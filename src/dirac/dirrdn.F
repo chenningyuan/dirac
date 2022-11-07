@@ -237,7 +237,7 @@ C     Initialize PE library
 !     consistency check for fragment X2C and the proper X2C module
       if(x2cmod_fragment_x2c.and..not.x2c)then
         write(lupri,'(/a,a)')
-     &  '  *** PAMINP reports an error after readin *X2C input:',
+     &  '  *** PAMINP reports an error after reading *X2C input:',
      &  '  a fragment X2C calculation requires the X2C module'//
      &  ' via .X2C under **HAMILTONIAN.'
         call quit('*** fragment X2C calculation not possible. ***')
@@ -382,7 +382,7 @@ C
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
      &             '.PRINT ','.PRJTHR','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
-     &             '.ACMOUT','.ACMOIN','.IMPMOS','.FAMILY',
+     &             '.ACMOUT','.ACMOIN','.IMPMOS','xxxxxxx',
      &             '.SKIP2E','.LOWJAC','.RKBIMP','.CODATA',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
@@ -543,8 +543,6 @@ C&&&& IMPMOS
             READ(LUCMD,*) QCPACK, (FILIMP(IDEG),IDEG=1,NFILES)
             GO TO 100
   116    CONTINUE
-C&&&& FAMILY: Family basis (Not yet implemented)
-            FAMILY = .TRUE.
             GO TO 100
   117    CONTINUE
 C&&&& SKIP2E
@@ -1716,6 +1714,11 @@ C&&& MJSELE: Selection based on Mj symmetry,
 C            NSUBBL = # of subblocks for MJ sym.
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
+               IF(TWOCOMP)THEN !2c
+                 NSUBBL = NHTYP 
+               ELSE !4c
+                 NSUBBL = NHTYP-1
+               ENDIF                
                READ(LUCMD,*,IOSTAT=IOS) NMJ
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*) 'Error in reading NMJ for .MJSELE !'
@@ -2354,6 +2357,11 @@ C
       END IF
 
       IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
+
+      CALL RMOLCHR(ICHRG)
+      KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
+      WRITE(LUPRI,'(A,I0)')
+     &    ' * Charge of molecule : ',KCHARG
 C
       IF (BNCRON.OR.BNSPON) THEN
 C     hjaaj nov 2004: bare nucleus correction is
@@ -2365,8 +2373,6 @@ C     a U(+90) calculation.
      &     ' - INFO: bare nucleus correction used independently of '//
      &  'the system charge'
         ELSE
-          CALL RMOLCHR(ICHRG)
-          KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
           IF (ABS(KCHARG) .GT. 10) THEN
             BNCRON = .FALSE.
             BNCRON = .FALSE.
@@ -5082,7 +5088,6 @@ C     Initialize /DCBGEN/
 C     ===================
 C
       TITLE    = 'DIRAC: No title specified !!!'
-      FAMILY   = .FALSE.
       INPTES   = .FALSE.
       VACUUM   = .FALSE.
       NUCVAC   = .FALSE.
@@ -6149,8 +6154,8 @@ C     =====================================================
         IF ((SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP).and.
      &      .not.x2cmod_mmf)THEN
           CALL QUIT('**HAMILTONIAN: '//
-     &    'Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP
-     &    & BSS/X2C !')
+     &    'Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP '//
+     &    '& BSS/X2C !')
         ENDIF
         IF (URKBAL.OR.SPINFR2) THEN
           CALL QUIT('**HAMILTONIAN: '//
@@ -7597,7 +7602,8 @@ C     and the density of the orbitals given by VECMVO.
         IF(NOCC(I).EQ.0) THEN
           VECMVO(I) = '1 '
         ELSEIF(NOCC(I).GT.0) THEN
-          WRITE(VECMVO(I),'(A3,I4)') '1..',NOCC(I)
+          WRITE(VECMVO(I),'(A3,I0)') '1..',NISH(I)
+          ! exclude active orbitals for default IONMVO
         ENDIF
       ENDDO
 C
@@ -7605,6 +7611,16 @@ C     Process input from CBIMVO
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*MVOCAL')
+
+      IF (DOMVO .AND. .NOT.NEWDEF .AND. NASHT.EQ.0) THEN
+         DOMVO = .FALSE.
+         WRITE(LUPRI,'(/A)')
+     &   ' INFO: .MVO option ignored because .VECMVO not specified'//
+     &   ' for closed shell SCF calculation',
+     &   '       (i.e. MVO orbitals would be identical to'//
+     &   ' canonical orbitals)'
+      END IF
+
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
@@ -7677,8 +7693,10 @@ C&&& WEIGHT: Give weight of the VECMVO density, the rest is inactive density
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal prompt in MVOINP.')
             END IF
-      END IF
+      END IF ! NEWDEF
   300 CONTINUE
+
+      IF (.NOT.DOMVO) GOTO 999 ! *MVOCAL input is ignored if not .MVO
 C
 C     Process section
 C
@@ -7688,7 +7706,6 @@ C
 C     Print section
 C     =============
 C
-      IF(.NOT.DOMVO) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)') ' MVOGEN: Modified virtual orbitals'
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -7764,7 +7781,6 @@ C
 C
       CALL TITLER('Input consistency checks','*',127)
 
-      is_2c_rel_run = .false.
       is_2c_rel_run = bss.or.x2c
 
       IF (DOPRP) THEN
@@ -8752,7 +8768,7 @@ C         if reading input from a terminal
   910 CONTINUE
       RETURN
   920 CONTINUE
-         CALL QUIT('Error reading LUCMD, no HAMIL input found')
+         CALL QUIT('Error reading input, no **HAMIL input found')
   930 CONTINUE
       READ (LUCMD,'(A7)') WORD
       CALL UPCASE(WORD)

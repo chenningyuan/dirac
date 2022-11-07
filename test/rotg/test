@@ -10,7 +10,7 @@ from runtest_config import configure
 assert version_info.major == 2
 
 f = [
-    get_filter(from_string='Molecular g-tensor',
+    get_filter(from_string='MOLECULAR ROTATIONAL G-TENSOR',
                to_string='E N D   of   D I R A C  output',
                rel_tolerance=1.0e-4)
 ]

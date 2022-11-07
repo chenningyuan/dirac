@@ -754,7 +754,8 @@ C&&& MAGCOR - print magnetic coordinates
          IF (S2MAGT) WRITE (LUPRI,'(10X,A)')
      &      '- test of second magnetic derivatives of overlap integrals'
          IF (ANGMOM) WRITE (LUPRI,'(10X,A)')
-     &      '- electronic angular momentum around the origin'
+     &      '- electronic angular momentum around the molecular'//
+     &      ' center of mass'
          IF (ANGLON) WRITE (LUPRI,'(10X,A)')
      &      '- electronic angular momentum around the nuclei'
          IF (LONMOM) WRITE (LUPRI,'(10X,A)')

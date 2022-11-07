@@ -1,5 +1,28 @@
 :orphan:
 
+22.1.beta
+---------
+
+Revised features:
+
+- Added a CI gradient convergence threshold option '.THRGCI' to '\*KRCICALC' (could not be changed by user previously).
+  - Contributor: H. J. Aa. Jensen.
+
+Performance improvements:
+
+- Improved code in luciarel CI program. Note that KRMC and KRCI by default uses luciarel.
+   - Contributor: Andreas Nyvang.
+   - numerical stability has been improved in the complex parallel diagonalization routine
+   - convergence algorithm has also been changed, with considerable improvement in convergence rate.
+     In particular, the truncation of the reduced space in the Davidson iterations is now done
+     in a much better way, leading to the improvement in convergence rate. Both for real and complex parallel cases.
+
+Bugfix:
+
+- Default for .MVO has been corrected, so it now behaves as expected: modified virtual orbitals
+  based on the Fock potential from the doubly-occupied molecular orbitals after an open-shell SCF calculation (H. J. Aa. Jensen).
+
+
 22.0 (2022-02-08)
 -----------------
 

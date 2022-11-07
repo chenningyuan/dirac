@@ -1,8 +1,8 @@
-DIRAC pam run in /Users/Stefanknecht/calc/test-scfmod/atomic-x2c/input-example/sf6
-DIRAC serial starts by allocating 125000000 words (953 MB) of memory
-             out of the allowed maximum of 225000000 words (1716 MB)
+  ** interface to 32-bit integer MPI enabled **
 
-Note: maximum allocatable memory for serial run can be set by pam --aw
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
  *******************************************************************************
  *                                                                             *
@@ -82,112 +82,165 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    Written by:                                                              *
  *                                                                             *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
- *    Radovan Bast             Universite P. Sabatier, Toulouse  France        *
- *    Trond Saue               Universite P. Sabatier, Toulouse  France        *
- *    Lucas Visscher           VU University Amsterdam           Netherlands   *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
  *    Sebastien Dubillard      University of Strasbourg          France        *
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Timo Fleig               Universite P. Sabatier, Toulouse  France        *
- *    Olav Fossgaard           University of Tromsoe             Norway        *
- *    Andre S. P. Gomes        CNRS/Universite Lille 1           France        *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
  *    Trygve Helgaker          University of Oslo                Norway        *
- *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
- *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany       *
- *    Stefan Knecht            University of Southern Denmark    Denmark       *
- *    Stanislav Komorovsky     University of Tromsoe             Norway        *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
- *    Patrick Norman           Linkoeping University             Sweden        *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
  *    Malgorzata Olejniczak    University of Warsaw              Poland        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
- *    Kenneth Ruud             University of Tromsoe             Norway        *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
- *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany       *
- *    Jetze Sikkema            VU University Amsterdam           Netherlands   *
- *    Andreas J. Thorvaldsen   University of Tromsoe             Norway        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost van Stralen        VU University Amsterdam           Netherlands   *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
  *    Toke Winther             University of Southern Denmark    Denmark       *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
  *                                                                             *
- *    For the complete list of contributors to the DIRAC code see our          *
- *    website http://www.diracprogram.org                                      *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
  *                                                                             *
  *    This is an experimental code. The authors accept no responsibility       *
  *    for the performance of the code or for the correctness of the results.   *
  *                                                                             *
- *    The code (in whole or part) is not to be reproduced for further          *
- *    distribution without the written permission of the authors or            *
- *    their representatives.                                                   *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
  *                                                                             *
  *    If results obtained with this code are published, an                     *
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC12 (2012),                                                  *
- *    written by H. J. Aa. Jensen, R. Bast, T. Saue, and L. Visscher,          *
- *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,            *
- *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, Y. S. Lee, J. Henriksson,   *
- *    M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie,             *
- *    C. V. Larsen, H. S. Nataraj, P. Norman, G. Olejniczak, J. Olsen,         *
- *    Y. C. Park, J. K. Pedersen, M. Pernpointner, K. Ruud, P. Salek,          *
- *    B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen,           *
- *    J. van Stralen, S. Villaume, O. Visser, T. Winther, and S. Yamamoto      *
- *    (see http://www.diracprogram.org).                                       *
+ *    Release DIRAC22 (2022), written by                                       *
+ *    H. J. Aa. Jensen, R. Bast, A. S. P. Gomes, T. Saue, and L. Visscher,     *
+ *    with contributions from I. A. Aucar, V. Bakken, C. Chibueze,             *
+ *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
+ *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, L. Halbert,         *
+ *    E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn, M. Ilias,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj, M. K. Nayak,         *
+ *    P. Norman, M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos,     *
+ *    Y. C. Park, J. K. Pedersen, M. Pernpointner, J. V. Pototschnig,          *
+ *    R. Di Remigio, M. Repisky, K. Ruud, P. Salek, B. Schimmelpfennig,        *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *
  *                                                                             *
  *******************************************************************************
 
 
-Binary information
-------------------
+Version information
+-------------------
 
- Who compiled             | Stefanknecht@stefans-mac-book-pro.local
- System                   | Darwin-11.4.2
- CMake generator          | Unix Makefiles
- Processor                | i386
- 64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/local/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.6.2 20111019 (prerelease)
- Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
-                          | _MFDS -fno-range-check -O3 -funroll-all-loops -w
- C compiler               | /usr/bin/gcc
- C compiler version       | i686-apple-darwin11-llvm-gcc-4.2 (GCC) 4.2.1 (Base
-                          | d on Apple Inc. build 5658) (LLVM build 2336.9.00)
- C flags                  | -g -O2 -Wno-unused
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | i686-apple-darwin11-llvm-g++-4.2 (GCC) 4.2.1 (Base
-                          | d on Apple Inc. build 5658) (LLVM build 2336.9.00)
- C++ flags                | -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -W
-                          | overloaded-virtual -Wwrite-strings -Wno-unused -Of
-                          | ast -march=native -DNDEBUG -Wno-unused
- Explicit libs            | -L/usr/lib -llapack -lblas
- Static linking           | OFF
- Last Git revision        | 7dc3496d03076712e787b64e0e89fe6213797253
- Configuration time       | 2013-03-08 16:33:40.379950
+Branch        | hjaaj-wip-master
+Commit hash   | d41fdde48
+Commit author | Hans Jørgen Aagaard Jensen
+Commit date   | Wed Jun 29 13:45:07 2022 +0200
 
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | hjj
+Compiled on server       | fe-ac-02.escience.sdu.dk
+Operating system         | Linux-5.4.119.el7
+CMake version            | 3.21.1
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2022-06-29 13:56:02.814657
+Python version           | 2.7.5
+Fortran compiler         | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpif90
+Fortran compiler version | 11.2.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch  -fopenmp -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch  -fopenmp
+C compiler               | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpicc
+C compiler version       | 11.2.0
+C compiler flags         |  -g  -fopenmp -g  -fopenmp
+C++ compiler             | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpicxx
+C++ compiler version     | 11.2.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | True
+MPI launcher             | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpiexec
+Math libraries           | /opt/sys/easybuild/software/OpenBLAS/0.3.18-GCC-11.2.0/lib/libopenblas.so;/opt/sys/easybuild/software/OpenBLAS/0.3.18-GCC-11.2.0/lib/libopenblas.so
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+
+ * openMP activated,  thread limit - # processes - # threads: *****   64    1
 
 Execution time and host
 -----------------------
 
  
+     Date and time (Linux)  : Wed Jun 29 16:08:20 2022
+     Host name              : fe-ac-02.escience.sdu.dk                
+
+ * Opening HDF5 checkpoint file 
+    - DIRAC was compiled without hdf5, checkpointing is not possible
 
 
 Contents of the input file
@@ -203,7 +256,6 @@ Contents of the input file
 .PRINT                                                                                              
  2                                                                                                  
 **HAMILTONIAN                                                                                       
-.MDIRAC                                                                                             
 .X2C                                                                                                
 .DOSSSS                                                                                             
 !*X2C                                                                                               
@@ -251,10 +303,10 @@ F      0.0000000000  -1.4829000000   0.0000000000
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
-   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
-                Peter J. Mohr and Barry N. Taylor                         
-   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
- * The speed of light :        137.0359998
+   CODATA Recommended Values of the Fundamental Physical Constants: 2018  
+             Peter J. Mohr, David B. Newell and Barry N. Taylor           
+         Reviews of Modern Physics, Vol. 93, 025010 (2021)                
+ * The speed of light :        137.0359992
  * Running in two-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
@@ -264,7 +316,7 @@ F      0.0000000000  -1.4829000000   0.0000000000
    MO-transformation for small components
  * Thresholds for linear dependence:
    Large components:   1.00D-06
-   Small components:   2.66D-09
+   Small components:   1.00D-08
  * General print level   :   0
 
 
@@ -273,7 +325,7 @@ F      0.0000000000  -1.4829000000   0.0000000000
     *************************************************************************
 
  Default print level:        1
- Nuclear model: Point charge.
+ Nuclear model requested in input: Point charge.
 
  Two-electron integrals not calculated.
 
@@ -282,21 +334,19 @@ F      0.0000000000  -1.4829000000   0.0000000000
 
 
 
- Changes of defaults for READIN:
+ Changes of defaults for *READIN
  -------------------------------
 
- Print level in READIN:    2
+ Print level in molecule setup (READIN):    2
 
  Uncontracted basis forced, irrespective of basis input file.
 
 
 
-    *************************************************************************
-    ****************** Output from READIN input processing ******************
-    *************************************************************************
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
 
- Coordinates were entered in Angstrom                        
- Converting to atomic units with conversion factor=   1.8897261339212517     
 
 
                           SYMGRP:Point group information
@@ -345,14 +395,15 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  QM-QM nuclear repulsion energy :    596.946359855468
+  Nuclear repulsion energy                       :    596.946362791822 Hartree
 
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.000000000000 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    7
 
   label    atoms   charge   prim    cont     basis   
@@ -365,204 +416,6 @@ Point group: C1
   total:      7      70     117     117
 
   Threshold for integrals (to be written to file):  1.00D-15
-
-
-                                Output from CAPOUT
-                                ------------------
-
-  Preparing formatted file "CAPINT.inp" for the CAP module.
-           1   1210.6199999999999        1.0000000000000000     
-           1   182.74700000000001        1.0000000000000000     
-           1   52.223599999999998        1.0000000000000000     
-           1   39.667299999999997        1.0000000000000000     
-           1   11.962899999999999        1.0000000000000000     
-           1   3.2891100000000000        1.0000000000000000     
-           1   1.2238400000000000        1.0000000000000000     
-           1  0.45730300000000002        1.0000000000000000     
-           1  0.14226900000000001        1.0000000000000000     
-           1   52.223599999999998        1.0000000000000000     
-           1   11.962899999999999        1.0000000000000000     
-           1   3.2891100000000000        1.0000000000000000     
-           1   1.2238400000000000        1.0000000000000000     
-           1  0.45730300000000002        1.0000000000000000     
-           1  0.14226900000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
-
-
-  CAPWRIBAS2: Contracted Orbitals again
-  -------------------------------------
-
-   1  S       s      1
-   2  S       s      2
-   3  S       s      3
-   4  S       s      4
-   5  S       s      5
-   6  S       s      6
-   7  S       s      7
-   8  S       s      8
-   9  S       s      9
-  10  S       px    10
-  11  S       py    16
-  12  S       pz    22
-  13  S       px    11
-  14  S       py    17
-  15  S       pz    23
-  16  S       px    12
-  17  S       py    18
-  18  S       pz    24
-  19  S       px    13
-  20  S       py    19
-  21  S       pz    25
-  22  S       px    14
-  23  S       py    20
-  24  S       pz    26
-  25  S       px    15
-  26  S       py    21
-  27  S       pz    27
-  28  F       s     28
-  29  F       s     29
-  30  F       s     30
-  31  F       s     31
-  32  F       s     32
-  33  F       s     33
-  34  F       px    34
-  35  F       py    37
-  36  F       pz    40
-  37  F       px    35
-  38  F       py    38
-  39  F       pz    41
-  40  F       px    36
-  41  F       py    39
-  42  F       pz    42
-  43  F       s     43
-  44  F       s     44
-  45  F       s     45
-  46  F       s     46
-  47  F       s     47
-  48  F       s     48
-  49  F       px    49
-  50  F       py    52
-  51  F       pz    55
-  52  F       px    50
-  53  F       py    53
-  54  F       pz    56
-  55  F       px    51
-  56  F       py    54
-  57  F       pz    57
-  58  F       s     58
-  59  F       s     59
-  60  F       s     60
-  61  F       s     61
-  62  F       s     62
-  63  F       s     63
-  64  F       px    64
-  65  F       py    67
-  66  F       pz    70
-  67  F       px    65
-  68  F       py    68
-  69  F       pz    71
-  70  F       px    66
-  71  F       py    69
-  72  F       pz    72
-  73  F       s     73
-  74  F       s     74
-  75  F       s     75
-  76  F       s     76
-  77  F       s     77
-  78  F       s     78
-  79  F       px    79
-  80  F       py    82
-  81  F       pz    85
-  82  F       px    80
-  83  F       py    83
-  84  F       pz    86
-  85  F       px    81
-  86  F       py    84
-  87  F       pz    87
-  88  F       s     88
-  89  F       s     89
-  90  F       s     90
-  91  F       s     91
-  92  F       s     92
-  93  F       s     93
-  94  F       px    94
-  95  F       py    97
-  96  F       pz   100
-  97  F       px    95
-  98  F       py    98
-  99  F       pz   101
- 100  F       px    96
- 101  F       py    99
- 102  F       pz   102
- 103  F       s    103
- 104  F       s    104
- 105  F       s    105
- 106  F       s    106
- 107  F       s    107
- 108  F       s    108
- 109  F       px   109
- 110  F       py   112
- 111  F       pz   115
- 112  F       px   110
- 113  F       py   113
- 114  F       pz   116
- 115  F       px   111
- 116  F       py   114
- 117  F       pz   117
 
 
   References for the basis sets
@@ -581,72 +434,72 @@ Point group: C1
    Cs     : A 3-21G quality set derived from the Huzinage MIDI basis sets.        
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (bohr)
+  ----------------------------
 
   Total number of coordinates: 21
 
 
-   1   S z      x      0.0000000000
+   1   S        x      0.0000000000
    2            y      0.0000000000
    3            z      0.0000000000
 
-   4   F z      x      2.8022748840
+   4   F        x      2.8022748702
    5            y      0.0000000000
    6            z      0.0000000000
 
-   7   F z      x     -2.8022748840
+   7   F        x     -2.8022748702
    8            y      0.0000000000
    9            z      0.0000000000
 
-  10   F z      x      0.0000000000
+  10   F        x      0.0000000000
   11            y      0.0000000000
-  12            z      2.8022748840
+  12            z      2.8022748702
 
-  13   F z      x      0.0000000000
+  13   F        x      0.0000000000
   14            y      0.0000000000
-  15            z     -2.8022748840
+  15            z     -2.8022748702
 
-  16   F z      x      0.0000000000
-  17            y      2.8022748840
+  16   F        x      0.0000000000
+  17            y      2.8022748702
   18            z      0.0000000000
 
-  19   F z      x      0.0000000000
-  20            y     -2.8022748840
+  19   F        x      0.0000000000
+  20            y     -2.8022748702
   21            z      0.0000000000
 
 
 
-  Cartesian coordinates xyz format (angstrom)
-  -------------------------------------------
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
 
     7
 
-S z    0.0000000000   0.0000000000   0.0000000000
-F z    1.4829000000   0.0000000000   0.0000000000
-F z   -1.4829000000   0.0000000000   0.0000000000
-F z    0.0000000000   0.0000000000   1.4829000000
-F z    0.0000000000   0.0000000000  -1.4829000000
-F z    0.0000000000   1.4829000000   0.0000000000
-F z    0.0000000000  -1.4829000000   0.0000000000
+S      0.0000000000   0.0000000000   0.0000000000
+F      1.4829000000   0.0000000000   0.0000000000
+F     -1.4829000000   0.0000000000   0.0000000000
+F      0.0000000000   0.0000000000   1.4829000000
+F      0.0000000000   0.0000000000  -1.4829000000
+F      0.0000000000   1.4829000000   0.0000000000
+F      0.0000000000  -1.4829000000   0.0000000000
 
 
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            S z         F z         F z         F z         F z         F z 
+            S           F           F           F           F           F   
 
-   S z     0.000000
-   F z     1.482900    0.000000
-   F z     1.482900    2.965800    0.000000
-   F z     1.482900    2.097137    2.097137    0.000000
-   F z     1.482900    2.097137    2.097137    2.965800    0.000000
-   F z     1.482900    2.097137    2.097137    2.097137    2.097137    0.000000
-   F z     1.482900    2.097137    2.097137    2.097137    2.097137    2.965800
+   S       0.000000
+   F       1.482900    0.000000
+   F       1.482900    2.965800    0.000000
+   F       1.482900    2.097137    2.097137    0.000000
+   F       1.482900    2.097137    2.097137    2.965800    0.000000
+   F       1.482900    2.097137    2.097137    2.097137    2.097137    0.000000
+   F       1.482900    2.097137    2.097137    2.097137    2.097137    2.965800
 
-            F z 
+            F   
 
-   F z     0.000000
+   F       0.000000
 
 
 
@@ -656,12 +509,12 @@ F z    0.0000000000  -1.4829000000   0.0000000000
 
                   atom 1     atom 2                           distance
                   ------     ------                           --------
-  bond distance:    F z        S z                            1.482900
-  bond distance:    F z        S z                            1.482900
-  bond distance:    F z        S z                            1.482900
-  bond distance:    F z        S z                            1.482900
-  bond distance:    F z        S z                            1.482900
-  bond distance:    F z        S z                            1.482900
+  bond distance:    F          S                              1.482900
+  bond distance:    F          S                              1.482900
+  bond distance:    F          S                              1.482900
+  bond distance:    F          S                              1.482900
+  bond distance:    F          S                              1.482900
+  bond distance:    F          S                              1.482900
 
 
   Bond angles (degrees):
@@ -669,24 +522,25 @@ F z    0.0000000000  -1.4829000000   0.0000000000
 
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
-  bond angle:       F z        S z        F z                  180.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                  180.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                  180.000
+  bond angle:       F          S          F                    180.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                    180.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                    180.000
 
 
-  Nuclear repulsion energy :  596.946359855468
+
+   Nuclear repulsion energy                          :  596.946362791822 Hartree
 
 
                               Large Components Basis
@@ -698,337 +552,175 @@ F z    0.0000000000  -1.4829000000   0.0000000000
   ----------------------------------------------
 
 
-  S      s      1  1.2106200000D+03    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-   seg. cont.   2  1.8274700000D+02    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-                3  5.2223600000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-                4  3.9667300000D+01    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-                5  1.1962900000D+01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000  0.0000  0.0000  0.0000
-                6  3.2891100000D+00    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000  0.0000  0.0000  0.0000
-                7  1.2238400000D+00    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  1.0000  0.0000  0.0000
-                8  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  1.0000  0.0000
-                9  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  1.0000
+  S      s       1  1.2106200000D+03
+   uncontrac.    2  1.8274700000D+02
+                 3  5.2223600000D+01
+                 4  3.9667300000D+01
+                 5  1.1962900000D+01
+                 6  3.2891100000D+00
+                 7  1.2238400000D+00
+                 8  4.5730300000D-01
+                 9  1.4226900000D-01
 
-  S      px    10  5.2223600000D+01    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  11  1.1962900000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               12  3.2891100000D+00    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               13  1.2238400000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               14  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               15  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  S      px     10  5.2223600000D+01
+   uncontrac.   11  1.1962900000D+01
+                12  3.2891100000D+00
+                13  1.2238400000D+00
+                14  4.5730300000D-01
+                15  1.4226900000D-01
 
-  S      py    16  5.2223600000D+01    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  17  1.1962900000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               18  3.2891100000D+00    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               19  1.2238400000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               20  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               21  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  S      py     16  5.2223600000D+01
+   uncontrac.   17  1.1962900000D+01
+                18  3.2891100000D+00
+                19  1.2238400000D+00
+                20  4.5730300000D-01
+                21  1.4226900000D-01
 
-  S      pz    22  5.2223600000D+01    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  23  1.1962900000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               24  3.2891100000D+00    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               25  1.2238400000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               26  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               27  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  S      pz     22  5.2223600000D+01
+   uncontrac.   23  1.1962900000D+01
+                24  3.2891100000D+00
+                25  1.2238400000D+00
+                26  4.5730300000D-01
+                27  1.4226900000D-01
 
-  F      s     28  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  29  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               30  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               31  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               32  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               33  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s      28  4.1380100000D+02
+   uncontrac.   29  6.2244600000D+01
+                30  1.3434000000D+01
+                31  9.7775900000D+00
+                32  2.0861700000D+00
+                33  4.8238300000D-01
 
-  F      px    34  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  35  2.0861700000D+00    0.0000  1.0000  0.0000
-               36  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px     34  9.7775900000D+00
+   uncontrac.   35  2.0861700000D+00
+                36  4.8238300000D-01
 
-  F      py    37  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  38  2.0861700000D+00    0.0000  1.0000  0.0000
-               39  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py     37  9.7775900000D+00
+   uncontrac.   38  2.0861700000D+00
+                39  4.8238300000D-01
 
-  F      pz    40  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  41  2.0861700000D+00    0.0000  1.0000  0.0000
-               42  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz     40  9.7775900000D+00
+   uncontrac.   41  2.0861700000D+00
+                42  4.8238300000D-01
 
-  F      s     43  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  44  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               45  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               46  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               47  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               48  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s      43  4.1380100000D+02
+   uncontrac.   44  6.2244600000D+01
+                45  1.3434000000D+01
+                46  9.7775900000D+00
+                47  2.0861700000D+00
+                48  4.8238300000D-01
 
-  F      px    49  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  50  2.0861700000D+00    0.0000  1.0000  0.0000
-               51  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px     49  9.7775900000D+00
+   uncontrac.   50  2.0861700000D+00
+                51  4.8238300000D-01
 
-  F      py    52  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  53  2.0861700000D+00    0.0000  1.0000  0.0000
-               54  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py     52  9.7775900000D+00
+   uncontrac.   53  2.0861700000D+00
+                54  4.8238300000D-01
 
-  F      pz    55  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  56  2.0861700000D+00    0.0000  1.0000  0.0000
-               57  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz     55  9.7775900000D+00
+   uncontrac.   56  2.0861700000D+00
+                57  4.8238300000D-01
 
-  F      s     58  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  59  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               60  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               61  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               62  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               63  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s      58  4.1380100000D+02
+   uncontrac.   59  6.2244600000D+01
+                60  1.3434000000D+01
+                61  9.7775900000D+00
+                62  2.0861700000D+00
+                63  4.8238300000D-01
 
-  F      px    64  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  65  2.0861700000D+00    0.0000  1.0000  0.0000
-               66  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px     64  9.7775900000D+00
+   uncontrac.   65  2.0861700000D+00
+                66  4.8238300000D-01
 
-  F      py    67  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  68  2.0861700000D+00    0.0000  1.0000  0.0000
-               69  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py     67  9.7775900000D+00
+   uncontrac.   68  2.0861700000D+00
+                69  4.8238300000D-01
 
-  F      pz    70  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  71  2.0861700000D+00    0.0000  1.0000  0.0000
-               72  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz     70  9.7775900000D+00
+   uncontrac.   71  2.0861700000D+00
+                72  4.8238300000D-01
 
-  F      s     73  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  74  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               75  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               76  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               77  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               78  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s      73  4.1380100000D+02
+   uncontrac.   74  6.2244600000D+01
+                75  1.3434000000D+01
+                76  9.7775900000D+00
+                77  2.0861700000D+00
+                78  4.8238300000D-01
 
-  F      px    79  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  80  2.0861700000D+00    0.0000  1.0000  0.0000
-               81  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px     79  9.7775900000D+00
+   uncontrac.   80  2.0861700000D+00
+                81  4.8238300000D-01
 
-  F      py    82  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  83  2.0861700000D+00    0.0000  1.0000  0.0000
-               84  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py     82  9.7775900000D+00
+   uncontrac.   83  2.0861700000D+00
+                84  4.8238300000D-01
 
-  F      pz    85  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  86  2.0861700000D+00    0.0000  1.0000  0.0000
-               87  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz     85  9.7775900000D+00
+   uncontrac.   86  2.0861700000D+00
+                87  4.8238300000D-01
 
-  F      s     88  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  89  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               90  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               91  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               92  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               93  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s      88  4.1380100000D+02
+   uncontrac.   89  6.2244600000D+01
+                90  1.3434000000D+01
+                91  9.7775900000D+00
+                92  2.0861700000D+00
+                93  4.8238300000D-01
 
-  F      px    94  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  95  2.0861700000D+00    0.0000  1.0000  0.0000
-               96  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px     94  9.7775900000D+00
+   uncontrac.   95  2.0861700000D+00
+                96  4.8238300000D-01
 
-  F      py    97  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  98  2.0861700000D+00    0.0000  1.0000  0.0000
-               99  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py     97  9.7775900000D+00
+   uncontrac.   98  2.0861700000D+00
+                99  4.8238300000D-01
 
-  F      pz   100  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 101  2.0861700000D+00    0.0000  1.0000  0.0000
-              102  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz    100  9.7775900000D+00
+   uncontrac.  101  2.0861700000D+00
+               102  4.8238300000D-01
 
-  F      s    103  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont. 104  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-              105  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-              106  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-              107  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-              108  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s     103  4.1380100000D+02
+   uncontrac.  104  6.2244600000D+01
+               105  1.3434000000D+01
+               106  9.7775900000D+00
+               107  2.0861700000D+00
+               108  4.8238300000D-01
 
-  F      px   109  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 110  2.0861700000D+00    0.0000  1.0000  0.0000
-              111  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px    109  9.7775900000D+00
+   uncontrac.  110  2.0861700000D+00
+               111  4.8238300000D-01
 
-  F      py   112  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 113  2.0861700000D+00    0.0000  1.0000  0.0000
-              114  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py    112  9.7775900000D+00
+   uncontrac.  113  2.0861700000D+00
+               114  4.8238300000D-01
 
-  F      pz   115  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 116  2.0861700000D+00    0.0000  1.0000  0.0000
-              117  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz    115  9.7775900000D+00
+   uncontrac.  116  2.0861700000D+00
+               117  4.8238300000D-01
 
 
   Contracted Orbitals
   -------------------
 
-   1  S       s      1
-   2  S       s      2
-   3  S       s      3
-   4  S       s      4
-   5  S       s      5
-   6  S       s      6
-   7  S       s      7
-   8  S       s      8
-   9  S       s      9
-  10  S       px    10
-  11  S       py    16
-  12  S       pz    22
-  13  S       px    11
-  14  S       py    17
-  15  S       pz    23
-  16  S       px    12
-  17  S       py    18
-  18  S       pz    24
-  19  S       px    13
-  20  S       py    19
-  21  S       pz    25
-  22  S       px    14
-  23  S       py    20
-  24  S       pz    26
-  25  S       px    15
-  26  S       py    21
-  27  S       pz    27
-  28  F       s     28
-  29  F       s     29
-  30  F       s     30
-  31  F       s     31
-  32  F       s     32
-  33  F       s     33
-  34  F       px    34
-  35  F       py    37
-  36  F       pz    40
-  37  F       px    35
-  38  F       py    38
-  39  F       pz    41
-  40  F       px    36
-  41  F       py    39
-  42  F       pz    42
-  43  F       s     43
-  44  F       s     44
-  45  F       s     45
-  46  F       s     46
-  47  F       s     47
-  48  F       s     48
-  49  F       px    49
-  50  F       py    52
-  51  F       pz    55
-  52  F       px    50
-  53  F       py    53
-  54  F       pz    56
-  55  F       px    51
-  56  F       py    54
-  57  F       pz    57
-  58  F       s     58
-  59  F       s     59
-  60  F       s     60
-  61  F       s     61
-  62  F       s     62
-  63  F       s     63
-  64  F       px    64
-  65  F       py    67
-  66  F       pz    70
-  67  F       px    65
-  68  F       py    68
-  69  F       pz    71
-  70  F       px    66
-  71  F       py    69
-  72  F       pz    72
-  73  F       s     73
-  74  F       s     74
-  75  F       s     75
-  76  F       s     76
-  77  F       s     77
-  78  F       s     78
-  79  F       px    79
-  80  F       py    82
-  81  F       pz    85
-  82  F       px    80
-  83  F       py    83
-  84  F       pz    86
-  85  F       px    81
-  86  F       py    84
-  87  F       pz    87
-  88  F       s     88
-  89  F       s     89
-  90  F       s     90
-  91  F       s     91
-  92  F       s     92
-  93  F       s     93
-  94  F       px    94
-  95  F       py    97
-  96  F       pz   100
-  97  F       px    95
-  98  F       py    98
-  99  F       pz   101
- 100  F       px    96
- 101  F       py    99
- 102  F       pz   102
- 103  F       s    103
- 104  F       s    104
- 105  F       s    105
- 106  F       s    106
- 107  F       s    107
- 108  F       s    108
- 109  F       px   109
- 110  F       py   112
- 111  F       pz   115
- 112  F       px   110
- 113  F       py   113
- 114  F       pz   116
- 115  F       px   111
- 116  F       py   114
- 117  F       pz   117
+ All orbitals are uncontracted.
 
 
+                                 Isotopic Masses
+                                 ---------------
+
+                           S          31.972072
+                           F          18.998403
+                           F          18.998403
+                           F          18.998403
+                           F          18.998403
+                           F          18.998403
+                           F          18.998403
+
+                       * Total mass:   145.962490 amu
+                       * Natural abundance:  95.020 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
 
 
                             **************************
@@ -1043,11 +735,9 @@ F z    0.0000000000  -1.4829000000   0.0000000000
    -----------------------------------------
    Total     117    117      0    Max    117
 
-   NNBBAST =   6903  NNBBASX   6903
+   NNBBAST, NNBASX:     6903     6903
 
-* Matrix offsets to symmetry
-
- blocks (I2BBASX):
+* Matrix offsets to symmetry blocks (I2BBASX):
    A    A    L  L           0   A    A    S  L         117   A    A    L  S       13689   A    A    S  S       13806
 
 
@@ -1109,16 +799,21 @@ F z    0.0000000000  -1.4829000000   0.0000000000
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
  * Print level:    0
  * Exact-Two-Component (X2C) Hamiltonian
    Reference: 
     M. Ilias and T. Saue:
     "Implementation of an infinite-order two-component relativistic Hamiltonian 
     by a simple one-step transformation." 
-    J. Chem. Phys., 126 (2007) 064102. 
-   additional reference for the new X2C module: 
+    J. Chem. Phys., 126 (2007) 064102.
+   additional reference for the new X2C module:
     S. Knecht and T. Saue:
-    manuscript in preparation, Strasbourg 2010. 
+    manuscript in preparation, Strasbourg 2010.
 
  * Running in two-component mode
  * Default integral flags passed to all modules
@@ -1126,8 +821,6 @@ F z    0.0000000000  -1.4829000000   0.0000000000
    - LS-integrals:     0
    - SS-integrals:     0
    - GT-integrals:     0
- * Basis set:
-   - uncontracted large component basis set
 ===========================================================================
    Set-up for AMFI/RELSCF calculations
 ===========================================================================
@@ -1144,16 +837,24 @@ F z    0.0000000000  -1.4829000000   0.0000000000
     ************************** Wave function module **************************
     **************************************************************************
 
- Jobs in this run (in execution order):
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
  * Hartree-Fock calculation
 ===========================================================================
- SCFINP: Set-up for Hartree-Fock calculation:
+ *SCF: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 1
  * Closed shell SCF calculation with    70 electrons in   35 orbitals.
+ * Charge of molecule : 0
  * General print level   :   0
+
  ***** INITIAL TRIAL SCF FUNCTION *****
  * Trial vectors read from file DFCOEF
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
    Desired convergence:1.000D-07
@@ -1189,12 +890,10 @@ F z    0.0000000000  -1.4829000000   0.0000000000
 
 
 
-    *************************************************************************
-    ****************** Output from READIN input processing ******************
-    *************************************************************************
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
 
- Coordinates were entered in Angstrom                        
- Converting to atomic units with conversion factor=   1.8897261339212517     
 
 
                           SYMGRP:Point group information
@@ -1243,14 +942,15 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  QM-QM nuclear repulsion energy :    596.946359855468
+  Nuclear repulsion energy                       :    596.946362791822 Hartree
 
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.000000000000 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    7
 
   label    atoms   charge   prim    cont     basis   
@@ -1259,395 +959,12 @@ Point group: C1
   F           6       9      15      15      L  - [6s3p|6s3p]                                                    
   ----------------------------------------------------------------------
                             117     117      L  - large components
-                            117     117      S  - small components
+                            303     303      S  - small components
   ----------------------------------------------------------------------
-  total:      7      70     234     234
+  total:      7      70     420     420
 
+  Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
-
-
-                                Output from CAPOUT
-                                ------------------
-
-  Preparing formatted file "CAPINT.inp" for the CAP module.
-           1   1210.6199999999999        1.0000000000000000     
-           1   182.74700000000001        1.0000000000000000     
-           1   52.223599999999998        1.0000000000000000     
-           1   39.667299999999997        1.0000000000000000     
-           1   11.962899999999999        1.0000000000000000     
-           1   3.2891100000000000        1.0000000000000000     
-           1   1.2238400000000000        1.0000000000000000     
-           1  0.45730300000000002        1.0000000000000000     
-           1  0.14226900000000001        1.0000000000000000     
-           1   52.223599999999998        1.0000000000000000     
-           1   11.962899999999999        1.0000000000000000     
-           1   3.2891100000000000        1.0000000000000000     
-           1   1.2238400000000000        1.0000000000000000     
-           1  0.45730300000000002        1.0000000000000000     
-           1  0.14226900000000001        1.0000000000000000     
-           1   1210.6199999999999        1.0000000000000000     
-           1   182.74700000000001        1.0000000000000000     
-           1   52.223599999999998        1.0000000000000000     
-           1   39.667299999999997        1.0000000000000000     
-           1   11.962899999999999        1.0000000000000000     
-           1   3.2891100000000000        1.0000000000000000     
-           1   1.2238400000000000        1.0000000000000000     
-           1  0.45730300000000002        1.0000000000000000     
-           1  0.14226900000000001        1.0000000000000000     
-           1   52.223599999999998        1.0000000000000000     
-           1   11.962899999999999        1.0000000000000000     
-           1   3.2891100000000000        1.0000000000000000     
-           1   1.2238400000000000        1.0000000000000000     
-           1  0.45730300000000002        1.0000000000000000     
-           1  0.14226900000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   413.80099999999999        1.0000000000000000     
-           1   62.244599999999998        1.0000000000000000     
-           1   13.433999999999999        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-           1   9.7775900000000000        1.0000000000000000     
-           1   2.0861700000000001        1.0000000000000000     
-           1  0.48238300000000001        1.0000000000000000     
-  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
-
-
-  CAPWRIBAS2: Contracted Orbitals again
-  -------------------------------------
-
-   1  S       s      1
-   2  S       s      2
-   3  S       s      3
-   4  S       s      4
-   5  S       s      5
-   6  S       s      6
-   7  S       s      7
-   8  S       s      8
-   9  S       s      9
-  10  S       px    10
-  11  S       py    16
-  12  S       pz    22
-  13  S       px    11
-  14  S       py    17
-  15  S       pz    23
-  16  S       px    12
-  17  S       py    18
-  18  S       pz    24
-  19  S       px    13
-  20  S       py    19
-  21  S       pz    25
-  22  S       px    14
-  23  S       py    20
-  24  S       pz    26
-  25  S       px    15
-  26  S       py    21
-  27  S       pz    27
-  28  F       s     28
-  29  F       s     29
-  30  F       s     30
-  31  F       s     31
-  32  F       s     32
-  33  F       s     33
-  34  F       px    34
-  35  F       py    37
-  36  F       pz    40
-  37  F       px    35
-  38  F       py    38
-  39  F       pz    41
-  40  F       px    36
-  41  F       py    39
-  42  F       pz    42
-  43  F       s     43
-  44  F       s     44
-  45  F       s     45
-  46  F       s     46
-  47  F       s     47
-  48  F       s     48
-  49  F       px    49
-  50  F       py    52
-  51  F       pz    55
-  52  F       px    50
-  53  F       py    53
-  54  F       pz    56
-  55  F       px    51
-  56  F       py    54
-  57  F       pz    57
-  58  F       s     58
-  59  F       s     59
-  60  F       s     60
-  61  F       s     61
-  62  F       s     62
-  63  F       s     63
-  64  F       px    64
-  65  F       py    67
-  66  F       pz    70
-  67  F       px    65
-  68  F       py    68
-  69  F       pz    71
-  70  F       px    66
-  71  F       py    69
-  72  F       pz    72
-  73  F       s     73
-  74  F       s     74
-  75  F       s     75
-  76  F       s     76
-  77  F       s     77
-  78  F       s     78
-  79  F       px    79
-  80  F       py    82
-  81  F       pz    85
-  82  F       px    80
-  83  F       py    83
-  84  F       pz    86
-  85  F       px    81
-  86  F       py    84
-  87  F       pz    87
-  88  F       s     88
-  89  F       s     89
-  90  F       s     90
-  91  F       s     91
-  92  F       s     92
-  93  F       s     93
-  94  F       px    94
-  95  F       py    97
-  96  F       pz   100
-  97  F       px    95
-  98  F       py    98
-  99  F       pz   101
- 100  F       px    96
- 101  F       py    99
- 102  F       pz   102
- 103  F       s    103
- 104  F       s    104
- 105  F       s    105
- 106  F       s    106
- 107  F       s    107
- 108  F       s    108
- 109  F       px   109
- 110  F       py   112
- 111  F       pz   115
- 112  F       px   110
- 113  F       py   113
- 114  F       pz   116
- 115  F       px   111
- 116  F       py   114
- 117  F       pz   117
- 118  S       s    118
- 119  S       s    119
- 120  S       s    120
- 121  S       s    121
- 122  S       s    122
- 123  S       s    123
- 124  S       s    124
- 125  S       s    125
- 126  S       s    126
- 127  S       px   127
- 128  S       py   133
- 129  S       pz   139
- 130  S       px   128
- 131  S       py   134
- 132  S       pz   140
- 133  S       px   129
- 134  S       py   135
- 135  S       pz   141
- 136  S       px   130
- 137  S       py   136
- 138  S       pz   142
- 139  S       px   131
- 140  S       py   137
- 141  S       pz   143
- 142  S       px   132
- 143  S       py   138
- 144  S       pz   144
- 145  F       s    145
- 146  F       s    146
- 147  F       s    147
- 148  F       s    148
- 149  F       s    149
- 150  F       s    150
- 151  F       px   151
- 152  F       py   154
- 153  F       pz   157
- 154  F       px   152
- 155  F       py   155
- 156  F       pz   158
- 157  F       px   153
- 158  F       py   156
- 159  F       pz   159
- 160  F       s    160
- 161  F       s    161
- 162  F       s    162
- 163  F       s    163
- 164  F       s    164
- 165  F       s    165
- 166  F       px   166
- 167  F       py   169
- 168  F       pz   172
- 169  F       px   167
- 170  F       py   170
- 171  F       pz   173
- 172  F       px   168
- 173  F       py   171
- 174  F       pz   174
- 175  F       s    175
- 176  F       s    176
- 177  F       s    177
- 178  F       s    178
- 179  F       s    179
- 180  F       s    180
- 181  F       px   181
- 182  F       py   184
- 183  F       pz   187
- 184  F       px   182
- 185  F       py   185
- 186  F       pz   188
- 187  F       px   183
- 188  F       py   186
- 189  F       pz   189
- 190  F       s    190
- 191  F       s    191
- 192  F       s    192
- 193  F       s    193
- 194  F       s    194
- 195  F       s    195
- 196  F       px   196
- 197  F       py   199
- 198  F       pz   202
- 199  F       px   197
- 200  F       py   200
- 201  F       pz   203
- 202  F       px   198
- 203  F       py   201
- 204  F       pz   204
- 205  F       s    205
- 206  F       s    206
- 207  F       s    207
- 208  F       s    208
- 209  F       s    209
- 210  F       s    210
- 211  F       px   211
- 212  F       py   214
- 213  F       pz   217
- 214  F       px   212
- 215  F       py   215
- 216  F       pz   218
- 217  F       px   213
- 218  F       py   216
- 219  F       pz   219
- 220  F       s    220
- 221  F       s    221
- 222  F       s    222
- 223  F       s    223
- 224  F       s    224
- 225  F       s    225
- 226  F       px   226
- 227  F       py   229
- 228  F       pz   232
- 229  F       px   227
- 230  F       py   230
- 231  F       pz   233
- 232  F       px   228
- 233  F       py   231
- 234  F       pz   234
 
 
   References for the basis sets
@@ -1666,72 +983,72 @@ Point group: C1
    Cs     : A 3-21G quality set derived from the Huzinage MIDI basis sets.        
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (bohr)
+  ----------------------------
 
   Total number of coordinates: 21
 
 
-   1   S z      x      0.0000000000
+   1   S        x      0.0000000000
    2            y      0.0000000000
    3            z      0.0000000000
 
-   4   F z      x      2.8022748840
+   4   F        x      2.8022748702
    5            y      0.0000000000
    6            z      0.0000000000
 
-   7   F z      x     -2.8022748840
+   7   F        x     -2.8022748702
    8            y      0.0000000000
    9            z      0.0000000000
 
-  10   F z      x      0.0000000000
+  10   F        x      0.0000000000
   11            y      0.0000000000
-  12            z      2.8022748840
+  12            z      2.8022748702
 
-  13   F z      x      0.0000000000
+  13   F        x      0.0000000000
   14            y      0.0000000000
-  15            z     -2.8022748840
+  15            z     -2.8022748702
 
-  16   F z      x      0.0000000000
-  17            y      2.8022748840
+  16   F        x      0.0000000000
+  17            y      2.8022748702
   18            z      0.0000000000
 
-  19   F z      x      0.0000000000
-  20            y     -2.8022748840
+  19   F        x      0.0000000000
+  20            y     -2.8022748702
   21            z      0.0000000000
 
 
 
-  Cartesian coordinates xyz format (angstrom)
-  -------------------------------------------
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
 
     7
 
-S z    0.0000000000   0.0000000000   0.0000000000
-F z    1.4829000000   0.0000000000   0.0000000000
-F z   -1.4829000000   0.0000000000   0.0000000000
-F z    0.0000000000   0.0000000000   1.4829000000
-F z    0.0000000000   0.0000000000  -1.4829000000
-F z    0.0000000000   1.4829000000   0.0000000000
-F z    0.0000000000  -1.4829000000   0.0000000000
+S      0.0000000000   0.0000000000   0.0000000000
+F      1.4829000000   0.0000000000   0.0000000000
+F     -1.4829000000   0.0000000000   0.0000000000
+F      0.0000000000   0.0000000000   1.4829000000
+F      0.0000000000   0.0000000000  -1.4829000000
+F      0.0000000000   1.4829000000   0.0000000000
+F      0.0000000000  -1.4829000000   0.0000000000
 
 
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            S z         F z         F z         F z         F z         F z 
+            S           F           F           F           F           F   
 
-   S z     0.000000
-   F z     1.482900    0.000000
-   F z     1.482900    2.965800    0.000000
-   F z     1.482900    2.097137    2.097137    0.000000
-   F z     1.482900    2.097137    2.097137    2.965800    0.000000
-   F z     1.482900    2.097137    2.097137    2.097137    2.097137    0.000000
-   F z     1.482900    2.097137    2.097137    2.097137    2.097137    2.965800
+   S       0.000000
+   F       1.482900    0.000000
+   F       1.482900    2.965800    0.000000
+   F       1.482900    2.097137    2.097137    0.000000
+   F       1.482900    2.097137    2.097137    2.965800    0.000000
+   F       1.482900    2.097137    2.097137    2.097137    2.097137    0.000000
+   F       1.482900    2.097137    2.097137    2.097137    2.097137    2.965800
 
-            F z 
+            F   
 
-   F z     0.000000
+   F       0.000000
 
 
 
@@ -1741,12 +1058,12 @@ F z    0.0000000000  -1.4829000000   0.0000000000
 
                   atom 1     atom 2                           distance
                   ------     ------                           --------
-  bond distance:    F z        S z                            1.482900
-  bond distance:    F z        S z                            1.482900
-  bond distance:    F z        S z                            1.482900
-  bond distance:    F z        S z                            1.482900
-  bond distance:    F z        S z                            1.482900
-  bond distance:    F z        S z                            1.482900
+  bond distance:    F          S                              1.482900
+  bond distance:    F          S                              1.482900
+  bond distance:    F          S                              1.482900
+  bond distance:    F          S                              1.482900
+  bond distance:    F          S                              1.482900
+  bond distance:    F          S                              1.482900
 
 
   Bond angles (degrees):
@@ -1754,24 +1071,25 @@ F z    0.0000000000  -1.4829000000   0.0000000000
 
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
-  bond angle:       F z        S z        F z                  180.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                  180.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                   90.000
-  bond angle:       F z        S z        F z                  180.000
+  bond angle:       F          S          F                    180.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                    180.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                     90.000
+  bond angle:       F          S          F                    180.000
 
 
-  Nuclear repulsion energy :  596.946359855468
+
+   Nuclear repulsion energy                          :  596.946362791822 Hartree
 
 
                               Large Components Basis
@@ -1783,337 +1101,156 @@ F z    0.0000000000  -1.4829000000   0.0000000000
   ----------------------------------------------
 
 
-  S      s      1  1.2106200000D+03    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-   seg. cont.   2  1.8274700000D+02    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-                3  5.2223600000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-                4  3.9667300000D+01    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-                5  1.1962900000D+01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000  0.0000  0.0000  0.0000
-                6  3.2891100000D+00    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000  0.0000  0.0000  0.0000
-                7  1.2238400000D+00    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  1.0000  0.0000  0.0000
-                8  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  1.0000  0.0000
-                9  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  1.0000
+  S      s       1  1.2106200000D+03
+   uncontrac.    2  1.8274700000D+02
+                 3  5.2223600000D+01
+                 4  3.9667300000D+01
+                 5  1.1962900000D+01
+                 6  3.2891100000D+00
+                 7  1.2238400000D+00
+                 8  4.5730300000D-01
+                 9  1.4226900000D-01
 
-  S      px    10  5.2223600000D+01    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  11  1.1962900000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               12  3.2891100000D+00    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               13  1.2238400000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               14  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               15  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  S      px     10  5.2223600000D+01
+   uncontrac.   11  1.1962900000D+01
+                12  3.2891100000D+00
+                13  1.2238400000D+00
+                14  4.5730300000D-01
+                15  1.4226900000D-01
 
-  S      py    16  5.2223600000D+01    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  17  1.1962900000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               18  3.2891100000D+00    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               19  1.2238400000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               20  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               21  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  S      py     16  5.2223600000D+01
+   uncontrac.   17  1.1962900000D+01
+                18  3.2891100000D+00
+                19  1.2238400000D+00
+                20  4.5730300000D-01
+                21  1.4226900000D-01
 
-  S      pz    22  5.2223600000D+01    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  23  1.1962900000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               24  3.2891100000D+00    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               25  1.2238400000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               26  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               27  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  S      pz     22  5.2223600000D+01
+   uncontrac.   23  1.1962900000D+01
+                24  3.2891100000D+00
+                25  1.2238400000D+00
+                26  4.5730300000D-01
+                27  1.4226900000D-01
 
-  F      s     28  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  29  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               30  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               31  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               32  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               33  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s      28  4.1380100000D+02
+   uncontrac.   29  6.2244600000D+01
+                30  1.3434000000D+01
+                31  9.7775900000D+00
+                32  2.0861700000D+00
+                33  4.8238300000D-01
 
-  F      px    34  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  35  2.0861700000D+00    0.0000  1.0000  0.0000
-               36  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px     34  9.7775900000D+00
+   uncontrac.   35  2.0861700000D+00
+                36  4.8238300000D-01
 
-  F      py    37  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  38  2.0861700000D+00    0.0000  1.0000  0.0000
-               39  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py     37  9.7775900000D+00
+   uncontrac.   38  2.0861700000D+00
+                39  4.8238300000D-01
 
-  F      pz    40  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  41  2.0861700000D+00    0.0000  1.0000  0.0000
-               42  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz     40  9.7775900000D+00
+   uncontrac.   41  2.0861700000D+00
+                42  4.8238300000D-01
 
-  F      s     43  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  44  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               45  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               46  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               47  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               48  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s      43  4.1380100000D+02
+   uncontrac.   44  6.2244600000D+01
+                45  1.3434000000D+01
+                46  9.7775900000D+00
+                47  2.0861700000D+00
+                48  4.8238300000D-01
 
-  F      px    49  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  50  2.0861700000D+00    0.0000  1.0000  0.0000
-               51  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px     49  9.7775900000D+00
+   uncontrac.   50  2.0861700000D+00
+                51  4.8238300000D-01
 
-  F      py    52  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  53  2.0861700000D+00    0.0000  1.0000  0.0000
-               54  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py     52  9.7775900000D+00
+   uncontrac.   53  2.0861700000D+00
+                54  4.8238300000D-01
 
-  F      pz    55  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  56  2.0861700000D+00    0.0000  1.0000  0.0000
-               57  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz     55  9.7775900000D+00
+   uncontrac.   56  2.0861700000D+00
+                57  4.8238300000D-01
 
-  F      s     58  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  59  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               60  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               61  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               62  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               63  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s      58  4.1380100000D+02
+   uncontrac.   59  6.2244600000D+01
+                60  1.3434000000D+01
+                61  9.7775900000D+00
+                62  2.0861700000D+00
+                63  4.8238300000D-01
 
-  F      px    64  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  65  2.0861700000D+00    0.0000  1.0000  0.0000
-               66  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px     64  9.7775900000D+00
+   uncontrac.   65  2.0861700000D+00
+                66  4.8238300000D-01
 
-  F      py    67  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  68  2.0861700000D+00    0.0000  1.0000  0.0000
-               69  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py     67  9.7775900000D+00
+   uncontrac.   68  2.0861700000D+00
+                69  4.8238300000D-01
 
-  F      pz    70  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  71  2.0861700000D+00    0.0000  1.0000  0.0000
-               72  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz     70  9.7775900000D+00
+   uncontrac.   71  2.0861700000D+00
+                72  4.8238300000D-01
 
-  F      s     73  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  74  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               75  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               76  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               77  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               78  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s      73  4.1380100000D+02
+   uncontrac.   74  6.2244600000D+01
+                75  1.3434000000D+01
+                76  9.7775900000D+00
+                77  2.0861700000D+00
+                78  4.8238300000D-01
 
-  F      px    79  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  80  2.0861700000D+00    0.0000  1.0000  0.0000
-               81  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px     79  9.7775900000D+00
+   uncontrac.   80  2.0861700000D+00
+                81  4.8238300000D-01
 
-  F      py    82  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  83  2.0861700000D+00    0.0000  1.0000  0.0000
-               84  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py     82  9.7775900000D+00
+   uncontrac.   83  2.0861700000D+00
+                84  4.8238300000D-01
 
-  F      pz    85  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  86  2.0861700000D+00    0.0000  1.0000  0.0000
-               87  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz     85  9.7775900000D+00
+   uncontrac.   86  2.0861700000D+00
+                87  4.8238300000D-01
 
-  F      s     88  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont.  89  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-               90  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-               91  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-               92  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-               93  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s      88  4.1380100000D+02
+   uncontrac.   89  6.2244600000D+01
+                90  1.3434000000D+01
+                91  9.7775900000D+00
+                92  2.0861700000D+00
+                93  4.8238300000D-01
 
-  F      px    94  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  95  2.0861700000D+00    0.0000  1.0000  0.0000
-               96  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px     94  9.7775900000D+00
+   uncontrac.   95  2.0861700000D+00
+                96  4.8238300000D-01
 
-  F      py    97  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont.  98  2.0861700000D+00    0.0000  1.0000  0.0000
-               99  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py     97  9.7775900000D+00
+   uncontrac.   98  2.0861700000D+00
+                99  4.8238300000D-01
 
-  F      pz   100  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 101  2.0861700000D+00    0.0000  1.0000  0.0000
-              102  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz    100  9.7775900000D+00
+   uncontrac.  101  2.0861700000D+00
+               102  4.8238300000D-01
 
-  F      s    103  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont. 104  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-              105  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-              106  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-              107  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-              108  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s     103  4.1380100000D+02
+   uncontrac.  104  6.2244600000D+01
+               105  1.3434000000D+01
+               106  9.7775900000D+00
+               107  2.0861700000D+00
+               108  4.8238300000D-01
 
-  F      px   109  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 110  2.0861700000D+00    0.0000  1.0000  0.0000
-              111  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px    109  9.7775900000D+00
+   uncontrac.  110  2.0861700000D+00
+               111  4.8238300000D-01
 
-  F      py   112  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 113  2.0861700000D+00    0.0000  1.0000  0.0000
-              114  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py    112  9.7775900000D+00
+   uncontrac.  113  2.0861700000D+00
+               114  4.8238300000D-01
 
-  F      pz   115  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 116  2.0861700000D+00    0.0000  1.0000  0.0000
-              117  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz    115  9.7775900000D+00
+   uncontrac.  116  2.0861700000D+00
+               117  4.8238300000D-01
 
 
   Contracted Orbitals
   -------------------
 
-   1  S       s      1
-   2  S       s      2
-   3  S       s      3
-   4  S       s      4
-   5  S       s      5
-   6  S       s      6
-   7  S       s      7
-   8  S       s      8
-   9  S       s      9
-  10  S       px    10
-  11  S       py    16
-  12  S       pz    22
-  13  S       px    11
-  14  S       py    17
-  15  S       pz    23
-  16  S       px    12
-  17  S       py    18
-  18  S       pz    24
-  19  S       px    13
-  20  S       py    19
-  21  S       pz    25
-  22  S       px    14
-  23  S       py    20
-  24  S       pz    26
-  25  S       px    15
-  26  S       py    21
-  27  S       pz    27
-  28  F       s     28
-  29  F       s     29
-  30  F       s     30
-  31  F       s     31
-  32  F       s     32
-  33  F       s     33
-  34  F       px    34
-  35  F       py    37
-  36  F       pz    40
-  37  F       px    35
-  38  F       py    38
-  39  F       pz    41
-  40  F       px    36
-  41  F       py    39
-  42  F       pz    42
-  43  F       s     43
-  44  F       s     44
-  45  F       s     45
-  46  F       s     46
-  47  F       s     47
-  48  F       s     48
-  49  F       px    49
-  50  F       py    52
-  51  F       pz    55
-  52  F       px    50
-  53  F       py    53
-  54  F       pz    56
-  55  F       px    51
-  56  F       py    54
-  57  F       pz    57
-  58  F       s     58
-  59  F       s     59
-  60  F       s     60
-  61  F       s     61
-  62  F       s     62
-  63  F       s     63
-  64  F       px    64
-  65  F       py    67
-  66  F       pz    70
-  67  F       px    65
-  68  F       py    68
-  69  F       pz    71
-  70  F       px    66
-  71  F       py    69
-  72  F       pz    72
-  73  F       s     73
-  74  F       s     74
-  75  F       s     75
-  76  F       s     76
-  77  F       s     77
-  78  F       s     78
-  79  F       px    79
-  80  F       py    82
-  81  F       pz    85
-  82  F       px    80
-  83  F       py    83
-  84  F       pz    86
-  85  F       px    81
-  86  F       py    84
-  87  F       pz    87
-  88  F       s     88
-  89  F       s     89
-  90  F       s     90
-  91  F       s     91
-  92  F       s     92
-  93  F       s     93
-  94  F       px    94
-  95  F       py    97
-  96  F       pz   100
-  97  F       px    95
-  98  F       py    98
-  99  F       pz   101
- 100  F       px    96
- 101  F       py    99
- 102  F       pz   102
- 103  F       s    103
- 104  F       s    104
- 105  F       s    105
- 106  F       s    106
- 107  F       s    107
- 108  F       s    108
- 109  F       px   109
- 110  F       py   112
- 111  F       pz   115
- 112  F       px   110
- 113  F       py   113
- 114  F       pz   116
- 115  F       px   111
- 116  F       py   114
- 117  F       pz   117
-
-
+ All orbitals are uncontracted.
 
 
                               Small Components Basis
@@ -2125,337 +1262,403 @@ F z    0.0000000000  -1.4829000000   0.0000000000
   ----------------------------------------------
 
 
-  S      s    118  1.2106200000D+03    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-   seg. cont. 119  1.8274700000D+02    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-              120  5.2223600000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-              121  3.9667300000D+01    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000  0.0000  0.0000  0.0000
-              122  1.1962900000D+01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000  0.0000  0.0000  0.0000
-              123  3.2891100000D+00    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000  0.0000  0.0000  0.0000
-              124  1.2238400000D+00    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  1.0000  0.0000  0.0000
-              125  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  1.0000  0.0000
-              126  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000  0.0000  0.0000  1.0000
+  S      s     118  5.2223600000D+01
+   uncontrac.  119  1.1962900000D+01
+               120  3.2891100000D+00
+               121  1.2238400000D+00
+               122  4.5730300000D-01
+               123  1.4226900000D-01
 
-  S      px   127  5.2223600000D+01    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont. 128  1.1962900000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-              129  3.2891100000D+00    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-              130  1.2238400000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-              131  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-              132  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  S      px    124  1.2106200000D+03
+   uncontrac.  125  1.8274700000D+02
+               126  5.2223600000D+01
+               127  3.9667300000D+01
+               128  1.1962900000D+01
+               129  3.2891100000D+00
+               130  1.2238400000D+00
+               131  4.5730300000D-01
+               132  1.4226900000D-01
 
-  S      py   133  5.2223600000D+01    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont. 134  1.1962900000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-              135  3.2891100000D+00    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-              136  1.2238400000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-              137  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-              138  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  S      py    133  1.2106200000D+03
+   uncontrac.  134  1.8274700000D+02
+               135  5.2223600000D+01
+               136  3.9667300000D+01
+               137  1.1962900000D+01
+               138  3.2891100000D+00
+               139  1.2238400000D+00
+               140  4.5730300000D-01
+               141  1.4226900000D-01
 
-  S      pz   139  5.2223600000D+01    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont. 140  1.1962900000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-              141  3.2891100000D+00    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-              142  1.2238400000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-              143  4.5730300000D-01    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-              144  1.4226900000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  S      pz    142  1.2106200000D+03
+   uncontrac.  143  1.8274700000D+02
+               144  5.2223600000D+01
+               145  3.9667300000D+01
+               146  1.1962900000D+01
+               147  3.2891100000D+00
+               148  1.2238400000D+00
+               149  4.5730300000D-01
+               150  1.4226900000D-01
 
-  F      s    145  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont. 146  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-              147  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-              148  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-              149  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-              150  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  S      dxx   151  5.2223600000D+01
+   uncontrac.  152  1.1962900000D+01
+               153  3.2891100000D+00
+               154  1.2238400000D+00
+               155  4.5730300000D-01
+               156  1.4226900000D-01
 
-  F      px   151  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 152  2.0861700000D+00    0.0000  1.0000  0.0000
-              153  4.8238300000D-01    0.0000  0.0000  1.0000
+  S      dxy   157  5.2223600000D+01
+   uncontrac.  158  1.1962900000D+01
+               159  3.2891100000D+00
+               160  1.2238400000D+00
+               161  4.5730300000D-01
+               162  1.4226900000D-01
 
-  F      py   154  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 155  2.0861700000D+00    0.0000  1.0000  0.0000
-              156  4.8238300000D-01    0.0000  0.0000  1.0000
+  S      dxz   163  5.2223600000D+01
+   uncontrac.  164  1.1962900000D+01
+               165  3.2891100000D+00
+               166  1.2238400000D+00
+               167  4.5730300000D-01
+               168  1.4226900000D-01
 
-  F      pz   157  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 158  2.0861700000D+00    0.0000  1.0000  0.0000
-              159  4.8238300000D-01    0.0000  0.0000  1.0000
+  S      dyy   169  5.2223600000D+01
+   uncontrac.  170  1.1962900000D+01
+               171  3.2891100000D+00
+               172  1.2238400000D+00
+               173  4.5730300000D-01
+               174  1.4226900000D-01
 
-  F      s    160  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont. 161  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-              162  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-              163  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-              164  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-              165  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  S      dyz   175  5.2223600000D+01
+   uncontrac.  176  1.1962900000D+01
+               177  3.2891100000D+00
+               178  1.2238400000D+00
+               179  4.5730300000D-01
+               180  1.4226900000D-01
 
-  F      px   166  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 167  2.0861700000D+00    0.0000  1.0000  0.0000
-              168  4.8238300000D-01    0.0000  0.0000  1.0000
+  S      dzz   181  5.2223600000D+01
+   uncontrac.  182  1.1962900000D+01
+               183  3.2891100000D+00
+               184  1.2238400000D+00
+               185  4.5730300000D-01
+               186  1.4226900000D-01
 
-  F      py   169  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 170  2.0861700000D+00    0.0000  1.0000  0.0000
-              171  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      s     187  9.7775900000D+00
+   uncontrac.  188  2.0861700000D+00
+               189  4.8238300000D-01
 
-  F      pz   172  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 173  2.0861700000D+00    0.0000  1.0000  0.0000
-              174  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px    190  4.1380100000D+02
+   uncontrac.  191  6.2244600000D+01
+               192  1.3434000000D+01
+               193  9.7775900000D+00
+               194  2.0861700000D+00
+               195  4.8238300000D-01
 
-  F      s    175  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont. 176  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-              177  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-              178  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-              179  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-              180  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      py    196  4.1380100000D+02
+   uncontrac.  197  6.2244600000D+01
+               198  1.3434000000D+01
+               199  9.7775900000D+00
+               200  2.0861700000D+00
+               201  4.8238300000D-01
 
-  F      px   181  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 182  2.0861700000D+00    0.0000  1.0000  0.0000
-              183  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz    202  4.1380100000D+02
+   uncontrac.  203  6.2244600000D+01
+               204  1.3434000000D+01
+               205  9.7775900000D+00
+               206  2.0861700000D+00
+               207  4.8238300000D-01
 
-  F      py   184  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 185  2.0861700000D+00    0.0000  1.0000  0.0000
-              186  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      dxx   208  9.7775900000D+00
+   uncontrac.  209  2.0861700000D+00
+               210  4.8238300000D-01
 
-  F      pz   187  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 188  2.0861700000D+00    0.0000  1.0000  0.0000
-              189  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      dxy   211  9.7775900000D+00
+   uncontrac.  212  2.0861700000D+00
+               213  4.8238300000D-01
 
-  F      s    190  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont. 191  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-              192  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-              193  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-              194  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-              195  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      dxz   214  9.7775900000D+00
+   uncontrac.  215  2.0861700000D+00
+               216  4.8238300000D-01
 
-  F      px   196  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 197  2.0861700000D+00    0.0000  1.0000  0.0000
-              198  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      dyy   217  9.7775900000D+00
+   uncontrac.  218  2.0861700000D+00
+               219  4.8238300000D-01
 
-  F      py   199  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 200  2.0861700000D+00    0.0000  1.0000  0.0000
-              201  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      dyz   220  9.7775900000D+00
+   uncontrac.  221  2.0861700000D+00
+               222  4.8238300000D-01
 
-  F      pz   202  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 203  2.0861700000D+00    0.0000  1.0000  0.0000
-              204  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      dzz   223  9.7775900000D+00
+   uncontrac.  224  2.0861700000D+00
+               225  4.8238300000D-01
 
-  F      s    205  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont. 206  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-              207  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-              208  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-              209  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-              210  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      s     226  9.7775900000D+00
+   uncontrac.  227  2.0861700000D+00
+               228  4.8238300000D-01
 
-  F      px   211  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 212  2.0861700000D+00    0.0000  1.0000  0.0000
-              213  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      px    229  4.1380100000D+02
+   uncontrac.  230  6.2244600000D+01
+               231  1.3434000000D+01
+               232  9.7775900000D+00
+               233  2.0861700000D+00
+               234  4.8238300000D-01
 
-  F      py   214  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 215  2.0861700000D+00    0.0000  1.0000  0.0000
-              216  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      py    235  4.1380100000D+02
+   uncontrac.  236  6.2244600000D+01
+               237  1.3434000000D+01
+               238  9.7775900000D+00
+               239  2.0861700000D+00
+               240  4.8238300000D-01
 
-  F      pz   217  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 218  2.0861700000D+00    0.0000  1.0000  0.0000
-              219  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      pz    241  4.1380100000D+02
+   uncontrac.  242  6.2244600000D+01
+               243  1.3434000000D+01
+               244  9.7775900000D+00
+               245  2.0861700000D+00
+               246  4.8238300000D-01
 
-  F      s    220  4.1380100000D+02    1.0000  0.0000  0.0000  0.0000  0.0000
-                                       0.0000
-   seg. cont. 221  6.2244600000D+01    0.0000  1.0000  0.0000  0.0000  0.0000
-                                       0.0000
-              222  1.3434000000D+01    0.0000  0.0000  1.0000  0.0000  0.0000
-                                       0.0000
-              223  9.7775900000D+00    0.0000  0.0000  0.0000  1.0000  0.0000
-                                       0.0000
-              224  2.0861700000D+00    0.0000  0.0000  0.0000  0.0000  1.0000
-                                       0.0000
-              225  4.8238300000D-01    0.0000  0.0000  0.0000  0.0000  0.0000
-                                       1.0000
+  F      dxx   247  9.7775900000D+00
+   uncontrac.  248  2.0861700000D+00
+               249  4.8238300000D-01
 
-  F      px   226  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 227  2.0861700000D+00    0.0000  1.0000  0.0000
-              228  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      dxy   250  9.7775900000D+00
+   uncontrac.  251  2.0861700000D+00
+               252  4.8238300000D-01
 
-  F      py   229  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 230  2.0861700000D+00    0.0000  1.0000  0.0000
-              231  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      dxz   253  9.7775900000D+00
+   uncontrac.  254  2.0861700000D+00
+               255  4.8238300000D-01
 
-  F      pz   232  9.7775900000D+00    1.0000  0.0000  0.0000
-   seg. cont. 233  2.0861700000D+00    0.0000  1.0000  0.0000
-              234  4.8238300000D-01    0.0000  0.0000  1.0000
+  F      dyy   256  9.7775900000D+00
+   uncontrac.  257  2.0861700000D+00
+               258  4.8238300000D-01
+
+  F      dyz   259  9.7775900000D+00
+   uncontrac.  260  2.0861700000D+00
+               261  4.8238300000D-01
+
+  F      dzz   262  9.7775900000D+00
+   uncontrac.  263  2.0861700000D+00
+               264  4.8238300000D-01
+
+  F      s     265  9.7775900000D+00
+   uncontrac.  266  2.0861700000D+00
+               267  4.8238300000D-01
+
+  F      px    268  4.1380100000D+02
+   uncontrac.  269  6.2244600000D+01
+               270  1.3434000000D+01
+               271  9.7775900000D+00
+               272  2.0861700000D+00
+               273  4.8238300000D-01
+
+  F      py    274  4.1380100000D+02
+   uncontrac.  275  6.2244600000D+01
+               276  1.3434000000D+01
+               277  9.7775900000D+00
+               278  2.0861700000D+00
+               279  4.8238300000D-01
+
+  F      pz    280  4.1380100000D+02
+   uncontrac.  281  6.2244600000D+01
+               282  1.3434000000D+01
+               283  9.7775900000D+00
+               284  2.0861700000D+00
+               285  4.8238300000D-01
+
+  F      dxx   286  9.7775900000D+00
+   uncontrac.  287  2.0861700000D+00
+               288  4.8238300000D-01
+
+  F      dxy   289  9.7775900000D+00
+   uncontrac.  290  2.0861700000D+00
+               291  4.8238300000D-01
+
+  F      dxz   292  9.7775900000D+00
+   uncontrac.  293  2.0861700000D+00
+               294  4.8238300000D-01
+
+  F      dyy   295  9.7775900000D+00
+   uncontrac.  296  2.0861700000D+00
+               297  4.8238300000D-01
+
+  F      dyz   298  9.7775900000D+00
+   uncontrac.  299  2.0861700000D+00
+               300  4.8238300000D-01
+
+  F      dzz   301  9.7775900000D+00
+   uncontrac.  302  2.0861700000D+00
+               303  4.8238300000D-01
+
+  F      s     304  9.7775900000D+00
+   uncontrac.  305  2.0861700000D+00
+               306  4.8238300000D-01
+
+  F      px    307  4.1380100000D+02
+   uncontrac.  308  6.2244600000D+01
+               309  1.3434000000D+01
+               310  9.7775900000D+00
+               311  2.0861700000D+00
+               312  4.8238300000D-01
+
+  F      py    313  4.1380100000D+02
+   uncontrac.  314  6.2244600000D+01
+               315  1.3434000000D+01
+               316  9.7775900000D+00
+               317  2.0861700000D+00
+               318  4.8238300000D-01
+
+  F      pz    319  4.1380100000D+02
+   uncontrac.  320  6.2244600000D+01
+               321  1.3434000000D+01
+               322  9.7775900000D+00
+               323  2.0861700000D+00
+               324  4.8238300000D-01
+
+  F      dxx   325  9.7775900000D+00
+   uncontrac.  326  2.0861700000D+00
+               327  4.8238300000D-01
+
+  F      dxy   328  9.7775900000D+00
+   uncontrac.  329  2.0861700000D+00
+               330  4.8238300000D-01
+
+  F      dxz   331  9.7775900000D+00
+   uncontrac.  332  2.0861700000D+00
+               333  4.8238300000D-01
+
+  F      dyy   334  9.7775900000D+00
+   uncontrac.  335  2.0861700000D+00
+               336  4.8238300000D-01
+
+  F      dyz   337  9.7775900000D+00
+   uncontrac.  338  2.0861700000D+00
+               339  4.8238300000D-01
+
+  F      dzz   340  9.7775900000D+00
+   uncontrac.  341  2.0861700000D+00
+               342  4.8238300000D-01
+
+  F      s     343  9.7775900000D+00
+   uncontrac.  344  2.0861700000D+00
+               345  4.8238300000D-01
+
+  F      px    346  4.1380100000D+02
+   uncontrac.  347  6.2244600000D+01
+               348  1.3434000000D+01
+               349  9.7775900000D+00
+               350  2.0861700000D+00
+               351  4.8238300000D-01
+
+  F      py    352  4.1380100000D+02
+   uncontrac.  353  6.2244600000D+01
+               354  1.3434000000D+01
+               355  9.7775900000D+00
+               356  2.0861700000D+00
+               357  4.8238300000D-01
+
+  F      pz    358  4.1380100000D+02
+   uncontrac.  359  6.2244600000D+01
+               360  1.3434000000D+01
+               361  9.7775900000D+00
+               362  2.0861700000D+00
+               363  4.8238300000D-01
+
+  F      dxx   364  9.7775900000D+00
+   uncontrac.  365  2.0861700000D+00
+               366  4.8238300000D-01
+
+  F      dxy   367  9.7775900000D+00
+   uncontrac.  368  2.0861700000D+00
+               369  4.8238300000D-01
+
+  F      dxz   370  9.7775900000D+00
+   uncontrac.  371  2.0861700000D+00
+               372  4.8238300000D-01
+
+  F      dyy   373  9.7775900000D+00
+   uncontrac.  374  2.0861700000D+00
+               375  4.8238300000D-01
+
+  F      dyz   376  9.7775900000D+00
+   uncontrac.  377  2.0861700000D+00
+               378  4.8238300000D-01
+
+  F      dzz   379  9.7775900000D+00
+   uncontrac.  380  2.0861700000D+00
+               381  4.8238300000D-01
+
+  F      s     382  9.7775900000D+00
+   uncontrac.  383  2.0861700000D+00
+               384  4.8238300000D-01
+
+  F      px    385  4.1380100000D+02
+   uncontrac.  386  6.2244600000D+01
+               387  1.3434000000D+01
+               388  9.7775900000D+00
+               389  2.0861700000D+00
+               390  4.8238300000D-01
+
+  F      py    391  4.1380100000D+02
+   uncontrac.  392  6.2244600000D+01
+               393  1.3434000000D+01
+               394  9.7775900000D+00
+               395  2.0861700000D+00
+               396  4.8238300000D-01
+
+  F      pz    397  4.1380100000D+02
+   uncontrac.  398  6.2244600000D+01
+               399  1.3434000000D+01
+               400  9.7775900000D+00
+               401  2.0861700000D+00
+               402  4.8238300000D-01
+
+  F      dxx   403  9.7775900000D+00
+   uncontrac.  404  2.0861700000D+00
+               405  4.8238300000D-01
+
+  F      dxy   406  9.7775900000D+00
+   uncontrac.  407  2.0861700000D+00
+               408  4.8238300000D-01
+
+  F      dxz   409  9.7775900000D+00
+   uncontrac.  410  2.0861700000D+00
+               411  4.8238300000D-01
+
+  F      dyy   412  9.7775900000D+00
+   uncontrac.  413  2.0861700000D+00
+               414  4.8238300000D-01
+
+  F      dyz   415  9.7775900000D+00
+   uncontrac.  416  2.0861700000D+00
+               417  4.8238300000D-01
+
+  F      dzz   418  9.7775900000D+00
+   uncontrac.  419  2.0861700000D+00
+               420  4.8238300000D-01
 
 
   Contracted Orbitals
   -------------------
 
- 118  S       s    118
- 119  S       s    119
- 120  S       s    120
- 121  S       s    121
- 122  S       s    122
- 123  S       s    123
- 124  S       s    124
- 125  S       s    125
- 126  S       s    126
- 127  S       px   127
- 128  S       py   133
- 129  S       pz   139
- 130  S       px   128
- 131  S       py   134
- 132  S       pz   140
- 133  S       px   129
- 134  S       py   135
- 135  S       pz   141
- 136  S       px   130
- 137  S       py   136
- 138  S       pz   142
- 139  S       px   131
- 140  S       py   137
- 141  S       pz   143
- 142  S       px   132
- 143  S       py   138
- 144  S       pz   144
- 145  F       s    145
- 146  F       s    146
- 147  F       s    147
- 148  F       s    148
- 149  F       s    149
- 150  F       s    150
- 151  F       px   151
- 152  F       py   154
- 153  F       pz   157
- 154  F       px   152
- 155  F       py   155
- 156  F       pz   158
- 157  F       px   153
- 158  F       py   156
- 159  F       pz   159
- 160  F       s    160
- 161  F       s    161
- 162  F       s    162
- 163  F       s    163
- 164  F       s    164
- 165  F       s    165
- 166  F       px   166
- 167  F       py   169
- 168  F       pz   172
- 169  F       px   167
- 170  F       py   170
- 171  F       pz   173
- 172  F       px   168
- 173  F       py   171
- 174  F       pz   174
- 175  F       s    175
- 176  F       s    176
- 177  F       s    177
- 178  F       s    178
- 179  F       s    179
- 180  F       s    180
- 181  F       px   181
- 182  F       py   184
- 183  F       pz   187
- 184  F       px   182
- 185  F       py   185
- 186  F       pz   188
- 187  F       px   183
- 188  F       py   186
- 189  F       pz   189
- 190  F       s    190
- 191  F       s    191
- 192  F       s    192
- 193  F       s    193
- 194  F       s    194
- 195  F       s    195
- 196  F       px   196
- 197  F       py   199
- 198  F       pz   202
- 199  F       px   197
- 200  F       py   200
- 201  F       pz   203
- 202  F       px   198
- 203  F       py   201
- 204  F       pz   204
- 205  F       s    205
- 206  F       s    206
- 207  F       s    207
- 208  F       s    208
- 209  F       s    209
- 210  F       s    210
- 211  F       px   211
- 212  F       py   214
- 213  F       pz   217
- 214  F       px   212
- 215  F       py   215
- 216  F       pz   218
- 217  F       px   213
- 218  F       py   216
- 219  F       pz   219
- 220  F       s    220
- 221  F       s    221
- 222  F       s    222
- 223  F       s    223
- 224  F       s    224
- 225  F       s    225
- 226  F       px   226
- 227  F       py   229
- 228  F       pz   232
- 229  F       px   227
- 230  F       py   230
- 231  F       pz   233
- 232  F       px   228
- 233  F       py   231
- 234  F       pz   234
+ All orbitals are uncontracted.
 
 
+                                 Isotopic Masses
+                                 ---------------
+
+                           S          31.972072
+                           F          18.998403
+                           F          18.998403
+                           F          18.998403
+                           F          18.998403
+                           F          18.998403
+                           F          18.998403
+
+                       * Total mass:   145.962490 amu
+                       * Natural abundance:  95.020 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
 
 
                             **************************
@@ -2464,130 +1667,68 @@ F z    0.0000000000  -1.4829000000   0.0000000000
 
    Irrep  NTBAS  NBASL  NBASS  IBASL  IBASS 
    -----------------------------------------
-   1  A      234    117    117      0    117
+   1  A      420    117    303      0    117
    -----------------------------------------
-   Frep 1    234    117    117
+   Frep 1    420    117    303
    -----------------------------------------
-   Total     234    117    117    Max    117
+   Total     420    117    303    Max    303
 
-   NNBBAST =  27495  NNBBASX  27495
+   NNBBAST, NNBASX:    88410    88410
 
-* Matrix offsets to symmetry
-
- blocks (I2BBASX):
-   A    A    L  L           0   A    A    S  L         117   A    A    L  S       27378   A    A    S  S       27495
-  i =   1    index  =   0    offset =   0    worker =   0    lvalue =   1    origin =   1    exponent =     0.12106D+04    coefficient =     0.14627D+03
-  i =   2    index  =   1    offset =   1    worker =   0    lvalue =   1    origin =   1    exponent =     0.18275D+03    coefficient =     0.35424D+02
-  i =   3    index  =   2    offset =   2    worker =   0    lvalue =   1    origin =   1    exponent =     0.52224D+02    coefficient =     0.13846D+02
-  i =   4    index  =   3    offset =   3    worker =   0    lvalue =   1    origin =   1    exponent =     0.39667D+02    coefficient =     0.11265D+02
-  i =   5    index  =   4    offset =   4    worker =   0    lvalue =   1    origin =   1    exponent =     0.11963D+02    coefficient =     0.45845D+01
-  i =   6    index  =   5    offset =   5    worker =   0    lvalue =   1    origin =   1    exponent =     0.32891D+01    coefficient =     0.17407D+01
-  i =   7    index  =   6    offset =   6    worker =   0    lvalue =   1    origin =   1    exponent =     0.12238D+01    coefficient =     0.82928D+00
-  i =   8    index  =   7    offset =   7    worker =   0    lvalue =   1    origin =   1    exponent =     0.45730D+00    coefficient =     0.39634D+00
-  i =   9    index  =   8    offset =   8    worker =   0    lvalue =   1    origin =   1    exponent =     0.14227D+00    coefficient =     0.16510D+00
-  i =  10    index  =   9    offset =   9    worker =   0    lvalue =   2    origin =   1    exponent =     0.52224D+02    coefficient =     0.20011D+03
-  i =  11    index  =  12    offset =  12    worker =   0    lvalue =   2    origin =   1    exponent =     0.11963D+02    coefficient =     0.31713D+02
-  i =  12    index  =  15    offset =  15    worker =   0    lvalue =   2    origin =   1    exponent =     0.32891D+01    coefficient =     0.63138D+01
-  i =  13    index  =  18    offset =  18    worker =   0    lvalue =   2    origin =   1    exponent =     0.12238D+01    coefficient =     0.18348D+01
-  i =  14    index  =  21    offset =  21    worker =   0    lvalue =   2    origin =   1    exponent =     0.45730D+00    coefficient =     0.53604D+00
-  i =  15    index  =  24    offset =  24    worker =   0    lvalue =   2    origin =   1    exponent =     0.14227D+00    coefficient =     0.12455D+00
-  i =  16    index  =  27    offset =  27    worker =   0    lvalue =   1    origin =   2    exponent =     0.41380D+03    coefficient =     0.65389D+02
-  i =  17    index  =  28    offset =  28    worker =   0    lvalue =   1    origin =   2    exponent =     0.62245D+02    coefficient =     0.15794D+02
-  i =  18    index  =  29    offset =  29    worker =   0    lvalue =   1    origin =   2    exponent =     0.13434D+02    coefficient =     0.50011D+01
-  i =  19    index  =  30    offset =  30    worker =   0    lvalue =   1    origin =   2    exponent =     0.97776D+01    coefficient =     0.39408D+01
-  i =  20    index  =  31    offset =  31    worker =   0    lvalue =   1    origin =   2    exponent =     0.20862D+01    coefficient =     0.12372D+01
-  i =  21    index  =  32    offset =  32    worker =   0    lvalue =   1    origin =   2    exponent =     0.48238D+00    coefficient =     0.41253D+00
-  i =  22    index  =  33    offset =  33    worker =   0    lvalue =   2    origin =   2    exponent =     0.97776D+01    coefficient =     0.24645D+02
-  i =  23    index  =  36    offset =  36    worker =   0    lvalue =   2    origin =   2    exponent =     0.20862D+01    coefficient =     0.35738D+01
-  i =  24    index  =  39    offset =  39    worker =   0    lvalue =   2    origin =   2    exponent =     0.48238D+00    coefficient =     0.57303D+00
-  i =  25    index  =  42    offset =  42    worker =   0    lvalue =   1    origin =   3    exponent =     0.41380D+03    coefficient =     0.65389D+02
-  i =  26    index  =  43    offset =  43    worker =   0    lvalue =   1    origin =   3    exponent =     0.62245D+02    coefficient =     0.15794D+02
-  i =  27    index  =  44    offset =  44    worker =   0    lvalue =   1    origin =   3    exponent =     0.13434D+02    coefficient =     0.50011D+01
-  i =  28    index  =  45    offset =  45    worker =   0    lvalue =   1    origin =   3    exponent =     0.97776D+01    coefficient =     0.39408D+01
-  i =  29    index  =  46    offset =  46    worker =   0    lvalue =   1    origin =   3    exponent =     0.20862D+01    coefficient =     0.12372D+01
-  i =  30    index  =  47    offset =  47    worker =   0    lvalue =   1    origin =   3    exponent =     0.48238D+00    coefficient =     0.41253D+00
-  i =  31    index  =  48    offset =  48    worker =   0    lvalue =   2    origin =   3    exponent =     0.97776D+01    coefficient =     0.24645D+02
-  i =  32    index  =  51    offset =  51    worker =   0    lvalue =   2    origin =   3    exponent =     0.20862D+01    coefficient =     0.35738D+01
-  i =  33    index  =  54    offset =  54    worker =   0    lvalue =   2    origin =   3    exponent =     0.48238D+00    coefficient =     0.57303D+00
-  i =  34    index  =  57    offset =  57    worker =   0    lvalue =   1    origin =   4    exponent =     0.41380D+03    coefficient =     0.65389D+02
-  i =  35    index  =  58    offset =  58    worker =   0    lvalue =   1    origin =   4    exponent =     0.62245D+02    coefficient =     0.15794D+02
-  i =  36    index  =  59    offset =  59    worker =   0    lvalue =   1    origin =   4    exponent =     0.13434D+02    coefficient =     0.50011D+01
-  i =  37    index  =  60    offset =  60    worker =   0    lvalue =   1    origin =   4    exponent =     0.97776D+01    coefficient =     0.39408D+01
-  i =  38    index  =  61    offset =  61    worker =   0    lvalue =   1    origin =   4    exponent =     0.20862D+01    coefficient =     0.12372D+01
-  i =  39    index  =  62    offset =  62    worker =   0    lvalue =   1    origin =   4    exponent =     0.48238D+00    coefficient =     0.41253D+00
-  i =  40    index  =  63    offset =  63    worker =   0    lvalue =   2    origin =   4    exponent =     0.97776D+01    coefficient =     0.24645D+02
-  i =  41    index  =  66    offset =  66    worker =   0    lvalue =   2    origin =   4    exponent =     0.20862D+01    coefficient =     0.35738D+01
-  i =  42    index  =  69    offset =  69    worker =   0    lvalue =   2    origin =   4    exponent =     0.48238D+00    coefficient =     0.57303D+00
-  i =  43    index  =  72    offset =  72    worker =   0    lvalue =   1    origin =   5    exponent =     0.41380D+03    coefficient =     0.65389D+02
-  i =  44    index  =  73    offset =  73    worker =   0    lvalue =   1    origin =   5    exponent =     0.62245D+02    coefficient =     0.15794D+02
-  i =  45    index  =  74    offset =  74    worker =   0    lvalue =   1    origin =   5    exponent =     0.13434D+02    coefficient =     0.50011D+01
-  i =  46    index  =  75    offset =  75    worker =   0    lvalue =   1    origin =   5    exponent =     0.97776D+01    coefficient =     0.39408D+01
-  i =  47    index  =  76    offset =  76    worker =   0    lvalue =   1    origin =   5    exponent =     0.20862D+01    coefficient =     0.12372D+01
-  i =  48    index  =  77    offset =  77    worker =   0    lvalue =   1    origin =   5    exponent =     0.48238D+00    coefficient =     0.41253D+00
-  i =  49    index  =  78    offset =  78    worker =   0    lvalue =   2    origin =   5    exponent =     0.97776D+01    coefficient =     0.24645D+02
-  i =  50    index  =  81    offset =  81    worker =   0    lvalue =   2    origin =   5    exponent =     0.20862D+01    coefficient =     0.35738D+01
-  i =  51    index  =  84    offset =  84    worker =   0    lvalue =   2    origin =   5    exponent =     0.48238D+00    coefficient =     0.57303D+00
-  i =  52    index  =  87    offset =  87    worker =   0    lvalue =   1    origin =   6    exponent =     0.41380D+03    coefficient =     0.65389D+02
-  i =  53    index  =  88    offset =  88    worker =   0    lvalue =   1    origin =   6    exponent =     0.62245D+02    coefficient =     0.15794D+02
-  i =  54    index  =  89    offset =  89    worker =   0    lvalue =   1    origin =   6    exponent =     0.13434D+02    coefficient =     0.50011D+01
-  i =  55    index  =  90    offset =  90    worker =   0    lvalue =   1    origin =   6    exponent =     0.97776D+01    coefficient =     0.39408D+01
-  i =  56    index  =  91    offset =  91    worker =   0    lvalue =   1    origin =   6    exponent =     0.20862D+01    coefficient =     0.12372D+01
-  i =  57    index  =  92    offset =  92    worker =   0    lvalue =   1    origin =   6    exponent =     0.48238D+00    coefficient =     0.41253D+00
-  i =  58    index  =  93    offset =  93    worker =   0    lvalue =   2    origin =   6    exponent =     0.97776D+01    coefficient =     0.24645D+02
-  i =  59    index  =  96    offset =  96    worker =   0    lvalue =   2    origin =   6    exponent =     0.20862D+01    coefficient =     0.35738D+01
-  i =  60    index  =  99    offset =  99    worker =   0    lvalue =   2    origin =   6    exponent =     0.48238D+00    coefficient =     0.57303D+00
-  i =  61    index  = 102    offset = 102    worker =   0    lvalue =   1    origin =   7    exponent =     0.41380D+03    coefficient =     0.65389D+02
-  i =  62    index  = 103    offset = 103    worker =   0    lvalue =   1    origin =   7    exponent =     0.62245D+02    coefficient =     0.15794D+02
-  i =  63    index  = 104    offset = 104    worker =   0    lvalue =   1    origin =   7    exponent =     0.13434D+02    coefficient =     0.50011D+01
-  i =  64    index  = 105    offset = 105    worker =   0    lvalue =   1    origin =   7    exponent =     0.97776D+01    coefficient =     0.39408D+01
-  i =  65    index  = 106    offset = 106    worker =   0    lvalue =   1    origin =   7    exponent =     0.20862D+01    coefficient =     0.12372D+01
-  i =  66    index  = 107    offset = 107    worker =   0    lvalue =   1    origin =   7    exponent =     0.48238D+00    coefficient =     0.41253D+00
-  i =  67    index  = 108    offset = 108    worker =   0    lvalue =   2    origin =   7    exponent =     0.97776D+01    coefficient =     0.24645D+02
-  i =  68    index  = 111    offset = 111    worker =   0    lvalue =   2    origin =   7    exponent =     0.20862D+01    coefficient =     0.35738D+01
-  i =  69    index  = 114    offset = 114    worker =   0    lvalue =   2    origin =   7    exponent =     0.48238D+00    coefficient =     0.57303D+00
-
-  Total number of basis function shells:       69
-  Total number of spherical basis functions:  117
-  Total number of cartesian basis functions:  117 (used in InteRest calculations)
+* Matrix offsets to symmetry blocks (I2BBASX):
+   A    A    L  L           0   A    A    S  L         117   A    A    L  S       49140   A    A    S  S       49257
 
 
-  Integral module InteRest is initialized
-  Last commit rev         | acba9e3f284719ac98f1dd17cf4af94d3916168c
-  Last commit author      | Michal Repisky 
-  Last commit time        | Sat Aug 4 11:27:23 2012 +0200
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
 
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 Debye =   2.54177000 a.u. 
+
+Total time used in ONEGEN (CPU)  0.07663200s and (WALL)  0.07900000s
 
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          0(Proj:          0, Lindep:          0)
-   S   A     * Deleted:          0(Proj:          0, Lindep:          0)
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.14E-02
+   S   A     * Deleted:         24(Proj:         24, Lindep:          0) Smin: 0.50E-02
 
                    *********************************************************************
                    ***   Entering the Exact-Two-Component (X2C) interface in DIRAC   ***
                    ***                                                               ***
-                   *** library version:  1.1 (January 2013)                          ***
+                   *** library version:  1.2 (August  2013)                          ***
                    ***                                                               ***
                    *** authors:          - Stefan Knecht                             ***
                    ***                   - Trond Saue                                ***
                    *** contributors:     - Hans Joergen Aagaard Jensen               ***
-                   ***                   - Miroslav Ilias                            ***
                    ***                   - Michal Repisky                            ***
+                   ***                   - Miroslav Ilias                            ***
                    *** features:         - X2C                                       ***
-                   ***                   - atomic/fragment X2C                       ***
+                   ***                   - X2C-atomic/fragment (X2C-LU)              ***
                    ***                   - X2C-spinfree                              ***
                    ***                   - X2C-molecular-mean-field (X2Cmmf)         ***
                    ***                                                               ***
-                   *** Universities of Odense, Toulouse, Banska Bystrica and Tromsoe ***
+                   ***                      Universities of                          ***
+                   ***     Zuerich, Toulouse, Odense, Banska Bystrica and Tromsoe    ***
+                   ***                                                               ***
+                   *** contact: stefan.knecht@phys.chem.ethz.ch                      ***
                    *********************************************************************
 
+
+                   *** chosen path in X2C module: molecular X2C (with spin-orbit contributions)      
 
 
                                 Output from MODHAM
                                 ------------------
 
  * Applied strict kinetic balance !
+ * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.
 
 
                                 Output from AMFIIN
@@ -2598,7 +1739,8 @@ F z    0.0000000000  -1.4829000000   0.0000000000
 
   *** calculate AMFI for atom type 1 with atomic charge    16
   *** number of nuclei with identical atom type:   1
-  *** file for storage of AMFI integrals: AOPROPER_MNF.16 
+   unique nuclei index: 1
+  *** file with AMFI integrals for this center: AOPROPER_MNF.16.1   
 
 
                          ATOMIC NO-PAIR SO-MF CODE starts
@@ -2623,6 +1765,8 @@ F z    0.0000000000  -1.4829000000   0.0000000000
       NUMBER OF BASIS FUNCTIONS:  9       6
       NUMBER OF CLOSED SHELLS  :  3       1
       OPEN SHELL OCCUPATION    :  0       4
+  ### SCF ITERATIONS           ###
+  ### NON-RELATIVISTIC APPROX. ###
     1. iteration,  total energy:             0.000000000000
     2. iteration,  total energy:          -317.402287233532
     3. iteration,  total energy:          -379.489258705322
@@ -2640,6 +1784,8 @@ F z    0.0000000000  -1.4829000000   0.0000000000
    14. iteration,  total energy:          -395.949045898090
   ### NON-RELATIVISTIC APPROX. ###
         14      -0.3959490459D+03      -0.7874861056D+03       0.3915370597D+03      -0.2011268374D+01
+  ### SCF ITERATIONS           ###
+  ### EV APPROX.               ###
     1. iteration,  total energy:          -396.851470169716
     2. iteration,  total energy:          -396.904399101681
     3. iteration,  total energy:          -396.904486255921
@@ -2657,7 +1803,8 @@ F z    0.0000000000  -1.4829000000   0.0000000000
 
   *** calculate AMFI for atom type 2 with atomic charge     9
   *** number of nuclei with identical atom type:   6
-  *** file for storage of AMFI integrals: AOPROPER_MNF.9  
+   unique nuclei index: 2
+  *** file with AMFI integrals for this center: AOPROPER_MNF.9.2    
 
 
                          ATOMIC NO-PAIR SO-MF CODE starts
@@ -2682,6 +1829,8 @@ F z    0.0000000000  -1.4829000000   0.0000000000
       NUMBER OF BASIS FUNCTIONS:  6       3
       NUMBER OF CLOSED SHELLS  :  2       0
       OPEN SHELL OCCUPATION    :  0       5
+  ### SCF ITERATIONS           ###
+  ### NON-RELATIVISTIC APPROX. ###
     1. iteration,  total energy:         -3497.382016073395
     2. iteration,  total energy:           -95.761821126421
     3. iteration,  total energy:           -98.530190805434
@@ -2698,6 +1847,8 @@ F z    0.0000000000  -1.4829000000   0.0000000000
    13. iteration,  total energy:           -98.849395771551
   ### NON-RELATIVISTIC APPROX. ###
         13      -0.9884939577D+02      -0.1971970710D+03       0.9834767520D+02      -0.2005101499D+01
+  ### SCF ITERATIONS           ###
+  ### EV APPROX.               ###
     1. iteration,  total energy:           -98.924688545317
     2. iteration,  total energy:           -98.926376508733
     3. iteration,  total energy:           -98.926378700247
@@ -2722,15 +1873,28 @@ F z    0.0000000000  -1.4829000000   0.0000000000
                    ***          Calculation continues in two-component mode.         ***
                    *********************************************************************
 
- >>> Time used in mk_h2c is   0.89 seconds
- Coordinates were entered in Angstrom                        
- Converting to atomic units with conversion factor=   1.8897261339212517     
+ >>> CPU  time used in mk_h2c is   0.89 seconds
+ >>> WALL time used in mk_h2c is   0.93 seconds
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 Debye =   2.54177000 a.u. 
+
+Total time used in ONEGEN (CPU)  0.00876300s and (WALL)  0.01200000s
 
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          0(Proj:          0, Lindep:          0)
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.14E-02
 
 
       **********************************************************************
@@ -2740,7 +1904,8 @@ F z    0.0000000000  -1.4829000000   0.0000000000
 No. of positive energy orbitals (NESH):   117
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):   117
- >>> Time used in PAMSET is   0.94 seconds
+ >>> CPU  time used in PAMSET is   1.07 seconds
+ >>> WALL time used in PAMSET is   1.13 seconds
 
 
  *******************************************************************************
@@ -2748,222 +1913,308 @@ Total no. of orbitals           (NORB):   117
  *******************************************************************************
 
 
-*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+*** INFO *** No trial vectors found.
 
-########## START ITERATION NO.   1 ##########                           
+########## START ITERATION NO.   1 ##########   Wed Jun 29 16:08:21 2022
 
+E_HOMO...E_LUMO, symmetry 1:                                 35 -26.24875   36 -26.24492
 
 => Calculating sum of orbital energies
-It.    1    -2129.960587804      0.00D+00  0.00D+00  0.00D+00               0.03206700s   Bare nuclei              
+It.    1    -2129.960590958      0.00D+00  0.00D+00  0.00D+00               0.02768700s   Bare nuclei    Wed Jun 29
 
-########## START ITERATION NO.   2 ##########                           
+########## START ITERATION NO.   2 ##########   Wed Jun 29 16:08:21 2022
 
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.46039820s
 
-########## END ITERATION NO.   2 ##########                           
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   63.56%    0.03%    1.02%   0.99822998s
+ >>> CPU  time used in SO Fock is   1.17 seconds
+ >>> WALL time used in SO Fock is   1.17 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35   1.42886   36   2.12605
+>>> Total wall time:  1.22900000s, and total CPU time :  1.20900800s
 
-It.    2    -827.1542150984     -1.30D+03  6.72D+01  5.46D+01              10.46039820s   LL                       
+########## END ITERATION NO.   2 ##########   Wed Jun 29 16:08:23 2022
 
-########## START ITERATION NO.   3 ##########                           
+It.    2    -827.1542148876     -1.30D+03  6.72D+01  5.46D+01               1.22900000s   LL             Wed Jun 29
+
+########## START ITERATION NO.   3 ##########   Wed Jun 29 16:08:23 2022
 
     3 *** Differential density matrix. DCOVLP     = 0.1582
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.44757462s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   61.51%    0.00%    1.05%   0.93869686s
+ >>> CPU  time used in SO Fock is   0.94 seconds
+ >>> WALL time used in SO Fock is   0.93 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -1.42817   36  -1.41484
+>>> Total wall time:  0.99800000s, and total CPU time :  0.97823300s
 
-########## END ITERATION NO.   3 ##########                           
+########## END ITERATION NO.   3 ##########   Wed Jun 29 16:08:24 2022
 
-It.    3    -864.2316494389      3.71D+01 -3.46D+01  1.20D+01   DIIS   2   10.44757462s   LL                       
+It.    3    -864.2316493118      3.71D+01 -3.46D+01  1.20D+01   DIIS   2    0.99800000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   4 ##########                           
+########## START ITERATION NO.   4 ##########   Wed Jun 29 16:08:24 2022
 
     4 *** Differential density matrix. DCOVLP     = 0.0679
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.35349655s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   63.44%    0.03%    1.01%   0.67141175s
+ >>> CPU  time used in SO Fock is   0.67 seconds
+ >>> WALL time used in SO Fock is   0.67 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -1.30412   36  -1.29321
+>>> Total wall time:  0.71400000s, and total CPU time :  0.70008200s
 
-########## END ITERATION NO.   4 ##########                           
+########## END ITERATION NO.   4 ##########   Wed Jun 29 16:08:24 2022
 
-It.    4    -943.0100922536      7.88D+01  2.82D+01  2.54D+01   DIIS   3   10.35349655s   LL                       
+It.    4    -943.0100926626      7.88D+01  2.82D+01  2.54D+01   DIIS   3    0.71400000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   5 ##########                           
+########## START ITERATION NO.   5 ##########   Wed Jun 29 16:08:24 2022
 
     5 *** Differential density matrix. DCOVLP     = 0.6067
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.74213409s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   64.76%    0.03%    0.99%   0.52418709s
+ >>> CPU  time used in SO Fock is   0.52 seconds
+ >>> WALL time used in SO Fock is   0.52 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -1.03471   36  -1.03471
+>>> Total wall time:  0.58200000s, and total CPU time :  0.55837300s
 
-########## END ITERATION NO.   5 ##########                           
+########## END ITERATION NO.   5 ##########   Wed Jun 29 16:08:25 2022
 
-It.    5    -958.4047466547      1.54D+01 -1.72D+00  1.98D+01   DIIS   4   10.74213409s   LL                       
+It.    5    -958.4047470321      1.54D+01 -1.72D+00  1.98D+01   DIIS   4    0.58200000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   6 ##########                           
+########## START ITERATION NO.   6 ##########   Wed Jun 29 16:08:25 2022
 
     6 *** Differential density matrix. DCOVLP     = 0.6843
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.28697586s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   64.55%    0.00%    0.43%   0.54709864s
+ >>> CPU  time used in SO Fock is   0.55 seconds
+ >>> WALL time used in SO Fock is   0.54 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -1.03183   36  -0.89377
+>>> Total wall time:  0.60200000s, and total CPU time :  0.58064800s
 
-########## END ITERATION NO.   6 ##########                           
+########## END ITERATION NO.   6 ##########   Wed Jun 29 16:08:26 2022
 
-It.    6    -969.3580269155      1.10D+01 -1.62D+00  1.50D+01   DIIS   5   10.28697586s   LL                       
+It.    6    -969.3579774650      1.10D+01 -1.62D+00  1.50D+01   DIIS   5    0.60200000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   7 ##########                           
+########## START ITERATION NO.   7 ##########   Wed Jun 29 16:08:26 2022
 
-    7 *** Differential density matrix. DCOVLP     = 0.7926
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.27797699s
+    7 *** Differential density matrix. DCOVLP     = 0.8037
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   64.89%    0.00%    0.00%   0.52254105s
+ >>> CPU  time used in SO Fock is   0.52 seconds
+ >>> WALL time used in SO Fock is   0.52 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.85296   36  -0.69178
+>>> Total wall time:  0.59100000s, and total CPU time :  0.56744900s
 
-########## END ITERATION NO.   7 ##########                           
+########## END ITERATION NO.   7 ##########   Wed Jun 29 16:08:26 2022
 
-It.    7    -976.2829111029      6.92D+00 -1.23D+00  1.21D+01   DIIS   6   10.27797699s   LL                       
+It.    7    -976.1733980941      6.82D+00 -1.22D+00  1.21D+01   DIIS   6    0.59100000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   8 ##########                           
+########## START ITERATION NO.   8 ##########   Wed Jun 29 16:08:26 2022
 
-    8 *** Differential density matrix. DCOVLP     = 0.9109
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.20637512s
+    8 *** Differential density matrix. DCOVLP     = 0.8972
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   65.23%    0.00%    0.00%   0.65294790s
+ >>> CPU  time used in SO Fock is   0.65 seconds
+ >>> WALL time used in SO Fock is   0.65 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.75330   36  -0.49377
+>>> Total wall time:  0.69800000s, and total CPU time :  0.68319300s
 
-########## END ITERATION NO.   8 ##########                           
+########## END ITERATION NO.   8 ##########   Wed Jun 29 16:08:27 2022
 
-It.    8    -981.4979855928      5.22D+00 -1.17D+00  9.61D+00   DIIS   7   10.20637512s   LL                       
+It.    8    -981.6070555106      5.43D+00 -1.24D+00  9.54D+00   DIIS   7    0.69800000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   9 ##########                           
+########## START ITERATION NO.   9 ##########   Wed Jun 29 16:08:27 2022
 
-    9 *** Differential density matrix. DCOVLP     = 0.9162
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.28707123s
+    9 *** Differential density matrix. DCOVLP     = 0.9198
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   65.47%    0.00%    0.01%   0.55778599s
+ >>> CPU  time used in SO Fock is   0.56 seconds
+ >>> WALL time used in SO Fock is   0.55 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.70318   36  -0.06381
+>>> Total wall time:  0.62700000s, and total CPU time :  0.60645900s
 
-########## END ITERATION NO.   9 ##########                           
+########## END ITERATION NO.   9 ##########   Wed Jun 29 16:08:28 2022
 
-It.    9    -986.3750388043      4.88D+00 -1.53D+00  6.50D+00   DIIS   8   10.28707123s   LL                       
+It.    9    -986.3585318217      4.75D+00 -1.44D+00  6.54D+00   DIIS   8    0.62700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  10 ##########                           
+########## START ITERATION NO.  10 ##########   Wed Jun 29 16:08:28 2022
 
-   10 *** Differential density matrix. DCOVLP     = 0.8949
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.24427032s
+   10 *** Differential density matrix. DCOVLP     = 0.8967
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   65.41%    0.00%    0.00%   0.98952675s
+ >>> CPU  time used in SO Fock is   0.99 seconds
+ >>> WALL time used in SO Fock is   0.98 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68354   36   0.20223
+>>> Total wall time:  1.05600000s, and total CPU time :  1.03722500s
 
-########## END ITERATION NO.  10 ##########                           
+########## END ITERATION NO.  10 ##########   Wed Jun 29 16:08:29 2022
 
-It.   10    -989.8295120935      3.45D+00 -1.82D+00  2.49D+00   DIIS   9   10.24427032s   LL                       
+It.   10    -989.8319776615      3.47D+00 -1.87D+00  2.45D+00   DIIS   9    1.05600000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  11 ##########                           
+########## START ITERATION NO.  11 ##########   Wed Jun 29 16:08:29 2022
 
-   11 *** Differential density matrix. DCOVLP     = 0.9487
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.23536682s
+   11 *** Differential density matrix. DCOVLP     = 0.9474
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   66.23%    0.00%    0.01%   0.67900944s
+ >>> CPU  time used in SO Fock is   0.68 seconds
+ >>> WALL time used in SO Fock is   0.67 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68183   36   0.22084
+>>> Total wall time:  0.74200000s, and total CPU time :  0.71557700s
 
-########## END ITERATION NO.  11 ##########                           
+########## END ITERATION NO.  11 ##########   Wed Jun 29 16:08:29 2022
 
-It.   11    -990.4036562211      5.74D-01 -1.03D+00  1.48D-01   DIIS   9   10.23536682s   LL                       
+It.   11    -990.4017571763      5.70D-01 -1.01D+00  1.77D-01   DIIS   9    0.74200000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  12 ##########                           
+########## START ITERATION NO.  12 ##########   Wed Jun 29 16:08:29 2022
 
-   12 *** Differential density matrix. DCOVLP     = 0.9978
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.19327545s
+   12 *** Differential density matrix. DCOVLP     = 0.9972
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   69.11%    0.00%    0.01%   0.52584267s
+ >>> CPU  time used in SO Fock is   0.53 seconds
+ >>> WALL time used in SO Fock is   0.52 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68596   36   0.21697
+>>> Total wall time:  0.59000000s, and total CPU time :  0.57346300s
 
-########## END ITERATION NO.  12 ##########                           
+########## END ITERATION NO.  12 ##########   Wed Jun 29 16:08:30 2022
 
-It.   12    -990.4070820339      3.43D-03 -5.93D-02  2.72D-02   DIIS   9   10.19327545s   LL                       
+It.   12    -990.4069273047      5.17D-03 -7.43D-02  3.21D-02   DIIS   9    0.59000000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  13 ##########                           
+########## START ITERATION NO.  13 ##########   Wed Jun 29 16:08:30 2022
 
-   13 *** Differential density matrix. DCOVLP     = 1.0002
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.24707031s
+   13 *** Differential density matrix. DCOVLP     = 1.0003
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   71.14%    0.00%    0.02%   0.93664742s
+ >>> CPU  time used in SO Fock is   0.94 seconds
+ >>> WALL time used in SO Fock is   0.93 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68636   36   0.21676
+>>> Total wall time:  1.07800000s, and total CPU time :  0.98814300s
 
-########## END ITERATION NO.  13 ##########                           
+########## END ITERATION NO.  13 ##########   Wed Jun 29 16:08:31 2022
 
-It.   13    -990.4072320494      1.50D-04 -4.56D-03  8.50D-03   DIIS   9   10.24707031s   LL                       
+It.   13    -990.4072187334      2.91D-04 -3.79D-03  9.47D-03   DIIS   9    1.07800000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  14 ##########                           
+########## START ITERATION NO.  14 ##########   Wed Jun 29 16:08:31 2022
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.25872803s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   72.83%    0.00%    0.03%   0.73749542s
+ >>> CPU  time used in SO Fock is   0.74 seconds
+ >>> WALL time used in SO Fock is   0.73 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68648   36   0.21684
+>>> Total wall time:  0.78500000s, and total CPU time :  0.76901100s
 
-########## END ITERATION NO.  14 ##########                           
+########## END ITERATION NO.  14 ##########   Wed Jun 29 16:08:32 2022
 
-It.   14    -990.4072508861      1.88D-05 -2.02D-03  3.33D-03   DIIS   9   10.25872803s   LL                       
+It.   14    -990.4072502085      3.15D-05 -1.54D-03  3.97D-03   DIIS   9    0.78500000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  15 ##########                           
+########## START ITERATION NO.  15 ##########   Wed Jun 29 16:08:32 2022
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.20115662s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   74.67%    0.00%    0.04%   0.51472473s
+ >>> CPU  time used in SO Fock is   0.52 seconds
+ >>> WALL time used in SO Fock is   0.51 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68655   36   0.21680
+>>> Total wall time:  0.56400000s, and total CPU time :  0.54757000s
 
-########## END ITERATION NO.  15 ##########                           
+########## END ITERATION NO.  15 ##########   Wed Jun 29 16:08:32 2022
 
-It.   15    -990.4072542364      3.35D-06  5.17D-04  6.16D-04   DIIS   9   10.20115662s   LL                       
+It.   15    -990.4072542276      4.02D-06 -5.96D-04  7.44D-04   DIIS   9    0.56400000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  16 ##########                           
+########## START ITERATION NO.  16 ##########   Wed Jun 29 16:08:32 2022
 
    16 *** Differential density matrix. DCOVLP     = 1.0000
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.28108215s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   77.81%    0.03%    0.04%   0.48989964s
+ >>> CPU  time used in SO Fock is   0.49 seconds
+ >>> WALL time used in SO Fock is   0.49 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68656   36   0.21681
+>>> Total wall time:  0.58400000s, and total CPU time :  0.52677900s
 
-########## END ITERATION NO.  16 ##########                           
+########## END ITERATION NO.  16 ##########   Wed Jun 29 16:08:33 2022
 
-It.   16    -990.4072544060      1.70D-07  7.12D-05  1.33D-04   DIIS   9   10.28108215s   LL                       
+It.   16    -990.4072544043      1.77D-07  6.85D-05  1.29D-04   DIIS   9    0.58400000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  17 ##########                           
+########## START ITERATION NO.  17 ##########   Wed Jun 29 16:08:33 2022
 
    17 *** Differential density matrix. DCOVLP     = 1.0000
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.20169067s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   81.48%    0.03%    0.05%   0.49093246s
+ >>> CPU  time used in SO Fock is   0.49 seconds
+ >>> WALL time used in SO Fock is   0.49 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68656   36   0.21681
+>>> Total wall time:  0.54300000s, and total CPU time :  0.52573800s
 
-########## END ITERATION NO.  17 ##########                           
+########## END ITERATION NO.  17 ##########   Wed Jun 29 16:08:33 2022
 
-It.   17    -990.4072544127      6.76D-09  2.00D-05  4.60D-05   DIIS   9   10.20169067s   LL                       
+It.   17    -990.4072544104      6.11D-09  2.07D-05  4.64D-05   DIIS   9    0.54300000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  18 ##########                           
+########## START ITERATION NO.  18 ##########   Wed Jun 29 16:08:33 2022
 
    18 *** Differential density matrix. DCOVLP     = 1.0000
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.24377441s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.04%   83.88%    0.03%    0.12%   0.53773785s
+ >>> CPU  time used in SO Fock is   0.54 seconds
+ >>> WALL time used in SO Fock is   0.53 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68656   36   0.21681
+>>> Total wall time:  0.58400000s, and total CPU time :  0.56560800s
 
-########## END ITERATION NO.  18 ##########                           
+########## END ITERATION NO.  18 ##########   Wed Jun 29 16:08:34 2022
 
-It.   18    -990.4072544134      6.45D-10  8.75D-06  1.42D-05   DIIS   9   10.24377441s   LL                       
+It.   18    -990.4072544113      8.53D-10  8.49D-06  1.51D-05   DIIS   9    0.58400000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  19 ##########                           
+########## START ITERATION NO.  19 ##########   Wed Jun 29 16:08:34 2022
 
    19 *** Differential density matrix. DCOVLP     = 1.0000
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.30209351s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.04%   84.86%    0.05%    0.13%   0.47355366s
+ >>> CPU  time used in SO Fock is   0.47 seconds
+ >>> WALL time used in SO Fock is   0.47 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68656   36   0.21681
+>>> Total wall time:  0.52300000s, and total CPU time :  0.50756700s
 
-########## END ITERATION NO.  19 ##########                           
+########## END ITERATION NO.  19 ##########   Wed Jun 29 16:08:35 2022
 
-It.   19    -990.4072544135      1.00D-10  1.48D-06  4.12D-06   DIIS   9   10.30209351s   LL                       
+It.   19    -990.4072544114      1.07D-10 -1.48D-06  3.54D-06   DIIS   9    0.52300000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  20 ##########                           
+########## START ITERATION NO.  20 ##########   Wed Jun 29 16:08:35 2022
 
    20 *** Differential density matrix. DCOVLP     = 1.0000
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.29524231s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.22%   87.24%    0.08%    0.21%   0.46198273s
+ >>> CPU  time used in SO Fock is   0.46 seconds
+ >>> WALL time used in SO Fock is   0.46 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68656   36   0.21681
+>>> Total wall time:  0.52900000s, and total CPU time :  0.51157300s
 
-########## END ITERATION NO.  20 ##########                           
+########## END ITERATION NO.  20 ##########   Wed Jun 29 16:08:35 2022
 
-It.   20    -990.4072544135      8.87D-12  5.79D-07  7.69D-07   DIIS   9   10.29524231s   LL                       
+It.   20    -990.4072544115      5.14D-11 -4.30D-07  8.10D-07   DIIS   9    0.52900000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  21 ##########                           
+########## START ITERATION NO.  21 ##########   Wed Jun 29 16:08:35 2022
 
    21 *** Differential density matrix. DCOVLP     = 1.0000
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.24284363s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.86%   90.36%    0.05%    0.47%   0.85812664s
+ >>> CPU  time used in SO Fock is   0.86 seconds
+ >>> WALL time used in SO Fock is   0.85 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 35  -0.68656   36   0.21681
+>>> Total wall time:  0.92200000s, and total CPU time :  0.90695400s
 
-########## END ITERATION NO.  21 ##########                           
+########## END ITERATION NO.  21 ##########   Wed Jun 29 16:08:36 2022
 
-It.   21    -990.4072544135      4.55D-13  5.80D-08  1.45D-07   DIIS   9   10.24284363s   LL                       
+It.   21    -990.4072544118      3.13D-10  7.88D-08  1.56D-07   DIIS   9    0.92200000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  22 ##########                           
+########## START ITERATION NO.  22 ##########   Wed Jun 29 16:08:36 2022
 
    22 *** Differential density matrix. DCOVLP     = 1.0000
->>> Total wall time: 0.00000000s
->>> Total CPU time :10.16595459s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    3.50%   90.77%    0.09%    0.61%   0.52027512s
+ >>> CPU  time used in SO Fock is   0.52 seconds
+ >>> WALL time used in SO Fock is   0.52 seconds
+>>> Total wall time:  0.52700000s, and total CPU time :  0.52674600s
 
-########## END ITERATION NO.  22 ##########                           
+########## END ITERATION NO.  22 ##########   Wed Jun 29 16:08:37 2022
 
-It.   22    -990.4072544135     -3.18D-12 -1.40D-08  3.44D-08   DIIS   9   10.16595459s   LL                       
+It.   22    -990.4072544116     -1.70D-10 -4.49D-08  3.76D-08   DIIS   9    0.52700000s   LL             Wed Jun 29
 
 
                                    SCF - CYCLE
@@ -2979,45 +2230,47 @@ It.   22    -990.4072544135     -3.18D-12 -1.40D-08  3.44D-08   DIIS   9   10.16
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -2129.960587804      0.00D+00  0.00D+00  0.00D+00               0.03206700s   Bare nuclei              
-It.    2    -827.1542150984     -1.30D+03  6.72D+01  5.46D+01              10.46039820s   LL                       
-It.    3    -864.2316494389      3.71D+01 -3.46D+01  1.20D+01   DIIS   2   10.44757462s   LL                       
-It.    4    -943.0100922536      7.88D+01  2.82D+01  2.54D+01   DIIS   3   10.35349655s   LL                       
-It.    5    -958.4047466547      1.54D+01 -1.72D+00  1.98D+01   DIIS   4   10.74213409s   LL                       
-It.    6    -969.3580269155      1.10D+01 -1.62D+00  1.50D+01   DIIS   5   10.28697586s   LL                       
-It.    7    -976.2829111029      6.92D+00 -1.23D+00  1.21D+01   DIIS   6   10.27797699s   LL                       
-It.    8    -981.4979855928      5.22D+00 -1.17D+00  9.61D+00   DIIS   7   10.20637512s   LL                       
-It.    9    -986.3750388043      4.88D+00 -1.53D+00  6.50D+00   DIIS   8   10.28707123s   LL                       
-It.   10    -989.8295120935      3.45D+00 -1.82D+00  2.49D+00   DIIS   9   10.24427032s   LL                       
-It.   11    -990.4036562211      5.74D-01 -1.03D+00  1.48D-01   DIIS   9   10.23536682s   LL                       
-It.   12    -990.4070820339      3.43D-03 -5.93D-02  2.72D-02   DIIS   9   10.19327545s   LL                       
-It.   13    -990.4072320494      1.50D-04 -4.56D-03  8.50D-03   DIIS   9   10.24707031s   LL                       
-It.   14    -990.4072508861      1.88D-05 -2.02D-03  3.33D-03   DIIS   9   10.25872803s   LL                       
-It.   15    -990.4072542364      3.35D-06  5.17D-04  6.16D-04   DIIS   9   10.20115662s   LL                       
-It.   16    -990.4072544060      1.70D-07  7.12D-05  1.33D-04   DIIS   9   10.28108215s   LL                       
-It.   17    -990.4072544127      6.76D-09  2.00D-05  4.60D-05   DIIS   9   10.20169067s   LL                       
-It.   18    -990.4072544134      6.45D-10  8.75D-06  1.42D-05   DIIS   9   10.24377441s   LL                       
-It.   19    -990.4072544135      1.00D-10  1.48D-06  4.12D-06   DIIS   9   10.30209351s   LL                       
-It.   20    -990.4072544135      8.87D-12  5.79D-07  7.69D-07   DIIS   9   10.29524231s   LL                       
-It.   21    -990.4072544135      4.55D-13  5.80D-08  1.45D-07   DIIS   9   10.24284363s   LL                       
-It.   22    -990.4072544135     -3.18D-12 -1.40D-08  3.44D-08   DIIS   9   10.16595459s   LL                       
+It.    1    -2129.960590958      0.00D+00  0.00D+00  0.00D+00               0.02768700s   Bare nuclei    Wed Jun 29
+It.    2    -827.1542148876     -1.30D+03  6.72D+01  5.46D+01               1.22900000s   LL             Wed Jun 29
+It.    3    -864.2316493118      3.71D+01 -3.46D+01  1.20D+01   DIIS   2    0.99800000s   LL             Wed Jun 29
+It.    4    -943.0100926626      7.88D+01  2.82D+01  2.54D+01   DIIS   3    0.71400000s   LL             Wed Jun 29
+It.    5    -958.4047470321      1.54D+01 -1.72D+00  1.98D+01   DIIS   4    0.58200000s   LL             Wed Jun 29
+It.    6    -969.3579774650      1.10D+01 -1.62D+00  1.50D+01   DIIS   5    0.60200000s   LL             Wed Jun 29
+It.    7    -976.1733980941      6.82D+00 -1.22D+00  1.21D+01   DIIS   6    0.59100000s   LL             Wed Jun 29
+It.    8    -981.6070555106      5.43D+00 -1.24D+00  9.54D+00   DIIS   7    0.69800000s   LL             Wed Jun 29
+It.    9    -986.3585318217      4.75D+00 -1.44D+00  6.54D+00   DIIS   8    0.62700000s   LL             Wed Jun 29
+It.   10    -989.8319776615      3.47D+00 -1.87D+00  2.45D+00   DIIS   9    1.05600000s   LL             Wed Jun 29
+It.   11    -990.4017571763      5.70D-01 -1.01D+00  1.77D-01   DIIS   9    0.74200000s   LL             Wed Jun 29
+It.   12    -990.4069273047      5.17D-03 -7.43D-02  3.21D-02   DIIS   9    0.59000000s   LL             Wed Jun 29
+It.   13    -990.4072187334      2.91D-04 -3.79D-03  9.47D-03   DIIS   9    1.07800000s   LL             Wed Jun 29
+It.   14    -990.4072502085      3.15D-05 -1.54D-03  3.97D-03   DIIS   9    0.78500000s   LL             Wed Jun 29
+It.   15    -990.4072542276      4.02D-06 -5.96D-04  7.44D-04   DIIS   9    0.56400000s   LL             Wed Jun 29
+It.   16    -990.4072544043      1.77D-07  6.85D-05  1.29D-04   DIIS   9    0.58400000s   LL             Wed Jun 29
+It.   17    -990.4072544104      6.11D-09  2.07D-05  4.64D-05   DIIS   9    0.54300000s   LL             Wed Jun 29
+It.   18    -990.4072544113      8.53D-10  8.49D-06  1.51D-05   DIIS   9    0.58400000s   LL             Wed Jun 29
+It.   19    -990.4072544114      1.07D-10 -1.48D-06  3.54D-06   DIIS   9    0.52300000s   LL             Wed Jun 29
+It.   20    -990.4072544115      5.14D-11 -4.30D-07  8.10D-07   DIIS   9    0.52900000s   LL             Wed Jun 29
+It.   21    -990.4072544118      3.13D-10  7.88D-08  1.56D-07   DIIS   9    0.92200000s   LL             Wed Jun 29
+It.   22    -990.4072544116     -1.70D-10 -4.49D-08  3.76D-08   DIIS   9    0.52700000s   LL             Wed Jun 29
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   22 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00000000s
-      LL           :    0.00000000s
+      No 2-ints    :    0.03300000s
+      LL           :    0.71752381s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -1587.3536142689391
+   Charge of molecule : 0
+
+   Electronic energy                        :    -1587.3536172034246
 
    Other contributions to the total energy
-   Nuclear repulsion energy                 :      596.9463598554684
+   Nuclear repulsion energy                 :      596.9463627918217
 
    Sum of all contributions to the energy
-   Total energy                             :     -990.4072544134707
+   Total energy                             :     -990.4072544116029
 
 
                                    Eigenvalues
@@ -3026,31 +2279,34 @@ It.   22    -990.4072544135     -3.18D-12 -1.40D-08  3.44D-08   DIIS   9   10.16
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-  -92.422559648540  ( 2)     -26.303322590716  ( 2)     -26.302188660425  ( 6)     -26.300547301661  ( 4)      -9.557976729114  ( 2)
-   -7.221015522028  ( 2)      -7.178236730520  ( 4)      -1.981502358074  ( 2)      -1.790665889711  ( 2)      -1.790144901362  ( 4)
-   -1.693529322519  ( 4)      -1.125114677623  ( 2)      -0.965697952762  ( 2)      -0.965138770856  ( 4)      -0.850645669750  ( 4)
-   -0.849682339273  ( 2)      -0.747268220091  ( 4)      -0.746167842288  ( 2)      -0.736438955109  ( 2)      -0.733920675740  ( 4)
-   -0.708937109724  ( 4)      -0.687804045169  ( 2)      -0.686561615178  ( 4)
+  -92.422559641534  ( 2)     -26.303322591549  ( 2)     -26.302188660895  ( 6)     -26.300547302206  ( 4)      -9.557976728762  ( 2)
+   -7.221015521365  ( 2)      -7.178236729143  ( 4)      -1.981502367105  ( 2)      -1.790665895366  ( 2)      -1.790144906817  ( 4)
+   -1.693529325374  ( 4)      -1.125114677919  ( 2)      -0.965697955596  ( 2)      -0.965138774703  ( 4)      -0.850645673430  ( 4)
+   -0.849682343436  ( 2)      -0.747268220953  ( 4)      -0.746167843805  ( 2)      -0.736438958100  ( 2)      -0.733920677222  ( 4)
+   -0.708937112667  ( 4)      -0.687804045105  ( 2)      -0.686561615090  ( 4)
   * Virtual eigenvalues, f = 0.0000
-    0.216811377573  ( 2)       0.394582474911  ( 2)       0.397552606130  ( 4)       0.562249560579  ( 2)       0.610421698944  ( 2)
-    0.612017120558  ( 4)       1.738538336549  ( 4)       1.740052730480  ( 2)       2.082814587648  ( 2)       2.089872158285  ( 4)
-    2.091413604142  ( 2)       2.100280136097  ( 4)       2.101445952225  ( 2)       2.200909173739  ( 4)       2.363395493659  ( 2)
-    2.364741425905  ( 4)       2.559723030288  ( 2)       2.562422558676  ( 4)       3.002815617920  ( 4)       3.230974513762  ( 2)
-    3.241777052585  ( 4)       3.863470080169  ( 2)       3.922014377809  ( 4)       3.922201886467  ( 2)       4.723376034554  ( 2)
-   14.375958216320  ( 2)      14.421143100647  ( 4)      14.494109257032  ( 4)      14.503666612841  ( 2)      14.614442142911  ( 2)
-   14.662788420640  ( 4)      14.673031437221  ( 2)      14.726175149471  ( 2)      14.727905399440  ( 4)      14.773260166377  ( 4)
-   14.806075840832  ( 2)      14.815392441618  ( 4)      14.932851164387  ( 2)      14.951927152955  ( 4)      22.713238349581  ( 4)
-   23.353269567981  ( 4)      23.353304788782  ( 2)      23.794712784529  ( 2)      24.674016391304  ( 2)      84.327560939426  ( 2)
-   84.780589367786  ( 4)      95.225354737034  ( 4)      95.766861025866  ( 4)      95.766864414209  ( 2)      96.168030274501  ( 2)
-  112.304272517681  ( 2)     360.027975251692  ( 2)     604.329487153438  ( 4)     604.742702383568  ( 6)     605.049636711752  ( 2)
- 1744.525208511898  ( 2)
+    0.216811389930  ( 2)       0.394582485443  ( 2)       0.397552615911  ( 4)       0.562249559051  ( 2)       0.610421698815  ( 2)
+    0.612017121297  ( 4)       1.738538334334  ( 4)       1.740052727672  ( 2)       2.082814579665  ( 2)       2.089872159325  ( 4)
+    2.091413604671  ( 2)       2.100280129674  ( 4)       2.101445946448  ( 2)       2.200909176253  ( 4)       2.363395499432  ( 2)
+    2.364741431607  ( 4)       2.559723036080  ( 2)       2.562422565137  ( 4)       3.002815623058  ( 4)       3.230974519755  ( 2)
+    3.241777058947  ( 4)       3.863470090225  ( 2)       3.922014381620  ( 4)       3.922201890333  ( 2)       4.723376038893  ( 2)
+   14.375958222218  ( 2)      14.421143106992  ( 4)      14.494109256841  ( 4)      14.503666612403  ( 2)      14.614442138596  ( 2)
+   14.662788420942  ( 4)      14.673031437235  ( 2)      14.726175145233  ( 2)      14.727905395048  ( 4)      14.773260168353  ( 4)
+   14.806075841879  ( 2)      14.815392442867  ( 4)      14.932851165208  ( 2)      14.951927154236  ( 4)      22.713238352124  ( 4)
+   23.353269576270  ( 4)      23.353304796353  ( 2)      23.794712789462  ( 2)      24.674016403485  ( 2)      84.327560939372  ( 2)
+   84.780589372044  ( 4)      95.225354734325  ( 4)      95.766861026801  ( 4)      95.766864415075  ( 2)      96.168030275321  ( 2)
+  112.304272521924  ( 2)     360.027975193322  ( 2)     604.329487001603  ( 4)     604.742702232304  ( 6)     605.049636558570  ( 2)
+ 1744.525207291817  ( 2)
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.21681138 au (symmetry E1 )
+    E(LUMO) :     0.21681139 au (symmetry E1 )
   - E(HOMO) :    -0.68656161 au (symmetry E1 )
   ------------------------------------------
-    gap     :     0.90337299 au
+    gap     :     0.90337300 au
 
+
+ * Closing HDF5 checkpoint file 
+    - DIRAC was compiled without hdf5, checkpointing was not possible
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -3058,31 +2314,35 @@ It.   22    -990.4072544135     -3.18D-12 -1.40D-08  3.44D-08   DIIS   9   10.16
 
 
  
+     Date and time (Linux)  : Wed Jun 29 16:08:37 2022
+     Host name              : fe-ac-02.escience.sdu.dk                
 
->>>> Node 0, utime: 216, stime: 0, minflt: 8191, majflt: 0, nvcsw: 222, nivcsw: 20244, maxrss: 26804224
->>>> Total WALL time used in DIRAC: 3min37s
+>>>> Node 0, utime: 15, stime: 0, minflt: 19717, majflt: 0, nvcsw: 2408, nivcsw: 6347, maxrss: 237348
+>>>> Total WALL time used in DIRAC: 17s
   
-  Dynamical Memory Usage Summary
+  Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :       409.29
+  Mean allocation size (Mb) :        98.30
   
   Largest          10  allocations
   
-      953.67 Mb at subroutine unknown                                    for WORK in PSIDHF                            
-      953.67 Mb at subroutine unknown                                    for WORK in PAMSET - 2                        
-      953.67 Mb at subroutine unknown                                    for WORK in GMOTRA - part 2                   
-      953.67 Mb at subroutine unknown                                    for WORK in GMOTRA                            
-      953.67 Mb at subroutine unknown                                    for WORK in PAMSET - 1                        
-      953.67 Mb at subroutine unknown                                    for test allocation of work array in DIRAC mai
-        1.67 Mb at subroutine unknown                                    for buf in butobs                             
-        1.67 Mb at subroutine unknown                                    for QTRANS90-buffer-space                     
-        1.67 Mb at subroutine unknown                                    for QTRANS90-buffer-space                     
-        0.84 Mb at subroutine unknown                                    for QTRANS90-buffer-space                     
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA - part 2                   
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        3.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for QTRANS90-buffer-space                     
+        3.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for QTRANS90-buffer-space                     
+        1.50 Mb at subroutine __allocator_track_if_MOD_allocator_registe for QTRANS90-buffer-space                     
+        1.35 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
   
-  Peak memory usage    (Mb) :       954.00
-       reached at subroutine : unknown                                   
-              for variable   : WORK in PSIDHF                            
+  Peak memory usage:       488.39 MB
+  Peak memory usage:        0.477 GB
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
+DIRAC pam run in /gpfs/ess1/work/sdujk/hjj/progs/gitDirac/build_master_i4/test/atomic_x2c_2esoc_models_energy
