@@ -1296,8 +1296,18 @@ Options are also read from ~/.diracrc"""
 
         def copy_single_file(file_name, file_name_scr):
             if os.path.isfile(file_name):
-                file_name_scratch = os.path.join(self.scratch_dir,os.path.basename(file_name_scr))
-                self.copy_file(file_name, file_name_scratch)
+                # first check whether we may be dealing with an archive
+                if not ".tar.gz" in file_name:
+                   file_name_scratch = os.path.join(self.scratch_dir,os.path.basename(file_name_scr))
+                   self.copy_file(file_name, file_name_scratch)
+                else:
+                   dir_name_scratch = os.path.join(self.scratch_dir,file_name.replace('.tar.gz',''))
+                   shutil.unpack_archive(file_name,dir_name_scratch)
+            elif ".h5" in file_name: # a missing .h5 file could be replacable by a fallback file
+                alt_file_name = file_name.replace('.h5','.noh5.tar.gz')
+                if os.path.isfile(alt_file_name):
+                   dir_name_scratch = os.path.join(self.scratch_dir,alt_file_name.replace('.tar.gz',''))
+                   shutil.unpack_archive(alt_file_name,dir_name_scratch)
             else:
                 if self.expert_mode:
                     
@@ -1366,6 +1376,9 @@ Options are also read from ~/.diracrc"""
                     f2 = p.split('=')[1]
                     copy_single_file(f1, f2)
                 else:
+                    # check whether fallback option is active in tests
+                    if (len(glob.glob(p)) == 0):
+                       p = p.replace(".h5",".noh5.tar.gz")
                     for f in glob.glob(p):
                         copy_single_file(f, f)
 

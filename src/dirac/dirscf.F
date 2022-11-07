@@ -5410,7 +5410,17 @@ C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
         IF (MBAS == 0) CYCLE
 C.......Read atomic coefficients in C1 format
-        INQUIRE(FILE=ATOMFIL(IATOM),EXIST=TOBE)         
+        atomfile%name = ATOMFIL(IATOM)
+        atomfile%status = 0
+        atomfile%type = 2
+        call lab_query (atomfile,
+     &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
+        IF (.NOT.TOBE) THEN
+           ! Could be that we need the fallback option
+           call toggle_fallback(atomfile)
+           call lab_query (atomfile,
+     &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
+        ENDIF
         IF(.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,A6,A)') 
      &     'ATOMIC_START: Atomic coefficient file ',ATOMFIL(IATOM),
@@ -5418,9 +5428,6 @@ C.......Read atomic coefficients in C1 format
            CALL QUIT
      &     ('ATOMIC_START: Atomic coefficient file not found !')
         ENDIF
-        atomfile%name = ATOMFIL(IATOM)
-        atomfile%status = 0
-        atomfile%type = 2
         call lab_read(atomfile,'/result/wavefunctions/scf/mobasis/n_mo',
      &                idata=n_mo)
         call lab_read(atomfile,'/result/wavefunctions/scf/mobasis/n_po',
@@ -5434,7 +5441,7 @@ C.......Read atomic coefficients in C1 format
         npos = sum(n_mo) - nneg
         nbas = sum(n_basis)
         nsym = 1 ! We read the C1 coefficients
-        text = 'Coefficients read from hdf5 file'
+        text = 'Coefficients read from file: '//atomfile%name
         IF(NBAS.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
      &     'ATOMIC_START: ',
@@ -5446,7 +5453,7 @@ C.......Read atomic coefficients in C1 format
         ENDIF
         IF(IPRINT.GE.1) THEN
           WRITE(LUPRI,*) NAMN(ICENT),ATOMFIL(IATOM)
-          WRITE(LUPRI,*) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
+          WRITE(LUPRI,*) trim(TEXT),NSYM,NNEG,NPOS,NBAS,TOTERG
         ENDIF
         NAORB   = NNEG+NPOS
         NACMO   = NBAS*NAORB
