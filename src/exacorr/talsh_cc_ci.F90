@@ -100,15 +100,15 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     ! prop_tens(26,11,2,1) = complex(0.03765773,0.0) 
 
 
-    call print_tensor(Interm_t_tensors(3)%epsilon_prop_vo,1.0d-10,"vo part of epison_prop3_after")
-    call print_tensor(Interm_t_tensors(3)%epsilon_prop_vvoo,1.0d-10,"T2 part of epison_prop3_after")
-    print *, "Norm^2 of Interm_t_tensors(3)%epsilon_prop_vo",  tensor_norm2(Interm_t_tensors(3)%epsilon_prop_vo)
-    print *, "Norm^2 of Interm_t_tensors(3)%epsilon_prop_vo",  tensor_norm2(Interm_t_tensors(3)%epsilon_prop_vvoo)
+    ! call print_tensor(Interm_t_tensors(3)%epsilon_prop_vo,1.0d-10,"vo part of epison_prop3_after")
+    ! call print_tensor(Interm_t_tensors(3)%epsilon_prop_vvoo,1.0d-10,"T2 part of epison_prop3_after")
+    ! print *, "Norm^2 of Interm_t_tensors(3)%epsilon_prop_vo",  tensor_norm2(Interm_t_tensors(3)%epsilon_prop_vo)
+    ! print *, "Norm^2 of Interm_t_tensors(3)%epsilon_prop_vo",  tensor_norm2(Interm_t_tensors(3)%epsilon_prop_vvoo)
 
-    call print_tensor(Interm_t_tensors(3)%eta_prop_ov,1.0d-10,"vo part of eta_prop3_after")
-    call print_tensor(Interm_t_tensors(3)%eta_prop_oovv,1.0d-10,"T2 part of eta_prop3_after")
-    print *, "Norm^2 of Interm_t_tensors(3)%eta_prop_ov",  tensor_norm2(Interm_t_tensors(3)%eta_prop_ov)
-    print *, "Norm^2 of Interm_t_tensors(3)%eta_prop_oovv",  tensor_norm2(Interm_t_tensors(3)%eta_prop_oovv)
+    ! call print_tensor(Interm_t_tensors(3)%eta_prop_ov,1.0d-10,"vo part of eta_prop3_after")
+    ! call print_tensor(Interm_t_tensors(3)%eta_prop_oovv,1.0d-10,"T2 part of eta_prop3_after")
+    ! print *, "Norm^2 of Interm_t_tensors(3)%eta_prop_ov",  tensor_norm2(Interm_t_tensors(3)%eta_prop_ov)
+    ! print *, "Norm^2 of Interm_t_tensors(3)%eta_prop_oovv",  tensor_norm2(Interm_t_tensors(3)%eta_prop_oovv)
 
     ! call print_tensor(Interm_t_tensors(3)%eta_prop_ov,1.0d-10,"vo part of eta_prop3_after")
     ! call print_tensor(Interm_t_tensors(3)%eta_prop_oovv,1.0d-10,"T2 part of eta_prop3_after")
@@ -129,10 +129,10 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     ! call print_tensor(Tprop_tensors(1)%t2,1.0d-10,"T2 part of T_prop1")
 
 
-    call print_tensor(Tprop_tensors(3)%t1,1.0d-10,"T1 part of T_prop3")
-    call print_tensor(Tprop_tensors(3)%t2,1.0d-10,"T2 part of T_prop3")
-    print *, "Norm^2 of Tprop_tensors(3)%t1",  tensor_norm2(Tprop_tensors(3)%t1)
-    print *, "Norm^2 of Tprop_tensors(3)%t2",  tensor_norm2(Tprop_tensors(3)%t2)
+    ! call print_tensor(Tprop_tensors(3)%t1,1.0d-10,"T1 part of T_prop3")
+    ! call print_tensor(Tprop_tensors(3)%t2,1.0d-10,"T2 part of T_prop3")
+    ! print *, "Norm^2 of Tprop_tensors(3)%t1",  tensor_norm2(Tprop_tensors(3)%t1)
+    ! print *, "Norm^2 of Tprop_tensors(3)%t2",  tensor_norm2(Tprop_tensors(3)%t2)
 
 
     if (rr==1) then 

@@ -90,10 +90,10 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
                         interm_t,int_t,nocc,nvir)
                 call print_date("Finish CC-CC tF terms")
 
-                call print_tensor(B1%t1,1.0d-10,"T1 part of tF")
-                call print_tensor(B1%t2,1.0d-10,"T2 part of tF")
-                print *, "Norm^2 of tF%t1",  tensor_norm2(B1%t1)
-                print *, "Norm^2 of tF%t2",  tensor_norm2(B1%t2)
+                ! call print_tensor(B1%t1,1.0d-10,"T1 part of tF")
+                ! call print_tensor(B1%t2,1.0d-10,"T2 part of tF")
+                ! print *, "Norm^2 of tF%t1",  tensor_norm2(B1%t1)
+                ! print *, "Norm^2 of tF%t2",  tensor_norm2(B1%t2)
 
             end if 
 
@@ -209,12 +209,12 @@ if (CC_CC) then
     ierr=talsh_tensor_contract("E()+=B(i,a)*Ty(a,i)",& 
             result_tensor,B%t1,tprop_tensor2%t1,scale=ONE_HALF)
     term1=result_tens(1)
-    print *, "term1 single contribution:  ", term1
+    ! print *, "term1 single contribution:  ", term1
     ierr=talsh_tensor_contract("E()+=B(i,j,a,b)*Ty(a,b,i,j)", &
             result_tensor,B%t2,tprop_tensor2%t2,scale=ONE_EIGHTH_C)
     term1=result_tens(1)
 !     call print_tensor(l1_tensor, 1.0d-10, "l1_tensor")
-    print *, "term1   total:  ", term1
+    ! print *, "term1   total:  ", term1
 
     term2 = complex(0.0,0.0)
 
@@ -233,7 +233,7 @@ else
 
     term1=result_tens(1)
 !     call print_tensor(l1_tensor, 1.0d-10, "l1_tensor")
-    print *, "term1 total:  ", term1
+    ! print *, "term1 total:  ", term1
 
 
 !--------------------------------------------------------------------------------------
@@ -246,7 +246,7 @@ else
                 result_tensor,tprop_tensor2%t2,interm_t%eta_oovv,scale=ONE_QUARTER_C)
     ! print*, "ierr tY(mu)*eta(mu)  double", ierr
     term2=result_tens(1)
-    print *, "term2:  ", term2
+    ! print *, "term2:  ", term2
 
 end if
 
@@ -257,7 +257,7 @@ end if
     ierr=talsh_tensor_contract("E()+=nX(i,j,a,b)*Ty(a,b,i,j)",result_tensor,interm_t_prop1%eta_prop_oovv, &
                             tprop_tensor2%t2,scale=ONE_QUARTER_C)
     term3=result_tens(1)
-    print *, "term3:  ", term3
+    ! print *, "term3:  ", term3
 
 
 ! else
@@ -314,7 +314,7 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
     integer(C_INT)              :: one_dims(1)
 
     integer(INTD)                   :: ierr
-    logical :: debug_local = .true.
+    logical :: debug_local = .false.
     
 
 

@@ -2529,8 +2529,13 @@ contains
 
         write(davidson_output_file_unit, *) "Final size of reduced subspace : ",workspace_t%L
         write(davidson_output_file_unit, *), "*****************EOM-CC Eigenvalules******************"
-        call print_values_vectors(davidson_output_file_unit,e_small, c_small_r, c_small_l, &
-        .false.,.false., nroots)
+        
+        if (davidson_solve_linear_system) then 
+            write(davidson_output_file_unit, *) "No Eigenvales since Solving linear systems"
+        else 
+            call print_values_vectors(davidson_output_file_unit,e_small, c_small_r, c_small_l, &
+                .false.,.false., nroots)
+        end if 
         write(davidson_output_file_unit, *), "******************************************************"
 
         
