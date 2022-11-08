@@ -1924,7 +1924,6 @@ Options are also read from ~/.diracrc"""
                         else:
                             print('  Incomplete hdf5 checkpoint file was constructed')
                         write_hdf5(os.path.join(self.input_directory, self.output_name+'.h5'),data)
-                        write_hdf5(chpfile,data)
                     else:
                         print('  Could not construct hdf5 checkpoint file')
                 except:
