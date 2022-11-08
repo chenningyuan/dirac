@@ -915,6 +915,10 @@ module exacorr_tensor_methods
         complex(8),pointer     :: tens4(:,:,:,:)
         complex(8),pointer     :: tens5(:,:,:,:,:)
         complex(8),pointer     :: tens6(:,:,:,:,:,:)
+        complex(8),pointer     :: tens7(:,:,:,:,:,:,:)
+        complex(8),pointer     :: tens8(:,:,:,:,:,:,:,:)
+        complex(8),pointer     :: tens9(:,:,:,:,:,:,:,:,:)
+        complex(8),pointer     :: tens10(:,:,:,:,:,:,:,:,:,:)
 
         ierr=0
 
@@ -1014,6 +1018,34 @@ module exacorr_tensor_methods
           call c_f_pointer(tens_body,tens6,tens_dims(1:rank))
           if(mode.eq.3) then
             tens6=ZERO
+          else 
+            call quit('Error: wrong mode in set zero')
+          end if
+        case (7)
+          call c_f_pointer(tens_body,tens7,tens_dims(1:rank))
+          if(mode.eq.3) then
+            tens7=ZERO
+          else 
+            call quit('Error: wrong mode in set zero')
+          end if
+        case (8)
+          call c_f_pointer(tens_body,tens8,tens_dims(1:rank))
+          if(mode.eq.3) then
+            tens8=ZERO
+          else 
+            call quit('Error: wrong mode in set zero')
+          end if
+        case (9)
+          call c_f_pointer(tens_body,tens9,tens_dims(1:rank))
+          if(mode.eq.3) then
+            tens9=ZERO
+          else 
+            call quit('Error: wrong mode in set zero')
+          end if
+        case (10)
+          call c_f_pointer(tens_body,tens10,tens_dims(1:rank))
+          if(mode.eq.3) then
+            tens10=ZERO
           else 
             call quit('Error: wrong mode in set zero')
           end if
