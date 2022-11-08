@@ -2577,12 +2577,6 @@ C.....loop over fragments
         call lab_query (fragfile,
      &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
         IF (.NOT.TOBE) THEN
-           ! Could be that we need the fallback option
-           call toggle_fallback(fragfile)
-           call lab_query (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
-        ENDIF
-        IF (.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,I2,A,I2,A,A6,A)') 
      &     'Fragment coefficient file no. ',
      &     IFRAG,'/',NFRAG,' named ',FRAGFIL(IFRAG),' not present'
@@ -2590,13 +2584,13 @@ C.....loop over fragments
         ENDIF
 C
         IF(LBIT(IOPT,1)) THEN
-          WRITE(LUPRI,'(A,A6)') 
-     &       '* SELFRAG: Coefficients from file: ',FRAGFIL(IFRAG)
+          WRITE(LUPRI,'(A,A)') 
+     &       '* SELFRAG: Coefficients from file: ',fragfile%name
         ENDIF
 C.......Fragment orbitals in own basis
         IF(OWNBAS) THEN
           CALL SELOWN(IOPT,CMO,EIG,IBEIG,
-     &                INUC,NUCFRAG(IFRAG),LUCOEF,FRAGFIL(IFRAG),
+     &                INUC,NUCFRAG(IFRAG),LUCOEF,fragfile,
      &                CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC(1,IFRAG),
      &                NSTR(1,0,IFRAG),WORK)
 C.......Fragment orbitals in molecular basis
@@ -3314,14 +3308,6 @@ C
 C
       IPRINT = IPRGEN
 C
-C     First check if file DFACMO is there
-C
-      INQUIRE(FILE='DFACMO',EXIST=TOBE)
-      IF(.NOT.TOBE) THEN
-          WRITE(LUPRI,'(A)') 
-     &      'Checkpoint file DFACMO not found !'
-          CALL QUIT('ACMOIN: DFACMO not found !')
-      ENDIF
 C     Allocate arrays
       allocate(CMO1(N2BBASX*4))
       allocate(CMO2(N2BBASX*4))
@@ -3335,7 +3321,7 @@ C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
 C
       dfacmo%type = 2
-      dfacmo%name = 'DFACMO'
+      dfacmo%name = 'DFACMO.h5'
       dfacmo%status = -1
       call lab_read (dfacmo,
      & '/result/wavefunctions/scf/energy',toterg)

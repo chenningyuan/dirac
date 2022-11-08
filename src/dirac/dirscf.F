@@ -5415,12 +5415,6 @@ C.......Read atomic coefficients in C1 format
         atomfile%type = 2
         call lab_query (atomfile,
      &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
-        IF (.NOT.TOBE) THEN
-           ! Could be that we need the fallback option
-           call toggle_fallback(atomfile)
-           call lab_query (atomfile,
-     &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
-        ENDIF
         IF(.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,A6,A)') 
      &     'ATOMIC_START: Atomic coefficient file ',ATOMFIL(IATOM),

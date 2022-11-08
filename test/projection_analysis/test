@@ -20,22 +20,25 @@ f.add(from_string = '* Total gross contributions',
       num_lines   = 7,
       rel_tolerance   = 1.0e-4)
 
-test.run(['H.inp'], ['H.mol'])
-test.run(['C.inp'], ['C.mol'])
+test.run(['H.inp'], ['H.mol'],args='--outcmo')
+if os.path.isfile('CHECKPOINT.h5'):
+    ext = '.h5'
+elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
+    ext = '.noh5.tar.gz'
+shutil.move('CHECKPOINT'+ext, 'H'+ext)
 
-test.run(['CH4.inp'], ['CH4.xyz'], f, args='--outcmo --put="H_H.h5=H.h5 C_C.h5=C.h5"')
-shutil.copy('CHECKPOINT.h5','DFACMO')
+test.run(['C.inp'], ['C.mol'],args='--outcmo')
+shutil.move('CHECKPOINT'+ext, 'C'+ext)
+
+test.run(['CH4.inp'], ['CH4.xyz'], f, args='--outcmo --put="H.h5 C.h5"')
+shutil.copy('CHECKPOINT'+ext, 'DFACMO'+ext)
 
 f = Filter()
 f.add(from_string = '* Total gross contributions',
       num_lines   = 7,
       rel_tolerance   = 1.0e-4)
 
-test.run(['CH4_repolar.inp'], ['CH4.xyz'], f, args='--incmo --put="H_H.h5=H.h5 C_C.h5=C.h5"')
-test.run(['CH4_C1.inp'], ['CH4.xyz'], f, args='--put="DFACMO H_H.h5=H.h5 C_C.h5=C.h5"')
-
-# cleanup
-os.unlink('CHECKPOINT.h5')
-os.unlink('DFACMO')
+test.run(['CH4_repolar.inp'], ['CH4.xyz'], f, args='--incmo --put="H.h5 C.h5"')
+test.run(['CH4_C1.inp'], ['CH4.xyz'], f, args='--put="DFACMO.h5 H.h5 C.h5"')
 
 sys.exit(test.return_code)

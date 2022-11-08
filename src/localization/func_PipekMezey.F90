@@ -1058,6 +1058,7 @@ contains
 !     Modify by S. Dubillard - Apr 21 2004
 !
 !***********************************************************************
+      use labeled_storage
       IMPLICIT NONE
 
       ! Global variables
@@ -1090,6 +1091,7 @@ contains
       TYPE(PTR2ARRAY), ALLOCATABLE :: KVEC(:,:)
       integer :: kvec_offset(2) 
       ! LV, introduced to be able to call standard selown and remove code duplication
+      type(file_info_t) :: reffile
 
   !------------------------------------------------------------------------------!
       IFRP   = 1
@@ -1149,14 +1151,12 @@ contains
       IOFF(1) = 0
       VAR%IPRPRJ = 4
       DO I = 1,NREFS
-        INQUIRE(FILE=REFFIL(I),EXIST=TOBE)
-        IF (.NOT.TOBE) THEN
-          WRITE(LUPRI,'(A,A6,A)') 'Reference coefficient file ',REFFIL(I),' not present'
-          CALL QUIT('PRJANA: No reference coefficients !')
-        ENDIF
         IF(VAR%OWNBAS)THEN
+          reffile%type = 2
+          reffile%name = REFFIL(I)
+          reffile%status = -1
           CALL SELOWN(2,CMO,DDUMARR,IDUMARR,               &
-               I,1,VAR%LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
+               I,1,VAR%LUCOEF,reffile,RCOEF,DDUMARR,IDUMARR, &
                NVECS(1,1),IOFF,kvec_offset,                 &
                NSTR(1,0,I),KVEC(IFRP,I)%P)
           IF(PM%IPRLOC.GE.5)THEN

@@ -16,11 +16,15 @@ f.add(from_string = ' TOTAL ENERGY',
 
 test.run(['atoms.inp'], ['atoms.xyz'],
                  args='--replace closed_occ="4" --replace open_e="5" --replace open_orb="6" --replace myatom="F" --outcmo')
-shutil.copy('CHECKPOINT.h5', 'X2CMAT_009.h5')
+if os.path.isfile('CHECKPOINT.h5'):
+    ext = '.h5'
+elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
+    ext = '.noh5.tar.gz'
+shutil.move('CHECKPOINT'+ext, 'X2CMAT_009'+ext)
 
 test.run(['atoms.inp'], ['atoms.xyz'],
                  args='--replace closed_occ="12" --replace open_e="4" --replace open_orb="6" --replace myatom="S" --outcmo')
-shutil.copy('CHECKPOINT.h5', 'X2CMAT_016.h5')
+shutil.move('CHECKPOINT'+ext, 'X2CMAT_016'+ext)
 
 test.run(['large-molecular-x2c-spinfree.inp', 'large-molecular-x2c-spinfree-end.inp', 'large-molecular-x2c-spinfree-beg.inp'],
                  ['sf6.xyz'], f)
@@ -29,8 +33,7 @@ test.run(['large-atomic-x2c-spinfree.inp'],
                  ['sf6.xyz'], f, args='--put="X2CMAT_009.h5 X2CMAT_016.h5"')
 
 # cleanup
-os.unlink('CHECKPOINT.h5')
-os.unlink('X2CMAT_016.h5')
-os.unlink('X2CMAT_009.h5')
+os.unlink('X2CMAT_016'+ext)
+os.unlink('X2CMAT_009'+ext)
 
 sys.exit(test.return_code)

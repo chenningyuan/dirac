@@ -1567,7 +1567,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selown */
-      SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,CMOFIL,
+      SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,fragfile,
      &                  CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR,
      &                  WORK)
 C***********************************************************************
@@ -1606,7 +1606,7 @@ C
      &          CSEL(*),ESEL(*),IBSEL(*),IOFF(2),WORK(*)
 C     Local variables
       LOGICAL LBIT,FNDLAB
-      CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
+      CHARACTER TEXT*74,FMT*6,MXFORM*6
       DIMENSION IDIM(3,2),JDIM(2,0:3)
       REAL*8 CMCSCF_MAGIC
       integer, allocatable :: jbas(:)
@@ -1625,9 +1625,6 @@ C
 C     Read dimension information
 C     ==========================
 C
-      fragfile%type = 2
-      fragfile%name = CMOFIL
-      fragfile%status = 0
       call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/nz',
      & idata=nzbuf)
       call lab_read (fragfile,
@@ -1654,7 +1651,7 @@ C
          idim(2,:) = n_mo(:)
          idim(3,:) = n_basis(:)
       end if
-      text = 'Fragment MO coefficient file used: '//CMOFIL
+      text = 'Fragment MO coefficient file used: '//fragfile%name
 !
 !     set local IOPT_TMP
       IOPT_TMP = IOPT
@@ -1669,7 +1666,7 @@ C
       IF(LBIT(IOPT_TMP,1)) THEN
         FMT = MXFORM(TOTERG,20)
         WRITE(LUPRI,'(/A,A6,3X,A,'//FMT//')')
-     &   'SELOWN: Coefficients read from file ',CMOFIL,
+     &   'SELOWN: Coefficients read from file ',fragfile%name,
      &   '- Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
         WRITE(LUPRI, '(2A, I8)') '- number of symmetry independent',  

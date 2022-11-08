@@ -17,9 +17,16 @@ f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
       rel_tolerance   = 1.0e-5)
 
-test.run(['H.inp'], ['H.xyz'])
-test.run(['B.inp'], ['B.xyz'])
+test.run(['H.inp'], ['H.xyz'], args='--outcmo')
+if os.path.isfile('CHECKPOINT.h5'):
+    ext = '.h5'
+elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
+    ext = '.noh5.tar.gz'
+shutil.move('CHECKPOINT'+ext, 'H'+ext)
 
-test.run(['HF.inp'], ['BH3.xyz'], f, args='--put="H_H.h5=H.h5 B_B.h5=B.h5"')
+test.run(['B.inp'], ['B.xyz'], args='--outcmo')
+shutil.move('CHECKPOINT'+ext, 'B'+ext)
+
+test.run(['HF.inp'], ['BH3.xyz'], f, args='--put="H.h5 B.h5"')
 
 sys.exit(test.return_code)

@@ -4284,7 +4284,6 @@ C
      &          NAO(MAXREF),WORK(*),IDIM(3)
       DIMENSION IOFF(2)
       CHARACTER TEXT*74
-      LOGICAL FNDLAB
       integer :: n_mo(2),n_po(2),n_basis(2)
       type(file_info_t) :: fragfile
 C
@@ -4306,14 +4305,15 @@ C.........Find the total number of basis functions for this atom type
           fragfile%type = 2
           fragfile%name = trim(REFFIL(IREFS))
           fragfile%status = -1
-       ! stupid 72 column rule of ancient fortran...
-       call lab_read (fragfile,
-     & '/result/wavefunctions/scf/mobasis/n_basis',
-     & idata=n_basis)
-       call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/n_mo',
-     & idata=n_mo)
-       call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/n_po',
-     & idata=n_po)
+          call lab_read (fragfile,
+     &    '/result/wavefunctions/scf/mobasis/n_basis',
+     &    idata=n_basis)
+          call lab_read (fragfile,
+     &    '/result/wavefunctions/scf/mobasis/n_mo',
+     &    idata=n_mo)
+          call lab_read (fragfile,
+     &    '/result/wavefunctions/scf/mobasis/n_po',
+     &    idata=n_po)
           fragfile%status = 0
           nao(irefs) = sum(n_basis)
           nstr(1,2,irefs) = sum(n_po)

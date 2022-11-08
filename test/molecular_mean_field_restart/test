@@ -24,7 +24,6 @@ f.add(from_string = 'SCF energy :',
 test.run(['res.inp'], ['f2.xyz'], f, args='--put="AOMOMAT X2CMAT"  --incmo')
 
 os.unlink('X2CMAT')
-os.unlink('CHECKPOINT.h5')
 os.unlink('AOMOMAT')
 
 sys.exit(test.return_code)

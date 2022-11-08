@@ -15,7 +15,6 @@ module labeled_storage
   public lab_write
   public lab_query
   public group_from_label
-  public toggle_fallback
 
 ! Define type to hold information for an active file
   type, public:: file_info_t
@@ -457,6 +456,28 @@ module labeled_storage
       integer :: ierr, data_size
       integer(kind=8), allocatable :: i8buf(:)
 
+      !  check first whether we can actually use mh5
+      inquire (file=file_info%name,exist=exist)
+      if (.not.mh5_is_available().or..not.exist) then
+         ! check whether the fallback can be used instead
+         call toggle_fallback(file_info)
+         call query_nohdf5 (file_info,'/result/execution/status',exist)
+         if (.not.exist) then
+           ! can not be used, toggle back and stop
+           call toggle_fallback(file_info)
+           write (*,*) " ERROR: trying to read non-existent data set ",trim(label)," from ",trim(file_info%name)
+           stop ' error detected by read_hdf5 '
+         end if
+         if (present(rdata)) then
+            call read_nohdf5(file_info,label,rdata=rdata)
+         elseif (present(idata)) then
+            call read_nohdf5(file_info,label,idata=idata)
+         elseif (present(sdata)) then
+            call read_nohdf5(file_info,label,sdata=sdata)
+         end if
+         return
+      end if
+
       if (file_info%status == 0) then
          file_info%id = mh5_open_file_rw(file_info%name)
          file_info%status = 1
@@ -575,9 +596,23 @@ module labeled_storage
       integer,intent(out), optional          :: data_size
       character*(:),allocatable              :: group
 
+      !  check first whether we can actually use mh5
+      inquire (file=file_info%name,exist=exist)
+      if (.not.mh5_is_available().or..not.exist) then
+         call toggle_fallback(file_info)
+         if (present(data_size)) then
+            call query_nohdf5(file_info,label,exist,data_size)
+         else
+            call query_nohdf5(file_info,label,exist)
+         end if
+         ! restore original state and go back
+         call toggle_fallback(file_info)
+         return
+      end if
+
       if (file_info%status == -1) then
          ! unknown file, check whether it exists and do not open (and create) if it does not
-          inquire(file=file_info%name,exist=exist)
+         inquire(file=file_info%name,exist=exist)
          if (.not.exist) return
       end if
 

@@ -17,8 +17,16 @@ f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
       rel_tolerance   = 1.0e-5)
 
-test.run(['F.x2c.scf.sto2g.inp'], ['F.xyz'], f)
-test.run(['P.x2c.scf.sto2g.inp'], ['P.xyz'], f)
+test.run(['F.x2c.scf.sto2g.inp'], ['F.xyz'], f, args='--outcmo')
+if os.path.isfile('CHECKPOINT.h5'):
+    ext = '.h5'
+elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
+    ext = '.noh5.tar.gz'
+shutil.move('CHECKPOINT'+ext, 'F'+ext)
+
+test.run(['P.x2c.scf.sto2g.inp'], ['P.xyz'], f, args='--outcmo')
+shutil.move('CHECKPOINT'+ext, 'P'+ext)
+
 test.run(['PF5.x2c.scf.sto2g.inp'], ['PF5.xyz'], f, args='--put="DFPCMO.PF5_x2c_scf_sto2g_xyz=DFPCMO" --outcmo')
 
 f = Filter()
@@ -26,9 +34,6 @@ f.add(from_string = '* Total gross contributions',
       num_lines   = 7,
       rel_tolerance   = 1.0e-4)
 
-test.run(['PF5.x2c.projanal.sto2g.inp'], ['PF5.xyz'], f, args='--incmo --copy="P.x2c.scf.sto2g_P.h5=P.h5 F.x2c.scf.sto2g_F.h5=F.h5" ')
-
-# cleanup
-os.unlink('CHECKPOINT.h5')
+test.run(['PF5.x2c.projanal.sto2g.inp'], ['PF5.xyz'], f, args='--incmo --copy="P.h5 F.h5" ')
 
 sys.exit(test.return_code)

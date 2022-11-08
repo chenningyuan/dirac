@@ -33,7 +33,6 @@ f.add(from_string = ' Overview of calculated energies',
 test.run(['ccsd_restart_othergeo.inp'], ['H2O_2.mol'], f, args='--mw=64 --aw=130 --put=MCCRES --incmo')
 
 # cleanup
-os.unlink('CHECKPOINT.h5')
 os.unlink('MCCRES')
 
 sys.exit(test.return_code)
