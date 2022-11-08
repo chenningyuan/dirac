@@ -1149,7 +1149,7 @@ contains
 ! aspg, added from (q)rsp
         complex(kind=8), pointer, contiguous, optional, intent(in) :: C_subspace(:)
 ! aspg, added from (q)rsp
-        complex(kind=8) :: factor1, factor2
+        complex(kind=8) :: factor1, factor2, factor3
         integer(INTD) :: r1_rank 
         integer :: ierr, i
         logical :: debug_form_r = .false.
@@ -1177,7 +1177,8 @@ contains
            factor1 =  eigenvectors_subspace(i,k)
            factor2 = -eigenvalues_subspace(k)*factor1
 ! aspg, added from (q)rsp
-           if (present(C_subspace)) factor2 = -C_subspace(i)
+        !    if (present(C_subspace)) factor2 = -C_subspace(i)
+           if (present(C_subspace)) factor3 = -C_subspace(i)
 ! aspg, added from (q)rsp
 
            if (debug_form_r) write(6,*) 'c(',i,',',k,')',factor1,'lambda*c',factor2
@@ -1198,6 +1199,11 @@ contains
               ierr=talsh_tensor_add("r(a,b)+=t(a,b)",workspace_t%delta1(k),workspace_t%trial1(i),scale=factor2)
               ierr=talsh_tensor_add("r(a,b,c,d)+=s(a,b,c,d)",workspace_t%delta2(k),workspace_t%sigma2(i),scale=factor1)
               ierr=talsh_tensor_add("r(a,b,c,d)+=t(a,b,c,d)",workspace_t%delta2(k),workspace_t%trial2(i),scale=factor2)
+
+              if (present(C_subspace)) then
+                ierr=talsh_tensor_add("r(a,b)+=t(a,b)",workspace_t%delta1(k),workspace_t%trial1(i),scale=factor3)
+                ierr=talsh_tensor_add("r(a,b,c,d)+=t(a,b,c,d)",workspace_t%delta2(k),workspace_t%trial2(i),scale=factor3)
+              end if 
 
            end if
 
@@ -2198,10 +2204,11 @@ contains
    end subroutine
 ! aspg, added from (q)rsp
 
-   subroutine create_subspace_matrix(M_small,workspace_t,right,left)
+   subroutine create_subspace_matrix(M_small,workspace_t,right,left,frequency)
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t ! here we will keep the M(Lmax,Lmax)
       complex(kind=8), pointer, contiguous, intent(inout) :: M_small(:,:)    ! this will be a copy of M, M_small(L,L)
       logical, intent(in) :: right, left
+      complex(kind=8), intent(in), optional :: frequency  
 
       integer :: mij_dims(2), mij_rank
       integer(INTD)      :: one_dims(1)
@@ -2280,6 +2287,13 @@ contains
             end if
 
             if (debug_subspace_matrix) write (6,*) 'i,j, m_ij:', i,j, mij_result_tens(1)
+
+            if (present(frequency)) then 
+                if (i==j) then 
+                    mij_result_tens(1) =mij_result_tens(1) - frequency
+                end if 
+            end if
+
             workspace_t%M(i,j) = mij_result_tens(1) 
             mij_result_tens(1) = ZERO
          end do
@@ -2448,7 +2462,7 @@ contains
 !           call apply_projector(workspace_t%L, projector_t, workspace_t%trial1,  workspace_t%trial2)
             call create_sigma(workspace_t,int_t,interm_t,davidson_solve_rhs,davidson_solve_lhs)
 !           call apply_projector(workspace_t%L, projector_t, workspace_t%sigma1,  workspace_t%sigma2)
-            call create_subspace_matrix(M_small,workspace_t,davidson_solve_rhs,davidson_solve_lhs)
+            call create_subspace_matrix(M_small,workspace_t,davidson_solve_rhs,davidson_solve_lhs,frequency_local)
 
 ! aspg, added from (q)rsp
             if (davidson_solve_linear_system) then
@@ -2529,7 +2543,7 @@ contains
 
         write(davidson_output_file_unit, *) "Final size of reduced subspace : ",workspace_t%L
         write(davidson_output_file_unit, *), "*****************EOM-CC Eigenvalules******************"
-        
+
         if (davidson_solve_linear_system) then 
             write(davidson_output_file_unit, *) "No Eigenvales since Solving linear systems"
         else 

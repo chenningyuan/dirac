@@ -1109,6 +1109,7 @@
       if (kw_matches(word, '.CCCILR')) then
          exa_input%eom_lr =.true.
          call kw_read(word, exa_input%N_eom_trail)
+         call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
       end if
 
       ! if (kw_matches(word, '.CCCIQR')) then

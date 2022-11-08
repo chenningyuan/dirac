@@ -28,7 +28,7 @@ module talsh_eom_LR
 !-----------------------------------------------------------------------------------------------------------------
 
 subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
-                tprop_tensor1, tprop_tensor2, &
+                tprop_tensor1, tprop_tensor2, tprop_tensor1_minus_fre, tprop_tensor2_minus_fre, &
                 l1_tensor,l2_tensor, eom_lr)
 !This subroutine drives the CC-CI linear response property calculation
     !   Written by Xiang Yuan Janunary 2022, Lille, France
@@ -42,13 +42,16 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             type(talsh_tens_t), intent(inout)           :: l1_tensor
             type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2
             type(talsh_comm_tens_t)            :: tprop_tensor1, tprop_tensor2
+            type(talsh_comm_tens_t)            :: tprop_tensor1_minus_fre, tprop_tensor2_minus_fre
 
 
             type(talsh_comm_tens_t)            :: B1, B2   !Ft^x
+            type(talsh_comm_tens_t)            :: B1_minus_fre, B2_minus_fre   !Ft^x
             integer            :: nocc, nvir
             integer(INTD), dimension(4)   :: vvoo_dims
             integer(INTD), dimension(2)   :: vo_dims
             type(talsh_comm_tens_t)       :: sigma_prop_tensor12, sigma_prop_tensor21
+            type(talsh_comm_tens_t)       :: sigma_prop_tensor12_minus_fre, sigma_prop_tensor21_minus_fre
             complex(kind=8)               :: quarsp, quarsp_con
 
             integer                       :: ierr
@@ -88,6 +91,10 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
                         interm_t,int_t,nocc,nvir)
                 call get_tF(B2%t1,B2%t2,tprop_tensor2%t1,tprop_tensor2%t2,l1_tensor,l2_tensor,&
                         interm_t,int_t,nocc,nvir)
+                call get_tF(B1_minus_fre%t1,B1_minus_fre%t2,tprop_tensor1_minus_fre%t1,tprop_tensor1_minus_fre%t2,& 
+                        l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
+                call get_tF(B2_minus_fre%t1,B2_minus_fre%t2,tprop_tensor2_minus_fre%t1,tprop_tensor2_minus_fre%t2,& 
+                        l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
                 call print_date("Finish CC-CC tF terms")
 
                 ! call print_tensor(B1%t1,1.0d-10,"T1 part of tF")
@@ -99,12 +106,20 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
 
 
             call get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
-                    tprop_tensor1, tprop_tensor2, &
+                    tprop_tensor1, tprop_tensor2_minus_fre, &
                     sigma_prop_tensor12, sigma_prop_tensor21,  &
-                    l1_tensor, l2_tensor, quarsp, B1, B2, CC_CC)
+                    l1_tensor, l2_tensor, quarsp, B1, B2_minus_fre, CC_CC)
 
-            quarsp_con=conjg(quarsp)
+
+            call get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
+                    tprop_tensor1_minus_fre, tprop_tensor2, &
+                    sigma_prop_tensor12_minus_fre, sigma_prop_tensor21_minus_fre,  &
+                    l1_tensor, l2_tensor, quarsp_con, B1_minus_fre, B2, CC_CC)
+
+            quarsp_con=conjg(quarsp_con)
             eom_lr=(quarsp+quarsp_con)*0.5
+            print *, "linear response: +w", quarsp
+            print *, "linear response: -w", quarsp_con
             call print_date("Finish CC-CI Linear Response Calculations")
             print *, "CC-CI(EOM-CC) linear response:", eom_lr
 

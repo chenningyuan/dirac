@@ -348,7 +348,7 @@ module intermediates_eom_rsp
       type(talsh_tens_t)            :: LR_Aux_oo,LR_Aux_vv
       integer(INTD), dimension(4)   :: oovv_dims
       integer :: ierr
-      logical :: debug_local = .true.
+      logical :: debug_local = .false.
       integer(C_INT)     :: one_dims(1)
       type(talsh_tens_t) :: uncon_tensor
 

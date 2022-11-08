@@ -51,7 +51,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     type(talsh_comm_tens_t)       :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
     type(talsh_comm_tens_t)       :: bvec_tensor1, bvec_tensor2, bvec_tensor3
     complex(kind=8)               :: eom_qr, eom_lr
-    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:)
+    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_minus_fre(:)
     type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:)
     type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:)
     type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
@@ -65,17 +65,20 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     integer :: ierr
     
     omega1=(0.0,0.0)
+    omega1 = complex(exa_input%w_lr_re, exa_input%w_lr_im)
     omega2=(0.0,0.0)
     omega3=(0.0,0.0)
 
 
     N_prop = 3
     allocate(Tprop_tensors(N_prop))
+    allocate(Tprop_tensors_minus_fre(N_prop))
     allocate(Tprop_bar_tensors(N_prop))
     allocate(Bvec_tensors(N_prop))
     allocate(Interm_t_tensors(N_prop))
 
     call print_date('Enter CC-CI response')
+    print *, "Read frequency:", omega1
 
     do  i=1, N_prop
         call form_eomccsd_qr_intermediates(exa_input, interm_t, i, Interm_t_tensors(i),&
@@ -89,15 +92,6 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     ! ierr=talsh_tensor_dimensions(Interm_t_tensors(3)%epsilon_prop_vvoo,tens_rank,vvoo_dims)
     ! ierr=talsh_tensor_get_body_access(Interm_t_tensors(3)%epsilon_prop_vvoo,body_p,C8,int(0,C_INT),DEV_HOST)
     ! call c_f_pointer(body_p,prop_tens,vvoo_dims)
-
-    ! prop_tens(11,26,1,2) = complex(0.03765773,0.0) 
-    ! prop_tens(11,26,2,1) = complex(-0.03765773,0.0) 
-    ! prop_tens(12,25,1,2) = complex(-0.03765773,0.0) 
-    ! prop_tens(12,25,2,1) = complex(0.03765773,0.0) 
-    ! prop_tens(25,12,1,2) = complex(0.03765773,0.0) 
-    ! prop_tens(25,12,2,1) = complex(-0.03765773,0.0) 
-    ! prop_tens(26,11,1,2) = complex(-0.03765773,0.0) 
-    ! prop_tens(26,11,2,1) = complex(0.03765773,0.0) 
 
 
     ! call print_tensor(Interm_t_tensors(3)%epsilon_prop_vo,1.0d-10,"vo part of epison_prop3_after")
@@ -119,10 +113,9 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     
     do i=1, N_prop
         call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega1, Tprop_tensors(i))
-        print *, "Norm^2 of t_prop_tensor",  tensor_norm2(Tprop_tensors(i)%t1) + tensor_norm2(Tprop_tensors(i)%t2)
+        call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), -omega1, Tprop_tensors_minus_fre(i))
     end do
     call print_date('Solved All CC-CI response right equations')
-
 
 
     ! call print_tensor(Tprop_tensors(1)%t1,1.0d-10,"T1 part of T_prop1")
@@ -140,7 +133,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         do i=1, N_prop
             do j=1, N_prop
                 call get_eom_lr(exa_input,interm_t, int_t, Interm_t_tensors(i), Interm_t_tensors(j), & 
-                Tprop_tensors(i), Tprop_tensors(j), & 
+                Tprop_tensors(i), Tprop_tensors(j), Tprop_tensors_minus_fre(i), Tprop_tensors_minus_fre(j), & 
                     l1_tensor,l2_tensor,eom_lr)
             end do
         end do
@@ -240,8 +233,8 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
                 ! call print_tensor(interm_t_prop1%epsilon_prop_vo, 1.0d-10, "Xi1")
                 ! call print_tensor(interm_t_prop1%epsilon_prop_vvoo, 1.0d-10, "Xi2")
                 
-                print *, "NORM^2 of episilonX",  tensor_norm2(interm_t_prop1%epsilon_prop_vo) + &
-                                                tensor_norm2(interm_t_prop1%epsilon_prop_vvoo)
+                ! print *, "NORM^2 of episilonX",  tensor_norm2(interm_t_prop1%epsilon_prop_vo) + &
+                !                                 tensor_norm2(interm_t_prop1%epsilon_prop_vvoo)
 
 
                 ! get O_prop

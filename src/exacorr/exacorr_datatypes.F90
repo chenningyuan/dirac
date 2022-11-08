@@ -77,6 +77,7 @@
             integer                 :: tripl_block(1:2) = -1    ! for running triples
             integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
             integer                 :: n_laplace = 10           ! number of laplace points to use
+            integer                 :: N_eom_trail              ! number of trial vectors in CC linear response
             
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
             integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
@@ -85,7 +86,9 @@
             real(REALD)             :: level_shift = 0.D0       ! level shift
             real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
             real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
-            real(REALD)             :: N_eom_trail
+            real(REALD)             :: w_lr_re =  0.0            ! real frequency in CC response
+            real(REALD)             :: w_lr_im =  0.0            ! imaginary frequency in CC response
+
 
 ! this just signals we should handle *EOMCC inputs under **EXACC
             logical                 :: eom = .false.
