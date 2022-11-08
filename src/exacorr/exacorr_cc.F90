@@ -4893,6 +4893,7 @@ module exacorr_cc
           end if
 
           if (.not.CCD.and..not.CCSDT.and..not.CCSDTQ.and..not.CCSDTQP) then
+             print *,'calling exatensor_CCSD_codegen'
             call exatensor_CCSD_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
                                     int_t%oovv,         &   ! H24 OOVV 
@@ -4914,6 +4915,7 @@ module exacorr_cc
                                     s1_tensor,          &   ! Z49 VO
                                     s2_tensor)              ! Z50 VVOO
           else if (CCD.and..not.CCSDT.and..not.CCSDTQ.and..not.CCSDTQP) then
+             print *,'calling exatensor_CCD_codegen'
             call exatensor_CCD_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
                                         comm_t%t2,      &   ! S23 
@@ -4927,6 +4929,7 @@ module exacorr_cc
                                         result_t_tensor,  &   ! Z26   unit tensor
                                         s2_tensor)          ! Z27   VVOO
           else if (CCSDT.and..not.CCD.and..not.CCSDTQ.and..not.CCSDTQP) then
+             print *,'calling exatensor_CCSDT_codegen'
              call exatensor_CCSDT_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
                                            int_t%oovv,     &  !  OOVV
@@ -4950,6 +4953,7 @@ module exacorr_cc
                                            s2_tensor,      &  !  VVOO
                                            s3_tensor)         !  VVVOOO
           else if (CCSDTQ.and..not.CCD.and..not.CCSDT.and..not.CCSDTQP) then
+             print *,'calling exatensor_CCSDTQ_codegen'
              call exatensor_CCSDTQ_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
                                            int_t%oovv,     &  !  OOVV
@@ -4976,6 +4980,7 @@ module exacorr_cc
                                            s4_tensor)         !  VVVVOOOO
  
           else if (CCSDTQP.and..not.CCD.and..not.CCSDT.and..not.CCSDTQ) then
+             print *,'calling exatensor_CCSDTQP_codegen'
              call exatensor_CCSDTQP_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
                                            int_t%oovv,     &  !  OOVV
