@@ -67,7 +67,7 @@ module talsh_eom_rspeq_solver
                         solve_linear_sys=.true.,&
                         symmetric=.false., &
                         use_preconditioner=.false.,&
-                        max_subspace_size=nroot,&
+                        ! max_subspace_size=nroot,&
                         complex_mode=.true.)
 
             call print_date("Entering CC-CI Right Linear Systems calculation")

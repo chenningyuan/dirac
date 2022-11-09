@@ -1294,7 +1294,7 @@ contains
 
         unconverged_roots = 0
         ! rank = talsh_tensor_rank(workspace_t%delta1(1))
-        rank = workspace_t%tens1_dims(1)     
+        rank = workspace_t%tens1_dims(1) 
         do k = 1, nroots
            ierr=talsh_tensor_init(workspace_t%delta1(k), ZERO)
            if (debug_correction_vectors) print *,'debug, init workspace_t%delta1(k) to zero, ierr',ierr
@@ -1946,6 +1946,8 @@ contains
               print *, 'INFO: number of roots > dimension of Hbar, resetting it'
            end if
            workspace_t%nroots = min(nroots,excitation_manifold_size)
+           print *, "excitation_manifold_size:", excitation_manifold_size
+           print *, "davidson_max_subspace_size:", davidson_max_subspace_size
            workspace_t%Lmax   = min(davidson_max_subspace_size,excitation_manifold_size)
         end if
         workspace_t%L      = workspace_t%nroots
@@ -2143,8 +2145,12 @@ contains
          write (6,*) 'foobar, workspace_t%Lprev',workspace_t%Lprev
       end if
       do i = workspace_t%Lprev, workspace_t%L
-        ! call print_tensor(workspace_t%trial1(i), 1.0d-10, "trial1")
-        ! call print_tensor(prop_grad1, 1.0d-10, "prop_grad1")
+        if (debug_subspace_matrix) then
+            call print_tensor(workspace_t%trial1(i), 1.0d-18, "trial1")
+            call print_tensor(prop_grad1, 1.0d-18, "prop_grad1")
+            call print_tensor(workspace_t%trial2(i), 1.0d-18, "trial2")
+            call print_tensor(prop_grad2, 1.0d-18, "prop_grad2")
+        end if 
 ! this will be a reduction to a scalar at each contractions, and we then will build the 
          if (workspace_t%N(1).ne.0) then
             if (right.and..not.left) then
