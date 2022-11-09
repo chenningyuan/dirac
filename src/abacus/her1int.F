@@ -1076,7 +1076,7 @@ C
       IF (INTTYP .EQ. 65) JMAXA = JMAXA + 2
       JMAXB  = NHKTB - 1
 
-CMI     for RDSUSLL, wee need to multiply with x_N, y_N, z_N ...
+CMI     for RDSUSLL, we need to multiply with x_N, y_N, z_N ...
       IF (INTTYP .EQ. 206) JMAXB = JMAXB + 1
 
       JMAXT  = JMAXA + JMAXB + JMAXD + JMAXM
@@ -1215,15 +1215,15 @@ C     3) Gauge origin
 C     4) Molecular center of mass
 C     5) Operator center ("molecular" origin)
 C
-         IF ((INTTYP .EQ. 17) .OR. (INTTYP .EQ. 20) .OR.
-     &       (INTTYP .EQ. 22) .OR. (INTTYP .EQ. 26).OR. 
-     &       (INTTYP .EQ. 202).OR. (INTTYP .EQ.205) ) THEN
+         IF ((INTTYP .EQ. 17)  .OR. (INTTYP .EQ. 20) .OR.
+     &       (INTTYP .EQ. 22)  .OR. (INTTYP .EQ. 26) .OR.
+     &       (INTTYP .EQ. 202) .OR. (INTTYP .EQ.205)) THEN
             TEMP(1) = CORBX ! MI:shift the gauge to the right orbital
             TEMP(2) = CORBY
             TEMP(3) = CORBZ
-         ELSE IF ((INTTYP .EQ. 2) .OR. (INTTYP .EQ. 4) .OR.
-     &            (INTTYP .EQ. 6) .OR. (INTTYP .EQ. 7) .OR.
-     &            (INTTYP .EQ. 8) .OR. (INTTYP .EQ. 29) .OR.
+         ELSE IF ((INTTYP .EQ. 2)  .OR. (INTTYP .EQ. 4)  .OR.
+     &            (INTTYP .EQ. 6)  .OR. (INTTYP .EQ. 7)  .OR.
+     &            (INTTYP .EQ. 8)  .OR. (INTTYP .EQ. 29) .OR.
      &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
      &            (INTTYP .EQ. 53) .OR. (INTTYP .EQ. 56) .OR.
      &            (INTTYP .EQ. 57) .OR. (INTTYP .EQ. 58)) THEN
@@ -1252,7 +1252,7 @@ C
                   TEMP(2) = CORD(2,KR)
                   TEMP(3) = CORD(3,KR)
                END IF
- 37         CONTINUE 
+ 37         CONTINUE
          ELSE
             TEMP(1) = ORIGIN(1)
             TEMP(2) = ORIGIN(2)
@@ -1345,7 +1345,7 @@ C                 58: NUCFIEL
                   CALL HERNAI(AHGTF,JMAX,EXPP,DIFCPX,DIFCPY,DIFCPZ
      &                 ,FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
                END IF
-               
+
                IF (ADDNAI) THEN
                   CALL DAXPY(NAHGTF,D1,AHGTF(IADR),1,AHGTF(1),1)
                ELSE

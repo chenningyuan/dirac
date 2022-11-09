@@ -10,8 +10,13 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'TOTAL ENERGY',
-      num_lines   = 11,
+      num_lines   = 14,
       rel_tolerance   = 1.0e-9)
+
+f.add(from_string="Energy eigenvalues in atomic units",
+      to_string="Total average:",
+      abs_tolerance=1.0e-7)
+
 
 test.run(['cosci.Li2.inp'], ['Li2.mol'],  f, args='--mw=120')
 test.run(['cosci.H3.inp'], ['H3.mol'],  f, args='--mw=120')

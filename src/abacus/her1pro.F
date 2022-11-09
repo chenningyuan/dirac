@@ -1380,8 +1380,8 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Diamagnetic contribution integrals to rotational g factors
-C     ----------------------------------------------------------
+C     Diamagnetic (exp. value) contribution to (NR limit of) shieldings
+C     -----------------------------------------------------------------
 C
  51   CONTINUE
          INTTYP = 48
@@ -1398,7 +1398,7 @@ C     ---------------------------------------------------------
  52   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of first electric derivative of overlap '/
-     $     /'matrix. Type A'
+     &     /'matrix. Type A'
          INTTYP = 49
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -1418,7 +1418,7 @@ C     ---------------------------------------------------------
  53   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of first electric derivative of overlap '/
-     $     / 'matrix. Type B'
+     &     / 'matrix. Type B'
          INTTYP = 50
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -1438,8 +1438,8 @@ C     ___________________________________________________________
 C
  54   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     $     'Calculation of electric derivative of 1-electron
-     $     Hamiltonian integrals'
+     &     'Calculation of electric derivative of 1-electron
+     &     Hamiltonian integrals'
          INTTYP = 51
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -1463,7 +1463,7 @@ C
  55   CONTINUE
          INTTYP = 62
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     $     'Parity Violation - chirality integrals'
+     &     'Parity Violation - chirality integrals'
          CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL PVCTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.

@@ -61,6 +61,7 @@ if(ENABLE_UTILITIES)
     compile_standalone(test_allocator.x          utils/test_allocator.F90            "${_list_of_executables}")
     compile_standalone(h5towfx.x                 utils/h5towfx.cpp                   "${_list_of_executables}")
 #   compile_standalone(test_davidson.x           utils/test_davidson.F90             "${_list_of_executables}")
+    set_property(TARGET h5towfx.x PROPERTY LINKER_LANGUAGE CXX)
 endif()
 
 if(ENABLE_GEN1INT)

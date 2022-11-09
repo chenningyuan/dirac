@@ -61,6 +61,8 @@ module symmetry_setup_krci
    integer, allocatable, public :: iadjsym(:)
    integer, allocatable, public :: invelm(:)
 
+   integer, allocatable, public :: orbsymVEC(:)
+
 contains
 
 !*******************************************************************************
@@ -819,6 +821,7 @@ contains
       if (allocated(  invelm)) call dealloc(invelm  )
       if (allocated( iadjsym)) call dealloc(iadjsym )
       if (allocated(idbgmult)) call dealloc(idbgmult)
+      !if (allocated(orbsymVEC)) call dealloc(orbsymVEC)
 
    end subroutine symmetry_setup_delete
 
