@@ -297,28 +297,26 @@ C
          CALL PRIDIS(NAMDPX,DIST,NUCDEP)
       END IF
 C
+      BONDED(1:NUCDEP,1:NUCDEP) = .FALSE.
       DO 10, J= 1,NUCDEP
+         IF (ICHARG(J) .EQ. 0) GO TO 10 ! point charge
          RADJ = RADIUS(ICHARG(J))
          DO 20, I= 1, J-1
+            IF (ICHARG(I) .EQ. 0) GO TO 20 ! point charge
             RADI = RADIUS(ICHARG(I))
             IF (RADI .LT. D0 .OR. RADJ .LT. D0) THEN
-               WRITE(LUPRI,*) 'RADII FOR ATOMS WITH EITHER/OR ATOMIC'
+               WRITE(LUPRI,'(A,I0,A,I0,A)')
+     &              'RADII FOR ATOMS WITH EITHER/OR ATOMIC'
      &              //' NUMBER ', ICHARG(I), ' OR ', ICHARG(J),
-     &              ' ARE UNAVAILABLE '
-               BONDED(I,J) = .FALSE.
-               BONDED(J,I) = .FALSE.
+     &              ' ARE UNAVAILABLE'
             ELSE IF (DIST2(I,J) .LT. (1.2D0 * (RADI + RADJ))) THEN
                NBONDS = NBONDS + 1
                IPAIRS(1,NBONDS) = I
                IPAIRS(2,NBONDS) = J
                BONDED(I,J) = .TRUE.
                BONDED(J,I) = .TRUE.
-            ELSE
-               BONDED(I,J) = .FALSE.
-               BONDED(J,I) = .FALSE.
             END IF
  20      CONTINUE
-         BONDED(J,J) = .FALSE.
  10   CONTINUE
 C
       IF (PRINT .AND. .NOT. DIF) THEN

@@ -202,7 +202,7 @@ module labeled_storage
        elseif (i == 1) then
           group = label ! This is one of the top groups
        else
-          group = 'invalid_label' ! No / found, there is something wrong with this label
+          group = 'nogroups' ! No / found, no hierarchical structure
        end if
 
      end function group_from_label_general
@@ -461,7 +461,7 @@ module labeled_storage
       if (.not.mh5_is_available().or..not.exist) then
          ! check whether the fallback can be used instead
          call toggle_fallback(file_info)
-         call query_nohdf5 (file_info,'/result/execution/status',exist)
+         inquire(file=file_info%name//'/.initialized',exist=exist)
          if (.not.exist) then
            ! can not be used, toggle back and stop
            call toggle_fallback(file_info)
@@ -531,6 +531,22 @@ module labeled_storage
       integer(kind=8) :: file_id, dset_id
       logical(kind=8) :: dyn
       logical :: group_exists
+
+      !  check first whether we can actually use mh5
+      if (.not.mh5_is_available()) then
+         ! use the fallback
+         call toggle_fallback(file_info)
+         if (present(rdata)) then
+            call write_nohdf5(file_info,label,rdata=rdata)
+         elseif (present(idata)) then
+            call write_nohdf5(file_info,label,idata=idata)
+         elseif (present(sdata).and.present(slen).and.present(sdim)) then
+            call write_nohdf5(file_info,label,sdata=sdata,slen=slen,sdim=sdim)
+         elseif (present(sdata)) then
+            call write_nohdf5(file_info,label,sdata=sdata)
+         end if
+         return
+      end if
 
       if (file_info%status == -1) then
          file_info%id = mh5_create_file(file_info%name)
@@ -628,6 +644,7 @@ module labeled_storage
       end if
 
       group = group_from_label(label)
+      if (group=='nogroups') group = label
 
       if (group == label) then
          ! a top group that can be checked immediately
@@ -662,6 +679,11 @@ module labeled_storage
      character(:),allocatable    :: parent_label
      integer(kind=8)             :: file_id,group_id
 
+     ! only in case there is no hierarchical structure we need not create any groups
+     group_exists = label == 'nogroups'
+     if (group_exists) return
+
+     ! otherwise we keep unpeeling the groups till we hit a parent that already exists
      group_exists = mh5_exists_group(file_id,label)
      if (group_exists) return
 
@@ -843,13 +865,17 @@ module labeled_storage
      integer                     :: ierr
      character*(:), allocatable  :: subdir
 
-     subdir = './'//trim(file_name)//trim(label)
+     ! only in case there is no hierarchical structure we need not create any groups
+     group_exists = label == 'nogroups'
+     if (group_exists) return
+
      group_exists = exists_group_nohdf5(file_name,label)
      if (group_exists) return
 
      parent_label  = group_from_label(label)
      parent_exists = exists_group_nohdf5(file_name,parent_label)
 
+     subdir = './'//trim(file_name)//trim(label)
      if (parent_exists) then
         call execute_command_line ('mkdir '//subdir,exitstat=ierr)
         if (ierr.ne.0) then
