@@ -835,6 +835,9 @@ module labeled_storage
       data_file = './'//trim(file_info%name)//'/'//label
       inquire (file=data_file,exist=exist)
 
+      ! could be an inquiry about a directory, so check this possibility as well
+      if (.not.exist) inquire(file=data_file//'/.initialized',exist=exist)
+
       if (present(data_size)) then
          if (exist) then
             open (file_unit,file=data_file,form='unformatted')
