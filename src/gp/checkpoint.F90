@@ -215,27 +215,16 @@ module checkpoint
       character*(*),intent(out), optional    :: verbose_message
 
 
-      logical :: file_exist=.false., label_exist=.false.
-
-      ! First check whether the checkpoint file itself exists
-      inquire (file=checkpoint_file%name,exist=file_exist)
-
-      if (file_exist) then
-         ! check whether the label is present
-         if (present(data_size)) then
-            call lab_query(checkpoint_file,label,label_exist,data_size)
-         else
-            call lab_query(checkpoint_file,label,label_exist)
-         end if
+      if (present(data_size)) then
+          call lab_query(checkpoint_file,label,exist,data_size)
+      else
+          call lab_query(checkpoint_file,label,exist)
       end if
-
-      exist = file_exist.and.label_exist
 
       ! We're already done, but the caller may want us to be more verbose
       if (present(verbose_message)) then
-         if (.not.label_exist) verbose_message = label//' not found'
-         if (.not.file_exist)  verbose_message = checkpoint_file%name//' not found'
-         if (file_exist.and.label_exist) verbose_message = label//' found on '//checkpoint_file%name
+         if (exist) verbose_message = label//' found on '//checkpoint_file%name
+         if (.not.exist) verbose_message = label//' not found on '//checkpoint_file%name
       end if
 
   end subroutine checkpoint_query
