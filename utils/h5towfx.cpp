@@ -59,7 +59,7 @@ Shell2AOs *shell2aos;
 double Quaternion_coef[4];
 double *OCCs,**Prim2AO_Coef;
 complex<double> **AO2MO_Coef,**Prim2MO_Coef;
-string h5_name;
+string h5_name,calctyp;
 vector<int>Prim2Center_map;
 vector<int>shell_types;
 vector<double>Center_x;
@@ -86,10 +86,11 @@ int main(int argc, char *argv[])
  cout<<"--------------------------------------------"<<endl;
  cout<<"--------------------------------------------"<<endl;
  cout<<endl;
- if(argc!=2)
+ if(argc!=3)
  {
   cout<<endl;
-  cout<<"Please, include the h5 file as an argument"<<endl;
+  cout<<"Please, include the h5 file as an argument and the orbitals to use(scf/mbpt)"<<endl;
+  cout<<"e.g. ./h5towfx.x file.h5 scf"<<endl;
   cout<<endl;
   cout<<"--------------------------------------------"<<endl;
   cout<<"--          Normal termination            --"<<endl;
@@ -100,6 +101,8 @@ int main(int argc, char *argv[])
  int ishell,ishell1,iprim,iprim1,iaos,iaos1,imos,imos1; // imos for Scalar MOs
  int naos;
  string aux(argv[1]);
+ string aux_mos(argv[2]);
+ calctyp=aux_mos;
  h5_name=aux;
  h5_read();
  // Read Dirac output
@@ -342,7 +345,7 @@ void h5_read()
   Nshell_S=Nshells_S[0];
   Nshell=Nshells_L[0]+Nshells_S[0];
   shell2aos=new Shell2AOs[Nshell];
-  for(i=0;i<Nshell_L;i++)
+  for(i=0;i<Nshell;i++)
   {
    shell2aos[i].paired2=-1;
   }
@@ -482,7 +485,7 @@ void h5_read()
    }
   }
  // Read results information
-  path="/result/wavefunctions/scf/mobasis/";
+  path="/result/wavefunctions/"+calctyp+"/mobasis/";
   // Retrieve MO_occs
   read_dou(file_id,path,"occupations",&MO_occs);
   OCCs=new double[8*MO_occs.size()];
