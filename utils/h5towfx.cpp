@@ -46,9 +46,14 @@ complex<double>czero=(zero,zero);
 int ith,Ncenters,Nprimitives,Nbasis,Nbasis_L,Nbasis_S,Nshell,Nshell_L,Nshell_S,NMOs,NMOs_LS,NMOs_occ;
 struct Shell2AOs
 {
- int styp,atom,nprim,naos,paired2=-1;
+ int styp,atom,nprim,naos,paired2;
  int **index_min2max; 
  double *Coef,*Expon,Coord[3];
+};
+struct NewCenter
+{
+ int index;
+ double Coord[3];
 };
 Shell2AOs *shell2aos;
 double Quaternion_coef[4];
@@ -337,6 +342,10 @@ void h5_read()
   Nshell_S=Nshells_S[0];
   Nshell=Nshells_L[0]+Nshells_S[0];
   shell2aos=new Shell2AOs[Nshell];
+  for(i=0;i<Nshell_L;i++)
+  {
+   shell2aos[i].paired2=-1;
+  }
   // Retrieve Shell_type_S
   read_int(file_id,path,"orbmom",&Shell_type_S);
   for(i=0;i<Nshell_L;i++)
@@ -637,11 +646,6 @@ void asign(vector<int> *s2atom_map,vector<double> *Shell_coord_L,vector<double> 
  int i,j,k,ind,nshells=(Shell_coord_L[0].size()+Shell_coord_S[0].size())/3;
  bool newcent;
  double diff;
- struct NewCenter
- {
-  int index;
-  double Coord[3];
- };
  vector<NewCenter>newcenter;
  NewCenter centertemp;
  ind=1;
