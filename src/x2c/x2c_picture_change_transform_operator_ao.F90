@@ -441,7 +441,7 @@ contains
 !        define unique file label for each property operator f
          call num2str(i,numstr)
          write(flabel,'(a8,a4)') 'prpint2c',numstr
-
+         
          if(spherical_on)then
 
            lwrk = is_len_wrk - naosh_ls**2*nz*2 - ioff_pct_mat

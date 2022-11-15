@@ -14,67 +14,67 @@ f.add(string = '* Electronic eigenvalue',
       rel_tolerance = 1.0e-7)
 
 # run calculation for hydrogen in linear symmetry
-test.run(['H.inp'], ['H.mol'], f, '--get=CHECKPOINT.h5 ')
+test.run(['H.inp'], ['H.mol'], f, '--outcmo')
+if os.path.isfile('CHECKPOINT.h5'):
+    ext = '.h5'
+elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
+    ext = '.noh5.tar.gz'
+shutil.move('CHECKPOINT'+ext, 'DFACMO'+ext)
 
-shutil.copy('CHECKPOINT.h5', 'DFACMO')
 # export coefficients to cs symmetry
-test.run(['H_Cs.inp'], ['H_Cs.mol'], f, '--get=CHECKPOINT.h5 --put=DFACMO')
-shutil.copy('CHECKPOINT.h5', 'DFHAT1')
-shutil.copy('CHECKPOINT.h5', 'DFHAT2')
-shutil.copy('CHECKPOINT.h5', 'DFHAT3')
+test.run(['H_Cs.inp'], ['H_Cs.mol'], f, '--outcmo --put=DFACMO.h5')
+shutil.copy('CHECKPOINT'+ext, 'H1'+ext)
+shutil.copy('CHECKPOINT'+ext, 'H2'+ext)
+shutil.copy('CHECKPOINT'+ext, 'H3'+ext)
 
 # run calculation for nitrogen in linear symmetry
-test.run(['N.inp'], ['N.mol'], f, '--get="CHECKPOINT.h5"')
-shutil.copy('N_N.h5', 'DFACMO')
-shutil.copy('CHECKPOINT.h5', 'DFCAT')
+test.run(['N.inp'], ['N.mol'], f, '--outcmo')
+shutil.copy('CHECKPOINT'+ext, 'DFACMO'+ext)
 
 # export coefficients to cs symmetry
-test.run(['N_Cs.inp'], ['N_Cs.mol'], f, '--get=CHECKPOINT.h5 --put=DFACMO')
-shutil.copy('CHECKPOINT.h5', 'DFNNNN')
+test.run(['N_Cs.inp'], ['N_Cs.mol'], f, '--outcmo --put=DFACMO.h5')
+shutil.copy('CHECKPOINT'+ext, 'N1'+ext)
 
 # run calculation for ammonia; note that it is flat ...
-test.run(['NH3.inp'], ['NH3.mol'], f, '--put="DFNNNN DFHAT1 DFHAT2 DFHAT3" ')
+test.run(['NH3.inp'], ['NH3.mol'], f, '--put="N1.h5 H1.h5 H2.h5 H3.h5" ')
 
 # cleanup
-os.unlink('CHECKPOINT.h5')
-os.unlink('DFACMO')
-os.unlink('DFNNNN')
-os.unlink('DFCAT')
-os.unlink('DFHAT1')
-os.unlink('DFHAT2')
-os.unlink('DFHAT3')
+os.unlink('CHECKPOINT'+ext)
+os.unlink('DFACMO'+ext)
+os.unlink('N1'+ext)
+os.unlink('H1'+ext)
+os.unlink('H2'+ext)
+os.unlink('H3'+ext)
 
 ### run spinfree version of the test ###
 
 # run calculation for hydrogen in linear symmetry
-test.run(['H_sf.inp'], ['H.mol'], f, '--get=CHECKPOINT.h5')
-shutil.copy('CHECKPOINT.h5', 'DFACMO')
+test.run(['H_sf.inp'], ['H.mol'], f, '--outcmo')
+shutil.move('CHECKPOINT'+ext, 'DFACMO'+ext)
 
 # export coefficients to cs symmetry
-test.run(['H_Cs_sf.inp'], ['H_Cs.mol'], f, '--get=CHECKPOINT.h5 --put=DFACMO')
-shutil.copy('CHECKPOINT.h5', 'DFHAT1')
-shutil.copy('CHECKPOINT.h5', 'DFHAT2')
-shutil.copy('CHECKPOINT.h5', 'DFHAT3')
+test.run(['H_Cs_sf.inp'], ['H_Cs.mol'], f, '--outcmo --put=DFACMO.h5')
+shutil.copy('CHECKPOINT'+ext, 'H1'+ext)
+shutil.copy('CHECKPOINT'+ext, 'H2'+ext)
+shutil.copy('CHECKPOINT'+ext, 'H3'+ext)
 
 # run calculation for nitrogen in linear symmetry
-test.run(['N_sf.inp'], ['N.mol'], f, '--get="CHECKPOINT.h5"')
-shutil.copy('N_sf_N.h5', 'DFACMO')
-shutil.copy('CHECKPOINT.h5', 'DFCAT')
+test.run(['N_sf.inp'], ['N.mol'], f, '--outcmo')
+shutil.copy('CHECKPOINT'+ext, 'DFACMO'+ext)
 
 # export coefficients to cs symmetry
-test.run(['N_Cs_sf.inp'], ['N_Cs.mol'], f, '--get=CHECKPOINT.h5 --put=DFACMO')
-shutil.copy('CHECKPOINT.h5', 'DFNNNN')
+test.run(['N_Cs_sf.inp'], ['N_Cs.mol'], f, '--outcmo --put=DFACMO.h5')
+shutil.copy('CHECKPOINT'+ext, 'N1'+ext)
 
 # run calculation for ammonia; note that it is flat ...
-test.run(['NH3_sf.inp'], ['NH3.mol'], f, '--put="DFNNNN DFHAT1 DFHAT2 DFHAT3"')
+test.run(['NH3_sf.inp'], ['NH3.mol'], f, '--put="N1.h5 H1.h5 H2.h5 H3.h5"')
 
 # cleanup
-os.unlink('CHECKPOINT.h5')
-os.unlink('DFACMO')
-os.unlink('DFNNNN')
-os.unlink('DFCAT')
-os.unlink('DFHAT1')
-os.unlink('DFHAT2')
-os.unlink('DFHAT3')
+os.unlink('CHECKPOINT'+ext)
+os.unlink('DFACMO'+ext)
+os.unlink('N1'+ext)
+os.unlink('H1'+ext)
+os.unlink('H2'+ext)
+os.unlink('H3'+ext)
 
 sys.exit(test.return_code)

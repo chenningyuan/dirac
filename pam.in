@@ -1296,8 +1296,18 @@ Options are also read from ~/.diracrc"""
 
         def copy_single_file(file_name, file_name_scr):
             if os.path.isfile(file_name):
-                file_name_scratch = os.path.join(self.scratch_dir,os.path.basename(file_name_scr))
-                self.copy_file(file_name, file_name_scratch)
+                # first check whether we may be dealing with an archive
+                if not ".tar.gz" in file_name:
+                   file_name_scratch = os.path.join(self.scratch_dir,os.path.basename(file_name_scr))
+                   self.copy_file(file_name, file_name_scratch)
+                else:
+                   dir_name_scratch = os.path.join(self.scratch_dir,file_name.replace('.tar.gz',''))
+                   shutil.unpack_archive(file_name,dir_name_scratch)
+            elif ".h5" in file_name: # a missing .h5 file could be replacable by a fallback file
+                alt_file_name = file_name.replace('.h5','.noh5.tar.gz')
+                if os.path.isfile(alt_file_name):
+                   dir_name_scratch = os.path.join(self.scratch_dir,alt_file_name.replace('.tar.gz',''))
+                   shutil.unpack_archive(alt_file_name,dir_name_scratch)
             else:
                 if self.expert_mode:
                     
@@ -1366,6 +1376,9 @@ Options are also read from ~/.diracrc"""
                     f2 = p.split('=')[1]
                     copy_single_file(f1, f2)
                 else:
+                    # check whether fallback option is active in tests
+                    if (len(glob.glob(p)) == 0):
+                       p = p.replace(".h5",".noh5.tar.gz")
                     for f in glob.glob(p):
                         copy_single_file(f, f)
 
@@ -1374,6 +1387,10 @@ Options are also read from ~/.diracrc"""
             file_name = 'CHECKPOINT.h5'
             if os.path.isfile(os.path.join(self.input_directory,file_name)):
                copy_single_file(file_name,file_name)
+            dir_name = 'CHECKPOINT.noh5'
+            archive = dir_name+'.tar.gz'
+            if os.path.isfile(archive):
+               shutil.unpack_archive(archive,os.path.join(self.scratch_dir,dir_name))
         if self.inkrmc:
             file_name_loc = 'KRMCSCF'
             file_name_scr = 'KRMCOLD'
@@ -1913,7 +1930,14 @@ Options are also read from ~/.diracrc"""
                         print('  Could not construct hdf5 checkpoint file, h5py is not installed')
 
         if self.outcmo:
-            save_single_file('CHECKPOINT.h5')
+           file_name = 'CHECKPOINT.h5'
+           if os.path.isfile(file_name):
+                save_single_file(file_name)
+           dir_name = 'CHECKPOINT.noh5'
+           if os.path.isdir(dir_name):
+              archive = dir_name+'.tar.gz'
+              shutil.make_archive(dir_name, 'gztar', dir_name)
+              save_single_file(archive,archive)
 
         if self.outkrmc:
             save_single_file('KRMCSCF')

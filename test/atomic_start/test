@@ -24,18 +24,19 @@ f.add(from_string = ' Eigenvalues',
       num_lines = 10,  # the different tests have different number of lines, this should be OK for all
       abs_tolerance   = 1.0e-5)
 
-test.run(['H.inp'], ['H.mol'], args='--get=CHECKPOINT.h5')
-shutil.copy('CHECKPOINT.h5', 'DFHXXX')
+test.run(['H.inp'], ['H.mol'], args='--outcmo')
+if os.path.isfile('CHECKPOINT.h5'):
+    ext = '.h5'
+elif os.path.isfile('CHECKPOINT.noh5.tar.gz'): 
+    ext = '.noh5.tar.gz'
+shutil.copy('CHECKPOINT'+ext, 'H'+ext)
 
-test.run(['O.inp'], ['O.mol'], args='--get=CHECKPOINT.h5')
-shutil.copy('CHECKPOINT.h5', 'DFOXXX')
+test.run(['O.inp'], ['O.mol'], args='--outcmo')
+shutil.copy('CHECKPOINT'+ext, 'O'+ext)
 
-test.run(['O_atom.inp'], ['O.mol'], f, '--copy=DFOXXX')
-test.run(['H2O.inp'], ['H2O.mol'], f, '--copy="DFHXXX DFOXXX"')
-
-# cleanup
-os.unlink('CHECKPOINT.h5')
-os.unlink('DFHXXX')
-os.unlink('DFOXXX')
+# Note that we need no branching below as the copy option of pam 
+# will automatically activate the fallback option if .h5 files are not present
+test.run(['O_atom.inp'], ['O.mol'], f, '--copy=O.h5')
+test.run(['H2O.inp'], ['H2O.mol'], f, '--copy="H.h5 O.h5"')
 
 sys.exit(test.return_code)

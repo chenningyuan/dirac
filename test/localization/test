@@ -15,16 +15,23 @@ f.add(string = '**** Inverse mean delocalization',
       rel_tolerance = 1.0e-7)
 
 # prepare reference orbitals
-test.run(['H.inp'], ['H.xyz'])
-test.run(['C.inp'], ['C.xyz'])
-test.run(['O.inp'], ['O.xyz'])
+test.run(['H.inp'], ['H.xyz'], args='--outcmo')
+if os.path.isfile('CHECKPOINT.h5'):
+    ext = '.h5'
+elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
+    ext = '.noh5.tar.gz'
+shutil.move('CHECKPOINT'+ext, 'H'+ext)
+test.run(['C.inp'], ['C.xyz'], args='--outcmo')
+shutil.move('CHECKPOINT'+ext, 'C'+ext)
+test.run(['O.inp'], ['O.xyz'], args='--outcmo')
+shutil.move('CHECKPOINT'+ext, 'O'+ext)
 
-shutil.copy('H_H.h5', 'H1.h5')
-shutil.copy('H_H.h5', 'H2.h5')
-shutil.copy('H_H.h5', 'H3.h5')
-shutil.copy('H_H.h5', 'H4.h5')
-shutil.copy('C_C.h5', 'C1.h5')
-shutil.copy('O_O.h5', 'O1.h5')
+shutil.copy('H'+ext, 'H1'+ext)
+shutil.copy('H'+ext, 'H2'+ext)
+shutil.copy('H'+ext, 'H3'+ext)
+shutil.copy('H'+ext, 'H4'+ext)
+shutil.copy('C'+ext, 'C1'+ext)
+shutil.copy('O'+ext, 'O1'+ext)
 
 # CH4
 shutil.copy('cf.CH4', 'DFPCMO')
@@ -41,12 +48,12 @@ test.run(['H2Olocprj_comb.inp'], ['H2O.mol'], f, '--copy="DFPCMO O1.h5 H1.h5 H2.
 test.run(['H2Olocprj_diag.inp'], ['H2O.mol'], f, '--copy="DFPCMO O1.h5 H1.h5 H2.h5"')
 
 # cleanup
-os.unlink('C1.h5')
-os.unlink('O1.h5')
-os.unlink('H1.h5')
-os.unlink('H2.h5')
-os.unlink('H3.h5')
-os.unlink('H4.h5')
+os.unlink('C1'+ext)
+os.unlink('O1'+ext)
+os.unlink('H1'+ext)
+os.unlink('H2'+ext)
+os.unlink('H3'+ext)
+os.unlink('H4'+ext)
 os.unlink('DFPCMO')
 
 sys.exit(test.return_code)

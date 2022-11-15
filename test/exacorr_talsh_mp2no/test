@@ -5,12 +5,15 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
 
 test = TestRun(__file__, sys.argv)
 
 f1 = Filter()
 f1.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
-      num_lines   = 21,
+      num_lines   = 17,
       rel_tolerance   = 1.0e-7)
 
 # The test have two parts, the first run generates MP2 natural orbitals that are stored on the CHECKPOINT.h5 file

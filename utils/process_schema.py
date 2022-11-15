@@ -102,13 +102,25 @@ def write_schema(file_name,flat_schema):
             f.write("{:<80}{:<10}{:<10}{:<10}#{:<60}\n".format(label,dataset['type'],dataset['rank'],dataset['use'],dataset['description']))
     f.close()
 
+def group_from_label(label):
+    """
+    Identify the group to which the dataset or subgroup belongs.
+    For top groups it just returns label (as these are their own parents)
+    """
+    separator_index = label.rfind('/')
+    if separator_index > 0:
+       group = label[:separator_index]
+    else:
+       group = label
+    return group
+     
 def data_validity(data):
     """
     Check whether the data read or to be written is valid.
     Should be made more rigorous, for now just check whether all required data is present.
     """
     valid = True
-    print (' Checking validity of data with respect to the DIRAC data schema....')
+    print ('  Checking validity of data with respect to the DIRAC data schema....')
     # Check whether all required data have values
     for label, dataset in data.items():
         if dataset['type'] == 'composite':
@@ -117,8 +129,20 @@ def data_validity(data):
            #todo: check whether the data has the right type
            continue
         if dataset['use'] == 'required':
-              print(' ..missing required dataset {} : {}'.format(label,dataset['description']))
-              valid = False
+              # check whether this data set without a value is required 
+              # first check whether (grand)parents are actually required
+              optional = False
+              parent = label
+              while group_from_label(parent) != parent:
+                  parent = group_from_label(parent) 
+                  if data[parent]['use'] == 'optional':
+                      optional = True
+              if optional:
+                  continue
+              # this is indeed a required data set, print a warning and invalidate the data
+              else:
+                  print(' ..missing required dataset {} : {}'.format(label,dataset['description']))
+                  valid = False
     return valid
 
 ###### Function to read plaintext xyz file
@@ -263,7 +287,7 @@ def nohdf5_recursively_load_dict_contents_from_group(data,path):
     with os.scandir(path) as it:
       for entry in it:
         if not entry.name.startswith('.') and entry.is_file():
-          label=os.path.join(path,entry.name).split('CHECKPOINT')[1]
+          label=os.path.join(path,entry.name).split('CHECKPOINT.noh5')[1]
           f = FortranFile(os.path.join(path,entry.name), 'r')
           # reading of strings written by Fortran is tricky, this appears to work
           record = f.read_record(np.dtype('a4'),np.int64,np.int64)
@@ -288,7 +312,10 @@ def nohdf5_recursively_load_dict_contents_from_group(data,path):
              str_format = 'a{}'.format(data_dim1)
              data[label]['value'] = f.read_record(str_format)
           elif data_type=='strn':
-             str_format = '{}a{}'.format(data_dim2,data_dim1)
+             if (data_dim2==1):
+                str_format = 'a{}'.format(data_dim1)
+             else:
+                str_format = '{}a{}'.format(data_dim2,data_dim1)
              data[label]['value'] = f.read_record(str_format)
           else:
              print('ERROR in processing restart data: unknown data type',data_type)
@@ -299,7 +326,7 @@ def nohdf5_recursively_load_dict_contents_from_group(data,path):
 
 def nohdf5_load_data(path):
     """ 
-    Checks for existence of CHECKPOINT fall back directory and loads the data that is inside
+    Checks for existence of CHECKPOINT.noh5 fall back directory and loads the data that is inside
     """
     # Get schema (hierarchical dictionary) and flattened form thereof based on the definition found in the build directory
     from os.path import dirname, join, isdir
@@ -310,8 +337,8 @@ def nohdf5_load_data(path):
     # that is written should be properly defined in the data schema file.
     data = valid_data.copy()
 
-    if isdir(join(path,'CHECKPOINT')):
-      error = nohdf5_recursively_load_dict_contents_from_group(data,join(path,"CHECKPOINT"))
+    if isdir(join(path,'CHECKPOINT.noh5')):
+      error = nohdf5_recursively_load_dict_contents_from_group(data,join(path,"CHECKPOINT.noh5"))
     else:
       error = 3
 
@@ -350,7 +377,10 @@ def write_hdf5(file_name,data):
     cp = h5py.File(file_name, 'w')
     for label, dataset in data.items():
         if 'value' in dataset: 
-           cp.create_dataset(label, data=dataset['value'])
+           if (len(dataset['value']) == 1):
+               cp.create_dataset(label, data=dataset['value'])
+           else:
+               cp.create_dataset(label, data=dataset['value'], maxshape=(h5py.h5s.UNLIMITED))
     cp.close()
 
 # Simple use of these functions:

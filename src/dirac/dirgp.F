@@ -749,6 +749,7 @@ C*****************************************************************************
 
       use memory_allocator
       use dircmo
+      use checkpoint
 
 #include "implicit.h"
 #include "priunit.h"
@@ -780,7 +781,8 @@ C
 C
 C        Get eigenvalues from CHECKPOINT file
 C
-         INQUIRE(FILE='CHECKPOINT.h5',EXIST=TOBE)
+         call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',
+     &        exist=TOBE)
          IF(.NOT.TOBE.OR.I_DCBORB_SET.NE.1) THEN
 C
 C           CHECKPOINT does not (yet) exist, put IP = - 666, which makes
@@ -1671,7 +1673,8 @@ C
       MCORB = .FALSE.
       MJAVA = .FALSE.
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='CHECKPOINT.h5',EXIST=TOBE)
+      call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',
+     &  exist=TOBE)
       IF((.NOT.TOBE).and.(.NOT.TOBEK)) THEN
         WRITE(LUPRI,'(A)') 
      &  'ACMOUT: Unformatted file CHECKPOINT/KRMCSCF not found !'
@@ -2213,6 +2216,7 @@ C***********************************************************************
 
       use memory_allocator
       use dircmo
+      use checkpoint
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2229,7 +2233,8 @@ C
 C
 C     Check if coefficients are on file
 C
-      INQUIRE(FILE='CHECKPOINT.h5',EXIST=TOBE)
+      call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',
+     &        exist=TOBE)
       IF(.NOT.TOBE) GOTO 1000
 
 !     memory allocation
@@ -2546,6 +2551,7 @@ C
      &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
       DIMENSION IOFF(2)
       REAL*8 CMCSCF_MAGIC
+      integer              :: len_fragname
       type(file_info_t)    :: fragfile
 !
 !     flag for MCSCF coefficents present on fragment/molecular
@@ -2565,7 +2571,11 @@ C.....loop over fragments
      &       '* No coefficients selected for fragment ',FRAGFIL(IFRAG)
           GOTO 12
         ENDIF
-        INQUIRE(FILE=FRAGFIL(IFRAG),EXIST=TOBE)
+        fragfile%type = 2
+        fragfile%name = FRAGFIL(IFRAG)
+        fragfile%status = -1
+        call lab_query (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
         IF (.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,I2,A,I2,A,A6,A)') 
      &     'Fragment coefficient file no. ',
@@ -2573,17 +2583,14 @@ C.....loop over fragments
            CALL QUIT('SELFRAG: No fragment coefficients !')
         ENDIF
 C
-        fragfile%type = 2
-        fragfile%name = FRAGFIL(IFRAG)
-        fragfile%status = 0
         IF(LBIT(IOPT,1)) THEN
-          WRITE(LUPRI,'(A,A6)') 
-     &       '* SELFRAG: Coefficients from file: ',FRAGFIL(IFRAG)
+          WRITE(LUPRI,'(A,A)') 
+     &       '* SELFRAG: Coefficients from file: ',fragfile%name
         ENDIF
 C.......Fragment orbitals in own basis
         IF(OWNBAS) THEN
           CALL SELOWN(IOPT,CMO,EIG,IBEIG,
-     &                INUC,NUCFRAG(IFRAG),LUCOEF,FRAGFIL(IFRAG),
+     &                INUC,NUCFRAG(IFRAG),LUCOEF,fragfile,
      &                CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC(1,IFRAG),
      &                NSTR(1,0,IFRAG),WORK)
 C.......Fragment orbitals in molecular basis
@@ -3268,7 +3275,7 @@ C  /* Deck acmoin */
 C*****************************************************************************
 C
 C     Read coefficients in C1 symmetry from DFACMO
-C     adapt to current symmetry and write back to CHECKPOINT.h5
+C     adapt to current symmetry and write back to CHECKPOINT
 C
 C     Written by T. Saue Mar 3 2008
 C     Adaptation to checkpoint by L. Visscher 2022
@@ -3301,14 +3308,6 @@ C
 C
       IPRINT = IPRGEN
 C
-C     First check if file DFACMO is there
-C
-      INQUIRE(FILE='DFACMO',EXIST=TOBE)
-      IF(.NOT.TOBE) THEN
-          WRITE(LUPRI,'(A)') 
-     &      'Checkpoint file DFACMO not found !'
-          CALL QUIT('ACMOIN: DFACMO not found !')
-      ENDIF
 C     Allocate arrays
       allocate(CMO1(N2BBASX*4))
       allocate(CMO2(N2BBASX*4))
@@ -3322,8 +3321,8 @@ C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
 C
       dfacmo%type = 2
-      dfacmo%name = 'DFACMO'
-      dfacmo%status = 0
+      dfacmo%name = 'DFACMO.h5'
+      dfacmo%status = -1
       call lab_read (dfacmo,
      & '/result/wavefunctions/scf/energy',toterg)
       call lab_read (dfacmo,

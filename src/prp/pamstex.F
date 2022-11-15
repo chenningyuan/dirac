@@ -201,7 +201,7 @@ C     .SCREEN
       SUBROUTINE STEX(WORK,LWORK)
       use labeled_storage
 C
-C     At this point we expect a converged groundstate CHECKPOINT.h5 in
+C     At this point we expect a converged groundstate CHECKPOINT in
 C     the working directory, plus an optional ION.h5 for the
 C     core-relaxed determinant.
 C
@@ -256,14 +256,15 @@ C     Save ground state energy
       LUBUF=22
       IOPT = 2+4+8
 C     See if a separate reference state will be used and read reference orbitals and eigenvalues
-      INQUIRE(FILE='ION.h5',EXIST=LION)
+      ionfile%type = 2
+      ionfile%status = 0
+      ionfile%name = 'ION.h5'
+      call lab_query(ionfile,
+     &   '/result/wavefunctions/scf/energy',exist=lion)
       IF (LION) THEN
-         WRITE(LUPRI,*) 'ION.h5 found, using it as reference state'
+         WRITE(LUPRI,*) ionfile%name,' found, used as reference state'
          WRITE(LUPRI,*) 'for STEX calculation'
          STEX_COFACTOR = .TRUE.
-         ionfile%type = 2
-         ionfile%status = 0
-         ionfile%name = 'ION.h5'
          call lab_read(ionfile,
      &   '/result/wavefunctions/scf/energy',
      &   rdata=TOTERG)

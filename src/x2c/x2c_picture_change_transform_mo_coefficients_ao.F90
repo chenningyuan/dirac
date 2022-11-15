@@ -44,8 +44,7 @@ module x2c_pct_mo_coefficients
 contains
 
 !**********************************************************************
-  subroutine x2c_pctrafo_mo_coefficients_driver(mo_coeff_file_name,  &
-                                                pct_mocoeff_strategy,&
+  subroutine x2c_pctrafo_mo_coefficients_driver(pct_mocoeff_strategy,&
                                                 nr_cmo_q,            &
                                                 naosh_ls,            &
                                                 nr_ao_L,             &
@@ -89,7 +88,6 @@ contains
      integer, intent(in)             :: ipq_off_in(4,0:7)
      integer, intent(in)             :: x2c_file_glb
      logical, intent(in)             :: linear_sym
-     character (len= 6), intent(in)  :: mo_coeff_file_name
      integer, intent(in)             :: print_lvl
 !----------------------------------------------------------------------
      real(8), allocatable            :: scratch1(:)
@@ -538,12 +536,6 @@ contains
 
 !      read the total energy
        call checkpoint_read ('/result/wavefunctions/scf/energy',total_energy)
-!      keep 4C vectors for restart purposes
-#if defined SYS_WINDOWS
-       call system('copy CHECKPOINT.h5 CP_4C.h5')
-#else
-       call system('cp CHECKPOINT.h5 CP_4C.h5')
-#endif
 
 !      backtransform the 2c-MO coefficients from the reference MO basis to AO basis
        ndim_2c_mo_ao = 0
@@ -583,13 +575,6 @@ contains
        call checkpoint_write ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eigen_values(1:nesh_dim_total))
        call checkpoint_write ('/result/wavefunctions/scf/mobasis/symmetry',idata=supersymmetry)
        call checkpoint_write ('/result/wavefunctions/scf/mobasis/orbitals',rdata=mo_coeff_2c_ao(1:ndim_2c_mo_ao))
-       !call wricmo (fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
-!      make additional copy of these coefficients for restart purposes
-#if defined SYS_WINDOWS
-       call system('copy CHECKPOINT.h5 CP_2C.h5')
-#else
-       call system('cp CHECKPOINT.h5 CP_2C.h5')
-#endif
 
        deallocate(supersymmetry)
 

@@ -87,10 +87,10 @@ module exacorr_global
 #endif
              ! this decision tree needs to be generalized, for now we prioritize MP2 natural orbitals
              ! followed  by RESPECT orbitals before standard canonical MOs
-             inquire (file='CHECKPOINT.h5',exist=tobe_dirac)
              inquire (file='RSD_MOS',exist=tobe_respect)
              ierr = -1
-             if (tobe_dirac) call checkpoint_query('/result/wavefunctions/mbpt/mobasis/nz',tobe_mp2no)
+             call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',tobe_dirac)
+             call checkpoint_query('/result/wavefunctions/mbpt/mobasis/nz',tobe_mp2no)
              if (tobe_mp2no) then
                scf_file = 2
                call print_date ("Found Dirac MP2 natural orbitals, will use these.")

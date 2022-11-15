@@ -62,10 +62,12 @@ module checkpoint
 
   subroutine checkpoint_open
 
+      use mh5, only : mh5_is_available
+
       ! Open a new or existing file and initialize or check data sets defined in the schema
       ! After this step individual data sets can be written (or read in case of restart)
 
-      logical           :: restart
+      logical           :: restart,restart_noh5
 
       ! Read the schema to define all allowed labels
       call get_labels
@@ -75,14 +77,20 @@ module checkpoint
           stop " Error in checkpoint_open: file is already in use"
       end if
 
-      ! Proceed by initializing the file object as a hdf5 file with the correct name
-      checkpoint_file%type = 2
-      checkpoint_file%name = CHECKPOINT_NAME//'.h5'
+      ! Inquire whether (a yet unopened) checkpoint file is present and attempt a restart if it is
+      inquire (file=CHECKPOINT_NAME//'.h5',exist=restart)
+      if (restart.and..not.mh5_is_available()) then
+         ! a hdf5 restart file is available, but we are not able to use it
+         ! will be deleted to not create confusion when postprocessing the fallback file
+         restart = .false. 
+         call unlink(CHECKPOINT_NAME//'.h5')
+      end if
+      inquire (file=CHECKPOINT_NAME//'.noh5/.initialized',exist=restart_noh5)
 
-      ! Inquire whether (a yet unopened) file with this name is present and attempt a restart if it is
-      inquire (file=checkpoint_file%name,exist=restart)
       if (restart) then
-         print*,"   - Existing checkpoint file: check contents"
+         checkpoint_file%name = CHECKPOINT_NAME//'.h5'
+         checkpoint_file%type = 2
+         print*,"   - Existing hdf5 checkpoint file: check contents"
          if (checkpoint_valid()) then
             print*, "   - Checkpoint file is valid, will be used for restart"
             return
@@ -91,9 +99,28 @@ module checkpoint
             call unlink(checkpoint_file%name)
             checkpoint_file%status = -1
          endif
+      elseif (restart_noh5) then
+         checkpoint_file%name = CHECKPOINT_NAME//'.noh5'
+         checkpoint_file%type = 3
+         print*,"   - Existing checkpoint directory: check contents"
+         if (checkpoint_valid()) then
+            print*, "   - Checkpoint directory is valid, will be used for restart"
+            return
+         else 
+            print*, "   - Checkpoint directory is not valid, will be overwritten"
+            call execute_command_line('rm -r '//CHECKPOINT_NAME//'.noh5')
+            checkpoint_file%status = -1
+         endif
       endif 
 
-      ! If we come this far we are dealing with a pristine directory and need to create and init the hdf5 file
+      ! If we come this far we are dealing with a pristine directory and need to create and init a checkpoint file
+      if (mh5_is_available()) then
+         checkpoint_file%name = CHECKPOINT_NAME//'.h5'
+         checkpoint_file%type = 2
+      else
+         checkpoint_file%name = CHECKPOINT_NAME//'.noh5'
+         checkpoint_file%type = 3
+      end if
       call create_new_checkpoint
       print*, "   - New checkpoint file created"
 
@@ -188,27 +215,16 @@ module checkpoint
       character*(*),intent(out), optional    :: verbose_message
 
 
-      logical :: file_exist=.false., label_exist=.false.
-
-      ! First check whether the checkpoint file itself exists
-      inquire (file=checkpoint_file%name,exist=file_exist)
-
-      if (file_exist) then
-         ! check whether the label is present
-         if (present(data_size)) then
-            call lab_query(checkpoint_file,label,label_exist,data_size)
-         else
-            call lab_query(checkpoint_file,label,label_exist)
-         end if
+      if (present(data_size)) then
+          call lab_query(checkpoint_file,label,exist,data_size)
+      else
+          call lab_query(checkpoint_file,label,exist)
       end if
-
-      exist = file_exist.and.label_exist
 
       ! We're already done, but the caller may want us to be more verbose
       if (present(verbose_message)) then
-         if (.not.label_exist) verbose_message = label//' not found'
-         if (.not.file_exist)  verbose_message = checkpoint_file%name//' not found'
-         if (file_exist.and.label_exist) verbose_message = label//' found on '//checkpoint_file%name
+         if (exist) verbose_message = label//' found on '//checkpoint_file%name
+         if (.not.exist) verbose_message = label//' not found on '//checkpoint_file%name
       end if
 
   end subroutine checkpoint_query

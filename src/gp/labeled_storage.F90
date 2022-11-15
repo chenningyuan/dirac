@@ -202,7 +202,7 @@ module labeled_storage
        elseif (i == 1) then
           group = label ! This is one of the top groups
        else
-          group = 'invalid_label' ! No / found, there is something wrong with this label
+          group = 'nogroups' ! No / found, no hierarchical structure
        end if
 
      end function group_from_label_general
@@ -424,6 +424,14 @@ module labeled_storage
       integer(kind=8)                        :: group_id
       integer                                :: i
 
+      !  check first whether we can actually use mh5
+      if (.not.mh5_is_available()) then
+         print*," HDF5 interface is not available, using fallback Unix implementation"
+         call toggle_fallback(file_info)
+         call init_nohdf5(file_info,top_groups)
+         return
+      end if
+
       ! create the hdf5 file
       file_info%id = mh5_create_file(file_info%name)
       file_info%status = 1
@@ -447,6 +455,28 @@ module labeled_storage
       logical :: exist
       integer :: ierr, data_size
       integer(kind=8), allocatable :: i8buf(:)
+
+      !  check first whether we can actually use mh5
+      inquire (file=file_info%name,exist=exist)
+      if (.not.mh5_is_available().or..not.exist) then
+         ! check whether the fallback can be used instead
+         call toggle_fallback(file_info)
+         inquire(file=file_info%name//'/.initialized',exist=exist)
+         if (.not.exist) then
+           ! can not be used, toggle back and stop
+           call toggle_fallback(file_info)
+           write (*,*) " ERROR: trying to read non-existent data set ",trim(label)," from ",trim(file_info%name)
+           stop ' error detected by read_hdf5 '
+         end if
+         if (present(rdata)) then
+            call read_nohdf5(file_info,label,rdata=rdata)
+         elseif (present(idata)) then
+            call read_nohdf5(file_info,label,idata=idata)
+         elseif (present(sdata)) then
+            call read_nohdf5(file_info,label,sdata=sdata)
+         end if
+         return
+      end if
 
       if (file_info%status == 0) then
          file_info%id = mh5_open_file_rw(file_info%name)
@@ -501,6 +531,22 @@ module labeled_storage
       integer(kind=8) :: file_id, dset_id
       logical(kind=8) :: dyn
       logical :: group_exists
+
+      !  check first whether we can actually use mh5
+      if (.not.mh5_is_available()) then
+         ! use the fallback
+         call toggle_fallback(file_info)
+         if (present(rdata)) then
+            call write_nohdf5(file_info,label,rdata=rdata)
+         elseif (present(idata)) then
+            call write_nohdf5(file_info,label,idata=idata)
+         elseif (present(sdata).and.present(slen).and.present(sdim)) then
+            call write_nohdf5(file_info,label,sdata=sdata,slen=slen,sdim=sdim)
+         elseif (present(sdata)) then
+            call write_nohdf5(file_info,label,sdata=sdata)
+         end if
+         return
+      end if
 
       if (file_info%status == -1) then
          file_info%id = mh5_create_file(file_info%name)
@@ -566,6 +612,26 @@ module labeled_storage
       integer,intent(out), optional          :: data_size
       character*(:),allocatable              :: group
 
+      !  check first whether we can actually use mh5
+      inquire (file=file_info%name,exist=exist)
+      if (.not.mh5_is_available().or..not.exist) then
+         call toggle_fallback(file_info)
+         if (present(data_size)) then
+            call query_nohdf5(file_info,label,exist,data_size)
+         else
+            call query_nohdf5(file_info,label,exist)
+         end if
+         ! restore original state and go back
+         call toggle_fallback(file_info)
+         return
+      end if
+
+      if (file_info%status == -1) then
+         ! unknown file, check whether it exists and do not open (and create) if it does not
+         inquire(file=file_info%name,exist=exist)
+         if (.not.exist) return
+      end if
+
       if (file_info%status /= 1) then
           file_info%id = mh5_open_file_rw(file_info%name)
           if (file_info%id < 0) then
@@ -578,6 +644,7 @@ module labeled_storage
       end if
 
       group = group_from_label(label)
+      if (group=='nogroups') group = label
 
       if (group == label) then
          ! a top group that can be checked immediately
@@ -612,6 +679,11 @@ module labeled_storage
      character(:),allocatable    :: parent_label
      integer(kind=8)             :: file_id,group_id
 
+     ! only in case there is no hierarchical structure we need not create any groups
+     group_exists = label == 'nogroups'
+     if (group_exists) return
+
+     ! otherwise we keep unpeeling the groups till we hit a parent that already exists
      group_exists = mh5_exists_group(file_id,label)
      if (group_exists) return
 
@@ -763,6 +835,9 @@ module labeled_storage
       data_file = './'//trim(file_info%name)//'/'//label
       inquire (file=data_file,exist=exist)
 
+      ! could be an inquiry about a directory, so check this possibility as well
+      if (.not.exist) inquire(file=data_file//'/.initialized',exist=exist)
+
       if (present(data_size)) then
          if (exist) then
             open (file_unit,file=data_file,form='unformatted')
@@ -793,13 +868,17 @@ module labeled_storage
      integer                     :: ierr
      character*(:), allocatable  :: subdir
 
-     subdir = './'//trim(file_name)//trim(label)
+     ! only in case there is no hierarchical structure we need not create any groups
+     group_exists = label == 'nogroups'
+     if (group_exists) return
+
      group_exists = exists_group_nohdf5(file_name,label)
      if (group_exists) return
 
      parent_label  = group_from_label(label)
      parent_exists = exists_group_nohdf5(file_name,parent_label)
 
+     subdir = './'//trim(file_name)//trim(label)
      if (parent_exists) then
         call execute_command_line ('mkdir '//subdir,exitstat=ierr)
         if (ierr.ne.0) then
@@ -820,5 +899,21 @@ module labeled_storage
      end if
 
     end function create_group_nohdf5
+
+    subroutine toggle_fallback(targetfile)
+         type(file_info_t), intent(inout)    :: targetfile
+         integer                             :: len_name
+
+         len_name = len_trim(targetfile%name)
+         if (targetfile%type == 2) then       
+           targetfile%name = targetfile%name(1:len_name-2)//'noh5'
+           targetfile%type = 3
+         elseif  (targetfile%type == 3) then 
+           targetfile%name = targetfile%name(1:len_name-4)//'h5'
+           targetfile%type = 2
+         endif
+
+    end subroutine toggle_fallback
+
 
 end module labeled_storage

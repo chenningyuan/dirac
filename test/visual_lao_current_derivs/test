@@ -13,16 +13,15 @@ f.add(from_string = 'Requested density at point(s)',
       num_lines   = 10,
       abs_tolerance   = 1.0e-6)
 
-test.run(['dc_symmetric.inp'], ['h2o.mol'], args='--get="CHECKPOINT.h5 PAMXVC TBMO"')
+test.run(['dc_symmetric.inp'], ['h2o.mol'], args='--outcmo --get="PAMXVC TBMO"')
 
 inp_files = []
 inp_files.append('vis_divjbz_dc_nolao.inp')
 inp_files.append('vis_gradjbz_dc_symmetric.inp')
 
-test.run(inp_files, ['h2o.mol'], f, args='--copy="CHECKPOINT.h5 PAMXVC TBMO"')
+test.run(inp_files, ['h2o.mol'], f, args='--incmo --copy="PAMXVC TBMO"')
 
 # cleanup
-os.unlink('CHECKPOINT.h5')
 os.unlink('PAMXVC')
 os.unlink('TBMO')
 
