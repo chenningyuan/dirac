@@ -17,10 +17,13 @@ module talsh_trial_eomccsd
 
   public talsh_eomccsd_ip_trial_create 
   public talsh_eomccsd_ee_trial_create 
+  public talsh_eomccsd_LR_trial_create 
+
 
   public talsh_eomccsd_ip_Hdiag_create
   public talsh_eomccsd_ea_Hdiag_create
   public talsh_eomccsd_ee_Hdiag_create
+  public talsh_eomccsd_LR_proper_create
 
   contains
 
@@ -439,6 +442,45 @@ module talsh_trial_eomccsd
     end subroutine
 
 
+
+    subroutine talsh_eomccsd_LR_proper_create(workspace, Prop_gradient_tensor)
+      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
+      type(talsh_tens_t), intent(inout) :: Prop_gradient_tensor
+      integer :: nocc, nvir, i, j, a, b, ierr 
+      integer :: Prop_gradient_rank
+      integer :: Prop_gradient_dims(2)
+      real(8) :: norm_element 
+      complex(8), pointer, contiguous:: norm_element_tens(:,:)
+      complex(8), pointer, contiguous:: Prop_gradient_tens(:,:)
+      type(C_PTR):: Prop_gradient_body_p
+      type(C_PTR):: norm_element_body_p
+
+      norm_element = ZERO
+
+      nvir  = workspace%tens1_dims(1)
+      nocc  = workspace%tens1_dims(2)
+
+      ierr = talsh_tensor_dimensions(Prop_gradient_tensor,Prop_gradient_rank,Prop_gradient_dims)
+      ierr = talsh_tensor_get_body_access(Prop_gradient_tensor,Prop_gradient_body_p,C8,0,DEV_HOST)
+      call c_f_pointer(Prop_gradient_body_p,Prop_gradient_tens,Prop_gradient_dims(1:2))
+
+
+      ierr = talsh_tensor_get_body_access(workspace%Norm_prop_grad,norm_element_body_p,C8,0,DEV_HOST)
+      call c_f_pointer(norm_element_body_p,norm_element_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+
+      do i = 1, nocc
+         do a = 1, nvir
+            norm_element = abs(Prop_gradient_tens(a,i))
+            norm_element_tens(a,i) = norm_element 
+         end do
+      end do
+
+
+    end subroutine
+
+
+
+
     subroutine from_linear_to_indexes_pq(k_desired, p, dim_p, q, dim_q)
        integer, intent(in)  :: k_desired, dim_p, dim_q
        integer, intent(out) :: p, q
@@ -644,6 +686,75 @@ module talsh_trial_eomccsd
         end if
 
      end subroutine
+
+
+
+     subroutine talsh_eomccsd_LR_trial_create (workspace)
+      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
+
+      integer :: nocc, nvir, i, j, a, b, ierr, iroot, k(1), N, N1, N2 
+      real(8), allocatable :: diagonal(:)
+      integer :: i1, j1, a1, b1
+      integer :: w
+
+      complex(8), pointer, contiguous:: hdiag1_hp_tens(:,:)
+      complex(8), pointer, contiguous:: trial1_hp_tens(:,:)
+      type(C_PTR):: hdiag1_body_p
+      type(C_PTR):: trial1_body_p
+      logical :: debug_trial = .true.
+
+
+      ierr = talsh_tensor_get_body_access(workspace%Norm_prop_grad,hdiag1_body_p,C8,0,DEV_HOST)
+! first we copy the diagonal to a local working variable ("diagonal"), in order to sort it later with minloc() 
+      call c_f_pointer(hdiag1_body_p,hdiag1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+
+      allocate(diagonal(workspace%N(1)))
+      diagonal = 0.0d0
+      iroot = 1
+
+      w = 0
+      do i = 1, workspace%tens1_dims(2) 
+         do a = 1, workspace%tens1_dims(1) 
+            w = w + 1
+            diagonal(w) = real(hdiag1_hp_tens(a,i))
+         end do
+      end do
+
+
+    if (debug_trial) then
+         do i = 1, size(diagonal,1)
+             write (6,*) 'H_II(',i,'):',diagonal(i)
+         end do
+    end if
+
+      j = 0
+
+!          k = minloc(diagonal, MASK=(diag_H .ge. in_window_HbarSS_threshold))
+      do iroot = 1, workspace%nroots
+         if (size(diagonal).gt.2) then
+            k = maxloc(diagonal)
+            i = k(1)
+            if (debug_trial) write(6,*) 'debug, roots',iroot,diagonal(i),i
+            diagonal(i) = -1.0*huge(diagonal)
+            if (debug_trial) write(6,*) 'debug, making diagonal huge',diagonal(i)
+         else 
+            j = j + 1
+            i = j
+         end if
+
+         if (.true.) then
+                  ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
+                  call c_f_pointer(trial1_body_p,trial1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+                  call from_linear_to_indexes_pq(i,a1,workspace%tens1_dims(1),i1,workspace%tens1_dims(2))
+                  trial1_hp_tens(a1,i1) = ONE
+         end if
+      end do
+
+      deallocate (diagonal)
+
+
+   end subroutine
+
 
 
 end module

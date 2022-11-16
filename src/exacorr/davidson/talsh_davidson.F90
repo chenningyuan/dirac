@@ -81,6 +81,7 @@ type :: talsh_davidson_workspace_tens_t
    type(talsh_tens_t), pointer :: precond1(:), precond2(:) ! workspace for preconditioner
    type(talsh_tens_t), pointer :: metric1(:), metric2(:)   ! workspace for metric, for generalized eigenvalue problem, or linear equation problem 
    type(talsh_tens_t) :: Hdiag1, Hdiag2                    ! workspace for diagonal elements of the similarity-transformed Hamiltonian
+   type(talsh_tens_t) :: Norm_prop_grad                    ! workspace for norm of each element of property gradient vectors C in LR
 ! this so far is not really used outside of davidson, if it is, we should create a type
    integer, pointer :: tens1_dims(:), tens2_dims(:)        ! since all tensors for a given model IP/EA/EE/... have the same dimensions, we keep this information
    integer :: tens1_rank, tens2_rank                       ! since all tensors for a given model IP/EA/EE/... have the same rank, we keep this information
@@ -1982,6 +1983,7 @@ contains
            ierr = talsh_tensor_construct(workspace_t%precond1(i),C8,workspace_t%tens1_dims,init_val=ZERO)
         end do
         ierr=talsh_tensor_construct(workspace_t%Hdiag1,C8,workspace_t%tens1_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(workspace_t%Norm_prop_grad,C8,workspace_t%tens1_dims,init_val=ZERO)
 
 ! doubles
         do i = 1, workspace_t%Lmax

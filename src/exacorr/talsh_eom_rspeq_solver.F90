@@ -73,8 +73,13 @@ module talsh_eom_rspeq_solver
             call print_date("Entering CC-CI Right Linear Systems calculation")
 
             call talsh_davidson_workspace_create(workspace_t, nroot, interm_t%nocc, interm_t%nvir, flavor, 2)
-            call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
-            call talsh_eomccsd_ee_trial_create(workspace_t)
+            ! call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
+            ! call talsh_eomccsd_ee_trial_create(workspace_t)
+            call talsh_eomccsd_LR_proper_create(workspace_t,interm_t_prop%epsilon_prop_vo)
+            print *, "pass _LR_proper_create?"
+            call talsh_eomccsd_LR_trial_create(workspace_t)
+            print *, "pass _LR_trial_create?"
+            
 
 !     set pointers to sigma vector subroutines 
             interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
