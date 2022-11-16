@@ -403,10 +403,9 @@ module talsh_gradient
 !     error code
       integer :: ierr
 !     loop variables
-      integer :: i, j
+      integer :: p, q
 ! debug
       logical :: debug=.false.
-      integer :: k
 
 !***************************************
 !     copy DM blocks into one large DM *
@@ -439,15 +438,13 @@ module talsh_gradient
       dm_1rdm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
 
       if (debug) then
-        print *,'<<<<< DM, complete, in MO basis and fortran storage'
-        k = 1
-        do i=1,(nocc+nvir)
-           do j=1,(nocc+nvir)
-              write(*,'(3X,I4,2x,2F28.10,2x,4I4)') k, dm_1rdm_mo_fort(i,j),i,j
-              k = k + 1
+        print *,'<<<<< 1RDM, complete (active spinors only), in MO basis and fortran storage'
+        do p=1,(nocc+nvir)
+           do q=1,(nocc+nvir)
+              write(*,'(3X,4I4,2x,2F28.10)') p, q, dm_1rdm_mo_fort(p,q)
            end do
          end do
-         print *,'>>>>> DM, complete, in MO basis and fortran storage'
+         print *,'>>>>> 1RDM, complete (active spinors only), in MO basis and fortran storage'
       end if
 
     end subroutine
@@ -466,10 +463,8 @@ module talsh_gradient
 !     error code
       integer :: ierr
 !     loop variables
-      integer :: i, j
-! debug
-      logical :: debug=.false.
-      integer :: k
+      integer :: p,q,r,s
+      logical :: debug = .false.
 
 !***************************************
 !     copy DM blocks into one large DM *
@@ -481,6 +476,7 @@ module talsh_gradient
 !     | VVOO | VVOV | VVVO | VVVV |
 !     -----------------------------
 
+! first row
 !     oooo
       ierr=talsh_tensor_get_body_access(gamma%symm_oooo,body_p2,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(body_p2,dm_block,(/nocc,nocc,nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
@@ -489,12 +485,95 @@ module talsh_gradient
 !     ooov
       ierr=talsh_tensor_get_body_access(gamma%symm_ooov,body_p2,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(body_p2,dm_block,(/nocc,nocc,nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 4d array
-      dm_2rdm_mo_fort(1:nocc,1:nocc,1:nocc,1:nvir) = dm_block
+      dm_2rdm_mo_fort(1:nocc,1:nocc,1:nocc,1+nocc:nocc+nvir) = dm_block
 
+!     oovo
+      ierr=talsh_tensor_get_body_access(gamma%symm_oovo,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nocc,nocc,nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1:nocc,1:nocc,1+nocc:nocc+nvir,1:nocc) = dm_block
+
+!     oovv
+      ierr=talsh_tensor_get_body_access(gamma%symm_oovv,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nocc,nocc,nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1:nocc,1:nocc,1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
+
+! second row
+!     ovoo
+      ierr=talsh_tensor_get_body_access(gamma%symm_ovoo,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nocc,nvir,nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1:nocc,1+nocc:nocc+nvir,1:nocc,1:nocc) = dm_block
+
+!     ovov
+      ierr=talsh_tensor_get_body_access(gamma%symm_ovov,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nocc,nvir,nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1:nocc,1+nocc:nocc+nvir,1:nocc,1+nocc:nocc+nvir) = dm_block
+
+!     ovvo
+      ierr=talsh_tensor_get_body_access(gamma%symm_ovvo,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nocc,nvir,nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1:nocc,1+nocc:nocc+nvir,1+nocc:nocc+nvir,1:nocc) = dm_block
+
+!     ovvv
+      ierr=talsh_tensor_get_body_access(gamma%symm_ovvv,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nocc,nvir,nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1:nocc,1+nocc:nocc+nvir,1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
+
+! third row
 !     vooo
       ierr=talsh_tensor_get_body_access(gamma%symm_vooo,body_p2,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(body_p2,dm_block,(/nvir,nocc,nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
-      dm_2rdm_mo_fort(1:nvir,1:nocc,1:nocc,1:nocc) = dm_block
+      dm_2rdm_mo_fort(1+nocc:nocc+nvir,1:nocc,1:nocc,1:nocc) = dm_block
+
+!     voov
+      ierr=talsh_tensor_get_body_access(gamma%symm_voov,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nvir,nocc,nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1+nocc:nocc+nvir,1:nocc,1:nocc,1+nocc:nocc+nvir) = dm_block
+
+!     vovo
+      ierr=talsh_tensor_get_body_access(gamma%symm_vovo,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nvir,nocc,nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1+nocc:nocc+nvir,1:nocc,1+nocc:nocc+nvir,1:nocc) = dm_block
+
+!     vovv
+      ierr=talsh_tensor_get_body_access(gamma%symm_vovv,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nvir,nocc,nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1+nocc:nocc+nvir,1:nocc,1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
+
+! fourth row
+! vvoo
+      ierr=talsh_tensor_get_body_access(gamma%symm_vvoo,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nvir,nvir,nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir,1:nocc,1:nocc) = dm_block
+
+! vvov
+      ierr=talsh_tensor_get_body_access(gamma%symm_vvov,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nvir,nvir,nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir,1:nocc,1+nocc:nocc+nvir) = dm_block
+
+! vvvo
+      ierr=talsh_tensor_get_body_access(gamma%symm_vvvo,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nvir,nvir,nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir,1+nocc:nocc+nvir,1:nocc) = dm_block
+
+! vvvv
+      ierr=talsh_tensor_get_body_access(gamma%symm_vvvv,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nvir,nvir,nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir,1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
+
+
+      if (debug) then
+        print *,'<<<<< 2RDM, complete (active spinors only), in MO basis and fortran storage'
+        do p=1,(nocc+nvir)
+           do q=1,(nocc+nvir)
+             do r=1,(nocc+nvir)
+               do s=1,(nocc+nvir)
+                  write(*,'(3X,4I4,2x,2F28.10,2x,4I4)') p,q,r,s, dm_2rdm_mo_fort(p,q,r,s)
+               end do
+             end do
+           end do
+         end do
+         print *,'>>>>> 2RDM, complete (active spinors only), in MO basis and fortran storage' 
+      end if
 
 
    end subroutine
