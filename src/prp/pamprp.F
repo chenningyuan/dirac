@@ -8879,8 +8879,6 @@ C     ... allocate for LL-only operator
       IF (IPRINT.GE.3) THEN
         CALL HEADER('*** Output from PROP2BSS ***',-1)
       ENDIF
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',FILE='AOPROPER')
-      REWIND (LU1INT)
 C     ... run over all operators in the list
       DO I = 1, NPRPS
 C       ... get info if this operator has to be picture change transformed
@@ -8938,10 +8936,6 @@ C            ...
         ENDIF
 caspg
       ENDDO
-C
-C     Close AOPROPER
-C
-      CLOSE(LU1INT,STATUS='KEEP')
 C
       CALL MEMREL('KPRLL',WORK,KWORK,KPRLL,KFREE,LFREE)
 C

@@ -809,8 +809,6 @@ contains
 !     return
 
       file_unit = lu1int
-      call opnfil(file_unit, 'AOPROPER', 'UNKNOWN', 'read_1el_integrals')
-      rewind file_unit
 
       op_index = index_on_aoproper(op_name)
 
@@ -842,7 +840,6 @@ contains
                   work, 1, lwork, 0)
 
       call di_deselect_wrk(work, lwork)
-      close(file_unit, status = 'keep')
 
       if (debug_me) then
          call print_mat(P, label = 'debug P in AO basis')

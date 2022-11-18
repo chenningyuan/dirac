@@ -34,6 +34,4 @@ test.run(['CO.x2c.scf.inp'], ['CO.sto-2g.mol'], f, args='--outcmo ')
 test.run(['CO_1p.x2c.scf_4sigma.inp'], ['CO.sto-2g.mol'], f, args='--incmo ')
 test.run(['CO_1p.x2c.scf_5sigma.inp'], ['CO.sto-2g.mol'], f, args='--incmo ')
 
-os.unlink('DFCOEF')
-
 sys.exit(test.return_code)

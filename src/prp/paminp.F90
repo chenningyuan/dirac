@@ -3032,11 +3032,6 @@
 !     Open LU1INT if not opened
 !
       IF (DOPRP) THEN
-         INQUIRE(FILE='AOPROPER',OPENED=FOPEN)
-         IF (.NOT. FOPEN) THEN
-            OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',           &
-     &         FILE='AOPROPER')
-         END IF
 !
          call legacy_lwork_get(LWORK)
          call alloc(WORK,LWORK,id='WORK in MINPRP')
@@ -3046,11 +3041,6 @@
 !
          CALL ONEGEN(WORK,LWORK)
          call dealloc(WORK)
-!
-!        Close AOPROPER if it was closed on entry to
-!        MINPRP.
-!
-         IF (.NOT. FOPEN) CLOSE(LU1INT,STATUS = 'KEEP')
 !
 !
 !***********************************************************************

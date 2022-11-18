@@ -16,11 +16,12 @@ module checkpoint
   ! A type to store the schema
   type :: label_t
       character(len=:),allocatable:: label,type,rank,use,description
+      integer :: parent
   end type label_t
 
   ! Constants
   logical,parameter            :: VALID = .true.                   ! defined for convenience
-  character(len=13), parameter :: CHECKPOINT_NAME="CHECKPOINT.h5"  ! name of the checkpoint file
+  character(len=10), parameter :: CHECKPOINT_NAME="CHECKPOINT"     ! name of the checkpoint file
   character(len=17), parameter :: SCHEMA_NAME="schema_labels.txt"  ! pathname of the file that contains the labels (created from DIRACschema.txt by a python function)
 
   ! The file object that is stored in global memory
@@ -29,12 +30,13 @@ module checkpoint
   ! Keep also the schema in the modules (private) global memory
   type(label_t), allocatable, save :: labels(:)
 
-  ! These 4 functions should provide all functionality needed to write/read data defined in the schema.
+  ! These 5 functions should provide all functionality needed to write/read data defined in the schema.
 
   public checkpoint_open
   public checkpoint_close
   public checkpoint_write
   public checkpoint_read
+  public checkpoint_query
 
   interface checkpoint_write
       module procedure checkpoint_write
@@ -50,16 +52,22 @@ module checkpoint
       module procedure read_string_array
   end interface
 
+  interface checkpoint_query
+      module procedure checkpoint_query
+  end interface
+
   contains
 
 !------- Public procedures ----
 
   subroutine checkpoint_open
 
+      use mh5, only : mh5_is_available
+
       ! Open a new or existing file and initialize or check data sets defined in the schema
       ! After this step individual data sets can be written (or read in case of restart)
 
-      logical           :: restart
+      logical           :: restart,restart_noh5
 
       ! Read the schema to define all allowed labels
       call get_labels
@@ -69,25 +77,50 @@ module checkpoint
           stop " Error in checkpoint_open: file is already in use"
       end if
 
-      ! Proceed by initializing the file object as a hdf5 file with the correct name
-      checkpoint_file%type = 2
-      checkpoint_file%name = CHECKPOINT_NAME
+      ! Inquire whether (a yet unopened) checkpoint file is present and attempt a restart if it is
+      inquire (file=CHECKPOINT_NAME//'.h5',exist=restart)
+      if (restart.and..not.mh5_is_available()) then
+         ! a hdf5 restart file is available, but we are not able to use it
+         ! will be deleted to not create confusion when postprocessing the fallback file
+         restart = .false. 
+         call unlink(CHECKPOINT_NAME//'.h5')
+      end if
+      inquire (file=CHECKPOINT_NAME//'.noh5/.initialized',exist=restart_noh5)
 
-      ! Inquire whether (a yet unopened) file with this name is present and attempt a restart if it is
-      inquire (file=CHECKPOINT_NAME,exist=restart)
       if (restart) then
-         print*,"   - Existing checkpoint file: check contents"
+         checkpoint_file%name = CHECKPOINT_NAME//'.h5'
+         checkpoint_file%type = 2
+         print*,"   - Existing hdf5 checkpoint file: check contents"
          if (checkpoint_valid()) then
             print*, "   - Checkpoint file is valid, will be used for restart"
             return
          else 
             print*, "   - Checkpoint file is not valid, will be overwritten"
-            call unlink(CHECKPOINT_NAME)
+            call unlink(checkpoint_file%name)
+            checkpoint_file%status = -1
+         endif
+      elseif (restart_noh5) then
+         checkpoint_file%name = CHECKPOINT_NAME//'.noh5'
+         checkpoint_file%type = 3
+         print*,"   - Existing checkpoint directory: check contents"
+         if (checkpoint_valid()) then
+            print*, "   - Checkpoint directory is valid, will be used for restart"
+            return
+         else 
+            print*, "   - Checkpoint directory is not valid, will be overwritten"
+            call execute_command_line('rm -r '//CHECKPOINT_NAME//'.noh5')
             checkpoint_file%status = -1
          endif
       endif 
 
-      ! If we come this far we are dealing with a pristine directory and need to create and init the hdf5 file
+      ! If we come this far we are dealing with a pristine directory and need to create and init a checkpoint file
+      if (mh5_is_available()) then
+         checkpoint_file%name = CHECKPOINT_NAME//'.h5'
+         checkpoint_file%type = 2
+      else
+         checkpoint_file%name = CHECKPOINT_NAME//'.noh5'
+         checkpoint_file%type = 3
+      end if
       call create_new_checkpoint
       print*, "   - New checkpoint file created"
 
@@ -96,8 +129,6 @@ module checkpoint
   end subroutine checkpoint_open
 
   subroutine checkpoint_close
-
-      use mh5
 
       ! Close the checkpoint file after having checked that all required data is written
 
@@ -111,7 +142,6 @@ module checkpoint
             print*, "   - Checkpoint file does not contains all required data, can not be used for restarts"
       end if
 
-      call mh5_close_file(checkpoint_file%id)
       checkpoint_file%status = 0
       print*, "   - Checkpoint file closed"
 
@@ -158,7 +188,15 @@ module checkpoint
       integer,intent(out), optional          :: idata(:)
       character*(*),intent(out), optional    :: sdata
 
-      !TODO: implement error handling
+      character(len=100)                     :: verbose_message
+      logical                                :: exist
+
+      call  checkpoint_query(label,exist,verbose_message=verbose_message)
+      if (.not.exist) then
+         print*," WARNING: ",trim(label)," could not be read"
+         print*," REASON: ",trim(verbose_message)
+      end if
+
       if (present(rdata)) then
          call lab_read(checkpoint_file,label,rdata=rdata)
       elseif (present(idata)) then
@@ -168,6 +206,28 @@ module checkpoint
       end if
 
   end subroutine checkpoint_read
+
+  subroutine checkpoint_query(label,exist,data_size,verbose_message)
+
+      character*(*),intent(in)               :: label
+      logical, intent(out)                   :: exist
+      integer,intent(out), optional          :: data_size
+      character*(*),intent(out), optional    :: verbose_message
+
+
+      if (present(data_size)) then
+          call lab_query(checkpoint_file,label,exist,data_size)
+      else
+          call lab_query(checkpoint_file,label,exist)
+      end if
+
+      ! We're already done, but the caller may want us to be more verbose
+      if (present(verbose_message)) then
+         if (exist) verbose_message = label//' found on '//checkpoint_file%name
+         if (.not.exist) verbose_message = label//' not found on '//checkpoint_file%name
+      end if
+
+  end subroutine checkpoint_query
 
   subroutine write_single_real (label,rdata)
       ! Wrapper to allow writing of single numbers
@@ -243,8 +303,6 @@ module checkpoint
 
   logical function checkpoint_valid()
 
-      use mh5
-
       ! Check whether the file given as argument is a valid checkpoint file
       ! Criteria used for checking:
       ! - file should be readable (hdf5 formatted)
@@ -253,27 +311,27 @@ module checkpoint
       ! function is called at the end of a run to check the integrity of the file
       ! and can also be called at the beginning of a run to see if restart is possible
 
-      integer         :: i
-      integer(kind=8) :: group_id
+      integer         :: i, parent
+      logical         :: check,label_exists
 
       checkpoint_valid = VALID
 
-      ! open the file (if not already open)
-      if (checkpoint_file%status /= 1) then
-          checkpoint_file%id = mh5_open_file_rw(checkpoint_file%name)
-          if (checkpoint_file%id < 0) then
-             ! invalid identifier, error when opening this file
-             print*,"  - Could not open checkpoint file"
-             checkpoint_valid = .NOT. VALID
-             return
-          end if
-          checkpoint_file%status = 1
-      end if
-
       ! check the existence of all required data
       do i = 1, size(labels)
-         if (index(labels(i)%use,'required').ne.0) then
-             if (.not.mh5_exists_dset(checkpoint_file%id,labels(i)%label)) then
+
+         ! first find out whether this label belongs to an existing group
+         parent = labels(i)%parent
+         if (parent == 0) then
+            check = .true. ! always check for presence of the top level groups
+         else
+            ! only check in case the parent group is present
+            ! the group itself is checked as well as it is also among the labels
+            call lab_query(checkpoint_file,labels(parent)%label,check)
+         end if
+            
+         if (check .and. index(labels(i)%use,'required').ne.0) then
+             call lab_query(checkpoint_file,labels(i)%label,label_exists)
+             if (.not.label_exists) then
                 print*, "   - Required data set ",trim(labels(i)%label)," is missing"
                 ! dataset does not exist
                 checkpoint_valid = .NOT. VALID
@@ -286,25 +344,34 @@ module checkpoint
   subroutine create_new_checkpoint
 
       ! Part of initialization procedure, hdf5 requires that a group is created
-      ! before attempting to write data that is part of this group. Do this for
-      ! all groups defined in the schema.
+      ! before attempting to write data that is part of this group. We need to
+      ! create the top level groups at this stage, optional groups are created
+      ! when needed.
 
-      use mh5
-      integer :: i
-      logical :: composite_data
-      integer(kind=8) :: group_id
+      integer :: i,n_top
+      character(len=80), allocatable :: top_labels(:)
 
-      ! create the hdf5 file
-      checkpoint_file%id = mh5_create_file(checkpoint_file%name)
-      checkpoint_file%status = 1
-
-      ! Composite data corresponds to groups, find these labels and initialize the file by creating (empty) groups
+      ! Count the number of top groups that should be passed on to the initializer
+      n_top = 0
       do i = 1, size(labels)
-         if (index(labels(i)%type,'composite').ne.0) then
-             group_id = mh5_create_group(checkpoint_file%id,labels(i)%label)
-             call  mh5_close_group(group_id)
+         if (labels(i)%parent == 0) n_top = n_top + 1
+      end do
+
+      if (n_top == 0) then
+         print*, "ERROR: no top labels defined for checkpoint"
+         stop "error in create_new_checkpoint"
+      end if
+      allocate(top_labels(n_top))
+
+      n_top = 0
+      do i = 1, size(labels)
+         if (labels(i)%parent == 0) then
+            n_top = n_top + 1
+            top_labels(n_top) = labels(i)%label
          end if
       end do
+
+      call lab_init(checkpoint_file,top_labels)
 
   end subroutine create_new_checkpoint
 
@@ -334,15 +401,41 @@ module checkpoint
       read(unit,*) lengths
       do i = 1, n_labels
          read(unit,'(A)') line
-         labels(i)%label        = line(1                  :lengths(1))
-         labels(i)%type         = line(lengths(1)+1       :sum(lengths(1:2)))
-         labels(i)%rank         = line(sum(lengths(1:2))+1:sum(lengths(1:3)))
-         labels(i)%use          = line(sum(lengths(1:3))+1:sum(lengths(1:4)))
-         labels(i)%description  = line(sum(lengths(1:4))+1:sum(lengths(1:5)))
+         labels(i)%label        = trim(line(1                  :lengths(1)))
+         labels(i)%type         = trim(line(lengths(1)+1       :sum(lengths(1:2))))
+         labels(i)%rank         = trim(line(sum(lengths(1:2))+1:sum(lengths(1:3))))
+         labels(i)%use          = trim(line(sum(lengths(1:3))+1:sum(lengths(1:4))))
+         labels(i)%description  = trim(line(sum(lengths(1:4))+1:sum(lengths(1:5))))
       end do
       close(unit)
 
+      do i = 1, n_labels
+         call get_parent(labels(i))
+      end do
+
   end subroutine get_labels
+
+  subroutine get_parent(label)
+
+     type(label_t),intent(inout) :: label
+
+     character(:),allocatable    :: group
+     integer :: i
+
+     group = group_from_label(label%label)
+     if (label%label == group_from_label(label%label)) then
+         label%parent = 0 ! group is his own parent (top level groups like /input and /result)
+         return
+     end if
+        
+     do i = 1, size(labels)
+        if (group == trim(labels(i)%label)) then
+           label%parent = i
+           exit
+        end if
+     end do
+
+  end subroutine get_parent
 
   logical function check_label(mylabel,mytype)
 
@@ -350,17 +443,32 @@ module checkpoint
 
       character*(*), intent(in) :: mylabel, mytype
       logical :: found = .false.
-      integer :: i
+      integer :: i,i_wild
+      character(:),allocatable  :: mylabel1
+      character(len=2)          :: subdir
+
+      ! First check whether the label is a later instance of an array.
+      ! In that case we need to check the first instance
+      ! Note that for simplicity we allow only 9 instances of the same kind of data
+      mylabel1 = trim(mylabel)
+      do i = 2, 9
+         write (subdir,'(A,I1)') '/',i
+         i_wild = index(mylabel1,subdir)
+         if (i_wild > 0) then
+            mylabel1(i_wild+1:i_wild+1) = '1'
+            exit
+         endif
+      end do
 
       ! Try to find the label in the list of allowed labels
       do i = 1, size(labels)
          ! if this label is generic, only the groups need to match
          if (trim(labels(i)%use) == 'generic') then
-            found = index(group_from_label(mylabel),group_from_label(labels(i)%label)).ne.0
+            found = index(group_from_label(mylabel1),group_from_label(labels(i)%label)).ne.0
             if (found) exit
          end if
          ! normal case: a complete match is required
-         found = trim(labels(i)%label) == trim(mylabel)
+         found = trim(labels(i)%label) == mylabel1
          if (found) exit
       end do
 
@@ -376,24 +484,5 @@ module checkpoint
       end if
 
   end function check_label
-
-  function group_from_label(mylabel) result(group)
-
-       character(len=*)            :: mylabel
-       character, parameter        :: delimiter='/'
-       character(:),allocatable    :: group
-       integer                     :: i
-
-       ! find rightmost delimiter
-       i = scan(mylabel, delimiter, .true.)
-
-       ! the first part is the group
-       if (i > 1) then
-          group = mylabel(1:i-1)
-       else
-          group = 'invalid_label'
-       end if
-
-  end function group_from_label
 
 end module

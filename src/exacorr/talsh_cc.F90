@@ -46,7 +46,7 @@ module talsh_cc
          use talsh_triples
 
          type(exacc_input), intent(in) :: exa_input
-         type(file_info_t), save :: exacc_file
+         type(file_info_t)      :: exacc_file
          integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
@@ -114,10 +114,9 @@ module talsh_cc
          ncycles = exa_input%ncycles
 
          call print_date("MO occupation data to EXACC file")
-         if (exacc_file%status == -1) then
-            exacc_file%type = 2
-            exacc_file%name = "EXACC.h5"
-         end if
+         exacc_file%status = -1
+         exacc_file%type = 2
+         exacc_file%name = "EXACC.h5"
          call lab_write(exacc_file,'nocc',idata=nocc)
          call lab_write(exacc_file,'mo_occ',idata=mo_occ)
 

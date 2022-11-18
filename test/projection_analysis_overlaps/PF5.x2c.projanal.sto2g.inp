@@ -29,8 +29,8 @@ Projection analysis for PF5
 #.OWNBAS
 .POLREF
 .ATOMS
-AFPXXX
+P.h5
 1..9
-AFFXXX
+F.h5
 1..5
 *END OF 
