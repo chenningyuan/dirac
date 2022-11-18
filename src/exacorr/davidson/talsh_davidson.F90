@@ -1141,14 +1141,15 @@ contains
         end if
     end function
 
-    subroutine form_r_tensors(k,eigenvectors_subspace,eigenvalues_subspace,workspace_t,C_subspace)
+    subroutine form_r_tensors(k,eigenvectors_subspace,eigenvalues_subspace,workspace_t,prop_grad1, prop_grad2)
 ! we use delta{1,2,...} to store the values of r^k
         integer, intent(in) :: k
         complex(kind=8), intent(in)  :: eigenvectors_subspace(:,:)
         complex(kind=8), intent(in)  :: eigenvalues_subspace(:)
         type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
 ! aspg, added from (q)rsp
-        complex(kind=8), pointer, contiguous, optional, intent(in) :: C_subspace(:)
+        ! complex(kind=8), pointer, contiguous, optional, intent(in) :: C_subspace(:)
+        type(talsh_tens_t), intent(inout), optional :: prop_grad1, prop_grad2
 ! aspg, added from (q)rsp
         complex(kind=8) :: factor1, factor2, factor3
         integer(INTD) :: r1_rank 
@@ -1179,7 +1180,7 @@ contains
            factor2 = -eigenvalues_subspace(k)*factor1
 ! aspg, added from (q)rsp
         !    if (present(C_subspace)) factor2 = -C_subspace(i)
-           if (present(C_subspace)) factor3 = -C_subspace(i)
+        !    if (present(C_subspace)) factor3 = -C_subspace(i)
 ! aspg, added from (q)rsp
 
            if (debug_form_r) write(6,*) 'c(',i,',',k,')',factor1,'lambda*c',factor2
@@ -1201,10 +1202,10 @@ contains
               ierr=talsh_tensor_add("r(a,b,c,d)+=s(a,b,c,d)",workspace_t%delta2(k),workspace_t%sigma2(i),scale=factor1)
               ierr=talsh_tensor_add("r(a,b,c,d)+=t(a,b,c,d)",workspace_t%delta2(k),workspace_t%trial2(i),scale=factor2)
 
-              if (present(C_subspace)) then
-                ierr=talsh_tensor_add("r(a,b)+=t(a,b)",workspace_t%delta1(k),workspace_t%trial1(i),scale=factor3)
-                ierr=talsh_tensor_add("r(a,b,c,d)+=t(a,b,c,d)",workspace_t%delta2(k),workspace_t%trial2(i),scale=factor3)
-              end if 
+            !   if (present(C_subspace)) then
+                ! ierr=talsh_tensor_add("r(a,b)+=t(a,b)",workspace_t%delta1(k),workspace_t%trial1(i),scale=factor3)
+                ! ierr=talsh_tensor_add("r(a,b,c,d)+=t(a,b,c,d)",workspace_t%delta2(k),workspace_t%trial2(i),scale=factor3)
+            !   end if 
 
            end if
 
@@ -1216,8 +1217,14 @@ contains
 !             call print_tensor_elements(workspace_t%delta2(k))
 !             write (6,*) 'debug <<< in form_r_tensors, accumulated r2 for L',i,' <<<'
 !          end if
-       
        end do
+
+       if (present(prop_grad1)) then
+        ierr=talsh_tensor_contract("r(a,b)+=p(a,b)*K()",workspace_t%delta1(k),prop_grad1,&
+        & one_tensor,scale=ONE)
+        ierr=talsh_tensor_contract("r(a,b,c,d)+=p(a,b,c,d)*K()",workspace_t%delta2(k),prop_grad2,&
+        & one_tensor,scale=ONE)
+      end if 
 
 ! this should in the end work as what is below, but now we're doing a k at a time 
 !      vectors_L = size(b,2)
@@ -1260,13 +1267,14 @@ contains
 
 
 
-    function correction_to_vectors(output_file_unit, e_small_M, c_small_M, workspace_t, C_small, correct_all)
+    function correction_to_vectors(output_file_unit, e_small_M, c_small_M, workspace_t, prop_grad1, prop_grad2, correct_all)
         integer, intent(in)       :: output_file_unit
         type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
         complex(kind=8), intent(in)  :: e_small_M(:)
         complex(kind=8), intent(in)  :: c_small_M(:,:)
 ! aspg, added from (q)rsp
-        complex(kind=8), pointer, contiguous, optional, intent(in) ::  C_small(:)
+        ! complex(kind=8), pointer, contiguous, optional, intent(in) ::  C_small(:)
+        type(talsh_tens_t), intent(inout), optional :: prop_grad1, prop_grad2
 ! aspg, added from (q)rsp
         logical, optional, intent(in) :: correct_all
 
@@ -1284,7 +1292,8 @@ contains
             correct_all_local = .false. 
         end if
 
-        if (present(C_small)) then
+        ! if (present(C_small)) then
+        if (present(prop_grad1)) then
             nroots = 1
         else
             nroots = workspace_t%nroots
@@ -1304,8 +1313,10 @@ contains
         end do
         do k = 1, nroots
 ! instead of having a new variable to store r(:,k), we will do collect the results on workspace_t%delta{1,2,...} 
-           if (present(C_small)) then
-              call form_r_tensors(k,c_small_M,e_small_M,workspace_t,C_small)
+        !    if (present(C_small)) then
+           if (present(prop_grad1)) then
+            !   call form_r_tensors(k,c_small_M,e_small_M,workspace_t,C_small)
+              call form_r_tensors(k,c_small_M,e_small_M,workspace_t,prop_grad1,prop_grad2)
            else
               call form_r_tensors(k,c_small_M,e_small_M,workspace_t)
            end if
@@ -2513,8 +2524,10 @@ contains
             if (associated(delta)) deallocate(delta)
             if (davidson_solve_rhs) then
                 if (davidson_solve_linear_system) then
+!                     delta => correction_to_vectors(davidson_output_file_unit, &
+!    &                                        e_small, x_small, workspace_t, C_small)
                     delta => correction_to_vectors(davidson_output_file_unit, &
-   &                                        e_small, x_small, workspace_t, C_small)
+   &                                        e_small, x_small, workspace_t, prop_grad1,prop_grad2)
                 else
                     delta => correction_to_vectors(davidson_output_file_unit, &
    &                                               e_small, c_small_r, workspace_t)
