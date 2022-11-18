@@ -5222,6 +5222,7 @@ C
 #include "gencon.h"
 #include "nuclei.h"
 #include "orgcom.h"
+#include "codata.h"
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
@@ -5992,23 +5993,23 @@ C..TODO: check for inconsistencies and add stops
           GO TO 100
   169     CONTINUE
 !&&&& GAUGEO
-          READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
+          READ (LUCMD, *,IOSTAT=IOS) GAGORG
           GAGORG_SET = .TRUE.
           IF (IOS.NE.0) THEN
-            CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
+            CALL QUIT('Error in reading .GAUGEO')
           ENDIF
           GO TO 100
   170     CONTINUE
 !&&&& GO ANG
-          GO TO 100
 !         read user specified gauge origin in angstrom
           read(lucmd, *, iostat=ios) gagorg
           GAGORG_SET = .TRUE.
           if (ios /= 0) then
-            call quit('error in reading .GO ANG')
+            call quit('Error in reading .GO ANG')
           end if
 !         convert from angstrom to bohr
           gagorg = gagorg/xtang
+          GO TO 100
   171     CONTINUE
 !&&&& DIPORG
           READ (LUCMD, *,IOSTAT=IOS) DIPORG(1:3)
