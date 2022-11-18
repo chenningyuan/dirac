@@ -905,10 +905,10 @@ module labeled_storage
          integer                             :: len_name
 
          len_name = len_trim(targetfile%name)
-         if (targetfile%type == 2) then       
+         if (targetfile%type == 2 .and. targetfile%name(len_name-1:len_name) == 'h5') then
            targetfile%name = targetfile%name(1:len_name-2)//'noh5'
            targetfile%type = 3
-         elseif  (targetfile%type == 3) then 
+         elseif (targetfile%type == 3 .and. targetfile%name(len_name-3:len_name) == 'noh5') then
            targetfile%name = targetfile%name(1:len_name-4)//'h5'
            targetfile%type = 2
          endif
