@@ -701,7 +701,7 @@ module talsh_trial_eomccsd
       complex(8), pointer, contiguous:: trial1_hp_tens(:,:)
       type(C_PTR):: hdiag1_body_p
       type(C_PTR):: trial1_body_p
-      logical :: debug_trial = .true.
+      logical :: debug_trial = .false.
 
 
       ierr = talsh_tensor_get_body_access(workspace%Norm_prop_grad,hdiag1_body_p,C8,0,DEV_HOST)

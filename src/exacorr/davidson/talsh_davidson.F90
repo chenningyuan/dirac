@@ -100,6 +100,7 @@ real(kind=8), parameter :: davidson_eigenvalues_shift_threshold = 1.0e-3
 real(kind=8), save :: safe_minimum = 1.0d-36
 
 real(kind=8), save :: davidson_convergence_threshold 
+real(kind=8), save :: davidson_antisymme_threshold
 real(kind=8), save :: davidson_eigenvalues_shift(2)
 
 integer, save      :: davidson_max_subspace_size 
@@ -262,8 +263,11 @@ contains
         if (present(convergence_threshold)) then
             davidson_convergence_threshold = convergence_threshold
         else
-            davidson_convergence_threshold = 1.0d-5 
+            davidson_convergence_threshold = 1.0d-8 
         end if
+
+        davidson_antisymme_threshold = davidson_convergence_threshold * 0.1
+
 
         if (present(energy_shift)) then
             davidson_eigenvalues_shift = energy_shift
@@ -293,7 +297,7 @@ contains
         if (present(max_iterations)) then
             davidson_max_iterations = max_iterations
         else
-            davidson_max_iterations = 50
+            davidson_max_iterations = 100
         end if
 
         if (present(solve_values)) then
@@ -611,7 +615,7 @@ contains
         real(8) :: norm_r
         integer, allocatable :: valid_index(:)
         type(C_PTR) :: body_p, body_p1
-        real(8) :: davidson_antisymme_threshold = 1.0d-6
+        ! real(8) :: davidson_antisymme_threshold = 1.0d-6
         integer :: ierr
         logical :: debug_double_check = .false.
 
@@ -702,7 +706,7 @@ contains
        integer :: rank
        real :: norm_r
        complex(8) :: norm
-       real(8) :: davidson_antisymme_threshold = 1.0d-6
+    !    real(8) :: davidson_antisymme_threshold = 1.0d-6
        integer :: ierr
   
 
@@ -817,7 +821,7 @@ contains
         complex(8) :: factor
         ! type(talsh_tens_t) :: one_tensor
         ! integer(C_INT)     :: one_dims(1)
-        real(8) :: davidson_antisymme_threshold = 1.0d-6
+        ! real(8) :: davidson_antisymme_threshold = 1.0d-6
         ! real(8) :: davidson_antisymme_threshold_num = 1.0d-12
 
         integer(C_INT)     :: one_dims(1)

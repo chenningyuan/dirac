@@ -76,9 +76,7 @@ module talsh_eom_rspeq_solver
             ! call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
             ! call talsh_eomccsd_ee_trial_create(workspace_t)
             call talsh_eomccsd_LR_proper_create(workspace_t,interm_t_prop%epsilon_prop_vo)
-            print *, "pass _LR_proper_create?"
             call talsh_eomccsd_LR_trial_create(workspace_t)
-            print *, "pass _LR_trial_create?"
             
 
 !     set pointers to sigma vector subroutines 
