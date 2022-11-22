@@ -64,7 +64,7 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
 
             call print_date('Evaluate CC-CI LR')
 
-            eom_lr = complex(0.0,0.0)
+            eom_lr = dcmplx(0.0,0.0)
 
             vvoo_dims(3:4) = exa_input%nocc
             vvoo_dims(1:2) = exa_input%nvir
@@ -223,7 +223,7 @@ subroutine get_linrsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             print *, "Contribution of total tFt(CC-CC): ", term1
         end if 
 
-        term2 = complex(0.0,0.0)
+        term2 = dcmplx(0.0,0.0)
 
     else 
 !--------------------------------------------------------------------------------------

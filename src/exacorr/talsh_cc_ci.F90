@@ -65,7 +65,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     integer :: ierr
     
     omega1=(0.0,0.0)
-    omega1 = complex(exa_input%w_lr_re, exa_input%w_lr_im)
+    omega1 = dcmplx(exa_input%w_lr_re, exa_input%w_lr_im)
     omega2=(0.0,0.0)
     omega3=(0.0,0.0)
 

@@ -263,7 +263,7 @@ contains
         if (present(convergence_threshold)) then
             davidson_convergence_threshold = convergence_threshold
         else
-            davidson_convergence_threshold = 1.0d-8 
+            davidson_convergence_threshold = 1.0d-5 
         end if
 
         davidson_antisymme_threshold = davidson_convergence_threshold * 0.1
