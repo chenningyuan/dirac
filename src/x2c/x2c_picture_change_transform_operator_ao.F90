@@ -441,14 +441,14 @@ contains
 !        define unique file label for each property operator f
          call num2str(i,numstr)
          write(flabel,'(a8,a4)') 'prpint2c',numstr
-         
+
          if(spherical_on)then
 
            lwrk = is_len_wrk - naosh_ls**2*nz*2 - ioff_pct_mat
            allocate(wrk(lwrk))
            call sph_iotc(scr_mat1,scr_mat2,nr_sph,print_lvl,wrk,lwrk)
            deallocate(wrk)
-           
+
 
            call x2c_write(flabel,scr_mat2,nr_sph**2  * nz,x2c_file_glb)
          else

@@ -39,8 +39,8 @@ C
 #include "dcbprp.h"
 C
       CHARACTER WF*4
-      INTEGER state 
-      INTEGER J 
+      INTEGER state
+      INTEGER J
 C
       CALL QENTER('PAMPRP')
 C
@@ -53,7 +53,7 @@ C
      &     3X,'* First-order ESR properties',/,
      &     6X,'Hans Joergen Aa. Jensen et al.',//,
      &     3X,'* MP2 first order properties:',/,
-     &     6X,'J. N. P. van Stralen, L. Visscher, C. V. Larsen' 
+     &     6X,'J. N. P. van Stralen, L. Visscher, C. V. Larsen'
      &       ,' and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.',//
      &     3X,'* KR-RPA second-order properties',/,
      &     6X,'Hans Joergen Aa. Jensen and Trond Saue',//,
@@ -97,14 +97,14 @@ C
          CALL TITLER('Properties for ' // WF // ' wave function',
      &        '*',110)
 
-         IF (WF .EQ. 'EOM ') THEN 
+         IF (WF .EQ. 'EOM ') THEN
            CALL number_of_states(state)
              write(*,*)'# states', state
             do j = 1, state
 
              CALL PAMPRP_1(WF, j)
 
-            enddo 
+            enddo
 
          ELSE
            CALL PAMPRP_1(WF,1)
@@ -192,7 +192,7 @@ C
          if (doexacc) then
             call kuprpexp(wf, work(kexp), work(kfree), lfree, state)
          else
-             CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE,STATE) 
+             CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE,STATE)
          endif
       ELSE
          KEXP = KFREE
@@ -454,7 +454,7 @@ C  /* Deck def_epolar */
 C***********************************************************************
 C
 C     Define operators for electric dipole polarizabilities
-C    
+C
 C     Written by T.Saue - June 28 1996
 C     Last revision: June 28 - tsaue
 C                    July 2006 - M.Ilias, Prievidza
@@ -546,7 +546,7 @@ C  /* Deck DEF_EFN */
       SUBROUTINE DEF_EFN(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
-C     Define operator for electric field 
+C     Define operator for electric field
 C
 C     Written by T.Saue Feb 26 2003
 C
@@ -623,7 +623,7 @@ C
  200      CONTINUE
  50     CONTINUE
       END IF
- 100  CONTINUE 
+ 100  CONTINUE
 C
       IF(IPRINT.GE.1) THEN
         DO I = 1,ITYP
@@ -1406,7 +1406,7 @@ C
 
 ! gosia:
 ! calculate << B_i; B_i >>_0 with LAO
-! only for one component of magnetic field, i = x, y or z 
+! only for one component of magnetic field, i = x, y or z
 ! i need it temporarily in visual
       IF (BXLAO .OR. BYLAO .OR. BZLAO) THEN
         CALL DEF_BLAO(WORK,LWORK,IPRPRP)
@@ -1546,7 +1546,7 @@ C
 C
 C
 C     PV contribution to NMR shielding
-      IF(PVC_SHIELD) 
+      IF(PVC_SHIELD)
      &  CALL PRINTOUT_PVC_SHIELD(ABLRF,ABCNV,WORK,KFREE,LFREE)
 C     PV contribution to spin-spin coupling
       IF(PVC_SPINSPIN)
@@ -1554,7 +1554,7 @@ C     PV contribution to spin-spin coupling
 C
 C     Magnetic susceptibilities
 C
-      IF (MSUSCP) THEN
+      IF(MSUSCP) THEN
         CALL PRP_MSUSCP(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
@@ -2003,8 +2003,8 @@ C     print section
             DO J = 1,3
               EFGTOT(I,J,NATOM)=EFGNUC(I,J,NATOM)+EFGEL(I,J,NATOM)
               EFG_METHOD(I,J,NATOM) = EFGTOT(I,J,NATOM)
-              EFGPRINT1 = EFGEL(I,J,NATOM) 
-              EFGPRINT2 = EFGNUC(I,J,NATOM) 
+              EFGPRINT1 = EFGEL(I,J,NATOM)
+              EFGPRINT2 = EFGNUC(I,J,NATOM)
               EFGPRINT3 = EFGTOT(I,J,NATOM)
               IF (ABS(EFG_METHOD(I,J,NATOM)).GT.1.0D-12) THEN
                 IF (ABS(EFG_METHOD(I,I,NATOM)).GT.1.0D+04) THEN
@@ -2052,7 +2052,7 @@ C
           EFGTOT(3,3,NATOM) = PVAL(6)
           WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOMD)
           DO I=1,3
-            FMTEFG = '(2X,A3,3(3X,E16.10,A))' 
+            FMTEFG = '(2X,A3,3(3X,E16.10,A))'
             WRITE(LUPRI,FMTEFG)
      &            'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
      &            ,EFGTOT(I,I,NATOM),' au '
@@ -2136,7 +2136,7 @@ C       fill temporary matrix
 C       =====================
 C
         ! edh: ABLRF appears to have different dim. for damped response?
-        ! Check if this output still works... 
+        ! Check if this output still works...
         DO I = 1,3
           DO J = 1,3
             KI = IPEPOLAR(I,1)
@@ -2173,7 +2173,7 @@ C       calculate tensor trace
 C       ==========================
 C
         average(ifreq)=(tmpmat(1,1)+tmpmat(2,2)+tmpmat(3,3))/3.0d0
-      
+C
 C
 C       printout a.u.
 C       =============
@@ -4070,7 +4070,7 @@ C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
      &                 "London atomic orbitals expectation value term:"
                        CALL WRIXPR(NNSTIN,INDXPR)
                     ENDIF
-                    CALL OP1IND(LABEL,IPIND,LEXPP,NEXPP,INDXPR,MAXEXP) 
+                    CALL OP1IND(LABEL,IPIND,LEXPP,NEXPP,INDXPR,MAXEXP)
                     IPRNST(NNSTIN) = IPIND
                  END DO
               END IF
@@ -4461,13 +4461,13 @@ C     define operator type, factor, name and label
 C
       NPCOMP = 1
       PFAC(1)  = 4.0D0*CVAL
-C     
+C
 C     4*ic gamma^0 gamma^5 p^2/2m
-C     
+C
       PNAME(1) = 'P2-EDM'
 CTF   Since we are working with the p^2 form of the EDM operator, there
 CTF   is no explicit reference to Atom1 or Atom2 (etc.). We evaluate
-CTF   over EDM integrals in the molecular spinor basis. 
+CTF   over EDM integrals in the molecular spinor basis.
 C
       IOP(1)   = 21
       PLABEL(1) = 'KINENERG'
@@ -4935,7 +4935,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD */
       SUBROUTINE DEFINE_PVC_SHIELD()
 C=======================================================================
-C     define operators for 
+C     define operators for
 C     PV contribution to NMR shielding
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
@@ -4959,7 +4959,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SPINSPIN */
       SUBROUTINE DEFINE_PVC_SPINSPIN()
 C=======================================================================
-C     define operators for 
+C     define operators for
 C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
@@ -5336,7 +5336,7 @@ C
 C     Define diamagnetic contribution to shieldings
 C     Written by T. Enevoldsen Oct. 1997
 C
-C  MI&HJJ/2002,2003 - extended for LAO 
+C  MI&HJJ/2002,2003 - extended for LAO
 C
 C***********************************************************************
 #include "implicit.h"
@@ -5360,7 +5360,7 @@ C
 #include "chrnos.h"
 #include "ibtfun.h"
 
-      CALL QENTER('DEF_NSTDIA1')   
+      CALL QENTER('DEF_NSTDIA1')
 
       IF (LONDON) THEN
          LABEL = 'NSNL'
@@ -5368,7 +5368,7 @@ C
          LABEL = 'NSCO'
       END IF
 
-C  always do control print out 
+C  always do control print out
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)')
      &' NMR diamagnetic shielding contributions '//
@@ -5376,7 +5376,7 @@ C  always do control print out
        IF (LONDON) THEN
         WRITE(LUPRI,'(2X,A)')
      &'- for London atomic orbitals (invariant gauge origin)'
-       ELSE 
+       ELSE
         WRITE(LUPRI,'(2X,A)')
      &'- for conventional atomic orbitals (common gauge origin)'
        ENDIF
@@ -5426,7 +5426,7 @@ C
  200    CONTINUE
  100  CONTINUE
 
-      CALL QEXIT('DEF_NSTDIA1')   
+      CALL QEXIT('DEF_NSTDIA1')
       RETURN
       END
 
@@ -5435,7 +5435,7 @@ C  /* Deck def_msuscp */
       SUBROUTINE DEF_MSUSCP()
 C****************************************************************************
 C
-C    PURPOSE: 
+C    PURPOSE:
 C  ===========
 C   Define operators for calculating the magnetic susceptibility
 C   both for response part and the expectation value (& diamagnetic) terms.
@@ -5471,7 +5471,7 @@ C
        IF (LONDON) THEN
           WRITE(LUPRI,'(1X,A)')
      &  '- with London atomic orbitals (LAO).'
-       ELSE  
+       ELSE
           WRITE(LUPRI,'(1X,A)')
      &  '- with conventional atomic orbitals (CGO)'
        ENDIF
@@ -5493,12 +5493,12 @@ C  ** Split for conventional and London orbitals
 C
       IPRINT = IPRPRP
       CALL IZERO(IPMSUSC,6)
-    
+C
       IF (LONDON) THEN ! use London AO's
-C ... always calculate expectation value terms 
-       DOEXP = .TRUE. 
+C ... always calculate expectation value terms
+       DOEXP = .TRUE.
 C ... define operators for response and exp.value parts
-       CALL DEF_D1HBLOND(2,LPRINT)  
+       CALL DEF_D1HBLOND(2,LPRINT)
       ELSE ! Conventional AO
 C      ... XAVECTOR
        IOP(1) = 5
@@ -5568,7 +5568,7 @@ C
            CALL WRIXPR(0,IPLONDON(J,I))
          ENDDO
          WRITE(LUPRI,'(2X,A)')
-     &'Including g(B) and {T(1),H(0)} terms. ' 
+     &'Including g(B) and {T(1),H(0)} terms. '
        ELSE
        INDOP1 = IPMSUSC(1,I)
        IF(INDOP1.GT.0) THEN
@@ -5591,7 +5591,7 @@ C
            CALL WRIXPR(0,IPLONDON(J,I))
          ENDDO
          WRITE(LUPRI,'(2X,A)')
-     &'Including g(B) and {T(1),H(0)} terms. ' 
+     &'Including g(B) and {T(1),H(0)} terms. '
        ELSE
         INDOP1 = IPMSUSC(2,I)
         IF(INDOP1.GT.0) THEN
@@ -5605,7 +5605,7 @@ C ----------------------------------------------
 C Define operators for the expectation value
 C ----------------------------------------------
       IF (MSUSCDIA.AND.(.NOT.LONDON)) THEN
-       DOEXP = .TRUE. ! Calculate the expectation value 
+       DOEXP = .TRUE. ! Calculate the expectation value
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)')
      & 'Diamagnetic susceptibility terms (CGO):'
@@ -5682,17 +5682,17 @@ C
       ENDIF
 
       ELSE IF ((.NOT.MSUSCDIA).AND.(.NOT.LONDON)) THEN
-C  ... Do not calculate exp. value - diamag.term 
+C  ... Do not calculate exp. value - diamag.term
 C  which is fully  involved in paramag. term when rotating electrons and positrons
 
-        DOEXP = .FALSE. 
+        DOEXP = .FALSE.
         WRITE(LUPRI,'(1X,A)')
      & 'Diamagnetic CGO susceptibility expectation value term'//
      & ' is  not calculated (MSUSCDIA=.false.)!'
 
 ! ... London atomic orbitals - always calculate the expectation value
       ELSE IF (LONDON) THEN
-C  ... Here take care of one-electron terms 
+C  ... Here take care of one-electron terms
 C ... first 3 terms from the <r r~ hd> - RM2H1+RM2H2+RM2H3
 C  ... 6 terms  Qmn.<r r~ beta' c^2>.Qmn - 6 diagonal operators
 C     RM2H1 terms, IPDSUSC(1-6)
@@ -5906,7 +5906,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
            FACLL = -1.0D0
         ENDIF
 
-        PNAME     = 'LAO-XXRDSUSLL' 
+        PNAME     = 'LAO-XXRDSUSLL'
         IPTYP     = 5
         NPCOMP    = 2
         PFAC(1)   = FACLL*CVAL
@@ -5918,7 +5918,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         CALL OP1IND('XXRDSUL',IPDSUSC(19),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-        PNAME     = 'LAO-XYRDSUSLL'  
+        PNAME     = 'LAO-XYRDSUSLL'
         IPTYP     = 6
         NPCOMP    = 2
         PFAC(1)   = FACLL*CVAL
@@ -5930,7 +5930,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         CALL OP1IND('XYRDSUL',IPDSUSC(20),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-        PNAME     = 'LAO-XZRDSUSLL'  
+        PNAME     = 'LAO-XZRDSUSLL'
         IPTYP     = 7
         NPCOMP    = 2
         PFAC(1)   = FACLL*CVAL
@@ -5942,7 +5942,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         CALL OP1IND('XZRDSUL',IPDSUSC(21),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-        PNAME     = 'LAO-YXRDSUSLL'  
+        PNAME     = 'LAO-YXRDSUSLL'
         IPTYP     = 5
         NPCOMP    = 2
         PFAC(1)   = FACLL*CVAL
@@ -5954,7 +5954,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         CALL OP1IND('YXRDSUL',IPDSUSC(22),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-        PNAME     = 'LAO-YYRDSUSLL'  
+        PNAME     = 'LAO-YYRDSUSLL'
         IPTYP     = 6
         NPCOMP    = 2
         PFAC(1)   = FACLL*CVAL
@@ -5966,7 +5966,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         CALL OP1IND('YYRDSUL',IPDSUSC(23),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-        PNAME     = 'LAO-YZRDSUSLL'  
+        PNAME     = 'LAO-YZRDSUSLL'
         IPTYP     = 7
         NPCOMP    = 2
         PFAC(1)   = FACLL*CVAL
@@ -5978,7 +5978,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         CALL OP1IND('YZRDSUL',IPDSUSC(24),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-        PNAME     = 'LAO-ZXRDSUSLL'  
+        PNAME     = 'LAO-ZXRDSUSLL'
         IPTYP     = 5
         NPCOMP    = 2
         PFAC(1)   = FACLL*CVAL
@@ -5990,7 +5990,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         CALL OP1IND('ZXRDSUL',IPDSUSC(25),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-        PNAME     = 'LAO-ZYRDSUSLL'  
+        PNAME     = 'LAO-ZYRDSUSLL'
         IPTYP     = 6
         NPCOMP    = 2
         PFAC(1)   = FACLL*CVAL
@@ -6002,7 +6002,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         CALL OP1IND('ZYRDSUL',IPDSUSC(26),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-        PNAME     = 'LAO-ZZRDSUSLL'  
+        PNAME     = 'LAO-ZZRDSUSLL'
         IPTYP     = 7
         NPCOMP    = 2
         PFAC(1)   = FACLL*CVAL
@@ -6015,7 +6015,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 !-----------------------------------------------------------------
 ! RDSUSNL terms,  pointers  IPDSUSC(28-33),
-! represent gauge-origin independent Sternheim diamagnetic term 
+! represent gauge-origin independent Sternheim diamagnetic term
 ! for LAO-magnetizabilities
 !
 ! include them 1.RKB-by default,  2.UKB - when specified (.MSUSCD)
@@ -6081,7 +6081,7 @@ C ... off-diagonal tensor elements have to be symmetrized !
         CALL OP1IND('ZZDSUSN',IPDSUSC(33),
      &               LEXPP,NEXPP,INDXPR,MAXEXP)
 
-C ... for diamagnetic terms, we also need DSUSCGM DALTON analogues, pointers IPDSUSC(34-39) 
+C ... for diamagnetic terms, we also need DSUSCGM DALTON analogues, pointers IPDSUSC(34-39)
 
         PNAME     = 'DSUSC_CGO-XX'
         IPTYP     = 1
@@ -6154,7 +6154,7 @@ C
            CALL PRSYMB(LUPRI,'.',75,0)
            CALL WRIXPR(I,INDXPR)
          ENDDO
-         IF (MSUSCDIA) THEN 
+         IF (MSUSCDIA) THEN
            WRITE(LUPRI,'(2X,A)') '*** Aucars diamagnetic terms '//
      &'for magnetizabilities with LAO ***'
            NTERMS_EXP_DIAMAG=39
@@ -6183,14 +6183,14 @@ C /* Deck PRP_MSUSCP */
       SUBROUTINE PRP_MSUSCP(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C    PURPOSE: Output routine for magnetic susceptibilities     
+C    PURPOSE: Output routine for magnetic susceptibilities
 C
 C    It is modelled after TEC's routines
-C    and after the dalton routine 'abacus/abadrv.F/SUSRES' 
-C    
+C    and after the dalton routine 'abacus/abadrv.F/SUSRES'
+C
 C    Written by MI, jan. 2003
-C    Last modifications: MI, April 2006; MI, Nov. 2007, Tel Aviv     
-C     
+C    Last modifications: MI, April 2006; MI, Nov. 2007, Tel Aviv
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -6228,7 +6228,7 @@ C***********************************************************************
 
 C=============================================================================
 C  Call routine for calculation of all remaining exp.value terms
-C  when using London atomic orbitals. 
+C  when using London atomic orbitals.
 C=============================================================================
       CALL DZERO(SUS2EL,9)
       CALL DZERO(SUSFSY,9)
@@ -6260,14 +6260,14 @@ C     ... evaluate expectation value terms first
           DO I = 1, 3
           DO J = I, 3
             IJ = IJ + 1
-            IJX = IPDSUSC(IJ) 
+            IJX = IPDSUSC(IJ)
             IF (IJ.GT.NEXPP) WRITE(LUPRI,*)
      &   "     PRP_MSUSCP: NEXPP is exceeded!"
            IF (XLR_SKIPEP) THEN
 C  -1 is for the compatibility with Dalton
              SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJX)
              SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
-           ELSE                
+           ELSE
              SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJX)
              SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
            ENDIF
@@ -6278,12 +6278,12 @@ C  -1 is for the compatibility with Dalton
            CALL HEADER('Expectation values part of susceptibilities',-1)
            CALL OUTPUT(SUSDIA,1,3,1,3,3,3,1,LUPRI)
            CALL FLSHFO(LUPRI)
-          ENDIF 
+          ENDIF
         ENDIF ! IF (MSUSCDIA) THEN
-      ELSE IF (LONDON) THEN 
+      ELSE IF (LONDON) THEN
 C ... accumulate one-electron expectation values into SUSDIA
 C.......................................................................................
-C   IPDSUSC(1-6)...pqRM2H1, IPDSUSC(7-12)...pqRM2H2, IPDSUSC(13-18)...pqRM3H3, 
+C   IPDSUSC(1-6)...pqRM2H1, IPDSUSC(7-12)...pqRM2H2, IPDSUSC(13-18)...pqRM3H3,
 C   IPDSUSC(19-27)...pqRDUSLL, IPDSUSC(28-33)...pqRDSUSNL, IPDSUSC(34-39)...pqSUSCGO
 C
         CALL DZERO(SUSDIA,9)
@@ -6292,11 +6292,11 @@ C
         NEXPVALTERMS=3 ! RM2H1 + RM2H2 + RM2H3: second magnetic derivatives of the Dirac Hamiltonian
         DO K = 1, NEXPVALTERMS
         DO I = 1, 3
-        DO J = I, 3 
+        DO J = I, 3
           IJ = IJ + 1
-          IJX = IPDSUSC(IJ) 
+          IJX = IPDSUSC(IJ)
           SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
-     &    SUSDIA(IPTAX(J,2),IPTAX(I,2))  
+     &    SUSDIA(IPTAX(J,2),IPTAX(I,2))
           SUSDIA(IPTAX(I,2),IPTAX(J,2)) = SUSDIA(IPTAX(J,2),IPTAX(I,2))
         ENDDO
         ENDDO
@@ -6357,25 +6357,25 @@ C    ... control print-out of both symmetrized and nosymmetrized RDSUSLL terms
 
         ! store the RDSUSLL expectation value contributions
         DO I = 1, 3
-        DO J = 1, 3 
+        DO J = 1, 3
          IJ = IJ + 1
-         IJX = IPDSUSC(IJ) 
+         IJX = IPDSUSC(IJ)
          SUSDIA(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJX) +
-     &   SUSDIA(IPTAX(I,2),IPTAX(J,2)) 
+     &   SUSDIA(IPTAX(I,2),IPTAX(J,2))
         ENDDO
         ENDDO
 
 C ------------------------------------------------------------------------------
 C  LAST 6 Aucars (Sternheim) diamagnetic terms, RDSUSNL, extracted if wanted
 C ------------------------------------------------------------------------------
-        IF (MSUSCDIA) THEN  
+        IF (MSUSCDIA) THEN
           DO I = 1, 3
-          DO J = I, 3 
+          DO J = I, 3
            IJ = IJ + 1
-           IJX = IPDSUSC(IJ) 
+           IJX = IPDSUSC(IJ)
            SUSDIA(IPTAX(J,2),IPTAX(I,2)) =  EXPVAL(IJX) +
-     &     SUSDIA(IPTAX(J,2),IPTAX(I,2)) 
-           SUSDIA(IPTAX(I,2),IPTAX(J,2)) =  
+     &     SUSDIA(IPTAX(J,2),IPTAX(I,2))
+           SUSDIA(IPTAX(I,2),IPTAX(J,2)) =
      &     SUSDIA(IPTAX(J,2),IPTAX(I,2))
 C          ... save them only when e-p rotations are active!
            IF (.NOT.XLR_SKIPEP) THEN
@@ -6385,12 +6385,12 @@ C          ... save them only when e-p rotations are active!
          ENDDO
          ENDDO
 
-C ... This is needed for compatibility with Dalton 
+C ... This is needed for compatibility with Dalton
 !gosia: but suscom is not used in following print of one-electron exp.value!
          DO I = 1, 3
-         DO J = I, 3 
+         DO J = I, 3
           IJ = IJ + 1
-          IJX = IPDSUSC(IJ) 
+          IJX = IPDSUSC(IJ)
           SUSCOM(IPTAX(J,2),IPTAX(I,2)) = -EXPVAL(IJX)
           SUSCOM(IPTAX(I,2),IPTAX(J,2)) = -EXPVAL(IJX)
          ENDDO
@@ -6425,10 +6425,10 @@ C------------------------------------------------------------
 C  ... get relaxation parts of susceptibilities
 C     for both conventional and London atomic orbitals
 C------------------------------------------------------------
-      DO IFREQ = 1, NBFREQ 
+      DO IFREQ = 1, NBFREQ
         CALL PRSYMB(LUPRI,'-',72,2)
         IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
-           WRITE(LUPRI,'(A,F15.8,2X,A)') 
+           WRITE(LUPRI,'(A,F15.8,2X,A)')
      &           '*** Frequency    :',BFREQ(IFREQ),'a.u.'
         ENDIF
         CALL DZERO(SUSREL,9)
@@ -6465,7 +6465,7 @@ CMI  ...    extract first character, like 'X magnetic field'
           IF (LONDON) THEN
             IAX = IPLONDON(1,IA)
             READ (PRPNAM((IAX)),'(4X,A1)') JCA
-            JA = ICONVXYZ(JCA)  
+            JA = ICONVXYZ(JCA)
           ELSE
             IAX = IPMSUSC(1,IA)
             READ (PRPNAM(LLRAPU(IAX)),'(A1)') JCA
@@ -6490,7 +6490,7 @@ C          contributions from the linear response function
        ENDDO
 
          CALL HEADER('Relaxation part of susceptibilities',-1)
-         IF (LONDON) THEN  
+         IF (LONDON) THEN
 C    .... DALTON type of output
           CALL POLPRI(SUSREL,'   ',-2)
          ELSE
@@ -6519,12 +6519,12 @@ C ....write out e-e and e-p contributions...
            CALL HEADER('.MSUSCD diamagnetic term for comparison '//
      &                 'with e-p "diamagnetic" term (au):',1)
            CALL OUTPUT(SUSDIA_EX,1,3,1,3,3,3,1,LUPRI)
-           AVERAG_EX = 
+           AVERAG_EX =
      &      (SUSDIA_EX(1,1) + SUSDIA_EX(2,2) + SUSDIA_EX(3,3))/D3
             WRITE (LUPRI,'(/,6X,A,F20.6)')
      &      '.MSUSCDIA average value:',AVERAG_EX
           ENDIF
- 
+C
           IF (.NOT.LONDON) THEN
 C        ... copy e-e "paramagnetic" into SUSREL and e-p "diamagnetic" into SUSDIA
             CALL DCOPY(9,SUSREL_EP(1,1,1),1,SUSREL,1)
@@ -6551,7 +6551,7 @@ C          ... copy the e-e "diamagnetic" contribution into SUSCOM
             SUSTOT(I,J)  = SUSDIA(I,J) + SUSREL(I,J)
          ENDDO
          ENDDO
-      ELSE 
+      ELSE
 C        ... the case with London atomic orbitals ...
          DO I = 1, 3
          DO J = 1, 3
@@ -6574,7 +6574,7 @@ C
       IJ = 1
       DO 300 I = 1, 3
          DO 310 J = 1, I
-!gosia: todo check if these "magnetizability outputs 1/2/3" have sense with LAOs 
+!gosia: todo check if these "magnetizability outputs 1/2/3" have sense with LAOs
 !            (diasusc=0 for some keyword combination)
             PVAL1(IJ) = DIASUSC(I,J)
             PVAL2(IJ) = PARSUS(I,J)
@@ -6590,7 +6590,7 @@ C
 
       D12DIFF = ABS(PVAL(1)-PVAL(2))
       D23DIFF = ABS(PVAL(2)-PVAL(3))
-   
+
       D12 = (D12DIFF .LT. THRESHM)
       D23 = (D23DIFF .LT. THRESHM)
 
@@ -6639,7 +6639,7 @@ C
      &  ' London atomic orbitals used in calculations.'
       END IF
 
-CMI   ...there are three defferent types of the magnetizability output 
+CMI   ...there are three defferent types of the magnetizability output
 CMI  ====================================================================
       IF (MAGOUT1) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
@@ -6714,7 +6714,7 @@ CMI  ====================================================================
 C
       CALL HEADER('Total magnetizability tensor (au)',-1)
 csonia 04/10/1995
-csonia 04/10/1995                                                              
+csonia 04/10/1995
       CALL DSCAL(9,-D1,SUSTOT,1)
       CALL POLPRI(SUSTOT,'   ',-2)
 CMI   CALL OUTPUT(SUSTOT,1,3,1,3,3,3,1,LUPRI)
@@ -6810,7 +6810,7 @@ C     Output routine for NMR shieldings
 C
 C     Written by T.Enevoldsen Nov. 7 1997
 C
-C     Updated by MI,2003,2004 for LAO based calculation 
+C     Updated by MI,2003,2004 for LAO based calculation
 C     of NMR shieldings.
 C
 C***********************************************************************
@@ -6851,7 +6851,7 @@ C
       CALL TITLER('NMR SHIELDING TENSOR','*',116)
 
 #ifdef MOD_LAO_REARRANGED
-! gosia: if .SHIEL2 then calculate NMR shielding + LAO from rearranged 
+! gosia: if .SHIEL2 then calculate NMR shielding + LAO from rearranged
 ! equation (Eq. 40-42 in JCP 131, 124119 (2009))
       if (shielding_rearrange) then
         write(*, *) 'NMR shielding tensor calculated ',
@@ -6859,7 +6859,7 @@ C
      &               '(Eq.40-42 in JCP 131, 124119 (2009))'
       end if
 ! if .LAOMOD, then NMR shielding is calculated from rearranged equations
-! but also LR equations are modified  
+! but also LR equations are modified
       if (lao_lr_rearrange) then
         write(*, *) 'NMR shielding rearranged, LR equations in LAO ',
      &               'basis are rearranged too (fully connection-',
@@ -6960,7 +6960,6 @@ C--------------------------------------------------------------------
            ENDIF
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
            CALL DAXPY(NCMAT,D1,PMAT,1,DMATREO,1)
-          
 ! e-occ:
            ee = .true.
            ep = .false.
@@ -7019,13 +7018,13 @@ CMI ... sign convention !!!
         IF (IPRPRP.GE.2) THEN
 #ifdef MOD_LAO_REARRANGED
           if (lao_lr_rearrange .or. shielding_rearrange) then
-            CALL HEADER('Contribution to the shielding from overlap '// 
+            CALL HEADER('Contribution to the shielding from overlap '//
      &      'magnetic derivative (expect.value) in symmetry '//
      &      'coordinates (ppm)',1)
             CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
           else
 #endif
-            CALL HEADER('Reorthonormalization part of the '// 
+            CALL HEADER('Reorthonormalization part of the '//
      &      'shielding (expect.value) in symmetry coordinates (ppm)',1)
             CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
 #ifdef MOD_LAO_REARRANGED
@@ -7205,7 +7204,7 @@ C
         WRITE (LUPRI,'(A/A/A/A)')
      &      '@            isotropic shielding',
      &      '@        ----------------------------',
-     &      '@atom          total          dia         para'//     
+     &      '@atom          total          dia         para'//
      &      '            skew'//
      &      '            span            anis            asym',
      &      '@-----------------------------------------------------'//
@@ -7244,7 +7243,7 @@ C     Analyze routine for NMR shieldings
 C     This routine is modelled after SHIANA in DALTON
 C
 C     INPUT:
-C        TMAT   - total shielding 
+C        TMAT   - total shielding
 C        DMAT   - diamagnetic term if calculated as expectation value
 C        DMATLO - London term
 C        DMATRE - reorthonormalization term
@@ -7265,7 +7264,7 @@ C***********************************************************************
       INTEGER Z
       DOUBLE PRECISION FACTOR
       DIMENSION TMAT(3,3), DMAT(3,3), PMATEE(3,3), PMATEP(3,3),
-     &          SYM(3,3),  ANTI(3,3), AXES(3,3), DMATLO(3,3), 
+     &          SYM(3,3),  ANTI(3,3), AXES(3,3), DMATLO(3,3),
      &          DMATRE(3,3),DMATREE(3,3),DMATREP(3,3),DMATREO(3,3),
      &          PVAL(6), WRK(3), IWRK(3), ABSP(3)
 #include "chrxyz.h"
@@ -7429,17 +7428,17 @@ C   ... make separate print out of e-e and e-p response contributions
             WRITE (LUPRI,'(2X,A6,3F11.4)') NAMEX(ICOOR),
      &            (DMATRE(K,ICOOR),K=1,3)
           END DO
-          WRITE (LUPRI,'(/A,F14.6)') 
+          WRITE (LUPRI,'(/A,F14.6)')
      &    ' Reorthonormalization contribution:',AVEDIA3
           if (SEPTEP) then
            write(LUPRI,'(/A60,F14.6)') '...from "occ-secondary '//
      &            'electronic (ia+)" blocks of T = ',
      &                                AVEDIA3E
            write(LUPRI,'(/A60,F14.6)') '...from "occ-secondary '//
-     &            'positronic (ia-)" blocks of T = ', 
+     &            'positronic (ia-)" blocks of T = ',
      &                                AVEDIA3P
            write(LUPRI,'(/A60,F14.6)') '...from "occ-occ (ij)" '//
-     &            'blocks of T = ', 
+     &            'blocks of T = ',
      &                                AVEDIA3O
           end if
         ENDIF
@@ -7599,7 +7598,7 @@ C
           RATIO = GVAL/(D2*XFMP)
           IF(RATIO .NE. D0) THEN
             BY_RATIO = D1/RATIO
-            CALL DSCAL(9,BY_RATIO,RESPONSE_MATRIX,1) !divide by magnetogyric ratio 
+            CALL DSCAL(9,BY_RATIO,RESPONSE_MATRIX,1) !divide by magnetogyric ratio
           ELSE
             WRITE(LUPRI,'(A)') '  g-factor is zero'
             WRITE(LUPRI,'(A)') '  therefore no division'
@@ -7727,7 +7726,7 @@ C
 C
       CALL AROUND('PV contribution to spin-spin coupling (in nHz)')
       WRITE(LUPRI,*)
-C     NOTE that we here exploit that we are in C1 symmetry, 
+C     NOTE that we here exploit that we are in C1 symmetry,
 C     so that all nuclei are symmetry-independent ! (tsaue)
       DO IATOM = 1,NUCDEP-1
       IF(DOATOM(IATOM)) THEN
@@ -7765,7 +7764,7 @@ C
             KA = IP_PVC_SPINSPIN(1,(IATOM*3)-3+IXYZ)
             KB = IP_PVC_SPINSPIN(2,(JATOM*3)-3+IXYZ)
             RESPONSE = RESPONSE
-     &               + RATIO_JATOM*ABLRF(1,KA,KB,2) 
+     &               + RATIO_JATOM*ABLRF(1,KA,KB,2)
      &               + RATIO_IATOM*ABLRF(1,KB,KA,2)
             IF(.NOT. XLR_SKIPEP) THEN
               RESPONSE = RESPONSE
@@ -7827,15 +7826,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRP_EFN1(EXPVAL,EXP_CORR,EFNVEC,TEMP,DOATOM,CORR,
      &                    IPRINT)
 C*****************************************************************************
-C     
+C
 C     Calculate electric field at individual nuclei
 C
 C     Written by T.Saue - Feb 26 2003
-C     
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C     
+C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -7845,13 +7844,13 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "ibtfun.h"
-C     
+C
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(A/)') '* Electric field at nuclei:'
-C    
+C
       CALL EL_EFN(IPREXP,EXPVAL,DOATOM,EFNVEC(1,1,1),TEMP)
       CALL NUC_EFN(IPREXP,DOATOM,EFNVEC(1,1,2),TEMP)
-C     
+C
 C     print section
       IOFF = ICHAR('w')
       CALL PRSYMB(LUPRI,'-',72,2)
@@ -7888,16 +7887,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck el_efn */
       SUBROUTINE EL_EFN(IPRINT,EXPVAL,DOATOM,EFNEL,TEMP)
 C*****************************************************************************
-C     
+C
 C     Calculates electronic contribution to electric fields
 C     Based on EL_EFG
-C     
+C
 C     Written by T.Saue Feb 26 3004
-C     
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C     
+C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -7918,7 +7917,7 @@ C
           IF (IBTAND(ISTBNU(IATOM),
      &        IBTXOR(IREPC,ISYMAX(ICOOR,1))).EQ.0) THEN
             ITYP = ITYP + 1
-            TEMP(ICOOR,IATOM) = TEMP(ICOOR,IATOM) 
+            TEMP(ICOOR,IATOM) = TEMP(ICOOR,IATOM)
      &                        + EXPVAL(IPEFN(ITYP))/NUCDEG(IATOM)
           END IF
  200      CONTINUE
@@ -8070,7 +8069,7 @@ C
       CHARACTER PNAME*16, PLABEL(2)*8
       DIMENSION PFAC(2),IOP(3)
 C     ANGMOM integrals correspond to -iL, so we set DL = -1
-C     XSIGMA,YSIGMA and ZSIGMA come with imaginary i, so we set DS = +1
+C     XSIGMA,YSIGMA and ZSIGMA come with imaginary i, so we set DS positive (DS = 0.5)
       PARAMETER(DL = -1.0D0,DS = 0.5D0)
 C
       CALL QENTER('DEF_ROTG')
@@ -8265,15 +8264,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_ROTG */
       SUBROUTINE PRP_ROTG(ABLRF,ABCNV)
 C***********************************************************************
-C     
+C
 C    Output routine for molecular rotational g-tensor
 C
 C   Written by T.Enevoldsen Jul. 1998
-C     
+C
 C   Revisions: MI, jan.2003 - added from TEC's 'left' code
 C              MI, Prievidza/Odense, August 2006
 C              Agustin Aucar, November 2019
-C     
+C
 C***********************************************************************
       use memory_allocator
 C
@@ -8823,27 +8822,27 @@ C  /* Deck prop2bss */
       SUBROUTINE PROP2BSS(VMAT,IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C    PURPOSE: Run the list of four-component property operators 
+C    PURPOSE: Run the list of four-component property operators
 C             in the DCBPRP block and do the picture change
 C             transformation of selected. Do not transform
 C             certain operators (like overlap, connection matrixes...)
 C
 C             However, all operators of the list are written into BSSMAT in LL-blocks,
-C             either picture change transformed or not. Some of them in LL form 
+C             either picture change transformed or not. Some of them in LL form
 C            (like kinetic energy, beta matrix) are useless (MI/Nov 07).
 C             TODO: select operators which do not have to be picked up in LL block.
 C
-C    Called from: MAKE_H2C 
+C    Called from: MAKE_H2C
 C      (if TWOCOMPBSS is true, ie in true two-comp. mode when IOTC Hamiltonian is on)
 C
-C    On input:  
+C    On input:
 C              VMAT - empty field (N2BBASXQ) to be utilized inside
 C              IPRINT - print level (=IPRHAM)
 C
-C    On output: 
+C    On output:
 C              BSS/DKn integrals in LL_only matrix are written to the BSSMAT file
 C              under the label P2C_xxxx.
-C            
+C
 C    Written by Miro Ilias, Strasbourg, March 2006
 C    Modifications: Miro Ilias, Tel Aviv, Nov. 2007
 C
@@ -8872,7 +8871,7 @@ C
       CALL QENTER('PROP2BSS')
 #include "memint.h"
 
-C     ... allocate for LL-only operator 
+C     ... allocate for LL-only operator
       N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
       CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
@@ -8895,16 +8894,16 @@ C       ... get info if this operator has to be picture change transformed
      &      'Operator need NOT to be picture change transformed.'
           ENDIF
         ENDIF
-C       ... get the operator either in the full four-component form, 
+C       ... get the operator either in the full four-component form,
 C       .... or already in  the picture change transformed shape
 C       ...   (occupying in fact only  LL block of the four-component matrix)
         INDXPR = I
         CALL PRPMSAO(INDXPR,VMAT,.TRUE.,WORK,WORK(KFIRST),
-     &               WORK(KFREE),LFREE,IPRINT)   
+     &               WORK(KFREE),LFREE,IPRINT)
 C       .. extract LL block from VMAT into WORK(KPRLL)
         CALL EXTRLL(IREP,VMAT,WORK(KPRLL),IPRINT)
 C      ... save WORK(KPRLL) into BSSMAT under label P2C_xxxx, with xxxx=INDXPR
-        CALL NUM2STR(INDXPR,NUMSTR) 
+        CALL NUM2STR(INDXPR,NUMSTR)
         PRPLABEL = 'P2C_'//NUMSTR
 caspg
         if (dosphe) then
@@ -8926,7 +8925,7 @@ caspg
             WRITE(LUPRI,'(2X,A)')
      &      '...operator was picture change transformed'
           ELSE
-C            ...           
+C            ...
             WRITE(LUPRI,'(2X,A)')
      &      '...operator was NOT picture change transformed'
           ENDIF
@@ -8940,7 +8939,7 @@ C
       CALL MEMREL('KPRLL',WORK,KWORK,KPRLL,KFREE,LFREE)
 C
       IF (IPRINT.GE.2) THEN
-       WRITE(LUPRI,'(/2X,A)') 
+       WRITE(LUPRI,'(/2X,A)')
      & 'PROP2BSS: EOFLABEL was renewed after saving all 2c operators '//
      & 'into BSSMAT.'
       ENDIF
@@ -9181,7 +9180,7 @@ C
       WRITE(LUPRI,*)
       DO IFREQ = 1,NBFREQ
         FREQ = BFREQ(IFREQ)*XTKAYS
-        WRITE(LUPRI,'(/A,3(F12.6,A))') 
+        WRITE(LUPRI,'(/A,3(F12.6,A))')
      &        '* Frequency: ',BFREQ(IFREQ),' au  = ',
      &         XTNM/BFREQ(IFREQ), ' nm = ',FREQ,' cm-1'
         WRITE(LUPRI,*)
@@ -9203,7 +9202,7 @@ C
         WRITE(LUPRI,9008) 'Ez',(TMPMAT(3,I), I=1,3)
         OR_BETA = (TMPMAT(1,1)+TMPMAT(2,2)+TMPMAT(3,3))/D3/BFREQ(IFREQ)
         OR_ALPHA = FAC*FREQ*FREQ*OR_BETA
-        WRITE(LUPRI,'(4(/10X,A,F12.6))') 
+        WRITE(LUPRI,'(4(/10X,A,F12.6))')
      &    'Beta             :',OR_BETA,
      &    'Optical rotation :',OR_ALPHA
       ENDDO
@@ -9318,7 +9317,7 @@ C     (-99: accept .SELECT specification)
       CALL SETATM(DOATOM,NATOM,-99)
       CALL DEF_EFF_DEN21(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
       deallocate(DOATOM)
-      RETURN  
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DEF_EFF_DEN21(PNAME,PLABEL,PFAC,DOATOM,IPRINT)
@@ -9373,7 +9372,7 @@ C  /* Deck DEF_EFFDEN */
 C***********************************************************************
 C
 C     Define operator for effective density at nuclei
-C     see S. Knecht, S. Fux, R. van Meer, L. Visscher, M. Reiher 
+C     see S. Knecht, S. Fux, R. van Meer, L. Visscher, M. Reiher
 C     and T. Saue, Theor. Chem. Acc. 129 (2011) 631
 C     Based on DEF_PVC
 C
@@ -9436,7 +9435,7 @@ C
         WRITE(6,*) 'WARNING: Effective density at nucleus is not'//
      &       'well defined for point nucleus,',
      &       'due to singularity in the relativistic case. Skipping.'
-        RETURN        
+        RETURN
       ENDIF
       DO 100 IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
@@ -9485,7 +9484,7 @@ C     such a shifted matrix the values of the power triplet is given by
 C
 C     NX = L-a, NY =  a - b , NZ = b
 C
-C     Note that this routine does not check if IPEPOL goes out of 
+C     Note that this routine does not check if IPEPOL goes out of
 C     bounds. This has to be done outside the routine.
 C
 C     Written by Trond Saue March 29 2013
@@ -9532,26 +9531,26 @@ C     The general formula is
 C
 C       L/(L+1)*x^(NX)*y^(NY)*z^(NZ)*(RVEC times JVEC)_q
 C
-C     where the Cartesian powers (NX,NY,NZ) sum to L-1, 
+C     where the Cartesian powers (NX,NY,NZ) sum to L-1,
 C     RVEC is the position vector and JVEC the operator for the
 C     current density vector. In the relativistic domain the current
 C     density vector is -c*ALPHAVEC, where the sign comes from
 C     the electron charge, c is the speed of light and ALPHAVEC is the
 C     vector of Dirac alpha matrices.
 C
-C     A magnetic multipole of order L is symmetric in all indices 
-C     except q, so there are 3(L+1)L/2 linearly independent Cartesian operators 
-C     specified by the powers (NX,NY,NZ) of the Cartesian coordinates. 
-C     They can therefore be generated by looping over the lower triangle 
+C     A magnetic multipole of order L is symmetric in all indices
+C     except q, so there are 3(L+1)L/2 linearly independent Cartesian operators
+C     specified by the powers (NX,NY,NZ) of the Cartesian coordinates.
+C     They can therefore be generated by looping over the lower triangle
 C     of a square matrix of dimension L.
 C     The loop below is inspired by the routine CARPOW, but simplified
-C     by starting rows and columns by index zero. Let LM = L - 1. 
-C     From an element (a,b) of such a shifted matrix the values of the 
+C     by starting rows and columns by index zero. Let LM = L - 1.
+C     From an element (a,b) of such a shifted matrix the values of the
 C     power triplet is given by
 C
 C     NX = LM-a, NY =  a - b , NZ = b
 C
-C     Note that this routine does not check if IPMPOL goes out of 
+C     Note that this routine does not check if IPMPOL goes out of
 C     bounds. This has to be done outside the routine.
 C
 C     Written by Trond Saue March 29 2013
@@ -9632,7 +9631,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Define contribution to order L in the wave vector from the
-C     full light-matter interaction      
+C     full light-matter interaction
 C
 C     The general formula is
 C
@@ -9642,10 +9641,10 @@ C     where the Cartesian powers (NX,NY,NZ) sum to L,
 C     c is the speed of light and ALPHAVEC is the
 C     vector of Dirac alpha matrices.
 C
-C     A contribution of order L is symmetric in all indices 
-C     except p, so there are 3(L+2)(L+1)/2 linearly independent Cartesian operators 
-C     specified by the powers (NX,NY,NZ) of the Cartesian coordinates. 
-C     They can therefore be generated by looping over the lower triangle 
+C     A contribution of order L is symmetric in all indices
+C     except p, so there are 3(L+2)(L+1)/2 linearly independent Cartesian operators
+C     specified by the powers (NX,NY,NZ) of the Cartesian coordinates.
+C     They can therefore be generated by looping over the lower triangle
 C     of a square matrix of dimension L+1.
 C     The loop below is inspired by the routine CARPOW, but simplified
 C     by starting rows and columns by index zero. From an element (a,b) of
@@ -9653,7 +9652,7 @@ C     such a shifted matrix the values of the power triplet is given by
 C
 C     NX = L-a, NY =  a - b , NZ = b
 C
-C     Note that this routine does not check if IPBEDCON goes out of 
+C     Note that this routine does not check if IPBEDCON goes out of
 C     bounds. This has to be done outside the routine.
 C
 C     Written by Trond Saue October 5 2018
@@ -9718,12 +9717,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck nuc_efg */
       SUBROUTINE NUC_EFG(IPRINT,DOATOM)
 C***********************************************************************
-C     
+C
 C     Calculates nuclear contribution to electric field gradients
 C
 C     Written by T.Enevoldsen  - Sep 1996
 C     Last revision by W.A. de Jong - April 1999
-C     
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -9813,7 +9812,7 @@ C     /* Deck nuc_nef */
       SUBROUTINE NUC_EFN(IPRINT,DOATOM,EFNNUC,GEOM)
 C***********************************************************************
 C
-C     Calculates nuclear contribution to the electric field at 
+C     Calculates nuclear contribution to the electric field at
 C     individual nuclei
 C
 C     Based on NUC_EFG
@@ -9888,7 +9887,7 @@ C
           KK = KK + 3
  20     CONTINUE
       ELSE
-        IATOMD = IATOMD + NUCDEG(I1)      
+        IATOMD = IATOMD + NUCDEG(I1)
         KK = KK + 3*NUCDEG(I1)
       ENDIF
  10   CONTINUE
@@ -9907,19 +9906,19 @@ C
       PARAMETER (DP5=0.5D0)
 #include "dcbgen.h"
 #include "dgroup.h"
-      CHARACTER PNAME*16      
+      CHARACTER PNAME*16
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:)
       DIMENSION IBED(*)
-C      
-C     
-C     Allocate placeholders for integral labels and irreps 
+C
+C
+C     Allocate placeholders for integral labels and irreps
 C
       allocate(LABINT(8))
       allocate(INTREP(8))
 C
 C     Get number of scalar integrals (NCOMP) and integral labels (and symmetries)
-C     NCOMP is an even number; first half is real part, then imaginary part      
+C     NCOMP is an even number; first half is real part, then imaginary part
 C
       CALL CEXPINT_INFO(NCOMP,INTREP,LABINT)
       II = 0
@@ -9978,19 +9977,19 @@ C
       PARAMETER (DP5=0.5D0)
 #include "dcbgen.h"
 #include "dgroup.h"
-      CHARACTER PNAME*16      
+      CHARACTER PNAME*16
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:)
       DIMENSION IBED(*)
-C      
-C     
-C     Allocate placeholders for integral labels and irreps 
+C
+C
+C     Allocate placeholders for integral labels and irreps
 C
       allocate(LABINT(8))
       allocate(INTREP(8))
 C
 C     Get number of scalar integrals (NCOMP) and integral labels (and symmetries)
-C     NCOMP is an even number; first half is real part, then imaginary part      
+C     NCOMP is an even number; first half is real part, then imaginary part
 C
       CALL CEXPINT_INFO(NCOMP,INTREP,LABINT)
       II = 0
@@ -10379,7 +10378,7 @@ C     /* Deck PRP_SPINRO */
       SUBROUTINE PRP_SPINRO(EXPVAL,ABLRF,ABCNV)
 C***********************************************************************
 C
-C     Output routine for nuclear spin-rotation constant
+C     Output routine for nuclear spin-rotation constants
 C
 C     Written by Agustin Aucar and Trond Saue - Sep 2013
 C
@@ -10730,8 +10729,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dcbxpp.h"
       DIMENSION WAVVEC(3),POLVEC(3,2)
-          
-
+C
       FAC      = ACOS(-1.0D0)/180.0D0
       THETA2   = THETA*FAC
       PHI2     = PHI*FAC
@@ -10751,16 +10749,16 @@ C***********************************************************************
       ENDIF
 C.....Output section
       IF (BEDECD) THEN
-        WRITE(LUPRI,'(1X,A,3F18.10)') 
-     &   '* Unit wave vector   :', (WAVVEC(I),I=1,3),    
+        WRITE(LUPRI,'(1X,A,3F18.10)')
+     &   '* Unit wave vector   :', (WAVVEC(I),I=1,3),
      &   '* Polarization Vector 1:', (POLVEC(I,1),I=1,3),
      &   '* Polarization vector 2:', (POLVEC(I,2),I=1,3)
       ELSE
 
-      WRITE (LUPRI,'(1X,A,3F18.10)')                                   
-     &     '* Unit wave vector   :', (WAVVEC(I),I=1,3),                  
+      WRITE (LUPRI,'(1X,A,3F18.10)')
+     &     '* Unit wave vector   :', (WAVVEC(I),I=1,3),
      &     '* Polarization vector:', (POLVEC(I,1),I=1,3)
-      ENDIF                   
+      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
