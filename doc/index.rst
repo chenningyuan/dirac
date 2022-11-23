@@ -129,7 +129,8 @@ Tutorials and walkthrus
   :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>` |
   :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` |
   :doc:`Calculation of nuclear spin-rotation constants <tutorials/spinrot/tutorial>` |
-  :doc:`Calculation of molecular rotational g-tensors <tutorials/rotg/tutorial>`
+  :doc:`Calculation of molecular rotational g-tensors <tutorials/rotg/tutorial>` |
+  :doc:`Calculation of parity-violation contribution to nuclear spin-rotation constants <tutorials/pvcsr/tutorial>`
 
 * **X-ray spectroscopy:**
   :doc:`Core ionization in the CO and N2 molecules <tutorials/x_ray/CO_N2_IP1s/tutorial>` |

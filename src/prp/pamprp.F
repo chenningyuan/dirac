@@ -1403,7 +1403,13 @@ C
       IF(SPINRO) THEN
          CALL DEF_SPINRO(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
-
+C
+C     PV contribution to nuclear spin-rotation constant
+C
+      IF(PVC_SPINRO) THEN
+         CALL DEF_PVC_SPINRO(PNAME,PLABEL,PFAC,IPRPRP)
+      ENDIF
+C
 ! gosia:
 ! calculate << B_i; B_i >>_0 with LAO
 ! only for one component of magnetic field, i = x, y or z
@@ -1575,6 +1581,12 @@ C
       IF(OPTROT) THEN
         CALL PRP_OPTROT(ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
+C
+C     PV contribution to nuclear spin-rotation constant
+C
+      IF(PVC_SPINRO)
+     &  CALL PRP_PVC_SPINRO(ABLRF,ABCNV)
+C
 #ifdef HAS_PELIB
       if (peqm) then
          write(lupri,'(/A)')
@@ -11445,6 +11457,862 @@ C           Total expectation value contribution to NSR
             END IF  ! (LINMOL)
  47        CONTINUE
           END IF    ! (LINEAR)
+          END IF    ! (CHARGE(IATOM).GT.D0)
+         END IF     ! (DOATOM(K))
+        END IF
+ 200   CONTINUE
+ 98   CONTINUE
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_pvc_spinro */
+      SUBROUTINE DEF_PVC_SPINRO(PNAME,PLABEL,PFAC,IPRINT)
+C=======================================================================
+C
+C     Define operators for parity-violation contribution
+C     to nuclear spin-rotation constants
+C
+C     Written by Agustin Aucar - Sep 2020
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use memory_allocator
+C
+      implicit none
+C
+      integer I,J
+C
+#include "priunit.h"
+#include "mxcent.h"     ! Parameters of maximum number of nuclei
+#include "maxaqn.h"     ! Highest angular quantum number
+#include "maxorb.h"     ! Maximum number of orbitals/basis functions
+#include "nuclei.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbprp.h"
+#include "dcbxlr.h"     ! Common block for linear reponse
+#include "dcbgen.h"
+#include "spinro.h"
+#include "consts.h"
+#include "gfac.h"
+#include "pi.h"
+#include "chrnos.h"
+#include "ibtfun.h"
+C
+      INTEGER IPRINT,NATOM,IATOM,ICOOR,INDXPR,
+     &        IOP,IPTYP,IREPO,ISCOR,ISYXPR,
+     &        INDOP1,ITRXPR,NPCOMP
+      DOUBLE PRECISION PFAC,DL,DS
+      logical, allocatable :: DOATOM(:)
+      CHARACTER PNAME*16, PLABEL*8
+      DIMENSION IOP(3)
+C
+C     ANGMOM integrals correspond to -iL, so we set DL = -1
+C     XSIGMA,YSIGMA and ZSIGMA come with imaginary i, so we set DS = +1
+      PARAMETER(DL = -1.0D0,DS = 0.5D0)
+C
+      CALL QENTER('DEF_PVC_SPINRO')
+C
+      CALL IZERO(IP_PVC_SPINRO,6+MXCOOR)
+C
+      allocate(DOATOM(NUCIND))
+C
+C     INTTYP = 62 (Integrals for Parity Violation - chirality)
+C     (-62: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-62)
+C
+C
+C     Here we set up the operators needed for the linear reponse part
+C
+C     Define left-hand operators
+C
+C     XALPHA
+      IOP(1) = 2
+C     YALPHA
+      IOP(2) = 3
+C     ZALPHA
+      IOP(3) = 4
+C
+      NPCOMP = 1    ! one component
+      PFAC   = CVAL ! factor
+C
+C     Point nucleus
+      IF(.NOT.GAUNUC) PFAC = PFAC*D3/(D4*GFAC*PI)
+C
+!*****************************************************************************
+!iaa: to review for symmetry
+C     Irreps
+      DO IREPO = 0, MAXREP
+C       Atoms
+        DO IATOM = 1, NUCIND
+          IF(DOATOM(IATOM)) THEN
+!           IF (IBTAND(IREPO,ISTBNU(IATOM)).EQ.0) THEN
+C           Cartesian directions
+            DO ICOOR = 1, 3
+              ISCOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREPO,2)
+              IF (ISCOR .GE. 1000) THEN
+                CALL QUIT(
+     &      'DEF_PVC_SPINRO: Max 1000 coords in this implementation !')
+              ENDIF
+              IF (ISCOR .GT. 0) THEN
+                PNAME    = 'PVCa '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                            //CHRNOS(IPTNUC(IATOM,IREPO)/10)
+     &                            //CHRNOS(MOD(IPTNUC(IATOM,IREPO),10))
+                PNAME(5:5) = CHRNOS(ICOOR)
+                IPTYP  = IOP(ICOOR)
+                IF(GAUNUC) THEN ! Gaussian nuclear model
+                  PLABEL= 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                         //CHRNOS(IPTNUC(IATOM,IREPO)/10)
+     &                         //CHRNOS(MOD(IPTNUC(IATOM,IREPO),10))
+                ELSE            ! Point nuclear model
+                  PLABEL= 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                         //CHRNOS(IPTNUC(IATOM,IREPO)/10)
+     &                         //CHRNOS(MOD(IPTNUC(IATOM,IREPO),10))
+                ENDIF
+                CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                      INDXPR,ISYXPR,ITRXPR,IPRINT)
+                CALL OP1IND(PNAME(1:6),IP_PVC_SPINRO(ISCOR),
+     &                      LLRAPU,NLRAPT,INDXPR,MAXLLR)
+              ENDIF
+            ENDDO
+!           END IF
+          END IF
+        ENDDO
+      ENDDO
+!*****************************************************************************
+C
+C
+C     Define right-hand operators
+C
+      LINDET=.FALSE.    ! to detect if linear symmetry is used
+C
+      IF (LINEAR) THEN  ! linear molecule detected using symmetry
+C
+Ciaa   LINDET is used to record that LINEAR symmetry is used,
+C      even when in further steps it could be changed, as occur
+C      for UKB, spin-free and ZORA calculations.
+       LINDET=.TRUE.    ! save that linear symmetry is used
+C
+C     Orbital angular momentum
+C
+       PNAME     = 'X Orb. ang. mom.'
+       IPTYP     = 1    ! diagonal operator
+       NPCOMP    = 1    ! one component
+       PFAC      = DL   ! factor
+       PLABEL    = 'XANGMOM'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('XANGMOM ',IP_PVC_SPINRO(1+MXCOOR),LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+C     Spin angular momentum
+C
+       PNAME     = 'X Spin ang.mom. '
+       IPTYP     = 10   ! Sigma_x
+       NPCOMP    = 1    ! one component
+       PFAC      = DS   ! factor
+       PLABEL    = 'OVERLAP'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('XSPINMOM',IP_PVC_SPINRO(4+MXCOOR),LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+      ELSE ! if LINEAR is not TRUE
+C
+C     Orbital angular momentum
+C
+       PNAME     = 'X Orb. ang. mom.'
+       IPTYP     = 1    ! diagonal operator
+       NPCOMP    = 1    ! one component
+       PFAC      = DL   ! factor
+       PLABEL    = 'XANGMOM'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('XANGMOM ',IP_PVC_SPINRO(1+MXCOOR),LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+       PNAME     = 'Y Orb. ang. mom.'
+       IPTYP     = 1    ! diagonal operator
+       NPCOMP    = 1    ! one component
+       PFAC      = DL   ! factor
+       PLABEL    = 'YANGMOM'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('YANGMOM ',IP_PVC_SPINRO(2+MXCOOR),LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+       PNAME     = 'Z Orb. ang. mom.'
+       IPTYP     = 1    ! diagonal operator
+       NPCOMP    = 1    ! one component
+       PFAC      = DL   ! factor
+       PLABEL    = 'ZANGMOM'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('ZANGMOM ',IP_PVC_SPINRO(3+MXCOOR),LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+C     Spin angular momentum
+C
+       PNAME     = 'X Spin ang.mom. '
+       IPTYP     = 10   ! Sigma_x
+       NPCOMP    = 1    ! one component
+       PFAC      = DS   ! factor
+       PLABEL    = 'OVERLAP'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('XSPINMOM',IP_PVC_SPINRO(4+MXCOOR),LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+       PNAME     = 'Y Spin ang.mom. '
+       IPTYP     = 11   ! Sigma_y
+       NPCOMP    = 1    ! one component
+       PFAC      = DS   ! factor
+       PLABEL    = 'OVERLAP'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('YSPINMOM',IP_PVC_SPINRO(5+MXCOOR),LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+C
+       PNAME     = 'Z Spin ang.mom. '
+       IPTYP     = 12   ! Sigma_z
+       NPCOMP    = 1    ! one component
+       PFAC      = DS   ! factor
+       PLABEL    = 'OVERLAP'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('ZSPINMOM',IP_PVC_SPINRO(6+MXCOOR),LLRBPU,NLRBPT,
+     &                       INDXPR,MAXLLR)
+      END IF !LINEAR
+C
+C     Print section for parity-violation contribution to nuclear spin-rotation:
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 'Parity-violation contribution to '//
+     &  'nuclear spin-rotation constant:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+C
+C     Print reference
+C
+C     A operators
+C     ===========
+C
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(1X,A)')
+     &   '** A operators for PVC to nuclear spin-rotation **'
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO I = 1,3*NUCDEP
+        INDOP1 = IP_PVC_SPINRO(I)
+        IF(INDOP1.GT.0) THEN
+          INDXPR = LLRAPU(INDOP1)
+          CALL WRIXPR(INDOP1,INDXPR)
+        ENDIF
+      ENDDO
+C
+C     B operators
+C     ===========
+C
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(1X,A)')
+     &   '** B operators for PVC to nuclear spin-rotation **'
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO I = 1,6
+        INDOP1 = IP_PVC_SPINRO(I+MXCOOR)
+        IF(INDOP1.GT.0) THEN
+          INDXPR = LLRBPU(INDOP1)
+          CALL WRIXPR(INDOP1,INDXPR)
+        ENDIF
+      ENDDO
+C
+      deallocate(DOATOM)
+C
+      CALL QEXIT('DEF_PVC_SPINRO')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* deck prp_pvc_spinro */
+      SUBROUTINE PRP_PVC_SPINRO(ABLRF,ABCNV)
+C***********************************************************************
+C
+C     Output routine for Parity-violation contribution
+C     to nuclear spin-rotation constants
+C
+C     Written by Agustin Aucar - Sep 2020
+C
+C***********************************************************************
+      use memory_allocator
+C
+      implicit none
+C
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
+#include "spinro.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "consts.h"
+C
+      logical, allocatable :: DOATOM(:)
+      integer, allocatable :: NAT(:),ISOT(:)
+      double precision, allocatable :: PMATL(:,:,:,:),PMATS(:,:,:,:),
+     &                                 TMPMATL(:,:,:),TMPMATS(:,:,:),
+     &                                 CSTRA(:),SCTRA(:),GEOM(:,:),
+     &                                 MASS(:),AMASS(:)
+C
+      LOGICAL TEST
+      INTEGER IBUFA(3*NUCDEP),IBUFB1(3),IBUFB2(3),
+     &        IATINF(3,NUCDEP),IDEG,IDEP,IFREQ,INUC,ISO,IZ,JATOM,NATOM,
+     &        I,IA,IB1,IB2,J,JA,JB1,JB2,K,KA,KB1,KB2,NA,NB1,NB2,
+     &        L,NCMAT,NSCOOR,NISO,NSPEC,IABLRF_EE,IABLRF_EP
+      DOUBLE PRECISION RATINF(3,5,NUCDEP),DISOTP,ABND,GVALUE,
+     &                 ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &                 ABCNV(NBFREQ,NLRBPT)
+C
+      JATOM  = NATOMS + NFLOAT
+      NCMAT  = 9*NUCDEP
+      NSCOOR = 3*NUCDEP
+      allocate(DOATOM(NUCIND))
+      allocate(PMATL(3,3,NUCDEP,2)) ! L part of NSR for ee and ep contributions.
+      allocate(PMATS(3,3,NUCDEP,2)) ! S part of NSR for ee and ep contributions.
+      allocate(CSTRA(NSCOOR*NSCOOR))
+      allocate(SCTRA(NSCOOR*NSCOOR))
+      allocate(TMPMATL(3,NSCOOR,2))
+      allocate(TMPMATS(3,NSCOOR,2))
+      allocate(GEOM(NUCDEP,3))
+      allocate(MASS(NATOMS))
+      allocate(NAT(NATOMS))
+      allocate(AMASS(NUCDEP))
+      allocate(ISOT(NUCDEP))
+C
+      CALL QENTER('PRP_PVC_SPINRO')
+C
+      CALL TITLER('PARITY-VIOLATION CONTRIBUTION TO '//
+     &  'NUCLEAR SPIN-ROTATION TENSOR','*',116)
+
+      WRITE(LUPRI,'(13X,A)')
+     & 'According to I. A. Aucar et al, JCP 155 (2021) p.134307'
+      CALL PRSYMB(LUPRI,'-',81,0)
+      WRITE(LUPRI,*) ''
+C
+C     INTTYP = 62 (Integrals for Parity Violation - chirality)
+C     (-62: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-62)
+C--------------------------------------------------------------------
+C--------------------------------------------------------------------
+C     ***************************************
+C     ***** Extract nuclear information *****
+C     ***************************************
+C
+      WRITE(LUPRI,'(A)') '@ Nuclear species:'
+      CALL PRSYMB(LUPRI,'=',61,0)
+      WRITE(LUPRI,'(A)')
+     &  '@ name  charge  isotope   mass         abundance     g factor'
+      CALL PRSYMB(LUPRI,'-',61,0)
+      NSPEC = 0
+      IDEP  = 0
+      DO INUC = 1,NUCIND
+      IDEG = NUCDEG(INUC)
+      IF(DOATOM(INUC)) THEN
+        TEST = .FALSE.
+        IZ   = IZATOM(INUC)
+        NISO = 0
+        DO ISO = 1,5
+            GVALUE = DISOTP(IZ,ISO,'GVAL')
+            ABND = DISOTP(IZ,ISO,'ABUNDANCE')
+            IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
+              TEST = .TRUE.
+              NISO = NISO + 1
+              RATINF(1,NISO,NSPEC+1) = DISOTP(IZ,ISO,'A')
+              RATINF(2,NISO,NSPEC+1) = ABND
+              RATINF(3,NISO,NSPEC+1) = GVALUE
+            ENDIF
+        ENDDO
+        IF(NISO.GT.0) THEN
+          IATINF(1,NSPEC+1) = IDEP + 1
+          IATINF(2,NSPEC+1) = IZ
+          IATINF(3,NSPEC+1) = NISO
+          WRITE(LUPRI,
+     &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)')
+     &       '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
+          DO J = 2,NISO
+            WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)')
+     &         '@',J,(RATINF(K,J,NSPEC+1),K=1,3)
+          ENDDO
+          DO K = 2,IDEG
+            IATINF(1,NSPEC+K) = IDEP + K
+            IATINF(2,NSPEC+K) = IZ
+            IATINF(3,NSPEC+K) = NISO
+            DO L = 1,NISO
+              RATINF(1,L,NSPEC+K) = RATINF(1,L,NSPEC+1)
+              RATINF(2,L,NSPEC+K) = RATINF(2,L,NSPEC+1)
+              RATINF(3,L,NSPEC+K) = RATINF(3,L,NSPEC+1)
+            ENDDO
+          ENDDO
+          NSPEC = NSPEC + IDEG
+        ENDIF
+      ENDIF
+      IDEP = IDEP + IDEG
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',61,0)
+      IF(NSPEC.EQ.0) THEN
+        WRITE(LUPRI,'(A)') '* No suitable isotopes. Returning'
+        CALL QEXIT('PRP_PVC_SPINRO')
+        RETURN
+      ENDIF
+C---------------------------------------------------------------------------
+C---------------------------------------------------------------------------
+C     **********************************************************************
+C     ***** Extract PV contribution to nuclear spin-rotation constants *****
+C     **********************************************************************
+C
+C     The NUCDEP PV operators as A operators in <<A;B>> :
+      NA = 0
+      DO I = 1,NSCOOR
+        IF(IP_PVC_SPINRO(I).GT.0) THEN
+          NA = NA + 1
+          IBUFA(NA) = I
+        ENDIF
+      END DO
+      IF (NA.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_PVC_SPINRO: NA=',NA
+        CALL QUIT('PRP_PVC_SPINRO: Wrong value of NA!')
+      ENDIF
+C
+Ciaa   As in the current implementation UKB, spin-free and ZORA
+C      calculations of energy cannot be performed employing symmetry
+C      (they set LINEAR to false in such cases, see subroutine GLINSM)
+C      LINDET allows to recover LINEAR symmetry defined in DEF_PVC_SPINRO
+C      if it is lost due to the use of UKB, SF or ZORA functionalities
+      IF ((URKBAL.or.SPINFR.or.ZORA).and.LINDET) LINEAR=.TRUE.
+C
+C     The 3 L orbital angular momentum directions as B operators in <<A;B>> :
+      NB1 = 0
+      DO I = 1,3
+        IF(IP_PVC_SPINRO(I+MXCOOR).GT.0) THEN
+          NB1 = NB1 + 1
+          IBUFB1(NB1) = I
+        ENDIF
+      END DO
+      IF (NB1.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_PVC_SPINRO: NB1=',NB1
+        CALL QUIT('PRP_PVC_SPINRO: Wrong value of NB1!')
+      ENDIF
+C
+C     The 3 S spin angular momentum directions as B operators in <<A;B>> :
+      NB2 = 0
+      DO I = 1,3
+        IF(IP_PVC_SPINRO(I+3+MXCOOR).GT.0) THEN
+          NB2 = NB2 + 1
+          IBUFB2(NB2) = I
+        ENDIF
+      END DO
+      IF (NB2.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_PVC_SPINRO: NB2=',NB2
+        CALL QUIT('PRP_PVC_SPINRO: Wrong value of NB2!')
+      ENDIF
+C
+C---------------------------------------------------------------------------
+C---------------------------------------------------------------------------
+C--------------------------------------------------------------------
+C
+      CALL CMMASS(GEOM,MASS,NAT,ISOT,IPRPRP)
+C
+C     LINEAR RESPONSE PART OF PVC-NSR TENSOR
+C
+C     Fill matrices of parity-violation contribution to nuclear spin-rotation
+C
+      IF (XLR_SKIPEE) THEN
+        IABLRF_EE = -999999999
+        IF (XLR_SKIPEP) THEN
+          IABLRF_EP = -999999999
+        ELSE
+          IABLRF_EP = 2
+        END IF
+      ELSE
+        IABLRF_EE = 2
+        IF (XLR_SKIPEP) THEN
+          IABLRF_EP = -999999999
+        ELSE
+          IABLRF_EP = 3
+        END IF
+      END IF
+C
+C
+      DO IFREQ = 1,NBFREQ
+        IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
+           CALL PRSYMB(LUPRI,'-',72,2)
+           WRITE(LUPRI,'(A,F15.8,A)')
+     &          '*** Frequency    :',BFREQ(IFREQ),' a.u.'
+        ENDIF
+        CALL DZERO(TMPMATL,2*NCMAT)
+        CALL DZERO(TMPMATS,2*NCMAT)
+C
+        DO IB1 = 1,NB1
+          JB1 = IBUFB1(IB1)
+          KB1 = IP_PVC_SPINRO(MXCOOR+JB1)
+          JB1 = IPTAX(JB1,2)
+          DO IA = 1,NA
+            JA = IBUFA(IA)
+            KA = IP_PVC_SPINRO(JA)
+C           First extract the e-e contribution
+            IF (.NOT. XLR_SKIPEE)
+     &         TMPMATL(JB1,JA,1) = ABLRF(IFREQ,KA,KB1,IABLRF_EE)
+C           then extract the e-p contribution
+            IF (.NOT. XLR_SKIPEP)
+     &         TMPMATL(JB1,JA,2) = ABLRF(IFREQ,KA,KB1,IABLRF_EP)
+          ENDDO
+        ENDDO
+C
+        DO IB2 = 1,NB2
+          JB2 = IBUFB2(IB2)
+          KB2 = IP_PVC_SPINRO(MXCOOR+3+JB2)
+          JB2 = IPTAX(JB2,2)
+          DO IA = 1,NA
+            JA = IBUFA(IA)
+            KA = IP_PVC_SPINRO(JA)
+C           First extract the e-e contribution
+            IF (.NOT. XLR_SKIPEE)
+     &         TMPMATS(JB2,JA,1) = ABLRF(IFREQ,KA,KB2,IABLRF_EE)
+C           then extract the e-p contribution
+            IF (.NOT. XLR_SKIPEP)
+     &         TMPMATS(JB2,JA,2) = ABLRF(IFREQ,KA,KB2,IABLRF_EP)
+          ENDDO
+        ENDDO
+C
+C     Transform to C1 basis
+C
+        CALL DZERO(PMATL,2*NCMAT)
+        CALL DZERO(PMATS,2*NCMAT)
+C
+        IF (.NOT. XLR_SKIPEE) THEN
+C           .... extract the e-e response part into PMAT(...,1)
+            CALL TRADIP(TMPMATL,PMATL,CSTRA,SCTRA,NSCOOR,2,2)
+            CALL TRADIP(TMPMATS,PMATS,CSTRA,SCTRA,NSCOOR,2,2)
+        END IF
+        IF (.NOT.XLR_SKIPEP) THEN
+C           ... extract the e-p response part into PMAT(...,2)
+            CALL TRADIP(TMPMATL(1,1,2),PMATL(1,1,1,2),
+     &                CSTRA,SCTRA,NSCOOR,2,2)
+            CALL TRADIP(TMPMATS(1,1,2),PMATS(1,1,1,2),
+     &                CSTRA,SCTRA,NSCOOR,2,2)
+        END IF
+      END DO
+C
+C--------------------------------------------------------------------
+      CALL PVCNSR(GEOM,AMASS,PMATL,PMATS,JATOM,IPRPRP,DOATOM)
+C--------------------------------------------------------------------
+C
+      CALL QEXIT('PRP_PVC_SPINRO')
+C
+      deallocate(AMASS)
+      deallocate(ISOT)
+      deallocate(GEOM)
+      deallocate(MASS)
+      deallocate(NAT)
+      deallocate(DOATOM)
+      deallocate(PMATL)
+      deallocate(PMATS)
+      deallocate(CSTRA)
+      deallocate(SCTRA)
+      deallocate(TMPMATL)
+      deallocate(TMPMATS)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck pvcnsr */
+      SUBROUTINE PVCNSR(GEOM,AMASS,PMATL,PMATS,KATOM,IPRINT,DOATOM)
+C***********************************************************************
+C
+C     Analyze routine for the parity-violation contribution
+C     to nuclear spin-rotation constants
+C
+C     This routine is modelled after SPRRES subroutine
+C
+C   INPUT:
+C     PMATL - contribution from orbital angular moment to linear response term
+C     PMATS - contribution from spin angular moment to linear response term
+C
+C     Agustin Aucar - Sep 2020
+C
+C***********************************************************************
+      implicit none
+C
+      integer I,J
+C
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "spinro.h"
+#include "orgcom.h"
+#include "ibtfun.h"
+#include "codata.h"
+#include "consts.h"
+C
+      integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
+     &        JATOM,JX,JY,NATTYP,NUMIS
+C
+      double precision FACTOR,CONST,GEOM(KATOM,3),AMASS(KATOM),
+     &                 EIGVAL(3),EIGVEC(3,3),OMEGA(3),
+     &                 TINERT(9),DISOTP,ANGUMOM(3),
+     &                 PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
+     &                 NSRTOT,NSRLRLEE,NSRLRLEP,NSRLRSEE,NSRLRSEP,
+     &                 GTRANPLEE(3,3,KATOM),GTRANPLEP(3,3,KATOM),
+     &                 GTRANPSEE(3,3,KATOM),GTRANPSEP(3,3,KATOM)
+C
+      LOGICAL PLANAR,LINMOL,DOATOM(NUCIND)
+C
+      FACTOR = (-GFERMI*(D1-D4*S2THETAW)/(CVEL*SQRT(D2)))*(XTHZ/XFAMU)
+C
+C
+Ciaa  Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
+      DO 300 I = 1,3
+        ANGUMOM(I) = D1
+ 300  CONTINUE
+C
+C
+C     Determine principal moments of inertia
+C     ======================================
+C
+C     Set up coordinates (relative to center of mass), g-values and masses of all nuclei
+      JATOM = 0
+      DO 100 IATOM = 1, NUCIND
+         NATTYP = IZATOM(IATOM)
+         NUMIS  = ISOTOP(IATOM)
+         DO 110 ISYMOP = 0, MAXOPR
+         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+           JATOM = JATOM + 1
+           AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
+           DO 120 ICOOR = 1, 3
+             GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+     &                          *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
+ 120       CONTINUE
+         END IF
+ 110     CONTINUE
+ 100  CONTINUE
+C
+      CALL WLKDIN(GEOM,AMASS,KATOM,ANGUMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
+     &            .TRUE.,PLANAR,LINMOL,IPRINT)
+C     On output
+C        TINERT - inertia tensor
+C        EIGVAL - inverse eigenvalues (for linear molecules, in descending order)
+C        EIGVEC - corresponding eigenvectors
+C        PLANAR=T : planar molecule
+C        LINMOL=T : linear molecule (EIGVAL(1) = 0.0)
+C
+C     Transform each PVC to NSR constant to principal axis system,
+C     and multiply by inverse moment of inertia and various constants
+C
+C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
+      IF (IPRINT .GE. 8) THEN
+       CALL HEADER
+     &    ('Nuclear angular velocity (a.u.)',0)
+       WRITE (LUPRI,'(3X,A,F16.8)')
+     &       'Omega_A',OMEGA(1),
+     &       'Omega_B',OMEGA(2),
+     &       'Omega_C',OMEGA(3)
+      END IF
+C
+C    Print inertia tensor or moment
+C
+      IF (IPRINT .GE. 0) THEN
+!*****************************************************************************
+!iaa: to review
+!       IF (LINEAR) THEN      ! Linear molecule detected using symmetry
+!              WRITE (LUPRI,'(2X,A,F16.8,/)')
+!     &         'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
+!       ELSE
+!        IF(LINMOL) THEN      ! Linear molecule (without symmetry detection)
+!         WRITE (LUPRI,'(2X,A,F16.8,/)')
+!     &         'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
+!        ELSE                 ! Non-linear molecule
+!*****************************************************************************
+         CALL HEADER
+     &    ('Principal moments of inertia (a.u.) and principal axes',0)
+         WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
+     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
+     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
+     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
+         WRITE (LUPRI,'(/,2X,A)') 'Components of PVC to nuclear '//
+     &             'spin-rotation tensor in the principal axis system'
+!*****************************************************************************
+!iaa: to review
+!        END IF
+!       END IF
+!*****************************************************************************
+      END IF
+C
+C    Print PVC to nuclear spin-rotation constants or tensors
+C
+      IATOM = 0
+      DO 98 K = 1, NUCIND
+       DO 200 ISYMOP = 0, MAXOPR
+        IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
+         IATOM = IATOM + 1
+         IF (DOATOM(K)) THEN
+          IF (CHARGE(IATOM) .GT. D0) THEN
+           IF (IPRINT .GE. 0) THEN
+            CALL HEADER('Parity-violation contribution to '    //
+     &            'nuclear spin-rotation constant (in Hz) for '//
+     &                     NAMDEP(IATOM),-1)
+            WRITE (LUPRI,'(2X,A14,F12.6,/)')
+     &                 'Nuclear mass: ', AMASS(IATOM)
+           END IF
+C
+!*****************************************************************************
+!iaa: to review
+!C         Linear molecule detected using symmetry
+!C
+!          IF (LINEAR) THEN
+!C
+!           FACTOR = EIGVAL(3)*FACTOR
+!C
+!C           Linear response contributions to the PVC-NSR
+!            NSRLRLEE = PMATL(1,1,IATOM,1)*FACTOR
+!            NSRLRLEP = PMATL(1,1,IATOM,2)*FACTOR
+!            NSRLRSEE = PMATS(1,1,IATOM,1)*FACTOR
+!            NSRLRSEP = PMATS(1,1,IATOM,2)*FACTOR
+!C           Total PVC-NSR
+!            NSRTOT=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
+!C
+!C           For molecules in non-equilibrium (general case)
+!C
+!C
+!             IF (IPRINT .GE. 0)
+!     &  WRITE(LUPRI,'(1X,A,E16.8)')
+!     & 'Total PVC to nuclear spin-rotation constant:',NSRTOT
+!C
+!            IF (IPRINT .GE. 1)
+!     &  WRITE(LUPRI,'(3(1X,A,E16.8,/),(1X,A,E16.8),/)')
+!     & '           M^PVC-L(e-e) :',NSRLRLEE,
+!     & '           M^PVC-S(e-e) :',NSRLRSEE,
+!     & '           M^PVC-L(e-p) :',NSRLRLEP,
+!     & '           M^PVC-S(e-p) :',NSRLRSEP
+!C
+!C         Linear symmetry is not detected
+!C
+!          ELSE
+!*****************************************************************************
+C
+C
+            CALL DZERO(GTRANT,9*NUCDEP)
+            CALL DZERO(GTRANPLEE,9*NUCDEP)
+            CALL DZERO(GTRANPLEP,9*NUCDEP)
+            CALL DZERO(GTRANPSEE,9*NUCDEP)
+            CALL DZERO(GTRANPSEP,9*NUCDEP)
+C
+            DO 50 I = 1, 3
+             DO 50 J = 1, 3
+              DO 60 IX = 1, 3
+               DO 60 IY = 1, 3
+                JX = IPTAX(IX,2)
+                JY = IPTAX(IY,2)
+                CONST = FACTOR*EIGVAL(I)
+C           ee and pp parts of the PVC-NSR
+                GTRANPLEE(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
+     &                       + EIGVEC(IX,I)
+     &                        *PMATL(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
+                GTRANPLEP(I,J,IATOM) = GTRANPLEP(I,J,IATOM)
+     &                       + EIGVEC(IX,I)
+     &                        *PMATL(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
+                GTRANPSEE(I,J,IATOM) = GTRANPSEE(I,J,IATOM)
+     &                       + EIGVEC(IX,I)
+     &                        *PMATS(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
+                GTRANPSEP(I,J,IATOM) = GTRANPSEP(I,J,IATOM)
+     &                       + EIGVEC(IX,I)
+     &                        *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
+ 60           CONTINUE
+C           Total PV contribution to NSR
+              GTRANT(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
+     &                       + GTRANPLEP(I,J,IATOM)
+     &                       + GTRANPSEE(I,J,IATOM)
+     &                       + GTRANPSEP(I,J,IATOM)
+ 50         CONTINUE
+C
+!*****************************************************************************
+!iaa: to review
+!C
+!C    At least one inertia tensor eigenvalue equal to zero (linear molecule):
+!            IF(LINMOL) THEN
+!C
+!             IF (IPRINT .GE. 0)
+!     &  WRITE(LUPRI,'(1X,A,E16.8)')
+!     & 'Total PVC to nuclear spin-rotation constant:',GTRANT(3,3,IATOM)
+!C
+!            IF (IPRINT .GE. 1)
+!     &  WRITE(LUPRI,'(3(1X,A,E16.8,/),(1X,A,E16.8),/)')
+!     & '           M^PVC-L(e-e) :',GTRANPLEE(3,3,IATOM),
+!     & '           M^PVC-S(e-e) :',GTRANPSEE(3,3,IATOM),
+!     & '           M^PVC-L(e-p) :',GTRANPLEP(3,3,IATOM),
+!     & '           M^PVC-S(e-p) :',GTRANPSEP(3,3,IATOM)
+!C
+!C    Inertia tensor of a non-linear molecule (with and without symmetry):
+!            ELSE
+!*****************************************************************************
+             IF (IPRINT .GE. 0) THEN
+C
+C           Total PVC-NSR for molecules in equilibrium
+C
+              CALL HEADER('Total PVC to nuclear spin-rotation '//
+     &              'constant',-1)
+              WRITE (LUPRI,'(3X,A,6X,3E16.8)')
+     &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
+     &                 'iso', (GTRANT(1,1,IATOM)
+     &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
+             END IF
+C
+C           Linear response contributions to PVC-NSR
+C
+             IF (IPRINT .GE. 1) THEN
+              CALL HEADER('M^LR-L(e-e)',-1)
+              WRITE (LUPRI,'(3X,A,6X,3E16.8)')
+     &                 'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEE(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
+     &                 'iso', (GTRANPLEE(1,1,IATOM)
+     &              +GTRANPLEE(2,2,IATOM)+GTRANPLEE(3,3,IATOM))/3
+              CALL HEADER('M^LR-S(e-e)',-1)
+              WRITE (LUPRI,'(3X,A,6X,3E16.8)')
+     &                 'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEE(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
+     &                 'iso', (GTRANPSEE(1,1,IATOM)
+     &              +GTRANPSEE(2,2,IATOM)+GTRANPSEE(3,3,IATOM))/3
+              CALL HEADER('M^LR-L(e-p)',-1)
+              WRITE (LUPRI,'(3X,A,6X,3E16.8)')
+     &                 'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEP(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
+     &                 'iso', (GTRANPLEP(1,1,IATOM)
+     &              +GTRANPLEP(2,2,IATOM)+GTRANPLEP(3,3,IATOM))/3
+              CALL HEADER('M^LR-S(e-p)',-1)
+              WRITE (LUPRI,'(3X,A,6X,3E16.8)')
+     &                 'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEP(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
+     &                 'iso', (GTRANPSEP(1,1,IATOM)
+     &              +GTRANPSEP(2,2,IATOM)+GTRANPSEP(3,3,IATOM))/3
+             END IF
+C
+!*****************************************************************************
+!iaa: to review
+!            END IF  ! (LINMOL)
+!          END IF    ! (LINEAR)
+!*****************************************************************************
           END IF    ! (CHARGE(IATOM).GT.D0)
          END IF     ! (DOATOM(K))
         END IF
