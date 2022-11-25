@@ -63,6 +63,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     complex(8), pointer    ::prop_tens(:,:,:,:)
     integer            :: tens_rank
     integer :: ierr
+    logical          :: CC_CC
     
     omega1=(0.0,0.0)
     omega1 = dcmplx(exa_input%w_lr_re, exa_input%w_lr_im)
@@ -71,6 +72,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
 
     N_prop = 3
+    CC_CC = .false.
     allocate(Tprop_tensors(N_prop))
     allocate(Tprop_tensors_minus_fre(N_prop))
     allocate(Tprop_bar_tensors(N_prop))
@@ -82,7 +84,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
     do  i=1, N_prop
         call form_eomccsd_qr_intermediates(exa_input, interm_t, i, Interm_t_tensors(i),&
-                                  int_t, l1_tensor, l2_tensor)
+                                  int_t, l1_tensor, l2_tensor, CC_CC)
     end do
 
     ! call print_tensor(Interm_t_tensors(3)%epsilon_prop_vo,1.0d-10,"vo part of epison_prop3_before")
@@ -134,7 +136,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
             do j=1, N_prop
                 call get_eom_lr(exa_input,interm_t, int_t, Interm_t_tensors(i), Interm_t_tensors(j), & 
                 Tprop_tensors(i), Tprop_tensors(j), Tprop_tensors_minus_fre(i), Tprop_tensors_minus_fre(j), & 
-                    l1_tensor,l2_tensor,eom_lr)
+                    l1_tensor,l2_tensor,eom_lr,CC_CC)
             end do
         end do
 
@@ -164,7 +166,7 @@ end subroutine talsh_CC_CI_driver
 
 
 subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_prop1, &
-                                   int_t, l1_tensor, l2_tensor)
+                                   int_t, l1_tensor, l2_tensor, CC_CC)
             use intermediates_eom_rsp
             use intermediates_eom_ccsd
 
@@ -175,6 +177,7 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
                 type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
                 type(talsh_tens_t), intent(inout)           :: l2_tensor
                 type(talsh_tens_t), intent(inout)           :: l1_tensor
+                ! CHARACTER, optional           :: WF
 
                 integer(INTD), dimension(4)   :: vvoo_dims, ovoo_dims, vvvo_dims, oovv_dims
                 integer(INTD), dimension(2)   :: ov_dims, oo_dims, vv_dims, vo_dims
@@ -185,7 +188,15 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
                 ! integer,allocatable       :: mo1_list(:)   ! and their indices
                 integer                   :: nmo2          ! the length of the mo basis
                 ! integer                   :: mo2_list(:)   ! and their indices
+                logical :: CC_CC
                 
+
+
+                ! if (present(WF)) then
+                !     CC_CC = .true.
+                ! else
+                !     CC_CC = .false.
+                ! end if
         
                 oovv_dims(1:2) = exa_input%nocc
                 oovv_dims(3:4) = exa_input%nvir
@@ -242,13 +253,19 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
                 call get_O_vo(interm_t_prop1%O_vo,orb_int_tensor1,vo_dims)
 
                 ! get eta_prop
-                call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,l1_tensor,l2_tensor,&
+
+                if (CC_CC) then
+                    call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,l1_tensor,l2_tensor,&
                                     interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
+                else 
+                    call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,l1_tensor,l2_tensor,&
+                                    interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
+                    call get_eta_prop_ov_eom(interm_t_prop1%eta_prop_ov_eom,interm_t_prop1%eta_prop_ov,&
+                                    interm_t_prop1%epsilon_prop_vo,l2_tensor,ov_dims)
+                end if 
+
                 call get_eta_prop_oovv(interm_t_prop1%eta_prop_oovv,orb_int_tensor1,l1_tensor,l2_tensor,&
                                     interm_t%t1,LR_Aux_oo,LR_Aux_vv,oovv_dims)
-                call get_eta_prop_ov_eom(interm_t_prop1%eta_prop_ov_eom,interm_t_prop1%eta_prop_ov,&
-                                    interm_t_prop1%epsilon_prop_vo,l2_tensor,ov_dims)
-
 
                 ! get prop_bar
                 call get_prop_bar_oo(interm_t_prop1%prop_bar_oo,orb_int_tensor1,interm_t%t1,oo_dims)

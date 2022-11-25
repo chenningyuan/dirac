@@ -29,7 +29,7 @@ module talsh_eom_LR
 
 subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
                 tprop_tensor1, tprop_tensor2, tprop_tensor1_minus_fre, tprop_tensor2_minus_fre, &
-                l1_tensor,l2_tensor, eom_lr)
+                l1_tensor,l2_tensor, eom_lr, CC_CC)
 !This subroutine drives the CC-CI linear response property calculation
 !   Written by Xiang Yuan Janunary 2022, Lille, France
 
@@ -57,9 +57,16 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             integer                       :: ierr
 
             complex(kind=8)               :: eom_lr
-            logical :: CC_CC = .false.
+            logical :: CC_CC
             logical :: debug_get_lrresp = .false.
             type(talsh_tens_t)    :: total_t_t1, total_t_t2
+
+
+            ! if (present(WF)) then
+            !     CC_CC = .true.
+            ! else
+            !     CC_CC = .false.
+            ! end if
 
 
             call print_date('Evaluate CC-CI LR')

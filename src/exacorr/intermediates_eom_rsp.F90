@@ -420,10 +420,21 @@ module intermediates_eom_rsp
          type(talsh_tens_t) :: epsilon_prop_vo_tensor
          type(talsh_tens_t) :: l2_tensor
          integer(INTD), dimension(2)   :: ov_dims
+         type(C_PTR) :: body_p, body_p1
+         complex(8), pointer, contiguous:: etaX_tens(:,:), etaXeom_tens(:,:)
          integer            :: ierr
 
          ierr=talsh_tensor_construct(eta_prop_ov_eom_tensor,C8,ov_dims,init_val=ZERO)
          eta_prop_ov_eom_tensor = eta_prop_ov_tensor
+
+         ierr=talsh_tensor_get_body_access(eta_prop_ov_eom_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=talsh_tensor_get_body_access(eta_prop_ov_tensor,body_p1,C8,int(0,C_INT),DEV_HOST)
+
+         call c_f_pointer(body_p,etaXeom_tens,ov_dims)
+         call c_f_pointer(body_p1,etaX_tens,ov_dims)
+
+         etaXeom_tens = etaX_tens
+
          ierr=talsh_tensor_contract("nX(i,a)+=Tl(i,j,a,b)*Epis(b,j)",eta_prop_ov_eom_tensor,& 
                         l2_tensor,epsilon_prop_vo_tensor)
 
