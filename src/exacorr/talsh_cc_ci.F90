@@ -230,6 +230,7 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
                 call get_epsilon_prop_vvoo(interm_t_prop1%epsilon_prop_vvoo,orb_int_tensor1,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
 
+
                 ! call print_tensor(interm_t_prop1%epsilon_prop_vo, 1.0d-10, "Xi1")
                 ! call print_tensor(interm_t_prop1%epsilon_prop_vvoo, 1.0d-10, "Xi2")
                 
@@ -245,6 +246,9 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
                                     interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
                 call get_eta_prop_oovv(interm_t_prop1%eta_prop_oovv,orb_int_tensor1,l1_tensor,l2_tensor,&
                                     interm_t%t1,LR_Aux_oo,LR_Aux_vv,oovv_dims)
+                call get_eta_prop_ov_eom(interm_t_prop1%eta_prop_ov_eom,interm_t_prop1%eta_prop_ov,&
+                                    interm_t_prop1%epsilon_prop_vo,l2_tensor,ov_dims)
+
 
                 ! get prop_bar
                 call get_prop_bar_oo(interm_t_prop1%prop_bar_oo,orb_int_tensor1,interm_t%t1,oo_dims)

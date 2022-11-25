@@ -32,6 +32,10 @@ module intermediates_eom_rsp
         module procedure get_eta_prop_ov_talsh
      end interface get_eta_prop_ov
 
+     interface get_eta_prop_ov_eom
+        module procedure get_eta_prop_ov_eom_talsh
+     end interface get_eta_prop_ov_eom
+
      interface get_eta_prop_oovv
         module procedure get_eta_prop_oovv_talsh
      end interface get_eta_prop_oovv
@@ -70,6 +74,7 @@ module intermediates_eom_rsp
    !   public destroy_eomccsd_rsp_intermediates
      public get_epsilon_prop_vo, get_epsilon_prop_vvoo, get_O_vo, get_eta_prop_ov, get_eta_prop_oovv
      public get_prop_bar_oo, get_prop_bar_vv, get_prop_bar_ov, get_Q_ovoo, get_Q_vvvo
+     public get_eta_prop_ov_eom
 
      contains
 
@@ -334,6 +339,7 @@ module intermediates_eom_rsp
          ! ierr=talsh_tensor_contract('E(i,a)+=H(e,m)*L(i,m,a,e)',eta_prop_ov_tensor,LR_Aux_vo,l2_tensor,scale=ONE)
          ! ierr=talsh_tensor_destruct(Transpose_vo)
 
+
      end subroutine get_eta_prop_ov_talsh
 
 
@@ -406,6 +412,22 @@ module intermediates_eom_rsp
      end subroutine get_eta_prop_oovv_talsh
 
 
+     subroutine get_eta_prop_ov_eom_talsh(eta_prop_ov_eom_tensor,eta_prop_ov_tensor,epsilon_prop_vo_tensor,&
+                                    l2_tensor,ov_dims)
+
+         type(talsh_tens_t) :: eta_prop_ov_eom_tensor
+         type(talsh_tens_t) :: eta_prop_ov_tensor
+         type(talsh_tens_t) :: epsilon_prop_vo_tensor
+         type(talsh_tens_t) :: l2_tensor
+         integer(INTD), dimension(2)   :: ov_dims
+         integer            :: ierr
+
+         ierr=talsh_tensor_construct(eta_prop_ov_eom_tensor,C8,ov_dims,init_val=ZERO)
+         eta_prop_ov_eom_tensor = eta_prop_ov_tensor
+         ierr=talsh_tensor_contract("nX(i,a)+=Tl(i,j,a,b)*Epis(b,j)",eta_prop_ov_eom_tensor,& 
+                        l2_tensor,epsilon_prop_vo_tensor)
+
+     end subroutine get_eta_prop_ov_eom_talsh
 
 
      subroutine get_O_vo_talsh(O_vo_tensor,orb_int_tensor,vo_dims)

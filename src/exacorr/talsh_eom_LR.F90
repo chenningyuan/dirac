@@ -184,17 +184,20 @@ subroutine get_linrsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
 
     !  Point connected with tensors 
     type(talsh_tens_t)          :: result_tensor
-    integer(C_INT)              :: ierr
+    integer(C_INT)              :: ierr, etaX_rank, l2_ranks, epsilon1_rank
     complex(8), pointer         :: result_tens(:)
+    complex(8), pointer         :: l2_tens(:,:,:,:), epsilon1_tens(:,:),etaX1_tens(:,:)
     integer                     :: initialize_talsh
 
-    type(C_PTR):: body_p
+    type(C_PTR):: body_p, body_p_1, body_p_2, body_p_3
     integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
     integer(C_INT):: host_arg_max
 
-    integer(C_INT)              :: one_dims(1)
+    integer(C_INT)              :: one_dims(1), l2_dims(4), epsilon1_dims(2),etaX1_dims(2)
 
     complex(8)                  :: term1, term2, term3, term4
+    integer                     :: i,j,a,c, N_occ, N_vir
+    complex(8)                  :: contrac_l2
 
 
     one_dims(1) = 1
@@ -229,16 +232,22 @@ subroutine get_linrsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
 !--------------------------------------------------------------------------------------
 !       Term1 -= t_bar0(nu)*tX(nu)   XY: do we need to transpose Tlx(i,a)?            |
 !--------------------------------------------------------------------------------------
-        ierr=talsh_tensor_contract("E()+=Tl(i,a)*Tx(a,i)",& 
-            result_tensor,l1_tensor,tprop_tensor1%t1,scale=MINUS_ONE)
+        ! ierr=talsh_tensor_contract("E()+=Tl(i,a)*Tx(a,i)",& 
+        !     result_tensor,l1_tensor,tprop_tensor1%t1,scale=MINUS_ONE)
+
+        ierr=talsh_tensor_contract("E()+=Tl(i,a)*Ex(a,i)",& 
+            result_tensor,l1_tensor,interm_t_prop1%epsilon_prop_vo,scale=MINUS_ONE)
         term1=result_tens(1)
 
         if (debug_local) then 
             print *, "Contribution of lambda*tX single part(CC-CI): ", term1
         end if 
 
-        ierr=talsh_tensor_contract("E()+=Tl(i,j,a,b)*Tx(a,b,i,j)", &
-            result_tensor,l2_tensor,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER_C)
+        ! ierr=talsh_tensor_contract("E()+=Tl(i,j,a,b)*Tx(a,b,i,j)", &
+        !     result_tensor,l2_tensor,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER_C)
+
+        ierr=talsh_tensor_contract("E()+=Tl(i,j,a,b)*Ex(a,b,i,j)", &
+            result_tensor,l2_tensor,interm_t_prop1%epsilon_prop_vvoo,scale=MINUS_ONE_QUARTER_C)
         term1=result_tens(1)
 
         if (debug_local) then 
@@ -249,22 +258,35 @@ subroutine get_linrsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
 !       Term2 += tY(mu)*eta(mu)                                                       |
 !--------------------------------------------------------------------------------------
         ierr=talsh_tensor_init(result_tensor)
-        ierr=talsh_tensor_contract("E()+=Ty(a,i)*n(i,a)",result_tensor,tprop_tensor2%t1,interm_t%eta_ov)
+        ! ierr=talsh_tensor_contract("E()+=Ty(a,i)*n(i,a)",result_tensor,tprop_tensor2%t1,interm_t%eta_ov)
 
-        ierr=talsh_tensor_contract("E()+=Ty(a,b,i,j)*n(i,j,a,b)", &
-                result_tensor,tprop_tensor2%t2,interm_t%eta_oovv,scale=ONE_QUARTER_C)
+        ierr=talsh_tensor_contract("E()+=Ty(a,i)*Tl(i,a)",result_tensor,tprop_tensor2%t1,l1_tensor)
+
+        ! ierr=talsh_tensor_contract("E()+=Ty(a,b,i,j)*n(i,j,a,b)", &
+        !         result_tensor,tprop_tensor2%t2,interm_t%eta_oovv,scale=ONE_QUARTER_C)
+
+        ierr=talsh_tensor_contract("E()+=Ty(a,b,i,j)*Tl(i,j,a,b)", &
+                result_tensor,tprop_tensor2%t2,l2_tensor,scale=ONE_QUARTER_C)
         term2=result_tens(1)
         if (debug_local) then 
-            print *, "Contribution of tY*eta single part(CC-CI): ", term1
+            print *, "Contribution of tY*eta single part(CC-CI): ", term2
         end if 
 
     end if
 
     ierr=talsh_tensor_init(result_tensor)
-    ierr=talsh_tensor_contract("E()+=nX(i,a)*Ty(a,i)",result_tensor,interm_t_prop1%eta_prop_ov,tprop_tensor2%t1)
+    if (CC_CC) then 
+        ierr=talsh_tensor_contract("E()+=nX(i,a)*Ty(a,i)",result_tensor,interm_t_prop1%eta_prop_ov,tprop_tensor2%t1)
+    end if 
+
+    ierr=talsh_tensor_contract("E()+=nX(i,a)*Ty(a,i)",result_tensor,interm_t_prop1%eta_prop_ov_eom,tprop_tensor2%t1)
+    term3=result_tens(1)
+    print *, "single part of etax*tY", term3
     ierr=talsh_tensor_contract("E()+=nX(i,j,a,b)*Ty(a,b,i,j)",result_tensor,interm_t_prop1%eta_prop_oovv, &
                             tprop_tensor2%t2,scale=ONE_QUARTER_C)
     term3=result_tens(1)
+    print *, "total etax*tY", term3
+
     if (debug_local) then 
         print *, "Contribution of etaX*tY: ", term3
     end if 

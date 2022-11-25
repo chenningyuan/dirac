@@ -221,7 +221,7 @@
               type(talsh_tens_t) :: Q_vvvo, Q_ovoo
               type(talsh_tens_t) :: eta_ov, eta_oovv
               type(talsh_tens_t) :: epsilon_prop_vo, epsilon_prop_vvoo
-              type(talsh_tens_t) :: eta_prop_ov, eta_prop_oovv
+              type(talsh_tens_t) :: eta_prop_ov, eta_prop_oovv, eta_prop_ov_eom
               type(talsh_tens_t) :: O_vo
        end type talsh_rsp_interm_tens_t
 
