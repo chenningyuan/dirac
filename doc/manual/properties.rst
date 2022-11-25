@@ -430,6 +430,12 @@ The relativistic Zeeman operator
 
 is expressed in terms of the operator :math:`\hat{\mathbf{m}}_e^{[1]}` associated with the magnetic dipole moment of the electrons and the external magnetic field :math:`\mathbf{B}_0`. Note reference to the gauge origin :math:`G`.
 
+Results are given in ppm.
+
+Using :ref:`PROPERTIES_.PRINT` 1, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response are given separately.
+
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
+
 keyword(PVCSR)
 
 Calculate parity-violating contribution to the nuclear spin-rotation tensor, see :cite:`Aucar_JCP2021`.
