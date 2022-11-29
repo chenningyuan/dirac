@@ -72,7 +72,13 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
 
     N_prop = 3
-    CC_CC = .false.
+
+    if (exa_input%wf_type == 1) then 
+        CC_CC = .true.
+    else 
+        CC_CC = .false.
+    end if 
+
     allocate(Tprop_tensors(N_prop))
     allocate(Tprop_tensors_minus_fre(N_prop))
     allocate(Tprop_bar_tensors(N_prop))

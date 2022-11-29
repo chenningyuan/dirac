@@ -62,13 +62,6 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             type(talsh_tens_t)    :: total_t_t1, total_t_t2
 
 
-            ! if (present(WF)) then
-            !     CC_CC = .true.
-            ! else
-            !     CC_CC = .false.
-            ! end if
-
-
             call print_date('Evaluate CC-CI LR')
 
             eom_lr = dcmplx(0.0,0.0)

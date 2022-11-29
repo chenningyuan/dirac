@@ -65,6 +65,7 @@
             logical                 :: tripl_lap = .false.
             logical                 :: do_no = .false.          ! if true, generate natural orbital
             logical                 :: eom_lr = .false.
+            
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
@@ -77,7 +78,8 @@
             integer                 :: tripl_block(1:2) = -1    ! for running triples
             integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
             integer                 :: n_laplace = 10           ! number of laplace points to use
-            integer                 :: N_eom_trail              ! number of trial vectors in CC linear response
+            integer                 :: N_eom_trail = 1          ! number of trial vectors in CC linear response
+            integer                 :: wf_type = 2              ! wave-function type
             
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
             integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
