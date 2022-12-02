@@ -147,6 +147,7 @@ if(ENABLE_EXATENSOR)
    set(EXATENSOR_ENV "WRAP=NOWRAP BUILD_TYPE=OPT ${EXATENSOR_TALSH} ${TALSH_COMPILERS} ${EXATENSOR_TOOLKIT} ${EXATENSOR_OS} ${EXATENSOR_GPUENV} ${EXATENSOR_MPIENV} ${EXATENSOR_BLAS}")
    message(STATUS "The environment variables used to build ExaTensor are collected in the file ExaTensor_ENV (can be inspected/changed if necessary)")
    file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV ${EXATENSOR_ENV})
+   file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP "${EXATENSOR_ENV}  EXA_NO_BUILD=YES")
 
    ExternalProject_Add(exatensor
         PREFIX "${PROJECT_BINARY_DIR}/exatensor"
@@ -154,7 +155,7 @@ if(ENABLE_EXATENSOR)
         GIT_TAG ${EXATENSOR_GIT_HASH}
         GIT_CONFIG advice.detachedHead=false
         CONFIGURE_COMMAND true  # currently no configure command, but this is needed for cmake to function
-        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && set -a && . ${PROJECT_BINARY_DIR}/ExaTensor_ENV && set +a && make
+        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && set -a && . ${PROJECT_BINARY_DIR}/ExaTensor_ENV && set +a && make && cp ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP ${PROJECT_BINARY_DIR}/ExaTensor_ENV
         INSTALL_DIR ${EXATENSOR_INSTALL_DIR}
         INSTALL_COMMAND true
         )
