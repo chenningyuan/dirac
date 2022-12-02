@@ -75,8 +75,10 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
     if (exa_input%wf_type == 1) then 
         CC_CC = .true.
+        call print_date('Activate CC-CC(LR-CC) response')
     else 
         CC_CC = .false.
+        call print_date('Activate CC-CI(EOM-CC) response')
     end if 
 
     allocate(Tprop_tensors(N_prop))
@@ -85,7 +87,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     allocate(Bvec_tensors(N_prop))
     allocate(Interm_t_tensors(N_prop))
 
-    call print_date('Enter CC-CI response')
+    
     print *, "Read frequency:", omega1
 
     do  i=1, N_prop
@@ -115,7 +117,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     ! call print_tensor(Interm_t_tensors(3)%eta_prop_ov,1.0d-10,"vo part of eta_prop3_after")
     ! call print_tensor(Interm_t_tensors(3)%eta_prop_oovv,1.0d-10,"T2 part of eta_prop3_after")
 
-    call print_date('Constructed intermediates needed in CC-CI response')
+    call print_date('Constructed intermediates needed in CC Response')
 
 
     
@@ -123,7 +125,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega1, Tprop_tensors(i))
         call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), -omega1, Tprop_tensors_minus_fre(i))
     end do
-    call print_date('Solved All CC-CI response right equations')
+    call print_date('Solved All 1st response right equations')
 
 
     ! call print_tensor(Tprop_tensors(1)%t1,1.0d-10,"T1 part of T_prop1")
@@ -143,8 +145,19 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
                 call get_eom_lr(exa_input,interm_t, int_t, Interm_t_tensors(i), Interm_t_tensors(j), & 
                 Tprop_tensors(i), Tprop_tensors(j), Tprop_tensors_minus_fre(i), Tprop_tensors_minus_fre(j), & 
                     l1_tensor,l2_tensor,eom_lr,CC_CC)
+                if (CC_CC) then 
+                    print *, "CC-CC(LR-CC) linear response: <<X;", i, "X", j, ">> = ", eom_lr
+                else
+                    print *, "CC-CI(EOM-CC) linear response: <<X", i, ";X", j, ">> = ", eom_lr
+                end if
             end do
         end do
+
+        if (CC_CC) then     
+            call print_date("Finish CC-CC Linear Response Calculations")
+        else
+            call print_date("Finish CC-CI Linear Response Calculations")
+        end if 
 
     else 
         call print_date('Do quadratic response')
@@ -163,7 +176,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         !             l1_tensor,l2_tensor,eom_qr)
     end if
 
-    call print_date('Leave CC-CI response')    
+    call print_date('Leave CC response')    
 
 end subroutine talsh_CC_CI_driver
 

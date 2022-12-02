@@ -62,8 +62,6 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             type(talsh_tens_t)    :: total_t_t1, total_t_t2
 
 
-            call print_date('Evaluate CC-CI LR')
-
             eom_lr = dcmplx(0.0,0.0)
 
             vvoo_dims(3:4) = exa_input%nocc
@@ -79,15 +77,32 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
                         interm_t,int_t,nocc,nvir)
                 call get_tF(B2%t1,B2%t2,tprop_tensor2%t1,tprop_tensor2%t2,l1_tensor,l2_tensor,&
                         interm_t,int_t,nocc,nvir)
+
+                if (debug_get_lrresp) then 
+                    call print_date("Finish CC-CC tF terms (+w)")
+                end if  
+
                 call get_tF(B1_minus_fre%t1,B1_minus_fre%t2,tprop_tensor1_minus_fre%t1,tprop_tensor1_minus_fre%t2,& 
                         l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
                 call get_tF(B2_minus_fre%t1,B2_minus_fre%t2,tprop_tensor2_minus_fre%t1,tprop_tensor2_minus_fre%t2,& 
                         l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
-                call print_date("Finish CC-CC tF terms")
+
+                if (debug_get_lrresp) then 
+                    call print_date("Finish CC-CC tF terms (-w)")
+                end if  
 
                 if (debug_get_lrresp) then
                     call print_tensor(B1%t1,1.0d-18,"T1 part of tF")
                     call print_tensor(B1%t2,1.0d-18,"T2 part of tF")
+                end if 
+            end if 
+
+
+            if (debug_get_lrresp) then
+                if (CC_CC) then 
+                    call print_date('Evaluate CC-CC LR (+w)')
+                else
+                    call print_date('Evaluate CC-CI LR (+w)')
                 end if 
             end if 
 
@@ -97,6 +112,14 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
                     sigma_prop_tensor12, sigma_prop_tensor21,  &
                     l1_tensor, l2_tensor, quarsp, B1, B2_minus_fre, CC_CC)
 
+            if (debug_get_lrresp) then
+                if (CC_CC) then 
+                    call print_date('Evaluate CC-CC LR (-w)')
+                else
+                    call print_date('Evaluate CC-CI LR (-w)')
+                end if 
+            end if 
+
 
             call get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
                     tprop_tensor1_minus_fre, tprop_tensor2, &
@@ -105,12 +128,14 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
 
             quarsp_con=conjg(quarsp_con)
             eom_lr=(quarsp+quarsp_con)*0.5
+
             if (debug_get_lrresp) then
                 print *, "linear response: +w", quarsp
                 print *, "linear response: -w", quarsp_con
-            end if 
-            call print_date("Finish CC-CI Linear Response Calculations")
-            print *, "CC-CI(EOM-CC) linear response:", eom_lr
+            end if
+
+
+            
 
 
 !*********************           Test perturbated T tensors         *********************************
@@ -179,7 +204,7 @@ subroutine get_linrsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
     type(talsh_comm_tens_t)       :: sigma_prop_tensor12
     type(talsh_comm_tens_t),optional   :: B
     logical :: CC_CC
-    logical :: debug_local
+    logical :: debug_local = .false.
 
 
     !  Point connected with tensors 
@@ -282,14 +307,15 @@ subroutine get_linrsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
     end if 
 
     term3=result_tens(1)
-    print *, "single part of etax*tY", term3
+    if (debug_local) then
+        print *, "single part of etax*tY", term3
+    end if 
     ierr=talsh_tensor_contract("E()+=nX(i,j,a,b)*Ty(a,b,i,j)",result_tensor,interm_t_prop1%eta_prop_oovv, &
                             tprop_tensor2%t2,scale=ONE_QUARTER_C)
     term3=result_tens(1)
-    print *, "total etax*tY", term3
 
-    if (debug_local) then 
-        print *, "Contribution of etaX*tY: ", term3
+    if (debug_local) then
+        print *, "Total Contribution of etaX*tY: ", term3
     end if 
 
     if (CC_CC) then
