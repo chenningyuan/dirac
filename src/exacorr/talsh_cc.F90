@@ -357,11 +357,11 @@ module talsh_cc
                         exa_input%level_shift,-1,fock_mode,exa_input%nff(1),keep_diagonal=.true.)
 
 ! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
-            if (exa_input%eom_input(1)%do_expval) then
+            ! if (exa_input%eom_input(1)%do_expval) then
                call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t, l2_tensor)
-            else
-               call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
-            end if
+            ! else
+            !    call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
+            ! end if
 
 ! with the ground-state intermediates done, and t amplitudes store
 

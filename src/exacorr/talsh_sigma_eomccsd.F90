@@ -743,11 +743,15 @@ module talsh_sigma_eomccsd
       type(talsh_tens_t),    intent(inout) :: sigma2_tensor
       type(talsh_tens_t),    intent(inout) :: l1_tensor
       type(talsh_tens_t),    intent(inout) :: l2_tensor
+      type(talsh_tens_t) :: one_tensor
 !     auxiliary tensor
       type(talsh_tens_t) :: oo_aux
       integer            :: oo_dims(2)
+      integer(C_INT)     :: one_dims(1)
 !     error code
       integer :: ierr
+
+      one_dims(1) = 1
 
 !***************
 !     l1_sigma *
@@ -760,12 +764,15 @@ module talsh_sigma_eomccsd
 !--------------------------------
 
       ierr=talsh_tensor_add("S(i,a)+=F(i,a)",sigma1_tensor,interm_t%fbar_ov)
+      
 
 !-----------------------------------------
 !     term 2: S1(i,a) += L(i,e) * F(e,a) |
 !-----------------------------------------
 
       ierr=talsh_tensor_contract("S(i,a)+=L(i,e)*F(e,a)",sigma1_tensor,l1_tensor,interm_t%fbar_vv)
+      call print_tensor(l1_tensor, 1.0d-18, "trail 1")
+      call print_tensor(sigma1_tensor, 1.0d-18, "diagm2")
 
 !-----------------------------------------
 !     term 3: S1(i,a) -= L(m,a) * F(i,m) |
@@ -790,6 +797,7 @@ module talsh_sigma_eomccsd
 !---------------------------------------------
 
       ierr=talsh_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",sigma1_tensor,interm_t%goo,interm_t%w_ooov)
+      
 
 !---------------------------------------------
 !     term 7: S1(i,a) += L(m,e) * W(i,e,a,m) |
@@ -865,13 +873,14 @@ module talsh_sigma_eomccsd
       ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",sigma2_tensor,int_t%oovv,interm_t%goo)
 
 !---------------------------------------------------------------------
-!     term 9: S2(i,j,a,b) += P(i,j) V(m,j,a,b) * ( L(i,e) * T(e,m) ) |
+!     term 9: S2(i,j,a,b) -= P(i,j) V(m,j,a,b) * ( L(i,e) * T(e,m) ) |
 !---------------------------------------------------------------------
 
       if (.not.interm_t%ccd) then
         oo_dims = (/interm_t%nocc,interm_t%nocc/)
         ierr=talsh_tensor_construct(oo_aux,C8,oo_dims,init_val=ZERO)
-        ierr=talsh_tensor_contract("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1)
+      !   ierr=talsh_tensor_contract("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1)
+        ierr=talsh_tensor_contract("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1,scale=MINUS_ONE)  !XY
         ierr=talsh_tensor_contract("S(i,j,a,b)+=V(m,j,a,b)*U(i,m)",sigma2_tensor,int_t%oovv,oo_aux)
         ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,a,b)*U(j,m)",sigma2_tensor,int_t%oovv,oo_aux)
         ierr=talsh_tensor_destruct(oo_aux)

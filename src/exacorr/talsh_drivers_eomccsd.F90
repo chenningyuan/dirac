@@ -125,6 +125,7 @@ module talsh_eom
       type(eom_config_t),     intent(in)             :: eom_config
       type(talsh_intg_tens_t), intent(inout)         :: int_t
       type(talsh_intermediates_tens_t), intent(inout):: interm_t
+      logical                                        :: left_equation
 
       write(*,*) ""
       write(*,'(A)') "*******************************************************************************"
@@ -134,8 +135,10 @@ module talsh_eom
 
 ! aspg : need to get from hardcoded options to getting them from input (*CCDIAG) on the calls to talsh_davidson_setup
       call talsh_davidson_setup(unit_output=6, &
-                                solve_right=.true.,&
-                                solve_left=.false.,&
+                              !   solve_right=.true.,&
+                              !   solve_left=.false.,&
+                                solve_right=.false.,&
+                                solve_left=.true.,&
                                 symmetric=.false., &
                                 overlap_sorting=relcc_mfd_overlap_sorting,&
                                 max_subspace_size=relcc_mfd_max_subspace_size,&
@@ -149,13 +152,14 @@ module talsh_eom
 
       ! print *,'debug: eom_input%flavor is__',eom_config%flavor,'___'
       ! print *,'debug: eom_input%flavor is__',eom_config%flavor(1:2),'___'
+      left_equation = .true.
       select case(eom_config%flavor)
          case("IP")
             call eom_ccsd_eigenvalue_ip(results_t,eom_config%nroots,interm_t,int_t)
          case("EA")
             call eom_ccsd_eigenvalue_ea(results_t,eom_config%nroots,interm_t,int_t)
          case("EE")
-            call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t)
+            call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t,left_equation)
          case default
             call quit ('Error: No valid EOM-flavour chosen')
       end select
@@ -308,13 +312,14 @@ module talsh_eom
 
     end subroutine
 
-    subroutine eom_ccsd_eigenvalue_ee(results_t, nroots, interm_t, int_t)
+    subroutine eom_ccsd_eigenvalue_ee(results_t, nroots, interm_t, int_t, left_equation)
        use talsh_sigma_eomccsd
 
 !     input variables
       integer, intent(in) :: nroots
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
+      logical, optional                              :: left_equation
       type(talsh_eom_results_tens_t), intent(inout)  :: results_t
 !     workspace
       type(talsh_davidson_workspace_tens_t) :: workspace_t
@@ -325,7 +330,7 @@ module talsh_eom
 
       call print_date("Entering EOM-EE eigenvalue calculation")
 
-      call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
+      call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, left_equation)
       call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
       call talsh_eomccsd_ee_trial_create(workspace_t)
       call talsh_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)

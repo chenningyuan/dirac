@@ -1687,7 +1687,7 @@ contains
 
         if (left) then
             do_left = 'V'
-!           do_right = 'N'
+            do_right = 'N'
             allocate(eVectorsL(vectors_N,vectors_L))
             eVectorsL = 0.0d0
         else
@@ -1888,10 +1888,11 @@ contains
         write(davidson_output_file_unit, "(4x,a)") 'leaving talsh_davidson_workspace_destroy'
     end subroutine 
 
-    subroutine talsh_davidson_workspace_create(workspace_t, nroots, nocc, nvirt, flavor, excitation_level)
+    subroutine talsh_davidson_workspace_create(workspace_t, nroots, nocc, nvirt, flavor, excitation_level, left_equation)
         type(talsh_davidson_workspace_tens_t),  intent(inout) :: workspace_t
         character*2 :: flavor
         integer, intent(in) :: nocc, nvirt, nroots, excitation_level
+        logical, optional                              :: left_equation
         logical :: workspace_create_debug = .false.
 
         integer :: M_dims(2) 
@@ -1937,10 +1938,18 @@ contains
 
            case("EE")
 ! singles
-              workspace_t%tens1_dims = (/ nvirt, nocc /)
+              if (left_equation) then
+                workspace_t%tens1_dims = (/ nocc, nvirt /)
+              else
+                workspace_t%tens1_dims = (/ nvirt, nocc /)
+              end if 
               workspace_t%N(1) = nvirt*nocc
 ! doubles
-              workspace_t%tens2_dims = (/ nvirt, nvirt, nocc, nocc /)
+              if (left_equation) then
+                workspace_t%tens2_dims = (/ nocc, nocc, nvirt, nvirt /)
+              else 
+                workspace_t%tens2_dims = (/ nvirt, nvirt, nocc, nocc /)
+              end if 
               workspace_t%N(2) = nvirt*nvirt*nocc*nocc
 
         end select
@@ -2303,8 +2312,8 @@ contains
                else if (left.and..not.right) then
                   ierr=talsh_tensor_contract("MIJ()+=S(p,q,r,s)*B(p,q,r,s)",      &
    &                                                        result_tensor,        &
-   &                                                        workspace_t%trial2(i),&
-   &                                                        workspace_t%sigma2(j),&
+   &                                                        workspace_t%sigma2(i),&
+   &                                                        workspace_t%trial2(j),&
    &                                                        scale=contrac_coeff)
                end if
             end if
