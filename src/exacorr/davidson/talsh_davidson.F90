@@ -2535,17 +2535,22 @@ contains
             call form_preconditioner(workspace_t, e_small)
 
             if (associated(delta)) deallocate(delta)
-            if (davidson_solve_rhs) then
+            ! if (davidson_solve_rhs) then
                 if (davidson_solve_linear_system) then
 !                     delta => correction_to_vectors(davidson_output_file_unit, &
 !    &                                        e_small, x_small, workspace_t, C_small)
                     delta => correction_to_vectors(davidson_output_file_unit, &
    &                                        e_small, x_small, workspace_t, prop_grad1,prop_grad2)
                 else
-                    delta => correction_to_vectors(davidson_output_file_unit, &
+                    if (davidson_solve_rhs) then
+                        delta => correction_to_vectors(davidson_output_file_unit, &
    &                                               e_small, c_small_r, workspace_t)
+                    else 
+                        delta => correction_to_vectors(davidson_output_file_unit, &
+                        &                          e_small, c_small_l, workspace_t)
+                    end if
                end if
-            end if
+            ! end if
             if (.not.associated(delta)) then
                 if (davidson_solve_linear_system) then 
                     write(davidson_output_file_unit,*) "Root converged."
