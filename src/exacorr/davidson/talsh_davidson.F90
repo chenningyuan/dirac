@@ -2295,7 +2295,7 @@ contains
    &                                                        workspace_t%trial1(i),&
    &                                                        workspace_t%sigma1(j))
                else if (left.and..not.right) then 
-                  ierr=talsh_tensor_contract("MIJ()+=S(p,q)*B(p,q)",              &
+                  ierr=talsh_tensor_contract("MIJ()+=S+(p,q)*B(p,q)",              &
    &                                                        result_tensor,        &
    &                                                        workspace_t%sigma1(i),&
    &                                                        workspace_t%trial1(j))
@@ -2310,7 +2310,7 @@ contains
    &                                                        workspace_t%sigma2(j),&
    &                                                        scale=contrac_coeff)
                else if (left.and..not.right) then
-                  ierr=talsh_tensor_contract("MIJ()+=S(p,q,r,s)*B(p,q,r,s)",      &
+                  ierr=talsh_tensor_contract("MIJ()+=S+(p,q,r,s)*B(p,q,r,s)",      &
    &                                                        result_tensor,        &
    &                                                        workspace_t%sigma2(i),&
    &                                                        workspace_t%trial2(j),&

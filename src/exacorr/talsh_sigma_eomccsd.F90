@@ -876,22 +876,26 @@ module talsh_sigma_eomccsd
 !     term 9: S2(i,j,a,b) -= P(i,j) V(m,j,a,b) * ( L(i,e) * T(e,m) ) |
 !---------------------------------------------------------------------
 
-      if (.not.interm_t%ccd) then
-        oo_dims = (/interm_t%nocc,interm_t%nocc/)
-        ierr=talsh_tensor_construct(oo_aux,C8,oo_dims,init_val=ZERO)
-      !   ierr=talsh_tensor_contract("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1)
-        ierr=talsh_tensor_contract("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1,scale=MINUS_ONE)  !XY
-        ierr=talsh_tensor_contract("S(i,j,a,b)+=V(m,j,a,b)*U(i,m)",sigma2_tensor,int_t%oovv,oo_aux)
-        ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,a,b)*U(j,m)",sigma2_tensor,int_t%oovv,oo_aux)
-        ierr=talsh_tensor_destruct(oo_aux)
-      end if
+      ! if (.not.interm_t%ccd) then
+      !   oo_dims = (/interm_t%nocc,interm_t%nocc/)
+      !   ierr=talsh_tensor_construct(oo_aux,C8,oo_dims,init_val=ZERO)
+      ! !   ierr=talsh_tensor_contract("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1)
+      !   ierr=talsh_tensor_contract("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1,scale=MINUS_ONE)  !XY
+      !   ierr=talsh_tensor_contract("S(i,j,a,b)+=V(m,j,a,b)*U(i,m)",sigma2_tensor,int_t%oovv,oo_aux)
+      !   ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,a,b)*U(j,m)",sigma2_tensor,int_t%oovv,oo_aux)
+      !   ierr=talsh_tensor_destruct(oo_aux)
+      ! end if
 
 !---------------------------------------------------------
 !     term 10: S2(i,j,a,b) += P(i,j) L(i,e) * V(e,j,a,b) |
 !---------------------------------------------------------
 
-      ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*V(e,j,a,b)",sigma2_tensor,l1_tensor,int_t%vovv)
-      ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*V(e,i,b,a)",sigma2_tensor,l1_tensor,int_t%vovv)
+      ! ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*V(e,j,a,b)",sigma2_tensor,l1_tensor,int_t%vovv)
+      ! ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*V(e,i,b,a)",sigma2_tensor,l1_tensor,int_t%vovv)
+
+      ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*W(e,j,a,b)",sigma2_tensor,l1_tensor,interm_t%w_vovv)
+      ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*W(e,i,b,a)",sigma2_tensor,l1_tensor,interm_t%w_vovv)
+
 
 !------------------------------------------------------------
 !     term 11: S2(i,j,a,b) += P(i,j) P(a,b) L(i,a) * F(j,b) |
@@ -908,10 +912,10 @@ module talsh_sigma_eomccsd
 
       ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",sigma2_tensor,l2_tensor,interm_t%w_vvvv,scale=ONE_HALF)
       print *, "new sigma vector:" 
-      call print_tensor(L1_tensor, 1.0d-18, "L1")
-      call print_tensor(l2_tensor, 1.0d-18, "L2")
-      call print_tensor(sigma1_tensor, 1.0d-18, "sigma1")
-      call print_tensor(sigma2_tensor, 1.0d-18, "sigma2")
+      call print_tensor(L1_tensor, 1.0d-10, "L1")
+      call print_tensor(l2_tensor, 1.0d-10, "L2")
+      call print_tensor(sigma1_tensor, 1.0d-10, "sigma1")
+      call print_tensor(sigma2_tensor, 1.0d-10, "sigma2")
 
 
     end subroutine talsh_sigma_eomccsd_lhs_ee
