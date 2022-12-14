@@ -26,12 +26,6 @@ module talsh_eom_QR
 
 !-----------------------------------------------------------------------------------------------------------------
 
-! subroutine get_eom_qr(exa_input, interm_t, Interm_t_tensors,& 
-!                     Tprop_tensors_w1, Tprop_tensors_w2, Tprop_tensors_w3,& 
-!                     Tprop_bar_tensors_w1, Tprop_bar_tensors_w2, Tprop_bar_tensors_w3,& 
-!                     Tprop_tensors_min_w1, Tprop_tensors_min_w2, Tprop_tensors_min_w3,&
-!                     Tprop_bar_tensors_min_w1, Tprop_bar_tensors_min_w2, Tprop_bar_tensors_min_w3,&
-!                     i, j, k, l1_tensor, l2_tensor, eom_qr)
 
 subroutine get_eom_qr(exa_input, interm_t, Interm_t_tensors,& 
                         Tprop_tensors, Tprop_bar_tensors,& 
@@ -45,13 +39,6 @@ subroutine get_eom_qr(exa_input, interm_t, Interm_t_tensors,&
         type(talsh_tens_t), intent(inout)           :: l1_tensor
         type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
 
-        ! type(talsh_comm_tens_t), allocatable :: Tprop_tensors_w1(:), Tprop_tensors_w2(:)   !QR
-        ! type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors_w1(:), Tprop_bar_tensors_w2(:)  !QR
-        ! type(talsh_comm_tens_t), allocatable :: Tprop_tensors_w3(:), Tprop_bar_tensors_w3(:) !QR
-    
-        ! type(talsh_comm_tens_t), allocatable :: Tprop_tensors_min_w1(:), Tprop_tensors_min_w2(:)   !QR
-        ! type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors_min_w1(:), Tprop_bar_tensors_min_w2(:)  !QR
-        ! type(talsh_comm_tens_t), allocatable :: Tprop_tensors_min_w3(:), Tprop_bar_tensors_min_w3(:)  !QR
 
         type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
         type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
@@ -69,19 +56,11 @@ subroutine get_eom_qr(exa_input, interm_t, Interm_t_tensors,&
 
 
 
-        ! call get_quarspf(exa_input, interm_t, Interm_t_tensors,&
-        !                 Tprop_tensors_w1, Tprop_tensors_w2, Tprop_tensors_w3,& 
-        !                 Tprop_bar_tensors_w1, Tprop_bar_tensors_w2, Tprop_bar_tensors_w3,& 
-        !                 i, j, k, l1_tensor, l2_tensor, quarsp)
-
         call get_quarspf(exa_input, interm_t, Interm_t_tensors,&
                         Tprop_tensors,Tprop_bar_tensors,& 
                         i, j, k, l1_tensor, l2_tensor, quarsp)
 
-        ! call get_quarspf(exa_input, interm_t, Interm_t_tensors,&
-        !                 Tprop_tensors_min_w1, Tprop_tensors_min_w2, Tprop_tensors_min_w3,&
-        !                 Tprop_bar_tensors_min_w1, Tprop_bar_tensors_min_w2, Tprop_bar_tensors_min_w3,&
-        !                 i, j, k, l1_tensor, l2_tensor, quarsp_con)
+
 
         call get_quarspf(exa_input, interm_t, Interm_t_tensors,&
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
@@ -96,11 +75,6 @@ end subroutine get_eom_qr
 
 !------------------------------------------------------------------------------------------------------------------
 
-! subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
-!                         Tprop_tensors_w1, Tprop_tensors_w2, Tprop_tensors_w3, &
-!                         Tprop_bar_tensors_w1, Tprop_bar_tensors_w2, Tprop_bar_tensors_w3, &
-!                         i, j, k, l1_tensor, l2_tensor, quarsp)
-
 subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
                             Tprop_tensors,Tprop_bar_tensors,&
                             i, j, k, l1_tensor, l2_tensor, quarsp)         
@@ -109,9 +83,6 @@ subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
             type(talsh_tens_t), intent(inout)           :: l2_tensor
             type(talsh_tens_t), intent(inout)           :: l1_tensor
             type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
-            ! type(talsh_comm_tens_t), allocatable :: Tprop_tensors_w1(:), Tprop_tensors_w2(:)   !QR
-            ! type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors_w1(:), Tprop_bar_tensors_w2(:)  !QR
-            ! type(talsh_comm_tens_t), allocatable :: Tprop_tensors_w3(:), Tprop_bar_tensors_w3(:) !QR
             type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:),Tprop_bar_tensors(:)
             integer                            :: i, j, k
 
