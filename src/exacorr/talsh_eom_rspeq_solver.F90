@@ -29,7 +29,8 @@ module talsh_eom_rspeq_solver
 
 !----------------------------------------------------------------------------------------------------------------
 
-      subroutine solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop, omega, tprop_tensor)
+      subroutine solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop, &
+                                    omega, tprop_tensor)
             use talsh_sigma_eomccsd
 
       ! write(*,*) ""
@@ -48,6 +49,7 @@ module talsh_eom_rspeq_solver
 
             type(talsh_eom_results_tens_t)  :: results_t
             type(talsh_comm_tens_t)       :: tprop_tensor
+
 !     workspace
             type(talsh_davidson_workspace_tens_t) :: workspace_t
             type(talsh_projectors_tens_t) :: projector_t
@@ -73,13 +75,10 @@ module talsh_eom_rspeq_solver
             call print_date("Entering CC-CI Right Linear Systems calculation")
 
             call talsh_davidson_workspace_create(workspace_t, nroot, interm_t%nocc, interm_t%nvir, flavor, 2)
-            print *, "bug?"
             ! call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
             ! call talsh_eomccsd_ee_trial_create(workspace_t)
             call talsh_eomccsd_LR_proper_create(workspace_t,interm_t_prop%epsilon_prop_vo)
-            print *, "bug?"
             call talsh_eomccsd_LR_trial_create(workspace_t)
-            print *, "bug?"
             
 
 !     set pointers to sigma vector subroutines 
@@ -144,7 +143,7 @@ module talsh_eom_rspeq_solver
       
                   call print_date("Entering CC-CI Left Linear Systems calculation")
       
-                  call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
+                  call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
                   call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
                   call talsh_eomccsd_ee_trial_create(workspace_t)
       

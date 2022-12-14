@@ -46,19 +46,27 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 !   Wave-function tensor needed to construct the response function
 
     complex(kind=8)               :: omega1, omega2, omega3
-    ! complex(kind=8)               :: omega(:)
+    complex(kind=8),allocatable   :: omega(:)
     type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2, interm_t_prop3  
     type(talsh_comm_tens_t)       :: tprop_tensor1, tprop_tensor2, tprop_tensor3
     type(talsh_comm_tens_t)       :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
     type(talsh_comm_tens_t)       :: bvec_tensor1, bvec_tensor2, bvec_tensor3
     complex(kind=8)               :: eom_qr, eom_lr
-    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:)
-    type(talsh_comm_tens_t), allocatable :: Tprop_tensors_w1(:), Tprop_tensors_w2(:)   !only for qr
-    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors_w1(:), Tprop_bar_tensors_w2(:)  !only for qr
-    type(talsh_comm_tens_t), allocatable :: Tprop_tensors_min_w(:),  Tprop_bar_tensors_min_w(:)
+    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
+
+    ! type(talsh_comm_tens_t), allocatable :: Tprop_tensors_w1(:), Tprop_tensors_w2(:)   !QR
+    ! type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors_w1(:), Tprop_bar_tensors_w2(:)  !QR
+    ! type(talsh_comm_tens_t), allocatable :: Tprop_tensors_w3(:), Tprop_bar_tensors_w3(:) !QR
+
+    ! type(talsh_comm_tens_t), allocatable :: Tprop_tensors_min_w1(:), Tprop_tensors_min_w2(:)   !QR
+    ! type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors_min_w1(:), Tprop_bar_tensors_min_w2(:)  !QR
+    ! type(talsh_comm_tens_t), allocatable :: Tprop_tensors_min_w3(:), Tprop_bar_tensors_min_w3(:)  !QR
+
+    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
+
     type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:)
     type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
-    integer                       :: N_prop, i, j
+    integer                       :: N_prop, i, j, k, N_oper_qr
 
 
     integer            :: vvoo_dims(4)
@@ -75,10 +83,11 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
 
     N_prop = 3
-    ! allocate(omega(N_prop))
-    ! omega(1) = omega1
-    ! omega(2) = omega2
-    ! omega(3) = omega3
+    N_oper_qr = 3
+    allocate(omega(N_prop))
+    omega(1) = omega1
+    omega(2) = omega2
+    omega(3) = omega3
 
 
     if (exa_input%wf_type == 1) then 
@@ -99,58 +108,23 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
                                   int_t, l1_tensor, l2_tensor, CC_CC)
     end do
 
-    ! call print_tensor(Interm_t_tensors(3)%epsilon_prop_vo,1.0d-10,"vo part of epison_prop3_before")
-    ! call print_tensor(Interm_t_tensors(3)%epsilon_prop_vvoo,1.0d-10,"T2 part of epison_prop3_before")
-
-
-    ! ierr=talsh_tensor_dimensions(Interm_t_tensors(3)%epsilon_prop_vvoo,tens_rank,vvoo_dims)
-    ! ierr=talsh_tensor_get_body_access(Interm_t_tensors(3)%epsilon_prop_vvoo,body_p,C8,int(0,C_INT),DEV_HOST)
-    ! call c_f_pointer(body_p,prop_tens,vvoo_dims)
-
-
-    ! call print_tensor(Interm_t_tensors(3)%epsilon_prop_vo,1.0d-10,"vo part of epison_prop3_after")
-    ! call print_tensor(Interm_t_tensors(3)%epsilon_prop_vvoo,1.0d-10,"T2 part of epison_prop3_after")
-    ! print *, "Norm^2 of Interm_t_tensors(3)%epsilon_prop_vo",  tensor_norm2(Interm_t_tensors(3)%epsilon_prop_vo)
-    ! print *, "Norm^2 of Interm_t_tensors(3)%epsilon_prop_vo",  tensor_norm2(Interm_t_tensors(3)%epsilon_prop_vvoo)
-
-    ! call print_tensor(Interm_t_tensors(3)%eta_prop_ov,1.0d-10,"vo part of eta_prop3_after")
-    ! call print_tensor(Interm_t_tensors(3)%eta_prop_oovv,1.0d-10,"T2 part of eta_prop3_after")
-    ! print *, "Norm^2 of Interm_t_tensors(3)%eta_prop_ov",  tensor_norm2(Interm_t_tensors(3)%eta_prop_ov)
-    ! print *, "Norm^2 of Interm_t_tensors(3)%eta_prop_oovv",  tensor_norm2(Interm_t_tensors(3)%eta_prop_oovv)
-
-    ! call print_tensor(Interm_t_tensors(3)%eta_prop_ov,1.0d-10,"vo part of eta_prop3_after")
-    ! call print_tensor(Interm_t_tensors(3)%eta_prop_oovv,1.0d-10,"T2 part of eta_prop3_after")
 
     call print_date('Constructed intermediates needed in CC Response')
 
 
-    allocate(Tprop_tensors(N_prop))
-    allocate(Tprop_tensors_min_w(N_prop))
-    do i=1, N_prop
-        call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega1, Tprop_tensors(i))
-        call solve_eom_lr_right(exa_input, interm_t, int_t, &
-                                Interm_t_tensors(i), -omega1, Tprop_tensors_min_w(i))
-    end do
-    call print_date('Solved All 1st response right equations')
-
-
-
-    ! call print_tensor(Tprop_tensors(1)%t1,1.0d-10,"T1 part of T_prop1")
-    ! call print_tensor(Tprop_tensors(1)%t2,1.0d-10,"T2 part of T_prop1")
-
-
-    ! call print_tensor(Tprop_tensors(3)%t1,1.0d-10,"T1 part of T_prop3")
-    ! call print_tensor(Tprop_tensors(3)%t2,1.0d-10,"T2 part of T_prop3")
-    ! print *, "Norm^2 of Tprop_tensors(3)%t1",  tensor_norm2(Tprop_tensors(3)%t1)
-    ! print *, "Norm^2 of Tprop_tensors(3)%t2",  tensor_norm2(Tprop_tensors(3)%t2)
 
 
     if (rr==1) then 
         call print_date('Do linear response')
-        ! do i=1, N_prop
-        !     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega1, Tprop_tensors(i))
-        !     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), -omega1, Tprop_tensors_min_w(i))
-        ! end do
+
+        allocate(Tprop_tensors(N_prop))
+        allocate(Tprop_tensors_min_w(N_prop))
+        do i=1, N_prop
+            call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega1, Tprop_tensors(i))
+            call solve_eom_lr_right(exa_input, interm_t, int_t, &
+                                    Interm_t_tensors(i), -omega1, Tprop_tensors_min_w(i))
+        end do
+        call print_date('Solved All 1st response right equations')
 
         do i=1, N_prop
             do j=1, N_prop
@@ -175,46 +149,78 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         call print_date('Do quadratic response')
         allocate(Bvec_tensors(N_prop))
 
-        allocate(Tprop_tensors_w1(N_prop))
-        allocate(Tprop_tensors_w2(N_prop))
-        allocate(Tprop_bar_tensors_w1(N_prop))
-        allocate(Tprop_bar_tensors_w2(N_prop))
+        ! allocate(Tprop_tensors_w1(N_prop))
+        ! allocate(Tprop_tensors_w2(N_prop))
+        ! allocate(Tprop_tensors_w3(N_prop))
+        ! allocate(Tprop_tensors_min_w1(N_prop))
+        ! allocate(Tprop_tensors_min_w2(N_prop))
+        ! allocate(Tprop_tensors_min_w3(N_prop))
+        ! allocate(Tprop_bar_tensors_w1(N_prop))
+        ! allocate(Tprop_bar_tensors_w2(N_prop))
+        ! allocate(Tprop_bar_tensors_w3(N_prop))
+        ! allocate(Tprop_bar_tensors_min_w1(N_prop))
+        ! allocate(Tprop_bar_tensors_min_w2(N_prop))
+        ! allocate(Tprop_bar_tensors_min_w3(N_prop))
+
+
+        allocate(Tprop_tensors(N_prop))
         allocate(Tprop_tensors_min_w(N_prop))
+        allocate(Tprop_bar_tensors(N_prop))
         allocate(Tprop_bar_tensors_min_w(N_prop))
 
-        do i=1, N_prop
+
+        omega1 = -(omega2+omega3)
+
+        do i=1, N_oper_qr
             call get_left_bvec(exa_input,Interm_t_tensors(i),l1_tensor,l2_tensor,Bvec_tensors(i))
         end do
 
-        do i=1, N_prop
-            call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega1, Tprop_tensors_w1(i))
-            call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega2, Tprop_tensors_w2(i))
-        end do
-
-        do i=1, N_prop
-            call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(i), omega1, Bvec_tensors(i), Tprop_bar_tensors_w1(i))
-            call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(i), omega2, Bvec_tensors(i), Tprop_bar_tensors_w2(i))
-        end do 
         
-        omega3 = -(omega1+omega2)
+        do i=1, N_oper_qr
+            ! call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega1, Tprop_tensors_w1(i))
+            ! call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), -omega1, Tprop_tensors_min_w1(i))
+            ! call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega2, Tprop_tensors_w2(i))
+            ! call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), -omega2, Tprop_tensors_min_w2(i))
+            ! call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega3, Tprop_tensors_w3(i))
+            ! call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), -omega3, Tprop_tensors_min_w3(i))
+
+            call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega(i), Tprop_tensors(i))
+            call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), -omega(i), Tprop_tensors_min_w(i))
+        end do
+        call print_date('Solved All 1st response right equations')
+
+        do i=1, N_oper_qr
+            ! call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(i), omega1, Bvec_tensors(i), Tprop_bar_tensors_w1(i))
+            ! call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(i), -omega1, Bvec_tensors(i), Tprop_bar_tensors_min_w1(i))
+            ! call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(i), omega2, Bvec_tensors(i), Tprop_bar_tensors_w2(i))
+            ! call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(i), -omega2, Bvec_tensors(i), Tprop_bar_tensors_min_w2(i))
+            ! call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(i), omega3, Bvec_tensors(i), Tprop_bar_tensors_w3(i))
+            ! call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(i), -omega3, Bvec_tensors(i), Tprop_bar_tensors_min_w3(i))
+            call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(i), omega(i), Bvec_tensors(i), Tprop_bar_tensors(i))
+            call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(i), -omega(i), Bvec_tensors(i), Tprop_bar_tensors_min_w(i))
+        end do
+        call print_date('Solved All 1st response left equations') 
+        
 
         do i=1, N_prop
-            call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega3, Tprop_tensors_min_w(i))
-            call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(i), omega3, Bvec_tensors(i), Tprop_bar_tensors_min_w(i))
-        end do 
+            do j=1, N_prop
+                do k=1, N_prop
+                    ! call get_eom_qr(exa_input, interm_t, Interm_t_tensors,& 
+                    ! Tprop_tensors_w1, Tprop_tensors_w2, Tprop_tensors_w3,& 
+                    ! Tprop_bar_tensors_w1, Tprop_bar_tensors_w2, Tprop_bar_tensors_w3,& 
+                    ! Tprop_tensors_min_w1, Tprop_tensors_min_w2, Tprop_tensors_min_w3,&
+                    ! Tprop_bar_tensors_min_w1, Tprop_bar_tensors_min_w2, Tprop_bar_tensors_min_w3,&
+                    ! i, j, k, l1_tensor, l2_tensor, eom_qr)
 
-
-        ! do i=1, N_prop
-        !     do j=1, N_prop
-        !         do k=1, N_prop
-        !             call get_eom_qr(exa_input, interm_t, Interm_t_tensors,& 
-        !             Tprop_tensors_w1, Tprop_tensors_w2,& 
-        !             Tprop_bar_tensors_w1, Tprop_bar_tensors_w2,& 
-        !             Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
-        !             l1_tensor,l2_tensor,eom_qr)
-        !         end do
-        !     end do
-        ! end do
+                    
+                    call get_eom_qr(exa_input, interm_t, Interm_t_tensors,& 
+                    Tprop_tensors, Tprop_bar_tensors,& 
+                    Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
+                    i, j, k, l1_tensor, l2_tensor, eom_qr)
+                    print *, "CC-CI(EOM-CC) quadratic response: <<X", i, ";X", j, "X", k, ">> = ", eom_qr
+                end do
+            end do
+        end do
 
     end if
 
