@@ -94,10 +94,10 @@ subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
 
 
             !XYZ   X is 1; Y is 2; Z is 3
-            call construct_AyTz(exa_input,Interm_t_tensors(i),Tprop_tensors(k),sigma_prop_tensor13)
+            call construct_AyTz(exa_input,Interm_t_tensors(i),Tprop_tensors(3),sigma_prop_tensor13)
 
-            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(j), Tprop_tensors(k), &
-                                Tprop_bar_tensors(i), Tprop_bar_tensors(j), Tprop_bar_tensors(k), &
+            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(2), Tprop_tensors(3), &
+                                Tprop_bar_tensors(1), Tprop_bar_tensors(2), Tprop_bar_tensors(3), &
                                 Interm_t_tensors(i), Interm_t_tensors(k), &
                                 sigma_prop_tensor13,l1_tensor,l2_tensor)
                                 
@@ -106,50 +106,50 @@ subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
 
 
             !XZY
-            call construct_AyTz(exa_input,Interm_t_tensors(i),Tprop_tensors(j),sigma_prop_tensor12)
+            call construct_AyTz(exa_input,Interm_t_tensors(i),Tprop_tensors(2),sigma_prop_tensor12)
 
-            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(k), Tprop_tensors(j), &
-                                Tprop_bar_tensors(i), Tprop_bar_tensors(j), Tprop_bar_tensors(j), &
+            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(3), Tprop_tensors(2), &
+                                Tprop_bar_tensors(1), Tprop_bar_tensors(3), Tprop_bar_tensors(2), &
                                 Interm_t_tensors(i), Interm_t_tensors(j), &
                                 sigma_prop_tensor12,l1_tensor,l2_tensor)
             quarsp=quarsp+tem_quarsp_iter
 
 
             !YXZ
-            call construct_AyTz(exa_input,Interm_t_tensors(j),Tprop_tensors(k),sigma_prop_tensor23)
+            call construct_AyTz(exa_input,Interm_t_tensors(j),Tprop_tensors(3),sigma_prop_tensor23)
 
-            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(i), Tprop_tensors(k), &
-                                Tprop_bar_tensors(j), Tprop_bar_tensors(i), Tprop_bar_tensors(k), &
+            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(1), Tprop_tensors(3), &
+                                Tprop_bar_tensors(2), Tprop_bar_tensors(1), Tprop_bar_tensors(3), &
                                 Interm_t_tensors(j), Interm_t_tensors(k), &
                                 sigma_prop_tensor23,l1_tensor,l2_tensor)
             quarsp=quarsp+tem_quarsp_iter
 
 
             !YZX
-            call construct_AyTz(exa_input,Interm_t_tensors(j),Tprop_tensors(i),sigma_prop_tensor21)
+            call construct_AyTz(exa_input,Interm_t_tensors(j),Tprop_tensors(1),sigma_prop_tensor21)
 
-            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(k), Tprop_tensors(i), &
-                                Tprop_bar_tensors(j), Tprop_bar_tensors(i), Tprop_bar_tensors(i), &
+            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(3), Tprop_tensors(1), &
+                                Tprop_bar_tensors(2), Tprop_bar_tensors(3), Tprop_bar_tensors(1), &
                                 Interm_t_tensors(j), Interm_t_tensors(i), &
                                 sigma_prop_tensor21,l1_tensor,l2_tensor)
             quarsp=quarsp+tem_quarsp_iter
 
 
             !ZYX
-            call construct_AyTz(exa_input,Interm_t_tensors(k),Tprop_tensors(i),sigma_prop_tensor31)
+            call construct_AyTz(exa_input,Interm_t_tensors(k),Tprop_tensors(1),sigma_prop_tensor31)
 
-            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(j), Tprop_tensors(i), &
-                                Tprop_bar_tensors(k), Tprop_bar_tensors(j), Tprop_bar_tensors(i), &
+            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(2), Tprop_tensors(1), &
+                                Tprop_bar_tensors(3), Tprop_bar_tensors(2), Tprop_bar_tensors(1), &
                                 Interm_t_tensors(k), Interm_t_tensors(i), &
                                 sigma_prop_tensor31,l1_tensor,l2_tensor)
             quarsp=quarsp+tem_quarsp_iter
 
 
             !ZXY
-            call construct_AyTz(exa_input,Interm_t_tensors(k),Tprop_tensors(j),sigma_prop_tensor32)
+            call construct_AyTz(exa_input,Interm_t_tensors(k),Tprop_tensors(2),sigma_prop_tensor32)
 
-            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(i), Tprop_tensors(j), &
-                                Tprop_bar_tensors(k), Tprop_bar_tensors(i), Tprop_bar_tensors(j), &
+            call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(1), Tprop_tensors(2), &
+                                Tprop_bar_tensors(3), Tprop_bar_tensors(1), Tprop_bar_tensors(2), &
                                 Interm_t_tensors(k), Interm_t_tensors(j), &
                                 sigma_prop_tensor32,l1_tensor,l2_tensor)
             quarsp=quarsp+tem_quarsp_iter
@@ -224,7 +224,6 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             ierr=talsh_tensor_init(result_tensor)
             ierr=talsh_tensor_contract("Aux(i,a)+=Tly(i,j,a,b)*EpX(b,j)",Aux_ov,&
                                         tprop_bar_tensor2%t2,interm_t_prop1%epsilon_prop_vo,scale=MINUS_ONE)
-            ierr=talsh_tensor_init(result_tensor)
             ierr=talsh_tensor_contract("E()+=Aux(i,a)*TZ(a,i)",result_tensor,Aux_ov,tprop_tensor2%t1,scale=ONE)
             term4=result_tens(1)
 

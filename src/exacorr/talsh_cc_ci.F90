@@ -48,6 +48,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     complex(kind=8)               :: omega1, omega2, omega3
     complex(kind=8),allocatable   :: omega(:)
     complex(kind=8)               :: eom_qr, eom_lr
+    complex(kind=8),allocatable   :: eom_qrs(:,:,:), eom_lrs(:,:)
     type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
 
     type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
@@ -74,13 +75,6 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
 
     N_prop = 3
-    N_oper_qr = 3
-    N_oper_lr = 2
-    allocate(N_prop_tem_lr(N_oper_lr))
-    allocate(N_prop_tem_qr(N_oper_qr))
-    ! omega(1) = omega1
-    ! omega(2) = omega2
-    ! omega(3) = omega3
 
 
     if (exa_input%wf_type == 1) then 
@@ -94,7 +88,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     allocate(Interm_t_tensors(N_prop))
 
     
-    print *, "Read frequency:", omega1
+
 
     do  i=1, N_prop
         call form_eomccsd_qr_intermediates(exa_input, interm_t, i, Interm_t_tensors(i),&
@@ -110,48 +104,73 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     if (rr==1) then 
         call print_date('Do linear response')
 
+        N_oper_lr = 2
         allocate(omega(N_oper_lr))
+        allocate(N_prop_tem_lr(N_oper_lr))
         omega2 = -omega1
         omega(1) = omega1
         omega(2) = omega2
+        print *, "Read frequency1:", omega(1)
+        print *, "Read frequency2:", omega(2)
 
-        allocate(Tprop_tensors(N_prop))
-        allocate(Tprop_tensors_min_w(N_prop))
-        do i=1, N_prop
-            call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega1, Tprop_tensors(i))
-            call solve_eom_lr_right(exa_input, interm_t, int_t, &
-                                    Interm_t_tensors(i), -omega1, Tprop_tensors_min_w(i))
-        end do
-        call print_date('Solved All 1st response right equations')
+        allocate(Tprop_tensors(N_oper_lr))
+        allocate(Tprop_tensors_min_w(N_oper_lr))
+        allocate(eom_lrs(N_prop,N_prop))
+        
 
         do i=1, N_prop
             N_prop_tem_lr(1) = i
             do j=1, N_prop
                 N_prop_tem_lr(2) = j
 
+                do n=1, N_oper_lr
+                    m = N_prop_tem_lr(n)
+                    call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(m), omega(n), Tprop_tensors(n))
+                    call solve_eom_lr_right(exa_input, interm_t, int_t, &
+                                            Interm_t_tensors(m), omega(n), Tprop_tensors_min_w(n))
+                end do
+                call print_date('Solved All 1st response right equations')
 
-                call get_eom_lr(exa_input,interm_t, int_t, Interm_t_tensors(i), Interm_t_tensors(j), & 
-                Tprop_tensors(i), Tprop_tensors(j), Tprop_tensors_min_w(i), Tprop_tensors_min_w(j), & 
+                call get_eom_lr(exa_input,interm_t, int_t, Interm_t_tensors,& 
+                    Tprop_tensors, Tprop_tensors_min_w, i, j,& 
                     l1_tensor,l2_tensor,eom_lr,CC_CC)
-                if (CC_CC) then 
-                    print *, "CC-CC(LR-CC) linear response: <<X;", i, "X", j, ">> = ", eom_lr
-                else
-                    print *, "CC-CI(EOM-CC) linear response: <<X", i, ";X", j, ">> = ", eom_lr
-                end if
+                eom_lrs(i,j) = eom_lr
+
+                do n=1,  N_oper_lr
+                    ierr=talsh_tensor_destruct(Tprop_tensors(n)%t1)
+                    ierr=talsh_tensor_destruct(Tprop_tensors(n)%t2)
+                    ierr=talsh_tensor_destruct(Tprop_tensors_min_w(n)%t1)
+                    ierr=talsh_tensor_destruct(Tprop_tensors_min_w(n)%t2)
+                end do
+
             end do
         end do
 
-        
+        do i=1, N_prop
+            do j=1, N_prop
+                if (CC_CC) then 
+                    print *, "CC-CC(LR-CC) linear response: <<X;", i, "X", j, ">> = ", eom_lrs(i,j)
+                else
+                    print *, "CC-CI(EOM-CC) linear response: <<X", i, ";X", j, ">> = ", eom_lrs(i,j)
+                end if
+            end do
+        end do  
+
+
         if (CC_CC) then     
             call print_date("Finish CC-CC Linear Response Calculations")
         else
             call print_date("Finish CC-CI Linear Response Calculations")
         end if 
 
+
     else 
 
         call print_date('Do quadratic response')
 
+        N_oper_qr = 3
+
+        allocate(N_prop_tem_qr(N_oper_qr))
         allocate(omega(N_oper_qr))
         allocate(Bvec_tensors(N_oper_qr))
         allocate(Tprop_tensors(N_oper_qr))
@@ -160,6 +179,11 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         allocate(Tprop_bar_tensors_min_w(N_oper_qr))
 
         omega1 = -(omega2+omega3)
+        print *, "Read frequency1:", omega(1)
+        print *, "Read frequency2:", omega(2)
+        print *, "Read frequency3:", omega(3)
+
+        allocate(eom_qrs(N_prop,N_prop,N_prop))
         
         
 ! This loop is to determine which three properties to calculate
@@ -191,8 +215,9 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
                     Tprop_tensors, Tprop_bar_tensors,& 
                     Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
                     i, j, k, l1_tensor, l2_tensor, eom_qr)
-                    print *, "CC-CI(EOM-CC) quadratic response: <<X", i, ";X", j, "X", k, ">> = ", eom_qr
 
+                    eom_qrs(i,j,k) = eom_qr
+                   
                     do n=1,  N_oper_qr
                         ierr=talsh_tensor_destruct(Tprop_tensors(n)%t1)
                         ierr=talsh_tensor_destruct(Tprop_tensors(n)%t2)
@@ -208,6 +233,15 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
                 end do
             end do
+        end do
+
+
+        do i=1, N_prop
+            do j=1, N_prop
+                do k=1, N_prop
+                    print *, "CC-CI(EOM-CC) quadratic response: <<X", i, ";X", j, "X", k, ">> = ", eom_qrs(i,j,k)
+                end do
+            end do 
         end do
 
     end if
