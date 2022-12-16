@@ -1181,6 +1181,7 @@ contains
         do i = 1, workspace_t%L
 
            factor1 =  eigenvectors_subspace(i,k)
+        !    factor1 = conjg(factor1)
            factor2 = -eigenvalues_subspace(k)*factor1
 ! aspg, added from (q)rsp
         !    if (present(C_subspace)) factor2 = -C_subspace(i)
@@ -1194,7 +1195,6 @@ contains
             !   call rotate_eigenvector(workspace_t%sigma1(i),workspace_t%sigma2(i),workspace_t)
               ierr=talsh_tensor_contract("r(a)+=s(a)*K()",workspace_t%delta1(k),workspace_t%sigma1(i),one_tensor,scale=factor1)
               ierr=talsh_tensor_contract("r(a)+=t(a)*K()",workspace_t%delta1(k),workspace_t%trial1(i),one_tensor,scale=factor2)
-
               ierr=talsh_tensor_contract("r(a,b,c)+=s(a,b,c)*K()",workspace_t%delta2(k),workspace_t%sigma2(i),&
                                 & one_tensor,scale=factor1)
               ierr=talsh_tensor_contract("r(a,b,c)+=t(a,b,c)*K()",workspace_t%delta2(k),workspace_t%trial2(i),&
@@ -1205,6 +1205,8 @@ contains
               ierr=talsh_tensor_add("r(a,b)+=t(a,b)",workspace_t%delta1(k),workspace_t%trial1(i),scale=factor2)
               ierr=talsh_tensor_add("r(a,b,c,d)+=s(a,b,c,d)",workspace_t%delta2(k),workspace_t%sigma2(i),scale=factor1)
               ierr=talsh_tensor_add("r(a,b,c,d)+=t(a,b,c,d)",workspace_t%delta2(k),workspace_t%trial2(i),scale=factor2)
+
+            !   call print_tensor(workspace_t%delta1(k), 1.0d-10, "delta2")
 
             !   if (present(C_subspace)) then
                 ! ierr=talsh_tensor_add("r(a,b)+=t(a,b)",workspace_t%delta1(k),workspace_t%trial1(i),scale=factor3)
