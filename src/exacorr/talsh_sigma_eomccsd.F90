@@ -781,14 +781,14 @@ module talsh_sigma_eomccsd
       ierr=talsh_tensor_contract("S(i,a)+=L(i,e)*F(e,a)",sigma1_tensor,l1_tensor,interm_t%fbar_vv)
       ! call print_tensor(interm_t%fbar_vv, 1.0d-10, "fbar_vv")
       ! call print_tensor(sigma1_tensor, 1.0d-10, "sigma1")
-      print*, "norm contraction 1 (accumulated, this):", tensor_norm2(sigma1_tensor)
+      ! print*, "norm contraction 1 (accumulated, this):", tensor_norm2(sigma1_tensor)
 
 !-----------------------------------------
 !     term 3: S1(i,a) -= L(m,a) * F(i,m) |
 !-----------------------------------------
 
       ierr=talsh_tensor_contract("S(i,a)+=L(m,a)*F(i,m)",sigma1_tensor,l1_tensor,interm_t%fbar_oo,scale=MINUS_ONE)
-      print*, "norm contraction 1 (accumulated, this):", tensor_norm2(sigma1_tensor)
+      ! print*, "norm contraction 1 (accumulated, this):", tensor_norm2(sigma1_tensor)
 
 !-----------------------------------------------------
 !     term 4: S1(i,a) += 1/2 L(i,m,e,f) * W(e,f,a,m) |
@@ -827,7 +827,7 @@ module talsh_sigma_eomccsd
 !-----------------------------------------------------
 
       ierr=talsh_tensor_contract("S(i,a)+=L(m,n,a,e)*W(i,e,n,m)",sigma1_tensor,l2_tensor,interm_t%w_ovoo,scale=ONE_HALF)
-      ! print*, "norm contraction 1 (accumulated, this):", tensor_norm2(sigma1_tensor)
+      ! print*, "norm contraction sigma1 (accumulated, this):", tensor_norm2(sigma1_tensor)
 
 !***************
 !     l2_sigma *
@@ -884,7 +884,7 @@ module talsh_sigma_eomccsd
       ! ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",sigma2_tensor,int_t%oovv,interm_t%gvv)
 
       ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",sigma2_tensor,int_t%oovv,gvv_tensor)   !XY
-      ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",sigma2_tensor,int_t%oovv,gvv_tensor)   !XY
+      ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,b,e)*G(e,a)",sigma2_tensor,int_t%oovv,gvv_tensor,scale=MINUS_ONE)   !XY
       ! print*, "norm contraction 1 (accumulated, this):", tensor_norm2(sigma2_tensor)/4.0
 
 
@@ -950,7 +950,7 @@ module talsh_sigma_eomccsd
       ! call print_tensor(l2_tensor, 1.0d-10, "L2")
       ! call print_tensor(sigma1_tensor, 1.0d-10, "sigma1")
       ! call print_tensor(sigma2_tensor, 1.0d-10, "sigma2")
-      ! print*, "norm contraction 1 (accumulated, this):", tensor_norm2(sigma2_tensor)/4.0
+      ! print*, "norm contraction sigma2 (accumulated, this):", tensor_norm2(sigma2_tensor)/4.0
 
       ierr=talsh_tensor_destruct(goo_tensor)
       ierr=talsh_tensor_destruct(gvv_tensor)
