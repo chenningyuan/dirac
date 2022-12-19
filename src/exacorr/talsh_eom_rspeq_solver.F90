@@ -29,7 +29,8 @@ module talsh_eom_rspeq_solver
 
 !----------------------------------------------------------------------------------------------------------------
 
-      subroutine solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop, omega, tprop_tensor)
+      subroutine solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop, &
+                                    omega, tprop_tensor)
             use talsh_sigma_eomccsd
 
       ! write(*,*) ""
@@ -48,6 +49,7 @@ module talsh_eom_rspeq_solver
 
             type(talsh_eom_results_tens_t)  :: results_t
             type(talsh_comm_tens_t)       :: tprop_tensor
+
 !     workspace
             type(talsh_davidson_workspace_tens_t) :: workspace_t
             type(talsh_projectors_tens_t) :: projector_t
@@ -89,6 +91,7 @@ module talsh_eom_rspeq_solver
 
             ierr=talsh_tensor_construct(tprop_tensor%t1,C8,vo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(tprop_tensor%t2,C8,vvoo_dims,init_val=ZERO)
+
 
             call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, & 
                                     omega, interm_t_prop%epsilon_prop_vo, interm_t_prop%epsilon_prop_vvoo, tprop_tensor)
@@ -138,11 +141,11 @@ module talsh_eom_rspeq_solver
                               use_preconditioner=.false.,&
                               complex_mode=.true.)
       
-                  call print_date("Entering EOM-EE eigenvalue calculation")
+                  call print_date("Entering CC-CI Left Linear Systems calculation")
       
-                  call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
+                  call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
                   call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
-      !     call talsh_eomccsd_ee_trial_create(workspace_t)
+                  call talsh_eomccsd_ee_trial_create(workspace_t)
       
       !     set pointers to sigma vector subroutines 
                   interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ee
@@ -150,7 +153,7 @@ module talsh_eom_rspeq_solver
                   call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, &
                                           omega, bvec_tensor%t1, bvec_tensor%t2)
                                           
-                  call print_date("Finishing EOM-EE eigenvalue calculation")
+                  call print_date("Finishing CC-CI Left Linear Systems calculation")
       
                   call talsh_davidson_workspace_destroy(workspace_t)
 
@@ -158,7 +161,7 @@ module talsh_eom_rspeq_solver
 
 !---------------------------------------------------------------------------------------------------------------------
       
-      subroutine get_left_bvec(exa_input,interm_t,interm_t_prop,l1_tensor,l2_tensor,tprop_tensor,bvec_tensor)
+      subroutine get_left_bvec(exa_input,interm_t_prop,l1_tensor,l2_tensor,bvec_tensor)
             use tensor_algebra
             use talsh
             use exacorr_datatypes
@@ -168,11 +171,9 @@ module talsh_eom_rspeq_solver
 
 
             type(exacc_input), intent(in) :: exa_input
-            type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
             type(talsh_rsp_interm_tens_t) :: interm_t_prop
             type(talsh_tens_t), intent(inout)  :: l2_tensor
             type(talsh_tens_t), intent(inout)  :: l1_tensor
-            type(talsh_comm_tens_t)       :: tprop_tensor
             type(talsh_comm_tens_t)       :: bvec_tensor
 
 
@@ -198,21 +199,20 @@ module talsh_eom_rspeq_solver
             ierr=talsh_tensor_construct(Aux_tensor2,C8,one_dims(1:0),init_val=ZERO)
 
 
-            ierr=talsh_tensor_contract("A1()+=l1(i,a)*TX(a,i)",Aux_tensor1,l1_tensor,tprop_tensor%t1,scale=ONE)
-            ierr=talsh_tensor_contract("A1()+=l2(i,j,a,b)*TX(a,b,i,j)",Aux_tensor1,l2_tensor,tprop_tensor%t2,scale=ONE)
-
-            ierr=talsh_tensor_contract("A2()+=N(i,a)*TX(a,i)",Aux_tensor2,interm_t%eta_ov,tprop_tensor%t1,scale=ONE)
-            ierr=talsh_tensor_contract("A2()+=N(i,j,a,b)*TX(a,b,i,j)",Aux_tensor2,interm_t%eta_oovv,tprop_tensor%t2,scale=ONE)
+            ierr=talsh_tensor_contract("A1()+=l1(i,a)*E(a,i)",Aux_tensor1,l1_tensor,interm_t_prop%epsilon_prop_vo,scale=ONE)
+            ierr=talsh_tensor_contract("A2()+=l2(i,j,a,b)*E(a,b,i,j)",Aux_tensor2,l2_tensor,&
+                                          interm_t_prop%epsilon_prop_vvoo,scale=ONE)
 
 
-            ierr=talsh_tensor_add('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov,scale=MINUS_ONE)   
-            ierr=talsh_tensor_contract("B(i,a)+=l1(i,a)*A2()",bvec_tensor%t1,l1_tensor,Aux_tensor2,scale=ONE)   
-            ierr=talsh_tensor_contract("B(i,a)+=A1()*N(i,a)",bvec_tensor%t1,interm_t%eta_ov,Aux_tensor2,scale=ONE)   
+            ierr=talsh_tensor_add('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov,scale=ONE)  
+            ierr=talsh_tensor_contract("B(i,a)+=l2(i,j,a,b)*E(b,j)",bvec_tensor%t1,l2_tensor,& 
+                                                interm_t_prop%epsilon_prop_vo,scale=ONE)   
+
+            ierr=talsh_tensor_contract("B(i,a)+=l1(i,a)*A1()",bvec_tensor%t1,l1_tensor,Aux_tensor1,scale=MINUS_ONE)   
 
 
-            ierr=talsh_tensor_add('B(i,j,a,b)+=Y(i,j,a,b)',bvec_tensor%t2,interm_t_prop%eta_prop_oovv,scale=MINUS_ONE)   
-            ierr=talsh_tensor_contract("B(i,j,a,b)+=l2(i,j,a,b)*A2()",bvec_tensor%t2,l2_tensor,Aux_tensor2,scale=ONE)   
-            ierr=talsh_tensor_contract("B(i,j,a,b)+=A1()*N(i,j,a,b)",bvec_tensor%t2,interm_t%eta_oovv,Aux_tensor2,scale=ONE) 
+            ierr=talsh_tensor_add('B(i,j,a,b)+=Y(i,j,a,b)',bvec_tensor%t2,interm_t_prop%eta_prop_oovv,scale=ONE)   
+            ierr=talsh_tensor_contract("B(i,j,a,b)+=l2(i,j,a,b)*A2()",bvec_tensor%t2,l2_tensor,Aux_tensor2,scale=MINUS_ONE)   
 
             ierr=talsh_tensor_destruct(Aux_tensor1)
             ierr=talsh_tensor_destruct(Aux_tensor2)

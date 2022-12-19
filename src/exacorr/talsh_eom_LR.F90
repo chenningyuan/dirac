@@ -27,8 +27,8 @@ module talsh_eom_LR
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
-                tprop_tensor1, tprop_tensor2, tprop_tensor1_minus_fre, tprop_tensor2_minus_fre, &
+subroutine get_eom_lr(exa_input,interm_t,int_t,Interm_t_tensors,&
+                tprop_tensors, tprop_tensors_min_w, i, j,&
                 l1_tensor,l2_tensor, eom_lr, CC_CC)
 !This subroutine drives the CC-CI linear response property calculation
 !   Written by Xiang Yuan Janunary 2022, Lille, France
@@ -37,9 +37,14 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
 
             type(exacc_input), intent(in) :: exa_input
             type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+            type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
+            type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
             type(talsh_intg_tens_t),intent(inout)          :: int_t 
             type(talsh_tens_t), intent(inout)           :: l2_tensor
             type(talsh_tens_t), intent(inout)           :: l1_tensor
+            integer                          :: i, j
+
+
             type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2
             type(talsh_comm_tens_t)            :: tprop_tensor1, tprop_tensor2
             type(talsh_comm_tens_t)            :: tprop_tensor1_minus_fre, tprop_tensor2_minus_fre
@@ -50,8 +55,6 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             integer            :: nocc, nvir
             integer(INTD), dimension(4)   :: vvoo_dims
             integer(INTD), dimension(2)   :: vo_dims
-            type(talsh_comm_tens_t)       :: sigma_prop_tensor12, sigma_prop_tensor21
-            type(talsh_comm_tens_t)       :: sigma_prop_tensor12_minus_fre, sigma_prop_tensor21_minus_fre
             complex(kind=8)               :: quarsp, quarsp_con
 
             integer                       :: ierr
@@ -73,18 +76,18 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
 
 
             if (CC_CC) then
-                call get_tF(B1%t1,B1%t2,tprop_tensor1%t1,tprop_tensor1%t2,l1_tensor,l2_tensor,&
+                call get_tF(B1%t1,B1%t2,Tprop_tensors(1)%t1,Tprop_tensors(1)%t2,l1_tensor,l2_tensor,&
                         interm_t,int_t,nocc,nvir)
-                call get_tF(B2%t1,B2%t2,tprop_tensor2%t1,tprop_tensor2%t2,l1_tensor,l2_tensor,&
+                call get_tF(B2%t1,B2%t2,Tprop_tensors(2)%t1,Tprop_tensors(2)%t2,l1_tensor,l2_tensor,&
                         interm_t,int_t,nocc,nvir)
 
                 if (debug_get_lrresp) then 
                     call print_date("Finish CC-CC tF terms (+w)")
                 end if  
 
-                call get_tF(B1_minus_fre%t1,B1_minus_fre%t2,tprop_tensor1_minus_fre%t1,tprop_tensor1_minus_fre%t2,& 
+                call get_tF(B1_minus_fre%t1,B1_minus_fre%t2,Tprop_tensors_min_w(1)%t1,Tprop_tensors_min_w(1)%t2,& 
                         l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
-                call get_tF(B2_minus_fre%t1,B2_minus_fre%t2,tprop_tensor2_minus_fre%t1,tprop_tensor2_minus_fre%t2,& 
+                call get_tF(B2_minus_fre%t1,B2_minus_fre%t2,Tprop_tensors_min_w(2)%t1,Tprop_tensors_min_w(2)%t2,& 
                         l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
 
                 if (debug_get_lrresp) then 
@@ -107,9 +110,8 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             end if 
 
 
-            call get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
-                    tprop_tensor1, tprop_tensor2_minus_fre, &
-                    sigma_prop_tensor12, sigma_prop_tensor21,  &
+            call get_linrspf(interm_t, Interm_t_tensors(i), Interm_t_tensors(j), &
+                    Tprop_tensors(1), Tprop_tensors_min_w(2), &
                     l1_tensor, l2_tensor, quarsp, B1, B2_minus_fre, CC_CC)
 
             if (debug_get_lrresp) then
@@ -121,9 +123,8 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             end if 
 
 
-            call get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
-                    tprop_tensor1_minus_fre, tprop_tensor2, &
-                    sigma_prop_tensor12_minus_fre, sigma_prop_tensor21_minus_fre,  &
+            call get_linrspf(interm_t, Interm_t_tensors(i), Interm_t_tensors(j), &
+                    Tprop_tensors_min_w(1), Tprop_tensors(2),&
                     l1_tensor, l2_tensor, quarsp_con, B1_minus_fre, B2, CC_CC)
 
             quarsp_con=conjg(quarsp_con)
@@ -157,7 +158,6 @@ end subroutine get_eom_lr
 
 subroutine get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
                 tprop_tensor1, tprop_tensor2, &
-                sigma_prop_tensor12, sigma_prop_tensor21, &
                 l1_tensor, l2_tensor, linrsp, B1,B2,CC_CC)
 
         type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
@@ -165,7 +165,7 @@ subroutine get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
         type(talsh_tens_t), intent(inout)           :: l1_tensor
         type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2
         type(talsh_comm_tens_t)            :: tprop_tensor1, tprop_tensor2
-        type(talsh_comm_tens_t)       :: sigma_prop_tensor12, sigma_prop_tensor21
+        ! type(talsh_comm_tens_t)       :: sigma_prop_tensor12, sigma_prop_tensor21
         complex(kind=8)               :: linrsp
         type(talsh_comm_tens_t),optional   :: B1, B2
         logical :: CC_CC
@@ -175,11 +175,11 @@ subroutine get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
 !       << X;Y >>ωY = P(X,Y) [term1 * term2 + etaX*TY]                          |
 !--------------------------------------------------------------------------------------
             call get_linrsp_driver(linrsp,tprop_tensor1, tprop_tensor2, &
-                    sigma_prop_tensor12,l1_tensor,l2_tensor, &
+                    l1_tensor,l2_tensor, &
                     interm_t,interm_t_prop1,B1,CC_CC)
 
             call get_linrsp_driver(linrsp_iter,tprop_tensor2, tprop_tensor1, &
-                    sigma_prop_tensor21,l1_tensor,l2_tensor, &
+                    l1_tensor,l2_tensor, &
                     interm_t,interm_t_prop2,B2,CC_CC)
             
             linrsp=linrsp+linrsp_iter
@@ -190,7 +190,7 @@ end subroutine get_linrspf
 !------------------------------------------------------------------------------------------------------------------
 
 subroutine get_linrsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
-                sigma_prop_tensor12,l1_tensor,l2_tensor,&
+                l1_tensor,l2_tensor,&
                 interm_t,interm_t_prop1,B,CC_CC)
 
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t 
@@ -201,7 +201,7 @@ subroutine get_linrsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
 
     type(talsh_comm_tens_t)            :: tprop_tensor1, tprop_tensor2
         
-    type(talsh_comm_tens_t)       :: sigma_prop_tensor12
+    ! type(talsh_comm_tens_t)       :: sigma_prop_tensor12
     type(talsh_comm_tens_t),optional   :: B
     logical :: CC_CC
     logical :: debug_local = .false.

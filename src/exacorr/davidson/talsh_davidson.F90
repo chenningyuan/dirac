@@ -1890,11 +1890,11 @@ contains
         write(davidson_output_file_unit, "(4x,a)") 'leaving talsh_davidson_workspace_destroy'
     end subroutine 
 
-    subroutine talsh_davidson_workspace_create(workspace_t, nroots, nocc, nvirt, flavor, excitation_level, left_equation)
+    subroutine talsh_davidson_workspace_create(workspace_t, nroots, nocc, nvirt, flavor, excitation_level, left_right)
         type(talsh_davidson_workspace_tens_t),  intent(inout) :: workspace_t
         character*2 :: flavor
         integer, intent(in) :: nocc, nvirt, nroots, excitation_level
-        logical, optional                              :: left_equation
+        character*1, OPTIONAL                              :: left_right
         logical :: workspace_create_debug = .false.
 
         integer :: M_dims(2) 
@@ -1940,14 +1940,15 @@ contains
 
            case("EE")
 ! singles
-              if (left_equation) then
+              if (present(left_right)) then
                 workspace_t%tens1_dims = (/ nocc, nvirt /)
               else
+                print *, "come"
                 workspace_t%tens1_dims = (/ nvirt, nocc /)
               end if 
               workspace_t%N(1) = nvirt*nocc
 ! doubles
-              if (left_equation) then
+              if (present(left_right)) then
                 workspace_t%tens2_dims = (/ nocc, nocc, nvirt, nvirt /)
               else 
                 workspace_t%tens2_dims = (/ nvirt, nvirt, nocc, nocc /)
@@ -2417,6 +2418,7 @@ contains
       complex(kind=8), intent(in), optional :: frequency  
       type(talsh_tens_t), intent(inout), optional :: prop_grad1, prop_grad2
       type(talsh_comm_tens_t), intent(inout), optional    :: tprop_tensor
+      complex(kind=8), pointer, contiguous :: x_small(:,:)        => NULL()
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
 
@@ -2430,7 +2432,7 @@ contains
         complex(kind=8), pointer, contiguous :: M_small(:,:)        => NULL()
 ! aspg, added from (q)rsp
         complex(kind=8), pointer, contiguous :: C_small(:)          => NULL() 
-        complex(kind=8), pointer, contiguous :: x_small(:,:)        => NULL()
+       
 ! aspg, added from (q)rsp
         complex(kind=8), pointer, contiguous :: c_small_r(:,:)      => NULL()
         complex(kind=8), pointer, contiguous :: c_small_l(:,:)      => NULL()

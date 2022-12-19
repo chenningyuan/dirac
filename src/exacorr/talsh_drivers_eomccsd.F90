@@ -125,7 +125,6 @@ module talsh_eom
       type(eom_config_t),     intent(in)             :: eom_config
       type(talsh_intg_tens_t), intent(inout)         :: int_t
       type(talsh_intermediates_tens_t), intent(inout):: interm_t
-      logical                                        :: left_equation
 
       write(*,*) ""
       write(*,'(A)') "*******************************************************************************"
@@ -152,14 +151,13 @@ module talsh_eom
 
       ! print *,'debug: eom_input%flavor is__',eom_config%flavor,'___'
       ! print *,'debug: eom_input%flavor is__',eom_config%flavor(1:2),'___'
-      left_equation = .true.
       select case(eom_config%flavor)
          case("IP")
             call eom_ccsd_eigenvalue_ip(results_t,eom_config%nroots,interm_t,int_t)
          case("EA")
             call eom_ccsd_eigenvalue_ea(results_t,eom_config%nroots,interm_t,int_t)
          case("EE")
-            call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t,left_equation)
+            call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t,'L')
          case default
             call quit ('Error: No valid EOM-flavour chosen')
       end select
@@ -312,14 +310,14 @@ module talsh_eom
 
     end subroutine
 
-    subroutine eom_ccsd_eigenvalue_ee(results_t, nroots, interm_t, int_t, left_equation)
+    subroutine eom_ccsd_eigenvalue_ee(results_t, nroots, interm_t, int_t, left_right)
        use talsh_sigma_eomccsd
 
 !     input variables
       integer, intent(in) :: nroots
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
-      logical, optional                              :: left_equation
+      character*1, OPTIONAL                              :: left_right
       type(talsh_eom_results_tens_t), intent(inout)  :: results_t
 !     workspace
       type(talsh_davidson_workspace_tens_t) :: workspace_t
@@ -330,7 +328,7 @@ module talsh_eom
 
       call print_date("Entering EOM-EE eigenvalue calculation")
 
-      call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, left_equation)
+      call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, left_right)
       call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
       call talsh_eomccsd_ee_trial_create(workspace_t)
       call talsh_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
