@@ -10,6 +10,18 @@ New ESR features (Contributor: H. J. Aa. Jensen):
 - .G10PPM for \*ESR : request g-shifts to 10 ppm accuracy instead of default of 1 ppt = 1000 ppm accuracy
 
 -----------------------------------------------------------------------------------------------------
+23.0
+----
+
+New features:
+
+- Calculation of Parity-Violating Nuclear Spin-Rotation Tensors. Activated with ".PVCSR"
+   - Contributor: I. Agustín Aucar
+   - Reference: `Ignacio Agustín Aucar and Anastasia Borschevsky, Relativistic study of parity-violating nuclear spin-rotation tensors. J. Chem. Phys. 155, 134307 (2021) <https://doi.org/10.1063/5.0065487>`__
+   - Manual: `PVCSR <http://www.diracprogram.org/doc/release-23/manual/properties.html#pvcsr>`__
+   - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/pvcsr/tutorial.html>`__
+
+
 22.1.beta
 ---------
 

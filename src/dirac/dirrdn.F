@@ -1439,7 +1439,7 @@ C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
 C              TRIFCK: Start on two-electron Fock matrix read from file
                   TRIFCK = .TRUE.
                ELSE IF (INDEX(LINE,'TRIVEC').ne.0) THEN
-C              TRIVEC: Read trial vectors from DFCOEF file
+C              TRIVEC: Read trial vectors from file
                   TRIVEC = .TRUE.
                ELSE IF (INDEX(LINE,'SIRIFC').ne.0) THEN
                   SIRIFC = .TRUE.
@@ -2539,7 +2539,7 @@ C
      +     ' * Trial two-electron Fock matrix read from file DF2FCK'
       ELSE IF(TRIVEC) THEN
         WRITE(LUPRI,'(A)')
-     +   ' * Trial vectors read from file DFCOEF'
+     +   ' * Trial vectors read from CHECKPOINT'
       ELSE IF(ATOMST) THEN
         WRITE(LUPRI,'(A,I5//4X,A)') ' * Atomic start:',NONTYP,
      &   'atom   cffile     occ    orbitals'
@@ -5222,6 +5222,7 @@ C
 #include "gencon.h"
 #include "nuclei.h"
 #include "orgcom.h"
+#include "codata.h"
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
@@ -5992,23 +5993,23 @@ C..TODO: check for inconsistencies and add stops
           GO TO 100
   169     CONTINUE
 !&&&& GAUGEO
-          READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
+          READ (LUCMD, *,IOSTAT=IOS) GAGORG
           GAGORG_SET = .TRUE.
           IF (IOS.NE.0) THEN
-            CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
+            CALL QUIT('Error in reading .GAUGEO')
           ENDIF
           GO TO 100
   170     CONTINUE
 !&&&& GO ANG
-          GO TO 100
 !         read user specified gauge origin in angstrom
           read(lucmd, *, iostat=ios) gagorg
           GAGORG_SET = .TRUE.
           if (ios /= 0) then
-            call quit('error in reading .GO ANG')
+            call quit('Error in reading .GO ANG')
           end if
 !         convert from angstrom to bohr
           gagorg = gagorg/xtang
+          GO TO 100
   171     CONTINUE
 !&&&& DIPORG
           READ (LUCMD, *,IOSTAT=IOS) DIPORG(1:3)
@@ -8715,7 +8716,7 @@ C
        ENDIF
       ENDIF
       WRITE(LUPRI,'(1X,A)')
-     &     '* Localised MO are written in file DFCOEF !!!'
+     &     '* Localised MO are written to CHECKPOINT !!!'
  999  CONTINUE
       RETURN
 C

@@ -4019,33 +4019,9 @@ C
       CHARACTER*8 LABEL,RTNLBL(2)
       DIMENSION AINT(LENGTH)
 C
-C     Open file
-C
-      IF (NEWPRP) THEN
-         NEWPRP = .FALSE.
-         OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-         REWIND LUPROP
-      ELSE
-         REWIND (LUPROP)
-         CALL FNDLAB('EOFLABEL',LUPROP)
-         BACKSPACE LUPROP
-      END IF
-C
-C     Write label
-C
-      CALL NEWLB2(LABEL,RTNLBL,LUPROP,LUPRI)
-C
 C     Write integrals
 C
-      LEN = MAX(4,LENGTH)
-      CALL WRITSQ(LUPROP,IRAT*LEN,AINT)
-C
-C     We add an extra label to signify EOF
-C
-      CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
-C
-      ! Write also to checkpoint file, rtnlbl(1) is date, not needed.
+      ! Write to checkpoint file, rtnlbl(1) is date, not needed.
       call prop_to_checkpoint(label//rtnlbl(2),aint,length)
       RETURN
       END
@@ -4287,6 +4263,7 @@ C --- end of her1pro.F ---
      &   '/result/operators/ao_matrices/aobasis_dim',idata=ntbas(0))
       else
          call checkpoint_write (
-     &   '/result/operators/ao_matrices/'//label,rdata=prop)
+     &   '/result/operators/ao_matrices/'//label(1:8)//label(13:16),
+     &    rdata=prop)
       end if
       end

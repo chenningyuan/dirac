@@ -69,6 +69,7 @@ contains
                                naosh_L_cent)
 !   ----------------------------------------------------------------------------
 !   ----------------------------------------------------------------------------
+    use labeled_storage
     type(fragment_x2c)           :: A
     integer, intent(in)          :: nfsym
     integer, intent(in)          :: nz
@@ -81,6 +82,7 @@ contains
     character(len=3)             :: extension
     character(len=10)            :: filename
     character(len=12)            :: flabel
+    type(file_info_t)            :: fragfile
 !   ----------------------------------------------------------------------------
 
 !   reset old type information
@@ -113,19 +115,24 @@ contains
 
     if(extension(1:1) == ' ') write(extension(1:1),'(i1)') 0
     if(extension(2:2) == ' ') write(extension(2:2),'(i1)') 0
-    write(filename,'(a7,a3)') 'X2CMAT.',extension
+    write(filename,'(a7,a3)') 'X2CMAT_',extension
 
-    open(A%funit,file=filename,status='old',form='unformatted',    &
-         access='sequential',action='readwrite',position='rewind')
+    fragfile%type = 2
+    fragfile%name = filename//'.h5'
+    fragfile%status = 0
+    !open(A%funit,file=filename,status='old',form='unformatted',    &
+    !     access='sequential',action='readwrite',position='rewind')
 
 !   read atomic pctmat from file
     write(flabel,'(a7,i4,i1)') 'pctmtAO',1,1
-    call x2c_read(flabel,                 &
-                  A%pctmat,               &
-                  A%naosh_all(1) *        &
-                  A%naosh_L(1)   *        &
-                  nz,                     &
-                  A%funit)
+    call lab_read(fragfile,'/result/hamiltonian/x2c/ao_matrices/'//flabel,rdata=A%pctmat)
+
+    !call x2c_read(flabel,                 &
+    !              A%pctmat,               &
+    !              A%naosh_all(1) *        &
+    !              A%naosh_L(1)   *        &
+    !              nz,                     &
+    !              A%funit)
 
   end subroutine fragment_x2c_init
 !*******************************************************************************

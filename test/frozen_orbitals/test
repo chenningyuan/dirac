@@ -14,20 +14,20 @@ f.add(from_string = 'Energy at final geometry is',
       num_lines   = 3,
       rel_tolerance   = 1.0e-4)
 
-test.run(['O.inp'], ['O.mol'], args='--get=DFCOEF')
-shutil.copy('DFCOEF', 'DFPROJ')
-test.run(['H2O.inp'], ['H2O.mol'], f, args='--copy=DFPROJ')
+test.run(['O.inp'], ['O.mol'], args='--outcmo')
+if os.path.isfile('CHECKPOINT.h5'):
+    ext = '.h5'
+elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
+    ext = '.noh5.tar.gz'
+shutil.move('CHECKPOINT'+ext, 'O'+ext)
+test.run(['H2O.inp'], ['H2O.mol'], f, args='--copy=O.h5')
 
-test.run(['O.2c_iotc.inp'], ['O.mol'], args='--get=DFCOEF')
-shutil.copy('DFCOEF', 'DFPROJ')
-test.run(['H2O.2c_iotc.inp'], ['H2O.mol'], f, args='--copy=DFPROJ')
+test.run(['O.2c_iotc.inp'], ['O.mol'],args='--outcmo')
+shutil.move('CHECKPOINT'+ext, 'O'+ext)
+test.run(['H2O.2c_iotc.inp'], ['H2O.mol'], f, args='--copy="O.h5"')
 
-test.run(['O.2c_iotc_noamfi.inp'], ['O.mol'], args='--get=DFCOEF')
-shutil.copy('DFCOEF', 'DFPROJ')
-test.run(['H2O.2c_iotc_noamfi.inp'], ['H2O.mol'], f, args='--copy=DFPROJ')
-
-# cleanup
-os.unlink('DFCOEF')
-os.unlink('DFPROJ')
+test.run(['O.2c_iotc_noamfi.inp'], ['O.mol'], args='--outcmo')
+shutil.move('CHECKPOINT'+ext, 'O'+ext)
+test.run(['H2O.2c_iotc_noamfi.inp'], ['H2O.mol'], f, args='--copy=O.h5')
 
 sys.exit(test.return_code)

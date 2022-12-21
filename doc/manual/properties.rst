@@ -438,6 +438,50 @@ The relativistic Zeeman operator
 
 is expressed in terms of the operator :math:`\hat{\mathbf{m}}_e^{[1]}` associated with the magnetic dipole moment of the electrons and the external magnetic field :math:`\mathbf{B}_0`. Note reference to the gauge origin :math:`G`.
 
+Results are given in ppm.
+
+Using :ref:`PROPERTIES_.PRINT` 1, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response are given separately.
+
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
+
+keyword(PVCSR)
+
+Calculate parity-violating contribution to the nuclear spin-rotation tensor, see :cite:`Aucar_JCP2021`.
+Elements of the parity-violating contribution to the nuclear spin-rotation tensor
+for center :math:`K` are given by
+
+.. math::
+
+   M^{PV}_{K;\mu\nu} = - \frac{\hslash^2}{h} \frac{\partial^2}{\partial I_{K;\mu}\partial L_{\nu}}\langle\langle\hat{h}^{PV2}_{K};\hat{h}^{BO}\rangle\rangle_0
+
+where appears the nuclear spin-dependent parity-violating operator
+
+.. math::
+
+   \hat{h}^{PV2}_{K} = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}\,c}\sum_{i}\frac{1}{\hslash}c\boldsymbol{\alpha}\cdot\mathbf{I}_K\rho_K(\mathbf{r}_i)
+
+expressed in terms of the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2018, but it can change if you use other CODATA set),
+the nuclear spin :math:`\mathbf{I}_K` and the normalized nuclear charge density :math:`\rho_K` (in units of the inverse of cube distances),
+and the first order correction to the Born-Oppenheimer (BO) approximation
+
+.. math::
+
+   \hat{h}^{BO}=-\boldsymbol{\boldsymbol{\omega}}\cdot\hat{\mathbf{J}}_e;
+   \quad\boldsymbol{\boldsymbol{\omega}}=\mathbf{L}\cdot\mathbf{I}^{-1},
+
+expressed in terms of the angular velocity :math:`\boldsymbol{\boldsymbol{\omega}}` associated with the total angular momentum of the
+electrons :math:`\hat{\mathbf{J}}_e=\hat{\mathbf{L}}_e+\hat{\mathbf{S}}_e`.
+Note that the origin of the orbital angular momentum is the molecular center of mass.
+
+Results are given in Hz.
+
+Using :ref:`PROPERTIES_.PRINT` 1, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response are given separately,
+together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
+
+For more details, the user is welcome to see the Tutorial Section.
+
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
+
 keyword(RHONUC)
 
 Calculate electronic density at the nuclear positions, also known as the contact density :cite:`Knecht2011` and :cite:`Almoukhalalati:2016b`.

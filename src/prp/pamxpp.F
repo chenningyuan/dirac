@@ -1021,10 +1021,7 @@ C
 C     Indicate from vectors are read...
 C
       LUBUF = 22
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
       CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,XPPERG,1)
-
-      CLOSE(LUBUF,STATUS='KEEP')
 C
 C     Initialize file for solution vectors
 C
@@ -1114,11 +1111,9 @@ C     ----------------
 C
       CALL MEMGET2('REAL','CMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       LUBUF = 22
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETPPF')
       CALL MEMGET2('INTE','IBEIG',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
       CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
      &              TOTERG,10)
-      CLOSE(LUBUF,STATUS='KEEP')
 C
       IOFF  = 1
 C
