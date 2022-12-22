@@ -26,6 +26,7 @@ CN molecule (S=1/2)
 **PROPERTIES
 .ESR
 *ESR
+.G10PPM
 .PRINT
   5
 .MAX CI
