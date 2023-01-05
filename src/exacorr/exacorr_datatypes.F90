@@ -106,16 +106,18 @@
          type(tens_rcrsv_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(tens_rcrsv_t) :: prime_vv, symm_vv
 ! two-body density matrices
-         type(tens_rcrsv_t) :: prime_vooo, symm_vooo
-         type(tens_rcrsv_t) :: prime_ooov, symm_ooov
-         type(tens_rcrsv_t) :: prime_ovov, symm_ovov
-         type(tens_rcrsv_t) :: prime_vvvo, symm_vvvo
-         type(tens_rcrsv_t) :: prime_vovv, symm_vovv
-         type(tens_rcrsv_t) :: prime_vvvv, symm_vvvv
-         type(tens_rcrsv_t) :: prime_oovv, symm_oovv
-         type(tens_rcrsv_t) :: prime_ovoo, symm_ovoo
-         type(tens_rcrsv_t) :: prime_oooo, symm_oooo
-         type(tens_rcrsv_t) :: prime_vvoo, symm_vvoo
+         type(tens_rcrsv_t) :: prime_vvvv
+         type(tens_rcrsv_t) :: prime_vvvo, prime_vovv, prime_ovvv, prime_ovvv
+         type(tens_rcrsv_t) :: prime_vvoo, prime_oovv
+         type(tens_rcrsv_t) :: prime_ovoo, prime_ooov, prime_vooo, prime_oovo 
+         type(tens_rcrsv_t) :: prime_ovov, prime_voov, prime_ovvo, prime_vovo
+         type(tens_rcrsv_t) :: prime_oooo
+         type(tens_rcrsv_t) :: symm_vvvv
+         type(tens_rcrsv_t) :: symm_vvvo,  symm_vovv,  symm_vvov,  symm_ovvv
+         type(tens_rcrsv_t) :: symm_vvoo,  symm_oovv
+         type(tens_rcrsv_t) :: symm_vooo,  symm_ooov,  symm_ovoo,  symm_oovo
+         type(tens_rcrsv_t) :: symm_vovo,  symm_voov,  symm_ovvo,  symm_ovov
+         type(tens_rcrsv_t) :: symm_oooo
         end type exatns_dm_tens
 
         type, public :: space_dims
@@ -159,21 +161,18 @@
          type(talsh_tens_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(talsh_tens_t) :: prime_vv, symm_vv
 ! two-body density matrices
-         type(talsh_tens_t) :: prime_vooo, symm_vooo
-         type(talsh_tens_t) :: prime_ooov, symm_ooov
-         type(talsh_tens_t) :: prime_oovo, symm_oovo
-         type(talsh_tens_t) :: prime_ovov, symm_ovov
-         type(talsh_tens_t) :: prime_vvvo, symm_vvvo
-         type(talsh_tens_t) :: prime_voov, symm_voov
-         type(talsh_tens_t) :: prime_vovv, symm_vovv
-         type(talsh_tens_t) :: prime_vovo, symm_vovo
-         type(talsh_tens_t) :: prime_vvvv, symm_vvvv
-         type(talsh_tens_t) :: prime_vvov, symm_vvov
-         type(talsh_tens_t) :: prime_oovv, symm_oovv
-         type(talsh_tens_t) :: prime_ovoo, symm_ovoo
-         type(talsh_tens_t) :: prime_oooo, symm_oooo
-         type(talsh_tens_t) :: prime_vvoo, symm_vvoo
-         type(talsh_tens_t) :: prime_ovvo, symm_ovvo
+         type(talsh_tens_t) :: prime_vvvv
+         type(talsh_tens_t) :: prime_vvvo, prime_vovv, prime_vvov, prime_ovvv
+         type(talsh_tens_t) :: prime_vvoo, prime_oovv
+         type(talsh_tens_t) :: prime_ovoo, prime_ooov, prime_vooo, prime_oovo
+         type(talsh_tens_t) :: prime_ovov, prime_voov, prime_vovo, prime_ovvo
+         type(talsh_tens_t) :: prime_oooo
+         type(talsh_tens_t) :: symm_vvvv
+         type(talsh_tens_t) :: symm_vvvo,  symm_vovv,  symm_vvov,  symm_ovvv
+         type(talsh_tens_t) :: symm_vvoo,  symm_oovv
+         type(talsh_tens_t) :: symm_vooo,  symm_ooov,  symm_ovoo,  symm_oovo
+         type(talsh_tens_t) :: symm_vovo,  symm_voov,  symm_ovvo,  symm_ovov
+         type(talsh_tens_t) :: symm_oooo
         end type talsh_dm_tens
 
         type, public, extends(talsh_comm_tens) :: talsh_eom_fixed_tens
