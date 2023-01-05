@@ -60,18 +60,10 @@ module talsh_1rdm_2rdm_ccsd_kernels
       type(talsh_tens_t) :: oo_aux_tensor, vv_aux_tensor
 !     tensor dimensions
       integer(C_INT)              :: one_dims(1)=1
-      integer(INTD), dimension(2) :: oo_dims, vv_dims, ov_dims, vo_dims
 !     CCD switch
       logical :: CCD = .false.
 !     error code
       integer :: ierr
-      integer(INTD), dimension(4) ::  vvoo_dims
-
-      oo_dims        = (/nocc,nocc/)
-      vv_dims        = (/nvir,nvir/)
-      vo_dims        = (/nvir,nocc/)
-      ov_dims        = (/nocc,nvir/)
-      vvoo_dims      = (/nvir,nvir,nocc,nocc/)
 
       if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
 
@@ -80,6 +72,11 @@ module talsh_1rdm_2rdm_ccsd_kernels
 !*********************************
  
       ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+      if (.not.CCD) then
+        ierr=talsh_tensor_construct(tau2_tensor,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+        ierr=talsh_tensor_construct(vv_aux_tensor,C8,(/nvir,nvir/),init_val=ZERO)
+        ierr=talsh_tensor_construct(oo_aux_tensor,C8,(/nocc,nocc/),init_val=ZERO)
+      end if
 
       if (print_level.gt.8) then
         print *,'T1',tensor_norm2(t1_tensor)
@@ -256,8 +253,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
       type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
       type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
-      integer(INTD),       intent(in   ) :: nocc, nvir
-      integer,             intent(in   ) :: print_level
+      integer,             intent(in   ) :: nocc, nvir, print_level
 
       type(talsh_tens_t) :: one_tensor
 !     tensor dimensions
@@ -275,6 +271,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
       logical :: debug=.true.
       ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+
 
       ierr=talsh_tensor_construct(Hinter_vovv,C8,(/nvir,nocc,nvir,nvir/),init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_ooov,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
@@ -609,7 +606,6 @@ module talsh_1rdm_2rdm_ccsd_kernels
       oovo_dims      = (/nocc,nocc,nvir,nocc/)
       vovo_dims      = (/nvir,nocc,nvir,nocc/)
       vvov_dims      = (/nvir,nvir,nocc,nvir/)
-
 
       ierr=talsh_tensor_construct(Hinter_voov,C8,voov_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_vv,C8,vv_dims,init_val=ZERO)

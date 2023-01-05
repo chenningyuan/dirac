@@ -285,6 +285,8 @@ module talsh_gradient
           ierr=talsh_tensor_construct(dmat%prime_vvoo,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%prime_oovv,C8,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%prime_vooo,C8,(/nvir,nocc,nocc,nocc/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%prime_ovoo,C8,(/nocc,nvir,nocc,nocc/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%prime_ovov,C8,(/nocc,nvir,nocc,nvir/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%prime_ooov,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%prime_vovo,C8,(/nvir,nocc,nvir,nocc/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%prime_oooo,C8,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
