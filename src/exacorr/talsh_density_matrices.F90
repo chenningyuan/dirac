@@ -196,31 +196,37 @@ module talsh_gradient
       end if
 
       if (exa_input%do_2rdm_gs) then
-         ierr=talsh_tensor_destruct(dmat%prime_oooo)
-         ierr=talsh_tensor_destruct(dmat%prime_vooo)
-         ierr=talsh_tensor_destruct(dmat%prime_ooov)
-         ierr=talsh_tensor_destruct(dmat%prime_ovoo)
-         ierr=talsh_tensor_destruct(dmat%prime_oovv)
-         ierr=talsh_tensor_destruct(dmat%prime_vvoo)
-         ierr=talsh_tensor_destruct(dmat%prime_ovvo)
-         ierr=talsh_tensor_destruct(dmat%prime_voov)
-         ierr=talsh_tensor_destruct(dmat%prime_ovov)
+         ierr=talsh_tensor_destruct(dmat%prime_vvvv)
          ierr=talsh_tensor_destruct(dmat%prime_vvvo)
          ierr=talsh_tensor_destruct(dmat%prime_vovv)
-         ierr=talsh_tensor_destruct(dmat%prime_vvvv)
+         ierr=talsh_tensor_destruct(dmat%prime_vvoo)
+         ierr=talsh_tensor_destruct(dmat%prime_oovv)
+         ierr=talsh_tensor_destruct(dmat%prime_vooo)
+         ierr=talsh_tensor_destruct(dmat%prime_ooov)
+         ierr=talsh_tensor_destruct(dmat%prime_vovo)
+         ierr=talsh_tensor_destruct(dmat%prime_oooo)
+!        the two below may be used
+         ierr=talsh_tensor_destruct(dmat%prime_voov)
+         ierr=talsh_tensor_destruct(dmat%prime_ovvo)
 
-         ierr=talsh_tensor_destruct(dmat%symm_oooo)
+!        allocate all blocks of the symmetrized Gamma
+         ierr=talsh_tensor_destruct(dmat%symm_vvvv)
+         ierr=talsh_tensor_destruct(dmat%symm_vvvo)
+         ierr=talsh_tensor_destruct(dmat%symm_vovv)
+         ierr=talsh_tensor_destruct(dmat%symm_vvov)
+         ierr=talsh_tensor_destruct(dmat%symm_ovvv)
+         ierr=talsh_tensor_destruct(dmat%symm_vvoo)
+         ierr=talsh_tensor_destruct(dmat%symm_oovv)
          ierr=talsh_tensor_destruct(dmat%symm_vooo)
          ierr=talsh_tensor_destruct(dmat%symm_ooov)
          ierr=talsh_tensor_destruct(dmat%symm_ovoo)
-         ierr=talsh_tensor_destruct(dmat%symm_oovv)
-         ierr=talsh_tensor_destruct(dmat%symm_vvoo)
-         ierr=talsh_tensor_destruct(dmat%symm_ovvo)
+         ierr=talsh_tensor_destruct(dmat%symm_oovo)
+         ierr=talsh_tensor_destruct(dmat%symm_vovo)
          ierr=talsh_tensor_destruct(dmat%symm_voov)
+         ierr=talsh_tensor_destruct(dmat%symm_ovvo)
          ierr=talsh_tensor_destruct(dmat%symm_ovov)
-         ierr=talsh_tensor_destruct(dmat%symm_vvvo)
-         ierr=talsh_tensor_destruct(dmat%symm_vovv)
-         ierr=talsh_tensor_destruct(dmat%symm_vvvv)
+         ierr=talsh_tensor_destruct(dmat%symm_oooo)
+
          call print_date("Destroyed 2RDM storage")
       end if
 
@@ -272,31 +278,38 @@ module talsh_gradient
        end if
 
        if (exa_input%do_2rdm_gs) then
-          ierr=talsh_tensor_construct(dmat%prime_oooo,C8,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%prime_vooo,C8,(/nvir,nocc,nocc,nocc/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%prime_ooov,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%prime_ovoo,C8,(/nocc,nvir,nocc,nocc/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%prime_oovv,C8,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%prime_vvoo,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%prime_ovvo,C8,(/nocc,nvir,nvir,nocc/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%prime_voov,C8,(/nvir,nocc,nocc,nvir/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%prime_ovov,C8,(/nocc,nvir,nocc,nvir/),init_val=ZERO)
+
+          ierr=talsh_tensor_construct(dmat%prime_vvvv,C8,(/nvir,nvir,nvir,nvir/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%prime_vvvo,C8,(/nvir,nvir,nvir,nocc/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%prime_vovv,C8,(/nvir,nocc,nvir,nvir/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%prime_vvvv,C8,(/nvir,nvir,nvir,nvir/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%prime_vvoo,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%prime_oovv,C8,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%prime_vooo,C8,(/nvir,nocc,nocc,nocc/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%prime_ooov,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%prime_vovo,C8,(/nvir,nocc,nvir,nocc/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%prime_oooo,C8,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
+!         the two below may be used
+          ierr=talsh_tensor_construct(dmat%prime_voov,C8,(/nvir,nocc,nocc,nvir/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%prime_ovvo,C8,(/nocc,nvir,nvir,nocc/),init_val=ZERO)
 
-          ierr=talsh_tensor_construct(dmat%symm_oooo, C8,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
+!         allocate all blocks of the symmetrized Gamma
+          ierr=talsh_tensor_construct(dmat%symm_vvvv, C8,(/nvir,nvir,nvir,nvir/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%symm_vvvo, C8,(/nvir,nvir,nvir,nocc/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%symm_vovv, C8,(/nvir,nocc,nvir,nvir/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%symm_vvov, C8,(/nvir,nvir,nocc,nvir/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%symm_ovvv, C8,(/nocc,nvir,nvir,nvir/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%symm_vvoo, C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%symm_oovv, C8,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%symm_vooo, C8,(/nvir,nocc,nocc,nocc/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%symm_ooov, C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%symm_ovoo, C8,(/nocc,nvir,nocc,nocc/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%symm_oovv, C8,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%symm_vvoo, C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%symm_ovvo, C8,(/nocc,nvir,nvir,nocc/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%symm_oovo, C8,(/nocc,nocc,nvir,nocc/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%symm_vovo, C8,(/nvir,nocc,nvir,nocc/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%symm_voov, C8,(/nvir,nocc,nocc,nvir/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%symm_ovvo, C8,(/nocc,nvir,nvir,nocc/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%symm_ovov, C8,(/nocc,nvir,nocc,nvir/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%symm_vvvo, C8,(/nvir,nvir,nvir,nocc/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%symm_vovv, C8,(/nvir,nocc,nvir,nvir/),init_val=ZERO)
-          ierr=talsh_tensor_construct(dmat%symm_vvvv, C8,(/nvir,nvir,nvir,nvir/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%symm_oooo, C8,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
+
           call print_date("Created 2RDM storage")
        end if
 
@@ -469,12 +482,12 @@ module talsh_gradient
 !***************************************
 !     copy DM blocks into one large DM *
 !***************************************
-!     -----------------------------
-!     | OOOO | OOOV | OOVO | OOVV | 
-!     | OVOO | OVOV | OVVO | OVVV |
-!     | VOOO | VOOV | VOVO | VOVV |
-!     | VVOO | VVOV | VVVO | VVVV |
-!     -----------------------------
+!     ---------------------------------       ---------------------------------       ---------------------------------
+!     |  OOOO |  OOOV |  OOVO |  OOVV |       |  OOOO |  OOOV |       |  OOVV |   |   |       |       | -OOOV |       |
+!     |  OVOO |  OVOV |  OVVO |  OVVV |  ===  |       |       |       |       |  -+-  | -VOOO | +VOVO | -VOVO | -VOVV |
+!     |  VOOO |  VOOV |  VOVO |  VOVV |  ===  |  VOOO |       |  VOVO |  VOVV |   |   |       | -VOVO |       |       |
+!     |  VVOO |  VVOV |  VVVO |  VVVV |       |  VVOO |       |  VVVO |  VVVV |       |       | -VVVO |       |       |
+!     ---------------------------------       ---------------------------------       ---------------------------------
 
 ! first row
 !     oooo
@@ -487,7 +500,7 @@ module talsh_gradient
       call c_f_pointer(body_p2,dm_block,(/nocc,nocc,nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 4d array
       dm_2rdm_mo_fort(1:nocc,1:nocc,1:nocc,1+nocc:nocc+nvir) = dm_block
 
-!     oovo
+!     oovo 
       ierr=talsh_tensor_get_body_access(gamma%symm_oovo,body_p2,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(body_p2,dm_block,(/nocc,nocc,nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
       dm_2rdm_mo_fort(1:nocc,1:nocc,1+nocc:nocc+nvir,1:nocc) = dm_block
