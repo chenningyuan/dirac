@@ -420,7 +420,7 @@ module talsh_gradient
 !     loop variables
       integer :: p, q
 ! debug
-      logical :: debug=.false.
+      logical :: debug = .false.
 
 !***************************************
 !     copy DM blocks into one large DM *
@@ -456,7 +456,7 @@ module talsh_gradient
         print *,'<<<<< 1RDM, complete (active spinors only), in MO basis and fortran storage'
         do p=1,(nocc+nvir)
            do q=1,(nocc+nvir)
-              write(*,'(3X,4I4,2x,2F28.10)') p, q, dm_1rdm_mo_fort(p,q)
+              write(*,'(3X,2I4,2x,2F28.10)') p, q, dm_1rdm_mo_fort(p,q)
            end do
          end do
          print *,'>>>>> 1RDM, complete (active spinors only), in MO basis and fortran storage'
