@@ -1574,7 +1574,7 @@ C*********************************************************
 C
 C/* Deck find_pos */
       SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB, INTISG,
-     &   LUBAS, IPRINT)
+     &   LUBAS, IPRINT, EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1587,6 +1587,7 @@ C*********************************************************
       LOGICAL   NEWEL
       CHARACTER SIGN
       CHARACTER*300 STRING
+      LOGICAL       EMSL_TYPE
 
 C
 C Initializing NEWEL, because one is innocent until proven guilty

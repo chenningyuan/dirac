@@ -39,7 +39,7 @@ module talsh_ao_to_mo
          use exacorr_datatypes
          use exacorr_global
          use module_interest_interface
-         use talsh_cholesky_routines
+         use talsh_CD_routines
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          use interface_to_mpi
 #endif

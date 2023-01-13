@@ -126,7 +126,7 @@ C
       CALL QENTER('DIRCTL')
       call xml_open_file('dirac.xml')
       call xml_begin('run','type="dirac-run"')
-      write (lupri,'(/A,I2)')," * Opening checkpoint file "
+      write (lupri,'(/A,I2)') " * Opening checkpoint file "
       call checkpoint_open
 C
 C***********************************************************************
@@ -187,7 +187,7 @@ C
 !     clean up Gen1Int interface
       call gen1int_host_finalize()
 #endif
-      write (lupri,'(/A,I2)')," * Closing HDF5 checkpoint file "
+      write (lupri,'(/A,I2)') " * Closing HDF5 checkpoint file "
       call checkpoint_close
       call xml_end('run')
       call xml_close_file

@@ -589,14 +589,15 @@ C
 !
 !   function interfaces
 !
+      ! why this ??
       interface
 
-        SUBROUTINE denomvvoo_pp(ra1,ra2)
-          real*8, dimension(:)         :: ra1,ra2
-        END SUBROUTINE
+!       SUBROUTINE denomvvoo_pp(ra1,ra2)
+!         real*8, allocatable, dimension(:)         :: ra1,ra2
+!       END SUBROUTINE
 
         SUBROUTINE do_partial_precon(ra1,ra2)
-          real*8, dimension(:)         :: ra1,ra2
+          real*8,  allocatable,dimension(:)         :: ra1,ra2
         END SUBROUTINE
 
       end interface
