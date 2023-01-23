@@ -12,8 +12,8 @@
 !
 !      If a copy of the GNU LGPL v2.1 was not distributed with this
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
-!dirac_copyright_end
 
+!     dirac_copyright_end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck onegen */
       SUBROUTINE ONEGEN(WORK,LWORK)
@@ -261,9 +261,6 @@ C
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
 C
-      DO II=1,NUCIND
-         write(*,*)'CHARGE=,II',CHARGE(II),II
-      ENDDO
       IF(NXYZ.EQ.0)THEN
         INIXYZ = 0
         MAXXYZ = 0
@@ -324,11 +321,6 @@ C
          CALL MEMSET_NUM(CHARGE(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
      &                    num_grid_cfg_grasp,IPRINT)
 C         
-C NUCPRM is for making nuclear parameter of Fermi and Uniform nucleus. 
-C We do not have to use it for the Gaussian nucleus.
-C         
-C        CALL NUCPRM(ZAN(IATOM),GEXP,NNUC,RNT,EPH,NUCTYP)
-C
          write(*,*)"MXNP",MXNP
          allocate( NUMIR(MXNP) )
          allocate( R(MXNP)     )
@@ -338,6 +330,10 @@ C
            DO J = 2,MXNP
               R(J) = R(J-1)*EPH
            ENDDO
+C  Print out the information           
+           IF(num_grid_cfg_numint_print)THEN
+             CALL NUMINFO(ISYMOP,IATOM,CHARGE(IATOM),RNT,R(MXNP),H,MXNP)
+           ENDIF 
 C R**2 is multiplized in NUMPOT
            CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
 C Additional R is needed for GRASP grid (QUAD2)
@@ -347,22 +343,23 @@ C Additional R is needed for GRASP grid (QUAD2)
 C
          ELSE  ! num_grid_cfg_grasp: DIRAC grid start from here
            R(1) = RNT
-             write(*,*)'H,EPH,RL,GRDC',H,EPH,RNT,GRDC
-             write(*,*)'R,W',R(1)!,W(1)
            DO IR = 2,MXNP
              R(IR) = (R(IR-1)+GRDC)*EPH-GRDC
            ENDDO
+CC  Print out the information           
+C          IF(num_grid_cfg_numint_print)THEN
+C             CALL NUMINFO(ISYMOP,IATOM,CHARGE(IATOM),RNT,R(MXNP),H,MXNP)
+C           ENDIF 
 C R**2 is multiplized in NUMPOT
            CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
-C           CALL NUMPOT(IOP,NUMIR,R,ZAN(NAT),GEXP,MXNP,IPRINT)
            W = (RNT+GRDC)*H 
            NUMIR(1) = NUMIR(1) * W
            DO IR = 2,MXNP
              W = (R(IR)+GRDC)*H
              NUMIR(IR) = NUMIR(IR) * W
            ENDDO
-C          
          ENDIF   !num_grid_cfg_grasp
+C
 C     Numerical integration
 C     Here, INTAOTRI is a buffer
          CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,
@@ -395,7 +392,7 @@ C     deallocate(W)
         ELSE
           WRITE(LUPRI,'(A,A)')" - For ", NAMN(IATOM)
           WRITE(LUPRI,'(A,/)')"     effQED potential is skipped"
-        ENDIF                   !IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)  
+        ENDIF           !IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)  
         ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
 10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
 C
@@ -618,8 +615,6 @@ C
       allocate( GMAX(0:nr_boson_ireps-1, nr_shells) )
 C
       CALL DZERO(INTAOBUF,NDIM2)
-      write(*,*)'C1,C2,C3',C(1,1),C(2,1),C(3,1)
-      write(*,*)'MAT,SCREEN ',MAT,SCREEN
       IF(IXYZ.EQ.0)THEN
         CALL DCOPY(m,ANG(1,4),1,ANGXYZ,1)
         MTXYZ = 0 
@@ -629,9 +624,6 @@ C
             ANGXYZ(iy) = ANG(iy,4)*ANG(iy,IXYZ)
           ENDDO
           MTXYZ = ISYMAX(IXYZ,2)
-C         write(*,*)'IF,IXYZ=',IXYZ
-C         write(*,*)'(ISYMAX(IXYZ,1)',ISYMAX(IXYZ,1)
-C         write(*,*)'(ISYMAX(IXYZ,2)',ISYMAX(IXYZ,2) !debug
        ELSE
          write(*,*)'IXYZ=',IXYZ
          write(*,*)'is wrong number!' !debug
@@ -1275,60 +1267,15 @@ C
 C      
       DIMENSION TB(N),R(N)
       
-!      allocate(ZCHARG(N))       
-!      allocate(TA(N))
 C
 C   CLEAR ARRAYS ZCHARG, TA AND TB
 C
-!      CALL DZERO(ZCHARG,N)
-!      CALL DZERO(TA,N)
       IF (NUCTYP .EQ. 0) GO TO 3 !change
-C
-C   SET UP R*1 TIMES NUCLEAR CHARGE DISTRIBUTION
-C
-      write(*,*)"ZNORM,NNUC",ZNORM,NNUC
-      write(*,*)'GEXP,NUCTYP,Z',GEXP,NUCTYP,Z
-!      CALL NCHARG(ZCHARG,R,Z,GEXP,N,NNUC,NUCTYP)
-!      CALL NCHARG(ZCHARG,R,GR,Z,GEXP,N,NNUC,NUCTYP)
-!      DO 2 I = 1,NNUC
-!        ZCHARG(I) = TA(I)*ZNORM
-C This part is calculated in NCHARG      
-!         write(*,*)'ZCHARG,TA',ZCHARG(I),TA(I),ZNORM
-!    2 CONTINUE
-C     
 C
 C   SECOND-ORDER VACUUM POLARISATION
 C
     3 CALL VAC2(TB,R,Z,GEXP,N,NNUC,NUCTYP)
-!      write(*,*)"TB2"
-!      DO 1 I = 1,N
-!         write(*,*)I,TB(I)
-!    1 CONTINUE      
-!      IF (NVPORD .EQ. 2) GO TO 4
-!      IF (KTC(19) .EQ. 0) RETURN  !change
-!      WRITE (IPD,300)   !change
-!      WRITE (IPD,301) (R(I),TB(I),I = 1,N)  !change
-!      deallocate(ZCHARG)
-!      deallocate(TA)
       RETURN
-C
-C   FOURTH-ORDER VACUUM POLARIZATION
-C
-!    4 CALL VAC4 !change
-!      IF (KTC(19) .NE. 0) WRITE (IPD,302)  !change
-      DO 5 I = 1,N
-!         WA = TA(I)+TB(I)
-!         WRITE (IPD,303) R(I),TB(I),TA(I),WA !sunaga
-!         IF (KTC(19) .NE. 0) WRITE (IPD,303) R(I),TB(I),TA(I),WA !change
-!         TB(I) = WA
-    5 CONTINUE
-C
-c$$$C   USER-DEFINED VACUUM POLARIZATION POTENTIAL
-c$$$C
-c$$$    6 CALL VACUSR
-c$$$      IF (KTC(19) .EQ. 0) RETURN
-c$$$      WRITE (IPD,304)
-c$$$      WRITE (IPD,301) (R(I),TB(I),I = 1,N)
 C
   300 FORMAT (///' SECOND-ORDER VACUUM-POLARISATION POTENTIAL',
      &   //'     R            R * V.P. POTENTIAL')
@@ -2027,7 +1974,6 @@ C
       DIMENSION TB(N),R(N)
       PARAMETER(ONE=1.0D0,TWO=2.0D0)
 C
-      write(*,*)"magnetic" !sunaga
       IF(NUCTYP.EQ.0)THEN
 *     POINT
         POTIR=Z 
@@ -2044,23 +1990,8 @@ C
           DIFFNUCPOT = POTIR/(R(I)*R(I))
      &                 - TWO*Z*SQRT(XI)/(SQRTPI*R(I))*EXP(-XI*R(I)*R(I))
           CALL INTMG2(TB(I),R(I),POTIR,DIFFNUCPOT)
-C        SEC1 = - TWO*Z*SQRT(XI/3.14159)/R(I)*EXP(-XI*R(I)*R(I))
-C        SEC2 = - TWO*Z*SQRT(XI/PI)/R(I)*EXP(-XI*R(I)*R(I))
-C        SEC3 = - TWO*Z*SQRT(XI)/(SQRTPI*R(I))*EXP(-XI*R(I)*R(I))
-C        DIFFNUCPOT = POTIR/R(I)**TWO
-C     &               - TWO*Z*WA/(R(I)*SQRT(3.14159))*EXP(-XI*R(I)*R(I)) !sqrtpi
-C        DIFFNUCPOT = ZZ(I)/R(I)**2
-C     :                  - 2*Z*SQRT(XI/3.14159)/R(I)*EXP(-XI*R(I)**2)
-C        write(*,*)
-C        write(*,*)"POTIR/R(I)**TWO",POTIR/R(I)**TWO
-C        write(*,*)"SEC1",SEC1, POTIR/R(I)**TWO + SEC1
-C        write(*,*)"SEC2",SEC2, POTIR/R(I)**TWO + SEC2
-C        write(*,*)"SEC3",SEC3, POTIR/R(I)**TWO + SEC3
-C        write(*,*)
  20     CONTINUE
       ENDIF  
-!     IF(NUCTYP.EQ.1.OR.2)
-!     For the calculation of the deri
 C      
       RETURN
       END
@@ -2095,30 +2026,13 @@ C     From this, we have to remove TWO from GRASP's source.
 C      
       CALL G1TGRID(TT,TTX,NTMAX,NT,RI)
       CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
-C        write(*,*)""
-C        write(*,*)"TT,RESULT" ,TT(1),TT(2),NTMAX,NT,RESULT
-C        write(*,*)"TTX,R" ,TTX(1),TTX(2)
 *     radial derivative of the nuclear potential
       G1A = RESULT*DIFFNUCPOT
       G1B = DIFFNUCPOT
-C      write(*,*)"ERF,WA,R(I),I"
-C      write(*,*)"ERF,WA,R(I),I",ERF(WA*R(I)),WA,R(I),I
-C      write(*,*)"POTIR,XI,a,",POTIR,XI,TWO*Z*WA/(R(I)*SQRTPI)
-C      write(*,*)"1,2,total",POTIR/R(I)**TWO,
-C     &     - TWO*Z*SQRT(XI/PI)/(R(I))*EXP(-XI*R(I)*R(I)),DIFFNUCPOT
-C      write(*,*)"RESULT,NUCPOT",RESULT,DIFFNUCPOT
-C     write(*,*)"exp",EXP(-XI*R(I)*R(I))
 *
       CALL G2TGRID(TT,TTX,NTMAX,NT,RI)
-C      write(*,*)"TT",TT(1),TT(2),TT(3)
-C      write(*,*)"TTX",TTX(1),TTX(2),TTX(3)
-C      write(*,*)"NTMAX,NT,R(I)",NTMAX,NT,R(1),R(2),R(3)
-C      write(*,*)""
       CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
       G2 = TWO*RESULT*CVAL*POTIR/RI
-C      write(*,*)"TWO,RESULT,CVAL,POTIR", TWO,RESULT,CVAL,POTIR!sunaga
-C      write(*,*)"PREFAC,G1A,G1B,G2",PREFAC,G1A,G1B,G2,I !sunaga
-C      write(*,*)""
       TBI = PREFAC*(G1A - G1B + G2) !*R(I)
 C      
       deallocate(TT)
@@ -2156,7 +2070,6 @@ C
            NT = J
            GOTO 2
         END IF
-C        write(*,*)"T,J",T(J)
 *
     1 CONTINUE
     2 RETURN
@@ -2186,7 +2099,6 @@ C        write(*,*)"T,J",T(J)
       X2 = EXP(-TWO*T*R*CVAL)
 *
       PHI_G1_INNER = X1*X2
-C      write(*,*)"X1,X2,inner",X1,X2,PHI_G1_INNER
 *
       RETURN
 *
@@ -2746,7 +2658,43 @@ C
      &" ***** SET-UP for EACH ATOM *****"
 C       
       RETURN         
-      END        
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck numinfo */
+      SUBROUTINE NUMINFO(ISYMOP,IATOM,Z,RNT,RMAX,H,MXNP)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C      
+C Printing the information for numerical integration 
+C
+C Called from: NUMINT, NUMINT_ANG
+C
+C A. Sunaga Nov. 2020
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use num_grid_cfg
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "nucdata.h"
+C
+      IF(ISYMOP.NE.0)RETURN
+C      
+      WRITE(LUPRI,'(A,A)')
+     &" - For ", NAMN(IATOM)
+      WRITE(LUPRI,'(A,I3,A,E8.2e2,A,E8.2e2)')
+     &"     mass = ",INT(NUCMASS(INT(Z))),
+     &", Rmin = ", RNT, ", Rmax = ",RMAX
+      WRITE(LUPRI,'(A,E8.2e2,A,I4)')
+     &"     stepsize = ",H,", # of radial grid = ",MXNP 
+      WRITE(LUPRI,*)""
+C
+      IF(IATOM.EQ.NUCIND)THEN
+       num_grid_cfg_numint_print = .FALSE.
+      ENDIF
+      RETURN
+      END    
+C       
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
