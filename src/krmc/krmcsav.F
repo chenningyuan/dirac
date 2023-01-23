@@ -190,14 +190,12 @@ C
       CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
 C
       IF (NASHT .EQ. 0) THEN
-C     ... also save on DFCOEF when SCF
+C     ... also save on CHECKPOINT when SCF
 C         (needed for e.g. RPA or restarts without changing
 C          input from .HF to .MCSCF /hjaaj Feb 2004)
-         CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','KRMCSAV')
          allocate (ibeig(norbt))
          CALL IZERO(IBEIG,NORBT)
          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,EMCSCF)
-         CLOSE(LUCOEF,STATUS='KEEP')
       END IF
 C
       REWIND(LUKRMC)

@@ -14,8 +14,6 @@
 1.0E-9 1.0E-8 
 .MAXITR
 1
-**GENERAL
-.PCMOUT 
 **EXACC
 .OCCUPIED                                                                                           
 1..5 
