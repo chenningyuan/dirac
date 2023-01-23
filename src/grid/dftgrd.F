@@ -685,7 +685,6 @@ C     Grid spacing....
       ENDDO
 C...  Inner grid point
       AH = AA(1, 1, 1, IATOM)
-        write(*,*)'IATOM=,AH',IATOM,AH
 !     radovan:
 !     if Levy-Leblond or X2C, ignore small component
 !     unless user forces 4-c grid
@@ -695,7 +694,6 @@ C...  Inner grid point
       AH = D2*AH
       RL = ((1.9D0+LOG(RADERR))/D3)-(LOG(AH)/D2)
       RL = EXP(RL)
-      write(*,*)'RL,AH,RADERR',RL,AH,RADERR !sunaga
 C...  Outer point
       RH = D0
       DO LL = 1,NHTYP
@@ -1583,11 +1581,6 @@ C
           C(1,NAT)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
           C(2,NAT)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
           C(3,NAT)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-          write(*,*)'ISYMOP,ICENT,IBTAND',
-     &               ISYMOP,ICENT,IBTAND(ISYMOP,MULCNT)
-          write(*,*)'ZCNT,NAT,NUCIND',ZCNT,NAT,NUCIND !sunaga
-          write(*,*)'C3',C(3,NAT) !sunaga
-          write(*,*)
         ENDIF
         ENDDO
       ENDDO

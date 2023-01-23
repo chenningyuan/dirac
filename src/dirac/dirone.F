@@ -12,8 +12,8 @@
 !
 !      If a copy of the GNU LGPL v2.1 was not distributed with this
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
+!dirac_copyright_end
 
-!     dirac_copyright_end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck onegen */
       SUBROUTINE ONEGEN(WORK,LWORK)
@@ -321,7 +321,11 @@ C
          CALL MEMSET_NUM(CHARGE(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
      &                    num_grid_cfg_grasp,IPRINT)
 C         
-         write(*,*)"MXNP",MXNP
+C NUCPRM is for making nuclear parameter of Fermi and Uniform nucleus. 
+C We do not have to use it for the Gaussian nucleus.
+C         
+C        CALL NUCPRM(ZAN(IATOM),GEXP,NNUC,RNT,EPH,NUCTYP)
+C
          allocate( NUMIR(MXNP) )
          allocate( R(MXNP)     )
 C         
@@ -330,11 +334,11 @@ C
            DO J = 2,MXNP
               R(J) = R(J-1)*EPH
            ENDDO
-C  Print out the information           
+C     Print out the information
            IF(num_grid_cfg_numint_print)THEN
              CALL NUMINFO(ISYMOP,IATOM,CHARGE(IATOM),RNT,R(MXNP),H,MXNP)
-           ENDIF 
-C R**2 is multiplized in NUMPOT
+           ENDIF           
+C     R**2 is multiplized in NUMPOT
            CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
 C Additional R is needed for GRASP grid (QUAD2)
            DO I = 1,MXNP
@@ -346,20 +350,21 @@ C
            DO IR = 2,MXNP
              R(IR) = (R(IR-1)+GRDC)*EPH-GRDC
            ENDDO
-CC  Print out the information           
-C          IF(num_grid_cfg_numint_print)THEN
-C             CALL NUMINFO(ISYMOP,IATOM,CHARGE(IATOM),RNT,R(MXNP),H,MXNP)
-C           ENDIF 
+C     Print out the information
+           IF(num_grid_cfg_numint_print)THEN
+             CALL NUMINFO(ISYMOP,IATOM,CHARGE(IATOM),RNT,R(MXNP),H,MXNP)
+           ENDIF           
 C R**2 is multiplized in NUMPOT
            CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
+C           CALL NUMPOT(IOP,NUMIR,R,ZAN(NAT),GEXP,MXNP,IPRINT)
            W = (RNT+GRDC)*H 
            NUMIR(1) = NUMIR(1) * W
            DO IR = 2,MXNP
              W = (R(IR)+GRDC)*H
              NUMIR(IR) = NUMIR(IR) * W
            ENDDO
+C          
          ENDIF   !num_grid_cfg_grasp
-C
 C     Numerical integration
 C     Here, INTAOTRI is a buffer
          CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,
@@ -381,18 +386,12 @@ C       Scale weights with multiplicity of center
 C     Here, INTAOTRI is a buffer
          CALL DAXPY(NDIM2,D1,INTAOTRI,1,INTAO,1)
          CALL DZERO(INTAOTRI,NDIM2)
-         write(*,*)'INTAO'
-C         CALL OUTPUT(INTAO,1,NTBAS(0),1,NTBAS(0),
-C     &                   NTBAS(0),NTBAS(0),-1,LUPRI)
-C          CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI) !debug
-C        Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
          deallocate(NUMIR)
          deallocate(R)
-C     deallocate(W)
         ELSE
           WRITE(LUPRI,'(A,A)')" - For ", NAMN(IATOM)
           WRITE(LUPRI,'(A,/)')"     effQED potential is skipped"
-        ENDIF           !IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)  
+        ENDIF                   !IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)  
         ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
 10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
 C
@@ -630,7 +629,6 @@ C
          stop
         ENDIF
       ENDIF
-      write(*,*)'IXYZ',IXYZ
 C
       IF(MAT.EQ.'SY')THEN
          IA(1) = 1
@@ -668,31 +666,17 @@ C
 C      
       nr_points_on_this_proc=MXNP*m
 C
-      write(*,*)'nr_points_on_this_proc,m',nr_points_on_this_proc,m
-      write(*,*)'max_block_length',max_block_length
-      write(*,*)'NTBAS(1)',NTBAS(1)
-      write(*,*)'nr_shells, nr_boson_ireps',nr_shells, nr_boson_ireps
-      write(*,*)'KMAX,MAXOPR+1,',KMAX,MAXOPR+1
-C
 C     Determination of the maximum value for each (isym,ishell)
 C     for cutoff of the numerical integration 
 C      
       CALL DZERO(GMAX, nr_boson_ireps*nr_shells)
-         MXNP_ODD = MXNP - mod(MXNP,2)
-C      IF(R(MXNP).LE.D1)THEN
-C         MXNP_ODD = MXNP - mod(MXNP,2)
-C      ELSE
-C         DO
-C         MXNP_ODD = 
-C      ENDIF
-      do IR = 1, MXNP_ODD, (MXNP_ODD-1)/2  !change
+      MXNP_ODD = MXNP - mod(MXNP,2)
+      do IR = 1, MXNP_ODD, (MXNP_ODD-1)/2  
         IOF_block = 1
 C                 
 C     In the case of m>100, a speciAL treatment is needed.
 C
         m_NUM_MAX = INT(m/100) + 1               
-C
-          write(*,*)'IR',IR
 C
 C    GET AO's
 C
@@ -732,27 +716,8 @@ C
      &                                    pxyz(1,3),           
      &                                    p2,
      &                                    GAO2(1, i))
-C               IF(ishell.eq.nr_shells)THEN
-C                  write(*,*)'IR',IR
-C               write(*,*) 
-C               DO JJ = 1,NTBAS(0)
-C                 write(*,*)'GAO2(1),JJ',GAO2(1,JJ),JJ
-C               ENDDO
-C               write(*,*) 
-C               DO JJ = 1,NTBAS(0)
-C                 write(*,*)'GAO2(2),JJ',GAO2(2,JJ),JJ
-C               ENDDO
-C               write(*,*) 
-C               DO JJ = 1,NTBAS(0)
-C                 write(*,*)'GAO2(3),JJ',GAO2(3,JJ),JJ
-C               ENDDO
-C               ENDIF 
 C              
                DO k = 1, nblock_length
-C                 IF(GMAX(isym,ishell).GT.1.0D2)THEN
-C                    write(*,*)'GMAX,before',
-C     &               GMAX(isym,ishell),isym,ishell,IR,k
-C                 ENDIF
                  DO ICOMP = 1,KHKT(ishell)
                  GMAX(isym,ishell)
      &          = MAX( ABS(GAO2(k,i+ICOMP-1)), ABS(GMAX(isym,ishell)) )
@@ -775,9 +740,7 @@ C                 ENDIF   !debug, which is cutoff
           deallocate(GAO2)
         ENDDO                  ! m_NUM
       end do                ! IR         
-CCCCCCC
-C test         do IR = MXNP, 1, -1    !change
-CCCCCCC                          
+C
       IF(GRASP)THEN
         allocate( TD(NDIM2,MXNP) )         
         do IR = 1, MXNP
@@ -864,20 +827,16 @@ C
           deallocate(BUFGAO)
         end do                ! IR
           CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
-          write(*,*)
-          write(*,*)'forTD'
-C        CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
-C     &                  NTBAS(0),NTBAS(0),-1,LUPRI)
         deallocate(TD)
       ELSE  !DIRAC grid from here
-        do IR = 1, MXNP  !change
+        do IR = 1, MXNP  
           CALL DZERO(TC,      NDIM2)
           IOF_block = 1
 C                 
 C     In the case of m>100, a speciAL treatment is needed.
 C
           m_NUM_MAX = INT(m/100) + 1               
-          allocate( GAO    (m, NTBAS(0)) )  !change
+          allocate( GAO    (m, NTBAS(0)) ) 
           allocate( BUFGAO (m, NTBAS(0)) )
           CALL DZERO(GAO, m*NTBAS(0))
           CALL DZERO(BUFGAO,m*NTBAS(0))
@@ -901,7 +860,6 @@ C     in get_cartesian_ao_g0 must be nblock_length
             ENDDO
 C
             i = 1
-C              write(*,*)'nr_boson_ireps',nr_shells,nr_boson_ireps
             do ishell = 1, nr_shells
               do isym = 0, nr_boson_ireps - 1
                if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then                 
@@ -919,10 +877,6 @@ C
      &                             pxyz(k,1),nblock_size) 
                  end do
 C      
-C                 IF(IR.EQ.MXNP)THEN
-C                   write(*,*)'GMAX,isym,ishell',
-C     &                GMAX(isym,ishell),isym,ishell
-C                 ENDIF
                  call get_cartesian_ao_g0(nblock_length, 
      &                                      ishell,       
      &                                      pxyz(1,1),           
@@ -939,11 +893,6 @@ C     Copy a set of 100 AO (GAO2) to total AO array (GAO)
             DO J = 1, NTBAS(0)
               CALL DCOPY(nblock_length,GAO2(1,J),1,GAO(IOFM,J),1)
             ENDDO
-C            write(*,*)'IR_GAO2',IR
-C            write(*,*)
-C            DO JJ = 1,NTBAS(0)
-C              write(*,*)'GAO2,JJ',GAO2(1,JJ),JJ
-C            ENDDO
             IOFM = IOFM + nblock_length
             IOF_block = IOF_block + nblock_length
             deallocate(GAO2)
@@ -975,10 +924,9 @@ C
       CALL MTAOSO(INTAOBUF,INTSO,NTBAS(0),MTXYZ,IPRINT)
 C      write(*,*)'OUTPUT2'      
 C            CALL OUTPUT(INTSOBUF,1,NTBAS(0),1,NTBAS(0),
-C     &                   NTBAS(0),NTBAS(0),-1,LUPRI)  !debug?
+C     &                   NTBAS(0),NTBAS(0),-1,LUPRI)  !debug
       deallocate( TC      )
       deallocate( INTAOBUF)
-C      deallocate( INTSOBUF)
       deallocate( XYZ8    )
       deallocate( pxyz    )
       deallocate( p2      )
@@ -1267,25 +1215,18 @@ C
 C      
       DIMENSION TB(N),R(N)
       
-C
-C   CLEAR ARRAYS ZCHARG, TA AND TB
-C
       IF (NUCTYP .EQ. 0) GO TO 3 !change
+C
+C   SET UP R*1 TIMES NUCLEAR CHARGE DISTRIBUTION
+C
+      write(*,*)""  ! this is needed
 C
 C   SECOND-ORDER VACUUM POLARISATION
 C
     3 CALL VAC2(TB,R,Z,GEXP,N,NNUC,NUCTYP)
-      RETURN
 C
-  300 FORMAT (///' SECOND-ORDER VACUUM-POLARISATION POTENTIAL',
-     &   //'     R            R * V.P. POTENTIAL')
-  301 FORMAT (1PD12.1,D22.8)
-  302 FORMAT (///' VACUUM-POLARISATION POTENTIAL',
-     &  //'     R            R * 2ND ORDER POT.    ',
-     &  'R * 4TH ORDER POT.    R * TOTAL POTENTIAL',/)
-  303 FORMAT (1PD12.1,3D22.8)
-  304 FORMAT (///' USER-DEFINED VACUUM-POLARISATION POTENTIAL',
-     &  //'     R            R * V.P. POTENTIAL')
+C   FOURTH-ORDER VACUUM POLARIZATION
+C
 C
       RETURN
       END
@@ -2026,13 +1967,30 @@ C     From this, we have to remove TWO from GRASP's source.
 C      
       CALL G1TGRID(TT,TTX,NTMAX,NT,RI)
       CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
+C        write(*,*)""
+C        write(*,*)"TT,RESULT" ,TT(1),TT(2),NTMAX,NT,RESULT
+C        write(*,*)"TTX,R" ,TTX(1),TTX(2)
 *     radial derivative of the nuclear potential
       G1A = RESULT*DIFFNUCPOT
       G1B = DIFFNUCPOT
+C      write(*,*)"ERF,WA,R(I),I"
+C      write(*,*)"ERF,WA,R(I),I",ERF(WA*R(I)),WA,R(I),I
+C      write(*,*)"POTIR,XI,a,",POTIR,XI,TWO*Z*WA/(R(I)*SQRTPI)
+C      write(*,*)"1,2,total",POTIR/R(I)**TWO,
+C     &     - TWO*Z*SQRT(XI/PI)/(R(I))*EXP(-XI*R(I)*R(I)),DIFFNUCPOT
+C      write(*,*)"RESULT,NUCPOT",RESULT,DIFFNUCPOT
+C     write(*,*)"exp",EXP(-XI*R(I)*R(I))
 *
       CALL G2TGRID(TT,TTX,NTMAX,NT,RI)
+C      write(*,*)"TT",TT(1),TT(2),TT(3)
+C      write(*,*)"TTX",TTX(1),TTX(2),TTX(3)
+C      write(*,*)"NTMAX,NT,R(I)",NTMAX,NT,R(1),R(2),R(3)
+C      write(*,*)""
       CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
       G2 = TWO*RESULT*CVAL*POTIR/RI
+C      write(*,*)"TWO,RESULT,CVAL,POTIR", TWO,RESULT,CVAL,POTIR!sunaga
+C      write(*,*)"PREFAC,G1A,G1B,G2",PREFAC,G1A,G1B,G2,I !sunaga
+C      write(*,*)""
       TBI = PREFAC*(G1A - G1B + G2) !*R(I)
 C      
       deallocate(TT)
@@ -2070,6 +2028,7 @@ C
            NT = J
            GOTO 2
         END IF
+C        write(*,*)"T,J",T(J)
 *
     1 CONTINUE
     2 RETURN
@@ -2099,6 +2058,7 @@ C
       X2 = EXP(-TWO*T*R*CVAL)
 *
       PHI_G1_INNER = X1*X2
+C      write(*,*)"X1,X2,inner",X1,X2,PHI_G1_INNER
 *
       RETURN
 *
@@ -2309,39 +2269,13 @@ chth  T-INTEGRATION
         AZ1 = AZ1COEF * TB(I)
         AZ2 = TB(I) + ZC7
         AZ  = AZ1/AZ2
-!        write(*,*)
-!        write(*,*)'AZ1,AZ2,TB,X,X4',AZ1,AZ2,TB(I),X,X4
         TB(I) = PREFAC*RESULT*POT*AZ
-!        write(*,*)'VWRR,POT,R(I),AZ,I',
-!     &                PREFAC*RESULT*POT*AZ,POT,R(I),AZ,I
         
  5    CONTINUE
 C
-!      write(*,*)'ZZ,AZZ1COEF'
-!      DO I=1,N
-!      DO ZZ=1,120
-!        XZ1  = (ZZ-80.0D0)/CVAL
-!        XZ2  = XZ1 * XZ1
-!        XZ3  = XZ2 * XZ1
-!        XZ4  = XZ3 * XZ1
-!        AZZ1COEF = 1.071D0 - 1.976D0*XZ2 - 2.128D0*XZ3 + 0.169D0*XZ4
-!        AZZ1 = AZZ1COEF * R(I)*CVAL
-!        AZZ2 = R(I)*CVAL + 0.07D0 * ZZ*ZZ/(CVAL*CVAL)
-!        AZTEST(ZZ) = AZZ1/AZZ2
-!        write(*,*)ZZ,AZZ1,AZZ2,ZC7
-!      ENDDO
-!        write(*,*) (AZTEST(ZZ),ZZ=1,120)
-!      ENDDO
-!      write(*,*)
-!      write(*,*)
-!      write(*,*)'radial'
-!      DO I=1,N
-!         write(*,*) R(I)
-!       ENDDO  
 C
 C     It does not agree with GRASP, because the default of GRASP is n-dependent HF
 C     In order to compare with GRASP, we have to use n-INdependent HF term in GRASP
-!     debug
       deallocate(TT)
       deallocate(TTX)
       deallocate(AZTEST)
@@ -2447,13 +2381,6 @@ C
  1    CONTINUE
       CALL DSCAL(N,BFIT,TB,1)
 C
-!         write(*,*)'ZZ,BFIT,BETAFIT'
-!      DO ZZ=1,120
-!         BFIT_ZZ = B0 + B1*ZZ + B2*ZZ*ZZ
-!         BETAFIT_ZZ = BETA0 + BETA1*ZZ + BETA2*ZZ*ZZ
-!         write(*,*)ZZ,BFIT_ZZ,BETAFIT_ZZ
-!      ENDDO   
-C      
 C     change
 C     error sentence for 29<Z<83
 C      
@@ -2568,8 +2495,6 @@ C
       M = 7
     2 K = K+1
       KM = K-M
-!      write(*,*)
-!      write(*,*)"KM,MXXK",KM,MXXK !sunaga
       IF (KM .GT. MXXK-1) GO TO 99
       XK = -XK*X
       FKN = DBLE (K**N)
@@ -2578,7 +2503,6 @@ C
          DELTA(J) = HALF*(DELTA(J)+DELTA(J+1))
     3 CONTINUE
       SUM = SUM+DELTA(1)
-!      write(*,*)"DELTA,SUM,TOL",DELTA(1),SUM,TOL !sunaga
       IF (ABS (DELTA(1)/SUM) .GT. TOL) GO TO 2
 C
     4 XKONKN = SUM*X
@@ -2693,8 +2617,7 @@ C
        num_grid_cfg_numint_print = .FALSE.
       ENDIF
       RETURN
-      END    
-C       
+      END       
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
