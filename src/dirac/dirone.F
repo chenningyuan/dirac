@@ -176,7 +176,6 @@ C
       CLSCAL(I) = .FALSE.
    10 CONTINUE
 C
-      CLOSE(LU1INT,STATUS='KEEP')
       IF (IPRONE .GT. 0) THEN
          CALL GETTIM(CPUE,WALLE)
          CPUTID  = SECTID(CPUE-CPU0)
@@ -2832,7 +2831,7 @@ C         Create total property matrix with correct prefactor
      &               work(konein+(l-1)*nnbbasx),1,
      &               WORK(khelp),1)
           end do
-C         Store matrix in AOproper file
+C         Store matrix
           ITYP = ITYP + 1
           CALL WRTPRO(WORK(khelp),NNBBASX,LABINT(ITYP),RTNLBL,IPRHAM)
           CALL MEMREL('EFFECTIVE_DENS_NUC',WORK,KWORK,KHELP,KFREE,LFREE)
@@ -2890,7 +2889,7 @@ C  /* Deck op1gen */
 C*****************************************************************************
 C
 C     Driver for the generation of one-electron integrals
-C    to be placed on the file AOPROPER.
+C    to be placed on the file CHECKPOINT
 C
 C     On input:  WORD     ...
 C                COMB     ... integral characteritics
@@ -2979,7 +2978,7 @@ C  /* Deck betamt */
 C*****************************************************************************
 C
 C     Driver for the generation of beta-matrix integrals
-C     to be placed on file AOPROPER.
+C     to be placed on file CHECKPOINT
 C
 C     Written by Trond Saue - May 1996
 C     Last revision May 19 1996
@@ -3504,8 +3503,6 @@ c
          deallocate(op1int)
       endif
 C
-      CLOSE(LU1INT,STATUS = 'KEEP')
-C
 C     Reindex to sorted basis
 C     =======================
 C
@@ -3706,7 +3703,7 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
      &    'FIRST = ',FIRST(IQP),' and IC(1 or 2):',IC
         ENDIF
 C =============================================================
-C               Get integrals from the AOPROPER file
+C               Get integrals from the CHECKPOINT file
 C     =============================================================
         IF(ONFILE) THEN
           CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
@@ -3717,7 +3714,7 @@ C     =============================================================
         ENDIF  
         IF(IPRINT.GE.10) THEN
           WRITE(LUPRI,'(A,I3)')
-     &    '* Integrals from AOPROPER, size of matrix ',NTBAS(0)
+     &    '* Integrals from CHECKPOINT, size of matrix ',NTBAS(0)
           IF (NTBAS(0).EQ.NTBAS(1)) THEN
            WRITE(LUPRI,'(2X,A)')
      &   '...two-component framework (only LL block is present) '
@@ -4591,8 +4588,6 @@ C
 C
 C     Initialize
 C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
       FIRST(1:4) = .TRUE.
 C
 C     Beta matrix (FOCK is used as scratch space)
@@ -4608,8 +4603,6 @@ C
       IOP = IPKINERG
       CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &            FOCK,FIRST,IPRHAM)
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Make full matrix
 C     ================
@@ -4679,7 +4672,7 @@ C     transformation matrix as well.
 C MI/2006
 C     For the two-component nonrelativistic
 C     calculations run the "URKBAL" branch as only
-C     Lowdin canonical matrix is needed. It's assumed that small
+C     Lowdin canonical matrix is needed. It is assumed that small
 C     components were eliminated in HERINP.
 C
 C     Called from: PSISCF (when BSS2DC or DC2BSS mode is activated)
@@ -4692,6 +4685,7 @@ C                    2006 - M.Ilias
 C
 C*****************************************************************************
       use memory_allocator
+      use checkpoint
       use dircmo
       use x2cmod_cfg
       use dirx2c
@@ -4770,6 +4764,7 @@ C   PAMIOU: LUTMAT
       logical              :: no1esystem_aoosoc
 #endif
       real(8)              :: timstr(2), timend(2), dum
+      logical              :: x2c_AOA,x2c_Aon
 
       CALL QENTER('GMOTRA')
 
@@ -4921,7 +4916,7 @@ C
 
 C         BSSMAT or X2CMAT available:
 C         1) open BSSMAT/X2CMAT and remove all property integrals
-C         2) do picture change transformation of integrals on AOPROPER
+C         2) do picture change transformation of integrals on CHECKPOINT
 
           if(bss)then
 
@@ -4948,7 +4943,11 @@ C         2) do picture change transformation of integrals on AOPROPER
             if(.not.x2cmod_fragment_x2c)then
               i2cofk =  0
 !             check for hamiltonian integrals on file X2CMAT and set i2cofk
-              if(fndlab12('h12cAOA   10',lux2c))then
+              call checkpoint_query(
+     &'/result/hamiltonian/x2c/ao_matrices/h12cAOA   10',x2c_AOA)
+              call checkpoint_query(
+     &'/result/hamiltonian/x2c/ao_matrices/h12cAOn   10',x2c_AOn)
+              if(x2c_AOA)then
                 if(noamfi)then
                   write(lupri,'(a)')
      &' *** restart error: try to read h1+amfi and noamfi == .true. ***'
@@ -4958,7 +4957,7 @@ C         2) do picture change transformation of integrals on AOPROPER
 !               set i2cofk to |3|: since we restart, it does not matter
 !               how the AMFI part was derived.
                 i2cofk = 3
-              else if(fndlab12('h12cAOn   10',lux2c))then
+              else if(x2c_AOn)then
                 i2cofk = 1
               else
                 if(x2cmod_mmf_restart)then
@@ -4975,11 +4974,6 @@ C         2) do picture change transformation of integrals on AOPROPER
             end if
 
             if(.not.x2cmod_skip_op_pct)then
-!             find first property integral... and step back
-              if(fndlab12('prpint2c0001',lux2c))then
-                backspace(lux2c)
-                call x2c_write('thisisadummy',work,-1,lux2c)
-              end if
 
               call pctrafo_all_op_driver(ntbas(0),
      &                                   ntbas(1),
@@ -5027,7 +5021,7 @@ C         2) do picture change transformation of integrals on AOPROPER
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
           IPREAD = IPREAD + 5
-C.........reset NEWPRP to re-initialize AOPROPER
+C.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
           NEWPRP = .TRUE.
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
           CALL ONEGEN(WORK,LWORK)
@@ -5120,7 +5114,7 @@ C
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
           IPREAD = IPREAD + 5
-C.........reset NEWPRP to re-initialize AOPROPER
+C.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
           NEWPRP = .TRUE.
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
           CALL ONEGEN(WORK,LWORK)
@@ -5345,18 +5339,13 @@ C
             dmat_aoosoc = 0.0d0
             cmo_aoosoc  = 0.0d0
 !           read coefficients
-            call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo_new(lucoef,cmo=cmo_aoosoc)
-            close(lucoef,status='keep')
+            call reacmo_new(cmo=cmo_aoosoc)
 
 !           generate density matri(x/ces)
             call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
             deallocate(cmo_aoosoc)
 
             allocate(pctm_aoosoc(ntbas(0)**2*4))
-            open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &           access='sequential',action='readwrite',
-     &           position='rewind')
 
 !           initialize offset
             ioff_pct_mat = 1
@@ -5368,8 +5357,6 @@ C
               end if
               ioff_pct_mat = ioff_pct_mat + nfbas(i,0) * nfbas(i,1) * nz
             end do
-
-            close(lux2c,status='keep')
 
 !           no 2e-SO correction for 1e-systems
             call rmolchr(ichrg) ! sum of charge of all constituents, here only one atom
@@ -5410,7 +5397,7 @@ C
 !         ------------------------------------------------------------------------------------
 
 !         purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
-!                  and renew the coefficient file DFCOEF
+!                  and renew the coefficients on fileF
 !                  a potential issue could be frozen orbitals - test me!
           allocate(tmat_mmf(n2bbasxq))
           allocate(tbuf_mmf(n2bbasxq))
@@ -5453,7 +5440,7 @@ C
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
           IPREAD = IPREAD + 5
-!.........reset NEWPRP to re-initialize AOPROPER
+!.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
           NEWPRP = .TRUE.
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
           CALL ONEGEN(WORK(kfree),lfree)
@@ -5506,9 +5493,7 @@ C
           cmo_mmf     = 0
           tbuf_mmf    = 0
           !> read 2c-mos
-          call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-          call reacmo_new(lucoef,cmo=cmo_mmf)
-          close(lucoef,status='keep')
+          call reacmo_new(cmo=cmo_mmf)
           !> density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
 
@@ -5521,15 +5506,10 @@ C
      &    call get_2e_2c_fock_matrix_x2c(tmat_mmf,tbuf_mmf,
      &         ntbas(0),ntbas(0),nz,nfmat,lfree,iprham,df)
 
-          open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &         access='sequential',action='readwrite',
-     &         position='rewind')
-
 !         2c-Fock operator, picture-change transformed from 4c-Fock operator ("++"-part)
           write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
           call x2c_read(flabel,tbuf_mmf,len_fmat,lux2c)
           call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
-          close(lux2c, status='keep')
 
 !         save H1_mmf_X2C_AO
           open(lux2c,file='DFFCK_mmf',status='unknown',
@@ -5973,6 +5953,7 @@ C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prprea */
       SUBROUTINE PRPREA(LU1INT,PRPLBL,RTNLBL,PCOMB,PRPINT,NDIM,IPRINT)
+      use checkpoint
 C***********************************************************************
 C
 C     Read property integrals from file with the label PRPLBL
@@ -5993,6 +5974,8 @@ C***********************************************************************
       LOGICAL FNDLB3, FINDLABEL
       CHARACTER PRPLBL*8, RTNLBL(2)*8, PCOMB*4, COMB*4
       DIMENSION PRPINT(NDIM)
+      character*(:), allocatable :: label
+      logical                    :: label_present
       CALL QENTER('PRPREA')
 C
 Chj   PDOINT is now '+', '-', or '0',
@@ -6006,27 +5989,28 @@ C     The four blocks (AO basis): LL, SL, LS, SS
         END IF
       END DO
 C
-      REWIND LU1INT
       IF (IPRINT.GE.12) THEN
        WRITE(LUPRI,'(A,I4)')
      & 'PRPREA: >>> Going to read the property '//PRPLBL//
      & ' with COMB '//COMB//
      & ' from the file with LU1INT = ',LU1INT
       ENDIF
-      IF(FNDLB3(PRPLBL,COMB,RTNLBL,LU1INT,IPRINT)) THEN
-        CALL READT(LU1INT,NDIM,PRPINT)
+      label = '/result/operators/ao_matrices/'//
+     &        PRPLBL//COMB
+      call checkpoint_query(label,label_present)
+      if (label_present) then
+        call checkpoint_read(label,rdata=prpint(1:ndim))
         IF (IPRINT.GE.17) THEN
            WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
-     &    'succesfully read from the file with LU1INT = ',LU1INT
+     &    'succesfully read from CHECKPOINT '
         ENDIF
       ELSE
         WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
-     &                     ' not found on LU1INT = ',LU1INT
-        WRITE(LUPRI,*) 'label RTNLBL=',RTNLBL
+     &                     ' not found on CHECKPOINT'
         CALL QUIT('PRPREA:Property '//PRPLBL//
-     &   ' of COMB '//COMB//' not found on AOPROPER file !')
+     &   ' of COMB '//COMB//' not found on CHECKPOINT')
       ENDIF
 C
       CALL FLSHFO(LUPRI)
@@ -6072,7 +6056,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GTOVLX(SMAT,SSMETR)
 C*****************************************************************************
 C
-C     Get overlap matrix from file AOPROPER
+C     Get overlap matrix from file CHECKPOINT
 C     The SS block is scaled by the factor SSMETR
 C     No symmetry packing
 C
@@ -6104,11 +6088,8 @@ C
 C       Read integral from file
 C       =======================
 C
-        OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &           FILE='AOPROPER')
         CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',sbuf,NNBBASX,
      &              IPRONE)
-        CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C       Make full matrix
 C       ================
@@ -6146,7 +6127,7 @@ C  /* Deck gtovlt */
       SUBROUTINE GTOVLT(SMAT,SSMETR,IPRINT)
 C*****************************************************************************
 C
-C     Get overlap matrix from file AOPROPER
+C     Get overlap matrix from file CHECKPOINT
 C     The SS block is scaled by the factor SSMETR
 C     Packed on fermion irreps
 C
@@ -6187,11 +6168,8 @@ C
 C       Read integral from file
 C       =======================
 C
-        OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &           FILE='AOPROPER')
         CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',STRI,NNBBASX,
      &              IPRONE)
-        CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C       Make full matrix
 C       ================
@@ -9822,9 +9800,6 @@ C     Sanity check : linear symmetry requires use of real groups (C2v or D2h)
 C
       IF (NZ.NE.1) CALL QUIT ("Linear symmetry requires NZ=1")
 C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-C
 C     Get integrals of component of the z-angular momentum that we want to
 C     quantize on.
 C
@@ -9849,10 +9824,9 @@ C     =====================================================
 C
       IF(.NOT.SPINFR) CALL DAXPY (N2BBASX,D1,WORK(KBUF),1,FOCK,1)
 C
-C     Release memory & close AOPROPER
+C     Release memory
 C
       CALL MEMREL('AMJMA1',WORK,KBUF,KBUF,KFREE,LFREE)
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Reindex to sorted basis
 C     =======================
@@ -9950,9 +9924,6 @@ C     Sanity check : ATOMIC symmetry requires use of real groups (C2v or D2h)
 C
       IF (NZ.NE.1) CALL QUIT ("Atomic symmetry requires NZ=1")
 C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-C
 C     Get integrals of component of the Spin-orbit operatar
 C
       FIRST = .TRUE.
@@ -9976,10 +9947,9 @@ C     =====================================================
 C
       IF(.NOT.SPINFR) CALL DAXPY (N2BBASX,DM1,WORK(KBUF),1,FOCK,1)
 C
-C     Release memory & close AOPROPER
+C     Release memory
 C
       CALL MEMREL('AMKMA1',WORK,KBUF,KBUF,KFREE,LFREE)
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Reindex to sorted basis
 C     =======================

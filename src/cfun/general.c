@@ -28,7 +28,7 @@
 */
 
 /* strictly conform to XOPEN ANSI C standard */
-#define _XOPEN_SOURCE          500
+#define _XOPEN_SOURCE          600
 #define _XOPEN_SOURCE_EXTENDED 1
 
 /* Use BSD's strncasecmp(); if there is a platform that has no strncasecmp()

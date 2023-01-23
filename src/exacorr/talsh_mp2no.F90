@@ -71,7 +71,7 @@ module talsh_mp2no
         end if
         call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
                               New_orbital_energy,'NOs_MO',N_cano)
-        call write_to_newfile(nocc,NOs_AO,New_orbital_energy,'DFCOEF','MP2NOs_AO')
+        call write_nos(nocc,NOs_AO,New_orbital_energy,'scf','mbpt')
 
         call print_date('Leaving MP2_NO Module')
       end subroutine talsh_mp2no_driver
@@ -82,6 +82,8 @@ module talsh_mp2no
 !       This subroutine obtains the complex mp2 density matrix in MO basis
 !       The non-diagonal complex DM is written into file DM_complex.
 !       Written by Xiang Yuan
+
+         use checkpoint
 
          type(exacc_input), intent(in)          :: exa_input
          integer                                :: nocc, nvir              ! the size of the mo basis for occupied and virtual spinors
@@ -106,7 +108,7 @@ module talsh_mp2no
          integer(C_INT)              :: ierr
          complex(8), pointer         :: result_tens(:)
          integer                     :: initialize_talsh
-         real(8)                     :: mp2_energy
+         real(8)                     :: mp2_energy,scf_energy
 
          type(C_PTR):: body_p
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
@@ -179,6 +181,10 @@ module talsh_mp2no
          write(*,*) "    MP2 energy = ", mp2_energy
          write(*,*) ""
 
+         call checkpoint_write ('/result/wavefunctions/mbpt/method',sdata="MP2")
+         call checkpoint_write ('/result/wavefunctions/mbpt/e_corr',rdata=mp2_energy)
+         call checkpoint_read ('/result/wavefunctions/scf/energy',rdata=scf_energy)
+         call checkpoint_write ('/result/wavefunctions/mbpt/energy',rdata=scf_energy+mp2_energy)
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=int_t%oovv)
 
 !        Calculate and print the MP2 density matrix of virtual-virtual block Dvv 
@@ -306,14 +312,14 @@ module talsh_mp2no
                   call print_date('wrote all natural orbital and occupation number in file NOs_MO')
                     
                   ! we initialize the (diagonal) vv block of the Fock matrix with the orbital energies
-                  call read_from_dirac(ao_basis,qorbital,'DFCOEF',ierr)
+                  call read_from_dirac(ao_basis,qorbital,'scf',ierr)
                   call convert_mo_to_quaternion(qorbital)
                   nvirt = exa_input%nkr_vir        ! the number of virtual orbitals
                   nocc  = exa_input%mokr_occ(size(exa_input%mokr_occ))
                   allocate(Fock_HF(nvirt,nvirt,4))
                   Fock_HF = 0.0
                   forall (i=1:nvirt) Fock_HF(i,i,1) = qorbital%energy(nocc+i)
-                  call print_date('read Fock matrix from DFCOEF')
+                  call print_date('read Fock matrix from checkpoint')
 
                   call basis_transform_matrix(Fock_HF,NOs_MO,Fock_NO)
                   call print_date('got full VV Fock matrix in natural orbital basis F_VV_NO')
@@ -374,17 +380,17 @@ module talsh_mp2no
 
             nvirt = exa_input%nkr_vir        ! the number of virtual orbitals
             nocc  = exa_input%mokr_occ(size(exa_input%mokr_occ))
-            call read_from_dirac(ao_basis,qorbital,'DFCOEF',ierr)
+            call read_from_dirac(ao_basis,qorbital,'scf',ierr)
             call convert_mo_to_quaternion(qorbital)
             allocate(HF_AO(qorbital%nao,nvirt,4))
             HF_AO = qorbital%coeff_q(:,nocc+1:nocc+nvirt,:)
-            call print_date('read HF orbital coefficient from DFCOEF')
+            call print_date('read HF orbital coefficient from checkpoint')
             
             ! we initialize the (diagonal) vv block of the Fock matrix with the orbital energies
             allocate(Fock_HF(nvirt,nvirt,4))
             Fock_HF = 0.0
             forall (i=1:nvirt) Fock_HF(i,i,1) = qorbital%energy(nocc+i)
-            call print_date('read Fock matrix from DFCOEF')
+            call print_date('read Fock matrix from checkpoint')
 
             call basis_transform_matrix(Fock_HF,NOs_MO_reduced,Fock_NO)
             call print_date('transformed Fock matrix into reduced NO basis')

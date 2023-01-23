@@ -460,7 +460,7 @@ C  /* Deck CDENS */
       SUBROUTINE CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)
 C*****************************************************************************
 C
-C Get the core density matrix into DMAT, from selected MO's in QCO
+C Get the core density matrix into DMAT, from selected MOs in QCO
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1022,7 +1022,7 @@ C     Cinv have an infinite number of irreps and we use a finite
 C     multiplication table to store the coupling information we need 
 C     to truncate at some point. We do this at mj=15/2 in Cinfh and 
 C     mj=31/2 in Cinf so that we can keep MULTB dimensioned at 64 like 
-C     before. In fact this means that we'll be using the subgroups C8h 
+C     before. In fact this means that we will be using the subgroups C8h 
 C     and C16 respectively. This can be easily extended or decreased 
 C     using the input parameter NORDER that indicates how large MULTB 
 C     may become.
@@ -2027,7 +2027,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer, allocatable :: ibeig(:)
       integer              :: nash_x(1:nfsym)
 
-!     !> read ibeig (info array on boson irreps) from DFCOEF
+!     !> read ibeig (info array on boson irreps) from CHECKPOINT
       allocate(ibeig(norbt))
       ibeig(1:norbt)         = 0
       nash_x(1:nfsym)        = 0
@@ -2056,9 +2056,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
       if( linear .or. spinfr )then
-        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
         call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
-        close(lucoef,STATUS='KEEP')
       end if
 
 

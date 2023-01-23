@@ -24,6 +24,13 @@ def make_schema(definitions,section,rootlabel=''):
         definition['label'] = label
 
         if definition['type'] == 'composite':
+            # we need an extra layer if we have an array of composites, initialize the first element of this to 1
+            if definition['rank'] == 'array':
+               label = label + '/' + '1'
+               definitions['flat_schema'][label] = definition.copy()
+               definitions['flat_schema'][label]['rank'] = 'single'
+               definition['label'] = label
+               definition['rank'] = 'single'
             schema[variable] = make_schema(definitions,variable,label)
         else:
             # Make also a hierarchical dictionary
@@ -95,13 +102,25 @@ def write_schema(file_name,flat_schema):
             f.write("{:<80}{:<10}{:<10}{:<10}#{:<60}\n".format(label,dataset['type'],dataset['rank'],dataset['use'],dataset['description']))
     f.close()
 
+def group_from_label(label):
+    """
+    Identify the group to which the dataset or subgroup belongs.
+    For top groups it just returns label (as these are their own parents)
+    """
+    separator_index = label.rfind('/')
+    if separator_index > 0:
+       group = label[:separator_index]
+    else:
+       group = label
+    return group
+     
 def data_validity(data):
     """
     Check whether the data read or to be written is valid.
     Should be made more rigorous, for now just check whether all required data is present.
     """
     valid = True
-    print (' Checking validity of data with respect to the DIRAC data schema....')
+    print ('  Checking validity of data with respect to the DIRAC data schema....')
     # Check whether all required data have values
     for label, dataset in data.items():
         if dataset['type'] == 'composite':
@@ -110,8 +129,20 @@ def data_validity(data):
            #todo: check whether the data has the right type
            continue
         if dataset['use'] == 'required':
-              print(' ..missing required dataset {} : {}'.format(label,dataset['description']))
-              valid = False
+              # check whether this data set without a value is required 
+              # first check whether (grand)parents are actually required
+              optional = False
+              parent = label
+              while group_from_label(parent) != parent:
+                  parent = group_from_label(parent) 
+                  if data[parent]['use'] == 'optional':
+                      optional = True
+              if optional:
+                  continue
+              # this is indeed a required data set, print a warning and invalidate the data
+              else:
+                  print(' ..missing required dataset {} : {}'.format(label,dataset['description']))
+                  valid = False
     return valid
 
 ###### Function to read plaintext xyz file
@@ -242,6 +273,76 @@ def load_diracdata(path):
 
     return data
 
+def nohdf5_recursively_load_dict_contents_from_group(data,path):
+    """
+    Browse through the hdf5 emulator directory and fill the flat dictionary
+    """
+    import os
+    try:
+       from scipy.io import FortranFile
+       import numpy as np
+    except:
+       print('  scipy is not installed, HDF5 restart file can not be made')
+       return 1
+    with os.scandir(path) as it:
+      for entry in it:
+        if not entry.name.startswith('.') and entry.is_file():
+          label=os.path.join(path,entry.name).split('CHECKPOINT.noh5')[1]
+          f = FortranFile(os.path.join(path,entry.name), 'r')
+          # reading of strings written by Fortran is tricky, this appears to work
+          record = f.read_record(np.dtype('a4'),np.int64,np.int64)
+          data_type=record[0][0].decode("utf-8")
+          data_dim1=record[1][0]
+          data_dim2=record[2][0]
+          # A more general solution is needed for the case in  which a generic label is not defined explicitly in the schema
+          # For now just handle the only two exceptions that can currently occur
+          if 'ao_matrices' in label:
+             # copy the generic dictionary to the specific dictionary used to store this particular property matrix
+             data[label] = data['/result/operators/ao_matrices/operator_name'].copy()
+          if 'input/aobasis/2' in label:
+             # copy the dictionary of the first instance as dictionary for a later instance
+             data[label] = data[label.replace('input/aobasis/2','input/aobasis/1')].copy()
+          if data_type=='real':
+             data[label]['value'] = f.read_reals()
+          elif data_type=='int4':
+             data[label]['value'] = f.read_ints(dtype=np.int32)
+          elif data_type=='int8':
+             data[label]['value'] = f.read_ints(dtype=np.int64)
+          elif data_type=='str1':
+             str_format = 'a{}'.format(data_dim1)
+             data[label]['value'] = f.read_record(str_format)
+          elif data_type=='strn':
+             if (data_dim2==1):
+                str_format = 'a{}'.format(data_dim1)
+             else:
+                str_format = '{}a{}'.format(data_dim2,data_dim1)
+             data[label]['value'] = f.read_record(str_format)
+          else:
+             print('ERROR in processing restart data: unknown data type',data_type)
+             return 2
+        elif entry.is_dir():
+          nohdf5_recursively_load_dict_contents_from_group(data,os.path.join(path,entry.name))
+    return 0
+
+def nohdf5_load_data(path):
+    """ 
+    Checks for existence of CHECKPOINT.noh5 fall back directory and loads the data that is inside
+    """
+    # Get schema (hierarchical dictionary) and flattened form thereof based on the definition found in the build directory
+    from os.path import dirname, join, isdir
+    valid_schema, valid_data = read_schema(join(dirname(__file__),"DIRACschema.txt"))
+
+    # Make a copy of the flattened form of the schema that is filled with data loaded from the different files
+    # Note that the load routines will fail in case data of an unknown kind is encountered. This is intentional, the data 
+    # that is written should be properly defined in the data schema file.
+    data = valid_data.copy()
+
+    if isdir(join(path,'CHECKPOINT.noh5')):
+      error = nohdf5_recursively_load_dict_contents_from_group(data,join(path,"CHECKPOINT.noh5"))
+    else:
+      error = 3
+
+    return error, data
 
 ###### Functions to read and write hdf5 files
 
@@ -276,7 +377,10 @@ def write_hdf5(file_name,data):
     cp = h5py.File(file_name, 'w')
     for label, dataset in data.items():
         if 'value' in dataset: 
-           cp.create_dataset(label, data=dataset['value'])
+           if (len(dataset['value']) == 1):
+               cp.create_dataset(label, data=dataset['value'])
+           else:
+               cp.create_dataset(label, data=dataset['value'], maxshape=(h5py.h5s.UNLIMITED))
     cp.close()
 
 # Simple use of these functions:

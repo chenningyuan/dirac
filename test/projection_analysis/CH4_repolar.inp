@@ -15,9 +15,9 @@ Projection analysis for CH4
 *PROJEC
 .POLREF
 .ATOMS
-AFCXXX
+C.h5
 1..5
-AFH1XX
+H.h5
 1
 **MOLECULE
 *BASIS

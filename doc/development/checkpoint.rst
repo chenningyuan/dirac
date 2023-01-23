@@ -23,7 +23,7 @@ What can I do with it ?
 Can I also extend the schema as I have data that is not listed here ?
 ---------------------------------------------------------------------
 
-* The first question is whether this data is indeed essential. The CHECKPOINT.h5 file is not intended for large data sets as it gets saved automatically after a run. It is also not intended for highly specialized or intermediate data. If you want to use hdf5 for such data consider making a special hdf5 file using the interface provided in the mh5 module. This is even easier as you need not define everything as thoroughly as with the schema (see below). 
+* The first question is whether this data is indeed essential. The CHECKPOINT.h5 file is not intended for large data sets as it gets saved automatically after a run. It is also not intended for highly specialized or intermediate data. If you want to use hdf5 for such data consider making a special hdf5 file using the interface provided in the labeled_storage module. This is even easier as you need not define everything as thoroughly as with the schema (see below). 
 
 * In case a new data type is indeed a generally useful addition, please start by documenting it (type and description) and ask for a peer review by one of the developers before proceeding to the next step.
 
@@ -57,10 +57,18 @@ What happens at run time and on the Fortran side ?
  
 * At the start of the run DIRAC checks whether CHECKPOINT.h5 is present and contains all required data. If it is, a restart will be attempted. Note that you can use the copy facilities of pam to place the file in the work directory.
 
-* During the run the only calls needed on the Fortran side are ``checkpoint_read`` and ``checkpoint_write``. These subroutines are found in the module ``checkpoint`` and support writing of reals, integers and strings. It is intended to keep the hdf5 interface simple and easily maintainable, so more complicated types should be split up in these standard types. There are two more public routines in this module (for opening and closing a checkpoint file), but these are already called at the appropriate places in DIRAC and should not be called at other places.
+* During the run the only calls needed on the Fortran side are ``checkpoint_read``, ``checkpoint_write`` and possibly ``checkpoint_query``. These subroutines are found in the module ``checkpoint`` and support writing of reals, integers and strings. The query routine can be used to determine whether a data set already exists and what its size is. It is intended to keep the hdf5 interface simple and easily maintainable, so more complicated types should be split up in these standard types. Note that we have a layered structure with the ``labeled_storage`` module being responsible for the actual I/O, the ``checkpoint`` module is merely an additional layer that checks the schema. If you feel inclined to change the ``checkpoint`` module, make sure to not directly call ``hdf5`` routines to not break the fallback option (see below) that is provided in case we hit a system or user that has no hdf5 installed. There are two more public routines in this module (for opening and closing a checkpoint file), but these are already called at the appropriate places in DIRAC and should not be called at other places.
 
-* If the checkpoint_read routine is called data is located on the file and given back to the caller. Error handling is currently absent (still to do) so make sure data is indeed present or you may get crashes.
+* If the checkpoint_read routine is called data is located on the file and given back to the caller. Some error handling is provided, like checking whether the array given to hold the data is large enough, but crashed are still possible, for instance in case you try to read a file that is not in hdf5 formati or otherwise corrupted.
 
 * If the checkpoint_write routine is called data is stored on file after checking that the label is indeed known in the schema. Undefined data will not be written and a warning is issued. This guarantees that all data placed on the checkpoint file is properly documented.
 
-* At the end of the run ``pam`` checks whether CHECKPOINT.h5 is present and contains all required data. If it is, it will be copied to the directory from which pam was called and renamed following the same convention as used for the output file, but giving a file extension .h5 instead of .out.
+* At the end of the run ``pam`` checks whether CHECKPOINT.h5 is present and contains all required data. If it is, it will be copied to the directory from which pam was called and renamed following the same convention as used for the output file, but giving a file extension .h5 instead of .out
+
+What happens if hdf5 is not installed ?
+---------------------------------------
+
+* At configure time cmake will detect whether DIRAC can be linked with the required hdf5 routines (via the interface contained in the module ``mh5`` that you find in ``src/gp/hdf5_util``). If this is not the case, a simple Unix mimic of hdf5 is acivated by creating a directory CHECKPOINT.noh5 in which the hierarchical data structure is implemented with subdirectories containing Fortran unformatted files. A hidden file ``.initialized`` is used to determine whether a data group has been defined, the data itself is stored in a two-record file with the first record containing the data type, data size and data length (the latter being only different from 1 in case of string data). All read, write and query functionalities work, but moving data to and from the work directory is now more complicated as we need to move directories. This is currently implemented by tarring and gzipping the CHECKPOINT.noh5 directory. In case hdf5 can not be linked but h5py is found, the fallback format is converted into proper hdf5 format by the Python routines ``nohdf5_load_data`` and ``write_hdf5`` called by the pam script at the end of the run. 
+
+* Note that use of the fallback option is strongly discouraged as it is less efficient as hdf5 has only limited functionality. 
+

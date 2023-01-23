@@ -1,6 +1,6 @@
       SUBROUTINE get_vemb_mat(vemb_mat)
 !
-!     Get embedding potential matrix from file AOPROPER
+!     Get embedding potential matrix from file CHECKPOINT
 !     Packed on fermion irreps
 !
 !     andre gomes, october 2012
@@ -35,8 +35,6 @@ C
 C     Read integral from file
 C     =======================
 C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
       if (NOSMLV) then
       CALL PRPREA(LU1INT,'FDEVEMB ',RTNLBL,'TFFF',STRI,NNBBASX,
      &            IPRONE)
@@ -44,7 +42,6 @@ C
       CALL PRPREA(LU1INT,'FDEVEMB ',RTNLBL,'TFFT',STRI,NNBBASX,
      &            IPRONE)
       endif
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Make full matrix
 C     ================
