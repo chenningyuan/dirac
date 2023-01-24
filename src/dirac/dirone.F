@@ -116,10 +116,10 @@ C
 C     Uehling potential for vacuum polarization
 C
       ELSEIF (CLSINT(I).EQ.'UEHLING') THEN
-C     sunaga
+C
         IF(NOSMLV) COMB(4:4) = 'F'
         CALL NUMINT(I,COMB,0,'SY',IPRONE)       
-Csunaga      
+C
 C
 C     Contribution from (static) embedding potential
 C
@@ -443,6 +443,9 @@ C
 C     Getting numerical potential for operators
 C
 C     On input:
+C     R(MXNP)... Radial grid
+C     Z......... Nuclear charge       
+C     GEXP...... 3/(2 * <R^2_nuc>)      
 C      
 C     On output:
 C     NUMIR ... Numerical potential
@@ -460,8 +463,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
       REAL*8 NUMIR(MXNP), R(MXNP)
 C     
-C      CHARACTER LABEL*8 !check      
-C      GEXP = GNUEXP(IATOM)
       IF(GAUNUC)THEN
          NUCTYP = 3
       ELSE   
@@ -471,54 +472,40 @@ C
       IF(CLSINT(IOP).EQ.'SEFGMG')THEN
         CALL INTMG(NUMIR,R,Z,GEXP,MXNP,NUCTYP)
         DO IR = 1,MXNP
-C          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug 
          NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'UEHLING')THEN
         CALL VCMPOL(NUMIR,R,Z,GEXP,MXNP,NNUC,NUCTYP,1)
         DO IR = 1,MXNP
-C          write(*,*)'NUMIR/R,R',NUMIR(IR)/R(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR)
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'SEFGHF')THEN
         CALL INTHF (NUMIR,R,Z,GEXP,MXNP,NUCTYP)
         DO IR = 1,MXNP
-C          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'SEFGLF')THEN
         CALL INTLF (NUMIR,R,Z,MXNP             )
         DO IR = 1,MXNP
-C          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'SEPZ'  )THEN
         CALL INTPZ (NUMIR,R,Z,MXNP             )
         DO IR = 1,MXNP
-C          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ENDIF
-C      IF(IPRINT.GE.2)THEN
+C
+      IF(IPRINT.GE.2)THEN
         WRITE(LUPRI,'(2X,/A)')
      &        '**Numerical potential (not operator) at each radial grid'
-        write(*,*)
-        write(*,*)CLSINT(IOP)
-        write(*,*)'NUMIR,R'
+        WRITE(LUPRI,'(2A)')"  Potential: ",CLSINT(IOP)
+        write(LUPRI,'(A)')'   R(Bohr),           Potential(a.u.)'
         DO IR = 1,MXNP
-          write(*,*)R(IR),-NUMIR(IR)/(R(IR)*R(IR))
+          write(LUPRI,'(A,E14.8e2,E20.8e2)')
+     &      "  ",R(IR),-NUMIR(IR)/(R(IR)*R(IR))
         ENDDO
-C      ENDIF                   !debug
-C      IF(IPRINT.GE.2)THEN
-C        WRITE(LUPRI,'(2X,/A)')
-C     &        '**Numerical potential*R^2 at each radial grid'
-C        write(*,*)
-C        write(*,*)CLSINT(IOP)
-C        write(*,*)'NUMIR,R'
-C        DO IR = 1,MXNP
-C          write(*,*)NUMIR(IR),R(IR)
-C        ENDDO
-C      ENDIF                   !debug
+      ENDIF                  
       RETURN
       END
       
@@ -550,9 +537,9 @@ C     C         ... Center of IATOM:
 C                   It is obtained by CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
 C     GRASP     ... TRUE : GRASP grid
 C                   FALSE: DIRAC grid
-C     MAT       ... SY :
-C                   AN :
-C                   OF :
+C     MAT       ... SY : Symmetric
+C                   AN : Anti-symmetrix
+C                   OF : Off-diagonal
 C
 C     On output:
 C     INTSO ... AO matrix at SO basis after the integration + previous INTSO     
@@ -674,7 +661,7 @@ C
       do IR = 1, MXNP_ODD, (MXNP_ODD-1)/2  
         IOF_block = 1
 C                 
-C     In the case of m>100, a speciAL treatment is needed.
+C     In the case of m>100, a special treatment is needed.
 C
         m_NUM_MAX = INT(m/100) + 1               
 C
@@ -722,15 +709,7 @@ C
                  GMAX(isym,ishell)
      &          = MAX( ABS(GAO2(k,i+ICOMP-1)), ABS(GMAX(isym,ishell)) )
                  ENDDO
-C                 IF(GMAX(isym,ishell).GT.1.0D2)THEN
-C                    write(*,*)'GMAX,isym,ishell,IR,i',
-C     &               GMAX(isym,ishell),isym,ishell,IR,i
-C                 ENDIF   !debug, which is cutoff
                ENDDO
-                IF(IR.EQ.(MXNP_ODD-1)/2)THEN
-                   write(*,*)'GMAX,isym,ishell',
-     &                GMAX(isym,ishell),isym,ishell
-                 ENDIF
                i = i + cartesian_deg(ishell)
               end if
             end do  ! isym
@@ -808,7 +787,6 @@ C
                CALL DCOPY(nblock_length,GAO2(1,J),1,GAO(IOFM,J),1)
             ENDDO
             IOFM = IOFM + nblock_length
-C            write(*,*)'IOFM',IOFM
             deallocate(GAO2)
             IOF_block = IOF_block + nblock_length
           ENDDO                 ! m_NUM          
@@ -922,9 +900,16 @@ C sum  weight*r^2*V(r)*Basis^2
       ENDIF   
 C
       CALL MTAOSO(INTAOBUF,INTSO,NTBAS(0),MTXYZ,IPRINT)
-C      write(*,*)'OUTPUT2'      
-C            CALL OUTPUT(INTSOBUF,1,NTBAS(0),1,NTBAS(0),
-C     &                   NTBAS(0),NTBAS(0),-1,LUPRI)  !debug
+C
+      IF(IPRINT.GE.6)THEN
+        WRITE(TITLE_PRINT,'(5A)')
+     &     'INTSUM: ',LABEL,'After-symmetrized AO-matrix of ',
+     &     NAMN(IATOM),"atom"
+           CALL HEADER(TITLE_PRINT,-1)
+           CALL OUTPUT(INTSO,1,NTBAS(0),1,NTBAS(0),
+     &                 NTBAS(0),NTBAS(0),-1,LUPRI) 
+      ENDIF   
+C
       deallocate( TC      )
       deallocate( INTAOBUF)
       deallocate( XYZ8    )
@@ -949,7 +934,7 @@ C***********************************************************************
 #include "priunit.h"
 C#include "dcbbas.h"
       DIMENSION FUL(NDIM*NDIM), TRI(NDIM*NDIM)
-!     debug referring to MTAOSO
+C
       DO J = 1, NDIM
         IOFF = 0
         IOFT = (J-1)*J/2
@@ -1000,8 +985,7 @@ C     In the case of molecule, a situation TE(II,nuclear region) < TE(II,NR)
 C     can occur. So, I changed from 'DO 10 J = 1,"NR"' to 'DO 10 J = 1,"NR-4"'
 C     "4" is the minumum number for JJ+3 =< NR        
 C         
-        DO 10 J = 1,NR-4
-!        write(*,*)"TE4",TE(J) !sunaga
+      DO 10 J = 1,NR-4
         IF (ABS (TE(II,J)) .GT. EPSI) GO TO 20
    10 CONTINUE
       RESULT(II) = ZERO
@@ -1108,8 +1092,6 @@ C
            IF(X.LT.1.0D-50)THEN
               TEMP = X
               MXNP = I
-              write(*,*)'MEMSET_NUM'
-              write(*,*)'TEMP,RTEMP',TEMP,RTEMP           
               exit
            ENDIF   
            RTEMP = RTEMP*EPH
@@ -1261,14 +1243,12 @@ C
       EPS = 1.0D-05
       WD = CVAL+CVAL
       FACTOR = -(Z+Z)/(PI3*CVAL)
-      write(*,*)"CVAC,C2,PI",CVAL,C2,PI !sunaga
 C
 C   SET UP POTENTIAL FOR POINT NUCLEUS
 C
       DO 1 I = 1,N
          X = WD*R(I)
          TB(I) = FACTOR*FUNK (X,1)
-!         write(*,*)'TB,R,I',TB(I),R(I),I
     1 CONTINUE
       IF (NUCTYP .EQ. 0) RETURN
 C
@@ -1549,7 +1529,6 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
       DIMENSION TA(N),R(N)
 C
-      write(*,*)"NCHARG,NUCTYP",NUCTYP
 !      IF (RAD .LE. ZERO) GO TO 99
       IF (GEXP .LE. ZERO) GO TO 99
       IF (NUCTYP .GT. 1) GO TO 3
@@ -1560,7 +1539,6 @@ C
          TA(I) = R(I)*R(I)
     2 CONTINUE
       GO TO 9
-!      RETURN
 C
 C   FERMI CHARGE DISTRIBUTION
 C
@@ -1585,7 +1563,6 @@ C
       WA = SQRT(WB)
       ZNORM = 4.0D0*Z
       ZNORM = ZNORM*WB*WA/SQRT(PI)
-      write(*,*)'WB,WA,ZNORM,PI',WB,WA,ZNORM,PI
       DO 6 I = 1,N
          TA(I) = (EXP (-WB*R(I)*R(I)))* R(I)*R(I)        
   6   CONTINUE
@@ -2245,7 +2222,6 @@ C
       AZ1COEF = 1.071D0 - 1.976D0*X2 - 2.128D0*X3 + 0.169D0*X4
       PREFAC  = ONE/(CVAL*PI)
       IF(NUCTYP.EQ.3)THEN
-!        RAD = PARM1
         XI = GEXP !1.5D0/(RAD*RAD)
         WA = SQRT(XI)
       ENDIF
@@ -2253,7 +2229,6 @@ C
       CALL DCOPY(N,R,1,TB,1)
       CALL DSCAL(N,CVAL,TB,1) 
 C
-      write(*,*)'PARM1.XI,WA'
       DO 5 I = 1,N
         IF (NUCTYP .EQ. 0) THEN
 *     POINT
@@ -2272,7 +2247,6 @@ chth  T-INTEGRATION
         TB(I) = PREFAC*RESULT*POT*AZ
         
  5    CONTINUE
-C
 C
 C     It does not agree with GRASP, because the default of GRASP is n-dependent HF
 C     In order to compare with GRASP, we have to use n-INdependent HF term in GRASP

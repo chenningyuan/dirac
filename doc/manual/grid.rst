@@ -190,3 +190,60 @@ be printed.
     .INTCHK
      2
 
+keyword(EFFQED)
+
+Activate the effQED module. This option will be user-friendly command to add
+effQED potentials, but in the current version, it is under development.
+
+     
+star(EFFQED)
+
+Options for the numerical integration of effective QED potentials.
+
+keyword(GRASP)
+Activate the radial grid of GRASP code.
+
+*Default:*
+
+::
+
+     Lindh's radial grid
+
+keyword(ANGQED)
+Angular momentum of Lebedev quadrature for the numerical intebration of effective QED potential.
+
+*Default:*
+
+::
+
+    .ANGQED
+     15
+
+keyword(UEHCUT)
+Cutoff of the radial integration based on Uehling potential.
+
+*Default:*
+
+::
+
+    Cutoff based on Flambaum's low-frequency term
+
+
+keyword(MINIMUM)
+Decision the smallest nuclear charge Z to include effective QED potentials. 
+
+*Default:*
+
+::
+
+    .MINIMUM
+     19
+
+    
+keyword(ALLATOM)
+Incorporating effective QED potentials for all atoms in the molecule.
+*Default:*
+
+::
+
+    The element with Z < 19 is not calculated.
