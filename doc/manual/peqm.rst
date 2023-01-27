@@ -6,7 +6,7 @@ Polarizable embedding model
 
 This input section controls calculations using the polarizable embedding (PE) model.
 For examples of calculations with different response methods and Hamiltonians, 
-see the tutorial :ref:`PE-TDDFT calculations of excitation energies and solvent shifts`).
+see the tutorial :ref:`pe_response`).
 
 In DIRAC it is possible to include the effects from a structured environment on a core
 molecular system using the polarizable embedding (PE) model. The current implementation 
