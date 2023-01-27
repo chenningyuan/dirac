@@ -34,7 +34,6 @@
 #include "dcbham.h"
 #include "dcbpsi.h"
 #include "dcbgen.h"
-#include "dcbmp2no.h"
 #include "../moltra/dcbtra.h"
 #include "infpar.h"
 #include "../relccsd/ccpar.inc"
@@ -91,30 +90,9 @@
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
          call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
-         call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
-     &                  global_communicator)
-        call interface_mpi_BCAST(ISTRAT,1,MASTER,
-     &                 global_communicator)
-      END IF
-!
-!     if MP2-NO is enabled, tell the slaves about the correct interface
-!
-      IF( MP2_DENRUN )THEN
-        call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
-     &                 global_communicator)
-        call interface_mpi_BCAST(INFO_STRING(1),62,MASTER,
-     &                 global_communicator)
-        call interface_mpi_BCAST(INFO_STRING(2),62,MASTER,
-     &                 global_communicator)
-        call interface_mpi_BCAST(INFO_STRING(3),62,MASTER,
-     &                 global_communicator)
+         call interface_mpi_BCAST(ISTRAT,1,MASTER,global_communicator)
       END IF
 #endif
-      IF (ISTRAT /= IAOMOSCHEME) THEN
-         print*,"WARNING: fixed incompatible schemes for MP2 and MOLTRA"
-         print*,' Dirac MO integrals interface used: ',INTFCE
-         IAOMOSCHEME = ISTRAT
-      END IF
 !
 !     Enter the generic POLPRP_MAIN routine (master becomes now primus inter pares)
 !
@@ -165,7 +143,6 @@
 #include "maxorb.h"
 #include "dcbham.h"
 #include "../moltra/dcbtra.h"
-#include "dcbmp2no.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
       integer istat(df_mpi_status_size)
@@ -174,7 +151,7 @@
 #include "dgroup.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
-      CHARACTER*10 INTFCE, MP2NOF
+      CHARACTER*10 INTFCE
       LOGICAL CA,CCEND
 C
 C     arrange for the MPI stuff and correct node number
@@ -196,15 +173,9 @@ C     Get the correct arithmetic (NZ is not initialized on slaves if you do not 
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
-         call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
-     &                  global_communicator)
+        call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
         call interface_mpi_BCAST(ISTRAT,1,MASTER,
      &                 global_communicator)
-      END IF
-      IF( MP2_DENRUN )THEN
-        call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
-     &                  global_communicator)
       END IF
 #endif
 ! iface for integral reading is now communicated from master, set the string as well

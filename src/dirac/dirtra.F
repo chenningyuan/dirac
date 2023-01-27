@@ -4247,7 +4247,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C***********************************************************************
 C
 C     Transform density matrix in MO form to AO format using coefficients
-C     taken from DFCOEF
+C     taken from CHECKPOINT
 C     Written by L. Visscher, March 2008
 C
 C***********************************************************************
@@ -4276,11 +4276,7 @@ C
      
 C
 C     Read the MO coefficients
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) CALL QUIT ('DFCOEF missing')
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-      CALL REACMO_new(LUCOEF,cmo=CMO)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL REACMO_new(cmo=CMO)
 
 C     Perform the transformation
       DO IFSYM = 1,NFSYM

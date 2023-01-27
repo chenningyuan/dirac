@@ -143,8 +143,13 @@ C
 !    &              buf3,nbuf3,nbuf2,CZ)
 
 
-
+#if defined (VAR_MPI)
+      if (myproc .eq. 0) then
        CALL TITLER('Solving Left Eigenvector Equation','*',123)
+      endif
+#else
+       CALL TITLER('Solving Left Eigenvector Equation','*',123)
+#endif
 
 !-------Initialization Step for the Left Eigenvectors-----------
 

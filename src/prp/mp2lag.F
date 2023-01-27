@@ -223,11 +223,7 @@ C     a) Get coefficients
 C     -------------------
 C
       LUBUF = 1
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','LVCDEN1')
       CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IDUM,TOTERG,2)
-      CLOSE(LUBUF,STATUS='KEEP')
 C
 C     b) Generate AO density matrix
 C     -----------------------------

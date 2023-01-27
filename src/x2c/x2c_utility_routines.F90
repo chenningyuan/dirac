@@ -1339,6 +1339,7 @@ contains
 !             with GAUNT (LS|LS) entering the game (intflg=8) you know what to do by now...
 !
 !**********************************************************************
+     use dircmo
 #ifdef VAR_MPI
 #include "mpif.h"
 #endif
@@ -1368,11 +1369,7 @@ contains
      dmat = 0.0d0
      cmo  = 0.0d0
 !    read coefficients
-     lucoef = 99
-     call opnfil(lucoef,'DFCOEF','OLD','x2cfck')
-     rewind(lucoef)
-     call reacmo(lucoef,'DFCOEF',cmo,xx,i,j,2)
-     close(lucoef,status='keep')
+     call reacmo_new(cmo=cmo)
 
 !    generate density matri(x/ces) (denmat is a general driver routine from Dirac
 !    computing all inactive and active density matrices)

@@ -14,9 +14,7 @@ module mp2no_driver
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
        subroutine get_no_driver (exa_input)
-!       This module is used to construct the natural orbital based on quaternion density matrix.
-!       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
-!       The natural orbitals and occupation numbers are written into 'DFNOSAO' by Module3.
+!       This module is used to construct the natural orbital by reading and diagonalizing a quaternion density matrix.
 !       Written by Xiang Yuan
         type(exacc_input), intent(in) :: exa_input
 
@@ -35,7 +33,7 @@ module mp2no_driver
             N_CORR_OCC = exa_input%mokr_occ(1)
             call get_transform_NO(NROOT,NORBT,N_CORR_OCC,NOs_AO,N_OCCUPATION)
             call print_date('Generated natural orbitals in AO basis')
-            call write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,'DFCOEF','DFNOSAO')
+            call write_nos (exa_input%nkr_occ,NOs_AO,N_OCCUPATION,'scf','mbpt')
         else
             stop "Error: density matrix File CCDENS not found" 
         end if 
@@ -86,11 +84,11 @@ module mp2no_driver
 
                   nvirt = NORBT
                   nocc  = N_CORR_OCC
-                  call read_from_dirac(ao_basis,qorbital,'DFCOEF',ierr)
+                  call read_from_dirac(ao_basis,qorbital,'scf',ierr)
                   call convert_mo_to_quaternion(qorbital)
                   allocate(HF_AO(qorbital%nao,nvirt,4))
                   HF_AO = qorbital%coeff_q(:,nocc+1:nocc+nvirt,:)
-                  call print_date('Read HF orbital coefficient from DFCOEF')
+                  call print_date('Read scf orbital coefficients')
 
                   call diagonal_matrix_quater(density_quat,N_OCCUPATION,NOs_MO)    
                   call print_date('Diagonalized density matrix (quaternion basis)')       
@@ -156,69 +154,6 @@ module mp2no_driver
                   deallocate(density_quat_read)
                         
       end subroutine get_transform_NO
-
-!-----------------------------------------------------------------------------------------------------------------------------
-      subroutine write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,file_old,file_new)
-            !      write new orbital information into new file 'DFNOSAO', which is similar to DFCOEF 
-            !      copy the basis information from DFCOEF and use new occupation number and orbital coefficient 
-            !      to replace the old orbital. 
-            !      This file only includes the orbital which is correlated in CC. 
-            !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
-            
-                   implicit none
-              
-                   type(exacc_input), intent(in)         :: exa_input
-                   character(len=*),intent(in)           :: file_old,file_new
-                   real(8),pointer,intent(in)            :: NOs_AO(:,:,:)          ! new canonical orbital in AO basis
-                   real(kind=8),pointer,intent(in)       :: N_OCCUPATION(:)        ! occupation number
-!                   real(kind=8),pointer,intent(in)       :: New_orbital_energy(:)  ! new orbital energy 
-          
-          
-                   type(basis_set_info_t)   :: ao_basis
-                   type(cmo)                :: qorbital        ! save the new canonical orbital 
-                   type(cmo)                :: qorbital_hf     ! save the original HF canonical orbital 
-          
-                   integer                  :: nocc            ! occupied orbital 
-                   integer                  :: nao, nmo, nno   ! number of atomic orbital; molecular orbital; natural orbital
-                   integer                  :: i,j
-                   integer                  :: ierr
-                   integer                  :: nmo_hf
-                   real(kind=8)             :: diff_1, diff_2, diff_3, diff_4
-          
-          
-          !        read information of from DFCOEF
-                   call read_from_dirac(ao_basis,qorbital_hf,file_old,ierr)
-                   call convert_mo_to_quaternion(qorbital_hf)
-          
-                   nocc = exa_input%nkr_occ
-                   nao = qorbital_hf%nao
-                   nno = size(NOs_AO,2)
-                   nmo = nocc+nno
-                   nmo_hf = qorbital_hf%nmo
-          
-                   ! create copy of HF orbitals
-                   call copy_mo(qorbital_hf,qorbital)
-                   
-                   do i = 1, nmo
-                      qorbital%energy(i)=N_OCCUPATION(i) !we use occupation number to replace the orbital energy
-                   end do
- 
-                             
-                   ! replace virtuals by NOs
-                   do  j = 1, nmo
-                      do  i = 1, qorbital%nao
-                            qorbital%coeff_q(i,j,1)=NOs_AO(i,j,1)
-                            qorbital%coeff_q(i,j,2)=NOs_AO(i,j,2)
-                            qorbital%coeff_q(i,j,3)=NOs_AO(i,j,3)
-                            qorbital%coeff_q(i,j,4)=NOs_AO(i,j,4)
-                      enddo
-                   enddo
-          
-                   call write_mos_to_dirac(ao_basis,qorbital,file_new)
-                   call print_date('Write natural orbitals into DFNOSAO file like DFCOEF')
-          
-      end subroutine write_no_to_newfile
-!----------------------------------------------------------------------------------------------------------
 
 end module mp2no_driver
 

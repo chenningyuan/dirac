@@ -127,15 +127,8 @@ C
          END IF
          CLOSE (LUKRMC)
       ELSE
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(A)') 'Coefficient file not present'
-            CALL QUIT('TRAPAM: No coefficients !')
-         ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
-            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &                  WORK(KIBEIG),TOTERG,14)
-         ENDIF
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &               WORK(KIBEIG),TOTERG,14)
       END IF
 C
 C     Get the boson symmetries of the transformed spinors
@@ -156,8 +149,6 @@ C
 C     Transform property matrices to MO basis
 C     ---------------------------------------
 C
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
       OPEN (LUMLF1,FORM='UNFORMATTED',FILE='MDPROP')
 C
       CALL MEMGET('REAL',KPROPMO,NSTRT(1)*NSTRT(2)*NZ,WORK,KFREE,LFREE)
@@ -209,7 +200,6 @@ C
      &                ISYM,ACHAR,LUMLF1)
          CALL MEMREL('TRAPRP',WORK,KPRCMO,KPRCMO,KFREE,LFREE)
       ENDDO
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
       DO IX = 1, 32
          ACHAR(IX:IX) = '*'
