@@ -220,7 +220,7 @@ Example (unperturbed density Hessian)::
    DFCOEF
 
 
-keyword(RDG   )
+keyword(RDG)
 
 Compute the reduced density gradient :math:`\frac{1}{2(3\pi^2)^{1/3}}\frac{|\grad n(\mathbf{r})|}{n(\mathbf{r})^{4/3}}`.
 Example::
