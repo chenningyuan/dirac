@@ -22,6 +22,4 @@ test.run(['O.bss+mfsso.postscf.ci.inp'], ['O.mol'], f, args='--incmo ')
 test.run(['O.bss+mfsso.scf_ci.inp'],     ['O.mol'], f)
 test.run(['O.bss.scf_ci.inp'],           ['O.mol'], f)
 
-os.unlink('DFCOEF')
-
 sys.exit(test.return_code)

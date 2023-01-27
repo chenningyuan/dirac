@@ -199,9 +199,10 @@ C     .SCREEN
       END
 
       SUBROUTINE STEX(WORK,LWORK)
+      use labeled_storage
 C
-C     At this point we expect a converged groundstate DFCOEF in
-C     the working directory, plus an optional DFCOEF.ION for the
+C     At this point we expect a converged groundstate CHECKPOINT in
+C     the working directory, plus an optional ION.h5 for the
 C     core-relaxed determinant.
 C
 #include "implicit.h"
@@ -222,6 +223,9 @@ C#include "dcbrho.h"
       DOUBLE COMPLEX REFGSOVL
       DIMENSION WORK(LWORK)
       LOGICAL LION,LTOBE
+      type(file_info_t)    :: ionfile
+      integer, allocatable :: brep(:)
+
 #include "memint.h"
       CALL QENTER('STEX')
       WRITE(LUPRI,*) 'Start of STEX'
@@ -246,35 +250,40 @@ C
 C     Save ground state energy
       GSERG = DHFERG
 
-C     Check for existence of DFCOEF (should always be present)
-      INQUIRE(FILE='DFCOEF',EXIST=LTOBE)
-      IF(.NOT.LTOBE) THEN
-         WRITE(LUPRI,*) 'Missing DFCOEF'
-         CALL QUIT('File DFCOEF missing')
-      ENDIF
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KBREP,NORBT,WORK,KFREE,LFREE)
+      allocate (brep(norbt))
       LUBUF=22
       IOPT = 2+4+8
 C     See if a separate reference state will be used and read reference orbitals and eigenvalues
-      INQUIRE(FILE='DFCOEF.ION',EXIST=LION)
+      ionfile%type = 2
+      ionfile%status = 0
+      ionfile%name = 'ION.h5'
+      call lab_query(ionfile,
+     &   '/result/wavefunctions/scf/energy',exist=lion)
       IF (LION) THEN
-         WRITE(LUPRI,*) 'DFCOEF.ION found, using it as reference state'
+         WRITE(LUPRI,*) ionfile%name,' found, used as reference state'
          WRITE(LUPRI,*) 'for STEX calculation'
          STEX_COFACTOR = .TRUE.
-         CALL OPNFIL(LUBUF,'DFCOEF.ION','OLD','STEX  ')
-         CALL REACMO(LUBUF,'DFCOEF.ION',WORK(KCMO),WORK(KEIG),
-     &        WORK(KBREP),TOTERG,IOPT)
+         call lab_read(ionfile,
+     &   '/result/wavefunctions/scf/energy',
+     &   rdata=TOTERG)
+         call lab_read(ionfile,
+     &   '/result/wavefunctions/scf/mobasis/orbitals',
+     &   rdata=WORK(KCMO:KCMO+NCMOTQ))
+         call lab_read(ionfile,
+     &   '/result/wavefunctions/scf/mobasis/eigenvalues',
+     &   rdata=WORK(KEIG:KEIG+NORBT))
+         call lab_read(ionfile,
+     &   '/result/wavefunctions/scf/mobasis/symmetry',
+     &   idata=brep)
       ELSE
-         WRITE(LUPRI,*) 'No separate reference state (DFCOEF.ION) found'
+         WRITE(LUPRI,*) 'No separate reference state (ION.h5) found'
          WRITE(LUPRI,*) 'using groundstate as STEX reference state.'
          STEX_COFACTOR = .FALSE.
-         CALL OPNFIL(LUBUF,'DFCOEF','OLD','STEX  ')
          CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &        WORK(KBREP),TOTERG,IOPT)
+     &        BREP,TOTERG,IOPT)
       ENDIF
-      CLOSE(LUBUF,STATUS='KEEP')
 
 C     Set up cutoff and indices
       STEX_NVIR(2) = 0
@@ -331,17 +340,16 @@ C     property gradients are complex, so *2 size of double.
       IF (STEX_COFACTOR) THEN         
          ERGION = TOTERG
          CALL MEMGET('REAL',KCMOGS,NCMOTQ,WORK,KFREE,LFREE)
-         CALL OPNFIL(LUBUF,'DFCOEF','OLD','STEX  ')
          IOPT = 2+8
          CALL REACMO(LUBUF,'DFCOEF',WORK(KCMOGS),DUM,
-     &        WORK(KBREP),TOTERG,IOPT)
-         CALL COF_PRPGRAD(WORK(KPRP),WORK(KCMOGS),WORK(KBREP)
+     &        BREP,TOTERG,IOPT)
+         CALL COF_PRPGRAD(WORK(KPRP),WORK(KCMOGS),BREP
      $        ,WORK(KCMO),REFGSOVL,WORK(KFREE),LFREE)
       ELSE
          ERGION = 0.0D0
          REFGSOVL = 1.0D0
 C     Calculate the property gradient the normal way
-         CALL FROZEN_PRPGRAD(WORK(KPRP),WORK(KCMO),WORK(KBREP)
+         CALL FROZEN_PRPGRAD(WORK(KPRP),WORK(KCMO),BREP
      $        ,WORK(KFREE),LFREE)
       ENDIF
 C       IF (STEX_NCUBE.GT.0) THEN
@@ -1093,11 +1101,6 @@ c     FIXME: symmetry
 #include "memint.h"
       CALL QENTER('FROZEN_PRPGRAD')
       CALL MEMGET('REAL',KPROP,N2ORBXQ,WORK,KFREE,LFREE)
-      INQUIRE(FILE='AOPROPER',OPENED=LOPEN)
-      IF (.NOT. LOPEN) THEN
-         OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &        FILE='AOPROPER')
-      ENDIF
       DO IPRP=1,STEX_NR_OP
          CALL WRIXPR(IPRP,STEX_OP_IND(IPRP))
          call flush(lupri)
@@ -1665,11 +1668,6 @@ C     Put the complex overlap matrix in WORK(KCOVL)
       CALL QTOC(WORK(KQOVL+NPSH(1)*(1+NORBT)),WORK(KCOVL),1,NOCCT,
      &     NOCCVIRT,NORBT,NORBT,NZ)
 C     Load the property matrices and convert them to complex form.
-      INQUIRE(FILE='AOPROPER',OPENED=LOPEN)
-      IF (.NOT. LOPEN) THEN
-         OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &        FILE='AOPROPER')
-      ENDIF
       CALL MEMGET('REAL',KCPRP, NCSIZE*STEX_NR_OP, WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KQA, N2ORBXQ, WORK,KFREE,LFREE)
 

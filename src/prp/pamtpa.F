@@ -47,7 +47,6 @@ C     Get the MO coefficients
 C     =======================
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPTPA')
       IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
@@ -56,7 +55,6 @@ C
         KIBRP = KFREE
         CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3)
       ENDIF
-      CLOSE(LUCMO,STATUS='KEEP')
 C
 C     Calculate allowed excitations
 C     =============================
@@ -524,12 +522,6 @@ C
       KFREE = 1
       LFREE = LWRK
 C
-C     Open the property file
-C     ======================
-C
-      OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-C     
       CALL DZERO(RESULT,3*NBSYM*MAXLQR*MAXLQR*MAXFQR)
 C
       IQRF = 0
@@ -628,11 +620,6 @@ C
          END DO
       END DO
       END DO
-C
-C     Close the property file
-C     =======================
-C
-      CLOSE(LU1INT,STATUS='KEEP')
 C
       CALL QEXIT('QRTPA')
       RETURN
