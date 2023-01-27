@@ -20,7 +20,7 @@ The RELADC/LANCZOS calculation is then individually controlled in the
 The FanoADC calculation is a special case of a one-particle propagator
 calculation. Therefore the keywords are part of the \*\*RELADC section.
 
-star(RELADC)
+starstar(RELADC)
 
 keyword(DOSIPS)
 
@@ -299,7 +299,7 @@ calculation of the one-particle propagator.
 
     False
 
-star(LANCZOS)
+starstar(LANCZOS)
 
 Once the ADC matrices are stored in packed form on disk they are diagonalized
 by the iterative Lanczos algorithm. The spectral information is written to

@@ -1,28 +1,23 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
-! This module contains the integral sorters.
+! This file contains the integral sorters.
 ! 4 Types of symmetry-packed integral orderings can be defined
 ! All integrals are assumed antisymmetrized and in Dirac notation.
 !
@@ -293,8 +288,6 @@
              IJKL = IJKL + RCW * N
              IKLJ0 = IKLJ0 + NPAIR(IKREP)*LFIE(LREP)
              ILKJ0 = ILKJ0 + NPAIR(ILREP)*KFIE(KREP)
-!             JKLI0 = JKLI0 + 1
-!             JLKI0 = JLKI0 + 1
            ENDDO
  20       CONTINUE
          ENDDO
@@ -385,9 +378,6 @@
      &          + (OFF2(KREP,IREP)+K-1) * NPAIR(JLREP)
            JLKI0 = JLKI0 + OFF1(JREP,LREP) + (L-1)*JFIE(JREP)
 
-
-!!!             write(*,*)'LJREP,JLREP',LREp,JREP,LJREP,JLREP 
-
            DO J = 1, JFIE(JREP)
              IMIN = 1
              IF (IREP.EQ.JREP) IMIN = J + 1
@@ -433,8 +423,6 @@
            ENDDO
              IKLJ0 = IKLJ0 + NPAIR(IKREP)*LFIE(LREP)
              ILKJ0 = ILKJ0 + NPAIR(ILREP)*KFIE(KREP)
-!             JKLI0 = JKLI0 + 1
-!             JLKI0 = JLKI0 + 1
            ENDDO
  20       CONTINUE
          ENDDO
@@ -506,11 +494,11 @@
            IKREP = MULTB(IREP,KREP,2)
            ILREP = MULTB(IREP,LREP,2)
            JKREP = MULTB(JREP,KREP,2)
-           IKJL0 = OFF(JLREP)                                           &
+           IKJL0 = OFF(IKREP)                                           &
      &          + (OFF2(JREP,LREP)+(L-1)*JFIE(JREP)) * NPAIR(IKREP)
            IKJL0 = IKJL0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
            IKJL0 = IKJL0 * RCW + 1
-           ILJK0 = OFF(JKREP)                                           &
+           ILJK0 = OFF(ILREP)                                           &
      &          + (OFF2(JREP,KREP)+(K-1)*JFIE(JREP)) * NPAIR(ILREP)
            ILJK0 = ILJK0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
            ILJK0 = ILJK0 * RCW + 1
@@ -653,7 +641,7 @@
       ENDIF
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = KLREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
        N = NPAIR(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -726,7 +714,7 @@
       ENDIF
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = KLREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
        M = NPAIR1(IJREP)
        N = NPAIR2(KLREP)
        IJ = 1
@@ -801,7 +789,7 @@
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = KLREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
        M = NPAIR1(IJREP)
        N = NPAIR2(KLREP)
        IJ = 1
@@ -833,13 +821,16 @@
 !
 !---------------Description--------------------------------------------
 !
-!     Sort array BUF1(I,J;KL:KLREP) to array -BUF2*(KL J,I:IREP)
+!     Sort array BUF1(I,J;KL:KLREP) to array BUF2(KL J,I:IREP)
 !
 !---------------Routines called----------------------------------------
 !
 !---------------Last modified------------------------------------------
 !
-!     Author : Luuk Visscher
+!     Author : Luuk Visscher ; modified by Avijit Shee, so that now
+!                              it can do only the sorting, c.c. and
+!                              anti-symmetrization should be done
+!                              later if needed, that is a separate task.
 !
 !---------------Calling variables--------------------------------------
 !
@@ -865,7 +856,7 @@
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = KLREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
        M = NPAIR1(IJREP)
        N = NPAIR2(KLREP)
        IJ = 1
@@ -886,9 +877,6 @@
  10    CONTINUE
        IJKL = IJKL + M * N * RCW
       ENDDO
-      CALL XSCAL (OFF(NREP+1),-A1,BUF2,1)
-      IF (CARITH) CALL CONJUGA (OFF(NREP+1),BUF2,1)
-!
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1490,7 +1478,6 @@
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!avijit.
       SUBROUTINE SRT33 (IRP,ISTART,NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,  &
      &              NTRIPL,OFF,OFF1,BUF2,NBUF1,OFF3,DONE)
 !
@@ -1533,15 +1520,15 @@
 !
 !---------------Executable code--------------------------------------
 
-      allocate(buf1(npair1(irp)*npair2(irp)*rcw))
-
        NVVVO = OFF(NREP+1)
-       buf2(1:NVVVO*rcw) = 0.0d0 
-!!       CALL XCOPY(NVVVO,A0,0,BUF2,1)
+       buf2(1:NVVVO*rcw) = 0.0d0
        KLREP = IRP
        IJREP = KLREP
        M = NPAIR1(IJREP)
        N = NPAIR2(KLREP)
+       if (M*N*rcw.eq.0) return ! no integrals on this node, we're done
+       allocate(buf1(M*N*rcw))
+
 !
 !      We can only fetch integrals that are present on our node, ISTART will be 
 !      modified by GETVOVV to represent the first value of KL that is present on
@@ -1954,8 +1941,6 @@
 !---------------Executable code--------------------------------------
 !
 
-      write(*,*)'WARNING!!! i am here', DOINV
-
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
 
       IJLKOFF = 0
@@ -2193,7 +2178,6 @@
 #include "ccpar.inc"
 #include "dcborb.h"
 #include "dgroup.h"
-!#include "dmp2la.h"      
 !
 !---------------Local variables--------------------------------------
 !
@@ -2336,10 +2320,6 @@
           ENDIF
         ENDDO !ireprs
       ENDDO !irepci
-!
-!     Write the T's to file
-!
-!     CALL WRITETAU(BUF2)
 !
       RETURN                
       END

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
     Script to replace homecooked macros to get index and crossref labels
     'for free'. Bash version written by Radovan Bast, translated
@@ -20,33 +19,29 @@ import fnmatch
 import fileinput
 import subprocess
 import shutil
-import string
 
 
-def main(argv):
+def expand_sections(source_dir, build_dir, build_type):
 
     KEYWORD_REGEX  = r'keyword\(([a-zA-Z !0-9_+-]+)\)'
     STARSTAR_REGEX = r'starstar\(([a-zA-Z 0-9_]+)\)'
     STAR_REGEX     = r'star\(([a-zA-Z 0-9_]+)\)'
 
-    DIR_DOC   = os.path.abspath(argv[1])
-    DIR_BUILD = os.path.abspath(argv[2])
-    DIR_TEMP  = os.path.join(DIR_BUILD, 'html_temp')
-    DIR_FINAL = os.path.join(DIR_BUILD, 'html')
+    DIR_TEMP  = os.path.join(build_dir, build_type+'_temp')
+    DIR_FINAL = os.path.join(build_dir, build_type)
 
     shutil.rmtree(DIR_TEMP, ignore_errors=True)
-    shutil.copytree(DIR_DOC, DIR_TEMP)
+    shutil.copytree(source_dir, DIR_TEMP)
 
     for root, dirs, files in os.walk(os.path.join(DIR_TEMP, 'manual')):
         for filename in fnmatch.filter(files, '*.rst'):
 
             #
-            # replace (in a given **SECTION/*SECTION):
-            #
+            ##replace (in a given **NEW SECTION/*NEW SECTION):
             # keyword(RABOOF)
-            # by:
+            ##by:
             # .. index:: .RABOOF
-            # .. SECTION_RABOOF:
+            # .. _NEW_SECTION_.RABOOF:
             #
             # .RABOOF
             # -------
@@ -57,39 +52,42 @@ def main(argv):
                 if section_found == []:
                     section_found = re.findall(STAR_REGEX, line)
                 if section_found != []:
-                    section = '%s_' % string.replace(section_found[0], ' ', '_')
-                print re.sub(KEYWORD_REGEX,
-                            ('.. index:: .\g<1>\n.. _%s.\g<1>:\n\n.\g<1>\n'+str('-'*(line.find(')')-line.find('(')))) % section,line[0:len(line)-1])
+                    section = '%s_' % section_found[0].replace(' ', '_')
+                print(re.sub(KEYWORD_REGEX,
+                            ('.. index:: .\g<1>\n.. _%s.\g<1>:\n\n.\g<1>\n'+str('-'*(line.find(')')-line.find('(')))) % section,line[0:len(line)-1]))
 
-            # replace:
+            ##replace:
             # starstar(RABOOF)
-            # by:
+            ##by:
             # .. index:: **RABOOF
-            # .. _RABOOF:
+            # .. _**RABOOF:
             #
             # ==========
             # \*\*RABOOF
             # ==========
             for line in fileinput.input(os.path.join(root, filename), inplace=True):
-                print re.sub(STARSTAR_REGEX,
-                             ('.. index:: **\g<1>\n.. _**\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+3))+'\n\\*\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+3))),line[0:len(line)-1])
+                print(re.sub(STARSTAR_REGEX,
+                             ('.. index:: **\g<1>\n.. _**\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+3))+'\n\\*\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+3))),line[0:len(line)-1]))
 
-            # replace:
+            ##replace:
             # star(RABOOF)
-            # by:
-            # .. index:: **RABOOF
-            # .. _RABOOF:
+            ##by:
+            # .. index:: *RABOOF
+            # .. _*RABOOF:
             #
             # ========
             # \*RABOOF
             # ========
             for line in fileinput.input(os.path.join(root, filename), inplace=True):
-                print re.sub(STAR_REGEX,
-                             ('.. index:: *\g<1>\n.. _*\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+1))+'\n\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+1))),line[0:len(line)-1])
+                print(re.sub(STAR_REGEX,
+                             ('.. index:: *\g<1>\n.. _*\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+1))+'\n\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+1))),line[0:len(line)-1]))
 
     # Miro: use quiet mode to keep only warnings and errors
-    subprocess.call('sphinx-build -q -b html %s %s' % (DIR_TEMP, DIR_FINAL), shell=True)
+    subprocess.call('sphinx-build -q -b %s %s %s' % (build_type, DIR_TEMP, DIR_FINAL), shell=True)
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    source_dir = os.path.dirname(os.path.abspath(__file__))
+    build_dir = os.path.abspath(sys.argv[2])
+    build_type = sys.argv[3]
+    expand_sections(source_dir, build_dir, build_type)

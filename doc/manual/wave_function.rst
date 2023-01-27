@@ -49,6 +49,8 @@ Activates :ref:`*MP2CAL`.
 keyword(MVO)
 
 Calculate modified virtual orbitals (see :ref:`*MVOCAL`).
+Default after open-shell SCF is modified virtual orbitals based on the closed-shell molecular orbitals.
+There is no default for closed-shell SCF.
 
 keyword(MP2 NO)
 
@@ -105,6 +107,12 @@ transformed integrals).
 By default, molecular orbitals with orbital energy between -10 and +20
 hartree (a.u.) are included, this can be modified in the
 :ref:`**MOLTRA` section.
+
+
+keyword(EXACC)
+
+Activates the  :ref:`**EXACC` module, the new coupled cluster implementation
+based on the ExaTensor library.
 
 
 **Pre-SCF orbital manipulations**
@@ -170,3 +178,9 @@ Activates the :ref:`*KRMCSCF`
 module for the optimization of ground and excited states (in other than the ground state symmetry) 
 at the relativistic MCSCF level.
 
+keyword(LAPLCE)
+
+Activates the :ref:`*LAPLCE`
+module to compute weights for Laplace transformation of orbital
+energy denominators with the algorithm of Helmich-Paris.
+No subsequent calculations, only output of the Laplace points and weights.

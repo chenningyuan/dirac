@@ -1,25 +1,20 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
-      SUBROUTINE RECP_LNK_READCP(LUINFO,NUC1,NONT0)
+      SUBROUTINE RECP_LNK_READCP(LUINFO,NUC1,NONT0,IPREAD)
 !     Read ECP parameters
       USE RECP_NTR
       IMPLICIT NONE
@@ -28,12 +23,13 @@
 #include "molinp.h"
 #include "nuclei.h"
 #include "recpval.h"
+#include "inc_mxvalue.h"
 #include "argoscom.h"
 !     global variables
-      INTEGER LUINFO,NUC1,NONT0
+      INTEGER LUINFO,NUC1,NONT0,IPREAD
       REAL*8  Q,Q1
 !     local variables
-      INTEGER I,J,K,IOS,RECPIN1,LUBAS,INTQ0,ISTART,ECPINDEX,msup
+      INTEGER I,J,K,IOS,RECPIN1,LUBAS,INTQ0,ISTART,ECPINDEX
       LOGICAL ECPLIB
       CHARACTER*3 ECPKEYWORD,SOREP_CHR
       CHARACTER*30 ECPNAM,ECPTMP
@@ -130,11 +126,13 @@
          IF (CHARGE(ECPNUC).LT.0) GOTO 8310
 !        GNUEXP(ECPNUC) = 6.66D+37
       ENDDO
-      WRITE(LUPRI,'(2X,A,I3,A)') 
+      IF (IPREAD .GT. 0) THEN
+         WRITE(LUPRI,'(2X,A,I3,A)') 
      &     '* This atomic center has RECP with ',RECP_CORE(NUC1),
      &     ' core electrons.'
-      WRITE(LUPRI,'(2X,A,F8.3)') 
+         WRITE(LUPRI,'(2X,A,F8.3)') 
      &     '  The charge value is changed as',CHARGE(ECPNUC)
+      END IF
 
 !     Write RECP information into file
 !     ================================
@@ -142,8 +140,7 @@
 !    &      RECP_CORE(NUC1),(AREP_ANG(NUC1)-1),SOREP_ANG(NUC1),NUC1
 
       IF (.NOT.ALLOCATED(RECP_MCRS)) THEN 
-         msup=203 ! maximum value is setted in inc_mxvalue.h
-         ALLOCATE(RECP_MCRS(msup))
+         ALLOCATE(RECP_MCRS(msup)) ! maximum value of msup is set in "inc_mxvalue.h"
          DO I = 1, msup
             RECP_MCRS(I) = 0
          ENDDO
@@ -318,8 +315,8 @@
 !     INTEGER      IQM(KATOM),JCO(KANG,KATOM)
       CHARACTER*1  KASYM(3,3)
       CHARACTER*11 SYMTXT
-      REAL*8       XYZ3(3,8,MXATOM,MXATOM)
-      INTEGER      MJ2(MXATOM,MXATOM),ISEND(8,MXATOM,8,MXATOM),NFUNC
+      REAL*8       XYZ3(3,8,MAX_NONT,MXATOM)
+      INTEGER      MJ2(MXATOM,MAX_NONT),ISEND(8,MXATOM,8,MXATOM),NFUNC
       INTEGER      I,J,K,N,ICENT,NSYMOP,IGENQ(3),NGENP,blk,JBLOCK,KBLOCK
 
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
@@ -418,10 +415,10 @@
       CHARACTER*1 KASYM(3,3)
       INTEGER   LGEN(3,3),NIREP,LTRANS(3,8),ICLAT,IREP1,ICENT
       REAL*8    DISTSQ,NCLOSE,sqdif,tolsq
-      INTEGER   I,J,K,J2,J3,NSYMOP,  MJ2(MXATOM,MXATOM),
+      INTEGER   I,J,K,J2,J3,NSYMOP,  MJ2(MXATOM,MAX_NONT),
      &          ISEND(8,MXATOM,8,MXATOM)
-      REAL*8    XYZ1(3,8,MXATOM), XYZ2(3,8,MXATOM,MXATOM),
-     &          XYZ3(3,8,MXATOM,MXATOM),XYZ4(3)
+      REAL*8    XYZ1(3,8,MXATOM), XYZ2(3,8,MXATOM,MAX_NONT),
+     &          XYZ3(3,8,MAX_NONT,MXATOM),XYZ4(3)
 
       tolsq=1.0d-12
 
@@ -547,7 +544,7 @@
 #include "mxcent.h"
 #include "nuclei.h"
       INTEGER   NGENP,IGENP(8),IGENQ(3),NSYMOP
-      INTEGER   MJ2(MXATOM,MXATOM), ISEND(8,MXATOM,8,MXATOM)
+      INTEGER   MJ2(MXATOM,MAX_NONT), ISEND(8,MXATOM,8,MXATOM)
       INTEGER   I,J,IGEN,JGEN,KGEN,IATOM,IATOM2
 
       NGENP=0

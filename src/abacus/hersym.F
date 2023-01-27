@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! FILE    : hersym.F
@@ -24,7 +19,7 @@
 ! ::: HERSYM_DEBUG - Debug print if > 0 + IPRSYM set to HERSYM_DEBUG
 #define HERSYM_DEBUG -1
 ! ::: IPRTHR - Print level threshold for verbose output
-#define IPRTHR 3
+!#define IPRTHR 3 ! Miro: I had to deactivate it due to runtime checks !
 !
 !========================================================================
 !950208-Vebjoern Bakken
@@ -59,6 +54,7 @@ C*****************************************************************************
 
       CALL QENTER('SYMADD')
 
+      IPRTHR = 3 ! Miro: for runtime check it must be defined as variable
       IPRSYM = MAX(HERSYM_DEBUG, IPRSYM_input)
 
 C     Set control variables in "mxsymm.h"
@@ -100,9 +96,7 @@ C  /* Deck FIND_SYMMETRY */
      &            TMPARR,TMP2AR,NSYMOP,
      &            KATOM,KASYM,LENTMP,POINT_GROUP,VRML_SYM,
      &            internal_file,WORK,KFREE,LFREE)
-
-      use codata
-
+C
 #include "implicit.h"
 #include "mxsymm.h"
 #include "mxcent.h"
@@ -133,6 +127,8 @@ C ***********************************************************
       CHARACTER*1 KASYM(3,3)
       CHARACTER SYMM*9, TMPLN*80
       CHARACTER POINT_GROUP*15, TEXT*43
+
+      IPRTHR = 3 ! Miro: for runtime check it must be defined as variable
 C
 C     Just to make sure, we zero all temporary arrays
 C
@@ -431,7 +427,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
      &   ' -----------------------------'
       DO I=1,NINT(MIRPLN(1,0))
          IT = NINT(MIRPLN(4,I))
-         N  = MOD(IZ,100000)
+         N  = MOD(IT,100000) 
          IT = IT / 100000
          WRITE (LUPRI,11) IT,N,(MIRPLN(J,I), J=1,3)
       END DO
@@ -846,6 +842,7 @@ C    - do it twice to minimize round-off errors
 C
 #include "implicit.h"
 #include "priunit.h"
+#include "mxsymm.h"
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
 
@@ -1083,6 +1080,8 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN (6,0:MAXMIR)
       DIMENSION V1(3), V2(3), V3(3), TMPARR(6,0:LENTMP)
       LOGICAL   LINMOL
+
+      IPRTHR = 3 ! Miro: for runtime check it must be defined as variable
 C
       N_ROTAXS = NINT(DRTAXS(1,0))
       N_MIRROR = NINT(DMRPLN(1,0))

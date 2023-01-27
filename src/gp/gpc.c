@@ -1,23 +1,19 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2017 by the authors of DIRAC.
- *     All Rights Reserved.
  *
- *     This source code is part of the DIRAC program package.
- *     It is provided under a written license and may be used,
- *     copied, transmitted, or stored only in accordance to the
- *     conditions of that written license.
+ *     Copyright (c) by the authors of DIRAC.
  *
- *     In particular, no part of the source code or compiled modules may
- *     be distributed outside the research group of the license holder.
- *     This means also that persons (e.g. post-docs) leaving the research
- *     group of the license holder may not take any part of Dirac,
- *     including modified files, with him/her, unless that person has
- *     obtained his/her own license.
+ *     This program is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU Lesser General Public
+ *     License version 2.1 as published by the Free Software Foundation.
  *
- *     For information on how to get a license, as well as the
- *     author list and the complete list of contributors to the
- *     DIRAC program, see: http://www.diracprogram.org
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *     Lesser General Public License for more details.
+ *
+ *     If a copy of the GNU LGPL v2.1 was not distributed with this
+ *     code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
  */
 /* dirac_copyright_end */
 
@@ -32,7 +28,17 @@
 #endif
 
 #include <math.h>
-#include "fortran_interface.h"
+typedef int64_t fortran_int8_t;
+typedef int32_t fortran_int4_t;
+#ifdef INT_STAR8
+  typedef fortran_int8_t fortran_int_t;
+#else
+  typedef fortran_int4_t fortran_int_t;
+#endif
+
+#if defined (VAR_MPI)
+#include <mpi.h>
+#endif
 
 void printaddr_(void *p)
 {
@@ -170,7 +176,6 @@ void distribute_env(const char* name, int mytid)
 #if !defined (VAR_MPI)
   return;
 #else
-#include <mpi.h>
   char *env_local, *env_master, *newname;
   int len_local, len_master, len_name;
 
@@ -200,7 +205,6 @@ void distribute_env(const char* name, int mytid)
     putenv(newname);
     free(env_master);
   }
-
 #endif
 }
 

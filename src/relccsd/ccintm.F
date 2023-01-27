@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -76,6 +71,8 @@ C------------------------------------------------
       CALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
       CALL SRT9 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,NOOOT,KOOOVT,KKOOOT,
      &           BUF1,BUF2)
+      CALL XSCAL (KOOOVT(NREP+1),-A1,BUF2,1)
+      IF (CARITH) CALL CONJUGA (KOOOVT(NREP+1),BUF2,1)
       CALL CNTRCT ('N','N',NOOOT,NO,NV,A1,BUF2,T1,A0,BUF1,NREP)
       CALL SRT1T3 (NREP,MULTB,LTR,NOOT,NO,NO,NOOOT,KOOOOT,KKOOOT,
      &             BUF1,BUF2)
@@ -222,6 +219,7 @@ C------------------------------------
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HINTM(T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
 C
+      use interface_to_mpi
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -311,7 +309,6 @@ C----------------------------------------
         CALL XCOPY(NV4,A0,0,BUF1,1)
 
       ENDIF
-
 
 C ***************************
 C ** END OF TASK SPLITTING **
@@ -410,8 +407,8 @@ C----------------------------------------------------------------------
 C For the H-intermediate in the lambda equations we should not scale t2
 C----------------------------------------------------------------------
       CALL GETTAU (T1,BUF1,BUF2)
-      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
-     &              BUF2,BUF1)
+      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,
+     &             JJVO,BUF2,BUF1)
 C---------------------------------------------------------------
 C BUF1 now contains 0.5*T(AD,IL) - T(A,L)*T(D,I) + T(A,I)*T(D,L)
 C Subtract T(A,I)*T(D,L)
@@ -445,6 +442,30 @@ C
       ENDDO
  
       CALL XTIME(0,2,'--- HINTM: VVOO contribution      ')
+
+#if defined (VAR_MPI)
+C *******************
+C ** parallel case: the H-intermediate was partially calculated
+C ** on the separate slaves. In order to perform the H*T2
+C ** contraction we need the complete H array ==> we complete it
+C ** here and synchronize all the nodes. They then have the complete
+C ** H-array and this lengthy contraction can also be parallelized.
+C
+      IF (NMPROC .GT. 1) THEN
+
+        IF(NBUF3.LT.IVOVO(NREP+1))
+     &    CALL QUIT('BUF3 can not keep the VOVO integrals !')
+
+C ... we collect the H array
+        CALL XTIME(4,1,'-- combining HINTM via MPI_ALLREDUCE')
+        CALL XCOPY (NBUF3,A0,0,BUF3,1)
+        call interface_mpi_allreduce_r1_work_f77(H,BUF3,
+     &       RCW*IVOVO(NREP+1),
+     &       op_MPI_SUM,global_communicator)
+        CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
+        CALL XTIME(4,2,'-- combining HINTM via MPI_ALLREDUCE')
+      ENDIF
+#endif
 
       RETURN
       END
@@ -492,7 +513,6 @@ C
 C---------------------------------------
 C H(K,I) = F(K,I)  - DELTA(K,I) * EPS(I)
 C---------------------------------------
-      call dzero(ho,nfoo)
       CALL XCOPY (NFOO,FOO,1,HO,1)
       II = 1
       I = 1
@@ -650,7 +670,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BINTM(T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
+      SUBROUTINE BINTM(T1,T2,BUF1,BUF2,BUF3,NBUF3,S2)
 C
       implicit none
 C
@@ -666,7 +686,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NBUF2,NBUF3,IW
+      INTEGER NBUF3
       REAL*8 T1(*),T2(*)
       REAL*8 S2(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)

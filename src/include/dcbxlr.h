@@ -7,7 +7,7 @@
 ! MAXLLR - max number of operators allowed in XLR
 ! MAXFLR - max number of frequencies allowed in XLR
 ! Note: if you change any of these two parameters, then you
-!       must do a 'make depend' followed by 'make'.
+!       must rebuild with 'make'.
 !
       INTEGER MAXLLR, MAXFLR
       PARAMETER (MAXLLR = 60, MAXFLR = 60)
@@ -39,8 +39,10 @@
      &                NOSPIA, NOSPIB, XLR_UNCOUP, XLR_TRIPLET,          &
      &                XLR_IMFREQ,XLR_E2CHEK,XSTERNC
 
-      REAL*8 THCLR, BFREQ(MAXFLR), THRCOM, CNVXLR(2), RESXLR, DMPFRLR
-      COMMON /XCBRLR/ THCLR, BFREQ, THRCOM, CNVXLR, RESXLR, DMPFRLR
+      REAL*8 THCLR, BFREQ(MAXFLR), THRCOM, CNVXLR(2), RESXLR, DMPFRLR,  &
+     &       XLR_ANATHR
+      COMMON /XCBRLR/ THCLR, BFREQ, THRCOM, CNVXLR, RESXLR, DMPFRLR,    &
+     &       XLR_ANATHR
 
       INTEGER IPRXLR, ITRXLR, NBFREQ, INDBP, MAXRM, MXLOAD,             &
      &        LLRAPU(MAXLLR), LLAPSU(MAXLLR), NLRAPT, NLRAP(8),         &

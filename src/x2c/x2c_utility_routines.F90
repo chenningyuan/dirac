@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 !
 !
@@ -33,9 +28,6 @@ module x2c_utils
   use x2c_fio
   use x2c_cb_interface, only:  &
       set_x2c_subblock_data
-#ifdef MOD_INTEREST
-  use module_interest_interface
-#endif
 
   implicit none
 
@@ -512,7 +504,8 @@ contains
                         ipq_off_in,          &
                         x2c_file_glb,        &
                         print_lvl,           &
-                        linear_sym)
+                        linear_sym,          &
+                        atomic_sym)
 !**********************************************************************
 !
 !    purpose:
@@ -542,6 +535,7 @@ contains
      integer, intent(in)    :: x2c_file_glb
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: atomic_sym
 !----------------------------------------------------------------------
      integer                :: i
      integer                :: j
@@ -602,6 +596,14 @@ contains
 
        call x2c_write(flabel,lowd_mat,nlowdmat,x2c_file_glb)
 
+! debug print
+       if(print_lvl > 2)then
+         ilowdmat = 1
+         do i = 1, nfsym
+           call print_x2cmat(lowd_mat(ilowdmat),naosh_all(i),nesh_dim(i),nz,ipq_off_in(1,0),'lowd-2cG',6)
+           ilowdmat     = ilowdmat     + naosh_all(i)*nesh_dim(i)
+         end do
+       end if
 
 !      step 4: transform 2c-adapted Lowdin matrix in AO2MO basis to account for linear symmetry
 !      ----------------------------------------------------------------------------------------
@@ -609,8 +611,13 @@ contains
 
 !        a. read the linear-symmetry adapted MO2MO transformation matrix
 !        -----------------------------------------------------------------
-         open(8,file='JzMOLLb',status='old',form='unformatted', &
-              access='sequential',action="readwrite",position='rewind')
+         if(atomic_sym)then
+           open(8,file='KMJMOLLb',status='old',form='unformatted', &
+                access='sequential',action="readwrite",position='rewind')
+         else
+           open(8,file='JzMOLLb',status='old',form='unformatted', &
+                access='sequential',action="readwrite",position='rewind')
+         end if
 
 !        MO2MO linear symmetry <--> nonlinear symmetry transformation matrix
          ilowdmat = 1
@@ -680,7 +687,7 @@ contains
      integer, intent(in)           :: ndim_x
      integer, intent(in)           :: ndim_y
      integer, intent(in)           :: nz
-     integer, intent(in)           :: ipq_off(4,*)
+     integer, intent(in)           :: ipq_off(1:4, 0:7)
      integer, intent(in)           :: prntunit
      logical, optional, intent(in) :: lrlc_equal
      character(*), intent(in)      :: title
@@ -689,10 +696,10 @@ contains
          call header2(title,-1,prntunit)
          if(.not.present(lrlc_equal))then
            call prqmat(xmat,ndim_x,ndim_y,ndim_x,ndim_y,nz,  &
-                       ipq_off,prntunit)
+                       ipq_off(1,0),prntunit)
          else
            call prqmat(xmat,ndim_x,ndim_x,ndim_y,ndim_y,nz,  &
-                       ipq_off,prntunit)
+                       ipq_off(1,0),prntunit)
          end if
 
   end subroutine print_x2cmat
@@ -918,7 +925,6 @@ contains
                                                nr_entries,     &
                                                fh,             &
                                                print_lvl,      &
-                                               loop_read,      &
                                                loop_factor     &
                                               )
 !**********************************************************************
@@ -933,7 +939,6 @@ contains
      integer,           intent(in)    :: nr_entries
      integer,           intent(in)    :: fh
      integer,           intent(in)    :: print_lvl
-     logical, optional                :: loop_read
      real(8), optional                :: loop_factor(0:nr_entries-1)
      real(8),           intent(inout) :: xmat(ndim * nr_entries)
 !----------------------------------------------------------------------
@@ -941,7 +946,12 @@ contains
      integer                          :: nr_entries_check
      character (len=74)               :: info_text
      character (len=72)               :: file_name
+     logical                          :: squash
 !**********************************************************************
+       squash = .false.
+       if(present(loop_factor))then
+        squash = .true.
+       end if
 
 !      step 1: inquire file name
 !      -------------------------
@@ -965,15 +975,11 @@ contains
 
        read(fh) xmat
 
-       if(nr_entries > 1)then
+       !> possibly squash AO matrices into one with scaling factors applied to each matrix, e.g. AOC factors
+       if(nr_entries > 1 .and. squash)then
          offset = 1
          do i = 1, nr_entries
-         print *, 'offset, nr_entries, loop_factor, ndim',offset, nr_entries, loop_factor, ndim
-         print *, 'i, loop_factor(i-1)',i,loop_factor(i-1)
            if(i > 1)then
-!            do j = 1, ndim
-!              xmat(j) = xmat(j) + xmat(offset+j)*loop_factor(i-1)
-!            end do
              call daxpy(ndim,loop_factor(i-1),xmat(offset+(i-1)*(ndim)),1,xmat,1)
            end if
            offset = offset + ndim
@@ -986,6 +992,7 @@ contains
   subroutine write_fock_matrices_saao_basis_x2c(xmat,           &
                                                 ndim,           &
                                                 nr_entries,     &
+                                                name,           &
                                                 fh,             &
                                                 print_lvl)
 !**********************************************************************
@@ -1004,6 +1011,7 @@ contains
 !----------------------------------------------------------------------
      character (len=74)               :: info_text
      character (len=72)               :: file_name
+     character (len=4)                :: name
 !**********************************************************************
 
 !      step 1: inquire file name
@@ -1013,7 +1021,7 @@ contains
 !      step 2: write matrix elements to file
 !      -------------------------------------
        rewind fh
-       write(info_text,'(a74)') 'X2C molecular-mean-field: picture-change transformed effective F[1] matrix.'
+       write(info_text,'(a74)') 'X2C molecular-mean-field: picture-change transformed effective '//name//' matrix.'
        write(fh) info_text
        write(fh) ndim, nr_entries
        if(print_lvl > 2)then
@@ -1058,16 +1066,10 @@ contains
 
        if(task_id >= 0)then
 
-         if(mdirac)then
-#ifdef MOD_INTEREST
-           call process_overlap_integrals_4comp( scr_mat1, ss_scaling=0.0d0 )
-#endif
-         else
 #ifdef PRG_DIRAC
 !        compute Sao_LL overlap matrix where the SS part is set to zero
          call gtovlt(scr_mat1,0.0d0,0)
 #endif
-        end if
 
 !        store matrix on file in "gerade/ungerade" format (if applicable)
          ioff_ovl = 1
@@ -1133,16 +1135,9 @@ contains
        saoao(1:nzt*naosh_ls**2) = 0.0d0
 
 !      compute Saoao overlap matrix
-       if(mdirac)then
-#ifdef MOD_INTEREST
-         call process_overlap_integrals_4comp( saoao , ss_scaling=1.0d0)
-!        call butobs_no_work(saoao,1)
-#endif
-       else
 #ifdef PRG_DIRAC
-         call gtovlx(saoao,1.0d0)
+       call gtovlx(saoao,1.0d0)
 #endif
-       end if
 
        iaomo = 1
 
@@ -1344,6 +1339,7 @@ contains
 !             with GAUNT (LS|LS) entering the game (intflg=8) you know what to do by now...
 !
 !**********************************************************************
+     use dircmo
 #ifdef VAR_MPI
 #include "mpif.h"
 #endif
@@ -1373,11 +1369,7 @@ contains
      dmat = 0.0d0
      cmo  = 0.0d0
 !    read coefficients
-     lucoef = 99
-     call opnfil(lucoef,'DFCOEF','OLD','x2cfck')
-     rewind(lucoef)
-     call reacmo_no_work(lucoef,'DFCOEF',cmo,xx,i,j,2)
-     close(lucoef,status='keep')
+     call reacmo_new(cmo=cmo)
 
 !    generate density matri(x/ces) (denmat is a general driver routine from Dirac
 !    computing all inactive and active density matrices)

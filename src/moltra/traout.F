@@ -1,28 +1,23 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDINTI */
-      SUBROUTINE MDINTI(NSTR,IPRINT)
+      SUBROUTINE MDINTI(IPRINT)
 C
 C     Initialize MDINT file
 C     Written by Luuk Visscher, March 1997
@@ -38,7 +33,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "infpar.h"
-      DIMENSION NSTR(2)
       CHARACTER*8 CDATE,TIMEX,DATEX*10
       CHARACTER*10 FNODE,LFNAM
 C
@@ -172,16 +166,20 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       CALL QENTER('MDINTB')
 
-      IF (IPRTRA.GE.5) THEN
-        CALL HEADER('Output from MDINTB routine',-1)
-        SELECT CASE (ICLASS)
-         CASE(1); write(LUPRI,'(A)') 'Class 1 : (i    j    | k    l   )'
-         CASE(2); write(LUPRI,'(A)') 'Class 2 : (i    j    | kbar lbar)'
-         CASE(3); write(LUPRI,'(A)') 'Class 3 : (i    jbar | k    lbar)'
-         CASE(4); write(LUPRI,'(A)') 'Class 4 : (ibar j    | k    lbar)'
-         CASE DEFAULT
-            write(LUPRI,'(A,I5)')'WARNING Unknown integral class',ICLASS
-        END SELECT
+      IF (IPRINT.GE.5) THEN
+      CALL HEADER('Output from MDINTB routine',-1)
+      SELECT CASE (ICLASS)
+       CASE(1); write(LUPRI,'(A)') 'Class 1 : (i    j    | k    l   )'
+       CASE(2); write(LUPRI,'(A)') 'Class 2 : (i    j    | kbar lbar)'
+       CASE(3); write(LUPRI,'(A)') 'Class 3 : (i    jbar | k    lbar)'
+       CASE(4); write(LUPRI,'(A)') 'Class 4 : (i    jbar | kbar l   )'
+       CASE(9); write(LUPRI,'(A)') 'Class 9 : (i    j    | kbar l   )'
+       CASE(10); write(LUPRI,'(A)') 'Class 10 : (i    j    | k    lbar)'
+       CASE(11); write(LUPRI,'(A)') 'Class 11 : (ibar j    | k    l   )'
+       CASE(12); write(LUPRI,'(A)') 'Class 12 : (i    jbar | k    l   )'
+       CASE DEFAULT
+         write(LUPRI,'(A,I5)')'WARNING Unknown integral class',ICLASS
+      END SELECT
 C     ...      
       ENDIF
 C
@@ -193,7 +191,7 @@ C
       DO IREPL = 1, NFSYM
          IREPK = MOD(IREPL+IREPIJ,2) + 1
 
-         IF (IPRTRA.GE.5) THEN
+         IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(2X,A,I3,A,I3)') 'IREPK=',IREPK,' IREPL=',IREPL
           WRITE(LUPRI,'(2X,A,I3,A,I3)') ' NSTR3(IREPK)=',NSTR3(IREPK), 
      &                                  ' NSTR4(IREPL)=',NSTR4(IREPL)
@@ -289,7 +287,7 @@ C     Write out integrals in ASCII format
 C
 C     Write out integrals to output if desired. 
 C   ------------------------------------------------------------------
-      IF (IPRTRA.GE.25) THEN
+      IF (IPRINT.GE.25) THEN
          WRITE(LUPRI,'(2x,a,3i4)')
      &  'MOLTRA: integrals batch saved;  IKR1,JKR1,NZKL:',
      &   IKR1,JKR1,NZKL

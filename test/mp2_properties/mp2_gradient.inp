@@ -4,6 +4,9 @@ Analytical first-order MP2 properties
 .WAVE F
 .PROPER
 .4INDEX
+**GENERAL
+.CODATA
+ PDG94
 **WAVE FUNCTIONS
 .SCF
 .RELCCSD
@@ -24,6 +27,9 @@ Analytical first-order MP2 properties
 energy -15.0 100.0 1.0
 **RELCCSD
 .GRADIENT
+*CCENER
+.NOSD
+.NOSDT
 *CCFOPR
 .MP2G
 .RELAXED

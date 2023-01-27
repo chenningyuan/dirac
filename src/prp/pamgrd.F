@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C FILE    : pamgrd.F
@@ -249,35 +244,30 @@ C       ... set to zero
       ELSE
 C
 C       read HF coefficients 
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
         IF(SPINFR) THEN
-          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,10,
-     &                WORK,KFREE,LFREE)
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,10)
         ELSE
-          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2,
-     &                WORK,KFREE,LFREE)
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2)
         ENDIF
-        CLOSE(LUCOEF,STATUS='KEEP')
       END IF
 C
 C     Get property matrix in MO-basis and scale by factor -1
 C     ======================================================
 C
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
 CMI... distinguish between standard and LAO-based atomic orbitals
 CMI NOTE/27.10'04 The new IBEIG parameters for spin-free properties !
 CMI This has to be adapted also for LAO properties !
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
         IB = 7 ! 0111 = full H(B) prop. gradient
+!gosia: fac2lo is not set? i'm setting it to 1.0
+        fac2lo = 1.0d0
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
       ELSE
-        CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
+        CALL PRPMAT(INDXPR,IOPSY,PRPMO,.TRUE.,WORK,CMO,IBEIG,ICMOQ,NORB,
      &              WORK,KFREE,LFREE,IPRINT)
       ENDIF
 
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Hermicity of operator
 C     =====================
@@ -360,7 +350,6 @@ C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
 C
       DO IZ = 1,NZ
-#include "ivdep.h"
         DO IXOP = 1,NXOP
           IA = JXOP(1,IXOP)
           IM = JXOP(2,IXOP)
@@ -386,7 +375,6 @@ C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
 C
       DO IZ = 1,NZ
-#include "ivdep.h"
         DO IXOP = 1,NXOP
           INDI = JXOP(1,IXOP)
           INDA = JXOP(2,IXOP)
@@ -397,8 +385,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmat */
-      SUBROUTINE PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,IPCMO,NPMO,
-     &                  WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE PRPMAT(INDXPR,IOPSY,PRPMO,ONFILE,PRPINT,CMO,
+     &                  IBEIG,IPCMO,NPMO,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
@@ -435,7 +423,9 @@ C
 #include "dgroup.h"
 #include "dcbxpr.h"
 C
-      DIMENSION PRPMO(*),CMO(*),IBEIG(*),IPCMO(*),NPMO(*),WORK(*)
+      LOGICAL ONFILE
+      DIMENSION PRPMO(*),PRPINT(*),CMO(*),IBEIG(*),IPCMO(*),NPMO(*),
+     &          WORK(*)
 C
       CALL QENTER('PRPMAT')
       KFRSAV = KFREE
@@ -456,8 +446,9 @@ C     Memory allocation
 C
       CALL MEMGET('REAL',KPRPAO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST,NZ      ,WORK,KFREE,LFREE)
-      CALL PRPMA1(INDXPR,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,
-     &            WORK(KPRPAO),WORK(KFIRST),WORK,KFREE,LFREE,IPRINT)
+      CALL PRPMA1(INDXPR,PRPMO,ONFILE,PRPINT,CMO,IBEIG,IPCMO,NPMO,
+     &            N2PMOX,WORK(KPRPAO),WORK(KFIRST),
+     &            WORK,KFREE,LFREE,IPRINT)
       CALL MEMREL('PRPMAT',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPMAT')
 C
@@ -465,8 +456,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpma1 */
-      SUBROUTINE PRPMA1(INDXPR,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,PRPAO,
-     &                  FIRST,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE PRPMA1(INDXPR,PRPMO,ONFILE,PRPINT,CMO,IBEIG,IPCMO,NPMO,
+     &                  N2PMOX,PRPAO,FIRST,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
@@ -490,9 +481,9 @@ C
 #include "dcbprl.h"
 #include "dummy.h"
 C
-      LOGICAL QBTR,TOBE,FIRST(NZ)
+      LOGICAL QBTR,TOBE,FIRST(NZ),ONFILE
       DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),
-     &          PRPAO(N2BBASX,NZ),WORK(*)
+     &          PRPAO(N2BBASX,NZ),PRPINT(*),WORK(*)
       DIMENSION J2PMOX(2,2)
 C
       CALL QENTER('PRPMA1')
@@ -527,7 +518,8 @@ C
 C
 C     Get property matrix in AO-basis
 C     ===============================
-      CALL PRPMSAO(INDXPR,PRPAO,FIRST,WORK(KFREE),LFREE,IPRINT)
+      CALL PRPMSAO(INDXPR,PRPAO,ONFILE,PRPINT,FIRST,
+     &             WORK(KFREE),LFREE,IPRINT)
 C .. control print out of 2c/4c-component
 C    operator in the SA-AO basis
       IF (IPRINT.GE.15) THEN
@@ -541,6 +533,26 @@ C
 C     Transform to MO-basis only the blocks of correct fermion symmetry
 C     =================================================================
 C         
+CTROND
+!      IF (PRPNAM(INDXPR)(1:5).EQ.'BEDcZ'.AND.
+!     &    PRPNAM(INDXPR)(8:10).EQ.'X00' .AND.
+!     &    PRPNAM(INDXPR)(14:16).EQ.'Z00') THEN
+!          DO I = 1,NXPAR
+!             WRITE(6,*) 'JXOP..',JXOP(1,I),JXOP(2,I)
+!          ENDDO
+!          I1=1
+!          I2=2
+CTROND    Radium
+!         II = 165
+!         IA = 213
+CTROND     Magnesium
+C          II = 30
+C          IA = 40
+!          CALL GPOTEST(PRPNAM(INDXPR),II,IA,NZ,
+!     &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),
+!     &           CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),
+!     &           CMO(IPCMO(I2)+1),NFBAS(I2,0),NORB(I2))
+!      ENDIF
       CALL DZERO(PRPMO,N2PMOX*NZ)
       IOPSY = JBTOF(IREP,1)
 !     write(*,*) 'N2PMOX,NZ:', N2PMOX,NZ
@@ -630,8 +642,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gpget */
-      SUBROUTINE GPGET(INDXPR,GP,JXPAR,NXPAR,CMO,IBEIG,ITYP,
-     &                 WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE GPGET(INDXPR,GP,JXPAR,NXPAR,CMO,IBEIG,
+     &                 ITYP,ONFILE,PRPINT,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct orbital part of gradient for property INDXPR 
@@ -667,7 +679,8 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbibn.h"
-      DIMENSION GP(*),CMO(*),IBEIG(*),JXPAR(*),WORK(*)
+       LOGICAL ONFILE
+       DIMENSION GP(*),CMO(*),IBEIG(*),JXPAR(*),PRPINT(*),WORK(*)
 C
       CALL QENTER('GPGET')
       KFRSAV = KFREE
@@ -677,8 +690,8 @@ C
       IF(ITYP.EQ.JBENDX) THEN
         IF(NXPAR.GE.0) THEN
           CALL MEMGET('REAL',KPRPMO,N2BBASXQ,WORK,KFREE,LFREE)
-          CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),CMO,
-     &                IBEIG,WORK,KFREE,LFREE,IPRINT)
+          CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),
+     &                CMO,IBEIG,ONFILE,PRPINT,WORK,KFREE,LFREE,IPRINT)
           CALL MEMREL('GPGET.e-e',WORK,1,KFRSAV,KFREE,LFREE)
 #ifndef ANALYZE_PROPERTY_GRADIENT
           IF(IPRINT.GE.4) THEN
@@ -696,8 +709,8 @@ C
       ELSEIF(ITYP.EQ.JBPNDX) THEN
         IF(NXPAR.GE.0) THEN
           CALL MEMGET('REAL',KPRPMO,N2BBASXQ,WORK,KFREE,LFREE)
-          CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),CMO,
-     &                IBEIG,WORK,KFREE,LFREE,IPRINT)
+          CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),
+     &                CMO,IBEIG,ONFILE,PRPINT,WORK,KFREE,LFREE,IPRINT)
           CALL MEMREL('GPGET.e-p',WORK,1,KFRSAV,KFREE,LFREE)
           IF(IPRINT.GE.4) THEN
             CALL HEADER('Output from GPGET',-1)
@@ -726,7 +739,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GPOGET */
       SUBROUTINE GPOGET(INDXPR,GPO,JXOP,NXOP,PRPMO,CMO,
-     &                  IBEIG,WORK,KFREE,LFREE,IPRINT)
+     &                  IBEIG,ONFILE,PRPINT,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct orbital part of gradient for property INDXPR 
@@ -763,8 +776,9 @@ C
 #include "mxcent.h"
 #include "dcbprp.h"
 C
+      LOGICAL ONFILE
       DIMENSION GPO(*),PRPMO(NORBT,NORBT,NZ),CMO(*),
-     &          IBEIG(*),JXOP(NXOP),WORK(*)
+     &          IBEIG(*),JXOP(NXOP),PRPINT(*),WORK(*)
 C
       CALL QENTER('GPOGET')
 C
@@ -773,18 +787,17 @@ C     ==========================================
 C
       ISYM  = IPRPSYM(INDXPR)
       IOPSY = JBTOF(ISYM-1,1)
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
         IB = 7 ! 111
+!gosia: fac2lo is not set? i'm setting it to 1.0
+        fac2lo = 1.0d0
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
       ELSE
-        CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
-     &            WORK,KFREE,LFREE,IPRINT)
+         CALL PRPMAT(INDXPR,IOPSY,PRPMO,ONFILE,PRPINT,
+     &               CMO,IBEIG,ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
       ENDIF
-
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Hermicity of operator
 C     =====================
@@ -793,8 +806,6 @@ C
       IREP = IPRPSYM(INDXPR) - 1
       IQ   = IPQTOQ(1,IREP)
       IH   = IHQMAT(IQ,ITIM)
-C
-C
 C
 C     Construct gradient - electronic part
 C     ====================================
@@ -916,3 +927,31 @@ C
       CALL QEXIT('PRPORB')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GPOTEST(PRPNAM,I1,I2,NZ,PRPAO,NB,
+     &           CMO1,NF1,NO1,CMO2,NF2,NO2)
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION PRPAO(NB,NB),CMO1(NF1,NO1),CMO2(NF2,NO2)
+      CHARACTER*16 PRPNAM
+      WRITE(LUPRI,*) 'GPOTEST: Checking element (',I1,',',I2,
+     &   ') of property ',PRPNAM
+      IF(NZ.GT.1) CALL QUIT('GPOTEST: NZ. gt. 1. Write me!')
+      GPO = 0.0D0
+      DO J = 1,NF2
+        DO I = 1,NF1
+          TMP = CMO1(I,I1)*PRPAO(I,J)*CMO2(J,I2)
+          GPO = GPO + TMP
+          IF(ABS(TMP).GT.1e-20) THEN
+            WRITE(LUPRI,'(ES16.8,2I4,3ES16.8)') 
+     &        ABS(TMP),I,J,
+     &        CMO1(I,I1),PRPAO(I,J),CMO2(J,I2)
+          ENDIF
+        ENDDO
+      ENDDO
+      WRITE(LUPRI,'(A,A16,A,ES16.8)') 
+     &   'GPOTEST: Total ',PRPNAM,' : ',GPO
+      RETURN
+      END
+

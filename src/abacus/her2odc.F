@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -126,10 +121,9 @@ C
      &          NREDCC(NORB1,NORB2), NRED12(NORB1*NORB2),
      &          NFTOR1(NUC1), NFTOR2(NUC2)
 
-#include "ibtfun.h"
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
 C
 C     ***********************************************
 C     ***** Set up overlap distribution vectors *****
@@ -158,7 +152,7 @@ C     ===================
 C
       ISYM = 0
       DO 100 ISYMOP = 0, MAXOPR
-      IF (IBTAND(ISYMOP,IBTOR(MUL1,MUL2)) .EQ. 0) THEN
+      IF (IAND(ISYMOP,IOR(MUL1,MUL2)) .EQ. 0) THEN
          ISYM = ISYM + 1
          XFAC(ISYM) = XAND(ISYMOP)
          YFAC(ISYM) = YAND(ISYMOP)
@@ -521,10 +515,10 @@ C
      &          FAC12(NUC1*NUC2,NODC12), NUCT12(NODC12),
      &          NUCS12(NORB1*NORB2,NODC12), NPRI12(8),
      &          NIND12(NORB1*NORB2,2), NORT12(8)
-#include "ibtfun.h"
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
 C
 C     ***********************************************
 C     ***** Set up overlap distribution vectors *****
@@ -587,7 +581,7 @@ C
 C
                   DOTHIS = .FALSE.
                   DO 510 ISYMOP = 0,MAXOPR
-                  IF (IBTAND(ISYMOP,IBTOR(MUL1,MUL2)) .EQ. 0) THEN
+                  IF (IAND(ISYMOP,IOR(MUL1,MUL2)) .EQ. 0) THEN
                      CRX2 = XAND(ISYMOP)*CRX20
                      CRY2 = YAND(ISYMOP)*CRY20
                      CRZ2 = ZAND(ISYMOP)*CRZ20
@@ -602,12 +596,8 @@ C
   510             CONTINUE
 C
                   NSYMOP = 0
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-C                 Cray fails in some cases without this directive
-CDIR$ NOVECTOR
-#endif
                   DO 500 ISYMOP = 0,MAXOPR
-                  IF (IBTAND(ISYMOP,IBTOR(MUL1,MUL2)) .EQ. 0) THEN
+                  IF (IAND(ISYMOP,IOR(MUL1,MUL2)) .EQ. 0) THEN
                      NSYMOP = NSYMOP + 1
                      CRX2 = XAND(ISYMOP)*CRX20
                      CRY2 = YAND(ISYMOP)*CRY20
@@ -987,7 +977,7 @@ C
       CHARACTER WORD*4
       DIMENSION DIFPA(*), DIFPB(*), HEXPPI(*)
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2)
-#include "ibtfun.h"
+
 C
 C     ****************************
 C     ********** AB > 0 **********
@@ -1039,7 +1029,7 @@ C
 
   500          CONTINUE
                DO 510 T = 1, A - 2
-                  T1 = SIGN*dble(T + 1)
+                  T1 = SIGN*(T + 1.0D0)
                   DO 520 I = 1, NUC12
                      COEF12(I,T,A,0) = HEXPPI(I)*COEF12(I,T-1,A-1,0)
      *                                + DIFPA(I)*COEF12(I,  T,A-1,0)
@@ -1099,7 +1089,7 @@ C
                      COEF12(I,  AB,A,B) = EXPPIH*COEF12(I,AB-1,A,B-1)
   900             CONTINUE
                   DO 910 T = 1, AB - 2
-                     T1 = SIGN*dble(T + 1)
+                     T1 = SIGN*(T + 1.0D0)
                      DO 920 I = 1, NUC12
                         COEF12(I,T,A,B)=HEXPPI(I)*COEF12(I,T-1,A,B-1)
      &                                 + DIFPB(I)*COEF12(I,  T,A,B-1)
@@ -1146,7 +1136,7 @@ C
 C            ***** E(A,0) *****
 C
             ELSE
-               IF (IBTAND(1,A) .EQ. 0) THEN
+               IF (IAND(1,A) .EQ. 0) THEN
                   DO 505 I = 1, NUC12
                      COEF12(I,0,A,0) =      SIGN*COEF12(I,  1,A-1,0)
                      COEF12(I,A,A,0) = HEXPPI(I)*COEF12(I,A-1,A-1,0)
@@ -1156,8 +1146,8 @@ C
                      COEF12(I,A,A,0) = HEXPPI(I)*COEF12(I,A-1,A-1,0)
   506             CONTINUE
                END IF
-               DO 515 T = 2 - IBTAND(1,A), A - 2, 2
-                  T1 = SIGN*dble(T + 1)
+               DO 515 T = 2 - IAND(1,A), A - 2, 2
+                  T1 = SIGN*(T + 1.0D0)
                   DO 525 I = 1, NUC12
                      COEF12(I,T,A,0) = HEXPPI(I)*COEF12(I,T-1,A-1,0)
      &                                      + T1*COEF12(I,T+1,A-1,0)
@@ -1189,7 +1179,7 @@ C
 C              ***** E(A,B) *****
 C
                ELSE
-                  IF (IBTAND(1,AB) .EQ. 0) THEN
+                  IF (IAND(1,AB) .EQ. 0) THEN
                      DO 905 I = 1, NUC12
                        COEF12(I, 0,A,B) =      SIGN*COEF12(I,   1,A,B-1)
                        COEF12(I,AB,A,B) = HEXPPI(I)*COEF12(I,AB-1,A,B-1)
@@ -1199,8 +1189,8 @@ C
                        COEF12(I,AB,A,B) = HEXPPI(I)*COEF12(I,AB-1,A,B-1)
   906                CONTINUE
                   END IF
-                  DO 915 T = 2 - IBTAND(1,AB), AB - 2, 2
-                     T1 = SIGN*dble(T + 1)
+                  DO 915 T = 2 - IAND(1,AB), AB - 2, 2
+                     T1 = SIGN*(T + 1.0D0)
                      DO 925 I = 1, NUC12
                         COEF12(I,T,A,B) = HEXPPI(I)*COEF12(I,T-1,A,B-1)
      &                                         + T1*COEF12(I,T+1,A,B-1)
@@ -1223,7 +1213,7 @@ C
       DO 2000 A = 0, MAX1
          DO 2100 B = 0, MAX2
             DO 2200 T = 0, A + B
-               IF (IBTAND(A + B - T,I120) .EQ. 0) THEN
+               IF (IAND(A + B - T,I120) .EQ. 0) THEN
                   WRITE (LUPRI, 1100) WORD, A, B, T
                   WRITE (LUPRI, 1130) (COEF12(I,T,A,B), I = 1, NUC12)
                END IF
@@ -1253,12 +1243,12 @@ C
      &          ACOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include "ibtfun.h"
+
 C
       DO 100 A = 0, MAX1
          DO 200 B = 0, MAX2
             AB = A + B
-            DO 300 T = IBTAND(AB + 1,I120), AB + 1, I120 + 1
+            DO 300 T = IAND(AB + 1,I120), AB + 1, I120 + 1
 C
 C              Differentiation with respect to A
 C              =================================
@@ -1271,7 +1261,7 @@ C
                   ELSE
                      DO 410 I = 1, NUC12
                         ACOEF(I,T,A,B) = AXP(I)*UCOEF(I,T,A+1,B)
-     &                               - dble(A)*UCOEF(I,T,A-1,B)
+     &                                      - A*UCOEF(I,T,A-1,B)
   410                CONTINUE
                   END IF
                END IF
@@ -1287,7 +1277,7 @@ C
                   ELSE
                      DO 510 I = 1, NUC12
                         BCOEF(I,T,A,B) = BXP(I)*UCOEF(I,T,A,B+1)
-     &                               - dble(B)*UCOEF(I,T,A,B-1)
+     &                                      - B*UCOEF(I,T,A,B-1)
   510                CONTINUE
                   END IF
                END IF
@@ -1308,7 +1298,7 @@ C
          DO 600 A = 0, MAX1
             DO 610 B = 0, MAX2
                DO 620 T = 0, A + B + 1
-                  IF (IBTAND(A + B + 1 - T,I120) .EQ. 0) THEN
+                  IF (IAND(A + B + 1 - T,I120) .EQ. 0) THEN
                     WRITE (LUPRI,1100) WORDA, A, B, T
                     WRITE(LUPRI,'(1X,6F12.8)')(ACOEF(I,T,A,B),I=1,NUC12)
                     WRITE (LUPRI,1100) WORDB, A, B, T
@@ -1338,14 +1328,16 @@ C
      &          XCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include "ibtfun.h"
+
 C
       DO 100 A = 0, MAX1
          AGT0 = A .GT. 0
+         XA_TRI = A*(A-1.0D0)
          DO 200 B = 0, MAX2
             BGT0 = B .GT. 0
+            XB_TRI = B*(B-1.0D0)
             AB = A + B
-            DO 300 T = IBTAND(AB,I120), AB + 2, I120 + 1
+            DO 300 T = IAND(AB,I120), AB + 2, I120 + 1
 C
 C              Differentiation with respect to A
 C              =================================
@@ -1354,13 +1346,13 @@ C
                   IF ((T .LE. AB - 2) .AND. (A .GT. 1)) THEN
                      DO 400 I = 1, NUC12
                        ACOEF(I,T,A,B) = AXP(I)*(AXP(I)*UCOEF(I,T,A+2,B)
-     &                                  - dble(2*A+1)*UCOEF(I,T,A,  B))
-     &                                + dble(A*(A-1))*UCOEF(I,T,A-2,B)
+     &                               - (2.0D0*A+1.0D0)*UCOEF(I,T,A,  B))
+     &                                + XA_TRI        *UCOEF(I,T,A-2,B)
   400                CONTINUE
                   ELSE IF (T .LE. AB) THEN
                      DO 410 I = 1, NUC12
                        ACOEF(I,T,A,B) = AXP(I)*(AXP(I)*UCOEF(I,T,A+2,B)
-     &                                  - dble(2*A+1)*UCOEF(I,T,A,  B))
+     &                               - (2.0D0*A+1.0D0)*UCOEF(I,T,A,  B))
   410                CONTINUE
                   ELSE
                      DO 420 I = 1, NUC12
@@ -1376,13 +1368,13 @@ C
                   IF ((T .LE. AB - 2) .AND. (B .GT. 1)) THEN
                      DO 500 I = 1, NUC12
                        BCOEF(I,T,A,B) = BXP(I)*(BXP(I)*UCOEF(I,T,A,B+2)
-     &                                  - dble(2*B+1)*UCOEF(I,T,A,B  ))
-     &                                + dble(B*(B-1))*UCOEF(I,T,A,B-2)
+     &                               - (2.0D0*B+1.0D0)*UCOEF(I,T,A,B  ))
+     &                                + XB_TRI        *UCOEF(I,T,A,B-2)
   500                CONTINUE
                   ELSE IF (T .LE. AB) THEN
                      DO 510 I = 1, NUC12
                        BCOEF(I,T,A,B) = BXP(I)*(BXP(I)*UCOEF(I,T,A,B+2)
-     &                                  - dble(2*B+1)*UCOEF(I,T,A,B  ))
+     &                               - (2.0D0*B+1.0D0)*UCOEF(I,T,A,B  ))
   510                CONTINUE
                   ELSE
                      DO 520 I = 1, NUC12
@@ -1398,25 +1390,25 @@ C
                   IF (AGT0 .AND. BGT0 .AND. T.LE.AB-2) THEN
                      DO 600 I = 1, NUC12
                        XCOEF(I,T,A,B) = AXP(I)*BXP(I)*UCOEF(I,T,A+1,B+1)
-     &                              - AXP(I)*dble(B)*UCOEF(I,T,A+1,B-1)
-     &                              - BXP(I)*dble(A)*UCOEF(I,T,A-1,B+1)
-     &                                   + dble(A*B)*UCOEF(I,T,A-1,B-1)
+     &                              - AXP(I)*B*UCOEF(I,T,A+1,B-1)
+     &                              - BXP(I)*A*UCOEF(I,T,A-1,B+1)
+     &                              +    (A*B)*UCOEF(I,T,A-1,B-1)
   600                CONTINUE
                   ELSE IF (AGT0 .AND. BGT0 .AND. T.LE.AB) THEN
                      DO 610 I = 1, NUC12
                        XCOEF(I,T,A,B) = AXP(I)*BXP(I)*UCOEF(I,T,A+1,B+1)
-     &                              - AXP(I)*dble(B)*UCOEF(I,T,A+1,B-1)
-     &                              - BXP(I)*dble(A)*UCOEF(I,T,A-1,B+1)
+     &                                - AXP(I)*B     *UCOEF(I,T,A+1,B-1)
+     &                                - A     *BXP(I)*UCOEF(I,T,A-1,B+1)
   610                CONTINUE
                   ELSE IF (AGT0 .AND. T.LE.AB) THEN
                      DO 620 I = 1, NUC12
                        XCOEF(I,T,A,B) = AXP(I)*BXP(I)*UCOEF(I,T,A+1,B+1)
-     &                              - BXP(I)*dble(A)*UCOEF(I,T,A-1,B+1)
+     &                                - A     *BXP(I)*UCOEF(I,T,A-1,B+1)
   620                CONTINUE
                   ELSE IF (BGT0 .AND. T.LE.AB) THEN
                      DO 630 I = 1, NUC12
                        XCOEF(I,T,A,B) = AXP(I)*BXP(I)*UCOEF(I,T,A+1,B+1)
-     &                              - AXP(I)*dble(B)*UCOEF(I,T,A+1,B-1)
+     &                                - AXP(I)*B     *UCOEF(I,T,A+1,B-1)
   630                CONTINUE
                   ELSE
                      DO 640 I = 1, NUC12
@@ -1441,7 +1433,7 @@ C
          DO 700 A = 0, MAX1
             DO 710 B = 0, MAX2
                DO 720 T = 0, A + B + 2
-                  IF (IBTAND(A + B + 2 - T,I120) .EQ. 0) THEN
+                  IF (IAND(A + B + 2 - T,I120) .EQ. 0) THEN
                      WRITE (LUPRI,1100) 'E20',WORD, A, B, T,
      &                                  'E11',WORD, A, B, T,
      &                                  'E02',WORD, A, B, T
@@ -1479,7 +1471,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "abainf.h"
 #include "chrxyz.h"
 #include "orgcom.h"
-#include "ibtfun.h"
+
 C
       IODD(1) = I120X
       IODD(2) = I120Y
@@ -1496,7 +1488,7 @@ C
          DO 310 A = 0, MAX1 + MADD
             DO 410 B = 0, MAX2
                ABM = A + B + 1
-               DO 510 T = IBTAND(ABM,IODD(X)), ABM, IODD(X) + 1
+               DO 510 T = IAND(ABM,IODD(X)), ABM, IODD(X) + 1
                   IF (T.LT.ABM .AND. IODD(X).EQ.0) THEN
                      DO 610 I = 1, NUC12
                         COEF12(I,T,A,B,X,2) = COEF12(I,T,A+1,B,X,1)
@@ -1517,7 +1509,7 @@ C
             DO 320 A = 0, MAX1
                DO 420 B = 0, MAX2
                   ABM = A + B + 2
-                  DO 520 T = IBTAND(ABM,IODD(X)), ABM, IODD(X) + 1
+                  DO 520 T = IAND(ABM,IODD(X)), ABM, IODD(X) + 1
                      IF (T.LT.ABM .AND. IODD(X).EQ.0) THEN
                         DO 620 I = 1, NUC12
                            COEF12(I,T,A,B,X,4) = COEF12(I,T,A+1,B,X,2)
@@ -1561,7 +1553,7 @@ C
             DO 800 B = 0, MAX2
             DO 800 T = 0, A + B + M
                WRITE (LUPRI,1000) 'E', A, B, T
-               IF (IBTAND(A + B + M - T,IODD(X)) .EQ. 0) THEN
+               IF (IAND(A + B + M - T,IODD(X)) .EQ. 0) THEN
                   WRITE(LUPRI,'(1X,6F12.8)')
      &               (COEF12(I,T,A,B,X,MM),I=1,NUC12)
                END IF
@@ -1599,11 +1591,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "chrnos.h"
 #include "chrxyz.h"
       SAVE SGNOLD, DOCOMP, MAXDIF
-#include "ibtfun.h"
+
 C
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
 C
       IF (IPRINT .GE. 20) THEN
         WRITE(LUPRI,'(/,2X,A)') '... EXCSGN at start'
@@ -1718,7 +1710,7 @@ C
                DO 900 I = 0, NHKTC - 1
                   DO 910 J = 0, NHKTD - 1
                      DO 920 T = 0, I + J + IDERIV
-                     IF (IBTAND(I + J + IDERIV - T,ICD0) .EQ. 0) THEN
+                     IF (IAND(I + J + IDERIV - T,ICD0) .EQ. 0) THEN
                         WRITE (LUPRI,1000) 'E', I, J, T
                         WRITE (LUPRI,'(1X,6F12.8)')
      &                     (COEFCD(P,T,I,J,X,ITYPE),P=1,NUCCD)

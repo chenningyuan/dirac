@@ -1,40 +1,42 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module fde_io
 
    use fde_cfg
       
-   private
+   implicit none
 
    public fde_open_file
    public fde_close_file
    public read_grid
+   public read_grid_dim_only
+
 
    interface read_grid
       module procedure read_grid_onecol
       module procedure read_grid_manycol
+      module procedure read_grid_proponly
    end interface read_grid
 
    real(kind=8) :: threshold = 1.0d-18
+
+!  pertden info
+   integer, public :: fde_pertden_ncol
+   integer, public :: fde_pertden_nrow
 
    contains
 
@@ -51,6 +53,7 @@ module fde_io
                  FORM   = 'FORMATTED',   &
                  STATUS = 'UNKNOWN',     &
                  ACCESS = 'SEQUENTIAL',  &
+                 POSITION = 'REWIND',    &
                  FILE   =  name)
          else
             write (errmsg,'(a60)') "FDE-related file: "//name(1:10)//" not found. Stopping now!"
@@ -122,7 +125,7 @@ module fde_io
     REAL(kind=8),POINTER :: points(:,:), ptmp_many(:,:)
     REAL(kind=8),pointer :: properties(:,:)
     INTEGER              :: file
-    INTEGER              :: i,npoints, nprop
+    INTEGER              :: i,npoints, nprop, ierr
    
     REWIND(file)
     READ(file,*) npoints, nprop
@@ -133,10 +136,38 @@ module fde_io
     allocate(properties(nprop,npoints))
 
     DO i=1,npoints
-       READ(file,*) points(:,i),properties(:,i)
+       READ(file,*, IOSTAT=ierr) points(:,i),properties(:,i)
+       if (ierr .ne. 0) write(*,*) 'error ierr in point', ierr, i
     END DO
 
   END SUBROUTINE READ_GRID_manycol
   
+  SUBROUTINE READ_GRID_proponly(file,npoints,nprop,properties)
+    REAL(kind=8),pointer :: properties(:,:)
+    REAL(kind=8)         :: dummy(4)
+    INTEGER              :: file
+    INTEGER              :: i,npoints, nprop, ierr
+   
+    REWIND(file)
+    if (associated(properties)) nullify(properties)
+    allocate(properties(nprop,npoints))
+
+    DO i=1,npoints
+       READ(file,*, IOSTAT=ierr) dummy(:), properties(:,i)
+       if (ierr .ne. 0) write(*,*) 'error ierr in point', ierr, i
+    END DO
+
+  END SUBROUTINE READ_GRID_proponly
+
+   subroutine read_grid_dim_only(file,nr_points, nr_cols)
+    integer    :: nr_points, nr_cols
+    integer    :: file
+
+    rewind(file)
+    read(file,*) nr_points, nr_cols
+
+  end subroutine
+
 
 end module fde_io
+

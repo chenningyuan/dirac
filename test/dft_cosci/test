@@ -18,8 +18,8 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
       num_lines   = 9,
       rel_tolerance = 1.0e-5)
 
-test.run(['F.x2c.2Paver_bp86_2fs_cosci.inp'], ['F.sto-2g.mol'], f)
-test.run(['C.x2c.aver_b3lyp_2fs_cosci_novxc.inp'], ['C.sto-2g.mol'], f)
-test.run(['N.x2c.aver_pbe_2fs_cosci.inp'], ['N.sto-2g.mol'], f)
+test.run(['F.x2c.2Paver_bp86_2fs_cosci.inp'], ['F.sto-2g.mol'], f, accepted_errors=['DFT-COSCI not parallelized'])
+test.run(['C.x2c.aver_b3lyp_2fs_cosci_novxc.inp'], ['C.sto-2g.mol'], f, accepted_errors=['DFT-COSCI not parallelized'])
+test.run(['N.x2c.aver_pbe_2fs_cosci.inp'], ['N.sto-2g.mol'], f, accepted_errors=['DFT-COSCI not parallelized'])
 
 sys.exit(test.return_code)

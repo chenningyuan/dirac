@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module interface_functional_read
@@ -37,7 +32,7 @@ module interface_functional_read
    public set_hf_exchange_factor
  
    real(8), public :: hf_exchange_factor
-   logical, public :: pure_hf_run
+   logical, public :: pure_hf_run = .false.
    logical, save   :: already_checked = .true.
    private
 
@@ -181,27 +176,18 @@ contains
            f%w(XC_M06X) = f%w(XC_M06X) + w
            f%w(XC_M06C) = f%w(XC_M06C) + w
            hfx_out = hfx_out + h*w
-#ifndef MOD_UNRELEASED
-           call quit('this functional is not available in this version')
-#endif
         end if
       
         w = get_weight(word_array(i), 'm06l')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_M06LX) = f%w(XC_M06LX) + w
            f%w(XC_M06LC) = f%w(XC_M06LC) + w
-#ifndef MOD_UNRELEASED
-           call quit('this functional is not available in this version')
-#endif
         end if
       
         w = get_weight(word_array(i), 'm06-l')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_M06LX) = f%w(XC_M06LX) + w
            f%w(XC_M06LC) = f%w(XC_M06LC) + w
-#ifndef MOD_UNRELEASED
-           call quit('this functional is not available in this version')
-#endif
         end if
       
         w = get_weight(word_array(i), 'pbe')

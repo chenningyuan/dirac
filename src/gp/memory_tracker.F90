@@ -45,7 +45,7 @@
          integer, parameter :: topListSize = 10
 
          type         :: memChunk
-            integer                        :: n_elements        ! size of the memory, in units
+            integer*8                      :: n_elements        ! size of the memory, in units
             integer                        :: type              ! type of variable
             integer(kind=klongint)         :: varID             ! type of variable
             character(len=charArrayLength) :: varLabel          ! type of variable
@@ -85,11 +85,53 @@
          public track_SetCurrentGroup, track_GetCurrentGroup
          public track_getMemoryInuse
 
+         interface track_RegisterAllocation
+            module procedure track_RegisterAllocation
+#if !defined (INT_STAR8)
+            module procedure track_RegisterAllocation_i8_fixed
+#endif
+         end interface track_RegisterAllocation
          contains
 !
 !
             subroutine track_RegisterAllocation(size,type,varID,varLabel,trackCaller,trackLevel)
-               integer                  :: size, type, trackLevel
+#if defined (INT_STAR8)
+               integer(kind=8)          :: size
+#else
+               integer                  :: size
+#endif
+               integer                  :: type, trackLevel
+               real(kind=kreal)         :: bytes
+               integer(kind=klongint)   :: varID
+               character(len=*)         :: varLabel, trackCaller
+               type (memChunk), pointer :: newChunk
+
+               call track_createNewChunk(newChunk)
+
+#if defined (INT_STAR8)
+               newChunk%n_elements  = size
+#else
+               newChunk%n_elements  = int(size,kind(newChunk%n_elements))
+#endif
+               newChunk%type        = type
+               newChunk%varID       = varID
+               newChunk%varLabel    = varLabel
+               bytes = real(size)*real(type)
+               write (newChunk%allocatedAt,'(a42)') trackCaller
+
+               call track_AddToList(memTracking%aL,newChunk)
+
+               memTracking%n_created        = memTracking%n_created + 1
+               memTracking%CurrentMemoryUse = memTracking%CurrentMemoryUse + bytes 
+
+               call track_updateTopLists(memTracking,newChunk)
+
+            end subroutine track_RegisterAllocation
+
+#if !defined (INT_STAR8)
+            subroutine track_RegisterAllocation_i8_fixed(size,type,varID,varLabel,trackCaller,trackLevel)
+               integer(kind=8)          :: size
+               integer                  :: type, trackLevel
                real(kind=kreal)         :: bytes
                integer(kind=klongint)   :: varID
                character(len=*)         :: varLabel, trackCaller
@@ -111,7 +153,9 @@
 
                call track_updateTopLists(memTracking,newChunk)
 
-            end subroutine track_RegisterAllocation
+            end subroutine track_RegisterAllocation_i8_fixed
+#endif
+
 !
 ! registerDeallocation will ad the information gathered within dealloc
 !

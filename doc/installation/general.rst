@@ -4,6 +4,28 @@
 Basic installation
 ==================
 
+
+If you have cloned or downloaded from GitLab
+--------------------------------------------
+
+If you clone the code directly from GitLab, please clone with ``--recursive``::
+
+  $ git clone --recursive --branch v22.0 https://gitlab.com/dirac/dirac.git
+
+If you have downloaded a zip/tar.gz/tar.bz2/tar archive directly from GitLab,
+you will require Git installed to build the code. After extracting the archive
+you will need to run this additional step in order to fetch and update external
+dependencies::
+
+  $ git submodule update --init --recursive
+
+**However, we recommend users who do not plan to make any code changes
+to download from** https://doi.org/10.5281/zenodo.4836495.
+In this case the above extra step is not needed as the release tarballs are
+self-contained, and in addition we get useful download metrics which we can use
+in future funding applications.
+
+
 General
 -------
 
@@ -68,9 +90,10 @@ some typical configuration scenarios.
 Configure for parallel compilation using MPI (make sure to properly export MPI
 paths)::
 
-  $ ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx
+  $ ./setup --mpi --fc=mpif90 --cc=mpicc --cxx=mpicxx
 
-There is a shortcut for it::
+These compiler names are in fact default for MPI in Dirac, so there is a shortcut if these
+are the compiler wrappers you want to use::
 
   $ ./setup --mpi
 

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 #if defined (VAR_MPI2)
@@ -52,7 +47,7 @@ C
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -230,7 +225,7 @@ C
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -607,7 +602,7 @@ C
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -1107,7 +1102,7 @@ C
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -1289,7 +1284,7 @@ C
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       DIMENSION VEC1(*), VEC2(*), SUBSPH(*)
       DIMENSION LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -1454,6 +1449,7 @@ C
       SUBROUTINE UPDATE_LUC_LIST2(ISCLFAC_GROUP,LUCLIST,RCCTOS,CB,
      &                            NPARBLOCK,IBLOCKL,IGROUPLIST,
      &                            IPROCLIST,IRILP,BLOCKTIME)
+      use luci_wrkspc
 C
 C     make an update of of grouplist for c-vector file based on 
 C     different list gathered from global_communicator
@@ -1467,9 +1463,8 @@ C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "wrkspc.inc"
       DIMENSION ISCLFAC_GROUP(*), LUCLIST(*) 
       DIMENSION CB(*)
       DIMENSION NPARBLOCK(*), IBLOCKL(*)
@@ -1587,7 +1582,7 @@ C
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
       DIMENSION IGROUPLIST(*), IBLOCKL(*), IBLOCKD(*)
@@ -1867,7 +1862,7 @@ C
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
 C     INPUT
@@ -1914,7 +1909,7 @@ C
       use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       CHARACTER*10 PLU1,PLU2,PLU3,PLU4,PLU5,PLU6,PLU7,PLU8,PLUC,PDIA
       CHARACTER*6 PLU1BL,PLU2BL,PLU3BL,PLU4BL,PLU6BL,PLU7BL,PLU5BL
@@ -2081,7 +2076,7 @@ C
       use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C
 C     ... close
@@ -2130,9 +2125,9 @@ C
 ***********************************************************************
       SUBROUTINE BLOCK_DISTR_DRV(NBLOCK,IBLOCKL,NBLOCKD,IBLOCKS_FNODE,
      &                           SCALFAC,NVAR,IPROCLIST)
+      use luci_wrkspc
 #include "implicit.h"
 #include "parluci.h"
-#include "wrkspc.inc"
       INTEGER*8 IABSOLUTE_WEIGHT
       IABSOLUTE_WEIGHT = 0
 C
@@ -3070,6 +3065,7 @@ C
       SUBROUTINE FNDMND_PAR(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,
      &                     SCR,ISCAT,SUBVAL,IBLOCKL,IBLOCKD,
      &                     NBLOCK,NTESTG)
+      use luci_wrkspc
 *
 * FIND NSUB LOWEST ELEMENTS OF VECTOR RESIDING ON FILE
 * LU. ENSURE THAT NO DEGENERENCIES ARE SPLIT
@@ -3093,9 +3089,8 @@ C
       use interface_to_mpi
       IMPLICIT REAL*8           ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "wrkspc.inc"
       
       DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
       DIMENSION IBLOCKL(NBLOCK), IBLOCKD(NBLOCK)

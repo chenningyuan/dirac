@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 *fordeck lucia_cc
@@ -316,6 +311,7 @@ C?   &                    I,J,K,L,IJKL
       SUBROUTINE OPTIM_CC(CC_AMP,VEC1,VEC2)
 *
 * Optimize CC wave function
+      use luci_wrkspc
 *
 * Initial version,Sept 98
 *
@@ -336,7 +332,6 @@ C?   &                    I,J,K,L,IJKL
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPROD
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
@@ -487,6 +482,7 @@ C            DIAVC2(VECOUT,VECIN,DIAG,SHIFT,NDIM)
 * as well as multireference cc expansions
 *
 * The CC vector function reads
+      use luci_wrkspc
 *
 *     <\my! Exp(-T) H Exp (T) !0>
 *
@@ -521,7 +517,6 @@ C            DIAVC2(VECOUT,VECIN,DIAG,SHIFT,NDIM)
 #include "cc_exc.inc"
 #include "clunit.inc"
 #include "glbbas.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "cprnt.inc"
 *
@@ -2090,6 +2085,7 @@ C            WRT_CC_VEC(CC,LU)
       RETURN
       END
       SUBROUTINE LUCIA_CC(ISM,ISPC,IPRNT,ECC,II_RESTRT_CC,I_TRANS_WF)
+      use luci_wrkspc
 *
 * Coupled Cluster calculations with LUCIA
 *
@@ -2099,7 +2095,6 @@ C            WRT_CC_VEC(CC,LU)
       REAL*8 INPRDD
 #include "mxpdim.inc"
 #include "crun.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "cands.inc"
 #include "clunit.inc"

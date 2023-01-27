@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -70,9 +65,21 @@ C
       END
 C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
-#include "implicit.h"
+      ! print CPU time used
+      ! template:
+      !   CALL TIMER('START',TIMSTR,TIMEND)
+      !   ... work ...
+      !   CALL TIMER('work', TIMSTR,TIMEND
+      !   ... more work ...
+      !   CALL TIMER('more work',TIMSTR,TIMEND)
+      implicit none
 #include "priunit.h"
-      CHARACTER TEXT*(*), OUT_TEXT*50
+      CHARACTER TEXT*(*)
+      REAL*8    TIMSTR, TIMEND
+      ! local variables:
+      REAL*8    TIME, DUMMY
+      INTEGER   LTEXT, LOUT, LNBLNK
+      CHARACTER OUT_TEXT*50
 C
       IF (TEXT(1:5) .EQ. 'START') THEN
          CALL GETTIM(TIMSTR,DUMMY)
@@ -84,10 +91,49 @@ C
 C        Jun 06 hjaaj: do not print times less than 0.1 seconds
             LTEXT = LNBLNK(TEXT)
             LTEXT = MIN(30,LTEXT)
-            OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
-            LOUT = 17 + LTEXT + 3
+            OUT_TEXT = '>>> CPU time used in '//TEXT(1:LTEXT)//' is'
+            LOUT = 21 + LTEXT + 3
             CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
-            CALL FLSHFO(LUPRI)
+            flush(LUPRI)
+         END IF
+      END IF
+      RETURN
+      END
+      SUBROUTINE TIMER2(TEXT,TIMSTR,TIMEND)
+      ! print CPU and WALL time used
+      ! template:
+      !   CALL TIMER('START',TIMSTR,TIMEND)
+      !   ... work ...
+      !   CALL TIMER('work', TIMSTR,TIMEND
+      !   ... more work ...
+      !   CALL TIMER('more work',TIMSTR,TIMEND)
+      implicit none
+#include "priunit.h"
+      CHARACTER TEXT*(*)
+      REAL*8    TIMSTR(2), TIMEND(2)
+      ! local variables:
+      REAL*8    CTIME, WTIME
+      INTEGER   LTEXT, LOUT, LNBLNK
+      CHARACTER OUT_TEXT*50
+C
+      IF (TEXT(1:5) .EQ. 'START') THEN
+         CALL GETTIM(TIMSTR(1),TIMSTR(2))
+      ELSE
+         CALL GETTIM(TIMEND(1),TIMEND(2))
+         CTIME     = TIMEND(1) - TIMSTR(1)
+         TIMSTR(1) = TIMEND(1)
+         WTIME     = TIMEND(2) - TIMSTR(2)
+         TIMSTR(2) = TIMEND(2)
+         IF (CTIME .GT. 0.1D0 .OR. WTIME .GT. 0.1D0) THEN
+C        Jun 06 hjaaj: do not print times less than 0.1 seconds
+            LTEXT = LNBLNK(TEXT)
+            LTEXT = MIN(30,LTEXT)
+            LOUT = 22 + LTEXT + 3
+            OUT_TEXT = '>>> CPU  time used in '//TEXT(1:LTEXT)//' is'
+            CALL TIMTXT(OUT_TEXT(1:LOUT),CTIME,LUPRI)
+            OUT_TEXT = '>>> WALL time used in '//TEXT(1:LTEXT)//' is'
+            CALL TIMTXT(OUT_TEXT(1:LOUT),WTIME,LUPRI)
+            flush(LUPRI)
          END IF
       END IF
       RETURN
@@ -96,45 +142,6 @@ C  /* Deck timdat */
       SUBROUTINE TIMDAT
 #include "implicit.h"
 #include "priunit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-      INTEGER CDATE, CTIME
-      CDATE = DATE()
-      CTIME = CLOCK()
-      WRITE(LUPRI,100) CDATE, CTIME
-  100 FORMAT(/,'  Date and time (CRAY) : ',A8,2X,A8)
-#endif
-#if defined (SYS_CONVEX)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (Convex) : ',A)
-#endif
-#if defined (SYS_HAL)
-      CHARACTER*(24) CFDATE
-      CALL FDATE(CFDATE)
-      WRITE (LUPRI,100) CFDATE
-  100 FORMAT(/,' Date and time (HAL)    : ',A)
-#endif
-#if defined (SYS_AIX)
-C     AIX XL FORTRAN version 2.3+
-      CHARACTER*(24) fdate
-      WRITE (LUPRI,100) fdate()
-  100 FORMAT(/,' Date and time (IBM-AIX): ',A)
-#endif
-#if defined (SYS_HPUX)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (HP-UX)  : ',A)
-#endif
-#if defined (SYS_DEC)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (DEC)  : ',A)
-#endif
-#if defined (SYS_IRIX)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (IRIX)   : ',A)
-#endif
 #if defined (SYS_LINUX)
       CHARACTER*(24) FDATE
       WRITE (LUPRI,100) FDATE()
@@ -149,16 +156,6 @@ C     AIX XL FORTRAN version 2.3+
       CHARACTER*(24) FDATE
       WRITE (LUPRI,100) FDATE()
   100 FORMAT(/,' Date and time (Darwin) : ',A)
-#endif
-#if defined (SYS_SX)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (Nec-SX) : ',A)
-#endif
-#if defined (SYS_SUN)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (SUN)   : ',A)
 #endif
       RETURN
       END
@@ -297,19 +294,11 @@ C
       WRITE (LUPRI,'(/A)') STRING
       CALL TIMDAT
       WRITE (LUPRI,'(1X,A)') TEXT
-#if defined (SYS_CRAY) || defined (SYS_CONVEX)\
-|| defined (SYS_UNIX) || defined (SYS_AIX)\
-|| defined (SYS_HPUX) || defined (SYS_IRIX)\
-|| defined (SYS_NEC) || defined (SYS_DEC)\
-|| defined (SYS_T3D) || defined (SYS_LINUX)\
-|| defined (SYS_SUN) || defined (SYS_HPUX)\
-|| defined (SYS_HAL) || defined (SYS_T90)\
-|| defined (SYS_SX) || defined (SYS_DARWIN)
+      CALL FLSHFO(LUPRI)
+
 C     Write to stderr
       WRITE (0,'(/A/1X,A)') STRING, TEXT
       CALL FLSHFO(0)
-#endif
-      CALL FLSHFO(LUPRI)
 
 #if defined (SYS_LINUX)
 C aspg, replacing trace with os-provided traceback facilities. linux support for now
@@ -326,9 +315,6 @@ C 3 = pretty print traceback to stdout...
 #   else
       CALL interface_MPI_ABORT(global_communicator,IERR)
 #   endif
-#endif
-#if defined (VAR_PVM)
-      CALL PVMFEXIT(INFO)
 #endif
 
 CMI ... .*F -> *.p dependency brings -DNO_SF_QUIT
@@ -463,70 +449,8 @@ C
 #include "chrnos.h"
 C
       IF (LEN .EQ. 0) RETURN
-#if defined (VAR_SPLITFILES)
-      INQUIRE(UNIT=LU,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
-      LRECL = LRECL/8
-#else
-#if !defined (SYS_NEC) && !defined (SYS_IRIX)
-      LRECL = LRECL/4
-#endif
-#endif
-      IRECPF = I2GB/LRECL
-C
-C     Error branch for very large record lengths
-C
-      IF (IRECPF .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I14,A)')
-     &        ' ERROR: The requested record length of ', LRECL,
-     &        ' is larger than 2Gb'
-         WRITE (LUPRI,'(/A)') ' The program cannot write even a '//
-     &        'single record to file!'
-         CALL QUIT('Record length of file too long for this computer')
-      END IF
-C
-      IF (I .GT. IRECPF) THEN
-C
-C     Ooops, this record is not in this file
-C
-         LFILNM = I/IRECPF - 1
-         IF (LFILNM .GT. 9) THEN
-            WRITE (LUPRI,'(/A)') ' DALTON needs to read from a file '//
-     &           ' split more than 11 times.',
-     &           ' This is currently not supported'
-            CALL QUIT('Too many splittings of a file')
-         END IF
-         IRECT = MOD(I,IRECPF)
-         IF (IRECT .EQ. 0) IRECT = IRECPF
-         INQUIRE(UNIT=LU,NAME=FNNAME)
-         LN = 1
- 10      CONTINUE
-         IF (FNNAME(LN:LN) .NE. ' ') THEN
-            LN = LN + 1
-            GOTO 10
-         END IF
-         LN = LN - 1
-         LUBKP = LU
-         CALL GPCLOSE(LU,'KEEP')
-         LU = LUBKP
-         FNNM2 = FNNAME(1:LN)//'-'//CHRNOS(LFILNM)
-         CALL GPOPEN(LU,FNNM2(1:(LN+2)),'UNKNOWN','DIRECT',' ',LRECL,
-     &               OLDDX)
-      ELSE
-         IRECT = I
-      END IF
-#else
       IRECT = I
-#endif
       READ (LU, REC = IRECT) IVEC
-#if defined (VAR_SPLITFILES)
-      IF (I .GT. IRECPF) THEN
-         LUBKP = LU
-         CALL GPCLOSE(LU,'KEEP')
-         LU = LUBKP
-         CALL GPOPEN(LU,FNNAME(1:LN),'UNKNOWN','DIRECT',' ',LRECL,OLDDX)
-      END IF
-#endif
       RETURN
       END
 C  /* Deck writdx */
@@ -544,70 +468,8 @@ C
 #include "inftap.h"
 #include "chrnos.h"
 C
-#if defined (VAR_SPLITFILES)
-      INQUIRE(UNIT=LU,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
-      LRECL = LRECL/8
-#else
-#if !defined (SYS_NEC) && !defined (SYS_IRIX)
-      LRECL = LRECL/4
-#endif
-#endif
-      IRECPF = I2GB/LRECL
-C
-C     Error branch for very large record lengths
-C
-      IF (IRECPF .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I14,A)')
-     &        ' ERROR: The requested record length of ', LRECL,
-     &        ' is larger than 2Gb'
-         WRITE (LUPRI,'(/A)') ' The program cannot write even a '//
-     &        'single record to file!'
-         CALL QUIT('Record length of file too long for this computer')
-      END IF
-C
-      IF (I .GT. IRECPF) THEN
-C
-C     Ooops, this record will not fit in this file
-C
-         LFILNM = I/IRECPF - 1
-         IF (LFILNM .GT. 9) THEN
-            WRITE (LUPRI,'(/A)') ' DALTON need to split a file more '//
-     &           ' than 11 times.', ' This is currently not supported'
-            CALL QUIT('Too many splittings of a file')
-         END IF
-         IRECT = MOD(I,IRECPF)
-         IF (IRECT .EQ. 0) IRECT = IRECPF
-         INQUIRE(UNIT=LU,NAME=FNNAME)
-         LN = 1
- 10      CONTINUE
-         IF (FNNAME(LN:LN) .NE. ' ') THEN
-            LN = LN + 1
-            GOTO 10
-         END IF
-         LN = LN - 1
-         LUBKP = LU
-         CALL GPCLOSE(LU,'KEEP')
-         LU = LUBKP
-         FNNM2 = FNNAME(1:LN)//'-'//CHRNOS(LFILNM)
-         LN2 = LN + 2
-         CALL GPOPEN(LU,FNNM2(1:LN2),'UNKNOWN','DIRECT',' ',LRECL,
-     &               OLDDX)
-      ELSE
-         IRECT = I
-      END IF
-#else
       IRECT = I
-#endif
       WRITE (LU, REC = IRECT) IVEC
-#if defined (VAR_SPLITFILES)
-      IF (I .GT. IRECPF) THEN
-         LUBKP = LU
-         CALL GPCLOSE(LU,'KEEP')
-         LU = LUBKP
-         CALL GPOPEN(LU,FNNAME(1:LN),'UNKNOWN','DIRECT',' ',LRECL,OLDDX)
-      END IF
-#endif
       RETURN
       END
 C  /* Deck aolab4 */
@@ -864,7 +726,7 @@ C
       GOTO 9100
 C
  9004 CONTINUE
-#ifdef GFORTRAN
+#ifdef VAR_GFORTRAN
 C
       call perror(' GPOPEN calling perror:')
 #endif
@@ -968,51 +830,7 @@ C
          CLOSE (LUNIT,STATUS='KEEP',ERR=9003)
          GOTO 30
       ELSE
-#if defined (VAR_SPLITFILES)
-         INQUIRE(UNIT=LUNIT,DIRECT=IODIR)
-         INQUIRE(UNIT=LUNIT,NAME=FNNAME)
-         IF (IODIR .EQ. 'YES') THEN
-            INQUIRE(UNIT=LUNIT,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
-            LRECL = LRECL/8
-#endif
-#if !defined (SYS_NEC) && !defined (SYS_IRIX)
-            LRECL = LRECL/4
-#endif
-         END IF
-         LN = 1
- 15      CONTINUE
-         IF (FNNAME(LN:LN) .NE. ' ') THEN
-            LN = LN + 1
-            GOTO 15
-         END IF
-         LN = LN - 1
-         IF (IODIR .NE. 'YES') THEN
-            IF (FNNAME((LN-1):(LN-1)) .EQ. '-') THEN
-               CLOSE(LUNIT,STATUS='KEEP')
-               LN = LN - 2
-               OPEN (UNIT=LUNIT,FILE=FNNAME(1:LN),STATUS='OLD')
-            END IF
-         END IF
          CLOSE (LUNIT,STATUS='DELETE',ERR=20)
-         IUNIT = 0
- 16      CONTINUE
-         FNNM2 = FNNAME(1:LN)//'-'//CHRNOS(IUNIT)
-         LN2 = LN + 2
-         INQUIRE(FILE=FNNM2(1:LN2),EXIST=FEXIST)
-         IF (FEXIST) THEN
-            IF (IODIR .EQ. 'YES') THEN
-               CALL OPENDX(LUNIT,FNNM2(1:LN2),LRECL,'OLD',OLDDX)
-            ELSE
-               OPEN(UNIT=LUNIT,FILE=FNNM2(1:LN2),STATUS='OLD')
-            END IF
-            CLOSE(LUNIT,STATUS='DELETE')
-            IUNIT = IUNIT + 1
-            GOTO 16
-         END IF
-#else
-         CLOSE (LUNIT,STATUS='DELETE',ERR=20)
-#endif
          GOTO 30
       END IF
 C

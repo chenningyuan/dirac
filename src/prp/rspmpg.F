@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -59,6 +54,7 @@ C
       dimension pfac(3)
       character plabel(3)*8
       character tmp(4)*4
+      CHARACTER PNAME*16
 
       call qenter('PRPXLR_MPG')
 CMI   .. add this
@@ -525,10 +521,6 @@ C
 C
       call qenter('GRDORB_MPG')
 C
-      open(lu1int,status='OLD',form='UNFORMATTED',file='AOPROPER')
-C
-      close(lu1int,status='KEEP')
-C
 C     Construct gradient
 C     ==================
 C
@@ -694,17 +686,14 @@ C     ================
 C
       call memget('REAL',kcmo,ncmotq,work,kfree,lfree)
       lubuf=22
-      call opnfil(lubuf,'DFCOEF','OLD','GETLRF')
       IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
-     &              TOTERG,11,WORK,KFREE,LFREE)
+     &              TOTERG,11)
       ELSE
         KIBRP = KFREE
-        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3)
       ENDIF
-      close(lubuf,status='KEEP')
 C
 C     Solution vector (e-e) part
 C     ==========================
@@ -876,14 +865,9 @@ C
 C     We also need the eigenvalues
 C     ============================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) GOTO 1000
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CALCDAX')
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6,
-     &            WORK,KFREE,LFREE)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6)
       CALL MEMCHK('na reacmo',WORK,1)
 C
       CALL CALC1_DAX(DMO,XMO,WORK(KDAX),WORK(KDVJ),WORK(KEIG),WORK,
@@ -894,10 +878,6 @@ C
 C
       CALL QEXIT('CALCDAX')
       RETURN
- 1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'CALCDAX: Coefficient file not found !'
-      CALL QUIT('CALCDAX: Coefficients not found !')
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck calc1_dax */
@@ -1049,14 +1029,9 @@ C
 C       Open the coefficient file and read the eigenvalues
 C       ==================================================
 C
-        INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-        IF(.NOT.FILEX) GOTO 1000
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CALCDJI')
         CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6,
-     &              WORK,KFREE,LFREE)
-        CLOSE(LUCOEF,STATUS='KEEP')
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6)
 C
 C       Calculate D_ji' and D_b'a
 C       =========================
@@ -1074,9 +1049,6 @@ C
 C
       CALL QEXIT('CALCDJI')
       RETURN
- 1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'CALCDJI: Coefficient file not found !'
-      CALL QUIT('CALCDJI: Coefficients not found !')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -139,10 +134,10 @@ C
       IF(IPRINT.GE.1) THEN
         CALL HEADER('GETLAB: AO-labels',-1)
         WRITE(LUPRI,'(3X,A,I5)') '* Large components:',NPLAB(1)
-        WRITE(LUPRI,'(6(3X,I3,2X,A12))') (I,PLABEL(I,1),I=1,NPLAB(1))
+        WRITE(LUPRI,'(6(I6,2X,A12))') (I,PLABEL(I,1),I=1,NPLAB(1))
         IOFF = NPLAB(1)
         WRITE(LUPRI,'(3X,A,I5)') '* Small components:',NPLAB(2)
-        WRITE(LUPRI,'(6(3X,I3,2X,A12))')
+        WRITE(LUPRI,'(6(I6,2X,A12))')
      &      (I,PLABEL(I,1),I=1+IOFF,NPLAB(0))
         IF(IPRINT.GE.7) THEN
           CALL PRIVEC('IPLAB ',IPLAB(1,1),NAORB)
@@ -183,10 +178,10 @@ C
       IF((IPRINT.GE.1).AND.(NBSYM.GT.1)) THEN
         CALL HEADER('GETLAB: SO-labels',-1)
         WRITE(LUPRI,'(3X,A,I5)') '* Large components:',NPLAB(1)
-        WRITE(LUPRI,'(6(3X,I3,2X,A12))') (I,PLABEL(I,2),I=1,NPLAB(1))
+        WRITE(LUPRI,'(6(I6,2X,A12))') (I,PLABEL(I,2),I=1,NPLAB(1))
         IOFF = NPLAB(1)
         WRITE(LUPRI,'(3X,A,I5)') '* Small components:',NPLAB(2)
-        WRITE(LUPRI,'(6(3X,I3,2X,A12))')
+        WRITE(LUPRI,'(6(I6,2X,A12))')
      &      (I,PLABEL(I,2),I=1+IOFF,NPLAB(0))
         IF(IPRINT.GE.7) THEN
            CALL PRIVEC('IPLAB ',IPLAB(1,2),NAORB)
@@ -518,12 +513,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
@@ -566,12 +556,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
@@ -614,12 +599,7 @@ C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C     DCBBAS:  NTBAS(0),N2BBASX
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
@@ -662,12 +642,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
@@ -1630,14 +1605,14 @@ C
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KBUF,MZ*N2BBASX,WORK,KFREE,LFREE)
-      CALL DCOPY(MZ*N2BBASX,AMAT,1,WORK(KBUF),1)
+      CALL MEMGET2('REAL','BUF',KBUF,N2BBASX,WORK,KFREE,LFREE)
       IZOFF = 0
       DO IZ = 1,MZ
+        CALL DCOPY(N2BBASX,AMAT(IZOFF+1),1,WORK(KBUF),1)
         DO JC = 1,2
           DO JREP = 0,MAXREP
             DO J = 0,NBBAS(JREP,JC)-1
-              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JSOFF =         (IBBAS(JREP  ,JC)+J)*NTBAS(0)
               JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
               DO IC = 1,2
                 DO IREP = 0,MAXREP
@@ -1684,33 +1659,36 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-      DIMENSION AMAT(*),WORK(LWORK)
+      DIMENSION AMAT(N2BBASX,MZ),WORK(LWORK)
       CALL QENTER('BUTOBS')
 #include "memint.h"
 C
 
-      CALL MEMGET('REAL',KBUF,MZ*N2BBASX,WORK,KFREE,LFREE)
-      CALL DCOPY(MZ*N2BBASX,AMAT,1,WORK(KBUF),1)
+      CALL MEMGET2('REAL','BUF',KBUF,N2BBASX,WORK,KFREE,LFREE)
       IZOFF = 0
       DO IZ = 1,MZ
+        CALL DCOPY(N2BBASX,AMAT(1,IZ),1,WORK(KBUF),1)
         DO JC = 1,2
           DO JREP = 0,MAXREP
             DO J = 0,NBBAS(JREP,JC)-1
-              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
-              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              JSOFF = (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = (ICOS (JREP+1,JC)+J)*NTBAS(0)
               DO IC = 1,2
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
+!                  write(*,*)""
+!                  write(*,*)"IREP", IREP
+!                  write(*,*)"IUOFF",IUOFF
+!                  write(*,*)"ISOFF",ISOFF
                   IF(NBBAS(IREP,IC).GT.0) 
      &              CALL DCOPY(NBBAS(IREP,IC),WORK(KBUF+IUOFF),1,
-     &                                        AMAT(ISOFF+1)   ,1)
+     &                                        AMAT(ISOFF+1,IZ)   ,1)
                 ENDDO
               ENDDO
             ENDDO
           ENDDO
         ENDDO
-        IZOFF = IZOFF + N2BBASX
       ENDDO
 C
       CALL MEMREL('BUTOBS',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1741,36 +1719,32 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-      DIMENSION AMAT(*)
+      DIMENSION AMAT(N2BBASX,MZ)
       real(8), allocatable :: buf(:)
       CALL QENTER('BSTOBU_no_work')
 C
 C     Memory allocation
 C
-      call alloc(buf, mz*n2bbasx)
-      CALL DCOPY(MZ*N2BBASX,AMAT,1,BUF,1)
-      IZOFF = 0
+      call alloc(buf, n2bbasx)
       DO IZ = 1,MZ
+        CALL DCOPY(N2BBASX,AMAT(1,IZ),1,BUF,1)
         DO JC = 1,2
           DO JREP = 0,MAXREP
             DO J = 0,NBBAS(JREP,JC)-1
-              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
-              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              JSOFF = (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = (ICOS (JREP+1,JC)+J)*NTBAS(0)
               DO IC = 1,2
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
-!                 print *,'copy IREP,IC, in JREP  ,JC: nbbas =',
-!    &                          IREP,IC,JREP  ,JC, NBBAS(IREP,IC)
                   IF(NBBAS(IREP,IC).GT.0)
      &              CALL DCOPY(NBBAS(IREP,IC),buf(1+ISOFF),1,
-     &                                        AMAT(IUOFF+1)   ,1)
+     &                                        AMAT(IUOFF+1,IZ)   ,1)
                 ENDDO
               ENDDO
             ENDDO
           ENDDO
         ENDDO
-        IZOFF = IZOFF + N2BBASX
       ENDDO
 C
 C     Memory deallocation
@@ -1802,7 +1776,7 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-      real(8), intent(inout) :: amat(*)
+      real(8), intent(inout) :: amat(ntbas(0)*ntbas(1),mz)
       real(8), allocatable   :: bufx(:)
       integer                :: ndim_mat
 
@@ -1823,20 +1797,18 @@ C
       call flshfo(6)
 C
 C     Memory allocation
-      call alloc(bufx, mz*ntbas(1)*ntbas(0), id='bufx LS-L Dao --> Hao')
+      call alloc(bufx, ntbas(1)*ntbas(0), id='bufx LS-L Dao --> Hao')
 
-      call dcopy(mz*ntbas(0)*ntbas(1),amat,1,bufx,1)
-      call dzero(amat,mz*ntbas(0)*ntbas(1))
 
 !     IREP+1 for icos because loop indices in herrdn.F run from 
 !     1 --> maxrep+1 for icos!
 
-
-      izoff = 0
       do iz = 1,mz
+        call dcopy(ntbas(0)*ntbas(1),amat(1,iz),1,bufx,1)
+        call dzero(amat(1,iz),ntbas(0)*ntbas(1))
         do jrep = 0,maxrep
           do j = 0,nbbas(jrep,1)-1
-            joff = izoff + (ibbas(jrep,1)+j)*ntbas(0)
+            joff = (ibbas(jrep,1)+j)*ntbas(0)
             print *,'joff ==> column in L part', joff
             do ic = 1, 2
               do irep = 0,maxrep
@@ -1846,7 +1818,7 @@ C     Memory allocation
                 if(nbbas(irep,ic).gt.0)then
 
                    call dcopy(nbbas(irep,ic),bufx(1+isoff),1,
-     &                                       amat(1+iuoff),1)
+     &                                       amat(1+iuoff,iz),1)
 
                 end if
 
@@ -1854,7 +1826,6 @@ C     Memory allocation
             end do
           end do
         end do
-        izoff = izoff + ntbas(1)*ntbas(0)
       end do
 C
 C     Memory deallocation
@@ -1887,93 +1858,34 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-      DIMENSION AMAT(*)
+      DIMENSION AMAT(N2BBASX,MZ)
       real(8), allocatable             :: buf(:)
       CALL QENTER('BUTOBS')
 C
-      call alloc(buf, mz*n2bbasx, id='buf in butobs')
-      CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
-      IZOFF = 0
+      call alloc(buf, n2bbasx, id='buf in butobs')
       DO IZ = 1,MZ
+        CALL DCOPY(N2BBASX,AMAT(1,IZ),1,buf,1)
         DO JC = 1,2
           DO JREP = 0,MAXREP
             DO J = 0,NBBAS(JREP,JC)-1
-              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
-              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              JSOFF = (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = (ICOS (JREP+1,JC)+J)*NTBAS(0)
               DO IC = 1,2
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
                   if(NBBAS(IREP,IC).GT.0)then
                     CALL DCOPY(NBBAS(IREP,IC),buf(1+IUOFF),1,
-     &                                        AMAT(ISOFF+1)   ,1)
+     &                                        AMAT(ISOFF+1,IZ)   ,1)
                   end if
                 ENDDO
               ENDDO
             ENDDO
           ENDDO
         ENDDO
-        IZOFF = IZOFF + N2BBASX
       ENDDO
 C
       call dealloc(buf)
-      CALL QEXIT ('BUTOBS')
-      RETURN
-C
-      END
-      SUBROUTINE BUTOBS_no_work2(AMAT,MZ,bmat)
-C***********************************************************************
-C
-C     Matrix transform:
-C     from symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
-C     to class/symmetry sorted basis ("sorted basis" = Dirac sorted)
-C
-C     Written by T.Saue Mar 2 1995
-C     Last revision : May 6 1996 - tsaue
-C
-C***********************************************************************
-
-         use memory_allocator
-#include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-C
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "symmet.h"
-C
-      DIMENSION AMAT(*)
-      real(8), intent(inout) :: bmat(*)
-      CALL QENTER('BUTOBS')
-C
-      write(lupri,*) 'dim of mat in butobs: ',MZ*N2BBASX,mz,n2bbasx
-      call flshfo(lupri)
-      CALL DCOPY(MZ*N2BBASX,AMAT,1,bmat,1)
-      IZOFF = 0
-      DO IZ = 1,MZ
-        DO JC = 1,2
-          DO JREP = 0,MAXREP
-            DO J = 0,NBBAS(JREP,JC)-1
-              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
-              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
-              DO IC = 1,2
-                DO IREP = 0,MAXREP
-                  IUOFF = JUOFF + ICOS (IREP+1,IC)
-                  ISOFF = JSOFF + IBBAS(IREP  ,IC)
-                  if(NBBAS(IREP,IC).GT.0)then
-                    CALL DCOPY(NBBAS(IREP,IC),bmat(1+IUOFF),1,
-     &                                        AMAT(ISOFF+1)   ,1)
-                  end if
-                ENDDO
-              ENDDO
-            ENDDO
-          ENDDO
-        ENDDO
-        IZOFF = IZOFF + N2BBASX
-      ENDDO
-C
       CALL QEXIT ('BUTOBS')
       RETURN
 C
@@ -1999,12 +1911,7 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION VBU(NBAST,NVEC),VBS(NBAST,NVEC)
-#else
       DIMENSION VBU(NTBAS(0),NVEC),VBS(NTBAS(0),NVEC)
-#endif
       CALL QENTER('VTBUBS')
 C
       DO J = 1,NVEC
@@ -2044,12 +1951,7 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION VBS(NBAST,NVEC),VBU(NBAST,NVEC)
-#else
       DIMENSION VBS(NTBAS(0),NVEC),VBU(NTBAS(0),NVEC)
-#endif
       CALL QENTER('VTBSBU')
       DO J = 1,NVEC
         DO IC = 1,2
@@ -2831,12 +2733,7 @@ C  /* Deck sphts1 */
 #include "priunit.h"
 C
 #include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AMAT(NBAST,NBAST),BMAT(NSPH,NBAST),WORK(LWORK)
-#else
       DIMENSION AMAT(NTBAS(0),NTBAS(0)),BMAT(NSPH,NTBAS(0)),WORK(LWORK)
-#endif
 C
 C     GENERATE MATRIX
 C
@@ -2975,14 +2872,16 @@ C
      &          TMAT(LR1,LC1,NZT)
 
 C   ...Define internal print level 
-      IBPRNT = 12 
+      IBPRNT = 12
 C
       IF(NVEC.EQ.0) RETURN
       IF(IPRINT.GE.IBPRNT) THEN
         CALL HEADER('BCKTRA: Nontransformed coefficients',-1)
         WRITE(LUPRI,'(2(3X,A,I5))')
      +    'Start index: ',JVEC,'No. of vectors:',NVEC
-        CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZC,IPQTOQ(1,0),LUPRI)
+        IF(ATOMIC .eqv. .FALSE.)THEN   !ayaki  Error appear in PRQMAT for ATOMIC
+          CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZC,IPQTOQ(1,0),LUPRI)
+        ENDIF   
         CALL HEADER('BCKTRA: Transformation matrix:',-1)
         CALL PRQMAT(TMAT,NBAS,NORB,LR1,LC1,NZT,IPQTOQ(1,0),LUPRI)
       ENDIF
@@ -3388,6 +3287,7 @@ C
         IAO = I2BASX(IFRP,IFRP)+1
         IMO = I2TMOT(IFRP) + (NTMO(IFRP)+1)*IBORB + 1
         ITM = I2TMT(IFRP)  + NFBAS(IFRP,0)*IBORB + 1
+
         CALL QTRANS('AOMO','S',0.0d0,NFBAS(IFRP,0),NFBAS(IFRP,0),
      &         NTMO_SUB(ISUB,IFRP,0),NTMO_SUB(ISUB,IFRP,0),
      &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
@@ -3398,6 +3298,59 @@ C
           IBORB = IBORB + NTMO_SUB(ISUB,IFRP,0)
       ENDIF
       ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck tsbbl2 */
+      SUBROUTINE TSBBL2(IFRP,IC,ISUB,FAO,FMO,TM1,TM2,BUF,LBUF,IPRINT)
+C***********************************************************************
+C 
+C     Perform AO->MO transformation separatly Large and Small
+C     (TSUBBL can transoform only total  )
+C
+C     Modified from TSUBBL
+C     A Sunaga 2018
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C      
+#include "dcbbas.h"
+#include "dcborb.h"  
+#include "dcbdhf.h"  
+#include "dgroup.h" 
+      DIMENSION FAO(*),FMO(*),TM1(*),TM2(*),BUF(LBUF)
+C
+      IF(ISUB.GE.1)THEN
+        IBORB = 0 
+        DO IS = 1, ISUB-1
+           IBORB = IBORB + NTMO_SUB(IS,IFRP,0)
+        ENDDO   
+      ELSE
+        IBORB = 0
+      ENDIF
+C      
+      IF(NTMO_SUB(ISUB,IFRP,IC).GT.0) THEN
+        IF(IC.EQ.1)THEN
+          NTMO_BUF = NTMO_SUB(ISUB,IFRP,2)
+        ELSEIF(IC.EQ.2)THEN
+          NTMO_BUF = 0
+        ENDIF
+        IAO = I2BASX(IFRP,IFRP)+1
+        IMO = 1
+        ITM = I2TMT(IFRP)  +
+     &        NFBAS(IFRP,0)*(IBORB+NTMO_BUF) + 1
+C
+        CALL QTRANS('AOMO','S',0.0d0,NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &         NTMO_SUB(ISUB,IFRP,IC),NTMO_SUB(ISUB,IFRP,IC),
+     &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &         FMO(IMO),NTMO_SUB(ISUB,IFRP,IC),NTMO_SUB(ISUB,IFRP,IC),
+     &         1,IPQTOQ(1,0),
+     &         TM1(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
+     &         TM2(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
+     &         BUF,LBUF,IPRINT)
+      ENDIF
 C
       RETURN
       END
@@ -4294,10 +4247,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C***********************************************************************
 C
 C     Transform density matrix in MO form to AO format using coefficients
-C     taken from DFCOEF
+C     taken from CHECKPOINT
 C     Written by L. Visscher, March 2008
 C
 C***********************************************************************
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -4322,12 +4276,7 @@ C
      
 C
 C     Read the MO coefficients
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) CALL QUIT ('DFCOEF missing')
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,DUM,2, 
-     &            WORK,KFREE,LFREE)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL REACMO_new(cmo=CMO)
 
 C     Perform the transformation
       DO IFSYM = 1,NFSYM

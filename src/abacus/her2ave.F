@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -140,12 +135,12 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
 #include "dirprt.h"
 #include "dcbgrd.h"
 #include "doxyz.h"
-#include "ibtfun.h"
 Cjth
 C
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+C     statement functions:
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 CMI  define calculation of SO contributions
       DOQUAT = .NOT.SPINFR
@@ -224,7 +219,7 @@ C
    5        CONTINUE
          END IF
       END IF
-      ISYMTS   = IBTXOR(ISYMT,ISYMS)
+      ISYMTS   = IEOR(ISYMT,ISYMS)
       IF (DDFOCK .AND. LONDON) THEN
          DIFAB(1) =             CORAX0 - XAND(ISYMR )*CORBX0
          DIFAB(2) =             CORAY0 - YAND(ISYMR )*CORBY0
@@ -624,8 +619,8 @@ CMI/HJ (TEC) implementation of two-electron part of magnet. susceptibilities
                               end if
 
                               pval1 = dmat(a, b, 1)*dmat(c, d, 1) 
-     &                              - dp25*(ttcadb + ttdacb)
-                              pval2 = dp25*(ttcadb - ttdacb)
+     &                              - dp25*hfxfac*(ttcadb + ttdacb)
+                              pval2 = dp25*hfxfac*(ttcadb - ttdacb)
 
                             end if
 
@@ -767,8 +762,9 @@ CMI/HJ (TEC) implementation of two-electron part of magnet. susceptibilities
      &                                + dmat(d, b, 4)*dmat(c, a, 8)
                               end if
 
-                              pval1 = pval1_x
-                              pval1 = d2*pval1_c - pval1_x
+!gosia: hfxfac here untested
+                              pval1 = hfxfac*pval1_x
+                              pval1 = d2*pval1_c - hfxfac*pval1_x
                               pval2 = pval1
 
                             end if
@@ -1636,10 +1632,10 @@ C
 #include "twocom.h"
 #include "symmet.h"
 #include "suscpt.h"
-#include "ibtfun.h"
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 C
       IF (IPRINT .GT. 10) THEN
@@ -1750,10 +1746,9 @@ C
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3)
 #include "twocom.h"
 #include "symmet.h"
-#include "ibtfun.h"
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 C
       IF (IPRINT .GT. 10) THEN
@@ -1822,10 +1817,9 @@ C
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3,3)
 #include "twocom.h"
 #include "symmet.h"
-#include "ibtfun.h"
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 C
       IF (IPRINT .GT. 10) THEN
@@ -1939,10 +1933,10 @@ C
 #include "maxorb.h"
 #include "symmet.h"
       DIMENSION PSO(*), PAO(*)
-#include "ibtfun.h"
+
       IAR(I,J,K,L) = KHKTA*(KHKTB*(KHKTC*(L-1)+K-1)+J-1)+I
       IRR(I,J,K,L) = MULTA*(MULTB*(MULTC*L+K)+J)+I+1
-      ISYMTS = IBTXOR(ISYMT,ISYMS)
+      ISYMTS = IEOR(ISYMT,ISYMS)
       MULTA = MULT(MULA)
       MULTB = MULT(MULB)
       MULTC = MULT(MULC)
@@ -1959,25 +1953,25 @@ C     Loop over irreps
 C
       IRCNTA = -1
       DO 100 IREPA = 0, MAXREP
-      IF(IBTAND(MULA,IBTXOR(IREPA,ITYNA)) .EQ. 0) THEN
+      IF(IAND(MULA,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
          IRCNTA = IRCNTA + 1
          IRCNTB = -1
          DO 200 IREPB = 0, MAXREP
-         IF(IBTAND(MULB,IBTXOR(IREPB,ITYNB)) .EQ. 0) THEN
-            SIGNB = PT(IBTAND(ISYMR, IBTXOR(IREPB,ITYNB)))
+         IF(IAND(MULB,IEOR(IREPB,ITYNB)) .EQ. 0) THEN
+            SIGNB = PT(IAND(ISYMR, IEOR(IREPB,ITYNB)))
             IRCNTB = IRCNTB + 1
             IRCNTC = -1
             DO 300 IREPC = 0, MAXREP
-            IF(IBTAND(MULC,IBTXOR(IREPC,ITYNC)) .EQ. 0) THEN
-               SIGNBC = SIGNB*PT(IBTAND(ISYMT, IBTXOR(IREPC,ITYNC)))
-               IRPABC = IBTXOR(IREPA,IBTXOR(IREPB,IREPC))
+            IF(IAND(MULC,IEOR(IREPC,ITYNC)) .EQ. 0) THEN
+               SIGNBC = SIGNB*PT(IAND(ISYMT, IEOR(IREPC,ITYNC)))
+               IRPABC = IEOR(IREPA,IEOR(IREPB,IREPC))
                IRCNTC = IRCNTC + 1
                IRCNTD = -1
                DO 400 IREPD = 0,MAXREP
-               IF (IBTAND(MULD,IBTXOR(IREPD,ITYND)) .EQ. 0) THEN
+               IF (IAND(MULD,IEOR(IREPD,ITYND)) .EQ. 0) THEN
                   IRCNTD = IRCNTD + 1
-                  IF (IBTXOR(IREPD,IRPABC) .EQ. 0) THEN
-                     SIGN =SIGNBC*PT(IBTAND(ISYMTS,IBTXOR(IREPD,ITYND)))
+                  IF (IEOR(IREPD,IRPABC) .EQ. 0) THEN
+                     SIGN =SIGNBC*PT(IAND(ISYMTS,IEOR(IREPD,ITYND)))
                      IOFF = NCABCD*(MULTOT
      &                      *(IAR(ICOMPA,ICOMPB,ICOMPC,ICOMPD) - 1)
      &                      + IRR(IRCNTA,IRCNTB,IRCNTC,IRCNTD) - 1)
@@ -2168,15 +2162,14 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
 #include "dirprt.h"
 #include "dcbgrd.h"
 #include "doxyz.h"
-#include "ibtfun.h"
 #include "dcbham.h"
       logical :: allow=.false.
 C
 C     jth
 C     
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 
 
@@ -2190,7 +2183,7 @@ C
        WRITE(LUPRI,'(10X,A,L2)') 'NODV:',NODV
       ENDIF
 C     
-      ISYMTS   = IBTXOR(ISYMT,ISYMS)
+      ISYMTS   = IEOR(ISYMT,ISYMS)
       DIFAB(1) =             CORAX0 - XAND(ISYMR )*CORBX0
       DIFAB(2) =             CORAY0 - YAND(ISYMR )*CORBY0
       DIFAB(3) =             CORAZ0 - ZAND(ISYMR )*CORBZ0
@@ -2486,8 +2479,8 @@ CMI ... stolen from dalton(abacus/abadip.F)
 C      for making the dirac output of magnetizabilities 
 C      the same as is in the older brother dalton
 
-       use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -2504,6 +2497,7 @@ C#include <debye.h>
 #include "dorps.h"
 #include "symmet.h"
 #include "chrxyz.h"
+C
       DATA CHRABC /'A','B','C'/
 C
       INERT = INDEX(SPC,'PRI') .NE. 0

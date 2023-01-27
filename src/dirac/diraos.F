@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -37,12 +32,7 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),BUF(*)
-#else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
-#endif
       RHO = D0
       DO IC = 1,MC
          CALL GETRH1(RHO,IC,IREPOP,GAO,DMAT,BUF)      
@@ -67,12 +57,7 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),BUF(*)
-#else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
-#endif
 C
 #include "ibtfun.h"
 C      
@@ -110,14 +95,8 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),
-     &          BUF(NBAST),GAO1(NBAST,3)
-#else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &          BUF(NTBAS(0)),GAO1(NTBAS(0),3)
-#endif
       DIMENSION RHG(3)
 C      
 #include "ibtfun.h"
@@ -166,14 +145,8 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION RHO(0:2),GAO(NBAST),DMAT(NBAST,NBAST),
-     &          BUF(NBAST,4),GAO1(NBAST,3),GAO2(NBAST,6)
-#else
       DIMENSION RHO(0:2),GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &          BUF(NTBAS(0),4),GAO1(NTBAS(0),3),GAO2(NTBAS(0),6)
-#endif
 C      
       RXX = D0
       RXY = D0
@@ -315,7 +288,7 @@ C
 !radovan:
 !     comment out this check (= include all shells) if you wish
 !     to calculate the relativistic current with Levy-Leblond
-      IF (MC .EQ. 1) ISHEND = NLRGSH
+      IF (MC .EQ. 1 .or. LEVYLE) ISHEND = NLRGSH
 C
       DO 100 ISHELA = ISHBEGIN,ISHEND
          NHKTA = NHKT(ISHELA)

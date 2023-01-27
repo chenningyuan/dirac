@@ -1,23 +1,19 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2017 by the authors of DIRAC.
- *     All Rights Reserved.
  *
- *     This source code is part of the DIRAC program package.
- *     It is provided under a written license and may be used,
- *     copied, transmitted, or stored only in accordance to the
- *     conditions of that written license.
+ *     Copyright (c) by the authors of DIRAC.
  *
- *     In particular, no part of the source code or compiled modules may
- *     be distributed outside the research group of the license holder.
- *     This means also that persons (e.g. post-docs) leaving the research
- *     group of the license holder may not take any part of Dirac,
- *     including modified files, with him/her, unless that person has
- *     obtained his/her own license.
+ *     This program is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU Lesser General Public
+ *     License version 2.1 as published by the Free Software Foundation.
  *
- *     For information on how to get a license, as well as the
- *     author list and the complete list of contributors to the
- *     DIRAC program, see: http://www.diracprogram.org
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *     Lesser General Public License for more details.
+ *
+ *     If a copy of the GNU LGPL v2.1 was not distributed with this
+ *     code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
  */
 /* dirac_copyright_end */
 
@@ -32,15 +28,12 @@
 */
 
 /* strictly conform to XOPEN ANSI C standard */
-#if !defined(SYS_DEC)
-/* XOPEN compliance is missing on old Tru64 4.0E Alphas */
-#define _XOPEN_SOURCE          500
+#define _XOPEN_SOURCE          600
 #define _XOPEN_SOURCE_EXTENDED 1
-#endif
 
 /* Use BSD's strncasecmp(); if there is a platform that has no strncasecmp()
  * ask pawsa@theochem.kth.se for replacement */
-#define _BSD_SOURCE 1
+#define _DEFAULT_SOURCE 1
 
 #include <ctype.h>
 #include <math.h>
@@ -635,16 +628,6 @@ fort_print(const char* format, ...)
 #endif
     va_list a;
 
-/* DEC does not recognize the vsnprintf command */
-/* unless when linked with -ldb */
-#ifndef SYS_DEC
-    va_start(a, format);
-    vsnprintf(line, sizeof(line), format, a);
-    va_end(a);
-    len = strlen(line);
-    fortwrt_(line, &len);
-    return len;
-#endif
 }
 
 /* ################################################################### */

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -407,13 +402,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Subroutine DayTime (Datum,Tijd)
       Character Datum*10,Tijd*8
 
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      Call Date(Datum)
-      Call Clock(Tijd)
-#else
-#if defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_DARWIN) \
-   || defined (SYS_DEC) || defined (SYS_IRIX)  || defined (SYS_AIX) \
-   || defined (SYS_SUN) || defined (SYS_SX)
       CHARACTER FDATE*24, String*24
 C
       STRING = FDATE()
@@ -422,11 +410,6 @@ C     format from fdate(): 'Fri Sep 13 00:00:00 1986'
 C     format of DATUM: ' 13 Sep 86'
       TIJD  = STRING(12:19)
 C     format of TIJD: '00:00:00'
-#else
-      Datum = '          '
-      Tijd  = '        '
-#endif
-#endif
       Return
       End
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -442,8 +425,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
      &                   ISIZE,INDX,IRPS,IND,esels,indsel)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 C
 C---------------Description--------------------------------------------
 C
@@ -732,8 +715,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV,
      &                       TSHOLD)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 C
 C---------------Description--------------------------------------------
 C
@@ -786,7 +769,6 @@ C
       CHARACTER*4 REPNA(*), REPNAO(*)
       INTEGER TSHOLD
       REAL*8 E_OFF
-
 C
 C---------------Local variables--------------------------------------
 C
@@ -1633,7 +1615,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "bucket_sort.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
       LOGICAL NEWMAIL
       INTEGER IHBUF(4*NGBFSZ+4)
 C
@@ -1677,7 +1659,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "bucket_sort.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
       INTEGER ISTATS(df_MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
       LOGICAL NEWMAIL
       INTEGER IEND

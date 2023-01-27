@@ -1,7 +1,8 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
-    ${PROJECT_SOURCE_DIR}/src/cfun
-    )
+    ${PROJECT_SOURCE_DIR}/src/grid
+    ${PROJECT_SOURCE_DIR}/src/cfun # yes, depends 
+)
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
     SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
@@ -9,7 +10,6 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_GRID_FORTRAN_SOURCES
-    dftwrk.h
     Lebedev-Laikov.F
     dftgrd.F
     grtest.F
@@ -25,6 +25,12 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FIXED_GRID_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'grid' module without exceptions")
+    set_source_files_properties(${FREE_GRID_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_GRID_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+endif()
+
 add_library(
     grid
     OBJECT
@@ -33,9 +39,7 @@ add_library(
 )
 
 #
-# deal with intedependencies
+# deal with module intedependencies
 #
-## modules/interface_grid.mod
 add_dependencies(grid xcint)
-## modules/dirac_cfg.mod
 add_dependencies(grid gp)

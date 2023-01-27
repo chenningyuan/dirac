@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -65,15 +60,27 @@ C
      &/"  - Initial implementation :",T30,
      &"L. Visscher, T.J. Lee and K.G. Dyall, ",
      &"J. Chem. Phys. 105 (1996) 8769."
-     &/"  - Fock Space (FSCC):",T30,
+     &/"  - Fock Space (FSCC)      :",T30,
      &"L. Visscher, E. Eliav and U. Kaldor, ",
      &"J. Chem. Phys. 115 (2002) 9720."
-     &/"  - Intermediate Hamiltonian FSCC :",T30,
+     &/"  - Parallelization        :",T30,
+     &"M. Pernpointner and L. Visscher, ",
+     &"J. Comp. Chem. 24 (2003) 754.",
+     &/"  - Intermediate Hamilt. FS:",T30,
      &"E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, ",
      &"J. Chem. Phys. 122 (2005) 224113.",
-     &/"  - Parallelization :",T30,
-     &"M. Pernpointner and L. Visscher, ",
-     &"J. Comp. Chem. 24 (2003) 754.")
+     &/"  - MP2 expectation values :",T30,
+     &"J.N.P. van Stralen, L. Visscher, C.V. Larsen and H.J.Aa. Jensen,",
+     &" Chem. Phys. 311 (2005) 81."
+     &/"  - CC  expectation values :",T30,
+     &"A. Shee, L. Visscher, and T. Saue, ",
+     &"J. Chem. Phys. 145 (2016) 184107."
+     &/"  - EOM-IP/EA/EE energies  :",T30,
+     &"A. Shee, T. Saue, L. Visscher, and A.S.P. Gomes, ",
+     &"J. Chem. Phys. 149 (2018) 174113.",
+     &/"  - Core spectra (CVS-EOM) :",T30,
+     &"L. Halbert, M. L. Vidal, A. Shee, S. Coriani, and A.S.P. Gomes,",
+     &" arXiv:2011.08549")
 C
       RETURN
 C---------------Record of modifications made in the code-------------
@@ -171,17 +178,16 @@ C
       REAL*8 EHMIN,EHMAX,EPMIN,EPMAX
       REAL*8 SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,SHIFTH12,SHIFTHP,SHIFTP12
 C
+      DOUBLE PRECISION D0
+      PARAMETER (D0 = 0.0D00)
+      INTEGER   NACTH(16),NACTP(16)
+      INTEGER   NACTHI(16),NACTPI(16)
+      INTEGER MAXIT00,MAXIT01,MAXIT10,MAXIT11,MAXIT20,MAXIT02,I,IFREQ,
+     &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT,TSHOLD, NTOL
 !     This namelist is the only one kept for backward compatibility (old HF Hessian).
 !     This is to be replaced when a real CC or MP2 Hessian becomes available.
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
-      DOUBLE PRECISION D0
-      PARAMETER (D0 = 0.0D00)
-      INTEGER NACTH,NACTP,NACTHI,NACTPI,NTOL
-      DIMENSION NACTH(16),NACTP(16)
-      DIMENSION NACTHI(16),NACTPI(16)
-      INTEGER MAXIT00,MAXIT01,MAXIT10,MAXIT11,MAXIT20,MAXIT02,I,IFREQ,
-     &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT,TSHOLD
 
       Logical, SAVE :: FirstCall=.TRUE.
 
@@ -267,8 +273,6 @@ C
       NTOL      = relcc_fopr_desired_convergence
 C     Switch on evaluation of property output if necessary
       IF (DOMP2G) THEN
-!         IF (SPFR) 
-!     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
           DOEXP = .TRUE.
           IPRP_WF = 0
           DO I = 1, NPRP_WF
@@ -300,6 +304,24 @@ C     Switch on evaluation of property output if necessary
                 IPRP_WF = NPRP_WF
              END IF
              PRP_WF(IPRP_WF) = 'CCSD'
+          END IF
+      END IF
+! the following section is to activate excited state property evaluation module
+
+      if (relcc_do_eomprop) then
+        DOEXP = .TRUE.
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'EOM ') IPRP_WF = I
+          END DO
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
+             END IF
+             PRP_WF(IPRP_WF) = 'EOM '
           END IF
       END IF
 
@@ -408,6 +430,10 @@ CMI     ...default maximum number iterations per sector
       DO I = 1, 16
         NINACT(I) = NELEC(I) - NACTH(I)
         NACT(I) = NACTH(I) + NACTP(I)
+        IF (.not.FirstCall.and.NINACT(I).LT.0) THEN
+           WRITE (IW,*) "more holes than electrons in input"
+           CALL QUIT ("Input error")
+        END IF
       ENDDO
 CMI   ... translate MAXITxy easy input to MAXIT_SECT type input ...
       IF (MAXIT02.NE.-1) MAXIT_SECT(5) = MAXIT02
@@ -564,6 +590,7 @@ c
       use interface_to_mpi
       use relcc_cfg
       use xmlout
+      use eom_driver
 C
       IMPLICIT NONE
 C
@@ -603,9 +630,9 @@ C
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,CA
       REAL*8 CPU0,CPU1,CPU2,CPUTOT,CPUI,CPUS
-      REAL*8 CPUE,CPUFO,CPUSO,CPUFS,CPUVAR
+      REAL*8 CPUE,CPUFO,CPUSO,CPUFS,CPUVAR,CPUEOM
       REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS,TIME_SYNC_TOT
-      REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR,TIME_SYNC
+      REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR,WALLEOM,TIME_SYNC
       CHARACTER*10 INTFCE
       integer :: verbose    = 0
       integer :: ncore_elec = 0
@@ -644,6 +671,7 @@ C
       CPUE = 0
       CPUFO = 0
       CPUFS = 0
+      CPUEOM = 0
       CPUSO = 0
       CPUTOT = 0
       WALL1 = WALL0
@@ -652,6 +680,7 @@ C
       WALLE = 0
       WALLFO = 0
       WALLFS = 0
+      WALLEOM = 0
       WALLSO = 0
       WALLTOT = 0
 C
@@ -733,6 +762,7 @@ C
       DO I = 1, 16
          NELECT = NELECT + NELEC(I)
       ENDDO
+      IF (NELECT.LE.2) DOCCSDT = .FALSE. ! Override default or user set value if this calculation makes no sense and possibly gives errors.
 
 !     total charge of the system
       call get_charge_cc(mycharge,nelect,ncore_elec)
@@ -810,6 +840,17 @@ C
          CALL CCFSPC(ICALC,MXCORR1,EPS1,EPS,NSP,IREPSP,IREPSPI)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
+
+!! Activate EOMCC calculation 
+
+      DOEOMCCSD=.FALSE.
+      IF (relcc_do_eomcc) THEN
+         DOEOMCCSD=.TRUE.
+         MXCORR1 = 0
+         CALL eom_ee(ICALC,MXCORR1,eps)
+         MXCORR = MAX(MXCORR,MXCORR1)
+      ENDIF
+
 C
 C excitation energy code (e.g. rpa) is disabled
 C     IF (DOEXCIT) THEN
@@ -891,7 +932,15 @@ C
       WALLFS = WALLFS + CPU2 - CPU1
       WALL1 = WALL2
       CALL FLSHFO (IW)
-C
+
+      IF (relcc_do_eomcc) CALL eom_ee(ICALC,MXCORR,eps)
+      CALL GETTIM(CPU2,WALL2)
+      CPUEOM = CPUEOM + CPU2 - CPU1
+      CPU1 = CPU2
+      WALLEOM = WALLEOM + CPU2 - CPU1
+      WALL1 = WALL2
+      CALL FLSHFO (IW)
+
 C  FINISHED; RETURN AFTER CLOSING FILES
 C
       JCODE = 3
@@ -905,9 +954,11 @@ C
       JCODE = 3
       CALL WAIO_CLOSE(ITAPT+4,JCODE)
       JCODE = 3
-      IF (DOCCSD.OR.DOCCSDT.OR.DOCCSDG) CALL WAIO_CLOSE(ITAPT+5,JCODE)
+      IF (DOCCSD.OR.DOCCSDT.OR.DOCCSDG.OR.relcc_do_eomcc) 
+     &       CALL WAIO_CLOSE(ITAPT+5,JCODE)
       JCODE = 3
-      IF (DOCCSD.OR.DOCCSDG) CALL WAIO_CLOSE(ITAPT+6,JCODE)
+      IF (DOCCSD.OR.DOCCSDG.OR.relcc_do_eomcc)
+     &  CALL WAIO_CLOSE(ITAPT+6,JCODE)
       IF (DOFSPC) CLOSE (IUHEFF)
 C
       CALL CCSUMM
@@ -922,14 +973,15 @@ C
 !!      IF (.NOT.DOCCSDG)
       CALL XTIME(0,4,' RELCCSD                         ')
       CALL FLSHFO (IW)
+
       CALL GETTIM(CPUTOT,WALLTOT)
 
       CPUTOT = CPUTOT - CPU0
-      CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO-CPUFS
+      CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO-CPUFS-CPUEOM
       WALLTOT = WALLTOT-WALL0
-      WALLVAR = WALLTOT-WALLI-WALLS-WALLE-WALLFO-WALLSO-WALLFS
+      WALLVAR = WALLTOT-WALLI-WALLS-WALLE-WALLFO-WALLSO-WALLFS-WALLEOM
       WRITE(IW,1010) WALL0,CPU0,WALLI,CPUI,WALLS,CPUS,WALLE,CPUE,
-     & WALLFO,CPUFO,WALLSO,CPUSO,WALLFS,CPUFS,
+     & WALLFO,CPUFO,WALLSO,CPUSO,WALLFS,CPUFS,WALLEOM,CPUEOM,
      & WALLVAR,CPUVAR,WALLTOT,CPUTOT
 
 
@@ -992,7 +1044,8 @@ C
      &/' First order properties :',T30,F12.2,T55,F12.2
      &/' Second order properties :',T30,F12.2,T55,F12.2
      &/' Fock space energies :',T30,F12.2,T55,F12.2
-     &/' Untimed parts :',T30,F12.2,T55,F12.2
+     &/' EOMCC energies :',T30,F12.2,T55,F12.2
+     &/' Untimed parts :',T30,F12.2,T55,F12.2 
      &/' Total time in CC driver :',T30,F12.0,T55,F12.2)
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
  1015 FORMAT (/' Checking ',A,'MXCORR1,MXCORR',2I10)
@@ -1003,6 +1056,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
      &                   FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
+      use spinor_indexing
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -1059,6 +1113,7 @@ C
          NO(IREP) = 0
          NV(IREP) = 0
          NC(IREP) = 0
+!         NCONT(IREP) = 0
          NIO(IREP) = 0
          NIV(IREP) = 0
          NAO(IREP) = 0
@@ -1721,7 +1776,7 @@ C
          KVOOV  (IREP+1) = KVOOV  (IREP) + NVOO (IREP)*NV(IREP)
          KOVOO  (IREP+1) = KOVOO  (IREP) + NOVO (IREP)*NO(IREP)
          KOVOV  (IREP+1) = KOVOO  (IREP) + NOVO (IREP)*NV(IREP)
-         KOVVOT  (IREP+1) = KOVVOT  (IREP) + NOVVT (IREP)*NO(IREP)
+         KOVVOT (IREP+1) = KOVVOT (IREP) + NOVVT (IREP)*NO(IREP)
          KVOVV  (IREP+1) = KVOVV  (IREP) + NVOV (IREP)*NV(IREP)
          KVOVO  (IREP+1) = KVOVO  (IREP) + NVOV (IREP)*NO(IREP)
          KVOOO  (IREP+1) = KVOOO  (IREP) + NVOO (IREP)*NO(IREP)
@@ -2064,6 +2119,10 @@ CMI ..... write only active irreps
        ENDIF
 
       ENDIF
+
+!     initialize module needed to reorder matrix elements read from MRCONEE or MDPROP
+      call init_index (focksp,nsp,irepsp,irepspi)
+
 C
  1000 FORMAT (/' Configuration in highest pointgroup'//T40,16(1X,A4))
  1001 FORMAT (/' Configuration in abelian subgroup'//T40,8(1X,A4))
@@ -2124,7 +2183,7 @@ C
 Caspg, replacing memget
       integer,       allocatable, target :: a_kr(:),
      &                              a_indk(:),   a_indl(:),
-     &                              a_ibuf(:),   a_index(:)
+     &                              a_ibuf(:)
       real (kind=kreal), allocatable, target :: a_cbuf(:),
      &                              a_buf1(:),
      &                              a_buf2(:),   a_foo(:),
@@ -2150,11 +2209,6 @@ C
 C  Allocate core for integral sorting step
 C
       call alloc(a_kr,2*NSP+2, id="kr")
-      IF (EQNS.EQ.'FOCKSP') THEN
-         call alloc(a_INDEX,NSP*NSP*16, id="index")
-      ELSE
-         call alloc(a_INDEX,NSP*NSP*4, id="index")
-      ENDIF
       call alloc(a_INDK,NSP*NSP    , id="indk")
       call alloc(a_INDL,NSP*NSP    , id="indl")
       call alloc(a_CBUF,NSP*NSP*RCW, id="cbuf")
@@ -2236,16 +2290,15 @@ C
       IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
       IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
 C
-      CALL RDINTS(IPRNT,NSP,a_INDEX,a_KR,a_INDK,a_INDL,
-     &            a_CBUF,a_IBUF,NVT,a_BUF1,a_BUF2,IREPSP,
-     &            IREPSPI,a_V1,a_V1A,
+      CALL RDINTS(IPRNT,NSP,a_KR,a_INDK,a_INDL,
+     &            a_CBUF,a_IBUF,NVT,a_BUF1,a_BUF2,
+     &            a_V1,a_V1A,
      &            a_V2,a_V2A,a_V3,a_V3A,a_V4,a_V4A,
      &            a_VT,a_VTA,a_VT,a_VTA,EPS,a_FOO,a_FVO,
      &            a_FVV,BREIT,SRTALL,INTERFACE)
 
  450  CONTINUE
       call dealloc(a_kr, id="kr" )
-      call dealloc(a_INDEX, id="index" )
       call dealloc(a_INDK, id="indk" )
       call dealloc(a_INDL, id="indl" )
       call dealloc(a_CBUF, id="cbuf" )
@@ -2308,7 +2361,7 @@ C
 #include "eqns.inc"
 #include "results.inc"
 #include "complex.inc"
-#include "ccpar.inc"
+#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
 C
 C---------------Local variables--------------------------------------
 C
@@ -2323,7 +2376,7 @@ C
      &                                     a_S1(:),  a_S2(:)
 c
       real(kind=kreal), allocatable, target :: a_AZ(:), a_H(:), a_HO(:),
-     &                         a_HV(:),  a_HOV(:),a_CCC(:),  a_BB1(:),
+     &           a_HV(:), a_GO(:), a_GV(:), a_HOV(:),a_CCC(:), a_BB1(:),
      &                             a_BB2(:), a_BUF1(:), a_BUF2(:)
 c
       real(kind=kreal), allocatable, target :: a_VOOO(:),a_T2S(:),
@@ -2374,10 +2427,9 @@ C
          call alloc( a_H    ,    NV4*RCW              , id="h" )
          call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
          call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
+         call alloc( a_GO   ,    NFOO*RCW             , id="go" )
+         call alloc( a_GV   ,    NFVV*RCW             , id="gv" )
          call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
-         call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
-         call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" )
-         call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" )
          call alloc( a_BUF1 ,  NBUF1*RCW              , id="buf1" )
          call alloc( a_BUF2 ,  NBUF2*RCW              , id="buf2" )
 
@@ -2459,6 +2511,18 @@ C  Solve relativistic CCSD equations
 C
    11 IF (DOCCSD) THEN
 ! aspg changed
+         if (DOEOMCCSD) then
+            if ((IMSTAT(14).NE.3).AND.(IMSTAT(6).EQ.3)) then
+!        if we have not yet reached the EOM-CCSD intermediates checkpont (IMSTAT(14)==3)
+!        we mark the CCSD amplitudes as not completely converged to ensure the intermediates will 
+!        be correctly calculated, since there appears to be an issue with eom-ee when restarting
+!        the eom part while having skipped the ccsd iterations. since the amplitudes are converged,
+!        this typically results in one or two additional iterations.
+               IMSTAT(6) = 2
+               write (iw,*) " INFO: resetting IMSTAT(6) to ",IMSTAT(6)
+            end if
+         end if
+
          IF (IMSTAT(6).EQ.3) THEN
             WRITE (IW,1011)
             GOTO 20
@@ -2505,11 +2569,10 @@ C
          CALL XTIME(5,1,'CCSD equations                ')
 
          maxit_save = MAXIT
-         CALL cceqn_driver_amplitudes(MAXIT_SAVE,EPS,a_FOO,a_FVO,a_FVV,
-     &           a_T1,a_S1,a_T2 ,a_S2 ,a_AZ,a_H,a_HO,a_HV,a_HOV,
-     &           a_BUF1,a_BUF2,a_BUF3,
-     &           a_CCC,a_BB1,a_BB2,
-     &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
+         CALL cceqn_driver_amplitudes(maxdim,MAXIT_SAVE,EPS,a_FOO,
+     &        a_FVO,a_FVV,a_T1,a_S1,a_T2,a_S2,a_AZ,a_H,a_HO,a_HV,a_HOV,
+     &        a_GO,a_GV,a_BUF1,a_BUF2,a_BUF3,
+     &        TOL,NBUF2,NBUF3)
          CALL XTIME(5,2,'CCSD equations                ')
          if (maxit_save.le.maxit) is_ccsd_converged = .true.
 
@@ -2538,6 +2601,8 @@ C
       call dealloc(a_HO  )
       call dealloc(a_HV  )
       call dealloc(a_HOV )
+      call dealloc(a_GO )
+      call dealloc(a_GV )
       call dealloc(a_CCC )
       call dealloc(a_BB1 )
       call dealloc(a_BB2 )
@@ -2551,7 +2616,6 @@ C
             WRITE (IW,1012)
             GOTO 30
          ENDIF
-
 C
 C        now we start reallocating
 C
@@ -2690,8 +2754,8 @@ C
 #include "diis.inc"
 #include "inpt.inc"
 #include "eqns.inc"
-#include "results.inc"
 #include "symm.inc"
+#include "dgroup.h"
 #include "complex.inc"
 #include "ccpar.inc"
 #include "dcbmp2no.h"
@@ -2784,8 +2848,8 @@ C
       MAXIT  = MXITGR
       MAXDIM = MXDIMGR
 
-      call alloc( a_BUF1  , NBUF1*RCW             , id="buf2" )
-      call alloc( a_BUF2  , NBUF2*RCW             , id="buf1" )
+      call alloc( a_BUF1  , NBUF1*RCW             , id="buf1" )
+      call alloc( a_BUF2  , NBUF2*RCW             , id="buf2" )
 C
 C     Read the Fock matrix from file
 C
@@ -2956,7 +3020,11 @@ C       limitations elsewhere. 20120720
       IF (MYPROC .NE. MASTER) THEN
          NBUF3 = 0
       ELSE
-         NBUF3 = freemem / RCW
+
+         NV5IRP = MAX(JVOVV(NREP+1),JVVVO(NREP+1), 
+     &       JOVVV(NREP+1),JVVOV(NREP+1))
+
+         NBUF3 = MAX(freemem / RCW, NV5IRP)
       END IF
 C
 C     Allocate now also this remaining work array
@@ -3008,7 +3076,7 @@ C
          CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
 C        Write density matrix to file for later processing
 C
-         CALL STORE_CC_DENSITY ('MP2 ', a_DMO )
+         CALL STORE_CC_DENSITY ('MP2 ', a_DMO, NORBT, NZ )
 C
 C        Generate natural orbitals, if desired
 C
@@ -3069,7 +3137,7 @@ C        Check the minimum size for the general use of this array
 
          IF (NV5IRP.GT.NBUF3) THEN
 
-           write(iw,*) 'The calculation may Fail because of very high
+           write(iw,*) 'The calculation may Fail because of very high //
      &                  memory requirement. Increase mw'
            NBUF3 = NV5IRP
          
@@ -3079,6 +3147,7 @@ C        Check the minimum size for the general use of this array
 
 C     Allocate now also this remaining work array
         call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
+
 
          MAXDIM = MXDIMCC
          MAXIT  = MXITCC
@@ -3134,6 +3203,8 @@ C         this means that, for the time being, we can deallocate everything?
 
 !        get coupled cluster lambdas
 
+
+
          CALL CCDUMP
 
     5   format(10f10.6)
@@ -3147,24 +3218,32 @@ C         this means that, for the time being, we can deallocate everything?
      &           TOL,NBUF2,NBUF3)
 
 
+#if defined (VAR_MPI)
+       if (myproc == 0) then
        call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2,
      &                   a_dmo)
+       call interface_mpi_bcast_r1_work_f77(a_dmo,NORBT*NORBT*NZ,
+     &                  master,global_communicator)
+       else
+       call interface_mpi_bcast_r1_work_f77(a_dmo,NORBT*NORBT*NZ,
+     &                  master,global_communicator)
+       endif
+#else
+       call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2,
+     &                   a_dmo)
+#endif
 
 
 C        Solve Z-vector equations
-
          IF (.NOT.NOZG)
      &      CALL MP2ZVEC( a_S2, a_BUF1, a_BUF2, a_BUF3,
      &                   NBUF3, a_XMO , a_DMO)
-C
-C        Create upper triangle of density matrix
-C
-!!         CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
+
+
 C        Write density matrix to file for later processing
-C
          if (myproc==0) then 
 
-           CALL STORE_CC_DENSITY ('CCSD', a_DMO )
+           CALL STORE_CC_DENSITY ('CCSD', a_DMO, NORBT, NZ )
 
          endif
 
@@ -3596,11 +3675,9 @@ c
      &                             a_T1  (:), a_T2  (:), a_S1  (:),
      &                             a_S2  (:), a_AZ  (:), a_H   (:),
      &                             a_HO  (:), a_HV  (:), a_HOV (:),
-     &                             a_CCC (:),
+     &                             a_GO(:), a_GV(:), a_CCC (:),
      &                             a_BB1 (:), a_BB2 (:), a_BUF1(:),
-     &                             a_BUF2(:), a_BUF3(:),
-     &                             a_HEFF(:,:), a_EIGENVALUES(:,:),
-     &                             a_EIGENVECTORS(:,:)
+     &                             a_BUF2(:), a_BUF3(:)
       integer                :: freemem = 0
       integer(kind=8)        :: mxcorr, mxcorr1
       integer                :: maxit_save
@@ -3663,9 +3740,8 @@ C
       call alloc( a_HO  , NFOO*RCW              , id="ho")
       call alloc( a_HV  , NFVV*RCW              , id="hv")
       call alloc( a_HOV , NFVO*RCW              , id="hov")
-      call alloc( a_CCC , MAXDIM                , id="ccc")
-      call alloc( a_BB1 , (MAXDIM+1)*(MAXDIM+2) , id="bb1")
-      call alloc( a_BB2 , (MAXDIM+1)*(MAXDIM+2) , id="bb2")
+      call alloc( a_GO  , NFOO*RCW              , id="go")
+      call alloc( a_GV  , NFVV*RCW              , id="gv")
       call alloc( a_BUF1,NBUF1*RCW              , id="buf1")
       call alloc( a_BUF2,NBUF2*RCW              , id="buf2")
 C
@@ -3777,66 +3853,50 @@ C
      &          'marked as converged but user asked to recalculate it'
            endif
         ENDIF
-C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
-C
+
+
  441    CONTINUE
 C
 C       skip sectors which have converged, or that we specifically asked to skip
 C       conversely calculate sectors we asked to be recalculated even if previously converged
 C
-        IF (((IMSTAT(IFSTAT).ne.3).and..not.FS_SKIP_SECT(ICURFSS)).or.
-     &      FS_REDO_SECT(ICURFSS)) THEN
-           call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff")
-           call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1),
-     &                 id="eigenvalues" )
-           call alloc (a_EIGENVECTORS, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
-     &              id="eigenvectors" )
-           IF (ICALC.LE.1) GOTO 442
-C
+        IF ((((IMSTAT(IFSTAT).ne.3).and..not.FS_SKIP_SECT(ICURFSS)).or.
+     &      FS_REDO_SECT(ICURFSS)).and.(ICALC.gt.1)) THEN
 
            maxit_save = MAXIT_SECT(ICURFSS)
-        CALL cceqn_driver_amplitudes(maxit_save,EPS,
+          CALL cceqn_driver_amplitudes(maxdim, maxit_save,EPS,
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
      &             a_T2  , a_S2  , a_AZ   ,a_H,
-     &             a_HO  , a_HV  , a_HOV  ,
+     &             a_HO  , a_HV  , a_HOV, a_GO, a_GV,
      &             a_BUF1 , a_BUF2 , a_BUF3 ,
-     &             a_CCC , a_BB1 , a_BB2 ,
-     &             TOL, NBUF2, NBUF3,
-     &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
+     &             TOL, NBUF2, NBUF3)
 
-           if (maxit_save.gt.maxit_SECT(ICURFSS)) then
+C         Calculate the energies for this sector
+          CALL HEFF1(ICURFSS,IPRNT,a_S1,a_S2,a_FVO,EPS,a_BUF1,
+     &         a_BUF2,a_BUF3,NSP,IREPSPI)
+
+          if (maxit_save.gt.maxit_SECT(ICURFSS)) then
               is_ccsd_converged = .false.
-           else
-              is_ccsd_converged = .true.
-           endif
+          else
+             is_ccsd_converged = .true.
+          endif
 
-           if (ICURFSS.GT.1)
-C          Print the Fock space eigenvalues, compute transition moments
-C          except for the 00 sector, obviously
-     &     CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
-     &                    NSP,IREPSPI)
+C         Save the updated wave function
+          CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
 
-C          Save the updated wave function
-           CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
-
-           if (is_ccsd_converged.or.restart_unconverged) then
+          if (is_ccsd_converged.or.restart_unconverged) then
               IMSTAT(IFSTAT) = 3
               write (IW,*)
               write (IW,'(1X,A)') 'INFO:   converged (unconverged'//
      &                            ' if .UNCONVERGED used) amplitudes'//
      &                            ' available for restart'
-           else
+          else
               IMSTAT(IFSTAT) = 2
               write (IW,*)
               write (IW,'(1X,A)') 'INFO: unconverged amplitudes '//
      &                            'available for restart'
-           endif
+          endif
 
-C          Deallocate space for the effective Hamiltonian
- 442       CONTINUE
-           call dealloc (a_HEFF, id="heff")
-           call dealloc (a_EIGENVALUES, id="eigenvalues")
-           call dealloc (a_EIGENVECTORS, id="eigenvectors")
         ENDIF
 C
       ENDIF
@@ -3855,6 +3915,8 @@ C
       call dealloc( a_HO  , id="ho" )
       call dealloc( a_HV  , id="hv" )
       call dealloc( a_HOV , id="hov" )
+      call dealloc( a_GO  , id="go" )
+      call dealloc( a_GV  , id="gv" )
       call dealloc( a_CCC , id="ccc" )
       call dealloc( a_BB1 , id="bb1" )
       call dealloc( a_BB2 , id="bb2" )
@@ -4404,7 +4466,9 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       integer   :: spinor_info(5,2)
-      integer   :: i,irep,irp,isp,j,jrep,krep,nfsym
+      integer   :: i,irep,irp,isp,j,jrep,krep,nfsym,nz
+      integer   :: nspc(2,0:2),ncore2
+      real(8)   :: toterg
 C
 C---------------Executable code--------------------------------------
 C
@@ -4414,8 +4478,8 @@ C
 C
       IF (MYPROC.EQ.MASTER) THEN
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
-       READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,
-     &                              NFSYM,NZ,SPFR,NORBT
+       READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,NFSYM,NZ,
+     &                              SPFR,NORBT,toterg,nspc,ncore2
        READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP),
      &                 (NELEC(IRP),IRP=1,NSYMRP),
      &                 (spinor_info(1,irp),irp=1,nfsym),
@@ -4423,8 +4487,8 @@ C
      &                 (spinor_info(3,irp),irp=1,nfsym),
      &                 (spinor_info(4,irp),irp=1,nfsym),
      &                 (spinor_info(5,irp),irp=1,nfsym)
-       ncore_elec = 0
-       ncore_elec = ncore_elec + spinor_info(3,1)*2 + spinor_info(3,2)*2
+       ncore_elec = -ncore2
+       ncore_elec = ncore_elec+spinor_info(3,1)*2+spinor_info(3,2)*2
        GOTO 11
 C---- Keep OLD (MOLFDIR) format here for compatibility
    10     WRITE (IW,*) "Missing information on MRCONEE, I assume"//
@@ -4510,7 +4574,7 @@ C
             MULTB(IREP,KREP,2) = JREP
          ENDDO
       ENDDO
-       write(*,*) (REPNA(IREP),IREP=1,2*NREP)
+C      write(*,*) (REPNA(IREP),IREP=1,2*NREP)
 
 C     write(*,*)
 C     write(*,*) '--------------------------------------------'
@@ -5024,3 +5088,5 @@ C
 !     print *, 'charge, ncore_elec_cc, nelect_cc, mycharge',
 !    & charge, ncore_elec_cc, nelect_cc, mycharge
       end subroutine
+
+

@@ -23,9 +23,10 @@
 !     11 - fock-space sector 11 and T1 + T2 amplitudes
 !     12 - fock-space sector 02 and T1 + T2 amplitudes
 !     13 - fock-space sector 20 and T1 + T2 amplitudes
-!     14 - 30 reserved for future use
+!     14 - CCSD intemediates (used in EOM code)
+!     15 - 30 reserved for future use
 !
-      INTEGER NSTATS,IMSTAT
+      INTEGER :: NSTATS,IMSTAT
       PARAMETER (NSTATS=30)
       COMMON/STATUS/IMSTAT(NSTATS)
 !
@@ -33,5 +34,5 @@
 !     ETOT is the energy at the current highest level of theory
 !     EFS is the energy of the lowest/selected eigenstate in the FSCC run (last sector)
 !
-      COMMON/ENERG/ECORE,ETOT,ESCF,EMP2,ECCSD,ECCSDIM,ET1,ET2,ET3,EFS(2)
-      REAL*8 ECORE,ETOT,ESCF,EMP2,ECCSD,ECCSDIM,ET1,ET2,ET3,EFS
+      REAL*8 :: ECORE,ETOT,ESCF,EMP2,ECCSD,ECCSDIM,ET1,ET2,ET3,EFS(2)
+      COMMON/ENERG/ECORE,ETOT,ESCF,EMP2,ECCSD,ECCSDIM,ET1,ET2,ET3,EFS

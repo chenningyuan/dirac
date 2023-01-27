@@ -34,6 +34,9 @@
         case ('*aooSOC')
            call read_input_aoosoc(word, kw_section)
 
+        case ('**EXACC')
+           call read_input_exacc(word, kw_section)
+
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
 
@@ -54,6 +57,18 @@
 
         case ('*CCIH  ')
            call read_input_ccih(word, kw_section)
+
+        case ('*EOMCC')
+           call read_input_cceom(word, kw_section)
+
+        case ('*EOMPROP')
+           call read_input_eomprop(word, kw_section)
+
+        case ('*CCPROJ')
+           call read_input_ccproj(word, kw_section)
+
+        case ('*CCDIAG')
+           call read_input_ccdiag(word, kw_section)
 
 #ifdef HAS_PCMSOLVER
         case ('*PCM   ')
@@ -184,7 +199,7 @@
 !     --------------------------------------------------------------------------
       integer                          :: i, j
       integer                          :: isym, istart, iend
-      real(8)                          :: f, s, v_12(3), v_13(3)
+      real(8)                          :: f, s, v(3), v_12(3), v_13(3)
       integer                          :: nr_lines
       character(100)                   :: line
       character(80), allocatable       :: word_array(:)
@@ -193,9 +208,12 @@
 
 #include "dgroup.h"
 #include "maxorb.h"
+! orgcom.h : GAGORG
+#include "orgcom.h"
 
       call reset_available_kw_list()
 
+      visual_cfg_gauge_origin(1:3) = GAGORG(1:3) ! use magnetic gauge origin defined globally in Dirac
       dirac_cfg_visual = .true.
 
       if (kw_matches(word, '.LIST  ')) then
@@ -275,6 +293,12 @@
          visual_cfg_3d_integration = .true.
       end if
 
+      if (kw_matches(word, '.3D_IMP')) then
+         visual_cfg_3d_gridimp = .true.
+         read(get_file_unit(), *) visual_cfg_3d_gridfil
+         read(get_file_unit(), *) visual_cfg_3d_grid_units
+      end if
+
       if (kw_matches(word, '.SCALE ')) then
          call kw_read(word, visual_cfg_scale)
       end if
@@ -292,6 +316,27 @@
 
       if (kw_matches(word, '.DENSIT')) then
          call read_input_visual_helper(iq_density)
+      end if
+
+      if (kw_matches(word, '.DENGRA')) then
+         call read_input_visual_helper(iq_density_gradient)
+      end if
+
+      if (kw_matches(word, '.DENHES')) then
+         visual_cfg_tensor = .true.
+         call read_input_visual_helper(iq_density_hessian)
+      end if
+
+      if (kw_matches(word, '.DENLAP')) then
+         call read_input_visual_helper(iq_density_laplacian)
+      end if
+
+      if (kw_matches(word, '.RDG   ')) then
+         call read_input_visual_helper(iq_rdg)
+      end if
+
+      if (kw_matches(word, '.SIGNL2')) then
+         call read_input_visual_helper(iq_density_sign_lambda2)
       end if
 
       if (kw_matches(word, '.ELF   ')) then
@@ -354,6 +399,11 @@
          call read_input_visual_helper(iq_rotj)
       end if
 
+      if (kw_matches(word, '.GRADJ ')) then
+         visual_cfg_tensor = .true.
+         call read_input_visual_helper(iq_gradj)
+      end if
+
       if (kw_matches(word, '.S     ')) then
          call read_input_visual_helper(iq_s)
       end if
@@ -384,6 +434,17 @@
       end if
       if (kw_matches(word, '.BDIPZ ')) then
          call read_input_visual_helper(iq_bdipz)
+      end if
+
+      if (kw_matches(word, '.BEDCOS')) then
+         call read_input_visual_helper(iq_tcos)
+      end if
+      if (kw_matches(word, '.BEDSIN')) then
+         call read_input_visual_helper(iq_tsin)
+      end if
+      if (kw_matches(word, '.BEDFIX')) then
+         call kw_read(word, v(1),v(2),v(3),visual_cfg_freq)
+         CALL ANGLES(v(1),v(2),v(3),visual_cfg_wave_vector,visual_cfg_pol_vector)
       end if
 
       if (kw_matches(word, '.NDIPX ')) then
@@ -435,10 +496,16 @@
          call read_input_visual_helper(iq_espnrho)
       end if
 
-      if (kw_matches(word, '.GAUGE ')) then
-         call kw_read(word, visual_cfg_gauge_origin(1), &
-                            visual_cfg_gauge_origin(2), &
-                            visual_cfg_gauge_origin(3))
+      if (kw_matches(word, '.NICS  ')) then
+         visual_cfg_nics = .true.
+         call kw_read(word, visual_cfg_nics_origin(1), &
+                            visual_cfg_nics_origin(2), &
+                            visual_cfg_nics_origin(3))
+      end if
+
+      if (kw_matches(word, '.READJB')) then
+         visual_cfg_3d_readjb = .true.
+         read(get_file_unit(), *) visual_cfg_3d_jbfile
       end if
 
       if (kw_matches(word, '.RADIAL')) then
@@ -526,6 +593,37 @@
       if (kw_matches(word, '.NOKAPP')) then
          visual_cfg_london_skip_kappa = .true.
       end if
+
+      if (kw_matches(word, '.OUTFIL')) then
+         visual_cfg_out_file_custom = .true.
+!        file for scalar field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_scalar_file_name   = trim(line)
+            visual_cfg_out_scalar_file_custom = .true.
+         end if 
+!        file for vector field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_vector_file_name   = trim(line)
+            visual_cfg_out_vector_file_custom = .true.
+         end if 
+!        file for 2ndtensor field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_2ndtensor_file_name   = trim(line)
+            visual_cfg_out_2ndtensor_file_custom = .true.
+         end if 
+      end if
+
+      if (kw_matches(word, '.NOCUBE')) then
+         visual_cfg_london_skip_cube  = .true.
+      end if
+
+      if (kw_matches(word, '.NOVTK ')) then
+         visual_cfg_london_skip_vtk   = .true.
+      end if
+
 
       call check_whether_kw_found(word, kw_section)
 
@@ -804,6 +902,146 @@
 
    end subroutine
 
+   subroutine read_input_exacc(word, kw_section)
+
+#ifdef MOD_EXACORR
+      use exacc_cfg
+#endif
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+      integer :: i,j
+      real(8) :: val_real, val_imag
+!     --------------------------------------------------------------------------
+
+#ifndef MOD_EXACORR
+      call quit(kw_section//' not available in this version')
+#else
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.OCCUPIED')) then
+         call kw_read(word, string_occupied)
+      end if
+
+      if (kw_matches(word, '.VIRTUAL')) then
+         call kw_read(word, string_virtual)
+      end if
+
+      if (kw_matches(word, '.EXATENSOR')) then
+         exa_input%talsh = .false.
+      end if
+
+      if (kw_matches(word, '.CCDOUBLES')) then
+         exa_input%ccd = .true.
+      end if
+
+      if (kw_matches(word, '.MP2NO         ')) then
+         exa_input%mp2no = 1
+         call kw_read(word, exa_input%t_mp2no)
+      end if
+
+      if (kw_matches(word, '.MP2LAP        ')) then
+         exa_input%mp2no = -1
+      end if
+
+      if (kw_matches(word, '.MP2_LAP_NO      ')) then
+         exa_input%mp2no = 10
+         call kw_read(word, exa_input%t_mp2no)
+      end if
+
+      if (kw_matches(word, '.CC2         ')) then
+         exa_input%cc2 = .true.
+      end if
+
+      if (kw_matches(word, '.TCONVERG')) then
+         call kw_read(word, exa_input%t_econv)
+      end if
+
+      if (kw_matches(word, '.LSHIFT')) then
+         call kw_read(word, exa_input%level_shift)
+      end if
+
+      if (kw_matches(word, '.CHOLESKY')) then
+         call kw_read(word, exa_input%t_cholesky)
+      end if
+
+      if (kw_matches(word, '.LAMBDA')) then
+         exa_input%lambda = .true.
+      end if
+
+      if (kw_matches(word, '.DONATORB')) then
+         exa_input%do_no = .true.
+      end if
+
+      if (kw_matches(word, '.NOTRIPLES')) then
+         exa_input%do_triples = .false.
+      end if
+
+      if (kw_matches(word, '.TRIPL_BLOCK')) then
+         call kw_read(word, exa_input%tripl_block)
+      end if
+
+      if (kw_matches(word, '.LAP_TRIPL   ')) then
+         exa_input%tripl_lap = .true.
+      end if
+
+      if (kw_matches(word, '.EXA_BLOCKSIZE')) then
+         call kw_read(word, exa_input%exa_blocksize)
+      end if
+
+      if (kw_matches(word, '.MOINT_SCHEME')) then
+         call kw_read(word, exa_input%moint_scheme)
+      end if
+
+      if (kw_matches(word, '.NCYCLES')) then
+         call kw_read(word, exa_input%ncycles)
+      end if
+
+      if (kw_matches(word, '.OCC_BETA')) then
+         exa_input%beta_occ = .true.
+         call kw_read(word, string_occ_beta)
+      end if
+
+      if (kw_matches(word, '.VIR_BETA')) then
+         exa_input%beta_vir = .true.
+         call kw_read(word, string_vir_beta)
+      end if
+
+      if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, exa_input%print_level)
+      end if
+
+      if (kw_matches(word, '.TALSH_BUFF')) then
+         call kw_read(word, exa_input%talsh_buff)
+      end if
+
+      if (kw_matches(word, '.FF_PROP')) then
+         call kw_read(word, exa_input%nff)
+         allocate(exa_input%ff_names(exa_input%nff(1)))
+         allocate(exa_input%ff(exa_input%nff(1),exa_input%nff(2)))
+         do i=1,exa_input%nff(1)
+           call kw_read(word, exa_input%ff_names(i))
+           do j=1,exa_input%nff(2)
+             call kw_read(word, val_real,val_imag)
+             exa_input%ff(i,j)=dcmplx(val_real,val_imag)
+           enddo
+         enddo
+      end if
+
+      if (kw_matches(word, '.NLAPLACE')) then
+         call kw_read(word, exa_input%n_laplace)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+#endif
+
+   end subroutine
+
    subroutine read_input_relcc(word, kw_section)
 
       use relcc_cfg
@@ -883,6 +1121,14 @@
 
       if (kw_matches(word, '.HESSIA')) then
          relcc_do_hessian  = .true.
+      end if
+
+      if (kw_matches(word, '.EOMCC ')) then
+         relcc_do_eomcc  = .true.
+      end if
+
+      if (kw_matches(word, '.EOMPROP')) then
+         relcc_do_eomprop  = .true.
       end if
 
       if (kw_matches(word, '.FOCKSP')) then
@@ -1016,6 +1262,253 @@
 
    end subroutine
 
+
+   subroutine read_input_cceom(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+       integer                          :: nr_roots(2) ! number of roots in each symmetry 
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.EE    ')) then
+         relcc_do_eomee=.true.
+         call kw_read(word,  nr_roots)
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
+      end if
+
+      if (kw_matches(word, '.IP    ')) then
+         relcc_do_eomip=.true.
+         call kw_read(word,  nr_roots)
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
+      end if
+
+      if (kw_matches(word, '.EA    ')) then
+         relcc_do_eomea=.true.
+         call kw_read(word,  nr_roots)
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+      if (    (relcc_do_eomip .and. relcc_do_eomea) &
+          .or.(relcc_do_eomip .and. relcc_do_eomee) &
+          .or.(relcc_do_eomea .and. relcc_do_eomee)) &
+          call quit('Only one EOM kind of calculation at a time (IP/EE/EA) allowed !')
+
+
+   end subroutine
+
+
+   subroutine read_input_eomprop(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+       integer   :: nr_roots_prop(2),nr_roots_left(2),nr_roots_right(2) ! number of roots in each symmetry 
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.EXCPRP')) then
+         relcc_do_excprp=.true.
+         call kw_read(word,  nr_roots_prop)
+         relcc_eom_nroots_prop(nr_roots_prop(1)) = nr_roots_prop(2)           
+      end if
+
+      if (kw_matches(word, '.LEFT_STATE')) then
+         relcc_do_excprp=.true.
+         call kw_read(word,  nr_roots_left)
+         relcc_eom_nroots_left(nr_roots_left(1)) = nr_roots_left(2)           
+      end if
+
+      if (kw_matches(word, '.RIGHT_STATE')) then
+         relcc_do_excprp=.true.
+         call kw_read(word,  nr_roots_right)
+         relcc_eom_nroots_right(nr_roots_right(1)) = nr_roots_right(2)           
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+
+   subroutine read_input_ccproj(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.REW_STRICT')) then
+         relcc_projectors_rew_strict = .true.
+      end if
+
+      if (kw_matches(word, '.REW_NOSTRICT')) then
+         relcc_projectors_rew_strict = .false.
+      end if
+
+      if (kw_matches(word, '.REW_OCC')) then
+         relcc_projectors_do_restricted_excitation_window = .true.
+         call kw_read(word,  relcc_projectors_rew_occ_min_energy)
+         call kw_read(word,  relcc_projectors_rew_occ_max_energy)
+      end if
+
+      if (kw_matches(word, '.REW_VIRT')) then
+         relcc_projectors_do_restricted_excitation_window = .true.
+         call kw_read(word,  relcc_projectors_rew_virt_min_energy)
+         call kw_read(word,  relcc_projectors_rew_virt_max_energy)
+      end if
+
+      if (kw_matches(word, '.CVS_CORE')) then
+         relcc_projectors_do_core_valence_separation = .true.
+         call kw_read(word,  relcc_projectors_rew_occ_max_energy)
+         relcc_projectors_rew_occ_min_energy = -huge(relcc_projectors_rew_occ_min_energy)
+         relcc_projectors_rew_virt_min_energy = -huge(relcc_projectors_rew_virt_min_energy)
+         relcc_projectors_rew_virt_max_energy = huge(relcc_projectors_rew_virt_min_energy)
+      end if
+
+      if (kw_matches(word, '.FCORE ')) then
+         relcc_projectors_frozen_core = .true.
+         call kw_read(word,  relcc_projectors_frozen_core_max_energy)
+      end if
+
+      if (kw_matches(word, '.NODOCC')) then
+         relcc_projectors_rew_remove_double_occupied = .true.
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+      if (relcc_projectors_do_restricted_excitation_window.and.relcc_projectors_do_core_valence_separation) & 
+          call quit('Only one projection scheme (CVS/REW) allowed at a time !')
+
+
+   end subroutine
+
+
+   subroutine read_input_ccdiag(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.DEBUG ')) then
+         relcc_mfd_verbose = .true.
+      end if
+
+      if (kw_matches(word, '.MAXSIZE')) then
+         call kw_read(word,  relcc_mfd_max_subspace_size)
+      end if
+
+      if (kw_matches(word, '.REFRESH')) then
+         call kw_read(word, relcc_mfd_refresh_rate)
+      end if
+
+      if (kw_matches(word, '.MAXITER')) then
+         call kw_read(word, relcc_mfd_max_iterations)
+      end if
+
+      if (kw_matches(word, '.CONVERG')) then
+         call kw_read(word, relcc_mfd_convergence_threshold)
+      end if
+
+! aspg: .TRV_SDM allows to bypass the restriction of the number of roots
+!       from the dimension of the singles manifold, so that initial
+!       trial vectors also contaning elements of the doubles manifold.
+!       this implies a pivoted diagonal  
+      if (kw_matches(word, '.TRV_SDM')) then
+         relcc_mfd_trial_double_mfold = .true.
+      end if
+
+      if (kw_matches(word, '.TRV_CCS')) then
+         relcc_mfd_trial_ccs      = .true.
+         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_ccs
+         relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_ccs
+         relcc_mfd_trial_restart = .not.relcc_mfd_trial_ccs
+         relcc_mfd_trial_double_mfold = .not.relcc_mfd_trial_ccs
+      end if
+
+      if (kw_matches(word, '.TRV_I  ')) then
+         relcc_mfd_trial_diagonal = .true.
+         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_diagonal 
+         relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_diagonal
+         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_diagonal
+      end if
+
+      if (kw_matches(word, '.TRV_FULLMATRIX')) then
+         relcc_mfd_trial_full_matrix = .true.
+         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_full_matrix
+         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_full_matrix
+         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_full_matrix
+      end if
+
+      if (kw_matches(word, '.TRV_RESTART')) then
+         relcc_mfd_trial_restart = .true.
+         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_restart
+         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_restart
+         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_restart
+      end if
+
+      if (kw_matches(word, '.TRV_R2L ')) then
+         relcc_mfd_trial_lhs_use_rhs = .true.
+      end if
+
+      if (kw_matches(word, '.TRV_NOR2L')) then
+         relcc_mfd_trial_lhs_use_rhs = .false.
+      end if
+
+      if (kw_matches(word, '.OVERLAP')) then
+         relcc_mfd_overlap_sorting = .true.
+      end if
+
+      if (kw_matches(word, '.NOOVERLAP')) then
+         relcc_mfd_overlap_sorting = .false.
+      end if
+
+      if (kw_matches(word, '.EV_Re_SHIFT')) then
+         call kw_read(word, relcc_mfd_eigenvalues_energy_shift(1))
+      end if
+
+      if (kw_matches(word, '.EV_Im_SHIFT')) then
+         call kw_read(word, relcc_mfd_eigenvalues_energy_shift(2))
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+
+   end subroutine
+
+
+
    subroutine read_input_ccsort(word, kw_section)
 
       use relcc_cfg
@@ -1043,7 +1536,6 @@
 
 ! miro&luuk: expert option - adding finite field perturbation operators
       if (kw_matches(word, '.NFFOPER')) then
-#ifdef MOD_UNRELEASED
          call kw_read(word, relcc_nffoper)
          relcc_ADD_FINITE_FIELD = .TRUE.
          ! after reading the number of perturbative operators
@@ -1052,9 +1544,6 @@
            call kw_read(word, relcc_FF_PROP_NAMES(i))
            call kw_read(word, relcc_FF_PROP_STRENGTHS(1,i),relcc_FF_PROP_STRENGTHS(2,i))
          enddo
-#else
-         call quit('.NFFOPER keyword not in the Dirac release version !')
-#endif
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -2222,7 +2711,7 @@
          call setaldaha(.true.) !activate alda for the h- part
       end if
 
-      if (kw_matches(word, '.GAUTSC')) then
+      if (kw_matches(word, '.GAUNTS')) then
          call set_lscale_dft_gaunt()
       end if
 #endif
@@ -2236,11 +2725,9 @@
          dft_cfg_pointwise = .true.
       end if
 
-#ifdef MOD_UNRELEASED
       if (kw_matches(word, '.OVLDIA')) then
          dft_cfg_overlap_diagnostic = .true.
       end if
-#endif
 
       call check_whether_kw_found(word, kw_section)
 
@@ -2250,7 +2737,6 @@
 ! reading subroutine for the standalone testing program of diagonalization
 ! routines (miro ilias)
      subroutine read_input_diagonalization_tests(word, kw_section)
-#ifdef MOD_UNRELEASED
       use input_reader
       use diagmod
       implicit none
@@ -2302,7 +2788,4 @@
      end if
 
      call check_whether_kw_found(word, kw_section)
-#else
-     call quit('read_input_diagonalization_tests not in release version')
-#endif  /* MOD_UNRELEASED */
    end subroutine

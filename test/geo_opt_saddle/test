@@ -2,25 +2,40 @@
 
 import os
 import sys
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest_dirac import Filter, TestRun
 
-test = TestRun(__file__, sys.argv)
+from runtest import version_info, get_filter, cli, run
+from runtest_config import configure
 
-f = Filter()
-f.add(string      = 'Electronic energy',
-      rel_tolerance   = 1.0e-7)
+assert version_info.major == 2
 
-test.run(['minimum.inp', 'saddle.inp'], ['ethane_1.mol'], f)
-test.run(['constrained.inp'], ['ethane_2.mol'], f)
+options = cli()
 
-f = Filter()
-f.add(from_string = '                      PRNRED: Redundant internal coordinates',
-      num_lines   = 37,
-      ignore_sign = True,
-      rel_tolerance   = 1.0e-4)
+f1 = [
+    get_filter(string='Electronic energy',
+               rel_tolerance=1.0e-7),
+]
 
-test.run(['findre.inp'], ['ethane_2.mol'], f)
+ierr = 0
+for inp, mol in [('minimum.inp', 'ethane_1.mol'),
+                 ('saddle.inp', 'ethane_1.mol'),
+                 ('constrained.inp', 'ethane_2.mol')]:
+    ierr += run(options,
+                configure,
+                input_files=[inp, mol],
+                filters={'out': f1})
 
-sys.exit(test.return_code)
+f2 = [
+    get_filter(from_string='                      PRNRED: Redundant internal coordinates',
+               num_lines=37,
+               ignore_sign=True,
+               rel_tolerance=1.0e-4),
+]
+
+for inp, mol in [('findre.inp', 'ethane_2.mol')]:
+    ierr += run(options,
+                configure,
+                input_files=[inp, mol],
+                filters={'out': f2})
+
+sys.exit(ierr)

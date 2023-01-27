@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -419,7 +414,7 @@ C     SB_(si) = -FB_(si) - GB_(si)
 C
 C     with
 C
-C     FA_(si) = WA_(st)h_(ti) - h_(st)WA_(ti)
+C     FA_(si) = WA_(st)F_(ti) - F_(st)WA_(ti)
 C
 C     GA_(si) = [g_(si,xy)-g_(sy,xi)] DA_(yx)
 C
@@ -1395,7 +1390,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 C
-      DIMENSION IHRMOP(NTSIM),IFCKOP(NTSIM),ISYMOP(NTSIM)
+      DIMENSION IHRMOP(*),IFCKOP(*),ISYMOP(*)
       DIMENSION IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*)
 C
       IM = 0
@@ -1882,8 +1877,7 @@ C
           IND = IBVEC(IREC)
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
-          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
+            CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               IF(ABS(EVECR(IND,IFREQ)).GT.DTOL) THEN
@@ -1902,8 +1896,7 @@ C
           INDI = 2*IND
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
-          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
+            CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               IF(ABS(EVECR(INDR,IFREQ)).GT.DTOL) THEN
@@ -1968,8 +1961,10 @@ C
 #include "dcbxrs.h"
 #include "dcbibn.h"
       DIMENSION BEPVC(NZXOPEQ,*),BEMVC(NZXOPEQ,*),BEBUF(NZXOPEQ,NDAMP),
-     &          BPPVC(NZXOPPQ,*),BPMVC(NZXOPPQ,*),BPBUF(NZXOPPQ,NDAMP),
-     &          BCPVC(NZCONFQ,*),BCMVC(NZCONFQ,*),BCBUF(NZCONFQ),
+     &    BPPVC(max(1,NZXOPPQ),*),BPMVC(max(1,NZXOPPQ),*),
+     &    BPBUF(max(1,NZXOPPQ),NDAMP),
+     &    BCPVC(max(1,NZCONFQ),*),BCMVC(max(1,NZCONFQ),*),
+     &    BCBUF(max(1,NZCONFQ)),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),
      &          EVECR(NEVEC,MFREQ),EVALR(MFREQ),WORK(*)
 C
@@ -3911,16 +3906,9 @@ C     ----------------
 C
       IF ( .NOT. FKRMC) THEN
 C
-C        We're not doing a KRMCSCF optimization
+C        We are not doing a KRMCSCF optimization
 C
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(/A)')
-     &      '*** ERROR in GMOLITX : Coefficient file DFCOEF not found!'
-            CALL QUIT('GMOLITX: coeff. file DFCOEF file not found!')
-         END IF
          LUBUF = 1
-         CALL OPNFIL(LUBUF,'DFCOEF','OLD','GMOLI1')
          IF(SPINFR) THEN
            IOPT = 10
          ELSE
@@ -3928,8 +3916,7 @@ C
          ENDIF
          IF (IPRXRS .GE. 10) IOPT = IOPT + 1
          CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &               TOTERG,IOPT,WORK,KFREE,LFREE)
-         CLOSE(LUBUF,STATUS='KEEP')
+     &               TOTERG,IOPT)
       ELSE
 C
 C        We are doing a KRMCSCF opt. Read orbitals from KRMCSCF
@@ -4120,6 +4107,9 @@ C     --------------------------
 
               call fde_dirac_set_isymop(isymop)
               call fde_dirac_set_ihrmop(ihrmop)
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl( FDE_PAR )
+#endif
               call fde_dirac_emb_matrices_via_integration(       
      &                       fde_mat_dim            = ntbas(0),
      &                       fde_nz                 = nz,

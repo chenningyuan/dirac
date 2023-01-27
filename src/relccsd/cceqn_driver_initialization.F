@@ -30,7 +30,7 @@ C---------------Common Blocks--------------------------------------
 #include "complex.inc"
 #include "ccpar.inc"
 !#if defined (VAR_MPI)
-!      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+!      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 !#endif
 C---------------Local variables--------------------------------------
       LOGICAL TEQ,FOCKSP      

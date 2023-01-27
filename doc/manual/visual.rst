@@ -16,7 +16,7 @@ Sampling
 
 keyword(LIST)
 
-Calculate various densities in few points. Example (3 points; coordinates in
+Calculate various densities in few points. Scalar and vector densities are written to the standard output file. Example (3 points; coordinates in
 bohr)::
 
   .LIST
@@ -80,6 +80,9 @@ Example (coordinates in bohr)::
    0.0 10.0  0.0     !"top"
    200               !nr of points origin-"top"
 
+Scalar and vector densities are written to files ``plot.2d.scalar`` and ``plot.2d.vector``, respectively, and should be saved after calculation, e.g. ::
+
+   pam --get=plot.2d.scalar ...
 
 keyword(2D_INT)
 
@@ -105,6 +108,21 @@ Example (coordinates in bohr)::
   .3D
    40 40 40          ! 40 x 40 x 40 points
 
+Scalar and vector densities are written to files ``plot.3d.scalar`` and ``plot.3d.vector``, respectively, and should be saved after calculation, e.g. ::
+
+   pam --get=plot.3d.scalar ...
+   
+Scalar densities are also written to a Gaussian cube file ``plot.3d.cube``.
+
+keyword(3D_IMP)
+
+Calculate various densities in 3D on an imported grid and write to text file format (imported grid does not have to be regular).
+Example:
+
+  .3D_IMP
+   numerical_grid    ! a grid file on which various densities will be calculated; the file should have 3 columns with x, y, z coordinates of grid points 
+   grid_units        ! grid units (choose from: 'angstrom' or 'au')
+
 
 keyword(3DFAST)
 
@@ -122,6 +140,15 @@ Default (coordinates in bohr)::
 
   .3D_ADD
    4.0
+
+
+keyword(3D_IMP)
+
+Calculate various densities in 3D on an imported grid (does not have to be regular)
+Example::
+
+  .3D_IMP
+   grid_file        ! a file with x,y,z-coordinates of grid points
 
 
 keyword(3D_INT)
@@ -174,6 +201,41 @@ Another example (perturbed density, first response vector)::
 
   .DENSITY
    PAMXVC 1
+
+   
+keyword(DENGRA)
+
+Compute number density gradient :math:`\grad n(\mathbf{r})` in addition to the number density :math:`n(\mathbf{r})`.
+Example (unperturbed density gradient)::
+
+  .DENGRA
+   DFCOEF
+
+keyword(DENHES)
+
+Compute number density Hessian :math:`H(n(\mathbf{r}))` in addition to the number density :math:`n(\mathbf{r})` and to the number density gradient :math:`\grad n(\mathbf{r})`.
+Example (unperturbed density Hessian)::
+
+  .DENHES
+   DFCOEF
+
+
+keyword(RDG   )
+
+Compute the reduced density gradient :math:`\frac{1}{2(3\pi^2)^{1/3}}\frac{|\grad n(\mathbf{r})|}{n(\mathbf{r})^{4/3}}`.
+Example::
+
+  .RDG   
+   DFCOEF
+
+
+keyword(SIGNL2)
+
+Compute the signed electron density :math:`sign(\lambda_2) * n(\mathbf{r})`, where :math:`\lambda_2` is the second eigenvalue of the number density Hessian :math:`H(n(\mathbf{r}))`.
+Example::
+
+  .SIGNL2
+   DFCOEF
 
 
 keyword(ELF)
@@ -264,6 +326,44 @@ Compute the z-component :math:`m^{[1]}_{z}(\mathbf{r})=-\frac{1}{2}(\mathbf{r}\t
   .BDIPZ
    PAMXVC 1
 
+keyword(BEDCOS)
+
+Compute the Hermitian part of the full effective light-matter interaction
+
+.. math::
+   \hat{T}_{H}\left(\omega\right)=\frac{e}{\omega}\left(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)\cos\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)
+
+where appears the wave vector :math:`\mathbf{k}` and the polarization vector
+:math:`\boldsymbol{\epsilon}`. In accordance with the quaternion symmetry scheme of DIRAC an imaginary :math:`i` will be inserted in the Hermitian part to make it time-symmetric. It should be noted that this is an *ungerade* operator.
+
+keyword(BEDSIN)
+
+Compute the anti-Hermitian part of the full effective light-matter interaction
+
+.. math::
+
+    \hat{T}_{A}\left(\omega\right)=\frac{e}{\omega}\left(ic\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)\sin\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)
+
+where appears the wave vector :math:`\mathbf{k}` and the polarization vector
+:math:`\boldsymbol{\epsilon}`. It should be noted that this is a *gerade* operator.
+
+keyword(BEDFIX)
+
+Specify the wave vector :math:`\mathbf{k}` and the polarization vector :math:`\boldsymbol{\epsilon}` when using the full light-matter interaction.
+The orientation of the wave and polarization vector is given by specification of the angles :math:`\theta`, :math:`\phi` and :math:`\chi`, see the :ref:`EXCITATION_ENERGIES_.BED` keyword for more details. In addition the user has to specify the angular frequency $\omega$ which fixes the length of the wave vector :math:`\mathbf{k}` since we have
+
+.. math::
+
+   k=\frac{\omega}{c}={2\pi}{\lambda}
+
+For instance, to specify that the wave vector is along the :math:`z` -axis, the polarization vector along the :math:`x` - axis for an excitation energy at :math:`\omega=49.138` a.u. we set
+
+::
+
+    .BEDFIX
+    0.0 0.0 0.0 49.138
+   
+
 keyword(EDIPX)
 
 Compute the x-component :math:`Q^{[1]}_{x}(\mathbf{r})=xn(\mathbf{r})` of the electric dipole.
@@ -309,12 +409,40 @@ keyword(ESPNRHO)
 Compute the nuclear part of the electrostatic potential times density.
 
 
-keyword(GAUGE)
+keyword(NDIPX)
 
-Specify gauge origin. Example::
+Compute the NMR shielding density, with the "X"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
 
-  .GAUGE
-   0.0 0.0 0.0
+keyword(NDIPY)
+
+Compute the NMR shielding density, with the "Y"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
+
+keyword(NDIPZ)
+
+Compute the NMR shielding density, with the "Z"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
+
+keyword(NICS )
+
+Compute the NMR shielding density in a selected point in space. Is used to calculate NICS.
+Example::
+
+  .NICS
+   1.2 -1.0 2.0
+
+will calculate the NMR shielding in point (1.2, -1.0, 2.0). This keyword can be used only with one of: NDIPX, NDIPY, NDIPZ keywords.
+
+
+keyword(READJB)
+
+Use the grid and the magnetically-induced current density (jB) from a file to calculate the jB-dependent densities,
+e.g. the NMR shielding density or the magnetizability density. 
+Example::
+
+  .READJB
+   file_name        ! a file with x,y,z-coordinates of grid points and jB vector field
 
 
 keyword(SMALLAO)
@@ -355,6 +483,11 @@ Another example (nitrogen atom)::
 keyword(LONDON)
 
 Activate LAO contribution.
+This keyword is followed by a letter "X", "Y" or "Z" indicating the component of an external perturbing magnetic field.
+For example::
+
+  .LONDON
+   X
 
 
 keyword(NONE)

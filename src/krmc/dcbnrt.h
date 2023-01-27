@@ -1,4 +1,4 @@
-C -- FILE : dcbnrt.h
+! -- FILE : dcbnrt.h
 !
 ! FILE : dcbnrt.h
 !
@@ -6,7 +6,9 @@ C -- FILE : dcbnrt.h
 !
 !     Dependencies: maxorb.h
 !
+      INTEGER NOROT(MXCORB), NOROTC(MXCORB)
+      COMMON /DCINRT/ NOROT, NOROTC
+
       LOGICAL LNOROT
-      COMMON /DCINRT/ NOROT(MXCORB), NOROTC(MXCORB)
       COMMON /DCLNRT/ LNOROT
 ! -- end of dcbnrt.h --

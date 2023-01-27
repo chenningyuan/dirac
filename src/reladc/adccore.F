@@ -1,29 +1,19 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 !
-#ifdef HAVE_MKL_BLAS
-!radovan: workaround for strange crash when using MKL zdotc
-#define ZDOTC z_dot_c
-#define zdotc z_dot_c
-#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PAMADC ()
 !
@@ -47,7 +37,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbpsi.h"
-#include "dcbmp2no.h"
 #include "infpar.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
@@ -67,9 +56,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IW = LUPRI
 !
 ! iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
-!     INTFCE = 'DIRAC     '
-      INTFCE = 'DIRAC6    '
-      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
+! LV 2020: this set up is weird, but appears to give no problems here in contrast to
+! polprp. If interface problems show up, look at the fixed code in polprp_driver
+!      
+! sunaga 2022: iface set to DIRAC4 as default, in line with having scheme 4 as default in moltra
+!      INTFCE = 'DIRAC6    '
+      INTFCE = 'DIRAC     '
 !
 !  determine condition when we have complex arithmetic !
 !
@@ -99,22 +91,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
          call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
-         call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
-     &                  global_communicator)
-      END IF
-!
-!     if MP2-NO is enabled, tell the slaves about the correct interface
-!
-      IF( MP2_DENRUN )THEN
-        call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
-     &                 global_communicator)
-        IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
-        call interface_mpi_BCAST(INFO_STRING(1),62,MASTER,
-     &                 global_communicator)
-        call interface_mpi_BCAST(INFO_STRING(2),62,MASTER,
-     &                 global_communicator)
-        call interface_mpi_BCAST(INFO_STRING(3),62,MASTER,
-     &                 global_communicator)
       END IF
 #endif
 !
@@ -227,7 +203,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     Controlled by inpt.inc from relccsd.
 !
 !     The INTERFACE/EQNS variable is defined in ccinpt.inc and is needed
-!     by CCSETI. The default scheme is DIRAC6. This is also hardcoded
+!     by CCSETI. The default scheme is DIRAC4. This is also hardcoded
 !     in the RELCCSD code.
 !
       CARITH = CA
@@ -546,6 +522,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
+#include "dgroup.h"
 #include  "../relccsd/files.inc"
 #include  "adcinpt.inc"
 #include  "../relccsd/symm.inc"
@@ -579,7 +556,6 @@ C
 
       real*8 ddot
       logical done
-      complex*16 zdotc
 
       integer(8) :: ivmax
 
@@ -1663,7 +1639,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 ddot,getimag
-      COMPLEX*16 zdotc
+!     COMPLEX*16 zdotc
 C---------------Executable Code --------------------------------------
 C
 C     CALL PST('Calculating coupling block AFFIN/HOLE+')
@@ -1807,7 +1783,7 @@ C
       integer JVVVO_I48(MXREP+1)   !mxrep+1 is defined in symm.inc !
       LOGICAL DONE
       real*8 ddot,getimag
-      complex*16 zdotc
+!     complex*16 zdotc
 C
 C---------------Executable Code --------------------------------------
 C
@@ -1970,7 +1946,7 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
       real*8 ddot,getimag
-      complex*16 zdotc
+!     complex*16 zdotc
 C
 C---------------Executable Code --------------------------------------
 C
@@ -2108,7 +2084,7 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
       real*8 ddot,getimag
-      complex*16 zdotc
+!     complex*16 zdotc
 C
 C---------------Executable Code --------------------------------------
 C
@@ -2634,7 +2610,7 @@ C
       COMPLEX*16 CEPSK,CKCVIR,DII,S_UNST,S_STAR,S
       REAL*8 SEC0,SEC1,SEC2,SECA,TITERTIME
 
-      COMPLEX*16 ZDOTC
+!     COMPLEX*16 ZDOTC
       REAL*8 GETIMAG
 C
 C---------------Executable code--------------------------------------
@@ -2850,7 +2826,7 @@ C
       COMPLEX*16 S_UNST,S_STAR
       REAL*8 S
 
-      COMPLEX*16 ZDOTC
+!     COMPLEX*16 ZDOTC
       REAL*8 GETIMAG
 
 C
@@ -3521,7 +3497,7 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
-      COMPLEX*16 zdotc
+!     COMPLEX*16 zdotc
       REAL*8 ddot,getimag
       INTEGER JVVVO_I48(MXREP+1)   !MXREP is defined in symm.inc !
       INTEGER IVOVVTAUX
@@ -7084,71 +7060,3 @@ c
 
       return
       end
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#ifdef HAVE_MKL_BLAS
-!radovan: workaround for strange crash when using MKL zdotc
-!miro: restricted by preprocessor for IBM XL
-      DOUBLE COMPLEX FUNCTION z_dot_c(N,ZX,INCX,ZY,INCY)
-*     .. Scalar Arguments ..
-      INTEGER INCX,INCY,N
-*     ..
-*     .. Array Arguments ..
-      DOUBLE COMPLEX ZX(*),ZY(*)
-*     ..
-*
-*  Purpose
-*  =======
-*
-*  ZDOTC forms the dot product of a vector.
-*
-*  Further Details
-*  ===============
-*
-*     jack dongarra, 3/11/78.
-*     modified 12/3/93, array(1) declarations changed to array(*)
-*
-*  =====================================================================
-*
-*     .. Local Scalars ..
-      DOUBLE COMPLEX ZTEMP
-      INTEGER I,IX,IY
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC DCONJG
-*     ..
-      ZTEMP = (0.0d0,0.0d0)
-      ZDOTC = (0.0d0,0.0d0)
-      IF (N.LE.0) RETURN
-      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
-*
-*        code for both increments equal to 1
-*
-         DO I = 1,N
-            ZTEMP = ZTEMP + DCONJG(ZX(I))*ZY(I)
-         END DO
-      ELSE
-*
-*        code for unequal increments or equal increments
-*          not equal to 1
-*
-         IX = 1
-         IY = 1
-         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
-         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
-         DO I = 1,N
-            ZTEMP = ZTEMP + DCONJG(ZX(IX))*ZY(IY)
-            IX = IX + INCX
-            IY = IY + INCY
-         END DO
-      END IF
-      ZDOTC = ZTEMP
-      RETURN
-      END
-#endif
-!&&&&&&&&&&& intermediate surrogate
-!     SUBROUTINE PAMPOLPRP ()
-!     write(*,*) 'Only strut! Nothing is done here'
-!     return
-!     end
-!&&&&&&&&&&& intermediate surrogate
-

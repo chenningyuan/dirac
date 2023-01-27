@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -50,7 +45,6 @@ C                        and block
 C                        (INDA refers to index of SO-orbital)
 C     * CONTROL INFORMATION:
 C       LMP2  = .TRUE. - evaluate MP2 energy
-C       MSOUT = .TRUE. - write transformed integrals to file
 C       EIGn           - eigenvalues (for  MP2 calculation)
 C       ANTIS = .TRUE. - anti-symmetrize integrals
 C       INTFLG - flag of what integral types to transform
@@ -67,7 +61,7 @@ C***********************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
 #include "infpar.h"
 #include "dcbgen.h"
@@ -265,7 +259,7 @@ C     Initialize MOLFDIR integral file
 C
       CALL FLSHFO(LUPRI)
       IF (.NOT. NOMDCINT) THEN
-         CALL MDINTI(NSTR,IPRINT)
+         CALL MDINTI(IPRINT)
       ELSE
          CALL INI4INDINFO
       END IF
@@ -695,13 +689,6 @@ C           --------------------------
 C
             NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
      &              .FALSE.,INDX,WORK(KFREE),IJP12,IDUM,NSIZG,IDUM)
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-C           CRAYfix:
-C           Opening a direct access file with too long records 
-C           generates a crash because the machine tries to keep some
-C           records in memory
-            IF (NPASS.GT.1) NSIZG = MIN0(NSIZG,1000000)
-#endif
 C
 C           Setup INDXAB & IJPASS
 C           ---------------------
@@ -1209,7 +1196,7 @@ C
 C
 C        Initialize MOLFDIR integral file on slave
 C
-         CALL MDINTI(NSTR,IPRINT)
+         CALL MDINTI(IPRINT)
       END IF
 C
       CALL XTIME(4,1,' Symmetrizing MO integrals    ')

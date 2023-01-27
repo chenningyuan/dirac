@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module fde_export_data
@@ -27,11 +22,19 @@ module fde_export_data
    use fde_io
    use xml_parser
    use xml_file
-   use fde_evaluators
+   use fde_mag_cfg
+   use fde_evaluators_dirac
    
+   implicit none
+
    public fde_export_to_file
 
    private
+   private fde_export_data_as_txt
+   interface fde_export_data_as_txt
+      module procedure fde_export_data_as_txt_full
+      module procedure fde_export_data_as_txt_scope
+   end interface
    
    contains
 
@@ -46,13 +49,28 @@ module fde_export_data
          
          if (etmp%do_grid_out .and. (level.eq.etmp%ex_level)) then
             write (*,*) 'Preparing FDE data for export'
-            call fde_prepare_export(level,fde_grid_ex,gf_export)
-         
+
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
+            if (etmp%ex_property .eq. 'density') then
+                call fde_prepare_export_rho(level,fde_grid_ex,gf_export)
+            else
+                call fde_prepare_export(level,fde_grid_ex,gf_export)
+            end if
+
             call fde_get_export_info(etmp) 
             if (etmp%ex_format.eq.'XML') then
                call fde_export_data_as_xml(fde_grid_ex,gf_export)
             else if (etmp%ex_format.eq.'TXT') then
-               call fde_export_data_as_txt(fde_grid_ex,gf_export)
+               if (etmp%ex_property .eq. 'density') then
+                  call fde_export_data_as_txt(fde_grid_ex,gf_export,'density')
+               else
+                  call fde_export_data_as_txt(fde_grid_ex,gf_export)
+               end if
             else
                call fde_quit('unrecognized export format')
             endif
@@ -64,14 +82,29 @@ module fde_export_data
 
 
 !   ----------------------------------------------------------------------------
+      subroutine fde_prepare_export_rho(level,grid,gf)
+!   ----------------------------------------------------------------------------
+         type(grid_function), intent(inout) :: gf
+         type(fde_grid), intent(in)         :: grid
+         character(len=4)                   :: level
+
+        call fde_get_density(level,grid,gf)
+
+      end subroutine fde_prepare_export_rho
+
+
+!   ----------------------------------------------------------------------------
       subroutine fde_prepare_export(level,grid,gf)
 !   ----------------------------------------------------------------------------
          type(grid_function), intent(inout) :: gf
          type(fde_grid), intent(in)         :: grid
          character(len=4)                   :: level
 
-        call fde_calculate_elpot(level,grid,gf)
-        call fde_get_density(level,grid,gf)
+        call fde_calculate_elpot(level,grid,gf,old_scheme=fde_export_old_esp)
+
+        if (fde_rsp_mag_lao_export) then
+           call fde_get_pertden(level,grid,gf)
+        end if
 
       end subroutine fde_prepare_export
 
@@ -219,7 +252,7 @@ module fde_export_data
 
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_export_data_as_txt(grid,gf)
+      subroutine fde_export_data_as_txt_full(grid,gf)
 !   ----------------------------------------------------------------------------
          type(grid_function), intent(in) :: gf
          type(fde_grid), intent(in)      :: grid 
@@ -227,12 +260,14 @@ module fde_export_data
          type(fde_files)  :: ftmp
          type(fde_export) :: etmp
 
-         integer :: i
-         integer :: nr_variables = 6
+         integer :: i, j, k, l
+         integer :: nr_variables
          real(kind=8) :: v_pc_array = 0.0d0
          integer :: export_unit, log_unit
          character(len=60)  :: export_name, log_name
        
+         nr_variables = 6
+
          if (.not.associated(grid%r)) &
             call fde_quit('grid not available in fde export')
 
@@ -247,6 +282,32 @@ module fde_export_data
          
          if (.not.associated(gf%elpot)) &
             call fde_quit('potential not available in fde export')
+
+!        lao contribs
+         !if (fde_rsp_mag_lao_export) then
+         !   if (.not.associated(gf%n_b)) then
+         !      call fde_quit('n_b not available in fde export')
+         !   else
+         !      nr_variables = nr_variables + 3
+         !   end if
+         !   if (.not.associated(gf%gn_b)) then
+         !      call fde_quit('gn_b not available in fde export')
+         !   else
+         !      nr_variables = nr_variables + 9
+         !   end if
+         !   if (.not. fde_cfg_no_sdft) then
+         !      if (.not.associated(gf%s_b)) then
+         !         call fde_quit('s_b not available in fde export')
+         !      else
+         !         nr_variables = nr_variables + 9
+         !      end if
+         !      if (.not.associated(gf%gs_b)) then
+         !         call fde_quit('gs_b not available in fde export')
+         !      else
+         !         nr_variables = nr_variables + 27
+         !      end if
+         !   end if
+         !end if
          
          call fde_get_files_info(ftmp)
          call fde_get_export_info(etmp)
@@ -265,19 +326,123 @@ module fde_export_data
          write (export_unit,'(2I8)') grid%npoints, nr_variables
 
          do i = 1, grid%npoints
-            write (export_unit,'(10E28.16e3)') (grid%r(j,i), j = 1,3), &
-                                                grid%w(i),             &
-                                                gf%elpot(i),           &
-                                                v_pc_array,            &
-                                                gf%n(i),               &
-                                                (gf%gn(j,i), j = 1,3)
+!             if (fde_rsp_mag_lao_export.and..not.fde_cfg_no_sdft) then                   ! order of columns:
+!               write (export_unit,'(58ES30.20E3)') (grid%r(j,i), j = 1,3), &                 !1-3,   x-y-z
+!                                               grid%w(i),             &                      !4
+!                                               gf%elpot(i),          &                       !5
+!                                               v_pc_array,            &                      !6
+!                                               gf%n(i),               &                      !7
+!                                               (gf%gn(j,i), j = 1,3), &                      !8-10,  gx-gy-gz
+!                                               (gf%n_b(j,i), j = 1,3),             &         !11-13, bx-by-bz
+!                                               ((gf%gn_b(j,k,i), j = 1,3), k=1,3), &         !14-22, gxbx-gybx-gzbx - gxby-gyby-gzby - gzbx-gzby-gzbz
+!                                               ((gf%s_b(j,k,i), j = 1,3), k=1,3),  &         !23-31, sxbx-sybx-szbx - sxby-syby-szby - szbx-szby-szbz
+!                                               (((gf%gs_b(j,k,l,i), j = 1,3), k=1,3), l=1,3) !32-58, gxsxbx-gysxbx-gzsxbx - gxsybx-gysybx-gzsybx - etc.
+!             else if (fde_rsp_mag_lao_export.and.fde_cfg_no_sdft) then
+!               write (export_unit,'(22ES30.20E3)') (grid%r(j,i), j = 1,3), &
+!                                               grid%w(i),             &
+!                                               gf%elpot(i),          &
+!                                               v_pc_array,            &
+!                                               gf%n(i),               &
+!                                               (gf%gn(j,i), j = 1,3), &
+!                                               (gf%n_b(j,i), j = 1,3), &
+!                                               ((gf%gn_b(j,k,i), j = 1,3), k=1,3)
+!             else
+               write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
+                                               grid%w(i),             &
+                                               gf%elpot(i),          &
+                                               v_pc_array,            &
+                                               gf%n(i),               &
+                                               (gf%gn(j,i), j = 1,3)
+!             end if
+
          end do
 
          write(log_unit,*) 'done writing plaintext file'       
          write(log_unit,*) 'closing plaintext file'
          call fde_close_file(export_unit)
 
-      end subroutine fde_export_data_as_txt
+      end subroutine fde_export_data_as_txt_full
+      
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_export_data_as_txt_scope(grid,gf, scope)
+!   ----------------------------------------------------------------------------
+         type(grid_function), intent(in) :: gf
+         type(fde_grid), intent(in)      :: grid 
+         character(len=7), intent(in)    :: scope
+
+         type(fde_files)  :: ftmp
+         type(fde_export) :: etmp
+
+         integer :: i, j, k, l
+         integer :: nr_variables
+         real(kind=8) :: v_pc_array = 0.0d0
+         integer :: export_unit, log_unit
+         character(len=60)  :: export_name, log_name
+       
+         nr_variables = 6
+
+         if (.not.associated(grid%r)) &
+            call fde_quit('grid not available in fde export')
+
+         select case (scope)
+         case ('density')
+            if (.not.associated(gf%n)) &
+               call fde_quit('density not available in fde export')
+         case default
+            if (.not.associated(gf%n)) &
+               call fde_quit('density not available in fde export')
+            
+            if (.not.associated(gf%gn)) &
+               call fde_quit('density gradient not available in fde export')
+            
+            if (.not.associated(gf%hn)) &
+               call fde_quit('density gradient not available in fde export')
+            
+            if (.not.associated(gf%elpot)) &
+               call fde_quit('potential not available in fde export')
+         end select
+
+         
+         call fde_get_files_info(ftmp)
+         call fde_get_export_info(etmp)
+      
+         export_unit = ftmp%export%unit
+         export_name = ftmp%export%name
+
+         log_unit    = ftmp%logfile%unit
+         log_name    = ftmp%logfile%name
+
+         WRITE(log_unit,*) 'Output FDE data to text file:',trim(export_name)
+
+         call fde_test_export
+
+         call fde_open_file(export_name,export_unit)
+         write (export_unit,'(2I8)') grid%npoints, nr_variables
+
+         select case (scope)
+         case ('density')
+           do i = 1, grid%npoints
+               ! only grid coordinates + electron density
+               write (export_unit,'(4ES30.20E3)') (grid%r(j,i), j = 1,3), &
+                                               gf%n(i)
+           end do
+         case default
+           do i = 1, grid%npoints
+               write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
+                                               grid%w(i),             &
+                                               gf%elpot(i),          &
+                                               v_pc_array,            &
+                                               gf%n(i),               &
+                                               (gf%gn(j,i), j = 1,3)
+           end do
+         end select
+
+         write(log_unit,*) 'done writing plaintext file'       
+         write(log_unit,*) 'closing plaintext file'
+         call fde_close_file(export_unit)
+
+      end subroutine fde_export_data_as_txt_scope
       
 
 end module fde_export_data 

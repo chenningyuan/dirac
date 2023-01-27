@@ -60,6 +60,9 @@
          interface allocator_track
             module procedure allocator_registerAllocation
             module procedure allocator_registerDeallocation
+#if !defined (INT_STAR8)
+            module procedure allocator_registerAllocation_i8_fixed
+#endif
          end interface allocator_track
 
          interface allocator_get_maxsize
@@ -86,6 +89,14 @@
             module procedure allocator_get_arrayindex_size_i4
             module procedure allocator_get_arrayindex_size_i8
          end interface allocator_get_arraysize
+
+         interface allocator_withinRange
+            module procedure allocator_withinRange
+#if !defined (INT_STAR8)
+            module procedure allocator_withinRange_i8_fixed
+#endif
+         end interface allocator_withinRange
+        
          contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -127,6 +138,27 @@
 
       end function allocator_withinRange
 
+#if !defined (INT_STAR8)
+      logical function allocator_withinRange_i8_fixed(size,kind)
+         integer(kind=8) :: size 
+         integer :: kind 
+         real(kind=kreal) :: requestedMem, inuseMem, totalMem, maxMem
+
+         requestedMem = real(size)*real(kind)
+         call track_getMemoryInuse(inuseMem)
+         call allocator_get_max(maxMem)
+
+         totalMem = requestedMem + inuseMem
+
+         if ( totalMem .le. maxMem ) then
+            allocator_withinRange_i8_fixed = .true.
+         else
+            allocator_withinRange_i8_fixed = .false.
+         endif
+
+      end function allocator_withinRange_i8_fixed
+#endif
+
 
       subroutine allocator_report(mytid,verbose)
          integer :: mytid, verbose
@@ -150,13 +182,11 @@
 #endif
 
       end subroutine allocator_registerAllocation
-      
 
       subroutine allocator_registerDeallocation(varAddr,varLabel)
-         integer                        :: size
          integer                        :: kind
          integer                        :: traceStackDepth = -1
-         integer(kind=klongint)         :: varAddr 
+         integer(kind=klongint)         :: varAddr
          character(len=charArrayLength) :: trace_result
          character(len=charArrayLength) :: varLabel
 
@@ -164,10 +194,29 @@
          trace_result = ' '
          call get_traceback_info (2,trace_result,charArrayLength,traceStackDepth)
          call track_RegisterDeallocation(varAddr,varLabel,&
-     &                                   trace_result,traceStackDepth) 
+     &                                   trace_result,traceStackDepth)
 #endif
 
       end subroutine allocator_registerDeallocation
+
+#if !defined (INT_STAR8)
+      subroutine allocator_registerAllocation_i8_fixed(size, kind,varAddr,varLabel)
+         integer(kind=8)                :: size
+         integer                        :: kind
+         integer                        :: traceStackDepth = -1
+         integer(kind=klongint)         :: varAddr
+         character(len=charArrayLength) :: trace_result
+         character(len=charArrayLength) :: varLabel
+
+#ifndef GFORTRAN_ALLOCATOR_WORKAROUND
+         trace_result = ' '
+         call get_traceback_info (2,trace_result,charArrayLength,traceStackDepth)
+         call track_RegisterAllocation(size,kind,varAddr,varLabel,&
+     &                                 trace_result,traceStackDepth)
+#endif
+
+      end subroutine allocator_registerAllocation_i8_fixed
+#endif
 !     
 !
 !

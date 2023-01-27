@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -42,7 +37,7 @@ C
      &          COEF12(*), CONT1(*),  CONT2(*), INDHSQ(*), IODDHR(*),
      &          LMNV12(*), IODD12(KCKT12,2),
      &          NPNT12(*), NRED12(*), WORK(LWORK)
-#include "ibtfun.h"
+
 C
       CALL QENTER('C1DRIV')
 #include "memint.h"
@@ -107,12 +102,12 @@ C
          IF (SPHR1 .AND. SPHR2) LCSINT = NCCPP*NTUV34*KHKT2
 C
 C
-         CALL MEMGET('REAL',KCCONT,LCCONT,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CCONT',KCCONT,LCCONT,WORK,KFREE,LFREE)
          LNGTH1 = LHCPRM + LETUV
          LNGTH2 = LHCPRM + LSCR1 + LSCR2
          LNGTH3 = LCSINT
          LBUF   = MAX(LNGTH1,LNGTH2,LNGTH3)
-         CALL MEMGET('REAL',KBUF,LBUF,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','BUF',KBUF,LBUF,WORK,KFREE,LFREE)
          KCSINT = KBUF
          KHCPRM = KBUF
          KETUV  = KHCPRM + LHCPRM
@@ -203,7 +198,7 @@ C
                IF (DIAG12) MAX2 = ICOMP1
                DO 620 ICOMP2 = 1, MAX2
                   ICMP12 = ICMP12 + 1
-                  IODD = IBTXOR(IODD12(ICMP12,2),IHCSYM(IHCINT))
+                  IODD = IEOR(IODD12(ICMP12,2),IHCSYM(IHCINT))
                   DO 630 TUV = 1, MTUV34
                   IF (IODDHR(TUV) .EQ. IODD) THEN
                      WRITE (LUPRI,'(/A,I3,A,2I3,A,I3)' )
@@ -254,15 +249,13 @@ C
      &          INDHVC(0:*), IODDHR(*), INDHSQ(*),
      &          COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          ETUV(NU1234), HCPRIM(NU1234,NTUV34),
-!radovan: went out of bounds with spherical AOs, changed to:
      &          HCCONT(NCCPP,NTUV34,KCKT12),
-!    &          HCCONT(NCCPP,NTUV34,KHKT12),
      &          HCINT(NCCPP,NTUV34,KHKT12),
      &          HCSINT(*), SCR1(*), SCR2(*), CONT1(*), CONT2(*),
      &          LMNV12(KCKMX,5,2), IODD12(KCKT12,2),
      &          NPCO1(*), NPCO2(*), NUCS12(*), NPNT12(*), NRED12(*)
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C10INT','*',103)
 C
@@ -308,9 +301,9 @@ C
                MAXT = L1 + L2
                MAXU = M1 + M2
                MAXV = N1 + N2
-               MINT = IBTAND(MAXT,INCRMT - 1)
-               MINU = IBTAND(MAXU,INCRMU - 1)
-               MINV = IBTAND(MAXV,INCRMV - 1)
+               MINT = IAND(MAXT,INCRMT - 1)
+               MINU = IAND(MAXU,INCRMU - 1)
+               MINV = IAND(MAXV,INCRMV - 1)
                IF (IPRINT .GE. 10) THEN
                   WRITE (LUPRI,'(A,2I5)')'ICOMP1/2: ',ICOMP1,ICOMP2
                   WRITE (LUPRI,'(A,3I5)')'L/M/N1:',L1,M1,N1
@@ -411,7 +404,7 @@ C
      &          LMNV12(KCKMX,5,2), IODD12(KCKT12,2), KODD12(KCKT12,2),
      &          SCR1(*), SCR2(*), CONT1(*), CONT2(*),
      &          NPCO1(*), NPCO2(*), NUCS12(*), NPNT12(*), NRED12(*)
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C1EINT','*',103)
 C
@@ -431,7 +424,7 @@ C
             JOFFEX(IHCINT) = 2
             JOFFEY(IHCINT) = 1
             JOFFEZ(IHCINT) = 1
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,1)
+            IHCSYM(IHCINT) = IAND(IHRSYM,1)
             IHCADR(3) = IHCINT
          END IF
          IF (DHCEX2) THEN
@@ -439,7 +432,7 @@ C
             JOFFEX(IHCINT) = 3
             JOFFEY(IHCINT) = 1
             JOFFEZ(IHCINT) = 1
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,1)
+            IHCSYM(IHCINT) = IAND(IHRSYM,1)
             IHCADR(4) = IHCINT
          END IF
          JENDAT(ICOOR) = IHCINT
@@ -458,7 +451,7 @@ C
             JOFFEX(IHCINT) = 1
             JOFFEY(IHCINT) = 2
             JOFFEZ(IHCINT) = 1
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,2)
+            IHCSYM(IHCINT) = IAND(IHRSYM,2)
             IHCADR(6) = IHCINT
          END IF
          IF (DHCEY2) THEN
@@ -466,7 +459,7 @@ C
             JOFFEX(IHCINT) = 1
             JOFFEY(IHCINT) = 3
             JOFFEZ(IHCINT) = 1
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,2)
+            IHCSYM(IHCINT) = IAND(IHRSYM,2)
             IHCADR(7) = IHCINT
          END IF
          JENDAT(ICOOR) = IHCINT
@@ -485,7 +478,7 @@ C
             JOFFEX(IHCINT) = 1
             JOFFEY(IHCINT) = 1
             JOFFEZ(IHCINT) = 2
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,4)
+            IHCSYM(IHCINT) = IAND(IHRSYM,4)
             IHCADR(9) = IHCINT
          END IF
          IF (DHCEZ2) THEN
@@ -493,7 +486,7 @@ C
             JOFFEX(IHCINT) = 1
             JOFFEY(IHCINT) = 1
             JOFFEZ(IHCINT) = 3
-            IHCSYM(IHCINT) = IBTAND(IHRSYM,4)
+            IHCSYM(IHCINT) = IAND(IHRSYM,4)
             IHCADR(10) = IHCINT
          END IF
          JENDAT(ICOOR) = IHCINT
@@ -532,8 +525,8 @@ C
             WRITE (LUPRI,'(A,I5)') ' ICOOR ', ICOOR
          END IF
          DO 110 I = 1, KCKT12
-            KODD12(I,1) = IBTXOR(IODD12(I,1),IHCSYM(IHCINT))
-            KODD12(I,2) = IBTXOR(IODD12(I,2),IHCSYM(IHCINT))
+            KODD12(I,1) = IEOR(IODD12(I,1),IHCSYM(IHCINT))
+            KODD12(I,2) = IEOR(IODD12(I,2),IHCSYM(IHCINT))
   110    CONTINUE
          ICMP12 = 0
          DO 200 ICOMP1 = 1, KCKT1
@@ -554,9 +547,9 @@ C
                MAXT = L1 + L2 + INCMXT(ICOOR)
                MAXU = M1 + M2 + INCMXU(ICOOR)
                MAXV = N1 + N2 + INCMXV(ICOOR)
-               MINT = IBTAND(MAXT,INCRMT - 1)
-               MINU = IBTAND(MAXU,INCRMU - 1)
-               MINV = IBTAND(MAXV,INCRMV - 1)
+               MINT = IAND(MAXT,INCRMT - 1)
+               MINU = IAND(MAXU,INCRMU - 1)
+               MINV = IAND(MAXV,INCRMV - 1)
                IF (IPRINT .GE. 10) THEN
                   WRITE (LUPRI,'(A,2I5)')'ICOMP1/2:',ICOMP1,ICOMP2
                   WRITE (LUPRI,'(A,3I5)')'L/M/N1:',L1,M1,N1
@@ -761,7 +754,8 @@ C
   430                CONTINUE
   400             CONTINUE
                END IF
-               CALL MXM(SCR2,NPR234,CONT2,NUCR2,SCR1,NORR2)
+               CALL DGEMM('N','N',NPR234,NORR2,NUCR2,D1,SCR2,NPR234,
+     &              CONT2,NUCR2,D0,SCR1,NPR234)
             ELSE
                IF (RPRI12) THEN
                   CALL DZERO(SCR2,NUCR1*NUCR2*NUC34)
@@ -771,9 +765,11 @@ C
                         SCR2(KL,IOFFIJ) = HCPRIM(KL,IJ,TUV)
   510                CONTINUE
   500             CONTINUE
-                  CALL MXM(SCR2,NPR234,CONT2,NUCR2,SCR1,NORR2)
+                  CALL DGEMM('N','N',NPR234,NORR2,NUCR2,D1,SCR2,NPR234,
+     &                 CONT2,NUCR2,D0,SCR1,NPR234)
                ELSE
-                 CALL MXM(HCPRIM(1,1,TUV),NPR234,CONT2,NUCR2,SCR1,NORR2)
+                 CALL DGEMM('N','N',NPR234,NORR2,NUCR2,D1,
+     &                HCPRIM(1,1,TUV),NPR234,CONT2,NUCR2,D0,SCR1,NPR234)
                END IF
             END IF
 C
@@ -796,12 +792,14 @@ C           Transform second index
 C           ======================
 C
             IF (TCON12 .OR. RCNT12) THEN
-               CALL MXM(SCR2,NCT134,CONT1,NUCR1,SCR1,NORR1)
+               CALL DGEMM('N','N',NCT134,NORR1,NUCR1,D1,SCR2,NCT134,
+     &              CONT1,NUCR1,D0,SCR1,NCT134)
                DO 700 I = 1, NORB12
                  CALL DCOPY(NUC34,SCR1(1,NRED12(I)),1,HCCNT(1,I,TUV),1)
   700          CONTINUE
             ELSE
-               CALL MXM(SCR2,NCT134,CONT1,NUCR1,HCCNT(1,1,TUV),NORR1)
+               CALL DGEMM('N','N',NCT134,NORR1,NUCR1,D1,SCR2,NCT134,
+     &              CONT1,NUCR1,D0,HCCNT(1,1,TUV),NCT134)
             END IF
          END IF
   200    CONTINUE

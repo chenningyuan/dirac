@@ -29,15 +29,12 @@ f.add(from_re     = 'TOTAL ENERGY',
 #  compare SCF eigenvalues
 f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
-      rel_tolerance   = 1.0e-7)
+      rel_tolerance   = 5.0e-7)
 # check the total COSCI averaged energy - must be identical with the previos SCF energy
 f.add(from_re     = 'Total average:',
       num_lines   = 1,
       rel_tolerance   = 1.0e-8)
 
 test.run(['V.x2c.2fs.scf_os-ds_ovlsel_cosci.inp'], ['V.v2z.Dinfh.mol'], f, args='--incmo')
-
-# remove MO file
-os.unlink('DFCOEF')
 
 sys.exit(test.return_code)

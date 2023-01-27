@@ -15,7 +15,7 @@ f = [
                rel_tolerance=1.0e-5),
     get_filter(from_string='Peak memory usage:',
                to_string='reached at subroutine :',
-               abs_tolerance=1.0e-4),
+               rel_tolerance=0.50), # different memory peaks for serial / parallel runs
 ]
 
 options = cli()
@@ -26,7 +26,7 @@ for inp in ['H2O.ae4z.x2c.scf_countmem-relcc.inp']:
         ierr += run(options,
                     configure,
                     input_files=[inp, mol],
-                    extra_args=' --gb=0.20 --ag=0.366 --put "DFPCMO.H2O.x2c.ae4z=DFPCMO" ',
+                    extra_args=' --mw=32 --nw=32 --aw=64 --put "DFPCMO.H2O.x2c.ae4z=DFPCMO" ',
                     filters={'out': f})
 
 sys.exit(ierr)

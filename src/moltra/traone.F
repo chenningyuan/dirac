@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -24,7 +19,7 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAONE */
       SUBROUTINE TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,
-     &                  KQ,KQC,KE,KIBE)
+     &                  KQ,KQC,KE,KIBE,NSPC2)
 C***********************************************************************
 C
 C     Driver routine for 2-index transformations
@@ -46,10 +41,10 @@ C
       LOGICAL TOBE,TRASAM
       real*8, intent(in) :: toterg
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KQ(2,2),
-     &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,4)
+     &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,4),
+     &          NSPC2(2,0:3)
       Real(8), Allocatable :: FMO(:),ORBE(:)
       Integer, Allocatable :: IBORB(:)
-
 C
       CALL QENTER('TRAONE')
       KFRSAV = KFREE
@@ -64,11 +59,15 @@ C
 C     Transform core-fock matrix to active MO basis
 C     ---------------------------------------------
 C
-      Allocate (FMO(N2BBASXQ))
+      IF(NSPC2(1,3).GT.0) THEN
+        Allocate(FMO(N2BBASXQ*2)) ! core density matrix
+      ELSE
+        Allocate(FMO(N2BBASXQ)) ! core density matrix
+      ENDIF
 !Miro: used parameter DUMMY -no need for full set of MOs
       CALL GTCFCK(FMO,IPRTRA,WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQC(1)),DUMMY,NDMOQR,ICMOQR,NSTR,NDMOQC,ICMOQC,NSPC,
-     &        ITRA_INTFL2,WORK,KFREE,LFREE)
+     &        NSPC2,ITRA_INTFL2,WORK,KFREE,LFREE)
 C
 C     Write MOLFDIR file MRCONEE
 C     --------------------------
@@ -97,7 +96,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gtcfck */
       SUBROUTINE GTCFCK(FMO,IPRINT,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
-     &                  NDMOQC,ICMOQC,NSPC,INTFLG2,WORK,KFREE,LFREE)
+     &          NDMOQC,ICMOQC,NSPC,NSPC2,INTFLG2,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
@@ -121,7 +120,7 @@ C
       LOGICAL TOBE
       DIMENSION FMO(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
-      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
+      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),NSPC2(2,0:3)
       DIMENSION Q1(*),Q2(*),QCO(*),CMO(*)
       Real(8), Allocatable :: FAO(:),DMAT(:),DMATfull(:)
 C
@@ -133,11 +132,15 @@ C
       INTFLG = INTFLG2
 C
       Allocate(FAO(N2BBASXQ))
-      Allocate(DMAT(N2BBASXQ)) ! core density matrix
+      IF(NSPC2(1,3).GT.0) THEN
+        Allocate(DMAT(N2BBASXQ*2)) ! core density matrix
+      ELSE
+        Allocate(DMAT(N2BBASXQ)) ! core density matrix
+      ENDIF
       Allocate(DMATfull(N2BBASXQ))! Miro: full density matrix
 C
       CALL GTCFC1(FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,
-     &            NSTR,NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
+     &      NSTR,NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
 C
 C     Print section
 C
@@ -167,7 +170,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GTCFC1 */
       SUBROUTINE GTCFC1(
      &   FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
-     &             NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
+     &          NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
@@ -208,48 +211,80 @@ C
       LOGICAL :: dirac_cfg_dft_calculation_save
       DIMENSION FMO(*),FAO(*),DMAT(*),DMATfull(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
-      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
-      DIMENSION Q1(*),Q2(*),QCO(*),CMO(*)
+      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),NSPC2(2,0:3)
+      DIMENSION Q1(*),Q2(*),QCO(*),QCO2(*),CMO(*)
 
       Integer, Allocatable :: POS(:)
+      real(8)              :: f_occ
 C
       CALL QENTER('GTCFC1')
       KFRSAV = KFREE
       LUBUF = 22
 C
+C     Modified Fall 2019 by J. Pototschnig to allow for open shell core
+      IF(NSPC2(1,3).GT.0) THEN
+C     Initialize with open shell !
+        NOPENBUF = NOPEN
+        NFMAT = 2
+        NOPEN = 1
+C       get number of orbitals
+        f_occ = 0
+        DO IFRP = 1,NFSYM
+          f_occ = f_occ + real(NSPC2(IFRP,0))
+        ENDDO
+        f_occ=real(NSPC2(1,3))/(2*f_occ)
+      ELSE
 C     Initialize - core is the closed-shell system !
-C
-      NOPENBUF = NOPEN
-      NFMAT = 1
-      NOPEN = 0
-C
+        NOPENBUF = NOPEN
+        NFMAT = 1
+        NOPEN = 0
+      ENDIF
+
 C     Check if we need two-electron part
-C
       NTOT = 0
       DO IFRP = 1,NFSYM
         NTOT = NTOT + NSPC(IFRP,0)
       ENDDO
+        
       IF(NTOT.GT.0) THEN
 C
 C       1. Get two-electron Fock matrix in AO-basis
 C       ===========================================
 C
-        call SaveTaskDistribFlags(saveflags)
-       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-        call SetIntTaskArrayDimension(NPOS,PARCAL)
+      call SaveTaskDistribFlags(saveflags)
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
         Allocate (POS(NPOS))
-C
-C       Closed shell Hartree - Fock
-C       ===========================
-C       Totally symmetric operator
-        ISYMOP(1) = 1
-C       Fock matrix type
-        IFCKOP(1) = 1
-C       Hermitian operator
-        IHRMOP(1) = 1
-C       Get core density matrix
-        CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT) 
-C       Get the two-electron Fock matrix using core density matrix
+
+C       Modified Fall 2019 by J. Pototschnig to allow for open shell core
+        IF(NSPC2(1,3).GT.0) THEN
+C         with  frozen open-shell
+C         ===========================
+C         Get density matrix
+          CALL CDENSO(DMAT,QCO,NDMOQC,ICMOQC,NSPC,NSPC2,IPRINT) 
+C         Totally symmetric operator
+          ISYMOP(1) = 1
+          ISYMOP(2) = 1
+C         Fock matrix type
+          IFCKOP(1) = 1
+          IFCKOP(2) = 1
+C         Hermitian operator
+          IHRMOP(1) = 1
+          IHRMOP(2) = 1
+        ELSE
+C         Closed shell Hartree - Fock
+C         ===========================
+C         Get core density matrix
+          CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT) 
+C         Totally symmetric operator
+          ISYMOP(1) = 1
+C         Fock matrix type
+          IFCKOP(1) = 1
+C         Hermitian operator
+          IHRMOP(1) = 1
+        ENDIF
+
+C       Get the two-electron Fock matrix using the density matrix
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
      &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
 
@@ -260,7 +295,6 @@ C       Get the two-electron Fock matrix using core density matrix
      &                NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
 
-#if defined MOD_UNRELEASED
 ! Miro: inject xcint density into FMO as is in dirscf.F
         if (DORES.AND.dirac_cfg_dft_calculation.AND..NOT.NOVXC) then
           IF (COREDENS) THEN
@@ -287,7 +321,6 @@ C       Get the two-electron Fock matrix using core density matrix
      &                NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
         endif
-#endif
 
         IF(PARCAL) call SetTaskDistribFlags(saveflags)
 
@@ -318,19 +351,17 @@ C
 ! if NOVXC=.true. - do not add Exc to the core SCF energy, FMO (2-el Fock mtx) does not contain Vxc
 ! if NOVXC=.false. - add Exc from core density only to the core SCF energy, FMO (2-el Fock mtx) contains Vxc
 !
-#if defined MOD_UNRELEASED
        if (DORES.AND.dirac_cfg_dft_calculation.AND.NOVXC) then
           dirac_cfg_dft_calculation_save=.true.
           dirac_cfg_dft_calculation=.false.   !Miro: do we have interest in absolute energies of multiplet states ?
+       else 
+          dirac_cfg_dft_calculation_save=.false.
        endif
-#endif
       CALL ERGCAL(FAO,FMO,DMAT,WORK(KFREE),LFREE)
 !Miro: restore the DFT status
-#if defined MOD_UNRELEASED
        if (dirac_cfg_dft_calculation_save.AND.NOVXC) then
           dirac_cfg_dft_calculation=.true.   !Miro: do we have interest in absolute energies of multiplet states ?
        endif
-#endif
 
 C
 C     IF LVCON is used we should take the repulsion between all charge while
@@ -349,7 +380,13 @@ C
 C     5. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================
 C
-      IF(NTOT.GT.0) CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
+      IF(NTOT.GT.0) THEN
+        CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
+        IF(NFMAT.GT.1) THEN
+C         for now only one froze open-shell included
+          CALL DAXPY(N2BBASXQ,f_occ,FMO(1+N2BBASXQ),1,FAO,1) 
+        ENDIF
+      ENDIF
 C
 C     Make the matrix spinfree if desired.
 C
@@ -423,7 +460,7 @@ C  /* Deck CDENS */
       SUBROUTINE CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)
 C*****************************************************************************
 C
-C Get the core density matrix into DMAT, from selected MO's in QCO
+C Get the core density matrix into DMAT, from selected MOs in QCO
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -758,7 +795,7 @@ C     group type (1 real, 2 complex, 4 quat.),spinfree formalism,
 C     total number of orbitals (so including frozen or deleted orbitals)
 !     total SCF energy
       WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR,
-     &               NORBT,TOTERG
+     &               NORBT,TOTERG,NSPC,NCORE2
 C     NSYMRP        - Number of fermion irreps in parent group
 C     REPN          - names of these irreps (gerade, ungerade)
 C     NAEL          - number of spinors active in the transformation
@@ -767,6 +804,7 @@ C                     0: total
 C                     1: positive energy
 C                     2: negative energy
 C     NESH-NST-NSPC -number of deleted spinors.
+C     NCORE2        - spinors missing due to frozen open shell
       WRITE (LUMLF1) NSYMRP,(REPN(IRP),IRP=1,NSYMRP),  
      &                      (NAEL(IRP),IRP=1,NSYMRP),
      &                      (NSTR(IRP),IRP=1,NFSYM),
@@ -791,7 +829,7 @@ C     - Number of boson symmetry reps (for LUCITA)
      &               (IBSPI(I),I=1,2*NSTRT),(NORB(I),I=1,NFSYM),NBSYMRP
 C     Matrix elements over the core Fock operator.
       WRITE (LUMLF1) ((FMOM(I,J,1),FMOM(I,J,2),
-     &                 J=1,NSTRT*2),I=1,NSTRT*2)
+     &                 I=1,NSTRT*2),J=1,NSTRT*2)
       CLOSE (LUMLF1)
 C
       WRITE (LUPRI,1000) 
@@ -984,7 +1022,7 @@ C     Cinv have an infinite number of irreps and we use a finite
 C     multiplication table to store the coupling information we need 
 C     to truncate at some point. We do this at mj=15/2 in Cinfh and 
 C     mj=31/2 in Cinf so that we can keep MULTB dimensioned at 64 like 
-C     before. In fact this means that we'll be using the subgroups C8h 
+C     before. In fact this means that we will be using the subgroups C8h 
 C     and C16 respectively. This can be easily extended or decreased 
 C     using the input parameter NORDER that indicates how large MULTB 
 C     may become.
@@ -1367,7 +1405,15 @@ C***********************************************************************
 C     
 C     Joost van Stralen, april 2002
 C
-C     XMO - The Lagrangian in Dirac format, this matrix is not sym. packed
+C     Input:  XMOM - symmetry packed matrix in RELCCSD format (using supersymmetry for linear molecules)
+C     Output: XMO  - The Lagrangian in Dirac format, this matrix is not sym. packed
+C
+C     Auxilliaries (all input and unchanged)
+C     NFVO - total size of packed VO blocks (is identical to size of T1 amplitude array)
+C     IRCW - real or complex arithmetic used in RELCCSD (1:real, 2:complex)
+C     NREP - number of irreps used in RELCCSD
+C     NV   - for each irrep the number of virtual spinors
+C     NO   - for each irrep the number of occupied spinors
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1398,44 +1444,37 @@ C
 
       call Super_Symmetry(nrep,no,idyu2g,'hole') 
 
-      IF (nz.NE.4) THEN
+      IF (nz.NE.4) THEN ! The most common case for small molecules "real" or complex" double groups
 
-         if(nfsym == 1)then
+         if(nfsym == 1)then ! no inversion symmetry
            norbc = 1
-        if (spinfr) then
-           do j = 1, nbsym
-             CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
-     &                              xmo,norbt,norbt,idxu2g(1,j),
-     &                              idyu2g(1,j),nz)
-           norbc = norbc + no(j)*nv(j)
-           end do
-        else
-           do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
-     &                              xmo,norbt,norbt,idxu2g(1,j),
-     &                              idyu2g(1,j),nz)
-           norbc = norbc + 2*nv(j)*no(j)
-           end do
-        endif
-         else if(nfsym == 2)then
-           do k = 1, nfsym 
-             if(k == 1)then
-               norbc = 1
-               do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
-     &                                  xmo,norbt,norbt,idxu2g(1,j),
-     &                                  idyu2g(1,j),nz)
-                 norbc = norbc + 2*nv(j)*no(j)
-               end do
-             else if(k == 2)then
-               do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
-     &                                  xmo,norbt,norbt,idxu2g(1,j),
-     &                                  idyu2g(1,j),nz)
-                 norbc = norbc + 2*nv(j)*no(j)
-               end do
-             end if
-           end do
+           if (spinfr) then
+              do j = 1, nbsym
+                CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
+     &                                 xmo,norbt,norbt,idxu2g(1,j),
+     &                                 idyu2g(1,j),nz)
+                 norbc = norbc + no(j)*nv(j)
+              end do
+           else
+              do j = 1, nrep,2
+                if (nv(j)>0 .and. no(j)>0) 
+     &          CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
+     &                                 xmo,norbt,norbt,idxu2g(1,j),
+     &                                 idyu2g(1,j),nz)
+              norbc = norbc + 2*nv(j)*no(j)
+              end do
+           endif
+         else if(nfsym == 2)then ! inversion symmetry
+!           LV: this code is incomplete, should be checked for spinfree with inversion
+!           LV: non-spinfree code is identical to non-inversion code, can be simplified further
+            norbc = 1
+            do j = 1, nrep,2
+              if (nv(j)>0 .and. no(j)>0) 
+     &        CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
+     &                               xmo,norbt,norbt,idxu2g(1,j),
+     &                               idyu2g(1,j),nz)
+              norbc = norbc + 2*nv(j)*no(j)
+            end do
          end if
 
          deallocate(idxu2g,idyu2g)
@@ -1445,72 +1484,69 @@ C
          IOFF3 = 0
          IOFF4 = 0
 
-         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
+! Complex groups unless when they are run in spinfree (so that the algebra could be chosen as real)
+         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN 
 
-      DO IFSYM = 1, NFSYM
-         IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-         IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-          IAI = 1
-          DO I = 1, NO(IFSYM+IOFF4)
-              CALL DCOPY(NV(IFSYM+IOFF4),     XMOM(IAI+IOFF3,2),1,
-     &                                XMO(1+IOFF1,I+IOFF2,2),1)
-          IAI = IAI + NV(IFSYM+IOFF4)
-          ENDDO
-        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
-        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
-        IOFF3 = IOFF3 + 2*NV(IFSYM)*NO(IFSYM)
-        IOFF4 = IOFF4 + 1
-      ENDDO
-      ENDIF
+            DO IFSYM = 1, NFSYM
+               IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+               IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
+                IAI = 1
+                DO I = 1, NO(IFSYM+IOFF4)
+                    CALL DCOPY(NV(IFSYM+IOFF4),     XMOM(IAI+IOFF3,2),1,
+     &                                      XMO(1+IOFF1,I+IOFF2,2),1)
+                    IAI = IAI + NV(IFSYM+IOFF4)
+                ENDDO
+                IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
+                IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) 
+     &                                      + NORB(IFSYM)
+                IOFF3 = IOFF3 + 2*NV(IFSYM)*NO(IFSYM)
+                IOFF4 = IOFF4 + 1
+            ENDDO
+         ENDIF
 
-      ELSE
+      ELSE ! branching for NZ, next comes the code for NZ=4 (quaternion groups, at most inversion symmetry)
 
-      IOFF1 = 0
-      IOFF2 = 0
-      IOFF3 = 0
-      DO IFSYM = 1, NFSYM
-        IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-        IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-        IAI = 1
-        DO I = 1, NAOCC(IFSYM)
+         IOFF1 = 0
+         IOFF2 = 0
+         IOFF3 = 0
+         DO IFSYM = 1, NFSYM
+           IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+           IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
+           IAI = 1
+           DO I = 1, NAOCC(IFSYM)
 C    Re
-           CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
-     &                             XMO(1+IOFF1,I+IOFF2,1),1)
+              CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
+     &                                XMO(1+IOFF1,I+IOFF2,1),1)
 
 C    i
-           CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
-     &                             XMO(1+IOFF1,I+IOFF2,2),1)
+              CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
+     &                                XMO(1+IOFF1,I+IOFF2,2),1)
 
-           IAI = IAI + 2*NAVIR(IFSYM)
-        ENDDO
-        IAI = 2*NAVIR(IFSYM)*NAOCC(IFSYM) + 1
-        DO I = 1, NAOCC(IFSYM)
+              IAI = IAI + 2*NAVIR(IFSYM)
+           ENDDO
+           IAI = 2*NAVIR(IFSYM)*NAOCC(IFSYM) + 1
+           DO I = 1, NAOCC(IFSYM)
 C    j
-             CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
-     &                               XMO(1+IOFF1,I+IOFF2,3),1)
+                CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
+     &                                  XMO(1+IOFF1,I+IOFF2,3),1)
 
 
 C    k
-             CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
-     &                               XMO(1+IOFF1,I+IOFF2,4),1)
-
+                CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
+     &                                  XMO(1+IOFF1,I+IOFF2,4),1)
 
              IAI = IAI + 2*NAVIR(IFSYM)
-        ENDDO
-        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
-        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
-        IOFF3 = IOFF3 + 4*NAVIR(IFSYM)*NAOCC(IFSYM)
-      ENDDO
+           ENDDO
+           IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
+           IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
+           IOFF3 = IOFF3 + 4*NAVIR(IFSYM)*NAOCC(IFSYM)
+         ENDDO
 C
       ENDIF
 C
-      ioff1 = 0
-      ioff2 = 0
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-C/* Deck moltodir */
       SUBROUTINE DOVTODIR(XMO,XMOM,NFVO,IRCW,NREP,NO,NV)
 C***********************************************************************
 C     
@@ -1553,7 +1589,8 @@ C
        if (spinfr) then
 
            do j = 1, nbsym
-             CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
+             if (nv(j)>0 .and. no(j)>0) 
+     &       CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
            norbc = norbc + no(j)*nv(j)
@@ -1562,7 +1599,8 @@ C
        else
 
            do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
+             if (nv(j)>0 .and. no(j)>0) 
+     &       CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
            norbc = norbc + 2*nv(j)*no(j)
@@ -1574,14 +1612,16 @@ C
              if(k == 1)then
                norbc = 1
                do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
+                 if (nv(j)>0 .and. no(j)>0) 
+     &           CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                                  xmo,norbt,norbt,idxu2g(1,j),
      &                                  idyu2g(1,j),nz)
                  norbc = norbc + 2*nv(j)*no(j)
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
+                 if (nv(j)>0 .and. no(j)>0) 
+     &           CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                                  xmo,norbt,norbt,idxu2g(1,j),
      &                                  idyu2g(1,j),nz)
                  norbc = norbc + 2*nv(j)*no(j)
@@ -1715,7 +1755,8 @@ C
         else
 
            do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
+             if (no(j)>0) 
+     &       CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
            norbc = norbc + 2*no(j)**2
@@ -1727,14 +1768,16 @@ C
              if(k == 1)then
                norbc = 1
                do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
+                 if (no(j)>0) 
+     &           CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
                  norbc = norbc + 2*no(j)**2
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
+                 if (no(j)>0) 
+     &           CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
                  norbc = norbc + 2*no(j)**2
@@ -1834,7 +1877,8 @@ C
         if (spinfr) then
 
            do j = 1, nbsym
-             CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
+             if (nv(j)>0) 
+     &       CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
            norbc = norbc + nv(j)**2
@@ -1843,7 +1887,8 @@ C
         else
 
            do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
+             if (nv(j)>0) 
+     &       CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
            norbc = norbc + 2*nv(j)**2
@@ -1857,14 +1902,16 @@ C
              if(k == 1)then
                norbc = 1
                do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
+                 if (nv(j)>0) 
+     &           CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
                  norbc = norbc + 2*nv(j)**2
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
+                 if (nv(j)>0) 
+     &           CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
                  norbc = norbc + 2*nv(j)**2
@@ -1961,9 +2008,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       subroutine Super_Symmetry(nrep,orb_dim,idxu2g,orbital_type)
 
-!------------------------------------------------------------
-!
-!------------------------------------------------------------
+!------------------------------------------------------------------
+! Make index array to map RELCCSD MO ordering on DIRAC MO ordering
+!------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -1980,29 +2027,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer, allocatable :: ibeig(:)
       integer              :: nash_x(1:nfsym)
 
-
-!     !> read ibeig (info array on boson irreps) from DFCOEF
+!     !> read ibeig (info array on boson irreps) from CHECKPOINT
       allocate(ibeig(norbt))
       ibeig(1:norbt)         = 0
       nash_x(1:nfsym)        = 0
 
-      if(nfsym == 1)then
-        do j = 1, nrep,2
-          nash_x(1) = nash_x(1) + orb_dim(j)
-        end do
-      else if(nfsym == 2)then
-        do i = 1, nfsym 
-          if(i == 1)then
-             do j = 1, nrep/2,2
-               nash_x(i) = nash_x(i) + orb_dim(j)
-             end do
-          else if(i == 2)then
-             do j = nrep/2+1,nrep,2
-               nash_x(i) = nash_x(i) + orb_dim(j)
-             end do
-          end if
-        end do
-      end if
+!     Start by counting the number of spinors in each fermion irrep
+      i = 1
+      do j = 1, nrep
+         if ( nfsym==2 .and.  j > nrep/2) i = 2
+         nash_x(i) = nash_x(i) + orb_dim(j)
+      end do
+
+      ! but we want nash (meaning number of active shells = active Kramers pairs) so we need to
+      ! divide by 2. Note that this will NOT work for unrestricted calculations.
+      nash_x = nash_x/2
 
       if (spinfr) then
         do ifsym = 1,nfsym
@@ -2015,13 +2054,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         enddo
       endif
 
+
       if( linear .or. spinfr )then
-        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
-        call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
-        close(lucoef,STATUS='KEEP')
+        call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
       end if
 
-!      write(*,*)'index checking',iimax(norbt,ibeig,1),nrep,nrep/2
 
       if(nfsym == 1)then
         indx_loop = 0
@@ -2257,5 +2294,77 @@ c       CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
 c    &              NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
 c       CALL FLSHFO(LUPRI)
 C     
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck CDENSO */
+      SUBROUTINE CDENSO(DMAT,QCO,NDMOQC,ICMOQC,NSPC,NSPC2,IPRINT)
+C*****************************************************************************
+C
+C Get the core density matrix into DMAT, from selected MO's in QCO
+C Modified version of CDENS to also include one cor eopen shell
+C Johann Pototschnig, Fall 2019
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      real(8)            :: DMAT(*),QCO(*)
+      integer            :: NSPC(2,0:2),NDMOQC(2,2),ICMOQC(2)
+      integer            :: NSPC2(2,0:3)
+      real(8), parameter :: d1 = 1.0D0,d0 = 0.0D0
+      integer            :: ncspin(2,0:2), i, j, iopen
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+C
+      CALL DZERO(DMAT,2*N2BBASXQ)
+C     get closed shell denstiy matrix
+      do i = 1,NFSYM
+        do j=0,2
+          ncspin(i,j)=NSPC(i,j)-NSPC2(i,j)
+        enddo
+
+        IF(ncspin(i,0).EQ.0) CYCLE
+        CALL DENST1(DMAT(1+I2BASX(i,i)),NTBAS(0),NTBAS(0),NZ,d1,d0,
+     &              QCO(ICMOQC(i)),NDMOQC(1,i),NDMOQC(2,i),
+     &              1,ncspin(i,0),NFBAS(i,0))
+      enddo
+C     get open-shell density matrix
+      iopen=1
+C     only use the first (one) open-shell
+      do i = 1,NFSYM
+
+        IF(NSPC2(i,0).EQ.0) CYCLE
+        CALL DENST1(DMAT(1+N2BBASXQ*iopen+I2BASX(i,i)),
+     &              NTBAS(0),NTBAS(0),NZ,d1,d0,
+     &              QCO(ICMOQC(i)),NDMOQC(1,i),NDMOQC(2,i),
+     &              ncspin(i,0)+1,NSPC2(i,0),NFBAS(i,0))
+      enddo 
+C     reset values
+      do i = 1,NFSYM
+            NDMOQC(2,i) = NSPC(i,0)
+      enddo 
+C     
+      IF (IPRINT.GE.7) THEN
+        CALL TITLER('Output from CDENSO','*',103)
+        DO 20 I = 1,NFSYM
+        IF(NORB(I).EQ.0) GOTO 20
+          WRITE(LUPRI,'(/3X,A,I1,A,I1/)')
+     &    '*** Fermion corep ',I,'/',NFSYM
+          IF (IPRINT.GE.10) THEN
+            write(LUPRI,*)
+     &      'Core molecular orbitals, QCO:',NDMOQC(1,I),NDMOQC(2,I)
+            CALL PRQMAT(QCO(ICMOQC(I)),NDMOQC(1,I),NDMOQC(2,I),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+          write(LUPRI,*) 'Core density matrix, DMAT:'
+          CALL PRQMAT(DMAT(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+          write(LUPRI,*) 'Open-shell core density matrix, DMAT:'
+          CALL PRQMAT(DMAT(I2BASX(I,I)+1+N2BBASXQ*iopen),NFBAS(I,0),
+     &            NFBAS(I,0),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+   20   CONTINUE
+      ENDIF
       RETURN
       END

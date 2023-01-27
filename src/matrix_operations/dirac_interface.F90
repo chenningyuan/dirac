@@ -32,8 +32,6 @@ module dirac_interface
    public daxpy_iz_jz
    public init_dirac_interface
    public lsquit
-   public read_mo_coef
-   public read_ibeig
    public dpgnuc_ifc
 
    save
@@ -657,52 +655,6 @@ contains
     call dealloc(npos)
 
   end subroutine
-
-   subroutine read_ibeig(ibeig)
-
-!     --------------------------------------------------------------------------
-      integer            :: ibeig(*)
-!     --------------------------------------------------------------------------
-      integer, parameter :: file_unit = 66
-      real(8)            :: energy
-!     --------------------------------------------------------------------------
-
-      call opnfil(file_unit, 'DFCOEF', 'OLD', 'read_mo_coef')
-
-      call reacmo_no_work(file_unit, &
-                          'DFCOEF',  &
-                          (/0.0d0/), &
-                          (/0.0d0/), &
-                          ibeig,     &
-                          energy,    &
-                          8)
-
-      close(file_unit, status = 'keep')
-
-   end subroutine
-
-   subroutine read_mo_coef(mo_coef)
-
-!     --------------------------------------------------------------------------
-      real(8)            :: mo_coef(*)
-!     --------------------------------------------------------------------------
-      integer, parameter :: file_unit = 66
-      real(8)            :: energy
-!     --------------------------------------------------------------------------
-
-      call opnfil(file_unit, 'DFCOEF', 'OLD', 'read_mo_coef')
-
-      call reacmo_no_work(file_unit, &
-                          'DFCOEF',  &
-                          mo_coef,   &
-                          (/0.0d0/), &
-                          (/0/),     &
-                          energy,    &
-                          2)
-
-      close(file_unit, status = 'keep')
-
-   end subroutine
 
   subroutine get_C(C, cmo_from_file, i, s, g, u)
 

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 #if defined (VAR_MPI2)
@@ -54,7 +49,7 @@ C
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
+      INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
       DIMENSION LUINLIST(*)
@@ -423,7 +418,7 @@ C
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
+      INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SEGMNT(*), NDISTND( NBLOCK ), LBLOCKL(*)
       INTEGER(KIND=df_mpi_offset_kind) MY_IOFF_LUIN
@@ -858,7 +853,7 @@ C
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
+      INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*) 
       DIMENSION IVCOFF_IN(*), IVCOFF_OUT(*)
@@ -939,7 +934,7 @@ C
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
+      INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
@@ -1019,7 +1014,7 @@ C**********************************************************************
       use interface_to_mpi
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
+      INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SEGMNT(*), IBLOCKD(NBLOCK), IBLOCKL(NBLOCK)
       DIMENSION ISCALFAC(*), ISCALFAC_GROUP(*)
@@ -1293,7 +1288,7 @@ C
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
+      INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION VEC1(*)
       DIMENSION LUOUTLIST(*), NPARBLOCK(*), IBLOCKL(*)
@@ -3903,7 +3898,7 @@ C
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
+      INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_OUT(*)
       DIMENSION IBLOCKL(*)
@@ -3970,7 +3965,7 @@ C
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
+      INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=df_mpi_offset_kind) IOFFSET
@@ -3982,8 +3977,8 @@ C
         DO IBLK = 1, NBATCH_BLK
 C
           ILEN2 = NBATCH_INF(8,IBLK) 
-CSK          WRITE(LUWRT,*) 'ILEN2 for block IBLK',
-CSK     &                    ILEN2,IBLK
+C          WRITE(LUWRT,*) 'ILEN2 for block IBLK',
+C     &                    ILEN2,IBLK
           IF( ILEN2 .gt. 0 ) THEN
 C
             NUM_A_B = NUM_A_B + 1 
@@ -4031,7 +4026,7 @@ C
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
+      INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*), IVCOFF_IN1(*)
       INTEGER(KIND=df_mpi_offset_kind) IOFFSET
@@ -4097,7 +4092,7 @@ C
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
+      INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
       DIMENSION SCR(*), NBATCH_INF(8,*)
       INTEGER(KIND=df_mpi_offset_kind) IOFFSET
@@ -4175,7 +4170,8 @@ C
 C
 C     copy back: LUOUT --> LUIN1
 C
-      CALL ISETVC(LUIN1LIST,NZERO,IALL_LUIN)
+      Call IZero(LuIn1List,IAll_LuIn)
+C      CALL ISETVC(LUIN1LIST,NZERO,IALL_LUIN)
 C
       DO IROOT = 1, NVEC2
          CALL COPVCD_PP_B_RL(VEC1,LUOUTLIST,LUIN1LIST,
@@ -5912,7 +5908,7 @@ C
       use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
+      INTEGER ISTAT(df_mpi_status_size)
 #include "parluci.h"
 *     input
       DIMENSION IPLAC(*),VAL(*),IBLOCKL(NBLOCK),IBLOCKD(NBLOCK)

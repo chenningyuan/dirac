@@ -1,23 +1,18 @@
 #define notESR_DEBUG
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C VERSION : $Revision: 11757 $
@@ -42,15 +37,14 @@ C
 #include "dcbprp.h"
 #include "dcbesr.h"
 #include "dcborb.h"
-#include "orgcom.h"
 #include "dgroup.h"
       PARAMETER (NTABLE = 16)
-      LOGICAL SET, NEWDEF, RESET, GORG_BY_USER
+      LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.GAUGEO','.PRINT ','.OPERAT','.MULTIP',
+      DATA TABLE /'xXXXXXX','.PRINT ','.OPERAT','.MULTIP',
      &            '.SPINPO','.SDCI  ','.MAX CI','.CI ROO',
      &            '.THRCVE','.THRCI ','.SDTCI ','.SDT*CI',
      &            '.ESR CI','.MY CI ','.THRPCI','.KR-CON'/
@@ -95,12 +89,6 @@ C     variables for spin polarization and correlation in CI
 
       USE_KRAMERS_CONJ = .FALSE.
 C
-C     Initialize orgcom.h
-C     ===================
-C
-      GORG_BY_USER = .FALSE.
-      CALL DZERO(GAGORG,3)
-C
 C     Process input
 C     =========================
 C
@@ -131,10 +119,7 @@ C
      &            '" not recognized in ESRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in ESRINP.')
-C Read user specified gauge origin
-    1          CONTINUE ! .GAUGEO
-                  READ(LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
-                  GORG_BY_USER = .TRUE.
+    1          CONTINUE !
                GO TO 100
     2          CONTINUE ! .PRINT
 C&&&& PRINT:  Print level in ESR module
@@ -322,7 +307,7 @@ C
      &        '*ESR: ERROR in specification of CI. Error code',NERR
            WRITE(LUPRI,*) 'NGAS_CIESR    :',NGAS_CIESR(1:3)
            WRITE(LUPRI,*) 'RAS1 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,1)
-           WRITE(LUPRI,*) 'RAS3 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,1)
+           WRITE(LUPRI,*) 'RAS3 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,3)
            WRITE(LUPRI,*) 'RAS1 orbitals :',NGSH_CIESR(1,1:maxgas_esr,1)
            WRITE(LUPRI,*) 'RAS3 orbitals :',NGSH_CIESR(1,1:maxgas_esr,3)
          END IF
@@ -333,12 +318,6 @@ C
          IF (NERR > 0) CALL QUIT('*ESR: ERROR in specification of CI')
       END IF
 
-      IF (GORG_BY_USER) THEN
-         CALL PRSYMB(LUPRI,'-',75,0)
-         WRITE(LUPRI,'(/A,3F12.6)') '* User defined magnetic '//
-     &           'gauge origin used:',(GAGORG(I), I = 1, 3)
-         CALL DCOPY(3,GAGORG,1,DIPORG,1)
-      END IF
       CALL PRSYMB(LUPRI,'=',75,0)
 
   999 CONTINUE
@@ -356,10 +335,11 @@ C
 C     Written by Anette Noerager - Mar 2000
 C
 C***********************************************************************
-       use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
+#include "consts.h"
 C     for PRQMAT print of complex matrices:
       PARAMETER (NZCMPLX = 2)
       DIMENSION IQINDX(NZCMPLX)
@@ -371,8 +351,6 @@ C
       LOGICAL   FILEX
       DIMENSION GTENSOR(3,3),GCORR(3,3),GMATRIX(3,3),GEIG(3),GSHIFT(3),
      &          GEVEC(3,3), GCOR(3),JMS(-5:5)
-C
-      PARAMETER (D2=2.0D0, D3 = 3.0D0, D4 = 4.0D0)
 C
 C Used from common blocks:
 C  dcbgen : LUCOEF
@@ -849,9 +827,6 @@ C
       CALL QENTER('ESRPHASE')
       KFRSAV = KFREE
 C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &      FILE='AOPROPER')
-C
 C     Initialize
 C     ==========
 C     (using first NPSIGMA elements of ESRVAL for IPSIGMA properties,
@@ -954,8 +929,6 @@ C
           CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),CMO,PMAT,
      &                  CIEVEC,MZ,WORK,KFREE,LFREE)
         ENDDO
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C
 C     SEFF        = S_eff (one of 0.0, 0.5, 1.0, ...)
@@ -1109,10 +1082,6 @@ C
       KFRSAV = KFREE
       call memchk('prpesr1 1',work,1)
 C
-
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &      FILE='AOPROPER')
-C
 C     Initialize
 C     ==========
 C
@@ -1125,10 +1094,7 @@ C
 C     Generate density matrix
 C     =======================
 C
-C      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
-C      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6,
-C     &            WORK,KFREE,LFREE)
-C      CLOSE(LUCOEF,STATUS='KEEP')
+C      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6)
 
 C     Expectation values normal procedure
 C    ************************************
@@ -1185,7 +1151,7 @@ c      print *, 'nish   :',nish
 c      print *, 'IPCMO,nash:',IPCMO,nash
 C
 c     call memchk('prpesr1 2',work,1)
-C          CALL PRPMAT(INDXPR,IOPSY,PMAT,CMO,IBEIG,IPCMO,NASH,
+C          CALL PRPMAT(INDXPR,IOPSY,PMAT,.TRUE.,WORK,CMO,IBEIG,IPCMO,NASH,
 C     &                WORK,KFREE,LFREE,IPRESR)
 c    &                WORK,KFREE,LFREE,10)
 C      call memchk('prpesr1 3',work,1)
@@ -1285,7 +1251,6 @@ c       WRITE(LUPRI,'(4X,A)')
 c    &   't0 = T : Expectation value zero by time reversal symmetry.'
 C
 C
-      CLOSE(LU1INT,STATUS = 'KEEP')
       call memchk('prpesr1 4',work,1)
       RETURN
 C
@@ -1350,10 +1315,6 @@ C
 !d    print *,'ESRTRANS 1 KFREE,LFREE',KFREE,LFREE
 !d    call memchk('esrTRANS 1',work,1)
 C
-c LU1INT must be opened before calling ESRTRANS
-c     OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-c    &      FILE='AOPROPER')
-C
 C     Initialize
 C     ==========
 C
@@ -1404,12 +1365,10 @@ c      print *, 'IPCMO,nash:',IPCMO,nash
 C
 !d    call memchk('esrTRANS 2',work,1)
       CALL MEMGET2('REAL','IBEIG',KIBEIG ,NORBT,WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ESRPRP')
-      CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
+      CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
      &                    TOTERG,8)
-      CLOSE(LUCOEF,status='KEEP')
-      CALL PRPMAT(INDXPR,IOPSY,PMAT,CMO,WORK(KIBEIG),IPCMO,NASH,
-     &            WORK,KFREE,LFREE,IPRESR)
+      CALL PRPMAT(INDXPR,IOPSY,PMAT,.TRUE.,WORK,CMO,WORK(KIBEIG),
+     &            IPCMO,NASH,WORK,KFREE,LFREE,IPRESR)
       CALL MEMREL('after PRPMAT',WORK,1,KIBEIG,KFREE,LFREE)
 c    &            WORK,KFREE,LFREE,10)
 !d    call memchk('esrTRANS 3',work,1)
@@ -1712,9 +1671,8 @@ C
 C     Totally symmetric operator ==> proceed
 C
       CALL LSET(NZ,.TRUE.,FIRST)
-CMI   CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
-      CALL PRPMAO(LU1INT,INDXPR,NNBBASX,
-     &             PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+      CALL PRPMAO(LU1INT,INDXPR,.TRUE.,WORK,.TRUE.,NNBBASX,
+     &             PTRI,OP1INT,FIRST,IPRINT)
 C
 C     Get expectation value, using only the matrices containing
 C     integrals
@@ -1840,7 +1798,7 @@ C
       IDEG = NUCDEG(INUC)
       IF(DOATOM(INUC)) THEN
         TEST = .FALSE.
-        IZ   = NINT(CHARGE(INUC))
+        IZ   = IZATOM(INUC)
         NISO = 0
         DO ISO = 1,5
           GVAL = DISOTP(IZ,ISO,'GVAL')
@@ -2007,17 +1965,18 @@ C
 C     April 2000 A. Noerager
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
-      PARAMETER (FACTOR = ALPHAC*ALPHAC/(D2*XFMP))
-C                factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)
       CHARACTER NAME*6, NAMEX(3)*6
       DIMENSION TMAT(3,3), TMATNY(3,3), IATINF(3), RATINF(3,*),
      &          TMATX(3,3)
 #include "chrxyz.h"
+C
+C     factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)
+      FACTOR = ALPHAC*ALPHAC/(D2*XFMP)
 C
 C     Multiply with FACTOR
 C
@@ -2165,30 +2124,25 @@ C
          GO TO 9000
       END IF
 
-C        MP2NO not found. Then:
-C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
+C     MP2NO not found. Then:
+C     3. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
 
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(FILEX) THEN
-         CALL MEMGET2('REAL','EIG',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
-         IF (SPINFR.OR.LEVYLE) THEN
-            CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,WORK(KIBRP),
-     &                  TOTERG,10,WORK,KFREE,LFREE)
-         ELSE
-            KIBRP = KFREE
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),IDUM,
-     &                  TOTERG,2,WORK,KFREE,LFREE)
-         END IF
-         CLOSE(LUCOEF,STATUS='KEEP')
-         WRITE(LUPRI,'(/A)')
-     &      ' (ESR)  molecular orbitals read from file DFCOEF'
-         GO TO 9000
+      CALL MEMGET2('REAL','EIG',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+      IF (SPINFR.OR.LEVYLE) THEN
+         CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,WORK(KIBRP),
+     &               TOTERG,10)
+      ELSE
+         KIBRP = KFREE
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),IDUM,
+     &               TOTERG,2)
       END IF
+      WRITE(LUPRI,'(/A)')
+     &   ' (ESR)  molecular orbitals read from CHECKPOINT'
+      GO TO 9000
 
-C        DFCOEF not found. Then:
-C        4. no more options (yet).
+C     DFCOEF not found. Then:
+C     4. no more options (yet).
 
       WRITE(LUPRI,'(//A)') 'Fatal error for ESR: MO coefficients not'//
      &   ' found on KRMCOLD or DFCOEF'

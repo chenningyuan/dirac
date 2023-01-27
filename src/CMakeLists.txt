@@ -29,38 +29,37 @@ endif()
 if(ENABLE_STIELTJES)
     add_definitions(-DHAS_STIELTJES)
 endif()
-# interest as separate library
-cmake_dependent_option(ENABLE_INTEREST "Enable Interest" ON  "ENABLE_UNRELEASED" OFF)
-if(ENABLE_INTEREST)
-    add_definitions(-DMOD_INTEREST)
-endif()
 option(ENABLE_OPENRSP "Enable OpenRSP" OFF)
 if(ENABLE_OPENRSP)
     add_definitions(-DMOD_OPENRSP)
 endif()
-cmake_dependent_option(ENABLE_LAO_REARRANGED "LAO properties without connection matrices" ON "ENABLE_UNRELEASED" OFF)
+option(ENABLE_LAO_REARRANGED "LAO properties without connection matrices" ON)
 if(ENABLE_LAO_REARRANGED)
     add_definitions(-DMOD_LAO_REARRANGED)
 endif()
-cmake_dependent_option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON "ENABLE_UNRELEASED" OFF)
+option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON)
 if(ENABLE_MCSCF_spinfree)
     add_definitions(-DMOD_MCSCF_spinfree)
 endif()
-cmake_dependent_option(ENABLE_AOOSOC "Atomic oo-order spin-orbit correction module" ON "ENABLE_UNRELEASED" OFF)
+option(ENABLE_AOOSOC "Atomic oo-order spin-orbit correction module" ON)
 if(ENABLE_AOOSOC)
     add_definitions(-DMOD_AOOSOC)
 endif()
-cmake_dependent_option(ENABLE_ESR "ESR property module" ON "ENABLE_UNRELEASED" OFF)
+option(ENABLE_ESR "ESR property module" ON)
 if(ENABLE_ESR)
     add_definitions(-DMOD_ESR)
 endif()
-cmake_dependent_option(ENABLE_KRCC "KRCC module" ON "ENABLE_UNRELEASED" OFF)
+option(ENABLE_KRCC "KRCC module" ON)
 if(ENABLE_KRCC)
     add_definitions(-DMOD_KRCC)
 endif()
-cmake_dependent_option(ENABLE_SRDFT "srDFT module" ON  "ENABLE_UNRELEASED" OFF)
+option(ENABLE_SRDFT "srDFT module" ON)
 if(ENABLE_SRDFT)
     add_definitions(-DMOD_SRDFT)
+endif()
+option(ENABLE_LAPLACE "Laplace module" ON)
+if(ENABLE_LAPLACE)
+    add_definitions(-DHAS_LAPLACE)
 endif()
 
 #--------------------------------------------------------------------------------------------------------------
@@ -101,6 +100,13 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:abacus> ${EXTERNAL_OBJECTS})
 # Making matrix_operations  as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/matrix_operations)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:matrix_operations> ${EXTERNAL_OBJECTS})
+
+# exacorr as separate library
+if(ENABLE_EXATENSOR)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/exacorr)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:exacorr> ${EXTERNAL_OBJECTS})
+add_definitions(-DMOD_EXACORR)
+endif()
 
 #    Moltra as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
@@ -170,8 +176,6 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:xcint> ${EXTERNAL_OBJECTS})
 if(ENABLE_QCORR)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/qcorr)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:qcorr> ${EXTERNAL_OBJECTS})
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_QCORR)
 endif()
 message(STATUS "Davidson-type +Q corrections for (MR)CISD: ${ENABLE_QCORR}")
 
@@ -191,9 +195,7 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krmc> ${EXTERNAL_OBJECTS})
 if(ENABLE_ESR)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp/esr)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:esr> ${EXTERNAL_OBJECTS})
-    dirac_test(esr "short;gascip;ci" "")
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_ESR)
+    dirac_test(esr "medium;gascip;ci" "")
 endif()
 message(STATUS "ESR property module: ${ENABLE_ESR}")
 
@@ -236,7 +238,7 @@ if(ENABLE_PCMSOLVER)
     message(STATUS "PCM accompanying libs cleared of 'libc' due to static linking")
   endif()
   dirac_test(pcm_energy "short;scf;pcm" "")
-  dirac_test(pcm_response "short;polarizabilities;pcm" "")
+  dirac_test(pcm_response "medium;polarizabilities;pcm" "")
 
   set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:pcm_dirac> ${EXTERNAL_OBJECTS})
 endif()
@@ -266,21 +268,13 @@ else()
 endif()
 
 # interest as separate library
-if(ENABLE_INTEREST)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
-    dirac_test(mdirac_closed-shell_dft "interest" "")
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)
-endif()
-message(STATUS "Interest library: ${ENABLE_INTEREST}")
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
 
 #   krcc as separate library
 if(ENABLE_KRCC)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/krcc)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krcc> ${EXTERNAL_OBJECTS})
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_KRCC)
 endif()
 message(STATUS "KRCC module: ${ENABLE_KRCC}")
 
@@ -307,33 +301,24 @@ if(ENABLE_OPENRSP)
     dirac_test(legacy_openrsp_quadrupole "openrsp" "")
     dirac_test(legacy_openrsp_roa "openrsp" "")
     dirac_test(legacy_openrsp_pnc_gradient "openrsp" "")
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_OPENRSP)
 endif()
 message(STATUS "OpenRSP library: ${ENABLE_OPENRSP}")
 
 #    lao_rearranged as separate library
 if(ENABLE_LAO_REARRANGED)
-    dirac_test(lao_shield_rearranged "" "")
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_LAO_REARRANGED)
+    dirac_test(lao_shield_rearranged "long" "")
 endif()
 message(STATUS "LAO properties without connection matrices: ${ENABLE_LAO_REARRANGED}")
 
 #  mcscf_sf as separate library
-if(NOT ENABLE_MCSCF_spinfree)
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_MCSCF_spinfree)
-endif()
 message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
 
 # aoosoc as separate library
 if(ENABLE_AOOSOC)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/aoosoc)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:aoosoc> ${EXTERNAL_OBJECTS})
-    dirac_test(atomic_x2c_2esoc_models_energy "short" "")
-    dirac_test(atomic_x2c_spinfree_energy "medium" "")
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_AOOSOC)
+    dirac_test(atomic_x2c_2esoc_models_energy "long" "")
+    dirac_test(atomic_x2c_spinfree_energy "long" "")
 endif()
 message(STATUS "Atomic oo-order spin-orbit correction module: ${ENABLE_AOOSOC}")
 
@@ -341,19 +326,44 @@ message(STATUS "Atomic oo-order spin-orbit correction module: ${ENABLE_AOOSOC}")
 if(ENABLE_SRDFT)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/srdft)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:srdft> ${EXTERNAL_OBJECTS})
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_SRDFT)
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 
+# laplace-minimax as separate external library
+if(ENABLE_LAPLACE)
+
+# external part
+#include_directories (${PROJECT_BINARY_DIR}/external/laplace-minimax-build)
+
+  set(ExternalProjectCMakeArgs
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
+
+  add_external(laplace-minimax)
+
+  set(EXTERNAL_LIBS
+    ${PROJECT_BINARY_DIR}/external/lib/liblaplace-minimax.a
+    ${EXTERNAL_LIBS})
+
+# dirac part
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:laplace> ${EXTERNAL_OBJECTS})
+
+endif()
+message(STATUS "Laplace module: ${ENABLE_LAPLACE}")
 
 # pelib interface routines added as module
 if(ENABLE_PELIB)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
     set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
-    dirac_test(pe_energy "short;scf;pelib" "")
-    dirac_test(pe_response "short;polarizabilities;pelib" "")
-    dirac_test(pe_exc "short;pelib" "")
+    dirac_test(pe_energy "medium;scf;pelib" "")
+    dirac_test(pe_response "medium;polarizabilities;pelib" "")
+    dirac_test(pe_exc "medium;pelib" "")
+    dirac_test(pe_cpp "short;pelib" "")
 endif()
 
 #  dirac sources as separate library
@@ -371,4 +381,3 @@ set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:main> ${EXTERNAL_OBJECTS})
 # make these variables visible to the cmake one level up
 set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)
 set(EXTERNAL_OBJECTS ${EXTERNAL_OBJECTS} PARENT_SCOPE)
-set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} PARENT_SCOPE)

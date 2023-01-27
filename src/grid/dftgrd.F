@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -205,14 +200,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use interface_grid
 
 #include "implicit.h" 
-#include "priunit.h" 
+#include "codata.h"
+#include "priunit.h"
+#include "consts.h"
 
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0)
-
-      LOGICAL SWITCH,TEST
+      LOGICAL SWITCH,ADDSML
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
 
-      CHARACTER SPDCAR*1
 
 #include "dftwrk.h"
 
@@ -242,7 +236,9 @@ C
       DIMENSION ANGWT(9000), XANG(9000), YANG(9000), ZANG(9000)
       DIMENSION XPASC(20)
 #include "ibtfun.h"
-      TEST = num_grid_cfg_force_4c_grid.OR.(MC.GT.1.AND.(.NOT.LEVYLE))
+C
+      ADDSML = num_grid_cfg_force_4c_grid.OR.
+     &         (MC.GT.1.AND.(.NOT.LEVYLE))
 C
 C     Get estimates for atomic size ratios for use in the Becke
 C     partitioning scheme.
@@ -327,7 +323,6 @@ C
       MXOPR = 0 
       NTOTAL = 0
       NALL = 0
-      BOHR   = 0.529177249D0
       NATOM = 1
       WRITE(LUPRI,'(A)')
      &  'Atom  Deg   Rmin        Rmax        Step size     #rp     #tp',
@@ -367,73 +362,10 @@ C     Radial weight:
 C
 C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
 C           
-
-C        Grid spacing....
-         H = DUMMY
-         DO LL = 1,NHTYP
-           L = LL-1
-
-           nbas = nucorb(ll, 1, iatom)
-!          radovan:
-!          if Levy-Leblond or X2C, ignore small component
-!          unless user forces 4-c grid
-!           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
-           if (TEST) then
-             nbas = nbas + nucorb(ll, 2, iatom)
-           end if
-
-           IF(NBAS.GT.0) THEN
-             HTMP = DISERR(RADERR,L)
-             H = MIN(H,HTMP)
-             IF(IPRINT.GE.3) THEN
-               WRITE(LUPRI,'(3X,A1,A,F6.3)')
-     &        SPDCAR(L),'-orbitals --> ',HTMP
-             ENDIF
-           ENDIF
-         ENDDO
-         EPH = EXP(H)
-
-C...     Inner grid point
-         ah = aa(1, 1, 1, iatom)
-!        radovan:
-!        if Levy-Leblond or X2C, ignore small component
-!        unless user forces 4-c grid
-!         if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
-         if (TEST) then
-           ah = max(ah, aa(1, 1, 2, iatom))
-         end if
-         ah = d2*ah
-
-         RL = ((1.9D0+LOG(RADERR))/D3)-(LOG(AH)/D2)
-         RL = EXP(RL)
-
-C...     Outer point
-         RH = D0
-         DO LL = 1,NHTYP
-           L = LL-1
-           AL=DUMMY
-
-           IF(NUCORB(LL,1,IATOM).GT.0) AL=AA(2,LL,1,IATOM)
-!          radovan:
-!          if Levy-Leblond or X2C, ignore small component
-!          unless user forces 4-c grid
-!           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
-           if (TEST) then
-             IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
-           end if
-
-           IF(AL.LT.DUMMY) THEN
-             AL = AL+AL
-             RHTMP = OUTERR(AL,L,RADERR)           
-             RH=MAX(RH,RHTMP)
-             IF(IPRINT.GE.3) THEN
-               WRITE(LUPRI,'(3X,A1,A,F6.3)')
-     &            SPDCAR(L),'-orbitals --> ',RHTMP
-             ENDIF
-           ENDIF
-         ENDDO
+         CALL LMGGRID(H,RL,RH,RADERR,IATOM,ADDSML,NUCORB,AA,IPRINT)
+         EPH  = EXP(H)
          GRDC = RL/(EPH-D1)
-         NR = NINT(LOG(D1+(RH/GRDC))/H)
+         NR   = NINT(LOG(D1+(RH/GRDC))/H)
          RADNDE(1) = RL
          RADWT(1)  = (RL+GRDC)*RL*RL*H
          DO IR = 2,NR
@@ -445,7 +377,7 @@ C        loop over radial points
 C        =======================
 C
          SWITCH = .FALSE.
-         RBRAGG = BRAGG(NINT(ZAN(NATOM)))/(5.0D0*BOHR)
+         RBRAGG = BRAGG(NINT(ZAN(NATOM)))/(5.0D0*XTANG)
          DO 20 IR = 1, NR
             RWT   = RADWT(IR)
             RNODE = RADNDE(IR)
@@ -564,23 +496,69 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "implicit.h" 
 
-      NTOT =1454
-      
-      IF (NSCHEME.LE.64) NTOT=1454
-      IF (NSCHEME.LE.59) NTOT=1202
-      IF (NSCHEME.LE.53) NTOT=974
-      IF (NSCHEME.LE.47) NTOT=770
-      IF (NSCHEME.LE.41) NTOT=590
-      IF (NSCHEME.LE.35) NTOT=434
-      IF (NSCHEME.LE.31) NTOT=350
-      IF (NSCHEME.LE.29) NTOT=302
-      IF (NSCHEME.LE.23) NTOT=194
-      IF (NSCHEME.LE.21) NTOT=170
-      IF (NSCHEME.LE.19) NTOT=146
-      IF (NSCHEME.LE.17) NTOT=110
-      IF (NSCHEME.LE.15) NTOT=86
-      IF (NSCHEME.LE.11) NTOT=50
-      IF (NSCHEME.LE.9) NTOT=38
+      IF(NSCHEME.GT.131)THEN
+         WRITE(6,*) 'Requested accuracy:        ',NSCHEME
+         WRITE(6,*) 'Maximum accuracy available:',131
+         CALL QUIT('NLEB: Requested accuracy not available !')
+      ELSEIF(NSCHEME.LE.131.AND.NSCHEME.GT.125) THEN
+         NTOT = 5810
+      ELSEIF(NSCHEME.LE.125.AND.NSCHEME.GT.119) THEN
+         NTOT = 5294
+      ELSEIF(NSCHEME.LE.119.AND.NSCHEME.GT.113) THEN
+         NTOT = 4802
+      ELSEIF(NSCHEME.LE.113.AND.NSCHEME.GT.107) THEN
+         NTOT = 4334
+      ELSEIF(NSCHEME.LE.107.AND.NSCHEME.GT.101) THEN
+         NTOT = 3890
+      ELSEIF(NSCHEME.LE.101.AND.NSCHEME.GT.95) THEN
+         NTOT = 3470
+      ELSEIF(NSCHEME.LE.95.AND.NSCHEME.GT.89) THEN
+         NTOT = 3074
+      ELSEIF(NSCHEME.LE.89.AND.NSCHEME.GT.83) THEN
+         NTOT = 2702
+      ELSEIF(NSCHEME.LE.83.AND.NSCHEME.GT.77) THEN
+         NTOT = 2354
+      ELSEIF(NSCHEME.LE.77.AND.NSCHEME.GT.71) THEN
+         NTOT = 2030
+      ELSEIF(NSCHEME.LE.71.AND.NSCHEME.GT.65) THEN
+         NTOT = 1730
+      ELSEIF(NSCHEME.LE.65.AND.NSCHEME.GT.59) THEN
+         NTOT = 1454
+      ELSEIF(NSCHEME.LE.59.AND.NSCHEME.GT.53) THEN
+         NTOT = 1202
+      ELSEIF(NSCHEME.LE.53.AND.NSCHEME.GT.47) THEN
+         NTOT =  974
+      ELSEIF(NSCHEME.LE.47.AND.NSCHEME.GT.41) THEN
+         NTOT =  770
+      ELSEIF(NSCHEME.LE.41.AND.NSCHEME.GT.35) THEN
+         NTOT =  590
+      ELSEIF(NSCHEME.LE.35.AND.NSCHEME.GT.31) THEN
+         NTOT =  434
+      ELSEIF(NSCHEME.LE.31.AND.NSCHEME.GT.29) THEN
+         NTOT =  350
+      ELSEIF(NSCHEME.LE.29.AND.NSCHEME.GT.23) THEN
+         NTOT =  302
+      ELSEIF(NSCHEME.LE.23.AND.NSCHEME.GT.21) THEN
+         NTOT =  194
+      ELSEIF(NSCHEME.LE.21.AND.NSCHEME.GT.19) THEN
+         NTOT =  170
+      ELSEIF(NSCHEME.LE.19.AND.NSCHEME.GT.17) THEN
+         NTOT =  146
+      ELSEIF(NSCHEME.LE.17.AND.NSCHEME.GT.15) THEN
+         NTOT =  110
+      ELSEIF(NSCHEME.LE.15.AND.NSCHEME.GT.11) THEN
+         NTOT =   86
+      ELSEIF(NSCHEME.LE.11.AND.NSCHEME.GT.9) THEN
+         NTOT =   50
+      ELSEIF(NSCHEME.LE.9.AND.NSCHEME.GT.7) THEN
+         NTOT =   38
+      ELSEIF(NSCHEME.LE.7.AND.NSCHEME.GT.5) THEN
+         NTOT =   26
+      ELSEIF(NSCHEME.LE.5.AND.NSCHEME.GT.3) THEN
+         NTOT =   14
+      ELSEIF(NSCHEME.LE.3) THEN
+         NTOT =    6
+      END IF
 
       NLEB = NTOT
 
@@ -634,7 +612,110 @@ C
  
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LMGGRID(H,RL,RH,RADERR,IATOM,ADDSML,NUCORB,AA,IPRINT)
+C***********************************************************************
+C
+C     Find parameters definining the radial grid defined here
+C     Roland Lindh, Per-Aake Malmqvist and Laura Gagliardi
+C     Theor. Chem. Acc. (2001) 106:178
+C
+C     H  - grid spacing      
+C     RL - inner grid point
+C     RH - outer grid point
+C
+C     Input variable:
+C       RADERR - acceptable discretization error
+C       IATOM  - index of symmetry-independent nucleus
+C       ADDSML - include small component basis functions in the generation of
+C                grid parameters (4c grid)      
+C       NUCORB(LL,2,IATOM) - number of large(1)/small(2) component basis functions
+C                            of angular momentum L = LL - 1 on atom IATOM      
+C       AA(2,LL,IC,NUCIND) - highest(1)/lowest(2) exponent of angular momentum 
+C                            L = LL - 1 of large(IC=1)/small(IC=2) components
+C                            on atom IATOM
+C     
+C     Radial point:         
+C     RADNDE(K) = GRDC(EXP[K*H] - 1)
+C               = (RADNDE(K-1)+GRDC)*EXP[H]-GRDC
+C
+C     where appears the constant
+C
+C          GRDC = RL/(EXP[H] - 1),         
+C                   
+C     calculated from the step size H and the inner point RL.
+C
+C     Radial weight:         
+C
+C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
+C           
+C***********************************************************************
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"      
+#include "dummy.h"      
+      PARAMETER(D0=0.0D0,D2=2.0D0,D3=3.0D0)
+C     
+      CHARACTER SPDCAR*1
+#include "ccom.h"
+#include "nuclei.h"
+      LOGICAL ADDSML
+      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)      
+C     Grid spacing....
+      H = DUMMY
+      DO LL = 1,NHTYP
+        L = LL-1
+        NBAS = NUCORB(LL, 1, IATOM)
+!       radovan:
+!       if Levy-Leblond or X2C, ignore small component
+!       unless user forces 4-c grid
+        IF (ADDSML) THEN
+          NBAS = NBAS + NUCORB(LL, 2, IATOM)
+        END IF
+        IF(NBAS.GT.0) THEN
+          HTMP = DISERR(RADERR,L) ! discretization error
+          H    = MIN(H,HTMP)
+          IF(IPRINT.GE.3) THEN
+            WRITE(LUPRI,'(3X,A1,A,F6.3)')
+     &          SPDCAR(L),'-orbitals --> ',HTMP
+          ENDIF
+        ENDIF
+      ENDDO
+C...  Inner grid point
+      AH = AA(1, 1, 1, IATOM)
+!     radovan:
+!     if Levy-Leblond or X2C, ignore small component
+!     unless user forces 4-c grid
+      if (ADDSML) then
+        AH = MAX(AH, AA(1, 1, 2, IATOM))
+      end if
+      AH = D2*AH
+      RL = ((1.9D0+LOG(RADERR))/D3)-(LOG(AH)/D2)
+      RL = EXP(RL)
+C...  Outer point
+      RH = D0
+      DO LL = 1,NHTYP
+        L = LL-1
+        AL= DUMMY
+        IF(NUCORB(LL,1,IATOM).GT.0) AL=AA(2,LL,1,IATOM)
+!       radovan:
+!       if Levy-Leblond or X2C, ignore small component
+!       unless user forces 4-c grid
+        IF (ADDSML) THEN
+          IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
+        END IF
+        IF(AL.LT.DUMMY) THEN
+          AL    = AL+AL
+          RHTMP = OUTERR(AL,L,RADERR)           
+          RH    = MAX(RH,RHTMP)
+          IF(IPRINT.GE.3) THEN
+            WRITE(LUPRI,'(3X,A1,A,F6.3)')
+     &            SPDCAR(L),'-orbitals --> ',RHTMP
+           ENDIF
+         ENDIF
+       ENDDO
+       RETURN
+       END  
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck sleb */                                                     C
@@ -957,9 +1038,9 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+#include "pi.h"
       PARAMETER(ACC=1.0D-5)
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
-      PARAMETER (PI = 3.14159 26535 89793 D00)
       PARAMETER(MXIT=20)
       DIMENSION CF(4,0:4)
       DATA CF/0.91570D0,0.78806D-1,0.28056D-2,3.4197D-05,
@@ -1022,9 +1103,9 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+#include "pi.h"
       PARAMETER(ACC=1.0D-6)
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
-      PARAMETER (PI = 3.14159 26535 89793 D00)
       PARAMETER(MXIT=8)
 C
 C     Initialization
@@ -1154,19 +1235,9 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "dcbbas.h"
       DIMENSION C(3,NAT)
-#if defined (VAR_G77) || defined (SYS_SX)
-C     g77 fails in the complicated dimension statement that was used
-C     in the original version, make things easier for the compiler with an
-C     equivalence statment
-      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
-      DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NBAST,NBAST),
-     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
-     &     ICLAB(NBAST)
-#else
       DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
-#endif
 #include "ibtfun.h"
 C
       WRITE(LUPRI,*)
@@ -1200,32 +1271,20 @@ C     in one dimension, along bonds.
 C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
-
-      PARAMETER(D0=0.0D0,D2=2.0D0)
+#include "consts.h"
 #include "dcbbas.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-C     g77 fails in the complicated dimension statement that was used
-C     in the original version, make things easier for the compiler with an
-C     equiavelence statment
-      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
-      DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NBAST,NBAST),
-     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
-     &     ICLAB(NBAST)
-#else
       DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
-#endif
 C
 C     Arrays for 2nd order polynomial fit:
 C
       DIMENSION A(3,3),B(3),COFF(3),D(3),X(3),Y(3)
 C
-
       WRITE(LUPRI,*)
       WRITE(LUPRI,'(A,I2,A,I2,A)') '** Region of density minimum '//
      &      'for atom pair (', ICENTA,',', ICENTB,')'
@@ -1376,26 +1435,15 @@ C                                                                      C
 C      Written by Olav Fossgaard - June 2003                           C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
 
       PARAMETER(ZERO=0.0D0,ONE=1.0D0)
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-C     g77 fails in the complicated dimension statement that was used
-C     in the original version, make things easier for the compiler with an
-C     equiavelence statment
-      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
-      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),
-     &     SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
-     &     ICLAB(NBAST)
-#else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &     SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
-#endif
       GAO   = 0.0d0
       SMAT  = 0.0d0
       ASMAT = 0.0d0

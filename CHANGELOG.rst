@@ -1,16 +1,213 @@
 :orphan:
 
+23.0
+----
+
 New features:
 
-- The visualization module has been extended to generate various radial distributions using the keyword .RADIAL. Contributor: Trond Saue
+- Calculation of Parity-Violating Nuclear Spin-Rotation Tensors. Activated with ".PVCSR"
+   - Contributor: I. Agustín Aucar
+   - Reference: `Ignacio Agustín Aucar and Anastasia Borschevsky, Relativistic study of parity-violating nuclear spin-rotation tensors. J. Chem. Phys. 155, 134307 (2021) <https://doi.org/10.1063/5.0065487>`__
+   - Manual: `PVCSR <http://www.diracprogram.org/doc/release-23/manual/properties.html#pvcsr>`__
+   - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/pvcsr/tutorial.html>`__
 
-17.1 (unreleased)
+
+22.1.beta
+---------
+
+Revised features:
+
+- Added a CI gradient convergence threshold option '.THRGCI' to '\*KRCICALC' (could not be changed by user previously).
+  - Contributor: H. J. Aa. Jensen.
+
+Performance improvements:
+
+- Improved code in luciarel CI program. Note that KRMC and KRCI by default uses luciarel.
+   - Contributor: Andreas Nyvang.
+   - numerical stability has been improved in the complex parallel diagonalization routine
+   - convergence algorithm has also been changed, with considerable improvement in convergence rate.
+     In particular, the truncation of the reduced space in the Davidson iterations is now done
+     in a much better way, leading to the improvement in convergence rate. Both for real and complex parallel cases.
+
+Bugfix:
+
+- Default for .MVO has been corrected, so it now behaves as expected: modified virtual orbitals
+  based on the Fock potential from the doubly-occupied molecular orbitals after an open-shell SCF calculation (H. J. Aa. Jensen).
+
+
+22.0 (2022-02-08)
 -----------------
 
-- Allow to compile with OpenMP support (this does not imply OpenMP parallelization of the code).
-- Update in CMake framework: pass compilers as cmake variables, not as environment variables.
+New features:
+
+- New licence: GNU Lesser General Public License v2.1
+- Electronic circular dichroism (ECD) beyond lowest-order -- full light-matter interaction
+   - Contributors: Martin van Horn, Trond Saue, and Nanna Holmgaard List
+   - Reference: `M. van Horn, T. Saue, N. H. List., Probing Chirality across the
+     Electromagnetic Spectrum with the Full Semiclassical Light-Matter
+     Interaction. J. Chem. Phys. (in press) (2022) <https://doi.org/10.1063/5.0077502>`__, `ChemRxiv <https://doi.org/10.33774/chemrxiv-2021-j1hcz-v2>`__
+- MP2 frozen virtual natural orbitals via the ExaCorr module
+   - Contributors: Xiang Yuan, Lucas Visscher, André Severo Pereira Gomes.
+   - Reference: `X. Yuan, L. Visscher, A. S. P. Gomes., Assessing MP2 frozen
+     natural orbitals in relativistic correlated electronic structure calculations.
+     <https://arxiv.org/abs/2202.01146>`__
+   - Manual: `.MP2NO <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html#mp2no>`__
+     and `.DONATORB <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html#donatorb>`__
+- Polarizable Embedding with Complex Polarization Propagator
+   - Contributors: Joel Creutzberg, Erik D. Hedegård
+   - Reference: `Polarizable embedding complex polarization propagator in four-
+     and two-component frameworks. <https://arxiv.org/abs/2112.07721>`__
+
+Infrastructure changes and fixes:
+
+- HDF5 checkpoint file and DIRAC data scheme, python utilities to extract data
+   - Contributor: Lucas Visscher
+   - Manual: `The CHECKPOINT.h5 file <http://www.diracprogram.org/doc/release-22/development/checkpoint.html>`__
+
+Improvements:
+
+- DIIS replaced by `CROP <https://pubs.acs.org/doi/10.1021/ct501114q>`__ algorithm in ExaCorr module.
+   - Contributors: Chima Chibueze and Lucas Visscher.
+   - Reference: `Pototschnig et al., J. Chem. Theory Comput. 17 (2021) 5509−5529. <https://doi.org/10.1021/acs.jctc.1c00260>`__
+   - Manual: `EXACC <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html>`__
+
+Bugfix:
+
+- There was an error in the construction of the projection operator for
+  secondary orbitals using density matrices for the very special case of
+  4-component relatistic average-of-configuration HF calculations on systems
+  with inversion symmetry and no occupation in ungerade symmetry.
+
+
+21.1 (2021-09-16)
+-----------------
+
+Revised features:
+
+- Enhanced pam script: now it also looks in job directory for .diracrc, and it looks there first. pam looks for .diracrc three places: 1) job directory ("local .diracrc"), 2) home directory ("global .diracrc"), 3) pam script directory ("system .diracrc). The first .diracrc found is used. (H. J. Aa. Jensen).
+  - added ENABLE_EXATENSOR to the options you can change with 'ccmake --' (H. J. Aa. Jensen).
+  - enable talsh only with unsupported mpi libraries (Andre Gomes)
+  - improved exatensor MPI identification (Johann Pototschnig)
+    
+Error corrections:
+
+- Fixed pam script so it can find dirac.x and basis set directories in an installed version (i.e. after make install or e.g. "cmake --install build --prefix <installation root dir>"). H.J.Aa.Jensen.
+- Fixed memory management in LUCIA (Lucas Visscher)
+- atomic supersymmetry now works with X2Cmmf (Ayaki Sunaga, Stefan Knecht, Trond Saue)
+
+
+21.0 (2021-05-28)
+-----------------
+
+New features:
+
+- New parallel coupled cluster implementation ExaCorr. Contributors: J.V. Pototschnig, A. Papadopoulos,
+   D. I. Lyakh, M. Repisky, L.Halbert, A.S.P. Gomes, H.J.Aa. Jensen, and L. Visscher.
+   To be published.
+- Improved start potential with far fewer functions and better accuracy. Contributor: Lucas Visscher.
+   S. Lehtola,  L. Visscher and  E. Engel.
+   Efficient implementation of the superposition of atomic potentials initial guess for electronic structure calculations in Gaussian basis sets.
+   J. Chem. Phys. 152, 144105 (2020); http://dx.doi.org/10.1063/5.0004046 doi: 10.1063/5.0004046
+- Calculation of Rotational Molecular g-tensors. Activated with ".ROTG". Contributor: I. Agustín Aucar.
+   I. A. Aucar, S. S. Gómez, C. G. Giribet and M. C. Ruiz de Azúa.
+   Theoretical study of the relativistic molecular rotational g-tensor.
+   J. Chem. Phys. 141, 194103 (2014); http://dx.doi.org/10.1063/1.4901422 doi: 10.1063/1.4901422
+- Improved reading of basis sets to be able to read all EMSL basis sets of type DALTON. Contributor: Hans Joergen Aa. Jensen.
+- "make latex" for making a latex version of the documenation in "build/latex", used e.g. pdflatex to make a pdf version of the manual. Contributor: Hans Joergen Aa. Jensen
+- Efficient parallel diagonalization of quaternion Fock matrices using openMP. Contributor: Hans Joergen Aa. Jensen.
+- Utility (dirac_data.py) to export DIRAC data into a Python dictionary. Contributor: Lucas Visscher.
+
+Revised features:
+
+- Gauge origin (.GAUGEO and .GO ANG) now can only be set under \*\*HAMILTONIAN.
+- Phase and dipole origins (.PHASEO and .DIPORG, respectively) now can only be set under \*\*HAMILTONIAN.
+- EOM-CC excitation energies collected for all symmetries and summarized at the end  
+
+New defaults:
+
+- One-electron operator ANGMOM's origin was moved from the gauge-origin to the molecular center of mass.
+- The CODATA2018 set of physical constants is now used as default (taken from http://physics.nist.gov/constants). Before this version, CODATA1998 was default.
+- Non-relativistic and relativistic effective core-potential calculations (".NONREL" and ".ECP") now have nuclear point nucleus as default.
+  For non-relativistic calculations this makes it easier to compare to other codes, and for RECP this is the intended behavior which by mistake was not activated.
+
+-----------------------------------------------------------------------------------------------------
+
+19.0 (2019-12-12)
+-----------------
+
+New features:
+
+- Calculation of Nuclear Spin-Rotation tensors. Activated with ".SPINRO". Contributors: Trond Saue and I. Agustín Aucar.
+   I. A. Aucar, S. S. Gómez, M. C. Ruiz de Azúa, and C. G. Giribet.
+   Theoretical study of the nuclear spin-molecular rotation coupling for relativistic electrons and non-relativistic nuclei.
+   J. Chem. Phys. 136, 204119 (2012); http://dx.doi.org/10.1063/1.4721627 doi: 10.1063/1.4721627
+- Interface with the Quantum Computing package OpenFermion. https://github.com/bsenjean/Openfermion-Dirac. Contributors: Bruno Senjean and Luuk Visscher.
+   T. E. O'Brien, B. Senjean, R. Sagastizabal, X. Bonet-Monroig, A. Dutkiewicz, F. Buda, L. DiCarlo and L. Visscher
+   Calculating energy derivatives for quantum chemistry on a quantum computer.
+   Accepted to npj: Quantum Information. https://arxiv.org/abs/1905.03742
+- Expectation value of Nuclear Magnetic-Quadrupole-Moment interaction constant using ".OPERATOR" and ".NMQM" keyword in KRCI. Contributor: Malaya K. Nayak
+   T. Fleig, M. K. Nayak and M. G. Kozlov.
+   TaN, a molecular system for probing P,T-violating hadron physics.
+   Phys. Rev. A 93, 012505, 2016; http://dx.doi.org/10.1103/PhysRevA.93.012505 doi: 10.1103/PhysRevA.93.012505
+
+Revised features:
+
+- Maximum number of basis functions increased from 30k to 40k.
+
+Error corrections:
+
+- Fixed use of point charges (do not try to obtain e.g. mass of a point charge).
+- Fixed spelling error in keyword .GAUNTSCALE (was .GAUTSCALE).
+- Fixed T1EQN1 function call in src/relccsd/ccgrad.F (thanks to Martin Siegert).
+- Fixed wrong memory allocation for spin-free or non-relativistic KRMCSCF.
+- Fixed runtime error for XPROPMAT in src/krmc/krmccan.F property modules.
+- Fixed runtime error for calling XPRIND in src/prp/pamprp.F property modules.
+
+Basis set corrections:
+
+- Fixed Be basis set in cc-pV5Z.
+- Fixed Al basis set in aug-cc-pV(D+d)Z, aug-cc-pV(T+d)Z and aug-cc-pV(Q+d)Z.
+- Fixed Si basis set in aug-cc-pV(D+d)Z and aug-cc-pV(Q+d)Z.
+
+Performance improvements:
+
+- Reduced static memory requirement from common blocks.
+
+Documentation:
+
+- Restore local build of Sphinx documentation.
+
+-----------------------------------------------------------------------------------------------------
+
+18.0 (2018-12-13)
+-----------------
+
+New features:
+
+- The visualization module has been extended to generate various radial distributions using the keyword .RADIAL. Contributor: Trond Saue.
+
+Error corrections:
+
+- Fix f correlating exponents for 3d in dyall.cv2z and dyall.ae2z basis sets. Contributor: Ken G. Dyall.
+- Fix f polarizing exponents for 3d in dyall.cv3z and dyall.ae3z basis sets. Contributor: Ken G. Dyall.
 - Bugfix in KRCI module (subroutine STRTYP_GAS_REL), reported by Shigeyoshi Yamamoto.
-- Bugfix in polarizable embedding (the printed electronic part of the energy was not corrected with PE contributions)
+- Bugfix in polarizable embedding (the printed electronic part of the energy was not corrected with PE contributions).
+- Fixed the formatting of the carbon potential in the file basis_ecp/ECPCE2SO.
+
+Performance improvements:
+
+- New much more efficient quaternion diagonalization routine using openMP for performance. Contributor: Hans Joergen Aa. Jensen.
+- New much more efficient complex diagonalization routine using openMP for performance. Contributor: Hans Joergen Aa. Jensen.
+- Use MPI_REDUCE for adding Fock matrix contributions from MPI worker nodes on MPI master node. Contributor: Hans Joergen Aa. Jensen.
+- Save memory in direct Fock matrix constructions, now >13000 basis functions can be run in 32GB RAM. Contributor: Hans Joergen Aa. Jensen.
+- (With these performance improvements, a 4c HF test calculation with 13000 basis functions, 3300 postive energy orbitals (6600 in total) has been run on Titan at ORNL with 800 nodes, each with 8 openMP threads, at 1h59m-2h06m per HF iteration.)
+
+Framework changes:
+
+- Allow to compile with OpenMP support.
+- Update in CMake framework: pass compilers as cmake variables, not as environment variables.
+
+-----------------------------------------------------------------------------------------------------
 
 17.0 (2017-12-12)
 -----------------
@@ -29,7 +226,7 @@ New features:
 - Polarizable embedding using PElib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", additional options under \*PEQM.
 
  Reference:
- E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jense:  Relativistic Polarizable Embedding., J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
+ E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen:  Relativistic Polarizable Embedding., J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
 
 - New and numerically stable procedure for elimination/freezing of orbitals at SCF level. Author: T. Saue.
 - New ".MVOFAC" option in \*KRMC input section. Author: H. J. Aa. Jensen.
@@ -118,6 +315,7 @@ Bug fixes:
 - Bugfix: restored "make install" target.
 - Bugfix: Test reladc_fano does not report failure if Stieltjes is deactivated.
 
+-----------------------------------------------------------------------------------------------------
 
 15.0 (2015-12-16)
 -----------------
@@ -147,6 +345,7 @@ Bug fixes:
 - Fixed plotting of the electrostatic potential (electronic part was factor 2 too large).
 - Configuration framework uses [Autocmake](http://autocmake.org).
 
+-----------------------------------------------------------------------------------------------------
 
 14.1 (2015-07-20)
 -----------------

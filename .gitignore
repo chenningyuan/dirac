@@ -2,5 +2,6 @@ build*/
 test/*/*.out*
 test/*/*.stdout
 test/*/*.stderr
+test/*/*.tgz*
 *.pyc
 venv/

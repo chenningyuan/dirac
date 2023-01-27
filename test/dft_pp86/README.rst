@@ -1,0 +1,9 @@
+Ne atom DFT test
+================
+
+note that P86C (C implementation) and P86C (XCFun) are NOT the same functionals!
+note that PP86 (C implementation) and PP86 (XCFun) are NOT the same functionals!
+
+P86C (XCFun) reproduces the Daresbury database reference values
+
+

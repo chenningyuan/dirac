@@ -135,7 +135,12 @@ if (XCFUN_ENABLE_TESTS)
 	add_subdirectory(test)
 endif()
 
+#Miro: Doxygen searching is in main CMake-in-DIRAC, prevent thus configure error
+# because ${DOXYGEN_EXECUTABLE} tends to be filled with wrong executable!
+set(DOXYGEN_EXECUTABLE "")
 find_package(Doxygen QUIET)
+message("xcfun DOXYGEN_FOUND ?  ${DOXYGEN_FOUND}")
+
 if (DOXYGEN_FOUND)
 	add_custom_target(docs
 		COMMAND ${DOXYGEN_EXECUTABLE}
@@ -156,9 +161,8 @@ if (VALGRIND_EXECUTABLE)
 endif()
 
 include(InstallRequiredSystemLibraries)
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
-	"XCFun")
-set(CPACK_PACKAGE_VENDOR "Ulf Ekström")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "XCFun")
+set(CPACK_PACKAGE_VENDOR "Ulf Ekstrom")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 set(CPACK_PACKAGE_VERSION_MAJOR "1")

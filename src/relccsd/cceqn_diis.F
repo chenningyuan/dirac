@@ -32,7 +32,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 XM,XMAX,XEN,XFAC,XADD,DET
-      REAL*8 SUM1,SUM2,SSUM,DSUM,SDOT,DDOT
+      REAL*8 SUM2,SSUM,DSUM,SDOT,DDOT
       COMPLEX*16 CFAC
       real*8, allocatable :: T1O(:),T2O(:)
       integer it1,it2,jcode,m,n,sect1,sect2,intowp
@@ -108,20 +108,14 @@ C
       CALL XSCAL (NDIMT2,-A1,T2O,1)
 C
       IF (CARITH) THEN
-         SUM1 = DSUM (RCW*NDIMT1,T1O,1)
          SUM2 = DDOT (RCW*NDIMT1,T1O,1,T1O,1)
-         SUM1 = SUM1 + DSUM (RCW*NDIMT2,T2O,1)
          SUM2 = SUM2 + DDOT (RCW*NDIMT2,T2O,1,T2O,1)
-         RMS = SUM1 * SUM1
       ELSE
-         SUM1 = DSUM (NDIMT1,T1O,1)
          SUM2 = DDOT (NDIMT1,T1O,1,T1O,1)
-         SUM1 = SUM1 + DSUM (NDIMT2,T2O,1)
          SUM2 = SUM2 + DDOT (NDIMT2,T2O,1,T2O,1)
-         RMS = SUM1 * SUM1
       ENDIF
 C
-      RMS = SQRT(ABS(SUM2-RMS))
+      RMS = SQRT(SUM2/(NDIMT1+NDIMT2))
 C
       SECT1 = (ITC-1)*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1

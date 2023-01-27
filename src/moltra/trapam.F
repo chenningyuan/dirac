@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -36,6 +31,9 @@ C***********************************************************************
 
       Use memory_allocator
       Use moltra_labeling
+#ifdef MOD_EXACORR
+      Use exacorr_ao_to_mo
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -58,19 +56,36 @@ C
       LOGICAL TOBE,TOBEK,TOBEKK,TRASAM,ACTIVE
       DIMENSION NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
-     &          NSPC(2,0:2),KQC(2),NSTRT(4)
+     &          NSPC(2,0:2),KQC(2),NSTRT(4),NSPC2(2,0:3)
       Real(8), Allocatable :: CMO(:),EIG(:)
       Integer, Allocatable :: IBEIG(:)
       real(8), allocatable :: WORK(:)
+C     Initialize (for debug mode)
+      KE=0
+      KIBE=0
+      KQC=0
 C
       CALL QENTER('PAMTRA')
       call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PAMTRA')
       KFRSAV = KFREE
+
 C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
+
+C     Define NOMDCINT from **MOLTRA input
+
+      NOMDCINT = NOMDCINT_TRAINP
+      ISTRAT_save = ISTRAT
+      IF (NOMDCINT .AND. ISTRAT .NE. 4) THEN
+         WRITE(LUPRI,'(/A,I0/)')
+     &   'INFO, .NOMDCINT is only implemented for strategy 4;'//
+     &   ' therefore use stategy 4 instead of ',ISTRAT
+         ISTRAT = 4
+      END IF
+
 C
 C     Define number of double quaternionic classes
 C
@@ -115,7 +130,7 @@ C
         ENDDO
       ENDDO
 C
-C
+ 
       CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
 
       KFRSAV = KFREE
@@ -128,6 +143,7 @@ C
          CALL TRAPRI(4,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
      &                 WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
       ENDDO
+
 C
 C     Calculate dimensions of coefficient arrays
 C     The coefficients are stored as 4 arrays of two matrices each
@@ -203,8 +219,27 @@ C
       Allocate (IBEIG(NORBT))
       CALL IZERO(IBEIG,NORBT)
       CALL DZERO(EIG,NORBT)
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
+
+      SELECT CASE ( MOFILE_TRAINP )
+         CASE ( "DFCOEF" )
+            TOBEK  = .FALSE.
+            TOBEKK = .FALSE.
+         CASE ( "KRMCSCF" )
+            TOBEK  = .TRUE.
+            TOBEKK = .FALSE.
+         CASE ( "KRMCOLD" )
+            TOBEK  = .FALSE.
+            TOBEKK = .TRUE.
+         CASE ( "UNKNOWN" )
+            INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+            INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
+         CASE DEFAULT
+            WRITE(LUPRI,'(/2A)')
+     &      'FATAL ERROR for **MOLTRA input: Unknown .MOFILE name : ',
+     &      MOFILE_TRAINP
+            CALL QUIT('Unknown .MOFILE from **MOLTRA input')
+      END SELECT
+
 
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
@@ -244,18 +279,14 @@ C
          
          CLOSE (LUKRMC)
       ELSE
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
+         IF (IPRTRA .GE. 0) THEN
             WRITE(LUPRI,'(/A)')
-     &        'PAMTRA ERROR: MO coefficient file not present'
-            CALL QUIT('PAMTRA: No MO coefficient file !')
-         ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
-            CLOSE(LUCOEF,STATUS='KEEP')
+     &          ' (PAMTRA)  Orbitals read from CHECKPOINT'
          END IF
       END IF
+
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C
 C     Select the set of MOs(CMO), eigenvalues(EIG) and boson array id(IBEIG) that we need for core transformation
 C
@@ -325,6 +356,28 @@ C
      &                  NPSH(IFRP),NESH(IFRP),
      &                  NSPC(IFRP,2),NSPC(IFRP,1))
          ENDIF
+         IF (INDEX(TRA_CORSTR2(IFRP),'not specified').EQ.0) THEN
+             WRITE(LUPRI,'(/A)') '* frozen open-shell added'
+             Allocate (IBEIG(NR(IFRP)))
+             NSPC2(IFRP,0)=1
+             CALL NUMLST(TRA_CORSTR2(IFRP),IBEIG,
+     &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &                  IFRP,NSPC2(IFRP,0))
+             CALL ORBCNT(IBEIG,NSPC2(IFRP,0),
+     &                  NPSH(IFRP),NESH(IFRP),
+     &                  NSPC2(IFRP,2),NSPC2(IFRP,1))
+             CALL ADDCORE2(NR(IFRP),WORK(KVEC(IFRP,5)),NSPC(IFRP,0),
+     &                     IBEIG,NSPC2(IFRP,0))
+             CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),
+     &                  NPSH(IFRP),NESH(IFRP),
+     &                  NSPC(IFRP,2),NSPC(IFRP,1))
+             DeAllocate (IBEIG)
+             WRITE(LUPRI,*) 'WARNING: Frozen open shell is a continous',
+     &                  ' set of ',NSPC2(IFRP,0),'. orbitals'
+             NSPC2(IFRP,3)=NCORE2
+         ELSE
+             NSPC2(IFRP,3)=-1
+         ENDIF
          NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
          CALL MEMREL('PAMTRA.4',WORK,KFRSAV,KVEC(IFRP,5),KFREE,LFREE)
          CALL MEMGET2('INTE','VEC',KVEC(IFRP,5),NSPC(IFRP,0),
@@ -334,6 +387,15 @@ C
          NDMOQC(1,IFRP,2) = NFBAS(IFRP,0)
          NDMOQC(2,IFRP,2) = NSPC(IFRP,0)
       ENDDO
+      IF (NSPC2(1,3).LT.0) THEN
+        NCORE2=0
+      ELSE
+        I=0
+        DO IFRP = 1,NFSYM
+          I=I+NSPC2(IFRP,0)*2
+        ENDDO
+        NCORE2=I-NCORE2
+      ENDIF
 C####################################################
 C
 C     number of active occupied
@@ -400,8 +462,6 @@ C
       Allocate (CMO(NCMOTQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
          JRDMO = -1
@@ -423,16 +483,10 @@ C
          END IF
          CLOSE (LUKRMC)
       ELSE
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-            CALL QUIT('PAMTRA: No MO coefficient file !')
-         ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
-         ENDIF
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
       END IF
+
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C
 C     Select the set of MOs that we need for core transformation
 C
@@ -459,11 +513,22 @@ C
 C
       IF (.NOT.NO2IND) THEN
          CALL FLSHFO(LUPRI)
-         CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,
-     &               KQC,KE,KIBE)
+         CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,
+     &                  KQ,KQC,KE,KIBE,NSPC2)
       ENDIF
 C
       CALL FLSHFO(LUPRI)
+
+      if (tra_exacorr) then
+#ifndef MOD_EXACORR
+          call quit(
+     &    'moltra error: tra_exacorr not included in this version')
+#else
+          call exa_moltra()
+          no4ind = .true. ! skip conventional 4-index transformation
+#endif
+      end if
+
 C
 C     Call driver for 4-index transformation
 C     --------------------------------------
@@ -471,7 +536,7 @@ C
       IF (.NOT.NO4IND)
      &   CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
      &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
-     &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
+     &               TRA_ANTIS,ITRA_INTFL4)
 C
 C      Print timing information
 C
@@ -500,6 +565,7 @@ C
 C
       CALL FLSHFO(LUPRI)
 
+      ISTRAT = ISTRAT_save
       call dealloc(WORK)
       CALL QEXIT('PAMTRA')
       RETURN
@@ -572,19 +638,8 @@ C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PSIMP2')
       KFRSAV = KFREE
+      TRANOP = .false.
       CALL MP2HI(IPRMP2)
-C
-C     Check to see if coefficients are there
-C     ======================================
-C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-        WRITE(LUPRI,'(/A)')
-     &    'PSIMP2 ERROR: MO coefficient file not present'
-        CALL QUIT('PSIMP2: No MO coefficient file !')
-      ELSE
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
-      ENDIF
 C
 C     Transfer information from DCBMP2 to DCBTRA
 C     ==========================================
@@ -658,8 +713,10 @@ C
 C     If energy threshold, truncate virtual space
 C     ===========================================
 C
-      IF(DMP2_VIRTHR.NE.DUMMY) CALL VIRTHR(WORK,KFREE,LFREE,
+      IF (DMP2_VIRTHR.NE.DUMMY) THEN
+         CALL VIRTHR(WORK,KFREE,LFREE,
      &     LUCOEF,NSTR(1,0,2),KVEC(1,2),DMP2_VIRTHR)
+      END IF
 C
 C     Calculate dimensions of coefficient arrays
 C     The coefficients are stored as 2 arrays of two matrices each
@@ -714,18 +771,11 @@ C
       Allocate (CMO(N2BBASXQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-         CALL QUIT('PSIMP2: No MO coefficient file !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &               IBEIG,ESCF,14,WORK,KFREE,LFREE)
-      ENDIF
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,ESCF,14)
       WRITE(LUPRI,'(A,F18.10,/)')
      &  'Coefficients imported. Total DHF energy:', ESCF
+
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C
 C     Select the set that we need
 C
@@ -804,7 +854,7 @@ C     --------------------------------------
 C
       CALL PAMTR1(WORK,KFREE,LFREE,IPRMP2,KQ,KE,KIBE,
      &            NDMOQR,ICMOQR,NSTR,.TRUE.,EMP2,
-     &            MP2_MSOUT,MP2_ANTIS,MP2_INTFLG)
+     &            MP2_ANTIS,MP2_INTFLG)
 C
 C     Print MP2 energy
 C     ----------------
@@ -1087,17 +1137,8 @@ C
       Allocate (CMO(NCMOTQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)')
-     &     'LAGTAU ERROR: MO coefficient file not present'
-         CALL QUIT('LAGTAU: No MO coefficient file !')
-      ELSE  
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','LAGTAU')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,
-     &               TOTERG,14,WORK,KFREE,LFREE)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      ENDIF 
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C           
 C     Select the set that we need
 C        
@@ -1142,7 +1183,7 @@ C
       IF (.NOT.NO4IND)
      &   CALL LAGTAU1(XMO,TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRTRA,KQ,KE,
      &               KIBE,NDMOQR,ICMOQR,NSTR,
-     &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
+     &               TRA_ANTIS,ITRA_INTFL4)
 C
 C      Print timing information
 C
@@ -1286,7 +1327,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PAMTR1 */
       SUBROUTINE PAMTR1(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &           NDMOQR,ICMOQR,NSTR,LMP2,EMP2,MSOUT,ANTIS,INTFLG)
+     &           NDMOQR,ICMOQR,NSTR,LMP2,EMP2,ANTIS,INTFLG)
 C***********************************************************************
 C
 C     Subdriver for 4index transformation.
@@ -1298,8 +1339,6 @@ C     NSTR(ifrp,0,i) - total number of orbitals for index i
 C     NSTR(ifrp,1,i) - number of electronic orbitals for index i
 C     NSTR(ifrp,2,i) - number of positronic orbitals for index i
 C     LMP2  = .TRUE. - evaluate MP2 energy
-C     MSOUT = .TRUE. - write transformed integrals to file
-C     note TODO: choice of MSOUT is not implemented!
 C     ANTIS = .TRUE. - anti-symmetrize integrals
 C     note TODO: ANTIS is not implemented!
 C     INTFLG - flag of what integral types to transform
@@ -1321,7 +1360,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 C
-      LOGICAL MSOUT,ANTIS,LMP2
+      LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),NDMOQR(2,2,4),ICMOQR(2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),DINTSKP(4,2),WORK(*)
 C
@@ -1388,29 +1427,21 @@ C
          CALL QUIT('PAMTR1: .ANTIS is not implemented!')
       ENDIF
       IF (ISTRAT.EQ.1) THEN
-          IF (.NOT.MSOUT)
-     &    CALL QUIT('PAMTR1: not MSOUT not implemented for strategy 1')
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 1')
           CALL TRDR1T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.2) THEN
-          IF (MSOUT)
-     &    CALL QUIT('PAMTR1: MSOUT not implemented for strategy 2')
           IF (.NOT.LMP2)
      &    CALL QUIT('PAMTR1: Only MP2 implemented for strategy 2')
           CALL TRDR2T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,NSTR,
      &                ANTIS,LMP2,EMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.3) THEN
-          IF (.NOT.MSOUT)
-     &    CALL QUIT('PAMTR1: not MSOUT not implemented for strategy 3')
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 3')
           CALL TRDR3T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
      &                ANTIS,LMP2,WORK(KINDX),KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.4) THEN
-          IF (.NOT.MSOUT)
-     &    CALL QUIT('PAMTR1: not MSOUT not implemented for strategy 4')
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 4')
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,
@@ -1419,7 +1450,6 @@ C
       ELSEIF (ISTRAT.EQ.5) THEN
           CALL QUIT('PAMTR1: strategy 5 can only do lagrangians')
       ELSEIF (ISTRAT.EQ.6) THEN
-c..not yet activated
           CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                KGAB,KDRIJ,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
@@ -1438,7 +1468,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lagtau1 */
       SUBROUTINE LAGTAU1(XMO,TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRINT,KQ,
-     &                   KE,KIBE,NDMOQR,ICMOQR,NSTR,MSOUT,ANTIS,INTFLG)
+     &                   KE,KIBE,NDMOQR,ICMOQR,NSTR,ANTIS,INTFLG)
 C***********************************************************************
 C       
 C     Subdriver for 4index transformation.
@@ -1449,8 +1479,6 @@ C     KIBE(ifrp,n)   - adresses of single group identification (for spinfree cal
 C     NSTR(ifrp,0,i) - total number of orbitals for index i
 C     NSTR(ifrp,1,i) - number of electronic orbitals for index i
 C     NSTR(ifrp,2,i) - number of positronic orbitals for index i
-C     MSOUT = .TRUE. - write transformed integrals to file
-C     note TODO: choice of MSOUT is not implemented!
 C     ANTIS = .TRUE. - anti-symmetrize integrals
 C     note TODO: ANTIS is not implemented!
 C     INTFLG - flag of what integral types to transform
@@ -1472,7 +1500,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 C
-      LOGICAL MSOUT,ANTIS
+      LOGICAL ANTIS
       DIMENSION TMATRX1(*),TMATRX2(*)
       DIMENSION XMO(*)
       DIMENSION NSTR(2,0:2,4),NDMOQR(2,2,4),ICMOQR(2,4),
@@ -1607,16 +1635,7 @@ C
          INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
          INQUIRE(FILE='KRMCOLD',EXIST=TOBEK)
          IF (.NOT.TOBEK) THEN
-            INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-            IF (.NOT.TOBE) THEN
-               WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-               CALL QUIT('TRAHI: No MO coefficient file !')
-            ELSE
-               CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAHI')
-               CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1,
-     &                     DUM,IDUM,IDUM)
-               CLOSE(LUCOEF,STATUS='KEEP')
-            ENDIF
+            CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1)
          END IF
       END IF
 C
@@ -3605,8 +3624,7 @@ C
 C     Read and check eigenvalues
 C
       CALL MEMGET2('REAL','EIG',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,DUM,4,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,DUM,4)
       DO IFRP = 1,NFSYM
         NSEL = 0
         NDEL = 0
@@ -3805,11 +3823,15 @@ C
 #include "dcbdhf.h"
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
       LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
-      DIMENSION NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
+      DIMENSION NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),NSPC2(2,0:3),
      &          KVEC(2,2),KQ(2,4),KE(2,4),KIBE(2,4),NQ(2),KQC(2)
 CTROND: to fix !
       DIMENSION MINE(16),MAXE(16),NGASO(256)
       real(8), allocatable :: WORK(:)
+C     Initialize (for debug mode)
+      KE=0
+      KIBE=0
+      KQC=0
 C
       CALL QENTER('RESOLV')
       call legacy_lwork_get(LWORK)
@@ -3965,19 +3987,11 @@ C
 C     Get all coefficients and eigenvalues
 C     ====================================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)')
-     &      'RESOLV ERROR: MO coefficient file not present'
-         CALL QUIT('RESOLV: No MO coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
-        CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF1),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      ENDIF
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
+     &               TOTERG,14)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF1),WORK(KEIG),WORK(KIBEIG),
+     &               TOTERG,14)
+      if (atomic) call atomic_to_linear (work(kibeig),norbt)
 C
 C     Select active orbitals
 C     ======================
@@ -4015,15 +4029,17 @@ C        ( ITASK = 1 for Fock matrices )
 C
         IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
+C       don't use frozen open shells
+        NSPC2=-1
 C       Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
-CMiro/Aug 2016 - introduced DFT-COSCI, core-fock mtx contains xc contrib 
+C Miro/Aug 2016 - introduced DFT-COSCI, core-fock mtx contains xc contrib 
 
         CALL GTCFCK(WORK(KBUF),IPRRES,WORK(KQ(1,1)),WORK(KQ(1,2)),
      &            WORK(KQC(1)),WORK(KBUF1),NDMOQR,ICMOQR,NSTR(1,0,1),
-     &             NDMOQC,ICMOQC,NSPC(1,0),
+     &             NDMOQC,ICMOQC,NSPC(1,0),NSPC2,
      &             INTRES,WORK,KFREE,LFREE)
-C
+C 
 C       Write MOLFDIR file MRCONEE
 C       --------------------------
 C
@@ -4058,7 +4074,7 @@ C       --------------------------------------
 C
         CALL PAMTR1(WORK,KFREE,LFREE,IPRRES,KQ,KE,KIBE,
      &              NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
-     &              .TRUE.,.FALSE.,INTRES)
+     &              .FALSE.,INTRES)
 C
 C        Print timing information
 C
@@ -4085,11 +4101,6 @@ C     Do full CI in open-shell manifold
 C     =================================
 C
  10   CONTINUE
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IERR = 0
-      CALL ASNUNIT(5,'-Yon',IERR)
-      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
-#endif
       OPEN (5,FILE='DIRAC.INP')
       CALL GOSRES(WORK(KFREE),LFREE)
       CLOSE(5,STATUS='KEEP')
@@ -4158,6 +4169,12 @@ C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in SY_COSCI')
 
+! .. definitions to satisfy ifort runtime check
+      TRANOP = .false.
+      SCRBUF = 0.0D0
+      THRBUF = 0.0D0
+      IPRBUF = 0
+      ISTBUF = 0
       KFRSAV = KFREE
 !@m   CALL TITLER('Resolution of open-shell states','*',120)
       CALL TITLER('Stand-alone COS_CI','*',120)
@@ -4329,19 +4346,9 @@ C
 C     Get all coefficients and eigenvalues
 C     ====================================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-!@m      WRITE(LUPRI,'(/A)')
-!@m  &      'RESOLV ERROR: MO coefficient file not present'
-         WRITE(LUPRI,'(/A)')
-     &      'SY_COSCI ERROR: MO coefficient file not present'
-         CALL QUIT('RESOLV: No MO coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      ENDIF
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
+     &               TOTERG,14)
+      if (atomic) call atomic_to_linear (work(kibeig),norbt)
 C
 C     Select active orbitals
 C     ======================
@@ -4453,11 +4460,6 @@ C     Do full CI in open-shell manifold
 C     =================================
 C
  10   CONTINUE
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-!@d   IERR = 0
-      CALL ASNUNIT(5,'-Yon',IERR)
-      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
-#endif
       OPEN (5,FILE='DIRAC.INP')
 !.s/sya,2007.02.04
 !#    CALL GOSRES(WORK(KFREE),LFREE)
@@ -4584,8 +4586,6 @@ C
       CALL QENTER('TRAPARI')
 C
       KFRSAV = KFREE
-      PARHER = .TRUE.
-      PARCAL = .TRUE.
 C
       FINISH = .FALSE.
 C
@@ -4933,6 +4933,7 @@ C       Receive orbital energies
      &                   MPARID,global_communicator)
         ENDDO
 C       Receive orbital (single group) info
+        KIBE = 1 ! initialize these memory locations to avoid bound check errors if nfsym = 1
         DO I = 1,4
           DO J = 1,NFSYM
             CALL MEMGET2('REAL','KIBE',KIBE(J,I),NSTR(J,0,I),
@@ -4980,24 +4981,26 @@ C
 #include "aovec.h"
 #include "maxorb.h"
 #include "blocks.h"
-      LOGICAL ANTIS,LMP2
-      DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
-      DIMENSION DINTSKP(8),TIM1(7)
+      LOGICAL   ANTIS,LMP2
+      INTEGER   NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
+      REAL(8)   DINTSKP(8),TIM1(7)
       real(8), allocatable :: WORK(:)
 C
       CALL QENTER('TRANOD')
       call legacy_lwork_get(LWORK)
-      call alloc(WORK,LWORK,id='WORK in TRANOD')
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in TRANOD')
       KFRSAV = KFREE
+      CALL DZERO(DINTSKP,8)
+
 C
 C     Initialize the common blocks.
 C
+      PARHER = .TRUE.
       IPRINT = -1
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
      &             KINDX,KGAB,KDRIJ,
      &             INTFLG,NSTR,ANTIS,LMP2)
-      CALL DZERO(DINTSKP,8)
 C
       IF (ISTRAT.EQ.1) THEN
          WRITE(LUPRI,'(A)')
@@ -5053,6 +5056,7 @@ C
 C
       CALL MEMREL('TRANOD',WORK,1,KFRSAV,KFREE,LFREE)
       call dealloc(WORK)
+      PARHER = .FALSE.
       CALL QEXIT('TRANOD')
 C
       RETURN
@@ -5074,7 +5078,7 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 C
 #include "priunit.h"
 #include "mxcent.h"
@@ -5512,3 +5516,40 @@ C
 !
       RETURN
       END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck TRAPAM */
+      SUBROUTINE ADDCORE2(NLIST,TLIST,TNUM,
+     &                     SLIST,SNUM)
+C***********************************************************************
+C
+C     Written by J.Pototschnig, Fall 2019
+C
+C***********************************************************************
+C     add SLIST to TLIST
+#include "priunit.h"
+      INTEGER NLIST,TNUM,SNUM,I
+      INTEGER TLIST(NLIST),SLIST(NLIST)
+
+      DO I=1,SNUM
+        TLIST(TNUM+I)=SLIST(I)
+      ENDDO
+      TNUM=TNUM+SNUM
+      WRITE(LUPRI,'(6X,12I5)') (SLIST(I),I=1,SNUM)
+
+      RETURN
+      END
+
+      subroutine atomic_to_linear (ibeig,norbt)
+         implicit none
+         ! replace the atomic symmetry information by just the mj value
+         integer,intent(in) :: norbt ! dimension info needed because this may come out the old work array
+         integer,intent(inout) :: ibeig(*)
+         integer :: i,j,kappa,mj,l
+         do i = 1, norbt
+            ! unpack the mj and other quantum numbers
+            call atomic_id(ibeig(i),kappa,j,mj,l)
+            ! store just mj
+            ibeig(i) = mj
+         enddo
+      end subroutine atomic_to_linear

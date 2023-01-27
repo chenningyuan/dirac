@@ -10,10 +10,12 @@ def postprocess_args(sys_argv, arguments):
     # if --mpi is selected and compilers are not selected
     # then compilers default to mpif90, mpicc, and mpicxx
     if arguments['--mpi']:
-        if not contains_flag(sys_argv, 'fc') and not contains_flag(sys_argv, 'cc') and not contains_flag(sys_argv, 'cxx'):
-           arguments['--fc'] = 'mpif90'
-           arguments['--cc'] = 'mpicc'
-           arguments['--cxx'] = 'mpicxx'
+        if not contains_flag(sys_argv, 'fc'):
+            arguments['--fc'] = 'mpif90'
+        if not contains_flag(sys_argv, 'cc'):
+            arguments['--cc'] = 'mpicc'
+        if not contains_flag(sys_argv, 'cxx'):
+            arguments['--cxx'] = 'mpicxx'
 
     # if one of the compilers contains "mpi" and --mpi is not selected, it is probably a user error
     # in this case stop the configuration

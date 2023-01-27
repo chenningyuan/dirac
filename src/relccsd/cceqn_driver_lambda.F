@@ -47,8 +47,7 @@ C---------------Common Blocks--------------------------------------
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-      integer istat
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      integer ISTAT(df_MPI_STATUS_SIZE)
 #endif
 
 C---------------Local variables--------------------------------------
@@ -56,26 +55,12 @@ C---------------Local variables--------------------------------------
       LOGICAL    :: FOCKSP,PRENE
       real*8,allocatable :: resL1(:),resL2(:),dinv_one(:),dinv_two(:)
       real*8,allocatable :: G_oo(:),G_vv(:),int_wooop(:),w_v_temp(:)
+      real*8,allocatable :: l1_temp(:),l2_temp(:)
       integer            :: i !remove
       real*8             :: val  
       integer            :: it, itc, nit,ierr
 C---------------Executable code--------------------------------------
 C
-C
-C     Get initial values of timers for the most important contractions
-C     This is important in Fock space calculations where we enter this
-C     routine more than once. We do it in this manner rather than resetting
-C     the timer because we want the overall timing at the end.
-
-      IF (EQNS.EQ.'LAMBDA') THEN
-         FOCKSP = .FALSE.
-      ELSE
-         CALL QUIT('Wrong keyword in call to CCEQNS')
-      ENDIF
-
-
-C     Initialize the work arrays to zero.
-
        buf2(1:nbuf2*rcw) = 0.0d0
        buf1(1:ndimt2*rcw) = 0.0d0
 
@@ -92,7 +77,7 @@ C     Initialize the work arrays to zero.
 
          call f_bar_me(fvo,S1,hov)
 
-         call wbar_mbej(S2,w_ovvo,buf2,buf3)
+         call wbar_mbej(S2,w_ovvo)
 
          call w_ijmn(S1,S2,w_oooo)
 
@@ -104,10 +89,9 @@ C     Initialize the work arrays to zero.
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
-
       CALL XTIME(5,1,'-- "efam" Intermediate                     ')
 
-        call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3)
+        call w_efam(s1,s2,w_ovvo,hov,cz)
 
         if (myproc.gt.0) then
           cz(1:nv5*rcw) = 0.0d0
@@ -159,8 +143,13 @@ C     Initialize the work arrays to zero.
 !    &              buf3,nbuf3,nbuf2,CZ)
 
 
-
+#if defined (VAR_MPI)
+      if (myproc .eq. 0) then
        CALL TITLER('Solving Left Eigenvector Equation','*',123)
+      endif
+#else
+       CALL TITLER('Solving Left Eigenvector Equation','*',123)
+#endif
 
 !-------Initialization Step for the Left Eigenvectors-----------
 
@@ -257,7 +246,6 @@ C     Initialize the work arrays to zero.
 !      call xaxpy (ndimt1,-a1,resL1,1,l1,1)
 !      call xaxpy (ndimt2,-a2,resL2,1,l2,1)
 
-
        call xaxpy (ndimt1,-a1,resL1*dinv_one,1,l1,1)
        call xaxpy (ndimt2,-a2,resL2*dinv_two,1,l2,1)
 
@@ -273,6 +261,20 @@ C     Initialize the work arrays to zero.
 
 
       IF (IPRNT.GE.1) WRITE(IW,6001) NIT,RMS
+
+
+      allocate(l1_temp(ndimt1*rcw))
+      allocate(l2_temp(ndimt2*rcw))
+
+    
+      call srt1c1 (nrep,no,nv,l1,l1_temp) 
+      call srt1c1 (nrep,noot,nvvt,l2,l2_temp) 
+
+      call gettau(s1,s2,buf2)
+
+      deallocate(l1_temp)
+      deallocate(l2_temp)
+
       CALL FLSHFO(IW)
 
       if(rms.lt.conv) exit

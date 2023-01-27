@@ -1,3 +1,13 @@
+#
+#
+# Couple of additional settings/trimmings of various CMake variables 
+# to enable dirac.x buildups in various environments
+#
+#
+# Maintainers: Miro Ilias
+#              Rado Bast
+#
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         # switch off warnings due to incompatibility XCode 4 and Intel 11 on OsX 10.6
@@ -39,4 +49,23 @@ if ( ENABLE_STATIC_LINKING AND BLAS_TYPE MATCHES OPENBLAS AND (CMAKE_Fortran_COM
     message(STATUS "Linking flag -ldl removed from CMAKE_SHARED_LIBRARY_LINK_Fortran/CXX/C_FLAGS (OpenMPI/Intel/OPENBLAS/static)")
 endif()
 
+# remove set MKL_FLAG, if none Intel compiler
+# NOTE: this MKL_FLAG maybe cleared already in the downloaded autocmake module
+if ( NOT (MKL_FLAG AND (CMAKE_Fortran_COMPILER_ID MATCHES Intel) ) )
+    set(MKL_FLAG "")
+    message(STATUS "-mkl=... flag removed due to lacking Intel Fortran compiler. THEREFORE CHECK IF YOU HAVE SET MATH LIBRARIES !")
+elseif ( MKL_FLAG AND (CMAKE_Fortran_COMPILER_ID MATCHES Intel ) )
+    message(STATUS "-mkl=... flag for MKL libraries kept because Intel Fortran compiler is present")
+endif()
+
+#JVP workaround for lto wrapper
+if ( ( CMAKE_Fortran_COMPILER_ID MATCHES GNU )  AND  ( ${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER "10.9.9" ) )
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-lto")
+endif()
+if ( ( CMAKE_C_COMPILER_ID MATCHES GNU )  AND  ( ${CMAKE_C_COMPILER_VERSION} VERSION_GREATER "10.9.9" ) )
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-lto")
+endif()
+if ( ( CMAKE_CXX_COMPILER_ID MATCHES GNU )  AND  ( ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER "10.9.9" ) )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-lto")
+endif()
 

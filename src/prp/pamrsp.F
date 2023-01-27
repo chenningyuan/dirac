@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -154,6 +149,7 @@ C
       CHARACTER*1 TTYPEG, TTYPSG
 C
       CALL QENTER('XRSCTL')
+      CALL ICOPY(2*NREDM,0,0,IBTYP,1)
       KFRSAV = KFREE
       IF(LINEQ) THEN
         NREDGP = NREDM
@@ -161,6 +157,7 @@ C
         NREDGP = 0
       ENDIF
 C.....NSTAT is set to one in the static case, two otherwise
+      IF (E2CHEK) STATIC = .FALSE.
       NSTAT = 2
       IF(STATIC) NSTAT = 1
 C.....NDAMP is set to two in the complex case since the solution vector now
@@ -241,7 +238,7 @@ C
      &            WORK(KRNORM),WORK(KIVECS),WORK(KISIM),
      &            WORK(KPOS),WORK,KFREE,LFREE)
 C
-      CALL MEMREL('XRSCTL.XRSRED',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('XRSCTL.XRSCT1',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('XRSCTL')
       RETURN
@@ -448,7 +445,9 @@ C     If   (not user specified SCRFCK)
 C     then SCRFCK may be dynamically determined
 C          (both for LINEQ and for PP) /hjaaj jan 2001
 C
-      IF (.NOT. USRSCR) THEN
+      IF (E2CHEK) THEN
+         SCRFCK = 1.D-14 ! we need accuracy for symmetry check of E2 matrix
+      ELSE IF (.NOT. USRSCR) THEN
          IDTEST = IBTAND(INTDEF, IDFLAG)
          IF (IDTEST .NE. 0) THEN
 C
@@ -705,7 +704,7 @@ C       Solve reduced RSP equation
 C       ==========================
 C
         CALL XRSSOL (REDGP,REDE,REDS,EVALR,EVECR,RCNV,
-     &               IBTYP,WORK,KFREE,LFREE)
+     &               IBTYP,IBEVC,WORK,KFREE,LFREE)
         CALL FLSHFO(LUPRI)
 C
 C        CALCULATE TRANSITION MOMENT
@@ -1729,6 +1728,7 @@ C
       IF (NTSIM.LT.1) GO TO 9999
 C
       E2FULL = .FALSE.
+      IF (E2CHEK) E2FULL = .TRUE.
       IF (IPRXRS .GE. 15) THEN
          CALL HEADER('(XRSRED) Sigma vectors',-1)
          IF (NZCONF .GT. 1) THEN
@@ -2532,7 +2532,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssol */
       SUBROUTINE XRSSOL (REDGP,REDE,REDS,EVALR,EVECR,
-     *                   RCNV,IBTYP,WORK,KFREE,LFREE)
+     *                   RCNV,IBTYP,IBEVC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     This routine solves the response equation in reduced subspace
@@ -2566,7 +2566,7 @@ C
 C
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),REDS(NREDM,NREDM),
      &          EVALR(NFREQ),EVECR(NEVEC,NFREQ),IBTYP(2,*),RCNV(*),
-     &          WORK(*)
+     &          IBEVC(*),WORK(*)
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , D2 = 2.0D0 , DP5 = 0.5D0)
       PARAMETER ( DP75 = 0.75D00 )
@@ -2604,7 +2604,7 @@ C
 C     Check for instabilies in reduced Hessian
 C
       CALL XRSSTAB(REDE,NREDM,NZRED,NPRED,IPRXRS,INERT,
-     &             WORK,KFREE,LFREE)
+     &             IBTYP,IBEVC,WORK,KFREE,LFREE)
 C
       IF (FKRMC) THEN
          CALL KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
@@ -2739,8 +2739,8 @@ C solve A2*X=G
       CALL ZSYSV('L',N,1,A2,LDA,WORK(KPVT),X,LDA,
      &           WORK(KFREE),LFREE,INFO)
 CPP remove after debug
-      ALPHAR = DP5 * DDOT(N,G,1,X,2)
-      ALPHAI = DP5 * DDOT(N,G,1,X(2),2)
+!     ALPHAR = DP5 * DDOT(N,G,1,X,2)
+!     ALPHAI = DP5 * DDOT(N,G,1,X(2),2)
 C
       CALL MEMREL('XRSLINRE2',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('XRSLINRE2')
@@ -3889,7 +3889,11 @@ C        number of start trial vectors is increased with
 C        the vectors which are nearly degenerate with
 C        the last requested, i.e. number NEXSTV.
 C
-         HDGSTV = HDIAG(IVEC(NEXSTV))
+
+!Miro: Subscript #1 of the array HDIAG has value 0 which is less than the lower bound of 1 !
+! here is naive fix:
+         IF (IVEC(NEXSTV).GE.1) HDGSTV = HDIAG(IVEC(NEXSTV))
+!
   210    IF (NEXST2 .GT. NEXSTV) THEN
             HDGDIF = HDIAG(IVEC(NEXST2)) - HDGSTV
             IF ( HDGDIF .GT. 0.01D0) THEN
@@ -4060,7 +4064,7 @@ C
       IF (IRDERR .LT. 5) GO TO 1
       GO TO 8
     3 CONTINUE
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
@@ -4254,7 +4258,7 @@ C
       IF (IRDERR .LT. 5) GO TO 1
       GO TO 8
     3 CONTINUE
-#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+#if defined (VAR_MFDS)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
@@ -4328,58 +4332,60 @@ C/* Deck setrsp */
       SUBROUTINE SETRSP
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-C     Set a default values for a number of variables of the response
-C     module such that they need to be modified only in modules where they
-C     are used.
+C     Set default values for a number of control variables of the response
+C     module such that they need to be modified only in modules where
+C     they are used.
 C
 C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
 C
-      PARAMETER(D0=0.0D0)
+      implicit none
 #include "dcbxrs.h"
       FKRMC  = .FALSE.
       UNCOUP = .FALSE.
       IMFREQ = .FALSE.
       E2CHEK = .FALSE.
       STERNC = .FALSE.
-      DAMPFREQ = D0
+      DAMPFREQ = 0.0D0
       NEVEC  = NREDM
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck xrsstab */
-      SUBROUTINE XRSSTAB(A,LDA,N,NEPROT,IPRINT,INERT,WORK,KFREE,LFREE)
+      SUBROUTINE XRSSTAB(A,LDA,N,NEPROT,IPRINT,INERT,IBTYP,IBEVC,
+     &                   WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Check for instability by looking for negative eigenvalues of
 C     the reduced Hessian.
 C
-C               INERT(1)  =  NUMBER OF POSITIVE EIGENVALUES.
-C               INERT(2)  =  NUMBER OF NEGATIVE EIGENVALUES.
-C               INERT(3)  =  NUMBER OF ZERO EIGENVALUES.
+C        A - reduced Hessian of dimension N
+C
+C        INERT(1)  =  NUMBER OF POSITIVE EIGENVALUES.
+C        INERT(2)  =  NUMBER OF NEGATIVE EIGENVALUES.
+C        INERT(3)  =  NUMBER OF ZERO EIGENVALUES.
 C
 C     In the general relativistic case the ground state corresponds to
-C     a saddle opint and so one should subtract the number of e-p
+C     a saddle point and so one should subtract the number of e-p
 C     rotations given by NEPROT
 C
 C     Written by T. Saue - updated Dec 9 2010
 C
 C***********************************************************************
+      use orbital_rotation_indices
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
-      DIMENSION A(LDA,N),WORK(*)
+      DIMENSION A(LDA,N),IBTYP(*),IBEVC(*),WORK(*)
       DIMENSION INERT(3),DET(2)
 C
       KFRSAV=KFREE
       NNA = (N*(N+1))/2
       CALL MEMGET2('INTE','PVT',KPVT,N,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','AN', KAN,NNA,WORK,KFREE,LFREE)
-      CALL DAMATR(N,A,LDA,WORK(KAN))
-      CALL DSPFA (WORK(KAN),N,WORK(KPVT),INFO)
-      CALL DSPDI(WORK(KAN),N,WORK(KPVT),DET,INERT,WORK(KFREE),100)
-      IPAR = INERT(2) - NEPROT
+      CALL DAMATR(N,A,LDA,WORK(KAN))                                ! Row-pack lower triangle of matrix AMAT into ATR
+      CALL DSPFA (WORK(KAN),N,WORK(KPVT),INFO)                      ! Factorization: A = U*D*TRANS(U)
+      CALL DSPDI(WORK(KAN),N,WORK(KPVT),DET,INERT,WORK(KFREE),100)  ! Calculate the inertia
+      IPAR = INERT(2) - NEPROT                                      
 !     stefan: reduce output for mcscf - FIXME: find a better solution to handle the quantity of output...
       if(nasht .le. 0)then
         IF(IPRINT.GE.2 .OR. IPAR.GT.0 .OR. INERT(3).ne.0) THEN
@@ -4388,15 +4394,118 @@ C
      &        'Number of positive/zero/negative eigenvalues : (',
      &        INERT(1),'/',INERT(3),'/',INERT(2),
      &        ');   +- (ep) trial vectors:',NEPROT
-          IF(IPAR.GT.0) WRITE(LUPRI,'(//A,I3/A/A/)')
+          IF(IPAR.GT.0) THEN
+            WRITE(LUPRI,'(//A,I3/A/A/)')
      &      '*** WARNING - If your reference state is not the'//
-     &         ' excited state with index',IPAR,
+     &         ' excited state with index',IPAR+1,
      &      '    WARNING - then you probably have an instability in'//
      &        ' your reference state !!!',
      &      '    WARNING - (e.g. unrestricted lower energy than'//
-     &        ' restricted, or ...)'
+     &            ' restricted, or ...)'
+!           Analyze instability in more detail
+            CALL MEMREL('XRSSTAB',WORK,1,KFRSAV,KFREE,LFREE)
+            CALL MEMGET2('REAL','EIG ',KEIG ,N    ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','EVEC',KEVEC,LDA*N,WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','IORBCL',KLRO,4*NORBT,WORK,KFREE,LFREE)
+            CALL INSTABANA(LDA,N,A,WORK(KEVEC),WORK(KEIG),IPAR,IBTYP,
+     &           IBEVC,get_orbital_rotation_indices_pp(),
+     &           WORK(KLRO),WORK,KFREE,LFREE)
+          ENDIF
         ENDIF
       ENDIF
       CALL MEMREL('XRSSTAB',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/*   Deck instabana */
+      SUBROUTINE INSTABANA(LDA,N,REDE,EVEC,EIG,IPAR,IBTYP,IBEVC,JXOPE,
+     &                     IORBCL,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Upon detection of instability in reduced Hessian, analyze corresponding solution vector
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxrs.h"
+#include "dgroup.h"
+#include "dcbibn.h"
+#include "dcborb.h"
+      PARAMETER(D1=1.0D0)
+      DIMENSION REDE(LDA,N),EVEC(LDA,N),EIG(N),IBTYP(2,NREDM),
+     &     IBEVC(NREDM),JXOPE(2,NZXOPE),IORBCL(4,NORBT),
+     &     WORK(*)
+      real*8, allocatable  :: XVEC(:,:),BBUF(:,:)
+      integer, allocatable :: INDX(:)
+      INTEGER   NCLS(2,3,2)
+      CHARACTER*1 TYP(3)
+      DATA TYP/'i','a','v'/
+C.....First diagonalize reduced Hessian      
+      CALL RSJACO(LDA,N,N,REDE,EIG,1,1,0,EVEC)
+C      WRITE(LUPRI,*) '* Eigenvalues of the reduced Hessian. NDIM=',N,
+C     &           ' NPRED= ',NPRED,NZXOPE
+C      DO I = 1,N
+C        WRITE(LUPRI,*) I, EIG(I)
+C      ENDDO
+C.....We next form solution e-e vectors
+      allocate(XVEC(NZXOPE,NZ))
+      allocate(BBUF(NZXOPEQ,NSTAT))
+      allocate(INDX(NZXOPE))
+C     Set orbital strings and classify orbitals
+      CALL OSTRING(INDSTR,SKIPEE,SKIPEP,-1,WORK,KFREE,LFREE)
+      CALL DEFORB(IORBCL,NCLS,INDSTR,WORK,KFREE,LFREE,IPRXRS)
+C.....The calls to XRSXV1 assumes that the file PAMBOE exists and is open
+      DO I = 1,IPAR
+        II = NPRED + I
+        CALL XRSXV1(IPX,JBENDX,XVEC,EVEC(1,II),1,IBTYP,IBEVC,
+     &              J,BBUF)
+        IF(.NOT.STATIC) THEN
+          CALL XRSXV1(IMX,JBENDX,BBUF(1,2),EVEC(1,II),1,IBTYP,IBEVC,
+     &                J,BBUF)
+          CALL DAXPY(NZXOPEQ,D1,BBUF(1,2),1,XVEC,1)          
+        ENDIF
+C       Calculate norm
+        DO J = 1,NZXOPE
+          BBUF(J,1) = XVEC(J,1)*XVEC(J,1)
+        ENDDO
+        DO IZ = 2,NZ
+          DO J = 1,NZXOPE
+            BBUF(J,1) = BBUF(J,1) + XVEC(J,IZ)*XVEC(J,IZ)
+          ENDDO
+        ENDDO
+        D2TOT=DSUM(NZXOPE,BBUF,1)
+        THR   = SQRT(D2TOT/NZXOPE)
+        DNTOT = SQRT(D2TOT)
+        CALL INDEXX (NZXOPE,BBUF,INDX)
+C        WRITE(LUPRI,*) '* XVEC no. ',I
+C        DO J = 1,NZXOPE
+C          WRITE(LUPRI,*) JXOPE(1,J),JXOPE(2,J),J,BBUF(J,1)
+C        ENDDO
+        WRITE(LUPRI,'(/3X,A,I3)')
+     &    '* Hessian electronic eigenstate nr. ',I
+        WRITE(LUPRI,'(3X,A,ES16.8)')
+     &    '    Eigenvalue : ',EIG(II)
+        WRITE(LUPRI,'(3X,A,ES10.2/)')
+     &    '    Excitation amplitudes larger than threshold ',THR
+        THR = THR*THR
+        DO J = NZXOPE,1,-1
+          JJ = INDX(J)
+          IF(ABS(BBUF(JJ,1)).LT.THR) GOTO 5
+          I1 = JXOPE(1,JJ)
+          I2 = JXOPE(2,JJ)
+          WRITE(LUPRI,'(6X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,E16.8)')
+     &      IORBCL(2,I1),'(',TYP(IORBCL(1,I1)),':',
+     &      FREP(IORBCL(3,I1)),')',
+     &      ' ---> ',
+     &      IORBCL(2,I2),'(',TYP(IORBCL(1,I2)),':',
+     &      FREP(IORBCL(3,I2)),')',SQRT(BBUF(JJ,1))
+        ENDDO
+ 5      CONTINUE
+      ENDDO
+      deallocate(BBUF)
+      deallocate(XVEC)
+      deallocate(INDX)
+      RETURN
+      END
+      
+      

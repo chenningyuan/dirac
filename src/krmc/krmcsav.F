@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -36,6 +31,7 @@ C                S. Knecht - Feb 2010: print of mj-vector to file
 C                                      KRMCSCF added.
 C
 C***********************************************************************
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -51,6 +47,8 @@ C
       LOGICAL   FNDLAB, FND, RTRACI
 C
       CHARACTER CNOLBL*6
+      real(8), allocatable :: eig(:)
+      integer, allocatable :: ibeig(:)
 C
       CALL QENTER('KRMCSAV')
       KFRSAV = KFREE
@@ -71,9 +69,9 @@ C
           CALL IREAKRMC(LUKRMC,'MJVEC   ',WORK(KMJVEC),NORBT)
         END IF
       else
-        CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-        CALL IZERO(WORK(KIBEIG),NORBT)
-        CALL IREAKRMC(LUKRMC,'IBEIG   ',WORK(KIBEIG),NORBT)
+        allocate (ibeig(norbt))
+        CALL IZERO(IBEIG,NORBT)
+        CALL IREAKRMC(LUKRMC,'IBEIG   ',IBEIG,NORBT)
       end if
 C
 C     Clean LUKRMC
@@ -100,8 +98,8 @@ C
 C       (1).2 IBEIG: write boson irreps orbital-vector
 C       -------------------------------------------
 C
-        CALL IWRTKRMC(LUKRMC,'IBEIG   ',WORK(KIBEIG),NORBT)
-        CALL MEMREL('KRMCSAV.1',WORK,1,KFRSAV,KFREE,LFREE)
+        CALL IWRTKRMC(LUKRMC,'IBEIG   ',IBEIG,NORBT)
+        deallocate (ibeig)
       end if
 C
 C     (2) OLDORB & OLDCREF: write old MO orbitals
@@ -158,8 +156,8 @@ C
 C
 C     Rotate to Fock type and/or natural orbitals.
 C
-      CALL MEMGET('REAL',KEIG  ,NORBT,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KEIG),NORBT)
+      allocate (eig(norbt))
+      CALL DZERO(EIG,NORBT)
       IF (IKRMCCNO .GE. -1) THEN
 CSK   IF (.FALSE.) THEN
 C     TODO Feb 2004 hjaaj: KRMCCNO not working correctly yet ...
@@ -183,7 +181,7 @@ C
          END IF
 C
          WRITE (LUPRI,'(/2A)') ' - calling KRCCNO with keyword ',CNOLBL
-         CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPROPT,WORK(KEIG),
+         CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPROPT,EIG,
      &                WORK,KFREE,LFREE)
 C
       END IF
@@ -192,14 +190,12 @@ C
       CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
 C
       IF (NASHT .EQ. 0) THEN
-C     ... also save on DFCOEF when SCF
+C     ... also save on CHECKPOINT when SCF
 C         (needed for e.g. RPA or restarts without changing
 C          input from .HF to .MCSCF /hjaaj Feb 2004)
-         CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','KRMCSAV')
-         CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-         CALL IZERO(WORK(KIBEIG),NORBT)
-         CALL WRICMO(LUCOEF,CMO,WORK(KEIG),WORK(KIBEIG),EMCSCF)
-         CLOSE(LUCOEF,STATUS='KEEP')
+         allocate (ibeig(norbt))
+         CALL IZERO(IBEIG,NORBT)
+         CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,EMCSCF)
       END IF
 C
       REWIND(LUKRMC)
@@ -207,5 +203,135 @@ C
       CALL MEMREL('KRMCSAV.2',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('KRMCSAV')
+      RETURN
+      END
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck save_moltra_inp */
+      SUBROUTINE SAVE_MOLTRA_INP(SAVTRA,SAVLOG,SAVREAL,SAVINT,IPRINT)
+C***********************************************************************
+C
+C    routine to save common block for MOLTRA
+C
+C     Written by JVP 2020
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "../moltra/dcbtra.h"
+C
+      CHARACTER SAVTRA(4,2,2)*(*)
+      LOGICAL SAVLOG(*)
+      REAL*8  SAVREAL(*)
+      INTEGER SAVINT(*)
+C
+C     /DCBTC/
+C
+      DO I = 1, 4
+         DO J = 1, 2
+            SAVTRA(I,J,1)= TRA4_INDSTR(I,J)
+         END DO
+      END DO
+      DO I = 1,2
+         DO J = 1,2
+            SAVTRA(I,J,2) = TRA2_INDSTR(I,J)
+         END DO
+         SAVTRA(3,I,2) = TRA_INDSTR(I)
+         SAVTRA(4,I,2) = TRA_CORSTR(I)
+      END DO
+C
+C     /DCBTRI/
+C
+      SAVINT(1) = ITRA_INTFLG 
+      SAVINT(2) = ITRA_INTFL2 
+      SAVINT(3) = ITRA_INTFL4
+      SAVINT(4) = IPRTRA
+      SAVINT(5) = ISTRAT
+C
+C     /DCBTRL/
+C
+      SAVLOG(1) = TRA_ANTIS
+      SAVLOG(2) = TRA_MSOUT
+      SAVLOG(3) = NO2IND
+      SAVLOG(4) = NO4IND
+      SAVLOG(5) = NOPAIR
+      SAVLOG(6) = PRPTRA
+      SAVLOG(7) = RCORBS
+      SAVLOG(8) = FKRMC
+      SAVLOG(9) = NOMDCINT
+      SAVLOG(10) = MDCSCAT
+C
+C     /DCBTRR/
+C
+      SAVREAL(1) = THROUT
+      SAVREAL(2) = SCRTRA
+C
+C
+      RETURN
+      END
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck reset_moltra_inp */
+      SUBROUTINE RESET_MOLTRA_INP(SAVTRA,SAVLOG,SAVREAL,SAVINT,IPRINT)
+C***********************************************************************
+C
+C    routine to reset common block for MOLTRA
+C
+C     Written by JVP 2020
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "../moltra/dcbtra.h"
+C
+      CHARACTER SAVTRA(4,2,2)*(*)
+      LOGICAL SAVLOG(*)
+      REAL*8  SAVREAL(*)
+      INTEGER SAVINT(*)
+C
+C     /DCBTC/
+C
+      DO I = 1, 4
+         DO J = 1, 2
+            TRA4_INDSTR(I,J) = SAVTRA(I,J,1)
+         END DO
+      END DO
+      DO I = 1,2
+         DO J = 1,2
+            TRA2_INDSTR(I,J) = SAVTRA(I,J,2)
+         END DO
+         TRA_INDSTR(I) = SAVTRA(3,I,2)
+         TRA_CORSTR(I) = SAVTRA(4,I,2)
+      END DO
+C
+C     /DCBTRI/
+C
+      ITRA_INTFLG = SAVINT(1)
+      ITRA_INTFL2 = SAVINT(2)
+      ITRA_INTFL4 = SAVINT(3)
+      IPRTRA = SAVINT(4)
+      ISTRAT = SAVINT(5)
+C
+C     /DCBTRL/
+C
+      TRA_ANTIS = SAVLOG(1)
+      TRA_MSOUT = SAVLOG(2)
+      NO2IND = SAVLOG(3)
+      NO4IND = SAVLOG(4)
+      NOPAIR = SAVLOG(5)
+      PRPTRA = SAVLOG(6)
+      RCORBS = SAVLOG(7)
+      FKRMC  = SAVLOG(8)
+      NOMDCINT = SAVLOG(9)
+      MDCSCAT = SAVLOG(10)
+C
+C     /DCBTRR/
+C
+      THROUT = SAVREAL(1)
+      SCRTRA = SAVREAL(2)
+C
+C
       RETURN
       END

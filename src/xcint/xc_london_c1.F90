@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module xc_london_c1
@@ -49,7 +44,12 @@ module xc_london_c1
    public xc_london_c1_ks_gga
    public xc_london_c1_lr_lda_densities
    public xc_london_c1_lr_gga_densities
+   public xc_london_c1_get_s_b
+   public xc_london_c1_get_gs_b
+   public xc_london_c1_susc_der1
+   public xc_london_c1_susc_der2
    public j_dia
+   public xc_london_c1_susc_gga_der1
 
    private
 
@@ -357,6 +357,292 @@ contains
       j(3, 2) = -q(1) ! d j_z / d B_y
 
       j = 0.5d0*j
+
+   end subroutine
+
+   subroutine xc_london_c1_get_s_b(s,       &
+                                   mat_dim, &
+                                   nz,      &
+                                   dmat,    &
+                                   ao,      &
+                                   r)
+
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: s(3, 3)
+      integer, intent(in)  :: mat_dim
+      integer, intent(in)  :: nz
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, nz)
+      real(8), intent(in)  :: ao(mat_dim)
+      real(8), intent(in)  :: r(3)
+!     --------------------------------------------------------------------------
+      integer              :: k, l, n, bxyz
+      real(8)              :: f
+      real(8)              :: rkl_cross_r
+      real(8)              :: omega
+!     --------------------------------------------------------------------------
+
+      s = 0.0d0
+
+      do n = 1, 3
+         do k = 1, mat_dim
+            do l = 1, mat_dim
+         
+               f = dmat(l, k, iq(n))
+               omega = ao(k)*ao(l)*f
+         
+               do bxyz = 1, 3
+                  rkl_cross_r = ao_distance(k, l, b(bxyz))*r(c(bxyz)) &
+                              - ao_distance(k, l, c(bxyz))*r(b(bxyz))
+                  rkl_cross_r = 0.5d0*rkl_cross_r
+         
+                  s(n, bxyz) = s(n, bxyz) &
+                            + rkl_cross_r*omega
+               end do
+            end do
+         end do
+      end do
+
+   end subroutine
+
+   subroutine xc_london_c1_get_gs_b(gs,      &
+                                    s,       &
+                                    mat_dim, &
+                                    nz,      &
+                                    dmat,    &
+                                    ao,      &
+                                    r)
+
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: gs(3, 3, 3)
+      real(8), intent(out) :: s(3, 3)
+      integer, intent(in)  :: mat_dim
+      integer, intent(in)  :: nz
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, nz)
+      real(8), intent(in)  :: ao(mat_dim)
+      real(8), intent(in)  :: r(3)
+!     --------------------------------------------------------------------------
+      integer              :: k, l, n, bxyz, ixyz
+      real(8)              :: f
+      real(8)              :: rkl_cross_r, nabla_rkl_cross_r
+      real(8)              :: rkl_cross_gn
+      real(8)              :: gn_nabla_omega
+      real(8)              :: omega, nabla_omega(3)
+!     --------------------------------------------------------------------------
+
+      s = 0.0d0   ! \Sigma, B
+      gs = 0.0d0  ! grad, \sigma, B
+
+      do n = 1, 3   ! \Sigma_{x,y,z}
+         do k = 1, mat_dim
+            do l = 1, mat_dim
+         
+               f = dmat(l, k, iq(n))
+               omega = ao(k)*ao(l)*f
+         
+               do ixyz = 1, 3 ! dR_{x,y,z}
+                  nabla_omega(ixyz) = ao(k)*ao(ao_off_g1_m0(ixyz, 0) + l) &
+                                    + ao(l)*ao(ao_off_g1_m0(ixyz, 0) + k)
+                  nabla_omega(ixyz) = nabla_omega(ixyz)*f
+               end do
+
+               do bxyz = 1, 3  ! dB_{x,y,z}
+                  rkl_cross_r = ao_distance(k, l, b(bxyz))*r(c(bxyz)) &
+                              - ao_distance(k, l, c(bxyz))*r(b(bxyz))
+                  rkl_cross_r = 0.5d0*rkl_cross_r
+         
+                  s(n, bxyz) = s(n, bxyz) &
+                            + rkl_cross_r*omega
+
+                  do ixyz = 1, 3
+
+                     if (ixyz .eq. b(bxyz)) then
+                         nabla_rkl_cross_r = - 0.5d0*ao_distance(k, l, c(bxyz))
+                     else if (ixyz .eq. c(bxyz)) then
+                         nabla_rkl_cross_r =   0.5d0*ao_distance(k, l, b(bxyz))
+                     else
+                        nabla_rkl_cross_r = 0.0d0
+                     end if
+
+                     gs(ixyz, n, bxyz) = gs(ixyz, n, bxyz) &
+                                       + rkl_cross_r*nabla_omega(ixyz) &
+                                       + nabla_rkl_cross_r*omega
+
+                  end do
+               end do
+
+            end do
+         end do
+      end do
+
+   end subroutine
+
+
+   subroutine xc_london_c1_susc_der1(s, &
+                                     mat_dim, &
+                                     nz,      &
+                                     dmat,    &
+                                     ao,      &
+                                     r,       &
+                                     n_b)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)  :: mat_dim
+      integer, intent(in)  :: nz
+      real(8), intent(in)  :: s
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim)
+      real(8), intent(in)  :: ao(mat_dim)
+      real(8), intent(in)  :: r(3)
+      real(8), intent(out) :: n_b(3, 3)
+!     --------------------------------------------------------------------------
+      integer              :: k, l, alpha, beta
+      real(8)              :: f, f1, f2
+      real(8)              :: rkl_cross_r(2)
+      real(8)              :: omega
+!     --------------------------------------------------------------------------
+
+      n_b = 0.0d0
+
+      do k = 1, mat_dim
+         do l = 1, mat_dim
+
+            f = -0.25d0*dmat(l, k)
+            omega = ao(k)*ao(l)*f*s
+
+            do alpha = 1, 3
+              do beta = 1, 3
+
+               f1 = ao_distance(k, l, b(alpha))*r(c(alpha)) &
+                                  - ao_distance(k, l, c(alpha))*r(b(alpha))
+
+               f2 = ao_distance(k, l, b(beta))*r(c(beta)) &
+                                 - ao_distance(k, l, c(beta))*r(b(beta))
+
+               n_b(beta, alpha) = n_b(beta, alpha) &
+                         + f1*f2*omega
+
+              end do
+            end do
+         end do
+      end do
+
+
+   end subroutine
+
+
+   subroutine xc_london_c1_susc_gga_der1(d_r, &
+                                     d_z,     &
+                                     gn_0,    &
+                                     mat_dim, &
+                                     nz,      &
+                                     dmat,    &
+                                     ao,      &
+                                     r,       &
+                                     n_b)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)  :: mat_dim
+      integer, intent(in)  :: nz
+      real(8), intent(in)  :: d_r, d_z, gn_0(3)
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim)
+      real(8), intent(in)  :: ao(mat_dim)
+      real(8), intent(in)  :: r(3)
+      real(8), intent(out) :: n_b(3, 3)
+!     --------------------------------------------------------------------------
+      integer              :: k, l, alpha, beta, gxyz
+      real(8)              :: f, f1, f2, f3, f4, gnn_kl
+      real(8)              :: omega, nabla_omega(3)
+!     --------------------------------------------------------------------------
+
+      n_b = 0.0d0
+      gnn_kl = 0.0d0
+
+      do k = 1, mat_dim
+         do l = 1, mat_dim
+
+            f = -0.25d0*dmat(l, k)
+            omega = ao(k)*ao(l)*f
+
+            do gxyz = 1, 3
+               nabla_omega(gxyz) = ao(k)*ao(ao_off_g1_m0(gxyz, 0) + l) &
+                                 + ao(l)*ao(ao_off_g1_m0(gxyz, 0) + k)
+               nabla_omega(gxyz) = f*nabla_omega(gxyz)
+            end do
+
+            gnn_kl = gn_0(1)*nabla_omega(1) &
+                   + gn_0(2)*nabla_omega(2) &
+                   + gn_0(3)*nabla_omega(3)
+
+            do alpha = 1, 3
+              do beta = 1, 3
+
+               f1 = ao_distance(k, l, b(alpha))*r(c(alpha)) &
+                  - ao_distance(k, l, c(alpha))*r(b(alpha))
+
+               f2 = ao_distance(k, l, b(beta))*r(c(beta)) &
+                  - ao_distance(k, l, c(beta))*r(b(beta))
+
+               f3 = ao_distance(k, l, b(alpha))*gn_0(c(alpha)) &
+                  - ao_distance(k, l, c(alpha))*gn_0(b(alpha))
+
+               f4 = ao_distance(k, l, b(beta))*gn_0(c(beta)) &
+                  - ao_distance(k, l, c(beta))*gn_0(b(beta))
+
+
+               n_b(beta, alpha) = n_b(beta, alpha) &
+                         + f1*f2*omega*d_r  + (f1*f2*gnn_kl + f3*f2*omega + f4*f1*omega)*d_z
+
+              end do
+            end do
+         end do
+      end do
+
+   end subroutine
+
+   subroutine xc_london_c1_susc_der2(s, &
+                                     mat_dim, &
+                                     nz,      &
+                                     dmat,    &
+                                     ao,      &
+                                     r,       &
+                                     n_b)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)  :: mat_dim
+      integer, intent(in)  :: nz
+      real(8), intent(in)  :: s
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim)
+      real(8), intent(in)  :: ao(mat_dim)
+      real(8), intent(in)  :: r(3)
+      real(8), intent(out) :: n_b(3, 3)
+!     --------------------------------------------------------------------------
+      integer              :: k, l, alpha, beta
+      real(8)              :: f, f1, n1(3)
+      real(8)              :: omega
+!     --------------------------------------------------------------------------
+
+      n_b = 0.0d0
+
+      do k = 1, mat_dim
+         do l = 1, mat_dim
+
+            f = dmat(l, k)
+            omega = ao(k)*ao(l)*f
+
+            do alpha = 1, 3
+               f1 = ao_distance(k, l, b(alpha))*r(c(alpha)) &
+                           - ao_distance(k, l, c(alpha))*r(b(alpha))
+
+               n1(alpha) = n1(alpha) + f1*omega
+            end do
+         end do
+      end do
+
+      do k = 1, 3
+        do l = 1, 3
+          n_b(l, k) = n_b(l, k) - 0.25d0*n1(l)*n1(k)*s
+        end do
+      end do
+
 
    end subroutine
 

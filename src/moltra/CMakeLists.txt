@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/moltra
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -25,12 +26,18 @@ set(FREE_MOLTRA_FORTRAN_SOURCES
     dcbtra_h.F90
     tradr3.F90
     tradr5.F90
-    moltra_mocoefficients.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_MOLTRA_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_MOLTRA_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FIXED_MOLTRA_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
+endif()
+
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'moltra' module")
+    set_source_files_properties(${FREE_MOLTRA_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_MOLTRA_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
 endif()
 
 add_library(
@@ -45,4 +52,7 @@ add_library(
 add_dependencies(moltra main)
 add_dependencies(moltra dirac)
 add_dependencies(moltra dirrci)
+if(ENABLE_EXATENSOR)
+add_dependencies(moltra exacorr)
+endif()
 add_dependencies(moltra interface_mpi)

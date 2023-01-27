@@ -7,6 +7,7 @@ module fde_nadd_derv
       use fde_xcfun_interface
 
       public fde_initialize_nadd_functionals
+      public fde_set_nadd_functionals
       public fde_print_nadd_functionals
 
       public get_fde_nadd_fun_derv
@@ -31,7 +32,7 @@ module fde_nadd_derv
 
       type(functional), save :: fde_kef,       fde_xcf
       type(functional), save :: fde_kef_alda,  fde_xcf_alda
-      type(functional), save :: fde_kef_xalda, fde_xcf_xalda
+!      type(functional), save :: fde_kef_xalda, fde_xcf_xalda
 
 ! the default (orbital-free) kinetic energy functional for now is the thomas-fermi one
       character(len=80), save :: kefun_fde='kin_tf'
@@ -42,7 +43,7 @@ module fde_nadd_derv
       character(len=80), save :: kefun_fde_alda='kin_tf'
       character(len=80), save :: xcfun_fde_alda='lda'
 
-      logical, save :: fde_set_functionals(20) 
+!     logical, save :: fde_set_functionals(20) 
       logical, save :: functionals_initialized = .false.
 
       real(8) :: hfx_out, mu_out, beta_out
@@ -184,28 +185,32 @@ module fde_nadd_derv
 !   ----------------------------------------------------------------------------
          subroutine fde_initialize_nadd_functionals
 !   ----------------------------------------------------------------------------
-            integer :: i, order = 5
-            logical :: parallel_fde
-
-            parallel_fde = .false.
+            if (.not.functionals_initialized) then
+               functionals_initialized = .true.
             
-        if (.not.functionals_initialized) then
-            functionals_initialized = .true.
-            
-            call parse_functional(kefun_fde,      fde_kef,      hfx_out, mu_out, beta_out, .false.)
-            call parse_functional(xcfun_fde,      fde_xcf,      hfx_out, mu_out, beta_out, .false.)
-            call parse_functional(kefun_fde_alda, fde_kef_alda, hfx_out, mu_out, beta_out, .false.)
-            call parse_functional(xcfun_fde_alda, fde_xcf_alda, hfx_out, mu_out, beta_out, .false.)
+               call parse_functional(kefun_fde,      fde_kef,      hfx_out, mu_out, beta_out, .false.)
+               call parse_functional(xcfun_fde,      fde_xcf,      hfx_out, mu_out, beta_out, .false.)
+               call parse_functional(kefun_fde_alda, fde_kef_alda, hfx_out, mu_out, beta_out, .false.)
+               call parse_functional(xcfun_fde_alda, fde_xcf_alda, hfx_out, mu_out, beta_out, .false.)
 
-
-!            ! we set them now so that we can verify whether or not they
-            call xcfun_set_functional(fde_xcf     , order, parallel_fde) 
-            call xcfun_set_functional(fde_kef,      order, parallel_fde)
-            call xcfun_set_functional(fde_xcf_alda, order, parallel_fde) 
-            call xcfun_set_functional(fde_kef_alda, order, parallel_fde)
-        endif
+           endif
         
          end subroutine fde_initialize_nadd_functionals
+
+!   ----------------------------------------------------------------------------
+         subroutine fde_set_nadd_functionals(order,parallel_fde)
+!   ----------------------------------------------------------------------------
+            integer, intent(in) :: order 
+            logical, intent(in) :: parallel_fde
+
+            call xcfun_set_functional(fde_xcf,       order, parallel_fde)
+            call xcfun_set_functional(fde_xcf_alda,  order, parallel_fde)
+            call xcfun_set_functional(fde_kef,       order, parallel_fde)
+            call xcfun_set_functional(fde_kef_alda,  order, parallel_fde)
+
+         end subroutine
+
+!   ----------------------------------------------------------------------------
 
 
 !   ----------------------------------------------------------------------------

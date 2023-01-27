@@ -70,6 +70,7 @@ character(len=72), allocatable, save, private :: VAR_vecref(:,:)  ! vecref(2,max
 contains
 
   subroutine init_func(ndim)
+  use dircmo
   !==============================================================================!
   !            Initialize module func_PipekMezey for Dirac program               !
   !==============================================================================!
@@ -81,7 +82,7 @@ contains
   ! Internal variables
 
   logical :: tobe, twocomp, x2c
-  integer :: i, ifrp, idum, ier, nloc, nmax, iunit
+  integer :: i, ifrp, idum, ier, nloc, nmax, iunit, iopt,ioer
   real*8  :: toterg, second
   character*8  :: chdum
   character*72 :: selmos
@@ -112,7 +113,7 @@ contains
   read(iunit,*) chdum,PM%iprloc
   read(iunit,*) chdum,PM%prjloc
   read(iunit,*) chdum,var%lupri
-  read(iunit,*) selmos
+  read(iunit,'(A72)') selmos
   ! dcbgen.h
   read(iunit,*) var%title
   read(iunit,*) chdum,var%lucoef
@@ -249,20 +250,17 @@ contains
   ! -- scoef -- Electronic orbital coeffients selection !
   !-----------------------------------------------------!
   ! Check if coefficients are on file
-  keyform = 0
-  inquire(file='DFCOEF',exist=tobe)
-  if(tobe) keyform = 1
-  inquire(file='DFPCMO',exist=tobe)
-  if(tobe) keyform = 2
+  keyform = 1
+!  inquire(file='DFPCMO',exist=tobe)
+!  if(tobe) keyform = 2
   if(keyform == 0)then
     write(var%lupri,'(a)') 'init_func: Coefficient file not found!'
-    write(var%lupri,'(a)') 'init_func: DFCOEF or DFPCMO file is missing!'
     call quit('init_func: Coefficients not found !')
   endif
 
   ! Read coefficients
-  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1)
-
+  call REACMO_new(cmo=cmo)
+  
   ! select orbitals
   isel(1:nloc) = itmp(1:nloc)
   call selcfs_mod(cmo,ifrp,scoef,nloc,isel,0,nloc,var%nfbas(ifrp,0),var%norb(ifrp))
@@ -1060,7 +1058,7 @@ contains
 !     Modify by S. Dubillard - Apr 21 2004
 !
 !***********************************************************************
-      USE SELECT_COEFF_OWN_BAS
+      use labeled_storage
       IMPLICIT NONE
 
       ! Global variables
@@ -1091,6 +1089,9 @@ contains
       END TYPE PTR2ARRAY
 
       TYPE(PTR2ARRAY), ALLOCATABLE :: KVEC(:,:)
+      integer :: kvec_offset(2) 
+      ! LV, introduced to be able to call standard selown and remove code duplication
+      type(file_info_t) :: reffile
 
   !------------------------------------------------------------------------------!
       IFRP   = 1
@@ -1103,6 +1104,8 @@ contains
       VECREF(:,:) = VAR_VECREF(:,:)
       REFFIL(:)   = VAR_REFFIL(:)
 
+      kvec_offset = 1 ! offset for all coefficients of irrep 1 is 1
+      ! will not work in this form for two irreps, but the code is hardwired to 1 above 
       ALLOCATE( KVEC(2,NREFS), STAT=IER )
       IF(IER /= 0)THEN
         WRITE(LUPRI,*) "Error in allocation of KVEC array of pointers in OBLP1"
@@ -1148,16 +1151,14 @@ contains
       IOFF(1) = 0
       VAR%IPRPRJ = 4
       DO I = 1,NREFS
-        INQUIRE(FILE=REFFIL(I),EXIST=TOBE)
-        IF (.NOT.TOBE) THEN
-          WRITE(LUPRI,'(A,A6,A)') 'Reference coefficient file ',REFFIL(I),' not present'
-          CALL QUIT('PRJANA: No reference coefficients !')
-        ENDIF
         IF(VAR%OWNBAS)THEN
-          CALL SELOWN_DRV(2,CMO,DDUMARR,IDUMARR,               &
-               I,1,VAR%LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
-               NVECS(1,1),IOFF,KVEC(IFRP,I)%P,                 &
-               NSTR(1,0,I))
+          reffile%type = 2
+          reffile%name = REFFIL(I)
+          reffile%status = -1
+          CALL SELOWN(2,CMO,DDUMARR,IDUMARR,               &
+               I,1,VAR%LUCOEF,reffile,RCOEF,DDUMARR,IDUMARR, &
+               NVECS(1,1),IOFF,kvec_offset,                 &
+               NSTR(1,0,I),KVEC(IFRP,I)%P)
           IF(PM%IPRLOC.GE.5)THEN
             WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1
@@ -1604,9 +1605,10 @@ contains
   subroutine wcmo2file
   !==============================================================================!
   !                                                                              !
-  !          Write the localised MO coefficients to the DFCOEF file              !
+  !          Write the localised MO coefficients to the CHECKPOINT               !
   !                                                                              !
   !==============================================================================!
+   use dircmo
    implicit none
 
    ! Global variables
@@ -1615,7 +1617,7 @@ contains
 
    ! Internal variables
    integer :: ifrp, nz, no, nb, nloc, ier
-   integer :: i, ii, iz, ioff
+   integer :: i, ii, iz, ioff,ioer
    real*8  :: toterg
 
    integer, allocatable :: ibeig(:)
@@ -1634,7 +1636,7 @@ contains
   allocate( ibeig(var%norbt), stat=ier ); call errall(ier,'wcmo2file','ibeig')
 
   ! read EIG, IBEIG and TOTERG
-  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,2)
+  call REACMO_new(eig=eig,ibeig=ibeig,toterg=toterg)
 
   ! reorganize MO
   ioff = var%npsh(ifrp)
@@ -1651,7 +1653,8 @@ contains
   endif
 
   ! write MO to file and close him
-  call wricmo_mod(var%lucoef,cmo,eig,ibeig,toterg)
+  call WRICMO(var%lucoef,reshape(CMO,(/nb*no*nz/)),EIG,IBEIG,TOTERG)
+  close(var%lucoef,status='keep')
 
   ! deallocate arrays
   deallocate( cmo   )
@@ -1729,7 +1732,7 @@ contains
   !     IDIM(2,IFRP) - number of electronic solutions                            !
   !     IDIM(3,IFRP) - number of AO-basis functions                              !
   !                                                                              !
-  !     Based on REACMO_no_work routine from the main Dirac code                 !
+  !     Based on REACMO routine from the main Dirac code                 !
   !                                                                              !
   !==============================================================================!
   implicit none
@@ -1755,7 +1758,6 @@ contains
   ! Open file
   ! =========
   if(keyform == 1)then
-    open(iunit,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
   elseif(keyform == 2)then
     open(iunit,file='DFPCMO',status='old',form='formatted',access='sequential',iostat=ioer)
   else
@@ -2071,6 +2073,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
       SUBROUTINE NUMLST_MOD(A,ILIST,NLIST,IRNGE1,IRNGE2,IFRP,IP)
+      use dircmo
 !*****************************************************************************
 !
 !     Original purpose was to read the numbers in the string A which has
@@ -2134,10 +2137,9 @@ contains
          ALLOCATE( EIG(NORBT), STAT=IER ); CALL ERRALL(IER,'NUMLST_MOD','EIG')
          ALLOCATE( IBG(NORBT), STAT=IER ); CALL ERRALL(IER,'NUMLST_MOD','IBG')
 !
-!        Get eigenvalues from DFCOEF
+!        Get eigenvalues
 !
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF(.NOT.TOBE.OR.VAR%I_DCBORB_SET.NE.1) THEN
+         IF(VAR%I_DCBORB_SET.NE.1) THEN
 
 !           DFCOEF does not (yet) exist, put IP = - 666, which makes 
 !           NUMLS2 return with an empty list
@@ -2150,9 +2152,7 @@ contains
             IP = - 666
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
          ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
-            CALL REACMO_no_work(LUCOEF,'DFCOEF',DUM,EIG,IBG,DUM,4)
-            CLOSE(LUCOEF,STATUS='KEEP')
+            call reacmo_new(eig=eig)
             IOFF = VAR%IORB(IFRP)+VAR%NPSH(IFRP)
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG(1+IOFF))
          ENDIF

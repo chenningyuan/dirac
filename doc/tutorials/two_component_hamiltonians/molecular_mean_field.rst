@@ -63,7 +63,10 @@ and set the keyword combination as indicated below under the \*\*HAMILTONIAN inp
 
 In order to run a (MR)CC calculation add also the following keyword(s) to the namelist RELCCSSD input::
 
-    &CCSORT USEOE=T, NORECMP=T &END
+    *CCSORT 
+    .USEOE
+    .NORECMP
+    END
 
 
 or the new RELCCSD deck input::

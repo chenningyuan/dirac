@@ -18,11 +18,9 @@ test.run(['sf.scf.inp'], ['Mg.mol'], f, args='--outcmo')
 f = Filter()
 f.add(from_string = ' Energy eigenvalues in atomic units',
       to_re       = 'Relative real eigenvalues in other units;',
-      rel_tolerance = 1.0e-5)
+      abs_tolerance = 1.0e-9)
 
 test.run(['so-fsccsd_IH.inp'], ['Mg.mol'], f, args='--incmo --mw=110')
 test.run(['fsccsd.inp', 'bss+mfsso.fsccsd_IH.inp'], ['Mg.mol'], f, args='--mw=110')
-
-os.unlink('DFCOEF')
 
 sys.exit(test.return_code)

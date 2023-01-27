@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module visual_cfg
@@ -35,6 +30,15 @@ module visual_cfg
    logical,      public            :: visual_cfg_skip(max_para) = .false.
    integer,      public            :: visual_cfg_property_to_matrix(max_para) = 0
    integer,      public            :: visual_cfg_irep_xvector(max_para)
+   logical,      public            :: visual_cfg_out_file_custom = .false.
+   logical,      public            :: visual_cfg_out_scalar_file_custom = .false.
+   logical,      public            :: visual_cfg_out_vector_file_custom = .false.
+   logical,      public            :: visual_cfg_out_2ndtensor_file_custom = .false.
+   character(60), public           :: visual_cfg_out_scalar_file_name
+   character(60), public           :: visual_cfg_out_vector_file_name
+   character(60), public           :: visual_cfg_out_2ndtensor_file_name
+   logical,      public            :: visual_cfg_london_skip_cube = .false.
+   logical,      public            :: visual_cfg_london_skip_vtk  = .false.
 
    integer, public :: iq_gamma5   =  1
    integer, public :: iq_density  =  2
@@ -76,6 +80,14 @@ module visual_cfg
    integer, public :: iq_jx       = 38
    integer, public :: iq_jy       = 39
    integer, public :: iq_jz       = 40
+   integer, public :: iq_tcos     = 41
+   integer, public :: iq_tsin     = 42   
+   integer, public :: iq_density_gradient     =  43
+   integer, public :: iq_density_hessian      =  44
+   integer, public :: iq_density_laplacian    =  45
+   integer, public :: iq_density_sign_lambda2 =  46
+   integer, public :: iq_rdg      = 47
+   integer, public :: iq_gradj    = 48
    
 !                     visualization in 2d
    logical, public :: visual_cfg_2d             = .false.
@@ -99,6 +111,11 @@ module visual_cfg
    logical, public :: visual_cfg_3d_fast    = .false.
    integer, public :: visual_cfg_ncube(1:3) = 0
    real(8), public :: visual_cfg_add_3d     = 4.0d0
+   logical, public :: visual_cfg_3d_gridimp = .false.
+   logical, public :: visual_cfg_3d_readjb  = .false.
+   character(80), public :: visual_cfg_3d_gridfil
+   character(80), public :: visual_cfg_3d_grid_units
+   character(80), public :: visual_cfg_3d_jbfile
 
 !                     integration in 3d
    logical, public :: visual_cfg_3d_integration = .false.
@@ -123,7 +140,13 @@ module visual_cfg
    real(8),       public :: visual_cfg_scale              = 1.0d0
    real(8),       public :: visual_cfg_cartesian_power(3) = 0.0   
    real(8),       public :: visual_cfg_gauge_origin(3)    = 0.0d0
+   real(8),       public :: visual_cfg_wave_vector(3)     = 0.0d0
+   real(8),       public :: visual_cfg_freq               = 0.0d0   
+   real(8),       public :: visual_cfg_pol_vector(3)      = 0.0d0   
    logical,       public :: visual_cfg_force_small_ao     = .false.
+
+   logical,       public :: visual_cfg_nics              = .false.
+   real(8),       public :: visual_cfg_nics_origin(3)    = 0.0d0
 
    logical,      public :: visual_cfg_london               = .false.
    logical,      public :: visual_cfg_london_skip_kappa    = .false.
@@ -137,6 +160,8 @@ module visual_cfg
 
    logical, public              :: visual_cfg_use_orbital_string = .false.
    real(8), public, allocatable :: visual_cfg_occupation(:, :)
+
+   logical,      public :: visual_cfg_tensor          = .false.
 
    private
 

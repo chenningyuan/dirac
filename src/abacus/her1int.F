@@ -1,30 +1,19 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
-#ifdef UNDEF
-/* Comdeck log */
-930309-Sheela Kirpekar: added MVLINT and DWNINT
-930726-hjaaj: SDINT: factor DFACSD = (GFAC/D2)
-#endif
-C  /* Deck pr1drv */
       SUBROUTINE PR1DRV(SOINT,NELMNT,WORK,LWORK,NPQUAD,LABINT,
      &                  INTTYP,INTREP,NOPTYP,NBAST,ANTI,IORDER,DOATOM,
      &                  INTADR,TRIANG,NATOM,SQUARE,IPRINT,DOINT)
@@ -38,10 +27,9 @@ C
 C
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(A,/)')
      &     ' <<<<<<<<<< OUTPUT FROM PR1DRV >>>>>>>>>> '
-
       npoint = 1
 
-      if      (inttyp == 12) then
+      if      (inttyp == 12) then ! DSO
         npoint = npquad
         nshint = 9*natom*natom
       else if (inttyp == 101) then
@@ -173,7 +161,7 @@ C
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.12) THEN
+      ELSE IF (INTTYP .EQ.12) THEN ! DSO
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
@@ -452,6 +440,12 @@ C     type 58 already defined (NUCFIEL)
          jmaxm  = 0
          donuc1 = .true.
          domom1 = .true.
+      else if (inttyp == 106) then
+!        cxikr
+         jmaxd  = 0
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .true.
 C
 C hjaaj: INTTYP .gt. 200 are special relativistic operators for Dirac ...
 C
@@ -518,7 +512,7 @@ C
       END IF
 C
       IF (IPRINT .GT. 5) THEN
-            WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
+         WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
          WRITE (LUPRI,'(A,I5)') ' NELMNT ', NELMNT
          WRITE (LUPRI,'(A,I5)') ' INTTYP ', INTTYP
          WRITE (LUPRI,'(A,I5)') ' NOPTYP ', NOPTYP
@@ -530,6 +524,7 @@ C
          WRITE (LUPRI,'(A,3F20.10)') ' GAUGE  ', (GAGORG(I),I=1,3)
          WRITE (LUPRI,'(A,3F20.10)') ' DIPOLE ', (DIPORG(I),I=1,3)
          WRITE (LUPRI,'(A,3F20.10)') ' CAVITY ', (CAVORG(I),I=1,3)
+         WRITE (LUPRI,'(A,3F20.10)') ' CM     ', (CMXYZ(I),I=1,3)
          WRITE (LUPRI,'(A,I5)') ' JMAXD  ',JMAXD
          WRITE (LUPRI,'(A,I5)') ' JMAXM  ',JMAXM
       END IF
@@ -540,7 +535,7 @@ C     ****************************************************************
 C     *** Prepare for Gaussian quadrature (diamagnetic spin-orbit) ***
 C     ****************************************************************
 C
-      IF (INTTYP .EQ. 12) THEN
+      IF (INTTYP .EQ. 12) THEN ! DSO
 C        HER = NPOINT .EQ. 5 .OR. NPOINT .EQ. 6 .OR.
 C    &         NPOINT .EQ. 8 .OR. NPOINT .EQ. 10
          HER = .FALSE.
@@ -801,7 +796,7 @@ C
       NATOMC = 0
       IF ((INTTYP .EQ. 5) .OR. (INTTYP .EQ. 10)
      &                    .OR. (INTTYP .EQ. 11)
-     &                    .OR. (INTTYP .EQ. 12)
+     &                    .OR. (INTTYP .EQ. 12) ! DSO
      &                    .OR. (INTTYP .EQ. 13)
      &                    .OR. (INTTYP .EQ. 19)
      &                    .OR. (INTTYP .EQ. 20)
@@ -830,7 +825,7 @@ C
          IF (INTTYP .EQ.  5) JMAX = JMAX + 1
          IF (INTTYP .EQ. 10) JMAX = JMAX + 1
          IF (INTTYP .EQ. 11) JMAX = JMAX + 2
-         IF (INTTYP .EQ. 12) JMAX = JMAX + 2
+         IF (INTTYP .EQ. 12) JMAX = JMAX + 2 ! DSO
          IF (INTTYP .EQ. 13) JMAX = JMAX + 2
          IF (INTTYP .EQ. 19) JMAX = JMAX + 1
          IF (INTTYP .EQ. 20) JMAX = JMAX + 1
@@ -866,7 +861,7 @@ C
          ISTEPU = JMAX + 1
          ISTEPV = ISTEPU*ISTEPU
          NAHGTF = ISTEPU*ISTEPV
-         IF (INTTYP .NE. 12) THEN
+         IF (INTTYP .NE. 12) THEN ! not DSO
             NATOMC = 0
             DO 300 IATOMC = 1, NUCIND
             IF (DOATOM(IATOMC)) THEN
@@ -966,7 +961,7 @@ C
          ELSE IF (INTTYP .EQ. 11 .OR. INTTYP .EQ. 13) THEN
             CALL SDTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                 NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-         ELSE IF (INTTYP .EQ. 12) THEN
+         ELSE IF (INTTYP .EQ. 12) THEN ! DSO
             CALL DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
      &                  KAB,TRIANG,NATOM,INTADR,NSHINT,IPRINT)
          ELSE IF ((INTTYP .EQ. 14) .OR. (INTTYP .EQ. 44)) THEN
@@ -1008,7 +1003,6 @@ C
          ELSE IF (INTTYP .EQ. 57) THEN
             CALL EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-
          else if (inttyp == 100) then
 !          g1o
            call s1htra(shlint, soint, isymop, 
@@ -1082,7 +1076,7 @@ C
       IF (INTTYP .EQ. 65) JMAXA = JMAXA + 2
       JMAXB  = NHKTB - 1
 
-CMI     for RDSUSLL, wee need to multiply with x_N, y_N, z_N ...
+CMI     for RDSUSLL, we need to multiply with x_N, y_N, z_N ...
       IF (INTTYP .EQ. 206) JMAXB = JMAXB + 1
 
       JMAXT  = JMAXA + JMAXB + JMAXD + JMAXM
@@ -1100,7 +1094,7 @@ C     Integrals for Parity Violation - chirality
      &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
      &               TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,
      &               DIFABX,DIFABY,DIFABZ,DONUC1,DOMOM1,HUCFAC)
-      ELSE IF (INTTYP .NE. 12) THEN
+      ELSE IF (INTTYP .NE. 12) THEN ! not DSO
          CALL PR1PRA(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
      &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
@@ -1108,11 +1102,11 @@ C     Integrals for Parity Violation - chirality
      &               DIFABX,DIFABY,DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC,
      &               ncentc)
       ELSE
-C     Diamagnetic spin-orbit integrals
+C     DSO - Diamagnetic spin-orbit integrals
          CALL PR1PRD(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,NPOINT,LABINT,
      &               INTTYP,NOPTYP,NBAST,DOATOM,WEIGHT,ABSCIS,TRIANG,
-     &               IPRINT,TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,
+     &               IPRINT,TOLS,TOLOG,DISTAB,FACINT,CORCX,CORCY,
      &               CORCZ,DIFABX,DIFABY,DIFABZ,KAB,DONUC1,DOMOM1)
       END IF
       RETURN
@@ -1180,7 +1174,7 @@ C
          JPRIMA = JSTA + IPRIMA
          CONTA = PRICCF(JPRIMA,NUMCFA)
          EXPA = PRIEXP(JPRIMA)
-      DO 100 IPRIMB = 1,NUCB
+      DO 200 IPRIMB = 1,NUCB
          JPRIMB = JSTB + IPRIMB
          CONTB = PRICCF(JPRIMB,NUMCFB)
          EXPB = PRIEXP(JPRIMB)
@@ -1218,29 +1212,32 @@ C     Choose origin for expansions coefficients:
 C     1) A certain nuclei
 C     2) Dipole origin
 C     3) Gauge origin
-C     4) Operator center ("molecular" origin)
+C     4) Molecular center of mass
+C     5) Operator center ("molecular" origin)
 C
-         IF ((INTTYP .EQ. 17) .OR. (INTTYP .EQ. 20) .OR.
-     &       (INTTYP .EQ. 22) .OR. (INTTYP .EQ. 26).OR. 
-     &       (INTTYP .EQ. 202).OR. (INTTYP .EQ.205) ) THEN
+         IF ((INTTYP .EQ. 17)  .OR. (INTTYP .EQ. 20) .OR.
+     &       (INTTYP .EQ. 22)  .OR. (INTTYP .EQ. 26) .OR.
+     &       (INTTYP .EQ. 202) .OR. (INTTYP .EQ.205)) THEN
             TEMP(1) = CORBX ! MI:shift the gauge to the right orbital
             TEMP(2) = CORBY
             TEMP(3) = CORBZ
-         ELSE IF ((INTTYP .EQ. 2) .OR. (INTTYP .EQ. 4) .OR.
-     &            (INTTYP .EQ. 6) .OR. (INTTYP .EQ. 7) .OR.
-     &            (INTTYP .EQ. 8) .OR. (INTTYP .EQ. 29) .OR.
+         ELSE IF ((INTTYP .EQ. 2)  .OR. (INTTYP .EQ. 4)  .OR.
+     &            (INTTYP .EQ. 6)  .OR. (INTTYP .EQ. 7)  .OR.
+     &            (INTTYP .EQ. 8)  .OR. (INTTYP .EQ. 29) .OR.
      &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
-     &            (INTTYP .EQ. 53) .OR.
-     &            (INTTYP .EQ. 56) .OR. (INTTYP .EQ. 57) .OR.
-     &            (INTTYP .EQ. 58)) THEN
+     &            (INTTYP .EQ. 53) .OR. (INTTYP .EQ. 56) .OR.
+     &            (INTTYP .EQ. 57) .OR. (INTTYP .EQ. 58)) THEN
             TEMP(1) = DIPORG(1)
             TEMP(2) = DIPORG(2)
             TEMP(3) = DIPORG(3)
-         ELSE IF ((INTTYP .EQ. 18) .OR. (INTTYP .EQ. 37) .OR.
-     &            (INTTYP .EQ. 38)) THEN
+         ELSE IF ((INTTYP .EQ. 37) .OR. (INTTYP .EQ. 38)) THEN
             TEMP(1) = GAGORG(1)
             TEMP(2) = GAGORG(2)
             TEMP(3) = GAGORG(3)
+         ELSE IF (INTTYP .EQ. 18) THEN
+            TEMP(1) = CMXYZ(1)
+            TEMP(2) = CMXYZ(2)
+            TEMP(3) = CMXYZ(3)
          ELSE IF ((INTTYP .EQ. 46) .OR. (INTTYP .EQ. 47)) THEN
             TEMP(1) = CAVORG(1)
             TEMP(2) = CAVORG(2)
@@ -1255,7 +1252,7 @@ C
                   TEMP(2) = CORD(2,KR)
                   TEMP(3) = CORD(3,KR)
                END IF
- 37         CONTINUE 
+ 37         CONTINUE
          ELSE
             TEMP(1) = ORIGIN(1)
             TEMP(2) = ORIGIN(2)
@@ -1348,7 +1345,7 @@ C                 58: NUCFIEL
                   CALL HERNAI(AHGTF,JMAX,EXPP,DIFCPX,DIFCPY,DIFCPZ
      &                 ,FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
                END IF
-               
+
                IF (ADDNAI) THEN
                   CALL DAXPY(NAHGTF,D1,AHGTF(IADR),1,AHGTF(1),1)
                ELSE
@@ -1460,8 +1457,8 @@ C
             CALL AM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  D1)
 C
-C        Angular momentum around the origin
-C        ----------------------------------
+C        Angular momentum around the molecular center of mass
+C        ----------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 18) THEN
             CALL AM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
@@ -1607,8 +1604,8 @@ C
             CALL HDBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  DIFOBX,DIFOBY,DIFOBZ)
 C
-C        Potential energy at the individual nuclei
-C        -----------------------------------------
+C        Potential energy of interaction of electrons with individual nuclei
+C        -------------------------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 35) THEN
             CALL NPEINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
@@ -1891,7 +1888,13 @@ C
      &                          shlint)
            end if
 
+!     CEXPIKR: expikr integrals for interaction with electromagnetic field
+!     radiation
+!     ===========================================================
 
+         ELSE IF (INTTYP == 106) THEN
+           CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &          CORPX,CORPY,CORPZ,EXPPI,NOPTYP,WORK,LWORK)
 C
 C        rp integrals, RM1H3  i c Q_MN < r (alpha.p) >
 C        --------------------------------------------------
@@ -1990,14 +1993,6 @@ Cdj mixed bra-ket part
             DIFOBZ = GAGORG(3) - CORBZ
             CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  DIFAOX,DIFAOY,DIFAOZ,DIFOBX,DIFOBY,DIFOBZ)
-
-
-
-
-
-
-
-
          END IF
   200    CONTINUE
   100 CONTINUE
@@ -2016,8 +2011,11 @@ C  /* Deck pr1prd */
       SUBROUTINE PR1PRD(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  WORK,LWORK,NPOINT,LABINT,INTTYP,NOPTYP,NBAST,
      &                  DOATOM,WEIGHT,ABSCIS,TRIANG,IPRINT,TOLS,TOLOG,
-     &                  NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,
+     &                  DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,
      &                  DIFABY,DIFABZ,KAB,DONUC1,DOMOM1)
+!
+!     Special subroutine for DSO - diamagnetic spin-orbit integrals
+!
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2516,20 +2514,24 @@ C
 C  /* Deck mvlint */
       SUBROUTINE MVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
-C     shki. jan. 93 (based on KININT)
+C     Sheela Kirpekar. jan. 93 (based on KININT)
 C
 C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
 #include "onecom.h"
 #include "lmns.h"
-      PARAMETER (ALPMVL = ALPHA2*0.125D0, ALPMV2 = ALPHA2*0.25D0)
+      DOUBLE PRECISION ALPMVL,ALPMV2
+
+      ALPMVL = ALPHA2*0.125D0
+      ALPMV2 = ALPHA2*0.25D0
+
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3799,7 +3801,7 @@ C  /* Deck npeint */
       SUBROUTINE NPEINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  NOPTYP,NATOMC)
 C
-C     Potential energy at the nuclei
+C     Potential energy of interaction of electrons with individual nuclei
 C
 C     K.Ruud, July 1992
 C
@@ -4721,17 +4723,17 @@ C
 C  /* Deck dwnint */
       SUBROUTINE DWNINT(SHLINT,EXPP,XP,YP,ZP,SAAB)
 C
-C     shki, Jan. 93 (based on FRMINT tuh feb 91)
+C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 C
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (DWNFAC = 0.5D0*PI*ALPHA2)
+      DOUBLE PRECISION DWNFAC
       DIMENSION SHLINT(KCKTAB)
 #include "onecom.h"
 #include "lmns.h"
@@ -4739,6 +4741,9 @@ C
 #include "nuclei.h"
 C
 #include "ibtfun.h"
+#include "pi.h"
+C
+      DWNFAC = 0.5D0*PI*ALPHA2
       DFAC = SAAB*DWNFAC
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -5854,6 +5859,180 @@ C
   100 CONTINUE
       RETURN
       END
+C/* Deck cexpint */
+C***********************************************************************      
+      SUBROUTINE CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &     CORPX,CORPY,CORPZ,EXPPI,NINTS,WORK,LWORK)
+C***********************************************************************      
+C
+C     nhl 2016 -- calculates integrals over exp(ikr)
+C                 based on GOSINT routine.
+C     References are:
+C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
+C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "onecom.h"             !contains KCKTAB
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &     SHLINT(KCKTAB,NINTS),WORK(LWORK)
+#include "memint.h"
+      CALL MEMGET2('REAL','TMPARR',KTMP,8*KCKTAB,WORK,KFREE,LFREE)
+      CALL CEXPIN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &     CORPX,CORPY,CORPZ,EXPPI,NINTS,WORK(KTMP))
+      CALL MEMREL('CEXPINT',WORK,KWORK,KTMP,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      SUBROUTINE CEXPIN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &     CORPX,CORPY,CORPZ,EXPPI,NINTS,TMPARR)
+C***********************************************************************      
+C
+C     nhl 2016 -- calculates integrals over exp(ikr)
+C                 based on GOSINT routine.
+C     References are:
+C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
+C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+      PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0, NIREP = 8)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &     SHLINT(KCKTAB,NINTS),TMPARR(KCKTAB,8)
+      INTEGER T, U, V, NINTS
+#include "onecom.h" !contains KCKTAB
+#include "lmns.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcbwav.h"      
+C
+#include "ibtfun.h"
+C
+      CALL DZERO(TMPARR,KCKTAB*8)
+C     
+      DKX  = WAVEVEC(1)
+      DKY  = WAVEVEC(2)
+      DKZ  = WAVEVEC(3)
+      FACX = SHGTF/EXP(DP25*EXPPI*DKX**2)
+      FACY = SHGTF/EXP(DP25*EXPPI*DKY**2)
+      FACZ = SHGTF/EXP(DP25*EXPPI*DKZ**2)
+      COSX = COS(CORPX*DKX)*FACX
+      COSY = COS(CORPY*DKY)*FACY
+      COSZ = COS(CORPZ*DKZ)*FACZ
+      SINX = SIN(CORPX*DKX)*FACX
+      SINY = SIN(CORPY*DKY)*FACY
+      SINZ = SIN(CORPZ*DKZ)*FACZ
+C
+      INT = 0
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA) !power of x factor in basis a
+         MVALA = MVALUA(ICOMPA) !power of y factor in basis a
+         NVALA = NVALUA(ICOMPA) !power of z factor in basis a
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB) !power of x factor in basis b
+         MVALB = MVALUB(ICOMPB) !power of y factor in basis b
+         NVALB = NVALUB(ICOMPB) !power of z factor in basis b
+C
+         CX    = D0
+         CXDX  = D0
+         SX    = D0
+         SGNC  = D1
+         SGNS  = D1
+         FACKX = D1
+         DO 200 T = 0, LVALA + LVALB
+            IF (MOD(T,2) .EQ. 0) THEN
+               CX = CX + SGNC*FACKX*COSX*ODC(LVALA,LVALB,T,0,0,1)
+               SX = SX + SGNS*FACKX*SINX*ODC(LVALA,LVALB,T,0,0,1)
+               SGNC = - SGNC
+            ELSE
+               CX = CX + SGNC*FACKX*SINX*ODC(LVALA,LVALB,T,0,0,1)
+               SX = SX + SGNS*FACKX*COSX*ODC(LVALA,LVALB,T,0,0,1)
+               SGNS = - SGNS
+            END IF
+            FACKX = FACKX*DKX
+  200    CONTINUE
+         CY    = D0
+         CYDY  = D0
+         SY    = D0
+         SGNC  = D1
+         SGNS  = D1
+         FACKY = D1
+         DO 300 U = 0, MVALA + MVALB
+            IF (MOD(U,2) .EQ. 0) THEN
+               CY = CY + SGNC*FACKY*COSY*ODC(MVALA,MVALB,U,0,0,2)
+               SY = SY + SGNS*FACKY*SINY*ODC(MVALA,MVALB,U,0,0,2)
+               SGNC = - SGNC
+            ELSE
+               CY = CY + SGNC*FACKY*SINY*ODC(MVALA,MVALB,U,0,0,2)
+               SY = SY + SGNS*FACKY*COSY*ODC(MVALA,MVALB,U,0,0,2)
+               SGNS = - SGNS
+            END IF
+            FACKY = FACKY*DKY
+  300    CONTINUE
+C
+         CZ    = D0
+         CZDZ  = D0
+         SZ    = D0
+         SGNC  = D1
+         SGNS  = D1
+         FACKZ = D1
+         DO 400 V = 0, NVALA + NVALB
+            IF (MOD(V,2) .EQ. 0) THEN
+               CZ = CZ + SGNC*FACKZ*COSZ*ODC(NVALA,NVALB,V,0,0,3)
+               SZ = SZ + SGNS*FACKZ*SINZ*ODC(NVALA,NVALB,V,0,0,3)
+               SGNC = - SGNC
+            ELSE
+               CZ = CZ + SGNC*FACKZ*SINZ*ODC(NVALA,NVALB,V,0,0,3)
+               SZ = SZ + SGNS*FACKZ*COSZ*ODC(NVALA,NVALB,V,0,0,3)
+               SGNS = - SGNS
+            END IF
+            FACKZ = FACKZ*DKZ
+  400    CONTINUE
+C
+        INT = INT + 1
+CC     Real part: eq. 44
+        TMPARR(INT,1) = TMPARR(INT,1) + CX*CY*CZ ! Sym 0
+        TMPARR(INT,2) = TMPARR(INT,2) - CX*SY*SZ ! Sym yz
+        TMPARR(INT,3) = TMPARR(INT,3) - SX*CY*SZ ! Sym xz
+        TMPARR(INT,4) = TMPARR(INT,4) - SX*SY*CZ ! Sym xy
+CC     Imaginary part: eq. 45
+        TMPARR(INT,5) = TMPARR(INT,5) + CX*CY*SZ ! Sym z
+        TMPARR(INT,6) = TMPARR(INT,6) + CX*SY*CZ ! Sym y
+        TMPARR(INT,7) = TMPARR(INT,7) + SX*CY*CZ ! Sym x
+        TMPARR(INT,8) = TMPARR(INT,8) - SX*SY*SZ ! Sym xyz
+ 100  CONTINUE
+      IOFF = NINTS/2
+      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+C     accumulating real part on symmetries
+      II = IBTOSF(0,1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,1) ! Sym 0
+      II = IBTOSF(ISYMAX(1,2),1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,2)  ! Sym yz
+      II = IBTOSF(ISYMAX(2,2),1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,3)  ! Sym xz
+      II = IBTOSF(ISYMAX(3,2),1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,4)  ! Sym xy
+C     accumulating imaginary part on symmetries
+      II = IBTOSF(ISYMAX(3,1),2) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,5)  ! Sym z
+      II = IBTOSF(ISYMAX(2,1),2) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,6)  ! Sym y
+      II = IBTOSF(ISYMAX(1,1),2) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,7)  ! Sym x
+      II = IBTOSF(IXYZ,2) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,8)  ! Sym xyz
+      RETURN
+      END
+
 C  /* Deck sl1int */
       SUBROUTINE SL1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  CORPX,CORPY,CORPZ,DIFABX,DIFABY,DIFABZ,EXPPI,

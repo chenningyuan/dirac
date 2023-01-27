@@ -8,7 +8,9 @@ Kramers unrestricted Coupled-Cluster methods
 ============================================
 
 See :cite:`Visscher1996` for the initial CCSD(T) implementation. The Fock-space CC 
-implementation is described in :cite:`Visscher2001`.
+implementation is described in :cite:`Visscher2001`. The ground-state expectation 
+value implementations are described in :cite:`vanStralen2005` for MP2 and :cite:`Shee2016` for CCSD.
+The base EOM CC implementation is described in :cite:`Shee2018`.
 
 starstar(RELCC)
 
@@ -44,11 +46,55 @@ Calculate the effective 1-particle density matrix. This option can be used to ca
 molecular properties. For closed-shell MP2 see :cite:`vanStralen2005`. For closed-shell CC 
 see :cite:`Shee2016`.
 
+This calculation generates the file CCDENS, which contains the MP2 or CC ground-state density 
+matrix in AO basis. In this release, CCDENS is used by the property module to calculate 
+ground-state expectation values. 
+
+If saved, CCDENS can be used in a property calculation (see :ref:`PROPERTIES_.RDCCDENS`) 
+without the need to invoke this module.
+
+
 *Default:*
 
 ::
 
     No gradient calculation.
+
+keyword(EOMCC)
+
+Activate the equation of motion (EOMCC) module. This option can be used to obtain
+excitation energies (EOM-EE), singly ionized (EOM-IP) and electron attached (EOM-EA)
+states starting from a closed shell reference and at the CCSD level, by solving for
+the right-hand eigenvalues and eigenvectors of the appropriate similarity-transformed 
+Hamiltonian.  
+
+Unlike in Fock-space calculations, where the full model Hamiltonian for each sector
+is diagonalized, in EOMCC the user must specify the desired number of roots per symmetry,
+(see :ref:`*EOMCC` for further details) and these are determined via matrix-free 
+diagonalization procedures such as the Davidson method (see :ref:`*CCDIAG` for the 
+options available). 
+
+*Default:*
+
+::
+
+    No EOM-CC calculation.
+
+keyword(EOMPROP)
+
+.. warning:: Development version only. 
+
+Activate the calculation of excited-state first-order properties for the EOMCC module for
+CCSD wavefunctions, by solving for the left-hand eigenvectors of the corresponding 
+similarity-transformed Hamiltonian. It should be specified along with  :ref:`RELCC_.EOMCC` 
+as it requires the right-hand eigenvectors and, as such, the same type of calculation 
+(EOM-EE/IP/EA) will be performed. See :ref:`*EOMPROP` for further details.
+
+*Default:*
+
+::
+
+    No EOM-CC excited-state expectation value calculation.
 
 keyword(NELEC)
 
@@ -81,6 +127,10 @@ Distribution of correlated open shell electrons over the irreps.  This determine
 
 This input should always be given for average-of-configuration SCF calculations that are followed by a CC calculation. The total number of electrons that is
 given should correspond to the number of open shell electrons.
+
+One should activate either :ref:`RELCC_.NELEC` (total number of correlated electrons) or
+:ref:`RELCC_.NELEC_OPEN` (only open-shell electrons)  for open-shell cases. 
+Do not activate both :ref:`RELCC_.NELEC` and :ref:`RELCC_.NELEC_OPEN` once.
 
 *Arguments:*
 
@@ -221,6 +271,315 @@ keyword(RELAXED)
 Use orbital-relaxed density matrix (currently only for MP2).
 The current default for MP2 and CC wave functions is to use the unrelaxed 
 density matrix. This is computationally less expensive, but also less accurate.
+
+
+
+star(EOMCC)
+
+This menu controls the parameters for the definition of the EOM model used and the number of roots per symmetry. 
+
+Currently the implementation supports the excitation energy (EE), single electron attachment (EA) and detachment (IP) models for CCSD wavefunctions only. 
+
+Note that there is no default, if no options are selected no calculations will be performed. 
+
+keyword(EE)
+
+Selects excitation energy calculations. 
+
+Expects two integers, the first specifying the state symmetry number and the second the number of states for this symmetry.
+The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
+the different EOM models in the same run.
+
+NB: finding the state symmetry number for EE may require some experimentation, the totally symmetry irrep is always number 1,
+but the order of the other boson irreps depends on the double group that is used and how the molecule is oriented.
+
+*Example:* requesting two excitation energies for symmetry 1, four for symmetry 3, and one for symmetry 8::
+
+      .EE
+      1 2
+      .EE
+      3 4
+      .EE
+      8 1
+
+*Default:*
+
+::
+
+     No excitation energies requested
+
+
+keyword(EA)
+
+Selects single electron attachment calculations. 
+
+Expects two integers, the first specifying the state symmetry number and the second the number of states for this symmetry.
+The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
+the different EOM models in the same run.
+
+NB: the state symmetry number for EA depends on the ordering of irreps for the spinors, this information is printed at
+the beginning of the RELCCSD output.
+
+
+*Example:* requesting two electron attachment energies for symmetry 1, four for symmetry 3, and one for symmetry 8::
+
+      .EA
+      1 2
+      .EA
+      3 4
+      .EA
+      8 1
+
+*Default:*
+
+::
+
+     No excitation energies requested
+
+keyword(IP)
+
+Selects electron detachment calculations. 
+
+Expects two integers, the first specifying the state symmetry number and the second the number of states for this symmetry.
+The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
+the different EOM models in the same run.
+
+NB: the state symmetry number for IP depends on the ordering of irreps for the spinors, this information is printed at
+the beginning of the RELCCSD output.
+
+
+*Example:* requesting two single electron detachment energies for symmetry 1, four for symmetry 3, and one for symmetry 8::
+
+      .IP
+      1 2
+      .IP
+      3 4
+      .IP
+      8 1
+
+*Default:*
+
+::
+
+     No excitation energies requested
+
+star(EOMPROP)
+
+keyword(EXCPRP)
+
+.. warning:: Development version only. 
+
+number of excited states to calculate expectation values for, on a given symmetry.
+
+Arguments: two integers, the first specifying the state symmetry and the second the number of states for this symmetry
+
+star(CCDIAG)
+
+This menu controls the parameters to the iterative Davidson diagonalization procedure.
+
+Note that the implementation currently does not support the saving of eigenvectors, so no restarts are possible.
+
+keyword(CONVERG)
+
+Sets the convergence threshold on the norm of the residual vectors
+
+*Default:*
+
+::
+
+     .CONVERG
+     1.0E-8
+
+keyword(MAXSIZE)
+
+Sets the maximum size of the subspace
+
+*Default:*
+
+::
+
+     .MAXSIZE
+     128
+
+keyword(MAXITER)
+
+Sets the maximum number of iterations
+
+*Default:*
+
+::
+
+     .MAXITR
+     80
+
+keyword(TRV_I)
+`
+Creates trial vectors based on unit vectors sorted by lowest energy of the diagonal of the similarity-transoformed Hamitonian (pivoting).
+
+
+*Default:*
+
+::
+
+    Enabled
+
+keyword(TRV_FULLMATRIX)
+
+Creates unit trial vectors from a unit matrix. This roughly means that the first trial vectors will be those for high-lying states. 
+
+If combined with a number of EE/EA/IP roots set to -1 and a maximum number of iterations set to 1, the full similarity transformed Hamiltonian for a given symmetry will be diagonalized. 
+This yields the full spectrum, but for anything other than CC singles will require significant amounts of memory, so in practice such a combination is useful for debug purposes only.
+
+*Default:*
+
+::
+
+    Disabled 
+
+keyword(TRV_CCS)
+
+Creates trial vectors from the eigenvectors of the singles-singles EOM-EE/IP/EA blocks.
+
+keyword(TRV_R2L) 
+keyword(TRV_NOR2L)
+
+Control the use the right-hand side (R) vectors as guess for the left-hand side (L). If disabled, (.TRV_NOR2L) trial vector generation will be controlled by the options above.
+
+*Default:*
+
+::
+
+    .TRV_R2L
+
+keyword(OVERLAP) 
+keyword(NOOVERLAP)
+
+Controls the use of root following via overlap in sorting the left/right-hand side eigenvalues and eigenvectors.
+
+*Default:*
+
+::
+
+    .NOOVERLAP
+
+
+keyword(DEBUG)
+
+Enables debug printout. Massive output.
+
+*Default:*
+
+::
+
+    Does not print out debug information
+
+
+
+star(CCPROJ)
+
+This menu controls the use of projection operators in the CC calculations.
+
+These projectors are used to remove terms from the ground state CC equations (frozen core), the EOM-CC similarity transformed Hamiltonian (CVS and restricted excitation window), or a combination of both. The implementation for projection operations is detailed in :cite:`Halbert2020` and follows the scheme introduced by Coriani and Koch :cite:`Coriani2015`.
+
+keyword(FCORE)
+
+Defines which active occupied spinors to consider as part of frozen core within the ground-state CC calculation.
+
+Input is an threshold energy value in atomic units. T amplitudes contaning spinors with energies below such value are set to zero.
+
+Note this value does not have to be the same as for the definition of the core spinors for core-valence separation. Assuring the consistency of these choices is up to the user.
+
+ 
+*Example:* requests that all spinors with energies below -10.0 a.u. are frozen::
+
+      .FCORE
+      -10.0
+
+*Default:*
+
+::
+
+     No frozen core spinors
+
+
+keyword(CVS_CORE)
+
+Defines which active occupied spinors to consider as core spinors for EOM-CC calculations employing the core-valence separation (CVS) framework. To be used with EOM-IP or EOM-EE, in order to target high-lying excited/ionized states, namely for core spectra.
+
+Input is an threshold energy value in atomic units. 
+
+Right/Left-hand side trial vector and similarity transformed Hamiltonian matrix elements representing excited determinants containing at least one occupied spinor with energies below such value are set to zero.
+
+Note this value does not have to be the same as for the definition of the frozen core. Assuring the consistency of these choices is up to the user. 
+
+In addition to this, users should make sure to enable root following (see :ref:`CCDIAG_.OVERLAP`) if they want to target states with dominant singly ionized or singly excited character.
+
+When each edge is energetically far apart (e.g., K and L1 edge of heavy elements), one should aim for calculating different edges separately instead of requesting more roots. Otherwise, convergence is likely to be obtained only for the lowest-lying state. 
+Furthermore, if more than one edge is sought, we recommend that is the restart capabilities of the code are employed to avoid the AO to MO transformation step (:ref:`**MOLTRA`) and the integral sorting in RELCCSD (see restart options under :ref:`*CCRESTART`.
+
+*Example:* requests that all spinors with energies below -10.0 a.u. are considered to be core::
+
+      .CVS_CORE
+      -10.0
+
+*Default:*
+
+::
+
+     No core-valence separation is enforced
+
+
+keyword(NODOCC)
+
+Requests that, when using core-valence separation,  Right/Left-hand side trial vector and similarity transformed Hamiltonian matrix elements representing excited determinants containing both core occupied spinors to be projected out. 
+
+
+*Example:* requests that double core excited determinants are projected out::
+
+      .NODOCC
+
+*Default:*
+
+::
+
+     Double core excited determinants are retained in the calculations
+
+
+keyword(REW_OCC)
+keyword(REW_VIRT)
+
+Defines a set or active occupied and/or virtual spinors as part of restricted window for EOM-CC calculations. Can be used with any EOM variant. 
+
+If an occupied/virtual restricted window is defined, the Right/Left-hand side trial vector and similarity transformed Hamiltonian matrix elements representing excited determinants containing at least one occupied/virtual  spinor within the window(s) are retained in the calculation, the rest being projected out.
+
+Input for each keyword is a pair of values defining thethreshold energy value in atomic units, one per line. Note that the two keywords can be used independently.
+
+Right/Left-hand side trial vector and similarity transformed Hamiltonian matrix elements representing excited determinants containing at least one occupied spinor with energies below such value are set to zero.
+
+The option :ref:`CCPROJ_.REW_OCC` is incompatible with :ref:`CCPROJ_.CVS_CORE`. It can however be used with :ref:`CCPROJ_.FCORE`, but assuring the consistency of these choices is up to the user.
+
+In addition to this, users should make sure to enable root following (see under :ref:`*EOMCC`) if they want to target states with dominant singly ionized or singly excited character.
+
+
+*Example:* requests two restricted windows, one for occupied spinors with energies between -200.0 a.u. and -150.0 a.u. and another for virtual spinors with energies between 0.001 a.u. and 35.0 a.u.::
+
+      .REW_OCC      
+       -200.0   
+       -150.0
+      .REW_VIRT      
+       0.001 
+       35.0
+
+*Default:*
+
+::
+
+     No restricted window is defined, all occupied and/or virtual spinors are active
+
+
+
+
+
 
 
 
@@ -474,6 +833,8 @@ A change in the values that define the partition between main (Pm) and intermedi
 does not require the integral sorting to be redone.
 (2) One has to specifically indentify which which sectors of Fock space are to be (re)calculated and which should be skipped. Some examples of such a procedure can be found in the test set. 
 
+Important: for EOMCC calculations it is currently only possible to restart from ground-state calculations. In this case, the ".REDOCSD" keyword *must* be used, otherwise the code will produce incorrect results.
+
 
 keyword(UNCONVERGED)
 
@@ -559,6 +920,5 @@ Forces the sorting into the six integral classes to be performed again, even if 
 ::
 
     False. integrals are not resorted if the prior sorting was completed.
-
 
 

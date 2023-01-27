@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ***********************************************************************
@@ -1197,13 +1192,13 @@ C        .. we do not accept user input of less than 100 000 !
 *                                                                     *
 ***********************************************************************
       SUBROUTINE DMPINT(LUINT)
+      use luci_wrkspc
 *
 * Dump integrals in WORK(KINT1),WORK(KINT2) on file LUINT
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
 #include "glbbas.inc"
-#include "wrkspc.inc"
 *
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
       COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H,ECORE_HEX
@@ -1245,7 +1240,7 @@ C        .. we do not accept user input of less than 100 000 !
       IF(ENVIRO(1:6).EQ.'DALTON') THEN
         CALL GET_CMOAO_DALTON(CMO,NMOS_ENV(1),NAOS_ENV(1),NSMOB)
       ELSE IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
-*. Readin from LUMORB file
+*. Read in from LUMORB file
         CALL GETMOAO_MOLCAS(CMO,LUMOIN)
       ELSE IF(ENVIRO(1:5).EQ.'LUCIA' ) THEN
 *. Read in from LUCIA 1e file : unit 91
@@ -1367,6 +1362,7 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GET_CMOMO(CMOMO)
+      use luci_wrkspc
 *
 * Obtain MO-MO transformation matrix CMOMO for transforming to
 * final set of orbitals
@@ -1388,7 +1384,6 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
@@ -1500,6 +1495,7 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 * Jeppe Olsen, Feb.98
 
       SUBROUTINE GET_H1AO(LABEL,H1AO,IHSM,NBAS)
+      use luci_wrkspc
 *
 * Obtain 1 electron integrals with label LABEL
 *
@@ -1509,7 +1505,6 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 #include "mxpdim.inc"
 #include "crun.inc"
 #include "orbinp.inc"
-#include "wrkspc.inc"
 #include "lucinp.inc"
 *
       CHARACTER*8 LABEL
@@ -1598,7 +1593,7 @@ C     write(6,*) ' IHSM = ', IHSM
          IF (FNDLAB(LABEL,LUPRP)) THEN
 C           write(6,*) ' Label obtained'
             READ(LUPRP) (SCR(I),I=1,NINT01)
-C           write(6,*) 'integrals readin'
+C           write(6,*) 'integrals read in'
 C           call prsym(scr,NBAST)
 C           CALL READT(LUPRP,NBAST*(NBAST+1)/2,WRK(KSCR2))
          ELSE
@@ -1657,6 +1652,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GET_H1AO_LUCIA(LABEL,H1,LUH)
+      use luci_wrkspc
 *
 *
 * Obtain property integrals with LABEL LABEL from LU91,
@@ -1669,7 +1665,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "crun.inc"
-#include "wrkspc.inc"
 C     CHARACTER*1 XYZ(3)
 C     DATA XYZ/'X','Y','Z'/
       CHARACTER*8 LABEL, LABEL2, LABELX
@@ -1762,6 +1757,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       SUBROUTINE GET_ORB_DIM_ENV(ECORE_ENV)
 *
 * Obtain number of orbitals and basis functions from the
+      use luci_wrkspc
 * programming environment.
 * results stored in NAOS_ENV, NMOS_ENV
 *
@@ -1771,7 +1767,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "crun.inc"
 #include "lucinp.inc"
@@ -1987,6 +1982,7 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
 *                                                                     *
 ***********************************************************************
       Subroutine GetH0S(H,NTORB)
+      use luci_wrkspc
 ************************************************************************
 *                                                                      *
 *     Purpose:                                                         *
@@ -2005,7 +2001,6 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
       Dimension H(*)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 *
       IDUM = 1
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'GETH0S')
@@ -2044,6 +2039,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GETH1(H,ISM,ITP,JSM,JTP)
+      use luci_wrkspc
 *
 * One-electron integrals over orbitals belonging to
 * given OS class
@@ -2060,7 +2056,6 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 *.Global pointers
 #include "glbbas.inc"
 #include "lucinp.inc"
@@ -2106,6 +2101,7 @@ C           GET_SX_BLK(HBLK,H,IGAS,ISM,JGAS,JSM)
 *                                                                     *
 ***********************************************************************
       FUNCTION GETH1E(IORB,ITP,ISM,JORB,JTP,JSM)
+      use luci_wrkspc
 *
 * One-electron integral for active
 * orbitals (IORB,ITP,ISM),(JORB,JTP,JSM)
@@ -2115,7 +2111,6 @@ C           GET_SX_BLK(HBLK,H,IGAS,ISM,JGAS,JSM)
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 *
 #include "glbbas.inc"
 #include "lucinp.inc"
@@ -2490,6 +2485,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
 ***********************************************************************
       SUBROUTINE LGETINT(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
      &                  IXCHNG,IKSM,JLSM,ICOUL)
+      use luci_wrkspc
 
 *
 * Outer routine for accessing integral block
@@ -2502,7 +2498,6 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
 #include "csm.inc"
 #include "cc_exc.inc"
 #include "crun.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 *
       CALL QENTER('GETIN')
@@ -2603,6 +2598,7 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GETMOAO(CMOAO)
+      use luci_wrkspc
 *
 * Obtain MOAO matrix and save in CMOAO
 *
@@ -2610,7 +2606,6 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
 #include "crun.inc"
@@ -2983,6 +2978,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *                                                                     *
 ***********************************************************************
       FUNCTION GTIJKL(I,J,K,L)
+      use luci_wrkspc
 *
 * Obtain  integral (I J ! K L )
 * where I,J,K and l refers to active orbitals in
@@ -2991,7 +2987,6 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 *.GLobal pointers
 C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
 #include "glbbas.inc"
@@ -3536,6 +3531,7 @@ c       Write(*,Fmt) '*'//Line//'*'
 *                                                                     *
 ***********************************************************************
       Function I2EAD(IORB,JORB,KORB,LORB)
+      use luci_wrkspc
 *
 * Find adress of integral in LUCIA order
 *
@@ -3548,7 +3544,6 @@ C    &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR
 #include "glbbas.inc"
 *
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 *
       I2EAD = I2EADS(IORB,JORB,KORB,LORB,WORK(KPINT2))
 *
@@ -3714,6 +3709,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *                                                                     *
 ***********************************************************************
       subroutine info_dirac(CARD,WAFFCT,NACRAS,IDBGRP,IRETISH,IPRT)
+      use luci_wrkspc
 *
 ************************************************************************
 *                                                                      *
@@ -3735,7 +3731,6 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 *
 #include "mxpdim.inc"
 #include "orbinf_lucita.inc"
-#include "wrkspc.inc"
 #include "clunit.inc"
 #include "parluci.h"
 *
@@ -4034,6 +4029,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE INTIM(IPRNT)
+      use luci_wrkspc
 *
 * Interface to external integrals
 *
@@ -4044,7 +4040,6 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
@@ -6255,6 +6250,7 @@ CC        IVFLEV = 1               ! could be made more flexible
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PUTINT(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM)
+      use luci_wrkspc
 *
 * Put integrals in permanent integral list
 *
@@ -6265,7 +6261,6 @@ CC        IVFLEV = 1               ! could be made more flexible
 #include "mxpdim.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 *. Specific input
       DIMENSION XINT(*)
@@ -6342,6 +6337,7 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PUTMOAO(CMOAO)
+      use luci_wrkspc
 *
 * SAVE   MOAO matrix CMOAO on LUMOUT
 *
@@ -6349,7 +6345,6 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
 #include "crun.inc"
@@ -6408,6 +6403,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
 * routines from LUCIAREL interface
 *
       subroutine rdint_dirac(KINT1,KINT2,DOUGRP,IPRINT)
+      use luci_wrkspc
 *
       implicit real*8(A-H,O-Z)
 *
@@ -6416,7 +6412,6 @@ C    &           ' MO orbitals obtained from LUCIA ')
       character*7 DIRACONE
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "cgas.inc"
@@ -6597,7 +6592,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
       NTIT = 0
 *
 *
-      call qenter('ReadIn')
+      call qenter('rdmoluc')
 *
 *---  Read input from standard input ----------------------------------*
 *  Read Namelist
@@ -6620,7 +6615,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
          end if
       End Do
 *  If not found, call error message
-      if ( JCMD.eq.0 ) Call ErrMsg('Readin',001)
+      if ( JCMD.eq.0 ) Call ErrMsg('rdmoluc',001)
 *  Go to predefined number of this keyword (if found)
       Goto ( 100,  200,  300,  400,  500,
      &       600,  700,  800,  900,  1000,
@@ -7293,13 +7288,13 @@ c     call XFLUSH(6)
         end do
       end if
 *
-      Call qExit('Readin')
+      Call qExit('rdmoluc')
       RETURN
 991   Call StkA(0,COMMAND)
-      Call ErrMsg('Readin',002)
+      Call ErrMsg('rdmoluc',002)
       Call Quit(20)
 992   Call StkA(0,COMMAND)
-      Call ErrMsg('Readin',003)
+      Call ErrMsg('rdmoluc',003)
       Call Quit(20)
       END
 ***********************************************************************
@@ -7844,12 +7839,12 @@ c
 *                                                                     *
 ***********************************************************************
       SUBROUTINE SCLH2(XLAMBDA)
+      use luci_wrkspc
 *
 *. Scale two electron integrals
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *

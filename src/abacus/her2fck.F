@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -33,7 +28,7 @@ C
 changed ISYMDM, IFCTYP to ISYMDM(NDMAT), IFCTYP(NDMAT)
 implemented all six IFCTYPes (two was already implemented)
 improved efficiency of INTFCK by moving GINT outside and
- moving common factors to SKLFC1
+ moving common factors to SKLFCK_1
 halved no. of  operations for IFCTYP=2 in INTFCK
 #endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -68,8 +63,6 @@ C*****************************************************************************
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),DINTSKP(*),WORK(LWORK)
 #include "twocom.h"
-#include "expcom.h"
-#include "symmet.h"
 #include "nuclei.h"
 C
       CALL QENTER('INTFCK')
@@ -84,7 +77,7 @@ C
 C
       CALL INTFC1(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
-     &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
+     &                  IPRINT,NINDAB,NINDCD,SUSCEP,IFCTYP,
      &                  DNSBUF,DINTSKP,HFXFAC,WORK(KIND))
 C
       CALL MEMREL('INTFCK',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -96,7 +89,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck intfc1 */
       SUBROUTINE INTFC1(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
-     &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
+     &                  IPRINT,NINDAB,NINDCD,SUSCEP,IFCTYP,
      &                  DNSBUF,DINTSKP,HFXFAC,IND)
 C*****************************************************************************
 C
@@ -119,21 +112,18 @@ C*****************************************************************************
       PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0,
      &          DM1=-1.D0, DM3=-3.D0)
       INTEGER A,B,C,D
-      LOGICAL NODV, SUSCEP, NOTEST,LBIT,DOC,DOE
+      LOGICAL SUSCEP, NOTEST,LBIT,DOC,DOE
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          AOINT(NCCINT), FMAT(NBASIS,NBASIS,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),IND(4,*),DINTSKP(2,4)
 #include "twocom.h"
-#include "expcom.h"
-#include "symmet.h"
 #include "nuclei.h"
 C
       IF (IPRINT .GT. 9) THEN
          CALL HEADER('Output from INTFC1',-1)
-         WRITE (LUPRI, '(A,2L5)') ' NODV, SUSCEP',
-     *                              NODV, SUSCEP
+         WRITE (LUPRI, '(A,2L5)') ' SUSCEP', SUSCEP
          WRITE (LUPRI, '(A,4I5)') ' NORB ', NORBA,NORBB,NORBC,NORBD
          WRITE (LUPRI, '(A,2L5)') ' DIAGAB/CD ', DIAGAB,DIAGCD
          WRITE (LUPRI, '(A,3L5)') ' SHAEQB, SHCEQD, SHABAB ',
@@ -167,25 +157,32 @@ C
       NBUF  = 0
       IOFF  = 0
       AOMAX = D0
-      IF(SUSCEP) THEN
         IF(NOTEST) THEN
           DO ICOMPA = 1,KHKTA
-                        KHKTBB = KHKTB
-            DO ICOMPB = 1,KHKTBB
+            DO ICOMPB = 1,KHKTB
               DO ICOMPC = 1,KHKTC
-                            KHKTDD = KHKTD
-                DO ICOMPD = 1,KHKTDD
+                DO ICOMPD = 1,KHKTD
                   DO IORBAB = 1,NORBAB
-                    IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
-                    IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
+                    IF (SUSCEP) THEN
+                      IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
+                      IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
+                    ELSE
+                      IORBA = NINDAB(IORBAB,1)
+                      IORBB = NINDAB(IORBAB,2)
+                    END IF
                     A = ICORBA(IORBA) + ICOMPA
                     B = ICORBB(IORBB) + ICOMPB
                     DO IORBCD = 1, NORBCD
                       AINT  = AOINT(IOFF+IORBCD)
                       IF(ABS(AINT).GT.FCKTOL) THEN
                         NBUF  = NBUF + 1
-                        IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
-                        IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        IF (SUSCEP) THEN
+                          IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
+                          IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        ELSE
+                          IORBC = NINDCD(IORBCD,1)
+                          IORBD = NINDCD(IORBCD,2)
+                        END IF
                         AOMAX       = MAX(AOMAX,ABS(AINT))
                         AOINT(NBUF) = AINT
                         IND(1,NBUF) = A
@@ -214,12 +211,17 @@ C
                 IF (DIAGCD) KHKTDD = ICOMPC
                 DO ICOMPD = 1,KHKTDD
                   FCABCD = FACAB
-                  IF(DIAGCD.AND.ICOMPC.NE.ICOMPD)
+                  IF (DIAGCD.AND.ICOMPC.NE.ICOMPD)
      &              FCABCD = FCABCD+FCABCD
                   DO IORBAB = 1,NORBAB
+                    IF (SUSCEP) THEN
+                      IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
+                      IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
+                    ELSE
+                      IORBA = NINDAB(IORBAB,1)
+                      IORBB = NINDAB(IORBAB,2)
+                    END IF
                     FAB = FCABCD
-                    IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
-                    IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
                     IF (TCONAB.AND.IORBA.NE.IORBB)
      &                FAB = FAB+FAB
                     A = ICORBA(IORBA) + ICOMPA
@@ -228,8 +230,13 @@ C
                       AINT  = AOINT(IOFF+IORBCD)
                       IF(ABS(AINT).GT.FCKTOL) THEN
                         NBUF  = NBUF + 1
-                        IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
-                        IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        IF (SUSCEP) THEN
+                          IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
+                          IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        ELSE
+                          IORBC = NINDCD(IORBCD,1)
+                          IORBD = NINDCD(IORBCD,2)
+                        END IF
                         FABCD = FAB
                         IF (TCONCD.AND.IORBC.NE.IORBD)
      &                     FABCD = FABCD+FABCD
@@ -248,88 +255,6 @@ C
             ENDDO
           ENDDO
         ENDIF
-      ELSE
-        IF(NOTEST) THEN
-          DO ICOMPA = 1,KHKTA
-                        KHKTBB = KHKTB
-            DO ICOMPB = 1,KHKTBB
-              DO ICOMPC = 1,KHKTC
-                            KHKTDD = KHKTD
-                DO ICOMPD = 1,KHKTDD
-                  DO IORBAB = 1,NORBAB
-                    IORBA = NINDAB(IORBAB,1)
-                    IORBB = NINDAB(IORBAB,2)
-                    A = ICORBA(IORBA) + ICOMPA
-                    B = ICORBB(IORBB) + ICOMPB
-                    DO IORBCD = 1, NORBCD
-                      AINT  = AOINT(IOFF+IORBCD)
-                      IF(ABS(AINT).GT.FCKTOL) THEN
-                        NBUF  = NBUF + 1
-                        IORBC = NINDCD(IORBCD,1)
-                        IORBD = NINDCD(IORBCD,2)
-                        AOMAX       = MAX(AOMAX,ABS(AINT))
-                        AOINT(NBUF) = AINT
-                        IND(1,NBUF) = A
-                        IND(2,NBUF) = B
-                        IND(3,NBUF) = ICORBC(IORBC) + ICOMPC
-                        IND(4,NBUF) = ICORBD(IORBD) + ICOMPD
-                      ENDIF
-                    ENDDO
-                    IOFF = IOFF + NORBCD
-                  ENDDO
-                ENDDO
-              ENDDO
-            ENDDO
-          ENDDO
-          IF(SFAC.NE.D1) CALL DSCAL(NBUF,SFAC,AOINT,1)
-        ELSE
-          DO ICOMPA = 1,KHKTA
-                        KHKTBB = KHKTB
-            IF (DIAGAB) KHKTBB = ICOMPA
-            DO ICOMPB = 1,KHKTBB
-              FACAB = SFAC
-              IF(DIAGAB.AND.ICOMPA.NE.ICOMPB)
-     &          FACAB = FACAB+FACAB
-              DO ICOMPC = 1,KHKTC
-                            KHKTDD = KHKTD
-                IF (DIAGCD) KHKTDD = ICOMPC
-                DO ICOMPD = 1,KHKTDD
-                  FCABCD = FACAB
-                  IF (DIAGCD.AND.ICOMPC.NE.ICOMPD)
-     &              FCABCD = FCABCD+FCABCD
-                  DO IORBAB = 1,NORBAB
-                    IORBA = NINDAB(IORBAB,1)
-                    IORBB = NINDAB(IORBAB,2)
-                    FAB   = FCABCD
-                    IF(TCONAB.AND.IORBA.NE.IORBB)
-     &                FAB = FAB+FAB
-                    A = ICORBA(IORBA) + ICOMPA
-                    B = ICORBB(IORBB) + ICOMPB
-                    DO IORBCD = 1, NORBCD
-                      AINT  = AOINT(IOFF+IORBCD)
-                      IF(ABS(AINT).GT.FCKTOL) THEN
-                        NBUF  = NBUF + 1
-                        IORBC = NINDCD(IORBCD,1)
-                        IORBD = NINDCD(IORBCD,2)
-                        FABCD = FAB
-                        IF (TCONCD.AND.IORBC.NE.IORBD)
-     &                    FABCD = FABCD+FABCD
-                        AOMAX       = MAX(AOMAX,ABS(AINT))
-                        AOINT(NBUF) = FABCD*AINT
-                        IND(1,NBUF) = A
-                        IND(2,NBUF) = B
-                        IND(3,NBUF) = ICORBC(IORBC) + ICOMPC
-                        IND(4,NBUF) = ICORBD(IORBD) + ICOMPD
-                      ENDIF
-                    ENDDO
-                    IOFF = IOFF + NORBCD
-                  ENDDO
-                ENDDO
-              ENDDO
-            ENDDO
-          ENDDO
-        ENDIF
-      ENDIF
 C
 C     Statistics
 C
@@ -338,7 +263,7 @@ C
       DINTSKP(2,2) = DINTSKP(2,2) + NDEL
       DINTSKP(1,3) = DINTSKP(1,3) + NCM*NBUF
       DINTSKP(1,4) = DINTSKP(1,4) + NEM*NBUF
-      TIND = TIND + SECOND()
+      TIND = SECOND() - TIND
 C
 C     **********************************
 C     ***** Print section  *************
@@ -401,6 +326,10 @@ C..........Coulomb interaction
            IE = IY - IC
 C          ... no direct term for antisymmetric density matrix
            IF (IX.EQ.2) IC = 0
+C
+C          Exchange may be switched off in DFT calculations
+C
+           IF (HFXFAC.EQ.D0) IE = 0
         ELSE
 C..........Gaunt interaction
            IF (IY.LE.5) THEN
@@ -415,11 +344,11 @@ C..........Gaunt interaction
            ENDIF
 C          ... no direct term for symmetric density matrix
            IF (IX.EQ.1) IC = 0
+C
+C          Exchange may be switched off in DFT calculations
+C
+           IF (LSCALE_GAUNT .AND. HFXFAC.EQ.D0) IE = 0
         ENDIF
-C
-C       Exchange may be switched off in DFT calculations
-C
-        IF (HFXFAC.EQ.D0) IE = 0
 C       Screening on direct contributions
         IF(DOC.AND.IC.EQ.1.AND.FCM.LT.SCRTHR) THEN
           IC = 0
@@ -461,7 +390,6 @@ C         =============================
 C         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -487,7 +415,6 @@ C         =========================================
 C         F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -506,7 +433,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -534,7 +460,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -566,7 +491,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -590,7 +514,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -624,12 +547,12 @@ C...............Direct contributions
  400  CONTINUE
       TFCK = SECOND() - TFCK
 C
-      IF(IPRINT.GE.3) THEN
+      IF(IPRINT.GE.4) THEN
         WRITE(LUPRI,'(A)')       '* INTFC1 - statistics:'
         WRITE(LUPRI,'(A,I10)')   '*   Integrals in     :',NCCINT
         WRITE(LUPRI,'(A,I10)')   '*   Integrals out    :',NBUF
-        WRITE(LUPRI,'(A,F15.6)') '*   Indices          :',TIND
-        WRITE(LUPRI,'(A,F15.6)') '*   Fock matrix      :',TFCK
+        WRITE(LUPRI,'(A,F15.6)') '*   Time indices     :',TIND
+        WRITE(LUPRI,'(A,F15.6)') '*   Time Fock matrix :',TFCK
         CALL FLSHFO(LUPRI)
       ENDIF
       RETURN
@@ -724,13 +647,12 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "mxcent.h"
 #include "iratdef.h"
-      LOGICAL DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
-      DIMENSION FMAT(NBASIS*NBASIS,*), WORK(LWORK), ISYMDM(NDMAT),
-     &          IFCTYP(NDMAT)
+      LOGICAL   DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
+      REAL*8    FMAT(NBASIS*NBASIS,*), WORK(LWORK) 
+      INTEGER   ISYMDM(NDMAT), IFCTYP(NDMAT)
 #include "abainf.h"
 #include "ccom.h"
 #include "nuclei.h"
-CTROND#include "inforb.h"
 #include "shells.h"
 #include "symmet.h"
 #include "nuctap.h"
@@ -745,15 +667,19 @@ C     ============================
 C
       IF (DIRFCK) THEN
          NMAT = NDMAT
-         CALL MEMGET('REAL',KSKLTN,NMAT*N2BASX      ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFAC  ,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','SKLTON',KSKLTN,NMAT*N2BASX,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FAC',   KFAC  ,NBASIS*(MAXREP+1),
+     &      WORK,KFREE,LFREE)
          NINDEX = KMAX*(MAXREP + 1)*KHK(NHTYP)
-         CALL MEMGET('REAL',KINDEX,NINDEX           ,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KPOINT,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IINDEX',KINDEX,NINDEX,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IPOINT',KPOINT,NBASIS*(MAXREP+1),
+     &      WORK,KFREE,LFREE)
          IXYZ = 0
-         CALL SKLFC1(FMAT,WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
-     &               WORK(KPOINT),DUM,DUM,DUM,IDUM,IXYZ,
-     &               NMAT,ISYMDM,IFCTYP,IPRINT)
+         CALL SKLFCK_1(FMAT,WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
+     &                 WORK(KPOINT),DUM,DUM,DUM,IDUM,IXYZ,
+     &                 NMAT,ISYMDM,IFCTYP,IPRINT)
       END IF
 C
 C     Derivative Fock matrices
@@ -801,7 +727,7 @@ C     We ought also to reorder IFCTYP and ISYMDM, but as
 C     all values are 1 and 0, resp., never mind. /941221-hjaaj
                DO 400 IXYZ = 1, 3
                   IADR = IOFF + NMAT*(IXYZ - 1) + 1
-                  CALL SKLFC1(FMAT(1,IADR),WORK(KSKLTN),WORK(KFAC),
+                  CALL SKLFCK_1(FMAT(1,IADR),WORK(KSKLTN),WORK(KFAC),
      &                        WORK(KINDEX),WORK(KPOINT),WORK(KNFAC),
      &                        WORK(KNINDX),WORK(KNPINT),IATOM,IXYZ,NMAT,
      &                        ISYMDM(IADR),IFCTYP(IADR),IPRINT)
@@ -866,14 +792,14 @@ C
       CALL QEXIT('SKLFCK')
       RETURN
       END
-C  /* Deck sklfc1 */
-      SUBROUTINE SKLFC1(FMAT,SKLTON,FACTOR,INDEX,IPOINT,NFACTR,NINDEX,
-     &                  NPOINT,IATOM,IXYZ,NMAT,ISYMDM,IFCTYP,IPRINT)
+C  /* Deck SKLFCK_1 */
+      SUBROUTINE SKLFCK_1(FMAT,SKLTON,FACTOR,INDEX,IPOINT,NFACTR,NINDEX,
+     &                    NPOINT,IATOM,IXYZ,NMAT,ISYMDM,IFCTYP,IPRINT)
 C*****************************************************************************
 C
 C Trygve Helgaker and Henrik Koch 93-94 ??
 C
-C Implemented all IFCTYP's Oct-Nov 94 Hans Joergen Aa. Jensen
+C Implemented all IFCTYPs Oct-Nov 94 Hans Joergen Aa. Jensen
 C Revised Oct 11 1996 by T.Saue:
 C   a) changed definition of IFCTYP
 C   b) symmetrization/anti-symmetrization is taken out
@@ -901,8 +827,8 @@ C*****************************************************************************
 C
 C
       IF (IPRINT .GT. 5) THEN
-         CALL HEADER('Subroutine SKLFC1',-1)
-         CALL HEADER("Input skeleton Fock matrices in SKLFC1",1)
+         CALL HEADER('Subroutine SKLFCK_1',-1)
+         CALL HEADER("Input skeleton Fock matrices in SKLFCK_1",1)
          DO 10 IMAT = 1, NMAT
             WRITE (LUPRI,*) 'Input skeleton Fock matrix no.',IMAT,
      &         ' out of',NMAT
@@ -919,7 +845,7 @@ C         (see comments in INTFCK)
 C     /941019-hjaaj
 C
       IF (IPRINT .GT. 5) THEN
-         CALL HEADER("Final scaled skeleton Fock matrices in SKLFC1",1)
+        CALL HEADER("Final scaled skeleton Fock matrices in SKLFCK_1",1)
       END IF
       DO 100 IMAT = 1, NMAT
          IY = MOD(IFCTYP(IMAT),10)
@@ -1068,7 +994,7 @@ C
          FAC = D1/dble(MAXREP + 1)
          CALL DSCAL(NMAT*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
-            CALL HEADER("AO Fock matrices in SKLFC1",1)
+            CALL HEADER("AO Fock matrices in SKLFCK_1",1)
             DO 40 N = 1, NMAT
                WRITE (LUPRI,*) 'AO Fock matrix no.',N,
      &         ' out of',NMAT
@@ -1191,7 +1117,7 @@ C
          END IF
 #endif
          IF (IPRINT .GT. 5) THEN
-            CALL HEADER("SO Fock matrices in SKLFC1",1)
+            CALL HEADER("SO Fock matrices in SKLFCK_1",1)
             DO 700 N = 1, NMAT
                WRITE (LUPRI,*) 'SO Fock matrix no.',N,
      &         ' out of',NMAT

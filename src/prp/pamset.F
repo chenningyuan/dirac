@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -142,6 +137,7 @@ C
       type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
+      CHARACTER*6 F2NAME
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
       real(8), allocatable :: xc_matrix(:, :, :)
 #ifdef HAS_PCMSOLVER
@@ -157,25 +153,20 @@ C
 C     1. Get coefficients
 C     ===================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETFC1')
       IF(SPINFR) THEN
         IOPT = 10
       ELSE
         IOPT = 2
       ENDIF
       IF (IPRINT.GE.10) IOPT = IOPT + 1
-      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,IOPT,
-     &            WORK,KFREE,LFREE)
-      CLOSE(LUBUF,STATUS='KEEP')
+      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,IOPT)
       NFMAT = 1
       IF (NASHT .GT. 0) NFMAT = 2
 C
 C     1. Get two-electron Fock matrix in AO-basis
 C     ===========================================
 C
-      INQUIRE(FILE='DFFCK2',EXIST=TOBE)   
+      INQUIRE(FILE='DFFCK2',EXIST=TOBE)
       IF(TOBE) THEN
         CALL OPNFIL(LUBUF,'DFFCK2','OLD','GETFC1')
         WRITE(LUPRI,'(/A)')
@@ -246,18 +237,14 @@ C          Hermitian operator
 
         if (dirac_cfg_dft_calculation) then
            call genden(fao, cmo, 1, iprint)
-#ifdef MOD_UNRELEASED
            if (dft_cfg_overlap_diagnostic) then    
               call reset_num_grid()
               call stash_zipgrid(num_grid_cfg_zipgrid)       
            end if
-#endif
            call generate_num_grid(fao)
-#ifdef MOD_UNRELEASED
            if (dft_cfg_overlap_diagnostic) then    
               call unstash_zipgrid(num_grid_cfg_zipgrid)       
            end if
-#endif
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
@@ -290,11 +277,14 @@ C          Hermitian operator
               endif
 
 !             call fde_set_nz(nz)
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl( FDE_PAR )
+#endif
               call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
 
               write (*,*) 'FDE Fock contributions (re)calculated'
            else if (itmp%im_vemb) then
-              write (*,*) 'FDE Fock contributions (in AOPROPER) added'
+              write (*,*) 'FDE Fock contributions (CHECKPOINT) added'
            endif
         endif
 C
@@ -333,7 +323,7 @@ CJTH check this
 #ifdef HAS_PELIB
 ! edh: As the solvent methods before us (see above) we need
 ! to construct the (static) PE contributions from environment
-! before starting a response calculation from DFCOEF
+! before starting a response calculation
       IF (PEQM) THEN
         call genden(fao, cmo, 1, iprint)
         call pelib_ifc_fock(fao, fmo, tot_nrg, el_nrg)
@@ -572,8 +562,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck DEFORB */
-      SUBROUTINE DEFORB(IORBCL,NIND,NTYP,INDSTR,WORK,KFREE,LFREE,
-     &                  IPRINT)
+      SUBROUTINE DEFORB(IORBCL,NIND,INDSTR,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     This routine reads orbital strings and classifies
@@ -588,8 +577,8 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      CHARACTER INDSTR(NTYP,2)*72
-      DIMENSION IORBCL(4,NORBT),NIND(2,NTYP,2),WORK(*)
+      CHARACTER INDSTR(3,2)*72
+      DIMENSION IORBCL(4,NORBT),NIND(2,3,2),WORK(*)
 C
       CALL QENTER('DEFORB')
       KFRSAV = KFREE
@@ -598,7 +587,7 @@ C     Allocate buffer areas
 C     =====================
 C
       CALL MEMGET2('INTE','NIND',KIND ,MXFBAS,WORK,KFREE,LFREE)
-      CALL DEFOR1(IORBCL,NIND,NTYP,INDSTR,WORK(KIND),
+      CALL DEFOR1(IORBCL,NIND,INDSTR,WORK(KIND),
      &            WORK,KFREE,LFREE,IPRINT)
       CALL MEMREL('DEFORB',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('DEFORB')
@@ -606,7 +595,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck DEFOR1 */
-      SUBROUTINE DEFOR1(IORBCL,NIND,NTYP,INDSTR,IND,
+      SUBROUTINE DEFOR1(IORBCL,NIND,INDSTR,IND,
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -638,9 +627,9 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      CHARACTER INDSTR(NTYP,2)*72
+      CHARACTER INDSTR(3,2)*72
       DIMENSION IORBCL(4,NORBT),IND(MXFBAS),
-     &          NIND(2,NTYP,2),WORK(KFREE)
+     &          NIND(2,3,2),WORK(KFREE)
 C
       NDIM = NORBT*4
       CALL IZERO(IORBCL,NDIM)
@@ -648,7 +637,7 @@ C
 C     Unpack strings
 C     ==============
 C
-      DO ITYP = 1,NTYP
+      DO ITYP = 1,3
         KOFE = 0
         KOFP = 0
         DO IFRP = 1,NFSYM
@@ -710,7 +699,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Ostring */
-      SUBROUTINE OSTRING(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE)
+      SUBROUTINE OSTRING(INDSTR,SKIPEE,SKIPEP,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Set orbital strings         
@@ -787,9 +776,9 @@ C
               IT=IT+1
             ENDIF
             IF(NSSH(I).EQ.1) THEN
-              WRITE(INDSTR(3,I)(IT:IT),'(I1)') 1
+              WRITE(INDSTR(3,I)(IT:IT+5),'(I6)') NOCC(I)+1
             ELSE
-              WRITE(INDSTR(3,I)(IT:IT+14),'(I6,A2,I6)')
+              WRITE(INDSTR(3,I)(IT:IT+13),'(I6,A2,I6)')
      &             NOCC(I)+1,'..',NESH(I)
             ENDIF
           ENDIF
@@ -803,7 +792,9 @@ C
 C      Definition of orbital classes
 C      -----------------------------
 C
-      WRITE(LUPRI,'(/4X,A)') '* Orbital classes:'
+      IF(IPRINT.GE.0) THEN
+        WRITE(LUPRI,'(/4X,A)') '* Orbital classes:'
+      ENDIF
       DO I = 1,NFSYM
         IF(SKIPEP) THEN
           NR(I)   = NESH(I)
@@ -814,7 +805,9 @@ C
           IR(1,I) = -NPSH(I)
           IR(2,I) =  NESH(I)
         ENDIF
-        WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
+        IF(IPRINT.GE.0) THEN
+           WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
+        ENDIF
 C
 C       Inactive orbitals
 C       -----------------
@@ -823,12 +816,14 @@ C
         CALL  NUMLST(INDSTR(1,I),IDUMMY,NR(I),
      &             IR(1,I),IR(2,I),I,NVEC)
         nvec_inactive = nvec_inactive + nvec
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') 
-     &       '- Inactive orbitals  : No electrons'
-        ELSE
-          WRITE(LUPRI,'(4X,A,A56)') 
-     &       '- Inactive orbitals  : ', INDSTR(1,I)
+        IF(IPRINT.GE.0) THEN
+          IF(NVEC.EQ.0) THEN
+            WRITE(LUPRI,'(4X,A)') 
+     &         '- Inactive orbitals  : No electrons'
+          ELSE
+            WRITE(LUPRI,'(4X,A,A56)') 
+     &         '- Inactive orbitals  : ', INDSTR(1,I)
+          ENDIF
         ENDIF
 C
 C       Active orbitals
@@ -838,12 +833,14 @@ C
         CALL  NUMLST(INDSTR(2,I),IDUMMY,NR(I),
      &             IR(1,I),IR(2,I),I,NVEC)
         nvec_active = nvec_active + nvec
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') 
-     &       '- Active orbitals    : No electrons'
-        ELSE
-          WRITE(LUPRI,'(4X,A,A56)') 
-     &       '- Active orbitals    : ', INDSTR(2,I)
+        IF(IPRINT.GE.0) THEN
+          IF(NVEC.EQ.0) THEN
+            WRITE(LUPRI,'(4X,A)') 
+     &         '- Active orbitals    : No electrons'
+          ELSE
+            WRITE(LUPRI,'(4X,A,A56)') 
+     &         '- Active orbitals    : ', INDSTR(2,I)
+          ENDIF
         ENDIF
 C
 C       Secondary orbitals
@@ -851,14 +848,16 @@ C       ------------------
 C
         NVEC = 0
         CALL  NUMLST(INDSTR(3,I),IDUMMY,NR(I),
-     &            IR(1,I),IR(2,I),I,NVEC)
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') 
-     &       '- Secondary orbitals : No electrons'
-        ELSE
-          WRITE(LUPRI,'(4X,A,A56)') 
-     &       '- Secondary orbitals : ', INDSTR(3,I)
-        ENDIF
+     &       IR(1,I),IR(2,I),I,NVEC)
+        IF(IPRINT.GE.0) THEN
+          IF(NVEC.EQ.0) THEN
+            WRITE(LUPRI,'(4X,A)') 
+     &         '- Secondary orbitals : No electrons'
+          ELSE
+            WRITE(LUPRI,'(4X,A,A56)') 
+     &         '- Secondary orbitals : ', INDSTR(3,I)
+          ENDIF
+        ENDIF 
       ENDDO
 
       if ((nvec_inactive + nvec_active) == 0) then 
@@ -872,7 +871,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck xrspar */
-      SUBROUTINE XRSPAR(INDSTR,SKIPEE,SKIPEP,IPRINT)
+      SUBROUTINE XRSPAR(XRS_INDSTR,XRS_SKIPEE,XRS_SKIPEP,IPRINT)
 C***********************************************************************
 C
 C     Initialize configurational and orbital parameters for
@@ -888,20 +887,22 @@ C***********************************************************************
       implicit none
 
       integer, intent(in) :: iprint
-
 #include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
 C
-      CHARACTER INDSTR(3,2)*72
-      LOGICAL   SKIPEE,SKIPEP
-      LOGICAL GASWF
+      LOGICAL GASWF, XRS_SKIPEE, XRS_SKIPEP
+      CHARACTER*72 XRS_INDSTR(3,2)
       integer, allocatable :: norot(:)
 C
       CALL QENTER('XRSPAR')
 C
+      SKIPEE = XRS_SKIPEE
+      SKIPEP = XRS_SKIPEP
+      INDSTR = XRS_INDSTR
+C     
 C     Configurational parameters
 C     ==========================
 C
@@ -925,7 +926,7 @@ C
       allocate(norot(norbt))
       norot = 0
       GASWF = .FALSE.
-      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,NOROT,
+      CALL SETXOP(INDSTR,XRS_SKIPEE,XRS_SKIPEP,GASWF,JOPSY,NOROT,
      &            NZXOPE,NZHOPE,NZXOPP,
      &            IPRINT)
       deallocate(norot)
@@ -951,3 +952,45 @@ C
 C
       CALL QEXIT('XRSPAR')
       END
+
+      SUBROUTINE set_prop_flags_ccsd()
+C
+C---------------Description--------------------------------------------
+C
+C   set flags to perform property computations if lambda is activated
+C
+C   Johann Pototschnig, Fall 2019
+
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+
+      character(4)  :: WF
+C
+      WF='CCSD'
+C     Switch on evaluation of property output
+      DOEXP = .TRUE.
+C     Add this density matrix to the list to be evaluated
+      IPRP_WF = 0
+      DO I = 1, NPRP_WF
+         IF (PRP_WF(I).EQ.WF) IPRP_WF = I
+      END DO
+      IF (IPRP_WF.EQ.0) THEN
+         IF (NPRP_WF .GE. MXPRP_WF) THEN
+             IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+         ELSE
+             NPRP_WF = NPRP_WF + 1
+             IPRP_WF = NPRP_WF
+         END IF
+         PRP_WF(IPRP_WF) = WF
+      END IF
+
+      END
+

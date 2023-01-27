@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -1338,16 +1333,6 @@ CTROND      END IF
 C
       call dealloc(WORK)
       CALL RUNOPT(MXRINT)
-#ifndef PRG_DIRAC
-#if defined (VAR_MPI)
-      IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
-         IJOB = 0
-         CALL interface_MPI_BCAST(IJOB,1,NODEID(MOTHER),
-     &                  global_communicator)
-      END IF
-#endif      
-#endif 
-
 
  9999 CALL QEXIT('OPTMIN')
       RETURN
@@ -1355,7 +1340,6 @@ C
 
 C  /* Deck runopt */
       SUBROUTINE RUNOPT(MXRCRD)
-      use codata
       use memory_allocator
 #include "implicit.h"
 #include "dummy.h"
@@ -1374,6 +1358,7 @@ C  /* Deck runopt */
 #include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
+#include "codata.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -2195,13 +2180,12 @@ C
 C     Prints important information at the end of a
 C     geometry optimization.
 C
-      use codata
-
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "optinf.h"
+#include "codata.h"
 
       DIMENSION GEINFO(0:ITRMAX,6)
       CHARACTER NWSMRK*1,BRKMRK*1,REDMRK*1
@@ -2525,7 +2509,6 @@ C     normalization vector in WLKCGH).
 C
       DO 1 IREP = 0, MAXREP
          DO 2 ICENT = 1, NUCIND
-#include "scalar.h"
             DO 3 ICOOR = 1, 3
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                IF (ISCOOR .GT. 0) THEN
@@ -6741,7 +6724,6 @@ C
       CALL DZERO(SCLVEC,MXCOOR)
       DO 1 IREP = 0, MAXREP
          DO 2 ICENT = 1, NUCIND
-#include "scalar.h"
             DO 3 ICOOR = 1, 3
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                IF (ISCOOR .GT. 0) THEN
@@ -7183,7 +7165,6 @@ C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C     and XXXX_mol.inp + optional VRML-file
 C
-      use codata
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7471,7 +7452,6 @@ C
          use dirac_cfg
          use read_xyzfile
 #endif
-      use codata
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7493,6 +7473,7 @@ C
 #include "optinf.h"
 #include "infopt.h"
 #include "numder.h"
+#include "codata.h"
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -7571,7 +7552,7 @@ C
 C
 C     Update geometry in common block
 C
-         MLINE(NMLAU)(20:20) = ' '
+         IF (NMLAU.GE.1) MLINE(NMLAU)(20:20) = ' ' 
          DO 100 N = 1, NUCIND
             CRX = COOR(1,N)
             CRY = COOR(2,N)
@@ -7674,11 +7655,69 @@ CTROND      deallocate(STPCAR)
       RETURN
       END
 
+      SUBROUTINE write_xyz_fromcommon(group)
+
+      use checkpoint
+
+C     Dump the coordinates sitting in common block nuclei.h to checkpoint file
+C     The argument group should define the appropriate group (e.g. '/input/molecule')
+C
+#include "implicit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "ibtfun.h"
+
+      character(len=*),intent(in) :: group
+      real(8), allocatable        :: geometry(:),nuc_charge(:)
+      character*4, allocatable    :: symbols(:)
+      logical                     :: tobe
+
+      ! start by writing the number of atoms
+      call checkpoint_write (trim(group)//'/n_atoms',idata=nucdep)
+      ! allocate arrays to store the full list of symbols and coordinates
+      allocate (symbols(nucdep))
+      allocate (geometry(3*nucdep))
+      allocate (nuc_charge(nucdep))
+      ! get these from the symmetry-unique list of atoms by applying symmetry operations
+      ! we always write coordinates in Angstroms and convert them from AU using XTANG
+      jcent = 0 ! counter for the dependent atoms
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               DO I = 1, 3
+                 geometry(i+3*jcent) =
+     &           XTANG*PT(IBTAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
+               END DO 
+               jcent = jcent + 1
+               symbols(jcent) = namn(icent)
+               nuc_charge(jcent) = charge(icent)
+            END IF
+         END DO
+      END DO
+
+      ! write the coordinates
+      call checkpoint_write (group//'/symbols',sarray=symbols,slen=4)
+      call checkpoint_write (group//'/nuc_charge',rdata=nuc_charge)
+      call checkpoint_write (group//'/geometry',rdata=geometry)
+
+!     Finish by writing XYZ file in plain text format if it does not exist yet.
+      INQUIRE(FILE='MOLECULE.XYZ',EXIST=TOBE)
+      if (.not.TOBE) then
+         call pncxyz(cord)
+      end if
+
+      RETURN
+      END
+
       SUBROUTINE PNCXYZ (UNIQUE_CORD)
 
 C     Write an XYZ file
 C
-      use codata
       use read_xyzfile
 #include "implicit.h"
 #include "mxcent.h"
@@ -7688,10 +7727,16 @@ C
 #include "nuclei.h"
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
 #include "ibtfun.h"
+#include "codata.h"
+#include "dcbgen.h"
 C
 !     XYZ files are written in Angstroms (default) or a user-specified Unit
 !
-      FAC = 1.D0 / UNIT_CONVERSION
+      IF (UNIT_CONVERSION_SET) THEN
+          FAC = 1.D0 / UNIT_CONVERSION
+      ELSE
+          FAC = XTANG
+      END IF
 
 !     Write the file
 
@@ -7700,8 +7745,8 @@ C
      &            'FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUXYZ)
 
-      WRITE (LUXYZ,'(I10/)') NUCDEP
-      WRITE (LUXYZ,*) " "
+      WRITE (LUXYZ,'(I10)') NUCDEP
+      WRITE (LUXYZ,*) TITLE
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO ISYMOP = 0, MAXOPR

@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/cfun
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -16,9 +17,6 @@ set(FREE_CFUN_FORTRAN_SOURCES
 )
 
 set(CFUN_C_SOURCES
-   functionals.h 
-   general.h
-# ---------------------
    emb-functional.c
    fun-becke.c
    fun-cam.c
@@ -53,6 +51,13 @@ set(CFUN_C_SOURCES
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_CFUN_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_CFUN_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+endif()
+
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'cfun' module")
+    set_source_files_properties(${FREE_CFUN_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_CFUN_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${CFUN_C_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_runtimecheck})
 endif()
 
 add_library(

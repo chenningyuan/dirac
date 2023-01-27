@@ -1,23 +1,18 @@
 #define GASCIP_DEBUG -1
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! FILE    : krmcgascip.F
@@ -305,6 +300,8 @@ C
      &        'Generating dets. with symmetry ', REPNA(IRRP),
      &        ' and 2*MK interval:',MINMK2,' to',MAXMK2
          END IF
+         WRITE(LUPRI,'(10X,A,I10)')
+     &        'Max no. of strings     ',MAXSTR
          WRITE(LUPRI,'(10X,A,I10)')
      &        'Max no. of determinants',MAXDET
       END IF
@@ -734,15 +731,9 @@ C
 C
 C     17-11-2007-SK: INTEGER*1 is an illegal value on 64-Bit SX machines
 C     Is this solution still working?
-#if defined (SYS_SX64)
-!     INTEGER*4 ID1(4)
-      call qenter('NGASCIP_NBITS')
-      call quit('ERROR: INTEGER*1 not defined on 64-bit SX machines')
-#else
       INTEGER*8 JDET, ID8
       INTEGER*1 ID1(8)
       EQUIVALENCE (ID1(1),ID8)
-#endif /* SYS_SX64 */
 C
 C     Anyone who can find with a faster routine?
 C
@@ -2465,7 +2456,7 @@ C     degeneracy: energy difference less than 0.01 bohr)
       !> hardwire for debugging:
 !     n_csim = 4
 C
-      if (N_CSIM .GT. N_ROOTS) then
+      if (N_CSIM .GT. N_ROOTS .AND. N_CSIM .LT. NDET) then
         HDIAG_N_CSIMp1 = WORK(KHDIAG-1 + J_HDIAG(N_CSIM+1))
    40   HDIAG_N_CSIM   = WORK(KHDIAG-1 + J_HDIAG(N_CSIM))
         call flshfo(lupri)
@@ -4415,7 +4406,7 @@ C        ... do not print all the small numbers
      &   ' CPU (Wall) time in GASCIP_CISIG_SCREEN kernel: ',CPUTID,' (',
      &   WALLTID,')',' Number of BVEC elements skipped:',NBSKIP,
      &   ' out of',NDET,'; remaining ',NDET-NBSKIP
-         IF (NODTOT .GT. 0) THEN
+         IF (NUMNOD .GT. 0) THEN
             WRITE(LUPRI,'(A,I5,A,2I15)')
      &      ' Node',MYTID,'; start and end in SVEC:',IS_START,IS_END
          END IF
@@ -5056,7 +5047,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
 
 #include "priunit.h"
 C
@@ -5098,19 +5089,19 @@ C     master: 1) send bc-vectors to all slaves
 !      will give OK load balancing)
 !!    (2: could still be better, now set length to 2000 instead,
 !!     independent of numer of nodes)
-!!    N_TASKS = 5 * NODTOT
+!!    N_TASKS = 5 * NUMNOD
 !!    LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
 !!    IF (LEN_SCVEC_PER_TASK .LT. 2000) THEN
          LEN_SCVEC_PER_TASK = 2000
          N_TASKS = (NDET - 1) / LEN_SCVEC_PER_TASK + 1
-         N_TASKS = MAX(N_TASKS, NODTOT)
+         N_TASKS = MAX(N_TASKS, NUMNOD)
          LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
 !!    END IF
 
       call interface_MPI_BCAST(
      &     N_TASKS,1,MPARID,global_communicator)
 
-      NEXT_TASK = NODTOT + 1 ! nodes start automatically with their first task
+      NEXT_TASK = NUMNOD + 1 ! nodes start automatically with their first task
 
       DO I_TASK = 1, N_TASKS
          CAll interface_mpi_RECV(SLAVE_S_INTERVAL,3,

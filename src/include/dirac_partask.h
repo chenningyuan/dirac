@@ -18,3 +18,4 @@
 #define GEN1INT_GET_INT   15
 #define GEN1INT_GET_EXPT  16
 #define GEN1INT_GET_CUBE  17
+#define FDE_PAR           18

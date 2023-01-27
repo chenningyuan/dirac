@@ -2,24 +2,19 @@
 #define MPIX_DEBUG -1
 #endif
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! FILE    : mpi_framework.F90
@@ -178,13 +173,7 @@ IERR      = 0
 !
 IF( ITASK .eq. 0 )THEN
    IF( MYTID .eq. MPARID )THEN
-!tsaue: Adding initialization until I have checked what happend for SYS_T3D and SYS_T90....
-      LEN_LOCAL = LBASDIR
-#if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDIR,IERR)
-#else
       CALL GETENV('BASDIR',BASDIR_SCR)
-#endif
       LEN_LOCAL = LEN_TRIM(BASDIR_SCR)
 !
 !     If string is empty add current directory
@@ -210,11 +199,7 @@ IF( ITASK .eq. 0 )THEN
 ELSE IF ( ITASK .eq. 1 ) THEN ! ITASK == 1: DIRWRK
 !
    IF( MYTID .eq. MPARID )THEN
-#if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV ('DIRWRK',6,CDIRWRK_SCR,LDIRWRK,IERR)
-#else
       CALL GETENV("DIRWRK",CDIRWRK_SCR)
-#endif
       LEN_LOCAL = LDIRWRK
 20    CONTINUE
       IF ( LEN_LOCAL .gt. 0 ) THEN
@@ -247,11 +232,7 @@ ELSE IF ( ITASK .eq. 1 ) THEN ! ITASK == 1: DIRWRK
 ELSE IF ( ITASK .eq. 2 ) THEN ! ITASK == 2: DIRNOD
 !
    IF( MYTID .eq. MPARID )THEN
-#if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV ('DIRNOD',6,CDIRNOD_SCR,LDIRNOD,IERR)
-#else
       CALL GETENV("DIRNOD",CDIRNOD_SCR)
-#endif
       LEN_LOCAL = LDIRNOD
 30    CONTINUE
       IF ( LEN_LOCAL .gt. 0 ) THEN
@@ -329,11 +310,11 @@ use interface_to_mpi
     CALL interface_MPI_BARRIER(global_communicator)
 
 #if MPIX_DEBUG > 0
-    DO IJ = 1, (NUMNOD    )
+    DO IJ = 1, NUMNOD
        CALL interface_MPI_BARRIER(global_communicator)
        IF( MYTID .eq. IJ ) THEN
-          print '(a,i3,1x,a,a,a,i14,a,f8.3,a)', 'DIRAC node ',mytid, &
-          '(',HOST(1:LHOST),') starts by allocating ',IVARIABLE,' r*8 words (', &
+          print '(a,i0,a,a,a,i14,a,f8.3,a)', 'DIRAC node ',mytid, &
+          ' (',HOST(1:LHOST),') starts by allocating ',IVARIABLE,' r*8 words (', &
           DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
           flush(lupri)
        ENDIF
@@ -342,7 +323,7 @@ use interface_to_mpi
     END DO
 #else
     IF( MYTID .eq. 1 ) THEN
-       print '(a,i3,a,i14,a,f8.3,a)', 'DIRAC nodes 1 to ',numnod, &
+       print '(a,i0,a,i14,a,f8.3,a)', 'DIRAC nodes 1 to ',numnod, &
        ' starts by allocating      ',IVARIABLE,' r*8 words (', &
        DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
        flush(lupri)
@@ -354,8 +335,9 @@ use interface_to_mpi
     DO IJ = 1, NUMNOD
       CALL interface_MPI_BARRIER(global_communicator)
       IF( MYTID .eq. IJ ) THEN
+         flush(lupri)
          CALL STOPWATCH(0,MYTID)
-         CALL FLSHFO(LUPRI)
+         flush(lupri)
       END IF
       CALL interface_MPI_BARRIER(global_communicator)
     END DO
@@ -378,12 +360,12 @@ use interface_to_mpi
        CALL interface_MPI_BARRIER(global_communicator)
        IF( MYTID .eq. IJ )  THEN
            if (ivariable.gt.0) then
-              print '(a,i3,1x,a,a,a,i14,a,f8.3,a)', 'DIRAC node ',mytid, &
-              '(',HOST(1:LHOST),') to allocate at most ',IVARIABLE,' r*8 words (', &
+              print '(a,i0,a,a,a,i14,a,f8.3,a)', 'DIRAC node ',mytid, &
+              ' (',HOST(1:LHOST),') to allocate at most ',IVARIABLE,' r*8 words (', &
               DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
            else
-              print '(a,i3,1x,a,a)', 'DIRAC node ',mytid, &
-              '(',HOST(1:LHOST),') has no limitations in place for the amount of dynamically allocated memory'
+              print '(a,i0,a,a)', 'DIRAC node ',mytid, &
+              ' (',HOST(1:LHOST),') has no limitations in place for the amount of dynamically allocated memory'
            endif
            flush(lupri)
        ENDIF
@@ -394,11 +376,11 @@ use interface_to_mpi
     CALL interface_MPI_BARRIER(global_communicator)
     IF( MYTID .eq. 1 ) THEN
        if (ivariable.gt.0) then
-          print '(a,i3,a,i14,a,f8.3,a)', 'DIRAC nodes 1 to ',numnod, &
+          print '(a,i0,a,i14,a,f8.3,a)', 'DIRAC nodes 1 to ',numnod, &
           ' to allocate at most       ',IVARIABLE,' r*8 words (', &
           DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
        else
-          print '(a,i3,a,i14,a,i14,a)', 'DIRAC nodes 1 to ',numnod, &
+          print '(a,i0,a,i14,a,i14,a)', 'DIRAC nodes 1 to ',numnod, &
           ' has no limitations in place for the amount of dynamically allocated memory'
        endif
        flush(lupri)

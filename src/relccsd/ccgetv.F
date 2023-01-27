@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -522,7 +517,6 @@ C
       implicit none
 C
 C---------------Description--------------------------------------------
-
 C     Get VOVO part of two-electron integrals
 
 C---------------Calling variables--------------------------------------
@@ -533,16 +527,18 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
+#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
-C
+      REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
+      INTEGER, ALLOCATABLE :: counter(:), displ(:)
+      LOGICAL :: DONE
+      INTEGER :: totsize
 C---------------Executable code--------------------------------------
 C
-
       ALLOCATE(VVOVV(NV5*IRW*RCW))
 
       CALL GETVOVV_incore (VVOVV)
@@ -553,7 +549,7 @@ C
 
       RETURN
       END
-
+!=================================================================
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -588,15 +584,14 @@ C
 #include "eqns.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-      integer istat
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      integer ISTAT(df_MPI_STATUS_SIZE)
 #endif
 C
 C---------------Local variables--------------------------------------
       REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
       INTEGER, ALLOCATABLE :: counter(:), displ(:)
       LOGICAL :: DONE
-      INTEGER :: totsize, check, i, istart, mint, nint, off1, irp,IERR
+      INTEGER :: totsize, check, i, istart, mint, nint, off1, irp
 C---------------Executable code--------------------------------------
 C
        allocate(counter(0:nmproc-1))
@@ -606,10 +601,9 @@ C
 
        OFF1 = 1
        DO  30 IRP = 1, NREP
-
          check = IRP
          totsize = 0
-         IF (NVO(IRP).EQ.0) GOTO 30
+         IF ((NVO(IRP).EQ.0).OR.(NVVT(IRP).EQ.0)) GOTO 30
          ALLOCATE(VOVV_TEMP(NVO(IRP)*NVVT(IRP)*RCW))
 
          VOVV_TEMP = 0.0d0
@@ -637,16 +631,13 @@ C
 #if defined (VAR_MPI)
       IF (nmproc .GT. 1) THEN
 
-      CALL XTIME(4,1,'-- combining VOVV via MPI_GATHER')
+        CALL XTIME(4,1,'-- combining VOVV via MPI_GATHER')
 
-      call interface_mpi_allgatherv(vovv_temp(1),counter(myproc),
+        call interface_mpi_allgatherv(vovv_temp(1),counter(myproc),
      &    VVOVV(totsize+off1),counter,displ,global_communicator)
 
-      CALL XTIME(4,2,'-- combining VOVV via MPI_GATHER')
+        CALL XTIME(4,2,'-- combining VOVV via MPI_GATHER')
 
-        IF(IERR.GT.0) THEN
-           CALL QUIT('MPI_GATHER ERROR in collecting VOVV Integrals !')
-        ENDIF
       ENDIF
 #endif
 
@@ -655,8 +646,6 @@ C
        call xcopy(nvo(irp)*nvvt(irp),vovv_temp(1),1,VVOVV(off1),1)
     
       endif
-
-
 
          totsize = totsize + sum(counter)
 
@@ -710,6 +699,44 @@ C
      &             VVOVV,VOVVV)
 
       DEALLOCATE(VVOVV)
+
+      RETURN
+      END
+
+
+      SUBROUTINE GETVVOV_incore (VVVOV)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+
+C     Get VOVO part of two-electron integrals
+
+C---------------Calling variables--------------------------------------
+C
+      REAL*8             :: VVVOV(*)
+      REAL*8, ALLOCATABLE:: VOVVV(:)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+
+      ALLOCATE(VOVVV(NV5*IRW*RCW))
+
+      CALL GETOVVV_incore (VOVVV)
+
+      CALL SRT1C1 (NREP,NOV,NVVT,VOVVV,VVVOV) 
+
+      DEALLOCATE(VOVVV)
 
       RETURN
       END

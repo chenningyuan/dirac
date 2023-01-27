@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -77,6 +72,9 @@ module london_direct_hb
 contains
 
   subroutine london_twoel_hb(cmo, ibeig, work, lwork)
+  use dirac_cfg
+  use fde_input
+  use fde_mag_cfg
 
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
@@ -105,14 +103,14 @@ contains
 !   density matrix
     allocate(dmat_ao(n2bbasx, nr_mat))
     dmat_ao = 0.0d0
-    call get_dmat_ao(cmo, ibeig, dmat_ao)
+    call get_dmat_ao(cmo, dmat_ao)
 
 !   fock matrix
     allocate(fmat(n2bbasx*nr_mat*max_nr_xyz_comp))
     fmat = 0.0d0
 
 !   get 2-electron lao-integrals
-    call get_ao_fock_2el_lao(cmo, ibeig, fmat, dmat_ao)
+    call get_ao_fock_2el_lao(fmat, dmat_ao)
 
     deallocate(dmat_ao)
 
@@ -142,6 +140,17 @@ contains
     if (dirac_cfg_dft_calculation) then
        call xc_contrib_2el_lao(cmo, fmat)
     end if
+
+!   calculate fde direct-LAO contributions to the property gradient
+!   and, if requested, LAO contribution from the perturbed density
+    if (dirac_cfg_fde_response .and. fde_rsp_propgrad_lao) then
+       if (fde_rsp_propgrad_lao_direct_embpot .or. fde_rsp_propgrad_lao_direct_embker) then
+          call fde_direct_contribs(cmo, fmat)
+       else
+          write(*, *) 'no LAO-direct contributions to FDE property gradient'
+       end if
+    end if
+
 
 !   transform from ao to mo basis
     call ao_to_mo_2el_lao(cmo, ibeig, fmat)
@@ -184,7 +193,7 @@ contains
 !   --------------------------------------------------------------------
     real(8), intent(inout) :: fmat(n2bbasx, nr_mat, max_nr_xyz_comp)
     real(8), allocatable   :: buffer(:, :)
-    integer :: i, icomp, iq, iz, ipq, irepd, irep, ipari, ioff, itim, ih
+    integer :: icomp, iq, iz, ipq, irepd, irep, ipari, ioff
 !   --------------------------------------------------------------------
 
     call alloc(buffer, n2bbasx, nz)
@@ -230,7 +239,7 @@ contains
 
   subroutine initialize_direct_lao()
 !   --------------------------------------------------------------------
-    integer :: i, j
+    integer :: i
 
 #include "dcbfir.h"
 !   --------------------------------------------------------------------
@@ -260,24 +269,21 @@ contains
   end subroutine
 
 
-  subroutine get_ao_fock_2el_lao(cmo, ibeig, fmat, dmat)
+  subroutine get_ao_fock_2el_lao(fmat, dmat)
 !   --------------------------------------------------------------------
     real(8), intent(inout) :: fmat(n2bbasx, nr_mat, max_nr_xyz_comp)
     real(8), intent(inout) :: dmat(n2bbasx, nr_mat)
-    real(8), intent(in)    :: cmo(*)
-    integer, intent(in)    :: ibeig(*)
 
     real(8), pointer       :: work(:)
     integer                :: lwork
 
     integer, allocatable   :: npos(:)
+
     integer :: i2typ
     integer :: itype, max_deriv, iatom
     logical :: nodv, nopv, nocont, retur, relcal, ddfock, fckddr, &
                london, first(3)
 
-    logical :: debug_me
-    integer :: iq, ipq, iz, irepd, i, ioff(3)
     integer :: mtottk(3)
     real(8) :: cpu1, cpu2, wall1, wall2, cputot, wlltot
 !   --------------------------------------------------------------------
@@ -317,60 +323,35 @@ contains
 !   -------------------------------
     call gettim(cpu1,wall1)
 
-
     do i2typ = 1, 3
       if (btest(intnmr, (i2typ - 1))) then
 
-
+        lwork = len_f77_work
+        call di_select_wrk(work, lwork)
 #ifdef VAR_MPI
         if (parcal) then
-
            call alloc(npos, mtottk(i2typ))
            npos = 0
            call dirac_parctl( HERFCK_PAR )
-
-           lwork = len_f77_work
-           call di_select_wrk(work, lwork)
 
            call her_pardrv(work,lwork,fmat,dmat,nr_mat,irepdm,                   &
                            ifock_type,itype,max_deriv,iatom,nodv,nopv,nocont,   &
                            tktime,.false.,first, npos,mtottk(i2typ),          &
                            i2typ,(/0/),(/0.0d0/),(/0.0d0/),(/0.0d0/),(/0.0d0/),(/0.0d0/))
 
-           call di_deselect_wrk(work, lwork)
            call dealloc(npos)
-
         else
-
-          lwork = len_f77_work
-          call di_select_wrk(work, lwork)
-
+#endif 
           call twoint(work, lwork, fmat, dmat, nr_mat, irepdm, ifock_type, &
                       (/0.0d0/), (/0/), (/0/), itype, max_deriv, iatom,   &
                       nodv, nopv, nocont, tktime, iprprp, iprnta, &
                       iprntb, iprntc, iprntd, retur, (/0/), i2typ,  &
                       (/0/), (/0.0d0/), (/0.0d0/), (/0.0d0/), (/0.0d0/),  &
                       (/0.0d0/), relcal, .false., (/0/), (/0.0d0/))
-
-          call di_deselect_wrk(work, lwork)
-
+#ifdef VAR_MPI
         end if
-
-#else
-
-          lwork = len_f77_work
-          call di_select_wrk(work, lwork)
-
-          call twoint(work, lwork, fmat, dmat, nr_mat, irepdm, ifock_type, &
-                      (/0.0d0/), (/0/), (/0/), itype, max_deriv, iatom,   &
-                      nodv, nopv, nocont, tktime, iprprp, iprnta, &
-                      iprntb, iprntc, iprntd, retur, (/0/), i2typ,  &
-                      (/0/), (/0.0d0/), (/0.0d0/), (/0.0d0/), (/0.0d0/),  &
-                      (/0.0d0/), relcal, .false., (/0/), (/0.0d0/))
-
-          call di_deselect_wrk(work, lwork)
-
 #endif
+        call di_deselect_wrk(work, lwork)
 
       end if
     end do
@@ -381,27 +362,22 @@ contains
     write(lupri,'(/a,f13.4,a,f13.4,a/)') 'cpu time:',cputot,' wall time:',wlltot, &
                                            ' used in call to twoint(in get_ao_fock_2el_lao).'
 
-    if (allocated(npos)) then
-      call dealloc(npos)
-    end if
-
   end subroutine
 
 
-  subroutine get_dmat_ao(cmo, ibeig, dmat_ao)
+  subroutine get_dmat_ao(cmo, dmat_ao)
 !   --------------------------------------------------------------------
     real(8), intent(inout) :: dmat_ao(n2bbasx, *)
     real(8), intent(in)    :: cmo(*)
-    integer, intent(in)    :: ibeig(*)
 
     real(8), allocatable   :: dmat(:, :)
-    integer                :: iz, irep, ipari, irepd, iq, ipq, ioff
+    integer                :: iz, irep, ipari, irepd, iq, ipq
 !   --------------------------------------------------------------------
 
-    call alloc(dmat, ntbas(0)*ntbas(0), nz)
+    call alloc(dmat, n2bbasx, nz)
     dmat = 0.0d0
     call genden(dmat, cmo, 1, iprprp)
-    call dscal(ntbas(0)*ntbas(0)*nz, 2.0d0, dmat, 1)
+    call dscal(n2bbasxq, 2.0d0, dmat, 1)
     call bstobu_no_work(dmat, nz)
 
     isymop(1) = 1
@@ -436,32 +412,67 @@ contains
     real(8), intent(inout) :: fmat(n2bbasx, nz, max_nr_xyz_comp)
     real(8), allocatable   :: dmat(:, :)
 
-    integer :: icomp
-    logical :: debug_me
+!   gosia todo: Bx, By and Bz contributions are added on top, if we want just one
+!   of these contributions (for instance for VISUAL), then routines in density_eval
+!   need to be adapted...
 !   --------------------------------------------------------------------
 
     call alloc(dmat, n2bbasx, nz)
     dmat = 0.0d0
     call genden(dmat, cmo, 1, iprprp)
 
-!   gosia todo: Bx, By and Bz contributions are added on top, if we want just one
-!   of these contributions (for instance for VISUAL), then routines in density_eval
-!   need to be adapted...
-
     call generate_num_grid(dmat)
+
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
-    call integrate_xc(xc_mat_dim              = ntbas(0),     &
-                       xc_nz                   = nz,           &
-                       xc_dmat_0               = dmat,            &
-                       xc_nr_dmat              = 0,               &
-                       xc_nr_fmat              = max_nr_xyz_comp, &
-                       xc_fmat                 = fmat,            &
-                       xc_fmat_pg_sym          = isym_2el_lao,    &
-                       xc_do_london_rhs_direct = .true.)
+!     no spin contributions for closed-shell (xc potential)
+      call integrate_xc(xc_mat_dim              = ntbas(0),        &
+                        xc_nz                   = nz,              &
+                        xc_dmat_0               = dmat,            &
+                        xc_nr_dmat              = 0,               &
+                        xc_nr_fmat              = max_nr_xyz_comp, &
+                        xc_fmat                 = fmat,            &
+                        xc_fmat_pg_sym          = isym_2el_lao,    &
+                        xc_do_london_rhs_direct_der1 = .true.)
+
+!   spin density contributions (xc kernel)
+    if (.not. dft_cfg_no_sdft) then
+
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(XCINT_PAR)
+#endif
+      if (expped) then
+!        s_b_lao and gs_b_lao export (used in fde)
+         call integrate_xc(xc_mat_dim              = ntbas(0),        &
+                           xc_nz                   = nz,              &
+                           xc_dmat_0               = dmat,            &
+                           xc_nr_dmat              = 0,               &
+                           xc_nr_fmat              = max_nr_xyz_comp, &
+                           xc_fmat                 = fmat,            &
+                           xc_fmat_pg_sym          = isym_2el_lao,    &
+                           xc_do_london_rhs_direct_der2 = .true.,     &
+                           xc_london_direct_export = .true.)
+      else
+         call integrate_xc(xc_mat_dim              = ntbas(0),        &
+                           xc_nz                   = nz,              &
+                           xc_dmat_0               = dmat,            &
+                           xc_nr_dmat              = 0,               &
+                           xc_nr_fmat              = max_nr_xyz_comp, &
+                           xc_fmat                 = fmat,            &
+                           xc_fmat_pg_sym          = isym_2el_lao,    &
+                           xc_do_london_rhs_direct_der2 = .true.)
+      end if
+    end if
 
     call dealloc(dmat)
+
+    if (iprprp .ge. 5) then
+        write(*, *) 'fmat after integrate_xc, london_direct'
+        call prqmat(fmat, &
+                    ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                    nz, ipqtoq(1, 0), lupri)
+    end if
 
   end subroutine
 
@@ -472,9 +483,14 @@ contains
     integer, intent(in)    :: ibeig(*)
     real(8), intent(inout) :: fmat(n2bbasx, nz, max_nr_xyz_comp)
 
+    real(8), pointer       :: work(:)
+    integer                :: lwork
+
     real(8), allocatable :: gmat(:)
     integer :: icomp, ii, jj, irep, iopsy
     logical :: debug_me
+    real(8) :: dsx
+    real(8), external :: symcheck
 !   --------------------------------------------------------------------
 
     call alloc(gmat, n2orbxq)
@@ -489,37 +505,80 @@ contains
 
       call dzero(gmat, n2orbxq)
 
-      do ii = 1, nfsym
-        iopsy = jbtof(irep, 1)
-        jj = mod(ii + iopsy, 2) + 1
+! gosia: spinfree+london should be properly tested;
+! the call to qbtrans is temporarily removed to restore the "response_lao_shield" test
+! that is passing on master
+      !if (spinfr) then
+      !  lwork = len_f77_work
+      !  call di_select_wrk(work, lwork)
 
-! todo add qbtrans for spin-free case
+      !  do ii = 1, nfsym
+      !    iopsy = jbtof(irep, 1)
+      !    jj = mod(ii + iopsy, 2) + 1
+      !    if (nfbas(ii, 0) > 0 .and. nfbas(jj, 0) > 0) then
 
-        call qtrans90('AOMO',                             &
-                      'S',                                &
-                      0.0d0,                              &
-                      nfbas(ii, 0), nfbas(jj, 0),         &
-                      norb(ii), norb(jj),                 &
-!                     -------------------------------------
-                      fmat(i2basx(ii, jj) + 1, 1, icomp), &
-                      ntbas(0), ntbas(0), nz,             &
-                      ipqtoq(1, irep_2el_lao(icomp)),     &
-!                     -------------------------------------
-                      gmat(i2orbx(ii, jj) + 1),           &
-                      norbt,    norbt,    nz,             &
-                      ipqtoq(1, irep_2el_lao(icomp)),     &
-!                     -------------------------------------
-                      cmo(icmoq(ii) + 1),                 &
-                      nfbas(ii,0), norb(ii), nz,          &
-                      ipqtoq(1, 0),                       &
-!                     -------------------------------------
-                      cmo(icmoq(jj) + 1),                 &
-                      nfbas(jj, 0), norb(jj), nz,         &
-                      ipqtoq(1, 0),                       &
-!                     -------------------------------------
-                      iprprp)
+      !      call qbtrans(irep_2el_lao(icomp),                &
+      !                   'AOMO',                             &
+      !                   'S',                                &
+      !                   0.0d0,                              &
+      !                   nfbas(ii, 0), nfbas(jj, 0),         &
+      !                   norb(ii), norb(jj),                 &
+!     !                   -------------------------------------
+      !                   fmat(i2basx(ii, jj) + 1, 1, icomp), &
+      !                   ntbas(0), ntbas(0), nz,             &
+      !                   ipqtoq(1, irep_2el_lao(icomp)),     &
+!     !                   -------------------------------------
+      !                   gmat(i2orbx(ii, jj) + 1),           &
+      !                   norbt,    norbt,    nz,             &
+      !                   ipqtoq(1, irep_2el_lao(icomp)),     &
+!     !                   -------------------------------------
+      !                   cmo(icmoq(ii) + 1),                 &
+      !                   nfbas(ii,0), norb(ii), nz,          &
+      !                   ipqtoq(1, 0),ibeig(iorb(ii)+1),     &
+!     !                   -------------------------------------
+      !                   cmo(icmoq(jj) + 1),                 &
+      !                   nfbas(jj, 0), norb(jj), nz,         &
+      !                   ipqtoq(1, 0),ibeig(iorb(jj)+1),     &
+!     !                   -------------------------------------
+      !                   work, lwork, iprprp)
+      !    end if
+      !  end do
+      !  call di_deselect_wrk(work, lwork)
+      !else
+        do ii = 1, nfsym
+          iopsy = jbtof(irep, 1)
+          jj = mod(ii + iopsy, 2) + 1
+          if (nfbas(ii, 0) > 0 .and. nfbas(jj, 0) > 0) then
+            call qtrans90('AOMO',                             &
+                          'S',                                &
+                          0.0d0,                              &
+                          nfbas(ii, 0), nfbas(jj, 0),         &
+                          norb(ii), norb(jj),                 &
+!                         -------------------------------------
+                          fmat(i2basx(ii, jj) + 1, 1, icomp), &
+                          ntbas(0), ntbas(0), nz,             &
+                          ipqtoq(1, irep_2el_lao(icomp)),     &
+!                         -------------------------------------
+                          gmat(i2orbx(ii, jj) + 1),           &
+                          norbt,    norbt,    nz,             &
+                          ipqtoq(1, irep_2el_lao(icomp)),     &
+!                         -------------------------------------
+                          cmo(icmoq(ii) + 1),                 &
+                          nfbas(ii,0), norb(ii), nz,          &
+                          ipqtoq(1, 0),                       &
+!                         -------------------------------------
+                          cmo(icmoq(jj) + 1),                 &
+                          nfbas(jj, 0), norb(jj), nz,         &
+                          ipqtoq(1, 0),                       &
+!                         -------------------------------------
+                          iprprp)
+          end if
+        end do
+      !end if
 
-      end do
+! check if it is antisymmetric:
+      DSX=SYMCHECK(gmat(1),NORBT,NORBT,NORBT,NZ)
+      write(*, *) 'symmetry check in london_direct', dsx
 
 !     write the two-electron London contribution to file
 !     --------------------------------------------------
@@ -543,5 +602,130 @@ contains
     call dealloc(gmat)
 
   end subroutine
+
+  subroutine fde_direct_contribs(cmo, fmat)
+
+    use fde_mag_cfg
+    use fde_mod
+    use fde_data
+    use fde_dirac_matrices_integration
+    use fde_evaluators_dirac
+!   --------------------------------------------------------------------
+    real(8), intent(in)    :: cmo(*)
+    real(8), intent(inout) :: fmat(n2bbasx, nz, max_nr_xyz_comp)
+    real(8), allocatable   :: dmat(:, :)
+
+    type(fde_import) :: itmp
+!   --------------------------------------------------------------------
+
+     call fde_get_import_info(itmp)
+
+     call alloc(dmat, n2bbasx, nz)
+     dmat = 0.0d0
+     call genden(dmat, cmo, 1, iprprp)
+
+     call generate_num_grid(dmat)
+
+     if (fde_rsp_propgrad_lao_direct_embpot .and. .not. fde_exclude_rsp_propgrad_lao_direct_embpot) then
+        write(*, *) 'FDE-LAO direct contribution to the property gradient '// & 
+                    'dependent on the embedding potential'
+
+#ifdef VAR_MPI
+        if (parcal) call dirac_parctl(FDE_PAR)
+#endif
+
+        if (itmp%im_vemb) then
+           call fde_dirac_emb_matrices_via_integration(       &   
+                         fde_mat_dim            = ntbas(0),   &
+                         fde_nz                 = nz,         &
+                         fde_dmat_0             = dmat,       &
+                         fde_nr_dmat            = 0,          &
+                         fde_nr_fmat            = max_nr_xyz_comp,      &
+                         fde_fmat               = fmat,       &
+                         fde_use_potential      = .true.,     &
+                         fde_do_london_rhs_direct_der1 = .true.)
+        else
+           call fde_dirac_emb_matrices_via_integration(       &   
+                         fde_mat_dim            = ntbas(0),   &
+                         fde_nz                 = nz,         &
+                         fde_dmat_0             = dmat,       &
+                         fde_nr_dmat            = 0,          &
+                         fde_nr_fmat            = max_nr_xyz_comp,      &
+                         fde_fmat               = fmat,       &
+                         fde_do_london_rhs_direct_der1 = .true.)
+        end if
+
+        if (iprprp .ge. 5) then
+            write(*, *) 'london_direct: fmat after fde integrate (embpot)'
+            call prqmat(fmat, &
+                        ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                        nz, ipqtoq(1, 0), lupri)
+        end if
+
+     end if
+
+     if (fde_rsp_propgrad_lao_direct_embker &
+         .and. .not. fde_exclude_rsp_propgrad_lao_direct_embker &
+         .and. .not. fde_cfg_no_sdft) then
+
+        write(*, *) 'FDE-LAO direct contribution to the property gradient ' // &
+                    'dependent on the (uncoupled) embedding kernel'
+
+#ifdef VAR_MPI
+        if (parcal) call dirac_parctl(FDE_PAR)
+#endif
+
+        call fde_dirac_emb_matrices_via_integration(       &   
+                      fde_mat_dim            = ntbas(0),   &
+                      fde_nz                 = nz,         &
+                      fde_dmat_0             = dmat,       &
+                      fde_nr_dmat            = 0,          &
+                      fde_nr_fmat            = max_nr_xyz_comp, &
+                      fde_fmat               = fmat,       &
+                      fde_do_london_rhs_direct_der2 = .true.)
+
+        if (iprprp .ge. 5) then
+            write(*, *) 'london_direct: fmat after fde integrate (embker)'
+            call prqmat(fmat, &
+                        ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                        nz, ipqtoq(1, 0), lupri)
+        end if
+
+     end if
+
+!    coupling (non-additive xc and kinetic energy):
+!    ----------------------------------------------
+     if (fde_lao_frozen_embker_nonadd.and.fde_rsp_mag_lao_import &
+       .and..not.fde_cfg_no_sdft) then
+       write(*, *) 'LAO kernel-like contribution to property gradient '// &
+                   'from frozen perturbed density (non-additive xc and kin terms)'
+#ifdef VAR_MPI
+       if (parcal) call dirac_parctl(FDE_PAR)
+#endif
+
+       call fde_dirac_emb_matrices_via_integration(       &
+                     fde_mat_dim            = ntbas(0),   &
+                     fde_nz                 = nz,         &
+                     fde_dmat_0             = dmat,       &
+                     fde_nr_dmat            = 0,          &
+                     fde_nr_fmat            = max_nr_xyz_comp,      &
+                     fde_fmat               = fmat,       &
+                     fde_do_london_rhs_direct_coupling = .true.)
+
+       if (iprprp .ge. 5) then
+           write(*, *) 'london_direct: fmat after fde integrate (embpot nonadd)'
+           call prqmat(fmat, &
+                       ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                       nz, ipqtoq(1, 0), lupri)
+       end if
+
+
+     end if
+
+     call dealloc(dmat)
+
+  end subroutine fde_direct_contribs
+  
+
 
 end module

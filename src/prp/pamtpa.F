@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
       SUBROUTINE PRPTPA(WORK,LWRK)
@@ -52,17 +47,14 @@ C     Get the MO coefficients
 C     =======================
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPTPA')
       IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
-     &              TOTERG,11,WORK,KFREE,LFREE)
+     &              TOTERG,11)
       ELSE
         KIBRP = KFREE
-        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3)
       ENDIF
-      CLOSE(LUCMO,STATUS='KEEP')
 C
 C     Calculate allowed excitations
 C     =============================
@@ -350,7 +342,8 @@ C
 C     Set orbital strings
 C     ===================
 C
-      CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,IPRXQR,
+     &             WORK,KFREE,LFREE)
 C
 C     Initiate variables in dcbxrs.h
 C     ==============================
@@ -529,12 +522,6 @@ C
       KFREE = 1
       LFREE = LWRK
 C
-C     Open the property file
-C     ======================
-C
-      OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-C     
       CALL DZERO(RESULT,3*NBSYM*MAXLQR*MAXLQR*MAXFQR)
 C
       IQRF = 0
@@ -634,11 +621,6 @@ C
       END DO
       END DO
 C
-C     Close the property file
-C     =======================
-C
-      CLOSE(LU1INT,STATUS='KEEP')
-C
       CALL QEXIT('QRTPA')
       RETURN
       END
@@ -651,8 +633,8 @@ C
 C     Written by johhe 2002
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
@@ -954,7 +936,9 @@ C
 C     Input handeling for .TWO-PHOTON
 C
 C     Written by johhe 2002
-C
+!
+!  Miro: July 2018, no more need for WORK(:) stuff
+!
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1004,7 +988,7 @@ C
       PNAME(3) = 'ZDIPLEN'
       DO I=1,3
          CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
-     &               ITRXPR,WORK(KFREE),LFREE,IPRXQR)
+     &               ITRXPR,IPRXQR)
          CALL OP1IND('NAQROP',IND1OP,LAQROP,NAQROP,INDXPR,MAXLQR)
          CALL OP1IND('NBQROP',IND1OP,LBQROP,NBQROP,INDXPR,MAXLQR)
       END DO

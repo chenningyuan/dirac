@@ -23,10 +23,11 @@ contains
 #ifdef PRG_DIRAC
    subroutine interface_mo_write_dirac()
 
+      use checkpoint
+
 !     --------------------------------------------------------------------------
       real(8) :: dummy
       integer :: i
-      logical :: lucoef_opened_by_dirac
 !     --------------------------------------------------------------------------
 
 #include "dcbbas.h"
@@ -36,43 +37,16 @@ contains
 
       call interface_mo_clear()
 
-      inquire(file = 'DFCOEF', exist = interface_file_exists)
-      if (interface_file_exists) then
-         inquire(unit=lucoef, opened=lucoef_opened_by_dirac)
-         if (lucoef_opened_by_dirac) then
-            close(lucoef, status = 'keep')
-         end if
-
-         open(interface_file_unit,              &
-              file   = 'DFCOEF',      &
-              status = 'unknown',     &
-              form   = 'unformatted', &
-              access = 'sequential')
-         rewind(interface_file_unit)
-         !miro: increased array size as it's sometimes getting out of bounds: NORBT --> NORBT*2
+      call checkpoint_query ('/result/wavefunctions/scf/mobasis/eigenvalues',mo_eigenvalues_available)
+      if (mo_eigenvalues_available) then
          allocate(mo_eigenvalues(norbt*2))
-         mo_eigenvalues = 0.0d0
+         call checkpoint_read  ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=mo_eigenvalues)
+      end if
+
+      call checkpoint_query ('/result/wavefunctions/scf/mobasis/orbitals',mo_coef_available)
+      if (mo_coef_available) then
          allocate(mo_coef(n2bbasxq))
-         mo_coef = 0.0d0
-
-         call reacmo_no_work(interface_file_unit,      &
-                             'DFCOEF',       &
-                             mo_coef,        &
-                             mo_eigenvalues, &
-                             (/0/),          &
-                             dummy,          &
-                             6)
-         mo_eigenvalues_available = .true.
-         mo_coef_available        = .true.
-
-         close(interface_file_unit, status = 'keep')
-         if (lucoef_opened_by_dirac) then
-            open(lucoef,                 &
-                 file   = 'DFCOEF',      &
-                 status = 'unknown',     &
-                 form   = 'unformatted', &
-                 access = 'sequential')
-         end if
+         call checkpoint_read  ('/result/wavefunctions/scf/mobasis/orbitals',rdata=mo_coef)
       end if
 
 !     always regenerate this file

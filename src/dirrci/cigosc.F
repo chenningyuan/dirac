@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -45,9 +40,7 @@ C
       WRITE(6,1000) DATEX,TIMEX
       CALL CPUUSED(SEC)
 C
-!.s/sya,2007.03.12
       CALL IBTABINI1()
-!.q
 C     Read namelist input
       CALL READGOS(NELECT)
 C
@@ -83,9 +76,6 @@ C.......Generate list of determinants
         NDETMX = MAX0(NDETMX,NDET)
       ENDDO
       IF(IERR.NE.0) CALL Q2JOB(3,'P.GENDET','    N2',NDETMX)
-!
-!     common variable "NDETMX" is set here.  (sya, 2007.03.03)
-!
       KHR  = KTOP
       KHI  = KHR + NDETMX*NDETMX
       KTOP = KHI + NDETMX*NDETMX
@@ -104,15 +94,13 @@ C
       DO 10 IRP=1,NREP
         IRRP = IRP
         IF (MOD(NELACT,2).EQ.0) IRRP = IRP + NREP
-	CALL CPUUSED(SEC0)
-ctom
+        CALL CPUUSED(SEC0)
         CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
-ctom
         IF (NDET.EQ.0) GOTO 10
-	CALL CPUUSED(SEC1)
+        CALL CPUUSED(SEC1)
         CALL MAKEH(CI(KHR),CI(KHI),CI(KINDTWR),CI(KINDTWI),
      &       CI(KINDGAI),CI(KINDGAI),CI(KTWOINR),CI(KTWOINI),MAXINT)
-	CALL CPUUSED(SEC2)
+        CALL CPUUSED(SEC2)
 C
         IF (IPRNT .GE. 11) THEN
           CALL HEADER('Real part of total H',-1)
@@ -130,9 +118,9 @@ C
           CALL OUTPUT(CI(KHI),1,NDET,1,NDET,NDET,NDET,1,6)
         END IF
 C
-	CALL CPUUSED(SEC3)
+        CALL CPUUSED(SEC3)
         CALL WRVEC(IRP,IRRP,CI(KHR),CI(KHI))
-	CALL CPUUSED(SEC4)
+        CALL CPUUSED(SEC4)
         WRITE (6,1010) SEC1-SEC0,SEC2-SEC1,SEC3-SEC2,SEC4-SEC3
         CALL PRTOUT(IRP,IRRP,CI(KHR),CI(KHI))
  10     CONTINUE
@@ -141,7 +129,7 @@ C
       CALL CPUUSED(SEC5)
       WRITE (6,*)    '====================='
       WRITE (6,1020) SEC5-SEC
- 1000 FORMAT(///1X,'GOSCIP (Version 1.8)'//
+ 1000 FORMAT(///1X,'GOSCIP (Version 2.0)'//
      &' Today is :',T15,A10/' The time is :',T17,A8//)
  1010 FORMAT(/' CPU time for this representation '//
      &' Generation of determinants :',T30,F12.4/
@@ -183,12 +171,12 @@ C              LV (April 8, 1994)
 C VERSION 1.7: Uses time-reversal unique canonical list of integrals
 C              LV (June 28, 1994)
 C VERSION 1.8: Now also real groups can be handled all real
-!.s/sya,2007.02.05
+C VERSION 2.0: Reads also from FCIDUMP files (LV, June 22, 2020)
       RETURN
-!.q
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sy_pamgos */
+C    (LV, 2020) Note: this is a terrible example of code duplication, should be refactored
       SUBROUTINE SY_PAMGOS(CI,MAXCORE,NELECT,NGAS,IGAS,
      &                     MAXE,MINE,NGASO)
 C***********************************************************************
@@ -283,10 +271,7 @@ C
 C
 C     Check if this still fits in the available memory
 C
-!.s/sya,2007.01.30
-!#    IF (MAXINT.LE.0)  CALL Q2JOB (3,'P.PAMGOS','MAXINT',NRB4)
       IF (MAXINT.LE.0)  CALL Q2JOB (3,'SY_PAMGOS','MAXINT',NRB4)
-!.q
 C
       KTWOINR = KTOP
       KTWOINI = KTWOINR + MAXINT
@@ -297,12 +282,10 @@ C
       DO 10 IRP=1,NREP
         IRRP = IRP
         IF (MOD(NELACT,2).EQ.0) IRRP = IRP + NREP
-	CALL CPUUSED(SEC0)
-ctom
+        CALL CPUUSED(SEC0)
         CALL GENDET(IRP,IRRP,NGAS,IGAS,MINE,MAXE,IERR)
-ctom
         IF (NDET.EQ.0) GOTO 10
-	CALL CPUUSED(SEC1)
+        CALL CPUUSED(SEC1)
         CALL MAKEH(CI(KHR),CI(KHI),CI(KINDTWR),CI(KINDTWI),
      &       CI(KINDGAI),CI(KINDGAI),CI(KTWOINR),CI(KTWOINI),MAXINT)
 	CALL CPUUSED(SEC2)
@@ -967,24 +950,23 @@ C
       COMPLEX*16 RPHASE(N1),ONE
       INTEGER INDK(N3),INDL(N3)
 C
-      MDINT = 1
-      NUNIQ = 0
       TWOINR(0) = D0
       TWOINI(0) = D0
 
-      DO L = 1, NSPACT
-      DO K = 1, NSPACT
-      DO J = 1, NSPACT
-      DO I = 1, NSPACT
-         INDTWR(I,J,K,L) = 0
-         INDTWI(I,J,K,L) = 0
-         IF (BREIT) INDGAR(I,J,K,L) = 0
-         IF (BREIT) INDGAI(I,J,K,L) = 0
-      ENDDO
-      ENDDO
-      ENDDO
-      ENDDO
+      INDTWR = 0
+      INDTWI = 0
+      IF (BREIT) INDGAR = 0
+      IF (BREIT) INDGAI = 0
+
+      if (in_fcidump /= 0) then
+         call read_fcidump (2,n1,norb,nspact,irpamo,
+     &                      ECORE,EPS,ONER,ONEI,
+     &                      INDTWR,INDTWI,TWOINR,TWOINI,maxint)
+         return
+      end if
 C
+      MDINT = 1
+      NUNIQ = 0
       OPEN(MDINT,FILE='MDCINT',FORM='UNFORMATTED')
       Read (mdint,err=10000,end=10000) datex,timex,nkr,
      &     (KR(I),KR(-I),I=1,NKR) 
@@ -1193,14 +1175,16 @@ C
       CHARACTER*14 REPN(16)
 C
       LOGICAL SPINFR
-      INTEGER REFDET,IRPMO(N1)
+      INTEGER REFDET,IRPMO(N1),FCI
       REAL*8 SELPOP
+      DIMENSION MINE(16),MAXE(16),IGAS(16)
+      DIMENSION NGASO(256)
 !.s/sya,2007.09.14
       EXTERNAL ISUM
       DATA IONE/1/
 !.q
 C
-      NAMELIST/GOSCIP/NELACT,NGAS,MINE,MAXE,NGASO,REFDET,IREFE,IPRNT
+      NAMELIST/GOSCIP/NELACT,NGAS,MINE,MAXE,NGASO,REFDET,IREFE,IPRNT,FCI
       NAMELIST/POPAN/THRESH,DEGEN,SELPOP,MAXPOP
 !----------------------------------------------------------------------
       MRCONEE=75
@@ -1210,19 +1194,19 @@ C
       IPRNT=0
       REFDET=0
       IREFE=0
+      MINE=0
+      MAXE=0
+      IGAS=0
+      NGASO=0
+      FCI=0
       READ(5,GOSCIP,END=200)
-  200 CONTINUE
+  200 WRITE(6,GOSCIP)
       NELACT = MAX(NELACT,NELECT)
-!     SK - during the merge of the COSCI-TDM this variable renaming 
-!     on the NAMELIST slipped my attention.
       NELECT = NELACT
       IREF=REFDET
-!.s/sya,2007.01.30
-!#    IF (IREFE.LE.0) IREFE = NBITS(IREF)
       IF( IREFE .LE. 0 ) THEN
         CALL NCOSCI_NBITS(IREFE,IREF)
       END IF
-!.q
 C
       REWIND(5)
       THRESH=1.0D-3
@@ -1233,19 +1217,42 @@ C
       READ(5,POPAN,END=100)
   100 WRITE(6,POPAN)
 C
-      OPEN(MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
-      READ(MRCONEE) NSPACT,BREIT,ECORE,NFSYM,NZ,SPINFR
-      REALAR = NZ .EQ. 1 .OR. SPINFR
-      IF( NSPACT .GT. N1 ) CALL Q2JOB(3,'P.READIN','    N1',NSPACT)
-      READ(MRCONEE) NSYMRP,(REPN(IRP),IRP=1,NSYMRP)
-      READ(MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
-      READ(MRCONEE) ((MULTB(I,J),I=1,2*NREP),J=1,2*NREP)
-      READ(MRCONEE) (IRPMO(IMO),IRPAMO(IMO),EPS(IMO),IMO=1,NSPACT)
-      READ(MRCONEE)
-     & ((ONER(IMO,JMO),ONEI(IMO,JMO),JMO=1,NSPACT),IMO=1,NSPACT)
-      CLOSE(MRCONEE)
-!
-!.s/sya,2007.06.09
+      IF (FCI == 0) THEN
+         IN_FCIDUMP = 0
+         OPEN(MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
+         READ(MRCONEE) NSPACT,BREIT,ECORE,NFSYM,NZ,SPINFR
+         REALAR = NZ .EQ. 1 .OR. SPINFR
+         IF( NSPACT .GT. N1 ) CALL Q2JOB(3,'P.READIN','    N1',NSPACT)
+         READ(MRCONEE) NSYMRP,(REPN(IRP),IRP=1,NSYMRP)
+         READ(MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
+         READ(MRCONEE) ((MULTB(I,J),I=1,2*NREP),J=1,2*NREP)
+         READ(MRCONEE) (IRPMO(IMO),IRPAMO(IMO),EPS(IMO),IMO=1,NSPACT)
+         READ(MRCONEE)
+     &    ((ONER(IMO,JMO),ONEI(IMO,JMO),IMO=1,NSPACT),JMO=1,NSPACT)
+         CLOSE(MRCONEE)
+      ELSE
+         in_fcidump = 1
+         nspact = 1 ! First read header to check symmetry and get norb
+         call read_fcidump (0,n1,norb,nspact,irpamo,
+     &                      ECORE,EPS,ONER,ONEI,
+     &                      INDTWR,INDTWI,TWOINR,TWOINI,0)
+         nrep = 1 ! interface works for C1 (NOSYM) only
+         ! Could read symmetry info from FCITABLE, not implemented to
+         ! keep code simple
+         nfsym = 1
+         repn  = ' A         '
+         repna(1) = '   A'
+         repna(2) = '   a'
+         irpmo = irpamo
+         multb(1,1) = 2
+         multb(2,1) = 1
+         multb(1,2) = 1
+         multb(2,2) = 2
+         nspact = norb ! Read again to get ecore, eps, oner and onei
+         call read_fcidump (1,n1,norb,nspact,irpamo,
+     &                      ECORE,EPS,ONER,ONEI,
+     &                      INDTWR,INDTWI,TWOINR,TWOINI,0)
+      ENDIF
 !
 !     Check NSPACT
 !     ------------
@@ -1269,15 +1276,18 @@ C
           STOP
         END IF
       END IF
-!.q
 C
       DO 250 I = 1, 2 * NREP
         MULTB(I,0) = I
   250 CONTINUE
 C
-      WRITE(6,1200)
+      IF (FCI == 0) THEN
+         WRITE(6,1200)
+      ELSE
+         WRITE(6,1201)
+      ENDIF
+
       WRITE(6,1210) NELACT,IREF
-!.s/sya,2007.06.16
 !
 !     Check NELACT
 !     ------------
@@ -1321,6 +1331,7 @@ C
 C
       RETURN
  1200 FORMAT(//' All information read from MRCONEE (and input)')
+ 1201 FORMAT(//' All information read from FCIDUMP (and input)')
  1210 FORMAT(//' Number of electrons:',I5/
      +         ' Decimal representation of frozen orbitals:',I4)
  1220 FORMAT(//' Breit interaction included :',T50,L1
@@ -1854,7 +1865,7 @@ C
         CALL RDCIVEC(NRIVEC,MSTATE,IRRP_I,IREP_I,NVEC_I,CL,DET_I,
      &               NZCONF_I,KST,IRVEC,IPRINT)
         IF( KST .NE. 0 ) THEN
-          WRITE(LUPRI,"(/'<bra|      irrep',I3,A
+          WRITE(LUPRI,"(/'<bra|      irrep',I3,A,
      &                   '     skipped.',I4)") 
      &          IREP_I,REPNA(IREP_I),KST
           CYCLE
@@ -1942,7 +1953,7 @@ C
       DIMENSION IXDET(NDETMX)
       CHARACTER*11 VECFIL
       DATA K8BYTE/8/
-!SK   DATA K4BYTE/4/, K1WORD/1/, K4WORD/4/
+      DATA K4BYTE/4/, K1WORD/1/, K4WORD/4/ ! Miro: necessary to fix runtimecheck
       INTEGER KXBYTE
       DATA LUCIVC/10/
 !----------------------------------------------------------------------
@@ -1957,9 +1968,7 @@ C
 !#    LENREC = LEN * 2 * 8
       LENW   = NDETMX
       LENR0  = LENW * NRIVEC * K8BYTE 
-!radovan: K1WORD is not initialized
       LENR2  = (K1WORD + NDETMX) * KXBYTE
-!radovan: K4WORD is not initialized
       LENR1  = K4WORD * KXBYTE + NDETMX * K8BYTE
       LENREC = MAX(LENR0,LENR2,LENR1)
 !.q
@@ -3555,8 +3564,8 @@ c#include "dcbbas.h"
 !     Last-update: S. Yamamoto - 2007.06.19, chukyo-u
 !     Called by:   CLTMOM2
 !-----------------------------------------------------------------------
-      use codata
 #include "implicit.h"
+#include "codata.h"
 !
 !     ...for MXCOOR
 #include "mxcent.h"
@@ -3576,15 +3585,13 @@ c#include "dcbbas.h"
 !
 !             ...declare constant(s) in code
 !
-!#    DATA CLIGHT/2.99792458D0/
-!#    DATA ECHARG/1.6021892D0/
-!#    DATA BOHR/5.2917706D-1/
       DATA IONE/1/
       DATA DM1/-1.0D0/
       DATA KREAL/1/
 !
       EXTERNAL DDOT
 !-----------------------------------------------------------------------
+!
       IF( IPRINT .GE. 6 ) WRITE(LUPRI,"(' >>>> CLTMOM5')")
       L1 = NRIVEC * N3DIM
 !
@@ -3740,3 +3747,78 @@ c#include "dcbbas.h"
       END IF
       RETURN
       END
+C
+C     ===========================================================
+      SUBROUTINE read_fcidump (mode,n1,norb,n,irpamo,
+     & ECORE,EPS,ONER,ONEI,
+     & INDTWR,INDTWI,TWOINR,TWOINI,MAXINT)
+C     ==========================================================
+      IMPLICIT none
+C
+C     Routine to read data from an FCIDUMP formatted file
+C     Mode 0: header and symmetry check
+C     Mode 1: one-electron integrals
+C     Mode 2: two-electron integrals
+C
+      real(8), parameter   :: D0 = 0.0D0
+      integer, parameter   :: FCIDUMP = 75 ! file unit
+      integer, intent(in)  :: n1,n,mode
+      integer, intent(out) :: norb,irpamo(N1)
+      real(8), intent(out) :: ecore,eps(N1)
+      integer, intent(in)  :: maxint
+      integer, intent(out) :: INDTWR(N,N,N,N)
+      integer, intent(out) :: INDTWI(N,N,N,N)
+      real(8), intent(out) :: ONER(N1,N1),ONEI(N1,N1)
+      real(8), intent(out) :: TWOINR(0:MAXINT),TWOINI(0:MAXINT)
+
+      real*8 integral(2)
+      integer nelec,isym,orbsym(32),iuhf,n_uniq,label(4)
+      namelist/FCI/norb,nelec,orbsym,isym,iuhf
+
+      orbsym = 0
+      open(FCIDUMP,file='FCIDUMP',form='FORMATTED')
+      read(FCIDUMP,FCI)
+      if (MODE == 0) then
+         write(6,FCI)
+         if (norb > n1) then
+            print*, " Error: GOSCIP can not handle",norb, " spinors"
+            call quit ('dimensioning error')
+         end if
+         if (any (orbsym(1:norb) /= 1)) then
+            print*, " Error: this interface does not handle symmetry"
+            call quit ('incomplete symmetry information')
+         end if
+         irpamo(1:norb) = orbsym(1:norb)
+      endif
+
+      n_uniq = 0
+      do
+        read (FCIDUMP,*) integral,label
+        if (all(label == 0)) then
+           if (mode == 1) ecore = integral(1)
+        elseif (all(label(2:4) == 0)) then
+           if (mode == 1) eps(label(1)) = integral(1)
+        elseif (all(label(3:4) == 0)) then
+           if (mode == 1) oner(label(1),label(2)) = integral(1)
+           if (mode == 1) onei(label(1),label(2)) = integral(2)
+        else
+           n_uniq = n_uniq + 1
+           if (mode == 2) then
+               TWOINR(n_uniq) = integral(1)
+               TWOINI(n_uniq) = integral(2)
+               indtwr(label(1),label(2),label(3),label(4)) = n_uniq
+               indtwi(label(1),label(2),label(3),label(4)) = n_uniq
+               indtwr(label(3),label(4),label(1),label(2)) = n_uniq
+               indtwi(label(3),label(4),label(1),label(2)) = n_uniq
+               indtwr(label(2),label(1),label(4),label(3)) = n_uniq
+               indtwi(label(2),label(1),label(4),label(3)) = -n_uniq
+               indtwr(label(4),label(3),label(2),label(1)) = n_uniq
+               indtwi(label(4),label(3),label(2),label(1)) = -n_uniq
+           end if
+        end if
+        if (all(label == 0)) exit
+      end do
+
+      close(FCIDUMP,status="KEEP")
+
+      end

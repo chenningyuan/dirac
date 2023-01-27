@@ -53,7 +53,6 @@ cbs   clean the arrays for cartesian integrals
 C
       length3=(numbalLcart*numbalLcart+numbalLcart)/2
       iloca=length3
-CBS   print *, 'iloca',iloca
       IOCAX = 1
       iocay=iocax+iloca
       iocaz=iocay+iloca
@@ -1861,6 +1860,7 @@ cbs   get expansions of atomic orbitals in contracted functions
       dimension xorb(MxprimL,MxContL,0:lmax)
       dimension ovlpprimcont(MxcontL,MxprimL),
      *dummytrafo(MxcontL,MxprimL)
+      real(8), allocatable :: zeta(:)
       DIMENSION WORK(LWORK)
 
 #include "amfi_if.h"
@@ -1920,15 +1920,26 @@ CMI   write(17,'(I5)') null
 CMI   else
       write(17,'(I5)') ione    
 CMI   endif
-      write(17,'(4(E20.14,1X))') ((exponents(irun,L),irun=1,
-     *nprimit(l)),l=0,Lmax_occ)
+
+!     Pack exponents in a one dimensional array as they will be read that way
+!     avoids bug with gnu8 compiler in directly writing in a nested loop
+      allocate(zeta(sum(nprimit)))
+      ii = 0
+      do l=0,Lmax_occ
+         do irun=1,nprimit(l)
+            ii = ii + 1
+            zeta(ii) = exponents(irun,l)
+         end do
+      end do
+      write(17,'(4(E20.14,1X))') zeta
+      deallocate(zeta)
+
       rewind(17)
       close(17,status='keep')
 C
 C     set file labels for file RELSCF_COEF
       CALL GETLAB_RELSCF(INT(CHARGE))
 
-CMI   call system('relscf < TOSCF > scf.out')
 CMI ... run internal atomic SCF code which reads TOSCF input file
       CALL INT_AT_SCF(WORK,LWORK)
       IF(ONRELSCF) THEN
@@ -2224,13 +2235,13 @@ CMI  *' H: no mean-field             ',
      *'Mt: [Rn]7s^2 7p^0 6d^7 5f^14  ',  ! 109
      *'Ds: [Rn]7s^1 7p^0 6d^9 5f^14  ',  ! 110
      *'Rg: [Rn]7s^1 7p^0 6d^10 5f^14 ',  ! 111
-     *'Uub:[Rn]7s^2 7p^0 6d^10 5f^14 ',  ! 112
-     *'Uut:[Rn]7s^2 7p^1 6d^10 5f^14 ',  ! 113
-     *'Uuq:[Rn]7s^2 7p^2 6d^10 5f^14 ',  ! 114
-     *'Uup:[Rn]7s^2 7p^3 6d^10 5f^14 ',  ! 115
-     *'Uuh:[Rn]7s^2 7p^4 6d^10 5f^14 ',  ! 116
-     *'Uus:[Rn]7s^2 7p^5 6d^10 5f^14 ',  ! 117
-     *'Uuo:[Rn]7s^2 7p^6 6d^10 5f^14 '/  ! 118
+     *'Cn: [Rn]7s^2 7p^0 6d^10 5f^14 ',  ! 112
+     *'Nh: [Rn]7s^2 7p^1 6d^10 5f^14 ',  ! 113
+     *'Fl: [Rn]7s^2 7p^2 6d^10 5f^14 ',  ! 114
+     *'Mc: [Rn]7s^2 7p^3 6d^10 5f^14 ',  ! 115
+     *'Lv: [Rn]7s^2 7p^4 6d^10 5f^14 ',  ! 116
+     *'Ts: [Rn]7s^2 7p^5 6d^10 5f^14 ',  ! 117
+     *'Og: [Rn]7s^2 7p^6 6d^10 5f^14 '/  ! 118
       data ((iclocc(i,j),i=0,LMAX_occ),j=0,ichargemax) /
      & 0 , 0, 0, 0,  0 , 0, 0, 0,  1 , 0, 0, 0,  ! 0-2
      & 1 , 0, 0, 0,  2 , 0, 0, 0,  2 , 0, 0, 0,  ! 3-5      
@@ -2579,13 +2590,13 @@ CMI  *' H: no mean-field             ',
      *'Mt ',  ! 109
      *'Ds ',  ! 110
      *'Rg ',  ! 111
-     *'Uub',  ! 112
-     *'Uut',  ! 113
-     *'Uuq',  ! 114
-     *'Uup',  ! 115
-     *'Uuh',  ! 116
-     *'Uus',  ! 117
-     *'Uuo'/  ! 118
+     *'Cn' ,  ! 112
+     *'Nh' ,  ! 113
+     *'Fl' ,  ! 114
+     *'Mc' ,  ! 115
+     *'Lv' ,  ! 116
+     *'Ts' ,  ! 117
+     *'Og' /  ! 118
 cbs
       if (icharge.gt.ichargemax) then
          CALL QUIT('occupations not implemented')

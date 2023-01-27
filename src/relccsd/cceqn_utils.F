@@ -1089,8 +1089,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-      integer istat
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      integer ISTAT(df_MPI_STATUS_SIZE)
 #endif
 C
 C---------------Local variables--------------------------------------
@@ -1231,6 +1230,72 @@ C
 C
       RETURN
       END
+
+      SUBROUTINE FCORE(T1,T2,EPS)
+      use relcc_cfg  
+      use projectors 
+C
+      implicit none
+C
+C---------------Description--------------------------------------------
+C
+C     Zeroes out core contributions (frozen core approximation)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 T1(*),T2(*),EPS(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      integer :: idet, j, k
+      logical, pointer :: projector(:) => NULL()
+C
+C---------------Executable code--------------------------------------
+C
+      if (.not.relcc_projectors_frozen_core) RETURN
+
+      projector => create_t_projector(NDIMT1+NDIMT2,EPS)
+       
+      do idet=1, (NDIMT1+NDIMT2)
+        if (projector(idet)) then
+          if (idet.le.NDIMT1) then
+            if(CARITH) then
+              j = 2*(idet-1) + 1
+              k = j + 1
+              T1(j) = 0d0
+              T1(k) = 0d0
+            else
+              T1(idet) = 0d0
+            endif
+          else 
+            if(CARITH) then
+              j = 2*(idet-1) + 1
+              k = j + 1
+              T2(j-NDIMT1*2) = 0d0
+              T2(k-NDIMT1*2) = 0d0
+            else
+              T2(idet-NDIMT1) = 0d0
+            endif
+          endif
+        endif
+      end do
+C
+      RETURN
+      END
+
+
       SUBROUTINE MP2ENG(T1,T2,FVO,BUF1,EMP2)
 C
       implicit none

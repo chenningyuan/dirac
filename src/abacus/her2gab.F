@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -420,7 +415,6 @@ C               Electron 2
 #include "dorps.h"
 #include "nuclei.h"
 #include "twosta.h"
-#include "ibtfun.h"
 C
       CALL QENTER('GABDR1')
 #include "memint.h"
@@ -609,11 +603,10 @@ C
      &          COEFCD(*),ICORBC(NORBC),ICORBD(NORBD),NUCTCD(8),
      &          IEFFA(0:7),IEFFB(0:7), IEFFC(0:7), IEFFD(0:7),SIGNT(3)
 C
-#include "ibtfun.h"
-      IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
-      XAND(I)     = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I)     = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I)     = PT(IBTAND(ISYMAX(3,1),I))
+      IBTAXO(I,J) = IAND(I,IEOR(I,J))
+      XAND(I)     = PT(IAND(ISYMAX(1,1),I))
+      YAND(I)     = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I)     = PT(IAND(ISYMAX(3,1),I))
 C
 CMI   CALL QENTER('GABDR2')
 #include "memint.h"
@@ -626,17 +619,17 @@ C     This is a GAB-run
 C
       IOFF = 0
       DO I = 0, MAXOPR
-      IF(IBTAND(I,MULA).EQ.0) THEN
+      IF(IAND(I,MULA).EQ.0) THEN
         IEFFA(I) = IOFF
         IOFF = IOFF + KHKTA
         ELSE
-          IEFFA(I) = IEFFA(IBTXOR(I,IBTAND(I,MULA)))
+          IEFFA(I) = IEFFA(IEOR(I,IAND(I,MULA)))
         END IF
       ENDDO
       CALL SETEFF(IEFFB,IEFFC,IEFFD)
 C
-      MULAB  = IBTAND(MULA,MULB)
-      MULCD  = IBTAND(MULC,MULD)
+      MULAB  = IAND(MULA,MULB)
+      MULCD  = IAND(MULC,MULD)
 C
       IF(DIRAC) THEN
         COMP(1) = 'L'
@@ -652,7 +645,7 @@ C
 c     HKABCD is a symmetry factor, which determines how many different integrals
 c     have the same value. This symmetry factor is not factorizable
 c     between AB and CD, and must therefore not be included in GAB/YAB matrix.
-c     HKABCD = FMULT(IBTAND(MULAB,MULCD)). /Feb 19 1998 - jth
+c     HKABCD = FMULT(IAND(MULAB,MULCD)). /Feb 19 1998 - jth
       HKABCD = D1
       IF (SPNORB) HKABCD = - HKABCD
       IF (UNDIFF .OR. LONDON .OR. SPNORB) THEN
@@ -707,7 +700,7 @@ C
 
       NSYMR = 0
       DO 100 ISYMR = 0,MAXOPR
-      IF (IBTAND(ISYMR,IBTOR(MULA,MULB)) .EQ. 0) THEN
+      IF (IAND(ISYMR,IOR(MULA,MULB)) .EQ. 0) THEN
          NSYMR  = NSYMR + 1
          IF(NCENTB.GT.0) ICENTB = NUCNUM(NCNTSH(ISHELB),
      &        IBTAXO(ISYMR,MULB)+1)
@@ -747,7 +740,7 @@ c the total contribution is zero).  /jan.98-hjaaj,jth
 
          NSYMS = 0
          DO 200 ISYMS = 0, MAXOPR
-         IF (IBTAND(ISYMS,IBTOR(MULC,MULD)) .EQ. 0) THEN
+         IF (IAND(ISYMS,IOR(MULC,MULD)) .EQ. 0) THEN
            IF(IJOB.EQ.0) THEN
              IF(ISYMS.NE.ISYMR) THEN
                GOTO 200
@@ -788,11 +781,11 @@ C
               NCCINT = NORBAB*NORBCD*KHKTAB*KHKTCD
             END IF
             DO 300 ISYMT = 0, MAXOPR
-            IF (IBTAND(ISYMT,IBTOR(MULAB,MULCD)) .EQ. 0) THEN
+            IF (IAND(ISYMT,IOR(MULAB,MULCD)) .EQ. 0) THEN
               IF(IJOB.EQ.0) THEN
                 IF(ISYMT.NE.0) GOTO 300
               ENDIF
-              ISYMTS = IBTXOR(ISYMT,ISYMS)
+              ISYMTS = IEOR(ISYMT,ISYMS)
               IF(NCENTC.GT.0) ICENTC = NUCNUM(NCNTSH(ISHELC),
      &            IBTAXO(ISYMT,MULC)+1)
               IF(NCENTD.GT.0) ICENTD = NUCNUM(NCNTSH(ISHELD),
@@ -853,7 +846,7 @@ C
               ONECEN = ONECEN .AND. .NOT. DOGAB
               IF (ONECEN) THEN
                 IF (MAXDER .EQ. 0) THEN
-                  IF (IBTAND(JMAX0,1).EQ.1)              GO TO 100
+                  IF (IAND(JMAX0,1).EQ.1)              GO TO 100
                 ELSE
                   IF (PERTUR .OR. EXPECT .OR. LONDON)    GO TO 100
                 END IF
@@ -1039,8 +1032,6 @@ C
 #include "twocom.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine GABGAT',-1)
       IF (IPRINT .GT. 10) THEN
          WRITE (LUPRI,'(2X,A,4I5)') 'NHKT? ', NHKTA, NHKTB, NHKTC, NHKTD
@@ -1065,7 +1056,7 @@ C
          IREPA  = IPNTRP(1,I)
          IREPB  = IPNTRP(2,I)
          IREPC  = IPNTRP(3,I)
-         IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+         IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
          INT = 0
          DO 200 IAB = 1, NORBAB
            IA = KHKTA*(NINDAB(IAB,1) - 1)
@@ -1127,15 +1118,13 @@ C*****************************************************************************
 #include "nuclei.h"
 #include "blocks.h"
 C
-#include "ibtfun.h"
-C
 Chj/980617: changed ISYMA test from MULA to MULAB, we must
 C           include all different operations where at least one of
 C           A and B move (because we need the GAB integrals
 C           for sqrt( T(C S(D)) | T(C S(D)) ) ).
       IF(SYMFAC.NE.D1) CALL DSCAL(NCCINT,SYMFAC,AOINT,1)
       IOFF = 0
-      MULAB = IBTAND(MULA,MULB)
+      MULAB = IAND(MULA,MULB)
       IF(SUSCEP) THEN
         DO ICOMPA = 1,KHKTA
                       KHKTBB = KHKTB
@@ -1158,8 +1147,8 @@ C           for sqrt( T(C S(D)) | T(C S(D)) ) ).
                     IF(A.EQ.C.AND.B.EQ.D) THEN
                       AOBUF     = AOINT(IOFF+IORBCD)
                       DO ISYMA = 0, MAXOPR
-                      IF(IBTAND(ISYMA,MULAB).EQ.0) THEN
-                         ISYMB = IBTXOR(ISYMR,ISYMA)
+                      IF(IAND(ISYMA,MULAB).EQ.0) THEN
+                         ISYMB = IEOR(ISYMR,ISYMA)
                          IA = IORBSH(ISHELA,IORBA)
      &                       + IEFFA(ISYMA) + ICOMPA
                          IB = IORBSH(ISHELB,IORBB)
@@ -1203,8 +1192,8 @@ C           for sqrt( T(C S(D)) | T(C S(D)) ) ).
                          AOBUF2    = AOBUF
                       END IF
                       DO ISYMA = 0, MAXOPR
-                      IF(IBTAND(ISYMA,MULAB).EQ.0) THEN
-                         ISYMB = IBTXOR(ISYMR,ISYMA)
+                      IF(IAND(ISYMA,MULAB).EQ.0) THEN
+                         ISYMB = IEOR(ISYMR,ISYMA)
                          IA = IORBSH(ISHELA,IORBA)
      &                     + IEFFA(ISYMA) + ICOMPA
                          IB = IORBSH(ISHELB,IORBB)
@@ -1409,13 +1398,11 @@ C
 #include "nuclei.h"
       DIMENSION INDRSO(NBASIS)
 C
-#include "ibtfun.h"
-C
       ISTRA = 1
       DO IREPA = 0, MAXREP
         NORBA = NAOS(IREPA+1)
         DO I = ISTRA,ISTRA + NORBA - 1
-          ISHELA   = IPTSHL(IBTAND(IBTSHR(IPIND(I),16),65535))
+          ISHELA   = IPTSHL(IAND(ISHFT(IPIND(I),-16),65535))
           INDRSO(I) = ISHELA
         ENDDO
         ISTRA = ISTRA + NORBA
@@ -1786,10 +1773,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Gabgen */
       SUBROUTINE GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,JATOM,NOCONT,
      &                  IPRINT,WORK,LWORK)
+      use checkpoint
 C***********************************************************************
 C
 C     This routine will generate the reduced matrix of
-C     Cauchy-Schwartz integrals and write it to file AOPROPER
+C     Cauchy-Schwartz integrals and write it to CHECKPOINT
 C
 C     Written by T.Saue Mar 19 1997
 C
@@ -1803,10 +1791,14 @@ C
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
-      LOGICAL EXTST,OPTST,FNDLAB,NOCONT
+      LOGICAL EXTST,FNDLAB,NOCONT
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
+      logical gabdone
+      integer gabsize
+      character*(:), allocatable :: group
       CALL QENTER('GABGEN')
+      group = '/result/operators/ao_matrices/'
       IF (IPRINT .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
 #include "memint.h"
 C
@@ -1844,45 +1836,14 @@ C
 C
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
 C
-C     Check if file AOPROPER is present
+C     Search for GAB-integrals; return if they are there
 C
-      OPTST = .FALSE.
-      INQUIRE(FILE='AOPROPER',EXIST=EXTST)
-      IF(EXTST) THEN
-C     File AOPROPER present; see if it is opened
-         INQUIRE(FILE = 'AOPROPER',OPENED=OPTST)
-         IF(OPTST) THEN
-C        File AOPROPER is opened; get unit number
-            INQUIRE(FILE = 'AOPROPER',NUMBER=LUPROP)
-         ELSE
-C           File AOPROPER is not opened; open it
-            LUPROP = 19
-            OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &            FILE='AOPROPER')
-         ENDIF
-C
-C       Search for GAB-integrals; return if they are there
-C
-         DO I = 1,NGAB
-            REWIND LUPROP
-            IF (.NOT. FNDLAB(GABLAB(I),LUPROP)) GOTO 10
-         END DO
-         GOTO 999
- 10      CONTINUE
-         REWIND LUPROP
-         IF(FNDLAB('EOFLABEL',LUPROP)) THEN
-            BACKSPACE LUPROP
-         ELSE
-            WRITE(LUPRI,'(A)')
-     &      'GABGEN: EOFLABEL not found on AOPROPER !'
-            CALL QUIT('GABGEN: EOFLABEL not found !')
-         ENDIF
-      ELSE
-         LUPROP = 19
-         OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-         REWIND LUPROP
-      ENDIF
+      DO I = 1,NGAB
+          call checkpoint_query (group//gablab(i),gabdone,gabsize)
+          IF(.not.gabdone.or.gabsize.ne.nsymbl**2) GOTO 10
+      END DO
+      GOTO 999
+ 10   CONTINUE
 C
 C     Generate GAB-integrals
 C
@@ -1941,18 +1902,15 @@ C
       ENDIF
 C
 C
-C     Write label
+C     Write labeled data
 C
       IOFF = 0
       DO I = 1,NGAB
-         CALL NEWLB2(GABLAB(I),RTNLBL,LUPROP,LUPRI)
-         LEN = MAX(4,N2GAB)
-         CALL WRITT(LUPROP,LEN,WORK(KGAB+IOFF))
+         call checkpoint_write (group//gablab(i),
+     &        rdata=WORK(KGAB+IOFF:KGAB+IOFF+N2GAB-1))
          IOFF = IOFF + N2GAB
       END DO
-      CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
 C
-      IF(.NOT.OPTST) CLOSE(LUPROP,STATUS='KEEP')
       CALL MEMREL('GABGEN',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       IF (IPRINT .GT. 1) CALL TIMER('GABGEN',TIMSTR,TIMEND)
@@ -1964,6 +1922,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck Getgab */
       SUBROUTINE GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,IPRINT,
      &     GABM,WORK,LWORK)
+       use checkpoint
 C***********************************************************************
 C
 C     Fetch compressed matrix of Cauchy-Scwartz-integrals from file
@@ -1979,10 +1938,16 @@ C***********************************************************************
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
-      LOGICAL EXTST,OPTST,FNDLAB
+      LOGICAL EXTST,FNDLAB
       CHARACTER GABLAB(3)*8
       DIMENSION GABM(NSYMBL,NSYMBL,*), WORK(*)
+      integer gabsize
+      logical gabdone
+      character*(:), allocatable :: group
+      real(8), allocatable :: gab1d(:)
 #include "memint.h"
+      group = '/result/operators/ao_matrices/'
+      allocate(gab1d(nsymbl*nsymbl)) ! need a 1d reading array
 C
 C     Construct label
 C     ---------------
@@ -2014,69 +1979,29 @@ C
          WRITE(GABLAB(I)(6:6),'(I1)') IGTYP
       ENDDO
 C
-C     Check if file AOPROPER is present
-C     ---------------------------------
-C
-      OPTST = .FALSE.
-      INQUIRE(FILE='AOPROPER',EXIST=EXTST)
-      IF(EXTST) THEN
-C        File AOPROPER present; see if it is opened
-         INQUIRE(FILE = 'AOPROPER',OPENED=OPTST)
-         IF(OPTST) THEN
-C           File AOPROPER is opened; get unit number
-            INQUIRE(FILE = 'AOPROPER',NUMBER=LUPROP)
-         ELSE
-C           File AOPROPER is not opened; open it
-            LUPROP = 19
-            OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &           FILE='AOPROPER')
-         ENDIF
-      ELSE
-         WRITE(LUPRI,'(A)') 'GETGAB: AOPROPER not found !'
-         CALL QUIT('GETGAB: AOPROPER not found !')
-      ENDIF
-C
 C     Get GAB-matrix
 C     --------------
 C
       DO IGAB = 1, NGAB
-         REWIND LUPROP
-         IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
-            CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
-            IF(IPRINT.GE.5) THEN
-C              reduced GAB-matrix is printed for IPRINT .ge. 4 in GABGEN
-C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
-               CALL HEADER('GETGAB:Reduced GAB-matrix',-1)
-               WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
-               CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,
-     &                  NSYMBL,NSYMBL,-4,LUPRI)
-            ENDIF
-         ELSE
-            WRITE(LUPRI,'(/4A)')
+         call checkpoint_query (group//gablab(igab),gabdone,gabsize)
+         IF(.not.gabdone.or.gabsize.ne.nsymbl**2) THEN
+            WRITE(LUPRI,'(/3A)')
      &           '* GETGAB: label "',GABLAB(IGAB),'" not found; '//
      &           'calling GABGEN.'
             CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,0,.FALSE.,
      &           IPRINT,WORK,LWORK)
-            REWIND LUPROP
-            IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
-               CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
-            ELSE
-               WRITE(LUPRI,'(A,A8,A)')
-     &              'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
-               CALL QUIT('GETGAB: No GAB on AOPROPER !')
-            END IF
          ENDIF
-C
-C
+         call checkpoint_read (group//gablab(igab),rdata=gab1d)
+         gabm(:,:,igab) = reshape(gab1d,(/nsymbl,nsymbl/))
+         IF(IPRINT.GE.5) THEN
+C           reduced GAB-matrix is printed for IPRINT .ge. 4 in GABGEN
+C           we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
+            CALL HEADER('GETGAB:Reduced GAB-matrix',-1)
+            WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
+            CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,
+     &               NSYMBL,NSYMBL,-4,LUPRI)
+         ENDIF
       END DO
 C
-      IF(.NOT.OPTST) CLOSE(LUPROP,STATUS='KEEP')
       RETURN
-!radovan: rest of the routine is unreachable
- 10   CONTINUE
-      WRITE(LUPRI,'(A,A8)') '* GETGAB: ERROR reading ',GABLAB
-      CALL QUIT('GETGAB: Error reading GAB from AOPROPER !')
- 20   CONTINUE
-      WRITE(LUPRI,'(A,A8)') '* GETGAB: EOF   reading ',GABLAB
-      CALL QUIT('GETGAB: EOF reading GAB from AOPROPER !')
       END

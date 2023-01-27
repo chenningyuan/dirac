@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ***********************************************************************
@@ -299,6 +294,7 @@ CTEMP     ISM2(3,5) = 1
 ***********************************************************************
 
       SUBROUTINE GASANA_REL(C,NBLOCK,IBLOCK,IBLTP,LUC,LUSCR,ICISTR,IRC)
+      use luci_wrkspc
 *
 *
 * Analyze CI vector
@@ -327,7 +323,6 @@ CTEMP     ISM2(3,5) = 1
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "cprnt.inc"
@@ -1083,6 +1078,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 ***********************************************************************
 
       SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,LSCR2,CIRUN)
+      use luci_wrkspc
 C**********************************************************************
 C
 C     allocate two blocks: VEC1 and VEC2
@@ -1113,7 +1109,6 @@ C
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "clunit.inc"
 #include "cstate.inc"
 #include "crun.inc"
@@ -1512,6 +1507,7 @@ C?              WRITE(6,*)   I1SM,I2SM,I3SM,I4SM,MDX
 ***********************************************************************
 
       SUBROUTINE LCISPC_REL(LCSBLK,IPRNT,CIRUN)
+      use luci_wrkspc
 *
 * Number of dets and combinations
 * per symmetry for each type of internal space
@@ -1536,7 +1532,6 @@ C?              WRITE(6,*)   I1SM,I2SM,I3SM,I4SM,MDX
 *./CSM/ : NSMST is used
 #include "stinf.inc"
 *./CSTATE/ : IDC is used
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 *
@@ -3263,6 +3258,7 @@ COLD  MIN1A = MIN1_T
      &                       NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2,
      &                       NBLK_MS2_C,CALC_MS2_C,I_SET_L2BLOCK,
      &                       I_USE_PC,NPARBLOCK)
+      use luci_wrkspc
 *
 * Construct information about batch and block structure of CI space
 * defined by ISPC,ISM.
@@ -3290,7 +3286,6 @@ COLD  MIN1A = MIN1_T
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cicisp.inc"
 #include "stinf.inc"
 #include "strbas.inc"
@@ -3611,6 +3606,7 @@ C
      &                         NBAT_MS2,IBAT_MS2,I_SET_L2BLOCK,
      &                         I_USE_PC,NPARBLOCK,IRC,IT_TTPL,
      &                         IGROUPLIST)
+      use luci_wrkspc
 *
 * Construct information about batch and block structure of CI space
 * defined by ISPC,ISM.
@@ -3635,7 +3631,6 @@ C
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cicisp.inc"
 #include "stinf.inc"
 #include "strbas.inc"
@@ -3647,7 +3642,7 @@ C
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
 *
 *.output
@@ -3880,6 +3875,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
      &                         NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
      &                         NBAT_MS2,IBAT_MS2,I_SET_L2BLOCK,
      &                         I_USE_PC,NPARBLOCK,IRC)
+      use luci_wrkspc
 *
 * Construct information about batch and block structure of CI space
 * defined by ISPC,ISM.
@@ -3904,7 +3900,6 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cicisp.inc"
 #include "stinf.inc"
 #include "strbas.inc"
@@ -3916,7 +3911,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
 *
       INTEGER NBLK_MS2(*), IBLK_MS2(*)
@@ -4138,6 +4133,7 @@ C***********************************************************************
       SUBROUTINE Z_BLKFO_XPROP(IDC,NMS2VAL,ISPC,KNODELIST,KBLOCKLIST,
      &                         KRCCTOS,KXSYMDISTR,IXSYMBLK,IXSYMPAIRS,
      &                         IRC,IGROUPLIST)
+      use luci_wrkspc
 C***********************************************************************
 C
 C     construct information about batch and block structure of all 
@@ -4157,7 +4153,6 @@ C
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cicisp.inc"
 #include "stinf.inc"
 #include "strbas.inc"
@@ -4169,7 +4164,7 @@ C
 #include "krciprop.h"
 #if defined (VAR_MPI2)
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
       DIMENSION IXSYMBLK(*)
 C
@@ -4427,9 +4422,9 @@ C
 #include "infpar.h"
 #include "cands.inc"
 #include "mxpdim.inc"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), ISYM_DISTR(IXSYMACT)
-      DIMENSION NPARBLOCK_X(NUM_BLOCKS,*),IBLOCKL_X(NUM_BLOCKS,*)
-      DIMENSION IXSYMPAIRS(MXPROPKRCI_SYM,*)
+      INTEGER   ISTAT(MPI_STATUS_SIZE), ISYM_DISTR(IXSYMACT)
+      INTEGER   NPARBLOCK_X(NUM_BLOCKS,*),IBLOCKL_X(NUM_BLOCKS,*)
+      INTEGER   IXSYMPAIRS(MXPROPKRCI_SYM,*)
       INTEGER   RCCTOS_X(NUM_BLOCKS2,*)
 C
       IXPAIR = 0
@@ -4549,6 +4544,7 @@ C
 ***********************************************************************
 
       SUBROUTINE ZNELFSPGP_REL(NTESTG)
+      use luci_wrkspc
 *
 * Generate for each supergroup the number of electrons in each active
 * orbital space and store in NELFSPGP
@@ -4559,7 +4555,6 @@ C
 #include "ipoist8.inc"
 *. input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strbas.inc"
 #include "cgas.inc"
 *. Input and Output ( NELFSPGP(MXPNGAS,MXPSTT) )

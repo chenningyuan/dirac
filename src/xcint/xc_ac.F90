@@ -17,10 +17,16 @@ module xc_ac
    private
 
    real(8) :: homo_eigenvalue
-   real(8) :: homo_eigenvalue_previous
+   real(8), save :: homo_eigenvalue_previous = 0.0d0
 
 
 contains
+
+    subroutine get_safe_minimum(safe_minimum)
+        real(8) :: safe_minimum
+        double precision dlamch
+        safe_minimum = dlamch('S')
+    end subroutine
 
    subroutine dftac(              &
                     block_length, &
@@ -45,6 +51,7 @@ contains
       real(8)                :: rho43, f
       real(8)                :: vx_bulk(3), vx_outer(3), vx_slater(3), vx_resp(3)
       real(8)                :: x, shiftbulk
+      real(8)                :: safe_minimum
 !     --------------------------------------------------------------------------
 
 #ifdef PRG_DIRAC
@@ -53,6 +60,7 @@ contains
       print *, 'adapt standalone AC to xcfun'
       stop
 #endif
+      call get_safe_minimum(safe_minimum)
 
 !     shift bulk?
       if (dft_cfg_grac) then
@@ -69,9 +77,12 @@ contains
             vx_slater = 0.0d0
             vx_resp = 0.0d0
 #ifdef PRG_DIRAC
+            if (rho(k).gt.safe_minimum) &
             call gllbholepot(vx_slater, weight(k), rho(k), dsqrt(z_0(k)))
 #endif
-            vx_resp(1) = 0.42d0*weight(k)*rho_resp(k)/rho(k)
+            if (rho(k).gt.safe_minimum) &
+              vx_resp(1) = 0.42d0*weight(k)*rho_resp(k)/rho(k)
+
             vx_bulk(1) = vx_slater(1) + vx_resp(1)
          else
             vx_bulk(1) = derv(k, d1000000)
@@ -91,11 +102,12 @@ contains
 
 !        interpolation
          if (dft_cfg_saop) then
-            f = rho_outer(k)/rho(k)
+            if (rho(k).gt.safe_minimum) &
+               f = rho_outer(k)/rho(k)
          end if
          if (dft_cfg_grac) then
             rho43 = rho(k)**(4.0d0/3.0d0)
-            if (rho43 /= 0.0d0) then
+            if (rho43.gt.safe_minimum) then
                x = dsqrt(z_0(k))/rho43
             else
                x = 0.0d0
@@ -107,7 +119,6 @@ contains
 !        connection
          derv(k, d0010000) = (1.0d0-f)* vx_bulk(2)
          derv(k, d1000000) = (1.0d0-f)*(vx_bulk(1) - weight(k)*shiftbulk) + f*vx_outer(1)*(1.0d0 - hf_exchange_factor)
-
       end do
 
    end subroutine

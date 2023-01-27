@@ -1,7 +1,19 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_BINARY_DIR}/src/gp
     ${PROJECT_BINARY_DIR}
     )
+
+find_package(HDF5 COMPONENTS C)
+if(HDF5_FOUND)
+   option(ENABLE_HDF5 "Enable HDF5" ON)
+   message(STATUS "HFD5 found, enabling HDF5 interface ")
+   message(STATUS "HDF5 include directory location: ${HDF5_INCLUDE_DIRS} ")
+   include_directories(${HDF5_INCLUDE_DIRS})
+else()
+   option(ENABLE_HDF5 "Enable HDF5" OFF)
+   message(STATUS "HDF5 interface can not be used, no HDF5 installation found")
+endif()
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
     SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
@@ -15,8 +27,6 @@ set(FIXED_GP_FORTRAN_SOURCES
    gpjeppe.F
    gpjth.F
    gpkrmc.F
-   gplucia.F
-   gplucia_io.F
    gplupar.F
    gpluuk.F
    gpsaue.F
@@ -34,15 +44,21 @@ set(FIXED_GP_FORTRAN_SOURCES
    qpack.F
    spline.F
    time.F
-   vcraypack.F
-   # gpsaue.F needs disotp
-   ${PROJECT_SOURCE_DIR}/src/abacus/hergp.F
+)
+
+set(FIXED_GP_FORTRAN_SOURCES_noruntimecheck
+# Miro: I moved problematic source files here
+   gplucia_io.F
+   gplucia.F
 )
 
 set(FREE_GP_FORTRAN_SOURCES
+    basis_datatypes.F90
+    checkpoint.F90
     codata.F90
     debug_mem_alloc.F90
     dirac_cfg.F90
+    dirac_mocoefficients.F90
     dynamic_string.F90
     electrostatic_potential.F90
     exception_handling.F90
@@ -53,10 +69,12 @@ set(FREE_GP_FORTRAN_SOURCES
     heapsort.F90
     include_h_modules.F90
     kinds.F90
+    luci_wrkspc.F90
     machine_parameters.F90
     memory_allocator.F90
     memory_control.F90
     memory_errorhandler.F90
+    memory_internal_special_i8.F90
     memory_internal_ada_1d.F90
     memory_internal_ada_2d.F90
     memory_internal_ada_3d.F90
@@ -67,7 +85,6 @@ set(FREE_GP_FORTRAN_SOURCES
     memory_track_if.F90
     memory_tracker.F90
     moltra_labeling.F90
-    numerical_operators.F90
     num_der.F90
     orbital_rotation_indices.F90
     osutils.F90
@@ -75,6 +92,7 @@ set(FREE_GP_FORTRAN_SOURCES
     quaternion_algebra.F90
     selftests.F90
     string_manipulations.f90
+    type_laplace.F90
     unit_test_generator.f90
     unit_testing.F90
     vector_functions.F90
@@ -82,7 +100,17 @@ set(FREE_GP_FORTRAN_SOURCES
     xml/xml_file.F90
     xml/xml_structure.F90
     xml/xml_parser.F90
+    labeled_storage.F90
+    dircmo.F90
 )
+
+# later we can take quaternion_algebra.F90 out of "gp" and link against quaternion_algebra
+add_library(quaternion_algebra)
+
+target_sources(quaternion_algebra
+  PRIVATE
+    quaternion_algebra.F90
+  )
 
 set(GP_C_SOURCES
     execinfo_bsd.c
@@ -97,21 +125,56 @@ set(GP_C_SOURCES
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_GP_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_GP_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FIXED_GP_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
-add_library(
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'gp' module with some source files excluded")
+    set_source_files_properties(${FREE_GP_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_GP_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${GP_C_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_runtimecheck})
+endif()
+
+if(ENABLE_HDF5)
+  add_library(
     gp
     OBJECT
     ${FIXED_GP_FORTRAN_SOURCES}
+    ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_GP_FORTRAN_SOURCES}
     ${GP_C_SOURCES}
+    hdf5_util/mh5.F90
+    hdf5_util/mh5_capi.c
 )
+else()
+  add_library(
+    gp
+    OBJECT
+    ${FIXED_GP_FORTRAN_SOURCES}
+    ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
+    ${FREE_GP_FORTRAN_SOURCES}
+    ${GP_C_SOURCES}
+    hdf5_util/mh5_nohdf5.F90
+)
+endif()
 
 # add intermodule dependencies
 add_dependencies(gp interface_mpi)
-add_dependencies(gp dirac_interfaces)
-add_dependencies(gp xcint)
 add_dependencies(gp pdpack)
 
-generate_git_info_header(${PROJECT_BINARY_DIR} git_info.h)
+# generates git information
+add_custom_command(
+  OUTPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
+    ALL
+  COMMAND
+  ${CMAKE_COMMAND} -D INPUT_DIR=${PROJECT_SOURCE_DIR}/cmake/downloaded -D OUTPUT_DIR=${PROJECT_BINARY_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/downloaded/git-hash.cmake
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+add_custom_target(
+  git_info
+  ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
+  )
+
 add_dependencies(gp git_info)

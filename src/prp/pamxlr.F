@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -126,8 +121,7 @@ C
       CALL PRPXL1(WORK(KLRF),WORK(KCNV),WORK,KFREE,LFREE)
 C
  10   CONTINUE
-      IF (XLRANA) CALL ANAXRS(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
-     &                        WORK,KFREE,LFREE,IPRXLR)
+      IF (XLRANA) CALL ANAXRS(WORK,KFREE,LFREE,IPRXLR)
 C
       CALL QEXIT('PRPXLR')
       RETURN
@@ -204,7 +198,7 @@ C
 
       IF(XLRANA) THEN
         CALL MEMGET2('INTE','IORBCLS',KLRO,4*NORBT,WORK,KFREE,LFREE)
-        CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
+        CALL DEFORB(WORK(KLRO),NCLS_XLR,XLR_INDSTR,
      &              WORK,KFREE,LFREE,IPRXLR)
       ELSE
         KLRO = KFREE
@@ -223,29 +217,31 @@ C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
       if (london) then
+        if (.not.regrad) then
 
-        call alloc(cmo,   ncmotq)
-        call alloc(ibeig, ntbas(0))
+          call alloc(cmo,   ncmotq)
+          call alloc(ibeig, ntbas(0))
 
-c.......direct contribution
-        call onelon(cmo, ibeig, work, kfree, lfree)
+c.........direct contribution
+          call onelon(cmo, ibeig, work, kfree, lfree)
+          
+          if (.not.notwol) then
+            call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
+          end if
 
-        if (.not.notwol) then
-          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
-        end if
+c.........reorthonormalization contribution
+!         gosia: in connection-independent formulation, there is no
+!         reorthonormalization contribution in the property gradient.
+!         Instead, there is a contribution from magnetic derivatives 
+!         of overlap matrix (modifications in london_reorth.F90)
+          if (.not. noonei) then
+            call london_reort_hb(cmo, ibeig, work(kfree), lfree)
+          end if
+         
+          call dealloc(cmo)
+          call dealloc(ibeig)
 
-c.......reorthonormalization contribution
-!       gosia: in connection-independent formulation, there is no
-!       reorthonormalization contribution in the property gradient.
-!       Instead, there is a contribution from magnetic derivatives 
-!       of overlap matrix (modifications in london_reorth.F90)
-        if (.not. noonei) then
-          call london_reort_hb(cmo, ibeig, work(kfree), lfree)
-        end if
-
-        call dealloc(cmo)
-        call dealloc(ibeig)
-
+        endif
       endif
 
 C
@@ -400,7 +396,6 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
-      use codata
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -409,12 +404,13 @@ C***********************************************************************
 #endif
       use dirac_cfg
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 42,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 44,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -441,13 +437,12 @@ C
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
      &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
      &            '.DAMPIN','.FREQ I','.LAOMOD','.EPOLE ',
-     &            '.MPOLE ','.NMFREQ'/
+     &            '.MPOLE ','.NMFREQ','.ANATHR','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
 #include "gauss_legendre.h"
 C
-
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -457,6 +452,8 @@ C
       ELSE
          SET = .TRUE.
       END IF
+! Miro: satisfy runtimecheck for parallel run
+      FINTER     = .FALSE. 
 C
 C     Local initialization
 C
@@ -514,7 +511,7 @@ C     Calculation of C6 dispersion coefficient
       ALLCMB     = .FALSE.
       XLR_SKIPEP = .FALSE.
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
-      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
+      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj.or.x2cmmf)
      &  XLR_SKIPEP = .TRUE.
 #ifdef HAS_PCMSOLVER
       if(dirac_cfg_pcm) 
@@ -529,6 +526,7 @@ C     Calculation of C6 dispersion coefficient
       XLR_XVCFIL = 'NORXVC'
       XLR_UNCOUP = .FALSE.
       XLRANA     = .FALSE.
+      XLR_ANATHR = 2.0D0
       XSTERN     = .FALSE.
       XSTERNC    = .FALSE.
       NOSPIA     = .FALSE.
@@ -567,7 +565,7 @@ C
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
-     &                     41,42), I
+     &                     41,42,43,44), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -812,10 +810,6 @@ C&&& STERNC: Sternheimer complement
  37            CONTINUE
 C&&& DAMPING: specify a damping parameter
                READ(LUCMD,*) DMPFRLR
-#ifdef HAS_PELIB
-               !edh testing...
-               IF (PEQM) CALL QUIT('PE damped response not enabled yet')
-#endif
                GO TO 100
  38            CONTINUE
 C&&& FREQ INTERVAL: specify frequencies with start, end, step values
@@ -906,6 +900,12 @@ C                 set by the choice of quadrature scheme
                        NBFREQ = MAXFLR
                     END IF
                   END IF
+               GO TO 100
+ 43            CONTINUE
+C&&&& ANATHR: Threshold for analysis of linear response function
+               READ(LUCMD,*) XLR_ANATHR
+               GO TO 100
+ 44            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1256,7 +1256,8 @@ C     ************************************
 C     *** Set orbital strings          ***
 C     ************************************
 C
-      CALL OSTRING(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,IPRXLR,
+     &             WORK,KFREE,LFREE)
 C
 C     ************************************
 C     *** Sort operators on symmetries ***
@@ -1378,9 +1379,7 @@ C
 C     Indicate from vectors are read...
 C
       LUBUF = 22
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
-      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,DUM,1,DUM,IDUM,IDUM)
-      CLOSE(LUBUF,STATUS='KEEP')
+      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,DUM,1)
 C
 C     Initialize file for solution vectors
 C
@@ -1455,23 +1454,20 @@ C     ----------------
 C
       CALL MEMGET2('REAL','CMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       LUBUF = 22
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETLRF')
       IF(SPINFR) THEN
         CALL MEMGET2('INTE','IBEIG',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
-     &              TOTERG,10,WORK,KFREE,LFREE)
+     &              TOTERG,10)
       ELSE
         KBEIG = KFREE
-        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,2,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,2)
       ENDIF
-      CLOSE(LUBUF,STATUS='KEEP')
 C
 C
 C
       IF(XLRANA) THEN
         CALL MEMGET2('INTE','IORBCL',KLRO,4*NORBT,WORK,KFREE,LFREE)
-        CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
+        CALL DEFORB(WORK(KLRO),NCLS_XLR,XLR_INDSTR,
      &              WORK,KFREE,LFREE,IPRXLR)
       ELSE
         KLRO=KFREE
@@ -1765,8 +1761,8 @@ C         Get gradient
 C         ------------
 C
           IF (KTIMOP .EQ. ITIM) THEN
-             CALL GPGET(INDPRA,GPO,JXOP,NXPAR,
-     &                  CMO,IBEIG,NBTYP,WORK,KFREE,LFREE,IPRXLR)
+             CALL GPGET(INDPRA,GPO,JXOP,NXPAR,CMO,IBEIG,
+     &                  NBTYP,.TRUE.,WORK,WORK,KFREE,LFREE,IPRXLR)
           END IF
 C
 C         Form linear reponse function
@@ -1806,14 +1802,13 @@ C
                     RIBF(J1) = RIBF(J1) + BBUF(J)
                     RVBF(J2) = RVBF(J2) + BBUF(J)
                   ENDDO
-          THR = 2.0D-0
 C.......Give major inactive orbitals
         WRITE(LUPRI,'(3X,A)') 'Dominant inactive orbitals:'
         CALL ABSIND (NI,RIBF,INDX)
         DO J = NI,1,-1
           JJ = INDX(J)
           FAC = RIBF(JJ)*TMP
-          IF(ABS(FAC).LE.THR) GOTO 3
+          IF(ABS(FAC).LE.XLR_ANATHR) GOTO 3
           I1  = IIBF(JJ)
           J1 = IORBCL(2,I1)
           WRITE(LUPRI,'(I6,A1,A3,A1,E16.8,3X,F8.2,A1)')
@@ -1827,7 +1822,7 @@ C       Give major virtual orbitals
         DO J = NV,1,-1
           JJ = INDX(J)
           FAC = RVBF(JJ)*TMP
-          IF(ABS(FAC).LE.THR) GOTO 4
+          IF(ABS(FAC).LE.XLR_ANATHR) GOTO 4
           I2 = IVBF(JJ)
           J2 = IORBCL(2,I2)
           WRITE(LUPRI,'(I6,A1,A3,A1,E16.8,3X,F8.2,A1)')
@@ -1837,11 +1832,11 @@ C       Give major virtual orbitals
  4      CONTINUE
         CALL ABSIND (NXPAR,BBUF,INDX)
         WRITE(LUPRI,'(3X,A,E10.2/)')
-     &   'Amplitudes larger than threshold ',THR
+     &   'Amplitudes larger than threshold ',XLR_ANATHR
         DO J = NXPAR,1,-1
           JJ = INDX(J)
           FAC = BBUF(JJ)*TMP
-          IF(ABS(FAC).LE.THR) GOTO 5
+          IF(ABS(FAC).LE.XLR_ANATHR) GOTO 5
           I1 = JXOP(1,JJ)
           I2 = JXOP(2,JJ)
           WRITE(LUPRI,
@@ -1899,8 +1894,8 @@ C
 C     Written by T.Saue Oct 31 1996
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 C
       PARAMETER(D0 = 0.0D0)
@@ -1918,7 +1913,6 @@ C
       DATA RESPLAB/'Real part           ',
      &             'Imaginary part      ',
      &             '                    '/
-C
 C
 C     Loop over perturbation operators
 C     ================================
@@ -2045,7 +2039,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Anaxrs */
-      SUBROUTINE ANAXRS(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE ANAXRS(WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Analyze solution vectors on file PAMXVC
@@ -2067,8 +2061,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 C
-      CHARACTER INDSTR(3,2)*72
-      LOGICAL   SKIPEE,SKIPEP,TOBE,GASWF
+      LOGICAL   TOBE,GASWF
       DIMENSION WORK(*)
       INTEGER   NCLS(2,3,2)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
@@ -2078,11 +2071,9 @@ C
       KFRSAV = KFREE
       CALL HEADER('Analysis of response solution vectors',-1)
 
-#ifdef MOD_UNRELEASED
       if (dft_cfg_overlap_diagnostic) then
          call o_matrix_from_disc()
       end if
-#endif
 
 C
 C     Check if file of solution vectors is present
@@ -2101,9 +2092,9 @@ C
       TOBE = .FALSE.
       JFRP = -1
 C     Set orbital strings and classify orbitals
-      CALL OSTRING(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(INDSTR,SKIPEE,SKIPEP,IPRINT,WORK,KFREE,LFREE)
       CALL MEMGET2('INTE','IORBCL',KLRO,4*NORBT,WORK,KFREE,LFREE)
-      CALL DEFORB(WORK(KLRO),NCLS,3,INDSTR,
+      CALL DEFORB(WORK(KLRO),NCLS,INDSTR,
      &              WORK,KFREE,LFREE,IPRINT)
       KLOOP=KFREE
 C
@@ -2225,6 +2216,7 @@ C
       WRITE(LUPRI,'(/A)') 'ANAXRS ERROR: No solution vectors found !'
       CALL QUIT('ANAXRS: Solution vectors not found !')
 C
+
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck anaxr1 */
@@ -2243,13 +2235,13 @@ C
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
 C
       KFRSAV = KFREE
-      CALL MEMGET('REAL',KVEC ,NBDIM*NZ*NVEC,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFREQ,NVEC         ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KNORM,NVEC         ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF1,NBDIM*NZ     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF2,NBDIM        ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KBTYP,NVEC         ,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFLAG,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BVEC' ,KVEC ,NBDIM*NZ*NVEC,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FREQ' ,KFREQ,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RNORM',KNORM,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BUF1' ,KBUF1,NBDIM*NZ     ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BUF2' ,KBUF2,NBDIM        ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBTYP',KBTYP,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET2('LOGI','LFLAG',KFLAG,NVEC         ,WORK,KFREE,LFREE)
       NI = 0
       NV = 0
       IF(IC.EQ.1) THEN
@@ -2270,11 +2262,11 @@ C...secondary positron orbitals
         CALL QUIT('ANAXR1: Unknown IC !')
       ENDIF
       NINDX=MAX(NI,NV,NBDIM)
-      CALL MEMGET('INTE',KINDX,NINDX,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KII,NI,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIV,NV,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRI,NI,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRV,NV,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDX',KINDX,NINDX,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IIBF',KII,NI,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IVBF',KIV,NV,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RIBF',KRI,NI,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RVBF',KRV,NV,WORK,KFREE,LFREE)
       CALL ANAXR2(WORK(KVEC),WORK(KFREQ),WORK(KNORM),
      &            WORK(KBTYP),WORK(KFLAG),WORK(KBUF1),
      &            WORK(KBUF2),WORK(KINDX),JXOP,IORBCL,
@@ -2357,7 +2349,7 @@ C     Read vectors
         ENDIF
         CALL READT(LUINP,LEN,BVEC(1,1,I))
         IF(IPRINT.GE.4) THEN
-          WRITE(LUPRI,'(3X,A2,A,F10.6)')
+          WRITE(LUPRI,'(3X,A2,A,F15.8)')
      &      TYP1,' vector at frequency: ', FREQ(I)
           CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,
      &                NZ,IPQTOQ(1,IREP),LUPRI)
@@ -2406,7 +2398,7 @@ C       Calculate norm
           D2TOT = D2TOT + BUF2(J)
         ENDDO
         DNTOT = SQRT(D2TOT)
-        WRITE(LUPRI,'(A8,F10.6,A,E16.8,A,E10.2)')
+        WRITE(LUPRI,'(A8,F15.8,A,E16.8,A,E10.2)')
      &        ' Freq.: ',FREQ(I),' Norm: ',DNTOT,
      &        ' Residual norm: ',RNORM(I)
         IF(DNTOT.LT.DTOL2) THEN
@@ -2453,22 +2445,21 @@ C       Give major virtual orbitals
         ENDDO
  4      CONTINUE
 C       Give major orbital rotations in excitations
-        THR   = SQRT(D2TOT/NBDIM)
         CALL INDEXX (NBDIM,BUF2,INDX)
-        WRITE(LUPRI,'(3X,A,E10.2/)')
-     &   'Excitation amplitudes larger than threshold ',THR
-        THR = THR*THR
+        WRITE(LUPRI,'(3X,A,F6.2,A1/)')
+     &   'Excitation amplitudes larger than weight ',THR,'%'
         DO J = NBDIM,1,-1
           JJ = INDX(J)
-          IF(ABS(BUF2(JJ)).LT.THR) GOTO 5
+          WT = FAC*BUF2(JJ)
+          IF(WT.LT.THR) GOTO 5
           I1 = JXOP(1,JJ)
           I2 = JXOP(2,JJ)
-          WRITE(LUPRI,'(3X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,E16.8)')
+          WRITE(LUPRI,'(3X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,F6.2,A1)')
      &      IORBCL(2,I1),'(',TYP(IORBCL(1,I1)),':',
      &      FREP(IORBCL(3,I1)),')',
      &      ' ---> ',
      &      IORBCL(2,I2),'(',TYP(IORBCL(1,I2)),':',
-     &      FREP(IORBCL(3,I2)),')',SQRT(BUF2(JJ))
+     &      FREP(IORBCL(3,I2)),')',WT,'%'
         ENDDO
  5      CONTINUE
         IF(IPRINT.GE.4) THEN
@@ -2477,7 +2468,6 @@ C       Give major orbital rotations in excitations
             WRITE(LUPRI,'(3X,I6,E16.8)') J,BUF2(J)
           ENDDO
         ENDIF
-#ifdef MOD_UNRELEASED
         if (dft_cfg_overlap_diagnostic) then
            lambda_numerator   = 0.0d0
            lambda_denominator = 0.0d0
@@ -2500,9 +2490,35 @@ C       Give major orbital rotations in excitations
            write(lupri, '(a, f8.5)') '     lambda = ', 
      &        lambda_numerator/lambda_denominator
         end if
-#endif /* MOD_UNRELEASED */
       ENDIF
  20   CONTINUE
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PRINT_GP_XP(GP,XP,JXOP,NXOP,NZ)
+C***********************************************************************
+C
+C     Printout of proprty gradient and solution vector
+C     Written by Trond Saue Nov 26 2019
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION GP(NXOP,NZ),XP(NXOP,NZ),JXOP(2,NXOP)
+      CHARACTER M(4)*6
+      M(1) = 'A real'
+      M(2) = 'A imag'
+      M(3) = 'B real'
+      M(4) = 'B imag'
+      DO IZ = 1,NZ
+        WRITE(LUPRI,'(/A,A6,A/)') '*** ',M(IZ),' part ***';
+        WRITE(LUPRI,'(A)')
+     & '    A    I   Property gradient     Solution vector'
+        DO IXOP = 1,NXOP
+          WRITE(LUPRI,'(2I5,2ES20.8)')
+     &         JXOP(1,IXOP),JXOP(2,IXOP),GP(IXOP,IZ),XP(IXOP,IZ)
+        ENDDO
       ENDDO
       RETURN
       END

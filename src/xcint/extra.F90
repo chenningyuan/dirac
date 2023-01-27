@@ -7,7 +7,7 @@ module extra
 
    public gtdoav
    public timtxt
-   public reacmo_no_work
+   public reacmo
    public qtrans90
 
    private
@@ -75,7 +75,7 @@ contains
 !
       end subroutine
 
-      SUBROUTINE REACMO_no_work(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
+      SUBROUTINE REACMO(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
 !***********************************************************************
 !
 !     Read DHF-coefficients and eigenvalues from unformatted file
