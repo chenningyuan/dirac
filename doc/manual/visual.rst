@@ -117,11 +117,17 @@ Scalar densities are also written to a Gaussian cube file ``plot.3d.cube``.
 keyword(3D_IMP)
 
 Calculate various densities in 3D on an imported grid and write to text file format (imported grid does not have to be regular).
-Example:
+Example::
 
   .3D_IMP
    numerical_grid    ! a grid file on which various densities will be calculated; the file should have 3 columns with x, y, z coordinates of grid points 
    grid_units        ! grid units (choose from: 'angstrom' or 'au')
+
+Another usage is calculating various densities in 3D on an imported grid (does not have to be regular)
+Example::
+
+  .3D_IMP
+   grid_file        ! a file with x,y,z-coordinates of grid points
 
 
 keyword(3DFAST)
@@ -140,15 +146,6 @@ Default (coordinates in bohr)::
 
   .3D_ADD
    4.0
-
-
-keyword(3D_IMP)
-
-Calculate various densities in 3D on an imported grid (does not have to be regular)
-Example::
-
-  .3D_IMP
-   grid_file        ! a file with x,y,z-coordinates of grid points
 
 
 keyword(3D_INT)
