@@ -2371,47 +2371,7 @@ C
 C     Truncated interaction
 C     ------------------------------
       IF(KVAL_OSC.LT.0) GOTO 10
-C.....Oscillator strenghts: general velocity gauge: rotational average
-      IF(DOVELR) THEN
-        allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
-        FOSC=0.0D0
-        DO IK = 0,K2ORD
-           CALL GENOSC_BED(IK,FOSC(1,1,IK,1),ATMPPF,OMEGA)
-           CALL DAXPY(MAXEXC*NBSYM,D1,FOSC(1,1,IK,1),1,FOSC(1,1,-1,1),1)
-        ENDDO
-        NLIN=32+16*(K2ORD+2)
-        WRITE(LUPRI,'(/A,ES8.2)')
-     &       '* Isotropic oscillator strengths '//
-     &       '(generalized velocity gauge) above threshold :', TTOL
-        WRITE(LUPRI,'(3X,A)')
-     &     '- [f( 0) corresponds to the electric dipole approximation]'
-        CALL PRSYMB(LUPRI,'=',NLIN,0)
-        WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
-     &       'Level    Frequency (eV) Symmetry    f(total)        ',
-     &       ('f(',IK+IK,') ',IK=0,K2ORD)
-        CALL PRSYMB(LUPRI,'-',NLIN,0)
-        DO JEXC = 2,NEXC          ! skip reference state
-          II = INDX(JEXC)
-          IEXC  = IEERG(1,II)
-          ISYM  = IEERG(2,II)
-          OSCIL = FOSC(IEXC,ISYM,-1,1)
-          IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
-            ILAB  = ISSYM(IEXC,ISYM)
-            WRITE(LUPRI,
-     &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
-     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
-     &         (FOSC(IEXC,ISYM,IK,1),IK=0,K2ORD)
-          ENDIF
-        ENDDO
-        CALL PRSYMB(LUPRI,'-',NLIN,0)
-        TOT = DSUM(NEXCF,FOSC(1,1,-1,1),1)
-        WRITE(LUPRI,'(A,ES12.5)')
-     &     'Sum of oscillator strengths (general velocity) : ',TOT
-        deallocate(fosc)
-      ELSE
-        WRITE(LUPRI,'(A)') ' * Velocity representation not active.'
-      ENDIF
-C.....Oscillator strenghts: general velocity gauge: rotational average with multipolar separation
+C.....Oscillator strenghts: general velocity gauge: rotational average 
       IF(DOVELR) THEN
         allocate(fosc(4,MAXEXC,NBSYM,-1:K2ORD))
         FOSC=0.0D0
@@ -2571,49 +2531,7 @@ C.......Full light-matter interaction
           WRITE(LUPRI,'(A,ES12.5)') 'Sum of differential'// 
      &    ' oscillator strengths (full light-matter interaction) : ',TOT
         ENDIF  
-C.......Generalized velocity gauge        
-        IF(DOVELR) THEN
-          allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
-          FOSC=0.0D0
-          DO IK = 0,K2ORD
-             CALL OSC_BED(IK,FOSC(1,1,IK,1),ATMPPF,OMEGA)
-             CALL DAXPY(MAXEXC*NBSYM,D1,FOSC(1,1,IK,1),1,
-     &                  FOSC(1,1,-1,1),1)
-          ENDDO
-          NLIN=32+16*(K2ORD+2)
-          WRITE(LUPRI,'(/A,ES8.2)')
-     &       '* Anisotropic oscillator strengths '//
-     &       '(generalized velocity gauge) above threshold :', TTOL
-          WRITE(LUPRI,'(3X,A)')
-     &     '- [f( 0) corresponds to the electric dipole approximation]'
-          CALL PRSYMB(LUPRI,'=',NLIN,0)
-          WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
-     &       'Level    Frequency (eV) Symmetry    f(total)        ',
-     &       ('f(',IK+IK,') ',IK=0,K2ORD)
-          CALL PRSYMB(LUPRI,'-',NLIN,0)
-          DO JEXC = 2,NEXC          ! skip reference state
-            II = INDX(JEXC)
-            IEXC  = IEERG(1,II)
-            ISYM  = IEERG(2,II)
-            OSCIL = FOSC(IEXC,ISYM,-1,1)
-            IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
-              ILAB  = ISSYM(IEXC,ISYM)
-              WRITE(LUPRI,
-     &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
-     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
-     &         (FOSC(IEXC,ISYM,IK,1),IK=0,K2ORD)
-            ENDIF
-          ENDDO
-c          write(6,*) "FOSC VEL ", FOSC
-          CALL PRSYMB(LUPRI,'-',NLIN,0)
-          TOT = DSUM(NEXCF,FOSC(1,1,-1,1),1)
-          WRITE(LUPRI,'(A,ES12.5)')
-     &     'Sum of oscillator strengths (general velocity) : ',TOT
-          deallocate(fosc)
-        ELSE
-          WRITE(LUPRI,'(A)') ' * Velocity representation not active.'
-        ENDIF
-C.......Generalized velocity gauge with multipolar separation
+C.......Generalized velocity gauge
 
         IF(DOVELR) THEN
           allocate(fosc(4,MAXEXC,NBSYM,-1:K2ORD))
@@ -2651,7 +2569,7 @@ C.......Generalized velocity gauge with multipolar separation
      &         'M-Q',(FOSC(3,IEXC,ISYM,IK),IK=0,K2ORD)
               WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
      &         'M-M',(FOSC(4,IEXC,ISYM,IK),IK=0,K2ORD)
-c            ENDIF
+            ENDIF
           ENDDO
           CALL PRSYMB(LUPRI,'-',NLIN,0)
           TOT = DSUM(NEXCF,FOSC(1,1,1,-1),4)
