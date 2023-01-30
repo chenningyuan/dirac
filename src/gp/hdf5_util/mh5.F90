@@ -210,14 +210,6 @@ interface
 
   ! group
 
-  function mh5_c_exists_group(lu,groupname) result(groupid) &
-           bind(C,name='mh5c_exists_group')
-    import :: MOLCAS_C_INT, c_char
-    integer(kind=MOLCAS_C_INT) :: groupid
-    integer(kind=MOLCAS_C_INT), value :: lu
-    character(kind=c_char) :: groupname(*)
-  end function mh5_c_exists_group
-
   function mh5_c_open_group(lu,groupname) result(groupid) &
            bind(C,name='mh5c_open_group')
     import :: MOLCAS_C_INT, c_char
@@ -828,16 +820,6 @@ function mh5_open_group(lu,groupname) result(groupid)
   call f2c_string(groupname,mh5_lbl)
   groupid = mh5_c_open_group(lu,mh5_lbl)
 end function mh5_open_group
-
-function mh5_exists_group(lu,groupname) result(groupid)
-  integer(kind=iwp) :: groupid
-  integer(kind=iwp), intent(in) :: lu
-  character(len=*), intent(in) :: groupname
-  character(len=MH5_MAX_LBL_LEN) :: mh5_lbl
-  call f2c_string(groupname,mh5_lbl)
-  groupid = mh5_c_exists_group(lu,mh5_lbl)
-end function mh5_exists_group
-
 
 function mh5_create_group(lu,groupname) result(groupid)
   integer(kind=iwp) :: groupid

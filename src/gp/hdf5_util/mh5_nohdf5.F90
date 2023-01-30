@@ -215,13 +215,6 @@ function mh5_open_group(lu,groupname) result(groupid)
   character(len=MH5_MAX_LBL_LEN) :: mh5_lbl
 end function mh5_open_group
 
-function mh5_exists_group(lu,groupname) result(groupid)
-  integer(kind=iwp) :: groupid
-  integer(kind=iwp), intent(in) :: lu
-  character(len=*), intent(in) :: groupname
-  character(len=MH5_MAX_LBL_LEN) :: mh5_lbl
-end function mh5_exists_group
-
 function mh5_create_group(lu,groupname) result(groupid)
   integer(kind=iwp) :: groupid
   integer(kind=iwp), intent(in) :: lu

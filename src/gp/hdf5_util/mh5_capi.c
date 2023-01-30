@@ -59,7 +59,6 @@ INT mh5c_close_file (INT file_id);
 /* groups */
 INT mh5c_exists_group (INT file_id, char* name);
 INT mh5c_open_group (INT file_id, char* name);
-INT mh5c_exists_group(INT file_id, char*name);
 INT mh5c_create_group (INT file_id, char* name);
 INT mh5c_close_group (INT group_id);
 
@@ -281,19 +280,6 @@ INT mh5c_open_group (INT file_id, char* name) {
         return H5Gopen(file_id, name, H5P_DEFAULT);
 }
 
-INT mh5c_exists_group(INT file_id, char* name){
-	herr_t (*old_func)(void*);
-	void *old_client_data;
-	INT mySTATUS = -1;
-	H5Eget_auto(H5E_DEFAULT, &old_func, &old_client_data);
-	/* Turn off error handling */
-	H5Eset_auto(H5E_DEFAULT, NULL, NULL);       
-	/* Probe. Likely to fail, but that's okay */
-	mySTATUS = H5Gopen(file_id, name, H5P_DEFAULT);
-	/* Restore previous error handler */
-	H5Eset_auto(H5E_DEFAULT, old_func, old_client_data);
-	return mySTATUS;
-}
 
 INT mh5c_close_group (INT group_id) {
         return H5Gclose(group_id);

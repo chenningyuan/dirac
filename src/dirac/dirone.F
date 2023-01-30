@@ -2982,7 +2982,7 @@ C
           cmo_mmf     = 0
           tbuf_mmf    = 0
           !> read 2c-mos
-          call reacmo_new(lucoef,cmo=cmo_mmf)
+          call reacmo_new(cmo=cmo_mmf)
 
           !> calculate inactive (and possibly active) density matrix
           call denmat(tbuf_mmf,cmo_mmf,iprham)
@@ -3227,9 +3227,7 @@ C
               cmo_mmf     = 0
               scratch_mmf = 0
               !> read 2c-mos
-              call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-              call reacmo_new(lucoef,cmo=cmo_mmf)
-              close(lucoef,status='keep')
+              call reacmo_new(cmo=cmo_mmf)
               !> calculate inactive (and possibly active) density matrix
               call denmat(scratch_mmf,cmo_mmf,iprham)
 
