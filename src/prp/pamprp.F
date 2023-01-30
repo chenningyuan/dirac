@@ -9565,10 +9565,8 @@ C     This operator is symmetric with respect to the indices (j1...j_(n-1)),
 C     thus the possible combinations are stored in lower triangular form.
 C     Therefore, at order L, we have 9*(L-1)L/2 unique multipoles.
 C     
-C     However, there are two exceptions to this rule: L=1 and L=2.
-C     For the former, the multipole operator reduces to the set (ca_x,ca_y,ca_z),
-C     while for the latter, we have 6 unique multipole moments, because 
-C     Q^[2]_{ij} is symmetric with respect to its two indices. 
+C     However, L=1 is an exception to this rule.
+C     At this order, the multipole operator reduces to the set (ca_x,ca_y,ca_z),
 C
 C     Note that this routine does not check if IPVPOL goes out of 
 C     bounds. This has to be done outside the routine.

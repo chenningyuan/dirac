@@ -971,7 +971,6 @@
           CALL accMMOM(TMMOMR(:,:,2),ATMPPF,IORD,UPOL(:,2))
 !.......Accumulate oscillator strengths
 
-!below still needs to be changed
         DO ISYM = 1,NBSYM        
           NEXC=KEXCNV(ISYM)
           DO IEXC=1,NEXC
