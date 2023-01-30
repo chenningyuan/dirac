@@ -1455,11 +1455,20 @@
          call kw_read(word, relcc_mfd_convergence_threshold)
       end if
 
+! aspg: .TRV_SDM allows to bypass the restriction of the number of roots
+!       from the dimension of the singles manifold, so that initial
+!       trial vectors also contaning elements of the doubles manifold.
+!       this implies a pivoted diagonal  
+      if (kw_matches(word, '.TRV_SDM')) then
+         relcc_mfd_trial_double_mfold = .true.
+      end if
+
       if (kw_matches(word, '.TRV_CCS')) then
          relcc_mfd_trial_ccs      = .true.
          relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_ccs
          relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_ccs
          relcc_mfd_trial_restart = .not.relcc_mfd_trial_ccs
+         relcc_mfd_trial_double_mfold = .not.relcc_mfd_trial_ccs
       end if
 
       if (kw_matches(word, '.TRV_I  ')) then
