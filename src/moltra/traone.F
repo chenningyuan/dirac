@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -300,7 +295,6 @@ C       Get the two-electron Fock matrix using the density matrix
      &                NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
 
-#ifdef MOD_UNRELEASED
 ! Miro: inject xcint density into FMO as is in dirscf.F
         if (DORES.AND.dirac_cfg_dft_calculation.AND..NOT.NOVXC) then
           IF (COREDENS) THEN
@@ -327,7 +321,6 @@ C       Get the two-electron Fock matrix using the density matrix
      &                NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
         endif
-#endif
 
         IF(PARCAL) call SetTaskDistribFlags(saveflags)
 
@@ -358,21 +351,17 @@ C
 ! if NOVXC=.true. - do not add Exc to the core SCF energy, FMO (2-el Fock mtx) does not contain Vxc
 ! if NOVXC=.false. - add Exc from core density only to the core SCF energy, FMO (2-el Fock mtx) contains Vxc
 !
-#ifdef MOD_UNRELEASED
        if (DORES.AND.dirac_cfg_dft_calculation.AND.NOVXC) then
           dirac_cfg_dft_calculation_save=.true.
           dirac_cfg_dft_calculation=.false.   !Miro: do we have interest in absolute energies of multiplet states ?
        else 
           dirac_cfg_dft_calculation_save=.false.
        endif
-#endif
       CALL ERGCAL(FAO,FMO,DMAT,WORK(KFREE),LFREE)
 !Miro: restore the DFT status
-#ifdef MOD_UNRELEASED
        if (dirac_cfg_dft_calculation_save.AND.NOVXC) then
           dirac_cfg_dft_calculation=.true.   !Miro: do we have interest in absolute energies of multiplet states ?
        endif
-#endif
 
 C
 C     IF LVCON is used we should take the repulsion between all charge while
@@ -471,7 +460,7 @@ C  /* Deck CDENS */
       SUBROUTINE CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)
 C*****************************************************************************
 C
-C Get the core density matrix into DMAT, from selected MO's in QCO
+C Get the core density matrix into DMAT, from selected MOs in QCO
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1033,7 +1022,7 @@ C     Cinv have an infinite number of irreps and we use a finite
 C     multiplication table to store the coupling information we need 
 C     to truncate at some point. We do this at mj=15/2 in Cinfh and 
 C     mj=31/2 in Cinf so that we can keep MULTB dimensioned at 64 like 
-C     before. In fact this means that we'll be using the subgroups C8h 
+C     before. In fact this means that we will be using the subgroups C8h 
 C     and C16 respectively. This can be easily extended or decreased 
 C     using the input parameter NORDER that indicates how large MULTB 
 C     may become.
@@ -2038,7 +2027,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer, allocatable :: ibeig(:)
       integer              :: nash_x(1:nfsym)
 
-!     !> read ibeig (info array on boson irreps) from DFCOEF
+!     !> read ibeig (info array on boson irreps) from CHECKPOINT
       allocate(ibeig(norbt))
       ibeig(1:norbt)         = 0
       nash_x(1:nfsym)        = 0
@@ -2067,9 +2056,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
       if( linear .or. spinfr )then
-        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
         call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
-        close(lucoef,STATUS='KEEP')
       end if
 
 

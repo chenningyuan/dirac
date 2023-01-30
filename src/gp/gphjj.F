@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -160,10 +155,6 @@ C Written 4-Dec-1983 hjaaj
 C
 C Major clean-up LV (feb. 2007)
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CALL QTRACE(6)
-      CALL TRBK()
-#endif
       CALL QTRACE(6)
       WRITE(*,*) 'This OS has no obvious system traceback facility.'
       RETURN
@@ -475,7 +466,6 @@ C
             CX= SQRT(DP5   + T)
             SSX= SIGN( SQRT(DP5 - T),T2X2)
   270    CONTINUE
-#include "ivdep.h"
          DO 275 IR=1,IA
             T        = F(IAA+IR)*SSX
             F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SSX
@@ -553,7 +543,6 @@ C              F(IEAB)=     TT*CX+F(IEBR)*SSX
   390       CONTINUE
          JAA=(IA-1)*NROWV
          JBB=(IB-1)*NROWV
-#include "ivdep.h"
          DO 400 I=1,NROWV
             T=V(JBB+I)*SSX
             V(JBB+I)=-V(JAA+I)*SSX + V(JBB+I)*CX
@@ -1051,19 +1040,11 @@ C
       END IF
       END
 C  /* Deck second */
-#if !defined (SYS_CRAY) && !defined (VAR_SECSEC)
-      FUNCTION SECOND ()
-#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) \
-      || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) \
-      || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) \
-      || defined (SYS_DEC) || defined (SYS_SX) || defined (SYS_DARWIN)
-#include "implicit.h"
+      REAL*8 FUNCTION SECOND ()
       real*4 etime,tarray(2)
       SECOND = etime(tarray)
-#endif
       RETURN
       END
-#endif
 C  /* Deck sotmat */
       SUBROUTINE SOTMAT(NMO,UMO,IFAIL)
 C

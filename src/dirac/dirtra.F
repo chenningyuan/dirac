@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -518,12 +513,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
@@ -566,12 +556,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
@@ -614,12 +599,7 @@ C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C     DCBBAS:  NTBAS(0),N2BBASX
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
@@ -662,12 +642,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
@@ -1936,12 +1911,7 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION VBU(NBAST,NVEC),VBS(NBAST,NVEC)
-#else
       DIMENSION VBU(NTBAS(0),NVEC),VBS(NTBAS(0),NVEC)
-#endif
       CALL QENTER('VTBUBS')
 C
       DO J = 1,NVEC
@@ -1981,12 +1951,7 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION VBS(NBAST,NVEC),VBU(NBAST,NVEC)
-#else
       DIMENSION VBS(NTBAS(0),NVEC),VBU(NTBAS(0),NVEC)
-#endif
       CALL QENTER('VTBSBU')
       DO J = 1,NVEC
         DO IC = 1,2
@@ -2768,12 +2733,7 @@ C  /* Deck sphts1 */
 #include "priunit.h"
 C
 #include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AMAT(NBAST,NBAST),BMAT(NSPH,NBAST),WORK(LWORK)
-#else
       DIMENSION AMAT(NTBAS(0),NTBAS(0)),BMAT(NSPH,NTBAS(0)),WORK(LWORK)
-#endif
 C
 C     GENERATE MATRIX
 C
@@ -4287,10 +4247,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C***********************************************************************
 C
 C     Transform density matrix in MO form to AO format using coefficients
-C     taken from DFCOEF
+C     taken from CHECKPOINT
 C     Written by L. Visscher, March 2008
 C
 C***********************************************************************
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -4315,11 +4276,7 @@ C
      
 C
 C     Read the MO coefficients
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) CALL QUIT ('DFCOEF missing')
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,DUM,2)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL REACMO_new(cmo=CMO)
 
 C     Perform the transformation
       DO IFSYM = 1,NFSYM

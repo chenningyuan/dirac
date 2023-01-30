@@ -1,28 +1,24 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 ***********************************************************************
 
       SUBROUTINE ADAST_GAS_REL(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
      &                         I1,XI1S,NKSTR,IEND,
      &                         IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
+      use luci_wrkspc
 *
 *
 * Obtain creation or annihilation mapping
@@ -70,7 +66,6 @@
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strinp.inc"
 #include "stinf.inc"
 #include "strbas.inc"
@@ -805,6 +800,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 ***********************************************************************
       SUBROUTINE GETSTR2_TOTSM_SPGP_REL(IUB,IGRP,NIGRP,ISPGRPSM,NEL,
      &                                  NSTR,ISTR)
+      use luci_wrkspc
 *
 * Obtain all super-strings of given total symmetry and given
 * occupation in each GAS space 
@@ -841,7 +837,6 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 #include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "strbas.inc"
@@ -990,6 +985,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 ***********************************************************************
       SUBROUTINE GETSTR_TOTSM_SPGP_REL(ISTRTP,ISPGRP,ISPGRPSM,NEL,
      &                                 NSTR,ISTR)
+      use luci_wrkspc
 *
 * Obtain all super-strings of given total symmetry and given
 * occupation in each GAS space
@@ -1023,7 +1019,6 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 #include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "strbas.inc"
@@ -1263,6 +1258,7 @@ c         if (NGASCT.eq.0) goto 1001
 *              April 98
 *
 *. In this subroutine the ordering of strings belonging to a given type
+      use luci_wrkspc
 *  is defined !!
 * Currently we are using the order
 * Loop over GAS 1 strings
@@ -1276,7 +1272,6 @@ c         if (NGASCT.eq.0) goto 1001
 #include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strbas.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -1486,6 +1481,7 @@ CTI  Set following stuff to zero in such cases.
 ***********************************************************************
 
       SUBROUTINE MEMSTR_GAS_REL
+      use luci_wrkspc
 *
 *
 * Construct pointers for saving information about strings and
@@ -1513,7 +1509,6 @@ CTI  Set following stuff to zero in such cases.
 *
 #include "mxpdim.inc"
 #include "strbas.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "stinf.inc"
@@ -2093,6 +2088,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE STRINF_GAS_REL(STIN,IPRNT)
+      use luci_wrkspc
 *
 * Obtain string information for GAS expansion
 *
@@ -2137,7 +2133,6 @@ C
 #include "stinf.inc"
 #include "strinp.inc"
 *
-#include "wrkspc.inc"
 *
       dimension STIN(*)
 *. A bit of scratch
@@ -2724,6 +2719,15 @@ C     CALL QEXIT('OCCLS')
          MNELFGP(IGAS) = MIN(MNELFGP(IGAS),MNAB)
          MXELFGP(IGAS) = MAX(MXELFGP(IGAS),MXAB)
          MXELFGP(IGAS) = MIN(2*NOBPT(IGAS),MXELFGP(IGAS))
+C         IF(IMS2.EQ.1) THEN
+C           MNELFGP(IGAS) = MNAB
+C           MXELFGP(IGAS) = MXAB
+C           MXELFGP(IGAS) = MIN(2*NOBPT(IGAS),MXELFGP(IGAS))
+C         ELSE
+C           MNELFGP(IGAS) = MIN(MNELFGP(IGAS),MNAB)
+C           MXELFGP(IGAS) = MAX(MXELFGP(IGAS),MXAB)
+C           MXELFGP(IGAS) = MIN(2*NOBPT(IGAS),MXELFGP(IGAS))
+C         END IF
         END DO
 C       ^ End of loop over gasspaces
       END DO
@@ -3071,6 +3075,7 @@ C     CALL QEXIT('STRTYP_REL')
 ***********************************************************************
       SUBROUTINE TS_SYM_PNT2_REL(IGRP,NIGRP,MAXVAL,MINVAL,ISYM,
      &                           IPNT,LPNT,IAB)
+      use luci_wrkspc
 *
 * Construct pointers to start of symmetry distributions
 * for supergroup of strings with given symmetry
@@ -3100,7 +3105,6 @@ C     CALL QEXIT('STRTYP_REL')
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strinp.inc"
 #include "stinf.inc"
 #include "strbas.inc"
@@ -3499,6 +3503,7 @@ C     COMMON/STINF/ISTAC(MXPSTT,2),NOCTYP(MXPSTT)
 
       SUBROUTINE MINMAX_FOR_SYM_DIST_DBG(NIGRP,IGRP,MNVAL,MXVAL,NDIST,
      &                                   NDISTL,IAB)
+      use luci_wrkspc
 *
 * A combination of NIGRP groups are given (IGRP)
 *. Find MIN and MAX for symmetry in each group
@@ -3515,7 +3520,6 @@ C     COMMON/STINF/ISTAC(MXPSTT,2),NOCTYP(MXPSTT)
 #include "strbas.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
-#include "wrkspc.inc"
 *. Input
       DIMENSION IGRP(NIGRP)
 *.Output

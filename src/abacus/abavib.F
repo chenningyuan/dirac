@@ -1,24 +1,18 @@
 !dalton_copyright_start
-!      Copyright (c) 2017 by the authors of Dalton (see below).
-!      All Rights Reserved.
+!      Dalton, a molecular electronic structure program
+!      Copyright (c) by the authors of Dalton.
 !
-!      The source code in this file is part of
-!      "Dalton, a molecular electronic structure program,
-!       Release DALTON2017 (2017), see http://daltonprogram.org"
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      This source code is provided under a written licence and may be
-!      used, copied, transmitted, or stored only in accord with that
-!      written licence.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the licence holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the licence holder may not take any part of Dalton,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own licence.
-!
-!      For further information, including how to get a licence, see:
-!         http://daltonprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dalton_copyright_end
 
 #ifndef PRG_DIRAC
@@ -1634,11 +1628,7 @@ C
       END
 #ifndef PRG_DIRAC
 C  /* Deck hdot */
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL)
-      REAL FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
-#else
-      DOUBLE PRECISION FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
-#endif
+      REAL*8 FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION VEC1(NDIM), VEC2(NDIM), HMAT(NDIM,NDIM)
@@ -1955,11 +1945,7 @@ C  /* Deck prhint */
       PARAMETER ( KCOL = 6 )
 C
       INTEGER BEGIN
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL)
-      REAL MATRIX(NINTER,NINTER)
-#else
-      DOUBLE PRECISION MATRIX(NINTER,NINTER)
-#endif
+      REAL*8 MATRIX(NINTER,NINTER)
 #include "cbivib.h"
 #include "nuclei.h"
 C
@@ -4169,11 +4155,7 @@ C
             WRITE (LUPRI,181)       NAME1,NAME2,NAME3,NAME4,CCOEF,CSCAL
          END IF
       END IF
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-  180 FORMAT (I6,'.',4X,A4,5X,4(A6,2X),F10.5,F12.6)
-#else
   180 FORMAT (I6,'.',A8,5X,4(A6,2X),F10.5,F12.6)
-#endif
   181 FORMAT (20X,            4(A6,2X),F10.5,F12.6)
 C
 C     Test that all specified atoms are well defined

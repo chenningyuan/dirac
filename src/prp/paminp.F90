@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! FILE    : paminp.F
@@ -51,7 +46,7 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 10, NTABLE = 41)
+      PARAMETER (NDIR = 10, NTABLE = 44)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -99,8 +94,7 @@
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
 !                    41        42        43        44
-     &             '.RDCCDE'/
-
+     &             '.RDCCDM','.PVCSR ','xXXXXXX','xXXXXXX' /
 !
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -128,6 +122,7 @@
       SPINRO       = .FALSE.
       PVC_SHIELD   = .FALSE.
       PVC_SPINSPIN = .FALSE.
+      PVC_SPINRO   = .FALSE.
       SPNSPN       = .FALSE.
       EFG          = .FALSE.
       EFN          = .FALSE.
@@ -213,7 +208,7 @@
      &                117,118,119,120,121,122,123,124,                  &
      &                125,126,127,128,129,130,131,132,                  &
      &                133,134,135,136,137,138,139,140,                  &
-     &                141), I
+     &                141,142,143,144), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -364,7 +359,7 @@
             CALL DEF_VERDET(WORK,LWORK)
             GO TO 100
  126     CONTINUE
-!&&&& ROTG - rotational g-tensor according to Aucar et al
+!&&&& ROTG - Molecular rotational g-tensor according to Aucar et al
             ROTG  = .TRUE.
             DOXLR = .TRUE.
             GO TO 100
@@ -405,7 +400,7 @@
             DOVDW  = .TRUE.
             GO TO 100
   134    CONTINUE 
-!&&&& SPIN-R - spin-rotation constant according to Aucar et al
+!&&&& SPIN-R - Nuclear spin-rotation tensor according to Aucar et al
             DOEXP = .TRUE.
             DOXLR = .TRUE.
             SPINRO = .TRUE.
@@ -437,7 +432,7 @@
 !&&&& EFFDE2; calculate effective electronic densities at the nuclei:old code
             DOEXP  = .TRUE.
             EFFDE2 = .TRUE. 
-         GO TO 100
+            GO TO 100
   140    CONTINUE
 #ifdef MOD_LAO_REARRANGED
 !&&&& SHIEL2, calculate shielding+london, but with rearranged terms
@@ -452,6 +447,18 @@
 ! quick hack to read CC density matrix without the need to run CC as wavefunction
             call set_prop_flags_ccsd()
             GO TO 100
+  142    CONTINUE
+!&&&& Parity-violation contribution to nuclear spin-rotation constant
+            DOXLR      = .TRUE.
+            PVC_SPINRO = .TRUE.
+            IF(NBSYM .GT. 1) CALL QUIT('.PVCSR only for C1 symmetry')
+            GOTO 100
+  143    CONTINUE
+!&&&& xXXXXXX
+            GOTO 100
+  144    CONTINUE
+!&&&& xXXXXXX
+            GOTO 100
 !
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -475,8 +482,8 @@
       END DO
 !
 !=========================================================================
-!MI   For magnetic susceptibilities, NMR shielding constants and rotational
-!MI   g-tensors, operator centers might be changed
+!MI   For magnetic susceptibilities, NMR shielding constants and
+!MI   molecular rotational g-tensors, operator centers might be changed
       WRITE(LUPRI,'(1X,A)')                                             &
      &'These initial settings of center and origins'//                  &
      &' might be changed later:'
@@ -1517,7 +1524,7 @@
          PCOMB = '00+0'
         IF (IPRINT.GE.6) WRITE(LUPRI,'(/A)')                            &
      & 'XPRADD: Only the LS block kept for the RDSUSLL operator!'
-      ELSE IF ((PNAME(1:5).EQ.'d|S>/'.OR.PNAME(1:3).EQ.'dS/').AND.BSS)  &
+      ELSE IF ((PNAME(1:5).EQ.'d|S>_'.OR.PNAME(1:3).EQ.'dS_').AND.BSS)  &
      &     THEN
         PCOMB='+000'
         IF (IPRINT.GE.6) WRITE(LUPRI,'(/A)')                            &
@@ -1885,7 +1892,7 @@
 !
 !     Contribution from overlap matrix to magnetic properties
 !
-      ELSE IF(LABINT(1:5).EQ.'dS/dB') THEN
+      ELSE IF(LABINT(1:5).EQ.'dS_dB') THEN
         IF(LABINT(6:6).EQ.'2') THEN
 !
 !       Contribution from overlap matrix to magnetic properties
@@ -1948,7 +1955,7 @@
 !
 !     Angular London orbital contribution to diamagnetic susceptibility
 !
-      ELSE IF(LABINT(3:8).EQ.'dh/dB2') THEN
+      ELSE IF(LABINT(3:8).EQ.'dh_dB2') THEN
         CLASLB = 'DIASUS '
 !
 !     Nuclear shielding integrals without London orbital contribution
@@ -1989,13 +1996,13 @@
 !     Bra-differentiation of overlap matrix with respect to magnetic 
 !     field
 !
-      ELSEIF(LABINT(1:7).EQ.'d<S|/dB') THEN
+      ELSEIF(LABINT(1:7).EQ.'d<S|_dB') THEN
         CLASLB = 'S1MAGL'
 !
 !     Ket-differentiation of overlap matrix with respect to 
 !     magnetic field
 !
-      ELSE IF(LABINT(1:7).EQ.'d|S>/dB') THEN
+      ELSE IF(LABINT(1:7).EQ.'d|S>_dB') THEN
         CLASLB = 'S1MAGR'
 !
 !     Ket-differentation of HDO-integrals with respect to magnetic field
@@ -3038,11 +3045,6 @@
 !     Open LU1INT if not opened
 !
       IF (DOPRP) THEN
-         INQUIRE(FILE='AOPROPER',OPENED=FOPEN)
-         IF (.NOT. FOPEN) THEN
-            OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',           &
-     &         FILE='AOPROPER')
-         END IF
 !
          call legacy_lwork_get(LWORK)
          call alloc(WORK,LWORK,id='WORK in MINPRP')
@@ -3052,11 +3054,6 @@
 !
          CALL ONEGEN(WORK,LWORK)
          call dealloc(WORK)
-!
-!        Close AOPROPER if it was closed on entry to
-!        MINPRP.
-!
-         IF (.NOT. FOPEN) CLOSE(LU1INT,STATUS = 'KEEP')
 !
 !
 !***********************************************************************
@@ -3079,7 +3076,7 @@
      &   PRPLBL(3:7).EQ.'RM2H3'.OR.                                     &
      &   PRPLBL(3:7).EQ.'RDSUL'.OR.                                     &
      &   PRPLBL(3:7).EQ.'RDSUS'.OR.                                     &
-     &   PRPLBL(1:7).EQ.'d|S>/dB') THEN
+     &   PRPLBL(1:7).EQ.'d|S>_dB') THEN
          ITIM = -1
       ELSEIF(PRPLBL(2:6).EQ.'RM1H3'.OR.                                 &
      &   PRPLBL(4:7).EQ.'NSNL'.OR.                                      &

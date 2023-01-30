@@ -329,7 +329,7 @@ contains
          do i = 1, size(i_iter)
             s = 'dS/dB   '
             s(6:6) = i_iter(i)
-            call add_operator('dbet/dB' // i_iter(i) // '        ', &
+            call add_operator('dbet_dB' // i_iter(i) // '        ', &
                               blocks,                               &
                               1,                                    &
                              -1,                                    &
@@ -341,7 +341,7 @@ contains
    
          do ij = 1, size(ij_iter)
             s = 'dS/dB2' // ij_iter(ij)
-            call add_operator('dbet/dB2' // ij_iter(ij) // '      ', &
+            call add_operator('dbet_dB2' // ij_iter(ij) // '      ', &
                               blocks,                                &
                               1,                                     &
                               1,                                     &
@@ -357,7 +357,7 @@ contains
          do i = 1, size(i_iter)
             s = ' RM1H2  '
             s(1:1) = i_iter(i)
-            call add_operator('dnuc/dB' // i_iter(i) // '        ', &
+            call add_operator('dnuc_dB' // i_iter(i) // '        ', &
                               blocks,                               &
                               1,                                    &
                              -1,                                    &
@@ -370,7 +370,7 @@ contains
          do ij = 1, size(ij_iter)
             s = '  RM2H2 '
             s(1:2) = ij_iter(ij)
-            call add_operator('dnuc/dB2' // ij_iter(ij) // '      ', &
+            call add_operator('dnuc_dB2' // ij_iter(ij) // '      ', &
                               blocks,                                &
                               1,                                     &
                               1,                                     &
@@ -394,7 +394,7 @@ contains
             s1(1:1) = i_iter(i)
             s2(1:1) = i_iter(i)
             s3(1:1) = i_iter(i)
-            call add_operator('dkin/dB' // i_iter(i) // '        ',     &
+            call add_operator('dkin_dB' // i_iter(i) // '        ',     &
                               blocks,                                   &
                               8,                                        &
                               0,                                        &
@@ -413,7 +413,7 @@ contains
             s1(1:2) = ij_iter(ij)
             s2(1:2) = ij_iter(ij)
             s3(1:2) = ij_iter(ij)
-            call add_operator('dkin/dB2' // ij_iter(ij) // '      ', &
+            call add_operator('dkin_dB2' // ij_iter(ij) // '      ', &
                               blocks,                                &
                               8,                                     &
                               0,                                     &
@@ -426,7 +426,7 @@ contains
          f = 0.5d0*cval
          blocks = '0++0'
    
-         call add_operator('dvec/dBX        ', &
+         call add_operator('dvec_dBX        ', &
                            blocks,             &
                            5,                  &
                            0,                  &
@@ -434,7 +434,7 @@ contains
                            (/1, 1/),           &
                            (/f, f/),           &
                            (/'ZRM1RN  ', 'YRM1RN  '/))
-         call add_operator('dvec/dBY        ', &
+         call add_operator('dvec_dBY        ', &
                            blocks,             &
                            6,                  &
                            0,                  &
@@ -442,7 +442,7 @@ contains
                            (/1, 1/),           &
                            (/f, f/),           &
                            (/'XRM1RN  ', 'ZRM1RN  '/))
-         call add_operator('dvec/dBZ        ', &
+         call add_operator('dvec_dBZ        ', &
                            blocks,             &
                            7,                  &
                            0,                  &
@@ -461,7 +461,7 @@ contains
          do i = 1, size(i_iter)
             s = 'dS/dB   '
             s(6:6) = i_iter(i)
-            call add_operator('dS/dB' // i_iter(i) // '          ', &
+            call add_operator('dS_dB' // i_iter(i) // '          ', &
                               blocks,                               &
                               1,                                    &
                              -1,                                    &
@@ -473,7 +473,7 @@ contains
    
          do ij = 1, size(ij_iter)
             s = 'dS/dB2' // ij_iter(ij)
-            call add_operator('dS/dB2' // ij_iter(ij) // '        ', &
+            call add_operator('dS_dB2' // ij_iter(ij) // '        ', &
                               blocks,                                &
                               1,                                     &
                               1,                                     &
@@ -484,12 +484,12 @@ contains
          end do
    
          do ij = 1, size(ij_iter)
-            s = '>>S/B2' // ij_iter(ij)
+            s = '>>S_B2' // ij_iter(ij)
             call add_operator(s // '        ', blocks, 1, 0, 1, (/1/), (/f/), (/s/))
          end do
    
          do ij = 1, size(ij_iter)
-            s = '<>S/B2' // ij_iter(ij)
+            s = '<>S_B2' // ij_iter(ij)
             call add_operator(s // '        ', blocks, 1, 0, 1, (/1/), (/f/), (/s/))
          end do
 
@@ -498,7 +498,7 @@ contains
          irep(3) = ieor(isymax(1, 1), isymax(2, 1))
    
          do i = 1, size(i_iter)
-            s = 'd|S>/dB '
+            s = 'd|S>_dB '
             s(8:8) = i_iter(i)
             call add_operator('d|S>/dB' // i_iter(i) // '        ', &
                               blocks,                               &
@@ -809,8 +809,6 @@ contains
 !     return
 
       file_unit = lu1int
-      call opnfil(file_unit, 'AOPROPER', 'UNKNOWN', 'read_1el_integrals')
-      rewind file_unit
 
       op_index = index_on_aoproper(op_name)
 
@@ -842,7 +840,6 @@ contains
                   work, 1, lwork, 0)
 
       call di_deselect_wrk(work, lwork)
-      close(file_unit, status = 'keep')
 
       if (debug_me) then
          call print_mat(P, label = 'debug P in AO basis')

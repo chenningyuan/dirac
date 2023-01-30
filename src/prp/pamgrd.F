@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C FILE    : pamgrd.F
@@ -249,20 +244,16 @@ C       ... set to zero
       ELSE
 C
 C       read HF coefficients 
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
         IF(SPINFR) THEN
           CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,10)
         ELSE
           CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2)
         ENDIF
-        CLOSE(LUCOEF,STATUS='KEEP')
       END IF
 C
 C     Get property matrix in MO-basis and scale by factor -1
 C     ======================================================
 C
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
 CMI... distinguish between standard and LAO-based atomic orbitals
 CMI NOTE/27.10'04 The new IBEIG parameters for spin-free properties !
 CMI This has to be adapted also for LAO properties !
@@ -277,7 +268,6 @@ CMI This has to be adapted also for LAO properties !
      &              WORK,KFREE,LFREE,IPRINT)
       ENDIF
 
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Hermicity of operator
 C     =====================
@@ -360,7 +350,6 @@ C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
 C
       DO IZ = 1,NZ
-#include "ivdep.h"
         DO IXOP = 1,NXOP
           IA = JXOP(1,IXOP)
           IM = JXOP(2,IXOP)
@@ -386,7 +375,6 @@ C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
 C
       DO IZ = 1,NZ
-#include "ivdep.h"
         DO IXOP = 1,NXOP
           INDI = JXOP(1,IXOP)
           INDA = JXOP(2,IXOP)
@@ -799,10 +787,6 @@ C     ==========================================
 C
       ISYM  = IPRPSYM(INDXPR)
       IOPSY = JBTOF(ISYM-1,1)
-      IF(ONFILE) THEN
-        OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &           FILE='AOPROPER')
-      ENDIF
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
         IB = 7 ! 111
 !gosia: fac2lo is not set? i'm setting it to 1.0
@@ -814,8 +798,6 @@ C
      &               CMO,IBEIG,ICMOQ,NORB,
      &               WORK,KFREE,LFREE,IPRINT)
       ENDIF
-
-      IF(ONFILE) CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Hermicity of operator
 C     =====================

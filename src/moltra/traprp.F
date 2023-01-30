@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -132,15 +127,8 @@ C
          END IF
          CLOSE (LUKRMC)
       ELSE
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(A)') 'Coefficient file not present'
-            CALL QUIT('TRAPAM: No coefficients !')
-         ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
-            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &                  WORK(KIBEIG),TOTERG,14)
-         ENDIF
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &               WORK(KIBEIG),TOTERG,14)
       END IF
 C
 C     Get the boson symmetries of the transformed spinors
@@ -161,8 +149,6 @@ C
 C     Transform property matrices to MO basis
 C     ---------------------------------------
 C
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
       OPEN (LUMLF1,FORM='UNFORMATTED',FILE='MDPROP')
 C
       CALL MEMGET('REAL',KPROPMO,NSTRT(1)*NSTRT(2)*NZ,WORK,KFREE,LFREE)
@@ -214,7 +200,6 @@ C
      &                ISYM,ACHAR,LUMLF1)
          CALL MEMREL('TRAPRP',WORK,KPRCMO,KPRCMO,KFREE,LFREE)
       ENDDO
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
       DO IX = 1, 32
          ACHAR(IX:IX) = '*'
@@ -313,7 +298,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-      PARAMETER (DM1=-1.D0,ZEROTHRS=1.0D-11)
+      PARAMETER (DM1=-1.D0,ZEROTHRS=1.0D-7)
       CHARACTER*32 ACHAR
       DIMENSION NSTR(2,0:2,2),PRCMO(NSTRT1*2,NSTRT2*2,2)
       DIMENSION PROPMO(NSTRT1,NSTRT2,NZ)

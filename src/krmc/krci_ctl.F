@@ -1,21 +1,18 @@
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!dirac_copyright_start
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
+!dirac_copyright_end
 
 ! FILE : krmc/krci_ctl.F
 !
@@ -98,7 +95,7 @@ C
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
      &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX',
-     &            '.EEDM  ','.MHYP  ','.ENSPS ','.NMQM  ','.XXXXXX',
+     &            '.EEDM  ','.MHYP  ','.ENSPS ','.NMQM  ','.THRGCI',
      &            '.XXXXXX','.TERSE '/ !MKN
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
@@ -187,7 +184,11 @@ CTF   DKRCI_THRECI = 1.0d-8
 CTF   DKRCI_THRECI = 0.3d-10   ! Seems to converge P,T-odd properties
 C                                sufficiently well. More testing
 C                                required.
-      DKRCI_THRECI = 0.8d-12
+C      DKRCI_THRECI = 0.8d-12 
+      !September 25 2019: Changed to more moderate value - A. Nyvang
+      DKRCI_THRECI = 1.0d-10 ! CI energy change convergence threshold;
+      ! set so low that the DKRCI_THRGCI takes precedence
+      DKRCI_THRGCI = 1.0d-4 ! CI gradient convergence threshold
 C
 C     Initialize /DCOKRCI/
 C     ===================
@@ -879,6 +880,8 @@ C          : (\alpha X r)_z.(r_z) (i.e. \alpha X Electric Field Gradient)
                GO TO 100
 CMKN The nMQM is newly implemented following mHYP
    50          CONTINUE
+C&&& .THRGCI:  CI gradient convergence threshold
+               read(lucmd,*) DKRCI_THRGCI
                GO TO 100
    51          CONTINUE
                GO TO 100
@@ -1205,7 +1208,9 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
 C
       WRITE(LUPRI,'(A,1P,D10.2)')
-     &     ' * Energy convergence threshold: ', DKRCI_THRECI
+     &     ' * Gradient convergence threshold:', DKRCI_THRGCI
+      WRITE(LUPRI,'(A,1P,D10.2)')
+     &     ' * Energy convergence threshold:  ', DKRCI_THRECI
       IF (MAXCIT_KRCI .GE. 0) THEN
          WRITE(LUPRI,'(A,I3)')
      &     ' * Maximum number of CI iterations for each symmetry: ',
@@ -1408,6 +1413,7 @@ C     Last revision :
 C
 C***********************************************************************
       use memory_allocator
+      use symmetry_setup_krci, only: orbsymVEC
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1614,6 +1620,9 @@ C
 C     ***************************************************
 C     *** Memory deallocation ***************************
 C     ***************************************************
+      IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+            if(allocated(orbsymVEC)) deallocate(orbsymVEC)
+      END IF
 C
       CALL MEMREL('KRCI_CALC',WORK,KWORK,KWORK,KFREE,LFREE)
       call dealloc(WORK)

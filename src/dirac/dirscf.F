@@ -1,22 +1,17 @@
-!Dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!dirac_copyright_start
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -242,6 +237,7 @@ C*****************************************************************************
       use fde_mod
       use num_grid_gen
       use xmlout
+      use dircmo
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
@@ -315,7 +311,6 @@ C
       CALL OPNFIL(LUCMOS,'DFCMOS','UNKNOWN','PREDHF')
       OPEN (LUFOCK, FILE='DFFOCK', FORM='UNFORMATTED',
      +      ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='UNKNOWN')
-      CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PREDHF')
       CALL OPNFIL(LUFCK1,'DFFCK1','OLD','PREDHF')
 C
 C     *****************************************************************
@@ -335,7 +330,7 @@ C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true.
       IF(ATHUCK) THEN
         DHF_INTTYP = 'Atom. Huckel'
         CALL ADHOC(CMO,EIG,IBEIG,DHFERG,IPRSCF,WORK,KFREE,LFREE)
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG,.FALSE.) ! CTROND: check
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
         GOTO 100
 C
 C     2) - atomic start
@@ -361,11 +356,7 @@ C       We calculate a regular Fock matrix so we can check convergence ...
 C
         IF (ICHKCNV.EQ.0) ICHKCNV = -1
         IOPT = 15
-        IF(ATOMIC) THEN
-          CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
-        ELSE
-          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
-        ENDIF
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
 C
 C       Generate untransformed coefficients (MO basis)
 C       and prepare for overlap selection
@@ -643,15 +634,6 @@ C
         AOC      = AOCBUF
         NFMAT    = NFMATBUF
       ENDIF
-C
-C     Add vacuum polarisation in case of ONESYS
-C
-#ifdef MOD_UNRELEASED
-      IF(ONESYS.AND.VACPOL) THEN
-        WRITE(LUPRI,'(/A)') '=> Adding vacuum polarization potential'
-        CALL ONEVAC(CMO,EIG,IBEIG,FOCK,WORK(KFREE),LFREE)
-      ENDIF
-#endif
 CMI   ... when (DO4C2C.AND..NOT.CONT2C)=.true.,  !
       IF (DOHUCKEL.OR.BARNUC.OR.(TRIFCK.AND..NOT.DO4C2C)) THEN
         WRITE(LUPRI,'(/A)') '=> Calculating sum of orbital energies'
@@ -693,11 +675,7 @@ C
           DO I = 1,NFSYM
             CALL PHATRA(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ)
           ENDDO
-          IF(ATOMIC) THEN
-            CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
-          ELSE
-            CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG,.FALSE.)
-          ENDIF   
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
         CLOSE(LUFCK1,STATUS='KEEP')
@@ -912,6 +890,7 @@ C     Last revisions: Mar 09 1995
 C                     Nov. 2005 - MI
 C
 C*****************************************************************************
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -991,7 +970,7 @@ C        ... before extracting of EIG print the Fock matrix
 C
 C     If converged, exit SCF here
 C
-      IF (DHFEXIT) GOTO 9999      
+      IF (DHFEXIT) GOTO 9999
 C
 C     Diagonalize Fock matrix
 C     =======================
@@ -1091,11 +1070,7 @@ C     Write untransformed coefficients
       REWIND LUCMOS
       CALL WRITT(LUCMOS,N2TMOTQ,FAO)
 C     Write transformed coefficients
-      IF(ATOMIC) THEN
-        CALL ATOMIC_WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
-      ELSE
-        CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG,.FALSE.)
-      ENDIF   
+      CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
 C
 C     Dynamic update of overlap selection matrix, if not converged
 C     (note that DMAT is destroyed)
@@ -1879,7 +1854,7 @@ C
          call fde_get_import_info(itmp)
          if (itmp%im_update_vemb) then
              elergy = elergy - fde_get_embpot_energy()
-         else if (itmp%im_vemb) then
+         else if (itmp%im_vemb.and.itmp%im_remove_vemb_e_dcount) then
              elergy = elergy - fde_dirac_embpot_static_energy()
          end if
 !        deallocate(vemb_mat)
@@ -1963,14 +1938,7 @@ CMI      ... print out matrixes ...
             ENDIF
          END IF
       ENDIF
-c     Check if this is the lowest energy so far, in that case
-c     save the DFCOEF file as DFCOEF.BEST
       if (dhferg.lt.besterg) then
-#if defined SYS_WINDOWS
-         call system('copy DFCOEF DFCOEF.BEST')
-#else
-         call system('cp DFCOEF DFCOEF.BEST')
-#endif
          besterg = dhferg
       endif
       CALL QEXIT('ERGCAL')
@@ -3246,6 +3214,7 @@ C     Written by T.Saue June 18 1998
 C     Last revision : June 18 1998 - tsaue
 C
 C***********************************************************************
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0,DM2=-2.0D0,D2=2.0D0)
@@ -3277,21 +3246,12 @@ C     only exchange contributions
 C
 C     Get all coefficients
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(//A)')
-     &   'MVOGEN ERROR: MO coefficient file DFCOEF not present'
-         CALL QUIT('MVOGEN: No MO coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
-         IOPT=14
-         IF(ATOMIC) THEN
-           CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
-         ELSE
-           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
-         ENDIF
-      ENDIF
+      IOPT=14
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
       IF(IONMVO) THEN
+        WRITE(LUPRI,'(A)') "Generating MVOs with Bauschlicher's"//
+     &  " method (J. Chem. Phys. 72, 880 (1980))."
+
 C
 C       Generate MVOs by the Bauschlicher method (ionic Fock)
 C
@@ -3392,12 +3352,7 @@ C
         ENDDO
       END IF
       END DO
-      IF(ATOMIC) THEN
-        CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      ELSE
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
-      ENDIF   
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
 C
       CALL QEXIT('MVOGEN')
       RETURN
@@ -3428,6 +3383,8 @@ C
 C     Set up index arrays for coefficients contributing
 C     =================================================
 C
+      IF (IPRMVO.GE.0) WRITE(LUPRI,'(/A/,(5X,A))')
+     &   'Orbital selection for MVO density matrix:',VECMVO(1:NFSYM)
       IC   = 1
       DO I = 1,NFSYM
         NR(I)   = NESH(I)
@@ -3484,7 +3441,8 @@ C
         CALL TITLER('Output density matrix from DENMVO','*',103)
         DO 20 I = 1,NFSYM
         IF(NVEC(I,0).EQ.0) GOTO 20
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          WRITE(LUPRI,'(/3X,A,I2,A,I0/)') '*** Fermion corep ',I,
+     &       '; Occupied MOs: ',NVEC(I,0)
           CALL PRQMAT(DMAT(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    20   CONTINUE
@@ -3504,6 +3462,7 @@ C     Last modification: MI, July 2005 for BSSpostDC-SCF calculation
 C
 C***********************************************************************
       use num_grid_cfg
+      use checkpoint
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3581,9 +3540,9 @@ C
 C     * TRIVEC: Looking for old coefficients
 C     --------------------------------------
 C
-CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
       IF(TRIVEC.AND..NOT.RESTFCK) THEN
-        INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+        call checkpoint_query
+     &  ('/result/wavefunctions/scf/mobasis/orbitals',tobe)
         IF(TOBE) THEN
           BARNUC   = .FALSE.
           DOHUCKEL = .FALSE.
@@ -4230,16 +4189,6 @@ C
      &                 NTMO(I),WORK(KFREE),LFREE,IERR)
           ENDIF
 C
-#ifdef MOD_UNRELEASED
-          IF(VACPOL) THEN
-            CALL HEADER(
-     &      'DFDIAG: Eigenvalues (normal diagonalization) :',-1)
-            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &      '*** Fermion corep ',I,'/',NFSYM
-            WRITE(LUPRI,'(I5,F25.10)')
-     &      (J,EIG(IORB(I)+J),J=1,NTMO(I)) 
-         ENDIF
-#endif
          IF (DODBG) THEN
           IF (IPRHAM.GE.3) THEN
            CALL HEADER(
@@ -4816,7 +4765,7 @@ C     Level shift
 C
 C     Written by T. Saue July 4 2006
 C
-C  MI July 6,2006: Requires DFCOEF with written MO's
+C  MI July 6,2006: Requires CHECKPOINT with written MO's
 !
 !     April 2013
 !     sknecht: attempt to change level shift for closed-shell cases: i do not understand 
@@ -4845,12 +4794,6 @@ C
 
       CALL QENTER('LEVSHI')
 C
-      IF (IPRSCF.GE.10) THEN
-        INQUIRE(FILE='DFCOEF',EXIST=IS_HERE,OPENED=IS_OPEN)
-        write(lupri,*) 'LEVSHI: DFCOEF IS_HERE=',IS_HERE
-        write(lupri,*) 'LEVSHI: DFCOEF IS_OPEN=',IS_OPEN
-      ENDIF
-
       REWIND LUCMOS
       CALL READT(LUCMOS,N2TMOTQ,CMO)
       DO I = 1,NFSYM
@@ -5101,7 +5044,6 @@ C
 
       RETURN
       END
-#ifdef MOD_UNRELEASED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck onevac */
       SUBROUTINE ONEVAC(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
@@ -5174,7 +5116,6 @@ C     Release memory
 C
       RETURN
       END
-#endif
       SUBROUTINE FMO_FREEZE(FMO)
 #include "implicit.h"
 #include "priunit.h"
@@ -5419,6 +5360,8 @@ C.....  Rotate orbitals into place
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ATOMIC_START(DMAT,IPRINT,WORK,KFREE,LFREE)
+      use dircmo
+      use labeled_storage
 C***********************************************************************
 C
 C     Routine for atomic start
@@ -5443,7 +5386,10 @@ C
 C.....Local variables
       LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
-      INTEGER NNEG,NPOS,NBAS,IDIM(3)
+      INTEGER NNEG,NPOS,NBAS,IDIM(3),idims(12)
+      real(8), allocatable :: atom_cmo(:)
+      type(file_info_t)    :: atomfile
+      integer              :: n_mo(2),n_po(2), n_basis(2)
 C
       KFRSAV=KFREE
 C.....Say hello
@@ -5464,7 +5410,11 @@ C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
         IF (MBAS == 0) CYCLE
 C.......Read atomic coefficients in C1 format
-        INQUIRE(FILE=ATOMFIL(IATOM),EXIST=TOBE)         
+        atomfile%name = ATOMFIL(IATOM)
+        atomfile%status = 0
+        atomfile%type = 2
+        call lab_query (atomfile,
+     &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
         IF(.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,A6,A)') 
      &     'ATOMIC_START: Atomic coefficient file ',ATOMFIL(IATOM),
@@ -5472,14 +5422,20 @@ C.......Read atomic coefficients in C1 format
            CALL QUIT
      &     ('ATOMIC_START: Atomic coefficient file not found !')
         ENDIF
-        CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
-        IF(FNDLAB('INFO    ',LUATOM)) THEN
-           READ(LUATOM) TEXT,NSYM,NZBUF,NNEG,NPOS,NBAS,TOTERG
-        ELSE
-           WRITE(LUPRI,*) 'ATOMIC_START: error reading info ',
-     &                    ATOMFIL(IATOM) 
-          CALL QUIT('ATOMIC START: Error reading info')
-        ENDIF
+        call lab_read(atomfile,'/result/wavefunctions/scf/mobasis/n_mo',
+     &                idata=n_mo)
+        call lab_read(atomfile,'/result/wavefunctions/scf/mobasis/n_po',
+     &              idata=n_po)
+        call lab_read(atomfile,
+     &       '/result/wavefunctions/scf/mobasis/n_basis',
+     &       idata=n_basis)
+        call lab_read(atomfile,'/result/wavefunctions/scf/energy',
+     &       rdata=toterg)
+        nneg = sum(n_po)
+        npos = sum(n_mo) - nneg
+        nbas = sum(n_basis)
+        nsym = 1 ! We read the C1 coefficients
+        text = 'Coefficients read from file: '//atomfile%name
         IF(NBAS.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
      &     'ATOMIC_START: ',
@@ -5491,7 +5447,7 @@ C.......Read atomic coefficients in C1 format
         ENDIF
         IF(IPRINT.GE.1) THEN
           WRITE(LUPRI,*) NAMN(ICENT),ATOMFIL(IATOM)
-          WRITE(LUPRI,*) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
+          WRITE(LUPRI,*) trim(TEXT),NSYM,NNEG,NPOS,NBAS,TOTERG
         ENDIF
         NAORB   = NNEG+NPOS
         NACMO   = NBAS*NAORB
@@ -5502,9 +5458,10 @@ C.......Read atomic coefficients in C1 format
         IDIM(3) = NBAS
 C.......Allocate memory for atomic density matrix and coefficients
         CALL MEMGET2('REAL','ADEN',KADE,NADEN ,WORK,KFREE,LFREE)
-        CALL MEMGET2('REAL','CMO ',KCMO,NACMOQ,WORK,KFREE,LFREE)
-        CALL REACMO_coefficients(LUATOM,WORK(KCMO),NACMOQ,1,NZC1,
-     &           NAORB,NBAS,NNEG,NPOS,IDIM)         
+        allocate (atom_cmo(nacmoq))
+        call lab_read(atomfile,
+     &       '/result/wavefunctions/scf/mobasis/orbitals_C1',
+     &              rdata=atom_cmo)
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET2('INTE','VEC ',KVEC,NAORB,WORK,KFREE,LFREE)
         NDIM=MAX(NAORB+1,NBAS)
@@ -5521,12 +5478,12 @@ C.........extract selected vectors from CMO and place in CBUF
           CALL MEMGET2('REAL','CBUF',KCBUF,NBAS*NSEL*NZC1,
      &                 WORK,KFREE,LFREE)
           CALL INDEXFILL(WORK(KIBUF),NBAS,1,1)
-          CALL SELOWC(NZC1,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
+          CALL SELOWC(NZC1,atom_cmo,NBAS,NAORB,NNEG,NPOS,
      &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
      &                 NPVEC,NEVEC)
           IF(IPRINT.GE.4) THEN
             WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
-            CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
+            CALL PRQMAT(atom_cmo,NBAS,NAORB,NBAS,NAORB,
      &                NZ,IPQTOQ(1,0),LUPRI)
             WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients',IATOM
             CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
@@ -5556,7 +5513,8 @@ C       molecular C1 density matrix
      &                   WORK(KR1BUF),WORK(KC1BUF),
      &                   WORK(KI1BUF),WORK(KJ1BUF))
 C.......Release memory        
-        CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
+        deallocate (atom_cmo)
+        CALL MEMREL('ATOMIC_START',WORK,1,KADE,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
         ICENT = ICENT+NONT(IATOM)
       ENDDO
@@ -5603,6 +5561,8 @@ C.......transform atomic start to actual symmetry
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADHOC(CMO,EIG,IBEIG,EIGSUM,IPRINT,WORK,KFREE,LFREE)
+      use dircmo
+      use labeled_storage
 C***********************************************************************
 C
 C     Atomic Huckel start
@@ -5628,9 +5588,10 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+      type(file_info_t)    :: fragfile
       LOGICAL FNDLAB
       CHARACTER TEXT*74
-      DIMENSION IDIM(3)
+      DIMENSION IDIM(3),n_mo(2),n_po(2),n_ao(2)
       DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
      &          NATDEG(MAXHOC),CMO(*),EIG(*),IBEIG(*),WORK(*)
       KFRSAV = KFREE
@@ -5651,19 +5612,24 @@ C     INDEP runs over symmetry dependent centers
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
 C.......Read information from coefficient file
-        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')
-        IF(FNDLAB('INFO    ',LUHOC)) THEN
-          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,NZBUF,
-     &          NCATOM(2,ITYP),NCATOM(1,ITYP),NAO(ITYP),DUM
-        ELSE
-          WRITE(6,*) 'ADHOC: not able to read info from file ',
-     &                HOCFIL(ITYP)
-          CALL QUIT('ADHOC: Error reading info')
-        ENDIF
+        fragfile%type = 2
+        fragfile%name = trim(HOCFIL(ITYP))
+        fragfile%status = 0
+        call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_mo',
+     &                idata=n_mo)
+        call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_po',
+     &              idata=n_po)
+        call lab_read(fragfile,
+     &       '/result/wavefunctions/scf/mobasis/n_basis',
+     &       idata=n_ao)
+        fragfile%status = 0 ! close the file
+
+        ncatom(1,ityp) = sum(n_po)
+        ncatom(2,ityp) = sum(n_mo)-sum(n_po)
+        nao(ityp)      = sum(n_ao) 
 C.............NPSH............NESH............NBAS...........TOTERG
-        CLOSE(LUHOC,STATUS='KEEP')
         IF(NAO(ITYP).NE.MBAS) THEN
-           WRITE(LUPRI,'(A/A,I6/A,A6,A,I6)') 
+           WRITE(LUPRI,'(A/A,I6/A,A6,A,I6/A,I6)') 
      &     '* Atomic Huckel start: ',
      &     '  Wrong number of basis function for atomic type ', ITYP,
      &     '  Number read from                     ',
@@ -5706,27 +5672,26 @@ C
       ININD= 1
       DO ITYP = 1,NONTYP
 C.......Read C1 coefficients and orbitalenergies
-        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','PRJAOB')        
-        IF(FNDLAB('INFO    ',LUHOC)) THEN
-          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,NZBUF,
-     &          NNEG,NPOS,NAO(ITYP),DUM
-        ELSE
-          WRITE(6,*) 'ADHOC2: not able to read info from file ',
-     &                HOCFIL(ITYP)
-          CALL QUIT('ADHOC2: Error reading info')
-        ENDIF
-        NTOT = NNEG+NPOS
-        IDIM(1) = NNEG
-        IDIM(2) = NPOS
-        IDIM(3) = NAO(ITYP)
+        fragfile%type = 2
+        fragfile%name = trim(HOCFIL(ITYP))
+        fragfile%status = 0
+        call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_mo',
+     &                idata=n_mo)
+        call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_po',
+     &              idata=n_po)
+        NNEG = sum(n_po)
+        NPOS = sum(n_mo)-sum(n_po)
+        NTOT = sum(n_mo)
         NQA  = NAO(ITYP)*NTOT*NZC1
         CALL MEMGET2('REAL','QA',KQA,NQA ,WORK,KFREE,LFREE)
-        CALL REACMO_coefficients(LUHOC,WORK(KQA),NQA,1,4,
-     &           NTOT,NAO(ITYP),NNEG,NPOS,IDIM)         
+        call lab_read(fragfile,
+     &   '/result/wavefunctions/scf/mobasis/orbitals_C1',
+     &    rdata=WORK(KQA:KQA+NQA-1))
         CALL MEMGET2('REAL','EA',KEA,NTOT,WORK,KFREE,LFREE)
-        CALL REACMO_eigenvalues(LUHOC,WORK(KEA),NTOT,1,4,
-     &           NTOT,NNEG,NPOS,IDIM)         
-        CLOSE(LUHOC,STATUS='KEEP')
+        call lab_read(fragfile,
+     &   '/result/wavefunctions/scf/mobasis/eigenvalues_C1',
+     &    rdata=WORK(KEA:KEA+NTOT-1))
+        fragfile%status = 0 ! close the file
 C.......Make pointer array to selected reference orbitals
         NDIM = NTOT+1
         CALL MEMGET2('INTE','ITMP',KITMP,NDIM,WORK,KFREE,LFREE)
@@ -5941,7 +5906,7 @@ CMI    ... prepare the starting 4c Fock MO matrix
         CALL MEMREL('FDTR4C.GO2C4C',WORK,KWORK,KWORK,KFREE,LFREE)
 
       ELSE IF (INI2C.EQ.3.OR.INI2C.EQ.4) THEN
-C       .... prepare the DFCOEF file with staring MOs
+C       .... prepare the CHECKPOINT file with starting MOs
         CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','TMAT ',K1   ,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
@@ -5976,13 +5941,6 @@ C       .... prepare the DFCOEF file with staring MOs
         CALL SYSTEM('/bin/rm DFEVEC')
         IF (IPRSCF.GE.0) WRITE(LUPRI,*)
      &  'GO2C4C: DFEVEC file from previous SCF cycle was deleted.'
-      ENDIF
-
-      INQUIRE(FILE='DFCOEF',EXIST=EX)
-      IF (EX.AND.(INI2C.NE.3.AND.INI2C.NE.4)) THEN
-        CALL SYSTEM('/bin/rm DFCOEF')
-        IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &  'GO2C4C: DFCOEF file from previous SCF cycle was deleted.'
       ENDIF
 
       DHFCONV(1)=.FALSE.
@@ -6080,8 +6038,6 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
         IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
         INQUIRE(FILE='DFEVEC',EXIST=EX)
         IF (EX) CALL SYSTEM('/bin/rm DFEVEC')
-        INQUIRE(FILE='DFCOEF',EXIST=EX)
-        IF (EX) CALL SYSTEM('/bin/rm DFCOEF')
 
         CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,
      &               WORK,KFREE,LFREE)

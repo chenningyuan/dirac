@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'MP2 energy =',
+      num_lines   = 1,
+      rel_tolerance   = 1.0e-7)
+
+test.run(['mp2lap_hf_pvdz.inp'], ['HF.xyz'], f)
+test.run(['mp2lap_hf_pvtz.inp'], ['HF.xyz'], f)
+
+
+f = Filter()
+f.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
+        num_lines   = 21,
+        rel_tolerance   = 1.0e-7)
+
+test.run(['mp2lap_hf_pvdz_get_no_1.0d-4.inp'], ['HF.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4"')
+#test.run(['mp2lap_hf_pvtz_get_no_1.0d-4.inp'], ['HF.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvtz_1.0d-4"')
+#test works, also for different indices, but takes time 04.11.2021
+
+f = Filter()  
+f.add(from_string = '* Dipole moment:',
+        num_lines   = 9,
+        rel_tolerance   = 1.0e-6)
+f.add(from_string = '           Total contribution to principal components',
+        num_lines   = 15,
+        rel_tolerance   = 1.0e-6)
+
+
+#test.run(['ccsd_hf_pvdz_with_no_1.0d-4.inp'], ['HF.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4=DFCOEF"')
+# values are acceptable close to the ones for mp2no, but deactivate test as it doesn't test a separate functionlity
+
+sys.exit(test.return_code)

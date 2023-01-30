@@ -1,0 +1,5 @@
+!
+! Creating checkpoint file and dumping part of its content
+! We create this file from the DIRAC-style files DFCOEF, AOPROPER and MOLECULE.XYZ
+! and then read 3 dataset that each originate from a different file.
+! 

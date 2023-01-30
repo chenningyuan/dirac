@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
+      num_lines   = 21,
+      rel_tolerance   = 1.0e-7)
+
+# Test if restart procedure works
+
+
+test.run(['hf_get_NOs_MO_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--outcmo --get=NOs_MO')
+test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--incmo --put=NOs_MO --outcmo')
+
+f = Filter()
+
+f.add(from_string = '    -     Final results from EXACORR     -    ',
+      num_lines   = 8,
+      rel_tolerance   = 1.0e-8)
+f.add(from_string = '* Dipole moment:',
+      num_lines   = 9,
+      rel_tolerance   = 1.0e-6)
+f.add(from_string = '           Total contribution to principal components',
+      num_lines   = 15,
+      rel_tolerance   = 1.0e-6)
+
+test.run(['hf_fno_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--incmo')
+sys.exit(test.return_code)

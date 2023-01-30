@@ -39,6 +39,7 @@ C***********************************************************************
       integer, allocatable :: mo_list(:), mo_list_tmp(:)
       integer              :: nmo(4)
       integer              :: i, j, imo, jmo, ntmo, rcw
+      integer              :: numproc
 
       exa_input%print_level=IPRTRA
 
@@ -46,6 +47,12 @@ C***********************************************************************
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
       call interface_mpi_comm_rank(global_communicator,mytid)
+      call interface_mpi_comm_size(global_communicator,numproc)
+      if (mytid == 0 .and. numproc < 4 .and. .not. exa_input%talsh) then
+         print*," The EXATENSOR library needs ar least 4 mpi processes"
+         print*," -> switched to serial mode using only TALSH"
+         exa_input%talsh = .true.
+      end if
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
          ! instruct slaves to go to the current routine (exa_moltra) as well
@@ -150,7 +157,11 @@ C***********************************************************************
 
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
+      use talsh_mp2no,only          : talsh_mp2no_driver
+      use talsh_mp2lap,only         : talsh_mp2lap_driver
+      use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
+      use exacorr_mp2no,only        : exacorr_mp2no_driver
       use exacorr_global
       use exacorr_utils, only       : print_exacorr_logo
       use exacorr_utils, only       : print_date
@@ -160,13 +171,21 @@ C***********************************************************************
 
       implicit none
 
-      integer              :: mytid                    ! MPI rank
+      integer              :: mytid, numproc           ! MPI rank and # processors
+      integer              :: n_mp2no,i                 
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       ! parallel version of DIRAC
       ! the slaves do not have their input set yet, so call them
       ! and let them know whether we use talsh or exatensor
       call interface_mpi_comm_rank(global_communicator,mytid)
+      call interface_mpi_comm_size(global_communicator,numproc)
+      if (mytid == 0 .and. numproc < 4 .and. .not. exa_input%talsh) then
+         print*," The EXATENSOR library needs ar least 4 mpi processes"
+         print*," -> switched to serial mode using only TALSH"
+         exa_input%talsh = .true.
+      end if
+
       if (mytid == 0 ) then
          call print_exacorr_logo
          call dirac_parctl( 20 ) 
@@ -201,61 +220,34 @@ C
 #endif
 
       if (exa_input%talsh) then
+       if (exa_input%do_no) then
+         call get_no_driver (exa_input)
+       else if (exa_input%mp2no > 0 ) then
+         call talsh_mp2no_driver (exa_input,n_mp2no)
+       elseif (exa_input%mp2no < 0) then
+         call talsh_mp2lap_driver (exa_input)
+       else
          call talsh_cc_driver (exa_input)
+       end if
       else
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          call exacc_sync_cw(0,mytid)
 #endif
          !if lambda is activated set prop flags
-         if (exa_input%lambda) then 
-           if (mytid == 0) call set_prop_flags_ccsd()
-         end if
+       if (exa_input%lambda) then 
+              if (mytid == 0) call set_prop_flags_ccsd()
+       end if
 
-         call exacorr_cc_driver (exa_input)
+       if (exa_input%mp2no > 0) then
+              call exacorr_mp2no_driver (exa_input,n_mp2no)
+       else
+              call exacorr_cc_driver (exa_input) 
+       end if 
       end if
 
       call exacc_deallocate_cw()
 
       end
-
-       subroutine Initialize_Shells (shell,ierr)
-
-!      get information from common blocks about the basis set
-!      raise an error for contracted sets that can not yet be handled by Interest
-
-!      NB: this routine is outdated, replaced by read_from_dirac. Just keeping it in case we still need it.
-
-       use exacorr_datatypes
-
-#include "implicit.h"
-#include "maxorb.h"
-#include "shells.h"
-#include "aovec.h"
-#include "primit.h"
-
-       integer ishell, iPrimStart, iPrimEnd, k, ierr
-       type(basis_func_info_t) :: shell(*)
-
-       do ishell = 1, nlrgsh
-          shell(ishell)%orb_momentum = nhkt(ishell)
-          shell(ishell)%atom_number  = ncent(ishell)
-          shell(ishell)%n_primitives = nuco(ishell)
-          nullify  (shell(ishell)%exponent)
-          allocate (shell(ishell)%exponent(nuco(ishell)))
-          nullify  (shell(ishell)%coefficient)
-          allocate (shell(ishell)%coefficient(nuco(ishell)))
-          iPrimStart = jstrt(ishell) + 1
-          iPrimEnd   = jstrt(ishell) + nuco(ishell)
-          k          = numcf(ishell)
-         shell(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
-         shell(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
-         shell(ishell)%coord = cent(ishell,1:3,1)
-!        In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
-         call compress_unc_shell (shell(ishell),ierr)
-       end do
-
-       return 
-       end
 
        subroutine compress_unc_shell (shell,ierr)
 !If basis functions were grouped together in the input, they appear as quasi-contracted functions
@@ -308,7 +300,209 @@ C
 
        end subroutine compress_unc_shell
 
-       subroutine read_from_dirac (ao_basis,cspinor,file_name,ierr)
+       subroutine read_from_dirac (ao_basis,cspinor,section,ierr)
+
+       use checkpoint
+       use exacorr_mo
+       use exacorr_datatypes
+       use exacorr_global,only: nfunctions
+       use exacorr_utils
+
+       implicit none
+
+!      read all positive energy mo coefficients present on CHECKPOINT file
+!      check for incompatibilities (use of symmetry) as well and continue
+!      by reading also the basis set information into gtos
+
+       character(len=*),intent(in) :: section
+       type(basis_set_info_t), intent(inout) :: ao_basis
+       type(cmo), intent(inout):: cspinor
+       integer, intent(out)   :: ierr 
+       integer, parameter     :: NOERROR  = 0 ! no error
+       integer, parameter     :: NOTFOUND = 1 ! file not found
+       integer, parameter     :: CORRUPT  = 2 ! file unreadable
+       integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
+       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old CHECKPOINT?)
+       integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
+       integer, parameter     :: INCONSIS = 6 ! CHECKPOINT does not contain consistent information wrt number of basis functions
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
+       integer                :: nsym
+       real(8)                :: total_energy,e_corr
+       integer                :: i, j, k, ishell, iprimstart, iprimend
+       integer                :: nao, nao_bas, nshells, iao, ibas
+       integer                :: nmo, npo, nto, npriexp, nzbuf
+       integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
+       real(8), allocatable   :: coeff(:),eig(:),coeff_q(:,:,:)
+       integer, allocatable   :: ibeig(:),index(:)
+       integer, allocatable   :: orbmom(:)
+       real(8), allocatable   :: priexp(:),priccf(:),coord(:)
+       integer, allocatable   :: ao_map(:,:)
+       character(8)           :: label(4)
+       logical                :: labeled
+       integer                :: n_mo(2),n_po(2),n_basis(2)
+       integer,allocatable    :: n_prim(:),n_cont(:)
+       character*(:),allocatable :: group
+
+
+       group = '/result/wavefunctions/'//trim(section)//'/'
+       ierr = NOERROR
+       text = trim(section)//' data read from the checkpoint file '
+       call checkpoint_read (group//'mobasis/nz',idata=nzbuf)
+       call checkpoint_read (group//'mobasis/n_basis',idata=n_basis)
+       call checkpoint_read (group//'mobasis/n_mo',idata=n_mo)
+       call checkpoint_read (group//'mobasis/n_po',idata=n_po)
+       call checkpoint_read (group//'energy',rdata=total_energy)
+       if (section .ne. 'scf') then
+          call checkpoint_read (group//'e_corr',rdata=e_corr)
+          total_energy = total_energy - e_corr
+       end if
+
+       if (n_basis(2) == 0) then
+         nsym = 1
+       else
+         nsym = 2
+       end if
+       ! check symmetry and get dimensions of the coefficient array
+       if (nsym > 1) then
+          ierr = SYMMETRY
+          return
+       else
+          nao = n_basis(1) ! number of ao's
+          npo = n_po(1)    ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
+          nmo = n_mo(1)    ! "electronic" (= positive energy) solutions (we only need these)
+          nto = npo+nmo    ! total number of solutions on this file
+          if (npo>0) print*, "warning: reading 4C CHECKPOINT file" ! this warning will go once we have the full index transform implemented
+       end if
+
+       allocate(coeff(nao*nto*nzbuf))
+       allocate(coeff_q(nao,nto,nz))
+       allocate(eig(nto))
+       allocate(ibeig(nto))
+       allocate(index(nmo))
+        
+       ! read the mo coefficients and orbital eigenvalues
+       call checkpoint_read (group//'mobasis/orbitals',rdata=coeff)
+       call checkpoint_read (group//'mobasis/eigenvalues',rdata=eig)
+       call checkpoint_read (group//'mobasis/symmetry',idata=ibeig)
+       ! fill in index values
+       do i = 1, nmo
+          index(i) = i ! we set the index compatible with the fact that we store all mo's
+       end do
+
+       ! put in cmo in quaternion format
+       coeff_q = reshape(coeff,(/nao,nto,nzbuf/))
+       cspinor%algebra = 'q'
+       call alloc_mo (cspinor,nao,nmo)
+       cspinor%total_energy = total_energy
+       cspinor%index        = index(npo+1:nto)
+       cspinor%coeff_q      = coeff_q(:,npo+1:nto,:)
+       cspinor%energy       = eig(npo+1:nto)
+       cspinor%symmetry     = ibeig(npo+1:nto)
+
+       deallocate(coeff)
+       deallocate(eig)
+       deallocate(ibeig)
+       deallocate(index)
+!      switch to unrestricted spinor picture
+       call convert_mo_to_complex(cspinor)
+
+       ! read general AO basis information
+       group = '/input/aobasis/1/'
+       call checkpoint_read 
+     & (group//'angular',idata=ao_basis%basis_angular)
+       call checkpoint_read (group//'n_ao',idata=nao_bas)
+       call checkpoint_read (group//'n_shells',idata=nshells)
+       allocate (orbmom(nshells))
+       allocate (n_prim(nshells))
+       allocate (n_cont(nshells))
+       allocate (coord(3*nshells))
+!      read information that is defined for each shell
+       call checkpoint_read (group//'orbmom',idata=orbmom)
+       call checkpoint_read (group//'n_prim',idata=n_prim)
+       call checkpoint_read (group//'n_cont',idata=n_cont)
+       call checkpoint_read (group//'center',rdata=coord)
+!      values of the exponents and coefficients for all shells (packed into a 1-d arrays)
+       npriexp = sum(n_prim)
+       allocate (priexp(npriexp))
+       allocate (priccf(npriexp))
+       call checkpoint_read (group//'exponents',rdata=priexp)
+       call checkpoint_read (group//'contractions',rdata=priccf)
+
+       ! check for consistency with the MO first dimension
+       if (nao < nao_bas) then
+          ierr = INCONSIS
+          return
+       elseif (nao > nao_bas) then
+          print*,"WARNING: assuming Levy-Leblond Hamiltonian"
+          print*,"Reading fewer basis functions than MO-coefficients"
+          allocate (ao_map(2,nao_bas))
+          forall (i=1:nao_bas) ao_map(:,i)=i
+          call compress_mo (cspinor,ao_map)
+       end if
+
+       ! put information in gtos
+       ao_basis%nshells       = nshells
+       ao_basis%nao           = nao_bas
+       nullify(ao_basis%gtos)
+       allocate(ao_basis%gtos(nshells))
+       iPrimStart = 1
+       do ishell = 1, nshells
+          ao_basis%gtos(ishell)%orb_momentum = orbmom(ishell)
+          ao_basis%gtos(ishell)%n_primitives = n_prim(ishell)
+          nullify  (ao_basis%gtos(ishell)%exponent) 
+          allocate (ao_basis%gtos(ishell)%exponent(n_prim(ishell)))
+          nullify  (ao_basis%gtos(ishell)%coefficient)
+          allocate (ao_basis%gtos(ishell)%coefficient(n_prim(ishell)))
+          iPrimEnd   = iPrimStart+n_prim(ishell)-1
+          ao_basis%gtos(ishell)%exponent   = priexp(iPrimStart:iPrimEnd)
+          ao_basis%gtos(ishell)%coefficient= priccf(iPrimStart:iPrimEnd)
+          ao_basis%gtos(ishell)%coord = coord(ishell*3-2:3*ishell)
+!         In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
+          call compress_unc_shell (ao_basis%gtos(ishell),ierr)
+          if (ierr == 1) ierr = CONTRAC
+          iPrimStart = iPrimStart + n_prim(ishell)
+       end do
+
+       deallocate(orbmom)
+       deallocate(n_prim)
+       deallocate(n_cont)
+       deallocate(coord)
+       deallocate(priexp)
+       deallocate(priccf)
+
+       ! make array with pointers from a basis function index to its shell
+       nullify(ao_basis%shell_indices)
+       allocate(ao_basis%shell_indices(nao))
+       iao = 0
+       do ishell = 1, nshells
+          do ibas = 1,
+     &       nfunctions(
+     &       ao_basis%gtos(ishell)%orb_momentum,ao_basis%basis_angular)
+             iao = iao + 1
+             if (iao.gt.nao) then
+                ierr = INCONSIS
+                call quit ('Error in read_from_dirac')
+             endif
+             ao_basis%shell_indices(iao) = ishell
+          end do
+       end do
+       if (iao.gt.nao) then
+          ierr = INCONSIS
+          call quit ('Error in read_from_dirac')
+       endif
+
+       call print_date(trim(text))
+       return
+
+  10   ierr = CORRUPT
+       return
+
+  20   ierr = NOBASIS
+       return
+
+       end subroutine read_from_dirac
+
+       subroutine read_from_dfcoef (ao_basis,cspinor,file_name,ierr)
 
        use exacorr_mo
        use exacorr_datatypes
@@ -317,8 +511,8 @@ C
 
        implicit none
 
-!      read all positive energy mo coefficients present on DFCOEF file
-!      check for imcompatibiklities (use of symmetry) as well and continue
+!      read all positive energy mo coefficients present on CHECKPOINT file
+!      check for incompatibilities (use of symmetry) as well and continue
 !      by reading also the basis set information into gtos
 
        character(len=*),intent(in) :: file_name
@@ -329,10 +523,10 @@ C
        integer, parameter     :: NOTFOUND = 1 ! file not found
        integer, parameter     :: CORRUPT  = 2 ! file unreadable
        integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
-       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old DFCOEF?)
+       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old CHECKPOINT?)
        integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
-       integer, parameter     :: INCONSIS = 6 ! DFCOEF does not contain consistent information wrt number of basis functions
-       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       integer, parameter     :: INCONSIS = 6 ! CHECKPOINT does not contain consistent information wrt number of basis functions
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
        integer                :: nsym
        integer                :: idim(3,2)
        real(8)                :: total_energy
@@ -342,12 +536,11 @@ C
        integer                :: nao, nao_bas, nshells, iao, ibas
        integer                :: nmo, npo, nto, npriexp, ncnt, nzbuf
        integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
-       real(8), allocatable   :: coeff(:,:,:),eig(:), seig(:)
+       real(8), allocatable   :: coeff(:,:,:),eig(:)
        integer, allocatable   :: ibeig(:),index(:)
        integer, allocatable   :: ncent(:),nhkt(:),nuco(:),numcf(:)
        integer, allocatable   :: jstrt(:)
        real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
-       complex(8), allocatable:: scoeff(:,:,:)
        integer, allocatable   :: ao_map(:,:)
        character(8)           :: label(4)
        logical                :: labeled
@@ -387,13 +580,13 @@ C
           npo = idim(1,1) ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
           nmo = idim(2,1) ! "electronic" (= positive energy) solutions (we only need these)
           nto = npo+nmo   ! total number of solutions on this file
-          if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implemented
+          if (npo > 0) print*, "warning: reading 4C CHECKPOINT file" ! this warning will go once we have the full index transform implemented
        end if
 
        allocate(coeff(nao,nto,nz))
        allocate(eig(nto))
        allocate(ibeig(nto))
-       allocate(index(2*nmo))
+       allocate(index(nmo))
         
        ! read the mo coefficients and orbital eigenvalues
        if (labeled) read (lucoef) label
@@ -403,30 +596,25 @@ C
        if (labeled) read (lucoef) label
        read (lucoef,end=10,err=10) ibeig
        ! fill in index values
-       do i = 1, 2*nmo
+       do i = 1, nmo
           index(i) = i ! we set the index compatible with the fact that we store all mo's
        end do
 
-!      switch to unrestricted spinor picture
-       allocate(seig(2*nmo))
-       allocate(scoeff(nao,2*nmo,2)) ! nao, 2*nmo, spin
-       call convert_quaternion_to_complex(coeff,scoeff,eig,seig,
-     &                                              nao,nmo,npo)
-
-       ! put in cmo
-       call alloc_mo (cspinor,nao,2*nmo)
+       ! put in cmo in quaternion format
+       cspinor%algebra = 'q'
+       call alloc_mo (cspinor,nao,nmo)
        cspinor%total_energy = total_energy
-       cspinor%index        = index
-       cspinor%coeff        = scoeff
-       cspinor%energy       = seig
-       cspinor%boson_irrep  = 0 ! because nosym. if there is, include ibeig in converter
+       cspinor%index        = index(npo+1:nto)
+       cspinor%coeff_q      = coeff(:,npo+1:nto,:)
+       cspinor%energy       = eig(npo+1:nto)
+       cspinor%symmetry     = ibeig(npo+1:nto)
 
        deallocate(coeff)
        deallocate(eig)
        deallocate(ibeig)
        deallocate(index)
-       deallocate(seig)
-       deallocate(scoeff)
+!      switch to unrestricted spinor picture
+       call convert_mo_to_complex(cspinor)
 
        ! read the basis set information and check for consistency
        if (labeled) read (lucoef) label
@@ -520,10 +708,9 @@ C
           close (lucoef,status='KEEP')
           call quit ('Error in read_from_dirac')
        endif
-
        close (lucoef,status='KEEP')
 
-       call print_date("read from DFCOEF:"//text)
+       call print_date("read from CHECKPOINT:"//text)
        return
 
   10   ierr = CORRUPT
@@ -534,13 +721,56 @@ C
        close (lucoef,status='KEEP')
        return
 
-       end subroutine read_from_dirac
+       end subroutine read_from_dfcoef
 
-       subroutine write_mos_to_dirac (ao_basis,cspinor,file_name)
+       subroutine write_mos_to_checkpoint(mobasis_id,cspinor,section)
+
+       use exacorr_mo
+       use checkpoint
+
+!      write mo coefficients in new dirac format
+
+       integer, intent(in)         :: mobasis_id
+       character(len=*),intent(in) :: section
+       type(cmo), intent(inout)    :: cspinor
+       type(cmo)                   :: qorbital
+       integer                     :: ncoeff
+       character*(:), allocatable  :: group
+
+
+       call copy_mo(cspinor,qorbital)
+       call convert_mo_to_quaternion(qorbital)
+
+       ncoeff = qorbital%nao * qorbital%nmo * qorbital%nz
+       group = '/result/wavefunctions/'//trim(section)//'/mobasis'
+       call checkpoint_write 
+     & (trim(group)//'/mobasis_id',idata=mobasis_id)
+       call checkpoint_write 
+     & (trim(group)//'/eigenvalues',rdata=qorbital%energy)
+       call checkpoint_write 
+     & (trim(group)//'/nz',idata=qorbital%nz)
+       call checkpoint_write 
+     & (trim(group)//'/n_fsym',idata=1) ! we can not handle symmetry yet, so this is always 1
+       call checkpoint_write 
+     & (trim(group)//'/n_basis',idata=qorbital%nao)
+       call checkpoint_write (trim(group)//'/n_mo',idata=qorbital%nmo)
+       call checkpoint_write (trim(group)//'/n_po',idata=0)
+       call checkpoint_write 
+     & (trim(group)//'/symmetry',idata=qorbital%symmetry)
+       call checkpoint_write 
+     & (trim(group)//'/orbitals',rdata=
+     & reshape(qorbital%coeff_q,(/ncoeff/)))
+
+       call dealloc_mo(qorbital)
+
+       end subroutine  write_mos_to_checkpoint
+
+       subroutine write_mos_to_dfcoef(ao_basis,cspinor,file_name)
 
        use exacorr_mo
        use exacorr_datatypes
        use exacorr_utils
+       use labeled_storage
 
        implicit none
 
@@ -549,23 +779,24 @@ C
        character(len=*),intent(in) :: file_name
        type(basis_set_info_t), intent(inout) :: ao_basis
        type(cmo), intent(inout):: cspinor
-       type(qumo)             :: qorbital
-       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       type(cmo)              :: qorbital
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
        integer                :: nsym
        real(8)                :: total_energy
        logical                :: tobe
        integer                :: lucoef
-       integer                :: ishell
+       integer                :: i, ishell, iprimstart, iprimend
        integer                :: nao, nshells, iao, ibas
-       integer                :: nmo, npo, nto, npriexp, ncnt
+       integer                :: nmo, npo, nto, npriexp, ncnt, ncoeff
        integer, allocatable   :: numcf(:),jstrt(:)
        real(8), allocatable   :: priexp(:),priccf(:)
 
 !      switch to Kramers-restricted format
-       text = "MO coefficients produced by geniao "
+       text = "MO coefficients written by exacorr"
+       nsym = 1 ! we are not using symmetry, so this is always one
        npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
-       nsym = 1 ! we do not use symmetry, so nsym is always 1
-       call convert_complex_to_quaternion(cspinor,qorbital)
+       call copy_mo(cspinor,qorbital)
+       call convert_mo_to_quaternion(qorbital)
        ! print warning in case we overwrite a file and open the file
        call get_free_fileunit(lucoef)
        inquire (file=file_name,exist=tobe)
@@ -581,30 +812,41 @@ C
        ! convert basis set info to 1-d lists used by DIRAC (assuming uncontracted basis sets)
        ! TODO: change storage on DIRAC side to use the basis set type
        nshells = ao_basis%nshells
-       ! we always have uncontracted basis sets, so can hardwire the next variable and equate the number of exponents to the number of shells
+       ! we do not support general contraction so ncnt is always 1
        ncnt = 1
-       npriexp =  nshells
+       ! first count the number of exponents (is also number of contraction coefficients) and set jstrt
        allocate(jstrt(nshells))
        allocate(numcf(nshells))
-       allocate(priexp(nshells))
-       allocate(priccf(nshells))
+       npriexp = 0
        do ishell = 1, nshells
-          jstrt(ishell) = ishell-1
+          jstrt(ishell) = npriexp
+          npriexp = npriexp + ao_basis%gtos(ishell)%n_primitives
           numcf(ishell) = 1
-          priexp(ishell) = ao_basis%gtos(ishell)%exponent(1)
-          priccf(ishell) = ao_basis%gtos(ishell)%coefficient(1)
+       end do
+       ! now copy the exponents and contraction coefficients into the 1-d lists
+       allocate(priexp(npriexp))
+       allocate(priccf(npriexp))
+       do ishell = 1, nshells
+        iPrimStart = jstrt(ishell) + 1
+        iPrimEnd   = jstrt(ishell) + ao_basis%gtos(ishell)%n_primitives
+        priexp(iPrimStart:iPrimEnd)=ao_basis%gtos(ishell)%exponent(:)
+        priccf(iPrimStart:iPrimEnd)=ao_basis%gtos(ishell)%coefficient(:)
        end do
  
        ! write the header
-       write (lucoef) text,nsym,npo,qorbital%nmo,
+       call lab_write(lucoef,'INFO    ')
+       write (lucoef) text,nsym,qorbital%nz,npo,qorbital%nmo,
      &                qorbital%nao,qorbital%total_energy
        ! write the mo-coefficients
-       write (lucoef) qorbital%coeff
+       ncoeff = qorbital%nao * qorbital%nmo * qorbital%nz
+       call lab_write(lucoef,'COEFS   ',
+     &      reshape(qorbital%coeff_q,(/ncoeff/)))
        ! write the orbital energies
-       write (lucoef) qorbital%energy
-       ! write the boson symnmetry information
-       write (lucoef) qorbital%boson_irrep
+       call lab_write(lucoef,'EVALS   ',qorbital%energy)
+       ! write the symnmetry information
+       call lab_write(lucoef,'SUPERSYM',idata=qorbital%symmetry)
        ! write the ao basis information header
+       call lab_write(lucoef,'BASINFO ')
        write (lucoef) ao_basis%nao,ao_basis%nshells,npriexp,ncnt 
 !      orb_momentum, atom_number, n_primives for all shells
        write (lucoef) ao_basis%gtos(:)%orb_momentum,
@@ -613,23 +855,24 @@ C
 !      start of exponent values, number of contracted for all shells
        write (lucoef) jstrt,numcf
 !      coordinates (x, y, z) of center for all shells
-       write (lucoef) (ao_basis%gtos(ishell)%coord(:),
-     &                 ishell=1,nshells)
+       write (lucoef) (ao_basis%gtos(:)%coord(i),i=1,3)
 !      values of the exponents for all shells (packed into a 1-d array)
        write (lucoef) priexp
 !      values of the contraction coefficients for all shells (packed into a 1-d array)
        write (lucoef) priccf
+       call lab_write(lucoef,'EOFLABEL')
 
        deallocate(jstrt)
        deallocate(numcf)
        deallocate(priexp)
        deallocate(priccf)
+       call dealloc_mo(qorbital)
 
        close (lucoef,status='KEEP')
 
        return
 
-       end subroutine write_mos_to_dirac
+       end subroutine write_mos_to_dfcoef
 
        subroutine write_mos_to_dirac_formatted(cspinor,file_name)
 
@@ -642,8 +885,8 @@ C
 
        character(len=*),intent(in) :: file_name
        type(cmo), intent(inout):: cspinor
-       type(qumo)             :: qorbital
-       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       type(cmo)              :: qorbital
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
        integer                :: nsym
        real(8)                :: total_energy
        logical                :: tobe
@@ -655,7 +898,8 @@ C
        text = "MO coefficients produced by geniao "
        npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
        nsym = 1 ! we do not use symmetry, so nsym is always 1
-       call convert_complex_to_quaternion(cspinor,qorbital)
+       call copy_mo(cspinor,qorbital)
+       call convert_mo_to_quaternion(qorbital)
        ! print warning in case we overwrite a file and open the file
        call get_free_fileunit(lucoef)
        inquire (file=file_name,exist=tobe)
@@ -673,13 +917,14 @@ C
        write (lucoef,'(7(X,I0))') nsym,npo,qorbital%nmo,qorbital%nao
        write (lucoef,'(E24.16)') qorbital%total_energy
        ! write the mo-coefficients
-       write (lucoef,'(6F22.16)') qorbital%coeff
+       write (lucoef,'(6F22.16)') qorbital%coeff_q
        ! write the orbital energies
        write (lucoef,'(6E22.12)') qorbital%energy
-       ! write the boson symnmetry information
-       write (lucoef,'(66(X,I0))') qorbital%boson_irrep
+       ! write the symnmetry information
+       write (lucoef,'(66(X,I0))') qorbital%symmetry
 
        close (lucoef,status='KEEP')
+       call dealloc_mo(qorbital)
        return
        
        end subroutine write_mos_to_dirac_formatted
@@ -811,7 +1056,7 @@ C
        integer, parameter     :: NOERROR  = 0 ! no error
        integer, parameter     :: NOTFOUND = 1 ! file not found
        integer, parameter     :: CORRUPT  = 2 ! file unreadable
-       integer, parameter     :: INCONSIS = 6 ! MRCONEE does not match information read from DFCOEF
+       integer, parameter     :: INCONSIS = 6 ! MRCONEE does not match information read from CHECKPOINT
 
        integer :: nsp, nkr
        logical :: breit
@@ -839,7 +1084,7 @@ C
        int_1el%n_spinor=nsp
 !      save core energy
        int_1el%e_core=e_core
-!TODO  check consistency of e_core and nsp with the values read from DFCOEF !
+!TODO  check consistency of e_core and nsp with the values read from CHECKPOINT !
 
 !      skip symmetry information
        read (luone,ERR=10,END=10)
@@ -962,4 +1207,85 @@ C
        return
 
        end subroutine read_mdprop
+
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine set_laplace(num,print_level)
+C
+C---------------Description--------------------------------------------
+C
+C   set flags for the computation of laplace points
+C
+C   Johann Pototschnig, Fall 2019
+
+C----------------------------------------------------------------------
+
+      IMPLICIT NONE
+
+C parameters
+#include "priunit.h"
+#include "lapdim.h"
+
+C common blocks
+#include "dcblap.h"
+
+
+      integer  :: num
+      integer  :: print_level
+
+      integer  :: ILAP
+      logical  :: LWGHTS, LXPNTS
+      CHARACTER*7, CHRERR
+      PARAMETER (CHRERR = 'LAPINP>')
+
+C     Initialize /DCBLAP/
+C     ===================
+C
+      IPRLAP = print_level
+      NLAP = num
+      MXITER = 50
+      STEPMX = 0.3D0
+      TOLRNG = 1.D-10
+      TOLPAR = 1.D-15
+
+      ! rather conservative accuracy threshold
+      TOLLAP = 1.D-8
+
+      LWGHTS = .FALSE.
+      LXPNTS = .FALSE.
+
+C     Processing
+C     ====================
+
+!     use pre-tabulated start values
+      INILAP = (.NOT.(LWGHTS.AND.LXPNTS))
+!     determine if points are given or not
+      FNDLAP = (NLAP.LT.1)
+!     print setting
+      IF (IPRLAP.GT.1) THEN
+       WRITE(LUPRI,*) CHRERR,"print level:",IPRLAP
+       WRITE(LUPRI,*) CHRERR,"maximum iteratations:",MXITER
+       WRITE(LUPRI,*) CHRERR,"number of quadrature points:",NLAP
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Maehly algorithms:",TOLRNG 
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Raphson algorithms:",TOLPAR
+       WRITE(LUPRI,*) CHRERR,"accuracy threshold:",TOLLAP 
+       WRITE(LUPRI,*) CHRERR,
+     &  "step length in line search algorithm:",STEPMX 
+       IF (LWGHTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start weights were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,WGHTS(ILAP)
+        END DO
+       END IF
+       IF (LXPNTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start exponents were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,XPNTS(ILAP)
+        END DO
+       END IF
+      END IF
+
+      end subroutine set_laplace
 

@@ -297,7 +297,7 @@ within the module X2Cmod, Ref. :cite:`Knecht2014`.
 
 DIRAC starts with a 4c-SCF run and performs a transformation to 2-component
 mode (based on the converged Fock operator) prior to a post-HF correlation
-step. after the SCF. One can combine this option with :ref:`HAMILTONIAN_.GAUNT` which
+step. One can combine this option with :ref:`HAMILTONIAN_.GAUNT` which
 activates the inclusion of spin-other-orbit contributions in the Hamiltonian.
 The X2Cmmf-Hamiltonian can at present only be used for post-HF calculation
 within the RELCCSD module. Patches for other correlation modules in DIRAC will 
@@ -692,26 +692,6 @@ keyword(YREQ1)
 
 
 keyword(BLOCKD)
-
-.. warning:: documentation missing
-
-
-keyword(VACPOL)
-
-.. warning:: documentation missing
-
-
-keyword(MIXVAC)
-
-.. warning:: documentation missing
-
-
-keyword(NOVREF)
-
-.. warning:: documentation missing
-
-
-keyword(POSVAC)
 
 .. warning:: documentation missing
 

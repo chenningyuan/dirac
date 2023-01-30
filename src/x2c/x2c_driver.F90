@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module dirx2c
@@ -288,6 +283,7 @@ contains
                               lwrk,                        &
                               x2c_prt,                     &
                               x2c_linsym,                  &
+                              x2c_atomic,                  &
                               x2c_mdirac                   &
                              )
 
@@ -417,8 +413,7 @@ contains
 !      operator matrix is the 4c-Dirac Fock operator)
 !      ---------------------------------------------------------------------------------------------------------------
        if(x2c_is_defining_h1mat == 2)then ! X2Cmmf
-         call x2c_pctrafo_mo_coefficients_driver('DFCOEF',                  &
-                                                 2,                         &
+         call x2c_pctrafo_mo_coefficients_driver(2,                         &
                                                  nr_cmo_q,                  &
                                                  nr_ao_total_x2c,           &
                                                  nr_ao_large_x2c,           &
@@ -482,6 +477,7 @@ contains
                                lwrk,                 &
                                print_lvl,            &
                                linear_sym,           &
+                               atomic_sym,           &                
                                mdirac                &
                               )              
 !**********************************************************************
@@ -524,6 +520,7 @@ contains
      integer, intent(inout) :: lwrk
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: atomic_sym     
      logical, intent(in)    :: mdirac
 !----------------------------------------------------------------------
      real(8), allocatable   :: eigvl(:)
@@ -623,7 +620,8 @@ contains
                        ipq_off,              &
                        x2c_file_glb,         &
                        print_lvl,            &
-                       linear_sym)
+                       linear_sym,           &
+                       atomic_sym)
 
 !      recover the 4c-Lowdin matrix
        A%xmat = 0.0d0
