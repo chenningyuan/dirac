@@ -14,8 +14,8 @@ if(ENABLE_EXATENSOR)
    # on which the repository resides locally but where network cannot be accessed
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
-   set (EXATENSOR_GIT_REPO_LOCATION "https://gitlab.com/DmitryLyakh/ExaTensor.git" CACHE STRING "ExaTENSOR Git repository location")
-   set (EXATENSOR_GIT_HASH e8e6f6351fabad514be9dd07d3c0a3a9e81c3f52 CACHE STRING "ExaTENSOR Git repository hash in use")
+   set (EXATENSOR_GIT_REPO_LOCATION "https://github.com/RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
+   set (EXATENSOR_GIT_HASH 559373c25f80dfc39e6c081516e692db31d9d434 CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type
@@ -142,6 +142,7 @@ if(ENABLE_EXATENSOR)
    set(EXATENSOR_ENV "WRAP=NOWRAP BUILD_TYPE=OPT ${EXATENSOR_TALSH} ${TALSH_COMPILERS} ${EXATENSOR_TOOLKIT} ${EXATENSOR_OS} ${EXATENSOR_GPUENV} ${EXATENSOR_MPIENV} ${EXATENSOR_BLAS}")
    message(STATUS "The environment variables used to build ExaTensor are collected in the file ExaTensor_ENV (can be inspected/changed if necessary)")
    file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV ${EXATENSOR_ENV})
+   file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP "${EXATENSOR_ENV}  EXA_NO_BUILD=YES")
 
    ExternalProject_Add(exatensor
         PREFIX "${PROJECT_BINARY_DIR}/exatensor"
@@ -149,7 +150,7 @@ if(ENABLE_EXATENSOR)
         GIT_TAG ${EXATENSOR_GIT_HASH}
         GIT_CONFIG advice.detachedHead=false
         CONFIGURE_COMMAND true  # currently no configure command, but this is needed for cmake to function
-        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && set -a && . ${PROJECT_BINARY_DIR}/ExaTensor_ENV && set +a && make
+        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && set -a && . ${PROJECT_BINARY_DIR}/ExaTensor_ENV && set +a && make && cp ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP ${PROJECT_BINARY_DIR}/ExaTensor_ENV
         INSTALL_DIR ${EXATENSOR_INSTALL_DIR}
         INSTALL_COMMAND true
         )
@@ -170,21 +171,21 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_debug "cc;talsh;short" "")
     dirac_test(exacorr_talsh_nr_contracted "cc;talsh;short" "")
     dirac_test(exacorr_talsh_standalone "cc;talsh;short" "")
-    dirac_test(exacorr_talsh_lambda "cc;talsh" "")
-    dirac_test(exacorr_talsh_open_lambda "cc;talsh;short" "")
-    dirac_test(exacorr_talsh_fock "cc;talsh" "")
+    dirac_test(exacorr_talsh_lambda "cc;talsh;short" "")
+    dirac_test(exacorr_talsh_open_lambda "cc;talsh;medium" "")
+    dirac_test(exacorr_talsh_fock "cc;talsh;short" "")
     dirac_test(exacorr_talsh_open "cc;talsh;short" "")
-    dirac_test(exacorr_talsh_cc2 "cc;talsh" "")
-    dirac_test(exacorr_talsh_spinfree "cc;talsh" "")
-    dirac_test(exacorr_talsh_respect "cc;talsh;respect" "")
-    dirac_test(exacorr_talsh_finite_field "cc;talsh" "")
-    dirac_test(exacorr_talsh_cholesky "cc;talsh" "")
-    dirac_test(exacorr_talsh_mp2no "mp2no;talsh" "")
-    dirac_test(exacorr_talsh_mp2no_restart "mp2no_re;talsh" "")
+    dirac_test(exacorr_talsh_cc2 "cc;talsh;medium" "")
+    dirac_test(exacorr_talsh_spinfree "cc;talsh;medium" "")
+    dirac_test(exacorr_talsh_respect "cc;talsh;respect;medium" "")
+    dirac_test(exacorr_talsh_finite_field "cc;talsh;short" "")
+    dirac_test(exacorr_talsh_cholesky "cc;talsh;long" "")
+    dirac_test(exacorr_talsh_mp2no "mp2no;talsh;long" "")
+    dirac_test(exacorr_talsh_mp2no_restart "mp2no_re;talsh;long" "")
     #dirac_test(exacorr_talsh_lambda_cc2 "cc;talsh" "")
     if(ENABLE_LAPLACE)
-      dirac_test(exacorr_talsh_mp2lap "mp2lap;talsh" "")
-      dirac_test(exacorr_talsh_tripl_lap "cc;talsh" "")
+      dirac_test(exacorr_talsh_mp2lap "mp2lap;talsh;long" "")
+      dirac_test(exacorr_talsh_tripl_lap "cc;talsh;long" "")
     endif()
 
    if (ENABLE_MPI AND NOT EXATENSOR_TALSH)

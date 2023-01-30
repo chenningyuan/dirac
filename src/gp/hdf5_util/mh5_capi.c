@@ -57,6 +57,7 @@ INT mh5c_open_file_r (char* filename);
 INT mh5c_close_file (INT file_id);
 
 /* groups */
+INT mh5c_exists_group (INT file_id, char* name);
 INT mh5c_open_group (INT file_id, char* name);
 INT mh5c_exists_group(INT file_id, char*name);
 INT mh5c_create_group (INT file_id, char* name);
@@ -240,6 +241,30 @@ INT mh5c_is_hdf5(char* filename) {
 /*
  * groups
  */
+
+INT mh5c_exists_group (INT file_id, char* name) {
+        /*LV As of Oct. 2022, HDF5 does not provide a way to test for existence of groups,
+             this is an accpetable hack that I found at various places on the net */
+        INT group_id, err;
+        hid_t old_estack, estack;
+        herr_t (*old_func)(hid_t, void *);
+        void *old_client_data;
+
+        /* Save old error handler */
+        H5Eget_auto(old_estack,&old_func, &old_client_data);
+
+        /* Turn off error handling */
+        H5Eset_auto(estack, NULL, NULL);
+
+        /* Get group_id, will be zero or negative if not found */
+        group_id = H5Gopen(file_id, name, H5P_DEFAULT);
+        if (group_id > 0) err = H5Gclose(group_id);
+
+        /* Restore error handler */
+        H5Eset_auto(old_estack, old_func, old_client_data);
+
+        return group_id;
+}
 
 INT mh5c_create_group (INT file_id, char* name) {
 	INT mySTATUS = -1;

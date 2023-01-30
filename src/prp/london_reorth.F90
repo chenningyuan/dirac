@@ -186,8 +186,6 @@ contains
     call alloc(buf, n2orbxq)
     buf = 0.0d0
 
-    call opnfil(lu1int, 'AOPROPER', 'OLD', 'get_ftb')
-
     open(lufckl, file='FCKLON', form='unformatted',   &
          access='direct',recl=8*n2orbxq,                 &
          status='unknown')
@@ -219,7 +217,7 @@ contains
       kfree = 1
       call di_select_wrk(work, lwork)
 
-!     get T^B_icomp matrix to tb (from AOPROPER file)
+!     get T^B_icomp matrix to tb (from CHECKPOINT)
       call prpmat(indxpr,        &
                   iopsy(icomp),  &
                   tb,            &
@@ -343,7 +341,6 @@ contains
 
     close(tbmo_unit,   status='keep')
     close(lufckl, status='keep')
-    close(lu1int,   status='keep')
 
     call dealloc(tb)
     call dealloc(buf)
@@ -778,8 +775,6 @@ contains
 
     end if
 
-    call opnfil(lu1int, 'AOPROPER', 'OLD', 'get_tb_dmat')
-
     call alloc(tb, n2orbxq)
     tb = 0.0d0
 
@@ -869,7 +864,6 @@ contains
        close(tbdmat_file_unit, status='keep')
     end if
 
-    close(lu1int)
     call dealloc(tb)
 
   end subroutine

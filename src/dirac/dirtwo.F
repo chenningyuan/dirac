@@ -3238,8 +3238,8 @@ C     Memory allocation
       CALL MEMGET2('REAL','DMRAO',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
 C
 C
-C     Get G(ab) integrals from AOPROPER
-C     =================================
+C     Get G(ab) integrals from CHECKPOINT
+C     ===================================
 C
       IF (SCRFCK .GT. D0) THEN
 C
@@ -3929,8 +3929,8 @@ C
       CALL MEMGET2('REAL','DMRAO',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','DMRSO',KDMRSO,NDMRSO ,WORK,KFREE,LFREE)
 C
-C     Get G(ab) integrals from AOPROPER
-C     =================================
+C     Get G(ab) integrals from CHECKPOINT
+C     ===================================
 C
       IF (SCRFCK .GT. D0) THEN
          IJOB   = 0

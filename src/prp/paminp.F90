@@ -46,7 +46,7 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 10, NTABLE = 41)
+      PARAMETER (NDIR = 10, NTABLE = 44)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -93,8 +93,8 @@
      &             '.C6    ','.SPIN-R','.BXLAO ','.BYLAO ',             &
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
-     &             '.RDCCDM'/
-
+!                    41        42        43        44
+     &             '.RDCCDM','.PVCSR ','xXXXXXX','xXXXXXX' /
 !
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -122,6 +122,7 @@
       SPINRO       = .FALSE.
       PVC_SHIELD   = .FALSE.
       PVC_SPINSPIN = .FALSE.
+      PVC_SPINRO   = .FALSE.
       SPNSPN       = .FALSE.
       EFG          = .FALSE.
       EFN          = .FALSE.
@@ -207,7 +208,7 @@
      &                117,118,119,120,121,122,123,124,                  &
      &                125,126,127,128,129,130,131,132,                  &
      &                133,134,135,136,137,138,139,140,                  &
-     &                141), I
+     &                141,142,143,144), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -446,6 +447,18 @@
 ! quick hack to read CC density matrix without the need to run CC as wavefunction
             call set_prop_flags_ccsd()
             GO TO 100
+  142    CONTINUE
+!&&&& Parity-violation contribution to nuclear spin-rotation constant
+            DOXLR      = .TRUE.
+            PVC_SPINRO = .TRUE.
+            IF(NBSYM .GT. 1) CALL QUIT('.PVCSR only for C1 symmetry')
+            GOTO 100
+  143    CONTINUE
+!&&&& xXXXXXX
+            GOTO 100
+  144    CONTINUE
+!&&&& xXXXXXX
+            GOTO 100
 !
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -3032,11 +3045,6 @@
 !     Open LU1INT if not opened
 !
       IF (DOPRP) THEN
-         INQUIRE(FILE='AOPROPER',OPENED=FOPEN)
-         IF (.NOT. FOPEN) THEN
-            OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',           &
-     &         FILE='AOPROPER')
-         END IF
 !
          call legacy_lwork_get(LWORK)
          call alloc(WORK,LWORK,id='WORK in MINPRP')
@@ -3046,11 +3054,6 @@
 !
          CALL ONEGEN(WORK,LWORK)
          call dealloc(WORK)
-!
-!        Close AOPROPER if it was closed on entry to
-!        MINPRP.
-!
-         IF (.NOT. FOPEN) CLOSE(LU1INT,STATUS = 'KEEP')
 !
 !
 !***********************************************************************

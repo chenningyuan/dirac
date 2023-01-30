@@ -1773,10 +1773,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Gabgen */
       SUBROUTINE GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,JATOM,NOCONT,
      &                  recompute_Gab_,IPRINT,WORK,LWORK)
+      use checkpoint
 C***********************************************************************
 C
 C     This routine will generate the reduced matrix of
-C     Cauchy-Schwartz integrals and write it to file AOPROPER
+C     Cauchy-Schwartz integrals and write it to CHECKPOINT
 C
 C     Written by T.Saue Mar 19 1997
 C
@@ -1790,10 +1791,14 @@ C
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
-      LOGICAL EXTST,OPTST,FNDLAB,NOCONT, recompute_Gab_
+      LOGICAL EXTST,NOCONT, recompute_Gab_
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
+      logical gabdone
+      integer gabsize
+      character*(:), allocatable :: group
       CALL QENTER('GABGEN')
+      group = '/result/operators/ao_matrices/'
       IF (IPRINT .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
 #include "memint.h"
 C
@@ -1831,47 +1836,16 @@ C
 C
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
 C
-C     Check if file AOPROPER is present
+C     Search for GAB-integrals; return if they are there
 C
-      OPTST = .FALSE.
-      INQUIRE(FILE='AOPROPER',EXIST=EXTST)
-      IF(EXTST) THEN
-C     File AOPROPER present; see if it is opened
-         INQUIRE(FILE = 'AOPROPER',OPENED=OPTST)
-         IF(OPTST) THEN
-C        File AOPROPER is opened; get unit number
-            INQUIRE(FILE = 'AOPROPER',NUMBER=LUPROP)
-         ELSE
-C           File AOPROPER is not opened; open it
-            LUPROP = 19
-            OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &            FILE='AOPROPER')
-         ENDIF
-C
-C       Search for GAB-integrals; return if they are there
-C
-         if(.not.recompute_Gab_)then !> by default we reuse GAB-integrals
-           DO I = 1,NGAB
-              REWIND LUPROP
-              IF (.NOT. FNDLAB(GABLAB(I),LUPROP) ) GOTO 10
-           END DO
-           GOTO 999
-         end if
- 10      CONTINUE
-         REWIND LUPROP
-         IF(FNDLAB('EOFLABEL',LUPROP)) THEN
-            BACKSPACE LUPROP
-         ELSE
-            WRITE(LUPRI,'(A)')
-     &      'GABGEN: EOFLABEL not found on AOPROPER !'
-            CALL QUIT('GABGEN: EOFLABEL not found !')
-         ENDIF
-      ELSE
-         LUPROP = 19
-         OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-         REWIND LUPROP
-      ENDIF
+      if(.not.recompute_Gab_)then !> by default we reuse GAB-integrals
+          DO I = 1,NGAB
+              call checkpoint_query (group//gablab(i),gabdone,gabsize)
+              IF(.not.gabdone.or.gabsize.ne.nsymbl**2) GOTO 10
+          END DO
+          GOTO 999
+      end if
+ 10   CONTINUE
 C
 C     Generate GAB-integrals
 C
@@ -1930,32 +1904,27 @@ C
       ENDIF
 C
 C
-C     Write label
+C     Write labeled data
 C
 
       IOFF = 0
       DO I = 1,NGAB
-         if(recompute_Gab_)then
+        if(recompute_Gab_)then
             OPEN (104,STATUS='replace',FORM='UNFORMATTED',
      &            FILE=trim(gablab(i)))
             rewind(104)
             CALL NEWLB2(GABLAB(I),RTNLBL,104,LUPRI)
             LEN = MAX(4,N2GAB)
             CALL WRITT(104,LEN,WORK(KGAB+IOFF))
-            IOFF = IOFF + N2GAB
             CALL NEWLB2('EOFLABEL',RTNLBL,104,LUPRI)
             close(104,status="keep")
          else
-           CALL NEWLB2(GABLAB(I),RTNLBL,LUPROP,LUPRI)
-           LEN = MAX(4,N2GAB)
-           CALL WRITT(LUPROP,LEN,WORK(KGAB+IOFF))
-           IOFF = IOFF + N2GAB
+           call checkpoint_write (group//gablab(i),
+     &          rdata=WORK(KGAB+IOFF:KGAB+IOFF+N2GAB-1))
          end if
+         IOFF = IOFF + N2GAB
       END DO
-      if(.not.recompute_Gab_)
-     &CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
 C
-      IF(.NOT.OPTST) CLOSE(LUPROP,STATUS='KEEP')
       CALL MEMREL('GABGEN',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       IF (IPRINT .GT. 1) CALL TIMER('GABGEN',TIMSTR,TIMEND)
@@ -1967,6 +1936,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck Getgab */
       SUBROUTINE GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,IPRINT,
      &     GABM,WORK,LWORK)
+       use checkpoint
 C***********************************************************************
 C
 C     Fetch compressed matrix of Cauchy-Scwartz-integrals from file
@@ -1983,16 +1953,23 @@ C***********************************************************************
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
-      LOGICAL EXTST,OPTST,FNDLAB
+      LOGICAL EXTST,FNDLAB
       CHARACTER GABLAB(3)*8
       DIMENSION GABM(NSYMBL,NSYMBL,*), WORK(*)
+      integer gabsize
+      logical gabdone
+      character*(:), allocatable :: group
+      real(8), allocatable :: gab1d(:)
 #include "memint.h"
+      group = '/result/operators/ao_matrices/'
+      allocate(gab1d(nsymbl*nsymbl)) ! need a 1d reading array
 C
 C     Construct label
 C     ---------------
 C
 
       iprint_ = iprint; !iprint_ = 10
+      gabsize = -1; gabdone = .false.
 
 
       IF(ITYPE.EQ.0) THEN
@@ -2023,94 +2000,40 @@ C
       ENDDO
 
 C
-C     Check if file AOPROPER is present
-C     ---------------------------------
-C
-      OPTST = .FALSE.
-      INQUIRE(FILE='AOPROPER',EXIST=EXTST)
-      IF(EXTST) THEN
-C        File AOPROPER present; see if it is opened
-         INQUIRE(FILE = 'AOPROPER',OPENED=OPTST)
-         IF(OPTST) THEN
-C           File AOPROPER is opened; get unit number
-            INQUIRE(FILE = 'AOPROPER',NUMBER=LUPROP)
-         ELSE
-C           File AOPROPER is not opened; open it
-            LUPROP = 19
-            OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &           FILE='AOPROPER')
-         ENDIF
-      ELSE
-         WRITE(LUPRI,'(A)') 'GETGAB: AOPROPER not found !'
-         CALL QUIT('GETGAB: AOPROPER not found !')
-      ENDIF
-C
 C     Get GAB-matrix
 C     --------------
 C
       DO IGAB = 1, NGAB
-         REWIND LUPROP
-         IF(FNDLAB(GABLAB(IGAB),LUPROP).and..not.recompute_Gab) THEN
-            CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
-            IF(IPRINT_.GE.5) THEN
-C              reduced GAB-matrix is printed for IPRINT_ .ge. 4 in GABGEN
-C              we only print later reads if IPRINT_ .ge. 5 /hjaaj apr 2001
-               CALL HEADER('GETGAB: (0) Reduced GAB-matrix',-1)
-               WRITE (LUPRI,'(3A,i0,a,i0)') ' Label : ',GABLAB(IGAB),
-     &         ' dimension : ',nsymbl,' x ',nsymbl
-               CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,
-     &                  NSYMBL,NSYMBL,-4,LUPRI)
-            ENDIF
-         ELSE
-            WRITE(LUPRI,'(/4A)')
+         if(.not.recompute_Gab) 
+     &   call checkpoint_query (group//gablab(igab),gabdone,gabsize)
+         IF(.not.gabdone.or.gabsize.ne.nsymbl**2) THEN
+            WRITE(LUPRI,'(/3A)')
      &           '* GETGAB: label "',GABLAB(IGAB),'" not found; '//
      &           'calling GABGEN.'
             CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,0,.FALSE.,
-     &           recompute_Gab,IPRINT_,WORK,LWORK)
-            if(recompute_Gab)then
+     &           recompute_Gab,IPRINT,WORK,LWORK)
+         ENDIF
+         if(recompute_Gab)then
               OPEN (104,STATUS='old',FORM='UNFORMATTED',
      &              FILE=trim(gablab(igab)))
               rewind(104)
               IF(FNDLAB(GABLAB(IGAB),104))then
                 CALL READT(104,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
                 close(104,status="delete")
-              ELSE
-                 WRITE(LUPRI,'(A,A8,3A)')
-     &                'GETGAB: Label ',GABLAB,' not found on ',
-     &                 trim(gablab(i)),' !'
-                 CALL QUIT('GETGAB: No GAB on AOPROPER !')
               END IF
-            else
-              REWIND LUPROP
-              IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
-                 CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
-              ELSE
-                 WRITE(LUPRI,'(A,A8,A)')
-     &                'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
-                 CALL QUIT('GETGAB: No GAB on AOPROPER !')
-              END IF
-            end if
-            IF(IPRINT_.GE.5) THEN
-C              reduced GAB-matrix is printed for IPRINT_ .ge. 4 in GABGEN
-C              we only print later reads if IPRINT_ .ge. 5 /hjaaj apr 2001
-               CALL HEADER('GETGAB: (1) Reduced GAB-matrix',-1)
-               WRITE (LUPRI,'(3A,i0,a,i0)') ' Label : ',GABLAB(IGAB),
-     &         ' dimension : ',nsymbl,' x ',nsymbl
-               CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,
-     &                  NSYMBL,NSYMBL,-4,LUPRI)
-            ENDIF
+         else
+           call checkpoint_read (group//gablab(igab),rdata=gab1d)
+           gabm(:,:,igab) = reshape(gab1d,(/nsymbl,nsymbl/))
+         end if
+         IF(IPRINT.GE.5) THEN
+C           reduced GAB-matrix is printed for IPRINT .ge. 4 in GABGEN
+C           we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
+            CALL HEADER('GETGAB:Reduced GAB-matrix',-1)
+            WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
+            CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,
+     &               NSYMBL,NSYMBL,-4,LUPRI)
          ENDIF
-C
-C
       END DO
 C
-      IF(.NOT.OPTST) CLOSE(LUPROP,STATUS='KEEP')
       RETURN
-!radovan: rest of the routine is unreachable
- 10   CONTINUE
-      WRITE(LUPRI,'(A,A8)') '* GETGAB: ERROR reading ',GABLAB
-      CALL QUIT('GETGAB: Error reading GAB from AOPROPER !')
- 20   CONTINUE
-      WRITE(LUPRI,'(A,A8)') '* GETGAB: EOF   reading ',GABLAB
-      CALL QUIT('GETGAB: EOF reading GAB from AOPROPER !')
       END

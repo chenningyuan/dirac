@@ -7673,7 +7673,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
-C  Generate 2c MO from previous converged 4c MO (read from DFCOEF) by using 
+C  Generate 2c MO from previous converged 4c MO (read from CHECKPOINT) by using 
 C  the 4c-2c picture change transformation matrix  :
 C
 C           CMO(2c) = U^{+}(4c->2c) * CMO(4c)
@@ -7714,12 +7714,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       ENDIF
 
 C ================================================================
-C         ... get 4c MO from the "DFCOEF" file into CMO
+C         ... get 4c MO from file into CMO
 C ================================================================
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR2C')
-      call reacmo_new(lucoef,cmo=cmo,eig=eig,ibeig=ibeig,
+      call reacmo_new(cmo=cmo,eig=eig,ibeig=ibeig,
      &                toterg=toterg)
-      CLOSE(LUCOEF,STATUS='KEEP')
 
 C   ... first get the picture change transf.matrix into VMAT
       ISIZE = (NFBAS(1,0)*NFBAS(1,1)*NZ)
@@ -7926,12 +7924,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IF (INI2C.EQ.3) THEN ! restart code INI2C described in dirrdn.F
 C ================================================================
-C         ... get 2c MO from the "DFCOEF" file into CMO
+C         ... get 2c MO from file into CMO
 C ================================================================
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-      call reacmo_new(lucoef,cmo=cmo,eig=eig,ibeig=ibeig,
+      call reacmo_new(cmo=cmo,eig=eig,ibeig=ibeig,
      &                toterg=toterg)
-      CLOSE(LUCOEF,STATUS='KEEP')
 
 CMI .... do the picture change transformation ...
 CMI   ... first get the picture change transf.matrix
@@ -8002,10 +7998,8 @@ C *
 C ********************************************************
       ELSE IF (INI2C.EQ.4) THEN
 C    ... read 2c CMO into TBUF ...
-       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-       call reacmo_new(lucoef,cmo=tbuf,eig=eig,ibeig=ibeig,
+       call reacmo_new(cmo=tbuf,eig=eig,ibeig=ibeig,
      &                toterg=toterg)
-       CLOSE(LUCOEF,STATUS='KEEP')
 
       ELSE
         CALL QUIT('CMOTR4C: INI2C differ from 3 or 4!')
@@ -8165,10 +8159,9 @@ C
 C  PURPOSE:   After the reverse picture change transformation of 2c CMO into 4c CMO (in CMOTR4C)
 C ----------  fill positronic MOs with zeroes for silly restarting the DC-SCF from BSS-SCF
 C
-C  On input: only arrays, but needed CMO 2c-4c from BSSMAT,
-C             also DFCOEF file is needed
+C  On input: only arrays, but needed CMO 2c-4c from BSSMAT
 C
-C  On output:  the DFCOEF file is renewed !
+C  On output:  the CMOs are renewed !
 C
 C  Written by Miro Ilias, August, Strasbourg, 2005
 C
@@ -8244,16 +8237,9 @@ C       ... add zeroes to form LS_0e orbitals ...
       ENDIF
       ENDDO
 
-C    ... do renew the DFCOEF file !!!
-      INQUIRE(FILE='DFCOEF',EXIST=EX)
-      IF (.NOT.EX) THEN
-       CALL QUIT(
-     & 'CMOINI4C: DFCOEF from the the previous BSS-SCF not found!')
-      ENDIF
-
-C     ... do read the DFCOEF file from previous iterations ...
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOINI4C')
-      call reacmo_new(lucoef,cmo=tmat,eig=eig,ibeig=ibeig,
+C    ... do renew the MO coefficients
+C     ... do read the coefficients from previous iterations ...
+      call reacmo_new(cmo=tmat,eig=eig,ibeig=ibeig,
      &                toterg=toterg)
       ! LV: not sure why tmat is read, but kept this as it was when revising reacmo
 
@@ -8262,9 +8248,8 @@ C   Write 2c->4c transformed coefficients ()
 C ===================================================
       CALL WRICMO(LUCOEF,CMO(1:NCMOTQ),EIG(1:NORBT),
      &            IBEIG(1:NORBT),TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
       WRITE (LUPRI,'(/2X,A/)')
-     & '>>> The DFCOEF file was renewed for restarting 4c SCF'//
+     & '>>> The MO coefficients are renewed for restarting 4c SCF'//
      & ' with pseudo-4c MO from previous 2c SCF cycle.'
 
       CALL QEXIT('CMOINI4C')

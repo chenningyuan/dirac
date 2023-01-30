@@ -17,6 +17,4 @@ f.add(from_string = '  Magnetizabilities                     au                 
 test.run(['dc_pbe.inp'], ['hf.xyz'], args='--outcmo')
 test.run(['dc_pbe_magn_sc_g0.inp'], ['hf.xyz'], f, args='--incmo')
 
-os.unlink('DFCOEF')
-
 sys.exit(test.return_code)

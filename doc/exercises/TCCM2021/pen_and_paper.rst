@@ -22,7 +22,7 @@ The Pauli spin matrices
    0 & -1
    \end{array}\right]
 
-are representation matrices of of the operator :math:`2\mathbf{s}` in the basis :math:`\left\{ \left|\alpha\right\rangle ,\left|\beta\right\rangle \right\}` of spin-1/2 functions (``spin-up'' and ``spin-down'', respectively), that is :math:`2\mathbf{s}\rightarrow\hbar\boldsymbol{\sigma}`. These spin functions obey the following relations
+are representation matrices of of the operator :math:`2\mathbf{s}` in the basis :math:`\left\{ \left|\alpha\right\rangle ,\left|\beta\right\rangle \right\}` of spin-1/2 functions (*spin-up* and *spin-down*, respectively), that is :math:`2\mathbf{s}\rightarrow\hbar\boldsymbol{\sigma}`. These spin functions obey the following relations
 
 .. math::
 
