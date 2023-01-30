@@ -1157,7 +1157,8 @@ C
       ENDIF    !num_grid_cfg_grasp
 C      
       IF (IPRINT.GE.6) THEN
-         WRITE(LUPRI,'(2X,/A)')'**Truncation of radial grid',
+         WRITE(LUPRI,'(2X,A)')'**Truncation of radial grid'
+         WRITE(LUPRI,'(2X,A,E8.2e2,A,/)')
      &    'The value of outer grid ',TEMP,' is less than 1.0D-50'
       ENDIF   
 C      
@@ -2519,7 +2520,7 @@ C
        WRITE(LUPRI,200)
  200   FORMAT(/' This module is published in:',//
      &    4X,'effQED: A. Sunaga, M. Salman and T. Saue',/,
-     &    20X,'J Chem Phys to be submitted ',/,
+     &    20X,'J. Chem. Phys. 157 (2022) 164101 ',/,
      &    1X,79('*'),/)
 
        WRITE(LUPRI,'(A)')
