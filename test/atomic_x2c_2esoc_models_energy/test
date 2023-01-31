@@ -31,11 +31,24 @@ shutil.move('CHECKPOINT'+ext, 'X2CMAT_005'+ext)
 # molecular U matrix (from molecular core h1^{4c}) + AMFI 2e-SO corrections
 test.run(['molecular-x2c-amfi.inp'], ['lihe.mol'], f)
 
-# molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO corrections
-#test.run(['molecular-x2c-xamfi.inp'], ['lihe.mol'], f, args='--put="X2CMAT*"')
+test.run(['atoms.inp'], ['atoms.xyz'],
+                 args='--replace closed_occ="4" --replace open_e="5" --replace open_orb="6" --replace myatom="F" --outcmo')
+shutil.move('CHECKPOINT'+ext, 'X2CMAT_009'+ext)
+
+test.run(['atoms.inp'], ['atoms.xyz'],
+                 args='--replace closed_occ="12" --replace open_e="4" --replace open_orb="6" --replace myatom="S" --outcmo')
+shutil.move('CHECKPOINT'+ext, 'X2CMAT_016'+ext)
+
+# molecular U matrix (from molecular core h1^{4c}) + AMFI 2e-SO corrections
+test.run(['large-molecular-x2c-amfi.inp'], ['sf6.xyz'], f)
+
+# atomic U matrices + AMFI 2e-SO corrections
+test.run(['large-atomic-x2c-amfi.inp'], ['sf6.xyz'], f, args='--put="X2CMAT_009.h5 X2CMAT_016.h5"')
 
 os.unlink('X2CMAT_002'+ext)
 os.unlink('X2CMAT_003'+ext)
 os.unlink('X2CMAT_005'+ext)
+os.unlink('X2CMAT_009'+ext)
+os.unlink('X2CMAT_016'+ext)
 
 sys.exit(test.return_code)
