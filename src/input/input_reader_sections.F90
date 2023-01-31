@@ -31,7 +31,7 @@
         case ('*X2C')
            call read_input_x2c(word, kw_section)
 
-        case ('*X-AMFI')
+        case ('*X-AMFI', '*XAMFI ')
            call read_input_aoosoc(word, kw_section)
 
         case ('**EXACC')
