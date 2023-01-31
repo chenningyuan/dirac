@@ -1350,7 +1350,7 @@ contains
     print '(18x,a )', ' ***                      Universities of                          ***'
     print '(18x,a )', ' ***     Zuerich, Toulouse, Odense, Banska Bystrica and Tromsoe    ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '(18x,a )', ' *** contact: s.knecht@gsi.de                                      ***'
+    print '(18x,a )', ' *** contact: stefan.knecht@gmail.com                              ***'
     print '(18x,a/)', ' *********************************************************************'
 
   end subroutine hello_dirx2c

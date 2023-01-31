@@ -261,30 +261,7 @@ contains
         6                          &
        )
 #endif
-    endif
-
-#ifdef BLUBB
-!   determine full file name
-    write(file_extension,'(i3)') element
-    do i = 1, 3
-        if(file_extension(i:i) .eq. ' ') file_extension(i:i) = '0'
-    end do
-    write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
-
-!   dump 2e-soc on file
-    open(fh,file=file_name(1:12),status='replace',form='unformatted',      &
-         access='sequential',action="readwrite",position='rewind')
-
-    if(final_dump)then
-        write(fh) nrow, ncol, nzc1
-        write(fh) Gmat_c1
-        !DEALLOCATE(Gmat_c1)
-    else
-        write(fh) nrow, ncol, nz
-        write(fh) Gmat
-    end if
-    close(fh,status='keep')
-#endif
+    endif !> final_dump
 
 !> HDF5 data dump
 if(final_dump)then
@@ -650,9 +627,9 @@ end subroutine dump_Xc_c1_dens
     print '( 18x,a)', ' *** a module for the generation of atomic two-electron            ***'
     print '(18x,a )', ' *** scalar- and spin-orbit corrections                            ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '(18x,a )', ' *** library version: X-AMFI v1.4 (October 2021)                   ***'
+    print '(18x,a )', ' *** library version: X-AMFI v1.5 (February 2023)                  ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '(18x,a )', ' *** authors:         - Stefan Knecht (GSI Darmstadt, DE)          ***'
+    print '(18x,a )', ' *** authors:         - Stefan Knecht (Algorithmiq, FI)            ***'
     print '(18x,a )', ' ***                  - Trond Saue ( U Toulouse, F)                ***'
     print '(18x,a )', ' ***                  - Hans Joergen Aa. Jensen (SDU Odense, DK)   ***'
     print '(18x,a )', ' ***                  - Michal Repisky (U Tromsoe, NO)             ***'
@@ -662,7 +639,14 @@ end subroutine dump_Xc_c1_dens
     print '(18x,a )', ' ***                    @ spin-same-orbit                          ***'
     print '(18x,a )', ' ***                    @ spin-same + spin-other-orbit             ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '(18x,a )', ' *** contact: s.knecht@gsi.de                                      ***'
+    print '(18x,a )', ' *** contact: stefan.knecht@gmail.com                              ***'
+    print '(18x,a )', ' ***                                                               ***'
+    print '(18x,a )', ' *** If results obtained with this code are published, please cite ***'
+    print '(18x,a )', ' ***                                                               ***'
+    print '(18x,a )', ' *** S. Knecht, M. Repisky, H. J. Aa. Jensen, T.Saue,              ***'
+    print '(18x,a )', ' *** J. Chem. Phys., 157, 114106 (2022);                           ***'
+    print '(18x,a )', ' *** https://doi.org/10.1063/5.0095112                             ***'
+    print '(18x,a )', ' ***                                                               ***'
     print '(18x,a/)', ' *********************************************************************'
 
   end subroutine hello_xamfi

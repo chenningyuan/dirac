@@ -672,7 +672,7 @@ module labeled_storage
          exist = mh5_exists_dset(file_info%id,label)
       else
          ! check the existence of the group first
-         exist = mh5_exists_group(file_info%id,group)
+         exist = (mh5_exists_group(file_info%id,group) > 0)
          ! check the existence of the data set itself
          if (exist) exist = mh5_exists_dset(file_info%id,label)
       end if
@@ -705,11 +705,11 @@ module labeled_storage
      if (group_exists) return
 
      ! otherwise we keep unpeeling the groups till we hit a parent that already exists
-     group_exists = mh5_exists_group(file_id,label)
+     group_exists = (mh5_exists_group(file_id,label)) > 0
      if (group_exists) return
 
      parent_label  = group_from_label(label)
-     parent_exists = mh5_exists_group(file_id,parent_label)
+     parent_exists = (mh5_exists_group(file_id,parent_label)) > 0
 
      if (parent_exists) then
         group_id = mh5_create_group(file_id,label)

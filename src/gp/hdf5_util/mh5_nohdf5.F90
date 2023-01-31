@@ -199,7 +199,7 @@ end function mh5_is_hdf5
 
 ! group
 
-function mh5_exists_group(lu,groupname) result(exists)
+function mh5_exists_group(lu,groupname) result(groupid)
   !LV: Added this "missing" HDF5 function for convenience.
   integer(kind=iwp) :: groupid
   integer(kind=iwp), intent(in) :: lu
