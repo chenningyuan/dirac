@@ -2415,10 +2415,10 @@ C.....Oscillator strenghts: general velocity gauge: rotational average
         CALL PRSYMB(LUPRI,'-',NLIN,0)
         TOT = DSUM(NEXCF,FOSC(1,1,1,-1),4)
         WRITE(LUPRI,'(A,ES12.5)')
-     &     'Sum of oscillator strengths (general length) : ',TOT
+     &     'Sum of oscillator strengths (general velocity) : ',TOT
         deallocate(fosc)
       ELSE
-        WRITE(LUPRI,'(A)') ' * Length representation not active.'
+        WRITE(LUPRI,'(A)') ' * Velocity representation not active.'
       ENDIF
 C.....Oscillator strenghts: general length gauge
       IF(DOLENR) THEN
