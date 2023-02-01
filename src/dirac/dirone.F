@@ -2109,9 +2109,9 @@ C*****************************************************************************
       use num_grid_gen
       use interface_mo_specific
       use interface_ao_specific
-      use x_fock
       use dirac_cfg, only: dirac_cfg_dft_calculation
 #ifdef MOD_XAMFI
+      use x_fock
       use xamfi_global_parameters
       use xamfi_internal_parameters
       use xamfi_environment
@@ -3011,7 +3011,7 @@ C
 
           allocate(tmat_mmf(len_fmats))
           tmat_mmf    = 0
-          
+
 #ifdef MOD_XAMFI
           if(.not.onesys)
      &    call get_scso_2e_fock(dmat                  = tbuf_mmf,
