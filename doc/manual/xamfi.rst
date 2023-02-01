@@ -5,6 +5,7 @@ star(XAMFI)
 
 Options for the (extended) atomic-mean field aka **(e)amf** module for the :ref:`HAMILTONIAN_.X2C` Hamiltonian, 
 developed and written by S. Knecht, M. Repisky, H. J. Aa. Jensen and T. Saue, 2013-2022.
+The HDF5 interface for XAMFI was developed and implemented by K. N. Spauszus (U Bonn/Germany) and S. Knecht. 
 
 .. warning:: The XAMFI module requires a working HDF5 installation as well as h5py in your python env!
 
