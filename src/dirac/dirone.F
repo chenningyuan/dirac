@@ -2987,6 +2987,7 @@ C
           !> calculate inactive (and possibly active) density matrix
           call denmat(tbuf_mmf,cmo_mmf,iprham)
 
+#ifdef MOD_XAMFI
           if(aooeamf)then
             !> save atomic density matrix (of atom(1) ... == atomic fragment)
             allocate(dmat_aoosoc(len_fmats)); dmat_aoosoc = 0
@@ -3006,10 +3007,12 @@ C
      &                           )
             aooeamf= .false.; deallocate(dmat_aoosoc);
           endif
+#endif
 
           allocate(tmat_mmf(len_fmats))
           tmat_mmf    = 0
-
+          
+#ifdef MOD_XAMFI
           if(.not.onesys)
      &    call get_scso_2e_fock(dmat                  = tbuf_mmf,
      &                          cmo                   = cmo_mmf,
@@ -3041,7 +3044,7 @@ C
      &                          lwork_ext             = lfree,
      &                          print_lvl             = iprham
      &                         )
-#ifdef MOD_XAMFI
+
           !> subtract XC_energy_2c
           if(dirac_cfg_dft_calculation)then
             delta_xc_energy_aoosoc =

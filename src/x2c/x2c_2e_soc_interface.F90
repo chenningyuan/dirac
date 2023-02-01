@@ -41,8 +41,11 @@ module x2c_2e_soc_interface
 #include "dcbcls.h"
 
   public x2c_add_2e_so_corrections
+
+#ifdef MOD_XAMFI
   public x2c_add_2e_diagonal_atomic
   public x2c_add_2e_from_atomic_dens
+#endif
 
   private
 
@@ -512,7 +515,7 @@ contains
   end subroutine x2c_interface2old_amfi
 
 !**********************************************************************
-
+#ifdef MOD_XAMFI
   subroutine x2c_interface2aoosoc(naosh_ls,              &
                                   nr_ao_L,               &
                                   naosh_all,             &
@@ -1530,6 +1533,6 @@ deallocate(aooso_info, scr1_mat,scr2_mat)
 end subroutine x2c_prepare_delta_Vxc_from_atomic_blocks
 
 !**********************************************************************
-
+#endif /* MOD_XAMFI */
 
 end module x2c_2e_soc_interface

@@ -1716,9 +1716,11 @@ C*****************************************************************************
 
       use dirac_cfg
       use fde_mod
+#ifdef MOD_XAMFI
       use xamfi_global_parameters, only: aoomod, 
      &                             xamfi_energy_contributions
       use xamfi_utils, only: xamfi_get_energy_correction
+#endif
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
@@ -1774,6 +1776,7 @@ C
          call fde_get_import_info(itmp)
       end if
 
+#ifdef MOD_XAMFI
       inquire(file='XAMFI-ss-soc-contributions',
      &        exist=XAMFI_CORRECTIONS)
       if(XAMFI_CORRECTIONS.and.aoomod)then
@@ -1784,6 +1787,7 @@ C
         read(99) XAMFI_FMAT(1:ntbas(0)**2*nz)
         close(99,status='keep')
       end if
+#endif
 
       IF(AOC) THEN
         ITOP = NOPEN
@@ -1826,6 +1830,7 @@ C
             END DO
          END DO
       END DO
+#ifdef MOD_XAMFI
       !> calculate contribution to 2-e energy from X-AMFI correction
       if(XAMFI_CORRECTIONS.and.aoomod)then
         !> only the 0th intra-shell contribution is needed
@@ -1836,11 +1841,12 @@ C
      &                              NZ,N2BBASX,NFMAT)
         deallocate(XAMFI_FMAT)
       end if
+#endif
 
       !> correct for contribution from ks potential to two-electron energy
       if(dirac_cfg_dft_calculation)then
 
-
+#ifdef MOD_XAMFI
          !> ... and correct for contribution from the PC correction to the ks potential
          inquire(file='XAMFI-Vxc-contributions',exist=XAMFI_VXC_)
          if(XAMFI_VXC_)then
@@ -1853,6 +1859,7 @@ C
            call xcint_set_xc_mat_energy_delta(XAMFI_Vxc_delta)
            deallocate(XAMFI_FMAT)
          end if
+#endif
 
          xcint_xc_energy=xcint_get_xc_mat_energy()
 
@@ -1962,9 +1969,11 @@ CMI      ... print out matrixes ...
             WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total electronic energy            :  ',ELERGY,
      +       'Nuclear potential energy           :  ',POTNUC
+#ifdef MOD_XAMFI
          IF(XAMFI_CORRECTIONS) WRITE(LUPRI,'(A,'//FMT//')')
      +       '... with X-AMFI contr. to 2e-energy:  ',
      +        xamfi_energy_contributions
+#endif
          IF(LVCON) WRITE(LUPRI,'(A,'//FMT//')')
      +       'SS Coulombic correction            :  ',CORRLV
          IF(SOLVEN) WRITE(LUPRI,'(A,'//FMT//')')

@@ -42,9 +42,11 @@ module x2c_def_h1_4c
       get_saomo_x2c,                  &
       generic_interface_ao2mo_mo2ao
   use x2cmod_cfg
+#ifdef MOD_XAMFI
   use x2c_2e_soc_interface, only:     &
       x2c_add_2e_diagonal_atomic,     &
       x2c_add_2e_from_atomic_dens
+#endif
 
   implicit none
 

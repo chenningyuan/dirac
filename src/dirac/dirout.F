@@ -25,8 +25,10 @@ C
 C***********************************************************************
       use dirac_cfg
       use fde_evaluators_dirac, only: fde_calculate_interaction_energy
+#ifdef MOD_XAMFI
       use xamfi_global_parameters, only: aoomod, 
      &                                     xamfi_energy_contributions
+#endif
 
 #ifdef HAS_PCMSOLVER
       use pcm_scf, only: get_pcm_energy, pcm_scf_finalize
@@ -149,10 +151,12 @@ C       Start by writing the computed electronic energy
         endif
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Electronic energy                        :   ',ELERGY
+#ifdef MOD_XAMFI
         IF(aoomod.and.abs(xamfi_energy_contributions) > 0.0d0)
      +  WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      '... with X-AMFI contribution to 2e-energy:   ',
      +        xamfi_energy_contributions
+#endif
 C       The total energy consists of the electronic energy plus 
 C       additional terms
         WRITE(LUPRI,'(/3X,A)') 'Other contributions to the total energy'
