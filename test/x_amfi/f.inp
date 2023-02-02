@@ -10,8 +10,7 @@
 .X2Cmmf
 .DOSSSS
 *X-AMFI
-.atomic
-!.nofocc
+.amf
 **WAVE FUNCTION
 .SCF
 *SCF

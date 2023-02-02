@@ -181,10 +181,10 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | X-amfi-feature-stknecht-merge-with-master
-Commit hash   | e82ff4f3d
+Branch        | X-amfi-feature-stknecht
+Commit hash   | 72de06922
 Commit author | Stefan Knecht
-Commit date   | Mon Jan 30 22:36:51 2023 +0100
+Commit date   | Thu Feb 2 10:19:02 2023 +0100
 
 
 Configuration and build information
@@ -195,18 +195,18 @@ Compiled on server       | stknecht-MacBook-Pro.local
 Operating system         | Darwin-22.3.0
 CMake version            | 3.25.1
 CMake generator          | Unix Makefiles
-CMake build type         | Debug
-Configuration time       | 2023-01-30 21:37:44.665635
+CMake build type         | Release
+Configuration time       | 2023-02-02 09:19:39.810840
 Python version           | 3.9.1
 Fortran compiler         | /opt/homebrew/bin/gfortran
 Fortran compiler version | 12.2.0
-Fortran compiler flags   |  -fallow-argument-mismatch -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fno-lto
+Fortran compiler flags   |  -fallow-argument-mismatch -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fno-lto -fallow-argument-mismatch -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fno-lto
 C compiler               | /usr/bin/gcc
 C compiler version       | 14.0
-C compiler flags         |  -g
+C compiler flags         |  -g -g
 C++ compiler             | /usr/bin/g++
 C++ compiler version     | 14.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | False
@@ -215,7 +215,7 @@ Math libraries           | /Applications/Xcode.app/Contents/Developer/Platforms/
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_SYSTEM_NATIVE_BLAS;HAVE_SYSTEM_NATIVE_LAPACK;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+Compile definitions      | SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
 
 EXACORR dependencies
 --------------------
@@ -231,7 +231,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Mac OSX): Mon Jan 30 23:14:11 2023
+     Date and time (Mac OSX): Thu Feb  2 21:53:08 2023
      Host name              : stknecht-MacBook-Pro.local              
 
  * Opening checkpoint file 
@@ -253,8 +253,7 @@ Contents of the input file
 .X2Cmmf                                                                                             
 .DOSSSS                                                                                             
 *X-AMFI                                                                                             
-.atomic                                                                                             
-!.nofocc                                                                                            
+.amf                                                                                                
 **WAVE FUNCTION                                                                                     
 .SCF                                                                                                
 *SCF                                                                                                
@@ -627,8 +626,6 @@ Information about the X-AMFI module:
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)         NaNs and (WALL)         NaNs
-
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
@@ -663,116 +660,116 @@ Total no. of orbitals           (NORB):    30
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Mon Jan 30 23:14:11 2023
+########## START ITERATION NO.   1 ##########   Thu Feb  2 21:53:08 2023
 
 E_HOMO...E_LUMO, symmetry 1:                                 17  -1.00177   18  -0.27597   19  -0.27409   20  -0.27409   21   1.70968
 
 => Calculating sum of orbital energies
-It.    1    -52.69929658359      0.00D+00  0.00D+00  0.00D+00               0.01139300s   Atom. scrpot   Mon Jan 30
+It.    1    -52.69929658354      0.00D+00  0.00D+00  0.00D+00               0.00616400s   Atom. scrpot   Thu Feb  2
 
-########## START ITERATION NO.   2 ##########   Mon Jan 30 23:14:11 2023
+########## START ITERATION NO.   2 ##########   Thu Feb  2 21:53:08 2023
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   61.36%   14.20%   16.30%   0.00079300s
-SOfock:SL  1.00D-12    0.00%   69.71%   14.90%   17.57%   0.00470600s
-SOfock:SS  1.00D-12    0.00%   72.66%   16.34%   12.46%   0.01459100s
+SOfock:LL  1.00D-12    0.00%   61.36%   14.20%   17.87%   0.00021500s
+SOfock:SL  1.00D-12    0.00%   69.71%   13.86%   17.57%   0.00082600s
+SOfock:SS  1.00D-12    0.00%   72.66%   16.34%   12.46%   0.00196400s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -1.54438   18  -0.63001   19  -0.62795   20  -0.62795   21   2.08692
->>> Total wall time:  0.05400000s, and total CPU time :  0.03215700s
+>>> Total wall time:  0.04000000s, and total CPU time :  0.01569000s
 
-########## END ITERATION NO.   2 ##########   Mon Jan 30 23:14:11 2023
+########## END ITERATION NO.   2 ##########   Thu Feb  2 21:53:08 2023
 
-It.    2    -98.91963535840      4.62D+01  7.74D+00  1.41D+00               0.05400000s   LL SL SS       Mon Jan 30
+It.    2    -98.91963535840      4.62D+01  7.74D+00  1.41D+00               0.04000000s   LL SL SS       Thu Feb  2
 
-########## START ITERATION NO.   3 ##########   Mon Jan 30 23:14:11 2023
+########## START ITERATION NO.   3 ##########   Thu Feb  2 21:53:08 2023
 
     3 *** Differential density matrix. DCOVLP     = 0.9996
     3 *** Differential density matrix. DVOVLP( 1) = 0.9957
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   61.36%   21.14%   17.58%   0.00066701s
-SOfock:SL  1.00D-12    0.00%   69.71%   15.93%   17.57%   0.00368700s
-SOfock:SS  1.00D-12    0.00%   72.92%   16.08%   12.45%   0.01314000s
+SOfock:LL  1.00D-12    0.00%   61.36%    7.26%   16.63%   0.00057400s
+SOfock:SL  1.00D-12    0.00%   69.71%    8.68%   17.57%   0.00189600s
+SOfock:SS  1.00D-12    0.00%   72.92%   16.08%   12.45%   0.00354200s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -1.52710   18  -0.61525   19  -0.61324   20  -0.61324   21   2.09839
->>> Total wall time:  0.04600000s, and total CPU time :  0.02542000s
+>>> Total wall time:  0.03900000s, and total CPU time :  0.01309700s
 
-########## END ITERATION NO.   3 ##########   Mon Jan 30 23:14:11 2023
+########## END ITERATION NO.   3 ##########   Thu Feb  2 21:53:08 2023
 
-It.    3    -98.93126879655      1.16D-02 -9.51D-02  2.88D-02   DIIS   2    0.04600000s   LL SL SS       Mon Jan 30
+It.    3    -98.93126879655      1.16D-02 -9.51D-02  2.88D-02   DIIS   2    0.03900000s   LL SL SS       Thu Feb  2
 
-########## START ITERATION NO.   4 ##########   Mon Jan 30 23:14:11 2023
+########## START ITERATION NO.   4 ##########   Thu Feb  2 21:53:08 2023
 
     4 *** Differential density matrix. DCOVLP     = 1.0008
     4 *** Differential density matrix. DVOVLP( 1) = 1.0005
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   61.36%    7.26%   13.75%   0.00068399s
-SOfock:SL  1.00D-12    0.00%   69.71%    8.68%   17.57%   0.00412601s
-SOfock:SS  1.00D-12    0.00%   74.00%   15.19%   12.24%   0.01243900s
+SOfock:LL  1.00D-12    0.00%   61.36%   14.20%   18.36%   0.00053400s
+SOfock:SL  1.00D-12    0.00%   69.71%   14.90%   17.57%   0.00182000s
+SOfock:SS  1.00D-12    0.00%   74.00%   15.19%   12.24%   0.00179500s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -1.52981   18  -0.61832   19  -0.61630   20  -0.61630   21   2.09579
->>> Total wall time:  0.04400000s, and total CPU time :  0.02469500s
+>>> Total wall time:  0.03300000s, and total CPU time :  0.01315400s
 
-########## END ITERATION NO.   4 ##########   Mon Jan 30 23:14:11 2023
+########## END ITERATION NO.   4 ##########   Thu Feb  2 21:53:08 2023
 
-It.    4    -98.93130999401      4.12D-05 -1.51D-02  5.49D-03   DIIS   3    0.04400000s   LL SL SS       Mon Jan 30
+It.    4    -98.93130999401      4.12D-05 -1.51D-02  5.49D-03   DIIS   3    0.03300000s   LL SL SS       Thu Feb  2
 
-########## START ITERATION NO.   5 ##########   Mon Jan 30 23:14:11 2023
+########## START ITERATION NO.   5 ##########   Thu Feb  2 21:53:08 2023
 
     5 *** Differential density matrix. DCOVLP     = 1.0000
     5 *** Differential density matrix. DVOVLP( 1) = 0.9998
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   61.36%   14.20%   14.53%   0.00058599s
-SOfock:SL  1.00D-12    0.00%   69.74%    9.71%   17.56%   0.00372800s
-SOfock:SS  1.00D-12    0.00%   75.67%   13.94%   11.77%   0.01189300s
+SOfock:LL  1.00D-12    0.00%   61.36%   14.20%   19.64%   0.00051700s
+SOfock:SL  1.00D-12    0.00%   69.74%    9.71%   17.56%   0.00185201s
+SOfock:SS  1.00D-12    0.00%   75.67%   13.94%   11.77%   0.00266800s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -1.52928   18  -0.61793   19  -0.61592   20  -0.61592   21   2.09611
->>> Total wall time:  0.04800000s, and total CPU time :  0.02371600s
+>>> Total wall time:  0.03400000s, and total CPU time :  0.01128600s
 
-########## END ITERATION NO.   5 ##########   Mon Jan 30 23:14:11 2023
+########## END ITERATION NO.   5 ##########   Thu Feb  2 21:53:08 2023
 
-It.    5    -98.93131365631      3.66D-06  3.75D-03  1.14D-03   DIIS   4    0.04800000s   LL SL SS       Mon Jan 30
+It.    5    -98.93131365631      3.66D-06  3.75D-03  1.14D-03   DIIS   4    0.03400000s   LL SL SS       Thu Feb  2
 
-########## START ITERATION NO.   6 ##########   Mon Jan 30 23:14:11 2023
+########## START ITERATION NO.   6 ##########   Thu Feb  2 21:53:08 2023
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
     6 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   61.36%   14.20%   15.81%   0.00057401s
-SOfock:SL  1.00D-12    0.00%   69.95%   10.63%   17.51%   0.00357801s
-SOfock:SS  1.00D-12    0.00%   76.87%   13.07%   11.39%   0.01136599s
+SOfock:LL  1.00D-12    0.00%   61.36%   21.14%   21.70%   0.00049700s
+SOfock:SL  1.00D-12    0.00%   69.95%   14.66%   17.51%   0.00187800s
+SOfock:SS  1.00D-12    0.00%   76.87%   13.07%   11.39%   0.00206900s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -1.52926   18  -0.61793   19  -0.61591   20  -0.61591   21   2.09611
->>> Total wall time:  0.04700000s, and total CPU time :  0.02295400s
+>>> Total wall time:  0.03400000s, and total CPU time :  0.01308800s
 
-########## END ITERATION NO.   6 ##########   Mon Jan 30 23:14:11 2023
+########## END ITERATION NO.   6 ##########   Thu Feb  2 21:53:08 2023
 
-It.    6    -98.93131378079      1.24D-07 -5.68D-04  6.40D-05   DIIS   5    0.04700000s   LL SL SS       Mon Jan 30
+It.    6    -98.93131378079      1.24D-07 -5.68D-04  6.40D-05   DIIS   5    0.03400000s   LL SL SS       Thu Feb  2
 
-########## START ITERATION NO.   7 ##########   Mon Jan 30 23:14:11 2023
+########## START ITERATION NO.   7 ##########   Thu Feb  2 21:53:08 2023
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
     7 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   61.36%   14.20%   15.03%   0.00062099s
-SOfock:SL  1.00D-12    0.00%   70.84%    9.22%   17.28%   0.00346000s
-SOfock:SS  1.00D-12    0.00%   81.39%   10.12%    9.61%   0.01083800s
+SOfock:LL  1.00D-12    0.00%   61.36%    7.26%   18.36%   0.00052100s
+SOfock:SL  1.00D-12    0.00%   70.84%    8.20%   17.28%   0.00199600s
+SOfock:SS  1.00D-12    0.00%   81.39%   10.12%    9.61%   0.00257900s
 E_HOMO...E_LUMO, symmetry 1:                                 17  -1.52926   18  -0.61793   19  -0.61591   20  -0.61591   21   2.09611
->>> Total wall time:  0.04800000s, and total CPU time :  0.02232500s
+>>> Total wall time:  0.03600000s, and total CPU time :  0.01473000s
 
-########## END ITERATION NO.   7 ##########   Mon Jan 30 23:14:11 2023
+########## END ITERATION NO.   7 ##########   Thu Feb  2 21:53:08 2023
 
-It.    7    -98.93131378130      5.11D-10 -1.32D-05  6.03D-07   DIIS   6    0.04800000s   LL SL SS       Mon Jan 30
+It.    7    -98.93131378130      5.11D-10 -1.32D-05  6.03D-07   DIIS   6    0.03600000s   LL SL SS       Thu Feb  2
 
-########## START ITERATION NO.   8 ##########   Mon Jan 30 23:14:11 2023
+########## START ITERATION NO.   8 ##########   Thu Feb  2 21:53:08 2023
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
     8 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   61.77%    7.26%   16.15%   0.00067800s
-SOfock:SL  1.00D-12    0.00%   74.98%    7.68%   16.10%   0.00330199s
-SOfock:SS  1.00D-12    0.00%   95.42%    1.59%    3.61%   0.00786401s
->>> Total wall time:  0.03100000s, and total CPU time :  0.01598000s
+SOfock:LL  1.00D-12    0.00%   61.77%    7.26%   14.87%   0.00052200s
+SOfock:SL  1.00D-12    0.00%   74.98%    5.48%   16.10%   0.00182600s
+SOfock:SS  1.00D-12    0.00%   95.42%    1.59%    3.61%   0.00106600s
+>>> Total wall time:  0.02100000s, and total CPU time :  0.01050300s
 
-########## END ITERATION NO.   8 ##########   Mon Jan 30 23:14:11 2023
+########## END ITERATION NO.   8 ##########   Thu Feb  2 21:53:08 2023
 
-It.    8    -98.93131378130     -1.42D-13 -2.66D-07  7.06D-08   DIIS   6    0.03100000s   LL SL SS       Mon Jan 30
+It.    8    -98.93131378130     -2.70D-13 -2.66D-07  7.06D-08   DIIS   6    0.02100000s   LL SL SS       Thu Feb  2
 
 
                                    SCF - CYCLE
@@ -788,19 +785,19 @@ It.    8    -98.93131378130     -1.42D-13 -2.66D-07  7.06D-08   DIIS   6    0.03
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -52.69929658359      0.00D+00  0.00D+00  0.00D+00               0.01139300s   Atom. scrpot   Mon Jan 30
-It.    2    -98.91963535840      4.62D+01  7.74D+00  1.41D+00               0.05400000s   LL SL SS       Mon Jan 30
-It.    3    -98.93126879655      1.16D-02 -9.51D-02  2.88D-02   DIIS   2    0.04600000s   LL SL SS       Mon Jan 30
-It.    4    -98.93130999401      4.12D-05 -1.51D-02  5.49D-03   DIIS   3    0.04400000s   LL SL SS       Mon Jan 30
-It.    5    -98.93131365631      3.66D-06  3.75D-03  1.14D-03   DIIS   4    0.04800000s   LL SL SS       Mon Jan 30
-It.    6    -98.93131378079      1.24D-07 -5.68D-04  6.40D-05   DIIS   5    0.04700000s   LL SL SS       Mon Jan 30
-It.    7    -98.93131378130      5.11D-10 -1.32D-05  6.03D-07   DIIS   6    0.04800000s   LL SL SS       Mon Jan 30
-It.    8    -98.93131378130     -1.42D-13 -2.66D-07  7.06D-08   DIIS   6    0.03100000s   LL SL SS       Mon Jan 30
+It.    1    -52.69929658354      0.00D+00  0.00D+00  0.00D+00               0.00616400s   Atom. scrpot   Thu Feb  2
+It.    2    -98.91963535840      4.62D+01  7.74D+00  1.41D+00               0.04000000s   LL SL SS       Thu Feb  2
+It.    3    -98.93126879655      1.16D-02 -9.51D-02  2.88D-02   DIIS   2    0.03900000s   LL SL SS       Thu Feb  2
+It.    4    -98.93130999401      4.12D-05 -1.51D-02  5.49D-03   DIIS   3    0.03300000s   LL SL SS       Thu Feb  2
+It.    5    -98.93131365631      3.66D-06  3.75D-03  1.14D-03   DIIS   4    0.03400000s   LL SL SS       Thu Feb  2
+It.    6    -98.93131378079      1.24D-07 -5.68D-04  6.40D-05   DIIS   5    0.03400000s   LL SL SS       Thu Feb  2
+It.    7    -98.93131378130      5.11D-10 -1.32D-05  6.03D-07   DIIS   6    0.03600000s   LL SL SS       Thu Feb  2
+It.    8    -98.93131378130     -2.70D-13 -2.66D-07  7.06D-08   DIIS   6    0.02100000s   LL SL SS       Thu Feb  2
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    8 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.02200000s
-      LL SL SS     :    0.04542857s
+      No 2-ints    :    0.01600000s
+      LL SL SS     :    0.03385714s
 
 
                                    TOTAL ENERGY
@@ -808,13 +805,13 @@ It.    8    -98.93131378130     -1.42D-13 -2.66D-07  7.06D-08   DIIS   6    0.03
 
    Charge of molecule : 0
 
-   Electronic energy                        :    -98.931313781299593
+   Electronic energy                        :    -98.931313781299536
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      0.000000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -98.931313781299593
+   Total energy                             :    -98.931313781299536
 
 
                                    Eigenvalues
@@ -823,12 +820,12 @@ It.    8    -98.93131378130     -1.42D-13 -2.66D-07  7.06D-08   DIIS   6    0.03
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
- -26.2489262510509  ( 2)     -1.5292587089992  ( 2)
+ -26.2489262510178  ( 2)     -1.5292587090019  ( 2)
   * Open shell #1, f = 0.8333
-  -0.6179282061942  ( 2)     -0.6159118326462  ( 4)
+  -0.6179282062090  ( 2)     -0.6159118326613  ( 4)
   * Virtual eigenvalues, f = 0.0000
-   2.0961108054656  ( 2)      2.0987754706383  ( 4)      2.8987111285389  ( 2)     14.6623289798054  ( 2)     14.6807063484065  ( 4)
-  22.5869246906004  ( 2)     95.1212208322468  ( 2)    604.2780865668901  ( 2)
+   2.0961108054658  ( 2)      2.0987754706452  ( 4)      2.8987111285422  ( 2)     14.6623289798209  ( 2)     14.6807063484223  ( 4)
+  22.5869246906046  ( 2)     95.1212208322540  ( 2)    604.2780865669192  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     2.09611081 au (symmetry E1 )
@@ -855,7 +852,7 @@ It.    8    -98.93131378130     -1.42D-13 -2.66D-07  7.06D-08   DIIS   6    0.03
                    ***                      Universities of                          ***
                    ***     Zuerich, Toulouse, Odense, Banska Bystrica and Tromsoe    ***
                    ***                                                               ***
-                   *** contact: s.knecht@gsi.de                                      ***
+                   *** contact: stefan.knecht@gmail.com                              ***
                    *********************************************************************
 
 
@@ -866,8 +863,6 @@ It.    8    -98.93131378130     -1.42D-13 -2.66D-07  7.06D-08   DIIS   6    0.03
                    ***          Calculation continues in two-component mode.         ***
                    *********************************************************************
 
- >>> CPU  time used in mk_h2c is   0.07 seconds
- >>> WALL time used in mk_h2c is   0.11 seconds
 
                    *********************************************************************
                    ***                          X-AMFI                               ***
@@ -875,9 +870,9 @@ It.    8    -98.93131378130     -1.42D-13 -2.66D-07  7.06D-08   DIIS   6    0.03
                    *** a module for the generation of atomic two-electron            ***
                    *** scalar- and spin-orbit corrections                            ***
                    ***                                                               ***
-                   *** library version: X-AMFI v1.4 (October 2021)                   ***
+                   *** library version: X-AMFI v1.5 (February 2023)                  ***
                    ***                                                               ***
-                   *** authors:         - Stefan Knecht (GSI Darmstadt, DE)          ***
+                   *** authors:         - Stefan Knecht (Algorithmiq, FI)            ***
                    ***                  - Trond Saue ( U Toulouse, F)                ***
                    ***                  - Hans Joergen Aa. Jensen (SDU Odense, DK)   ***
                    ***                  - Michal Repisky (U Tromsoe, NO)             ***
@@ -887,13 +882,20 @@ It.    8    -98.93131378130     -1.42D-13 -2.66D-07  7.06D-08   DIIS   6    0.03
                    ***                    @ spin-same-orbit                          ***
                    ***                    @ spin-same + spin-other-orbit             ***
                    ***                                                               ***
-                   *** contact: s.knecht@gsi.de                                      ***
+                   *** contact: stefan.knecht@gmail.com                              ***
+                   ***                                                               ***
+                   *** If results obtained with this code are published, please cite ***
+                   ***                                                               ***
+                   *** S. Knecht, M. Repisky, H. J. Aa. Jensen, T.Saue,              ***
+                   *** J. Chem. Phys., 157, 114106 (2022);                           ***
+                   *** https://doi.org/10.1063/5.0095112                             ***
+                   ***                                                               ***
                    *********************************************************************
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   61.36%    7.26%   15.81%   0.00069898s
-SOfock:SL  1.00D-12    0.00%   69.71%    8.68%   17.57%   0.00383702s
-SOfock:SS  1.00D-12    0.00%   72.66%   16.34%   12.46%   0.01232502s
+SOfock:LL  1.00D-12    0.00%   61.36%   21.14%   17.58%   0.00021699s
+SOfock:SL  1.00D-12    0.00%   69.71%   14.90%   17.57%   0.00075500s
+SOfock:SS  1.00D-12    0.00%   72.66%   16.34%   12.46%   0.00182399s
 
 
                       Nuclear contribution to dipole moments
@@ -907,11 +909,9 @@ SOfock:SS  1.00D-12    0.00%   72.66%   16.34%   12.46%   0.01232502s
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)         NaNs and (WALL)         NaNs
-
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   61.36%   21.14%   15.81%   0.00066900s
+SOfock:LL  1.00D-12    0.00%   61.36%   21.14%   20.14%   0.00018999s
 
                    *********************************************************************
                    ***                          X-AMFI                               ***
@@ -941,15 +941,15 @@ Total no. of orbitals           (NORB):    15
 
 
  
-     Date and time (Mac OSX): Mon Jan 30 23:14:12 2023
+     Date and time (Mac OSX): Thu Feb  2 21:53:09 2023
      Host name              : stknecht-MacBook-Pro.local              
 
->>>> Node 0, utime: 0, stime: 0, minflt: 32983, majflt: 27, nvcsw: 32, nivcsw: 946, maxrss: 537919488
+>>>> Node 0, utime: 0, stime: 0, minflt: 32849, majflt: 7, nvcsw: 3, nivcsw: 964, maxrss: 535445504
 >>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :       102.23
+  Mean allocation size (Mb) :        99.91
   
   Largest          10  allocations
   
@@ -973,1354 +973,3 @@ Total no. of orbitals           (NORB):    15
 
 *****************************************************
 DIRAC pam run in /Users/stknecht/progs/dirac/test/x_amfi
-
- ====  below this line is the stderr stream  ====
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'input' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'result' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'execution' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'execution' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'molecule' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'molecule' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 729 in H5G__traverse_real(): component not found
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'operators' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'operators' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'operators' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'ao_matrices' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 729 in H5G__traverse_real(): component not found
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'aobasis' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'aobasis' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'aobasis' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object '1' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object '2' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object '2' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 729 in H5G__traverse_real(): component not found
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 729 in H5G__traverse_real(): component not found
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 729 in H5G__traverse_real(): component not found
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5G.c line 510 in H5Gopen2(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #001: H5VLcallback.c line 4187 in H5VL_group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #002: H5VLcallback.c line 4154 in H5VL__group_open(): group open failed
-    major: Virtual Object Layer
-    minor: Can't open object
-  #003: H5VLnative_group.c line 123 in H5VL__native_group_open(): unable to open group
-    major: Symbol table
-    minor: Can't open object
-  #004: H5Gint.c line 270 in H5G__open_name(): group not found
-    major: Symbol table
-    minor: Object not found
-  #005: H5Gloc.c line 442 in H5G_loc_find(): can't find object
-    major: Symbol table
-    minor: Object not found
-  #006: H5Gtraverse.c line 837 in H5G_traverse(): internal path traversal failed
-    major: Symbol table
-    minor: Object not found
-  #007: H5Gtraverse.c line 613 in H5G__traverse_real(): traversal operator failed
-    major: Symbol table
-    minor: Callback failed
-  #008: H5Gloc.c line 399 in H5G__loc_find_cb(): object 'wavefunctions' doesn't exist
-    major: Symbol table
-    minor: Object not found
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1650 in H5Eset_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
-HDF5-DIAG: Error detected in HDF5 (1.12.2) thread 0:
-  #000: H5E.c line 1587 in H5Eget_auto2(): not a error stack ID
-    major: Invalid arguments to routine
-    minor: Inappropriate type
