@@ -322,9 +322,6 @@ integer, PARAMETER            :: nzc1 = 4
 !> Start by constructing a fractional occupation density (eqivalent to what is used in an atomic start guess)
 !> that is, add active density matrices to closed-shell density matrix
 
-!write(6,*) 'BLUBB: x_nopen, x_dfopen, nrow, ncol, nz, nr_2e_fock_matrices = ',&
-!x_nopen, x_dfopen(0:x_nopen), nrow, ncol, nz, nr_2e_fock_matrices, size(dmat)
-
 if(nr_2e_fock_matrices > 1)then
 do i = 1,x_nopen
   call daxpy(nrow*ncol*nz,x_dfopen(i),Dmat(1,1,1,i+1),1,Dmat(1,1,1,1),1)
@@ -402,28 +399,6 @@ aoo_cb_pq_to_uq(1,0),      &
 
 end if
 
-#ifdef BLUBB
-!   determine full file name
-write(file_extension,'(i3)') element
-do i = 1, 3
-if(file_extension(i:i) .eq. ' ') file_extension(i:i) = '0'
-end do
-write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
-
-!   dump (fooc) density matrix on file
-open(fh,file=file_name(1:12),status='replace',form='unformatted',      &
-access='sequential',action="readwrite",position='rewind')
-if(final_dump)then
-write(fh) nrow, ncol, nzc1
-write(fh) Dmat_c1
-!DEALLOCATE(Dmat_c1)
-else !> final_dump
-write(fh) nrow, ncol, nz
-write(fh) Dmat
-endif
-close(fh,status='keep')
-#endif
-
 !> HDF5 data dump
 if(final_dump)then
 call amf_write_hdf5(amfh5Data(1),Dmat_c1,nrow,ncol,nzc1,file_base)
@@ -457,22 +432,6 @@ end subroutine dump_Xc_c1_dens
      character (len=12)            :: file_name
 !----------------------------------------------------------------------
 
-#ifdef BLUBB
-!   determine full file name
-    write(file_extension,'(i3)') element
-    do i = 1, 3
-        if(file_extension(i:i) .eq. ' ') file_extension(i:i) = '0'
-    end do
-    write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
-
-!   dump DELTA XC on file
-    open(fh,file=file_name(1:12),status='replace',form='unformatted',      &
-         access='sequential',action="readwrite",position='rewind')
-
-
-    write(fh) Gscalar
-    close(fh,status='keep')
-#endif
     !> HDF5 data dump
     call amf_write_hdf5(amfh5Data(1),Gscalar,1,1,1,file_base)
 
@@ -510,44 +469,7 @@ end subroutine dump_Xc_c1_dens
      character (len=12)            :: file_name
 !----------------------------------------------------------------------
 
-#ifdef BLUBB
-!    determine full file name
-     write(file_extension,'(i3)') element
-     do i = 1, 3
-        if(file_extension(i:i) .eq. ' ') file_extension(i:i) = '0'
-     end do
-     write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
-
-!    read 2e-soc from file
-     open(fh,file=file_name(1:12),status='old',form='unformatted',      &
-          access='sequential',action="readwrite",position='rewind')
-
-     read(fh) nrow_tmp, ncol_tmp, nz_tmp
-     if(nrow_tmp >  nrow)then
-       print *, 'read_xamfi_general_matrix: row dimension does not fit',nrow_tmp,nrow
-       call quit( 'read_xamfi_general_matrix: row dimension does not fit' )
-     end if
-     if(ncol_tmp >  ncol)then
-       print *, 'read_xamfi_general_matrix: col dimension does not fit',ncol_tmp,ncol
-       call quit( 'read_xamfi_general_matrix: col dimension does not fit' )
-     end if
-     if(nz_tmp   /= nzc1   )then
-       print *, 'read_xamfi_general_matrix: nz  dimension does not fit',nz_tmp,nzc1
-       call quit( 'read_xamfi_general_matrix: nz  dimension does not fit' )
-     end if
-
-     read(fh) Gmat
-
-     close(fh,status='keep')
-#endif
-
-     !print *, ' atom_id => ', atom_id,' #0 first 4  elements of Gmat ==> ',Gmat(1,1,1),Gmat(2,1,1),Gmat(1,2,1),Gmat(2,2,1)
-     !write(6,*) ' read Gmat... '; call flush(6)
-     !Gmat = 0
      call amf_read_hdf5(amfH5Data(atom_id),Gmat,file_base)
-     !print *, ' atom_id => ', atom_id,' #1 first 4  elements of Gmat ==> ',Gmat(1,1,1),Gmat(2,1,1),Gmat(1,2,1),Gmat(2,2,1)
-     !write(6,*) ' read Gmat... '; call flush(6)
-
 
   end subroutine read_xamfi_general_matrix
 !----------------------------------------------------------------------
@@ -573,28 +495,7 @@ end subroutine dump_Xc_c1_dens
      character (len=12)            :: file_name
 !----------------------------------------------------------------------
 
-#ifdef BLUBB
-!    determine full file name
-     write(file_extension,'(i3)') element
-     do i = 1, 3
-        if(file_extension(i:i) .eq. ' ') file_extension(i:i) = '0'
-     end do
-     write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
-
-!    read 2e-soc from file
-     open(fh,file=file_name(1:12),status='old',form='unformatted',      &
-          access='sequential',action="readwrite",position='rewind')
-
-     Gscalar = 0.0d0
-     read(fh) Gscalar
-
-     close(fh,status='keep')
-#endif
-
-     !print *, ' atom_id => ', atom_id,' #0 Gscalar ==> ',Gscalar
-     !Gscalar = 0
      call amf_read_hdf5(amfH5Data(atom_id),Gscalar,file_base)
-     !print *, ' atom_id => ', atom_id,' #1 Gscalar ==> ',Gscalar
 
   end function read_xamfi_general_scalar
 !----------------------------------------------------------------------

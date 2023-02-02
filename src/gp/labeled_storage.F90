@@ -81,7 +81,6 @@ module labeled_storage
 
       integer :: ierr
 
-      !write(6,*) '#0 read_general ',(present(rdata)); call flush(6)
       select case (file_info%type)
       case (1)
          ! We use DIRAC files (FORTRAN unformatted sequential)
@@ -95,7 +94,6 @@ module labeled_storage
       case (2)
          ! We use HDF5 files
          if (present(rdata)) then
-            !write(6,*) '#1 read_general ',(present(rdata)); call flush(6)
             call read_hdf5(file_info,label,rdata=rdata)
          elseif (present(idata)) then
             call read_hdf5(file_info,label,idata=idata)
@@ -232,7 +230,6 @@ module labeled_storage
       real(8),intent(out)                    :: rdata
       real(8)                                :: rdata_array(1)
 
-      write(6,*) '#0 read_single '; call flush(6)
       call read_general (file_info,label,rdata=rdata_array)
       rdata = rdata_array(1)
 

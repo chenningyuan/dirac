@@ -196,9 +196,6 @@ contains
           ndim_ao        = naosh_ls
         end if
 
-!       call print_x2cmat( tra_mat_4cAOMO(ioff_ao_o_sh1),nbas1_f,norb1_f,nz,ipq_off_in,'blubb sf aomo',6)
-!       call print_x2cmat( h1_saao_bas(ioff_ao_ao_sh1),nbas1_f,ndim_ao,nz,ipq_off_in,'blubb sf h1aoba',6)
-
         if( norb_dim(i) > 0 )then
 
           call get_h1_4c_on_basis(h1_onmo_bas(ioff_osh1),            &
@@ -215,7 +212,6 @@ contains
                                   boson_info(ioff_osh2),             &
                                   print_lvl)
         end if
-!       call print_x2cmat(h1_onmo_bas(ioff_osh1),norb1_f,norb1_f,nz,ipq_off_in,'blubb sf h1onmo',6)
 
 !       update offsets for matrices
         ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
@@ -674,8 +670,7 @@ contains
                                           'S',                   &
                                           print_lvl) 
 
-!#ifdef x2c_spinfree_before_4c_to_2c
-!       test the spinfree-before scheme by Miro and HJAAJ
+!       spinfree-before scheme by Miro and HJAAJ
         if(spinfree)then
           call make_spinfree_h1_onmo(                            &
                                      h1_onmo_bas,                & 
@@ -689,7 +684,6 @@ contains
                                      print_lvl                   &
                                     )
         end if
-!#endif
 
   end subroutine get_h1_4c_on_basis
 !**********************************************************************
