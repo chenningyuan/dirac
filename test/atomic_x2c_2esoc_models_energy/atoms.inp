@@ -10,8 +10,6 @@
 **HAMILTONIAN
 .X2Cmmf
 .DOSSSS
-*X-AMFI
-.atomic
 **WAVE FUNCTION
 .SCF
 *SCF

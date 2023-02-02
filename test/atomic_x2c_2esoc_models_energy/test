@@ -21,7 +21,7 @@ if os.path.isfile('CHECKPOINT.h5'):
 elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
     ext = '.noh5.tar.gz'
 shutil.move('CHECKPOINT'+ext, 'X2CMAT_002'+ext)
- 
+
 test.run(['li.inp'], ['li.xyz'], f, args='--outcmo')
 shutil.move('CHECKPOINT'+ext, 'X2CMAT_003'+ext)
 

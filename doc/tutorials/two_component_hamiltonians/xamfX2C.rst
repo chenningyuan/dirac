@@ -55,7 +55,7 @@ atomic contributions regardless of the actual atom type, that is, both “light�
 “heavy” (many-electron) atoms contribute equally. 
 Bearing the latter in mind, the total SCF energies as well as
 spinor energies compiled in the above Table confirm
-the unique numerical performance of the :math:`{\rm amfX2C}_{\rm DC}` 
+the unique numerical performance of the :math:`{\rm eamfX2C}_{\rm DC}` 
 Hamiltonian model in comparison to the :math:`{}^4{\rm DC}` reference data.
 
 Atomic calculations
@@ -63,7 +63,7 @@ Atomic calculations
 
 Note that, besides scaling the speed of light by a factor of :math:`c`/10, we also 
 use a point nucleus as well as a different set of constants as default in our calculations. 
-This was done for Ref. :cite:`Knecht2022` to match calculations with ReSpect. 
+This was done for Ref. :cite:`Knecht2022` to match calculations with `ReSpect <http://www.respectprogram.org/>`__. 
 Since we would like to reproduce in this tutorial the results from Ref. :cite:`Knecht2022`, we will keep 
 those details. Needless to say, the :math:`{\rm eamf}` model works for finite nuclei just as for point nuclei.
 
