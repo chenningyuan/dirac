@@ -67,6 +67,8 @@ This was done for Ref. :cite:`Knecht2022` to match calculations with `ReSpect <h
 Since we would like to reproduce in this tutorial the results from Ref. :cite:`Knecht2022`, we will keep 
 those details. Needless to say, the :math:`{\rm eamf}` model works for finite nuclei just as for point nuclei.
 
+.. warning:: Do not use approximations like .LVCORR for the parent 4-component Hamiltonian. Always use .DOSSSS in the atomic molecular-mean field calculations.
+
 1. H atom
 
 For the atomic run of H, we use the following input (``h.inp``)

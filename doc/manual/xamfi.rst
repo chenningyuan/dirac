@@ -15,10 +15,13 @@ picture-change corrections for the two-component X2C Hamiltonian (in a molecular
 Since it is completely integrated in the SCF framework of DIRAC, it can explot all its capabilities for efficient 
 atomic calculations, for example the use of atomic supersymmetry.
 
-For a detailed example of how to use the :ref:`\*XAMFI` module, see the **x_amfi** test of the DIRAC test suite. 
+For a detailed example of how to use the :ref:`\*XAMFI` module, see the **x_amfi** test of the DIRAC test suite 
+or have a look at the `tutorial <http://www.diracprogram.org/doc/release-23/tutorials/two_component_hamiltonians/xamfX2C.html>`__. 
 
-**NOTE**: We highly recommend to use the **(e)amf** module rather than the :ref:`\*AMFI` module as 
-highlighted by the numerical examples provided in :cite:`Knecht2022`.
+The keywords below are vaild for both, atomic (mean-field) as well molecular calculations. 
+
+.. warning:: Do not use approximations like .LVCORR for the parent 4-component Hamiltonian. Always use .DOSSSS in the atomic molecular-mean field calculations. 
+
 
 keyword(AMF)
 
@@ -42,4 +45,4 @@ keyword(DEBUG)
 
 Activates debug output in the \*XAMFI module.
 
-.. warning:: CAUTION: extremely verbose output!
+.. warning:: **CAUTION**: This will lead to extremely verbose output!
