@@ -100,6 +100,7 @@ Tutorials and walkthrus
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **2-component Hamiltonians:**
+  :doc:`xamfX2C: 2e picture change corrections for the X2C Hamiltonian <tutorials/two_component_hamiltonians/xamfX2C>` |
   :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
   :doc:`Molecular mean-field X2C <tutorials/two_component_hamiltonians/molecular_mean_field>` |
   :doc:`Selecting a 2-component Hamiltonian other than X2C <tutorials/two_component_hamiltonians/hamiltonians>` |
