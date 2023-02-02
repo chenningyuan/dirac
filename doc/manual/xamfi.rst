@@ -28,9 +28,18 @@ picture-change corrections. See also Algorithm 1 in :cite:`Knecht2022` for furth
 
 keyword(EAMF)
 
-Activates the extended atomic mean-field model for two-electron scalar-relativistic **and** spin-orbit 
+Activates the **extended** atomic mean-field model for two-electron scalar-relativistic **and** spin-orbit 
 picture-change corrections. See also Algorithm 2 in :cite:`Knecht2022` for further information.
+
+keyword(ATOMIC)
+
+Activates a ``deprecated(!)`` simplified version of the atomic mean-field model for two-electron scalar-relativistic **and** spin-orbit 
+picture-change corrections. Used only for testing/debugging purposes.
+
+.. warning:: Do not use this option in production calculations.
 
 keyword(DEBUG)
 
-Activates debug output. **CAUTION**: extremely verbose output!
+Activates debug output in the \*XAMFI module.
+
+.. warning:: CAUTION: extremely verbose output!

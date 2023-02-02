@@ -1717,7 +1717,7 @@ C*****************************************************************************
       use dirac_cfg
       use fde_mod
 #ifdef MOD_XAMFI
-      use xamfi_global_parameters, only: aoomod, 
+      use xamfi_global_parameters, only: aoomod, aooeamf,
      &                             xamfi_energy_contributions
       use xamfi_utils, only: xamfi_get_energy_correction
 #endif
@@ -1970,9 +1970,17 @@ CMI      ... print out matrixes ...
      +       'Total electronic energy            :  ',ELERGY,
      +       'Nuclear potential energy           :  ',POTNUC
 #ifdef MOD_XAMFI
-         IF(XAMFI_CORRECTIONS) WRITE(LUPRI,'(A,'//FMT//')')
-     +       '... with X-AMFI contr. to 2e-energy:  ',
-     +        xamfi_energy_contributions
+         IF(XAMFI_CORRECTIONS)then
+             if(aooeamf)then
+               WRITE(LUPRI,'(A,'//FMT//')')
+     +         '... with eamf contr. to 2e-energy :  ',
+     +          xamfi_energy_contributions
+             else
+               WRITE(LUPRI,'(A,'//FMT//')')
+     +         '... with amf contr. to 2e-energy  :  ',
+     +          xamfi_energy_contributions
+             end if
+         END IF
 #endif
          IF(LVCON) WRITE(LUPRI,'(A,'//FMT//')')
      +       'SS Coulombic correction            :  ',CORRLV
