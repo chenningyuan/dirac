@@ -23,6 +23,12 @@ New features:
    - Manual: `XAMFI <http://www.diracprogram.org/doc/release-23/manual/xamfi.html>`__
    - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/two_component_hamiltonians/xamfX2C.html>`__
 
+Infrastructure changes and fixes:
+
+- HDF5 checkpoint file is now default for data handling
+   - Contributor: Lucas Visscher
+   - User manual: `Data storage in DIRAC <http://www.diracprogram.org/doc/release-23/manual/data.html>`__
+   - Developer manual: `The CHECKPOINT.h5 file <http://www.diracprogram.org/doc/release-23/development/checkpoint.html>`__
 
 22.1.beta
 ---------
