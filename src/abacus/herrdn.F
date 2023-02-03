@@ -4650,6 +4650,7 @@ C
       INTEGER NBASE(8), NSIGN(8)
       DIMENSION WORK(LWORK)
 C
+#include "infpar.h"
 #include "nuclei.h"
 #include "frame.h"
 #include "symmet.h"

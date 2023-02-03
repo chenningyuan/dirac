@@ -11,6 +11,12 @@ New features:
    - Manual: `PVCSR <http://www.diracprogram.org/doc/release-23/manual/properties.html#pvcsr>`__
    - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/pvcsr/tutorial.html>`__
 
+- (extended) atomic-mean-field two-electron scalar and spin-orbit picture-change corrections for two-component Hamiltonian calculations
+   - Contributors: Stefan Knecht, Michal Repsiky, Hans Joergen Aa. Jensen and Trond Saue.
+   - Reference: `Stefan Knecht, Michal Repisky, Hans Jørgen Aagaard Jensen, and Trond Saue, Exact two-component Hamiltonians for relativistic quantum chemistry: Two-electron picture-change corrections made simple, J. Chem. Phys. 157, 114106 (2022) <https://doi.org/10.1063/5.0095112>`__
+   - Manual: `XAMFI <http://www.diracprogram.org/doc/release-23/manual/xamfi.html>`__
+   - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/two_component_hamiltonians/xamfX2C.html>`__
+
 
 22.1.beta
 ---------

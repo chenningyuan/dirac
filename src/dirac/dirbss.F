@@ -364,7 +364,7 @@ C ============================================================
 !     needs to be checked though)
       is_defining_h1mat = 4
       CALL MODHAM(WORK(KTMAT),VMAT,WORK(KTBUF),WORK(KEIG),.NOT.FPB,
-     &            LINAD,is_defining_h1mat,WORK(KFREE),LFREE)
+     &            LINAD,is_defining_h1mat,.true.,WORK(KFREE),LFREE)
 C.....set variables needed in DFDIAG (N2TMT etc.)
       CALL SET_TMT(IPRHAM)
 C     1. Write transformation matrices to file BSSMAT
@@ -6177,9 +6177,6 @@ C         .... accumulate (and skip) L(isym) blocks
 
       ENDIF                                   
       ENDDO  
-
-      WRITE(LUPRI,'(A)')
-     &' * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.'
 
       CALL QEXIT('SLSORT')
       RETURN

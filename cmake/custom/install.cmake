@@ -6,6 +6,7 @@ message(STATUS "Copied DIRAC basis set directories into the build directory")
 file(COPY ${PROJECT_SOURCE_DIR}/utils/DIRACschema.txt    DESTINATION ${PROJECT_BINARY_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/utils/dirac_data.py      DESTINATION ${PROJECT_BINARY_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/utils/process_schema.py  DESTINATION ${PROJECT_BINARY_DIR})
+file(COPY ${PROJECT_SOURCE_DIR}/utils/merge_amf.py  DESTINATION ${PROJECT_BINARY_DIR})
 message(STATUS "Copied data schema and python utilities into the build directory")
 
 foreach(

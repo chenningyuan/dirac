@@ -1869,7 +1869,7 @@ C  /* Deck qaxpy */
       SUBROUTINE QAXPY(N,FA,TA,A,IQPA,NZA,
      &                 X,NX,INCX,IQPX,NZX,Y,NY,INCY,IQPY,NZY)
 C***********************************************************************
-C     Computes a constant times a vector plus av vector
+C     Computes a constant times a vector plus a vector
 C
 C        Y := A*X + Y
 C
@@ -3057,6 +3057,9 @@ C
       CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
 #undef DEBUG
 #endif
+!     write(6,*) " BLUBB QTRANS: LRAO,LCAO,LR1,LC1,LR2,LC2,LRMO,LCMO",
+!    &LRAO,LCAO,LR1,LC1,LR2,LC2,LRMO,LCMO," columns: AO, MO: ",
+!    &NRAO,NCAO,NRMO,NCMO,TREV," ",TYP
 C
 C     Time reversal symmetry of F-matrix
 C
@@ -3091,7 +3094,7 @@ C
      &   '                   current work space ',LBUF
              CALL QUIT('ERROR: need more work space')
           ENDIF
-         
+
           IF (IPRINT.GE.12) THEN
             CALL HEADER('QTRANS: AO-to-MO-transformation',-1)
 
@@ -3165,12 +3168,12 @@ C
      &       'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
      &        D0,IQW,BUF,NRMO,NCAO,NZW)
 
-	  IF(IPRINT.GE.15) THEN
+      IF(IPRINT.GE.15) THEN
         CALL HEADER('QTRANS:first part of transformation,W = (C+)F ',-1)
-        CALL PRQMAT(BUF,NRMO,NCAO,NRMO,NCAO,NZW,IQW,LUPRI)       
-	  ENDIF
-	 
-C 
+        CALL PRQMAT(BUF,NRMO,NCAO,NRMO,NCAO,NZW,IQW,LUPRI)
+      ENDIF
+
+C
 C         Second part of transformation: H = WC
 C         -------------------------------------
 C
@@ -3180,7 +3183,7 @@ C
      &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
 C
         ENDIF
-		
+
         IF(IPRINT.GE.11) THEN
           CALL HEADER('QTRANS: Final AO-to-MO-transformed matrix',-1)
           CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
