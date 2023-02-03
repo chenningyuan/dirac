@@ -135,7 +135,8 @@ Tutorials and walkthrus
 
 * **X-ray spectroscopy:**
   :doc:`Core ionization in the CO and N2 molecules <tutorials/x_ray/CO_N2_IP1s/tutorial>` |
-  :doc:`Core electron excitations and ionization in water at the HF and DFT levels <tutorials/x_ray/water_Kedge/tutorial>`
+  :doc:`Core electron excitations and ionization in water at the HF and DFT levels <tutorials/x_ray/water_Kedge/tutorial>` |
+  :doc:`X-ray absorption spectroscopy beyond the electric-dipole approximation <tutorials/x_ray/BED_Ba/tutorial>`
 
 * **Spectroscopy:**
   :doc:`Excitation energies at the SCF-level <tutorials/properties/scfexc/tutorial>` |

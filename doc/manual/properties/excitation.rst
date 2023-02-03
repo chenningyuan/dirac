@@ -61,6 +61,19 @@ for the calculation of transition moments (note that they contribute to the same
       1
 
 
+keyword(VPOLE)
+
+Specification of electric Cartesian multipole operators of order :math:`n` in the velocity representation
+
+.. math::
+
+    \hat{\mathcal{Q}}^{[n]}_{j_1\ldots j_{n-1};j_n} = \frac{ie}{\omega}r_{j_1}\ldots r_{j_{n-2}}(c\alpha_{j_n} r_{j_{n-1}} + nc\alpha_{j_{n-1}}r_{j_n})
+
+*Example:* Velocity representation electric dipole operator::
+
+      .VPOLE
+      1
+
 keyword(ANALYZE)
 
 Analyze solution vectors and show the most important excitations at the
