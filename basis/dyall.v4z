@@ -2,11 +2,15 @@ $
 $ Elements Supported
 $ H  He Li Be Na Mg
 $ K  Ca Rb Sr Cs Ba Fr Ra 
-$ B  C  N  O  F  Ne Al Si P  S  Cl Ar
-$ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn 
+$ B  C  N  O  F  Ne
+$ Al Si P  S  Cl Ar
+$ Ga Ge As Se Br Kr
+$ In Sn Sb Te I  Xe
+$ Tl Pb Bi Po At Rn 
 $ Nh Fl Mc Lv Ts Og
 $ Sc Ti V  Cr Mn Fe Co Ni Cu Zn
-$ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg 
+$ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd
+$ Hf Ta W  Re Os Ir Pt Au Hg 
 $ Rf Db Sg Bh Hs Mt Ds Rg Cn
 $ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr 
 $ La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu 
@@ -20,8 +24,9 @@ $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (2006) 115:441
 $    7p: K.G. Dyall, Theor. Chem. Acc. (2012) 131:1172
 $    3d: K.G. Dyall and A.S.P. Gomes, unpublished.
 $    4d: K.G. Dyall, Theor. Chem. Acc. (2007) 117:483
-$    6d: K.G. Dyall, Theor. Chem. Acc. (2011) 129:603
 $    5d: K.G. Dyall, Theor. Chem. Acc. (2004) 112:403;
+$        revision  K.G. Dyall and A.S.P. Gomes, Theor. Chem. Acc. (2009) 125:97.
+$    6d: K.G. Dyall, Theor. Chem. Acc. (2011) 129:603
 $    4f: A.S.P. Gomes, K.G. Dyall and L. Visscher, Theor. Chem. Acc. (2010)
 $        127:369
 $    5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:491

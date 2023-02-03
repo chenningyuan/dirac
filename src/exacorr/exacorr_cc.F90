@@ -39,7 +39,8 @@ module exacorr_cc
 !        The implementation is based on the parallel ExaTensor library
 
 !        Written by Lucas Visscher, winter 2016/2017
-
+         
+         use labeled_storage
          use interface_to_mpi
          use exacorr_global
          use exacorr_tensor_methods
@@ -51,8 +52,8 @@ module exacorr_cc
          implicit none
 
          type(exacc_input), intent(in) :: exa_input
-
-         integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
+         type(file_info_t)             :: exacc_file
+         integer                       :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
 
          integer(INTD) :: my_role
          integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
@@ -130,9 +131,7 @@ module exacorr_cc
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
 
-         if (my_MPI_rank == 0) then
-            call print_exainput(exa_input,int(ao_space%get_root_id(ierr)))
-         end if
+         if (my_MPI_rank == 0) call print_exainput(exa_input,int(ao_space%get_root_id(ierr)))
 
          !Create all id and root arrays, neccessary for exatns_tensor_create
          ao_space_root=ao_space%get_root_id(ierr)
@@ -177,6 +176,14 @@ module exacorr_cc
          if(ierr.eq.EXA_SUCCESS) then
             ierr=exatns_process_role(my_role) ! only EXA_DRIVER will return immediately
             if(my_role.eq.EXA_DRIVER) then
+
+            !start creating EXACC
+            call print_date("MO occupation data to EXACC file")
+            exacc_file%status = -1
+            exacc_file%type = 2
+            exacc_file%name = "EXACC.h5"
+            call lab_write(exacc_file,'nocc',idata=exa_input%nocc)
+            call lab_write(exacc_file,'mo_occ',idata=exa_input%mo_occ)
 
 !           Create and initialize scalars that are to be used as tensors in contractions
             ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)
