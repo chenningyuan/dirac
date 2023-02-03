@@ -42,7 +42,7 @@ For the full interaction, the oscillator strength can be written as
 
 .. math::
 
-	f_{fi}=\frac{2\omega_{fi}}{\hbar e^{2}}\big\lvert\langle f\lvert\hat{T}(\omega_{fi})\lvert i\rangle\big\lvert^{2};\quad\hat{T}(\omega)=\frac{e}{\omega}(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon})e^{i\mathbf{k}\cdot\mathbf{r}}.
+	f_{fi}=\frac{2\omega_{fi}}{\hbar e^{2}}\big| \langle f\lvert\hat{T}(\omega_{fi})\lvert i\rangle\big|^{2};\quad\hat{T}(\omega)=\frac{e}{\omega}(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon})e^{i\mathbf{k}\cdot\mathbf{r}}.
 
 This expression contains all corrections from zero to infinity. However, it comes at a somewhat higher computational cost because the integrals depend on the frequency and the isotropic averaging needs to be carried out on a Lebedev grid. For more information, see ref. :cite:`List_JCP2020`.
 
@@ -110,7 +110,7 @@ Below you can find the results for the truncated oscillator strengths::
 	Sum of oscillator strengths (general length) :  1.89904E-03
 
 
-First of all, note that only the dipole allowed transitions are visible. The code did calculate the other transitions, but they fell below the threshold of :math:`10^{-8}` and are hence not displayed. Furthermore, the numbers clearly indicate that the multipole expansion is already converged at zeroth order, i.e. the electric dipole approximation. This was to be expected, since it is known that the electric dipole approximation produces good results in the UV-vis regime. 
+In the output, you can find in the fourth column the symbols Q-Q, M-Q, and M-M. These refer to the purely electric, mixed electric and magnetic and purely magnetic contribution to the truncated oscillator strenghts. These contributions can be isolated when the multipole operator in the truncated oscillator strength is expanded in terms of its constituent multipole moments. Note that only the dipole allowed transitions are visible. The code did calculate the other transitions, but they fell below the threshold of :math:`10^{-8}` and are hence not displayed. Furthermore, the numbers clearly indicate that the multipole expansion is already converged at zeroth order, i.e. the electric dipole approximation. This was to be expected, since it is known that the electric dipole approximation produces good results in the UV-vis regime. 
 
 The results from the full interaction confirm the validity of the electric dipole approximation as well: only the dipole allowed transitions were large enough to be printed and their values agree with :math:`f^{[0]}`::
 
@@ -137,7 +137,7 @@ the same xyz file and the command::
 
 	pam --inp=core.inp --mol=Ba.xyz
 
-Note that this input is nearly identical to the previous one. The main difference is the :ref:`EXCITATION_ENERGIES_.OCCUP` keyword. Once activated, this keyword invokes the restricted-excitation-window approximation :ref:`stener2003time` :ref:`south20164`. Without this approximation, core excitations can only be calculated by first computing all higher excitations, since the diagonalization routine in DIRAC computes the excitation energies from lowest to highest. The restricted-excitation-window approximation allows us to fix the occupied orbital involved in the excitation. In this example, we set this orbital to the :math:`1s_{1/2}` orbital, hence calculating the Barium K-edge.
+Note that this input is nearly identical to the previous one. The main difference is the :ref:`EXCITATION_ENERGIES_.OCCUP` keyword. Once activated, this keyword invokes the restricted-excitation-window approximation. Without this approximation, core excitations can only be calculated by first computing all higher excitations, since the diagonalization routine in DIRAC computes the excitation energies from lowest to highest. The restricted-excitation-window approximation allows us to fix the occupied orbital involved in the excitation. In this example, we set this orbital to the :math:`1s_{1/2}` orbital, hence calculating the Barium K-edge.
 
 Below you can find the truncated oscillator strengths::
 

@@ -10,6 +10,12 @@ New features:
    - Reference: `Ignacio Agustín Aucar and Anastasia Borschevsky, Relativistic study of parity-violating nuclear spin-rotation tensors. J. Chem. Phys. 155, 134307 (2021) <https://doi.org/10.1063/5.0065487>`__
    - Manual: `PVCSR <http://www.diracprogram.org/doc/release-23/manual/properties.html#pvcsr>`__
    - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/pvcsr/tutorial.html>`__
+   
+- Calculation of oscillator strenghts beyond the electric dipole approximation in the generalized velocity representation
+  - Contributors: Martin van Horn, Trond Saue, Nanna Holmgaard List
+  - Reference: `M. van Horn, T. Saue, N. H. List. Probing Chirality across the Electromagnetic Spectrum with the Full Semi-Classical Light-Matter Interaction. J. Chem. Phys. 156, 054113 (2022) < https://doi.org/10.1063/5.0077502>`__
+  - Manual `VPOL <http://www.diracprogram.org/doc/release-23/manual/properties/excitation.html#vpole>`__
+  -Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/x_ray/BED_Ba/tutorial.html>`__
 
 
 22.1.beta
