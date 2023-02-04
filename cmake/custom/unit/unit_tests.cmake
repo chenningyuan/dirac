@@ -45,6 +45,8 @@ if(ENABLE_UNIT_TESTS)
                 )
         endif()
 
+        target_link_libraries(${_name}.x laplace)
+
         if(HDF5_FOUND)
             target_link_libraries(${_name}.x HDF5::HDF5)
         endif()
