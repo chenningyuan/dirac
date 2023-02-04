@@ -13,7 +13,7 @@ subroutine lap_rmsd(errmsd,eig,xpnts2,wghts2,istro,iendo,istrv,iendv,neig,nlap)
  
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 
 ! constants:
  character(len=*), parameter :: chrdbg = 'lap_rmsd>'

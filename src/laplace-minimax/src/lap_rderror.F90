@@ -10,7 +10,7 @@ subroutine lap_rderror(errbnd,rnge,nlap)
 
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 
 ! constants:
  logical, parameter :: locdbg = .false.

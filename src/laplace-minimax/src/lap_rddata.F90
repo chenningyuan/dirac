@@ -10,7 +10,7 @@ subroutine lap_rddata(xpnts,wghts,rnge,nlap)
 
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 
 ! constants:
  logical, parameter :: locdbg = .false.

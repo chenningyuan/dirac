@@ -80,7 +80,7 @@ subroutine laplace_minimax(errmax,xpnts,wghts,nlap,ymin,ymax,&
 
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 
 ! constants:
  logical, parameter :: locdbg = .false.

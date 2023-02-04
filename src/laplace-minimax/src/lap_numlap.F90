@@ -10,7 +10,7 @@ subroutine lap_numlap(errbnd,nlap,tolerr,rnge)
 
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 
 ! constants:
  logical, parameter :: locdbg = .false.

@@ -15,7 +15,7 @@ subroutine lap_paraopt(niter,weight,expon,error,&                 !out
 
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 
 ! parameter:
  logical, parameter :: locdbg = .false.
@@ -200,7 +200,7 @@ subroutine lap_lnsrch(check,xnew,func,fval,&
 
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 
 ! parameter:
  logical, parameter :: locdbg = .false.
@@ -370,7 +370,7 @@ subroutine lap_functional(func,jaco,iopt,nlap,xpts,xval,ndim)
 
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 
 ! parameter:
  logical, parameter :: locdbg = .false.

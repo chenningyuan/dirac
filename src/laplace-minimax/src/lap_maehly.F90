@@ -14,7 +14,7 @@ subroutine lap_maehly(niter,xpts,&
 
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 
 ! parameter:
  logical, parameter :: locdbg = .false.
@@ -187,7 +187,7 @@ subroutine lap_functional1(func,grad,xval,wghts,xpnts,nlap)
 
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 
 ! paramter:
  real(8), parameter :: alpha(2) = (/ d1, d0 /)
@@ -242,7 +242,7 @@ subroutine lap_newton1(niter,xval,&
  
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 
 ! parameter
  logical, parameter :: locdbg = .false.

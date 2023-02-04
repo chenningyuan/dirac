@@ -10,7 +10,7 @@ program test_laplace
 
  implicit none
 
-#include "consts.h"
+#include "laplace_consts.h"
 #include "laplace_minimax.h"
 
 ! local scalars:
