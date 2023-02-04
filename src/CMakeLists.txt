@@ -338,28 +338,16 @@ message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 
 # laplace-minimax as separate external library
 if(ENABLE_LAPLACE)
-
-# external part
-#include_directories (${PROJECT_BINARY_DIR}/external/laplace-minimax-build)
-
-  set(ExternalProjectCMakeArgs
-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
-
-  add_external(laplace-minimax)
+  include_directories(${PROJECT_SOURCE_DIR}/src/laplace-minimax/inc)
 
   set(EXTERNAL_LIBS
-    ${PROJECT_BINARY_DIR}/external/lib/liblaplace-minimax.a
+    ${PROJECT_BINARY_DIR}/src/laplace-minimax/liblaplace-minimax.a
     ${EXTERNAL_LIBS})
 
-# dirac part
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:laplace> ${EXTERNAL_OBJECTS})
-
+  # dirac part
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace-minimax)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
+  set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:laplace> ${EXTERNAL_OBJECTS})
 endif()
 message(STATUS "Laplace module: ${ENABLE_LAPLACE}")
 
