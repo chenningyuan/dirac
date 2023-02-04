@@ -68,6 +68,9 @@ First steps in DIRAC territory
   :doc:`General information <molecule_and_basis/basis>` |
   :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>`
 
+* **Data storage:**
+  :doc:`Extracting data from the checkpoint file <manual/data>`
+
 * **Troubleshooting:**
   :doc:`Known problems <getting_help/known_problems>` |
   :doc:`Memory problems <getting_help/memory>`

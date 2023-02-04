@@ -73,6 +73,7 @@ Keyword reference
 Notes:
 ------
 
+  :doc:`Data handling <data>` |
   :doc:`One-electron operators <one_electron_operators>` |
   :doc:`Orbital strings <orbital_strings>` |
   :doc:`Symmetry-handling at the correlated level <groupchain>`
