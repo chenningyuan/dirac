@@ -200,7 +200,7 @@ contains
                                   nr_ao_large_aoo,            &
                                   nr_ao_large_aoo,            &
                                   nr_quat,                    &
-                                  file_name_aoo_contributions,&
+                                  'aoo2esoX',                 &
                                   nint(atom(1)%charge),       &
                                   aoo_fsoc,                   &
                                   .false.                     &

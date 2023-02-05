@@ -3141,7 +3141,7 @@ C
      &                                     ntbas(0),
      &                                     ntbas(0),
      &                                     nz,
-     &                                     'aoo2esoc',
+     &                                     'aoo2esoX',
      &                                     nint(charge(1)),
      &                                     lux2c,
      &                                     1 !> atomic center id
