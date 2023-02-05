@@ -15,10 +15,7 @@ option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
-option(ENABLE_QCORR "Davidson-type +Q corrections for (MR)CISD" ON)
-if(ENABLE_QCORR)
-    add_definitions(-DMOD_QCORR)
-endif()
+
 if (CMAKE_Fortran_COMPILER_ID MATCHES XL OR CMAKE_Fortran_COMPILER_ID MATCHES PGI)
 # xlf compiler does not support isnan used
 # pgfortran compiler does not suppore real*16
@@ -178,11 +175,7 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/xcint)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:xcint> ${EXTERNAL_OBJECTS})
 
-if(ENABLE_QCORR)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/qcorr)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:qcorr> ${EXTERNAL_OBJECTS})
-endif()
-message(STATUS "Davidson-type +Q corrections for (MR)CISD: ${ENABLE_QCORR}")
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/qcorr)
 
 # luciarel as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/luciarel)

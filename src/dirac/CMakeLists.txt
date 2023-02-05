@@ -88,9 +88,9 @@ if (ENABLE_SRDFT)
     add_dependencies(dirac srdft)
 endif()
 add_dependencies(dirac reladc)
-if (ENABLE_QCORR)
-    add_dependencies(dirac qcorr)
-endif()
+
+target_link_libraries(dirac PRIVATE qcorr)
+
 if (ENABLE_KRCC)
     add_dependencies(dirac krcc)
 endif()
