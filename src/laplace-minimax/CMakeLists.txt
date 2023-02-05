@@ -20,3 +20,25 @@ target_include_directories(laplace-minimax
 
 file(COPY data/init_para.txt  DESTINATION ${PROJECT_BINARY_DIR}/laplace-minimax/data)
 file(COPY data/init_error.txt DESTINATION ${PROJECT_BINARY_DIR}/laplace-minimax/data)
+
+install(
+  FILES
+    data/init_para.txt
+  DESTINATION
+    share/dirac/laplace-minimax/data
+  PERMISSIONS
+    OWNER_READ OWNER_WRITE
+    GROUP_READ
+    WORLD_READ
+  )
+
+install(
+  FILES
+    data/init_error.txt
+  DESTINATION
+    share/dirac/laplace-minimax/data
+  PERMISSIONS
+    OWNER_READ OWNER_WRITE
+    GROUP_READ
+    WORLD_READ
+  )
