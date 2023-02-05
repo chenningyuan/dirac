@@ -17,3 +17,6 @@ target_include_directories(laplace-minimax
   PRIVATE
     inc
   )
+
+file(COPY data/init_para.txt  DESTINATION ${PROJECT_BINARY_DIR}/laplace-minimax/data)
+file(COPY data/init_error.txt DESTINATION ${PROJECT_BINARY_DIR}/laplace-minimax/data)
