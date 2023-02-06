@@ -9,7 +9,7 @@ if sys.version_info[0] == 2 and sys.version_info[1] < 7:
     sys.exit(-1)
 
 
-AUTOCMAKE_GITHUB_URL = 'https://github.com/coderefinery/autocmake/raw/master/'
+AUTOCMAKE_GITHUB_URL = 'https://github.com/dev-cafe/autocmake/raw/master/'
 
 
 def licensing_info():
@@ -56,7 +56,8 @@ def fetch_modules(config, relative_path, download_directory):
     Assemble modules which will
     be included in CMakeLists.txt.
     """
-    from collections import Iterable, namedtuple, defaultdict
+    from collections.abc import Iterable
+    from collections import namedtuple, defaultdict
     from autocmake.extract import extract_list, to_d, to_l
     from autocmake.parse_rst import parse_cmake_module
 
