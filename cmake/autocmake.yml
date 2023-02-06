@@ -67,8 +67,8 @@ modules:
     - 'custom/work_array.cmake'
     - 'custom/workarounds.cmake'
     - 'custom/external.cmake'
-    - 'custom/pcm.cmake'
     - 'custom/exatensor.cmake'
+    - 'custom/pcm.cmake'
     - 'custom/gen1int.cmake'
     - 'custom/pelib.cmake'
 - subdirectories:

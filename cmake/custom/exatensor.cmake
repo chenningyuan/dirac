@@ -1,3 +1,12 @@
+#.rst:
+#
+# autocmake.yml configuration::
+#
+#   docopt:
+#     - "--exatensor=<ENABLE_EXATENSOR> Toggle use of ExaTensor <ON/OFF> [default: ON]."
+#   define:
+#     - "'-DENABLE_EXATENSOR={0}'.format(arguments['--exatensor'])"
+
 #Check whether ExaTensor can be used
 option(ENABLE_EXATENSOR "Enable ExaTENSOR library" ON)
 option(TALSH_ONLY "Enable only TALSH component of ExaTENSOR library" OFF)
