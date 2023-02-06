@@ -180,8 +180,6 @@ contains
      logical, intent(in)           :: final_dump
 !----------------------------------------------------------------------
      integer                       :: i, irep, iz, iq, ipar, irepd, ipq, j, k
-     character (len=3)             :: file_extension
-     character (len=12)            :: file_name
      real*8, ALLOCATABLE           :: Gmat_c1(:,:,:)
      integer, PARAMETER            :: nzc1 = 4
 !----------------------------------------------------------------------
@@ -559,9 +557,8 @@ end subroutine dump_Xc_c1_dens
     print '(/18x,a)', ' *********************************************************************'
     print '( 18x,a)', ' ***                          X-AMFI                               ***'
     print '( 18x,a)', ' *** Atomic 2e-scalar and spin-orbit corrections are ready.        ***'
-    print '( 18x,a)', ' *** The corrections have been stored on the file aoo2esoc.Z       ***'
-    print '( 18x,a)', ' *** where Z is the nuclear charge in 3-digit format.              ***'
-    print '( 18x,a,i3,a,i0.3,a)', ' *** Example for the present case with Z = ',NINT(Z),': aoo2esoc.',NINT(Z),'       ***'
+    print '( 18x,a)', ' *** The corrections have been stored on the file amfPCEC.h5       ***'
+    print '( 18x,a)', ' *** under the data label aoo2esoc.                                ***'
     print '(18x,a/)', ' *********************************************************************'
 
   end subroutine goodbye_xamfi
