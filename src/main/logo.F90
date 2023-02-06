@@ -127,7 +127,7 @@ print *, '*    Johan Henriksson         Linkoeping University             Sweden
 print *, '*    Martin van Horn          Universite Toulouse III           France        *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia      *'
 print *, '*    Christoph R. Jacob       TU Braunschweig                   Germany       *'
-print *, '*    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *'
+print *, '*    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *'
 print *, '*    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *'
 print *, '*    Ossama Kullie            University of Kassel              Germany       *'
 print *, '*    Jon K. Laerdahl          University of Oslo                Norway        *'
