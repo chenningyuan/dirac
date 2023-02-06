@@ -17,14 +17,16 @@ f.add(from_string = ' TOTAL ENERGY',
 
 test.run(['s.inp'], ['s.xyz'], f, args='--outcmo --get="amfPCEC.h5"')
 
-
-
 if os.path.isfile('CHECKPOINT.h5'):
     ext = '.h5'
 elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
     ext = '.noh5.tar.gz'
 shutil.move('CHECKPOINT'+ext, 'X2CMAT_016'+ext)
 shutil.move('amfPCEC.h5', 'amfPCEC.016.h5')
+
+test.run(['s_sym.inp'], ['s.xyz'], f, args='--outcmo --get="amfPCEC.h5"')
+shutil.move('CHECKPOINT'+ext, 'X2CMAT_016.sym'+ext)
+shutil.move('amfPCEC.h5', 'amfPCEC.016.sym.h5')
 
 test.run(['f.inp'], ['f.xyz'], f, args='--outcmo --get="amfPCEC.h5"')
 shutil.move('CHECKPOINT'+ext, 'X2CMAT_009'+ext)
@@ -42,13 +44,21 @@ test.run(['x2c_xamfi_nosym.inp'], ['sf.xyz'], f, args='--put="amfPCEC.h5"')
 # molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO corrections + scalar corrections (symmetry turned on)
 test.run(['x2c_xamfi_sym.inp'], ['sf.xyz'], f, args='--put="amfPCEC.h5"')
 
+os.unlink('amfPCEC.h5')
+os.system('python merge_amf.py amfPCEC.009.h5 amfPCEC.016.sym.h5')
+
+# molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO corrections + scalar corrections (symmetry turned on)
+test.run(['x2c_xamfi_sym_s_sym.inp'], ['sf.xyz'], f, args='--put="amfPCEC.h5"')
+
 # 4c reference
 test.run(['4c_nosym.inp'], ['sf.xyz'], f)
 
 os.unlink('X2CMAT_009'+ext)
 os.unlink('X2CMAT_016'+ext)
+os.unlink('X2CMAT_016.sym'+ext)
 os.unlink('amfPCEC.h5')
 os.unlink('amfPCEC.016.h5')
 os.unlink('amfPCEC.009.h5')
+os.unlink('merge_amf.py')
 
 sys.exit(test.return_code)
