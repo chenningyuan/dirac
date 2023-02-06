@@ -1,6 +1,6 @@
 name: DIRAC
 
-min_cmake_version: 3.7
+min_cmake_version: "3.20"
 
 default_build_type: release
 
