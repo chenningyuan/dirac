@@ -55,16 +55,6 @@ execute_process(
 string(STRIP ${_configuration_time} _configuration_time) # delete newline
 message(STATUS "Configuration time: ${_configuration_time}")
 
-set(_python_version "unknown")
-execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} -V
-    OUTPUT_VARIABLE _python_version
-    ERROR_VARIABLE _python_version
-    )
-string(REGEX MATCH "Python ([0-9].[0-9].[0-9])" temp "${_python_version}")
-set(_python_version ${CMAKE_MATCH_1})
-message(STATUS "Python version: ${_python_version}")
-
 foreach(_lang Fortran C CXX)
     set(_${_lang}_compiler "unknown")
     if(CMAKE_${_lang}_COMPILER)
