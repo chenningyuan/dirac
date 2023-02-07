@@ -1,5 +1,5 @@
 See https://github.com/bhelmichparis/laplace-minimax
 
 - The sources correspond to version
-  https://github.com/bhelmichparis/laplace-minimax/tree/55414f3f28b89ffa602ecb1f12e5645a998a2206
+  https://github.com/bhelmichparis/laplace-minimax/tree/334620bb7b862e83ec91af0f4bcbd4337c7dc7bc
 - Renamed inc/consts.h -> inc/laplace_consts.h for better namespace isolation
