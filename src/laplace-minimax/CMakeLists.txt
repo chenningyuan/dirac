@@ -18,6 +18,13 @@ target_include_directories(laplace-minimax
     inc
   )
 
+if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+  target_compile_options(laplace-minimax
+    PRIVATE
+      $<$<COMPILE_LANGUAGE:Fortran>:${Fortran_FLAGS}> -O3 -free -warn all -assume protect_parens -nogen-interfaces
+    )
+endif()
+
 file(COPY data/init_para.txt  DESTINATION ${PROJECT_BINARY_DIR}/laplace-minimax/data)
 file(COPY data/init_error.txt DESTINATION ${PROJECT_BINARY_DIR}/laplace-minimax/data)
 
