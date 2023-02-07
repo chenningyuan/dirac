@@ -233,21 +233,22 @@
      &           Edc_2, Erdc_2, Epc_2, Emc_2, Epcp_2, Emc_N2,           &
      &           ntest, wunit_q)
 
-        write(wunit_q,"(/A,i3,a)")'  Q corrections for state ',i,       &
-     &  ' with c0^2 according to Eq. (43)'
-      ! output of the q-correction       
-        if(ntest > 2)then
-          write(wunit_q,"( A,1f16.8)")'  reference   energy: ',         &
-     &                                   reference_energy
-          write(wunit_q,"( A,1f16.8)")'  correlation energy: ',e_corr(i)
-          write(wunit_q,"( A,1f16.8)")'  original CI energy: ',e_tot(i)
+!       if(ntest > 2)then
+          write(wunit_q,"( A,1f16.8)")                                  &
+     &    '   MC/HF reference energy:      ', reference_energy,         &
+     &    ' + extra CI correlation energy: ',e_corr(i),                 &
+     &    ' = total CI energy:             ',e_tot(i)
 
-        end if
+!       end if
 
         !> MC/HF wave function
         if(reference_energy == 0.0d0)then
           call quit('qcorr module: no reference energy given!')
         end if 
+
+        write(wunit_q,"(/A,i3,a)")'  Q corrections for state ',i,       &
+     &  ' with c0^2 according to Eq. (43)'
+      ! output of the q-correction       
 
         CALL PRSYMB(wunit_q,'-',120,2)
         WRITE(wunit_q,'(2X,a12,2x,4(A16,1X),5x,a16)') 'model',          &
@@ -644,15 +645,18 @@
       c02_2  = c02**2
       teta_2 = acos(sqrt(c02_2))
 
-      if(iprnt > 10)then
-        write(wunit_q,'(/a )')  " coefficients entering the q equations"
-        write(wunit_q,'( a )')  " -------------------------------------"
+        write(wunit_q,'(/a )') " Coefficients entering the +Q equations"
+        write(wunit_q,'( a )') " --------------------------------------"
+      if(iprnt > 2)then
         write(wunit_q,*) " c01       :",c01
         write(wunit_q,*) " sqrt (c01):",sqrt(c01)
         write(wunit_q,*) " c02       :",c02
         write(wunit_q,*) " c02_2     :",c02_2
-        write(wunit_q,'( a/)')  " -------------------------------------"
+      else
+        write(wunit_q,*) ' c0^2 according to Eq. (43)', c01
+        write(wunit_q,*) ' c0^2 according to Eq. (44)', c02_2
       end if
+        write(wunit_q,'( a/)') " --------------------------------------"
      
 !     print *, 'tan(2*teta_1)',tan(2*teta_1)
 !     print *, 'alter...     ',(sqrt(1-c01)/sqrt(c01))/(1-((1-c01)/c01))
