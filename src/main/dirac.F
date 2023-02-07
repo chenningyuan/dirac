@@ -41,7 +41,7 @@ C***********************************************************************
 #include "dgroup.h"
 
 #ifdef HAVE_OPENMP
-      INTEGER omp_get_num_procs, omp_get_thread_limit
+      INTEGER omp_get_num_procs
       INTEGER omp_get_max_threads, omp_get_num_threads
       INTEGER omp_get_thread_num
 #endif
@@ -51,10 +51,11 @@ C     common block infpar
 
 #ifdef HAVE_OPENMP
       MAX_OMP_THREADS = omp_get_max_threads()
-      write(lupri,'(//A,3I5)')
+      IF (MAX_OMP_THREADS .gt. 1) write(lupri,'(//A,3I8)')
      &' * openMP activated, '//
-     &' thread limit - # processes - # threads: ',
-     & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
+     &' max # processes, max # threads, current # threads: ',
+     & omp_get_num_procs(), MAX_OMP_THREADS, omp_get_num_threads()
+      ! else openMP deactivated probably because user has exported OMP_NUM_THREADS=1
 !$OMP PARALLEL
 !      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
 !     &' max # threads - current # threads - current thread: ',
