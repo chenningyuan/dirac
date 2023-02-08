@@ -160,6 +160,7 @@ contains
         CALL MEMGET2('REAL','TMAT' ,KTMAT ,x_N2TMT,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','SAOMO',KSAOMO,x_N2TMT,WORK,KFREE,LFREE)
 
+        isLUTMAT = -1
         CALL OPNFIL(isLUTMAT,trim(myAOMOMAT),'OLD','XAMFI ')
 
         !> read AO2MO transformation matrix TMAT and LUTMAT rec#2 with SAOMO
