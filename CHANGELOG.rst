@@ -12,10 +12,10 @@ New features:
    - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/pvcsr/tutorial.html>`__
    
 - Calculation of oscillator strenghts beyond the electric dipole approximation in the generalized velocity representation
-  - Contributors: Martin van Horn, Trond Saue, and Nanna Holmgaard List.
-  - Reference: `M. van Horn, T. Saue, N. H. List. Probing Chirality across the Electromagnetic Spectrum with the Full Semi-Classical Light-Matter Interaction. J. Chem. Phys. 156, 054113 (2022) < https://doi.org/10.1063/5.0077502>`__
-  - Manual `VPOL <http://www.diracprogram.org/doc/release-23/manual/properties/excitation.html#vpole>`__
-  -Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/x_ray/BED_Ba/tutorial.html>`__
+   - Contributors: Martin van Horn, Trond Saue, and Nanna Holmgaard List.
+   - Reference: `M. van Horn, T. Saue, N. H. List. Probing Chirality across the Electromagnetic Spectrum with the Full Semi-Classical Light-Matter Interaction. J. Chem. Phys. 156, 054113 (2022) < https://doi.org/10.1063/5.0077502>`__
+   - Manual: `VPOL <http://www.diracprogram.org/doc/release-23/manual/properties/excitation.html#vpole>`__
+   - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/x_ray/BED_Ba/tutorial.html>`__
 
 - (extended) atomic-mean-field two-electron scalar and spin-orbit picture-change corrections for two-component Hamiltonian calculations
    - Contributors: Stefan Knecht, Michal Repsiky, Hans Joergen Aa. Jensen and Trond Saue.
@@ -36,7 +36,7 @@ Infrastructure changes and fixes:
 Revised features:
 
 - Added a CI gradient convergence threshold option '.THRGCI' to '\*KRCICALC' (could not be changed by user previously).
-  - Contributor: H. J. Aa. Jensen.
+   - Contributor: H. J. Aa. Jensen.
 
 Performance improvements:
 
@@ -52,6 +52,7 @@ Bugfix:
 - Default for .MVO has been corrected, so it now behaves as expected: modified virtual orbitals
   based on the Fock potential from the doubly-occupied molecular orbitals after an open-shell SCF calculation (H. J. Aa. Jensen).
 
+-----------------------------------------------------------------------------------------------------
 
 22.0 (2022-02-08)
 -----------------
@@ -96,6 +97,7 @@ Bugfix:
   4-component relatistic average-of-configuration HF calculations on systems
   with inversion symmetry and no occupation in ungerade symmetry.
 
+-----------------------------------------------------------------------------------------------------
 
 21.1 (2021-09-16)
 -----------------
@@ -113,6 +115,7 @@ Error corrections:
 - Fixed memory management in LUCIA (Lucas Visscher)
 - atomic supersymmetry now works with X2Cmmf (Ayaki Sunaga, Stefan Knecht, Trond Saue)
 
+-----------------------------------------------------------------------------------------------------
 
 21.0 (2021-05-28)
 -----------------
