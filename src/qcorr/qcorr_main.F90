@@ -647,7 +647,7 @@
 
         write(wunit_q,'(/a )') " Coefficients entering the +Q equations"
         write(wunit_q,'( a )') " --------------------------------------"
-      if(iprnt > 2)then
+      if(iprnt > 4)then
         write(wunit_q,*) " c01       :",c01
         write(wunit_q,*) " sqrt (c01):",sqrt(c01)
         write(wunit_q,*) " c02       :",c02
