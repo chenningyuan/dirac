@@ -118,6 +118,8 @@ foreach(
         target_link_libraries(${_executable} HDF5::HDF5)
     endif()
 
+    target_link_libraries(${_executable} laplace)
+
     if(ENABLE_STATIC_LINKING)
         if(ENABLE_OLD_LINKER)
            set(_no_dyn_export "")
