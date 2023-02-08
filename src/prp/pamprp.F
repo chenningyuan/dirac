@@ -1767,8 +1767,14 @@ C print section
 C
       IOFF = ICHAR('w')
       CALL PRSYMB(LUPRI,'-',76,0)
-      WRITE(LUPRI,'(A/)')
+      IF (.NOT.NQCCcart) THEN
+         WRITE(LUPRI,'(A/)')
      &'* Nuclear quadrupole coupling constants (principal components):'
+      ELSE IF (NQCCcart) THEN
+         WRITE(LUPRI,'(A/)')
+     &   '* Nuclear quadrupole coupling constants'//
+     &   '(cartesian axes components):'
+      END IF
       WRITE(LUPRI,'(14X,A18)') 'Total contribution'
       CALL PRSYMB(LUPRI,'-',72,2)
       IATOMD = 0
@@ -1794,21 +1800,27 @@ C
               IJ = IJ + 1
             ENDDO
           ENDDO
-          CALL JACO(PVAL,AXIS,3,3,3,TMP,ITMP)
-          EFGTOT(1,1,IATOM) = PVAL(1)
-          EFGTOT(2,2,IATOM) = PVAL(3)
-          EFGTOT(3,3,IATOM) = PVAL(6)
+
+      IF (.NOT.NQCCcart) THEN
+         CALL JACO(PVAL,AXIS,3,3,3,TMP,ITMP)
+         EFGTOT(1,1,IATOM) = PVAL(1)
+         EFGTOT(2,2,IATOM) = PVAL(3)
+         EFGTOT(3,3,IATOM) = PVAL(6)
 C
-C         Reorder to calculate eta:
-C            |xx|<|yy|<|zz|
+C        Reorder to calculate eta:
+C           |xx|<|yy|<|zz|
 C
-          PVAL(2) = PVAL(3)
-          PVAL(3) = PVAL(6)
-          IZ = IDAMAX(3,PVAL(1),1)
-          CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
-          IX = IDAMIN(3,PVAL(1),1)
-          CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
-          ETA = (PVAL(1) - PVAL(2))/ PVAL(3)
+         PVAL(2) = PVAL(3)
+         PVAL(3) = PVAL(6)
+         IZ = IDAMAX(3,PVAL(1),1)
+         CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
+         IX = IDAMIN(3,PVAL(1),1)
+         CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
+         ETA = (PVAL(1) - PVAL(2))/ PVAL(3)
+      ELSE IF (NQCCcart) THEN
+         ETA = (PVAL(1) - PVAL(3))/ PVAL(6) !(xx-yy)/zz
+      END IF
+
           NUCCHA = IZATOM(IATOM)
           DO ISO = 1, 5
             QMOM = DISOTP(NUCCHA,ISO,'QMOM')
