@@ -60,6 +60,7 @@ Keyword reference
    - :doc:`*MOLGRD <properties/molgrd>` --- Molecular gradient
    - :doc:`*NMR <properties/nmr>` --- NMR directives
    - :doc:`*STEX <properties/stex>` --- Static exchange (STEX) directives
+   - :doc:`*NQCC <properties/nqcc>` --- NQCC directives
 
 
 * :doc:`**VISUAL <visual>` --- Visualization module
