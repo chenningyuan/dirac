@@ -18,6 +18,7 @@ module num_grid_gen
 
    implicit none
 
+   public delete_num_grid
    public reset_num_grid
    public generate_num_grid
    public stash_zipgrid
@@ -29,6 +30,27 @@ module num_grid_gen
    logical :: remember_zipgrid = .false.
 
 contains
+
+   subroutine delete_num_grid()
+
+   logical :: tobe
+   integer :: ludft
+
+   !> delete DFT-grid
+   inquire(file='numerical_grid',exist=tobe)
+   if(tobe)then
+     inquire(file='numerical_grid',opened=tobe)
+     if(tobe)then
+       inquire(file='numerical_grid',number=ludft)
+       CLOSE(ludft,STATUS='DELETE')
+     else
+       ludft = 109
+       CALL OPNFIL(ludft,'numerical_grid','OLD','xxxxxx')
+       CLOSE(ludft,STATUS='DELETE')
+     end if
+   end if
+
+   end subroutine
 
    subroutine reset_num_grid()
 

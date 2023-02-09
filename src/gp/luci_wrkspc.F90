@@ -10,13 +10,13 @@ contains
      integer :: lsize
      call legacy_lwork_get(lsize)
      if (.not.allocated(work)) allocate(work(lsize))
-     print*,"Allocated ",lsize," real words for use by the LUCI modules"
+!    print*,"Allocated ",lsize," real words for use by the LUCI modules"
   end
 
 
   subroutine delete_wrkspc
      deallocate(work)
-     print*,"Deallocated memory for the LUCI modules"
+!    print*,"Deallocated memory for the LUCI modules"
   end
 
 end module

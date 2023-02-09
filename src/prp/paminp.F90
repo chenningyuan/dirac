@@ -46,7 +46,7 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 10, NTABLE = 44)
+      PARAMETER (NDIR = 11, NTABLE = 44)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -72,7 +72,7 @@
 !
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',             &
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',             &
-     &             '*STEX  ','*OPENRS'/
+     &             '*STEX  ','*OPENRS','*NQCC  '/
 !                     1         2         3         4
       DATA TABLE  /'.DIPOLE','.QUADRU','.POLARI','.MAGNET',             &
 !                     5         6         7         8
@@ -130,6 +130,7 @@
       EFTNTL       = .FALSE.
       OPTROT       = .FALSE.
       NQCC         = .FALSE.
+      NQCCcart     = .FALSE.
       DSO          = .FALSE.
       NSTDIA       = .FALSE.
       MSUSCDIA     = .FALSE.
@@ -525,7 +526,7 @@
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -583,6 +584,10 @@
          call quit('*OpenRSP not included in this version')
 #endif
       go to 200
+!     *NQCC
+   11 CONTINUE
+         CALL NQCC_INPUT(WORD,WORK,LWORK)
+         GO TO 200
 
     1 CONTINUE
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)

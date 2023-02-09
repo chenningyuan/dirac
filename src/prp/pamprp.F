@@ -1765,8 +1765,14 @@ C print section
 C
       IOFF = ICHAR('w')
       CALL PRSYMB(LUPRI,'-',76,0)
-      WRITE(LUPRI,'(A/)')
+      IF (.NOT.NQCCcart) THEN
+         WRITE(LUPRI,'(A/)')
      &'* Nuclear quadrupole coupling constants (principal components):'
+      ELSE IF (NQCCcart) THEN
+         WRITE(LUPRI,'(A/)')
+     &   '* Nuclear quadrupole coupling constants'//
+     &   '(cartesian axes components):'
+      END IF
       WRITE(LUPRI,'(14X,A18)') 'Total contribution'
       CALL PRSYMB(LUPRI,'-',72,2)
       IATOMD = 0
@@ -1792,21 +1798,27 @@ C
               IJ = IJ + 1
             ENDDO
           ENDDO
-          CALL JACO(PVAL,AXIS,3,3,3,TMP,ITMP)
-          EFGTOT(1,1,IATOM) = PVAL(1)
-          EFGTOT(2,2,IATOM) = PVAL(3)
-          EFGTOT(3,3,IATOM) = PVAL(6)
+
+      IF (.NOT.NQCCcart) THEN
+         CALL JACO(PVAL,AXIS,3,3,3,TMP,ITMP)
+         EFGTOT(1,1,IATOM) = PVAL(1)
+         EFGTOT(2,2,IATOM) = PVAL(3)
+         EFGTOT(3,3,IATOM) = PVAL(6)
 C
-C         Reorder to calculate eta:
-C            |xx|<|yy|<|zz|
+C        Reorder to calculate eta:
+C           |xx|<|yy|<|zz|
 C
-          PVAL(2) = PVAL(3)
-          PVAL(3) = PVAL(6)
-          IZ = IDAMAX(3,PVAL(1),1)
-          CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
-          IX = IDAMIN(3,PVAL(1),1)
-          CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
-          ETA = (PVAL(1) - PVAL(2))/ PVAL(3)
+         PVAL(2) = PVAL(3)
+         PVAL(3) = PVAL(6)
+         IZ = IDAMAX(3,PVAL(1),1)
+         CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
+         IX = IDAMIN(3,PVAL(1),1)
+         CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
+         ETA = (PVAL(1) - PVAL(2))/ PVAL(3)
+      ELSE IF (NQCCcart) THEN
+         ETA = (PVAL(1) - PVAL(3))/ PVAL(6) !(xx-yy)/zz
+      END IF
+
           NUCCHA = IZATOM(IATOM)
           DO ISO = 1, 5
             QMOM = DISOTP(NUCCHA,ISO,'QMOM')
@@ -9748,6 +9760,151 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DEF_VPOLE(L,IPVPOL,IPRINT)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Define electric multipole moment in the generalized velocity representation.
+C     Multipole moments of this type are given by
+C     
+C     Q^[n+1]_(j1...jn;p) = -e/omega*r_j1...r_(jn-1)(r_jn*(ca_p) + n*(ca_jn)r_p)
+C
+C     where r_i represent the ith component of a Cartesian coordinate and ca_i
+C     the ith alpha matrix multiplied with the speed of light.
+C     For a given combination of (j1...j_(n-1)), we can generate nine unique
+C     multipole moments
+C
+C     1: (n+1)x*ca_x               2: (n+1)y*ca_y            3: (n+1)z*ca_z 
+C     4: (z*(ca_y) + n*(ca_z)y)    5: (y*(ca_z) + n*(ca_y)z) 6: (x*(ca_z) + n*(ca_x)z) 
+C     7: (z*(ca_x) + n*(ca_z)x)    8: (y*(ca_x) + n*(ca_y)x) 9: (x*(ca_y) + n*(ca_x)y)
+C
+C     Note that for a given set of (j1...j_(n-1)), the multipole moments are stored in the
+C     order above. To each of these terms, we associate the following label
+C
+C     1: xx    2: yy    3: zz
+C     4: zy    5: yz    6: xz 
+C     7: zx    8: yx    9: xy
+C
+C     For example, a multipole moment of the form 
+C
+C     Q^[5]_(xyyz;x) = -e/omega*xy^2(z*(ca_x) + n*(ca_z)x)
+C
+C     gets the following name 
+C
+C     VpolzxX01Y02Z00
+C
+C     This operator is symmetric with respect to the indices (j1...j_(n-1)),
+C     thus the possible combinations are stored in lower triangular form.
+C     Therefore, at order L, we have 9*(L-1)L/2 unique multipoles.
+C     
+C     However, L=1 is an exception to this rule.
+C     At this order, the multipole operator reduces to the set (ca_x,ca_y,ca_z),
+C
+C     Note that this routine does not check if IPVPOL goes out of 
+C     bounds. This has to be done outside the routine.
+C
+C     Written by Martin van Horn July 16 2021
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "chrnos.h"
+#include "dcbgen.h"
+      DIMENSION IPVPOL(*), PFAC(2)
+      REAL CARPOW(3,3)
+      CHARACTER PNAME*16, PLABEL(2)*8,COMPLAB(3)*2  
+C
+      II = 0
+      PFAC  = CVAL
+      PNAME       = 'VpolxxX00Y00Z00'
+      PLABEL = 'CM000000'
+      IF (L.EQ.1) THEN ! for L=1 the set of multipoles reduces to (ca_x,ca_y,ca_z)
+            COMPLAB = ['x1','y1','z1']
+            NPCOMP = 1
+            IPTYP = 2
+            DO IP = 1, 3
+                  PNAME(6:7) = COMPLAB(IP)
+                  II = II + 1 
+                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC(1),PLABEL(1),
+     &            IPVPOL(II),ISYXPR,ITRXPR,IPRINT)
+                  IPTYP = IPTYP + 1
+            ENDDO
+      ELSE 
+            IPTYP = 2
+            COMPLAB = ['xx','yy','zz']
+            CARPOW = 0.0D0    
+            DO I = 1,3
+                  CARPOW(I,I) = 1
+            ENDDO
+            DO IA = 0,L-2   
+                  IX = L - 2 - IA
+                  DO IB = 0,IA     !Loops over lower triangle
+                        IY = IA - IB
+                        IZ = IB
+                        IPTYP = 2
+                        DO IP = 1,3  !define multipole moments xx yy and zz
+                              PNAME(5:6) = COMPLAB(IP)                                           
+                              PNAME( 8:9) = CHRNOS(IX/10)
+     &                                     //CHRNOS(MOD(IX,10))
+                              PNAME(11:12) = CHRNOS(IY/10)
+     &                                     //CHRNOS(MOD(IY,10))
+                              PNAME(14:15) = CHRNOS(IZ/10)
+     &                                     //CHRNOS(MOD(IZ,10))     
+                              NPCOMP = 1
+                              PFAC(1) = L*CVAL
+                              NX = IX + CARPOW(1,IP)
+                              NY = IY + CARPOW(2,IP)
+                              NZ = IZ + CARPOW(3,IP)
+                              PLABEL(1)(3:8) = CHRNOS(NX/10)
+     &                        //CHRNOS(MOD(NX,10))//CHRNOS(NY/10)
+     &                        //CHRNOS(MOD(NY,10))//CHRNOS(NZ/10)
+     &                        //CHRNOS(MOD(NZ,10))
+                              II = II + 1
+                              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC(1)
+     &                       ,PLABEL(1),IPVPOL(II),ISYXPR,ITRXPR,IPRINT)          
+                              IPTYP = IPTYP + 1
+                        ENDDO
+                        COMPLAB = ['zy','xz','yx']
+                        DO IP = 1,3    !define multipole moments zy yz xz zx yx xy
+                              NPCOMP = 2
+                              PFAC(1) = CVAL 
+                              PFAC(2) = -(L-1)*CVAL
+                              PNAME(5:6) = COMPLAB(IP)
+                              PNAME( 8:9) = CHRNOS(IX/10)
+     &                                     //CHRNOS(MOD(IX,10))
+                              PNAME(11:12) = CHRNOS(IY/10)
+     &                                     //CHRNOS(MOD(IY,10))
+                              PNAME(14:15) = CHRNOS(IZ/10)
+     &                                     //CHRNOS(MOD(IZ,10))    
+                              NX = IX + CARPOW(IP,2)
+                              NY = IY + CARPOW(IP,3)
+                              NZ = IZ + CARPOW(IP,1)
+                              PLABEL(1)(3:8) = CHRNOS(NX/10)
+     &                               //CHRNOS(MOD(NX,10))//CHRNOS(NY/10)
+     &                               //CHRNOS(MOD(NY,10))//CHRNOS(NZ/10)
+     &                               //CHRNOS(MOD(NZ,10))                                     
+                              NX = IX + CARPOW(3,IP)
+                              NY = IY + CARPOW(1,IP)
+                              NZ = IZ + CARPOW(2,IP)
+                              PLABEL(2)(3:8) = CHRNOS(NX/10)
+     &                        //CHRNOS(MOD(NX,10))//CHRNOS(NY/10)
+     &                        //CHRNOS(MOD(NY,10))//CHRNOS(NZ/10)
+     &                        //CHRNOS(MOD(NZ,10))
+                              II = II + 1
+                              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL
+     &                           ,IPVPOL(II),ISYXPR,ITRXPR,IPRINT)    
+                              PFAC(1) = (L-1)*CVAL 
+                              PFAC(2) = -CVAL
+                              PNAME(5:6) = COMPLAB(IP)(2:2)
+     &                                   //COMPLAB(IP)(1:1)
+                              II = II + 1
+                              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC
+     &                          ,PLABEL,IPVPOL(II),ISYXPR,ITRXPR,IPRINT)
+                              IPTYP = IPTYP + 1
+                        ENDDO
+                  ENDDO
+            ENDDO
+      ENDIF
+      END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DEF_MPOLE(L,IPMPOL,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

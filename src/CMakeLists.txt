@@ -15,10 +15,7 @@ option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
-option(ENABLE_QCORR "Davidson-type +Q corrections for (MR)CISD" ON)
-if(ENABLE_QCORR)
-    add_definitions(-DMOD_QCORR)
-endif()
+
 if (CMAKE_Fortran_COMPILER_ID MATCHES XL OR CMAKE_Fortran_COMPILER_ID MATCHES PGI)
 # xlf compiler does not support isnan used
 # pgfortran compiler does not suppore real*16
@@ -41,9 +38,14 @@ option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON)
 if(ENABLE_MCSCF_spinfree)
     add_definitions(-DMOD_MCSCF_spinfree)
 endif()
-option(ENABLE_AOOSOC "Atomic oo-order spin-orbit correction module" ON)
-if(ENABLE_AOOSOC)
-    add_definitions(-DMOD_AOOSOC)
+option(ENABLE_XAMFI "(e)amf 2-electron scalar and spin-orbit picture-change correction module" ON)
+if(ENABLE_XAMFI AND HDF5_FOUND)
+    add_definitions(-DMOD_XAMFI)
+else()
+    if(ENABLE_XAMFI AND NOT HDF5_FOUND)
+        message(STATUS "X-AMFI, the (e)amf 2-electron scalar and spin-orbit picture-change correction module requires a working HDF5 library")
+    endif()
+    set(ENABLE_XAMFI OFF)
 endif()
 option(ENABLE_ESR "ESR property module" ON)
 if(ENABLE_ESR)
@@ -56,10 +58,6 @@ endif()
 option(ENABLE_SRDFT "srDFT module" ON)
 if(ENABLE_SRDFT)
     add_definitions(-DMOD_SRDFT)
-endif()
-option(ENABLE_LAPLACE "Laplace module" ON)
-if(ENABLE_LAPLACE)
-    add_definitions(-DHAS_LAPLACE)
 endif()
 
 #--------------------------------------------------------------------------------------------------------------
@@ -173,11 +171,7 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/xcint)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:xcint> ${EXTERNAL_OBJECTS})
 
-if(ENABLE_QCORR)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/qcorr)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:qcorr> ${EXTERNAL_OBJECTS})
-endif()
-message(STATUS "Davidson-type +Q corrections for (MR)CISD: ${ENABLE_QCORR}")
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/qcorr)
 
 # luciarel as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/luciarel)
@@ -313,14 +307,16 @@ message(STATUS "LAO properties without connection matrices: ${ENABLE_LAO_REARRAN
 #  mcscf_sf as separate library
 message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
 
-# aoosoc as separate library
-if(ENABLE_AOOSOC)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/aoosoc)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:aoosoc> ${EXTERNAL_OBJECTS})
-    dirac_test(atomic_x2c_2esoc_models_energy "long" "")
-    dirac_test(atomic_x2c_spinfree_energy "long" "")
+# XAMFI as separate library
+if(ENABLE_XAMFI)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/x-amfi)
+    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:x-amfi> ${EXTERNAL_OBJECTS})
+    dirac_test(atomic_x2c_2esoc_models_energy "medium;xamfi" "")
+    dirac_test(atomic_x2c_spinfree_energy "medium;xamfi" "")
+    dirac_test(x_amfi "short;xamfi" "")
+    message(STATUS "NOTE: tests for the (e)amfX2C 2e-scalar and spin-orbit picture-change correction module require h5py in your python env!")
 endif()
-message(STATUS "Atomic oo-order spin-orbit correction module: ${ENABLE_AOOSOC}")
+message(STATUS "(e)amfX2C 2e-scalar and spin-orbit picture-change correction module: ${ENABLE_XAMFI}")
 
 #  srdft module as separate library
 if(ENABLE_SRDFT)
@@ -329,32 +325,9 @@ if(ENABLE_SRDFT)
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 
-# laplace-minimax as separate external library
-if(ENABLE_LAPLACE)
-
-# external part
-#include_directories (${PROJECT_BINARY_DIR}/external/laplace-minimax-build)
-
-  set(ExternalProjectCMakeArgs
-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
-
-  add_external(laplace-minimax)
-
-  set(EXTERNAL_LIBS
-    ${PROJECT_BINARY_DIR}/external/lib/liblaplace-minimax.a
-    ${EXTERNAL_LIBS})
-
-# dirac part
+# laplace-minimax
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace-minimax)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:laplace> ${EXTERNAL_OBJECTS})
-
-endif()
-message(STATUS "Laplace module: ${ENABLE_LAPLACE}")
 
 # pelib interface routines added as module
 if(ENABLE_PELIB)

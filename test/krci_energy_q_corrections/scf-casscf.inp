@@ -10,6 +10,10 @@ qcorr
 .X2C
 **WAVE FUNCTION
 .SCF
+! move lone-pair oxygen pi orbital down as number 3;
+! we want the two O-H electron pairs in the active space
+.POST SCF REORDER MO
+1,2,5,3,4
 .KRMCSCF
 *SCF
 .CLOSED SHELL

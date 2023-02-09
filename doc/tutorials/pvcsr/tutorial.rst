@@ -20,7 +20,7 @@ where :math:`\rho_N({\bf r})` is the normalized nuclear charge density; :math:`{
 
 
 Application to the H2O2 molecule
-------------------------------
+--------------------------------
 
 As an example, we show a calculation of the PV contribution to the NSR constant of the oxygen nucleus at the Hydrogen peroxide molecule. The input file `pvcsr.inp` is given by
 

@@ -41,6 +41,12 @@ module x2c_def_h1_4c
       read_4cfock_operator_x2c,       &
       get_saomo_x2c,                  &
       generic_interface_ao2mo_mo2ao
+  use x2cmod_cfg
+#ifdef MOD_XAMFI
+  use x2c_2e_soc_interface, only:     &
+      x2c_add_2e_diagonal_atomic,     &
+      x2c_add_2e_from_atomic_dens
+#endif
 
   implicit none
 
@@ -50,9 +56,9 @@ module x2c_def_h1_4c
 
   private
 
-  real(8), parameter :: val_d1      =  1.0d0
-  real(8), parameter :: val_d0      =  0.0d0
-  real(8), parameter :: val_dm1     = -1.0d0
+  real*8, parameter :: val_d1      =  1.0d0
+  real*8, parameter :: val_d0      =  0.0d0
+  real*8, parameter :: val_dm1     = -1.0d0
 
 contains
 
@@ -74,21 +80,23 @@ contains
                                      linear_sym,           &
                                      mdirac,               &
                                      spinfree,             &
+                                     isDFT,                &
                                      print_lvl)
 !**********************************************************************
 !
 !    purpose: driver routine to obtain a 'defining' h1 matrix in orthonormal MO basis
 !             currently implemented: 
 !               - defining_h1mat == 0: case a. bare-nucleus 1-el Dirac-Hamiltonian
-!         TODO:(- defining_h1mat == 1: case b. (extended) Huckel-start guess)
-!         TODO:(- defining_h1mat == 2: case c. 4c-Fock-Dirac operator matrix)
+!               - defining_h1mat == 1: case b. bare-nucleus 1-el Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
+!               - defining_h1mat == 2: case c. 4c-Fock-Dirac operator matrix)
 !               - defining_h1mat == 3: case d. free-particle matrix
+!               - defining_h1mat == 4: case e. bare-nucleus 1-el Dirac-Hamiltonian + first-order (molecular) 2e-mean-field contributions
 !
 !----------------------------------------------------------------------
 !
-     real(8), intent(inout) :: h1_onmo_bas(*)
-     real(8), intent(inout) :: h1_saao_bas(*)
-     real(8), intent(inout) :: tra_mat_4cAOMO(*)
+     real*8 , intent(inout) :: h1_onmo_bas(*)
+     real*8 , intent(inout) :: h1_saao_bas(*)
+     real*8 , intent(inout) :: tra_mat_4cAOMO(*)
      integer, intent(in)    :: naosh_ls
      integer, intent(in)    :: naosh_all(nfsym)
      integer, intent(in)    :: norb_dim(nfsym)
@@ -104,6 +112,7 @@ contains
      logical, intent(in)    :: linear_sym
      logical, intent(in)    :: mdirac
      logical, intent(in)    :: spinfree
+     logical, intent(in)    :: isDFT
 !----------------------------------------------------------------------
      integer                :: ioff_osh1
      integer                :: ioff_osh2
@@ -114,10 +123,6 @@ contains
      integer                :: nbas1_f
      integer                :: ndim_ao
      integer                :: mz
-     real(8)                :: mydummy(2)
-     character (len=12)     :: flabel
-     logical                :: skip_step1 = .false.
-     logical                :: fndlab12
      integer, allocatable   :: boson_info(:)
 !**********************************************************************
 
@@ -125,9 +130,10 @@ contains
 !
 !             in : defining_h1mat as integer value: 
 !                  0 == case a.; bare-nucleus 4c-h1 
-!                  1 == case b.; not defined yet
+!                  1 == case b.; bare-nucleus 4c-h1 + diagonal (atomic) 2e-mean-field contributions
 !                  2 == case c.; 4c-Dirac-Fock matrix
 !                  3 == case d.; free-particle matrix
+!                  4 == case e.; bare nucleus Dirac-Hamiltonian + first-order (molecular) 2e-mean-field contributions
 !             out: 4c h1 matrix in SA-AO basis --> h1_saao_bas
 !     ------------------------------------------------------------------------------
       call get_h1_4c_saao_basis(h1_saao_bas,            &
@@ -143,14 +149,16 @@ contains
                                 defining_h1mat,         &
                                 linear_sym,             &
                                 mdirac,                 &
+                                isDFT,                  &
                                 is_len_wrk,             &
                                 x2c_file_scr,           &
                                 print_lvl)
 
 !     step 2: transform h1 to orthonormal MO basis if defining h1 matrix is 
 !             case 0. 1-el. bare nucleus Dirac-Hamiltonian 
-!             case 1. extended Huckel start guess
+!             case 1. 1-el. bare nucleus Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions (amfX2C)
 !             case 3. free-particle matrix
+!             case 4. 1-el. bare nucleus Dirac-Hamiltonian + first-order (molecular) 2e-mean-field contributions (eamfX2C)
 !
 !             in : 4c h1 matrix in SA-AO basis --> h1_saao_bas; transformation matrix --> tra_mat_4cAOMO
 !             out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
@@ -188,9 +196,6 @@ contains
           ndim_ao        = naosh_ls
         end if
 
-!       call print_x2cmat( tra_mat_4cAOMO(ioff_ao_o_sh1),nbas1_f,norb1_f,nz,ipq_off_in,'blubb sf aomo',6)
-!       call print_x2cmat( h1_saao_bas(ioff_ao_ao_sh1),nbas1_f,ndim_ao,nz,ipq_off_in,'blubb sf h1aoba',6)
-
         if( norb_dim(i) > 0 )then
 
           call get_h1_4c_on_basis(h1_onmo_bas(ioff_osh1),            &
@@ -207,7 +212,6 @@ contains
                                   boson_info(ioff_osh2),             &
                                   print_lvl)
         end if
-!       call print_x2cmat(h1_onmo_bas(ioff_osh1),norb1_f,norb1_f,nz,ipq_off_in,'blubb sf h1onmo',6)
 
 !       update offsets for matrices
         ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
@@ -235,6 +239,7 @@ contains
                                   defining_h1mat,         &
                                   linear_sym,             &
                                   mdirac,                 &
+                                  isDFT,                  &
                                   is_len_wrk,             &
                                   x2c_file_scr,           &
                                   print_lvl)
@@ -243,17 +248,18 @@ contains
 !    purpose: get 'defining' matrix h1 in symmetry-adapted (SA)-AO basis
 !             currently implemented: 
 !               - defining_h1mat == 0: bare-nucleus 1-el Dirac-Hamiltonian
-!         TODO:(- defining_h1mat == 1: (extended) Huckel-start guess)
+!               - defining_h1mat == 1: bare-nucleus 1-el Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
 !               - defining_h1mat == 2: 4c-Fock-Dirac operator matrix
 !               - defining_h1mat == 3: free-particle matrix
+!               - defining_h1mat == 4: bare-nucleus 1-el Dirac-Hamiltonian + first-order (molecular) 2e-mean-field contributions
 !
 !             note: scrmat1 and scrmat2 are in use exclusively for
 !             defining_h1mat == 2: 4c-fock operator as h1 (defining and/or 'basic' h1)
 !
 !----------------------------------------------------------------------
-     real(8), intent(inout) :: h1_saao_bas(*)
-     real(8), intent(inout) :: scrmat1(*)
-     real(8), intent(inout) :: scrmat2(*)
+     real*8 , intent(inout) :: h1_saao_bas(*)
+     real*8 , intent(inout) :: scrmat1(*)
+     real*8 , intent(inout) :: scrmat2(*)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: naosh_ls
      integer, intent(in)    :: naosh_all(nfsym)
@@ -264,19 +270,22 @@ contains
      integer, intent(in)    :: defining_h1mat
      logical, intent(in)    :: linear_sym
      logical, intent(in)    :: mdirac
+     logical, intent(in)    :: isDFT
      integer, intent(in)    :: is_len_wrk
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
 !----------------------------------------------------------------------
-     real(8), allocatable   :: wrk(:)
+     real*8 , allocatable   :: wrk(:)
      integer                :: lwrk
+     integer                :: integral_types
 !**********************************************************************
 
 !      give full length for WORK array allocations
        lwrk = is_len_wrk
 
-       if(defining_h1mat == 0)then
-
+       select case(defining_h1mat)
+       case(0)
+!        bare-nucleus h1 Dirac-Hamiltonian
 #ifdef PRG_DIRAC
          allocate(wrk(lwrk))
          call reset_x2c_cb_onefck(.false.)
@@ -285,9 +294,33 @@ contains
          deallocate(wrk)
 #endif
 
-       else if(defining_h1mat == 1)then
-!        HUCKEL start guess...
-       else if(defining_h1mat == 2)then
+       case(1)
+!        bare-nucleus h1 Dirac-Hamiltonian...
+#ifdef PRG_DIRAC
+        allocate(wrk(lwrk))
+        call reset_x2c_cb_onefck(.false.)
+        call onefck(h1_saao_bas,print_lvl,wrk,lwrk)
+        call reset_x2c_cb_onefck(.true.)
+        deallocate(wrk)
+#endif
+
+#ifdef MOD_XAMFI
+!       ... + diagonal (atomic) 2e-mean-field contributions
+        call x2c_add_2e_diagonal_atomic(h1_saao_bas,                       &
+                                        naosh_ls,                          &
+                                        nfsym,                             &
+                                        nz,                                &
+                                        x2c_bs_irrep_mat,                  &
+                                        x2c_cb_pq_to_uq,                   &
+                                        x2c_cb_uq_to_pq,                   &
+                                        x2c_iqmult_trip_q,                 &
+                                        x2c_bs_to_fs,                      &
+                                        x2c_pointer_quat,                  &
+                                        num_nuclei,                        &
+                                        type_nuclei,                       &
+                                        print_lvl)
+#endif
+       case(2)
 !        4c-Fock-Dirac Hamiltonian...
 
 !        out: 4c-fock operator in SA-AO basis -> h1_saao_bas
@@ -306,18 +339,53 @@ contains
                                   x2c_file_scr,       &
                                   print_lvl)
 
-       else if(defining_h1mat == 3)then
+       case(3)
 
 #ifdef PRG_DIRAC
-!        Free-particle matrix
+!        Free-particle matrix h_fp
          allocate(wrk(lwrk))
          call reset_x2c_cb_onefck(.false.)
          call freemt(h1_saao_bas,print_lvl,wrk,lwrk)
          call reset_x2c_cb_onefck(.true.)
          deallocate(wrk)
 #endif
+        case(4)
+  !        bare-nucleus h1 Dirac-Hamiltonian...
+#ifdef PRG_DIRAC
+          allocate(wrk(lwrk))
+          call reset_x2c_cb_onefck(.false.)
+          call onefck(h1_saao_bas,print_lvl,wrk,lwrk)
+          call reset_x2c_cb_onefck(.true.)
+          deallocate(wrk)
+#endif
 
-       end if
+          integral_types = x2c_intgen_4c
+#ifdef MOD_XAMFI
+  !       ... + F^{4c,2e}[D^4c_(+)atoms]
+          call x2c_add_2e_from_atomic_dens(h1_saao_bas,                       &
+                                           naosh_ls,                          &
+                                           nz,                                &
+                                           x2c_bs_irrep_mat,                  &
+                                           x2c_cb_pq_to_uq,                   &
+                                           x2c_cb_uq_to_pq,                   &
+                                           x2c_iqmult_trip_q,                 &
+                                           x2c_bs_to_fs,                      &
+                                           x2c_pointer_quat,                  &
+                                           num_nuclei,                        &
+                                           type_nuclei,                       &
+                                           4,                                 & ! xcmode
+                                           integral_types,                    & ! integral flag
+                                           lwrk,                              & ! lwrk
+                                           isDFT,                             & ! add XC potential (DFT)
+                                           print_lvl                          &
+                                          )
+#endif
+
+       case default
+         print *, ' get_h1_4c_saao_basis, unkown selection code defining_h1_mat=',&
+         defining_h1mat
+         call quit('get_h1_4c_saao_basis, unkown selection code defining_h1_mat')
+       end select
 
   end subroutine get_h1_4c_saao_basis
 
@@ -367,7 +435,7 @@ contains
      integer                      :: ioff_osh1
      integer                      :: ioff_ao_o_sh1
      integer                      :: ioff_ao_ao_sh1
-     integer                      :: i, j
+     integer                      :: i
      integer                      :: norb1_f
      integer                      :: nbas1_f
      character (len=6)            :: op_mat_on_file
@@ -375,9 +443,6 @@ contains
      character (len=28)           :: debug_string
      logical                      :: fndlab12
 !**********************************************************************
- 
-!     dummy center/fragment counter
-      j = 1
 
       rewind(x2c_file_scr)
       if(fndlab12('h14csAO   11',x2c_file_scr))then
@@ -412,6 +477,7 @@ contains
                                         op_mat_on_file,    &
                                         print_lvl)
         end if
+
         if(x2c_fock_saao_basis) goto 100 ! debug option - can be activated in the input
 
 !       step 2: 4c-fock_onmo (LS sorted) --> 4c-fock_onmo_nonlin LS sorted
@@ -494,6 +560,11 @@ contains
           nbas1_f = naosh_all(i)
           norb1_f = norb_dim(i)
           if(norb1_f > 0)then
+
+!           save on file x2cscr for use in post-X2Cmmf steps like (e)amf
+            write(flabel,'(a7,i4,i1)') '4cSaomo',1,i
+            call x2c_write(flabel,scrmat2(ioff_ao_o_sh1),nbas1_f*norb1_f * nzt,x2c_file_scr)
+
 !           h1_saao_bas = scrmat2 * scrmat1 * scrmat2^+
             if(.not.x2c_fock_saao_basis)then
             call generic_interface_ao2mo_mo2ao(h1_saao_bas(ioff_ao_ao_sh1),    &
@@ -528,11 +599,9 @@ contains
           ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
         end do
 
-        !> dump the full Fock matrix in AO basis to file (if needed later)
-        open(81,file='4cf1f2AO',status='replace',form='unformatted',         &
-              access='sequential',action='write',position='rewind')
-        write(81) (h1_saao_bas(i),i=1,naosh_ls*naosh_ls*nz)
-        close(81,status="keep")
+        call dzero(scrmat1,naosh_ls**2*nz)
+        call dzero(scrmat2,naosh_ls**2*nz)
+
 !
 !       step 5: read in the "SL resorted" transformation matrix (the calling programs expect it to reside in scrmat2
 !       ------------------------------------------------------------------------------------------------------------
@@ -601,8 +670,7 @@ contains
                                           'S',                   &
                                           print_lvl) 
 
-!#ifdef x2c_spinfree_before_4c_to_2c
-!       test the spinfree-before scheme by Miro and HJAAJ
+!       spinfree-before scheme by Miro and HJAAJ
         if(spinfree)then
           call make_spinfree_h1_onmo(                            &
                                      h1_onmo_bas,                & 
@@ -616,7 +684,6 @@ contains
                                      print_lvl                   &
                                     )
         end if
-!#endif
 
   end subroutine get_h1_4c_on_basis
 !**********************************************************************
