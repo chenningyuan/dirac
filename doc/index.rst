@@ -193,6 +193,9 @@ Tutorials and walkthrus
 * **Davidson corrections for relCI (LUCITA and KRCI):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
+* **Quantum electrodynamics (QED):**
+  :doc:`effective QED potential <tutorials/qed/effqed>`
+
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
   :doc:`VIBCAL <tutorials/utils/vibcal>` |
