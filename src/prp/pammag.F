@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -453,7 +448,6 @@ C  ...array for MO coefficients
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
 C boson irreps identification (read with MO coeff.)
       CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETCON')
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
@@ -463,9 +457,6 @@ C boson irreps identification (read with MO coeff.)
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
      &            TOTERG,IOPT)
       ENDIF
-
-C Open property file
-      CALL OPNFIL(LU1INT,'AOPROPER','OLD','GETCON')
 
 C  ... arrays for T(2)_comp connection matrixes in MO basis
       CALL MEMGET('REAL',KTMAT,N2ORBXQ,WORK,KFREE,LFREE)
@@ -593,10 +584,6 @@ C ... store the reorthonormalization contribution into ORTO
       ENDDO
        call dealloc(conmat)
 C
-C close property file
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')      
-
 C ... release the memmory...
       CALL MEMREL('GETCON',WORK,1,KFRSAV,KFREE,LFREE)
 
@@ -662,7 +649,6 @@ C  ...array for MO coefficients
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
 C boson irreps identification (read with MO coeff.)
       CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETCON')
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
@@ -672,9 +658,6 @@ C boson irreps identification (read with MO coeff.)
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
      &            TOTERG,IOPT)
       ENDIF
-
-C Open property file
-      CALL OPNFIL(LU1INT,'AOPROPER','OLD','GETCON')
 
 C  ... arrays for T(2)_comp connection matrixes in MO basis
       CALL MEMGET('REAL',KTMAT,N2ORBXQ,WORK,KFREE,LFREE)
@@ -811,9 +794,6 @@ C ... store the reorthonormalization contribution into ORTO
          ENDIF
       ENDDO
 C
-C close property file
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')      
 
 C ... release the memmory...
       CALL MEMREL('GETCON',WORK,1,KFRSAV,KFREE,LFREE)
@@ -1104,7 +1084,6 @@ C***********************************************************************
 
       KFRSAV = KFREE
 
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ONELON')
 C ... distinguish between spin-free (boson symm.) mode
 C     and the full relativistic (fermion symm.) mode
       IF (SPINFR) THEN
@@ -1117,14 +1096,10 @@ C     and the full relativistic (fermion symm.) mode
      &            TOTERG,IOPT)
 
       ENDIF
-      CLOSE(LUCOEF,STATUS='KEEP')
 
 C Open file for the London one-electron contributions, dh(B)/dB_c
       OPEN(LUONELO,FILE='ONELON',FORM='UNFORMATTED',
      &     ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='UNKNOWN') ! Why 8* and not 3*?
-
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
 
 C Allocate memory for storing components of dh(B)/dB_c
 
@@ -1164,7 +1139,6 @@ C ... and write it the file:
       ENDDO
 
       CLOSE(LUONELO,STATUS='KEEP')
-      CLOSE(LU1INT,STATUS='KEEP')
 
 C     .... release the whole block used in this subroutine
       CALL MEMREL('ONELON',WORK,1,KFRSAV,KFREE,LFREE)
@@ -1874,7 +1848,6 @@ C
 C 0. Allocate memory and read coefficients etc.
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE) ! MO coefficients
       CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXVSUSLO')
 C ... distinguish between spin-free (boson symm.) mode
 C     and the full relativistic (fermion symm.) mode
       IF (SPINFR) THEN
@@ -1886,7 +1859,6 @@ C     and the full relativistic (fermion symm.) mode
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
      &            TOTERG,IOPT)
       ENDIF
-      CLOSE(LUCOEF,STATUS='KEEP')
 C  1. Get tensor of two-electron expectation value terms 
       CALL SUSC2EL(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
 C  2. Compute highest order reorthonormalization term {T(2),h(0)+g(0)}
@@ -2365,9 +2337,6 @@ C   Get the Fock matrix in MO basis
      &            NORBT,NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-
 C ... arrays for transformed F - {T(2),F(0)}_comp 
       CALL MEMGET('REAL',KTFMAT,N2ORBXQ,WORK,KFREE,LFREE)
 
@@ -2453,8 +2422,6 @@ C       ... control print-out ...
       DOPCT=DOPCTRA_SAVE
 C     .... release the whole memory block used in this subroutine
       CALL MEMREL('HORDRNT',WORK,1,KFRSAV,KFREE,LFREE)
-C     ... close the AOPROPER file
-      CLOSE(LU1INT,STATUS = 'KEEP')
       CALL QEXIT('HORDRNT')
       RETURN
       END
@@ -2542,8 +2509,6 @@ C   Get the Fock matrix in MO basis
         CALL PRQMAT(WORK(KFMAT),NORBT,NORBT,NORBT,
      &            NORBT,NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
 C  ... arrays for T(2)_comp connection matrixes in MO basis
       CALL MEMGET('REAL',KSWMAT,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSMAT ,N2ORBXQ,WORK,KFREE,LFREE)
@@ -2911,7 +2876,7 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
 !           call genden(dmat_0, cmo, 1, iprprp)
 !           call generate_num_grid(dmat_0)
 ! 
-! !         get T(1) matrices from AOPROPER
+! !         get T(1) matrices from CHECKPOINT
 !           call alloc(tb_dmat, n2bbasxq, 3)
 !           tb_dmat = 0.0d0
 !           call alloc(tb, n2orbxq)
@@ -2986,7 +2951,7 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
 ! !n          call genden(dmat_0, cmo, 1, iprprp)
 ! !n          call generate_num_grid(dmat_0)
 ! !n
-! !n!         get T(1) matrices from AOPROPER
+! !n!         get T(1) matrices from CHECKPOINT
 ! !n          call alloc(tb_dmat, n2bbasxq, 3)
 ! !n          tb_dmat = 0.0d0
 ! !n          call alloc(tb, n2orbxq)
@@ -3037,7 +3002,6 @@ C Symmetrize the off-diagonal terms of SUSFSY !!
       ENDDO
 C     .... release the whole block used in this subroutine
       CALL MEMREL('LORDRNT',WORK,1,KFRSAV,KFREE,LFREE)
-      CLOSE(LU1INT,STATUS = 'KEEP')
       DOPCT=DOPCTRA_SAVE
       CALL QEXIT('LORDRNT')
       RETURN
@@ -3126,7 +3090,7 @@ C
       IPTYP    = 1
       NPCOMP   = 1
       PFAC(1)  = -D2*CVAL*CVAL
-      PLABEL(1)= 'dS/dBX'
+      PLABEL(1)= 'dS_dBX'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,IPRINT)
       IPLONDON(1,1) = INDXPR
@@ -3203,7 +3167,7 @@ C
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = -D2*CVAL*CVAL
-      PLABEL(1) = 'dS/dBY'
+      PLABEL(1) = 'dS_dBY'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &       INDXPR,ISYXPR,ITRXPR,IPRINT)
       IPLONDON(1,2) = INDXPR
@@ -3278,7 +3242,7 @@ C
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = -D2*CVAL*CVAL
-      PLABEL(1) = 'dS/dBZ'
+      PLABEL(1) = 'dS_dBZ'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &      INDXPR,ISYXPR,ITRXPR,IPRINT)
       IPLONDON(1,3) = INDXPR
@@ -3355,17 +3319,17 @@ C----------------------------------------------------------------
 #ifdef MOD_LAO_REARRANGED
       if (lao_lr_rearrange) then
           PFAC(1) = -1.0d0
-          LABELC='dS/dB'
+          LABELC='dS_dB'
           ILABELC = 5
       else
 #endif
         IF (SYMCON) THEN
           PFAC(1) = DMI2
-          LABELC='dS/dB'
+          LABELC='dS_dB'
           ILABELC = 5
         ELSE
           PFAC(1) = -D1
-          LABELC='d|S>/dB'
+          LABELC='d|S>_dB'
           ILABELC = 7
         END IF
 #ifdef MOD_LAO_REARRANGED
@@ -3418,7 +3382,7 @@ C ... Symmetry connection term T(1)=S(1)
        NPCOMP = 1
 C      PFAC(1) = DMI2
        PFAC(1) = D1
-       LABELC='dS/dB'
+       LABELC='dS_dB'
        ILABELC = 5
        PNAME     = LABELC(1:ILABELC)//'X'
        PLABEL(1) = LABELC(1:ILABELC)//'X'
@@ -3444,7 +3408,7 @@ C      PFAC(1) = DMI2
 C ... Natural connection term T(1)=W(1)
 C      PFAC(1) = -D1
        PFAC(1) =  D1
-       LABELC='d|S>/dB'
+       LABELC='d|S>_dB'
        ILABELC = 7
        PNAME     = LABELC(1:ILABELC)//'X'
        PLABEL(1) = LABELC(1:ILABELC)//'X'
@@ -3472,7 +3436,7 @@ C Specify latter PFAC(1)!!!
        IPTYP  = 1
        NPCOMP = 1
        PFAC(1) = DMI2 ! For the  "-1/2 {S(2),H(0)}" term
-       LABELC='dS/dB2'
+       LABELC='dS_dB2'
        ILABELC =6 
        PNAME     = LABELC(1:ILABELC)//'XX'
        PLABEL(1) = LABELC(1:ILABELC)//'XX'

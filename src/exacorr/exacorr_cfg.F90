@@ -30,14 +30,17 @@ contains
   call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_occ,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_vir,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%tripl_lap,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_triples,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%tripl_block,2,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%exa_blocksize,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%talsh_buff,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%moint_scheme,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%mp2no,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%ncycles,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%print_level,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%tripl_block,2,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%n_laplace,1,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%nkr_occ,1,exa_MPI_rank,global_communicator)
   if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%mokr_occ(exa_input%nkr_occ))
@@ -54,6 +57,7 @@ contains
   call interface_mpi_bcast(exa_input%mo_vir,exa_input%nvir,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%t_econv,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%t_mp2no,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%level_shift,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%t_cholesky,1,exa_MPI_RANK,global_communicator)
 
@@ -63,7 +67,7 @@ contains
     call interface_mpi_bcast(exa_input%ff_names,len(exa_input%ff_names(1))*exa_input%nff(1), &
                            exa_MPI_RANK,global_communicator)
     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%ff(exa_input%nff(1),exa_input%nff(2)))
-    call interface_mpi_bcast(exa_input%ff,exa_input%nff(1)*exa_input%nff(2),exa_MPI_RANK,global_communicator)
+    call interface_mpi_bcast(exa_input%ff,exa_input%nff(1)*exa_input%nff(2)*2,exa_MPI_RANK,global_communicator)
   end if
 
   end subroutine exacc_sync_cw

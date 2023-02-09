@@ -1,27 +1,23 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful, 
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module visual
 
   use memory_allocator
+  use dircmo
   use visual_cfg
   use dirac_ao_eval
   use interface_ao
@@ -55,8 +51,9 @@ module visual
 #include "symmet.h"
 #include "dcbxlr.h"
 #include "codata.h"
+#include "orgcom.h"
 
-    integer, parameter :: file_unit = 137
+    integer, parameter:: file_unit = 137
 
 contains
 
@@ -67,12 +64,12 @@ contains
     type(matrix)         :: D_con_mo, D_con_mo_ai, D_con, D_0, D_test
     type(matrix)         :: C, Cig, Ciu, Csg, Csu
 
-    real(8), allocatable :: eigenvalues(:)
-    real(8), allocatable :: occupation(:)
-    real(8), allocatable :: ao(:)
-    real(8), allocatable :: buffer(:)
-    real(8), allocatable :: cmo_from_file(:)
-    real(8), allocatable :: occ_from_file(:)
+    real(8), allocatable:: eigenvalues(:)
+    real(8), allocatable:: occupation(:)
+    real(8), allocatable:: ao(:)
+    real(8), allocatable:: buffer(:)
+    real(8), allocatable:: cmo_from_file(:)
+    real(8), allocatable:: occ_from_file(:)
 
     real(8)              :: energy, time_start, second
     integer              :: max_ao_g_order, max_ao_m_order
@@ -84,31 +81,39 @@ contains
     logical              :: natorb_found
     logical, external    :: fndlab
 
-    integer :: i, j, off_ij, off_iz, off_ij_s, off_ij_e, jrdmo
-    type(matrix) :: D_mo_dagger, TP, TM, T
-    logical, allocatable :: matrix_is_unperturbed(:)
+    integer              :: q_max_dim
+
+    integer:: i, j, off_ij, off_iz, off_ij_s, off_ij_e, jrdmo
+    type(matrix):: D_mo_dagger, TP, TM, T
+    logical, allocatable:: matrix_is_unperturbed(:)
 !   ----------------------------------------------------------------------------
 
     max_ao_g_order = 0
     do imat = 1, visual_cfg_nr_dmat
-       if (                                               &
-           (visual_cfg_property(imat) == iq_elf)     .or. &
-           (visual_cfg_property(imat) == iq_kin)     .or. &
-           (visual_cfg_property(imat) == iq_kin_ls)  .or. &
-           (visual_cfg_property(imat) == iq_kin_sl)  .or. &
-           (visual_cfg_property(imat) == iq_kin_tau) .or. &
-           (visual_cfg_property(imat) == iq_divs)    .or. &
-           (visual_cfg_property(imat) == iq_rots)    .or. &
-           (visual_cfg_property(imat) == iq_divj)    .or. &
-           (visual_cfg_property(imat) == iq_rotj)         &
+       if (                                                        &
+           (visual_cfg_property(imat) == iq_elf)              .or. &
+           (visual_cfg_property(imat) == iq_kin)              .or. &
+           (visual_cfg_property(imat) == iq_kin_ls)           .or. &
+           (visual_cfg_property(imat) == iq_kin_sl)           .or. &
+           (visual_cfg_property(imat) == iq_kin_tau)          .or. &
+           (visual_cfg_property(imat) == iq_divs)             .or. &
+           (visual_cfg_property(imat) == iq_rots)             .or. &
+           (visual_cfg_property(imat) == iq_divj)             .or. &
+           (visual_cfg_property(imat) == iq_rotj)             .or. &
+           (visual_cfg_property(imat) == iq_density_gradient) .or. &
+           (visual_cfg_property(imat) == iq_rdg)              .or. &
+           (visual_cfg_property(imat) == iq_gradj)                 &
           ) then
           if (max_ao_g_order < 1) then
              max_ao_g_order = 1
           end if
        end if
-       if (                                               &
-           (visual_cfg_property(imat) == iq_kin_lap) .or. &
-           (visual_cfg_property(imat) == iq_kin_nr)       &
+       if (                                                       &
+           (visual_cfg_property(imat) == iq_kin_lap)          .or. &
+           (visual_cfg_property(imat) == iq_density_hessian)  .or. &
+           (visual_cfg_property(imat) == iq_density_laplacian).or. &
+           (visual_cfg_property(imat) == iq_density_sign_lambda2).or. &
+           (visual_cfg_property(imat) == iq_kin_nr)               &
           ) then
           if (max_ao_g_order < 2) then
              max_ao_g_order = 2
@@ -139,7 +144,7 @@ contains
        max_ao_m_order = 1
     end if
 
-    write(LUPRI,'(/,2x,a)') '*** Visualisation module ***'
+    write(LUPRI, '(/,2x, a)') '*** Visualisation module ***'
     call write_visual_cfg()
 
 !   get coefficients
@@ -149,7 +154,7 @@ contains
     allocate(occ_from_file(norbt))
     occ_from_file = 0.0d0
 
-    inquire(file='KRMCSCF', exist=krmcscf_found)
+    inquire(file='KRMCSCF', exist = krmcscf_found)
 
     if (krmcscf_found) then
 !      read from KRMCSCF
@@ -177,20 +182,13 @@ contains
 
        close(file_unit)
     else
-!      read from DFCOEF
-
-       call read_mo_coef(cmo_from_file)
-
-!      find occupation
+!      read from CHECKPOINT FILE
 
        call alloc(eigenvalues, norbt)
        eigenvalues = 0.0d0
+       call reacmo_new(cmo=cmo_from_file,eig=eigenvalues,toterg=energy)
 
-       call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
-       call reacmo(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
-
-       close(file_unit, status = 'keep')
-       write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'
+       write(LUPRI, '(2x, a)') 'Visualisation : CHECKPOINT file read'
 
 !fixme verify whether this is really needed
 !      when i introduced it i needed it so that certain arrays were properly set
@@ -208,9 +206,9 @@ contains
 !         it's ok if you plot a single orbital but not ok for many things
 !         need to add careful checks
 
-    call get_c(C,   cmo_from_file, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
-    call get_c(Cig, cmo_from_file, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
-    call get_c(Csg, cmo_from_file, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
+    call get_c(C,   cmo_from_file, i = 1.0d0, s = 1.0d0, g = 1.0d0, u = 1.0d0)
+    call get_c(Cig, cmo_from_file, i = 1.0d0, s = 0.0d0, g = 1.0d0, u = 0.0d0)
+    call get_c(Csg, cmo_from_file, i = 0.0d0, s = 1.0d0, g = 1.0d0, u = 0.0d0)
     if (debug_me) then
        call print_mat(C,   label='debug C')
        call print_mat(Cig, label='debug Cig')
@@ -218,8 +216,8 @@ contains
     end if
 
     if (nfsym == 2) then
-       call get_c(Ciu, cmo_from_file, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
-       call get_c(Csu, cmo_from_file, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
+       call get_c(Ciu, cmo_from_file, i = 1.0d0, s = 0.0d0, g = 0.0d0, u = 1.0d0)
+       call get_c(Csu, cmo_from_file, i = 0.0d0, s = 1.0d0, g = 0.0d0, u = 1.0d0)
        if (debug_me) then
           call print_mat(Ciu, label='debug Ciu')
           call print_mat(Csu, label='debug Csu')
@@ -234,7 +232,7 @@ contains
 
        D_mo%elms = 0.0d0
        do m = 1, norbt
-          D_mo%elms((m - 1)*norbt + m) = occupation(m)
+          D_mo%elms((m-1)*norbt+m) = occupation(m)
        end do
        D(imat) = C*(D_mo*dag(C))
 
@@ -304,7 +302,7 @@ contains
 
           D_mo%elms = 0.0d0
           do m = 1, norbt
-             D_mo%elms((m - 1)*norbt + m) = occupation(m)
+             D_mo%elms((m-1)*norbt+m) = occupation(m)
           end do
 
           D_mo%ih_sym = 1
@@ -323,8 +321,8 @@ contains
           call setup_fo_dmat_ao(imat, occupation, D_mo)
 
           if (visual_cfg_london .and. visual_cfg_london_none) then
-             TP = D_mo - dag(D_con_mo_ai)
-             TM = D_mo - D_con_mo_ai
+             TP = D_mo-dag(D_con_mo_ai)
+             TM = D_mo-D_con_mo_ai
           else
              TP = 1.0d0*D_mo
              TM = 1.0d0*D_mo
@@ -349,23 +347,22 @@ contains
                      - (Csg*(TM*dag(Cig)))
           end if
           call copy_matrix_sym(D(imat), D_mo)
-
        end if
     end do
 
 !   insert half phases
     if (nz < 4) then
        do iz = 1, nz
-         ioff = ntbas(0)*ntbas(0)*(iz - 1)
+         ioff = ntbas(0)*ntbas(0)*(iz-1)
          if (visual_cfg_london) then
             iq   = ipqtoq(iz, D_0%irep)
-            call q2bphase('D', iq, 1, D_0%elms(1 + ioff))
+            call q2bphase('D', iq, 1, D_0%elms(1+ioff))
             iq   = ipqtoq(iz, D_con%irep)
-            call q2bphase('D', iq, 1, D_con%elms(1 + ioff))
+            call q2bphase('D', iq, 1, D_con%elms(1+ioff))
          end if
          do imat = 1, visual_cfg_nr_dmat
             iq   = ipqtoq(iz, D(imat)%irep)
-            call q2bphase('D', iq, 1, D(imat)%elms(1 + ioff))
+            call q2bphase('D', iq, 1, D(imat)%elms(1+ioff))
          end do
        end do
     end if
@@ -395,6 +392,10 @@ contains
 
 !      collect matrices for identical densities to save time
        if (visual_cfg_property(imat) /= iq_elf) then
+       !if (visual_cfg_property(imat) /= iq_elf .and. visual_cfg_property(imat) /= iq_gradj) then
+       ! gosia TODO: i need to figure out a better way to sum up contribs involving the same densities
+       ! for a moment it's messing up the "GRADJ" calculations if done in the same input as "J" calculations
+
 !         elf has nonlinear dependence
           j = visual_cfg_property_to_matrix(visual_cfg_property(imat))
           if (j == 0) then
@@ -403,7 +404,7 @@ contains
              D(j) = D(j) + D(imat)
              if (visual_cfg_london) then
                 T   = 1.0d0*D_0
-                D_0 = D_0 + T
+                D_0 = D_0+T
                 T   = 0
              end if
              visual_cfg_skip(imat) = .true.
@@ -449,6 +450,11 @@ contains
 
 !   plot and integrate
 !   ==================
+    if (visual_cfg_tensor) then
+      q_max_dim = 12
+    else
+      q_max_dim = 3
+    end if
 
     if (visual_cfg_nics) then
       write(*,*)"VISUAL: nics value in ", visual_cfg_nics_origin(1), &
@@ -471,7 +477,8 @@ contains
                                D,                  &
                                D_0,                &
                                ao,                 &
-                               buffer)
+                               buffer, &
+                               q_max_dim)
     end if
     call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
 
@@ -503,8 +510,9 @@ contains
       real(8), intent(in)  :: ao(*)
       real(8)              :: buffer(*)
 !     --------------------------------------------------------------------------
-      real(8), allocatable :: q(:, :)
-      real(8), allocatable :: atom_xyz(:, :)
+      real(8), allocatable:: q(:, :)
+      integer              :: q_max_dim
+      real(8), allocatable:: atom_xyz(:, :)
       real(8)              :: step_3d(3, 0:3)
       integer              :: i, j, k, l, m, istep, n
       integer              :: icube, jcube, kcube
@@ -512,36 +520,50 @@ contains
       real(8)              :: vx(3), vx_norm
       real(8)              :: vy(3), vy_norm
       real(8)              :: vz(3), vz_norm
-      real(8)              :: r(3), v(3), w(0:3), s, rad, radtot, qbuf(0:3)
+      real(8)              :: r(3), v(3), t(9), w(0:12), s, rad, radtot, qbuf(0:12)
       integer              :: lunit_2d_scalar
       integer              :: lunit_2d_vector
       integer              :: lunit_2d_flow
+      integer              :: lunit_2d_tensor
       integer              :: lunit_3d_cube
       integer              :: lunit_3d_scalar
       integer              :: lunit_3d_vector
+      integer              :: lunit_3d_tensor
       integer              :: lunit_3d_vector_vtk
       integer              :: lunit_3d_jbfile
       integer              :: lunit_line_scalar
       integer              :: lunit_line_vector
+      integer              :: lunit_line_tensor
       integer              :: lunit_3d_gridimp
       integer              :: lunit_radial_scalar
       integer              :: lunit_radial_vector
-      real(8), allocatable :: temp(:, :)
-      real(8), allocatable :: temp2(:, :, :, :)
-      real(8), allocatable :: res(:)
-      real(8), allocatable :: res_temp(:)
-      real(8), allocatable :: xyz(:, :)
-      real(8), allocatable :: xyzk(:, :)
-      real(8)              :: acos,dsum
+      integer              :: lunit_radial_tensor
+      integer              :: lunit_outfil_custom_scalar
+      integer              :: lunit_outfil_custom_vector
+      integer              :: lunit_outfil_custom_2ndtensor
+      real(8), allocatable:: temp(:, :)
+      real(8), allocatable:: temp2(:, :, :, :)
+      real(8), allocatable:: res(:)
+      real(8), allocatable:: res_temp(:)
+      real(8), allocatable:: xyz(:, :)
+      real(8), allocatable:: xyzk(:, :)
+      real(8)              :: acos, dsum
       integer              :: nleb
       integer              :: nr_points_gridimp
+      logical              :: is_open
 !     --------------------------------------------------------------------------
 
       i = 1
       if (visual_cfg_ncube(3) > 0) then
          i = visual_cfg_ncube(3)
       end if
-      allocate(q(0:3, i))
+      if (visual_cfg_tensor) then
+        q_max_dim = 12
+        allocate(q(0:12, i))
+      else
+        q_max_dim = 3
+        allocate(q(0:3, i))
+      end if
 
       allocate(atom_xyz(4, nucdep))
 
@@ -550,6 +572,16 @@ contains
       end if
       if (visual_cfg_3d_readjb .and. visual_cfg_3d_gridimp) then
               call quit('Select one of .READJB and .3D_IMP keywords.')
+      end if
+
+      if (visual_cfg_3d_gridimp) then
+          if (visual_cfg_3d_grid_units .eq. 'angstrom') then
+              write(LUPRI, *) 'imported grid is in Angstrom, it will be transformed to a.u.'
+          else if (visual_cfg_3d_grid_units .eq. 'au') then
+              write(LUPRI, *) 'imported grid is in atomic units'
+          else
+              call quit('unrecognized unit in 3D_IMP keyword; choose "angstrom" or "au"')
+          end if
       end if
 
 
@@ -566,123 +598,197 @@ contains
       lunit_radial_scalar = 24
       lunit_radial_vector = 25
       lunit_3d_jbfile     = 26
+      lunit_2d_tensor     = 27
+      lunit_3d_tensor     = 28
+      lunit_line_tensor   = 29
+      lunit_radial_tensor = 30
+      lunit_outfil_custom_scalar    = 31
+      lunit_outfil_custom_vector    = 32
+      lunit_outfil_custom_2ndtensor = 33
 
-      if (visual_cfg_2d) then
-         open(lunit_2d_scalar,           &
-              file   = 'plot.2d.scalar', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-         open(lunit_2d_vector,           &
-              file   = 'plot.2d.vector', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-         open(lunit_2d_flow,             &
-              file   = 'plot.2d.flow',   &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-      end if
-
-      if (visual_cfg_3d .or. visual_cfg_3d_fast) then
-         open(lunit_3d_cube,           &
-              file   = 'plot.3d.cube', &
-              status = 'new',          &
-              access = 'sequential',   &
-              form   = 'formatted')
-         open(lunit_3d_vector,           &
-              file   = 'plot.3d.vector', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-         open(lunit_3d_vector_vtk,           &
-              file   = 'plot.3d.vector.vtk', &
-              status = 'new',                &
-              access = 'sequential',         &
-              form   = 'formatted')
-         open(lunit_3d_scalar,           &
-              file   = 'plot.3d.scalar', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-      end if
-
-      if (visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) then
-!        gosia: if we import grid on which we plot, then don't do *cube or *vtk files
-!        as this grid is not necessarily uniform.
-!        If it is uniform, then use the script lines_to_vtk.py or lines_to_cube.py in DIRAC's utils directory 
-         open(lunit_3d_vector,           &
-              file   = 'plot.3d.vector', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-         open(lunit_3d_scalar,           &
-              file   = 'plot.3d.scalar', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-      end if
-
-      if (visual_cfg_line) then
-         open(lunit_line_scalar,           &
-              file   = 'plot.line.scalar', &
-              status = 'new',              &
-              access = 'sequential',       &
-              form   = 'formatted')
-         open(lunit_line_vector,           &
-              file   = 'plot.line.vector', &
-              status = 'new',              &
-              access = 'sequential',       &
-              form   = 'formatted')
-      end if
-
-      if (visual_cfg_radial) then
-         open(lunit_radial_scalar,           &
-              file   = 'plot.radial.scalar', &
-              status = 'new',                &
-              access = 'sequential',         &
-              form   = 'formatted')
-         open(lunit_radial_vector,           &
-              file   = 'plot.radial.vector', &
-              status = 'new',                &
-              access = 'sequential',         &
-              form   = 'formatted')
-      end if
+      if (.not.visual_cfg_out_file_custom) then
+         if (visual_cfg_2d) then
+            open(lunit_2d_scalar,           &
+                 file   = 'plot.2d.scalar', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_2d_vector,           &
+                 file   = 'plot.2d.vector', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_2d_tensor,           &
+                 file   = 'plot.2d.tensor', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_2d_flow,             &
+                 file   = 'plot.2d.flow',   &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+         end if
+         
+         if (visual_cfg_3d .or. visual_cfg_3d_fast) then
+            if (.not. visual_cfg_london_skip_cube) then
+               open(lunit_3d_cube,           &
+                    file   = 'plot.3d.cube', &
+                    status = 'new',          &
+                    access = 'sequential',   &
+                    form   = 'formatted')
+            end if
+            open(lunit_3d_vector,           &
+                 file   = 'plot.3d.vector', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            if (.not. visual_cfg_london_skip_vtk) then
+               open(lunit_3d_vector_vtk,           &
+                    file   = 'plot.3d.vector.vtk', &
+                    status = 'new',                &
+                    access = 'sequential',         &
+                    form   = 'formatted')
+            end if
+            open(lunit_3d_scalar,           &
+                 file   = 'plot.3d.scalar', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_3d_tensor,           &
+                 file   = 'plot.3d.tensor', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+         end if
+         
+         if (visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) then
+!           gosia: if we import grid on which we plot, then don't do*cube or*vtk files
+!           as this grid is not necessarily uniform.
+!           If it is uniform, then use the script lines_to_vtk.py or lines_to_cube.py in DIRAC's utils directory 
+            open(lunit_3d_vector,           &
+                 file   = 'plot.3d.vector', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_3d_scalar,           &
+                 file   = 'plot.3d.scalar', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_3d_tensor,           &
+                 file   = 'plot.3d.tensor', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+         end if
+         
+         if (visual_cfg_line) then
+            open(lunit_line_scalar,           &
+                 file   = 'plot.line.scalar', &
+                 status = 'new',              &
+                 access = 'sequential',       &
+                 form   = 'formatted')
+            open(lunit_line_vector,           &
+                 file   = 'plot.line.vector', &
+                 status = 'new',              &
+                 access = 'sequential',       &
+                 form   = 'formatted')
+            open(lunit_line_tensor,           &
+                 file   = 'plot.line.tensor', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+         end if
+         
+         if (visual_cfg_radial) then
+            open(lunit_radial_scalar,           &
+                 file   = 'plot.radial.scalar', &
+                 status = 'new',                &
+                 access = 'sequential',         &
+                 form   = 'formatted')
+            open(lunit_radial_vector,           &
+                 file   = 'plot.radial.vector', &
+                 status = 'new',                &
+                 access = 'sequential',         &
+                 form   = 'formatted')
+            open(lunit_radial_tensor,           &
+                 file   = 'plot.radial.tensor', &
+                 status = 'new',                &
+                 access = 'sequential',         &
+                 form   = 'formatted')
+         end if
+      else
+         if (visual_cfg_out_scalar_file_custom) then
+            open(lunit_outfil_custom_scalar,       &
+                 file   = trim(visual_cfg_out_scalar_file_name), &
+                 status = 'new',                    &
+                 access = 'sequential',             &
+                 form   = 'formatted')
+         end if
+         if (visual_cfg_out_vector_file_custom) then
+            open(lunit_outfil_custom_vector,       &
+                 file   = trim(visual_cfg_out_vector_file_name), &
+                 status = 'new',                    &
+                 access = 'sequential',             &
+                 form   = 'formatted')
+         end if
+         if (visual_cfg_out_2ndtensor_file_custom) then
+            open(lunit_outfil_custom_2ndtensor,       &
+                 file   = trim(visual_cfg_out_2ndtensor_file_name), &
+                 status = 'new',                    &
+                 access = 'sequential',             &
+                 form   = 'formatted')
+         end if
+      end if  ! if (.not.visual_cfg_out_file_custom) then
 
       if (visual_cfg_list) then
 
          call around('Requested density at point(s)')
 
          write(lupri, *)
-         write(lupri, '(a8, 2a14, a18, a32, 2a26)') &
-            'r_x',                                  &
-            'r_y',                                  &
-            'r_z',                                  &
-            'scalar',                               &
-            'x-component',                          &
-            'y-component',                          &
-            'z-component'
+         if (visual_cfg_tensor) then
+           write(lupri, '(a200)') &
+                'in columns: r_x, r_y, r_z, '//&
+                'scalar, x-component, y-component, z-component, '//&
+                'xx-component, xy-component, xz-component, '//&
+                'yx-component, yy-component, yz-component, '//&
+                'zx-component, zy-component, zz-component'
+         else
+           write(lupri, '(a80)') &
+                'in columns: r_x, r_y, r_z, '//&
+                'scalar, x-component, y-component, z-component'
+         end if
+
          write(lupri, *)
-
+           
          do i = 1, visual_cfg_nr_points_in_list
-            call get_quantity_in_point(visual_cfg_nr_dmat,        &
-                                       D,                         &
-                                       D_0,                       &
-                                       visual_cfg_xyz_list(i, 1), &
-                                       visual_cfg_xyz_list(i, 2), &
-                                       visual_cfg_xyz_list(i, 3), &
-                                       ao,                        &
-                                       buffer,                    &
-                                       q)
-
-            write(lupri, '(3e14.6, 4ES26.16E3)') &
-               visual_cfg_xyz_list(i, 1),        &
-               visual_cfg_xyz_list(i, 2),        &
-               visual_cfg_xyz_list(i, 3),        &
-               q(0:3, 1)
+           call get_quantity_in_point(visual_cfg_nr_dmat,        &
+                                      D,                         &
+                                      D_0,                       &
+                                      visual_cfg_xyz_list(i, 1), &
+                                      visual_cfg_xyz_list(i, 2), &
+                                      visual_cfg_xyz_list(i, 3), &
+                                      ao,                        &
+                                      buffer,                    &
+                                      q_max_dim,                 &
+                                      q)
+           
+           if (visual_cfg_tensor) then
+             write(lupri, '(16ES18.8E3)') &
+                 visual_cfg_xyz_list(i, 1),        &
+                 visual_cfg_xyz_list(i, 2),        &
+                 visual_cfg_xyz_list(i, 3),        &
+                 q(0:12, 1)
+           else
+             write(lupri, '(7ES18.8E3)') &
+                visual_cfg_xyz_list(i, 1),        &
+                visual_cfg_xyz_list(i, 2),        &
+                visual_cfg_xyz_list(i, 3),        &
+                q(0:3, 1)
+           end if
          end do
-
+           
          write(lupri, *)
          call prsymb(lupri, '-', 100, 0)
          write(lupri, *)
@@ -692,11 +798,11 @@ contains
 
       if (visual_cfg_line) then
 
-         v = visual_cfg_line_to - visual_cfg_line_from
+         v = visual_cfg_line_to-visual_cfg_line_from
          v = v/visual_cfg_line_nr_steps
      
          do istep = 0, visual_cfg_line_nr_steps
-            r = visual_cfg_line_from + istep*v
+            r = visual_cfg_line_from+istep*v
             call get_quantity_in_point(visual_cfg_nr_dmat, &
                                        D,                  &
                                        D_0,                &
@@ -705,18 +811,50 @@ contains
                                        r(3),               &
                                        ao,                 &
                                        buffer,             &
+                                       q_max_dim,          &
                                        q)
 
-            write(lunit_line_scalar, '(3e18.10,ES26.16E3)')      &
-               r(1),                                             &
-               r(2),                                             &
-               r(3),                                             &
-               q(0, 1)
-            write(lunit_line_vector, '(3e18.10,3ES26.16E3)')     &
-               r(1),                                             &
-               r(2),                                             &
-               r(3),                                             &
-               q(1:3, 1)
+            if (.not.visual_cfg_out_file_custom) then
+               write(lunit_line_scalar, '(4ES18.8E3)')     &
+                  r(1),                                    &
+                  r(2),                                    &
+                  r(3),                                    &
+                  q(0, 1)
+               write(lunit_line_vector, '(6ES18.8E3)')     &
+                  r(1),                                    &
+                  r(2),                                    &
+                  r(3),                                    &
+                  q(1:3, 1)
+               if (visual_cfg_tensor) then
+                  write(lunit_line_tensor, '(12ES18.8E3)')     &
+                     r(1),                                     &
+                     r(2),                                     &
+                     r(3),                                     &
+                     q(4:12, 1)
+               end if
+            else
+               if (visual_cfg_out_scalar_file_custom) then
+                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     q(0, 1)
+               end if
+               if (visual_cfg_out_vector_file_custom) then
+                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     q(1:3, 1)
+               end if
+               if (visual_cfg_out_2ndtensor_file_custom) then
+                  write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     q(4:12, 1)
+               end if
+            end if  ! if (.not.visual_cfg_out_file_custom) then
 
          end do
       end if
@@ -727,9 +865,12 @@ contains
 !   ==============================
 
          m = NLEB(num_grid_cfg_angint)
-         allocate(temp(m,4))
-         CALL LEBEDEV(num_grid_cfg_angint,temp(1,1),temp(1,2),temp(1,3),temp(1,4),n)
-         CALL DSCAL(m,4*ACOS(-1.0D0),temp(1,4),1)
+         write(LUPRI, '(/,4x, a)')  '** Radial distribution **'
+         write(LUPRI, '(6x, A, I3)')  '   Lebedev angular grid L = ',num_grid_cfg_angint
+         write(LUPRI, '(6x, A, I10)') '   Angular points:   ',m       
+         allocate(temp(m, 4))
+         CALL LEBEDEV(num_grid_cfg_angint, temp(1, 1), temp(1, 2), temp(1, 3), temp(1, 4), n)
+         CALL DSCAL(m, 4*ACOS(-1.0D0), temp(1, 4), 1)
 
 !   Loop over radial points
 !   =======================
@@ -742,9 +883,10 @@ contains
 
 !           Angular integration
 !           ===================
-            q(0:3,1) = 0.0d0
-            do i = 1,m
-              r   = visual_cfg_radial_from + rad*temp(i,1:3)
+!gosia TODO: adapt to tensors
+            q(0:3, 1) = 0.0d0
+            do i = 1, m
+              r   = visual_cfg_radial_from+rad*temp(i, 1:3)
               call get_quantity_in_point(visual_cfg_nr_dmat, &
                                          D,                  &
                                          D_0,                &
@@ -753,30 +895,56 @@ contains
                                          r(3),               &
                                          ao,                 &
                                          buffer,             &
+                                         3,                  &
                                          qbuf)
-              q(0:3,1) = q(0:3,1) + qbuf(0:3)*temp(i,4)
+              q(0:3, 1) = q(0:3, 1) + qbuf(0:3)*temp(i, 4)
             end do
-            q(0:3,1) = q(0:3,1)*rad*rad
-            radtot = radtot + q(0,1)
+            q(0:3, 1) = q(0:3, 1)*rad*rad
+            radtot = radtot+q(0, 1)
             
 !           Write results
 !           =============
 
-            write(lunit_radial_scalar, '(2e18.10)') &
-               rad,                                 &
-               q(0, 1)
-            write(lunit_radial_vector, '(4e18.10)') &
-               rad,                                 &
-               q(1:3, 1)
+            if (.not.visual_cfg_out_file_custom) then
+               write(lunit_radial_scalar, '(2e18.10)') &
+                  rad,                                 &
+                  q(0, 1)
+               write(lunit_radial_vector, '(4e18.10)') &
+                  rad,                                 &
+                  q(1:3, 1)
+            else
+               if (visual_cfg_out_scalar_file_custom) then
+                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     q(0, 1)
+               end if
+               if (visual_cfg_out_vector_file_custom) then
+                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     q(1:3, 1)
+               end if
+               !if (visual_cfg_out_2ndtensor_file_custom) then
+               !   write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
+               !      r(1),                                             &
+               !      r(2),                                             &
+               !      r(3),                                             &
+               !      q(4:12, 1)
+               !end if
+            end if  ! if (.not.visual_cfg_out_file_custom) then
+
 
          end do
-         write(lupri,*) '  The radial distribution integrates to: ',radtot*s
+         write(lupri, *) '        The radial distribution integrates to: ',radtot*s
          deallocate(temp)
       end if
 
       if (visual_cfg_2d) then
 
-         vx = (visual_cfg_2d_p_right - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_right
+         vx = (visual_cfg_2d_p_right-visual_cfg_2d_p_origin)/visual_cfg_2d_nr_right
          vy = (visual_cfg_2d_p_top   - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_top
 
          vz(1) = vx(2)*vy(3) - vx(3)*vy(2)
@@ -790,8 +958,8 @@ contains
          i = 0
          do ix = 0, visual_cfg_2d_nr_right
             do iy = 0, visual_cfg_2d_nr_top
-               i = i + 1
-               r = visual_cfg_2d_p_origin + ix*vx + iy*vy
+               i = i+1
+               r = visual_cfg_2d_p_origin+ix*vx+iy*vy
                call get_quantity_in_point(visual_cfg_nr_dmat, &
                                           D,                  &
                                           D_0,                &
@@ -800,26 +968,33 @@ contains
                                           r(3),               &
                                           ao,                 &
                                           buffer,             &
+                                          3,                  &
                                           q)
 
-               s      = q(0,   1)
-               v(1:3) = q(1:3, 1)
+               s       = q(0,   1)
+               v(1:3)  = q(1:3, 1)
+!              gosia TODO add tensors
+               !t(4:12) = q(4:12, 1)
 
-               write(lunit_2d_scalar, '(2e18.10,ES26.16E3)')     &
-                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
-                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,   &
-                  s
-
-               write(lunit_2d_vector, '(2e18.10,2ES26.16E3)')     &
-                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
-                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
-                  (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
-                  (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
-
-               write(lunit_2d_flow, '(2e18.10,ES26.16E3)')        &
-                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
-                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
-                  (v(1)*vz(1) + v(2)*vz(2) + v(3)*vz(3))/vz_norm
+               if (.not.visual_cfg_out_file_custom) then
+                  write(lunit_2d_scalar, '(2e18.10, ES26.16E3)')     &
+                     ix*vx_norm-vx_norm*visual_cfg_2d_nr_right/2, &
+                     iy*vy_norm-vy_norm*visual_cfg_2d_nr_top/2,   &
+                     s
+                  
+                  write(lunit_2d_vector, '(2e18.10, 2ES26.16E3)')     &
+                     ix*vx_norm-vx_norm*visual_cfg_2d_nr_right/2,  &
+                     iy*vy_norm-vy_norm*visual_cfg_2d_nr_top/2,    &
+                     (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
+                     (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
+                  
+                  write(lunit_2d_flow, '(2e18.10, ES26.16E3)')        &
+                     ix*vx_norm-vx_norm*visual_cfg_2d_nr_right/2,  &
+                     iy*vy_norm-vy_norm*visual_cfg_2d_nr_top/2,    &
+                     (v(1)*vz(1) + v(2)*vz(2) + v(3)*vz(3))/vz_norm
+               else
+!              gosia: todo
+               end if  ! if (.not.visual_cfg_out_file_custom) then
 
             end do
          end do
@@ -836,7 +1011,10 @@ contains
          rewind(lunit_3d_gridimp)
 
          do 
-            read(lunit_3d_gridimp, *, end=98) r(1), r(2), r(3)
+            read(lunit_3d_gridimp, *, end = 98) r(1), r(2), r(3)
+            if (visual_cfg_3d_grid_units .eq. 'angstrom') then
+                r = r/xtang
+            end if
             call get_quantity_in_point(visual_cfg_nr_dmat, &
                                        D,                  &
                                        D_0,                &
@@ -845,14 +1023,44 @@ contains
                                        r(3),               &
                                        ao,                 &
                                        buffer,             &
+                                       q_max_dim,          &
                                        w)
 
-            write(lunit_3d_vector, '(6e13.5)') &
-               r(1:3),                         &
-               w(1:3)
-            write(lunit_3d_scalar, '(4e13.5)') &
-               r(1:3),                         &
-               w(0)
+            if (.not.visual_cfg_out_file_custom) then
+               write(lunit_3d_vector, '(6ES18.8E3)') &
+                  r(1:3),                         &
+                  w(1:3)
+               write(lunit_3d_scalar, '(4ES18.8E3)') &
+                  r(1:3),                         &
+                  w(0)
+               if (visual_cfg_tensor) then
+                 write(lunit_3d_tensor, '(12ES18.8E3)') &
+                    r(1:3),                          &
+                    w(4:12)
+               end if
+            else
+               if (visual_cfg_out_scalar_file_custom) then
+                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(0)
+               end if
+               if (visual_cfg_out_vector_file_custom) then
+                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(1:3)
+               end if
+               if (visual_cfg_out_2ndtensor_file_custom) then
+                  write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(4:12)
+               end if
+            end if  ! if (.not.visual_cfg_out_file_custom) then
 
          end do
  98      continue
@@ -870,7 +1078,7 @@ contains
          rewind(lunit_3d_jbfile)
 
          do 
-            read(lunit_3d_jbfile, *, end=99) r(1), r(2), r(3), v(1), v(2), v(3)
+            read(lunit_3d_jbfile, *, end = 99) r(1), r(2), r(3), v(1), v(2), v(3)
             call get_quantity_in_point(visual_cfg_nr_dmat, &
                                        D,                  &
                                        D_0,                &
@@ -879,15 +1087,45 @@ contains
                                        r(3),               &
                                        ao,                 &
                                        buffer,             &
+                                       q_max_dim,          &
                                        w, &
-                                       jb_input=v)
+                                       jb_input = v)
 
-            write(lunit_3d_vector, '(6e13.5)') &
-               r(1:3),                         &
-               w(1:3)
-            write(lunit_3d_scalar, '(4e13.5)') &
-               r(1:3),                         &
-               w(0)
+            if (.not.visual_cfg_out_file_custom) then
+               write(lunit_3d_vector, '(6ES18.8E3)') &
+                  r(1:3),                         &
+                  w(1:3)
+               write(lunit_3d_scalar, '(4ES18.8E3)') &
+                  r(1:3),                         &
+                  w(0)
+               if (visual_cfg_tensor) then
+                 write(lunit_3d_tensor, '(12ES18.8E3)') &
+                    r(1:3),                         &
+                    w(4:12)
+               end if
+            else
+               if (visual_cfg_out_scalar_file_custom) then
+                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(0)
+               end if
+               if (visual_cfg_out_vector_file_custom) then
+                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(1:3)
+               end if
+               if (visual_cfg_out_2ndtensor_file_custom) then
+                  write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(4:12)
+               end if
+            end if  ! if (.not.visual_cfg_out_file_custom) then
 
          end do
  99      continue
@@ -919,7 +1157,7 @@ contains
             k = istbnu(j)
             do l = 0, maxopr
                if (iand(l, k) == 0) then
-                  i = i + 1
+                  i = i+1
                   do m = 1, 3
                      atom_xyz(m, i) = pt(iand(isymax(m, 1), l))*cord(m, j)
 
@@ -934,40 +1172,44 @@ contains
 !        add some space, calculate step sizes and convert step vectors to angstrom
 
          do i = 1, 3
-            step_3d(i, 0) =  step_3d(i, 0) -  visual_cfg_add_3d
+            step_3d(i, 0) = (step_3d(i, 0) - (visual_cfg_add_3d*2.0d0))*xtang
             step_3d(i, i) = (step_3d(i, i) + (visual_cfg_add_3d*2.0d0))*xtang
             step_3d(i, i) = (step_3d(i, i) -  step_3d(i, 0))/(visual_cfg_ncube(i) - 1)
          end do
 
 !        write header
 
-         write(lunit_3d_cube, '(a)') 'cube file'
-         write(lunit_3d_cube, '(a)') 'generated by DIRAC'
+         if (.not. visual_cfg_london_skip_cube) then
+            write(lunit_3d_cube, '(a)') 'cube file'
+            write(lunit_3d_cube, '(a)') 'generated by DIRAC'
+            
+            write(lunit_3d_cube, '(i5, 4f12.6)') &
+               nucdep,                          &
+              (step_3d(j, 0), j = 1, 3)
+            do i = 1, 3
+              write(lunit_3d_cube, '(i5, 4f12.6)') &
+                 visual_cfg_ncube(i),             &
+                (step_3d(j, i), j = 1, 3)
+            end do
+            
+            do i = 1, nucdep
+              write(lunit_3d_cube, '(i5, 4f12.6)') &
+                   nint(atom_xyz(4, i)),           &
+                   atom_xyz(4, i),                 &
+                  (atom_xyz(j, i), j = 1, 3)
+            end do
+         end if
 
-         write(lunit_3d_cube,'(i5, 4f12.6)') &
-            nucdep,                          &
-           (step_3d(j, 0), j = 1, 3)
-         do i = 1, 3
-           write(lunit_3d_cube,'(i5, 4f12.6)') &
-              visual_cfg_ncube(i),             &
-             (step_3d(j, i), j = 1, 3)
-         end do
-
-         do i = 1, nucdep
-           write(lunit_3d_cube, '(i5, 4f12.6)') &
-                nint(atom_xyz(4, i)),           &
-                atom_xyz(4, i),                 &
-               (atom_xyz(j, i), j = 1, 3)
-         end do
-
-         write(lunit_3d_vector_vtk, '(a)')      '# vtk DataFile Version 2.0'
-         write(lunit_3d_vector_vtk, '(a)')      'Sample rectilinear grid'
-         write(lunit_3d_vector_vtk, '(a)')      'ASCII'
-         write(lunit_3d_vector_vtk, '(a)')      'DATASET RECTILINEAR_GRID'
-         write(lunit_3d_vector_vtk, '(a, 3i8)') 'DIMENSIONS',        &
-                                                visual_cfg_ncube(1), &
-                                                visual_cfg_ncube(2), &
-                                                visual_cfg_ncube(3)
+         if (.not. visual_cfg_london_skip_vtk) then
+            write(lunit_3d_vector_vtk, '(a)')      '# vtk DataFile Version 2.0'
+            write(lunit_3d_vector_vtk, '(a)')      'Sample rectilinear grid'
+            write(lunit_3d_vector_vtk, '(a)')      'ASCII'
+            write(lunit_3d_vector_vtk, '(a)')      'DATASET RECTILINEAR_GRID'
+            write(lunit_3d_vector_vtk, '(a, 3i8)') 'DIMENSIONS',        &
+                                                   visual_cfg_ncube(1), &
+                                                   visual_cfg_ncube(2), &
+                                                   visual_cfg_ncube(3)
+         end if
 
          n = maxval((/visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3)/))
          allocate(temp(n, 3))
@@ -991,32 +1233,40 @@ contains
             end do
          end do
 
-         j = visual_cfg_ncube(1)
-         write(lunit_3d_vector_vtk, '(a, i8, a)') 'X_COORDINATES', j, ' float'
-         write(lunit_3d_vector_vtk, '(6f13.5)')   (temp(m, 1), m = 1, j)
-         j = visual_cfg_ncube(2)
-         write(lunit_3d_vector_vtk, '(a, i8, a)') 'Y_COORDINATES', j, ' float'
-         write(lunit_3d_vector_vtk, '(6f13.5)')   (temp(m, 2), m = 1, j)
-         j = visual_cfg_ncube(3)
-         write(lunit_3d_vector_vtk, '(a, i8, a)') 'Z_COORDINATES', j, ' float'
-         write(lunit_3d_vector_vtk, '(6f13.5)')   (temp(m, 3), m = 1, j)
+         if (.not. visual_cfg_london_skip_vtk) then
+            j = visual_cfg_ncube(1)
+            write(lunit_3d_vector_vtk, '(a, i8, a)') 'X_COORDINATES', j, ' float'
+            write(lunit_3d_vector_vtk, '(6f13.5)')   (temp(m, 1), m = 1, j)
+            j = visual_cfg_ncube(2)
+            write(lunit_3d_vector_vtk, '(a, i8, a)') 'Y_COORDINATES', j, ' float'
+            write(lunit_3d_vector_vtk, '(6f13.5)')   (temp(m, 2), m = 1, j)
+            j = visual_cfg_ncube(3)
+            write(lunit_3d_vector_vtk, '(a, i8, a)') 'Z_COORDINATES', j, ' float'
+            write(lunit_3d_vector_vtk, '(6f13.5)')   (temp(m, 3), m = 1, j)
+         end if
 
          deallocate(temp)
 
-         n = visual_cfg_ncube(1)*visual_cfg_ncube(2)*visual_cfg_ncube(3)
-         write(lunit_3d_vector_vtk, '(a, i8)')    'POINT_DATA', n
-         write(lunit_3d_vector_vtk, '(a)')        'SCALARS scalars float'
-         write(lunit_3d_vector_vtk, '(a)')        'LOOKUP_TABLE default'
+         if (.not. visual_cfg_london_skip_vtk) then
+            n = visual_cfg_ncube(1)*visual_cfg_ncube(2)*visual_cfg_ncube(3)
+            write(lunit_3d_vector_vtk, '(a, i8)')    'POINT_DATA', n
+            write(lunit_3d_vector_vtk, '(a)')        'SCALARS scalars float'
+            write(lunit_3d_vector_vtk, '(a)')        'LOOKUP_TABLE default'
+            
+            do i = 1, n
+               write(lunit_3d_vector_vtk, '(f13.5)') 0.0d0
+            end do
+            
+            write(lunit_3d_vector_vtk, '(a)')
+            write(lunit_3d_vector_vtk, '(a)')
+            write(lunit_3d_vector_vtk, '(a)')       'VECTORS vectors float'
+         end if
 
-         do i = 1, n
-            write(lunit_3d_vector_vtk, '(f13.5)') 0.0d0
-         end do
-
-         write(lunit_3d_vector_vtk, '(a)')
-         write(lunit_3d_vector_vtk, '(a)')
-         write(lunit_3d_vector_vtk, '(a)')       'VECTORS vectors float'
-
-         allocate(temp2(visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3), 3))
+         if (visual_cfg_tensor) then
+           allocate(temp2(visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3), 12))
+         else
+           allocate(temp2(visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3), 3))
+         end if
 
          if (visual_cfg_3d_fast) then
             if (visual_cfg_ncube(3) > max_batch_length) then
@@ -1072,7 +1322,7 @@ contains
                                xyz,                     &
                                include_nuc_part=.true., &
                                include_el_part=.false.)
-                  res = res + res_temp
+                  res = res+res_temp
                   do kcube = 1, visual_cfg_ncube(3)
                      q(0, kcube) = res(kcube)
                   end do
@@ -1097,19 +1347,55 @@ contains
                                                 r(3),               &
                                                 ao,                 &
                                                 buffer,             &
+                                                q_max_dim,          &
                                                 q(0, kcube))
 
-                     write(lunit_3d_vector, '(3e13.5,3ES26.16E3)') &
-                        r(1:3),                                    &
-                        q(1:3, kcube)
-                     write(lunit_3d_scalar, '(3e13.5,ES26.16E3)')  &
-                        r(1:3),                                    &
-                        q(0, kcube)
-                     temp2(icube, jcube, kcube, 1:3) = q(1:3, kcube)
+                     if (.not.visual_cfg_out_file_custom) then
+                        write(lunit_3d_vector, '(6ES18.8E3)') &
+                           r(1:3),                                    &
+                           q(1:3, kcube)
+                        write(lunit_3d_scalar, '(4ES18.8E3)')  &
+                           r(1:3),                                    &
+                           q(0, kcube)
+                        if (visual_cfg_tensor) then
+                          write(lunit_3d_tensor, '(12ES18.8E3)')  &
+                             r(1:3),                                    &
+                             q(4:12, kcube)
+                        end if
+                     else
+                        if (visual_cfg_out_scalar_file_custom) then
+                           write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
+                              r(1),                                             &
+                              r(2),                                             &
+                              r(3),                                             &
+                              q(0, kcube)
+                        end if
+                        if (visual_cfg_out_vector_file_custom) then
+                           write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
+                              r(1),                                             &
+                              r(2),                                             &
+                              r(3),                                             &
+                              q(1:3, kcube)
+                        end if
+                        if (visual_cfg_out_2ndtensor_file_custom) then
+                           write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
+                              r(1),                                             &
+                              r(2),                                             &
+                              r(3),                                             &
+                              q(4:12, kcube)
+                        end if
+                     end if  ! if (.not.visual_cfg_out_file_custom) then
+                     if (visual_cfg_tensor) then
+                       temp2(icube, jcube, kcube, 1:12) = q(1:12, kcube)
+                     else
+                       temp2(icube, jcube, kcube, 1:3) = q(1:3, kcube)
+                     end if
                   end do
                end if
-               write(lunit_3d_cube, '(6ES26.16E3)')  &
-                  (q(0, m), m = 1, visual_cfg_ncube(3))
+               if (.not. visual_cfg_london_skip_cube) then
+                  write(lunit_3d_cube, '(6ES18.8E3)')  &
+                     (q(0, m), m = 1, visual_cfg_ncube(3))
+               end if
             end do
          end do
 
@@ -1120,62 +1406,124 @@ contains
             deallocate(xyzk)
          end if
 
-         do kcube = 1, visual_cfg_ncube(3)
-            do jcube = 1, visual_cfg_ncube(2)
-               do icube = 1, visual_cfg_ncube(1)
-                  write(lunit_3d_vector_vtk, '(3e13.5)') &
-                     temp2(icube, jcube, kcube, 1:3)
+         if (.not. visual_cfg_london_skip_vtk) then
+            do kcube = 1, visual_cfg_ncube(3)
+               do jcube = 1, visual_cfg_ncube(2)
+                  do icube = 1, visual_cfg_ncube(1)
+                     write(lunit_3d_vector_vtk, '(3ES18.8E3)') &
+                        temp2(icube, jcube, kcube, 1:3)
+                  end do
                end do
             end do
-         end do
+         end if
          deallocate(temp2)
       end if
 
-      if (visual_cfg_line) close(lunit_line_scalar, status = 'keep')
-      if (visual_cfg_line) close(lunit_line_vector, status = 'keep')
+      is_open=.false.
+      inquire(lunit_line_scalar, opened = is_open)
+      if (is_open) close(lunit_line_scalar, status = 'keep')
 
-      if (visual_cfg_radial) close(lunit_radial_scalar, status = 'keep')
-      if (visual_cfg_radial) close(lunit_radial_vector, status = 'keep')
+      is_open=.false.
+      inquire(lunit_line_vector, opened = is_open)
+      if (is_open) close(lunit_line_vector, status = 'keep')
 
-      if (visual_cfg_2d) close(lunit_2d_scalar, status = 'keep')
-      if (visual_cfg_2d) close(lunit_2d_vector, status = 'keep')
-      if (visual_cfg_2d) close(lunit_2d_flow,   status = 'keep')
+      is_open=.false.
+      inquire(lunit_line_tensor, opened = is_open)
+      if (is_open) close(lunit_line_tensor, status = 'keep')
 
-      if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_cube,       status = 'keep')
-      if (visual_cfg_3d .or. visual_cfg_3d_fast .or. visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) &
-                                                 close(lunit_3d_scalar,     status = 'keep')
-      if (visual_cfg_3d .or. visual_cfg_3d_fast .or. visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) &
-                                                 close(lunit_3d_vector,     status = 'keep')
-      if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_vector_vtk, status = 'keep')
+      is_open=.false.
+      inquire(lunit_radial_scalar, opened = is_open)
+      if (is_open) close(lunit_radial_scalar, status = 'keep')
 
-      if (visual_cfg_3d_gridimp) close(lunit_3d_gridimp, status = 'keep')
-      if (visual_cfg_3d_readjb)  close(lunit_3d_jbfile, status = 'keep')
+      is_open=.false.
+      inquire(lunit_radial_vector, opened = is_open)
+      if (is_open) close(lunit_radial_vector, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_radial_tensor, opened = is_open)
+      if (is_open) close(lunit_radial_tensor, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_2d_scalar, opened = is_open)
+      if (is_open) close(lunit_2d_scalar, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_2d_vector, opened = is_open)
+      if (is_open) close(lunit_2d_vector, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_2d_flow, opened = is_open)
+      if (is_open) close(lunit_2d_flow, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_2d_tensor, opened = is_open)
+      if (is_open) close(lunit_2d_tensor, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_3d_cube, opened = is_open)
+      if (is_open) close(lunit_3d_cube, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_3d_vector_vtk, opened = is_open)
+      if (is_open) close(lunit_3d_vector_vtk, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_3d_scalar, opened = is_open)
+      if (is_open) close(lunit_3d_scalar, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_3d_vector, opened = is_open)
+      if (is_open) close(lunit_3d_vector, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_3d_tensor, opened = is_open)
+      if (is_open) close(lunit_3d_tensor, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_3d_gridimp, opened = is_open)
+      if (is_open) close(lunit_3d_gridimp, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_3d_jbfile, opened = is_open)
+      if (is_open) close(lunit_3d_jbfile, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_outfil_custom_scalar, opened = is_open)
+      if (is_open) close(lunit_outfil_custom_scalar, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_outfil_custom_vector, opened = is_open)
+      if (is_open) close(lunit_outfil_custom_vector, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_outfil_custom_2ndtensor, opened = is_open)
+      if (is_open) close(lunit_outfil_custom_2ndtensor, status = 'keep')
+
 
       deallocate(q)
       deallocate(atom_xyz)
 
    end subroutine
 
-
    subroutine setup_orbital_string(occupation)
 
       ! this routine will set up occupation vector
-      ! based on **VISUAL
+      ! based on**VISUAL
       !          .OCCUPATION
       ! if this is not given, then it will occupy all
       ! "occupied" electrons with 1.0
-      real(8) :: occupation(norbt)
+      real(8):: occupation(norbt)
 
-      integer :: i, ifsym, ioff
+      integer:: i, ifsym, ioff
 
       occupation = 0.0d0
 
       ioff = 0
       do ifsym = 1, nfsym
-         ioff = ioff + npsh(ifsym)
+         ioff = ioff+npsh(ifsym)
          if (visual_cfg_use_orbital_string) then
-            do i = 1, nish(ifsym) + nash(ifsym) + nssh(ifsym)
-               occupation(ioff + i) = visual_cfg_occupation(i, ifsym)
+            do i = 1, nesh(ifsym)
+               occupation(ioff+i) = visual_cfg_occupation(i, ifsym)
             end do
          else
             if (nash(ifsym) > 0) then
@@ -1185,10 +1533,10 @@ contains
                stop 1
             end if
             do i = 1, nish(ifsym)
-               occupation(ioff + i) = 1.0d0
+               occupation(ioff+i) = 1.0d0
             end do
          end if
-         ioff = ioff + nesh(ifsym)
+         ioff = norb(ifsym)
       end do
 
    end subroutine
@@ -1196,20 +1544,20 @@ contains
       SUBROUTINE SETUP_FO_DMAT_AO(IXVECTOR, &
      &                            STRING, D_mo)
 
-      CHARACTER LAB1*16,&
-     &          LAB2*16,&
-     &          TYP1*2,&
-     &          TYP2*2,&
-     &          LBUF*16,&
+      CHARACTER LAB1*16, &
+     &          LAB2*16, &
+     &          TYP1*2, &
+     &          TYP2*2, &
+     &          LBUF*16, &
      &          PBUF*1
       LOGICAL   FILE_EXISTS
-      type(matrix) :: D_mo
-      real(8) :: STRING(*)
+      type(matrix):: D_mo
+      real(8):: STRING(*)
 
-      real(8), allocatable :: bvec(:)
+      real(8), allocatable:: bvec(:)
 
-      integer, allocatable :: orbital_rotation_indices(:, :)
-      real(8), allocatable :: response_vector(:, :)
+      integer, allocatable:: orbital_rotation_indices(:, :)
+      real(8), allocatable:: response_vector(:, :)
       integer              :: length
       character(2)         :: vector_type
       real(8)              :: ih_factor
@@ -1220,15 +1568,15 @@ contains
       real(8)              :: FREQ1, FREQ2, ERGRSP, unused
 
 !gosia, i'll remove it later
-      integer :: i, j
-      character(10) :: pattern
-      character(16) :: text
+      integer:: i, j
+      character(10):: pattern
+      character(16):: text
 
-      INQUIRE(FILE = visual_cfg_dmat_file(IXVECTOR),EXIST = FILE_EXISTS)
+      INQUIRE(FILE = visual_cfg_dmat_file(IXVECTOR), EXIST = FILE_EXISTS)
       IF(.NOT. FILE_EXISTS) THEN
-        WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A,A6,A)') 'solution vector file ', &
-     &    visual_cfg_dmat_file(IXVECTOR),' not found'
+        WRITE(LUPRI, '(A)') 'ERROR in VISUAL:'
+        WRITE(LUPRI, '(A, A6, A)') 'solution vector file ', &
+     &    visual_cfg_dmat_file(IXVECTOR), ' not found'
         CALL QUIT('ERROR in VISUAL')
       ENDIF
       LUNIT_XVECTOR = 17
@@ -1247,7 +1595,7 @@ contains
       IF(LAB1 .EQ. 'END_OF_THIS_FILE') THEN
         GOTO 2
       ELSE
-        NR_VECTORS = NR_VECTORS + 1
+        NR_VECTORS = NR_VECTORS+1
 !       skip solution vector
         READ(LUNIT_XVECTOR)
 !       skip orbital rotations
@@ -1260,8 +1608,8 @@ contains
 
       if ((visual_cfg_dmat_file_record(ixvector) > nr_vectors) &
           .or. (visual_cfg_dmat_file_record(ixvector) < 1)) then
-         write(lupri,'(a)') 'error in visual:'
-         write(lupri,'(a)') 'you try to read an invalid record number from file '//visual_cfg_dmat_file(ixvector)
+         write(lupri, '(a)') 'error in visual:'
+         write(lupri, '(a)') 'you try to read an invalid record number from file '//visual_cfg_dmat_file(ixvector)
          call quit('error in visual')
       end if
 
@@ -1271,7 +1619,7 @@ contains
       REWIND LUNIT_XVECTOR
  3    CONTINUE
       READ(LUNIT_XVECTOR)
-      IVECTOR = IVECTOR + 1
+      IVECTOR = IVECTOR+1
       IF(IVECTOR .EQ. visual_cfg_dmat_file_record(IXVECTOR)) THEN
         BACKSPACE(LUNIT_XVECTOR)
         GOTO 4
@@ -1291,9 +1639,9 @@ contains
 
 
 
-      visual_cfg_irep_xvector(IXVECTOR) = JSYMOP1 - 1
+      visual_cfg_irep_xvector(IXVECTOR) = JSYMOP1-1
       length  = LEN/NZ
-      D_mo%irep   = JSYMOP1 - 1
+      D_mo%irep   = JSYMOP1-1
 
 
     select case (typ1(1:1))
@@ -1353,7 +1701,7 @@ contains
     integer, intent(in)  :: orbital_rotation_indices(2, length)
     real(8), intent(in)  :: h
     real(8), intent(in)  :: response_vector(length, nz)
-    real(8), intent(out) :: matrix(norbt, norbt, nz)
+    real(8), intent(out):: matrix(norbt, norbt, nz)
     integer, intent(in)  :: irep
 !   ----------------------------------------------------------------------------
     integer              :: i, s, is, iz
@@ -1396,6 +1744,9 @@ contains
                                                                    visual_cfg_ncube(2), &
                                                                    visual_cfg_ncube(3) 
         write(lupri, *) 'Space around the cube file is ', visual_cfg_add_3d
+        write(lupri, *) 'Gauge origin is ', visual_cfg_gauge_origin(1), &
+                                            visual_cfg_gauge_origin(2), &
+                                            visual_cfg_gauge_origin(3)
      end if
      if (visual_cfg_3d_fast) then 
         write(lupri, *) 'Visualization in 3d with fast evaluation of the molecular electrostatic potential', &

@@ -5,6 +5,7 @@ module exacorr_global
         use exacorr_datatypes
         use exacorr_mo
         use, intrinsic:: ISO_C_BINDING
+        use checkpoint
 
         implicit none
         private
@@ -73,8 +74,8 @@ module exacorr_global
              use interface_to_mpi
              integer :: my_MPI_rank
 #endif
-             integer :: ierr, scf_file
-             logical :: tobe
+             integer :: ierr, scf_file, nmo_original
+             logical :: tobe, tobe_mp2no, tobe_dirac, tobe_respect
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
@@ -84,17 +85,28 @@ module exacorr_global
                 return
              end if
 #endif
+             ! this decision tree needs to be generalized, for now we prioritize MP2 natural orbitals
+             ! followed  by RESPECT orbitals before standard canonical MOs
+             inquire (file='RSD_MOS',exist=tobe_respect)
+             ierr = -1
+             call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',tobe_dirac)
+             call checkpoint_query('/result/wavefunctions/mbpt/mobasis/nz',tobe_mp2no)
+             if (tobe_mp2no) then
+               scf_file = 2
+               call print_date ("Found Dirac MP2 natural orbitals, will use these.")
+               call read_from_dirac (ao_basis,cspinor_all,'mbpt',ierr)
+             else if (tobe_respect) then
+                scf_file = 1
+                call print_date ("Found ReSpect SCF orbitals file. Will read orbitals from this file.")
+                call read_from_respect (ao_basis,cspinor_all,ierr)
+             else if (tobe_dirac) then
              ! read MO coefficients and ao basis set information
-             inquire (file='DFCOEF',exist=tobe)
-             if (tobe) then
                 scf_file = 0
-                call read_from_dirac (ao_basis,cspinor_all,'DFCOEF',ierr)
+                call print_date ("Found Dirac SCF orbitals file. using it.")
+                call read_from_dirac (ao_basis,cspinor_all,'scf',ierr)
              else
-                inquire (file='RSD_MOS',exist=tobe)
-                if (tobe) then
-                   scf_file = 1
-                   call read_from_respect (ao_basis,cspinor_all,ierr)
-                end if
+                scf_file = -1
+                call print_date ("No orbitals file found.")
              end if
 
              if (ierr == 0) then
@@ -332,10 +344,9 @@ module exacorr_global
       integer, intent(in)     :: nmo,mo_list(nmo)
       type(cmo), intent(inout) :: cspinor
 
-      integer  :: i, nao, nmo_all
+      integer  :: i, nao
 
       nao     = cspinor_all%nao
-      nmo_all = cspinor_all%nmo !WHY IS THIS HERE?
 
       ! allocate arrays in cmo to hold the active MO's specified in mo_list
       call alloc_mo (cspinor,nao,nmo)
@@ -345,7 +356,7 @@ module exacorr_global
          cspinor%index(i)       = mo_list(i)
          cspinor%coeff(:,i,:)   = cspinor_all%coeff(:,mo_list(i),:)
          cspinor%energy(i)      = cspinor_all%energy(mo_list(i))
-         cspinor%boson_irrep(i) = cspinor_all%boson_irrep(mo_list(i))
+         cspinor%symmetry(i)    = cspinor_all%symmetry(mo_list(i))
       enddo
 
       end subroutine get_MO_coefficients
@@ -464,10 +475,14 @@ module exacorr_global
         if((mo1_list(nmo1)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MDPROP (MOLTRA)')
         if((mo2_list(nmo2)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MDPROP (MOLTRA)')
 
+        if (i_prop<0 .or. i_prop>10000) then
+          print*, " ERROR: property number ",i_prop," not available"
+          stop "        property to be added not found"
+        end if
+
         do qmo = 1, nmo2
           do pmo = 1, nmo1
-            h(pmo, qmo) = h(pmo, qmo) + &
-            int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop)
+            h(pmo, qmo) = int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop)
           end do
         end do
 

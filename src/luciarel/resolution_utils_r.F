@@ -1,26 +1,21 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 ***********************************************************************
 
-      subroutine c_to_ckk(C,CKK,IWAY,NJA,NJB,NKA,NKB,NTA,NTB,
+      subroutine c_to_ckk_old_2(C,CKK,IWAY,NJA,NJB,NKA,NKB,NTA,NTB,
      &                    IKJA,XKJA,IKJB,XKJB)
 *
 * IWAY = 1 : C(Ja,Jb) => C(Ka,Kb,ITa,ITb)
@@ -44,7 +39,9 @@
       integer, intent(in)    :: NTB
       integer, intent(in)    :: IKJA(NTA*NKA) 
       integer, intent(in)    :: IKJB(NTB,NKB)
+
       real(8), intent(in)    :: XKJA(NTA*NKA) 
+
       real(8), intent(in)    :: XKJB(NTB,NKB)
       real(8), intent(inout) :: C(NJA*NJB) 
       real(8), intent(inout) :: CKK(*)
@@ -123,6 +120,132 @@
 *
       END 
 ***********************************************************************
+
+      subroutine c_to_ckk(C,CKK,IWAY,NJA,NJB,NKA,NKB,NTA,NTB,
+     &                    IKJA,XKJA,IKJB,XKJB)
+*
+* IWAY = 1 : C(Ja,Jb) => C(Ka,Kb,ITa,ITb)
+* IWAY = 2 : C(Ka,KB,Ita,Itb) => C(Ja,Jb) + C(Ka,Kb,Ita,Itb)
+*
+* Jeppe Olsen, Summer of 99
+* Version where matrix notation is eliminated
+* Notice : K and T is in general batched. This is not visible here
+!
+! simplification an f90-fied by Stefan Knecht - April 2011
+! Improved efficiency - Andreas Nyvang and Jeppe Olsen, August 2018
+*
+      implicit none
+
+!----------------------------------------------------------------------
+      integer, intent(in)    :: IWAY
+      integer, intent(in)    :: NJA
+      integer, intent(in)    :: NJB
+      integer, intent(in)    :: NKA
+      integer, intent(in)    :: NKB
+      integer, intent(in)    :: NTA
+      integer, intent(in)    :: NTB
+      integer, intent(in)    :: IKJA(NTA*NKA) 
+      integer, intent(in)    :: IKJB(NTB,NKB)
+
+      real(8), intent(in)    :: XKJA(NTA*NKA) 
+
+      real(8), intent(in)    :: XKJB(NTB,NKB)
+      real(8), intent(inout) :: C(NJA*NJB) 
+      real(8), intent(inout) :: CKK(*)
+!----------------------------------------------------------------------
+      integer                :: ita, itb
+      integer                ::  ka,  kb
+      integer                ::  ja,  jb
+      integer                :: kakbitab, kakbitabx
+      integer                :: itaka
+      integer                :: itab
+      integer                :: JB_ABS
+      real(8)                :: SIGN_JB
+!======================================================================
+
+!     print '(a,4i8)', ' NJA,NJB,NKA,NKB ==> ',nja,njb, nka, nkb
+!     print '(a,2i8)', ' NTA,NTB         ==> ',nta,ntb
+!     print '(a   )', ' vector IKJA'
+!     CALL IWRTMA(IKJA,1,NTA*NKA,1,NTA*NKA)
+!     print '(a   )', ' vector IKJB'
+!     CALL IWRTMA(IKJB,NTB,NKB,NTB,NKB)
+!     print '(a,i8)', ' nta*ntb*nka*nkb  ==> ',nta*ntb*nka*nkb
+ 
+!     initialize
+      if(iway.eq.1)then 
+        call dzero(ckk,nta*ntb*nka*nkb)
+      end if
+
+      DO ITB = 1, NTB
+        DO ITA = 1, NTA
+          KAKBITAB = ((ITB-1)*NTA + ITA - 1) * NKA * NKB
+          DO KB = 1, NKB         
+            JB = IKJB(ITB,KB)
+            JB_ABS = ABS(JB)
+            if(JB /= 0)then
+              KAKBITABx = KAKBITAB
+              ITAKA     = ITA-NTA
+*
+              IF(JB.GT.0) THEN
+                SIGN_JB = 1.0D0
+              ELSE
+                SIGN_JB = -1.0D0
+              END IF
+*
+              if(iway.eq.1) then
+                do ka = 1, nka           
+                  KAKBITABx = KAKBITABx + 1
+                  ITAKA     = ITAKA + NTA
+                  JA        = IKJA(ITAKA)
+                  if(ja .gt. 0)then
+                      CKK(KAKBITABx) = SIGN_JB * C((JB_ABS-1)*NJA + JA)
+                  else if(ja.lt.0) then
+                      CKK(KAKBITABx) = -SIGN_JB * C((JB_ABS-1)*NJA - JA)
+                  end if ! ja .ne 0
+                end do ! ka loop
+              else ! Iway switch
+                do ka = 1, nka           
+                  KAKBITABx = KAKBITABx + 1
+                  ITAKA     = ITAKA + NTA
+                  JA        = IKJA(ITAKA)
+                  if(ja .gt. 0)then
+                      C((JB_ABS-1)*NJA  + JA) = SIGN_JB * CKK(KAKBITABx)
+     &                                   + C((JB_ABS-1)*NJA + JA)
+                  else if(ja.lt.0) then
+                      C((JB_ABS-1)*NJA  - JA) =-SIGN_JB* CKK(KAKBITABx)
+     &                                   + C((JB_ABS-1)*NJA - JA)
+                  end if ! ja .ne 0
+                end do ! ka loop
+              end if! iway switch
+            end if ! jb > 0
+            KAKBITAB  =  KAKBITAB + NKA
+          end do ! kb loop
+        end do ! nta loop
+      end do ! ntb loop
+*
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      WRITE(6,*) ' Output from C_TO_CKK, IWAY =  ', IWAY
+      WRITE(6,*) ' ======================================='
+      WRITE(6,*)
+      WRITE(6,*) ' C(Ja,Jb) '
+      CALL WRTMAT(C,NJA,NJB,NJA,NJB)
+      WRITE(6,*) ' C(Ka, Kb, ITa, Itb) '
+      ITAB = 0 
+      DO ITB = 1, NTB
+      DO ITA = 1, NTA
+        WRITE(6,*) ' C(Ka, Kb, Ita, Itb) for Ita,Itb =', Ita, Itb
+        CALL WRTMAT(CKK(1+ITAB*NKA*NKB),NKA,NKB,NKA,NKB)
+        ITAB = ITAB + 1
+      END DO
+      END DO
+#endif
+!#undef LUCI_DEBUG
+*
+      END 
+***********************************************************************
+
+*
 
       SUBROUTINE C_TO_CKK_old(C,CKK,IWAY,NJA,NJB,NKA,NKB,NTA,NTB,
      &                        IKJA,XKJA,IKJB,XKJB)
@@ -308,6 +431,7 @@ C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
      &        IBM(MXNDGIRR,MXNDGIRR,LTOP),NK(MXPOBS,LTOP)
       DIMENSION XM(*)
 *. Output
+
       INTEGER IKJ(NTOP,(IK_E-IK_B+1))
 !     DIMENSION XKJ(NTOP,(IK_E-IK_B+1))
       DIMENSION XKJ(*)
@@ -325,6 +449,7 @@ C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
       end do
 #endif
 !#undef LUCI_DEBUG
+
 *
       IZERO_MAP = 1
       IF(LTOP.GT.0) THEN
@@ -394,6 +519,7 @@ C?          WRITE(6,*) ' ITOP = ', ITOP
 *
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
+      write(6,*) 'IZERO_MAP = ',IZERO_MAP
       WRITE(6,*) ' Operators '
       print*,'IT_B and IT_E are ==> ',IT_B, IT_E
       print*,'IK_B and IK_E are ==> ',IK_B, IK_E
@@ -405,6 +531,7 @@ C?          WRITE(6,*) ' ITOP = ', ITOP
       CALL IWRTMA(IKJ,LT,LK,LT,LK)
 #endif
 !#undef LUCI_DEBUG
+
       END
 ***********************************************************************
 
@@ -866,6 +993,7 @@ C               LCJBLK = MXSOB*MXKB*MXB
 
 ***********************************************************************
       SUBROUTINE NEWTYP_REL(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
+      use luci_wrkspc
 *
 * an input supergroup is given.
 * apply a string of elementary operators to this supergroup and
@@ -897,7 +1025,6 @@ C               LCJBLK = MXSOB*MXKB*MXB
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "strbas.inc"
-#include "wrkspc.inc"
 *. Local scratch
       DIMENSION IEL(MXPNGAS)
 *. output
@@ -940,6 +1067,7 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 ***********************************************************************
 
       SUBROUTINE GTSPGP_REL(IEL,ISPGP,IWAY)
+      use luci_wrkspc
 *
 *
 * Relation between number of electrons in AS1, AS2 ... and
@@ -959,7 +1087,6 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 #include "ipoist8.inc"
 *. Generel input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strbas.inc"
 #include "stinf.inc"
 #include "cgas.inc"

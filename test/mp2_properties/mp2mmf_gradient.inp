@@ -4,6 +4,9 @@ Analytical first-order MP2 properties
 .WAVE F
 .PROPER
 .4INDEX
+**GENERAL
+.CODATA
+ PDG94
 **HAMILTONIAN
 .X2Cmmf
 **WAVE FUNCTIONS

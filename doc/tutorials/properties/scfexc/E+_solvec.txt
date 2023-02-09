@@ -1,0 +1,9 @@
+ E+ part of solution vectors for  1 excitations:
+* Vector nr.    1
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   1   1   1   1
+
+
+               Column   1
+       1       0.35355084
+    ==== End of matrix output ====

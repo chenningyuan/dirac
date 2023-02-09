@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -2147,7 +2142,9 @@ C
       if(linear.or.spinfr)then
 
         call alloc(orb_sym_vec,norbt)
-        orb_sym_vec = 0
+        if(.not.allocated(orbsymVEC))
+     &  call alloc(orbsymVEC,norbt,'orbital-SYM-KRCI')
+        orb_sym_vec = 0; orbsymVEC = 0
 
 !       read data from master file krmcscf or dfcoef
         if(myproc.eq.master)then
@@ -2178,20 +2175,21 @@ C
               end if
               if(.not.isopen) close(luxxxx,status="keep")
             else
-              call opnfil(lucoef,'DFCOEF','OLD','mjlist ')
               call reacmo(lucoef,'DFCOEF',dummy,dummy,
      &                            orb_sym_vec,dummy,8)
-              close(lucoef,status='KEEP')
             end if
           end if
         end if
+        call ICOPY(norbt,orb_sym_vec,1,orbsymVEC,1)
 !       communicate data
 #ifdef VAR_MPI
         if(isync_nodes .eq. 1)then
-          call interface_mpi_bcast(orb_sym_vec,norbt,master,
+          call interface_mpi_bcast(orbsymVEC,norbt,master,
      &                   global_communicator)
         end if
 #endif
+
+#ifdef BLUBB
 !       store orbital symmetry information on file 'orbsym.xxxx' 
 !       where xxxx is the process id.
         orb_sym_fh = 99
@@ -2201,6 +2199,7 @@ C
      &       form='unformatted',action='readwrite',position='rewind')
         write(orb_sym_fh) (orb_sym_vec(i), i=1,norbt)
         close(orb_sym_fh)
+#endif
 
         call dealloc(orb_sym_vec)
       end if
@@ -2472,12 +2471,16 @@ C     been initialized on the outside.
 CSK      IGSOCCX(I          ) = NGASSP(1,I)
 CSK      IGSOCCX(I + MXPNGAS) = NGASSP(2,I)
       END DO
-C     Energy convergence threshold
+C     Gradient and energy convergence thresholds
+      THRES_G = opt_thrgrd
       THRES_E = opt_threci
 #if defined (VAR_MPI)
-        IF( ISYNC_NODES .eq. 1 )
-     &    call interface_mpi_BCAST(thres_e,1,MASTER,
+        IF( ISYNC_NODES .eq. 1 ) THEN
+          call interface_mpi_BCAST(thres_g,1,MASTER,
      &                   global_communicator)
+          call interface_mpi_BCAST(thres_e,1,MASTER,
+     &                   global_communicator)
+         END IF
 #endif
 C     Sequence of CI calculations (here one!)
       NSEQCI(1) = 1
@@ -3142,14 +3145,16 @@ C     DIAPAR.1
       END IF
 *
 *. Number of iterations
-      WRITE(LUPRI,'(A,I2)')
+      WRITE(LUPRI,'(A,I4)')
      &   '        Allowed number of iterations    ',MAXIT
 *. Number of CI vectors in subspace
-      WRITE(LUPRI,'(A,I2)')
-     &   '        Allowed Dimension of CI subspace ',MXCIV_CI
+      WRITE(LUPRI,'(A,I4)')
+     &   '        Allowed Dimension of CI subspace',MXCIV_CI
 *
       WRITE(LUPRI,'(A,1P,E11.5/)')
-     &   '        Convergence threshold for energy ',THRES_E
+     &   '        Convergence threshold for gradient',THRES_G
+      WRITE(LUPRI,'(A,1P,E11.5/)')
+     &   '        Convergence threshold for energy  ',THRES_E
       IF(IDIAG.EQ.2) THEN
         WRITE(LUPRI,'(A,1P,E11.5)')
      &   '        Individual second order energy threshold ',E_THRE

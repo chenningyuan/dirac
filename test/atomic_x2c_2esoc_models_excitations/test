@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = ' TOTAL ENERGY',
+      num_lines   = 11,
+      rel_tolerance   = 1.0e-8)
+
+#test.run(['atoms.inp'], ['atoms.xyz'],
+#                 args='--replace closed_occ="10" --replace open_e="2" --replace open_orb="2" --replace myatom="Mg" --get="X2CMAT aoo2esoc.012"')
+#shutil.copy('X2CMAT', 'X2CMAT.012')
+
+test.run(['atoms.inp'], ['atoms.xyz'],
+                 #args='--replace closed_occ="6" --replace open_e="2" --replace open_orb="4" --replace myatom="O" --get="X2CMAT aoo2esoc.008"')
+                 args='--replace closed_occ="4" --replace open_e="4" --replace open_orb="6" --replace myatom="O" --get="X2CMAT aoo2esoc.008"')
+shutil.copy('X2CMAT', 'X2CMAT.008')
+
+#test.run(['atoms.inp'], ['atoms.xyz'],
+#                 args='--replace closed_occ="4" --replace open_e="3" --replace open_orb="6" --replace myatom="N" --get="X2CMAT aoo2esoc.007"')
+#shutil.copy('X2CMAT', 'X2CMAT.007')
+
+# 4c reference
+#test.run(['fsccsd.inp'], ['Mg.mol'], f)
+#test.run(['mol_fsccsd.inp'], ['O2.mol'], f)
+#test.run(['mol2_fsccsd.inp'], ['N2.mol'], f)
+
+# molecular U matrix (from molecular core h1^{4c}) + AMFI 2e-SO corrections
+#test.run(['fsccsd_molecular-x2c-amfi.inp'], ['Mg.mol'], f)
+#test.run(['mol_fsccsd_molecular-x2c-amfi.inp'], ['O2.mol'], f)
+#test.run(['mol2_fsccsd_molecular-x2c-amfi.inp'], ['N2.mol'], f)
+
+# molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO corrections
+#test.run(['fsccsd_molecular-x2c-xamfi.inp'], ['Mg.mol'], f, args='--put="aoo2esoc*"')
+test.run(['mol_fsccsd_molecular-x2c-xamfi.inp'], ['O2.mol'], f, args='--put="aoo2esoc*"')
+#test.run(['mol2_fsccsd_molecular-x2c-xamfi.inp'], ['N2.mol'], f, args='--put="aoo2esoc*"')
+
+os.unlink('X2CMAT.007')
+os.unlink('X2CMAT.008')
+os.unlink('X2CMAT.012')
+os.unlink('aoo2esoc.007')
+os.unlink('aoo2esoc.008')
+os.unlink('aoo2esoc.012')
+
+sys.exit(test.return_code)

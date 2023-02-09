@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -64,6 +59,9 @@ C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, KAOVEC, KPRIM,
      &                   Q, QEFF, DSM, UNCONT, BASNAM, BASREF, IPRBAS)
+#ifdef PRG_DIRAC
+      use aobasis_collector, only: add_aobasis2container
+#endif
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL   UNCONT, SEG, READ_NU_CALLED
@@ -114,6 +112,7 @@ C
 C     control print in BASLIB, usually IPRBAS = IPREAD = IPRUSR + 1 = 1
 C     from calling routine
       IPRINT = IPRBAS
+      !IPRINT = 10
       IF (BASNAM(1:1).eq.' ') IPRINT = 5
       INTQ   = NINT(Q)
       IF (abs(Q-INTQ) .gt. 1.d-8) then
@@ -457,6 +456,12 @@ C
         WRITE(LUPRI,*) 'SADLEJ =',SADLEJ
         WRITE(LUPRI,*) 'NQVD   =',NQVD
       ENDIF
+
+      !> save AO basis label for later usage
+#if defined PRG_DIRAC && defined MOD_XAMFI
+      call add_aobasis2container(BASTMP)
+#endif
+
 C
 C Finds the right element in the file.
 C

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -158,9 +153,6 @@ C
 C     1. Get coefficients
 C     ===================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETFC1')
       IF(SPINFR) THEN
         IOPT = 10
       ELSE
@@ -168,7 +160,6 @@ C
       ENDIF
       IF (IPRINT.GE.10) IOPT = IOPT + 1
       CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,IOPT)
-      CLOSE(LUBUF,STATUS='KEEP')
       NFMAT = 1
       IF (NASHT .GT. 0) NFMAT = 2
 C
@@ -246,18 +237,14 @@ C          Hermitian operator
 
         if (dirac_cfg_dft_calculation) then
            call genden(fao, cmo, 1, iprint)
-#ifdef MOD_UNRELEASED
            if (dft_cfg_overlap_diagnostic) then    
               call reset_num_grid()
               call stash_zipgrid(num_grid_cfg_zipgrid)       
            end if
-#endif
            call generate_num_grid(fao)
-#ifdef MOD_UNRELEASED
            if (dft_cfg_overlap_diagnostic) then    
               call unstash_zipgrid(num_grid_cfg_zipgrid)       
            end if
-#endif
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
@@ -297,7 +284,7 @@ C          Hermitian operator
 
               write (*,*) 'FDE Fock contributions (re)calculated'
            else if (itmp%im_vemb) then
-              write (*,*) 'FDE Fock contributions (in AOPROPER) added'
+              write (*,*) 'FDE Fock contributions (CHECKPOINT) added'
            endif
         endif
 C
@@ -336,7 +323,7 @@ CJTH check this
 #ifdef HAS_PELIB
 ! edh: As the solvent methods before us (see above) we need
 ! to construct the (static) PE contributions from environment
-! before starting a response calculation from DFCOEF
+! before starting a response calculation
       IF (PEQM) THEN
         call genden(fao, cmo, 1, iprint)
         call pelib_ifc_fock(fao, fmo, tot_nrg, el_nrg)

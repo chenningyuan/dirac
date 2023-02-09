@@ -61,6 +61,19 @@ for the calculation of transition moments (note that they contribute to the same
       1
 
 
+keyword(VPOLE)
+
+Specification of electric Cartesian multipole operators of order :math:`n` in the velocity representation
+
+.. math::
+
+    \hat{\mathcal{Q}}^{[n]}_{j_1\ldots j_{n-1};j_n} = \frac{ie}{\omega}r_{j_1}\ldots r_{j_{n-2}}(c\alpha_{j_n} r_{j_{n-1}} + nc\alpha_{j_{n-1}}r_{j_n})
+
+*Example:* Velocity representation electric dipole operator::
+
+      .VPOLE
+      1
+
 keyword(ANALYZE)
 
 Analyze solution vectors and show the most important excitations at the
@@ -148,6 +161,34 @@ since only the polarization vectors depend on the angle :math:`\chi`. The averag
 whereas the average over angles :math:`\theta` and :math:`\phi` is handled by `Lebedev quadrature <https://en.wikipedia.org/wiki/Lebedev_quadrature>`_ .
 
 A full account is given in :cite:`List_JCP2020`
+
+
+keyword(BEDECD)
+
+Invoke calculation of the differential oscillator strengths using the full interaction operator. This quantity is calculated as the difference between the oscillator strengths corresponding to left- and right-handed circularly polarized light. The differential oscillator strenght is given by
+
+.. math::
+
+    \Delta f= f_{\text{L}}-f_{\text{R}}=-i\frac{2m_e\omega}{\hbar e^2}\mathbf{e}_{k}\cdot\left(\mathbf{T}\times\mathbf{T}^{\ast}\right),
+
+where the transition moments are written in vector form, :math:`\mathbf{T}=\langle f|\frac{e}{\omega} c\boldsymbol{\alpha}e^{i\mathbf{k}\cdot\mathbf{r}}|i\rangle`, which allows the compact cross-product form in previous equation.
+
+Isotropic averaging of the differential oscillator strength is handled in an analogous manner as :ref:`EXCITATION_ENERGIES_.BED`, with the main difference being that in the current case, only two angles are required. The redundancy of the angle :math:`\chi` is a manifestation of axial symmetry. The rotational average can be written as 
+
+.. math::
+
+   \left\langle \Delta f_{n\leftarrow 0}\right\rangle _{\theta,\phi} = -i\frac{2m_e\omega}{\hbar e^2}\left\langle n|\mathbf{e}_{k}\cdot\left(\mathbf{T}\times\mathbf{T}^{\ast}\right)\right\rangle _{\theta,\phi}.
+
+For a full account see :cite:`vanHorn2021probing`.
+
+keyword(ANGPLOT)
+
+Print the anisotropic differential oscillator strength (see. :ref:`EXCITATION_ENERGIES_.BEDECD`) for every point on the Lebedev grid. These points can be used to plot the differential oscillator strength as a function of the incident angle of the radiation. A full account is given in :cite:`vanHorn2021probing`.
+
+
+
+
+
 
 keyword(ORIENT)
 

@@ -1,24 +1,19 @@
 !define DEBUG_MP2_NO
 
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -111,7 +106,10 @@ C     step
       ENDDO
       IMAXVSP     = JMAXVSP
 Caspg, default changed from scheme 4 to scheme 6
-      IAOMOSCHEME = 6 
+cayaki_03_06_2022
+c     default changed from scheme 6 to scheme 4, because scheme 4 is faster
+c     for the current architecture      
+      IAOMOSCHEME = 4
       
 C
 C     Process input from CBIMP2NO
@@ -437,9 +435,7 @@ C          ... MP2 NO coefficients
 C          ... boson irrep info (or mj-values if linear symmetry is available)
            CALL IREAKRMC(LUKRMC,'IBEIGORI',work(kibeig),NORBT)
 C          ... MO coefficients
-           CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
-           CALL REACMO_new(LUCOEF,cmo=WORK(KCMO_TRA:KCMO_TRA+NCMOTQ-1))
-           CLOSE(LUCOEF,STATUS='KEEP')
+           CALL REACMO_new(cmo=WORK(KCMO_TRA:KCMO_TRA+NCMOTQ-1))
 C
 C          transformation 
 C          --------------
@@ -862,16 +858,7 @@ C
       allocate (EIG(NORBT))
       allocate (IBEIG(NORBT))
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)')
-     &   'MP2DEN ERROR: MO coefficient file not present'
-         CALL Abend2('MP2DEN: No MO coefficient file !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
-         CALL REACMO_new(LUCOEF,cmo=cmo,eig=eig,ibeig=ibeig)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      END IF
+      CALL REACMO_new(cmo=cmo,eig=eig,ibeig=ibeig)
 C
 C     Select the set that we need
 C
@@ -1060,14 +1047,7 @@ C
       allocate (CMO(NCMOTQ))
       allocate (EIG(NORBT))
       allocate (IBEIG(NORBT))
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-         CALL QUIT('PAMTRA: No MO coefficient file !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
-         CALL REACMO_new(LUCOEF,cmo=cmo,eig=eig,ibeig=ibeig)
-      ENDIF
+      CALL REACMO_new(cmo=cmo,eig=eig,ibeig=ibeig)
 C
 C     Select the set that we need
 C
@@ -1165,6 +1145,7 @@ C
       relcc_do_mp2gradient = .true.
       relcc_do_naturalorbitals = .true.
       relcc_no_recompute = .true.
+      if (istrat==6) relcc_integral_interface = 'DIRAC6    '
 C     The original NO generation treats open shells as closed, set occupation explicitly to keep this definition.
 C     These lines are necessary because the default for information written to MRCONEE has changed to closed shells only.
 C     / Luuk June 2016

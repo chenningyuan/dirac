@@ -59,5 +59,6 @@ add_library(
 )
 
 # add intermodule dependencies
+add_dependencies(embedding xcint)
 add_dependencies(embedding xcfun)
 add_dependencies(embedding gp)

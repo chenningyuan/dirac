@@ -1,23 +1,18 @@
 
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module fde_input_dirac
@@ -115,6 +110,15 @@ module fde_input_dirac
                read(lucmd,*) nadd_fun
                call fde_set_nadd_kef(nadd_fun)
 
+! do not correct for double counting for subsystem energy for static potential
+!
+! by default we correct for double counting if the  static potential is used; 
+! if the potential is calculated in the scf from the density and electrostatic
+! potential of the frozen subsystem, this option has no effect, as the 
+! subsytem energy is always corrected for this double-counting 
+            CASE ('.NOEDCC')
+                itmp%im_remove_vemb_e_dcount=.false.
+
 ! flags for response read kinetic energy functional for non-additive term
             CASE ('.RSP')
                itmp%im_frozen = .true.
@@ -142,7 +146,9 @@ module fde_input_dirac
                read(lucmd,*) itmp%im_format
 
             CASE ('.EXONLY')
+               !read(lucmd,*) ftmp%export%gridfile
                read(lucmd,*) ftmp%export%name
+               read(lucmd,*) etmp%ex_property
                dirac_cfg_fde_export = .true.
                etmp%do_grid_out = .true.
 ! doprp is part of dcbgen.h
