@@ -158,6 +158,7 @@ module talsh_eom
             call eom_ccsd_eigenvalue_ea(results_t,eom_config%nroots,interm_t,int_t)
          case("EE")
             call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t,'L')
+            ! call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t)
          case default
             call quit ('Error: No valid EOM-flavour chosen')
       end select
