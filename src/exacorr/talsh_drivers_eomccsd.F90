@@ -134,10 +134,8 @@ module talsh_eom
 
 ! aspg : need to get from hardcoded options to getting them from input (*CCDIAG) on the calls to talsh_davidson_setup
       call talsh_davidson_setup(unit_output=6, &
-                              !   solve_right=.true.,&
-                              !   solve_left=.false.,&
-                                solve_right=.false.,&
-                                solve_left=.true.,&
+                                solve_right=.true.,&
+                                solve_left=.false.,&
                                 symmetric=.false., &
                                 overlap_sorting=relcc_mfd_overlap_sorting,&
                                 max_subspace_size=relcc_mfd_max_subspace_size,&
@@ -157,8 +155,8 @@ module talsh_eom
          case("EA")
             call eom_ccsd_eigenvalue_ea(results_t,eom_config%nroots,interm_t,int_t)
          case("EE")
-            call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t,'L')
-            ! call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t)
+            call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t)
+            ! call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t,'L')  ! test left equation
          case default
             call quit ('Error: No valid EOM-flavour chosen')
       end select
@@ -330,7 +328,7 @@ module talsh_eom
       call print_date("Entering EOM-EE eigenvalue calculation")
 
       call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, left_right)
-      call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
+      call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, left_right)
       call talsh_eomccsd_ee_trial_create(workspace_t)
       call talsh_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
 

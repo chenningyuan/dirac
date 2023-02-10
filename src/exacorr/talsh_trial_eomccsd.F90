@@ -265,9 +265,10 @@ module talsh_trial_eomccsd
 
      end subroutine
 
-    subroutine talsh_eomccsd_ip_Hdiag_create(workspace, Fmi_tensor, Fae_tensor)
+    subroutine talsh_eomccsd_ip_Hdiag_create(workspace, Fmi_tensor, Fae_tensor, left_right)
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
       type(talsh_tens_t), intent(inout) :: Fmi_tensor, Fae_tensor
+      character*1, OPTIONAL                              :: left_right
       integer :: nocc, nvir, ncont, i, j, a, X, ierr 
       integer :: Fmi_dims(2), Fae_dims(2), Fmi_rank, Fae_rank
       real(8) :: diagonal
@@ -335,9 +336,10 @@ module talsh_trial_eomccsd
     end subroutine
 
 
-    subroutine talsh_eomccsd_ea_Hdiag_create(workspace, Fmi_tensor, Fae_tensor)
+    subroutine talsh_eomccsd_ea_Hdiag_create(workspace, Fmi_tensor, Fae_tensor, left_right)
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
       type(talsh_tens_t), intent(inout) :: Fmi_tensor, Fae_tensor
+      character*1, OPTIONAL                              :: left_right
       integer :: nocc, nvir, i, a, b, ierr 
       integer :: Fmi_dims(2), Fae_dims(2), Fmi_rank, Fae_rank
       real(8) :: diagonal
@@ -380,9 +382,13 @@ module talsh_trial_eomccsd
 
     end subroutine
 
-    subroutine talsh_eomccsd_ee_Hdiag_create(workspace, Fmi_tensor, Fae_tensor)
+    subroutine talsh_eomccsd_ee_Hdiag_create(workspace, Fmi_tensor, Fae_tensor, left_right)
+      ! XY: we need to ditinguish left or right equation since we need to switch occ and vir for trial vectors
+      ! We also need to change Hdiag left IP and EA. 
+
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
       type(talsh_tens_t), intent(inout) :: Fmi_tensor, Fae_tensor
+      character*1, OPTIONAL                              :: left_right
       integer :: nocc, nvir, i, j, a, b, ierr 
       integer :: Fmi_dims(2), Fae_dims(2), Fmi_rank, Fae_rank
       real(8) :: diagonal
@@ -394,8 +400,10 @@ module talsh_trial_eomccsd
 
       diagonal = ZERO
 
-      nvir  = workspace%tens1_dims(1)
+      nvir  = workspace%tens1_dims(1)    
       nocc  = workspace%tens1_dims(2)
+
+
 
       ierr = talsh_tensor_dimensions(Fmi_tensor,Fmi_rank,Fmi_dims)
       ierr = talsh_tensor_get_body_access(Fmi_tensor,Fmi_body_p,C8,0,DEV_HOST)
@@ -413,7 +421,11 @@ module talsh_trial_eomccsd
 
       do i = 1, nocc
          do a = 1, nvir
-            diagonal = fae_p_tens(a,a) - fmi_p_tens(i,i)
+            if (present(left_right)) then
+               diagonal = fae_p_tens(i,i) - fmi_p_tens(a,a)
+            else
+               diagonal = fae_p_tens(a,a) - fmi_p_tens(i,i)
+            end if
             hdiag1_hp_tens(a,i) = diagonal
          end do
       end do
@@ -422,7 +434,11 @@ module talsh_trial_eomccsd
          do i = 1, nocc
             do b = 1, nvir
                do a = 1, nvir
-                  diagonal = fae_p_tens(a,a) + fae_p_tens(b,b) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
+                  if (present(left_right)) then
+                     diagonal = fae_p_tens(i,i) + fae_p_tens(j,j) - fmi_p_tens(a,a) - fmi_p_tens(b,b)
+                  else
+                     diagonal = fae_p_tens(a,a) + fae_p_tens(b,b) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
+                  end if 
                 if ((a.eq.b).or.(i.eq.j)) then 
                   ! if (i.lt.j.and.a.lt.b) then
 ! matching indexes of virtuals and/or occupied correspond to unphysical excited determinants and thus spurious matrix elements
