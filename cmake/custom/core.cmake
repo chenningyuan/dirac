@@ -41,34 +41,42 @@ target_sources(dirac.x PRIVATE src/main/main.F90)
 
 target_link_libraries(dirac.x
   PRIVATE
-    main
     abacus
-    gp
-    xcfun_fortran_bindings
+    amfi
+    cfun
+    dirac
+    dirrci
+    ecp
     embedding
-    localization
-    visual
-    x2c
-    interface_mpi
+    esr
+    gp
+    grid
+    input
     interest
+    interest
+    interface_mpi
+    krmc
+    laplace
+    localization
+    luciarel
+    lucita
+    main
+    matrix_operations
+    moltra
+    prp
     qcorr
     reladc
-    luciarel
     relccsd
-    matrix_operations
-    density_eval
+    visual
+    x2c
+    xcfun_fortran_bindings
+    xcint
   )
 
 if(ENABLE_PCMSOLVER)
   target_link_libraries(dirac.x
     PRIVATE
       pcm_dirac
-    )
-endif()
-if(ENABLE_XAMFI)
-  target_link_libraries(dirac.x
-    PRIVATE
-      x-amfi
     )
 endif()
 if(ENABLE_SRDFT)
