@@ -1,3 +1,12 @@
+add_library(hergp)
+
+target_sources(hergp
+  PRIVATE
+    hergp.F
+  )
+
+#-------------------------------------------------------------------------------
+
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
     ${PROJECT_SOURCE_DIR}/src/abacus
