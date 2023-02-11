@@ -35,7 +35,64 @@ macro(compile_standalone _executable _source _list_of_executables)
     )
 endmacro()
 
-compile_standalone(dirac.x src/main/main.F90 "${_list_of_executables}")
+add_executable(dirac.x)
+
+target_sources(dirac.x PRIVATE src/main/main.F90)
+
+target_link_libraries(dirac.x
+  PRIVATE
+    main
+    abacus
+    gp
+    xcfun_fortran_bindings
+    embedding
+    localization
+    visual
+    x2c
+    interface_mpi
+    interest
+    qcorr
+    reladc
+    luciarel
+    relccsd
+    matrix_operations
+    density_eval
+  )
+
+if(ENABLE_PCMSOLVER)
+  target_link_libraries(dirac.x
+    PRIVATE
+      pcm_dirac
+    )
+endif()
+if(ENABLE_XAMFI)
+  target_link_libraries(dirac.x
+    PRIVATE
+      x-amfi
+    )
+endif()
+if(ENABLE_SRDFT)
+  target_link_libraries(dirac.x
+    PRIVATE
+      srdft
+    )
+endif()
+if(ENABLE_KRCC)
+  target_link_libraries(dirac.x
+    PRIVATE
+      krcc
+    )
+endif()
+# if(ENABLE_EXATENSOR)
+#   target_link_libraries(dirac.x
+#     PRIVATE
+#       exatensor
+#     )
+# endif()
+target_link_libraries(dirac.x
+  PRIVATE
+    ${EXTERNAL_LIBS}
+  )
 
 #synchronize basis set directories of trunk/basis* into the installation directory
 add_custom_command(TARGET dirac.x PRE_LINK COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis ${PROJECT_BINARY_DIR}/basis COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_ecp ${PROJECT_BINARY_DIR}/basis_ecp  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_dalton ${PROJECT_BINARY_DIR}/basis_dalton COMMAND ${CMAKE_COMMAND} -E echo "INFO:basis set directories, basis*, synchronized into current installation directory")
@@ -45,27 +102,6 @@ find_package(HDF5 COMPONENTS C HL)
 # If exatensor is enabled we also make a stand-alone binary for convenience.
 if (ENABLE_EXATENSOR)
    compile_standalone(exacorr.x src/exacorr/exacorr_main.F90   "${_list_of_executables}")
-endif()
-
-option(ENABLE_UTILITIES "Enable utilities" ON)
-if(ENABLE_UTILITIES)
-    compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90   "${_list_of_executables}")
-    compile_standalone(rspread.x                 utils/rspread.F90                   "${_list_of_executables}")
-    compile_standalone(labread.x                 utils/labread.F90                   "${_list_of_executables}")
-    compile_standalone(twofit.x                  utils/twofit.F90                    "${_list_of_executables}")
-    compile_standalone(cfread.x                  utils/cfread.F90                    "${_list_of_executables}")
-    compile_standalone(cf_addlabels.x            utils/cf_addlabels.F90              "${_list_of_executables}")
-    compile_standalone(pcmo_addlabels.x          utils/pcmo_addlabels.F90            "${_list_of_executables}")    
-    compile_standalone(vibcal.x                  utils/vibcal.F90                    "${_list_of_executables}")
-    compile_standalone(polfit.x                  utils/polfit.F90                    "${_list_of_executables}")
-    compile_standalone(mx2fit.x                  utils/mx2fit.F90                    "${_list_of_executables}")
-    compile_standalone(diag.x                    utils/diag.F90                      "${_list_of_executables}")
-    compile_standalone(test_allocator.x          utils/test_allocator.F90            "${_list_of_executables}")
-#   compile_standalone(test_davidson.x           utils/test_davidson.F90             "${_list_of_executables}")
-    if(HDF5_FOUND)
-    	compile_standalone(h5towfx.x             utils/h5towfx.cpp                   "${_list_of_executables}")
-    	set_property(TARGET h5towfx.x PROPERTY LINKER_LANGUAGE CXX)
-    endif()
 endif()
 
 if(ENABLE_GEN1INT)

@@ -106,6 +106,12 @@ include(${PROJECT_SOURCE_DIR}/cmake/custom/exatensor.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/gen1int.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/pelib.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/downloaded/autocmake_src.cmake)
+
+option(ENABLE_UTILITIES "Enable utilities" ON)
+if(ENABLE_UTILITIES)
+  add_subdirectory(utils)
+endif()
+
 include(${PROJECT_SOURCE_DIR}/cmake/custom/benchmarks.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/external_libs.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/tutorials.cmake)
