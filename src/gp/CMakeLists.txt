@@ -1,47 +1,91 @@
-include_directories(
-    ${PROJECT_SOURCE_DIR}/src/include
-    ${PROJECT_BINARY_DIR}/src/gp
-    ${PROJECT_BINARY_DIR}
-    )
+# generates git information
+add_custom_command(
+  OUTPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
+    ALL
+  COMMAND
+    ${CMAKE_COMMAND} -D INPUT_DIR=${PROJECT_SOURCE_DIR}/cmake/downloaded -D OUTPUT_DIR=${PROJECT_BINARY_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/downloaded/git-hash.cmake
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}
+  )
 
-if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
-    message(STATUS "For libgp.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
+add_custom_target(git_info
+  ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
+  )
+
+#-------------------------------------------------------------------------------
+
+add_library(quaternion_algebra)
+
+target_sources(quaternion_algebra
+  PRIVATE
+    quaternion_algebra.F90
+  )
+
+#-------------------------------------------------------------------------------
+
+add_library(hdf5_util)
+
+option(ENABLE_HDF5 "Enable HDF5" OFF)
+
+if(ENABLE_HDF5)
+  find_package(HDF5 COMPONENTS C REQUIRED)
+
+  target_sources(hdf5_util
+    PRIVATE
+     hdf5_util/mh5.F90
+     hdf5_util/mh5_capi.c
+   )
+
+  target_link_libraries(hdf5_util
+    PRIVATE
+      HDF5::HDF5
+    )
+else()
+  target_sources(hdf5_util
+    PRIVATE
+     hdf5_util/mh5_nohdf5.F90
+   )
 endif()
 
-set(FIXED_GP_FORTRAN_SOURCES
-   finesort_scheme6.F
-   global_file.F
-   gphjj.F
-   gpjeppe.F
-   gpjth.F
-   gpkrmc.F
-   gplupar.F
-   gpluuk.F
-   gpsaue.F
-   gptrygve.F
-   gpulfek.F
-   graphic.F
-   io.F
-   matexport.F
-   math.F
-   mempkg.F
-   mpi2macro.F
-   mxmpack.F
-   order2.F
-   qalgebra.F
-   qpack.F
-   spline.F
-   time.F
-)
+#-------------------------------------------------------------------------------
 
-set(FIXED_GP_FORTRAN_SOURCES_noruntimecheck
-# Miro: I moved problematic source files here
-   gplucia_io.F
-   gplucia.F
-)
+add_library(gp)
 
-set(FREE_GP_FORTRAN_SOURCES
+target_sources(gp
+  PRIVATE
+    execinfo_bsd.c
+    gpc.c
+    memory_sys_if.c
+    print_info.c
+    selftest_fortran_c_interoperability.c
+    stacktraverse_bsd.c
+    trace.c
+    finesort_scheme6.F
+    global_file.F
+    gphjj.F
+    gpjeppe.F
+    gpjth.F
+    gpkrmc.F
+    gplupar.F
+    gpluuk.F
+    gpsaue.F
+    gptrygve.F
+    gpulfek.F
+    graphic.F
+    io.F
+    matexport.F
+    math.F
+    mempkg.F
+    mpi2macro.F
+    mxmpack.F
+    order2.F
+    qalgebra.F
+    qpack.F
+    spline.F
+    time.F
+    gplucia_io.F
+    gplucia.F
     basis_datatypes.F90
     checkpoint.F90
     codata.F90
@@ -50,6 +94,8 @@ set(FREE_GP_FORTRAN_SOURCES
     dirac_mocoefficients.F90
     dynamic_string.F90
     electrostatic_potential.F90
+    # FIXME
+    quaternion_algebra.F90
     exception_handling.F90
     file_handler.F90
     f77_work_interface.F90
@@ -78,7 +124,6 @@ set(FREE_GP_FORTRAN_SOURCES
     orbital_rotation_indices.F90
     osutils.F90
     picture_change_operations.F90
-    quaternion_algebra.F90
     selftests.F90
     string_manipulations.f90
     type_laplace.F90
@@ -91,79 +136,33 @@ set(FREE_GP_FORTRAN_SOURCES
     xml/xml_parser.F90
     labeled_storage.F90
     dircmo.F90
-)
+  )
 
-# later we can take quaternion_algebra.F90 out of "gp" and link against quaternion_algebra
-add_library(quaternion_algebra)
-
-target_sources(quaternion_algebra
+target_include_directories(gp
   PRIVATE
-    quaternion_algebra.F90
+    ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_BINARY_DIR}
   )
 
-set(GP_C_SOURCES
-    execinfo_bsd.c
-    gpc.c
-    memory_sys_if.c
-    print_info.c
-    selftest_fortran_c_interoperability.c
-    stacktraverse_bsd.c
-    trace.c
-)
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    set_source_files_properties(${FREE_GP_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
-    set_source_files_properties(${FIXED_GP_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
-    set_source_files_properties(${FIXED_GP_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
-endif()
-
-if(ENABLE_RUNTIMECHECK)
-    message(STATUS "runtime-check flags activated for the 'gp' module with some source files excluded")
-    set_source_files_properties(${FREE_GP_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
-    set_source_files_properties(${FIXED_GP_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
-    set_source_files_properties(${GP_C_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_runtimecheck})
-endif()
-
-if(ENABLE_HDF5)
-  add_library(
-    gp
-    OBJECT
-    ${FIXED_GP_FORTRAN_SOURCES}
-    ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
-    ${FREE_GP_FORTRAN_SOURCES}
-    ${GP_C_SOURCES}
-    hdf5_util/mh5.F90
-    hdf5_util/mh5_capi.c
-)
-else()
-  add_library(
-    gp
-    OBJECT
-    ${FIXED_GP_FORTRAN_SOURCES}
-    ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
-    ${FREE_GP_FORTRAN_SOURCES}
-    ${GP_C_SOURCES}
-    hdf5_util/mh5_nohdf5.F90
-)
-endif()
-
-# add intermodule dependencies
-add_dependencies(gp interface_mpi)
-add_dependencies(gp pdpack)
-
-# generates git information
-add_custom_command(
-  OUTPUT
-    ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
-    ALL
-  COMMAND
-  ${CMAKE_COMMAND} -D INPUT_DIR=${PROJECT_SOURCE_DIR}/cmake/downloaded -D OUTPUT_DIR=${PROJECT_BINARY_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/downloaded/git-hash.cmake
-  WORKING_DIRECTORY
-    ${CMAKE_CURRENT_SOURCE_DIR}
+target_link_libraries(gp
+  PRIVATE
+    hdf5_util
+#   quaternion_algebra
+    interface_mpi
+    pdpack
+    hergp
   )
-add_custom_target(
-  git_info
-  ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
-  )
+
+#-------------------------------------------------------------------------------
+
+# FIXME move this somewhere else and adapt for internal math
+find_package(BLAS)
+
+if(BLAS_FOUND)
+  target_link_libraries(gp
+    PRIVATE
+      BLAS::BLAS
+    )
+endif()
 
 add_dependencies(gp git_info)
