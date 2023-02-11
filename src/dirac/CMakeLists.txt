@@ -31,4 +31,13 @@ target_sources(dirac
 target_link_libraries(dirac
   PRIVATE
     amfi
+    localization
+    relccsd
+    x2c
+    srdft
+  )
+
+target_include_directories(dirac
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/include
   )

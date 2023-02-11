@@ -36,6 +36,11 @@ target_link_libraries(prp
     esr
 )
 
+target_include_directories(prp
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/include
+  )
+
 option(ENABLE_LAO_REARRANGED "LAO properties without connection matrices" ON)
 
 if(ENABLE_LAO_REARRANGED)

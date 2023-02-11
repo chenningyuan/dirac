@@ -5,3 +5,8 @@ target_sources(esr
     pamesr.F
     pamesrci.F
 )
+
+target_include_directories(esr
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/include
+  )
