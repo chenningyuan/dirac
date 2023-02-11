@@ -27,3 +27,8 @@ target_sources(dirac
     huckel.F
     dirimpmos.F90
  )
+
+target_link_libraries(dirac
+  PRIVATE
+    amfi
+  )
