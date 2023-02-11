@@ -30,10 +30,6 @@ option(ENABLE_OPENRSP "Enable OpenRSP" OFF)
 if(ENABLE_OPENRSP)
     add_definitions(-DMOD_OPENRSP)
 endif()
-option(ENABLE_LAO_REARRANGED "LAO properties without connection matrices" ON)
-if(ENABLE_LAO_REARRANGED)
-    add_definitions(-DMOD_LAO_REARRANGED)
-endif()
 option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON)
 if(ENABLE_MCSCF_spinfree)
     add_definitions(-DMOD_MCSCF_spinfree)
@@ -297,12 +293,6 @@ if(ENABLE_OPENRSP)
     dirac_test(legacy_openrsp_pnc_gradient "openrsp" "")
 endif()
 message(STATUS "OpenRSP library: ${ENABLE_OPENRSP}")
-
-#    lao_rearranged as separate library
-if(ENABLE_LAO_REARRANGED)
-    dirac_test(lao_shield_rearranged "long" "")
-endif()
-message(STATUS "LAO properties without connection matrices: ${ENABLE_LAO_REARRANGED}")
 
 #  mcscf_sf as separate library
 message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")

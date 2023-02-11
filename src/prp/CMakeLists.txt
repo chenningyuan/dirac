@@ -35,3 +35,11 @@ target_link_libraries(prp
   PRIVATE
     esr
 )
+
+option(ENABLE_LAO_REARRANGED "LAO properties without connection matrices" ON)
+
+if(ENABLE_LAO_REARRANGED)
+  target_compile_definitions(prp PRIVATE MOD_LAO_REARRANGED)
+
+  dirac_test(lao_shield_rearranged "long" "")
+endif()
