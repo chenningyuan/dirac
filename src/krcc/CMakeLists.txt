@@ -13,7 +13,7 @@ set(FREE_KRCC_FORTRAN_SOURCES
 )
 
 set(FIXED_KRCC_FORTRAN_SOURCES
-        cc_vec_fnc2.F
+#       cc_vec_fnc2.F
         optimization.F
         cc_vec_fnc.F
         op_t_occ_r.F
