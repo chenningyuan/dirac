@@ -34,6 +34,9 @@ target_sources(prp
 target_link_libraries(prp
   PRIVATE
     esr
+    relccsd
+    krmc
+    x2c
 )
 
 target_include_directories(prp
