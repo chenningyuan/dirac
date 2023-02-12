@@ -7,7 +7,6 @@ endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     add_definitions(-DSYS_DARWIN)
-    add_definitions(-DVAR_MFDS)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
