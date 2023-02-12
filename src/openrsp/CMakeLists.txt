@@ -1,49 +1,43 @@
-include_directories(
-    ${PROJECT_SOURCE_DIR}/src/include
-    )
+add_library(openrsp)
 
-if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
-    message(STATUS "For libopenrsp.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
-endif()
-
-set(FIXED_OPENRSP_FORTRAN_SOURCES
+target_sources(openrsp
+  PRIVATE
     VIBCTL_interface.F
-)
+    openrsp_interface_response.F90
+    vib_prop.F90
+    openrsp_interface_2el.F90
+    prop_contribs.F90
+    fc.F90
+    openrsp_cfg.F90
+    openrsp_interface_1el.F90
+    prop_test.F90
+    rsp_equations.F90
+    birefring.F90
+    openrsp_output.F90
+    openrsp_main.F90
+  )
 
-set(FREE_OPENRSP_FORTRAN_SOURCES
-     openrsp_interface_response.F90
-     vib_prop.F90
-     openrsp_interface_2el.F90
-     prop_contribs.F90
-     fc.F90
-     openrsp_cfg.F90
-     openrsp_interface_1el.F90
-     prop_test.F90
-     rsp_equations.F90
-     birefring.F90
-     openrsp_output.F90
-     openrsp_main.F90
-)
+target_include_directories(openrsp
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/include
+  )
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    set_source_files_properties(${FREE_OPENRSP_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
-    set_source_files_properties(${FIXED_OPENRSP_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
-endif()
+target_link_libraries(openrsp
+  PRIVATE
+    xcint
+    matrix_operations
+  )
 
-if(ENABLE_RUNTIMECHECK)
-    message(STATUS "runtime-check flags activated for the 'openrsp' module without exceptions")
-    set_source_files_properties(${FREE_OPENRSP_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
-    set_source_files_properties(${FIXED_OPENRSP_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
-endif()
-
-add_library(
-    openrsp
-    OBJECT
-    ${FIXED_OPENRSP_FORTRAN_SOURCES}
-    ${FREE_OPENRSP_FORTRAN_SOURCES}
-)
-
-# add intermodule dependencies
-#add_dependencies(openrsp gp)
-
+dirac_test(legacy_openrsp_cars "openrsp" "")
+dirac_test(legacy_openrsp_cme "openrsp" "")
+dirac_test(legacy_openrsp_delta "openrsp" "")
+dirac_test(legacy_openrsp_efgb "openrsp" "")
+dirac_test(legacy_openrsp_efgb_dft "openrsp" "")
+dirac_test(legacy_openrsp_electric "openrsp" "")
+dirac_test(legacy_openrsp_jones "openrsp" "")
+dirac_test(legacy_openrsp_magnetizability "openrsp" "")
+dirac_test(legacy_openrsp_molecular_gradient "openrsp" "")
+dirac_test(legacy_openrsp_pv "openrsp" "")
+dirac_test(legacy_openrsp_quadrupole "openrsp" "")
+dirac_test(legacy_openrsp_roa "openrsp" "")
+dirac_test(legacy_openrsp_pnc_gradient "openrsp" "")

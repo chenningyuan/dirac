@@ -20,15 +20,20 @@ endif()
 
 #-------------------------------------------------------------------------------
 
+option(ENABLE_OPENRSP "Enable OpenRSP" OFF)
+
+if(ENABLE_OPENRSP)
+  add_definitions(-DMOD_OPENRSP)
+  add_subdirectory(openrsp)
+endif()
+
+#-------------------------------------------------------------------------------
+
 option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
 
-option(ENABLE_OPENRSP "Enable OpenRSP" OFF)
-if(ENABLE_OPENRSP)
-    add_definitions(-DMOD_OPENRSP)
-endif()
 option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON)
 if(ENABLE_MCSCF_spinfree)
     add_definitions(-DMOD_MCSCF_spinfree)
@@ -250,26 +255,6 @@ message(STATUS "KRCC module: ${ENABLE_KRCC}")
 # Making relccsd as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/relccsd)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:relccsd> ${EXTERNAL_OBJECTS})
-
-#  openrsp as separate library
-if(ENABLE_OPENRSP)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/openrsp)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:openrsp> ${EXTERNAL_OBJECTS})
-    dirac_test(legacy_openrsp_cars "openrsp" "")
-    dirac_test(legacy_openrsp_cme "openrsp" "")
-    dirac_test(legacy_openrsp_delta "openrsp" "")
-    dirac_test(legacy_openrsp_efgb "openrsp" "")
-    dirac_test(legacy_openrsp_efgb_dft "openrsp" "")
-    dirac_test(legacy_openrsp_electric "openrsp" "")
-    dirac_test(legacy_openrsp_jones "openrsp" "")
-    dirac_test(legacy_openrsp_magnetizability "openrsp" "")
-    dirac_test(legacy_openrsp_molecular_gradient "openrsp" "")
-    dirac_test(legacy_openrsp_pv "openrsp" "")
-    dirac_test(legacy_openrsp_quadrupole "openrsp" "")
-    dirac_test(legacy_openrsp_roa "openrsp" "")
-    dirac_test(legacy_openrsp_pnc_gradient "openrsp" "")
-endif()
-message(STATUS "OpenRSP library: ${ENABLE_OPENRSP}")
 
 #  mcscf_sf as separate library
 message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
