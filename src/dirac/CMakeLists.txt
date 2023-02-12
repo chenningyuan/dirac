@@ -35,6 +35,7 @@ target_link_libraries(dirac
     relccsd
     x2c
     srdft
+    abacus
   )
 
 target_include_directories(dirac
