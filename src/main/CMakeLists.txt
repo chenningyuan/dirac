@@ -18,9 +18,6 @@ target_link_libraries(main
     xcint
     visual
     embedding
-#   interest
-#   laplace-minimax
-#   interface_mpi
   )
 
 if(ENABLE_PCMSOLVER)
