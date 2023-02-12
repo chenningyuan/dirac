@@ -31,16 +31,6 @@ file(COPY data/init_error.txt DESTINATION ${PROJECT_BINARY_DIR}/laplace-minimax/
 install(
   FILES
     data/init_para.txt
-  DESTINATION
-    share/dirac/laplace-minimax/data
-  PERMISSIONS
-    OWNER_READ OWNER_WRITE
-    GROUP_READ
-    WORLD_READ
-  )
-
-install(
-  FILES
     data/init_error.txt
   DESTINATION
     share/dirac/laplace-minimax/data
