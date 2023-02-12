@@ -17,6 +17,7 @@ target_link_libraries(input
     relccsd
     grid
     qcorr
+    cfun
   )
 
 if(ENABLE_EXATENSOR)
