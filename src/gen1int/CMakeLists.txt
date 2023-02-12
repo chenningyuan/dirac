@@ -1,26 +1,27 @@
-add_definitions(-DBUILD_GEN1INT)
-add_definitions(-DPRG_DIRAC)
+add_subdirectory(gen1int)
 
-add_library(
-    gen1int_interface
+add_library(gen1int_interface)
+
+target_sources(gen1int_interface
+  PRIVATE
     gen1int_api.F90
     gen1int_cube.F90
     gen1int_host.F90
     gen1int_matrix.F90
     gen1int_shell.F90
-    )
+  )
 
-set(ExternalProjectCMakeArgs
-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-    -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
-    -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-    )
+target_compile_definitions(gen1int_interface
+  PRIVATE
+    PRG_DIRAC
+  )
 
-add_external(gen1int)
+target_include_directories(gen1int_interface
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/include
+  )
 
-add_dependencies(gen1int_interface gen1int)
+target_link_libraries(gen1int_interface
+  PRIVATE
+    gen1int
+  )

@@ -10,6 +10,16 @@
 # Set all module options and definitions first
 # so they can be DEFINED for all source subdirectories below
 #----------------------------------------------------------------------------------
+
+option(ENABLE_GEN1INT "Enable Gen1Int library" ON)
+
+if(ENABLE_GEN1INT)
+  add_definitions(-DBUILD_GEN1INT)
+  add_subdirectory(gen1int)
+endif()
+
+#-------------------------------------------------------------------------------
+
 option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)

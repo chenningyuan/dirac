@@ -112,12 +112,7 @@ if (ENABLE_EXATENSOR)
    compile_standalone(exacorr.x src/exacorr/exacorr_main.F90   "${_list_of_executables}")
 endif()
 
-if(ENABLE_GEN1INT)
-    add_dependencies(dirac gen1int)
-endif()
-
 if(ENABLE_PELIB)
-    add_dependencies(gen1int_interface gen1int)
     add_dependencies(pelib gen1int_interface)
     add_dependencies(dirac pelib)
 endif()

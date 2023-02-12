@@ -35,6 +35,6 @@ add_library(
 # deal with intedependencies
 # needs memory allocator etc..
 add_dependencies(gen1int_interface gen1int)
-add_dependencies(pelib gen1int_interface)
+#add_dependencies(pelib gen1int_interface)
 add_dependencies(pelib_interface pelib)
 add_dependencies(pelib_interface interface_mpi)

@@ -1,0 +1,76 @@
+add_library(gen1int)
+
+target_sources(gen1int
+  PRIVATE
+    src/xkind.F90
+    src/dump_info.F90
+    src/error_stop.F90
+    src/xtimer.F90
+    src/tools/norm_contr_cgto.F90
+    src/tools/norm_contr_sgto.F90
+    src/tools/reorder_ints.F90
+    src/tools/trace_ints.F90
+    src/tools/get_address_list.F90
+    src/basic/binom_coeff.F90
+    src/basic/const_contr_ints.F90
+    src/basic/hgto_to_cgto.F90
+    src/basic/hgto_to_sgto.F90
+    src/basic/next_permutation.F90
+    src/basic/shell_scatter.F90
+    src/basic/sort_cents.F90
+    src/auxfun/aux_boys_vec.F90
+    src/geom/geom_total.F90
+    src/geom/geom_part_zero.F90
+    src/geom/geom_part_one.F90
+    src/mag/hgto_to_lcgto.F90
+    src/mag/london_mom_hgto.F90
+    src/carmom/carmom_deriv.F90
+    src/carmom/carmom_hbra.F90
+    src/carmom/carmom_hrr_ket.F90
+    src/carmom/carmom_moment.F90
+    src/carmom/prim_hgto_carmom.F90
+    src/carmom/contr_cgto_carmom.F90
+    src/carmom/contr_sgto_carmom.F90
+    src/carmom/contr_csgto_carmom.F90
+    src/delta/delta_geom.F90
+    src/delta/delta_hket.F90
+    src/delta/delta_moment.F90
+    src/delta/prim_hgto_delta.F90
+    src/delta/contr_cgto_delta.F90
+    src/delta/contr_sgto_delta.F90
+    src/nucpot/nucpot_geom.F90
+    src/nucpot/nucpot_hket.F90
+    src/nucpot/nucpot_hbra.F90
+    src/nucpot/prim_hgto_nucpot.F90
+    src/nucpot/contr_cgto_nucpot.F90
+    src/nucpot/contr_sgto_nucpot.F90
+    src/gaupot/gaupot_geom.F90
+    src/gaupot/prim_hgto_gaupot.F90
+    src/gaupot/contr_cgto_gaupot.F90
+    src/gaupot/contr_sgto_gaupot.F90
+    src/odist/prim_hgto_odist.F90
+    src/odist/contr_cgto_odist.F90
+    src/odist/contr_sgto_odist.F90
+    src/value/prim_hgto_value.F90
+    src/value/const_contr_gto.F90
+    src/value/contr_cgto_value.F90
+    src/value/contr_sgto_value.F90
+    src/london_ao.F90
+    src/gen1int_geom.F90
+    src/gen1int_carmom.F90
+    src/gen1int_nucpot.F90
+    src/gen1int_onehamil.F90
+    src/gen1int_gaupot.F90
+    src/gen1int.F90
+    tools/str_decode.F90
+  )
+
+target_include_directories(gen1int
+  PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/include
+  )
+
+target_compile_definitions(gen1int
+  PRIVATE
+    BUILD_F90_MODULE
+  )

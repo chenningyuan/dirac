@@ -78,6 +78,7 @@ target_include_directories(abacus
 target_link_libraries(abacus
   PRIVATE
     ecp
+    gen1int_interface
   )
 
 # FIXME
