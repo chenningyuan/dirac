@@ -18,23 +18,6 @@ include(FindCompilerVersion)
 # Miro Ilias restored CMake printout, associated with build_info.h generation
 include(build_info)
 
-set(_list_of_executables)
-macro(compile_standalone _executable _source _list_of_executables)
-    add_executable(
-        ${_executable}
-        ${_source}
-    )
-
-    # each executable is of Fortran language ...
-    set_property(TARGET ${_executable} PROPERTY LINKER_LANGUAGE Fortran)
-
-    # extend list of executables
-    set(_list_of_executables
-        ${_list_of_executables}
-        ${_executable}
-    )
-endmacro()
-
 add_executable(dirac.x)
 
 target_sources(dirac.x PRIVATE src/main/main.F90)
@@ -106,75 +89,6 @@ if(ENABLE_PELIB)
     add_dependencies(dirac pelib)
 endif()
 
-foreach(
-    _executable
-    ${_list_of_executables}
-    )
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-        SET_TARGET_PROPERTIES(${_executable} PROPERTIES LINK_FLAGS "-Wl,-bbigtoc")
-    endif()
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        SET_TARGET_PROPERTIES(${_executable} PROPERTIES LINK_FLAGS "-Wl,-E")
-    endif()
-
-#miro: libraries are OBJECT type
-    add_library(objlib.${_executable} ${EXTERNAL_OBJECTS})
-    SET_TARGET_PROPERTIES(objlib.${_executable}  PROPERTIES LINKER_LANGUAGE Fortran)
-    target_link_libraries( ${_executable} objlib.${_executable} ${EXTERNAL_LIBS} )
-    target_link_libraries(${_executable} qcorr)
-
-    if(HDF5_FOUND)
-        target_link_libraries(${_executable} HDF5::HDF5)
-    endif()
-
-    target_link_libraries(${_executable} laplace)
-
-    if(ENABLE_STATIC_LINKING)
-        if(ENABLE_OLD_LINKER)
-           set(_no_dyn_export "")
-        else()
-           # Miro: the "-Wl,--no-export-dynamic" flag is only for newer
-           # ld-linkers, fix for older linkers
-           set(_no_dyn_export "-Wl,--no-export-dynamic")
-        endif()
-        target_link_libraries(${_executable} ${_no_dyn_export})
-        unset(_no_dyn_export)
-        if (BLAS_TYPE MATCHES Atlas)
-            # activate extra linking flags for dirac.x only if this bug occurs, please do not delete
-            # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
-            # this bug is: signal 11 (SIGSEGV):Segmentation fault, function __restore_rt (0x1613DA0),from file sigaction.c
-            target_link_libraries(${_executable} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
-        endif()
-        if ( CMAKE_Fortran_COMPILER_ID MATCHES GNU )
-            # miro: GNU+NoneLibs/MKL/OPENBLAS-static needs this extra lib !
-            target_link_libraries(${_executable} -ldl)
-        endif()
-        if ( BLAS_TYPE MATCHES OPENBLAS )
-            # miro: OPENBLAS-static needs this extra lib !
-            target_link_libraries(${_executable} -lgfortran)
-        endif()
-        if ( BLAS_TYPE MATCHES OPENBLAS AND CMAKE_Fortran_COMPILER_ID MATCHES Intel )
-            # miro:  needs extra lib , plus remove -lpthread from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS !
-            target_link_libraries(${_executable} -lquadmath)
-        endif()
-      
-    endif()
-
-    if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
-    # added -libstdc++ linking flag for each ${_executable} due to pgCC and xcfun
-        target_link_libraries(${_executable} -lstdc++)
-    endif()
-
-    if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-    # add -lC linking flag for each ${_executable} to satisfy missing objects - sqrtf,logf,cosf,powf 
-        target_link_libraries(${_executable} -lC)
-    endif()
-endforeach()
-
 #printout of all linked libraries to dirac.x executable
 get_target_property(OUT dirac.x  LINK_LIBRARIES)
 message(STATUS "For checking, linked libraries to dirac.x: ${OUT} ")
-
-# radovan: no! we cannot unset
-#          these are used in the make install target
-# unset(_list_of_executables)
