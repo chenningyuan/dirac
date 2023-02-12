@@ -35,6 +35,7 @@ target_link_libraries(xcint
     xcfun_fortran_bindings
     interface_mpi
     quaternion_algebra
+    gp
   )
 
 target_include_directories(xcint

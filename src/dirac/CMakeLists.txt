@@ -32,6 +32,7 @@ target_link_libraries(dirac
   PRIVATE
     amfi
     localization
+    lucita
     relccsd
     x2c
     srdft
