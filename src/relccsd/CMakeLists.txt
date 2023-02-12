@@ -100,5 +100,8 @@ if(ENABLE_RELCCSD_STANDALONE)
       x2c
       xcfun_fortran_bindings
       xcint
+      ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.so
     )
+
+  add_dependencies(relccsd.x exatensor)
 endif()
