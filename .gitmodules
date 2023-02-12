@@ -7,6 +7,3 @@
 [submodule "external/unit-tests"]
 	path = external/unit-tests
 	url = https://gitlab.com/dirac/unit-tests.git
-[submodule "external/stieltjes"]
-	path = external/stieltjes
-	url = https://gitlab.com/stieltjes/stieltjes.git

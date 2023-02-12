@@ -15,16 +15,6 @@ if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
 
-if (CMAKE_Fortran_COMPILER_ID MATCHES XL OR CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-# xlf compiler does not support isnan used
-# pgfortran compiler does not suppore real*16
-    option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
-else()
-    option(ENABLE_STIELTJES "Enable stieltjes library" ON)
-endif()
-if(ENABLE_STIELTJES)
-    add_definitions(-DHAS_STIELTJES)
-endif()
 option(ENABLE_OPENRSP "Enable OpenRSP" OFF)
 if(ENABLE_OPENRSP)
     add_definitions(-DMOD_OPENRSP)
@@ -235,26 +225,6 @@ endif()
 # prp as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:prp> ${EXTERNAL_OBJECTS})
-
-#  stieltjes as separate external library
-if(ENABLE_STIELTJES)
-  message(STATUS "Stieltjes external module ENABLED")
-  include_directories (${PROJECT_BINARY_DIR}/external/stieltjes-build)
-  set(ExternalProjectCMakeArgs
-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
-  add_external(stieltjes)
-  # Miro: how will this cope with OBJECT libraries ?
-  set(EXTERNAL_LIBS
-    ${PROJECT_BINARY_DIR}/external/lib/libstieltjes.a
-    ${EXTERNAL_LIBS})
-else()
-  message(STATUS "Stieltjes external module DISABLED")
-endif()
 
 # interest as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)

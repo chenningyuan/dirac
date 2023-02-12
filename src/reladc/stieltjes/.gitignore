@@ -1,0 +1,7 @@
+*.o
+*.mod
+*.x
+*fort.*
+inp.dat
+
+build

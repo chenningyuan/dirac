@@ -29,11 +29,3 @@ if(ENABLE_PCMSOLVER)
       pcm_dirac
     )
 endif()
-
-# FIXME
-# if(ENABLE_STIELTJES)
-#   target_link_libraries(main
-#     PRIVATE
-#       stieltjes
-#     )
-# endif()
