@@ -11,10 +11,12 @@ target_sources(grid
 
 target_include_directories(grid
   PRIVATE
-    ../include
-    ../cfun
+    ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/cfun
   )
 
-# FIXME this will be refactored later
-add_dependencies(grid xcint)
-add_dependencies(grid gp)
+target_link_libraries(grid
+  PRIVATE
+    gp
+    xcint
+  )
