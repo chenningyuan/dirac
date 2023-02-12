@@ -29,6 +29,15 @@ endif()
 
 #-------------------------------------------------------------------------------
 
+option(ENABLE_KRCC "KRCC module" ON)
+
+if(ENABLE_KRCC)
+  add_definitions(-DMOD_KRCC)
+  add_subdirectory(krcc)
+endif()
+
+#-------------------------------------------------------------------------------
+
 option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
@@ -50,10 +59,6 @@ endif()
 option(ENABLE_ESR "ESR property module" ON)
 if(ENABLE_ESR)
     add_definitions(-DMOD_ESR)
-endif()
-option(ENABLE_KRCC "KRCC module" ON)
-if(ENABLE_KRCC)
-    add_definitions(-DMOD_KRCC)
 endif()
 option(ENABLE_SRDFT "srDFT module" ON)
 if(ENABLE_SRDFT)
@@ -245,12 +250,6 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:prp> ${EXTERNAL_OBJECTS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
 
-#   krcc as separate library
-if(ENABLE_KRCC)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/krcc)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krcc> ${EXTERNAL_OBJECTS})
-endif()
-message(STATUS "KRCC module: ${ENABLE_KRCC}")
 
 # Making relccsd as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/relccsd)
