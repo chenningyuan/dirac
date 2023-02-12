@@ -33,4 +33,5 @@ target_include_directories(lucita
 target_link_libraries(lucita
   PRIVATE
     gp
+    qcorr
   )
