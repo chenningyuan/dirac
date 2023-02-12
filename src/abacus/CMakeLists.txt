@@ -5,6 +5,11 @@ target_sources(hergp
     hergp.F
   )
 
+target_include_directories(hergp
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/include
+  )
+
 #-------------------------------------------------------------------------------
 
 add_library(abacus)
@@ -69,3 +74,12 @@ target_include_directories(abacus
   PRIVATE
     ${PROJECT_SOURCE_DIR}/src/include
   )
+
+target_link_libraries(abacus
+  PRIVATE
+    ecp
+  )
+
+# FIXME
+add_dependencies(abacus pelib)
+add_dependencies(abacus pcmsolver)
