@@ -10,7 +10,6 @@
 # Set all module options and definitions first
 # so they can be DEFINED for all source subdirectories below
 #----------------------------------------------------------------------------------
-option(ENABLE_RELCCSD_STANDALONE "Enable standalone RELCCSD" OFF)
 option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
@@ -271,8 +270,6 @@ message(STATUS "KRCC module: ${ENABLE_KRCC}")
 # Making relccsd as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/relccsd)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:relccsd> ${EXTERNAL_OBJECTS})
-#  relccsd.x as standalone executable by default
-message(STATUS "Enable compilation of standalone relccsd.x: ${ENABLE_RELCCSD_STANDALONE}")
 
 #  openrsp as separate library
 if(ENABLE_OPENRSP)

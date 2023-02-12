@@ -122,15 +122,6 @@ if(ENABLE_PELIB)
     add_dependencies(dirac pelib)
 endif()
 
-if(ENABLE_RELCCSD_STANDALONE)
-    if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-        set_source_files_properties(src/relccsd/ccmain.F PROPERTIES COMPILE_FLAGS "-qfixed")
-    endif()
-    compile_standalone(relccsd.x                 src/relccsd/ccmain.F                "${_list_of_executables}")
-# miro: take care of object lib
-    target_link_libraries(relccsd.x objlib.relccsd.x)
-endif()
-
 option(ENABLE_HSCC "Enable compilation of the standalone hsmrcc.x" OFF)
 if(ENABLE_HSCC) # note: this functionality depends on the pam flag
     compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${_list_of_executables}")

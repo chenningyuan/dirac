@@ -16,7 +16,6 @@ target_sources(relccsd
     ccgetv.F
     ccintm.F
     ccints.F
-#   ccmain.F
     ccpam.F
     ccrpa.F
     ccxblas.F
@@ -50,3 +49,56 @@ target_link_libraries(relccsd
   PRIVATE
     prp
   )
+
+#-------------------------------------------------------------------------------
+
+# FIXME does not link and dependencies should be pushed one level down
+option(ENABLE_RELCCSD_STANDALONE "Enable standalone RELCCSD" OFF)
+
+if(ENABLE_RELCCSD_STANDALONE)
+  add_executable(relccsd.x)
+
+  target_sources(relccsd.x
+    PRIVATE
+      ccmain.F
+    )
+
+  target_include_directories(relccsd.x
+    PRIVATE
+      ${PROJECT_SOURCE_DIR}/src/include
+    )
+
+  target_link_libraries(relccsd.x
+    PRIVATE
+      abacus
+      amfi
+      cfun
+      dirac
+      dirrci
+      ecp
+      embedding
+      esr
+      gp
+      grid
+      input
+      interest
+      interest
+      interface_mpi
+      krmc
+      laplace
+      localization
+      luciarel
+      lucita
+      main
+      matrix_operations
+      moltra
+      prp
+      qcorr
+      reladc
+      relccsd
+      visual
+      x2c
+      xcfun_fortran_bindings
+      xcint
+    )
+endif()
