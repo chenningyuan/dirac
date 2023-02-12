@@ -104,12 +104,21 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:abacus> ${EXTERNAL_OBJECTS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/matrix_operations)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:matrix_operations> ${EXTERNAL_OBJECTS})
 
-# exacorr as separate library
-if(ENABLE_EXATENSOR)
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/exacorr)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:exacorr> ${EXTERNAL_OBJECTS})
-add_definitions(-DMOD_EXACORR)
+#-------------------------------------------------------------------------------
+
+option(ENABLE_EXATENSOR "Enable ExaTENSOR library" ON)
+
+if(ENABLE_64BIT_INTEGERS)
+  message(STATUS "ExaTensor library can not work with 64 bit integers, switched off")
+  set(ENABLE_EXATENSOR OFF)
 endif()
+
+if(ENABLE_EXATENSOR)
+  add_subdirectory(exacorr)
+  add_definitions(-DMOD_EXACORR)
+endif()
+
+#-------------------------------------------------------------------------------
 
 #    Moltra as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)

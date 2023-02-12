@@ -37,6 +37,9 @@ target_link_libraries(dirac
     x2c
     srdft
     abacus
+    # FIXME
+    ${PROJECT_BINARY_DIR}/src/exacorr/libexacorr.a
+    ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a
   )
 
 target_include_directories(dirac
