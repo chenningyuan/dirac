@@ -10,3 +10,5 @@ target_include_directories(esr
   PRIVATE
     ${PROJECT_SOURCE_DIR}/src/include
   )
+
+dirac_test(esr "medium;gascip;ci" "")

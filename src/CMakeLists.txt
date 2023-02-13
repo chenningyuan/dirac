@@ -175,13 +175,9 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:lucita> ${EXTERNAL_OBJECTS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/krmc)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krmc> ${EXTERNAL_OBJECTS})
 
-#     esr as separate library
 if(ENABLE_ESR)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp/esr)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:esr> ${EXTERNAL_OBJECTS})
-    dirac_test(esr "medium;gascip;ci" "")
+  add_subdirectory(prp/esr)
 endif()
-message(STATUS "ESR property module: ${ENABLE_ESR}")
 
 # ecp as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/ecp)
