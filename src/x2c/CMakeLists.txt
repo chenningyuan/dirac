@@ -1,16 +1,7 @@
-include_directories(
-    ${PROJECT_SOURCE_DIR}/src/include
-    )
+add_library(x2c)
 
-if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
-    message(STATUS "For libx2c.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
-endif()
-
-set(FIXED_X2C_FORTRAN_SOURCES
-)
-
-set(FREE_X2C_FORTRAN_SOURCES
+target_sources(x2c
+  PRIVATE
     fragment_x2c_cfg.F90
     x2c_2e_soc_interface.F90
     x2c_cfg.F90
@@ -28,45 +19,24 @@ set(FREE_X2C_FORTRAN_SOURCES
     x2c_setup_defining_h1_4c_matrix_ao2onmo.F90
     x2c_transform_h1_inf_2c_matrix_onmo2ao.F90
     x2c_utility_routines.F90
-)
+    ${PROJECT_SOURCE_DIR}/src/x-amfi/x_fock.F90
+    ${PROJECT_SOURCE_DIR}/src/x-amfi/amfDataStorage.F90
+    ${PROJECT_SOURCE_DIR}/src/x-amfi/amfH5Interface.F90
+    ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_utils.F90
+    ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_driver.F90
+    ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_environment.F90
+    ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_global_parameters.F90
+    ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_internal_parameters.F90
+  )
 
+target_include_directories(x2c
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/include
+  )
 
-if (ENABLE_XAMFI)
-# X2C depends on some XAMFI files and vice versa
-    set(FREE_X2C_FORTRAN_SOURCES
-        ${FREE_X2C_FORTRAN_SOURCES}
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_global_parameters.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_driver.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_utils.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_internal_parameters.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_environment.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/x_fock.F90
-	    ${PROJECT_SOURCE_DIR}/src/x-amfi/amfDataStorage.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/amfH5Interface.F90
-
-    )
-endif()
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    set_source_files_properties(${FREE_X2C_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
-    set_source_files_properties(${FIXED_X2C_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
-endif()
-
-if(ENABLE_RUNTIMECHECK)
-    message(STATUS "runtime-check flags activated for the 'x2c' module without exceptions")
-    set_source_files_properties(${FREE_X2C_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
-    set_source_files_properties(${FIXED_X2C_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
-endif()
-
-add_library(
-    x2c
-    OBJECT
-    ${FIXED_X2C_FORTRAN_SOURCES}
-    ${FREE_X2C_FORTRAN_SOURCES}
-)
-
-# add intermodule dependencies
-add_dependencies(x2c gp)
-add_dependencies(x2c grid)
-add_dependencies(x2c interest)
-add_dependencies(x2c abacus)
+target_link_libraries(x2c
+  PRIVATE
+    gp
+    grid
+    abacus
+  )

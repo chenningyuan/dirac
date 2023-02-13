@@ -269,14 +269,10 @@ message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
 
 # XAMFI as separate library
 if(ENABLE_XAMFI)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/x-amfi)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:x-amfi> ${EXTERNAL_OBJECTS})
     dirac_test(atomic_x2c_2esoc_models_energy "medium;xamfi" "")
     dirac_test(atomic_x2c_spinfree_energy "medium;xamfi" "")
     dirac_test(x_amfi "short;xamfi" "")
-    message(STATUS "NOTE: tests for the (e)amfX2C 2e-scalar and spin-orbit picture-change correction module require h5py in your python env!")
 endif()
-message(STATUS "(e)amfX2C 2e-scalar and spin-orbit picture-change correction module: ${ENABLE_XAMFI}")
 
 #  srdft module as separate library
 if(ENABLE_SRDFT)
