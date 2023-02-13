@@ -18,6 +18,7 @@ target_link_libraries(main
     xcint
     visual
     embedding
+    laplace
   )
 
 if(ENABLE_PCMSOLVER)

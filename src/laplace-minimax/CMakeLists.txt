@@ -14,7 +14,7 @@ target_sources(laplace-minimax
   )
 
 target_include_directories(laplace-minimax
-  PRIVATE
+  PUBLIC
     inc
   )
 
