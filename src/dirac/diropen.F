@@ -62,6 +62,8 @@ C
 #include "memint.h"
 C
       CALL QENTER('MKMOFK')
+
+!     iprscf_ = iprscf; iprscf = 50
 C
 C     The various blocks of the Fock matrix in MO-basis is defined in (3.40)
 C     They are constructed in AO-basis using density matrices as projection
@@ -133,6 +135,19 @@ C
         END IF
       END IF
       END DO
+
+
+      do i = 1, nfsym
+               IF ( IPRSCF .GE. 10 ) THEN
+                  CALL HEADER(
+     &           'MKMOFK: Total Fock matrix (no corr) in MO-basis',-1)
+                  WRITE(LUPRI,'(A,I1,A,I1)')
+     &           '* Fermion ircop no.',I,'/',NFSYM
+                 CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
+     &           NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+               END IF
+      end do
+
 C
 C     If not .trivec. then we don't have coefficients to form a density
 C     matrix, so return.
@@ -383,9 +398,9 @@ C
      &            FMO(1+I2TMOT(I)),N2TMO(I),1,
      &            IPQTOQ(1,0),NZ)
 
-               IF ( IPRSCF .GE. 7 ) THEN
+               IF ( IPRSCF .GE. 10 ) THEN
                   CALL HEADER(
-     &            'MKMOFK: Total Fock matrix (output) in MO-basis',-1)
+     &         'MKMOFK: corrected Fock matrix (output) in MO-basis',-1)
                    WRITE(LUPRI,'(A,I1,A,I1)')
      &             '* Fermion ircop no.',I,'/',NFSYM
                   CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
@@ -397,8 +412,19 @@ C
  10   CONTINUE
 C
  30   CONTINUE
+      do i = 1, nfsym
+               IF ( IPRSCF .GE. 7 ) THEN
+                  CALL HEADER(
+     &           'MKMOFK: Total Fock matrix (corrected) in MO-basis',-1)
+                  WRITE(LUPRI,'(A,I1,A,I1)')
+     &           '* Fermion ircop no.',I,'/',NFSYM
+                 CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
+     &           NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+               END IF
+      end do
       CALL QEXIT('MKMOFK')
       CALL FLSHFO(LUPRI)
+!     iprscf = iprscf_
       RETURN
       END
 ! -- end of diropen.F --

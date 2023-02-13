@@ -20,7 +20,4 @@ f.add(from_string = 'Isotropic oscillator strengths (generalized velocity gauge)
 test.run(['PBE.inp'],        ['CO.mol'], f, args='--outcmo')
 test.run(['PBE_skipep.inp'], ['CO.mol'], f, args='--incmo')
 
-# cleanup
-os.unlink('DFCOEF')
-
 sys.exit(test.return_code)

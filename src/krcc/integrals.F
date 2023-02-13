@@ -498,21 +498,14 @@ C
       IOPT_INTBUF = 7!0111
       CALL INTCON(IOPT_INTFLG,IOPT_INTBUF,IOPT_INTDEF,GNORM(5),
      &            OPT_CNVINT,ITMAC,IOPT_ITRINT,OPT_INTTYP)
-*     Mo's from DFCOEF
-      EX = .FALSE.
-      print*,'NCMOTQ',NCMOTQ
+*     Mos from CHECKPOINT
       CALL MEMGET('REAL',   KCMO  ,NCMOTQ  ,WORK,KFREE,LFREE)
-         INQUIRE ( FILE = 'DFCOEF', EXIST = EX )
-         IF ( EX ) THEN
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RREADMO')
-            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,2)
-            CLOSE(LUCOEF,STATUS='KEEP')
-            IF (NTEST.GE. 0) THEN
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,2)
+      IF (NTEST.GE. 0) THEN
                WRITE(LUPRI,'(/A)')
      &              ' (ROPTST)  Start orbitals read from' //
-     &              ' file DFCOEF'
-            END IF
-         END IF
+     &              ' CHECKPOINT '
+      END IF
       CALL RGMCMO(WORK(KCMO),WORK(KFREE),LFREE)
 * Stupid routine to see if the 4-index transformation should be done
       CALL AN_IDIOT(NO4IDX)

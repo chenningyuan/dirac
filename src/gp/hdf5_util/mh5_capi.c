@@ -51,11 +51,13 @@
 
 /* files */
 INT mh5c_create_file (char* filename);
+INT mh5c_open_file_a (char* filename);
 INT mh5c_open_file_rw (char* filename);
 INT mh5c_open_file_r (char* filename);
 INT mh5c_close_file (INT file_id);
 
 /* groups */
+INT mh5c_exists_group (INT file_id, char* name);
 INT mh5c_open_group (INT file_id, char* name);
 INT mh5c_create_group (INT file_id, char* name);
 INT mh5c_close_group (INT group_id);
@@ -196,6 +198,24 @@ INT mh5c_create_file (char* filename) {
         return file_id;
 }
 
+INT mh5c_open_file_a (char* filename) {
+        herr_t (*old_func)(void*);
+  	void *old_client_data;
+  	INT mySTATUS = -1;
+  	H5Eget_auto(H5E_DEFAULT, &old_func, &old_client_data);
+  	/* Turn off error handling */
+  	H5Eset_auto(H5E_DEFAULT, NULL, NULL);       
+  	/* Probe. Likely to fail, but that's okay */
+  	mySTATUS = H5Fopen(filename, H5F_ACC_RDWR, H5P_DEFAULT);
+  	/* Restore previous error handler */
+  	H5Eset_auto(H5E_DEFAULT, old_func, old_client_data);
+ 	if(mySTATUS == -1){
+		return mh5c_create_file (filename);
+ 	}else{
+		return mySTATUS;
+	} 
+}
+
 INT mh5c_open_file_rw (char* filename) {
         struct stat fileinfo;
         if (stat(filename, &fileinfo)) {
@@ -222,12 +242,34 @@ INT mh5c_is_hdf5(char* filename) {
  */
 
 INT mh5c_create_group (INT file_id, char* name) {
-        return H5Gcreate(file_id, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	INT mySTATUS = -1;
+	mySTATUS = mh5c_exists_group(file_id, name);
+	if(mySTATUS ==-1){
+		return H5Gcreate(file_id, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	}else{
+        	return mySTATUS;
+	}
 }
 
 INT mh5c_open_group (INT file_id, char* name) {
+    
         return H5Gopen(file_id, name, H5P_DEFAULT);
 }
+
+INT mh5c_exists_group(INT file_id, char* name){
+	herr_t (*old_func)(void*);
+	void *old_client_data;
+	INT mySTATUS = -1;
+	H5Eget_auto(H5E_DEFAULT, &old_func, &old_client_data);
+	/* Turn off error handling */
+	H5Eset_auto(H5E_DEFAULT, NULL, NULL);       
+	/* Probe. Likely to fail, but that's okay */
+	mySTATUS = H5Gopen(file_id, name, H5P_DEFAULT);
+	/* Restore previous error handler */
+	H5Eset_auto(H5E_DEFAULT, old_func, old_client_data);
+	return mySTATUS;
+}
+
 
 INT mh5c_close_group (INT group_id) {
         return H5Gclose(group_id);

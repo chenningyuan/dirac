@@ -24,6 +24,4 @@ test.run(['bss.zerofield.inp'],       ['HF.p-ccpvdz.mol'], f, '                 
 test.run(['bss.scf.ccsd.1.inp'],      ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160 --incmo          ')
 test.run(['bss.scf.ccsd.m1.inp'],     ['HF.p-ccpvdz.mol'], f, '--mw=140 --aw=160 --incmo          ')
 
-os.unlink('DFCOEF')
-
 sys.exit(test.return_code)

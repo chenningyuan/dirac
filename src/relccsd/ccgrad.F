@@ -160,7 +160,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !-------------------------------------------------------------------
        real*8, allocatable :: dvo(:),dov(:)
        real*8, allocatable :: woo_temp(:),wpp_temp(:)
-       integer :: iprnt=2, dm_type
+       integer :: iprnt=0, dm_type
 !-------------------------------------------------------------------
 
         if (iprnt.ge.2) write(*,*) 'at start of cc_density'
@@ -1127,11 +1127,9 @@ C
       CALL DZERO(OCC_NAT,NESHT)
       ibeig(1:norbt) = 0
 
-!     !> read ibeig (info array on boson irreps) from DFCOEF
+!     !> read ibeig (info array on boson irreps) 
       if( linear .or. spinfr )then
-        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
         call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
-        close(lucoef,STATUS='KEEP')
       end if
 C
 C     build diagonal according to Fock matrix

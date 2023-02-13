@@ -1441,11 +1441,6 @@ C
 C
       CALL QENTER('KRCIPRPMO')
 C
-      INQUIRE(FILE='AOPROPER',OPENED=LOPEN)
-      IF (.NOT. LOPEN) THEN
-         OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &        FILE='AOPROPER')
-      ENDIF
 #if defined MCSCF_DEBUG
       if( dojzexp) then
         allocate(jz_momat(n2ashxq))
@@ -1552,7 +1547,6 @@ C
 #endif
 C
 !     IPROPT = 00
-      CLOSE(LU1INT,STATUS = 'KEEP')
       CALL QEXIT('KRCIPRPMO')
       RETURN
       END

@@ -39,6 +39,7 @@
 #include "dgroup.h"
 #include "files.inc"
     logical :: reset_roots_in_symmetry = .false.
+    integer :: max_manifold = 0
     
     if (    (relcc_do_eomip .and. relcc_do_eomea) &
         .or.(relcc_do_eomip .and. relcc_do_eomee) &
@@ -61,14 +62,31 @@
 ! 1. IP: maximum number of roots for irrepN is reset back to the number of occupied spinors (nocc) in irrepN
 ! 2. EA: maximum number of roots for irrepN is reset back to the number of virtual  spinors (nvirt), per symmetry 
 ! 3. EE: maximum number of roots for irrepN is reset back to  nocc(irrepM)*nvirt(irrepO) for irrepN = irrepM * irrepO
+!
+! NOTE: we have introduced an expert keyword, that toggles the variable "relcc_mfd_trial_double_mfold" on, and is meant
+! to allow a number of roots (and associated inital trial vector generation) also spanning the doubles blocks. this is now
+! only implemented for IPs (so the 2h1p block for IPs (so the 2h1p block) 
+! 
 
            write (iw,'(2x,A,I6,2x,A,2x,A4,A1,I2,A1)') "Requested",relcc_eom_nroots(state_sym),"root(s) for symmetry: ", &
                 & REPNA(irpoff+state_sym),"(",state_sym,")'"
           select case (eomtype)
              case ('IP')
                 if (relcc_eom_nroots(state_sym).gt.no(state_sym)) then
+! if user asks for enabling generation of trial vectors from 2h1p manifold, we check whether it's still within dim(1h+2h1p),
+! if not we reset it to the maximum allowed value
+                   if (relcc_mfd_trial_double_mfold) then
+                      max_manifold = no(state_sym) + no(state_sym)*(no(state_sym)+1)*nv(state_sym)/2
+                      if (relcc_eom_nroots(state_sym).gt.max_manifold) then
+                         relcc_eom_nroots(state_sym) = max_manifold 
+                         reset_roots_in_symmetry = .true.
+                      else
+                         reset_roots_in_symmetry = .false.
+                      end if
+                   else
                    relcc_eom_nroots(state_sym) = no(state_sym)
                    reset_roots_in_symmetry = .true.
+                   end if
                 else if (relcc_eom_nroots(state_sym).eq.-1) then
                    reset_roots_in_symmetry = .true.
                 else
@@ -96,7 +114,11 @@
 
           if (reset_roots_in_symmetry) then
              if(relcc_do_eomip) then
-                write (iw,'(4x,A)') "Warning: more EOM-IP roots than there are occupied orbitals."
+                if (relcc_mfd_trial_double_mfold) then
+                   write (iw,'(4x,A)') "Warning: more EOM-IP roots than there are ionized (1h+2h1p) configurations."
+                else
+                   write (iw,'(4x,A)') "Warning: more EOM-IP roots than there are occupied orbitals."
+                endif
              endif
              if(relcc_do_eomea) then
                 write (iw,'(4x,A)') "Warning: more EOM-EA roots than there are virtual orbitals."
@@ -104,7 +126,11 @@
              if(relcc_do_eomee) then
                 write (iw,'(4x,A)') "Warning: more EOM-EE roots than there are occupied/virtual pairs."
              endif
-             write (iw,'(13x,A,I3,2x,A,2x,I3)') "Number or roots for symmetry",state_sym,"set to",relcc_eom_nroots(state_sym)
+             if (relcc_eom_nroots(state_sym).eq.-1) then
+                write (iw,'(13x,A,I3,2x,A,2x,I3)') "Number or roots for symmetry",state_sym,"set to full dimension of HBar"
+             else
+                write (iw,'(13x,A,I3,2x,A,2x,I3)') "Number or roots for symmetry",state_sym,"set to",relcc_eom_nroots(state_sym)
+             end if
           end if
        end if
     end do
@@ -331,8 +357,14 @@
 ! particular state symmetry.
 ! Thereby we avoid the sigma vector calculations of the degenerate roots.  
 
-          allocate(diag_H(ndimr1))
-          diag_H = H_II(1:N1:rcw)
+          if (relcc_mfd_trial_double_mfold) then
+! allowing trial vector from R1 and R2
+              allocate(diag_H(ndimr1+ndimr2))
+              diag_H = H_II(1:(N1+N2):rcw)
+          else
+              allocate(diag_H(ndimr1))
+              diag_H = H_II(1:N1:rcw)
+          end if
 
 ! aspg, WIP june/july 2018
 ! in principle we can eigenvalue shift with any of the schemes below 
@@ -345,6 +377,14 @@
 
           if (relcc_projectors_do_restricted_excitation_window &
              & .or.relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal within the given excitation window
+
+              if (relcc_mfd_trial_double_mfold) then 
+                  write (iw,*) ''
+                  write (iw,*) 'Restricted excitation window (REW) or Core valence separation (CVS)'
+                  write (iw,*) 'via projectors not implemented for trial vectors from double manifold'
+                  write (iw,*) ''
+                  call quit('unsupported combination of keywords')
+              end if
 
               if (iprnt.ge.1) then
                   write (iw,*) ''
@@ -381,6 +421,7 @@
 
               if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
               if (iprnt.ge.2) write (iw,*) 'in_window_HbarSS_threshold',in_window_HbarSS_threshold
+
 ! aspg, WIP june/july 2018
               iroot = 1
               do while (iroot.le.nroot)
@@ -411,11 +452,18 @@
                   i = k(1)
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
-                  R1(jroot,iroot) = 1.0d0
+                  if (jroot.gt.N1) then
+                     R2(jroot-N1,iroot) = 1.0d0
+                  else
+                     R1(jroot,iroot) = 1.0d0
+                  end if
                   diag_H(i) = huge(diag_H)
               enddo
           end if
           deallocate(diag_H)
+
+          if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
+          if (iprnt.ge.3) call davidson_print_vectors(R2, label="debug:  R2 vector             ")
 
       else if (relcc_mfd_trial_restart) then
           call quit ('restart from prior RHS vectors not implemented')
@@ -546,8 +594,13 @@
       else if (relcc_mfd_trial_diagonal) then
           write (iw,*) '  Using (reordered) unit vectors as trial vectors'
 
-          allocate(diag_H(ndimr1))
-          diag_H = H_II(1:N1:rcw)
+          if (relcc_mfd_trial_double_mfold) then
+             allocate(diag_H(ndimr1+ndimr2))
+             diag_H = H_II(1:(N1+N2):rcw)
+          else
+             allocate(diag_H(ndimr1))
+             diag_H = H_II(1:N1:rcw)
+          end if
 
 ! aspg, WIP june/july 2018
 ! in principle we can eigenvalue shift with any of the schemes below 
@@ -561,6 +614,15 @@
 
           if (relcc_projectors_do_restricted_excitation_window &
              & .or.relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal within the given excitation window
+
+              if (relcc_mfd_trial_double_mfold) then
+                  write (iw,*) ''
+                  write (iw,*) 'Restricted excitation window (REW) or Core valence separation (CVS)'
+                  write (iw,*) 'via projectors not implemented for trial vectors from double manifold'
+                  write (iw,*) ''
+                  call quit('unsupported combination of keywords')
+              end if
+
 
               if (iprnt.ge.1) then
                   write (iw,*) ''
@@ -624,15 +686,22 @@
 
               do iroot = 1, nroot
                   k = minloc(diag_H) 
-                  if (iprnt.ge.1) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
+                  if (iprnt.ge.3) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
                   i = k(1)
                   diag_H(i) = huge(diag_H)
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
-                  R1(jroot,iroot) = 1.0d0
+                  if (jroot.gt.N1) then
+                     R2(jroot-N1,iroot) = 1.0d0
+                  else
+                     R1(jroot,iroot) = 1.0d0
+                  end if
               enddo
           end if
           deallocate(diag_H)
+
+          if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
+          if (iprnt.ge.3) call davidson_print_vectors(R2, label="debug:  R2 vector             ")
 
       else if (relcc_mfd_trial_restart) then
           call quit ('restart from prior RHS vectors not implemented')

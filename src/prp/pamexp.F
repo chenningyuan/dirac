@@ -99,9 +99,7 @@ C
       complex(8), allocatable :: ckudmvec(:), ccoeffvec(:), cprpvec(:)
       complex(8), allocatable ::kudm_mo(:,:),kudm_tmp(:,:),kudm_ao(:,:)
       complex(8), allocatable :: cprpmat(:,:), ccoeffmat(:,:)
-      character(len=38) :: dataid1
-      character(len=21) :: dataid2
-      character(len=42) :: dataid3
+      character*(:),allocatable :: dataid
       character(len=4)  :: numstr
       character(len=12) :: prplab
       character(len=6)  :: reex(3)
@@ -130,9 +128,9 @@ C     ==============================
 C
 
       if (tobe_dirac) then
-          dataid2='/input/aobasis/n_ao'
+          dataid='/input/aobasis/1/n_ao'
           nmo = nesh(1)
-          call checkpoint_read(dataid2,idata=nao)
+          call checkpoint_read(dataid,idata=nao)
       elseif (tobe_respect) then
 
           ! checking existence of reex density file
@@ -165,10 +163,8 @@ C
           allocate(ccoeffmat(nao*2, nmo*2 ))
 
           ! reading in coefficient matrix from file from file
-          call opnfil(lucoef,'DFCOEF','OLD','KUPRPEX1')
           qcoeffvec = D0  
-          call reacmo_new(lucoef,cmo=qcoeffvec)
-          close(lucoef,status='KEEP') 
+          call reacmo_new(cmo=qcoeffvec)
           qcoeffmat = D0
           qcoeffmat = reshape(qcoeffvec, shape=(/nao,nmo,4/),
      &                order=(/1,2,3/))
@@ -307,10 +303,6 @@ C
               allocate(qx2cmat(nao, nao, 4))
               allocate(qqx2cmatvec(nao**2,4))
           else if (nonrel) then
-            luprop = lu1int
-            open(luprop,file='AOPROPER',status='old',form='unformatted',
-     &            action="read",position='rewind')
-
               allocate(scr_mat1(nao**2,4))
               allocate(scr_mat2(nao* nao * 4))
           else
@@ -352,12 +344,8 @@ C
                   !Getting integrals from X2CMAT!
                   call num2str(indxpr,numstr)
                   prplab = 'prpint2c'//numstr
-                  open(lux2c,file='X2CMAT',status='old',
-     &                 form='unformatted',access='sequential',
-     &                 action="read",position='rewind')
                   qqx2cmatvec = D0
                   call x2c_read(prplab,qqx2cmatvec,nao*nao*4,lux2c)
-                  close(lux2c,status="keep")
                   qx2cmat = reshape(qqx2cmatvec, shape=(/nao,nao,4/),
      &                              order=(/1,2,3/))
               cprpmat = DC0
@@ -567,11 +555,6 @@ C
       INTEGER :: state 
 C
 C     Initialize
-C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-C
-C     Initialize
 C     ==========
 C
 #include "memint.h"
@@ -584,11 +567,7 @@ C     Generate density matrix
 C     =======================
 C
       IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
-        INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-        IF(.NOT.FILEX) GOTO 1000
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6)
-        CLOSE(LUCOEF,STATUS='KEEP')
         IF (.NOT. ORBANA) THEN
 C.........accumulate all density into one matrix
           FILEX = AOC
@@ -834,11 +813,7 @@ C...........Transform property matrix to fragment orbital basis
         CALL MEMREL('PRPEX1.prjana',WORK,1,KFRSAV,KFREE,LFREE)
       ENDIF
 C
-      CLOSE(LU1INT,STATUS = 'KEEP')
       RETURN
- 1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'PRPEXP: Coefficient file not found !'
-      CALL QUIT('PRPEXP: Coefficients not found !')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1376,6 +1351,7 @@ C     Written by T. Saue Jan 20 2005
 C
 C***********************************************************************
        use dircmo
+       use labeled_storage
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -1388,6 +1364,8 @@ C
       DIMENSION PAO(*),CMO(*),WORK(*)
       integer, allocatable :: IBP(:)
       real(8), allocatable :: EIG(:)
+      type(file_info_t)    :: fexpcan
+      logical              :: tobe
 C
       KFRSAV = KFREE
 C
@@ -1395,7 +1373,6 @@ C     Read eigenvalues and boson irrep information
 C
       allocate (eig(norbt))
       allocate (ibp(norbt))
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXPCAN')
       CALL REACMO(LUCOEF,'DFCOEF',DUM,EIG,IBP,TOTERG,12)
       DO IFRP = 1,NFSYM
 C       Memory allocation
@@ -1420,15 +1397,21 @@ C       Generate canonical property orbitals
 C      
         CALL MEMREL('EXPCAN.1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       ENDDO
-C     Write new coefficients
-      IUNIT = 2
-      CALL OPNFIL(IUNIT,PRPNAM(INDXPR),'NEW','EXPCAN')  
-      CALL WRICMO(IUNIT,CMO,EIG,IBP,TOTERG)
-      CLOSE(IUNIT,STATUS='KEEP')
+C     Write new coefficients to a separate file called EXPCAN.h5
+      fexpcan%name = 'EXPCAN.h5'
+      fexpcan%type = 1
+      inquire (file=fexpcan%name,exist=tobe)
+      if (.not.tobe) then
+         fexpcan%status = -1 ! open for the first time
+      else
+         fexpcan%status = 0  ! add to existing data file
+      endif
+      call lab_write(fexpcan,trim(PRPNAM(INDXPR))//'_cmo',
+     & rdata=cmo(1:ncmotq))
+      call lab_write(fexpcan,trim(PRPNAM(INDXPR))//'_eig',rdata=eig)
+      call lab_write(fexpcan,trim(PRPNAM(INDXPR))//'_ibp',idata=ibp)
 C     Read old coefficients
-      REWIND LUCOEF
       CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,TOTERG,2)
-      CLOSE(LUCOEF,STATUS='KEEP')
       CALL MEMREL('EXPCAN.2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END

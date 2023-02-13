@@ -7672,7 +7672,7 @@ C
 #include "ibtfun.h"
 
       character(len=*),intent(in) :: group
-      real(8), allocatable        :: geometry(:)
+      real(8), allocatable        :: geometry(:),nuc_charge(:)
       character*4, allocatable    :: symbols(:)
       logical                     :: tobe
 
@@ -7681,6 +7681,7 @@ C
       ! allocate arrays to store the full list of symbols and coordinates
       allocate (symbols(nucdep))
       allocate (geometry(3*nucdep))
+      allocate (nuc_charge(nucdep))
       ! get these from the symmetry-unique list of atoms by applying symmetry operations
       ! we always write coordinates in Angstroms and convert them from AU using XTANG
       jcent = 0 ! counter for the dependent atoms
@@ -7694,12 +7695,14 @@ C
                END DO 
                jcent = jcent + 1
                symbols(jcent) = namn(icent)
+               nuc_charge(jcent) = charge(icent)
             END IF
          END DO
       END DO
 
       ! write the coordinates
       call checkpoint_write (group//'/symbols',sarray=symbols,slen=4)
+      call checkpoint_write (group//'/nuc_charge',rdata=nuc_charge)
       call checkpoint_write (group//'/geometry',rdata=geometry)
 
 !     Finish by writing XYZ file in plain text format if it does not exist yet.

@@ -1901,11 +1901,7 @@
 !     Open the coefficient file
 !     =========================
 !
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) GOTO 1000
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','LAGTRA')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,DUM,2)
-      CLOSE(LUCOEF,STATUS='KEEP')
 !
 !     ---------------------
 !     Do the transformation

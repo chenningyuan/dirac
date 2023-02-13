@@ -459,6 +459,7 @@ module exacorr_gradient
       end if
 
       call talsh_dm_store_mo (exa_input,talsh_gamma,wavefun)
+      call talsh_kudm_store_mo(exa_input,talsh_gamma,wavefun)
 
       ! Clean up and switch off talsh
       call talsh_dm_cleanup_dmtens(talsh_gamma,CCD)

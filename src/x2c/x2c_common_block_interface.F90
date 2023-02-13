@@ -25,8 +25,8 @@ module x2c_cb_interface
 !          hide as much as you can for public - it will save us lots of trouble in future
 
   use x2cmod_cfg
-#ifdef MOD_AOOSOC
-  use atomic_oo_order_so_correction_cfg
+#ifdef MOD_XAMFI
+  use xamfi_global_parameters
 #endif
 
   implicit none
@@ -51,6 +51,7 @@ contains
 
       use quaternion_algebra
       use memory_allocator
+      use dirac_cfg, only: dirac_cfg_dft_calculation
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -82,7 +83,13 @@ contains
 
        if(init_x2c_cb_blocks)then
 
-!        set AO-labels for large and small components - before x2c_main initialized only for the large component
+         !> set integral flags for two-electron evaluations within the X2C module
+         !> four-component evaluations use the default integral settings stored in intgen_save
+         !>  two-component evaluations use the default integral settings stored in intgen (set to (LL|LL) only in HAMINP for X2C)
+         x2c_intgen_4c = intgen_save
+         x2c_intgen_2c = intgen
+
+         !> set AO-labels for large and small components - before x2c_main initialized only for the large component
          call getlab(-1)
 
          call legacy_lwork_get(len_wrk_f77_x2c)
@@ -96,22 +103,23 @@ contains
          mfsym                 = min(nfsym,2)
          x2c_1e_system         = onesys
 
-!        set value for amfi module (if at all)
+         !> set value for amfi module (if at all)
          if(noamfi)        x2c_add_amfi = -1
          if(x2c_1e_system) x2c_add_amfi = -1 
 
-!        common block variables for Diracs 2e-SOC or the old AMFI
+         !> common block variables for Diracs 2e-SOC or the old AMFI
          if(x2c_add_amfi > 0)then
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
            if(aoomod)then ! Dirac oo-order 2e-SOC
              x2c_amfi_order           = aoo_soc_order
              x2c_add_amfi             = 2
+             if(aooeamf) x2c_add_amfi = 3
            else ! AMFI corrections by B. Schimmelpfennig
 #endif
              x2c_tot_charge_for_mfsum = imfch
              x2c_amfi_order           = isorder_amfi_x2c
              x2c_max_quant_num        = mxqn
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
            end if
 #endif
          end if
@@ -232,13 +240,19 @@ contains
          else if(x2c_free_part_mtx_defh1)then
 !          free-particle matrix
            x2c_is_defining_h1mat  = 3
-!        else if(dohuckel)then
-!          (extended) Huckel start guess
-!          x2c_is_defining_h1mat  = 1
          else
 !          default: bare-nucleus one-electron Dirac-Hamiltonian
            x2c_is_defining_h1mat  = 0
+#ifdef MOD_XAMFI
+           ! extension: bare-nucleus one-electron Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
+           if(aoomod.and.aoo2ediag) x2c_is_defining_h1mat  = 1
+           ! extension: bare-nucleus one-electron Dirac-Hamiltonian + first-order molecular 2e-mean-field contributions
+           if(aoomod.and.aooeamf)   x2c_is_defining_h1mat  = 4
+#endif
          end if
+
+         !> DFT run
+         x2c_isDFT = dirac_cfg_dft_calculation;
 ! 
        else 
 

@@ -31,7 +31,7 @@
         case ('*X2C')
            call read_input_x2c(word, kw_section)
 
-        case ('*aooSOC')
+        case ('*X-AMFI', '*XAMFI ')
            call read_input_aoosoc(word, kw_section)
 
         case ('**EXACC')
@@ -1450,11 +1450,20 @@
          call kw_read(word, relcc_mfd_convergence_threshold)
       end if
 
+! aspg: .TRV_SDM allows to bypass the restriction of the number of roots
+!       from the dimension of the singles manifold, so that initial
+!       trial vectors also contaning elements of the doubles manifold.
+!       this implies a pivoted diagonal  
+      if (kw_matches(word, '.TRV_SDM')) then
+         relcc_mfd_trial_double_mfold = .true.
+      end if
+
       if (kw_matches(word, '.TRV_CCS')) then
          relcc_mfd_trial_ccs      = .true.
          relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_ccs
          relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_ccs
          relcc_mfd_trial_restart = .not.relcc_mfd_trial_ccs
+         relcc_mfd_trial_double_mfold = .not.relcc_mfd_trial_ccs
       end if
 
       if (kw_matches(word, '.TRV_I  ')) then
@@ -2214,8 +2223,8 @@
 
       use x2cmod_cfg
       use input_reader
-#ifdef MOD_AOOSOC
-      use atomic_oo_order_so_correction_cfg
+#ifdef MOD_XAMFI
+      use xamfi_global_parameters
 #endif
 
       implicit none
@@ -2225,24 +2234,45 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
       call reset_available_kw_list()
 
 
       if (kw_matches(word, '.DEBUG ')) then
          aoomod_debug = .true.
-         aoomod       = .true.
-         x2c_add_amfi = 2
       end if
+
       if (kw_matches(word, '.atomic')) then
          aoomod       = .true.
          x2c_add_amfi = 2
       end if
 
+      if (kw_matches(word, '.2ediag')) then
+         aoomod       = .true.
+         aoo2ediag    = .true.
+      end if
+
+      if (kw_matches(word, '.amf   ')) then
+         aoomod       = .true.
+         aoo2ediag    = .true.
+         x2c_add_amfi = 2
+      end if
+
+      if (kw_matches(word, '.eamf  ')) then
+         aoomod       = .true.
+         aooeamf      = .true.
+         x2c_add_amfi = 3
+      end if
+
+      if (kw_matches(word, '.noaoc ')) then
+         aoomod       = .true.
+         aoofocc      = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
 #else
-      call quit('Atomic oo-order spin-orbit correction not included in this version')
+      call quit('X-AMFI not included in this version')
 #endif
 
    end subroutine

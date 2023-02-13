@@ -22,7 +22,7 @@ module mp2no_fileinterfaces
         end interface
 
         public quater_write, quater_read
-        public print_rMP2FVNO, write_to_newfile
+        public print_rMP2FVNO, write_nos
 
        contains
 
@@ -264,14 +264,12 @@ module mp2no_fileinterfaces
 
       end subroutine 
 
-      subroutine write_to_newfile (nocc,NOs_AO,New_orbital_energy,file_old,file_new)
-     !      write new orbital information into new file 'MP2NOs_AO', which is similar to DFCOEF 
-     !      copy the basis information from DFCOEF and use new orbital energy and coefficient to replace the old orbital.   
-     !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
+      subroutine write_nos (nocc,NOs_AO,New_orbital_energy,reference_orbitals,new_orbitals)
+     !      write new orbital information into the appropriate section of checkpoint 
 
             implicit none
 
-            character(len=*),intent(in)           :: file_old,file_new
+            character(len=*),intent(in)           :: reference_orbitals,new_orbitals
             real(8),pointer,intent(in)            :: NOs_AO(:,:,:)          ! new canonical orbital in AO basis
             real(kind=8),pointer,intent(in)       :: New_orbital_energy(:)  ! new orbital energy 
 
@@ -286,8 +284,8 @@ module mp2no_fileinterfaces
             integer                  :: nmo_hf
 
 
-   !        read information of from DFCOEF
-            call read_from_dirac(ao_basis,qorbital_hf,file_old,ierr)
+   !        read the reference orbitals
+            call read_from_dirac(ao_basis,qorbital_hf,reference_orbitals,ierr)
             call convert_mo_to_quaternion(qorbital_hf)
 
             nao = qorbital_hf%nao
@@ -295,7 +293,7 @@ module mp2no_fileinterfaces
             nmo = nocc+nno
             nmo_hf = qorbital_hf%nmo
 
-            ! make a copy of the Hartree-Fock orbitals
+            ! make a copy of the reference (Hartree-Fock) orbitals
             call copy_mo(qorbital_hf,qorbital)
 
             ! replace the orbital energies by the new (recanonized) ones
@@ -319,10 +317,10 @@ module mp2no_fileinterfaces
                enddo
             enddo
 
-            call write_mos_to_dirac(ao_basis,qorbital,file_new)
-            call print_date('Write new orbital into MP2NOs_AO file like DFCOEF')
+            call write_mos_to_checkpoint(2,qorbital,new_orbitals)
+            call print_date('Written natural orbitals to '//trim(new_orbitals)//' section of checkpoint')
 
-      end subroutine write_to_newfile
+      end subroutine write_nos
 
 end module mp2no_fileinterfaces
 
