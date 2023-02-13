@@ -1,14 +1,3 @@
-include_directories(
-    ${PROJECT_SOURCE_DIR}/src/include
-    ${PROJECT_SOURCE_DIR}/src/cfun
-    )
-
-include(autocmake_CMakeDependentOption)
-
-# FIXME re-introduce
-# set_source_files_properties(${PROJECT_BINARY_DIR}/config_info.F90 PROPERTIES GENERATED 1)
-
-
 #Miro: remove problematic linking library
 list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "pthread")
 
