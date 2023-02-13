@@ -276,3 +276,90 @@ set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:main> ${EXTERNAL_OBJECTS})
 # make these variables visible to the cmake one level up
 set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)
 set(EXTERNAL_OBJECTS ${EXTERNAL_OBJECTS} PARENT_SCOPE)
+
+#-------------------------------------------------------------------------------
+
+add_executable(dirac.x)
+
+target_sources(dirac.x
+  PRIVATE
+    main/main.F90
+  )
+
+target_include_directories(dirac.x
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/include
+  )
+
+target_link_libraries(dirac.x
+  PRIVATE
+    abacus
+    amfi
+    cfun
+    dirac
+    dirrci
+    ecp
+    embedding
+    esr
+    gp
+    grid
+    input
+    interest
+    interest
+    interface_mpi
+    krmc
+    laplace
+    localization
+    luciarel
+    lucita
+    main
+    matrix_operations
+    moltra
+    pelib_interface
+    prp
+    qcorr
+    reladc
+    relccsd
+    visual
+    x2c
+    xcfun_fortran_bindings
+    xcint
+  )
+
+if(ENABLE_PCMSOLVER)
+  target_link_libraries(dirac.x
+    PRIVATE
+      pcm_dirac
+    )
+endif()
+
+if(ENABLE_SRDFT)
+  target_link_libraries(dirac.x
+    PRIVATE
+      srdft
+    )
+endif()
+
+if(ENABLE_KRCC)
+  target_link_libraries(dirac.x
+    PRIVATE
+      krcc
+    )
+endif()
+
+target_link_libraries(dirac.x
+  PRIVATE
+    ${EXTERNAL_LIBS}
+  )
+
+# copy basis set libraries to build directory
+add_custom_command(
+  TARGET
+    dirac.x
+  COMMAND
+    ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis ${PROJECT_BINARY_DIR}/basis
+  COMMAND
+    ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_ecp ${PROJECT_BINARY_DIR}/basis_ecp
+  COMMAND
+    ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_dalton ${PROJECT_BINARY_DIR}/basis_dalton
+  )
