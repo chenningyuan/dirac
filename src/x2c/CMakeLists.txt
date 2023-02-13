@@ -40,3 +40,9 @@ target_link_libraries(x2c
     grid
     abacus
   )
+
+if(ENABLE_XAMFI)
+  dirac_test(atomic_x2c_2esoc_models_energy "medium;xamfi" "")
+  dirac_test(atomic_x2c_spinfree_energy "medium;xamfi" "")
+  dirac_test(x_amfi "short;xamfi" "")
+endif()

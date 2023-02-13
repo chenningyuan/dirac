@@ -239,13 +239,6 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:relccsd> ${EXTERNAL_OBJECTS})
 #  mcscf_sf as separate library
 message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
 
-# XAMFI as separate library
-if(ENABLE_XAMFI)
-    dirac_test(atomic_x2c_2esoc_models_energy "medium;xamfi" "")
-    dirac_test(atomic_x2c_spinfree_energy "medium;xamfi" "")
-    dirac_test(x_amfi "short;xamfi" "")
-endif()
-
 #  srdft module as separate library
 if(ENABLE_SRDFT)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/srdft)
