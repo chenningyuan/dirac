@@ -79,6 +79,7 @@ target_link_libraries(abacus
   PRIVATE
     ecp
     gen1int_interface
+    grid
   )
 
 # FIXME
