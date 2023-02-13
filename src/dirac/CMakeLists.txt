@@ -46,3 +46,7 @@ target_include_directories(dirac
   PRIVATE
     ${PROJECT_SOURCE_DIR}/src/include
   )
+
+if(ENABLE_SRDFT)
+  target_compile_definitions(dirac PRIVATE MOD_SRDFT)
+endif()

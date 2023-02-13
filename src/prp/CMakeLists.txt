@@ -33,7 +33,6 @@ target_sources(prp
 
 target_link_libraries(prp
   PRIVATE
-    esr
     relccsd
     krmc
     x2c
@@ -43,6 +42,25 @@ target_include_directories(prp
   PRIVATE
     ${PROJECT_SOURCE_DIR}/src/include
   )
+
+#-------------------------------------------------------------------------------
+
+option(ENABLE_ESR "ESR property module" ON)
+
+if(ENABLE_ESR)
+  add_subdirectory(esr)
+endif()
+
+if(ENABLE_ESR)
+  target_compile_definitions(prp PRIVATE MOD_ESR)
+
+  target_link_libraries(prp
+    PRIVATE
+      esr
+  )
+endif()
+
+#-------------------------------------------------------------------------------
 
 option(ENABLE_LAO_REARRANGED "LAO properties without connection matrices" ON)
 

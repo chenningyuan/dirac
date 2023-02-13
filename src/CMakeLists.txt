@@ -1,16 +1,3 @@
-#################################################################################
-#
-# Big substitution of many autocmake.cfg's custom/FUNCTIONALITY.cmake files.
-#
-# Written by Miro Ilias, February 2016, GSI
-#
-#################################################################################
-
-#----------------------------------------------------------------------------------
-# Set all module options and definitions first
-# so they can be DEFINED for all source subdirectories below
-#----------------------------------------------------------------------------------
-
 option(ENABLE_GEN1INT "Enable Gen1Int library" ON)
 
 if(ENABLE_GEN1INT)
@@ -39,6 +26,7 @@ endif()
 #-------------------------------------------------------------------------------
 
 option(ENABLE_XCFUN "Enable XCFun library" ON)
+
 if(ENABLE_XCFUN)
   add_subdirectory(xcfun)
 else()
@@ -61,65 +49,32 @@ endif()
 #-------------------------------------------------------------------------------
 
 option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON)
+
 if(ENABLE_MCSCF_spinfree)
-    add_definitions(-DMOD_MCSCF_spinfree)
+  add_definitions(-DMOD_MCSCF_spinfree)
 endif()
+
+#-------------------------------------------------------------------------------
+
+# FIXME
 option(ENABLE_XAMFI "(e)amf 2-electron scalar and spin-orbit picture-change correction module" ON)
+
 if(ENABLE_XAMFI AND HDF5_FOUND)
-    add_definitions(-DMOD_XAMFI)
+  add_definitions(-DMOD_XAMFI)
 else()
-    if(ENABLE_XAMFI AND NOT HDF5_FOUND)
-        message(STATUS "X-AMFI, the (e)amf 2-electron scalar and spin-orbit picture-change correction module requires a working HDF5 library")
-    endif()
-    set(ENABLE_XAMFI OFF)
-endif()
-option(ENABLE_ESR "ESR property module" ON)
-if(ENABLE_ESR)
-    add_definitions(-DMOD_ESR)
-endif()
-option(ENABLE_SRDFT "srDFT module" ON)
-if(ENABLE_SRDFT)
-    add_definitions(-DMOD_SRDFT)
+  if(ENABLE_XAMFI AND NOT HDF5_FOUND)
+      message(STATUS "X-AMFI, the (e)amf 2-electron scalar and spin-orbit picture-change correction module requires a working HDF5 library")
+  endif()
+  set(ENABLE_XAMFI OFF)
 endif()
 
-#--------------------------------------------------------------------------------------------------------------
-#
-# WARNING: The order of the functionality modules is crucial for the proper linking of all DIRAC executables !
-#
-# The first module here (pdpack) is the last in the linking command due way of filling the ${EXTERNAL_LIBS}
-# variable.
-#
-# The resulting ${EXTERNAL_LIBS} variable contains localized source libraries of all functionality modules
-# of DIRAC (main,dirac,relccsd,prp,reladc, interest ...)
-#
-# Due to entanglements between libraries (like dirac depends localization and vise versa) it is necessary
-# to keep source files (modules) as localized as possible and with minimal interdependencie on other modules.
-#
-#----------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-# make the EXTERNAL_LIBS variable visible to the scope up !
-set(EXTERNAL_LIBS PARENT_SCOPE)
-set(EXTERNAL_OBJECTS PARENT_SCOPE)
-
-# pdpack as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/pdpack)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:pdpack> ${EXTERNAL_OBJECTS})
-
-# Making interface_mpi as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/interface_mpi)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interface_mpi> ${EXTERNAL_OBJECTS})
-
-# gp as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/gp)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:gp> ${EXTERNAL_OBJECTS})
-
-# Abacus as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/abacus)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:abacus> ${EXTERNAL_OBJECTS})
-
-# Making matrix_operations  as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/matrix_operations)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:matrix_operations> ${EXTERNAL_OBJECTS})
+add_subdirectory(pdpack)
+add_subdirectory(interface_mpi)
+add_subdirectory(gp)
+add_subdirectory(abacus)
+add_subdirectory(matrix_operations)
 
 #-------------------------------------------------------------------------------
 
@@ -137,71 +92,24 @@ endif()
 
 #-------------------------------------------------------------------------------
 
-#    Moltra as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:moltra> ${EXTERNAL_OBJECTS})
+add_subdirectory(moltra)
+add_subdirectory(embedding)
+add_subdirectory(x2c)
+add_subdirectory(localization)
+add_subdirectory(cfun)
+add_subdirectory(xcint)
+add_subdirectory(qcorr)
+add_subdirectory(luciarel)
+add_subdirectory(lucita)
+add_subdirectory(krmc)
+add_subdirectory(ecp)
+add_subdirectory(amfi)
+add_subdirectory(dirrci)
+add_subdirectory(reladc)
+add_subdirectory(visual)
+add_subdirectory(grid)
 
-#    embedding as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/embedding)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:embedding> ${EXTERNAL_OBJECTS})
-
-# Making x2c as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/x2c)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:x2c> ${EXTERNAL_OBJECTS})
-
-# Making localization  as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/localization)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:localization> ${EXTERNAL_OBJECTS})
-
-# cfun as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/cfun)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:cfun> ${EXTERNAL_OBJECTS})
-
-# xcint as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/xcint)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:xcint> ${EXTERNAL_OBJECTS})
-
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/qcorr)
-
-# luciarel as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/luciarel)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:luciarel> ${EXTERNAL_OBJECTS})
-
-# lucita as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/lucita)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:lucita> ${EXTERNAL_OBJECTS})
-
-# krmc as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/krmc)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krmc> ${EXTERNAL_OBJECTS})
-
-if(ENABLE_ESR)
-  add_subdirectory(prp/esr)
-endif()
-
-# ecp as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/ecp)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:ecp> ${EXTERNAL_OBJECTS})
-
-# amfi as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/amfi)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:amfi> ${EXTERNAL_OBJECTS})
-
-# dirrci as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirrci)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:dirrci> ${EXTERNAL_OBJECTS})
-
-# Making reladc as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/reladc)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:reladc> ${EXTERNAL_OBJECTS})
-
-# Making visual as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/visual)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:visual> ${EXTERNAL_OBJECTS})
-
-# grid as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/grid)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:grid> ${EXTERNAL_OBJECTS})
+#-------------------------------------------------------------------------------
 
 # pcmsolver as separate external library
 if(ENABLE_PCMSOLVER)
@@ -223,48 +131,27 @@ if(ENABLE_PCMSOLVER)
   set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:pcm_dirac> ${EXTERNAL_OBJECTS})
 endif()
 
-# prp as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:prp> ${EXTERNAL_OBJECTS})
+#-------------------------------------------------------------------------------
 
-# interest as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
+add_subdirectory(prp)
+add_subdirectory(interest)
+add_subdirectory(relccsd)
 
+#-------------------------------------------------------------------------------
 
-# Making relccsd as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/relccsd)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:relccsd> ${EXTERNAL_OBJECTS})
+option(ENABLE_SRDFT "srDFT module" ON)
 
-#  mcscf_sf as separate library
-message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
-
-#  srdft module as separate library
 if(ENABLE_SRDFT)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/srdft)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:srdft> ${EXTERNAL_OBJECTS})
+  add_subdirectory(srdft)
 endif()
-message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 
-# laplace-minimax
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace-minimax)
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
+#-------------------------------------------------------------------------------
 
-#  dirac sources as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:dirac> ${EXTERNAL_OBJECTS})
-
-#  input reader directory as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/input)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:input> ${EXTERNAL_OBJECTS})
-
-# main directory as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
-set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:main> ${EXTERNAL_OBJECTS})
-
-# make these variables visible to the cmake one level up
-set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)
-set(EXTERNAL_OBJECTS ${EXTERNAL_OBJECTS} PARENT_SCOPE)
+add_subdirectory(laplace-minimax)
+add_subdirectory(laplace)
+add_subdirectory(dirac)
+add_subdirectory(input)
+add_subdirectory(main)
 
 #-------------------------------------------------------------------------------
 
@@ -340,6 +227,8 @@ target_link_libraries(dirac.x
   PRIVATE
     ${EXTERNAL_LIBS}
   )
+
+#-------------------------------------------------------------------------------
 
 # copy basis set libraries to build directory
 add_custom_command(
