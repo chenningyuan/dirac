@@ -46,6 +46,7 @@ target_link_libraries(dirac.x
     main
     matrix_operations
     moltra
+    pelib_interface
     prp
     qcorr
     reladc
@@ -83,11 +84,6 @@ target_link_libraries(dirac.x
 add_custom_command(TARGET dirac.x PRE_LINK COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis ${PROJECT_BINARY_DIR}/basis COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_ecp ${PROJECT_BINARY_DIR}/basis_ecp  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_dalton ${PROJECT_BINARY_DIR}/basis_dalton COMMAND ${CMAKE_COMMAND} -E echo "INFO:basis set directories, basis*, synchronized into current installation directory")
 
 find_package(HDF5 COMPONENTS C HL)
-
-if(ENABLE_PELIB)
-    add_dependencies(pelib gen1int_interface)
-    add_dependencies(dirac pelib)
-endif()
 
 #printout of all linked libraries to dirac.x executable
 get_target_property(OUT dirac.x  LINK_LIBRARIES)

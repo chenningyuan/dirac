@@ -68,7 +68,6 @@ modules:
     - 'custom/workarounds.cmake'
     - 'custom/external.cmake'
     - 'custom/pcm.cmake'
-    - 'custom/pelib.cmake'
 - subdirectories:
   - source: '%(url_root)modules/src.cmake'
 - custom:

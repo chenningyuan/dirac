@@ -1,6 +1,3 @@
-[submodule "external/pelib"]
-	path = external/pelib
-	url = https://gitlab.com/pe-software/pelib.git
 [submodule "external/unit-tests"]
 	path = external/unit-tests
 	url = https://gitlab.com/dirac/unit-tests.git

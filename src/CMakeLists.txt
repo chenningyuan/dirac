@@ -47,6 +47,19 @@ endif()
 
 #-------------------------------------------------------------------------------
 
+option(ENABLE_PELIB "Enable polarizabile embedding library" ON)
+
+if(ENABLE_PELIB)
+  add_definitions(-DHAS_PELIB)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
+
+  if(NOT ENABLE_GEN1INT)
+    message(FATAL_ERROR "-- PElib requires Gen1Int, use -DENABLE_GEN1INT=ON to enable Gen1Int or -DENABLE_PELIB=OFF to disable PElib")
+  endif()
+endif()
+
+#-------------------------------------------------------------------------------
+
 option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON)
 if(ENABLE_MCSCF_spinfree)
     add_definitions(-DMOD_MCSCF_spinfree)
@@ -247,16 +260,6 @@ message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 # laplace-minimax
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace-minimax)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
-
-# pelib interface routines added as module
-if(ENABLE_PELIB)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
-    set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
-    dirac_test(pe_energy "medium;scf;pelib" "")
-    dirac_test(pe_response "medium;polarizabilities;pelib" "")
-    dirac_test(pe_exc "medium;pelib" "")
-    dirac_test(pe_cpp "short;pelib" "")
-endif()
 
 #  dirac sources as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
