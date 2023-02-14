@@ -179,6 +179,9 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         allocate(Tprop_bar_tensors_min_w(N_oper_qr))
 
         omega1 = -(omega2+omega3)
+        omega(1) = omega1
+        omega(2) = omega2
+        omega(3) = omega3
         print *, "Read frequency1:", omega(1)
         print *, "Read frequency2:", omega(2)
         print *, "Read frequency3:", omega(3)
@@ -204,9 +207,9 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
                     do n=1, N_oper_qr
                         m = N_prop_tem_qr(n)
                         call get_left_bvec(exa_input,Interm_t_tensors(m),l1_tensor,l2_tensor,Bvec_tensors(n))
-                        call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(m), omega(n), &
+                        call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors(m), omega(n), &
                                                 Bvec_tensors(n), Tprop_bar_tensors(n))
-                        call solve_eom_lr_left(interm_t, int_t, Interm_t_tensors(m), -omega(n),&
+                        call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors(m), -omega(n),&
                                                 Bvec_tensors(n), Tprop_bar_tensors_min_w(n))
                     end do
                     call print_date('Solved All 1st response left equations') 

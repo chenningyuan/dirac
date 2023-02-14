@@ -1112,10 +1112,11 @@
          call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
       end if
 
-
-      ! if (kw_matches(word, '.CCCIQR')) then
-      !    exa_input% eom_qr =.true.
-      ! end if
+      if (kw_matches(word, '.CCCIQR')) then
+         exa_input%eom_qr =.true.
+         call kw_read(word, exa_input%wf_type)
+         ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
+      end if
 
       if (kw_matches(word, '.EXEOM ')) then
          exa_input%eom = .true.

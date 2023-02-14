@@ -297,7 +297,7 @@ contains
         if (present(max_iterations)) then
             davidson_max_iterations = max_iterations
         else
-            davidson_max_iterations = 100
+            davidson_max_iterations = 1
         end if
 
         if (present(solve_values)) then
@@ -1833,16 +1833,20 @@ contains
         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
         N = size(root_vect,1)
-        print *, "N in get_tensor_linear_systems", N
+        ! print *, "N in get_tensor_linear_systems", N
 
 
-        print *, "dim1", size(root_vect,1)
-        print *, "dim2", size(root_vect,2)
+        ! print *, "dim1", size(root_vect,1)
+        ! print *, "dim2", size(root_vect,2)
         ! print *, "roor_vect", root_vect(:,1)
+        call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
+        
+
          do iroot=1, N
             factor = root_vect(iroot,1)
             ierr=talsh_tensor_contract("t(a,i)+=B1(a,i)*X()",t_tensor%t1,workspace_t%trial1(iroot),one_tensor,scale=factor)
             ierr=talsh_tensor_contract("t(a,b,i,j)+=B2(a,b,i,j)*X()",t_tensor%t2,workspace_t%trial2(iroot),one_tensor,scale=factor)
+            
          end do
         !  call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
         !  call print_tensor(t_tensor%t2, 1.0d-10, "t_tensor%t2")

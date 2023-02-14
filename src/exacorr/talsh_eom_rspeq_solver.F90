@@ -105,7 +105,7 @@ module talsh_eom_rspeq_solver
 
 !----------------------------------------------------------------------------------------------------------------
       
-      subroutine solve_eom_lr_left(interm_t, int_t, interm_t_prop, omega, bvec_tensor, tprop_bar_tensor)
+      subroutine solve_eom_lr_left(exa_input, interm_t, int_t, interm_t_prop, omega, bvec_tensor, tprop_bar_tensor)
             use talsh_sigma_eomccsd
 
             ! write(*,*) ""
@@ -116,6 +116,7 @@ module talsh_eom_rspeq_solver
       
       
       !     input variables
+                  type(exacc_input), intent(in) :: exa_input
                   type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
                   type(talsh_intg_tens_t), intent(inout) :: int_t
                   type(talsh_rsp_interm_tens_t) :: interm_t_prop
@@ -132,6 +133,9 @@ module talsh_eom_rspeq_solver
                   integer :: ierr
                   integer :: nroots = 1
                   character(len=2) :: flavor = "EE"
+
+                  integer(INTD), dimension(2) :: ov_dims
+                  integer(INTD), dimension(4) :: oovv_dims
                  
                   call talsh_davidson_setup(unit_output=6, &
                               solve_right=.false.,&
@@ -144,14 +148,24 @@ module talsh_eom_rspeq_solver
                   call print_date("Entering CC-CI Left Linear Systems calculation")
       
                   call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
-                  call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
+                  call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, 'L')
                   call talsh_eomccsd_ee_trial_create(workspace_t)
       
       !     set pointers to sigma vector subroutines 
                   interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ee
+
+                  ov_dims(1) = exa_input%nocc
+                  ov_dims(2) = exa_input%nvir
+                  oovv_dims(1:2) = exa_input%nocc
+                  oovv_dims(3:4) = exa_input%nvir
+
+      
+                  ierr=talsh_tensor_construct(tprop_bar_tensor%t1,C8,ov_dims,init_val=ZERO)
+                  ierr=talsh_tensor_construct(tprop_bar_tensor%t2,C8,oovv_dims,init_val=ZERO)
+
       
                   call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, &
-                                          omega, bvec_tensor%t1, bvec_tensor%t2)
+                                          omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)
                                           
                   call print_date("Finishing CC-CI Left Linear Systems calculation")
       
