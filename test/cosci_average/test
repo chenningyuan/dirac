@@ -37,7 +37,4 @@ f.add(from_re     = 'Total average:',
 
 test.run(['V.x2c.2fs.scf_os-ds_ovlsel_cosci.inp'], ['V.v2z.Dinfh.mol'], f, args='--incmo')
 
-# remove MO file
-os.unlink('DFCOEF')
-
 sys.exit(test.return_code)

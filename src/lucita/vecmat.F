@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ***********************************************************************
@@ -116,6 +111,7 @@ C       NELMNT = IBLOCK(8,IBLKA(JBLK)-1+IOFF)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE BVEC(B,IBSM,LUC,LUB,VEC1,VEC2)
+      use luci_wrkspc
 *
 * Construct B defined as
 *
@@ -131,7 +127,6 @@ C       NELMNT = IBLOCK(8,IBLKA(JBLK)-1+IOFF)
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION B(*),VEC1(*),VEC2(*)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "multd2h.inc"
 #include "oper.inc"
@@ -218,6 +213,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
       SUBROUTINE EXPCIV(ISM,ISPCIN,LUIN,
      &                  ISPCUT,LUUT,LBLK,
      &                  LUSCR,NROOT,ICOPY,IDC,NTESTG)
+      use luci_wrkspc
 *
 * Expand CI vector in CI space ISPCIN to CI vector in ISPCUT
 * Input vector is supposed to be on LUIN
@@ -232,7 +228,6 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "strbas.inc"
 #include "stinf.inc"
@@ -633,6 +628,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GASANA(C,NBLOCK,IBLOCK,IBLTP,LUC,ICISTR)
+      use luci_wrkspc
 *
 *
 *
@@ -656,7 +652,6 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "cprnt.inc"
@@ -1081,6 +1076,7 @@ C?        WRITE(6,*) ' Number of elements read in ',IDET
 ***********************************************************************
       SUBROUTINE GET_BLOCKS_FROM_DISC
      &           (LU,NBLOCK,IOFF,IBLOCK,NBLOCKT,C,IREW)
+      use luci_wrkspc
 *
 * Obtain blocks IOFF - IOFF + NBLOCK from file LU
 *
@@ -1091,7 +1087,6 @@ C?        WRITE(6,*) ' Number of elements read in ',IDET
       DIMENSION IBLOCK(8,*)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strbas.inc"
 #include "cstate.inc"
 #include "csm.inc"
@@ -1574,6 +1569,7 @@ CSEPT29 CALL COPVCD(LUSCR1,LUHC,VEC1,1,LBLK)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE H0TVM(VEC1,VEC2,LLUC,LLUHC)
+      use luci_wrkspc
 *
 * Outer routine for zero order operator + shift times vector
 *
@@ -1586,7 +1582,6 @@ CSEPT29 CALL COPVCD(LUSCR1,LUHC,VEC1,1,LBLK)
       DIMENSION VEC1(*),VEC2(*)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "clunit.inc"
 C
 *. Transfer of zero order energy
@@ -1693,6 +1688,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE HPQTVM(VECIN,VECUT,IDUM,JDUM)
+      use luci_wrkspc
 *
 * Outer routine for Preconditioner times vector
 *
@@ -1702,7 +1698,6 @@ C
 #include "glbbas.inc"
 #include "crun.inc"
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,
 C    &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR
 C     COMMON/CRUN/MAXIT,IRESTR,INTIMP,MXP1,MXP2,MXQ,INCORE,MXCIV,
@@ -2163,6 +2158,7 @@ C     KLL = KFLREE
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TYPE_TO_SYM_REO_MAT(XIN,XOUT)
+      use luci_wrkspc
 *
 *. a matrix XIN is given as NTOOB X NTOOB matrix in type form
 *
@@ -2174,7 +2170,6 @@ C     KLL = KFLREE
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
 *.

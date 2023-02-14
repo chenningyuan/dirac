@@ -1,6 +1,7 @@
 :orphan:
  
-
+.. _orbital_densities:
+   
 Plotting orbital densities
 ==========================
 

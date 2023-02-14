@@ -25,7 +25,8 @@ module talsh_gradient
   public talsh_dm_form_ao_diracformat_from_dm_mo
   public talsh_dm_initialize_dmtens
   public talsh_dm_cleanup_dmtens
-
+  public talsh_dm_store_mo
+  public talsh_kudm_store_mo
   contains
 
     subroutine talsh_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor)
@@ -40,10 +41,12 @@ module talsh_gradient
       type(talsh_dm_tens) :: gamma
 !     CCD switch
       logical :: CCD
+      character(len=4) :: wavefun
 !     error code
       integer(INTD) :: ierr
 
       CCD = exa_input%CCD
+      wavefun = "CCSD"
 
 !************************************
 !     construct gamma prime tensors *
@@ -55,9 +58,9 @@ module talsh_gradient
 !**************************************
 
       if (.not.CCD) then
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,exa_input%print_level,t1_tensor,l1_tensor)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%print_level,t1_tensor,l1_tensor)
       else
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,exa_input%print_level)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%print_level)
       end if
       call print_date("Calculated density matrices in MO basis")
 
@@ -65,8 +68,8 @@ module talsh_gradient
 !     write DM to file *
 !***********************
 
-      call store_dm_mo(exa_input,gamma)
-
+      call talsh_dm_store_mo(exa_input,gamma,wavefun)
+      call talsh_kudm_store_mo(exa_input,gamma,wavefun) !also storing KU format!
 !     cleanup
       call talsh_dm_cleanup_dmtens(gamma,CCD)
 
@@ -139,13 +142,13 @@ module talsh_gradient
 
    end subroutine
 
-    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
+    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,print_level,t1_tensor,l1_tensor)
 
 !     input variables
       type(talsh_dm_tens), intent(inout) :: gamma
       type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
       type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
-      integer,             intent(in   ) :: nocc, nvir, print_level
+      integer,             intent(in   ) :: print_level
 !     auxiliary tensors
       type(talsh_tens_t) :: one_tensor
       type(talsh_tens_t) :: tau2_tensor
@@ -154,12 +157,15 @@ module talsh_gradient
       integer(C_INT)              :: one_dims(1)=1
       integer(INTD), dimension(2) :: oo_dims, vv_dims
       integer(INTD), dimension(4) :: vvoo_dims
+      integer(INTD)               :: t2_rank
 !     CCD switch
       logical :: CCD = .false.
 !     error code
       integer :: ierr
 
       if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
+      ierr = talsh_tensor_dimensions(t2_tensor,t2_rank,vvoo_dims)
+      if (t2_rank /= 4) stop "t2 tensor corrupted"
 
 !*********************************
 !     construct auxiliary tensor *
@@ -167,12 +173,10 @@ module talsh_gradient
  
       ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
       if (.not.CCD) then
-        vvoo_dims(1:2) = nvir
-        vvoo_dims(3:4) = nocc
         ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-        vv_dims = nvir
+        vv_dims = vvoo_dims(1:2)
         ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-        oo_dims = nocc
+        oo_dims = vvoo_dims(3:4)
         ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
       end if
 
@@ -342,13 +346,14 @@ module talsh_gradient
 
     end subroutine calc_dm_mo
 
-    subroutine store_dm_mo (exa_input,gamma)
+    subroutine talsh_dm_store_mo (exa_input,gamma,wavefun)
 
       use exacorr_global, only : get_nsolutions
 
 !     input variables
       type(exacc_input),   intent(in   )  :: exa_input
       type(talsh_dm_tens), intent(inout)  :: gamma
+      character*(*), intent(in)           :: wavefun
 !     matrix dimensions
       integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
 !     body pointers
@@ -398,13 +403,13 @@ module talsh_gradient
 ! form AO basis density matrix
       call talsh_dm_form_ao_diracformat_from_dm_mo(dm_diracformat, dm_mo_fort, mo_list, norbt)
 ! save AOm basis density matrix to file
-      call store_cc_density ('CCSD', dm_diracformat )
+      call store_cc_density (wavefun, dm_diracformat, nesh, 4)
 
       deallocate (dm_diracformat)
       deallocate (mo_list)
       deallocate (dm_mo_fort)
 
-    end subroutine store_dm_mo
+    end subroutine talsh_dm_store_mo
 
     subroutine talsh_dm_form_mo_fort_from_tensors(dm_mo_fort,gamma,nocc,nvir,CCD)
 !     input variables
@@ -618,6 +623,115 @@ module talsh_gradient
 
     end subroutine
 
+!ROUTINES FOR STORING CCDENS IN KUFORMAT ON EXACC FILE
+    subroutine talsh_kudm_store_mo (exa_input,gamma,wavefun)
 
+      use exacorr_global, only : get_nsolutions
+
+!     input variables
+      type(exacc_input),   intent(in   )  :: exa_input
+      type(talsh_dm_tens), intent(inout)  :: gamma
+      character*(*), intent(in)           :: wavefun
+!     matrix dimensions
+      integer :: nocc, nvir, nesh
+!     body pointers
+      type(C_PTR)                     :: body_p2
+      complex(8), pointer, contiguous :: dm_block(:,:)
+      complex(8), allocatable         :: dm_mo_fort(:,:)
+      real(8),allocatable             :: dm_storeformat(:,:,:)
+!     complete mo list
+      integer, allocatable :: mo_list(:)
+!     CCD switch
+      logical :: CCD
+!     error code
+      integer :: ierr
+!     loop variables
+      integer :: i, j, norbt
+! debug
+      logical :: debug=.false.
+      integer :: k
+
+      CCD = exa_input%CCD
+
+!***************
+!     set dims *
+!***************
+
+      nocc    = exa_input%nocc
+      nvir    = exa_input%nvir
+
+! set up storage for density matrices in MO and AO bases, in fortran storage
+      allocate (dm_mo_fort(nocc+nvir,nocc+nvir))
+      dm_mo_fort = ZERO
+
+      norbt = nocc + nvir
+      allocate(mo_list(norbt))
+      mo_list(1:nocc) = exa_input%mo_occ
+      mo_list(nocc+1:norbt) = exa_input%mo_vir
+
+      nesh = get_nsolutions()
+      allocate (dm_storeformat(nesh,nesh,2))
+      dm_storeformat = real(ZERO)
+
+! form MO basis density matrix
+      call talsh_dm_form_mo_fort_from_tensors(dm_mo_fort, gamma, nocc, nvir, CCD)
+! form AO basis density matrix
+      call talsh_kudm_form_ao_storeformat_from_dm_mo(dm_storeformat, dm_mo_fort, mo_list, norbt)
+! save AOm basis density matrix to file
+      call talsh_store_kucc_density (wavefun, dm_storeformat, nesh, mo_list, nocc)
+
+      deallocate (dm_storeformat)
+      deallocate (mo_list)
+      deallocate (dm_mo_fort)
+
+    end subroutine talsh_kudm_store_mo
+
+    subroutine talsh_kudm_form_ao_storeformat_from_dm_mo(dm_storeformat,dm_mo_fort, mo_list, norbt)
+      complex(8), allocatable, intent(in) :: dm_mo_fort(:,:)
+      integer, allocatable, intent(in) :: mo_list(:)
+      real(8),allocatable, intent(inout)  :: dm_storeformat(:,:,:)
+      integer, intent(in) :: norbt
+!     loop variables
+      integer :: i, j
+
+!*****************************************************************************************************************************
+!     Determine where an element of the MO density matrix  should go in the full
+!     list of MOs
+!*****************************************************************************************************************************
+
+      do j = 1, norbt
+        do i = 1, norbt
+          ! Extracting real and imaginary parts of KU-DM
+          dm_storeformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(i,j))
+          dm_storeformat(mo_list(i),mo_list(j),2) = dimag(dm_mo_fort(i,j))
+        end do
+      end do
+    end subroutine
+
+    subroutine talsh_store_kucc_density(wavefun, dm_storeformat, nmo, mo_list, nocc)
+      use labeled_storage
+      !use exacorr_datatypes
+      implicit none
+
+      character(len=4) :: wavefun
+      real(8), allocatable, intent(inout) :: dm_storeformat(:,:,:)
+      integer, intent(in)                 :: nmo, nocc
+      integer, allocatable, intent(in) :: mo_list(:)
+      type(file_info_t), save             :: exacc_file     
+      
+      call print_date("Writing CCDENS data to EXACC file")
+ 
+      if (exacc_file%status == -1) then
+         write(*,*) " Opening HDF5 EXACC file"
+         exacc_file%type = 2
+         exacc_file%name = "EXACC.h5"
+         exacc_file%status = 0
+      end if
+
+      call lab_write (exacc_file,'nmo',nmo)
+      call lab_write (exacc_file,'CCDENS_RE',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,1)), shape=(/nmo**2/) ) )
+      call lab_write (exacc_file,'CCDENS_IM',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,2)), shape=(/nmo**2/) ) )
+      
+    end subroutine
 
 end module talsh_gradient

@@ -23,6 +23,4 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
 test.run(['so-fsccsd_IH.inp'], ['Mg.mol'], f, args='--incmo --mw=110')
 test.run(['fsccsd.inp', 'bss+mfsso.fsccsd_IH.inp'], ['Mg.mol'], f, args='--mw=110')
 
-os.unlink('DFCOEF')
-
 sys.exit(test.return_code)

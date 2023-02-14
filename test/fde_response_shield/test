@@ -32,7 +32,6 @@ test.run(['dc_pbe_updatevemb_shield_g0_v_w11.inp'],      ['h2o-1.xyz'], f, args=
 os.unlink('FILEEX')
 os.unlink('GRIDOUT')
 os.unlink('FROZEN')
-os.unlink('DFCOEF')
 os.unlink('numerical_grid')
 os.unlink('numerical_grid.ORIG')
 

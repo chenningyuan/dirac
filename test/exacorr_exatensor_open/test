@@ -31,7 +31,7 @@ f2.add(from_string = 'Norm of Fock matrix (VV',
       num_lines   = 1,
       abs_tolerance   = 1.0e-2)
 
-test.run(['scf_beh.inp'], ['BeH_nosym.mol'], f1,"--get='X2CMAT AOMOMAT DFCOEF'")
-test.run(['cc_beh_level.inp'], ['BeH_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF'")
+test.run(['scf_beh.inp'], ['BeH_nosym.mol'], f1,"--get='X2CMAT AOMOMAT' --outcmo")
+test.run(['cc_beh_level.inp'], ['BeH_nosym.mol'], f2, "--put='X2CMAT AOMOMAT' --incmo")
 
 sys.exit(test.return_code)

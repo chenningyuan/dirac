@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 !
 module fragment_x2c_cfg
@@ -74,6 +69,7 @@ contains
                                naosh_L_cent)
 !   ----------------------------------------------------------------------------
 !   ----------------------------------------------------------------------------
+    use labeled_storage
     type(fragment_x2c)           :: A
     integer, intent(in)          :: nfsym
     integer, intent(in)          :: nz
@@ -86,6 +82,7 @@ contains
     character(len=3)             :: extension
     character(len=10)            :: filename
     character(len=12)            :: flabel
+    type(file_info_t)            :: fragfile
 !   ----------------------------------------------------------------------------
 
 !   reset old type information
@@ -118,19 +115,24 @@ contains
 
     if(extension(1:1) == ' ') write(extension(1:1),'(i1)') 0
     if(extension(2:2) == ' ') write(extension(2:2),'(i1)') 0
-    write(filename,'(a7,a3)') 'X2CMAT.',extension
+    write(filename,'(a7,a3)') 'X2CMAT_',extension
 
-    open(A%funit,file=filename,status='old',form='unformatted',    &
-         access='sequential',action='readwrite',position='rewind')
+    fragfile%type = 2
+    fragfile%name = filename//'.h5'
+    fragfile%status = 0
+    !open(A%funit,file=filename,status='old',form='unformatted',    &
+    !     access='sequential',action='readwrite',position='rewind')
 
 !   read atomic pctmat from file
     write(flabel,'(a7,i4,i1)') 'pctmtAO',1,1
-    call x2c_read(flabel,                 &
-                  A%pctmat,               &
-                  A%naosh_all(1) *        &
-                  A%naosh_L(1)   *        &
-                  nz,                     &
-                  A%funit)
+    call lab_read(fragfile,'/result/hamiltonian/x2c/ao_matrices/'//flabel,rdata=A%pctmat)
+
+    !call x2c_read(flabel,                 &
+    !              A%pctmat,               &
+    !              A%naosh_all(1) *        &
+    !              A%naosh_L(1)   *        &
+    !              nz,                     &
+    !              A%funit)
 
   end subroutine fragment_x2c_init
 !*******************************************************************************

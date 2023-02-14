@@ -88,7 +88,6 @@ module exacorr_tensor_methods
         type, extends(tens_method_uni_t), public:: set_energy_t
          real(8), allocatable, private :: eps_occ(:),eps_vir(:)
          integer, private              :: occ_id, vir_id   
-         real(8), private              :: level_shift
          integer, private              :: norb(2) 
          contains
           procedure, public:: set_energy_init
@@ -101,7 +100,6 @@ module exacorr_tensor_methods
         !Scale by denominators:
         type, extends(tens_method_uni_t), public:: denom_t
           real(8), allocatable, private :: eps_occ(:),eps_vir(:)
-          real(8), private              :: level_shift
           integer(INTD), private        :: occ_id
           integer, private              :: norb(2)
           contains
@@ -199,7 +197,7 @@ module exacorr_tensor_methods
 
          use exacorr_datatypes
          use exacorr_global
-         use module_interest_eri
+         use exacorr_eri
 
          implicit none
 
@@ -218,7 +216,7 @@ module exacorr_tensor_methods
 
          integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl
          integer :: li,lj,lk,ll,ni,nj,nk,nl
-         real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
+         real(8) :: xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
          real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
          !$OMP threadprivate(gout)
          real(8), parameter :: FIJKL = 1.0
@@ -249,45 +247,38 @@ module exacorr_tensor_methods
          loff = 0
          do lsh = 1, nshells(4)
             ll   =  gto4(lsh)%orb_momentum
-            el   =  gto4(lsh)%exponent(1)
             xl   =  gto4(lsh)%coord(1)
             yl   =  gto4(lsh)%coord(2)
             zl   =  gto4(lsh)%coord(3)
-            cl   =  gto4(lsh)%coefficient(1)
             nl   =  nfunctions(ll,basis_angular)
             koff = 0
             do ksh = 1, nshells(3)
                lk   =  gto3(ksh)%orb_momentum
-               ek   =  gto3(ksh)%exponent(1)
                xk   =  gto3(ksh)%coord(1)
                yk   =  gto3(ksh)%coord(2)
                zk   =  gto3(ksh)%coord(3)
-               ck   =  gto3(ksh)%coefficient(1)
                nk   =  nfunctions(lk,basis_angular)
                joff = 0
                do jsh = 1, nshells(2)
                   lj   =  gto2(jsh)%orb_momentum
-                  ej   =  gto2(jsh)%exponent(1)
                   xj   =  gto2(jsh)%coord(1)
                   yj   =  gto2(jsh)%coord(2)
                   zj   =  gto2(jsh)%coord(3)
-                  cj   =  gto2(jsh)%coefficient(1)
                   nj   =  nfunctions(lj,basis_angular)
                   ioff = 0
                   do ish = 1, nshells(1)
                      li   =  gto1(ish)%orb_momentum
-                     ei   =  gto1(ish)%exponent(1)
                      xi   =  gto1(ish)%coord(1)
                      yi   =  gto1(ish)%coord(2)
                      zi   =  gto1(ish)%coord(3)
-                     ci   =  gto1(ish)%coefficient(1)
                      ni   =  nfunctions(li,basis_angular)
 !                    output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-                     call interest_eri('llll',FIJKL,gout,&
-                                  lk,ek,xk,yk,zk,ck,&
-                                  ll,el,xl,yl,zl,cl,&
-                                  li,ei,xi,yi,zi,ci,&
-                                  lj,ej,xj,yj,zj,cj )
+                     call compute_eri('llll',fijkl,gout(1:ni*nj*nk*nl),&
+                                   lk,gto3(ksh)%exponent,xk,yk,zk,gto3(ksh)%coefficient,&
+                                   ll,gto4(lsh)%exponent,xl,yl,zl,gto4(lsh)%coefficient,&
+                                   li,gto1(ish)%exponent,xi,yi,zi,gto1(ish)%coefficient,&
+                                   lj,gto2(jsh)%exponent,xj,yj,zj,gto2(jsh)%coefficient )
+
                      do l = 1, nl
                         do k = 1, nk
                            do j = 1, nj
@@ -339,7 +330,7 @@ module exacorr_tensor_methods
 
           use exacorr_datatypes
           use exacorr_global
-          use module_interest_eri
+          use exacorr_eri
 
           implicit none
 
@@ -356,7 +347,7 @@ module exacorr_tensor_methods
           type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)  ! arrays with basis function information
           integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl
           integer :: li,lj,lk,ll,ni,nj,nk,nl,i0,j0,k0,l0
-          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
+          real(8) :: xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
           real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
           !$OMP threadprivate(gout)
           real(8), parameter :: FIJKL = 1.0
@@ -394,11 +385,9 @@ module exacorr_tensor_methods
           loff = 0
           do lsh = 1, nshells(4)
             ll   =  gto4(lsh)%orb_momentum
-            el   =  gto4(lsh)%exponent(1)
             xl   =  gto4(lsh)%coord(1)
             yl   =  gto4(lsh)%coord(2)
             zl   =  gto4(lsh)%coord(3)
-            cl   =  gto4(lsh)%coefficient(1)
             nl   =  nfunctions(ll,basis_angular)
             if(lsh.eq.1) then
               l0=off_ao(4)
@@ -408,11 +397,9 @@ module exacorr_tensor_methods
             koff = 0
             do ksh = 1, nshells(3)
               lk   =  gto3(ksh)%orb_momentum
-              ek   =  gto3(ksh)%exponent(1)
               xk   =  gto3(ksh)%coord(1)
               yk   =  gto3(ksh)%coord(2)
               zk   =  gto3(ksh)%coord(3)
-              ck   =  gto3(ksh)%coefficient(1)
               nk   =  nfunctions(lk,basis_angular)
               if(ksh.eq.1) then
                 k0=off_ao(3)
@@ -422,11 +409,9 @@ module exacorr_tensor_methods
               joff = 0
               do jsh = 1, nshells(2)
                 lj   =  gto2(jsh)%orb_momentum
-                ej   =  gto2(jsh)%exponent(1)
                 xj   =  gto2(jsh)%coord(1)
                 yj   =  gto2(jsh)%coord(2)
                 zj   =  gto2(jsh)%coord(3)
-                cj   =  gto2(jsh)%coefficient(1)
                 nj   =  nfunctions(lj,basis_angular)
                 if(jsh.eq.1) then
                   j0=off_ao(2)
@@ -436,11 +421,9 @@ module exacorr_tensor_methods
                 ioff = 0
                 do ish = 1, nshells(1)
                   li   =  gto1(ish)%orb_momentum
-                  ei   =  gto1(ish)%exponent(1)
                   xi   =  gto1(ish)%coord(1)
                   yi   =  gto1(ish)%coord(2)
                   zi   =  gto1(ish)%coord(3)
-                  ci   =  gto1(ish)%coefficient(1)
                   ni   =  nfunctions(li,basis_angular)
                   if(ish.eq.1) then
                     i0=off_ao(1)
@@ -449,11 +432,11 @@ module exacorr_tensor_methods
                   end if
 
 !                 output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-                  call interest_eri('llll',FIJKL,gout,&
-                                  lk,ek,xk,yk,zk,ck,&
-                                  ll,el,xl,yl,zl,cl,&
-                                  li,ei,xi,yi,zi,ci,&
-                                  lj,ej,xj,yj,zj,cj )
+                  call compute_eri('llll',fijkl,gout(1:ni*nj*nk*nl),&
+                                   lk,gto3(ksh)%exponent,xk,yk,zk,gto3(ksh)%coefficient,&
+                                   ll,gto4(lsh)%exponent,xl,yl,zl,gto4(lsh)%coefficient,&
+                                   li,gto1(ish)%exponent,xi,yi,zi,gto1(ish)%coefficient,&
+                                   lj,gto2(jsh)%exponent,xj,yj,zj,gto2(jsh)%coefficient )
                   do l = 1, nl
                     if (l+loff.gt.tens_dims(4)) exit
                     do k = 1, nk
@@ -715,7 +698,7 @@ module exacorr_tensor_methods
 
          use exacorr_datatypes
          use exacorr_global
-         use module_interest_eri
+         use exacorr_eri
 
          implicit none
 
@@ -803,11 +786,11 @@ module exacorr_tensor_methods
                      ci   =  gto1(ish)%coefficient(1)
                      ni   =  nfunctions(li,basis_angular)
                      ! output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-                     call interest_eri('llll',FIJKL,gout,&
-                                  lk,ek,xk,yk,zk,ck,&
-                                  ll,el,xl,yl,zl,cl,&
-                                  li,ei,xi,yi,zi,ci,&
-                                  lj,ej,xj,yj,zj,cj )
+                     call compute_eri('llll',fijkl,gout(1:ni*nj*nk*nl),&
+                                   lk,gto3(ksh)%exponent,xk,yk,zk,gto3(ksh)%coefficient,&
+                                   ll,gto4(lsh)%exponent,xl,yl,zl,gto4(lsh)%coefficient,&
+                                   li,gto1(ish)%exponent,xi,yi,zi,gto1(ish)%coefficient,&
+                                   lj,gto2(jsh)%exponent,xj,yj,zj,gto2(jsh)%coefficient )
 
                      do lmo = 1, nmo(2) ! loop over the mo's active in the HT integral tensor block
                         la = tens_bases(4) + lmo - 1 
@@ -1381,7 +1364,7 @@ module exacorr_tensor_methods
 
         ! --------------------------------------------------------------------------------
 
-        subroutine set_energy_init(this,mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,level_shift)
+        subroutine set_energy_init(this,mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id)
          
          use exacorr_mo
          use exacorr_global
@@ -1393,13 +1376,11 @@ module exacorr_tensor_methods
          integer, intent(in)      :: nocc, nvir
          integer(INTD),intent(in) :: occ_space_id, vir_space_id
          integer, intent(in)      :: mo_occ(:),mo_vir(:)
-         real(8), intent(in)      :: level_shift
 
          type(cmo)   :: cspinor
 
          this%occ_id=occ_space_id
          this%vir_id=vir_space_id
-         this%level_shift=level_shift
          this%norb(1)=nocc
          this%norb(2)=nvir
 
@@ -1412,8 +1393,6 @@ module exacorr_tensor_methods
          allocate(this%eps_vir(nvir))
          this%eps_vir = cspinor%energy
          call dealloc_mo (cspinor)
-
-         call shift_orbital_energy(this%eps_vir,this%eps_occ,level_shift)
 
         end subroutine set_energy_init
 
@@ -1429,8 +1408,6 @@ module exacorr_tensor_methods
 
         this%eps_occ = eps_occ
         this%eps_vir = eps_vir
-
-        call shift_orbital_energy(this%eps_vir,this%eps_occ,this%level_shift)
 
       end subroutine set_energy_reset
 
@@ -1562,7 +1539,7 @@ module exacorr_tensor_methods
 
         ! --------------------------------------------------------------------------------
       
-      subroutine denom_t_init(this,mo_occ,nocc,mo_vir,nvir,level_shift,occ_id)
+      subroutine denom_t_init(this,mo_occ,nocc,mo_vir,nvir,occ_id)
 
         use exacorr_mo
         use exacorr_global
@@ -1572,14 +1549,12 @@ module exacorr_tensor_methods
 
         integer, intent(in)          :: nocc, nvir
         integer, intent(in)          :: mo_occ(:),mo_vir(:)
-        real(8), intent(in)          :: level_shift
         integer(INTD), intent(in)    :: occ_id
         class(denom_t), intent(out)  :: this
          
         type(cmo)          :: cspinor
 
         this%occ_id=occ_id
-        this%level_shift=level_shift
         this%norb(1)=nocc
         this%norb(2)=nvir
 
@@ -1592,8 +1567,6 @@ module exacorr_tensor_methods
         allocate(this%eps_vir(nvir))
         this%eps_vir = cspinor%energy
         call dealloc_mo (cspinor)
-
-        call shift_orbital_energy(this%eps_vir,this%eps_occ,level_shift)
 
       end subroutine denom_t_init
 
@@ -1612,8 +1585,6 @@ module exacorr_tensor_methods
 
         this%eps_occ = eps_occ
         this%eps_vir = eps_vir
-
-        call shift_orbital_energy(this%eps_vir,this%eps_occ,this%level_shift)
 
       end subroutine denom_t_reset
 
@@ -2293,7 +2264,7 @@ module exacorr_tensor_methods
 
           use exacorr_datatypes
           use exacorr_global
-          use module_interest_eri
+          use exacorr_eri
 
           implicit none
 
@@ -2313,7 +2284,7 @@ module exacorr_tensor_methods
 
           integer            :: i, j, ish, jsh, ioff, joff, ijij
           integer            :: li,lj,ni,nj
-          real(8)            :: ei,ej,ci,cj,xi,yi,zi,xj,yj,zj
+          real(8)            :: xi,yi,zi,xj,yj,zj
           real(8),save       :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
           !$OMP threadprivate(gout)
           real(8), parameter :: FIJKL = 1.0
@@ -2342,28 +2313,24 @@ module exacorr_tensor_methods
           joff = 0
           do jsh = 1, nshells(2)
             lj   =  gto2(jsh)%orb_momentum
-            ej   =  gto2(jsh)%exponent(1)
             xj   =  gto2(jsh)%coord(1)
             yj   =  gto2(jsh)%coord(2)
             zj   =  gto2(jsh)%coord(3)
-            cj   =  gto2(jsh)%coefficient(1)
             nj   =  nfunctions(lj,basis_angular)
             ioff = 0
             do ish = 1, nshells(1)
               li   =  gto1(ish)%orb_momentum
-              ei   =  gto1(ish)%exponent(1)
               xi   =  gto1(ish)%coord(1)
               yi   =  gto1(ish)%coord(2)
               zi   =  gto1(ish)%coord(3)
-              ci   =  gto1(ish)%coefficient(1)
               ni   =  nfunctions(li,basis_angular)
 
 !             output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-              call interest_eri('llll',FIJKL,gout,&
-                                  li,ei,xi,yi,zi,ci,&
-                                  lj,ej,xj,yj,zj,cj,&
-                                  li,ei,xi,yi,zi,ci,&
-                                  lj,ej,xj,yj,zj,cj )
+              call compute_eri('llll',fijkl,gout(1:ni*nj*ni*nj),&
+                                li,gto1(ish)%exponent,xi,yi,zi,gto1(ish)%coefficient,&
+                                lj,gto2(jsh)%exponent,xj,yj,zj,gto2(jsh)%coefficient,&
+                                li,gto1(ish)%exponent,xi,yi,zi,gto1(ish)%coefficient,&
+                                lj,gto2(jsh)%exponent,xj,yj,zj,gto2(jsh)%coefficient )
 
               do j = 1, nj
                 do i = 1, ni
@@ -2447,7 +2414,7 @@ module exacorr_tensor_methods
 
          use exacorr_datatypes
          use exacorr_global
-         use module_interest_eri
+         use exacorr_eri
 
          implicit none
 
@@ -2469,7 +2436,7 @@ module exacorr_tensor_methods
 
          integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl
          integer :: li,lj,lk,ll,ni,nj,nk,nl
-         real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
+         real(8) :: xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
          real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
          !$OMP threadprivate(gout)
          real(8), parameter :: FIJKL = 1.0
@@ -2501,45 +2468,37 @@ module exacorr_tensor_methods
 
          lsh = 1
             ll   =  gto4(lsh)%orb_momentum
-            el   =  gto4(lsh)%exponent(1)
             xl   =  gto4(lsh)%coord(1)
             yl   =  gto4(lsh)%coord(2)
             zl   =  gto4(lsh)%coord(3)
-            cl   =  gto4(lsh)%coefficient(1)
             nl   =  nfunctions(ll,basis_angular)
 
             ksh = 1
                lk   =  gto3(ksh)%orb_momentum
-               ek   =  gto3(ksh)%exponent(1)
                xk   =  gto3(ksh)%coord(1)
                yk   =  gto3(ksh)%coord(2)
                zk   =  gto3(ksh)%coord(3)
-               ck   =  gto3(ksh)%coefficient(1)
                nk   =  nfunctions(lk,basis_angular)
                joff = 0
                do jsh = 1, nshells(2)
                   lj   =  gto2(jsh)%orb_momentum
-                  ej   =  gto2(jsh)%exponent(1)
                   xj   =  gto2(jsh)%coord(1)
                   yj   =  gto2(jsh)%coord(2)
                   zj   =  gto2(jsh)%coord(3)
-                  cj   =  gto2(jsh)%coefficient(1)
                   nj   =  nfunctions(lj,basis_angular)
                   ioff = 0
                   do ish = 1, nshells(1)
                      li   =  gto1(ish)%orb_momentum
-                     ei   =  gto1(ish)%exponent(1)
                      xi   =  gto1(ish)%coord(1)
                      yi   =  gto1(ish)%coord(2)
                      zi   =  gto1(ish)%coord(3)
-                     ci   =  gto1(ish)%coefficient(1)
                      ni   =  nfunctions(li,basis_angular)
 !                    output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-                     call interest_eri('llll',FIJKL,gout,&
-                                  lk,ek,xk,yk,zk,ck,&
-                                  ll,el,xl,yl,zl,cl,&
-                                  li,ei,xi,yi,zi,ci,&
-                                  lj,ej,xj,yj,zj,cj )
+                     call compute_eri('llll',fijkl,gout(1:ni*nj*nk*nl),&
+                                   lk,gto3(ksh)%exponent,xk,yk,zk,gto3(ksh)%coefficient,&
+                                   ll,gto4(lsh)%exponent,xl,yl,zl,gto4(lsh)%coefficient,&
+                                   li,gto1(ish)%exponent,xi,yi,zi,gto1(ish)%coefficient,&
+                                   lj,gto2(jsh)%exponent,xj,yj,zj,gto2(jsh)%coefficient )
                      
                      call get_shell_offset(first_ao(4),loff)
                      l = first_ao(4)-loff

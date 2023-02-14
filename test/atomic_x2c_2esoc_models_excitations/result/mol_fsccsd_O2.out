@@ -1,0 +1,3275 @@
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
+ of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Aarhus              Denmark       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        Lund University                   Sweden        *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            ETH Zuerich                       Switzerland   *
+ *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Avijit Shee              University of Michigan            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta Lopez Vidal        Technical University of Denmark   Denmark       *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    The code (in whole or part) is not to be reproduced for further          *
+ *    distribution without the written permission of the authors or            *
+ *    their representatives.                                                   *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC18 (2018),                                                  *
+ *    written by T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,          *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, A. S. P. Gomes, E. D. Hedegaard, T. Helgaker,              *
+ *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
+ *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
+ *    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *
+ *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
+ *    P. Salek, B. Schimmelpfennig, A. Shee, J. Sikkema, A. J. Thorvaldsen,    *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser,T. Winther,           *
+ *    and S. Yamamoto (see http://diracprogram.org).                           *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | X-amfi-feature-stknecht
+Commit hash   | 3cedb58fe
+Commit author | Stefan Knecht
+Commit date   | Sun Jun 30 23:53:20 2019 +0200
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | stknecht
+Compiled on server       | Stefans-MacBook-Pro-4.local
+Operating system         | Darwin-18.6.0
+CMake version            | 3.14.3
+CMake generator          | Unix Makefiles
+CMake build type         | Debug
+Configuration time       | 2019-06-30 22:05:19.141719
+Python version           | 2.7.1
+Fortran compiler         | /opt/local/bin/gfortran
+Fortran compiler version | 6.5.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -cpp -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
+C compiler               | /opt/local/bin/gcc
+C compiler version       | 6.5.0
+C compiler flags         |  -g -g
+C++ compiler             | /opt/local/bin/g++
+C++ compiler version     | 6.5.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | /usr/lib/liblapack.dylib;/usr/lib/libblas.dylib
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | MOD_UNRELEASED;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Mac OSX): Tue Jul  2 07:42:02 2019
+     Host name              : staff-net-vpn-1826.ethz.ch              
+
+
+Contents of the input file
+--------------------------
+
+!                                                                                                   
+! Calculation of molecular oxygen using the (0,2) sector of Fock space                              
+!                                                                                                   
+**DIRAC                                                                                             
+.TITLE                                                                                              
+Molecular oxygen. Ground and excited states (X, a, b).                                              
+.WAVE F                                                                                             
+.ANALYZE                                                                                            
+**GENERAL                                                                                           
+.CVALUE                                                                                             
+50.0d0                                                                                              
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONTRACTED                                                                                       
+**HAMILTONIAN                                                                                       
+.DOSSSS                                                                                             
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+.RELCCSD                                                                                            
+*SCF                                                                                                
+! O2_2+ closed shell reference                                                                      
+.CLOSED SHELL                                                                                       
+ 6 8                                                                                                
+#.EVCCNV                                                                                            
+#1.E-10 1.E-9                                                                                       
+**ANALYZE                                                                                           
+.MULPOP                                                                                             
+*MULPOP                                                                                             
+.VECPOP                                                                                             
+all                                                                                                 
+all                                                                                                 
+**RELCCSD                                                                                           
+.NELEC                                                                                              
+ 2 2 3 3                                                                                            
+.FOCKSP                                                                                             
+*CCFSPC                                                                                             
+.DOEA2                                                                                              
+.NACTP                                                                                              
+ 2 2 0 0                                                                                            
+.MAXIT                                                                                              
+100                                                                                                 
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+INTGRL                                                                                              
+Molecular oxygen at eq. distance taken from NIST.                                                   
+Automatic symmetry detection: will identify the Dinfh group.                                        
+C   1              A                                                                                
+        8.    2                                                                                     
+O      .0000000000        0.0000000000        0.60376                                               
+O      .0000000000        0.0000000000        -0.60376                                              
+LARGE BASIS cc-pVDZ                                                                                 
+FINISH                                                                                              
+                                                                                                    
+
+
+    **************************************************************************
+    *********** Molecular oxygen. Ground and excited states (X, a, ***********
+    **************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Analysis
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+   * The speed of light scaled by  3.65D-01 to :  50.0000000000
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for *READIN
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Molecular oxygen at eq. distance taken from NIST.                       
+  Automatic symmetry detection: will identify the Dinfh group.            
+
+  Coordinates are entered in Angstroms and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631427636D+08
+
+
+                     SYMADD: Detection of molecular symmetry
+                     ---------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+    The molecule has been centered at center of mass
+
+ Symmetry point group found: D(oo,h)        
+
+ The following symmetry elements were found: X  Y  Z  
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 3
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Full group is:  D(oo,h)        
+Represented as: D2h
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+     E  |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+    C2z | C2z   E   C2x  C2y  Oxy   i   Oyz  Oxz
+    C2y | C2y  C2x   E   C2z  Oxz  Oyz   i   Oxy
+    C2x | C2x  C2y  C2z   E   Oyz  Oxz  Oxy   i 
+     i  |  i   Oxy  Oxz  Oyz   E   C2z  C2y  C2x
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E   C2x  C2y
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E   C2z
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
+
+   * Character table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+    Ag  |   1    1    1    1    1    1    1    1
+    B3u |   1   -1   -1    1   -1    1    1   -1
+    B2u |   1   -1    1   -1   -1    1   -1    1
+    B1g |   1    1   -1   -1    1    1   -1   -1
+    B1u |   1    1   -1   -1   -1   -1    1    1
+    B2g |   1   -1    1   -1    1   -1    1   -1
+    B3g |   1   -1   -1    1    1   -1   -1    1
+    Au  |   1    1    1    1   -1   -1   -1   -1
+
+   * Direct product table
+
+        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+   -----+----------------------------------------
+    Ag  | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+    B3u | B3u  Ag   B1g  B2u  B2g  B1u  Au   B3g
+    B2u | B2u  B1g  Ag   B3u  B3g  Au   B1u  B2g
+    B1g | B1g  B2u  B3u  Ag   Au   B3g  B2g  B1u
+    B1u | B1u  B2g  B3g  Au   Ag   B3u  B2u  B1g
+    B2g | B2g  B1u  Au   B3g  B3u  Ag   B1g  B2u
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag   B3u
+    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * Two fermion irreps:  E1g  E1u
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1g x E1g : Ag  + B1g + B2g + B3g
+          E1u x E1g : Au  + B1u + B2u + B3u
+          E1u x E1u : Ag  + B1g + B2g + B3g
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1            * Fermion irrep no.: 2
+
+      La  |  Ag (1)  B1g(2)  |                La  |  Au (1)  B1u(2)  |
+      Sa  |  Au (1)  B1u(2)  |                Sa  |  Ag (1)  B1g(2)  |
+      Lb  |  B2g(3)  B3g(4)  |                Lb  |  B2u(3)  B3u(4)  |
+      Sb  |  B2u(3)  B3u(4)  |                Sb  |  B2g(3)  B3g(4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    Ag   1
+    B3u  k
+    B2u  j
+    B1g  i
+    B1u  i
+    B2g  j
+    B3g  k
+    Au   1
+
+  QM-QM nuclear repulsion energy :     28.047023097920
+
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O    1     15.994915
+                           O    2     15.994915
+
+                       Total mass:    31.989830 amu
+                       Natural abundance:  99.521 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    1
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           2       8      27      27      L  - [9s4p1d|9s4p1d]                                                
+                             68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
+  ----------------------------------------------------------------------
+                             54      54      L  - large components
+                            136     136      S  - small components
+  ----------------------------------------------------------------------
+  total:      2      16     190     190
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
+            J. Chem. Phys., 110, 7667 (1999)                                      
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:  6
+
+
+   1   O    1   x      0.0000000000
+   2            y      0.0000000000
+   3            z      1.1409410506
+
+   4   O    2   x      0.0000000000
+   5            y      0.0000000000
+   6            z     -1.1409410506
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    2
+
+O      0.0000000000   0.0000000000   0.6037600000
+O      0.0000000000   0.0000000000  -0.6037600000
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     1    1    1    0    1    1    1    0
+
+
+  Symmetry  Ag ( 1)
+
+    1   O     z    [  3  -    6 ]/2
+
+
+  Symmetry  B3u( 2)
+
+    2   O     x    [  1  +    4 ]/2
+
+
+  Symmetry  B2u( 3)
+
+    3   O     y    [  2  +    5 ]/2
+
+
+  Symmetry  B1u( 5)
+
+    4   O     z    [  3  +    6 ]/2
+
+
+  Symmetry  B2g( 6)
+
+    5   O     x    [  1  -    4 ]/2
+
+
+  Symmetry  B3g( 7)
+
+    6   O     y    [  2  -    5 ]/2
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O  1        O  2
+
+   O  1    0.000000
+   O  2    1.207520    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    O  2       O  1                           1.207520
+
+
+
+   Nuclear repulsion energy :   28.047023097920 Hartree
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   20
+     1  L O   1 s        2  L O   2 s        3  L O   1 px       4  L O   1 py       5  L O   1 pz       6  L O   2 px  
+     7  L O   2 py       8  L O   2 pz       9  L O   1 dxx     10  L O   1 dxy     11  L O   1 dxz     12  L O   1 dyy 
+    13  L O   1 dyz     14  L O   1 dzz     15  L O   2 dxx     16  L O   2 dxy     17  L O   2 dxz     18  L O   2 dyy 
+    19  L O   2 dyz     20  L O   2 dzz 
+   * Small components:   40
+    21  S O   1 s       22  S O   2 s       23  S O   1 px      24  S O   1 py      25  S O   1 pz      26  S O   2 px  
+    27  S O   2 py      28  S O   2 pz      29  S O   1 dxx     30  S O   1 dxy     31  S O   1 dxz     32  S O   1 dyy 
+    33  S O   1 dyz     34  S O   1 dzz     35  S O   2 dxx     36  S O   2 dxy     37  S O   2 dxz     38  S O   2 dyy 
+    39  S O   2 dyz     40  S O   2 dzz     41  S O   1 fxxx    42  S O   1 fxxy    43  S O   1 fxxz    44  S O   1 fxyy
+    45  S O   1 fxyz    46  S O   1 fxzz    47  S O   1 fyyy    48  S O   1 fyyz    49  S O   1 fyzz    50  S O   1 fzzz
+    51  S O   2 fxxx    52  S O   2 fxxy    53  S O   2 fxxz    54  S O   2 fxyy    55  S O   2 fxyz    56  S O   2 fxzz
+    57  S O   2 fyyy    58  S O   2 fyyz    59  S O   2 fyzz    60  S O   2 fzzz
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   20
+     1  L Ag O  s        2  L Ag O  pz       3  L Ag O  dxx      4  L Ag O  dyy      5  L Ag O  dzz      6  L B3uO  px  
+     7  L B3uO  dxz      8  L B2uO  py       9  L B2uO  dyz     10  L B1gO  dxy     11  L B1uO  s       12  L B1uO  pz  
+    13  L B1uO  dxx     14  L B1uO  dyy     15  L B1uO  dzz     16  L B2gO  px      17  L B2gO  dxz     18  L B3gO  py  
+    19  L B3gO  dyz     20  L Au O  dxy 
+   * Small components:   40
+    21  S Ag O  s       22  S Ag O  pz      23  S Ag O  dxx     24  S Ag O  dyy     25  S Ag O  dzz     26  S Ag O  fxxz
+    27  S Ag O  fyyz    28  S Ag O  fzzz    29  S B3uO  px      30  S B3uO  dxz     31  S B3uO  fxxx    32  S B3uO  fxyy
+    33  S B3uO  fxzz    34  S B2uO  py      35  S B2uO  dyz     36  S B2uO  fxxy    37  S B2uO  fyyy    38  S B2uO  fyzz
+    39  S B1gO  dxy     40  S B1gO  fxyz    41  S B1uO  s       42  S B1uO  pz      43  S B1uO  dxx     44  S B1uO  dyy 
+    45  S B1uO  dzz     46  S B1uO  fxxz    47  S B1uO  fyyz    48  S B1uO  fzzz    49  S B2gO  px      50  S B2gO  dxz 
+    51  S B2gO  fxxx    52  S B2gO  fxyy    53  S B2gO  fxzz    54  S B3gO  py      55  S B3gO  dyz     56  S B3gO  fxxy
+    57  S B3gO  fyyy    58  S B3gO  fyzz    59  S Au O  dxy     60  S Au O  fxyz
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           45    22    22     6    45    22    22     6
+  Number of large orbitals in each symmetry:     16     5     5     1    16     5     5     1
+  Number of small orbitals in each symmetry:     29    17    17     5    29    17    17     5
+
+* Large component functions
+
+  Symmetry  Ag ( 1)
+
+        9 functions:    O  s   1+2
+        4 functions:    O  pz  1-2
+        1 functions:    O  dxx 1+2
+        1 functions:    O  dyy 1+2
+        1 functions:    O  dzz 1+2
+
+  Symmetry  B3u( 2)
+
+        4 functions:    O  px  1+2
+        1 functions:    O  dxz 1-2
+
+  Symmetry  B2u( 3)
+
+        4 functions:    O  py  1+2
+        1 functions:    O  dyz 1-2
+
+  Symmetry  B1g( 4)
+
+        1 functions:    O  dxy 1+2
+
+  Symmetry  B1u( 5)
+
+        9 functions:    O  s   1-2
+        4 functions:    O  pz  1+2
+        1 functions:    O  dxx 1-2
+        1 functions:    O  dyy 1-2
+        1 functions:    O  dzz 1-2
+
+  Symmetry  B2g( 6)
+
+        4 functions:    O  px  1-2
+        1 functions:    O  dxz 1+2
+
+  Symmetry  B3g( 7)
+
+        4 functions:    O  py  1-2
+        1 functions:    O  dyz 1+2
+
+  Symmetry  Au ( 8)
+
+        1 functions:    O  dxy 1-2
+
+* Small component functions
+
+  Symmetry  Ag ( 1)
+
+        4 functions:    O  s   1+2
+       10 functions:    O  pz  1-2
+        4 functions:    O  dxx 1+2
+        4 functions:    O  dyy 1+2
+        4 functions:    O  dzz 1+2
+        1 functions:    O  fxxz1-2
+        1 functions:    O  fyyz1-2
+        1 functions:    O  fzzz1-2
+
+  Symmetry  B3u( 2)
+
+       10 functions:    O  px  1+2
+        4 functions:    O  dxz 1-2
+        1 functions:    O  fxxx1+2
+        1 functions:    O  fxyy1+2
+        1 functions:    O  fxzz1+2
+
+  Symmetry  B2u( 3)
+
+       10 functions:    O  py  1+2
+        4 functions:    O  dyz 1-2
+        1 functions:    O  fxxy1+2
+        1 functions:    O  fyyy1+2
+        1 functions:    O  fyzz1+2
+
+  Symmetry  B1g( 4)
+
+        4 functions:    O  dxy 1+2
+        1 functions:    O  fxyz1-2
+
+  Symmetry  B1u( 5)
+
+        4 functions:    O  s   1-2
+       10 functions:    O  pz  1+2
+        4 functions:    O  dxx 1-2
+        4 functions:    O  dyy 1-2
+        4 functions:    O  dzz 1-2
+        1 functions:    O  fxxz1+2
+        1 functions:    O  fyyz1+2
+        1 functions:    O  fzzz1+2
+
+  Symmetry  B2g( 6)
+
+       10 functions:    O  px  1-2
+        4 functions:    O  dxz 1+2
+        1 functions:    O  fxxx1-2
+        1 functions:    O  fxyy1-2
+        1 functions:    O  fxzz1-2
+
+  Symmetry  B3g( 7)
+
+       10 functions:    O  py  1-2
+        4 functions:    O  dyz 1+2
+        1 functions:    O  fxxy1-2
+        1 functions:    O  fyyy1-2
+        1 functions:    O  fyzz1-2
+
+  Symmetry  Au ( 8)
+
+        4 functions:    O  dxy 1-2
+        1 functions:    O  fxyz1+2
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     1
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+     RELCCSD   
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+ * Run RELCCSD code
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 2
+ * Closed shell SCF calculation with    14 electrons in
+       3 orbitals in Fermion irrep 1 and    4 orbitals in Fermion irrep 2
+ * Sum of atomic potentials used for start guess
+ * General print level   :   0
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+   The final open-shell orbital energies are recalculated with 1.0 scaling,
+   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+   SS-integrals from iteration    1
+    ---> this is default setting from Hamiltonian input
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+===========================================================================
+ **RELCC: Set-up for Coupled Cluster calculations
+===========================================================================
+
+  EHMIN:  1000.00000 EHMAX:   100.00000
+  EPMIN:    -1.00000 EPMAX: -1000.00000
+
+
+   ***************************************************************************
+   ***************************** Analysis module *****************************
+   ***************************************************************************
+
+ Jobs in this run:
+ * Mulliken population analysis
+===========================================================================
+ POPINP: Mulliken population analysis
+===========================================================================
+ * Gross populations
+ * Label definitions based on SO-labels
+ * Number of spinors analyzed:
+    - Orbitals in fermion ircop E1g :all                                                                     
+    - Orbitals in fermion ircop E1u :all                                                                     
+ * Print level:    1
+
+No input for integrals transformation, using defaults
+===========================================================================
+ TRPINP: Property integral transformation
+===========================================================================
+ * Print level:    0
+ *The following operators will be transformed:
+    1  XDIPLEN              B3u     T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : XDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    2  YDIPLEN              B2u     T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : YDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    3  ZDIPLEN              B1u     T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : ZDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+
+
+
+===========================================================================
+ TRAINP: Set-up for index transformation
+===========================================================================
+
+ * General print level   :   0
+ * Electronic orbitals only.
+ * Total active space.
+    Fermion ircop:E1g
+     No explicit orbitals specified 
+    Fermion ircop:E1u
+     No explicit orbitals specified 
+
+ * Set-up for 2-index transformation
+ * Active spaces:
+    Fermion ircop:E1g
+     No explicit orbitals specified for index  1
+     No explicit orbitals specified for index  2
+    Fermion ircop:E1u
+     No explicit orbitals specified for index  1
+     No explicit orbitals specified for index  2
+
+ * Set-up for 4-index transformation
+ * Following scheme      :   6
+ - write half-transformed integrals (ij|rs) to disk
+ - sorting of intermediate 1HT integrals is disabled
+ * Screening threshold :1.00E-14
+ * MO integral threshold :1.00E-14
+ * Gaunt Integrals not transformed.
+ * 4-index transformed integrals written to file.
+ * Active spaces:
+    Fermion ircop:E1g
+     No explicit orbitals specified for index  1
+     No explicit orbitals specified for index  2
+     No explicit orbitals specified for index  3
+     No explicit orbitals specified for index  4
+    Fermion ircop:E1u
+     No explicit orbitals specified for index  1
+     No explicit orbitals specified for index  2
+     No explicit orbitals specified for index  3
+     No explicit orbitals specified for index  4
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                    All dipole components are zero by symmetry
+
+Total time used in ONEGEN (CPU)  0.04401400s and (WALL)  0.04600000s
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   Ag    * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.30E-01
+   L   B1g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.21E+01
+   L   B2g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.32E+00
+   L   B3g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.32E+00
+   S   B3u   * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.42E-01
+   S   B2u   * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.42E-01
+   S   B1u   * Deleted:          5(Proj:          5, Lindep:          0) Smin: 0.81E-02
+   S   Au    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.50E+00
+   L   B3u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.40E+00
+   L   B2u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.40E+00
+   L   B1u   * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.27E-01
+   L   Au    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.19E+01
+   S   Ag    * Deleted:          5(Proj:          5, Lindep:          0) Smin: 0.27E-01
+   S   B1g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.65E+00
+   S   B2g   * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.26E-01
+   S   B3g   * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.26E-01
+
+
+                                Output from MODHAM
+                                ------------------
+
+ * Applied strict kinetic balance !
+ * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.
+
+
+                                Output from LINSYM
+                                ------------------
+
+
+ Parity   MJ  Functions(total) Functions(LC) Functions(SC)
+     1    1/2         38           19           19
+     1   -3/2         12            6            6
+     1    5/2          2            1            1
+    -1    1/2         38           19           19
+    -1   -3/2         12            6            6
+    -1    5/2          2            1            1
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+                                   Irrep 1 Irrep 2   Sum
+No. of electronic orbitals (NESH):    26      26      52
+No. of positronic orbitals (NPSH):    26      26      52
+Total no. of orbitals      (NORB):    52      52     104
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+*** INFO *** No trial vectors found.
+ Using bare nucleus approximation for initial trial vectors.
+             Improved by a sum of atomic screening potentials.
+
+
+########## START ITERATION NO.   1 ##########   Tue Jul  2 07:42:02 2019
+
+E_HOMO...E_LUMO, symmetry 1:    29  -0.68629   30  -0.42880
+E_HOMO...E_LUMO, symmetry 2:    82  -0.69190   83  -0.07957
+
+=> Calculating sum of orbital energies
+It.    1    -57.64796266847      0.00D+00  0.00D+00  0.00D+00               0.20366100s   Atom. scrpot   Tue Jul  2
+
+########## START ITERATION NO.   2 ##########   Tue Jul  2 07:42:02 2019
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.15%    0.00%    0.00%   0.04769200s
+SOfock:SL  1.00D-12    0.00%    1.26%    0.00%    0.00%   0.42837998s
+SOfock:SS  1.00D-12    0.00%    9.99%    0.00%    0.00%   1.27674204s
+ >>> CPU  time used in SO Fock is   1.81 seconds
+ >>> WALL time used in SO Fock is   1.82 seconds
+E_HOMO...E_LUMO, symmetry 1:    29  -1.76329   30  -0.99234
+E_HOMO...E_LUMO, symmetry 2:    82  -1.66450   83  -0.55434
+>>> Total wall time:  1.83100000s, and total CPU time :  1.81611100s
+
+########## END ITERATION NO.   2 ##########   Tue Jul  2 07:42:04 2019
+
+It.    2    -148.9508992658      9.13D+01  3.58D+00  9.96D-01               1.83100000s   LL SL SS       Tue Jul  2
+
+########## START ITERATION NO.   3 ##########   Tue Jul  2 07:42:04 2019
+
+    3 *** Differential density matrix. DCOVLP     = 0.9980
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.25%    0.00%    0.00%   0.05112481s
+SOfock:SL  1.00D-12    0.00%    2.26%    0.00%    0.00%   0.42614388s
+SOfock:SS  1.00D-12    0.00%   15.66%    0.00%    0.00%   1.25891805s
+ >>> CPU  time used in SO Fock is   1.74 seconds
+ >>> WALL time used in SO Fock is   1.75 seconds
+E_HOMO...E_LUMO, symmetry 1:    29  -1.70335   30  -0.92264
+E_HOMO...E_LUMO, symmetry 2:    82  -1.60317   83  -0.47228
+>>> Total wall time:  1.76200000s, and total CPU time :  1.74499000s
+
+########## END ITERATION NO.   3 ##########   Tue Jul  2 07:42:06 2019
+
+It.    3    -149.0048886256      5.40D-02  2.17D-01  1.12D-01   DIIS   2    1.76200000s   LL SL SS       Tue Jul  2
+
+########## START ITERATION NO.   4 ##########   Tue Jul  2 07:42:06 2019
+
+    4 *** Differential density matrix. DCOVLP     = 0.9995
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.55%    0.00%    0.00%   0.04875588s
+SOfock:SL  1.00D-12    0.00%    3.39%    0.00%    0.00%   0.42162299s
+SOfock:SS  1.00D-12    0.00%   22.63%    0.00%    0.00%   1.29321575s
+ >>> CPU  time used in SO Fock is   1.77 seconds
+ >>> WALL time used in SO Fock is   1.79 seconds
+E_HOMO...E_LUMO, symmetry 1:    29  -1.71347   30  -0.92958
+E_HOMO...E_LUMO, symmetry 2:    82  -1.61042   83  -0.48030
+>>> Total wall time:  1.80200000s, and total CPU time :  1.77308400s
+
+########## END ITERATION NO.   4 ##########   Tue Jul  2 07:42:08 2019
+
+It.    4    -149.0064681535      1.58D-03 -2.46D-02  2.34D-02   DIIS   3    1.80200000s   LL SL SS       Tue Jul  2
+
+########## START ITERATION NO.   5 ##########   Tue Jul  2 07:42:08 2019
+
+    5 *** Differential density matrix. DCOVLP     = 0.9996
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.79%    0.00%    0.00%   0.05523586s
+SOfock:SL  1.00D-12    0.00%    4.58%    0.00%    0.00%   0.42455101s
+SOfock:SS  1.00D-12    0.00%   26.89%    0.00%    0.00%   1.27166080s
+ >>> CPU  time used in SO Fock is   1.75 seconds
+ >>> WALL time used in SO Fock is   1.77 seconds
+E_HOMO...E_LUMO, symmetry 1:    29  -1.71362   30  -0.92835
+E_HOMO...E_LUMO, symmetry 2:    82  -1.60955   83  -0.47876
+>>> Total wall time:  1.79000000s, and total CPU time :  1.76148000s
+
+########## END ITERATION NO.   5 ##########   Tue Jul  2 07:42:10 2019
+
+It.    5    -149.0065825834      1.14D-04  5.23D-03  6.77D-03   DIIS   4    1.79000000s   LL SL SS       Tue Jul  2
+
+########## START ITERATION NO.   6 ##########   Tue Jul  2 07:42:10 2019
+
+    6 *** Differential density matrix. DCOVLP     = 0.9996
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    1.31%    0.00%    0.00%   0.04905891s
+SOfock:SL  1.00D-12    0.00%    5.31%    0.00%    0.00%   0.41691589s
+SOfock:SS  1.00D-12    0.00%   30.17%    0.00%    0.00%   1.33004665s
+ >>> CPU  time used in SO Fock is   1.80 seconds
+ >>> WALL time used in SO Fock is   1.81 seconds
+E_HOMO...E_LUMO, symmetry 1:    29  -1.71394   30  -0.92842
+E_HOMO...E_LUMO, symmetry 2:    82  -1.60971   83  -0.47887
+>>> Total wall time:  1.82300000s, and total CPU time :  1.80474400s
+
+########## END ITERATION NO.   6 ##########   Tue Jul  2 07:42:11 2019
+
+It.    6    -149.0066117072      2.91D-05  7.45D-04  3.36D-03   DIIS   5    1.82300000s   LL SL SS       Tue Jul  2
+
+########## START ITERATION NO.   7 ##########   Tue Jul  2 07:42:11 2019
+
+    7 *** Differential density matrix. DCOVLP     = 0.9999
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    1.64%    0.00%    0.00%   0.05183887s
+SOfock:SL  1.00D-12    0.00%    6.00%    0.00%    0.00%   0.43658447s
+SOfock:SS  1.00D-12    0.00%   33.28%    0.00%    0.00%   1.25495148s
+ >>> CPU  time used in SO Fock is   1.75 seconds
+ >>> WALL time used in SO Fock is   1.76 seconds
+E_HOMO...E_LUMO, symmetry 1:    29  -1.71391   30  -0.92828
+E_HOMO...E_LUMO, symmetry 2:    82  -1.60959   83  -0.47871
+>>> Total wall time:  1.77000000s, and total CPU time :  1.75390100s
+
+########## END ITERATION NO.   7 ##########   Tue Jul  2 07:42:13 2019
+
+It.    7    -149.0066289267      1.72D-05  7.96D-04  2.34D-03   DIIS   6    1.77000000s   LL SL SS       Tue Jul  2
+
+########## START ITERATION NO.   8 ##########   Tue Jul  2 07:42:13 2019
+
+    8 *** Differential density matrix. DCOVLP     = 1.0001
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    1.37%    0.00%    0.00%   0.05089188s
+SOfock:SL  1.00D-12    0.00%    5.32%    0.00%    0.00%   0.41799259s
+SOfock:SS  1.00D-12    0.00%   31.03%    0.00%    0.00%   1.20123577s
+ >>> CPU  time used in SO Fock is   1.67 seconds
+ >>> WALL time used in SO Fock is   1.68 seconds
+E_HOMO...E_LUMO, symmetry 1:    29  -1.71388   30  -0.92827
+E_HOMO...E_LUMO, symmetry 2:    82  -1.60957   83  -0.47871
+>>> Total wall time:  1.69400000s, and total CPU time :  1.68049100s
+
+########## END ITERATION NO.   8 ##########   Tue Jul  2 07:42:15 2019
+
+It.    8    -149.0066446190      1.57D-05  1.45D-03  5.52D-04   DIIS   7    1.69400000s   LL SL SS       Tue Jul  2
+
+########## START ITERATION NO.   9 ##########   Tue Jul  2 07:42:15 2019
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    1.98%    0.00%    0.00%   0.04894638s
+SOfock:SL  1.00D-12    0.00%    7.14%    0.00%    0.00%   0.41580009s
+SOfock:SS  1.00D-12    0.00%   36.10%    0.00%    0.00%   1.16807747s
+ >>> CPU  time used in SO Fock is   1.64 seconds
+ >>> WALL time used in SO Fock is   1.64 seconds
+E_HOMO...E_LUMO, symmetry 1:    29  -1.71387   30  -0.92828
+E_HOMO...E_LUMO, symmetry 2:    82  -1.60957   83  -0.47871
+>>> Total wall time:  1.65300000s, and total CPU time :  1.64185600s
+
+########## END ITERATION NO.   9 ##########   Tue Jul  2 07:42:17 2019
+
+It.    9    -149.0066454567      8.38D-07  4.00D-04  5.89D-05   DIIS   8    1.65300000s   LL SL SS       Tue Jul  2
+
+########## START ITERATION NO.  10 ##########   Tue Jul  2 07:42:17 2019
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    4.71%    0.00%    0.00%   0.04732418s
+SOfock:SL  1.00D-12    0.00%   12.59%    0.00%    0.00%   0.40768909s
+SOfock:SS  1.00D-12    0.00%   49.52%    0.00%    0.00%   1.12996101s
+ >>> CPU  time used in SO Fock is   1.59 seconds
+ >>> WALL time used in SO Fock is   1.59 seconds
+E_HOMO...E_LUMO, symmetry 1:    29  -1.71387   30  -0.92828
+E_HOMO...E_LUMO, symmetry 2:    82  -1.60957   83  -0.47871
+>>> Total wall time:  1.60500000s, and total CPU time :  1.59420600s
+
+########## END ITERATION NO.  10 ##########   Tue Jul  2 07:42:18 2019
+
+It.   10    -149.0066454602      3.50D-09  1.97D-05  1.19D-05   DIIS   9    1.60500000s   LL SL SS       Tue Jul  2
+
+########## START ITERATION NO.  11 ##########   Tue Jul  2 07:42:18 2019
+
+   11 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    8.07%    0.00%    0.00%   0.04774952s
+SOfock:SL  1.00D-12    0.00%   18.26%    0.00%    0.00%   0.40425110s
+SOfock:SS  1.00D-12    0.00%   62.16%    0.00%    0.07%   1.08765221s
+ >>> CPU  time used in SO Fock is   1.54 seconds
+ >>> WALL time used in SO Fock is   1.55 seconds
+E_HOMO...E_LUMO, symmetry 1:    29  -1.71387   30  -0.92828
+E_HOMO...E_LUMO, symmetry 2:    82  -1.60957   83  -0.47871
+>>> Total wall time:  1.55900000s, and total CPU time :  1.54864700s
+
+########## END ITERATION NO.  11 ##########   Tue Jul  2 07:42:20 2019
+
+It.   11    -149.0066454603      1.42D-10  3.27D-06  2.50D-06   DIIS   9    1.55900000s   LL SL SS       Tue Jul  2
+
+########## START ITERATION NO.  12 ##########   Tue Jul  2 07:42:20 2019
+
+   12 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   11.27%    0.00%    0.00%   0.04909706s
+SOfock:SL  1.00D-12    0.00%   23.43%    0.00%    0.00%   0.39960670s
+SOfock:SS  1.00D-12    0.00%   72.71%    0.04%    0.47%   1.04873085s
+ >>> CPU  time used in SO Fock is   1.50 seconds
+ >>> WALL time used in SO Fock is   1.51 seconds
+E_HOMO...E_LUMO, symmetry 1:    29  -1.71387   30  -0.92828
+E_HOMO...E_LUMO, symmetry 2:    82  -1.60957   83  -0.47871
+>>> Total wall time:  1.51600000s, and total CPU time :  1.50624100s
+
+########## END ITERATION NO.  12 ##########   Tue Jul  2 07:42:21 2019
+
+It.   12    -149.0066454603      5.40D-12  6.10D-07  1.48D-07   DIIS   9    1.51600000s   LL SL SS       Tue Jul  2
+
+########## START ITERATION NO.  13 ##########   Tue Jul  2 07:42:21 2019
+
+   13 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   21.45%    0.00%    0.00%   0.04719925s
+SOfock:SL  1.00D-12    0.00%   35.78%    0.00%    0.60%   0.38833046s
+SOfock:SS  1.00D-12    7.90%   84.97%    0.28%    0.61%   0.91592216s
+ >>> CPU  time used in SO Fock is   1.35 seconds
+ >>> WALL time used in SO Fock is   1.36 seconds
+>>> Total wall time:  1.37400000s, and total CPU time :  1.35829500s
+
+########## END ITERATION NO.  13 ##########   Tue Jul  2 07:42:23 2019
+
+It.   13    -149.0066454603      1.14D-13  2.79D-08  6.20D-09   DIIS   9    1.37400000s   LL SL SS       Tue Jul  2
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1    -57.64796266847      0.00D+00  0.00D+00  0.00D+00               0.20366100s   Atom. scrpot   Tue Jul  2
+It.    2    -148.9508992658      9.13D+01  3.58D+00  9.96D-01               1.83100000s   LL SL SS       Tue Jul  2
+It.    3    -149.0048886256      5.40D-02  2.17D-01  1.12D-01   DIIS   2    1.76200000s   LL SL SS       Tue Jul  2
+It.    4    -149.0064681535      1.58D-03 -2.46D-02  2.34D-02   DIIS   3    1.80200000s   LL SL SS       Tue Jul  2
+It.    5    -149.0065825834      1.14D-04  5.23D-03  6.77D-03   DIIS   4    1.79000000s   LL SL SS       Tue Jul  2
+It.    6    -149.0066117072      2.91D-05  7.45D-04  3.36D-03   DIIS   5    1.82300000s   LL SL SS       Tue Jul  2
+It.    7    -149.0066289267      1.72D-05  7.96D-04  2.34D-03   DIIS   6    1.77000000s   LL SL SS       Tue Jul  2
+It.    8    -149.0066446190      1.57D-05  1.45D-03  5.52D-04   DIIS   7    1.69400000s   LL SL SS       Tue Jul  2
+It.    9    -149.0066454567      8.38D-07  4.00D-04  5.89D-05   DIIS   8    1.65300000s   LL SL SS       Tue Jul  2
+It.   10    -149.0066454602      3.50D-09  1.97D-05  1.19D-05   DIIS   9    1.60500000s   LL SL SS       Tue Jul  2
+It.   11    -149.0066454603      1.42D-10  3.27D-06  2.50D-06   DIIS   9    1.55900000s   LL SL SS       Tue Jul  2
+It.   12    -149.0066454603      5.40D-12  6.10D-07  1.48D-07   DIIS   9    1.51600000s   LL SL SS       Tue Jul  2
+It.   13    -149.0066454603      1.14D-13  2.79D-08  6.20D-09   DIIS   9    1.37400000s   LL SL SS       Tue Jul  2
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   13 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.20700000s
+      LL SL SS     :    1.68158333s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -177.05366855826264
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :      28.04702309791971
+
+   Sum of all contributions to the energy
+   Total energy                             :    -149.00664546034295
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Block   1 in E1g:  Omega =  1/2
+  * Closed shell, f = 1.0000
+  -22.050297087041  ( 2)      -2.684971025022  ( 2)      -1.713870626716  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+   -0.928275896897  ( 2)       0.253294849410  ( 2)       0.352420200219  ( 2)       0.372189917807  ( 2)       2.176568349157  ( 2)
+    2.704103644251  ( 2)       4.793604795377  ( 2)       5.067950476173  ( 2)      11.101352910014  ( 2)      31.417247065444  ( 2)
+   31.725318168864  ( 2)      58.075688832428  ( 2)     214.222985595697  ( 2)     721.144588278594  ( 2)    2326.369674528750  ( 2)
+ 7612.906076001367  ( 2)
+
+* Block   2 in E1g:  Omega =  3/2
+  * Virtual eigenvalues, f = 0.0000
+   -0.920973842142  ( 2)       0.375889905808  ( 2)       1.714063434593  ( 2)       2.705234253049  ( 2)       5.090664900524  ( 2)
+   31.768538831956  ( 2)
+
+* Block   3 in E1g:  Omega =  5/2
+  * Virtual eigenvalues, f = 0.0000
+    1.715715261044  ( 2)
+
+* Block   1 in E1u:  Omega =  1/2
+  * Closed shell, f = 1.0000
+  -22.048878562024  ( 2)      -2.070968635802  ( 2)      -1.616483951382  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+   -0.478708289231  ( 2)       0.210153583531  ( 2)       0.236481100091  ( 2)       0.930537352065  ( 2)       1.432699266412  ( 2)
+    3.143835277645  ( 2)       4.800876812660  ( 2)       6.244704909521  ( 2)      11.978848538931  ( 2)      31.368256789239  ( 2)
+   32.270570259418  ( 2)      58.748930337069  ( 2)     214.747922494516  ( 2)     721.523906173497  ( 2)    2326.585816514564  ( 2)
+ 7612.989656365988  ( 2)
+
+* Block   2 in E1u:  Omega =  3/2
+  * Closed shell, f = 1.0000
+   -1.609566942507  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+    0.216365577735  ( 2)       1.433859560828  ( 2)       2.049541370147  ( 2)       4.825222436456  ( 2)      31.610180538387  ( 2)
+
+* Block   3 in E1u:  Omega =  5/2
+  * Virtual eigenvalues, f = 0.0000
+    2.051411702580  ( 2)
+
+* Occupation in fermion symmetry E1g
+  * Inactive orbitals
+     1/2 1/2 1/2
+  * Virtual orbitals
+     1/2 3/2 1/2 1/2 1/2 3/2 3/2 5/2 1/2 1/2 3/2 1/2 1/2 3/2 1/2 1/2 1/2 3/2
+     1/2 1/2 1/2 1/2 1/2
+
+* Occupation in fermion symmetry E1u
+  * Inactive orbitals
+     1/2 1/2 1/2 3/2
+  * Virtual orbitals
+     1/2 1/2 3/2 1/2 1/2 1/2 3/2 3/2 5/2 1/2 1/2 3/2 1/2 1/2 1/2 3/2 1/2 1/2
+     1/2 1/2 1/2 1/2
+
+* Occupation of subblocks
+                       E1g:  1/2  3/2  5/2                                                                  
+  closed shells (f=1.0000):    3    0    0
+ virtual shells (f=0.0000):   16    6    1
+tot.num. of pos.erg shells:   19    6    1
+                       E1u:  1/2  3/2  5/2                                                                  
+  closed shells (f=1.0000):    3    1    0
+ virtual shells (f=0.0000):   16    5    1
+tot.num. of pos.erg shells:   19    6    1
+
+
+* HOMO - LUMO gap:
+
+    E(LUMO) :    -0.92827590 au (symmetry E1g)
+  - E(HOMO) :    -1.60956694 au (symmetry E1u)
+  ------------------------------------------
+    gap     :     0.68129105 au
+
+
+
+    **************************************************************************
+    ********************** Mulliken population analysis **********************
+    **************************************************************************
+
+
+
+                                Fermion ircop E1g
+                                -----------------
+
+
+
+                                Fermion ircop E1g
+                                -----------------
+
+
+* Positronic eigenvalue no.   1: -14821.705688038       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.5984  |      0.3977         0.0000         0.0000         0.2008
+ beta     0.4016  |      0.0000         0.2008         0.2008         0.0000
+
+* Positronic eigenvalue no.   2: -8085.0553924641       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.5109  |      0.2664         0.0000         0.0000         0.2445
+ beta     0.4891  |      0.0000         0.2445         0.2445         0.0000
+
+* Positronic eigenvalue no.   3: -6044.9410686432       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.4233  |      0.1349         0.0000         0.0000         0.2884
+ beta     0.5767  |      0.0000         0.2884         0.2884         0.0000
+
+* Positronic eigenvalue no.   4: -5366.4605732828       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.3698  |      0.0547         0.0000         0.0000         0.3151
+ beta     0.6302  |      0.0000         0.3151         0.3151         0.0000
+
+* Positronic eigenvalue no.   5: -5133.5923106105       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.3467  |      0.0201         0.0000         0.0000         0.3266
+ beta     0.6533  |      0.0000         0.3267         0.3267         0.0000
+
+* Positronic eigenvalue no.   6: -5107.6953162752       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  pz     L B2gO  px     L B3gO  py     B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.9931  |      0.0034         0.0000         0.0000         0.9897
+ beta     0.0069  |      0.0000         0.0034         0.0034         0.0000
+
+* Positronic eigenvalue no.   7: -5071.4263425531       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B2gO  px     L B3gO  py     B3uO  _small   B2uO  _small   B1uO  _small   Au O  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.7915  |      0.0000         0.0000         0.0000         0.0000         0.3957         0.3957
+ beta     0.2085  |      0.0053         0.0053         0.0989         0.0989         0.0000         0.0000
+
+* Positronic eigenvalue no.   8: -5071.3684174497       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  pz     L B2gO  px     L B3gO  py     B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.4031  |      0.0071         0.0000         0.0000         0.0000         0.0000         0.3960
+ beta     0.5969  |      0.0000         0.0018         0.0018         0.2967         0.2967         0.0000
+
+* Positronic eigenvalue no.   9: -5048.9487845139       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.3381  |      0.0069         0.0000         0.0000         0.3312
+ beta     0.6619  |      0.0000         0.3309         0.3309         0.0000
+
+* Positronic eigenvalue no.  10: -5026.3770206542       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  pz     L B2gO  px     L B3gO  py     B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.9979  |      0.0008         0.0000         0.0000         0.0000         0.0000         0.9971
+ beta     0.0021  |      0.0000         0.0009         0.0009         0.0002         0.0002         0.0000
+
+* Positronic eigenvalue no.  11: -5017.4390180265       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B2gO  px     L B3gO  py     B3uO  _small   B2uO  _small   B1uO  _small   Au O  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.7984  |      0.0000         0.0000         0.0000         0.0000         0.3992         0.3992
+ beta     0.2016  |      0.0012         0.0012         0.0996         0.0996         0.0000         0.0000
+
+* Positronic eigenvalue no.  12: -5017.3652118894       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  pz     L B2gO  px     L B3gO  py     B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.4114  |      0.0016         0.0000         0.0000         0.0000         0.0000         0.4098
+ beta     0.5886  |      0.0000         0.0004         0.0004         0.2939         0.2939         0.0000
+
+* Positronic eigenvalue no.  13: -5016.3235163326       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.3079  |      0.0020         0.0000         0.0000         0.3059
+ beta     0.6921  |      0.0000         0.3460         0.3460         0.0000
+
+* Positronic eigenvalue no.  14: -5009.3446620925       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  dzz    L B2gO  dxz    L B3gO  dyz    B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.7032  |      0.0002         0.0000         0.0000         0.0000         0.0000         0.7029
+ beta     0.2968  |      0.0000         0.0003         0.0003         0.1481         0.1481         0.0000
+
+* Positronic eigenvalue no.  15: -5008.6914458360       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  dxx    L Ag O  dyy    L B1gO  dxy    L B2gO  dxz    L B3gO  dyz    B3uO  _small   B2uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0300  |      0.0001         0.0001         0.0002         0.0000         0.0000         0.0000         0.0000
+ beta     0.9700  |      0.0000         0.0000         0.0000         0.0002         0.0002         0.4848         0.4848
+
+Gross  | B1uO  _small   Au O  _small
+--------------------------------------
+ alpha |   0.0147         0.0147
+ beta  |   0.0000         0.0000
+
+* Positronic eigenvalue no.  16: -5007.8855126924       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  pz     L B2gO  px     L B3gO  py     B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.9739  |      0.0002         0.0000         0.0000         0.0000         0.0000         0.9737
+ beta     0.0261  |      0.0000         0.0002         0.0002         0.0128         0.0128         0.0000
+
+* Positronic eigenvalue no.  17: -5006.5314649591       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1gO  dxy    L B2gO  dxz    L B3gO  dyz    B3uO  _small   B2uO  _small   B1uO  _small   Au O  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.5385  |      0.0001         0.0000         0.0000         0.0000         0.0000         0.2691         0.2691
+ beta     0.4615  |      0.0000         0.0003         0.0003         0.2304         0.2304         0.0000         0.0000
+
+* Positronic eigenvalue no.  18: -5006.4764218336       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  dzz    L B2gO  dxz    L B3gO  dyz    B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.4015  |      0.0004         0.0000         0.0000         0.0000         0.0000         0.4009
+ beta     0.5985  |      0.0000         0.0002         0.0002         0.2991         0.2991         0.0000
+
+* Positronic eigenvalue no.  19: -5005.5767395769       (Occupation : f = 0.0000)  m_j=  5/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  dxx    L Ag O  dyy    L B1gO  dxy    B3uO  _small   B2uO  _small   B1uO  _small   Au O  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.1092  |      0.0002         0.0002         0.0004         0.0000         0.0000         0.0542         0.0542
+ beta     0.8908  |      0.0000         0.0000         0.0000         0.4454         0.4454         0.0000         0.0000
+
+* Positronic eigenvalue no.  20: -5004.8432717572       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B2gO  px     L B3gO  py     B3uO  _small   B2uO  _small   B1uO  _small   Au O  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.7774  |      0.0000         0.0000         0.0000         0.0000         0.3887         0.3887
+ beta     0.2226  |      0.0003         0.0003         0.1110         0.1110         0.0000         0.0000
+
+* Positronic eigenvalue no.  21: -5004.6262043245       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  pz     B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.2775  |      0.0004         0.0000         0.0000         0.2771
+ beta     0.7225  |      0.0000         0.3611         0.3611         0.0000
+
+* Positronic eigenvalue no.  22: -5004.3677499721       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.1796  |      0.0004         0.0000         0.0000         0.1791
+ beta     0.8204  |      0.0000         0.4102         0.4102         0.0000
+
+* Positronic eigenvalue no.  23: -5002.3435810036       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    B3uO  _small   B2uO  _small   B1uO  _small
+--------------------------------------------------------------------
+ alpha    0.9780  |      0.0000         0.0000         0.9779
+ beta     0.0220  |      0.0110         0.0110         0.0000
+
+* Positronic eigenvalue no.  24: -5001.5943728918       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    B3uO  _small   B2uO  _small   B1uO  _small
+--------------------------------------------------------------------
+ alpha    0.2927  |      0.0000         0.0000         0.2926
+ beta     0.7073  |      0.3536         0.3536         0.0000
+
+* Positronic eigenvalue no.  25: -5001.5846684753       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    B3uO  _small   B2uO  _small   B1uO  _small   Au O  _small
+-----------------------------------------------------------------------------------
+ alpha    0.6289  |      0.0000         0.0000         0.3145         0.3145
+ beta     0.3711  |      0.1854         0.1854         0.0000         0.0000
+
+* Positronic eigenvalue no.  26: -5001.1599972078       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    B3uO  _small   B2uO  _small   B1uO  _small
+--------------------------------------------------------------------
+ alpha    0.2339  |      0.0000         0.0000         0.2338
+ beta     0.7661  |      0.3831         0.3831         0.0000
+
+* Electronic eigenvalue no.   1: -22.050297087041       (Occupation : f = 1.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.9961  |      0.9941         0.0000         0.0000         0.0020
+ beta     0.0039  |      0.0000         0.0020         0.0020         0.0000
+
+* Electronic eigenvalue no.   2: -2.6849710250217       (Occupation : f = 1.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      L Ag O  pz     L Ag O  dxx    L Ag O  dyy    L Ag O  dzz    B3uO  _small   B2uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9996  |      0.8221         0.1670        -0.0134        -0.0134         0.0370         0.0000         0.0000
+ beta     0.0004  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0002         0.0002
+
+Gross  | B1uO  _small
+-----------------------
+ alpha |   0.0002
+ beta  |   0.0000
+
+* Electronic eigenvalue no.   3: -1.7138706267157       (Occupation : f = 1.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      L Ag O  pz     L Ag O  dxx    L Ag O  dyy    L Ag O  dzz    L B2gO  px     L B3gO  py  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9981  |      0.1817         0.8084         0.0066         0.0066        -0.0054         0.0000         0.0000
+ beta     0.0019  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0008         0.0008
+
+Gross  | B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------
+ alpha |   0.0000         0.0000         0.0004
+ beta  |   0.0001         0.0001         0.0000
+
+* Electronic eigenvalue no.   4: -0.9282758968969       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      L Ag O  pz     L B2gO  px     L B2gO  dxz    L B3gO  py     L B3gO  dyz    B1uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0021  |      0.0002         0.0014         0.0000         0.0000         0.0000         0.0000         0.0005
+ beta     0.9979  |      0.0000         0.0000         0.4982         0.0006         0.4982         0.0006         0.0000
+
+* Electronic eigenvalue no.   5: -0.9209738421422       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B2gO  px     L B2gO  dxz    L B3gO  py     L B3gO  dyz    B1uO  _small   Au O  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.0005  |      0.0000         0.0000         0.0000         0.0000         0.0002         0.0002
+ beta     0.9995  |      0.4990         0.0006         0.4990         0.0006         0.0000         0.0000
+
+* Electronic eigenvalue no.   6:  0.2532948494100       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      L Ag O  pz     L Ag O  dxx    L Ag O  dyy    L Ag O  dzz    L B2gO  px     L B3gO  py  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9988  |      0.0676         0.8511         0.0160         0.0160         0.0479         0.0000         0.0000
+ beta     0.0012  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0005         0.0005
+
+Gross  | B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------
+ alpha |   0.0000         0.0000         0.0002
+ beta  |   0.0001         0.0001         0.0000
+
+* Electronic eigenvalue no.   7:  0.3524202002187       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      L Ag O  pz     L Ag O  dxx    L Ag O  dyy    L Ag O  dzz    L B2gO  px     L B3gO  py  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9830  |      0.8719         0.1016         0.0030         0.0030         0.0034         0.0000         0.0000
+ beta     0.0170  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0083         0.0083
+
+Gross  | B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------
+ alpha |   0.0000         0.0000         0.0003
+ beta  |   0.0002         0.0002         0.0000
+
+* Electronic eigenvalue no.   8:  0.3721899178075       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      L Ag O  pz     L B2gO  px     L B2gO  dxz    L B3gO  py     L B3gO  dyz    B1uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0179  |      0.0126         0.0050         0.0000         0.0000         0.0000         0.0000         0.0004
+ beta     0.9821  |      0.0000         0.0000         0.4888         0.0022         0.4888         0.0022         0.0000
+
+* Electronic eigenvalue no.   9:  0.3758899058084       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B2gO  px     L B2gO  dxz    L B3gO  py     L B3gO  dyz    B1uO  _small   Au O  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.0004  |      0.0000         0.0000         0.0000         0.0000         0.0002         0.0002
+ beta     0.9996  |      0.4976         0.0022         0.4976         0.0022         0.0000         0.0000
+
+* Electronic eigenvalue no.  10:  1.7140634345934       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  dxx    L Ag O  dyy    L B1gO  dxy    B3uO  _small   B2uO  _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.9993  |      0.2498         0.2498         0.4996         0.0000         0.0000
+ beta     0.0007  |      0.0000         0.0000         0.0000         0.0004         0.0004
+
+* Electronic eigenvalue no.  11:  1.7157152610444       (Occupation : f = 0.0000)  m_j=  5/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  dxx    L Ag O  dyy    L B1gO  dxy    B3uO  _small   B2uO  _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.9993  |      0.2498         0.2498         0.4996         0.0000         0.0000
+ beta     0.0007  |      0.0000         0.0000         0.0000         0.0004         0.0004
+
+* Electronic eigenvalue no.  12:  2.1765683491568       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      L Ag O  pz     L Ag O  dxx    L Ag O  dyy    L Ag O  dzz    B3uO  _small   B2uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9995  |      0.0430         0.0698         0.1313         0.1313         0.6235         0.0000         0.0000
+ beta     0.0005  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0002         0.0002
+
+Gross  | B1uO  _small
+-----------------------
+ alpha |   0.0006
+ beta  |   0.0000
+
+* Electronic eigenvalue no.  13:  2.7041036442506       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B2gO  px     L B2gO  dxz    L B3gO  py     L B3gO  dyz    B3uO  _small   B2uO  _small   B1uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0005  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0005
+ beta     0.9995  |      0.0043         0.4952         0.0043         0.4952         0.0003         0.0003         0.0000
+
+* Electronic eigenvalue no.  14:  2.7052342530489       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B2gO  px     L B2gO  dxz    L B3gO  py     L B3gO  dyz    B3uO  _small   B2uO  _small   B1uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0005  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0002
+ beta     0.9995  |      0.0042         0.4952         0.0042         0.4952         0.0003         0.0003         0.0000
+
+Gross  | Au O  _small
+-----------------------
+ alpha |   0.0002
+ beta  |   0.0000
+
+* Electronic eigenvalue no.  15:  4.7936047953766       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      L Ag O  pz     L Ag O  dxx    L Ag O  dyy    L Ag O  dzz    L B2gO  px     L B3gO  py  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9938  |      0.0012         0.9863         0.0016         0.0016         0.0016         0.0000         0.0000
+ beta     0.0062  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0027         0.0027
+
+Gross  | B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------
+ alpha |   0.0000         0.0000         0.0015
+ beta  |   0.0004         0.0004         0.0000
+
+* Electronic eigenvalue no.  16:  5.0679504761728       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  pz     L B2gO  px     L B2gO  dxz    L B3gO  py     L B3gO  dyz    B3uO  _small   B2uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0072  |      0.0053         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+ beta     0.9928  |      0.0000         0.4947         0.0014         0.4947         0.0014         0.0003         0.0003
+
+Gross  | B1uO  _small
+-----------------------
+ alpha |   0.0018
+ beta  |   0.0000
+
+* Electronic eigenvalue no.  17:  5.0906649005240       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B2gO  px     L B2gO  dxz    L B3gO  py     L B3gO  dyz    B3uO  _small   B2uO  _small   B1uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0019  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0010
+ beta     0.9981  |      0.4974         0.0014         0.4974         0.0014         0.0002         0.0002         0.0000
+
+Gross  | Au O  _small
+-----------------------
+ alpha |   0.0010
+ beta  |   0.0000
+
+* Electronic eigenvalue no.  18:  11.101352910014       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      L Ag O  pz     L Ag O  dxx    L Ag O  dyy    L Ag O  dzz    B3uO  _small   B2uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9962  |      0.9926         0.0008         0.0098         0.0098        -0.0185         0.0000         0.0000
+ beta     0.0038  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0019         0.0019
+
+Gross  | B1uO  _small
+-----------------------
+ alpha |   0.0018
+ beta  |   0.0000
+
+* Electronic eigenvalue no.  19:  31.417247065444       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  pz     L B2gO  px     L B3gO  py     B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.4477  |      0.4375         0.0000         0.0000         0.0102
+ beta     0.5523  |      0.0000         0.2761         0.2761         0.0000
+
+* Electronic eigenvalue no.  20:  31.725318168864       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  pz     L B2gO  px     L B3gO  py     B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.5564  |      0.5521         0.0000         0.0000         0.0000         0.0000         0.0042
+ beta     0.4436  |      0.0000         0.2187         0.2187         0.0031         0.0031         0.0000
+
+* Electronic eigenvalue no.  21:  31.768538831956       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B2gO  px     L B3gO  py     B3uO  _small   B2uO  _small   B1uO  _small   Au O  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.0083  |      0.0000         0.0000         0.0000         0.0000         0.0042         0.0042
+ beta     0.9917  |      0.4948         0.4948         0.0010         0.0010         0.0000         0.0000
+
+* Electronic eigenvalue no.  22:  58.075688832428       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      L Ag O  dxx    L Ag O  dyy    L Ag O  dzz    B3uO  _small   B2uO  _small   B1uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9872  |      0.9808         0.0007         0.0007        -0.0013         0.0000         0.0000         0.0064
+ beta     0.0128  |      0.0000         0.0000         0.0000         0.0000         0.0064         0.0064         0.0000
+
+* Electronic eigenvalue no.  23:  214.22298559570       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      L Ag O  dxx    L Ag O  dyy    L Ag O  dzz    B3uO  _small   B2uO  _small   B1uO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9639  |      0.9458         0.0002         0.0002        -0.0003         0.0000         0.0000         0.0181
+ beta     0.0361  |      0.0000         0.0000         0.0000         0.0000         0.0181         0.0181         0.0000
+
+* Electronic eigenvalue no.  24:  721.14458827859       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.9104  |      0.8655         0.0000         0.0000         0.0448
+ beta     0.0896  |      0.0000         0.0448         0.0448         0.0000
+
+* Electronic eigenvalue no.  25:  2326.3696745287       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.8227  |      0.7341         0.0000         0.0000         0.0886
+ beta     0.1773  |      0.0000         0.0886         0.0886         0.0000
+
+* Electronic eigenvalue no.  26:  7612.9060760014       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Ag O  s      B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.7357  |      0.6035         0.0000         0.0000         0.1322
+ beta     0.2643  |      0.0000         0.1322         0.1322         0.0000
+
+
+** Total gross population of fermion ircop E1g **
+
+Gross      Total    |    L Ag O  s      L Ag O  pz     L Ag O  dxx    L Ag O  dyy    L Ag O  dzz    L B2gO  px     L B3gO  py  
+--------------------------------------------------------------------------------------------------------------------------------
+ total     6.00000  |      3.99580        1.95081       -0.01357       -0.01357        0.06304        0.00162        0.00162
+
+Gross  | B3uO  _small   B2uO  _small   B1uO  _small
+-----------------------------------------------------
+ total |   0.00462        0.00462        0.00503
+
+
+                                Fermion ircop E1u
+                                -----------------
+
+
+
+                                Fermion ircop E1u
+                                -----------------
+
+
+* Positronic eigenvalue no.   1: -14821.783828653       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.5984  |      0.3977         0.2008         0.0000         0.0000
+ beta     0.4016  |      0.0000         0.0000         0.2008         0.2008
+
+* Positronic eigenvalue no.   2: -8085.2566605009       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.5109  |      0.2664         0.2445         0.0000         0.0000
+ beta     0.4891  |      0.0000         0.0000         0.2445         0.2445
+
+* Positronic eigenvalue no.   3: -6045.2877409021       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.4233  |      0.1349         0.2884         0.0000         0.0000
+ beta     0.5767  |      0.0000         0.0000         0.2884         0.2884
+
+* Positronic eigenvalue no.   4: -5366.9196442949       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.3699  |      0.0548         0.3151         0.0000         0.0000
+ beta     0.6301  |      0.0000         0.0000         0.3151         0.3151
+
+* Positronic eigenvalue no.   5: -5134.1309648140       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.3469  |      0.0202         0.3267         0.0000         0.0000
+ beta     0.6531  |      0.0000         0.0000         0.3265         0.3265
+
+* Positronic eigenvalue no.   6: -5107.7848340908       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     L B1uO  pz     Ag O  _small
+-----------------------------------------------------------------------------------
+ alpha    0.9931  |      0.0000         0.0000         0.0035         0.9895
+ beta     0.0069  |      0.0034         0.0034         0.0000         0.0000
+
+* Positronic eigenvalue no.   7: -5071.7220611530       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     L B1uO  pz     Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.4026  |      0.0000         0.0000         0.0071         0.3955         0.0000         0.0000
+ beta     0.5974  |      0.0018         0.0018         0.0000         0.0000         0.2969         0.2969
+
+* Positronic eigenvalue no.   8: -5071.2905901081       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     Ag O  _small   B1gO  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.7915  |      0.0000         0.0000         0.3957         0.3957         0.0000         0.0000
+ beta     0.2085  |      0.0053         0.0053         0.0000         0.0000         0.0989         0.0989
+
+* Positronic eigenvalue no.   9: -5049.5484214023       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.3380  |      0.0070         0.3310         0.0000         0.0000
+ beta     0.6620  |      0.0000         0.0000         0.3310         0.3310
+
+* Positronic eigenvalue no.  10: -5026.5235003208       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     L B1uO  pz     Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.9946  |      0.0000         0.0000         0.0010         0.9936         0.0000         0.0000
+ beta     0.0054  |      0.0008         0.0008         0.0000         0.0000         0.0019         0.0019
+
+* Positronic eigenvalue no.  11: -5018.2623111158       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     L B1uO  s      L B1uO  pz     Ag O  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.4139  |      0.0000         0.0000         0.0005         0.0013         0.4120         0.0000         0.0000
+ beta     0.5861  |      0.0004         0.0004         0.0000         0.0000         0.0000         0.2927         0.2927
+
+* Positronic eigenvalue no.  12: -5017.2200786917       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     Ag O  _small   B1gO  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.7970  |      0.0000         0.0000         0.3985         0.3985         0.0000         0.0000
+ beta     0.2030  |      0.0012         0.0012         0.0000         0.0000         0.1003         0.1003
+
+* Positronic eigenvalue no.  13: -5016.6998759620       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      L B1uO  pz     Ag O  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.3439  |      0.0017         0.0003         0.3419         0.0000         0.0000
+ beta     0.6561  |      0.0000         0.0000         0.0000         0.3280         0.3280
+
+* Positronic eigenvalue no.  14: -5009.9445577278       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  pz     L B1uO  dxx    L B1uO  dyy    L B1uO  dzz    Ag O  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.6152  |      0.0002         0.0002         0.0002         0.0005         0.6141         0.0000         0.0000
+ beta     0.3848  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.1923         0.1923
+
+* Positronic eigenvalue no.  15: -5008.6095290258       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  dxx    L B1uO  dyy    L Au O  dxy    Ag O  _small   B1gO  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0080  |      0.0002         0.0002         0.0004         0.0036         0.0036         0.0000         0.0000
+ beta     0.9920  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.4960         0.4960
+
+* Positronic eigenvalue no.  16: -5007.9927058389       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     L B1uO  pz     Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.9293  |      0.0000         0.0000         0.0002         0.9290         0.0000         0.0000
+ beta     0.0707  |      0.0002         0.0002         0.0000         0.0000         0.0351         0.0351
+
+* Positronic eigenvalue no.  17: -5006.5111803754       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  dxz    L B2uO  dyz    L B1uO  dzz    Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.7945  |      0.0000         0.0000         0.0001         0.7943         0.0000         0.0000
+ beta     0.2055  |      0.0002         0.0002         0.0000         0.0000         0.1025         0.1025
+
+* Positronic eigenvalue no.  18: -5005.9260650075       (Occupation : f = 0.0000)  m_j=  5/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  dxx    L B1uO  dyy    L Au O  dxy    Ag O  _small   B1gO  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.1783  |      0.0002         0.0002         0.0004         0.0887         0.0887         0.0000         0.0000
+ beta     0.8217  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.4108         0.4108
+
+* Positronic eigenvalue no.  19: -5005.4887495961       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  dxz    L B2uO  dyz    Ag O  _small   B1gO  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.7869  |      0.0000         0.0000         0.3934         0.3934         0.0000         0.0000
+ beta     0.2131  |      0.0003         0.0003         0.0000         0.0000         0.1062         0.1062
+
+* Positronic eigenvalue no.  20: -5005.1984939783       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      L B1uO  pz     Ag O  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.4207  |      0.0002         0.0002         0.4202         0.0000         0.0000
+ beta     0.5793  |      0.0000         0.0000         0.0000         0.2896         0.2896
+
+* Positronic eigenvalue no.  21: -5004.6220738096       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     Ag O  _small   B1gO  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.8734  |      0.0000         0.0000         0.4367         0.4367         0.0000         0.0000
+ beta     0.1266  |      0.0003         0.0003         0.0000         0.0000         0.0630         0.0630
+
+* Positronic eigenvalue no.  22: -5004.5987023378       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      L B1uO  pz     Ag O  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.3077  |      0.0003         0.0002         0.3072         0.0000         0.0000
+ beta     0.6923  |      0.0000         0.0000         0.0000         0.3461         0.3461
+
+* Positronic eigenvalue no.  23: -5002.3104182064       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.8944  |      0.0002         0.8943         0.0000         0.0000
+ beta     0.1056  |      0.0000         0.0000         0.0528         0.0528
+
+* Positronic eigenvalue no.  24: -5002.0946669061       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.8545  |      0.0001         0.8543         0.0000         0.0000
+ beta     0.1455  |      0.0000         0.0000         0.0727         0.0727
+
+* Positronic eigenvalue no.  25: -5001.3310320009       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    Ag O  _small   B1gO  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.8767  |      0.4383         0.4383         0.0000         0.0000
+ beta     0.1233  |      0.0000         0.0000         0.0616         0.0616
+
+* Positronic eigenvalue no.  26: -5001.1930035983       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  pz     Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.3404  |      0.0001         0.3403         0.0000         0.0000
+ beta     0.6596  |      0.0000         0.0000         0.3298         0.3298
+
+* Electronic eigenvalue no.   1: -22.048878562024       (Occupation : f = 1.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      L B1uO  pz     Ag O  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.9961  |      0.9939         0.0002         0.0020         0.0000         0.0000
+ beta     0.0039  |      0.0000         0.0000         0.0000         0.0020         0.0020
+
+* Electronic eigenvalue no.   2: -2.0709686358017       (Occupation : f = 1.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      L B1uO  pz     L B1uO  dxx    L B1uO  dyy    L B1uO  dzz    Ag O  _small   B2gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9993  |      0.9153         0.0819         0.0046         0.0046        -0.0072         0.0003         0.0000
+ beta     0.0007  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0002
+
+Gross  | B3gO  _small
+-----------------------
+ alpha |   0.0000
+ beta  |   0.0002
+
+* Electronic eigenvalue no.   3: -1.6164839513821       (Occupation : f = 1.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B3uO  dxz    L B2uO  py     L B2uO  dyz    L B1uO  s      L B1uO  pz     Ag O  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0011  |      0.0000         0.0000         0.0000         0.0000         0.0004         0.0002         0.0004
+ beta     0.9989  |      0.4922         0.0072         0.4922         0.0072         0.0000         0.0000         0.0000
+
+* Electronic eigenvalue no.   4: -1.6095669425072       (Occupation : f = 1.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B3uO  dxz    L B2uO  py     L B2uO  dyz    Ag O  _small   B1gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.0004  |      0.0000         0.0000         0.0000         0.0000         0.0002         0.0002
+ beta     0.9996  |      0.4925         0.0072         0.4925         0.0072         0.0000         0.0000
+
+* Electronic eigenvalue no.   5: -0.4787082892305       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     L B1uO  s      L B1uO  pz     L B1uO  dxx    L B1uO  dyy    L B1uO  dzz 
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9991  |      0.0000         0.0000         0.0568         0.9219         0.0056         0.0056         0.0087
+ beta     0.0009  |      0.0003         0.0003         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------
+ alpha |   0.0005         0.0000         0.0000
+ beta  |   0.0000         0.0002         0.0002
+
+* Electronic eigenvalue no.   6:  0.2101535835311       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B3uO  dxz    L B2uO  py     L B2uO  dyz    L B1uO  s      L B1uO  pz     L B1uO  dzz 
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0597  |      0.0000         0.0000         0.0000         0.0000        -0.0172         0.0766        -0.0001
+ beta     0.9403  |      0.4696         0.0006         0.4696         0.0006         0.0000         0.0000         0.0000
+
+Gross  | Ag O  _small
+-----------------------
+ alpha |   0.0005
+ beta  |   0.0000
+
+* Electronic eigenvalue no.   7:  0.2163655777353       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B3uO  dxz    L B2uO  py     L B2uO  dyz    Ag O  _small   B1gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.0004  |      0.0000         0.0000         0.0000         0.0000         0.0002         0.0002
+ beta     0.9996  |      0.4991         0.0007         0.4991         0.0007         0.0000         0.0000
+
+* Electronic eigenvalue no.   8:  0.2364811000914       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     L B1uO  s      L B1uO  pz     L B1uO  dxx    L B1uO  dyy    L B1uO  dzz 
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9407  |      0.0000         0.0000        -0.2538         1.1945         0.0003         0.0003        -0.0009
+ beta     0.0593  |      0.0295         0.0295         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------
+ alpha |   0.0003         0.0000         0.0000
+ beta  |   0.0000         0.0001         0.0001
+
+* Electronic eigenvalue no.   9:  0.9305373520654       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      L B1uO  pz     Ag O  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.9995  |      1.2529        -0.2535         0.0003         0.0000         0.0000
+ beta     0.0005  |      0.0000         0.0000         0.0000         0.0003         0.0003
+
+* Electronic eigenvalue no.  10:  1.4326992664122       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B3uO  dxz    L B2uO  py     L B2uO  dyz    Ag O  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0005  |      0.0000         0.0000         0.0000         0.0000         0.0005         0.0000         0.0000
+ beta     0.9995  |      0.0101         0.4895         0.0101         0.4895         0.0000         0.0001         0.0001
+
+* Electronic eigenvalue no.  11:  1.4338595608284       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B3uO  dxz    L B2uO  py     L B2uO  dyz    Ag O  _small   B1gO  _small   B2gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0005  |      0.0000         0.0000         0.0000         0.0000         0.0002         0.0002         0.0000
+ beta     0.9995  |      0.0102         0.4894         0.0102         0.4894         0.0000         0.0000         0.0001
+
+Gross  | B3gO  _small
+-----------------------
+ alpha |   0.0000
+ beta  |   0.0001
+
+* Electronic eigenvalue no.  12:  2.0495413701470       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  dxx    L B1uO  dyy    L Au O  dxy    B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.9993  |      0.2498         0.2498         0.4996         0.0000         0.0000
+ beta     0.0007  |      0.0000         0.0000         0.0000         0.0004         0.0004
+
+* Electronic eigenvalue no.  13:  2.0514117025796       (Occupation : f = 0.0000)  m_j=  5/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  dxx    L B1uO  dyy    L Au O  dxy    B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.9993  |      0.2498         0.2498         0.4996         0.0000         0.0000
+ beta     0.0007  |      0.0000         0.0000         0.0000         0.0004         0.0004
+
+* Electronic eigenvalue no.  14:  3.1438352776449       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      L B1uO  pz     L B1uO  dxx    L B1uO  dyy    L B1uO  dzz    Ag O  _small   B2gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9995  |      0.0638         0.0481         0.1465         0.1465         0.5939         0.0008         0.0000
+ beta     0.0005  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0002
+
+Gross  | B3gO  _small
+-----------------------
+ alpha |   0.0000
+ beta  |   0.0002
+
+* Electronic eigenvalue no.  15:  4.8008768126601       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B3uO  dxz    L B2uO  py     L B2uO  dyz    L B1uO  pz     Ag O  _small   B2gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0021  |      0.0000         0.0000         0.0000         0.0000         0.0001         0.0019         0.0000
+ beta     0.9979  |      0.4964         0.0023         0.4964         0.0023         0.0000         0.0000         0.0002
+
+Gross  | B3gO  _small
+-----------------------
+ alpha |   0.0000
+ beta  |   0.0002
+
+* Electronic eigenvalue no.  16:  4.8252224364560       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B3uO  dxz    L B2uO  py     L B2uO  dyz    Ag O  _small   B1gO  _small   B2gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.0019  |      0.0000         0.0000         0.0000         0.0000         0.0009         0.0009         0.0000
+ beta     0.9981  |      0.4966         0.0023         0.4966         0.0023         0.0000         0.0000         0.0002
+
+Gross  | B3gO  _small
+-----------------------
+ alpha |   0.0000
+ beta  |   0.0002
+
+* Electronic eigenvalue no.  17:  6.2447049095215       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      L B1uO  pz     L B1uO  dxx    L B1uO  dyy    L B1uO  dzz    Ag O  _small   B2gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9988  |     -0.0057         0.9134         0.0421         0.0421         0.0053         0.0015         0.0000
+ beta     0.0012  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0005
+
+Gross  | B3gO  _small
+-----------------------
+ alpha |   0.0000
+ beta  |   0.0005
+
+* Electronic eigenvalue no.  18:  11.978848538931       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      L B1uO  pz     L B1uO  dxx    L B1uO  dyy    L B1uO  dzz    Ag O  _small   B2gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9963  |      0.9803         0.0132        -0.0150        -0.0150         0.0308         0.0020         0.0000
+ beta     0.0037  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0019
+
+Gross  | B3gO  _small
+-----------------------
+ alpha |   0.0000
+ beta  |   0.0019
+
+* Electronic eigenvalue no.  19:  31.368256789239       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     L B1uO  pz     Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.0384  |      0.0000         0.0000         0.0292         0.0091         0.0000         0.0000
+ beta     0.9616  |      0.4802         0.4802         0.0000         0.0000         0.0006         0.0006
+
+* Electronic eigenvalue no.  20:  31.610180538387       (Occupation : f = 0.0000)  m_j= -3/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     Ag O  _small   B1gO  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.0083  |      0.0000         0.0000         0.0042         0.0042         0.0000         0.0000
+ beta     0.9917  |      0.4948         0.4948         0.0000         0.0000         0.0010         0.0010
+
+* Electronic eigenvalue no.  21:  32.270570259418       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B3uO  px     L B2uO  py     L B1uO  s      L B1uO  pz     L B1uO  dxx    L B1uO  dyy    L B1uO  dzz 
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9656  |      0.0000         0.0000         0.0011         0.9587         0.0007         0.0007        -0.0009
+ beta     0.0344  |      0.0146         0.0146         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------
+ alpha |   0.0053         0.0000         0.0000
+ beta  |   0.0000         0.0026         0.0026
+
+* Electronic eigenvalue no.  22:  58.748930337069       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      L B1uO  pz     L B1uO  dxx    L B1uO  dyy    L B1uO  dzz    Ag O  _small   B2gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9871  |      0.9793         0.0014        -0.0009        -0.0009         0.0017         0.0064         0.0000
+ beta     0.0129  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0064
+
+Gross  | B3gO  _small
+-----------------------
+ alpha |   0.0000
+ beta  |   0.0064
+
+* Electronic eigenvalue no.  23:  214.74792249452       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      L B1uO  pz     L B1uO  dxx    L B1uO  dyy    L B1uO  dzz    Ag O  _small   B2gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.9638  |      0.9459        -0.0001        -0.0002        -0.0002         0.0004         0.0181         0.0000
+ beta     0.0362  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0181
+
+Gross  | B3gO  _small
+-----------------------
+ alpha |   0.0000
+ beta  |   0.0181
+
+* Electronic eigenvalue no.  24:  721.52390617350       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.9103  |      0.8655         0.0448         0.0000         0.0000
+ beta     0.0897  |      0.0000         0.0000         0.0448         0.0448
+
+* Electronic eigenvalue no.  25:  2326.5858165146       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.8227  |      0.7341         0.0886         0.0000         0.0000
+ beta     0.1773  |      0.0000         0.0000         0.0886         0.0886
+
+* Electronic eigenvalue no.  26:  7612.9896563660       (Occupation : f = 0.0000)  m_j=  1/2
+============================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B1uO  s      Ag O  _small   B2gO  _small   B3gO  _small
+-----------------------------------------------------------------------------------
+ alpha    0.7357  |      0.6035         0.1322         0.0000         0.0000
+ beta     0.2643  |      0.0000         0.0000         0.1322         0.1322
+
+
+** Total gross population of fermion ircop E1u **
+
+Gross      Total    |    L B3uO  px     L B3uO  dxz    L B2uO  py     L B2uO  dyz    L B1uO  s      L B1uO  pz     L B1uO  dxx 
+--------------------------------------------------------------------------------------------------------------------------------
+ total     8.00000  |      1.96970        0.02883        1.96970        0.02883        3.81932        0.16449        0.00910
+
+Gross  | L B1uO  dyy    L B1uO  dzz    Ag O  _small   B1gO  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------
+ total |   0.00910       -0.01441        0.00578        0.00042        0.00456        0.00456
+
+
+*** Total gross population ***
+
+Gross      Total    |    L Ag O  s      L Ag O  pz     L Ag O  dxx    L Ag O  dyy    L Ag O  dzz    L B3uO  px     L B3uO  dxz 
+--------------------------------------------------------------------------------------------------------------------------------
+ total    14.00000  |      3.99580        1.95081       -0.01357       -0.01357        0.06304        1.96970        0.02883
+
+Gross  | L B2uO  py     L B2uO  dyz    L B1uO  s      L B1uO  pz     L B1uO  dxx    L B1uO  dyy    L B1uO  dzz    L B2gO  px  
+--------------------------------------------------------------------------------------------------------------------------------
+ total |   1.96970        0.02883        3.81932        0.16449        0.00910        0.00910       -0.01441        0.00162
+
+Gross  | L B3gO  py     Ag O  _small   B3uO  _small   B2uO  _small   B1gO  _small   B1uO  _small   B2gO  _small   B3gO  _small
+--------------------------------------------------------------------------------------------------------------------------------
+ total |   0.00162        0.00578        0.00462        0.00462        0.00042        0.00503        0.00456        0.00456
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+     ************************************************************************
+     **************** Transformation of 2-electron integrals ****************
+     ************************************************************************
+
+
+ Transformation started at : Tue Jul  2 07:42:23 2019
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -149.006645460342838
+* Heading :Molecular oxygen. Ground and excited states (X, a,Tue Jul  2 07:42:21 2019
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+
+* Orbital ranges for 4-index transformation:
+
+
+ * Fermion ircop E1g
+
+      Index 1   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+      Index 2   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+      Index 3   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+      Index 4   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+
+ * Fermion ircop E1u
+
+      Index 1   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+      Index 2   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+      Index 3   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+      Index 4   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+ (PAMTRA)  Orbitals read from DFCOEF
+
+* Core orbital ranges for 2-index transformation:
+
+
+ * Fermion ircop E1g
+
+      Index 1    1 orbitals
+          1
+
+
+ * Fermion ircop E1u
+
+      Index 1    1 orbitals
+          1
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+      **********************************************************************
+      **************** Transformation of property integrals ****************
+      **********************************************************************
+
+
+ Transformation started at : Tue Jul  2 07:42:23 2019
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -149.006645460342838
+* Heading :Molecular oxygen. Ground and excited states (X, a,Tue Jul  2 07:42:21 2019
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+     Energy selection of active orbitals :      -10.00 < Eps. <        20.00 with a mininum gap of     1.0000 au.
+
+
+ * Fermion ircop E1g
+
+      Index 1   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+      Index 2   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+
+ * Fermion ircop E1u
+
+      Index 1   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+      Index 2   17 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+       ********************************************************************
+       **************** Transformation of core Fock matrix ****************
+       ********************************************************************
+
+
+ Transformation started at : Tue Jul  2 07:42:23 2019
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -149.006645460342838
+* Heading :Molecular oxygen. Ground and excited states (X, a,Tue Jul  2 07:42:21 2019
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.76%    0.00%    0.00%   0.05104637s
+SOfock:SL  1.00D-12    0.00%    4.20%    0.00%    0.00%   0.41457176s
+SOfock:SS  1.00D-12    0.00%   15.22%    0.00%    0.00%   1.25168991s
+ >>> CPU  time used in SO Fock is   1.72 seconds
+ >>> WALL time used in SO Fock is   1.73 seconds
+
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading :Molecular oxygen. Ground and excited states (X, a,Tue Jul  2 07:42:02 2019
+
+
+ Core energy (includes nuclear repulsion) :           -103.1742356536
+ - Electronic part :                                  -131.2212587515
+   - One-electron terms :                             -142.5525519137
+   - Two-electron terms :                               11.3312931622
+
+
+ MOLFDIR file MRCONEE is written
+ - Integral class 1 : (LL|??)
+   - Beginning task   1 of   3 after      0. seconds and      0. CPU-seconds
+   - Beginning task   2 of   3 after      0. seconds and      0. CPU-seconds
+   - Beginning task   3 of   3 after      0. seconds and      0. CPU-seconds
+ - Integral class 2 : (SS|??)
+   - Beginning task   4 of   8 after      1. seconds and      1. CPU-seconds
+   - Beginning task   5 of   8 after      1. seconds and      1. CPU-seconds
+   - Beginning task   6 of   8 after      1. seconds and      1. CPU-seconds
+   - Beginning task   7 of   8 after      1. seconds and      1. CPU-seconds
+   - Beginning task   8 of   8 after      3. seconds and      3. CPU-seconds
+ Node    0 finished first half transformation         4850888 HT integrals written ( 77.70%,      0.07 GB)
+ >>> CPU time used in 2HT_all is   4.35 seconds
+ - Binary  file MDCINT was written.
+* Screening statistics:
+   (LL|LL)ints :   0.00%
+   (SS|LL)ints :   0.00%
+   (SS|SS)ints :   0.00%
+   Total       :   0.00%
+
+------ Timing report (in CPU seconds) of module  integral transformation      
+
+ Time in  First halftransformation            4.507 seconds
+ Time in  Second halftransformation           4.352 seconds
+
+
+ Total wall time used in PAMTRA :   00:00:11
+ Total CPU  time used in PAMTRA (master only) :   00:00:11
+
+ Transformation ended at : Tue Jul  2 07:42:34 2019
+
+
+---< Process     1 of     1----<
+
+
+
+ Relativistic Coupled Cluster program RELCCSD
+
+ Written by :
+    Lucas Visscher
+
+    NASA Ames Research Center    (1994)
+    Rijks Universiteit Groningen (1995)
+    Odense Universitet           (1996-1997)
+    VU University Amsterdam      (1998-present)
+
+
+ This module is documented in
+  - Initial implementation : L. Visscher, T.J. Lee and K.G. Dyall, J. Chem. Phys. 105 (1996) 8769.
+  - Fock Space (FSCC):       L. Visscher, E. Eliav and U. Kaldor, J. Chem. Phys. 115 (2002) 9720.
+  - Intermediate Hamiltonian E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, J. Chem. Phys. 122 (2005) 224113.
+  - Parallelization :        M. Pernpointner and L. Visscher, J. Comp. Chem. 24 (2003) 754.
+  - MP2 expectation values : J.N.P. van Stralen, L. Visscher, C.V. Larsen and H.J.Aa. Jensen," Chem. Phys. 311 (2005) 81.
+  - CC  expectation values : A. Shee, L. Visscher, and T. Saue, J. Chem. Phys. 145 (2016) 184107.
+  - EOM-IP/EA/EE energies  : A. Shee, T. Saue, L. Visscher, and A.S.P. Gomes, J. Chem. Phys. 149 (2018) 174113.
+
+
+ Today is :     2 Jul 19
+ The time is :  07:42:34
+
+ Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
+===========================================================================
+ **RELCC: Set-up for Coupled Cluster calculations
+===========================================================================
+ * General print level   :   0
+
+  EHMIN:  1000.00000 EHMAX:   100.00000
+  EPMIN:    -1.00000 EPMAX: -1000.00000
+
+ Total memory available :       16384.00 MB   16.000 GB
+
+ INFO: No old restart file(s) found!
+
+
+ Configuration in highest pointgroup
+
+                                          Eg   Eg   Eu   Eu
+ Spinor class : occupied                   2    2    3    3
+ Spinor class : virtual                   15   15   14   14
+
+ Configuration in abelian subgroup
+
+                                          1g  -1g   3g  -3g   5g  -5g   1u  -1u
+ Spinor class : occupied                   2    2    0    0    0    0    2    2
+ Spinor class : virtual                    9    9    5    5    1    1    9    9
+
+ Configuration in abelian subgroup
+
+                                          3u  -3u   5u  -5u
+ Spinor class : occupied                   1    1    0    0
+ Spinor class : virtual                    4    4    1    1
+
+
+ Number of electrons :                    10
+ Total charge of the system :              2
+ Number of virtual spinors :              58
+ Complex arithmetic mode :                 F
+ Do integral sorting     :                 F
+ Do energy calculation   :                 F
+ Do gradient calculation :                 F
+ Do response calculation :                 F
+ Debug information       :                 F
+ Timing information      :                 F
+ Print level          :                    0
+ Memory limit (MWord) :                      2048
+ Interface used       :                DIRAC6    
+
+
+ Leave after calculating the total memory demand :          F
+ Memory for reading and sorting integrals :               788069 8-byte words
+ Memory for reading and sorting integrals :              4724761 8-byte words
+ Core used for Fock space CCSD energies :                  2147199488 8-byte words
+ Memory used for active modules :                     2147199488 8-byte words
+
+ Predicted RelCC memory demand:        16381.83 MB
+ Predicted RelCC memory demand:          15.998 GB
+
+
+ Fock space CCSD Energy calculations
+ Module written by Ephraim Eliav & Luuk Visscher, July 1999
+
+
+ List of inactive and active spinors (Fock space)
+
+ Configuration in highest pointgroup
+
+                                          Eg   Eg   Eu   Eu
+ Spinor class : inactive occupied          2    2    3    3
+ Spinor class : active occupied            0    0    0    0
+ Spinor class : active virtual             2    2    0    0
+ Spinor class : inactive virtual          13   13   14   14
+
+ Configuration in abelian subgroup
+
+                                          1g  -1g   3g  -3g   5g  -5g   1u  -1u
+ Spinor class : inactive occupied          2    2    0    0    0    0    2    2
+ Spinor class : active occupied            0    0    0    0    0    0    0    0
+ Spinor class : active virtual             1    1    1    1    0    0    0    0
+ Spinor class : inactive virtual           8    8    4    4    1    1    9    9
+
+ Configuration in abelian subgroup
+
+                                          3u  -3u   5u  -5u
+ Spinor class : inactive occupied          1    1    0    0
+ Spinor class : active occupied            0    0    0    0
+ Spinor class : active virtual             0    0    0    0
+ Spinor class : inactive virtual           4    4    1    1
+
+ Expanding and sorting integrals to unique types :
+ Type OOOO :             927 integrals
+ Type VOOO :            7568 integrals
+ Type VVOO :           14665 integrals
+ Type VOVO :           63036 integrals
+ Type VOVV :          122544 integrals
+ Type VVVV :          239341 integrals
+
+ Start sorting of integral classes at   2 Jul 19 07:42:34
+
+
+ Sorting of first 4 classes done at   2 Jul 19 07:42:35
+
+ Need      1 passes to sort VOVV integrals
+
+ Pass     1 ended at   2 Jul 19 07:42:36
+
+ VOVV sorting done at   2 Jul 19 07:42:36
+
+ Need      1 passes to sort VVVV integrals
+
+ Pass     1 ended at   2 Jul 19 07:42:37
+
+ VVVV sorting done at   2 Jul 19 07:42:37
+
+ Reading Coulomb integrals :
+ File date :       2 Jul 19
+ File time :       07:42:37
+ # of integrals              945756
+
+ Finished sorting of integrals
+
+
+ Checking the orbital energies, the program computes the diagonal elements of the
+ reconstructed Fock matrix. Differences with the reference orbital energies
+ are given if above a treshold or if iprnt > 1
+
+ Spinor   Abelian Rep.         Energy   Recalc. Energy
+
+ The diagonal elements of the recomputed Fock matrix (right column) are used in perturbation expressions.
+
+ Use the perturbative values (MP2, CCSD[T]/(T)/-T) with care, especially
+ in  open shell calculations because the orbitals need not always be
+ semi-canonical as was assumed in the derivation of the expressions.
+ The missing terms may be important !
+
+
+ Nuclear repulsion + core energy :          -103.174235653593897
+ Zero order electronic energy :              -19.391722360899461
+ First order electronic energy :             -26.440687445849807
+ Electronic energy :                         -45.832409806749268
+ SCF energy :                               -149.006645460343179
+
+
+ Fock space CCSD options :
+ Maximum number of iterations :          100
+ Maximum size of DIIS space :              8
+ Convergence criterium :             0.1E-11
+
+ INFO: Initializing amplitudes to MP2 ones!
+
+
+ Solving equations for sector 00
+
+  ...maximum number of iterations for this sector:100
+
+
+  CCSD results
+
+ SCF energy :                               -149.006645460343179
+ CCSD correlation energy :                    -0.489312752426884
+ Total CCSD energy :                        -149.495958212770063
+ T1 diagnostic :                               0.029839018257804
+ Convergence :                                 0.000000000000876
+ Number or iterations used :                                  21
+
+ INFO:   converged (unconverged if .UNCONVERGED used) amplitudes available for restart
+
+
+ Solving equations for sector 01
+
+  ...maximum number of iterations for this sector:100
+
+
+  CCSD results
+
+ T1 diagnostic :                               0.029839018255117
+ Convergence :                                 0.000000000000760
+ Number or iterations used :                                  16
+
+ Writing effective Hamiltonian to formatted HEFFF file
+
+
+ ( 1 au = 27.2113834378 eV  /  219474.631280634 cm-1)
+
+
+ Energy eigenvalues in atomic units
+
+ Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
+
+    1     0.0000000000     -0.901990355819     -150.397948568579 (   2 * )
+    2     0.0068478892     -0.895142466623     -150.391100679383 (   2 * )
+
+
+ Total average:      -150.3945246240
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)    1g| -1g|  3g| -3g|  5g| -5g|  7g| -7g|
+
+    1        0.000000000          0.000000     1|   1|   0|   0|   0|   0|   0|   0|
+    2        0.186340539       1502.937956     0|   0|   1|   1|   0|   0|   0|   0|
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)    9g| -9g| 11g|-11g| 13g|-13g| 15g|-15g|
+
+    1        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
+    2        0.186340539       1502.937956     0|   0|   0|   0|   0|   0|   0|   0|
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)    1u| -1u|  3u| -3u|  5u| -5u|  7u| -7u|
+
+    1        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
+    2        0.186340539       1502.937956     0|   0|   0|   0|   0|   0|   0|   0|
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)    9u| -9u| 11u|-11u| 13u|-13u| 15u|-15u|
+
+    1        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
+    2        0.186340539       1502.937956     0|   0|   0|   0|   0|   0|   0|   0|
+
+
+ Analysis of eigenvectors of the effective Hamiltonian
+ First line  :  Energy, Eigenvalue
+ other lines : Coefficients of contributing determinants (above a threshold of .1E+00)
+
+ Irrep   1g State     1   -150.39794857     -0.90199036
+        1.00000   |   1g #   1 (  -0.928) |                         
+
+ Irrep  -1g State     1   -150.39794857     -0.90199036
+        1.00000   |  -1g #   1 (  -0.928) |                         
+
+ Irrep   3g State     1   -150.39110068     -0.89514247
+        1.00000   |   3g #   1 (  -0.921) |                         
+
+ Irrep  -3g State     1   -150.39110068     -0.89514247
+        1.00000   |  -3g #   1 (  -0.921) |                         
+
+ INFO:   converged (unconverged if .UNCONVERGED used) amplitudes available for restart
+
+
+ Solving equations for sector 02
+
+  ...maximum number of iterations for this sector:100
+
+
+  CCSD results
+
+ T1 diagnostic :                               0.029839018255115
+ Convergence :                                 0.000000000000144
+ Number or iterations used :                                  12
+
+ Writing effective Hamiltonian to formatted HEFFF file
+
+
+ ( 1 au = 27.2113834378 eV  /  219474.631280634 cm-1)
+
+
+ Energy eigenvalues in atomic units
+
+ Level   Rel eigenvalue     Abs eigenvalue      Total Energy    Degeneracy
+
+    1     0.0000000000     -1.332160858879     -150.828119071639 (   1 * )
+    2     0.0007448894     -1.331415969517     -150.827374182277 (   2 * )
+    3     0.0288176690     -1.303343189839     -150.799301402599 (   2 * )
+    4     0.0536899912     -1.278470867710     -150.774429080471 (   1 * )
+
+
+ Total average:      -150.8093165536
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)    0g|  2g| -2g|  4g| -4g|  6g| -6g|  8g|
+
+    1        0.000000000          0.000000     1|   0|   0|   0|   0|   0|   0|   0|
+    2        0.020269470        163.484318     0|   1|   1|   0|   0|   0|   0|   0|
+    3        0.784168642       6324.747287     0|   0|   0|   1|   1|   0|   0|   0|
+    4        1.460978936      11783.591015     1|   0|   0|   0|   0|   0|   0|   0|
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)   -8g| 10g|-10g| 12g|-12g| 14g|-14g| 16g|
+
+    1        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
+    2        0.020269470        163.484318     0|   0|   0|   0|   0|   0|   0|   0|
+    3        0.784168642       6324.747287     0|   0|   0|   0|   0|   0|   0|   0|
+    4        1.460978936      11783.591015     0|   0|   0|   0|   0|   0|   0|   0|
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)    0u|  2u| -2u|  4u| -4u|  6u| -6u|  8u|
+
+    1        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
+    2        0.020269470        163.484318     0|   0|   0|   0|   0|   0|   0|   0|
+    3        0.784168642       6324.747287     0|   0|   0|   0|   0|   0|   0|   0|
+    4        1.460978936      11783.591015     0|   0|   0|   0|   0|   0|   0|   0|
+
+
+ Relative real eigenvalues in other units;
+ Symmetry Classification in the Abelian subgroup
+
+ Level  eigenvalue (eV)  Eigenvalue (cm-1)   -8u| 10u|-10u| 12u|-12u| 14u|-14u| 16u|
+
+    1        0.000000000          0.000000     0|   0|   0|   0|   0|   0|   0|   0|
+    2        0.020269470        163.484318     0|   0|   0|   0|   0|   0|   0|   0|
+    3        0.784168642       6324.747287     0|   0|   0|   0|   0|   0|   0|   0|
+    4        1.460978936      11783.591015     0|   0|   0|   0|   0|   0|   0|   0|
+
+
+ Analysis of eigenvectors of the effective Hamiltonian
+ First line  :  Energy, Eigenvalue
+ other lines : Coefficients of contributing determinants (above a threshold of .1E+00)
+
+ Irrep   0g State     1   -150.82811907     -1.33216086
+       -0.78215   |  -1g #   1 (  -0.928),   1g #   1 (  -0.928) |  
+       -0.62309   |  -3g #   1 (  -0.921),   3g #   1 (  -0.921) |  
+
+ Irrep   0g State     2   -150.77442908     -1.27847087
+        0.61412   |  -1g #   1 (  -0.928),   1g #   1 (  -0.928) |  
+       -0.78921   |  -3g #   1 (  -0.921),   3g #   1 (  -0.921) |  
+
+ Irrep   2g State     1   -150.82737418     -1.33141597
+        1.00000   |   3g #   1 (  -0.921),  -1g #   1 (  -0.928) |  
+
+ Irrep  -2g State     1   -150.82737418     -1.33141597
+        1.00000   |  -3g #   1 (  -0.921),   1g #   1 (  -0.928) |  
+
+ Irrep   4g State     1   -150.79930140     -1.30334319
+        1.00000   |   3g #   1 (  -0.921),   1g #   1 (  -0.928) |  
+
+ Irrep  -4g State     1   -150.79930140     -1.30334319
+        1.00000   |  -3g #   1 (  -0.921),  -1g #   1 (  -0.928) |  
+
+ INFO:   converged (unconverged if .UNCONVERGED used) amplitudes available for restart
+
+
+--------------------------------------------------------------------------------
+
+
+ Today is :     2 Jul 19
+ The time is :  07:42:38
+
+ Status of the calculations
+ Integral sort # 1 :                   Completed, restartable        
+ Integral sort # 2 :                   Completed, restartable        
+ Fock matrix build :                   Completed, restartable        
+ MP2 energy calculation :              Completed, restartable        
+ CCSD energy calculation :             On menu but not yet called    
+ CCSD(T) energy calculation :          On menu but not yet called    
+ CCSD(T) energy calculation :          Never asked for               
+
+ Overview of calculated energies
+@ SCF energy :                              -149.006645460343179
+@ MP2 correlation energy :                     0.000000000000000
+@ CCSD correlation energy :                   -0.489312752417105
+@ 4th order triples correction :               0.000000000000000
+@ 5th order triples (T) correction :           0.000000000000000
+@ 5th order triples -T  correction :           0.000000000000000
+@ Total MP2 energy :                        -149.006645460343179
+@ Total CCSD energy :                       -149.495958212760286
+@ Total CCSD+T  energy :                    -149.495958212760286
+@ Total CCSD(T) energy :                    -149.495958212760286
+@ Total CCSD-T  energy :                    -149.495958212760286
+
+
+--------------------------------------------------------------------------------
+
+------ Timing report (in CPU seconds) of module  RELCCSD                      
+
+ Time in Sorting of integrals                 0.000 seconds
+ Time in - T1 equations                       0.287 seconds
+ Time in --- T1EQNS T*[HOV - F]*T             0.000 seconds
+ Time in --- T1EQNS HOV*T2(A,C,I,K            0.009 seconds
+ Time in --- T1EQNS   HV*T / T*HO             0.000 seconds
+ Time in --- T1EQNS VOOO*TAU                  0.019 seconds
+ Time in --- T1EQNS VOVV contribution         0.123 seconds
+ Time in --- T1EQNS VOVO * T(C,K)             0.067 seconds
+ Time in -- GOINTM                            0.012 seconds
+ Time in -- GVINTM                            0.187 seconds
+ Time in -- AINTM                             0.032 seconds
+ Time in -- HINTM                             0.297 seconds
+ Time in --- HINTM: VOVV*T                    0.149 seconds
+ Time in --- HINTM: VVOO contribution         0.018 seconds
+ Time in -- T2 EQNS                           0.574 seconds
+ Time in --- T2EQNS: TAU*AINTM contract       0.005 seconds
+ Time in --- T2EQNS: VOVV*T1                  0.114 seconds
+ Time in --- T2EQNS: HINTM*T2                 0.058 seconds
+ Time in -- BINTM                             0.317 seconds
+ Time in - adding partial T1/T2 amplitu       0.000 seconds
+ Time in - DIIS extrapolation                 0.041 seconds
+ Time in - synchronizing T1 & T2 amplit       0.000 seconds
+
+
+ Timing of main modules :         Wallclock (s)       CPU on master (s)
+ Before CC driver :             825541.96                    31.21
+ Initialization :                    0.15                     0.15
+ Integral sorting :                  0.00                     0.00
+ Energy calculation :                0.00                     0.00
+ First order properties :            0.00                     0.00
+ Second order properties :           0.00                     0.00
+ Fock space energies :               0.00                     4.59
+ EOMCC energies :                    0.00                     0.00
+ Untimed parts :                     4.61                     0.00
+ Total time in CC driver :             5.                     4.74
+
+ Statistics for the word-addressable I/O
+ Number of write calls                                7517.
+ Number of read calls                                 7517.
+ Megabytes written                                   20.329
+ Megabytes read                                     518.385
+ Seconds spent in reads                               0.158
+ Seconds spent in writes                              0.158
+ average I/O speed for write (Mb/s)                 128.665
+ average I/O speed for read  (Mb/s)                3280.917
+
+
+ CPU time (seconds) used in RELCCSD:                     4.7362
+ CPU time (seconds) used before RELCCSD:                31.2107
+ CPU time (seconds) used in total sofar:                35.9469
+
+  --- Normal end of RELCCSD Run ---
+
+
+################################################################################
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Mac OSX): Tue Jul  2 07:42:38 2019
+     Host name              : staff-net-vpn-1826.ethz.ch              
+
+>>>> Node 0, utime: 34, stime: 1, minflt: 148282, majflt: 0, nvcsw: 192, nivcsw: 27387, maxrss: 577908736
+>>>> Total WALL time used in DIRAC: 36s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :        22.89
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine pamtra_                                    for WORK in PAMTRA                            
+      488.28 Mb at subroutine pamana_                                    for WORK in PAMANA                            
+      488.28 Mb at subroutine psiscf_                                    for WORK in PSISCF                            
+      488.28 Mb at subroutine pamset_                                    for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_                                    for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_                                    for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__                                     for test allocation of work array in DIRAC mai
+       31.61 Mb at subroutine ccseti_                                    for ibuf                                      
+       31.61 Mb at subroutine ccseti_                                    for ibuf                                      
+        1.98 Mb at subroutine ccseti_                                    for ibuf                                      
+  
+  Peak memory usage:       488.56 MB
+  Peak memory usage:        0.477 GB
+       reached at subroutine : butobs_no_work_                           
+              for variable   : buf in butobs                             
+  
+  Memory possibly left allocated! 
+     dumping list now... 
+  
+  <<< Tracked variables, alloc >>>
+      >>>            1  variables so far
+      >>> (de)allocated data details <<<
+          var. name                   : eigenvalues                                                                                                                         
+               kind                   :            8
+               tot.dim. (<1 if array) :            1
+               was allocated at       : heff1_                                                                                                                              
+               mem.addr. (as integer) :       140657138099296
+      >>> Done after           1  el.
+  
+  There were          153  allocations/           152  deallocations
+      Current memory usage (in Mb) is    0.0000000000000000     
+ MEMGET high-water mark:     0.00 MB
+
+*****************************************************
+DIRAC pam run in /Users/stknecht/progs/dirac/test/atomic_x2c_2esoc_models_excitations

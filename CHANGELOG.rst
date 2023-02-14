@@ -1,5 +1,121 @@
 :orphan:
 
+23.0
+----
+
+New features:
+
+- Calculation of Parity-Violating Nuclear Spin-Rotation Tensors. Activated with ".PVCSR"
+   - Contributor: I. Agustín Aucar.
+   - Reference: `Ignacio Agustín Aucar and Anastasia Borschevsky, Relativistic study of parity-violating nuclear spin-rotation tensors. J. Chem. Phys. 155, 134307 (2021) <https://doi.org/10.1063/5.0065487>`__
+   - Manual: `PVCSR <http://www.diracprogram.org/doc/release-23/manual/properties.html#pvcsr>`__
+   - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/pvcsr/tutorial.html>`__
+   
+- Calculation of oscillator strenghts beyond the electric dipole approximation in the generalized velocity representation
+   - Contributors: Martin van Horn, Trond Saue, and Nanna Holmgaard List.
+   - Reference: `M. van Horn, T. Saue, N. H. List. Probing Chirality across the Electromagnetic Spectrum with the Full Semi-Classical Light-Matter Interaction. J. Chem. Phys. 156, 054113 (2022) < https://doi.org/10.1063/5.0077502>`__
+   - Manual: `VPOL <http://www.diracprogram.org/doc/release-23/manual/properties/excitation.html#vpole>`__
+   - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/x_ray/BED_Ba/tutorial.html>`__
+
+- (extended) atomic-mean-field two-electron scalar and spin-orbit picture-change corrections for two-component Hamiltonian calculations
+   - Contributors: Stefan Knecht, Michal Repsiky, Hans Joergen Aa. Jensen and Trond Saue.
+   - Reference: `Stefan Knecht, Michal Repisky, Hans Jørgen Aagaard Jensen, and Trond Saue, Exact two-component Hamiltonians for relativistic quantum chemistry: Two-electron picture-change corrections made simple, J. Chem. Phys. 157, 114106 (2022) <https://doi.org/10.1063/5.0095112>`__
+   - Manual: `XAMFI <http://www.diracprogram.org/doc/release-23/manual/xamfi.html>`__
+   - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/two_component_hamiltonians/xamfX2C.html>`__
+
+- Basis set library has been extended with basis sets with diffuse functions for s and d blocks, dyall.aXNz basis sets.
+   - Contributor: Ken Dyall.
+
+Infrastructure changes and fixes:
+
+- HDF5 checkpoint file is now default for data handling
+   - Contributor: Lucas Visscher
+   - User manual: `Data storage in DIRAC <http://www.diracprogram.org/doc/release-23/manual/data.html>`__
+   - Developer manual: `The CHECKPOINT.h5 file <http://www.diracprogram.org/doc/release-23/development/checkpoint.html>`__
+
+Revised features:
+
+- Added a CI gradient convergence threshold option '.THRGCI' to '\*KRCICALC' (could not be changed by user previously).
+   - Contributor: H. J. Aa. Jensen.
+
+Performance improvements:
+
+- Improved code in luciarel CI program. Note that KRMC and KRCI by default uses luciarel.
+   - Contributor: Andreas Nyvang.
+   - numerical stability has been improved in the complex parallel diagonalization routine
+   - convergence algorithm has also been changed, with considerable improvement in convergence rate.
+     In particular, the truncation of the reduced space in the Davidson iterations is now done
+     in a much better way, leading to the improvement in convergence rate. Both for real and complex parallel cases.
+
+Bugfix:
+
+- Default for .MVO has been corrected, so it now behaves as expected: modified virtual orbitals
+  based on the Fock potential from the doubly-occupied molecular orbitals after an open-shell SCF calculation (H. J. Aa. Jensen).
+
+-----------------------------------------------------------------------------------------------------
+
+22.0 (2022-02-08)
+-----------------
+
+New features:
+
+- New licence: GNU Lesser General Public License v2.1
+- Electronic circular dichroism (ECD) beyond lowest-order -- full light-matter interaction
+   - Contributors: Martin van Horn, Trond Saue, and Nanna Holmgaard List
+   - Reference: `M. van Horn, T. Saue, N. H. List., Probing Chirality across the
+     Electromagnetic Spectrum with the Full Semiclassical Light-Matter
+     Interaction. J. Chem. Phys. (in press) (2022) <https://doi.org/10.1063/5.0077502>`__, `ChemRxiv <https://doi.org/10.33774/chemrxiv-2021-j1hcz-v2>`__
+- MP2 frozen virtual natural orbitals via the ExaCorr module
+   - Contributors: Xiang Yuan, Lucas Visscher, André Severo Pereira Gomes.
+   - Reference: `X. Yuan, L. Visscher, A. S. P. Gomes., Assessing MP2 frozen
+     natural orbitals in relativistic correlated electronic structure calculations.
+     <https://arxiv.org/abs/2202.01146>`__
+   - Manual: `.MP2NO <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html#mp2no>`__
+     and `.DONATORB <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html#donatorb>`__
+- Polarizable Embedding with Complex Polarization Propagator
+   - Contributors: Joel Creutzberg, Erik D. Hedegård
+   - Reference: `Polarizable embedding complex polarization propagator in four-
+     and two-component frameworks. <https://arxiv.org/abs/2112.07721>`__
+
+Infrastructure changes and fixes:
+
+- HDF5 checkpoint file and DIRAC data scheme, python utilities to extract data
+   - Contributor: Lucas Visscher
+   - Manual: `The CHECKPOINT.h5 file <http://www.diracprogram.org/doc/release-22/development/checkpoint.html>`__
+
+Improvements:
+
+- DIIS replaced by `CROP <https://pubs.acs.org/doi/10.1021/ct501114q>`__ algorithm in ExaCorr module.
+   - Contributors: Chima Chibueze and Lucas Visscher.
+   - Reference: `Pototschnig et al., J. Chem. Theory Comput. 17 (2021) 5509−5529. <https://doi.org/10.1021/acs.jctc.1c00260>`__
+   - Manual: `EXACC <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html>`__
+
+Bugfix:
+
+- There was an error in the construction of the projection operator for
+  secondary orbitals using density matrices for the very special case of
+  4-component relatistic average-of-configuration HF calculations on systems
+  with inversion symmetry and no occupation in ungerade symmetry.
+
+-----------------------------------------------------------------------------------------------------
+
+21.1 (2021-09-16)
+-----------------
+
+Revised features:
+
+- Enhanced pam script: now it also looks in job directory for .diracrc, and it looks there first. pam looks for .diracrc three places: 1) job directory ("local .diracrc"), 2) home directory ("global .diracrc"), 3) pam script directory ("system .diracrc). The first .diracrc found is used. (H. J. Aa. Jensen).
+  - added ENABLE_EXATENSOR to the options you can change with 'ccmake --' (H. J. Aa. Jensen).
+  - enable talsh only with unsupported mpi libraries (Andre Gomes)
+  - improved exatensor MPI identification (Johann Pototschnig)
+    
+Error corrections:
+
+- Fixed pam script so it can find dirac.x and basis set directories in an installed version (i.e. after make install or e.g. "cmake --install build --prefix <installation root dir>"). H.J.Aa.Jensen.
+- Fixed memory management in LUCIA (Lucas Visscher)
+- atomic supersymmetry now works with X2Cmmf (Ayaki Sunaga, Stefan Knecht, Trond Saue)
+
+-----------------------------------------------------------------------------------------------------
 
 21.0 (2021-05-28)
 -----------------

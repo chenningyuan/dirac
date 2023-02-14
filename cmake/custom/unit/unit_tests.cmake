@@ -13,6 +13,8 @@ if(ENABLE_UNIT_TESTS)
     #miro: OBJECT libraries throughout the DIRCA suite
     add_library(objlib.UNIT_TEST_LIBS ${EXTERNAL_OBJECTS})
 
+    find_package(HDF5 COMPONENTS C HL)
+
     macro(add_unit_test _path _name)
         file(GLOB COPIED_FILES "${_path}/*")
         file(COPY ${COPIED_FILES} DESTINATION ${PROJECT_BINARY_DIR}/unit-tests/${_name})
@@ -42,6 +44,14 @@ if(ENABLE_UNIT_TESTS)
                 objlib.UNIT_TEST_LIBS ${EXTERNAL_LIBS}
                 )
         endif()
+
+        target_link_libraries(${_name}.x laplace)
+
+        if(HDF5_FOUND)
+            target_link_libraries(${_name}.x HDF5::HDF5)
+        endif()
+
+        target_link_libraries(${_name}.x qcorr)
 
         if(ENABLE_EXATENSOR)
           # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
