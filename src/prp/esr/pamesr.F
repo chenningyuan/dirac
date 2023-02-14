@@ -240,7 +240,7 @@ C&&&& limit for printing CI coefficients in output
                   READ(LUCMD,*) THRPCI_ESR
                GO TO 100
 C&&&& use Kramers conjugation on CI vector
-   16          CONTINUE ! .KR_CON
+   16          CONTINUE ! .KR-CON
                   USE_KRAMERS_CONJ = .TRUE.
                GO TO 100
 C&&&& limit MK2 value
@@ -526,7 +526,7 @@ C
          WORK(II) = WORK(KEIGVL-1 + I)
       END DO
 
-      IF (IPRESR .GT. 0) THEN
+      IF (IPRESR .GT. 1) THEN
          WRITE(lupri,*) 'H_CI after ESR_RESOLVE:'
          CALL OUTPUT(WORK(KHCI),1,MULTIPESR,1,MULTIPESR,
      &               MULTIPESR,MULTIPESR,-1,LUPRI)
@@ -664,9 +664,9 @@ C     ***************************************
 C     Zero-field-splitting parameters D and E
 C     ***************************************
 C
-        EM1 = WORK(KHCI)
+        EP1 = WORK(KHCI)
         E0  = WORK(KHCI+  MULTIPESR+1)
-        EP1 = WORK(KHCI+2*MULTIPESR+2)
+        EM1 = WORK(KHCI+2*MULTIPESR+2)
         ZFS_D = -(E0-(EP1+EM1)/2.0D0)
         ZFS_E = (EP1-EM1)/2.0D0
         ZFS_DCM = ZFS_D*XTKAYS
@@ -683,6 +683,9 @@ C
 C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
 C     (2) Get the QED correction in GCORR
 C
+C       Take mean value of M_Seff=3/2 and 1/2 values
+        fac3hlf = 2.0d0/sqrt(3.0d0) ! fac1hlf is 1.0d0
+C
         jm3hlf = 4
         jm1hlf = 3
         jp1hlf = 2
@@ -690,15 +693,42 @@ C
         DO K = 1,3
 C       ... for B field in direction k (x,y,z)
           I = IPESR(MXCOOR+K,1)
-          GTENSOR(K,1) =  2.0D0*ESRVAL(2,3,1,I)
-          GTENSOR(K,2) = -2.0D0*ESRVAL(2,3,2,I)
-          GTENSOR(K,3) =  4.0D0*ESRVAL(2,2,1,I)
-c??       GTENSOR(K,3) = ESRVAL(jp1,jp1,1,I) - ESRVAL(jm1,jm1,1,I)
+!         GTENSOR(K,1) =  2.0D0*ESRVAL(jp1hlf,jm1hlf,1,I)
+!         GTENSOR(K,2) = -2.0D0*ESRVAL(jp1hlf,jm1hlf,2,I)
+!         GTENSOR(K,3) =  4.0D0*ESRVAL(jp1hlf,jp1hlf,1,I)
+          GTENSOR(K,1) =  ESRVAL(jp3hlf,jp1hlf,1,I) * fac3hlf
+     &                 +  ESRVAL(jp1hlf,jm1hlf,1,I)
+          GTENSOR(K,2) = -ESRVAL(jp3hlf,jp1hlf,2,I) * fac3hlf
+     &                 -  ESRVAL(jp1hlf,jm1hlf,2,I)
+          GTENSOR(K,3) =  2.0D0*(ESRVAL(jp3hlf,jp3hlf,1,I)/3.0D0
+     &                 +         ESRVAL(jp1hlf,jp1hlf,1,I) )
+
           J = IPESR(MXCOOR+K,2)
-          GCORR(K,1)   =  2.0D0*ESRVAL(2,3,1,J)
-          GCORR(K,2)   = -2.0D0*ESRVAL(2,3,2,J)
-          GCORR(K,3)   =  4.0D0*ESRVAL(2,2,1,J)
+!         GCORR(K,1)   =  2.0D0*ESRVAL(jp1hlf,jm1hlf,1,J)
+!         GCORR(K,2)   = -2.0D0*ESRVAL(jp1hlf,jm1hlf,2,J)
+!         GCORR(K,3)   =  4.0D0*ESRVAL(jp1hlf,jp1hlf,1,J)
+          GCORR(K,1)   =  ESRVAL(jp3hlf,jp1hlf,1,J) * fac3hlf
+     &                 +  ESRVAL(jp1hlf,jm1hlf,1,J)
+          GCORR(K,2)   = -ESRVAL(jp3hlf,jp1hlf,2,J) * fac3hlf
+     &                 -  ESRVAL(jp1hlf,jm1hlf,2,J)
+          GCORR(K,3)   =  2.0D0*(ESRVAL(jp3hlf,jp3hlf,1,J)/3.0D0
+     &                 +         ESRVAL(jp1hlf,jp1hlf,1,J) )
         ENDDO
+C
+C     ***************************************
+C     Zero-field-splitting
+C     ***************************************
+C
+        Ep3 = WORK(KHCI)
+        Ep1 = WORK(KHCI+  MULTIPESR+1)
+        Em1 = WORK(KHCI+2*MULTIPESR+2)
+        Em3 = WORK(KHCI+3*MULTIPESR+3)
+        ZFS_D = 0.5D0*(Ep3+Em3-Ep1-Em1)
+        ZFS_DCM = ZFS_D*XTKAYS
+
+        CALL HEADER(' Zero field splitting parameter : ',1)
+        WRITE (LUPRI,'(A,F25.8,A/)')
+     &   '  E(Sz_eff=3/2) - E(Sz_eff=1/2):  ',ZFS_DCM, ' cm-1 '
 C
       ELSE
          call quit('Only doublet, triplet, and quartet implemented yet')
@@ -719,7 +749,7 @@ C
 C
 C     Tests indicated that convergence noise in g-tensors is approximately +/-10*THR_CIESR
 C
-      IF (THR_CIESR .LT. 1.D-5) THEN
+      IF (THR_CIESR .LT. 9.D-5) THEN
          PPM_OR_PPT = 'ppm'
          FAC_GSHIFT = 1.D6
          WRITE(LUPRI,'(/A,F5.1,A)')
@@ -992,11 +1022,12 @@ C
      &        ESRVAL(1,1,1,2),MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
      &        ESRVAL(1,1,1,2),MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
      &        WORK(KFREE),LFREE,-1)
-      IF (IPRESR .GT. 3) THEN
-        CALL HEADER(' H_CI matrix after transform. to S_z basis ',1)
+
+!     IF (IPRESR .GT. 3) THEN
+        CALL HEADER(' H_CI matrix after transformation to S_z basis ',1)
         CALL PRQMAT(HCI,MULTIPESR,MULTIPESR,
      &              MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,LUPRI)
-      END IF
+!     END IF
 C
 C     Transform the first MULTIPESR CI eigenvectors to S_z basis
 C     (S_z is a real operator, so no problem in keeping NZ_in_CI)
@@ -1224,7 +1255,14 @@ C       1) multiply from left with phase factors for J, complex conjugated:
         SX_I = SXR*PHASE_JP1_I + SXI*PHASE_JP1_R
         SY_R = SYR*PHASE_JP1_R - SYI*PHASE_JP1_I
         SY_I = SYR*PHASE_JP1_I + SYI*PHASE_JP1_R
+
+        WRITE (LUPRI,'(/A,F4.1)')
+     &     "  Final values after phase transformation"//
+     &     " for M_Seff =",SEFF-DFLOAT(J-1)
+
         IF (SWITCH_XY) THEN
+           WRITE(LUPRI,'(/A)') ' Note: S_x and S_y operators have'//
+     &     ' been swapped to get correct phases.'
            SY_R_tmp  = SY_R
            SY_R = SX_R
            SX_R = SY_R_tmp
@@ -1232,10 +1270,6 @@ C       1) multiply from left with phase factors for J, complex conjugated:
            SY_I = SX_I
            SX_I = SY_I_tmp
         END IF
-
-        WRITE (LUPRI,'(/A,F4.1,A)')
-     &     "  Final values after phase transformation"//
-     &     "  for M_Seff =",SEFF-DFLOAT(J-1)
         WRITE (LUPRI,'(/A,F15.10,A,F15.10)')
      &     " <M_Seff|S_x|M_Seff - 1>  :",SX_R,' + i',SX_I
         WRITE (LUPRI,'( A,F15.10,A,F15.10)')
@@ -1258,6 +1292,9 @@ C       ... here PHASE is new phase of vector MJ-1
          CALL ESR_PHASE_TRANS(PHASE_factors, ESRVAL(1,1,1,1), MULTIPESR) ! S_x
          CALL ESR_PHASE_TRANS(PHASE_factors, ESRVAL(1,1,1,2), MULTIPESR) ! S_y
          IF (SWITCH_XY) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' Note: S_x and S_y operators are swapped in order'//
+     &      ' to get correct phases of final results.'
             L_ESRVAL = MULTIPESR*MULTIPESR*2
             CALL DSWAP(L_ESRVAL,ESRVAL(1,1,1,1),1,ESRVAL(1,1,1,2),1)
          END IF
@@ -2213,7 +2250,7 @@ C
                TMPMAT(IPTAX(1,2),JA) =  2.0D0*ESRVAL(jphlf,jmhlf,1,KA)
                TMPMAT(IPTAX(2,2),JA) = -2.0D0*ESRVAL(jphlf,jmhlf,2,KA)
             END IF
-            TMPMAT(IPTAX(3,2),JA) =  2.0D0*ESRVAL(jphlf,jphlf,1,KA)
+            TMPMAT(IPTAX(3,2),JA)    =  2.0D0*ESRVAL(jphlf,jphlf,1,KA)
          ENDDO
 C
       ELSE IF (MULTIPESR .EQ. 3) THEN
@@ -2233,11 +2270,14 @@ C
                TMPMAT(IPTAX(1,2),JA) =  SQRT2*ESRVAL(j0 ,jm1,1,KA)
                TMPMAT(IPTAX(2,2),JA) = -SQRT2*ESRVAL(j0 ,jm1,2,KA)
             END IF
-            TMPMAT(IPTAX(3,2),JA) =        ESRVAL(jp1,jp1,1,KA)
+            TMPMAT(IPTAX(3,2),JA)    =        ESRVAL(jp1,jp1,1,KA)
          ENDDO
 C
       ELSE IF (MULTIPESR .EQ. 4) THEN
 C     .... quartet molecules (Seff = 3/2)
+C
+C        Take mean value of M_Seff=3/2 and 1/2 values
+         fac3hlf = 2.0d0/sqrt(3.0d0) ! fac1hlf is 1.0d0
 C
          jm3hlf = 4
          jm1hlf = 3
@@ -2247,13 +2287,23 @@ C
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
             IF (SWITCH_XY) THEN
-               TMPMAT(IPTAX(2,2),JA) =       ESRVAL(2,3,1,KA)
-               TMPMAT(IPTAX(1,2),JA) =      -ESRVAL(2,3,2,KA)
+               TMPMAT(IPTAX(2,2),JA) =
+     &            0.5D0*( ESRVAL(jp3hlf,jp1hlf,1,KA)*fac3hlf
+     &                  + ESRVAL(jp1hlf,jm1hlf,1,KA) )
+               TMPMAT(IPTAX(1,2),JA) =
+     &           -0.5D0*( ESRVAL(jp3hlf,jp1hlf,2,KA)*fac3hlf
+     &                  + ESRVAL(jp1hlf,jm1hlf,2,KA) )
             ELSE
-               TMPMAT(IPTAX(1,2),JA) =       ESRVAL(2,3,1,KA)
-               TMPMAT(IPTAX(2,2),JA) =      -ESRVAL(2,3,2,KA)
+               TMPMAT(IPTAX(1,2),JA) =
+     &            0.5D0*( ESRVAL(jp3hlf,jp1hlf,1,KA)*fac3hlf
+     &                  + ESRVAL(jp1hlf,jm1hlf,1,KA) )
+               TMPMAT(IPTAX(2,2),JA) =
+     &           -0.5D0*( ESRVAL(jp3hlf,jp1hlf,2,KA)*fac3hlf
+     &                  + ESRVAL(jp1hlf,jm1hlf,2,KA) )
             END IF
-            TMPMAT(IPTAX(3,2),JA) = 2.0D0*ESRVAL(3,3,1,KA)
+!           TMPMAT(IPTAX(3,2),JA) = 2.0D0*ESRVAL(jp1hlf,jp1hlf,1,KA)
+            TMPMAT(IPTAX(3,2),JA) = ESRVAL(jp3hlf,jp3hlf,1,KA)/3.0D0
+     &                            + ESRVAL(jp1hlf,jp1hlf,1,KA)
          ENDDO
       ELSE
          WRITE(LUPRI,'(//A/A)') '@ WARNING:'//
@@ -2507,7 +2557,7 @@ C     DFCOEF not found. Then:
 C     4. no more options (yet).
 
       WRITE(LUPRI,'(//A)') 'Fatal error for ESR: MO coefficients not'//
-     &   ' found on KRMCOLD or DFCOEF'
+     &   ' found on KRMCOLD or CHECKPOINT'
       CALL QUIT('ESR fatal error: no MO coefficients found')
 
  9000 CALL MEMREL('ESR_READ_CMO',WORK,1,KFREE_start,KFREE,LFREE)

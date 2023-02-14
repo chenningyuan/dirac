@@ -2660,7 +2660,7 @@ C
 C        MAX_ROOTS must be greater than  N_ROOTS to be sure
 C        to include all members of quasidegenerate sets.
          WRITE(LUPRI,*) 'N_ROOTS .lt. 1 .or. N_ROOTS .ge. MAX_ROOTS;'//
-     &      ' NROOTS, MAX_ROOTS =',N_ROOTS,MAX_ROOTS
+     &      ' N_ROOTS, MAX_ROOTS =',N_ROOTS,MAX_ROOTS
          CALL QUIT('N_ROOTS .lt. 1 .or N_ROOTS .gt. MAX_ROOTS')
       END IF
       IF (N_ROOTS .GT. NDET) THEN
