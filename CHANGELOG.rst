@@ -23,6 +23,9 @@ New features:
    - Manual: `XAMFI <http://www.diracprogram.org/doc/release-23/manual/xamfi.html>`__
    - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/two_component_hamiltonians/xamfX2C.html>`__
 
+- ExaCorr module works now also with contracted basis functions.
+   - Contributor: Lucas Visscher.
+
 - Basis set library has been extended with basis sets with diffuse functions for s and d blocks, dyall.aXNz basis sets.
    - Contributor: Ken Dyall.
 
