@@ -6,6 +6,7 @@ module talsh_eom_rspeq_solver
       use exacorr_datatypes 
       use exacorr_utils
       use talsh_trial_eomccsd
+
       
       
       implicit none
@@ -32,6 +33,9 @@ module talsh_eom_rspeq_solver
       subroutine solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop, &
                                     omega, tprop_tensor)
             use talsh_sigma_eomccsd
+            use relcc_cfg
+            !XY: here, we use relcc_cfg as done in talsh_drivers_eomccsd to take variable from *CCDIAG
+
 
       ! write(*,*) ""
       ! write(*,'(A)') "*******************************************************************************"
@@ -64,11 +68,13 @@ module talsh_eom_rspeq_solver
             nroot = exa_input%N_eom_trail
             
             call talsh_davidson_setup(unit_output=6, &
+                        convergence_threshold=relcc_mfd_convergence_threshold, &
                         solve_right=.true.,&
                         solve_left=.false.,&
                         solve_linear_sys=.true.,&
                         symmetric=.false., &
                         use_preconditioner=.false.,&
+                        max_iterations=relcc_mfd_max_iterations,&
                         ! max_subspace_size=nroot,&
                         complex_mode=.true.)
 
@@ -107,6 +113,7 @@ module talsh_eom_rspeq_solver
       
       subroutine solve_eom_lr_left(exa_input, interm_t, int_t, interm_t_prop, omega, bvec_tensor, tprop_bar_tensor)
             use talsh_sigma_eomccsd
+            use relcc_cfg
 
             ! write(*,*) ""
             ! write(*,'(A)') "*******************************************************************************"
@@ -138,11 +145,13 @@ module talsh_eom_rspeq_solver
                   integer(INTD), dimension(4) :: oovv_dims
                  
                   call talsh_davidson_setup(unit_output=6, &
+                              convergence_threshold=relcc_mfd_convergence_threshold, &
                               solve_right=.false.,&
                               solve_left=.true.,&
                               solve_linear_sys=.true.,&
                               symmetric=.false., &
                               use_preconditioner=.false.,&
+                              max_iterations=relcc_mfd_max_iterations,&
                               complex_mode=.true.)
       
                   call print_date("Entering CC-CI Left Linear Systems calculation")

@@ -134,6 +134,7 @@ module talsh_eom
 
 ! aspg : need to get from hardcoded options to getting them from input (*CCDIAG) on the calls to talsh_davidson_setup
       call talsh_davidson_setup(unit_output=6, &
+                                convergence_threshold=relcc_mfd_convergence_threshold, &
                                 solve_right=.true.,&
                                 solve_left=.false.,&
                                 symmetric=.false., &

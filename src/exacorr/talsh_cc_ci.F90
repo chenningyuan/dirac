@@ -146,15 +146,20 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
             end do
         end do
 
+
+        if (CC_CC) then 
+            write(*,"(A54)"), "*************CC-CC(LR-CC) linear response*************"
+        else
+            write(*,"(A54)"), "*************CC-CI(EOM-CC) linear response************"
+        end if
+        
         do i=1, N_prop
             do j=1, N_prop
-                if (CC_CC) then 
-                    print *, "CC-CC(LR-CC) linear response: <<X;", i, "X", j, ">> = ", eom_lrs(i,j)
-                else
-                    print *, "CC-CI(EOM-CC) linear response: <<X", i, ";X", j, ">> = ", eom_lrs(i,j)
-                end if
+                write(*,"(A4,I1,A2,I1,A5)"), "<<X", i, ";X", j, ">> = "
+                write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(i,j)), '\', aimag(eom_lrs(i,j))
             end do
-        end do  
+        end do
+        write(*,"(A54)"), "**********************************************************"  
 
 
         if (CC_CC) then     

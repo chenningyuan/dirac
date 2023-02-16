@@ -184,9 +184,9 @@ Version information
 -------------------
 
 Branch        | yuan/exacc-cc-rsp
-Commit hash   | cf8088f6d
+Commit hash   | ed0080a8c
 Commit author | Xiang Yuan
-Commit date   | Tue Nov 29 23:45:21 2022 +0200
+Commit date   | Tue Feb 14 13:04:04 2023 +0100
 
 
 Configuration and build information
@@ -198,7 +198,7 @@ Operating system         | Darwin-20.6.0
 CMake version            | 3.23.3
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2022-11-27 13:17:52.786523
+Configuration time       | 2023-02-10 13:10:51.836374
 Python version           | 2.7.1
 Fortran compiler         | /Users/yuan/mpich-install/bin/mpif90
 Fortran compiler version | 8.5.0
@@ -236,7 +236,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Mac OSX): Fri Dec  2 16:36:29 2022
+     Date and time (Mac OSX): Wed Feb 15 18:48:45 2023
      Host name              : PCMTs-MacBook-Pro.local                 
 
  * Opening HDF5 checkpoint file 
@@ -751,7 +751,7 @@ debug:_EE     _ is a supported flavor
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.00255200s and (WALL)  0.00300000s
+Total time used in ONEGEN (CPU)  0.00430100s and (WALL)  0.00500000s
 
 
                        Generating Lowdin canonical matrix:
@@ -780,134 +780,138 @@ Total no. of orbitals           (NORB):    24
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Fri Dec  2 16:36:29 2022
+########## START ITERATION NO.   1 ##########   Wed Feb 15 18:48:45 2023
 
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.63988    6  -0.16118
 
 => Calculating sum of orbital energies
-It.    1    -37.12693227387      0.00D+00  0.00D+00  0.00D+00               0.00664400s   Atom. scrpot   Fri Dec  2
+It.    1    -37.12693227387      0.00D+00  0.00D+00  0.00D+00               0.00894600s   Atom. scrpot   Wed Feb 15
 
-########## START ITERATION NO.   2 ##########   Fri Dec  2 16:36:29 2022
+########## START ITERATION NO.   2 ##########   Wed Feb 15 18:48:45 2023
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.09325200s
- >>> CPU  time used in SO Fock is   0.10 seconds
- >>> WALL time used in SO Fock is   0.12 seconds
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.06237800s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.23161    6   0.22049
->>> Total wall time:  0.13500000s, and total CPU time :  0.10664000s
+>>> Total wall time:  0.07700000s, and total CPU time :  0.07043200s
 
-########## END ITERATION NO.   2 ##########   Fri Dec  2 16:36:29 2022
+########## END ITERATION NO.   2 ##########   Wed Feb 15 18:48:45 2023
 
-It.    2    -75.79254952041      3.87D+01  1.12D+00  1.11D+00               0.13500000s   LL             Fri Dec  2
+It.    2    -75.79254952041      3.87D+01  1.12D+00  1.11D+00               0.07700000s   LL             Wed Feb 15
 
-########## START ITERATION NO.   3 ##########   Fri Dec  2 16:36:29 2022
+########## START ITERATION NO.   3 ##########   Wed Feb 15 18:48:45 2023
 
     3 *** Differential density matrix. DCOVLP     = 0.7054
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.07918000s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.07222199s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.47995    6   0.18328
->>> Total wall time:  0.09000000s, and total CPU time :  0.08138400s
+>>> Total wall time:  0.10600000s, and total CPU time :  0.07550900s
 
-########## END ITERATION NO.   3 ##########   Fri Dec  2 16:36:29 2022
+########## END ITERATION NO.   3 ##########   Wed Feb 15 18:48:45 2023
 
-It.    3    -75.94934125764      1.57D-01 -1.16D+00  6.58D-01   DIIS   2    0.09000000s   LL             Fri Dec  2
+It.    3    -75.94934125764      1.57D-01 -1.16D+00  6.58D-01   DIIS   2    0.10600000s   LL             Wed Feb 15
 
-########## START ITERATION NO.   4 ##########   Fri Dec  2 16:36:29 2022
+########## START ITERATION NO.   4 ##########   Wed Feb 15 18:48:45 2023
 
     4 *** Differential density matrix. DCOVLP     = 1.0659
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05482799s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.08055599s
+ >>> CPU  time used in SO Fock is   0.08 seconds
+ >>> WALL time used in SO Fock is   0.11 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.48658    6   0.18308
->>> Total wall time:  0.06400000s, and total CPU time :  0.05667000s
+>>> Total wall time:  0.14200000s, and total CPU time :  0.08391400s
 
-########## END ITERATION NO.   4 ##########   Fri Dec  2 16:36:29 2022
+########## END ITERATION NO.   4 ##########   Wed Feb 15 18:48:45 2023
 
-It.    4    -76.02388565413      7.45D-02  4.22D-01  1.92D-02   DIIS   3    0.06400000s   LL             Fri Dec  2
+It.    4    -76.02388565413      7.45D-02  4.22D-01  1.92D-02   DIIS   3    0.14200000s   LL             Wed Feb 15
 
-########## START ITERATION NO.   5 ##########   Fri Dec  2 16:36:29 2022
+########## START ITERATION NO.   5 ##########   Wed Feb 15 18:48:45 2023
 
     5 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05117300s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.07637200s
+ >>> CPU  time used in SO Fock is   0.08 seconds
+ >>> WALL time used in SO Fock is   0.10 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.48895    6   0.18322
->>> Total wall time:  0.05900000s, and total CPU time :  0.05291300s
+>>> Total wall time:  0.12300000s, and total CPU time :  0.07895600s
 
-########## END ITERATION NO.   5 ##########   Fri Dec  2 16:36:29 2022
+########## END ITERATION NO.   5 ##########   Wed Feb 15 18:48:45 2023
 
-It.    5    -76.02400675167      1.21D-04 -2.67D-03  6.27D-03   DIIS   4    0.05900000s   LL             Fri Dec  2
+It.    5    -76.02400675167      1.21D-04 -2.67D-03  6.27D-03   DIIS   4    0.12300000s   LL             Wed Feb 15
 
-########## START ITERATION NO.   6 ##########   Fri Dec  2 16:36:29 2022
+########## START ITERATION NO.   6 ##########   Wed Feb 15 18:48:45 2023
 
     6 *** Differential density matrix. DCOVLP     = 1.0007
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05142900s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.07684401s
+ >>> CPU  time used in SO Fock is   0.08 seconds
+ >>> WALL time used in SO Fock is   0.10 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.48946    6   0.18319
->>> Total wall time:  0.06000000s, and total CPU time :  0.05312600s
+>>> Total wall time:  0.11200000s, and total CPU time :  0.07897900s
 
-########## END ITERATION NO.   6 ##########   Fri Dec  2 16:36:29 2022
+########## END ITERATION NO.   6 ##########   Wed Feb 15 18:48:45 2023
 
-It.    6    -76.02402486454      1.81D-05  1.09D-03  1.35D-03   DIIS   5    0.06000000s   LL             Fri Dec  2
+It.    6    -76.02402486454      1.81D-05  1.09D-03  1.35D-03   DIIS   5    0.11200000s   LL             Wed Feb 15
 
-########## START ITERATION NO.   7 ##########   Fri Dec  2 16:36:29 2022
+########## START ITERATION NO.   7 ##########   Wed Feb 15 18:48:45 2023
 
     7 *** Differential density matrix. DCOVLP     = 1.0002
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05144700s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.06242099s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.48949    6   0.18320
->>> Total wall time:  0.06000000s, and total CPU time :  0.05320000s
+>>> Total wall time:  0.08000000s, and total CPU time :  0.06476900s
 
-########## END ITERATION NO.   7 ##########   Fri Dec  2 16:36:29 2022
+########## END ITERATION NO.   7 ##########   Wed Feb 15 18:48:46 2023
 
-It.    7    -76.02402600254      1.14D-06 -2.73D-04  1.52D-04   DIIS   6    0.06000000s   LL             Fri Dec  2
+It.    7    -76.02402600254      1.14D-06 -2.73D-04  1.52D-04   DIIS   6    0.08000000s   LL             Wed Feb 15
 
-########## START ITERATION NO.   8 ##########   Fri Dec  2 16:36:29 2022
+########## START ITERATION NO.   8 ##########   Wed Feb 15 18:48:46 2023
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05100504s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.06262702s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.48949    6   0.18320
->>> Total wall time:  0.05900000s, and total CPU time :  0.05278600s
+>>> Total wall time:  0.07100000s, and total CPU time :  0.06483700s
 
-########## END ITERATION NO.   8 ##########   Fri Dec  2 16:36:29 2022
+########## END ITERATION NO.   8 ##########   Wed Feb 15 18:48:46 2023
 
-It.    8    -76.02402601864      1.61D-08 -2.01D-05  4.29D-05   DIIS   7    0.05900000s   LL             Fri Dec  2
+It.    8    -76.02402601864      1.61D-08 -2.01D-05  4.29D-05   DIIS   7    0.07100000s   LL             Wed Feb 15
 
-########## START ITERATION NO.   9 ##########   Fri Dec  2 16:36:29 2022
+########## START ITERATION NO.   9 ##########   Wed Feb 15 18:48:46 2023
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.01%   0.05230194s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.01%   0.05860698s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.48949    6   0.18320
->>> Total wall time:  0.06200000s, and total CPU time :  0.05435700s
+>>> Total wall time:  0.06900000s, and total CPU time :  0.06068100s
 
-########## END ITERATION NO.   9 ##########   Fri Dec  2 16:36:29 2022
+########## END ITERATION NO.   9 ##########   Wed Feb 15 18:48:46 2023
 
-It.    9    -76.02402602000      1.36D-09  7.39D-06  7.13D-06   DIIS   8    0.06200000s   LL             Fri Dec  2
+It.    9    -76.02402602000      1.36D-09  7.39D-06  7.13D-06   DIIS   8    0.06900000s   LL             Wed Feb 15
 
-########## START ITERATION NO.  10 ##########   Fri Dec  2 16:36:29 2022
+########## START ITERATION NO.  10 ##########   Wed Feb 15 18:48:46 2023
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.08%    0.00%    0.02%   0.05123204s
+SOfock:LL  1.00D-12    0.00%   48.08%    0.00%    0.02%   0.05316603s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.48949    6   0.18320
->>> Total wall time:  0.06000000s, and total CPU time :  0.05295500s
+>>> Total wall time:  0.06200000s, and total CPU time :  0.05506100s
 
-########## END ITERATION NO.  10 ##########   Fri Dec  2 16:36:29 2022
+########## END ITERATION NO.  10 ##########   Wed Feb 15 18:48:46 2023
 
-It.   10    -76.02402602004      3.24D-11  8.60D-07  7.87D-07   DIIS   9    0.06000000s   LL             Fri Dec  2
+It.   10    -76.02402602004      3.24D-11  8.60D-07  7.87D-07   DIIS   9    0.06200000s   LL             Wed Feb 15
 
-########## START ITERATION NO.  11 ##########   Fri Dec  2 16:36:29 2022
+########## START ITERATION NO.  11 ##########   Wed Feb 15 18:48:46 2023
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.31%    0.07%    0.01%   0.06810099s
->>> Total wall time:  0.08300000s, and total CPU time :  0.07050600s
+SOfock:LL  1.00D-12    0.00%   48.31%    0.07%    0.01%   0.05744797s
+>>> Total wall time:  0.07100000s, and total CPU time :  0.05879000s
 
-########## END ITERATION NO.  11 ##########   Fri Dec  2 16:36:29 2022
+########## END ITERATION NO.  11 ##########   Wed Feb 15 18:48:46 2023
 
-It.   11    -76.02402602004      3.84D-13 -1.04D-07  8.34D-08   DIIS   9    0.08300000s   LL             Fri Dec  2
+It.   11    -76.02402602004      3.84D-13 -1.04D-07  8.34D-08   DIIS   9    0.07100000s   LL             Wed Feb 15
 
 
                                    SCF - CYCLE
@@ -923,22 +927,22 @@ It.   11    -76.02402602004      3.84D-13 -1.04D-07  8.34D-08   DIIS   9    0.08
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -37.12693227387      0.00D+00  0.00D+00  0.00D+00               0.00664400s   Atom. scrpot   Fri Dec  2
-It.    2    -75.79254952041      3.87D+01  1.12D+00  1.11D+00               0.13500000s   LL             Fri Dec  2
-It.    3    -75.94934125764      1.57D-01 -1.16D+00  6.58D-01   DIIS   2    0.09000000s   LL             Fri Dec  2
-It.    4    -76.02388565413      7.45D-02  4.22D-01  1.92D-02   DIIS   3    0.06400000s   LL             Fri Dec  2
-It.    5    -76.02400675167      1.21D-04 -2.67D-03  6.27D-03   DIIS   4    0.05900000s   LL             Fri Dec  2
-It.    6    -76.02402486454      1.81D-05  1.09D-03  1.35D-03   DIIS   5    0.06000000s   LL             Fri Dec  2
-It.    7    -76.02402600254      1.14D-06 -2.73D-04  1.52D-04   DIIS   6    0.06000000s   LL             Fri Dec  2
-It.    8    -76.02402601864      1.61D-08 -2.01D-05  4.29D-05   DIIS   7    0.05900000s   LL             Fri Dec  2
-It.    9    -76.02402602000      1.36D-09  7.39D-06  7.13D-06   DIIS   8    0.06200000s   LL             Fri Dec  2
-It.   10    -76.02402602004      3.24D-11  8.60D-07  7.87D-07   DIIS   9    0.06000000s   LL             Fri Dec  2
-It.   11    -76.02402602004      3.84D-13 -1.04D-07  8.34D-08   DIIS   9    0.08300000s   LL             Fri Dec  2
+It.    1    -37.12693227387      0.00D+00  0.00D+00  0.00D+00               0.00894600s   Atom. scrpot   Wed Feb 15
+It.    2    -75.79254952041      3.87D+01  1.12D+00  1.11D+00               0.07700000s   LL             Wed Feb 15
+It.    3    -75.94934125764      1.57D-01 -1.16D+00  6.58D-01   DIIS   2    0.10600000s   LL             Wed Feb 15
+It.    4    -76.02388565413      7.45D-02  4.22D-01  1.92D-02   DIIS   3    0.14200000s   LL             Wed Feb 15
+It.    5    -76.02400675167      1.21D-04 -2.67D-03  6.27D-03   DIIS   4    0.12300000s   LL             Wed Feb 15
+It.    6    -76.02402486454      1.81D-05  1.09D-03  1.35D-03   DIIS   5    0.11200000s   LL             Wed Feb 15
+It.    7    -76.02402600254      1.14D-06 -2.73D-04  1.52D-04   DIIS   6    0.08000000s   LL             Wed Feb 15
+It.    8    -76.02402601864      1.61D-08 -2.01D-05  4.29D-05   DIIS   7    0.07100000s   LL             Wed Feb 15
+It.    9    -76.02402602000      1.36D-09  7.39D-06  7.13D-06   DIIS   8    0.06900000s   LL             Wed Feb 15
+It.   10    -76.02402602004      3.24D-11  8.60D-07  7.87D-07   DIIS   9    0.06200000s   LL             Wed Feb 15
+It.   11    -76.02402602004      3.84D-13 -1.04D-07  8.34D-08   DIIS   9    0.07100000s   LL             Wed Feb 15
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   11 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00700000s
-      LL           :    0.07320000s
+      No 2-ints    :    0.01000000s
+      LL           :    0.09130000s
 
 
                                    TOTAL ENERGY
@@ -998,10 +1002,10 @@ tot.num. of pos.erg shells:   24
      ************************************************************************
 
 
- Transformation started at : Fri Dec  2 16:36:29 2022
+ Transformation started at : Wed Feb 15 18:48:46 2023
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -76.0240260200367857
-* Heading :DIRAC: No title specified !!!                     Fri Dec  2 16:36:29 2022
+* Heading :DIRAC: No title specified !!!                     Wed Feb 15 18:48:46 2023
 
 * Orbital ranges for 4-index transformation:
 
@@ -1047,10 +1051,10 @@ tot.num. of pos.erg shells:   24
       **********************************************************************
 
 
- Transformation started at : Fri Dec  2 16:36:29 2022
+ Transformation started at : Wed Feb 15 18:48:46 2023
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -76.0240260200367857
-* Heading :DIRAC: No title specified !!!                     Fri Dec  2 16:36:29 2022
+* Heading :DIRAC: No title specified !!!                     Wed Feb 15 18:48:46 2023
 
 
  * Fermion ircop E1 
@@ -1078,15 +1082,15 @@ tot.num. of pos.erg shells:   24
        ********************************************************************
 
 
- Transformation started at : Fri Dec  2 16:36:29 2022
+ Transformation started at : Wed Feb 15 18:48:46 2023
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -76.0240260200367857
-* Heading :DIRAC: No title specified !!!                     Fri Dec  2 16:36:29 2022
+* Heading :DIRAC: No title specified !!!                     Wed Feb 15 18:48:46 2023
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05663103s
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Fri Dec  2 16:36:29 2022
+* Heading :DIRAC: No title specified !!!                     Wed Feb 15 18:48:45 2023
 
 
  Core energy (includes nuclear repulsion) :            -63.1047830817
@@ -1101,7 +1105,7 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
  Total wall time used in PAMTRA :   00:00:00
  Total CPU  time used in PAMTRA (master only) :   00:00:00
 
- Transformation ended at : Fri Dec  2 16:36:29 2022
+ Transformation ended at : Wed Feb 15 18:48:46 2023
 
  
  
@@ -1130,14 +1134,14 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
                     *****************************************************
  
  
-   2 Dec 22 16:36:29 Found Dirac SCF orbitals file. using it.
-   2 Dec 22 16:36:29 read from DFCOEF:DIRAC: No title specified !!!                     Fri Dec  2 16:36:29 2022
-   2 Dec 22 16:36:29 retrieved basis set information
-   2 Dec 22 16:36:29 read one el. integrals from MRCONEE
-   2 Dec 22 16:36:29 read property integrals from MDPROP
-   2 Dec 22 16:36:29 Initialized global data
-   2 Dec 22 16:36:29 Entered cc_driver routine
-   2 Dec 22 16:36:29 Initialized talsh library
+  15 Feb 23 18:48:46 Found Dirac SCF orbitals file. using it.
+  15 Feb 23 18:48:46 read from DFCOEF:DIRAC: No title specified !!!                     Wed Feb 15 18:48:46 2023
+  15 Feb 23 18:48:46 retrieved basis set information
+  15 Feb 23 18:48:46 read one el. integrals from MRCONEE
+  15 Feb 23 18:48:46 read property integrals from MDPROP
+  15 Feb 23 18:48:46 Initialized global data
+  15 Feb 23 18:48:46 Entered cc_driver routine
+  15 Feb 23 18:48:46 Initialized talsh library
   Status           0: Size (Bytes) =   53686566912: Max args in HAB =   12288
 
   Integral module InteRest is initialized
@@ -1146,7 +1150,7 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
   Last commit time        | Oct 16 14:37:58 2018 +0200
   Last update time        | Feb 20 15:39:00 2020 +0200
 
-   2 Dec 22 16:36:29 Initialized interest library
+  15 Feb 23 18:48:46 Initialized interest library
  
 -----------------------------------------------
       Characteristics of this calculation      
@@ -1172,22 +1176,22 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
  -- nvir ( scheme 4/42 ) :         0 GB
 -----------------------------------------------
  
-   2 Dec 22 16:36:29 Getting orbital energies
-   2 Dec 22 16:36:29 Retrieved orbital energies
-   2 Dec 22 16:36:29 -Start- Integral Transformation
-   2 Dec 22 16:36:29 allocated AO integral tensor
-   2 Dec 22 16:36:30 finished ao integral calculation
-   2 Dec 22 16:36:30 finished oovv integrals
-   2 Dec 22 16:36:30 finished oooo integrals
-   2 Dec 22 16:36:30 finished vovo integrals
-   2 Dec 22 16:36:30 finished vvvv integrals
-   2 Dec 22 16:36:30 finished ooov integrals
-   2 Dec 22 16:36:30 finished vovv integrals
-   2 Dec 22 16:36:30 -End- Integral Transformation
-   2 Dec 22 16:36:30 one electron integrals added to Fock Matrix
-   2 Dec 22 16:36:30 two electron integrals added to Fock Matrix
-   2 Dec 22 16:36:30 Fock matrix initialized
-   2 Dec 22 16:36:30 Succesfully allocated all tensors
+  15 Feb 23 18:48:46 Getting orbital energies
+  15 Feb 23 18:48:46 Retrieved orbital energies
+  15 Feb 23 18:48:46 -Start- Integral Transformation
+  15 Feb 23 18:48:46 allocated AO integral tensor
+  15 Feb 23 18:48:46 finished ao integral calculation
+  15 Feb 23 18:48:47 finished oovv integrals
+  15 Feb 23 18:48:47 finished oooo integrals
+  15 Feb 23 18:48:47 finished vovo integrals
+  15 Feb 23 18:48:47 finished vvvv integrals
+  15 Feb 23 18:48:47 finished ooov integrals
+  15 Feb 23 18:48:47 finished vovv integrals
+  15 Feb 23 18:48:47 -End- Integral Transformation
+  15 Feb 23 18:48:47 one electron integrals added to Fock Matrix
+  15 Feb 23 18:48:47 two electron integrals added to Fock Matrix
+  15 Feb 23 18:48:47 Fock matrix initialized
+  15 Feb 23 18:48:47 Succesfully allocated all tensors
  
      MP2 energy =   -3.0024612329824087E-002
  
@@ -1214,7 +1218,7 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
      Norm of Fock matrix (OV, all        ) =    2.5477625595591472E-015
      Norm of Fock matrix (VV, no diagonal) =    3.3396717994843562E-017
 
-   2 Dec 22 16:36:30 -Start- CC Iterations
+  15 Feb 23 18:48:47 -Start- CC Iterations
  
  -----------------------------------------------
    It.     Energy                  Convergence  
@@ -1238,9 +1242,9 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
  -----------------------------------------------
  
  
-   2 Dec 22 16:36:31 -End- CC Iterations
-   2 Dec 22 16:36:31 -Start- Triples
-   2 Dec 22 16:36:31 -End- Triples
+  15 Feb 23 18:48:47 -End- CC Iterations
+  15 Feb 23 18:48:47 -Start- Triples
+  15 Feb 23 18:48:47 -End- Triples
  
 -----------------------------------------------
      -     Final results from EXACORR     -    
@@ -1266,14 +1270,14 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
  
 -----------------------------------------------
  
-   2 Dec 22 16:36:31 -Start- Lambda Equations
+  15 Feb 23 18:48:47 -Start- Lambda Equations
  
 *******************************************************************************
 ********************** Solving Left Eigenvector Equation **********************
 *******************************************************************************
  
-   2 Dec 22 16:36:31 Finished calculating common blocks
-   2 Dec 22 16:36:31 Finished calculating fixed intermediates
+  15 Feb 23 18:48:47 Finished calculating common blocks
+  15 Feb 23 18:48:47 Finished calculating fixed intermediates
  T1amp      =    1.0542735133281683E-003
  T2amp      =    1.8234315652278676E-002
  Fbar_oo    =    2.2110788847873840E-003
@@ -1311,16 +1315,18 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
   Final L1amp = 6.8155947114431409E-04
   Final L2amp = 1.7674212150809929E-02
  
-   2 Dec 22 16:36:31 Calculated density matrices in MO basis
+  15 Feb 23 18:48:48 Calculated density matrices in MO basis
  Storing the CCSD density matrix on file
-   2 Dec 22 16:36:31 -End- Lambda Equations
-   2 Dec 22 16:36:31 one electron integrals added to Fock Matrix
-   2 Dec 22 16:36:31 two electron integrals added to Fock Matrix
-   2 Dec 22 16:36:31 Fock matrix initialized
+  15 Feb 23 18:48:48 -End- Lambda Equations
+  15 Feb 23 18:48:48 one electron integrals added to Fock Matrix
+  15 Feb 23 18:48:48 two electron integrals added to Fock Matrix
+  15 Feb 23 18:48:48 Fock matrix initialized
  foo_tensor norm    2.0667867261970989     
  fov_tensor norm    2.5477625595591472E-015
  fvv_tensor norm    5.4843048989950631     
  copying t2 tensor, norm    7.2937262609114706E-002   7.2937262609114706E-002
+ g_oo      tensor norm   3.0810788998854695E-004
+ g_vv      tensor norm   2.4017708480848486E-004
  t1        tensor norm   1.0542735133281683E-003
  t2        tensor norm   7.2937262609114706E-002
  fbar_oo   tensor norm   2.1981556111956353     
@@ -1337,9 +1343,11 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
  foo_tensor norm before eom #4   2.0667867261970989     
  fov_tensor norm before eom #4   2.5477625595591472E-015
  fvv_tensor norm before eom #4   5.4843048989950631     
-   2 Dec 22 16:36:31 Activate CC-CC(LR-CC) response
- Read frequency:               (0.0000000000000000,0.0000000000000000)
-   2 Dec 22 16:36:31 Constructed intermediates needed in CC Response
+  15 Feb 23 18:48:48 Activate CC-CC(LR-CC) response
+  15 Feb 23 18:48:48 Constructed intermediates needed in CC Response
+  15 Feb 23 18:48:48 Do linear response
+ Read frequency1:               (0.0000000000000000,0.0000000000000000)
+ Read frequency2:             (-0.0000000000000000,-0.0000000000000000)
  
  Configuration variables for matrix-free diagonalizer
  
@@ -1370,7 +1378,8 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
       shift value, real  part    :    0.0000000000000000     
       shift value, imag. part    :    0.0000000000000000     
  
-   2 Dec 22 16:36:31 Entering CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:48 Entering CC-CI Right Linear Systems calculation
+ come
  excitation_manifold_size:        3660
  davidson_max_subspace_size:        2048
     in talsh_davidson_workspace_create
@@ -1468,14 +1477,13 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
     Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
   
  Root converged.
- N in get_tensor_linear_systems          18
- dim1          18
- dim2           1
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
  Final size of reduced subspace :           18
  *****************EOM-CC Eigenvalules******************
  No Eigenvales since Solving linear systems
  ******************************************************
-   2 Dec 22 16:36:32 Finishing CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:49 Finishing CC-CI Right Linear Systems calculation
     leaving talsh_davidson_workspace_destroy
  
  Configuration variables for matrix-free diagonalizer
@@ -1507,7 +1515,8 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
       shift value, real  part    :    0.0000000000000000     
       shift value, imag. part    :    0.0000000000000000     
  
-   2 Dec 22 16:36:32 Entering CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:49 Entering CC-CI Right Linear Systems calculation
+ come
  excitation_manifold_size:        3660
  davidson_max_subspace_size:        2048
     in talsh_davidson_workspace_create
@@ -1605,14 +1614,13 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
     Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
   
  Root converged.
- N in get_tensor_linear_systems          18
- dim1          18
- dim2           1
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
  Final size of reduced subspace :           18
  *****************EOM-CC Eigenvalules******************
  No Eigenvales since Solving linear systems
  ******************************************************
-   2 Dec 22 16:36:33 Finishing CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:49 Finishing CC-CI Right Linear Systems calculation
     leaving talsh_davidson_workspace_destroy
  
  Configuration variables for matrix-free diagonalizer
@@ -1644,7 +1652,557 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
       shift value, real  part    :    0.0000000000000000     
       shift value, imag. part    :    0.0000000000000000     
  
-   2 Dec 22 16:36:33 Entering CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:49 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.461868E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.316454E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.206656E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.982552E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270427E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.769124E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.117225E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.278779E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.195117E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.137869E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.552258E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.160996E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.444656E-05
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.106732E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270779E-06
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.758291E-07
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.192124E-07
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           18
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:48:50 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:48:50 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.461868E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.316454E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.206656E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.982552E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270427E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.769124E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.117225E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.278779E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.195117E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.137869E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.552258E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.160996E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.444656E-05
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.106732E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270779E-06
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.758291E-07
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.192124E-07
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           18
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:48:51 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+  15 Feb 23 18:48:51 Solved All 1st response right equations
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:48:51 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.461868E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.316454E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.206656E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.982552E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270427E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.769124E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.117225E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.278779E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.195117E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.137869E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.552258E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.160996E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.444656E-05
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.106732E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270779E-06
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.758291E-07
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.192124E-07
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           18
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:48:52 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:48:52 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.461868E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.316454E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.206656E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.982552E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270427E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.769124E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.117225E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.278779E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.195117E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.137869E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.552258E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.160996E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.444656E-05
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.106732E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270779E-06
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.758291E-07
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.192124E-07
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           18
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:48:52 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:48:52 Entering CC-CI Right Linear Systems calculation
+ come
  excitation_manifold_size:        3660
  davidson_max_subspace_size:        2048
     in talsh_davidson_workspace_create
@@ -1752,14 +2310,13 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
     Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
   
  Root converged.
- N in get_tensor_linear_systems          20
- dim1          20
- dim2           1
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
  Final size of reduced subspace :           20
  *****************EOM-CC Eigenvalules******************
  No Eigenvales since Solving linear systems
  ******************************************************
-   2 Dec 22 16:36:33 Finishing CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:53 Finishing CC-CI Right Linear Systems calculation
     leaving talsh_davidson_workspace_destroy
  
  Configuration variables for matrix-free diagonalizer
@@ -1791,7 +2348,8 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
       shift value, real  part    :    0.0000000000000000     
       shift value, imag. part    :    0.0000000000000000     
  
-   2 Dec 22 16:36:33 Entering CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:53 Entering CC-CI Right Linear Systems calculation
+ come
  excitation_manifold_size:        3660
  davidson_max_subspace_size:        2048
     in talsh_davidson_workspace_create
@@ -1899,14 +2457,151 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
     Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
   
  Root converged.
- N in get_tensor_linear_systems          20
- dim1          20
- dim2           1
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
  Final size of reduced subspace :           20
  *****************EOM-CC Eigenvalules******************
  No Eigenvales since Solving linear systems
  ******************************************************
-   2 Dec 22 16:36:34 Finishing CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:54 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+  15 Feb 23 18:48:54 Solved All 1st response right equations
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:48:54 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.461868E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.316454E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.206656E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.982552E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270427E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.769124E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.117225E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.278779E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.195117E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.137869E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.552258E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.160996E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.444656E-05
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.106732E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270779E-06
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.758291E-07
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.192124E-07
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           18
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:48:55 Finishing CC-CI Right Linear Systems calculation
     leaving talsh_davidson_workspace_destroy
  
  Configuration variables for matrix-free diagonalizer
@@ -1938,7 +2633,145 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
       shift value, real  part    :    0.0000000000000000     
       shift value, imag. part    :    0.0000000000000000     
  
-   2 Dec 22 16:36:34 Entering CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:55 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.461868E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.316454E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.206656E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.982552E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270427E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.769124E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.117225E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.278779E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.195117E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.137869E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.552258E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.160996E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.444656E-05
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.106732E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270779E-06
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.758291E-07
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.192124E-07
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           18
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:48:55 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:48:55 Entering CC-CI Right Linear Systems calculation
+ come
  excitation_manifold_size:        3660
  davidson_max_subspace_size:        2048
     in talsh_davidson_workspace_create
@@ -2046,14 +2879,13 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
     Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
   
  Root converged.
- N in get_tensor_linear_systems          20
- dim1          20
- dim2           1
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
  Final size of reduced subspace :           20
  *****************EOM-CC Eigenvalules******************
  No Eigenvales since Solving linear systems
  ******************************************************
-   2 Dec 22 16:36:35 Finishing CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:56 Finishing CC-CI Right Linear Systems calculation
     leaving talsh_davidson_workspace_destroy
  
  Configuration variables for matrix-free diagonalizer
@@ -2085,7 +2917,8 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
       shift value, real  part    :    0.0000000000000000     
       shift value, imag. part    :    0.0000000000000000     
  
-   2 Dec 22 16:36:35 Entering CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:56 Entering CC-CI Right Linear Systems calculation
+ come
  excitation_manifold_size:        3660
  davidson_max_subspace_size:        2048
     in talsh_davidson_workspace_create
@@ -2193,37 +3026,3540 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
     Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
   
  Root converged.
- N in get_tensor_linear_systems          20
- dim1          20
- dim2           1
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
  Final size of reduced subspace :           20
  *****************EOM-CC Eigenvalules******************
  No Eigenvales since Solving linear systems
  ******************************************************
-   2 Dec 22 16:36:35 Finishing CC-CI Right Linear Systems calculation
+  15 Feb 23 18:48:57 Finishing CC-CI Right Linear Systems calculation
     leaving talsh_davidson_workspace_destroy
-   2 Dec 22 16:36:35 Solved All 1st response right equations
-   2 Dec 22 16:36:35 Do linear response
- CC-CC(LR-CC) linear response: <<X;           1 X           1 >> =               (-1.1045866253967542,0.0000000000000000)
- CC-CC(LR-CC) linear response: <<X;           1 X           2 >> =          (4.95360117006123578E-015,0.0000000000000000)
- CC-CC(LR-CC) linear response: <<X;           1 X           3 >> =         (-2.54090019264664322E-015,0.0000000000000000)
- CC-CC(LR-CC) linear response: <<X;           2 X           1 >> =          (4.95360117006123578E-015,0.0000000000000000)
- CC-CC(LR-CC) linear response: <<X;           2 X           2 >> =               (-7.2115300894897851,0.0000000000000000)
- CC-CC(LR-CC) linear response: <<X;           2 X           3 >> =         (-1.09127635995021850E-014,0.0000000000000000)
- CC-CC(LR-CC) linear response: <<X;           3 X           1 >> =         (-2.54090019264664322E-015,0.0000000000000000)
- CC-CC(LR-CC) linear response: <<X;           3 X           2 >> =         (-1.09127635995021850E-014,0.0000000000000000)
- CC-CC(LR-CC) linear response: <<X;           3 X           3 >> =               (-3.5317655379020074,0.0000000000000000)
-   2 Dec 22 16:36:37 Finish CC-CC Linear Response Calculations
-   2 Dec 22 16:36:37 Leave CC response
+  15 Feb 23 18:48:57 Solved All 1st response right equations
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:48:57 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.152180E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.623838E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.372045E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.132643E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.387801E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.153963E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.894016E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.354615E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.154889E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.343756E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.908881E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.590038E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.242552E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.965991E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.267111E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.708884E-06
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.223850E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.582291E-07
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.149767E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:48:58 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:48:58 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.152180E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.623838E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.372045E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.132643E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.387801E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.153963E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.894016E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.354615E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.154889E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.343756E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.908881E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.590038E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.242552E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.965991E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.267111E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.708884E-06
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.223850E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.582291E-07
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.149767E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:48:59 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:48:59 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.461868E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.316454E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.206656E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.982552E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270427E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.769124E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.117225E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.278779E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.195117E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.137869E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.552258E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.160996E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.444656E-05
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.106732E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270779E-06
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.758291E-07
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.192124E-07
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           18
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:48:59 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:48:59 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.461868E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.316454E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.206656E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.982552E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270427E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.769124E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.117225E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.278779E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.195117E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.137869E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.552258E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.160996E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.444656E-05
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.106732E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270779E-06
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.758291E-07
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.192124E-07
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           18
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:00 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+  15 Feb 23 18:49:00 Solved All 1st response right equations
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:00 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.152180E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.623838E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.372045E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.132643E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.387801E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.153963E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.894016E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.354615E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.154889E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.343756E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.908881E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.590038E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.242552E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.965991E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.267111E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.708884E-06
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.223850E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.582291E-07
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.149767E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:01 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:01 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.152180E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.623838E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.372045E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.132643E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.387801E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.153963E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.894016E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.354615E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.154889E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.343756E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.908881E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.590038E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.242552E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.965991E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.267111E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.708884E-06
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.223850E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.582291E-07
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.149767E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:01 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:01 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.152180E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.623838E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.372045E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.132643E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.387801E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.153963E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.894016E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.354615E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.154889E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.343756E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.908881E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.590038E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.242552E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.965991E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.267111E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.708884E-06
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.223850E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.582291E-07
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.149767E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:02 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:02 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.152180E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.623838E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.372045E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.132643E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.387801E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.153963E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.894016E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.354615E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.154889E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.343756E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.908881E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.590038E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.242552E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.965991E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.267111E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.708884E-06
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.223850E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.582291E-07
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.149767E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:03 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+  15 Feb 23 18:49:03 Solved All 1st response right equations
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:03 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.152180E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.623838E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.372045E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.132643E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.387801E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.153963E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.894016E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.354615E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.154889E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.343756E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.908881E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.590038E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.242552E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.965991E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.267111E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.708884E-06
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.223850E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.582291E-07
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.149767E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:04 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:04 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.152180E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.623838E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.372045E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.132643E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.387801E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.153963E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.894016E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.354615E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.154889E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.343756E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.908881E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.590038E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.242552E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.965991E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.267111E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.708884E-06
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.223850E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.582291E-07
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.149767E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:05 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:05 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.956799E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.504577E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.305009E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.121912E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.638358E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.253914E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.706685E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.164206E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.434103E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.226322E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.827921E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.323358E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.124821E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.518081E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.353335E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.165507E-05
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.520949E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.112863E-06
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.300939E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:06 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:06 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.956799E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.504577E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.305009E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.121912E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.638358E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.253914E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.706685E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.164206E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.434103E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.226322E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.827921E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.323358E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.124821E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.518081E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.353335E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.165507E-05
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.520949E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.112863E-06
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.300939E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:06 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+  15 Feb 23 18:49:06 Solved All 1st response right equations
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:07 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.956799E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.504577E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.305009E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.121912E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.638358E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.253914E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.706685E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.164206E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.434103E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.226322E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.827921E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.323358E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.124821E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.518081E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.353335E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.165507E-05
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.520949E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.112863E-06
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.300939E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:07 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:07 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.956799E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.504577E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.305009E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.121912E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.638358E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.253914E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.706685E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.164206E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.434103E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.226322E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.827921E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.323358E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.124821E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.518081E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.353335E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.165507E-05
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.520949E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.112863E-06
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.300939E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:08 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:08 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.461868E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.316454E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.206656E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.982552E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270427E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.769124E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.117225E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.278779E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.195117E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.137869E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.552258E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.160996E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.444656E-05
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.106732E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270779E-06
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.758291E-07
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.192124E-07
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           18
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:09 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:09 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.461868E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.316454E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.206656E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.982552E-01
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270427E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.769124E-02
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.117225E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.278779E-03
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.195117E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.137869E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.552258E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.160996E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.444656E-05
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.106732E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.270779E-06
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.758291E-07
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.192124E-07
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.298453E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           18
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:09 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+  15 Feb 23 18:49:09 Solved All 1st response right equations
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:10 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.956799E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.504577E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.305009E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.121912E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.638358E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.253914E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.706685E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.164206E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.434103E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.226322E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.827921E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.323358E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.124821E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.518081E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.353335E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.165507E-05
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.520949E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.112863E-06
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.300939E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:10 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:10 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.956799E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.504577E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.305009E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.121912E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.638358E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.253914E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.706685E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.164206E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.434103E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.226322E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.827921E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.323358E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.124821E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.518081E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.353335E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.165507E-05
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.520949E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.112863E-06
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.300939E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:11 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:11 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.152180E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.623838E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.372045E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.132643E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.387801E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.153963E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.894016E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.354615E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.154889E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.343756E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.908881E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.590038E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.242552E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.965991E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.267111E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.708884E-06
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.223850E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.582291E-07
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.149767E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:12 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:12 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.152180E+01
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.623838E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.372045E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.132643E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.387801E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.153963E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.894016E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.354615E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.154889E-02
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.343756E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.908881E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.590038E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.242552E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.965991E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.267111E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.708884E-06
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.223850E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.582291E-07
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.149767E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.370318E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:13 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+  15 Feb 23 18:49:13 Solved All 1st response right equations
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:13 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.956799E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.504577E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.305009E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.121912E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.638358E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.253914E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.706685E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.164206E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.434103E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.226322E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.827921E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.323358E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.124821E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.518081E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.353335E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.165507E-05
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.520949E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.112863E-06
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.300939E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:14 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:14 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.956799E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.504577E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.305009E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.121912E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.638358E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.253914E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.706685E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.164206E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.434103E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.226322E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.827921E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.323358E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.124821E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.518081E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.353335E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.165507E-05
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.520949E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.112863E-06
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.300939E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:15 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:15 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.956799E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.504577E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.305009E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.121912E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.638358E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.253914E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.706685E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.164206E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.434103E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.226322E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.827921E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.323358E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.124821E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.518081E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.353335E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.165507E-05
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.520949E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.112863E-06
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.300939E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:15 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+ 
+ Configuration variables for matrix-free diagonalizer
+ 
+   output written to unit        :            6
+   verbose output                :  F
+ 
+  convergence control
+ 
+   convergence threshold         :    1.0000000000000000E-008
+   maximum subspace size         :         2048
+   maximum number of iterations  :          100
+   refresh trial vectors         :  F
+ 
+  restart/data storage
+ 
+   save subspaces                : F
+   save sigma vectors            :  F
+   save results                  : F
+ 
+  diagonalization characteristics
+ 
+   solve for right eigenvectors  :  T
+   solve for left eigenvectors   :  F
+   symmetric eigenproblem        :  F
+   complex mode (real variables) :  T
+   root following via overlap    :  F
+   energy shift in eigval sorting:  F
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
+ 
+  15 Feb 23 18:49:15 Entering CC-CI Right Linear Systems calculation
+ come
+ excitation_manifold_size:        3660
+ davidson_max_subspace_size:        2048
+    in talsh_davidson_workspace_create
+    created tensor for trial vectors, dimensions :  3660  x    2048
+    Requested      1 eigenvales
+ 
+ Iteration            1
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.956799E+00
+  
+ Iteration            2
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.504577E+00
+  
+ Iteration            3
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.305009E+00
+  
+ Iteration            4
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.121912E+00
+  
+ Iteration            5
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.638358E-01
+  
+ Iteration            6
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.253914E-01
+  
+ Iteration            7
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.706685E-02
+  
+ Iteration            8
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.164206E-02
+  
+ Iteration            9
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.434103E-03
+  
+ Iteration           10
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.226322E-03
+  
+ Iteration           11
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.827921E-04
+  
+ Iteration           12
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.323358E-04
+  
+ Iteration           13
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.124821E-04
+  
+ Iteration           14
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.518081E-05
+  
+ Iteration           15
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.353335E-05
+  
+ Iteration           16
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.165507E-05
+  
+ Iteration           17
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.520949E-06
+  
+ Iteration           18
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.112863E-06
+  
+ Iteration           19
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.300939E-07
+  
+ Iteration           20
+ 
+ workspce_tensor:          10           6
+    Root      1  ||q_k,M||   0.867702E-08     <<< converged ! 
+  
+ Root converged.
+ print 2D tensor: t_tensor%t1 (shape:          10           6 )
+  end print 2D tensor t_tensor%t1
+ Final size of reduced subspace :           20
+ *****************EOM-CC Eigenvalules******************
+ No Eigenvales since Solving linear systems
+ ******************************************************
+  15 Feb 23 18:49:16 Finishing CC-CI Right Linear Systems calculation
+    leaving talsh_davidson_workspace_destroy
+  15 Feb 23 18:49:16 Solved All 1st response right equations
+*************CC-CC(LR-CC) linear response*************
+ <<X1;X1>> = 
+     -1.10458663 \      0.00000000
+ <<X1;X2>> = 
+      0.00000000 \      0.00000000
+ <<X1;X3>> = 
+     -0.00000000 \      0.00000000
+ <<X2;X1>> = 
+      0.00000000 \      0.00000000
+ <<X2;X2>> = 
+     -7.21153009 \      0.00000000
+ <<X2;X3>> = 
+     -0.00000000 \      0.00000000
+ <<X3;X1>> = 
+     -0.00000000 \      0.00000000
+ <<X3;X2>> = 
+     -0.00000000 \      0.00000000
+ <<X3;X3>> = 
+     -3.53176554 \      0.00000000
+******************************************************
+  15 Feb 23 18:49:16 Finish CC-CC Linear Response Calculations
+  15 Feb 23 18:49:16 Leave CC response
 #MSG(TAL-SH::CP-TAL): Statistics on CPU:
- Number of Flops processed    :      0.52260084160000D+10
- Average GEMM GFlop/s rate    :      0.17972991029929D+01
- Number of Bytes permuted     :      0.10374578880000D+11
- Average permute GB/s rate    :      0.14063671016685D+02
- Average contract GFlop/s rate:      0.12955206189966D+01
+ Number of Flops processed    :      0.16965988704000D+11
+ Average GEMM GFlop/s rate    :      0.18399920231082D+01
+ Number of Bytes permuted     :      0.50292769216000D+11
+ Average permute GB/s rate    :      0.13543176466281D+02
+ Average contract GFlop/s rate:      0.12136380430261D+01
 #END_MSG
  
-   2 Dec 22 16:36:37 Leaving cc_driver routine
+  15 Feb 23 18:49:16 Leaving cc_driver routine
 
  * Closing HDF5 checkpoint file 
     - DIRAC was compiled without hdf5, checkpointing was not possible
@@ -2234,11 +6570,11 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
 
 
  
-     Date and time (Mac OSX): Fri Dec  2 16:36:37 2022
+     Date and time (Mac OSX): Wed Feb 15 18:49:16 2023
      Host name              : PCMTs-MacBook-Pro.local                 
 
->>>> Node 0, utime: 7, stime: 0, minflt: 154347, majflt: 0, nvcsw: 78, nivcsw: 5619, maxrss: 626507776
->>>> Total WALL time used in DIRAC: 8s
+>>>> Node 0, utime: 28, stime: 2, minflt: 195853, majflt: 0, nvcsw: 100, nivcsw: 59386, maxrss: 798601216
+>>>> Total WALL time used in DIRAC: 31s
   
   Dynamical Memory Usage Summary for Master
   
@@ -2265,7 +6601,7 @@ SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.00%   0.05964398s
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-DIRAC pam run in /Users/yuan/Desktop/lille/Research/DIRAC/test_ccci_lr/h2o_nonrel_contra_ccpvdz/CC-CI
+DIRAC pam run in /Users/yuan/Desktop/lille/Research/DIRAC/dirac/build_parallel/test/exacorr_talsh_cclr
 
  ====  below this line is the stderr stream  ====
 
