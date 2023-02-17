@@ -226,7 +226,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
                                     result_tensor,tprop_bar_tensor1%t2,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER_C)
                                     ! print *, "ierr4 quarsp driver: ", ierr
             term1=result_tens(1)
-            print *, "term1: ", term1
+            ! print *, "term1: ", term1
 
 
         ! Term2: Lambda*Epison_Z    
@@ -238,7 +238,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
                                         interm_t_prop2%epsilon_prop_vvoo,l2_tensor,scale=ONE_QUARTER_C)
                                         ! print *, "ierr7 quarsp driver: ", ierr
             term2=result_tens(1)
-            print *, "term2: ", term2
+            ! print *, "term2: ", term2
 
 
         ! Term3: Tbar_Y*Sigma_XZ 
@@ -250,7 +250,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
                                         tprop_bar_tensor2%t2,sigma_prop_tensor%t2,scale=ONE_QUARTER_C)
                                         ! print *, "ierr10 quarsp driver: ", ierr
             term3=result_tens(1)
-            print *, "term3: ", term3
+            ! print *, "term3: ", term3
 
 
         ! Term4: -Tbar_Y(D)*Epison_X(S)*TZ(S)
@@ -263,7 +263,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             ierr=talsh_tensor_contract("E()+=Aux(i,a)*TZ(a,i)",result_tensor,Aux_ov,tprop_tensor2%t1,scale=ONE)
             ! print *, "ierr13 quarsp driver: ", ierr
             term4=result_tens(1)
-            print *, "term4: ", term4
+            ! print *, "term4: ", term4
 
 
         ! Term5: -Lamda*TY
@@ -275,7 +275,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
                                         l2_tensor,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER_C)
                                         ! print *, "ierr16 quarsp driver: ", ierr
             term5=result_tens(1)
-            print *, "term5: ", term5
+            ! print *, "term5: ", term5
 
 
         ! Term6: Tbar_Z*Epison_X
@@ -288,7 +288,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
                                         tprop_bar_tensor3%t2,interm_t_prop1%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
                                         ! print *, "ierr19 quarsp driver: ", ierr
             term6=result_tens(1)
-            print *, "term6: ", term6
+            ! print *, "term6: ", term6
 
             
             tem_quarsp_iter=term1*term2+term3+term4+term5*term6

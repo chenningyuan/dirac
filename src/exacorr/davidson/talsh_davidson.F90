@@ -1839,7 +1839,7 @@ contains
         ! print *, "dim1", size(root_vect,1)
         ! print *, "dim2", size(root_vect,2)
         ! print *, "roor_vect", root_vect(:,1)
-        call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
+        ! call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
         
 
          do iroot=1, N
