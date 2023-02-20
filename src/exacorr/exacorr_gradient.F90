@@ -101,6 +101,7 @@ module exacorr_gradient
       ierr=exatns_tensor_init(gamma%symm_oo,ZERO)
       ierr=exatns_tensor_init(gamma%symm_vv,ZERO)
 
+     if (exa_input%do_2rdm_gs) then
 !    Construct double
 
       oovv_id   = (/dims%occ_space_id,   dims%occ_space_id,   dims%vir_space_id,   dims%vir_space_id  /)
@@ -140,6 +141,7 @@ module exacorr_gradient
       ierr=exatns_tensor_create(gamma%symm_ovoo,"gsymm_ovoo",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
       ierr=exatns_tensor_create(gamma%prime_vvoo,"gprime_vvoo",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
       ierr=exatns_tensor_create(gamma%symm_vvoo,"gsymm_vvoo",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+     end if 
 
       ierr=exatns_tensor_init(gamma%prime_oovv,ZERO)
       ierr=exatns_tensor_init(gamma%prime_vovv,ZERO)
@@ -163,6 +165,7 @@ module exacorr_gradient
       end if
       call print_date("Calculated density matrices in MO basis")
 
+      if (exa_input%do_2rdm_gs) then
       call calc_dmdouble_mo(gamma,t2_tensor,l2_tensor,dims,CCD,exa_input%print_level,t1_tensor,l1_tensor)
 
 !***********************
@@ -243,6 +246,7 @@ module exacorr_gradient
       print *, " "
       print *, " "
       print *, " ************** "
+     end if
 
 
 
@@ -437,7 +441,8 @@ module exacorr_gradient
       integer(C_SIZE_T)               :: buf_size=1024_8*1024_8*1024_8 
       integer(C_INT)                  :: host_arg_max
 !
-      character(len=4)                :: wavefun = "CCSD"
+      character(len=4)                :: wavefun
+      wavefun = "CCSD"
 
       ! Convert to TALSH format and call the TALSH writer
       buf_size=exa_input%talsh_buff*buf_size
