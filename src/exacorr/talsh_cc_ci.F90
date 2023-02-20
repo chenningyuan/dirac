@@ -195,11 +195,11 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         
         
 ! This loop is to determine which three properties to calculate
-        do i=1, N_prop
+        do i=3, N_prop
             N_prop_tem_qr(1) = i
-            do j=1, N_prop
+            do j=3, N_prop
                 N_prop_tem_qr(2) = j
-                do k=1, N_prop
+                do k=3, N_prop
                     N_prop_tem_qr(3) = k
 
                     do n=1, N_oper_qr
@@ -244,9 +244,9 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         end do
 
 
-        do i=1, N_prop
-            do j=1, N_prop
-                do k=1, N_prop
+        do i=3, N_prop
+            do j=3, N_prop
+                do k=3, N_prop
                     print *, "CC-CI(EOM-CC) quadratic response: <<X", i, ";X", j, "X", k, ">> = ", eom_qrs(i,j,k)
                 end do
             end do 
