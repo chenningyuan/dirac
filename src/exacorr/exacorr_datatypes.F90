@@ -107,10 +107,10 @@
          type(tens_rcrsv_t) :: prime_vv, symm_vv
 ! two-body density matrices
          type(tens_rcrsv_t) :: prime_vvvv
-         type(tens_rcrsv_t) :: prime_vvvo, prime_vovv, prime_ovvv, prime_ovvv
+         type(tens_rcrsv_t) :: prime_vvvo, prime_vovv, prime_vvov, prime_ovvv
          type(tens_rcrsv_t) :: prime_vvoo, prime_oovv
-         type(tens_rcrsv_t) :: prime_ovoo, prime_ooov, prime_vooo, prime_oovo 
-         type(tens_rcrsv_t) :: prime_ovov, prime_voov, prime_ovvo, prime_vovo
+         type(tens_rcrsv_t) :: prime_ovoo, prime_ooov, prime_vooo, prime_oovo
+         type(tens_rcrsv_t) :: prime_ovov, prime_voov, prime_vovo, prime_ovvo
          type(tens_rcrsv_t) :: prime_oooo
          type(tens_rcrsv_t) :: symm_vvvv
          type(tens_rcrsv_t) :: symm_vvvo,  symm_vovv,  symm_vvov,  symm_ovvv
@@ -119,6 +119,7 @@
          type(tens_rcrsv_t) :: symm_vovo,  symm_voov,  symm_ovvo,  symm_ovov
          type(tens_rcrsv_t) :: symm_oooo
         end type exatns_dm_tens
+
 
         type, public :: space_dims
          integer       :: occ_space_id, vir_space_id

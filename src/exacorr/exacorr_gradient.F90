@@ -12,7 +12,7 @@ module exacorr_gradient
 
   implicit none
 
-  complex(8), parameter :: ZERO=(0.D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
+  complex(8), parameter :: ZERO=(0.D0,0.D0),ONE_HALF=(0.5D0,0.D0), ONE_QUARTER=(0.25D0,0.D0), &
                            MINUS_ONE=(-1.D0,0.D0),ONE=(1.0D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0)
 
   private
@@ -192,54 +192,54 @@ module exacorr_gradient
       ierr=exatns_tensor_get_scalar(result_tensor,result_val)
       if (exa_input%print_level.ge.2) print*, "Final ov symm : ",result_val
 
-      if (Add_Energy==.False.) ierr=exatns_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.) ierr=exatns_tensor_init(result_tensor)
       ierr=exatns_tensor_contract("E()+=G(a,i)*F(i,a)",result_tensor,gamma%symm_vo,int_t%fov)
       if (exa_input%print_level.ge.2) print*, "Final vo symm : ",result_val
 
-      if (Add_Energy==.False.) ierr=exatns_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.) ierr=exatns_tensor_init(result_tensor)
       ierr=exatns_tensor_contract("E()+=G(a,b)*F(b,a)",result_tensor,gamma%symm_vv,int_t%fvv)
       if (exa_input%print_level.ge.2) print*, "Final vv symm : ",result_val
 
-      if (Add_Energy==.False.) ierr=exatns_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.) ierr=exatns_tensor_init(result_tensor)
       ierr=exatns_tensor_contract("E()+=G(i,j)*F(j,i)",result_tensor,gamma%symm_oo,int_t%foo)
       if (exa_input%print_level.ge.2) print*, "Final oo symm : ",result_val
 
-      if (Add_Energy==.False.)       ierr=exatns_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.)       ierr=exatns_tensor_init(result_tensor)
       ierr=exatns_tensor_contract("E()+=G(a,b,i,j)*V(i,j,a,b)",result_tensor,gamma%symm_vvoo,int_t%oovv,ONE_QUARTER)
       if (exa_input%print_level.ge.2) print*, "Final vvoo symm : ",result_val
       
-      if (Add_Energy==.False.)       ierr=exatns_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.)       ierr=exatns_tensor_init(result_tensor)
       ierr=exatns_tensor_contract("E()+=G(i,j,a,b)*V+(i,j,a,b)",result_tensor,gamma%symm_oovv,int_t%oovv,ONE_QUARTER)
       if (exa_input%print_level.ge.2) print*, "Final oovv symm : ",result_val
-      if (Add_Energy==.False.)       ierr=exatns_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.)       ierr=exatns_tensor_init(result_tensor)
       ierr=exatns_tensor_contract("E()+=G(i,a,j,k)*V(j,k,i,a)",result_tensor,gamma%symm_ovoo,int_t%ooov,ONE_HALF)
       if (exa_input%print_level.ge.2) print*, "Final ovoo symm : ",result_val
 
-      if (Add_Energy==.False.)       ierr=exatns_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.)       ierr=exatns_tensor_init(result_tensor)
       ierr=exatns_tensor_contract("E()+=G(a,b,c,i)*V(c,i,a,b)",result_tensor,gamma%symm_vvvo,int_t%vovv,ONE_HALF)
       if (exa_input%print_level.ge.2) print*, "Final vvvo symm : ",result_val
 
-      if (Add_Energy==.False.)       ierr=exatns_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.)       ierr=exatns_tensor_init(result_tensor)
 !      ierr=exatns_tensor_contract("E()+=G(a,i,b,c)*V(b,c,a,i)",result_tensor,gamma%prime_vovv,int_t%vvvo,ONE_HALF)
       ierr=exatns_tensor_contract("E()+=G(a,i,b,c)*V+(a,i,b,c)",result_tensor,gamma%symm_vovv,int_t%vovv,ONE_HALF)
       if (exa_input%print_level.ge.2) print*, "Final vovv symm : ",result_val
 
-      if (Add_Energy==.False.)       ierr=exatns_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.)       ierr=exatns_tensor_init(result_tensor)
       ierr=exatns_tensor_contract("E()+=G(i,a,j,b)*V(b,j,a,i)",result_tensor,gamma%symm_ovov,int_t%vovo)
       if (exa_input%print_level.ge.2) print*, "Final ovov symm : ",result_val
 
-      if (Add_Energy==.False.)       ierr=exatns_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.)       ierr=exatns_tensor_init(result_tensor)
       ierr=exatns_tensor_contract("E()+=G(a,b,c,d)*V(c,d,a,b)",result_tensor,gamma%symm_vvvv,int_t%vvvv,ONE_QUARTER)
       if (exa_input%print_level.ge.2) print*, "Final vvvv symm : ",result_val
 
-      if (Add_Energy==.False.)       ierr=exatns_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.)       ierr=exatns_tensor_init(result_tensor)
       ierr=exatns_tensor_contract("E()+=G(i,j,k,l)*V(k,l,i,j)",result_tensor,gamma%symm_oooo,int_t%oooo,ONE_QUARTER)
       if (exa_input%print_level.ge.2) print*, "Final oooo symm : ",result_val
 
       print *, " "
       print *, " "
-      if (Add_Energy==.True.) print *, " Energy by CCSD Density Matrix ", result_val
-      if (Add_Energy==.False.) print *, " Energy by CCSD Density Matrix is the sum of all the idividuale terms "
+      if (Add_Energy .eqv. .True.) print *, " Energy by CCSD Density Matrix ", result_val
+      if (Add_Energy .eqv. .False.) print *, " Energy by CCSD Density Matrix is the sum of all the idividuale terms "
       print *, " "
       print *, " "
       print *, " ************** "
@@ -431,18 +431,13 @@ module exacorr_gradient
       type(exatns_dm_tens), intent(inout) :: gamma
 !     talsh type to get local copy
       type(talsh_dm_tens)          :: talsh_gamma
-!     CCD switch
-      logical :: CCD
 !     error code
       integer :: ierr
 !     variables for talsh, density matrix needs to be smaller than buffer size 
       integer(C_SIZE_T)               :: buf_size=1024_8*1024_8*1024_8 
       integer(C_INT)                  :: host_arg_max
 !
-      character(len=4)                :: wavefun
-
-      CCD = exa_input%CCD
-      wavefun = "CCSD"
+      character(len=4)                :: wavefun = "CCSD"
 
       ! Convert to TALSH format and call the TALSH writer
       buf_size=exa_input%talsh_buff*buf_size
@@ -453,7 +448,7 @@ module exacorr_gradient
       ierr=exatns_tensor_get_slice(gamma%symm_oo,talsh_gamma%symm_oo)
       ierr=exatns_tensor_get_slice(gamma%symm_vv,talsh_gamma%symm_vv)
 !     vo + ov
-      if (.not.CCD) then
+      if (.not.exa_input%CCD) then
          ierr=exatns_tensor_get_slice(gamma%symm_vo,talsh_gamma%symm_vo)
          ierr=exatns_tensor_get_slice(gamma%symm_ov,talsh_gamma%symm_ov)
       end if
@@ -462,7 +457,7 @@ module exacorr_gradient
       call talsh_kudm_store_mo(exa_input,talsh_gamma,wavefun)
 
       ! Clean up and switch off talsh
-      call talsh_dm_cleanup_dmtens(talsh_gamma,CCD)
+      call talsh_dm_cleanup_dmtens(exa_input,talsh_gamma)
       ierr = talsh_shutdown()
 
     end subroutine store_dm_mo
@@ -702,64 +697,83 @@ module exacorr_gradient
       ierr=exatns_tensor_contract("H(m,n,i,j)+=L(m,n,e,f)*T(e,f,i,j)",Hinter_oooo,l2_tensor,Hinter_vvoo)
       if (ierr.ne.0)  print*, "m12+m14+m15+m24 -d, ierr  ", ierr
 
-      ierr=exatns_tensor_contract("G(a,b,i,j)+=H(m,n,i,j)*A(a,b,m,n)",gamma%prime_vvoo,Hinter_oooo,Hinter_vvoo,ONE_QUARTER)
+      ierr=exatns_tensor_contract("G(a,b,i,j)+=H(m,n,i,j)*A(a,b,m,n)",&
+     &                            gamma%prime_vvoo,Hinter_oooo,Hinter_vvoo,ONE_QUARTER)
       if (ierr.ne.0)  print*, "m12+m14+m15+m24 -e, ierr  ", ierr
 
       !! gamma%prime construction
 
       !! Start Symetrisation
       ! gamma%symm_ooov 
-      ierr=exatns_tensor_contract("G(i,j,k,a)+=G(i,j,k,a)*K()",gamma%symm_ooov,gamma%prime_ooov,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(i,j,k,a)+=G(i,j,k,a)*K()",&
+     &                            gamma%symm_ooov,gamma%prime_ooov,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm ooov 1-a  ", ierr
-      ierr=exatns_tensor_contract("G(i,j,k,a)+=G+(k,a,i,j)*K()",gamma%symm_ooov,gamma%prime_ovoo,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(i,j,k,a)+=G+(k,a,i,j)*K()",&
+     &                            gamma%symm_ooov,gamma%prime_ovoo,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm ooov 1-b  ", ierr
 
       ! gamma%symm_ovoo 
-      ierr=exatns_tensor_contract("G(i,a,k,l)+=G(i,a,k,l)*K()",gamma%symm_ovoo,gamma%prime_ovoo,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(i,a,k,l)+=G(i,a,k,l)*K()",&
+     &                            gamma%symm_ovoo,gamma%prime_ovoo,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm ovoo 2-a  ", ierr
-      ierr=exatns_tensor_contract("G(i,a,k,l)+=G+(k,l,i,a)*K()",gamma%symm_ovoo,gamma%prime_ooov,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(i,a,k,l)+=G+(k,l,i,a)*K()",&
+     &                            gamma%symm_ovoo,gamma%prime_ooov,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm ovoo 2-b  ", ierr
 
       ! gamma%symm_ovov 
-      ierr=exatns_tensor_contract("G(i,a,j,b)+=G(i,a,j,b)*K()",gamma%symm_ovov,gamma%prime_ovov,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(i,a,j,b)+=G(i,a,j,b)*K()",&
+     &                            gamma%symm_ovov,gamma%prime_ovov,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm ovov 3-a  ", ierr
-      ierr=exatns_tensor_contract("G(i,a,j,b)+=G+(j,b,i,a)*K()",gamma%symm_ovov,gamma%prime_ovov,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(i,a,j,b)+=G+(j,b,i,a)*K()",&
+     &                            gamma%symm_ovov,gamma%prime_ovov,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm ovov 3-b  ", ierr
 
       ! gamma%symm_vvvo 
-      ierr=exatns_tensor_contract("G(a,b,c,i)+=G(a,b,c,i)*K()",gamma%symm_vvvo,gamma%prime_vvvo,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(a,b,c,i)+=G(a,b,c,i)*K()",&
+     &                            gamma%symm_vvvo,gamma%prime_vvvo,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm vvvo 4-a  ", ierr
-      ierr=exatns_tensor_contract("G(a,b,c,i)+=G+(c,i,a,b)*K()",gamma%symm_vvvo,gamma%prime_vovv,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(a,b,c,i)+=G+(c,i,a,b)*K()",&
+     &                            gamma%symm_vvvo,gamma%prime_vovv,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm vvvo 4-b  ", ierr
 
       ! gamma%symm_vovv
-      ierr=exatns_tensor_contract("G(a,i,b,c)+=G(a,i,b,c)*K()",gamma%symm_vovv,gamma%prime_vovv,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(a,i,b,c)+=G(a,i,b,c)*K()",&
+     &                            gamma%symm_vovv,gamma%prime_vovv,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm vovv 5-a  ", ierr
-      ierr=exatns_tensor_contract("G(a,i,b,c)+=G+(b,c,a,i)*K()",gamma%symm_vovv,gamma%prime_vvvo,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(a,i,b,c)+=G+(b,c,a,i)*K()",&
+     &                            gamma%symm_vovv,gamma%prime_vvvo,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm vovv 5-b  ", ierr
 
       ! gamma%symm_vvvv
-      ierr=exatns_tensor_contract("G(a,b,c,d)+=G(a,b,c,d)*K()",gamma%symm_vvvv,gamma%prime_vvvv,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(a,b,c,d)+=G(a,b,c,d)*K()",&
+     &                            gamma%symm_vvvv,gamma%prime_vvvv,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm vvvv 6-a  ", ierr
-      ierr=exatns_tensor_contract("G(a,b,c,d)+=G+(c,d,a,b)*K()",gamma%symm_vvvv,gamma%prime_vvvv,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(a,b,c,d)+=G+(c,d,a,b)*K()",&
+     &                            gamma%symm_vvvv,gamma%prime_vvvv,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm vvvv 6-b  ", ierr
 
       ! gamma%symm_oooo
-      ierr=exatns_tensor_contract("G(i,j,k,l)+=G(i,j,k,l)*K()",gamma%symm_oooo,gamma%prime_oooo,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(i,j,k,l)+=G(i,j,k,l)*K()",&
+     &                            gamma%symm_oooo,gamma%prime_oooo,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm oooo 7-a  ", ierr
-      ierr=exatns_tensor_contract("G(i,j,k,l)+=G+(k,l,i,j)*K()",gamma%symm_oooo,gamma%prime_oooo,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(i,j,k,l)+=G+(k,l,i,j)*K()",&
+     &                            gamma%symm_oooo,gamma%prime_oooo,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm oooo 7-b  ", ierr
 
       ! gamma%symm_oovv 
-      ierr=exatns_tensor_contract("G(i,j,a,b)+=G(i,j,a,b)*K()",gamma%symm_oovv,gamma%prime_oovv,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(i,j,a,b)+=G(i,j,a,b)*K()",&
+     &                            gamma%symm_oovv,gamma%prime_oovv,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm oovv 8-a  ", ierr
-      ierr=exatns_tensor_contract("G(i,j,a,b)+=G+(a,b,i,j)*K()",gamma%symm_oovv,gamma%prime_vvoo,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(i,j,a,b)+=G+(a,b,i,j)*K()",&
+     &                            gamma%symm_oovv,gamma%prime_vvoo,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm oovv 8-b  ", ierr
 
       ! gamma%symm_vvoo 
-      ierr=exatns_tensor_contract("G(a,b,i,j)+=G(a,b,i,j)*K()",gamma%symm_vvoo,gamma%prime_vvoo,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(a,b,i,j)+=G(a,b,i,j)*K()",&
+     &                            gamma%symm_vvoo,gamma%prime_vvoo,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm vvoo 9-a  ", ierr
-      ierr=exatns_tensor_contract("G(a,b,i,j)+=G+(i,j,a,b)*K()",gamma%symm_vvoo,gamma%prime_oovv,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(a,b,i,j)+=G+(i,j,a,b)*K()",&
+     &                            gamma%symm_vvoo,gamma%prime_oovv,one_dm_tensor,ONE_HALF)
       if (ierr.ne.0)  print*, " symm vvoo 9-b  ", ierr
 
 

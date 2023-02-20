@@ -29,6 +29,7 @@ module talsh_gradient
   public talsh_dm_initialize_dmtens
   public talsh_dm_cleanup_dmtens
   public talsh_dm_store_mo
+  public talsh_kudm_store_mo
 
   contains
 
