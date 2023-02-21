@@ -1788,7 +1788,7 @@ contains
         allocate(RWORK(2*N))
 
         if (left) then 
-            TRANS = 'C'
+            TRANS = 'T'
         else
             TRANS = 'N'
         end if 
