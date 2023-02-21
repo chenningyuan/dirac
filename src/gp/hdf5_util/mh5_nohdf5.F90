@@ -103,6 +103,7 @@ interface mh5_put_dset
                       mh5_put_dset_scalar_str, &
                       mh5_put_dset_array_int, &
                       mh5_put_dset_array_real, &
+                      mh5_put_dset_array_real_3d, &
                       mh5_put_dset_array_str
 end interface mh5_put_dset
 
@@ -549,6 +550,13 @@ subroutine mh5_put_dset_array_real(dsetid,buffer,exts,offs)
   integer(kind=iwp), intent(in), optional :: exts(*), offs(*)
   integer(kind=iwp) :: rc
 end subroutine mh5_put_dset_array_real
+
+subroutine mh5_put_dset_array_real_3d(dsetid,buffer,exts,offs)
+  integer(kind=iwp), intent(in) :: dsetid
+  real(kind=wp), intent(in) :: buffer(:,:,:)
+  integer(kind=iwp), intent(in), optional :: exts(*), offs(*)
+  integer(kind=iwp) :: rc
+end subroutine mh5_put_dset_array_real_3d
 
 subroutine mh5_put_dset_array_str(dsetid,buffer,exts,offs)
   integer(kind=iwp), intent(in) :: dsetid
