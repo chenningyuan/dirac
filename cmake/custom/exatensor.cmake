@@ -182,10 +182,7 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_nr_contracted "cc;talsh;short" "")
     dirac_test(exacorr_talsh_standalone "cc;talsh;short" "")
     dirac_test(exacorr_talsh_lambda "cc;talsh;short" "")
-<<<<<<< HEAD
     dirac_test(exacorr_talsh_lambda_2rdm "cc;talsh;short" "")
-=======
->>>>>>> upstream/master
     dirac_test(exacorr_talsh_open_lambda "cc;talsh;medium" "")
     dirac_test(exacorr_talsh_fock "cc;talsh;short" "")
     dirac_test(exacorr_talsh_open "cc;talsh;short" "")
@@ -197,15 +194,8 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_mp2no "mp2no;talsh;long" "")
     dirac_test(exacorr_talsh_mp2no_restart "mp2no_re;talsh;long" "")
     #dirac_test(exacorr_talsh_lambda_cc2 "cc;talsh" "")
-<<<<<<< HEAD
-    if(ENABLE_LAPLACE)
-      dirac_test(exacorr_talsh_mp2lap "mp2lap;talsh;long" "")
-      dirac_test(exacorr_talsh_tripl_lap "cc;talsh;long" "")
-    endif()
-=======
     dirac_test(exacorr_talsh_mp2lap "mp2lap;talsh;long" "")
     dirac_test(exacorr_talsh_tripl_lap "cc;talsh;long" "")
->>>>>>> upstream/master
 
    if (ENABLE_MPI AND NOT EXATENSOR_TALSH)
         dirac_test(exacorr_exatensor_memory "cc;exatensor;short" "")
