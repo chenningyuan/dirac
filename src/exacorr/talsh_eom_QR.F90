@@ -208,10 +208,10 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             ! call print_tensor(tprop_bar_tensor1%t1,1.0d-18,"T1 part of tbar")
             ! call print_tensor(tprop_bar_tensor1%t2,1.0d-18,"T2 part of tbar")
 
-            call print_tensor(tprop_tensor1%t1,1.0d-18,"T1 part of t")
-            call print_tensor(tprop_tensor1%t2,1.0d-18,"T2 part of t")
-            print *, "norm of t", sqrt(tensor_norm2(tprop_tensor1%t1) + tensor_norm2(tprop_tensor1%t2)/4)
-            print *, "norm of tbar", sqrt(tensor_norm2(tprop_bar_tensor1%t1) + tensor_norm2(tprop_bar_tensor1%t2)/4)
+            ! call print_tensor(tprop_tensor1%t1,1.0d-18,"T1 part of t")
+            ! call print_tensor(tprop_tensor1%t2,1.0d-18,"T2 part of t")
+            ! print *, "norm of t", sqrt(tensor_norm2(tprop_tensor1%t1) + tensor_norm2(tprop_tensor1%t2)/4)
+            ! print *, "norm of tbar", sqrt(tensor_norm2(tprop_bar_tensor1%t1) + tensor_norm2(tprop_bar_tensor1%t2)/4)
 
             one_dims(1) = 1
             ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
@@ -260,11 +260,11 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             print *, "term3: ", term3
 
 
-        ! Term4: -Tbar_Y(D)*Epison_X(S)*TZ(S)
+        ! Term4: Tbar_Y(D)*Epison_X(S)*TZ(S)
             ierr=talsh_tensor_init(result_tensor)
             ! print *, "ierr11 quarsp driver: ", ierr
             ierr=talsh_tensor_contract("Aux(i,a)+=Tly(i,j,a,b)*EpX(b,j)",Aux_ov,&
-                                        tprop_bar_tensor2%t2,interm_t_prop1%epsilon_prop_vo,scale=MINUS_ONE)
+                                        tprop_bar_tensor2%t2,interm_t_prop1%epsilon_prop_vo,scale=ONE)
 
             ! print *, "ierr12 quarsp driver: ", ierr
             ierr=talsh_tensor_contract("E()+=Aux(i,a)*TZ(a,i)",result_tensor,Aux_ov,tprop_tensor2%t1,scale=ONE)

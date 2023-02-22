@@ -226,12 +226,28 @@ subroutine get_linrsp_driver(tem_linrsp_iter,tprop_tensor1, tprop_tensor2, &
     complex(8)                  :: contrac_l2
 
 
+    type(talsh_tens_t)          :: eta_eom_test1, eta_eom_test2
+    integer(INTD)  ::  a_rank
+    integer(INTD)  ::  a_dims2(1:2)
+    integer(INTD)  ::  a_dims4(1:4)
+
+
     one_dims(1) = 1
     ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
     ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,result_tens,one_dims)
 
+
+    a_rank=talsh_tensor_rank(l1_tensor)
+    ierr = talsh_tensor_dimensions(l1_tensor,a_rank,a_dims2)
+    ierr=talsh_tensor_construct(eta_eom_test1,C8,a_dims2(1:2),init_val=ZERO)
+
+    a_rank=talsh_tensor_rank(l2_tensor)
+    ierr = talsh_tensor_dimensions(l2_tensor,a_rank,a_dims4)
+    ierr=talsh_tensor_construct(eta_eom_test2,C8,a_dims4(1:4),init_val=ZERO)
+
  
+
     if (CC_CC) then
 !--------------------------------------------------------------------------------------
 !       Term1 = 1/2 BX(nu)*tY(nu)  in CC-CC                                          |
@@ -316,8 +332,20 @@ subroutine get_linrsp_driver(tem_linrsp_iter,tprop_tensor1, tprop_tensor2, &
         print *, "Total Contribution of etaX*tY: ", term3
     end if 
 
-
     tem_linrsp_iter=term1*term2+term3
+
+
+    ierr=talsh_tensor_add("ETAEOM(i,a)+=ETA(i,a)",eta_eom_test1,interm_t_prop1%eta_prop_ov_eom,scale=ONE)
+    ierr=talsh_tensor_add("ETAEOM(i,a)+=L1(i,a)",eta_eom_test1,l1_tensor,scale=term2)
+
+    ierr=talsh_tensor_add("ETAEOM(i,j,a,b)+=ETA(i,j,a,b)",eta_eom_test2,interm_t_prop1%eta_prop_oovv,scale=ONE)
+    ierr=talsh_tensor_add("ETAEOM(i,j,a,b)+=L2(i,j,a,b)",eta_eom_test2,l2_tensor,scale=term2)
+
+    call print_tensor(eta_eom_test1,1.0d-18,"T1 part of ETAEOM")
+    call print_tensor(eta_eom_test2,1.0d-18,"T2 part of ETAEOM")
+
+    ierr=talsh_tensor_destruct(eta_eom_test1)
+    ierr=talsh_tensor_destruct(eta_eom_test2)
 
 end subroutine 
 
