@@ -104,9 +104,9 @@
 !
       IPRPRP       = 0
       DOEXP        = .FALSE.
-C     by default disable data transfer via the hdf5 file(s), until
-C     support is stable for all functionality related to ccsd, such as
-C     mp2fnos
+!     by default disable data transfer via the hdf5 file(s), until
+!     support is stable for all functionality related to ccsd, such as
+!     mp2fnos
       HDF5IO       = .FALSE.
       DOESR        = .FALSE.
       DOXLR        = .FALSE.
