@@ -94,7 +94,7 @@
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
 !                    41        42        43        44
-     &             '.RDCCDM','.PVCSR ','xXXXXXX','xXXXXXX' /
+     &             '.RDCCDM','.PVCSR ','.HDF5IO','xXXXXXX' /
 !
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -104,6 +104,10 @@
 !
       IPRPRP       = 0
       DOEXP        = .FALSE.
+!     by default disable data transfer via the hdf5 file(s), until
+!     support is stable for all functionality related to ccsd, such as
+!     mp2fnos
+      HDF5IO       = .FALSE.
       DOESR        = .FALSE.
       DOXLR        = .FALSE.
       DOXPP        = .FALSE.
@@ -455,7 +459,8 @@
             IF(NBSYM .GT. 1) CALL QUIT('.PVCSR only for C1 symmetry')
             GOTO 100
   143    CONTINUE
-!&&&& xXXXXXX
+!&&&& .HDF5IO
+            HDF5IO = .TRUE. 
             GOTO 100
   144    CONTINUE
 !&&&& xXXXXXX
