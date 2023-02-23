@@ -24,8 +24,7 @@ if(ENABLE_EXATENSOR)
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
    set (EXATENSOR_GIT_REPO_LOCATION "https://github.com/RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
-   set (EXATENSOR_GIT_HASH 559373c25f80dfc39e6c081516e692db31d9d434 CACHE STRING "ExaTENSOR Git repository hash in use")
-#  set (EXATENSOR_GIT_HASH e8e6f6351fabad514be9dd07d3c0a3a9e81c3f52 CACHE STRING "ExaTENSOR Git repository hash in use")
+   set (EXATENSOR_GIT_HASH 35caded68340657186be190a2d68a98c9e2159bb CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type
@@ -172,6 +171,7 @@ if(ENABLE_EXATENSOR)
    
    #In case of problems with the build, one may manually add ExaTENSOR dependencies here (BLAS, OpenMP, CUDA, C++):
    #set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-5/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/10.1.243/lib64 -lcublas -lcudart -lnvToolsExt -lstdc++ -lgomp)
+   # note: the same line could be added to CMAKE_EXE_LINKER_FLAGS
 
    include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/include)
 
