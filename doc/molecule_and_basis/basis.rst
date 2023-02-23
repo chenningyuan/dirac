@@ -4,19 +4,19 @@
 Pick the right basis for your calculation
 =========================================
 
-The development of basis sets suitable to use in relativistic calculations
-reflects the relatively lateness of the field's development. Because the more
+The development of basis sets suitable for use in relativistic calculations
+reflects the relative lateness of the field's development. Because the more
 consistent efforts in method development started at about the mid 1980's, it
 wasn't until well into the late 1990's that the pioneering works of the early
 and mid 1990's were substantially complemented and improved upon.
 
-This situations has dramatically improved in recent years, notably with the work
-of K. G. Dyall, and Dirac users are strongly advised to use Dyall's basis sets
-whenever they are available. These sets follow roughly the
-"correlation-consistent" philosophy introduced by Dunning and coworkers
-:cite:`Dunning1989`, so they already contain polarization functions, but the SCF sets
-are designed for an adequate SCF representation rather than to match correlating
-sets for the valence shells.
+The availability of basis sets has dramatically improved in recent years, notably 
+with the work of K. G. Dyall, and Dirac users are strongly advised to use Dyall's 
+basis sets whenever they are available. These sets follow roughly the
+"correlation-consistent" philosophy introduced by Dunning and coworkers :cite:`Dunning1989`, 
+so they already contain polarization and correlation functions, 
+but the SCF sets are designed for an adequate SCF representation rather than to match 
+correlating sets for the valence shells.
 
 
 
@@ -24,33 +24,56 @@ Dyall basis sets
 ----------------
 
 We recommend that you use the `Dyall basis set
-repository <http://dirac.chem.sdu.dk/basisarchives/dyall/index.html>`_
-whenever they are available for the elements of interest.
+repository <https://doi.org/10.5281/zenodo.7574628>`_
+whenever the basis sets are available for the elements of interest.
 In order to make that usage as convenient as possible,
 the following files, containing all sets currently available at the
 URL above (published or to be published), are made available:
 
-+------------------+-------------+----------------+----------------+-----------+
-|     quality      |  valence    |  core-valence  |  all-electron  |  DFT      |
-+==================+=============+================+================+===========+
-|     double-zeta  |  dyall.v2z  |  dyall.cv2z    |  dyall.ae2z    | dyall.2zp |
-+------------------+-------------+----------------+----------------+-----------+
-|     triple-zeta  |  dyall.v3z  |  dyall.cv3z    |  dyall.ae3z    | dyall.3zp |
-+------------------+-------------+----------------+----------------+-----------+
-|  quadruple-zeta  |  dyall.v4z  |  dyall.cv4z    |  dyall.ae4z    | dyall.2zp |
-+------------------+-------------+----------------+----------------+-----------+
++---------------------+-------------+----------------+----------------+-----------+
+|     quality         |  valence    |  core-valence  |  all-electron  |  DFT      |
++=====================+=============+================+================+===========+
+|  double-zeta        |  dyall.v2z  |  dyall.cv2z    |  dyall.ae2z    | dyall.2zp |
++---------------------+-------------+----------------+----------------+-----------+
+|  +diffuse functions |  dyall.av2z |  dyall.acv2z   |  dyall.aae2z   |           |
++---------------------+-------------+----------------+----------------+-----------+
+|  triple-zeta        |  dyall.v3z  |  dyall.cv3z    |  dyall.ae3z    | dyall.3zp |
++---------------------+-------------+----------------+----------------+-----------+
+|  +diffuse functions |  dyall.av3z |  dyall.acv3z   |  dyall.aae3z   |           |
++---------------------+-------------+----------------+----------------+-----------+
+|  quadruple-zeta     |  dyall.v4z  |  dyall.cv4z    |  dyall.ae4z    | dyall.4zp |
++---------------------+-------------+----------------+----------------+-----------+
+|  +diffuse functions |  dyall.av4z |  dyall.acv4z   |  dyall.aae4z   |           |
++---------------------+-------------+----------------+----------------+-----------+
 
-While the division in "valence" and "core-valence" can be at times not so
+The basis sets with diffuse functions are available for the s, p, and d blocks. 
+The diffuse functions consist of one additional function in each symmetry that has
+functions for valence correlation.
+
+While the division into "valence" and "core-valence" can be at times not so
 clear-cut as for lighter elements, the option was made to stick to the usual
 jargon of non-relativistic theory, particularly in relation to the
 "correlation-consistent" family of basis sets.
 
-The valence basis sets are defined to include functions for correlation of the
-outer ns shell and the (n-1)s and p shells for the s elements, the outer ns and
-np shells for the p elements, the ns, np, nd, and (n+1)s for the d elements, and
-the ns, np, nd, nf, (n+1)s, (n+1)p, (n+1)d, and (n+2)s for the f elements. The
-choice for the f block of these is necessary to cover correlation of the open f
-shell, which becomes a semicore shell towards the end of the row.
+The valence basis sets are defined differently for each block, and include functions 
+for the correlation of the following shells:
+
++-----------+-----------------------------------------------------------+
+|   block   |  shells included                                          |
++===========+===========================================================+
+|     s     |  ns shell, (n-1)s, p shells                               |
++-----------+-----------------------------------------------------------+
+|     p     |  ns, np shells                                            |
++-----------+-----------------------------------------------------------+
+|     d     |  ns, np, nd shells, (n+1)s and p shells                   |
++-----------+-----------------------------------------------------------+
+|     f     |  ns, np, nd, nf, (n+1)s, p, d shells, (n+2) s, p shells   |
++-----------+-----------------------------------------------------------+
+
+The choice for the f block is necessary to cover correlation of the open f
+shell, which becomes a semicore shell towards the end of the row. The reason 
+for including the outer core shells for the s and d blocks is that the correlation
+of these shells is usually necessary for accurate results.
 
 The core-valence basis sets include the (n-2) shell for the s elements, the
 (n-1) shell for the p elements, the (n-1) shell for the d elements, and nothing
@@ -60,28 +83,24 @@ The all-electron basis sets include correlating functions for all shells, down
 to the 1s for all elements. These are intended for use when correlating all
 electrons.
 
+The basis sets also include functions for dipole polarization of the outer core
+shells, as this is important for many elements. For the s block these functions
+are included for the outer core (n-1)s and p shells; for the p block, an f function
+is included to polarize the (n-1)d shell; for the d block, polarizing f and higher
+functions are included for the nd shell; none are added for the f block as the f
+is very compact.
+
 The DFT basis sets do not contain the correlating functions as these are not
-necessary for DFT (or Hartree-Fock) calculations. With inclusion of all required
-polarization functions they are the most economical choice for DFT calculations.
+necessary for DFT (or Hartree-Fock) calculations, except for the outermost shells
+where the functions with one unit more of angular momentum are included from the 
+correlating sets as polarization functions. The dipole polarization functions for 
+the outer core are also included. These basis sets are the most economical choice 
+for DFT calculations.
 
-Users are encouraged to look in these files and in the original archives
-published at Theor. Chem. Acc. (as, for instance, for the `5p TZ basis
-<http://dirac.chem.sdu.dk/basisarchives/dyall/5p_tz_archive>`_ to get a feel for
-what is included in each case.
-
-In the case of p-block elements, additional files containing the
-corresponding diffuse functions, in addition to the valence and
-core-valence basis sets mentioned above, are also provided.
-
-+------------------+--------------+-----------------+
-|     quality      |  valence     |  core-valence   |
-+==================+==============+=================+
-|     double-zeta  |  dyall.av2z  |  dyall.acv2z    |
-+------------------+--------------+-----------------+
-|     triple-zeta  |  dyall.av3z  |  dyall.acv3z    |
-+------------------+--------------+-----------------+
-|  quadruple-zeta  |  dyall.av4z  |  dyall.acv4z    |
-+------------------+--------------+-----------------+
+You are encouraged to look in the basis set files and in the original archives
+published in Theor. Chem. Acc. to get a feel for
+what is included in each case. The archive files are available on zenodo 
+`here <https://doi.org/10.5281/zenodo.7606546>`_.
 
 With the recent addition of Dyall basis sets for the light elements, it is no
 longer necessary to use the standard non-relativistic basis sets, such as the
@@ -89,11 +108,13 @@ correlation-consistent sets of Dunning and coworkers.  However, because the
 Dyall basis sets are quite a bit larger, you might want to continue using these
 basis sets.  It is advisable that, in order to have a balanced description when
 light and heavy elements are present, that one uses either contracted or
-uncontracted sets thoughout.
+uncontracted sets thoughout. For 4-component calculations it is strongly
+recommended to use the basis sets uncontracted (which is the case for the files 
+listed above).
 
-See the `Dyall basis set
-repository <http://dirac.chem.sdu.dk/basisarchives/dyall/index.html>`_
-for the latest updates by Ken Dyall and the appropriate basis set
+See the `Dyall basis set 
+repository <https://doi.org/10.5281/zenodo.7574628>`_
+for the latest updates and the appropriate basis set
 references. In case of errors or omissions on any of the files in this directory,
 users are kindly asked to contact the authors of DIRAC.
 
@@ -101,9 +122,9 @@ users are kindly asked to contact the authors of DIRAC.
 Other relativistic basis sets
 -----------------------------
 
-Apart from Dyall's sets, one can choose several different basis sets based upon
+Apart from Dyall's sets, you can choose several different basis sets based upon
 geometric progressions of exponents. One such set is that of K. Faegri, also
-available in the basis set library, but with the drawback that the user needs
+available in the basis set library, but with the drawback that you may need
 to extend it by adding polarization functions.
 
 Non-relativistic and scalar-relativistic basis sets

@@ -2,6 +2,7 @@
 
 import os
 import sys
+import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
@@ -14,10 +15,7 @@ test = TestRun(__file__, sys.argv)
 
 my_scratchdir = os.path.join(os.getcwd(), 'fscc_scratchdir')
 if os.path.lexists(my_scratchdir):
-   files_to_delete = os.listdir(my_scratchdir)
-   for f in files_to_delete:
-      os.unlink(os.path.join(my_scratchdir,f))
-   os.rmdir(my_scratchdir)
+   shutil.rmtree(my_scratchdir)
 
 f = Filter()
 f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
@@ -55,10 +53,7 @@ for s in sectors:
 
    test.run(['fsccsd_restart_s'+s+'_b.inp'], ['Mg.mol'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
 
-files_to_delete = os.listdir(my_scratchdir)
-for f in files_to_delete:
-   os.unlink(os.path.join(my_scratchdir,f))
-os.rmdir(my_scratchdir)
+shutil.rmtree(my_scratchdir)
 
 #
 # in the second part of the test comprises ihfscc calculations on oh- ... 2h2o  
@@ -68,10 +63,7 @@ os.rmdir(my_scratchdir)
 
 my_scratchdir = os.path.join(os.getcwd(), 'ihfscc_scratchdir')
 if os.path.lexists(my_scratchdir):
-   files_to_delete = os.listdir(my_scratchdir)
-   for f in files_to_delete:
-      os.unlink(os.path.join(my_scratchdir,f))
-   os.rmdir(my_scratchdir)
+   shutil.rmtree(my_scratchdir)
 
 f = Filter()
 f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
@@ -88,10 +80,8 @@ test.run(['ihfscc_oh-_to_oh+_integrals_035.inp'], ['oh+2h2o.xyz'], f, args='--ke
 test.run(['ihfscc_oh-_to_oh+_restart_a_025.inp'], ['oh+2h2o.xyz'], f, args='--keep_scratch --scratchful='+my_scratchdir)
 test.run(['ihfscc_oh-_to_oh+_restart_b_025.inp'], ['oh+2h2o.xyz'], f, args='--keep_scratch --scratchful='+my_scratchdir)
 test.run(['ihfscc_oh-_to_oh+_all_norst_025.inp'], ['oh+2h2o.xyz'], f, args='--keep_scratch --scratchful='+my_scratchdir)
-files_to_delete = os.listdir(my_scratchdir)
-for f in files_to_delete:
-   os.unlink(os.path.join(my_scratchdir,f))
-os.rmdir(my_scratchdir)
+
+shutil.rmtree(my_scratchdir)
 
 
 sys.exit(test.return_code)

@@ -41,7 +41,7 @@ C***********************************************************************
 #include "dgroup.h"
 
 #ifdef HAVE_OPENMP
-      INTEGER omp_get_num_procs, omp_get_thread_limit
+      INTEGER omp_get_num_procs
       INTEGER omp_get_max_threads, omp_get_num_threads
       INTEGER omp_get_thread_num
 #endif
@@ -51,10 +51,11 @@ C     common block infpar
 
 #ifdef HAVE_OPENMP
       MAX_OMP_THREADS = omp_get_max_threads()
-      write(lupri,'(//A,3I5)')
+      IF (MAX_OMP_THREADS .gt. 1) write(lupri,'(//A,3I8)')
      &' * openMP activated, '//
-     &' thread limit - # processes - # threads: ',
-     & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
+     &' max # processes, max # threads, current # threads: ',
+     & omp_get_num_procs(), MAX_OMP_THREADS, omp_get_num_threads()
+      ! else openMP deactivated probably because user has exported OMP_NUM_THREADS=1
 !$OMP PARALLEL
 !      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
 !     &' max # threads - current # threads - current thread: ',
@@ -126,7 +127,7 @@ C
       CALL QENTER('DIRCTL')
       call xml_open_file('dirac.xml')
       call xml_begin('run','type="dirac-run"')
-      write (lupri,'(/A,I2)')," * Opening HDF5 checkpoint file "
+      write (lupri,'(/A,I2)')," * Opening checkpoint file "
       call checkpoint_open
 C
 C***********************************************************************
@@ -385,9 +386,7 @@ C***********************************************************************
 C***** L A P L A C E  ---  T E S T             *************************
 C***********************************************************************
 C
-#ifdef HAS_LAPLACE
         IF(DOLAPLCE) CALL PAMLAPLCE()
-#endif
 C
 C***********************************************************************
 C***** K R - M C S C F *************************************************

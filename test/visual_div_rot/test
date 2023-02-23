@@ -15,7 +15,7 @@ ierr = 0
 ierr += run(options,
             configure,
             input_files=['response_1z_bz.inp', 'co.mol'],
-            extra_args='--get="DFCOEF PAMXVC"')
+            extra_args='--outcmo --get="PAMXVC"')
 
 f = [
     get_filter(from_string='Requested density at point(s)',
@@ -33,7 +33,7 @@ for inp in ['visual_1z_bz.inp',
     ierr += run(options,
                 configure,
                 input_files=[inp, 'co.mol'],
-                extra_args='--copy="DFCOEF PAMXVC"',
+                extra_args='--incmo --copy="PAMXVC"',
                 filters={'out': f})
 
 f = [
@@ -49,7 +49,7 @@ for inp in ['visual_jpara.inp',
     ierr += run(options,
                 configure,
                 input_files=[inp, 'co.mol'],
-                extra_args='--copy="DFCOEF PAMXVC"',
+                extra_args='--incmo --copy="PAMXVC"',
                 filters={'out': f})
 
 sys.exit(ierr)

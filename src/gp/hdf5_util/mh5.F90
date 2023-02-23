@@ -23,8 +23,8 @@ integer(kind=iwp), parameter :: wp = real64, MOLCAS_C_REAL = c_double
 
 private
 
-public :: mh5_create_file, mh5_open_file_rw, mh5_open_file_r, mh5_close_file, &
-          mh5_is_hdf5, mh5_open_group, mh5_create_group, mh5_close_group, &
+public :: mh5_is_available, mh5_open_file_a, mh5_create_file, mh5_open_file_rw, mh5_open_file_r, mh5_close_file, &
+          mh5_is_hdf5, mh5_open_group, mh5_create_group, mh5_close_group, mh5_exists_group, &
           mh5_exists_attr, mh5_open_attr, mh5_close_attr, mh5_exists_dset, mh5_open_dset, mh5_close_dset, mh5_create_attr_int, &
           mh5_create_attr_real, mh5_create_attr_str, mh5_put_attr, mh5_get_attr, mh5_init_attr, mh5_fetch_attr, &
           mh5_create_dset_int, mh5_create_dset_real, mh5_create_dset_str, mh5_put_dset, mh5_get_dset, mh5_init_dset, &
@@ -171,6 +171,14 @@ interface
     integer(kind=MOLCAS_C_INT) :: lu
     character(kind=c_char) :: filename(*)
   end function mh5_c_create_file
+  
+   function mh5_c_open_a(filename) result(lu) &
+           bind(C,name='mh5c_open_file_a')
+    import :: MOLCAS_C_INT, c_char
+    integer(kind=MOLCAS_C_INT) :: lu
+    character(kind=c_char) :: filename(*)
+  end function mh5_c_open_a
+
 
   function mh5_c_open_rw(filename) result(lu) &
            bind(C,name='mh5c_open_file_rw')
@@ -209,6 +217,15 @@ interface
     integer(kind=MOLCAS_C_INT), value :: lu
     character(kind=c_char) :: groupname(*)
   end function mh5_c_open_group
+
+  function mh5_c_exists_group(lu,groupname) result(groupid) &
+           bind(C,name='mh5c_exists_group')
+    import :: MOLCAS_C_INT, c_char
+    integer(kind=MOLCAS_C_INT) :: groupid
+    integer(kind=MOLCAS_C_INT), value :: lu
+    character(kind=c_char) :: groupname(*)
+  end function mh5_c_exists_group
+
 
   function mh5_c_create_group(lu,groupname) result(groupid) &
            bind(C,name='mh5c_create_group')
@@ -709,6 +726,11 @@ end subroutine f2c_string
 
 #define MH5_MAX_LBL_LEN 256
 
+function mh5_is_available() result(available)
+  logical :: available
+  available = .true.
+end function mh5_is_available
+
 ! file
 
 function mh5_create_file(filename) result(lu)
@@ -719,6 +741,16 @@ function mh5_create_file(filename) result(lu)
   call f2c_string(filename,c_name)
   lu = mh5_c_create_file(c_name)
 end function mh5_create_file
+
+function mh5_open_file_a(filename) result(lu)
+  integer(kind=iwp) :: lu
+  character(len=*), intent(in) :: filename
+  integer(kind=iwp) :: lrealname
+  character(len=4096) :: realname, c_name
+  call f2c_string(filename,c_name)
+  lu = mh5_c_open_a(c_name)
+end function mh5_open_file_a
+
 
 function mh5_open_file_rw(filename) result(lu)
   integer(kind=iwp) :: lu
@@ -767,6 +799,18 @@ function mh5_is_hdf5(filename) result(ishdf5)
 end function mh5_is_hdf5
 
 ! group
+
+function mh5_exists_group(lu,groupname) result(groupid)
+  !LV: Added this "missing" HDF5 function for convenience.
+  integer(kind=iwp) :: groupid
+  integer(kind=iwp), intent(in) :: lu
+  character(len=*), intent(in) :: groupname
+  character(len=MH5_MAX_LBL_LEN) :: mh5_lbl
+  logical(kind=iwp) :: exists
+  call f2c_string(groupname,mh5_lbl)
+  groupid = mh5_c_exists_group(lu,mh5_lbl)
+  !exists = groupid > 0
+end function mh5_exists_group
 
 function mh5_open_group(lu,groupname) result(groupid)
   integer(kind=iwp) :: groupid

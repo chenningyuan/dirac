@@ -16,14 +16,8 @@ target_link_libraries(input
     visual
     relccsd
     grid
+    qcorr
   )
-
-if(ENABLE_QCORR)
-  target_link_libraries(input
-    PRIVATE
-      qcorr
-    )
-endif()
 
 if(ENABLE_EXATENSOR)
   target_link_libraries(input

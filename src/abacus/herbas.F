@@ -59,6 +59,9 @@ C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, KAOVEC, KPRIM,
      &                   Q, QEFF, DSM, UNCONT, BASNAM, BASREF, IPRBAS)
+#ifdef PRG_DIRAC
+      use aobasis_collector, only: add_aobasis2container
+#endif
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL   UNCONT, SEG, READ_NU_CALLED
@@ -109,6 +112,7 @@ C
 C     control print in BASLIB, usually IPRBAS = IPREAD = IPRUSR + 1 = 1
 C     from calling routine
       IPRINT = IPRBAS
+      !IPRINT = 10
       IF (BASNAM(1:1).eq.' ') IPRINT = 5
       INTQ   = NINT(Q)
       IF (abs(Q-INTQ) .gt. 1.d-8) then
@@ -452,6 +456,12 @@ C
         WRITE(LUPRI,*) 'SADLEJ =',SADLEJ
         WRITE(LUPRI,*) 'NQVD   =',NQVD
       ENDIF
+
+      !> save AO basis label for later usage
+#if defined PRG_DIRAC && defined MOD_XAMFI
+      call add_aobasis2container(BASTMP)
+#endif
+
 C
 C Finds the right element in the file.
 C

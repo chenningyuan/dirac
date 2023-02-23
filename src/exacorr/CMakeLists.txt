@@ -36,7 +36,8 @@ if(ENABLE_EXATENSOR)
    talsh_ao_to_mo.F90
    talsh_cholesky_integrals.F90
    talsh_common_routines.F90
-   talsh_gradient.F90
+   talsh_density_matrices.F90
+   talsh_1rdm_2rdm_ccsd_kernels.F90
    talsh_triples.F90
    talsh_cc.F90
    talsh_mp2lap.F90

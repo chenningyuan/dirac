@@ -21,6 +21,7 @@ set(FIXED_PRP_FORTRAN_SOURCES
    pamrvc.F
    pamset.F
    pamstex.F
+   pamnqcc.F
    pamtpa.F
    pamxlr.F
    pamxpp.F

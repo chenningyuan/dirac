@@ -115,7 +115,6 @@ C
 !     Get the MO coefficients
 !
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPTPA')
       IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),TOTERG,11)
@@ -123,7 +122,6 @@ C
         KIBRP = KFREE
         CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3)
       ENDIF
-      CLOSE(LUCMO,STATUS='KEEP')
 !
 !     Determine which symmetry classes that give contributions
       CALL EXCLISTSETUP(prponly,nexcsym)
@@ -274,12 +272,6 @@ C
       KFREE = 1
       LFREE = LWRK
 C
-C     Open the property file
-C     ======================
-C
-      OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &            FILE='AOPROPER')
-C     
       CALL DZERO(RESULT,3*NBSYM*MAXFQR*NBSYM*MAXFQR*MAXLQR)
 C
       NFC  = NBSYM/NFSYM
@@ -314,11 +306,6 @@ C
      &        VECCEE,VECAEP,VECBEP,VECCEP,CMO,
      &        IBEIG,WORK(KFREE),LFREE)
       END DO
-C
-C     Close the property file
-C     =======================
-C
-      CLOSE(LU1INT,STATUS='KEEP')
 C
       CALL QEXIT('EXCPRPCALC')
       RETURN

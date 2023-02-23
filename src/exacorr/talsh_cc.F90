@@ -47,7 +47,7 @@ module talsh_cc
          use talsh_triples
 
          type(exacc_input), intent(in) :: exa_input
-         type(file_info_t), save :: exacc_file
+         type(file_info_t)      :: exacc_file
          integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
@@ -87,6 +87,7 @@ module talsh_cc
          logical :: do_perturbative
          integer :: iterative_level, iterative_scheme
          integer :: perturbative_level, perturbative_scheme
+         logical :: do1rdm_gs, do2rdm_gs
 
          integer :: iff        ! loop variable to loop over field strengths
          integer :: fock_mode  ! choice of Fock build options
@@ -140,12 +141,16 @@ module talsh_cc
 
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
+         do1rdm_gs = exa_input%do_1rdm_gs
+         do2rdm_gs = exa_input%do_2rdm_gs
+         if ((do1rdm_gs.or.do2rdm_gs).and..not.lambda) then
+            call quit("specify .LAMBDA to generate 1RDM/2RDM")
+         end if
 
          call print_date("MO occupation data to EXACC file")
-         if (exacc_file%status == -1) then
-            exacc_file%type = 2
-            exacc_file%name = "EXACC.h5"
-         end if
+         exacc_file%status = -1
+         exacc_file%type = 2
+         exacc_file%name = "EXACC.h5"
          call lab_write(exacc_file,'nocc',idata=nocc)
          call lab_write(exacc_file,'mo_occ',idata=mo_occ)
 
@@ -389,11 +394,11 @@ module talsh_cc
                 call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                     t_target_precision,ncycles,exa_input%print_level,l1_tensor)
             end if 
-            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
+            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor,int_t=int_t)
           else
             call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                         t_target_precision,ncycles,exa_input%print_level)
-            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor)
+            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,int_t=int_t)
           end if
 
           if (.not.CCD) ierr=talsh_tensor_destruct(l1_tensor)
@@ -1161,7 +1166,7 @@ module talsh_cc
          call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD)
          call print_date('Finished calculating fixed intermediates')
 
-         if (print_level.gt.8) then
+         if (print_level>0) then
              if (.not.CCD) print*, "T1amp      = ", tensor_norm2(comm_t%t1)
              print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER_R
              ! print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER_R

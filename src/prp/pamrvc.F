@@ -3906,16 +3906,9 @@ C     ----------------
 C
       IF ( .NOT. FKRMC) THEN
 C
-C        We're not doing a KRMCSCF optimization
+C        We are not doing a KRMCSCF optimization
 C
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(/A)')
-     &      '*** ERROR in GMOLITX : Coefficient file DFCOEF not found!'
-            CALL QUIT('GMOLITX: coeff. file DFCOEF file not found!')
-         END IF
          LUBUF = 1
-         CALL OPNFIL(LUBUF,'DFCOEF','OLD','GMOLI1')
          IF(SPINFR) THEN
            IOPT = 10
          ELSE
@@ -3924,7 +3917,6 @@ C
          IF (IPRXRS .GE. 10) IOPT = IOPT + 1
          CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
      &               TOTERG,IOPT)
-         CLOSE(LUBUF,STATUS='KEEP')
       ELSE
 C
 C        We are doing a KRMCSCF opt. Read orbitals from KRMCSCF

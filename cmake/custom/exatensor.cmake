@@ -1,3 +1,12 @@
+#.rst:
+#
+# autocmake.yml configuration::
+#
+#   docopt:
+#     - "--exatensor=<ENABLE_EXATENSOR> Toggle use of ExaTensor <ON/OFF> [default: ON]."
+#   define:
+#     - "'-DENABLE_EXATENSOR={0}'.format(arguments['--exatensor'])"
+
 #Check whether ExaTensor can be used
 option(ENABLE_EXATENSOR "Enable ExaTENSOR library" ON)
 option(TALSH_ONLY "Enable only TALSH component of ExaTENSOR library" OFF)
@@ -14,13 +23,8 @@ if(ENABLE_EXATENSOR)
    # on which the repository resides locally but where network cannot be accessed
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
-   set (EXATENSOR_GIT_REPO_LOCATION "https://gitlab.com/DmitryLyakh/ExaTensor.git" CACHE STRING "ExaTENSOR Git repository location")
-   #JVP old version do not know -fallow-argument-mismatch, newer need it
-   if ( (CMAKE_Fortran_COMPILER_ID MATCHES GNU) AND ("${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "10"))
-       set (EXATENSOR_GIT_HASH e36b0bac2b21a9e3e9a4cd6cbd216b9cd317ad4d CACHE STRING "ExaTENSOR Git repository hash in use")
-   else()
-       set (EXATENSOR_GIT_HASH 7a75a73bc6dbfa3ff4b107231514d8f3d26e6338 CACHE STRING "ExaTENSOR Git repository hash in use")
-   endif()
+   set (EXATENSOR_GIT_REPO_LOCATION "https://github.com/RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
+   set (EXATENSOR_GIT_HASH 35caded68340657186be190a2d68a98c9e2159bb CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type
@@ -147,6 +151,7 @@ if(ENABLE_EXATENSOR)
    set(EXATENSOR_ENV "WRAP=NOWRAP BUILD_TYPE=OPT ${EXATENSOR_TALSH} ${TALSH_COMPILERS} ${EXATENSOR_TOOLKIT} ${EXATENSOR_OS} ${EXATENSOR_GPUENV} ${EXATENSOR_MPIENV} ${EXATENSOR_BLAS}")
    message(STATUS "The environment variables used to build ExaTensor are collected in the file ExaTensor_ENV (can be inspected/changed if necessary)")
    file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV ${EXATENSOR_ENV})
+   file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP "${EXATENSOR_ENV}  EXA_NO_BUILD=YES")
 
    ExternalProject_Add(exatensor
         PREFIX "${PROJECT_BINARY_DIR}/exatensor"
@@ -154,7 +159,7 @@ if(ENABLE_EXATENSOR)
         GIT_TAG ${EXATENSOR_GIT_HASH}
         GIT_CONFIG advice.detachedHead=false
         CONFIGURE_COMMAND true  # currently no configure command, but this is needed for cmake to function
-        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && set -a && . ${PROJECT_BINARY_DIR}/ExaTensor_ENV && set +a && make
+        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && set -a && . ${PROJECT_BINARY_DIR}/ExaTensor_ENV && set +a && make && cp ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP ${PROJECT_BINARY_DIR}/ExaTensor_ENV
         INSTALL_DIR ${EXATENSOR_INSTALL_DIR}
         INSTALL_COMMAND true
         )
@@ -166,6 +171,7 @@ if(ENABLE_EXATENSOR)
    
    #In case of problems with the build, one may manually add ExaTENSOR dependencies here (BLAS, OpenMP, CUDA, C++):
    #set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-5/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/10.1.243/lib64 -lcublas -lcudart -lnvToolsExt -lstdc++ -lgomp)
+   # note: the same line could be added to CMAKE_EXE_LINKER_FLAGS
 
    include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/include)
 
@@ -175,26 +181,27 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_debug "cc;talsh;short" "")
     dirac_test(exacorr_talsh_nr_contracted "cc;talsh;short" "")
     dirac_test(exacorr_talsh_standalone "cc;talsh;short" "")
-    dirac_test(exacorr_talsh_lambda "cc;talsh" "")
-    dirac_test(exacorr_talsh_lambda_autokernels "cc;talsh" "")
-    dirac_test(exacorr_talsh_open_lambda "cc;talsh;short" "")
-    dirac_test(exacorr_talsh_fock "cc;talsh" "")
+    dirac_test(exacorr_talsh_lambda "cc;talsh;short" "")
+    dirac_test(exacorr_talsh_lambda_2rdm "cc;talsh;short" "")
+    dirac_test(exacorr_talsh_open_lambda "cc;talsh;medium" "")
+    dirac_test(exacorr_talsh_fock "cc;talsh;short" "")
     dirac_test(exacorr_talsh_open "cc;talsh;short" "")
-    dirac_test(exacorr_talsh_cc2 "cc;talsh" "")
-    dirac_test(exacorr_talsh_spinfree "cc;talsh" "")
-    dirac_test(exacorr_talsh_respect "cc;talsh;respect" "")
-    dirac_test(exacorr_talsh_ccsdt_autokernels "cc;exacorr;talsh" "")
-    dirac_test(exacorr_talsh_ccsdtq_autokernels "cc;exacorr;talsh" "")
-    dirac_test(exacorr_talsh_ccsdtqp_autokernels "cc;exacorr;talsh" "")
-    dirac_test(exacorr_talsh_finite_field "cc;talsh" "")
-    dirac_test(exacorr_talsh_cholesky "cc;talsh" "")
-    dirac_test(exacorr_talsh_mp2no "mp2no;talsh" "")
-    dirac_test(exacorr_talsh_mp2no_restart "mp2no_re;talsh" "")
+    dirac_test(exacorr_talsh_cc2 "cc;talsh;medium" "")
+    dirac_test(exacorr_talsh_spinfree "cc;talsh;medium" "")
+    dirac_test(exacorr_talsh_respect "cc;talsh;respect;medium" "")
+    dirac_test(exacorr_talsh_finite_field "cc;talsh;short" "")
+    dirac_test(exacorr_talsh_cholesky "cc;talsh;long" "")
+    dirac_test(exacorr_talsh_mp2no "mp2no;talsh;long" "")
+    dirac_test(exacorr_talsh_mp2no_restart "mp2no_re;talsh;long" "")
     #dirac_test(exacorr_talsh_lambda_cc2 "cc;talsh" "")
     if(ENABLE_LAPLACE)
       dirac_test(exacorr_talsh_mp2lap "mp2lap;talsh" "")
       dirac_test(exacorr_talsh_tripl_lap "cc;talsh" "")
     endif()
+    dirac_test(exacorr_talsh_lambda_autokernels "cc;talsh" "")
+    dirac_test(exacorr_talsh_ccsdt_autokernels "cc;exacorr;talsh" "")
+    dirac_test(exacorr_talsh_ccsdtq_autokernels "cc;exacorr;talsh" "")
+    dirac_test(exacorr_talsh_ccsdtqp_autokernels "cc;exacorr;talsh" "")
 
    if (ENABLE_MPI AND NOT EXATENSOR_TALSH)
         dirac_test(exacorr_exatensor_memory "cc;exatensor;short" "")

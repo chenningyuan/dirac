@@ -521,10 +521,6 @@ C
 C
       call qenter('GRDORB_MPG')
 C
-      open(lu1int,status='OLD',form='UNFORMATTED',file='AOPROPER')
-C
-      close(lu1int,status='KEEP')
-C
 C     Construct gradient
 C     ==================
 C
@@ -690,7 +686,6 @@ C     ================
 C
       call memget('REAL',kcmo,ncmotq,work,kfree,lfree)
       lubuf=22
-      call opnfil(lubuf,'DFCOEF','OLD','GETLRF')
       IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
@@ -699,7 +694,6 @@ C
         KIBRP = KFREE
         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3)
       ENDIF
-      close(lubuf,status='KEEP')
 C
 C     Solution vector (e-e) part
 C     ==========================
@@ -871,13 +865,9 @@ C
 C     We also need the eigenvalues
 C     ============================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) GOTO 1000
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CALCDAX')
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6)
-      CLOSE(LUCOEF,STATUS='KEEP')
       CALL MEMCHK('na reacmo',WORK,1)
 C
       CALL CALC1_DAX(DMO,XMO,WORK(KDAX),WORK(KDVJ),WORK(KEIG),WORK,
@@ -888,10 +878,6 @@ C
 C
       CALL QEXIT('CALCDAX')
       RETURN
- 1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'CALCDAX: Coefficient file not found !'
-      CALL QUIT('CALCDAX: Coefficients not found !')
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck calc1_dax */
@@ -1043,13 +1029,9 @@ C
 C       Open the coefficient file and read the eigenvalues
 C       ==================================================
 C
-        INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-        IF(.NOT.FILEX) GOTO 1000
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CALCDJI')
         CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6)
-        CLOSE(LUCOEF,STATUS='KEEP')
 C
 C       Calculate D_ji' and D_b'a
 C       =========================
@@ -1067,9 +1049,6 @@ C
 C
       CALL QEXIT('CALCDJI')
       RETURN
- 1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'CALCDJI: Coefficient file not found !'
-      CALL QUIT('CALCDJI: Coefficients not found !')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

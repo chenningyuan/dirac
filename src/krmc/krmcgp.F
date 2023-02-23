@@ -2175,10 +2175,8 @@ C
               end if
               if(.not.isopen) close(luxxxx,status="keep")
             else
-              call opnfil(lucoef,'DFCOEF','OLD','mjlist ')
               call reacmo(lucoef,'DFCOEF',dummy,dummy,
      &                            orb_sym_vec,dummy,8)
-              close(lucoef,status='KEEP')
             end if
           end if
         end if

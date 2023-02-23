@@ -279,21 +279,14 @@ C
          
          CLOSE (LUKRMC)
       ELSE
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(/A)')
-     &        'PAMTRA ERROR: MO coefficient file not present'
-            CALL QUIT('PAMTRA: No MO coefficient file !')
-         ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
-            CLOSE(LUCOEF,STATUS='KEEP')
-         END IF
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
          IF (IPRTRA .GE. 0) THEN
             WRITE(LUPRI,'(/A)')
-     &          ' (PAMTRA)  Orbitals read from DFCOEF'
+     &          ' (PAMTRA)  Orbitals read from CHECKPOINT'
          END IF
       END IF
+
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C
 C     Select the set of MOs(CMO), eigenvalues(EIG) and boson array id(IBEIG) that we need for core transformation
 C
@@ -490,15 +483,10 @@ C
          END IF
          CLOSE (LUKRMC)
       ELSE
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-            CALL QUIT('PAMTRA: No MO coefficient file !')
-         ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
-         ENDIF
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
       END IF
+
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C
 C     Select the set of MOs that we need for core transformation
 C
@@ -653,18 +641,6 @@ C
       TRANOP = .false.
       CALL MP2HI(IPRMP2)
 C
-C     Check to see if coefficients are there
-C     ======================================
-C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-        WRITE(LUPRI,'(/A)')
-     &    'PSIMP2 ERROR: MO coefficient file not present'
-        CALL QUIT('PSIMP2: No MO coefficient file !')
-      ELSE
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
-      ENDIF
-C
 C     Transfer information from DCBMP2 to DCBTRA
 C     ==========================================
 C
@@ -738,9 +714,6 @@ C     If energy threshold, truncate virtual space
 C     ===========================================
 C
       IF (DMP2_VIRTHR.NE.DUMMY) THEN
-!        NUMLST closes DFCOEF, need to be open for VIRTHR
-!        (note: no problem with OPNFIL call if LUCOEF is already open)
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
          CALL VIRTHR(WORK,KFREE,LFREE,
      &     LUCOEF,NSTR(1,0,2),KVEC(1,2),DMP2_VIRTHR)
       END IF
@@ -798,17 +771,11 @@ C
       Allocate (CMO(N2BBASXQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-         CALL QUIT('PSIMP2: No MO coefficient file !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,ESCF,14)
-      ENDIF
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,ESCF,14)
       WRITE(LUPRI,'(A,F18.10,/)')
      &  'Coefficients imported. Total DHF energy:', ESCF
+
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C
 C     Select the set that we need
 C
@@ -1170,16 +1137,8 @@ C
       Allocate (CMO(NCMOTQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)')
-     &     'LAGTAU ERROR: MO coefficient file not present'
-         CALL QUIT('LAGTAU: No MO coefficient file !')
-      ELSE  
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','LAGTAU')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      ENDIF 
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C           
 C     Select the set that we need
 C        
@@ -1676,15 +1635,7 @@ C
          INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
          INQUIRE(FILE='KRMCOLD',EXIST=TOBEK)
          IF (.NOT.TOBEK) THEN
-            INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-            IF (.NOT.TOBE) THEN
-               WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-               CALL QUIT('TRAHI: No MO coefficient file !')
-            ELSE
-               CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAHI')
-               CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1)
-               CLOSE(LUCOEF,STATUS='KEEP')
-            ENDIF
+            CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1)
          END IF
       END IF
 C
@@ -4036,19 +3987,11 @@ C
 C     Get all coefficients and eigenvalues
 C     ====================================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)')
-     &      'RESOLV ERROR: MO coefficient file not present'
-         CALL QUIT('RESOLV: No MO coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
      &               TOTERG,14)
-        CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF1),WORK(KEIG),WORK(KIBEIG),
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF1),WORK(KEIG),WORK(KIBEIG),
      &               TOTERG,14)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      ENDIF
+      if (atomic) call atomic_to_linear (work(kibeig),norbt)
 C
 C     Select active orbitals
 C     ======================
@@ -4403,19 +4346,9 @@ C
 C     Get all coefficients and eigenvalues
 C     ====================================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-!@m      WRITE(LUPRI,'(/A)')
-!@m  &      'RESOLV ERROR: MO coefficient file not present'
-         WRITE(LUPRI,'(/A)')
-     &      'SY_COSCI ERROR: MO coefficient file not present'
-         CALL QUIT('RESOLV: No MO coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
      &               TOTERG,14)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      ENDIF
+      if (atomic) call atomic_to_linear (work(kibeig),norbt)
 C
 C     Select active orbitals
 C     ======================
@@ -5606,3 +5539,17 @@ C     add SLIST to TLIST
 
       RETURN
       END
+
+      subroutine atomic_to_linear (ibeig,norbt)
+         implicit none
+         ! replace the atomic symmetry information by just the mj value
+         integer,intent(in) :: norbt ! dimension info needed because this may come out the old work array
+         integer,intent(inout) :: ibeig(*)
+         integer :: i,j,kappa,mj,l
+         do i = 1, norbt
+            ! unpack the mj and other quantum numbers
+            call atomic_id(ibeig(i),kappa,j,mj,l)
+            ! store just mj
+            ibeig(i) = mj
+         enddo
+      end subroutine atomic_to_linear

@@ -19,9 +19,8 @@ f.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
 # Test if restart procedure works
 
 
-test.run(['hf_get_NOs_MO_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--get="NOs_MO=NOs_MO_all-active_hf-ccpvdz_1.0d-4 DFCOEF"')
-test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4"\
-                  --put "NOs_MO_all-active_hf-ccpvdz_1.0d-4=NOs_MO DFCOEF"')
+test.run(['hf_get_NOs_MO_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--outcmo --get=NOs_MO')
+test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--incmo --put=NOs_MO --outcmo')
 
 f = Filter()
 
@@ -35,5 +34,5 @@ f.add(from_string = '           Total contribution to principal components',
       num_lines   = 15,
       rel_tolerance   = 1.0e-6)
 
-test.run(['hf_fno_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4=DFCOEF"')
+test.run(['hf_fno_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--incmo')
 sys.exit(test.return_code)
