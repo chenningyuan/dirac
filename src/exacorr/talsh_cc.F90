@@ -8,6 +8,7 @@ module talsh_cc
         use intermediates
         use intermediates_eom_ccsd
         use talsh_common_routines
+        use mfsolver_dirac_input
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -355,6 +356,7 @@ module talsh_cc
 !**************************
 
          if (eom.or.eom_lr.or.eom_qr) then
+            call mfsolver_dirac_input_sync_cw()
 
 !aspg, this new handling of fock matrices has to be verified, we don't want any addition to finite field ere for example
 !        Get fixed one-body tensors, needs to follow the two body tensors

@@ -68,10 +68,10 @@
            call read_input_eomprop(word, kw_section)
 
         case ('*CCPROJ')
-           call read_input_ccproj(word, kw_section)
+           call read_input_mfsolver_proj(word, kw_section)
 
         case ('*CCDIAG')
-           call read_input_ccdiag(word, kw_section)
+           call read_input_mfsolver_options(word, kw_section)
 
 #ifdef HAS_PCMSOLVER
         case ('*PCM   ')
@@ -1497,9 +1497,9 @@
    end subroutine
 
 
-   subroutine read_input_ccproj(word, kw_section)
+   subroutine read_input_mfsolver_proj(word, kw_section)
 
-      use relcc_cfg
+      use mfsolver_dirac_input
       use input_reader
 
       implicit none
@@ -1512,54 +1512,55 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.REW_STRICT')) then
-         relcc_projectors_rew_strict = .true.
+         mfsolver_projectors_rew_strict = .true.
       end if
 
       if (kw_matches(word, '.REW_NOSTRICT')) then
-         relcc_projectors_rew_strict = .false.
+         mfsolver_projectors_rew_strict = .false.
       end if
 
       if (kw_matches(word, '.REW_OCC')) then
-         relcc_projectors_do_restricted_excitation_window = .true.
-         call kw_read(word,  relcc_projectors_rew_occ_min_energy)
-         call kw_read(word,  relcc_projectors_rew_occ_max_energy)
+         mfsolver_projectors_do_restricted_excitation_window = .true.
+         call kw_read(word,  mfsolver_projectors_rew_occ_min_energy)
+         call kw_read(word,  mfsolver_projectors_rew_occ_max_energy)
       end if
 
       if (kw_matches(word, '.REW_VIRT')) then
-         relcc_projectors_do_restricted_excitation_window = .true.
-         call kw_read(word,  relcc_projectors_rew_virt_min_energy)
-         call kw_read(word,  relcc_projectors_rew_virt_max_energy)
+         mfsolver_projectors_do_restricted_excitation_window = .true.
+         call kw_read(word,  mfsolver_projectors_rew_virt_min_energy)
+         call kw_read(word,  mfsolver_projectors_rew_virt_max_energy)
       end if
 
       if (kw_matches(word, '.CVS_CORE')) then
-         relcc_projectors_do_core_valence_separation = .true.
-         call kw_read(word,  relcc_projectors_rew_occ_max_energy)
-         relcc_projectors_rew_occ_min_energy = -huge(relcc_projectors_rew_occ_min_energy)
-         relcc_projectors_rew_virt_min_energy = -huge(relcc_projectors_rew_virt_min_energy)
-         relcc_projectors_rew_virt_max_energy = huge(relcc_projectors_rew_virt_min_energy)
+         mfsolver_projectors_do_core_valence_separation = .true.
+         call kw_read(word,  mfsolver_projectors_rew_occ_max_energy)
+         mfsolver_projectors_rew_occ_min_energy = -huge(mfsolver_projectors_rew_occ_min_energy)
+         mfsolver_projectors_rew_virt_min_energy = -huge(mfsolver_projectors_rew_virt_min_energy)
+         mfsolver_projectors_rew_virt_max_energy = huge(mfsolver_projectors_rew_virt_min_energy)
       end if
 
       if (kw_matches(word, '.FCORE ')) then
-         relcc_projectors_frozen_core = .true.
-         call kw_read(word,  relcc_projectors_frozen_core_max_energy)
+         mfsolver_projectors_frozen_core = .true.
+         call kw_read(word,  mfsolver_projectors_frozen_core_max_energy)
       end if
 
       if (kw_matches(word, '.NODOCC')) then
-         relcc_projectors_rew_remove_double_occupied = .true.
+         mfsolver_projectors_rew_remove_double_occupied = .true.
       end if
 
       call check_whether_kw_found(word, kw_section)
 
-      if (relcc_projectors_do_restricted_excitation_window.and.relcc_projectors_do_core_valence_separation) & 
+      if (mfsolver_projectors_do_restricted_excitation_window.and. & 
+          mfsolver_projectors_do_core_valence_separation) & 
           call quit('Only one projection scheme (CVS/REW) allowed at a time !')
 
 
    end subroutine
 
 
-   subroutine read_input_ccdiag(word, kw_section)
+   subroutine read_input_mfsolver_options(word, kw_section)
 
-      use relcc_cfg
+      use mfsolver_dirac_input
       use input_reader
 
       implicit none
@@ -1572,23 +1573,23 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.DEBUG ')) then
-         relcc_mfd_verbose = .true.
+         mfsolver_options_verbose = .true.
       end if
 
       if (kw_matches(word, '.MAXSIZE')) then
-         call kw_read(word,  relcc_mfd_max_subspace_size)
+         call kw_read(word,  mfsolver_options_max_subspace_size)
       end if
 
       if (kw_matches(word, '.REFRESH')) then
-         call kw_read(word, relcc_mfd_refresh_rate)
+         call kw_read(word, mfsolver_options_refresh_rate)
       end if
 
       if (kw_matches(word, '.MAXITER')) then
-         call kw_read(word, relcc_mfd_max_iterations)
+         call kw_read(word, mfsolver_options_max_iterations)
       end if
 
       if (kw_matches(word, '.CONVERG')) then
-         call kw_read(word, relcc_mfd_convergence_threshold)
+         call kw_read(word, mfsolver_options_convergence_threshold)
       end if
 
 ! aspg: .TRV_SDM allows to bypass the restriction of the number of roots
@@ -1596,60 +1597,60 @@
 !       trial vectors also contaning elements of the doubles manifold.
 !       this implies a pivoted diagonal  
       if (kw_matches(word, '.TRV_SDM')) then
-         relcc_mfd_trial_double_mfold = .true.
+         mfsolver_options_trial_double_mfold = .true.
       end if
 
       if (kw_matches(word, '.TRV_CCS')) then
-         relcc_mfd_trial_ccs      = .true.
-         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_ccs
-         relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_ccs
-         relcc_mfd_trial_restart = .not.relcc_mfd_trial_ccs
-         relcc_mfd_trial_double_mfold = .not.relcc_mfd_trial_ccs
+         mfsolver_options_trial_ccs      = .true.
+         mfsolver_options_trial_diagonal = .not.mfsolver_options_trial_ccs
+         mfsolver_options_trial_full_matrix = .not.mfsolver_options_trial_ccs
+         mfsolver_options_trial_restart = .not.mfsolver_options_trial_ccs
+         mfsolver_options_trial_double_mfold = .not.mfsolver_options_trial_ccs
       end if
 
       if (kw_matches(word, '.TRV_I  ')) then
-         relcc_mfd_trial_diagonal = .true.
-         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_diagonal 
-         relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_diagonal
-         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_diagonal
+         mfsolver_options_trial_diagonal = .true.
+         mfsolver_options_trial_ccs      = .not.mfsolver_options_trial_diagonal 
+         mfsolver_options_trial_full_matrix = .not.mfsolver_options_trial_diagonal
+         mfsolver_options_trial_restart  = .not.mfsolver_options_trial_diagonal
       end if
 
       if (kw_matches(word, '.TRV_FULLMATRIX')) then
-         relcc_mfd_trial_full_matrix = .true.
-         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_full_matrix
-         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_full_matrix
-         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_full_matrix
+         mfsolver_options_trial_full_matrix = .true.
+         mfsolver_options_trial_diagonal = .not.mfsolver_options_trial_full_matrix
+         mfsolver_options_trial_ccs      = .not.mfsolver_options_trial_full_matrix
+         mfsolver_options_trial_restart  = .not.mfsolver_options_trial_full_matrix
       end if
 
       if (kw_matches(word, '.TRV_RESTART')) then
-         relcc_mfd_trial_restart = .true.
-         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_restart
-         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_restart
-         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_restart
+         mfsolver_options_trial_restart = .true.
+         mfsolver_options_trial_diagonal = .not.mfsolver_options_trial_restart
+         mfsolver_options_trial_ccs      = .not.mfsolver_options_trial_restart
+         mfsolver_options_trial_restart  = .not.mfsolver_options_trial_restart
       end if
 
       if (kw_matches(word, '.TRV_R2L ')) then
-         relcc_mfd_trial_lhs_use_rhs = .true.
+         mfsolver_options_trial_lhs_use_rhs = .true.
       end if
 
       if (kw_matches(word, '.TRV_NOR2L')) then
-         relcc_mfd_trial_lhs_use_rhs = .false.
+         mfsolver_options_trial_lhs_use_rhs = .false.
       end if
 
       if (kw_matches(word, '.OVERLAP')) then
-         relcc_mfd_overlap_sorting = .true.
+         mfsolver_options_overlap_sorting = .true.
       end if
 
       if (kw_matches(word, '.NOOVERLAP')) then
-         relcc_mfd_overlap_sorting = .false.
+         mfsolver_options_overlap_sorting = .false.
       end if
 
       if (kw_matches(word, '.EV_Re_SHIFT')) then
-         call kw_read(word, relcc_mfd_eigenvalues_energy_shift(1))
+         call kw_read(word, mfsolver_options_eigenvalues_energy_shift(1))
       end if
 
       if (kw_matches(word, '.EV_Im_SHIFT')) then
-         call kw_read(word, relcc_mfd_eigenvalues_energy_shift(2))
+         call kw_read(word, mfsolver_options_eigenvalues_energy_shift(2))
       end if
 
       call check_whether_kw_found(word, kw_section)

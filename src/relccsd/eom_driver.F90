@@ -2,6 +2,8 @@
   use projectors
   use sigma_eom
   use trial_vectors_eom
+  use mfsolver_dirac_input
+  use mfsolver_cfg
   use relcc_cfg
   implicit none
 !this module calculates the sigma vectors for IP(2h-1p), EA(1h-2p) and EE(2h-2p)  
@@ -63,7 +65,7 @@
 ! 2. EA: maximum number of roots for irrepN is reset back to the number of virtual  spinors (nvirt), per symmetry 
 ! 3. EE: maximum number of roots for irrepN is reset back to  nocc(irrepM)*nvirt(irrepO) for irrepN = irrepM * irrepO
 !
-! NOTE: we have introduced an expert keyword, that toggles the variable "relcc_mfd_trial_double_mfold" on, and is meant
+! NOTE: we have introduced an expert keyword, that toggles the variable "mfsolver_options_trial_double_mfold" on, and is meant
 ! to allow a number of roots (and associated inital trial vector generation) also spanning the doubles blocks. this is now
 ! only implemented for IPs (so the 2h1p block for IPs (so the 2h1p block) 
 ! 
@@ -75,7 +77,7 @@
                 if (relcc_eom_nroots(state_sym).gt.no(state_sym)) then
 ! if user asks for enabling generation of trial vectors from 2h1p manifold, we check whether it's still within dim(1h+2h1p),
 ! if not we reset it to the maximum allowed value
-                   if (relcc_mfd_trial_double_mfold) then
+                   if (mfsolver_options_trial_double_mfold) then
                       max_manifold = no(state_sym) + no(state_sym)*(no(state_sym)+1)*nv(state_sym)/2
                       if (relcc_eom_nroots(state_sym).gt.max_manifold) then
                          relcc_eom_nroots(state_sym) = max_manifold 
@@ -114,7 +116,7 @@
 
           if (reset_roots_in_symmetry) then
              if(relcc_do_eomip) then
-                if (relcc_mfd_trial_double_mfold) then
+                if (mfsolver_options_trial_double_mfold) then
                    write (iw,'(4x,A)') "Warning: more EOM-IP roots than there are ionized (1h+2h1p) configurations."
                 else
                    write (iw,'(4x,A)') "Warning: more EOM-IP roots than there are occupied orbitals."
@@ -263,10 +265,10 @@
 ! use a helper variable to map between the core-core part of the diagonal Hbar(ai,ai)
 ! and the occupied spinor energy threshold given as input. We will use this
 ! variable to determine the trial vectors below 
-              if (((eps(ii).le.relcc_projectors_rew_occ_max_energy).and.&
-                 & (eps(ii).ge.relcc_projectors_rew_occ_min_energy).and.&
-                 & ((eps(aa).ge.relcc_projectors_rew_virt_min_energy).and.&
-                 &  (eps(aa).le.relcc_projectors_rew_virt_max_energy))) &
+              if (((eps(ii).le.mfsolver_projectors_rew_occ_max_energy).and.&
+                 & (eps(ii).ge.mfsolver_projectors_rew_occ_min_energy).and.&
+                 & ((eps(aa).ge.mfsolver_projectors_rew_virt_min_energy).and.&
+                 &  (eps(aa).le.mfsolver_projectors_rew_virt_max_energy))) &
                  ) then
                  index_in_window(ai_norcw) = .true. 
                  if (H_II(ai).lt.in_window_HbarSS_threshold) then
@@ -322,7 +324,7 @@
       ENDDO
 !aspg+as
 
-      if (relcc_mfd_trial_full_matrix) then
+      if (mfsolver_options_trial_full_matrix) then
 ! New trial vectors for R1 
           do i = 1, min(ndimr1,nroot)
               iroot = i
@@ -339,7 +341,7 @@
              end do
           end if
 
-      else if (relcc_mfd_trial_ccs) then
+      else if (mfsolver_options_trial_ccs) then
           write (iw,*) '  Using eigenvalues of singles-singles block as trial vectors'
           allocate (R1_dum(N1,ndimr1))
           R1_dum = 0.0d0
@@ -361,14 +363,14 @@
           deallocate(R1_dum)
 
 
-      else if (relcc_mfd_trial_diagonal) then
+      else if (mfsolver_options_trial_diagonal) then
           write (iw,*) '  Using (reordered) unit vectors as trial vectors'
 
 ! In the following section we generate the guess vectors belonging to a
 ! particular state symmetry.
 ! Thereby we avoid the sigma vector calculations of the degenerate roots.  
 
-          if (relcc_mfd_trial_double_mfold) then
+          if (mfsolver_options_trial_double_mfold) then
 ! allowing trial vector from R1 and R2
               allocate(diag_H(ndimr1+ndimr2))
               diag_H = H_II(1:(N1+N2):rcw)
@@ -379,17 +381,17 @@
 
 ! aspg, WIP june/july 2018
 ! in principle we can eigenvalue shift with any of the schemes below 
-          if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(0.0d0))) then
+          if ((mfsolver_options_eigenvalues_energy_shift(1).gt.(0.0d0))) then
               do i = 1, size(diag_H,1)
-                 diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+                 diag_H(i) = abs(diag_H(i) - mfsolver_options_eigenvalues_energy_shift(1))
               end do
           end if
 ! aspg, WIP june/july 2018
 
-          if (relcc_projectors_do_restricted_excitation_window &
-             & .or.relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal within the given excitation window
+          if (mfsolver_projectors_do_restricted_excitation_window &
+             & .or.mfsolver_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal within the given excitation window
 
-              if (relcc_mfd_trial_double_mfold) then 
+              if (mfsolver_options_trial_double_mfold) then 
                   write (iw,*) ''
                   write (iw,*) 'Restricted excitation window (REW) or Core valence separation (CVS)'
                   write (iw,*) 'via projectors not implemented for trial vectors from double manifold'
@@ -399,19 +401,19 @@
 
               if (iprnt.ge.1) then
                   write (iw,*) ''
-                  if (relcc_projectors_do_restricted_excitation_window) then 
+                  if (mfsolver_projectors_do_restricted_excitation_window) then 
                       write (iw,*) '   Restricted excitation window (REW) via projectors will be invoked'
                       write (iw,*) '      - 1h1p determinants with all (quasi)particles within' 
                       write (iw,*) '        the occupied/virtual windows will be retained'
-                  else if (relcc_projectors_do_core_valence_separation) then
+                  else if (mfsolver_projectors_do_core_valence_separation) then
                       write (iw,*) '   Core valence separation (CVS) via projectors will be invoked'
                       write (iw,*) '      - 1h1p determinants with all particles within' 
                       write (iw,*) '        the occupied window will be retained'
                   end if
-                  if (relcc_projectors_rew_strict) then
+                  if (mfsolver_projectors_rew_strict) then
                       write (iw,*) '      - 2h2p/... determinants with all (quasi)particles within' 
                       write (iw,*) '        the occupied/virtual windows will be retained'
-                  else if (relcc_projectors_rew_remove_double_occupied) then
+                  else if (mfsolver_projectors_rew_remove_double_occupied) then
                       write (iw,*) '      - 2h2p/... determinants with only one (quasi)particle within'            
                       write (iw,*) '        the occupied window will be retained'
                   else
@@ -419,10 +421,10 @@
                       write (iw,*) '        the occupied/virtual windows will be retained'
                   end if
                   write (iw,*) '   Spinors/orbitals in the following window(s) will be active'
-                  write (iw,*) '      occupied min     ',relcc_projectors_rew_occ_min_energy,'a.u.'
-                  write (iw,*) '               max     ',relcc_projectors_rew_occ_max_energy,'a.u.'
-                  write (iw,*) '      virtual  min     ',relcc_projectors_rew_virt_min_energy,'a.u.'
-                  write (iw,*) '               max     ',relcc_projectors_rew_virt_max_energy,'a.u.'
+                  write (iw,*) '      occupied min     ',mfsolver_projectors_rew_occ_min_energy,'a.u.'
+                  write (iw,*) '               max     ',mfsolver_projectors_rew_occ_max_energy,'a.u.'
+                  write (iw,*) '      virtual  min     ',mfsolver_projectors_rew_virt_min_energy,'a.u.'
+                  write (iw,*) '               max     ',mfsolver_projectors_rew_virt_max_energy,'a.u.'
                   write (iw,*) '   There are',number_diagonal_elements_in_window,'possible 1h1p determinants within the window'
                   write (iw,*) ''
               end if
@@ -476,7 +478,7 @@
           if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
           if (iprnt.ge.3) call davidson_print_vectors(R2, label="debug:  R2 vector             ")
 
-      else if (relcc_mfd_trial_restart) then
+      else if (mfsolver_options_trial_restart) then
           call quit ('restart from prior RHS vectors not implemented')
       else
           call quit ('unknown RHS trial vectors generation scheme')
@@ -499,8 +501,8 @@
           do a = 1, ncont(arep)
              H_II(ai) = -fac1 
 ! aspg, WIP
-              if ( ((eps(ii).le.relcc_projectors_rew_occ_max_energy).and.&
-                 &  (eps(ii).ge.relcc_projectors_rew_occ_min_energy)) &
+              if ( ((eps(ii).le.mfsolver_projectors_rew_occ_max_energy).and.&
+                 &  (eps(ii).ge.mfsolver_projectors_rew_occ_min_energy)) &
                  ) then
                  index_in_window(ai_norcw) = .true.
                  if (H_II(ai).lt.in_window_HbarSS_threshold) then
@@ -567,7 +569,7 @@
 !        end if
 !     end do
 
-      if (relcc_mfd_trial_full_matrix) then
+      if (mfsolver_options_trial_full_matrix) then
 ! New trial vectors for R1 
           do i = 1, min(ndimr1,nroot)
               iroot = i
@@ -584,7 +586,7 @@
              end do
           end if
 
-      else if (relcc_mfd_trial_ccs) then
+      else if (mfsolver_options_trial_ccs) then
           write (iw,*) '  Using eigenvalues of singles-singles block as trial vectors'
           allocate (R1_dum(N1,ndimr1))
           R1_dum = 0.0d0
@@ -616,10 +618,10 @@
 
           deallocate(R1_dum)
 
-      else if (relcc_mfd_trial_diagonal) then
+      else if (mfsolver_options_trial_diagonal) then
           write (iw,*) '  Using (reordered) unit vectors as trial vectors'
 
-          if (relcc_mfd_trial_double_mfold) then
+          if (mfsolver_options_trial_double_mfold) then
              allocate(diag_H(ndimr1+ndimr2))
              diag_H = H_II(1:(N1+N2):rcw)
           else
@@ -629,18 +631,18 @@
 
 ! aspg, WIP june/july 2018
 ! in principle we can eigenvalue shift with any of the schemes below 
-          if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(0.0d0))) then
+          if ((mfsolver_options_eigenvalues_energy_shift(1).gt.(0.0d0))) then
               do i = 1, size(diag_H,1)
-                 diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+                 diag_H(i) = abs(diag_H(i) - mfsolver_options_eigenvalues_energy_shift(1))
               end do
           end if
 ! aspg, WIP june/july 2018
 
 
-          if (relcc_projectors_do_restricted_excitation_window &
-             & .or.relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal within the given excitation window
+          if (mfsolver_projectors_do_restricted_excitation_window &
+             & .or.mfsolver_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal within the given excitation window
 
-              if (relcc_mfd_trial_double_mfold) then
+              if (mfsolver_options_trial_double_mfold) then
                   write (iw,*) ''
                   write (iw,*) 'Restricted excitation window (REW) or Core valence separation (CVS)'
                   write (iw,*) 'via projectors not implemented for trial vectors from double manifold'
@@ -651,19 +653,19 @@
 
               if (iprnt.ge.1) then
                   write (iw,*) ''
-                  if (relcc_projectors_do_restricted_excitation_window) then
+                  if (mfsolver_projectors_do_restricted_excitation_window) then
                       write (iw,*) '   Restricted ionization window (RIW) via projectors will be invoked'
                       write (iw,*) '      - 1h determinants with all (quasi)particles within'
                       write (iw,*) '        the occupied/virtual windows will be retained'
-                  else if (relcc_projectors_do_core_valence_separation) then
+                  else if (mfsolver_projectors_do_core_valence_separation) then
                       write (iw,*) '   Core valence separation (CVS) via projectors will be invoked'
                       write (iw,*) '      - 1h  determinants with all particles within'
                       write (iw,*) '        the occupied window will be retained'
                   end if
-                  if (relcc_projectors_rew_strict) then
+                  if (mfsolver_projectors_rew_strict) then
                       write (iw,*) '      - 2h1p/... determinants with all (quasi)particles within'
                       write (iw,*) '        the occupied/virtual windows will be retained'
-                  else if (relcc_projectors_rew_remove_double_occupied) then
+                  else if (mfsolver_projectors_rew_remove_double_occupied) then
                       write (iw,*) '      - 2h1p/... determinants with only one (quasi)particle within'
                       write (iw,*) '        the occupied window will be retained'
                   else
@@ -671,10 +673,10 @@
                       write (iw,*) '        the occupied/virtual windows will be retained'
                   end if
                   write (iw,*) '   Spinors/orbitals in the following window(s) will be active'
-                  write (iw,*) '      occupied min     ',relcc_projectors_rew_occ_min_energy,'a.u.'
-                  write (iw,*) '               max     ',relcc_projectors_rew_occ_max_energy,'a.u.'
-                  write (iw,*) '      virtual  min     ',relcc_projectors_rew_virt_min_energy,'a.u.'
-                  write (iw,*) '               max     ',relcc_projectors_rew_virt_max_energy,'a.u.'
+                  write (iw,*) '      occupied min     ',mfsolver_projectors_rew_occ_min_energy,'a.u.'
+                  write (iw,*) '               max     ',mfsolver_projectors_rew_occ_max_energy,'a.u.'
+                  write (iw,*) '      virtual  min     ',mfsolver_projectors_rew_virt_min_energy,'a.u.'
+                  write (iw,*) '               max     ',mfsolver_projectors_rew_virt_max_energy,'a.u.'
                   write (iw,*) '   There are',number_diagonal_elements_in_window,'possible 1h determinans within the window'
                   write (iw,*) ''
               end if
@@ -728,7 +730,7 @@
           if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
           if (iprnt.ge.3) call davidson_print_vectors(R2, label="debug:  R2 vector             ")
 
-      else if (relcc_mfd_trial_restart) then
+      else if (mfsolver_options_trial_restart) then
           call quit ('restart from prior RHS vectors not implemented')
       else
           call quit ('unknown RHS trial vectors generation scheme')
@@ -784,7 +786,7 @@
       ENDDO
       ENDDO
 
-      if (relcc_mfd_trial_full_matrix) then
+      if (mfsolver_options_trial_full_matrix) then
 ! New trial vectors for R1 
           do i = 1, min(ndimr1,nroot)
               iroot = i
@@ -801,7 +803,7 @@
              end do
           end if
 
-      else if (relcc_mfd_trial_ccs) then
+      else if (mfsolver_options_trial_ccs) then
           write (iw,*) '  Using eigenvalues of singles-singles block as trial vectors'
           allocate (R1_dum(N1,ndimr1))
           R1_dum = 0.0d0
@@ -835,7 +837,7 @@
 
 ! calculate the orbital dimension within which our desired root should belong..
 
-      else if (relcc_mfd_trial_diagonal) then
+      else if (mfsolver_options_trial_diagonal) then
           write (iw,*) '  Using (reordered) unit vectors as trial vectors'
 
 ! In the following section we generate the guess vectors belonging to a particular state symmetry.
@@ -847,9 +849,9 @@
           diag_H = H_II(1:N1:rcw)
 
 ! aspg, WIP june/july 2018
-          if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(0.0d0))) then
+          if ((mfsolver_options_eigenvalues_energy_shift(1).gt.(0.0d0))) then
               do i = 1, size(diag_H,1)
-                 diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+                 diag_H(i) = abs(diag_H(i) - mfsolver_options_eigenvalues_energy_shift(1))
               end do
           end if
 ! aspg, WIP june/july 2018
@@ -871,7 +873,7 @@
  
           deallocate(diag_H)
 
-      else if (relcc_mfd_trial_restart) then
+      else if (mfsolver_options_trial_restart) then
           call quit ('restart from prior RHS vectors not implemented')
       else
           call quit ('unknown RHS trial vectors generation scheme')
@@ -1113,7 +1115,7 @@
        enddo
      deallocate(diag_H)
 
-      if (relcc_mfd_trial_lhs_use_rhs) then
+      if (mfsolver_options_trial_lhs_use_rhs) then
          write (iw,*) '  Using RHS eigenvectors as LHS trial vectors'
 ! if we are reusing the right-hand side eigenvectors, we resort them
 
@@ -1126,7 +1128,7 @@
 
       else
 ! otherwise, we are going to generate trial vectors for the lhs
-          if (relcc_mfd_trial_full_matrix) then
+          if (mfsolver_options_trial_full_matrix) then
 ! New trial vectors for L1 
               do i = 1, min(ndiml1,nroot)
                   iroot = i
@@ -1144,7 +1146,7 @@
                  end do
               end if
 
-          else if (relcc_mfd_trial_ccs) then
+          else if (mfsolver_options_trial_ccs) then
               write (iw,*) '  Using eigenvalues of singles-singles block as trial vectors'
               allocate (L1_dum(N1,ndiml1))
               L1_dum = 0.0d0
@@ -1168,7 +1170,7 @@
 
               deallocate(L1_dum)
 
-          else if (relcc_mfd_trial_diagonal) then
+          else if (mfsolver_options_trial_diagonal) then
               write (iw,*) '  Using (reordered) unit vectors as trial vectors'
 
 ! In the following section we generate the guess vectors belonging to a
@@ -1194,13 +1196,13 @@
           enddo
           deallocate(diag_H)
 
-          else if (relcc_mfd_trial_restart) then
+          else if (mfsolver_options_trial_restart) then
               call quit ('restart from prior LHS vectors not implemented')
           else
               call quit ('unknown LHS trial vectors generation scheme')
           end if ! if chain for trial vectors 
 
-      end if ! relcc_mfd_trial_lhs_use_rhs
+      end if ! mfsolver_options_trial_lhs_use_rhs
 
   call dealloc_array(e)
 
@@ -2137,14 +2139,14 @@ subroutine eom_set_davidson_mode_energies(left_vectors, right_vectors)
                         solve_right=right_vectors, &
                         solve_left=left_vectors,   &
                         symmetric=.false., &
-                        verbose=relcc_mfd_verbose,   &
-                        refresh_trial_rate=relcc_mfd_refresh_rate,  &
+                        verbose=mfsolver_options_verbose,   &
+                        refresh_trial_rate=mfsolver_options_refresh_rate,  &
                         complex_mode=(rcw.eq.2), &
-                        convergence_threshold = relcc_mfd_convergence_threshold, &
-                        max_subspace_size = relcc_mfd_max_subspace_size, &
-                        max_iterations = relcc_mfd_max_iterations, &
-                        overlap_sorting = relcc_mfd_overlap_sorting, &
-                        energy_shift=relcc_mfd_eigenvalues_energy_shift, &
+                        convergence_threshold = mfsolver_options_convergence_threshold, &
+                        max_subspace_size = mfsolver_options_max_subspace_size, &
+                        max_iterations = mfsolver_options_max_iterations, &
+                        overlap_sorting = mfsolver_options_overlap_sorting, &
+                        energy_shift=mfsolver_options_eigenvalues_energy_shift, &
                         print_config=davidson_splash)
 ! aspg: this is to silence davidson setup after the first call. we will know from the
 ! rest of the output whether we are doing left or right, and all other variables will not
@@ -2256,7 +2258,7 @@ subroutine eom_solve_for_left_or_right(state_sym, left_vectors, right_vectors, d
     &                               B%H_II)
  
            end if
-           if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
+           if (.not.(mfsolver_projectors_do_core_valence_separation.or.mfsolver_projectors_do_restricted_excitation_window)) then
               projector => NULL()
            else
               projector => create_projector(4, (ndimr1 + ndimr2), state_sym, eps)
@@ -2314,7 +2316,7 @@ subroutine eom_solve_for_left_or_right(state_sym, left_vectors, right_vectors, d
 
            end if
 
-           if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
+           if (.not.(mfsolver_projectors_do_core_valence_separation.or.mfsolver_projectors_do_restricted_excitation_window)) then
               projector => NULL()
            else
               projector => create_projector(3, (ndimr1 + ndimr2), state_sym, eps)
@@ -2373,7 +2375,7 @@ subroutine eom_solve_for_left_or_right(state_sym, left_vectors, right_vectors, d
  
            end if
            
-           if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
+           if (.not.(mfsolver_projectors_do_core_valence_separation.or.mfsolver_projectors_do_restricted_excitation_window)) then
               projector => NULL()
            else
               projector => create_projector(2, (ndimr1 + ndimr2), state_sym, eps)

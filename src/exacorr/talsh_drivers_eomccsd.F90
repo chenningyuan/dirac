@@ -8,6 +8,7 @@ module talsh_eom
   use exacorr_utils,  only : print_date
   use talsh_davidson
   use talsh_trial_eomccsd
+  use mfsolver_dirac_input
 
   implicit none
 
@@ -115,11 +116,6 @@ module talsh_eom
 !
 ! and within each use the different variants : EOM-IP/EE/EA/../-CC* where CC* refers to {P-,}EOM-{CC{SD,SDT},MBPT2}, CCn,
     subroutine talsh_eom_eigval_driver (results_t,eom_config,interm_t,int_t)
-! aspg: for now, use relcc_cfg to get the infromation on the *CCDIAG variables, like whether or not to do overlap etc
-! perhaps these variables have to be moved around. this will definitely not work with a distributed version since the 
-! variables need to be broadcast, and that requires a call to relcc_sync_cw(), which is done in relccsd but obviously not in exacorr
-      use relcc_cfg
-
 !     input variables
       type(talsh_eom_results_tens_t), intent(inout)  :: results_t
       type(eom_config_t),     intent(in)             :: eom_config
@@ -134,14 +130,14 @@ module talsh_eom
 
 ! aspg : need to get from hardcoded options to getting them from input (*CCDIAG) on the calls to talsh_davidson_setup
       call talsh_davidson_setup(unit_output=6, &
-                                convergence_threshold=relcc_mfd_convergence_threshold, &
+                                convergence_threshold=mfsolver_options_convergence_threshold, &
                                 solve_right=.true.,&
                                 solve_left=.false.,&
                                 symmetric=.false., &
-                                overlap_sorting=relcc_mfd_overlap_sorting,&
-                                max_subspace_size=relcc_mfd_max_subspace_size,&
-                                max_iterations=relcc_mfd_max_iterations,&
-                                verbose=relcc_mfd_verbose,&
+                                overlap_sorting=mfsolver_options_overlap_sorting,&
+                                max_subspace_size=mfsolver_options_max_subspace_size,&
+                                max_iterations=mfsolver_options_max_iterations,&
+                                verbose=mfsolver_options_verbose,&
                                 complex_mode=.true.)
 
 !************************************
