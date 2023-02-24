@@ -56,6 +56,13 @@ string(STRIP ${_configuration_time} _configuration_time) # delete newline
 message(STATUS "Configuration time: ${_configuration_time}")
 
 foreach(_lang Fortran C CXX)
+
+    set(_${_lang}_compiler_id "unknown")
+    if(CMAKE_${_lang}_COMPILER_ID)
+	    set(_${_lang}_compiler_id ${CMAKE_${_lang}_COMPILER_ID})
+	    message(STATUS "${_lang} compiler ID: ${CMAKE_${_lang}_COMPILER_ID}")
+    endif()
+
     set(_${_lang}_compiler "unknown")
     if(CMAKE_${_lang}_COMPILER)
         set(_${_lang}_compiler ${CMAKE_${_lang}_COMPILER})

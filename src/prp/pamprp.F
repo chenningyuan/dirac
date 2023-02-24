@@ -189,7 +189,11 @@ C***********************************************************************
 C
       IF (DOEXP) THEN
          CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
-         if (doexacc) then
+C     allow choice to use hdf5 file(s) to be used for expectation values
+C     that is supported by the exacorr module. not yet the default as there 
+C     are some issues to resolve for construction density matrices,
+C     notably in property calculations using mp2 frozen natural orbitals
+         if (doexacc.and.hdf5io) then
             call kuprpexp(wf, work(kexp), work(kfree), lfree, state)
          else
              CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE,STATE)
