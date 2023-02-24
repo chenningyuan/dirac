@@ -6,7 +6,7 @@ module talsh_dm_eomccsd
   use talsh
   use tensor_algebra
   use talsh_ao_to_mo, only    : tensor_norm2
-  use exacorr_datatypes, only : talsh_dm_tens, exacc_input
+  use exacorr_datatypes, only : talsh_dm_tens_t, exacc_input
   use exacorr_utils, only     : print_date
 
   implicit none
@@ -33,7 +33,7 @@ module talsh_dm_eomccsd
 
 
 !     density matrices type, output
-      type(talsh_dm_tens) :: gamma
+      type(talsh_dm_tens_t) :: gamma
 !     tensor dimensions
       integer, dimension(2) :: oo_dims,ov_dims,vo_dims,vv_dims
       integer, dimension(4) :: oooo_dims,vvvv_dims,oovv_dims,vvoo_dims !Loic_
@@ -113,7 +113,7 @@ module talsh_dm_eomccsd
     subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,t1_tensor,l1_tensor,r1_tensor,r2_tensor)
 
 !     input variables
-      type(talsh_dm_tens), intent(inout) :: gamma
+      type(talsh_dm_tens_t), intent(inout) :: gamma
       type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
       type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
 
@@ -298,7 +298,7 @@ module talsh_dm_eomccsd
 
 !     input variables
       type(exacc_input),   intent(in   )  :: exa_input
-      type(talsh_dm_tens), intent(inout)  :: gamma
+      type(talsh_dm_tens_t), intent(inout)  :: gamma
 !     matrix dimensions
       integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
 !     body pointers

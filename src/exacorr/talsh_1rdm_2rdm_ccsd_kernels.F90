@@ -9,7 +9,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
 !  use talsh
 !  use tensor_algebra
 !  use talsh_common_routines, only : tensor_norm2
-!  use exacorr_datatypes, only : talsh_dm_tens, exacc_input
+!  use exacorr_datatypes, only : talsh_dm_tens_t, exacc_input
 !  use exacorr_utils, only     : print_date
   use, intrinsic:: ISO_C_BINDING
 
@@ -49,7 +49,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
     subroutine talsh_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
 
 !     input variables
-      type(talsh_dm_tens), intent(inout) :: gamma
+      type(talsh_dm_tens_t), intent(inout) :: gamma
       type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
       type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
       integer,             intent(in   ) :: nocc, nvir, print_level
@@ -248,7 +248,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
     subroutine talsh_calc_dm_2rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
 
-      type(talsh_dm_tens), intent(inout) :: gamma
+      type(talsh_dm_tens_t), intent(inout) :: gamma
 
       type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
       type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
@@ -552,7 +552,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
       type(talsh_intg_tens_t),intent(inout) :: int_t
 
 
-      type(talsh_dm_tens), intent(inout) :: gamma
+      type(talsh_dm_tens_t), intent(inout) :: gamma
 
       type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
       type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
@@ -761,7 +761,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
           real(8)                        :: print_level=2
 
     !     input variables
-          type(talsh_dm_tens), intent(inout) :: gamma
+          type(talsh_dm_tens_t), intent(inout) :: gamma
           type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
           type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
 
@@ -1032,7 +1032,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
           real(8)                        :: print_level=2
 
     !     input variables
-          type(talsh_dm_tens), intent(inout) :: gamma
+          type(talsh_dm_tens_t), intent(inout) :: gamma
           type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
           type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
 
@@ -1770,7 +1770,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
           real(8)                        :: print_level=2
 
     !     input variables
-          type(talsh_dm_tens), intent(inout) :: gamma
+          type(talsh_dm_tens_t), intent(inout) :: gamma
           type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
           type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
 
@@ -1947,7 +1947,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
           real(8)                        :: print_level=2
 
     !     input variables
-          type(talsh_dm_tens), intent(inout) :: gamma
+          type(talsh_dm_tens_t), intent(inout) :: gamma
           type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
           type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
 
@@ -2366,7 +2366,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
           real(8)                        :: print_level=2
 
     !     input variables
-          type(talsh_dm_tens), intent(inout) :: gamma
+          type(talsh_dm_tens_t), intent(inout) :: gamma
           type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
           type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
 
@@ -2610,7 +2610,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
           real(8)                        :: print_level=2
 
     !     input variables
-          type(talsh_dm_tens), intent(inout) :: gamma
+          type(talsh_dm_tens_t), intent(inout) :: gamma
           type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
           type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
 

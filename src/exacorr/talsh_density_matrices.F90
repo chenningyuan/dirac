@@ -9,7 +9,7 @@ module talsh_gradient
   use talsh
   use tensor_algebra
   use talsh_common_routines, only : tensor_norm2, print_tensor_elements
-  use exacorr_datatypes, only : talsh_dm_tens, exacc_input
+  use exacorr_datatypes, only : talsh_dm_tens_t, exacc_input
   use exacorr_utils, only     : print_date
   use talsh_1rdm_2rdm_ccsd_kernels
   use, intrinsic:: ISO_C_BINDING
@@ -39,7 +39,7 @@ module talsh_gradient
       complex(8), intent (inout) :: recalculated_energy
       type(exacc_input), intent(in   ) :: exa_input
       type(talsh_intg_tens_t), intent(inout) :: int_t
-      type(talsh_dm_tens), intent(inout) :: gamma
+      type(talsh_dm_tens_t), intent(inout) :: gamma
       type(C_PTR)         :: res_body_p
       type(talsh_tens_t)  :: res_tensor
       integer(INTD)       :: res_dims(1)
@@ -111,7 +111,7 @@ module talsh_gradient
       type(talsh_tens_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
       type(talsh_intg_tens_t), intent(inout), optional :: int_t
 !     density matrices type, output
-      type(talsh_dm_tens) :: gamma
+      type(talsh_dm_tens_t) :: gamma
 !     CCD switch
       logical :: CCD
       character(len=4) :: wavefun
@@ -178,7 +178,7 @@ module talsh_gradient
 
     subroutine talsh_dm_cleanup_dmtens(exa_input,dmat)
       type(exacc_input),   intent(in   ) :: exa_input
-      type(talsh_dm_tens), intent(inout) :: dmat
+      type(talsh_dm_tens_t), intent(inout) :: dmat
 !     error code
       integer(INTD) :: ierr
 
@@ -242,7 +242,7 @@ module talsh_gradient
 !     input variables
       type(exacc_input), intent(in   ) :: exa_input
 !     density matrices type, output
-      type(talsh_dm_tens), intent(inout) :: dmat 
+      type(talsh_dm_tens_t), intent(inout) :: dmat 
 !     tensor dimensions
       integer(INTD), dimension(2) :: oo_dims,ov_dims,vo_dims,vv_dims
 !     CCD switch
@@ -329,7 +329,7 @@ module talsh_gradient
 
 !     input variables
       type(exacc_input),   intent(in   )  :: exa_input
-      type(talsh_dm_tens), intent(inout)  :: gamma
+      type(talsh_dm_tens_t), intent(inout)  :: gamma
       character*(*), intent(in)           :: wavefun
 !     matrix dimensions
       integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
@@ -407,7 +407,7 @@ module talsh_gradient
 
     subroutine talsh_dm_1rdm_form_mo_fort_from_tensors(dm_1rdm_mo_fort,gamma,nocc,nvir,CCD)
 !     input variables
-      type(talsh_dm_tens), intent(inout)     :: gamma 
+      type(talsh_dm_tens_t), intent(inout)     :: gamma 
       complex(8), allocatable, intent(inout) :: dm_1rdm_mo_fort(:,:)
 !     matrix dimensions
       integer, intent(in) :: nocc, nvir
@@ -467,7 +467,7 @@ module talsh_gradient
 
     subroutine talsh_dm_2rdm_form_mo_fort_from_tensors(dm_2rdm_mo_fort,gamma,nocc,nvir,CCD)
 !     input variables
-      type(talsh_dm_tens), intent(inout)     :: gamma
+      type(talsh_dm_tens_t), intent(inout)     :: gamma
       complex(8), allocatable, intent(inout) :: dm_2rdm_mo_fort(:,:,:,:)
 !     matrix dimensions
       integer, intent(in) :: nocc, nvir
@@ -632,7 +632,7 @@ module talsh_gradient
 
 !     input variables
       type(exacc_input),   intent(in   )  :: exa_input
-      type(talsh_dm_tens), intent(inout)  :: gamma
+      type(talsh_dm_tens_t), intent(inout)  :: gamma
       character*(*), intent(in)           :: wavefun
 !     matrix dimensions
       integer :: nocc, nvir, nesh

@@ -137,7 +137,7 @@
          type(tens_rcrsv_t) :: goo, gvv
         end type exatns_lambda_tens_t
 
-        type, public :: exatns_dm_tens
+        type, public :: exatns_dm_tens_t
 ! one-body density matrices
          type(tens_rcrsv_t) :: prime_oo, symm_oo
          type(tens_rcrsv_t) :: prime_ov, prime_vo, symm_ov, symm_vo
@@ -155,7 +155,7 @@
          type(tens_rcrsv_t) :: symm_vooo,  symm_ooov,  symm_ovoo,  symm_oovo
          type(tens_rcrsv_t) :: symm_vovo,  symm_voov,  symm_ovvo,  symm_ovov
          type(tens_rcrsv_t) :: symm_oooo
-        end type exatns_dm_tens
+        end type exatns_dm_tens_t
 
 
         type, public :: space_dims
@@ -247,7 +247,7 @@
         end type talsh_projectors_tens_t
 
 
-        type, public :: talsh_dm_tens
+        type, public :: talsh_dm_tens_t
 ! one-body density matrices
          type(talsh_tens_t) :: prime_oo, symm_oo
          type(talsh_tens_t) :: prime_ov, prime_vo, symm_ov, symm_vo
@@ -265,7 +265,7 @@
          type(talsh_tens_t) :: symm_vooo,  symm_ooov,  symm_ovoo,  symm_oovo
          type(talsh_tens_t) :: symm_vovo,  symm_voov,  symm_ovvo,  symm_ovov
          type(talsh_tens_t) :: symm_oooo
-        end type talsh_dm_tens
+        end type talsh_dm_tens_t
 
         ! type, public, extends(talsh_comm_tens) :: talsh_eom_fixed_tens
         !     type(talsh_intg_tens)   :: int_t
