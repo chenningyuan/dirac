@@ -216,6 +216,7 @@ C
 
       Integer, Allocatable :: POS(:)
       real(8)              :: f_occ
+      real*8 , allocatable :: aoo2esssoc(:)
 C
       CALL QENTER('GTCFC1')
       KFRSAV = KFREE
@@ -357,7 +358,24 @@ C
        else 
           dirac_cfg_dft_calculation_save=.false.
        endif
-      CALL ERGCAL(FAO,FMO,DMAT,WORK(KFREE),LFREE)
+C      Calculate total energy
+C      ======================
+       inquire(file='XAMFI-ss-soc-contributions',exist=tobe)
+       if(tobe)then
+         open(99,file='XAMFI-ss-soc-contributions',status='old',
+     &   form='unformatted',access='sequential',
+     &   action="readwrite",position='rewind')
+         allocate(aoo2esssoc(ntbas(0)**2*nz))
+         read(99) aoo2esssoc(1:ntbas(0)**2*nz)
+         close(99,status='keep')
+         !> subtract the PCE corrections from the effective F[1] ...
+         call daxpy(ntbas(0)**2*nz,-1.0d0,aoo2esssoc,1,fao,1)
+         !> ... and add the PCE corrections to F[2]
+         call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,fmo,1)
+         deallocate(aoo2esssoc)
+       end if
+
+       CALL ERGCAL(FAO,FMO,DMAT,WORK(KFREE),LFREE)
 !Miro: restore the DFT status
        if (dirac_cfg_dft_calculation_save.AND.NOVXC) then
           dirac_cfg_dft_calculation=.true.   !Miro: do we have interest in absolute energies of multiplet states ?
@@ -460,7 +478,7 @@ C  /* Deck CDENS */
       SUBROUTINE CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)
 C*****************************************************************************
 C
-C Get the core density matrix into DMAT, from selected MO's in QCO
+C Get the core density matrix into DMAT, from selected MOs in QCO
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1022,7 +1040,7 @@ C     Cinv have an infinite number of irreps and we use a finite
 C     multiplication table to store the coupling information we need 
 C     to truncate at some point. We do this at mj=15/2 in Cinfh and 
 C     mj=31/2 in Cinf so that we can keep MULTB dimensioned at 64 like 
-C     before. In fact this means that we'll be using the subgroups C8h 
+C     before. In fact this means that we will be using the subgroups C8h 
 C     and C16 respectively. This can be easily extended or decreased 
 C     using the input parameter NORDER that indicates how large MULTB 
 C     may become.
@@ -2027,7 +2045,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer, allocatable :: ibeig(:)
       integer              :: nash_x(1:nfsym)
 
-!     !> read ibeig (info array on boson irreps) from DFCOEF
+!     !> read ibeig (info array on boson irreps) from CHECKPOINT
       allocate(ibeig(norbt))
       ibeig(1:norbt)         = 0
       nash_x(1:nfsym)        = 0
@@ -2056,9 +2074,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
       if( linear .or. spinfr )then
-        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
         call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
-        close(lucoef,STATUS='KEEP')
       end if
 
 

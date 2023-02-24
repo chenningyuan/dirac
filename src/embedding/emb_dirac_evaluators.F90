@@ -564,8 +564,7 @@ module fde_evaluators_dirac
          allocate(cmo(ncmotq))
          cmo = 0.0d0
 
-         if (printlocal) write(lupri,*) 'Reading DFCOEF'
-         call opnfil(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
+         if (printlocal) write(lupri,*) 'Reading CHECKPOINT'
          call reacmo(lucoef,    &
                             'DFCOEF',  &
                              cmo,       &
@@ -717,19 +716,17 @@ module fde_evaluators_dirac
          end do
       end if
 
-!     get coefficients from DFCOEF...
+!     get coefficients ...
       call alloc(cmo,   ncmotq)
       cmo = 0.0d0
       call alloc(ibeig, ndim)
       ibeig = 0
 
-      call opnfil(lucoef,'DFCOEF','OLD','fde_get_pertden')
       if (spinfr) then
          call reacmo(lucoef,'DFCOEF',cmo,dum,ibeig,toterg,10)
       else
          call reacmo(lucoef,'DFCOEF',cmo,dum,idum,toterg,2)
       endif
-      close(lucoef,status='keep')
 
 !     ...to construct the density matrix
       call alloc(dmat, ndim*ndim, nz)
@@ -922,7 +919,7 @@ module fde_evaluators_dirac
          real(8)              :: n_0_f(1), gnn_0_f(1)
          real(8)              :: n_0_t(1), gnn_0_t(1)
 
-         threshold    = 1.0e-28
+         threshold    = fde_cfg_tinydens
          max_fun_derv = 1
          bllen        = 1
          order        = 1

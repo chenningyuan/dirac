@@ -307,7 +307,7 @@ C
      &        '*ESR: ERROR in specification of CI. Error code',NERR
            WRITE(LUPRI,*) 'NGAS_CIESR    :',NGAS_CIESR(1:3)
            WRITE(LUPRI,*) 'RAS1 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,1)
-           WRITE(LUPRI,*) 'RAS3 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,1)
+           WRITE(LUPRI,*) 'RAS3 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,3)
            WRITE(LUPRI,*) 'RAS1 orbitals :',NGSH_CIESR(1,1:maxgas_esr,1)
            WRITE(LUPRI,*) 'RAS3 orbitals :',NGSH_CIESR(1,1:maxgas_esr,3)
          END IF
@@ -827,9 +827,6 @@ C
       CALL QENTER('ESRPHASE')
       KFRSAV = KFREE
 C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &      FILE='AOPROPER')
-C
 C     Initialize
 C     ==========
 C     (using first NPSIGMA elements of ESRVAL for IPSIGMA properties,
@@ -932,8 +929,6 @@ C
           CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),CMO,PMAT,
      &                  CIEVEC,MZ,WORK,KFREE,LFREE)
         ENDDO
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C
 C     SEFF        = S_eff (one of 0.0, 0.5, 1.0, ...)
@@ -1087,10 +1082,6 @@ C
       KFRSAV = KFREE
       call memchk('prpesr1 1',work,1)
 C
-
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &      FILE='AOPROPER')
-C
 C     Initialize
 C     ==========
 C
@@ -1103,9 +1094,7 @@ C
 C     Generate density matrix
 C     =======================
 C
-C      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
 C      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6)
-C      CLOSE(LUCOEF,STATUS='KEEP')
 
 C     Expectation values normal procedure
 C    ************************************
@@ -1262,7 +1251,6 @@ c       WRITE(LUPRI,'(4X,A)')
 c    &   't0 = T : Expectation value zero by time reversal symmetry.'
 C
 C
-      CLOSE(LU1INT,STATUS = 'KEEP')
       call memchk('prpesr1 4',work,1)
       RETURN
 C
@@ -1327,10 +1315,6 @@ C
 !d    print *,'ESRTRANS 1 KFREE,LFREE',KFREE,LFREE
 !d    call memchk('esrTRANS 1',work,1)
 C
-c LU1INT must be opened before calling ESRTRANS
-c     OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-c    &      FILE='AOPROPER')
-C
 C     Initialize
 C     ==========
 C
@@ -1381,10 +1365,8 @@ c      print *, 'IPCMO,nash:',IPCMO,nash
 C
 !d    call memchk('esrTRANS 2',work,1)
       CALL MEMGET2('REAL','IBEIG',KIBEIG ,NORBT,WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ESRPRP')
       CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
      &                    TOTERG,8)
-      CLOSE(LUCOEF,status='KEEP')
       CALL PRPMAT(INDXPR,IOPSY,PMAT,.TRUE.,WORK,CMO,WORK(KIBEIG),
      &            IPCMO,NASH,WORK,KFREE,LFREE,IPRESR)
       CALL MEMREL('after PRPMAT',WORK,1,KIBEIG,KFREE,LFREE)
@@ -2142,30 +2124,25 @@ C
          GO TO 9000
       END IF
 
-C        MP2NO not found. Then:
-C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
+C     MP2NO not found. Then:
+C     3. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
 
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(FILEX) THEN
-         CALL MEMGET2('REAL','EIG',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
-         IF (SPINFR.OR.LEVYLE) THEN
-            CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,WORK(KIBRP),
-     &                  TOTERG,10)
-         ELSE
-            KIBRP = KFREE
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),IDUM,
-     &                  TOTERG,2)
-         END IF
-         CLOSE(LUCOEF,STATUS='KEEP')
-         WRITE(LUPRI,'(/A)')
-     &      ' (ESR)  molecular orbitals read from file DFCOEF'
-         GO TO 9000
+      CALL MEMGET2('REAL','EIG',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+      IF (SPINFR.OR.LEVYLE) THEN
+         CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,WORK(KIBRP),
+     &               TOTERG,10)
+      ELSE
+         KIBRP = KFREE
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),IDUM,
+     &               TOTERG,2)
       END IF
+      WRITE(LUPRI,'(/A)')
+     &   ' (ESR)  molecular orbitals read from CHECKPOINT'
+      GO TO 9000
 
-C        DFCOEF not found. Then:
-C        4. no more options (yet).
+C     DFCOEF not found. Then:
+C     4. no more options (yet).
 
       WRITE(LUPRI,'(//A)') 'Fatal error for ESR: MO coefficients not'//
      &   ' found on KRMCOLD or DFCOEF'

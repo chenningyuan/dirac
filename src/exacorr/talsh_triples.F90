@@ -407,9 +407,7 @@ module talsh_triples
 !       Evaluate +T, -T and (T) energy terms.
 !       Definitions of terms: L. Visscher, T.J. Lee, K.G. Dyall, J Chem Phys. 105 (1996) 8769.
 !       Implementation by Johann Pototschnig, Summer 2021
-
         use type_laplace, only : laplace_info, deallocate_laplace
-
         real(8), intent(out)                 :: t_energy(3)
         type(talsh_comm_tens_t), intent(inout) :: comm_t
         type(talsh_intg_tens_t), intent(inout) :: int_t
@@ -517,7 +515,6 @@ module talsh_triples
         deallocate(zero_occ)
         deallocate(zero_vir)
         deallocate(eps_occ_neg)
-
     end subroutine t3_energy_laplace
 
     subroutine laplace_get_T1(T,i_t2,i_ooov,i_vovv,t2_dims, &

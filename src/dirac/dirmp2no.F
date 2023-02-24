@@ -106,7 +106,10 @@ C     step
       ENDDO
       IMAXVSP     = JMAXVSP
 Caspg, default changed from scheme 4 to scheme 6
-      IAOMOSCHEME = 6 
+cayaki_03_06_2022
+c     default changed from scheme 6 to scheme 4, because scheme 4 is faster
+c     for the current architecture      
+      IAOMOSCHEME = 4
       
 C
 C     Process input from CBIMP2NO
@@ -432,9 +435,7 @@ C          ... MP2 NO coefficients
 C          ... boson irrep info (or mj-values if linear symmetry is available)
            CALL IREAKRMC(LUKRMC,'IBEIGORI',work(kibeig),NORBT)
 C          ... MO coefficients
-           CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
-           CALL REACMO_new(LUCOEF,cmo=WORK(KCMO_TRA:KCMO_TRA+NCMOTQ-1))
-           CLOSE(LUCOEF,STATUS='KEEP')
+           CALL REACMO_new(cmo=WORK(KCMO_TRA:KCMO_TRA+NCMOTQ-1))
 C
 C          transformation 
 C          --------------
@@ -857,16 +858,7 @@ C
       allocate (EIG(NORBT))
       allocate (IBEIG(NORBT))
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)')
-     &   'MP2DEN ERROR: MO coefficient file not present'
-         CALL Abend2('MP2DEN: No MO coefficient file !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
-         CALL REACMO_new(LUCOEF,cmo=cmo,eig=eig,ibeig=ibeig)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      END IF
+      CALL REACMO_new(cmo=cmo,eig=eig,ibeig=ibeig)
 C
 C     Select the set that we need
 C
@@ -1055,14 +1047,7 @@ C
       allocate (CMO(NCMOTQ))
       allocate (EIG(NORBT))
       allocate (IBEIG(NORBT))
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-         CALL QUIT('PAMTRA: No MO coefficient file !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
-         CALL REACMO_new(LUCOEF,cmo=cmo,eig=eig,ibeig=ibeig)
-      ENDIF
+      CALL REACMO_new(cmo=cmo,eig=eig,ibeig=ibeig)
 C
 C     Select the set that we need
 C
@@ -1160,6 +1145,7 @@ C
       relcc_do_mp2gradient = .true.
       relcc_do_naturalorbitals = .true.
       relcc_no_recompute = .true.
+      if (istrat==6) relcc_integral_interface = 'DIRAC6    '
 C     The original NO generation treats open shells as closed, set occupation explicitly to keep this definition.
 C     These lines are necessary because the default for information written to MRCONEE has changed to closed shells only.
 C     / Luuk June 2016

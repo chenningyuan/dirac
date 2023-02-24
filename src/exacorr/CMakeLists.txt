@@ -31,7 +31,8 @@ if(ENABLE_EXATENSOR)
    talsh_sigma_eomccsd.F90
    talsh_trial_eomccsd.F90
    talsh_drivers_eomccsd.F90
-   talsh_gradient.F90
+   talsh_density_matrices.F90
+   talsh_1rdm_2rdm_ccsd_kernels.F90
    talsh_triples.F90
    talsh_cc.F90
    talsh_cc_ci.F90
@@ -70,4 +71,5 @@ if(ENABLE_EXATENSOR)
   add_dependencies(exacorr  main)
   add_dependencies(exacorr  exatensor)
   add_dependencies(exacorr interest)
+  add_dependencies(exacorr relccsd)
 endif()

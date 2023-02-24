@@ -1527,7 +1527,7 @@ contains
          w(1) = rw(ipoint)
 
 
-         if ( frozen_n(ipoint) > 0.0d0 ) then
+         if ( frozen_n(ipoint) > fde_cfg_tinydens ) then
             n_0_t(1) = n_0(1)            + frozen_n(ipoint)
             z0tt(1)  = gn_0_pointwise(1) + frozen_gnx(ipoint)
             z0tt(2)  = gn_0_pointwise(2) + frozen_gny(ipoint)
@@ -1588,12 +1588,15 @@ contains
 !       ==============================
         if (do_interaction_energy) then
             
+! do not evaluate xcf for frozen density when that is too small
+           if ( frozen_n(ipoint) > fde_cfg_tinydens ) then
             call get_xcke_fun_derv(max_fun_derv, & 
                                    bllen,        &
                                    w,            &
                                    n_0_f,        &
                                    gnn_0_f,      &
                                    derv_frozen)
+           end if 
 
             nuc_part = .true.
             ele_part = .false.
@@ -1615,6 +1618,13 @@ contains
 
             active_nucpot(1) = -active_nucpot(1)
 !
+            if (isnan(derv_total(1, d0000000))) then
+               if (fde_mpi_is_master()) print *,'at point',ipoint,'derv_total is NaN' 
+            endif
+            if (isnan(derv_frozen(1, d0000000))) then
+               if (fde_mpi_is_master()) print *,'at point',ipoint,'derv_frozen is NaN' 
+            endif
+
             non_additive_interaction = non_additive_interaction &
                               + (derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000))
             electrostatic_b_rho_a_interaction = electrostatic_b_rho_a_interaction + w(1)*frozen_elpot(ipoint)*n_0(1)

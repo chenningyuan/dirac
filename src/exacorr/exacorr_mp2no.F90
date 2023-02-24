@@ -69,9 +69,9 @@ module exacorr_mp2no
             !LV: the line below should be improved, will not work if a user does not give the HOMO as the last orbital
             nocc = exa_input%mokr_occ(size(exa_input%mokr_occ))
 
-            inquire(file="NOs_MO", exist=alive)
+            if (my_MPI_rank == 0) inquire(file="NOs_MO", exist=alive)
+            call interface_mpi_bcast_l0(alive,1,0,global_communicator)
             if (alive) then
-                call interface_mpi_comm_rank(global_communicator,my_MPI_rank)  
                 if (my_MPI_rank == 0) then 
                     call print_date("File NOs_MO exists") 
                 end if 
@@ -84,7 +84,7 @@ module exacorr_mp2no
             if (my_MPI_rank == 0) then
                call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
                                     New_orbital_energy,'NOs_MO',N_cano)
-               call write_to_newfile(nocc,NOs_AO,New_orbital_energy,'DFCOEF','MP2NOs_AO')
+               call write_nos(nocc,NOs_AO,New_orbital_energy,'scf','mbpt')
                call print_date("Leave MP2_NO Module")
             end if
 
@@ -101,6 +101,7 @@ module exacorr_mp2no
         subroutine exacorr_generate_MP2_VNO_MObasis (exa_input)
 
          use talsh
+         use checkpoint
 
 !        This subroutine drives the mp2no DM calculation ans MP2 energy as well
 !        The implementation is based on the parallel ExaTensor library
@@ -319,8 +320,15 @@ module exacorr_mp2no
          
          call delete_global_data
 
-!        Make some noise so that we know we are leaving
+!        Write energy to checkpoint (cannot be done earlier, because DIRAC master = 0 and EXATENSOR master is the last process)
+         call interface_mpi_bcast (mp2_energy,1,0,global_communicator)
          if (my_MPI_rank == 0) then
+
+            call checkpoint_write ('/result/wavefunctions/mbpt/method',sdata="MP2")
+            call checkpoint_write ('/result/wavefunctions/mbpt/e_corr',rdata=mp2_energy)
+            call checkpoint_read ('/result/wavefunctions/scf/energy',rdata=scf_energy)
+            call checkpoint_write ('/result/wavefunctions/mbpt/energy',rdata=scf_energy+mp2_energy)
+
             write(*,*) ""
             write(*,*) " Leaving mp2no DM construction routine"
          end if

@@ -37,7 +37,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbpsi.h"
-#include "dcbmp2no.h"
 #include "infpar.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
@@ -59,9 +58,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
 ! LV 2020: this set up is weird, but appears to give no problems here in contrast to
 ! polprp. If interface problems show up, look at the fixed code in polprp_driver
-!     INTFCE = 'DIRAC     '
-      INTFCE = 'DIRAC6    '
-      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
+!      
+! sunaga 2022: iface set to DIRAC4 as default, in line with having scheme 4 as default in moltra
+!      INTFCE = 'DIRAC6    '
+      INTFCE = 'DIRAC     '
 !
 !  determine condition when we have complex arithmetic !
 !
@@ -91,22 +91,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
          call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
-         call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
-     &                  global_communicator)
-      END IF
-!
-!     if MP2-NO is enabled, tell the slaves about the correct interface
-!
-      IF( MP2_DENRUN )THEN
-        call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
-     &                 global_communicator)
-        IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
-        call interface_mpi_BCAST(INFO_STRING(1),62,MASTER,
-     &                 global_communicator)
-        call interface_mpi_BCAST(INFO_STRING(2),62,MASTER,
-     &                 global_communicator)
-        call interface_mpi_BCAST(INFO_STRING(3),62,MASTER,
-     &                 global_communicator)
       END IF
 #endif
 !
@@ -219,7 +203,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     Controlled by inpt.inc from relccsd.
 !
 !     The INTERFACE/EQNS variable is defined in ccinpt.inc and is needed
-!     by CCSETI. The default scheme is DIRAC6. This is also hardcoded
+!     by CCSETI. The default scheme is DIRAC4. This is also hardcoded
 !     in the RELCCSD code.
 !
       CARITH = CA

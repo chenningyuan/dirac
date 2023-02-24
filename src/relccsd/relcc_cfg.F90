@@ -64,7 +64,7 @@ module relcc_cfg
   logical, public :: relcc_no_recompute             = .false.
   logical, public :: relcc_low_memory               = .false.
   integer, public :: relcc_memory_in_mw             = 0
-  character(10), public :: relcc_integral_interface = 'DIRAC6    '
+  character(10), public :: relcc_integral_interface = 'DIRAC4    '
 
 ! Information relevant to restarts
   logical, public, dimension(1:6)  :: relcc_restart_skipsect     = .false. 
@@ -123,6 +123,7 @@ module relcc_cfg
   logical, public :: relcc_mfd_trial_full_matrix = .false.
   logical, public :: relcc_mfd_trial_restart = .false.
   logical, public :: relcc_mfd_trial_lhs_use_rhs = .true.
+  logical, public :: relcc_mfd_trial_double_mfold = .false.
 
   logical, public :: relcc_projectors_do_restricted_excitation_window = .false. 
   logical, public :: relcc_projectors_do_core_valence_separation = .false. 
@@ -253,6 +254,7 @@ contains
   call interface_mpi_bcast_l0(relcc_mfd_trial_full_matrix  ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_mfd_trial_restart      ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_mfd_trial_lhs_use_rhs  ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_mfd_trial_double_mfold ,1,0,global_communicator)
 
 ! information relevant to projectors that modify the matrix-free trial vectores
 

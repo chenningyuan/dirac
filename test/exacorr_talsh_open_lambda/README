@@ -1,0 +1,5 @@
+! testing both the lambda vector computation in the talsh cc implementation
+! and the first-order psuedo property expectation value implementation
+! at the KU DHF/CCSD level
+! this is done for the CH "beta" spin  doublet
+! requirements: talsh library (Dmitry Lyakh), efficent with CUDA / OPENMP

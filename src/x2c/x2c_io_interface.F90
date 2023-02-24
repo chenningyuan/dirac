@@ -33,6 +33,7 @@ contains
 !**********************************************************************
   subroutine x2c_write(flabel,fmat,nlen,funit)
 !**********************************************************************
+     use checkpoint
      real(8),            intent(in)     :: fmat(*)
      integer,            intent(in)     :: nlen
      integer,            intent(in)     :: funit
@@ -41,7 +42,17 @@ contains
      logical                            :: fndlab12
      character (len=800)                :: funit_name
      integer                            :: lfunit_name
+     character*(:), allocatable         :: group
 !**********************************************************************
+
+     ! write essential x2c information to CHECKPOINT
+     if (flabel(1:8)=='prpint2c'.or.flabel(1:7)=='pctmtAO'.or.flabel(1:4)=='h12c') then
+       group = '/result/hamiltonian/x2c/ao_matrices/'
+       if (nlen>0) then
+          call checkpoint_write(group//flabel,fmat(1:nlen))
+       endif
+       return
+     end if
 
        if(nlen >= 0)then
          rewind funit                                                    
@@ -66,6 +77,7 @@ contains
 !**********************************************************************
   subroutine x2c_read(flabel,fmat,nlen,funit)
 !**********************************************************************
+     use checkpoint
      real(8),            intent(inout)  :: fmat(*)
      integer,            intent(in)     :: nlen
      integer,            intent(in)     :: funit
@@ -76,8 +88,18 @@ contains
      character (len=1000)               :: error_stream
      integer                            :: lfunit_name
      integer                            :: lerror_stream
+     character*(:), allocatable         :: group
 !**********************************************************************
  
+     ! read essential x2c information from CHECKPOINT
+     if (flabel(1:8)=='prpint2c'.or.flabel(1:7)=='pctmtAO'.or.flabel(1:4)=='h12c') then
+       group = '/result/hamiltonian/x2c/ao_matrices/'
+       if (nlen>0) then
+          call checkpoint_read(group//flabel,fmat(1:nlen))
+       endif
+       return
+     end if
+
        rewind(funit)
        if(nlen > 0)then
          if(fndlab12(flabel,funit))then

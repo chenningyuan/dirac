@@ -3,7 +3,7 @@ subroutine xcint_potential_rks(mat_dim, &
                                fmat)
 
   use xcint_main
- ! use include_dgroup_h,only : get_IPQTOQ,get_NZ
+  !use include_dgroup_h,only : get_IPQTOQ,get_NZ
 
   implicit none
 
@@ -13,10 +13,10 @@ subroutine xcint_potential_rks(mat_dim, &
 ! fmat should be inout
 
   !miro: control print out of fmat at the beginnig
-  !print *,'xcint_potential_rks: entering fmat matrix, get_nz()=',get_nz()
-  !call prqmat(fmat,mat_dim,mat_dim,mat_dim,mat_dim, get_nz(), get_ipqtoq(1,0), 6)
+   !print *,'xcint_potential_rks: entering fmat matrix, get_nz()=',1
+   !call prqmat(fmat,mat_dim,mat_dim,mat_dim,mat_dim, 1, get_ipqtoq(1,0), 6)
 
-  call integrate_xc(xc_mat_dim      = mat_dim, &
+   call integrate_xc(xc_mat_dim      = mat_dim, &
                     xc_nz           = 1,       &
                     xc_dmat_0       = dmat_0,  &
                     xc_nr_dmat      = 0,       &
@@ -24,8 +24,8 @@ subroutine xcint_potential_rks(mat_dim, &
                     xc_fmat         = fmat,    &
                     xc_do_potential = .true.)
 
- ! print *,'xcint_potential_rks: exit fmat matrix'
- ! call prqmat(fmat,mat_dim,mat_dim,mat_dim,mat_dim, get_nz(), get_ipqtoq(1,0), 6)
+   !print *,'xcint_potential_rks: exit fmat matrix'
+   !call prqmat(fmat,mat_dim,mat_dim,mat_dim,mat_dim, 1, get_ipqtoq(1,0), 6)
 
 end subroutine
 
@@ -56,6 +56,21 @@ function xcint_get_xc_mat_energy()
   real(8) :: xcint_get_xc_mat_energy
   xcint_get_xc_mat_energy = get_xc_mat_energy()
 end function
+
+subroutine xcint_set_xc_mat_energy_delta(dXCpot)
+  use xcint_main
+  implicit none
+  real(8), intent(in) :: dXCpot
+  call set_xc_energy_delta(dXCpot=dXCpot)
+end subroutine
+
+subroutine xcint_set_xc_energy_delta(dXC)
+  use xcint_main
+  implicit none
+  real(8), intent(in) :: dXC
+  call set_xc_energy_delta(dXC=dXC)
+end subroutine
+
 
 function xcint_get_nr_electrons_integrated()
   use xcint_main
