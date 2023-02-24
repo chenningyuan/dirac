@@ -38,7 +38,7 @@ module talsh_gradient
 
       complex(8), intent (inout) :: recalculated_energy
       type(exacc_input), intent(in   ) :: exa_input
-      type(talsh_intg_tens), intent(inout) :: int_t
+      type(talsh_intg_tens_t), intent(inout) :: int_t
       type(talsh_dm_tens), intent(inout) :: gamma
       type(C_PTR)         :: res_body_p
       type(talsh_tens_t)  :: res_tensor
@@ -109,7 +109,7 @@ module talsh_gradient
       type(exacc_input), intent(in   ) :: exa_input
       type(talsh_tens_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
       type(talsh_tens_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
-      type(talsh_intg_tens), intent(inout), optional :: int_t
+      type(talsh_intg_tens_t), intent(inout), optional :: int_t
 !     density matrices type, output
       type(talsh_dm_tens) :: gamma
 !     CCD switch

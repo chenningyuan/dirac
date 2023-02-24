@@ -549,7 +549,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
 !      type(talsh_comm_tens) :: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron
 !        integrals)
-      type(talsh_intg_tens),intent(inout) :: int_t
+      type(talsh_intg_tens_t),intent(inout) :: int_t
 
 
       type(talsh_dm_tens), intent(inout) :: gamma

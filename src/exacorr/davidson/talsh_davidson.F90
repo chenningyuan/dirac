@@ -3547,7 +3547,7 @@ contains
     
     end subroutine 
 
-    subroutine print_tensor_elements(tensor)
+    subroutine print_tensor_elements2(tensor)
        implicit none
     
        type(talsh_tens_t), intent(inout)    :: tensor
