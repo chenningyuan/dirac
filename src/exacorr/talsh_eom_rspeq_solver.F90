@@ -202,7 +202,7 @@ module talsh_eom_rspeq_solver
             type(talsh_comm_tens_t)       :: bvec_tensor
 
 
-            type(talsh_tens_t)       :: Aux_tensor1, Aux_tensor2
+            type(talsh_tens_t)       :: Aux_tensor1, one_tensor
 
             integer(INTD), dimension(4)   :: oovv_dims
             integer(INTD), dimension(2)   :: ov_dims
@@ -221,7 +221,7 @@ module talsh_eom_rspeq_solver
             ierr=talsh_tensor_construct(bvec_tensor%t1,C8,ov_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(bvec_tensor%t2,C8,oovv_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(Aux_tensor1,C8,one_dims(1:0),init_val=ZERO)
-            ! ierr=talsh_tensor_construct(Aux_tensor2,C8,one_dims(1:0),init_val=ZERO)
+            ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
 
             ierr=talsh_tensor_contract("A1()+=l1(i,a)*E(a,i)",Aux_tensor1,l1_tensor,interm_t_prop%epsilon_prop_vo,scale=ONE)
@@ -229,23 +229,36 @@ module talsh_eom_rspeq_solver
                                           interm_t_prop%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
             
 
-            ! ierr=talsh_tensor_add('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov,scale=ONE)  
-            ! ierr=talsh_tensor_contract("B(i,a)+=l2(i,j,a,b)*E(b,j)",bvec_tensor%t1,l2_tensor,& 
-            !                                     interm_t_prop%epsilon_prop_vo,scale=ONE)  
+            ierr=talsh_tensor_add('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov,scale=ONE) 
+            ierr=talsh_tensor_contract("B(i,a)+=l2(i,j,a,b)*E(b,j)",bvec_tensor%t1,l2_tensor,& 
+                                                interm_t_prop%epsilon_prop_vo,scale=ONE)  
 
-                                                
-            ierr=talsh_tensor_add('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov_eom,scale=ONE)  
-            ierr=talsh_tensor_contract("B(i,a)+=l1(i,a)*A1()",bvec_tensor%t1,l1_tensor,Aux_tensor1,scale=MINUS_ONE)   
+            ! ierr=talsh_tensor_contract("B(i,a)+=nX(i,a)*I()",bvec_tensor%t1,interm_t_prop%eta_prop_ov_eom,&
+            !                                     one_tensor,scale=MINUS_ONE) 
+
+            ! call print_tensor(bvec_tensor%t1,1.0d-10,"T1 part of bvec")                                    
+            ! ierr=talsh_tensor_add('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov_eom,scale=ONE)  
+            ! print*, "bvec tensor norm", tensor_norm2(bvec_tensor%t1)+tensor_norm2(bvec_tensor%t2)/4.0
+            ierr=talsh_tensor_contract("B(i,a)+=l1(i,a)*A1()",bvec_tensor%t1,l1_tensor,Aux_tensor1,scale=MINUS_ONE) 
+            ! call print_tensor(bvec_tensor%t1,1.0d-10,"T1 part of bvec after minus ")        
 
 
-            ierr=talsh_tensor_add('B(i,j,a,b)+=Y(i,j,a,b)',bvec_tensor%t2,interm_t_prop%eta_prop_oovv,scale=ONE)   
+            ierr=talsh_tensor_add('B(i,j,a,b)+=Y(i,j,a,b)',bvec_tensor%t2,interm_t_prop%eta_prop_oovv,scale=ONE)  
+            ! call print_tensor(bvec_tensor%t2,1.0d-110,"T2 part of bvec")
+
             ierr=talsh_tensor_contract("B(i,j,a,b)+=l2(i,j,a,b)*A1()",bvec_tensor%t2,l2_tensor,Aux_tensor1,scale=MINUS_ONE)  
+            ! call print_tensor(bvec_tensor%t2,1.0d-110,"T2 part of bvec after minus")
             
-            call print_tensor(bvec_tensor%t1,1.0d-18,"T1 part of bvec")
-            call print_tensor(bvec_tensor%t2,1.0d-18,"T2 part of bvec")
+            
+            ! call print_tensor(bvec_tensor%t2,1.0d-18,"T2 part of bvec")
+
 
             ierr=talsh_tensor_destruct(Aux_tensor1)
-            ! ierr=talsh_tensor_destruct(Aux_tensor2)
+            ierr=talsh_tensor_destruct(one_tensor)
+
+            ! call print_tensor(interm_t_prop%eta_prop_ov,1.0d-18,"eta_prop_ov in  bvec")   
+            ! call print_tensor(interm_t_prop%epsilon_prop_vo,1.0d-18,"T1 part of epsilon_prop_vo in bvec")   
+            ! call print_tensor(l2_tensor,1.0d-18,"T2 part of lambda in bvec")  
 
 
       end subroutine get_left_bvec

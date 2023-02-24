@@ -333,19 +333,20 @@ subroutine get_linrsp_driver(tem_linrsp_iter,tprop_tensor1, tprop_tensor2, &
     end if 
 
     tem_linrsp_iter=term1*term2+term3
+    ! print *, "total:", tem_linrsp_iter
 
 
-    ierr=talsh_tensor_add("ETAEOM(i,a)+=ETA(i,a)",eta_eom_test1,interm_t_prop1%eta_prop_ov_eom,scale=ONE)
-    ierr=talsh_tensor_add("ETAEOM(i,a)+=L1(i,a)",eta_eom_test1,l1_tensor,scale=term2)
+    ! ierr=talsh_tensor_add("ETAEOM(i,a)+=ETA(i,a)",eta_eom_test1,interm_t_prop1%eta_prop_ov_eom,scale=ONE)
+    ! ierr=talsh_tensor_add("ETAEOM(i,a)+=L1(i,a)",eta_eom_test1,l1_tensor,scale=term2)
 
-    ierr=talsh_tensor_add("ETAEOM(i,j,a,b)+=ETA(i,j,a,b)",eta_eom_test2,interm_t_prop1%eta_prop_oovv,scale=ONE)
-    ierr=talsh_tensor_add("ETAEOM(i,j,a,b)+=L2(i,j,a,b)",eta_eom_test2,l2_tensor,scale=term2)
+    ! ierr=talsh_tensor_add("ETAEOM(i,j,a,b)+=ETA(i,j,a,b)",eta_eom_test2,interm_t_prop1%eta_prop_oovv,scale=ONE)
+    ! ierr=talsh_tensor_add("ETAEOM(i,j,a,b)+=L2(i,j,a,b)",eta_eom_test2,l2_tensor,scale=term2)
 
-    call print_tensor(eta_eom_test1,1.0d-18,"T1 part of ETAEOM")
-    call print_tensor(eta_eom_test2,1.0d-18,"T2 part of ETAEOM")
+    ! call print_tensor(eta_eom_test1,1.0d-18,"T1 part of ETAEOM")
+    ! call print_tensor(eta_eom_test2,1.0d-18,"T2 part of ETAEOM")
 
-    ierr=talsh_tensor_destruct(eta_eom_test1)
-    ierr=talsh_tensor_destruct(eta_eom_test2)
+    ! ierr=talsh_tensor_destruct(eta_eom_test1)
+    ! ierr=talsh_tensor_destruct(eta_eom_test2)
 
 end subroutine 
 

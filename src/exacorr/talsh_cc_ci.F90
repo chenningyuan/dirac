@@ -222,7 +222,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
                     call get_eom_qr(exa_input, interm_t, Interm_t_tensors,& 
                     Tprop_tensors, Tprop_bar_tensors,& 
                     Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
-                    i, j, k, l1_tensor, l2_tensor, eom_qr)
+                    i, j, k, l1_tensor, l2_tensor, eom_qr, Bvec_tensors(1))
 
                     eom_qrs(i,j,k) = eom_qr
                    

@@ -741,7 +741,7 @@ module talsh_sigma_eomccsd
       type(talsh_tens_t),    intent(inout) :: l2_tensor
       type(talsh_tens_t) :: one_tensor
 !     auxiliary tensor
-      type(talsh_tens_t) :: goo_tensor, gvv_tensor
+      type(talsh_tens_t) :: goo_tensor, gvv_tensor, oo_aux
       integer            :: oo_dims(2), vv_dims(2)
       integer(C_INT)     :: one_dims(1)
 !     error code
@@ -907,7 +907,7 @@ module talsh_sigma_eomccsd
 !---------------------------------------------------------------------
 
       ! if (.not.interm_t%ccd) then
-      !   oo_dims = (/interm_t%nocc,interm_t%nocc/)
+      ! !   oo_dims = (/interm_t%nocc,interm_t%nocc/)
       !   ierr=talsh_tensor_construct(oo_aux,C8,oo_dims,init_val=ZERO)
       ! !   ierr=talsh_tensor_contract("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1)
       !   ierr=talsh_tensor_contract("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1,scale=MINUS_ONE)  !XY

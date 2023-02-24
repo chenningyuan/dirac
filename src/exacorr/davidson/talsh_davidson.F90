@@ -2205,7 +2205,7 @@ contains
                ierr=talsh_tensor_contract("CI()+=C+(p,q)*B(p,q)",                &
    &                                                       result_tensor,        &
 &                                                          prop_grad1,           &
-   &                                                       workspace_t%trial1(i))
+   &                                                       workspace_t%trial1(i),scale=ONE)
             end if
          end if ! workspace_t%N(1).ne.0
 
