@@ -353,11 +353,11 @@ module exacorr_cc
                   call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,denom,dims,t_target_precision,&
                       & ncycles,exa_input%print_level,l1_tensor)
                 end if
-                ! call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
+                call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
              else
                call solve_lambda_equations(comm_t,int_t,l2_tensor,denom,dims,t_target_precision, &
                                           ncycles,exa_input%print_level)
-              !  call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor)
+               call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor)
              end if
              
              if (.not.CCD) ierr=exatns_tensor_destroy(l1_tensor)
