@@ -87,6 +87,10 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:pdpack> ${EXTERNAL_OBJECTS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/interface_mpi)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interface_mpi> ${EXTERNAL_OBJECTS})
 
+# Making mfsolver as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/mfsolver)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:mfsolver> ${EXTERNAL_OBJECTS})
+
 # gp as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/gp)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:gp> ${EXTERNAL_OBJECTS})

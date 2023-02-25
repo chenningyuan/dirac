@@ -134,24 +134,38 @@ module exacorr_global
                end if
              end if
 
-             ! read property integrals (requires also readding of nsp from mrconee, so testing for this as well)
-             if (exa_input%nff(1)>0) then
-               inquire (file='MDPROP',exist=tobe)
-             else
-              exa_input%nff(2)=1
-              tobe=.FALSE.
-             end if
+             ! YX: MDPROP not only for finite gradient. So, we check if MDPROP first. 
+             inquire (file = 'MDPROP', exist=tobe)
              if (tobe.and.one_el_exist) then
-                call read_mdprop (int_1el, ierr)
-                if (ierr == 0) then
-                  call print_date("read property integrals from MDPROP")
-                else
-                  call print_date("could not read property integrals from MDPROP")
-                  int_1el%n_prop = 0
-                endif
+              call read_mdprop (int_1el, ierr)
+              if (ierr == 0) then
+                call print_date("read property integrals from MDPROP")
+              else
+                call print_date("could not read property integrals from MDPROP")
+                int_1el%n_prop = 0
+              endif
              else
-               int_1el%n_prop = 0
+                int_1el%n_prop = 0
              end if
+
+             ! read property integrals (requires also readding of nsp from mrconee, so testing for this as well)
+             if (exa_input%nff(1)<=0) then
+              !  inquire (file='MDPROP',exist=tobe)
+            !  else
+              exa_input%nff(2)=1
+              ! tobe=.FALSE.
+             end if
+            !  if (tobe.and.one_el_exist) then
+            !     call read_mdprop (int_1el, ierr)
+            !     if (ierr == 0) then
+            !       call print_date("read property integrals from MDPROP")
+            !     else
+            !       call print_date("could not read property integrals from MDPROP")
+            !       int_1el%n_prop = 0
+            !     endif
+            !  else
+            !    int_1el%n_prop = 0
+            !  end if
 
              call synchronize_global_data
 
