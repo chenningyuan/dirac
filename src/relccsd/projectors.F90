@@ -1,6 +1,5 @@
   module projectors
   use mfsolver_dirac_input
-  use mfsolver_cfg
   use relcc_cfg
   implicit none
 
