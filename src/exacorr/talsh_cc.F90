@@ -92,6 +92,9 @@ module talsh_cc
          integer :: fock_mode  ! choice of Fock build options
          integer :: rr         ! rank of cc-ci response
          
+! this should be needed in the case of exatensor, but not for talsh i guess..
+!        call mfsolver_dirac_input_sync_cw()
+
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
@@ -356,7 +359,6 @@ module talsh_cc
 !**************************
 
          if (eom.or.eom_lr.or.eom_qr) then
-            call mfsolver_dirac_input_sync_cw()
 
 !aspg, this new handling of fock matrices has to be verified, we don't want any addition to finite field ere for example
 !        Get fixed one-body tensors, needs to follow the two body tensors
