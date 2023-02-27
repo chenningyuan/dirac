@@ -45,9 +45,13 @@ if(ENABLE_UNIT_TESTS)
                 )
         endif()
 
+        target_link_libraries(${_name}.x laplace)
+
         if(HDF5_FOUND)
             target_link_libraries(${_name}.x HDF5::HDF5)
         endif()
+
+        target_link_libraries(${_name}.x qcorr)
 
         if(ENABLE_EXATENSOR)
           # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR

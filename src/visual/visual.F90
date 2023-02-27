@@ -17,6 +17,7 @@
 module visual
 
   use memory_allocator
+  use dircmo
   use visual_cfg
   use dirac_ao_eval
   use interface_ao
@@ -185,20 +186,13 @@ contains
 
        close(file_unit)
     else
-!      read from DFCOEF
-
-       call read_mo_coef(cmo_from_file)
-
-!      find occupation
+!      read from CHECKPOINT FILE
 
        call alloc(eigenvalues, norbt)
        eigenvalues = 0.0d0
+       call reacmo_new(cmo=cmo_from_file,eig=eigenvalues,toterg=energy)
 
-       call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
-       call reacmo(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
-
-       close(file_unit, status = 'keep')
-       write(LUPRI, '(2x, a)') 'Visualisation : DFCOEF file read'
+       write(LUPRI, '(2x, a)') 'Visualisation : CHECKPOINT file read'
 
 !fixme verify whether this is really needed
 !      when i introduced it i needed it so that certain arrays were properly set

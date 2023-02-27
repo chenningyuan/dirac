@@ -39,14 +39,14 @@ module talsh_cc
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
 
 !        Written by Lucas Visscher, winter 2016/2017
-
+         use labeled_storage
          use exacorr_global
          use talsh_gradient
          use talsh_cholesky_integrals
          use talsh_triples
 
          type(exacc_input), intent(in) :: exa_input
-
+         type(file_info_t)      :: exacc_file
          integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
@@ -112,6 +112,13 @@ module talsh_cc
          CC2 = exa_input%cc2     !L
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
+
+         call print_date("MO occupation data to EXACC file")
+         exacc_file%status = -1
+         exacc_file%type = 2
+         exacc_file%name = "EXACC.h5"
+         call lab_write(exacc_file,'nocc',idata=nocc)
+         call lab_write(exacc_file,'mo_occ',idata=mo_occ)
 
          call print_exainput(exa_input,get_nao())
 
@@ -1045,7 +1052,7 @@ module talsh_cc
          call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD)
          call print_date('Finished calculating fixed intermediates')
 
-         if (print_level.gt.8) then
+         if (print_level>0) then
              if (.not.CCD) print*, "T1amp      = ", tensor_norm2(comm_t%t1)
              print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER_R
              ! print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER_R

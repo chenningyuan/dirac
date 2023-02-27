@@ -1,0 +1,5 @@
+! This test calculates the parity-violation contribution to nuclear spin-rotation constants
+! in the H2O2 molecule using Dirac-Coulomb (DC) and L\'evy-Leblond (NR).
+!
+! Please note that the basis-set is far from being appropriate, just for demonstration.
+! Note also that this property is very sensitive to numerical noise and demands good SCF and response convergence.

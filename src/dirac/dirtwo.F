@@ -57,8 +57,6 @@ C
 C
       CALL QENTER('TWOFCK')
 #include "memint.h"
-      iprint_save = iprint
-!     iprint = 5
 C
       IF(IPRINT.GE.5) THEN
         CALL TITLER('Output from TWOFCK','*',103)
@@ -267,7 +265,6 @@ C
         ENDIF
       ENDDO
       CALL QEXIT('TWOFCK')
-      iprint = iprint_save
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3241,8 +3238,8 @@ C     Memory allocation
       CALL MEMGET2('REAL','DMRAO',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
 C
 C
-C     Get G(ab) integrals from AOPROPER
-C     =================================
+C     Get G(ab) integrals from CHECKPOINT
+C     ===================================
 C
       IF (SCRFCK .GT. D0) THEN
 C
@@ -3932,8 +3929,8 @@ C
       CALL MEMGET2('REAL','DMRAO',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','DMRSO',KDMRSO,NDMRSO ,WORK,KFREE,LFREE)
 C
-C     Get G(ab) integrals from AOPROPER
-C     =================================
+C     Get G(ab) integrals from CHECKPOINT
+C     ===================================
 C
       IF (SCRFCK .GT. D0) THEN
          IJOB   = 0

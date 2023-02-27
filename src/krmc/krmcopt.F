@@ -306,6 +306,7 @@ C     Last revision :
 C
 C***********************************************************************
       use orbital_rotation_indices
+      use symmetry_setup_krci, only: orbsymVEC
 
 #include "implicit.h"
 #include "priunit.h"
@@ -809,6 +810,10 @@ C
  9300 FORMAT(/'>>> TOTAL CPU (WALL) TIME IN KR-MCSCF: ',A,'(',A,')')
 C
       CALL MEMREL('PSIOP1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      !> clean final memory in KRCI
+      IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+            if(allocated(orbsymVEC)) deallocate(orbsymVEC)
+      END IF
       CALL QEXIT('PSIOP1')
       RETURN
       END
@@ -2403,14 +2408,13 @@ C
             end if
           END IF
         ELSE
-C         read orbital symmetry values from DFCOEF
-          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RSETCI')
+C         read orbital symmetry values from CHECKPOINT
           CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,TOTERG,8)
-          CLOSE(LUCOEF,STATUS='KEEP')
+          if (atomic) call atomic_to_linear (orb_sym_vec,norbt)
           if(IPROPT .ge. 2)then
             WRITE(LUPRI,'(/A)')
      &      ' (RSETCI) *** orbital symmetry information read'//
-     &      ' from DFCOEF ***'
+     &      ' from CHECKPOINT ***'
           end if
         END IF
 C
@@ -3181,19 +3185,14 @@ C     (1.5) From previous DHF calculation.
 C           Read orbitals from DFCOEF
 C
       IF (LBIT(IROST,5)) THEN
-         INQUIRE ( FILE = 'DFCOEF', EXIST = EX )
-         IF ( EX ) THEN
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RREADMO')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,DUMMY,DUMMY,2)
-            CLOSE(LUCOEF,STATUS='KEEP')
-            readmj_df = .true.
-            IF (IPRINT .GE. 0) THEN
-               WRITE(LUPRI,'(/A)')
-     &              ' (ROPTST)  Start orbitals read from' //
-     &              ' file DFCOEF'
-            END IF
-            GO TO 1000
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,DUMMY,DUMMY,2)
+         readmj_df = .true.
+         IF (IPRINT .GE. 0) THEN
+            WRITE(LUPRI,'(/A)')
+     &            ' (ROPTST)  Start orbitals read from' //
+     &            ' CHECKPOINT file'
          END IF
+         GO TO 1000
       END IF
 C
 C     (1.6) From a usual DHF start guess, i.e. bare nucleus guess.
@@ -3263,12 +3262,11 @@ C
           CALL MEMGET2('INTE','MJVEC',KMJVEC,NORBT,WORK,KFREE,LFREE)
           CALL IZERO(WORK(KMJVEC),NORBT)
 !
-!         read mj-vector from DFCOEF or KRMC"SCF"(OLD)
+!         read mj-vector from CHECKPOINT or KRMC"SCF"(OLD)
           if( readmj_df )then
-            call opnfil(lucoef,'DFCOEF','OLD','RMJVEC ')
             call reacmo(lucoef,'DFCOEF',dummy,dummy,work(kmjvec),
      &                  dummy,8)
-            close(lucoef,STATUS='KEEP')
+            if (atomic) call atomic_to_linear(work(kmjvec),norbt)
           else
             call ireakrmc(lukrm5,'MJVEC   ',work(kmjvec),norbt)
           end if
@@ -3317,11 +3315,9 @@ C         write back on file - if not present
 !
 !         read ibeig (info array on boson irreps) from DFCOEF or KRMC"SCF"(OLD)
           if( readmj_df )then
-            call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
             call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
 !           WRITE(LUPRI,'(/A)') ' IBEIG array read from file DFCOEF'
 !           call iwrtmamn(ibeig,1,norbt,1,norbt,lupri)
-            close(lucoef,STATUS='KEEP')
           else
             call ireakrmc(lukrm5,'IBEIG   ',ibeig,norbt)
           end if

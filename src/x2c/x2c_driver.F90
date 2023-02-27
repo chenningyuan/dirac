@@ -141,6 +141,9 @@ contains
 !                 a. x2c_is_defining_h1mat == 0: 1-el Dirac Hamiltonian                           
 !                    ==> default for X2C
 !
+!                 b. x2c_is_defining_h1mat == 1: 1-el Dirac Hamiltonian + diagonal (atomic) 2e-mean-field contributions                 
+!                    ==> optional for X2C
+! 
 !                 b. x2c_is_defining_h1mat == 2: Fock operator after a (converged) [spinfree==sf] SCF 
 !                    ==> default for [sf-]X2Cmmf
 !
@@ -319,6 +322,7 @@ contains
                                 x2c_linsym,                &
                                 x2c_mdirac,                &
                                 x2c_spinfree,              &
+                                x2c_isDFT,                 &
                                 x2c_do_spherical)
 !      free memory
        deallocate(x2c_data%scr1mat)
@@ -330,45 +334,8 @@ contains
 
      end if
 
-      
-!    --------------------------------------------------------------------------------------------------
-!    step 1.3: add oo-order 2e-SOC or AMFI contributions in case
-!              h1 == bare-nucleus 1e Dirac-Hamiltonian .and. 2e-SOC are desired
-!    --------------------------------------------------------------------------------------------------
-     if(x2c_add_amfi > 0)then
-
-       call x2c_add_2e_so_corrections(final_ham_lvl_x2c,                 &
-                                      x2c_add_amfi,                      &
-                                      nr_ao_total_x2c,                   &
-                                      nr_ao_large_x2c,                   &
-                                      nr_ao_all,                         &
-                                      nr_ao_l,                           &
-                                      nr_fsym,                           &
-                                      nr_quat,                           &
-                                      x2c_bs_irrep_mat,                  &
-                                      x2c_cb_pq_to_uq,                   &
-                                      x2c_cb_uq_to_pq,                   &
-                                      x2c_iqmult_trip_q,                 &
-                                      x2c_bs_to_fs,                      &
-                                      x2c_pointer_quat,                  &
-                                      x2c_pointer_quat_op,               &
-                                      x2c_max_quant_num,                 &
-                                      num_nuclei,                        &
-                                      type_nuclei,                       &
-                                      x2c_tot_charge_for_mfsum,          &
-                                      x2c_amfi_order,                    &
-                                      lwrk,                              &
-                                      x2c_do_spherical,                  &
-                                      x2c_famfi,                         &
-                                      x2c_funit,                         &
-                                      x2c_cspeed,                        &
-                                      x2c_prt)
-      end if
-
-      close(x2c_famfi,status="delete")
-
 !     ------------------------------------------------------------------------------------------
-!     step 2: picture-change transform all (remaining) operator (in DIRAC-sorted SA-AO basis):
+!     step 2: picture-change transform all operator (in DIRAC-sorted SA-AO basis):
 !             a. if(appropriate) bare-nucleus corrected 1e Dirac-Hamiltonian
 !             b. if(appropriate) 1-electron/2-electron Fock matrices
 !             c. list of 1e-property operators
@@ -413,8 +380,7 @@ contains
 !      operator matrix is the 4c-Dirac Fock operator)
 !      ---------------------------------------------------------------------------------------------------------------
        if(x2c_is_defining_h1mat == 2)then ! X2Cmmf
-         call x2c_pctrafo_mo_coefficients_driver('DFCOEF',                  &
-                                                 2,                         &
+         call x2c_pctrafo_mo_coefficients_driver(2,                         &
                                                  nr_cmo_q,                  &
                                                  nr_ao_total_x2c,           &
                                                  nr_ao_large_x2c,           &
@@ -440,15 +406,53 @@ contains
          call x2c_export_pctmat2C1()
        end if
 
-!      ----------------------------------------------------------------------------------------
-!      step 5: renew dimensions on common blocks, i.e. "remove" references to positronic shells
-!      ----------------------------------------------------------------------------------------
-       call renew_x2c_cb_orb_shell_dim(final_ham_lvl_x2c)
+!      --------------------------------------------------------------------------------------------------
+!      step 5: add (e)amf picture-change corrections (PCE) or AMFI PCE corrections in case
+!              h1 == bare-nucleus 1e Dirac-Hamiltonian .and. PCE corrections are desired
+!      --------------------------------------------------------------------------------------------------
+       if(x2c_add_amfi > 0)then
 
-       close(x2c_funit,status="keep")
+       call x2c_add_2e_so_corrections(final_ham_lvl_x2c,                 &
+                                      x2c_add_amfi,                      &
+                                      nr_ao_total_x2c,                   &
+                                      nr_ao_large_x2c,                   &
+                                      nr_ao_all,                         &
+                                      nr_ao_l,                           &
+                                      nr_fsym,                           &
+                                      nr_quat,                           &
+                                      x2c_bs_irrep_mat,                  &
+                                      x2c_cb_pq_to_uq,                   &
+                                      x2c_cb_uq_to_pq,                   &
+                                      x2c_iqmult_trip_q,                 &
+                                      x2c_bs_to_fs,                      &
+                                      x2c_pointer_quat,                  &
+                                      x2c_pointer_quat_op,               &
+                                      x2c_max_quant_num,                 &
+                                      num_nuclei,                        &
+                                      type_nuclei,                       &
+                                      x2c_tot_charge_for_mfsum,          &
+                                      x2c_amfi_order,                    &
+                                      lwrk,                              &
+                                      x2c_do_spherical,                  &
+                                      x2c_famfi,                         &
+                                      x2c_funit,                         &
+                                      x2c_cspeed,                        &
+                                      ioff_aomat_x,                      &
+                                      x2c_isDFT,                         &
+                                      x2c_prt)
+      end if
 
-!      print goodbye 
-       call goodbye_dirx2c()
+      close(x2c_famfi,status="delete")
+
+!     ----------------------------------------------------------------------------------------
+!     step 6: renew dimensions on common blocks, i.e. "remove" references to positronic shells
+!     ----------------------------------------------------------------------------------------
+      call renew_x2c_cb_orb_shell_dim(final_ham_lvl_x2c)
+
+      close(x2c_funit,status="keep")
+
+!     print goodbye 
+      call goodbye_dirx2c()
 
   end subroutine x2c_main
 
@@ -478,18 +482,20 @@ contains
                                lwrk,                 &
                                print_lvl,            &
                                linear_sym,           &
-                               atomic_sym,           &                
+                               atomic_sym,           &
                                mdirac                &
-                              )              
+                              )
 !**********************************************************************
 !
 !    purpose: full (== molecular approach) X2C transformation initialization routine
 !
-!             requires: 4c-Lowdin matrix; 
+!             requires: 4c-Lowdin matrix;
 !                       value of "defining_h1mat" determines the defining 4c-h1 matrix
 !                       wrt which the decoupling step is performed.
 !
 !                       defining_h1mat == 0: bare-nucleus one-electron Dirac-Hamiltonian
+!                                      == 1: bare-nucleus one-electron Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
+!                                      == 4: bare-nucleus one-electron Dirac-Hamiltonian + first-order (molecular) 2e-mean-field contributions
 !                                      == 2: converged 4c-Fock-Dirac operator
 !
 !             delivers: a. AO2MO transformation matrices
@@ -521,7 +527,7 @@ contains
      integer, intent(inout) :: lwrk
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
-     logical, intent(in)    :: atomic_sym     
+     logical, intent(in)    :: atomic_sym
      logical, intent(in)    :: mdirac
 !----------------------------------------------------------------------
      real(8), allocatable   :: eigvl(:)
@@ -536,7 +542,7 @@ contains
 !**********************************************************************
 
 !    memory allocation - part 1 - allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
-!    --------------------------------------------------------------------------------------------- 
+!    ---------------------------------------------------------------------------------------------
      dimension_for_2mat   = naosh_ls**2 * nz
      do i = 1, nfsym
        dimension_for_2mat = max(dimension_for_2mat,ioff_aomx(i,i)+1+naosh_ls*naosh_all(i)*nz)
@@ -564,8 +570,8 @@ contains
 !                                                                  ^ (compute+write if >= 0)
 
 !    allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
-     j                               = dimension_for_2mat
-     if(defining_h1mat < 1) j = naosh_ls**2 * nz
+                            j = dimension_for_2mat
+     if(defining_h1mat < 2) j = naosh_ls**2 * nz
      allocate(A%scr2mat(naosh_ls**2 * nz))
      allocate(A%scr1mat(j))
 
@@ -655,14 +661,15 @@ contains
               access='sequential',action="readwrite",position='rewind')
 
          if(linear_sym)then
-!          MO2MO linear symmetry --> nonlinear symmetry transformation matrix
-           call readt(11,fullmo2momat_dim,A%scr2mat)
-!          AO2MO linear symmetry --> nonlinear symmetry transformation matrix
-!          skip the record as it is not needed here
-           read(11)
+             ! MO2MO linear symmetry --> nonlinear symmetry transformation matrix aka "U"
+             call readt(11,fullmo2momat_dim,A%scr2mat)
+
+             ! AO2MO linear symmetry --> nonlinear symmetry transformation matrix aka "VU"
+!             skip the record as it is not needed here
+             read(11)
          end if
 
-!        AO2MO transformation matrix
+         ! AO2MO transformation matrix aka "V"
          call readt(11,fullao2momat_dim,A%scr1mat)
 
          close(11,status='delete')
@@ -676,7 +683,7 @@ contains
 
          close(9,status='delete')
 
-       case (0, 3) ! 1-el Dirac Hamiltonian / free particle
+       case (0, 1, 3, 4) ! 1-el Dirac Hamiltonian (of some flavour) / free-particle h1
 
          allocate(wrk(local_lwrk))
          call modham(A%scr1mat,                                         &
@@ -686,6 +693,7 @@ contains
                      .true.,                                            &
                      .false.,                                           &
                      defining_h1mat,                                    &
+                     .false.,                                           &
                      wrk,                                               &
                      local_lwrk)
          deallocate(wrk)
@@ -748,6 +756,7 @@ contains
                                  linear_sym,           &
                                  mdirac,               &
                                  spinfree,             &
+                                 isDFT,                &
                                  spherical_on)
 !**********************************************************************
 !
@@ -758,7 +767,7 @@ contains
 !                       wrt which the decoupling step is performed.
 !
 !                       defining_h1mat == 0: bare-nucleus one-electron Dirac-Hamiltonian
-!                                      == 1: (extended) Huckel start guess (won't be implemented)
+!                                      == 1: bare-nucleus one-electron Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
 !                                      == 2: converged 4c-Fock-Dirac operator
 !
 !             delivers: a. decoupling matrix "R" in orthonormal MO basis
@@ -800,6 +809,7 @@ contains
      logical, intent(in)    :: mdirac
      logical, intent(in)    :: spinfree
      logical, intent(in)    :: spherical_on
+     logical, intent(in)    :: isDFT
 !----------------------------------------------------------------------
      real(8), allocatable   :: eigvl(:)
      integer                :: i,j
@@ -885,6 +895,7 @@ contains
                                     linear_sym,            &
                                     mdirac,                &
                                     spinfree,              &
+                                    isDFT,                 &
                                     print_lvl)
  
 !      allocate scratch matrix with appropriate dimension
@@ -980,7 +991,11 @@ contains
 !      free scratch memory
        deallocate(eigvl)
 
-       close(x2c_file_scr,status="delete")
+       if(defining_h1mat == 2)then
+         close(x2c_file_scr,status="keep")
+       else
+         close(x2c_file_scr,status="delete")
+       end if
 
   end subroutine x2c_full_x2c_driver
 

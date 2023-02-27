@@ -10,7 +10,6 @@ module talsh_mp2lap
         use talsh_cholesky_integrals
         use talsh_common_routines
         use type_laplace, only : laplace_info, deallocate_laplace
-
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -256,7 +255,7 @@ module talsh_mp2lap
         type(talsh_tens_t)                     :: T1,R1,R2,S1,one_mp2lap
 
         call print_date("Entering MP2_LAP Module")
-
+        
         !Initialize TALSH
         buf_size=exa_input%talsh_buff*buf_size
         ierr=talsh_init(buf_size,host_arg_max)
@@ -434,7 +433,6 @@ module talsh_mp2lap
         !shutdown TALSH
         ierr=talsh_stats()
         ierr = talsh_shutdown()
-
         call print_date('Leaving MP2_LAP Module')
       end subroutine mp2lap_get_DM
 

@@ -602,17 +602,10 @@ C     when we run with the MOLMF(3) hamiltonian
         WRITE(IW,'(/A,/A,/A,/A)') 
      & ' ***********************************************************',
      & ' * Info from RDINTS: No recomputation of SCF energy.       *',
-     & ' * Value is taken from the file DFCOEF instead.            *',
+     & ' * Value is taken from the CHECKPOINT file.                *',
      & ' ***********************************************************'
         ORIG_TOTSCF = 0.0D0
         IF( MYPROC .eq. MASTER )THEN
-          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-          IF(.NOT.TOBE) THEN
-              WRITE(IW,'(A)')
-     &          'RDINTS: Coefficient file DFCOEF not found !'
-              CALL QUIT('RDINTS: Coefficient file DFCOEF not found !')
-          ENDIF
-          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RDINTS')
           CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,IDUMMY,ORIG_TOTSCF,1)
         ENDIF
 #if defined VAR_MPI

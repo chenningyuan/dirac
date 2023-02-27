@@ -1082,7 +1082,7 @@ contains
    end subroutine
 
    subroutine pnc_gradient(mol, S, D, F, nr_atoms)
-
+#include "codata.h"
       type(prop_molcfg), intent(in)  :: mol
       type(matrix),      intent(in)  :: S
       type(matrix),      intent(in)  :: D
@@ -1098,14 +1098,11 @@ contains
       integer                        :: icharge, imass, nproton, nneutron
       real(8), external              :: disotp
       real(8)                        :: qw
-
-      real(8), parameter             :: sthetaw2 = 0.2319d0
       real(8)                        :: dfac
-      real(8), parameter             :: hartree2hz = 6.579683920721d15
 
 #include "mxcent.h"
 #include "nuclei.h"
-      dfac = 2.22255d-14/(2.0d0*sqrt(2.0d0))
+      dfac = gfermi/(2.0d0*sqrt(2.0d0))
 
       allocate(epnc(nc))
       allocate(epnc_gradient(nr_atoms*3, nc))
@@ -1130,12 +1127,12 @@ contains
       imass    = nint(disotp(icharge, 1, 'MASS'))
       nproton  = icharge
       nneutron = imass - icharge
-      qw = (1.0d0 - 4.0d0*sthetaw2)*nproton - 1.0d0*nneutron
+      qw = (1.0d0 - 4.0d0*s2thetaw)*nproton - 1.0d0*nneutron
 
       print *, 'center', openrsp_cfg_pnc_center
       print *, 'E_pnc (bare integrals in a.u.)', real(epnc)
       print *, 'E_pnc (in hartree)', real(epnc)*qw*dfac
-      print *, 'E_pnc (in Hz)', real(epnc)*qw*dfac*hartree2hz
+      print *, 'E_pnc (in Hz)', real(epnc)*qw*dfac*xthz
 
       call header('E_pnc gradient (bare integrals in a.u.)', -1)
       do iatom = 1, nr_atoms
@@ -1160,7 +1157,7 @@ contains
                                    real(epnc_gradient(iz, 1))
       end do
 
-      epnc_gradient = epnc_gradient*hartree2hz
+      epnc_gradient = epnc_gradient*xthz
       call header('E_pnc gradient (in Hz)', -1)
       do iatom = 1, nr_atoms
          ix = 3*(iatom - 1) + 1

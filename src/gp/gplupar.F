@@ -3977,8 +3977,8 @@ C
         DO IBLK = 1, NBATCH_BLK
 C
           ILEN2 = NBATCH_INF(8,IBLK) 
-CSK          WRITE(LUWRT,*) 'ILEN2 for block IBLK',
-CSK     &                    ILEN2,IBLK
+C          WRITE(LUWRT,*) 'ILEN2 for block IBLK',
+C     &                    ILEN2,IBLK
           IF( ILEN2 .gt. 0 ) THEN
 C
             NUM_A_B = NUM_A_B + 1 
@@ -4170,7 +4170,8 @@ C
 C
 C     copy back: LUOUT --> LUIN1
 C
-      CALL ISETVC(LUIN1LIST,NZERO,IALL_LUIN)
+      Call IZero(LuIn1List,IAll_LuIn)
+C      CALL ISETVC(LUIN1LIST,NZERO,IALL_LUIN)
 C
       DO IROOT = 1, NVEC2
          CALL COPVCD_PP_B_RL(VEC1,LUOUTLIST,LUIN1LIST,

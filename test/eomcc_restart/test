@@ -2,6 +2,7 @@
 
 import os
 import sys
+import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
@@ -10,10 +11,7 @@ test = TestRun(__file__, sys.argv)
 
 my_scratchdir = os.path.join(os.getcwd(), 'eomcc_scratchdir')
 if os.path.lexists(my_scratchdir):
-   files_to_delete = os.listdir(my_scratchdir)
-   for f in files_to_delete:
-      os.unlink(os.path.join(my_scratchdir,f))
-   os.rmdir(my_scratchdir)
+   shutil.rmtree(my_scratchdir)
 
 f = Filter()
 f.add(from_string = ' Energy eigenvalues in atomic units',
@@ -22,10 +20,7 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
 
 test.run(['eom_ip.inp', 'eom_ip_restart.inp'], ['h2o.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
 
-files_to_delete = os.listdir(my_scratchdir)
-for f in files_to_delete:
-   os.unlink(os.path.join(my_scratchdir,f))
-os.rmdir(my_scratchdir)
+shutil.rmtree(my_scratchdir)
 
 f = Filter()
 f.add(from_string = ' Energy eigenvalues in atomic units',
@@ -34,10 +29,7 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
 
 test.run(['eom_ee.inp', 'eom_ee_restart.inp'], ['h2o.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
 
-files_to_delete = os.listdir(my_scratchdir)
-for f in files_to_delete:
-   os.unlink(os.path.join(my_scratchdir,f))
-os.rmdir(my_scratchdir)
+shutil.rmtree(my_scratchdir)
 
 f = Filter()
 f.add(from_string = ' Overview of calculated energies',
@@ -53,10 +45,7 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
 
 test.run(['eom_ee_restart_from_gs.inp'], ['h2o.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
 
-files_to_delete = os.listdir(my_scratchdir)
-for f in files_to_delete:
-   os.unlink(os.path.join(my_scratchdir,f))
-os.rmdir(my_scratchdir)
+shutil.rmtree(my_scratchdir)
 
 #
 #test.run(['eom_ea.inp', 'eom_ea_restart.inp'], ['h2o.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
@@ -74,10 +63,6 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
 
 test.run(['eom_ee_linear_0g.inp', 'eom_ee_linear_0g_restart.inp'], ['f2.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
 
-files_to_delete = os.listdir(my_scratchdir)
-for f in files_to_delete:
-   os.unlink(os.path.join(my_scratchdir,f))
-os.rmdir(my_scratchdir)
-
+shutil.rmtree(my_scratchdir)
 
 sys.exit(test.return_code)
