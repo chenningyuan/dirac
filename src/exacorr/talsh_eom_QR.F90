@@ -30,7 +30,7 @@ module talsh_eom_QR
 subroutine get_eom_qr(exa_input, interm_t, Interm_t_tensors,& 
                         Tprop_tensors, Tprop_bar_tensors,& 
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
-                        i, j, k, l1_tensor, l2_tensor, eom_qr, bvec_tensor)
+                        i, j, k, l1_tensor, l2_tensor, eom_qr)
         use talsh_sigma_eomccsd
 
         type(exacc_input), intent(in) :: exa_input
@@ -52,41 +52,23 @@ subroutine get_eom_qr(exa_input, interm_t, Interm_t_tensors,&
         complex(kind=8)               :: eom_qr
 
 
-        type(talsh_comm_tens_t)     :: bvec_tensor
+        ! type(talsh_comm_tens_t)     :: bvec_tensor
         type(talsh_tens_t)          :: result_tensor
         integer(C_INT)              :: one_dims(1)
         complex(8), pointer         :: result_tens(:)
         type(C_PTR):: body_p
 
 
-
-        ! call print_date('Evaluate CC-CI LR')
-        ! one_dims(1) = 1
-        ! ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-        ! ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-        ! call c_f_pointer(body_p,result_tens,one_dims)
-
-        ! ierr=talsh_tensor_contract("E()+=BY(i,a)*TX(a,i)",result_tensor,bvec_tensor%t1,Tprop_tensors(i)%t1)
-        ! ierr=talsh_tensor_contract("E()+=BY(i,j,a,b)*TX(a,b,i,j)",result_tensor,bvec_tensor%t2,&
-        !                             Tprop_tensors(i)%t2,scale=ONE_QUARTER_C)
-
-        ! print *, "CC-CI LR test:", result_tens(1)
-
-
-
         call print_date('Evaluate CC-CI QR')
-
 
 
         call get_quarspf(exa_input, interm_t, Interm_t_tensors,&
                         Tprop_tensors,Tprop_bar_tensors,& 
-                        i, j, k, l1_tensor, l2_tensor, quarsp, bvec_tensor)
-
-
+                        i, j, k, l1_tensor, l2_tensor, quarsp)
 
         call get_quarspf(exa_input, interm_t, Interm_t_tensors,&
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
-                        i, j, k, l1_tensor, l2_tensor, quarsp_con, bvec_tensor)
+                        i, j, k, l1_tensor, l2_tensor, quarsp_con)
 
         quarsp_con=conjg(quarsp_con)
 
@@ -99,7 +81,7 @@ end subroutine get_eom_qr
 
 subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
                             Tprop_tensors,Tprop_bar_tensors,&
-                            i, j, k, l1_tensor, l2_tensor, quarsp, bvec_tensor)         
+                            i, j, k, l1_tensor, l2_tensor, quarsp)         
             type(exacc_input), intent(in) :: exa_input
             type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
             type(talsh_tens_t), intent(inout)           :: l2_tensor
@@ -127,7 +109,7 @@ subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(2), Tprop_tensors(3), &
                                 Tprop_bar_tensors(1), Tprop_bar_tensors(2), Tprop_bar_tensors(3), &
                                 Interm_t_tensors(i), Interm_t_tensors(k), &
-                                sigma_prop_tensor12,l1_tensor,l2_tensor, bvec_tensor)
+                                sigma_prop_tensor12,l1_tensor,l2_tensor)
                                 
             quarsp=quarsp+tem_quarsp_iter
 
@@ -145,7 +127,7 @@ subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(3), Tprop_tensors(2), &
                                 Tprop_bar_tensors(1), Tprop_bar_tensors(3), Tprop_bar_tensors(2), &
                                 Interm_t_tensors(i), Interm_t_tensors(j), &
-                                sigma_prop_tensor13,l1_tensor,l2_tensor, bvec_tensor)
+                                sigma_prop_tensor13,l1_tensor,l2_tensor)
 
             quarsp=quarsp+tem_quarsp_iter
 
@@ -161,7 +143,7 @@ subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(1), Tprop_tensors(3), &
                                 Tprop_bar_tensors(2), Tprop_bar_tensors(1), Tprop_bar_tensors(3), &
                                 Interm_t_tensors(j), Interm_t_tensors(k), &
-                                sigma_prop_tensor21,l1_tensor,l2_tensor, bvec_tensor)
+                                sigma_prop_tensor21,l1_tensor,l2_tensor)
 
             quarsp=quarsp+tem_quarsp_iter
 
@@ -177,7 +159,7 @@ subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(3), Tprop_tensors(1), &
                                 Tprop_bar_tensors(2), Tprop_bar_tensors(3), Tprop_bar_tensors(1), &
                                 Interm_t_tensors(j), Interm_t_tensors(i), &
-                                sigma_prop_tensor23,l1_tensor,l2_tensor, bvec_tensor)
+                                sigma_prop_tensor23,l1_tensor,l2_tensor)
             quarsp=quarsp+tem_quarsp_iter
 
 
@@ -192,7 +174,7 @@ subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(2), Tprop_tensors(1), &
                                 Tprop_bar_tensors(3), Tprop_bar_tensors(2), Tprop_bar_tensors(1), &
                                 Interm_t_tensors(k), Interm_t_tensors(i), &
-                                sigma_prop_tensor32,l1_tensor,l2_tensor, bvec_tensor)
+                                sigma_prop_tensor32,l1_tensor,l2_tensor)
             quarsp=quarsp+tem_quarsp_iter
 
 
@@ -207,7 +189,7 @@ subroutine get_quarspf(exa_input, interm_t, Interm_t_tensors, &
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(1), Tprop_tensors(2), &
                                 Tprop_bar_tensors(3), Tprop_bar_tensors(1), Tprop_bar_tensors(2), &
                                 Interm_t_tensors(k), Interm_t_tensors(j), &
-                                sigma_prop_tensor31,l1_tensor,l2_tensor, bvec_tensor)
+                                sigma_prop_tensor31,l1_tensor,l2_tensor)
             quarsp=quarsp+tem_quarsp_iter
 
 end subroutine get_quarspf
@@ -217,7 +199,7 @@ end subroutine get_quarspf
 subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
                             tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3, &
                             interm_t_prop1, interm_t_prop2, &
-                            sigma_prop_tensor,l1_tensor,l2_tensor, bvec_tensor)
+                            sigma_prop_tensor,l1_tensor,l2_tensor)
 
             type(talsh_rsp_interm_tens_t)    :: interm_t_prop1, interm_t_prop2
             type(talsh_tens_t)               :: l2_tensor
@@ -226,7 +208,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             type(talsh_comm_tens_t)          :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
             type(talsh_comm_tens_t)          :: sigma_prop_tensor
             complex(kind=8)                  :: tem_quarsp_iter
-            type(talsh_comm_tens_t),OPTIONAL          :: bvec_tensor
+            ! type(talsh_comm_tens_t),OPTIONAL          :: bvec_tensor
 
 !  Point connected with tensors 
             type(talsh_tens_t)          :: result_tensor
@@ -250,20 +232,16 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
 
 
 
-            ! call print_tensor(tprop_tensor1%t1,1.0d-18,"T1 part of t")
-            ! call print_tensor(tprop_tensor1%t2,1.0d-18,"T2 part of t")
+            ! print *, "norm of t1", sqrt(tensor_norm2(tprop_tensor1%t1))
+            ! print *, "norm of tbar1", sqrt(tensor_norm2(tprop_bar_tensor1%t1) )
+            ! call print_tensor(tprop_bar_tensor1%t1,1.0d-18,"T1 part of tbar")
+            ! call print_tensor(tprop_bar_tensor1%t2,1.0d-18,"T2 part of tbar")
 
-            ! call print_tensor(l1_tensor,1.0d-18,"T1 part of lambda")
-
-            print *, "norm of t1", sqrt(tensor_norm2(tprop_tensor1%t1))
-            print *, "norm of tbar1", sqrt(tensor_norm2(tprop_bar_tensor1%t1) )
 
             one_dims(1) = 1
             ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-            ! print *, "ierr1 quarsp driver: ", ierr
             ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,result_tens,one_dims)
-            ! print *, "ierr2 quarsp driver: ", ierr
 
 
             ov_rank=talsh_tensor_rank(tprop_bar_tensor1%t1)
@@ -274,55 +252,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             ierr=talsh_tensor_construct(Aux_vo,C8,vo_dims,init_val=ZERO)
 
 
-
-            ! oovv_dims(1:2) = ov_dims(1)
-            ! oovv_dims(3:4) = ov_dims(2)
-            ! ! call print_tensor(tprop_bar_tensor1%t1,1.0d-18,"T1 part of tbar")
-            ! ! call print_tensor(tprop_bar_tensor1%t2,1.0d-18,"T2 part of tbar")
-
-            ! ierr=talsh_tensor_get_body_access(tprop_bar_tensor1%t1,body_p2,C8,int(0,C_INT),DEV_HOST)
-            ! call c_f_pointer(body_p2,tbar_tens,ov_dims)
-            ! tbar_tens(1,1) = complex(8.3794105,0.0)
-            ! tbar_tens(2,2) = complex(8.3794105,0.0)
-            ! tbar_tens(1,7) = complex(1.465576,0.0)
-            ! tbar_tens(2,8) = complex(1.465576,0.0)
-            ! ! call print_tensor(tprop_bar_tensor1%t1,1.0d-18,"T1 part of tbar after")
-
-
-            ! ierr=talsh_tensor_get_body_access(tprop_bar_tensor1%t2,body_p3,C8,int(0,C_INT),DEV_HOST)
-            ! call c_f_pointer(body_p3,tbar_tens2,oovv_dims)
-            ! tbar_tens2(1,2,1,2) = complex(-2.021297,0.0)
-            ! tbar_tens2(1,2,1,8) = complex(-1.5903325,0.0)
-            ! tbar_tens2(1,2,2,1) = complex(2.021297,0.0)
-            ! tbar_tens2(1,2,2,7) = complex(1.5903325,0.0)
-            ! tbar_tens2(1,2,3,4) = complex(-0.19159,0.0)
-            ! tbar_tens2(1,2,4,3) = complex(0.19159,0.0)
-            ! tbar_tens2(1,2,5,6) = complex(-0.19159,0.0)
-            ! tbar_tens2(1,2,6,5) = complex(0.19159,0.0)
-            ! tbar_tens2(1,2,7,2) = complex(-1.5903325,0.0)
-            ! tbar_tens2(1,2,7,8) = complex(-0.53714,0.0)
-            ! tbar_tens2(1,2,8,1) = complex(1.5903325,0.0)
-            ! tbar_tens2(1,2,8,7) = complex(0.53714,0.0)
-
-            ! tbar_tens2(2,1,1,2) = complex(2.021297,0.0)
-            ! tbar_tens2(2,1,1,8) = complex(1.5903325,0.0)
-            ! tbar_tens2(2,1,2,1) = complex(-2.021297,0.0)
-            ! tbar_tens2(2,1,2,7) = complex(-1.5903325,0.0)
-            ! tbar_tens2(2,1,3,4) = complex(0.19159,0.0)
-            ! tbar_tens2(2,1,4,3) = complex(-0.19159,0.0)
-            ! tbar_tens2(2,1,5,6) = complex(0.19159,0.0)
-            ! tbar_tens2(2,1,6,5) = complex(-0.19159,0.0)
-            ! tbar_tens2(2,1,7,2) = complex(1.5903325,0.0)
-            ! tbar_tens2(2,1,7,8) = complex(0.53714,0.0)
-            ! tbar_tens2(2,1,8,1) = complex(-1.5903325,0.0)
-            ! tbar_tens2(2,1,8,7) = complex(-0.53714,0.0)
-
-
-
-            ! call print_tensor(tprop_bar_tensor1%t1,1.0d-18,"T1 part of tbar after")
-            ! call print_tensor(tprop_bar_tensor1%t2,1.0d-18,"T2 part of tbar after")
-
-
+            ! Asymmetric LR
             ! ierr=talsh_tensor_contract("E()+=nx(i,a)*Ty(a,i)",& 
             !                             result_tensor,bvec_tensor%t1,tprop_tensor1%t1,scale=ONE)
 
@@ -344,66 +274,23 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             ierr=talsh_tensor_init(result_tensor)
             ierr=talsh_tensor_contract("E()+=Tlx(i,a)*Ty(a,i)",& 
                                     result_tensor,tprop_bar_tensor1%t1,tprop_tensor1%t1,scale=MINUS_ONE)
-                                    ! print *, "ierr3 quarsp driver: ", ierr
             ierr=talsh_tensor_contract("E()+=Tlx(i,j,a,b)*Ty(a,b,i,j)", &
                                     result_tensor,tprop_bar_tensor1%t2,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER_C)
-                                    ! print *, "ierr4 quarsp driver: ", ierr
             term1=result_tens(1)
             print *, "term1: ", term1
 
 
         ! Term2: Lambda*Epison_Z    
             ierr=talsh_tensor_init(result_tensor)
-            ! print *, "ierr5 quarsp driver: ", ierr
             ierr=talsh_tensor_contract("E()+=Epz(a,i)*L(i,a)",result_tensor,interm_t_prop2%epsilon_prop_vo,l1_tensor)
-            ! print *, "ierr6 quarsp driver: ", ierr
             ierr=talsh_tensor_contract("E()+=Epz(a,b,i,j)*L(i,j,a,b)",result_tensor,&
                                         interm_t_prop2%epsilon_prop_vvoo,l2_tensor,scale=ONE_QUARTER_C)
-                                        ! print *, "ierr7 quarsp driver: ", ierr
             term2=result_tens(1)
-            ! print *, "term1*2: ", term1*term2
             print *, "term2: ", term2
-
-
-
-
-
-        ! Term3: Tbar_Y*Sigma_XZ  Tbar*Sigma
-        !     ierr=talsh_tensor_init(result_tensor)
-        !     ierr=talsh_tensor_contract("E()+=Tly(i,a)*Sixz(a,i)",result_tensor,tprop_bar_tensor2%t1,sigma_prop_tensor%t1)
-        !     ierr=talsh_tensor_contract("E()+=Tly(i,j,a,b)*Sigxz(a,b,i,j)",result_tensor,&
-        !                                 tprop_bar_tensor2%t2,sigma_prop_tensor%t2,scale=ONE_QUARTER_C)
-                 
-        ! ! Term3: Tbar_Y*Sigma_XZ  Sigma*T
-        !     ! ierr=talsh_tensor_init(result_tensor)
-        !     ! ierr=talsh_tensor_contract("E()+=Sixy(i,a)*Tz(a,i)",result_tensor,sigma_prop_tensor%t1,tprop_tensor2%t1)
-        !     ! ierr=talsh_tensor_contract("E()+=Sigxy(i,j,a,b)*Tz(a,b,i,j)",result_tensor,&
-        !     !                             sigma_prop_tensor%t2,tprop_tensor2%t2,scale=ONE_QUARTER_C)   
-
-        !     term3=result_tens(1)
-        !     print *, "term3: ", term3
-
-
-        ! ! Term4: Tbar_Y(D)*Epison_X(S)*TZ(S)
-        !     ierr=talsh_tensor_init(result_tensor)
-        !     ierr=talsh_tensor_contract("Aux(i,a)+=Tly(i,j,a,b)*EpX(b,j)",Aux_ov,&
-        !                                 tprop_bar_tensor2%t2,interm_t_prop1%epsilon_prop_vo,scale=ONE)
-
-        !     ! ierr=talsh_tensor_contract("Aux(a,i)+=Ty(a,b,i,j)*EpX(b,j)",Aux_vo,&
-        !     !                             tprop_tensor2%t2,interm_t_prop1%epsilon_prop_vo,scale=ONE)
-
-        !     ierr=talsh_tensor_contract("E()+=Aux(i,a)*TZ(a,i)",result_tensor,Aux_ov,tprop_tensor2%t1,scale=ONE)
-        !     ! ierr=talsh_tensor_contract("E()+=Aux(a,i)*TlZ(i,a)",result_tensor,Aux_vo,tprop_bar_tensor2%t1,scale=ONE)
-            
-        !     term4=result_tens(1)
-        !     ! print *, "term3+4: ", term3+term4
-        !     print *, "term4: ", term4
 
 
 !           Term3: eta_primeXY*TZ
             ierr=talsh_tensor_init(result_tensor)
-            call print_tensor(sigma_prop_tensor%t1, 1.0d-10, "eta_prime_t1")
-            call print_tensor(sigma_prop_tensor%t2, 1.0d-10, "eta_prime_t2")
             ierr=talsh_tensor_contract("E()+=Sixy(i,a)*Tz(a,i)",result_tensor,sigma_prop_tensor%t1,tprop_tensor2%t1)
             ierr=talsh_tensor_contract("E()+=Sixy(i,j,a,b)*Tz(a,b,i,j)",result_tensor,&
                                         sigma_prop_tensor%t2,tprop_tensor2%t2,scale=ONE_QUARTER_C) 
@@ -415,30 +302,33 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
 
         ! Term5: -Lamda*TY
             ierr=talsh_tensor_init(result_tensor)
-            ! print *, "ierr14 quarsp driver: ", ierr
             ierr=talsh_tensor_contract("E()+=L(i,a)*Tl(a,i)",result_tensor,l1_tensor,tprop_tensor1%t1,scale=MINUS_ONE)
-            ! print *, "ierr15 quarsp driver: ", ierr
             ierr=talsh_tensor_contract("E()+=L(i,j,a,b)*Tl(a,b,i,j)",result_tensor,&
                                         l2_tensor,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER_C)
-                                        ! print *, "ierr16 quarsp driver: ", ierr
             term5=result_tens(1)
             print *, "term5: ", term5
 
 
-        ! Term6: Tbar_Z*Epison_X
+!EOM-QR-----! Term6: Tbar_Z*Epison_X -------------------------------------------------------------------------------
             ierr=talsh_tensor_init(result_tensor)
-            ! print *, "ierr17 quarsp driver: ", ierr
-            ! ierr=talsh_tensor_contract("E()+=Tl(i,a)*Epz(a,i)",result_tensor,&
-            !                             tprop_bar_tensor3%t1,interm_t_prop1%epsilon_prop_vo,scale=ONE)
+            ierr=talsh_tensor_contract("E()+=Tl(i,a)*Epz(a,i)",result_tensor,&
+                                        tprop_bar_tensor3%t1,interm_t_prop1%epsilon_prop_vo,scale=ONE)
             
-            ierr=talsh_tensor_contract("E()+=T(a,i)*Epz(a,i)",result_tensor,&
-                                        tprop_tensor2%t1,interm_t_prop1%O_vo,scale=ONE)
-                                        ! print *, "ierr18 quarsp driver: ", ierr
-            ! ierr=talsh_tensor_contract("E()+=Tl(i,j,a,b)*Epz(a,b,i,j)",result_tensor,&
-            !                             tprop_bar_tensor3%t2,interm_t_prop1%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
-                                        ! print *, "ierr19 quarsp driver: ", ierr
+
+            ierr=talsh_tensor_contract("E()+=Tl(i,j,a,b)*Epz(a,b,i,j)",result_tensor,&
+                                        tprop_bar_tensor3%t2,interm_t_prop1%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+
             term6=result_tens(1)
             print *, "term6: ", term6
+
+!CC-CI-QR-----! Term6: Tbar_Z*Epison_X -------------------------------------------------------------------------------
+
+            ! ierr=talsh_tensor_init(result_tensor)
+            ! ierr=talsh_tensor_contract("E()+=T(a,i)*Epz(a,i)",result_tensor,&
+            !                         tprop_tensor2%t1,interm_t_prop1%O_vo,scale=ONE)
+
+            ! term6=result_tens(1)
+            ! print *, "term6: ", term6
 
             
             tem_quarsp_iter=term1*term2+term3+term5*term6
@@ -447,34 +337,6 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             ierr=talsh_tensor_destruct(Aux_vo)
 
 end subroutine 
-
-!------------------------------------------------------------------------------------------------------------------
-
-subroutine construct_AyTz(exa_input,Interm_t_tensor,tprop_tensor ,sigma_prop_tensor)
-    type(exacc_input), intent(in) :: exa_input
-    type(talsh_rsp_interm_tens_t) :: Interm_t_tensor
-    type(talsh_comm_tens_t)       :: tprop_tensor     
-    type(talsh_comm_tens_t)       :: sigma_prop_tensor
-
-    integer(INTD), dimension(4)   :: vvoo_dims
-    integer(INTD), dimension(2)   :: vo_dims
-    integer                       :: ierr
-
-
-    vvoo_dims(1:2) = exa_input%nvir
-    vvoo_dims(3:4) = exa_input%nocc
-    vo_dims(1) = exa_input%nvir
-    vo_dims(2) = exa_input%nocc
-
-
-
-    ierr=talsh_tensor_construct(sigma_prop_tensor%t1,C8,vo_dims,init_val=ZERO)
-    ! print *, "ierr1: ", ierr
-    ierr=talsh_tensor_construct(sigma_prop_tensor%t2,C8,vvoo_dims,init_val=ZERO)
-    ! print *, "ierr2: ", ierr
-    call get_sigma_eomccsd_prop(Interm_t_tensor, tprop_tensor, sigma_prop_tensor)    
-
-end subroutine construct_AyTz
 
 !-----------------------------------------------------------------------------------------------------------------
 
@@ -502,8 +364,6 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
     oo_dims(1:2) = exa_input%nocc
     vo_dims(1) = exa_input%nvir
     vo_dims(2) = exa_input%nocc
-
-
 
     ierr=talsh_tensor_construct(sigma_prop_tensor%t1,C8,ov_dims,init_val=ZERO)
     ierr=talsh_tensor_construct(sigma_prop_tensor%t2,C8,oovv_dims,init_val=ZERO)
@@ -538,169 +398,6 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
 
 
 end subroutine construct_TlXAy
-
-
-!------------------------------------------------------------------------------------------------------------------
-
-subroutine get_sigma_eomccsd_prop(interm_t_prop1, tprop_tensor2, sigma_prop_tensor12)
-
-    type(talsh_rsp_interm_tens_t) :: interm_t_prop1
-    type(talsh_comm_tens_t)            :: tprop_tensor2
-    type(talsh_comm_tens_t)       :: sigma_prop_tensor12
-
-    integer :: ierr
-
-
-!***************
-!l1_sigma_prop *
-!***************
-
-!--------------------------------------------------------
-!     term 1: Sxz(a,i) += Xbar(a,e)* tY(e,i) |
-!--------------------------------------------------------
-    ierr=talsh_tensor_contract("Sxz(a,i)+=Xbar(a,e)*Tz(e,i)",sigma_prop_tensor12%t1,interm_t_prop1%prop_bar_vv,tprop_tensor2%t1)
-    ! print *, "ierr3: ", ierr
-
-!--------------------------------------------------------
-!     term 2: Sxz(a,i) += -Xbar(m,i)* tY(a,m) |
-!--------------------------------------------------------
-    ierr=talsh_tensor_contract("Sxz(a,i)+=Xbar(m,i)*Tz(a,m)", &
-                sigma_prop_tensor12%t1,interm_t_prop1%prop_bar_oo,tprop_tensor2%t1,scale=MINUS_ONE)
-                ! print *, "ierr4: ", ierr
-
-!--------------------------------------------------------
-!     term 3: Sxz(a,i) += Xbar(m,e)* tY(e,a,m,i) |
-!--------------------------------------------------------
-    ierr=talsh_tensor_contract("Sxz(a,i)+=Xbar(m,e)*Tz(e,a,m,i)", &
-                sigma_prop_tensor12%t1,interm_t_prop1%prop_bar_ov,tprop_tensor2%t2)
-                ! print *, "ierr5: ", ierr
-
-
-!***************
-!l2_sigma_prop *
-!***************
-
-!--------------------------------------------------------
-!     term 1: Sxz(a,b,i,j) += -P(ab) Q(m,b,i,j)* tY(a,m) |
-!--------------------------------------------------------
-    ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Q(m,b,i,j)*Tz(a,m)", &
-                sigma_prop_tensor12%t2,interm_t_prop1%Q_ovoo,tprop_tensor2%t1,scale=MINUS_ONE)
-                ! print *, "ierr6: ", ierr
-    ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Q(m,a,i,j)*Tz(b,m)", &
-                sigma_prop_tensor12%t2,interm_t_prop1%Q_ovoo,tprop_tensor2%t1,scale=ONE)
-                ! print *, "ierr7: ", ierr
-    
-!--------------------------------------------------------
-!     term 2: Sxz(a,b,i,j) += P(ij) Q(a,b,j,e)* tY(e,i)   |
-!--------------------------------------------------------
-    ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Q(a,b,e,j)*Tz(e,i)", &
-                sigma_prop_tensor12%t2,interm_t_prop1%Q_vvvo,tprop_tensor2%t1,scale=ONE)
-                ! print *, "ierr8: ", ierr
-    ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Q(a,b,e,i)*Tz(e,j)", &
-                sigma_prop_tensor12%t2,interm_t_prop1%Q_vvvo,tprop_tensor2%t1,scale=MINUS_ONE)
-                ! print *, "ierr9: ", ierr
-
-!--------------------------------------------------------
-!     term 3: Sxz(a,b,i,j) += P(ab) Xbar(b,e)* tY(a,e,i,j)|
-!--------------------------------------------------------
-    ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Xbar(b,e)*Tz(a,e,i,j)", &
-                sigma_prop_tensor12%t2,interm_t_prop1%prop_bar_vv,tprop_tensor2%t2,scale=ONE)
-                ! print *, "ierr10: ", ierr
-    ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Xbar(a,e)*Tz(b,e,i,j)", &
-                sigma_prop_tensor12%t2,interm_t_prop1%prop_bar_vv,tprop_tensor2%t2,scale=MINUS_ONE)
-                ! print *, "ierr11: ", ierr
-
-!--------------------------------------------------------
-!     term 4: Sxz(a,b,i,j) += -P(ij) Xbar(m,j)* tY(a,b,i,m)|
-!--------------------------------------------------------
-    ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Xbar(m,j)*Tz(a,b,i,m)", &
-                sigma_prop_tensor12%t2,interm_t_prop1%prop_bar_oo,tprop_tensor2%t2,scale=MINUS_ONE)
-                ! print *, "ierr12: ", ierr
-    ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Xbar(m,i)*Tz(a,b,j,m)", &
-                sigma_prop_tensor12%t2,interm_t_prop1%prop_bar_oo,tprop_tensor2%t2,scale=ONE)
-                ! print *, "ierr13: ", ierr
-
-
-  end subroutine get_sigma_eomccsd_prop
-
-
-!-----------------------------------------------------------------------------------------------------------------------------
-
-  subroutine get_sigma_eomccsd_bar_prop(interm_t_prop2, tprop_bar_tensor1, sigma_prop_tensor12)
-
-    type(talsh_rsp_interm_tens_t) :: interm_t_prop2
-    type(talsh_comm_tens_t)       :: tprop_bar_tensor1
-    type(talsh_comm_tens_t)       :: sigma_prop_tensor12
-    ! type(talsh_intermediates_tens_t),intent(inout) :: interm_t
-
-    integer :: ierr
-
-
-!***************
-!l1_sigma_prop *
-!***************
-
-!--------------------------------------------------------
-!     term 1: Sxz(i,a) += Xbar(a,e)* tlY(i,e) |
-!--------------------------------------------------------
-    ierr=talsh_tensor_contract("Sxy(i,a)+=Xbar(a,e)*Tz(i,e)",sigma_prop_tensor12%t1,interm_t_prop2%prop_bar_vv,tprop_bar_tensor1%t1)
-
-!--------------------------------------------------------
-!     term 2: Sxz(i,a) += -Xbar(m,i)* tlY(m,a) |
-!--------------------------------------------------------
-    ierr=talsh_tensor_contract("Sxz(i,a)+=Xbar(m,i)*Tz(m,a)", &
-                sigma_prop_tensor12%t1,interm_t_prop2%prop_bar_oo,tprop_bar_tensor1%t1,scale=MINUS_ONE)
-
-!--------------------------------------------------------
-!     term 3: Sxz(i,a) += Q(e,f,a,m)* tlY(i,m,e,f) |
-!--------------------------------------------------------
-    ierr=talsh_tensor_contract("Sxz(i,a)+=Q(e,f,a,m)*Tlz(i,m,e,f)", &
-                sigma_prop_tensor12%t1,interm_t_prop2%Q_vvvo,tprop_bar_tensor1%t2,scale=ONE_HALF)
-
-!--------------------------------------------------------
-!     term 3: Sxz(i,a) += -Q(i,e,m,n)* tlY(m,n,a,e) |
-!--------------------------------------------------------
-    ierr=talsh_tensor_contract("Sxz(i,a)+=Q(i,e,m,n)*Tlz(m,n,a,e)", &
-                sigma_prop_tensor12%t1,interm_t_prop2%Q_ovoo,tprop_bar_tensor1%t2,scale=MINUS_ONE_HALF)
-
-!***************
-!l2_sigma_prop *
-!***************
-
-!--------------------------------------------------------
-!     term 2: S2(i,j,a,b) += P(a,b) L(i,j,a,e) * F(e,b) |
-!--------------------------------------------------------
-
-    ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,a,e)*F(e,b)",sigma_prop_tensor12%t2,&
-                            tprop_bar_tensor1%t2,interm_t_prop2%prop_bar_vv)
-    ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,b)*F(e,a)",sigma_prop_tensor12%t2,&
-                            tprop_bar_tensor1%t2,interm_t_prop2%prop_bar_vv)
-
-!--------------------------------------------------------
-!     term 3: S2(i,j,a,b) -= P(i,j) L(i,m,a,b) * F(j,m) |
-!--------------------------------------------------------
-
-    ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,i,a,b)*F(j,m)",sigma_prop_tensor12%t2,&
-                            tprop_bar_tensor1%t2,interm_t_prop2%prop_bar_oo)
-    ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,b)*F(i,m)",sigma_prop_tensor12%t2,&
-                            tprop_bar_tensor1%t2,interm_t_prop2%prop_bar_oo)
-                ! print*, "norm contraction 1 (accumulated, this):", tensor_norm2(sigma2_tensor)/4.0
-
-!------------------------------------------------------------
-!     term 11: S2(i,j,a,b) += P(i,j) P(a,b) L(i,a) * F(j,b) |
-!------------------------------------------------------------
-
-    ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,a)*F(j,b)",sigma_prop_tensor12%t2,&
-                            tprop_bar_tensor1%t1,interm_t_prop2%prop_bar_ov)
-    ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,a)*F(i,b)",sigma_prop_tensor12%t2,&
-                            tprop_bar_tensor1%t1,interm_t_prop2%prop_bar_ov,scale=MINUS_ONE)
-    ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,b)*F(j,a)",sigma_prop_tensor12%t2,&
-                            tprop_bar_tensor1%t1,interm_t_prop2%prop_bar_ov,scale=MINUS_ONE)
-    ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,b)*F(i,a)",sigma_prop_tensor12%t2,&
-                            tprop_bar_tensor1%t1,interm_t_prop2%prop_bar_ov)
-  end subroutine get_sigma_eomccsd_bar_prop
-
-
 
 !-----------------------------------------------------------------------------------------------------------
   subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor,Interm_t_tensor,l1_tensor,l2_tensor,&
@@ -841,3 +538,203 @@ subroutine get_eta_prop_oovv_prime(eta_prop_oovv_tensor,Interm_t_tensor,&
 end subroutine get_eta_prop_oovv_prime
 
 end module
+
+
+
+
+
+
+! !----------------------------------------------Back up for use Hbar to approximate AZ------------------------------
+! !------------------------------------------------------------------------------------------------------------------
+
+! subroutine construct_AyTz(exa_input,Interm_t_tensor,tprop_tensor ,sigma_prop_tensor)
+!     type(exacc_input), intent(in) :: exa_input
+!     type(talsh_rsp_interm_tens_t) :: Interm_t_tensor
+!     type(talsh_comm_tens_t)       :: tprop_tensor     
+!     type(talsh_comm_tens_t)       :: sigma_prop_tensor
+
+!     integer(INTD), dimension(4)   :: vvoo_dims
+!     integer(INTD), dimension(2)   :: vo_dims
+!     integer                       :: ierr
+
+
+!     vvoo_dims(1:2) = exa_input%nvir
+!     vvoo_dims(3:4) = exa_input%nocc
+!     vo_dims(1) = exa_input%nvir
+!     vo_dims(2) = exa_input%nocc
+
+
+
+!     ierr=talsh_tensor_construct(sigma_prop_tensor%t1,C8,vo_dims,init_val=ZERO)
+!     ! print *, "ierr1: ", ierr
+!     ierr=talsh_tensor_construct(sigma_prop_tensor%t2,C8,vvoo_dims,init_val=ZERO)
+!     ! print *, "ierr2: ", ierr
+!     call get_sigma_eomccsd_prop(Interm_t_tensor, tprop_tensor, sigma_prop_tensor)    
+
+! end subroutine construct_AyTz
+
+
+! !------------------------------------------------------------------------------------------------------------------
+
+! subroutine get_sigma_eomccsd_prop(interm_t_prop1, tprop_tensor2, sigma_prop_tensor12)
+
+!     type(talsh_rsp_interm_tens_t) :: interm_t_prop1
+!     type(talsh_comm_tens_t)            :: tprop_tensor2
+!     type(talsh_comm_tens_t)       :: sigma_prop_tensor12
+
+!     integer :: ierr
+
+
+! !***************
+! !l1_sigma_prop *
+! !***************
+
+! !--------------------------------------------------------
+! !     term 1: Sxz(a,i) += Xbar(a,e)* tY(e,i) |
+! !--------------------------------------------------------
+!     ierr=talsh_tensor_contract("Sxz(a,i)+=Xbar(a,e)*Tz(e,i)",sigma_prop_tensor12%t1,interm_t_prop1%prop_bar_vv,tprop_tensor2%t1)
+!     ! print *, "ierr3: ", ierr
+
+! !--------------------------------------------------------
+! !     term 2: Sxz(a,i) += -Xbar(m,i)* tY(a,m) |
+! !--------------------------------------------------------
+!     ierr=talsh_tensor_contract("Sxz(a,i)+=Xbar(m,i)*Tz(a,m)", &
+!                 sigma_prop_tensor12%t1,interm_t_prop1%prop_bar_oo,tprop_tensor2%t1,scale=MINUS_ONE)
+!                 ! print *, "ierr4: ", ierr
+
+! !--------------------------------------------------------
+! !     term 3: Sxz(a,i) += Xbar(m,e)* tY(e,a,m,i) |
+! !--------------------------------------------------------
+!     ierr=talsh_tensor_contract("Sxz(a,i)+=Xbar(m,e)*Tz(e,a,m,i)", &
+!                 sigma_prop_tensor12%t1,interm_t_prop1%prop_bar_ov,tprop_tensor2%t2)
+!                 ! print *, "ierr5: ", ierr
+
+
+! !***************
+! !l2_sigma_prop *
+! !***************
+
+! !--------------------------------------------------------
+! !     term 1: Sxz(a,b,i,j) += -P(ab) Q(m,b,i,j)* tY(a,m) |
+! !--------------------------------------------------------
+!     ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Q(m,b,i,j)*Tz(a,m)", &
+!                 sigma_prop_tensor12%t2,interm_t_prop1%Q_ovoo,tprop_tensor2%t1,scale=MINUS_ONE)
+!                 ! print *, "ierr6: ", ierr
+!     ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Q(m,a,i,j)*Tz(b,m)", &
+!                 sigma_prop_tensor12%t2,interm_t_prop1%Q_ovoo,tprop_tensor2%t1,scale=ONE)
+!                 ! print *, "ierr7: ", ierr
+    
+! !--------------------------------------------------------
+! !     term 2: Sxz(a,b,i,j) += P(ij) Q(a,b,j,e)* tY(e,i)   |
+! !--------------------------------------------------------
+!     ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Q(a,b,e,j)*Tz(e,i)", &
+!                 sigma_prop_tensor12%t2,interm_t_prop1%Q_vvvo,tprop_tensor2%t1,scale=ONE)
+!                 ! print *, "ierr8: ", ierr
+!     ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Q(a,b,e,i)*Tz(e,j)", &
+!                 sigma_prop_tensor12%t2,interm_t_prop1%Q_vvvo,tprop_tensor2%t1,scale=MINUS_ONE)
+!                 ! print *, "ierr9: ", ierr
+
+! !--------------------------------------------------------
+! !     term 3: Sxz(a,b,i,j) += P(ab) Xbar(b,e)* tY(a,e,i,j)|
+! !--------------------------------------------------------
+!     ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Xbar(b,e)*Tz(a,e,i,j)", &
+!                 sigma_prop_tensor12%t2,interm_t_prop1%prop_bar_vv,tprop_tensor2%t2,scale=ONE)
+!                 ! print *, "ierr10: ", ierr
+!     ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Xbar(a,e)*Tz(b,e,i,j)", &
+!                 sigma_prop_tensor12%t2,interm_t_prop1%prop_bar_vv,tprop_tensor2%t2,scale=MINUS_ONE)
+!                 ! print *, "ierr11: ", ierr
+
+! !--------------------------------------------------------
+! !     term 4: Sxz(a,b,i,j) += -P(ij) Xbar(m,j)* tY(a,b,i,m)|
+! !--------------------------------------------------------
+!     ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Xbar(m,j)*Tz(a,b,i,m)", &
+!                 sigma_prop_tensor12%t2,interm_t_prop1%prop_bar_oo,tprop_tensor2%t2,scale=MINUS_ONE)
+!                 ! print *, "ierr12: ", ierr
+!     ierr=talsh_tensor_contract("Sxz(a,b,i,j)+=Xbar(m,i)*Tz(a,b,j,m)", &
+!                 sigma_prop_tensor12%t2,interm_t_prop1%prop_bar_oo,tprop_tensor2%t2,scale=ONE)
+!                 ! print *, "ierr13: ", ierr
+
+
+!   end subroutine get_sigma_eomccsd_prop
+
+
+
+! !-----------------------------------------------------------------------------------------------------------------------------
+
+!   subroutine get_sigma_eomccsd_bar_prop(interm_t_prop2, tprop_bar_tensor1, sigma_prop_tensor12)
+
+!     type(talsh_rsp_interm_tens_t) :: interm_t_prop2
+!     type(talsh_comm_tens_t)       :: tprop_bar_tensor1
+!     type(talsh_comm_tens_t)       :: sigma_prop_tensor12
+!     ! type(talsh_intermediates_tens_t),intent(inout) :: interm_t
+
+!     integer :: ierr
+
+
+! !***************
+! !l1_sigma_prop *
+! !***************
+
+! !--------------------------------------------------------
+! !     term 1: Sxz(i,a) += Xbar(a,e)* tlY(i,e) |
+! !--------------------------------------------------------
+!     ierr=talsh_tensor_contract("Sxy(i,a)+=Xbar(a,e)*Tz(i,e)",sigma_prop_tensor12%t1,interm_t_prop2%prop_bar_vv,tprop_bar_tensor1%t1)
+
+! !--------------------------------------------------------
+! !     term 2: Sxz(i,a) += -Xbar(m,i)* tlY(m,a) |
+! !--------------------------------------------------------
+!     ierr=talsh_tensor_contract("Sxz(i,a)+=Xbar(m,i)*Tz(m,a)", &
+!                 sigma_prop_tensor12%t1,interm_t_prop2%prop_bar_oo,tprop_bar_tensor1%t1,scale=MINUS_ONE)
+
+! !--------------------------------------------------------
+! !     term 3: Sxz(i,a) += Q(e,f,a,m)* tlY(i,m,e,f) |
+! !--------------------------------------------------------
+!     ierr=talsh_tensor_contract("Sxz(i,a)+=Q(e,f,a,m)*Tlz(i,m,e,f)", &
+!                 sigma_prop_tensor12%t1,interm_t_prop2%Q_vvvo,tprop_bar_tensor1%t2,scale=ONE_HALF)
+
+! !--------------------------------------------------------
+! !     term 3: Sxz(i,a) += -Q(i,e,m,n)* tlY(m,n,a,e) |
+! !--------------------------------------------------------
+!     ierr=talsh_tensor_contract("Sxz(i,a)+=Q(i,e,m,n)*Tlz(m,n,a,e)", &
+!                 sigma_prop_tensor12%t1,interm_t_prop2%Q_ovoo,tprop_bar_tensor1%t2,scale=MINUS_ONE_HALF)
+
+! !***************
+! !l2_sigma_prop *
+! !***************
+
+! !--------------------------------------------------------
+! !     term 2: S2(i,j,a,b) += P(a,b) L(i,j,a,e) * F(e,b) |
+! !--------------------------------------------------------
+
+!     ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,a,e)*F(e,b)",sigma_prop_tensor12%t2,&
+!                             tprop_bar_tensor1%t2,interm_t_prop2%prop_bar_vv)
+!     ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,b)*F(e,a)",sigma_prop_tensor12%t2,&
+!                             tprop_bar_tensor1%t2,interm_t_prop2%prop_bar_vv)
+
+! !--------------------------------------------------------
+! !     term 3: S2(i,j,a,b) -= P(i,j) L(i,m,a,b) * F(j,m) |
+! !--------------------------------------------------------
+
+!     ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,i,a,b)*F(j,m)",sigma_prop_tensor12%t2,&
+!                             tprop_bar_tensor1%t2,interm_t_prop2%prop_bar_oo)
+!     ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,b)*F(i,m)",sigma_prop_tensor12%t2,&
+!                             tprop_bar_tensor1%t2,interm_t_prop2%prop_bar_oo)
+!                 ! print*, "norm contraction 1 (accumulated, this):", tensor_norm2(sigma2_tensor)/4.0
+
+! !------------------------------------------------------------
+! !     term 11: S2(i,j,a,b) += P(i,j) P(a,b) L(i,a) * F(j,b) |
+! !------------------------------------------------------------
+
+!     ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,a)*F(j,b)",sigma_prop_tensor12%t2,&
+!                             tprop_bar_tensor1%t1,interm_t_prop2%prop_bar_ov)
+!     ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,a)*F(i,b)",sigma_prop_tensor12%t2,&
+!                             tprop_bar_tensor1%t1,interm_t_prop2%prop_bar_ov,scale=MINUS_ONE)
+!     ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,b)*F(j,a)",sigma_prop_tensor12%t2,&
+!                             tprop_bar_tensor1%t1,interm_t_prop2%prop_bar_ov,scale=MINUS_ONE)
+!     ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,b)*F(i,a)",sigma_prop_tensor12%t2,&
+!                             tprop_bar_tensor1%t1,interm_t_prop2%prop_bar_ov)
+!   end subroutine get_sigma_eomccsd_bar_prop
+
+
+
+! end module
