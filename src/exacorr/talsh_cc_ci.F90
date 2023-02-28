@@ -118,9 +118,9 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         allocate(eom_lrs(N_prop,N_prop))
         
 
-        do i=3, N_prop
+        do i=1, N_prop
             N_prop_tem_lr(1) = i
-            do j=3, N_prop
+            do j=1, N_prop
                 N_prop_tem_lr(2) = j
 
                 do n=1, N_oper_lr
@@ -153,8 +153,8 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
             write(*,"(A54)"), "*************CC-CI(EOM-CC) linear response************"
         end if
         
-        do i=3, N_prop
-            do j=3, N_prop
+        do i=1, N_prop
+            do j=1, N_prop
                 write(*,"(A4,I1,A2,I1,A5)"), "<<X", i, ";X", j, ">> = "
                 write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(i,j)), '\', aimag(eom_lrs(i,j))
             end do
