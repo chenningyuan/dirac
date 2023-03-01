@@ -57,7 +57,7 @@
             logical                 :: talsh = .true.           ! if false, use ExaTensor
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: cc2 = .false.            !L if true CC2
-            logical                 :: cis = .false.            ! enables CIS, and branch off away from the CC driver 
+            logical                 :: do_cis = .false.         ! enables CIS, and branch off away from the CC driver 
             logical                 :: lambda = .false.
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
@@ -93,6 +93,7 @@
             real(REALD)             :: w_lr_re =  0.0            ! real frequency in CC response
             real(REALD)             :: w_lr_im =  0.0            ! imaginary frequency in CC response
 
+            real(REALD), allocatable:: rew_energies(:,:) ! restricted excitation window, in terms of energy thresholds (a.u.)
 
 ! this just signals we should handle *EOMCC inputs under **EXACC
             logical                 :: eom = .false.
