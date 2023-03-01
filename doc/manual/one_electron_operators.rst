@@ -147,6 +147,12 @@ List of one-electron operators
 |             |                                  |                +----------------+----------------------------------+
 |             |                                  |                | ZZSECMOM       | :math:`\Omega_6 = zz`            |
 +-------------+----------------------------------+----------------+----------------+----------------------------------+
+| SEFGMG      | Magnetic term of Flambaum-Ginges | Anti-symmetric | XSEFGMG        |                                  |
+|             | self-energy potential            |                +----------------+----------------------------------+
+|             |                                  |                | YSEFGMG        |                                  |
+|             |                                  |                +----------------+----------------------------------+
+|             |                                  |                | ZSEFGMG        |                                  |
++-------------+----------------------------------+----------------+----------------+----------------------------------+
 
 
 =========== ====================================================================================================================
@@ -192,6 +198,10 @@ CM1         First order magnetic field derivatives of electric field
 CM2         Second order magnetic field derivatives of electric field
 SQHDOR      Half-derivative overlap integrals not to be anti-symmetrized
 SQOVLAP     Second order derivatives overlap integrals
+UEHLING     Uehling potential
+SEFGLF      Low-frequency term of Flambaum-Ginges self-energy potential 
+SEFGHF      High-frequency term of Flambaum-Ginges self-energy potential 
+SEPZ        Pyykko-Zhao self-energy model potential
 =========== ====================================================================================================================
 
 

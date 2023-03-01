@@ -112,6 +112,11 @@ Example 1: DCG Hamiltonian with Uehling and FG potentials
 -------------------------------------------------------------
 .. literalinclude:: ueh_fg.inp
 
+Here the reader can find that the matrix part of the magnetic term is "ALPHADOT (:math:`\alpha`)",
+although :math:`\gamma` appears in the above expression of the magnetic term. This input is correct
+because the :math:`\beta` part in :math:`\gamma=\beta\alpha` is already included
+in the code for a technical reason.
+
 Example 2: DCG Hamiltonian with Uehling and PZ potentials
 -------------------------------------------------------------
 .. literalinclude:: ueh_pz.inp
