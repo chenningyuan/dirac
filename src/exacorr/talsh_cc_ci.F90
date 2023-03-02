@@ -260,13 +260,16 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         end do
 
 
+        write(*,"(A54)"), "*************CC-CI(EOM-CC) quadratic response************"
         do i=3, N_prop
             do j=3, N_prop
                 do k=3, N_prop
-                    print *, "CC-CI(EOM-CC) quadratic response: <<X", i, ";X", j, "X", k, ">> = ", eom_qrs(i,j,k)
+                    write(*,"(A4,I1,A2,I1,A2,I1,A5)"), "<<X", i, ";X", j, ";X", k,">> = "
+                    write(*,"(F16.8,A2,F16.8)"), real(eom_qrs(i,j,k)), '\', aimag(eom_qrs(i,j,k))
                 end do
             end do 
         end do
+        write(*,"(A54)"), "**********************************************************"  
 
     end if
 
@@ -327,8 +330,8 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
 
 
                 ! eta is independent on property so that in eom-cc energy intermediates. in intermediates_eom.F90
-                call get_eta_ov(interm_t%eta_ov,interm_t%fbar_ov,ov_dims)
-                call get_eta_oovv(interm_t%eta_oovv,int_t%oovv,oovv_dims)
+                ! call get_eta_ov(interm_t%eta_ov,interm_t%fbar_ov,ov_dims)
+                ! call get_eta_oovv(interm_t%eta_oovv,int_t%oovv,oovv_dims)
 
                 ! call print_date("get eta_oovv?")
 
@@ -373,8 +376,8 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
 
 
                 ! get Q
-                call get_Q_ovoo(interm_t_prop1%Q_ovoo,interm_t_prop1%prop_bar_ov,interm_t%t2,ovoo_dims)                               
-                call get_Q_vvvo(interm_t_prop1%Q_vvvo,interm_t_prop1%prop_bar_ov,interm_t%t2,vvvo_dims)
+                ! call get_Q_ovoo(interm_t_prop1%Q_ovoo,interm_t_prop1%prop_bar_ov,interm_t%t2,ovoo_dims)                               
+                ! call get_Q_vvvo(interm_t_prop1%Q_vvvo,interm_t_prop1%prop_bar_ov,interm_t%t2,vvvo_dims)
 
                 call destroy_aux_tensor(LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo)
 
