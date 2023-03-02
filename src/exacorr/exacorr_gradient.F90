@@ -33,12 +33,12 @@ module exacorr_gradient
       type(tens_rcrsv_t),intent(inout) :: t2_tensor, l2_tensor
       type(tens_rcrsv_t),intent(inout), optional :: t1_tensor, l1_tensor
 !     density matrices type, output
-      type(exatns_dm_tens) :: gamma
+      type(exatns_dm_tens_t) :: gamma
 
       type(tens_rcrsv_t)               :: result_tensor
       complex(8)                     :: result_val
 
-      type(exatns_intg_tens)   :: int_t !! LH intent ? 
+      type(exatns_intg_tens_t)   :: int_t !! LH intent ? 
 
 !     tensor dimensions
       integer(INTD), dimension(2) :: oo_id,  ov_id,  vo_id,  vv_id
@@ -279,7 +279,7 @@ module exacorr_gradient
     subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,print_level,t1_tensor,l1_tensor)
 
 !     input variables
-      type(exatns_dm_tens), intent(inout) :: gamma
+      type(exatns_dm_tens_t), intent(inout) :: gamma
       type(tens_rcrsv_t),   intent(inout) :: t2_tensor, l2_tensor
       type(tens_rcrsv_t),   intent(inout), optional :: t1_tensor, l1_tensor
       integer,              intent(in   ) :: print_level
@@ -432,9 +432,9 @@ module exacorr_gradient
 
 !     input variables
       type(exacc_input),    intent(in   ) :: exa_input
-      type(exatns_dm_tens), intent(inout) :: gamma
+      type(exatns_dm_tens_t), intent(inout) :: gamma
 !     talsh type to get local copy
-      type(talsh_dm_tens)          :: talsh_gamma
+      type(talsh_dm_tens_t)          :: talsh_gamma
 !     error code
       integer :: ierr
 !     variables for talsh, density matrix needs to be smaller than buffer size 
@@ -470,7 +470,7 @@ module exacorr_gradient
     subroutine calc_dmdouble_mo(gamma,t2_tensor,l2_tensor,dims,CCD,print_level,t1_tensor,l1_tensor)
 
 !     input variables
-      type(exatns_dm_tens), intent(inout) :: gamma
+      type(exatns_dm_tens_t), intent(inout) :: gamma
       type(tens_rcrsv_t),   intent(inout) :: t2_tensor, l2_tensor
       type(tens_rcrsv_t),   intent(inout), optional :: t1_tensor, l1_tensor
       type(space_dims),     intent(in   ) :: dims

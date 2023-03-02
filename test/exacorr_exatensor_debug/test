@@ -18,13 +18,10 @@ f.add(from_string = 'Final CCSD energy',
       num_lines   = 4,
       rel_tolerance   = 1.0e-8)
 #Test Lambda
-f.add(from_string = 'T1amp',
+f.add(from_string = 'Final L1amp',
       num_lines   = 2,
       rel_tolerance   = 1.0e-6)
-f.add(from_string = 'Fbar_ov',
-      num_lines   = 8,
-      rel_tolerance   = 1.0e-6)
-f.add(from_string = 'Final L1amp',
+f.add(from_string = 'Final L2amp',
       num_lines   = 2,
       rel_tolerance   = 1.0e-6)
 

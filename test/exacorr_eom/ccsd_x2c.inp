@@ -1,0 +1,48 @@
+!
+! This test calculates the CC energy with the X2C Hamiltonian
+!
+**DIRAC
+.TITLE
+Water molecule. X2C Hamiltonian. CC energies.
+.WAVE F
+.4INDEX
+**HAMILTONIAN
+.X2C
+**WAVE FUNCTIONS
+.SCF
+.EXACC
+.RELCCSD
+*SCF
+.EVCCNV
+1.0E-9
+**EXACC
+.OCCUPIED
+3..5
+.VIRTUAL
+6..17
+.EOMCC
+IP
+!.CCDOUBLES
+**MOLTRA
+.ACTIVE
+3..17
+**RELCCSD
+.PRINT
+3
+.ENERGY
+.EOMCC
+*EOMCC
+.IP
+1 4
+*CCENER
+.MAXIT
+45
+*CCDIAG
+#.DEBUG
+.CONVERG
+1.0D-7
+.MAXSIZE
+1024
+.MAXITER
+160
+*END OF
