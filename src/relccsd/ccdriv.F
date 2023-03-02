@@ -591,6 +591,7 @@ c
       use relcc_cfg
       use xmlout
       use eom_driver
+      use mfsolver_dirac_input
 C
       IMPLICIT NONE
 C
@@ -705,6 +706,7 @@ C     Read input from file (old namelist) / transfer input (new style) from relc
 !     sync co-workers and master with variables from new input...
 #ifdef VAR_MPI
       call relcc_sync_cw()
+      call mfsolver_dirac_input_sync_cw()
 #endif
 C
       CALL CCINPT (IN,IW)
@@ -3218,8 +3220,20 @@ C         this means that, for the time being, we can deallocate everything?
      &           TOL,NBUF2,NBUF3)
 
 
+#if defined (VAR_MPI)
+       if (myproc == 0) then
        call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2,
      &                   a_dmo)
+       call interface_mpi_bcast_r1_work_f77(a_dmo,NORBT*NORBT*NZ,
+     &                  master,global_communicator)
+       else
+       call interface_mpi_bcast_r1_work_f77(a_dmo,NORBT*NORBT*NZ,
+     &                  master,global_communicator)
+       endif
+#else
+       call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2,
+     &                   a_dmo)
+#endif
 
 
 C        Solve Z-vector equations

@@ -194,7 +194,7 @@ subroutine get_exc_grd(exa_input, onetdmeg, All_opera, eVectors)
     integer                       :: nvir, nocc
     complex(kind=8)               :: onetdmeg_tem
 
-    type(talsh_dm_tens)       :: Tra_Den_exe_grd_tensor
+    type(talsh_dm_tens_t)       :: Tra_Den_exe_grd_tensor
     type(talsh_tens_t)        :: orb_inte_exe_grd_tensor
 
 
@@ -234,7 +234,7 @@ subroutine get_exc_exc(exa_input, onetdmee, All_opera, eVectors)
     integer                       :: all_state
     integer                       :: nvir, nocc
     complex(kind=8)               :: onetdmee_tem
-    type(talsh_dm_tens)           :: Tra_Den_exe_exe_tensor
+    type(talsh_dm_tens_t)           :: Tra_Den_exe_exe_tensor
     type(talsh_tens_t)            :: orb_inte_exe_exe_vv_tensor
     type(talsh_tens_t)            :: orb_inte_exe_exe_oo_tensor
 
@@ -318,7 +318,7 @@ subroutine get_propeg(onetdmeg_tem, orb_inte_exe_grd_tensor, Tra_Den_exe_grd_ten
     complex(kind=8)               :: onetdmeg_tem
 
 
-    type(talsh_dm_tens)           :: Tra_Den_exe_grd_tensor
+    type(talsh_dm_tens_t)           :: Tra_Den_exe_grd_tensor
     type(talsh_tens_t)            :: orb_inte_exe_grd_tensor
     type(talsh_tens_t)            :: TDM_exe_grd_tensor
 
@@ -351,7 +351,7 @@ subroutine get_propee(onetdmee_tem, orb_inte_exe_exe_vv_tensor, orb_inte_exe_exe
 
 
     complex(kind=8)           :: onetdmee_tem
-    type(talsh_dm_tens)       :: Tra_Den_exe_exe_tensor
+    type(talsh_dm_tens_t)       :: Tra_Den_exe_exe_tensor
     type(talsh_tens_t)        :: orb_inte_exe_exe_vv_tensor
     type(talsh_tens_t)        :: orb_inte_exe_exe_oo_tensor
     type(talsh_tens_t)        :: TDM_exe_exe_vv_tensor, TDM_exe_exe_oo_tensor

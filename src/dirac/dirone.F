@@ -14,6 +14,8 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+!#define DEBUG_SOC
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck onegen */
       SUBROUTINE ONEGEN(WORK,LWORK)
@@ -64,7 +66,7 @@ C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
 C
       IF (NOSMLV) CALL NOSSNUCATT
-      IF (IPRONE .GT. 0) CALL GETTIM(CPU0,WALL0)
+      IF (IPRONE .GT. 2) CALL GETTIM(CPU0,WALL0)
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
         IF (IPRONE.GE.2) WRITE(LUPRI,'(/2A,2X,A)')
@@ -147,8 +149,7 @@ C
       CLSCAL(I) = .FALSE.
    10 CONTINUE
 C
-      CLOSE(LU1INT,STATUS='KEEP')
-      IF (IPRONE .GT. 0) THEN
+      IF (IPRONE .GT. 2) THEN
          CALL GETTIM(CPUE,WALLE)
          CPUTID  = SECTID(CPUE-CPU0)
          WALLTID = SECTID(WALLE-WALL0)
@@ -243,7 +244,7 @@ C         Create total property matrix with correct prefactor
      &               work(konein+(l-1)*nnbbasx),1,
      &               WORK(khelp),1)
           end do
-C         Store matrix in AOproper file
+C         Store matrix
           ITYP = ITYP + 1
           CALL WRTPRO(WORK(khelp),NNBBASX,LABINT(ITYP),RTNLBL,IPRHAM)
           CALL MEMREL('EFFECTIVE_DENS_NUC',WORK,KWORK,KHELP,KFREE,LFREE)
@@ -301,7 +302,7 @@ C  /* Deck op1gen */
 C*****************************************************************************
 C
 C     Driver for the generation of one-electron integrals
-C    to be placed on the file AOPROPER.
+C    to be placed on the file CHECKPOINT
 C
 C     On input:  WORD     ...
 C                COMB     ... integral characteritics
@@ -390,7 +391,7 @@ C  /* Deck betamt */
 C*****************************************************************************
 C
 C     Driver for the generation of beta-matrix integrals
-C     to be placed on file AOPROPER.
+C     to be placed on file CHECKPOINT
 C
 C     Written by Trond Saue - May 1996
 C     Last revision May 19 1996
@@ -822,8 +823,6 @@ C
 C
 C     Initialize
 C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
       allocate(ftri(nnbbasx,nz))
       allocate(op1int(nnbbasx))
       allocate(first(nz))
@@ -914,8 +913,6 @@ c
      &          OP1INT,FIRST,IPRHAM)
          deallocate(op1int)
       endif
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Reindex to sorted basis
 C     =======================
@@ -1106,7 +1103,7 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
      &    'FIRST = ',FIRST(IQP),' and IC(1 or 2):',IC
         ENDIF
 C =============================================================
-C               Get integrals from the AOPROPER file
+C               Get integrals from the CHECKPOINT file
 C     =============================================================
         IF(ONFILE) THEN
           CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
@@ -1117,7 +1114,7 @@ C     =============================================================
         ENDIF  
         IF(IPRINT.GE.10) THEN
           WRITE(LUPRI,'(A,I3)')
-     &    '* Integrals from AOPROPER, size of matrix ',NTBAS(0)
+     &    '* Integrals from CHECKPOINT, size of matrix ',NTBAS(0)
           IF (NTBAS(0).EQ.NTBAS(1)) THEN
            WRITE(LUPRI,'(2X,A)')
      &   '...two-component framework (only LL block is present) '
@@ -1429,36 +1426,41 @@ C*****************************************************************************
 #include "priunit.h"
 
       LOGICAL DOTRANS
-      CHARACTER*16  PROPNAME
+      CHARACTER*16  PROPNAME, TPROPNAME
 
       CALL QENTER('DECIDEPCTR')
 
       DOTRANS = .TRUE.
 
+      TPROPNAME = trim(PROPNAME)
+
 C ... here is list of operators which DO not have to be picture change tranformed
 C ... LL-forms of some operators (Beta matrix, Kinetic energy...) are not usable, however,
 C ... some are usable (ZANGMOM)
 
-      IF ( PROPNAME.EQ.'Overlap matrix  ' .OR.  !
-     &     PROPNAME.EQ.'z-spin'           .OR.  ! overlap * 1/2
-     &     PROPNAME.EQ.'Nuc. attraction ' .OR.
-     &     PROPNAME.EQ.'Beta matrix     ' .OR.
-     &     PROPNAME.EQ.'Kinetic energy  ' .OR.
-     &     PROPNAME.EQ.'Orbital z-moment' .OR.  ! ... ZANGMOM
-     &     PROPNAME.EQ.'ZANGMOM'          .OR.  ! ... ZANGMOM
-     &     PROPNAME.EQ.'z-angular mom'    .OR.  ! ... ZANGMOM
-     &     PROPNAME.EQ.'d|S>_dBX        ' .OR.
-     &     PROPNAME.EQ.'d|S>_dBY        ' .OR.
-     &     PROPNAME.EQ.'d|S>_dBZ        ' .OR.
-     &     PROPNAME.EQ.'dS_dBX          ' .OR.
-     &     PROPNAME.EQ.'dS_dBY          ' .OR.
-     &     PROPNAME.EQ.'dS_dBZ          ' .OR.
-     &     PROPNAME.EQ.'dS_dB2XX        ' .OR.
-     &     PROPNAME.EQ.'dS_dB2XY        ' .OR.
-     &     PROPNAME.EQ.'dS_dB2XZ        ' .OR.
-     &     PROPNAME.EQ.'dS_dB2YY        ' .OR.
-     &     PROPNAME.EQ.'dS_dB2YZ        ' .OR.
-     &     PROPNAME.EQ.'dS_dB2ZZ        '
+      IF (TPROPNAME.EQ.'Overlap matrix'   .OR.  !
+     &    TPROPNAME.EQ.'z-spin'           .OR.  ! overlap * 1/2
+     &    TPROPNAME.EQ.'Nuc. attraction'  .OR.
+     &    TPROPNAME.EQ.'Beta matrix'      .OR.
+     &    TPROPNAME.EQ.'Kinetic energy'   .OR.
+     &    TPROPNAME.EQ.'Orbital z-moment' .OR.  ! ... ZANGMOM
+     &    TPROPNAME.EQ.'z-angular mom'    .OR.  ! ... ZANGMOM
+     &    TPROPNAME.EQ.'XANGMOM'          .OR.  ! ... XANGMOM
+     &    TPROPNAME.EQ.'YANGMOM'          .OR.  ! ... YANGMOM
+     &    TPROPNAME.EQ.'ZANGMOM'          .OR.  ! ... ZANGMOM
+!    &    TPROPNAME.EQ.'Spin-orbit matri' .OR.  ! ... spin-orbit matrix used for kappa matrix
+     &    TPROPNAME.EQ.'d|S>_dBX'         .OR.
+     &    TPROPNAME.EQ.'d|S>_dBY'         .OR.
+     &    TPROPNAME.EQ.'d|S>_dBZ'         .OR.
+     &    TPROPNAME.EQ.'dS_dBX'           .OR.
+     &    TPROPNAME.EQ.'dS_dBY'           .OR.
+     &    TPROPNAME.EQ.'dS_dBZ'           .OR.
+     &    TPROPNAME.EQ.'dS_dB2XX'         .OR.
+     &    TPROPNAME.EQ.'dS_dB2XY'         .OR.
+     &    TPROPNAME.EQ.'dS_dB2XZ'         .OR.
+     &    TPROPNAME.EQ.'dS_dB2YY'         .OR.
+     &    TPROPNAME.EQ.'dS_dB2YZ'         .OR.
+     &    TPROPNAME.EQ.'dS_dB2ZZ'
      &      ) DOTRANS = .FALSE.
 
       IF (IPRINT.GE.4) THEN
@@ -1990,8 +1992,6 @@ C
 C
 C     Initialize
 C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
       FIRST(1:4) = .TRUE.
 C
 C     Beta matrix (FOCK is used as scratch space)
@@ -2007,8 +2007,6 @@ C
       IOP = IPKINERG
       CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &            FOCK,FIRST,IPRHAM)
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Make full matrix
 C     ================
@@ -2078,7 +2076,7 @@ C     transformation matrix as well.
 C MI/2006
 C     For the two-component nonrelativistic
 C     calculations run the "URKBAL" branch as only
-C     Lowdin canonical matrix is needed. It's assumed that small
+C     Lowdin canonical matrix is needed. It is assumed that small
 C     components were eliminated in HERINP.
 C
 C     Called from: PSISCF (when BSS2DC or DC2BSS mode is activated)
@@ -2091,6 +2089,7 @@ C                    2006 - M.Ilias
 C
 C*****************************************************************************
       use memory_allocator
+      use checkpoint
       use dircmo
       use x2cmod_cfg
       use dirx2c
@@ -2098,31 +2097,39 @@ C*****************************************************************************
      &    pctrafo_all_op_driver
       use x2c_fio
       use x2c_utils, only:
-     &    get_2e_2c_fock_matrix_x2c,
      &    write_fock_matrices_saao_basis_x2c,
      &    read_fock_matrices_saao_basis_x2c
+
       use x2c_pct_mo_coefficients, only:
      &    x2c_molecular_mean_field_mos
       use x2c_cb_interface, only:
      &    renew_x2c_cb_orb_shell_dim
+      use x2c_renew_AOMOMAT
       use quaternion_algebra
       use num_grid_gen
       use interface_mo_specific
       use interface_ao_specific
-#ifdef MOD_AOOSOC
-      use atomic_oo_order_so_correction_cfg
-      use module_aoosoc_pfg
-      use module_aoosoc_init
-      use atomic_oo_order_so_correction_utils, only:
+      use dirac_cfg, only: dirac_cfg_dft_calculation
+#ifdef MOD_XAMFI
+      use x_fock
+      use xamfi_global_parameters
+      use xamfi_internal_parameters
+      use xamfi_environment
+      use xamfi_utils, only:
      &    dump_normalized_2e_soc,
-     &    read_normalized_2e_soc
-      use atomic_oo_order_so_correction, only:
-     &    get_atomic_oo_order_so_correction
+     &    read_xamfi_general_matrix,
+     &    dump_delta_xc_energy,
+     &    goodbye_xamfi,
+     &    dump_Xc_c1_dens
+      use xamfi_driver, only:
+     &    get_xamfi_correction
+      use xcint_main, only: get_xc_energy
+      use aobasis_collector, only: deallocate_aobasis_container
 #endif
 !
 #include "implicit.h"
-#ifndef MOD_AOOSOC
-      logical :: aoomod = .false.
+#ifndef MOD_XAMFI
+      logical :: aoomod   = .false.
 #endif
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -2143,7 +2150,7 @@ C   PAMIOU: LUTMAT
 #include "maxaqn.h"
 #include "ccom.h"
 #include "dgroup.h"
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
 #include "mxcent.h"
 #include "nuclei.h"
 #endif
@@ -2153,7 +2160,7 @@ C   PAMIOU: LUTMAT
       logical, intent(in)  :: GOFAST
 !     local scratch
       logical              :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
-      logical              :: is_2c_rel_run
+      logical              :: is_2c_rel_run, lsymad
       integer              :: is_defining_h1mat
       integer              :: ndim_lowmat,idum
       integer              :: lulmat = 99
@@ -2162,13 +2169,17 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: tbuf_mmf(:)
       real(8), allocatable :: cmo_mmf(:)
       real(8), allocatable :: scratch_mmf(:)
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
+      real(8), allocatable :: scr1_aoosoc(:)
       real(8), allocatable :: dmat_aoosoc(:)
       real(8), allocatable :: cmo_aoosoc(:)
       real(8), allocatable :: pctm_aoosoc(:)
-      logical              :: no1esystem_aoosoc
+      logical              :: no1esystem_aoosoc, aoc_save
+      logical              :: x2c_save
+      real*8               :: delta_xc_energy_aoosoc
 #endif
       real(8)              :: timstr(2), timend(2), dum
+      logical              :: x2c_AOA,x2c_Aon
 
       CALL QENTER('GMOTRA')
 
@@ -2253,9 +2264,9 @@ C     ==============================================
        call dealloc(work)
       end if
 
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
 !     initialize atomic oo-order 2e-SOC module if enabled
-      if(aoomod) call aoosoc_init()
+      if(aoomod) call xamfi_init()
 #endif
 
 C     Unrestricted kinetic balance; use Lowdin canonical matrix
@@ -2318,7 +2329,7 @@ C
 
 C         BSSMAT or X2CMAT available:
 C         1) open BSSMAT/X2CMAT and remove all property integrals
-C         2) do picture change transformation of integrals on AOPROPER
+C         2) do picture change transformation of integrals on CHECKPOINT
 
           if(bss)then
 
@@ -2345,7 +2356,11 @@ C         2) do picture change transformation of integrals on AOPROPER
             if(.not.x2cmod_fragment_x2c)then
               i2cofk =  0
 !             check for hamiltonian integrals on file X2CMAT and set i2cofk
-              if(fndlab12('h12cAOA   10',lux2c))then
+              call checkpoint_query(
+     &'/result/hamiltonian/x2c/ao_matrices/h12cAOA   10',x2c_AOA)
+              call checkpoint_query(
+     &'/result/hamiltonian/x2c/ao_matrices/h12cAOn   10',x2c_AOn)
+              if(x2c_AOA)then
                 if(noamfi)then
                   write(lupri,'(a)')
      &' *** restart error: try to read h1+amfi and noamfi == .true. ***'
@@ -2355,7 +2370,7 @@ C         2) do picture change transformation of integrals on AOPROPER
 !               set i2cofk to |3|: since we restart, it does not matter
 !               how the AMFI part was derived.
                 i2cofk = 3
-              else if(fndlab12('h12cAOn   10',lux2c))then
+              else if(x2c_AOn)then
                 i2cofk = 1
               else
                 if(x2cmod_mmf_restart)then
@@ -2372,11 +2387,6 @@ C         2) do picture change transformation of integrals on AOPROPER
             end if
 
             if(.not.x2cmod_skip_op_pct)then
-!             find first property integral... and step back
-              if(fndlab12('prpint2c0001',lux2c))then
-                backspace(lux2c)
-                call x2c_write('thisisadummy',work,-1,lux2c)
-              end if
 
               call pctrafo_all_op_driver(ntbas(0),
      &                                   ntbas(1),
@@ -2424,7 +2434,7 @@ C         2) do picture change transformation of integrals on AOPROPER
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
           IPREAD = IPREAD + 5
-C.........reset NEWPRP to re-initialize AOPROPER
+C.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
           NEWPRP = .TRUE.
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
           CALL ONEGEN(WORK,LWORK)
@@ -2458,10 +2468,8 @@ C.........reset NEWPRP to re-initialize AOPROPER
               NORB(IFRP)  = NESH(IFRP)    +  NPSH(IFRP)
               NTMO(IFRP)  = NORB(IFRP)
             END DO
-
 !           optimized x2c module
             call x2c_main()
-
 !           re-allocate
             call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
 #include "memint.h"
@@ -2472,10 +2480,10 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
         CALL TIMER2('mk_h2c',TIMSTR,TIMEND)
 
-!
 !       case 2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
 !       -------------------------------------------------------------------------------
         if(.not.(twocompbss.or.x2c).or.x2cmod_mmf)then
+
 
           if(x2cmod_mmf)then
             CALL MEMGET2('REAL','TMAT',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
@@ -2512,12 +2520,12 @@ C
           CALL READIN(.FALSE.)
           !> stknecht: take care of 2c-mmf-sf for a linear molecule
           if(spinfr .and. linear) linear = .false.
-          if(spinfr .and. atomic) atomic = .false.          
+          if(spinfr .and. atomic) atomic = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
           IPREAD = IPREAD + 5
-C.........reset NEWPRP to re-initialize AOPROPER
+C.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
           NEWPRP = .TRUE.
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
           CALL ONEGEN(WORK,LWORK)
@@ -2570,6 +2578,8 @@ C.........do canonical orthonormalization
 !       defining h1 matrix control variable (in the X2C module) -
 !       set here for consistency to the maximum value
         is_defining_h1mat = 4
+        lsymad = .false.
+        if(linear.or.atomic) lsymad = .true.
 
 !        in: LOWDIN matrix                   --> KVMAT
 
@@ -2578,8 +2588,8 @@ C.........do canonical orthonormalization
 !       out: MO2MO linear symmetry adapted   --> KTBUF (if linear == .true.; nothing otherwise)
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
      &              .not.(VEXTPJ.OR.FREEPJ.OR.LEVYLE),
-     &               linear,
-     &              is_defining_h1mat,WORK(KFREE),LFREE)
+     &              lsymad,
+     &              is_defining_h1mat,.true.,WORK(KFREE),LFREE)
 
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
 
@@ -2595,7 +2605,7 @@ C.........do canonical orthonormalization
 C
 C     ** End of branching **
 C=======================================================================
-C     
+C
       CALL MEMGET2('REAL','TBUF',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
       N2TMT   = 0
@@ -2611,12 +2621,21 @@ C
         N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
         N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
       ENDDO
+
+#ifdef MOD_XAMFI
+      !> store common block variables while still being in 4c mode
+      if(aoomod.and. .not. x2c)then
+         call xamfi_set_cb("set-4c")
+      else if(aoomod .and. x2c)then
+         call xamfi_set_cb("set-2c")
+      endif
+#endif
 C
 C     Copy information from NBORB to the subblock array if we have not
 C     partioned the orbital space otherwise.
 C
       IF (.NOT.SUB_BL) CALL INISUB
-      IF (SPINFR.or.(x2c.and.x2cmod_mmf)) THEN
+      IF (SPINFR.or.(linear.and.x2c.and.x2cmod_mmf)) THEN
          SUB_BL = .TRUE.
       ENDIF
 
@@ -2634,10 +2653,10 @@ C.......SUB_BL will be set true if linear symmetry works
 !       out: AO2MO                         --> KTBUF
 !     out: MO2MO linear symmetry adapted --> KTBUF2 (discarded if not x2c-mmf)
 
-        IF(ATOMIC)THEN        
+        IF(ATOMIC)THEN
           CALL GATMSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
      &                WORK(KFREE),LFREE)
-        ELSE        
+        ELSE
           CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
      &                WORK(KFREE),LFREE)
         ENDIF
@@ -2650,44 +2669,15 @@ C.......SUB_BL will be set true if linear symmetry works
           call x2c_read('2cLWAOl   10',work(KTMAT),ndim_lowdinmat,lux2c)
           close(lux2c,status='keep')
         else
+
           open(99,file='AOMOlin',status='old',form='unformatted',
      &         access='sequential',action='readwrite',
      &         position='rewind')
-!         skip rec # 1
+
+          !> rec # 1: U
           read(99)
+          !> rec # 2: VU
           call readt(99,N2TMT,work(KTMAT))
-!> SK: DEBUG FOR ATOMIC - CAN BE REMOVED ONCE ATMSYM WORKS CORRECTLY
-CCCCCCCC
-C         if(atomic)then
-C          !if(.false.)then
-C
-C            CALL MEMGET2('REAL','TBUF2',KTBUF2,N2BBASXQ,WORK,
-C     &                   KFREE,LFREE)
-C            CALL MEMGET2('REAL','TBUF3',KTBUF3,N2BBASXQ,WORK,
-C     &                   KFREE,LFREE)
-C            CALL MEMGET2('REAL','TBUF2',KTBUF4,N2BBASXQ,WORK,
-C     &                   KFREE,LFREE)
-
-C            !> get V in KTBUF2
-C            call readt(99,N2TMT,work(KTBUF2))
-
-C            !> get V(dagger)S in KTBUF3
-C            call MKSMOAO(WORK(KTBUF3),WORK(KTBUF2),IPRHAM,
-C     &                   WORK(KFREE),LFREE)
-C            !> get U --> V(dagger)S * VU since  V(dagger)S * V = I
-C            call get_umomo(WORK(KTBUF3),WORK(KTMAT),
-C     &                     WORK(KTBUF4),IPRHAM)
-C            rewind(99)
-C            !> U
-C            call writt(99,N2TMT,work(KTBUF4))
-C            !> VU
-C            call writt(99,N2TMT,work(KTMAT))
-C            !> V
-C            call writt(99,N2TMT,work(KTBUF2))
-C
-C            CALL MEMREL('MODHAM',WORK,KTBUF2,KTBUF2,KFREE,LFREE)
-C          end if
-CCCCCCCC
 !         file is needed in the 4c-2c transformation after the 4c-SCF
 !         in order to ensure numerical stability (avoiding double
 !         diagonalization, etc.)
@@ -2699,13 +2689,13 @@ CCCCCCCC
         end if
       end if
 C
-C     Construct right index transformed overlap matrix Saomo = Sao T
-C     Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
+C     Construct right index transformed overlap matrix Saomo = Sao V
+C     Since V(dagger) Sao V = I, Saomo is the inverse of V(dagger)
 C
-!      in: AO2MO (linear symmetry adapted if linsym = T)--> KTMAT
-!     out: right index transformed overlap matrix Saomo --> KTBUF
+!      in: AO2MO (linear symmetry adapted if linsym == true) --> KTMAT
+!     out: right index transformed overlap matrix Saomo      --> KTBUF
       CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),.FALSE.,
-     &              IPRHAM,WORK(KFREE),LFREE)
+     &             IPRHAM,WORK(KFREE),LFREE)
 C
 C     If requested, reduce transformation matrix by projection with
 C     respect to a set of fragment orbitals
@@ -2716,46 +2706,74 @@ C
       ENDIF
 C
 C     Write transformation matrices
-C
       CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
 !     AO2MO transformation matrix (linear symmetry adapted if linsym == .true.)
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
-!     right index transformed overlap matrix Saomo 
+!     right index transformed overlap matrix Saomo
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
 !     orbital dimensions, etc --> "runtime" data
       CALL ORBDAT
 
       CLOSE(LUTMAT,STATUS='KEEP')
-!
+
+#ifdef MOD_XAMFI
+      if(.not.x2c.and.x2cmod_mmf.and.aoomod.and.nucdep==1
+     &   .and.nucind==1)then
+       CALL MEMGET2('REAL','SCR1'  ,KTMATaoo,N2TMT,WORK,KFREE,LFREE)
+       CALL MEMGET2('REAL','SCR2'  ,KTBUFaoo,N2TMT,WORK,KFREE,LFREE)
+
+       CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','GMOTRA ')
+       CALL READT(LUTMAT,N2TMT,work(ktmataoo))
+       CALL READT(LUTMAT,N2TMT,work(ktbufaoo))
+       CLOSE(LUTMAT,STATUS='KEEP')
+
+       CALL OPNFIL(LUTMAT,'AOMOMATaoo','UNKNOWN','GMOTRA')
+       CALL WRITT(LUTMAT,N2TMT,WORK(ktmataoo))
+       CALL WRITT(LUTMAT,N2TMT,WORK(ktbufaoo))
+       CALL ORBDAT
+       CLOSE(LUTMAT,STATUS='KEEP')
+      end if
+#endif
+
       if(x2c.and.x2cmod_mmf)then
         if(aoomod)then
-#ifdef MOD_AOOSOC
-          if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SOC in an atomic run
+#ifdef MOD_XAMFI
+          if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SO+scalar corrections in an atomic run
 
 !           release memory
             CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
             call dealloc(work)
 
-!           generate density matri(x/ces) - incoming variable to aoosoc module
+            !> ... and temporarily switch on 4c mode
+            call xamfi_set_cb("get-4c")
+
+            !> if requested (.FOCC): density matrix for 2e-SO+scalar corrections
+            !> always with fractional occupation for open shell atoms
+            if(aoofocc .and. aoc)then
+              aoc_save   = aoc
+              nfmat_save = nfmat
+              aoc        = .false.
+              nfmat      = 1
+            end if
+
+            !> turn off x2c to properly call twofck in 4c mode
+            x2c_save = x2c
+            x2c      = .false.
+
+!           !> generate density matrix - incoming variable to the aoosoc module
             allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
             allocate(cmo_aoosoc(ncmotq))
             dmat_aoosoc = 0.0d0
             cmo_aoosoc  = 0.0d0
 !           read coefficients
-            call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo_new(lucoef,cmo=cmo_aoosoc)
-            close(lucoef,status='keep')
+            call reacmo_new(cmo=cmo_aoosoc)
 
-!           generate density matri(x/ces)
+!           !> generate density matrix
             call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
-            deallocate(cmo_aoosoc)
 
             allocate(pctm_aoosoc(ntbas(0)**2*4))
-            open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &           access='sequential',action='readwrite',
-     &           position='rewind')
 
-!           initialize offset
+!           !> read the U matrix
             ioff_pct_mat = 1
             do i = 1, nfsym
               write(flabel,'(a11,i1)') 'pctmtAO   1',i
@@ -2768,47 +2786,68 @@ C
 
             close(lux2c,status='keep')
 
-!           no 2e-SO correction for 1e-systems
+!           !> ensure to not calculate any spurious 2e-SO+scalar corrections for actual 1e-systems
             call rmolchr(ichrg) ! sum of charge of all constituents, here only one atom
-            no1esystem_aoosoc = .false.
-            no1esystem_aoosoc = (ichrg - kcharg > 1)
+                       no1esystem_aoosoc = .false.
+                       no1esystem_aoosoc = (ichrg - kcharg > 1)
             if(onesys) no1esystem_aoosoc = .false.
 
-            x2c = .false. ! turn off x2c for the proper inside call of twofck
+            lwork_local = lwork - ntbas(0)**2*nz*nfmat
+     &                  - ntbas(0)**2*nz - ncmotq
 
-            lwork_local = lwork - ntbas(0)**2*nz*nfmat - ntbas(0)**2*nz
+            call get_xamfi_correction(
+     &                                dmat_aoosoc,
+     &                                cmo_aoosoc,
+     &                                pctm_aoosoc,
+     &                                no1esystem_aoosoc,
+     &                                dirac_cfg_dft_calculation,
+     &                                (linear.or.atomic),
+     &                                lwork_local,
+     &                                iprham
+     &                               )
 
-            call get_atomic_oo_order_so_correction(
-     &                                             dmat_aoosoc,
-     &                                             pctm_aoosoc,
-     &                                             no1esystem_aoosoc,
-     &                                             lwork_local,
-     &                                             iprham
-     &                                             )
+            !> save XC_energy_4c
+            delta_xc_energy_aoosoc     = 0.0d0
+            if(dirac_cfg_dft_calculation)then
+              delta_xc_energy_aoosoc =
+     &        delta_xc_energy_aoosoc + get_xc_energy()
+            end if
 
-            x2c = .true. ! reset
+            !> reset common block variables to 2c mode
+            call xamfi_set_cb("get-2c")
+
+            !> restore logicals
+            if(aoofocc)then
+              aoc   = aoc_save
+              nfmat = nfmat_save
+            end if
+            x2c = x2c_save
+            !nzt = nzt_save
 
             deallocate(pctm_aoosoc)
+            deallocate(cmo_aoosoc)
             deallocate(dmat_aoosoc)
           end if ! check for atomic run
 #else
-        call quit('generation of atomic oo-order 2e-SOC not active'//
-     &            ' in this version')
+        call quit('X-AMFI not available in this version')
 #endif
         end if ! aoomod
+        
         if(x2c_2c_mmf_mos)then
-
+ 
 !         release memory
           if(allocated(work))then
             CALL MEMREL('GMOTRA - mmfmos',WORK,KWORK,KWORK,KFREE,LFREE)
             call dealloc(work)
           end if
-!         perform the final step for the molecular mean-field procedure within the X2C-module
+!         perform the final steps for the molecular mean-field procedure within the X2C-module
 !         ------------------------------------------------------------------------------------
 
-!         purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
-!                  and renew the coefficient file DFCOEF
-!                  a potential issue could be frozen orbitals - test me!
+          !> step 1
+          !> ****** 
+!         !> purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
+!                     and renew the coefficient file DFCOEF
+!                     FIXME: a potential issue could be frozen orbitals - test me!
           allocate(tmat_mmf(n2bbasxq))
           allocate(tbuf_mmf(n2bbasxq))
           allocate(scratch_mmf(norbt))
@@ -2821,7 +2860,7 @@ C
           CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
           CALL READT(LUTMAT,N2TMT,tmat_mmf)
           CLOSE(LUTMAT,STATUS='KEEP')
- 
+
           call x2c_molecular_mean_field_mos(tmat_mmf,tbuf_mmf,cmo_mmf,
      &                                      scratch_mmf,
      &                                      i2tmt,i2tmot,icmoq,ntmo,
@@ -2832,6 +2871,41 @@ C
           deallocate(scratch_mmf)
           deallocate(tbuf_mmf)
           deallocate(tmat_mmf)
+
+          !> step 2
+          !> ******
+          !> pupose: renew AOMOMAT with matrices of proper dimensions
+
+          allocate(tmat_mmf(n2tmt),tbuf_mmf(n2tmt),scratch_mmf(n2tmt))
+          tbuf_mmf = 0; tmat_mmf = 0; scratch_mmf = 0
+
+          CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
+          CALL READT(LUTMAT,N2TMT,tmat_mmf)
+          CALL READT(LUTMAT,N2TMT,tbuf_mmf)
+          CLOSE(LUTMAT,STATUS='DELETE')
+
+          CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
+
+          call x2c_molecular_mean_field_AOMOMAT(
+     &            fh    = LUTMAT,
+     &            tm1   = tmat_mmf,
+     &            tm2   = tbuf_mmf,
+     &            tmX   = scratch_mmf,
+     &            lr1   = nfbas(1:nfsym,0),
+     &            lc1   = norb(1:nfsym),
+     &            lr2   = nfbas(1:nfsym,0),
+     &            lc2   = norb(1:nfsym),
+     &            lrX   = nfbas(1:nfsym,1),
+     &            lcX   = nesh(1:nfsym),
+     &            nfsym = nfsym,
+     &            nzt   = nzt,
+     &            I2TMT = i2tmt(1:nfsym),
+     &            N2TMT = N2TMT,
+     &            lupri = lupri,
+     &            debug = iprham > 2
+     &            )
+          !> NOTE: ORBDAT is called after the reset of dimensions below and eventually AOMOMAT is closed
+          deallocate(scratch_mmf,tbuf_mmf,tmat_mmf)
 
 !         re-allocate
           call alloc(WORK,LWORK,id='WORK in GMOTRA - mmfmos')
@@ -2845,12 +2919,12 @@ C
           CALL READIN(.FALSE.)
           !> stknecht: take care of 2c-mmf-sf for a linear molecule
           if(spinfr .and. linear) linear = .false.
-          if(spinfr .and. atomic) atomic = .false.          
+          if(spinfr .and. atomic) atomic = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
           IPREAD = IPREAD + 5
-!.........reset NEWPRP to re-initialize AOPROPER
+!.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
           NEWPRP = .TRUE.
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
           CALL ONEGEN(WORK(kfree),lfree)
@@ -2871,30 +2945,35 @@ C
             call opnfil(lublubb,'DFDENS','OLD','GMOTRA')
             close(lublubb,status='DELETE')
           end if
-!         reset DFT-grid
-          inquire(file='numerical_grid',exist=tobe)
-          if(tobe)then
-            inquire(file='numerical_grid',opened=tobe)
-            if(tobe)then
-            inquire(file='numerical_grid',number=lublubb)
-              CLOSE(lublubb,STATUS='DELETE')
-            else
-              lublubb = 99
-              CALL OPNFIL(lublubb,'numerical_grid','OLD','GMOTRA')
-              CLOSE(lublubb,STATUS='DELETE')
-            end if
-          end if
-          call reset_num_grid()
+!         delete and reset DFT grid
+          call delete_num_grid(); call reset_num_grid()
 !         reset interface-mo
           call interface_mo_write()
 !         reset interface-ao
           call interface_ao_write()
 
+
+          !> final step: store orbital dimensions, etc --> "runtime" data on AOMOMAT
+          CALL ORBDAT
+          CLOSE(LUTMAT,STATUS='KEEP')
+
 !         release memory
           CALL MEMREL('GMOTRA - mmfmos-2',WORK,KWORK,KWORK,KFREE,LFREE)
           call dealloc(work)
 
-! ***     prepare the H1_mmf_X2C_AO and save it on DFFCK1_mmf
+!         !> post-SCF X2Cmmf:                   calculate H1_mmf_X2C_AO and save it on DFFCK1_mmf
+!         !> atomic 2e-SO + scalar corrections: calculate G_A[2c] and save it on D2FCK_mmf
+
+#ifdef MOD_XAMFI
+          if(aoomod .and. aoofocc .and. aoc)then
+            aoc_save   = aoc
+            nfmat_save = nfmat
+            !> implies focc ...
+            aoc        = .false.
+            nfmat      = 1
+          end if
+#endif
+
           len_fmat  = ntbas(0)**2*nz
           len_fmats = len_fmat*nfmat
 
@@ -2903,57 +2982,134 @@ C
           cmo_mmf     = 0
           tbuf_mmf    = 0
           !> read 2c-mos
-          call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-          call reacmo_new(lucoef,cmo=cmo_mmf)
-          close(lucoef,status='keep')
-          !> density matrix/ces
+          call reacmo_new(cmo=cmo_mmf)
+
+          !> calculate inactive (and possibly active) density matrix
           call denmat(tbuf_mmf,cmo_mmf,iprham)
 
-          deallocate(cmo_mmf)
+#ifdef MOD_XAMFI
+          if(aooeamf)then
+            !> save atomic density matrix (of atom(1) ... == atomic fragment)
+            allocate(dmat_aoosoc(len_fmats)); dmat_aoosoc = 0
+            call dcopy(len_fmats,tbuf_mmf,1,dmat_aoosoc,1)
+            call dump_Xc_c1_dens(
+     &                           dmat_aoosoc,
+     &                           ntbas(0),
+     &                           ntbas(0),
+     &                           nz,
+     &                           nfmat,
+     &                           nopen,
+     &                           df(0:nopen),
+     &                           'aooDM_2c',
+     &                           nint(charge(1)),
+     &                           102,
+     &                           .true.
+     &                           )
+            aooeamf= .false.; deallocate(dmat_aoosoc);
+          endif
+#endif
 
           allocate(tmat_mmf(len_fmats))
           tmat_mmf    = 0
 
+#ifdef MOD_XAMFI
           if(.not.onesys)
-     &    call get_2e_2c_fock_matrix_x2c(tmat_mmf,tbuf_mmf,
-     &         ntbas(0),ntbas(0),nz,nfmat,lfree,iprham,df)
+     &    call get_scso_2e_fock(dmat                  = tbuf_mmf,
+     &                          cmo                   = cmo_mmf,
+     &                          fmat                  = tmat_mmf,
+     &                          nrows                 = ntbas(0),
+     &                          ncols                 = ntbas(0),
+     &                          nr_2e_fock_matrices   = nfmat,
+     &                          intflg                = intflg,
+     &                          nz                    = nz,
+     &                          ipqtoq                = ipqtoq,
+     &                          x_nopen               = nopen,
+     &                          x_dfopen              = df(0:nopen),
+     &                          x_n2tmt               = n2tmt,
+     &                          nzt_x                 = nzt,
+     &                          nr_fsym               = nfsym,
+     &                          N2BBASXQ_dim_x        = n2bbasxq,
+     &                          nr_tmo                = ntmo,
+     &                          nr_ao_all             =nfbas(1:nfsym,0),
+     &                          nr_mo_all             = norb(1:nfsym),
+     &                          ioff_tmot             = i2tmot,
+     &                          ioff_tmt              = i2tmt,
+     &                          ioff_aomat_x          = i2basx,
+     &                          myAOMOMAT             = 'AOMOMAT   ',
+     &                          isDFT                 =
+     &                          dirac_cfg_dft_calculation,
+     &                          isLoA                 =
+     &                          (linear.or.atomic),
+     &                          xcmode                = 2,
+     &                          lwork_ext             = lfree,
+     &                          print_lvl             = iprham
+     &                         )
 
-          open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &         access='sequential',action='readwrite',
-     &         position='rewind')
+          !> subtract XC_energy_2c
+          if(dirac_cfg_dft_calculation)then
+            delta_xc_energy_aoosoc =
+     &      delta_xc_energy_aoosoc - get_xc_energy()
+          end if
+#endif
 
-!         2c-Fock operator, picture-change transformed from 4c-Fock operator ("++"-part)
-          write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
-          call x2c_read(flabel,tbuf_mmf,len_fmat,lux2c)
-          call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
-          close(lux2c, status='keep')
+          !> here we split...
+          !> a. either construct H1_mmf_X2C_AO for post-SCF X2Cmmf calculation ...
+          if(.not.aoomod)then
 
-!         save H1_mmf_X2C_AO
-          open(lux2c,file='DFFCK_mmf',status='unknown',
-     &         access='sequential',action='readwrite',
-     &         form='unformatted',position='rewind')
-          call write_fock_matrices_saao_basis_x2c(
-     &                                            tbuf_mmf,
-     &                                            len_fmat, 1,'Fock',
-     &                                            lux2c, 0)
-!         save F2c-ll part
-          close(lux2c, status='keep')
-          open(lux2c,file='D2FCK_mmf',status='unknown',
-     &         access='sequential',action='readwrite',
-     &         form='unformatted',position='rewind')
-          call write_fock_matrices_saao_basis_x2c(
-     &                                            tmat_mmf,
-     &                                            len_fmat, 1,'F[2]',
-     &                                            lux2c, 0)
-          close(lux2c, status='keep')
+            open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &           access='sequential',action='readwrite',
+     &           position='rewind')
+
+!           2c-Fock operator, picture-change transformed from 4c-Fock operator ("++"-part)
+            write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
+            call x2c_read(flabel,tbuf_mmf,len_fmat,lux2c)
+            call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
+            close(lux2c, status='keep')
+
+!           save H1_mmf_X2C_AO
+            open(lux2c,file='DFFCK_mmf',status='unknown',
+     &           access='sequential',action='readwrite',
+     &           form='unformatted',position='rewind')
+            call write_fock_matrices_saao_basis_x2c(
+     &                                              tbuf_mmf,
+     &                                              len_fmat, 1,'Fock',
+     &                                              lux2c, 0)
+            close(lux2c, status='keep')
+
+          !> ... or
+          !> b. save the G_A[2c] contribution to calculate the final 2e-SO+scalar atomic correction below
+          else !
+            open(lux2c,file='D2FCK_mmf',status='unknown',
+     &           access='sequential',action='readwrite',
+     &           form='unformatted',position='rewind')
+            call write_fock_matrices_saao_basis_x2c(
+     &                                              tmat_mmf,
+     &                                              len_fmat, 1,'F[2]',
+     &                                              lux2c, 0)
+            close(lux2c, status='keep')
+
+#ifdef MOD_XAMFI
+            !> restore original settings
+            if(aoofocc .and. aoc)then
+              aoc        = aoc_save
+              nfmat      = nfmat_save
+            end if
+#endif
+
+          end if
+
           deallocate(tmat_mmf)
+          deallocate(cmo_mmf)
           deallocate(tbuf_mmf)
 
-        end if ! x2c_2c_mmf_mos == .true. or aoomod == true
+        end if ! x2c_2c_mmf_mos == .true.
 
-#ifdef MOD_AOOSOC
-        if(aoomod .and. no1esystem_aoosoc)then
-          if(nucdep == 1 .and. nucind == 1)then ! finalize the 2e-SOC in an atomic run
+#ifdef MOD_XAMFI
+        !>                                                              ~
+        !>  final step for atomic 2e-spin-orbit and scalar corrections: G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
+
+        if(aoomod .and. no1esystem_aoosoc .and. x2c_2c_mmf_mos)then
+          if(nucdep == 1 .and. nucind == 1)then
             len_fmat  = ntbas(0)**2*nz
             allocate(tmat_mmf(len_fmat))
             allocate(tbuf_mmf(len_fmat))
@@ -2962,22 +3118,52 @@ C
             open(lux2c,file='D2FCK_mmf',status='unknown',
      &           access='sequential',action='readwrite',
      &           form='unformatted',position='rewind')
+
+            !> read G_A[2c]
             call read_fock_matrices_saao_basis_x2c(
      &                                             tmat_mmf,
      &                                             len_fmat, 1,
      &                                             lux2c, 0,
      &                                             scratch_mmf)
+            deallocate(scratch_mmf)
             close(lux2c, status='keep')
-            call read_normalized_2e_soc(
-     &                                  tbuf_mmf,
-     &                                  ntbas(0),
-     &                                  ntbas(0),
-     &                                  nz,
-     &                                  'aoo2esoc',
-     &                                  nint(charge(1)),
-     &                                  lux2c
-     &                                 )
+!#define DEBUG_SOC
+#ifdef DEBUG_SOC
+            CALL HEADER(
+     &      'X-AMFI - G_A[2c]',-1)
+            CALL PRQMAT(tmat_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &                  IPQTOQ(1,0),LUPRI)
+#endif
+
+            !> read {U+ G_A[4c] U}^{++}
+            call read_xamfi_general_matrix(
+     &                                     tbuf_mmf,
+     &                                     ntbas(0),
+     &                                     ntbas(0),
+     &                                     nz,
+     &                                     'aoo2esoX',
+     &                                     nint(charge(1)),
+     &                                     lux2c,
+     &                                     1 !> atomic center id
+     &                                    )
+#ifdef DEBUG_SOC
+            CALL HEADER(
+     &      'X-AMFI - {U+ G_A[4c] U}^{++}',-1)
+            CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &                  IPQTOQ(1,0),LUPRI)
+#endif
+            !> ~
+            !> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
             call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
+
+#ifdef DEBUG_SOC
+            CALL HEADER(
+     &      'X-AMFI - 2e-normalized (final)',-1)
+            CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &                  IPQTOQ(1,0),LUPRI)
+#undef DEBUG_SOC
+#endif
+
             call dump_normalized_2e_soc(
      &                                  tbuf_mmf,
      &                                  ntbas(0),
@@ -2985,9 +3171,107 @@ C
      &                                  nz,
      &                                  'aoo2esoc',
      &                                  nint(charge(1)),
+     &                                  lux2c,
+     &                                  .true.
+     &                                 )
+            if(dirac_cfg_dft_calculation)then
+!#define DEBUG_SOC
+#ifdef DEBUG_SOC
+              WRITE(LUPRI,'(/a,f12.9)')
+     &        'X-AMFI - DELTA XC energy: ',delta_xc_energy_aoosoc
+#undef DEBUG_SOC
+#endif
+              tbuf_mmf = 0; tmat_mmf = 0
+              !> read {U+ V_A[4c] U}^{++}
+              call read_xamfi_general_matrix(
+     &                                       tbuf_mmf,
+     &                                       ntbas(0),
+     &                                       ntbas(0),
+     &                                       nz,
+     &                                       'amftVxc2',
+     &                                       nint(charge(1)),
+     &                                       103,
+     &                                       1 !> atomic center id
+     &                                      )
+
+              open(103,file='amfVxc2',status='old',
+     &        access='sequential',action='readwrite',
+     &        form='unformatted',position='rewind')
+
+              !> read V_A[2c]
+              read(103) tmat_mmf(1:ntbas(0)*ntbas(0)*nz)
+              close(103,status="delete")
+!#define DEBUG_SOC
+#ifdef DEBUG_SOC
+              CALL HEADER(
+     &        'X-AMFI - Vxc-tilde             ',-1)
+              CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                    NZ,IPQTOQ(1,0),LUPRI)
+              CALL HEADER(
+     &        'X-AMFI - Vxc2                  ',-1)
+              CALL PRQMAT(tmat_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                    NZ,IPQTOQ(1,0),LUPRI)
+#endif
+
+              !> ~
+              !> V_A^{++} = {U+ V_A[4c] U}^{++} - V_A[2c]
+              call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
+
+!#define DEBUG_SOC
+#ifdef DEBUG_SOC
+              CALL HEADER(
+     &        'X-AMFI - Vxc-normalized (final)',-1)
+              CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                    NZ,IPQTOQ(1,0),LUPRI)
+
+              allocate(cmo_mmf(ncmotq))
+              allocate(scratch_mmf(len_fmats))
+
+              cmo_mmf     = 0
+              scratch_mmf = 0
+              !> read 2c-mos
+              call reacmo_new(cmo=cmo_mmf)
+              !> calculate inactive (and possibly active) density matrix
+              call denmat(scratch_mmf,cmo_mmf,iprham)
+
+              xxxBLUBB = ddot(len_fmat,scratch_mmf,1,tbuf_mmf,1)
+              WRITE(LUPRI,'(/a,f12.9)')
+     &        'X-AMFI - DELTA XCmat (PCE) energy: ',xxxBLUBB
+              deallocate(scratch_mmf)
+              deallocate(cmo_mmf)
+#undef DEBUG_SOC
+#endif
+
+              call dump_normalized_2e_soc(
+     &                                    tbuf_mmf,
+     &                                    ntbas(0),
+     &                                    ntbas(0),
+     &                                    nz,
+     &                                    'aooVxcMA',
+     &                                    nint(charge(1)),
+     &                                    103,
+     &                                    .true.
+     &                                   )
+
+
+              call dump_delta_xc_energy(
+     &                                  delta_xc_energy_aoosoc,
+     &                                  'aooDLXCE',
+     &                                  nint(charge(1)),
      &                                  lux2c
      &                                 )
-            deallocate(scratch_mmf)
+
+            end if
+
+            call goodbye_xamfi(atom(1)%charge)
+            call deallocate_aobasis_container()
+
+            !> restore logicals
+            if(aoofocc)then
+              aoc   = aoc_save
+              nfmat = nfmat_save
+            end if
+
             deallocate(tbuf_mmf)
             deallocate(tmat_mmf)
           end if ! check for atomic run
@@ -3040,8 +3324,8 @@ C     Memory deallocation
 
  10   CONTINUE
 
-#ifdef MOD_AOOSOC
-      if(aoomod) call aoosoc_finalize()
+#ifdef MOD_XAMFI
+      if(aoomod) call xamfi_finalize()
 #endif
 
       CALL QEXIT('GMOTRA')
@@ -3051,7 +3335,7 @@ C     Memory deallocation
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck modham */
       SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,LSYMAD,
-     &                  is_defining_h1mat,WORK,LWORK)
+     &                  is_defining_h1mat,print_header,WORK,LWORK)
 C*****************************************************************************
 C
 C     Generate transformation matrix to MO-basis with the
@@ -3114,8 +3398,8 @@ C  DGROUP:
 #include "cbihr1.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
-      LOGICAL SLGROUP,LSYMAD
-      logical, save :: print_header = .true.
+      LOGICAL, intent(in) :: SLGROUP,LSYMAD
+      logical, intent(in) :: print_header
       integer is_defining_h1mat
       CALL QENTER('MODHAM')
 #include "memint.h"
@@ -3195,7 +3479,6 @@ C
           WRITE(LUPRI,'(A)') ' * Applied strict kinetic balance !'
         ENDIF
       end if
-      print_header = .false.
       IF(IPRHAM.GE.5) THEN
         CALL HEADER(
      &    'MODHAM: Actual transformation matrix 4c AO->MO ',-1)
@@ -3220,7 +3503,6 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 !       is_defining_h1mat is the control variable for the defining h1
 !       matrix wrt which the decoupling is performed in the X2C module.
 !       see the following lsymad procedure for more comments - SK Aug 2010
-!       print *,'is_defining_h1mat is...',is_defining_h1mat
         open(99,file='AOMOSLR',status='replace',form='unformatted',
      &       access='sequential',action='readwrite',
      &       position='rewind')
@@ -3233,6 +3515,7 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 !              AO2MO transformation matrix SL resorted --> WORK(KBUF)
           CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
           call writt(99,ISIZE, WORK(KBUF))
+          !> keep KBUF as we will need it later...
 !CTROND
         else
           call dzero(VMAT,n2bbasxq)
@@ -3289,12 +3572,15 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 
 !       in:  VMAT
 
+        IF(ATOMIC)THEN
+!       out: AO2MO atomic symmetry adapted (kappa/mj) --> TMAT
+!       out: AO2MO atomic symmetry adapted (kappa   ) --> VMAT
+!       out: MO2MO atomic symmetry adapted WRONG .... --> TBUF (discarded if not x2c-mmf)
+          CALL GATMSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
+        ELSE
 !       out: AO2MO linear symmetry adapted --> TMAT
 !       out: AO2MO                         --> VMAT
 !       out: MO2MO linear symmetry adapted --> TBUF (discarded if not x2c-mmf)
-        IF(ATOMIC)THEN
-          CALL GATMSM(TMAT,VMAT,TBUF, EIG,WORK(KFREE),LFREE)
-        ELSE
           CALL GLINSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
         ENDIF
 !       save matrices on file to be re-used in the x2c-module
@@ -3304,20 +3590,20 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 !         AO2MO lin
           call writt(99,ISIZE, TMAT)
         end if
-!       AO2MO
+!       AO2MO (on backup buffer space)
         call writt(99,ISIZE, WORK(KBUF1))
 
 !       by default: return the unmodified AO2MO transformation matrix
         CALL DCOPY(ISIZE,WORK(KBUF1),1,TMAT,1)
 
         IF(IPRHAM.GE.5) THEN
-          CALL HEADER(
-     &    'MODHAM: AFTER LINSYM final transformation'//
-     &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
           IMAT = 1
           IBUF = 1
           DO I = 1,NFSYM
             IF(NORB(I).GT.0) THEN
+                  CALL HEADER(
+     &    'MODHAM: AFTER LINSYM final transformation'//
+     &    ' matrix 4c AO->MO, TMAT(output)',-1)
               WRITE(LUPRI,'(A,I1,A,I1)')
      &        '* Fermion ircop no.',I,'/',NFSYM
               CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
@@ -3370,6 +3656,7 @@ C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prprea */
       SUBROUTINE PRPREA(LU1INT,PRPLBL,RTNLBL,PCOMB,PRPINT,NDIM,IPRINT)
+      use checkpoint
 C***********************************************************************
 C
 C     Read property integrals from file with the label PRPLBL
@@ -3390,6 +3677,8 @@ C***********************************************************************
       LOGICAL FNDLB3, FINDLABEL
       CHARACTER PRPLBL*8, RTNLBL(2)*8, PCOMB*4, COMB*4
       DIMENSION PRPINT(NDIM)
+      character*(:), allocatable :: label
+      logical                    :: label_present
       CALL QENTER('PRPREA')
 C
 Chj   PDOINT is now '+', '-', or '0',
@@ -3403,27 +3692,28 @@ C     The four blocks (AO basis): LL, SL, LS, SS
         END IF
       END DO
 C
-      REWIND LU1INT
       IF (IPRINT.GE.12) THEN
        WRITE(LUPRI,'(A,I4)')
      & 'PRPREA: >>> Going to read the property '//PRPLBL//
      & ' with COMB '//COMB//
      & ' from the file with LU1INT = ',LU1INT
       ENDIF
-      IF(FNDLB3(PRPLBL,COMB,RTNLBL,LU1INT,IPRINT)) THEN
-        CALL READT(LU1INT,NDIM,PRPINT)
+      label = '/result/operators/ao_matrices/'//
+     &        PRPLBL//COMB
+      call checkpoint_query(label,label_present)
+      if (label_present) then
+        call checkpoint_read(label,rdata=prpint(1:ndim))
         IF (IPRINT.GE.17) THEN
            WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
-     &    'succesfully read from the file with LU1INT = ',LU1INT
+     &    'succesfully read from CHECKPOINT '
         ENDIF
       ELSE
         WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
-     &                     ' not found on LU1INT = ',LU1INT
-        WRITE(LUPRI,*) 'label RTNLBL=',RTNLBL
+     &                     ' not found on CHECKPOINT'
         CALL QUIT('PRPREA:Property '//PRPLBL//
-     &   ' of COMB '//COMB//' not found on AOPROPER file !')
+     &   ' of COMB '//COMB//' not found on CHECKPOINT')
       ENDIF
 C
       CALL FLSHFO(LUPRI)
@@ -3469,7 +3759,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GTOVLX(SMAT,SSMETR)
 C*****************************************************************************
 C
-C     Get overlap matrix from file AOPROPER
+C     Get overlap matrix from file CHECKPOINT
 C     The SS block is scaled by the factor SSMETR
 C     No symmetry packing
 C
@@ -3501,11 +3791,8 @@ C
 C       Read integral from file
 C       =======================
 C
-        OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &           FILE='AOPROPER')
         CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',sbuf,NNBBASX,
      &              IPRONE)
-        CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C       Make full matrix
 C       ================
@@ -3543,7 +3830,7 @@ C  /* Deck gtovlt */
       SUBROUTINE GTOVLT(SMAT,SSMETR,IPRINT)
 C*****************************************************************************
 C
-C     Get overlap matrix from file AOPROPER
+C     Get overlap matrix from file CHECKPOINT
 C     The SS block is scaled by the factor SSMETR
 C     Packed on fermion irreps
 C
@@ -3584,11 +3871,8 @@ C
 C       Read integral from file
 C       =======================
 C
-        OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &           FILE='AOPROPER')
         CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',STRI,NNBBASX,
      &              IPRONE)
-        CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C       Make full matrix
 C       ================
@@ -5564,6 +5848,10 @@ C
          RETURN
       ENDIF
 C
+      IF(IPRHAM == 6 .and. atomic)THEN
+        ATOMIC = .FALSE.
+        IPRHAM = 5
+      END IF
       DO IATOM = 1, NUCIND
         IF(NINT(CHARGE(IATOM)).EQ.0)THEN
         IF(NOORBT(IATOM).EQV. .FALSE.)THEN
@@ -5751,7 +6039,7 @@ C
 C       Find eigenvalues of Jz
 C
         IF (NL.GT.0) THEN
-          IF (IPRHAM.GE.5) THEN
+          IF (IPRHAM.GE.6) THEN
            CALL HEADER('LINSYM: Jz_LL to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -5821,7 +6109,7 @@ C
      &               TMAT(IOFT),NT,NT,NZ)
 C
         IF (NS.GT.0) THEN
-          IF (IPRHAM.GE.5) THEN
+          IF (IPRHAM.GE.6) THEN
            CALL HEADER('LINSYM: Jz_SS to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -5997,7 +6285,7 @@ C
           call writt(13,NL**2,WORK(KVLL))
         end if
 
-        IF (IPRHAM.GE.5) THEN
+        IF (IPRHAM.GE.6) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,LL',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
@@ -6018,7 +6306,7 @@ C
      &               WORK(KVSS),NS,NS,1,
      &               TBUF(IOFT),NT,NT,1)
 
-        IF (IPRHAM.GE.5) THEN
+        IF (IPRHAM.GE.6) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,SS',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
@@ -6090,8 +6378,8 @@ C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
       RETURN
- 1000 FORMAT
-     & (/' Parity   MJ  Functions(total) Functions(LC) Functions(SC)')
+ 1000 FORMAT (/' Parity   MJ  Functions(total) Functions(LC)'//
+     &         ' Functions(SC)')
  1010 FORMAT (T5,I2,T9,I3,'/2',T20,I5,T33,I5,T46,I5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -6102,11 +6390,11 @@ C
 C     Generate transformation to atomic supersymmetry
 C     This will lead to orbitals with well-defined kappa and m_j.
 C     The routine first builds the matrix representation of the kappa operator
-C     in orthonormal basis and the diagonalizes it.
+C     in orthonormal basis and diagonalizes it in a second step.
 C     The transformation to orthonormal basis is then updated with the
 C     transformation to kappa blocks.
 C
-C     In a second step, for each kappa block, the matrix representation of the j_z operator
+C     In the ensuing step, for each kappa block, the matrix representation of the j_z operator
 C     is diagonalized. The transformation to orthonormal basis is then updated with the
 C     transformation to (kappa, mj) - blocks
 C
@@ -6164,10 +6452,11 @@ C     Called from GLINSM, LOWD2C
 C
 C     On input:  VMAT 4c AO-MO RKB transformation matrix
 C
-C     On output: TMAT - new 4c AO-MO RKB transf.matrix adapted for the linear symmetry
-C                TBUF - MO to MO transformation matrix adapted for linear symmetry...
+C     On output: TMAT - new 4c AO-MO RKB transf.matrix adapted for atomic supersymmetry
+C                TBUF - MO to MO transformation matrix adapted for atomic supersymmetry
 C
 C     Written by A.Sunaga, July 2018
+C     Bugfixes by S. Knecht, May 2021
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -6226,7 +6515,7 @@ C
      &            VMAT(IOFV),NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRHAM)
 
-        IF (IPRHAM.GE.12) THEN
+        IF (IPRHAM.GE.10) THEN
 
          CALL HEADER(
      &    'ATMSYM: Entering AO->MO transformation matrix',-1)
@@ -6293,6 +6582,7 @@ C
         IEIGE  = IEIGP + NS
         KPMAXL = 0
         KPMAXS = 0
+
 C
 C       Allocate memory for the diagonalization. We want to
 C       have the LL and SS blocks in separate blocks.
@@ -6663,18 +6953,7 @@ C
         IF (IPRHAM.GE.5) THEN
          CALL HEADER(
      &'ATMSYM: TMAT (symm.blocked) transformation'//
-     &' matrix (AO->MO),TMAT',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',IFRP,'/',NFSYM
-         CALL PRQMAT(TMAT(IOFT),NFBAS(IFRP,0),NORB(IFRP),
-     &         NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
-         CALL FLSHFO(LUPRI)
-        ENDIF
-C
-        IF (IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &'ATMSYM: TMAT (symm.blocked) transformation'//
-     &' matrix (AO->MO),TMAT',-1)
+     &' matrix (AO->MO) aka VU/kappa,TMAT',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',IFRP,'/',NFSYM
          CALL PRQMAT(TMAT(IOFT),NFBAS(IFRP,0),NORB(IFRP),
@@ -6686,30 +6965,34 @@ C
         IOFU = IOFU + NORB(IFRP)*NORB(IFRP)
         IOFV = IOFV + NORB(IFRP)*NFBAS(IFRP,0)
  30   CONTINUE !  DO 30 IFRP = 1,NFSYM
-      CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
+
+      CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)  
+      !> copy kappa-adapted 4c AO->atomic MO transformation matrix from TMAT to VMAT
+      !> so that VMAT becomes VU, i.e. V => VU
       CALL DCOPY(N2TMT,TMAT,1,VMAT,1)
       IF(IPRHAM.GE.5) THEN
-        CALL HEADER(
+            CALL HEADER(
      &    'dcopy: AFTER LINSYM final transformation'//
      &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
         IMAT = 1
         IBUF = 1
         DO IFRP = 1,NFSYM
-          IF(NORB(IFRP).GT.0) THEN
-            WRITE(LUPRI,'(A,I1,A,I1)')
+            IF(NORB(IFRP).GT.0) THEN
+                WRITE(LUPRI,'(A,I1,A,I1)')
      &      '* Fermion ircop no.',IFRP,'/',NFSYM
-            CALL PRQMAT(TMAT(IMAT),NFBAS(IFRP,0),NORB(IFRP),
+                CALL PRQMAT(TMAT(IMAT),NFBAS(IFRP,0),NORB(IFRP),
      &                  NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
-            WRITE(LUPRI,'(A,I1,A,I1)')
+                WRITE(LUPRI,'(A,I1,A,I1)')
      &      '* Fermion ircop no.',IFRP,'/',NFSYM
-            CALL PRQMAT(VMAT(IMAT),NFBAS(IFRP,0),NORB(IFRP),
+                CALL PRQMAT(VMAT(IMAT),NFBAS(IFRP,0),NORB(IFRP),
      &                  NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
-            WRITE(LUPRI,'(/5X,A/)')
-            IMAT = IMAT + NFBAS(IFRP,0)*NORB(IFRP)*1
-            IBUF = IBUF + NORB(IFRP)*NORB(IFRP)*1
-          ENDIF
-        ENDDO
+                WRITE(LUPRI,'(/5X,A/)')
+                IMAT = IMAT + NFBAS(IFRP,0)*NORB(IFRP)*1
+                IBUF = IBUF + NORB(IFRP)*NORB(IFRP)*1
+            ENDIF
+         ENDDO
       ENDIF
+    
 C       
 CCCCCCCCCCCCCCCCCCCCCCCCCCC
 C.....Here we start MJ-part
@@ -6771,7 +7054,7 @@ C
        CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
 C
        IF(do4c2c)THEN 
-C       make U_Mj only for kappa = 1,-1, beucase U_Mj is diagonal at Kappa = -1,1 
+C       make U_Mj only for kappa = 1,-1, because U_Mj is diagonal at Kappa = -1,1 
 C       kappa = not 1,-1 will be made later       
          allocate(TMPB(NORB(IFRP)*NORB(IFRP)))       
          CALL DZERO(TMPB,NORB(IFRP)*NORB(IFRP))
@@ -6794,7 +7077,7 @@ C
          ENDIF
 C           
 CCCCCCCCCCCCCCCCCC         
-C Large AO-MO transformation
+C Large AO-MO transformation (diagonal in kappa because of VMAT => VU)
 CCCCCCCCCCCCCCCCCC         
          IF (NL.GT.0) THEN
            CALL TSBBL2(IFRP,1,KPADD,TMPA,WORK(KFLL),VMAT,VMAT,
@@ -6857,7 +7140,7 @@ C
          ENDIF !NL.GT.0
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC         
-C Small AO-MO transformation
+C Small AO-MO transformation (diagonal in kappa because of VMAT => VU)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC         
          IF (NS.GT.0) THEN
            CALL TSBBL2(IFRP,2,KPADD,TMPA,WORK(KFSS),VMAT,VMAT,
@@ -6917,37 +7200,37 @@ C
      &                   IPQTOQ(1,0),LUPRI)
              CALL FLSHFO(LUPRI)
            ENDIF
-         ENDIF                     !NS.GT.0
 C      
-         MJBUF = 0
-         DO IX = IEIGP, IEIGP+NS-1
-           MJ = NINT(D2*EIG(IX))
-           IF(MJ.NE.MJBUF) THEN
-             MJBUF = MJ
-             MJABS = (ABS(MJ)+1)/2
-             ID_SUB_BL(KPADD+MJABS-1,IFRP)=ISKP*(KPOFF+MJABS)
-           ENDIF
-         ENDDO        
+           MJBUF = 0
+           DO IX = IEIGP, IEIGP+NS-1
+             MJ = NINT(D2*EIG(IX))
+             IF(MJ.NE.MJBUF) THEN
+               MJBUF = MJ
+               MJABS = (ABS(MJ)+1)/2
+               ID_SUB_BL(KPADD+MJABS-1,IFRP)=ISKP*(KPOFF+MJABS)
+             ENDIF
+           ENDDO        
 C
-         DO IX = IEIGP, IEIGP+NS-1
-           EIG(IX) = ABS(EIG(IX))
-         ENDDO
+           DO IX = IEIGP, IEIGP+NS-1
+             EIG(IX) = ABS(EIG(IX))
+           ENDDO
 C
-C        The SELBOS routine does just the reordering that we want,
-C        use work(kfss) as scratch, and allocate a few other small
-C        scratch arrays. The IBEIG part will not be used but we will
-C        initialize it to prevent problems with uninitialized data while
-C        sorting it.
+C          The SELBOS routine does just the reordering that we want,
+C          use work(kfss) as scratch, and allocate a few other small
+C          scratch arrays. The IBEIG part will not be used but we will
+C          initialize it to prevent problems with uninitialized data while
+C          sorting it.
 C
-         CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
-         MJ = 0
-         CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
-         CALL SELBOS (IFRP,NS,WORK(KINDX),EIG(IEIGP),
-     &                WORK(KIBEI),WORK(KVSS),
-     &                WORK(KFSS),WORK(KIDUM),IPRHAM)
-         CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
+           CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
+           CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
+           CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
+           MJ = 0
+           CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
+           CALL SELBOS (IFRP,NS,WORK(KINDX),EIG(IEIGP),
+     &                  WORK(KIBEI),WORK(KVSS),
+     &                  WORK(KFSS),WORK(KIDUM),IPRHAM)
+           CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
+         ENDIF                     !NS.GT.0
 C
 C        Same thing for large component solutions
 C
@@ -6973,8 +7256,8 @@ C
      &                WORK(KIBEI),WORK(KVLL),
      &                WORK(KFLL),WORK(KIDUM),IPRHAM)
          CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
-C       
-         DO IC = 0,2
+C
+         DO IC = 0,MC !MC = 1 for L only and 2 for L+S
            NDIM = NORB_SUB(KPADD,IFRP,IC)/IKAP 
            DO IK = 1,IKAP
              NORB_SUB(KPADD+IK-1,IFRP,IC) = NDIM
@@ -6987,16 +7270,18 @@ C     Write information to output
            IF(NORB_SUB(KPADD+IK-1,IFRP,0).NE.0) THEN
              CALL ATOMIC_ID(ID,KP,J,MJ,LL)
              WRITE (LUPRI,1020) 3-2*IFRP,KP,MJ,
-     &             (NORB_SUB(KPADD+IK-1,IFRP,IC),IC=0,2)
-           ENDIF  
-         ENDDO       
+     &             (NORB_SUB(KPADD+IK-1,IFRP,IC),IC=0,MC)
+           ENDIF
+         ENDDO
 C
          IOFS = 0
          IOFL = 0
          IOFVL = IOFVL + NFBAS(IFRP,0)*NS
+
+
          DO IK = 1,IKAP
            IOFK = KPADD+IK-1
-           IF(NS.GT.0)THEN  
+           IF(NS.GT.0)THEN
              CALL BCKTRA(TMAT(IOFT),NFBAS(IFRP,0),
      &                   NORB_SUB(IOFK,IFRP,2),
      &                   WORK(KVSS+IOFS),NS,NORB_SUB(IOFK,IFRP,2),
@@ -7062,7 +7347,7 @@ C... Extract only LL block (TMPA) from total U (TBUF)
      &               TBUF(IOFU),NORB(IFRP),NORB(IFRP),1)
         call writt(13,NESH(IFRP)*NESH(IFRP),TMPA(1))
 C
-        IF(IPRHAM.GE.6)THEN        
+        IF(IPRHAM.GE.5)THEN        
          CALL HEADER(
      &    'ATMSYM: Unitary transformation'//
      &    ' matrix Kappa->Mj MO, TMPB',-1)         
@@ -7096,16 +7381,17 @@ C
 C
 C... Debug sentences
 C      
-      DO 50 IFRP = 1,NFSYM
-      IF(NORB(IFRP).EQ.0) GOTO 50      
+      IOFT = 1
+      IOFU = 1
+      IOFV = 1
+      IMAT = 1
+      IBUF = 1 
       IF (IPRHAM.GE.5) THEN
-         IOFT = 1
-         IOFU = 1
-         IOFV = 1
-         IMAT = 1
-         IBUF = 1 
+            DO 50 IFRP = 1,NFSYM
+            IF(NORB(IFRP).EQ.0) GOTO 50      
+      
 C
-         CALL HEADER(
+            CALL HEADER(
      &'ATMSYM: Final unitary transformation matrix'// 
      &' in orthon. basis U (MO->MO),TBUF',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
@@ -7132,20 +7418,20 @@ C
      &               NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
          WRITE(LUPRI,'(/5X,A/)')         
 C
-         IOFT = IOFT + NFBAS(IFRP,0)*NORB(IFRP)
-         IOFU = IOFU + NORB(IFRP)*NORB(IFRP)
-         IOFV = IOFV + NORB(IFRP)*NFBAS(IFRP,0)
-         IMAT = IMAT + NFBAS(IFRP,0)*NORB(IFRP)*1
-         IBUF = IBUF + NORB(IFRP)*NORB(IFRP)*1
-      ENDIF
+            IOFT = IOFT + NFBAS(IFRP,0)*NORB(IFRP)
+            IOFU = IOFU + NORB(IFRP)*NORB(IFRP)
+            IOFV = IOFV + NORB(IFRP)*NFBAS(IFRP,0)
+            IMAT = IMAT + NFBAS(IFRP,0)*NORB(IFRP)*1
+            IBUF = IBUF + NORB(IFRP)*NORB(IFRP)*1
 C
- 50   CONTINUE
+ 50         CONTINUE
+      ENDIF            
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('ATMSYM')
       RETURN
- 1000 FORMAT
-     & (/' Parity  Kappa  Functions(total) Functions(LC) Functions(SC)')
+ 1000 FORMAT (/' Parity  Kappa  Functions(total) Functions(LC)'//
+     &       ' Functions(SC)')
  1010 FORMAT (T5,I2,T9,I3,T20,I5,T33,I5,T46,I5)
  1020 FORMAT (T5,I2,T9,I3,T13,I4,'/2',T25,I5,T39,I5,T53,I5)
       END
@@ -7220,9 +7506,6 @@ C     Sanity check : linear symmetry requires use of real groups (C2v or D2h)
 C
       IF (NZ.NE.1) CALL QUIT ("Linear symmetry requires NZ=1")
 C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-C
 C     Get integrals of component of the z-angular momentum that we want to
 C     quantize on.
 C
@@ -7247,10 +7530,9 @@ C     =====================================================
 C
       IF(.NOT.SPINFR) CALL DAXPY (N2BBASX,D1,WORK(KBUF),1,FOCK,1)
 C
-C     Release memory & close AOPROPER
+C     Release memory
 C
       CALL MEMREL('AMJMA1',WORK,KBUF,KBUF,KFREE,LFREE)
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Reindex to sorted basis
 C     =======================
@@ -7348,9 +7630,6 @@ C     Sanity check : ATOMIC symmetry requires use of real groups (C2v or D2h)
 C
       IF (NZ.NE.1) CALL QUIT ("Atomic symmetry requires NZ=1")
 C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-C
 C     Get integrals of component of the Spin-orbit operatar
 C
       FIRST = .TRUE.
@@ -7374,10 +7653,9 @@ C     =====================================================
 C
       IF(.NOT.SPINFR) CALL DAXPY (N2BBASX,DM1,WORK(KBUF),1,FOCK,1)
 C
-C     Release memory & close AOPROPER
+C     Release memory
 C
       CALL MEMREL('AMKMA1',WORK,KBUF,KBUF,KFREE,LFREE)
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Reindex to sorted basis
 C     =======================
@@ -7487,7 +7765,7 @@ C
         ELSEIF(IC.EQ.2)THEN
           MJBLCK_BUF = 0
         ENDIF
-        ITMMJ = IMJ + MJBLCK_BUF !final poionter
+        ITMMJ = IMJ + MJBLCK_BUF !final pointer
 C
         DO I = 1,NINSRT
            CALL DCOPY(NSUB,FSUB(1,I),1,FFUL(ITMKP+1,ITMMJ+I),1)
@@ -8731,4 +9009,7 @@ C***********************************************************************
       close (lupot, STATUS = 'KEEP')
 
       end
+#ifdef DEBUG_SOC
+#undef DEBUG_SOC
+#endif
 ! -- end of dirone.F --

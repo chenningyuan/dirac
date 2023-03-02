@@ -402,7 +402,6 @@ CTROND                IOFF = I2COSX(ISY1,ISY2,IC1,IC2)
    10 CONTINUE
 C
       END
-
       subroutine q2bphase_nonquadmat_LS_L(typ,im,jfac,amat)
 C***********************************************************************
 C
@@ -1834,7 +1833,7 @@ C     Memory deallocation
       call qexit('bstobu_no_work_nonquadmat_LS_L')
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck butobs */
+C  /* Deck butobs_no_work */
       SUBROUTINE BUTOBS_no_work(AMAT,MZ)
 C***********************************************************************
 C
@@ -3355,6 +3354,56 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck GET_UMOMO */
+      SUBROUTINE GET_UMOMO(SMOAO,TMAT,UMOMO,IPRINT)
+C**********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+            PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dgroup.h"
+
+            DIMENSION SMOAO(*),TMAT(*),UMOMO(*)
+
+            CALL QENTER('GETUMOMO')
+
+            ISIZE = 0
+            DO I = 1,NFSYM
+               ISIZE = ISIZE + NZ*NORB(I)*NORB(I)
+            END DO
+            CALL DZERO(UMOMO,ISIZE)
+
+            IOFF  = 1
+            IOFF2 = 1
+            DO I = 1,NFSYM
+               IF ( NORB(I) .GT. 0 ) THEN
+                  CALL QGEMM(NORB(I),NORB(I),NFBAS(I,0),D1,
+     &         'N','N',IPQTOQ(1,0),SMOAO(I2TMT(I)+1),
+     &         NORB(I),NFBAS(I,0),NZT,
+     &         'N','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
+     &         NFBAS(I,0),NORB(I),1,
+     &         D0,IPQTOQ(1,0),UMOMO(IOFF2),
+     &         NORB(I),NORB(I),NZ)
+      
+                  IF ( IPRINT .GE. 5 ) THEN
+                     CALL HEADER('GETUMOMO: identity matrix '//
+     &            ' matrix momo',-1)
+                     CALL PRQMAT(UMOMO(IOFF2),NORB(I),NORB(I),
+     &            NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+                     CALL FLSHFO(LUPRI)
+                  END IF
+               END IF
+            IOFF  = IOFF  + NZ*NORB(I)*NFBAS(I,0)
+            IOFF2 = IOFF2 + NZ*NORB(I)*NORB(I)
+            END DO
+            CALL QEXIT('GETUMOMO')
+            RETURN
+            END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKSMOAO */
       SUBROUTINE MKSMOAO(SMOAO,TMAT,IPRINT,WORK,LWORK)
 C**********************************************************************
@@ -3497,7 +3546,7 @@ C
           write(lupri,'(2X,A,I3,A,I3,A,I3,A,I3,A,I3)')
      &    '>>>> NPSH(I)=',NPSH(I),
      &    ' NESH(I)=',NESH(I),' NTMO(I)=',NTMO(I),
-     &    ' - NORB(I)=',NORB(I),'>>> used NREF=',NREF
+     &    ' NORB(I)=',NORB(I),'>>> used NREF=',NREF
         ENDIF
       ENDDO
 
@@ -4247,7 +4296,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C***********************************************************************
 C
 C     Transform density matrix in MO form to AO format using coefficients
-C     taken from DFCOEF
+C     taken from CHECKPOINT
 C     Written by L. Visscher, March 2008
 C
 C***********************************************************************
@@ -4276,11 +4325,7 @@ C
      
 C
 C     Read the MO coefficients
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) CALL QUIT ('DFCOEF missing')
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-      CALL REACMO_new(LUCOEF,cmo=CMO)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL REACMO_new(cmo=CMO)
 
 C     Perform the transformation
       DO IFSYM = 1,NFSYM

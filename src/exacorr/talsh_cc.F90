@@ -6,7 +6,9 @@ module talsh_cc
         use exacorr_datatypes
         use exacorr_utils
         use intermediates
+        use intermediates_eom_ccsd
         use talsh_common_routines
+        use mfsolver_dirac_input
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -39,14 +41,16 @@ module talsh_cc
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
 
 !        Written by Lucas Visscher, winter 2016/2017
-
+         use labeled_storage
          use exacorr_global
          use talsh_gradient
+         use talsh_eom,      only       : talsh_eom_results_tens_t, talsh_eom_eigval_driver
+         use talsh_cc_ci,    only       : talsh_CC_CI_driver
          use talsh_cholesky_integrals
          use talsh_triples
 
          type(exacc_input), intent(in) :: exa_input
-
+         type(file_info_t)      :: exacc_file
          integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
@@ -57,11 +61,15 @@ module talsh_cc
          integer(C_INT):: host_arg_max
 
 !        Common tensors
-         type(talsh_comm_tens) :: comm_t
+         type(talsh_comm_tens_t) :: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_intg_tens) :: int_t
+         type(talsh_intg_tens_t) :: int_t
 !        Lambda tensors
          type(talsh_tens_t) :: l1_tensor, l2_tensor
+!        1- and 2-body cc intermediates 
+         type(talsh_intermediates_tens_t) :: interm_t
+!        eom results
+         type(talsh_eom_results_tens_t) :: eom_results_t
 !        intermediate tensors (same notation as in relccsd)
          integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
          integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
@@ -75,13 +83,18 @@ module talsh_cc
          real(8) :: t_target_precision
          real(8) :: t1diag
          integer :: ncycles
-
-         logical :: CCD, lambda
+         logical :: CCD, lambda, eom, eom_lr, eom_qr
+         logical :: debug_eom = .false.
          logical :: CC2 
+         logical :: do1rdm_gs, do2rdm_gs
 
          integer :: iff        ! loop variable to loop over field strengths
          integer :: fock_mode  ! choice of Fock build options
+         integer :: rr         ! rank of cc-ci response
          
+! this should be needed in the case of exatensor, but not for talsh i guess..
+!        call mfsolver_dirac_input_sync_cw()
+
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
@@ -111,7 +124,22 @@ module talsh_cc
          CCD = exa_input%ccd
          CC2 = exa_input%cc2     !L
          lambda = exa_input%lambda
+         eom = exa_input%eom
+         eom_lr = exa_input%eom_lr
+         eom_qr = exa_input%eom_qr
          ncycles = exa_input%ncycles
+         do1rdm_gs = exa_input%do_1rdm_gs
+         do2rdm_gs = exa_input%do_2rdm_gs
+         if ((do1rdm_gs.or.do2rdm_gs).and..not.lambda) then
+            call quit("specify .LAMBDA to generate 1RDM/2RDM")
+         end if
+
+         call print_date("MO occupation data to EXACC file")
+         exacc_file%status = -1
+         exacc_file%type = 2
+         exacc_file%name = "EXACC.h5"
+         call lab_write(exacc_file,'nocc',idata=nocc)
+         call lab_write(exacc_file,'mo_occ',idata=mo_occ)
 
          call print_exainput(exa_input,get_nao())
 
@@ -123,6 +151,9 @@ module talsh_cc
          call get_orbital_energies(nvir,mo_vir,eps_vir)
          call print_date("Retrieved orbital energies")
 
+         ! print *,'before get_CC_integrals'
+         ! print *,' eps_occ:',eps_occ
+         ! print *,' eps_vir:',eps_vir
 !        Get fixed two-body tensors
          call print_date('-Start- Integral Transformation')
          if (exa_input%moint_scheme.eq.41) then
@@ -205,12 +236,14 @@ module talsh_cc
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
          mp2_energy=result_tens(1)*ONE_QUARTER_R
+
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
          mp2_energy=mp2_energy+result_tens(1)
          write(*,*) ""
          write(*,*) "    MP2 energy = ", mp2_energy
          write(*,*) ""
+         ! call print_tensor(comm_t%t2, 1.0d-18, "t2 mp2")
 !=====================
 !        Calculate the pair correlation energy for each pair of occupied spin-orbits
          call pair_correlation_energies(comm_t%t2, int_t%oovv, nocc, nvir)
@@ -296,35 +329,22 @@ module talsh_cc
                 call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                     t_target_precision,ncycles,exa_input%print_level,l1_tensor)
             end if 
-            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
+            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor,int_t=int_t)
           else
             call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                         t_target_precision,ncycles,exa_input%print_level)
-            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor)
+            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,int_t=int_t)
           end if
-
-          if (.not.CCD) ierr=talsh_tensor_destruct(l1_tensor)
-          ierr=talsh_tensor_destruct(l2_tensor)
           call print_date('-End- Lambda Equations')
          else
             write(*,*) 'Lambda equations with CC2 wavefunctions not supported in this release' 
          end if
 
-!        Destruct tensors and shut down library
-         ierr=talsh_tensor_destruct(int_t%oooo)
-         ierr=talsh_tensor_destruct(int_t%oovv)
-         ierr=talsh_tensor_destruct(int_t%vovo)
-         ierr=talsh_tensor_destruct(int_t%vvvv)
-         ierr=talsh_tensor_destruct(int_t%ooov)
-         ierr=talsh_tensor_destruct(int_t%vovv)
-         ierr=talsh_tensor_destruct(comm_t%foo)
-         ierr=talsh_tensor_destruct(comm_t%fov)
-         ierr=talsh_tensor_destruct(comm_t%fvv)
+!        Destruct tensors
          ierr=talsh_tensor_destruct(comm_t%tau)
          ierr=talsh_tensor_destruct(comm_t%hoo)
          if (.not.CCD) then
             ierr=talsh_tensor_destruct(comm_t%hov)
-            ierr=talsh_tensor_destruct(comm_t%t1)
          end if
          ierr=talsh_tensor_destruct(comm_t%hvv)
          ierr=talsh_tensor_destruct(comm_t%goo)
@@ -333,8 +353,73 @@ module talsh_cc
          ierr=talsh_tensor_destruct(comm_t%h_int)
          ierr=talsh_tensor_destruct(result_tensor)
          ierr=talsh_tensor_destruct(one_tensor)
-         ierr=talsh_tensor_destruct(comm_t%t2)
 
+!**************************
+!        EOM calculations *
+!**************************
+
+         if (eom.or.eom_lr.or.eom_qr) then
+
+!aspg, this new handling of fock matrices has to be verified, we don't want any addition to finite field ere for example
+!        Get fixed one-body tensors, needs to follow the two body tensors
+         if ( exist_one_el(e_core) ) then
+            fock_mode = 2
+         else
+            fock_mode = 1
+         end if
+         call init_fock_talsh (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
+         ! copy Fock matrix to comm, add finite field to the Fock matrix
+         call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
+         ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
+         call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
+                        exa_input%level_shift,-1,fock_mode,exa_input%nff(1),keep_diagonal=.true.)
+
+! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
+            ! if (exa_input%eom_input(1)%do_expval) then
+               call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t, l2_tensor)
+            ! else
+            !    call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
+            ! end if
+
+! with the ground-state intermediates done, and t amplitudes store
+
+!           if (debug_eom) then
+            if (.true.) then 
+               print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
+               print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
+               print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
+            end if
+            ! print '(A)','debug: exa_input%eom_input(1)%flavor is:_'//exa_input%eom_input(1)%flavor//'_'
+
+            if (exa_input%eom_input(1)%flavor.eq."EE    " .and. exa_input%eom_input(1)%do_expval.and..not.lambda) then
+               call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
+            end if
+
+! solve eom eigenvalue equations; right now we do only one flavor but there's no reason not to handle different flavors in the same calculation,
+! we just need different results instances
+           if (eom_qr) then
+              rr = 2
+              call talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+           else if (eom_lr) then
+              rr = 1
+              call talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+! TODO: if we want properties etc, now we call other drivers
+           else
+              call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t)
+           end if
+         end if
+
+         if (.not.CCD) then
+           ierr=talsh_tensor_destruct(comm_t%t1)
+           ierr=talsh_tensor_destruct(l1_tensor)
+         end if
+         ierr=talsh_tensor_destruct(l2_tensor)
+! aspg
+         ierr=talsh_tensor_destruct(comm_t%foo)
+         ierr=talsh_tensor_destruct(comm_t%fov)
+         ierr=talsh_tensor_destruct(comm_t%fvv)
+! aspg
+         ierr=talsh_tensor_destruct(comm_t%t2)
 !        Get statistics
          ierr=talsh_stats()
          ierr = talsh_shutdown()
@@ -361,8 +446,8 @@ module talsh_cc
          type(C_PTR):: body_p
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_comm_tens), intent(inout) :: comm_t
-         type(talsh_intg_tens), intent(inout) :: int_t
+         type(talsh_comm_tens_t), intent(inout) :: comm_t
+         type(talsh_intg_tens_t), intent(inout) :: int_t
 !        intermediate tensors (same notation as in relccsd)
          !type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
          type(talsh_tens_t) :: tau2_tensor
@@ -397,13 +482,13 @@ module talsh_cc
          if (.not.CCD) then
             oo_dims = nocc
             ierr=talsh_tensor_construct(hoo_aux_tensor,C8,oo_dims,init_val=ZERO)
-            ov_dims(1) = nocc
-            ov_dims(2) = nvir
-            ierr=talsh_tensor_construct(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
             vo_dims(1) = nvir
             vo_dims(2) = nocc
             ierr=talsh_tensor_construct(s1_tensor,C8,vo_dims,init_val=ZERO)
          end if
+         ov_dims(1) = nocc
+         ov_dims(2) = nvir
+         ierr=talsh_tensor_construct(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(s2_tensor,C8,vvoo_dims,init_val=ZERO)
@@ -561,12 +646,15 @@ module talsh_cc
           else
             call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
           end if
+         !  call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs before diis")
 
           if (.not.CCD) then
             call diis (comm_t%t2,comm_t%t1,t_convergence=t_convergence)
           else
             call diis (comm_t%t2,t_convergence=t_convergence)
           end if
+
+         ! call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs, after diis")
 
           if (.not.CCD) then
             ierr=talsh_tensor_init(result_tensor)
@@ -603,6 +691,7 @@ module talsh_cc
             ierr=talsh_tensor_destruct(hov_aux_tensor)
          end if
          ierr=talsh_tensor_destruct(result_tensor)
+         ! call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs, leaving")
 
         end subroutine
 
@@ -616,8 +705,8 @@ module talsh_cc
          type(C_PTR):: body_p
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_comm_tens), intent(inout) :: comm_t
-         type(talsh_intg_tens), intent(inout) :: int_t
+         type(talsh_comm_tens_t), intent(inout) :: comm_t
+         type(talsh_intg_tens_t), intent(inout) :: int_t
 !        intermediate tensors (same notation as in relccsd)
          type(talsh_tens_t) :: Wabef_tensor,Wmnij_tensor     !L
          type(talsh_tens_t) :: Wabej_tensor,Wmbij_tensor     !L
@@ -948,9 +1037,9 @@ module talsh_cc
 
          integer, intent(in) :: nocc, nvir, print_level
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_comm_tens), intent(inout) :: comm_t
-         type(talsh_intg_tens), intent(inout) :: int_t
-         type(talsh_lambda_tens)              :: lambda_t
+         type(talsh_comm_tens_t), intent(inout) :: comm_t
+         type(talsh_intg_tens_t), intent(inout) :: int_t
+         type(talsh_lambda_tens_t)              :: lambda_t
 !        solution tensors
          type(talsh_tens_t), intent(inout)           :: l2_tensor
          type(talsh_tens_t), intent(inout), optional :: l1_tensor
@@ -1045,13 +1134,13 @@ module talsh_cc
          call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD)
          call print_date('Finished calculating fixed intermediates')
 
-         if (print_level.gt.8) then
+         if (print_level>0) then
              if (.not.CCD) print*, "T1amp      = ", tensor_norm2(comm_t%t1)
              print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER_R
              ! print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER_R
-             ! print*, "Fbar_oo    = ", tensor_norm2(lambda_t%fbar_oo)
+              print*, "Fbar_oo    = ", tensor_norm2(lambda_t%fbar_oo)
              print*, "Fbar_ov    = ", tensor_norm2(lambda_t%fbar_ov)
-             ! print*, "Fbar_vv    = ", tensor_norm2(lambda_t%fbar_vv)
+             print*, "Fbar_vv    = ", tensor_norm2(lambda_t%fbar_vv)
              ! print*, "w_vvvv     = ", tensor_norm2(lambda_t%w_vvvv)*ONE_QUARTER_R
              print*, "wbar_vovo  = ", tensor_norm2(lambda_t%wbar_vovo)
              print*, "w_vvvo     = ", tensor_norm2(lambda_t%w_vvvo)*0.5D0
@@ -1326,10 +1415,10 @@ module talsh_cc
 
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_comm_tens), intent(inout) :: comm_t
-         type(talsh_comm_tens) :: comm_t_CC2
-         type(talsh_intg_tens), intent(inout) :: int_t
-         type(talsh_lambda_tens)              :: lambda_t,lambda_t_CC2
+         type(talsh_comm_tens_t), intent(inout) :: comm_t
+         type(talsh_comm_tens_t) :: comm_t_CC2
+         type(talsh_intg_tens_t), intent(inout) :: int_t
+         type(talsh_lambda_tens_t)              :: lambda_t,lambda_t_CC2
 !        solution tensors
          type(talsh_tens_t), intent(inout)           :: l2_tensor
          type(talsh_tens_t), intent(inout), optional :: l1_tensor
@@ -1706,9 +1795,7 @@ module talsh_cc
 
         end subroutine solve_CC2_lambda_equations 
 
-
         subroutine init_fock_talsh (mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,print_level)
-
 !        Written by Lucas Visscher, summer 2017
 !        Constructs unrestricted Hartree-Fock matrix and computes corresponding UHF energy.
 
@@ -1726,7 +1813,7 @@ module talsh_cc
          integer, intent(in)                  :: print_level
          
 !        target tensors (2e integrals are input, UHF matrix sections to be filled here).
-         type(talsh_intg_tens), intent(inout) :: int_t
+         type(talsh_intg_tens_t), intent(inout) :: int_t
 
          integer                         :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
          type(talsh_tens_t)              :: id_mat_occ
@@ -1739,7 +1826,6 @@ module talsh_cc
          type(C_PTR)                     :: body_p
          complex(8), pointer, contiguous :: h_tens(:,:)
          integer                         :: i
-
 
          nocc = size(eps_occ)
          nvir = size(eps_vir)
@@ -1840,7 +1926,7 @@ module talsh_cc
 
         end subroutine init_fock_talsh
 
-        subroutine define_H0 (scf_energy,eps_occ,eps_vir,comm_t,oooo,level_shift,print_level,mode,nff)
+        subroutine define_H0 (scf_energy,eps_occ,eps_vir,comm_t,oooo,level_shift,print_level,mode,nff,keep_diagonal)
 
 !        Written by Lucas Visscher, spring 2021
 !        Shifts diagonal part of the T1-equations to the LHS, defines these epsilons ("orbital energies") as H0 
@@ -1860,7 +1946,7 @@ module talsh_cc
 
 
 !        common tensors: the foo and fvv parts get modfied here (diagonal is shifted to the left)
-         type(talsh_comm_tens), intent(inout) :: comm_t
+         type(talsh_comm_tens_t), intent(inout) :: comm_t
          type(talsh_tens_t)                   :: oooo
 
          integer                         :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
@@ -1871,6 +1957,15 @@ module talsh_cc
          type(C_PTR)                     :: body_p
          complex(8), pointer, contiguous :: h_tens(:,:)
          integer                         :: i
+
+         logical, intent(in), optional:: keep_diagonal
+         logical            :: keep_diagonal_local
+
+         if (present(keep_diagonal)) then
+           keep_diagonal_local = keep_diagonal
+         else
+           keep_diagonal_local = .false.
+         end if
 
          nocc = size(eps_occ)
          nvir = size(eps_vir)
@@ -1918,14 +2013,24 @@ module talsh_cc
            h_tens(i,i) = eps_vir(i)
          end do
 
-         ! create foo and fvv with H0 subtracted
-         ierr=talsh_tensor_add("F(i,j)+=D(i,j)",comm_t%foo,diag_mat_occ,scale=MINUS_ONE)
-         ierr=talsh_tensor_add("F(a,b)+=D(a,b)",comm_t%fvv,diag_mat_vir,scale=MINUS_ONE)
+         if (.not.keep_diagonal_local) then 
+            ! create foo and fvv with H0 subtracted
+            ierr=talsh_tensor_add("F(i,j)+=D(i,j)",comm_t%foo,diag_mat_occ,scale=MINUS_ONE)
+            ierr=talsh_tensor_add("F(a,b)+=D(a,b)",comm_t%fvv,diag_mat_vir,scale=MINUS_ONE)
+         end if
          if (print_level >0) then 
            write(*,*)
-           write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", tensor_norm2(comm_t%foo)
+           if (keep_diagonal_local) then
+              write(*,*) "    Norm of Fock matrix (OO, all        ) = ", tensor_norm2(comm_t%foo)
+           else
+              write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", tensor_norm2(comm_t%foo)
+           end if
            write(*,*) "    Norm of Fock matrix (OV, all        ) = ", tensor_norm2(comm_t%fov)
-           write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", tensor_norm2(comm_t%fvv)
+           if (keep_diagonal_local) then
+              write(*,*) "    Norm of Fock matrix (VV, all        ) = ", tensor_norm2(comm_t%fvv)
+           else
+              write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", tensor_norm2(comm_t%fvv)
+           end if
            write(*,*) 
          end if
 
@@ -2011,9 +2116,9 @@ module talsh_cc
          integer, intent(in)                  :: iff !integer to loop over field strengths
 
 !        integral tensors (for technical reasons defined as inout, but not to be changed here).
-         type(talsh_intg_tens), intent(inout) :: int_t
+         type(talsh_intg_tens_t), intent(inout) :: int_t
 !        target tensors to be augmented with the finite field
-         type(talsh_comm_tens), intent(inout) :: comm_t
+         type(talsh_comm_tens_t), intent(inout) :: comm_t
 
          integer                         :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
          type(talsh_tens_t)              :: h_tensor
@@ -2086,10 +2191,9 @@ module talsh_cc
          integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 !        target integral tensors to be filled and given back to the caller
-         type(talsh_intg_tens),intent(inout)  :: int_t
+         type(talsh_intg_tens_t),intent(inout)  :: int_t
          integer, intent(in)                  :: print_level
          integer, intent(in)                  :: moint_scheme
-
          integer(INTD) :: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),ooov_dims(1:4),vovv_dims(1:4)
 
          integer(INTD)                      :: ierr
@@ -2389,6 +2493,7 @@ module talsh_cc
             ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
             b_diis(itens,i) = scalar_tens(1)
             b_diis(i,itens) = dconjg(scalar_tens(1))
+            ! print *,'b_diis(',i,',',itens,'):',b_diis(i,itens)
          end do
 
          if (present(t_convergence)) then
@@ -2415,6 +2520,7 @@ module talsh_cc
 
 !        make the extrapolated amplitudes if the space is large enough
          if (ntens.ge.mindim) then
+         !   print *,'coeff:',coeff
            if (crop) then
               ! replace latest error vector by the optimized error vector using t1_tensor and t2_tensor as scratch space
               if (.not.CCD) ierr=talsh_tensor_init(t1_tensor)

@@ -11,17 +11,17 @@
 
 Clone the complete repository:
 ```
-$ git clone --recursive git@gitlab.com:dirac/dirac-private.git
+$ git clone --recursive git@gitlab.com:dirac/dirac.git
 ```
 
 or the latest revision only:
 ```
-$ git clone --depth 1 --recursive git@gitlab.com:dirac/dirac-private.git
+$ git clone --depth 1 --recursive git@gitlab.com:dirac/dirac.git
 ```
 
 or a particular release:
 ```
-$ git clone --recursive --branch v22.0 git@gitlab.com:dirac/dirac-private.git
+$ git clone --recursive --branch v22.0 git@gitlab.com:dirac/dirac.git
 ```
 ```
 

@@ -89,12 +89,7 @@ subroutine pamlaplce()
 
   allocate(eig(npsh(1)+nesh(1)))
 
-  ! read MO energies from DFCOEF
-  INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-  IF(.NOT.FILEX) CALL QUIT ('DFCOEF missing')
-  CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
   call reacmo(LUCOEF, 'DFCOEF', dum, eig, idum, toterg, 4  )
-  CLOSE(LUCOEF,STATUS='KEEP')
 
   ! orbital start and end addresses
   istro = npsh(1)+nfro_lap+1

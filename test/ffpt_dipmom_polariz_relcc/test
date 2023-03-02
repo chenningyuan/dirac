@@ -41,6 +41,48 @@ ierr += run(options,
             extra_args='--noarch --put "DFPCMO.BeH.x2c_scf_sto-2g.C2v=DFPCMO"',
             filters={'out': f})
 
+
+# run LiH analytic and finite-field calculations
+ierr += run(options,
+            configure,
+            input_files=['LiH.x2c_scf_relcc_analytic-gradient.inp', 'LiH.sto-6g.C2v.mol'],
+            filters={'out': f})
+
+f = [ get_filter(from_string='  Perturbative treatment of triple excitations',
+               num_lines=10,
+               rel_tolerance=1.0e-5) ]
+ 
+ierr += run(options,
+            configure,
+            input_files=['LiH.x2c_scf_relcc_orb-unrelaxed_z_-0.0005.inp', 'LiH.sto-6g.C2v.mol'],
+            filters={'out': f})
+
+ierr += run(options,
+            configure,
+            input_files=['LiH.x2c_scf_relcc_orb-unrelaxed_z_+0.0005.inp', 'LiH.sto-6g.C2v.mol'],
+            filters={'out': f})
+ 
+ierr += run(options,
+            configure,
+            input_files=['LiH.x2c_scf_relcc_orb-unrelaxed_qzz_-0.0005.inp', 'LiH.sto-6g.C2v.mol'],
+            filters={'out': f})
+
+ierr += run(options,
+            configure,
+            input_files=['LiH.x2c_scf_relcc_orb-unrelaxed_qzz_+0.0005.inp', 'LiH.sto-6g.C2v.mol'],
+            filters={'out': f})
+ 
+ierr += run(options,
+            configure,
+            input_files=['LiH.x2c_scf_relcc_orb-relaxed_z_-0.0005.inp', 'LiH.sto-6g.C2v.mol'],
+            filters={'out': f})
+
+ierr += run(options,
+            configure,
+            input_files=['LiH.x2c_scf_relcc_orb-relaxed_z_+0.0005.inp', 'LiH.sto-6g.C2v.mol'],
+            filters={'out': f})
+
 sys.exit(ierr)
+
 
 

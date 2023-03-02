@@ -265,7 +265,7 @@ C               - common block NUCLEI:
 C                       - added GAUNUC, GNUEXP(MXCENT)
 C                       - added NAMN(MXCENT)
 C               - NEW common block FRAME
-C                       - added POTNUC, DPNUC(3)
+C                       - added POTNUC
 C               - common block CBIREA:
 C                       - IPRINT changed to IPREAD
 C                       - added INPTST,FAMILY
@@ -1098,17 +1098,17 @@ C              LARGE INTGRL    2    1    1  (IBSFLAG = 1)
 C              LARGE    2    1    1 (IBSFLAG = 1)
 C              LARGE EXPLICIT    2    1    1 (IBSFLAG = 1)
 
-C              LARGE MOLFBAS H.bas (IBSFLAG = 2)
+C              LARGE MOLFBAS H.bas  (IBSFLAG = 2)
 C              LARGE BASIS basisset (IBSFLAG = 3)
 C              LARGE GEOM alpha beta N 2 1 1 (IBSFLAG = 4)
-C              LARGE EVENTEMP alpha beta N 2 1 1 (IBSFLAG = 4)
-c               (alias for LARGE GEOM)
+C              LARGE EVENTEMP alpha beta N 2 1 1 (IBSFLAG = 4) (alias for LARGE GEOM)
 C              LARGE WELLTEMP alpha beta gamma delta N 2 1 1 (IBSFLAG = 4)
 C              LARGE FAMILY    N    2    1    1 (IBSFLAG = 4)
 C              LARGE DUALFAMILY    N    2    1    1 (IBSFLAG = 4)
 
 C              LARGE POINTCHARGE (IBSFLAG = 1)
 C              LARGE NOBASIS     (IBSFLAG = 1) (alias for LARGE POINTCHARGE)
+C              LARGE    0        (IBSFLAG = 1) (a third way to specify a point charge)
 C
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),'(A5,1X,A14)',IOSTAT=IOS) 
@@ -1139,6 +1139,7 @@ C
                   IBSFLAG = 1
                   IQM(I,1) = 0
                   IZATOM(I) = 0
+                  GNUEXP(I) = QEXP ! point nucleus unless finite nucleus was specified by user
                ELSE IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
                   IBSFLAG = 1
                   READ (MLINE(NMLINE)(13:),*,IOSTAT=IOS)
@@ -1218,8 +1219,10 @@ C
                   READ (MLINE(NMLINE)(18:),*,ERR=9000)
      &                   NFILES,(BSFIL(K),K=1,NFILES)
                   IF ( NFILES .EQ. 0 ) THEN
-                     WRITE(*,*) 
-     &                 'PLEASE SPECIFY THE NUMBER OF BASIS SET FILES'
+                     WRITE(LUPRI,'(/A,I0,A)')
+     &                 'PLEASE SPECIFY THE NUMBER OF BASIS SET FILES'//
+     &                 ' in .mol line ',NMLINE,':'
+                     WRITE(LUPRI,*) MLINE(NMLINE)
                      GOTO 9000
                   END IF
 C
@@ -1233,6 +1236,10 @@ C                 Assume it is 'LARGE   2    1....'
                     WRITE(LUPRI,*) MLINE(NMLINE)
                     CALL QUIT('Error in basis set reading')
                   ENDIF
+                  IF (IQM(I,1) .EQ. 0) THEN ! point charge
+                     IZATOM(I) = 0
+                     GNUEXP(I) = QEXP ! point nucleus unless finite nucleus was specified by user
+                  END IF
                END IF
 
 C
@@ -2035,8 +2042,7 @@ C*****************************************************************************
 C
         CHARGE(NUCIND) = Q
         IZATOM(NUCIND) = NQ
-C       ... if point charge this is reset outside to -1234567890
-C           to tell this is a point charge /hjaaj Nov 2003
+C       ... if point charge IZATOM(NUCIND) is reset outside to 0
         GNUEXP(NUCIND) = GEXP
   100 CONTINUE   !  DO 100 N = 1,NONTVC
       RETURN
@@ -4017,7 +4023,6 @@ C******************************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
@@ -4029,6 +4034,7 @@ C
 #include "symmet.h"
 #include "aosotr.h"
 #include "dgroup.h"
+#include "orgcom.h"
 C     
 C
 C
@@ -4049,9 +4055,6 @@ C     * 30      - loop over second symmetry independent centre
 C     * 40+IF   - loop over dependent centers
 C     ************************************************************
 C
-      DPNUC(1) = D0
-      DPNUC(2) = D0
-      DPNUC(3) = D0
       NUCDEP    = 0
       NUCPRE(1) = 0
       NFLOAT    = 0
@@ -4066,12 +4069,6 @@ C
          NUCPRE(N + 1) = NUCPRE(N) + NDEG
          IF (NINT(CHARGE(N)) .EQ. 0 .AND. NAMN(N) .NE. 'cav')
      &        NFLOAT = NFLOAT + 1
-         IF (ISYMAX(1,1) .EQ. 0)
-     &   DPNUC(1) = DPNUC(1) + CORD(1,N)*CHARGE(N)*FMULT(IVARB)
-         IF (ISYMAX(1,1) .EQ. 0)
-     &   DPNUC(2) = DPNUC(2) + CORD(2,N)*CHARGE(N)*FMULT(IVARB)
-         IF (ISYMAX(1,1) .EQ. 0)
-     &   DPNUC(3) = DPNUC(3) + CORD(3,N)*CHARGE(N)*FMULT(IVARB)
          II = 0
          DO 200 LA = 0,MAXREP
            IF (IAND(IVARB,LA) .EQ. 0) THEN ! filter out generator products containing generators that stabilise the center
@@ -4106,7 +4103,7 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   200    CONTINUE
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
-      IF (LINEAR .EQV. .TRUE.) THEN
+      IF (LINEAR) THEN
         IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) 
      &    ATOMIC = .TRUE.
       ENDIF
@@ -4202,7 +4199,6 @@ C*************************************************************************
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (D0 = 0.0D0)
 C
       LOGICAL DOOWN
       DIMENSION LVALUE(MXAQN), MVALUE(MXAQN), NVALUE(MXAQN),
@@ -4255,7 +4251,7 @@ C
                 NVAR = MOD(NVALUE(J),2)*ISYMAX(3,1)
                 DO 220 K = 1, KHK(I)
                    IJK = IJK + 1
-                   IF (ABS(CSP(IJK)).GT.D0) THEN
+                   IF (ABS(CSP(IJK)).GT.0.0D0) THEN
                       IF (ISYMAO(I,K) .EQ. -1) THEN
                          ISYMAO(I,K) = IEOR(LVAR,IEOR(MVAR,NVAR))
                       ELSE
@@ -4654,6 +4650,7 @@ C
       INTEGER NBASE(8), NSIGN(8)
       DIMENSION WORK(LWORK)
 C
+#include "infpar.h"
 #include "nuclei.h"
 #include "frame.h"
 #include "symmet.h"
@@ -4815,14 +4812,10 @@ C
      &       ,'  WARNING:  maybe coordinates were in Bohr, '//
      &        'but DIRAC were told they were in Angstrom ?'
             END IF
-         END IF
 C
-         IF (IPREAD .GE. 0) THEN
-            WRITE(LUPRI,'(/A,F18.12,A/A,3F18.8,A)')
+            WRITE(LUPRI,'(/A,F18.12,A)')
      &   '   Nuclear repulsion energy                          :',
-     &       POTNUC,' Hartree',
-     &   '   Nuclear contribution to electric dipole moment    :',
-     &       DPNUC(1:3),' a.u.'
+     &       POTNUC,' Hartree'
          END IF
       END IF
       RETURN
@@ -6122,8 +6115,9 @@ C
          NONT(ITYP) = 1
          CHNON(ITYP) = CHARGE(I)
  600  CONTINUE
-C     define atom number in IZATOM /hjaaj Mar 2004
-C     TODO : define multiple basis sets and point charges
+C     Define atom number in IZATOM /hjaaj Mar 2004
+C     Point charges are later reset to IZATOM(I) = 0
+C     TODO : define multiple basis sets
       DO I = 1, NUCIND
          IZATOM(I) = NINT(CHARGE(I))
       END DO

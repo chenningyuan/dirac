@@ -19,13 +19,17 @@ f.add(from_string  = ' --------------- STEX Final Output --------------',
       mask = [1,2,3,4], # miro: compare only first four numbers, avoid comparing components
       ignore_below = 1.0e-9)
 
-test.run(['gs.inp'], ['LiH-c1.mol'], args='--get "DFCOEF=DFCOEF.GS"')
+test.run(['gs.inp'], ['LiH-c1.mol'],args='--outcmo')
+if os.path.isfile('CHECKPOINT.h5'):
+    ext = '.h5'
+elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
+    ext = '.noh5.tar.gz'
+shutil.copy('CHECKPOINT'+ext, 'gs_LiH'+ext)
 
-test.run(['ion.inp'], ['LiH-c1.mol'], args='--put "DFCOEF.GS=DFCOEF" --get "DFCOEF=DFCOEF.ION"')
+test.run(['ion.inp'], ['LiH-c1.mol'], args='--incmo --outcmo')
+shutil.move('CHECKPOINT'+ext, 'ION'+ext)
+shutil.move('gs_LiH'+ext, 'CHECKPOINT'+ext)
 
-test.run(['stex.inp'], ['LiH-c1.mol'], f, args='--put "DFCOEF.GS=DFCOEF" --copy="DFCOEF.ION"')
-
-os.unlink('DFCOEF.ION')
-os.unlink('DFCOEF.GS')
+test.run(['stex.inp'], ['LiH-c1.mol'], f, args='--incmo --put="ION.h5"')
 
 sys.exit(test.return_code)

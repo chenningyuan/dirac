@@ -18,7 +18,7 @@ def configure(options, input_files, extra_args):
         exe = 'dirac.x'
 
     command = []
-    command.append('python {0}'.format(launcher_full_path))
+    command.append('python3 {0}'.format(launcher_full_path))
     command.append('--dirac={0}'.format(path.join(options.binary_dir, exe)))
     command.append('--noarch --nobackup')
     command.append('--inp={0} --mol={1}'.format(inp, mol))

@@ -46,7 +46,7 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 10, NTABLE = 41)
+      PARAMETER (NDIR = 11, NTABLE = 44)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -72,7 +72,7 @@
 !
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',             &
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',             &
-     &             '*STEX  ','*OPENRS'/
+     &             '*STEX  ','*OPENRS','*NQCC  '/
 !                     1         2         3         4
       DATA TABLE  /'.DIPOLE','.QUADRU','.POLARI','.MAGNET',             &
 !                     5         6         7         8
@@ -93,8 +93,8 @@
      &             '.C6    ','.SPIN-R','.BXLAO ','.BYLAO ',             &
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
-     &             '.RDCCDM'/
-
+!                    41        42        43        44
+     &             '.RDCCDM','.PVCSR ','.HDF5IO','xXXXXXX' /
 !
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -104,6 +104,10 @@
 !
       IPRPRP       = 0
       DOEXP        = .FALSE.
+!     by default disable data transfer via the hdf5 file(s), until
+!     support is stable for all functionality related to ccsd, such as
+!     mp2fnos
+      HDF5IO       = .FALSE.
       DOESR        = .FALSE.
       DOXLR        = .FALSE.
       DOXPP        = .FALSE.
@@ -122,6 +126,7 @@
       SPINRO       = .FALSE.
       PVC_SHIELD   = .FALSE.
       PVC_SPINSPIN = .FALSE.
+      PVC_SPINRO   = .FALSE.
       SPNSPN       = .FALSE.
       EFG          = .FALSE.
       EFN          = .FALSE.
@@ -129,6 +134,7 @@
       EFTNTL       = .FALSE.
       OPTROT       = .FALSE.
       NQCC         = .FALSE.
+      NQCCcart     = .FALSE.
       DSO          = .FALSE.
       NSTDIA       = .FALSE.
       MSUSCDIA     = .FALSE.
@@ -207,7 +213,7 @@
      &                117,118,119,120,121,122,123,124,                  &
      &                125,126,127,128,129,130,131,132,                  &
      &                133,134,135,136,137,138,139,140,                  &
-     &                141), I
+     &                141,142,143,144), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -358,7 +364,7 @@
             CALL DEF_VERDET(WORK,LWORK)
             GO TO 100
  126     CONTINUE
-!&&&& ROTG - rotational g-tensor according to Aucar et al
+!&&&& ROTG - Molecular rotational g-tensor according to Aucar et al
             ROTG  = .TRUE.
             DOXLR = .TRUE.
             GO TO 100
@@ -399,7 +405,7 @@
             DOVDW  = .TRUE.
             GO TO 100
   134    CONTINUE 
-!&&&& SPIN-R - spin-rotation constant according to Aucar et al
+!&&&& SPIN-R - Nuclear spin-rotation tensor according to Aucar et al
             DOEXP = .TRUE.
             DOXLR = .TRUE.
             SPINRO = .TRUE.
@@ -431,7 +437,7 @@
 !&&&& EFFDE2; calculate effective electronic densities at the nuclei:old code
             DOEXP  = .TRUE.
             EFFDE2 = .TRUE. 
-         GO TO 100
+            GO TO 100
   140    CONTINUE
 #ifdef MOD_LAO_REARRANGED
 !&&&& SHIEL2, calculate shielding+london, but with rearranged terms
@@ -446,6 +452,19 @@
 ! quick hack to read CC density matrix without the need to run CC as wavefunction
             call set_prop_flags_ccsd()
             GO TO 100
+  142    CONTINUE
+!&&&& Parity-violation contribution to nuclear spin-rotation constant
+            DOXLR      = .TRUE.
+            PVC_SPINRO = .TRUE.
+            IF(NBSYM .GT. 1) CALL QUIT('.PVCSR only for C1 symmetry')
+            GOTO 100
+  143    CONTINUE
+!&&&& .HDF5IO
+            HDF5IO = .TRUE. 
+            GOTO 100
+  144    CONTINUE
+!&&&& xXXXXXX
+            GOTO 100
 !
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -469,8 +488,8 @@
       END DO
 !
 !=========================================================================
-!MI   For magnetic susceptibilities, NMR shielding constants and rotational
-!MI   g-tensors, operator centers might be changed
+!MI   For magnetic susceptibilities, NMR shielding constants and
+!MI   molecular rotational g-tensors, operator centers might be changed
       WRITE(LUPRI,'(1X,A)')                                             &
      &'These initial settings of center and origins'//                  &
      &' might be changed later:'
@@ -512,7 +531,7 @@
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -574,6 +593,10 @@
          call quit('*OpenRSP not included in this version')
 #endif
       go to 200
+!     *NQCC
+   11 CONTINUE
+         CALL NQCC_INPUT(WORD,WORK,LWORK)
+         GO TO 200
 
     1 CONTINUE
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
@@ -3032,11 +3055,6 @@
 !     Open LU1INT if not opened
 !
       IF (DOPRP) THEN
-         INQUIRE(FILE='AOPROPER',OPENED=FOPEN)
-         IF (.NOT. FOPEN) THEN
-            OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',           &
-     &         FILE='AOPROPER')
-         END IF
 !
          call legacy_lwork_get(LWORK)
          call alloc(WORK,LWORK,id='WORK in MINPRP')
@@ -3046,11 +3064,6 @@
 !
          CALL ONEGEN(WORK,LWORK)
          call dealloc(WORK)
-!
-!        Close AOPROPER if it was closed on entry to
-!        MINPRP.
-!
-         IF (.NOT. FOPEN) CLOSE(LU1INT,STATUS = 'KEEP')
 !
 !
 !***********************************************************************

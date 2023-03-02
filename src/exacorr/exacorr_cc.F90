@@ -39,7 +39,8 @@ module exacorr_cc
 !        The implementation is based on the parallel ExaTensor library
 
 !        Written by Lucas Visscher, winter 2016/2017
-
+         
+         use labeled_storage
          use interface_to_mpi
          use exacorr_global
          use exacorr_tensor_methods
@@ -51,8 +52,8 @@ module exacorr_cc
          implicit none
 
          type(exacc_input), intent(in) :: exa_input
-
-         integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
+         type(file_info_t)             :: exacc_file
+         integer                       :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
 
          integer(INTD) :: my_role
          integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
@@ -61,9 +62,9 @@ module exacorr_cc
          complex(8)                     :: result_val
 
 !        Common tensors
-         type(exatns_comm_tens) :: comm_t
+         type(exatns_comm_tens_t) :: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(exatns_intg_tens) :: int_t
+         type(exatns_intg_tens_t) :: int_t
 !        Lambda tensors
          type(tens_rcrsv_t) :: l1_tensor, l2_tensor
 !        scalars (need to be defined as tensor types)
@@ -130,9 +131,7 @@ module exacorr_cc
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
 
-         if (my_MPI_rank == 0) then
-            call print_exainput(exa_input,int(ao_space%get_root_id(ierr)))
-         end if
+         if (my_MPI_rank == 0) call print_exainput(exa_input,int(ao_space%get_root_id(ierr)))
 
          !Create all id and root arrays, neccessary for exatns_tensor_create
          ao_space_root=ao_space%get_root_id(ierr)
@@ -177,6 +176,14 @@ module exacorr_cc
          if(ierr.eq.EXA_SUCCESS) then
             ierr=exatns_process_role(my_role) ! only EXA_DRIVER will return immediately
             if(my_role.eq.EXA_DRIVER) then
+
+            !start creating EXACC
+            call print_date("MO occupation data to EXACC file")
+            exacc_file%status = -1
+            exacc_file%type = 2
+            exacc_file%name = "EXACC.h5"
+            call lab_write(exacc_file,'nocc',idata=exa_input%nocc)
+            call lab_write(exacc_file,'mo_occ',idata=exa_input%mo_occ)
 
 !           Create and initialize scalars that are to be used as tensors in contractions
             ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)
@@ -749,8 +756,8 @@ module exacorr_cc
          use exacorr_tensor_methods
 
 !        Input
-         type(exatns_comm_tens), intent(inout) :: comm_t
-         type(exatns_intg_tens), intent(inout) :: int_t
+         type(exatns_comm_tens_t), intent(inout) :: comm_t
+         type(exatns_intg_tens_t), intent(inout) :: int_t
          type(space_dims),intent(in) :: dims
          integer(INTD) :: occ_space_id, vir_space_id
          integer(INTL) :: occ_space_root, vir_space_root
@@ -992,8 +999,8 @@ module exacorr_cc
          logical :: debug_local = .false.
 
 !        Input
-         type(exatns_comm_tens), intent(inout) :: comm_t
-         type(exatns_intg_tens), intent(inout) :: int_t
+         type(exatns_comm_tens_t), intent(inout) :: comm_t
+         type(exatns_intg_tens_t), intent(inout) :: int_t
          type(space_dims),intent(in) :: dims
          integer(INTD) :: occ_space_id, vir_space_id
          integer(INTL) :: occ_space_root, vir_space_root
@@ -1422,9 +1429,9 @@ module exacorr_cc
          use exacorr_tensor_methods
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(exatns_comm_tens), intent(inout) :: comm_t
-         type(exatns_intg_tens), intent(inout) :: int_t
-         type(exatns_lambda_tens)              :: lambda_t
+         type(exatns_comm_tens_t), intent(inout) :: comm_t
+         type(exatns_intg_tens_t), intent(inout) :: int_t
+         type(exatns_lambda_tens_t)              :: lambda_t
 !        denominator
          type(denom_t)      :: denom
 !        solution tensors
@@ -1825,10 +1832,10 @@ module exacorr_cc
          use exacorr_tensor_methods
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(exatns_comm_tens), intent(inout) :: comm_t
-         type(exatns_comm_tens) :: comm_t_CC2
-         type(exatns_intg_tens), intent(inout) :: int_t
-         type(exatns_lambda_tens)              :: lambda_t, lambda_t_CC2
+         type(exatns_comm_tens_t), intent(inout) :: comm_t
+         type(exatns_comm_tens_t) :: comm_t_CC2
+         type(exatns_intg_tens_t), intent(inout) :: int_t
+         type(exatns_lambda_tens_t)              :: lambda_t, lambda_t_CC2
 !         denominator
          type(denom_t)      :: denom
 !        solution tensors
@@ -2295,7 +2302,7 @@ module exacorr_cc
          integer(INTD),intent(in)              :: ao_space_id
          class(h_space_t), pointer, intent(in) :: ao_space
 !        target integral tensors to be filled and given back to the caller
-         type(exatns_intg_tens), intent(inout) :: int_t
+         type(exatns_intg_tens_t), intent(inout) :: int_t 
          integer, intent(in)                   :: print_level 
 
          integer(INTL)              :: ao_space_root,subspace_id(4),num_subspaces
@@ -2761,7 +2768,7 @@ module exacorr_cc
           implicit none
   
           integer                                :: mode
-          type(exatns_intg_tens), intent(inout)  :: int_t
+          type(exatns_intg_tens_t), intent(inout):: int_t
           integer(INTL),dimension(2), intent(in) :: oo_root, ov_root, vv_root
           integer(INTD),dimension(2), intent(in) :: oo_id, ov_id, vv_id
           type(set_energy_t)                     :: orb_set
@@ -2851,8 +2858,8 @@ module exacorr_cc
 
           implicit none
   
-          type(exatns_comm_tens), intent(inout)  :: comm_t
-          type(exatns_intg_tens), intent(inout)  :: int_t
+          type(exatns_comm_tens_t), intent(inout):: comm_t
+          type(exatns_intg_tens_t), intent(inout):: int_t
           integer(INTL),dimension(2), intent(in) :: oo_root, ov_root, vv_root
           integer(INTD),dimension(2), intent(in) :: oo_id, ov_id, vv_id
           type(set_ff_t)                         :: ff_set
@@ -2918,13 +2925,14 @@ module exacorr_cc
         end subroutine set_fock_exat
 
         subroutine define_H0_exat(comm_t, oooo, oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
-                              f_delta,denom,orb_set,scf_energy,mode,nff,level_shift,print_level)
+                              f_delta,denom,orb_set,scf_energy,mode,nff,level_shift,print_level,&
+                              keep_diagonal)
 
             use exacorr_tensor_methods
 
             implicit none
   
-            type(exatns_comm_tens), intent(inout)  :: comm_t
+            type(exatns_comm_tens_t), intent(inout):: comm_t
             type(tens_rcrsv_t)                     :: oooo
             integer(INTL),dimension(2), intent(in) :: oo_root, ov_root, vv_root
             integer(INTD),dimension(2), intent(in) :: oo_id, ov_id, vv_id 
@@ -2939,6 +2947,16 @@ module exacorr_cc
             type(tens_rcrsv_t)         :: H0_val, H0_one, orb_tensor
             integer(INTD)              :: ierr
             complex(8)                 :: result_val
+
+            logical, intent(in), optional:: keep_diagonal
+            logical            :: keep_diagonal_local
+ 
+            if (present(keep_diagonal)) then
+              keep_diagonal_local = keep_diagonal
+            else
+              keep_diagonal_local = .false.
+            end if
+
 
             ! Allocate two auxilliary tensors needed to extract results or multiply by one
             ierr=exatns_tensor_create(H0_val,"H0_val",EXA_DATA_KIND_C8)
@@ -2959,13 +2977,15 @@ module exacorr_cc
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             ierr=exatns_tensor_init(orb_tensor,orb_set)
             if(ierr.ne.EXA_SUCCESS) call quit('init_fock3: set orbitals failed!')
-            ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%foo,orb_tensor,H0_one, MINUS_ONE)
+            if (.not.keep_diagonal_local) &
+               ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%foo,orb_tensor,H0_one, MINUS_ONE)
             ierr=exatns_tensor_destroy(orb_tensor)
             ierr=exatns_tensor_create(orb_tensor,"orb_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             ierr=exatns_tensor_init(orb_tensor,orb_set)
             if(ierr.ne.EXA_SUCCESS) call quit('init_fock4: set orbitals failed!')
-            ierr=exatns_tensor_contract("F(a,b)+=E(a,b)*O()",comm_t%fvv,orb_tensor,H0_one, MINUS_ONE)
+            if (.not.keep_diagonal_local) &
+                           ierr=exatns_tensor_contract("F(a,b)+=E(a,b)*O()",comm_t%fvv,orb_tensor,H0_one, MINUS_ONE)
             ierr=exatns_tensor_destroy(orb_tensor)
             if (print_level >0) call print_date('orbital energies subtracted from the diagonal')
             
@@ -2976,7 +2996,11 @@ module exacorr_cc
               ierr=exatns_tensor_contract("R()=F(i,j)*F(i,j)",H0_val,comm_t%foo,comm_t%foo)
               ierr=exatns_tensor_get_scalar(H0_val,result_val)
               off_diag=real(result_val,8) ! Casting into real(8)
-              write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", off_diag
+              if (.not.keep_diagonal_local) then 
+                write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", off_diag
+              else
+                write(*,*) "    Norm of Fock matrix (OO, all        ) = ", off_diag
+              end if
             
               ierr=exatns_tensor_init(H0_val, ZERO)
               ierr=exatns_tensor_contract("R()=F(i,a)*F(i,a)",H0_val,comm_t%fov,comm_t%fov)
@@ -2988,7 +3012,11 @@ module exacorr_cc
               ierr=exatns_tensor_contract("R()=F(a,b)*F(a,b)",H0_val,comm_t%fvv,comm_t%fvv)
               ierr=exatns_tensor_get_scalar(H0_val,result_val)
               off_diag=real(result_val,8) ! Casting into real(8)
-              write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", off_diag
+              if (.not.keep_diagonal_local) then
+                write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", off_diag
+              else
+                write(*,*) "    Norm of Fock matrix (VV, all        ) = ", off_diag
+              end if
               write(*,*) ""
             end if 
 
@@ -3060,7 +3088,7 @@ module exacorr_cc
 
           implicit none
 
-          type(exatns_comm_tens)                 :: comm_t
+          type(exatns_comm_tens_t)                 :: comm_t
           type(delta_t)                          :: f_delta 
           type(denom_t)                          :: denom
           type(set_energy_t)                     :: orb_set 
@@ -3134,8 +3162,8 @@ module exacorr_cc
             use interface_to_mpi
 
             real(8), intent(out)                    :: t_energy(3)
-            type(exatns_comm_tens)                  :: comm_t
-            type(exatns_intg_tens)                  :: int_t
+            type(exatns_comm_tens_t)                  :: comm_t
+            type(exatns_intg_tens_t)                  :: int_t
             class(h_space_t), pointer               :: occ_space
             type(exacc_input), intent(in)           :: exa_input
             type(denom_t)                           :: denom
@@ -3737,8 +3765,8 @@ module exacorr_cc
             use exacorr_ao_to_mo, only : print_tensornorm2
 
             real(8), intent(out)                    :: t_energy(3)
-            type(exatns_comm_tens)                  :: comm_t
-            type(exatns_intg_tens)                  :: int_t
+            type(exatns_comm_tens_t)                  :: comm_t
+            type(exatns_intg_tens_t)                  :: int_t
             type(delta_t)                           :: f_delta  ! fill delta matrix
             type(denom3_t)                          :: denom3
             integer                                 :: mo_occ(:)
