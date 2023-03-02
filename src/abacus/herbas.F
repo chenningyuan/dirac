@@ -148,7 +148,6 @@ C     perform an integral transformation to the spinor basis
 C
       DO_SPLIT = (DOTRA .OR. DOKRMC .OR. DOMP2 .OR. DOMP2NO)
       IF (PARCAL) DO_SPLIT = .true. ! if parallel, then also split for direct SCF
-
 CDIRAC:..by default, allow contraction only for elements Z.LE.36
 C        except for 2c NR and RECP calculations
       DO_UNCONT = INTQ.GT.36 .AND. .NOT.(NONREL.OR.LEVYLE.OR.ECPCALC)
@@ -1587,13 +1586,13 @@ C/* Deck find_pos */
      &   LUBAS, IPRINT)
 #include "implicit.h"
 #include "priunit.h"
-C*********************************************************
-C* Variable declarations:                                *
-C*     SIGN - The first sign in a sentence, to find out  *
-C*            what kind of sentence it is.               *
-C*     STRING - A character string to help bulletproofing*
-C*              the subroutine.                          *
-C*********************************************************
+C************************************************************
+C* Variable declarations:                                   *
+C*     SIGN - The first sign in a sentence, to find out     *
+C*            what kind of sentence it is.                  *
+C*     STRING - A character string to help bulletproofing   *
+C*              the subroutine.                             *
+C************************************************************
       LOGICAL   NEWEL
       CHARACTER SIGN
       CHARACTER*300 STRING
