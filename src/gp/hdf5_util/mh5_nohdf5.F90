@@ -14,7 +14,7 @@ integer(kind=iwp), parameter :: wp = real64, MOLCAS_C_REAL = c_double
 
 private
 
-public :: mh5_is_available, mh5_create_file, mh5_open_file_rw, mh5_open_file_r, mh5_close_file, &
+public :: mh5_is_available, mh5_open_file_a, mh5_create_file, mh5_open_file_rw, mh5_open_file_r, mh5_close_file, &
           mh5_is_hdf5, mh5_open_group, mh5_create_group, mh5_close_group, mh5_exists_group, &
           mh5_exists_attr, mh5_open_attr, mh5_close_attr, mh5_exists_dset, mh5_open_dset, mh5_close_dset, mh5_create_attr_int, &
           mh5_create_attr_real, mh5_create_attr_str, mh5_put_attr, mh5_get_attr, mh5_init_attr, mh5_fetch_attr, &
@@ -103,6 +103,7 @@ interface mh5_put_dset
                       mh5_put_dset_scalar_str, &
                       mh5_put_dset_array_int, &
                       mh5_put_dset_array_real, &
+                      mh5_put_dset_array_real_3d, &
                       mh5_put_dset_array_str
 end interface mh5_put_dset
 
@@ -165,6 +166,13 @@ function mh5_create_file(filename) result(lu)
   character(len=4096) :: realname, c_name
 end function mh5_create_file
 
+function mh5_open_file_a(filename) result(lu)
+  integer(kind=iwp) :: lu
+  character(len=*), intent(in) :: filename
+  integer(kind=iwp) :: lrealname
+  character(len=4096) :: realname, c_name
+end function mh5_open_file_a
+
 function mh5_open_file_rw(filename) result(lu)
   integer(kind=iwp) :: lu
   character(len=*), intent(in) :: filename
@@ -192,7 +200,7 @@ end function mh5_is_hdf5
 
 ! group
 
-function mh5_exists_group(lu,groupname) result(exists)
+function mh5_exists_group(lu,groupname) result(groupid)
   !LV: Added this "missing" HDF5 function for convenience.
   integer(kind=iwp) :: groupid
   integer(kind=iwp), intent(in) :: lu
@@ -542,6 +550,13 @@ subroutine mh5_put_dset_array_real(dsetid,buffer,exts,offs)
   integer(kind=iwp), intent(in), optional :: exts(*), offs(*)
   integer(kind=iwp) :: rc
 end subroutine mh5_put_dset_array_real
+
+subroutine mh5_put_dset_array_real_3d(dsetid,buffer,exts,offs)
+  integer(kind=iwp), intent(in) :: dsetid
+  real(kind=wp), intent(in) :: buffer(:,:,:)
+  integer(kind=iwp), intent(in), optional :: exts(*), offs(*)
+  integer(kind=iwp) :: rc
+end subroutine mh5_put_dset_array_real_3d
 
 subroutine mh5_put_dset_array_str(dsetid,buffer,exts,offs)
   integer(kind=iwp), intent(in) :: dsetid

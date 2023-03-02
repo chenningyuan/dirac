@@ -47,8 +47,8 @@ C***********************************************************************
       use read_xyzfile, only: pelib_sym_xyz
 #endif
       use x2cmod_cfg
-#ifdef MOD_AOOSOC
-      use atomic_oo_order_so_correction_cfg
+#ifdef MOD_XAMFI
+      use xamfi_global_parameters
 #endif
 
 #include "implicit.h"
@@ -223,7 +223,7 @@ C     Initialize PE library
 !     *X2C
 !     *PCM
 !     *PCMSOL      
-!     *AooSOC
+!     *X-AMFI
 !     *QCORR
 !     ignores rest
       call read_menu_input('DIRAC.INP', lucmd, 'ALL', input_found)
@@ -243,21 +243,23 @@ C     Initialize PE library
         call quit('*** fragment X2C calculation not possible. ***')
       end if
 !     consistency check for atomic oo-order SOC contributions
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
       if(aoomod)then
-        write(lupri,*) 'Information about the oo-order SOC module:'
-        write(lupri,*) '* atomic oo-order SOC module active'
+        write(lupri,'(/a/)') 'Information about the X-AMFI module:'
         x2c_2c_mmf_mos = .false.
         if(x2cmod_mmf)then
-          write(lupri,*) '  - generate 2e-SRCs/SOCs to be added to'//
-     &                   ' the X2C Hamiltonian (of a molecule)'
+          write(lupri,'(a/)') ' - generate atomic two-electron '//
+     &                   ' scalar- and spin-orbit corrections for'//
+     &                   ' subsequent use in X2C calculations.'
           x2c_add_amfi   = -1
           x2c_2c_mmf_mos = .true.
         else
-          write(lupri,*) '  - add 2e-SOCs to the X2C Hamiltonian'
+          write(lupri,'(a/)') ' - add atomic two-electron '//
+     &                   ' scalar- and spin-orbit corrections '//
+     &                   ' to the X2C Hamiltonian.'
         end if
         if(.not.x2c)then
-          call quit(' aooSOC does not make sense in NON-2c '//
+          call quit(' X-AMFI does not make sense in NON-2c '//
      &      ' relativistic runs')
         end if
       end if
@@ -1009,8 +1011,8 @@ C
 C***********************************************************************
        use dirac_cfg
        use x2cmod_cfg
-#ifdef MOD_AOOSOC
-       use atomic_oo_order_so_correction_cfg
+#ifdef MOD_XAMFI
+       use xamfi_global_parameters
 #endif
 
 #include "implicit.h"
@@ -1142,10 +1144,7 @@ C     ... Average-of-Configuration (AOC) is default for Hartree-Fock,
 C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
       IF (dirac_cfg_dft_calculation) AOC = .FALSE.
-!     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
-#ifdef MOD_AOOSOC
-      if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
-#endif
+
       ATOMST = .FALSE.
       ATHUCK = .FALSE.
       HUCPAR = 1.5D0
@@ -5190,14 +5189,14 @@ C***********************************************************************
       use xc_derv
       use interface_functional_read
       use x2cmod_cfg
-#ifdef HAS_PCMSOLVER      
+#ifdef HAS_PCMSOLVER
       use pcmmod_cfg
 #endif
 #ifdef HAS_PELIB
       use pe_variables, only: peqm
 #endif
-#ifdef MOD_AOOSOC
-      use atomic_oo_order_so_correction_cfg
+#ifdef MOD_XAMFI
+      use xamfi_global_parameters
 #endif
 
 #include "implicit.h"
@@ -5234,7 +5233,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*aooSOC','*PEQM  ','*PCMSOL'/
+     &             '*PCM   ','*X-AMFI','*PEQM  ','*PCMSOL'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -6203,10 +6202,8 @@ CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
         WRITE(LUPRI,'(2X,A)') '- BSS with properties !'
        ENDIF
 
-       IF(DO2C4C)THEN
-         IF(GAUNT)THEN ! check whether it has been included already in INTGEN_SAVE
-           IF(IBTAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
-         END IF
+       IF(GAUNT)THEN ! check whether it has been included already in INTGEN_SAVE
+         IF(IBTAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
        END IF
 
 CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR
@@ -7036,7 +7033,7 @@ CMI  ... reading input routine for AMFI+RELSCF
         call move_to_next_star(word, lucmd)
         go to 200
    10 continue
-      ! this is a cheat so that *aooSOC section is parsed
+      ! this is a cheat so that *X-AMFI section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200

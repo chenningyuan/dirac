@@ -1,7 +1,6 @@
-  ** interface to 64-bit integer MPI enabled **
+  ** interface to 32-bit integer MPI enabled **
 
-DIRAC serial starts by allocating 1000000000 words (   7629.39 MB -      7.451 GB)
- of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -82,22 +81,24 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *    Radovan Bast             UiT The Arctic University of      Norway        *
  *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
  *    Trond Saue               Universite Toulouse III           France        *
  *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
  *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
  *    Sebastien Dubillard      University of Strasbourg          France        *
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Elke Fasshauer           University of Aarhus              Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
  *    Loic Halbert             Universite de Lille               France        *
@@ -105,15 +106,16 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Trygve Helgaker          University of Oslo                Norway        *
  *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
- *    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
  *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
- *    Nanna Holmgaard List     Stanford University               USA           *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
  *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
@@ -125,50 +127,52 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
  *    Johann V. Pototschnig    Technical University Graz         Austria       *
- *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
  *    Michal Repisky           UiT The Arctic University of      Norway        *
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
- *    Bruno Senjean            University of Leiden              Netherlands   *
- *    Avijit Shee              University of Michigan            USA           *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
  *    Ayaki Sunaga             Kyoto University                  Japan         *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
  *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
- *    Marta L. Vidal           Technical University of Denmark   Denmark       *
+ *    Marta L. Vidal           Cardiff University                UK            *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
  *    Toke Winther             University of Southern Denmark    Denmark       *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
  *                                                                             *
  *    For more information about the DIRAC code see http://diracprogram.org    *
  *                                                                             *
  *    This is an experimental code. The authors accept no responsibility       *
  *    for the performance of the code or for the correctness of the results.   *
  *                                                                             *
- *    The code (in whole or part) is not to be reproduced for further          *
- *    distribution without the written permission of the authors or            *
- *    their representatives.                                                   *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
  *                                                                             *
  *    If results obtained with this code are published, an                     *
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC21 (2021), written by                                       *
- *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast, and A. S. P. Gomes      *
- *    with contributions from I. A. Aucar, V. Bakken, K. G. Dyall,             *
- *    S. Dubillard, U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer,        *
- *    T. Fleig, O. Fossgaard, L. Halbert, E. D. Hedegaard, T. Helgaker,        *
- *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
- *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, N. H. List,          *
- *    H. S. Nataraj, M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen,          *
- *    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,             *
- *    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud,  *
- *    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,*
- *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
- *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *
+ *    Release DIRAC22 (2022), written by                                       *
+ *    H. J. Aa. Jensen, R. Bast, A. S. P. Gomes, T. Saue, and L. Visscher,     *
+ *    with contributions from I. A. Aucar, V. Bakken, C. Chibueze,             *
+ *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
+ *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, L. Halbert,         *
+ *    E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn, M. Ilias,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj, M. K. Nayak,         *
+ *    P. Norman, M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos,     *
+ *    Y. C. Park, J. K. Pedersen, M. Pernpointner, J. V. Pototschnig,          *
+ *    R. Di Remigio, M. Repisky, K. Ruud, P. Salek, B. Schimmelpfennig,        *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
  *    (see http://diracprogram.org).                                           *
  *                                                                             *
  *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *
@@ -179,61 +183,60 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | WIP-master-new-luciarel
-Commit hash   | 1a409e3d2
+Branch        | pub-master
+Commit hash   | 45db3ee91
 Commit author | Hans Joergen Aagard Jensen
-Commit date   | Thu Aug 19 16:29:15 2021 +0200
+Commit date   | Tue Feb 7 14:50:09 2023 +0100
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | andreas
-Compiled on server       | nyvang-work-ThinkPad-T460s
-Operating system         | Linux-4.15.0-156-generic
-CMake version            | 3.21.0-rc2
+Who compiled             | hjj
+Compiled on server       | adm-110765.pc.sdu.dk
+Operating system         | Linux-5.15.0-58-generic
+CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2021-09-16 12:48:17.321425
-Python version           | 2.7.1
-Fortran compiler         | /home/andreas/openmpi_gcc_7.2.0/bin/mpif90
-Fortran compiler version | 7.5.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp -fdefault-integer-8
-C compiler               | /home/andreas/openmpi_gcc_7.2.0/bin/mpicc
-C compiler version       | 7.5.0
-C compiler flags         |  -g  -fopenmp
-C++ compiler             | /home/andreas/openmpi_gcc_7.2.0/bin/mpicxx
-C++ compiler version     | 7.5.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
+Configuration time       | 2023-02-07 13:52:46.320985
+Fortran compiler         | /home/hjj/my_libs/openmpi/bin/mpif90
+Fortran compiler version | 11.3.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch  -fopenmp -fno-lto -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch  -fopenmp -fno-lto
+C compiler               | /home/hjj/my_libs/openmpi/bin/mpicc
+C compiler version       | 11.3.0
+C compiler flags         |  -g  -fopenmp -fno-lto -g  -fopenmp -fno-lto
+C++ compiler             | /home/hjj/my_libs/openmpi/bin/mpicxx
+C++ compiler version     | 11.3.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp -fno-lto -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp -fno-lto
 Static linking           | False
-64-bit integers          | True
+64-bit integers          | False
 MPI parallelization      | True
-MPI launcher             | /home/andreas/openmpi_gcc_7.2.0/bin/mpiexec
-Math libraries           | unknown
+MPI launcher             | /home/hjj/my_libs/openmpi/bin/mpiexec
+Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86_64-linux-gnu/libopenblas.so
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | USE_BUILTIN_BLAS;USE_BUILTIN_LAPACK;HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INT_STAR8;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+Compile definitions      | HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE;MOD_EXACORR
 
 EXACORR dependencies
 --------------------
-Exatensor source repo    | unknown
-Exatensor git hash       | unknown
-Exatensor configuration  | unknown
+Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
+Exatensor git hash       | 559373c25f80dfc39e6c081516e692db31d9d434
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT   TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=OPENMPI PATH_OPENMPI=/home/hjj/my_libs/openmpi BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/usr/lib/x86_64-linux-gnu
 
 
  LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
-
- * openMP activated,  thread limit - # processes - # threads: *****    4    1
-
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Sep 22 13:59:44 2021
-     Host name              : nyvang-work-ThinkPad-T460s              
+     Date and time (Linux)  : Tue Feb  7 17:43:30 2023
+     Host name              : adm-110765.pc.sdu.dk                    
+
+ * Opening checkpoint file 
+    - New checkpoint file created
 
 
 Contents of the input file
@@ -260,7 +263,7 @@ LUCIAREL
 3                                                                                                   
 4 6 / 3                                                                                             
 8 10 / 4                                                                                            
-10 10 / 9                                                                                           
+10 10 / 12                                                                                          
 .CIROOTS                                                                                            
 1 1                                                                                                 
 .MAX CI                                                                                             
@@ -268,6 +271,8 @@ LUCIAREL
 .MXCIVE                                                                                             
 36                                                                                                  
 .NOOCCN                                                                                             
+.THRECI                                                                                             
+ 1.0D-7                                                                                             
 *QCORR                                                                                              
 .REFFILE                                                                                            
 .CVORB                                                                                              
@@ -450,8 +455,9 @@ Represented as: C2v
     B2   k
     A2   i
 
-  QM-QM nuclear repulsion energy :      9.009284066678
+  Nuclear repulsion energy                       :      9.009284066678 Hartree
 
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.924399226660 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
@@ -580,7 +586,7 @@ H      0.0000000000  -0.8020112100   0.4931882205
 
 
 
-   Nuclear repulsion energy :    9.009284066678 Hartree
+   Nuclear repulsion energy                          :    9.009284066678 Hartree
 
                        * Total mass:    18.010565 amu
                        * Natural abundance:  99.730 %
@@ -703,14 +709,14 @@ H      0.0000000000  -0.8020112100   0.4931882205
  *KRCICALC: General set-up for KR-CI calculation:
 ===========================================================================
  * Inactive orbitals     :    0
- * Active orbitals       :   16
+ * Active orbitals       :   19
  * Active electrons      :   10
  * GAS space setup for   3 GAS space(s) : 
    - GAS space   1       :    3
     (constraints: min/max active electrons after space :   4/  6)
    - GAS space   2       :    4
     (constraints: min/max active electrons after space :   8/ 10)
-   - GAS space   3       :    9
+   - GAS space   3       :   12
     (constraints: min/max active electrons after space :  10/ 10)
  * CI program used       : LUCIAREL
  * Convergence of CI function(s) in the following symmetries:
@@ -725,7 +731,8 @@ H      0.0000000000  -0.8020112100   0.4931882205
 ===========================================================================
  Control parameters for KR-CI optimization
 ===========================================================================
- * Energy convergence threshold:   1.00D-07
+ * Gradient convergence threshold:  1.00D-04
+ * Energy convergence threshold:    1.00D-07
  * Maximum number of CI iterations for each symmetry: 200
  * Maximum subspace dimension set to  36
  * Integrals on slave nodes provided by the MASTER
@@ -864,8 +871,9 @@ Represented as: C2v
     B2   k
     A2   i
 
-  QM-QM nuclear repulsion energy :      9.009284066678
+  Nuclear repulsion energy                       :      9.009284066678 Hartree
 
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.924399226660 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
@@ -995,7 +1003,7 @@ H      0.0000000000  -0.8020112100   0.4931882205
 
 
 
-   Nuclear repulsion energy :    9.009284066678 Hartree
+   Nuclear repulsion energy                          :    9.009284066678 Hartree
 
                        * Total mass:    18.010565 amu
                        * Natural abundance:  99.730 %
@@ -1013,8 +1021,6 @@ H      0.0000000000  -0.8020112100   0.4931882205
                     z      0.92439923      2.34961022
 
                         1 Debye =   2.54177000 a.u. 
-
-Total time used in ONEGEN (CPU)  0.00398500s and (WALL)  0.00398443s
 
 
                        Generating Lowdin canonical matrix:
@@ -1047,18 +1053,11 @@ Total time used in ONEGEN (CPU)  0.00398500s and (WALL)  0.00398443s
                    ***                      Universities of                          ***
                    ***     Zuerich, Toulouse, Odense, Banska Bystrica and Tromsoe    ***
                    ***                                                               ***
-                   *** contact: stefan.knecht@phys.chem.ethz.ch                      ***
+                   *** contact: stefan.knecht@gmail.com                              ***
                    *********************************************************************
 
 
                    *** chosen path in X2C module: molecular X2C (with spin-orbit contributions)      
-
-
-                                Output from MODHAM
-                                ------------------
-
- * Applied strict kinetic balance !
- * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.
 
 
                                 Output from AMFIIN
@@ -1150,16 +1149,6 @@ Total time used in ONEGEN (CPU)  0.00398500s and (WALL)  0.00398443s
                    *********************************************************************
 
 
-
-                     SYMADD: Detection of molecular symmetry
-                     ---------------------------------------
-
- Symmetry test threshold:  5.00E-06
-
-    The molecule has been centered at center of mass
-
- Symmetry point group found: C(2v)          
-
  The following symmetry elements were found: X  Y     
 
 
@@ -1171,8 +1160,6 @@ Total time used in ONEGEN (CPU)  0.00398500s and (WALL)  0.00398443s
                     z      0.92439923      2.34961022
 
                         1 Debye =   2.54177000 a.u. 
-
-Total time used in ONEGEN (CPU)  0.00090900s and (WALL)  0.00089008s
 
 
                        Generating Lowdin canonical matrix:
@@ -1246,16 +1233,16 @@ Total no. of orbitals           (NORB):    40
 
   Number of determinants per double group irrep 
   ============================================= 
-              120536              120320                   0                   0
+              211478              211196                   0                   0
 
- (RSETCI) Number of determinants:       120536 (dimension       120536)
+ (RSETCI) Number of determinants:       211478 (dimension       211478)
 
- CPU (Wall) time for generation of determinants:  0.10003900s( 0.10003872s)
+ CPU (Wall) time for generation of determinants:  0.10560600s( 0.10600000s)
 
  (RSETWOP) Orbital classes:
      Inactive orbitals   :                                                   
-     Active orbitals     :    1..  16                                        
-     Secondary orbitals  :   17..  40                                        
+     Active orbitals     :    1..  19                                        
+     Secondary orbitals  :   20..  40                                        
 
  (ROPTST)  Start orbitals read from label NEWORB on file KRMCOLD
 
@@ -1271,30 +1258,30 @@ Total no. of orbitals           (NORB):    40
    - Beginning task   4 of   5 after      0. seconds and      0. CPU-seconds
    - Beginning task   5 of   5 after      0. seconds and      0. CPU-seconds
 
- - Starting symmetrization after           0.09 seconds
- - Finished symmetrization after           0.09 seconds
+ - Starting symmetrization after           0.04 seconds
+ - Finished symmetrization after           0.04 seconds
 
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Initializing MS4IND file            0.004 seconds
- Time in  Computing+transform. integral       0.088 seconds
+ Time in  Initializing MS4IND file            0.005 seconds
+ Time in  Computing+transform. integral       0.038 seconds
  Time in  Symmetrizing MO integrals           0.000 seconds
 
 ------ End of timing report ------
 
 
  (RTRACTL1) Total CPU (wall) time used :   00:00:00 (   00:00:00)
-            Transformation ended Wed Sep 22 13:59:44 2021
+            Transformation ended Tue Feb  7 17:43:30 2023
   //  LUCIAREL called
   //  CIRUN = KR-CI 
   //  Running large-scale CI calculation
-  Allocating for             1552 diagonal integrals.
+  Allocating for             2185 diagonal integrals.
 
 
-  Allocating for           189184 integrals.
+  Allocating for           378328 integrals.
 
- Number of integrals/CC amplitudes:           189184
+ Number of integrals/CC amplitudes:           378328
  (including imaginary parts) 
 
 
@@ -1305,34 +1292,34 @@ Total no. of orbitals           (NORB):    40
   total number of processes to distribute on :                  1
   total number of blocks                     :               1968
   total number of active blocks              :                 78
-  size of largest TTSS block                 :              26244
-  overall weighted active block length       :           13011420
-  Maximum weighted block size                :            3831624
+  size of largest TTSS block                 :              46656
+  overall weighted active block length       :           22734150
+  Maximum weighted block size                :            6811776
 
                     ================================
                      Summation of even distribution 
                     ================================
 
-  CPU    0  computes     78 blocks with a total weight of           13011420
+  CPU    0  computes     78 blocks with a total weight of           22734150
 
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
   
-   current available free memory in double words:       999747904
-   allocate two CI vectors each of length:                 120536
-   allocate resolution vector of length:                   157464
+   current available free memory in double words:        63558348
+   allocate two CI vectors each of length:                 211478
+   allocate resolution vector of length:                   279936
    ==============================================================
 
    
    
 
     6 start vectors based on lowest diagonal elements of H_CI
-         1          -76.078274
-         2          -75.365789
-         7          -75.365789
-     17101          -75.333738
-       127          -75.333738
-       133          -75.308690
+         1          -76.077505
+        37          -75.441727
+     14851          -75.441727
+        43          -75.399152
+     14852          -75.399152
+       415          -75.347628
 
   Number of roots to be converged ........    1
 
@@ -1353,153 +1340,178 @@ Total no. of orbitals           (NORB):    40
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.   1
   Olsen correction active
-                        Total energy       =        -76.07827449
-                        Lowering of energy =          0.00000081
+                        Total energy       =        -76.07750507
+                        Lowering of energy =          0.00000000
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         7.16308D-01
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         7.56675D-01
 
-                        Wall time for microiteration       0.85025766s
+                        Wall time for microiteration       0.56324473s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.   2
   Olsen correction active
-                        Total energy       =        -76.20280154
-                        Lowering of energy =          0.12452705
+                        Total energy       =        -76.21753217
+                        Lowering of energy =          0.14002710
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         3.22618D-01
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         3.29029D-01
 
-                        Wall time for microiteration       1.00433043s
+                        Wall time for microiteration       0.61682436s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.   3
   Olsen correction active
-                        Total energy       =        -76.21261737
-                        Lowering of energy =          0.00981582
+                        Total energy       =        -76.22948599
+                        Lowering of energy =          0.01195382
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         1.64477D-01
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         1.87091D-01
 
-                        Wall time for microiteration       1.00697343s
+                        Wall time for microiteration       0.61589135s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.   4
   Olsen correction active
-                        Total energy       =        -76.21477396
-                        Lowering of energy =          0.00215659
+                        Total energy       =        -76.23231016
+                        Lowering of energy =          0.00282418
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         7.20319D-02
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         8.31526D-02
 
-                        Wall time for microiteration       1.00909901s
+                        Wall time for microiteration       0.63965291s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.   5
   Olsen correction active
-                        Total energy       =        -76.21534742
-                        Lowering of energy =          0.00057346
+                        Total energy       =        -76.23309444
+                        Lowering of energy =          0.00078427
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         3.66006D-02
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         4.36512D-02
 
-                        Wall time for microiteration       1.01384413s
+                        Wall time for microiteration       0.62446203s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.   6
   Olsen correction active
-                        Total energy       =        -76.21545956
-                        Lowering of energy =          0.00011214
+                        Total energy       =        -76.23327663
+                        Lowering of energy =          0.00018220
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         1.80052D-02
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         2.30798D-02
 
-                        Wall time for microiteration       1.02313273s
+                        Wall time for microiteration       0.62776880s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.   7
   Olsen correction active
-                        Total energy       =        -76.21549657
-                        Lowering of energy =          0.00003701
+                        Total energy       =        -76.23333258
+                        Lowering of energy =          0.00005595
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         1.07936D-02
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         1.19401D-02
 
-                        Wall time for microiteration       1.01891269s
+                        Wall time for microiteration       0.63070733s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.   8
   Olsen correction active
-                        Total energy       =        -76.21550838
-                        Lowering of energy =          0.00001181
+                        Total energy       =        -76.23335030
+                        Lowering of energy =          0.00001772
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         7.35209D-03
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         9.15129D-03
 
-                        Wall time for microiteration       1.01715834s
+                        Wall time for microiteration       0.65646510s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.   9
   Olsen correction active
-                        Total energy       =        -76.21551358
-                        Lowering of energy =          0.00000519
+                        Total energy       =        -76.23335815
+                        Lowering of energy =          0.00000785
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         3.62798D-03
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         5.16223D-03
 
-                        Wall time for microiteration       1.02083790s
+                        Wall time for microiteration       0.64049123s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.  10
   Olsen correction active
-                        Total energy       =        -76.21551536
-                        Lowering of energy =          0.00000179
+                        Total energy       =        -76.23336228
+                        Lowering of energy =          0.00000412
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         2.47841D-03
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         3.70236D-03
 
-                        Wall time for microiteration       1.02352545s
+                        Wall time for microiteration       0.64382659s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.  11
   Olsen correction active
-                        Total energy       =        -76.21551588
-                        Lowering of energy =          0.00000052
+                        Total energy       =        -76.23336408
+                        Lowering of energy =          0.00000180
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         1.41281D-03
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         3.02522D-03
 
-                        Wall time for microiteration       1.02678882s
+                        Wall time for microiteration       0.64677924s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.  12
   Olsen correction active
-                        Total energy       =        -76.21551609
-                        Lowering of energy =          0.00000021
+                        Total energy       =        -76.23336498
+                        Lowering of energy =          0.00000091
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         7.51833D-04
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         1.65272D-03
 
-                        Wall time for microiteration       1.02762076s
+                        Wall time for microiteration       0.67083134s
 
 
  (MICDV4_ENLMD_REL_PAR) CI microiteration no.  13
-                        Total energy       =        -76.21551615
-                        Lowering of energy =          0.00000006
+  Olsen correction active
+                        Total energy       =        -76.23336536
+                        Lowering of energy =          0.00000038
 
-                        Norm of CI residuals (thr = 1.00D-06)
-              1         5.39856D-04
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         1.28770D-03
 
-                        Wall time for microiteration       0.01935092s
+                        Wall time for microiteration       0.65495437s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.  14
+  Olsen correction active
+                        Total energy       =        -76.23336552
+                        Lowering of energy =          0.00000016
+
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         7.55261D-04
+
+                        Wall time for microiteration       0.65871067s
+
+
+ (MICDV4_ENLMD_REL_PAR) CI microiteration no.  15
+                        Total energy       =        -76.23336559
+                        Lowering of energy =          0.00000007
+
+                        Norm of CI residuals (thr = 1.00D-04)
+              1         4.86547D-04
+
+                        Wall time for microiteration       0.03701839s
 
 
  (MICDV4_ENLMD_REL_PAR) Micro iterations converged.
 
                         Core energy        =           9.00928407
-                        Active energies    =         -85.22480022
-                        Final CI energies  =         -76.21551615
+                        Active energies    =         -85.24264965
+                        Final CI energies  =         -76.23336559
 
                         root    1 ...... converged!
+
+ Gradient convergence threshold 1.00D-04
+ Energy   convergence threshold 1.00D-07
 
  Information about convergence for root...   1
  ============================================
@@ -1509,21 +1521,23 @@ Total no. of orbitals           (NORB):    40
  -----------------------
 
   Iteration point        Eigenvalue         Residual 
-          1           -76.0782744897045   0.71631E+00
-          2           -76.2028015446488   0.32262E+00
-          3           -76.2126173683599   0.16448E+00
-          4           -76.2147739552335   0.72032E-01
-          5           -76.2153474189555   0.36601E-01
-          6           -76.2154595588163   0.18005E-01
-          7           -76.2154965729373   0.10794E-01
-          8           -76.2155083828246   0.73521E-02
-          9           -76.2155135757864   0.36280E-02
-         10           -76.2155153618420   0.24784E-02
-         11           -76.2155158797752   0.14128E-02
-         12           -76.2155160941673   0.75183E-03
-         13           -76.2155161506890   0.53986E-03
+          1           -76.0775050671057   0.75667E+00
+          2           -76.2175321655063   0.32903E+00
+          3           -76.2294859885253   0.18709E+00
+          4           -76.2323101637120   0.83153E-01
+          5           -76.2330944357359   0.43651E-01
+          6           -76.2332766307605   0.23080E-01
+          7           -76.2333325797904   0.11940E-01
+          8           -76.2333503008540   0.91513E-02
+          9           -76.2333581522858   0.51622E-02
+         10           -76.2333622756635   0.37024E-02
+         11           -76.2333640751556   0.30252E-02
+         12           -76.2333649847624   0.16527E-02
+         13           -76.2333653607643   0.12877E-02
+         14           -76.2333655160084   0.75526E-03
+         15           -76.2333655864592   0.48655E-03
 
-  I have completed task KR-CI  in 12.37522899s (wall time)
+  I have completed task KR-CI  in  9.24200000s (wall time)
 
   //  LUCIAREL called
   //  CIRUN = QCORR 
@@ -1535,22 +1549,22 @@ Total no. of orbitals           (NORB):    40
   total number of processes to distribute on :                  1
   total number of blocks                     :               1968
   total number of active blocks              :                 78
-  size of largest TTSS block                 :              26244
-  overall weighted active block length       :           13011420
-  Maximum weighted block size                :            3831624
+  size of largest TTSS block                 :              46656
+  overall weighted active block length       :           22734150
+  Maximum weighted block size                :            6811776
 
                     ================================
                      Summation of even distribution 
                     ================================
 
-  CPU    0  computes     78 blocks with a total weight of           13011420
+  CPU    0  computes     78 blocks with a total weight of           22734150
 
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
   
-   current available free memory in double words:       999944384
-   allocate two CI vectors each of length:                 120536
-   allocate resolution vector of length:                   157464
+   current available free memory in double words:        63945424
+   allocate two CI vectors each of length:                 211478
+   allocate resolution vector of length:                   279936
    ==============================================================
 
 
@@ -1578,19 +1592,29 @@ Total no. of orbitals           (NORB):    40
   Emc : Meissner correction              [Eq. (41)]
 
 
+ Coefficients entering the +Q equations
+ --------------------------------------
+  c0^2 according to Eq. (43)  0.96958652087993091     
+  c0^2 according to Eq. (44)  0.96929086440621648     
+ --------------------------------------
+
+   MC/HF reference energy:          -76.13118897
+ + extra CI correlation energy:      -0.10217662
+ = total CI energy:                 -76.23336559
+
   Q corrections for state   1 with c0^2 according to Eq. (43)
   ------------------------------------------------------------------------------------------------------------------------
          model              Edc             Erdc             Epc`              Emc        Emc (Nact - 2e)
-   CI+Q energy           -76.218288       -76.218372       -76.217801       -76.217293       -76.217046
+   CI+Q energy           -76.236473       -76.236571       -76.235930       -76.235360       -76.235083
   ------------------------------------------------------------------------------------------------------------------------
 
   Q corrections for state   1 with c0^2 according to Eq. (44)
   ------------------------------------------------------------------------------------------------------------------------
          model              Edc             Erdc             Epc`              Emc        Emc (Nact - 2e)
-   CI+Q energy           -76.218304       -76.218389       -76.217814       -76.217304       -76.217055
+   CI+Q energy           -76.236503       -76.236603       -76.235955       -76.235380       -76.235100
   ------------------------------------------------------------------------------------------------------------------------
 
-  I have completed task QCORR  in  0.24349230s (wall time)
+  I have completed task QCORR  in  0.28600000s (wall time)
 
 
 
@@ -1600,12 +1624,12 @@ Total no. of orbitals           (NORB):    40
   //  LUCIAREL called
   //  CIRUN = DENS1 
   //  Computing only 1-particle density matrices
-  Allocating for             1552 diagonal integrals.
+  Allocating for             2185 diagonal integrals.
 
 
-  Allocating for              512 integrals.
+  Allocating for              722 integrals.
 
- Number of integrals/CC amplitudes:              512
+ Number of integrals/CC amplitudes:              722
  (including imaginary parts) 
 
 
@@ -1616,22 +1640,22 @@ Total no. of orbitals           (NORB):    40
   total number of processes to distribute on :                  1
   total number of blocks                     :               1968
   total number of active blocks              :                 78
-  size of largest TTSS block                 :              26244
-  overall weighted active block length       :            1221680
-  Maximum weighted block size                :             314928
+  size of largest TTSS block                 :              46656
+  overall weighted active block length       :            2132774
+  Maximum weighted block size                :             559872
 
                     ================================
                      Summation of even distribution 
                     ================================
 
-  CPU    0  computes     78 blocks with a total weight of            1221680
+  CPU    0  computes     78 blocks with a total weight of            2132774
 
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
   
-   current available free memory in double words:       999944000
-   allocate two CI vectors each of length:                 120536
-   allocate resolution vector of length:                   157464
+   current available free memory in double words:        63943912
+   allocate two CI vectors each of length:                 211478
+   allocate resolution vector of length:                   279936
    ==============================================================
 
   
@@ -1643,10 +1667,10 @@ Total no. of orbitals           (NORB):    40
    Computing spin-dependent one-particle density
   
 
- Allocating 4-index array of length            2048
+ Allocating 4-index array of length            2888
 
 
-  I have completed task DENS1  in  0.07217010s (wall time)
+  I have completed task DENS1  in  0.05700000s (wall time)
 
 
 
@@ -1660,25 +1684,37 @@ Total no. of orbitals           (NORB):    40
 
    Symmetry  1.   Occupation of active orbitals:
 
-   1.999956011   1.989620954   1.975114464   1.973274773   1.979442887
-   0.023907664   0.016177030   0.003635904   0.003861351   0.010351855
-   0.018455670   0.000187697   0.002764111   0.001638847   0.000116172
-   0.001494609
+   1.999959080   1.988340602   1.979725858   1.965835586   1.969337571
+   0.026375499   0.026092752   0.004560504   0.004572064   0.010715305
+   0.015854024   0.000093937   0.002883133   0.002080626   0.000103909
+   0.001569288   0.000438001   0.000816625   0.000645636
 
    Total     0.000000000 +    10.000000000 =    10.000000000
 
    Symmetry  1. ** REORDERED DESCENDING OCCUPATION **
 
-   1.999956011   1.989620954   1.979442887   1.975114464   1.973274773
-   0.023907664   0.018455670   0.016177030   0.010351855   0.003861351
-   0.003635904   0.002764111   0.001638847   0.001494609   0.000187697
-   0.000116172
+   1.999959080   1.988340602   1.979725858   1.969337571   1.965835586
+   0.026375499   0.026092752   0.015854024   0.010715305   0.004572064
+   0.004560504   0.002883133   0.002080626   0.001569288   0.000816625
+   0.000645636   0.000438001   0.000103909   0.000093937
  (ROPTST)  KR-CI calculation ended properly.
 
->>> TOTAL CPU (WALL) TIME IN KR-CI: 13.33247500s(13.33467934s)
+>>> TOTAL CPU (WALL) TIME IN KR-CI: 10.28321300s(10.28400000s)
 
 
 
+
+ * Closing HDF5 checkpoint file 
+    - Required data set /result/wavefunctions/scf/energy is missing
+    - Required data set /result/wavefunctions/scf/mobasis/eigenvalues is missing
+    - Required data set /result/wavefunctions/scf/mobasis/mobasis_id is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_basis is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_fsym is missing
+    - Required data set /result/wavefunctions/scf/mobasis/n_mo is missing
+    - Required data set /result/wavefunctions/scf/mobasis/nz is missing
+    - Required data set /result/wavefunctions/scf/mobasis/orbitals is missing
+    - Checkpoint file does not contains all required data, can not be used for restarts
+    - Checkpoint file closed
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -1686,35 +1722,35 @@ Total no. of orbitals           (NORB):    40
 
 
  
-     Date and time (Linux)  : Wed Sep 22 13:59:57 2021
-     Host name              : nyvang-work-ThinkPad-T460s              
+     Date and time (Linux)  : Tue Feb  7 17:43:40 2023
+     Host name              : adm-110765.pc.sdu.dk                    
 
->>>> Node 0, utime: 13, stime: 0, minflt: 49443, majflt: 0, nvcsw: 65, nivcsw: 197, maxrss: 50704
->>>> Total WALL time used in DIRAC: 13s
+>>>> Node 0, utime: 10, stime: 0, minflt: 88813, majflt: 29, nvcsw: 71, nivcsw: 80, maxrss: 369656
+>>>> Total WALL time used in DIRAC: 10s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :       212.15
+  Mean allocation size (Mb) :        13.68
   
-  Largest                   10  allocations
+  Largest          10  allocations
   
-     7629.39 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in KRCI_CALC                         
-     7629.39 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
-     7629.39 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA - part 2                   
-     7629.39 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
-     7629.39 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
-     7629.39 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
-        3.81 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        3.81 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        3.81 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        3.81 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in KRCI_CALC                         
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA - part 2                   
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        1.91 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        1.91 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        1.91 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        1.91 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
   
-  Peak memory usage:      7644.78 MB
-  Peak memory usage:        7.466 GB
+  Peak memory usage:       495.97 MB
+  Peak memory usage:        0.484 GB
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : unnamed variable                          
   
- MEMGET high-water mark:     0.00 MB
+ MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/andreas/DIRAC_calc/MCSCF-test
+DIRAC pam run in /home/hjj/progs/gitDirac_esr/build_master_myompi_exa_i4/test/krci_energy_q_corrections

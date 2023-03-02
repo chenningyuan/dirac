@@ -6,6 +6,7 @@
 ! Written by Lucas Visscher, spring 2021, one of the Covid years
 
 module labeled_storage
+
   implicit none
 
   private
@@ -32,6 +33,7 @@ module labeled_storage
   interface lab_read
       module procedure read_general
       module procedure read_single_real
+      module procedure read_3d_real
       module procedure read_single_int
       module procedure read_string_array
       module procedure read_dirac
@@ -232,6 +234,22 @@ module labeled_storage
       rdata = rdata_array(1)
 
     end subroutine read_single_real
+
+    subroutine read_3d_real (file_info,label,rdata)
+      ! Wrapper around read_general to allow reading of 3d arrays
+      use, intrinsic :: ISO_C_BINDING
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      real(8),intent(out),target             :: rdata(:,:,:)
+      real(8),            pointer            :: rdata1d(:)
+
+      nullify(rdata1d)
+      call C_F_POINTER (C_LOC(rdata), rdata1d, [size(rdata)])
+      !write(6,*) '#0 read_3d     '; call flush(6)
+      call read_general (file_info,label,rdata=rdata1d)
+      if(associated(rdata1d)) nullify(rdata1d)
+
+    end subroutine read_3d_real
 
     subroutine write_single_int (file_info,label,idata)
       ! Wrapper around write_general to allow writing of single numbers
@@ -651,7 +669,7 @@ module labeled_storage
          exist = mh5_exists_dset(file_info%id,label)
       else
          ! check the existence of the group first
-         exist = mh5_exists_group(file_info%id,group)
+         exist = (mh5_exists_group(file_info%id,group) > 0)
          ! check the existence of the data set itself
          if (exist) exist = mh5_exists_dset(file_info%id,label)
       end if
@@ -684,11 +702,11 @@ module labeled_storage
      if (group_exists) return
 
      ! otherwise we keep unpeeling the groups till we hit a parent that already exists
-     group_exists = mh5_exists_group(file_id,label)
+     group_exists = (mh5_exists_group(file_id,label)) > 0
      if (group_exists) return
 
      parent_label  = group_from_label(label)
-     parent_exists = mh5_exists_group(file_id,parent_label)
+     parent_exists = (mh5_exists_group(file_id,parent_label)) > 0
 
      if (parent_exists) then
         group_id = mh5_create_group(file_id,label)

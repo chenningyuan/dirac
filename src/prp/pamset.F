@@ -977,6 +977,10 @@ C
       WF='CCSD'
 C     Switch on evaluation of property output
       DOEXP = .TRUE.
+C     disable data transfer via the hdf5 file(s), until
+C     support is stable for all functionality related to ccsd, such as
+C     mp2fnos
+      HDF5IO = .FALSE.
 C     Add this density matrix to the list to be evaluated
       IPRP_WF = 0
       DO I = 1, NPRP_WF

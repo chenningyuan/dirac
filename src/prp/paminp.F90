@@ -46,7 +46,7 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 10, NTABLE = 44)
+      PARAMETER (NDIR = 11, NTABLE = 44)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -72,7 +72,7 @@
 !
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',             &
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',             &
-     &             '*STEX  ','*OPENRS'/
+     &             '*STEX  ','*OPENRS','*NQCC  '/
 !                     1         2         3         4
       DATA TABLE  /'.DIPOLE','.QUADRU','.POLARI','.MAGNET',             &
 !                     5         6         7         8
@@ -94,7 +94,7 @@
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
 !                    41        42        43        44
-     &             '.RDCCDM','.PVCSR ','xXXXXXX','xXXXXXX' /
+     &             '.RDCCDM','.PVCSR ','.HDF5IO','xXXXXXX' /
 !
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -104,6 +104,10 @@
 !
       IPRPRP       = 0
       DOEXP        = .FALSE.
+!     by default disable data transfer via the hdf5 file(s), until
+!     support is stable for all functionality related to ccsd, such as
+!     mp2fnos
+      HDF5IO       = .FALSE.
       DOESR        = .FALSE.
       DOXLR        = .FALSE.
       DOXPP        = .FALSE.
@@ -130,6 +134,7 @@
       EFTNTL       = .FALSE.
       OPTROT       = .FALSE.
       NQCC         = .FALSE.
+      NQCCcart     = .FALSE.
       DSO          = .FALSE.
       NSTDIA       = .FALSE.
       MSUSCDIA     = .FALSE.
@@ -454,7 +459,8 @@
             IF(NBSYM .GT. 1) CALL QUIT('.PVCSR only for C1 symmetry')
             GOTO 100
   143    CONTINUE
-!&&&& xXXXXXX
+!&&&& .HDF5IO
+            HDF5IO = .TRUE. 
             GOTO 100
   144    CONTINUE
 !&&&& xXXXXXX
@@ -525,7 +531,7 @@
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -587,6 +593,10 @@
          call quit('*OpenRSP not included in this version')
 #endif
       go to 200
+!     *NQCC
+   11 CONTINUE
+         CALL NQCC_INPUT(WORD,WORK,LWORK)
+         GO TO 200
 
     1 CONTINUE
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)

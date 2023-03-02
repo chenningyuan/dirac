@@ -1,3 +1,12 @@
+#.rst:
+#
+# autocmake.yml configuration::
+#
+#   docopt:
+#     - "--exatensor=<ENABLE_EXATENSOR> Toggle use of ExaTensor <ON/OFF> [default: ON]."
+#   define:
+#     - "'-DENABLE_EXATENSOR={0}'.format(arguments['--exatensor'])"
+
 #Check whether ExaTensor can be used
 option(ENABLE_EXATENSOR "Enable ExaTENSOR library" ON)
 option(TALSH_ONLY "Enable only TALSH component of ExaTENSOR library" OFF)
@@ -14,13 +23,8 @@ if(ENABLE_EXATENSOR)
    # on which the repository resides locally but where network cannot be accessed
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
-   set (EXATENSOR_GIT_REPO_LOCATION "https://gitlab.com/DmitryLyakh/ExaTensor.git" CACHE STRING "ExaTENSOR Git repository location")
-   #JVP old version do not know -fallow-argument-mismatch, newer need it
-   if ( (CMAKE_Fortran_COMPILER_ID MATCHES GNU) AND ("${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "10"))
-       set (EXATENSOR_GIT_HASH e36b0bac2b21a9e3e9a4cd6cbd216b9cd317ad4d CACHE STRING "ExaTENSOR Git repository hash in use")
-   else()
-       set (EXATENSOR_GIT_HASH 7a75a73bc6dbfa3ff4b107231514d8f3d26e6338 CACHE STRING "ExaTENSOR Git repository hash in use")
-   endif()
+   set (EXATENSOR_GIT_REPO_LOCATION "https://github.com/RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
+   set (EXATENSOR_GIT_HASH 35caded68340657186be190a2d68a98c9e2159bb CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type
@@ -201,6 +205,7 @@ if(ENABLE_EXATENSOR)
    
    #In case of problems with the build, one may manually add ExaTENSOR dependencies here (BLAS, OpenMP, CUDA, C++):
    #set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-5/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/10.1.243/lib64 -lcublas -lcudart -lnvToolsExt -lstdc++ -lgomp)
+   # note: the same line could be added to CMAKE_EXE_LINKER_FLAGS
 
    include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/include)
 
@@ -223,8 +228,8 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_mp2no_restart "mp2no_re;talsh;long" "")
     #dirac_test(exacorr_talsh_lambda_cc2 "cc;talsh" "")
     if(ENABLE_LAPLACE)
-      dirac_test(exacorr_talsh_mp2lap "mp2lap;talsh;long" "")
-      dirac_test(exacorr_talsh_tripl_lap "cc;talsh;long" "")
+      dirac_test(exacorr_talsh_mp2lap "mp2lap;talsh" "")
+      dirac_test(exacorr_talsh_tripl_lap "cc;talsh" "")
     endif()
 
    if (ENABLE_MPI AND NOT EXATENSOR_TALSH)

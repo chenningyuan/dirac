@@ -290,6 +290,11 @@ The spinfree X2C is equivalent to and numerically yields the same numbers as X2C
 An overview of the (local) X2C approach is given in the corresponding tutorial 
 section :ref:`X2Clocal`.
 
+**NOTE**: From DIRAC2023 onwards, we highly recommend to use the **(e)amf** module 
+described in  :ref:`\*XAMFI` in replacement of the :ref:`\*AMFI` module as highlighted 
+by the numerical examples provided in :cite:`Knecht2022`.
+
+
 keyword(X2Cmmf)
 
 This keyword activates the 2-component molecular-mean-field (X2C) Hamiltonian approach :cite:`Sikkema2009` 

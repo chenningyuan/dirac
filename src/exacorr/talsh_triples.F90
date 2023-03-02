@@ -407,9 +407,7 @@ module talsh_triples
 !       Evaluate +T, -T and (T) energy terms.
 !       Definitions of terms: L. Visscher, T.J. Lee, K.G. Dyall, J Chem Phys. 105 (1996) 8769.
 !       Implementation by Johann Pototschnig, Summer 2021
-#ifdef HAS_LAPLACE
         use type_laplace, only : laplace_info, deallocate_laplace
-#endif
         real(8), intent(out)                 :: t_energy(3)
         type(talsh_comm_tens), intent(inout) :: comm_t
         type(talsh_intg_tens), intent(inout) :: int_t
@@ -417,9 +415,7 @@ module talsh_triples
         type(exacc_input), intent(in)        :: exa_input
 
         !  variables to get laplace points
-#ifdef HAS_LAPLACE
         type(laplace_info)    :: laplace
-#endif
 
         real(8), allocatable  :: zero_occ(:),zero_vir(:),eps_occ_neg(:)
         complex(8)            :: T(40),Res(40)
@@ -427,7 +423,6 @@ module talsh_triples
         integer(INTD)         :: t2_dims(4)
         integer               :: nocc, nvir, i
 
-#ifdef HAS_LAPLACE
 !       Get nocc and nvir from tensor information
         ierr = talsh_tensor_dimensions(comm_t%t2,tens_rank,t2_dims)
         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'error: t2 tensor corrupted'
@@ -520,10 +515,6 @@ module talsh_triples
         deallocate(zero_occ)
         deallocate(zero_vir)
         deallocate(eps_occ_neg)
-#else
-        call quit('Laplace routines not included, functionality not available')
-        return 
-#endif
     end subroutine t3_energy_laplace
 
     subroutine laplace_get_T1(T,i_t2,i_ooov,i_vovv,t2_dims, &

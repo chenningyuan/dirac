@@ -32,16 +32,18 @@ If not stated otherwise we will always use a Gaussian nuclear model in DIRAC.
 Atomic calculations
 *******************
 
-.. note:: **Exercise A**:
-   In these exercises we look at relativity in atomic systems. Three columns of the periodic table will be explored:
-	  1. From group  2: Mg, Sr and Ra
-	  2. From group 12: Zn, Cd and Hg
-	  3. From group 18: Ne, Kr and Rn
-   The exercises are:
-	  1. Perform 4-component HF-calculations on your series of three atoms. We focus on the *outermost* :math:`p` orbitals: i) How does spin-orbit splitting vary as a function of nuclear charge Z ? ii) How do spin-orbit interaction affect  orbital sizes :math:`<r^2>^{1/2}`of spin-orbit partners down the series ?
-	  2. Perform 4-component *spin-free* and *non-relativistic* HF-calculations on the heaviest atom of your series in order to investigate the effects of spin-orbit coupling and scalar relativistic effects. i) Make a table showing orbital energies and orbital sizes of all orbitals for each of the three Hamiltonians. ii) What orbitals contract (stabilize) and expand (destabilize) ? iii) Plot the densities of the *outermost* :math:`p` orbitals with the three Hamiltonians.
-	  3. Perform 2-component relativistic HF-calculations on the heaviest atom of your series using the following Hamiltonians: i) X2C ii) second-order Douglas-Kroll-Hess iii) ZORA and iv) scaled ZORA. Make a table of energies of all orbitals obtained with these Hamiltonians comparing with those obtained with the 4-component Dirac-Coulomb Hamiltonian.
-   Helpful information for these exercises is given below !	     
+.. note:: 
+ **Exercise A**
+ In these exercises we look at relativity in atomic systems. Three columns of the periodic table will be explored:
+ 1. From group  2: Mg, Sr and Ra
+ 2. From group 12: Zn, Cd and Hg
+ 3. From group 18: Ne, Kr and Rn
+
+ The exercises are:
+ 1. Perform 4-component HF-calculations on your series of three atoms. We focus on the *outermost* :math:`p` orbitals: i) How does spin-orbit splitting vary as a function of nuclear charge Z ? ii) How do spin-orbit interaction affect  orbital sizes :math:`<r^2>^{1/2}`of spin-orbit partners down the series ?
+ 2. Perform 4-component *spin-free* and *non-relativistic* HF-calculations on the heaviest atom of your series in order to investigate the effects of spin-orbit coupling and scalar relativistic effects. i) Make a table showing orbital energies and orbital sizes of all orbitals for each of the three Hamiltonians. ii) What orbitals contract (stabilize) and expand (destabilize) ? iii) Plot the densities of the *outermost* :math:`p` orbitals with the three Hamiltonians.
+ 3. Perform 2-component relativistic HF-calculations on the heaviest atom of your series using the following Hamiltonians: i) X2C ii) second-order Douglas-Kroll-Hess iii) ZORA and iv) scaled ZORA. Make a table of energies of all orbitals obtained with these Hamiltonians comparing with those obtained with the 4-component Dirac-Coulomb Hamiltonian.
+ Helpful information for these exercises is given below !	     
 
 We shall start gently by looking at atoms. It will be useful to recall the form and notation for atomic orbitals. In the non-relativistic
 case atomic orbitals have the general form
@@ -186,15 +188,16 @@ Molecular calculations
 **********************
       
 .. note:: **Exercise M** :
-  In these exercises we look at relativistic effects on the spectroscopic constants of noble metal monohydrides. Experimental data can be found at `these NIST pages <https://webbook.nist.gov/chemistry/form-ser/>`_ by giving the chemical formula and selecting *Constants of diatomic molecules*. Note that we are looking at spectroscopic constants for the ground state, normally denoted *X* and found at the bottom of the table. Three different DFT  functionals will be explored:
-	   1. B3LYP
-	   2. PBE
-	   3. PBE0
-   The exercises are:
-	  1. Perform 4-component DFT-calculations on the monohydrides of the noble metals Cu, Ag and Au in order to investigate the effects of spin-orbit coupling and scalar relativity (again using the keywords :ref:`HAMILTONIAN_.SPINFREE` and :ref:`HAMILTONIAN_.LEVY-LEBLOND`) on equilibrium distances :math:`r_e`, harmonic frequencies :math:`\omega_e` and anharmonic constants :math:`\omega_e x_e`.
-	  2. For AuH, explore the non-relativistic limit by recalculating spectroscopic constants setting :math:`c=4000` a.u. 
-          3. For CuH, explore the *ultra-relativstic* limit by recalculating spectroscopic constants setting :math:`c=20` a.u. 
-   Helpful information for these exercises is given below !	     
+ In these exercises we look at relativistic effects on the spectroscopic constants of noble metal monohydrides. Experimental data can be found at `these NIST pages <https://webbook.nist.gov/chemistry/form-ser/>`_ by giving the chemical formula and selecting *Constants of diatomic molecules*. Note that we are looking at spectroscopic constants for the ground state, normally denoted *X* and found at the bottom of the table. Three different DFT  functionals will be explored:
+ 1. B3LYP
+ 2. PBE
+ 3. PBE0
+
+ The exercises are:
+ 1. Perform 4-component DFT-calculations on the monohydrides of the noble metals Cu, Ag and Au in order to investigate the effects of spin-orbit coupling and scalar relativity (again using the keywords :ref:`HAMILTONIAN_.SPINFREE` and :ref:`HAMILTONIAN_.LEVY-LEBLOND`) on equilibrium distances :math:`r_e`, harmonic frequencies :math:`\omega_e` and anharmonic constants :math:`\omega_e x_e`.
+ 2. For AuH, explore the non-relativistic limit by recalculating spectroscopic constants setting :math:`c=4000` a.u. 
+ 3. For CuH, explore the *ultra-relativistic* limit by recalculating spectroscopic constants setting :math:`c=20` a.u. 
+ Helpful information for these exercises is given below !	     
 
 As a sample calculation, let us look at CuH. These are simple diatomic species, so we shall simply obtain spectroscopic constants by calculating the energy at a selection of interatomic distances about the expected minimum. We can then calculate the equilibrium distance :math:`r_e`, harmonic frequency :math:`\omega_e` and anharmonic constant :math:`\omega_e x_e` using the utility program :ref:`twofit`. The manual pages provide theoretical background. The executable twofit.x is in the same directory as the DIRAC executable.
 
