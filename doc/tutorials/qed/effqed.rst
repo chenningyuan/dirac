@@ -88,7 +88,7 @@ However, it is confirmed that this approximation works well in the case of the U
 -----------------------------------------------
 
 This is a Gaussian-type model potential where the parameters are fitted to reproduce
-the orbital energy and M1 hyperfine splitting within the range  :math:`29 \geq Z \geq 83` :cite:`Pyykko2003`.
+the orbital energy and M1 hyperfine splitting within the range  :math:`29 \leq Z \leq 83` :cite:`Pyykko2003`.
       
 .. math::
    \varphi_{\mathrm{PZ}}(\boldsymbol{x})=B(Z) e^{-\beta(Z) r_x^2}

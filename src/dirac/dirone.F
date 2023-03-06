@@ -389,8 +389,13 @@ C     Here, INTAOTRI is a buffer
          deallocate(NUMIR)
          deallocate(R)
         ELSE
-          WRITE(LUPRI,'(A,A)')" - For ", NAMN(IATOM)
-          WRITE(LUPRI,'(A,/)')"     effQED potential is skipped"
+          IF(num_grid_cfg_numint_print)THEN
+            WRITE(LUPRI,'(A,A)')" - For ", NAMN(IATOM)
+            WRITE(LUPRI,'(A,/)')"     effQED potential is skipped"
+          ENDIF    
+          IF(IATOM.EQ.NUCIND)THEN
+            num_grid_cfg_numint_print = .FALSE.
+          ENDIF
         ENDIF                   !IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)  
         ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
 10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
@@ -2586,7 +2591,6 @@ C
      &", Rmin = ", RNT, ", Rmax = ",RMAX
       WRITE(LUPRI,'(A,E8.2e2,A,I4)')
      &"     stepsize = ",H,", # of radial grid = ",MXNP 
-      WRITE(LUPRI,*)""
 C
       IF(IATOM.EQ.NUCIND)THEN
        num_grid_cfg_numint_print = .FALSE.
