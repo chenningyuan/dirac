@@ -43,22 +43,36 @@ module visual_cfg
    logical,      public            :: visual_cfg_london_skip_vtk  = .false.
 
 
-!  options for output plot files
-!  by default, plot to txt files, use legacy file names ("plot.3d.scalar", etc.)
+!
+!  options for exporting real-space data to files
+!
+! WIP
+!  character(len = :), public               :: visual_cfg_plot_file_formats(2) = (/'txt', 'cube', 'csv', 'hdf5'/)
+!  character(len = 6), public               :: visual_cfg_txt_plot_file_domains(4) = &
+!                                              [character(len = 6):: '2D', '3D', 'line', 'radial']
+!
    logical,      public                     :: visual_cfg_plot_file_custom = .false.
    character(len = :), allocatable, public  :: visual_cfg_plot_file_format
-   !character(len = :), public               :: visual_cfg_plot_file_formats(2) = (/'txt', 'hdf5'/)
-   logical,      public                     :: visual_cfg_txt_plot_file_use_legacy = .true.
+   character(len = :), allocatable, public  :: visual_cfg_plot_domain
+   character(len = :), allocatable, public  :: visual_cfg_plot_property
 
+!  options for exporting to txt files
+!  by default, export real-space data to txt files and use legacy file names ("plot.3d.scalar", etc.)
+   logical,      public                     :: visual_cfg_txt_plot_file_use_legacy = .true.
    character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_name
    character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_float_format
 
-   character(len = :), allocatable, public  :: visual_cfg_plot_domain
-   !character(len = 6), public               :: visual_cfg_txt_plot_file_domains(4) = &
-   !                                            [character(len = 6):: '2D', '3D', 'line', 'radial']
-   character(len = :), allocatable, public  :: visual_cfg_plot_property
+!  options for exporting to cube files (applies to scalar fields on 3D cube grids)
+!  by default, use old export to cube files
+   logical,      public                     :: visual_cfg_cube_plot_file_use_legacy = .true.
+   character(len = :), allocatable, public  :: visual_cfg_cube_plot_file_name
+   character(len = :), allocatable, public  :: visual_cfg_cube_plot_file_float_format
 
+
+
+!
 !  option for input data files
+!
    logical,      public                     :: visual_cfg_inp_data_files_use_legacy= .false.
    integer,      public                     :: visual_cfg_nr_plot_files = 0
 

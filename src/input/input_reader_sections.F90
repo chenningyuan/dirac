@@ -616,13 +616,17 @@
       end if
 
       if (kw_matches(word, '.PLTFMT')) then
+         !gosia-this is now redundant? todo remove
          call kw_read(word, visual_cfg_plot_file_format)
       end if
 
       if (kw_matches(word, '.PLTTXT')) then
 
          visual_cfg_plot_file_format = 'txt'
+
+         ! 'turn off' all legacy options
          visual_cfg_txt_plot_file_use_legacy = .false.
+         visual_cfg_cube_plot_file_use_legacy = .false.
 
          read(get_file_unit(), '(a)') line
          nr_words = word_count(line)
@@ -638,6 +642,29 @@
          end if
          deallocate(word_array)
       end if
+
+      if (kw_matches(word, '.PLTCUB')) then
+
+         visual_cfg_plot_file_format = 'cube'
+
+         ! 'turn off' all legacy options
+         visual_cfg_txt_plot_file_use_legacy = .false.
+         visual_cfg_cube_plot_file_use_legacy = .false.
+
+         read(get_file_unit(), '(a)') line
+         nr_words = word_count(line)
+         allocate(word_array(nr_words))
+         read(line, *) (word_array(j), j = 1, nr_words)
+         visual_cfg_plot_property = trim(word_array(1))
+         if (nr_words > 1) then 
+            visual_cfg_cube_plot_file_name = trim(word_array(2))
+         end if
+         if (nr_words > 2) then 
+            visual_cfg_cube_plot_file_float_format = trim(word_array(3))
+         end if
+         deallocate(word_array)
+      end if
+
 
       call check_whether_kw_found(word, kw_section)
 

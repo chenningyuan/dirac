@@ -33,6 +33,7 @@ module visual_io
 
    interface write_plot_data 
       module procedure write_plot_data_txt_by_line
+      !TODOmodule procedure write_plot_data_cube
    end interface
 
    private
@@ -110,7 +111,12 @@ module visual_io
       if (use_legacy) then
          call visual_legacy_files_for_data_export(plot_files)
       else
-         call prepare_plot_txt_file(plot_files)
+         select case (visual_cfg_plot_file_format)
+            case ('txt')
+               call prepare_plot_txt_file(plot_files)
+            case ('cube')
+               call prepare_plot_cube_file(plot_files)
+         end select
       end if
 
       if (allocated(plot_files)) then
@@ -220,6 +226,32 @@ module visual_io
    !   end if
    !   write(*,*) 'buba2', property, data_type, len(data_type)
    !end function
+
+!  -----------------------------------------------------------------------------
+   subroutine prepare_plot_cube_file(plot_files)
+!  -----------------------------------------------------------------------------
+      type(visual_plot_file), intent(out), allocatable:: plot_files(:)
+!  -----------------------------------------------------------------------------
+
+      allocate(plot_files(1))
+
+      plot_files(1)%unit = newunit()
+      if (visual_cfg_cube_plot_file_name .ne. '') then
+         plot_files(1)%name = visual_cfg_cube_plot_file_name
+      else
+         plot_files(1)%name = 'plot_file.cube'
+      end if
+      plot_files(1)%format      = 'txt'
+      plot_files(1)%domain      = '3d'
+      plot_files(1)%data_type   = 'scalar'
+      !plot_files(1)%data_type   = data_type(visual_cfg_plot_property)
+      plot_files(1)%float_format= 'es20.10e3'
+   
+      visual_cfg_nr_plot_files = 1
+
+
+   end subroutine prepare_plot_cube_file
+
 
 !  -----------------------------------------------------------------------------
    subroutine visual_legacy_files_for_data_import(plot_files)

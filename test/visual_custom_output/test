@@ -16,12 +16,17 @@ f.add(from_string = '! Requested density at point(s) !',
 
 #test.run(['dc.inp'], ['h2o.mol'], args='--outcmo --get="PAMXVC TBMO"')
 
-test.run(['vis_list_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_list.txt"')
-test.run(['vis_list_diracout.inp'], ['h2o.mol'], f, args='--incmo --get="scalar_field_list.txt"')
+# OK! test.run(['vis_list_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_list.txt"')
+# OK! test.run(['vis_list_diracout.inp'], ['h2o.mol'], f, args='--incmo')
+
 #test.run(['vis_line_out.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_line.txt"')
 #test.run(['vis_radial_out.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_radial.txt"')
 #test.run(['vis_2d_out.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_2d.txt"')
-#test.run(['vis_3d_out.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_3d.txt"')
+
+test.run(['vis_3d_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_3d.txt"')
+test.run(['vis_3d_cubeout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_3d.cube"')
+#test.run(['vis_3d_diracout.inp'], ['h2o.mol'], f, args='--incmo')
+
 #
 ##test.run(['vis_dc_density_2d_custom_txt.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="scalar_field_2d.txt"')
 ##test.run(['vis_dc_density_2d_legacy_txt.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="plot.2d.scalar"')
@@ -39,16 +44,21 @@ def compare(fname, fname_ref):
     elif p.returncode == 1:
         print('{} and {} are different'.format(fname, fname_ref))
         sys.stderr.write('{} and {} are different'.format(fname, fname_ref))
+        sys.stdout.write('{} and {} are different'.format(fname, fname_ref))
+        sys.exit(1)
     else:
         print('error %s' % p.returncode)
         sys.stderr.write('error %s' % p.returncode)
 
 
-compare("scalar_field_list.txt", "result/scalar_field_list.txt")
+# OK! compare("scalar_field_list.txt", "result/scalar_field_list.txt")
 #compare("scalar_field_line.txt", "result/scalar_field_line.txt")
 #compare("scalar_field_radial.txt", "result/scalar_field_radial.txt")
 #compare("scalar_field_2d.txt", "result/scalar_field_2d.txt")
-#compare("scalar_field_3d.txt", "result/scalar_field_3d.txt")
+
+compare("scalar_field_3d.txt", "result/scalar_field_3d.txt")
+#compare("scalar_field_3d.cube", "result/scalar_field_3d.cube")
+
 ##compare("scalar_field_2d.txt", "result/scalar_field_2d.txt")
 ##compare("plot.2d.scalar", "result/plot.2d.scalar")
 ###compare("scalar_field.txt", "result/scalar_field.txt")

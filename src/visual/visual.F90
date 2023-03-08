@@ -190,7 +190,7 @@ contains
 
        call alloc(eigenvalues, norbt)
        eigenvalues = 0.0d0
-       call reacmo_new(cmo=cmo_from_file,eig=eigenvalues,toterg=energy)
+       call reacmo_new(cmo = cmo_from_file, eig = eigenvalues, toterg = energy)
 
        write(LUPRI, '(2x, a)') 'Visualisation : CHECKPOINT file read'
 
@@ -609,7 +609,12 @@ contains
             ! write to DIRAC output
          else
             ! write to files
-            call open_plot_files_for_export(visual_cfg_txt_plot_file_use_legacy, &
+            write(*,*) 'BUBA ', visual_cfg_txt_plot_file_use_legacy, &
+                                visual_cfg_cube_plot_file_use_legacy, &
+                               (visual_cfg_txt_plot_file_use_legacy &
+                           .or. visual_cfg_cube_plot_file_use_legacy)
+            call open_plot_files_for_export((visual_cfg_txt_plot_file_use_legacy &
+                                        .or. visual_cfg_cube_plot_file_use_legacy), &
                                             visual_plot_files)
             if (allocated(visual_plot_files)) then
                call print_plot_files_info(visual_plot_files)
