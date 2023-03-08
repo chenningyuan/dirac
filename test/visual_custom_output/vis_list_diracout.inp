@@ -1,4 +1,6 @@
 **DIRAC
+.TITLE
+ calculate the electron density in listed points and write it to DIRAC output
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -16,7 +18,5 @@
 9.50000000E-001   0.00000000E+000   0.00000000E+000
 3.50000000E+000   0.00000000E+000   0.00000000E+000
 4.50000000E+000   0.00000000E+000   0.00000000E+000
-.PLTTXT
-list density scalar_field_list.txt e12.4
-#.OUTPRI
+.OUTPRI
 *END OF

@@ -1,4 +1,6 @@
 **DIRAC
+.TITLE
+ calculate the electron density on a 3D cube grid and export it to an external file
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -14,5 +16,4 @@
 2 2 2
 .PLTTXT
 3d density scalar_field_3d.txt e8.2
-#.OUTPRI
 *END OF
