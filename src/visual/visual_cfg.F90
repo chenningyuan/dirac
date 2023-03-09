@@ -69,6 +69,7 @@ module visual_cfg
    character(len = :), allocatable, public  :: visual_cfg_cube_plot_file_float_format
 
 
+   real(8), public  :: visual_cfg_txt_print_threshold = 1.0e-8
 
 !
 !  option for input data files

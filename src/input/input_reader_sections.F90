@@ -620,6 +620,11 @@
          call kw_read(word, visual_cfg_plot_file_format)
       end if
 
+      if (kw_matches(word, '.TXTTHR')) then
+         !gosia-this is temporary threshold: avoid writing small numbers to txt files
+         call kw_read(word, visual_cfg_txt_print_threshold)
+      end if
+
       if (kw_matches(word, '.PLTTXT')) then
 
          visual_cfg_plot_file_format = 'txt'
