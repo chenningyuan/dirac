@@ -574,9 +574,11 @@ contains
       if (visual_cfg_tensor) then
         q_max_dim = 12
         allocate(q(0:12, i))
+        q(0:12, 1:i) = 0.0d0
       else
         q_max_dim = 3
         allocate(q(0:3, i))
+        q(0:3, 1:i) = 0.0d0
       end if
 
       allocate(atom_xyz(4, nucdep))
@@ -638,7 +640,7 @@ contains
                                       buffer,                    &
                                       q_max_dim,                 &
                                       q)
-           
+
            call write_plot_data(visual_plot_files, &
                                 (/visual_cfg_xyz_list(i, 1), visual_cfg_xyz_list(i, 2), visual_cfg_xyz_list(i, 3)/), &
                                 q(0:q_max_dim, 1))
@@ -667,7 +669,7 @@ contains
            
             call write_plot_data(visual_plot_files, &
                                 (/r(1), r(2), r(3)/), &
-                                q(0:12, 1))
+                                q(0:q_max_dim, 1))
          end do
       end if
 
@@ -1064,7 +1066,7 @@ contains
 
                      call write_plot_data(visual_plot_files, &
                                          r(1:3), &
-                                         q(0:12, kcube))
+                                         q(0:q_max_dim, kcube))
 
 
                      if (visual_cfg_tensor) then
@@ -1102,7 +1104,7 @@ contains
 
                         call write_plot_data(visual_plot_files, &
                                             r(1:3), &
-                                            q(0:12, kcube))
+                                            q(0:q_max_dim, kcube))
 
                      end if
 
