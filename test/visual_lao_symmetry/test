@@ -9,7 +9,7 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'Requested density at point(s)',
+f.add(from_string = '! Requested density at point(s) !',
       num_lines   = 10,
       rel_tolerance   = 5.0e-3)
 

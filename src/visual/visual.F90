@@ -607,6 +607,7 @@ contains
 
          if (visual_cfg_print_data_to_dirac_output) then
             ! write to DIRAC output
+            call write_data_to_dirac_output()
          else
             ! write to files
             write(*,*) 'BUBA ', visual_cfg_txt_plot_file_use_legacy, &
@@ -626,26 +627,6 @@ contains
 
       if (visual_cfg_list) then
 
-         call around('Requested density at point(s)')
-
-         if (visual_cfg_print_data_to_dirac_output) then
-            write(lupri, *)
-            if (visual_cfg_tensor) then
-              write(lupri, '(a200)') &
-                   'in columns: r_x, r_y, r_z, '//&
-                   'scalar, x-component, y-component, z-component, '//&
-                   'xx-component, xy-component, xz-component, '//&
-                   'yx-component, yy-component, yz-component, '//&
-                   'zx-component, zy-component, zz-component'
-            else
-              write(lupri, '(a80)') &
-                   'in columns: r_x, r_y, r_z, '//&
-                   'scalar, x-component, y-component, z-component'
-            end if
-         
-            write(lupri, *)
-         end if
-           
          do i = 1, visual_cfg_nr_points_in_list
            call get_quantity_in_point(visual_cfg_nr_dmat,        &
                                       D,                         &
@@ -660,17 +641,11 @@ contains
            
            call write_plot_data(visual_plot_files, &
                                 (/visual_cfg_xyz_list(i, 1), visual_cfg_xyz_list(i, 2), visual_cfg_xyz_list(i, 3)/), &
-                                q(0:12, 1))
+                                q(0:q_max_dim, 1))
          end do
            
-         if (visual_cfg_print_data_to_dirac_output) then
-            write(lupri, *)
-            call prsymb(lupri, '-', 100, 0)
-            write(lupri, *)
-            write(lupri, *)
-         end if
-
       end if
+
 
       if (visual_cfg_line) then
 
@@ -1406,5 +1381,45 @@ contains
 
   end subroutine
 
+
+  subroutine write_data_to_dirac_output()
+
+!   ----------------------------------------------------------------------------
+!   ----------------------------------------------------------------------------
+
+    if (visual_cfg_2d .or. &
+        visual_cfg_3d .or. visual_cfg_3d_fast .or. &
+        visual_cfg_list .or. visual_cfg_line) then
+
+       call around('Requested density at point(s)')
+       
+       write(lupri, *)
+       if (visual_cfg_tensor) then
+         write(lupri, '(a200)') &
+              'in columns: r_x, r_y, r_z, '//&
+              'scalar, x-component, y-component, z-component, '//&
+              'xx-component, xy-component, xz-component, '//&
+              'yx-component, yy-component, yz-component, '//&
+              'zx-component, zy-component, zz-component'
+       else
+         write(lupri, '(a80)') &
+              'in columns: r_x, r_y, r_z, '//&
+              'scalar, x-component, y-component, z-component'
+       end if
+       
+    else if (visual_cfg_radial) then
+    end if
+
+    write(lupri, *)
+
+    if (visual_cfg_list) then
+    end if
+ 
+    !write(lupri, *)
+    !call prsymb(lupri, '-', 100, 0)
+    !write(lupri, *)
+    !write(lupri, *)
+
+  end subroutine
 
 end module
