@@ -102,7 +102,7 @@ C     that generate 3 small component p-functions. The maximum for
 C     other types of functions is scaled down by KHK(IQM+1) that
 C     gives the number of functions in the small component for that type.
       PARAMETER (MAX_IN_BLOCK=3*15)
-      LOGICAL SPLIT, DO_UNCONT, DO_SPLIT
+      LOGICAL SPLIT, DO_UNCONT
       integer :: jcount = 0
 #endif /* PRG_DIRAC */
       integer :: LU_NOT_USED
@@ -143,29 +143,12 @@ C     from calling routine
       POLFUN = .FALSE.
 
 C
-C     turn on splitting of primitive shells only for methods that
-C     perform an integral transformation to the spinor basis
-C
-      DO_SPLIT = (DOTRA .OR. DOKRMC .OR. DOMP2 .OR. DOMP2NO)
-      IF (PARCAL) DO_SPLIT = .true. ! if parallel, then also split for direct SCF
-
 CDIRAC:..by default, allow contraction only for elements Z.LE.36
 C        except for 2c NR and RECP calculations
       DO_UNCONT = INTQ.GT.36 .AND. .NOT.(NONREL.OR.LEVYLE.OR.ECPCALC)
 !     DO_UNCONT = DO_UNCONT .OR. (TWOCOMP.AND.(.NOT.TWOCOMPBSS))
 !     hjaaj: is this still relevant after introducing NONREL above?
       DO_UNCONT = UNCONT .OR. DO_UNCONT
-      IF(DO_UNCONT.AND.(.NOT.UNCONT)) THEN
-!     print only from one process
-      if (mytid == MPARID) then
-        WRITE(LUPRI,'(/A/A,I5/2A/A/A)')
-     &   '*** INFO (BASLIB) : Decontracting basis set',
-     &   ' - nuclear charge: ',INTQ,
-     &   ' - basis file    : ',BASNAM,
-     &   'Reason: DIRAC cannot create proper small component basis',
-     &   '        for contracted large component basis when Z > 36'
-      end if
-      ENDIF
 
       ! for windows we keep "-star" basis set files and not "*" files
       ! now we will translate a possible "*" basis set input
@@ -475,17 +458,29 @@ C Finds the number of primitives and columns of contraction coefficients
 C
          CALL FIND_POS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS,
      &      IPRINT, EMSL_TYPE)
+
+! Print message if basis set uncontracted because Z>36 (and .UNCONT not specified)
+         IF (DO_UNCONT .AND. .NOT. UNCONT .AND. INTORB .GT. 0) THEN
+            if (mytid == MPARID) then ! print only from one process
+               WRITE(LUPRI,'(/A/A,I5/2A/A/A)')
+     &   '*** INFO (BASLIB) : Decontracting basis set',
+     &   ' - nuclear charge: ',INTQ,
+     &   ' - basis set file: ',BASNAM,
+     &   'Reason: DIRAC cannot create proper small component basis',
+     &   '        for contracted large component basis when Z > 36'
+            end if
+         ENDIF
 C
  10      CONTINUE
 C
-         IF (DO_UNCONT) THEN
+         IF (DO_UNCONT .AND. INTORB .GT. 0) THEN
             INTORB = -INTORB
             IF (ANO .OR. SADLEJ) THEN
                WRITE (LUPRI,'(/A)') ' FATAL ERROR: '//
-     &            '.UNCONT not implemented for ano and sadlej yet.'
+     &            'UNCONTRACTED not implemented for ano and sadlej yet.'
                CALL QUIT(
-     &            '.UNCONT not implemented for ano and sadlej yet')
-Chj-aug99: MAERKE find out how to implement UNCONT for ano or sadlej !
+     &            'UNCONTRACTED not implemented for ano and sadlej yet')
+Chj-aug99: TODO find out how to implement UNCONT for ano or sadlej !
             END IF
          END IF
 C
@@ -523,7 +518,7 @@ C
             ELSEIF (INTEXP.GT.KPRIM) THEN
                ! splitting is always necessary, otherwise the fixed array size is too small
                SPLIT = .TRUE.
-            ELSEIF (INTEXP.GT.MAXPRIM_IN_BLOCK .AND. DO_SPLIT) THEN
+            ELSEIF (INTEXP.GT.MAXPRIM_IN_BLOCK) THEN
                ! splitting is desired by the user to reduce memory consumption
                SPLIT = .TRUE.
             ELSE
@@ -542,7 +537,7 @@ C Setting ALPHA, CPRIMU AND CPRIM to zero.
 C
             CALL DZERO(ALPHA(1, NBLOCK), KPRIM)
             CALL DZERO(CPRIMU(1,1, NBLOCK), KPRIM*KPRIM)
-            CALL DZERO(CPRIM (1, 1, NBLOCK), KPRIM*KPRIM)
+            CALL DZERO(CPRIM (1,1, NBLOCK), KPRIM*KPRIM)
 C
 C Reading the primitives and contraction coefficients from file in READ_NU
 C
@@ -690,7 +685,6 @@ C
 C
 C Close basis set file
 C
-
       BASNAM = BASSAV
       CLOSE (LUBAS, STATUS = 'KEEP')
       CALL QEXIT('BASLIB')
@@ -1587,13 +1581,13 @@ C/* Deck find_pos */
      &   LUBAS, IPRINT, EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
-C*********************************************************
-C* Variable declarations:                                *
-C*     SIGN - The first sign in a sentence, to find out  *
-C*            what kind of sentence it is.               *
-C*     STRING - A character string to help bulletproofing*
-C*              the subroutine.                          *
-C*********************************************************
+C************************************************************
+C* Variable declarations:                                   *
+C*     SIGN - The first sign in a sentence, to find out     *
+C*            what kind of sentence it is.                  *
+C*     STRING - A character string to help bulletproofing   *
+C*              the subroutine.                             *
+C************************************************************
       LOGICAL   NEWEL
       CHARACTER SIGN
       CHARACTER*300 STRING
