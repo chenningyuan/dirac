@@ -64,11 +64,15 @@ module talsh_mp2lap
         !avoiding nvir
         type(talsh_tens_t)                     :: T1,T2,R1,R2
 
+        integer :: num_gpus = 0, igpu
+
         call print_date("Entering MP2_LAP Module")
+
+        call talsh_get_number_gpus(num_gpus)
 
         !Initialize TALSH
         buf_size=exa_input%talsh_buff*buf_size
-        ierr=talsh_init(buf_size,host_arg_max)
+        ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
         call print_date('Initialized talsh library')
 
         call interest_initialize(.true.)
@@ -254,11 +258,15 @@ module talsh_mp2lap
         !avoiding nvir
         type(talsh_tens_t)                     :: T1,R1,R2,S1,one_mp2lap
 
+        integer :: num_gpus = 0, igpu
+
         call print_date("Entering MP2_LAP Module")
         
+        call talsh_get_number_gpus(num_gpus)
+
         !Initialize TALSH
         buf_size=exa_input%talsh_buff*buf_size
-        ierr=talsh_init(buf_size,host_arg_max)
+        ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
         call print_date('Initialized talsh library')
         write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
 
