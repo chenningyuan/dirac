@@ -53,7 +53,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
     type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
 
-    type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:)
+    type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
     type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
     integer                       :: N_prop
     integer                       :: N_oper_lr, N_oper_qr
@@ -178,6 +178,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         allocate(N_prop_tem_qr(N_oper_qr))
         allocate(omega(N_oper_qr))
         allocate(Bvec_tensors(N_oper_qr))
+        ! allocate(Bvec_tensors_min_w(N_oper_qr))
         allocate(Tprop_tensors(N_oper_qr))
         allocate(Tprop_tensors_min_w(N_oper_qr))
         allocate(Tprop_bar_tensors(N_oper_qr))
@@ -195,11 +196,11 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         
         
 ! This loop is to determine which three properties to calculate
-        do i=1, N_prop
+        do i=3, N_prop
             N_prop_tem_qr(1) = i
-            do j=1, N_prop
+            do j=3, N_prop
                 N_prop_tem_qr(2) = j
-                do k=1, N_prop
+                do k=3, N_prop
                     N_prop_tem_qr(3) = k
 
                     do n=1, N_oper_qr
@@ -211,11 +212,24 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
                     do n=1, N_oper_qr
                         m = N_prop_tem_qr(n)
-                        call get_left_bvec(exa_input,Interm_t_tensors(m),l1_tensor,l2_tensor,Bvec_tensors(n))
+                        ! EOM left equation
+                        call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors(m),l1_tensor,l2_tensor, &
+                                        Bvec_tensors(n))
                         call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors(m), omega(n), &
-                                                Bvec_tensors(n), Tprop_bar_tensors(n))
+                                        Bvec_tensors(n), Tprop_bar_tensors(n))
                         call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors(m), -omega(n),&
-                                                Bvec_tensors(n), Tprop_bar_tensors_min_w(n))
+                                        Bvec_tensors(n), Tprop_bar_tensors_min_w(n))
+
+                        !CC-CI left equation
+                        ! call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors(m),l1_tensor,l2_tensor, &
+                        !                     Tprop_tensors(n),Bvec_tensors(n))
+                        ! call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors(m),l1_tensor,l2_tensor, &
+                        !                     Tprop_tensors_min_w(n),Bvec_tensors_min_w(n))
+                        ! call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors(m), omega(n), &
+                        !                         Bvec_tensors(n), Tprop_bar_tensors(n))
+                        ! call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors(m), -omega(n),&
+                        !                         Bvec_tensors_min_w(n), Tprop_bar_tensors_min_w(n))
+
                     end do
                     call print_date('Solved All 1st response left equations') 
 
@@ -237,6 +251,8 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
                         ierr=talsh_tensor_destruct(Tprop_bar_tensors(n)%t2)
                         ierr=talsh_tensor_destruct(Tprop_bar_tensors_min_w(n)%t1)
                         ierr=talsh_tensor_destruct(Tprop_bar_tensors_min_w(n)%t2)
+                        ! ierr=talsh_tensor_destruct(Bvec_tensors_min_w(n)%t1)  for CC-CI
+                        ! ierr=talsh_tensor_destruct(Bvec_tensors_min_w(n)%t2)
                     end do
 
                 end do
@@ -244,9 +260,9 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         end do
 
 
-        do i=1, N_prop
-            do j=1, N_prop
-                do k=1, N_prop
+        do i=3, N_prop
+            do j=3, N_prop
+                do k=3, N_prop
                     print *, "CC-CI(EOM-CC) quadratic response: <<X", i, ";X", j, "X", k, ">> = ", eom_qrs(i,j,k)
                 end do
             end do 

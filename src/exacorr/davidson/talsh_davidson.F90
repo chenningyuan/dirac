@@ -1470,82 +1470,92 @@ contains
     end subroutine
  
 ! aspg, added from (q)rsp
-    subroutine talsh_solve_Linear_systems(A, B_input, Solution)
+    subroutine talsh_solve_Linear_systems(left, A, B_input, Solution)
+        logical, optional, intent(in) :: left
         complex(kind=8), intent(inout), pointer :: A(:,:)
         complex(kind=8), intent(inout), pointer :: B_input(:)
         complex(kind=8), intent(inout), pointer :: Solution(:,:)
 
-        ! character ::    FACT
-        ! character ::    TRANS
+        character ::    FACT
+        character ::    TRANS
         integer   ::    N
         integer   ::    NRHS
         integer   ::    LDA
-        ! complex(kind=8),allocatable ::  AF(:,:)
-        ! integer   ::    LDAF
+        complex(kind=8),allocatable ::  AF(:,:)
+        integer   ::    LDAF
         integer, allocatable   ::       IPIV(:)
-        ! character ::    EQUED
-        ! real(kind=8), allocatable ::    R(:)
-        ! real(kind=8), allocatable ::    C(:)
+        character ::    EQUED
+        real(kind=8), allocatable ::    R(:)
+        real(kind=8), allocatable ::    C(:)
         complex(kind=8),allocatable  :: B(:,:)
         integer ::      LDB
-        ! complex(kind=8),allocatable ::  X(:,:)
-        ! integer ::      LDX
+        complex(kind=8),allocatable ::  X(:,:)
+        integer ::      LDX
         real(kind=8) :: RCOND
-        ! real(kind=8), allocatable ::    FERR(:)
-        ! real(kind=8), allocatable :: BERR(:)
-        ! complex(kind=8), allocatable :: WORK(:)
-        ! real(kind=8), allocatable ::    RWORK(:)
+        real(kind=8), allocatable ::    FERR(:)
+        real(kind=8), allocatable :: BERR(:)
+        complex(kind=8), allocatable :: WORK(:)
+        real(kind=8), allocatable ::    RWORK(:)
         integer ::      INFO
         integer :: dimen_x
 
-        ! FACT = 'N'
+        FACT = 'N'
         ! TRANS = 'N'
         N = size(A,1)
         NRHS = 1
         LDA = N
-        ! LDAF = N
-        ! LDX = N
+        LDAF = N
+        LDX = N
         LDB = N
-        ! EQUED = 'N'
-        ! allocate(AF(LDAF,N))
+        EQUED = 'N'
+        allocate(AF(LDAF,N))
         allocate(IPIV(N))
 
-        ! allocate(R(N))
-        ! allocate(C(N))
+        allocate(R(N))
+        allocate(C(N))
 
         allocate(B(LDB,NRHS))
-        ! allocate(X(LDX,NRHS))
-        ! allocate(FERR(NRHS))
-        ! allocate(BERR(NRHS))
-        ! allocate(WORK(2*N))
-        ! allocate(RWORK(2*N))
+        allocate(X(LDX,NRHS))
+        allocate(FERR(NRHS))
+        allocate(BERR(NRHS))
+        allocate(WORK(2*N))
+        allocate(RWORK(2*N))
+
+        if (left) then 
+            TRANS = 'T'
+        else
+            TRANS = 'N'
+        end if 
+        ! print *, "TRANS:", TRANS
 
         B(:,NRHS) = B_input(:)
-        ! call zgesvx (FACT, TRANS, N, NRHS, A, LDA, AF, &
-        !             LDAF, IPIV, EQUED, R, C, B, LDB, &
-        !             X, LDX, RCOND, FERR, BERR,&
-        !             WORK, RWORK, INFO)
+        call zgesvx (FACT, TRANS, N, NRHS, A, LDA, AF, &
+                    LDAF, IPIV, EQUED, R, C, B, LDB, &
+                    X, LDX, RCOND, FERR, BERR,&
+                    WORK, RWORK, INFO)
 
-        call zgesv (N, NRHS, A, LDA, IPIV, B, LDB, INFO)
+        ! call zgetrs (TRANS, N, NRHS, A, LDA, IPIV, B, LDB, INFO)
 
-        ! dimen_x = size(X,1)
-        ! allocate(Solution(dimen_x,NRHS))
-        ! Solution(:,NRHS) = X(:,NRHS)
+        ! call zgesv (N, NRHS, A, LDA, IPIV, B, LDB, INFO)
 
-        dimen_x = size(B,1)
+        dimen_x = size(X,1)
         allocate(Solution(dimen_x,NRHS))
-        Solution(:,NRHS) = B(:,NRHS)
+        Solution(:,NRHS) = X(:,NRHS)
 
-        ! deallocate(AF)
+        ! dimen_x = size(B,1)
+        ! allocate(Solution(dimen_x,NRHS))
+        ! Solution(:,NRHS) = B(:,NRHS)
+
+        deallocate(AF)
         deallocate(IPIV)
-        ! deallocate(R)
-        ! deallocate(C)
+        deallocate(R)
+        deallocate(C)
         deallocate(B)
-        ! deallocate(X)
-        ! deallocate(FERR)
-        ! deallocate(BERR)
-        ! deallocate(rwork)
-        ! deallocate(work)
+        deallocate(X)
+        deallocate(FERR)
+        deallocate(BERR)
+        deallocate(rwork)
+        deallocate(work)
 
     end subroutine talsh_solve_Linear_systems
 ! aspg, added from (q)rsp
@@ -1573,7 +1583,7 @@ contains
         ! print *, "dim1", size(root_vect,1)
         ! print *, "dim2", size(root_vect,2)
         ! print *, "roor_vect", root_vect(:,1)
-        call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
+        ! call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
         
 
          do iroot=1, N
@@ -1929,7 +1939,7 @@ contains
                ierr=talsh_tensor_contract("CI()+=C+(p,q)*B(p,q)",                &
    &                                                       result_tensor,        &
 &                                                          prop_grad1,           &
-   &                                                       workspace_t%trial1(i))
+   &                                                       workspace_t%trial1(i),scale=ONE)
             end if
          end if ! workspace_t%N(1).ne.0
 
@@ -2242,7 +2252,7 @@ contains
             if (config%solve_linear_system) then
                call create_subspace_property_gradient(C_small,workspace_t, &
  &                  prop_grad1,prop_grad2,config%solve_rhs,config%solve_lhs)
-               call calculate_Linear_systems(M_small,C_small,x_small)
+               call calculate_Linear_systems(config%solve_rhs, M_small,C_small,x_small)
 ! aspg, added from (q)rsp
             else
                call calculate_eigenvalues_and_eigenvectors(config%output_file_unit,    &
@@ -2572,13 +2582,14 @@ contains
 
 
 ! aspg, added from (q)rsp
-    subroutine calculate_Linear_systems(M, B, Solution)
+    subroutine calculate_Linear_systems(left, M, B, Solution)
 
+        logical, optional, intent(in) :: left
         complex(kind=8), intent(inout), pointer :: M(:,:)
         complex(kind=8), intent(inout), pointer :: B(:)
         complex(kind=8), intent(inout), pointer :: Solution(:,:)
 
-        call talsh_solve_Linear_systems(M, B, Solution)
+        call talsh_solve_Linear_systems(left, M, B, Solution)
     end subroutine calculate_Linear_systems
 ! aspg, added from (q)rsp
 

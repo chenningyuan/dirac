@@ -128,11 +128,14 @@ module talsh_eom
       write(*,'(A)') "*******************************************************************************"
       write(*,*) ""
 
+      print *, "are we here?"
 ! aspg : need to get from hardcoded options to getting them from input (*CCDIAG) on the calls to talsh_davidson_setup
       call talsh_davidson_setup(unit_output=6, &
                                 convergence_threshold=mfsolver_options_convergence_threshold, &
                                 solve_right=.true.,&
                                 solve_left=.false.,&
+                              !   solve_right=.false.,&
+                              !   solve_left=.true.,&
                                 symmetric=.false., &
                                 overlap_sorting=mfsolver_options_overlap_sorting,&
                                 max_subspace_size=mfsolver_options_max_subspace_size,&
