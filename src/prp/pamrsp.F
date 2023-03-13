@@ -428,6 +428,7 @@ C            /Sep 2005 hjaaj
          MAXSIM = MAX(1,MAXSIM)
 C        ... always attempt at least one vector
       END IF
+
 C
 C     ============================
 C     hjj+panor:
@@ -505,6 +506,7 @@ C
           GOTO 40
         ENDIF
       ENDIF
+
 C
 C     Handle case of zero microiterations
 C     ===================================
@@ -525,9 +527,11 @@ C         ... EVECR set in subroutine XRSST2 for UNCOUP
           ENDDO
         END IF
         IF(IPRXRS.GE.4) THEN
-          IF(NCSIM.GT.0) THEN
-            WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
-            CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
+
+         IF(NCSIM.GT.0) THEN
+c            WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
+c            CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
+            write(lupri,*), 'config trial', work(kbci:nzconf)
           ENDIF
           IF(NESIM.GT.0) THEN
             WRITE(LUPRI,'(/I5,A)')NESIM,
@@ -541,6 +545,7 @@ C         ... EVECR set in subroutine XRSST2 for UNCOUP
           ENDIF
          END IF
       ENDIF
+
 C
 C     **********************************************
 C     ***                                        ***
@@ -586,11 +591,19 @@ C         Print section
      &     (BVTYP(I),':',ISIM(I),I=1,NVPAR)
           ENDIF
 C
+
           IF(IPRXRS.GE.4) THEN
             WRITE(LUPRI,'(/A)')' Before XRSSVC'
             IF(NCSIM.GT.0) THEN
+c MvH: a bug occors here for NZ=4. In PRBVEC, the routine 
+c      PRQMAT is used, which prints a quaternion matrix
+c      However, the configurational trial vectors are at most
+c      complex, so it prints parts of the memory that have not yet 
+c      been assigned, resulting in a crash.
               WRITE(LUPRI,'(/I5,A)')NCSIM,' Config. trial vectors'
-              CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
+c              CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
+            call output(WORK(KBCI),1,NZCONF,1,NZ_in_CI,NZCONF,NZ_in_CI,
+     &                  1,LUPRI)             
             ENDIF
             IF(NESIM.GT.0) THEN
               WRITE(LUPRI,'(/I5,A)')NESIM,
@@ -621,6 +634,7 @@ C
      &         WORK(KSCI),WORK(KSOE),WORK(KSOP),
      &         IBTYP,IBCVC,IBEVC,IBPVC,NPOS,
      &         GPCI,GPOE,GPOP, WORK,KFREE,LFREE)
+
 C
 C         On file we save the Hessian PHP = PLP (i.e. beta=0), so
 C         we must project CREF out.
@@ -685,6 +699,7 @@ C       ======================================================
         ENDDO
 C
  30     CONTINUE
+
 C
 C       Info on current trial vectors
 C       -----------------------------
@@ -706,6 +721,7 @@ C
         CALL XRSSOL (REDGP,REDE,REDS,EVALR,EVECR,RCNV,
      &               IBTYP,IBEVC,WORK,KFREE,LFREE)
         CALL FLSHFO(LUPRI)
+
 C
 C        CALCULATE TRANSITION MOMENT
 C
@@ -827,6 +843,7 @@ C
          IINFO(5) = NERED
          IINFO(6) = NPRED
       END IF
+
 C
 C
 C

@@ -2850,21 +2850,22 @@ C     -------------------------
 C
 C     Add (u~v~|xy) to (uv|x~y~)
 C
-      IF (IPRINT .GE. 20) THEN
+cmartin      IF (IPRINT .GE. 20) THEN
          DO IOSIM = 1, NOSIM
             WRITE(LUPRI,'(/A,I3)')
      $           ' H2ACX matrix before SYMMH2AC no. ', IOSIM
             CALL PRDNZ3(H2ACX(1,1,1,1,1,IOSIM),NASHT,NNASHX,NZ,
      &           IPQTOQ(1,0),LUPRI)
          END DO
-      END IF
+cmartin      END IF
       CALL SYMMH2AC(H2ACX,NOSIM,WORK(KFREE),LFREE)
 C
 C     Print section
 C     -------------
 C
-      IF (IPRINT .GE. 20) THEN
+cmartin      IF (IPRINT .GE. 20) THEN
          DO IOSIM = 1, NOSIM
+            write(lupri,*) 'dit is een test'
             WRITE(LUPRI,'(/A,I3)') ' (RGETH2TX1) H2ACX matrix no. ',
      &           IOSIM
             CALL PRDNZ3(H2ACX(1,1,1,1,1,IOSIM),NASHT,NNASHX,NZ,
@@ -2884,7 +2885,7 @@ C
             CALL PRQMAT(FQT(1,1,1,ICSIM),NORBT,NASHT,NORBT,NASHT,
      &           NZ,IPQTOQ(1,0),LUPRI)
          END DO
-      END IF
+cmartin      END IF
 C
       CALL QEXIT('RGETH2TX1')
       RETURN
@@ -3013,9 +3014,9 @@ C
       ELSE
          NZ_local = NZ
       END IF
-      if (NZ_local .eq. 4) then
-         call quit('SYMMH2AX1: nz=4 not implemented')
-      end if
+c      if (NZ_local .eq. 4) then
+c         call quit('SYMMH2AX1: nz=4 not implemented')
+c      end if
       DO IN = 1, N
          CALL DCOPY(NASHT*NASHT*NNASHX*3*NZ,H2AC(1,1,1,1,1,IN),1,
      &        H2ACO,1)
@@ -3040,6 +3041,7 @@ C
                      H2AC(K,L,NIJ,1,1,IN) =
      &                    H2AC(K,L,NIJ,1,1,IN)
      &                    + H2ACO(J,I,NKL,1,1)
+cm                    write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,1,IN)
 C
 C                    (kL|iJ) + (iJ|kL) = (kL|iJ) - (iJ|lK)
 C
@@ -3047,12 +3049,14 @@ C
                      H2AC(K,L,NIJ,1,2,IN) =
      &                    H2AC(K,L,NIJ,1,2,IN)
      &                    - H2ACO(I,J,NKL,1,2)
+cm                     write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,2,IN)
 C
 C                    (Kl|iJ) + (iJ|Kl) = (Kl|iJ) + (Ji|lK)^*
 C
                      H2AC(K,L,NIJ,1,3,IN) =
      &                    H2AC(K,L,NIJ,1,3,IN)
      &                    + H2ACO(J,I,NKL,1,3)
+cm                    write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,3,IN)
 C
 C                    NZ = 2:
 C                    -------
@@ -3064,18 +3068,21 @@ C
                         H2AC(K,L,NIJ,2,1,IN) =
      &                       H2AC(K,L,NIJ,2,1,IN)
      &                       - H2ACO(J,I,NKL,2,1)
+cm                    write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,1,IN)
 C
 C                       (kL|iJ) + (iJ|kL) = (kL|iJ) - (iJ|lK)
 C
                         H2AC(K,L,NIJ,2,2,IN) =
      &                       H2AC(K,L,NIJ,2,2,IN)
      &                       - H2ACO(I,J,NKL,2,2)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,2,IN)
 C
 C                       (Kl|iJ) + (iJ|Kl) = (Kl|iJ) + (Ji|lK)^*
 C
                         H2AC(K,L,NIJ,2,3,IN) =
      &                       H2AC(K,L,NIJ,2,3,IN)
      &                       - H2ACO(J,I,NKL,2,3)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,3,IN)
 C
                      END IF
 C
@@ -3089,30 +3096,36 @@ C
                         H2AC(K,L,NIJ,3,1,IN) =
      &                       H2AC(K,L,NIJ,3,1,IN)
      &                       + H2ACO(J,I,NKL,3,3)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,1,IN)
 C
                         H2AC(K,L,NIJ,4,1,IN) =
      &                       H2AC(K,L,NIJ,4,1,IN)
      &                       - H2ACO(J,I,NKL,4,3)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,1,IN)
 C
 C                       (kL|ij) + (ij|kL) = (kL|ij) - (ij|lK)
 C
                         H2AC(K,L,NIJ,3,2,IN) =
      &                       H2AC(K,L,NIJ,3,2,IN)
      &                       - H2ACO(I,J,NKL,3,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,2,IN)
 C
                         H2AC(K,L,NIJ,4,2,IN) =
      &                       H2AC(K,L,NIJ,4,2,IN)
      &                       - H2ACO(I,J,NKL,4,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,2,IN)
 C
 C                       (Kl|ij) + (ij|Kl) = (Kl|ij) + (ji|lK)^*
 C
                         H2AC(K,L,NIJ,3,3,IN) =
      &                       H2AC(K,L,NIJ,3,3,IN)
      &                       + H2ACO(J,I,NKL,3,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,3,IN)
 C
                         H2AC(K,L,NIJ,4,3,IN) =
      &                       H2AC(K,L,NIJ,4,3,IN)
      &                       - H2ACO(J,I,NKL,4,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,3,IN)
 C
                      END IF
                      endif
@@ -3132,6 +3145,7 @@ C
                      H2AC(K,L,NIJ,1,1,IN) =
      &                    H2AC(K,L,NIJ,1,1,IN) +
      &                    H2ACO(I,J,NKL,1,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,1,IN)
 
                      if(.not.spinfr_krmc)then
 C
@@ -3140,12 +3154,14 @@ C
                      H2AC(K,L,NIJ,1,2,IN) =
      &                    H2AC(K,L,NIJ,1,2,IN) +
      &                    H2ACO(I,J,NKL,1,2)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,2,IN)
 C
 C                    (Kl|iJ) + (iJ|Kl) = (Kl|iJ) + (Ij|kL)^*
 C
                      H2AC(K,L,NIJ,1,3,IN) =
      &                    H2AC(K,L,NIJ,1,3,IN) +
      &                    H2ACO(I,J,NKL,1,3)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,1,3,IN)
 C
                      IF (NZ_local .GE. 2) THEN
 C
@@ -3157,18 +3173,21 @@ C
                         H2AC(K,L,NIJ,2,1,IN) =
      &                       H2AC(K,L,NIJ,2,1,IN) +
      &                       H2ACO(I,J,NKL,2,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,1,IN)
 C
 C                       (kL|iJ) + (iJ|kL)
 C
                         H2AC(K,L,NIJ,2,2,IN) =
      &                       H2AC(K,L,NIJ,2,2,IN) +
      &                       H2ACO(I,J,NKL,2,2)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,2,IN)
 C
 C                       (Kl|iJ) + (iJ|Kl) = (Kl|iJ) + (Ij|kL)^*
 C
                         H2AC(K,L,NIJ,2,3,IN) =
      &                       H2AC(K,L,NIJ,2,3,IN) -
      &                       H2ACO(I,J,NKL,2,3)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,2,3,IN)
 C
                      END IF
 C
@@ -3182,30 +3201,36 @@ C
                         H2AC(K,L,NIJ,3,1,IN) =
      &                       H2AC(K,L,NIJ,3,1,IN) +
      &                       H2ACO(I,J,NKL,3,2)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,1,IN)
 C
                         H2AC(K,L,NIJ,4,1,IN) =
      &                       H2AC(K,L,NIJ,4,1,IN) +
      &                       H2ACO(I,J,NKL,4,2)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,1,IN)
 C
 C                       (kL|ij) + (ij|kL)
 C
                         H2AC(K,L,NIJ,3,2,IN) =
      &                       H2AC(K,L,NIJ,3,2,IN) +
      &                       H2ACO(I,J,NKL,3,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,2,IN)
 C
                         H2AC(K,L,NIJ,4,2,IN) =
      &                       H2AC(K,L,NIJ,4,2,IN) +
      &                       H2ACO(I,J,NKL,4,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,2,IN)
 C
 C                       (Kl|ij) + (ij|Kl) = (Kl|ij) - (ji|kL)^*
 C
                         H2AC(K,L,NIJ,3,3,IN) =
      &                       H2AC(K,L,NIJ,3,3,IN) -
      &                       H2ACO(J,I,NKL,3,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,3,3,IN)
 C
                         H2AC(K,L,NIJ,4,3,IN) =
      &                       H2AC(K,L,NIJ,4,3,IN) +
      &                       H2ACO(J,I,NKL,4,1)
+cm                        write(6,*), K,L,NIJ, H2AC(K,L,NIJ,4,3,IN)
 C
                      END IF
                      endif

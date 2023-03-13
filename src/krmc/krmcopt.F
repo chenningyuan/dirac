@@ -585,6 +585,7 @@ C
 C
          GNRMSV = GNORM(5)
          CALL RGRDINF(GCI,GOEE,GOEP)
+         write(6,*) 'martingradtest', gci(1:NZCONF)
 C
 C
          EMCSCF = POTNUC + EMY + EACTIV + E_LVCORR_MC
