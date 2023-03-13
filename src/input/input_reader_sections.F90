@@ -1040,9 +1040,9 @@
          exa_input%ccd = .true.
       end if
 
-      ! if (kw_matches(word, '.CIS   ')) then
-      !    exa_input%cis = .true.
-      ! end if
+      if (kw_matches(word, '.CIS   ')) then
+         exa_input%do_cis = .true.
+      end if
 
       if (kw_matches(word, '.MP2NO         ')) then
          exa_input%mp2no = 1
@@ -1093,6 +1093,14 @@
 
       if (kw_matches(word, '.NOTRIPLES')) then
          exa_input%do_triples = .false.
+      end if
+
+      if (kw_matches(word, '.RIXS     ')) then
+         allocate(exa_input%rew_energies(2,2)) 
+! energy window for core states 
+         call kw_read(word, exa_input%rew_energies(1,1),exa_input%rew_energies(2,1))
+! energy window for final states (valence or core)
+         call kw_read(word, exa_input%rew_energies(1,2),exa_input%rew_energies(2,2))
       end if
 
       if (kw_matches(word, '.TRIPL_BLOCK')) then

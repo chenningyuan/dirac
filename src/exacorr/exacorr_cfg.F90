@@ -35,6 +35,7 @@ contains
   call interface_mpi_bcast_l0(exa_input%do_triples,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_1rdm_gs,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_2rdm_gs,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%do_cis,1,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%exa_blocksize,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%talsh_buff,1,exa_MPI_RANK,global_communicator)

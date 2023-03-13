@@ -143,7 +143,7 @@ by a single electron in an active (open) orbital. We want the O1s to be the acti
 We therefore start be reordering the orbitals such that the O1s orbital from the previous calculation on the neutral system comes out on top of the occupied orbitals. However, this is not enough to converge to the desired state since after the first diagonalization DIRAC will again by default order orbitals according to their energy. This is why we use *overlap selection*, that is, we ask DIRAC to
 rather order orbitals according to their overlap with some reference orbitals. By default (dynamic overlap selection) this will be the orbitals from the previous iteration. However, in this case we activate *non-dynamic* overlap selection, which means that we order orbitals according to their overlap with the starting orbitals.
 
- .. note:: Overlap selection is nowadays marketed hard as MOM (Maximum Orbital Method, see :cite:`Gilbert_JPCA2008`), but this method has been included in DIRAC for at least two decades and goes back to the pioneering work of `Paul Bagus <http://cascam.unt.edu/people/psbagus.htm>`_ It was used in :cite:`Bagus_JCP1971`, but not reported explicitly. However, it is for instance documented in the `1975 manual of the ALCHEMY program <http://k-sek01.t-komazawa.ac.jp/msekiya/alchemy/scfm.pdf>`_ (On pdf page 15 you find a description of keyword MOORDR using a "maximum overlap criterion").
+ .. note:: Overlap selection is nowadays marketed hard as MOM (Maximum Orbital Method, see :cite:`Gilbert_JPCA2008`), but this method has been included in DIRAC for at least two decades and goes back to the pioneering work of `Paul Bagus <http://cascam.unt.edu/people/psbagus.htm>`_ It was used in :cite:`Bagus_JCP1971`, but not reported explicitly. However, it is for instance documented in the 1970 manual of the ALCHEMY program :cite:`ALCHEMY1970` (in French ! On pdf page 9 you find a description of keyword MOORDR using a "maximum overlap criterion").
 
 The  K edge obtained by :math:`\Delta SCF` does not correspond to that of our TD-HF or complex reponse calculations since they 
 only allow linear reponse (orbital relaxation). 
@@ -177,7 +177,7 @@ We then first run the ground state::
 
 followed by the 1s core-ionized state::
 
-   pam --mol=H2O_C1 --inp=H2O_1s --incmo --get "DFCOEF=DFCOEF.ION"
+   pam --mol=H2O_C1 --inp=H2O_1s --incmo 
 
 
    
@@ -187,7 +187,7 @@ We now run STEX using the input
 
 and the command::
 
-    pam --inp=stex --mol=H2O_C1 --put "DFCOEF DFCOEF.ION"
+    pam --inp=stex --mol=H2O_C1 --incmo --put "H2O_1s_H2O_C1.h5=ION.h5"
 
 We have plotted the STEX spectrum below together with the experimental one
 
