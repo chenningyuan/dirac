@@ -33,7 +33,7 @@
         case ('*X2C')
            call read_input_x2c(word, kw_section)
 
-        case ('*aooSOC')
+        case ('*X-AMFI', '*XAMFI ')
            call read_input_aoosoc(word, kw_section)
 
         case ('**EXACC')
@@ -2228,8 +2228,8 @@
 
       use x2cmod_cfg
       use input_reader
-#ifdef MOD_AOOSOC
-      use atomic_oo_order_so_correction_cfg
+#ifdef MOD_XAMFI
+      use xamfi_global_parameters
 #endif
 
       implicit none
@@ -2239,24 +2239,45 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
       call reset_available_kw_list()
 
 
       if (kw_matches(word, '.DEBUG ')) then
          aoomod_debug = .true.
-         aoomod       = .true.
-         x2c_add_amfi = 2
       end if
+
       if (kw_matches(word, '.atomic')) then
          aoomod       = .true.
          x2c_add_amfi = 2
       end if
 
+      if (kw_matches(word, '.2ediag')) then
+         aoomod       = .true.
+         aoo2ediag    = .true.
+      end if
+
+      if (kw_matches(word, '.amf   ')) then
+         aoomod       = .true.
+         aoo2ediag    = .true.
+         x2c_add_amfi = 2
+      end if
+
+      if (kw_matches(word, '.eamf  ')) then
+         aoomod       = .true.
+         aooeamf      = .true.
+         x2c_add_amfi = 3
+      end if
+
+      if (kw_matches(word, '.noaoc ')) then
+         aoomod       = .true.
+         aoofocc      = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
 #else
-      call quit('Atomic oo-order spin-orbit correction not included in this version')
+      call quit('X-AMFI not included in this version')
 #endif
 
    end subroutine

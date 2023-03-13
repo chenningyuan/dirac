@@ -81,13 +81,17 @@ module talsh_cc
 
          integer :: iff        ! loop variable to loop over field strengths
          integer :: fock_mode  ! choice of Fock build options
+
+         integer :: num_gpus = 0, igpu
          
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
+         call talsh_get_number_gpus(num_gpus)
+
 !        Initialize libraries
          buf_size=exa_input%talsh_buff*buf_size
-         ierr=talsh_init(buf_size,host_arg_max)
+         ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
          call print_date('Initialized talsh library')
          write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
          call interest_initialize(.true.)
@@ -1052,7 +1056,7 @@ module talsh_cc
          call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD)
          call print_date('Finished calculating fixed intermediates')
 
-         if (print_level.gt.8) then
+         if (print_level>0) then
              if (.not.CCD) print*, "T1amp      = ", tensor_norm2(comm_t%t1)
              print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER_R
              ! print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER_R

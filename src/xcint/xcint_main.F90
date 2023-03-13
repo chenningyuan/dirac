@@ -27,6 +27,7 @@ module xcint_main
 
    public integrate_xc
    public get_xc_energy
+   public set_xc_energy_delta
    public get_xc_mat_energy
    public get_nr_electrons_integrated
    public get_susc2el_integrated
@@ -62,7 +63,9 @@ module xcint_main
    real(8) :: tau_integral
    real(8) :: nr_electrons_integrated
    real(8) :: xc_energy
+   real(8) :: xc_energy_delta = 0.0d0
    real(8) :: xc_mat_energy
+   real(8) :: xc_mat_energy_delta = 0.0d0
 
    real(8) :: susc2el_xc_integrated(3, 3)
    real(8) :: susc2el_xc_integrated_sdft(3, 3)
@@ -711,6 +714,7 @@ contains
          if (do_potential) then
             save_ddot2    = ddot(mat_dim*mat_dim, dmat_0(1,1,1), 1, fmat, 1)
             xc_mat_energy = save_ddot2 - save_ddot1
+            !print *, 'xc_mat_energy is ',xc_mat_energy, save_ddot2,save_ddot1
          end if
 
          call report()
@@ -1858,7 +1862,7 @@ contains
       if (do_potential) then
          write(file_unit, '(3x, a, f26.16)')                        &
                'DFT exchange-correlation energy:               = ', &
-               xc_energy
+               get_xc_energy()
       end if
 
       write(file_unit, '(3x, a, f26.16)')                        &
@@ -1914,12 +1918,18 @@ contains
 
    function get_xc_energy()
       real(8) :: get_xc_energy
-      get_xc_energy = xc_energy
+      get_xc_energy = xc_energy + xc_energy_delta
    end function
+
+   subroutine set_xc_energy_delta(dXC,dXCpot)
+      real(8), intent(in), optional :: dXC,dXCpot
+      if(present(dXC   )) xc_energy_delta     = dXC
+      if(present(dXCpot)) xc_mat_energy_delta = dXCpot
+   end subroutine set_xc_energy_delta
 
    function get_xc_mat_energy()
       real(8) :: get_xc_mat_energy
-      get_xc_mat_energy = xc_mat_energy
+      get_xc_mat_energy = xc_mat_energy + xc_mat_energy_delta
    end function
 
    function get_susc2el_integrated() result(r)

@@ -29,7 +29,7 @@ ${dft}
 1..oo
 *END OF
 EOF
-pam --inp=H2O_dft  --mol=H2O --outcmo --suffix=${dft}
+pam --inp=H2O_dft  --mol=H2O --outcmo --suffix=${dft} --noh5
 for occ in 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9
 do
 cat <<EOF > H2O_1s_dft.inp
@@ -68,7 +68,8 @@ ${occ}/2
 1..oo
 *END OF
 EOF
-pam --inp=H2O_1s  --mol=H2O --incmo --suffix=${dft}_occ${occ}
+pam --inp=H2O_1s  --mol=H2O --incmo --suffix=${dft}_occ${occ} --noh5
 done
+rm CHECKPOINT.h5
 done
 exit 0

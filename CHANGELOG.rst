@@ -6,19 +6,41 @@
 New features:
 
 - Calculation of Parity-Violating Nuclear Spin-Rotation Tensors. Activated with ".PVCSR"
-   - Contributor: I. Agustín Aucar
+   - Contributor: I. Agustín Aucar.
    - Reference: `Ignacio Agustín Aucar and Anastasia Borschevsky, Relativistic study of parity-violating nuclear spin-rotation tensors. J. Chem. Phys. 155, 134307 (2021) <https://doi.org/10.1063/5.0065487>`__
    - Manual: `PVCSR <http://www.diracprogram.org/doc/release-23/manual/properties.html#pvcsr>`__
    - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/pvcsr/tutorial.html>`__
+   
+- Calculation of oscillator strenghts beyond the electric dipole approximation in the generalized velocity representation
+   - Contributors: Martin van Horn, Trond Saue, and Nanna Holmgaard List.
+   - Reference: `M. van Horn, T. Saue, N. H. List. Probing Chirality across the Electromagnetic Spectrum with the Full Semi-Classical Light-Matter Interaction. J. Chem. Phys. 156, 054113 (2022) < https://doi.org/10.1063/5.0077502>`__
+   - Manual: `VPOL <http://www.diracprogram.org/doc/release-23/manual/properties/excitation.html#vpole>`__
+   - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/x_ray/BED_Ba/tutorial.html>`__
 
+- (extended) atomic-mean-field two-electron scalar and spin-orbit picture-change corrections for two-component Hamiltonian calculations
+   - Contributors: Stefan Knecht, Michal Repsiky, Hans Joergen Aa. Jensen and Trond Saue.
+   - Reference: `Stefan Knecht, Michal Repisky, Hans Jørgen Aagaard Jensen, and Trond Saue, Exact two-component Hamiltonians for relativistic quantum chemistry: Two-electron picture-change corrections made simple, J. Chem. Phys. 157, 114106 (2022) <https://doi.org/10.1063/5.0095112>`__
+   - Manual: `XAMFI <http://www.diracprogram.org/doc/release-23/manual/xamfi.html>`__
+   - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/two_component_hamiltonians/xamfX2C.html>`__
 
-22.1.beta
----------
+- ExaCorr module works now also with contracted basis functions.
+   - Contributor: Lucas Visscher.
+
+- Basis set library has been extended with basis sets with diffuse functions for s and d blocks, dyall.aXNz basis sets.
+   - Contributor: Ken Dyall.
+   - Reference: `K. G. Dyall, P. Tecmer, and A. Sunaga, Diffuse basis functions for relativistic s and d block Gaussian basis sets, J. Chem. Theor. Comput. 19, 198 (2023). <https://doi.org/10.1021/acs.jctc.2c01050>`__
+
+Infrastructure changes and fixes:
+
+- HDF5 checkpoint file is now default for data handling
+   - Contributor: Lucas Visscher
+   - User manual: `Data storage in DIRAC <http://www.diracprogram.org/doc/release-23/manual/data.html>`__
+   - Developer manual: `The CHECKPOINT.h5 file <http://www.diracprogram.org/doc/release-23/development/checkpoint.html>`__
 
 Revised features:
 
 - Added a CI gradient convergence threshold option '.THRGCI' to '\*KRCICALC' (could not be changed by user previously).
-  - Contributor: H. J. Aa. Jensen.
+   - Contributor: H. J. Aa. Jensen.
 
 Performance improvements:
 
@@ -34,6 +56,7 @@ Bugfix:
 - Default for .MVO has been corrected, so it now behaves as expected: modified virtual orbitals
   based on the Fock potential from the doubly-occupied molecular orbitals after an open-shell SCF calculation (H. J. Aa. Jensen).
 
+-----------------------------------------------------------------------------------------------------
 
 22.0 (2022-02-08)
 -----------------
@@ -78,6 +101,7 @@ Bugfix:
   4-component relatistic average-of-configuration HF calculations on systems
   with inversion symmetry and no occupation in ungerade symmetry.
 
+-----------------------------------------------------------------------------------------------------
 
 21.1 (2021-09-16)
 -----------------
@@ -95,6 +119,7 @@ Error corrections:
 - Fixed memory management in LUCIA (Lucas Visscher)
 - atomic supersymmetry now works with X2Cmmf (Ayaki Sunaga, Stefan Knecht, Trond Saue)
 
+-----------------------------------------------------------------------------------------------------
 
 21.0 (2021-05-28)
 -----------------

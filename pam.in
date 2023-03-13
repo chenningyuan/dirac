@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 """
@@ -1470,11 +1470,8 @@ Options are also read from ~/.diracrc"""
         os.putenv('BASDIR', self.basdir)
 
         # set path to laplace input data
-        try:
-          os.putenv('LAPLACE_ROOT',os.path.join(pam_directory,'external'))
-        except:
-          pass
-        
+        os.putenv('LAPLACE_ROOT', os.path.join(pam_directory, 'laplace-minimax'))
+
         dirwrk_amount = str(int(self.max_memory_work_master * 1000000))
         try:
             # make sure DIRWRK is integer

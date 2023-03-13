@@ -454,6 +454,8 @@ C     on disk in DFFCK1
 #include "cbihr2.h"
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),FMAT(N2BBASXQ),CMO(NCMOTQ)
+      real*8 , allocatable :: aoo2esssoc(:)
+      logical              :: tobe
 #include "memint.h"
 
       CALL MEMGET('REAL',KF1,N2BBASXQ,WORK,KFREE,LFREE)
@@ -483,6 +485,22 @@ C     Calculate 2e part
       SCRFCK = SCRFCK_SAVE 
       print *,'SCRFCK:',SCRFCK
 C     Calculate energy
+C     ======================
+      inquire(file='XAMFI-ss-soc-contributions',exist=tobe)
+      if(tobe)then
+        open(99,file='XAMFI-ss-soc-contributions',status='old',
+     &  form='unformatted',access='sequential',
+     &  action="readwrite",position='rewind')
+        allocate(aoo2esssoc(ntbas(0)**2*nz))
+        read(99) aoo2esssoc(1:ntbas(0)**2*nz)
+        close(99,status='keep')
+        !> subtract the PCE corrections from the effective F[1] ...
+        call daxpy(ntbas(0)**2*nz,-1.0d0,aoo2esssoc,1,work(kf1),1)
+        !> ... and add the PCE corrections to F[2]
+        call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,work(kf2),1)
+        deallocate(aoo2esssoc)
+      end if
+
       CALL ERGCAL(WORK(KF1),WORK(KF2),WORK(KDEN),WORK(KFREE),LFREE)
 C     Add 2e part to 1e part
       DO II=0,N2BBASXQ-1

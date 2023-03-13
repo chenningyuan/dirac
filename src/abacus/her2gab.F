@@ -345,7 +345,7 @@ C
           CALL MEMGET('INTE',KINDCD,2*NORBC*NORBD,
      &                              WORK,KFREE,LFREE)
 
-CMI          ... here it fails !!!
+CMI          ... here it fails !!! stknecht: what does that mean @Miro???
           CALL GABDR1(GABM,IJOB,WORK(KFREE),LFREE,
      &          UNDIFF,PERTUR,LONDON,SPNORB,EXPECT,SUSCEP,DDFOCK,
      &          DIRFCK,SOFOCK,DISTRI,IATOM,MULE,MULTE,MAXDER,NOCONT,
@@ -1772,7 +1772,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Gabgen */
       SUBROUTINE GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,JATOM,NOCONT,
-     &                  IPRINT,WORK,LWORK)
+     &                  recompute_Gab_,IPRINT,WORK,LWORK)
       use checkpoint
 C***********************************************************************
 C
@@ -1791,7 +1791,7 @@ C
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
-      LOGICAL EXTST,FNDLAB,NOCONT
+      LOGICAL EXTST,NOCONT, recompute_Gab_
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
       logical gabdone
@@ -1838,11 +1838,13 @@ C
 C
 C     Search for GAB-integrals; return if they are there
 C
-      DO I = 1,NGAB
-          call checkpoint_query (group//gablab(i),gabdone,gabsize)
-          IF(.not.gabdone.or.gabsize.ne.nsymbl**2) GOTO 10
-      END DO
-      GOTO 999
+      if(.not.recompute_Gab_)then !> by default we reuse GAB-integrals
+          DO I = 1,NGAB
+              call checkpoint_query (group//gablab(i),gabdone,gabsize)
+              IF(.not.gabdone.or.gabsize.ne.nsymbl**2) GOTO 10
+          END DO
+          GOTO 999
+      end if
  10   CONTINUE
 C
 C     Generate GAB-integrals
@@ -1904,10 +1906,22 @@ C
 C
 C     Write labeled data
 C
+
       IOFF = 0
       DO I = 1,NGAB
-         call checkpoint_write (group//gablab(i),
-     &        rdata=WORK(KGAB+IOFF:KGAB+IOFF+N2GAB-1))
+        if(recompute_Gab_)then
+            OPEN (104,STATUS='replace',FORM='UNFORMATTED',
+     &            FILE=trim(gablab(i)))
+            rewind(104)
+            CALL NEWLB2(GABLAB(I),RTNLBL,104,LUPRI)
+            LEN = MAX(4,N2GAB)
+            CALL WRITT(104,LEN,WORK(KGAB+IOFF))
+            CALL NEWLB2('EOFLABEL',RTNLBL,104,LUPRI)
+            close(104,status="keep")
+         else
+           call checkpoint_write (group//gablab(i),
+     &          rdata=WORK(KGAB+IOFF:KGAB+IOFF+N2GAB-1))
+         end if
          IOFF = IOFF + N2GAB
       END DO
 C
@@ -1930,6 +1944,7 @@ C
 C     Written by T.Saue Mar 20 1997
 C
 C***********************************************************************
+      use gab_settings, only: recompute_Gab
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -1952,6 +1967,11 @@ C
 C     Construct label
 C     ---------------
 C
+
+      iprint_ = iprint; !iprint_ = 10
+      gabsize = -1; gabdone = .false.
+
+
       IF(ITYPE.EQ.0) THEN
          NGAB = 1
          GABLAB(1) = 'GABXXXXX'
@@ -1978,21 +1998,33 @@ C
       DO I = 1,NGAB
          WRITE(GABLAB(I)(6:6),'(I1)') IGTYP
       ENDDO
+
 C
 C     Get GAB-matrix
 C     --------------
 C
       DO IGAB = 1, NGAB
-         call checkpoint_query (group//gablab(igab),gabdone,gabsize)
+         if(.not.recompute_Gab) 
+     &   call checkpoint_query (group//gablab(igab),gabdone,gabsize)
          IF(.not.gabdone.or.gabsize.ne.nsymbl**2) THEN
             WRITE(LUPRI,'(/3A)')
      &           '* GETGAB: label "',GABLAB(IGAB),'" not found; '//
      &           'calling GABGEN.'
             CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,0,.FALSE.,
-     &           IPRINT,WORK,LWORK)
+     &           recompute_Gab,IPRINT,WORK,LWORK)
          ENDIF
-         call checkpoint_read (group//gablab(igab),rdata=gab1d)
-         gabm(:,:,igab) = reshape(gab1d,(/nsymbl,nsymbl/))
+         if(recompute_Gab)then
+              OPEN (104,STATUS='old',FORM='UNFORMATTED',
+     &              FILE=trim(gablab(igab)))
+              rewind(104)
+              IF(FNDLAB(GABLAB(IGAB),104))then
+                CALL READT(104,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
+                close(104,status="delete")
+              END IF
+         else
+           call checkpoint_read (group//gablab(igab),rdata=gab1d)
+           gabm(:,:,igab) = reshape(gab1d,(/nsymbl,nsymbl/))
+         end if
          IF(IPRINT.GE.5) THEN
 C           reduced GAB-matrix is printed for IPRINT .ge. 4 in GABGEN
 C           we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001

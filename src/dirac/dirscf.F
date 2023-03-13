@@ -257,7 +257,7 @@ C
 #include "dcborb.h"
 #include "dcbreo.h"
       type(fde_import) :: itmp
-      LOGICAL DOSEL,DOLEV,DSCFON,AOCBUF
+      LOGICAL DOSEL,DOLEV,DSCFON,AOCBUF, tobe
       CHARACTER CPUTID*12,WALTID*12,DAYTID*24,SECTID*12
       INTEGER NOCCUP(8)
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
@@ -268,6 +268,7 @@ C
 #ifdef HAS_PCMSOLVER
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
+      real*8 , allocatable :: aoo2esssoc(:)
 
       real(8) :: TIMSTR(2), TIMEND(2)
 
@@ -275,14 +276,14 @@ C
       CALL QENTER('PREDHF')
 C
 #include "memint.h"
-C     
+C
 C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
       TDXC=D0
       CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRSCF)
-CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
+CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch
       IF (RESTFCK) THEN
          BARNUC  =.FALSE.
          DOHUCKEL=.FALSE.
@@ -300,8 +301,8 @@ C
 C
 C       Open files necessary for Dirac-Fock calculation
 C
-!        N2TMOTQ = N2TMO(I)*NZ        
-!        N2TMOTQ = N2TMO(I)*NZ        
+!        N2TMOTQ = N2TMO(I)*NZ
+!        N2TMOTQ = N2TMO(I)*NZ
         OPEN (LUEVEC, FILE='DFEVEC', FORM='UNFORMATTED',
      +      ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='UNKNOWN')
         CALL OPNFIL(LUFCK2,'DFFCK2','UNKNOWN','PREDHF')
@@ -325,7 +326,7 @@ C
 C     Get 2-electron Fock matrix (save in CMO)
 C     ========================================
       DOSEL = .FALSE.
-C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
+C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true.
       IF (.NOT.RESTFCK) THEN
       IF(ATHUCK) THEN
         DHF_INTTYP = 'Atom. Huckel'
@@ -343,7 +344,7 @@ C.......In the open-shell case use fractional occupation in first iteration; res
         NFMATBUF   = NFMAT
         NFMAT      = 1
         CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
-        !fixme: michal for InteRest                            
+        !fixme: michal for InteRest
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C
@@ -545,13 +546,31 @@ C       ... read 1-electron Fock matrix into FOCK ...
 C     MI     ... get 1-electron Fock matrix into CMO ...
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 C
-C     Calculate correction according to the One-center app. models 
-C     ============================================================
 C
         IF (TRIVEC.OR.ATOMST) THEN
+C          Calculate correction according to the One-center app. models
+C          ============================================================
            IF (ONECAP.AND. .NOT.SMLV1C) THEN
               CALL CATCORR(CMO,FOCK,DMAT,WORK(KFREE),LFREE,IPRSCF)
            END IF
+
+C          Calculate total energy
+C          ======================
+           inquire(file='XAMFI-ss-soc-contributions',exist=tobe)
+           if(tobe)then
+             open(99,file='XAMFI-ss-soc-contributions',status='old',
+     &            form='unformatted',access='sequential',
+     &            action="readwrite",position='rewind')
+             allocate(aoo2esssoc(ntbas(0)**2*nz))
+             read(99) aoo2esssoc(1:ntbas(0)**2*nz)
+             close(99,status='keep')
+             !> subtract the PCE corrections from the effective F[1] ...
+             call daxpy(ntbas(0)**2*nz,-1.0d0,aoo2esssoc,1,cmo,1)
+             !> ... and add the PCE corrections to F[2]
+             call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,fock,1)
+             deallocate(aoo2esssoc)
+           end if
+
            CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         END IF
 
@@ -595,6 +614,7 @@ C
             CALL DAXPY(N2BBASXQ,DF(IOPEN),
      &                 FOCK(1+N2BBASXQ*IOPEN),1,FOCK,1)
           END DO
+
         ENDIF
 C
 C       Write total Fock matrix
@@ -785,6 +805,7 @@ C         read LUTMAT rec#2 with SAOMO
       CALL READT(LUTMAT,N2TMT,SAOMO)
       CLOSE(LUTMAT,STATUS='KEEP')
 
+!     iprscf_ = iprscf; iprscf = 50
 CMI ... perform all this only if we do not restart BSS from DC-SCF or DC-SCF from BSS-SCF
       IF (.NOT.RESTFCK) THEN
         IF (NASHT.GT.0.AND.AOC) THEN
@@ -848,6 +869,7 @@ C       provide starting for the postDHF-BSS-SCF procedure
         CLOSE(LUBSS,STATUS='KEEP')
         RESTFCK = .FALSE.
       ENDIF 
+!     iprscf = iprscf_
 C
 C     Freeze orbitals by zeroing off-diagonal elements of FMO
 C     =======================================================
@@ -1361,8 +1383,10 @@ C
 C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
+!           iprscf_ = iprscf; iprscf = 10
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+!           iprscf = iprscf_
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
             CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
 C
@@ -1459,31 +1483,24 @@ C
 C
 C        Calculate total energy
 C        ======================
-         inquire(file='aoo2e-ss-soc-contributions',exist=tobe)
+         inquire(file='XAMFI-ss-soc-contributions',exist=tobe)
+         !write(lupri,*) 'tobe = ',tobe
          if(tobe)then
-           open(99,file='aoo2e-ss-soc-contributions',status='old',
-     &     form='unformatted',
-     &     access='sequential',action="readwrite",position='rewind')
+           open(99,file='XAMFI-ss-soc-contributions',status='old',
+     &          form='unformatted',access='sequential',
+     &          action="readwrite",position='rewind')
            allocate(aoo2esssoc(ntbas(0)**2*nz))
            read(99) aoo2esssoc(1:ntbas(0)**2*nz)
            close(99,status='keep')
            call daxpy(ntbas(0)**2*nz,-1.0d0,aoo2esssoc,1,cmo,1)
            call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,fock,1)
-!          if(aoc) call quit('AOC not working yet for aoo2esssoc...')
-           !> stefan: enabling this is wrong but not doing it as well...
-           !> if possible the contributions should be added in the MO basis but how to calculate the energy at this point correctly???
-!          IF (AOC) THEN
-!             DO IOPEN = 1,NOPEN
-!                CALL DAXPY(N2BBASXQ,1.0d0,
-!    &                      aoo2esssoc,1,
-!    &                      FOCK(1+N2BBASXQ*IOPEN),1)
-!              END DO
-!           END IF
            deallocate(aoo2esssoc)
          end if
 C
+!        iprscf_ = iprscf; iprscf = 5;
          ! here F1 is in CMO and F2 is in FOCK
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
+!        iprscf = iprscf_;
 #ifdef HAS_PCMSOLVER
          if (dirac_cfg_pcm) then
            write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
@@ -1499,8 +1516,8 @@ C
 !                      nz, ipqtoq(1,0), 6)
            deallocate(fock_pcm)
            time_pcm_fock = second() - time_pcm_fock
-         endif 
-#endif         
+         endif
+#endif
 
 C
 C        Add one-electron Fock matrix to two-electron matrix
@@ -1520,10 +1537,20 @@ C
      &                 FOCK(1+N2BBASXQ*IOPEN),1,FOCK,1)
            END DO
          ENDIF
+
+#ifdef DEBUG_SOC
+         CALL DAXPY(N2BBASXQ,-1.0d0,CMO,1,FOCK,1)
+         CALL HEADER('SCFCYC_1: BLUX F[2] matrix in SA-AO basis',-1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NZ,IPQTOQ(1,0),LUPRI)
+         CALL DAXPY(N2BBASXQ,1.0d0,CMO,1,FOCK,1)
+#endif
 C
 C       Write total Fock matrix
 C
         CALL WRIFCK(LUFCKT,FOCK,NFMAT)
+        !> DFFCK1 --> one-electron part
+        !> DFFCKT --> first entry
 C
          IF(IPRSCF.GE.5) THEN
            IF (NISHT .GT. 0) THEN
@@ -1689,6 +1716,11 @@ C*****************************************************************************
 
       use dirac_cfg
       use fde_mod
+#ifdef MOD_XAMFI
+      use xamfi_global_parameters, only: aoomod, aooeamf,
+     &                             xamfi_energy_contributions
+      use xamfi_utils, only: xamfi_get_energy_correction
+#endif
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
@@ -1709,7 +1741,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-      LOGICAL LVCON
+      LOGICAL LVCON, XAMFI_CORRECTIONS, XAMFI_VXC_
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
@@ -1721,8 +1753,9 @@ c     besterg is the lowest energy we encountered so far
 #ifdef HAS_PCMSOLVER
       real(8)      :: pcm_energy
 #endif
-      REAL(8) :: PE_TOT_NRG, PE_EL_NRG
+      REAL(8) :: PE_TOT_NRG, PE_EL_NRG, XAMFI_Vxc_delta
       REAL(8), DIMENSION(:), ALLOCATABLE :: PE_FMAT
+      REAL(8), DIMENSION(:), ALLOCATABLE :: XAMFI_FMAT
       type(fde_import) :: itmp
       data besterg /1.0D100/
       save besterg
@@ -1743,6 +1776,18 @@ C
          call fde_get_import_info(itmp)
       end if
 
+#ifdef MOD_XAMFI
+      inquire(file='XAMFI-ss-soc-contributions',
+     &        exist=XAMFI_CORRECTIONS)
+      if(XAMFI_CORRECTIONS.and.aoomod)then
+        open(99,file='XAMFI-ss-soc-contributions',status='old',
+     &     form='unformatted',
+     &     access='sequential',action="readwrite",position='rewind')
+        allocate(XAMFI_FMAT(ntbas(0)**2*nz))
+        read(99) XAMFI_FMAT(1:ntbas(0)**2*nz)
+        close(99,status='keep')
+      end if
+#endif
 
       IF(AOC) THEN
         ITOP = NOPEN
@@ -1775,26 +1820,52 @@ C           The factor is 0.5 * (2*f_{o1})*(2*f_{o2})
 C           Divide by 2 (from TWOFCK)
 C           Total factor is DF(ISHELL)*DF(JSHELL)
 C
-            DFRAC1 = DF(ISHELL)*DF(JSHELL)
+            DFRAC2 = DF(ISHELL)*DF(JSHELL)
             DO IZ = 1,NZ
                ETEMP =
-     &            DFRAC1*DDOT(N2BBASX,DMAT(1,IZ,JSHELL+1),1,
+     &            DFRAC2*DDOT(N2BBASX,DMAT(1,IZ,JSHELL+1),1,
      &                                  F2(1,IZ,ISHELL+1),1)
                E(IZ,2,ISHELL) = E(IZ,2,ISHELL) + ETEMP
                E(IZ,2,JSHELL) = E(IZ,2,JSHELL) + ETEMP
             END DO
          END DO
       END DO
-!     correct for contribution from ks potential to two-electron energy
-      if (dirac_cfg_dft_calculation) then
-!Miro: separate this contribution into own variable, xcint_xc_energy
-!     the density for calculation is the same as for xcint_xc_contribution to the 2el Fock matrix
-        xcint_xc_energy=xcint_get_xc_mat_energy()
-        e(1, 2, 0) = e(1, 2, 0) - xcint_xc_energy
-        !print *
-        !print *,'ERGCAL: xcint_get_xc_mat_energy()=',xcint_xc_energy
-        !print *
+#ifdef MOD_XAMFI
+      !> calculate contribution to 2-e energy from X-AMFI correction
+      if(XAMFI_CORRECTIONS.and.aoomod)then
+        !> only the 0th intra-shell contribution is needed
+        DFRAC2 = DP25*D2*DF(0)*D2*DF(0)*DA(0)
+        xamfi_energy_contributions =  
+     &  xamfi_get_energy_correction(DMAT,XAMFI_FMAT,
+     &                              DFRAC2,0,0,
+     &                              NZ,N2BBASX,NFMAT)
+        deallocate(XAMFI_FMAT)
       end if
+#endif
+
+      !> correct for contribution from ks potential to two-electron energy
+      if(dirac_cfg_dft_calculation)then
+
+#ifdef MOD_XAMFI
+         !> ... and correct for contribution from the PC correction to the ks potential
+         inquire(file='XAMFI-Vxc-contributions',exist=XAMFI_VXC_)
+         if(XAMFI_VXC_)then
+           open(99,file='XAMFI-Vxc-contributions',status='old',
+     &          form='unformatted',access='sequential',
+     &          action="readwrite",position='rewind')
+           allocate(XAMFI_FMAT(N2BBASXQ));read(99)XAMFI_FMAT(1:N2BBASXQ)
+           close(99,status='keep')
+           XAMFI_Vxc_delta = ddot(N2BBASXQ,DMAT,1,XAMFI_FMAT,1)
+           call xcint_set_xc_mat_energy_delta(XAMFI_Vxc_delta)
+           deallocate(XAMFI_FMAT)
+         end if
+#endif
+
+         xcint_xc_energy=xcint_get_xc_mat_energy()
+
+        e(1, 2, 0) = e(1, 2, 0) - xcint_xc_energy
+      end if
+
       DO IZ = 1,NZ
         DO IOPEN = 0,ITOP
            E1PART = E1PART + E(IZ,1,IOPEN)
@@ -1820,7 +1891,7 @@ C
       IF (PEQM) THEN
         ! The PE Fock matrix is added to F2 before entering ERGCAL
         ! and the electronic PE energy is therefore added to E2PART.
-        ! Therefore we subtract its' contribution from the total PE energy.
+        ! Therefore we subtract its contribution from the total PE energy.
         ALLOCATE(PE_FMAT(N2BBASX))
         E_PE = 0.0D0
         CALL PELIB_IFC_FOCK(DMAT, PE_FMAT, PE_TOT_NRG, PE_EL_NRG)
@@ -1898,6 +1969,19 @@ CMI      ... print out matrixes ...
             WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total electronic energy            :  ',ELERGY,
      +       'Nuclear potential energy           :  ',POTNUC
+#ifdef MOD_XAMFI
+         IF(XAMFI_CORRECTIONS)then
+             if(aooeamf)then
+               WRITE(LUPRI,'(A,'//FMT//')')
+     +         '... with eamf contr. to 2e-energy :  ',
+     +          xamfi_energy_contributions
+             else
+               WRITE(LUPRI,'(A,'//FMT//')')
+     +         '... with amf contr. to 2e-energy  :  ',
+     +          xamfi_energy_contributions
+             end if
+         END IF
+#endif
          IF(LVCON) WRITE(LUPRI,'(A,'//FMT//')')
      +       'SS Coulombic correction            :  ',CORRLV
          IF(SOLVEN) WRITE(LUPRI,'(A,'//FMT//')')
@@ -5408,7 +5492,6 @@ C.....Loop over atomic types
       CALL MEMGET2('INTE','INFO',KINF,NTBAS(0),WORK,KFREE,LFREE)
       ICENT = 1
       DO IATOM = 1,NONTYP
-      IF(NVECATOM(IATOM).GT.0) THEN
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
         IF (MBAS == 0) CYCLE
@@ -5519,8 +5602,9 @@ C.......Release memory
         deallocate (atom_cmo)
         CALL MEMREL('ATOMIC_START',WORK,1,KADE,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
-      ENDIF
-      ICENT = ICENT+NONT(IATOM)
+        write(lupri,*) 'added block for center ',icent,
+     &  NONT(IATOM),iatom,NUCDEG(ICENT)
+        ICENT = ICENT+NONT(IATOM)
       ENDDO
 C
       IF(NBSYM.EQ.1) THEN

@@ -3,6 +3,8 @@
 
 star(AMFI)
 
+.. note:: We highly recommend to use the :ref:`\*XAMFI` module rather than the present \*AMFI module as highlighted by the numerical examples provided in :cite:`Knecht2022`.
+
 Specification of the AMFI, RELSCF directives.
 
 The AMFI program of B.Schimmelpfennig serves for calculating spin-orbit

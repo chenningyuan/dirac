@@ -18,6 +18,7 @@ Keyword reference
 
 * :doc:`**HAMILTONIAN <hamiltonian>` --- Specify the Hamiltonian
    - :doc:`*DFT <dft>` --- DFT directives
+   - :doc:`*XAMFI <xamfi>` --- X-AMFI directives
    - :doc:`*AMFI <amfi>` --- AMFI directives
    - :doc:`*X2C <x2c>` --- X2C directives
    - :doc:`*FDE <fde>` --- Frozen Density Embedding directives
@@ -59,6 +60,7 @@ Keyword reference
    - :doc:`*MOLGRD <properties/molgrd>` --- Molecular gradient
    - :doc:`*NMR <properties/nmr>` --- NMR directives
    - :doc:`*STEX <properties/stex>` --- Static exchange (STEX) directives
+   - :doc:`*NQCC <properties/nqcc>` --- NQCC directives
 
 
 * :doc:`**VISUAL <visual>` --- Visualization module
@@ -72,6 +74,7 @@ Keyword reference
 Notes:
 ------
 
+  :doc:`Data handling <data>` |
   :doc:`One-electron operators <one_electron_operators>` |
   :doc:`Orbital strings <orbital_strings>` |
   :doc:`Symmetry-handling at the correlated level <groupchain>`

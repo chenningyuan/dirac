@@ -43,9 +43,9 @@ add_dependencies(main interest)
 if (ENABLE_STIELTJES)
     add_dependencies(main stieltjes)
 endif()
-if (ENABLE_LAPLACE)
-    add_dependencies(main laplace-minimax)
-endif()
+
+add_dependencies(main laplace-minimax)
+
 if(ENABLE_PCMSOLVER)
     add_dependencies(main pcm_dirac)
 endif()

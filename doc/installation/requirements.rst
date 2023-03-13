@@ -14,7 +14,7 @@ Minimum requirements
 --------------------
 
 * CMake 3.20 - or later
-* Python 2.6 - 2.7
+* Python 3.6 - or later
 * GFortran/GCC/G++ 4.9 - 5.2 or Intel compilers 13.0 - 15.0.6
 
 If your distribution does not provide a recent CMake, you can install it
