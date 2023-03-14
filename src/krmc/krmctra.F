@@ -3625,10 +3625,10 @@ C
      &     DP5 , DP5 , D1  , D1,
      &     DMP5, DMP5, DMP5, DMP5,
      &     D1  , DM1 , D1  , DM1,
-     &     DMP5, DP5 , DP5 , DMP5,
+     &     DMP5, DP5 , DP5 , DM1,
      &     DMP5, DP5 , DP5 , DMP5,
      &     D1  , D1  , D1  , D1,
-     &     DP5 , DP5 , DP5 , DP5,
+     &     DP5 , DP5 , DP5 , D1,
      &     DP5 , DP5 , DP5 , DP5 /
       DATA iPVINT /
      &     1,1, 2,1, 3,1, 4,3,
@@ -3667,39 +3667,47 @@ C     DP5 * \Twoint{vq,xy;3,1} P_{vq,xy;3,1}
 C
 C     etc...
 C
-      IF (IPRINT .GE. 20) THEN
-         CALL HEADER('Output from RADDFQX',-1)
-         WRITE(LUPRI,'(A,I3)') 'IV        = ',IV
-         WRITE(LUPRI,'(A,I3)') 'IP        = ',IP
-         WRITE(LUPRI,'(A,I3)') 'IREPVP    = ',IREPVP
-         WRITE(LUPRI,'(/A/)') ' (RADDFQX) FQX on entry'
-         CALL PRQMAT(FQX,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
-         DO I = 1, 3
-            WRITE(6,*) '(RADDFQX) integral matrix no. ',I
-            CALL PRQMAT(H2VPX(1,1,1,I),NASHT,NASHT,NASHT,NASHT,NZ,
-     &           IPQTOQ(1,0),LUPRI)
-         END DO
-      END IF
+c MvH      IF (IPRINT .GE. 20) THEN
+c         CALL HEADER('Output from RADDFQX',-1)
+c         WRITE(LUPRI,'(A,I3)') 'IV        = ',IV
+c         WRITE(LUPRI,'(A,I3)') 'IP        = ',IP
+c         WRITE(LUPRI,'(A,I3)') 'IREPVP    = ',IREPVP
+c         WRITE(LUPRI,'(/A/)') ' (RADDFQX) FQX on entry'
+c         CALL PRQMAT(FQX,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
+c         DO I = 1, 3
+c            WRITE(6,*) '(RADDFQX) integral matrix no. ',I
+c            CALL PRQMAT(H2VPX(1,1,1,I),NASHT,NASHT,NASHT,NASHT,NZ,
+c     &           IPQTOQ(1,0),LUPRI)
+c         END DO
+c         DO I = 1, 3
+c            WRITE(6,*) '(RADDFQX) PV matrix no. ',I
+c            CALL PRQMAT(PV(1,1,1,1,I),N2ASHX,NNASHX,N2ASHX,NNASHX,NZ,
+c     &           IPQTOQ(1,0),LUPRI)
+c         END DO
+c      END IF
 C
 C     (vp) is active-general
 C
       IVU = IDXG2U(IV)
       IF (IVU .GT. 0) THEN
-c        write(6,*) '(vp active general)'
+        write(6,*) '(vp active general)'
          DO IQU = 1, NASHT
             NVQ = MAX(IVU,IQU) * ( MAX(IVU,IQU) - 1 ) / 2 + MIN(IQU,IVU)
             DO IZFQ = 1, NZ
                DO I3 = 1, 3
                   DO IZ = 1, NZ
 C
-#ifdef MOD_DEBUG
-                     WRITE(LUPRI,*)
-     &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
-     &                    dFAC(IZ,I3,IZFQ),
-     &                    iPVINT(1,IZ,I3,IZFQ),iPVINT(2,IZ,I3,IZFQ),
-     &                    iQVINT(1,IZ,I3,IZFQ),iQVINT(2,IZ,I3,IZFQ),
-     &                    IVU,IQU,NVQ,IZFQ,I3,IZ
-#endif
+c MvH #ifdef MOD_DEBUG
+c      if (IZFQ.eq.4) then
+c                    write(lupri,*) 'IZ,I3,IZFQ ',IZ,I3,IZFQ
+c                     WRITE(LUPRI,*)
+c     &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
+c     &                    dFAC(IZ,I3,IZFQ),
+c     &                    iPVINT(1,IZ,I3,IZFQ),iPVINT(2,IZ,I3,IZFQ),
+c     &                    iQVINT(1,IZ,I3,IZFQ),iQVINT(2,IZ,I3,IZFQ),
+c     &                    IVU,IQU,NVQ,IZFQ,I3,IZ
+c      endif
+c #endif
 C
                      FAC = dFAC(IZ,I3,IZFQ)
                      szPV1 = szPV(IZ,I3,IZFQ)
@@ -3715,6 +3723,17 @@ C
      &                    iQVINT1,iQVINT2,
      &                    H2VPX,PV,NVQ1,IQU,IVU,
      &                    FQX(IP,IQU,IZFQ))
+      if (IZFQ.eq.4) then
+                    write(lupri,*) 'IZ,I3,IZFQ ',IZ,I3,IZFQ
+                     WRITE(LUPRI,*)
+     &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
+     &                    dFAC(IZ,I3,IZFQ),
+     &                    iPVINT(1,IZ,I3,IZFQ),iPVINT(2,IZ,I3,IZFQ),
+     &                    iQVINT(1,IZ,I3,IZFQ),iQVINT(2,IZ,I3,IZFQ),
+     &                    IVU,IQU,NVQ,IZFQ,I3,IZ
+                    write (lupri,*)'FQX(IP,IQU,IZFQ) ', FQX(IP,IQU,IZFQ)
+      endif
+
                   END DO
                END DO
             END DO
@@ -3725,7 +3744,7 @@ C     (pv) is active-general
 C
       IPU = IDXG2U(IP)
       IF (IPU .GT. 0 .AND. IPU .NE. IVU) THEN
-c        write(6,*) '(pv active general)'
+        write(6,*) '(pv active general)'
          DO IQU = 1, NASHT
             NPQ = MAX(IPU,IQU) * ( MAX(IPU,IQU) - 1 ) / 2 + MIN(IPU,IQU)
             DO IZFQ = 1, NZ
@@ -3741,6 +3760,7 @@ C
      &                    IPU,IQU,-NPQ,IZFQ,I3,IZ
 #endif
 C
+
                      FAC = dFAC(IZ,I3,IZFQ)
                      szPV1 = szPV(IZ,I3,IZFQ)
                      szQV1 = szQV(IZ,I3,IZFQ)
@@ -3749,12 +3769,29 @@ C
                      iQVINT1 = iQVINT(1,IZ,I3,IZFQ)
                      iQVINT2 = iQVINT(2,IZ,I3,IZFQ)
                      NPQ1 = -NPQ
+c MvH: debug
+                    write(lupri,*) 'print PV before RADDFQX4'
+                    write(lupri,*) 'NPQ1 ',NPQ
+        call output(PV(1,1,NPQ,4,1),
+     &       1,NASHT,1,NASHT,NASHT,NASHT,1,lupri)
+
                      CALL RADDFQX1(
      &                    szPV1,szQV1,FAC,
      &                    iPVINT1,iPVINT2,
      &                    iQVINT1,iQVINT2,
      &                    H2VPX,PV,NPQ1,IQU,IPU,
      &                    FQX(IV,IQU,IZFQ))
+      if (IZFQ.eq.4) then
+                    write(lupri,*) 'IZ,I3,IZFQ ',IZ,I3,IZFQ
+                     WRITE(LUPRI,*)
+     &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
+     &                    dFAC(IZ,I3,IZFQ),
+     &                    iPVINT(1,IZ,I3,IZFQ),iPVINT(2,IZ,I3,IZFQ),
+     &                    iQVINT(1,IZ,I3,IZFQ),iQVINT(2,IZ,I3,IZFQ),
+     &                    IPU,IQU,-NPQ,IZFQ,I3,IZ
+                    write (lupri,*)'FQX(IV,IQU,IZFQ) ', FQX(IV,IQU,IZFQ)
+      endif
+
                   END DO
                END DO
             END DO
@@ -3763,10 +3800,10 @@ C
 C
 C     Output section
 C
-      IF (IPRINT .GE. 20) THEN
+c Mvh      IF (IPRINT .GE. 20) THEN
          WRITE(LUPRI,'(/A/)') ' (RADDFQX) FQX on exit'
          CALL PRQMAT(FQX,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
-      END IF
+c      END IF
       RETURN
       END
 C
@@ -3791,6 +3828,7 @@ C     Calculate \sum_{pv|xy}_{i,j} P_{qv,xy;k,l}
 C
 C     from integrals {xy|vp}
 C
+      write(lupri,*) 'a NVQ,IZQV,I3QV',NVQ,IZQV,I3QV
       IF (NVQ .LT. 0) THEN
          IF (szPV .EQ. 'PV') THEN
             szPV = 'VP'
@@ -3802,6 +3840,8 @@ c     write(6,*) 'before RADDFQX2',szPV,FAC,IZPV,I3PV
       CALL RADDFQX2(szPV,FAC,IZPV,I3PV,szPVXY)
 c     write(6,*) 'after RADDFQX2',szPV,FAC,IZPV,I3PV,szPVXY
 C
+
+c  MvH: it might be correct to change this if statement to IQU.LT.IVU 
       IF (NVQ .LT. 0) THEN
          IF (szQV .EQ. 'QV') THEN
             szQV = 'VQ'
@@ -3811,6 +3851,7 @@ C
       END IF
 c     write(6,*) 'before RADDFQX2',szQV,FAC,IZQV,I3QV
       CALL RADDFQX2(szQV,FAC,IZQV,I3QV,szQVXY)
+      write(lupri,*) 'b NVQ,IZQV,I3QV',NVQ,IZQV,I3QV
 c     write(6,*) 'after RADDFQX2',szQV,FAC,IZQV,I3QV,szQVXY
 C
 C     If NVQ > 0:
@@ -3824,17 +3865,23 @@ C     We have density matrices: (**|qp
 C
       IF ( (IVU .LT. IQU) .AND. NVQ .GT. 0) THEN
          CALL RADDFQX3(szQV,FAC,IZQV,I3QV,szQVXY)
+      write(lupri,*) 'c NVQ,IZQV,I3QV',NVQ,IZQV,I3QV
       END IF
       IF ( (IQU .LT. IVU) .AND. NVQ .LT. 0) THEN
          CALL RADDFQX3(szQV,FAC,IZQV,I3QV,szQVXY)
+      write(lupri,*) 'd NVQ,IZQV,I3QV',NVQ,IZQV,I3QV
       END IF
       NVQ = ABS(NVQ)
+
 c     write(6,*) 'after RADDFQX3',szQV,FAC,IZQV,I3QV,szQVXY
 c     write(6,*) 'NVQ = ',NVQ
 C
 C     Do the DDOT:
 C
 c     write(6,*) 'FQX before ',FQX
+c MvH
+
+      write(lupri,*) 'e NVQ,IZQV,I3QV',NVQ,IZQV,I3QV
       CALL RADDFQX4(szPVXY,szQVXY,FAC,
      &     H2VPX(1,1,IZPV,I3PV),PV(1,1,NVQ,IZQV,I3QV),
      &     FQX)
@@ -3854,6 +3901,9 @@ C
       DIMENSION H2VPX(NASHT,NASHT), PV(NASHT,NASHT)
       CHARACTER szPVXY*2, szQVXY*2
 C
+      write(lupri,*)'output of H2VPX and PV (inside RADDFQX4)'
+      call output(H2VPX,1,NASHT,1,NASHT,NASHT,NASHT,1,lupri)
+      call output(PV,1,NASHT,1,NASHT,NASHT,NASHT,1,lupri)
       IF (szPVXY .EQ. szQVXY) THEN
 C
 C        \sum_{xy} H2VPX(x,y) PV(x,y)
@@ -3976,11 +4026,12 @@ C
             IF (sz(2:2) .EQ. 'V') THEN
 C              We want (pv|xY) = (xY|pv) = (Yx|vp)^* (class 3,2 and 4,2)
                szXY = 'YX'
-               I3 = 3
-            ELSE
+               FAC = -FAC
+c mvh               I3 = 3
+c            ELSE
 C              We want (vp|xY) = (xY|vp) (class 3,3 and 4,3)
-               IZ= 3
-               I3= 3
+
+c mvh               I3= 3
             END IF
 C
 C
@@ -3989,11 +4040,11 @@ C
 C
             IF (sz(2:2) .EQ. 'V') THEN
                szXY = 'YX'
-               I3 = 4
+c               I3 = 4
                FAC = FAC * DM1
-            ELSE
-               IZ = 4
-               I3 = 3
+c            ELSE
+c               IZ = 4
+c               I3 = 3
             END IF
 C
 C
@@ -4019,11 +4070,12 @@ C
 C
             IF (sz(2:2) .EQ. 'V') THEN
 C              We want (pV|xy) = (xy|pV) = - (xy|vP)
-               I3 = 1
+c               I3 = 1
+                I3 = 3
                FAC = FAC * DM1
             ELSE
 C              We want (vP|xy) = (xy|vP)
-               I3 = 1
+               I3 = 3
             END IF
 C
 C
