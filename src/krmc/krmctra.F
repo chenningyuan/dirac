@@ -654,8 +654,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER ( DM1 = -1.0D00 )
-C
       CHARACTER SZ(2,4)*(*)
       LOGICAL LNOPAIR
 C
@@ -716,7 +714,7 @@ C
 C     /DCBTRR/
 C
       THROUT = 1.0D-16
-      SCRTRA = DM1
+      SCRTRA = -1.0D0
 C
 C
       RETURN
@@ -3252,7 +3250,7 @@ C
 C     Calculate one-index transform of the integrals in HMAT.
 C
 C     Input:
-C        I: orbital trial vector no.
+C        ITRVEC: orbital trial vector no.
 C        BEVEC, BPVEC: orbital trial vectors
 C        IBEVC, IBPVC, IBTYP: usual index vectors
 C        HMAT: integrals in double quaternion format
@@ -3716,12 +3714,11 @@ C
                      iPVINT2 = iPVINT(2,IZ,I3,IZFQ)
                      iQVINT1 = iQVINT(1,IZ,I3,IZFQ)
                      iQVINT2 = iQVINT(2,IZ,I3,IZFQ)
-                     NVQ1 = NVQ
                      CALL RADDFQX1(
      &                    szPV1,szQV1,FAC,
      &                    iPVINT1,iPVINT2,
      &                    iQVINT1,iQVINT2,
-     &                    H2VPX,PV,NVQ1,IQU,IVU,
+     &                    H2VPX,PV,NVQ,IQU,IVU,
      &                    FQX(IP,IQU,IZFQ))
       if (IZFQ.eq.4) then
                     write(lupri,*) 'IZ,I3,IZFQ ',IZ,I3,IZFQ
@@ -3757,7 +3754,7 @@ C
      &                    dFAC(IZ,I3,IZFQ),
      &                    iPVINT(1,IZ,I3,IZFQ),iPVINT(2,IZ,I3,IZFQ),
      &                    iQVINT(1,IZ,I3,IZFQ),iQVINT(2,IZ,I3,IZFQ),
-     &                    IPU,IQU,-NPQ,IZFQ,I3,IZ
+     &                    IPU,IQU,NPQ,IZFQ,I3,IZ
 #endif
 C
 
@@ -3768,18 +3765,18 @@ C
                      iPVINT2 = iPVINT(2,IZ,I3,IZFQ)
                      iQVINT1 = iQVINT(1,IZ,I3,IZFQ)
                      iQVINT2 = iQVINT(2,IZ,I3,IZFQ)
-                     NPQ1 = -NPQ
-c MvH: debug
-                    write(lupri,*) 'print PV before RADDFQX4'
-                    write(lupri,*) 'NPQ1 ',NPQ
-        call output(PV(1,1,NPQ,4,1),
-     &       1,NASHT,1,NASHT,NASHT,NASHT,1,lupri)
+                     ! (pv) is in fact active-general, so we need to do an extra swap to get general-active
+                     IF (szPV1.EQ. 'PV') THEN
+                        szPV1= 'VP'
+                     ELSE
+                        szPV1= 'PV'
+                     END IF
 
                      CALL RADDFQX1(
      &                    szPV1,szQV1,FAC,
      &                    iPVINT1,iPVINT2,
      &                    iQVINT1,iQVINT2,
-     &                    H2VPX,PV,NPQ1,IQU,IPU,
+     &                    H2VPX,PV,NPQ,IQU,IPU,
      &                    FQX(IV,IQU,IZFQ))
       if (IZFQ.eq.4) then
                     write(lupri,*) 'IZ,I3,IZFQ ',IZ,I3,IZFQ
@@ -3809,6 +3806,13 @@ c      END IF
 C
       SUBROUTINE RADDFQX1(szPV,szQV,FAC,IZPV,I3PV,IZQV,I3QV,
      &     H2VPX,PV,NVQ,IQU,IVU,FQX)
+C
+C H2VPX(x,y,iz,i3) = {x~y~|vp}_iz,i3 where v .ge. p
+C ( x and y are one-index transformed orbitals x~ and y~)
+C
+C szPV='PV' or 'VP': we need {x~y~|pv}_iz,i3 or {x~y~|vp}_iz,i3
+C i.e. if szPV='PV' we need to swap
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3824,55 +3828,30 @@ C
 C
       CHARACTER szPVXY*2, szQVXY*2
 C
-C     Calculate \sum_{pv|xy}_{i,j} P_{qv,xy;k,l}
+C     Calculate \sum_{xy} {pv|xy}_{i,j} P_{qv,xy;k,l}
 C
-C     from integrals {xy|vp}
-C
-      write(lupri,*) 'a NVQ,IZQV,I3QV',NVQ,IZQV,I3QV
-      IF (NVQ .LT. 0) THEN
-         IF (szPV .EQ. 'PV') THEN
-            szPV = 'VP'
-         ELSE
-            szPV = 'PV'
-         END IF
+C     integrals are (x~ y~ | v p), do we need to swap ?
+      szPVXY = 'XY'
+      IF (szPV .EQ. 'PV') THEN ! yes we do
+         CALL RADDFQX3(FAC,IZPV,I3PV,szPVXY)
       END IF
+C
 c     write(6,*) 'before RADDFQX2',szPV,FAC,IZPV,I3PV
-      CALL RADDFQX2(szPV,FAC,IZPV,I3PV,szPVXY)
+!     CALL RADDFQX2(szPV,FAC,IZPV,I3PV,szPVXY)
 c     write(6,*) 'after RADDFQX2',szPV,FAC,IZPV,I3PV,szPVXY
 C
-
-c  MvH: it might be correct to change this if statement to IQU.LT.IVU 
-      IF (NVQ .LT. 0) THEN
-         IF (szQV .EQ. 'QV') THEN
-            szQV = 'VQ'
-         ELSE
-            szQV = 'QV'
-         END IF
-      END IF
 c     write(6,*) 'before RADDFQX2',szQV,FAC,IZQV,I3QV
-      CALL RADDFQX2(szQV,FAC,IZQV,I3QV,szQVXY)
-      write(lupri,*) 'b NVQ,IZQV,I3QV',NVQ,IZQV,I3QV
+!     CALL RADDFQX2(szQV,FAC,IZQV,I3QV,szQVXY)
 c     write(6,*) 'after RADDFQX2',szQV,FAC,IZQV,I3QV,szQVXY
 C
-C     If NVQ > 0:
+C     We have density matrices: (**|qv) if q .ge. v, otherwise (**|vq) in PV
+C     We need (**|qv), so in the second case we need to swap indices, done
+C     in RADDFQX3 :
 C
-C     We have density matrices: (**|vq),
-C     so if v<q then get (**|qv) instead.
-C
-C     If NVQ < 0:
-C
-C     We have density matrices: (**|qp
-C
-      IF ( (IVU .LT. IQU) .AND. NVQ .GT. 0) THEN
-         CALL RADDFQX3(szQV,FAC,IZQV,I3QV,szQVXY)
-      write(lupri,*) 'c NVQ,IZQV,I3QV',NVQ,IZQV,I3QV
+      szQVXY='XY'
+      IF ( IQU .LT. IVU ) THEN
+         CALL RADDFQX3(FAC,IZQV,I3QV,szQVXY)
       END IF
-      IF ( (IQU .LT. IVU) .AND. NVQ .LT. 0) THEN
-         CALL RADDFQX3(szQV,FAC,IZQV,I3QV,szQVXY)
-      write(lupri,*) 'd NVQ,IZQV,I3QV',NVQ,IZQV,I3QV
-      END IF
-      NVQ = ABS(NVQ)
-
 c     write(6,*) 'after RADDFQX3',szQV,FAC,IZQV,I3QV,szQVXY
 c     write(6,*) 'NVQ = ',NVQ
 C
@@ -3928,13 +3907,11 @@ C
       END
 C
 C
-      SUBROUTINE RADDFQX3(sz,FAC,IZ,I3,szXY)
+      SUBROUTINE RADDFQX3(FAC,IZ,I3,szXY)
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
-C
-      CHARACTER sz*2, szXY*2
+      CHARACTER szXY*2
 C
       LOGICAL INTCH
 C
@@ -3947,30 +3924,30 @@ C
             INTCH = .TRUE.
          ELSE IF (IZ .EQ. 2) THEN
             INTCH = .TRUE.
-            FAC = FAC * DM1
+            FAC = -FAC
          ELSE
-            FAC = FAC * DM1
+            FAC = -FAC
          ENDIF
       ELSE IF (I3 .EQ. .2) THEN
          IF (IZ .EQ. 1 .OR. IZ .EQ. 2) THEN
-            FAC = FAC * DM1
+            FAC = -FAC
          ELSE IF (IZ .EQ. 3) THEN
             INTCH = .TRUE.
             I3 = 3
          ELSE
             INTCH = .TRUE.
-            FAC = FAC * DM1
+            FAC = -FAC
             I3 = 3
          END IF
       ELSE
          IF (IZ .EQ. 1 .OR. IZ .EQ. 2) THEN
-            FAC = FAC * DM1
+            FAC = -FAC
          ELSE IF (IZ .EQ. 3) THEN
             INTCH = .TRUE.
             I3 = 2
          ELSE
             INTCH = .TRUE.
-            FAC = FAC * DM1
+            FAC = -FAC
             I3 = 2
          END IF
       END IF
@@ -3988,42 +3965,40 @@ C
 C
 C
       SUBROUTINE RADDFQX2(sz,FAC,IZ,I3,szXY)
+C
+C
+C Note: e.g. Y means y-bar
+
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
+      CHARACTER sz*2, szXY*2
+      logical :: swap_PV
 C
-      CHARACTER SZ*2, szXY*2
-C
+C     integrals are (x~ y~ | v p), do we need to swap ?
+      IF (sz .EQ. 'PV') THEN
+         swap_PV = .true.
+      ELSE
+         swap_PV = .false.
+      END IF
+    
       szXY = 'XY'
       IF (I3 .EQ. 1) THEN
-C
-C
          IF (IZ .EQ. 1) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
 C              We want (pv|xy) = (xy|pv) = (yx|vp)^*
                szXY = 'YX'
 C           ELSE
 C              We want (vp|xy) = (xy|vp)
 C              szXY = 'XY'
             END IF
-C
-C
          ELSE IF (IZ .EQ. 2) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
                szXY = 'YX'
-               FAC = FAC * DM1
+               FAC = -FAC
             END IF
-C
-C
          ELSE IF (IZ .EQ. 3) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
 C              We want (pv|xY) = (xY|pv) = (Yx|vp)^* (class 3,2 and 4,2)
                szXY = 'YX'
                FAC = -FAC
@@ -4033,86 +4008,55 @@ C              We want (vp|xY) = (xY|vp) (class 3,3 and 4,3)
 
 c mvh               I3= 3
             END IF
-C
-C
-         ELSE
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+         ELSE ! IZ .eq. 4
+            IF (swap_PV) THEN
                szXY = 'YX'
-c               I3 = 4
-               FAC = FAC * DM1
-c            ELSE
-c               IZ = 4
-c               I3 = 3
+               I3 = 4
+               FAC = -FAC
+            ELSE
+               IZ = 4
+               I3 = 3
             END IF
-C
-C
          END IF
          RETURN
       ELSE IF (I3 .EQ. 2) THEN
-C
-C
          IF (IZ .EQ. 1 .OR. IZ .EQ. 2) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
 C              We want (pV|xY) = (xY|pV) = (yX|vP)
                szXY = 'YX'
 C           ELSE
 C              We want (vP|xY) = (xY|vP)
 C              szXY = 'XY'
             END IF
-C
-C
-         ELSE
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+         ELSE ! IZ is 3 or 4
+            IF (swap_PV) THEN
 C              We want (pV|xy) = (xy|pV) = - (xy|vP)
-c               I3 = 1
-                I3 = 3
-               FAC = FAC * DM1
+               I3 = 1
+               FAC = -FAC
             ELSE
 C              We want (vP|xy) = (xy|vP)
                I3 = 3
             END IF
-C
-C
          END IF
-C
-C
-      ELSE
-C
-C
+      ELSE ! I3 is 3
          IF (IZ .EQ. 1) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
 C              We want (Pv|xY) = (xY|Pv) = (Yx|vP)^*
                szXY = 'YX'
             ELSE
 C              We want (Vp|xY) = (xY|Vp) = - (xY|Pv) = - (Yx|vP)^*
                szXY = 'YX'
-               FAC = FAC * DM1
+               FAC = -FAC
             END IF
-C
-C
          ELSE IF (IZ .EQ. 2) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
                szXY = 'YX'
-               FAC = FAC * DM1
+               FAC = -FAC
             ELSE
                szXY = 'YX'
             END IF
-C
-C
          ELSE IF (IZ .EQ. 3) THEN
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+            IF (swap_PV) THEN
 C              We want (Pv|xy) = (xy|Pv) = (yx|vP)^*
                szXY = 'YX'
                I3 = 1
@@ -4120,29 +4064,22 @@ C              We want (Pv|xy) = (xy|Pv) = (yx|vP)^*
 C              We want (Vp|xy) = (xy|Vp) = - (xy|Pv) = - (yx|vP)^*
                szXY = 'YX'
                I3 = 1
-               FAC = FAC * DM1
+               FAC = -FAC
             END IF
-C
-C
-         ELSE
-C
-C
-            IF (sz(2:2) .EQ. 'V') THEN
+         ELSE ! Iz is 4
+            IF (swap_PV) THEN
                szXY = 'YX'
                I3 = 1
-               FAC = FAC * DM1
+               FAC = -FAC
             ELSE
                szXY = 'YX'
                I3 = 1
             END IF
-C
-C
          END IF
       END IF
       RETURN
       END
-C
-C
+
 
 #ifdef UNDEF
 C     Loop over q

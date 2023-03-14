@@ -982,7 +982,7 @@ C
             CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,IREP),LUPRI)
             WRITE(LUPRI,'(/A,I5)')
-     &           '* FMOLI: QXC no.:',I
+     &           '* FMOLI: FCX no.:',I
             CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,IREP),LUPRI)
             WRITE(LUPRI,'(/A,I5)')
@@ -1102,7 +1102,7 @@ C
             CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,IREP),LUPRI)
             WRITE(LUPRI,'(/A,I5)')
-     &           '* FMOLI: QCX no.:',I
+     &           '* FMOLI: FCX no.:',I
             CALL PRQMAT(FMO(1,IM),NORBT,NORBT,NORBT,NORBT,NZ,
      &           IPQTOQ(1,IREP),LUPRI)
             WRITE(LUPRI,'(/A,I5)')
@@ -4245,10 +4245,10 @@ C
             CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 10) THEN
-               WRITE(LUPRI,9011) 'e-e inactive QCX', I
+               WRITE(LUPRI,9011) 'e-e inactive FCX_ao', I
                CALL PRQMAT(FAO(1,IAOMAT),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-               WRITE(LUPRI,9012) 'e-e inactive QCX', I
+               WRITE(LUPRI,9012) 'e-e inactive FCX', I
                CALL PRQMAT(FMO(1,IMOMAT),NORBT,NORBT,
      &              NORBT,NORBT,NZ,IPQTOQ(1,IREP),LUPRI)
             END IF
@@ -4260,7 +4260,7 @@ C
             CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
-               WRITE(LUPRI,9011) 'e-e active FVX', I
+               WRITE(LUPRI,9011) 'e-e active FVX_ao', I
                CALL PRQMAT(FAO(1,IAOMAT),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
                WRITE(LUPRI,9012) 'e-e active FVX', I
@@ -4288,10 +4288,10 @@ C
             CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 10) THEN
-               WRITE(LUPRI,9011) 'e-p inactive QCX', I
+               WRITE(LUPRI,9011) 'e-p inactive FCX_ao', I
                CALL PRQMAT(FAO(1,IAOMAT),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-               WRITE(LUPRI,9012) 'e-p inactive QCX', I
+               WRITE(LUPRI,9012) 'e-p inactive FCX', I
                CALL PRQMAT(FMO(1,IMOMAT),NORBT,NORBT,
      &              NORBT,NORBT,NZ,IPQTOQ(1,IREP),LUPRI)
             END IF
@@ -4303,7 +4303,7 @@ C
             CALL GMOLITX2(-1,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
-               WRITE(LUPRI,9011) 'e-p active FVX', I
+               WRITE(LUPRI,9011) 'e-p active FVX_ao', I
                CALL PRQMAT(FAO(1,IAOMAT),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
                WRITE(LUPRI,9012) 'e-p active FVX', I
