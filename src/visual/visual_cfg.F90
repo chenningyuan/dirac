@@ -48,9 +48,9 @@ module visual_cfg
 !
 ! WIP
 !  character(len = :), public               :: visual_cfg_plot_file_formats(2) = (/'txt', 'cube', 'csv', 'hdf5'/)
-!  character(len = 6), public               :: visual_cfg_txt_plot_file_domains(4) = &
-!                                              [character(len = 6):: '2D', '3D', 'line', 'radial']
-!
+   character(len = 6), public               :: visual_cfg_txt_plot_file_domains(4) = &
+                                              [character(len = 6):: '2D', '3D', 'line', 'radial']
+
    logical,      public                     :: visual_cfg_plot_file_custom = .false.
    character(len = :), allocatable, public  :: visual_cfg_plot_file_format
    character(len = :), allocatable, public  :: visual_cfg_plot_domain
@@ -68,6 +68,8 @@ module visual_cfg
    character(len = :), allocatable, public  :: visual_cfg_cube_plot_file_name
    character(len = :), allocatable, public  :: visual_cfg_cube_plot_file_float_format
 
+!  options for grid manipulation
+   integer, public:: visual_cfg_nr_grid_files = 1
 
    real(8), public  :: visual_cfg_txt_print_threshold = 1.0e-8
 

@@ -34,6 +34,7 @@ module visual
   use visual_io
   use visual_datatypes
   use visual_dirac_input
+  use visual_grids
 
   implicit none
 
@@ -554,6 +555,7 @@ contains
       real(8)              :: acos, dsum
       real(8)              :: norm_grad
       integer              :: nleb
+      integer              :: nr_points(3), nr_points_total
       integer              :: nr_points_gridimp
       logical              :: is_open
 
@@ -561,6 +563,7 @@ contains
       logical              :: refactoring
       type(visual_plot_file), allocatable:: visual_inp_data_files(:)
       type(visual_plot_file), allocatable:: visual_plot_files(:)
+      type(visual_grid_file), allocatable:: visual_grid_files(:)
       real(8), allocatable:: grid_point(:)
       real(8), allocatable:: grid_function(:)
 !     --------------------------------------------------------------------------
@@ -847,6 +850,22 @@ contains
 
 
       if (visual_cfg_3d .or. visual_cfg_3d_fast) then
+      refactoring=.true.
+      if (refactoring) then
+         ! generate 3d cube grid
+         !nr_points = (2, 2, 2)
+         !nr_points_total = 8
+         !allocate(grid_point(nr_points_total))
+         write(*,*) 'refactoring!'
+         call open_grid_files(visual_grid_files)
+         if (allocated(visual_grid_files)) then
+            call print_grid_files_info(visual_grid_files)
+         end if
+         call generate_grid_file(visual_grid_files, &
+               (/visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3)/))
+         !deallocate(grid_point)
+      else
+      end if
 
 !        step_3d(*, 0)  coordinates of initial point
 !        step_3d(*, 1)  step vector for the "x"-direction
@@ -1140,6 +1159,10 @@ contains
       if (allocated(visual_plot_files)) then
          call close_plot_txt_files(visual_plot_files)
       end if
+      if (allocated(visual_grid_files)) then
+         call close_grid_files(visual_grid_files)
+      end if
+
 
       is_open=.false.
       inquire(lunit_3d_gridimp, opened = is_open)

@@ -17,6 +17,7 @@ set(FREE_VISUAL_FORTRAN_SOURCES
     visual_in_point.F90
     visual_london.F90
     visual_io.F90
+    visual_grids.F90
     visual_datatypes.F90
     visual_utils.F90
     visual_dirac_input.F90
