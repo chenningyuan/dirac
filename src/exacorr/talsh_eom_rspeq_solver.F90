@@ -65,7 +65,7 @@ module talsh_eom_rspeq_solver
             integer(INTD), dimension(2) :: vo_dims
             integer(INTD), dimension(4) :: vvoo_dims
 
-            nroot = exa_input%N_eom_trail
+            nroot = exa_input%N_eom_trial
             
             call talsh_davidson_setup(unit_output=6, &
                         convergence_threshold=relcc_mfd_convergence_threshold, &

@@ -55,10 +55,12 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
     type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
     type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
-    integer                       :: N_prop
+    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:), Interm_t_tensors_C(:)
+    integer                       :: N_prop, N_prop_A, N_prop_B
     integer                       :: N_oper_lr, N_oper_qr
     integer, allocatable          :: N_prop_tem_lr (:), N_prop_tem_qr(:)
     integer                       :: i, j, k, n, m
+    integer, allocatable          :: Prop_A(:), Prop_B(:), Prop_C(:)
 
 
     integer            :: vvoo_dims(4)
@@ -75,6 +77,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
 
     N_prop = 3
+    allocate(Interm_t_tensors(N_prop))
 
 
     if (exa_input%wf_type == 1) then 
@@ -85,65 +88,94 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         call print_date('Activate CC-CI(EOM-CC) response')
     end if 
 
-    allocate(Interm_t_tensors(N_prop))
-
-    
 
 
-    do  i=1, N_prop
-        call form_eomccsd_qr_intermediates(exa_input, interm_t, i, Interm_t_tensors(i),&
-                                  int_t, l1_tensor, l2_tensor, CC_CC)
-    end do
+    ! do  i=1, N_prop
+    !     call form_eomccsd_qr_intermediates(exa_input, interm_t, i, Interm_t_tensors(i),&
+    !                               int_t, l1_tensor, l2_tensor, CC_CC)
+    ! end do
 
 
-    call print_date('Constructed intermediates needed in CC Response')
-
-
+    ! call print_date('Constructed intermediates needed in CC Response')
 
 
     if (rr==1) then 
         call print_date('Do linear response')
 
+        Prop_A = exa_input%Prop_A
+        Prop_B = exa_input%Prop_B
+
+        ! allocate(Prop_A(3))
+        ! allocate(Prop_B(3))
+        ! Prop_A = (/1, 2, 3/)
+        ! Prop_B = (/1, 2, 3/)
+
+
         N_oper_lr = 2
+        N_prop_A = size(Prop_A)
+        N_prop_B = size(Prop_B)
+
         allocate(omega(N_oper_lr))
         allocate(N_prop_tem_lr(N_oper_lr))
-        omega2 = -omega1
+        allocate(Interm_t_tensors_A(N_prop_A))
+        allocate(Interm_t_tensors_B(N_prop_B))
+        allocate(Tprop_tensors(N_oper_lr))
+        allocate(Tprop_tensors_min_w(N_oper_lr))
+        allocate(eom_lrs(N_prop_A,N_prop_B))
+
+        omega2 =  -omega1
         omega(1) = omega1
         omega(2) = omega2
         print *, "Read frequency1:", omega(1)
         print *, "Read frequency2:", omega(2)
 
-        allocate(Tprop_tensors(N_oper_lr))
-        allocate(Tprop_tensors_min_w(N_oper_lr))
-        allocate(eom_lrs(N_prop,N_prop))
-        
 
-        do i=1, N_prop
-            N_prop_tem_lr(1) = i
-            do j=1, N_prop
-                N_prop_tem_lr(2) = j
+        do  i=1, N_prop_A
+            m = Prop_A(i)
+            call form_eomccsd_qr_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
+                                      int_t, l1_tensor, l2_tensor, CC_CC)
+        end do
+    
+    
+        do  i=1, N_prop_B
+            m = Prop_B(i)
+            call form_eomccsd_qr_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
+                                      int_t, l1_tensor, l2_tensor, CC_CC)
+        end do
 
-                do n=1, N_oper_lr
-                    m = N_prop_tem_lr(n)
-                    call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(m), omega(n), Tprop_tensors(n))
-                    call solve_eom_lr_right(exa_input, interm_t, int_t, &
-                                            Interm_t_tensors(m), omega(n), Tprop_tensors_min_w(n))
-                end do
+        call print_date('Constructed intermediates needed in CC Linear Response')
+
+
+        do i=1, N_prop_A
+            call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
+            call solve_eom_lr_right(exa_input, interm_t, int_t, &
+                                    Interm_t_tensors_A(i), -omega(1), Tprop_tensors_min_w(1))
+
+            do j=1, N_prop_B
+                call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
+                call solve_eom_lr_right(exa_input, interm_t, int_t, &
+                                            Interm_t_tensors_B(j), -omega(2), Tprop_tensors_min_w(2))
+
                 call print_date('Solved All 1st response right equations')
 
-                call get_eom_lr(exa_input,interm_t, int_t, Interm_t_tensors,& 
-                    Tprop_tensors, Tprop_tensors_min_w, i, j,& 
+                call get_eom_lr(exa_input,interm_t, int_t, &
+                    Interm_t_tensors_A,Interm_t_tensors_B,& 
+                    Tprop_tensors, Tprop_tensors_min_w, i,j,& 
                     l1_tensor,l2_tensor,eom_lr,CC_CC)
+
                 eom_lrs(i,j) = eom_lr
 
-                do n=1,  N_oper_lr
-                    ierr=talsh_tensor_destruct(Tprop_tensors(n)%t1)
-                    ierr=talsh_tensor_destruct(Tprop_tensors(n)%t2)
-                    ierr=talsh_tensor_destruct(Tprop_tensors_min_w(n)%t1)
-                    ierr=talsh_tensor_destruct(Tprop_tensors_min_w(n)%t2)
-                end do
+                ierr=talsh_tensor_destruct(Tprop_tensors(2)%t1)
+                ierr=talsh_tensor_destruct(Tprop_tensors(2)%t2)
+                ierr=talsh_tensor_destruct(Tprop_tensors_min_w(2)%t1)
+                ierr=talsh_tensor_destruct(Tprop_tensors_min_w(2)%t2)
 
             end do
+
+            ierr=talsh_tensor_destruct(Tprop_tensors(1)%t1)
+            ierr=talsh_tensor_destruct(Tprop_tensors(1)%t2)
+            ierr=talsh_tensor_destruct(Tprop_tensors_min_w(1)%t1)
+            ierr=talsh_tensor_destruct(Tprop_tensors_min_w(1)%t2)
         end do
 
 
@@ -153,9 +185,9 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
             write(*,"(A54)"), "*************CC-CI(EOM-CC) linear response************"
         end if
         
-        do i=1, N_prop
-            do j=1, N_prop
-                write(*,"(A4,I1,A2,I1,A5)"), "<<X", i, ";X", j, ">> = "
+        do i=1, size(Prop_A)
+            do j=1,size(Prop_B)
+                write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
                 write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(i,j)), '\', aimag(eom_lrs(i,j))
             end do
         end do

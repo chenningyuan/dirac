@@ -27,8 +27,9 @@ module talsh_eom_LR
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine get_eom_lr(exa_input,interm_t,int_t,Interm_t_tensors,&
-                tprop_tensors, tprop_tensors_min_w, i, j,&
+subroutine get_eom_lr(exa_input,interm_t,int_t,&
+                Interm_t_tensors_A,Interm_t_tensors_B,&
+                tprop_tensors, tprop_tensors_min_w, i,j,&
                 l1_tensor,l2_tensor, eom_lr, CC_CC)
 !This subroutine drives the CC-CI linear response property calculation
 !   Written by Xiang Yuan Janunary 2022, Lille, France
@@ -37,12 +38,12 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,Interm_t_tensors,&
 
             type(exacc_input), intent(in) :: exa_input
             type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-            type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
+            type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:)
             type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
             type(talsh_intg_tens_t),intent(inout)          :: int_t 
             type(talsh_tens_t), intent(inout)           :: l2_tensor
             type(talsh_tens_t), intent(inout)           :: l1_tensor
-            integer                          :: i, j
+            integer                                     :: i,j 
 
 
             type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2
@@ -110,10 +111,11 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,Interm_t_tensors,&
             end if 
 
 
-            call get_linrspf(interm_t, Interm_t_tensors(i), Interm_t_tensors(j), &
-                    Tprop_tensors(1), Tprop_tensors_min_w(2), &
-                    l1_tensor, l2_tensor, linrsp, B1, B2_minus_fre, CC_CC)
+            call get_linrspf(interm_t, Interm_t_tensors_A(i), Interm_t_tensors_B(j), &
+                    Tprop_tensors(1), Tprop_tensors(2), &
+                    l1_tensor, l2_tensor, linrsp, B1, B2, CC_CC)
 
+            print *, "linrsp +w: ", linrsp
             if (debug_get_lrresp) then
                 if (CC_CC) then 
                     call print_date('Evaluate CC-CC LR (-w)')
@@ -123,9 +125,11 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,Interm_t_tensors,&
             end if 
 
 
-            call get_linrspf(interm_t, Interm_t_tensors(i), Interm_t_tensors(j), &
-                    Tprop_tensors_min_w(1), Tprop_tensors(2),&
-                    l1_tensor, l2_tensor, linrsp_con, B1_minus_fre, B2, CC_CC)
+            call get_linrspf(interm_t, Interm_t_tensors_A(i), Interm_t_tensors_B(j), &
+                    Tprop_tensors_min_w(1), Tprop_tensors_min_w(2),&
+                    l1_tensor, l2_tensor, linrsp_con, B1_minus_fre, B2_minus_fre, CC_CC)
+
+            print *, "linrsp -w: ", linrsp_con
 
             linrsp_con=conjg(linrsp_con)
             eom_lr=(linrsp+linrsp_con)*0.5

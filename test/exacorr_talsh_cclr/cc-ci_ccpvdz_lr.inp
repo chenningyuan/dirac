@@ -44,6 +44,12 @@
 .CCCILR
 20
 0.0 0.0
+.AProp
+3
+1,2,3
+.BProp
+3
+1,2,3
 **MOLECULE
 *SYMMETRY
 .NOSYM

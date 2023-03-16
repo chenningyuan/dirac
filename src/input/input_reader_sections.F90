@@ -1118,6 +1118,18 @@
          ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
       end if
 
+      if (kw_matches(word, '.AProp ')) then
+         call kw_read(word, exa_input%N_prop_A)
+         allocate(exa_input%Prop_A(exa_input%N_prop_A))
+         call kw_read(word, exa_input%Prop_A,exa_input%N_prop_A)
+      end if
+
+      if (kw_matches(word, '.BProp ')) then
+         call kw_read(word, exa_input%N_prop_B)
+         allocate(exa_input%Prop_B(exa_input%N_prop_B))
+         call kw_read(word, exa_input%Prop_B,exa_input%N_prop_B)
+      end if
+
       if (kw_matches(word, '.EXEOM ')) then
          exa_input%eom = .true.
          call kw_read(word, nr_eom_runs)

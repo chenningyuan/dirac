@@ -44,6 +44,12 @@
 .CCCILR
 20
 0.1 0.0
+.AProp
+3
+1,2,3
+.BProp
+3
+1,2,3
 *CCDIAG
 .CONVERG
 1.0d-6
