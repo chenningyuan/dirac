@@ -277,7 +277,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             ierr=talsh_tensor_contract("E()+=Tlx(i,j,a,b)*Ty(a,b,i,j)", &
                                     result_tensor,tprop_bar_tensor1%t2,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER_C)
             term1=result_tens(1)
-            print *, "term1: ", term1
+            ! print *, "term1: ", term1
 
 
         ! Term2: Lambda*Epison_Z    
@@ -286,7 +286,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             ierr=talsh_tensor_contract("E()+=Epz(a,b,i,j)*L(i,j,a,b)",result_tensor,&
                                         interm_t_prop2%epsilon_prop_vvoo,l2_tensor,scale=ONE_QUARTER_C)
             term2=result_tens(1)
-            print *, "term2: ", term2
+            ! print *, "term2: ", term2
 
 
 !           Term3: eta_primeXY*TZ
@@ -296,7 +296,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
                                         sigma_prop_tensor%t2,tprop_tensor2%t2,scale=ONE_QUARTER_C) 
 
             term3=result_tens(1)
-            print *, "term3: ", term3
+            ! print *, "term3: ", term3
 
 
 
@@ -306,7 +306,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             ierr=talsh_tensor_contract("E()+=L(i,j,a,b)*Tl(a,b,i,j)",result_tensor,&
                                         l2_tensor,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER_C)
             term5=result_tens(1)
-            print *, "term5: ", term5
+            ! print *, "term5: ", term5
 
 
 !EOM-QR-----! Term6: Tbar_Z*Epison_X -------------------------------------------------------------------------------
@@ -319,7 +319,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
                                         tprop_bar_tensor3%t2,interm_t_prop1%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
 
             term6=result_tens(1)
-            print *, "term6: ", term6
+            ! print *, "term6: ", term6
 
 !CC-CI-QR-----! Term6: Tbar_Z*Epison_X -------------------------------------------------------------------------------
 

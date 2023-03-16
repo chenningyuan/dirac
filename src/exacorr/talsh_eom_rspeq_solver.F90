@@ -63,7 +63,7 @@ module talsh_eom_rspeq_solver
             integer(INTD), dimension(2) :: vo_dims
             integer(INTD), dimension(4) :: vvoo_dims
 
-            nroot = exa_input%N_eom_trail
+            nroot = exa_input%N_eom_trial
             
             call talsh_davidson_setup(unit_output=6, &
                         convergence_threshold=mfsolver_options_convergence_threshold, &
@@ -300,7 +300,8 @@ module talsh_eom_rspeq_solver
                   type(talsh_tens_t) :: one_tensor
             !     auxiliary tensor
                   type(talsh_tens_t) :: goo_tensor, gvv_tensor, oo_aux
-                  integer            :: oo_dims(2), vv_dims(2)
+                  integer            :: oo_dims(2), vv_dims(2), ov_dims(2)
+                  integer            :: oovv_dims(4)
                   integer(C_INT)     :: one_dims(1)
             !     error code
                   integer :: ierr
@@ -308,6 +309,8 @@ module talsh_eom_rspeq_solver
                   one_dims(1) = 1
                   oo_dims = (/interm_t%nocc,interm_t%nocc/)
                   vv_dims = (/interm_t%nvir,interm_t%nvir/)
+                  ov_dims = (/interm_t%nocc,interm_t%nvir/)
+                  oovv_dims = (/interm_t%nocc,interm_t%nocc,interm_t%nvir,interm_t%nvir/)
                   ierr=talsh_tensor_construct(goo_tensor,C8,oo_dims,init_val=ZERO)
                   ierr=talsh_tensor_construct(gvv_tensor,C8,vv_dims,init_val=ZERO)
                   ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
@@ -317,8 +320,10 @@ module talsh_eom_rspeq_solver
             !***************
             !     l1_sigma *
             !***************
-            
-             ierr=talsh_tensor_init(sigma1_tensor)
+            ierr=talsh_tensor_construct(sigma2_tensor,C8,oovv_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(sigma1_tensor,C8,ov_dims,init_val=ZERO)
+
+            !  ierr=talsh_tensor_init(sigma1_tensor)
             
                   
             !-----------------------------------------
@@ -369,7 +374,7 @@ module talsh_eom_rspeq_solver
             !     l2_sigma *
             !***************
             
-            ierr=talsh_tensor_init(sigma2_tensor)
+            ! ierr=talsh_tensor_init(sigma2_tensor)
             
             !--------------------------------------------------------
             !     term 2: S2(i,j,a,b) += P(a,b) L(i,j,a,e) * F(e,b) |
