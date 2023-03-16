@@ -176,7 +176,7 @@ module talsh_eom_rspeq_solver
 
       
                   call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, &
-                                          omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)
+                                          -omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)   !left equation use -omega
                                           
                   call print_date("Finishing CC-CI Left Linear Systems calculation")
       
