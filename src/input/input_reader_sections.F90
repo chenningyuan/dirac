@@ -1147,6 +1147,13 @@
          call kw_read(word, exa_input%Prop_B,exa_input%N_prop_B)
       end if
 
+      if (kw_matches(word, '.CProp ')) then
+         call kw_read(word, exa_input%N_prop_C)
+         allocate(exa_input%Prop_C(exa_input%N_prop_C))
+         call kw_read(word, exa_input%Prop_C,exa_input%N_prop_C)
+      end if
+
+
       if (kw_matches(word, '.EXEOM ')) then
          exa_input%eom = .true.
          call kw_read(word, nr_eom_runs)
