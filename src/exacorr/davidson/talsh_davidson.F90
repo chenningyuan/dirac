@@ -2252,7 +2252,7 @@ contains
             if (config%solve_linear_system) then
                call create_subspace_property_gradient(C_small,workspace_t, &
  &                  prop_grad1,prop_grad2,config%solve_rhs,config%solve_lhs)
-               call calculate_Linear_systems(config%solve_rhs, M_small,C_small,x_small)
+               call calculate_Linear_systems(config%solve_lhs, M_small,C_small,x_small)
 ! aspg, added from (q)rsp
             else
                call calculate_eigenvalues_and_eigenvectors(config%output_file_unit,    &
