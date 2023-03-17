@@ -18,7 +18,7 @@ module visual_dirac_input
           call quit('Mutually exclusive keywords found in the input: .3D and .3D_IMP, please choose one')
       end if
       if (visual_cfg_3d_readjb .and. visual_cfg_3d_gridimp) then
-              call quit('Select one of .READJB and .3D_IMP keywords.')
+          call quit('Mutually exclusive keywords found in the input: .READJB and .3D_IMP, please choose one.')
       end if
 
       if (visual_cfg_3d_gridimp) then
@@ -32,6 +32,7 @@ module visual_dirac_input
       end if
 
       if (visual_cfg_plot_file_format .eq. 'hdf5') then
+         call quit('export to hdf5 unavailable in this version. quitting')
       end if
 
       if (.not. visual_cfg_txt_plot_file_use_legacy &
@@ -51,7 +52,7 @@ module visual_dirac_input
       write(lupri, '(/,2x, a)') '*** Visualisation module ***'
 
       if (visual_cfg_3d) then
-         write(lupri, *) 'Visualization in 3d done with the following settings:'
+         write(lupri, *) '***** Visualization in 3d done with the following settings *****'
          write(lupri, *) 'Number of points in x, y, z direction: ', visual_cfg_ncube(1), &
                                                                     visual_cfg_ncube(2), &
                                                                     visual_cfg_ncube(3) 
@@ -60,6 +61,7 @@ module visual_dirac_input
                                              visual_cfg_gauge_origin(2), &
                                              visual_cfg_gauge_origin(3)
       end if
+
       if (visual_cfg_3d_fast) then 
          write(lupri, *) 'Visualization in 3d with fast evaluation of the molecular electrostatic potential', &
                          ' done with the following settings:'
@@ -78,7 +80,10 @@ module visual_dirac_input
          write(lupri, *) 'And the magnetically-induced current density written on that file is used'
       end if
 
-      write(lupri, *) 'Visualization data exported to files: '
+      write(lupri, *) '***** Grids used for data export *****'
+      write(lupri, *) 'Number of grid files in use: ', visual_cfg_nr_grid_files
+
+      write(lupri, *) '***** Visualization data exported to files *****'
       if (visual_cfg_plot_file_format .eq. 'txt') then
          if (visual_cfg_txt_plot_file_use_legacy) then
             write(lupri, *) 'using legacy files'

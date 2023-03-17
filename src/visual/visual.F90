@@ -566,9 +566,10 @@ contains
       type(visual_grid_file), allocatable:: visual_grid_files(:)
       real(8), allocatable:: grid_point(:)
       real(8), allocatable:: grid_function(:)
+      real(8), allocatable:: rx(:)
+      real(8), allocatable:: ry(:)
+      real(8), allocatable:: rz(:)
 !     --------------------------------------------------------------------------
-
-      refactoring = .true.
 
       i = 1
       if (visual_cfg_ncube(3) > 0) then
@@ -601,6 +602,48 @@ contains
                                         visual_inp_data_files)
       end if
          
+
+
+!     get grid points
+!     ===============
+
+      refactoring = .true.
+      if (visual_cfg_3d .and. refactoring) then
+
+         ! generate 3d cube grid
+
+         allocate(visual_grid_files(visual_cfg_nr_grid_files))
+
+         call open_grid_files(visual_grid_files)
+
+         call print_grid_files_info(visual_grid_files)
+
+         call generate_grid_file(visual_grid_files, &
+               (/visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3)/))
+         call close_grid_files(visual_grid_files)
+
+         ! read grid
+         allocate(rx(visual_cfg_ncube(1)))
+         allocate(ry(visual_cfg_ncube(2)))
+         allocate(rz(visual_cfg_ncube(3)))
+         rx = 0.0d0
+         ry = 0.0d0
+         rz = 0.0d0
+
+         call open_old_grid_txt_file(visual_grid_files(1))
+         call read_grid_files(rx, ry, rz, visual_grid_files, &
+               (/visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3)/))
+
+         call close_grid_files(visual_grid_files)
+
+         deallocate(visual_grid_files)
+
+         do i = 1, visual_cfg_ncube(1)*visual_cfg_ncube(2)*visual_cfg_ncube(3)
+            write(*,*) 'POINTS GRID: ', i, rx(i), ry(i), rz(i)
+         end do
+      end if
+
+
 
 !     open files for outputting data on meshes
 !     ========================================
@@ -850,22 +893,38 @@ contains
 
 
       if (visual_cfg_3d .or. visual_cfg_3d_fast) then
+
       refactoring=.true.
       if (refactoring) then
-         ! generate 3d cube grid
-         !nr_points = (2, 2, 2)
-         !nr_points_total = 8
-         !allocate(grid_point(nr_points_total))
-         write(*,*) 'refactoring!'
-         call open_grid_files(visual_grid_files)
-         if (allocated(visual_grid_files)) then
-            call print_grid_files_info(visual_grid_files)
-         end if
-         call generate_grid_file(visual_grid_files, &
-               (/visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3)/))
-         !deallocate(grid_point)
+         write(*,*) 'refactoring-3d!'
+
+         !do icube = 1, visual_cfg_ncube(1)
+         !   do jcube = 1, visual_cfg_ncube(2)
+         !      do kcube = 1, visual_cfg_ncube(3)
+         !         r(1) = rx(icube)
+         !         r(2) = ry(jcube)
+         !         r(3) = rz(kcube)
+
+         !         call get_quantity_in_point(visual_cfg_nr_dmat, &
+         !                                    D,                  &
+         !                                    D_0,                &
+         !                                    r(1),               &
+         !                                    r(2),               &
+         !                                    r(3),               &
+         !                                    ao,                 &
+         !                                    buffer,             &
+         !                                    q_max_dim,          &
+         !                                    q(0, kcube))
+
+         !         call write_plot_data(visual_plot_files, &
+         !                             r(1:3), &
+         !                             q(0:q_max_dim, kcube))
+
+         !      end do
+         !   end do
+         !end do
+
       else
-      end if
 
 !        step_3d(*, 0)  coordinates of initial point
 !        step_3d(*, 1)  step vector for the "x"-direction
@@ -1154,15 +1213,13 @@ contains
             end do
          end if
          deallocate(temp2)
+      end if  ! if (refactoring) then
       end if
 
       if (allocated(visual_plot_files)) then
          call close_plot_txt_files(visual_plot_files)
+         deallocate(visual_plot_files)
       end if
-      if (allocated(visual_grid_files)) then
-         call close_grid_files(visual_grid_files)
-      end if
-
 
       is_open=.false.
       inquire(lunit_3d_gridimp, opened = is_open)
@@ -1174,6 +1231,9 @@ contains
 
       deallocate(q)
       deallocate(atom_xyz)
+      if (allocated(rx)) deallocate(rx)
+      if (allocated(ry)) deallocate(ry)
+      if (allocated(rz)) deallocate(rz)
 
    end subroutine
 

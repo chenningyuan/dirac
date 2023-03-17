@@ -12,6 +12,9 @@ module visual_grids
    public close_grid_files
    public generate_grid_file
    public print_grid_files_info
+   public read_grid_files
+!  temp
+   public open_old_grid_txt_file
 
 !  public types
    type, public:: visual_grid_file
@@ -61,13 +64,14 @@ module visual_grids
 !  -----------------------------------------------------------------------------
    subroutine generate_grid_file_cube_regular(grid_files, nr_points)
 !  -----------------------------------------------------------------------------
-      type(visual_grid_file), intent(inout), dimension(:), allocatable:: grid_files
+      type(visual_grid_file), intent(inout), dimension(:):: grid_files
       integer, intent(in):: nr_points(3)
       real(8), allocatable:: grid_points(:,:)
       integer:: i, icoor, jcoor, kcoor, idx, n
+      character(len = 16):: fmt
 !  -----------------------------------------------------------------------------
 
-      n = maxval(nr_points)
+      n = nr_points(1)*nr_points(2)*nr_points(3)
       allocate(grid_points(n, 3))
       grid_points = 0.0d0
 
@@ -76,18 +80,17 @@ module visual_grids
       do i = 1, visual_cfg_nr_grid_files
       
          !fmt = '(*('//trim(grid_files(i)%float_format)//',:))'
+         fmt = float_format_txt 
 
          if (grid_files(i)%is_opened) then
-            do icoor = 1, nr_points(1)
-               do jcoor = 1, nr_points(2)
-                  do kcoor = 1, nr_points(3)
-                     write(grid_files(i)%unit, float_format_txt) &
-                        grid_points(icoor, 1), &
-                        grid_points(jcoor, 2), &
-                        grid_points(kcoor, 3)
-                  end do
-                end do
-            end do
+            call grid_file_txt_write(grid_files(i)%unit, & 
+                                     fmt, &
+                                     n, &
+                                     grid_points(:,1), &
+                                     grid_points(:,2), &
+                                     grid_points(:,3))
+         else
+            write(*, *) 'error-grid file closed'
          end if
       
       end do
@@ -100,16 +103,12 @@ module visual_grids
 !  -----------------------------------------------------------------------------
    subroutine get_grid_points(grid_points, nr_points)
 !  -----------------------------------------------------------------------------
-!#include "nuclei.h" !nucdep, cord, nucind, istbnu, charge 
-!#include "symmet.h" !maxopr, pt, isymax
-!#include "codata.h" !xtang
       real(8), intent(inout), dimension(:,:):: grid_points
       integer, intent(in):: nr_points(3)
       real(8), allocatable:: atom_xyz(:, :)
       real(8)              :: step_3d(3, 0:3), r(3)
       integer              :: i, j, k, l, m, istep, n
       integer              :: icube, jcube, kcube
-      integer:: nr_points_total
 !  -----------------------------------------------------------------------------
 
          allocate(atom_xyz(4, nucdep))
@@ -156,6 +155,7 @@ module visual_grids
             step_3d(i, i) = (step_3d(i, i) -  step_3d(i, 0))/(visual_cfg_ncube(i) - 1)
          end do
 
+         i = 1
          do icube = 1, nr_points(1)
             do jcube = 1, nr_points(2)
                do kcube = 1, nr_points(3)
@@ -168,9 +168,10 @@ module visual_grids
                   r(3) = step_3d(3, 0) + (icube-1)*step_3d(3, 1) &
                                        + (jcube-1)*step_3d(3, 2) &
                                        + (kcube-1)*step_3d(3, 3)
-                  grid_points(icube, 1) = r(1)
-                  grid_points(jcube, 2) = r(2)
-                  grid_points(kcube, 3) = r(3)
+                  grid_points(i, 1) = r(1)
+                  grid_points(i, 2) = r(2)
+                  grid_points(i, 3) = r(3)
+                  i = i+1
                end do
             end do
          end do
@@ -187,7 +188,7 @@ module visual_grids
 !  -----------------------------------------------------------------------------
    subroutine open_grid_files(grid_files)
 !  -----------------------------------------------------------------------------
-      type(visual_grid_file), intent(out), allocatable:: grid_files(:)
+      type(visual_grid_file), intent(inout):: grid_files(:)
 
       integer:: lunit_3d_gridimp
       integer:: lunit_3d_jbfile
@@ -200,77 +201,84 @@ module visual_grids
 
       if (visual_cfg_3d_gridimp) then
 !        grid imported from file
-         allocate(grid_files(1))
          grid_files(1)%unit = lunit_3d_gridimp
          grid_files(1)%name = visual_cfg_3d_gridfil
          grid_files(1)%format = 'txt'
          grid_files(1)%domain = '3d'
          grid_files(1)%grid_units = visual_cfg_3d_grid_units
+         ! open
 
       else if (visual_cfg_3d_readjb) then
 !        grid and data imported from file
 !gosia fixme-move this elsewhere
-         allocate(grid_files(1))
          grid_files(1)%unit = lunit_3d_jbfile
          grid_files(1)%name = visual_cfg_3d_jbfile
          grid_files(1)%format = 'txt'
          grid_files(1)%domain = '3d'
          grid_files(1)%grid_units  = visual_cfg_3d_grid_units  ! fixme
+         ! open
 
       else
-!        open a new file for grid generated in this run
-         allocate(grid_files(1))
-         grid_files(1)%unit = get_new_file_unit()
-         grid_files(1)%name = 'testme.grid'
-         grid_files(1)%format = 'txt'
-         grid_files(1)%domain = '3d'
-         grid_files(1)%float_format = float_format_txt
-         grid_files(1)%grid_units  = 'au' ! visual_cfg_3d_grid_units  ! fixme
-
-      end if
-
-      if (allocated(grid_files)) then
-         do i = 1, size(grid_files)
-            call open_inp_txt_file(grid_files(i))
+         do i = 1, visual_cfg_nr_grid_files
+!           open a new file for grid generated in this run
+            grid_files(i)%unit = get_new_file_unit()
+            grid_files(i)%name = 'testme.grid'
+            grid_files(i)%format = 'txt'
+            grid_files(i)%domain = '3d'
+            grid_files(i)%float_format = float_format_txt
+            grid_files(i)%grid_units  = 'au' ! visual_cfg_3d_grid_units  ! fixme
+            call open_new_grid_txt_file(grid_files(i))
          end do
+
       end if
 
 
    end subroutine
 
+
 !  -----------------------------------------------------------------------------
-   subroutine open_inp_txt_file(f)
+   subroutine open_new_grid_txt_file(f)
 !  -----------------------------------------------------------------------------
       type(visual_grid_file), intent(inout):: f
-      character(len = 100):: errmsg
-      logical:: exists, is_opened
 !  -----------------------------------------------------------------------------
 
-      inquire(f%unit, exist = exists, opened = is_opened)
-      if (exists) then
-         if (.not.is_opened) then
-            open(unit   = f%unit, &
-                 file   = f%name, &
-                 status = 'new',          &
-                 access = 'sequential',   &
-                 form   = 'formatted')
-            f%is_opened = .true.
-         end if
-         f%exists    = .true.
-      else
-          write (errmsg, *) 'file ', f%name, ' does not exist',&
-                            ' Stopping now!'
-          call visual_quit(errmsg)
-      end if
+      open(unit   = f%unit, &
+           file   = f%name, &
+           status = 'new',          &
+           access = 'sequential',   &
+           form   = 'formatted')
+      f%is_opened = .true.
+      f%exists    = .true.
  
-   end subroutine open_inp_txt_file
+   end subroutine
 
+
+!  -----------------------------------------------------------------------------
+   subroutine open_old_grid_txt_file(f)
+!  -----------------------------------------------------------------------------
+      type(visual_grid_file), intent(inout):: f
+      logical:: ex, op
+!  -----------------------------------------------------------------------------
+
+      !inquire(file = f%name, exist = ex, opened = op)
+      !if (ex .and. .not. op) then
+      if (f%exists .and..not.f%is_opened) then
+         f%unit = get_new_file_unit()
+         open(unit   = f%unit, &
+              file   = f%name, &
+              status = 'OLD',          &
+              access = 'sequential',   &
+              form   = 'formatted')
+         f%is_opened = .true.
+      end if
+      write(*,*) 'opened file: ', f%name, f%unit
+   end subroutine
 
 
 !  -----------------------------------------------------------------------------
    subroutine close_grid_files(grid_files)
 !  -----------------------------------------------------------------------------
-      type(visual_grid_file), intent(inout), dimension(:), allocatable:: grid_files
+      type(visual_grid_file), intent(inout), dimension(:):: grid_files
       integer:: i
 !  -----------------------------------------------------------------------------
 
@@ -278,18 +286,49 @@ module visual_grids
          if (grid_files(i)%is_opened) close(grid_files(i)%unit, status='keep')
       end do
 
-      deallocate(grid_files)
+   end subroutine
+
+
+!  -----------------------------------------------------------------------------
+   subroutine read_grid_files(x, y, z, grid_files, nr_points)
+!  -----------------------------------------------------------------------------
+      type(visual_grid_file), intent(in), dimension(:), allocatable:: grid_files
+      real(8), intent(inout), dimension(:):: x, y, z
+      integer, intent(in):: nr_points(3)
+      integer:: i, j, n
+!  -----------------------------------------------------------------------------
+
+      n = nr_points(1)*nr_points(2)*nr_points(3)
+
+      !do i = 1, visual_cfg_nr_grid_files
+      !
+      !   if (grid_files(i)%is_opened) then
+      !      rewind(grid_files(i)%unit)
+      !   else
+      !      write(*, *) 'error-grid file closed'
+      !   end if
+
+      !   call grid_file_txt_read(grid_files(i)%unit, grid_files(i)%float_format, n, x, y, z)
+      !end do
+        i = 1
+            rewind(grid_files(i)%unit)
+         call grid_file_txt_read(grid_files(i)%unit, grid_files(i)%float_format, n, x, y, z)
 
    end subroutine
 
 
+!  -----------------------------------------------------------------------------
    subroutine print_grid_files_info(grid_files)
+!  -----------------------------------------------------------------------------
       type(visual_grid_file), intent(in), dimension(:):: grid_files
       integer:: i
+!  -----------------------------------------------------------------------------
 
-      write(*,*) 'size(grid_files): ', size(grid_files)
+      write(*,*) 'Grid files used in VISUAL:'
+      write(*,*) '--------------------------'
+
       do i = 1, size(grid_files)
-         write(*,*)     
+         write(*,*) ' grid file #',i    
          write(*,*) grid_files(i)%unit
          write(*,*) grid_files(i)%name
          write(*,*) grid_files(i)%format
@@ -299,5 +338,60 @@ module visual_grids
          write(*,*) grid_files(i)%exists
          write(*,*) grid_files(i)%is_opened
       end do
+
    end subroutine print_grid_files_info
+
+
+
+!XXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+   subroutine grid_file_txt_write(file_unit, float_format, nr_points, x, y, z)
+!     --------------------------------------------------------------------------
+      integer, intent(in):: file_unit
+      character(*), intent(in):: float_format
+      integer, intent(in):: nr_points
+      real(8), intent(in):: x(:), y(:), z(:)
+      character(len = 8):: xc, yc, zc
+!     --------------------------------------------------------------------------
+      integer             :: i
+!     --------------------------------------------------------------------------
+
+      do i = 1, nr_points
+         write(file_unit, float_format) x(i), y(i), z(i)
+      enddo
+
+   end subroutine
+
+
+   subroutine grid_file_txt_read(file_unit, float_format, nr_points, x, y, z)
+!     --------------------------------------------------------------------------
+      real(8), intent(inout), dimension(:):: x, y, z
+      integer, intent(in)  :: file_unit
+      character(*), intent(in):: float_format
+      integer, intent(in)  :: nr_points
+!     --------------------------------------------------------------------------
+      integer              :: i
+!     --------------------------------------------------------------------------
+
+      rewind(file_unit)
+
+      i = 1
+      do
+         read(file_unit, *, end = 98) x(i), y(i), z(i)
+         write(*, *) 'in grid_file_txt_read: ', i, x(i), y(i), z(i)
+         i = i+1
+      end do
+ 98   continue
+
+
+   end subroutine
+
+
+
+
+
+
+
+
 end module

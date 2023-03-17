@@ -108,24 +108,29 @@ module visual_io
       integer:: i
 !  -----------------------------------------------------------------------------
 
+      write(*, *) 'IN OPEN'
+
       if (use_legacy) then
-         call visual_legacy_files_for_data_export(plot_files)
+         write(*, *) 'IN OPEN: legacy'
+         !call visual_legacy_files_for_data_export(plot_files)
       else
          select case (visual_cfg_plot_file_format)
             case ('txt')
-               call prepare_plot_txt_file(plot_files)
+               write(*, *) 'IN OPEN: NOT legacy; txt'
+               !call prepare_plot_txt_file(plot_files)
             case ('cube')
-               call prepare_plot_cube_file(plot_files)
+               write(*, *) 'IN OPEN: NOT legacy; cube'
+               !call prepare_plot_cube_file(plot_files)
          end select
       end if
 
       if (allocated(plot_files)) then
          write(*, *) 'before trying to open: '
          write(*, *) 'use_legacy, nr of plot files: ', use_legacy, size(plot_files)
-         call print_plot_files_info(plot_files)
-         do i = 1, size(plot_files)
-            call open_plot_txt_file(plot_files(i))
-         end do
+         !call print_plot_files_info(plot_files)
+         !do i = 1, size(plot_files)
+         !   call open_plot_txt_file(plot_files(i))
+         !end do
       end if
 
    end subroutine open_plot_files_for_export
@@ -187,8 +192,6 @@ module visual_io
          if (plot_files(i)%is_opened) close(plot_files(i)%unit, status='keep')
       end do
 
-      deallocate(plot_files)
-
    end subroutine close_plot_txt_files
 
 
@@ -215,7 +218,7 @@ module visual_io
       visual_cfg_nr_plot_files = 1
 
 
-   end subroutine prepare_plot_txt_file
+   end subroutine
 
    !character(len=:) function data_type(property)
    !   character(len = 6), intent(in):: property
@@ -561,4 +564,7 @@ module visual_io
          write(*,*) plot_files(i)%is_opened
       end do
    end subroutine print_plot_files_info
+
+
+
 end module
