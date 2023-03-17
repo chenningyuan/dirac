@@ -33,7 +33,7 @@ module talsh_cc_ci
 subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 !This subroutine drives the CC-CI response property calculation 
 !it now includes linear and quadratic response
-    !   Written by Xiang Yuan Janunary 2022, Lille, France
+!Written by Xiang Yuan Janunary 2022, Lille, France
 
     type(exacc_input), intent(in) :: exa_input
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
@@ -54,7 +54,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
 
     type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
-    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
+    ! type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
     type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:), Interm_t_tensors_C(:)
     integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
     integer                       :: N_oper_lr, N_oper_qr
@@ -78,7 +78,6 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
 
     N_prop = 3
-    ! allocate(Interm_t_tensors(N_prop))
 
 
     if (exa_input%wf_type == 1) then 
@@ -89,15 +88,6 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         call print_date('Activate CC-CI(EOM-CC) response')
     end if 
 
-
-
-    ! do  i=1, N_prop
-    !     call form_eomccsd_qr_intermediates(exa_input, interm_t, i, Interm_t_tensors(i),&
-    !                               int_t, l1_tensor, l2_tensor, CC_CC)
-    ! end do
-
-
-    ! call print_date('Constructed intermediates needed in CC Response')
 
 
     if (rr==1) then 
@@ -127,14 +117,14 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
         do  i=1, N_prop_A
             m = Prop_A(i)
-            call form_eomccsd_qr_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
+            call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
                                       int_t, l1_tensor, l2_tensor, CC_CC)
         end do
     
     
         do  i=1, N_prop_B
             m = Prop_B(i)
-            call form_eomccsd_qr_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
+            call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
                                       int_t, l1_tensor, l2_tensor, CC_CC)
         end do
 
@@ -195,15 +185,6 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
         N_oper_qr = 3
 
-
-
-        ! allocate(Prop_A(1))
-        ! allocate(Prop_B(1))
-        ! allocate(Prop_C(1))
-        ! Prop_A = (/3/)
-        ! Prop_B = (/3/)
-        ! Prop_C = (/3/)
-
         Prop_A = exa_input%Prop_A
         Prop_B = exa_input%Prop_B
         Prop_C = exa_input%Prop_C
@@ -226,16 +207,6 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         allocate(eom_qrs(N_prop_A,N_prop_B,N_prop_C))
 
 
-
-        ! allocate(N_prop_tem_qr(N_oper_qr))
-        ! allocate(omega(N_oper_qr))
-        ! allocate(Bvec_tensors(N_oper_qr))
-        ! ! allocate(Bvec_tensors_min_w(N_oper_qr))
-        ! allocate(Tprop_tensors(N_oper_qr))
-        ! allocate(Tprop_tensors_min_w(N_oper_qr))
-        ! allocate(Tprop_bar_tensors(N_oper_qr))
-        ! allocate(Tprop_bar_tensors_min_w(N_oper_qr))
-
         omega3 = -(omega1+omega2)
         omega(1) = omega1
         omega(2) = omega2
@@ -244,25 +215,24 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         print *, "Read frequency2:", omega(2)
         print *, "Read frequency3:", omega(3)
 
-        ! allocate(eom_qrs(N_prop,N_prop,N_prop))
         
         do  i=1, N_prop_A
             m = Prop_A(i)
-            call form_eomccsd_qr_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
+            call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
                                       int_t, l1_tensor, l2_tensor, CC_CC)
         end do
     
     
         do  i=1, N_prop_B
             m = Prop_B(i)
-            call form_eomccsd_qr_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
+            call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
                                       int_t, l1_tensor, l2_tensor, CC_CC)
         end do
 
 
         do  i=1, N_prop_C
             m = Prop_C(i)
-            call form_eomccsd_qr_intermediates(exa_input, interm_t, m, Interm_t_tensors_C(i),&
+            call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_C(i),&
                                   int_t, l1_tensor, l2_tensor, CC_CC)
         end do
 
@@ -361,7 +331,7 @@ end subroutine talsh_CC_CI_driver
 !------------------------------------------------------------------------------------------------------------------
 
 
-subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_prop1, &
+subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1, &
                                    int_t, l1_tensor, l2_tensor, CC_CC)
             use intermediates_eom_rsp
             use intermediates_eom_ccsd
@@ -409,17 +379,8 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
                 vv_dims(1:2) = exa_input%nvir
 
 
-                ! eta is independent on property so that in eom-cc energy intermediates. in intermediates_eom.F90
-                ! call get_eta_ov(interm_t%eta_ov,interm_t%fbar_ov,ov_dims)
-                ! call get_eta_oovv(interm_t%eta_oovv,int_t%oovv,oovv_dims)
-
-                ! call print_date("get eta_oovv?")
-
                 ! get property integral in MO basis
                 call get_prop_integral(exa_input,orb_int_tensor1,i_prop)
-
-                ! call form_eom_qr_prop_inter(interm_t%t1, interm_t%t2, interm_t_prop1, interm_t_prop2, interm_t_prop3, &
-                !                 l1_tensor, l2_tensor)
 
                 ! get epsilon_prop  intermediates_eom_rsp.F90
 
@@ -459,10 +420,14 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
                 ! call get_Q_ovoo(interm_t_prop1%Q_ovoo,interm_t_prop1%prop_bar_ov,interm_t%t2,ovoo_dims)                               
                 ! call get_Q_vvvo(interm_t_prop1%Q_vvvo,interm_t_prop1%prop_bar_ov,interm_t%t2,vvvo_dims)
 
+                ! eta is independent on property so that in eom-cc energy intermediates. in intermediates_eom.F90
+                ! call get_eta_ov(interm_t%eta_ov,interm_t%fbar_ov,ov_dims)
+                ! call get_eta_oovv(interm_t%eta_oovv,int_t%oovv,oovv_dims)
+
                 call destroy_aux_tensor(LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo)
 
 
-end subroutine form_eomccsd_qr_intermediates
+end subroutine form_ccresp_intermediates
 
 
 !------------------------------------------------------------------------------------------------------------------

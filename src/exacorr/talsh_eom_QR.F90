@@ -6,7 +6,6 @@ module talsh_eom_QR
     use talsh_common_routines
     use exacorr_global
     use talsh_eom_rspeq_solver
-    ! use talsh_cc_ci
 
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -32,8 +31,11 @@ subroutine get_eom_qr(exa_input, interm_t,&
                         Tprop_tensors, Tprop_bar_tensors,& 
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
                         i, j, k, l1_tensor, l2_tensor, eom_qr)
-        use talsh_sigma_eomccsd
+   
+!   This subroutine drives the CC-CI Quadratic response property calculation
+!   Written by Xiang Yuan Janunary 2022, Lille, France
 
+        use talsh_sigma_eomccsd
         type(exacc_input), intent(in) :: exa_input
         type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
         type(talsh_tens_t), intent(inout)           :: l2_tensor
@@ -106,7 +108,7 @@ subroutine get_quarspf(exa_input, interm_t,&
             type(talsh_comm_tens_t)       :: bvec_tensor
 
 
-            !XYZ   X is 1; Y is 2; Z is 3
+            !XYZ   X is 1; Y is 2; Z is 3  Ax*Tly
             ! call construct_AyTz(exa_input,Interm_t_tensors(i),Tprop_tensors(3),sigma_prop_tensor13)
             ! call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(2), Tprop_tensors(3), &
             !                     Tprop_bar_tensors(1), Tprop_bar_tensors(2), Tprop_bar_tensors(3), &
@@ -123,7 +125,7 @@ subroutine get_quarspf(exa_input, interm_t,&
 
 
 
-            !XZY
+            !XZY   Ax*Tlz
             ! call construct_AyTz(exa_input,Interm_t_tensors(i),Tprop_tensors(2),sigma_prop_tensor12)
             ! call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(3), Tprop_tensors(2), &
             !                     Tprop_bar_tensors(1), Tprop_bar_tensors(3), Tprop_bar_tensors(2), &
@@ -140,7 +142,7 @@ subroutine get_quarspf(exa_input, interm_t,&
             quarsp=quarsp+tem_quarsp_iter
 
 
-            !YXZ
+            !YXZ   Ay*Tlx
             ! call construct_AyTz(exa_input,Interm_t_tensors(j),Tprop_tensors(3),sigma_prop_tensor23)
             ! call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(1), Tprop_tensors(3), &
             !                     Tprop_bar_tensors(2), Tprop_bar_tensors(1), Tprop_bar_tensors(3), &
@@ -156,7 +158,7 @@ subroutine get_quarspf(exa_input, interm_t,&
             quarsp=quarsp+tem_quarsp_iter
 
 
-            !YZX
+            !YZX  Ay*Tlz
             ! call construct_AyTz(exa_input,Interm_t_tensors(j),Tprop_tensors(1),sigma_prop_tensor21)
             ! call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(3), Tprop_tensors(1), &
             !                     Tprop_bar_tensors(2), Tprop_bar_tensors(3), Tprop_bar_tensors(1), &
@@ -171,7 +173,7 @@ subroutine get_quarspf(exa_input, interm_t,&
             quarsp=quarsp+tem_quarsp_iter
 
 
-            !ZYX
+            !ZYX Az*Tly
             ! call construct_AyTz(exa_input,Interm_t_tensors(k),Tprop_tensors(1),sigma_prop_tensor31)
             ! call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(2), Tprop_tensors(1), &
             !                     Tprop_bar_tensors(3), Tprop_bar_tensors(2), Tprop_bar_tensors(1), &
@@ -186,7 +188,7 @@ subroutine get_quarspf(exa_input, interm_t,&
             quarsp=quarsp+tem_quarsp_iter
 
 
-            !ZXY
+            !ZXY Az*Tlx
             ! call construct_AyTz(exa_input,Interm_t_tensors(k),Tprop_tensors(2),sigma_prop_tensor32)
             ! call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(1), Tprop_tensors(2), &
             !                     Tprop_bar_tensors(3), Tprop_bar_tensors(1), Tprop_bar_tensors(2), &

@@ -187,6 +187,12 @@ module talsh_eom_rspeq_solver
 !---------------------------------------------------------------------------------------------------------------------
       
       subroutine get_left_bvec(exa_input,int_t,interm_t,interm_t_prop,l1_tensor,l2_tensor,bvec_tensor)
+
+      !XY: Although the final QR result of EOM is same as CC-CI, the response equations and 
+      ! the left perturbed ampiltudes tbar are not same. The point is the left bevctor EOM used is not the one of CC-CI 
+      ! CC-CI left bvector is depended on the right perturbed ampiltudes. So, here we choose the EOM type and comment out the CC-CI as backup
+      ! see more details: J. Chem Phys, 142, p.114109, 2015, & J. Chem Phys, 144, p.024102, 2016
+
             use tensor_algebra
             use talsh
             use exacorr_datatypes
