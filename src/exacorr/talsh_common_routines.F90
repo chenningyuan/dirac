@@ -15,6 +15,7 @@ module talsh_common_routines
         module procedure scale_with_denominators
     end interface scale_with_denominators
 
+    public talsh_get_number_gpus
     public get_orbital_energies
     public scale_with_denominators
     public print_tensor
@@ -28,6 +29,16 @@ module talsh_common_routines
     public laplace_testing
 
     contains
+
+      subroutine talsh_get_number_gpus(num_gpus)
+        integer, intent(inout) :: num_gpus
+        integer :: ierr
+
+        write(*,'(1x,"Checking Nvidia GPU availability ... ")',ADVANCE='NO')
+        ierr=talsh_device_count(DEV_NVIDIA_GPU,num_gpus)
+        write(*,'("Status ",i11,": Number of GPUs = ",i3)') ierr,num_gpus
+
+      end subroutine
 
       subroutine scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor,t2_tensor,t3_tensor,eps_ijk)
 
