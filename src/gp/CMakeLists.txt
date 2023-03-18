@@ -10,6 +10,7 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_GP_FORTRAN_SOURCES
+   etime_cray.F
    finesort_scheme6.F
    global_file.F
    gphjj.F

@@ -118,6 +118,8 @@ module talsh_mp2no
          real(kind=8)  :: energy_shift(2) = 0.0d0
          integer       :: i, j, k
 
+         integer :: num_gpus = 0, igpu
+
          nocc = exa_input%nocc
          nvir = exa_input%nvir
          allocate(mo_occ(nocc))
@@ -129,10 +131,12 @@ module talsh_mp2no
 !        Make some noise so that we know we are here
          call print_date('Entered mp2_driver routine')
 
+         call talsh_get_number_gpus(num_gpus)
+
 !        Initialize libraries
          initialize_talsh=1
          buf_size=exa_input%talsh_buff*buf_size
-         ierr=talsh_init(buf_size,host_arg_max)
+         ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
          call print_date('Initialized talsh library')
          write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
 
