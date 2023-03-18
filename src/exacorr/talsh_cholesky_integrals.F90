@@ -8,7 +8,7 @@ module talsh_cholesky_integrals
         use talsh_common_routines
         use exacorr_global
         use talsh_ao_to_mo
-        use talsh_cholesky_routines
+        use talsh_CD_routines
 
         use, intrinsic:: ISO_C_BINDING
 
