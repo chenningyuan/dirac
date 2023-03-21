@@ -1109,8 +1109,16 @@
       if (kw_matches(word, '.CCCILR')) then
          exa_input%eom_lr =.true.
          call kw_read(word, exa_input%wf_type)
-         call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
       end if
+
+      if (kw_matches(word, '.LRFRE ')) then
+         call kw_read(word, exa_input%N_omega_lr)
+         allocate(exa_input%w_lr_re(exa_input%N_omega_lr))
+         allocate(exa_input%w_lr_im(exa_input%N_omega_lr))
+         call kw_read(word, exa_input%w_lr_re,exa_input%N_omega_lr)
+         call kw_read(word, exa_input%w_lr_im,exa_input%N_omega_lr)
+      end if
+
 
       if (kw_matches(word, '.CCCIQR')) then
          exa_input%eom_qr =.true.

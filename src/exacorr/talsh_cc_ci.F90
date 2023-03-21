@@ -48,7 +48,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     complex(kind=8)               :: omega1, omega2, omega3
     complex(kind=8),allocatable   :: omega(:)
     complex(kind=8)               :: eom_qr, eom_lr
-    complex(kind=8),allocatable   :: eom_qrs(:,:,:), eom_lrs(:,:)
+    complex(kind=8),allocatable   :: eom_qrs(:,:,:), eom_lrs(:,:,:)
     type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
 
     type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
@@ -58,6 +58,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:), Interm_t_tensors_C(:)
     integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
     integer                       :: N_oper_lr, N_oper_qr
+    integer                       :: N_omega
     integer, allocatable          :: N_prop_tem_lr (:), N_prop_tem_qr(:)
     integer                       :: i, j, k, n, m
     integer, allocatable          :: Prop_A(:), Prop_B(:), Prop_C(:)
@@ -70,12 +71,6 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     integer :: ierr
     logical          :: CC_CC
     
-    omega1=(0.0,0.0)
-    omega1 = dcmplx(exa_input%w_lr_re, exa_input%w_lr_im)
-    omega2=(-0.0,0.0)
-
-    ! omega3=(-0.1,0.0)
-
 
     N_prop = 3
 
@@ -97,6 +92,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         Prop_B = exa_input%Prop_B
 
         N_oper_lr = 2
+        N_omega = exa_input%N_omega_lr
         N_prop_A = size(Prop_A)
         N_prop_B = size(Prop_B)
 
@@ -106,13 +102,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         allocate(Interm_t_tensors_B(N_prop_B))
         allocate(Tprop_tensors(N_oper_lr))
         allocate(Tprop_tensors_min_w(N_oper_lr))
-        allocate(eom_lrs(N_prop_A,N_prop_B))
-
-        omega2 =  -omega1
-        omega(1) = omega1
-        omega(2) = omega2
-        print *, "Read frequency1:", omega(1)
-        print *, "Read frequency2:", omega(2)
+        allocate(eom_lrs(N_omega,N_prop_A,N_prop_B))
 
 
         do  i=1, N_prop_A
@@ -131,29 +121,42 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         call print_date('Constructed intermediates needed in CC Linear Response')
 
 
-        do i=1, N_prop_A
-            call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
-            call solve_eom_lr_right(exa_input, interm_t, int_t, &
+        do n=1, N_omega
+            omega1 =  dcmplx(exa_input%w_lr_re(n), exa_input%w_lr_im(n))
+            omega2 =  -omega1
+            omega(1) = omega1
+            omega(2) = omega2
+            print *, "Read frequency1:", omega(1)
+            print *, "Read frequency2:", omega(2)
+
+
+            do i=1, N_prop_A
+                call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
+                call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                     Interm_t_tensors_A(i), -omega(1), Tprop_tensors_min_w(1))
 
-            do j=1, N_prop_B
-                call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
-                call solve_eom_lr_right(exa_input, interm_t, int_t, &
+                do j=1, N_prop_B
+                    call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
+                    call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                             Interm_t_tensors_B(j), -omega(2), Tprop_tensors_min_w(2))
 
-                call print_date('Solved All 1st response right equations')
+                    call print_date('Solved All 1st response right equations')
 
-                call get_eom_lr(exa_input,interm_t, int_t, &
-                    Interm_t_tensors_A,Interm_t_tensors_B,& 
-                    Tprop_tensors, Tprop_tensors_min_w, i,j,& 
-                    l1_tensor,l2_tensor,eom_lr,CC_CC)
+                    call get_eom_lr(exa_input,interm_t, int_t, &
+                        Interm_t_tensors_A,Interm_t_tensors_B,& 
+                        Tprop_tensors, Tprop_tensors_min_w, i,j,& 
+                        l1_tensor,l2_tensor,eom_lr,CC_CC)
 
-                eom_lrs(i,j) = eom_lr
+                    eom_lrs(n,i,j) = eom_lr
+                    write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
+                    write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
 
-                call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,2)
+                    call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,2)
+                end do
+
+                call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,1)
             end do
-
-            call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,1)
+        
         end do
 
 
@@ -163,12 +166,16 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
             write(*,"(A54)"), "*************CC-CI(EOM-CC) linear response************"
         end if
         
-        do i=1, size(Prop_A)
-            do j=1,size(Prop_B)
-                write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
-                write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(i,j)), '\', aimag(eom_lrs(i,j))
+        do n=1, N_omega
+            do i=1, N_prop_A
+                do j=1, N_prop_B
+                    write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
+                    write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
+                end do
             end do
         end do
+
+
         write(*,"(A54)"), "**********************************************************"  
 
 
@@ -207,6 +214,9 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         allocate(eom_qrs(N_prop_A,N_prop_B,N_prop_C))
 
 
+
+        omega1=(0.0,0.0)
+        omega2=(-0.0,0.0)
         omega3 = -(omega1+omega2)
         omega(1) = omega1
         omega(2) = omega2

@@ -81,19 +81,21 @@
             integer                 :: N_eom_trial = 1          ! number of trial vectors in CC linear response
             integer                 :: wf_type = 2              ! wave-function type
             integer                 :: N_Prop_A, N_Prop_B, N_Prop_C    ! number of property
+            integer                 :: N_omega_lr = 1               ! number of frequency in cclr
            
             
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
             integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
             integer, allocatable    :: Prop_A(:), Prop_B(:), Prop_C(:) ! index of Property
+            real(REALD), allocatable :: w_lr_re(:)            ! real frequency in CC response
+            real(REALD), allocatable :: w_lr_im(:)            ! imaginary frequency in CC response
            
 
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
             real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
             real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
-            real(REALD)             :: w_lr_re =  0.0            ! real frequency in CC response
-            real(REALD)             :: w_lr_im =  0.0            ! imaginary frequency in CC response
+            
            
 
 
