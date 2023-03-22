@@ -425,15 +425,12 @@ module talsh_cc
             write(*,*) 'Lambda equations with CC2 wavefunctions not supported in this release' 
          end if
 
-!        Destruct tensors
+!        Destruct tensors no longer needed for ground-state
+!        note the amplitude tensor may still be reused in eom or response, so they need to live longer
          ierr=talsh_tensor_destruct(comm_t%tau)
          ierr=talsh_tensor_destruct(comm_t%hoo)
          if (.not.CCD) then
             ierr=talsh_tensor_destruct(comm_t%hov)
-            ierr=talsh_tensor_destruct(comm_t%t1)
-            if (CCSDT) ierr=talsh_tensor_destruct(comm_t%t3)
-            if (CCSDTQ) ierr=talsh_tensor_destruct(comm_t%t4)
-            if (CCSDTQP) ierr=talsh_tensor_destruct(comm_t%t5)
          end if
          ierr=talsh_tensor_destruct(comm_t%hvv)
          ierr=talsh_tensor_destruct(comm_t%goo)
@@ -501,6 +498,9 @@ module talsh_cc
          if (.not.CCD) then
            ierr=talsh_tensor_destruct(comm_t%t1)
            ierr=talsh_tensor_destruct(l1_tensor)
+           if (CCSDT) ierr=talsh_tensor_destruct(comm_t%t3)
+           if (CCSDTQ) ierr=talsh_tensor_destruct(comm_t%t4)
+           if (CCSDTQP) ierr=talsh_tensor_destruct(comm_t%t5)
          end if
          ierr=talsh_tensor_destruct(l2_tensor)
 ! aspg
