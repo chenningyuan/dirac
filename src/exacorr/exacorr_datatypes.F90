@@ -61,6 +61,8 @@
             logical                 :: lambda = .false.
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
+            logical                 :: do_iterative   = .true.  ! this provides a way to switch off iterative methods, e.g. if we want to do only MP2 
+            logical                 :: do_perturbative = .true. ! this generalizes the do_triples
             logical                 :: do_triples = .true.
             logical                 :: tripl_lap = .false.
             logical                 :: do_no = .false.          ! if true, generate natural orbital
@@ -68,6 +70,8 @@
             
             logical                 :: do_1rdm_gs=.false.
             logical                 :: do_2rdm_gs=.false.
+
+            logical                 :: auto_kernels = .false.   ! if true, use automatically generated kernels for t/l equations
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
@@ -77,6 +81,18 @@
             integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
             integer                 :: nocc, nvir               ! number of spinors
+            integer                 :: iterative_level = 2      ! at which excitation level iterative amplitudes/lagrange mult. will be calculated: 1, 2, 3, 4...
+            integer                 :: iterative_scheme = 21    ! scheme/variant for the iterative determination of amplitudes 
+                                                                ! 10: CCS (not currently implemented, but logically should follow as this)
+                                                                ! 20: CCD      ; 21: CCSD      ; 22: CC2       ; 
+                                                                ! 30: CCSDT    ; 31: CCSDT-1   ; 32: CCSDT-1a  ; 33: CCSDT-1b  ; 34: CCSDT-2   ; 35: CCSDT-3; 36: CC3           ;
+                                                                ! 40: CCSDTQ   ; 41: CCSDTQ-1  ; 
+            integer                 :: perturbative_level = 3   ! at which excitation level pertubative corrections will be calculated: 2, 3, 4...
+            integer                 :: perturbative_scheme = 30 ! scheme/variant for the iterative determination of energies/amplitudes/... 
+                                                                ! 20: MP2 (MP2 is always performed)
+                                                                ! 30: CCSD(T)
+
+!  aspg, TODO: harmonize this tripl_block with the more general setup of excitation rank
             integer                 :: tripl_block(1:2) = -1    ! for running triples
             integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
             integer                 :: n_laplace = 10           ! number of laplace points to use
@@ -132,7 +148,7 @@
          type(tens_rcrsv_t) :: goo, gvv
          type(tens_rcrsv_t) :: hoo, hov, hvv
          type(tens_rcrsv_t) :: a_int, h_int
-         type(tens_rcrsv_t) :: t1, t2, tau
+         type(tens_rcrsv_t) :: t1, t2, t3, t4, t5, tau
         end type exatns_comm_tens_t
 
         type, public :: exatns_lambda_tens_t
@@ -188,7 +204,7 @@
          type(talsh_tens_t) :: goo, gvv
          type(talsh_tens_t) :: hoo, hov, hvv
          type(talsh_tens_t) :: a_int, h_int
-         type(talsh_tens_t) :: t1, t2, tau
+         type(talsh_tens_t) :: t1, t2, t3, t4, t5, tau
         end type talsh_comm_tens_t
 
         type, public :: talsh_lambda_tens_t

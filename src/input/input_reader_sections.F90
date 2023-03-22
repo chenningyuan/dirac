@@ -1036,8 +1036,30 @@
          exa_input%talsh = .false.
       end if
 
+      if (kw_matches(word, '.AUTOKERNELS')) then
+         exa_input%auto_kernels = .true.
+      end if
+
       if (kw_matches(word, '.CCDOUBLES')) then
          exa_input%ccd = .true.
+         exa_input%iterative_level  = 2
+         exa_input%iterative_scheme = 20
+      end if
+
+      if (kw_matches(word, '.ITLEVEL')) then
+         call kw_read(word, exa_input%iterative_level)
+      end if
+
+      if (kw_matches(word, '.ITSCHEME')) then
+         call kw_read(word, exa_input%iterative_scheme)
+      end if
+
+      if (kw_matches(word, '.PTLEVEL')) then
+         call kw_read(word, exa_input%perturbative_level)
+      end if
+
+      if (kw_matches(word, '.PTSCHEME')) then
+         call kw_read(word, exa_input%perturbative_scheme)
       end if
 
       if (kw_matches(word, '.CIS   ')) then
@@ -1060,6 +1082,23 @@
 
       if (kw_matches(word, '.CC2         ')) then
          exa_input%cc2 = .true.
+         exa_input%iterative_level  = 2
+         exa_input%iterative_scheme = 22
+      end if
+
+      if (kw_matches(word, '.CC-iT       ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 30
+      end if
+
+      if (kw_matches(word, '.CC-iQ    ')) then
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 40
+      end if
+
+      if (kw_matches(word, '.CC-iP    ')) then
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 50
       end if
 
       if (kw_matches(word, '.TCONVERG')) then
@@ -1087,12 +1126,21 @@
          exa_input%do_2rdm_gs = .true.
       end if
 
+      if (kw_matches(word, '.NOITERT')) then
+         exa_input%do_iterative = .false.
+      end if
+
+      if (kw_matches(word, '.NOPERTT')) then
+         exa_input%do_perturbative = .false.
+      end if
+
       if (kw_matches(word, '.DONATORB')) then
          exa_input%do_no = .true.
       end if
 
       if (kw_matches(word, '.NOTRIPLES')) then
          exa_input%do_triples = .false.
+         exa_input%do_perturbative = .false.
       end if
 
       if (kw_matches(word, '.RIXS     ')) then
