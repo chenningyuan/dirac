@@ -4419,7 +4419,7 @@ C
 CSK   ... only if MP2-NO orbitals are available - set in MP2NOGE1
       MP2NATPOP = .FALSE.
 C
-C     Process input from CBIPOP
+C     Process input for *MULPOP
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*MULPOP')
@@ -4627,7 +4627,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       MAYER  = .FALSE.
       POLNRM = .FALSE.
 C
-C     Process input from CBIPRJ
+C     Process *PROJEC input
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*PROJEC')
@@ -4803,10 +4803,10 @@ C
       IF(MAYER) THEN
         IF(OWNBAS) THEN
           CALL QUIT
-     &     ('ANAINP: Mayer polarization only possible with SELOWN=T')
+     &     ('*PROJEC: Mayer polarization only possible with SELOWN=T')
         ELSE
-          WRITE(LUPRI,'(1X,A,A)')
-     &      '* Reference orbitals will be polarized according to ',
+          WRITE(LUPRI,'(1X,A)')
+     &      '* Reference orbitals will be polarized according to'//
      &      ' a modified Mayer scheme'
         ENDIF
       ENDIF
@@ -7511,29 +7511,6 @@ C.........define label
       deallocate(ibuf)
       RETURN
       END 
-#ifdef NOT_USED
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck READREORDER*/
-      SUBROUTINE READREORDER(STRING,IREORD,IMOORD,MXREORD)
-C***********************************************************************
-C
-C     Read in new order of orbitals
-C
-C     Written by J. Thyssen, Sep 1 1998
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      DIMENSION IMOORD(MXREORD)
-      CHARACTER STRING*90
-
-      string(90:90) = char(0)
-!     ... call C-routine
-        write(LUPRI,*) 'got string:',STRING
-      call creadreorder(string,ireord,imoord,mxreord)
-      RETURN
-      END
-#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mvoinp */
       SUBROUTINE MVOINP(WORD,RESET,WORK,LWORK)
