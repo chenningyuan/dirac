@@ -55,7 +55,10 @@
 .LAMBDA
 .CCCILR
 1
-0.1 0.0
+.LRFRE
+1
+0.1
+0.0
 .AProp
 1
 3
