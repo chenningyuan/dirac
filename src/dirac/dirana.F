@@ -531,8 +531,7 @@ C     Loop over fermion ircops
 C     ========================
 C
       DO IFRP = 1,NFSYM
-        IF (IPRPOP .GE. 0)
-     &     CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
+        CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
         IF (IPRPOP .GE. 2) WRITE(LUPRI,*) 'vecpop : ',vecpop(ifrp)
 C
 C       Find number of electronic/positronic vectors
@@ -545,7 +544,6 @@ C
         CALL ORBCNT(WORK(KJVEC),NVEC,NPSH(IFRP),NESH(IFRP),
      &              NPVEC,NEVEC)
         IF(NVEC.EQ.0) GOTO 20
-        CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
         NCBAS=NTBAS(0)
         IF(ILABDF.EQ.2) NCBAS=NFBAS(IFRP,0)
         CALL MEMGET('REAL',KCBF,NCBAS*NVEC*4,WORK,KFREE,LFREE)
