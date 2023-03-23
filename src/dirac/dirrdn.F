@@ -4391,7 +4391,7 @@ C
 ! HJAAJ TODO : new parameter to set ADD_ALL = .TRUE. /Jan 2010
       SAVE SET
       DATA TABLE /'.AOLAB ','.LABDEF','.VECPOP','.LABEL ',
-     &            '.PRINT ','.INDSML','.NETPOP','.XXXXXX'/
+     &            '.PRINT ','.INDSML','.NETPOP','.PR TOL'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4418,6 +4418,7 @@ C
       ORBDEF   = .TRUE.
 CSK   ... only if MP2-NO orbitals are available - set in MP2NOGE1
       MP2NATPOP = .FALSE.
+      POP_DTOL = 1.D-2
 C
 C     Process input for *MULPOP
 C     =========================
@@ -4490,7 +4491,9 @@ C&&&& INDSML: Do not collect labels of small components of given center/symmetry
 C&&&& NETPOP: Mulliken Net populations
                  DONETP = .TRUE.
                GO TO 100
+C&&&& PR TOL: print tolerance, only print VECPOP contributions > POP_DTOL
     8          CONTINUE
+                  READ(LUCMD,*) POP_DTOL
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

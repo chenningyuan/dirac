@@ -1050,21 +1050,25 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (DTOL=0.0001D0,D0 = 0.0D0)
+      PARAMETER (D0 = 0.0D0)
       CHARACTER LAB(NLAB)*12,FMT*7
       DIMENSION POPG(NLAB,2),IEFF(*)
+
+! dcbpop.h : POP_DTOL
+#include "maxorb.h"
+#include "dcbpop.h"
 C
 C     Find nonzero contributions
 C     ==========================
 C
-      SUMA = D0
-      SUMB = D0
+      SUMA = 0.0D0
+      SUMB = 0.0D0
       NEFF = 0
       DO I = 1,NLAB
         SUMA = SUMA + POPG(I,1)
         SUMB = SUMB + POPG(I,2)
         POPT = ABS(POPG(I,1))+ABS(POPG(I,2))
-        IF(POPT.GE.DTOL) THEN
+        IF(POPT.GE.POP_DTOL) THEN
           NEFF = NEFF + 1
           IEFF(NEFF) = I
         ENDIF
@@ -1080,7 +1084,8 @@ C
       NPRI = MIN(NEFF+1,8)
       NFMT = 8 + 15*NPRI
       NPRI = NPRI - 1
-      WRITE(LUPRI,'(/A,F8.5)') '* Gross populations greater than',DTOL
+      WRITE(LUPRI,'(/A,F8.5)')
+     &   '* Gross populations greater than',POP_DTOL
       WRITE(FMT,'(A1,I3,A3)') '(',NFMT,'A1)'
       WRITE(LUPRI,'(/A8,2X,A6,2X,A1,4X,7(A12,3X))')
      &     'Gross   ','Total ','|',(LAB(IEFF(I)),I=1,NPRI)
@@ -1159,9 +1164,13 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (DTOL=0.0001D0,D2 = 2.0D0)
+      PARAMETER (D2 = 2.0D0)
       CHARACTER LAB(NLAB)*12,FMT*7,PFMT*23,COMP*5
       DIMENSION PMAT(NLAB,NLAB),POPG(NLAB),IEFF(NLAB)
+
+! dcbpop.h : POP_DTOL
+#include "maxorb.h"
+#include "dcbpop.h"
 C
 C     Find nonzero contributions
 C     ==========================
@@ -1169,7 +1178,7 @@ C
       NEFF = 0
       DO I = 1,NLAB
         POPT = ABS(POPG(I))
-        IF(POPT.GE.DTOL) THEN
+        IF(POPT.GE.POP_DTOL) THEN
           NEFF = NEFF + 1
           IEFF(NEFF) = I
         ENDIF
@@ -2105,9 +2114,13 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (DTOL=0.0001D0,D0 = 0.0D0)
+      PARAMETER (D0 = 0.0D0)
       CHARACTER LAB(NLAB)*12,FMT*7
       DIMENSION POPG(NLAB),IEFF(*)
+
+! dcbpop.h : POP_DTOL
+#include "maxorb.h"
+#include "dcbpop.h"
 C
 C     Find nonzero contributions
 C     ==========================
@@ -2117,7 +2130,7 @@ C
       DO I = 1,NLAB
         SUMA = SUMA + POPG(I)
         POPT = ABS(POPG(I))
-        IF(POPT.GE.DTOL) THEN
+        IF(POPT.GE.POP_DTOL) THEN
           NEFF = NEFF + 1
           IEFF(NEFF) = I
         ENDIF
