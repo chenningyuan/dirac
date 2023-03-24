@@ -266,7 +266,7 @@ contains
             davidson_convergence_threshold = 1.0d-8 
         end if
 
-        davidson_antisymme_threshold = davidson_convergence_threshold * 0.1
+        davidson_antisymme_threshold = davidson_convergence_threshold * 0.0001
 
 
         if (present(energy_shift)) then
@@ -578,6 +578,9 @@ contains
                                                 workspace_t%trial1, workspace_t%trial2,rank,flavor)
 
 
+        call double_check_trial_vector(workspace_t%Lprev, workspace_t%L, &
+                                        workspace_t%trial1, workspace_t%trial2,rank)
+
         if (debug) then
            write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization '
            do i = 1, workspace_t%L
@@ -700,8 +703,6 @@ contains
        integer :: ierr
   
 
-    !    rank=talsh_tensor_rank(v1)
-
        if (rank.eq.1) then
             norm_r = sqrt(tensor_norm2(v1) + tensor_norm2(v2)/2)
        else 
@@ -711,13 +712,20 @@ contains
     !    norm_r = sqrt(tensor_norm2(v1) + tensor_norm2(v2)/4) !XY 4 is for EE(ab.ij) but we need to take care for IP
        norm = dcmplx(norm_r, 0.0d0)
 
-
-        if (norm_r .ge. safe_minimum ) then
+       if (norm_r.lt.davidson_antisymme_threshold) then 
+            ierr=talsh_tensor_init(v1)
+            ierr=talsh_tensor_init(v2)
+       else
             call divide_tensor_elements_by_value(v1, norm)
             call divide_tensor_elements_by_value(v2, norm)
-        else
-            call quit ('norm of tensors too small for division, quitting')
-        end if
+       end if
+
+        ! if (norm_r .ge. safe_minimum ) then
+        !     call divide_tensor_elements_by_value(v1, norm)
+        !     call divide_tensor_elements_by_value(v2, norm)
+        ! else
+        !     call quit ('norm of tensors too small for division, quitting')
+        ! end if
 
     end subroutine
 
@@ -837,6 +845,14 @@ contains
                 ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
                 ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
 
+            end do
+
+
+            do i = 1, j-1                      
+                call gram_schmidt_projection_tensors(factor,trial1(i), trial2(i), trial1(j), trial2(j),rank)
+    
+                ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
+                ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)    
             end do
 
 
