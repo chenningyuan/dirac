@@ -496,9 +496,10 @@ contains
     end subroutine
 
 
-    subroutine update_trial_vectors(delta,workspace_t)
+    subroutine update_trial_vectors(delta,workspace_t,flavor)
         type(talsh_davidson_workspace_tens_t) :: workspace_t
         logical, pointer, intent(inout) :: delta(:)
+        character(len=2) :: flavor
 
         integer :: ierr, i, j
         integer(INTD) :: rank
@@ -573,20 +574,9 @@ contains
            end do
         end if
 
-        call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2,rank)
+        call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, &
+                                                workspace_t%trial1, workspace_t%trial2,rank,flavor)
 
-        ! if (debug) then
-        !     write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization'
-        !     do i = 1, workspace_t%L
-        !        write (6,*) 'debug >>> trial vector ',i
-        !        call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
-        !        call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
-        !        print *, "norm of new trial", sqrt(tensor_norm2(workspace_t%trial1(i)) + tensor_norm2(workspace_t%trial2(i))/4)
-        !        write (6,*) ''
-        !     end do
-        !  end if
-
-        call double_check_trial_vector(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2,rank)
 
         if (debug) then
            write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization '
@@ -721,21 +711,13 @@ contains
     !    norm_r = sqrt(tensor_norm2(v1) + tensor_norm2(v2)/4) !XY 4 is for EE(ab.ij) but we need to take care for IP
        norm = dcmplx(norm_r, 0.0d0)
 
-    !    print *, "norm in renormalize", norm_r
-       if (norm_r.lt.davidson_antisymme_threshold) then ! to avoid numerical noisy 
-            ierr=talsh_tensor_init(v1, ZERO)
-            ierr=talsh_tensor_init(v2, ZERO)
-       else
+
+        if (norm_r .ge. safe_minimum ) then
             call divide_tensor_elements_by_value(v1, norm)
             call divide_tensor_elements_by_value(v2, norm)
-       end if
-
-        ! if (norm_r .ge. safe_minimum ) then
-        !     call divide_tensor_elements_by_value(v1, norm)
-        !     call divide_tensor_elements_by_value(v2, norm)
-        ! else
-        !     call quit ('norm of tensors too small for division, quitting')
-        ! end if
+        else
+            call quit ('norm of tensors too small for division, quitting')
+        end if
 
     end subroutine
 
@@ -745,6 +727,7 @@ contains
        type(talsh_tens_t), intent(inout) :: u1, u2
        type(talsh_tens_t), intent(inout) :: v1, v2
        integer :: rank
+
 
        type(talsh_tens_t) :: result_tensor_num, result_tensor_den
        complex(8), pointer :: result_tens_num(:), result_tens_den(:)
@@ -811,28 +794,23 @@ contains
     end subroutine
 
 
-    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,trial1,trial2,rank)
+    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,trial1,trial2,rank,flavor)
         integer, intent(in) :: L, Lnew
         type(talsh_tens_t), intent(inout) :: trial1(:), trial2(:)
         integer(INTD) :: rank
+        character(len=2) :: flavor
 
         real :: norm_r
         integer :: ierr, i, j
         complex(8) :: factor
-        ! type(talsh_tens_t) :: one_tensor
-        ! integer(C_INT)     :: one_dims(1)
-        ! real(8) :: davidson_antisymme_threshold = 1.0d-6
-        ! real(8) :: davidson_antisymme_threshold_num = 1.0d-12
-
+        type(talsh_tens_t) :: one_tensor
         integer(C_INT)     :: one_dims(1)
-        logical :: debug_GS_orthg = .false.
 
+        logical :: debug_GS_orthg = .false.
 
 
         ! one_dims(1) = 1
         ! ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-        ! rank=talsh_tensor_rank(trial1(1))
-        ! if (rank.ne.2) call quit('rank not implemented in form_r_tensors')
 
 
         do j = L+1, Lnew
@@ -840,33 +818,33 @@ contains
                 call print_tensor(trial1(j), 1.0d-18, "trial1(j) before ")
                 call print_tensor(trial2(j), 1.0d-18, "trial2(j) before ")
             end if
+
+            ! norm_r = sqrt(tensor_norm2(trial1(j))+tensor_norm2(trial2(j))/4)
+
+            ! if (norm_r.lt.davidson_antisymme_threshold) then
+            call antisymm_t2(trial2(j),flavor)
+            ! end if
+            
             do i = 1, j-1
                 if (debug_GS_orthg) then
                     print *, "I: ", i, "J: ", j
                     call print_tensor(trial1(i), 1.0d-10, "trial1(i)")
                     call print_tensor(trial2(i), 1.0d-10, "trial2(i)")
                 end if 
+                     
+                call gram_schmidt_projection_tensors(factor,trial1(i), trial2(i), trial1(j), trial2(j),rank)
 
-                if (i.le.L) then    !The previous L vectors should be ok.
-                    norm_r = 1.0
-                else
-                    norm_r = sqrt(tensor_norm2(trial1(i)) +  tensor_norm2(trial2(i))/4)
-                end if
- 
-                if (norm_r.gt.davidson_antisymme_threshold) then                       
-                    call gram_schmidt_projection_tensors(factor,trial1(i), trial2(i), trial1(j), trial2(j),rank)
-                else
-                    factor = ZERO ! complex(0.0D0,0.0D0)
-                end if
-
-                ! if (rank.eq.1) then
-                !    ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),trial1(i),scale=-factor)
-                !    ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(j),trial2(i),scale=-factor)
-                ! else if (rank.eq.2) then
                 ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
                 ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
-                ! end if
 
+            end do
+
+
+            do i = 1, j-1                      
+                call gram_schmidt_projection_tensors(factor,trial1(i), trial2(i), trial1(j), trial2(j),rank)
+    
+                ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
+                ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)    
             end do
 
             call renormalize_vectors(trial1(j),trial2(j),rank)
@@ -874,6 +852,91 @@ contains
          end do
 
     end subroutine
+
+
+    subroutine antisymm_t2(trial2,flavor)
+
+        type(talsh_tens_t), intent(inout) :: trial2
+        character(len=2) :: flavor
+    
+        integer :: L, Lnew
+        integer :: rank
+        integer :: Lnew_tem, L_tem
+        integer :: i, j, a, b
+        integer :: N_1, N_2, N_3, N_4
+        real(8) :: norm_r
+        integer, allocatable :: valid_index(:)
+        type(C_PTR) :: body_p, body_p1
+        integer :: ierr
+        logical :: debug_double_check = .false.
+
+        integer :: t2_dims(4), t2_rank
+        complex(8), pointer, contiguous:: trial2_tens(:,:,:,:), trial2_tens_tem(:,:,:,:)
+
+
+        ierr = talsh_tensor_dimensions(trial2,t2_rank,t2_dims)
+
+        if (debug_double_check) then
+            call print_tensor(trial2,1.0d-12, "trial2 in double check before")
+        end if 
+
+        ierr=talsh_tensor_get_body_access(trial2,body_p,C8,int(0,C_INT),DEV_HOST)
+        call c_f_pointer(body_p,trial2_tens,t2_dims)
+        N_1 = size(trial2_tens,1)
+        N_2 = size(trial2_tens,2)
+        N_3 = size(trial2_tens,3)
+        N_4 = size(trial2_tens,4)
+        allocate(trial2_tens_tem(N_1,N_2,N_3,N_4))
+        trial2_tens_tem = trial2_tens
+        
+
+        if (flavor=='IP') then
+
+            do a=1, size(trial2_tens_tem,1)
+                do i=1, size(trial2_tens_tem,3)
+                    do j=i, size(trial2_tens_tem,4)
+                            if (i==j) then 
+                                trial2_tens(a,1,i,j) = dcmplx(0.0,0.0)
+                            else
+                                trial2_tens(a,1,i,j) = trial2_tens_tem(a,1,i,j)
+                            end if
+
+                            trial2_tens(a,1,j,i) = -trial2_tens(a,1,i,j)
+                    end do
+                end do
+            end do
+
+        else
+
+            do a=1, size(trial2_tens_tem,1)
+                do b=a, size(trial2_tens_tem,2)
+                    do i=1, size(trial2_tens_tem,3)
+                        do j=i, size(trial2_tens_tem,4)
+                            if (i==j.or.a==b) then 
+                                trial2_tens(a,b,i,j) = dcmplx(0.0,0.0)
+                            else
+                                trial2_tens(a,b,i,j) = trial2_tens_tem(a,b,i,j)
+                            end if
+
+                            trial2_tens(b,a,i,j) = -trial2_tens(a,b,i,j)
+                            trial2_tens(a,b,j,i) = -trial2_tens(a,b,i,j)
+                            trial2_tens(b,a,j,i) = trial2_tens(a,b,i,j)
+                    end do
+                end do
+            end do
+        end do
+
+        end if 
+        
+
+        if (debug_double_check) then
+            call print_tensor(trial2,1.0d-12, "trial2 in double check after")
+        end if 
+
+        
+        deallocate(trial2_tens_tem)
+    end subroutine
+
 
     subroutine davidson_print_vectors_complex(vectors, label, nvectors)
         complex(kind=8), intent(in) :: vectors(:,:)
@@ -904,7 +967,7 @@ contains
                 vi = aimag(vectors(i,j))
                 if (abs(vi).lt.print_vector_threshold) vi = 0.0d0
                 if (abs(vr).lt.print_vector_threshold) vr = 0.0d0
-                print '(4x,1e14.6,2x,SP,1e14.6,"i",$)', cmplx(vr,vi)
+                print '(4x,1e14.6,2x,SP,1e14.6,"i",$)', dcmplx(vr,vi)
             end do
             print *, ""
         end do
@@ -1223,6 +1286,8 @@ contains
 !             call print_tensor_elements(workspace_t%delta2(k))
 !             write (6,*) 'debug <<< in form_r_tensors, accumulated r2 for L',i,' <<<'
 !          end if
+
+           
        end do
 
        if (present(prop_grad1)) then
@@ -1231,6 +1296,8 @@ contains
         ierr=talsh_tensor_contract("r(a,b,c,d)+=p(a,b,c,d)*K()",workspace_t%delta2(k),prop_grad2,&
         & one_tensor,scale=ONE)
       end if 
+
+      
 
 ! this should in the end work as what is below, but now we're doing a k at a time 
 !      vectors_L = size(b,2)
@@ -1498,7 +1565,7 @@ contains
                     if (dabs(x2py2).gt.safe_minimum) then
                        proj_r =  proj_r / x2py2
                        proj_i = -proj_i / x2py2
-                       preco_1d_p(ja) = cmplx(proj_r,proj_i)
+                       preco_1d_p(ja) = dcmplx(proj_r,proj_i)
                     end if
                  end do
 
@@ -1516,7 +1583,7 @@ contains
                           if (dabs(x2py2).gt.safe_minimum) then
                              proj_r =  proj_r / x2py2
                              proj_i = -proj_i / x2py2
-                             preco_3d_p(ja,jb,jc) = cmplx(proj_r,proj_i)
+                             preco_3d_p(ja,jb,jc) = dcmplx(proj_r,proj_i)
                           end if
                        end do
                     end do
@@ -1550,7 +1617,7 @@ contains
                        if (dabs(x2py2).gt.safe_minimum) then
                           proj_r =  proj_r / x2py2
                           proj_i = -proj_i / x2py2
-                          preco_2d_p(ja,jb) = cmplx(proj_r,proj_i)
+                          preco_2d_p(ja,jb) = dcmplx(proj_r,proj_i)
                        end if
                     end do
                  end do
@@ -1582,7 +1649,7 @@ contains
                              if (dabs(x2py2).gt.safe_minimum) then
                                 proj_r =  proj_r / x2py2
                                 proj_i = -proj_i / x2py2
-                                preco_4d_p(ja,jb,jc,jd) = cmplx(proj_r,proj_i)
+                                preco_4d_p(ja,jb,jc,jd) = dcmplx(proj_r,proj_i)
                              end if
                           end do
                        end do
@@ -1957,7 +2024,6 @@ contains
               if (present(left_right)) then
                 workspace_t%tens1_dims = (/ nocc, nvirt /)
               else
-                print *, "come"
                 workspace_t%tens1_dims = (/ nvirt, nocc /)
               end if 
               workspace_t%N(1) = nvirt*nocc
@@ -2406,12 +2472,13 @@ contains
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
       type(talsh_projectors_tens_t), intent(inout) :: projector_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
+      character(len=2) :: flavor
       type(talsh_tens_t), intent(inout) :: prop_grad1, prop_grad2
       complex(kind=8), intent(in) :: frequency
 
 !     do something to populate the property gradient, within workspace_t, before calling the routine below
       call talsh_get_values_vectors_davidson(results_t,int_t,interm_t, &
- &          workspace_t, projector_t, frequency, prop_grad1, prop_grad2)
+ &          workspace_t, projector_t, flavor,frequency, prop_grad1, prop_grad2)
 
    end subroutine
 
@@ -2422,12 +2489,13 @@ contains
 !   subroutine talsh_get_values_vectors_davidson(A, workspace, projector)
 ! removed property gradient since that will be avaliable from within workspace_t
    subroutine talsh_get_values_vectors_davidson(results_t,int_t,interm_t, &
- &               workspace_t, projector_t, frequency, prop_grad1, prop_grad2, tprop_tensor)
+ &               workspace_t, projector_t,flavor, frequency, prop_grad1, prop_grad2, tprop_tensor)
       type(talsh_davidson_results_tens_t) :: results_t
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
       type(talsh_projectors_tens_t), intent(inout) :: projector_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
+      character(len=2) :: flavor
 
       complex(kind=8), intent(in), optional :: frequency  
       type(talsh_tens_t), intent(inout), optional :: prop_grad1, prop_grad2
@@ -2589,7 +2657,7 @@ contains
             if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
                 print *,'debug : refreshing trial vectors not implemented in this version'
             else
-               call update_trial_vectors(delta,workspace_t)
+               call update_trial_vectors(delta,workspace_t,flavor)
             end if
  
         end do ! davidson iterations
@@ -2997,7 +3065,7 @@ contains
         end do
 
         allocate(temp_vector(vectors_L,vectors_L))
-        temp_vector = cmplx(0.0d0, 0.0d0)
+        temp_vector = dcmplx(0.0d0, 0.0d0)
 
         if (right) then
             do i = 1, vectors_L
@@ -3592,9 +3660,9 @@ contains
             if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
                value_to_print = ZERO
             else if ((real(value_to_print).gt.threshold).and.(aimag(value_to_print).le.threshold)) then
-               value_to_print = cmplx(real(value_to_print),0.0d0) 
+               value_to_print = dcmplx(real(value_to_print),0.0d0) 
             else if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
-               value_to_print = cmplx(0.0d0,aimag(value_to_print)) 
+               value_to_print = dcmplx(0.0d0,aimag(value_to_print)) 
             end if
             write(6,'(4x,i6,1e14.6,2x,SP,1e14.6,"i")') b, value_to_print
          end do
@@ -3612,9 +3680,9 @@ contains
             if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
                value_to_print = ZERO
             else if ((real(value_to_print).gt.threshold).and.(aimag(value_to_print).le.threshold)) then
-               value_to_print = cmplx(real(value_to_print),0.0d0)
+               value_to_print = dcmplx(real(value_to_print),0.0d0)
             else if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
-               value_to_print = cmplx(0.0d0,aimag(value_to_print))
+               value_to_print = dcmplx(0.0d0,aimag(value_to_print))
             end if
             write(6,'(4x,i6,2x,i6,2x,i6,2x,1e14.6,2x,SP,1e14.6,"i")') b, i, j, value_to_print
 
@@ -3634,9 +3702,9 @@ contains
                  if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
                     value_to_print = ZERO
                  else if ((real(value_to_print).gt.threshold).and.(aimag(value_to_print).le.threshold)) then
-                    value_to_print = cmplx(real(value_to_print),0.0d0)
+                    value_to_print = dcmplx(real(value_to_print),0.0d0)
                  else if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
-                    value_to_print = cmplx(0.0d0,aimag(value_to_print))
+                    value_to_print = dcmplx(0.0d0,aimag(value_to_print))
                  end if
                  write(6,'(4x,i6,2x,i6,2x,i6,2x,i6,2x,1e14.6,2x,SP,1e14.6,"i")') b, i, j, k, value_to_print
 
@@ -3659,9 +3727,9 @@ contains
                    if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
                       value_to_print = ZERO
                    else if ((real(value_to_print).gt.threshold).and.(aimag(value_to_print).le.threshold)) then
-                      value_to_print = cmplx(real(value_to_print),0.0d0)
+                      value_to_print = dcmplx(real(value_to_print),0.0d0)
                    else if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
-                      value_to_print = cmplx(0.0d0,aimag(value_to_print))
+                      value_to_print = dcmplx(0.0d0,aimag(value_to_print))
                    end if
                    write(6,'(4x,i6,2x,i6,2x,i6,2x,i6,2x,i6,2x,1e14.6,2x,SP,1e14.6,"i")') b, i, j, k, l, value_to_print
 

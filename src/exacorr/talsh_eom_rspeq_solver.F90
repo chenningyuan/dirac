@@ -99,7 +99,7 @@ module talsh_eom_rspeq_solver
             ierr=talsh_tensor_construct(tprop_tensor%t2,C8,vvoo_dims,init_val=ZERO)
 
 
-            call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, & 
+            call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,& 
                                     omega, interm_t_prop%epsilon_prop_vo, interm_t_prop%epsilon_prop_vvoo, tprop_tensor)
 
             call print_date("Finishing CC-CI Right Linear Systems calculation")
@@ -175,7 +175,7 @@ module talsh_eom_rspeq_solver
                   ierr=talsh_tensor_construct(tprop_bar_tensor%t2,C8,oovv_dims,init_val=ZERO)
 
       
-                  call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, &
+                  call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,&
                                           -omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)   !left equation use -omega
                                           
                   call print_date("Finishing CC-CI Left Linear Systems calculation")

@@ -366,11 +366,11 @@ module talsh_cc
 ! with the ground-state intermediates done, and t amplitudes store
 
 !           if (debug_eom) then
-            if (.true.) then 
-               print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
-               print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
-               print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
-            end if
+            ! if (.true.) then 
+            !    print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
+            !    print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
+            !    print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
+            ! end if
             ! print '(A)','debug: exa_input%eom_input(1)%flavor is:_'//exa_input%eom_input(1)%flavor//'_'
 
             if (exa_input%eom_input(1)%flavor.eq."EE    " .and. exa_input%eom_input(1)%do_expval.and..not.lambda) then
