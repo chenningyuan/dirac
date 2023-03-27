@@ -1040,6 +1040,10 @@
          exa_input%auto_kernels = .true.
       end if
 
+      if (kw_matches(word, '.AUTOSCHEME')) then
+         call kw_read(word, exa_input%auto_scheme)
+      end if
+
       if (kw_matches(word, '.CCDOUBLES')) then
          exa_input%ccd = .true.
          exa_input%iterative_level  = 2

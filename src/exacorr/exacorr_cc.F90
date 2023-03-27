@@ -192,19 +192,19 @@ module exacorr_cc
          vovv_root = (/vir_space_root, occ_space_root, vir_space_root, vir_space_root/)
          vvvv_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root/)
 
-         if (CCSDT.or.CCSDTQ.or.CCSDTQP) then
+         if (iterative_level.ge.3) then
             vvvooo_id   = (/vir_space_id, vir_space_id, vir_space_id,&
                             occ_space_id, occ_space_id, occ_space_id/)
             vvvooo_root = (/vir_space_root, vir_space_root, vir_space_root,&
                             occ_space_root, occ_space_root, occ_space_root/)
          end if
-         if (CCSDTQ.or.CCSDTQP) then
+         if (iterative_level.ge.4) then
             vvvvoooo_id   = (/vir_space_id, vir_space_id, vir_space_id, vir_space_id,&
                               occ_space_id, occ_space_id, occ_space_id, occ_space_id/)
             vvvvoooo_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root,&
                               occ_space_root, occ_space_root, occ_space_root, occ_space_root/)
          end if
-         if (CCSDTQP) then
+         if (iterative_level.ge.5) then
             vvvvvooooo_id   = (/vir_space_id, vir_space_id, vir_space_id, vir_space_id, vir_space_id,&
                                 occ_space_id, occ_space_id, occ_space_id, occ_space_id, occ_space_id/)
             vvvvvooooo_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root, vir_space_root,&
@@ -292,19 +292,19 @@ module exacorr_cc
                ierr=exatns_tensor_contract("T(a,i)+=V+(i,a)*K()",comm_t%t1,comm_t%fov,one_tensor)
                ierr=exatns_tensor_transform(comm_t%t1,denom)
                
-               if (CCSDT.or.CCSDTQ.or.CCSDTQP) then
+               if (iterative_level.ge.3) then
                   ierr=exatns_tensor_create(comm_t%t3,"t3",vvvooo_id,vvvooo_root,EXA_DATA_KIND_C8)
                   ierr=exatns_tensor_init(comm_t%t3,ZERO)
 ! uncomment this if/when adding an initialization step for this tensor, like is done for t1
 !                 ierr=exatns_tensor_transform(comm_t%t3,denom)
                end if
-               if (CCSDTQ.or.CCSDTQP) then
+               if (iterative_level.ge.4) then
                   ierr=exatns_tensor_create(comm_t%t4,"t4",vvvvoooo_id,vvvvoooo_root,EXA_DATA_KIND_C8)
                   ierr=exatns_tensor_init(comm_t%t4,ZERO)
 ! uncomment this if/when adding an initialization step for this tensor, like is done for t1
 !                 ierr=exatns_tensor_transform(comm_t%t4,denom)
                end if
-               if (CCSDTQP) then
+               if (iterative_level.ge.5) then
                   ierr=exatns_tensor_create(comm_t%t5,"t5",vvvvvooooo_id,vvvvvooooo_root,EXA_DATA_KIND_C8)
                   ierr=exatns_tensor_init(comm_t%t5,ZERO)
 ! uncomment this if/when adding an initialization step for this tensor, like is done for t1
@@ -356,20 +356,20 @@ module exacorr_cc
             ierr=exatns_tensor_create(comm_t%tau,"tau",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             if (.not.CCD) then
-             if (CCSDTQP) then
+             if (iterative_level.eq.5) then
                 call diis (&
                    t5_tensor=comm_t%t5,vvvvvooooo_id=vvvvvooooo_id,vvvvvooooo_root=vvvvvooooo_root,&
                    t4_tensor=comm_t%t4,vvvvoooo_id=vvvvoooo_id,vvvvoooo_root=vvvvoooo_root,&
                    t3_tensor=comm_t%t3,vvvooo_id=vvvooo_id,vvvooo_root=vvvooo_root,&
                    t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
                    t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,mode=1)
-             else if (CCSDTQ) then
+             else if (iterative_level.eq.4) then
                 call diis (&
                    t4_tensor=comm_t%t4,vvvvoooo_id=vvvvoooo_id,vvvvoooo_root=vvvvoooo_root,&
                    t3_tensor=comm_t%t3,vvvooo_id=vvvooo_id,vvvooo_root=vvvooo_root,&
                    t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
                    t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,mode=1)
-             else if (CCSDT) then
+             else if (iterative_level.eq.3) then
                 call diis (&
                    t3_tensor=comm_t%t3,vvvooo_id=vvvooo_id,vvvooo_root=vvvooo_root,&
                    t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
@@ -391,7 +391,8 @@ module exacorr_cc
             if (exa_input%auto_kernels) then
                write(*,*) " ccdriver: calling solve_t_equations_automatic"
                call solve_t_equations_automatic(comm_t,int_t,dims,t_target_precision,cc_energy,&
-                                               CCD,CCSDT,CCSDTQ,CCSDTQP,ncycles,denom,exa_input%print_level)
+                                               CCD,iterative_level,iterative_scheme,exa_input%auto_scheme,&
+                                               ncycles,denom,exa_input%print_level)
             else
                if (.not.CC2) then
                   call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,ncycles,denom,exa_input%print_level)
@@ -423,20 +424,20 @@ module exacorr_cc
 
 !           Destroy tensors 
             if (.not.CCD) then
-             if (CCSDTQP) then
+             if (iterative_level.eq.5) then
                 call diis (&
                    t5_tensor=comm_t%t5,&
                    t4_tensor=comm_t%t4,&
                    t3_tensor=comm_t%t3,&
                    t2_tensor=comm_t%t2,&
                    t1_tensor=comm_t%t1,mode=2)
-             else if (CCSDTQ) then
+             else if (iterative_level.eq.4) then
                 call diis (&
                    t4_tensor=comm_t%t4,&
                    t3_tensor=comm_t%t3,&
                    t2_tensor=comm_t%t2,&
                    t1_tensor=comm_t%t1,mode=2)
-             else if (CCSDT) then
+             else if (iterative_level.eq.3) then
                 call diis (&
                    t3_tensor=comm_t%t3,&
                    t2_tensor=comm_t%t2,&
@@ -517,9 +518,9 @@ module exacorr_cc
             ierr=exatns_tensor_destroy(one_tensor)
             if (.not.CCD) then
                ierr=exatns_tensor_destroy(comm_t%t1)
-               if (CCSDT.or.CCSDTQ.or.CCSDTQP) ierr=exatns_tensor_destroy(comm_t%t3) 
-               if (CCSDTQ.or.CCSDTQP) ierr=exatns_tensor_destroy(comm_t%t4) 
-               if (CCSDTQP) ierr=exatns_tensor_destroy(comm_t%t5) 
+               if (iterative_level.ge.3) ierr=exatns_tensor_destroy(comm_t%t3) 
+               if (iterative_level.ge.4) ierr=exatns_tensor_destroy(comm_t%t4) 
+               if (iterative_level.ge.5) ierr=exatns_tensor_destroy(comm_t%t5) 
             end if
             ierr=exatns_tensor_destroy(comm_t%t2)
 
@@ -4703,7 +4704,8 @@ module exacorr_cc
 
 !aspg
         subroutine solve_t_equations_automatic(comm_t,int_t,dims,t_target_precision,ccsd_energy,&
-                                               CCD,CCSDT,CCSDTQ,CCSDTQP,ncycles,denom,print_level)
+                                               CCD,iterative_level,iterative_scheme,auto_scheme,&
+                                               ncycles,denom,print_level)
 
 !        Routine for solving the t amplitude equations
 
@@ -4765,9 +4767,9 @@ module exacorr_cc
          integer :: iccsd
          integer,intent(in) :: ncycles
          logical, intent(in)  :: CCD
-         logical, intent(in)  :: CCSDT
-         logical, intent(in)  :: CCSDTQ
-         logical, intent(in)  :: CCSDTQP
+         integer, intent(in)  :: iterative_level
+         integer, intent(in)  :: iterative_scheme
+         integer, intent(in)  :: auto_scheme
          integer, intent(in)  :: print_level
          integer(INTD) :: ierr
 
@@ -4833,7 +4835,7 @@ module exacorr_cc
          ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",vvoo_aux_tensor, int_t%oovv,one_tensor)
 
 
-         if (CCSDT.or.CCSDTQ.or.CCSDTQP) then
+         if (iterative_level.ge.3) then
             vvvooo_id   = (/vir_space_id, &
                             vir_space_id, &
                             vir_space_id, &
@@ -4850,7 +4852,7 @@ module exacorr_cc
                        vvvooo_id,vvvooo_root,EXA_DATA_KIND_C8)
          end if
 
-         if (CCSDTQ.or.CCSDTQP) then
+         if (iterative_level.ge.4) then
             vvvvoooo_id   = (/vir_space_id, &
                             vir_space_id, &
                             vir_space_id, &
@@ -4871,7 +4873,7 @@ module exacorr_cc
                        vvvvoooo_id,vvvvoooo_root,EXA_DATA_KIND_C8)
          end if
 
-         if (CCSDTQP) then
+         if (iterative_level.ge.5) then
             vvvvvooooo_id   = (/vir_space_id, &
                             vir_space_id, &
                             vir_space_id, &
@@ -4905,9 +4907,9 @@ module exacorr_cc
 
           if (.not.CCD) then
              ierr=exatns_tensor_init(s1_tensor,'ZERO')
-             if (CCSDT.or.CCSDTQ.or.CCSDTQP) ierr=exatns_tensor_init(s3_tensor,'ZERO')
-             if (CCSDTQ.or.CCSDTQP)          ierr=exatns_tensor_init(s4_tensor,'ZERO')
-             if (CCSDTQP)                    ierr=exatns_tensor_init(s5_tensor,'ZERO')
+             if (iterative_level.ge.3) ierr=exatns_tensor_init(s3_tensor,'ZERO')
+             if (iterative_level.ge.4) ierr=exatns_tensor_init(s4_tensor,'ZERO')
+             if (iterative_level.ge.5) ierr=exatns_tensor_init(s5_tensor,'ZERO')
           end if
           ierr=exatns_tensor_init(s2_tensor,'ZERO')
 
@@ -4920,7 +4922,8 @@ module exacorr_cc
              write(*,'(A7,F20.15)') "b T2amp = ",print_tensornorm2 (comm_t%t2)
           end if
 
-          if (.not.CCD.and..not.CCSDT.and..not.CCSDTQ.and..not.CCSDTQP) then
+          if ((iterative_level.eq.2).and.(iterative_scheme.eq.21)) then
+            if (auto_scheme.eq.1) then
              print *,'calling exatensor_CCSD_codegen'
             call exatensor_CCSD_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
@@ -4942,7 +4945,11 @@ module exacorr_cc
                                     result_t_tensor,      &   ! Z48 UnitTensor
                                     s1_tensor,          &   ! Z49 VO
                                     s2_tensor)              ! Z50 VVOO
-          else if (CCD.and..not.CCSDT.and..not.CCSDTQ.and..not.CCSDTQP) then
+             else if (auto_scheme.eq.2) then
+             ! tenpi 
+             end if
+          else if ((iterative_level.eq.2).and.(iterative_scheme.eq.20)) then
+            if (auto_scheme.eq.1) then
              print *,'calling exatensor_CCD_codegen'
             call exatensor_CCD_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
@@ -4956,7 +4963,11 @@ module exacorr_cc
                                         voov_aux_tensor,&   ! H10   VOOV
                                         result_t_tensor,  &   ! Z26   unit tensor
                                         s2_tensor)          ! Z27   VVOO
-          else if (CCSDT.and..not.CCD.and..not.CCSDTQ.and..not.CCSDTQP) then
+             else if (auto_scheme.eq.2) then
+             ! tenpi 
+             end if
+          else if ((iterative_level.eq.3).and.(iterative_scheme.eq.30)) then
+            if (auto_scheme.eq.1) then
              print *,'calling exatensor_CCSDT_codegen'
              call exatensor_CCSDT_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
@@ -4980,7 +4991,11 @@ module exacorr_cc
                                            s1_tensor,      &  !  VO
                                            s2_tensor,      &  !  VVOO
                                            s3_tensor)         !  VVVOOO
-          else if (CCSDTQ.and..not.CCD.and..not.CCSDT.and..not.CCSDTQP) then
+             else if (auto_scheme.eq.2) then
+             ! tenpi 
+             end if
+          else if ((iterative_level.eq.4).and.(iterative_scheme.eq.40)) then
+            if (auto_scheme.eq.1) then
              print *,'calling exatensor_CCSDTQ_codegen'
              call exatensor_CCSDTQ_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
@@ -5006,8 +5021,11 @@ module exacorr_cc
                                            s2_tensor,      &  !  VVOO
                                            s3_tensor,      &  !  VVVOOO
                                            s4_tensor)         !  VVVVOOOO
- 
-          else if (CCSDTQP.and..not.CCD.and..not.CCSDT.and..not.CCSDTQ) then
+             else if (auto_scheme.eq.2) then
+             ! tenpi 
+             end if
+          else if ((iterative_level.eq.5).and.(iterative_scheme.eq.50)) then 
+            if (auto_scheme.eq.1) then
              print *,'calling exatensor_CCSDTQP_codegen'
              call exatensor_CCSDTQP_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
@@ -5035,6 +5053,9 @@ module exacorr_cc
                                            s3_tensor,      &  !  VVVOOO
                                            s4_tensor,      &  !  VVVVOOOO
                                            s5_tensor)         !  VVVVVOOOOO 
+             else if (auto_scheme.eq.2) then
+             ! tenpi 
+             end if
           end if
 
           if (print_level.gt.8) then
@@ -5049,21 +5070,21 @@ module exacorr_cc
 
 !         prepare for next iteration
           if (.not.CCD) then
-              if (CCSDTQP) then
+              if (iterative_level.ge.5) then
                  ierr=exatns_tensor_init(comm_t%t5,'ZERO')
                  ierr=exatns_tensor_contract("T5(a,b,c,d,e,i,j,k,l,m)+=S5(a,b,c,d,e,i,j,k,l,m)*K()",&
                        comm_t%t5,s5_tensor,one_tensor)
                  ierr=exatns_tensor_transform(comm_t%t5,denom)
               end if
 
-              if (CCSDTQ) then
+              if (iterative_level.ge.4) then
                  ierr=exatns_tensor_init(comm_t%t4,'ZERO')
                  ierr=exatns_tensor_contract("T4(a,b,c,d,i,j,k,l)+=S4(a,b,c,d,i,j,k,l)*K()",&
                        comm_t%t4,s4_tensor,one_tensor)
                  ierr=exatns_tensor_transform(comm_t%t4,denom)
               end if
 
-              if (CCSDT) then
+              if (iterative_level.ge.3) then
                  ierr=exatns_tensor_init(comm_t%t3,'ZERO')
                  ierr=exatns_tensor_contract("T3(a,b,c,i,j,k)+=S3(a,b,c,i,j,k)*K()",&
                        comm_t%t3,s3_tensor,one_tensor)
@@ -5080,7 +5101,7 @@ module exacorr_cc
           ierr=exatns_tensor_transform(comm_t%t2,denom)
 
           if (.not.CCD) then
-             if (CCSDTQP) then
+             if (iterative_level.eq.5) then
                 call diis (&
                    t5_tensor=comm_t%t5,vvvvvooooo_id=vvvvvooooo_id,vvvvvooooo_root=vvvvvooooo_root,&
                    t4_tensor=comm_t%t4,vvvvoooo_id=vvvvoooo_id,vvvvoooo_root=vvvvoooo_root,&
@@ -5088,14 +5109,14 @@ module exacorr_cc
                    t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
                    t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,&
                          t_convergence=t_convergence)
-             else if (CCSDTQ) then
+             else if (iterative_level.eq.4) then
                 call diis (&
                    t4_tensor=comm_t%t4,vvvvoooo_id=vvvvoooo_id,vvvvoooo_root=vvvvoooo_root,&
                    t3_tensor=comm_t%t3,vvvooo_id=vvvooo_id,vvvooo_root=vvvooo_root,&
                    t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
                    t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,&
                          t_convergence=t_convergence)
-             else if (CCSDT) then
+             else if (iterative_level.eq.3) then
                 call diis (&
                    t3_tensor=comm_t%t3,vvvooo_id=vvvooo_id,vvvooo_root=vvvooo_root,&
                    t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
@@ -5151,9 +5172,9 @@ module exacorr_cc
             ierr=exatns_tensor_destroy(hvo_aux_tensor)
             ierr=exatns_tensor_destroy(vooo_aux_tensor)
             ierr=exatns_tensor_destroy(vvov_aux_tensor)
-            if (CCSDT.or.CCSDTQ.or.CCSDTQP) ierr=exatns_tensor_destroy(s3_tensor)
-            if (CCSDTQ.or.CCSDTQP) ierr=exatns_tensor_destroy(s4_tensor)
-            if (CCSDTQP) ierr=exatns_tensor_destroy(s5_tensor)
+            if (iterative_level.ge.3) ierr=exatns_tensor_destroy(s3_tensor)
+            if (iterative_level.ge.4) ierr=exatns_tensor_destroy(s4_tensor)
+            if (iterative_level.ge.5) ierr=exatns_tensor_destroy(s5_tensor)
          end if
          ierr=exatns_tensor_destroy(vvoo_aux_tensor)
          ierr=exatns_tensor_destroy(voov_aux_tensor)
