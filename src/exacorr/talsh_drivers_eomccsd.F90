@@ -128,7 +128,6 @@ module talsh_eom
       write(*,'(A)') "*******************************************************************************"
       write(*,*) ""
 
-      print *, "are we here?"
 ! aspg : need to get from hardcoded options to getting them from input (*CCDIAG) on the calls to talsh_davidson_setup
       call talsh_davidson_setup(unit_output=6, &
                                 convergence_threshold=mfsolver_options_convergence_threshold, &
@@ -212,7 +211,7 @@ module talsh_eom
       interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ip
       interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ip
 
-      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t)
+      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
       call print_date("Finishing EOM-IP eigenvalue calculation")
 
       call talsh_davidson_workspace_destroy(workspace_t)
@@ -245,7 +244,7 @@ module talsh_eom
       interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ea
       interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ea
 
-      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t)
+      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
       call print_date("Finishing EOM-EA eigenvalue calculation")
 
       call talsh_davidson_workspace_destroy(workspace_t)
@@ -336,7 +335,7 @@ module talsh_eom
       interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
       interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ee
 
-      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t)
+      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
       call print_date("Finishing EOM-EE eigenvalue calculation")
 
       call talsh_davidson_workspace_destroy(workspace_t)
