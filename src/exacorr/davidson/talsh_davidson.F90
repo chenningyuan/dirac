@@ -616,7 +616,7 @@ contains
                 norm_r = sqrt(tensor_norm2(trial1(j))+tensor_norm2(trial2(j))/4)
             end if
 
-            if (norm_r.lt.davidson_antisymme_threshold) then 
+            if (norm_r.lt.config%antisymme_threshold) then 
                 ierr=talsh_tensor_init(trial1(j))
                 ierr=talsh_tensor_init(trial2(j))
                 Index_small_v(isv) = j
