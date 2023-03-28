@@ -524,7 +524,6 @@ contains
        ierr=talsh_tensor_contract("num()+=u+(a,b,c,d)*v(a,b,c,d)",result_tensor_num,u2,v2,scale=contrac_coeff)
        ierr=talsh_tensor_contract("den()+=u+(a,b,c,d)*u(a,b,c,d)",result_tensor_den,u2,u2,scale=contrac_coeff)
 
-       
        factor = result_tens_num(1) / result_tens_den(1)
 
        if (debug_GS_proj) then
@@ -565,6 +564,8 @@ contains
         ! one_dims(1) = 1
         ! ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
+        n = size(Index_small_v)
+
 
 
         do j = L+1, Lnew
@@ -584,9 +585,7 @@ contains
                 end if 
                 
                 found = is_number_in_array(i, Index_small_v, n)
-                if (found) then
-                    print *, "Skip GS for this small vector"
-                else
+                if (.not.found) then
                     call gram_schmidt_projection_tensors(factor,trial1(i), trial2(i), trial1(j), trial2(j),rank)
                 end if
 
@@ -597,13 +596,10 @@ contains
 
 
             do i = 1, j-1            
-                found = is_number_in_array(i, Index_small_v, n)  
-                if (found) then
-                    print *, "Skip GS for this small vector"
-                else        
+                found = is_number_in_array(i, Index_small_v, n) 
+                if (.not.found) then     
                     call gram_schmidt_projection_tensors(factor,trial1(i), trial2(i), trial1(j), trial2(j),rank)
                 end if
-    
                 ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
                 ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)    
             end do
@@ -611,16 +607,18 @@ contains
 
 
             if (rank.eq.1) then
-                norm_r = sqrt(tensor_norm2(trial1(j))+tensor_norm2(trial2(j))/2)        
+                norm_r = sqrt(tensor_norm2(trial1(j))+tensor_norm2(trial2(j))/2)  
             else 
                 norm_r = sqrt(tensor_norm2(trial1(j))+tensor_norm2(trial2(j))/4)
             end if
 
+
             if (norm_r.lt.config%antisymme_threshold) then 
                 ierr=talsh_tensor_init(trial1(j))
                 ierr=talsh_tensor_init(trial2(j))
-                Index_small_v(isv) = j
                 isv = isv+1
+                Index_small_v(isv) = j
+
             else
                 call renormalize_vectors(trial1(j),trial2(j),rank)
             end if 
@@ -1043,20 +1041,22 @@ contains
         end if
     end function
 
-    subroutine form_r_tensors(k,eigenvectors_subspace,eigenvalues_subspace,workspace_t,prop_grad1, prop_grad2)
+    subroutine form_r_tensors(k,eigenvectors_subspace,eigenvalues_subspace,workspace_t,Index_small_v,prop_grad1, prop_grad2)
 ! we use delta{1,2,...} to store the values of r^k
         integer, intent(in) :: k
         complex(kind=8), intent(in)  :: eigenvectors_subspace(:,:)
         complex(kind=8), intent(in)  :: eigenvalues_subspace(:)
         type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
+        integer,ALLOCATABLE :: Index_small_v(:)
 ! aspg, added from (q)rsp
         ! complex(kind=8), pointer, contiguous, optional, intent(in) :: C_subspace(:)
         type(talsh_tens_t), intent(inout), optional :: prop_grad1, prop_grad2
 ! aspg, added from (q)rsp
         complex(kind=8) :: factor1, factor2, factor3
         integer(INTD) :: r1_rank 
-        integer :: ierr, i
+        integer :: ierr, i, i_pri
         logical :: debug_form_r = .false.
+        logical :: found 
         type(talsh_tens_t) :: one_tensor
         integer(C_INT)     :: one_dims(1)
 
@@ -1075,10 +1075,15 @@ contains
 !       if (debug_form_r) then
 !          call davidson_print_vectors(eigenvectors_subspace,   label="eigenvectors_subspace in form_r")
 !       end if
-
+        
+        i_pri = 0
         do i = 1, workspace_t%L
+          found = is_number_in_array(i,Index_small_v,size(Index_small_v))
+          if (.not.found) then
 
-           factor1 =  eigenvectors_subspace(i,k)
+           i_pri = i_pri+1
+        !    factor1 =  eigenvectors_subspace(i,k)
+           factor1 =  eigenvectors_subspace(i_pri,k)
         !    factor1 = conjg(factor1)
            factor2 = -eigenvalues_subspace(k)*factor1
 ! aspg, added from (q)rsp
@@ -1121,7 +1126,7 @@ contains
 !             call print_tensor_elements(workspace_t%delta2(k))
 !             write (6,*) 'debug <<< in form_r_tensors, accumulated r2 for L',i,' <<<'
 !          end if
-
+        end if
            
        end do
 
@@ -1175,11 +1180,13 @@ contains
 
 
 
-    function correction_to_vectors(output_file_unit, e_small_M, c_small_M, workspace_t, prop_grad1, prop_grad2, correct_all)
+    function correction_to_vectors(output_file_unit, e_small_M, c_small_M, workspace_t, Index_small_v,&
+                                    prop_grad1, prop_grad2, correct_all)
         integer, intent(in)       :: output_file_unit
         type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
         complex(kind=8), intent(in)  :: e_small_M(:)
         complex(kind=8), intent(in)  :: c_small_M(:,:)
+        integer,ALLOCATABLE :: Index_small_v(:)
 ! aspg, added from (q)rsp
         ! complex(kind=8), pointer, contiguous, optional, intent(in) ::  C_small(:)
         type(talsh_tens_t), intent(inout), optional :: prop_grad1, prop_grad2
@@ -1224,9 +1231,9 @@ contains
         !    if (present(C_small)) then
            if (present(prop_grad1)) then
             !   call form_r_tensors(k,c_small_M,e_small_M,workspace_t,C_small)
-              call form_r_tensors(k,c_small_M,e_small_M,workspace_t,prop_grad1,prop_grad2)
+              call form_r_tensors(k,c_small_M,e_small_M,workspace_t,Index_small_v,prop_grad1,prop_grad2)
            else
-              call form_r_tensors(k,c_small_M,e_small_M,workspace_t)
+              call form_r_tensors(k,c_small_M,e_small_M,workspace_t,Index_small_v)
            end if
             
            if (rank .eq.1) then
@@ -2280,13 +2287,13 @@ contains
         end do
       end do
 
-      M_small = workspace_t%M(1:workspace_t%L,1:workspace_t%L)
+      M_small = workspace_t%M(1:(workspace_t%L-isv),1:(workspace_t%L-isv))
 
       if (debug_subspace_matrix) then
          write (6,*) ' >>> debug, subspace Hamiltonian matrix M'
-         do i = 1, workspace_t%L
+         do i = 1, workspace_t%L-isv
            print "(2x,i6,$)", i
-           do j = 1, workspace_t%L
+           do j = 1, workspace_t%L-isv
                call print_complex_vector_element(M_small(i,j))
                if (mod(j,4) == 0) then 
                   print *, "  "
@@ -2498,14 +2505,14 @@ contains
 !                     delta => correction_to_vectors(config%output_file_unit, &
 !    &                                        e_small, x_small, workspace_t, C_small)
                     delta => correction_to_vectors(config%output_file_unit, &
-   &                                        e_small, x_small, workspace_t, prop_grad1,prop_grad2)
+   &                                        e_small, x_small, workspace_t, Index_small_v,prop_grad1,prop_grad2)
                 else
                     if (config%solve_rhs) then
                         delta => correction_to_vectors(config%output_file_unit, &
-   &                                               e_small, c_small_r, workspace_t)
+   &                                               e_small, c_small_r, workspace_t,Index_small_v)
                     else 
                         delta => correction_to_vectors(config%output_file_unit, &
-                        &                          e_small, c_small_l, workspace_t)
+                        &                          e_small, c_small_l, workspace_t,Index_small_v)
                     end if
                end if
             ! end if
