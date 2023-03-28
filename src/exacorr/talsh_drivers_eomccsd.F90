@@ -133,6 +133,8 @@ module talsh_eom
                                 convergence_threshold=mfsolver_options_convergence_threshold, &
                                 solve_right=.true.,&
                                 solve_left=.false.,&
+                              !   solve_right=.false.,&
+                              !   solve_left=.true.,&
                                 symmetric=.false., &
                                 overlap_sorting=mfsolver_options_overlap_sorting,&
                                 max_subspace_size=mfsolver_options_max_subspace_size,&
@@ -209,7 +211,7 @@ module talsh_eom
       interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ip
       interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ip
 
-      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t)
+      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
       call print_date("Finishing EOM-IP eigenvalue calculation")
 
       call talsh_davidson_workspace_destroy(workspace_t)
@@ -242,7 +244,7 @@ module talsh_eom
       interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ea
       interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ea
 
-      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t)
+      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
       call print_date("Finishing EOM-EA eigenvalue calculation")
 
       call talsh_davidson_workspace_destroy(workspace_t)
@@ -333,7 +335,7 @@ module talsh_eom
       interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
       interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ee
 
-      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t)
+      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
       call print_date("Finishing EOM-EE eigenvalue calculation")
 
       call talsh_davidson_workspace_destroy(workspace_t)

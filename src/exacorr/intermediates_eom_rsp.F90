@@ -425,18 +425,25 @@ module intermediates_eom_rsp
          integer            :: ierr
 
          ierr=talsh_tensor_construct(eta_prop_ov_eom_tensor,C8,ov_dims,init_val=ZERO)
-         eta_prop_ov_eom_tensor = eta_prop_ov_tensor
+         ! eta_prop_ov_eom_tensor = eta_prop_ov_tensor
 
-         ierr=talsh_tensor_get_body_access(eta_prop_ov_eom_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         ierr=talsh_tensor_get_body_access(eta_prop_ov_tensor,body_p1,C8,int(0,C_INT),DEV_HOST)
+         ! ierr=talsh_tensor_get_body_access(eta_prop_ov_eom_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ! ierr=talsh_tensor_get_body_access(eta_prop_ov_tensor,body_p1,C8,int(0,C_INT),DEV_HOST)
 
-         call c_f_pointer(body_p,etaXeom_tens,ov_dims)
-         call c_f_pointer(body_p1,etaX_tens,ov_dims)
+         ! call c_f_pointer(body_p,etaXeom_tens,ov_dims)
+         ! call c_f_pointer(body_p1,etaX_tens,ov_dims)
 
-         etaXeom_tens = etaX_tens
+         ! etaXeom_tens = etaX_tens
 
+         ierr=talsh_tensor_add('nX(i,a)+=n(i,a)',eta_prop_ov_eom_tensor,eta_prop_ov_tensor,scale=ONE)
          ierr=talsh_tensor_contract("nX(i,a)+=Tl(i,j,a,b)*Epis(b,j)",eta_prop_ov_eom_tensor,& 
                         l2_tensor,epsilon_prop_vo_tensor)
+
+         ! print *, "ierr: ", ierr
+         ! call print_tensor(eta_prop_ov_tensor,1.0d-18,"eta_prop_ov in etaeom ") 
+         ! call print_tensor(epsilon_prop_vo_tensor,1.0d-18,"T1 part of epsilon_prop_vo in etarom")  
+         ! call print_tensor(l2_tensor,1.0d-18,"T2 part of lambda in etaeom")   
+         ! call print_tensor(eta_prop_ov_eom_tensor,1.0d-18,"eta_ov_eom")
 
      end subroutine get_eta_prop_ov_eom_talsh
 
@@ -471,7 +478,7 @@ module intermediates_eom_rsp
 
         ierr=talsh_tensor_construct(prop_bar_oo_tensor,C8,oo_dims,init_val=ZERO)
         ierr=talsh_tensor_add("Xbar(m,i)+=X(m,i)",prop_bar_oo_tensor,orb_int_tensor%prop_oo)
-        ierr=talsh_tensor_contract("Xbar(m,i)+=X(m,e)*t1(e,i)",prop_bar_oo_tensor,orb_int_tensor%prop_ov,t1_tensor)
+      !   ierr=talsh_tensor_contract("Xbar(m,i)+=X(m,e)*t1(e,i)",prop_bar_oo_tensor,orb_int_tensor%prop_ov,t1_tensor)
 
      end subroutine get_prop_bar_oo_talsh
 
@@ -486,7 +493,7 @@ module intermediates_eom_rsp
 
         ierr=talsh_tensor_construct(prop_bar_vv_tensor,C8,vv_dims,init_val=ZERO)
         ierr=talsh_tensor_add("Xbar(a,e)+=X(a,e)",prop_bar_vv_tensor,orb_int_tensor%prop_vv)
-        ierr=talsh_tensor_contract("Xbar(a,e)+=X(m,e)*t1(a,m)",prop_bar_vv_tensor,orb_int_tensor%prop_ov,t1_tensor,scale=MINUS_ONE)
+      !   ierr=talsh_tensor_contract("Xbar(a,e)+=X(m,e)*t1(a,m)",prop_bar_vv_tensor,orb_int_tensor%prop_ov,t1_tensor,scale=MINUS_ONE)
 
      end subroutine get_prop_bar_vv_talsh
 

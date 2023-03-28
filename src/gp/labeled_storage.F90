@@ -548,7 +548,7 @@ module labeled_storage
       integer :: ierr
       integer(kind=8) :: file_id, dset_id
       logical(kind=8) :: dyn
-      logical :: group_exists
+      logical :: group_exists, dset_id_l
 
       !  check first whether we can actually use mh5
       if (.not.mh5_is_available()) then
@@ -577,9 +577,9 @@ module labeled_storage
       file_id = file_info%id
 
       group_exists = create_group_hdf5(file_id,group_from_label(label)) ! check whether group is present and create it if not
-      dset_id = mh5_exists_dset(file_id, label)                         ! check whether we already have data
+      dset_id_l = mh5_exists_dset(file_id, label)                         ! check whether we already have data
 
-      if (dset_id /= 0) then
+      if (dset_id_l) then
           dset_id = mh5_open_dset(file_id, label)
           call mh5_get_dset_dims(dset_id,dims)
           if (dims(1) > 1) then

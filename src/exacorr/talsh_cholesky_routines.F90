@@ -1,4 +1,4 @@
-module talsh_cholesky_routines
+module talsh_CD_routines
 
 !routines to perform cholesky decomposition
 
@@ -10,7 +10,7 @@ use tensor_algebra
 use talsh
 use talsh_common_routines
 use exacorr_utils
-use, intrinsic:: ISO_C_BINDING
+!use, intrinsic:: ISO_C_BINDING
 
 implicit none
 
@@ -145,7 +145,8 @@ subroutine decompose_cholesky_talsh_vec (CD, m, t_cholesky, nao, print_level)
 
             !sum and denominate
             ierr=talsh_tensor_contract("T(p,q)+=V(p,q)",Temp,Res,one_tensor,scale=MINUS_ONE)
-            factor=ONE / zsqrt(D_el)
+            !factor=ONE / zsqrt(D_el)
+            factor=ONE / sqrt(D_el)
             ierr=talsh_tensor_add("W(p,q)+=V(p,q)",CD(m+1),Temp,scale=factor)
             
             !update diagonal
@@ -333,7 +334,9 @@ subroutine decompose_cholesky_talsh_vec (CD, m, t_cholesky, nao, print_level)
             !sum and denominate
             ierr=talsh_tensor_contract("T(p,q)+=V(p,q)",Temp,Res,one_tensor,scale=MINUS_ONE)
             ierr=talsh_tensor_init(Res, ZERO)
-            denom_fac=ONE / zsqrt(D_el)
+            ! aspg, have to replace zsqrt by a general routine, this is a gnu extension
+            !denom_fac=ONE / zsqrt(D_el)
+            denom_fac=ONE / sqrt(D_el)
             ierr=talsh_tensor_add("W(p,q)=V(p,q)",Res,Temp,scale=denom_fac)
             if (print_level.gt.15) call print_tensor(Res, ACC, "CD entry")
 
@@ -934,4 +937,4 @@ subroutine talsh_set_mask_done(Filter,l,k)
 
 end subroutine talsh_set_mask_done
 
-end module talsh_cholesky_routines
+end module talsh_CD_routines

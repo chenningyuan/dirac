@@ -1036,8 +1036,34 @@
          exa_input%talsh = .false.
       end if
 
+      if (kw_matches(word, '.AUTOKERNELS')) then
+         exa_input%auto_kernels = .true.
+      end if
+
+      if (kw_matches(word, '.AUTOSCHEME')) then
+         call kw_read(word, exa_input%auto_scheme)
+      end if
+
       if (kw_matches(word, '.CCDOUBLES')) then
          exa_input%ccd = .true.
+         exa_input%iterative_level  = 2
+         exa_input%iterative_scheme = 20
+      end if
+
+      if (kw_matches(word, '.ITLEVEL')) then
+         call kw_read(word, exa_input%iterative_level)
+      end if
+
+      if (kw_matches(word, '.ITSCHEME')) then
+         call kw_read(word, exa_input%iterative_scheme)
+      end if
+
+      if (kw_matches(word, '.PTLEVEL')) then
+         call kw_read(word, exa_input%perturbative_level)
+      end if
+
+      if (kw_matches(word, '.PTSCHEME')) then
+         call kw_read(word, exa_input%perturbative_scheme)
       end if
 
       if (kw_matches(word, '.CIS   ')) then
@@ -1060,6 +1086,23 @@
 
       if (kw_matches(word, '.CC2         ')) then
          exa_input%cc2 = .true.
+         exa_input%iterative_level  = 2
+         exa_input%iterative_scheme = 22
+      end if
+
+      if (kw_matches(word, '.CC-iT       ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 30
+      end if
+
+      if (kw_matches(word, '.CC-iQ    ')) then
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 40
+      end if
+
+      if (kw_matches(word, '.CC-iP    ')) then
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 50
       end if
 
       if (kw_matches(word, '.TCONVERG')) then
@@ -1087,12 +1130,21 @@
          exa_input%do_2rdm_gs = .true.
       end if
 
+      if (kw_matches(word, '.NOITERT')) then
+         exa_input%do_iterative = .false.
+      end if
+
+      if (kw_matches(word, '.NOPERTT')) then
+         exa_input%do_perturbative = .false.
+      end if
+
       if (kw_matches(word, '.DONATORB')) then
          exa_input%do_no = .true.
       end if
 
       if (kw_matches(word, '.NOTRIPLES')) then
          exa_input%do_triples = .false.
+         exa_input%do_perturbative = .false.
       end if
 
       if (kw_matches(word, '.RIXS     ')) then
@@ -1126,14 +1178,41 @@
       if (kw_matches(word, '.CCCILR')) then
          exa_input%eom_lr =.true.
          call kw_read(word, exa_input%wf_type)
-         call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
       end if
+
+      if (kw_matches(word, '.LRFRE ')) then
+         call kw_read(word, exa_input%N_omega_lr)
+         allocate(exa_input%w_lr_re(exa_input%N_omega_lr))
+         allocate(exa_input%w_lr_im(exa_input%N_omega_lr))
+         call kw_read(word, exa_input%w_lr_re,exa_input%N_omega_lr)
+         call kw_read(word, exa_input%w_lr_im,exa_input%N_omega_lr)
+      end if
+
 
       if (kw_matches(word, '.CCCIQR')) then
          exa_input%eom_qr =.true.
          call kw_read(word, exa_input%wf_type)
          ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
       end if
+
+      if (kw_matches(word, '.AProp ')) then
+         call kw_read(word, exa_input%N_prop_A)
+         allocate(exa_input%Prop_A(exa_input%N_prop_A))
+         call kw_read(word, exa_input%Prop_A,exa_input%N_prop_A)
+      end if
+
+      if (kw_matches(word, '.BProp ')) then
+         call kw_read(word, exa_input%N_prop_B)
+         allocate(exa_input%Prop_B(exa_input%N_prop_B))
+         call kw_read(word, exa_input%Prop_B,exa_input%N_prop_B)
+      end if
+
+      if (kw_matches(word, '.CProp ')) then
+         call kw_read(word, exa_input%N_prop_C)
+         allocate(exa_input%Prop_C(exa_input%N_prop_C))
+         call kw_read(word, exa_input%Prop_C,exa_input%N_prop_C)
+      end if
+
 
       if (kw_matches(word, '.EXEOM ')) then
          exa_input%eom = .true.
