@@ -214,11 +214,11 @@ C
 
 #undef DMRG_DEBUG
 #endif
-      IF ( IPRINT .GE. 30 ) THEN
+c      IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('QFC2MFC: Output matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      $        IPQTOQ(1,0),LUPRI)
-      END IF
+c      END IF
 CSK   IPRINT = 00
 
 C
@@ -257,11 +257,11 @@ C
 C
 C
 csk   IPRINT = 30
-      IF ( IPRINT .GE. 30 ) THEN
+c      IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('MFC2QFC: Input matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      &        IPQTOQ(1,0),LUPRI)
-      END IF
+c      END IF
 C
 C             -----------
 C             | A' | B' |
@@ -281,6 +281,7 @@ C
       DO IFSYM = 1, NFSYM
          IOFF3 = IOFF3 + NASH(IFSYM)
          DO J = 1, NASH(IFSYM)
+            write(6,*) 'IOFF1,IOFF2,IOFF3', IOFF1,IOFF2,IOFF3
             CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF2,1), 1,
      &           DQFC (1+IOFF1,J+IOFF1,1),1 )
             IF (KSYMM) CALL DAXPY(NASH(IFSYM),D1,
@@ -289,8 +290,11 @@ C
          ENDDO
          IF (NZ.GE.2) THEN
             DO J = 1, NASH(IFSYM)
+c               CALL DAXPY(NASH(IFSYM),DM1, DMFC(1+IOFF2,J+IOFF2,2), 1,
+c     &              DQFC (1+IOFF1,J+IOFF1,2),1 )
                CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF2,2), 1,
      &              DQFC (1+IOFF1,J+IOFF1,2),1 )
+C               IF (KSYMM) CALL DAXPY(NASH(IFSYM),D1,
                IF (KSYMM) CALL DAXPY(NASH(IFSYM),DM1,
      &              DMFC(1+IOFF3,J+IOFF3,2),1,
      &              DQFC(1+IOFF1,J+IOFF1,2),1)
@@ -300,12 +304,17 @@ C
             DO J = 1, NASH(IFSYM)
                CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF3,1), 1,
      &              DQFC (1+IOFF1,J+IOFF1,3), 1)
+C               CALL DAXPY(NASH(IFSYM),DM1, DMFC(1+IOFF2,J+IOFF3,2), 1,
+C     &              DQFC (1+IOFF1,J+IOFF1,4), 1)
                CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF3,2), 1,
      &              DQFC (1+IOFF1,J+IOFF1,4), 1)
                IF (KSYMM) THEN
                   CALL DAXPY(NASH(IFSYM),DM1,
      &                 DMFC(1+IOFF3,J+IOFF2,1),1,
      &                 DQFC(1+IOFF1,J+IOFF1,3),1)
+C                  CALL DAXPY(NASH(IFSYM),DM1,
+C     &                 DMFC(1+IOFF3,J+IOFF2,2),1,
+C     &                 DQFC(1+IOFF1,J+IOFF1,4),1)
                   CALL DAXPY(NASH(IFSYM),D1,
      &                 DMFC(1+IOFF3,J+IOFF2,2),1,
      &                 DQFC(1+IOFF1,J+IOFF1,4),1)
@@ -347,10 +356,10 @@ C
 !
 !     print section
 !     IPRINT = 30
-      IF ( IPRINT .GE. 30 ) THEN
+c      IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('MFC2QFC: Output matrix:',-1)
          CALL PRQMAT(DQFC,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
-      END IF
+c      END IF
 !     IPRINT = 00
 C
       RETURN
@@ -961,11 +970,11 @@ C
          JJ = JJ + NASH(IFSYM)
       ENDDO
 C
-      IF (iprint_local .GE. 30) THEN
+c MvH      IF (iprint_local .GE. 30) THEN
          WRITE(LUPRI,'(/1X,A)')
      &        '(DNZ32M) Input VUUUU matrix in Dirac (NZ,3) format'
          CALL PRDNZ3(VDUUUU,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
-      END IF
+c      END IF
 C
       DO II = 1, NASHT
          DO JJ = 1, II
@@ -1196,11 +1205,11 @@ C
 C
 !9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
  9001 FORMAT(4I5,5X,4F20.10)
-      IF (iprint_local .GE. 30) THEN
+c MvH      IF (iprint_local .GE. 30) THEN
          WRITE(LUPRI,'(A,1P,D10.2)')
      &   ' (DNZ32M) Output VUUUU matrix in Molfdir format,'//
      &   ' print threshold =',THROUT
-#ifdef old_code
+c#ifdef old_code
 ! hjaaj mar 2018: new code below groups the 2-electron integrals,
 ! making it easier to spot some problems (particle symmetry, hermiticity)
 ! but not Kramers conjugation problems - that requires 2**4=16 times lot more
@@ -1217,27 +1226,27 @@ C
                END DO
             END DO
          END DO
-      ELSE IF (iprint_local .GE. 10) THEN
-#endif
-         DO I = 1, 2*NASHT
-            DO J = 1, I
-               DO L = 1, I
-                  DO K = 1, L
-                  WRITE(LUPRI,'(A)')
-     & 'New quadruplet re(ij|kl), re(kl|ij), im(ij|kl), im(kl|ij)'
-                  WRITE(LUPRI,9001)
-     & I,J,K,L,(VMUUUU(I,J,K,L,IZ),VMUUUU(K,L,I,J,IZ),IZ=1,NZ_in_CI)
-                  WRITE(LUPRI,9001)
-     & J,I,L,K,(VMUUUU(J,I,L,K,IZ),VMUUUU(L,K,J,I,IZ),IZ=1,NZ_in_CI)
-                  WRITE(LUPRI,9001)
-     & I,J,L,K,(VMUUUU(I,J,L,K,IZ),VMUUUU(L,K,I,J,IZ),IZ=1,NZ_in_CI)
-                  WRITE(LUPRI,9001)
-     & J,I,K,L,(VMUUUU(J,I,K,L,IZ),VMUUUU(K,L,J,I,IZ),IZ=1,NZ_in_CI)
-                  END DO
-               END DO
-            END DO
-         END DO
-      END IF
+c      ELSE IF (iprint_local .GE. 10) THEN
+c#endif
+c         DO I = 1, 2*NASHT
+c            DO J = 1, I
+c               DO L = 1, I
+c                  DO K = 1, L
+c                  WRITE(LUPRI,'(A)')
+c     & 'New quadruplet re(ij|kl), re(kl|ij), im(ij|kl), im(kl|ij)'
+c                  WRITE(LUPRI,9001)
+c     & I,J,K,L,(VMUUUU(I,J,K,L,IZ),VMUUUU(K,L,I,J,IZ),IZ=1,NZ_in_CI)
+c                  WRITE(LUPRI,9001)
+c     & J,I,L,K,(VMUUUU(J,I,L,K,IZ),VMUUUU(L,K,J,I,IZ),IZ=1,NZ_in_CI)
+c                  WRITE(LUPRI,9001)
+c     & I,J,L,K,(VMUUUU(I,J,L,K,IZ),VMUUUU(L,K,I,J,IZ),IZ=1,NZ_in_CI)
+c                  WRITE(LUPRI,9001)
+c     & J,I,K,L,(VMUUUU(J,I,K,L,IZ),VMUUUU(K,L,J,I,IZ),IZ=1,NZ_in_CI)
+c                  END DO
+c               END DO
+c            END DO
+c         END DO
+c      END IF
 C
       RETURN
       END

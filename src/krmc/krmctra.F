@@ -1333,6 +1333,8 @@ C           --------------------------------
 C
             call dzero(h2yx,n2orbx*nclass)
 C
+c mvh
+            call blabla(h2xy,nclass, nkl,0)
             IREPABR = 0
             DO IREPAB = 0, NBSYM - 1
                IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
@@ -1463,6 +1465,23 @@ C
      &     'NXY    = ',NXY
       CALL QUIT('*** ERROR in RGTETH21 *** Error reading integral file')
       END
+      subroutine blabla(h2xy,nclass, nkl,J)
+c
+c     debug routine. Sets all integral classes but one (J) to zero
+c
+      INTEGER NCLASS,NKL,J,I 
+      REAL*8 H2XY(NKL,NCLASS)
+
+      DO I = 1, NCLASS
+        IF (I.NE.J) THEN
+            H2XY(1:NKL,I) = 0.0D0
+        ENDIF 
+
+
+      ENDDO
+      write(6,*) 'MvH kept integral class ',J 
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck raddfq */
       SUBROUTINE RADDFQ(FQ,H2XY,H2YX,PV,NXY,IX,IY,IREPIJ,IPRINT)

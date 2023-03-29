@@ -3440,6 +3440,7 @@ CHJ 16-jun-2004: try use BNRMP instead of THCXRS to zero BCVEC elements
 CHJ could this give problems for MZ.eq.2 (e.g. real part included, imag. not)?
             ELSE
               THRBVEC = THRZER
+              THRBVEC = 1.0D-10 !MvH
 !sk+hjaaj testTHRBVEC = THCXRS*1.0D-4
             END IF
             DO IZ = 1,MZ

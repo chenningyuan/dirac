@@ -925,6 +925,7 @@ C        Get Fock matrix with both indices active.
 C        FCAC is written to KRMC FOCK.
 C
          CALL RGETAC(FC,FCAC,IPRINT)
+c         call blabla(fcac,N2ASHX,4,0)
 C
       END IF
 C
@@ -1102,6 +1103,7 @@ C
       CALL FLSHFO(LUPRI)
       CALL RTKTIME(.FALSE.,9)
       CALL QEXIT('RGRAD')
+      CALL QUIT('call quit from RGRAD')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1183,7 +1185,13 @@ C
 C        Transform to X+, x++ format for DV and PV
 C
 !        IPROPT = 40
+         write(lupri,*) 'relevant output is here'
          IF (CALCDV) CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
+         !mvh debug
+         call QFC2MFC(DV,WORK(KDVMOLF),1,1,IPROPT)
+         CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
+         !mvh debug
+
 C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
 !        IPROPT = 00
          IF (CALCPV) THEN
@@ -1192,6 +1200,14 @@ C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
      &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
      &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
          END IF
+C         !mvh debug
+C         write(lupri,*) 'relevant output part 2'
+C         CALL DNZ32M(PV,WORK(KPVMOLF),IPROPT)
+C         CALL M2DNZ390(.FALSE.,.TRUE.,.TRUE.,
+C     &           WORK(KPVMOLF),PV,IPROPT,
+C     &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
+C     &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
+         !mvh debug
 CSK      IPROPT = 00
          CALL MEMREL('RMAKDM',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -2788,6 +2804,12 @@ C
       EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
       IF (IPRINT .GE. 4)
      &   WRITE(LUPRI,9000) EACT
+c MvH debug
+c      WRITE(LUPRI,*) '\sum_{uv} DV_{uv} FC_{uv}'
+c      DO I = 1, N2ASHXQ
+c            WRITE(LUPRI,*) 'UV, \sum_{uv} DV_{uv} FC_{uv}'
+c     &       , I, DV(I)*F(I)
+c      enddo
 C
 C     1/2 \sum_{u} FQ_{uu}
 C     --------------------
@@ -2796,6 +2818,8 @@ C
       DO IV = 1, NASHT
          IGV = IDXU2G(IV)
          EACTFQ = EACTFQ + FQ(IGV,IV,1)
+c MvH debug
+      write(lupri,*) 'IV, IGV, FQ(IGV,IV,1) ',IGV, IV,  FQ(IGV,IV,1)
       END DO
       EACTFQ = EACTFQ * DP5
       IF (IPRINT .GE. 4)

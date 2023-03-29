@@ -90,6 +90,8 @@ contains
     ! \sum_{x > y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;1,1}
     call get_fq('n','n',h2yx,pv,fq,nxy,d1,1,1,1,1,1)
   endif
+  write(lupri,*) 'term1 FQ ix, iy', ix, iy
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
 
   !--------------------!
   ! Term 2 (real part) !
@@ -106,7 +108,8 @@ contains
     endif
 
   endif
-
+  write(lupri,*) 'term2 FQ'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
   !--------------------------!
   ! Term 3 and 4 (real part) !
   !--------------------------!
@@ -115,10 +118,12 @@ contains
 
     ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;3,1}
     call get_fq('n','t',h2xy,pv,fq,nxy,d1,3,1,3,1,1)
-
+  write(lupri,*) 'term3 FQ'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
     ! - \sum_{x > y} \sum_v \Twoint{pv|xy}_{4,1} P_{qv,xy;4,1}
     call get_fq('n','t',h2xy,pv,fq,nxy,dm1,4,1,4,1,1)
-
+  write(lupri,*) 'term4 FQ'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
   endif
 
   !--------------------!
@@ -129,7 +134,8 @@ contains
 
     ! \sum_{x > y} \sum_v \Twoint{pv|xy}_{1,2} P_{qv,xy;1,2}
     call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,2,1,2,1)
-
+  write(lupri,*) 'term5 FQ'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
   endif
 
   !--------------------!
@@ -140,7 +146,8 @@ contains
 
     ! - \sum_{x > y} \sum_v \Twoint{pv|xy}_{2,2} P_{qv,xy;2,2}
     call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,2,2,2,1)
-
+  write(lupri,*) 'term6 FQ'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
   endif
 
   if(nz == 4)then
@@ -158,7 +165,8 @@ contains
       call get_fq('n','n',h2yx,pv,fq,nxy,d1,3,3,3,3,1)
 
     endif
-
+  write(lupri,*) 'term7 FQ'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
   !--------------------!
   ! Term 8 (real part) !
   !--------------------!
@@ -172,7 +180,8 @@ contains
       call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,3,4,3,1)
 
     endif
-
+  write(lupri,*) 'term8 FQ'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
   endif
 
   !--------------------!
@@ -185,7 +194,8 @@ contains
     call get_fq('n','t',h2xy,pv,fq,nxy,d1,1,3,1,3,1)
 
   endif
-
+  write(lupri,*) 'term9 FQ'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
   !---------------------!
   ! Term 10 (real part) !
   !---------------------!
@@ -196,7 +206,8 @@ contains
     call get_fq('n','t',h2xy,pv,fq,nxy,dm1,2,3,2,3,1)
 
   endif
-
+  write(lupri,*) 'term10 FQ'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
   if(nz == 4 .and. ix /= iy)then
 
   !---------------------!
@@ -205,14 +216,16 @@ contains
 
     ! \sum_{x > y} \sum_v \Twoint{vp|xy}_{3,1} P_{vq,xy;3,1}
     call get_fq('n','n',h2yx,pv,fq,nxy,d1,3,1,3,1,1)
-
+  write(lupri,*) 'term11 FQ'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
   !---------------------!
   ! Term 12 (real part) !
   !---------------------!
 
     ! - \sum_{x > y} \sum_v \Twoint{vp|xy}_{4,1} P_{vq,xy;4,1}
     call get_fq('n','n',h2yx,pv,fq,nxy,dm1,4,1,4,1,1)
-
+  write(lupri,*) 'term12 FQ'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
   endif
 
   ! Skip remaining 36 terms if NZ = 1.
@@ -1416,10 +1429,10 @@ contains
         end do
       end if
 
-      IF (IPRINT .GE. 30) THEN
+!      IF (IPRINT .GE. 30) THEN
          CALL HEADER('VUUUU matrix in Dirac (NZ,3) format',-1)
          CALL PRDNZ3(VDUUUU,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
-      END IF
+!      END IF
 
   !------------------------------------------------------------------------------!
   !           Write to the file ouput information for unit testing               !
