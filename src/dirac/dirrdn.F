@@ -4445,9 +4445,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in POPINP.'
+     *            '" not recognized for *MULPOP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in POPINP.')
+               CALL QUIT('Illegal keyword for *MULPOP.')
     1          CONTINUE
 C&&&& AOLAB:  Base definition of labels on AO-labels:
                  ILABDF = 1
@@ -4476,7 +4476,7 @@ C&&&& LABEL: pre-define labels
                  ELSEIF(WORD.EQ.'SHELL  ') THEN
                    LABOPT = 2
                  ELSE
-                   CALL QUIT('*POPINP: Unknown word after LABEL')
+                   CALL QUIT('*MULPOP: Unknown word after .LABEL')
                  ENDIF
                GO TO 100
     5          CONTINUE
@@ -4499,9 +4499,9 @@ C&&&& PR TOL: print tolerance, only print VECPOP contributions > POP_DTOL
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in POPINP.'
+     *            '" not recognized for *MULPOP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in POPINP.')
+               CALL QUIT('Illegal prompt for *MULPOP.')
             END IF
       END IF
   300 CONTINUE
