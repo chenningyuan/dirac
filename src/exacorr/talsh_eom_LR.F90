@@ -241,14 +241,13 @@ subroutine get_linrsp_driver(tem_linrsp_iter,tprop_tensor1, tprop_tensor2, &
     ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,result_tens,one_dims)
 
+    ! a_rank=talsh_tensor_rank(l1_tensor)
+    ! ierr = talsh_tensor_dimensions(l1_tensor,a_rank,a_dims2)
+    ! ierr=talsh_tensor_construct(eta_eom_test1,C8,a_dims2(1:2),init_val=ZERO)
 
-    a_rank=talsh_tensor_rank(l1_tensor)
-    ierr = talsh_tensor_dimensions(l1_tensor,a_rank,a_dims2)
-    ierr=talsh_tensor_construct(eta_eom_test1,C8,a_dims2(1:2),init_val=ZERO)
-
-    a_rank=talsh_tensor_rank(l2_tensor)
-    ierr = talsh_tensor_dimensions(l2_tensor,a_rank,a_dims4)
-    ierr=talsh_tensor_construct(eta_eom_test2,C8,a_dims4(1:4),init_val=ZERO)
+    ! a_rank=talsh_tensor_rank(l2_tensor)
+    ! ierr = talsh_tensor_dimensions(l2_tensor,a_rank,a_dims4)
+    ! ierr=talsh_tensor_construct(eta_eom_test2,C8,a_dims4(1:4),init_val=ZERO)
 
  
 
@@ -351,6 +350,8 @@ subroutine get_linrsp_driver(tem_linrsp_iter,tprop_tensor1, tprop_tensor2, &
 
     ! ierr=talsh_tensor_destruct(eta_eom_test1)
     ! ierr=talsh_tensor_destruct(eta_eom_test2)
+    
+    ierr=talsh_tensor_destruct(result_tensor)
 
 end subroutine 
 

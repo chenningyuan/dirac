@@ -315,10 +315,6 @@ contains
         call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, &
                                                 workspace_t%trial1, workspace_t%trial2,rank,flavor,Index_small_v,isv)
 
-
-        ! call double_check_trial_vector(workspace_t%Lprev, workspace_t%L, &
-        !                                 workspace_t%trial1, workspace_t%trial2,rank)
-
         if (debug) then
            write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization '
            do i = 1, workspace_t%L
@@ -556,17 +552,7 @@ contains
         logical :: debug_GS_orthg = .false.
         logical :: found
 
-        ! n = Lnew-L
-        ! allocate(Index_small_v(n))
-        ! Index_small_v = 0
-
-
-        ! one_dims(1) = 1
-        ! ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-
         n = size(Index_small_v)
-
-
 
         do j = L+1, Lnew
             if (debug_GS_orthg) then
@@ -614,8 +600,8 @@ contains
 
 
             if (norm_r.lt.config%antisymme_threshold) then 
-                ierr=talsh_tensor_init(trial1(j))
-                ierr=talsh_tensor_init(trial2(j))
+                ierr=talsh_tensor_destruct(trial1(j))
+                ierr=talsh_tensor_destruct(trial2(j))
                 isv = isv+1
                 Index_small_v(isv) = j
 
@@ -628,31 +614,6 @@ contains
         end do
         L = L+1
 
-
-        !  m=1 
-        !  do i=L+1, Lnew
-        !     found = is_number_in_array(i, Index_small_v, n) 
-        !     if(found) then
-        !         m = which_number_in_array(i, Index_small_v, n)  
-        !         do j=i+1,Lnew
-        !             found = is_number_in_array(j, Index_small_v, n)  
-        !             if (.not.found) then
-                        
-        !                 ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(i),trial1(j),scale=ONE)
-        !                 ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(i),trial2(j),scale=ONE) 
-        !                 ierr=talsh_tensor_init(trial1(j))
-        !                 ierr=talsh_tensor_init(trial2(j))
-        !                 Index_small_v(m) = j  
-        !                 exit 
-        !             end if
-        !         end do
-        !     end if
-        !  end do
-        !  Lnew = Lnew-isv+1
-
-
-
-        !  deallocate(Index_small_v)
 
     end subroutine
 
@@ -692,9 +653,6 @@ contains
         type(talsh_tens_t), intent(inout) :: trial2
         character(len=2) :: flavor
     
-        integer :: L, Lnew
-        integer :: rank
-        integer :: Lnew_tem, L_tem
         integer :: i, j, a, b
         integer :: N_1, N_2, N_3, N_4
         real(8) :: norm_r

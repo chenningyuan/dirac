@@ -54,12 +54,10 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
 
     type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
-    ! type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
     type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:), Interm_t_tensors_C(:)
     integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
     integer                       :: N_oper_lr, N_oper_qr
     integer                       :: N_omega
-    integer, allocatable          :: N_prop_tem_lr (:), N_prop_tem_qr(:)
     integer                       :: i, j, k, n, m
     integer, allocatable          :: Prop_A(:), Prop_B(:), Prop_C(:)
 
@@ -98,7 +96,6 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
         allocate(omega(N_oper_lr))
         allocate(omega_min(N_oper_lr))
-        allocate(N_prop_tem_lr(N_oper_lr))
         allocate(Interm_t_tensors_A(N_prop_A))
         allocate(Interm_t_tensors_B(N_prop_B))
         allocate(Tprop_tensors(N_oper_lr))
@@ -166,6 +163,16 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         end do
 
 
+        do i=1, N_prop_A
+            call destroy_Interm_t_tensors(Interm_t_tensors_A(i),CC_CC)
+        end do
+
+        do i=1, N_prop_B
+            call destroy_Interm_t_tensors(Interm_t_tensors_B(i),CC_CC)
+        end do
+        
+
+
         if (CC_CC) then 
             write(*,"(A54)"), "*************CC-CC(LR-CC) linear response*************"
         else
@@ -182,8 +189,15 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         end do
 
 
-        write(*,"(A54)"), "**********************************************************"  
+        DEALLOCATE(omega)
+        DEALLOCATE(omega_min)
+        DEALLOCATE(Tprop_tensors)
+        DEALLOCATE(Tprop_tensors_min_w)
+        DEALLOCATE(Interm_t_tensors_A)
+        DEALLOCATE(Interm_t_tensors_B)
+        DEALLOCATE(eom_lrs)
 
+        write(*,"(A54)"), "**********************************************************"  
 
         if (CC_CC) then     
             call print_date("Finish CC-CC Linear Response Calculations")
@@ -209,7 +223,6 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
         allocate(omega(N_oper_qr))
         allocate(omega_min(N_oper_qr))
-        allocate(N_prop_tem_qr(N_oper_qr))
         allocate(Interm_t_tensors_A(N_prop_A))
         allocate(Interm_t_tensors_B(N_prop_B))
         allocate(Interm_t_tensors_C(N_prop_C))
@@ -343,6 +356,19 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         end do
 
 
+        do i=1, N_prop_A
+            call destroy_Interm_t_tensors(Interm_t_tensors_A(i),CC_CC)
+        end do
+
+        do i=1, N_prop_B
+            call destroy_Interm_t_tensors(Interm_t_tensors_B(i),CC_CC)
+        end do
+        
+        do i=1, N_prop_C
+            call destroy_Interm_t_tensors(Interm_t_tensors_C(i),CC_CC)
+        end do
+
+
         write(*,"(A54)"), "*************CC-CI(EOM-CC) quadratic response************"
         do i=1, N_prop_A
             do j=1, N_prop_B
@@ -355,6 +381,18 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
             end do 
         end do
         write(*,"(A54)"), "**********************************************************"  
+
+        DEALLOCATE(omega)
+        DEALLOCATE(omega_min)
+        DEALLOCATE(Tprop_tensors)
+        DEALLOCATE(Tprop_tensors_min_w)
+        DEALLOCATE(Tprop_bar_tensors)
+        DEALLOCATE(Tprop_bar_tensors_min_w)
+        DEALLOCATE(Interm_t_tensors_A)
+        DEALLOCATE(Interm_t_tensors_B)
+        DEALLOCATE(Interm_t_tensors_C)
+        DEALLOCATE(Bvec_tensors)
+        DEALLOCATE(eom_qrs)
 
     end if
 
@@ -579,6 +617,31 @@ subroutine destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,i,Bvec_tensor
 
 
 end subroutine 
+
+
+!---------------------------------------------------------------------------------------------------------------
+
+subroutine destroy_Interm_t_tensors(interm_t_prop1, CC_CC)
+    type(talsh_rsp_interm_tens_t) :: interm_t_prop1
+    logical          :: CC_CC
+    integer          :: ierr
+
+    ierr=talsh_tensor_destruct(interm_t_prop1%epsilon_prop_vo)
+    ierr=talsh_tensor_destruct(interm_t_prop1%epsilon_prop_vvoo)
+
+    ierr=talsh_tensor_destruct(interm_t_prop1%eta_prop_oovv)
+    ierr=talsh_tensor_destruct(interm_t_prop1%eta_prop_ov)
+
+    if(.not.CC_CC) then
+        ierr=talsh_tensor_destruct(interm_t_prop1%eta_prop_ov_eom)
+    end if
+
+    ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_oo)
+    ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_ov)    
+    ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_vv)
+    ierr=talsh_tensor_destruct(interm_t_prop1%O_vo)
+
+end subroutine
 
 
 
