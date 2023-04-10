@@ -290,12 +290,9 @@ C
          ENDDO
          IF (NZ.GE.2) THEN
             DO J = 1, NASH(IFSYM)
-c               CALL DAXPY(NASH(IFSYM),DM1, DMFC(1+IOFF2,J+IOFF2,2), 1,
-c     &              DQFC (1+IOFF1,J+IOFF1,2),1 )
-               CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF2,2), 1,
+               CALL DAXPY(NASH(IFSYM),DM1, DMFC(1+IOFF2,J+IOFF2,2), 1,
      &              DQFC (1+IOFF1,J+IOFF1,2),1 )
-C               IF (KSYMM) CALL DAXPY(NASH(IFSYM),D1,
-               IF (KSYMM) CALL DAXPY(NASH(IFSYM),DM1,
+               IF (KSYMM) CALL DAXPY(NASH(IFSYM),D1,
      &              DMFC(1+IOFF3,J+IOFF3,2),1,
      &              DQFC(1+IOFF1,J+IOFF1,2),1)
             ENDDO
@@ -304,20 +301,16 @@ C               IF (KSYMM) CALL DAXPY(NASH(IFSYM),D1,
             DO J = 1, NASH(IFSYM)
                CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF3,1), 1,
      &              DQFC (1+IOFF1,J+IOFF1,3), 1)
-C               CALL DAXPY(NASH(IFSYM),DM1, DMFC(1+IOFF2,J+IOFF3,2), 1,
-C     &              DQFC (1+IOFF1,J+IOFF1,4), 1)
-               CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF3,2), 1,
+               CALL DAXPY(NASH(IFSYM),DM1, DMFC(1+IOFF2,J+IOFF3,2), 1,
      &              DQFC (1+IOFF1,J+IOFF1,4), 1)
                IF (KSYMM) THEN
                   CALL DAXPY(NASH(IFSYM),DM1,
      &                 DMFC(1+IOFF3,J+IOFF2,1),1,
      &                 DQFC(1+IOFF1,J+IOFF1,3),1)
-C                  CALL DAXPY(NASH(IFSYM),DM1,
-C     &                 DMFC(1+IOFF3,J+IOFF2,2),1,
-C     &                 DQFC(1+IOFF1,J+IOFF1,4),1)
-                  CALL DAXPY(NASH(IFSYM),D1,
+                  CALL DAXPY(NASH(IFSYM),DM1,
      &                 DMFC(1+IOFF3,J+IOFF2,2),1,
      &                 DQFC(1+IOFF1,J+IOFF1,4),1)
+
                END IF
             ENDDO
          ENDIF

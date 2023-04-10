@@ -866,6 +866,7 @@ C
       DIMENSION JXOPE(*),JXOPP(*),GOEE(*),GOEP(*)
       DIMENSION CREF(*), ibeig(*)
       DIMENSION WORK(*)
+      DIMENSION FCAC_MOLF(2*nasht,2*nasht,2)
 C
 C     Local variable
 C
@@ -904,7 +905,7 @@ C     *** Calculate active density matrices *************
 C     ***************************************************
 C
       IF (NASHT .NE. 0) THEN
-         CALL RMAKDM(.TRUE.,.TRUE.,DV,PV,CREF,WORK,KFREE,LFREE)
+         CALL RMAKDM(.TRUE.,.TRUE.,DV,KDVMOLF,PV,CREF,WORK,KFREE,LFREE)
       END IF
 C
 C
@@ -925,6 +926,7 @@ C        Get Fock matrix with both indices active.
 C        FCAC is written to KRMC FOCK.
 C
          CALL RGETAC(FC,FCAC,IPRINT)
+         CALL QFC2MFC(FCAC,FCAC_MOLF,1,1,IPROPT)
 c         call blabla(fcac,N2ASHX,4,0)
 C
       END IF
@@ -942,11 +944,11 @@ C
 C
 C        Active energy.
 C
-         EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
+         EMCACT = RENRACT(WORK(KDVMOLF),FCAC_MOLF,FQ,IPROPT)
 C
       ELSE IF (NASHT. EQ. 1) THEN
          CALL DZERO(FQ,NZ*NASHT*NORBT)
-         EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
+         EMCACT = RENRACT(WORK(KDVMOLF),FCAC_MOLF,FQ,IPROPT)
       ELSE
          EMCACT = D0
       END IF
@@ -1108,7 +1110,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rmakdm */
-      SUBROUTINE RMAKDM(CALCDV,CALCPV,DV,PV,CREF,WORK,KFREE,LFREE)
+      SUBROUTINE RMAKDM(CALCDV,CALCPV,DV,KDVMOLF,
+     &                   PV,CREF,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Construct one- and two-electron active density matrix
@@ -1188,8 +1191,8 @@ C
          write(lupri,*) 'relevant output is here'
          IF (CALCDV) CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
          !mvh debug
-         call QFC2MFC(DV,WORK(KDVMOLF),1,1,IPROPT)
-         CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
+c         call QFC2MFC(DV,WORK(KDVMOLF),1,1,IPROPT)
+c         CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
          !mvh debug
 
 C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
@@ -1209,7 +1212,8 @@ C     &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
 C     &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
          !mvh debug
 CSK      IPROPT = 00
-         CALL MEMREL('RMAKDM',WORK,1,KFRSAV,KFREE,LFREE)
+c MvH: still need to release memory elswhere.
+c         CALL MEMREL('RMAKDM',WORK,1,KFRSAV,KFREE,LFREE)
 C
       ELSE IF ( NASHT .EQ. 1 .AND. NAELEC .EQ. 1) THEN
 C
@@ -2744,7 +2748,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck renract */
-      FUNCTION RENRACT(DV,FCAC,FQ,IPRINT)
+      FUNCTION RENRACT(DV,FCAC_MOLF,FQ,IPRINT)
 C***********************************************************************
 C
 C     Calculate active electronic energy of the KR-MCSCF state
@@ -2772,7 +2776,8 @@ C
 #include "dgroup.h"
 #include "dcbidx.h"
 C
-      DIMENSION DV(*),FCAC(*),FQ(NORBT,NASHT,NZ)
+      DIMENSION DV(2*NASHT,2*NASHT,2),FCAC_MOLF(2*NASHT,2*NASHT,2)
+      DIMENSION FQ(NORBT,NASHT,NZ)
 C
       CALL QENTER('RENRACT')
 C
@@ -2785,23 +2790,32 @@ C
 C
 C     Print FCAC
 C
-      IF (IPRINT .GE. 8) THEN
-         write(lupri,*) 'n2asht',N2ASHT
-         CALL HEADER('rEnract: FCAC matrix',-1)
-         CALL PRQMAT(FCAC,NASHT,NASHT,NASHT,NASHT,
-     &               NZ,IPQTOQ(1,0),LUPRI)
-         CALL HEADER('rEnract: DV matrix',-1)
-         CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,
-     &               NZ,IPQTOQ(1,0),LUPRI)
-         CALL HEADER('rEnract: FQ matrix',-1)
-         CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,
-     &               NZ,IPQTOQ(1,0),LUPRI)
-      END IF
+c      IF (IPRINT .GE. 8) THEN
+c         write(lupri,*) 'n2asht',N2ASHT
+c         CALL HEADER('rEnract: FCAC matrix',-1)
+c         CALL PRQMAT(FCAC,NASHT,NASHT,NASHT,NASHT,
+c     &               NZ,IPQTOQ(1,0),LUPRI)
+c         CALL HEADER('rEnract: DV matrix',-1)
+c         CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,
+c     &               NZ,IPQTOQ(1,0),LUPRI)
+c         CALL HEADER('rEnract: FQ matrix',-1)
+c         CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,
+c     &               NZ,IPQTOQ(1,0),LUPRI)
+c      END IF
 C
 C     \sum_{uv} DV_{uv} FC_{uv}
 C     -------------------------
 C
-      EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
+C      EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
+      EACT = D0
+      DO IU = 1, 2*NASHT 
+            DO IV = 1, 2*NASHT
+                  EACT = EACT + DV(IU,IV,1)*FCAC_MOLF(IU,IV,1)
+                  EACT = EACT - DV(IU,IV,2)*FCAC_MOLF(IU,IV,2)
+            ENDDO
+      ENDDO
+
+
       IF (IPRINT .GE. 4)
      &   WRITE(LUPRI,9000) EACT
 c MvH debug
