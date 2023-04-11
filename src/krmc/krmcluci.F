@@ -984,8 +984,8 @@ C
         call memget('INTE',kibeig,norbt,work,kfree,lfree)
         call izero(work(kibeig),norbt)
 
-        call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
-     &              .true.,.true.,work(kfree),lfree)
+        call rgeth2(dummy,work(kh2ac),dummy,dummy,work(kibeig)
+     &       ,.false.,.true.,.true.,work(kfree),lfree)
 C
       else if (I_IITP.eq.1) then
 C
@@ -1168,8 +1168,8 @@ C
         call memget('INTE',kibeig,norbt,work,kfree,lfree)
         call izero(work(kibeig),norbt)
 
-        call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
-     &              .true.,.true.,work(kfree),lfree)
+        call rgeth2(dummy,work(kh2ac),dummy,dummy,
+     &       work(kibeig),.false.,.true.,.true.,work(kfree),lfree)
 C
       else if (I_IITP.eq.1) then
 C
@@ -2272,8 +2272,8 @@ C
         call memget('INTE',kibeig,norbt,work,kfree,lfree)
         call izero(work(kibeig),norbt)
 
-        call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
-     &              .true.,.true.,work(kfree),lfree)
+        call rgeth2(dummy,work(kh2ac),dummy,dummy,
+     &       work(kibeig),.false.,.true.,.true.,work(kfree),lfree)
 C
       else if (I_IITP.eq.1) then
 C

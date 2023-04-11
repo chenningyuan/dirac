@@ -867,6 +867,7 @@ C
       DIMENSION CREF(*), ibeig(*)
       DIMENSION WORK(*)
       DIMENSION FCAC_MOLF(2*nasht,2*nasht,2)
+      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
 C
 C     Local variable
 C
@@ -905,7 +906,9 @@ C     *** Calculate active density matrices *************
 C     ***************************************************
 C
       IF (NASHT .NE. 0) THEN
-         CALL RMAKDM(.TRUE.,.TRUE.,DV,KDVMOLF,PV,CREF,WORK,KFREE,LFREE)
+         CALL RMAKDM(.TRUE.,.TRUE.,DV,KDVMOLF,PV,PVMOLF,CREF,WORK,
+     &       KFREE,LFREE)
+C         CALL GETPV(PVMOLF)
       END IF
 C
 C
@@ -913,7 +916,9 @@ C     ***************************************************
 C     *** Calculate inactive and active Fock matrices ***
 C     ***************************************************
 C
+
       CALL RFCKMAT(DV,CMO,EMCMY,EMCACT,FC,FV,WORK(KFREE),LFREE)
+
 C
 C     ***************************************************
 C     *** Calculate FQ matrix and two-electron inte-  ***
@@ -925,9 +930,10 @@ C
 C        Get Fock matrix with both indices active.
 C        FCAC is written to KRMC FOCK.
 C
+
          CALL RGETAC(FC,FCAC,IPRINT)
          CALL QFC2MFC(FCAC,FCAC_MOLF,1,1,IPROPT)
-c         call blabla(fcac,N2ASHX,4,0)
+         call blabla(fcac,N2ASHX,4,0)
 C
       END IF
 C
@@ -939,12 +945,16 @@ C        FQ and H2AC are written to KRMC FOCK.
 C
          dofq   = .true.
          doh2ac = .true.
-         CALL RGETH2(FQ,H2AC,PV,ibeig,dofq,doh2ac,
+         WRITE(LUPRI,*) 'RELEVANT OUTPUT PVGET'
+         CALL RGETH2(FQ,H2AC,PV,PVMOLF,ibeig,dofq,doh2ac,
      &               .true.,WORK(KFREE),LFREE)
+c      WRITE(LUPRI,*) 'VALUE KPVMOLF INSIDE RGRAD ', KPVMOLF
+
 C
 C        Active energy.
 C
-         EMCACT = RENRACT(WORK(KDVMOLF),FCAC_MOLF,FQ,IPROPT)
+        EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
+         !EMCACT = RENRACT(WORK(KDVMOLF),FCAC_MOLF,FQ,IPROPT)
 C
       ELSE IF (NASHT. EQ. 1) THEN
          CALL DZERO(FQ,NZ*NASHT*NORBT)
@@ -1108,10 +1118,60 @@ C
       CALL QUIT('call quit from RGRAD')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GETPV(PVMOLF)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "dcborb.h"
+      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+      real THR_PRINT
+
+      WRITE(6,*) 'THIS IS THE OUTPUT FROM GETPV'
+      THR_PRINT = 1.0D-12
+      DO L = 1,2*NASHT
+            DO K = 1,2*NASHT
+               DO J = 1,2*NASHT
+                  DO I = 1,2*NASHT
+                     IF  (ABS(PVMOLF(I,J,K,L,1)) .GT. THR_PRINT) then 
+                              WRITE(6,*) 'I,J,K,L, RePV ', I,J,K,L,
+     &                                        PVMOLF(I,J,K,L,1)
+                     ENDIF 
+                     IF  (ABS(PVMOLF(I,J,K,L,2)) .GT. THR_PRINT) THEN
+                              WRITE(6,*) 'I,J,K,L, ImPV ', I,J,K,L,
+     &                                        PVMOLF(I,J,K,L,2)
+                     ENDIF
+                  END DO
+               END DO
+            END DO
+         END DO
+
+C      DO I = 1, 2*NASHT
+C            DO J = 1, 2*NASHT 
+C                  DO K = 1, 2*NASHT 
+C                        DO L = 1, 2*NASHT 
+C                              WRITE(6,*) 'I,J,K,L, RePV ', I,J,K,L,
+C     &                                        PVMOLF(I,J,K,L,1)
+C                              WRITE(6,*) 'I,J,K,L, ImPV ', I,J,K,L,
+C     &                                        PVMOLF(I,J,K,L,2)
+C                        ENDDO
+C                  ENDDO
+C            ENDDO
+C      ENDDO
+      RETURN
+      END
+
+
+
+
+
+
+
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rmakdm */
       SUBROUTINE RMAKDM(CALCDV,CALCPV,DV,KDVMOLF,
-     &                   PV,CREF,WORK,KFREE,LFREE)
+     &                   PV,PVMOLF,CREF,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Construct one- and two-electron active density matrix
@@ -1143,6 +1203,7 @@ C
 C
       LOGICAL CALCDV, CALCPV
       DIMENSION DV(*), PV(*), CREF(*), WORK(*)
+      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
 C
 C
       DIMENSION DTRCE(4)
@@ -1184,6 +1245,8 @@ C    &                     CREFL,CREFR,WORK,KFREE,LFREE)
             CALL LUCI_DENS(CALCDV,CALCPV,WORK(KDVMOLF),WORK(KPVMOLF),
      &                     CREF,CREF,WORK,KFREE,LFREE)
          END IF
+
+
 C
 C        Transform to X+, x++ format for DV and PV
 C
@@ -1199,10 +1262,12 @@ C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
 !        IPROPT = 00
          IF (CALCPV) THEN
             CALL M2DNZ390(.FALSE.,.TRUE.,.TRUE.,
-     &           WORK(KPVMOLF),PV,IPROPT,
+     &           WORK(KPVMOLF),PV,PVMOLF,IPROPT,
      &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
      &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
+            !CALL GETPV(PVMOLF)
          END IF
+
 C         !mvh debug
 C         write(lupri,*) 'relevant output part 2'
 C         CALL DNZ32M(PV,WORK(KPVMOLF),IPROPT)
@@ -1346,13 +1411,16 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dcborb.h"
 C
       DIMENSION DV(*)
       DIMENSION WORK(*)
+      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
 C
       CALL QENTER('RMAKDV')
 C
-      CALL RMAKDM(.TRUE.,.FALSE.,DV,DUMMY,CREF,WORK,KFREE,LFREE)
+      CALL RMAKDM(.TRUE.,.FALSE.,DV,KDVMOLF,
+     &            DUMMY,pvmolf, CREF,WORK,KFREE,LFREE)
 C
       CALL QEXIT('RMAKDV')
       RETURN
@@ -2748,7 +2816,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck renract */
-      FUNCTION RENRACT(DV,FCAC_MOLF,FQ,IPRINT)
+      FUNCTION RENRACT(DV,FCAC,FQ,IPRINT)
+!      FUNCTION RENRACT(DV,FCAC_MOLF,FQ,IPRINT)
 C***********************************************************************
 C
 C     Calculate active electronic energy of the KR-MCSCF state
@@ -2806,14 +2875,14 @@ C
 C     \sum_{uv} DV_{uv} FC_{uv}
 C     -------------------------
 C
-C      EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
-      EACT = D0
-      DO IU = 1, 2*NASHT 
-            DO IV = 1, 2*NASHT
-                  EACT = EACT + DV(IU,IV,1)*FCAC_MOLF(IU,IV,1)
-                  EACT = EACT - DV(IU,IV,2)*FCAC_MOLF(IU,IV,2)
-            ENDDO
-      ENDDO
+      EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
+    !  EACT = D0
+    !  DO IU = 1, 2*NASHT 
+    !        DO IV = 1, 2*NASHT
+    !              EACT = EACT + DV(IU,IV,1)*FCAC_MOLF(IU,IV,1)
+    !              EACT = EACT - DV(IU,IV,2)*FCAC_MOLF(IU,IV,2)
+    !        ENDDO
+    !  ENDDO
 
 
       IF (IPRINT .GE. 4)

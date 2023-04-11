@@ -960,8 +960,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth2 */
-      SUBROUTINE RGETH2(FQ,H2AC,PV,ibeig,dofq,doh2ac,read_master_file,
-     &                  WORK,LWORK)
+      SUBROUTINE RGETH2(FQ,H2AC,PV,PVMOLF,ibeig,dofq,doh2ac
+     &   ,read_master_file,WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate FQ and get H2AC (two-electron integrals
@@ -991,6 +991,7 @@ C
       DIMENSION H2AC(*)
       DIMENSION PV(*), ibeig(*)
       DIMENSION WORK(*)
+      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
       logical, intent(in) :: dofq 
       logical, intent(in) :: doh2ac
       logical, intent(in) :: read_master_file
@@ -1001,6 +1002,10 @@ C
       CALL QENTER('RGETH2')
       CALL RTKTIME(.TRUE.,3)
 C
+
+
+
+
       IF ( OPT_CIPROGRAM .EQ. 'GASCIP' .OR.
      &     OPT_CIPROGRAM .EQ. 'LUCIAREL' .OR.
      &     OPT_CIPROGRAM .EQ. 'KRCC' ) THEN
@@ -1023,7 +1028,7 @@ C        =========================================
          call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
 
 !        b. read integrals and construct fq
-         call rgeth21(dofq,doh2ac,pv,fq,h2ac,
+         call rgeth21(dofq,doh2ac,pv,pvmolf,fq,h2ac,
      &                work(khmat),work(kh2xy),work(kh2yx),
      &                work(kdxkr12),work(kdxb12),work(kdxb34),
      &                ibeig,read_master_file,ipropt,lupri)
@@ -1105,7 +1110,7 @@ C
 !
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RGETH21(DOFQ,DOH2AC,PV,FQ,H2AC,
+      SUBROUTINE RGETH21(DOFQ,DOH2AC,PV,PVMOLF,FQ,H2AC,
      &                   hmat,h2xy,h2yx,idxkr12,indxb12,indxb34,
      &                   ibeig,int_file_is_master_file,
      &                   iprint,print_unit)
@@ -1142,10 +1147,14 @@ C
 #include "dcbham.h"
 C
       DIMENSION FQ(NORBT,NASHT,NZ)
+      DIMENSION FQ_TEST(NORBT,NASHT,NZ)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
       dimension hmat(*),h2xy(*),h2yx(*), ibeig(*)
+      DIMENSION HMAT44(NORBT,NORBT,NZ,NZ), H2GU(NORBT,NASHT,NZ,NZ)
+      DIMENSION H2UG(NASHT,NORBT,NZ,NZ)
       dimension idxkr12(2,*),indxb12(2,*),indxb34(2,*)
+      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
       LOGICAL DOFQ, DOH2AC
 !     controls whether or not we read only from the integral file
 !     associated with the master process.
@@ -1274,6 +1283,8 @@ C
 C     initialize output arrays
       IF(DOFQ)   CALL DZERO(FQ,NASHT*NORBT*NZ)
       IF(DOH2AC) CALL DZERO(H2AC,NASHT*NASHT*NNASHX*NZ*3)
+
+      CALL DZERO(FQ_TEST,NASHT*NORBT*NZ)
 C
 C     Loop over records in integrals files.
 C
@@ -1281,7 +1292,7 @@ C
 !
 !     offsets required for a spinfree MCSCF
       NIJOFF   = 0
-
+      write(6,*) 'MvH nfsym ',nfsym
       DO 10 IREPIJ = 1, NFSYM
          IREC = 0
          DO 20 IXY = 1, NFPCK12(IREPIJ)
@@ -1334,7 +1345,7 @@ C
             call dzero(h2yx,n2orbx*nclass)
 C
 c mvh
-            call blabla(h2xy,nclass, nkl,0)
+            call blabla(h2xy,nclass, nkl,2)
             IREPABR = 0
             DO IREPAB = 0, NBSYM - 1
                IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
@@ -1386,6 +1397,20 @@ C
      &                  indxb34_reod(1,1),
      &                  set_qphaseFAC)
 
+            IF (NZ.EQ.4.AND.DOFQ) THEN
+                CALL DZERO(H2UG, NORBT*NASHT*NZ*NZ)
+                CALL DZERO(H2GU, NORBT*NASHT*NZ*NZ)
+                CALL DZERO(HMAT44,NORBT*NORBT*NZ*NZ)
+C                CALL CL244(H2YX,HMAT44,N2ORBX,irepij,
+C     &                  indxb12(1,ixy+nijoff),
+C     &                  indxb34_reod(1,1))
+                
+                CALL INT44GU(H2YX,H2GU,H2UG,IXU .EQ. IYU)
+                CALL raddfq90_TEST(FQ,h2gu,h2ug,pv,
+     &               nxy,ix,iy,nz,lupri,norbt,nasht,NFSYM,NNASHX,ipqtoq)
+            ENDIF
+
+
 C
 C           Get (gu) and (ug) blocks + H2AC
 C           -------------------------------
@@ -1412,8 +1437,11 @@ C
 C           Do the gazillion matrix multiplies to construct
 C           the auxiliary Fock matrix FQ: (B.40) - (B.43)
 C
+
+
+
             IF (DOFQ) THEN
-               CALL RADDFQ90(FQ,H2XY,H2YX,PV,
+               CALL RADDFQ90(FQ_TEST,H2XY,H2YX,PV,
      &              IUU,IXU,IYU,IREPIJ,IPRINT,
      &              NZ,IPQTOQ,LUPRI,NORBT,NASHT,NNASHX)
             END IF

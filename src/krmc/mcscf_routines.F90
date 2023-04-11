@@ -1,11 +1,240 @@
 module mcscf_routines
 
-public :: raddfq90, m2dnz390
+public :: raddfq90,raddfq90_mlf, m2dnz390
 
-private :: get_fq
+private :: get_fq, geth2gu
 
 contains
 
+  subroutine raddfq90_mlf(fq,h2gu,h2ug,pv,nxy,ix,iy,nz,lupri,norbt,nasht, &
+                                     NFSYM,NASH,ipqtoq)
+  !***********************************************************************
+  !
+  !     Add up the infinite number of terms that constitutes the FQ fock
+  !     matrix.
+  !
+  !     For proper documentation see Ph.D. thesis of Joern Thyssen where
+  !     all the formulae below should be documented :-)
+  !
+  !     Formulas (B.40) - (B.43)
+  !
+  !     Input:
+  !        IREPIJ: symmetry of integrals (currently unused)
+  !        H2XY, H2YX: (p,v) and (v,p)^T integrals for compound index XY
+  !        NXY   : the XY compound index
+  !        IX,IY : x and y
+  !        PV    : 2-particle density matrix in (NZ,3) format, see appendix B3
+  !
+  !     Output:
+  !        FQ    : the aux. Fock matrix
+  !
+  !     Written by J. Thyssen - Nov 16 2000
+  !
+  !***********************************************************************
+  implicit none
+
+  ! External variables
+  integer, intent(in) :: nxy, ix, iy,ipqtoq(4,0:7)
+  integer, intent(in) :: nz,lupri, norbt, nasht
+  real*8,  intent(in) :: h2gu(norbt,nasht,nz,nz), h2ug(nasht,norbt,nz,nz)
+  real*8,  intent(in) :: pv(2*nasht,2*nasht,2*nasht,2*nasht,2)
+  real*8,  intent(inout) :: fq(norbt,nasht,nz)
+
+  ! Internal variables
+  integer :: izz, npvcol, IV, IP,IU, KRIV,KRIU, KRIX, KRIY
+  INTEGER :: I, J, K, L, M, IJ, II, JJ, KK, LL, ITR, JTR, KTR, LTR
+  INTEGER :: IER, NCLASS, IFSYM,NFSYM, IZ, KR(-300:300), NASH(2)
+  REAL*8  :: P 
+
+  real*8, parameter   :: d1 = 1.0d0, dm1 = -1.0d0
+
+  !------------------------------------------------------------------------------!
+  !                               Print section                                  !
+  !------------------------------------------------------------------------------!
+!  if(iprint .ge. 20)then
+    call header('Output from raddfq90_mlf',-1)
+    write(lupri,'(a,i3)') 'nxy       = ',nxy
+    write(lupri,'(a,i3)') 'ix        = ',ix
+    write(lupri,'(a,i3)') 'iy        = ',iy
+    call getpv(pv)
+    call get_h2gu(h2gu, h2ug,norbt,nasht,nz)
+
+  !    II = 0
+  !    JJ = 0
+  !    DO IFSYM = 1, NFSYM
+  !       DO I = 1, NASH(IFSYM)
+  !          II = II + 1
+  !          JJ = JJ + 1
+  !          KR(II) = JJ
+  !          KR(-II) = JJ + NASH(IFSYM)
+  !       ENDDO
+  !       JJ = JJ + NASH(IFSYM)
+  !    ENDDO
+
+
+  !------------------------------------------------------------------------------!
+  !                          *** Real part of FQ ***                             !
+  !------------------------------------------------------------------------------!
+  ! (B.40): each "term" is a line of the formula
+
+  !--------------------!
+  ! Term 1 (real part) !
+  !--------------------!
+
+  ! \sum_{x >= y} \sum_v -[pv|xy]_{2,1} Im[P_{qv,xy}]
+
+  KRIX = IX + NASHT
+  KRIY = IY + NASHT
+  DO IP = 1, NORBT
+    DO IU= 1, NASHT
+      DO IV = 1, NASHT
+        KRIV = IV + NASHT
+        KRIU = IU + NASHT
+        P = PV(IU,IV,IX,IY,1) + PV(IU,IV,KRIY,KRIX,1) + PV(KRIV,KRIU,IX,IY,1) &
+       +   PV(KRIV,KRIU,KRIY,KRIX,1) + PV(IX,IY,IU,IV,1)+ PV(KRIY,KRIX,IU,IV,1)&
+       + PV(IX,IY,KRIV,KRIU,1)+ PV(KRIY,KRIX,KRIV,KRIU,1)
+        FQ(IP,IU,1) = FQ(IP,IU,1) + H2GU(IP,IV,1,1)*P
+  !      WRITE(6,*) 'IU,IV,IX,IY,PV ',IU,IV,IX,IY,P
+      ENDDO
+    ENDDO
+  ENDDO
+
+  if(ix /= iy)then
+    ! \sum_{x > y} \sum_v -[vp|xy]_{2,1} Im[P_{vq,xy}]
+    DO IP = 1, NORBT 
+      DO IU = 1, NASHT 
+        DO IV = 1, NASHT 
+          KRIV = IV + NASHT
+          KRIU = IU + NASHT
+          P = PV(IV,IU,IX,IY,1) + PV(IV,IU,KRIY,KRIX,1) + PV(KRIU,KRIV,IX,IY,1) &
+           + PV(KRIU,KRIV,KRIY,KRIX,1) + PV(IX,IY,IV,IU,1)+ PV(KRIY,KRIX,IV,IU,1)&
+           + PV(IX,IY,KRIU,KRIV,1) + PV(KRIY,KRIX,KRIU,KRIV,1)
+          FQ(IP,IU,1) = FQ(IP,IU,1) + H2UG(IV,IP,1,1)*P
+  !        WRITE(6,*) 'IV,IU,IX,IY,PV ',IV,IU,IX,IY,P
+        ENDDO
+      ENDDO
+    ENDDO
+  WRITE(6,*) 'OUTPUT FQ_TEST ON EXIT raddfq90_mlf'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
+
+  ENDIF
+
+
+
+
+
+  end subroutine raddfq90_mlf
+
+  subroutine raddfq90_test(fq,h2gu,h2ug,pv,nxy,ix,iy,nz,lupri,norbt,nasht, &
+                                     NFSYM,NNASHX,ipqtoq)
+  !***********************************************************************
+  !
+  !     Add up the infinite number of terms that constitutes the FQ fock
+  !     matrix.
+  !
+  !     For proper documentation see Ph.D. thesis of Joern Thyssen where
+  !     all the formulae below should be documented :-)
+  !
+  !     Formulas (B.40) - (B.43)
+  !
+  !     Input:
+  !        IREPIJ: symmetry of integrals (currently unused)
+  !        H2XY, H2YX: (p,v) and (v,p)^T integrals for compound index XY
+  !        NXY   : the XY compound index
+  !        IX,IY : x and y
+  !        PV    : 2-particle density matrix in (NZ,3) format, see appendix B3
+  !
+  !     Output:
+  !        FQ    : the aux. Fock matrix
+  !
+  !     Written by J. Thyssen - Nov 16 2000
+  !
+  !***********************************************************************
+  implicit none
+
+  ! External variables
+  integer, intent(in) :: nxy, ix, iy,ipqtoq(4,0:7)
+  integer, intent(in) :: nz,lupri, norbt, nasht,nnashx
+  real*8,  intent(in) :: h2gu(norbt,nasht,nz,nz), h2ug(nasht,norbt,nz,nz)
+  real*8,  intent(in) :: pv(nasht,nasht,nnashx,nz,3)
+  real*8,  intent(inout) :: fq(norbt,nasht,nz)
+
+  ! Internal variables
+  integer :: izz, npvcol, IV, IP,IU, KRIV,KRIU, KRIX, KRIY
+  INTEGER :: I, J, K, L, M, IJ, II, JJ, KK, LL, ITR, JTR, KTR, LTR
+  INTEGER :: IER, NCLASS, IFSYM,NFSYM, IZ, KR(-300:300), NASH(2)
+  REAL*8  :: P 
+
+  real*8, parameter   :: d1 = 1.0d0, dm1 = -1.0d0
+
+  !------------------------------------------------------------------------------!
+  !                               Print section                                  !
+  !------------------------------------------------------------------------------!
+!  if(iprint .ge. 20)then
+    call header('Output from raddfq90_mlf',-1)
+    write(lupri,'(a,i3)') 'nxy       = ',nxy
+    write(lupri,'(a,i3)') 'ix        = ',ix
+    write(lupri,'(a,i3)') 'iy        = ',iy
+    call getpv(pv)
+    call get_h2gu(h2gu, h2ug,norbt,nasht,nz)
+
+  !    II = 0
+  !    JJ = 0
+  !    DO IFSYM = 1, NFSYM
+  !       DO I = 1, NASH(IFSYM)
+  !          II = II + 1
+  !          JJ = JJ + 1
+  !          KR(II) = JJ
+  !          KR(-II) = JJ + NASH(IFSYM)
+  !       ENDDO
+  !       JJ = JJ + NASH(IFSYM)
+  !    ENDDO
+
+
+  !------------------------------------------------------------------------------!
+  !                          *** Real part of FQ ***                             !
+  !------------------------------------------------------------------------------!
+  ! (B.40): each "term" is a line of the formula
+
+  !--------------------!
+  ! Term 1 (real part) !
+  !--------------------!
+
+  ! \sum_{x >= y} \sum_v -[pv|xy]_{2,1} Im[P_{qv,xy}]
+
+
+  DO IP = 1, NORBT
+    DO IU= 1, NASHT
+      DO IV = 1, NASHT
+        FQ(IP,IU,1) = FQ(IP,IU,1) - H2GU(IP,IV,2,1)*PV(IU,IV,NXY,2,1)
+  !      WRITE(6,*) 'IU,IV,IX,IY,PV ',IU,IV,IX,IY,P
+      ENDDO
+    ENDDO
+  ENDDO
+
+  if(ix /= iy)then
+    ! \sum_{x > y} \sum_v -[vp|xy]_{2,1} Im[P_{vq,xy}]
+    DO IP = 1, NORBT 
+      DO IU = 1, NASHT 
+        DO IV = 1, NASHT 
+          FQ(IP,IU,1) = FQ(IP,IU,1) - H2UG(IV,IP,2,1)*PV(IV,IU,NXY,2,1)
+  !        WRITE(6,*) 'IV,IU,IX,IY,PV ',IV,IU,IX,IY,P
+        ENDDO
+      ENDDO
+    ENDDO
+  WRITE(6,*) 'OUTPUT FQ_TEST ON EXIT raddfq90_mlf'
+  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
+
+  ENDIF
+
+
+
+
+
+  end subroutine raddfq90_test
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
   subroutine raddfq90(fq,h2xy,h2yx,pv,nxy,ix,iy,irepij,iprint, &
                       nz,ipqtoq,lupri,norbt,nasht,nnashx,key)
   !***********************************************************************
@@ -651,7 +880,6 @@ contains
   endif
 
   end subroutine raddfq90
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
@@ -677,11 +905,46 @@ contains
        1.0d0,fq(1,1,izf),norbt)
 
   end subroutine get_fq
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine get_h2gu(h2gu, h2ug,norbt,nasht,nz)
+  implicit none
+
+  ! External variables
+  real*8, intent(in) :: h2gu(norbt,nasht,nz,nz), h2ug(nasht,norbt,nz,nz)
+  integer, intent(in) :: nz
+  integer :: IP, IU, IZ1, IZ2
+
+
+  ! Internal variables
+  integer :: norbt, nasht
+
+  DO IP = 1, NORBT 
+    DO IU = 1, NASHT 
+      DO IZ1 = 1, NZ 
+        DO IZ2 = 1, NZ     
+          WRITE(6,*) 'IP,IU,H2GU,IZ1,IZ2 ', IP, IU, IZ1, IZ2, H2GU(IP, IU, IZ1, IZ2)
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+
+    DO IP = 1, NORBT 
+    DO IU = 1, NASHT 
+      DO IZ1 = 1, NZ 
+        DO IZ2 = 1, NZ     
+          WRITE(6,*) 'IP,IU,H2UG,IZ1,IZ2 ', IP, IU, IZ1, IZ2, H2GU(IU, IP, IZ1, IZ2)
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+  end subroutine get_h2gu
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  SUBROUTINE M2DNZ390(TSYMM,KSYMM,PSYMM,VMUUUU,VDUUUU,IPRINT,   &
+  SUBROUTINE M2DNZ390(TSYMM,KSYMM,PSYMM,VMUUUU,VDUUUU,MMOLF,IPRINT,   &
                       IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_IN_CI,NM5, &
                       NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
 !***********************************************************************
@@ -708,6 +971,7 @@ contains
 
       REAL*8,  INTENT( IN) :: VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,NM5)
       REAL*8,  INTENT(OUT) :: VDUUUU(NASHT,NASHT,NNASHX,NZ,3)
+      REAL*8,  INTENT(OUT) :: MMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,NM5)
 
       INTEGER :: I, J, K, L, M, IJ, II, JJ, KK, LL, ITR, JTR, KTR, LTR
       INTEGER :: IER, NCLASS, IFSYM, IZ, KR(-300:300)
@@ -782,6 +1046,19 @@ contains
             END DO
          END DO
       END IF
+
+      DO L = 1,2*NASHT
+         DO K = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO I = 1,2*NASHT
+                  DO IZ = 1, NM5
+                    MMOLF(I,J,K,L,IZ) = VMUUUU(I,J,K,L,IZ)
+                  ENDDO
+               END DO
+            END DO
+         END DO
+      END DO
+
 
 
       IJ = 0

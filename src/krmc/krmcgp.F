@@ -185,6 +185,107 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CL244(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB)
+C***********************************************************************
+C
+C     Transform from 4INDXXXX0-integral-file format to (NZ,3) format.
+C
+C     Input:
+C        VCL   : elements in (*,NCLASS) format
+C        NELEM : # of elements
+C        IREPIJ: irep of VCL
+C
+C     Output:
+C        VNZ3  : elements in (*,NZ,3) format
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcbham.h"
+C
+      DIMENSION VCL(NELEM,NZ,NZ,*)
+      DIMENSION V44(NELEM,4,4)
+      DIMENSION IREPIJB(2),IREPKLB(2,*)
+
+
+
+
+        IREPABR = 1
+C        DO IREPAB = 0, NBSYM - 1
+              DO IZ1 = 1, NZ
+                 DO IZ2 = 1,NZ
+                     CALL DAXPY(NELEM,1.0D0,
+     &                      VCL(1,IZ2,IZ1,IREPABR),1,
+     &                      V44(1,IZ2,IZ1),1)
+                 END DO
+              END DO
+C        ENDDO
+
+C
+         WRITE(6,*) 'OUTPUT CL244'
+        DO IN = 1, NELEM 
+         DO IZ1= 1, NZ 
+            DO IZ2 =1, NZ 
+               WRITE(6,*) 'IN,IZ1,IZ2,V44,VCL'
+     &          ,IN,IZ1,IZ2,V44(IN,IZ1,IZ2),VCL(IN,IZ1,IZ2,1)
+            ENDDO
+         ENDDO
+        ENDDO
+
+
+      END
+
+
+
+
+
+
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE INT44GU(HX,H2GU,H2UG,ONLYXY)
+C***********************************************************************
+C
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+C
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "pgroup.h"
+#include "maxorb.h"
+#include "dcbidx.h"
+C
+C
+      DIMENSION HX(NORBT,NORBT,NZ,NZ)
+      DIMENSION H2GU(NORBT,NASHT,NZ,NZ)
+      DIMENSION H2UG(NASHT,NORBT,NZ,NZ)
+      LOGICAL ONLYXY
+C
+
+      DO IZ1 = 1, NZ 
+         DO IZ2 = 1, NZ 
+            DO IP = 1, NORBT 
+               DO IU = 1, NASHT 
+                  IUG = IDXU2G(IU)
+                  H2GU(IP,IU,IZ1,IZ2) = HX(IP,IUG,IZ1,IZ2)
+                  IF (.NOT. ONLYXY) then 
+                     H2UG(IU,IP,IZ1,IZ2) = HX(IUG,IP,IZ1,IZ2)  
+                  ENDIF     
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO           
+
+
+      END
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE X2UU(HX,H2XY)
 C***********************************************************************
 C

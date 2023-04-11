@@ -1016,7 +1016,7 @@ C     ==============================================
         call izero(work(kibeig),norbt)
       end if
 
-      call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+      call rgeth2(dummy,work(kh2ac),dummy,dummy,work(kibeig),.false.,
      &            .true.,.true.,work(kfree),lfree)
 C
 C     Transform integrals to Molfdir format:
@@ -2305,7 +2305,7 @@ C     ==============================================
         call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
       end if
 
-      call rgeth2(dummy,work(kh2ac),dummy,work(kibeig),.false.,
+      call rgeth2(dummy,work(kh2ac),dummy,dummy,work(kibeig),.false.,
      &            .true.,.true.,work(kfree),lfree)
 C
 C     Make sure imag(VMUUUU) = 0 for NZ=1
