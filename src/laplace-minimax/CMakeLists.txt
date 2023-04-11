@@ -18,10 +18,24 @@ target_include_directories(laplace-minimax
     inc
   )
 
+if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+  target_compile_options(laplace-minimax
+    PRIVATE
+      $<$<COMPILE_LANGUAGE:Fortran>:${Fortran_FLAGS}> -O1 -H -ffree-form -Wall
+    )
+endif()
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   target_compile_options(laplace-minimax
     PRIVATE
       $<$<COMPILE_LANGUAGE:Fortran>:${Fortran_FLAGS}> -O3 -free -warn all -assume protect_parens -nogen-interfaces
+    )
+endif()
+
+if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+  target_compile_options(laplace-minimax
+    PRIVATE
+      $<$<COMPILE_LANGUAGE:Fortran>:${Fortran_FLAGS}> -O4 -fast -fastsse -Mfree -Mlarge_arrays -Mcache_align -Msmart -Msmartalloc -Minform=inform
     )
 endif()
 
