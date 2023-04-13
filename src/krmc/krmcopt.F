@@ -908,7 +908,8 @@ C
       IF (NASHT .NE. 0) THEN
          CALL RMAKDM(.TRUE.,.TRUE.,DV,KDVMOLF,PV,PVMOLF,CREF,WORK,
      &       KFREE,LFREE)
-C         CALL GETPV(PVMOLF)
+c         WRITE(6,*) 'GETPV FROM RGRAD'
+c         CALL GETPV(PVMOLF)
       END IF
 C
 C
@@ -945,7 +946,7 @@ C        FQ and H2AC are written to KRMC FOCK.
 C
          dofq   = .true.
          doh2ac = .true.
-         WRITE(LUPRI,*) 'RELEVANT OUTPUT PVGET'
+c         WRITE(LUPRI,*) 'RELEVANT OUTPUT PVGET'
          CALL RGETH2(FQ,H2AC,PV,PVMOLF,ibeig,dofq,doh2ac,
      &               .true.,WORK(KFREE),LFREE)
 c      WRITE(LUPRI,*) 'VALUE KPVMOLF INSIDE RGRAD ', KPVMOLF
@@ -1128,18 +1129,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       WRITE(6,*) 'THIS IS THE OUTPUT FROM GETPV'
       THR_PRINT = 1.0D-12
-      DO L = 1,2*NASHT
+
+ 9001 FORMAT(4I5,5X,2F20.10)
+
+         DO L = 1,2*NASHT
             DO K = 1,2*NASHT
                DO J = 1,2*NASHT
                   DO I = 1,2*NASHT
-                     IF  (ABS(PVMOLF(I,J,K,L,1)) .GT. THR_PRINT) then 
-                              WRITE(6,*) 'I,J,K,L, RePV ', I,J,K,L,
-     &                                        PVMOLF(I,J,K,L,1)
-                     ENDIF 
-                     IF  (ABS(PVMOLF(I,J,K,L,2)) .GT. THR_PRINT) THEN
-                              WRITE(6,*) 'I,J,K,L, ImPV ', I,J,K,L,
-     &                                        PVMOLF(I,J,K,L,2)
-                     ENDIF
+                   !  IF ( (ABS(VMUUUU(I,J,K,L,1)) .GT. THR_PRINT   &
+                    !  .OR. ABS(VMUUUU(I,J,K,L,2)) .GT. THR_PRINT)) &
+      WRITE(6,9001) I,J,K,L,(PVMOLF(I,J,K,L,IZ),IZ=1,2)
                   END DO
                END DO
             END DO
@@ -1245,13 +1244,14 @@ C    &                     CREFL,CREFR,WORK,KFREE,LFREE)
             CALL LUCI_DENS(CALCDV,CALCPV,WORK(KDVMOLF),WORK(KPVMOLF),
      &                     CREF,CREF,WORK,KFREE,LFREE)
          END IF
-
+C         WRITE(6,*) 'GETPV FROM RGRAD BEFORE M2DNZ390'
+C         CALL GETPV(WORK(KPVMOLF))
 
 C
 C        Transform to X+, x++ format for DV and PV
 C
 !        IPROPT = 40
-         write(lupri,*) 'relevant output is here'
+c         write(lupri,*) 'relevant output is here'
          IF (CALCDV) CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
          !mvh debug
 c         call QFC2MFC(DV,WORK(KDVMOLF),1,1,IPROPT)
@@ -1265,16 +1265,17 @@ C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
      &           WORK(KPVMOLF),PV,PVMOLF,IPROPT,
      &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
      &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
-            !CALL GETPV(PVMOLF)
+C         WRITE(6,*) 'GETPV FROM RGRAD AFTER M2DNZ390'
+C         CALL GETPV(PVMOLF)
          END IF
 
 C         !mvh debug
-C         write(lupri,*) 'relevant output part 2'
-C         CALL DNZ32M(PV,WORK(KPVMOLF),IPROPT)
-C         CALL M2DNZ390(.FALSE.,.TRUE.,.TRUE.,
-C     &           WORK(KPVMOLF),PV,IPROPT,
-C     &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
-C     &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
+c         write(lupri,*) 'relevant output part 2'
+c         CALL DNZ32M(PV,WORK(KPVMOLF),IPROPT)
+c         CALL M2DNZ390(.FALSE.,.TRUE.,.TRUE.,
+c     &           WORK(KPVMOLF),PV,PVMOLF,IPROPT,
+c     &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
+c     &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
          !mvh debug
 CSK      IPROPT = 00
 c MvH: still need to release memory elswhere.

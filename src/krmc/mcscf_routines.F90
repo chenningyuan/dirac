@@ -41,7 +41,7 @@ contains
   real*8,  intent(inout) :: fq(norbt,nasht,nz)
 
   ! Internal variables
-  integer :: izz, npvcol, IV, IP,IU, KRIV,KRIU, KRIX, KRIY
+  integer :: izz, npvcol, IV, IP,IU, IVTR,IUTR, IXTR, IYTR
   INTEGER :: I, J, K, L, M, IJ, II, JJ, KK, LL, ITR, JTR, KTR, LTR
   INTEGER :: IER, NCLASS, IFSYM,NFSYM, IZ, KR(-300:300), NASH(2)
   REAL*8  :: P 
@@ -56,20 +56,27 @@ contains
     write(lupri,'(a,i3)') 'nxy       = ',nxy
     write(lupri,'(a,i3)') 'ix        = ',ix
     write(lupri,'(a,i3)') 'iy        = ',iy
-    call getpv(pv)
-    call get_h2gu(h2gu, h2ug,norbt,nasht,nz)
+ !   call getpv(pv)
+   ! call get_h2gu(h2gu, h2ug,norbt,nasht,nz)
 
-  !    II = 0
-  !    JJ = 0
-  !    DO IFSYM = 1, NFSYM
-  !       DO I = 1, NASH(IFSYM)
-  !          II = II + 1
-  !          JJ = JJ + 1
-  !          KR(II) = JJ
-  !          KR(-II) = JJ + NASH(IFSYM)
-  !       ENDDO
-  !       JJ = JJ + NASH(IFSYM)
-  !    ENDDO
+
+
+
+
+
+
+      II = 0
+      JJ = 0
+      DO IFSYM = 1, NFSYM
+         DO I = 1, NASH(IFSYM)
+            II = II + 1
+            JJ = JJ + 1
+            KR(II) = JJ
+            KR(-II) = JJ + NASH(IFSYM)
+         ENDDO
+         JJ = JJ + NASH(IFSYM)
+      ENDDO
+
 
 
   !------------------------------------------------------------------------------!
@@ -83,17 +90,35 @@ contains
 
   ! \sum_{x >= y} \sum_v -[pv|xy]_{2,1} Im[P_{qv,xy}]
 
-  KRIX = IX + NASHT
-  KRIY = IY + NASHT
+  IXTR = KR(-IX)
+  IYTR = KR(-IY)
   DO IP = 1, NORBT
     DO IU= 1, NASHT
       DO IV = 1, NASHT
-        KRIV = IV + NASHT
-        KRIU = IU + NASHT
-        P = PV(IU,IV,IX,IY,1) + PV(IU,IV,KRIY,KRIX,1) + PV(KRIV,KRIU,IX,IY,1) &
-       +   PV(KRIV,KRIU,KRIY,KRIX,1) + PV(IX,IY,IU,IV,1)+ PV(KRIY,KRIX,IU,IV,1)&
-       + PV(IX,IY,KRIV,KRIU,1)+ PV(KRIY,KRIX,KRIV,KRIU,1)
-        FQ(IP,IU,1) = FQ(IP,IU,1) + H2GU(IP,IV,1,1)*P
+        IVTR = KR(-IV)
+        IUTR = KR(-IU)
+    !    WRITE(6,*) 'IU,IV,IX,IY,P ',IU,IV,IX,IY, PV(IU,IV,IX,IY,1)
+    !    WRITE(6,*) 'IU,IV,IYTR,IXTR,P ',IU,IV,IYTR,IXTR,PV(IU,IV,IYTR,IXTR,1)
+    !    WRITE(6,*) 'IVTR,IUTR,IX,IY,P ',IVTR,IUTR,IX,IY,PV(IVTR,IUTR,IX,IY,1)
+    !    WRITE(6,*) 'IVTR,IUTR,IYTR,IXTR,P ',IVTR,IUTR,IYTR,IXTR,PV(IVTR,IUTR,IYTR,IXTR,1)
+    !    WRITE(6,*) 'IX,IY,IU,IV,P ',IX,IY,IU,IV,PV(IX,IY,IU,IV,1)
+    !    WRITE(6,*) 'IYTR,IXTR,IU,IV,P ',IYTR,IXTR,IU,IV,PV(IYTR,IXTR,IU,IV,1)
+    !    WRITE(6,*) 'IX,IY,IVTR,IUTR,P ',IX,IY,IVTR,IUTR,PV(IX,IY,IVTR,IUTR,1)
+    !    WRITE(6,*) 'IYTR,IXTR,IVTR,IUTR,P ',IYTR,IXTR,IVTR,IUTR,PV(IYTR,IXTR,IVTR,IUTR,1)
+
+
+        P = PV(IU,IV,IX,IY,2) + PV(IU,IV,IYTR,IXTR,2) + PV(IVTR,IUTR,IX,IY,2) &
+       +   PV(IVTR,IUTR,IYTR,IXTR,2) !+ PV(IX,IY,IU,IV,1)+ PV(IYTR,IXTR,IU,IV,1)&
+      ! + PV(IX,IY,IVTR,IUTR,1)+ PV(IYTR,IXTR,IVTR,IUTR,1)
+      !  P = PV(IU,IV,IX,IY,2) + PV(IU,IV,IYTR,IXTR,2) + PV(IVTR,IUTR,IX,IY,2) &
+      ! +   PV(IVTR,IUTR,IYTR,IXTR,2) + PV(IX,IY,IU,IV,2)+ PV(IYTR,IXTR,IU,IV,2)&
+      ! +  PV(IX,IY,IVTR,IUTR,2) +  PV(IYTR,IXTR,IVTR,IUTR,2)
+
+      
+        FQ(IP,IU,1) = FQ(IP,IU,1) - H2GU(IP,IV,2,1)*P*2.0D0
+      !  IF (P.GT.1E-12) THEN
+ !         WRITE(6,*) 'IU,IV,IX,IY,PTOTAL ', IU,IV,IX,IY,P
+       ! ENDIF
   !      WRITE(6,*) 'IU,IV,IX,IY,PV ',IU,IV,IX,IY,P
       ENDDO
     ENDDO
@@ -104,13 +129,30 @@ contains
     DO IP = 1, NORBT 
       DO IU = 1, NASHT 
         DO IV = 1, NASHT 
-          KRIV = IV + NASHT
-          KRIU = IU + NASHT
-          P = PV(IV,IU,IX,IY,1) + PV(IV,IU,KRIY,KRIX,1) + PV(KRIU,KRIV,IX,IY,1) &
-           + PV(KRIU,KRIV,KRIY,KRIX,1) + PV(IX,IY,IV,IU,1)+ PV(KRIY,KRIX,IV,IU,1)&
-           + PV(IX,IY,KRIU,KRIV,1) + PV(KRIY,KRIX,KRIU,KRIV,1)
-          FQ(IP,IU,1) = FQ(IP,IU,1) + H2UG(IV,IP,1,1)*P
-  !        WRITE(6,*) 'IV,IU,IX,IY,PV ',IV,IU,IX,IY,P
+          IVTR = KR(-IV)
+          IUTR = KR(-IU)
+
+      !  WRITE(6,*) 'IV,IU,IX,IY,P ',IV,IU,IX,IY, PV(IV,IU,IX,IY,1)
+      !  WRITE(6,*) 'IV,IU,IYTR,IXTR,P ',IV,IU,IYTR,IXTR,PV(IV,IU,IYTR,IXTR,1)
+      !  WRITE(6,*) 'IUTR,IVTR,IX,IY,P ',IUTR,IVTR,IX,IY,PV(IUTR,IVTR,IX,IY,1)
+      !  WRITE(6,*) 'IUTR,IVTR,IYTR,IXTR,P ',IUTR,IVTR,IYTR,IXTR,PV(IUTR,IVTR,IYTR,IXTR,1)
+      !  WRITE(6,*) 'IX,IY,IV,IU,P ',IX,IY,IV,IU,PV(IX,IY,IV,IU,1)
+      !  WRITE(6,*) 'IYTR,IXTR,IV,IU,P ',IYTR,IXTR,IV,IU,PV(IYTR,IXTR,IV,IU,1)
+      !  WRITE(6,*) 'IX,IY,IUTR,IVTR,P ',IX,IY,IUTR,IVTR,PV(IX,IY,IUTR,IVTR,1)
+      !  WRITE(6,*) 'IYTR,IXTR,IUTR,IVTR,P ',IYTR,IXTR,IUTR,IVTR,PV(IYTR,IXTR,IUTR,IVTR,1)
+      !    P = PV(IV,IU,IX,IY,1) + PV(IV,IU,IYTR,IXTR,1) + PV(IUTR,IVTR,IX,IY,1) &
+      !     + PV(IUTR,IVTR,IYTR,IXTR,1) + PV(IX,IY,IV,IU,1)+ PV(IYTR,IXTR,IV,IU,1)&
+      !     + PV(IX,IY,IUTR,IVTR,1) + PV(IYTR,IXTR,IUTR,IVTR,1)
+
+          P = PV(IV,IU,IX,IY,2) + PV(IV,IU,IYTR,IXTR,2) + PV(IUTR,IVTR,IX,IY,2) &
+           + PV(IUTR,IVTR,IYTR,IXTR,2) 
+           !+ PV(IX,IY,IV,IU,2)+ PV(IYTR,IXTR,IUTR,IVTR,2)&
+           !+  PV(IYTR,IXTR,IV,IU,2) +  PV(IX,IY,IUTR,IVTR,2)
+
+          FQ(IP,IU,1) = FQ(IP,IU,1) - H2UG(IV,IP,2,1)*P*2.0D0
+      !  IF (P.GT.1E-12) THEN
+  !        WRITE(6,*) 'IV,IU,IX,IY,PTOTAL ', IV,IU,IX,IY,P
+       ! ENDIF
         ENDDO
       ENDDO
     ENDDO
@@ -206,7 +248,7 @@ contains
   DO IP = 1, NORBT
     DO IU= 1, NASHT
       DO IV = 1, NASHT
-        FQ(IP,IU,1) = FQ(IP,IU,1) - H2GU(IP,IV,2,1)*PV(IU,IV,NXY,2,1)
+        FQ(IP,IU,1) = FQ(IP,IU,1) + H2GU(IP,IV,1,1)*PV(IU,IV,NXY,1,1)
   !      WRITE(6,*) 'IU,IV,IX,IY,PV ',IU,IV,IX,IY,P
       ENDDO
     ENDDO
@@ -217,7 +259,7 @@ contains
     DO IP = 1, NORBT 
       DO IU = 1, NASHT 
         DO IV = 1, NASHT 
-          FQ(IP,IU,1) = FQ(IP,IU,1) - H2UG(IV,IP,2,1)*PV(IV,IU,NXY,2,1)
+          FQ(IP,IU,1) = FQ(IP,IU,1) + H2UG(IV,IP,1,1)*PV(IV,IU,NXY,1,1)
   !        WRITE(6,*) 'IV,IU,IX,IY,PV ',IV,IU,IX,IY,P
         ENDDO
       ENDDO
@@ -1028,7 +1070,7 @@ contains
 
  9001 FORMAT(4I5,5X,2F20.10)
 
-      IF (IPRINT .GE. 30) THEN
+!      IF (IPRINT .GE. 30) THEN
          THR_PRINT = 1.0D-12
          WRITE(LUPRI,'(/A,3(1X,L1)//A)') &
               ' (M2DNZ3) TSYMM, KSYMM, PSYMM = ',TSYMM,KSYMM,PSYMM, &
@@ -1037,21 +1079,21 @@ contains
             DO K = 1,2*NASHT
                DO J = 1,2*NASHT
                   DO I = 1,2*NASHT
-                     IF ( (ABS(VMUUUU(I,J,K,L,1)) .GT. THR_PRINT   &
-                      .OR. ABS(VMUUUU(I,J,K,L,2)) .GT. THR_PRINT)) &
+                   !  IF ( (ABS(VMUUUU(I,J,K,L,1)) .GT. THR_PRINT   &
+                    !  .OR. ABS(VMUUUU(I,J,K,L,2)) .GT. THR_PRINT)) &
                           WRITE(LUPRI,9001) &
                           I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,NZ_IN_CI)
                   END DO
                END DO
             END DO
          END DO
-      END IF
+!      END IF
 
       DO L = 1,2*NASHT
          DO K = 1,2*NASHT
             DO J = 1,2*NASHT
                DO I = 1,2*NASHT
-                  DO IZ = 1, NM5
+                  DO IZ = 1, 2
                     MMOLF(I,J,K,L,IZ) = VMUUUU(I,J,K,L,IZ)
                   ENDDO
                END DO
