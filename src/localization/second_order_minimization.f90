@@ -167,8 +167,6 @@ contains
   real*8  :: totdiag, totnond, shift, tradius, tpred
 
   real*8,  allocatable, dimension(:) :: grad, etmp, xvec
-!  real*8,  allocatable :: xvect(:),gradt(:),eval(:),hmat(:,:)
-!  integer, allocatable :: iorig(:)
 
   integer, pointer :: iorig(:)
   real*8,  pointer :: xvect(:), gradt(:), eval(:), hmat(:,:)
@@ -600,7 +598,7 @@ contains
   real*8,  intent(in ), dimension(:) :: gradient
   real*8,  intent(out), dimension(:) :: etmp
 
-  integer, intent(  out), pointer :: iorig(:)
+  integer, intent(inout), pointer :: iorig(:)
   real*8,  intent(inout), pointer :: hmat(:,:)
   real*8,  intent(inout), pointer :: gradt(:), eval(:)
 
