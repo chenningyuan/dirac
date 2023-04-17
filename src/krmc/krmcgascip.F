@@ -3771,6 +3771,15 @@ C              ... we know that NDBV .ge. (MK2I-MK2J)/2
 C
                JDAOLD = -1
                DO 200 J = JSTRT, JEND
+                  IF (DO_DENCHK) THEN
+                     DENCHK = ABS(CL(J,1)) + ABS(CR(J,1))
+                     IF (DOIMAG)
+     &               DENCHK = DENCHK + ABS(CL(J,2)) + ABS(CR(J,2))
+                     IF (DENCHK .LT. THRSCR) THEN
+!                       NDSKIP = NDSKIP + 1
+                        GO TO 200
+                     END IF
+                  ENDIF
 C
                   JDA = IDET(1,J)
                   IF (JDA .NE. JDAOLD) THEN
@@ -3947,6 +3956,15 @@ C
             IF (.NOT. (DOSIG .OR. DODEN)) GOTO 100
             JDAOLD = -1
             DO 400 J = ISTRT, I - 1
+               IF (DO_DENCHK) THEN
+                  DENCHK = ABS(CL(J,1)) + ABS(CR(J,1))
+                  IF (DOIMAG)
+     &            DENCHK = DENCHK + ABS(CL(J,2)) + ABS(CR(J,2))
+                  IF (DENCHK .LT. THRSCR) THEN
+!                    NDSKIP = NDSKIP + 1
+                     GO TO 400
+                  END IF
+               ENDIF
 C
                JDA = IDET(1,J)
                IF (JDA .NE. JDAOLD) THEN
