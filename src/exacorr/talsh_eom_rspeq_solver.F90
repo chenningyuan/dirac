@@ -67,6 +67,8 @@ module talsh_eom_rspeq_solver
             
             call talsh_davidson_setup(unit_output=6, &
                         convergence_threshold=mfsolver_options_convergence_threshold, &
+                        max_subspace_size=mfsolver_options_max_subspace_size,&
+                        verbose=mfsolver_options_verbose,&
                         solve_right=.true.,&
                         solve_left=.false.,&
                         solve_linear_sys=.true.,&
@@ -144,6 +146,8 @@ module talsh_eom_rspeq_solver
                  
                   call talsh_davidson_setup(unit_output=6, &
                               convergence_threshold=mfsolver_options_convergence_threshold, &
+                              max_subspace_size=mfsolver_options_max_subspace_size,&
+                              verbose=mfsolver_options_verbose,&
                               solve_right=.false.,&
                               solve_left=.true.,&
                               solve_linear_sys=.true.,&
