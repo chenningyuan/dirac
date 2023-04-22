@@ -2181,7 +2181,7 @@ contains
          write (6,*) ''
       end if
     !   do i = workspace_t%Lprev, workspace_t%L
-      print *, "workspce_tensor:", workspace_t%tens1_dims
+!     print *, "workspce_tensor:", workspace_t%tens1_dims
       if (workspace_t%tens1_dims(1)==1) then  !To distinguish IP and EE
         contrac_coeff = ONE_HALF   !It's IP
       else 
