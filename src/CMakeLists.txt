@@ -103,6 +103,10 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:abacus> ${EXTERNAL_OBJECTS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/matrix_operations)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:matrix_operations> ${EXTERNAL_OBJECTS})
 
+# laplace-minimax
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace-minimax)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
+
 # exacorr as separate library
 if(ENABLE_EXATENSOR)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/exacorr)
@@ -328,10 +332,6 @@ if(ENABLE_SRDFT)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:srdft> ${EXTERNAL_OBJECTS})
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
-
-# laplace-minimax
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace-minimax)
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
 
 # pelib interface routines added as module
 if(ENABLE_PELIB)

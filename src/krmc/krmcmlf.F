@@ -1705,18 +1705,15 @@ C
 #endif
 !***********************************************************************
 
-      subroutine write_fcidump_file(vmuuuu,hcore,ecore)
+       subroutine write_fcidump_file(vmuuuu,hcore,ecore)
 !***********************************************************************
 !
-!     
-!     
 !     purpose: write one- and two-electron integrals for a given active
 !              space to disk
 !
 !     written by S. Knecht
 !
-!     based on an analogous routine written for Dalton by
-!     Katharina Boguslawski and Pawel Tecmer
+!     Note: this version appends the orbital energies to 
 !
 !***********************************************************************
       use mospinor_info
@@ -1736,16 +1733,24 @@ C
       DIMENSION  VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
       DIMENSION  hcore(2*NASHT,2*NASHT,*)
       real(8), intent(in) :: ecore
-      real(8), parameter  :: THR_VMUUUU = 1.d-15
-      DIMENSION  KR(-300:300)
+      real*8 , parameter  :: THR_VMUUUU = 1.d-9
+      real*8              :: two_e_factor
+      complex*16          :: two_e_c
       integer :: LUFCID = -1
       character(len=30) :: form1
       character(len=30) :: form2
       character(len=30) :: form3
+      character(len=31) :: form11
       integer, allocatable  :: orb_sym_vec(:)
       integer, allocatable  :: ibosym(:)
+      integer, allocatable  :: KR(:), kx(:)
+      real*8, allocatable   :: mo_energies(:)
       logical :: ex_mcdf, ex_mcol, isopen
+#include "ibtfun.h"
 
+      !> scale (or not scale) two-electron integrals
+                      two_e_factor = 0.5d0
+      
 !     set up symmetry information
       IF (GROUP.eq.'C1 ') THEN
          DOUGRP      = 8
@@ -1805,7 +1810,7 @@ C
 !     initialize mo-spinor information arrays
       call mospinor_info_init()
 
-      allocate(orb_sym_vec(norbt))
+      allocate(orb_sym_vec(norbt)); orb_sym_vec = 0
 !     distribute orbital symmetry information (if applicable)
       if(linear.or.spinfr)then
 
@@ -1844,7 +1849,13 @@ C
           end if
         end if
       end if
-      
+
+      !> read orbital energies (from checkpoint file only)
+      allocate(mo_energies(norbt)); mo_energies = 0
+      call reacmo(lucoef,'DFCOEF',dummy,mo_energies,
+     &            IDUMMY,dummy,4)
+      !> 4 = 00100 0 * 2^0 + 0 * 2^1 + 1 * 2^2 + 0 * 2^3 + 0* 2^4
+
 !     place spinors (as MOs) in appropriate boson irreps  for further processing (see next step)
 !     generalized routine for handling of all double groups including
 !     linear symmetry (dougrp == 10 or 11)
@@ -1865,12 +1876,13 @@ C
       form1="(e24.14, 4X, I6, I6, I6, I6)"
       form2="(A11,I3,A7,I2,A5,I2,A1)"
       form3="(e24.14, 4X, I6, I6, I6, I6)"
+      form11="(2e24.14, 4X, I6, I6, I6, I6)"
 
 !     FCIDUMP info
-!     write(lupri,*) 
+!     write(lupri,*)
 !     write(lupri,*)" FCIDUMP file details "
-!     write(lupri,*)"======================" 
-!     write(lupri,*) 
+!     write(lupri,*)"======================"
+!     write(lupri,*)
 
 !     Print header of FCIDUMP file using MOLPRO format
       if (LUFCID .le. 0) then
@@ -1878,28 +1890,213 @@ C
      &                'FORMATTED',IDUMMY,.false.)
       end if
 
-      write(LUFCID,form2) ' &FCI NORB=', nasht*2 , 
-     & ',NELEC=', NKRCIAELEC, ',MS2=',
-     &  0, ','
-      write(LUFCID,"(A)",advance='no') '  ORBSYM=' 
+      write(LUFCID,form2) ' &FCI NORB=', nasht*2 ,
+!    & ',NELEC=', NKRCIAELEC, ',MS2=',
+     & ',NELEC=', NAELEC, ',MS2=',
+     &  DOUGRP, ','
+      write(LUFCID,"(A)",advance='no') '  ORBSYM='
+      !> symmetry ordering is such that gerade (u+b) comes first, then ungerade (u+b)
+      iashx = 0
       do IFSYM=1,NFSYM,1
          if(NASH(IFSYM) /= 0)then
            do i=1,nash(ifsym),1
-             write(LUFCID,"(I3,A1)",advance='no') 
-     &       imosp_dirac_counter1(i),','
+             select case(imosp_dirac_counter1(i+iashx))
+             case(0:9)
+               write(LUFCID,"(I1,A1)",advance='no')
+     &         imosp_dirac_counter1(i+iashx),','
+             case(10:99)
+               write(LUFCID,"(I2,A1)",advance='no')
+     &         imosp_dirac_counter1(i+iashx),','
+             case(100:999)
+               write(LUFCID,"(I3,A1)",advance='no')
+     &         imosp_dirac_counter1(i+iashx),','
+             case default
+               write(LUFCID,"(I4,A1)",advance='no')
+     &         imosp_dirac_counter1(i+iashx),','
+             end select
            end do
            do i=nash(ifsym)+1,2*nash(ifsym),1
-             write(LUFCID,"(I3,A1)",advance='no') 
-     &       imosp_dirac_counter2(i-nash(ifsym)),','
+             select case(imosp_dirac_counter2(i-nash(ifsym)+iashx))
+             case(0:9)
+               write(LUFCID,"(I1,A1)",advance='no')
+     &         imosp_dirac_counter2(i-nash(ifsym)+iashx),','
+             case(10:99)
+               write(LUFCID,"(I2,A1)",advance='no')
+     &         imosp_dirac_counter2(i-nash(ifsym)+iashx),','
+             case(100:999)
+               write(LUFCID,"(I3,A1)",advance='no')
+     &         imosp_dirac_counter2(i-nash(ifsym)+iashx),','
+             case default
+               write(LUFCID,"(I4,A1)",advance='no')
+     &         imosp_dirac_counter2(i-nash(ifsym)+iashx),','
+             end select
            end do
          end if
+         iashx = iashx + nash(ifsym)
       end do
 
-      write(LUFCID,*) 
+      write(LUFCID,*)
       write(LUFCID,"(A7,I1)") '  ISYM=',1
       write(LUFCID,"(A5)") ' &END'
 
-      NCLASS = NZ * NZ * NBSYM / NFSYM
+
+      !> debug
+!     write(6,*) 'VMUUUU(1,1,1,1,1) = ',VMUUUU(1,1,1,1,1)
+!     write(6,*) 'VMUUUU(2,2,2,2,1) = ',VMUUUU(2,2,2,2,1)
+!     write(6,*) 'VMUUUU(2,2,1,1,1) = ',VMUUUU(2,2,1,1,1)
+!     write(6,*) 'VMUUUU(3,3,3,3,1) = ',VMUUUU(3,3,3,3,1)
+!     write(6,*) 'VMUUUU(6,6,6,6,1) = ',VMUUUU(6,6,6,6,1)
+!     write(6,*) 'VMUUUU(1,1,1,3,1) = ',VMUUUU(1,1,1,3,1)
+!     write(6,*) 'nasht             = ',nasht
+
+      allocate(kr(-2*nasht:2*nasht)); kr = 0
+      allocate(kx(-2*nasht:2*nasht)); kx = 0
+
+      II = 0
+      JJ = 0
+      IJ = 0
+      DO IFSYM = 1, NFSYM
+         DO I = 1, NASH(IFSYM)
+            II = II + 1
+            JJ = JJ + 1
+            KR(II) = JJ
+            KR(-II) = JJ + NASH(IFSYM)
+            kx(II) = JJ - IJ
+         ENDDO
+         DO I = 1, NASH(IFSYM)
+            II = II + 1
+            KR(-II) = II
+            kx(II)  = II - NASH(IFSYM) - IJ
+         ENDDO
+         JJ = JJ + NASH(IFSYM)
+         IJ = IJ + NASH(IFSYM)
+      ENDDO
+
+      !> 2e-integrals
+      DO L = 1,2*NASHT
+         DO K = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO I = 1,2*NASHT
+
+                  if (nz_in_CI > 1)then
+                    two_e_c = dcmplx(two_e_factor*VMUUUU(I,J,K,L,1),
+     &                               two_e_factor*VMUUUU(I,J,K,L,2))
+                    if(abs(two_e_c) < THR_VMUUUU) cycle
+                  else
+                    if(abs(two_e_factor*VMUUUU(I,J,K,L,1))<THR_VMUUUU)
+     &              cycle
+                  end if
+
+      IF(linear)then
+!     only real groups needed ==> only even number of bars: 0, 2, 4
+
+!     linear symmetry case: To determine the MJ value we need to know the classes :
+!     Class 1 : (i    j    | k    l   )
+!     Class 2 : (i    j    | kbar lbar)
+!     Class 3 : (i    jbar | k    lbar)
+!     Class 4 : (ibar j    | k    lbar)
+
+      if(l /= kr(-l) .and. k /= kr(-k) .and.
+     &   j /= kr(-j) .and. i /= kr(-i)) then !(ij|kl)
+         isym = imosp_dirac_mjub(kx(i))
+         jsym = imosp_dirac_mjub(kx(j))
+         ksym = imosp_dirac_mjub(kx(k))
+         lsym = imosp_dirac_mjub(kx(l))
+         iclass = 1
+      else if(l == kr(-l) .and. k == kr(-k) .and.
+     &   j == kr(-j) .and. i == kr(-i)) then !(IJ|KL)
+        continue
+         isym = imosp_dirac_mjub(kx(i))
+         jsym = imosp_dirac_mjub(kx(j))
+         ksym = imosp_dirac_mjub(kx(k))
+         lsym = imosp_dirac_mjub(kx(l))
+         iclass = 1
+      else if(l /= kr(-l) .and. k /= kr(-k) .and.
+     &   j == kr(-j) .and. i == kr(-i)) then !(IJ|kl)
+         isym = imosp_dirac_mjub(kx(i))
+         jsym = imosp_dirac_mjub(kx(j))
+         ksym = imosp_dirac_mjub(kx(k))
+         lsym = imosp_dirac_mjub(kx(l))
+         iclass = 2
+        continue
+      else if(l == kr(-l) .and. k == kr(-k) .and.
+     &   j /= kr(-j) .and. i /= kr(-i)) then !(ij|KL)
+        continue
+         isym = imosp_dirac_mjub(kx(i))
+         jsym = imosp_dirac_mjub(kx(j))
+         ksym = imosp_dirac_mjub(kx(k))
+         lsym = imosp_dirac_mjub(kx(l))
+         iclass = 2
+      else if(l == kr(-l) .and. k /= kr(-k) .and.
+     &   j == kr(-j) .and. i /= kr(-i)) then !(iJ|kL)
+        continue
+         isym = imosp_dirac_mjub(kx(i))
+         jsym = imosp_dirac_mjub(kx(j))
+         ksym = imosp_dirac_mjub(kx(k))
+         lsym = imosp_dirac_mjub(kx(l))
+         iclass = 3
+      else if(l == kr(-l) .and. k /= kr(-k) .and.
+     &   j /= kr(-j) .and. i == kr(-i)) then !(Ij|kL)
+        continue
+         isym = imosp_dirac_mjub(kx(i))
+         jsym = imosp_dirac_mjub(kx(j))
+         ksym = imosp_dirac_mjub(kx(k))
+         lsym = imosp_dirac_mjub(kx(l))
+         iclass = 4
+      else if(l /= kr(-l) .and. k == kr(-k) .and.
+     &   j /= kr(-j) .and. i == kr(-i)) then !(Ij|Kl)
+        continue
+         isym = imosp_dirac_mjub(kx(i))
+         jsym = imosp_dirac_mjub(kx(j))
+         ksym = imosp_dirac_mjub(kx(k))
+         lsym = imosp_dirac_mjub(kx(l))
+         iclass = 3
+      else if(l /= kr(-l) .and. k == kr(-k) .and.
+     &   j == kr(-j) .and. i /= kr(-i)) then !(iJ|Kl)
+        continue
+         isym = imosp_dirac_mjub(kx(i))
+         jsym = imosp_dirac_mjub(kx(j))
+         ksym = imosp_dirac_mjub(kx(k))
+         lsym = imosp_dirac_mjub(kx(l))
+         iclass = 4
+      else
+        cycle ! odd number of bars
+      end if
+                 IF (ICLASS.LE.2) THEN
+                    MIJ = - isym + jsym
+                 ELSEIF (ICLASS.EQ.3) THEN
+                    MIJ = - isym - jsym
+                 ELSE
+                    MIJ =  isym + jsym
+                 ENDIF
+C
+                 IF (ICLASS.EQ.1) THEN
+                    MKL = - ksym + lsym
+                 ELSEIF (ICLASS.EQ.2) THEN
+                    MKL =   ksym - lsym
+                 ELSE
+                    MKL = - ksym - lsym
+                 ENDIF
+
+!       write(6,*) ' i j k l ',i,j,k,l,iclass,mij,mkl
+        if(MIJ+MKL /= 0) cycle
+
+      end if
+                  if(nz_in_CI == 2)then
+                    write(LUFCID,form11) two_e_factor*VMUUUU(I,J,K,L,1),
+     &                                   two_e_factor*VMUUUU(I,J,K,L,2),
+     &                                   I,J,K,L
+                  else
+                    write(LUFCID,form1)  two_e_factor*VMUUUU(I,J,K,L,1),
+     &                                   I,J,K,L
+                  end if
+               END DO
+            END DO
+         END DO
+      END DO
+
+      kr = 0
+
       II = 0
       JJ = 0
       DO IFSYM = 1, NFSYM
@@ -1912,130 +2109,75 @@ C
          JJ = JJ + NASH(IFSYM)
       ENDDO
 
-      !> 2e-integrals
-      DO L = 1,2*NASHT
-         DO K = 1,2*NASHT
-            DO J = 1,2*NASHT
-               DO I = 1,2*NASHT
 
-                  if (abs(VMUUUU(I,J,K,L,1))<=THR_VMUUUU) CYCLE
-                  if (nz > 1 .and. abs(VMUUUU(I,J,K,L,2))<= THR_VMUUUU)
-     &            CYCLE
 
-!     only real groups needed for now ==> only even number of bars: 0, 2, 4
-
-!     linear symmetry case: To determine the MJ value we need to know the classes :
-!     Class 1 : (i    j    | k    l   )
-!     Class 2 : (i    j    | kbar lbar)
-!     Class 3 : (i    jbar | k    lbar)
-!     Class 4 : (ibar j    | k    lbar)
-
-      if(l<=nasht .and. k<=nasht .and. j<=nasht .and. i<=nasht)then !(ij|kl)
-        continue
-         isym = imosp_dirac_mjub(i)
-         jsym = imosp_dirac_mjub(j)
-         ksym = imosp_dirac_mjub(k)
-         lsym = imosp_dirac_mjub(l)
-         iclass = 1
-      else if(l> nasht .and. k> nasht .and. j> nasht .and. i> nasht)then!(IJ|KL)
-        continue
-         isym = imosp_dirac_mjub(i-nasht)
-         jsym = imosp_dirac_mjub(j-nasht)
-         ksym = imosp_dirac_mjub(k-nasht)
-         lsym = imosp_dirac_mjub(l-nasht)
-         iclass = 1
-      else if(l<=nasht .and. k<=nasht .and. j> nasht .and. i> nasht)then!(IJ|kl)
-         isym = imosp_dirac_mjub(i-nasht)
-         jsym = imosp_dirac_mjub(j-nasht)
-         ksym = imosp_dirac_mjub(k)
-         lsym = imosp_dirac_mjub(l)
-         iclass = 2
-        continue
-      else if(l> nasht .and. k> nasht .and. j<=nasht .and. i<=nasht)then!(ij|KL)
-        continue
-         isym = imosp_dirac_mjub(i)
-         jsym = imosp_dirac_mjub(j)
-         ksym = imosp_dirac_mjub(k-nasht)
-         lsym = imosp_dirac_mjub(l-nasht)
-         iclass = 2
-      else if(l> nasht .and. k<=nasht .and. j> nasht .and. i<=nasht)then!(iJ|kL)
-        continue
-         isym = imosp_dirac_mjub(i)
-         jsym = imosp_dirac_mjub(j-nasht)
-         ksym = imosp_dirac_mjub(k)
-         lsym = imosp_dirac_mjub(l-nasht)
-         iclass = 3
-      else if(l> nasht .and. k<=nasht .and. j<=nasht .and. i> nasht)then!(Ij|kL)
-        continue
-         isym = imosp_dirac_mjub(i-nasht)
-         jsym = imosp_dirac_mjub(j)
-         ksym = imosp_dirac_mjub(k)
-         lsym = imosp_dirac_mjub(l-nasht)
-         iclass = 4
-      else if(l<=nasht .and. k> nasht .and. j<=nasht .and. i> nasht)then!(Ij|Kl)
-        continue
-         isym = imosp_dirac_mjub(i-nasht)
-         jsym = imosp_dirac_mjub(j)
-         ksym = imosp_dirac_mjub(k-nasht)
-         lsym = imosp_dirac_mjub(l)
-         iclass = 3
-      else if(l<=nasht .and. k> nasht .and. j> nasht .and. i<=nasht)then!(iJ|Kl)
-        continue
-         isym = imosp_dirac_mjub(i)
-         jsym = imosp_dirac_mjub(j-nasht)
-         ksym = imosp_dirac_mjub(k-nasht)
-         lsym = imosp_dirac_mjub(l)
-         iclass = 4
-      else
-        cycle ! odd number of bars
-      end if
-                 IF (ICLASS.LE.2) THEN
-                    MIJ = - isym + jsym
-                 ELSEIF (ICLASS.EQ.3) THEN
-                    MIJ = - isym - jsym
-                 ELSE
-                    MIJ =  isym + jsym 
-                 ENDIF
-C
-                 IF (ICLASS.EQ.1) THEN
-                    MKL = - ksym + lsym
-                 ELSEIF (ICLASS.EQ.2) THEN
-                    MKL =   ksym - lsym
-                 ELSE
-                    MKL = - ksym - lsym
-                 ENDIF
-
-!     write(6,'(2x,a,2i6)') '(linzero): MIJ, MKL are:', MIJ,MKL
-                 IF(linear .and. (MIJ+MKL /= 0)) cycle
-
-!     IF (MIJ+MKL /= 0)
-!    &write(6,'(2x,a,4i3,a,1p,d10.2,a,i4)')
-!    &'(linzero): removed integral(',i,j,k,l,')',VMUUUU(I,J,K,L,1),
-!    & ' class: ',iclass
-!     IF (MIJ+MKL ==0 .and. dabs(VMUUUU(I,J,K,L,1)) > 1.0d-99)
-!    &write(6,'(2x,a,4i3,a,1p,d10.2,a,i4)')
-!    &'(linzero): kept integral(',i,j,k,l,')',VMUUUU(I,J,K,L,1), 
-!    & ' class: ',iclass
-
-                 write(LUFCID,form1) VMUUUU(I,J,K,L,1),I,J,K,L
-               END DO
-            END DO
-         END DO
-      END DO
       !> 1e-integrals
-      DO K = 1,NASHT
-         DO L = 1,K
-           if(linear .and. 
-     &        (imosp_dirac_mjub(l) /= imosp_dirac_mjub(k))) cycle
-           write(LUFCID,form1) hcore(K,L,1),K,L,0,0
-!          write(LUFCID,form1) hcore(K+nasht,L+nasht,1),
-!    &                                      K+nasht,L+nasht,0,0
-         END DO
+      II = 0
+      DO IFSYM = 1, NFSYM
+        DO kk = 1,nash(ifsym)
+          DO ll = 1,kk
+            l = ll+ii; k= kk+ii
+!           if(linear) write(6,*) ' l k ',kr(l),kr(k),
+!    &     imosp_dirac_counter1(kr(l)-ii),imosp_dirac_counter1(kr(k)-ii)
+            if(linear .and.
+     &         (imosp_dirac_counter1(kr(l)-ii) /=
+     &          imosp_dirac_counter1(kr(k)-ii))) cycle
+
+            if(nz_in_CI == 2)then
+              !> t(k,l)
+              write(LUFCID,form11)    hcore(kr(k),kr(l),1),
+     &                                hcore(kr(k),kr(l),2),
+     &                                kr(k)      ,kr(l)      ,0,0
+              !> t(K,L) = t(k,l)*
+              write(LUFCID,form11)    hcore(kr(k),kr(l),1),
+     &                               -hcore(kr(k),kr(l),2),
+     &                                kr(-k),kr(-l),0,0
+              !> t(K,l)
+              write(LUFCID,form11)    hcore(kr(-k),kr(l),1),
+     &                                hcore(kr(-k),kr(l),2),
+     &                                kr(-k),kr(l)      ,0,0
+              if(k /= l)then
+                !> t(L,k) = -t(K,l)
+                write(LUFCID,form11) -hcore(kr(-k),kr(l),1),
+     &                               -hcore(kr(-k),kr(l),2),
+     &                                kr(-l),kr(k)      ,0,0
+              end if
+            else
+              write(LUFCID,form1)     hcore(kr(k),kr(l),1),
+     &                                kr(k)      ,kr(l)      ,0,0
+              write(LUFCID,form1)     hcore(kr(k),kr(l),1),
+     &                                kr(-k),kr(-l),0,0
+            endif
+
+          END DO
+        END DO
+        II = II + nash(ifsym)
       END DO
 
       !> core energy
-      write(LUFCID,form3) ecore, 0,0 ,0,0
- 
+      if(nz_in_CI == 2)then
+        write(LUFCID,form11) ecore, 0.0, 0,0 ,0,0
+      else
+        write(LUFCID,form3) ecore, 0,0 ,0,0
+      end if
+
+      !> append orbital energies
+      II = 0; JJ = 0
+      DO IFSYM = 1, NFSYM
+        JJ = JJ + NPSH(IFSYM) + NISH(IFSYM)
+        DO kk = 1,nash(ifsym)
+            k= kk+ii
+             write(LUFCID,form1)     mo_energies(kk+jj),
+     &                               kr(k),0,0,0
+             write(LUFCID,form1)     mo_energies(kk+jj),
+     &                               kr(-k),0,0,0
+        END DO
+        II = II + nash(ifsym)
+        JJ = NORB(ifsym)
+      END DO
+
+      deallocate(kr,kx,mo_energies)
+
       call GPCLOSE(LUFCID,'KEEP')
 
       !> finalize
