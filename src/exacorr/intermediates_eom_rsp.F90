@@ -98,7 +98,8 @@ module intermediates_eom_rsp
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
          ierr=talsh_tensor_construct(epsilon_prop_vo_tensor,C8,vo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(Transpose_vo,C8,vo_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract('A(a,i)+=Y+(i,a)*K()',Transpose_vo,orb_int_tensor%prop_ov,one_tensor)
+         ! ierr=talsh_tensor_contract('A(a,i)+=Y+(i,a)*K()',Transpose_vo,orb_int_tensor%prop_ov,one_tensor)
+         ierr=talsh_tensor_contract('A(a,i)+=Y(a,i)*K()',Transpose_vo,orb_int_tensor%prop_vo,one_tensor)
          ierr=talsh_tensor_construct(uncon_tensor,C8,one_dims(1:0),init_val=ZERO)
          ! if(print_level.ge.2) print *,'LH_talsh LR_Aux_vo=Y ai ', ierr
 

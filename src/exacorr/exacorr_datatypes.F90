@@ -221,7 +221,7 @@
 
 
         type, public :: talsh_orb_prop_integ_tens_t
-         type(talsh_tens_t) :: prop_oo, prop_ov, prop_vv
+         type(talsh_tens_t) :: prop_oo, prop_ov, prop_vv, prop_vo
         end type talsh_orb_prop_integ_tens_t
 
         
