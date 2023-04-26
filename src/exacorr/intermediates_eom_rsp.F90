@@ -97,14 +97,10 @@ module intermediates_eom_rsp
          one_dims(1) = 1
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
          ierr=talsh_tensor_construct(epsilon_prop_vo_tensor,C8,vo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(Transpose_vo,C8,vo_dims,init_val=ZERO)
-         ! ierr=talsh_tensor_contract('A(a,i)+=Y+(i,a)*K()',Transpose_vo,orb_int_tensor%prop_ov,one_tensor)
-         ierr=talsh_tensor_contract('A(a,i)+=Y(a,i)*K()',Transpose_vo,orb_int_tensor%prop_vo,one_tensor)
-         ierr=talsh_tensor_construct(uncon_tensor,C8,one_dims(1:0),init_val=ZERO)
          ! if(print_level.ge.2) print *,'LH_talsh LR_Aux_vo=Y ai ', ierr
 
 !LH     \Chis ai = +\Y ai
-         ierr=talsh_tensor_add('C(a,i)+=Y(a,i)',epsilon_prop_vo_tensor,Transpose_vo,scale=ONE)
+         ierr=talsh_tensor_contract('C(a,i)+=Y(a,i)*K()',epsilon_prop_vo_tensor,orb_int_tensor%prop_vo,one_tensor)
          ! if(print_level.ge.2) print *,'LH_talsh epsilon_prop_vo_tensor ierr ', ierr
 
 !LH     \Chis ai += +\Y ae \ts ei 
@@ -124,17 +120,16 @@ module intermediates_eom_rsp
 !LH     \Chis ai += +\Y me \td aeim
          ierr=talsh_tensor_contract('C(a,i)+=Y(m,e)*T(a,e,i,m)',epsilon_prop_vo_tensor,orb_int_tensor%prop_ov,t2_tensor,scale=ONE)
          ! if(print_level.ge.2) print *,'LH_talsh epsilon_prop_vo_tensor ierr ', ierr
+         ierr=talsh_tensor_destruct(one_tensor)
 
 ! !XY     \Chis ai += +\ts ai \Ys me \ts em  (Unconnected)
 !          ierr=talsh_tensor_contract('A()+=Y(m,e)*T(e,m)',uncon_tensor,orb_int_tensor%prop_ov,t1_tensor)
 !          ierr=talsh_tensor_contract('C(a,i)+=A()*T(a,i)',epsilon_prop_vo_tensor,uncon_tensor,t1_tensor,scale=ONE)
 
 !          ! if(print_level.ge.2) print *,"tensor_norm2(epsilon_prop_vo_tensor)",tensor_norm2(epsilon_prop_vo_tensor)
-!          ierr=talsh_tensor_destruct(Transpose_vo)
-         ierr=talsh_tensor_destruct(uncon_tensor)
-
 
      end subroutine get_epsilon_prop_vo_talsh
+
 
 
      subroutine get_epsilon_prop_vvoo_talsh(epsilon_prop_vvoo_tensor,orb_int_tensor, &
@@ -150,15 +145,9 @@ module intermediates_eom_rsp
                type(talsh_tens_t) :: uncon_tensor
                integer(C_INT)     :: one_dims(1)
 
-
-
-           one_dims(1) = 1
+               
            ierr=talsh_tensor_construct(epsilon_prop_vvoo_tensor,C8,vvoo_dims,init_val=ZERO)
-           ierr=talsh_tensor_construct(uncon_tensor,C8,one_dims(1:0),init_val=ZERO)
 
-
-         !   call print_tensor(orb_int_tensor%prop_vv, 1.0d-10, "orb_int_tensor%prop_vv")
-         !   call print_tensor(t2_tensor, 1.0d-10, "t2_tensor")
 
 !LH     \Chid abij = +\Pm ab \Y bf \td afij
          !   ierr=talsh_tensor_contract('C(a,b,i,j)+=Y(b,f)*T(a,f,i,j)',epsilon_prop_vvoo_tensor,orb_int_tensor%prop_vv,t2_tensor,scale=ONE)
@@ -208,7 +197,6 @@ module intermediates_eom_rsp
          !   if(debug_local) print *,"tensor_norm2(epsilon_prop_vvoo_tensor)",tensor_norm2(epsilon_prop_vvoo_tensor)
 
          !  call print_tensor(epsilon_prop_vvoo_tensor,1.0d-10,"T2 part of epison_prop")
-           ierr=talsh_tensor_destruct(uncon_tensor)
 
      end subroutine get_epsilon_prop_vvoo_talsh
 
@@ -233,16 +221,8 @@ module intermediates_eom_rsp
          logical :: debug_local = .false.
 
 
-         one_dims(1) = 1
-         vo_dims(1) = ov_dims(2)
-         vo_dims(2) = ov_dims(1)
          ierr=talsh_tensor_construct(eta_prop_ov_tensor,C8,ov_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(Transpose_vo,C8,vo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=talsh_tensor_contract('A(a,i)+=Y+(i,a)*K()',Transpose_vo,orb_int_tensor%prop_ov,one_tensor)
-         ierr=talsh_tensor_construct(uncon_tensor,C8,one_dims(1:0),init_val=ZERO)
          if(debug_local) print *,'LH_talsh eta_prop_ov_tensor ierr_tran ', ierr
-
 
 
 !LH Eat1
@@ -304,6 +284,7 @@ module intermediates_eom_rsp
          ierr=talsh_tensor_contract('E(i,a)+=H(e,a)*Y(i,e)',&
                                  eta_prop_ov_tensor,LR_Aux_vv,orb_int_tensor%prop_ov,scale=MINUS_ONE_HALF)
          if(debug_local) print *,'LH_talsh eta_prop_ov_tensor ierr_o29 ', ierr
+         ! ierr=talsh_tensor_destruct(one_tensor)
 
 
 ! !******************************RED**********************************************************************************************                                 
@@ -359,10 +340,7 @@ module intermediates_eom_rsp
       integer(C_INT)     :: one_dims(1)
       type(talsh_tens_t) :: uncon_tensor
 
-
-      one_dims(1) = 1
       ierr=talsh_tensor_construct(eta_prop_oovv_tensor,C8,oovv_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(uncon_tensor,C8,one_dims(1:0),init_val=ZERO)
 
 !LH     \Eta_2=+ \Pmm ij \Pmm ab \lambdas ia \Ys jb
       ierr=talsh_tensor_contract('E(i,j,a,b)+=L(i,a)*Y(j,b)',eta_prop_oovv_tensor,l1_tensor,orb_int_tensor%prop_ov,scale=ONE)
