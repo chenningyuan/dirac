@@ -465,6 +465,11 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
 
 
+
+                ! call print_tensor(interm_t_prop1%epsilon_prop_vo, 1.0D-6, 'epsilon_prop_vo')
+                ! call print_tensor(interm_t_prop1%epsilon_prop_vvoo, 1.0D-6, 'epsilon_prop_vvoo')
+
+
                 ! get O_prop
                 call get_O_vo(interm_t_prop1%O_vo,orb_int_tensor1,vo_dims)
 
@@ -519,6 +524,13 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,i_prop)
         call get_prop_integral_driver(orb_int_tensor%prop_oo,nocc,exa_input%mo_occ,nocc,exa_input%mo_occ,min_occ,i_prop)
         call get_prop_integral_driver(orb_int_tensor%prop_vv,nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,min_occ,i_prop)
         call get_prop_integral_driver(orb_int_tensor%prop_ov,nocc,exa_input%mo_occ,nvir,exa_input%mo_vir,min_occ,i_prop)
+        call get_prop_integral_driver(orb_int_tensor%prop_vo,nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,min_occ,i_prop)
+
+        ! call print_tensor(orb_int_tensor%prop_oo, 1.0D-18, 'orb_int_tensor%prop_oo')
+        ! call print_tensor(orb_int_tensor%prop_vv, 1.0D-18, 'orb_int_tensor%prop_vv')
+        ! call print_tensor(orb_int_tensor%prop_ov, 1.0D-6, 'orb_int_tensor%prop_ov')
+        ! call print_tensor(orb_int_tensor%prop_vo, 1.0D-6, 'orb_int_tensor%prop_vo')
+
 end subroutine 
 
 
@@ -539,6 +551,8 @@ subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,m
     integer                      :: i_prop
     complex(kind=8), pointer, contiguous :: orbital_integral_tens(:,:)
 
+    integer                      :: i,j
+    real(8)                      :: prop_real, prop_img
 
     integer(INTD),dimension(2)   :: mo_dims
 
@@ -554,8 +568,7 @@ subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,m
 
     !call add_finitefield(orbital_integral_tens,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
     call get_ff_mat (orbital_integral_tens,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ)
-    ! call print_date('Get property integrals')    
-
+    ! call print_date('Get property integrals') 
 
 end subroutine get_prop_integral_driver
 !-------------------------------------------------------------------------------------------------------------------
