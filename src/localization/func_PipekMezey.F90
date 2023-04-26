@@ -309,9 +309,10 @@ contains
 
   deallocate( VAR_reffil )
   deallocate( VAR_vecref )
+  
 
   ! deallocate pointers
-  deallocate( hmat   )
+  deallocate( hmat   ); nullify(hmat)
 
   ! print final functional value
   write(resst,'(a,f21.15)') 'Inverse mean delocalization =',dinvmg4out
@@ -464,7 +465,7 @@ contains
   logical, intent(in ) :: full
   real*8,  intent(out) :: totdiag, totnond
 
-  real*8,  intent(out), pointer :: hmat(:,:)
+  real*8,  intent(inout), pointer :: hmat(:,:)
 
   ! Internal variables
   integer :: i, j, k, l, m, n, ij, kl, ier
@@ -493,7 +494,9 @@ contains
 
   if(.not.full)then  ! label 111
 
-    if(associated(hmat)) deallocate( hmat )
+    if(associated(hmat)) then
+      deallocate( hmat )
+    endif
     allocate( hmat(ndimh,1), stat=ier ); call errall(ier,'get_hessian','hmat')
     hmat(:,:) = d0
 
@@ -567,8 +570,9 @@ contains
 
 
   else ! label 111
-
-    if(associated(hmat)) deallocate( hmat )
+    if(associated(hmat)) then
+      deallocate( hmat )
+    endif
     allocate( hmat(ndimh,ndimh), stat=ier ); call errall(ier,'get_hessian','hmat')
     hmat(:,:) = d0
 
@@ -1652,7 +1656,7 @@ contains
     call prqmat(cmo,nb,no,nb,no,4,var%ipqtoq(1,0),var%lupri)
   endif
 
-  ! write MO to file and close him
+  ! write MO to file and close it
   call WRICMO(var%lucoef,reshape(CMO,(/nb*no*nz/)),EIG,IBEIG,TOTERG)
   close(var%lucoef,status='keep')
 
