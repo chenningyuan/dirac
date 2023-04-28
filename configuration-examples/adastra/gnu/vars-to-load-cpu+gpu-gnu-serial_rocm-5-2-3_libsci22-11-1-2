@@ -7,7 +7,8 @@ module load amd-mixed
 module load cray-python/3.9.13.1
 module load rocm/5.2.3
 module load gcc/12.2.0
-module load cray-mpich/8.1.21-gcc
+module load cray-libsci/22.11.1.2
+module unload cray-mpich
 
 export EXA_GPU=AMD
 # MATH_LIBS="-L/opt/cray/pe/libsci/22.11.1.2/CRAY/9.0/x86_64/lib  -lsci_cray_mp"
@@ -18,7 +19,7 @@ export EXA_GPU=AMD
 #export EXA_TALSH_ONLY=YES
 export WRAP=NOWRAP
 export TOOLKIT=GNU
-export MPILIB=MPICH
+export MPILIB=NONE
 export PATH_MPICH=${CRAY_MPICH_PREFIX}
 export BUILD_TYPE=OPT
 export BLASLIB=LIBSCI

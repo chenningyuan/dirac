@@ -42,6 +42,7 @@ module talsh_cc
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
 
 !        Written by Lucas Visscher, winter 2016/2017
+         use os_utils
          use labeled_storage
          use exacorr_global
          use talsh_gradient
@@ -101,7 +102,7 @@ module talsh_cc
          integer :: fock_mode  ! choice of Fock build options
          integer :: rr         ! rank of cc-ci response
 
-         integer :: num_gpus = 0, igpu
+         integer :: num_gpus = 0, igpu, num_gpus_env = -1
          
 ! this should be needed in the case of exatensor, but not for talsh i guess..
 !        call mfsolver_dirac_input_sync_cw()
@@ -110,6 +111,15 @@ module talsh_cc
          call print_date('Entered cc_driver routine')
 
          call talsh_get_number_gpus(num_gpus)
+         num_gpus_env = get_environment_integer('TALSH_GPUS',-1)
+         if (num_gpus_env.eq.-1) then
+            print *,' Environment variable TALSH_GPUS undefined'
+            num_gpus = max(num_gpus,num_gpus_env)
+         else
+            print *,' Environment variable TALSH_GPUS defined, set to:',num_gpus_env
+            num_gpus = min(num_gpus,num_gpus_env)
+         end if
+         print *,' GPUs in use by Exacorr:',num_gpus
 
 !        Initialize libraries
          buf_size=exa_input%talsh_buff*buf_size

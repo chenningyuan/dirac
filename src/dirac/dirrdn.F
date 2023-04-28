@@ -4391,7 +4391,7 @@ C
 ! HJAAJ TODO : new parameter to set ADD_ALL = .TRUE. /Jan 2010
       SAVE SET
       DATA TABLE /'.AOLAB ','.LABDEF','.VECPOP','.LABEL ',
-     &            '.PRINT ','.INDSML','.NETPOP','.XXXXXX'/
+     &            '.PRINT ','.INDSML','.NETPOP','.PR TOL'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4418,8 +4418,9 @@ C
       ORBDEF   = .TRUE.
 CSK   ... only if MP2-NO orbitals are available - set in MP2NOGE1
       MP2NATPOP = .FALSE.
+      POP_DTOL = 1.D-2
 C
-C     Process input from CBIPOP
+C     Process input for *MULPOP
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*MULPOP')
@@ -4444,9 +4445,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in POPINP.'
+     *            '" not recognized for *MULPOP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in POPINP.')
+               CALL QUIT('Illegal keyword for *MULPOP.')
     1          CONTINUE
 C&&&& AOLAB:  Base definition of labels on AO-labels:
                  ILABDF = 1
@@ -4475,7 +4476,7 @@ C&&&& LABEL: pre-define labels
                  ELSEIF(WORD.EQ.'SHELL  ') THEN
                    LABOPT = 2
                  ELSE
-                   CALL QUIT('*POPINP: Unknown word after LABEL')
+                   CALL QUIT('*MULPOP: Unknown word after .LABEL')
                  ENDIF
                GO TO 100
     5          CONTINUE
@@ -4490,15 +4491,17 @@ C&&&& INDSML: Do not collect labels of small components of given center/symmetry
 C&&&& NETPOP: Mulliken Net populations
                  DONETP = .TRUE.
                GO TO 100
+C&&&& PR TOL: print tolerance, only print VECPOP contributions > POP_DTOL
     8          CONTINUE
+                  READ(LUCMD,*) POP_DTOL
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in POPINP.'
+     *            '" not recognized for *MULPOP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in POPINP.')
+               CALL QUIT('Illegal prompt for *MULPOP.')
             END IF
       END IF
   300 CONTINUE
@@ -4627,7 +4630,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       MAYER  = .FALSE.
       POLNRM = .FALSE.
 C
-C     Process input from CBIPRJ
+C     Process *PROJEC input
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*PROJEC')
@@ -4803,10 +4806,10 @@ C
       IF(MAYER) THEN
         IF(OWNBAS) THEN
           CALL QUIT
-     &     ('ANAINP: Mayer polarization only possible with SELOWN=T')
+     &     ('*PROJEC: Mayer polarization only possible with SELOWN=T')
         ELSE
-          WRITE(LUPRI,'(1X,A,A)')
-     &      '* Reference orbitals will be polarized according to ',
+          WRITE(LUPRI,'(1X,A)')
+     &      '* Reference orbitals will be polarized according to'//
      &      ' a modified Mayer scheme'
         ENDIF
       ENDIF
@@ -7511,29 +7514,6 @@ C.........define label
       deallocate(ibuf)
       RETURN
       END 
-#ifdef NOT_USED
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck READREORDER*/
-      SUBROUTINE READREORDER(STRING,IREORD,IMOORD,MXREORD)
-C***********************************************************************
-C
-C     Read in new order of orbitals
-C
-C     Written by J. Thyssen, Sep 1 1998
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      DIMENSION IMOORD(MXREORD)
-      CHARACTER STRING*90
-
-      string(90:90) = char(0)
-!     ... call C-routine
-        write(LUPRI,*) 'got string:',STRING
-      call creadreorder(string,ireord,imoord,mxreord)
-      RETURN
-      END
-#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mvoinp */
       SUBROUTINE MVOINP(WORD,RESET,WORK,LWORK)
