@@ -97,7 +97,7 @@
             integer                 :: tripl_block(1:2) = -1    ! for running triples
             integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
             integer                 :: n_laplace = 10           ! number of laplace points to use
-            integer                 :: N_eom_trial = 1          ! number of trial vectors in CC linear response
+            integer                 :: N_eom_trial = 5          ! number of trial vectors in CC linear response
             integer                 :: wf_type = 2              ! wave-function type
             integer                 :: N_Prop_A, N_Prop_B, N_Prop_C    ! number of property
             integer                 :: N_omega_lr = 1               ! number of frequency in cclr
