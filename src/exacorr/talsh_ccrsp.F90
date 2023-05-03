@@ -164,20 +164,32 @@ subroutine talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
 
         do i=1, N_prop_A
             call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
-            call solve_eom_lr_right(exa_input, interm_t, int_t, &
+            if (omega(1).ne.0.0) then
+                call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                     Interm_t_tensors_A(i), omega_min(1), Tprop_tensors_min_w(1))
+            end if
 
             do j=1, N_prop_B
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
-                call solve_eom_lr_right(exa_input, interm_t, int_t, &
+                if (omega(2).ne.0.0) then
+                    call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                             Interm_t_tensors_B(j), omega_min(2), Tprop_tensors_min_w(2))
+                end if
 
                 call print_date('Solved All 1st response right equations')
 
-                call get_eom_lr(exa_input,interm_t, int_t, &
+                if (omega(1).ne.0.0) then
+                    call get_eom_lr(exa_input,interm_t, int_t, &
                         Interm_t_tensors_A,Interm_t_tensors_B,& 
                         Tprop_tensors, Tprop_tensors_min_w, i,j,& 
                         l1_tensor,l2_tensor,eom_lr,CC_CC)
+                else
+                    call print_date('Note: Calculating static linear response.')
+                    call get_eom_lr(exa_input,interm_t, int_t, &
+                        Interm_t_tensors_A,Interm_t_tensors_B,& 
+                        Tprop_tensors, Tprop_tensors, i,j,& 
+                        l1_tensor,l2_tensor,eom_lr,CC_CC)
+                end if
 
                 eom_lrs(n,i,j) = eom_lr
                 write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
