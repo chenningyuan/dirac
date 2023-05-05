@@ -5852,7 +5852,7 @@ C
         ATOMIC = .FALSE.
         IPRHAM = 5
       END IF
-      IF(NUCIND.GE.2)THEN
+      IF(NUCIND.GT.1)THEN
         DO IATOM = 1, NUCIND
           IF(NINT(CHARGE(IATOM)).EQ.0)THEN
           IF(NOORBT(IATOM).EQV. .FALSE.)THEN
