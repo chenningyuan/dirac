@@ -5852,13 +5852,15 @@ C
         ATOMIC = .FALSE.
         IPRHAM = 5
       END IF
-      DO IATOM = 1, NUCIND
-        IF(NINT(CHARGE(IATOM)).EQ.0)THEN
-        IF(NOORBT(IATOM).EQV. .FALSE.)THEN
-          ATOMIC = .FALSE.         
-        ENDIF
-        ENDIF
-      ENDDO   
+      IF(NUCIND.GE.2)THEN
+        DO IATOM = 1, NUCIND
+          IF(NINT(CHARGE(IATOM)).EQ.0)THEN
+          IF(NOORBT(IATOM).EQV. .FALSE.)THEN
+            ATOMIC = .FALSE.         
+          ENDIF
+          ENDIF
+        ENDDO
+      ENDIF    
       IF(ATOMIC)THEN
        CALL ATMSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
        IF (IPRHAM.GE.1) THEN
