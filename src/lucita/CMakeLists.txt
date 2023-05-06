@@ -39,10 +39,6 @@ set(FIXED_LUCITA_FORTRAN_SOURCES_noruntimecheck
 set(FREE_LUCITA_FORTRAN_SOURCES
 )
 
-set(LUCITA_C_SOURCES
- flush_stdout.c
-)
-
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_LUCITA_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_LUCITA_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
@@ -54,7 +50,6 @@ if(ENABLE_RUNTIMECHECK)
     message(STATUS "runtime-check flags activated for the 'lucita' module with many exceptions")
     set_source_files_properties(${FREE_LUCITA_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
     set_source_files_properties(${FIXED_LUCITA_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
-    set_source_files_properties(${LUCITA_C_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_runtimecheck})
 endif()
 
 add_library(
@@ -63,7 +58,6 @@ add_library(
     ${FIXED_LUCITA_FORTRAN_SOURCES}
     ${FIXED_LUCITA_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_LUCITA_FORTRAN_SOURCES}
-    ${LUCITA_C_SOURCES}
 )
 
 add_dependencies(lucita qcorr)
