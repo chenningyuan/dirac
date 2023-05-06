@@ -5852,6 +5852,14 @@ C
         ATOMIC = .FALSE.
         IPRHAM = 5
       END IF
+C
+C The following part is needed to turn off ATOMIC
+C in the BSSE calculation, that is
+C   - NINT(CHARGE(IATOM)).EQ.0 ... ghost center
+C   - NOORBT(IATOM).EQV. .FALSE. ... ghost with basis set
+C However, when a single ghost center (NUCIND.EQ.1), 
+C ATOMIC is not turned off.
+C
       IF(NUCIND.GT.1)THEN
         DO IATOM = 1, NUCIND
           IF(NINT(CHARGE(IATOM)).EQ.0)THEN
