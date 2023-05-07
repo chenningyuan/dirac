@@ -31,6 +31,7 @@ module visual
   use electrostatic_potential
   use num_grid_cfg
 
+  use labeled_storage
   use visual_io
   use visual_datatypes
   use visual_dirac_input
@@ -468,11 +469,18 @@ contains
     end if
     time_start = second()
 
-    call visual_driver(visual_cfg_nr_dmat, &
+
+    call visual_driver_refactored(visual_cfg_nr_dmat, &
                        D,                  &
                        D_0,                &
                        ao,                 &
                        buffer)
+
+    !call visual_driver(visual_cfg_nr_dmat, &
+    !                   D,                  &
+    !                   D_0,                &
+    !                   ao,                 &
+    !                   buffer)
 
     call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
 
@@ -1507,4 +1515,197 @@ contains
 
   end subroutine
 
+
+  subroutine visual_driver_refactored(nr_dmat, &
+                            D,       &
+                            D_0,     &
+                            ao,      &
+                            buffer)
+
+!   --------------------------------------------------------------------------
+    integer, intent(in)  :: nr_dmat
+    type(matrix)         :: D(nr_dmat)
+    type(matrix)         :: D_0
+    real(8), intent(in)  :: ao(*)
+    real(8)              :: buffer(*)
+!   --------------------------------------------------------------------------
+    integer:: ig, igf
+!   --------------------------------------------------------------------------
+    type(grid_t), allocatable:: grids(:)
+    type(grid_function_t), allocatable:: grid_functions(:)
+    real(8), allocatable:: grid_function_values(:,:)
+    integer:: nr_grids
+    integer:: nr_grid_functions
+!   --------------------------------------------------------------------------
+
+    nr_grids = 1
+    nr_grid_functions = 1
+
+    allocate(grids(nr_grids))
+
+    do ig = 1, nr_grids
+
+      grids(ig) = setup_grid(ig)
+         
+      allocate(grid_functions(nr_grid_functions))
+
+      do igf = 1, nr_grid_functions
+        grid_functions(igf) = setup_grid_function(igf, grids(ig))
+        call work_on_grid(grids(ig), grid_functions(igf))
+        call store_data(grids(ig), grid_functions(igf))
+        !deallocate(grid_functions(igf)%values)
+        call grid_functions(igf)%erase
+      end do
+
+      deallocate(grid_functions)
+      call grids(ig)%erase
+      !deallocate(grids(ig)%points)
+    end do
+
+    deallocate(grids)
+
+  end subroutine
+
+  function setup_grid(id) result(grid)
+    integer, intent(in):: id
+    type(grid_t):: grid
+    !type(grid_t), intent(out):: grid
+
+    grid%id = id
+    grid%ndim = 3
+    grid%nr_points_total = 4
+    grid%action = 0
+    grid%typ = 1
+    grid%file="testgrid1.h5"
+
+    allocate(grid%points(grid%ndim, grid%nr_points_total))
+    grid%points = 0.0d0
+
+    select case (grid%typ)
+      case (0)
+        print *, "... grid #", id, " has unknown type. stopping now!"
+      case (1)
+        print *, "... grid #", id, " is regular cubic"
+      case (2)
+        print *, "... grid #", id, " is spherical"
+    end select
+
+    select case (grid%action)
+      case (0)
+        print *, "... grid #", id, " will be generated"
+        call generate_grid_points(grid)
+      case (1)
+        print *, "... grid #", id, " will be read from file"
+    end select
+
+    call grid%display
+  end function
+
+  subroutine generate_grid_points(grid)
+    class(grid_t), intent(inout):: grid
+    if (.not. grid%allocated_points()) return
+    print *, "going to generate grid #",grid%id
+    call random_number(grid%points)
+  end subroutine
+
+
+  function setup_grid_function(id, grid) result(grid_function)
+    integer, intent(in):: id
+    type(grid_t), intent(in):: grid
+    type(grid_function_t):: grid_function
+    !type(grid_function_t), intent(out):: grid_function
+
+    grid_function%id = id
+    grid_function%name = 'density'
+    grid_function%status = -1
+    grid_function%wf_order = 0
+    grid_function%tensor_order = 0
+    grid_function%id_assigned_grid = 1
+    grid_function%purpose = 0
+    grid_function%file="testgridfunction1.h5"
+
+    allocate(grid_function%values(grid_function%get_ndim(), grid%nr_points_total))
+    grid_function%values = 0.0d0
+    call grid_function%display
+  end function
+
+
+  subroutine work_on_grid(grid, grid_function)
+    type(grid_t), intent(in):: grid
+    type(grid_function_t), intent(inout):: grid_function
+    integer:: ipoint
+    real(8):: r, r1, r2, r3
+
+    if (.not. grid_function%allocated_values()) return
+
+!   here starts the expensive loop over points    
+    do ipoint = 1, grid%nr_points_total
+      if (grid_function%tensor_order == 0) then
+        r = grid%points(1, ipoint)
+        grid_function%values(ipoint, 1) = r
+      else if (grid_function%tensor_order == 1) then
+        r1 = grid%points(1, ipoint)
+        r2 = grid%points(2, ipoint)
+        r3 = grid%points(3, ipoint)
+        grid_function%values(ipoint, 1) = r1
+        grid_function%values(ipoint, 2) = r2
+        grid_function%values(ipoint, 3) = r3
+      end if
+    end do
+
+  end subroutine work_on_grid
+
+  subroutine store_data(grid, grid_function)
+    type(grid_t), intent(in):: grid
+    type(grid_function_t), intent(in):: grid_function
+
+    type(file_info_t):: labeled_file
+    integer:: i, m
+    logical:: file_exists
+
+    labeled_file%name = grid_function%file
+    labeled_file%status = -1
+    labeled_file%type = 2
+
+    call write_data_to_checkpoint(grid, grid_function, labeled_file)
+  end subroutine
+
+  subroutine write_data_to_checkpoint(grid, grid_function, labeled_file)
+    type(grid_t), intent(in):: grid
+    type(grid_function_t), intent(in):: grid_function
+    type(file_info_t), intent(inout):: labeled_file
+
+    character(9):: section
+    character*(:), allocatable  :: group
+    character:: ich
+    logical:: explicit
+    integer:: i
+
+    explicit = .true.
+
+    select case (grid_function%purpose)
+      case (0)
+        section = "visualize"
+      case (1)
+        section = "integrate"
+    end select
+
+    if (explicit) then
+
+      group = 'result/grid/'//trim(section)
+      call lab_write(labeled_file, trim(group)//'/nr_points_total',idata = grid%nr_points_total)
+      call lab_write(labeled_file, trim(group)//'/grid_ndim',idata = grid%ndim)
+
+      do i = 1, grid%ndim
+        write(ich, '(a1)') i
+        call lab_write(labeled_file, trim(group)//'/grid_points/'//ich, rdata = grid%points(i, :))
+      end do
+
+      group = 'result/grid_functions/'//trim(section)
+      do i = 1, grid_function%get_ndim()
+        write(ich, '(a1)') i
+        call lab_write(labeled_file, trim(group)//'/'//trim(grid_function%name)//'/t'//ich, rdata = grid_function%values(i, :))
+      end do
+    end if
+  end subroutine
 end module
