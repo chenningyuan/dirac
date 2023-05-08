@@ -216,9 +216,20 @@
       visual_cfg_gauge_origin(1:3) = GAGORG(1:3)  ! use magnetic gauge origin defined globally in Dirac
       dirac_cfg_visual = .true.
 
+      !temp
+      if (kw_matches(word, '.REFACT')) then
+         visual_cfg_global_refactor = .true.
+      end if
+
       if (kw_matches(word, '.OUTPRI')) then
          visual_cfg_print_data_to_dirac_output = .true.
+         rs_input%outpri=.true.
       end if
+
+      if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, rs_input%print_level)
+      end if
+
 
       if (kw_matches(word, '.LIST  ')) then
          visual_cfg_list = .true.
@@ -670,6 +681,37 @@
          deallocate(word_array)
       end if
 
+      if (kw_matches(word, '.GRIDS ')) then
+         call kw_read(word, rs_input%nr_grids)
+         allocate(rs_input%grids(rs_input%nr_grids))
+         do i = 1, rs_input%nr_grids
+            read(get_file_unit(), '(a)') line
+            nr_words = word_count(line)
+            allocate(word_array(nr_words))
+            call split_string(line, nr_words, word_array, separator=' ')
+            do j = 1, nr_words
+              call process_key_value_grids(word_array(j),i)
+            end do
+            deallocate(word_array)
+            call verify_grid_input_cfg(rs_input%grids(i))
+         end do
+      end if
+
+      if (kw_matches(word, '.GRIDFU')) then
+         call kw_read(word, rs_input%nr_grid_functions)
+         allocate(rs_input%grid_functions(rs_input%nr_grid_functions))
+         do i = 1, rs_input%nr_grid_functions
+            read(get_file_unit(), '(a)') line
+            nr_words = word_count(line)
+            allocate(word_array(nr_words))
+            call split_string(line, nr_words, word_array, separator=' ')
+            do j = 1, nr_words
+              call process_key_value_grid_functions(word_array(j),i)
+            end do
+            deallocate(word_array)
+            call verify_grid_function_input_cfg(rs_input%grid_functions(i))
+         end do
+      end if
 
       call check_whether_kw_found(word, kw_section)
 
@@ -722,6 +764,56 @@
       read(get_file_unit(), *) visual_cfg_ref_nucleus(i), &
                        visual_cfg_dmat_file(i),   &
                        visual_cfg_dmat_file_record(i)
+
+   end subroutine
+
+   subroutine process_key_value_grids(word, idx)
+
+      use visual_cfg
+      use visual_datatypes
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(len=*), intent(in)    :: word
+      integer, intent(in)::idx
+!     --------------------------------------------------------------------------
+      type(grid_t):: grid
+      character(len=1) :: sep
+      integer             :: nr_words
+      integer             :: i
+      character(80)       :: key, val
+!     --------------------------------------------------------------------------
+
+      sep = '='
+      call get_key_value(word, sep, key, val)
+      call grid_input_cfg(key, val, rs_input%grids(idx))
+
+   end subroutine
+
+   subroutine process_key_value_grid_functions(word, idx)
+
+      use visual_cfg
+      use visual_datatypes
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(len=*), intent(in)    :: word
+      integer, intent(in)::idx
+!     --------------------------------------------------------------------------
+      type(grid_function_t):: grid_function
+      character(len=1) :: sep
+      integer             :: nr_words
+      integer             :: i
+      character(80)       :: key, val
+!     --------------------------------------------------------------------------
+
+      sep = '='
+      call get_key_value(word, sep, key, val)
+      call grid_function_input_cfg(key, val, rs_input%grid_functions(idx), idx)
 
    end subroutine
 

@@ -18,9 +18,13 @@ set(FREE_VISUAL_FORTRAN_SOURCES
     visual_london.F90
     visual_io.F90
     visual_grids.F90
+    visual_grid_functions.F90
     visual_datatypes.F90
     visual_utils.F90
+    visual_dirac.F90
     visual_dirac_input.F90
+    visual_txt_storage.F90
+    visual_labeled_storage.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

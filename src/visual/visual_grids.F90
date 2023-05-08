@@ -1,6 +1,7 @@
 module visual_grids
 
 
+   use visual_io
    use visual_cfg
    use visual_utils
    use visual_datatypes
@@ -15,6 +16,8 @@ module visual_grids
    public read_grid_files
 !  temp
    public open_old_grid_txt_file
+   public get_grid_info
+   public get_grid_points
 
 !  public types
    type, public:: visual_grid_file
@@ -37,6 +40,11 @@ module visual_grids
       module procedure generate_grid_file_cube_regular
    end interface
 
+   interface generate_grid_rectilinear
+      module procedure generate_grid_rectilinear
+   end interface
+
+
    character(len = 16):: float_format_txt = '(*(es18.8e3, :))'
 
    private
@@ -57,8 +65,31 @@ module visual_grids
 #include "codata.h"
 #include "orgcom.h"
 
-   contains
+contains
 
+  subroutine generate_grid_rectilinear(grid)
+    type(grid_t), intent(inout):: grid
+    integer:: i,j,k, ipoint
+    real(8):: v(3)
+
+    if (grid%ndim /= 3) return
+
+    ipoint = 1
+    do i = 1, grid%nr_points(1)
+      v(1) = grid%origin(1) + (i - 1)*grid%spacing(1)
+      do j = 1, grid%nr_points(2)
+        v(2) = grid%origin(2) + (j - 1)*grid%spacing(2)
+        do k = 1, grid%nr_points(3)
+          v(3) = grid%origin(3) + (k - 1)*grid%spacing(3)
+
+          grid%points(1:3, ipoint) = v(1:3)
+
+          ipoint = ipoint + 1
+        end do
+      end do
+    end do
+
+  end subroutine generate_grid_rectilinear
 
 
 !  -----------------------------------------------------------------------------
@@ -75,7 +106,7 @@ module visual_grids
       allocate(grid_points(n, 3))
       grid_points = 0.0d0
 
-      call get_grid_points(grid_points, nr_points)
+      call get_grid_points_legacy(grid_points, nr_points)
 
       do i = 1, visual_cfg_nr_grid_files
       
@@ -101,7 +132,7 @@ module visual_grids
 
 
 !  -----------------------------------------------------------------------------
-   subroutine get_grid_points(grid_points, nr_points)
+   subroutine get_grid_points_legacy(grid_points, nr_points)
 !  -----------------------------------------------------------------------------
       real(8), intent(inout), dimension(:,:):: grid_points
       integer, intent(in):: nr_points(3)
@@ -387,11 +418,180 @@ module visual_grids
 
    end subroutine
 
+! NEW
+
+  subroutine grid_extents_from_mol(mol, grid, extents)
+#include "codata.h"
+    type(mol_t), intent(in):: mol
+    type(grid_t), intent(in):: grid
+    real(8), intent(out):: extents(0:1, 3)
+    real(8):: atoms_min(1:3), atoms_max(1:3)
+    integer::i, j
+
+    ! mol%geometry is in Angstroms, so we rescale it
+    atoms_min(1:3) = mol%geometry(1:3, 1)/xtang
+    atoms_max(1:3) = mol%geometry(1:3, 1)/xtang
+
+    do i = 1, mol%n_atoms
+      do j = 1, 3
+        atoms_min(j) = min(mol%geometry(j, i)/xtang, atoms_min(j))
+        atoms_max(j) = max(mol%geometry(j, i)/xtang, atoms_max(j))
+      end do
+    end do
+
+    ! add space around
+    do i = 1, 3
+      atoms_min(i) = atoms_min(i) - grid%margin
+      atoms_max(i) = atoms_max(i) + grid%margin
+      extents(0, i) = atoms_min(i)
+      extents(1, i) = atoms_max(i)
+      write(*, *) 'grid_extents_from_mol : i, min, max ', i, extents(0, i), extents(1, i) 
+    end do
+  end subroutine grid_extents_from_mol
 
 
+  subroutine grid_npoints_from_spacing(grid, extents)
+    type(grid_t), intent(inout):: grid
+    real(8), intent(in):: extents(0:1, 3)
+    integer:: i
+
+    do i = 1, grid%ndim
+      if (grid%nr_points_known(i)) return
+      if (grid%spacing(i) /= 0) then
+        grid%nr_points(i) = int((extents(1, i) - extents(0, i))/grid%spacing(i)) + 1
+        if (grid%nr_points(i) <= 0) then
+          ! assign 1 point to this dimension;
+          ! we do this because we work in grid%ndim dimensions
+          ! and so we cannot have 0 points in one of the dimensions
+          grid%nr_points(i) = 1
+        end if
+      end if
+      grid%nr_points_known(i) = .true.
+    end do
+  end subroutine grid_npoints_from_spacing
 
 
+  subroutine grid_spacing_from_npoints(grid, extents)
+    type(grid_t), intent(inout):: grid
+    real(8), intent(in):: extents(0:1, 3)
+    integer:: i
+
+    do i = 1, grid%ndim
+      if (grid%spacing_known(i)) return
+      grid%spacing(i) = 0.0d0
+      if (grid%nr_points(i) > 1) then
+        grid%spacing(i) = (extents(1, i) - extents(0, i))/(grid%nr_points(i) - 1)
+      else
+        grid%spacing(i) = extents(1, i) - extents(0, i)
+      end if
+      grid%spacing_known(i) = .true.
+    end do
+  end subroutine grid_spacing_from_npoints
+
+  subroutine grid_origin_from_mol(grid, mol, extents)
+    type(mol_t), intent(in):: mol
+    type(grid_t), intent(inout):: grid
+    real(8), intent(inout), optional:: extents(0:1, 3)
+
+    if (.not. present(extents)) call grid_extents_from_mol(mol, grid, extents)
+    grid%origin(1:3) = extents(0, 1:3)
+    grid%origin_known = .true.
+  end subroutine grid_origin_from_mol
 
 
+  subroutine center_mol_in_grid(grid)
+#include "orgcom.h"
+    type(grid_t), intent(inout):: grid
+    real(8):: extents(0:1, 3)
+    real(8):: cm_0, cm_1
+    integer:: i
+
+    do i = 1, 3
+      ! get actual grid extents
+      extents(0, i) = grid%origin(i)
+      extents(1, i) = grid%origin(i) + (grid%nr_points(i) - 1)*grid%spacing(i)
+      cm_0 = 0.5d0*(extents(1, i) + extents(0, i))
+      cm_1 = cmxyz(i)  ! this is center-of-mass from "orgcom.h" in a.u.
+      extents(0, i) = extents(0, i) + (cm_1 - cm_0)
+      extents(1, i) = extents(1, i) + (cm_1 - cm_0)
+    end do
+    grid%origin(1:3) = extents(0, 1:3)
+    grid%origin_known = .true.
+  end subroutine center_mol_in_grid
+
+
+  subroutine grid_get_nr_points_total(grid)
+    type(grid_t), intent(inout):: grid
+    integer:: i
+
+    if (grid%nr_points_total_known) return
+    grid%nr_points_total = 1
+    do i = 1, grid%ndim
+      grid%nr_points_total = grid%nr_points_total * grid%nr_points(i)
+    end do
+    grid%nr_points_total_known = .true.
+  end subroutine grid_get_nr_points_total
+
+
+  subroutine get_grid_essentials(grid, mol)
+    type(mol_t), intent(in):: mol
+    type(grid_t), intent(inout):: grid
+    real(8):: origin(3)
+    real(8):: extents(0:1, 3)
+    integer:: i
+
+    call grid_extents_from_mol(mol, grid, extents)
+    if (.not. grid%origin_known) call grid_origin_from_mol(grid, mol, extents)
+
+    do i = 1, grid%ndim
+      if (.not. grid%spacing_known(i)) call grid_spacing_from_npoints(grid, extents)
+      if (.not. grid%nr_points_known(i)) call grid_npoints_from_spacing(grid, extents)
+    end do
+
+    if (.not. grid%nr_points_total_known) call grid_get_nr_points_total(grid)
+  end subroutine get_grid_essentials
+
+
+  subroutine get_grid_info(grid, mol)
+    type(mol_t), intent(in):: mol
+    type(grid_t), intent(inout):: grid
+
+    if (grid%input  ==  1) then
+      call get_grid_info_from_file(grid)
+    else
+      call get_grid_essentials(grid, mol)
+      ! center grid around molecule,
+      ! modify grid extents and grid%origin (but do not move molecule)
+      call center_mol_in_grid(grid)
+    end if
+  end subroutine get_grid_info
+
+
+  subroutine get_grid_points(grid)
+    type(grid_t), intent(inout):: grid
+
+    if (.not. grid%allocated_points()) return
+
+    if (grid%input == 1) then
+      call get_grid_points_from_file(grid)
+      write(*, *) 'Grid points for grid id = ', grid%id, ' are read from file ', grid%file_inp
+    else if (grid%input == 0) then
+      call generate_grid_points(grid)
+      write(*, *) 'Grid points for grid id = ', grid%id, ' are generated'
+    end if
+  end subroutine
+
+
+  subroutine generate_grid_points(grid)
+    type(grid_t), intent(inout):: grid
+    integer :: i
+
+    select case (grid%typ)
+      case (1)
+        call generate_grid_rectilinear(grid)
+      case default
+        call random_number(grid%points)
+    end select
+  end subroutine
 
 end module

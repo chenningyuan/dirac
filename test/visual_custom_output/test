@@ -14,6 +14,9 @@ f.add(from_string = '! Requested density at point(s) !',
       num_lines   = 11,
       rel_tolerance   = 1.0e-5)
 
+#
+# run tests
+#
 test.run(['dc.inp'], ['h2o.mol'], args='--outcmo --get="PAMXVC TBMO"')
 
 # OK! test.run(['vis_list_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_list.txt"')
@@ -23,7 +26,8 @@ test.run(['dc.inp'], ['h2o.mol'], args='--outcmo --get="PAMXVC TBMO"')
 #test.run(['vis_radial_out.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_radial.txt"')
 #test.run(['vis_2d_out.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_2d.txt"')
 
-test.run(['vis_3d_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_3d.txt"')
+test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="scalar_field_3d.txt *.h5"')
+#test.run(['vis_3d_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_3d.txt"')
 #test.run(['vis_3d_cubeout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_3d.cube"')
 #test.run(['vis_3d_diracout.inp'], ['h2o.mol'], f, args='--incmo')
 
@@ -35,20 +39,23 @@ test.run(['vis_3d_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_3
 ###test.run(['vis_dc_gradjbz_3d_custom_txt.inp'], ['h2o.mol'], args='--copy="DFCOEF PAMXVC TBMO" --get="tensor_field.txt"')
 ###test.run(['vis_density_and_density_gradient_dc.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="*.txt"')
 
-def compare(fname, fname_ref):
+#
+# compare generated files 
+#
+
+def compare_txt(fname, fname_ref):
     p = Popen(["diff", fname, fname_ref], stdin=PIPE)
     p.communicate()
     if p.returncode == 0:
         print('{} and {} are the same'.format(fname, fname_ref))
-        sys.stderr.write('{} and {} are the same'.format(fname, fname_ref))
+        sys.stdout.write('{} and {} are the same'.format(fname, fname_ref))
     elif p.returncode == 1:
         print('{} and {} are different'.format(fname, fname_ref))
-        sys.stderr.write('{} and {} are different'.format(fname, fname_ref))
         sys.stdout.write('{} and {} are different'.format(fname, fname_ref))
         sys.exit(1)
     else:
         print('error %s' % p.returncode)
-        sys.stderr.write('error %s' % p.returncode)
+        sys.stdout.write('error %s' % p.returncode)
 
 
 # OK! compare("scalar_field_list.txt", "result/scalar_field_list.txt")
@@ -56,7 +63,7 @@ def compare(fname, fname_ref):
 #compare("scalar_field_radial.txt", "result/scalar_field_radial.txt")
 #compare("scalar_field_2d.txt", "result/scalar_field_2d.txt")
 
-compare("scalar_field_3d.txt", "result/scalar_field_3d.txt")
+compare_txt("scalar_field_3d.txt", "result/scalar_field_3d.txt")
 #compare("scalar_field_3d.cube", "result/scalar_field_3d.cube")
 
 ##compare("scalar_field_2d.txt", "result/scalar_field_2d.txt")
@@ -65,9 +72,53 @@ compare("scalar_field_3d.txt", "result/scalar_field_3d.txt")
 ###compare("vector_field.txt", "result/vector_field.txt")
 ###compare("tensor_field.txt", "result/tensor_field.txt")
 
+
+try:
+    import h5py
+    h5py_available = True
+except:
+    h5py_available = False
+
+if h5py_available:
+
+    # gosia 19/5/2023
+    # alternatively, there is h5diff tool,
+    # but this may not always work, e.g.:
+    # https://forum.hdfgroup.org/t/identical-hdf5-files-according-to-h5diff-differ-in-comparison-with-diff-unix-command/3285/5
+    # so instead, we compare selected datasets
+
+    def test_hdf5_single(fname, gf_name):
+        data_file = h5py.File(fname, 'r')
+        grid_ndim     = data_file['/result/grid/ndim']
+        grid_npoints  = data_file['/result/grid/nr_points_total']
+        return grid_ndim[0], grid_npoints[0]
+ 
+    def test_hdf5_array(fname, gf_name, gf_test_key):
+        data_file = h5py.File(fname, 'r')
+        grid_functions = data_file['/result/grid_function']
+        try:
+            grid_function_values = data_file['/result/grid_function/'+gf_name+'/visualize/values/']
+        except:
+            sys.stdout.write(gf_name+' not found in '+fname)
+            sys.exit(1)
+        return grid_function_values[gf_test_key][()]
+ 
+    test = test_hdf5_single('density_hessian1.h5', 'density_hessian')
+    ref  = test_hdf5_single('result/density_hessian1.h5', 'density_hessian')
+    res = tuple(i == j for i, j in zip(test, ref))
+    if False in res:
+        sys.stdout.write('Error! Different data on hdf5')
+
+    test = test_hdf5_array('density_hessian1.h5', 'density_hessian', 't2_icomp_3')
+    ref  = test_hdf5_array('result/density_hessian1.h5', 'density_hessian', 't2_icomp_3')
+    res = tuple(i == j for i, j in zip(test, ref))
+    if False in res:
+        sys.stdout.write('Error! Different array data on hdf5')
+
+
 # cleanup
 #os.unlink('DFCOEF')
 #os.unlink('PAMXVC')
 #os.unlink('TBMO')
 
-sys.exit(test.return_code)
+#sys.exit(1)

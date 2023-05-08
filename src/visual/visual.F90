@@ -32,14 +32,21 @@ module visual
   use num_grid_cfg
 
   use labeled_storage
+  !use visual_labeled_storage
+  !use visual_txt_storage, only: visual_plot_file
+  use visual_txt_storage
   use visual_io
   use visual_datatypes
   use visual_dirac_input
+  use visual_dirac
   use visual_grids
+  use visual_grid_functions
+  use checkpoint
 
   implicit none
 
   public run_visual
+
 
   private
 
@@ -470,17 +477,30 @@ contains
     time_start = second()
 
 
+    if (visual_cfg_global_refactor) then
+
+    ! gosia 19/5: now we do calculations on one molecule at a time, 
+    ! so here we read the molecular data from DIRAC's main checkpoint;
+    ! but in principle, this can be moved inside the loop over grids
+
+!   todo - when developing a separate schema
+!    write (lupri,'(/A,I2)')," * Opening checkpoint file for real-space data (VISUAL) "
+!    call checkpoint_rs_open
+
     call visual_driver_refactored(visual_cfg_nr_dmat, &
                        D,                  &
                        D_0,                &
                        ao,                 &
                        buffer)
 
-    !call visual_driver(visual_cfg_nr_dmat, &
-    !                   D,                  &
-    !                   D_0,                &
-    !                   ao,                 &
-    !                   buffer)
+!    call checkpoint_rs_close
+    else
+    call visual_driver(visual_cfg_nr_dmat, &
+                       D,                  &
+                       D_0,                &
+                       ao,                 &
+                       buffer)
+    end if
 
     call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
 
@@ -615,6 +635,7 @@ contains
 !     get grid points
 !     ===============
 
+      !refactoring = .false.
       refactoring = .true.
       if (visual_cfg_3d .and. refactoring) then
 
@@ -903,6 +924,7 @@ contains
       if (visual_cfg_3d .or. visual_cfg_3d_fast) then
 
       refactoring=.true.
+      !refactoring=.false.
       if (refactoring) then
          write(*,*) 'refactoring-3d!'
 
@@ -1529,183 +1551,128 @@ contains
     real(8), intent(in)  :: ao(*)
     real(8)              :: buffer(*)
 !   --------------------------------------------------------------------------
-    integer:: ig, igf
-!   --------------------------------------------------------------------------
     type(grid_t), allocatable:: grids(:)
     type(grid_function_t), allocatable:: grid_functions(:)
-    real(8), allocatable:: grid_function_values(:,:)
-    integer:: nr_grids
-    integer:: nr_grid_functions
+    type(mol_t):: mol
+    type(ao_t):: aobasis
+    integer:: ig, igf
+    integer:: g_ndim, gf_ndim, npoints
+    real(8):: extents(0:1, 3)
 !   --------------------------------------------------------------------------
 
-    nr_grids = 1
-    nr_grid_functions = 1
+    call read_from_dirac(mol, aobasis, rs_input%print_level)
 
-    allocate(grids(nr_grids))
+    call rs_input%display
 
-    do ig = 1, nr_grids
+    do ig = 1, rs_input%nr_grids
 
-      grids(ig) = setup_grid(ig)
-         
-      allocate(grid_functions(nr_grid_functions))
+      call get_grid_info(rs_input%grids(ig), mol)
+      if (rs_input%print_level > 0) call rs_input%grids(ig)%display
 
-      do igf = 1, nr_grid_functions
-        grid_functions(igf) = setup_grid_function(igf, grids(ig))
-        call work_on_grid(grids(ig), grid_functions(igf))
-        call store_data(grids(ig), grid_functions(igf))
-        !deallocate(grid_functions(igf)%values)
-        call grid_functions(igf)%erase
+      g_ndim  = rs_input%grids(ig)%ndim
+      npoints = rs_input%grids(ig)%nr_points_total
+
+      allocate(rs_input%grids(ig)%points(g_ndim, npoints))
+      rs_input%grids(ig)%points = 0.0d0
+
+!     gosia todo: 
+!     optimization - try making all arrays 1-dimensional, then reshape
+!     grid_points = reshape(rs_input%grids(ig)%points(g_ndim, npoints))
+
+      call get_grid_points(rs_input%grids(ig))
+      if (rs_input%grids(ig)%export) call store_grid(rs_input%grids(ig))
+      if (rs_input%print_level > 0) & 
+        write(*, *) 'Grid points (grid id = ', &
+          rs_input%grids(ig)%id, ') are stored on file ', rs_input%grids(ig)%file_out
+
+      do igf = 1, rs_input%nr_grid_functions
+        !gosia fixme - now used only to assign labels for hdf5 storage,
+        call get_grid_function_info(rs_input%grid_functions(igf))
+
+        if (rs_input%grid_functions(igf)%id_assigned_grid == ig) then
+
+          ! gosia todo: it would be cleaner to use "associate", 
+          ! but some compilers have troubles with nested associate
+          ! https://stackoverflow.com/questions/66562058/associate-chains-in-fortran
+
+          if (rs_input%print_level > 0) then
+            call rs_input%grid_functions(igf)%display
+            call rs_input%grids(ig)%display_points
+          end if
+
+          gf_ndim  = rs_input%grid_functions(igf)%get_ndim()
+
+          allocate(rs_input%grid_functions(igf)%values(gf_ndim, npoints))
+          rs_input%grid_functions(igf)%values = 0.0d0
+
+          ! gosia todo:
+          ! add "visualize"/"integrate" procedures in this call; now - visualization only
+          ! add constructs for DIRAC data (D, D_0, ...)
+          call work_on_grid(rs_input%grids(ig), rs_input%grid_functions(igf), &
+                            nr_dmat, D, D_0, ao, buffer)
+
+          if (rs_input%grid_functions(igf)%export) &
+             call store_data(rs_input%grids(ig), rs_input%grid_functions(igf))
+
+          deallocate(rs_input%grid_functions(igf)%values)
+
+        end if
       end do
 
-      deallocate(grid_functions)
-      call grids(ig)%erase
-      !deallocate(grids(ig)%points)
+      deallocate(rs_input%grids(ig)%points)
+
     end do
 
-    deallocate(grids)
+    if (mol%in_use()) then
+      call mol%erase()
+    end if
 
   end subroutine
 
-  function setup_grid(id) result(grid)
-    integer, intent(in):: id
-    type(grid_t):: grid
-    !type(grid_t), intent(out):: grid
 
-    grid%id = id
-    grid%ndim = 3
-    grid%nr_points_total = 4
-    grid%action = 0
-    grid%typ = 1
-    grid%file="testgrid1.h5"
+  subroutine work_on_grid(grid, grid_function, &
+                          nr_dmat, D, D_0, ao, buffer)
 
-    allocate(grid%points(grid%ndim, grid%nr_points_total))
-    grid%points = 0.0d0
-
-    select case (grid%typ)
-      case (0)
-        print *, "... grid #", id, " has unknown type. stopping now!"
-      case (1)
-        print *, "... grid #", id, " is regular cubic"
-      case (2)
-        print *, "... grid #", id, " is spherical"
-    end select
-
-    select case (grid%action)
-      case (0)
-        print *, "... grid #", id, " will be generated"
-        call generate_grid_points(grid)
-      case (1)
-        print *, "... grid #", id, " will be read from file"
-    end select
-
-    call grid%display
-  end function
-
-  subroutine generate_grid_points(grid)
-    class(grid_t), intent(inout):: grid
-    if (.not. grid%allocated_points()) return
-    print *, "going to generate grid #",grid%id
-    call random_number(grid%points)
-  end subroutine
-
-
-  function setup_grid_function(id, grid) result(grid_function)
-    integer, intent(in):: id
-    type(grid_t), intent(in):: grid
-    type(grid_function_t):: grid_function
-    !type(grid_function_t), intent(out):: grid_function
-
-    grid_function%id = id
-    grid_function%name = 'density'
-    grid_function%status = -1
-    grid_function%wf_order = 0
-    grid_function%tensor_order = 0
-    grid_function%id_assigned_grid = 1
-    grid_function%purpose = 0
-    grid_function%file="testgridfunction1.h5"
-
-    allocate(grid_function%values(grid_function%get_ndim(), grid%nr_points_total))
-    grid_function%values = 0.0d0
-    call grid_function%display
-  end function
-
-
-  subroutine work_on_grid(grid, grid_function)
     type(grid_t), intent(in):: grid
     type(grid_function_t), intent(inout):: grid_function
-    integer:: ipoint
-    real(8):: r, r1, r2, r3
-
-    if (.not. grid_function%allocated_values()) return
+    integer, intent(in)  :: nr_dmat
+    type(matrix)         :: D(nr_dmat)
+    type(matrix)         :: D_0
+    real(8), intent(in)  :: ao(*)
+    real(8)              :: buffer(*)
+    integer:: ipoint, icomp
 
 !   here starts the expensive loop over points    
     do ipoint = 1, grid%nr_points_total
-      if (grid_function%tensor_order == 0) then
-        r = grid%points(1, ipoint)
-        grid_function%values(ipoint, 1) = r
-      else if (grid_function%tensor_order == 1) then
-        r1 = grid%points(1, ipoint)
-        r2 = grid%points(2, ipoint)
-        r3 = grid%points(3, ipoint)
-        grid_function%values(ipoint, 1) = r1
-        grid_function%values(ipoint, 2) = r2
-        grid_function%values(ipoint, 3) = r3
-      end if
+
+      !call get_quantity_in_point(nr_dmat,                   &
+      !                           D,                         &
+      !                           D_0,                       &
+      !                           grid%points(1, ipoint),    &
+      !                           grid%points(2, ipoint),    &
+      !                           grid%points(3, ipoint),    &
+      !                           ao,                        &
+      !                           buffer,                    &
+      !                           grid_function%get_ndim(),  &
+      !                           grid_function%values(1, ipoint),      &
+      !                           grid_function, ipoint)
+
+
+      call get_quantity_in_point_refactored(nr_dmat,                   &
+                                 D,                         &
+                                 D_0,                       &
+                                 ao,                        &
+                                 buffer,                    &
+                                 grid, &
+                                 grid_function, &
+                                 ipoint)
+
+      !write(*,*) 'grid_function%values in ', ipoint, grid_function%values(1,ipoint)
     end do
+    !do icomp=1, grid_function%get_ndim()
+    !  write(*,*) 'grid_function%values', (grid_function%values(icomp,ipoint), ipoint=1,grid%nr_points_total)
+    !end do
 
   end subroutine work_on_grid
 
-  subroutine store_data(grid, grid_function)
-    type(grid_t), intent(in):: grid
-    type(grid_function_t), intent(in):: grid_function
-
-    type(file_info_t):: labeled_file
-    integer:: i, m
-    logical:: file_exists
-
-    labeled_file%name = grid_function%file
-    labeled_file%status = -1
-    labeled_file%type = 2
-
-    call write_data_to_checkpoint(grid, grid_function, labeled_file)
-  end subroutine
-
-  subroutine write_data_to_checkpoint(grid, grid_function, labeled_file)
-    type(grid_t), intent(in):: grid
-    type(grid_function_t), intent(in):: grid_function
-    type(file_info_t), intent(inout):: labeled_file
-
-    character(9):: section
-    character*(:), allocatable  :: group
-    character:: ich
-    logical:: explicit
-    integer:: i
-
-    explicit = .true.
-
-    select case (grid_function%purpose)
-      case (0)
-        section = "visualize"
-      case (1)
-        section = "integrate"
-    end select
-
-    if (explicit) then
-
-      group = 'result/grid/'//trim(section)
-      call lab_write(labeled_file, trim(group)//'/nr_points_total',idata = grid%nr_points_total)
-      call lab_write(labeled_file, trim(group)//'/grid_ndim',idata = grid%ndim)
-
-      do i = 1, grid%ndim
-        write(ich, '(a1)') i
-        call lab_write(labeled_file, trim(group)//'/grid_points/'//ich, rdata = grid%points(i, :))
-      end do
-
-      group = 'result/grid_functions/'//trim(section)
-      do i = 1, grid_function%get_ndim()
-        write(ich, '(a1)') i
-        call lab_write(labeled_file, trim(group)//'/'//trim(grid_function%name)//'/t'//ich, rdata = grid_function%values(i, :))
-      end do
-    end if
-  end subroutine
 end module

@@ -27,9 +27,12 @@ module visual_in_point
   use visual_london
   use xc_london_c1
 
+  use visual_datatypes
+
   implicit none
 
   public get_quantity_in_point
+  public get_quantity_in_point_refactored
 
   private
 
@@ -49,6 +52,98 @@ module visual_in_point
 
 contains
 
+  subroutine get_quantity_in_point_refactored(nr_dmat, &
+                                   D,       &
+                                   D_0,     &
+                                   ao,      &
+                                   buffer,  &
+                                   grid, &
+                                   grid_function, &
+                                   ipoint)
+
+!    --------------------------------------------------------------------------
+     integer, intent(in)  :: nr_dmat
+     type(matrix)         :: D(nr_dmat)
+     type(matrix)         :: D_0
+     real(8)              :: ao(*)
+     real(8)              :: buffer(*)
+     type(grid_t), intent(in):: grid
+     type(grid_function_t), intent(inout):: grid_function
+     integer, intent(in), optional  :: ipoint !thiswill not be optional
+!    --------------------------------------------------------------------------
+     integer              :: imat
+     real(8)              :: v1, v2(3), v3(3,3)
+     real(8)              :: px, py, pz
+     real(8)              :: rx, ry, rz, r(3)
+!    --------------------------------------------------------------------------
+
+     px = grid%points(1, ipoint)
+     py = grid%points(2, ipoint)
+     pz = grid%points(3, ipoint)
+     !todo: call grid%points%get_cartesian_coords()
+     call get_ao(1, (/px/), (/py/), (/pz/), ao, buffer)
+
+     r = 0.0d0
+     do imat = 1, nr_dmat
+
+       select case (grid_function%name)
+
+         case ('density')
+!          electron density
+           v1 = 0.0d0
+           call get_n(v1,            &
+                      D(imat)%irep,  &
+                      D(imat)%nrow,  &
+                      D(imat)%elms,  &
+                      buffer,        &
+                      ao)
+           grid_function%values(1,ipoint:ipoint) = v1
+
+         case ('density_gradient')
+!          electron density gradient
+           v1 = 0.0d0
+           v2 = 0.0d0
+           call get_gn(v1,               &
+                       v2,               &
+                       D(imat)%irep,     &
+                       D(imat)%nrow,     &
+                       D(imat)%elms,     &
+                       buffer,           &
+                       ao)               
+           grid_function%values(1:1,ipoint:ipoint) = v2(1)
+           grid_function%values(2:2,ipoint:ipoint) = v2(2)
+           grid_function%values(3:3,ipoint:ipoint) = v2(3)
+
+         case ('density_hessian')
+!          gosia fixme:
+!          density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!          todo: add a warning
+           v1 = 0.0d0
+           v2 = 0.0d0
+           v3 = 0.0d0
+           call get_hn(v1,               &
+                       v2,               &
+                       v3,               &
+                       D(imat)%irep,     &
+                       D(imat)%nrow,     &
+                       D(imat)%elms,     &
+                       buffer,           &
+                       ao)               
+           grid_function%values(1:1,ipoint:ipoint) = v3(1, 1)   ! xx
+           grid_function%values(2:2,ipoint:ipoint) = v3(1, 2)   ! xy
+           grid_function%values(3:3,ipoint:ipoint) = v3(1, 3)   ! xz
+           grid_function%values(4:4,ipoint:ipoint) = v3(2, 1)   ! yx
+           grid_function%values(5:5,ipoint:ipoint) = v3(2, 2)   ! yy
+           grid_function%values(6:6,ipoint:ipoint) = v3(2, 3)   ! yz
+           grid_function%values(7:7,ipoint:ipoint) = v3(3, 1)   ! zx
+           grid_function%values(8:8,ipoint:ipoint) = v3(3, 2)   ! zy
+           grid_function%values(9:9,ipoint:ipoint) = v3(3, 3)   ! zz
+       end select
+    end do
+
+   end subroutine
+
+
    subroutine get_quantity_in_point(nr_dmat, &
                                     D,       &
                                     D_0,     &
@@ -59,6 +154,8 @@ contains
                                     buffer,  &
                                     result_max_dim, &
                                     result,  &
+                                    grid_function, &
+                                    ipoint, &
                                     jb_input)
 
 !     --------------------------------------------------------------------------
@@ -73,6 +170,8 @@ contains
       integer, intent(in)  :: result_max_dim
       real(8), intent(out):: result(0:result_max_dim)
       real(8), intent(in), optional    :: jb_input(3)
+  type(grid_function_t), intent(inout), optional:: grid_function !thiswill not be optional
+  integer, intent(in), optional  :: ipoint !thiswill not be optional
 !     --------------------------------------------------------------------------
       integer              :: imat, i, j, ij, icomp
       real(8)              :: v(3), v2(3)

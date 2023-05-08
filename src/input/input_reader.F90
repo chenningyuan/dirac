@@ -16,6 +16,8 @@ module input_reader
    public kw_read
    public set_file_unit
    public get_file_unit
+   public get_key_value
+   public split_string
 
    integer, parameter, public :: kw_length = 7
 
@@ -148,6 +150,50 @@ contains
       end do
 
    end function
+
+   subroutine split_string(str, nr_words, word_array, separator)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)   :: nr_words
+      character(len=*), intent(in) :: str
+      character(len=*), intent(inout):: word_array(nr_words)
+      character(len=1), optional, intent(in) :: separator
+!     --------------------------------------------------------------------------
+      integer                  :: i,j
+      integer,allocatable::pos(:)
+      integer                  :: len_str
+      character(len=1):: sep
+!     --------------------------------------------------------------------------
+
+      len_str = len_trim(str)
+      if (len_str <= 0) return
+
+      if (present(separator)) then
+        sep=separator
+      else
+        sep=' '
+      end if
+
+      allocate(pos(nr_words-1))
+      pos = 0
+
+      j = 0
+      do i = 1, len_str
+         if (str(i:i) == sep) then
+            j = j + 1
+            pos(j) = i
+         end if
+      end do
+
+      word_array(1)(1:) = str(1:pos(1)-1)
+      do i = 1, nr_words-2
+        word_array(i+1)(1:) = str(pos(i)+1:pos(i+1)-1)
+      end do
+      word_array(nr_words)(1:) = str(pos(nr_words-1)+1:)
+
+      deallocate(pos)
+
+   end subroutine
 
    function word_contains(word, substring)
 
@@ -407,5 +453,26 @@ contains
       end if
 
    end function
+
+   subroutine get_key_value(s, sep, key, val)
+
+!     --------------------------------------------------------------------------
+      character(*), intent(in):: s
+      character(*), intent(in):: sep
+      character(*), intent(out):: key, val
+!     --------------------------------------------------------------------------
+      integer                  :: i
+!     --------------------------------------------------------------------------
+
+      if (len(s) <= 0) return
+
+      do i = 1, len(s)
+         if (s(i:i) == sep) then
+            key = s(1:i-1)
+            val = s(i+1:len(s))
+         end if
+      end do
+
+   end subroutine
 
 end module

@@ -1,22 +1,18 @@
-!dirac_copyright_start
-!      Copyright (c) by the authors of DIRAC.
-!
-!      This program is free software; you can redistribute it and/or
-!      modify it under the terms of the GNU Lesser General Public
-!      License version 2.1 as published by the Free Software Foundation.
-!
-!      This program is distributed in the hope that it will be useful, 
-!      but WITHOUT ANY WARRANTY; without even the implied warranty of
-!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-!      Lesser General Public License for more details.
-!
-!      If a copy of the GNU LGPL v2.1 was not distributed with this
-!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
-!dirac_copyright_end
-
 module visual_cfg
 
-   implicit none
+! change: visual_datatypes->rs_datatypes and visual_cfg -> rs_cfg
+  use visual_datatypes, only : rs_input_t, grid_t, grid_function_t
+  implicit none
+
+  type(rs_input_t), public:: rs_input
+
+
+  !public setup_grid
+  !public setup_grid_function
+  public grid_input_cfg
+  public grid_function_input_cfg
+  public verify_grid_input_cfg
+  public verify_grid_function_input_cfg
 
    save
 
@@ -42,6 +38,7 @@ module visual_cfg
    logical,      public            :: visual_cfg_london_skip_cube = .false.
    logical,      public            :: visual_cfg_london_skip_vtk  = .false.
 
+   logical,      public            :: visual_cfg_global_refactor = .false.
 
 !
 !  options for exporting real-space data to files
@@ -217,5 +214,359 @@ module visual_cfg
    logical,      public:: visual_cfg_tensor          = .false.
 
    private
+
+contains
+
+  elemental subroutine str2int(str,int,stat)
+    implicit none
+    ! Arguments
+    character(len=*),intent(in) :: str
+    integer,intent(out)         :: int
+    integer,intent(out)         :: stat
+
+    read(str,*,iostat=stat)  int
+  end subroutine str2int
+
+  elemental subroutine str2flt(str,flt,stat)
+    implicit none
+    ! Arguments
+    character(len=*),intent(in) :: str
+    real(8),intent(out)         :: flt
+    integer,intent(out)         :: stat
+
+    read(str,*,iostat=stat)  flt
+  end subroutine str2flt
+
+
+   function word_count(s,sep)
+
+!     --------------------------------------------------------------------------
+      character(*), intent(in) :: s
+      character(len=1), intent(in) :: sep
+      integer                  :: word_count
+!     --------------------------------------------------------------------------
+      integer                  :: i
+      logical                  :: is_blank
+!     --------------------------------------------------------------------------
+
+      word_count = 0
+
+      if (len(s) <= 0) return
+
+      is_blank = .true.
+
+      do i = 1, len(s)
+         if (s(i:i) == sep) then
+            is_blank = .true.
+         else if (is_blank) then
+            word_count = word_count + 1
+            is_blank = .false.
+         end if
+      end do
+
+   end function
+
+   subroutine split_string(str, nr_words, word_array, separator)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)   :: nr_words
+      character(len=*), intent(in) :: str
+      character(len=*), intent(inout):: word_array(nr_words)
+      character(len=1), optional, intent(in) :: separator
+!     --------------------------------------------------------------------------
+      integer                  :: i,j
+      integer,allocatable::pos(:)
+      integer                  :: len_str
+      character(len=1):: sep
+!     --------------------------------------------------------------------------
+
+      len_str = len_trim(str)
+      if (len_str <= 0) return
+
+      if (present(separator)) then
+        sep=separator
+      else
+        sep=' '
+      end if
+
+      allocate(pos(nr_words-1))
+      pos = 0
+
+      j = 0
+      do i = 1, len_str
+         if (str(i:i) == sep) then
+            j = j + 1
+            pos(j) = i
+         end if
+      end do
+
+      word_array(1)(1:) = str(1:pos(1)-1)
+      do i = 1, nr_words-2
+        word_array(i+1)(1:) = str(pos(i)+1:pos(i+1)-1)
+      end do
+      word_array(nr_words)(1:) = str(pos(nr_words-1)+1:)
+
+      deallocate(pos)
+
+   end subroutine
+
+  subroutine grid_input_cfg(key, val, grid)
+#include "codata.h"
+    character(len=*), intent(in):: key, val
+    character(len=len_trim(val))::temp
+    type(grid_t),intent(inout)::grid
+    integer::stat, np
+    real(8)::s
+    integer::nr_words, i
+    character(len=10),allocatable::chvalues(:)
+
+    select case (key)
+      case ('id')
+        call str2int(val, grid%id, stat)
+      case ('ndim')
+        call str2int(val, grid%ndim, stat)
+      case ('npoints')
+        temp = trim(val)
+        call trim_ch(temp, trim(val), (/'[',']'/))
+        if (index(val, ',') > 0) then
+          nr_words = word_count(temp, ',')
+          allocate(chvalues(nr_words))
+          call split_string(temp, nr_words, chvalues, separator=',')
+          do i = 1, nr_words
+            call str2int(trim(chvalues(i)), np, stat)
+            grid%nr_points(i) = np
+            grid%nr_points_known(i) = .true.
+          end do
+          deallocate(chvalues)
+        else
+          call str2int(trim(temp), grid%nr_points(1), stat)
+          grid%nr_points_known(1) = .true.
+        end if
+      case ('spacing')
+        temp = trim(val)
+        call trim_ch(temp, trim(val), (/'[',']'/))
+        if (index(val, ',') > 0) then
+          nr_words = word_count(temp, ',')
+          allocate(chvalues(nr_words))
+          call split_string(temp, nr_words, chvalues, separator=',')
+          do i = 1, nr_words
+            call str2flt(trim(chvalues(i)), s, stat)
+            ! scale to a.u.
+            grid%spacing(i) = s/xtang
+            grid%spacing_known(i) = .true.
+          end do
+          deallocate(chvalues)
+        else
+          call str2flt(trim(temp), grid%spacing(1), stat)
+          grid%spacing_known(1) = .true.
+          ! scale to a.u.
+          grid%spacing(1) = grid%spacing(1)/xtang
+        end if
+      case ('input')
+        if (val == 'create') then
+          grid%input = 0
+        else if (val == 'import') then
+          grid%input = 1
+        else
+          write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"'
+          stop
+        end if
+      case ('typ')
+        call str2int(val, grid%typ, stat)
+      case ('weights')
+        if (val == 'no') then
+          grid%weights = 0
+        else if (val == 'yes') then
+          grid%weights = 1
+        else
+          write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
+          stop
+        end if
+      case ('margin')
+        call str2flt(val, grid%margin, stat)
+        ! scale to a.u.
+        grid%margin = grid%margin/xtang
+      case ('export')
+        if (val == 'no') then
+          grid%export = .false.
+        else if (val == 'yes') then
+          grid%export = .true.
+        else
+          write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
+          stop
+        end if
+      case ('file_inp')
+        grid%file_inp = val
+      case ('file_out')
+        grid%file_out = val
+      case default
+        print *, 'unknown key'
+        stop
+    end select
+    !call verify_grid_input_cfg(grid)
+  end subroutine grid_input_cfg
+
+  subroutine verify_grid_input_cfg(grid)
+    type(grid_t),intent(inout)::grid
+    integer::i
+    logical:: err
+
+    if (grid%input == 1) then
+      if (grid%ndim /= 0) then
+        write(*, *) 'WARNING: grid information will be read from file; "ndim" option from DIRAC input is ignored'
+        grid%ndim = 0
+      end if
+      do i = 1, grid%ndim
+        if (grid%nr_points(i) /=0) then
+          write(*, *) 'WARNING: grid information will be read from file; "npoints" option from DIRAC input is ignored'
+          grid%nr_points(i) =0
+        end if
+        if (grid%spacing(i) /= 0) then
+          write(*, *) 'WARNING: grid information will be read from file; "spacing" option from DIRAC input is ignored'
+          grid%spacing(i) =0
+        end if
+      end do
+    else if (grid%input == 0) then
+      if (grid%ndim == 0) then
+        write(*, *) 'ERROR: grid "ndim" information is missing'
+        stop
+      end if
+      do i = 1, grid%ndim
+        if (grid%nr_points(i) ==0 .and. grid%spacing(i) ==0) then
+          write(*, *) 'ERROR: grid "npoints" or "spacing" information is missing'
+          stop
+        end if
+      end do
+    end if
+    do i = 1, grid%ndim
+      if (grid%nr_points(i) /=0 .and. grid%spacing(i) /=0) then
+        write(*, *) 'ERROR: exclusive options: "npoints" and "spacing"'
+        stop
+      end if
+    end do
+
+  end subroutine verify_grid_input_cfg
+
+
+  subroutine verify_grid_function_input_cfg(grid_function)
+    type(grid_function_t),intent(in)::grid_function
+
+    if (grid_function%input == 1) then
+      if (len_trim(grid_function%file_inp) == 0) then
+        write(*, *) 'Missing file for grid_function import. Stop.'
+        stop
+      end if
+    !else if (grid_function%input == 0) then
+    !  call verify_grid_function_predefined(grid_function)
+    end if
+
+  end subroutine verify_grid_function_input_cfg
+
+
+  subroutine grid_function_input_cfg(key, val, gf, idx)
+    character(len=*), intent(in):: key, val
+    integer, intent(in):: idx
+    character(len=len(key))::temp
+    type(grid_function_t),intent(inout)::gf
+    integer::stat
+
+    gf%id = idx
+    select case (key)
+      case ('name')
+        gf%name = val
+        call verify_grid_function_predefined(gf)
+      case ('id_grid')
+        call str2int(val, gf%id_assigned_grid, stat)
+      case ('input')
+        if (val == 'calculate') then
+          gf%input = 0
+        else if (val == 'import') then
+          gf%input = 1
+        else
+          write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"'
+          stop
+        end if
+      case ('purpose')
+        if (val == 'visualization') then
+          gf%purpose = 0
+        else if (val == 'integration') then
+          gf%purpose = 1
+        end if
+      case ('export')
+        if (val == 'no') then
+          gf%export = .false.
+        else if (val == 'yes') then
+          gf%export = .true.
+        else
+          write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
+          stop
+        end if
+      case ('file_inp')
+        gf%file_inp = val
+      case ('file_out')
+        gf%file_out = val
+      case default
+        print *, 'unknown key'
+        stop
+    end select
+
+  end subroutine grid_function_input_cfg
+
+  subroutine verify_grid_function_predefined(grid_function)
+    class(grid_function_t), intent(inout):: grid_function
+
+    select case (grid_function%name)
+      case ('density', 'density_laplacian', &
+            'esp', 'espe', 'espn',          &
+            'elf')
+        grid_function%tensor_order = 0
+        grid_function%wf_order = 0
+      case ('density_gradient')
+        grid_function%tensor_order = 1
+        grid_function%wf_order = 0
+      case ('density_hessian')
+        grid_function%tensor_order = 2
+        grid_function%wf_order = 0
+      case default
+        write(*, *) 'unknown grid function name. stop'
+        stop
+    end select
+  end subroutine verify_grid_function_predefined
+
+
+
+! strings
+
+  subroutine trim_ch(s_out, s_inp, ch)
+
+!     --------------------------------------------------------------------------
+      character(*), intent(out) :: s_out
+      character(*), intent(in) :: s_inp
+      character(1), intent(in) :: ch(:)
+!     --------------------------------------------------------------------------
+      integer                  :: i,j,k
+!     --------------------------------------------------------------------------
+
+      if (len(s_inp) <= 0) return
+
+      k = 0
+      do i = 1, len(s_inp)
+        if (s_inp(i:i) .ne. ch(1)) then
+          k = k + 1
+          s_out(k:k) = s_inp(i:i)
+        end if
+      end do
+      s_out = s_out(1:k)
+
+
+      if (size(ch) > 1) then
+        call trim_ch(s_out, s_out(1:k), ch(2:))
+      end if
+
+      s_out = trim(s_out)
+
+   end subroutine
+
+
 
 end module

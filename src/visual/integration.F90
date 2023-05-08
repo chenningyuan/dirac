@@ -25,6 +25,7 @@ module visual_integrate
    use file_units
    use visual_london
 
+  use visual_datatypes
   public visual_integration
 
   save
@@ -244,10 +245,12 @@ contains
                                     AO, &
                                     PX, PY, PZ, &
                                     buffer, &
+                                    !grid_function, &
                                     QUANTITY_INTEGRAL_MAX_DIM, &
                                     QUANTITY_INTEGRAL, &
                                     WEIGHT, &
-                                    NR_POINTS)
+                                    NR_POINTS, &
+                                    grid_function)
 
 #include "implicit.h"
 #include "priunit.h"
@@ -268,9 +271,24 @@ contains
      &          WEIGHT(*), &
      &          QUANTITY(0:QUANTITY_INTEGRAL_MAX_DIM)
 
+  type(grid_function_t), intent(inout), optional:: grid_function
 
       DO IPOINT = 1, NR_POINTS
 
+!temp fixme
+           if (present(grid_function)) then
+           call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                      D,                  &
+                                      D_0,                &
+                                      px(ipoint),         &
+                                      py(ipoint),         &
+                                      pz(ipoint),         &
+                                      ao,                 &
+                                      buffer,             &
+                                      QUANTITY_INTEGRAL_MAX_DIM, &
+                                      quantity, &
+                                    grid_function=grid_function, ipoint=ipoint)
+           else
            call get_quantity_in_point(visual_cfg_nr_dmat, &
                                       D,                  &
                                       D_0,                &
@@ -281,6 +299,7 @@ contains
                                       buffer,             &
                                       QUANTITY_INTEGRAL_MAX_DIM, &
                                       quantity)
+           end if
 
         CALL DAXPY(QUANTITY_INTEGRAL_MAX_DIM+1, WEIGHT(IPOINT), QUANTITY, 1, &
      &                              QUANTITY_INTEGRAL, 1)

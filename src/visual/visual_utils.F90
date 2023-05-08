@@ -6,7 +6,6 @@ module visual_utils
     public get_new_file_unit
     public visual_quit
 
-
     contains
 
 !  ----------------------------------------------------------------------------
@@ -80,5 +79,6 @@ module visual_utils
       stop
 
    end subroutine
+
 
 end module
