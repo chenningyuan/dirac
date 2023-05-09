@@ -8442,16 +8442,18 @@ C     when there is no subblock ... allows single code
         NQ(1) = 0
         NQ(2) = 0
         IF(IPRINT.GE.5) THEN
-           WRITE(6,*) '* Energies and symmetry labels of coefficients:'
-           DO IVEC = 1,NVECS(IFRP)
+          IF(NVECS(IFRP).GT.0) THEN
+            WRITE(6,*) '* Energies and symmetry labels of coefficients:'
+            DO IVEC = 1,NVECS(IFRP)
               WRITE(6,*) IVEC,ESEL(IVOFF+IVEC),ISEL(IVOFF+IVEC)
-           ENDDO
-           WRITE(6,*)
-     &       '  Input selected coefficients: '
-           CALL PRQMAT(CSEL(ICOFF+1),
+            ENDDO
+            WRITE(6,*)
+     &        '  Input selected coefficients: '
+            CALL PRQMAT(CSEL(ICOFF+1),
      &              NFBAS(IFRP,0),NVECS(IFRP),
      &              NFBAS(IFRP,0),NVECS(IFRP),
      &              NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
         ENDIF
         allocate(NVECS_SUB(N_SUB_BL(IFRP)))
 C.......First find how the selected vectors are distributed on subblocks
