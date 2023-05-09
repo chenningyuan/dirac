@@ -155,7 +155,11 @@ contains
             config%convergence_threshold = 1.0d-8 
         end if
 
-        config%antisymme_threshold = config%convergence_threshold * 0.1
+        if (config%convergence_threshold.lt.1.0d-8) then
+            config%antisymme_threshold = config%convergence_threshold * 0.1
+        else
+            config%antisymme_threshold = 1.0d-9
+        end if 
 
 
         if (present(energy_shift)) then
