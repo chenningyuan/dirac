@@ -4337,7 +4337,7 @@ C/* Deck iicopy */
       SUBROUTINE IICOPY(NDIM,IA,IA1,IASTEP,IB,IBSTEP,IB1)
 C***********************************************************************
 C
-C     WRapper routine allowing use of ICOPY for WORK
+C     Wrapper routine allowing use of ICOPY for WORK
 C
 C***********************************************************************
       implicit none

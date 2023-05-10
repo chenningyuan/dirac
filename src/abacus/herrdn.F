@@ -1120,7 +1120,6 @@ C
                  WRITE(LUPRI,*) 'Line',NMLINE,': ',MLINE(NMLINE)
                  CALL QUIT('Error in reading BSET,BSKEYWORD')
                ENDIF
-               
                IF ( BSET .NE. 'LARGE') THEN
                   WRITE(LUPRI,'(A,I5,A,/,A)')
      $                 'Expected keyword LARGE, read line no. ',
@@ -1138,8 +1137,10 @@ C
      &              BSKEYWORD(1:7) .EQ. 'NOBASIS') THEN
                   IBSFLAG = 1
                   IQM(I,1) = 0
-                  IZATOM(I) = 0
-                  GNUEXP(I) = QEXP ! point nucleus unless finite nucleus was specified by user
+                  DO K = 1,NONT(I)
+                    IZATOM(K+INUC) = 0
+                    GNUEXP(K+INUC) = QEXP ! point nucleus unless finite nucleus was specified by user
+                  END DO
                ELSE IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
                   IBSFLAG = 1
                   READ (MLINE(NMLINE)(13:),*,IOSTAT=IOS)
@@ -1237,9 +1238,11 @@ C                 Assume it is 'LARGE   2    1....'
                     CALL QUIT('Error in basis set reading')
                   ENDIF
                   IF (IQM(I,1) .EQ. 0) THEN ! point charge
-                     IZATOM(I) = 0
-                     GNUEXP(I) = QEXP ! point nucleus unless finite nucleus was specified by user
-                  END IF
+                    DO K = 1,NONT(I)
+                      IZATOM(K+INUC) = 0
+                      GNUEXP(K+INUC) = QEXP ! point nucleus unless finite nucleus was specified by user
+                    END DO
+                  ENDIF
                END IF
 
 C

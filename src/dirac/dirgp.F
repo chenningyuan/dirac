@@ -4369,11 +4369,13 @@ C
       IOFF = 1
       DO IFRP = 1,NFSYM
          DO IFRAG = 1,NFRAG
-            CALL IICOPY(NSTR(IFRP,0,IFRAG),WORK(KVEC(IFRP,IFRAG)),1,1,
-     &           INFOSEL(1,IOFF),2,1)
-            CALL ICOPY(NSTR(IFRP,0,IFRAG),IFRAG,0,
-     &           INFOSEL(2,IOFF),2)
-            IOFF = IOFF + NSTR(IFRP,0,IFRAG)
+           IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
+             CALL IICOPY(NSTR(IFRP,0,IFRAG),WORK(KVEC(IFRP,IFRAG)),1,1,
+     &             INFOSEL(1,IOFF),2,1)
+             CALL ICOPY(NSTR(IFRP,0,IFRAG),IFRAG,0,
+     &             INFOSEL(2,IOFF),2)
+             IOFF = IOFF + NSTR(IFRP,0,IFRAG)
+           ENDIF
          ENDDO
       ENDDO
       RETURN

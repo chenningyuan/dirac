@@ -3,7 +3,7 @@
 
 star(MULPOP)
 
-Mulliken population analysis is performed in AO basis. The analysis is
+Mulliken population analysis of molecular orbitals is performed in AO basis. The analysis is
 based on the concept of *labels*. Each basis function is labeled by its
 functional type and center (and boson irrep when in SO basis, the
 default). The labels are given in the output. A set of primitive labels
@@ -12,9 +12,9 @@ may be collected to group labels as specified by the user.
 
 keyword(VECPOP)
 
-For each fermion irrep, give an :ref:`orbital_strings` of orbitals to analyze.
+For each fermion irrep, give an :ref:`orbital_strings` of molecular orbitals to analyze.
 
-*Default:* Analyze the occupied electronic solutions.
+*Default:* Analyze the occupied electronic molecular orbitals.
 
 
 keyword(NETPOP)
@@ -99,4 +99,17 @@ Print level.
 
     .PRINT
      0
+
+
+keyword(PR TOL)
+
+Only labels with contribution greater than this tolerance value are printed.
+
+*Default:*
+
+::
+
+    .PR TOL
+     0.01
+
 
