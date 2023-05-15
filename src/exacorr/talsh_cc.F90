@@ -47,7 +47,7 @@ module talsh_cc
          use exacorr_global
          use talsh_gradient
          use talsh_eom,      only       : talsh_eom_results_tens_t, talsh_eom_eigval_driver
-         use talsh_cc_ci,    only       : talsh_CC_CI_driver
+         use talsh_ccrsp,    only       : talsh_CCRSP_driver
          use talsh_cholesky_integrals
          use talsh_triples
 
@@ -500,10 +500,10 @@ module talsh_cc
 ! we just need different results instances
            if (eom_qr) then
               rr = 2
-              call talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+              call talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
            else if (eom_lr) then
               rr = 1
-              call talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+              call talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 ! TODO: if we want properties etc, now we call other drivers
            else
               call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t)

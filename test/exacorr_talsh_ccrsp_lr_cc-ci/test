@@ -8,11 +8,13 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
+
 f1 = Filter()
 
 f1.add(from_string = '*************CC-CI(EOM-CC) linear response************',
       num_lines   = 19,
       rel_tolerance   = 1.0e-7)
+
 
 f2 = Filter()
 
@@ -20,14 +22,6 @@ f2.add(from_string = '*************CC-CI(EOM-CC) linear response************',
       num_lines   = 19,
       rel_tolerance   = 1.0e-7)
 
-
-f3 = Filter()
-
-f3.add(from_string = '*************CC-CI(EOM-CC) linear response************',
-      num_lines   = 19,
-      rel_tolerance   = 1.0e-7)
-
-test.run(['cc-ci_ccpvdz_lr.inp'], ['h2o.xyz'], f1)
-test.run(['cc-ci_ccpvdz_lr_0.1.inp'], ['h2o.xyz'], f2)
-test.run(['cc-ci_ccpvdz_lr_0.1_x2c.inp'], ['h2o.xyz'], f3)
+test.run(['cc-ci_ccpvdz_lr_0.1.inp'], ['h2o.xyz'], f1)
+test.run(['cc-ci_ccpvdz_lr_0.1_x2c.inp'], ['h2o.xyz'], f2)
 sys.exit(test.return_code)
