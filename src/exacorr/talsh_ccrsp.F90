@@ -1,4 +1,4 @@
-module talsh_cc_ci
+module talsh_ccrsp
 !This module contains the routines needed to calculate CC-CI(EOM-CC) response property
 
 
@@ -24,14 +24,14 @@ module talsh_cc_ci
 
     private
 
-    public talsh_CC_CI_driver
+    public talsh_CCRSP_driver
 
     contains
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
-!This subroutine drives the CC-CI response property calculation 
+subroutine talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+!This subroutine drives the response property calculation 
 !it now includes linear and quadratic response
 !Written by Xiang Yuan Janunary 2022, Lille, France
 
@@ -42,32 +42,61 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     type(talsh_tens_t), intent(inout)           :: l1_tensor
     integer                                     :: rr ! rank of response 
     
+!   Wave-function tensor needed to construct the response function
+    logical          :: CC_CC
+    
+
+    if (exa_input%wf_type == 1) then 
+        CC_CC = .true.
+        call print_date('Activate CC-CC(LR-CC) response')
+    else 
+        CC_CC = .false.
+        call print_date('Activate CC-CI(EOM-CC) response')
+    end if 
+
+    if (rr == 1) then
+        call talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+    else
+        call talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+    end if
+
+
+end subroutine talsh_CCRSP_driver
+
+
+!------------------------------------------------------------------------------------------------------------------
+
+subroutine talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+
+    type(exacc_input), intent(in) :: exa_input
+    type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+    type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+    type(talsh_tens_t), intent(inout)           :: l2_tensor
+    type(talsh_tens_t), intent(inout)           :: l1_tensor
+    logical                                     :: CC_CC
+    
 
 !   Wave-function tensor needed to construct the response function
 
-    complex(kind=8)               :: omega1, omega2, omega3
+    complex(kind=8)               :: omega1, omega2
     complex(kind=8),allocatable   :: omega(:), omega_min(:)
-    complex(kind=8)               :: eom_qr, eom_lr
-    complex(kind=8),allocatable   :: eom_qrs(:,:,:), eom_lrs(:,:,:)
+    complex(kind=8)               :: eom_lr
+    complex(kind=8),allocatable   :: eom_lrs(:,:,:)
     type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
 
-    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
-
-    type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
-    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:), Interm_t_tensors_C(:)
-    integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
-    integer                       :: N_oper_lr, N_oper_qr
+    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:)
+    integer                       :: N_prop, N_prop_A, N_prop_B
+    integer                       :: N_oper_lr
     integer                       :: N_omega
     integer                       :: i, j, k, n, m
-    integer, allocatable          :: Prop_A(:), Prop_B(:), Prop_C(:)
+    integer, allocatable          :: Prop_A(:), Prop_B(:)
 
-
-    integer            :: vvoo_dims(4)
+! 
     type(C_PTR) :: body_p
     complex(8), pointer    ::prop_tens(:,:,:,:)
     integer            :: tens_rank
     integer :: ierr
-    logical          :: CC_CC
+    logical          :: exchange
     
 
     N_prop = 3
@@ -82,80 +111,92 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     end if 
 
 
+    call print_date('Do linear response')
 
-    if (rr==1) then 
-        call print_date('Do linear response')
+    Prop_A = exa_input%Prop_A
+    Prop_B = exa_input%Prop_B
 
-        Prop_A = exa_input%Prop_A
-        Prop_B = exa_input%Prop_B
+    N_oper_lr = 2
+    N_omega = exa_input%N_omega_lr
+    N_prop_A = size(Prop_A)
+    N_prop_B = size(Prop_B)
 
-        N_oper_lr = 2
-        N_omega = exa_input%N_omega_lr
-        N_prop_A = size(Prop_A)
-        N_prop_B = size(Prop_B)
-
-        allocate(omega(N_oper_lr))
-        allocate(omega_min(N_oper_lr))
-        allocate(Interm_t_tensors_A(N_prop_A))
-        allocate(Interm_t_tensors_B(N_prop_B))
-        allocate(Tprop_tensors(N_oper_lr))
-        allocate(Tprop_tensors_min_w(N_oper_lr))
-        allocate(eom_lrs(N_omega,N_prop_A,N_prop_B))
+    allocate(omega(N_oper_lr))
+    allocate(omega_min(N_oper_lr))
+    allocate(Interm_t_tensors_A(N_prop_A))
+    allocate(Interm_t_tensors_B(N_prop_B))
+    allocate(Tprop_tensors(N_oper_lr))
+    allocate(Tprop_tensors_min_w(N_oper_lr))
+    allocate(eom_lrs(N_omega,N_prop_A,N_prop_B))
 
 
-        do  i=1, N_prop_A
-            m = Prop_A(i)
-            call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC)
-        end do
+    do  i=1, N_prop_A
+        m = Prop_A(i)
+        exchange = .False.
+        call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
+                                      int_t, l1_tensor, l2_tensor, CC_CC, exchange)
+    end do
     
     
-        do  i=1, N_prop_B
-            m = Prop_B(i)
-            call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC)
-        end do
+    do  i=1, N_prop_B
+        m = Prop_B(i)
+        exchange = .True.
+        call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
+                                      int_t, l1_tensor, l2_tensor, CC_CC, exchange)
+    end do
 
-        call print_date('Constructed intermediates needed in CC Linear Response')
-
-
-        do n=1, N_omega
-            omega1 =  dcmplx(exa_input%w_lr_re(n), exa_input%w_lr_im(n))
-            omega2 =  -omega1
-            omega(1) = omega1
-            omega(2) = omega2
-            print *, "Read frequency1:", omega(1)
-            print *, "Read frequency2:", omega(2)
-
-            omega_min(1) = dcmplx(-real(omega(1)),aimag(omega(1)))
-            omega_min(2) = dcmplx(-real(omega(2)),aimag(omega(2)))
-            print *, "Read frequency min_1:", omega_min(1)
-            print *, "Read frequency min_2:", omega_min(2)
+    call print_date('Constructed intermediates needed in CC Linear Response')
 
 
-            do i=1, N_prop_A
-                call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
+    do n=1, N_omega
+        omega1 =  dcmplx(exa_input%w_lr_re(n), exa_input%w_lr_im(n))
+        omega2 =  -omega1
+        omega(1) = omega1
+        omega(2) = omega2
+        print *, "Read frequency1:", omega(1)
+        print *, "Read frequency2:", omega(2)
+
+        omega_min(1) = dcmplx(-real(omega(1)),aimag(omega(1)))
+        omega_min(2) = dcmplx(-real(omega(2)),aimag(omega(2)))
+        print *, "Read frequency min_1:", omega_min(1)
+        print *, "Read frequency min_2:", omega_min(2)
+
+
+        do i=1, N_prop_A
+            call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
+            if (omega(1).ne.0.0) then
                 call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                     Interm_t_tensors_A(i), omega_min(1), Tprop_tensors_min_w(1))
+            end if
 
-                do j=1, N_prop_B
-                    call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
+            do j=1, N_prop_B
+                call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
+                if (omega(2).ne.0.0) then
                     call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                             Interm_t_tensors_B(j), omega_min(2), Tprop_tensors_min_w(2))
+                end if
 
-                    call print_date('Solved All 1st response right equations')
+                call print_date('Solved All 1st response right equations')
 
+                if (omega(1).ne.0.0) then
                     call get_eom_lr(exa_input,interm_t, int_t, &
                         Interm_t_tensors_A,Interm_t_tensors_B,& 
                         Tprop_tensors, Tprop_tensors_min_w, i,j,& 
                         l1_tensor,l2_tensor,eom_lr,CC_CC)
+                else
+                    call print_date('Note: Calculating static linear response.')
+                    call get_eom_lr(exa_input,interm_t, int_t, &
+                        Interm_t_tensors_A,Interm_t_tensors_B,& 
+                        Tprop_tensors, Tprop_tensors, i,j,& 
+                        l1_tensor,l2_tensor,eom_lr,CC_CC)
+                end if
 
-                    eom_lrs(n,i,j) = eom_lr
-                    write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
-                    write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
+                eom_lrs(n,i,j) = eom_lr
+                write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
+                write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
 
-                    call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,2)
-                end do
+                call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,2)
+            end do
 
                 call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,1)
             end do
@@ -206,11 +247,61 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         end if 
 
 
+end subroutine talsh_ccsd_lr_driver
+
+!------------------------------------------------------------------------------------------------------------------
+
+subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+
+    type(exacc_input), intent(in) :: exa_input
+    type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+    type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+    type(talsh_tens_t), intent(inout)           :: l2_tensor
+    type(talsh_tens_t), intent(inout)           :: l1_tensor
+    logical                                     :: CC_CC
+    
+
+!   Wave-function tensor needed to construct the response function
+
+    complex(kind=8)               :: omega1, omega2, omega3
+    complex(kind=8),allocatable   :: omega(:), omega_min(:)
+    complex(kind=8)               :: eom_qr
+    complex(kind=8),allocatable   :: eom_qrs(:,:,:)
+    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
+
+    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
+
+    type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
+    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:), Interm_t_tensors_C(:)
+    integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
+    integer                       :: N_oper_lr, N_oper_qr
+    integer                       :: N_omega
+    integer                       :: i, j, k, n, m
+    integer, allocatable          :: Prop_A(:), Prop_B(:), Prop_C(:)
+
+    type(C_PTR) :: body_p
+    complex(8), pointer    ::prop_tens(:,:,:,:)
+    integer            :: tens_rank
+    integer :: ierr
+    logical          :: exchange
+    
+
+    N_prop = 3
+
+
+    if (exa_input%wf_type == 1) then 
+        CC_CC = .true.
+        call print_date('Activate CC-CC(LR-CC) response')
     else 
+        CC_CC = .false.
+        call print_date('Activate CC-CI(EOM-CC) response')
+    end if 
 
-        call print_date('Do quadratic response')
 
-        N_oper_qr = 3
+
+    call print_date('Do quadratic response')
+
+    N_oper_qr = 3
 
         Prop_A = exa_input%Prop_A
         Prop_B = exa_input%Prop_B
@@ -394,18 +485,17 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         DEALLOCATE(Bvec_tensors)
         DEALLOCATE(eom_qrs)
 
-    end if
 
-    call print_date('Leave CC response')    
+    call print_date('Leave CC response') 
 
-end subroutine talsh_CC_CI_driver
 
+end subroutine talsh_ccsd_qr_driver
 
 !------------------------------------------------------------------------------------------------------------------
 
 
 subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1, &
-                                   int_t, l1_tensor, l2_tensor, CC_CC)
+                                   int_t, l1_tensor, l2_tensor, CC_CC, exchange)
             use intermediates_eom_rsp
             use intermediates_eom_ccsd
 
@@ -428,6 +518,7 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
                 integer                   :: nmo2          ! the length of the mo basis
                 ! integer                   :: mo2_list(:)   ! and their indices
                 logical :: CC_CC
+                logical, optional          :: exchange
                 
         
                 oovv_dims(1:2) = exa_input%nocc
@@ -453,7 +544,7 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
 
 
                 ! get property integral in MO basis
-                call get_prop_integral(exa_input,orb_int_tensor1,i_prop)
+                call get_prop_integral(exa_input,orb_int_tensor1,i_prop,exchange)
 
                 ! get epsilon_prop  intermediates_eom_rsp.F90
 
@@ -510,24 +601,25 @@ end subroutine form_ccresp_intermediates
 
 !------------------------------------------------------------------------------------------------------------------
 
-subroutine get_prop_integral(exa_input,orb_int_tensor,i_prop)
+subroutine get_prop_integral(exa_input,orb_int_tensor,i_prop,exchange)
         type(exacc_input), intent(in)      :: exa_input
         type(talsh_orb_prop_integ_tens_t)  :: orb_int_tensor
         integer                            :: i_prop
         integer                            :: min_occ
         integer                            :: nocc, nvir
+        logical, optional          :: exchange
 
         min_occ = minval(exa_input%mo_occ)
         nocc = exa_input%nocc
         nvir = exa_input%nvir
 
-        call get_prop_integral_driver(orb_int_tensor%prop_oo,nocc,exa_input%mo_occ,nocc,exa_input%mo_occ,min_occ,i_prop)
-        call get_prop_integral_driver(orb_int_tensor%prop_vv,nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,min_occ,i_prop)
-        call get_prop_integral_driver(orb_int_tensor%prop_ov,nocc,exa_input%mo_occ,nvir,exa_input%mo_vir,min_occ,i_prop)
-        call get_prop_integral_driver(orb_int_tensor%prop_vo,nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,min_occ,i_prop)
+        call get_prop_integral_driver(orb_int_tensor%prop_oo,nocc,exa_input%mo_occ,nocc,exa_input%mo_occ,min_occ,i_prop,exchange)
+        call get_prop_integral_driver(orb_int_tensor%prop_vv,nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,min_occ,i_prop,exchange)
+        call get_prop_integral_driver(orb_int_tensor%prop_ov,nocc,exa_input%mo_occ,nvir,exa_input%mo_vir,min_occ,i_prop,exchange)
+        call get_prop_integral_driver(orb_int_tensor%prop_vo,nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,min_occ,i_prop,exchange)
 
-        ! call print_tensor(orb_int_tensor%prop_oo, 1.0D-18, 'orb_int_tensor%prop_oo')
-        ! call print_tensor(orb_int_tensor%prop_vv, 1.0D-18, 'orb_int_tensor%prop_vv')
+        ! call print_tensor(orb_int_tensor%prop_oo, 1.0D-6, 'orb_int_tensor%prop_oo')
+        ! call print_tensor(orb_int_tensor%prop_vv, 1.0D-6, 'orb_int_tensor%prop_vv')
         ! call print_tensor(orb_int_tensor%prop_ov, 1.0D-6, 'orb_int_tensor%prop_ov')
         ! call print_tensor(orb_int_tensor%prop_vo, 1.0D-6, 'orb_int_tensor%prop_vo')
 
@@ -535,7 +627,7 @@ end subroutine
 
 
 !------------------------------------------------------------------------------------------------------------------
-subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,min_occ,i_prop)
+subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,min_occ,i_prop,exchange)
     ! Read proporty integrals from  MDPROP file 
     type(talsh_tens_t)        :: orb_int_tensor
     
@@ -549,10 +641,12 @@ subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,m
     integer(C_INT) :: ierr
     integer                      :: nocc, nvir
     integer                      :: i_prop
+    logical, optional          :: exchange
+
     complex(kind=8), pointer, contiguous :: orbital_integral_tens(:,:)
 
     integer                      :: i,j
-    real(8)                      :: prop_real, prop_img
+    real(8)                      :: prop_real, prop_img, prop
 
     integer(INTD),dimension(2)   :: mo_dims
 
@@ -568,6 +662,18 @@ subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,m
 
     !call add_finitefield(orbital_integral_tens,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
     call get_ff_mat (orbital_integral_tens,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+    ! if (exchange) then
+    ! do j=1, size(orbital_integral_tens,2)
+    !     do i=1, size(orbital_integral_tens,1)
+    !         prop_real = real(orbital_integral_tens(i,j))
+    !         prop_img = aimag(orbital_integral_tens(i,j))
+    !         prop = prop_img
+    !         prop_img = prop_real
+    !         prop_real = prop
+    !         orbital_integral_tens(i,j) = dcmplx(prop_real,prop_img)
+    !     end do
+    ! end do
+    ! end if
     ! call print_date('Get property integrals') 
 
 end subroutine get_prop_integral_driver
