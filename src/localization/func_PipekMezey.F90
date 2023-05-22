@@ -470,7 +470,7 @@ contains
   ! Internal variables
   integer :: i, j, k, l, m, n, ij, kl, ier
   integer :: nucdep, nloc, ndimh, nloc12, lupri
-  real*8  :: pij1, pij2, pkml, p2kml, p2lmk, buf, buf1, buf2
+  real*8  :: pij1, pij2, pkml, p2kml, p2lmk, buf, buf1, buf2, thresh
 
   integer, allocatable :: ijn(:,:), iju(:), ijl(:)
 
@@ -667,13 +667,13 @@ contains
            hmat(ijn(j,k),kl) = hmat(ijn(j,k),kl) + buf*p1(j,k,m) + (p2kml-pd(j,m))*p3(j,l,m)
           enddo
 
-          do i=ijl(l),nloc  ! j==l
-           hmat(ijn(i,l),kl) = hmat(ijn(i,l),kl) + buf*p1(i,l,m) - (p2lmk-pd(i,m))*p3(i,k,m)
-          enddo
+!          do i=ijl(l),nloc  ! j==l
+!           hmat(ijn(i,l),kl) = hmat(ijn(i,l),kl) + buf*p1(i,l,m) - (p2lmk-pd(i,m))*p3(i,k,m)
+!          enddo
 
-          do j=1,iju(l)     ! i==l
-           hmat(ijn(j,l),kl) = hmat(ijn(j,l),kl) - buf*p1(j,l,m) + (p2lmk-pd(j,m))*p3(j,k,m)
-          enddo
+!          do j=1,iju(l)     ! i==l
+!           hmat(ijn(j,l),kl) = hmat(ijn(j,l),kl) - buf*p1(j,l,m) + (p2lmk-pd(j,m))*p3(j,k,m)
+!          enddo
 
           do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k),kl) = hmat(ijn(i,k),kl) - buf*p1(i,k,m) - (p2kml-pd(i,m))*p3(i,l,m)
@@ -692,15 +692,15 @@ contains
                                + buf1*p3(i,l,m) + buf2*p4(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
           enddo
 
-          do j=1,iju(l)     ! i==l
-           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
-                               + buf1*p3(j,l,m) + buf2*p4(j,l,m) + (p2lmk-pd(j,m))*p1(j,k,m)
-          enddo
+!          do j=1,iju(l)     ! i==l
+!           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
+!                               + buf1*p3(j,l,m) + buf2*p4(j,l,m) + (p2lmk-pd(j,m))*p1(j,k,m)
+!          enddo
 
-          do i=ijl(k),nloc  ! j==k
-           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
-                               - buf1*p3(i,k,m) - buf2*p4(i,k,m) + (p2kml-pd(i,m))*p1(i,l,m)
-          enddo
+!          do i=ijl(k),nloc  ! j==k
+!           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
+!                               - buf1*p3(i,k,m) - buf2*p4(i,k,m) + (p2kml-pd(i,m))*p1(i,l,m)
+!          enddo
 
         enddo
       enddo
@@ -744,17 +744,17 @@ contains
            hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) + buf*p3(j,k,m) - (p2kml-pd(j,m))*p4(j,l,m)
           enddo
 
-          do i=ijl(l),nloc  ! j==l
-           hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) - buf*p3(i,l,m) - (p2lmk-pd(i,m))*p4(i,k,m)
-          enddo
+!          do i=ijl(l),nloc  ! j==l
+!           hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) - buf*p3(i,l,m) - (p2lmk-pd(i,m))*p4(i,k,m)
+!          enddo
 
           do j=1,iju(l)     ! i==l
            hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) - buf*p3(j,l,m) - (p2lmk-pd(j,m))*p4(j,k,m)
           enddo
 
-          do i=ijl(k),nloc  ! j==k
-           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) + buf*p3(i,k,m) - (p2kml-pd(i,m))*p4(i,l,m)
-          enddo
+!          do i=ijl(k),nloc  ! j==k
+!           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) + buf*p3(i,k,m) - (p2kml-pd(i,m))*p4(i,l,m)
+!          enddo
 
           ! (A^R - B^R)_uu = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (32) }                 - Real{ (36) }
@@ -800,13 +800,13 @@ contains
            hmat(ijn(j,k),kl) = hmat(ijn(j,k),kl) - buf*p1(j,k,m) - (p2kml-pd(j,m))*p4(j,l,m)
           enddo
 
-          do i=ijl(l),nloc  ! j==l
-           hmat(ijn(i,l),kl) = hmat(ijn(i,l),kl) - buf*p1(i,l,m) + (p2lmk-pd(i,m))*p4(i,k,m)
-          enddo
+!          do i=ijl(l),nloc  ! j==l
+!           hmat(ijn(i,l),kl) = hmat(ijn(i,l),kl) - buf*p1(i,l,m) + (p2lmk-pd(i,m))*p4(i,k,m)
+!          enddo
 
-          do j=1,iju(l)     ! i==l
-           hmat(ijn(j,l),kl) = hmat(ijn(j,l),kl) + buf*p1(j,l,m) - (p2lmk-pd(j,m))*p4(j,k,m)
-          enddo
+!          do j=1,iju(l)     ! i==l
+!           hmat(ijn(j,l),kl) = hmat(ijn(j,l),kl) + buf*p1(j,l,m) - (p2lmk-pd(j,m))*p4(j,k,m)
+!          enddo
 
           do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k),kl) = hmat(ijn(i,k),kl) + buf*p1(i,k,m) + (p2kml-pd(i,m))*p4(i,l,m)
@@ -825,15 +825,15 @@ contains
                                + buf1*p4(i,l,m) - buf2*p3(i,l,m) + (p2lmk-pd(i,m))*p2(i,k,m)
           enddo
 
-          do j=1,iju(l)     ! i==l
-           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
-                               + buf1*p4(j,l,m) - buf2*p3(j,l,m) + (p2lmk-pd(j,m))*p2(j,k,m)
-          enddo
+!          do j=1,iju(l)     ! i==l
+!           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
+!                               + buf1*p4(j,l,m) - buf2*p3(j,l,m) + (p2lmk-pd(j,m))*p2(j,k,m)
+!          enddo
 
-          do i=ijl(k),nloc  ! j==k
-           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
-                               - buf1*p4(i,k,m) + buf2*p3(i,k,m) + (p2kml-pd(i,m))*p2(i,l,m)
-          enddo
+!          do i=ijl(k),nloc  ! j==k
+!           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
+!                               - buf1*p4(i,k,m) + buf2*p3(i,k,m) + (p2kml-pd(i,m))*p2(i,l,m)
+!          enddo
 
           ! (A^R - B^R)_ub = Real{ d^2 G / dK*_ij dK_kl } - Real{ d^2 G / dK*_ij dK*_kl }
           !                = Real{ (33) }                 - Real{ (37) }
@@ -842,13 +842,13 @@ contains
            hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) - buf*p2(j,k,m) + (p2kml-pd(j,m))*p3(j,l,m)
           enddo
 
-          do i=ijl(l),nloc  ! j==l
-           hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) + buf*p2(i,l,m) + (p2lmk-pd(i,m))*p3(i,k,m)
-          enddo
+!          do i=ijl(l),nloc  ! j==l
+!           hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) + buf*p2(i,l,m) + (p2lmk-pd(i,m))*p3(i,k,m)
+!          enddo
 
-          do j=1,iju(l)     ! i==l
-           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) + buf*p2(j,l,m) + (p2lmk-pd(j,m))*p3(j,k,m)
-          enddo
+!          do j=1,iju(l)     ! i==l
+!           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) + buf*p2(j,l,m) + (p2lmk-pd(j,m))*p3(j,k,m)
+!          enddo
 
           do i=ijl(k),nloc  ! j==k
            hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) - buf*p2(i,k,m) + (p2kml-pd(i,m))*p3(i,l,m)
@@ -867,15 +867,15 @@ contains
                                + buf1*p3(i,l,m) + buf2*p4(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
           enddo
 
-          do j=1,iju(l)     ! i==l
-           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
-                               + buf1*p3(j,l,m) + buf2*p4(j,l,m) + (p2lmk-pd(j,m))*p1(j,k,m)
-          enddo
+!          do j=1,iju(l)     ! i==l
+!           hmat(ijn(j,l)+n,kl) = hmat(ijn(j,l)+n,kl) &
+!                               + buf1*p3(j,l,m) + buf2*p4(j,l,m) + (p2lmk-pd(j,m))*p1(j,k,m)
+!          enddo
 
-          do i=ijl(k),nloc  ! j==k
-           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
-                               - buf1*p3(i,k,m) - buf2*p4(i,k,m) + (p2kml-pd(i,m))*p1(i,l,m)
-          enddo
+!          do i=ijl(k),nloc  ! j==k
+!           hmat(ijn(i,k)+n,kl) = hmat(ijn(i,k)+n,kl) &
+!                               - buf1*p3(i,k,m) - buf2*p4(i,k,m) + (p2kml-pd(i,m))*p1(i,l,m)
+!          enddo
 
         enddo
       enddo
@@ -950,6 +950,78 @@ contains
         write(lupri,'(i4,15f10.5)') i,(hmat(i,j),j=2*nloc12+1,3*nloc12)
       enddo
     endif
+
+!   Print matrix blocks
+      thresh=1.0d-14
+      write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_uu'
+      do i=1,nloc12
+        do j=1,nloc12
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+        enddo
+      enddo
+
+      write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_uu'
+      do i=1,nloc12
+        do j=2*nloc12+1,3*nloc12
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+        enddo
+      enddo
+
+      write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_uu'
+      do i=2*nloc12+1,3*nloc12
+        do j=2*nloc12+1,3*nloc12
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+        enddo
+      enddo
+
+      write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_ub'
+      do i=1,nloc12
+        do j=nloc12+1,2*nloc12
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+        enddo
+      enddo
+
+      write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_ub'
+      do i=1,nloc12
+        do j=3*nloc12+1,4*nloc12
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+        enddo
+      enddo
+
+      write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_ub'
+      do i=2*nloc12+1,3*nloc12
+        do j=3*nloc12+1,4*nloc12
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+        enddo
+      enddo
+
+      write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_bb'
+      do i=nloc12+1,2*nloc12
+        do j=nloc12+1,2*nloc12
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+        enddo
+      enddo
+
+      write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_bb'
+      do i=nloc12+1,2*nloc12
+        do j=3*nloc12+1,4*nloc12
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+        enddo
+      enddo
+
+      write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_bb'
+      do i=3*nloc12+1,4*nloc12
+        do j=3*nloc12+1,4*nloc12
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+        enddo
+      enddo
+
+      write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_bu'
+      do i=nloc12+1,2*nloc12
+        do j=2*nloc12+1,3*nloc12
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+        enddo
+      enddo
 
     ! deallocate arrays
     deallocate( ijn )
