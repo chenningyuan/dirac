@@ -885,7 +885,8 @@ contains
     !            Calculate diagonal dominance and deallocate arrays              !
     !----------------------------------------------------------------------------!
     do j=1,ndimh
-      do i=1,j
+!      do i=1,j
+      do i=1,ndimh
         hmat(i,j) = - hmat(i,j) / dfloat(nloc)  ! minus sign --> we are looking for the minimum
         if(i==j)then
           totdiag = totdiag + dabs( hmat(i,j) )
@@ -894,7 +895,7 @@ contains
         endif
       enddo
     enddo
-    totnond = d2*totnond
+!    totnond = d2*totnond
 
     !----------------------------------------------------------------------------!
     !                              PRINT section                                 !
@@ -1108,6 +1109,16 @@ contains
     write(lupri,'(/a,2f10.5)') 'Print gradient^I_b'
     write(lupri,'(8d12.4)') (gradient(i),i=1+3*nloc12,4*nloc12)
   endif
+
+! Print gradient with better precision
+    write(lupri,*) 'Print gradient_u'
+    do i = 1,nloc12
+      write(lupri,*) gradient(i),gradient(i+2*nloc12)
+    enddo
+    write(lupri,*) 'Print gradient_b'
+    do i = 1,nloc12
+      write(lupri,*) gradient(i+nloc12),gradient(i+3*nloc12)
+    enddo
 
   ! Norm of the gradient
   dnrmg = dnrm2(ndimg,gradient,1)
