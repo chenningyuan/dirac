@@ -24,7 +24,7 @@ implicit none
 
 public  :: init_func, quit_func, mv2point, get_func, get_gradient, get_hessian, get_date
 
-private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, wricmo_mod, reacmo_mod
+private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, wricmo_mod, reacmo_mod, insert_loccmo
 private :: ROTCMO_MOD, NUMLST_MOD, errall, get_overlap, selcfs_mod, qtrans90_mod, qdiag90_mod
 
 type :: PipekMezey_flags
@@ -1620,12 +1620,12 @@ contains
    ! real*8  :: scoef(:,:,:) ! scoef(nb,nloc,4)
 
    ! Internal variables
-   integer :: ifrp, nz, no, nb, nloc, ier
-   integer :: i, ii, iz, ioff,ioer
+   integer :: ifrp, nz, no, nb, ncmo, nloc, ier
+   integer :: ioer
    real*8  :: toterg
 
    integer, allocatable :: ibeig(:)
-   real*8,  allocatable :: cmo(:,:,:), eig(:)
+   real*8,  allocatable :: cmo(:), eig(:)
 
   !------------------------------------------------------------------------------!
   ifrp = 1
@@ -1633,24 +1633,18 @@ contains
   no   = var%norb(ifrp)
   nb   = size(scoef,1)    ! nfbas(ifrp,0)
   nloc = size(scoef,2)
+  ncmo = nb*no*4
 
   ! allocate arrays
-  allocate( cmo  (nb,no,4),   stat=ier ); call errall(ier,'wcmo2file','cmo  ')
+  allocate( cmo  (ncmo),   stat=ier ); call errall(ier,'wcmo2file','cmo  ')
   allocate( eig  (var%norbt), stat=ier ); call errall(ier,'wcmo2file','eig  ')
   allocate( ibeig(var%norbt), stat=ier ); call errall(ier,'wcmo2file','ibeig')
 
   ! read EIG, IBEIG and TOTERG
-  call REACMO_new(eig=eig,ibeig=ibeig,toterg=toterg)
+  call REACMO_new(cmo=cmo,eig=eig,ibeig=ibeig,toterg=toterg)
 
-  ! reorganize MO
-  ioff = var%npsh(ifrp)
-  if(var%h2comp .or. var%levyle) ioff = 0
-  do iz = 1,nz
-    do i = 1,nloc
-      ii = ioff + isel(i)
-      call dcopy(nb,scoef(1,i,iz),1,cmo(1,ii,iz),1)
-    enddo
-  enddo
+  ! insert localized MOs
+  call insert_loccmo(cmo,nb,no,nz,ifrp,nloc)
   if (pm%iprloc.ge.5)then
     write(var%lupri,'(/a)') '*wcmo2file : New CMO matrix'
     call prqmat(cmo,nb,no,nb,no,4,var%ipqtoq(1,0),var%lupri)
@@ -1666,6 +1660,32 @@ contains
   deallocate( ibeig )
 
   end subroutine wcmo2file
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
+
+  subroutine insert_loccmo(cmo,nb,no,nz,ifrp,nloc)
+  !==============================================================================!
+  !                                                                              !
+  !         Insert localized MOs in starting coefficients
+  !                                                                              !
+  !==============================================================================!
+  implicit none
+
+  integer :: ifrp,nb,no,nz,nloc
+  real*8  :: cmo(nb,no,4)
+  ! Internal variables
+  integer :: ioff,iz,i,ii
+
+  ioff = var%npsh(ifrp)
+  if(var%h2comp .or. var%levyle) ioff = 0
+  do iz = 1,nz
+    do i = 1,nloc
+      ii = ioff + isel(i)
+      call dcopy(nb,scoef(1,i,iz),1,cmo(1,ii,iz),1)
+    enddo
+  enddo
+
+  end subroutine insert_loccmo
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
