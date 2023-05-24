@@ -14,6 +14,10 @@ module visual_cfg
   public verify_grid_input_cfg
   public verify_grid_function_input_cfg
 
+#ifdef VAR_MPI
+  public sync_visual_cfg
+#endif
+
    save
 
    integer,      public, parameter:: max_batch_length = 500
@@ -563,5 +567,41 @@ contains
    end subroutine
 
 
+
+#ifdef VAR_MPI
+  subroutine sync_visual_cfg()
+    !
+    ! this subroutine syncs data stored in rs_input
+    ! if any new variable has been added to this dt, please also add it here
+    !
+    use visual_mpi
+    use interface_to_mpi
+    use integer_kind_mpilib
+
+    call interface_mpi_bcast(rs_input%print_level,1,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_input%nr_grids,1,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_input%nr_grid_functions,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(rs_input%outpri,1,irank_master,global_communicator)
+    if (.not.mpi_is_master()) then
+      allocate(rs_input%grids(rs_input%nr_grids))
+      allocate(rs_input%grid_functions(rs_input%nr_grid_functions))
+    end if
+
+    ! legacy
+    call interface_mpi_bcast_l0(visual_cfg_global_refactor,1,irank_master,global_communicator)
+
+    call logprint
+  end subroutine sync_visual_cfg
+
+  subroutine logprint
+    use visual_mpi
+    write(*, *) 'Data on node ', get_my_rank(), 'print_level =       ', rs_input%print_level
+    write(*, *) 'Data on node ', get_my_rank(), 'nr_grids            ', rs_input%nr_grids
+    write(*, *) 'Data on node ', get_my_rank(), 'nr_grid_functions   ', rs_input%nr_grid_functions
+    write(*, *) 'Data on node ', get_my_rank(), 'outpri              ', rs_input%outpri
+    !write(*, *) 'Data on node ', get_my_rank(), 'allocated_grids:    ', rs_input%allocated_grids()
+  end subroutine logprint
+
+#endif
 
 end module

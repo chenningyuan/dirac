@@ -250,7 +250,6 @@ C***********************************************************************
 C
       if (dirac_cfg_visual) call run_visual()
 
-
  666  CONTINUE
       CALL QEXIT('PAMDRV')
       RETURN
@@ -1143,6 +1142,8 @@ C***********************************************************************
 #endif
 !     use fde_evaluators_dirac, only : fde_launch_slave_process
       use fde_mod, only : fde_launch_slave_process
+      !use visual_dirac, only : visual_initialize_nodes
+      use visual
 
       implicit none
 
@@ -1450,6 +1451,13 @@ C        start BEDLEB MPI calculation
 C
          call bedleb_launch_slave_procs()
 
+      ELSE IF (ITASK .EQ. 22) THEN
+C
+C        start visual with MPI
+C
+         !call visual_initialize_nodes()
+         call run_visual(launch_only=.true.)
+
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -1480,6 +1488,7 @@ C
 C***********************************************************************
       use interface_to_mpi
       use fde_mod, only : fde_launch_slave_process
+      !use visual_dirac, only : visual_initialize_nodes
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"

@@ -48,6 +48,7 @@ module visual_datatypes
     procedure, public:: display => display_rs_setup
     procedure, pass, public:: allocated_grids
     procedure, pass, public:: allocated_grid_functions
+    procedure, pass, public:: erase   => erase_rs_input
   end type rs_input_t
 
   type:: rs_label_t
@@ -186,6 +187,10 @@ contains
     logical:: assigned_to_grid
     assigned_to_grid = (self%id_assigned_grid > 0)
   end function
+
+  subroutine erase_rs_input(self)
+    class(rs_input_t), intent(out):: self
+  end subroutine
 
   subroutine erase_mol(self)
     class(mol_t), intent(out):: self

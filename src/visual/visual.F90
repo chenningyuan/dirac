@@ -1,24 +1,24 @@
-!dirac_copyright_start
-!      Copyright (c) by the authors of DIRAC.
-!
-!      This program is free software; you can redistribute it and/or
-!      modify it under the terms of the GNU Lesser General Public
-!      License version 2.1 as published by the Free Software Foundation.
-!
-!      This program is distributed in the hope that it will be useful, 
-!      but WITHOUT ANY WARRANTY; without even the implied warranty of
-!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-!      Lesser General Public License for more details.
-!
-!      If a copy of the GNU LGPL v2.1 was not distributed with this
-!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
-!dirac_copyright_end
-
 module visual
 
+  use visual_cfg
+  use visual_utils
+  use visual_dirac
+  use visual_in_point
+  use visual_dirac
+  use visual_grids
+  use visual_grid_functions
+  use visual_datatypes
+  use visual_io
+  use visual_mpi
+#ifdef VAR_MPI
+  use interface_to_mpi
+  use integer_kind_mpilib
+#endif
+  use checkpoint
+
+!   ---- legacy ----    
   use memory_allocator
   use dircmo
-  use visual_cfg
   use dirac_ao_eval
   use interface_ao
   use matrix_defop_old
@@ -27,29 +27,17 @@ module visual
   use visual_london
   use xc_london_c1
   use visual_integrate
-  use visual_in_point
   use electrostatic_potential
   use num_grid_cfg
 
   use labeled_storage
-  !use visual_labeled_storage
-  !use visual_txt_storage, only: visual_plot_file
   use visual_txt_storage
-  use visual_io
-  use visual_datatypes
   use visual_dirac_input
-  use visual_dirac
-  use visual_grids
-  use visual_grid_functions
-  use checkpoint
+!   ---- end ----    
 
   implicit none
 
-  public run_visual
-
-
-  private
-
+!   ---- legacy ----    
 #include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -68,11 +56,24 @@ module visual
 
     integer, parameter:: file_unit = 137
 
+!   ---- end ----    
+
+
+  public run_visual
+
+
+  private
+
 contains
+  subroutine run_visual(launch_only)
+    logical, intent(in), optional :: launch_only
 
-    subroutine run_visual()
+    type(mol_t):: mol
+    type(ao_t):: aobasis
+    real(8) :: walltime
+    logical :: legacy_prep
 
-!   ----------------------------------------------------------------------------
+!   ---- legacy ----    
     type(matrix)         :: D_mo, D(max_para)
     type(matrix)         :: D_con_mo, D_con_mo_ai, D_con, D_0, D_test
     type(matrix)         :: C, Cig, Ciu, Csg, Csu
@@ -95,12 +96,30 @@ contains
     logical, external    :: fndlab
 
     integer              :: q_max_dim
+    integer              :: irank
 
     integer:: i, j, off_ij, off_iz, off_ij_s, off_ij_e, jrdmo
     type(matrix):: D_mo_dagger, TP, TM, T
     logical, allocatable:: matrix_is_unperturbed(:)
-!   ----------------------------------------------------------------------------
+!   ---- end ----    
 
+    walltime = visual_walltime()
+
+
+#ifdef VAR_MPI
+    call visual_initialize_nodes(mol, aobasis, launch_only)
+    print *, 'VISUAL parallel: VAR_MPI', is_parallel()
+    print *, 'size of communicator', mpi_get_nr_proc()
+    print *, 'rank of the process on master ', get_my_rank()
+    print *, 'will call visual_initialize_nodes from visual'
+#endif
+
+
+    !legacy_prep = .true.
+    !if (legacy_prep) then
+
+
+    if (mpi_is_master()) then !temp
     max_ao_g_order = 0
     do imat = 1, visual_cfg_nr_dmat
        if (                                                        &
@@ -476,24 +495,49 @@ contains
     end if
     time_start = second()
 
+    end if ! if (mpi_is_master()) then
+    !end if ! if (legacy_prep) then
 
     if (visual_cfg_global_refactor) then
 
     ! gosia 19/5: now we do calculations on one molecule at a time, 
     ! so here we read the molecular data from DIRAC's main checkpoint;
-    ! but in principle, this can be moved inside the loop over grids
+    ! but this can be moved inside the loop over grids
 
 !   todo - when developing a separate schema
 !    write (lupri,'(/A,I2)')," * Opening checkpoint file for real-space data (VISUAL) "
 !    call checkpoint_rs_open
 
+
+    !if (is_parallel()) then
+    !  if (mpi_is_master()) walltime = interface_MPI_WTIME()
+    !else
+    !  call cpu_time(walltime)
+    !end if
+#ifdef VAR_MPI
+      if (is_parallel()) then
+        call interface_mpi_bcast(visual_cfg_nr_dmat,1,irank_master,global_communicator)
+      end if
+#endif
+! 
     call visual_driver_refactored(visual_cfg_nr_dmat, &
                        D,                  &
                        D_0,                &
+                       mol, aobasis,       &
                        ao,                 &
                        buffer)
 
 !    call checkpoint_rs_close
+
+    !if (mpi_is_master()) then
+    !  walltime = interface_MPI_Wtime() - walltime
+    !  write (*, '(a)') ''
+    !  write (*, '(a, g14.6, a)') &
+    !        'Elapsed wall clock time in VISUAL = ', walltime, ' seconds.'
+    !  write (*, '(a)') ''
+    !end if
+
+
     else
     call visual_driver(visual_cfg_nr_dmat, &
                        D,                  &
@@ -502,9 +546,13 @@ contains
                        buffer)
     end if
 
-    call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
+    call rs_input%erase()
 
-    time_start = second()
+    if (mol%in_use()) then
+      call mol%erase()
+    end if
+
+! ---- legacy ----    
     if (visual_cfg_2d_integration .or. visual_cfg_3d_integration) then
        call visual_integration(visual_cfg_nr_dmat, &
                                D,                  &
@@ -515,6 +563,7 @@ contains
     end if
     call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
 
+    if (mpi_is_master()) then !temp
     call dealloc(ao)
     call dealloc(buffer)
 
@@ -524,11 +573,171 @@ contains
     do imat = 1, visual_cfg_nr_dmat
        D(imat) = 0
     end do
-
-    end subroutine
-
+    end if !if (mpi_is_master()) then !temp
 
 
+! ---- end ----    
+
+    walltime = walltime - visual_walltime()
+    print *, 'Elapsed walltime in run_visual: ', walltime
+
+  end subroutine
+
+
+  subroutine visual_driver_refactored(nr_dmat, &
+                            D,       &
+                            D_0,     &
+                            mol, aobasis, &
+                            ao,      &
+                            buffer)
+
+!   --------------------------------------------------------------------------
+    integer, intent(in)  :: nr_dmat
+    type(matrix)         :: D(nr_dmat)
+    type(matrix)         :: D_0
+    real(8), intent(in)  :: ao(*)
+    real(8)              :: buffer(*)
+    type(mol_t), intent(inout):: mol
+    type(ao_t), intent(inout):: aobasis
+!   --------------------------------------------------------------------------
+    type(grid_t):: grid
+    type(grid_t), allocatable:: grids(:)
+    type(grid_function_t), allocatable:: grid_functions(:)
+    integer:: ig, igf
+    integer:: g_ndim, gf_ndim, npoints
+    real(8):: extents(0:1, 3)
+    integer:: my_rank
+    real(8) :: walltime
+!   --------------------------------------------------------------------------
+
+    if (mpi_is_master()) call rs_input%display
+
+    do ig = 1, rs_input%nr_grids
+
+      if (mpi_is_master()) then
+        call get_grid_info(ig, rs_input%grids(ig), mol)
+        if (rs_input%print_level > 0) call rs_input%grids(ig)%display
+      end if
+#ifdef VAR_MPI
+      if (is_parallel()) call synchronize_grid_data(rs_input%grids(ig))
+!      g_ndim  = rs_input%grids(ig)%ndim
+!      npoints = rs_input%grids(ig)%nr_points_total
+#endif
+! 
+!      if (mpi_is_master()) then
+!        allocate(rs_input%grids(ig)%points(g_ndim, npoints))
+!        rs_input%grids(ig)%points = 0.0d0
+!      end if
+
+!     !gosia todo: 
+!     !for optimization - try making all arrays 1-dimensional, then reshape?
+!     !grid_points = reshape(rs_input%grids(ig)%points(g_ndim, npoints))
+
+      !call get_grid_points(rs_input%grids(ig))
+      !if (rs_input%grids(ig)%export) call store_grid(rs_input%grids(ig))
+      !if (rs_input%print_level > 0) & 
+      !  write(*, *) 'Grid points (grid id = ', &
+      !    rs_input%grids(ig)%id, ') are stored on file ', rs_input%grids(ig)%file_out
+
+      !do igf = 1, rs_input%nr_grid_functions
+      !  !gosia fixme - now used only to assign labels for hdf5 storage,
+      !  if (mpi_is_master()) then 
+      !    call get_grid_function_info(rs_input%grid_functions(igf))
+      !  end if
+      !    !bcast
+
+      !  if (rs_input%grid_functions(igf)%id_assigned_grid == ig) then
+
+      !    ! gosia todo: it would be cleaner to use "associate", 
+      !    ! but some compilers have troubles with nested associate
+      !    ! https://stackoverflow.com/questions/66562058/associate-chains-in-fortran
+
+      !    if (rs_input%print_level > 0) then
+      !      if (mpi_is_master()) then 
+      !        call rs_input%grid_functions(igf)%display
+      !        call rs_input%grids(ig)%display_points
+      !      end if
+      !    end if
+
+      !    gf_ndim  = rs_input%grid_functions(igf)%get_ndim()
+
+      !    allocate(rs_input%grid_functions(igf)%values(gf_ndim, npoints))
+      !    rs_input%grid_functions(igf)%values = 0.0d0
+
+      !    ! gosia todo:
+      !    ! add "visualize"/"integrate" procedures in this call; now - visualization only
+      !    ! add constructs for DIRAC data (D, D_0, ...)
+      !    call work_on_grid(rs_input%grids(ig), rs_input%grid_functions(igf), &
+      !                      nr_dmat, D, D_0, ao, buffer)
+
+      !    if (rs_input%grid_functions(igf)%export) then
+      !       if (mpi_is_master()) then
+      !         call store_data(rs_input%grids(ig), rs_input%grid_functions(igf))
+      !       end if
+      !    end if
+
+      !    deallocate(rs_input%grid_functions(igf)%values)
+
+      !  end if
+      !end do
+
+      !deallocate(rs_input%grids(ig)%points)
+      !if (allocated(rs_input%grids(ig)%file_inp)) deallocate(rs_input%grids(ig)%file_inp)
+      !if (allocated(rs_input%grids(ig)%file_out)) deallocate(rs_input%grids(ig)%file_out)
+      call rs_input%grids(ig)%erase()
+
+    end do
+
+
+  end subroutine visual_driver_refactored
+
+
+  subroutine work_on_grid(grid, grid_function, &
+                          nr_dmat, D, D_0, ao, buffer)
+
+    type(grid_t), intent(in):: grid
+    type(grid_function_t), intent(inout):: grid_function
+    integer, intent(in)  :: nr_dmat
+    type(matrix)         :: D(nr_dmat)
+    type(matrix)         :: D_0
+    real(8), intent(in)  :: ao(*)
+    real(8)              :: buffer(*)
+    integer:: ipoint, icomp
+
+!   here starts the expensive loop over points    
+    do ipoint = 1, grid%nr_points_total
+
+      !call get_quantity_in_point(nr_dmat,                   &
+      !                           D,                         &
+      !                           D_0,                       &
+      !                           grid%points(1, ipoint),    &
+      !                           grid%points(2, ipoint),    &
+      !                           grid%points(3, ipoint),    &
+      !                           ao,                        &
+      !                           buffer,                    &
+      !                           grid_function%get_ndim(),  &
+      !                           grid_function%values(1, ipoint),      &
+      !                           grid_function, ipoint)
+
+
+      call get_quantity_in_point_refactored(nr_dmat,                   &
+                                 D,                         &
+                                 D_0,                       &
+                                 ao,                        &
+                                 buffer,                    &
+                                 grid, &
+                                 grid_function, &
+                                 ipoint)
+
+      !write(*,*) 'grid_function%values in ', ipoint, grid_function%values(1,ipoint)
+    end do
+    !do icomp=1, grid_function%get_ndim()
+    !  write(*,*) 'grid_function%values', (grid_function%values(icomp,ipoint), ipoint=1,grid%nr_points_total)
+    !end do
+
+  end subroutine work_on_grid
+
+!   ---- legacy ----    
 
    subroutine visual_driver(nr_dmat, &
                             D,       &
@@ -1538,141 +1747,5 @@ contains
   end subroutine
 
 
-  subroutine visual_driver_refactored(nr_dmat, &
-                            D,       &
-                            D_0,     &
-                            ao,      &
-                            buffer)
-
-!   --------------------------------------------------------------------------
-    integer, intent(in)  :: nr_dmat
-    type(matrix)         :: D(nr_dmat)
-    type(matrix)         :: D_0
-    real(8), intent(in)  :: ao(*)
-    real(8)              :: buffer(*)
-!   --------------------------------------------------------------------------
-    type(grid_t), allocatable:: grids(:)
-    type(grid_function_t), allocatable:: grid_functions(:)
-    type(mol_t):: mol
-    type(ao_t):: aobasis
-    integer:: ig, igf
-    integer:: g_ndim, gf_ndim, npoints
-    real(8):: extents(0:1, 3)
-!   --------------------------------------------------------------------------
-
-    call read_from_dirac(mol, aobasis, rs_input%print_level)
-
-    call rs_input%display
-
-    do ig = 1, rs_input%nr_grids
-
-      call get_grid_info(rs_input%grids(ig), mol)
-      if (rs_input%print_level > 0) call rs_input%grids(ig)%display
-
-      g_ndim  = rs_input%grids(ig)%ndim
-      npoints = rs_input%grids(ig)%nr_points_total
-
-      allocate(rs_input%grids(ig)%points(g_ndim, npoints))
-      rs_input%grids(ig)%points = 0.0d0
-
-!     gosia todo: 
-!     optimization - try making all arrays 1-dimensional, then reshape
-!     grid_points = reshape(rs_input%grids(ig)%points(g_ndim, npoints))
-
-      call get_grid_points(rs_input%grids(ig))
-      if (rs_input%grids(ig)%export) call store_grid(rs_input%grids(ig))
-      if (rs_input%print_level > 0) & 
-        write(*, *) 'Grid points (grid id = ', &
-          rs_input%grids(ig)%id, ') are stored on file ', rs_input%grids(ig)%file_out
-
-      do igf = 1, rs_input%nr_grid_functions
-        !gosia fixme - now used only to assign labels for hdf5 storage,
-        call get_grid_function_info(rs_input%grid_functions(igf))
-
-        if (rs_input%grid_functions(igf)%id_assigned_grid == ig) then
-
-          ! gosia todo: it would be cleaner to use "associate", 
-          ! but some compilers have troubles with nested associate
-          ! https://stackoverflow.com/questions/66562058/associate-chains-in-fortran
-
-          if (rs_input%print_level > 0) then
-            call rs_input%grid_functions(igf)%display
-            call rs_input%grids(ig)%display_points
-          end if
-
-          gf_ndim  = rs_input%grid_functions(igf)%get_ndim()
-
-          allocate(rs_input%grid_functions(igf)%values(gf_ndim, npoints))
-          rs_input%grid_functions(igf)%values = 0.0d0
-
-          ! gosia todo:
-          ! add "visualize"/"integrate" procedures in this call; now - visualization only
-          ! add constructs for DIRAC data (D, D_0, ...)
-          call work_on_grid(rs_input%grids(ig), rs_input%grid_functions(igf), &
-                            nr_dmat, D, D_0, ao, buffer)
-
-          if (rs_input%grid_functions(igf)%export) &
-             call store_data(rs_input%grids(ig), rs_input%grid_functions(igf))
-
-          deallocate(rs_input%grid_functions(igf)%values)
-
-        end if
-      end do
-
-      deallocate(rs_input%grids(ig)%points)
-
-    end do
-
-    if (mol%in_use()) then
-      call mol%erase()
-    end if
-
-  end subroutine
-
-
-  subroutine work_on_grid(grid, grid_function, &
-                          nr_dmat, D, D_0, ao, buffer)
-
-    type(grid_t), intent(in):: grid
-    type(grid_function_t), intent(inout):: grid_function
-    integer, intent(in)  :: nr_dmat
-    type(matrix)         :: D(nr_dmat)
-    type(matrix)         :: D_0
-    real(8), intent(in)  :: ao(*)
-    real(8)              :: buffer(*)
-    integer:: ipoint, icomp
-
-!   here starts the expensive loop over points    
-    do ipoint = 1, grid%nr_points_total
-
-      !call get_quantity_in_point(nr_dmat,                   &
-      !                           D,                         &
-      !                           D_0,                       &
-      !                           grid%points(1, ipoint),    &
-      !                           grid%points(2, ipoint),    &
-      !                           grid%points(3, ipoint),    &
-      !                           ao,                        &
-      !                           buffer,                    &
-      !                           grid_function%get_ndim(),  &
-      !                           grid_function%values(1, ipoint),      &
-      !                           grid_function, ipoint)
-
-
-      call get_quantity_in_point_refactored(nr_dmat,                   &
-                                 D,                         &
-                                 D_0,                       &
-                                 ao,                        &
-                                 buffer,                    &
-                                 grid, &
-                                 grid_function, &
-                                 ipoint)
-
-      !write(*,*) 'grid_function%values in ', ipoint, grid_function%values(1,ipoint)
-    end do
-    !do icomp=1, grid_function%get_ndim()
-    !  write(*,*) 'grid_function%values', (grid_function%values(icomp,ipoint), ipoint=1,grid%nr_points_total)
-    !end do
-
-  end subroutine work_on_grid
-
+!   ---- end ----    
 end module

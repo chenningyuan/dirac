@@ -552,9 +552,12 @@ contains
   end subroutine get_grid_essentials
 
 
-  subroutine get_grid_info(grid, mol)
+  subroutine get_grid_info(grid_id, grid, mol)
+    integer, intent(in):: grid_id !fixme
     type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
+
+    if (grid_id /= grid%id) return
 
     if (grid%input  ==  1) then
       call get_grid_info_from_file(grid)

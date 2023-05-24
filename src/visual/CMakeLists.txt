@@ -25,6 +25,7 @@ set(FREE_VISUAL_FORTRAN_SOURCES
     visual_dirac_input.F90
     visual_txt_storage.F90
     visual_labeled_storage.F90
+    visual_mpi.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

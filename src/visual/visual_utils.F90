@@ -1,12 +1,23 @@
 module visual_utils
 
-    implicit none
+  implicit none
 
-    public newunit
-    public get_new_file_unit
-    public visual_quit
+  public newunit
+  public get_new_file_unit
+  public visual_quit
+  public visual_walltime
 
-    contains
+contains
+
+  function visual_walltime()
+    use interface_to_mpi
+    real(8) :: visual_walltime
+#ifdef VAR_MPI
+    visual_walltime = interface_MPI_WTIME()
+#endif
+    call cpu_time(visual_walltime)
+   end function visual_walltime
+
 
 !  ----------------------------------------------------------------------------
    integer function get_new_file_unit(unit)
