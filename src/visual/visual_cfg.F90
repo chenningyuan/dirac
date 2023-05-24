@@ -327,7 +327,8 @@ contains
         call str2int(val, grid%ndim, stat)
       case ('npoints')
         temp = trim(val)
-        call trim_ch(temp, trim(val), (/'[',']'/))
+        call trim_ch(temp, trim(val), '[')
+        call trim_ch(temp, temp, ']')
         if (index(val, ',') > 0) then
           nr_words = word_count(temp, ',')
           allocate(chvalues(nr_words))
@@ -344,7 +345,8 @@ contains
         end if
       case ('spacing')
         temp = trim(val)
-        call trim_ch(temp, trim(val), (/'[',']'/))
+        call trim_ch(temp, trim(val), '[')
+        call trim_ch(temp, temp, ']')
         if (index(val, ',') > 0) then
           nr_words = word_count(temp, ',')
           allocate(chvalues(nr_words))
@@ -542,7 +544,7 @@ contains
 !     --------------------------------------------------------------------------
       character(*), intent(out) :: s_out
       character(*), intent(in) :: s_inp
-      character(1), intent(in) :: ch(:)
+      character(1), intent(in) :: ch
 !     --------------------------------------------------------------------------
       integer                  :: i,j,k
 !     --------------------------------------------------------------------------
@@ -551,19 +553,12 @@ contains
 
       k = 0
       do i = 1, len(s_inp)
-        if (s_inp(i:i) .ne. ch(1)) then
+        if (s_inp(i:i) .ne. ch) then
           k = k + 1
           s_out(k:k) = s_inp(i:i)
         end if
       end do
       s_out = s_out(1:k)
-
-
-      if (size(ch) > 1) then
-        call trim_ch(s_out, s_out(1:k), ch(2:))
-      end if
-
-      s_out = trim(s_out)
 
    end subroutine
 

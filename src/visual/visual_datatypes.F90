@@ -50,7 +50,7 @@ module visual_datatypes
     procedure, pass, public:: allocated_grid_functions
   end type rs_input_t
 
-  type, public:: rs_label_t
+  type:: rs_label_t
     private
     character(len=:), allocatable, public:: name
   contains
