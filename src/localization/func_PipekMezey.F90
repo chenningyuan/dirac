@@ -654,9 +654,9 @@ contains
       do l=1,nloc
         do k=l+1,nloc
           kl = kl + 1
-          buf1 = d2*p3(k,l,m)
-          buf2 = d2*p4(k,l,m)
-          buf  = d2*buf1
+!          buf1 = d2*p3(k,l,m)
+!          buf2 = d2*p4(k,l,m)
+          buf  = d4*p3(k,l,m)
           pkml =    pd(k,m) - pd(l,m)
           p2kml= d2*pd(k,m) - pd(l,m)
           p2lmk= d2*pd(l,m) - pd(k,m)
@@ -683,13 +683,15 @@ contains
           !                = Real{ (35) }                 + Real{ (39) }
           n = nloc12
           do j=1,iju(k)     ! i==k
-           hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) &
-                               - buf1*p3(j,k,m) - buf2*p4(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
+           hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) & 
+                               + buf*p3(k,j,m) + (p2kml-pd(j,m))*p1(l,j,m)
+!                               - buf1*p3(j,k,m) - buf2*p4(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
           enddo
 
           do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) &
-                               + buf1*p3(i,l,m) + buf2*p4(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
+                               + buf*p3(i,l,m) + (p2lmk-pd(i,m))*p1(k,i,m)
+!                               + buf1*p3(i,l,m) + buf2*p4(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
           enddo
 
 !          do j=1,iju(l)     ! i==l
@@ -787,9 +789,9 @@ contains
       do l=1,nloc
         do k=l+1,nloc
           kl = kl + 1
-          buf1 = d2*p3(k,l,m)
-          buf2 = d2*p4(k,l,m)
-          buf  = d2*buf2
+!          buf1 = d2*p3(k,l,m)
+!          buf2 = d2*p4(k,l,m)
+          buf  = d4*p4(k,l,m)
           pkml =    pd(k,m) - pd(l,m)
           p2kml= d2*pd(k,m) - pd(l,m)
           p2lmk= d2*pd(l,m) - pd(k,m)
@@ -817,12 +819,14 @@ contains
           n = nloc12
           do j=1,iju(k)     ! i==k
            hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) &
-                               - buf1*p4(j,k,m) + buf2*p3(j,k,m) + (p2kml-pd(j,m))*p2(j,l,m)
+!                               - buf1*p4(j,k,m) + buf2*p3(j,k,m) + (p2kml-pd(j,m))*p2(j,l,m)
+                                + buf*p3(j,k,m) + (p2kml-pd(j,m))*p2(j,l,m)
           enddo
 
           do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) &
-                               + buf1*p4(i,l,m) - buf2*p3(i,l,m) + (p2lmk-pd(i,m))*p2(i,k,m)
+!                               + buf1*p4(i,l,m) - buf2*p3(i,l,m) + (p2lmk-pd(i,m))*p2(i,k,m)
+                               - buf*p3(i,l,m) + (p2lmk-pd(i,m))*p2(i,k,m)
           enddo
 
 !          do j=1,iju(l)     ! i==l
@@ -859,12 +863,14 @@ contains
           n = 3*nloc12
           do j=1,iju(k)     ! i==k
            hmat(ijn(j,k)+n,kl) = hmat(ijn(j,k)+n,kl) &
-                               - buf1*p3(j,k,m) - buf2*p4(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
+!                               - buf1*p3(j,k,m) - buf2*p4(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
+                               - buf*p4(j,k,m) + (p2kml-pd(j,m))*p1(j,l,m)
           enddo
 
           do i=ijl(l),nloc  ! j==l
            hmat(ijn(i,l)+n,kl) = hmat(ijn(i,l)+n,kl) &
-                               + buf1*p3(i,l,m) + buf2*p4(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
+!                               + buf1*p3(i,l,m) + buf2*p4(i,l,m) + (p2lmk-pd(i,m))*p1(i,k,m)
+                               - buf*p4(l,i,m)  + (p2lmk-pd(i,m))*p1(k,i,m)
           enddo
 
 !          do j=1,iju(l)     ! i==l
@@ -953,6 +959,7 @@ contains
     endif
 
 !   Print matrix blocks
+    if(PM%iprloc.ge.4)then
       thresh=1.0d-14
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_uu'
       do i=1,nloc12
@@ -1023,6 +1030,7 @@ contains
           if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
+    endif
 
     ! deallocate arrays
     deallocate( ijn )
@@ -1111,6 +1119,7 @@ contains
   endif
 
 ! Print gradient with better precision
+  if(PM%iprloc.ge.4)then
     write(lupri,*) 'Print gradient_u'
     do i = 1,nloc12
       write(lupri,*) gradient(i),gradient(i+2*nloc12)
@@ -1119,6 +1128,7 @@ contains
     do i = 1,nloc12
       write(lupri,*) gradient(i+nloc12),gradient(i+3*nloc12)
     enddo
+  endif
 
   ! Norm of the gradient
   dnrmg = dnrm2(ndimg,gradient,1)
@@ -1734,7 +1744,7 @@ contains
   endif
 
   ! write MO to file and close it
-  call WRICMO(var%lucoef,reshape(CMO,(/nb*no*nz/)),EIG,IBEIG,TOTERG)
+  call WRICMO(var%lucoef,cmo,EIG,IBEIG,TOTERG)
   close(var%lucoef,status='keep')
 
   ! deallocate arrays
