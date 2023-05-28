@@ -118,6 +118,7 @@ contains
     character(len=1):: ich
     integer:: i
 
+    write(*, *) 'IN write_grid_function_to_checkpoint'
     call assign_label_grid_function(grid_function, label, top_section='result', level=2)
     group = label%name
     call lab_write(data_file, group)
@@ -128,6 +129,7 @@ contains
       write(ich, '(i1)') i
       call lab_write(data_file, group//'_icomp_'//ich, rdata = grid_function%values(i, :))
     end do
+    write(*, *) 'OUT write_grid_function_to_checkpoint'
   end subroutine
 
 
@@ -147,6 +149,7 @@ contains
     group = label%name
     call lab_read(data_file, trim(group)//'/ndim',idata = grid%ndim)
     call lab_read(data_file, trim(group)//'/nr_points_total',idata = grid%nr_points_total)
+    grid%ndim_known = .true.
     grid%nr_points_total_known = .true.
   end subroutine
 

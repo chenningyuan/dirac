@@ -221,14 +221,14 @@ module visual_cfg
 
 contains
 
-  elemental subroutine str2int(str,int,stat)
+  elemental subroutine str2int(str,int1,stat)
     implicit none
     ! Arguments
     character(len=*),intent(in) :: str
-    integer,intent(out)         :: int
+    integer,intent(out)         :: int1
     integer,intent(out)         :: stat
 
-    read(str,*,iostat=stat)  int
+    read(str,*,iostat=stat)  int1
   end subroutine str2int
 
   elemental subroutine str2flt(str,flt,stat)
@@ -324,15 +324,16 @@ contains
     integer::nr_words, i
     character(len=10),allocatable::chvalues(:)
 
-    select case (key)
+    select case (trim(key))
       case ('id')
         call str2int(val, grid%id, stat)
       case ('ndim')
         call str2int(val, grid%ndim, stat)
+        grid%ndim_known = .true.
       case ('npoints')
         temp = trim(val)
-        call trim_ch(temp, trim(val), '[')
-        call trim_ch(temp, temp, ']')
+        call trim_ch(temp, trim(val),  '[')
+        call trim_ch(temp, trim(temp), ']')
         if (index(val, ',') > 0) then
           nr_words = word_count(temp, ',')
           allocate(chvalues(nr_words))
@@ -349,8 +350,8 @@ contains
         end if
       case ('spacing')
         temp = trim(val)
-        call trim_ch(temp, trim(val), '[')
-        call trim_ch(temp, temp, ']')
+        call trim_ch(temp, trim(val),  '[')
+        call trim_ch(temp, trim(temp), ']')
         if (index(val, ',') > 0) then
           nr_words = word_count(temp, ',')
           allocate(chvalues(nr_words))
@@ -369,9 +370,9 @@ contains
           grid%spacing(1) = grid%spacing(1)/xtang
         end if
       case ('input')
-        if (val == 'create') then
+        if (trim(val) == 'create') then
           grid%input = 0
-        else if (val == 'import') then
+        else if (trim(val) == 'import') then
           grid%input = 1
         else
           write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"'
@@ -380,9 +381,9 @@ contains
       case ('typ')
         call str2int(val, grid%typ, stat)
       case ('weights')
-        if (val == 'no') then
+        if (trim(val) == 'no') then
           grid%weights = 0
-        else if (val == 'yes') then
+        else if (trim(val) == 'yes') then
           grid%weights = 1
         else
           write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
@@ -393,18 +394,18 @@ contains
         ! scale to a.u.
         grid%margin = grid%margin/xtang
       case ('export')
-        if (val == 'no') then
+        if (trim(val) == 'no') then
           grid%export = .false.
-        else if (val == 'yes') then
+        else if (trim(val) == 'yes') then
           grid%export = .true.
         else
           write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
           stop
         end if
       case ('file_inp')
-        grid%file_inp = val
+        grid%file_inp = trim(val)
       case ('file_out')
-        grid%file_out = val
+        grid%file_out = trim(val)
       case default
         print *, 'unknown key'
         stop
@@ -418,38 +419,33 @@ contains
     logical:: err
 
     if (grid%input == 1) then
-      if (grid%ndim /= 0) then
-        write(*, *) 'WARNING: grid information will be read from file; "ndim" option from DIRAC input is ignored'
-        grid%ndim = 0
-      end if
-      do i = 1, grid%ndim
-        if (grid%nr_points(i) /=0) then
-          write(*, *) 'WARNING: grid information will be read from file; "npoints" option from DIRAC input is ignored'
-          grid%nr_points(i) =0
-        end if
-        if (grid%spacing(i) /= 0) then
-          write(*, *) 'WARNING: grid information will be read from file; "spacing" option from DIRAC input is ignored'
-          grid%spacing(i) =0
-        end if
-      end do
+      ! when reading grid from file
+      write(*, *) 'WARNING: grid information will be read from file'
+      write(*, *) 'These input options will be ignored (if present): ndim, npoints, spacing, margin'
+
     else if (grid%input == 0) then
+      ! when creating grid
       if (grid%ndim == 0) then
         write(*, *) 'ERROR: grid "ndim" information is missing'
         stop
       end if
       do i = 1, grid%ndim
         if (grid%nr_points(i) ==0 .and. grid%spacing(i) ==0) then
-          write(*, *) 'ERROR: grid "npoints" or "spacing" information is missing'
+          write(*, *) 'ERROR: grid "npoints" or "spacing" information is missing for dimension ', i
           stop
         end if
       end do
     end if
+
     do i = 1, grid%ndim
       if (grid%nr_points(i) /=0 .and. grid%spacing(i) /=0) then
         write(*, *) 'ERROR: exclusive options: "npoints" and "spacing"'
         stop
       end if
     end do
+
+    ! set the status to -1 to make the code ready for processing grid metadata
+    grid%status = -1
 
   end subroutine verify_grid_input_cfg
 
@@ -479,7 +475,7 @@ contains
     gf%id = idx
     select case (key)
       case ('name')
-        gf%name = val
+        gf%name = trim(val)
         call verify_grid_function_predefined(gf)
       case ('id_grid')
         call str2int(val, gf%id_assigned_grid, stat)
@@ -508,9 +504,9 @@ contains
           stop
         end if
       case ('file_inp')
-        gf%file_inp = val
+        gf%file_inp = trim(val)
       case ('file_out')
-        gf%file_out = val
+        gf%file_out = trim(val)
       case default
         print *, 'unknown key'
         stop
@@ -583,6 +579,7 @@ contains
     call interface_mpi_bcast(rs_input%nr_grid_functions,1,irank_master,global_communicator)
     call interface_mpi_bcast_l0(rs_input%outpri,1,irank_master,global_communicator)
     if (.not.mpi_is_master()) then
+      ! this is allocated on master in input/input_reader_sections.F90
       allocate(rs_input%grids(rs_input%nr_grids))
       allocate(rs_input%grid_functions(rs_input%nr_grid_functions))
     end if
@@ -590,7 +587,7 @@ contains
     ! legacy
     call interface_mpi_bcast_l0(visual_cfg_global_refactor,1,irank_master,global_communicator)
 
-    call logprint
+    if (rs_input%print_level > 0) call logprint
   end subroutine sync_visual_cfg
 
   subroutine logprint

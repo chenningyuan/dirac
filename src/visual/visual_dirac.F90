@@ -1,7 +1,7 @@
 module visual_dirac
 
   use checkpoint
-  use visual_datatypes, only: mol_t, ao_t, grid_t
+  use visual_datatypes, only: mol_t, ao_t, grid_t, grid_function_t
   use visual_cfg
 
   use visual_mpi
@@ -13,20 +13,21 @@ module visual_dirac
 
   implicit none
 
-  public visual_initialize_nodes
+  public visual_initialize_and_sync_nodes
+  public visual_initialize_data_from_dirac
 #ifdef VAR_MPI
   public synchronize_grid_data
+  public synchronize_grid_function_data
+  public synchronize_data_from_dirac
 #endif
+
 
   private
 
-  interface read_from_dirac
-    module procedure read_from_dirac
-  end interface
 
 contains
 
-  subroutine visual_initialize_nodes(mol, aobasis, hello)
+  subroutine visual_initialize_and_sync_nodes(hello)
     use dirac_cfg, only: dirac_cfg_visual
     use visual_mpi
 #ifdef VAR_MPI
@@ -34,45 +35,14 @@ contains
     use integer_kind_mpilib
 #endif
 #include "dirac_partask.h"  
-    type(mol_t), intent(out):: mol
-    type(ao_t), intent(out):: aobasis
     logical, intent(in), optional :: hello
 
 #ifdef VAR_MPI
     ! wake up workers
-    if (is_parallel()) call dirac_parctl( VISUAL_PAR )
-#endif
-
-    ! initialize and sync data:
-    ! * global data: "rs_input" + legacy (dirac_cfg* variables);
-    !   the only public data is going to be "rs_input",
-    !   and this should be known now (from reading DIRAC input)
-    call initialize_visual_data(mol, aobasis)
-    if (present(hello)) then
-      if (hello) return
-    end if
-
-    ! * data read from DIRAC CHECKPOINT (mol, ao)
-    if (mpi_is_master()) then
-      call read_from_dirac(mol, aobasis, rs_input%print_level)
-    end if
-
-#ifdef VAR_MPI
-    if (is_parallel()) call synchronize_data_from_dirac(mol, aobasis)
-#endif
-
-  end subroutine visual_initialize_nodes
-
-
-  subroutine initialize_visual_data(mol, aobasis)
-    use dirac_cfg, only: dirac_cfg_visual
-    type(mol_t), intent(out):: mol
-    type(ao_t), intent(out):: aobasis
-
-#ifdef VAR_MPI
     if (is_parallel()) then
+      call dirac_parctl( VISUAL_PAR )
       if (get_my_rank() /= irank_master) then
-        call sync_visual_cfg
+        call sync_visual_cfg()
         return
       end if
     end if
@@ -81,16 +51,16 @@ contains
     ! then, the rest happens on master only
 
 #ifdef VAR_MPI
-    call sync_visual_cfg
+    if (is_parallel()) call sync_visual_cfg()
 #endif
-  end subroutine initialize_visual_data
+
+  end subroutine visual_initialize_and_sync_nodes
 
 
-  subroutine read_from_dirac(mol, ao, print_level)
-    integer, intent(in):: print_level
+  subroutine visual_initialize_data_from_dirac(mol, aobasis)
 
     type(mol_t), intent(out):: mol
-    type(ao_t), intent(out):: ao
+    type(ao_t), intent(out):: aobasis
     character*(:),allocatable:: group
     logical:: tobe_dirac
 
@@ -113,7 +83,7 @@ contains
     !  write(*, *) 'AO data read from DIRAC CHECKPOINT'
     !end if
 
-  end subroutine read_from_dirac
+  end subroutine visual_initialize_data_from_dirac
 
 
   subroutine read_mol_from_dirac(mol, group)
@@ -177,53 +147,86 @@ contains
 
   subroutine synchronize_grid_data(grid)
     type(grid_t), intent(inout):: grid
-    integer:: len_gl, len_fn_inp, len_fn_out
+    integer:: len_gfn_inp, len_gfn_out
 
-
-    !if (mpi_is_master()) then
-    !  !len_gl = len_trim(grid_labels%x_label%name)
-    !  len_fn_inp = len_trim(grid%file_inp)
-    !  len_fn_out = len_trim(grid%file_out)
-    !end if
-    !call interface_mpi_bcast(len_fn_inp,1,irank_master,global_communicator)
-    !call interface_mpi_bcast(len_fn_out,1,irank_master,global_communicator)
+    if (mpi_is_master()) then
+      len_gfn_inp = len_trim(grid%file_inp)
+      len_gfn_out = len_trim(grid%file_out)
+    end if
+    call interface_mpi_bcast(len_gfn_inp,1,irank_master,global_communicator)
+    call interface_mpi_bcast(len_gfn_out,1,irank_master,global_communicator)
 
     call interface_mpi_bcast(grid%id,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%ndim,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%nr_points_total,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%status,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%input,1,irank_master,global_communicator)
-!    call interface_mpi_bcast(grid%typ,1,irank_master,global_communicator)
-!    call interface_mpi_bcast(grid%weights,1,irank_master,global_communicator)
-!    call interface_mpi_bcast(grid%margin,1,irank_master,global_communicator)
-!    call interface_mpi_bcast_l0(grid%export,1,irank_master,global_communicator)
-!    call interface_mpi_bcast_l0(grid%origin_known,1,irank_master,global_communicator)
-!    call interface_mpi_bcast_l0(grid%nr_points_total_known,1,irank_master,global_communicator)
-!
-!    !call interface_mpi_bcast(grid%nr_points,grid%ndim,irank_master,global_communicator)
-!    !call interface_mpi_bcast(grid%origin,grid%ndim,irank_master,global_communicator)
-!    !call interface_mpi_bcast(grid%spacing,grid%ndim,irank_master,global_communicator)
-!    !call interface_mpi_bcast_l0(grid%nr_points_known,grid%ndim,irank_master,global_communicator)
-!    !call interface_mpi_bcast_l0(grid%spacing_known,grid%ndim,irank_master,global_communicator)
-!
-!    !if (.not.mpi_is_master()) then
-!    !  allocate(grid%nr_points(grid%ndim))
-!    !  allocate(grid%origin(grid%ndim))
-!    !  allocate(grid%spacing(grid%ndim))
-!    !  allocate(grid%nr_points_known(grid%ndim))
-!    !  allocate(grid%spacing_known(grid%ndim))
-!    !!  allocate(grid%points(grid%ndim, grid%nr_points_total))
-!    !!  grid%points = 0.0d0
-!    !!  if (len_fn_inp > 0) allocate(character(len_fn_inp):: grid%file_inp)
-!    !!  if (len_fn_out > 0) allocate(character(len_fn_out):: grid%file_out)
-!    !end if
-!
-!    !call interface_mpi_bcast(grid%file_inp,len_fn_inp,irank_master,global_communicator)
-!    !call interface_mpi_bcast(grid%file_out,len_fn_out,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%typ,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%weights,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%margin,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid%export,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid%origin_known,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid%nr_points_total_known,1,irank_master,global_communicator)
 
-    print *, 'grid%ndim on node ', grid%id, grid%ndim, get_my_rank()
+    call interface_mpi_bcast(grid%nr_points,grid%ndim,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%origin,grid%ndim,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%spacing,grid%ndim,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid%nr_points_known,grid%ndim,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid%spacing_known,grid%ndim,irank_master,global_communicator)
+
+    if (.not.mpi_is_master()) then
+    !!  allocate(grid%points(grid%ndim, grid%nr_points_total))
+    !!  grid%points = 0.0d0
+      if (len_gfn_inp > 0) allocate(character(len_gfn_inp):: grid%file_inp)
+      if (len_gfn_out > 0) allocate(character(len_gfn_out):: grid%file_out)
+    end if
+
+    call interface_mpi_bcast(grid%file_inp,len_gfn_inp,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%file_out,len_gfn_out,irank_master,global_communicator)
+
+    !print *, 'grid%id grid%ndim on node ', grid%id, grid%ndim, get_my_rank()
+    call grid%display(get_my_rank())
 
   end subroutine synchronize_grid_data
+
+
+  subroutine synchronize_grid_function_data(grid_function)
+    type(grid_function_t), intent(inout):: grid_function
+    integer:: len_gffn_inp, len_gffn_out, len_gf_name
+
+    if (mpi_is_master()) then
+      write(*,*) 'IN synchronize_grid_function_data: ', grid_function%file_out
+      write(*,*) 'IN synchronize_grid_function_data: ', len_trim(grid_function%file_out)
+      len_gffn_inp = len_trim(grid_function%file_inp)
+      len_gffn_out = len_trim(grid_function%file_out)
+      len_gf_name = len_trim(grid_function%name)
+    end if
+    call interface_mpi_bcast(len_gffn_inp,1,irank_master,global_communicator)
+    call interface_mpi_bcast(len_gffn_out,1,irank_master,global_communicator)
+    call interface_mpi_bcast(len_gf_name,1,irank_master,global_communicator)
+
+    call interface_mpi_bcast(grid_function%id,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%id_assigned_grid,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%status,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%input,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%wf_order,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%tensor_order,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%purpose,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid_function%export,1,irank_master,global_communicator)
+
+    if (.not.mpi_is_master()) then
+      if (len_gffn_inp > 0) allocate(character(len_gffn_inp):: grid_function%file_inp)
+      if (len_gffn_out > 0) allocate(character(len_gffn_out):: grid_function%file_out)
+      if (len_gf_name > 0) allocate(character(len_gf_name):: grid_function%name)
+    end if
+
+    call interface_mpi_bcast(grid_function%file_inp,len_gffn_inp,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%file_out,len_gffn_out,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%name,len_gf_name,irank_master,global_communicator)
+
+    !call grid_function%display(get_my_rank())
+
+  end subroutine synchronize_grid_function_data
 
 #endif
 

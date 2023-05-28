@@ -557,16 +557,20 @@ contains
     type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
 
-    if (grid_id /= grid%id) return
-
     if (grid%input  ==  1) then
       call get_grid_info_from_file(grid)
+      if (grid%id == 0) grid%id = grid_id
+      print *, 'INFO from get_grid_info: grid%id = ', grid%id
     else
+      if (grid_id /= grid%id) return
       call get_grid_essentials(grid, mol)
       ! center grid around molecule,
       ! modify grid extents and grid%origin (but do not move molecule)
       call center_mol_in_grid(grid)
     end if
+
+    ! we should now have all information to work on the grid
+    grid%status = 0
   end subroutine get_grid_info
 
 

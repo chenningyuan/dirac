@@ -81,6 +81,7 @@ module visual_datatypes
     character(len=:), public, allocatable:: file_out        ! name of a file for grid export
     !type(grid_point_t), public, allocatable:: points(:,:)
     real(8), public, allocatable:: points(:,:)
+    logical, public:: ndim_known = .false.
     logical, public:: origin_known = .false.
     logical, public:: nr_points_total_known = .false.
     logical, public:: nr_points_known(1:3) = .false.
@@ -258,70 +259,144 @@ contains
     write(*, *)
    end subroutine
 
-  subroutine display_grid(self)
+  subroutine display_grid(self,my_rank)
     class(grid_t), intent(in):: self
+    integer, intent(in), optional:: my_rank
+    logical:: with_rank_info
     integer::i, j
+
     if (self%id == 0) return
+
+    with_rank_info = .false.
+    if (present(my_rank)) with_rank_info = .true.
+
     write(*, *)
     write(*, *) ' GRID:'
-    write(*, *) 'id =              ', self%id
-    write(*, *) 'ndim =            ', self%ndim
-    write(*, *) 'nr_points       = ', (self%nr_points(i), i=1,self%ndim)
-    write(*, *) 'nr_points_total = ', self%nr_points_total
-    write(*, *) 'origin [a.u.]     = ', (self%origin(i), i=1,self%ndim)
-    write(*, *) 'spacing [a.u.]    = ', (self%spacing(i), i=1,self%ndim)
-    write(*, *) 'status =          ', self%status
-    write(*, *) 'input =           ', self%input
-    write(*, *) 'export =          ', self%export
-    write(*, *) 'typ =             ', self%typ
-    write(*, *) 'weights =         ', self%weights
-    write(*, *) 'margin =          ', self%margin
-    write(*, *) 'file_inp =        ', self%file_inp
-    write(*, *) 'file_out =        ', self%file_out
-    write(*, *) 'origin_known =    ', self%origin_known
-    write(*, *) 'nr_points_total_known = ', self%nr_points_total_known
-    write(*, *) 'nr_points_known(1:3) = ', (self%nr_points_known(i), i=1,self%ndim)
-    write(*, *) 'spacing_known(1:3) = ', (self%spacing_known(i), i=1,self%ndim)
+    if (with_rank_info) then
+      write(*, *) 'id =              ', self%id, my_rank
+      write(*, *) 'ndim =            ', self%ndim, my_rank 
+      write(*, *) 'nr_points       = ', (self%nr_points(i), i=1,self%ndim), my_rank
+      write(*, *) 'nr_points_total = ', self%nr_points_total, my_rank
+      write(*, *) 'origin [a.u.]     = ', (self%origin(i), i=1,self%ndim), my_rank
+      write(*, *) 'spacing [a.u.]    = ', (self%spacing(i), i=1,self%ndim), my_rank
+      write(*, *) 'status =          ', self%status, my_rank
+      write(*, *) 'input =           ', self%input, my_rank
+      write(*, *) 'export =          ', self%export, my_rank
+      write(*, *) 'typ =             ', self%typ, my_rank
+      write(*, *) 'weights =         ', self%weights, my_rank
+      write(*, *) 'margin =          ', self%margin, my_rank
+      write(*, *) 'file_inp =        ', self%file_inp, my_rank
+      write(*, *) 'file_out =        ', self%file_out, my_rank
+      write(*, *) 'ndim_known =      ', self%ndim_known, my_rank
+      write(*, *) 'origin_known =    ', self%origin_known, my_rank
+      write(*, *) 'nr_points_total_known = ', self%nr_points_total_known, my_rank
+      write(*, *) 'nr_points_known(1:3) = ', (self%nr_points_known(i), i=1,self%ndim), my_rank
+      write(*, *) 'spacing_known(1:3) = ', (self%spacing_known(i), i=1,self%ndim), my_rank
+    else
+      write(*, *) 'id =              ', self%id
+      write(*, *) 'ndim =            ', self%ndim
+      write(*, *) 'nr_points       = ', (self%nr_points(i), i=1,self%ndim)
+      write(*, *) 'nr_points_total = ', self%nr_points_total
+      write(*, *) 'origin [a.u.]     = ', (self%origin(i), i=1,self%ndim)
+      write(*, *) 'spacing [a.u.]    = ', (self%spacing(i), i=1,self%ndim)
+      write(*, *) 'status =          ', self%status
+      write(*, *) 'input =           ', self%input
+      write(*, *) 'export =          ', self%export
+      write(*, *) 'typ =             ', self%typ
+      write(*, *) 'weights =         ', self%weights
+      write(*, *) 'margin =          ', self%margin
+      write(*, *) 'file_inp =        ', self%file_inp
+      write(*, *) 'file_out =        ', self%file_out
+      write(*, *) 'ndim_known =      ', self%ndim_known
+      write(*, *) 'origin_known =    ', self%origin_known
+      write(*, *) 'nr_points_total_known = ', self%nr_points_total_known
+      write(*, *) 'nr_points_known(1:3) = ', (self%nr_points_known(i), i=1,self%ndim)
+      write(*, *) 'spacing_known(1:3) = ', (self%spacing_known(i), i=1,self%ndim)
+    end if
     write(*, *)
    end subroutine
 
-  subroutine display_grid_function(self)
+  subroutine display_grid_function(self,my_rank)
     class(grid_function_t), intent(in):: self
+    integer, intent(in), optional:: my_rank
+    logical:: with_rank_info
+
     if (self%id == 0) return
+
+    with_rank_info = .false.
+    if (present(my_rank)) with_rank_info = .true.
+
     write(*, *)
     write(*, *) ' GRID FUNCTION:'
-    write(*, *) 'id =              ', self%id
-    write(*, *) 'name =            ', self%name
-    write(*, *) 'status =          ', self%status
-    write(*, *) 'input =           ', self%input
-    write(*, *) 'export =          ', self%export
-    write(*, *) 'wf_order =        ', self%wf_order
-    write(*, *) 'tensor_order      ', self%tensor_order
-    write(*, *) 'id_assigned_grid =', self%id_assigned_grid
-    write(*, *) 'purpose =         ', self%purpose
-    write(*, *) 'file_inp =        ', self%file_inp
-    write(*, *) 'file_out =        ', self%file_out
+    if (with_rank_info) then
+      write(*, *) 'id =              ', self%id, my_rank
+      write(*, *) 'name =            ', self%name, my_rank
+      write(*, *) 'status =          ', self%status, my_rank
+      write(*, *) 'input =           ', self%input, my_rank
+      write(*, *) 'export =          ', self%export, my_rank
+      write(*, *) 'wf_order =        ', self%wf_order, my_rank
+      write(*, *) 'tensor_order      ', self%tensor_order, my_rank
+      write(*, *) 'id_assigned_grid =', self%id_assigned_grid, my_rank
+      write(*, *) 'purpose =         ', self%purpose, my_rank
+      write(*, *) 'file_inp =        ', self%file_inp, my_rank
+      write(*, *) 'file_out =        ', self%file_out, my_rank
+    else
+      write(*, *) 'id =              ', self%id
+      write(*, *) 'name =            ', self%name
+      write(*, *) 'status =          ', self%status
+      write(*, *) 'input =           ', self%input
+      write(*, *) 'export =          ', self%export
+      write(*, *) 'wf_order =        ', self%wf_order
+      write(*, *) 'tensor_order      ', self%tensor_order
+      write(*, *) 'id_assigned_grid =', self%id_assigned_grid
+      write(*, *) 'purpose =         ', self%purpose
+      write(*, *) 'file_inp =        ', self%file_inp
+      write(*, *) 'file_out =        ', self%file_out
+    end if
     write(*, *)
   end subroutine
 
-  subroutine display_grid_points(self)
+  subroutine display_grid_points(self,my_rank)
     class(grid_t), intent(in):: self
+    integer, intent(in), optional:: my_rank
+    logical:: with_rank_info
     integer::i
+
     if (self%id == 0) return
     if (.not. self%allocated_points()) return
+
+    with_rank_info = .false.
+    if (present(my_rank)) with_rank_info = .true.
+
     write(*, *)
-    write(*, *) ' GRID points (grid id = ):', self%id
-    call print_rs_2d(self%points, self%ndim, self%nr_points_total)
+    if (with_rank_info) then
+      write(*, *) ' GRID points (grid id = ):', self%id, my_rank
+      call print_rs_2d(self%points, self%ndim, self%nr_points_total, my_rank)
+    else
+      write(*, *) ' GRID points (grid id = ):', self%id
+      call print_rs_2d(self%points, self%ndim, self%nr_points_total)
+    end if
   end subroutine
 
-  subroutine print_rs_2d(array, n, m)
+  subroutine print_rs_2d(array, n, m, my_rank)
     real(8), intent(in):: array(n, m)
     integer, intent(in):: n, m
+    integer, intent(in), optional:: my_rank
+    logical:: with_rank_info
     integer :: i, j
 
-    do j = 1, m
-      write(*, *) (array(i, j), i = 1, n)
-    end do
+    with_rank_info = .false.
+    if (present(my_rank)) with_rank_info = .true.
+
+    if (with_rank_info) then
+      do j = 1, m
+        write(*, *) my_rank, (array(i, j), i = 1, n)
+      end do
+    else
+      do j = 1, m
+        write(*, *) (array(i, j), i = 1, n)
+      end do
+    end if
   end subroutine
 
 end module

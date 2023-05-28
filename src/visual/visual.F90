@@ -107,7 +107,14 @@ contains
 
 
 #ifdef VAR_MPI
-    call visual_initialize_nodes(mol, aobasis, launch_only)
+    ! We should have initial information from user input stored in rs_input dt
+    ! and other config information in visual_cfg* variables (legacy) available at this point.
+    ! So first, we make sure that all workers have this information to start.
+    ! Also, run_visual() is called from master (from subroutine dirac) 
+    ! and from workers (from subroutine dirnod);
+    ! in the latter case - we only want to wake up nodes, 
+    ! pass initial information, and leave the rest to master - this is handled with "launch+only" flag
+    call visual_initialize_and_sync_nodes(launch_only)
     print *, 'VISUAL parallel: VAR_MPI', is_parallel()
     print *, 'size of communicator', mpi_get_nr_proc()
     print *, 'rank of the process on master ', get_my_rank()
@@ -514,8 +521,10 @@ contains
     !else
     !  call cpu_time(walltime)
     !end if
+    if (mpi_is_master()) call visual_initialize_data_from_dirac(mol, aobasis)
 #ifdef VAR_MPI
       if (is_parallel()) then
+        call synchronize_data_from_dirac(mol, aobasis)
         call interface_mpi_bcast(visual_cfg_nr_dmat,1,irank_master,global_communicator)
       end if
 #endif
@@ -579,7 +588,7 @@ contains
 ! ---- end ----    
 
     walltime = walltime - visual_walltime()
-    print *, 'Elapsed walltime in run_visual: ', walltime
+    if (mpi_is_master()) print *, 'Elapsed walltime in run_visual: ', walltime
 
   end subroutine
 
@@ -603,89 +612,185 @@ contains
     type(grid_t):: grid
     type(grid_t), allocatable:: grids(:)
     type(grid_function_t), allocatable:: grid_functions(:)
+    real(8), allocatable:: grid_function_values(:,:)
     integer:: ig, igf
     integer:: g_ndim, gf_ndim, npoints
     real(8):: extents(0:1, 3)
     integer:: my_rank
     real(8) :: walltime
+    integer:: n_this_proc, idim_grid, idim_gf
 !   --------------------------------------------------------------------------
 
+    if (mpi_is_master()) write(*,*) 'IN VISUAL_DRIVER_REFACTORED'
     if (mpi_is_master()) call rs_input%display
 
     do ig = 1, rs_input%nr_grids
 
+      if (mpi_is_master()) write(*,*) 'IN VISUAL_DRIVER_REFACTORED, start loop over grids ', ig
+!
+!     get necessary information about the grid and share with workers
+!
+
       if (mpi_is_master()) then
         call get_grid_info(ig, rs_input%grids(ig), mol)
-        if (rs_input%print_level > 0) call rs_input%grids(ig)%display
+        !if (rs_input%print_level > 0) call rs_input%grids(ig)%display
       end if
 #ifdef VAR_MPI
       if (is_parallel()) call synchronize_grid_data(rs_input%grids(ig))
-!      g_ndim  = rs_input%grids(ig)%ndim
-!      npoints = rs_input%grids(ig)%nr_points_total
 #endif
-! 
-!      if (mpi_is_master()) then
-!        allocate(rs_input%grids(ig)%points(g_ndim, npoints))
-!        rs_input%grids(ig)%points = 0.0d0
-!      end if
 
-!     !gosia todo: 
-!     !for optimization - try making all arrays 1-dimensional, then reshape?
-!     !grid_points = reshape(rs_input%grids(ig)%points(g_ndim, npoints))
+      g_ndim  = rs_input%grids(ig)%ndim
+      npoints = rs_input%grids(ig)%nr_points_total
 
-      !call get_grid_points(rs_input%grids(ig))
-      !if (rs_input%grids(ig)%export) call store_grid(rs_input%grids(ig))
+      if (mpi_is_master()) then
+        allocate(rs_input%grids(ig)%points(g_ndim, npoints))
+        rs_input%grids(ig)%points = 0.0d0
+      end if
+
+!
+!     get grid points
+!
+!     gosia todo: 
+!     for optimization - try making all arrays 1-dimensional, then reshape?
+!     grid_points = reshape(rs_input%grids(ig)%points(g_ndim, npoints))
+
+      call get_grid_points(rs_input%grids(ig))
+      if (rs_input%grids(ig)%export) then
+        if (mpi_is_master()) call store_grid(rs_input%grids(ig))
+      end if
       !if (rs_input%print_level > 0) & 
       !  write(*, *) 'Grid points (grid id = ', &
       !    rs_input%grids(ig)%id, ') are stored on file ', rs_input%grids(ig)%file_out
 
-      !do igf = 1, rs_input%nr_grid_functions
-      !  !gosia fixme - now used only to assign labels for hdf5 storage,
-      !  if (mpi_is_master()) then 
-      !    call get_grid_function_info(rs_input%grid_functions(igf))
-      !  end if
-      !    !bcast
+      do igf = 1, rs_input%nr_grid_functions
 
-      !  if (rs_input%grid_functions(igf)%id_assigned_grid == ig) then
+!
+!       get necessary information about the grid function and share with workers
+!
+!       gosia fixme - now used only to assign labels for hdf5 storage,
+        if (mpi_is_master()) then 
+          call get_grid_function_info(igf, rs_input%grid_functions(igf))
+          if (rs_input%print_level > 0) call rs_input%grid_functions(igf)%display
+        end if
+#ifdef VAR_MPI
+        if (is_parallel()) call synchronize_grid_function_data(rs_input%grid_functions(igf))
+        !if (rs_input%print_level > 0) call rs_input%grid_functions(igf)%display(my_rank=get_my_rank())
+#endif
 
-      !    ! gosia todo: it would be cleaner to use "associate", 
-      !    ! but some compilers have troubles with nested associate
-      !    ! https://stackoverflow.com/questions/66562058/associate-chains-in-fortran
+        if (mpi_is_master()) write(*,*) &
+         'IN VISUAL_DRIVER_REFACTORED: ids ', ig, igf, rs_input%grid_functions(igf)%id_assigned_grid 
 
-      !    if (rs_input%print_level > 0) then
-      !      if (mpi_is_master()) then 
-      !        call rs_input%grid_functions(igf)%display
-      !        call rs_input%grids(ig)%display_points
-      !      end if
-      !    end if
 
-      !    gf_ndim  = rs_input%grid_functions(igf)%get_ndim()
+        if (rs_input%grid_functions(igf)%id_assigned_grid == ig) then
 
-      !    allocate(rs_input%grid_functions(igf)%values(gf_ndim, npoints))
-      !    rs_input%grid_functions(igf)%values = 0.0d0
+        if (mpi_is_master()) write(*,*) &
+         'IN VISUAL_DRIVER_REFACTORED, found corresp grid fun ', igf, ig
+          ! gosia todo: it would be cleaner to use "associate", 
+          ! but some compilers have troubles with nested associate
+          ! https://stackoverflow.com/questions/66562058/associate-chains-in-fortran
 
-      !    ! gosia todo:
-      !    ! add "visualize"/"integrate" procedures in this call; now - visualization only
-      !    ! add constructs for DIRAC data (D, D_0, ...)
-      !    call work_on_grid(rs_input%grids(ig), rs_input%grid_functions(igf), &
-      !                      nr_dmat, D, D_0, ao, buffer)
+!
+!         distribute grid points over nodes
+!
 
-      !    if (rs_input%grid_functions(igf)%export) then
-      !       if (mpi_is_master()) then
-      !         call store_data(rs_input%grids(ig), rs_input%grid_functions(igf))
-      !       end if
-      !    end if
+          n_this_proc = rs_input%grids(ig)%nr_points_total
+          if (is_parallel()) then
+            ! redefine n_this_proc
+            do idim_grid = 1, rs_input%grids(ig)%ndim
+              call visual_interface_mpi_distribute_points(rs_input%grids(ig)%points(idim_grid,:), &
+                         rs_input%grids(ig)%nr_points_total, n_this_proc)
+            end do
+          end if
 
-      !    deallocate(rs_input%grid_functions(igf)%values)
+!
+!         do work on grid
+!
 
-      !  end if
-      !end do
+          gf_ndim  = rs_input%grid_functions(igf)%get_ndim()
 
-      !deallocate(rs_input%grids(ig)%points)
-      !if (allocated(rs_input%grids(ig)%file_inp)) deallocate(rs_input%grids(ig)%file_inp)
-      !if (allocated(rs_input%grids(ig)%file_out)) deallocate(rs_input%grids(ig)%file_out)
+          allocate(grid_function_values(gf_ndim, n_this_proc))
+          grid_function_values = 0.0d0
+
+          if (mpi_is_master()) then
+            write(*, *) 'BEFORE WORK_ON_GRID'
+            write(*, *) 'dimensions: ', gf_ndim, n_this_proc
+            write(*, *) 'nr_dmat: ', nr_dmat
+            write(*, *) 'allocated values: ', allocated(grid_function_values)
+          end if
+
+          ! gosia todo:
+          ! add "visualize"/"integrate" procedures in this call; now - visualization only
+          ! add constructs for DIRAC data (D, D_0, ...)
+          call work_on_grid(rs_input%grids(ig), rs_input%grid_functions(igf), &
+                            n_this_proc, &
+                            grid_function_values, &
+                            nr_dmat, D, D_0, ao, buffer)
+
+          allocate(rs_input%grid_functions(igf)%values(gf_ndim, rs_input%grids(ig)%nr_points_total))
+          rs_input%grid_functions(igf)%values = 0.0d0
+
+          if (mpi_is_master()) then
+            write(*, *) 'AFTER WORK_ON_GRID'
+            write(*, *) 'allocated values: ', allocated(grid_function_values), allocated(rs_input%grid_functions(igf)%values)
+            write(*, *) 'values: ', grid_function_values
+          end if
+ 
+          if (is_parallel()) then
+            do idim_gf = 1, gf_ndim
+              call visual_interface_mpi_gatherv(grid_function_values(idim_gf,:), &
+                         rs_input%grid_functions(igf)%values(idim_gf,:), n_this_proc)
+            end do
+          else
+            do idim_gf = 1, gf_ndim
+              rs_input%grid_functions(igf)%values(idim_gf,:) = grid_function_values(idim_gf,:)
+            end do
+          end if
+
+          if (mpi_is_master()) then
+            write(*, *) 'AFTER GATHERING'
+            write(*, *) 'gathered values: ', rs_input%grid_functions(igf)%values
+          end if
+ 
+          deallocate(grid_function_values)
+
+!
+!         save data
+!
+
+          if (rs_input%grid_functions(igf)%export) then
+             if (mpi_is_master()) then
+               call store_data(rs_input%grids(ig), rs_input%grid_functions(igf))
+             end if
+          end if
+
+          if (mpi_is_master()) then
+            write(*, *) 'AFTER STORING'
+            write(*, *) 'stored values?: ', rs_input%grid_functions(igf)%values
+          end if
+ 
+          if (allocated(rs_input%grid_functions(igf)%values))   deallocate(rs_input%grid_functions(igf)%values)
+        end if
+
+        if (allocated(rs_input%grid_functions(igf)%file_inp)) deallocate(rs_input%grid_functions(igf)%file_inp)
+        if (allocated(rs_input%grid_functions(igf)%file_out)) deallocate(rs_input%grid_functions(igf)%file_out)
+
+      end do
+
+      if (allocated(rs_input%grids(ig)%points))   deallocate(rs_input%grids(ig)%points)
+    end do
+
+!
+!   clean
+!
+
+    do ig = 1, rs_input%nr_grids
       call rs_input%grids(ig)%erase()
-
+      if (allocated(rs_input%grids(ig)%file_inp)) deallocate(rs_input%grids(ig)%file_inp)
+      if (allocated(rs_input%grids(ig)%file_out)) deallocate(rs_input%grids(ig)%file_out)
+    end do
+    do igf = 1, rs_input%nr_grid_functions
+      call rs_input%grid_functions(igf)%erase()
+      if (allocated(rs_input%grid_functions(igf)%name)) deallocate(rs_input%grid_functions(igf)%name)
     end do
 
 
@@ -693,10 +798,14 @@ contains
 
 
   subroutine work_on_grid(grid, grid_function, &
+                          nr_points, &
+                          grid_function_values, &
                           nr_dmat, D, D_0, ao, buffer)
 
     type(grid_t), intent(in):: grid
     type(grid_function_t), intent(inout):: grid_function
+    real(8), intent(out)  :: grid_function_values(:,:)
+    integer, intent(in)  :: nr_points
     integer, intent(in)  :: nr_dmat
     type(matrix)         :: D(nr_dmat)
     type(matrix)         :: D_0
@@ -705,7 +814,7 @@ contains
     integer:: ipoint, icomp
 
 !   here starts the expensive loop over points    
-    do ipoint = 1, grid%nr_points_total
+    do ipoint = 1, nr_points
 
       !call get_quantity_in_point(nr_dmat,                   &
       !                           D,                         &
@@ -727,6 +836,7 @@ contains
                                  buffer,                    &
                                  grid, &
                                  grid_function, &
+                                 grid_function_values, &
                                  ipoint)
 
       !write(*,*) 'grid_function%values in ', ipoint, grid_function%values(1,ipoint)

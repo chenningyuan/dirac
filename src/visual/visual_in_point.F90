@@ -59,6 +59,7 @@ contains
                                    buffer,  &
                                    grid, &
                                    grid_function, &
+                                   grid_function_values, &
                                    ipoint)
 
 !    --------------------------------------------------------------------------
@@ -69,6 +70,7 @@ contains
      real(8)              :: buffer(*)
      type(grid_t), intent(in):: grid
      type(grid_function_t), intent(inout):: grid_function
+     real(8), intent(out):: grid_function_values(:,:)
      integer, intent(in), optional  :: ipoint !thiswill not be optional
 !    --------------------------------------------------------------------------
      integer              :: imat
@@ -97,7 +99,8 @@ contains
                       D(imat)%elms,  &
                       buffer,        &
                       ao)
-           grid_function%values(1,ipoint:ipoint) = v1
+           !grid_function%values(1,ipoint:ipoint) = v1
+           grid_function_values(1:1,ipoint:ipoint) = v1
 
          case ('density_gradient')
 !          electron density gradient
@@ -110,9 +113,12 @@ contains
                        D(imat)%elms,     &
                        buffer,           &
                        ao)               
-           grid_function%values(1:1,ipoint:ipoint) = v2(1)
-           grid_function%values(2:2,ipoint:ipoint) = v2(2)
-           grid_function%values(3:3,ipoint:ipoint) = v2(3)
+           !grid_function%values(1:1,ipoint:ipoint) = v2(1)
+           !grid_function%values(2:2,ipoint:ipoint) = v2(2)
+           !grid_function%values(3:3,ipoint:ipoint) = v2(3)
+           grid_function_values(1:1,ipoint:ipoint) = v2(1)
+           grid_function_values(2:2,ipoint:ipoint) = v2(2)
+           grid_function_values(3:3,ipoint:ipoint) = v2(3)
 
          case ('density_hessian')
 !          gosia fixme:
@@ -129,15 +135,24 @@ contains
                        D(imat)%elms,     &
                        buffer,           &
                        ao)               
-           grid_function%values(1:1,ipoint:ipoint) = v3(1, 1)   ! xx
-           grid_function%values(2:2,ipoint:ipoint) = v3(1, 2)   ! xy
-           grid_function%values(3:3,ipoint:ipoint) = v3(1, 3)   ! xz
-           grid_function%values(4:4,ipoint:ipoint) = v3(2, 1)   ! yx
-           grid_function%values(5:5,ipoint:ipoint) = v3(2, 2)   ! yy
-           grid_function%values(6:6,ipoint:ipoint) = v3(2, 3)   ! yz
-           grid_function%values(7:7,ipoint:ipoint) = v3(3, 1)   ! zx
-           grid_function%values(8:8,ipoint:ipoint) = v3(3, 2)   ! zy
-           grid_function%values(9:9,ipoint:ipoint) = v3(3, 3)   ! zz
+           !grid_function%values(1:1,ipoint:ipoint) = v3(1, 1)   ! xx
+           !grid_function%values(2:2,ipoint:ipoint) = v3(1, 2)   ! xy
+           !grid_function%values(3:3,ipoint:ipoint) = v3(1, 3)   ! xz
+           !grid_function%values(4:4,ipoint:ipoint) = v3(2, 1)   ! yx
+           !grid_function%values(5:5,ipoint:ipoint) = v3(2, 2)   ! yy
+           !grid_function%values(6:6,ipoint:ipoint) = v3(2, 3)   ! yz
+           !grid_function%values(7:7,ipoint:ipoint) = v3(3, 1)   ! zx
+           !grid_function%values(8:8,ipoint:ipoint) = v3(3, 2)   ! zy
+           !grid_function%values(9:9,ipoint:ipoint) = v3(3, 3)   ! zz
+           grid_function_values(1:1,ipoint:ipoint) = v3(1, 1)   ! xx
+           grid_function_values(2:2,ipoint:ipoint) = v3(1, 2)   ! xy
+           grid_function_values(3:3,ipoint:ipoint) = v3(1, 3)   ! xz
+           grid_function_values(4:4,ipoint:ipoint) = v3(2, 1)   ! yx
+           grid_function_values(5:5,ipoint:ipoint) = v3(2, 2)   ! yy
+           grid_function_values(6:6,ipoint:ipoint) = v3(2, 3)   ! yz
+           grid_function_values(7:7,ipoint:ipoint) = v3(3, 1)   ! zx
+           grid_function_values(8:8,ipoint:ipoint) = v3(3, 2)   ! zy
+           grid_function_values(9:9,ipoint:ipoint) = v3(3, 3)   ! zz
        end select
     end do
 

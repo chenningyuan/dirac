@@ -3,7 +3,8 @@ module visual_io
   use visual_txt_storage
   use visual_labeled_storage
 
-  use labeled_storage, only: file_info_t
+  !use labeled_storage, only: file_info_t
+  use labeled_storage
   use visual_cfg
   use visual_utils
   use visual_datatypes
@@ -13,6 +14,7 @@ module visual_io
   public store_grid
   public store_data
   public get_grid_info_from_file
+  !public get_grid_function_info_from_file
   public get_grid_points_from_file
   public get_grid_function_info_from_file
 
@@ -47,7 +49,7 @@ contains
   subroutine store_grid(grid)
     ! gosia todo:
     ! - add support for other formats (now, hdf5 format only: data_file%type = 2)
-    ! - check what grid%status == -1 means ('never used' a.k.a 'file not exists'?)
+    ! - check what file%status == -1 means ('never used' a.k.a 'file not exists'?)
     type(grid_t), intent(in):: grid
     type(file_info_t):: data_file
 
@@ -71,11 +73,12 @@ contains
   subroutine store_data(grid, grid_function)
     ! gosia todo:
     ! - add support for other formats (now, hdf5 format only: data_file%type = 2)
-    ! - check what grid%status == -1 means ('never used' a.k.a 'file not exists'?)
+    ! - check what file%status == -1 means ('never used' a.k.a 'file not exists'?)
     type(grid_t), intent(in):: grid
     type(grid_function_t), intent(in):: grid_function
     type(file_info_t):: data_file
 
+    write(*,*) 'IN store_data'
     data_file%name = grid_function%file_out
     ! gosia fixme - hardcoded
     data_file%status = -1
@@ -90,23 +93,25 @@ contains
         call write_grid_to_checkpoint(data_file, grid)
         call write_grid_function_to_checkpoint(data_file, grid_function)
     end select
+    write(*,*) 'OUT store_data'
   end subroutine
 
 
   subroutine get_grid_info_from_file(grid)
     ! gosia todo:
     ! - add support for other formats (now, hdf5 format only: data_file%type = 2)
-    ! - check what grid%status == -1 means ('never used' a.k.a 'file not exists'?)
+    ! - check what file%status == -1 means ('never used' a.k.a 'file not exists'?)
     type(grid_t), intent(inout):: grid
     type(file_info_t):: data_file
 
     if (grid%input  /=  1) return
-    if (grid%status /= -1) return
 
     data_file%name = grid%file_inp
+    !if (data_file%status == -1) return ! file not exists
+
     ! gosia fixme - hardcoded
     data_file%type = 2
-    data_file%status = 0
+    data_file%status = 0 ! assuming file present and closed
 
     select case (data_file%type)
       case (2)
@@ -118,14 +123,14 @@ contains
   subroutine get_grid_points_from_file(grid)
     ! gosia todo:
     ! - add support for other formats (now, hdf5 format only: data_file%type = 2)
-    ! - check what grid%status == -1 means ('never used' a.k.a 'file not exists'?)
     type(grid_t), intent(inout):: grid
     type(file_info_t):: data_file
 
     if (grid%input  /=  1) return
-    if (grid%status /= -1) return
 
     data_file%name = grid%file_inp
+    if (data_file%status == -1) return ! file not exists
+
     ! gosia fixme - hardcoded
     data_file%type = 2
     data_file%status = 0
@@ -140,7 +145,7 @@ contains
   subroutine get_grid_function_info_from_file(grid_function)
     ! gosia todo:
     ! - add support for other formats (now, hdf5 format only: data_file%type = 2)
-    ! - check what grid%status == -1 means ('never used' a.k.a 'file not exists'?)
+    ! - check what file%status == -1 means ('never used' a.k.a 'file not exists'?)
     type(grid_function_t), intent(inout):: grid_function
     character*(:), allocatable  :: group
     type(file_info_t):: data_file
