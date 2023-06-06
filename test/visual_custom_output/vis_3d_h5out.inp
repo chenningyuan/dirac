@@ -64,7 +64,7 @@ id=2 input=create ndim=3 spacing=[0.2,0.2,0.2] margin=2.0 typ=1 export=yes file_
 id=3 input=import file_inp=grid2.h5
 .GRIDFUNCTIONS    
 3
-name=density id_grid=3 purpose=visualization export=yes file_out=density1.h5
-name=density_gradient id_grid=3 purpose=visualization export=yes file_out=density_gradient1.h5
+#name=density id_grid=3 purpose=visualization export=yes file_out=density1.h5
+#name=density_gradient id_grid=3 purpose=visualization export=yes file_out=density_gradient1.h5
 name=density_hessian id_grid=3 purpose=visualization export=yes file_out=density_hessian1.h5
 *END OF

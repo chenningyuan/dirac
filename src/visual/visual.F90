@@ -555,6 +555,8 @@ contains
                        buffer)
     end if
 
+    if (allocated(rs_input%grids)) deallocate(rs_input%grids)
+    if (allocated(rs_input%grid_functions)) deallocate(rs_input%grid_functions)
     call rs_input%erase()
 
     if (mol%in_use()) then
@@ -621,12 +623,10 @@ contains
     integer:: n_this_proc, idim_grid, idim_gf
 !   --------------------------------------------------------------------------
 
-    if (mpi_is_master()) write(*,*) 'IN VISUAL_DRIVER_REFACTORED'
     if (mpi_is_master()) call rs_input%display
 
     do ig = 1, rs_input%nr_grids
 
-      if (mpi_is_master()) write(*,*) 'IN VISUAL_DRIVER_REFACTORED, start loop over grids ', ig
 !
 !     get necessary information about the grid and share with workers
 !
@@ -642,10 +642,8 @@ contains
       g_ndim  = rs_input%grids(ig)%ndim
       npoints = rs_input%grids(ig)%nr_points_total
 
-      if (mpi_is_master()) then
-        allocate(rs_input%grids(ig)%points(g_ndim, npoints))
-        rs_input%grids(ig)%points = 0.0d0
-      end if
+      allocate(rs_input%grids(ig)%points(g_ndim, npoints))
+      rs_input%grids(ig)%points = 0.0d0
 
 !
 !     get grid points
@@ -654,13 +652,21 @@ contains
 !     for optimization - try making all arrays 1-dimensional, then reshape?
 !     grid_points = reshape(rs_input%grids(ig)%points(g_ndim, npoints))
 
+      if (mpi_is_master()) then
+      ! gosia fixme - if grid is generated then also do this in parallel; in this case
+      ! here allocate points on master and move the allocation on nodes to "get_grid_points"
       call get_grid_points(rs_input%grids(ig))
-      if (rs_input%grids(ig)%export) then
-        if (mpi_is_master()) call store_grid(rs_input%grids(ig))
       end if
-      !if (rs_input%print_level > 0) & 
-      !  write(*, *) 'Grid points (grid id = ', &
-      !    rs_input%grids(ig)%id, ') are stored on file ', rs_input%grids(ig)%file_out
+
+      if (rs_input%grids(ig)%export) then
+!       also export grid to a separate file 
+        if (mpi_is_master()) then
+          call store_grid(rs_input%grids(ig))
+          if (rs_input%print_level > 0) then
+            write(*, *) 'Grid ', rs_input%grids(ig)%id, ' exported to file ', rs_input%grids(ig)%file_out
+          end if
+        end if
+      end if
 
       do igf = 1, rs_input%nr_grid_functions
 
@@ -670,21 +676,14 @@ contains
 !       gosia fixme - now used only to assign labels for hdf5 storage,
         if (mpi_is_master()) then 
           call get_grid_function_info(igf, rs_input%grid_functions(igf))
-          if (rs_input%print_level > 0) call rs_input%grid_functions(igf)%display
+          !if (rs_input%print_level > 0) call rs_input%grid_functions(igf)%display
         end if
 #ifdef VAR_MPI
         if (is_parallel()) call synchronize_grid_function_data(rs_input%grid_functions(igf))
-        !if (rs_input%print_level > 0) call rs_input%grid_functions(igf)%display(my_rank=get_my_rank())
 #endif
 
-        if (mpi_is_master()) write(*,*) &
-         'IN VISUAL_DRIVER_REFACTORED: ids ', ig, igf, rs_input%grid_functions(igf)%id_assigned_grid 
+        if (rs_input%grid_functions(igf)%id_assigned_grid == rs_input%grids(ig)%id) then
 
-
-        if (rs_input%grid_functions(igf)%id_assigned_grid == ig) then
-
-        if (mpi_is_master()) write(*,*) &
-         'IN VISUAL_DRIVER_REFACTORED, found corresp grid fun ', igf, ig
           ! gosia todo: it would be cleaner to use "associate", 
           ! but some compilers have troubles with nested associate
           ! https://stackoverflow.com/questions/66562058/associate-chains-in-fortran
@@ -694,6 +693,7 @@ contains
 !
 
           n_this_proc = rs_input%grids(ig)%nr_points_total
+#ifdef VAR_MPI
           if (is_parallel()) then
             ! redefine n_this_proc
             do idim_grid = 1, rs_input%grids(ig)%ndim
@@ -701,6 +701,7 @@ contains
                          rs_input%grids(ig)%nr_points_total, n_this_proc)
             end do
           end if
+#endif
 
 !
 !         do work on grid
@@ -737,8 +738,9 @@ contains
  
           if (is_parallel()) then
             do idim_gf = 1, gf_ndim
-              call visual_interface_mpi_gatherv(grid_function_values(idim_gf,:), &
-                         rs_input%grid_functions(igf)%values(idim_gf,:), n_this_proc)
+              call visual_interface_mpi_gatherv(grid_function_values(idim_gf,:),&
+                                                rs_input%grid_functions(igf)%values(idim_gf,:),&
+                                                n_this_proc)
             end do
           else
             do idim_gf = 1, gf_ndim
@@ -769,28 +771,28 @@ contains
           end if
  
           if (allocated(rs_input%grid_functions(igf)%values))   deallocate(rs_input%grid_functions(igf)%values)
-        end if
+        end if ! if (rs_input%grid_functions(igf)%id_assigned_grid == ig) then
 
+        if (.not. mpi_is_master()) then
+        if (allocated(rs_input%grid_functions(igf)%name)) deallocate(rs_input%grid_functions(igf)%name)
         if (allocated(rs_input%grid_functions(igf)%file_inp)) deallocate(rs_input%grid_functions(igf)%file_inp)
         if (allocated(rs_input%grid_functions(igf)%file_out)) deallocate(rs_input%grid_functions(igf)%file_out)
+        end if
 
-      end do
+      end do ! do igf = 1, rs_input%nr_grid_functions
 
-      if (allocated(rs_input%grids(ig)%points))   deallocate(rs_input%grids(ig)%points)
-    end do
-
-!
-!   clean
-!
-
-    do ig = 1, rs_input%nr_grids
-      call rs_input%grids(ig)%erase()
+      if (allocated(rs_input%grids(ig)%points)) deallocate(rs_input%grids(ig)%points)
       if (allocated(rs_input%grids(ig)%file_inp)) deallocate(rs_input%grids(ig)%file_inp)
       if (allocated(rs_input%grids(ig)%file_out)) deallocate(rs_input%grids(ig)%file_out)
-    end do
+
+    end do ! do ig = 1, rs_input%nr_grids
+
+
     do igf = 1, rs_input%nr_grid_functions
       call rs_input%grid_functions(igf)%erase()
-      if (allocated(rs_input%grid_functions(igf)%name)) deallocate(rs_input%grid_functions(igf)%name)
+    end do
+    do ig = 1, rs_input%nr_grids
+      call rs_input%grids(ig)%erase()
     end do
 
 

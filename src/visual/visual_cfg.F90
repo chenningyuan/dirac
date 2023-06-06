@@ -314,26 +314,27 @@ contains
 
    end subroutine
 
-  subroutine grid_input_cfg(key, val, grid)
+  subroutine grid_input_cfg(key, val, grid, id_grid)
 #include "codata.h"
     character(len=*), intent(in):: key, val
-    character(len=len_trim(val))::temp
     type(grid_t),intent(inout)::grid
+    integer, intent(in)::id_grid
+    character(len=len_trim(val))::temp
     integer::stat, np
     real(8)::s
     integer::nr_words, i
     character(len=10),allocatable::chvalues(:)
 
-    select case (trim(key))
+    select case (key)
       case ('id')
         call str2int(val, grid%id, stat)
       case ('ndim')
         call str2int(val, grid%ndim, stat)
         grid%ndim_known = .true.
       case ('npoints')
-        temp = trim(val)
-        call trim_ch(temp, trim(val),  '[')
-        call trim_ch(temp, trim(temp), ']')
+        temp = val
+        call trim_ch(temp, val,  '[')
+        call trim_ch(temp, temp, ']')
         if (index(val, ',') > 0) then
           nr_words = word_count(temp, ',')
           allocate(chvalues(nr_words))
@@ -345,13 +346,13 @@ contains
           end do
           deallocate(chvalues)
         else
-          call str2int(trim(temp), grid%nr_points(1), stat)
+          call str2int(temp, grid%nr_points(1), stat)
           grid%nr_points_known(1) = .true.
         end if
       case ('spacing')
-        temp = trim(val)
-        call trim_ch(temp, trim(val),  '[')
-        call trim_ch(temp, trim(temp), ']')
+        temp = val
+        call trim_ch(temp, val,  '[')
+        call trim_ch(temp, temp, ']')
         if (index(val, ',') > 0) then
           nr_words = word_count(temp, ',')
           allocate(chvalues(nr_words))
@@ -364,15 +365,15 @@ contains
           end do
           deallocate(chvalues)
         else
-          call str2flt(trim(temp), grid%spacing(1), stat)
+          call str2flt(temp, grid%spacing(1), stat)
           grid%spacing_known(1) = .true.
           ! scale to a.u.
           grid%spacing(1) = grid%spacing(1)/xtang
         end if
       case ('input')
-        if (trim(val) == 'create') then
+        if (val == 'create') then
           grid%input = 0
-        else if (trim(val) == 'import') then
+        else if (val == 'import') then
           grid%input = 1
         else
           write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"'
@@ -381,9 +382,9 @@ contains
       case ('typ')
         call str2int(val, grid%typ, stat)
       case ('weights')
-        if (trim(val) == 'no') then
+        if (val == 'no') then
           grid%weights = 0
-        else if (trim(val) == 'yes') then
+        else if (val == 'yes') then
           grid%weights = 1
         else
           write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
@@ -394,23 +395,23 @@ contains
         ! scale to a.u.
         grid%margin = grid%margin/xtang
       case ('export')
-        if (trim(val) == 'no') then
+        if (val == 'no') then
           grid%export = .false.
-        else if (trim(val) == 'yes') then
+        else if (val == 'yes') then
           grid%export = .true.
         else
           write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
           stop
         end if
       case ('file_inp')
-        grid%file_inp = trim(val)
+        grid%file_inp = val
       case ('file_out')
-        grid%file_out = trim(val)
+        grid%file_out = val
       case default
         print *, 'unknown key'
         stop
     end select
-    !call verify_grid_input_cfg(grid)
+    if (grid%id == 0) grid%id = id_grid
   end subroutine grid_input_cfg
 
   subroutine verify_grid_input_cfg(grid)
@@ -421,12 +422,12 @@ contains
     if (grid%input == 1) then
       ! when reading grid from file
       write(*, *) 'WARNING: grid information will be read from file'
-      write(*, *) 'These input options will be ignored (if present): ndim, npoints, spacing, margin'
+      write(*, *) 'These input options will be ignored (if present): ndim, npoints, spacing, margin.'
 
     else if (grid%input == 0) then
       ! when creating grid
       if (grid%ndim == 0) then
-        write(*, *) 'ERROR: grid "ndim" information is missing'
+        write(*, *) 'ERROR: grid "ndim" information is missing.'
         stop
       end if
       do i = 1, grid%ndim
@@ -439,13 +440,10 @@ contains
 
     do i = 1, grid%ndim
       if (grid%nr_points(i) /=0 .and. grid%spacing(i) /=0) then
-        write(*, *) 'ERROR: exclusive options: "npoints" and "spacing"'
+        write(*, *) 'ERROR: exclusive options: "npoints" and "spacing".'
         stop
       end if
     end do
-
-    ! set the status to -1 to make the code ready for processing grid metadata
-    grid%status = -1
 
   end subroutine verify_grid_input_cfg
 
@@ -453,9 +451,14 @@ contains
   subroutine verify_grid_function_input_cfg(grid_function)
     type(grid_function_t),intent(in)::grid_function
 
+    if (grid_function%id_assigned_grid == 0) then
+      write(*, *) 'ERROR: missing information about the grid ("id_grid").'
+      stop
+    end if
+
     if (grid_function%input == 1) then
       if (len_trim(grid_function%file_inp) == 0) then
-        write(*, *) 'Missing file for grid_function import. Stop.'
+        write(*, *) 'ERROR: missing file for grid_function import.'
         stop
       end if
     !else if (grid_function%input == 0) then
@@ -465,52 +468,54 @@ contains
   end subroutine verify_grid_function_input_cfg
 
 
-  subroutine grid_function_input_cfg(key, val, gf, idx)
+  subroutine grid_function_input_cfg(key, val, grid_function, id_grid_function)
     character(len=*), intent(in):: key, val
-    integer, intent(in):: idx
+    type(grid_function_t),intent(inout)::grid_function
+    integer, intent(in)::id_grid_function
     character(len=len(key))::temp
-    type(grid_function_t),intent(inout)::gf
     integer::stat
 
-    gf%id = idx
     select case (key)
       case ('name')
-        gf%name = trim(val)
-        call verify_grid_function_predefined(gf)
+        grid_function%name = val
+        ! gosia fixme: this call will be moved up to verify_grid_function_input_cfg subroutine
+        call verify_grid_function_predefined(grid_function)
       case ('id_grid')
-        call str2int(val, gf%id_assigned_grid, stat)
+        call str2int(val, grid_function%id_assigned_grid, stat)
       case ('input')
         if (val == 'calculate') then
-          gf%input = 0
+          grid_function%input = 0
         else if (val == 'import') then
-          gf%input = 1
+          grid_function%input = 1
         else
           write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"'
           stop
         end if
       case ('purpose')
         if (val == 'visualization') then
-          gf%purpose = 0
+          grid_function%purpose = 0
         else if (val == 'integration') then
-          gf%purpose = 1
+          grid_function%purpose = 1
         end if
       case ('export')
         if (val == 'no') then
-          gf%export = .false.
+          grid_function%export = .false.
         else if (val == 'yes') then
-          gf%export = .true.
+          grid_function%export = .true.
         else
           write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
           stop
         end if
       case ('file_inp')
-        gf%file_inp = trim(val)
+        grid_function%file_inp = val
       case ('file_out')
-        gf%file_out = trim(val)
+        grid_function%file_out = val
       case default
         print *, 'unknown key'
         stop
     end select
+
+    if (grid_function%id == 0) grid_function%id = id_grid_function
 
   end subroutine grid_function_input_cfg
 
@@ -518,8 +523,11 @@ contains
     class(grid_function_t), intent(inout):: grid_function
 
     select case (grid_function%name)
-      case ('density', 'density_laplacian', &
-            'esp', 'espe', 'espn',          &
+      case ('density', &
+            'density_laplacian', &
+            'esp', &
+            'espe', &
+            'espn', &
             'elf')
         grid_function%tensor_order = 0
         grid_function%wf_order = 0
@@ -533,6 +541,7 @@ contains
         write(*, *) 'unknown grid function name. stop'
         stop
     end select
+
   end subroutine verify_grid_function_predefined
 
 
@@ -574,12 +583,12 @@ contains
     use interface_to_mpi
     use integer_kind_mpilib
 
+    call interface_mpi_bcast_l0(rs_input%outpri,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%print_level,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%nr_grids,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%nr_grid_functions,1,irank_master,global_communicator)
-    call interface_mpi_bcast_l0(rs_input%outpri,1,irank_master,global_communicator)
     if (.not.mpi_is_master()) then
-      ! this is allocated on master in input/input_reader_sections.F90
+      ! the allocation on master happens during DIRAC input reading (input/input_reader_sections.F90)
       allocate(rs_input%grids(rs_input%nr_grids))
       allocate(rs_input%grid_functions(rs_input%nr_grid_functions))
     end if
@@ -587,8 +596,9 @@ contains
     ! legacy
     call interface_mpi_bcast_l0(visual_cfg_global_refactor,1,irank_master,global_communicator)
 
-    if (rs_input%print_level > 0) call logprint
+    !if (rs_input%print_level > 0) call logprint
   end subroutine sync_visual_cfg
+
 
   subroutine logprint
     use visual_mpi

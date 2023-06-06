@@ -686,6 +686,7 @@
          allocate(rs_input%grids(rs_input%nr_grids))
          do i = 1, rs_input%nr_grids
             read(get_file_unit(), '(a)') line
+            if (line(1:1) == '!' .or. line(1:1) == '#') cycle
             nr_words = word_count(line)
             allocate(word_array(nr_words))
             call split_string(line, nr_words, word_array, separator=' ')
@@ -702,6 +703,7 @@
          allocate(rs_input%grid_functions(rs_input%nr_grid_functions))
          do i = 1, rs_input%nr_grid_functions
             read(get_file_unit(), '(a)') line
+            if (line(1:1) == '!' .or. line(1:1) == '#') cycle
             nr_words = word_count(line)
             allocate(word_array(nr_words))
             call split_string(line, nr_words, word_array, separator=' ')
@@ -788,7 +790,7 @@
 
       sep = '='
       call get_key_value(word, sep, key, val)
-      call grid_input_cfg(key, val, rs_input%grids(idx))
+      call grid_input_cfg(trim(key), trim(val), rs_input%grids(idx), idx)
 
    end subroutine
 
@@ -813,7 +815,7 @@
 
       sep = '='
       call get_key_value(word, sep, key, val)
-      call grid_function_input_cfg(key, val, rs_input%grid_functions(idx), idx)
+      call grid_function_input_cfg(trim(key), trim(val), rs_input%grid_functions(idx), idx)
 
    end subroutine
 

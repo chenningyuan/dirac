@@ -330,7 +330,7 @@ contains
     write(*, *) ' GRID FUNCTION:'
     if (with_rank_info) then
       write(*, *) 'id =              ', self%id, my_rank
-      write(*, *) 'name =            ', self%name, my_rank
+      if (allocated(self%name)) write(*, *) 'name =            ', self%name, my_rank
       write(*, *) 'status =          ', self%status, my_rank
       write(*, *) 'input =           ', self%input, my_rank
       write(*, *) 'export =          ', self%export, my_rank
@@ -338,11 +338,11 @@ contains
       write(*, *) 'tensor_order      ', self%tensor_order, my_rank
       write(*, *) 'id_assigned_grid =', self%id_assigned_grid, my_rank
       write(*, *) 'purpose =         ', self%purpose, my_rank
-      write(*, *) 'file_inp =        ', self%file_inp, my_rank
-      write(*, *) 'file_out =        ', self%file_out, my_rank
+      if (allocated(self%file_inp)) write(*, *) 'file_inp =        ', self%file_inp, my_rank
+      if (allocated(self%file_out)) write(*, *) 'file_out =        ', self%file_out, my_rank
     else
       write(*, *) 'id =              ', self%id
-      write(*, *) 'name =            ', self%name
+      if (allocated(self%name)) write(*, *) 'name =            ', self%name
       write(*, *) 'status =          ', self%status
       write(*, *) 'input =           ', self%input
       write(*, *) 'export =          ', self%export
@@ -350,8 +350,8 @@ contains
       write(*, *) 'tensor_order      ', self%tensor_order
       write(*, *) 'id_assigned_grid =', self%id_assigned_grid
       write(*, *) 'purpose =         ', self%purpose
-      write(*, *) 'file_inp =        ', self%file_inp
-      write(*, *) 'file_out =        ', self%file_out
+      if (allocated(self%file_inp)) write(*, *) 'file_inp =        ', self%file_inp
+      if (allocated(self%file_out)) write(*, *) 'file_out =        ', self%file_out
     end if
     write(*, *)
   end subroutine

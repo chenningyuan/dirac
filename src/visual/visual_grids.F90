@@ -302,7 +302,7 @@ contains
               form   = 'formatted')
          f%is_opened = .true.
       end if
-      write(*,*) 'opened file: ', f%name, f%unit
+      !write(*,*) 'opened file: ', f%name, f%unit
    end subroutine
 
 
@@ -445,7 +445,7 @@ contains
       atoms_max(i) = atoms_max(i) + grid%margin
       extents(0, i) = atoms_min(i)
       extents(1, i) = atoms_max(i)
-      write(*, *) 'grid_extents_from_mol : i, min, max ', i, extents(0, i), extents(1, i) 
+      !write(*, *) 'grid_extents_from_mol : i, min, max ', i, extents(0, i), extents(1, i) 
     end do
   end subroutine grid_extents_from_mol
 
@@ -553,16 +553,20 @@ contains
 
 
   subroutine get_grid_info(grid_id, grid, mol)
-    integer, intent(in):: grid_id !fixme
+    integer, intent(in):: grid_id
     type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
 
     if (grid%input  ==  1) then
+      ! grid data to read from file
       call get_grid_info_from_file(grid)
       if (grid%id == 0) grid%id = grid_id
-      print *, 'INFO from get_grid_info: grid%id = ', grid%id
-    else
-      if (grid_id /= grid%id) return
+    else if (grid%input  ==  0) then
+      ! grid to generate
+      if (grid_id /= grid%id) then
+        print *, 'ERROR: problem with grid id in get_grid_info'
+        return
+      end if
       call get_grid_essentials(grid, mol)
       ! center grid around molecule,
       ! modify grid extents and grid%origin (but do not move molecule)
@@ -571,6 +575,7 @@ contains
 
     ! we should now have all information to work on the grid
     grid%status = 0
+
   end subroutine get_grid_info
 
 
@@ -581,10 +586,10 @@ contains
 
     if (grid%input == 1) then
       call get_grid_points_from_file(grid)
-      write(*, *) 'Grid points for grid id = ', grid%id, ' are read from file ', grid%file_inp
+      !write(*, *) 'Grid points for grid id = ', grid%id, ' are read from file ', grid%file_inp
     else if (grid%input == 0) then
       call generate_grid_points(grid)
-      write(*, *) 'Grid points for grid id = ', grid%id, ' are generated'
+      !write(*, *) 'Grid points for grid id = ', grid%id, ' are generated'
     end if
   end subroutine
 

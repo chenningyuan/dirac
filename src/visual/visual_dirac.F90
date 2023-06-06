@@ -68,7 +68,7 @@ contains
     call checkpoint_query(group, tobe_dirac)
     if (tobe_dirac) then
       call read_mol_from_dirac(mol, group)
-      write(*, *) 'Molecule data read from DIRAC CHECKPOINT'
+      !write(*, *) 'Molecule data read from DIRAC CHECKPOINT'
       !if (print_level > 0) call mol%display
 
       !call write_to_rs_checkpoint('/input/molecule', mol)
@@ -139,8 +139,8 @@ contains
 
     call interface_mpi_bcast(ao%n_ao,1,irank_master,global_communicator)
 
-    write(*, *) 'in synchronize_data_from_dirac, mol on node: ', get_my_rank()
-    call mol%display()
+    !write(*, *) 'in synchronize_data_from_dirac, mol on node: ', get_my_rank()
+    !call mol%display()
 
   end subroutine synchronize_data_from_dirac
 
@@ -150,8 +150,16 @@ contains
     integer:: len_gfn_inp, len_gfn_out
 
     if (mpi_is_master()) then
-      len_gfn_inp = len_trim(grid%file_inp)
-      len_gfn_out = len_trim(grid%file_out)
+      if (allocated(grid%file_inp)) then
+        len_gfn_inp = len_trim(grid%file_inp)
+      else
+        len_gfn_inp = 0
+      end if
+      if (allocated(grid%file_out)) then
+        len_gfn_out = len_trim(grid%file_out)
+      else
+        len_gfn_out = 0
+      end if
     end if
     call interface_mpi_bcast(len_gfn_inp,1,irank_master,global_communicator)
     call interface_mpi_bcast(len_gfn_out,1,irank_master,global_communicator)
@@ -184,9 +192,6 @@ contains
     call interface_mpi_bcast(grid%file_inp,len_gfn_inp,irank_master,global_communicator)
     call interface_mpi_bcast(grid%file_out,len_gfn_out,irank_master,global_communicator)
 
-    !print *, 'grid%id grid%ndim on node ', grid%id, grid%ndim, get_my_rank()
-    call grid%display(get_my_rank())
-
   end subroutine synchronize_grid_data
 
 
@@ -195,11 +200,23 @@ contains
     integer:: len_gffn_inp, len_gffn_out, len_gf_name
 
     if (mpi_is_master()) then
-      write(*,*) 'IN synchronize_grid_function_data: ', grid_function%file_out
-      write(*,*) 'IN synchronize_grid_function_data: ', len_trim(grid_function%file_out)
-      len_gffn_inp = len_trim(grid_function%file_inp)
-      len_gffn_out = len_trim(grid_function%file_out)
-      len_gf_name = len_trim(grid_function%name)
+      !write(*,*) 'IN synchronize_grid_function_data: ', grid_function%file_out
+      !write(*,*) 'IN synchronize_grid_function_data: ', len_trim(grid_function%file_out)
+      if (allocated(grid_function%file_inp)) then
+        len_gffn_inp = len_trim(grid_function%file_inp)
+      else
+        len_gffn_inp = 0
+      end if
+      if (allocated(grid_function%file_out)) then
+        len_gffn_out = len_trim(grid_function%file_out)
+      else
+        len_gffn_out = 0
+      end if
+      if (allocated(grid_function%name)) then
+        len_gf_name = len_trim(grid_function%name)
+      else
+        len_gf_name = 0
+      end if
     end if
     call interface_mpi_bcast(len_gffn_inp,1,irank_master,global_communicator)
     call interface_mpi_bcast(len_gffn_out,1,irank_master,global_communicator)
@@ -223,8 +240,6 @@ contains
     call interface_mpi_bcast(grid_function%file_inp,len_gffn_inp,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%file_out,len_gffn_out,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%name,len_gf_name,irank_master,global_communicator)
-
-    !call grid_function%display(get_my_rank())
 
   end subroutine synchronize_grid_function_data
 

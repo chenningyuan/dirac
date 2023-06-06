@@ -14,18 +14,27 @@ module visual_grid_functions
 contains
 
   subroutine get_grid_function_info(grid_function_id, grid_function)
-    integer, intent(in):: grid_function_id !fixme
+    integer, intent(in):: grid_function_id
     type(grid_function_t), intent(inout):: grid_function
 
     if (grid_function%input  ==  1) then
+      ! gosia todo:
+      ! grid function data to read from file
+      !
       !call get_grid_function_info_from_file(grid_function)
-      !if (grid_function%id == 0) grid_function%id = grid_function_id
-      print *, 'INFO from get_grid_function_info: grid_function%id = ', grid_function%id
-    !else
-    !  call get_grid_function_essentials(grid_function)
+      if (grid_function%id == 0) grid_function%id = grid_function_id
+    else
+      ! gosia todo:
+      ! grid to generate
+      if (grid_function_id /= grid_function%id) then
+        print *, 'ERROR: problem with grid function id in get_grid_function_info'
+        return
+      end if
+      !call get_grid_function_essentials(grid_function)
     end if
 
-    if (grid_function%id == 0) grid_function%id = grid_function_id
+    ! we should now have all information to work on the grid function
+    grid_function%status = 0
 
   end subroutine get_grid_function_info
 
