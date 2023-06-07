@@ -959,7 +959,7 @@ contains
     endif
 
 !   Print matrix blocks
-    if(PM%iprloc.ge.4)then
+!    if(PM%iprloc.ge.4)then
       thresh=1.0d-14
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_uu'
       do i=1,nloc12
@@ -1030,7 +1030,7 @@ contains
           if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
-    endif
+!    endif
 
     ! deallocate arrays
     deallocate( ijn )
@@ -1119,7 +1119,7 @@ contains
   endif
 
 ! Print gradient with better precision
-  if(PM%iprloc.ge.4)then
+!  if(PM%iprloc.ge.4)then
     write(lupri,*) 'Print gradient_u'
     do i = 1,nloc12
       write(lupri,*) gradient(i),gradient(i+2*nloc12)
@@ -1128,7 +1128,7 @@ contains
     do i = 1,nloc12
       write(lupri,*) gradient(i+nloc12),gradient(i+3*nloc12)
     enddo
-  endif
+!  endif
 
   ! Norm of the gradient
   dnrmg = dnrm2(ndimg,gradient,1)
@@ -1353,6 +1353,12 @@ contains
         ENDDO
       ENDDO
 
+      WRITE(6,*) 'TEST..QMAT'
+      open(137,file='QMAT',status='new',form='formatted',access='sequential',iostat=ier)
+      write(137) nucdep,nloc
+      write(137) pmat
+      close(137,status='keep')
+      
       IF(PM%IPRLOC.GE.2)THEN
         DO IZ=1,4
           WRITE(LUPRI,*)
@@ -1610,6 +1616,11 @@ contains
       enddo
     enddo
   enddo
+      WRITE(6,*) 'TEST..QMAT'
+      open(137,file='QMAT',status='new',form='unformatted',access='sequential',iostat=ier)
+      write(137) nucdep,nloc
+      write(137) pmat
+      close(137,status='keep')
 
   if(pm%iprloc.ge.2)then
     do iz=1,4
