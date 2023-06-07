@@ -714,10 +714,14 @@ contains
   if(nem == 0)Iminmin = .true.  ! we have reached the minimum of the function
   if(nem /= 0)Iminmin = .false.
 
-  if(mnf%iprint.ge.3)then
-    write(mnf%l,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',nep,nem,nez
+!  if(mnf%iprint.ge.3)then
+    write(mnf%l,'(/a,3i8)')' Eigenvalues of the hessian;  +,-,0  =  ',nep,nem,nez
     write(mnf%l,'(8d12.4)') (etmp(i),i=1,ndim)
-  endif
+!  endif
+write(6,*) '* Eigenvalues of the real Hessian:',ndim
+do i = 1,ndim
+  write(6,*) i,etmp(i)
+enddo
 
   if(mnf%iprint.ge.4)then
     write(mnf%l,'(/a)')' Reduced eigenvalues of the hessian:'
