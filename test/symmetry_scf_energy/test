@@ -22,4 +22,6 @@ inp_files = ['dc.inp', 'dc_sof.inp', 'dc_urkbal.inp', 'nr.inp', 'x2c.inp', 'x2c4
 
 test.run(inp_files, mol_files, f)
 
+test.run(['CO2.inp'], ['CO2.mol'])
+
 sys.exit(test.return_code)
