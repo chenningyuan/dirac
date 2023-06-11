@@ -26,6 +26,7 @@ public  :: init_func, quit_func, mv2point, get_func, get_gradient, get_hessian, 
 
 private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, wricmo_mod, reacmo_mod, insert_loccmo
 private :: ROTCMO_MOD, NUMLST_MOD, errall, get_overlap, selcfs_mod, qtrans90_mod, qdiag90_mod
+private :: cleanmat
 
 type :: PipekMezey_flags
   integer :: iprloc
@@ -1544,8 +1545,10 @@ contains
 
   ! Internal variables
   integer :: i, j, k, iz, nb, ioffl, ioffs, lupri, ier
+  integer :: nmdim
   integer :: ipqtoq(4,0:7)
   real*8  :: dinv, qloc2, dloc
+  real*8, parameter :: cthresh=1.0d-10
 
   real*8, allocatable, dimension(:) :: wlmat, wsmat
 
@@ -1642,6 +1645,10 @@ contains
         call prqmat(pmat(1,1,1,i),nloc,nloc,nloc,nloc,4,ipqtoq(1,0),lupri)
      enddo
   endif
+
+  ! Clean pmatrix
+  nmdim = nloc*nloc*4
+  call cleanmat(pmat,nmdim,cthresh)
 
   ! Calculation and print of the localisation criterion
   write(lupri,'(/20x,a)') '** Pipek-Mezey localization criteria **' 
@@ -2490,5 +2497,21 @@ contains
   deallocate(work, stat=ier); if (ier /= 0) call quit('qdiag90_mod: error in deallocation !')
 
   end subroutine qdiag90_mod
+
+  subroutine cleanmat(a,ndim,thresh)
+  !============================================================
+  !    Remove decimals beyond threshold
+  !============================================================
+  implicit none
+  integer :: ndim,i,ibuf
+  real*8  :: a(ndim),thresh
+
+  write(6,*) 'TEST .. cleanmat..',ndim, thresh  
+  do i = 1,ndim
+    ibuf = a(i)/thresh
+    a(i) = thresh*ibuf
+!    a(i)=thresh*NINT(a(i)/thresh)
+  enddo
+  end subroutine cleanmat
 
 end module func_PipekMezey
