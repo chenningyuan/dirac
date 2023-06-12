@@ -565,6 +565,7 @@ contains
       ! grid to generate
       if (grid_id /= grid%id) then
         print *, 'ERROR: problem with grid id in get_grid_info'
+        print *, 'grid%id is ', grid%id, ' while grid_id is ', grid_id
         return
       end if
       call get_grid_essentials(grid, mol)

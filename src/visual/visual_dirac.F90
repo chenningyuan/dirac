@@ -1,7 +1,7 @@
 module visual_dirac
 
   use checkpoint
-  use visual_datatypes, only: mol_t, ao_t, grid_t, grid_function_t
+  use visual_datatypes, only: mol_t, ao_t, mo_t, grid_t, grid_function_t
   use visual_cfg
 
   use visual_mpi
@@ -35,6 +35,9 @@ contains
     use integer_kind_mpilib
 #endif
 #include "dirac_partask.h"  
+! legacy
+#include "dcbbas.h"
+
     logical, intent(in), optional :: hello
 
 #ifdef VAR_MPI
@@ -49,6 +52,8 @@ contains
 #endif
 
     ! then, the rest happens on master only
+    ! legacy
+    n2bbasxq_node = n2bbasxq
 
 #ifdef VAR_MPI
     if (is_parallel()) call sync_visual_cfg()
@@ -57,31 +62,51 @@ contains
   end subroutine visual_initialize_and_sync_nodes
 
 
-  subroutine visual_initialize_data_from_dirac(mol, aobasis)
+  subroutine visual_initialize_data_from_dirac(mol, ao, mo, print_level)
 
     type(mol_t), intent(out):: mol
-    type(ao_t), intent(out):: aobasis
+    type(ao_t), intent(out):: ao
+    type(mo_t), intent(out):: mo
+    integer, optional :: print_level
     character*(:),allocatable:: group
     logical:: tobe_dirac
+    logical:: in_prep
 
     group = '/input/molecule/'
     call checkpoint_query(group, tobe_dirac)
     if (tobe_dirac) then
       call read_mol_from_dirac(mol, group)
-      !write(*, *) 'Molecule data read from DIRAC CHECKPOINT'
-      !if (print_level > 0) call mol%display
+      if (present(print_level)) then
+        if (print_level > 0) then
+          write(*, *) 'Molecule data read from DIRAC CHECKPOINT'
+          call mol%display
+        end if
+      end if
 
       !call write_to_rs_checkpoint('/input/molecule', mol)
       !if (print_level > 0) &
       !  write(*, *) 'Molecule data written to DIRAC RS-CHECKPOINT'
     end if
 
-    !group = '/input/aobasis/'
-    !call checkpoint_query(group, tobe_dirac)
-    !if (tobe_dirac) then
-    !  call read_ao_from_dirac(ao, group)
-    !  write(*, *) 'AO data read from DIRAC CHECKPOINT'
-    !end if
+    in_prep = .false.
+    if (in_prep) then
+!g!   gosia fixme - validated for section=scf only
+!g
+!g    if (section .ne. 'scf') return
+!g
+!g    group = '/result/wavefunctions/'//trim(section)//'/'
+!g    call checkpoint_query(group, tobe_dirac)
+!g    if (tobe_dirac) then
+!g      call read_ao_mo_from_dirac(ao, mo, group)
+!g      if (present(print_level)) then
+!g        if (print_level > 0) then
+!g          write(*, *) 'AO data read from DIRAC CHECKPOINT'
+!g          !call ao%display
+!g          write(*, *) 'MO data read from DIRAC CHECKPOINT'
+!g          !call mo%display
+!g        end if
+!g    end if
+    end if !if (in_prep) then 
 
   end subroutine visual_initialize_data_from_dirac
 
@@ -109,11 +134,85 @@ contains
   end subroutine read_mol_from_dirac
 
 
-  subroutine read_ao_from_dirac(ao, group)
-    type(ao_t), intent(out) :: ao
+  subroutine read_ao_mo_from_dirac(mo, group)
+    type(mo_t), intent(out) :: mo
     character(len=*),intent(in) :: group
+    logical:: tobe_dirac
 
-  end subroutine read_ao_from_dirac
+!g!
+!g!   read AO data
+!g!
+!g
+!g
+!g!
+!g!   read MO data
+!g!
+!g    call checkpoint_read(group//'mobasis/nz',idata=nz)
+!g    call checkpoint_read(group//'mobasis/n_basis',idata=n_basis)
+!g    call checkpoint_read(group//'mobasis/n_mo',idata=n_mo)
+!g    call checkpoint_read(group//'mobasis/n_po',idata=n_po)
+!g    call checkpoint_read(group//'energy',rdata=total_energy)
+!g
+!g    if (n_basis(2) == 0) then
+!g      nsym = 1
+!g    else
+!g      nsym = 2
+!g    end if
+!g    ! check symmetry and get dimensions of the coefficient array
+!g    if (nsym > 1) then
+!g       write(*, *) 'calculations with symmetry not supported, return'
+!g       return
+!g    else
+!g       nao = n_basis(1)
+!g       npo = n_po(1)
+!g       nmo = n_mo(1)
+!g       nto = npo+nmo
+!g    end if
+!g
+!g    call checkpoint_query(group//'mobasis/orbitals',tobe_dirac)
+!g    if (tobe_dirac) then
+!g      allocate(mo_coeff(nao*nto*nz))
+!g      allocate(mo_coeff_q(nao,nto,nz))
+!g      call checkpoint_read(group//'/mobasis/orbitals',rdata=mo_coeff)
+!g    end if
+!g
+!g    call checkpoint_query(group//'mobasis/eigenvalues',tobe_dirac)
+!g    if (tobe_dirac) then
+!g      allocate(eig(nto))
+!g      call checkpoint_read(group//'/mobasis/eigenvalues',rdata=eig)
+!g    end if
+!g
+!g    call checkpoint_query(group//'mobasis/symmetry',tobe_dirac)
+!g    if (tobe_dirac) then
+!g      allocate(ibeig(nto))
+!g      call checkpoint_read(group//'/mobasis/symmetry',idata=ibeig)
+!g    end if
+!g
+!g    ! fill in index values
+!g    allocate(index(nmo))
+!g    do i = 1, nmo
+!g       index(i) = i ! we set the index compatible with the fact that we store all mo's
+!g    end do
+!g
+!g    ! put in cmo in quaternion format
+!g    coeff_q = reshape(coeff,(/nao,nto,nzbuf/))
+!g    cspinor%algebra = 'q'
+!g    call alloc_mo (cspinor,nao,nmo)
+!g    cspinor%total_energy = total_energy
+!g    cspinor%index        = index(npo+1:nto)
+!g    cspinor%coeff_q      = coeff_q(:,npo+1:nto,:)
+!g    cspinor%energy       = eig(npo+1:nto)
+!g    cspinor%symmetry     = ibeig(npo+1:nto)
+!g
+!g    deallocate(mo_coeff)
+!g    deallocate(eig)
+!g    deallocate(ibeig)
+!g    deallocate(index)
+!g!   switch to unrestricted spinor picture
+!g    call convert_mo_to_complex(cspinor)
+
+
+  end subroutine read_ao_mo_from_dirac
 
 
 #ifdef VAR_MPI

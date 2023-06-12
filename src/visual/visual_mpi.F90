@@ -77,8 +77,6 @@ contains
     integer, allocatable:: rcounts_node(:)
     integer:: nproc
 
-    if (.not. MPI_INIT_called) return
-
 !   set ncouts and displs arrays
 !
     nproc = mpi_get_nr_proc()

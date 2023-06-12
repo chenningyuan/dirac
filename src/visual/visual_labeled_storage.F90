@@ -172,6 +172,7 @@ contains
     group = label%name
     do i = 1, grid%ndim
       write(ich, '(i1)') i
+      write(*,*) 'will read ', trim(group)//'/coor_'//trim(ich), ' from ', data_file%name
       call lab_read(data_file, trim(group)//'/coor_'//trim(ich), rdata = grid%points(i,:))
     end do
   end subroutine

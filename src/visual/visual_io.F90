@@ -129,14 +129,16 @@ contains
     if (grid%input  /=  1) return
 
     data_file%name = grid%file_inp
-    if (data_file%status == -1) return ! file not exists
+    !if (data_file%status == -1) return ! file not exists
 
+    write(*,*) 'in get_grid_points_from_file 2'
     ! gosia fixme - hardcoded
     data_file%type = 2
     data_file%status = 0
 
     select case (data_file%type)
       case (2)
+        write(*,*) ' calling get_grid_points_from_labeled_storage ', data_file%name
         call get_grid_points_from_labeled_storage(data_file, grid)
     end select
   end subroutine get_grid_points_from_file

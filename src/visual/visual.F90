@@ -69,19 +69,32 @@ contains
     logical, intent(in), optional :: launch_only
 
     type(mol_t):: mol
-    type(ao_t):: aobasis
+    type(ao_t):: ao_data
+    type(mo_t):: mo_data
     real(8) :: walltime
     logical :: legacy_prep
 
 !   ---- legacy ----    
-    type(matrix)         :: D_mo, D(max_para)
-    type(matrix)         :: D_con_mo, D_con_mo_ai, D_con, D_0, D_test
+    type(matrix)  :: D_node
+    !type(matrix), pointer  :: D_node
+    real(8),  pointer:: ao_node(:)
+    real(8),  pointer:: buffer_node(:)
+    real(8), allocatable, target:: ao_container(:)
+    real(8), allocatable, target:: buffer_container(:)
+    real(8), allocatable, target:: D_container(:)
+
+
+    type(matrix)         :: D_mo
+    type(matrix)         :: D(max_para)
+    !type(matrix),target         :: D(max_para)
+    type(matrix)         :: D_0
+    type(matrix)         :: D_con_mo, D_con_mo_ai, D_con, D_test
     type(matrix)         :: C, Cig, Ciu, Csg, Csu
 
     real(8), allocatable:: eigenvalues(:)
     real(8), allocatable:: occupation(:)
-    real(8), allocatable:: ao(:)
-    real(8), allocatable:: buffer(:)
+    real(8), allocatable, target:: ao(:)
+    real(8), allocatable, target:: buffer(:)
     real(8), allocatable:: cmo_from_file(:)
     real(8), allocatable:: occ_from_file(:)
 
@@ -451,7 +464,6 @@ contains
        end if
     end do
 
-
 !   deallocate various things
 !   =========================
 
@@ -503,6 +515,7 @@ contains
     time_start = second()
 
     end if ! if (mpi_is_master()) then
+
     !end if ! if (legacy_prep) then
 
     if (visual_cfg_global_refactor) then
@@ -521,20 +534,99 @@ contains
     !else
     !  call cpu_time(walltime)
     !end if
-    if (mpi_is_master()) call visual_initialize_data_from_dirac(mol, aobasis)
+
+    ! gosia: now this only reads mol data
+    if (mpi_is_master()) call visual_initialize_data_from_dirac(mol, ao_data, mo_data)
+
+    !temp:
+! here: temp: pass to workers
+#ifdef VAR_MPI
+    if (is_parallel()) then
+      call interface_mpi_bcast(nr_ao_slices,1,irank_master,global_communicator)
+      call interface_mpi_bcast(nr_ao_cartesian,1,irank_master,global_communicator)
+      call interface_mpi_bcast(visual_cfg_nr_dmat,1,irank_master,global_communicator)
+    end if
+#endif
+
+#ifdef VAR_MPI
+    if (is_parallel()) then
+      if (.not. mpi_is_master()) then
+        !call init_mat(D_node, reset=.true.)
+        allocate(D_container(n2bbasxq_node))
+        D_node%elms => D_container
+        write(*,*) 'D_node init on node: ', get_my_rank(), size(D_container), size(D_node%elms)
+      else
+        D_node = 2.0d0*D(1)
+        D_node%irep = 0
+        D_node%nrow = ntbas(0)
+        D_node%ncol = ntbas(0)
+        D_node%nz   = nz
+        write(*,*) 'D_node init on master: ', get_my_rank(), size(D_node%elms)
+      end if
+    else
+      D_node = 2.0d0*D(1)
+      D_node%irep = 0
+      D_node%nrow = ntbas(0)
+      D_node%ncol = ntbas(0)
+      D_node%nz   = nz
+    end if
+#else
+    D_node = 2.0d0*D(1)
+    D_node%irep = 0
+    D_node%nrow = ntbas(0)
+    D_node%ncol = ntbas(0)
+    D_node%nz   = nz
+#endif
+
+    nullify(ao_node)
+    if (.not. mpi_is_master()) then
+       allocate(ao_container(nr_ao_slices*nr_ao_cartesian*max_batch_length))
+       ao_container = 0.0d0
+       ao_node => ao_container
+    else
+       ao_node => ao
+    end if
+
+    nullify(buffer_node)
+    if (.not. mpi_is_master()) then
+       allocate(buffer_container(nr_ao_slices*nr_ao_cartesian*max_batch_length))
+       buffer_container = 0.0d0
+       buffer_node => buffer_container
+    else
+       buffer_node => buffer
+    end if
+
+#ifdef VAR_MPI
+    if (is_parallel()) then
+      call interface_mpi_bcast(D_node%irep,1,irank_master,global_communicator)
+      call interface_mpi_bcast(D_node%nrow,1,irank_master,global_communicator)
+      call interface_mpi_bcast(D_node%ncol,1,irank_master,global_communicator)
+      call interface_mpi_bcast(D_node%nz,1,irank_master,global_communicator)
+      call interface_mpi_bcast(D_node%elms,size(D_node%elms),irank_master,global_communicator)
+      call interface_mpi_bcast(ao_node,nr_ao_slices*nr_ao_cartesian*max_batch_length,irank_master,global_communicator)
+      call interface_mpi_bcast(buffer_node,nr_ao_slices*nr_ao_cartesian*max_batch_length,irank_master,global_communicator)
+    end if
+#endif
+! here: end temp: pass to workers
+    write(*, *) 'TESTME D_node%irep ', D_node%irep, get_my_rank()
+    write(*, *) 'TESTME D_node%nrow ', D_node%nrow, get_my_rank()
+    write(*, *) 'TESTME D_node%ncol ', D_node%ncol, get_my_rank()
+    write(*, *) 'TESTME D_node%nz   ', D_node%nz,   get_my_rank()
+    if (get_my_rank() == 7) write(*, *) 'TESTME D_node%elms   ', (D_node%elms(i),i=1,n2bbasxq_node),   get_my_rank()
+
+
 #ifdef VAR_MPI
       if (is_parallel()) then
-        call synchronize_data_from_dirac(mol, aobasis)
-        call interface_mpi_bcast(visual_cfg_nr_dmat,1,irank_master,global_communicator)
+        call synchronize_data_from_dirac(mol, ao_data)
       end if
 #endif
 ! 
     call visual_driver_refactored(visual_cfg_nr_dmat, &
                        D,                  &
-                       D_0,                &
-                       mol, aobasis,       &
-                       ao,                 &
-                       buffer)
+                       D_node,                &
+                       mol, ao_data,       &
+                       ao_node,                 &
+                       buffer_node)
 
 !    call checkpoint_rs_close
 
@@ -545,6 +637,20 @@ contains
     !        'Elapsed wall clock time in VISUAL = ', walltime, ' seconds.'
     !  write (*, '(a)') ''
     !end if
+
+    if (associated(D_node%elms)) then
+      nullify(D_node%elms)
+      !D_node = 0
+    end if
+
+    if (associated(ao_node)) nullify(ao_node)
+    if (associated(buffer_node)) nullify(buffer_node)
+
+    if (.not. mpi_is_master()) then
+      if (allocated(D_container)) deallocate(D_container)
+      if (allocated(ao_container)) deallocate(ao_container)
+      if (allocated(buffer_container)) deallocate(buffer_container)
+    end if
 
 
     else
@@ -598,7 +704,7 @@ contains
   subroutine visual_driver_refactored(nr_dmat, &
                             D,       &
                             D_0,     &
-                            mol, aobasis, &
+                            mol, ao_data, &
                             ao,      &
                             buffer)
 
@@ -609,7 +715,7 @@ contains
     real(8), intent(in)  :: ao(*)
     real(8)              :: buffer(*)
     type(mol_t), intent(inout):: mol
-    type(ao_t), intent(inout):: aobasis
+    type(ao_t), intent(inout):: ao_data
 !   --------------------------------------------------------------------------
     type(grid_t):: grid
     type(grid_t), allocatable:: grids(:)
@@ -621,6 +727,7 @@ contains
     integer:: my_rank
     real(8) :: walltime
     integer:: n_this_proc, idim_grid, idim_gf
+    integer:: i,j
 !   --------------------------------------------------------------------------
 
     if (mpi_is_master()) call rs_input%display
@@ -633,7 +740,6 @@ contains
 
       if (mpi_is_master()) then
         call get_grid_info(ig, rs_input%grids(ig), mol)
-        !if (rs_input%print_level > 0) call rs_input%grids(ig)%display
       end if
 #ifdef VAR_MPI
       if (is_parallel()) call synchronize_grid_data(rs_input%grids(ig))
@@ -656,6 +762,8 @@ contains
       ! gosia fixme - if grid is generated then also do this in parallel; in this case
       ! here allocate points on master and move the allocation on nodes to "get_grid_points"
       call get_grid_points(rs_input%grids(ig))
+      write(*, *) 'Grid points of grid ', ig
+      write(*, *) ((rs_input%grids(ig)%points(i,j),j=1,npoints), i=1,g_ndim)
       end if
 
       if (rs_input%grids(ig)%export) then
@@ -676,7 +784,6 @@ contains
 !       gosia fixme - now used only to assign labels for hdf5 storage,
         if (mpi_is_master()) then 
           call get_grid_function_info(igf, rs_input%grid_functions(igf))
-          !if (rs_input%print_level > 0) call rs_input%grid_functions(igf)%display
         end if
 #ifdef VAR_MPI
         if (is_parallel()) call synchronize_grid_function_data(rs_input%grid_functions(igf))
@@ -688,11 +795,21 @@ contains
           ! but some compilers have troubles with nested associate
           ! https://stackoverflow.com/questions/66562058/associate-chains-in-fortran
 
+          if (rs_input%print_level > 0) then
+            if (mpi_is_master()) then 
+              write(*, *) 'Start working on grid function ', igf, ' on grid ', ig
+              call rs_input%grids(ig)%display
+              call rs_input%grid_functions(igf)%display
+              write(*, *) 'Grid points to work on: '
+              write(*, *) ((rs_input%grids(ig)%points(i,j),j=1,npoints), i=1,g_ndim)
+            end if
+          end if
 !
 !         distribute grid points over nodes
 !
 
           n_this_proc = rs_input%grids(ig)%nr_points_total
+          write(*, *) 'BEFORE DISTRIBUTING GRID POINTS'
 #ifdef VAR_MPI
           if (is_parallel()) then
             ! redefine n_this_proc
@@ -700,6 +817,14 @@ contains
               call visual_interface_mpi_distribute_points(rs_input%grids(ig)%points(idim_grid,:), &
                          rs_input%grids(ig)%nr_points_total, n_this_proc)
             end do
+
+            if (get_my_rank() == 0) then
+              write(*, *) 'on master, we deal with ', ((rs_input%grids(ig)%points(i,j),j=1,n_this_proc), i=1,g_ndim)
+            else if (get_my_rank() == 1) then
+              !write(*, *) 'on node1, we deal with ', ((rs_input%grids(ig)%points(i,j),j=1,n_this_proc), i=1,g_ndim)
+            else if (get_my_rank() == 7) then
+              write(*, *) 'on node 7, we deal with ', ((rs_input%grids(ig)%points(i,j),j=1,n_this_proc), i=1,g_ndim)
+            end if
           end if
 #endif
 
@@ -712,13 +837,6 @@ contains
           allocate(grid_function_values(gf_ndim, n_this_proc))
           grid_function_values = 0.0d0
 
-          if (mpi_is_master()) then
-            write(*, *) 'BEFORE WORK_ON_GRID'
-            write(*, *) 'dimensions: ', gf_ndim, n_this_proc
-            write(*, *) 'nr_dmat: ', nr_dmat
-            write(*, *) 'allocated values: ', allocated(grid_function_values)
-          end if
-
           ! gosia todo:
           ! add "visualize"/"integrate" procedures in this call; now - visualization only
           ! add constructs for DIRAC data (D, D_0, ...)
@@ -730,11 +848,8 @@ contains
           allocate(rs_input%grid_functions(igf)%values(gf_ndim, rs_input%grids(ig)%nr_points_total))
           rs_input%grid_functions(igf)%values = 0.0d0
 
-          if (mpi_is_master()) then
-            write(*, *) 'AFTER WORK_ON_GRID'
-            write(*, *) 'allocated values: ', allocated(grid_function_values), allocated(rs_input%grid_functions(igf)%values)
-            write(*, *) 'values: ', grid_function_values
-          end if
+            !write(*, *) 'AFTER WORK_ON_GRID'
+            !write(*, *) 'values: ', ((grid_function_values(i,j),j=1,n_this_proc),i=1,gf_ndim), get_my_rank()
  
           if (is_parallel()) then
             do idim_gf = 1, gf_ndim
@@ -841,7 +956,11 @@ contains
                                  grid_function_values, &
                                  ipoint)
 
-      !write(*,*) 'grid_function%values in ', ipoint, grid_function%values(1,ipoint)
+      write(*,*) 'grid_function%values in ', ipoint, &
+                  grid%points(1, ipoint),& 
+                  grid%points(2, ipoint),&
+                  grid%points(3, ipoint),&
+                  grid_function_values(1:9,ipoint)
     end do
     !do icomp=1, grid_function%get_ndim()
     !  write(*,*) 'grid_function%values', (grid_function%values(icomp,ipoint), ipoint=1,grid%nr_points_total)

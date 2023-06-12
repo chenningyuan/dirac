@@ -10,6 +10,7 @@ module visual_datatypes
   !public grid_function_dirac_t
   public mol_t
   public ao_t
+  public mo_t
 
   !integer, parameter, private:: kind_real = 8
 
@@ -30,6 +31,11 @@ module visual_datatypes
     private
     integer, public:: n_ao = 0
   end type ao_t
+
+  type mo_t
+    private
+    integer, public:: n_mo = 0
+  end type mo_t
 
   type:: rs_input_t
     private
