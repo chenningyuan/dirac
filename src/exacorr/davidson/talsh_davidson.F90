@@ -240,11 +240,18 @@ contains
         integer :: isv
 
         integer :: ierr, i, j
-        integer(INTD) :: rank
+        integer(INTD) :: rank, rank1, rank2
         logical :: debug = .false.
 
-        ! rank=talsh_tensor_rank(workspace_t%trial1(1))
-        rank=workspace_t%tens1_dims(1)
+        rank=talsh_tensor_rank(workspace_t%trial1(1))
+        rank1=workspace_t%tens1_dims(1)
+        rank2=workspace_t%tens1_dims(2)
+        if (rank1.gt.rank2) then 
+            rank = rank2
+        else
+            rank = rank1
+        end if 
+        ! rank = workspace_t%tens1_dims(1)
         ! if (rank.gt.2) call quit('rank not implemented in update_trial_vectors')
 
         if (debug) then
@@ -697,6 +704,21 @@ contains
                 end do
             end do
 
+        else if (flavor=='EA') then
+            do i=1, size(trial2_tens_tem,3)
+                do b=1, size(trial2_tens_tem,2)
+                    do a=b, size(trial2_tens_tem,1)
+                            if (a==b) then 
+                                trial2_tens(a,b,i,1) = dcmplx(0.0,0.0)
+                            else
+                                trial2_tens(a,b,i,1) = trial2_tens_tem(a,b,i,1)
+                            end if
+
+                            trial2_tens(b,a,i,1) = -trial2_tens(a,b,i,1)
+                    end do
+                end do
+            end do
+
         else
 
             do j=1, size(trial2_tens_tem,4)
@@ -1011,7 +1033,7 @@ contains
         type(talsh_tens_t), intent(inout), optional :: prop_grad1, prop_grad2
 ! aspg, added from (q)rsp
         complex(kind=8) :: factor1, factor2, factor3
-        integer(INTD) :: r1_rank 
+        integer(INTD) :: r1_rank, r2_rank
         integer :: ierr, i, i_pri
         logical :: debug_form_r = .false.
         logical :: found 
@@ -1025,6 +1047,7 @@ contains
 ! r1 = 2 (1h1p for EE, 2h for DIP, 2p for DEA) then r2 = 4 (2h2p for EE, 3h1p for DIP, 1h3p for DEA)
 ! etc
         r1_rank=talsh_tensor_rank(workspace_t%delta1(k))
+        r2_rank=talsh_tensor_rank(workspace_t%delta2(k))
         if (r1_rank.gt.2) call quit('rank not implemented in form_r_tensors')
 
 !       ierr=talsh_tensor_init(workspace_t%delta1(k), ZERO)
@@ -1076,14 +1099,14 @@ contains
 
            end if
 
-!          if (debug_form_r) then
-!             write (6,*) 'debug >>> in form_r_tensors, accumulated r1 root',k,' for L',i,' >>>'
-!             call print_tensor_elements(workspace_t%delta1(k))
-!             write (6,*) 'debug <<< in form_r_tensors, accumulated r1 for L',i,' <<<'
-!             write (6,*) 'debug >>> in form_r_tensors, accumulated r2 root',k,' for L',i,' >>>'
-!             call print_tensor_elements(workspace_t%delta2(k))
-!             write (6,*) 'debug <<< in form_r_tensors, accumulated r2 for L',i,' <<<'
-!          end if
+         if (debug_form_r) then
+            write (6,*) 'debug >>> in form_r_tensors, accumulated r1 root',k,' for L',i,' >>>'
+            call print_tensor_elements(workspace_t%delta1(k))
+            write (6,*) 'debug <<< in form_r_tensors, accumulated r1 for L',i,' <<<'
+            write (6,*) 'debug >>> in form_r_tensors, accumulated r2 root',k,' for L',i,' >>>'
+            call print_tensor_elements(workspace_t%delta2(k))
+            write (6,*) 'debug <<< in form_r_tensors, accumulated r2 for L',i,' <<<'
+         end if
         end if
            
        end do
@@ -1154,7 +1177,7 @@ contains
         logical, pointer :: correction_to_vectors(:)
 
         integer :: ierr, k, unconverged_roots, nroots
-        integer :: rank
+        integer :: rank, rank1, rank2
         real(kind=8) :: norm_r = 0.0d0
         logical :: correct_all_local
         logical :: debug_correction_vectors = .false.
@@ -1177,7 +1200,15 @@ contains
 
         unconverged_roots = 0
         ! rank = talsh_tensor_rank(workspace_t%delta1(1))
-        rank = workspace_t%tens1_dims(1) 
+        ! rank = workspace_t%tens1_dims(1) 
+        rank1 = workspace_t%tens1_dims(1) 
+        rank2 = workspace_t%tens1_dims(2) 
+        if (rank1.gt.rank2) then 
+            rank = rank2
+        else 
+            rank = rank1
+        end if 
+
         do k = 1, nroots
            ierr=talsh_tensor_init(workspace_t%delta1(k), ZERO)
            if (debug_correction_vectors) print *,'debug, init workspace_t%delta1(k) to zero, ierr',ierr
@@ -1812,6 +1843,7 @@ contains
             !   workspace_t%N(2) = nvirt*n_continuum_virt*(nocc*(nocc-1))/2
 
            case("EA")
+              n_continuum_occ = 1
 ! singles
               workspace_t%tens1_dims = (/ nvirt, n_continuum_occ /)
               workspace_t%N(1) = nvirt*n_continuum_occ 
@@ -2182,8 +2214,8 @@ contains
       end if
     !   do i = workspace_t%Lprev, workspace_t%L
 !     print *, "workspce_tensor:", workspace_t%tens1_dims
-      if (workspace_t%tens1_dims(1)==1) then  !To distinguish IP and EE
-        contrac_coeff = ONE_HALF   !It's IP
+      if (workspace_t%tens1_dims(1)==1.or.workspace_t%tens1_dims(2)==1) then  !To distinguish IP,EA and EE
+        contrac_coeff = ONE_HALF   !It's IP, EA
       else 
         contrac_coeff = ONE_QUARTER_C  !It's EE
       end if
