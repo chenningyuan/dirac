@@ -113,19 +113,19 @@ def read_DFCOEF(file_name,dtype_int='<i4'):
        info, date_run, time_run = read_label(f)
        record = f.read_record('a74', dtype_int, dtype_int, '6'+dtype_int,'f8')
     contents['title']  = record[0]
-    contents['nfsym']  = record[1]
-    contents['nz']     = record[2]
+    contents['nfsym']  = [record[1][0]]
+    contents['nz']     = [record[2][0]]
     if (record[1] == 1):
-        contents['npo']    = record[3][0]
-        contents['nmo']    = record[3][1]
-        contents['nto']    = record[3][0]+record[3][1]
-        contents['nao']    = record[3][2]
+        contents['npo']    = [record[3][0],0]
+        contents['nmo']    = [record[3][1],0]
+        contents['nto']    = [record[3][0]+record[3][1],0]
+        contents['nao']    = [record[3][2],0]
     else:
         contents['npo']    = (record[3][0],record[3][3])
         contents['nmo']    = (record[3][1],record[3][4])
         contents['nto']    = (record[3][0]+record[3][1],record[3][3]+record[3][4])
         contents['nao']    = (record[3][2],record[3][5])
-    contents['energy'] = record[4][0]
+    contents['energy'] = [record[4][0]]
     label, date_run, time_run = read_label(f)
     contents['mo_coeff'] = f.read_reals()
     label, date_run, time_run = read_label(f)
@@ -140,9 +140,9 @@ def read_DFCOEF(file_name,dtype_int='<i4'):
     # 6 records with basis set information
     ints = f.read_ints(dtype=dtype_int)
     ao_nshells = ints[1]
-    contents['ao_nbas']    = ints[0]   # size of the basis set
-    contents['ao_npriexp'] = ints[2]   # number of primitive functions
-    contents['ao_ncnt']    = ints[3]   # maximum contraction length
+    contents['ao_nbas']    = [ints[0]]   # size of the basis set
+    contents['ao_npriexp'] = [ints[2]]   # number of primitive functions
+    contents['ao_ncnt']    = [ints[3]]   # maximum contraction length
     contents['ao_nshells'] = ao_nshells # number of distint ao shells, then for each shell:
     ints = f.read_ints(dtype=dtype_int).reshape((3,ao_nshells))
     contents['ao_orbmom']  = ints[0,:] # orbital momentum (s=1,p=2, d=3, etc.)
@@ -151,7 +151,7 @@ def read_DFCOEF(file_name,dtype_int='<i4'):
     ints = f.read_ints(dtype=dtype_int).reshape((2,ao_nshells))
     contents['ao_jstrt']   = ints[0,:] # start address of contraction coefficients
     contents['ao_numcf']   = ints[1,:] # column number of contraction coefficients
-    contents['ao_cent']    = f.read_reals().reshape((3,ao_nshells)) # xyz coordinates of the center
+    contents['ao_cent']    = f.read_reals()    # xyz coordinates of the center
     contents['ao_priexp']  = f.read_reals()    # exponential parameters
     contents['ao_priccf']  = f.read_reals()    # contraction coefficients
     f.close()

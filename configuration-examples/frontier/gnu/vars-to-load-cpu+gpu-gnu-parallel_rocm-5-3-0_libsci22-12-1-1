@@ -1,0 +1,34 @@
+#Alternatively you can export all relevant environment variables such that this
+#
+
+module load craype-accel-amd-gfx90a craype-x86-trento
+module load PrgEnv-gnu-amd/8.3.3
+module load amd-mixed
+module load cray-python/3.9.13.1
+module load rocm/5.3.0
+module load gcc/12.2.0
+module load cray-libsci/22.12.1.1
+
+export EXA_GPU=AMD
+# MATH_LIBS="-L/opt/cray/pe/libsci/22.11.1.2/CRAY/9.0/x86_64/lib  -lsci_cray_mp"
+# for ccmake use
+# ccmake -DMKL_FLAG="off" -DMATH_LIBS="-L/opt/cray/pe/libsci/22.11.1.2/CRAY/9.0/x86_64/lib  -lsci_cray_mp" -DMATH_LIB_SEARCH_ORDER="LIBSCI;ESSL;OPENBLAS;ATLAS;ACML;SYSTEM_NATIVE" -DTALSH_ONLY=ON -DENABLE_MPI=ON -DENABLE_PCMSOLVER=OFF -DENABLE_STIELTJES=OFF -DCMAKE_VERBOSE_MAKEFILE=ON ..
+
+#export TALSH_ONLY=YES
+#export EXA_TALSH_ONLY=YES
+export WRAP=NOWRAP
+export TOOLKIT=GNU
+export MPILIB=MPICH
+export PATH_MPICH=${CRAY_MPICH_PREFIX}
+export BUILD_TYPE=OPT
+export BLASLIB=LIBSCI
+export EXA_OS=LINUX
+export PATH_BLAS_LIBSCI=${CRAY_LIBSCI_PREFIX_DIR}/lib
+export USE_HIP=YES
+export GPU_CUDA=CUDA
+export GPU_SM_ARCH=90
+export PATH_ROCM=/opt/rocm-5.3.0
+
+# in the TALSH makefile, this should replace the HIP_FLAGS definition (todo on TAL-SH repo) 
+#
+# HIP_FLAGS = -c -g -O3 -D_FORCE_INLINES -fno-gpu-rdc -fPIC --offload-arch=gfx90a,gfx906,gfx908
