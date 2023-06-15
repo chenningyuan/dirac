@@ -1195,6 +1195,22 @@
          ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
       end if
 
+      if (kw_matches(word, '.QR1FRE ')) then
+         call kw_read(word, exa_input%N_omega_qr1)
+         allocate(exa_input%w_qr1_re(exa_input%N_omega_qr1))
+         allocate(exa_input%w_qr1_im(exa_input%N_omega_qr1))
+         call kw_read(word, exa_input%w_qr1_re,exa_input%N_omega_qr1)
+         call kw_read(word, exa_input%w_qr1_im,exa_input%N_omega_qr1)
+      end if
+
+      if (kw_matches(word, '.QR2FRE ')) then
+         call kw_read(word, exa_input%N_omega_qr2)
+         allocate(exa_input%w_qr2_re(exa_input%N_omega_qr2))
+         allocate(exa_input%w_qr2_im(exa_input%N_omega_qr2))
+         call kw_read(word, exa_input%w_qr2_re,exa_input%N_omega_qr2)
+         call kw_read(word, exa_input%w_qr2_im,exa_input%N_omega_qr2)
+      end if
+
       if (kw_matches(word, '.AProp ')) then
          call kw_read(word, exa_input%N_prop_A)
          allocate(exa_input%Prop_A(exa_input%N_prop_A))

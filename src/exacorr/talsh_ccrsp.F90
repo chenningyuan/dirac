@@ -275,7 +275,7 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
     type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:), Interm_t_tensors_C(:)
     integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
     integer                       :: N_oper_lr, N_oper_qr
-    integer                       :: N_omega
+    integer                       :: N_omega1, N_omega2
     integer                       :: i, j, k, n, m
     integer, allocatable          :: Prop_A(:), Prop_B(:), Prop_C(:)
 
@@ -303,72 +303,78 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
 
     N_oper_qr = 3
 
-        Prop_A = exa_input%Prop_A
-        Prop_B = exa_input%Prop_B
-        Prop_C = exa_input%Prop_C
+    Prop_A = exa_input%Prop_A
+    Prop_B = exa_input%Prop_B
+    Prop_C = exa_input%Prop_C
 
-        N_oper_qr = 3
-        N_prop_A = size(Prop_A)
-        N_prop_B = size(Prop_B)
-        N_prop_C = size(Prop_C)
+    N_oper_qr = 3
+    N_prop_A = size(Prop_A)
+    N_prop_B = size(Prop_B)
+    N_prop_C = size(Prop_C)
 
-        allocate(omega(N_oper_qr))
-        allocate(omega_min(N_oper_qr))
-        allocate(Interm_t_tensors_A(N_prop_A))
-        allocate(Interm_t_tensors_B(N_prop_B))
-        allocate(Interm_t_tensors_C(N_prop_C))
-        allocate(Bvec_tensors(N_oper_qr))
-        allocate(Tprop_tensors(N_oper_qr))
-        allocate(Tprop_tensors_min_w(N_oper_qr))
-        allocate(Tprop_bar_tensors(N_oper_qr))
-        allocate(Tprop_bar_tensors_min_w(N_oper_qr))
-        allocate(eom_qrs(N_prop_A,N_prop_B,N_prop_C))
+    N_omega1 = exa_input%N_omega_qr1
+    N_omega2 = exa_input%N_omega_qr2
 
+    allocate(omega(N_oper_qr))
+    allocate(omega_min(N_oper_qr))
+    allocate(Interm_t_tensors_A(N_prop_A))
+    allocate(Interm_t_tensors_B(N_prop_B))
+    allocate(Interm_t_tensors_C(N_prop_C))
+    allocate(Bvec_tensors(N_oper_qr))
+    allocate(Tprop_tensors(N_oper_qr))
+    allocate(Tprop_tensors_min_w(N_oper_qr))
+    allocate(Tprop_bar_tensors(N_oper_qr))
+    allocate(Tprop_bar_tensors_min_w(N_oper_qr))
+    allocate(eom_qrs(N_prop_A,N_prop_B,N_prop_C))
 
-
-        omega1=(0.0,0.0)
-        omega2=(-0.0,0.0)
-        omega3 = -(omega1+omega2)
-        omega(1) = omega1
-        omega(2) = omega2
-        omega(3) = omega3
-        print *, "Read frequency1:", omega(1)
-        print *, "Read frequency2:", omega(2)
-        print *, "Read frequency3:", omega(3)
-
-
-        omega_min(1) = dcmplx(-real(omega(1)),aimag(omega(1)))
-        omega_min(2) = dcmplx(-real(omega(2)),aimag(omega(2)))
-        omega_min(3) = dcmplx(-real(omega(3)),aimag(omega(3)))
-        print *, "Read frequency min_1:", omega_min(1)
-        print *, "Read frequency min_2:", omega_min(2)
-        print *, "Read frequency min_3:", omega_min(3)
 
         
-        do  i=1, N_prop_A
-            m = Prop_A(i)
-            call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
+    do  i=1, N_prop_A
+        m = Prop_A(i)
+        call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
                                       int_t, l1_tensor, l2_tensor, CC_CC)
-        end do
+    end do
     
     
-        do  i=1, N_prop_B
-            m = Prop_B(i)
-            call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
+    do  i=1, N_prop_B
+        m = Prop_B(i)
+        call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
                                       int_t, l1_tensor, l2_tensor, CC_CC)
-        end do
+    end do
 
 
-        do  i=1, N_prop_C
-            m = Prop_C(i)
-            call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_C(i),&
+    do  i=1, N_prop_C
+        m = Prop_C(i)
+        call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_C(i),&
                                   int_t, l1_tensor, l2_tensor, CC_CC)
-        end do
+    end do
 
 
-        call print_date('Constructed intermediates needed in CC Quadratic Response')
+    call print_date('Constructed intermediates needed in CC Quadratic Response')
 
-        
+
+
+    do n=1, N_omega1
+        omega1 = dcmplx(exa_input%w_qr1_re(n), exa_input%w_qr1_im(n))
+        do m=1, N_omega2
+            omega2 = dcmplx(exa_input%w_qr2_re(m), exa_input%w_qr2_im(m)) 
+            omega3 = -(omega1+omega2)
+            omega(1) = omega1
+            omega(2) = omega2
+            omega(3) = omega3
+            print *, "Read frequency1:", omega(1)
+            print *, "Read frequency2:", omega(2)
+            print *, "Read frequency3:", omega(3)
+      
+      
+            omega_min(1) = dcmplx(-real(omega(1)),aimag(omega(1)))
+            omega_min(2) = dcmplx(-real(omega(2)),aimag(omega(2)))
+            omega_min(3) = dcmplx(-real(omega(3)),aimag(omega(3)))
+            print *, "Read frequency min_1:", omega_min(1)
+            print *, "Read frequency min_2:", omega_min(2)
+            print *, "Read frequency min_3:", omega_min(3)
+
+
 ! This loop is to determine which three properties to calculate
         do i=1, N_prop_A
             call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_A(i),l1_tensor,l2_tensor, &
@@ -445,6 +451,9 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
                                         Tprop_bar_tensors,Tprop_bar_tensors_min_w)
 
         end do
+    
+      end do
+    end do 
 
 
         do i=1, N_prop_A
