@@ -18,6 +18,7 @@ module func_PipekMezey
 !            False - Mulliken analysis                                           !
 !   iprloc - print level (no prints =0)                                          !
 !   isel   - integer array which contains numbers of MOs that will be localized  !
+!   thclean - threshold for precision of population matrix                       !
 !   ... ( not finished yet )                                                     !
 !================================================================================!
 implicit none
@@ -31,6 +32,7 @@ private :: cleanmat
 type :: PipekMezey_flags
   integer :: iprloc
   logical :: prjloc
+  real*8  :: thclean
 end type PipekMezey_flags
 
 type :: PipekMezey_variales
@@ -115,6 +117,7 @@ contains
   read(iunit,*) chdum,PM%prjloc
   read(iunit,*) chdum,var%lupri
   read(iunit,'(A72)') selmos
+  read(iunit,*) chdum,PM%thclean
   ! dcbgen.h
   read(iunit,*) var%title
   read(iunit,*) chdum,var%lucoef
@@ -425,7 +428,7 @@ contains
   ! real*8,  intent(  out) :: pmat(nloc,nloc,4,nucdep)
 
   ! Internal variables
-  integer :: nloc, nucdep
+  integer :: nloc, nucdep, nmdim, ier
   real*8  :: dinvmg
 
   !------------------------------------------------------------------------------!
@@ -440,7 +443,23 @@ contains
   endif
   dinvmg4out = dinvmg   ! global variable
   get_func   = dinvmg
+  ! Clean pmatrix
+  if(pm%thclean.gt.d0) then
+    write(6,*) 'TEST..nucdep..',nucdep
+!    nmdim = nloc*nloc*4*nucdep
+    nmdim = nloc*nloc*4
+    call cleanmat(pmat(1,1,1,1),nmdim,pm%thclean)
+!    nmdim = nloc*nloc*4
+!    call cleanmat(pmat(1,1,1,2),nmdim,pm%thclean)
+!    nmdim = nloc*nloc*4
+!    call cleanmat(pmat(1,1,1,3),nmdim,pm%thclean)
+  endif
 
+      WRITE(6,*) 'TEST..QMAT'
+      open(137,file='QMAT',status='new',form='unformatted',access='sequential',iostat=ier)
+      write(137) nucdep,nloc
+      write(137) pmat
+      close(137,status='keep')
   !------------------------------------------------------------------------------!
   end function get_func
 
@@ -960,7 +979,7 @@ contains
     endif
 
 !   Print matrix blocks
-!    if(PM%iprloc.ge.4)then
+    if(PM%iprloc.ge.4)then
       thresh=1.0d-14
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_uu'
       do i=1,nloc12
@@ -1031,7 +1050,7 @@ contains
           if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
-!    endif
+    endif
 
     ! deallocate arrays
     deallocate( ijn )
@@ -1120,7 +1139,7 @@ contains
   endif
 
 ! Print gradient with better precision
-!  if(PM%iprloc.ge.4)then
+  if(PM%iprloc.ge.4)then
     write(lupri,*) 'Print gradient_u'
     do i = 1,nloc12
       write(lupri,*) gradient(i),gradient(i+2*nloc12)
@@ -1129,7 +1148,7 @@ contains
     do i = 1,nloc12
       write(lupri,*) gradient(i+nloc12),gradient(i+3*nloc12)
     enddo
-!  endif
+  endif
 
   ! Norm of the gradient
   dnrmg = dnrm2(ndimg,gradient,1)
@@ -1545,7 +1564,6 @@ contains
 
   ! Internal variables
   integer :: i, j, k, iz, nb, ioffl, ioffs, lupri, ier
-  integer :: nmdim
   integer :: ipqtoq(4,0:7)
   real*8  :: dinv, qloc2, dloc
   real*8, parameter :: cthresh=1.0d-10
@@ -1619,11 +1637,6 @@ contains
       enddo
     enddo
   enddo
-      WRITE(6,*) 'TEST..QMAT'
-      open(137,file='QMAT',status='new',form='unformatted',access='sequential',iostat=ier)
-      write(137) nucdep,nloc
-      write(137) pmat
-      close(137,status='keep')
 
   if(pm%iprloc.ge.2)then
     do iz=1,4
@@ -1645,10 +1658,6 @@ contains
         call prqmat(pmat(1,1,1,i),nloc,nloc,nloc,nloc,4,ipqtoq(1,0),lupri)
      enddo
   endif
-
-  ! Clean pmatrix
-  nmdim = nloc*nloc*4
-  call cleanmat(pmat,nmdim,cthresh)
 
   ! Calculation and print of the localisation criterion
   write(lupri,'(/20x,a)') '** Pipek-Mezey localization criteria **' 
@@ -2503,14 +2512,26 @@ contains
   !    Remove decimals beyond threshold
   !============================================================
   implicit none
-  integer :: ndim,i,ibuf
+  integer :: ndim,i
   real*8  :: a(ndim),thresh
+  real*8  :: buf
+  intrinsic maxval
 
-  write(6,*) 'TEST .. cleanmat..',ndim, thresh  
+
+!  buf=thresh*ANINT(maxval(a)/thresh,8)
+  write(6,*) 'TEST..ndim..thresh',ndim,thresh
+  buf=maxval(a(1:ndim))
+  write(6,*) 'TEST..maxval..',buf
+  buf=ANINT(buf/thresh,8)
+  write(6,*) 'TEST..anint...',buf
+  if (dabs(buf) > dble(huge(1_8))) then
+       print *, 'CLEANMAT: dabs(buf) > huge(1_8)'
+       stop
+  endif
+  buf=thresh*buf
+  write(6,*) 'TEST..clean...',buf
   do i = 1,ndim
-    ibuf = a(i)/thresh
-    a(i) = thresh*ibuf
-!    a(i)=thresh*NINT(a(i)/thresh)
+    a(i)=thresh*ANINT(a(i)/thresh,8)
   enddo
   end subroutine cleanmat
 

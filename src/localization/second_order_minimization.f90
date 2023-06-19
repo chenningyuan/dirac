@@ -203,15 +203,15 @@ contains
   restore = .false.
 
   if(mnf%iprint.ge.4)then
-    write(mnf%l,*) 'full  =',full
-    write(mnf%l,*) 'thdiag=',mnf%thdiag
-    write(mnf%l,*) 'thfull=',mnf%thfull
-    write(mnf%l,*) 'thgrad=',mnf%thgrad
-    write(mnf%l,*) 'lgdiag=',mnf%lgdiag
-    write(mnf%l,*) 'lgfull=',mnf%lgfull
-    write(mnf%l,*) 'lggrad=',mnf%lggrad
-    write(mnf%l,*) 'lgchck=',mnf%lgchck
-    write(mnf%l,*) 'heskey=',mnf%heskey
+    write(mnf%l,*) 'full  = ',full
+    write(mnf%l,*) 'thdiag= ',mnf%thdiag
+    write(mnf%l,*) 'thfull= ',mnf%thfull
+    write(mnf%l,*) 'thgrad= ',mnf%thgrad
+    write(mnf%l,*) 'lgdiag= ',mnf%lgdiag
+    write(mnf%l,*) 'lgfull= ',mnf%lgfull
+    write(mnf%l,*) 'lggrad= ',mnf%lggrad
+    write(mnf%l,*) 'lgchck= ',mnf%lgchck
+    write(mnf%l,*) 'heskey= ',mnf%heskey
   endif
 
   ! Memory allocation
