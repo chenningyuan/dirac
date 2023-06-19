@@ -82,6 +82,7 @@
   write(iunit,*) 'prjloc  ',prjloc
   write(iunit,*) 'lupri   ',lupri
   write(iunit,'(A72)') selmos
+  write(iunit,*) 'thclean ',thclean
   ! dcbgen.h
   write(iunit,*) title
   write(iunit,*) 'lucoef  ',lucoef
