@@ -72,7 +72,7 @@ module talsh_cc
 !        1- and 2-body cc intermediates 
          type(talsh_intermediates_tens_t) :: interm_t
 !        eom results
-         type(talsh_eom_results_tens_t) :: eom_results_t
+         type(talsh_eom_results_tens_t) :: eom_results_t, eom_results_t_left
 !        intermediate tensors (same notation as in relccsd)
          integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
          integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
@@ -505,8 +505,19 @@ module talsh_cc
               rr = 1
               call talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 ! TODO: if we want properties etc, now we call other drivers
-           else
-              call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t)
+           else if (eom) then
+              call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
+                           solve_right=.true.,solve_left=.false.)
+           else 
+               call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
+                  solve_right=.true.,solve_left=.false.)
+
+               call talsh_eom_eigval_driver(eom_results_t_left,exa_input%eom_input(1),interm_t,int_t,&
+                  solve_right=.false.,solve_left=.true.)
+
+               rr = 2
+               ! call talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor, &
+               !          rr,eom_results_t,eom_results_t_left)
            end if
          end if
 

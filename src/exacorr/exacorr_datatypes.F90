@@ -107,7 +107,7 @@
             
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
             integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
-            integer, allocatable    :: Prop_A(:), Prop_B(:), Prop_C(:) ! index of Property
+            integer, allocatable    :: Prop_A(:), Prop_B(:), Prop_C(:), Prop_D(:) ! index of Property
             real(REALD), allocatable :: w_lr_re(:)            ! real frequency in CC linear response
             real(REALD), allocatable :: w_lr_im(:)            ! imaginary frequency in CC response
 

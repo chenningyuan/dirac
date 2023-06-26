@@ -49,6 +49,7 @@ if(ENABLE_EXATENSOR)
    talsh_cis_density.F90
    talsh_cis_property.F90
    talsh_ccrsp.F90
+   talsh_ccrsp_common.F90
    talsh_eom_QR.F90
    talsh_eom_LR.F90
    talsh_eom_rspeq_solver.F90
