@@ -436,6 +436,34 @@ Using :ref:`PROPERTIES_.PRINT` 1, the paramagnetic-like (e-e) and diamagnetic-li
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
+keyword(PVCSPN)
+
+Calculate parity-violating contribution to the NMR spin-spin coupling tensor, see :cite:`Weijo2007`.
+Elements of the parity-violating contribution to the spin-spin coupling tensor for centers :math:`K` and :math:`L` are given by
+
+.. math::
+
+   J^{PV}_{KL;\mu\nu}=\frac{\hslash^2}{h} \gamma_K \gamma_L \frac{\partial^2}{\partial m_{K;\mu}\partial m_{L;\nu}} \left(\langle\langle \hat{h}^\text{PV2}_K; \hat{h}_{L}^{hfs} \rangle\rangle_0 + \langle\langle \hat{h}^\text{PV2}_L; \hat{h}_{K}^{hfs} \rangle\rangle_0 \right)
+
+where the nuclear spin-dependent parity-violating operator is given as
+
+.. math::
+
+   \hat{h}^\text{PV2}_K = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}\,c}\sum_{i}\frac{1}{\hslash \gamma_K}c\boldsymbol{\alpha}\cdot\mathbf{m}_K\rho_K(\mathbf{r}_i)
+
+where appears the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2018, but it can change if you use other CODATA set),
+the gyromagnetic ratio :math:`\gamma_K`, the nuclear magnetic dipole moment :math:`\mathbf{m}_K=\gamma_K\mathbf{I}_K` and the normalized nuclear charge density :math:`\rho_K`.
+
+The relativistic hyperfine operator
+
+.. math::
+
+   \hat{h}^{hfs}_{L}=-\sum_i\mathbf{m}_L\cdot\hat{\mathbf{B}}^{el}_{L}(i);\quad \hat{\mathbf{B}}^{el}_{L}(i)=-\frac{1}{4\pi\varepsilon_0 c^2}\frac{\mathbf{r}_{iL}\times ec\boldsymbol{\boldsymbol{\alpha}}}{r_{iL}^3},
+
+is expressed in terms of the nuclear magnetic dipole :math:`\mathbf{m}_L` and the operator :math:`\hat{\mathbf{B}}^{el}_{L}` giving the magnetic field due to the electrons at the nuclear position.
+
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
+
 keyword(PVCSR)
 
 Calculate parity-violating contribution to the nuclear spin-rotation tensor, see :cite:`Aucar_JCP2021`.

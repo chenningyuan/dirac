@@ -1,5 +1,15 @@
 :orphan:
 
+24.0
+----
+
+Bugfix:
+
+- Fixed implementation of Parity-Violating Nuclear Indirect Spin-Spin Coupling Tensors.
+  There was a wrong factor of 1/(2*pi) in the previous implementation. Besides, wrong values of these tensors were obtained when requesting more than one response property. I. A. Aucar.
+
+-----------------------------------------------------------------------------------------------------
+
 23.0
 ----
 
