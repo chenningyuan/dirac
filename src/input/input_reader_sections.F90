@@ -1195,6 +1195,14 @@
          ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
       end if
 
+
+      if (kw_matches(word, '.CCTPA ')) then
+         exa_input%eom_tpa =.true.
+         call kw_read(word, exa_input%wf_type)
+         call kw_read(word, exa_input%TPA_state)
+         ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
+      end if
+
       if (kw_matches(word, '.QR1FRE ')) then
          call kw_read(word, exa_input%N_omega_qr1)
          allocate(exa_input%w_qr1_re(exa_input%N_omega_qr1))
@@ -1227,6 +1235,12 @@
          call kw_read(word, exa_input%N_prop_C)
          allocate(exa_input%Prop_C(exa_input%N_prop_C))
          call kw_read(word, exa_input%Prop_C,exa_input%N_prop_C)
+      end if
+
+      if (kw_matches(word, '.DProp ')) then
+         call kw_read(word, exa_input%N_prop_D)
+         allocate(exa_input%Prop_D(exa_input%N_prop_D))
+         call kw_read(word, exa_input%Prop_D,exa_input%N_prop_D)
       end if
 
 

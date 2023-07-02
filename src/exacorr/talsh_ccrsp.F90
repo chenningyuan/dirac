@@ -314,13 +314,18 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
     N_prop_B = size(Prop_B)
     N_prop_C = size(Prop_C)
 
-    if (present(exa_input%N_omega_qr2)) then
-        N_omega1 = exa_input%N_omega_qr1
-        N_omega2 = exa_input%N_omega_qr2
-    else
-        N_omega1 = exa_input%N_omega_qr1/2.0
-        N_omega2 = exa_input%N_omega_qr1/2.0
-    end if
+    ! if (present(exa_input%N_omega_qr2)) then
+    !     N_omega1 = exa_input%N_omega_qr1
+    !     N_omega2 = exa_input%N_omega_qr2
+    ! else
+    !     N_omega1 = exa_input%N_omega_qr1/2.0
+    !     N_omega2 = exa_input%N_omega_qr1/2.0
+    ! end if
+
+
+    N_omega1 = exa_input%N_omega_qr1
+    N_omega2 = exa_input%N_omega_qr2
+
 
     allocate(omega(N_oper_qr))
     allocate(omega_min(N_oper_qr))
