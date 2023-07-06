@@ -396,7 +396,6 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_construct(aux_3,C8,one_dims(1:0),init_val=ZERO)
     ierr=talsh_tensor_construct(aux_4,C8,one_dims(1:0),init_val=ZERO)
 
-    print *, "error in construct aux?"
 
     ov_rank=talsh_tensor_rank(l1_tensor)
     oovv_rank=talsh_tensor_rank(l2_tensor)
@@ -405,10 +404,11 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr = talsh_tensor_construct(Aux_ov,C8,ov_dims,init_val=ZERO)
     ierr = talsh_tensor_construct(Aux_oovv,C8,oovv_dims,init_val=ZERO)
 
-    print *, "error in construct Aux?"
 
     ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+    print *, "ierr: ", ierr
     ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    print *, "ierr: ", ierr
     call c_f_pointer(body_p,result_tens,one_dims)
 
 
@@ -422,13 +422,13 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_contract("Aux1()+=Lamda(i,a)*EpiX(a,i)",& 
         aux_1,l1_tensor,Interm_t_tensor_X%epsilon_prop_vo,scale=ONE)
 
-    print *, "LTDM ierr aux_1 single: ", ierr
+    ! print *, "LTDM ierr aux_1 single: ", ierr
 
 !Double:
     ierr=talsh_tensor_contract("Aux1()+=Lamda(i,j,a,b)*EpiX(a,b,i,j)",& 
         aux_1,l2_tensor,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
 
-    print *, "LTDM ierr aux_1 double: ", ierr
+    ! print *, "LTDM ierr aux_1 double: ", ierr
 
 !------------------------------------------------------
 ! aux_2 =\lambda * \epsilonY                          |
@@ -437,13 +437,13 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_contract("Aux2()+=Lamda(i,a)*EpiY(a,i)",& 
         aux_2,l1_tensor,Interm_t_tensor_Y%epsilon_prop_vo,scale=ONE)
 
-    print *, "LTDM ierr aux_2 single: ", ierr
+    ! print *, "LTDM ierr aux_2 single: ", ierr
 
 !Double:
     ierr=talsh_tensor_contract("Aux2()+=Lamda(i,j,a,b)*EpiY(a,b,i,j)",& 
         aux_2,l2_tensor,Interm_t_tensor_Y%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
 
-    print *, "LTDM ierr aux_2 double: ", ierr
+    ! print *, "LTDM ierr aux_2 double: ", ierr
 
 
 !------------------------------------------------------
@@ -453,13 +453,13 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_contract("Aux3()+=Lamda(i,a)*RStat(a,i)",& 
         aux_3,l1_tensor,eom_results_t%value_vectors_t%rhs1(i_state),scale=ONE)
 
-    print *, "LTDM ierr aux_3 single: ", ierr
+    ! print *, "LTDM ierr aux_3 single: ", ierr
 
 !Double:
     ierr=talsh_tensor_contract("Aux3()+=Lamda(i,j,a,b)*RSta(a,b,i,j)",& 
         aux_3,l2_tensor,eom_results_t%value_vectors_t%rhs2(i_state),scale=ONE_QUARTER_C)
 
-    print *, "LTDM ierr aux_3 double: ", ierr
+    ! print *, "LTDM ierr aux_3 double: ", ierr
 
 
 !------------------------------------------------------
@@ -469,13 +469,13 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_contract("Aux4()+=tbarY(i,a)*EpiX(a,i)",& 
         aux_4,Tprop_bar_tensor_min_Y%t1,Interm_t_tensor_X%epsilon_prop_vo,scale=ONE)
 
-    print *, "LTDM ierr aux_4 ^{EOM}t_barY*\epsilonX single: ", ierr
+    ! print *, "LTDM ierr aux_4 ^{EOM}t_barY*\epsilonX single: ", ierr
 
 !Double:
     ierr=talsh_tensor_contract("Aux2()+=tbarY(i,j,a,b)*EpiX(a,b,i,j)",& 
         aux_4,Tprop_bar_tensor_min_Y%t2,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
 
-    print *, "LTDM ierr aux_4  ^{EOM}t_barY*\epsilonX double: ", ierr
+    ! print *, "LTDM ierr aux_4  ^{EOM}t_barY*\epsilonX double: ", ierr
 
 
 !------------------------------------------------------
@@ -485,13 +485,13 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_contract("Aux4()+=tbarX(i,a)*EpiY(a,i)",& 
         aux_4,Tprop_bar_tensor_X%t1,Interm_t_tensor_X%epsilon_prop_vo,scale=ONE)
 
-    print *, "LTDM ierr aux_4 ^{EOM}t_barX*\epsilonY single: ", ierr
+    ! print *, "LTDM ierr aux_4 ^{EOM}t_barX*\epsilonY single: ", ierr
 
 !Double:
     ierr=talsh_tensor_contract("Aux4()+=tbarX(i,j,a,b)*EpiX(a,b,i,j)",& 
         aux_4,Tprop_bar_tensor_X%t2,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
 
-    print *, "LTDM ierr aux_4  ^{EOM}t_barX*\epsilonY double: ", ierr
+    ! print *, "LTDM ierr aux_4  ^{EOM}t_barX*\epsilonY double: ", ierr
 
 
 
@@ -519,7 +519,7 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_contract("Aux(i,a)+=tbarY(i,a)*aux1()",& 
         Aux_ov,Tprop_bar_tensor_min_Y%t1,aux_1,scale=MINUS_ONE)
 
-    print *, "aux_1*^{EOM}t_barY_ov : ", ierr
+    ! print *, "aux_1*^{EOM}t_barY_ov : ", ierr
 
 
 !------------------------------------------------------
@@ -528,7 +528,7 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_contract("Aux(i,a)+=tbarX(i,a)*aux2()",& 
         Aux_ov,Tprop_bar_tensor_X%t1,aux_2,scale=MINUS_ONE)
 
-    print *, "- aux_2*^{EOM}t_barX_ov :", ierr
+    ! print *, "- aux_2*^{EOM}t_barX_ov :", ierr
 
 
 !------------------------------------------------------
@@ -555,7 +555,7 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
         Aux_oovv,Tprop_bar_tensor_min_Y%t2,aux_1,scale=MINUS_ONE)
 
 
-    print *, "aux_1*^{EOM}t_barY_oovv : ", ierr 
+    ! print *, "aux_1*^{EOM}t_barY_oovv : ", ierr 
 
 !------------------------------------------------------
 ! Aux_oovv =- aux_2*^{EOM}t_barX_oovv                 |
@@ -563,7 +563,7 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_contract("Aux(i,j,a,b)+=tbarX(i,j,a,b)*aux2()",& 
         Aux_oovv,Tprop_bar_tensor_X%t2,aux_2,scale=MINUS_ONE)
 
-    print *, "aux_2*^{EOM}t_barX_oovv: ", ierr
+    ! print *, "aux_2*^{EOM}t_barX_oovv: ", ierr
 
 !------------------------------------------------------
 ! Left_TDM =- Aux_ov*right_state_vo                   |
@@ -571,7 +571,8 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_contract("TDML()+=Aux(i,a)*Rstat(a,i)",& 
         result_tensor,Aux_ov,eom_results_t%value_vectors_t%rhs1(i_state),scale=MINUS_ONE)
 
-    print *, "Aux_ov*right_state_vo: ", ierr
+    ! print *, "Aux_ov*right_state_vo: ", ierr
+    ! print *, "result: ", result_tens(1)
 
 
 !------------------------------------------------------
@@ -580,7 +581,10 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_contract("TDML()+=Aux(i,j,a,b)*RSta(a,b,i,j)",& 
         result_tensor,Aux_oovv,eom_results_t%value_vectors_t%rhs2(i_state),scale=MINUS_ONE_QUARTER_C)
 
-    print *, "Aux_oovv*right_state_vvoo: ", ierr
+    ! print *, "Aux_oovv*right_state_vvoo: ", ierr
+    ! call print_tensor(result_tensor,1.0d-18,"Aux_oovv*right_state_vvoo")
+    ! print *, "result: ", result_tens(1)
+
 
 
 !------------------------------------------------------
@@ -589,9 +593,21 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=talsh_tensor_contract("TDML()+=aux3(i)*aux4(i)",& 
         result_tensor,aux_3,aux_4,scale=ONE)
 
-    print *, "aux3*aux4: ", ierr
+    ! print *, "aux3*aux4: ", ierr
+    ! call print_tensor(result_tensor,1.0d-18,"aux3*aux4")
+    ! print *, "result: ", result_tens(1)
+
 
     eom_tran_left_XY = result_tens(1)
+    print *, "eom_tran_left: ", eom_tran_left_XY
+    call print_tensor(eom_results_t%value_vectors_t%rhs1(i_state),1.0d-5,"T1 part of right state")
+    ! call print_tensor(eom_results_t%value_vectors_t%rhs2(i_state),1.0d-10,"T2 part of right state")
+    call print_tensor(Tprop_bar_tensor_min_Y%t1,1.0d-5,"T1 part of Tbary")
+    ! call print_tensor(Tprop_bar_tensor_min_Y%t2,1.0d-5,"T2 part of Tbary")
+    ! call print_tensor(Tprop_bar_tensor_X%t1,1.0d-5,"T1 part of Tbarx")
+    ! call print_tensor(Tprop_bar_tensor_X%t2,1.0d-5,"T2 part of Tbarx")
+    ! call print_tensor(Aux_ov,1.0d-5,"Aux_ov")
+    ! call print_tensor(Aux_oovv,1.0d-5,"Aux_oovv")
 
 
 ! Destroy aux tensors
@@ -669,12 +685,8 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr = talsh_tensor_construct(Aux_vo,C8,vo_dims,init_val=ZERO)
     ierr = talsh_tensor_construct(Aux_vvoo,C8,vvoo_dims,init_val=ZERO)
 
-    print *, "error in construct Aux?"
-
     ierr = talsh_tensor_construct(eta_ov_prim,C8,ov_dims,init_val=ZERO)
     ierr = talsh_tensor_construct(eta_oovv_prim,C8,oovv_dims,init_val=ZERO)
-
-    print *, "error in construct eta?"
             
     ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
     ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
@@ -689,13 +701,13 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("Aux1()+=Lamda(i,a)*EpiX(a,i)",& 
         aux_1,l1_tensor,Interm_t_tensor_X%epsilon_prop_vo,scale=ONE)
 
-    print *, "\lambda * \epsilonX single:", ierr
+    ! print *, "\lambda * \epsilonX single:", ierr
 
 !Double:
     ierr=talsh_tensor_contract("Aux1()+=Lamda(i,j,a,b)*EpiX(a,b,i,j)",& 
         aux_1,l2_tensor,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
 
-    print *, "\lambda * \epsilonX double:", ierr
+    ! print *, "\lambda * \epsilonX double:", ierr
 
 !------------------------------------------------------
 ! aux_2 =\lambda * \epsilonY                          |
@@ -704,13 +716,13 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("Aux2()+=Lamda(i,a)*EpiY(a,i)",& 
         aux_2,l1_tensor,Interm_t_tensor_Y%epsilon_prop_vo,scale=ONE)
 
-    print *, "\lambda * \epsilonY single: ", ierr
+    ! print *, "\lambda * \epsilonY single: ", ierr
 
 !Double:
     ierr=talsh_tensor_contract("Aux2()+=Lamda(i,j,a,b)*EpiY(a,b,i,j)",& 
         aux_2,l2_tensor,Interm_t_tensor_Y%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
     
-    print *, "\lambda * \epsilonY double: ", ierr
+    ! print *, "\lambda * \epsilonY double: ", ierr
 
 
 !------------------------------------------------------
@@ -720,13 +732,13 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("Aux3()+=Lamda(i,a)*TY(a,i)",& 
         aux_3,l1_tensor,Tprop_tensor_Y%t1,scale=ONE)
 
-    print *, "\lambda * \tY single: ", ierr
+    ! print *, "\lambda * \tY single: ", ierr
 
 !Double:
     ierr=talsh_tensor_contract("Aux3()+=Lamda(i,j,a,b)*TY(a,b,i,j)",& 
         aux_3,l2_tensor,Tprop_tensor_Y%t2,scale=ONE_QUARTER_C)
 
-    print *, "\lambda * \tY double: ", ierr
+    ! print *, "\lambda * \tY double: ", ierr
 
 
 !------------------------------------------------------
@@ -736,13 +748,13 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("Aux4()+=Lamda(i,a)*TX(a,i)",& 
         aux_4,l1_tensor,Tprop_tensor_min_w_X%t1,scale=ONE)
 
-    print *, "\lambda * \tX single: ", ierr
+    ! print *, "\lambda * \tX single: ", ierr
 
 !Double:
     ierr=talsh_tensor_contract("Aux4()+=Lamda(i,j,a,b)*TX(a,b,i,j)",& 
         aux_4,l2_tensor,Tprop_tensor_min_w_X%t2,scale=ONE_QUARTER_C)
 
-    print *, "\lambda * \tX double: ", ierr
+    ! print *, "\lambda * \tX double: ", ierr
 
 
 !------------------------------------------------------
@@ -751,7 +763,7 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("Aux(a,i)+=aux1()*Ty(a,i)",& 
         Aux_vo,aux_1,Tprop_tensor_Y%t1,scale=MINUS_ONE)
 
-    print *, "aux1 * \tY_vo: ", ierr
+    ! print *, "aux1 * \tY_vo: ", ierr
 
 !------------------------------------------------------
 ! Aux_vo =- aux2 * \tX_vo                             |
@@ -759,7 +771,7 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("Aux(a,i)+=aux2()*Tx(a,i)",& 
         Aux_vo,aux_2,Tprop_tensor_min_w_X%t1,scale=MINUS_ONE)
 
-    print *, "aux2 * \tX_vo: ", ierr
+    ! print *, "aux2 * \tX_vo: ", ierr
 
 !------------------------------------------------------
 ! Aux_vo =- aux3 * \epsilonX_vo                       |
@@ -767,7 +779,7 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("Aux(a,i)+=aux3()*epsilonX(a,i)",& 
         Aux_vo,aux_3,Interm_t_tensor_X%epsilon_prop_vo,scale=MINUS_ONE)
 
-    print *, "aux3 * \epsilonX_vo: ", ierr
+    ! print *, "aux3 * \epsilonX_vo: ", ierr
 
 !------------------------------------------------------
 ! Aux_vo =- aux4 * \epsilonY_vo                       |
@@ -775,7 +787,7 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("Aux(a,i)+=aux4()*epsilonY(a,i)",& 
         Aux_vo,aux_4,Interm_t_tensor_Y%epsilon_prop_vo,scale=MINUS_ONE)
 
-    print *, "aux4 * \epsilonY_vo :", ierr
+    ! print *, "aux4 * \epsilonY_vo :", ierr
 
 
 !------------------------------------------------------
@@ -784,7 +796,7 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("Aux(a,b,i,j)+=aux1()*Ty(a,b,i,j)",& 
         Aux_vvoo,aux_1,Tprop_tensor_Y%t2,scale=MINUS_ONE)
 
-    print *, "aux1 * \tY_vvoo: ", ierr
+    ! print *, "aux1 * \tY_vvoo: ", ierr
 
 !------------------------------------------------------
 ! Aux_vvoo =- aux2 * \tX_vvoo                         |
@@ -792,14 +804,14 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("Aux(a,b,i,j)+=aux2()*Tx(a,b,i,j)",& 
         Aux_vvoo,aux_2,Tprop_tensor_min_w_X%t2,scale=MINUS_ONE)
         
-    print *, "aux2 * \tX_vvoo: ", ierr
+    ! print *, "aux2 * \tX_vvoo: ", ierr
 !------------------------------------------------------
 ! Aux_vvoo =- aux3 * \epsilonX_vvoo                   |
 !------------------------------------------------------
     ierr=talsh_tensor_contract("Aux(a,b,i,j)+=aux3()*epsilonX(a,b,i,j)",& 
         Aux_vvoo,aux_3,Interm_t_tensor_X%epsilon_prop_vvoo,scale=MINUS_ONE)
 
-    print *, "aux3 * \epsilonX_vvoo: ", ierr
+    ! print *, "aux3 * \epsilonX_vvoo: ", ierr
 
 
 !------------------------------------------------------
@@ -839,7 +851,8 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("TDML()+=Eta_pri_X(i,a)*Ty(a,i)",& 
         result_tensor,eta_ov_prim,Tprop_tensor_Y%t1,scale=ONE)
 
-    print *, "eta_ov_prim_X_ov *tY_vo: ", ierr
+    ! print *, "eta_ov_prim_X_ov *tY_vo: ", ierr
+    ! print *, "result: ", result_tens(1)
 
 
 !------------------------------------------------------
@@ -848,7 +861,8 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("TDML()+=Eta_pri_X(i,j,a,b)*Ty(a,b,i,j)",& 
         result_tensor,eta_oovv_prim,Tprop_tensor_Y%t2,scale=ONE_QUARTER_C)
 
-    print *, "eta_ov_prim_X_oovv *tY_vvoo: ", ierr
+    ! print *, "eta_ov_prim_X_oovv *tY_vvoo: ", ierr
+    ! print *, "result: ", result_tens(1)
 
 
 !------------------------------------------------------
@@ -873,20 +887,24 @@ subroutine get_tran_right(exa_input, interm_t,&
 
 
 !------------------------------------------------------
-! Right_TDM =+ eta_ov_prim_Y_ov *tX_vo                |
+! Right_TDM =+ eta_ov_prim_Y *tX_vo                |
 !------------------------------------------------------
     ierr=talsh_tensor_contract("TDML()+=Eta_pri_Y(i,a)*Tx(a,i)",& 
             result_tensor,eta_ov_prim,Tprop_tensor_min_w_X%t1,scale=ONE)
 
-    print *, "eta_ov_prim_Y_ov *tX_vo: ", ierr
+    ! print *, "eta_ov_prim_Y_ov *tX_vo: ", ierr
+    ! call print_tensor(result_tensor,1.0d-18,"eta_ov_prim_Y*tX_vo")
+    ! print *, "result: ", result_tens(1)
 
 !------------------------------------------------------
-! Right_TDM =+ eta_ov_prim_Y_oovv *tX_vvoo             |
+! Right_TDM =+ eta_oovv_prim_Y *tX_vvoo             |
 !------------------------------------------------------
     ierr=talsh_tensor_contract("TDML()+=Eta_pri_Y(i,j,a,b)*Tx(a,b,i,j)",& 
             result_tensor,eta_oovv_prim,Tprop_tensor_min_w_X%t2,scale=ONE_QUARTER_C)
 
-    print *, "eta_ov_prim_Y_oovv *tX_vvoo: ", ierr
+    ! print *, "eta_ov_prim_Y_oovv *tX_vvoo: ", ierr
+    ! call print_tensor(result_tensor,1.0d-18,"eta_oovv_prim_Y*tX_vvoo")
+    ! print *, "result: ", result_tens(1)
 
 !------------------------------------------------------
 ! Right_TDM =- leftstate_ov * Aux_vo                  |
@@ -894,7 +912,9 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("TDML()+=LState(i,a)*Aux(a,i)",& 
             result_tensor,eom_results_t%value_vectors_t%lhs1(i_state),Aux_vo,scale=MINUS_ONE)
 
-    print *, "leftstate_ov * Aux_vo: ", ierr
+    ! print *, "leftstate_ov * Aux_vo: ", ierr
+    ! call print_tensor(result_tensor,1.0d-18,"leftstate_ov * Aux_vo")
+    ! print *, "result: ", result_tens(1)
         
 !------------------------------------------------------
 ! Right_TDM =- leftstate_oovv * Aux_vvoo              |
@@ -902,10 +922,20 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr=talsh_tensor_contract("TDML()+=LState(i,j,a,b)*Aux(a,b,i,j)",& 
             result_tensor,eom_results_t%value_vectors_t%lhs2(i_state),Aux_vvoo,scale=MINUS_ONE_QUARTER_C)
 
-    print *, "leftstate_oovv * Aux_vvoo: ", ierr
+    ! print *, "leftstate_oovv * Aux_vvoo: ", ierr
+    ! call print_tensor(result_tensor,1.0d-18,"leftstate_oovv * Aux_vvoo")
 
 
     eom_tran_right_XY = result_tens(1)
+    print *, "eom_tran_right: ", eom_tran_right_XY
+    call print_tensor(eom_results_t%value_vectors_t%lhs1(i_state),1.0d-5,"T1 part of left state")
+    ! call print_tensor(eom_results_t%value_vectors_t%lhs2(i_state),1.0d-10,"T2 part of left state")
+    call print_tensor(Tprop_tensor_min_w_X%t1,1.0d-5,"T1 part of Tx")
+    ! call print_tensor(Tprop_tensor_min_w_X%t2,1.0d-5,"T2 part of Tx")
+    ! call print_tensor(Tprop_tensor_Y%t1,1.0d-5,"T1 part of Ty")
+    ! call print_tensor(Tprop_tensor_Y%t2,1.0d-5,"T2 part of Ty")
+    ! call print_tensor(eta_ov_prim,1.0d-5,"eta_ov_prim")
+    ! call print_tensor(eta_oovv_prim,1.0d-5,"eta_oovv_prim")
 
     ! Destroy aux tensors
     ierr=talsh_tensor_destruct(aux_1)
@@ -958,7 +988,7 @@ subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor, t2_tensor,t1_tensor,&
     integer(INTD), dimension(2)   :: vo_dims
     integer(C_INT)     :: one_dims(1)
     type(talsh_tens_t) :: uncon_tensor
-    logical :: debug_local = .true.
+    logical :: debug_local = .false.
 
 
     one_dims(1) = 1
@@ -1045,7 +1075,7 @@ subroutine get_eta_prop_oovv_prime( eta_prop_oovv_tensor,t1_tensor,l2_tensor,l1_
     integer(INTD), dimension(4)   :: oovv_dims
     integer(INTD), dimension(2)   :: oo_dims, vv_dims
     integer :: ierr
-    logical :: debug_local = .true.
+    logical :: debug_local = .false.
     integer(C_INT)     :: one_dims(1)
     type(talsh_tens_t) :: uncon_tensor
 

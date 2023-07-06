@@ -1064,7 +1064,7 @@ contains
 
            i_pri = i_pri+1
         !    factor1 =  eigenvectors_subspace(i,k)
-           factor1 =  eigenvectors_subspace(i_pri,k)
+           factor1 = eigenvectors_subspace(i_pri,k)
         !    factor1 = conjg(factor1)
            factor2 = -eigenvalues_subspace(k)*factor1
 ! aspg, added from (q)rsp
@@ -1704,7 +1704,11 @@ contains
 
         dimen_x = size(X,1)
         allocate(Solution(dimen_x,NRHS))
-        Solution(:,NRHS) = X(:,NRHS)
+        if (left) then 
+            Solution(:,NRHS) = conjg(X(:,NRHS))
+        else
+            Solution(:,NRHS) = X(:,NRHS) 
+        end if 
 
         ! dimen_x = size(B,1)
         ! allocate(Solution(dimen_x,NRHS))
@@ -2536,10 +2540,8 @@ contains
 
 !           call apply_projector(workspace_t%L, projector_t, workspace_t%trial1,  workspace_t%trial2)
             call create_sigma(workspace_t,int_t,interm_t,config%solve_rhs,config%solve_lhs,Index_small_v)
-            print *, "error in sigma?"
 !           call apply_projector(workspace_t%L, projector_t, workspace_t%sigma1,  workspace_t%sigma2)
             call create_subspace_matrix(M_small,workspace_t,config%solve_rhs,config%solve_lhs,frequency_local,Index_small_v,isv)
-            print *, "error in subspace?"
 
 ! aspg, added from (q)rsp
             if (config%solve_linear_system) then
