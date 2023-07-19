@@ -329,13 +329,9 @@ module talsh_eom
       call print_date("Entering EOM-EE eigenvalue calculation")
 
       call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, left_right)
-      print *, "erro: workspace?"
       call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, left_right)
-      print *, "erro: Hdiag?"
       call talsh_eomccsd_ee_trial_create(workspace_t)
-      print *, "erro: trial?"
       call talsh_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
-      print *, "erro: kill?"
 
 !     set pointers to sigma vector subroutines 
       interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
