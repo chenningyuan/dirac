@@ -40,6 +40,7 @@
   write(iunit,*) 'thfull  ',thfull
   write(iunit,*) 'thdiag  ',thdiag
   write(iunit,*) 'thgrad  ',thgrad
+  write(iunit,*) 'thxvec  ',thxvec
   write(iunit,*) 'lgfull  ',lgfull
   write(iunit,*) 'lgdiag  ',lgdiag
   write(iunit,*) 'lggrad  ',lggrad
@@ -82,7 +83,6 @@
   write(iunit,*) 'prjloc  ',prjloc
   write(iunit,*) 'lupri   ',lupri
   write(iunit,'(A72)') selmos
-  write(iunit,*) 'thclean ',thclean
   ! dcbgen.h
   write(iunit,*) title
   write(iunit,*) 'lucoef  ',lucoef

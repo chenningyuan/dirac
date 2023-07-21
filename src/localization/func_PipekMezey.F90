@@ -18,7 +18,6 @@ module func_PipekMezey
 !            False - Mulliken analysis                                           !
 !   iprloc - print level (no prints =0)                                          !
 !   isel   - integer array which contains numbers of MOs that will be localized  !
-!   thclean - threshold for precision of population matrix                       !
 !   ... ( not finished yet )                                                     !
 !================================================================================!
 implicit none
@@ -27,12 +26,10 @@ public  :: init_func, quit_func, mv2point, get_func, get_gradient, get_hessian, 
 
 private :: ORBLP1, ORBLP2, orblo1, ORBLO4, wcmo2file, wricmo_mod, reacmo_mod, insert_loccmo
 private :: ROTCMO_MOD, NUMLST_MOD, errall, get_overlap, selcfs_mod, qtrans90_mod, qdiag90_mod
-private :: cleanmat
 
 type :: PipekMezey_flags
   integer :: iprloc
   logical :: prjloc
-  real*8  :: thclean
 end type PipekMezey_flags
 
 type :: PipekMezey_variales
@@ -117,7 +114,6 @@ contains
   read(iunit,*) chdum,PM%prjloc
   read(iunit,*) chdum,var%lupri
   read(iunit,'(A72)') selmos
-  read(iunit,*) chdum,PM%thclean
   ! dcbgen.h
   read(iunit,*) var%title
   read(iunit,*) chdum,var%lucoef
@@ -336,11 +332,11 @@ contains
   !                    Move to the new expansion point                           !
   !                      --> get new MO coefficients                             !
   !                                                                              !
-  !   Note:  Deffinition of kappa matrix in rotcmo_mod is different as in        !
+  !   Note:  Definition of kappa matrix in rotcmo_mod is different as in        !
   !          calculation of gradient and hessian in get_gradient and get_hessian !
   !          --> Indexes are exchanged and j quaterion is with minus sign        !
   !              Qkappa_lk = kappa_kl - bar{kappa}_kl^* j                        !
-  !              It follows from definition of bared unitary matrix:             !
+  !              It follows from definition of barred unitary matrix:            !
   !              tilde{Psi_i} = U_ij Psi_j + bar{U}_ij Psi_j                     !
   !==============================================================================!
   implicit none
@@ -428,8 +424,9 @@ contains
   ! real*8,  intent(  out) :: pmat(nloc,nloc,4,nucdep)
 
   ! Internal variables
-  integer :: nloc, nucdep, nmdim, ier
+  integer :: nloc, nucdep, nmdim, ier, i
   real*8  :: dinvmg
+  real*8  :: totdiag, totnond, bufdiag, bufnond
 
   !------------------------------------------------------------------------------!
   nloc   = size(pmat,1)
@@ -443,23 +440,11 @@ contains
   endif
   dinvmg4out = dinvmg   ! global variable
   get_func   = dinvmg
-  ! Clean pmatrix
-  if(pm%thclean.gt.d0) then
-    write(6,*) 'TEST..nucdep..',nucdep
-!    nmdim = nloc*nloc*4*nucdep
-    nmdim = nloc*nloc*4
-    call cleanmat(pmat(1,1,1,1),nmdim,pm%thclean)
-!    nmdim = nloc*nloc*4
-!    call cleanmat(pmat(1,1,1,2),nmdim,pm%thclean)
-!    nmdim = nloc*nloc*4
-!    call cleanmat(pmat(1,1,1,3),nmdim,pm%thclean)
-  endif
-
-      WRITE(6,*) 'TEST..QMAT'
-      open(137,file='QMAT',status='new',form='unformatted',access='sequential',iostat=ier)
-      write(137) nucdep,nloc
-      write(137) pmat
-      close(137,status='keep')
+  ! WRITE(6,*) 'TEST..QMAT'
+  ! open(137,file='QMAT',status='new',form='unformatted',access='sequential',iostat=ier)
+  ! write(137) nucdep,nloc
+  ! write(137) pmat
+  ! close(137,status='keep')
   !------------------------------------------------------------------------------!
   end function get_func
 
@@ -472,8 +457,8 @@ contains
   !  Construction of full hessian                                                !
   !                                                                              ! 
   !     HMAT         A = d^2 G / dK* dK     B = d^2 G / dK dK          K         !
-  !  / A   B  \       / A_uu   A_ub \        / B_uu   B_ub \      / K(unbared) \ !
-  !  \ B*  A* /       \ A_bu   A_bb /        \ B_bu   B_bb /      \ K(bared)   / !
+  !  / A   B  \       / A_uu   A_ub \        / B_uu   B_ub \      / K(unbarred)\ !
+  !  \ B*  A* /       \ A_bu   A_bb /        \ B_bu   B_bb /      \ K(barred)  / !
   !                                                                              ! 
   !==============================================================================!
   implicit none
@@ -520,7 +505,7 @@ contains
     allocate( hmat(ndimh,1), stat=ier ); call errall(ier,'get_hessian','hmat')
     hmat(:,:) = d0
 
-    ! unbared-unbared A^R + B^R contribution
+    ! unbarred-unbarred A^R + B^R contribution
     do m = 1,nucdep
       ij = 0
       do j=1,nloc
@@ -533,7 +518,7 @@ contains
       enddo
     enddo
 
-    ! bared-bared A^R + B^R contribution
+    ! barred-barred A^R + B^R contribution
     do m = 1,nucdep
       ij = nloc12
       do j=1,nloc
@@ -546,7 +531,7 @@ contains
       enddo
     enddo
 
-    ! unbared-unbared A^R - B^R contribution
+    ! unbarred-unbarred A^R - B^R contribution
     do m = 1,nucdep
       ij = 2*nloc12
       do j=1,nloc
@@ -559,7 +544,7 @@ contains
       enddo
     enddo
 
-    ! bared-bared A^R + B^R contribution
+    ! barred-barred A^R + B^R contribution
     do m = 1,nucdep
       ij = 3*nloc12
       do j=1,nloc
@@ -2506,33 +2491,5 @@ contains
   deallocate(work, stat=ier); if (ier /= 0) call quit('qdiag90_mod: error in deallocation !')
 
   end subroutine qdiag90_mod
-
-  subroutine cleanmat(a,ndim,thresh)
-  !============================================================
-  !    Remove decimals beyond threshold
-  !============================================================
-  implicit none
-  integer :: ndim,i
-  real*8  :: a(ndim),thresh
-  real*8  :: buf
-  intrinsic maxval
-
-
-!  buf=thresh*ANINT(maxval(a)/thresh,8)
-  write(6,*) 'TEST..ndim..thresh',ndim,thresh
-  buf=maxval(a(1:ndim))
-  write(6,*) 'TEST..maxval..',buf
-  buf=ANINT(buf/thresh,8)
-  write(6,*) 'TEST..anint...',buf
-  if (dabs(buf) > dble(huge(1_8))) then
-       print *, 'CLEANMAT: dabs(buf) > huge(1_8)'
-       stop
-  endif
-  buf=thresh*buf
-  write(6,*) 'TEST..clean...',buf
-  do i = 1,ndim
-    a(i)=thresh*ANINT(a(i)/thresh,8)
-  enddo
-  end subroutine cleanmat
 
 end module func_PipekMezey
