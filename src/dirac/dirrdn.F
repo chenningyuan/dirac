@@ -8373,7 +8373,7 @@ C
       DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
      &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
      &            '.THDIAG','.THGRAD','.CHECK ','.SELECT',
-     &            '.CLEAN ','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.THXVEC','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -8402,7 +8402,7 @@ C
       THFULL = 1.0D-13
       THDIAG = 1.0D-05
       THGRAD = 1.0D-07
-      THCLEAN = -1.0D0
+      THXVEC = 1.0D-15
       SELMOS = 'allocc'
 C
 C     Process input from CBILOC
@@ -8498,8 +8498,8 @@ C   SELMOS: Select MOs for localization
                READ(LUCMD,'(A72)') SELMOS
                GO TO 100
  13            CONTINUE
-C   CLEAN: Set threshold for cleaning of Q matrices
-               READ(LUCMD,*) THCLEAN
+C   THXVEC: Set threshold for removal of small rotations
+               READ(LUCMD,*) THXVEC
  14            CONTINUE
                GO TO 100
  15            CONTINUE
@@ -8658,9 +8658,9 @@ C
         WRITE(LUPRI,'(1X,A)') '* User defined MOs for localization:'
         WRITE(LUPRI,'(1X,A)') '    --> ',SELMOS
       ENDIF
-      WRITE(6,'(A,1P,E8.2)') 
-     &    '* Threshold for precision of population matrix: ',
-     &    THCLEAN          
+      WRITE(6,'(1X,A,1P,E8.2)') 
+     &    '* Threshold for removal of small rotations: ',
+     &    THXVEC          
 C     -----------------------------------------------------------------
 C     Fragments of spinors used in the projection analysis
 C
