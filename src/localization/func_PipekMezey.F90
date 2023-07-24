@@ -1012,28 +1012,28 @@ contains
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_bb'
       do i=nloc12+1,2*nloc12
         do j=nloc12+1,2*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(dabs(hmat(i,j)).ge.thresh) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_bb'
       do i=nloc12+1,2*nloc12
         do j=3*nloc12+1,4*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(dabs(hmat(i,j)).ge.thresh) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_bb'
       do i=3*nloc12+1,4*nloc12
         do j=3*nloc12+1,4*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(dabs(hmat(i,j)).ge.thresh) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_bu'
       do i=nloc12+1,2*nloc12
         do j=2*nloc12+1,3*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(dabs(hmat(i,j)).ge.thresh) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
     endif
