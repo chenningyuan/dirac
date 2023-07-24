@@ -365,7 +365,7 @@ module talsh_sigma_eomccsd
       ierr=talsh_tensor_init(sigma1_tensor)
 
 !--------------------------------------
-!     term 1: S1(a,X) += F(e,a) * R1(e,X) |
+!     term 1: S1(a,X) += F(a,e) * R1(e,X) |
 !--------------------------------------
 
       ! ierr=talsh_tensor_contract("S(a,X)+=F(e,a)*R(e,X)",sigma1_tensor,interm_t%fbar_vv,r1_tensor)

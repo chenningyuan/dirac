@@ -1064,7 +1064,7 @@ contains
 
            i_pri = i_pri+1
         !    factor1 =  eigenvectors_subspace(i,k)
-           factor1 =  eigenvectors_subspace(i_pri,k)
+           factor1 = eigenvectors_subspace(i_pri,k)
         !    factor1 = conjg(factor1)
            factor2 = -eigenvalues_subspace(k)*factor1
 ! aspg, added from (q)rsp
@@ -1704,7 +1704,11 @@ contains
 
         dimen_x = size(X,1)
         allocate(Solution(dimen_x,NRHS))
-        Solution(:,NRHS) = X(:,NRHS)
+        if (left) then 
+            Solution(:,NRHS) = conjg(X(:,NRHS))
+        else
+            Solution(:,NRHS) = X(:,NRHS) 
+        end if 
 
         ! dimen_x = size(B,1)
         ! allocate(Solution(dimen_x,NRHS))
@@ -1761,6 +1765,93 @@ contains
 
 
     end subroutine get_tensor_linear_systems
+
+
+    subroutine get_tensor_eigenvector(result_t,root_vect,e_small,workspace_t,left)
+      
+        type(talsh_davidson_results_tens_t) :: result_t
+        complex(kind=8), pointer, contiguous :: root_vect(:,:)
+        complex(kind=8), pointer, contiguous :: e_small(:)
+        type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
+        logical                     :: left
+        
+
+        type(talsh_tens_t)          :: one_tensor
+        integer(C_INT)              :: ierr
+        integer                     :: iroot, N, N_state, istate
+        integer(C_INT)              :: one_dims(1)
+        integer(INTD), dimension(2)   :: ov_dims
+        integer(INTD), dimension(4)   :: oovv_dims
+        integer(INTD)               ::  ov_rank, oovv_rank
+        complex(kind=8)             :: factor
+
+        one_dims(1) = 1
+        ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+
+
+
+        N = size(root_vect,1)
+        N_state = size(root_vect,2)
+        ! print *, "N in get_tensor_linear_systems", N
+
+
+        ! print *, "dim1", size(root_vect,1)
+        ! print *, "dim2", size(root_vect,2)
+        ! print *, "roor_vect", root_vect(:,1)
+        ! call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
+
+        ov_rank=talsh_tensor_rank(workspace_t%trial1(1))
+        oovv_rank=talsh_tensor_rank(workspace_t%trial2(1))
+
+        ierr = talsh_tensor_dimensions(workspace_t%trial1(1),ov_rank,ov_dims)
+        ierr = talsh_tensor_dimensions(workspace_t%trial2(1),oovv_rank,oovv_dims)
+
+        if (left) then 
+            allocate(result_t%lhs1(N_state))
+            allocate(result_t%lhs2(N_state))
+            allocate(result_t%values_lhs(N_state,1))
+        else
+            allocate(result_t%rhs1(N_state))
+            allocate(result_t%rhs2(N_state))
+            allocate(result_t%values_rhs(N_state,1))
+        end if 
+
+        ! print *, "N_state: ", N_state
+        ! print *, "N_state of e_small: ", size(e_small)
+
+        do istate=1, N_state
+            if (left) then
+                result_t%values_lhs(istate,1) = e_small(istate)
+                ierr = talsh_tensor_construct(result_t%lhs1(istate),C8,ov_dims,init_val=ZERO)
+                ierr = talsh_tensor_construct(result_t%lhs2(istate),C8,oovv_dims,init_val=ZERO)
+            else
+                result_t%values_rhs(istate,1) = e_small(istate)
+                ierr = talsh_tensor_construct(result_t%rhs1(istate),C8,ov_dims,init_val=ZERO)    !for right vector, actually we use vo and vvoo
+                ierr = talsh_tensor_construct(result_t%rhs2(istate),C8,oovv_dims,init_val=ZERO) 
+            end if
+
+
+          do iroot=1, N
+            factor = root_vect(iroot,istate)
+            if (left) then 
+                ierr=talsh_tensor_contract("t(i,a)+=B1(i,a)*X()",result_t%lhs1(istate),&
+                    workspace_t%trial1(iroot),one_tensor,scale=factor)
+                ierr=talsh_tensor_contract("t(i,j,a,b)+=B2(i,j,a,b)*X()",result_t%lhs2(istate),&
+                    workspace_t%trial2(iroot),one_tensor,scale=factor) 
+            else
+                ierr=talsh_tensor_contract("t(a,i)+=B1(a,i)*X()",result_t%rhs1(istate),&
+                    workspace_t%trial1(iroot),one_tensor,scale=factor)
+                ierr=talsh_tensor_contract("t(a,b,i,j)+=B2(a,b,i,j)*X()",result_t%rhs2(istate),&
+                    workspace_t%trial2(iroot),one_tensor,scale=factor) 
+            end if 
+          end do
+        end do 
+
+        !  call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
+        !  call print_tensor(t_tensor%t2, 1.0d-10, "t_tensor%t2")
+
+
+    end subroutine get_tensor_eigenvector
 
 
 
@@ -2396,6 +2487,7 @@ contains
         integer :: niter
         integer :: i, j, k
         integer :: nroots, ierr
+        logical :: left_eigen_vec
 
         ! if (config%solve_linear_system) then
         !     nroots = 1
@@ -2507,12 +2599,23 @@ contains
                end if
             ! end if
             if (.not.associated(delta)) then
+
                 if (config%solve_linear_system) then 
                     write(config%output_file_unit,*) "Root converged."
                     call get_tensor_linear_systems(tprop_tensor,x_small,workspace_t)
-                else
-                    write(config%output_file_unit,*) "All roots converged, stopping."
+                else 
+                    write(config%output_file_unit,*) "All roots converged"
+                    write(config%output_file_unit,*) "I want to Save eigenvectors."
+
+                    if (config%solve_rhs) then 
+                        left_eigen_vec = .FALSE.
+                        call get_tensor_eigenvector(results_t,c_small_r,e_small,workspace_t,left_eigen_vec)
+                    else 
+                        left_eigen_vec = .True.
+                        call get_tensor_eigenvector(results_t,c_small_l,e_small,workspace_t,left_eigen_vec)
+                    end if
                 end if
+
                 exit
             end if
 

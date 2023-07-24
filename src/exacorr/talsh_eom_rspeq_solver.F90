@@ -6,6 +6,7 @@ module talsh_eom_rspeq_solver
       use exacorr_datatypes 
       use exacorr_utils
       use talsh_trial_eomccsd
+      use talsh_eom
 
       
       
@@ -14,11 +15,6 @@ module talsh_eom_rspeq_solver
                          ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
                          MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
                          MINUS_TWO=(-2.D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0)
-
-      type, public :: talsh_eom_results_tens_t
-            character, pointer :: flavor(:)
-            type(talsh_davidson_results_tens_t) :: value_vectors_t
-      end type talsh_eom_results_tens_t
 
       private 
 

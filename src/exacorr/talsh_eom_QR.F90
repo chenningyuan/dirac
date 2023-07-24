@@ -390,10 +390,6 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
     call get_eta_prop_ov_prime(sigma_prop_tensor%t1,Interm_t_tensor,&
                     tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%t2,interm_t%t1,&
                     LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
-
-    ierr=talsh_tensor_contract("Sxy(i,a)+=X(i,a)*I()",sigma_prop_tensor%t1,Interm_t_tensor%prop_bar_ov,one_tensor,scale=MINUS_ONE)
-    ierr=talsh_tensor_contract("Sxy(i,a)+=Tl(i,j,a,b)*Ep(b,j)",sigma_prop_tensor%t1,tprop_bar_tensor%t2,&
-                                    Interm_t_tensor%epsilon_prop_vo,scale=ONE)
    
 
     call get_eta_prop_oovv_prime(sigma_prop_tensor%t2,Interm_t_tensor,&
@@ -445,7 +441,12 @@ end subroutine construct_TlXAy
 
 !LH Eat1
 !LH     \Eta_1 ia=+\Ys ia
-    ierr=talsh_tensor_add('E(i,a)+=Y(i,a)',eta_prop_ov_tensor,Interm_t_tensor%prop_bar_ov,scale=ONE)                    
+    ! ierr=talsh_tensor_add('E(i,a)+=Y(i,a)',eta_prop_ov_tensor,Interm_t_tensor%prop_bar_ov,scale=ONE)                    
+    ! if(debug_local) print *,'LH_talsh eta_prop_ov_tensor ierr_o1 ', ierr
+
+!XY  \Eta_1 ia=+\lambdad ijab \epison ej
+    ierr=talsh_tensor_contract('E(i,a)+=L(i,j,a,e)*Epis(e,j)',eta_prop_ov_tensor,l2_tensor,&
+                            Interm_t_tensor%epsilon_prop_vo,scale=ONE)                    
     if(debug_local) print *,'LH_talsh eta_prop_ov_tensor ierr_o1 ', ierr
 
 !LH     \Eta_1 ia=+\Ys ea \lambdas ie

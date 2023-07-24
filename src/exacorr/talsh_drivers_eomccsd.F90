@@ -115,12 +115,13 @@ module talsh_eom
 ! *_qrsp_driver   : uses *_linresp_driver to solve the linear response equations involved in the quadratic response, and forms the quadratic response function
 !
 ! and within each use the different variants : EOM-IP/EE/EA/../-CC* where CC* refers to {P-,}EOM-{CC{SD,SDT},MBPT2}, CCn,
-    subroutine talsh_eom_eigval_driver (results_t,eom_config,interm_t,int_t)
+    subroutine talsh_eom_eigval_driver (results_t,eom_config,interm_t,int_t, solve_right, solve_left)
 !     input variables
       type(talsh_eom_results_tens_t), intent(inout)  :: results_t
       type(eom_config_t),     intent(in)             :: eom_config
       type(talsh_intg_tens_t), intent(inout)         :: int_t
       type(talsh_intermediates_tens_t), intent(inout):: interm_t
+      logical :: solve_right, solve_left
 
       write(*,*) ""
       write(*,'(A)') "*******************************************************************************"
@@ -131,10 +132,8 @@ module talsh_eom
 ! aspg : need to get from hardcoded options to getting them from input (*CCDIAG) on the calls to talsh_davidson_setup
       call talsh_davidson_setup(unit_output=6, &
                                 convergence_threshold=mfsolver_options_convergence_threshold, &
-                                solve_right=.true.,&
-                                solve_left=.false.,&
-                              !   solve_right=.false.,&
-                              !   solve_left=.true.,&
+                                solve_right=solve_right,&
+                                solve_left=solve_left,&
                                 symmetric=.false., &
                                 overlap_sorting=mfsolver_options_overlap_sorting,&
                                 max_subspace_size=mfsolver_options_max_subspace_size,&
@@ -154,8 +153,11 @@ module talsh_eom
          case("EA")
             call eom_ccsd_eigenvalue_ea(results_t,eom_config%nroots,interm_t,int_t)
          case("EE")
-            call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t)
-            ! call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t,'L')  ! test left equation
+            if (solve_left) then 
+                  call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t,'L')  ! test left equation
+            else
+                  call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t)
+            end if 
          case default
             call quit ('Error: No valid EOM-flavour chosen')
       end select
