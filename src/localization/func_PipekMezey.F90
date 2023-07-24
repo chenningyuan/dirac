@@ -476,7 +476,7 @@ contains
   integer :: i, j, k, l, m, n, ij, kl, ier
   integer :: nucdep, nloc, ndimh, nloc12, lupri
   real*8  :: pij1, pij2, pkml, p2kml, p2lmk, buf, buf1, buf2, thresh
-
+  real*8  :: abs
   integer, allocatable :: ijn(:,:), iju(:), ijl(:)
 
   real*8,  allocatable, dimension(:,:,:) :: p1, p2, p3, p4
@@ -559,7 +559,7 @@ contains
 
     do i=1,ndimh
       hmat(i,1) = - hmat(i,1) / dfloat(nloc) ! minus sign --> we are looking for the minimum
-      totdiag = totdiag + dabs( hmat(i,1) )
+      totdiag = totdiag + abs( hmat(i,1) )
     enddo
 
     if(PM%iprloc.ge.3)then
@@ -900,9 +900,9 @@ contains
       do i=1,ndimh
         hmat(i,j) = - hmat(i,j) / dfloat(nloc)  ! minus sign --> we are looking for the minimum
         if(i==j)then
-          totdiag = totdiag + dabs( hmat(i,j) )
+          totdiag = totdiag + abs( hmat(i,j) )
         else
-          totnond = totnond + dabs( hmat(i,j) )
+          totnond = totnond + abs( hmat(i,j) )
         endif
       enddo
     enddo
@@ -966,73 +966,74 @@ contains
 !   Print matrix blocks
     if(PM%iprloc.ge.4)then
       thresh=1.0d-14
+
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_uu'
       do i=1,nloc12
         do j=1,nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_uu'
       do i=1,nloc12
         do j=2*nloc12+1,3*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_uu'
       do i=2*nloc12+1,3*nloc12
         do j=2*nloc12+1,3*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_ub'
       do i=1,nloc12
         do j=nloc12+1,2*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_ub'
       do i=1,nloc12
         do j=3*nloc12+1,4*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_ub'
       do i=2*nloc12+1,3*nloc12
         do j=3*nloc12+1,4*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R + B^R)_bb'
       do i=nloc12+1,2*nloc12
         do j=nloc12+1,2*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_bb'
       do i=nloc12+1,2*nloc12
         do j=3*nloc12+1,4*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (A^R - B^R)_bb'
       do i=3*nloc12+1,4*nloc12
         do j=3*nloc12+1,4*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
 
       write(lupri,'(/a,2f10.5)') 'Print (B^I - A^I)_bu'
       do i=nloc12+1,2*nloc12
         do j=2*nloc12+1,3*nloc12
-          if(dabs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
+          if(abs(hmat(i,j).ge.thresh)) write(6,*) i,j,hmat(i,j)
         enddo
       enddo
     endif
