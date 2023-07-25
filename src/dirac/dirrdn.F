@@ -231,6 +231,19 @@ C     Initialize PE library
       if (dirac_cfg_dft_calculation) then
         call consistency_after_dft_input()
         call report_after_dft_input()
+        IF (GAUNT) THEN
+           IF (LSCALE_DFT_GAUNT) THEN
+              WRITE (LUPRI,*) '* WARNING: Gaunt integrals will be '//
+     &        'scaled as HF exchange '
+              WRITE (LUPRI,*) '  according to the selected DFT '//
+     &        'functional.'
+           ELSE
+              WRITE (LUPRI,*) '* WARNING: Gaunt integrals will be '//
+     &        'included to 100%'
+              WRITE (LUPRI,*) '  independently of the selected '//
+     &        'DFT functional.'
+           ENDIF
+        ENDIF
 !       fixme num grid report should be independent of DFT
         call report_num_grid()
       end if
@@ -6476,17 +6489,6 @@ CMI    ... quantum dots
           call dftreport()
         end if
 
-         IF (IGTINT.EQ.1) THEN
-            IF (LSCALE_DFT_GAUNT) THEN
-               WRITE (LUPRI,*) 'WARNING: Gaunt integrals will be'//
-     &              'scaled as HF exchange according to the selected'
-               WRITE (LUPRI,*) ' DFT functional.'
-            ELSE
-               WRITE (LUPRI,*) 'WARNING: Gaunt integrals will be'//
-     &              'included to 100% independently of the selected'
-               WRITE (LUPRI,*) ' DFT functional.'
-            ENDIF
-         ENDIF
 
       ENDIF
 C
@@ -9255,7 +9257,10 @@ C
       subroutine set_lscale_dft_gaunt()
       implicit none
 #include "dcbham.h"
+#include "dcbgen.h"
       lscale_dft_gaunt = .true.
+      IF (PARCAL) CALL QUIT('GAUNTSCALE keyword not working for'//
+     &                      ' parallel calculations')
       end subroutine
 
       function word_count(s)
