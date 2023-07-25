@@ -1359,11 +1359,11 @@ contains
         ENDDO
       ENDDO
 
-      WRITE(6,*) 'TEST..QMAT'
-      open(137,file='QMAT',status='new',form='formatted',access='sequential',iostat=ier)
-      write(137) nucdep,nloc
-      write(137) pmat
-      close(137,status='keep')
+!      WRITE(6,*) 'TEST..QMAT'
+!      open(137,file='QMAT',status='new',form='formatted',access='sequential',iostat=ier)
+!      write(137) nucdep,nloc
+!      write(137) pmat
+!      close(137,status='keep')
       
       IF(PM%IPRLOC.GE.2)THEN
         DO IZ=1,4
