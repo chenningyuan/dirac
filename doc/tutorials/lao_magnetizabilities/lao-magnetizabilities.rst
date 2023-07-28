@@ -38,6 +38,19 @@ The molecular input file `NF3.mol` uses the experimental geometry and automatic 
 
 .. literalinclude:: NF3.mol
 
+Upon input one of the nitrogen atom is at the origin with one of the N-F bonds aligned with the z-axis.
+DIRAC detects the full symmetry :math:`C_{3v}`. but uses the Abelian subgroup :math:`C_s`.
+
+.. literalinclude:: NF3sym.txt
+
+The molecule is furthere centered at the center of mass with the :math:`C_3`-axis aligned with the z-axis; this
+is seen from the xyz-file given in the output
+
+
+.. literalinclude:: NF3geo.txt
+
+
+
 Generating the HF wave function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
