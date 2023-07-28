@@ -103,15 +103,14 @@ result as well as basis set convergence.
 Gauge-origin dependence
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-To investigate gauge-origin dependence we do a CGO and LAO calculation with the gauge origin placed at::
+To investigate gauge-origin dependence we do a CGO and LAO calculation with the gauge origin placed along 
+the :math:`C_3` axis:
 
-   **INTEGRALS
-   .GO ANG ! gauge origin in Angstrom
-   10.00 0.0 0.0
+.. literalinclude:: shift.inp
 
-that is, along the :math:`C_3` axis. Please note that when shifting the gauge origin in this manner you should 
+Please note that when shifting the gauge origin in this manner you should 
 limit the gauge origin to symmetry-independent points, that is, you should stay on symmetry elements like the
-*xy* mirror plane in this case. The CGO calculation now gives
+*xz* mirror plane in this case. The CGO calculation now gives
 
 .. literalinclude:: cgo2_NF3_total
 
