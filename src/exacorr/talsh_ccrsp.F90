@@ -372,9 +372,10 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
         do m=1, N_omega2
             omega2 = dcmplx(exa_input%w_qr2_re(m), exa_input%w_qr2_im(m)) 
             omega3 = -(omega1+omega2)
-            omega(1) = omega1
-            omega(2) = omega2
-            omega(3) = omega3
+
+            omega(1) = omega3   !omega(1): frequency for A operator
+            omega(2) = omega1   !omega(2): frequency for B operator
+            omega(3) = omega2   !omega(3): frequency for C operator
             print *, "Read frequency1:", omega(1)
             print *, "Read frequency2:", omega(2)
             print *, "Read frequency3:", omega(3)
@@ -394,14 +395,14 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
                             Bvec_tensors(1))
             call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
             ! call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), -omega(1), Tprop_tensors_min_w(1))
-            if (omega(1).ne.0.0) then 
+            if (omega(2).ne.0.0.or.omega(3).ne.0.0) then 
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega_min(1), Tprop_tensors_min_w(1))
             end if 
             call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), &
                                 Bvec_tensors(1), Tprop_bar_tensors(1))
             ! call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_A(i), -omega(1),&
             !                     Bvec_tensors(1), Tprop_bar_tensors_min_w(1))
-            if (omega(1).ne.0.0) then
+            if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
                 call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega_min(1),&
                                 Bvec_tensors(1), Tprop_bar_tensors_min_w(1))
             end if
@@ -413,7 +414,7 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
                 
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
                 ! call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), -omega(2), Tprop_tensors_min_w(2))
-                if (omega(2).ne.0.0) then
+                if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
                     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega_min(2), Tprop_tensors_min_w(2))
                 end if 
 
@@ -422,7 +423,7 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
                 ! call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), -omega(2),&
                 !                 Bvec_tensors(2), Tprop_bar_tensors_min_w(2))
 
-                if (omega(2).ne.0.0) then
+                if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
                 call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega_min(2),&
                                 Bvec_tensors(2), Tprop_bar_tensors_min_w(2))
                 end if 
@@ -433,7 +434,7 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
                     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_C(k), omega(3), Tprop_tensors(3))
                     ! call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_C(k), -omega(3), Tprop_tensors_min_w(3))
 
-                    if (omega(3).ne.0.0) then
+                    if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
                         call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_C(k), &
                                                 omega_min(3), Tprop_tensors_min_w(3))
                     end if      
@@ -442,7 +443,7 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
                     ! call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_C(k), -omega(3),&
                     !             Bvec_tensors(3), Tprop_bar_tensors_min_w(3))
 
-                    if (omega(3).ne.0.0) then
+                    if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
                         call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_C(k), omega_min(3),&
                                 Bvec_tensors(3), Tprop_bar_tensors_min_w(3))
                     end if 

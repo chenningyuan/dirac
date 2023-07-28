@@ -77,7 +77,19 @@ subroutine get_eom_qr(exa_input, interm_t,&
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
                         i, j, k, l1_tensor, l2_tensor, quarsp_con)
 
+        ! call print_tensor(Tprop_tensors(3)%t1,1.0d-10,"T1 part of tprop_3")
+        ! call print_tensor(Tprop_tensors(3)%t2,1.0d-10,"T2 part of tprop_3")
+
+        print *, "quarrsp: ", quarsp
         quarsp_con=conjg(quarsp_con)
+        print *, "quarrsp_conjugate: ", quarsp_con
+
+        print *, "Print the results for testset: "
+        print *, real(quarsp)
+        print *, aimag(quarsp)
+        print *, real(quarsp_con)
+        print *, aimag(quarsp_con)
+
 
         eom_qr=(quarsp+quarsp_con)*0.5
 
