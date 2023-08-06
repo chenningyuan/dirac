@@ -97,17 +97,26 @@
             integer                 :: tripl_block(1:2) = -1    ! for running triples
             integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
             integer                 :: n_laplace = 10           ! number of laplace points to use
-            integer                 :: N_eom_trial = 1          ! number of trial vectors in CC linear response
+            integer                 :: N_eom_trial = 5          ! number of trial vectors in CC linear response
             integer                 :: wf_type = 2              ! wave-function type
-            integer                 :: N_Prop_A, N_Prop_B, N_Prop_C    ! number of property
+            integer                 :: N_Prop_A, N_Prop_B    ! number of property
+            integer                 :: N_Prop_C, N_Prop_D    ! number of property
             integer                 :: N_omega_lr = 1               ! number of frequency in cclr
+            integer                 :: N_omega_qr1 = 1               ! number of frequency1 in ccqr
+            integer                 :: N_omega_qr2 = 1               ! number of frequency2 in ccqr
            
             
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
             integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
-            integer, allocatable    :: Prop_A(:), Prop_B(:), Prop_C(:) ! index of Property
-            real(REALD), allocatable :: w_lr_re(:)            ! real frequency in CC response
+            integer, allocatable    :: Prop_A(:), Prop_B(:), Prop_C(:), Prop_D(:) ! index of Property
+            INTEGER                 ::  TPA_state             ! index of final excited state in eom-tpa
+            real(REALD), allocatable :: w_lr_re(:)            ! real frequency in CC linear response
             real(REALD), allocatable :: w_lr_im(:)            ! imaginary frequency in CC response
+
+            real(REALD), allocatable :: w_qr1_re(:)            ! 1st real frequency in CC quadratic response
+            real(REALD), allocatable :: w_qr1_im(:)            ! 1st imaginary frequency in CC quadratic response
+            real(REALD), allocatable :: w_qr2_re(:)            ! 2nd real frequency in CC quadratic response
+            real(REALD), allocatable :: w_qr2_im(:)            ! 2nd imaginary frequency in CC quadratic response
            
 
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
@@ -124,6 +133,7 @@
             integer                 :: current_eom_input = -1
         !     logical                 :: eom_lr = .false.
             logical                 :: eom_qr = .false.
+            logical                 :: eom_tpa = .false.
 ! handle one or more *EOMCC blocks 
             type(eom_config_t), allocatable :: eom_input(:)
 
@@ -221,7 +231,7 @@
 
 
         type, public :: talsh_orb_prop_integ_tens_t
-         type(talsh_tens_t) :: prop_oo, prop_ov, prop_vv
+         type(talsh_tens_t) :: prop_oo, prop_ov, prop_vv, prop_vo
         end type talsh_orb_prop_integ_tens_t
 
         

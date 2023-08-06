@@ -6,6 +6,7 @@ module talsh_eom_rspeq_solver
       use exacorr_datatypes 
       use exacorr_utils
       use talsh_trial_eomccsd
+      use talsh_eom
 
       
       
@@ -14,11 +15,6 @@ module talsh_eom_rspeq_solver
                          ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
                          MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
                          MINUS_TWO=(-2.D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0)
-
-      type, public :: talsh_eom_results_tens_t
-            character, pointer :: flavor(:)
-            type(talsh_davidson_results_tens_t) :: value_vectors_t
-      end type talsh_eom_results_tens_t
 
       private 
 
@@ -73,7 +69,7 @@ module talsh_eom_rspeq_solver
                         solve_left=.false.,&
                         solve_linear_sys=.true.,&
                         symmetric=.false., &
-                        use_preconditioner=.false.,&
+                        use_preconditioner=.true.,&
                         max_iterations=mfsolver_options_max_iterations,&
                         ! max_subspace_size=nroot,&
                         complex_mode=.true.)
@@ -81,7 +77,7 @@ module talsh_eom_rspeq_solver
             call print_date("Entering CC-CI Right Linear Systems calculation")
 
             call talsh_davidson_workspace_create(workspace_t, nroot, interm_t%nocc, interm_t%nvir, flavor, 2)
-            ! call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
+            call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
             ! call talsh_eomccsd_ee_trial_create(workspace_t)
             call talsh_eomccsd_LR_proper_create(workspace_t,interm_t_prop%epsilon_prop_vo)
             call talsh_eomccsd_LR_trial_create(workspace_t)
@@ -152,14 +148,14 @@ module talsh_eom_rspeq_solver
                               solve_left=.true.,&
                               solve_linear_sys=.true.,&
                               symmetric=.false., &
-                              use_preconditioner=.false.,&
+                              use_preconditioner=.true.,&
                               max_iterations=mfsolver_options_max_iterations,&
                               complex_mode=.true.)
       
                   call print_date("Entering CC-CI Left Linear Systems calculation")
       
                   call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
-                  ! call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, 'L')
+                  call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, 'L')
                   ! call talsh_eomccsd_ee_trial_create(workspace_t)
                   call talsh_eomccsd_LR_proper_create(workspace_t,bvec_tensor%t1)
                   call talsh_eomccsd_LR_trial_create(workspace_t)

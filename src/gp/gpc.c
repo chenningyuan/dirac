@@ -45,35 +45,6 @@ void printaddr_(void *p)
    fprintf(stderr,"Address is %p\n",p);
 }
 
-
-/*
- * Take string of tokens and return new ordering
- */
-
-void creadreorder(char *string, int *ireord, int imoord[], int *mxreord)
-
-{
-   char *token;
-   int itemp;
-
-   *ireord = 0;
-   
-   token = strtok(string,",");
-
-   while ( token != NULL )
-   {
-      itemp = atoi(token);
-      if ( itemp <= 0 ) return;
-      if ( (*ireord = *ireord + 1) > (*mxreord) ) 
-      {
-         *ireord = -1;
-         return;
-      }
-      imoord[(*ireord)-1] = atoi(token);
-      token = strtok(NULL,",");
-   }
-}
-
 static void print_time(time_t secs, FILE *dst)
 {
     if (secs > 60*60*24)

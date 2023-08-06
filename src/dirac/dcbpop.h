@@ -24,12 +24,14 @@ C     NPOPLAB   : number of labels for population analysis
 C     IPOPLAB(1:PNLAB(0)) - pointer from AO/SO-label to POPLAB
 C     ICHRG(1:NPOPLAB) - nuclear charge of each entry in POPLAB (for DO_SCFPOP)
 C
-#include <dcblab.h>
+C     POP_DTOL : only mulpop contributions > POP_DTOL are printed
+C
+#include "dcblab.h"
       CHARACTER POPLAB*12,VECPOP*72, VECPOP_SAVE*72
       COMMON/CBCPOP/POPLAB(MAXLAB),VECPOP(2),VECPOP_SAVE(2)
       LOGICAL ADD_ALL,ADDSML,DONETP,LABDEF, DO_SCFPOP
       COMMON/CBLPOP/ADD_ALL,ADDSML,DONETP,LABDEF,DO_SCFPOP
       COMMON/CBIPOP/IPRPOP,ILABDF,NPOPLAB,IPOPLAB(MAXLAB)
-      REAL*8  CHRGNUC
-      COMMON/CBRPOP/CHRGNUC(MAXLAB)
+      REAL*8  CHRGNUC, POP_DTOL
+      COMMON/CBRPOP/CHRGNUC(MAXLAB), POP_DTOL
 C -- end of dcbpop.h --
