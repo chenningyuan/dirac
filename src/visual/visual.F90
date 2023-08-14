@@ -77,10 +77,8 @@ contains
 !   ---- legacy ----    
     type(matrix)  :: D_node
     !type(matrix), pointer  :: D_node
-    real(8),  pointer:: ao_node(:)
-    real(8),  pointer:: buffer_node(:)
-    real(8), allocatable, target:: ao_container(:)
-    real(8), allocatable, target:: buffer_container(:)
+    real(8), allocatable:: ao_node(:)
+    real(8), allocatable:: buffer_node(:)
     real(8), allocatable, target:: D_container(:)
 
 
@@ -93,8 +91,8 @@ contains
 
     real(8), allocatable:: eigenvalues(:)
     real(8), allocatable:: occupation(:)
-    real(8), allocatable, target:: ao(:)
-    real(8), allocatable, target:: buffer(:)
+    real(8), allocatable:: ao(:)
+    real(8), allocatable:: buffer(:)
     real(8), allocatable:: cmo_from_file(:)
     real(8), allocatable:: occ_from_file(:)
 
@@ -544,6 +542,7 @@ contains
     if (is_parallel()) then
       call interface_mpi_bcast(nr_ao_slices,1,irank_master,global_communicator)
       call interface_mpi_bcast(nr_ao_cartesian,1,irank_master,global_communicator)
+      !todo: track max_batch_length
       call interface_mpi_bcast(visual_cfg_nr_dmat,1,irank_master,global_communicator)
     end if
 #endif
@@ -578,23 +577,13 @@ contains
     D_node%nz   = nz
 #endif
 
-    nullify(ao_node)
-    if (.not. mpi_is_master()) then
-       allocate(ao_container(nr_ao_slices*nr_ao_cartesian*max_batch_length))
-       ao_container = 0.0d0
-       ao_node => ao_container
-    else
-       ao_node => ao
-    end if
+    allocate(ao_node(nr_ao_slices*nr_ao_cartesian))
+    ao_node = 0.0d0
+    !write(*, *) 'allocated ao on node, size: ', get_my_rank(), nr_ao_slices*nr_ao_cartesian
 
-    nullify(buffer_node)
-    if (.not. mpi_is_master()) then
-       allocate(buffer_container(nr_ao_slices*nr_ao_cartesian*max_batch_length))
-       buffer_container = 0.0d0
-       buffer_node => buffer_container
-    else
-       buffer_node => buffer
-    end if
+    allocate(buffer_node(nr_ao_slices*nr_ao_cartesian))
+    buffer_node = 0.0d0
+    !write(*, *) 'allocated buffer on node, size: ', get_my_rank(), nr_ao_slices*nr_ao_cartesian
 
 #ifdef VAR_MPI
     if (is_parallel()) then
@@ -603,16 +592,17 @@ contains
       call interface_mpi_bcast(D_node%ncol,1,irank_master,global_communicator)
       call interface_mpi_bcast(D_node%nz,1,irank_master,global_communicator)
       call interface_mpi_bcast(D_node%elms,size(D_node%elms),irank_master,global_communicator)
-      call interface_mpi_bcast(ao_node,nr_ao_slices*nr_ao_cartesian*max_batch_length,irank_master,global_communicator)
-      call interface_mpi_bcast(buffer_node,nr_ao_slices*nr_ao_cartesian*max_batch_length,irank_master,global_communicator)
     end if
 #endif
 ! here: end temp: pass to workers
-    write(*, *) 'TESTME D_node%irep ', D_node%irep, get_my_rank()
-    write(*, *) 'TESTME D_node%nrow ', D_node%nrow, get_my_rank()
-    write(*, *) 'TESTME D_node%ncol ', D_node%ncol, get_my_rank()
-    write(*, *) 'TESTME D_node%nz   ', D_node%nz,   get_my_rank()
-    if (get_my_rank() == 7) write(*, *) 'TESTME D_node%elms   ', (D_node%elms(i),i=1,n2bbasxq_node),   get_my_rank()
+    !if (get_my_rank() == 0) write(*, *) 'TESTME D_node%elms   ',   get_my_rank(), (D_node%elms(i),i=1,n2bbasxq_node)
+    !if (get_my_rank() == 0) write(*, *) 'TESTME D_node%elms   ',   get_my_rank(), (D_node%elms(1:3))
+    !write(*, *) 'TESTME D_node%irep ', get_my_rank(), D_node%irep
+    !write(*, *) 'TESTME D_node%nrow ', get_my_rank(), D_node%nrow
+    !write(*, *) 'TESTME D_node%ncol ', get_my_rank(), D_node%ncol
+    !write(*, *) 'TESTME D_node%nz   ',   get_my_rank(), D_node%nz
+    !if (get_my_rank() == 7) write(*, *) 'TESTME D_node%elms   ',   get_my_rank(), (D_node%elms(i),i=1,n2bbasxq_node)
+    !if (get_my_rank() == 7) write(*, *) 'TESTME D_node%elms   ',   get_my_rank(), (D_node%elms(1:3))
 
 
 #ifdef VAR_MPI
@@ -643,13 +633,11 @@ contains
       !D_node = 0
     end if
 
-    if (associated(ao_node)) nullify(ao_node)
-    if (associated(buffer_node)) nullify(buffer_node)
+    if (allocated(ao_node)) deallocate(ao_node)
+    if (allocated(buffer_node)) deallocate(buffer_node)
 
     if (.not. mpi_is_master()) then
       if (allocated(D_container)) deallocate(D_container)
-      if (allocated(ao_container)) deallocate(ao_container)
-      if (allocated(buffer_container)) deallocate(buffer_container)
     end if
 
 
@@ -693,7 +681,7 @@ contains
     end if !if (mpi_is_master()) then !temp
 
 
-! ---- end ----    
+! ---- legacy end ----    
 
     walltime = walltime - visual_walltime()
     if (mpi_is_master()) print *, 'Elapsed walltime in run_visual: ', walltime
@@ -754,16 +742,22 @@ contains
 !
 !     get grid points
 !
-!     gosia todo: 
-!     for optimization - try making all arrays 1-dimensional, then reshape?
+!     gosia:
+!     * TODO: for optimization - try making all arrays 1-dimensional, then reshape?
 !     grid_points = reshape(rs_input%grids(ig)%points(g_ndim, npoints))
+!     * FIXME: grid can be read from file or generated;
+!       * reading from file should be done on master
+!       * grid generation should be done in parallel
+!       now I do everything on master
 
       if (mpi_is_master()) then
-      ! gosia fixme - if grid is generated then also do this in parallel; in this case
-      ! here allocate points on master and move the allocation on nodes to "get_grid_points"
-      call get_grid_points(rs_input%grids(ig))
-      write(*, *) 'Grid points of grid ', ig
-      write(*, *) ((rs_input%grids(ig)%points(i,j),j=1,npoints), i=1,g_ndim)
+        call get_grid_points(rs_input%grids(ig))
+        if (rs_input%print_level > 0) then
+          write(*, *) 'Grid points of grid ', ig
+          do j = 1, npoints
+            write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
+          end do
+        end if
       end if
 
       if (rs_input%grids(ig)%export) then
@@ -781,7 +775,10 @@ contains
 !
 !       get necessary information about the grid function and share with workers
 !
-!       gosia fixme - now used only to assign labels for hdf5 storage,
+!       gosia:
+!       * FIXME: now, this is used only to assign labels for hdf5 storage,
+!         TODO: is there sth that could be shared now?
+
         if (mpi_is_master()) then 
           call get_grid_function_info(igf, rs_input%grid_functions(igf))
         end if
@@ -801,7 +798,9 @@ contains
               call rs_input%grids(ig)%display
               call rs_input%grid_functions(igf)%display
               write(*, *) 'Grid points to work on: '
-              write(*, *) ((rs_input%grids(ig)%points(i,j),j=1,npoints), i=1,g_ndim)
+              do j = 1, npoints
+                write(*, *) (rs_input%grids(ig)%points(i,j), i=1,g_ndim)
+              end do
             end if
           end if
 !
@@ -809,21 +808,25 @@ contains
 !
 
           n_this_proc = rs_input%grids(ig)%nr_points_total
-          write(*, *) 'BEFORE DISTRIBUTING GRID POINTS'
 #ifdef VAR_MPI
           if (is_parallel()) then
             ! redefine n_this_proc
+            !  call visual_interface_mpi_distribute_points(&
+            !             rs_input%grids(ig)%points(1,:), &
+            !             rs_input%grids(ig)%points(2,:), &
+            !             rs_input%grids(ig)%points(3,:), &
+            !             rs_input%grids(ig)%nr_points_total, n_this_proc)
             do idim_grid = 1, rs_input%grids(ig)%ndim
-              call visual_interface_mpi_distribute_points(rs_input%grids(ig)%points(idim_grid,:), &
+              call visual_interface_mpi_distribute_points(&
+                         rs_input%grids(ig)%points(idim_grid,:), &
                          rs_input%grids(ig)%nr_points_total, n_this_proc)
             end do
 
-            if (get_my_rank() == 0) then
-              write(*, *) 'on master, we deal with ', ((rs_input%grids(ig)%points(i,j),j=1,n_this_proc), i=1,g_ndim)
-            else if (get_my_rank() == 1) then
-              !write(*, *) 'on node1, we deal with ', ((rs_input%grids(ig)%points(i,j),j=1,n_this_proc), i=1,g_ndim)
-            else if (get_my_rank() == 7) then
-              write(*, *) 'on node 7, we deal with ', ((rs_input%grids(ig)%points(i,j),j=1,n_this_proc), i=1,g_ndim)
+            if (get_my_rank() == 7) then
+              do j =1, n_this_proc
+                write(*, '(a,i,3f8.3)') 'points on node 7: ', j, &
+                     (rs_input%grids(ig)%points(i,j), i=1,g_ndim)
+              end do
             end if
           end if
 #endif
@@ -840,6 +843,8 @@ contains
           ! gosia todo:
           ! add "visualize"/"integrate" procedures in this call; now - visualization only
           ! add constructs for DIRAC data (D, D_0, ...)
+          !if (get_my_rank() == 0) write(*, *) 'TESTME D_node%elms   ',   get_my_rank(), (D_0%elms(1:3))
+          !if (get_my_rank() == 7) write(*, *) 'TESTME D_node%elms   ',   get_my_rank(), (D_0%elms(1:3))
           call work_on_grid(rs_input%grids(ig), rs_input%grid_functions(igf), &
                             n_this_proc, &
                             grid_function_values, &
@@ -929,6 +934,7 @@ contains
     real(8), intent(in)  :: ao(*)
     real(8)              :: buffer(*)
     integer:: ipoint, icomp
+    integer:: i
 
 !   here starts the expensive loop over points    
     do ipoint = 1, nr_points
@@ -956,11 +962,15 @@ contains
                                  grid_function_values, &
                                  ipoint)
 
-      write(*,*) 'grid_function%values in ', ipoint, &
-                  grid%points(1, ipoint),& 
-                  grid%points(2, ipoint),&
-                  grid%points(3, ipoint),&
-                  grid_function_values(1:9,ipoint)
+      !write(*,*) 'grid_function%values on node', get_my_rank()
+      !do i = 1, 147
+      ! if (ao(i) .ne. 0.0d0) write(*,'(A,3I3,F8.3)') 'ao work: ', get_my_rank(), ipoint, i, ao(i)
+      !end do
+      !write(*,*) 'grid_function%values in ', ipoint, &
+      !            grid%points(1, ipoint),& 
+      !            grid%points(2, ipoint),&
+      !            grid%points(3, ipoint),&
+      !            grid_function_values(1:9,ipoint)
     end do
     !do icomp=1, grid_function%get_ndim()
     !  write(*,*) 'grid_function%values', (grid_function%values(icomp,ipoint), ipoint=1,grid%nr_points_total)

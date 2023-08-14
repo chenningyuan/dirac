@@ -24,6 +24,7 @@ module visual_mpi
 
   interface visual_interface_mpi_distribute_points
     module procedure mpi_distribute_r1
+    module procedure mpi_distribute_r3
   end interface
 #endif
 
@@ -43,7 +44,9 @@ contains
     logical:: mpi_is_master
     mpi_is_master = .true.
     if (is_parallel()) then
+#ifdef VAR_MPI
       mpi_is_master = (get_my_rank() == irank_master)
+#endif
     end if
   end function
 
@@ -117,7 +120,7 @@ contains
 
 
   subroutine mpi_distribute_r1(a, nr_points_batch, nr_points_on_this_proc)
-    real(8)              :: a(:)
+    real(8)              :: a(*)
     integer              :: nr_points_batch
     integer              :: nr_points_on_this_proc
     real(8), allocatable:: buffer(:)
@@ -143,16 +146,17 @@ contains
     if (nr_points_rest > 0) then
       if (mpi_is_master()) then
         i = nr_points_batch-nr_points_rest+1
-        call interface_mpi_send(a(i), nr_points_rest, mpi_get_nr_proc()-1, 99, global_communicator)
+        call interface_mpi_send(a(i), nr_points_rest, mpi_get_nr_proc()-1, 111, global_communicator)
       end if
       if (get_my_rank() == (mpi_get_nr_proc()-1)) then
         i = nr_points_on_this_proc+1
-        call interface_mpi_recv(a(i), nr_points_rest, irank_master, 99, global_communicator)
+        call interface_mpi_recv(a(i), nr_points_rest, irank_master, 111, global_communicator)
         nr_points_on_this_proc = nr_points_on_this_proc+nr_points_rest
       end if
     end if
 
 !   verify that sum matches nr_points_batch
+    isum = nr_points_on_this_proc
     call interface_mpi_reduce(nr_points_on_this_proc,isum,1,op_mpi_sum,&
                               irank_master,global_communicator)
     if (mpi_is_master()) then
@@ -162,6 +166,73 @@ contains
       end if
     end if
   end subroutine
+
+  subroutine mpi_distribute_r3(ax, ay, az, nr_points_batch, nr_points_on_this_proc)
+    real(8)              :: ax(*)
+    real(8)              :: ay(*)
+    real(8)              :: az(*)
+    integer              :: nr_points_batch
+    integer              :: nr_points_on_this_proc
+    real(8), allocatable:: buffer(:)
+    integer              :: nr_points_rest
+    integer              :: i
+    integer              :: isum=0
+
+    nr_points_on_this_proc = nr_points_batch/mpi_get_nr_proc()
+    if (mpi_is_master()) then
+      allocate(buffer(nr_points_on_this_proc))
+      call interface_mpi_scatter_r1_work_f77(ax, nr_points_on_this_proc, &
+                                              buffer, nr_points_on_this_proc, &
+                                              irank_master, global_communicator)
+      call interface_mpi_scatter_r1_work_f77(ay, nr_points_on_this_proc, &
+                                              buffer, nr_points_on_this_proc, &
+                                              irank_master, global_communicator)
+      call interface_mpi_scatter_r1_work_f77(az, nr_points_on_this_proc, &
+                                              buffer, nr_points_on_this_proc, &
+                                              irank_master, global_communicator)
+      deallocate(buffer)
+    else
+      call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, &
+                                             ax, nr_points_on_this_proc, &
+                                             irank_master, global_communicator)
+      call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, &
+                                             ay, nr_points_on_this_proc, &
+                                             irank_master, global_communicator)
+      call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, &
+                                             az, nr_points_on_this_proc, &
+                                             irank_master, global_communicator)
+    end if
+
+!   if there is a rest of points, send them to the last proc
+    nr_points_rest = mod(nr_points_batch, mpi_get_nr_proc())
+    if (nr_points_rest > 0) then
+      if (mpi_is_master()) then
+        i = nr_points_batch-nr_points_rest+1
+        call interface_mpi_send(ax(i), nr_points_rest, mpi_get_nr_proc()-1, 117, global_communicator)
+        call interface_mpi_send(ay(i), nr_points_rest, mpi_get_nr_proc()-1, 118, global_communicator)
+        call interface_mpi_send(az(i), nr_points_rest, mpi_get_nr_proc()-1, 119, global_communicator)
+      end if
+      if (get_my_rank() == (mpi_get_nr_proc()-1)) then
+        i = nr_points_on_this_proc+1
+        call interface_mpi_recv(ax(i), nr_points_rest, irank_master, 117, global_communicator)
+        call interface_mpi_recv(ay(i), nr_points_rest, irank_master, 118, global_communicator)
+        call interface_mpi_recv(az(i), nr_points_rest, irank_master, 119, global_communicator)
+        nr_points_on_this_proc = nr_points_on_this_proc+nr_points_rest
+      end if
+    end if
+
+!   verify that sum matches nr_points_batch
+    isum = nr_points_on_this_proc
+    call interface_mpi_reduce(nr_points_on_this_proc,isum,1,op_mpi_sum,&
+                              irank_master,global_communicator)
+    if (mpi_is_master()) then
+      if (isum /= nr_points_batch) then
+        write(*,*) 'programming error in distribution of points'
+        stop
+      end if
+    end if
+  end subroutine
+
 
 #endif /* ifdef VAR_MPI */
 end module
