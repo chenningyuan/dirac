@@ -54,10 +54,10 @@ contains
 
   subroutine get_quantity_in_point_refactored(nr_dmat, &
                                    D,       &
-                                   D_0,     &
+                                   mat_dim, mat_nz, mat_irep, &
+                                   dmat_0, &
                                    ao,      &
                                    buffer,  &
-                                   grid, &
                                    grid_function, &
                                    grid_function_values, &
                                    ipoint)
@@ -65,10 +65,10 @@ contains
 !    --------------------------------------------------------------------------
      integer, intent(in)  :: nr_dmat
      type(matrix)         :: D(nr_dmat)
-     type(matrix)         :: D_0
-     real(8)              :: ao(*)
-     real(8)              :: buffer(*)
-     type(grid_t), intent(in):: grid
+     integer, intent(in)  :: mat_dim, mat_nz, mat_irep
+     real(8), intent(in)  :: dmat_0(mat_dim, mat_dim, mat_nz) 
+     real(8), intent(in)  :: ao(*)
+     real(8), intent(in)  :: buffer(*)
      type(grid_function_t), intent(inout):: grid_function
      real(8), intent(out):: grid_function_values(:,:)
      integer, intent(in), optional  :: ipoint !thiswill not be optional
@@ -77,13 +77,13 @@ contains
      real(8)              :: v1, v2(3), v3(3,3)
      real(8)              :: px, py, pz
      real(8)              :: rx, ry, rz, r(3)
+     integer              :: i
 !    --------------------------------------------------------------------------
 
-     px = grid%points(1, ipoint)
-     py = grid%points(2, ipoint)
-     pz = grid%points(3, ipoint)
+     !px = grid%points(1, ipoint)
+     !py = grid%points(2, ipoint)
+     !pz = grid%points(3, ipoint)
      !todo: call grid%points%get_cartesian_coords()
-     call get_ao(1, (/px/), (/py/), (/pz/), ao, buffer)
 
      r = 0.0d0
      do imat = 1, nr_dmat
@@ -94,9 +94,9 @@ contains
 !          electron density
            v1 = 0.0d0
            call get_n(v1,            &
-                      D(imat)%irep,  &
-                      D(imat)%nrow,  &
-                      D(imat)%elms,  &
+                      mat_irep,  &
+                      mat_dim,  &
+                      dmat_0,  &
                       buffer,        &
                       ao)
            !grid_function%values(1,ipoint:ipoint) = v1
@@ -108,9 +108,9 @@ contains
            v2 = 0.0d0
            call get_gn(v1,               &
                        v2,               &
-                       D(imat)%irep,     &
-                       D(imat)%nrow,     &
-                       D(imat)%elms,     &
+                       mat_irep,     &
+                       mat_dim,     &
+                       dmat_0,     &
                        buffer,           &
                        ao)               
            !grid_function%values(1:1,ipoint:ipoint) = v2(1)
@@ -130,9 +130,9 @@ contains
            call get_hn(v1,               &
                        v2,               &
                        v3,               &
-                       D(imat)%irep,     &
-                       D(imat)%nrow,     &
-                       D(imat)%elms,     &
+                       mat_irep,     &
+                       mat_dim,     &
+                       dmat_0,     &
                        buffer,           &
                        ao)               
            !grid_function%values(1:1,ipoint:ipoint) = v3(1, 1)   ! xx
@@ -222,7 +222,7 @@ contains
          end if
          if (.not. visual_cfg_skip(imat)) then
 
-!           gamma5 density: \psi^\dag \gamma^5 \psi
+!           gamma5 density: \psi^\dag \gamma^5 \psi GOSIA-DONE
             if (visual_cfg_property(imat) == iq_gamma5) then
                call get_gamma5(density,       &
                                D(imat)%irep,  &
@@ -233,7 +233,7 @@ contains
                result(0) = result(0) + density
             end if
 
-!           electron density
+!           electron density GOSIA-DONE
             if (visual_cfg_property(imat) == iq_density) then
                call get_n(density,       &
                           D(imat)%irep,  &
@@ -244,7 +244,7 @@ contains
                result(0) = result(0) + density
             end if
 
-!           electron density gradient
+!           electron density gradient GOSIA-DONE
             if (visual_cfg_property(imat) == iq_density_gradient) then
                call get_gn(density,          &
                            density_gradient, &
@@ -257,7 +257,7 @@ contains
                result(1:3) = result(1:3) + density_gradient
             end if
 
-!           electron density Hessian
+!           electron density Hessian GOSIA-DONE
             if (visual_cfg_property(imat) == iq_density_hessian) then
 !              gosia fixme:
 !              density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
@@ -282,7 +282,7 @@ contains
                result(12)  = result(12)  + density_hessian(3, 3)  ! zz
             end if
 
-!           reduced density gradient
+!           reduced density gradient GOSIA-DONE
             if (visual_cfg_property(imat) == iq_rdg) then
                call get_gn(density,          &
                            density_gradient, &
@@ -303,7 +303,7 @@ contains
                result(0)   = result(0) + f
             end if
 
-!           sign(lambda2) where lambda2 is the second eogenvalue of the Hessian of the electron density
+!           sign(lambda2) where lambda2 is the second eogenvalue of the Hessian of the electron density GOSIA-DONE
             if (visual_cfg_property(imat) == iq_density_sign_lambda2) then
 !              gosia fixme:
 !              density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
@@ -353,7 +353,7 @@ contains
                end if
             end if
 
-!           laplacian of the electron density
+!           laplacian of the electron density GOSIA-DONE
             if (visual_cfg_property(imat) == iq_density_laplacian) then
 !              gosia fixme:
 !              density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)

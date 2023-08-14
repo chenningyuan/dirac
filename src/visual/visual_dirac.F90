@@ -37,6 +37,7 @@ contains
 #include "dirac_partask.h"  
 ! legacy
 #include "dcbbas.h"
+#include "dgroup.h"
 
     logical, intent(in), optional :: hello
 
@@ -53,7 +54,8 @@ contains
 
     ! then, the rest happens on master only
     ! legacy
-    n2bbasxq_node = n2bbasxq
+    mat_ao_dim = ntbas(0)
+    mat_ao_nz = nz
 
 #ifdef VAR_MPI
     if (is_parallel()) call sync_visual_cfg()
@@ -70,7 +72,6 @@ contains
     integer, optional :: print_level
     character*(:),allocatable:: group
     logical:: tobe_dirac
-    logical:: in_prep
 
     group = '/input/molecule/'
     call checkpoint_query(group, tobe_dirac)
@@ -88,14 +89,9 @@ contains
       !  write(*, *) 'Molecule data written to DIRAC RS-CHECKPOINT'
     end if
 
-    in_prep = .false.
-    if (in_prep) then
-!g!   gosia fixme - validated for section=scf only
-!g
-!g    if (section .ne. 'scf') return
-!g
-!g    group = '/result/wavefunctions/'//trim(section)//'/'
-!g    call checkpoint_query(group, tobe_dirac)
+!g!   gosia FIXME - the code is validated for scf only
+!g    group = '/result/wavefunctions/scf/'
+!g    call checkpoint_query(group//'mobasis/nz', tobe_dirac)
 !g    if (tobe_dirac) then
 !g      call read_ao_mo_from_dirac(ao, mo, group)
 !g      if (present(print_level)) then
@@ -106,7 +102,6 @@ contains
 !g          !call mo%display
 !g        end if
 !g    end if
-    end if !if (in_prep) then 
 
   end subroutine visual_initialize_data_from_dirac
 
@@ -134,11 +129,12 @@ contains
   end subroutine read_mol_from_dirac
 
 
-  subroutine read_ao_mo_from_dirac(mo, group)
-    type(mo_t), intent(out) :: mo
-    character(len=*),intent(in) :: group
-    logical:: tobe_dirac
-
+!g  subroutine read_ao_mo_from_dirac(ao, mo, group)
+!g    type(ao_t), intent(out):: ao
+!g    type(mo_t), intent(out) :: mo
+!g    character(len=*),intent(in) :: group
+!g    logical:: tobe_dirac
+!g
 !g!
 !g!   read AO data
 !g!
@@ -153,14 +149,8 @@ contains
 !g    call checkpoint_read(group//'mobasis/n_po',idata=n_po)
 !g    call checkpoint_read(group//'energy',rdata=total_energy)
 !g
-!g    if (n_basis(2) == 0) then
-!g      nsym = 1
-!g    else
-!g      nsym = 2
-!g    end if
-!g    ! check symmetry and get dimensions of the coefficient array
-!g    if (nsym > 1) then
-!g       write(*, *) 'calculations with symmetry not supported, return'
+!g    if (n_basis(2) > 0) then
+!g       write(*, *) 'calculations with symmetry not supported, stop.'
 !g       return
 !g    else
 !g       nao = n_basis(1)
@@ -210,9 +200,9 @@ contains
 !g    deallocate(index)
 !g!   switch to unrestricted spinor picture
 !g    call convert_mo_to_complex(cspinor)
-
-
-  end subroutine read_ao_mo_from_dirac
+!g
+!g
+!g  end subroutine read_ao_mo_from_dirac
 
 
 #ifdef VAR_MPI

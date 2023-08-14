@@ -43,7 +43,10 @@ module visual_cfg
    logical,      public            :: visual_cfg_london_skip_vtk  = .false.
 
    logical,      public            :: visual_cfg_global_refactor = .false.
-   integer,      public            :: n2bbasxq_node = 0
+
+   ! legacy
+   integer,      public            :: mat_ao_dim = 0
+   integer,      public            :: mat_ao_nz = 0
 
 !
 !  options for exporting real-space data to files
@@ -326,6 +329,9 @@ contains
     integer::nr_words, i
     character(len=10),allocatable::chvalues(:)
 
+!   gosia: possibly do sth tht mimics python parser here:
+!   write(*, *) ' ".GRIDS" arguments available in this version:'
+
     select case (key)
       case ('id')
         call str2int(val, grid%id, stat)
@@ -596,8 +602,8 @@ contains
 
     ! legacy
     call interface_mpi_bcast_l0(visual_cfg_global_refactor,1,irank_master,global_communicator)
-    !call interface_mpi_bcast(max_batch_length,1,irank_master,global_communicator)
-    call interface_mpi_bcast(n2bbasxq_node,1,irank_master,global_communicator)
+    call interface_mpi_bcast(mat_ao_dim,1,irank_master,global_communicator)
+    call interface_mpi_bcast(mat_ao_nz,1,irank_master,global_communicator)
 
     !if (rs_input%print_level > 0) call logprint
   end subroutine sync_visual_cfg
