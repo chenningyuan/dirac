@@ -72,7 +72,12 @@ contains
      integer              :: imat
      real(8)              :: v1, v2(3), v3(3,3)
      real(8)              :: px, py, pz
-     integer              :: i
+     integer              :: i,j
+      real(8)              :: b, c
+     real(8)              :: eigenvalues(3)
+     real(8)              :: eigenvectors(3, 3)
+      real(8)              :: temp(3), temp2(9)
+      integer              :: itemp(3)
 !    --------------------------------------------------------------------------
 
      !px = grid%points(1, ipoint)
@@ -134,6 +139,72 @@ contains
            grid_function_values(7:7,ipoint:ipoint) = v3(3, 1)   ! zx
            grid_function_values(8:8,ipoint:ipoint) = v3(3, 2)   ! zy
            grid_function_values(9:9,ipoint:ipoint) = v3(3, 3)   ! zz
+
+         case ('rdg')
+!          reduced density gradient
+           v1 = 0.0d0
+           v2 = 0.0d0
+           call get_gn(v1,       &
+                       v2,       &
+                       mat_irep, &
+                       mat_dim,  &
+                       dmat_0,   &
+                       buffer,   &
+                       ao)
+
+           b = sqrt(v2(1)*v2(1) + v2(2)*v2(2) + v2(3)*v2(3))
+           c = v1**(4.0d0/3.0d0)
+!          0.161620459674d0 = 1/(2.0d0*((3.0d0*pi*pi)**(1.0d0/3.0d0))
+           grid_function_values(1:1,ipoint:ipoint) = 0.161620459674d0*(b/c)
+
+         case ('ed_sign_lambda2')
+!          sign(lambda2), where lambda2=the second eigenvalue of the Hessian
+!          of the electron density
+!
+!          gosia fixme:
+!          density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!          todo: add a warning
+           v1 = 0.0d0
+           v2 = 0.0d0
+           v3 = 0.0d0
+           call get_hn(v1,       &
+                       v2,       &
+                       v3,       &
+                       mat_irep, &
+                       mat_dim,  &
+                       dmat_0,   &
+                       buffer,   &
+                       ao)               
+           eigenvalues  = 0.0d0
+           eigenvectors = 1.0d0
+           temp         = 0.0d0
+           itemp        = 0
+           temp2 = reshape(v3, (/9/))
+
+           call jaco(temp2, eigenvectors, 3, 3, 3, temp, itemp)
+
+           temp(1)        = temp2(1)
+           temp(2)        = temp2(3)
+           temp(3)        = temp2(6)
+           eigenvalues(1) = temp2(1)
+           eigenvalues(2) = temp2(3)
+           eigenvalues(3) = temp2(6)
+           do i = 1, 3
+              do j = 1, 3
+                 if (j .ne. i) then
+                    if (eigenvalues(i) .lt. eigenvalues(j)) then
+                       eigenvalues(i) = temp(j)
+                    end if  
+                 end if  
+              end do
+           end do
+
+           if (eigenvalues(2) .gt. 0.0d0) then
+              grid_function_values(1:1,ipoint:ipoint) = v1
+           else if (eigenvalues(2) .lt. 0.0d0) then
+              grid_function_values(1:1,ipoint:ipoint) = -v1
+           end if
+
        end select
     end do
 
@@ -285,7 +356,7 @@ contains
             end if
 
 !           sign(lambda2) where lambda2 is the second eogenvalue of the Hessian of the electron density GOSIA-DONE
-            if (visual_cfg_property(imat) == iq_density_sign_lambda2) then
+            if (visual_cfg_property(imat) == iq_ed_sign_lambda2) then
 !              gosia fixme:
 !              density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
                eigenvalues  = 0.0d0

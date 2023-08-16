@@ -130,7 +130,7 @@ module visual_cfg
    integer, public:: iq_density_gradient     =  43
    integer, public:: iq_density_hessian      =  44
    integer, public:: iq_density_laplacian    =  45
-   integer, public:: iq_density_sign_lambda2 =  46
+   integer, public:: iq_ed_sign_lambda2 =  46
    integer, public:: iq_rdg      = 47
    integer, public:: iq_gradj    = 48
    
@@ -536,13 +536,18 @@ contains
             'espe', &
             'espn', &
             'elf')
-        grid_function%tensor_order = 0
         grid_function%wf_order = 0
+        grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 0
         grid_function%max_ao_m_order = 0
       case ('density_gradient')
         grid_function%wf_order = 0
         grid_function%tensor_order = 1
+        grid_function%max_ao_g_order = 1
+        grid_function%max_ao_m_order = 0
+      case ('rdg')
+        grid_function%wf_order = 0
+        grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 1
         grid_function%max_ao_m_order = 0
       case ('density_hessian')
@@ -551,6 +556,11 @@ contains
         grid_function%max_ao_g_order = 2
         grid_function%max_ao_m_order = 0
       case ('density_laplacian')
+        grid_function%wf_order = 0
+        grid_function%tensor_order = 0
+        grid_function%max_ao_g_order = 2
+        grid_function%max_ao_m_order = 0
+      case ('ed_sign_lambda2')
         grid_function%wf_order = 0
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 2

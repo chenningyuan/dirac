@@ -352,7 +352,7 @@
       end if
 
       if (kw_matches(word, '.SIGNL2')) then
-         call read_input_visual_helper(iq_density_sign_lambda2)
+         call read_input_visual_helper(iq_ed_sign_lambda2)
       end if
 
       if (kw_matches(word, '.ELF   ')) then

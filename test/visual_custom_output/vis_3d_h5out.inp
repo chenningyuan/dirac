@@ -1,6 +1,6 @@
 **DIRAC
 .TITLE
- calculate the electron density on a 3D regular grid and export it to an external h5 file
+ calculate the electron density and its derivatives on a 3D regular grid and export it to an external h5 file
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -14,13 +14,17 @@
 .PRINT
 1
 .OUTPRI
-!.DENSITY
-! DFCOEF
+.DENSITY
+ DFCOEF
 !.DENGRA
 ! DFCOEF
-.DENHES
- DFCOEF
-.LIST
+!.DENHES
+! DFCOEF
+!.ELF
+! DFCOEF
+! gosia: the grid under ".LIST" is the same as the one stored in grid2.h5 file
+! this is now left for debugging the new code against the old code (then - comment out the .REFACT above)
+.LIST 
 27
 6.76588605e-03 4.24902337e-01 7.15868641e-01
 2.60518074e-01 3.57375773e-01 4.62083841e-01
@@ -53,18 +57,20 @@
 !grid_file
 !au
 !.PLTTXT
-!3d density scalar_field_3d.txt e8.2
+!3d propname scalar_field_3d.txt e8.2
 ! next in line:
 ! 1. test this
 ! 2. add .GRIDPOINTS if you want to work on a list of points from this input
 .GRIDS    
-3
-id=1 input=create ndim=3 npoints=[3,3,3] margin=2.0 typ=1 export=yes file_out=grid1.h5
-id=2 input=create ndim=3 spacing=[0.2,0.2,0.2] margin=2.0 typ=1 export=yes file_out=grid3.h5
-id=3 input=import file_inp=grid2.h5
+1
+id=1 input=import file_inp=grid2.h5
 .GRIDFUNCTIONS    
-3
-#name=density id_grid=3 purpose=visualization export=yes file_out=density1.h5
-#name=density_gradient id_grid=3 purpose=visualization export=yes file_out=density_gradient1.h5
-name=density_hessian id_grid=3 purpose=visualization export=yes file_out=density_hessian1.h5
+1
+name=ed_sign_lambda2 id_grid=1 purpose=visualization export=yes file_out=ed_sign_lambda2.h5
+!5
+!name=density id_grid=1 purpose=visualization export=yes file_out=density.h5
+!name=density_gradient id_grid=1 purpose=visualization export=yes file_out=density_gradient.h5
+!name=density_hessian id_grid=1 purpose=visualization export=yes file_out=density_hessian.h5
+!name=ed_sign_lambda2 id_grid=1 purpose=visualization export=yes file_out=ed_sign_lambda2.h5
+!name=rdg id_grid=1 purpose=visualization export=yes file_out=rdg.h5
 *END OF

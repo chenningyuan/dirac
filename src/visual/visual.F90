@@ -162,7 +162,7 @@ contains
            (visual_cfg_property(imat) == iq_kin_lap)          .or. &
            (visual_cfg_property(imat) == iq_density_hessian)  .or. &
            (visual_cfg_property(imat) == iq_density_laplacian).or. &
-           (visual_cfg_property(imat) == iq_density_sign_lambda2).or. &
+           (visual_cfg_property(imat) == iq_ed_sign_lambda2).or. &
            (visual_cfg_property(imat) == iq_kin_nr)               &
           ) then
           if (max_ao_g_order < 2) then
