@@ -91,8 +91,8 @@ contains
 
     real(8), allocatable:: eigenvalues(:)
     real(8), allocatable:: occupation(:)
-    real(8), allocatable:: ao(:,:)
-    real(8), allocatable:: buffer(:,:)
+    real(8), allocatable:: ao(:)
+    real(8), allocatable:: buffer(:)
     real(8), allocatable:: cmo_from_file(:)
     real(8), allocatable:: occ_from_file(:)
 
@@ -462,6 +462,7 @@ contains
        end if
     end do
 
+!
 !   deallocate various things
 !   =========================
 
@@ -477,53 +478,16 @@ contains
       Csu = 0
     end if
 
-    end if ! if (mpi_is_master()) then
-
-
-
-    if (visual_cfg_global_refactor) then
-      max_ao_g_order = 1 
-      max_ao_m_order = 0
-    end if
-
-
-#ifdef VAR_MPI
-    if (is_parallel()) then
-      call interface_mpi_bcast(max_ao_g_order,1,irank_master,global_communicator)
-      call interface_mpi_bcast(max_ao_m_order,1,irank_master,global_communicator)
-
-      write(*, *) 'TESTME max_ao_g_order on node ', max_ao_g_order, get_my_rank()
-      write(*, *) 'TESTME max_ao_m_order on node ', max_ao_m_order, get_my_rank()
-
-    end if
-#endif
-
+   
 !   initialize ao module
 !   ====================
-
     call dirac_ao_eval_init(max_ao_g_order, &
                       max_ao_m_order, &
-                      .true.)
-
-! here: temp: pass to workers
-#ifdef VAR_MPI
-    if (is_parallel()) then
-      call interface_mpi_bcast(nr_ao_slices,1,irank_master,global_communicator)
-      call interface_mpi_bcast(nr_ao_cartesian,1,irank_master,global_communicator)
-    end if
-#endif
-
-    allocate(ao(1,nr_ao_slices*nr_ao_cartesian))
-    ao = 0.0d0
-    allocate(buffer(1,nr_ao_slices*nr_ao_cartesian))
-    buffer = 0.0d0
-
-
-    write(*, '(a, 3i6)') 'AFTER AOEVAL: ', max_ao_g_order, max_ao_m_order, nr_ao_blocks
-
-
-    if (mpi_is_master()) then
-
+                      .false.)
+   
+    call alloc(ao,     nr_ao_slices*nr_ao_cartesian*max_batch_length)
+    call alloc(buffer, nr_ao_slices*nr_ao_cartesian*max_batch_length)
+   
     if (visual_cfg_london) then
        if (.not. visual_cfg_london_skip_ro) then
           D_con_mo = 0
@@ -531,7 +495,6 @@ contains
           if (visual_cfg_london_none) D_con_mo_ai = 0
        end if
     end if
-
 
 !   plot and integrate
 !   ==================
@@ -578,6 +541,9 @@ contains
       if (mpi_is_master()) call visual_initialize_data_from_dirac(mol, ao_data, mo_data)
 
 
+!
+!     prepare density matrices
+!
 
 !     gosia fixme: 
 !     this is a temporary solution for handling density matrices;
@@ -614,9 +580,7 @@ contains
       call visual_driver_refactored(visual_cfg_nr_dmat, &
                        mat_ao_dim, mat_ao_nz, mat_ao_irep, &
                        dmat_0,                &
-                       mol, ao_data,       &
-                       ao,                 &
-                       buffer)
+                       mol, ao_data)
 
 !    call checkpoint_rs_close
 
@@ -667,8 +631,8 @@ contains
     end if
     call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
 
-    deallocate(ao)
-    deallocate(buffer)
+    call dealloc(ao)
+    call dealloc(buffer)
 
     if (mpi_is_master()) then !temp
 !   deallocate density matrices
@@ -689,19 +653,17 @@ contains
   subroutine visual_driver_refactored(nr_dmat, &
                             mat_dim, mat_nz, mat_irep, &
                             dmat_0,     &
-                            mol, ao_data, &
-                            ao,      &
-                            buffer)
+                            mol, ao_data)
 
 !   --------------------------------------------------------------------------
     integer, intent(in)  :: nr_dmat
     integer, intent(in)  :: mat_dim, mat_nz, mat_irep
     real(8), intent(in)  :: dmat_0(mat_dim, mat_dim, mat_nz)
-    real(8)              :: ao(*)
-    real(8)              :: buffer(*)
     type(mol_t), intent(inout):: mol
     type(ao_t), intent(inout):: ao_data
 !   --------------------------------------------------------------------------
+    real(8), allocatable              :: ao(:,:)
+    real(8), allocatable              :: buffer(:,:)
     type(grid_t):: grid
     type(grid_t), allocatable:: grids(:)
     type(grid_function_t), allocatable:: grid_functions(:)
@@ -798,6 +760,28 @@ contains
           end if
 
 !
+!         initialize ao module
+!
+
+          call dirac_ao_eval_init(rs_input%grid_functions(igf)%max_ao_g_order, &
+                                  rs_input%grid_functions(igf)%max_ao_m_order, &
+                                  .true.)
+
+!         gosia fixme: temporary solution - pass to workers
+#ifdef VAR_MPI
+          if (is_parallel()) then
+            call interface_mpi_bcast(nr_ao_slices,1,irank_master,global_communicator)
+            call interface_mpi_bcast(nr_ao_cartesian,1,irank_master,global_communicator)
+          end if
+#endif
+
+          allocate(ao(1,nr_ao_slices*nr_ao_cartesian))
+          ao = 0.0d0
+          allocate(buffer(1,nr_ao_slices*nr_ao_cartesian))
+          buffer = 0.0d0
+
+
+!
 !         distribute grid points over nodes
 !
 
@@ -843,6 +827,9 @@ contains
                             mat_dim, mat_nz, mat_irep, &
                             dmat_0,                &
                             ao, buffer)
+
+          deallocate(ao)
+          deallocate(buffer)
 
           allocate(rs_input%grid_functions(igf)%values(gf_ndim, npoints))
           rs_input%grid_functions(igf)%values = 0.0d0
