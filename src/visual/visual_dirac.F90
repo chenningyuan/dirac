@@ -56,6 +56,7 @@ contains
     ! legacy
     mat_ao_dim = ntbas(0)
     mat_ao_nz = nz
+    mat_ao_irep = 0
 
 #ifdef VAR_MPI
     if (is_parallel()) call sync_visual_cfg()
@@ -319,6 +320,8 @@ contains
     call interface_mpi_bcast(grid_function%input,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%wf_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%tensor_order,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%max_ao_g_order,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%max_ao_m_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%purpose,1,irank_master,global_communicator)
     call interface_mpi_bcast_l0(grid_function%export,1,irank_master,global_communicator)
 

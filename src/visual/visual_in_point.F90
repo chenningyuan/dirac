@@ -52,21 +52,17 @@ module visual_in_point
 
 contains
 
-  subroutine get_quantity_in_point_refactored(nr_dmat, &
-                                   D,       &
-                                   mat_dim, mat_nz, mat_irep, &
-                                   dmat_0, &
-                                   ao,      &
-                                   buffer,  &
-                                   grid_function, &
-                                   grid_function_values, &
-                                   ipoint)
+  subroutine get_quantity_in_point_refactored(nr_dmat,mat_dim,mat_nz,mat_irep,&
+                                              dmat_0,&
+                                              ao,buffer,&
+                                              grid_function,grid_function_values,&
+                                              ipoint)
 
 !    --------------------------------------------------------------------------
      integer, intent(in)  :: nr_dmat
-     type(matrix)         :: D(nr_dmat)
      integer, intent(in)  :: mat_dim, mat_nz, mat_irep
      real(8), intent(in)  :: dmat_0(mat_dim, mat_dim, mat_nz) 
+     !real(8), intent(in)  :: dmat(mat_dim, mat_dim, mat_nz, nr_dmat) 
      real(8), intent(in)  :: ao(*)
      real(8), intent(in)  :: buffer(*)
      type(grid_function_t), intent(inout):: grid_function
@@ -76,7 +72,6 @@ contains
      integer              :: imat
      real(8)              :: v1, v2(3), v3(3,3)
      real(8)              :: px, py, pz
-     real(8)              :: rx, ry, rz, r(3)
      integer              :: i
 !    --------------------------------------------------------------------------
 
@@ -85,7 +80,6 @@ contains
      !pz = grid%points(3, ipoint)
      !todo: call grid%points%get_cartesian_coords()
 
-     r = 0.0d0
      do imat = 1, nr_dmat
 
        select case (grid_function%name)
@@ -93,29 +87,25 @@ contains
          case ('density')
 !          electron density
            v1 = 0.0d0
-           call get_n(v1,            &
-                      mat_irep,  &
+           call get_n(v1,       &
+                      mat_irep, &
                       mat_dim,  &
-                      dmat_0,  &
-                      buffer,        &
+                      dmat_0,   &
+                      buffer,   &
                       ao)
-           !grid_function%values(1,ipoint:ipoint) = v1
            grid_function_values(1:1,ipoint:ipoint) = v1
 
          case ('density_gradient')
 !          electron density gradient
            v1 = 0.0d0
            v2 = 0.0d0
-           call get_gn(v1,               &
-                       v2,               &
-                       mat_irep,     &
-                       mat_dim,     &
-                       dmat_0,     &
-                       buffer,           &
+           call get_gn(v1,      &
+                       v2,      &
+                       mat_irep,&
+                       mat_dim, &
+                       dmat_0,  &
+                       buffer,  &
                        ao)               
-           !grid_function%values(1:1,ipoint:ipoint) = v2(1)
-           !grid_function%values(2:2,ipoint:ipoint) = v2(2)
-           !grid_function%values(3:3,ipoint:ipoint) = v2(3)
            grid_function_values(1:1,ipoint:ipoint) = v2(1)
            grid_function_values(2:2,ipoint:ipoint) = v2(2)
            grid_function_values(3:3,ipoint:ipoint) = v2(3)
@@ -127,23 +117,14 @@ contains
            v1 = 0.0d0
            v2 = 0.0d0
            v3 = 0.0d0
-           call get_hn(v1,               &
-                       v2,               &
-                       v3,               &
-                       mat_irep,     &
-                       mat_dim,     &
-                       dmat_0,     &
-                       buffer,           &
+           call get_hn(v1,       &
+                       v2,       &
+                       v3,       &
+                       mat_irep, &
+                       mat_dim,  &
+                       dmat_0,   &
+                       buffer,   &
                        ao)               
-           !grid_function%values(1:1,ipoint:ipoint) = v3(1, 1)   ! xx
-           !grid_function%values(2:2,ipoint:ipoint) = v3(1, 2)   ! xy
-           !grid_function%values(3:3,ipoint:ipoint) = v3(1, 3)   ! xz
-           !grid_function%values(4:4,ipoint:ipoint) = v3(2, 1)   ! yx
-           !grid_function%values(5:5,ipoint:ipoint) = v3(2, 2)   ! yy
-           !grid_function%values(6:6,ipoint:ipoint) = v3(2, 3)   ! yz
-           !grid_function%values(7:7,ipoint:ipoint) = v3(3, 1)   ! zx
-           !grid_function%values(8:8,ipoint:ipoint) = v3(3, 2)   ! zy
-           !grid_function%values(9:9,ipoint:ipoint) = v3(3, 3)   ! zz
            grid_function_values(1:1,ipoint:ipoint) = v3(1, 1)   ! xx
            grid_function_values(2:2,ipoint:ipoint) = v3(1, 2)   ! xy
            grid_function_values(3:3,ipoint:ipoint) = v3(1, 3)   ! xz

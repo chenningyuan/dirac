@@ -109,8 +109,8 @@ module visual_datatypes
     logical, public:: export = .true.                       ! export to file
     integer, public:: wf_order = 0                          ! 0 = depends on unperturbed wave function only, >0 requires perturbed wave functions (1 = linear response, 2 = quadratic response, etc.)
     integer, public:: tensor_order = 0                      ! 0 = a scalar field, 1 = a vector field, 2 = a tensor field of rank 2, etc.
-    !integer, public:: max_ao_g_order
-    !integer, public:: max_ao_m_order
+    integer, public:: max_ao_g_order = 0 !legacy
+    integer, public:: max_ao_m_order = 0 !legacy
     integer, public:: id_assigned_grid = 0                  ! id of assigned grid
     integer, public:: purpose = 0                           ! 0 = visualization, 1 = integration
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid function import
@@ -342,6 +342,8 @@ contains
       write(*, *) 'export =          ', self%export, my_rank
       write(*, *) 'wf_order =        ', self%wf_order, my_rank
       write(*, *) 'tensor_order      ', self%tensor_order, my_rank
+      write(*, *) 'max_ao_g_order    ', self%max_ao_g_order, my_rank
+      write(*, *) 'max_ao_m_order    ', self%max_ao_m_order, my_rank
       write(*, *) 'id_assigned_grid =', self%id_assigned_grid, my_rank
       write(*, *) 'purpose =         ', self%purpose, my_rank
       if (allocated(self%file_inp)) write(*, *) 'file_inp =        ', self%file_inp, my_rank
@@ -354,6 +356,8 @@ contains
       write(*, *) 'export =          ', self%export
       write(*, *) 'wf_order =        ', self%wf_order
       write(*, *) 'tensor_order      ', self%tensor_order
+      write(*, *) 'max_ao_g_order    ', self%max_ao_g_order
+      write(*, *) 'max_ao_m_order    ', self%max_ao_m_order
       write(*, *) 'id_assigned_grid =', self%id_assigned_grid
       write(*, *) 'purpose =         ', self%purpose
       if (allocated(self%file_inp)) write(*, *) 'file_inp =        ', self%file_inp

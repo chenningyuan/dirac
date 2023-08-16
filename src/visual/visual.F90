@@ -481,6 +481,10 @@ contains
 
 
 
+    if (visual_cfg_global_refactor) then
+      max_ao_g_order = 1 
+      max_ao_m_order = 0
+    end if
 
 
 #ifdef VAR_MPI
@@ -515,6 +519,7 @@ contains
     buffer = 0.0d0
 
 
+    write(*, '(a, 3i6)') 'AFTER AOEVAL: ', max_ao_g_order, max_ao_m_order, nr_ao_blocks
 
 
     if (mpi_is_master()) then
@@ -607,7 +612,7 @@ contains
 #endif
 ! 
       call visual_driver_refactored(visual_cfg_nr_dmat, &
-                       mat_ao_dim, mat_ao_nz, 0, &
+                       mat_ao_dim, mat_ao_nz, mat_ao_irep, &
                        dmat_0,                &
                        mol, ao_data,       &
                        ao,                 &
@@ -824,6 +829,7 @@ contains
 
           allocate(grid_function_values(gf_ndim, n_this_proc))
           grid_function_values = 0.0d0
+          write(*, '(i3, a, 3i6)') igf, ' TESTME gfndims ', gf_ndim, n_this_proc, get_my_rank()
 
           ! gosia todo:
           ! add "visualize"/"integrate" procedures in this call; now - visualization only
@@ -948,7 +954,7 @@ contains
                                             ipoint)
 
       call TEMP_test_values_in_point('grid_function_values in point', &
-                             ipoint, grid_points(1:3, ipoint), v1=grid_function_values(1,ipoint))
+                             ipoint, grid_points(1:3, ipoint), v3=grid_function_values(1:3,ipoint))
 
     end do
 

@@ -47,6 +47,7 @@ module visual_cfg
    ! legacy
    integer,      public            :: mat_ao_dim = 0
    integer,      public            :: mat_ao_nz = 0
+   integer,      public            :: mat_ao_irep = 0
 
 !
 !  options for exporting real-space data to files
@@ -531,19 +532,29 @@ contains
 
     select case (grid_function%name)
       case ('density', &
-            'density_laplacian', &
             'esp', &
             'espe', &
             'espn', &
             'elf')
         grid_function%tensor_order = 0
         grid_function%wf_order = 0
+        grid_function%max_ao_g_order = 0
+        grid_function%max_ao_m_order = 0
       case ('density_gradient')
+        grid_function%wf_order = 0
         grid_function%tensor_order = 1
-        grid_function%wf_order = 0
+        grid_function%max_ao_g_order = 1
+        grid_function%max_ao_m_order = 0
       case ('density_hessian')
-        grid_function%tensor_order = 2
         grid_function%wf_order = 0
+        grid_function%tensor_order = 2
+        grid_function%max_ao_g_order = 2
+        grid_function%max_ao_m_order = 0
+      case ('density_laplacian')
+        grid_function%wf_order = 0
+        grid_function%tensor_order = 0
+        grid_function%max_ao_g_order = 2
+        grid_function%max_ao_m_order = 0
       case default
         write(*, *) 'unknown grid function name. stop'
         stop
@@ -604,6 +615,7 @@ contains
     call interface_mpi_bcast_l0(visual_cfg_global_refactor,1,irank_master,global_communicator)
     call interface_mpi_bcast(mat_ao_dim,1,irank_master,global_communicator)
     call interface_mpi_bcast(mat_ao_nz,1,irank_master,global_communicator)
+    call interface_mpi_bcast(mat_ao_irep,1,irank_master,global_communicator)
 
     !if (rs_input%print_level > 0) call logprint
   end subroutine sync_visual_cfg
