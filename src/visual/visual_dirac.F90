@@ -208,7 +208,8 @@ contains
 #ifdef VAR_MPI
   subroutine synchronize_data_from_dirac(mol, ao)
     !
-    ! this subroutine syncs data stored in ao and mol, read from DIRAC CHECKPOINT
+    ! this subroutine syncs data stored in ao and mol dts, 
+    ! which are read from DIRAC CHECKPOINT
     ! if any new variable has been added to these dts, please also add it here
     !
     type(mol_t), intent(inout):: mol
@@ -226,6 +227,7 @@ contains
     call interface_mpi_bcast(mol%geometry,3*mol%n_atoms,irank_master,global_communicator)
     call interface_mpi_bcast(mol%nuc_charge,mol%n_atoms,irank_master,global_communicator)
 
+    ! gosia todo/fixme what ao data do you need??
     call interface_mpi_bcast(ao%n_ao,1,irank_master,global_communicator)
 
     !write(*, *) 'in synchronize_data_from_dirac, mol on node: ', get_my_rank()

@@ -570,31 +570,33 @@ contains
     !end if
 
     ! gosia: now this only reads mol data
-    if (mpi_is_master()) call visual_initialize_data_from_dirac(mol, ao_data, mo_data)
+      if (mpi_is_master()) call visual_initialize_data_from_dirac(mol, ao_data, mo_data)
 
 
 
-! gosia fixme: temporary solution for passing density matrices
+!     gosia fixme: 
+!     this is a temporary solution for handling density matrices;
+!     also see https://gitlab.com/dirac/dirac-private/-/issues/550
 #ifdef VAR_MPI
-    if (is_parallel()) then
-      call interface_mpi_bcast(visual_cfg_nr_dmat,1,irank_master,global_communicator)
-    end if
+      if (is_parallel()) then
+        call interface_mpi_bcast(visual_cfg_nr_dmat,1,irank_master,global_communicator)
+      end if
 #endif
 
-    nullify(dmat_0)
-    if (.not. mpi_is_master()) then
-       allocate(dmat_0_container(mat_ao_dim, mat_ao_dim, mat_ao_nz))
-       dmat_0 => dmat_0_container
-    else
-       allocate(dmat_0_temp(mat_ao_dim, mat_ao_dim, mat_ao_nz))
-       dmat_0_temp = reshape(D(1)%elms, (/mat_ao_dim, mat_ao_dim, mat_ao_nz/))
-       dmat_0 => dmat_0_temp
-    end if
+      nullify(dmat_0)
+      if (.not. mpi_is_master()) then
+         allocate(dmat_0_container(mat_ao_dim, mat_ao_dim, mat_ao_nz))
+         dmat_0 => dmat_0_container
+      else
+         allocate(dmat_0_temp(mat_ao_dim, mat_ao_dim, mat_ao_nz))
+         dmat_0_temp = reshape(D(1)%elms, (/mat_ao_dim, mat_ao_dim, mat_ao_nz/))
+         dmat_0 => dmat_0_temp
+      end if
 
 #ifdef VAR_MPI
-    if (is_parallel()) then
-      call interface_mpi_bcast(dmat_0, size(dmat_0),irank_master,global_communicator)
-    end if
+      if (is_parallel()) then
+        call interface_mpi_bcast(dmat_0, size(dmat_0), irank_master,global_communicator)
+      end if
 #endif
 
 
@@ -604,8 +606,7 @@ contains
       end if
 #endif
 ! 
-    call visual_driver_refactored(visual_cfg_nr_dmat, &
-                       D,                  &
+      call visual_driver_refactored(visual_cfg_nr_dmat, &
                        mat_ao_dim, mat_ao_nz, 0, &
                        dmat_0,                &
                        mol, ao_data,       &
@@ -681,7 +682,6 @@ contains
 
 
   subroutine visual_driver_refactored(nr_dmat, &
-                            D,       &
                             mat_dim, mat_nz, mat_irep, &
                             dmat_0,     &
                             mol, ao_data, &
@@ -690,7 +690,6 @@ contains
 
 !   --------------------------------------------------------------------------
     integer, intent(in)  :: nr_dmat
-    type(matrix)         :: D(nr_dmat)
     integer, intent(in)  :: mat_dim, mat_nz, mat_irep
     real(8), intent(in)  :: dmat_0(mat_dim, mat_dim, mat_nz)
     real(8)              :: ao(*)
@@ -834,7 +833,7 @@ contains
                             rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
                             rs_input%grid_functions(igf), &
                             grid_function_values, &
-                            nr_dmat, D, &
+                            nr_dmat,&
                             mat_dim, mat_nz, mat_irep, &
                             dmat_0,                &
                             ao, buffer)
@@ -912,7 +911,7 @@ contains
                           grid_points,   &
                           grid_function, &
                           grid_function_values, &
-                          nr_dmat, D, &
+                          nr_dmat, &
                           mat_dim, mat_nz, mat_irep, &
                           dmat_0,     &
                           ao, buffer)
@@ -923,7 +922,6 @@ contains
     type(grid_function_t), intent(inout):: grid_function
     real(8), intent(out) :: grid_function_values(:,:)
     integer, intent(in)  :: nr_dmat
-    type(matrix)         :: D(nr_dmat)
     integer, intent(in)  :: mat_dim, mat_nz, mat_irep
     real(8), intent(in)  :: dmat_0(mat_dim, mat_dim, mat_nz)
     real(8)              :: ao(*)
@@ -940,33 +938,23 @@ contains
                   ao,                    &
                   buffer)
 
-      !write(*, '(A,2I6,3E16.8,ES30.20E3)') 'TESTME ao in point', get_my_rank(), ipoint, &
-      !                         grid_points(1, ipoint), &
-      !                         grid_points(2, ipoint), &
-      !                         grid_points(3, ipoint), &
-      !                         ao(68)
+      call TEMP_test_values_in_point('AO68 in point', &
+                             ipoint, grid_points(1:3, ipoint), v1=ao(68))
 
-      call get_quantity_in_point_refactored(nr_dmat,                   &
-                                 D,                         &
-                                 mat_dim, mat_nz, mat_irep, &
-                                 dmat_0,                &
-                                 ao,                        &
-                                 buffer,                    &
-                                 grid_function, &
-                                 grid_function_values, &
-                                 ipoint)
+      call get_quantity_in_point_refactored(nr_dmat,mat_dim,mat_nz,mat_irep,&
+                                            dmat_0,&
+                                            ao,buffer,&
+                                            grid_function,grid_function_values,&
+                                            ipoint)
 
-      write(*,'(A,2I3,3E16.8,ES30.20E3)') 'grid_function_values in ', get_my_rank(), ipoint, &
-                  grid_points(1, ipoint),& 
-                  grid_points(2, ipoint),&
-                  grid_points(3, ipoint),&
-                  grid_function_values(1,ipoint)
+      call TEMP_test_values_in_point('grid_function_values in point', &
+                             ipoint, grid_points(1:3, ipoint), v1=grid_function_values(1,ipoint))
+
     end do
-    !do icomp=1, grid_function%get_ndim()
-    !  write(*,*) 'grid_function%values', (grid_function%values(icomp,ipoint), ipoint=1,grid%nr_points_total)
-    !end do
 
   end subroutine work_on_grid
+
+
 
 !   ---- legacy ----    
 
@@ -1979,4 +1967,34 @@ contains
 
 
 !   ---- end ----    
+
+
+  subroutine TEMP_test_values_in_point(text, ipoint, r3, v1, v3, v9)
+    character(*), intent(in) :: text
+    integer, intent(in) :: ipoint
+    real(8), intent(in) :: r3(3)
+    real(8), intent(in), optional :: v1
+    real(8), intent(in), optional :: v3(3)
+    real(8), intent(in), optional :: v9(9)
+
+    if (present(v1)) then
+      write(*, '(A,2I6,3E16.8,ES30.20E3)') text, get_my_rank(), ipoint, &
+                                           r3(1:3), &
+                                           v1
+    end if
+
+    if (present(v3)) then
+      write(*, '(A,2I6,3E16.8,3ES30.20E3)') text, get_my_rank(), ipoint, &
+                                           r3(1:3), &
+                                           v3(1:3)
+    end if
+
+    if (present(v9)) then
+      write(*, '(A,2I6,3E16.8,9ES30.20E3)') text, get_my_rank(), ipoint, &
+                                           r3(1:3), &
+                                           v9(1:9)
+    end if
+
+  end subroutine
+
 end module
