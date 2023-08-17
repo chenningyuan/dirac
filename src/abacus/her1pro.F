@@ -4022,7 +4022,14 @@ C
 C     Write integrals
 C
       ! Write to checkpoint file, rtnlbl(1) is date, not needed.
-      call prop_to_checkpoint(label//rtnlbl(2),aint,length)
+      ! Keep the standard integrals also on the checkpoint
+      if (label == 'OVERLAP ' .or.
+     &    label == 'MOLFIELD' .or.
+     &    label == 'KINENERG' .or.
+     &    label == 'BETAMAT ') then
+          call prop_to_checkpoint(label//rtnlbl(2),aint,length)
+      end if
+      call prop_to_propfile (label//rtnlbl(2),aint,length)
       RETURN
       END
 C  /* Deck dsotst */
@@ -4263,6 +4270,44 @@ C --- end of her1pro.F ---
      &   '/result/operators/ao_matrices/aobasis_dim',idata=ntbas(0))
       else
          call checkpoint_write (
+     &   '/result/operators/ao_matrices/'//label(1:8)//label(13:16),
+     &    rdata=prop)
+      end if
+      end
+
+      subroutine init_propfile
+      use labeled_storage
+      logical             :: tobe
+      character(len=80)   :: top_groups(1)
+      inquire (file='OPERATORS.h5',exist=tobe)
+      if (.not.tobe) then
+         top_groups(1) = '/result'
+         dirac_datafiles(1)%name = 'OPERATORS.h5'
+         dirac_datafiles(1)%type = 2
+         dirac_datafiles(1)%status = -1
+         call lab_init (dirac_datafiles(1),top_groups)
+      else
+         dirac_datafiles(1)%name = 'OPERATORS.h5'
+         dirac_datafiles(1)%type = 2
+         dirac_datafiles(1)%status = 0
+      end if
+      end subroutine
+
+      subroutine prop_to_propfile(label,prop,nelmnt)
+
+      use labeled_storage
+
+#include "implicit.h"
+#include "dcbbas.h"
+
+      character(16), intent(in) :: label
+      real(8), intent(in) :: prop(nelmnt)
+
+      if (label == 'write_size_only!') then
+         call lab_write (dirac_datafiles(1),
+     &   '/result/operators/ao_matrices/aobasis_dim',idata=ntbas(0))
+      else
+         call lab_write (dirac_datafiles(1),
      &   '/result/operators/ao_matrices/'//label(1:8)//label(13:16),
      &    rdata=prop)
       end if
