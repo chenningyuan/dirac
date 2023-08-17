@@ -205,6 +205,32 @@ contains
               grid_function_values(1:1,ipoint:ipoint) = -v1
            end if
 
+
+         case ('ed_laplacian')
+!
+!          gosia fixme:
+!          density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!          todo: add a warning
+           v1 = 0.0d0
+           v2 = 0.0d0
+           v3 = 0.0d0
+           call get_hn(v1,       &
+                       v2,       &
+                       v3,       &
+                       mat_irep, &
+                       mat_dim,  &
+                       dmat_0,   &
+                       buffer,   &
+                       ao)               
+           eigenvectors = 1.0d0
+           temp         = 0.0d0
+           itemp        = 0
+           temp2 = reshape(v3, (/9/))
+
+           call jaco(temp2, eigenvectors, 3, 3, 3, temp, itemp)
+
+           grid_function_values(1:1,ipoint:ipoint) = temp2(1) + temp2(3) + temp2(6)
+
        end select
     end do
 

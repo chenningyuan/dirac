@@ -66,7 +66,7 @@
 id=1 input=import file_inp=grid2.h5
 .GRIDFUNCTIONS    
 1
-name=ed_sign_lambda2 id_grid=1 purpose=visualization export=yes file_out=ed_sign_lambda2.h5
+name=ed_laplacian id_grid=1 purpose=visualization export=yes file_out=ed_laplacian.h5
 !5
 !name=density id_grid=1 purpose=visualization export=yes file_out=density.h5
 !name=density_gradient id_grid=1 purpose=visualization export=yes file_out=density_gradient.h5

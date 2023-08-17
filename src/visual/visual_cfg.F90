@@ -555,7 +555,7 @@ contains
         grid_function%tensor_order = 2
         grid_function%max_ao_g_order = 2
         grid_function%max_ao_m_order = 0
-      case ('density_laplacian')
+      case ('ed_laplacian')
         grid_function%wf_order = 0
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 2
