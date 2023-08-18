@@ -4625,6 +4625,11 @@ contains
 !
     active_elpot = -active_elpot
 
+    !do ipoint = 1, nr_points_on_this_proc
+    !  write(*, '(A,2I6,3E16.8,3ES30.20E3)') 'active_elpot in point: ', fde_get_my_rank(), ipoint, &
+    !                                        r(1,ipoint),r(2,ipoint),r(3,ipoint),active_elpot(ipoint)
+    !end do
+
     call get_esp(nr_points_on_this_proc,&
               active_nucpot,            &
               irrep_esp,                &
