@@ -149,6 +149,9 @@ if h5py_available:
     compare_with_ref(ftest='ed_laplacian.h5', fref='result/ed_laplacian.h5', typ='single', gf_name='ed_laplacian')
     compare_with_ref(ftest='ed_laplacian.h5', fref='result/ed_laplacian.h5', typ='array',  gf_name='ed_laplacian', gf_test_key='t0_icomp_1')
 
+    compare_with_ref(ftest='gamma5.h5', fref='result/gamma5.h5', typ='single', gf_name='gamma5')
+    compare_with_ref(ftest='gamma5.h5', fref='result/gamma5.h5', typ='array',  gf_name='gamma5', gf_test_key='t0_icomp_1')
+
 
 # cleanup
 #os.unlink('DFCOEF')

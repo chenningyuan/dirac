@@ -89,6 +89,17 @@ contains
 
        select case (grid_function%name)
 
+         case ('gamma5')
+!          gamma5 density: \psi^\dag \gamma^5 \psi GOSIA-DONE
+           v1 = 0.0d0
+           call get_gamma5(v1,       &
+                           mat_irep, &
+                           mat_dim,  &
+                           dmat_0,   &
+                           buffer,   &
+                           ao)
+           grid_function_values(1:1,ipoint:ipoint) = v1
+
          case ('density')
 !          electron density
            v1 = 0.0d0

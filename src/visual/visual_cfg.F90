@@ -532,6 +532,7 @@ contains
 
     select case (grid_function%name)
       case ('density', &
+            'gamma5', &
             'esp', &
             'espe', &
             'espn', &
