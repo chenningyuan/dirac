@@ -33,6 +33,7 @@ module visual_in_point
 
   public get_quantity_in_point
   public get_quantity_in_point_refactored
+  public get_esp_functions_in_points
 
   private
 
@@ -56,6 +57,7 @@ contains
                                               dmat_0,&
                                               ao,buffer,&
                                               grid_function,grid_function_values,&
+                                              px,py,pz,&
                                               ipoint)
 
 !    --------------------------------------------------------------------------
@@ -67,11 +69,11 @@ contains
      real(8), intent(in)  :: buffer(*)
      type(grid_function_t), intent(inout):: grid_function
      real(8), intent(out):: grid_function_values(:,:)
+     real(8), intent(in) :: px, py, pz
      integer, intent(in), optional  :: ipoint !thiswill not be optional
 !    --------------------------------------------------------------------------
      integer              :: imat
      real(8)              :: v1, v2(3), v3(3,3)
-     real(8)              :: px, py, pz
      integer              :: i,j
       real(8)              :: b, c
      real(8)              :: eigenvalues(3)
@@ -110,6 +112,17 @@ contains
                       buffer,   &
                       ao)
            grid_function_values(1:1,ipoint:ipoint) = v1
+
+         !case ('espe')
+         !  call get_esp(1,&
+         !               v2(1),&
+         !               mat_irep, &
+         !               mat_dim,  &
+         !               dmat_0,   &
+         !               (/px,py,pz/),&
+         !               include_nuc_part=.false., &
+         !               include_el_part=.true.)
+         !  grid_function_values(1:1,ipoint:ipoint) = 0.5d0*v2(1)
 
          case ('density_gradient')
 !          electron density gradient
@@ -246,6 +259,55 @@ contains
     end do
 
    end subroutine
+
+
+  subroutine get_esp_functions_in_points(mat_dim,mat_nz,mat_irep,&
+                                         dmat_0,&
+                                         ao,buffer,&
+                                         ndim,nr_points,grid_points,&
+                                         grid_function,grid_function_values)
+
+!    --------------------------------------------------------------------------
+     integer, intent(in)  :: mat_dim, mat_nz, mat_irep
+     real(8), intent(in)  :: dmat_0(mat_dim, mat_dim, mat_nz) 
+     real(8), intent(in)  :: ao(*)
+     real(8), intent(in)  :: buffer(*)
+     integer, intent(in)  :: ndim,nr_points
+     real(8), intent(in)  :: grid_points(ndim,nr_points)
+     type(grid_function_t), intent(inout):: grid_function
+     real(8), intent(out):: grid_function_values(:,:)
+!    --------------------------------------------------------------------------
+     integer  :: ipoint
+     integer              :: imat
+     real(8)              :: v1, v2(3), v3(3,3)
+     integer              :: i,j
+      real(8)              :: b, c
+     real(8)              :: eigenvalues(3)
+     real(8)              :: eigenvectors(3, 3)
+      real(8)              :: temp(3), temp2(9)
+      integer              :: itemp(3)
+      real(8)              :: density
+      real(8),allocatable :: esp(:), esp_e(:), esp_n(:)
+!    --------------------------------------------------------------------------
+
+
+    if (grid_function%name .eq. 'espe') then
+      call get_esp(nr_points,&
+                   grid_function_values(1:1,1:nr_points),&
+                   mat_irep, &
+                   mat_dim,  &
+                   dmat_0,   &
+                   grid_points(1:3,1:nr_points),&
+                   include_nuc_part=.false., &
+                   include_el_part=.true.)
+!     gosia: figure out why this should be scaled
+      grid_function_values = 0.5d0*grid_function_values
+    end if
+
+
+
+  end subroutine
+
 
 
    subroutine get_quantity_in_point(nr_dmat, &
@@ -560,16 +622,16 @@ contains
             if ((visual_cfg_property(imat) == iq_esp) .or. &
                 (visual_cfg_property(imat) == iq_esprho)) then
                call get_esp(1, esp_e,     &
-                            D(imat)%irep, &
-                            D(imat)%nrow, &
-                            D(imat)%elms, &
+                            d(imat)%irep, &
+                            d(imat)%nrow, &
+                            d(imat)%elms, &
                             (/px, py, pz/), &
                             include_nuc_part=.false., &
                             include_el_part=.true.)
                call get_esp(1, esp_n,     &
-                            D(imat)%irep, &
-                            D(imat)%nrow, &
-                            D(imat)%elms, &
+                            d(imat)%irep, &
+                            d(imat)%nrow, &
+                            d(imat)%elms, &
                             (/px, py, pz/), &
                             include_nuc_part=.true., &
                             include_el_part=.false.)

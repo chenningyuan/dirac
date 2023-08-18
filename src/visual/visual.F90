@@ -795,13 +795,6 @@ contains
                          rs_input%grids(ig)%points(idim_grid,:), &
                          npoints, n_this_proc)
             end do
-
-            if (get_my_rank() == 7) then
-              do j =1, n_this_proc
-                write(*, '(a,i,3f8.3)') 'points on node 7: ', j, &
-                     (rs_input%grids(ig)%points(i,j), i=1,g_ndim)
-              end do
-            end if
           end if
 #endif
 
@@ -931,19 +924,36 @@ contains
                   ao,                    &
                   buffer)
 
-      call TEMP_test_values_in_point('AO68 in point', &
-                             ipoint, grid_points(1:3, ipoint), v1=ao(68))
+      !call TEMP_test_values_in_point('AO68 in point', &
+      !                       ipoint, grid_points(1:3, ipoint), v1=ao(68))
 
       call get_quantity_in_point_refactored(nr_dmat,mat_dim,mat_nz,mat_irep,&
                                             dmat_0,&
                                             ao,buffer,&
                                             grid_function,grid_function_values,&
+                                            grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
                                             ipoint)
 
-      call TEMP_test_values_in_point('grid_function_values in point', &
-                             ipoint, grid_points(1:3, ipoint), v3=grid_function_values(1:3,ipoint))
+      !call TEMP_test_values_in_point('grid_function_values in point', &
+      !                       ipoint, grid_points(1:3, ipoint), v3=grid_function_values(1:3,ipoint))
 
     end do
+
+    if (grid_function%name .eq. 'espe') then
+
+      call TEMP_test_values_in_points('grid_points', &
+                             nr_points, grid_points,v1=grid_function_values)
+
+      call get_esp_functions_in_points(mat_dim,mat_nz,mat_irep,&
+                                       dmat_0,&
+                                       ao,buffer,&
+                                       ndim,nr_points,&
+                                       grid_points,&
+                                       grid_function,grid_function_values)
+      !call TEMP_test_values_in_points('grid_function_values in point', &
+      !                       nr_points, grid_points, v1=grid_function_values)
+
+    end if
 
   end subroutine work_on_grid
 
@@ -1989,5 +1999,41 @@ contains
     end if
 
   end subroutine
+
+  subroutine TEMP_test_values_in_points(text, nr_points, r3, v1, v3, v9)
+    character(*), intent(in) :: text
+    integer, intent(in) :: nr_points
+    real(8), intent(in) :: r3(3,nr_points)
+    real(8), intent(in), optional :: v1(nr_points)
+    real(8), intent(in), optional :: v3(3,nr_points)
+    real(8), intent(in), optional :: v9(9,nr_points)
+    integer :: ipoint
+
+    if (present(v1)) then
+      do ipoint = 1, nr_points
+        write(*, '(A,2I6,3E16.8,ES30.20E3)') text, get_my_rank(), ipoint, &
+                                             r3(1:3,ipoint), &
+                                             v1(ipoint)
+      end do
+    end if
+
+    if (present(v3)) then
+      do ipoint = 1, nr_points
+        write(*, '(A,2I6,3E16.8,3ES30.20E3)') text, get_my_rank(), ipoint, &
+                                              r3(1:3,ipoint), &
+                                              v3(1:3,ipoint)
+      end do
+    end if
+
+    if (present(v9)) then
+      do ipoint = 1, nr_points
+        write(*, '(A,2I6,3E16.8,9ES30.20E3)') text, get_my_rank(), ipoint, &
+                                              r3(1:3,ipoint), &
+                                              v9(1:9,ipoint)
+      end do
+    end if
+
+  end subroutine
+
 
 end module

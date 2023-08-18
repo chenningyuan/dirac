@@ -536,6 +536,9 @@ contains
             'esp', &
             'espe', &
             'espn', &
+            'esprho', &
+            'esperho', &
+            'espnrho', &
             'elf')
         grid_function%wf_order = 0
         grid_function%tensor_order = 0
