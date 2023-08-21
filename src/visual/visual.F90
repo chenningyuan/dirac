@@ -479,6 +479,7 @@ contains
     end if
 
    
+    if (.not.visual_cfg_global_refactor) then
 !   initialize ao module
 !   ====================
     call dirac_ao_eval_init(max_ao_g_order, &
@@ -495,6 +496,7 @@ contains
           if (visual_cfg_london_none) D_con_mo_ai = 0
        end if
     end if
+    end if !if (.not.visual_cfg_global_refactor) then
 
 !   plot and integrate
 !   ==================
@@ -767,19 +769,10 @@ contains
                                   rs_input%grid_functions(igf)%max_ao_m_order, &
                                   .true.)
 
-!         gosia fixme: temporary solution - pass to workers
-#ifdef VAR_MPI
-          if (is_parallel()) then
-            call interface_mpi_bcast(nr_ao_slices,1,irank_master,global_communicator)
-            call interface_mpi_bcast(nr_ao_cartesian,1,irank_master,global_communicator)
-          end if
-#endif
-
           allocate(ao(1,nr_ao_slices*nr_ao_cartesian))
           ao = 0.0d0
           allocate(buffer(1,nr_ao_slices*nr_ao_cartesian))
           buffer = 0.0d0
-
 
 !
 !         distribute grid points over nodes
@@ -806,7 +799,6 @@ contains
 
           allocate(grid_function_values(gf_ndim, n_this_proc))
           grid_function_values = 0.0d0
-          write(*, '(i3, a, 3i6)') igf, ' TESTME gfndims ', gf_ndim, n_this_proc, get_my_rank()
 
           ! gosia todo:
           ! add "visualize"/"integrate" procedures in this call; now - visualization only
@@ -915,6 +907,32 @@ contains
     integer:: ipoint, icomp
     integer:: i
 
+    if (grid_function%name .eq. 'espe') then
+
+      !call TEMP_test_values_in_points('grid_points', &
+      !                       nr_points, grid_points,v1=grid_function_values)
+    do ipoint = 1, nr_points
+
+      call get_ao(1,                     &
+                  grid_points(1, ipoint),&
+                  grid_points(2, ipoint),&
+                  grid_points(3, ipoint),&
+                  ao,                    &
+                  buffer)
+    end do
+
+
+      write(*,'(a,6i6)') 'CALLING ESP ON NODE: ', get_my_rank(), mat_dim,mat_nz,mat_irep,ndim,nr_points
+      call get_esp_functions_in_points(get_my_rank(),mat_dim,mat_nz,mat_irep,&
+                                       dmat_0,&
+                                       ao,buffer,&
+                                       ndim,nr_points,&
+                                       grid_points,&
+                                       grid_function,grid_function_values)
+      call TEMP_test_values_in_points('grid_function_values in point', &
+                             nr_points, grid_points, v1=grid_function_values)
+
+    else
     do ipoint = 1, nr_points
 
       call get_ao(1,                     &
@@ -938,20 +956,6 @@ contains
       !                       ipoint, grid_points(1:3, ipoint), v3=grid_function_values(1:3,ipoint))
 
     end do
-
-    if (grid_function%name .eq. 'espe') then
-
-      call TEMP_test_values_in_points('grid_points', &
-                             nr_points, grid_points,v1=grid_function_values)
-
-      call get_esp_functions_in_points(mat_dim,mat_nz,mat_irep,&
-                                       dmat_0,&
-                                       ao,buffer,&
-                                       ndim,nr_points,&
-                                       grid_points,&
-                                       grid_function,grid_function_values)
-      !call TEMP_test_values_in_points('grid_function_values in point', &
-      !                       nr_points, grid_points, v1=grid_function_values)
 
     end if
 

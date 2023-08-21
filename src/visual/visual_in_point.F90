@@ -19,6 +19,7 @@ module visual_in_point
   use memory_allocator
   use electrostatic_potential
   use interface_ao
+  use interface_mo
   use visual_cfg
   use visual_london
   use dirac_ao_eval
@@ -50,6 +51,7 @@ module visual_in_point
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
+#include "ccom.h"
 
 contains
 
@@ -261,20 +263,21 @@ contains
    end subroutine
 
 
-  subroutine get_esp_functions_in_points(mat_dim,mat_nz,mat_irep,&
+  subroutine get_esp_functions_in_points(my_rank,mat_dim,mat_nz,mat_irep,&
                                          dmat_0,&
                                          ao,buffer,&
                                          ndim,nr_points,grid_points,&
                                          grid_function,grid_function_values)
 
 !    --------------------------------------------------------------------------
+     integer, intent(in)  :: my_rank
      integer, intent(in)  :: mat_dim, mat_nz, mat_irep
      real(8), intent(in)  :: dmat_0(mat_dim, mat_dim, mat_nz) 
      real(8), intent(in)  :: ao(*)
      real(8), intent(in)  :: buffer(*)
      integer, intent(in)  :: ndim,nr_points
      real(8), intent(in)  :: grid_points(ndim,nr_points)
-     type(grid_function_t), intent(inout):: grid_function
+     type(grid_function_t), intent(out):: grid_function
      real(8), intent(out):: grid_function_values(:,:)
 !    --------------------------------------------------------------------------
      integer  :: ipoint
@@ -299,7 +302,7 @@ contains
                    dmat_0,   &
                    grid_points(1:3,1:nr_points),&
                    include_nuc_part=.false., &
-                   include_el_part=.true.)
+                   include_el_part=.true., my_rank=my_rank)
 !     gosia: figure out why this should be scaled
       grid_function_values = 0.5d0*grid_function_values
     end if
