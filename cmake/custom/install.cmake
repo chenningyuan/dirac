@@ -6,7 +6,7 @@ message(STATUS "Copied DIRAC basis set directories into the build directory")
 file(COPY ${PROJECT_SOURCE_DIR}/utils/DIRACschema.txt    DESTINATION ${PROJECT_BINARY_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/utils/dirac_data.py      DESTINATION ${PROJECT_BINARY_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/utils/process_schema.py  DESTINATION ${PROJECT_BINARY_DIR})
-file(COPY ${PROJECT_SOURCE_DIR}/utils/merge_amf.py  DESTINATION ${PROJECT_BINARY_DIR})
+file(COPY ${PROJECT_SOURCE_DIR}/utils/merge_amf.py       DESTINATION ${PROJECT_BINARY_DIR})
 message(STATUS "Copied data schema and python utilities into the build directory")
 
 foreach(
@@ -58,6 +58,9 @@ install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/polfit.x ${PROJECT_BINARY_DIR}/polfit-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/twofit.x ${PROJECT_BINARY_DIR}/twofit-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/vibcal.x ${PROJECT_BINARY_DIR}/vibcal-dirac)")
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/dirac_data.py ${PROJECT_BINARY_DIR}/dirac_data-dirac)")
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/process_schema.py ${PROJECT_BINARY_DIR}/process_schema-dirac)")
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/merge_amf.py ${PROJECT_BINARY_DIR}/merge_amf-dirac)")
 # 2) install real files *-dirac
 install(
     FILES
@@ -68,6 +71,9 @@ install(
     ${PROJECT_BINARY_DIR}/polfit-dirac
     ${PROJECT_BINARY_DIR}/twofit-dirac
     ${PROJECT_BINARY_DIR}/vibcal-dirac
+    ${PROJECT_BINARY_DIR}/dirac_data-dirac
+    ${PROJECT_BINARY_DIR}/process_schema-dirac
+    ${PROJECT_BINARY_DIR}/merge_amf-dirac
     DESTINATION bin
     PERMISSIONS
     OWNER_READ OWNER_WRITE OWNER_EXECUTE
@@ -82,6 +88,9 @@ install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/polfit-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/twofit-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/vibcal-dirac)")
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/dirac_data-dirac)")
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/process_schema-dirac)")
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/merge_amf-dirac)")
 # 4) create symlink
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/diag.x ${CMAKE_INSTALL_PREFIX}/bin/diag-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/dirac_mointegral_export.x ${CMAKE_INSTALL_PREFIX}/bin/dirac_mointegral_export-dirac)")
@@ -90,6 +99,9 @@ install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/polfit.x ${CMAKE_INSTALL_PREFIX}/bin/polfit-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/twofit.x ${CMAKE_INSTALL_PREFIX}/bin/twofit-dirac)")
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/vibcal.x ${CMAKE_INSTALL_PREFIX}/bin/vibcal-dirac)")
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/dirac_data.py ${CMAKE_INSTALL_PREFIX}/bin/dirac_data-dirac)")
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/process_schema.py ${CMAKE_INSTALL_PREFIX}/bin/process_schema-dirac)")
+install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/merge_amf.py ${CMAKE_INSTALL_PREFIX}/bin/merge_amf-dirac)")
 
 # write git hash to build dir
 file(WRITE ${PROJECT_BINARY_DIR}/GIT_HASH "${_git_last_commit_hash}")

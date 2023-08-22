@@ -50,6 +50,7 @@ function get_environment_integer_i4(name, default)
      if (ios/=0) then
         print *,'ERROR reading environment variable ',name
         print *,'ERROR cannot convert to 32 bit integer, value = ',value
+        print *,' =>   Either reduce value to at most 2147483647 or compile Dirac with 64 bit integers'
         call quit('Invalid environment variable value')
         get_environment_integer_i4 = default
      else
