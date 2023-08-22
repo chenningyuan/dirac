@@ -330,37 +330,8 @@
          visual_cfg_scale = 1.0D0/visual_cfg_scale
       end if
 
-      if (kw_matches(word, '.DENSIT')) then
-         call read_input_visual_helper(iq_density)
-      end if
-
-      if (kw_matches(word, '.DENGRA')) then
-         call read_input_visual_helper(iq_density_gradient)
-      end if
-
-      if (kw_matches(word, '.DENHES')) then
-         visual_cfg_tensor = .true.
-         call read_input_visual_helper(iq_density_hessian)
-      end if
-
-      if (kw_matches(word, '.DENLAP')) then
-         call read_input_visual_helper(iq_density_laplacian)
-      end if
-
-      if (kw_matches(word, '.RDG   ')) then
-         call read_input_visual_helper(iq_rdg)
-      end if
-
-      if (kw_matches(word, '.SIGNL2')) then
-         call read_input_visual_helper(iq_ed_sign_lambda2)
-      end if
-
       if (kw_matches(word, '.ELF   ')) then
          call read_input_visual_helper(iq_elf)
-      end if
-
-      if (kw_matches(word, '.GAMMA5')) then
-         call read_input_visual_helper(iq_gamma5)
       end if
 
       if (kw_matches(word, '.J     ')) then

@@ -252,7 +252,7 @@ contains
       else
          do i = 1, visual_cfg_nr_grid_files
 !           open a new file for grid generated in this run
-            grid_files(i)%unit = get_new_file_unit()
+            grid_files(i)%unit = newunit()
             grid_files(i)%name = 'testme.grid'
             grid_files(i)%format = 'txt'
             grid_files(i)%domain = '3d'
@@ -294,7 +294,7 @@ contains
       !inquire(file = f%name, exist = ex, opened = op)
       !if (ex .and. .not. op) then
       if (f%exists .and..not.f%is_opened) then
-         f%unit = get_new_file_unit()
+         f%unit = newunit()
          open(unit   = f%unit, &
               file   = f%name, &
               status = 'OLD',          &

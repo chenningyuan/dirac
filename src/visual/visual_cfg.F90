@@ -22,7 +22,7 @@ module visual_cfg
 
    integer,      public, parameter:: max_batch_length = 500
    integer,      public, parameter:: max_para = 100
-   integer,      public            :: visual_cfg_nr_dmat = 0
+   integer,      public            :: visual_cfg_nr_dmat = 0 !FIXME
    character(6), public            :: visual_cfg_dmat_file(max_para)
    integer,      public            :: visual_cfg_dmat_file_record(max_para)
    integer,      public            :: visual_cfg_ref_nucleus(max_para)
@@ -85,8 +85,6 @@ module visual_cfg
    logical,      public                     :: visual_cfg_inp_data_files_use_legacy= .false.
    integer,      public                     :: visual_cfg_nr_plot_files = 0
 
-   integer, public:: iq_gamma5   =  1
-   integer, public:: iq_density  =  2
    integer, public:: iq_elf      =  3
    integer, public:: iq_j        =  4
    integer, public:: iq_rotj     =  5
@@ -127,11 +125,6 @@ module visual_cfg
    integer, public:: iq_jz       = 40
    integer, public:: iq_tcos     = 41
    integer, public:: iq_tsin     = 42   
-   integer, public:: iq_density_gradient     =  43
-   integer, public:: iq_density_hessian      =  44
-   integer, public:: iq_density_laplacian    =  45
-   integer, public:: iq_ed_sign_lambda2 =  46
-   integer, public:: iq_rdg      = 47
    integer, public:: iq_gradj    = 48
    
 
@@ -527,8 +520,12 @@ contains
 
   end subroutine grid_function_input_cfg
 
+
   subroutine verify_grid_function_predefined(grid_function)
+!   ----------------------------------------------------------------------------
     class(grid_function_t), intent(inout):: grid_function
+    ! gosia: now, grid_function%name also defines a label on HDF5
+!   ----------------------------------------------------------------------------
 
     select case (grid_function%name)
       case ('density', &
@@ -539,19 +536,29 @@ contains
             'esprho', &
             'esperho', &
             'espnrho', &
-            'elf')
+            'j')
         grid_function%wf_order = 0
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 0
         grid_function%max_ao_m_order = 0
+      case ('rdg', &
+            'elf', &
+            'kin', &
+            'kin_ls', &
+            'kin_sl', &
+            'kin_tau', &
+            'divs', &
+            'rots', &
+            'divj', &
+            'rotj', &
+            'gradj') 
+        grid_function%wf_order = 0
+        grid_function%tensor_order = 0
+        grid_function%max_ao_g_order = 1
+        grid_function%max_ao_m_order = 0
       case ('density_gradient')
         grid_function%wf_order = 0
         grid_function%tensor_order = 1
-        grid_function%max_ao_g_order = 1
-        grid_function%max_ao_m_order = 0
-      case ('rdg')
-        grid_function%wf_order = 0
-        grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 1
         grid_function%max_ao_m_order = 0
       case ('density_hessian')
@@ -559,12 +566,10 @@ contains
         grid_function%tensor_order = 2
         grid_function%max_ao_g_order = 2
         grid_function%max_ao_m_order = 0
-      case ('ed_laplacian')
-        grid_function%wf_order = 0
-        grid_function%tensor_order = 0
-        grid_function%max_ao_g_order = 2
-        grid_function%max_ao_m_order = 0
-      case ('ed_sign_lambda2')
+      case ('ed_laplacian',&
+            'ed_sign_lambda2',&
+            'kin_lap',&
+            'kin_nr') 
         grid_function%wf_order = 0
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 2
@@ -573,6 +578,8 @@ contains
         write(*, *) 'unknown grid function name. stop'
         stop
     end select
+
+! fixme: add others; + if (levyle) + if london
 
   end subroutine verify_grid_function_predefined
 

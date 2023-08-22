@@ -118,6 +118,7 @@ contains
 
 
 #ifdef VAR_MPI
+    ! gosia, spring 2023
     ! We should have initial information from user input stored in rs_input dt
     ! and other config information in visual_cfg* variables (legacy) available at this point.
     ! So first, we make sure that all workers have this information to start.
@@ -126,16 +127,12 @@ contains
     ! in the latter case - we only want to wake up nodes, 
     ! pass initial information, and leave the rest to master - this is handled with "launch+only" flag
     call visual_initialize_and_sync_nodes(launch_only)
-    print *, 'VISUAL parallel: VAR_MPI', is_parallel()
-    print *, 'size of communicator', mpi_get_nr_proc()
-    print *, 'rank of the process on master ', get_my_rank()
-    print *, 'will call visual_initialize_nodes from visual'
+    print *, 'VISUAL parallel? ', is_parallel()
+    print *, 'size of communicator: ', mpi_get_nr_proc()
+    print *, 'rank of the process: ', get_my_rank()
 #endif
 
-
-    !legacy_prep = .true.
-    !if (legacy_prep) then
-
+    if (visual_cfg_global_refactor) visual_cfg_nr_dmat = 1
 
     if (mpi_is_master()) then !temp
     max_ao_g_order = 0
@@ -150,8 +147,6 @@ contains
            (visual_cfg_property(imat) == iq_rots)             .or. &
            (visual_cfg_property(imat) == iq_divj)             .or. &
            (visual_cfg_property(imat) == iq_rotj)             .or. &
-           (visual_cfg_property(imat) == iq_density_gradient) .or. &
-           (visual_cfg_property(imat) == iq_rdg)              .or. &
            (visual_cfg_property(imat) == iq_gradj)                 &
           ) then
           if (max_ao_g_order < 1) then
@@ -160,9 +155,6 @@ contains
        end if
        if (                                                       &
            (visual_cfg_property(imat) == iq_kin_lap)          .or. &
-           (visual_cfg_property(imat) == iq_density_hessian)  .or. &
-           (visual_cfg_property(imat) == iq_density_laplacian).or. &
-           (visual_cfg_property(imat) == iq_ed_sign_lambda2).or. &
            (visual_cfg_property(imat) == iq_kin_nr)               &
           ) then
           if (max_ao_g_order < 2) then
@@ -346,6 +338,20 @@ contains
 
     do imat = 1, visual_cfg_nr_dmat
 
+       if (visual_cfg_global_refactor) then
+!FIXME
+
+          D_mo%elms = 0.0d0
+          do m = 1, norbt
+             D_mo%elms((m-1)*norbt+m) = occupation(m)
+          end do
+
+          D_mo%ih_sym = 1
+          D_mo%tr_sym = 1
+          D_mo%irep   = 0
+
+          D(imat) = C*(D_mo*dag(C))
+       else !if (visual_cfg_global_refactor) then
        if (visual_cfg_dmat_file(imat) == 'DFCOEF') then
           matrix_is_unperturbed(imat) = .true.
 !         get unperturbed density matrix
@@ -398,6 +404,7 @@ contains
           end if
           call copy_matrix_sym(D(imat), D_mo)
        end if
+       end if !if (visual_cfg_global_refactor) then
     end do
 
 !   insert half phases
@@ -526,7 +533,6 @@ contains
 
     ! gosia 19/5: now we do calculations on one molecule at a time, 
     ! so here we read the molecular data from DIRAC's main checkpoint;
-    ! but this can be moved inside the loop over grids
 
 !   todo - when developing a separate schema
 !    write (lupri,'(/A,I2)')," * Opening checkpoint file for real-space data (VISUAL) "
@@ -1618,38 +1624,38 @@ contains
                        temp2(icube, jcube, kcube, 1:3) = q(1:3, kcube)
                      end if
 
-                     if ((visual_cfg_add_grid_points_grad_ed .or. &
-                          visual_cfg_add_grid_points_grad_ed_scaled).and.      &
-                        (visual_cfg_property(1) == iq_density_gradient)) then
-                        if (visual_cfg_add_grid_points_grad_ed_scaled) then
-                           norm_grad = q(1, kcube)*q(1, kcube) &
-                                     + q(2, kcube)*q(2, kcube) &
-                                     + q(3, kcube)*q(3, kcube)
-                           norm_grad = sqrt(norm_grad)
-                           r(1) = r(1) + q(1, kcube)/norm_grad
-                           r(2) = r(2) + q(2, kcube)/norm_grad
-                           r(3) = r(3) + q(3, kcube)/norm_grad
-                        else
-                           r(1) = r(1) + q(1, kcube)
-                           r(2) = r(2) + q(2, kcube)
-                           r(3) = r(3) + q(3, kcube)
-                        end if
-                        call get_quantity_in_point(visual_cfg_nr_dmat, &
-                                                   D,                  &
-                                                   D_0,                &
-                                                   r(1),               &
-                                                   r(2),               &
-                                                   r(3),               &
-                                                   ao,                 &
-                                                   buffer,             &
-                                                   q_max_dim,          &
-                                                   q(0, kcube))
+                     !if ((visual_cfg_add_grid_points_grad_ed .or. &
+                     !     visual_cfg_add_grid_points_grad_ed_scaled).and.      &
+                     !   (visual_cfg_property(1) == iq_density_gradient)) then
+                     !   if (visual_cfg_add_grid_points_grad_ed_scaled) then
+                     !      norm_grad = q(1, kcube)*q(1, kcube) &
+                     !                + q(2, kcube)*q(2, kcube) &
+                     !                + q(3, kcube)*q(3, kcube)
+                     !      norm_grad = sqrt(norm_grad)
+                     !      r(1) = r(1) + q(1, kcube)/norm_grad
+                     !      r(2) = r(2) + q(2, kcube)/norm_grad
+                     !      r(3) = r(3) + q(3, kcube)/norm_grad
+                     !   else
+                     !      r(1) = r(1) + q(1, kcube)
+                     !      r(2) = r(2) + q(2, kcube)
+                     !      r(3) = r(3) + q(3, kcube)
+                     !   end if
+                     !   call get_quantity_in_point(visual_cfg_nr_dmat, &
+                     !                              D,                  &
+                     !                              D_0,                &
+                     !                              r(1),               &
+                     !                              r(2),               &
+                     !                              r(3),               &
+                     !                              ao,                 &
+                     !                              buffer,             &
+                     !                              q_max_dim,          &
+                     !                              q(0, kcube))
 
-                        call write_plot_data(visual_plot_files, &
-                                            r(1:3), &
-                                            q(0:q_max_dim, kcube))
+                     !   call write_plot_data(visual_plot_files, &
+                     !                       r(1:3), &
+                     !                       q(0:q_max_dim, kcube))
 
-                     end if
+                     !end if
 
                   end do
                end if

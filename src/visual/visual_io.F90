@@ -164,7 +164,7 @@ contains
 
     select case (data_file%type)
       case (2)
-        call get_grid_function_info_from_file_from_labeled_storage(data_file, grid_function)
+        call get_grid_function_info_from_labeled_storage(data_file, grid_function)
     end select
   end subroutine get_grid_function_info_from_file
 

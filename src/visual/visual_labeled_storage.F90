@@ -11,18 +11,21 @@ module visual_labeled_storage
   public write_grid_function_to_checkpoint
   public get_grid_info_from_labeled_storage
   public get_grid_points_from_labeled_storage
-  public get_grid_function_info_from_file_from_labeled_storage
+  public get_grid_function_info_from_labeled_storage
 
 contains
-  subroutine assign_label_grid_function(grid_function, label, top_section, level)
+
+  subroutine assign_label_grid_function(grid_function,label,top_section,level)
+!   ----------------------------------------------------------------------------
     type(grid_function_t), intent(in):: grid_function
     type(rs_label_t), intent(out):: label
     character(len=*), intent(in) :: top_section
     integer, intent(in) :: level
     character*(:),allocatable :: group_label
     character*(:),allocatable :: l0, l1, l2, l3, l4
+    character(len = 200):: errmsg
     character(len=1)::temp
-
+!   ----------------------------------------------------------------------------
     if (top_section /= 'input' .and. top_section /= 'result') return
 
     l0 = trim(top_section)
@@ -53,20 +56,26 @@ contains
     end select
 
     if (len(group_label) > 80) then
-      call visual_quit('Grid function label is too long. Stop.')
+      ! gosia todo - check whether this limitation is due to DIRAC or HDF5
+      write (errmsg, '(a)') 'STOP. Grid function label is too long. ', group_label
+      call visual_quit(errmsg)
     else
       label%name = trim(group_label)
     end if
+
   end subroutine assign_label_grid_function
 
+
   subroutine assign_label_grid(grid, label, top_section, level)
+!   ----------------------------------------------------------------------------
     type(grid_t), intent(in):: grid
     type(rs_label_t), intent(out):: label
     character(len=*), intent(in) :: top_section
     integer, intent(in) :: level
     character*(:),allocatable :: group_label
     character*(:),allocatable :: l0, l1, l2
-
+    character(len = 200):: errmsg
+!   ----------------------------------------------------------------------------
     if (top_section /= 'input' .and. top_section /= 'result') return
 
     l0 = trim(top_section)
@@ -81,24 +90,26 @@ contains
     end select
 
     if (len(group_label) > 80) then
-      call visual_quit('Grid label is too long. Stop.')
+      ! gosia todo - check whether this limitation is due to DIRAC or HDF5
+      write (errmsg, '(a)') 'STOP. Grid function label is too long. ', group_label
+      call visual_quit(errmsg)
     else
       label%name = trim(group_label)
-      write(*, *) 'assigned grid label: ', label%name
     end if
   end subroutine assign_label_grid
 
+
   subroutine write_grid_to_checkpoint(data_file, grid)
+!   ----------------------------------------------------------------------------
     type(file_info_t), intent(inout):: data_file
     type(grid_t), intent(in):: grid
     type(rs_label_t):: label
     character*(:), allocatable  :: group
     character(len=1):: ich
     integer:: i
-
+!   ----------------------------------------------------------------------------
     call assign_label_grid(grid, label, top_section='result', level=1)
     group = label%name
-    write(*, *) 'group grid: ', group, grid%nr_points_total, grid%ndim
     call lab_write(data_file, trim(group)//'/nr_points_total',idata = grid%nr_points_total)
     call lab_write(data_file, trim(group)//'/ndim',idata = grid%ndim)
 
@@ -110,15 +121,16 @@ contains
     end do
   end subroutine
 
+
   subroutine write_grid_function_to_checkpoint(data_file, grid_function)
+!   ----------------------------------------------------------------------------
     type(file_info_t), intent(inout):: data_file
     type(grid_function_t), intent(in):: grid_function
     type(rs_label_t):: label
     character*(:), allocatable  :: group
     character(len=1):: ich
     integer:: i
-
-    write(*, *) 'IN write_grid_function_to_checkpoint'
+!   ----------------------------------------------------------------------------
     call assign_label_grid_function(grid_function, label, top_section='result', level=2)
     group = label%name
     call lab_write(data_file, group)
@@ -129,11 +141,11 @@ contains
       write(ich, '(i1)') i
       call lab_write(data_file, group//'_icomp_'//ich, rdata = grid_function%values(i, :))
     end do
-    write(*, *) 'OUT write_grid_function_to_checkpoint'
   end subroutine
 
 
   subroutine get_grid_info_from_labeled_storage(data_file, grid)
+!   ----------------------------------------------------------------------------
     ! gosia todo:
     ! - add support for other formats (now, hdf5 format only: data_file%type = 2)
     ! - check whether "grid" group is under "input" or "result"
@@ -142,9 +154,7 @@ contains
     type(rs_label_t)::label
     integer:: i
     character*(:), allocatable  :: group
-
-    ! gosia fixme
-    !call assign_label(grid, label, top_section='input', level=1)
+!   ----------------------------------------------------------------------------
     call assign_label_grid(grid, label, top_section='result', level=1)
     group = label%name
     call lab_read(data_file, trim(group)//'/ndim',idata = grid%ndim)
@@ -155,7 +165,8 @@ contains
 
 
   subroutine get_grid_points_from_labeled_storage(data_file, grid)
-    ! gosia fixme: unused now - when would it be needed to read from file?
+!   ----------------------------------------------------------------------------
+    ! gosia fixme - unused thus far
     ! gosia todo:
     ! - add support for other formats (now, hdf5 format only: data_file%type = 2)
     ! - check whether "grid" group is under "input" or "result"
@@ -165,9 +176,7 @@ contains
     integer:: i
     character*(:), allocatable  :: group
     character(len=1):: ich
-
-    ! gosia fixme
-    !call assign_label(grid, label, top_section='input', level=2)
+!   ----------------------------------------------------------------------------
     call assign_label_grid(grid, label, top_section='result', level=2)
     group = label%name
     do i = 1, grid%ndim
@@ -178,8 +187,9 @@ contains
   end subroutine
 
 
-  subroutine get_grid_function_info_from_file_from_labeled_storage(data_file, grid_function)
-    ! gosia fixme: unused now - when would it be needed to read from file?
+  subroutine get_grid_function_info_from_labeled_storage(data_file,grid_function)
+!   ----------------------------------------------------------------------------
+    ! gosia fixme - unused thus far
     ! gosia todo:
     ! - add support for other formats (now, hdf5 format only: data_file%type = 2)
     ! - check whether "grid function" group is under "input" or "result"
@@ -188,13 +198,8 @@ contains
     type(file_info_t):: data_file
     type(rs_label_t)::label
     integer:: i
-
-    ! gosia fixme
-    !call assign_label(grid_function, label, top_section='input', level=1)
+!   ----------------------------------------------------------------------------
     call assign_label_grid_function(grid_function, label, top_section='result', level=1)
-    !group = label%name
-    !call lab_read(data_file, trim(group)//'/wf_order',idata = grid_function%wf_order)
-    !call lab_read(data_file, trim(group)//'/tensor_order',idata = grid_function%tensor_order)
   end subroutine
 
 end module
