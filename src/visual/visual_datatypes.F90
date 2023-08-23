@@ -10,7 +10,7 @@ module visual_datatypes
   !public grid_function_dirac_t
   public mol_t
   public ao_t
-  public mo_t
+  public cmo_t
 
   !integer, parameter, private:: kind_real = 8
 
@@ -36,6 +36,34 @@ module visual_datatypes
     private
     integer, public:: n_mo = 0
   end type mo_t
+
+  type cmo_t
+    private
+    integer, public:: n_ao(2) = 0               ! number of AOs
+    integer, public:: n_mo(2) = 0               ! number of all (positronic+electronic) MOs in each fermion symmetry
+    integer, public:: n_po(2) = 0               ! number of positronic MOs in each fermion symmetry
+    integer, public:: n_fsym  = 1               ! Number of fermion symmetries (no inversion 1, inversion 2); default=1
+    integer, public:: nz   = 4                  ! number of quaternion units; default=4
+    real(8), public:: total_energy              ! total SCF energy, as read from DIRAC CHECKPOINT
+    real(8), public, pointer:: energy(:)        ! orbital energies, as read from DIRAC CHECKPOINT
+    real(8), public, pointer:: coeff(:,:,:)     ! MO coefficients - now only in quaternion representation, i.e., coeff(sum(n_ao),sum(n_mo),nz)
+    integer, public, pointer:: symmetry(:)      ! additional symmetry label; used in spinfree
+    integer, public, pointer:: index(:)         ! index of the spinor for this fermion symmetry
+  contains
+    private
+    procedure, pass, public:: allocate_all => allocate_cmo_all
+    procedure, pass, public:: associated_cmo_energy
+    procedure, pass, public:: associated_cmo_coeff
+    procedure, pass, public:: associated_cmo_symmetry
+    procedure, pass, public:: associated_cmo_index
+    procedure, pass, public:: erase   => erase_cmo
+    procedure, pass, public:: display => display_cmo
+  end type cmo_t
+
+  type dmat_t
+    private
+    integer, public:: n_mo = 0
+  end type dmat_t
 
   type:: rs_input_t
     private
@@ -139,6 +167,34 @@ module visual_datatypes
 
 contains
 
+  pure function associated_cmo_energy(self)
+    class(cmo_t), intent(in):: self
+    logical:: associated_cmo_energy
+    associated_cmo_energy = associated(self%energy)
+  end function
+
+  pure function associated_cmo_coeff(self)
+    class(cmo_t), intent(in):: self
+    logical:: associated_cmo_coeff
+    associated_cmo_coeff = associated(self%coeff)
+  end function
+
+  pure function associated_cmo_symmetry(self)
+    class(cmo_t), intent(in):: self
+    logical:: associated_cmo_symmetry
+    associated_cmo_symmetry = associated(self%symmetry)
+  end function
+
+  pure function associated_cmo_index(self)
+    class(cmo_t), intent(in):: self
+    logical:: associated_cmo_index
+    associated_cmo_index = associated(self%index)
+  end function
+
+  subroutine erase_cmo(self)
+    class(cmo_t), intent(out):: self
+  end subroutine
+
   pure function allocated_points(self)
     class(grid_t), intent(in):: self
     logical:: allocated_points
@@ -238,6 +294,63 @@ contains
     end if
   end function
 
+
+  subroutine allocate_cmo_all(self)
+    class(cmo_t), intent(inout):: self
+    integer :: n, m
+
+    if (self%associated_cmo_energy()   .or.&
+        self%associated_cmo_symmetry() .or.&
+        self%associated_cmo_index()    .or.&
+        self%associated_cmo_coeff()) return
+
+    n = sum(self%n_mo)
+    m = sum(self%n_ao)
+
+    nullify(self%energy)
+    allocate(self%energy(n))
+    self%energy(1:n) = 0.0d0
+
+    nullify(self%coeff)
+    allocate(self%coeff(m,n,self%nz))
+    self%coeff(1:m,1:n,1:self%nz) = 0.0d0
+
+    nullify(self%symmetry)
+    allocate(self%symmetry(n))
+    self%symmetry(1:n) = 0
+
+    nullify(self%index)
+    allocate(self%index(n))
+    self%index(1:n) = 0
+  end subroutine
+
+  subroutine display_cmo(self)
+    class(cmo_t), intent(in):: self
+    integer:: i, j, k, n, m
+    n = sum(self%n_mo)
+    m = sum(self%n_ao)
+    write(*, *)
+    write(*, *) ' CMO:'
+    write(*, *) 'n_ao =         ', self%n_ao
+    write(*, *) 'n_mo =         ', self%n_mo
+    write(*, *) 'n_po =         ', self%n_po
+    write(*, *) 'n_fsym =       ', self%n_fsym
+    write(*, *) 'nz   =         ', self%nz
+    write(*, *) 'total_energy = ', self%total_energy
+    if (self%associated_cmo_energy())   write(*,*) 'energy   = ', (self%energy(i), i=1,n)
+    if (self%associated_cmo_symmetry()) write(*,*) 'symmetry = ', (self%symmetry(i), i=1,n)
+    if (self%associated_cmo_index())    write(*,*) 'index    = ', (self%index(i), i=1,n)
+    if (self%associated_cmo_coeff()) then
+      do k = 1, self%nz
+        do j = 1, n
+          do i = 1, m
+            write(*, '(a,3i6,es16.8e2)') 'coeff(i,j,k) = ', i, j, k, self%coeff(i,j,k)
+          end do
+        end do
+      end do
+    end if
+    write(*, *)
+   end subroutine
 
   subroutine display_mol(self)
     class(mol_t), intent(in):: self

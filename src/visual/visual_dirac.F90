@@ -1,7 +1,7 @@
 module visual_dirac
 
   use checkpoint
-  use visual_datatypes, only: mol_t, ao_t, mo_t, grid_t, grid_function_t
+  use visual_datatypes, only: mol_t, ao_t, cmo_t, grid_t, grid_function_t
   use visual_cfg
 
   use visual_mpi
@@ -15,6 +15,9 @@ module visual_dirac
 
   public visual_initialize_and_sync_nodes
   public visual_initialize_data_from_dirac
+
+  public dirac_dmat_init
+
 #ifdef VAR_MPI
   public synchronize_grid_data
   public synchronize_grid_function_data
@@ -26,6 +29,111 @@ module visual_dirac
 
 
 contains
+
+  subroutine dirac_dmat_init(wf_order, cmo, dmat_ao, dmat_mo)
+!   ----------------------------------------------------------------------------
+    integer, intent(in) :: wf_order
+    type(cmo_t), intent(in) :: cmo
+    real(8), optional, pointer, intent(out) :: dmat_ao(:,:,:)
+    real(8), optional, pointer, intent(out) :: dmat_mo(:,:,:)
+    integer :: nto
+    real(8), allocatable :: occupation(:)
+!   ----------------------------------------------------------------------------
+
+!    setup density matrix in AO basis from occupation numbers (user-controlled)
+!    get orbital string
+
+     nto = sum(cmo%n_mo) ! total number of orbitals
+     allocate(occupation(nto))
+     call setup_orbital_string(cmo,occupation)
+
+!    get CMOs
+
+!    !construct dmats
+
+     !dmat = 0.0d0
+
+     !do m = 1, norbt
+     !   D_mo%elms((m-1)*norbt+m) = occupation(m)
+     !end do
+
+     !D_mo%ih_sym = 1
+     !D_mo%tr_sym = 1
+     !D_mo%irep   = 0
+
+     !if (wf_order == 0) dmat = C*(D_mo*dag(C))
+!
+!    !clean
+!
+     deallocate(occupation)
+
+  end subroutine dirac_dmat_init
+
+
+  subroutine setup_orbital_string(cmo,occupation)
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+    type(cmo_t), intent(in) :: cmo
+!   ----------------------------------------------------------------------------
+
+    ! this routine will set up occupation vector
+    ! based on**VISUAL
+    !          .OCCUPATION
+    ! if this is not given, then it will occupy all
+    ! "occupied" electrons with 1.0
+    real(8), intent(out):: occupation(:)
+    integer:: i, ifsym, ioff
+!   ----------------------------------------------------------------------------
+
+    occupation = 0.0d0
+
+    ioff = 0
+    do ifsym = 1, cmo%n_fsym
+      ioff = ioff+npsh(ifsym)
+      !ioff = ioff+cmo%n_po(ifsym)
+      if (visual_cfg_use_orbital_string) then
+        !do i = 1, cmo%n_mo(ifsym) - cmo%n_po(ifsym)
+        do i = 1, nesh(ifsym)
+          occupation(ioff+i) = visual_cfg_occupation(i, ifsym)
+        end do
+      else
+        !if (cmo%n_mo(ifsym)-cmo%n_po(ifsym) > 0) then
+        if (nash(ifsym) > 0) then
+          print *, 'ERROR: with open shells you should use .OCCUPATION'
+          print *, '       otherwise occupation will be wrong'
+          print *, '       so we better stop here'
+          stop 1
+        end if
+        !do i = 1, cmo%n_mo(ifsym)
+        do i = 1, nish(ifsym)
+          occupation(ioff+i) = 1.0d0
+        end do
+      end if
+      ioff = cmo%n_mo(ifsym)
+    end do
+    write(*,'(a,i6)') 'NEW OCCUPATION SIZE: ', sum(cmo%n_mo)
+    !do i = 1, sum(cmo%n_mo)
+    do i = 1, norbt
+      write(*,'(a,i6,e16.8)') 'NEW OCCUPATION: ', i, occupation(i)
+    end do
+
+!!!!!!!!!!!!!!!
+    write(*, *)                                                                                          
+    write(*, *) 'OLD CMO:'
+    write(*, *) 'OLD n_ao =         ', nfbas
+    write(*, *) 'OLD n_mo =         ', NORB
+    write(*, *) 'OLD n_po =         ', NPSH
+    write(*, *) 'OLD n_fsym =       ', nfsym
+    write(*, *) 'OLD nz   =         ', nz
+    write(*, *)                                                                                          
+
+
+
+!!!!!!!!!!!!!!
+
+
+  end subroutine
 
   subroutine visual_initialize_and_sync_nodes(hello)
     use dirac_cfg, only: dirac_cfg_visual
@@ -68,8 +176,8 @@ contains
   subroutine visual_initialize_data_from_dirac(mol, ao, mo, print_level)
 
     type(mol_t), intent(out):: mol
-    type(ao_t), intent(out):: ao
-    type(mo_t), intent(out):: mo
+    type(ao_t),  intent(out):: ao
+    type(cmo_t), intent(out):: mo
     integer, optional :: print_level
     character*(:),allocatable:: group
     logical:: tobe_dirac
@@ -90,19 +198,20 @@ contains
       !  write(*, *) 'Molecule data written to DIRAC RS-CHECKPOINT'
     end if
 
-!g!   gosia FIXME - the code is validated for scf only
-!g    group = '/result/wavefunctions/scf/'
-!g    call checkpoint_query(group//'mobasis/nz', tobe_dirac)
-!g    if (tobe_dirac) then
-!g      call read_ao_mo_from_dirac(ao, mo, group)
-!g      if (present(print_level)) then
-!g        if (print_level > 0) then
+!   gosia FIXME - the code is validated for scf only
+    group = '/result/wavefunctions/scf/'
+    call checkpoint_query(group//'mobasis/nz', tobe_dirac)
+    if (tobe_dirac) then
+      call read_ao_mo_from_dirac(ao, mo, group)
+      !if (present(print_level)) then
+      !  if (print_level > 0) then
 !g          write(*, *) 'AO data read from DIRAC CHECKPOINT'
 !g          !call ao%display
-!g          write(*, *) 'MO data read from DIRAC CHECKPOINT'
-!g          !call mo%display
-!g        end if
-!g    end if
+          write(*, *) 'MO data read from DIRAC CHECKPOINT'
+          call mo%display
+      !  end if
+      !end if
+    end if
 
   end subroutine visual_initialize_data_from_dirac
 
@@ -130,84 +239,99 @@ contains
   end subroutine read_mol_from_dirac
 
 
-!g  subroutine read_ao_mo_from_dirac(ao, mo, group)
-!g    type(ao_t), intent(out):: ao
-!g    type(mo_t), intent(out) :: mo
-!g    character(len=*),intent(in) :: group
-!g    logical:: tobe_dirac
-!g
-!g!
-!g!   read AO data
-!g!
-!g
-!g
-!g!
-!g!   read MO data
-!g!
-!g    call checkpoint_read(group//'mobasis/nz',idata=nz)
-!g    call checkpoint_read(group//'mobasis/n_basis',idata=n_basis)
-!g    call checkpoint_read(group//'mobasis/n_mo',idata=n_mo)
-!g    call checkpoint_read(group//'mobasis/n_po',idata=n_po)
-!g    call checkpoint_read(group//'energy',rdata=total_energy)
-!g
-!g    if (n_basis(2) > 0) then
-!g       write(*, *) 'calculations with symmetry not supported, stop.'
-!g       return
-!g    else
-!g       nao = n_basis(1)
-!g       npo = n_po(1)
-!g       nmo = n_mo(1)
-!g       nto = npo+nmo
-!g    end if
-!g
-!g    call checkpoint_query(group//'mobasis/orbitals',tobe_dirac)
-!g    if (tobe_dirac) then
-!g      allocate(mo_coeff(nao*nto*nz))
-!g      allocate(mo_coeff_q(nao,nto,nz))
-!g      call checkpoint_read(group//'/mobasis/orbitals',rdata=mo_coeff)
-!g    end if
-!g
-!g    call checkpoint_query(group//'mobasis/eigenvalues',tobe_dirac)
-!g    if (tobe_dirac) then
-!g      allocate(eig(nto))
-!g      call checkpoint_read(group//'/mobasis/eigenvalues',rdata=eig)
-!g    end if
-!g
-!g    call checkpoint_query(group//'mobasis/symmetry',tobe_dirac)
-!g    if (tobe_dirac) then
-!g      allocate(ibeig(nto))
-!g      call checkpoint_read(group//'/mobasis/symmetry',idata=ibeig)
-!g    end if
-!g
-!g    ! fill in index values
-!g    allocate(index(nmo))
-!g    do i = 1, nmo
-!g       index(i) = i ! we set the index compatible with the fact that we store all mo's
-!g    end do
-!g
-!g    ! put in cmo in quaternion format
-!g    coeff_q = reshape(coeff,(/nao,nto,nzbuf/))
-!g    cspinor%algebra = 'q'
-!g    call alloc_mo (cspinor,nao,nmo)
-!g    cspinor%total_energy = total_energy
-!g    cspinor%index        = index(npo+1:nto)
-!g    cspinor%coeff_q      = coeff_q(:,npo+1:nto,:)
-!g    cspinor%energy       = eig(npo+1:nto)
-!g    cspinor%symmetry     = ibeig(npo+1:nto)
-!g
-!g    deallocate(mo_coeff)
-!g    deallocate(eig)
-!g    deallocate(ibeig)
-!g    deallocate(index)
-!g!   switch to unrestricted spinor picture
-!g    call convert_mo_to_complex(cspinor)
-!g
-!g
-!g  end subroutine read_ao_mo_from_dirac
+  subroutine read_ao_mo_from_dirac(ao, cmo, group)
+!   ----------------------------------------------------------------------------
+    type(ao_t), intent(out):: ao
+    type(cmo_t), intent(inout) :: cmo
+    character(len=*),intent(in) :: group
+    logical:: tobe_dirac
+    integer:: nao,npo,nmo,nto,ncoef,nfsym,nz
+    integer:: n_basis(2),n_po(2),n_mo(2)
+    real(8):: total_energy
+    integer, allocatable   :: ibeig(:), index(:)
+    real(8), allocatable   :: eig(:), mo_coeff(:), mo_coeff_q(:,:,:)
+    integer:: i
+!
+!   this subroutine reads data from DIRAC CHECKPOINT files
+!   and fills the "ao" and "mo" derived type
+!   now - based on how things are done in dircmo.F90 and exacorr
+!   gosia, summer 2023
+!   ----------------------------------------------------------------------------
+!
+!   read MO data
+!
+    n_basis = 0
+    n_mo = 0
+    n_po = 0
+ 
+    call checkpoint_read(group//'mobasis/nz',idata=nz)
+    call checkpoint_read(group//'mobasis/n_fsym',idata=nfsym)
+    call checkpoint_read(group//'mobasis/n_basis',idata=n_basis)
+    call checkpoint_read(group//'mobasis/n_mo',idata=n_mo)
+    call checkpoint_read(group//'mobasis/n_po',idata=n_po)
+    call checkpoint_read(group//'energy',rdata=total_energy)
+
+    nao = sum(n_basis)
+    npo = sum(n_po)
+    nmo = sum(n_mo)
+    nto = npo+nmo
+    ncoef = nz * sum(n_basis*n_mo)
+
+    cmo%n_ao = n_basis
+    cmo%n_mo = n_mo
+    cmo%nz   = nz
+    cmo%total_energy = total_energy
+
+    call cmo%allocate_all()
+
+    call checkpoint_query(group//'mobasis/orbitals',tobe_dirac)
+    if (tobe_dirac) then
+      allocate(mo_coeff(ncoef))
+      mo_coeff = 0.0d0
+      call checkpoint_read(group//'/mobasis/orbitals',rdata=mo_coeff)
+    ! put in cmo in quaternion format
+      allocate(mo_coeff_q(nao,nto,nz))
+      mo_coeff_q = 0.0d0
+      mo_coeff_q = reshape(mo_coeff,(/nao,nto,nz/))
+      cmo%coeff  = mo_coeff_q(:,npo+1:nto,:)
+      deallocate(mo_coeff)
+      deallocate(mo_coeff_q)
+    end if
+
+    call checkpoint_query(group//'mobasis/eigenvalues',tobe_dirac)
+    if (tobe_dirac) then
+      allocate(eig(nto))
+      eig = 0.0d0
+      call checkpoint_read(group//'/mobasis/eigenvalues',rdata=eig)
+      cmo%energy   = eig(npo+1:nto)
+      deallocate(eig)
+    end if
+
+    call checkpoint_query(group//'mobasis/symmetry',tobe_dirac)
+    if (tobe_dirac) then
+      allocate(ibeig(nto))
+      ibeig = 0
+      call checkpoint_read(group//'/mobasis/symmetry',idata=ibeig)
+      cmo%symmetry = ibeig(npo+1:nto)
+      deallocate(ibeig)
+    end if
+
+    ! fill in index values
+    allocate(index(nmo))
+    do i = 1, nmo
+       index(i) = i ! we set the index compatible with the fact that we store all mo's
+    end do
+    cmo%index    = index(npo+1:nto)
+    deallocate(index)
+
+!   switch to unrestricted spinor picture
+    !call convert_mo_to_complex(cmo)
+
+  end subroutine read_ao_mo_from_dirac
 
 
 #ifdef VAR_MPI
-  subroutine synchronize_data_from_dirac(mol, ao)
+  subroutine synchronize_data_from_dirac(mol, ao, cmo)
     !
     ! this subroutine syncs data stored in ao and mol dts, 
     ! which are read from DIRAC CHECKPOINT
@@ -215,6 +339,8 @@ contains
     !
     type(mol_t), intent(inout):: mol
     type(ao_t), intent(inout):: ao
+    type(cmo_t), intent(inout):: cmo
+    integer:: n,m
 
     call interface_mpi_bcast(mol%n_atoms,1,irank_master,global_communicator)
 
@@ -233,6 +359,35 @@ contains
 
     !write(*, *) 'in synchronize_data_from_dirac, mol on node: ', get_my_rank()
     !call mol%display()
+
+    !cmo data
+    call interface_mpi_bcast(cmo%n_ao,2,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%n_mo,2,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%n_fsym,1,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%nz,1,irank_master,global_communicator)
+    n = sum(cmo%n_mo)
+    m = sum(cmo%n_ao)
+    if (.not.mpi_is_master()) then
+      nullify(cmo%energy)
+      allocate(cmo%energy(n))
+      cmo%energy(1:n) = 0.0d0
+  
+      nullify(cmo%coeff)
+      allocate(cmo%coeff(m,n,cmo%nz))
+      cmo%coeff(1:m,1:n,1:cmo%nz) = 0.0d0
+  
+      nullify(cmo%symmetry)
+      allocate(cmo%symmetry(n))
+      cmo%symmetry(1:n) = 0
+  
+      nullify(cmo%index)
+      allocate(cmo%index(n))
+      cmo%index(1:n) = 0
+    end if
+    call interface_mpi_bcast(cmo%energy,n,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%coeff,n*m*cmo%nz,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%symmetry,n,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%index,n,irank_master,global_communicator)
 
   end subroutine synchronize_data_from_dirac
 

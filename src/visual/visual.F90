@@ -71,7 +71,7 @@ contains
 
     type(mol_t):: mol
     type(ao_t):: ao_data
-    type(mo_t):: mo_data
+    type(cmo_t):: mo_data
     real(8) :: walltime
     logical :: legacy_prep
 
@@ -531,74 +531,53 @@ contains
 
     if (visual_cfg_global_refactor) then
 
-    ! gosia 19/5: now we do calculations on one molecule at a time, 
-    ! so here we read the molecular data from DIRAC's main checkpoint;
+!     gosia 19/5/2023: 
+!     now assuming calculations on one molecular system at a time;
+!     so all data is read from one DIRAC's CHECKPOINT file
 
-!   todo - when developing a separate schema
-!    write (lupri,'(/A,I2)')," * Opening checkpoint file for real-space data (VISUAL) "
-!    call checkpoint_rs_open
+      if (mpi_is_master()) then
+        call visual_initialize_data_from_dirac(mol,ao_data,mo_data)
+      end if
 
-
-    !if (is_parallel()) then
-    !  if (mpi_is_master()) walltime = interface_MPI_WTIME()
-    !else
-    !  call cpu_time(walltime)
-    !end if
-
-    ! gosia: now this only reads mol data
-      if (mpi_is_master()) call visual_initialize_data_from_dirac(mol, ao_data, mo_data)
-
+#ifdef VAR_MPI
+      if (is_parallel()) then
+        call synchronize_data_from_dirac(mol,ao_data,mo_data)
+      end if
+#endif
 
 !
-!     prepare density matrices
+!         prepare density matrices
+!         gosia fixme 
+!         this is a temporary solution for handling density matrices;
+!         also see https://gitlab.com/dirac/dirac-private/-/issues/550
+
+          nullify(dmat_0)
+          if (.not. mpi_is_master()) then
+             allocate(dmat_0_container(mat_ao_dim, mat_ao_dim, mat_ao_nz))
+             dmat_0 => dmat_0_container
+          else
+             allocate(dmat_0_temp(mat_ao_dim, mat_ao_dim, mat_ao_nz))
+             dmat_0_temp = reshape(D(1)%elms, (/mat_ao_dim, mat_ao_dim, mat_ao_nz/))
+             dmat_0 => dmat_0_temp
+          end if
+
+#ifdef VAR_MPI
+          if (is_parallel()) then
+            call interface_mpi_bcast(visual_cfg_nr_dmat, 1, irank_master,global_communicator)
+            call interface_mpi_bcast(dmat_0, size(dmat_0), irank_master,global_communicator)
+          end if
+#endif
+
 !
+!     gosia todo - when developing a separate schema, here: open rs-checkpoint
+!     write (lupri,'(/A,I2)')," * Opening checkpoint file for real-space data (VISUAL) "
+!     call checkpoint_rs_open
 
-!     gosia fixme: 
-!     this is a temporary solution for handling density matrices;
-!     also see https://gitlab.com/dirac/dirac-private/-/issues/550
-#ifdef VAR_MPI
-      if (is_parallel()) then
-        call interface_mpi_bcast(visual_cfg_nr_dmat,1,irank_master,global_communicator)
-      end if
-#endif
-
-      nullify(dmat_0)
-      if (.not. mpi_is_master()) then
-         allocate(dmat_0_container(mat_ao_dim, mat_ao_dim, mat_ao_nz))
-         dmat_0 => dmat_0_container
-      else
-         allocate(dmat_0_temp(mat_ao_dim, mat_ao_dim, mat_ao_nz))
-         dmat_0_temp = reshape(D(1)%elms, (/mat_ao_dim, mat_ao_dim, mat_ao_nz/))
-         dmat_0 => dmat_0_temp
-      end if
-
-#ifdef VAR_MPI
-      if (is_parallel()) then
-        call interface_mpi_bcast(dmat_0, size(dmat_0), irank_master,global_communicator)
-      end if
-#endif
-
-
-#ifdef VAR_MPI
-      if (is_parallel()) then
-        call synchronize_data_from_dirac(mol, ao_data)
-      end if
-#endif
 ! 
-      call visual_driver_refactored(visual_cfg_nr_dmat, &
-                       mat_ao_dim, mat_ao_nz, mat_ao_irep, &
-                       dmat_0,                &
-                       mol, ao_data)
+      call visual_driver_refactored(mol,ao_data,mo_data,&
+                         mat_ao_dim, mat_ao_nz, mat_ao_irep,dmat_0)
 
-!    call checkpoint_rs_close
-
-    !if (mpi_is_master()) then
-    !  walltime = interface_MPI_Wtime() - walltime
-    !  write (*, '(a)') ''
-    !  write (*, '(a, g14.6, a)') &
-    !        'Elapsed wall clock time in VISUAL = ', walltime, ' seconds.'
-    !  write (*, '(a)') ''
-    !end if
+!     call checkpoint_rs_close
 
       if (associated(dmat_0)) then
          nullify(dmat_0)
@@ -610,15 +589,13 @@ contains
          deallocate(dmat_0_temp)
       end if
 
-
-
-    else
-    call visual_driver(visual_cfg_nr_dmat, &
-                       D,                  &
-                       D_0,                &
-                       ao,                 &
-                       buffer)
-    end if
+    else !if (visual_cfg_global_refactor) then
+      call visual_driver(visual_cfg_nr_dmat, &
+                         D,                  &
+                         D_0,                &
+                         ao,                 &
+                         buffer)
+    end if !if (visual_cfg_global_refactor) then
 
     if (allocated(rs_input%grids)) deallocate(rs_input%grids)
     if (allocated(rs_input%grid_functions)) deallocate(rs_input%grid_functions)
@@ -627,6 +604,8 @@ contains
     if (mol%in_use()) then
       call mol%erase()
     end if
+
+
 
 ! ---- legacy ----    
     if (visual_cfg_2d_integration .or. visual_cfg_3d_integration) then
@@ -658,18 +637,18 @@ contains
   end subroutine
 
 
-  subroutine visual_driver_refactored(nr_dmat, &
-                            mat_dim, mat_nz, mat_irep, &
-                            dmat_0,     &
-                            mol, ao_data)
+  subroutine visual_driver_refactored(mol,ao_data,cmo,&
+                mat_dim, mat_nz, mat_irep,dmat_0)
 
 !   --------------------------------------------------------------------------
-    integer, intent(in)  :: nr_dmat
-    integer, intent(in)  :: mat_dim, mat_nz, mat_irep
-    real(8), intent(in)  :: dmat_0(mat_dim, mat_dim, mat_nz)
     type(mol_t), intent(inout):: mol
     type(ao_t), intent(inout):: ao_data
+    type(cmo_t), intent(in):: cmo
+
+    integer  :: mat_dim, mat_nz, mat_irep
+    real(8)  :: dmat_0(mat_dim, mat_dim, mat_nz)
 !   --------------------------------------------------------------------------
+
     real(8), allocatable              :: ao(:,:)
     real(8), allocatable              :: buffer(:,:)
     type(grid_t):: grid
@@ -682,10 +661,11 @@ contains
     integer:: my_rank
     real(8) :: walltime
     integer:: n_this_proc, idim_grid, idim_gf
-    integer:: i,j
+    integer:: nr_dmat,i,j
 !   --------------------------------------------------------------------------
 
     if (mpi_is_master()) call rs_input%display
+
 
     do ig = 1, rs_input%nr_grids
 
@@ -781,6 +761,16 @@ contains
           buffer = 0.0d0
 
 !
+!         prepare density matrices
+!
+!         gosia fixme 
+!         this is a temporary solution for handling density matrices;
+!         also see https://gitlab.com/dirac/dirac-private/-/issues/550
+          call dirac_dmat_init(rs_input%grid_functions(igf)%wf_order,&
+                               cmo)
+          !                     !cmo,dmat_ao=dmat) 
+
+!
 !         distribute grid points over nodes
 !
 
@@ -810,6 +800,7 @@ contains
           ! add "visualize"/"integrate" procedures in this call; now - visualization only
           ! add constructs for DIRAC data (D, D_0, ...)
           !
+          nr_dmat = 1
           call work_on_grid(g_ndim, n_this_proc, &
                             rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
                             rs_input%grid_functions(igf), &
@@ -1740,6 +1731,10 @@ contains
             end do
          end if
          ioff = norb(ifsym)
+      end do
+      write(*,'(a,i6)') 'OLD OCCUPATION SIZE: ', norbt
+      do i = 1, norbt
+        write(*,'(a,i6,e16.8)') 'OLD OCCUPATION: ', i, occupation(i)
       end do
 
    end subroutine

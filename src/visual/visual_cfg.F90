@@ -20,6 +20,13 @@ module visual_cfg
 
    save
 
+
+!  stays; remember to bcast!!!
+   real(8), public, allocatable :: visual_cfg_occupation(:, :)
+   logical, public              :: visual_cfg_use_orbital_string = .false.
+
+!
+
    integer,      public, parameter:: max_batch_length = 500
    integer,      public, parameter:: max_para = 100
    integer,      public            :: visual_cfg_nr_dmat = 0 !FIXME
@@ -210,8 +217,6 @@ module visual_cfg
    integer,      public:: visual_cfg_irep_conmat = 0
    integer,      public:: visual_cfg_itim_conmat = 0
 
-   logical, public              :: visual_cfg_use_orbital_string = .false.
-   real(8), public, allocatable:: visual_cfg_occupation(:, :)
 
    logical,      public:: visual_cfg_tensor          = .false.
 
