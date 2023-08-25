@@ -40,18 +40,15 @@ contains
     real(8), allocatable :: occupation(:)
 !   ----------------------------------------------------------------------------
 
-!    setup density matrix in AO basis from occupation numbers (user-controlled)
-!    get orbital string
+    if (wf_order == 0) then
+!     setup unperturbed density matrix from occupation numbers (user-controlled)
+!     get orbital string
 
-     nto = sum(cmo%n_mo) ! total number of orbitals
-     allocate(occupation(nto))
-     call setup_orbital_string(cmo,occupation)
+      nto = sum(cmo%n_mo)
+      allocate(occupation(nto))
+      call setup_orbital_string(cmo,occupation)
 
-!    get CMOs
-
-!    !construct dmats
-
-     !dmat = 0.0d0
+      deallocate(occupation)
 
      !do m = 1, norbt
      !   D_mo%elms((m-1)*norbt+m) = occupation(m)
@@ -62,76 +59,50 @@ contains
      !D_mo%irep   = 0
 
      !if (wf_order == 0) dmat = C*(D_mo*dag(C))
-!
-!    !clean
-!
-     deallocate(occupation)
 
+    else if (wf_order == 1) then
+!     use PAMXVC
+    end if
   end subroutine dirac_dmat_init
 
 
+! -----------------------------------------------------------------------------
   subroutine setup_orbital_string(cmo,occupation)
+!   "dcborb.h" has missing nish(ifsym) and nash(ifsym) information
 #include "dcborb.h"
-#include "dgroup.h"
-#include "dcbbas.h"
     type(cmo_t), intent(in) :: cmo
-!   ----------------------------------------------------------------------------
-
-    ! this routine will set up occupation vector
-    ! based on**VISUAL
-    !          .OCCUPATION
-    ! if this is not given, then it will occupy all
-    ! "occupied" electrons with 1.0
     real(8), intent(out):: occupation(:)
     integer:: i, ifsym, ioff
-!   ----------------------------------------------------------------------------
+
+!   this routine will set up occupation vector
+!   based on**VISUAL
+!            .OCCUPATION
+!   if this is not given, then it will occupy all
+!   "occupied" electrons with 1.0
+! -----------------------------------------------------------------------------
 
     occupation = 0.0d0
 
     ioff = 0
     do ifsym = 1, cmo%n_fsym
-      ioff = ioff+npsh(ifsym)
-      !ioff = ioff+cmo%n_po(ifsym)
+      ioff = ioff+cmo%n_po(ifsym)
       if (visual_cfg_use_orbital_string) then
-        !do i = 1, cmo%n_mo(ifsym) - cmo%n_po(ifsym)
-        do i = 1, nesh(ifsym)
+        do i = 1, (cmo%n_mo(ifsym) - cmo%n_po(ifsym))
           occupation(ioff+i) = visual_cfg_occupation(i, ifsym)
         end do
       else
-        !if (cmo%n_mo(ifsym)-cmo%n_po(ifsym) > 0) then
         if (nash(ifsym) > 0) then
           print *, 'ERROR: with open shells you should use .OCCUPATION'
           print *, '       otherwise occupation will be wrong'
           print *, '       so we better stop here'
           stop 1
         end if
-        !do i = 1, cmo%n_mo(ifsym)
         do i = 1, nish(ifsym)
           occupation(ioff+i) = 1.0d0
         end do
       end if
       ioff = cmo%n_mo(ifsym)
     end do
-    write(*,'(a,i6)') 'NEW OCCUPATION SIZE: ', sum(cmo%n_mo)
-    !do i = 1, sum(cmo%n_mo)
-    do i = 1, norbt
-      write(*,'(a,i6,e16.8)') 'NEW OCCUPATION: ', i, occupation(i)
-    end do
-
-!!!!!!!!!!!!!!!
-    write(*, *)                                                                                          
-    write(*, *) 'OLD CMO:'
-    write(*, *) 'OLD n_ao =         ', nfbas
-    write(*, *) 'OLD n_mo =         ', NORB
-    write(*, *) 'OLD n_po =         ', NPSH
-    write(*, *) 'OLD n_fsym =       ', nfsym
-    write(*, *) 'OLD nz   =         ', nz
-    write(*, *)                                                                                          
-
-
-
-!!!!!!!!!!!!!!
-
 
   end subroutine
 
@@ -173,14 +144,18 @@ contains
   end subroutine visual_initialize_and_sync_nodes
 
 
+! -----------------------------------------------------------------------------
   subroutine visual_initialize_data_from_dirac(mol, ao, mo, print_level)
-
     type(mol_t), intent(out):: mol
     type(ao_t),  intent(out):: ao
     type(cmo_t), intent(out):: mo
     integer, optional :: print_level
     character*(:),allocatable:: group
     logical:: tobe_dirac
+!
+!   read data from DIRAC's CHECKPOINT file(s) into DTs:
+!   ao basis, MO coefficients, molecular information
+!   ---------------------------------------------------------------------------
 
     group = '/input/molecule/'
     call checkpoint_query(group, tobe_dirac)
@@ -193,6 +168,7 @@ contains
         end if
       end if
 
+      ! todo - move this to a separate subroutine + decide what to save on checkpoint
       !call write_to_rs_checkpoint('/input/molecule', mol)
       !if (print_level > 0) &
       !  write(*, *) 'Molecule data written to DIRAC RS-CHECKPOINT'
@@ -239,8 +215,8 @@ contains
   end subroutine read_mol_from_dirac
 
 
+! -----------------------------------------------------------------------------
   subroutine read_ao_mo_from_dirac(ao, cmo, group)
-!   ----------------------------------------------------------------------------
     type(ao_t), intent(out):: ao
     type(cmo_t), intent(inout) :: cmo
     character(len=*),intent(in) :: group
@@ -254,9 +230,10 @@ contains
 !
 !   this subroutine reads data from DIRAC CHECKPOINT files
 !   and fills the "ao" and "mo" derived type
-!   now - based on how things are done in dircmo.F90 and exacorr
+!   it is based on how things are done in dircmo.F90 and exacorr
 !   gosia, summer 2023
-!   ----------------------------------------------------------------------------
+! -----------------------------------------------------------------------------
+
 !
 !   read MO data
 !
@@ -279,6 +256,7 @@ contains
 
     cmo%n_ao = n_basis
     cmo%n_mo = n_mo
+    cmo%n_po = n_po
     cmo%nz   = nz
     cmo%total_energy = total_energy
 
@@ -289,7 +267,6 @@ contains
       allocate(mo_coeff(ncoef))
       mo_coeff = 0.0d0
       call checkpoint_read(group//'/mobasis/orbitals',rdata=mo_coeff)
-    ! put in cmo in quaternion format
       allocate(mo_coeff_q(nao,nto,nz))
       mo_coeff_q = 0.0d0
       mo_coeff_q = reshape(mo_coeff,(/nao,nto,nz/))

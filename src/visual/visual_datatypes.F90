@@ -11,6 +11,7 @@ module visual_datatypes
   public mol_t
   public ao_t
   public cmo_t
+  public dmat_t
 
   !integer, parameter, private:: kind_real = 8
 
@@ -62,8 +63,22 @@ module visual_datatypes
 
   type dmat_t
     private
-    integer, public:: n_mo = 0
+    integer, public:: mat_dim = 0
+    integer, public:: mat_nz = 0
+    real(8), public, pointer:: elements(:)
+    real(8), public, pointer:: elements_q(:,:,:)
+  contains
+    private
+    procedure, pass, public:: alloc => allocate_elements
+    procedure, pass, public:: alloc_q => allocate_elements_q
+    procedure, pass, public:: associated_elements
+    procedure, pass, public:: associated_elements_q
+    procedure, pass, public:: get_dmat_sector
+    procedure, pass, public:: erase   => erase_dmat
+    procedure, pass, public:: display => display_dmat
   end type dmat_t
+
+
 
   type:: rs_input_t
     private
@@ -195,6 +210,22 @@ contains
     class(cmo_t), intent(out):: self
   end subroutine
 
+  pure function associated_elements(self)
+    class(dmat_t), intent(in):: self
+    logical:: associated_elements
+    associated_elements = associated(self%elements)
+  end function
+
+  pure function associated_elements_q(self)
+    class(dmat_t), intent(in):: self
+    logical:: associated_elements_q
+    associated_elements_q = associated(self%elements_q)
+  end function
+
+  subroutine erase_dmat(self)
+    class(dmat_t), intent(out):: self
+  end subroutine
+
   pure function allocated_points(self)
     class(grid_t), intent(in):: self
     logical:: allocated_points
@@ -324,6 +355,45 @@ contains
     self%index(1:n) = 0
   end subroutine
 
+  subroutine allocate_elements(self)
+    class(dmat_t), intent(inout):: self
+    integer :: n
+
+    if (self%associated_elements()) return
+
+    n = self%mat_dim*self%mat_dim*self%mat_nz
+    nullify(self%elements)
+    allocate(self%elements(n))
+    self%elements(1:n) = 0.0d0
+  end subroutine
+
+  subroutine allocate_elements_q(self)
+    class(dmat_t), intent(inout):: self
+
+    if (self%associated_elements_q()) return
+
+    nullify(self%elements_q)
+    allocate(self%elements_q(self%mat_dim,self%mat_dim,self%mat_nz))
+    self%elements_q(1:self%mat_dim,1:self%mat_dim,1:self%mat_nz) = 0.0d0
+  end subroutine
+
+  !subroutine get_mat_q_sector(self, sector_start, sector_end)
+  !end subroutine
+
+  subroutine get_dmat_sector(self, sector)
+    class(dmat_t), intent(inout):: self
+    character(2), intent(in):: sector
+    integer:: s1,s2,e1,e2
+
+    if (.not. self%associated_elements_q()) return
+
+    select case (sector)
+      case ('ii')
+        self%elements_q(s1:e1,s2:e2,1:self%mat_nz) = 0.0d0
+    end select
+  end subroutine
+
+
   subroutine display_cmo(self)
     class(cmo_t), intent(in):: self
     integer:: i, j, k, n, m
@@ -350,7 +420,27 @@ contains
       end do
     end if
     write(*, *)
+  end subroutine
+
+  subroutine display_dmat(self)
+    class(dmat_t), intent(in):: self
+    integer:: i, j, k
+    write(*, *)
+    write(*, *) ' DMAT: '
+    write(*, *) ' mat_dim = ', self%mat_dim
+    write(*, *) ' mat_nz  = ', self%mat_nz
+    if (self%associated_elements_q()) then
+      do k = 1, self%mat_nz
+        do j = 1, self%mat_dim
+          do i = 1, self%mat_dim
+            write(*, '(a,3i6,es16.8e2)') 'elements_q(i,j,k) = ', i, j, k, self%elements_q(i,j,k)
+          end do
+        end do
+      end do
+    end if
+    write(*, *)
    end subroutine
+
 
   subroutine display_mol(self)
     class(mol_t), intent(in):: self

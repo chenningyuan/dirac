@@ -1,5 +1,11 @@
 module visual
 
+! This module contains routines that calculate 
+! various quantities on the real-space grids,
+! Written by Radovan Bast.
+! Refactored by Gosia Olejniczak, spring-summer 2023.
+! Full description of features: LINK
+
   use visual_cfg
   use visual_utils
   use visual_dirac
@@ -66,6 +72,7 @@ module visual
 
 contains
 
+! -----------------------------------------------------------------------------
   subroutine run_visual(launch_only)
     logical, intent(in), optional :: launch_only
 
@@ -75,6 +82,7 @@ contains
     real(8) :: walltime
     logical :: legacy_prep
 
+!   gosia: this is to be replaced once we have a more generic way to handle density matrices
     real(8), pointer             :: dmat_0(:, :, :)
     real(8), allocatable, target :: dmat_0_container(:, :, :)
     real(8), allocatable, target :: dmat_0_temp(:, :, :)
@@ -113,6 +121,7 @@ contains
     type(matrix):: D_mo_dagger, TP, TM, T
     logical, allocatable:: matrix_is_unperturbed(:)
 !   ---- end ----    
+! -----------------------------------------------------------------------------
 
     walltime = visual_walltime()
 
@@ -535,8 +544,10 @@ contains
 !     now assuming calculations on one molecular system at a time;
 !     so all data is read from one DIRAC's CHECKPOINT file
 
+      nullify(dmat_0)
       if (mpi_is_master()) then
         call visual_initialize_data_from_dirac(mol,ao_data,mo_data)
+        call dirac_dmat_init(0, mo_data, dmat_ao=dmat_0)
       end if
 
 #ifdef VAR_MPI
@@ -551,7 +562,6 @@ contains
 !         this is a temporary solution for handling density matrices;
 !         also see https://gitlab.com/dirac/dirac-private/-/issues/550
 
-          nullify(dmat_0)
           if (.not. mpi_is_master()) then
              allocate(dmat_0_container(mat_ao_dim, mat_ao_dim, mat_ao_nz))
              dmat_0 => dmat_0_container
@@ -760,15 +770,21 @@ contains
           allocate(buffer(1,nr_ao_slices*nr_ao_cartesian))
           buffer = 0.0d0
 
-!
-!         prepare density matrices
-!
-!         gosia fixme 
-!         this is a temporary solution for handling density matrices;
-!         also see https://gitlab.com/dirac/dirac-private/-/issues/550
-          call dirac_dmat_init(rs_input%grid_functions(igf)%wf_order,&
-                               cmo)
-          !                     !cmo,dmat_ao=dmat) 
+!!
+!!         prepare density matrices
+!!
+!!         gosia fixme 
+!!         this is a temporary solution for handling density matrices;
+!!         also see https://gitlab.com/dirac/dirac-private/-/issues/550
+!          if (rs_input%grid_functions(igf)%wf_order > 0) then
+!            if (mpi_is_master()) then
+!              call dirac_dmat_init(rs_input%grid_functions(igf)%wf_order,&
+!                                   cmo,dmat_ao=dmat) 
+!            end if
+!#ifdef VAR_MPI
+!            if (is_parallel()) call synchronize_dmat(dmat)
+!#endif
+!          end if
 
 !
 !         distribute grid points over nodes
@@ -1731,10 +1747,6 @@ contains
             end do
          end if
          ioff = norb(ifsym)
-      end do
-      write(*,'(a,i6)') 'OLD OCCUPATION SIZE: ', norbt
-      do i = 1, norbt
-        write(*,'(a,i6,e16.8)') 'OLD OCCUPATION: ', i, occupation(i)
       end do
 
    end subroutine
