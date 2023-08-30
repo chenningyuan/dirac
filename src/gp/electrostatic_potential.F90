@@ -52,11 +52,14 @@ module electrostatic_potential
       call legacy_lwork_get(lwork)
       call alloc(work, lwork, id='temporary work array in electrostatic potential')
 ! Never neglect SS-block for visualization purposes
-      write(*, '(a,4i6)') 'BEFORE CALLING ELECTRONIC_MEP ', my_rank, nr_points, mat_dim, lwork
+      write(*, '(a,4i12)') 'BEFORE CALLING ELECTRONIC_MEP ', my_rank, nr_points, mat_dim, lwork
       do i = 1, nr_points
-        write(*, '(a,2i6,4E16.8)') 'BEFORE CALLING ELECTRONIC_MEP ', my_rank, i, r(1:3,i), esp(i)
+        write(*, '(a,2i6,4E16.8)') 'points BEFORE CALLING ELECTRONIC_MEP ', my_rank, i, r(1:3,i), esp(i)
       end do
       call get_electronic_mep(nr_points, dmat, mat_dim, r, esp, work, lwork, 0, .false., .false.,my_rank=my_rank)
+      do i = 1, nr_points
+        write(*, '(a,2i6,4E16.8)') 'points AFTER CALLING ELECTRONIC_MEP ', my_rank, i, r(1:3,i), esp(i)
+      end do
       call dealloc(work)
    end if
 

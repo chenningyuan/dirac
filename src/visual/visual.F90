@@ -83,9 +83,10 @@ contains
     logical :: legacy_prep
 
 !   gosia: this is to be replaced once we have a more generic way to handle density matrices
-    real(8), pointer             :: dmat_0(:, :, :)
-    real(8), allocatable, target :: dmat_0_container(:, :, :)
-    real(8), allocatable, target :: dmat_0_temp(:, :, :)
+    type(dmat_t):: dmat_0
+    !real(8), pointer             :: dmat_0(:, :, :)
+    !real(8), allocatable, target :: dmat_0_container(:, :, :)
+    !real(8), allocatable, target :: dmat_0_temp(:, :, :)
 
 
 
@@ -544,7 +545,11 @@ contains
 !     now assuming calculations on one molecular system at a time;
 !     so all data is read from one DIRAC's CHECKPOINT file
 
-      nullify(dmat_0)
+!     prepare density matrices
+!     gosia fixme 
+!     this is a temporary solution for handling density matrices;
+!     also see https://gitlab.com/dirac/dirac-private/-/issues/550
+
       if (mpi_is_master()) then
         call visual_initialize_data_from_dirac(mol,ao_data,mo_data)
         call dirac_dmat_init(0, mo_data, dmat_ao=dmat_0)
@@ -553,51 +558,20 @@ contains
 #ifdef VAR_MPI
       if (is_parallel()) then
         call synchronize_data_from_dirac(mol,ao_data,mo_data)
+        call synchronize_dmat(dmat_0)
+        call interface_mpi_bcast(visual_cfg_nr_dmat, 1, irank_master,global_communicator)
       end if
 #endif
 
-!
-!         prepare density matrices
-!         gosia fixme 
-!         this is a temporary solution for handling density matrices;
-!         also see https://gitlab.com/dirac/dirac-private/-/issues/550
-
-          if (.not. mpi_is_master()) then
-             allocate(dmat_0_container(mat_ao_dim, mat_ao_dim, mat_ao_nz))
-             dmat_0 => dmat_0_container
-          else
-             allocate(dmat_0_temp(mat_ao_dim, mat_ao_dim, mat_ao_nz))
-             dmat_0_temp = reshape(D(1)%elms, (/mat_ao_dim, mat_ao_dim, mat_ao_nz/))
-             dmat_0 => dmat_0_temp
-          end if
-
-#ifdef VAR_MPI
-          if (is_parallel()) then
-            call interface_mpi_bcast(visual_cfg_nr_dmat, 1, irank_master,global_communicator)
-            call interface_mpi_bcast(dmat_0, size(dmat_0), irank_master,global_communicator)
-          end if
-#endif
-
+      !call dmat_0%display(node_id=get_my_rank())
 !
 !     gosia todo - when developing a separate schema, here: open rs-checkpoint
 !     write (lupri,'(/A,I2)')," * Opening checkpoint file for real-space data (VISUAL) "
 !     call checkpoint_rs_open
-
 ! 
-      call visual_driver_refactored(mol,ao_data,mo_data,&
-                         mat_ao_dim, mat_ao_nz, mat_ao_irep,dmat_0)
-
+      call visual_driver_refactored(mol,ao_data,mo_data,dmat_0)
 !     call checkpoint_rs_close
-
-      if (associated(dmat_0)) then
-         nullify(dmat_0)
-      end if
-      if (allocated(dmat_0_container)) then
-         deallocate(dmat_0_container)
-      end if
-      if (allocated(dmat_0_temp)) then
-         deallocate(dmat_0_temp)
-      end if
+      call dmat_0%erase()
 
     else !if (visual_cfg_global_refactor) then
       call visual_driver(visual_cfg_nr_dmat, &
@@ -605,16 +579,14 @@ contains
                          D_0,                &
                          ao,                 &
                          buffer)
-    end if !if (visual_cfg_global_refactor) then
+    end if
 
     if (allocated(rs_input%grids)) deallocate(rs_input%grids)
     if (allocated(rs_input%grid_functions)) deallocate(rs_input%grid_functions)
     call rs_input%erase()
-
     if (mol%in_use()) then
       call mol%erase()
     end if
-
 
 
 ! ---- legacy ----    
@@ -647,17 +619,12 @@ contains
   end subroutine
 
 
-  subroutine visual_driver_refactored(mol,ao_data,cmo,&
-                mat_dim, mat_nz, mat_irep,dmat_0)
-
-!   --------------------------------------------------------------------------
+! ------------------------------------------------------------------------------
+  subroutine visual_driver_refactored(mol,ao_data,cmo,dmat_0)
     type(mol_t), intent(inout):: mol
     type(ao_t), intent(inout):: ao_data
     type(cmo_t), intent(in):: cmo
-
-    integer  :: mat_dim, mat_nz, mat_irep
-    real(8)  :: dmat_0(mat_dim, mat_dim, mat_nz)
-!   --------------------------------------------------------------------------
+    type(dmat_t), intent(in):: dmat_0
 
     real(8), allocatable              :: ao(:,:)
     real(8), allocatable              :: buffer(:,:)
@@ -671,8 +638,8 @@ contains
     integer:: my_rank
     real(8) :: walltime
     integer:: n_this_proc, idim_grid, idim_gf
-    integer:: nr_dmat,i,j
-!   --------------------------------------------------------------------------
+    integer:: i,j
+! ------------------------------------------------------------------------------
 
     if (mpi_is_master()) call rs_input%display
 
@@ -734,7 +701,6 @@ contains
 !
 !       gosia:
 !       * FIXME: now, this is used only to assign labels for hdf5 storage,
-!         TODO: is there sth that could be shared now?
 
         if (mpi_is_master()) then 
           call get_grid_function_info(igf, rs_input%grid_functions(igf))
@@ -770,6 +736,13 @@ contains
           allocate(buffer(1,nr_ao_slices*nr_ao_cartesian))
           buffer = 0.0d0
 
+          if (allocated(ao)) then
+            write(*, *) 'ao is allocated on node ', get_my_rank()
+          end if
+          if (allocated(buffer)) then
+            write(*, *) 'buffer is allocated on node ', get_my_rank()
+          end if
+
 !!
 !!         prepare density matrices
 !!
@@ -804,25 +777,22 @@ contains
 #endif
 
 !
-!         do work on grid
+!         work on grid
 !
 
           gf_ndim  = rs_input%grid_functions(igf)%get_ndim()
 
           allocate(grid_function_values(gf_ndim, n_this_proc))
           grid_function_values = 0.0d0
-
+ 
           ! gosia todo:
           ! add "visualize"/"integrate" procedures in this call; now - visualization only
           ! add constructs for DIRAC data (D, D_0, ...)
           !
-          nr_dmat = 1
           call work_on_grid(g_ndim, n_this_proc, &
                             rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
                             rs_input%grid_functions(igf), &
                             grid_function_values, &
-                            nr_dmat,&
-                            mat_dim, mat_nz, mat_irep, &
                             dmat_0,                &
                             ao, buffer)
 
@@ -902,8 +872,6 @@ contains
                           grid_points,   &
                           grid_function, &
                           grid_function_values, &
-                          nr_dmat, &
-                          mat_dim, mat_nz, mat_irep, &
                           dmat_0,     &
                           ao, buffer)
 
@@ -912,9 +880,7 @@ contains
     real(8), intent(in):: grid_points(ndim, nr_points)
     type(grid_function_t), intent(inout):: grid_function
     real(8), intent(out) :: grid_function_values(:,:)
-    integer, intent(in)  :: nr_dmat
-    integer, intent(in)  :: mat_dim, mat_nz, mat_irep
-    real(8), intent(in)  :: dmat_0(mat_dim, mat_dim, mat_nz)
+    type(dmat_t), intent(in)  :: dmat_0
     real(8)              :: ao(*)
     real(8)              :: buffer(*)
     integer:: ipoint, icomp
@@ -924,19 +890,20 @@ contains
 
       !call TEMP_test_values_in_points('grid_points', &
       !                       nr_points, grid_points,v1=grid_function_values)
-    do ipoint = 1, nr_points
+      do ipoint = 1, nr_points
+     
+        call get_ao(1,                     &
+                    grid_points(1, ipoint),&
+                    grid_points(2, ipoint),&
+                    grid_points(3, ipoint),&
+                    ao,                    &
+                    buffer)
+      if (ao(ipoint) .ne. 0.0d0) &
+        write(*,'(a,2i6,es20.8)') 'CALLING ESP ON NODE; ao: ', get_my_rank(), ipoint, ao(ipoint)
+      end do
 
-      call get_ao(1,                     &
-                  grid_points(1, ipoint),&
-                  grid_points(2, ipoint),&
-                  grid_points(3, ipoint),&
-                  ao,                    &
-                  buffer)
-    end do
 
-
-      write(*,'(a,6i6)') 'CALLING ESP ON NODE: ', get_my_rank(), mat_dim,mat_nz,mat_irep,ndim,nr_points
-      call get_esp_functions_in_points(get_my_rank(),mat_dim,mat_nz,mat_irep,&
+      call get_esp_functions_in_points(get_my_rank(),&
                                        dmat_0,&
                                        ao,buffer,&
                                        ndim,nr_points,&
@@ -958,8 +925,7 @@ contains
       !call TEMP_test_values_in_point('AO68 in point', &
       !                       ipoint, grid_points(1:3, ipoint), v1=ao(68))
 
-      call get_quantity_in_point_refactored(nr_dmat,mat_dim,mat_nz,mat_irep,&
-                                            dmat_0,&
+      call get_quantity_in_point_refactored(dmat_0,&
                                             ao,buffer,&
                                             grid_function,grid_function_values,&
                                             grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&

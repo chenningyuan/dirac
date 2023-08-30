@@ -40,25 +40,29 @@ module visual_datatypes
 
   type cmo_t
     private
-    integer, public:: n_ao(2) = 0               ! number of AOs
+    integer, public:: n_ao(2) = 0               ! number of AOs in each fermion symmetry
     integer, public:: n_mo(2) = 0               ! number of all (positronic+electronic) MOs in each fermion symmetry
     integer, public:: n_po(2) = 0               ! number of positronic MOs in each fermion symmetry
     integer, public:: n_fsym  = 1               ! Number of fermion symmetries (no inversion 1, inversion 2); default=1
     integer, public:: nz   = 4                  ! number of quaternion units; default=4
     real(8), public:: total_energy              ! total SCF energy, as read from DIRAC CHECKPOINT
     real(8), public, pointer:: energy(:)        ! orbital energies, as read from DIRAC CHECKPOINT
-    real(8), public, pointer:: coeff(:,:,:)     ! MO coefficients - now only in quaternion representation, i.e., coeff(sum(n_ao),sum(n_mo),nz)
+    real(8), public, pointer:: coeff(:)         ! MO coefficients
+    real(8), public, pointer:: coeff_q(:,:,:)   ! MO coefficients in quaternion representation, i.e., coeff(sum(n_ao),sum(n_mo),nz)
     integer, public, pointer:: symmetry(:)      ! additional symmetry label; used in spinfree
     integer, public, pointer:: index(:)         ! index of the spinor for this fermion symmetry
   contains
     private
-    procedure, pass, public:: allocate_all => allocate_cmo_all
+    procedure, pass, public:: alloc_all => allocate_cmo_all
     procedure, pass, public:: associated_cmo_energy
     procedure, pass, public:: associated_cmo_coeff
+    procedure, pass, public:: associated_cmo_coeff_q
     procedure, pass, public:: associated_cmo_symmetry
     procedure, pass, public:: associated_cmo_index
     procedure, pass, public:: erase   => erase_cmo
     procedure, pass, public:: display => display_cmo
+    procedure, pass, public:: reshape_to_q => reshape_cmo_to_q
+    procedure, pass, public:: reshape_from_q => reshape_cmo_from_q
   end type cmo_t
 
   type dmat_t
@@ -73,6 +77,7 @@ module visual_datatypes
     procedure, pass, public:: alloc_q => allocate_elements_q
     procedure, pass, public:: associated_elements
     procedure, pass, public:: associated_elements_q
+    procedure, pass, public:: scale_elements
     procedure, pass, public:: get_dmat_sector
     procedure, pass, public:: erase   => erase_dmat
     procedure, pass, public:: display => display_dmat
@@ -192,6 +197,12 @@ contains
     class(cmo_t), intent(in):: self
     logical:: associated_cmo_coeff
     associated_cmo_coeff = associated(self%coeff)
+  end function
+
+  pure function associated_cmo_coeff_q(self)
+    class(cmo_t), intent(in):: self
+    logical:: associated_cmo_coeff_q
+    associated_cmo_coeff_q = associated(self%coeff_q)
   end function
 
   pure function associated_cmo_symmetry(self)
@@ -325,34 +336,74 @@ contains
     end if
   end function
 
+  subroutine reshape_cmo_to_q(self)
+    class(cmo_t), intent(inout):: self
+    integer :: nao,npo,nmo,nz
+
+    if (.not. self%associated_cmo_coeff() .and.&
+        .not. self%associated_cmo_coeff_q()) return
+
+    nao = sum(self%n_ao)
+    nmo = sum(self%n_mo)
+    nz  = self%nz
+
+    self%coeff_q  = reshape(self%coeff,(/nao,nmo,nz/))
+
+  end subroutine
+
+
+  subroutine reshape_cmo_from_q(self)
+    class(cmo_t), intent(inout):: self
+    integer :: nao,nmo,nz,ncoeff
+
+    if (.not. self%associated_cmo_coeff() .and.&
+        .not. self%associated_cmo_coeff_q()) return
+
+    nao = sum(self%n_ao)
+    nmo = sum(self%n_mo)
+    nz  = self%nz
+    ncoeff = nmo*nao*nz
+
+    self%coeff = reshape(self%coeff_q, (/ncoeff/))
+
+  end subroutine
+
 
   subroutine allocate_cmo_all(self)
     class(cmo_t), intent(inout):: self
     integer :: n, m
+    integer :: nao,nmo,nz,ncoeff
 
     if (self%associated_cmo_energy()   .or.&
         self%associated_cmo_symmetry() .or.&
         self%associated_cmo_index()    .or.&
-        self%associated_cmo_coeff()) return
+        self%associated_cmo_coeff()    .or.&
+        self%associated_cmo_coeff_q()) return
 
-    n = sum(self%n_mo)
-    m = sum(self%n_ao)
+    nao = sum(self%n_ao)
+    nmo = sum(self%n_mo)
+    nz  = self%nz
+    ncoeff = nmo*nao*nz
 
     nullify(self%energy)
-    allocate(self%energy(n))
-    self%energy(1:n) = 0.0d0
+    allocate(self%energy(nmo))
+    self%energy(1:nmo) = 0.0d0
 
     nullify(self%coeff)
-    allocate(self%coeff(m,n,self%nz))
-    self%coeff(1:m,1:n,1:self%nz) = 0.0d0
+    allocate(self%coeff(ncoeff))
+    self%coeff(1:ncoeff) = 0.0d0
+
+    nullify(self%coeff_q)
+    allocate(self%coeff_q(nao,nmo,nz))
+    self%coeff_q(1:nao,1:nmo,1:nz) = 0.0d0
 
     nullify(self%symmetry)
-    allocate(self%symmetry(n))
-    self%symmetry(1:n) = 0
+    allocate(self%symmetry(nmo))
+    self%symmetry(1:nmo) = 0
 
     nullify(self%index)
-    allocate(self%index(n))
-    self%index(1:n) = 0
+    allocate(self%index(nmo))
+    self%index(1:nmo) = 0
   end subroutine
 
   subroutine allocate_elements(self)
@@ -377,6 +428,17 @@ contains
     self%elements_q(1:self%mat_dim,1:self%mat_dim,1:self%mat_nz) = 0.0d0
   end subroutine
 
+  subroutine scale_elements(self, f)
+    class(dmat_t), intent(inout):: self
+    real(8), intent(in):: f
+    integer:: s1,s2,e1,e2
+
+    if (.not. self%associated_elements()) return
+
+    self%elements = f * self%elements
+  end subroutine
+
+
   !subroutine get_mat_q_sector(self, sector_start, sector_end)
   !end subroutine
 
@@ -396,9 +458,13 @@ contains
 
   subroutine display_cmo(self)
     class(cmo_t), intent(in):: self
-    integer:: i, j, k, n, m
-    n = sum(self%n_mo)
-    m = sum(self%n_ao)
+    integer:: nao,nmo,nz,ncoeff
+    integer:: i,j,k
+
+    nao = sum(self%n_ao)
+    nmo = sum(self%n_mo)
+    nz  = self%nz
+    ncoeff = nmo*nao*nz
     write(*, *)
     write(*, *) ' CMO:'
     write(*, *) 'n_ao =         ', self%n_ao
@@ -407,14 +473,19 @@ contains
     write(*, *) 'n_fsym =       ', self%n_fsym
     write(*, *) 'nz   =         ', self%nz
     write(*, *) 'total_energy = ', self%total_energy
-    if (self%associated_cmo_energy())   write(*,*) 'energy   = ', (self%energy(i), i=1,n)
-    if (self%associated_cmo_symmetry()) write(*,*) 'symmetry = ', (self%symmetry(i), i=1,n)
-    if (self%associated_cmo_index())    write(*,*) 'index    = ', (self%index(i), i=1,n)
+    if (self%associated_cmo_energy())   write(*,*) 'energy   = ', (self%energy(i), i=1,nmo)
+    if (self%associated_cmo_symmetry()) write(*,*) 'symmetry = ', (self%symmetry(i), i=1,nmo)
+    if (self%associated_cmo_index())    write(*,*) 'index    = ', (self%index(i), i=1,nmo)
     if (self%associated_cmo_coeff()) then
-      do k = 1, self%nz
-        do j = 1, n
-          do i = 1, m
-            write(*, '(a,3i6,es16.8e2)') 'coeff(i,j,k) = ', i, j, k, self%coeff(i,j,k)
+      do i = 1, ncoeff
+        write(*, '(a,i6,es16.8e2)') 'coeff(i) = ', i, self%coeff(i)
+      end do
+    end if
+    if (self%associated_cmo_coeff_q()) then
+      do k = 1, nz
+        do j = 1, nmo
+          do i = 1, nao
+            write(*, '(a,3i6,es16.8e2)') 'coeff_q(i,j,k) = ', i, j, k, self%coeff_q(i,j,k)
           end do
         end do
       end do
@@ -422,13 +493,23 @@ contains
     write(*, *)
   end subroutine
 
-  subroutine display_dmat(self)
+  subroutine display_dmat(self,node_id)
     class(dmat_t), intent(in):: self
+    integer, optional, intent(in):: node_id
     integer:: i, j, k
     write(*, *)
-    write(*, *) ' DMAT: '
+    if (present(node_id)) then
+      write(*, *) ' DMAT on node : ', node_id
+    else
+      write(*, *) ' DMAT: '
+    end if
     write(*, *) ' mat_dim = ', self%mat_dim
     write(*, *) ' mat_nz  = ', self%mat_nz
+    if (self%associated_elements()) then
+      do i = 1, self%mat_dim*self%mat_dim*self%mat_nz
+        write(*, '(a,i6,es16.8e2)') 'elements(i) = ', i, self%elements(i)
+      end do
+    end if
     if (self%associated_elements_q()) then
       do k = 1, self%mat_nz
         do j = 1, self%mat_dim
@@ -439,7 +520,7 @@ contains
       end do
     end if
     write(*, *)
-   end subroutine
+  end subroutine
 
 
   subroutine display_mol(self)

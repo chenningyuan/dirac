@@ -1,7 +1,7 @@
 module visual_dirac
 
   use checkpoint
-  use visual_datatypes, only: mol_t, ao_t, cmo_t, grid_t, grid_function_t
+  use visual_datatypes
   use visual_cfg
 
   use visual_mpi
@@ -22,6 +22,7 @@ module visual_dirac
   public synchronize_grid_data
   public synchronize_grid_function_data
   public synchronize_data_from_dirac
+  public synchronize_dmat
 #endif
 
 
@@ -34,31 +35,46 @@ contains
 !   ----------------------------------------------------------------------------
     integer, intent(in) :: wf_order
     type(cmo_t), intent(in) :: cmo
-    real(8), optional, pointer, intent(out) :: dmat_ao(:,:,:)
-    real(8), optional, pointer, intent(out) :: dmat_mo(:,:,:)
-    integer :: nto
+    type(dmat_t), optional, intent(inout) :: dmat_ao
+    type(dmat_t), optional, intent(inout) :: dmat_mo
+    type(dmat_t) :: dmat_mo_from_occupation
     real(8), allocatable :: occupation(:)
+    integer :: nao, nmo, nz
+    integer :: i
 !   ----------------------------------------------------------------------------
 
     if (wf_order == 0) then
-!     setup unperturbed density matrix from occupation numbers (user-controlled)
-!     get orbital string
+!     initialize unperturbed density matrix from occupation numbers
 
-      nto = sum(cmo%n_mo)
-      allocate(occupation(nto))
+      nao = sum(cmo%n_ao)
+      nmo = sum(cmo%n_mo)
+      nz  = cmo%nz
+
+!     get orbital string
+      allocate(occupation(nmo))
       call setup_orbital_string(cmo,occupation)
 
+      dmat_mo_from_occupation%mat_dim = nmo
+      dmat_mo_from_occupation%mat_nz  = nz
+      call dmat_mo_from_occupation%alloc()
+      do i = 1, nmo
+        !dmat_mo%elements((i-1)*nmo*nz + i) = occupation
+        dmat_mo_from_occupation%elements((i-1)*nmo + i) = occupation(i)
+      end do
+
+      if (present(dmat_mo)) then
+        dmat_mo = dmat_mo_from_occupation
+      end if
+
+      if (present(dmat_ao)) then
+        dmat_ao%mat_dim = nao
+        dmat_ao%mat_nz  = nz
+        call dmat_ao%alloc()
+        call dmat_transform_mo2ao(cmo, dmat_mo_from_occupation, dmat_ao)
+        call dmat_ao%scale_elements(2.0d0)
+      end if
+
       deallocate(occupation)
-
-     !do m = 1, norbt
-     !   D_mo%elms((m-1)*norbt+m) = occupation(m)
-     !end do
-
-     !D_mo%ih_sym = 1
-     !D_mo%tr_sym = 1
-     !D_mo%irep   = 0
-
-     !if (wf_order == 0) dmat = C*(D_mo*dag(C))
 
     else if (wf_order == 1) then
 !     use PAMXVC
@@ -132,10 +148,6 @@ contains
 #endif
 
     ! then, the rest happens on master only
-    ! legacy
-    mat_ao_dim = ntbas(0)
-    mat_ao_nz = nz
-    mat_ao_irep = 0
 
 #ifdef VAR_MPI
     if (is_parallel()) call sync_visual_cfg()
@@ -164,7 +176,7 @@ contains
       if (present(print_level)) then
         if (print_level > 0) then
           write(*, *) 'Molecule data read from DIRAC CHECKPOINT'
-          call mol%display
+          !call mol%display
         end if
       end if
 
@@ -184,7 +196,7 @@ contains
 !g          write(*, *) 'AO data read from DIRAC CHECKPOINT'
 !g          !call ao%display
           write(*, *) 'MO data read from DIRAC CHECKPOINT'
-          call mo%display
+          !call mo%display
       !  end if
       !end if
     end if
@@ -251,7 +263,6 @@ contains
     nao = sum(n_basis)
     npo = sum(n_po)
     nmo = sum(n_mo)
-    nto = npo+nmo
     ncoef = nz * sum(n_basis*n_mo)
 
     cmo%n_ao = n_basis
@@ -260,36 +271,32 @@ contains
     cmo%nz   = nz
     cmo%total_energy = total_energy
 
-    call cmo%allocate_all()
+    call cmo%alloc_all()
 
     call checkpoint_query(group//'mobasis/orbitals',tobe_dirac)
     if (tobe_dirac) then
       allocate(mo_coeff(ncoef))
       mo_coeff = 0.0d0
       call checkpoint_read(group//'/mobasis/orbitals',rdata=mo_coeff)
-      allocate(mo_coeff_q(nao,nto,nz))
-      mo_coeff_q = 0.0d0
-      mo_coeff_q = reshape(mo_coeff,(/nao,nto,nz/))
-      cmo%coeff  = mo_coeff_q(:,npo+1:nto,:)
+      cmo%coeff  = mo_coeff(1:ncoef)
       deallocate(mo_coeff)
-      deallocate(mo_coeff_q)
     end if
 
     call checkpoint_query(group//'mobasis/eigenvalues',tobe_dirac)
     if (tobe_dirac) then
-      allocate(eig(nto))
+      allocate(eig(nmo))
       eig = 0.0d0
       call checkpoint_read(group//'/mobasis/eigenvalues',rdata=eig)
-      cmo%energy   = eig(npo+1:nto)
+      cmo%energy   = eig(npo+1:nmo)
       deallocate(eig)
     end if
 
     call checkpoint_query(group//'mobasis/symmetry',tobe_dirac)
     if (tobe_dirac) then
-      allocate(ibeig(nto))
+      allocate(ibeig(nmo))
       ibeig = 0
       call checkpoint_read(group//'/mobasis/symmetry',idata=ibeig)
-      cmo%symmetry = ibeig(npo+1:nto)
+      cmo%symmetry = ibeig(npo+1:nmo)
       deallocate(ibeig)
     end if
 
@@ -298,7 +305,7 @@ contains
     do i = 1, nmo
        index(i) = i ! we set the index compatible with the fact that we store all mo's
     end do
-    cmo%index    = index(npo+1:nto)
+    cmo%index    = index(npo+1:nmo)
     deallocate(index)
 
 !   switch to unrestricted spinor picture
@@ -317,7 +324,7 @@ contains
     type(mol_t), intent(inout):: mol
     type(ao_t), intent(inout):: ao
     type(cmo_t), intent(inout):: cmo
-    integer:: n,m
+    integer:: nmo,nao,nz,ncoeff
 
     call interface_mpi_bcast(mol%n_atoms,1,irank_master,global_communicator)
 
@@ -342,31 +349,38 @@ contains
     call interface_mpi_bcast(cmo%n_mo,2,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%n_fsym,1,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%nz,1,irank_master,global_communicator)
-    n = sum(cmo%n_mo)
-    m = sum(cmo%n_ao)
+    nmo = sum(cmo%n_mo)
+    nao = sum(cmo%n_ao)
+    nz  = cmo%nz
+    ncoeff = nmo*nao*nz
+
     if (.not.mpi_is_master()) then
-      nullify(cmo%energy)
-      allocate(cmo%energy(n))
-      cmo%energy(1:n) = 0.0d0
-  
-      nullify(cmo%coeff)
-      allocate(cmo%coeff(m,n,cmo%nz))
-      cmo%coeff(1:m,1:n,1:cmo%nz) = 0.0d0
-  
-      nullify(cmo%symmetry)
-      allocate(cmo%symmetry(n))
-      cmo%symmetry(1:n) = 0
-  
-      nullify(cmo%index)
-      allocate(cmo%index(n))
-      cmo%index(1:n) = 0
+      call cmo%alloc_all()
     end if
-    call interface_mpi_bcast(cmo%energy,n,irank_master,global_communicator)
-    call interface_mpi_bcast(cmo%coeff,n*m*cmo%nz,irank_master,global_communicator)
-    call interface_mpi_bcast(cmo%symmetry,n,irank_master,global_communicator)
-    call interface_mpi_bcast(cmo%index,n,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%energy,nmo,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%coeff,ncoeff,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%coeff_q,ncoeff,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%symmetry,nmo,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%index,nmo,irank_master,global_communicator)
 
   end subroutine synchronize_data_from_dirac
+
+  subroutine synchronize_dmat(dmat)
+    type(dmat_t), intent(inout):: dmat
+    integer:: n
+
+    call interface_mpi_bcast(dmat%mat_dim,1,irank_master,global_communicator)
+    call interface_mpi_bcast(dmat%mat_nz,1,irank_master,global_communicator)
+    n = dmat%mat_dim*dmat%mat_dim*dmat%mat_nz
+
+    if (.not.mpi_is_master()) then
+      call dmat%alloc()
+      !call dmat%alloc_q()
+    end if
+    call interface_mpi_bcast(dmat%elements,n,irank_master,global_communicator)
+    !call interface_mpi_bcast(dmat%elements_q,n,irank_master,global_communicator)
+
+  end subroutine
 
 
   subroutine synchronize_grid_data(grid)
@@ -424,8 +438,6 @@ contains
     integer:: len_gffn_inp, len_gffn_out, len_gf_name
 
     if (mpi_is_master()) then
-      !write(*,*) 'IN synchronize_grid_function_data: ', grid_function%file_out
-      !write(*,*) 'IN synchronize_grid_function_data: ', len_trim(grid_function%file_out)
       if (allocated(grid_function%file_inp)) then
         len_gffn_inp = len_trim(grid_function%file_inp)
       else
@@ -470,5 +482,47 @@ contains
   end subroutine synchronize_grid_function_data
 
 #endif
+
+! -----------------------------------------------------------------------------
+  subroutine dmat_transform_mo2ao(cmo, dmat_mo, dmat_ao)
+
+    type(cmo_t), intent(in) :: cmo
+    type(dmat_t), intent(inout) :: dmat_ao
+    type(dmat_t), intent(inout) :: dmat_mo
+    integer :: iprint
+    integer :: nao, nmo, nz, nrao, ncao, nrmo, ncmo, irep
+    integer :: i2basx(2, 2), i2orbx(2, 2), icmoq(2), ipqtoq(2, 0:7)
+    integer :: i,j
+!
+!   Do the transformation dmat_ao(mu,nu)=cmo(mu,p)*dmat_mo(p,q)*cmo^{-1}(q,nu)
+! -----------------------------------------------------------------------------
+
+    ! gosia fixme - this causes "catastrophic error: **Internal compiler error: internal abort** Please report this error along with the circumstances in which it occurred in a Software Problem Report.  Note: File and line given may not be explicit cause of this error."
+    !if (   .not.dmat_ao%associated_elements  &
+    !  .and..not.dmat_mo%associated_elements  &
+    !  .and..not.cmo%associated_cmo_coeff) return
+
+    iprint = 0
+
+    nao  = sum(cmo%n_ao)
+    nmo  = sum(cmo%n_mo)
+    nz   = cmo%nz
+
+!   gosia fixme: no symmetry hardcoded
+    i = 1
+    j = 1
+      nrao = cmo%n_ao(i)
+      ncao = cmo%n_ao(j)
+      nrmo = cmo%n_mo(i)
+      ncmo = cmo%n_mo(j)
+      irep = 0
+      call qtrans90('MOAO','S',0.D0,nrao,ncao,nrmo,ncmo,&
+                    dmat_ao%elements,nao,nao,nz,(/1,2,3,4/),& 
+                    dmat_mo%elements,nmo,nmo,nz,(/1,2,3,4/),& 
+                    cmo%coeff,nrao,nrmo,nz,(/1,2,3,4/), &
+                    cmo%coeff,ncao,ncmo,nz,(/1,2,3,4/), &
+                    iprint)
+
+  end subroutine
 
 end module

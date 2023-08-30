@@ -24,8 +24,6 @@ contains
       !call get_grid_function_info_from_file(grid_function)
       if (grid_function%id == 0) grid_function%id = grid_function_id
     else
-      ! gosia todo:
-      ! grid to generate
       if (grid_function_id /= grid_function%id) then
         print *, 'ERROR: problem with grid function id in get_grid_function_info; '
         print *, 'grid_function%id is ', grid_function%id, ' while grid_function_id is ', grid_function_id
