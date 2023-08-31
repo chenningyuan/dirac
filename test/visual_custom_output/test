@@ -40,8 +40,12 @@ def compare_txt(fname, fname_ref):
 # tests to move elsewhere:
 # vis_3d_edderivs_h5out.inp - to tests on density derivatives
 
+#test.run(['dc_lda.inp'], ['h2o.mol'], args='--outcmo --get="PAMXVC TBMO"')
+#test.run(['vis_lda_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="*.h5"')
 
-### FIXMEtest.run(['dc.inp'], ['h2o.mol'], args='--outcmo --get="PAMXVC TBMO"')
+
+#FIXMEtest.run(['dc.inp'], ['h2o.mol'], args='--outcmo --get="PAMXVC TBMO"')
+test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="*.h5"')
 
 # OK! test.run(['vis_list_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_list.txt"')
 # OK! test.run(['vis_list_diracout.inp'], ['h2o.mol'], f, args='--incmo')
@@ -51,7 +55,7 @@ def compare_txt(fname, fname_ref):
 #test.run(['vis_2d_out.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_2d.txt"')
 
 #test.run(['vis_3d_legacy.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5"')
-test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="*.h5"')
+#test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="*.h5"')
 
 #test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="scalar_field_3d.txt *.h5"')
 #test.run(['vis_3d_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_3d.txt"')

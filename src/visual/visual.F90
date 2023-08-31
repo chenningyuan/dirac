@@ -868,6 +868,7 @@ contains
   end subroutine visual_driver_refactored
 
 
+! ------------------------------------------------------------------------------
   subroutine work_on_grid(ndim, nr_points, &
                           grid_points,   &
                           grid_function, &
@@ -879,29 +880,23 @@ contains
     integer, intent(in):: nr_points
     real(8), intent(in):: grid_points(ndim, nr_points)
     type(grid_function_t), intent(inout):: grid_function
-    real(8), intent(out) :: grid_function_values(:,:)
-    type(dmat_t), intent(in)  :: dmat_0
-    real(8)              :: ao(*)
-    real(8)              :: buffer(*)
-    integer:: ipoint, icomp
-    integer:: i
+    real(8), intent(out):: grid_function_values(:,:)
+    type(dmat_t), intent(in):: dmat_0
+    real(8), intent(inout):: ao(*)
+    real(8), intent(inout):: buffer(*)
+    integer:: ipoint, i
+! ------------------------------------------------------------------------------
 
     if (grid_function%name .eq. 'espe') then
 
-      !call TEMP_test_values_in_points('grid_points', &
-      !                       nr_points, grid_points,v1=grid_function_values)
-      do ipoint = 1, nr_points
-     
-        call get_ao(1,                     &
-                    grid_points(1, ipoint),&
-                    grid_points(2, ipoint),&
-                    grid_points(3, ipoint),&
-                    ao,                    &
-                    buffer)
-      if (ao(ipoint) .ne. 0.0d0) &
-        write(*,'(a,2i6,es20.8)') 'CALLING ESP ON NODE; ao: ', get_my_rank(), ipoint, ao(ipoint)
-      end do
-
+      !do ipoint = 1, nr_points
+      !  call get_ao(1,                     &
+      !              grid_points(1, ipoint),&
+      !              grid_points(2, ipoint),&
+      !              grid_points(3, ipoint),&
+      !              ao,                    &
+      !              buffer)
+      !end do
 
       call get_esp_functions_in_points(get_my_rank(),&
                                        dmat_0,&
@@ -913,28 +908,28 @@ contains
                              nr_points, grid_points, v1=grid_function_values)
 
     else
-    do ipoint = 1, nr_points
-
-      call get_ao(1,                     &
-                  grid_points(1, ipoint),&
-                  grid_points(2, ipoint),&
-                  grid_points(3, ipoint),&
-                  ao,                    &
-                  buffer)
-
-      !call TEMP_test_values_in_point('AO68 in point', &
-      !                       ipoint, grid_points(1:3, ipoint), v1=ao(68))
-
-      call get_quantity_in_point_refactored(dmat_0,&
-                                            ao,buffer,&
-                                            grid_function,grid_function_values,&
-                                            grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
-                                            ipoint)
-
-      !call TEMP_test_values_in_point('grid_function_values in point', &
-      !                       ipoint, grid_points(1:3, ipoint), v3=grid_function_values(1:3,ipoint))
-
-    end do
+      do ipoint = 1, nr_points
+      
+        call get_ao(1,                     &
+                    grid_points(1, ipoint),&
+                    grid_points(2, ipoint),&
+                    grid_points(3, ipoint),&
+                    ao,                    &
+                    buffer)
+      
+        !call TEMP_test_values_in_point('AO68 in point', &
+        !                       ipoint, grid_points(1:3, ipoint), v1=ao(68))
+      
+        call get_quantity_in_point_refactored(dmat_0,&
+                                              ao,buffer,&
+                                              grid_function,grid_function_values,&
+                                              grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
+                                              ipoint)
+      
+        !call TEMP_test_values_in_point('grid_function_values in point', &
+        !                       ipoint, grid_points(1:3, ipoint), v3=grid_function_values(1:3,ipoint))
+      
+      end do
 
     end if
 

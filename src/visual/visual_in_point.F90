@@ -55,31 +55,31 @@ module visual_in_point
 
 contains
 
+! ------------------------------------------------------------------------------
   subroutine get_quantity_in_point_refactored(dmat_0,&
                                               ao,buffer,&
                                               grid_function,grid_function_values,&
                                               px,py,pz,&
                                               ipoint)
 
-!    --------------------------------------------------------------------------
-     type(dmat_t), intent(in)  :: dmat_0
-     real(8), intent(in)  :: ao(*)
-     real(8), intent(in)  :: buffer(*)
-     type(grid_function_t), intent(inout):: grid_function
-     real(8), intent(out):: grid_function_values(:,:)
-     real(8), intent(in) :: px, py, pz
-     integer, intent(in), optional  :: ipoint !thiswill not be optional
-!    --------------------------------------------------------------------------
-     integer  :: mat_dim, mat_nz, mat_irep
-     integer              :: imat
-     real(8)              :: v1, v2(3), v3(3,3)
-     integer              :: i,j
-      real(8)              :: b, c
-     real(8)              :: eigenvalues(3)
-     real(8)              :: eigenvectors(3, 3)
-      real(8)              :: temp(3), temp2(9)
-      integer              :: itemp(3)
-!    --------------------------------------------------------------------------
+    type(dmat_t), intent(in)  :: dmat_0
+    real(8), intent(in)  :: ao(*)
+    real(8), intent(in)  :: buffer(*)
+    type(grid_function_t), intent(inout):: grid_function
+    real(8), intent(out):: grid_function_values(:,:)
+    real(8), intent(in) :: px, py, pz
+    integer, intent(in), optional  :: ipoint !thiswill not be optional
+
+    integer  :: mat_dim, mat_nz, mat_irep
+    integer              :: imat
+    real(8)              :: v1, v2(3), v3(3,3)
+    integer              :: i,j
+     real(8)              :: b, c
+    real(8)              :: eigenvalues(3)
+    real(8)              :: eigenvectors(3, 3)
+     real(8)              :: temp(3), temp2(9)
+     integer              :: itemp(3)
+! ------------------------------------------------------------------------------
 
      !px = grid%points(1, ipoint)
      !py = grid%points(2, ipoint)
@@ -250,43 +250,31 @@ contains
    end subroutine
 
 
+! ------------------------------------------------------------------------------
   subroutine get_esp_functions_in_points(my_rank,&
                                          dmat_0,&
                                          ao,buffer,&
                                          ndim,nr_points,grid_points,&
                                          grid_function,grid_function_values)
 
-!    --------------------------------------------------------------------------
-     integer, intent(in)  :: my_rank
-     type(dmat_t), intent(in)  :: dmat_0
-     real(8), intent(in)  :: ao(*)
-     real(8), intent(in)  :: buffer(*)
-     integer, intent(in)  :: ndim,nr_points
-     real(8), intent(in)  :: grid_points(ndim,nr_points)
-     type(grid_function_t), intent(inout):: grid_function
-     real(8), intent(inout):: grid_function_values(:,:)
-!    --------------------------------------------------------------------------
-     integer  :: mat_dim, mat_nz, mat_irep
-     integer  :: ipoint
-     integer              :: imat
-     real(8)              :: v1, v2(3), v3(3,3)
-     integer              :: i,j
-      real(8)              :: b, c
-     real(8)              :: eigenvalues(3)
-     real(8)              :: eigenvectors(3, 3)
-      real(8)              :: temp(3), temp2(9)
-      integer              :: itemp(3)
-      real(8)              :: density
-      real(8),allocatable :: esp(:), esp_e(:), esp_n(:)
-!    --------------------------------------------------------------------------
+    integer, intent(in) :: my_rank
+    type(dmat_t), intent(in):: dmat_0
+    real(8), intent(in):: ao(*)
+    real(8), intent(in):: buffer(*)
+    integer, intent(in):: ndim,nr_points
+    real(8), intent(in):: grid_points(ndim,nr_points)
+    type(grid_function_t), intent(in):: grid_function
+    real(8), intent(inout):: grid_function_values(:,:)
 
+    integer  :: mat_dim, mat_nz, mat_irep
+! ------------------------------------------------------------------------------
 
     if (grid_function%name .eq. 'espe') then
       mat_dim  = dmat_0%mat_dim
       mat_nz   = dmat_0%mat_nz
       mat_irep = 0
       call get_esp(nr_points,&
-                   grid_function_values(1:1,1:nr_points),&
+                   grid_function_values(1,1:nr_points),&
                    mat_irep, &
                    mat_dim,  &
                    dmat_0%elements,   &
@@ -297,12 +285,11 @@ contains
       grid_function_values = 0.5d0*grid_function_values
     end if
 
-
-
   end subroutine
 
 
 
+!  ----------- legacy ----------------------------------------------------------
    subroutine get_quantity_in_point(nr_dmat, &
                                     D,       &
                                     D_0,     &

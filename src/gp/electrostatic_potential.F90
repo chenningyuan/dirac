@@ -222,7 +222,7 @@ module electrostatic_potential
 #ifdef prg_dirac
 #include "dcbgrd.h"
 #endif
-#include "ccom.h"
+!#include "ccom.h" gosia - set THRS as a parameter here; otherwise cause trubles in VISUAL
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -259,6 +259,9 @@ module electrostatic_potential
       logical :: do_matrix
       real(8) :: debug_dij , debug_vij,  debug_prod , debug_sum
       integer :: idxa, idxb
+!gosia - set THRS as a parameter here; otherwise cause trubles in VISUAL;
+! its value is taken from REAINI subroutine in abacus/herrdn.F
+      real(8), parameter :: THRS = 1.0D-15
 
       if (nbsym > 1) then
          call quit('ESP calculation cannot handle symmetry!')
@@ -293,7 +296,7 @@ module electrostatic_potential
 ! Loop over bras <mu|      
 
       ! gosia: not all variables are visible in parallel when called from visual; but OK when called from embedding...
-      write(*, '(a,i6,2e16.8,2i6,l6)') 'IN ELECTRONIC_MEP ', my_rank, tols,tolog,idxmax,kmax,do_matrix
+      write(*, '(a,i6,e16.8,3i6,3l6)') 'IN ELECTRONIC_MEP ',my_rank,tols,idxmax,kmax,nlrgsh,nosmlv,skipss_block,levyle
 !!!!
 !! aspg, 23/10/2015
 !! debug printouts
