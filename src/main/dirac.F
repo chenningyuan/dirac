@@ -129,6 +129,7 @@ C
       call xml_begin('run','type="dirac-run"')
       write (lupri,'(/A,I2)')," * Opening checkpoint file "
       call checkpoint_open
+      call init_propfile
 C
 C***********************************************************************
 C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************

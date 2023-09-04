@@ -177,6 +177,7 @@ if(ENABLE_EXATENSOR)
 
    #Add also the tests (weird to do this here, but this whole test set up needs an overhaul).
    #disabled some tests waiting for code verification/efficiency improvement
+    dirac_test(exacorr_symmstart "cc;talsh;short" "")
     dirac_test(exacorr_talsh_memory "cc;talsh;short" "")
     dirac_test(exacorr_talsh_debug "cc;talsh;short" "")
     dirac_test(exacorr_talsh_nr_contracted "cc;talsh;short" "")

@@ -82,6 +82,9 @@ C
         CALL READIN(.FALSE.)
         CALL SETDC1(IPREAD)
       ENDIF
+
+C     ! write symmetry information to checkpoint
+      call symm_to_checkpoint
 C
 C     Generate all one-electron integrals
 C     ===================================
@@ -120,7 +123,7 @@ C     ===================
 #endif
 
 !     Write basis set information (which includes their centers, so is geometry-dependent) to checkpoint file
-      call write_basis_fromcommon
+      call write_basis_fromcommon(.false.) ! the argument false signals that we write the default format
 
       IF(DOHRM) THEN
         CALL TIMER2('PAMSET',TIMSTR,TIMEND)
@@ -1617,4 +1620,24 @@ C
 C
       RETURN
       END
+      subroutine symm_to_checkpoint
+
+      ! write point group symmetry information to checkpoint
+      use checkpoint
+
+#include "implicit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+
+#include "symmet.h"
+#include "dgroup.h"
+
+      call checkpoint_write ('/result/symmetry/inversion',
+     &     idata=nfsym)
+      call checkpoint_write ('/result/symmetry/maxopr',idata=maxopr)
+      call checkpoint_write ('/result/symmetry/isymax',
+     &     idata=reshape(isymax,(/6/)))
+      end
+
 ! -- end of dirac/dirset.F --
