@@ -58,27 +58,24 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine get_quantity_in_point_refactored(dmat_0,&
                                               ao,buffer,&
-                                              grid_function,grid_function_values,&
+                                              grid_function,&
+                                              grid_function_values,&
                                               px,py,pz,&
                                               ipoint)
 
-    type(dmat_t), intent(in)  :: dmat_0
-    real(8), intent(in)  :: ao(*)
-    real(8), intent(in)  :: buffer(*)
+    type(dmat_t), intent(in):: dmat_0
+    real(8), intent(in):: ao(*)
+    real(8), intent(in):: buffer(*)
     type(grid_function_t), intent(inout):: grid_function
     real(8), intent(out):: grid_function_values(:,:)
-    real(8), intent(in) :: px, py, pz
+    real(8), intent(in):: px, py, pz
     integer, intent(in), optional  :: ipoint !thiswill not be optional
 
-    integer  :: mat_dim, mat_nz, mat_irep
-    integer              :: imat
-    real(8)              :: v1, v2(3), v3(3,3)
-    integer              :: i,j
-     real(8)              :: b, c
-    real(8)              :: eigenvalues(3)
-    real(8)              :: eigenvectors(3, 3)
-     real(8)              :: temp(3), temp2(9)
-     integer              :: itemp(3)
+    integer:: mat_dim, mat_nz, mat_irep
+    integer:: imat,i,j,itemp(3)
+    real(8):: b, c, v1, v2(3), v3(3,3)
+    real(8):: eigenvalues(3),eigenvectors(3, 3)
+    real(8):: temp(3), temp2(9)
 ! ------------------------------------------------------------------------------
 
      !px = grid%points(1, ipoint)

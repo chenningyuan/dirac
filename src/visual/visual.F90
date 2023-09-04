@@ -77,7 +77,6 @@ contains
     logical, intent(in), optional :: launch_only
 
     type(mol_t):: mol
-    type(ao_t):: ao_data
     type(cmo_t):: mo_data
     real(8) :: walltime
     logical :: legacy_prep
@@ -542,34 +541,31 @@ contains
     if (visual_cfg_global_refactor) then
 
 !     gosia 19/5/2023: 
-!     now assuming calculations on one molecular system at a time;
-!     so all data is read from one DIRAC's CHECKPOINT file
-
-!     prepare density matrices
-!     gosia fixme 
-!     this is a temporary solution for handling density matrices;
-!     also see https://gitlab.com/dirac/dirac-private/-/issues/550
+!     calculations are done on one molecular system,
+!     and data (molecular information+wave function) is read from one DIRAC's CHECKPOINT file
 
       if (mpi_is_master()) then
-        call visual_initialize_data_from_dirac(mol,ao_data,mo_data)
+        call visual_initialize_data_from_dirac(mol,mo_data)
+
+!       gosia fixme: 
+!       this is a temporary solution for handling density matrices;
+!       also see https://gitlab.com/dirac/dirac-private/-/issues/550
         call dirac_dmat_init(0, mo_data, dmat_ao=dmat_0)
       end if
 
 #ifdef VAR_MPI
       if (is_parallel()) then
-        call synchronize_data_from_dirac(mol,ao_data,mo_data)
+        call synchronize_data_from_dirac(mol,mo_data)
         call synchronize_dmat(dmat_0)
-        call interface_mpi_bcast(visual_cfg_nr_dmat, 1, irank_master,global_communicator)
       end if
 #endif
 
-      !call dmat_0%display(node_id=get_my_rank())
-!
 !     gosia todo - when developing a separate schema, here: open rs-checkpoint
 !     write (lupri,'(/A,I2)')," * Opening checkpoint file for real-space data (VISUAL) "
 !     call checkpoint_rs_open
 ! 
-      call visual_driver_refactored(mol,ao_data,mo_data,dmat_0)
+      call visual_driver_refactored(mol,mo_data,dmat_0)
+
 !     call checkpoint_rs_close
       call dmat_0%erase()
 
@@ -620,9 +616,8 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine visual_driver_refactored(mol,ao_data,cmo,dmat_0)
+  subroutine visual_driver_refactored(mol,cmo,dmat_0)
     type(mol_t), intent(inout):: mol
-    type(ao_t), intent(inout):: ao_data
     type(cmo_t), intent(in):: cmo
     type(dmat_t), intent(in):: dmat_0
 
@@ -642,7 +637,6 @@ contains
 ! ------------------------------------------------------------------------------
 
     if (mpi_is_master()) call rs_input%display
-
 
     do ig = 1, rs_input%nr_grids
 
@@ -669,11 +663,8 @@ contains
 !     gosia:
 !     * TODO: for optimization - try making all arrays 1-dimensional, then reshape?
 !     grid_points = reshape(rs_input%grids(ig)%points(g_ndim, npoints))
-!     * FIXME: grid can be read from file or generated;
-!       * reading from file should be done on master
-!       * grid generation should be done in parallel
-!       now I do everything on master
-
+!     * grid can be read from file or generated;
+!       fixme: grid generation should be done in parallel (now - done sequentially, on master)
       if (mpi_is_master()) then
         call get_grid_points(rs_input%grids(ig))
         if (rs_input%print_level > 0) then
@@ -685,7 +676,7 @@ contains
       end if
 
       if (rs_input%grids(ig)%export) then
-!       also export grid to a separate file 
+!       export grid to a separate file 
         if (mpi_is_master()) then
           call store_grid(rs_input%grids(ig))
           if (rs_input%print_level > 0) then
@@ -698,9 +689,6 @@ contains
 
 !
 !       get necessary information about the grid function and share with workers
-!
-!       gosia:
-!       * FIXME: now, this is used only to assign labels for hdf5 storage,
 
         if (mpi_is_master()) then 
           call get_grid_function_info(igf, rs_input%grid_functions(igf))
@@ -726,7 +714,10 @@ contains
 !
 !         initialize ao module
 !
-
+!         gosia fixme(?)
+!         VISUAL uses AO evaluation routines from xcint;
+!         which also set up all offsets used in subroutines in xcint/density_eval.F90,
+!         called from visual_in_point.F90
           call dirac_ao_eval_init(rs_input%grid_functions(igf)%max_ao_g_order, &
                                   rs_input%grid_functions(igf)%max_ao_m_order, &
                                   .true.)
@@ -736,19 +727,12 @@ contains
           allocate(buffer(1,nr_ao_slices*nr_ao_cartesian))
           buffer = 0.0d0
 
-          if (allocated(ao)) then
-            write(*, *) 'ao is allocated on node ', get_my_rank()
-          end if
-          if (allocated(buffer)) then
-            write(*, *) 'buffer is allocated on node ', get_my_rank()
-          end if
-
-!!
-!!         prepare density matrices
-!!
-!!         gosia fixme 
-!!         this is a temporary solution for handling density matrices;
-!!         also see https://gitlab.com/dirac/dirac-private/-/issues/550
+!
+!         prepare density matrices
+!
+!         gosia fixme 
+!         this is a temporary solution for handling density matrices;
+!         also see https://gitlab.com/dirac/dirac-private/-/issues/550
 !          if (rs_input%grid_functions(igf)%wf_order > 0) then
 !            if (mpi_is_master()) then
 !              call dirac_dmat_init(rs_input%grid_functions(igf)%wf_order,&
@@ -787,7 +771,6 @@ contains
  
           ! gosia todo:
           ! add "visualize"/"integrate" procedures in this call; now - visualization only
-          ! add constructs for DIRAC data (D, D_0, ...)
           !
           call work_on_grid(g_ndim, n_this_proc, &
                             rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
@@ -802,8 +785,8 @@ contains
           allocate(rs_input%grid_functions(igf)%values(gf_ndim, npoints))
           rs_input%grid_functions(igf)%values = 0.0d0
 
-            !write(*, *) 'AFTER WORK_ON_GRID'
-            !write(*, *) 'values: ', ((grid_function_values(i,j),j=1,n_this_proc),i=1,gf_ndim), get_my_rank()
+          write(*, *) 'AFTER WORK_ON_GRID'
+          write(*, *) 'values: ', ((grid_function_values(i,j),j=1,n_this_proc),i=1,gf_ndim), get_my_rank()
  
           if (is_parallel()) then
             do idim_gf = 1, gf_ndim
@@ -864,7 +847,6 @@ contains
       call rs_input%grids(ig)%erase()
     end do
 
-
   end subroutine visual_driver_refactored
 
 
@@ -885,7 +867,6 @@ contains
     real(8), intent(inout):: ao(*)
     real(8), intent(inout):: buffer(*)
     integer:: ipoint, i
-! ------------------------------------------------------------------------------
 
     if (grid_function%name .eq. 'espe') then
 
@@ -916,9 +897,6 @@ contains
                     grid_points(3, ipoint),&
                     ao,                    &
                     buffer)
-      
-        !call TEMP_test_values_in_point('AO68 in point', &
-        !                       ipoint, grid_points(1:3, ipoint), v1=ao(68))
       
         call get_quantity_in_point_refactored(dmat_0,&
                                               ao,buffer,&

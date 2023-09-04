@@ -13,23 +13,24 @@ module visual_grid_functions
 
 contains
 
+! ------------------------------------------------------------------------------
   subroutine get_grid_function_info(grid_function_id, grid_function)
     integer, intent(in):: grid_function_id
     type(grid_function_t), intent(inout):: grid_function
+! ------------------------------------------------------------------------------
 
     if (grid_function%input  ==  1) then
       ! gosia todo:
-      ! grid function data to read from file
-      !
+      ! read grid function data from file
       !call get_grid_function_info_from_file(grid_function)
       if (grid_function%id == 0) grid_function%id = grid_function_id
     else
       if (grid_function_id /= grid_function%id) then
-        print *, 'ERROR: problem with grid function id in get_grid_function_info; '
-        print *, 'grid_function%id is ', grid_function%id, ' while grid_function_id is ', grid_function_id
+        print *, 'ERROR: problem with grid function id in get_grid_function_info:'
+        print *, ' * grid_function%id=', grid_function%id
+        print *, ' * grid_function_id=', grid_function_id
         return
       end if
-      !call get_grid_function_essentials(grid_function)
     end if
 
     ! we should now have all information to work on the grid function
@@ -38,8 +39,10 @@ contains
   end subroutine get_grid_function_info
 
 
+! ------------------------------------------------------------------------------
   subroutine get_grid_function_values(grid_function)
     type(grid_function_t), intent(inout):: grid_function
+! ------------------------------------------------------------------------------
 
     if (.not. grid_function%allocated_values()) return
 

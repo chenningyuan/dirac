@@ -420,6 +420,7 @@ contains
 
 ! NEW
 
+! ------------------------------------------------------------------------------
   subroutine grid_extents_from_mol(mol, grid, extents)
 #include "codata.h"
     type(mol_t), intent(in):: mol
@@ -450,6 +451,7 @@ contains
   end subroutine grid_extents_from_mol
 
 
+! ------------------------------------------------------------------------------
   subroutine grid_npoints_from_spacing(grid, extents)
     type(grid_t), intent(inout):: grid
     real(8), intent(in):: extents(0:1, 3)
@@ -471,6 +473,7 @@ contains
   end subroutine grid_npoints_from_spacing
 
 
+! ------------------------------------------------------------------------------
   subroutine grid_spacing_from_npoints(grid, extents)
     type(grid_t), intent(inout):: grid
     real(8), intent(in):: extents(0:1, 3)
@@ -488,6 +491,7 @@ contains
     end do
   end subroutine grid_spacing_from_npoints
 
+! ------------------------------------------------------------------------------
   subroutine grid_origin_from_mol(grid, mol, extents)
     type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
@@ -499,6 +503,7 @@ contains
   end subroutine grid_origin_from_mol
 
 
+! ------------------------------------------------------------------------------
   subroutine center_mol_in_grid(grid)
 #include "orgcom.h"
     type(grid_t), intent(inout):: grid
@@ -520,6 +525,7 @@ contains
   end subroutine center_mol_in_grid
 
 
+! ------------------------------------------------------------------------------
   subroutine grid_get_nr_points_total(grid)
     type(grid_t), intent(inout):: grid
     integer:: i
@@ -533,6 +539,7 @@ contains
   end subroutine grid_get_nr_points_total
 
 
+! ------------------------------------------------------------------------------
   subroutine get_grid_essentials(grid, mol)
     type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
@@ -552,20 +559,22 @@ contains
   end subroutine get_grid_essentials
 
 
+! ------------------------------------------------------------------------------
   subroutine get_grid_info(grid_id, grid, mol)
     integer, intent(in):: grid_id
     type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
 
     if (grid%input  ==  1) then
-      ! grid data to read from file
+      ! read grid data from file
       call get_grid_info_from_file(grid)
       if (grid%id == 0) grid%id = grid_id
     else if (grid%input  ==  0) then
-      ! grid to generate
+      ! generate grid
       if (grid_id /= grid%id) then
         print *, 'ERROR: problem with grid id in get_grid_info'
-        print *, 'grid%id is ', grid%id, ' while grid_id is ', grid_id
+        print *, ' * grid%id=', grid%id
+        print *, ' * grid_id=', grid_id
         return
       end if
       call get_grid_essentials(grid, mol)
@@ -580,6 +589,7 @@ contains
   end subroutine get_grid_info
 
 
+! ------------------------------------------------------------------------------
   subroutine get_grid_points(grid)
     type(grid_t), intent(inout):: grid
 
@@ -595,6 +605,7 @@ contains
   end subroutine
 
 
+! ------------------------------------------------------------------------------
   subroutine generate_grid_points(grid)
     type(grid_t), intent(inout):: grid
     integer :: i

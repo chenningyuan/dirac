@@ -1,15 +1,17 @@
 module visual_dirac
 
-  use checkpoint
   use visual_datatypes
   use visual_cfg
-
+  use visual_utils
   use visual_mpi
+
+! DIRAC modules
+  use checkpoint
+
 #ifdef VAR_MPI
    use interface_to_mpi
    use integer_kind_mpilib
 #endif
-
 
   implicit none
 
@@ -25,9 +27,7 @@ module visual_dirac
   public synchronize_dmat
 #endif
 
-
   private
-
 
 contains
 
@@ -58,7 +58,6 @@ contains
       dmat_mo_from_occupation%mat_nz  = nz
       call dmat_mo_from_occupation%alloc()
       do i = 1, nmo
-        !dmat_mo%elements((i-1)*nmo*nz + i) = occupation
         dmat_mo_from_occupation%elements((i-1)*nmo + i) = occupation(i)
       end do
 
@@ -156,18 +155,16 @@ contains
   end subroutine visual_initialize_and_sync_nodes
 
 
-! -----------------------------------------------------------------------------
-  subroutine visual_initialize_data_from_dirac(mol, ao, mo, print_level)
+! ------------------------------------------------------------------------------
+  subroutine visual_initialize_data_from_dirac(mol, mo, print_level)
     type(mol_t), intent(out):: mol
-    type(ao_t),  intent(out):: ao
     type(cmo_t), intent(out):: mo
     integer, optional :: print_level
-    character*(:),allocatable:: group
+    character*(:),allocatable:: group,section
     logical:: tobe_dirac
 !
-!   read data from DIRAC's CHECKPOINT file(s) into DTs:
-!   ao basis, MO coefficients, molecular information
-!   ---------------------------------------------------------------------------
+!   read data from DIRAC's CHECKPOINT file(s) into DTs
+! ------------------------------------------------------------------------------
 
     group = '/input/molecule/'
     call checkpoint_query(group, tobe_dirac)
@@ -176,7 +173,7 @@ contains
       if (present(print_level)) then
         if (print_level > 0) then
           write(*, *) 'Molecule data read from DIRAC CHECKPOINT'
-          !call mol%display
+          call mol%display
         end if
       end if
 
@@ -187,27 +184,24 @@ contains
     end if
 
 !   gosia FIXME - the code is validated for scf only
-    group = '/result/wavefunctions/scf/'
-    call checkpoint_query(group//'mobasis/nz', tobe_dirac)
-    if (tobe_dirac) then
-      call read_ao_mo_from_dirac(ao, mo, group)
-      !if (present(print_level)) then
-      !  if (print_level > 0) then
-!g          write(*, *) 'AO data read from DIRAC CHECKPOINT'
-!g          !call ao%display
+    section = 'scf'
+    call read_mo_from_dirac(section, mo)
+      if (present(print_level)) then
+        if (print_level > 0) then
           write(*, *) 'MO data read from DIRAC CHECKPOINT'
-          !call mo%display
-      !  end if
-      !end if
-    end if
+          call mo%display
+        end if
+      end if
 
   end subroutine visual_initialize_data_from_dirac
 
 
+! ------------------------------------------------------------------------------
   subroutine read_mol_from_dirac(mol, group)
     type(mol_t), intent(out) :: mol
     character(len=*),intent(in) :: group
     real(8), allocatable :: temp(:)
+! ------------------------------------------------------------------------------
 
     call checkpoint_read(group//'n_atoms', idata=mol%n_atoms)
 
@@ -227,11 +221,11 @@ contains
   end subroutine read_mol_from_dirac
 
 
-! -----------------------------------------------------------------------------
-  subroutine read_ao_mo_from_dirac(ao, cmo, group)
-    type(ao_t), intent(out):: ao
+! ------------------------------------------------------------------------------
+  subroutine read_mo_from_dirac(section,cmo)
     type(cmo_t), intent(inout) :: cmo
-    character(len=*),intent(in) :: group
+    character(len=*),intent(in) :: section
+    character*(:),allocatable:: group
     logical:: tobe_dirac
     integer:: nao,npo,nmo,nto,ncoef,nfsym,nz
     integer:: n_basis(2),n_po(2),n_mo(2)
@@ -240,15 +234,14 @@ contains
     real(8), allocatable   :: eig(:), mo_coeff(:), mo_coeff_q(:,:,:)
     integer:: i
 !
-!   this subroutine reads data from DIRAC CHECKPOINT files
-!   and fills the "ao" and "mo" derived type
-!   it is based on how things are done in dircmo.F90 and exacorr
+!   this subroutine is based on how things are done in dircmo.F90 and exacorr
 !   gosia, summer 2023
-! -----------------------------------------------------------------------------
+! ------------------------------------------------------------------------------
 
-!
-!   read MO data
-!
+    group = '/result/wavefunctions/'//trim(section)//'/'
+    call checkpoint_query(group//'mobasis', tobe_dirac)
+    if (.not.tobe_dirac) call visual_quit('No MO data available on CHECKPOINT. Stop.')
+
     n_basis = 0
     n_mo = 0
     n_po = 0
@@ -311,20 +304,19 @@ contains
 !   switch to unrestricted spinor picture
     !call convert_mo_to_complex(cmo)
 
-  end subroutine read_ao_mo_from_dirac
+  end subroutine read_mo_from_dirac
 
 
 #ifdef VAR_MPI
-  subroutine synchronize_data_from_dirac(mol, ao, cmo)
-    !
-    ! this subroutine syncs data stored in ao and mol dts, 
-    ! which are read from DIRAC CHECKPOINT
-    ! if any new variable has been added to these dts, please also add it here
-    !
+! ------------------------------------------------------------------------------
+  subroutine synchronize_data_from_dirac(mol, cmo)
     type(mol_t), intent(inout):: mol
-    type(ao_t), intent(inout):: ao
     type(cmo_t), intent(inout):: cmo
     integer:: nmo,nao,nz,ncoeff
+!
+!   this subroutine syncs data stored in cmo and mol DTs, 
+!   if any new variable has been added to these DTs, please also add it here
+! ------------------------------------------------------------------------------
 
     call interface_mpi_bcast(mol%n_atoms,1,irank_master,global_communicator)
 
@@ -338,13 +330,6 @@ contains
     call interface_mpi_bcast(mol%geometry,3*mol%n_atoms,irank_master,global_communicator)
     call interface_mpi_bcast(mol%nuc_charge,mol%n_atoms,irank_master,global_communicator)
 
-    ! gosia todo/fixme what ao data do you need??
-    call interface_mpi_bcast(ao%n_ao,1,irank_master,global_communicator)
-
-    !write(*, *) 'in synchronize_data_from_dirac, mol on node: ', get_my_rank()
-    !call mol%display()
-
-    !cmo data
     call interface_mpi_bcast(cmo%n_ao,2,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%n_mo,2,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%n_fsym,1,irank_master,global_communicator)
@@ -365,9 +350,12 @@ contains
 
   end subroutine synchronize_data_from_dirac
 
+
+! ------------------------------------------------------------------------------
   subroutine synchronize_dmat(dmat)
     type(dmat_t), intent(inout):: dmat
     integer:: n
+! ------------------------------------------------------------------------------
 
     call interface_mpi_bcast(dmat%mat_dim,1,irank_master,global_communicator)
     call interface_mpi_bcast(dmat%mat_nz,1,irank_master,global_communicator)
@@ -375,6 +363,7 @@ contains
 
     if (.not.mpi_is_master()) then
       call dmat%alloc()
+!gosia fixme
       !call dmat%alloc_q()
     end if
     call interface_mpi_bcast(dmat%elements,n,irank_master,global_communicator)
@@ -383,9 +372,11 @@ contains
   end subroutine
 
 
+! ------------------------------------------------------------------------------
   subroutine synchronize_grid_data(grid)
     type(grid_t), intent(inout):: grid
     integer:: len_gfn_inp, len_gfn_out
+! ------------------------------------------------------------------------------
 
     if (mpi_is_master()) then
       if (allocated(grid%file_inp)) then
@@ -421,8 +412,6 @@ contains
     call interface_mpi_bcast_l0(grid%spacing_known,grid%ndim,irank_master,global_communicator)
 
     if (.not.mpi_is_master()) then
-    !!  allocate(grid%points(grid%ndim, grid%nr_points_total))
-    !!  grid%points = 0.0d0
       if (len_gfn_inp > 0) allocate(character(len_gfn_inp):: grid%file_inp)
       if (len_gfn_out > 0) allocate(character(len_gfn_out):: grid%file_out)
     end if
@@ -433,9 +422,11 @@ contains
   end subroutine synchronize_grid_data
 
 
+! ------------------------------------------------------------------------------
   subroutine synchronize_grid_function_data(grid_function)
     type(grid_function_t), intent(inout):: grid_function
     integer:: len_gffn_inp, len_gffn_out, len_gf_name
+! ------------------------------------------------------------------------------
 
     if (mpi_is_master()) then
       if (allocated(grid_function%file_inp)) then
@@ -483,19 +474,20 @@ contains
 
 #endif
 
-! -----------------------------------------------------------------------------
+! ------------------------------------------------------------------------------
   subroutine dmat_transform_mo2ao(cmo, dmat_mo, dmat_ao)
 
-    type(cmo_t), intent(in) :: cmo
-    type(dmat_t), intent(inout) :: dmat_ao
-    type(dmat_t), intent(inout) :: dmat_mo
-    integer :: iprint
-    integer :: nao, nmo, nz, nrao, ncao, nrmo, ncmo, irep
-    integer :: i2basx(2, 2), i2orbx(2, 2), icmoq(2), ipqtoq(2, 0:7)
-    integer :: i,j
+    type(cmo_t), intent(in):: cmo
+    type(dmat_t), intent(inout):: dmat_ao
+    type(dmat_t), intent(inout):: dmat_mo
+    integer:: iprint
+    integer:: nao, nmo, nz, nrao, ncao, nrmo, ncmo, irep
+    integer:: i2basx(2, 2), i2orbx(2, 2), icmoq(2), ipqtoq(2, 0:7)
+    integer:: i,j
 !
-!   Do the transformation dmat_ao(mu,nu)=cmo(mu,p)*dmat_mo(p,q)*cmo^{-1}(q,nu)
-! -----------------------------------------------------------------------------
+!   dmat_ao(mu,nu)=cmo(mu,p)*dmat_mo(p,q)*cmo^{-1}(q,nu)
+!   gosia fixme: no symmetry
+! ------------------------------------------------------------------------------
 
     ! gosia fixme - this causes "catastrophic error: **Internal compiler error: internal abort** Please report this error along with the circumstances in which it occurred in a Software Problem Report.  Note: File and line given may not be explicit cause of this error."
     !if (   .not.dmat_ao%associated_elements  &
@@ -508,7 +500,6 @@ contains
     nmo  = sum(cmo%n_mo)
     nz   = cmo%nz
 
-!   gosia fixme: no symmetry hardcoded
     i = 1
     j = 1
       nrao = cmo%n_ao(i)

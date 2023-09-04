@@ -9,7 +9,6 @@ module visual_datatypes
   public grid_function_t
   !public grid_function_dirac_t
   public mol_t
-  public ao_t
   public cmo_t
   public dmat_t
 
@@ -27,16 +26,6 @@ module visual_datatypes
     procedure, pass, public:: erase  => erase_mol
     procedure, public:: display => display_mol
   end type mol_t
-
-  type ao_t
-    private
-    integer, public:: n_ao = 0
-  end type ao_t
-
-  type mo_t
-    private
-    integer, public:: n_mo = 0
-  end type mo_t
 
   type cmo_t
     private
@@ -82,8 +71,6 @@ module visual_datatypes
     procedure, pass, public:: erase   => erase_dmat
     procedure, pass, public:: display => display_dmat
   end type dmat_t
-
-
 
   type:: rs_input_t
     private
