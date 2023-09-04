@@ -40,6 +40,7 @@
   write(iunit,*) 'thfull  ',thfull
   write(iunit,*) 'thdiag  ',thdiag
   write(iunit,*) 'thgrad  ',thgrad
+  write(iunit,*) 'thxvec  ',thxvec
   write(iunit,*) 'lgfull  ',lgfull
   write(iunit,*) 'lgdiag  ',lgdiag
   write(iunit,*) 'lggrad  ',lggrad

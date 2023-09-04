@@ -26,6 +26,8 @@ module labeled_storage
      character(len=:),allocatable :: name ! file name
   end type file_info_t
 
+  type(file_info_t), save, public   :: dirac_datafiles(3) ! keep a limited number of file_info's here for convenience.
+
   interface lab_init
       module procedure init_general
   end interface
