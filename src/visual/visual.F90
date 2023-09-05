@@ -866,7 +866,7 @@ contains
     type(dmat_t), intent(in):: dmat_0
     real(8), intent(inout):: ao(*)
     real(8), intent(inout):: buffer(*)
-    integer:: ipoint, i
+    integer:: ipoint
 
     if (grid_function%name .eq. 'espe') then
 

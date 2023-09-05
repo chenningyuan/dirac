@@ -213,6 +213,10 @@ module electrostatic_potential
 !            get_matrix logical is absent or is present and FALSE:
 !            density matrix as input, potentials vector as output.                        
 !                        
+#ifdef VAR_MPI
+    use interface_to_mpi
+#include "infpar.h"
+#endif
 
 #include "pi.h"
 #include "mxcent.h"
@@ -263,6 +267,43 @@ module electrostatic_potential
 ! its value is taken from REAINI subroutine in abacus/herrdn.F
       real(8), parameter :: THRS = 1.0D-15
 
+
+!gosia, first pass variables from common blocks
+#ifdef VAR_MPI
+    call interface_MPI_BCAST_l0(nosmlv,1,MPARID,global_communicator)
+    call interface_MPI_BCAST_l0(levyle,1,MPARID,global_communicator)
+    call interface_MPI_BCAST_l0(bss,1,MPARID,global_communicator)
+    call interface_MPI_BCAST_l0(x2c,1,MPARID,global_communicator)
+    call interface_MPI_BCAST(nlrgsh,1,MPARID,global_communicator)
+    call interface_MPI_BCAST(kmax,1,MPARID,global_communicator)
+    call interface_MPI_BCAST(nhkt,size(nhkt),MPARID,global_communicator)
+    call interface_MPI_BCAST(khkt,size(khkt),MPARID,global_communicator)
+    call interface_MPI_BCAST(kckt,size(kckt),MPARID,global_communicator)
+    call interface_MPI_BCAST(istbao,size(istbao),MPARID,global_communicator)
+    call interface_MPI_BCAST(nuco,size(nuco),MPARID,global_communicator)
+    call interface_MPI_BCAST(nstrt,size(nstrt),MPARID,global_communicator)
+    call interface_MPI_BCAST(ncent,size(ncent),MPARID,global_communicator)
+    call interface_MPI_BCAST(numcf,size(numcf),MPARID,global_communicator)
+    call interface_MPI_BCAST(lclass,size(lclass),MPARID,global_communicator)
+    call interface_MPI_BCAST(jstrt,size(jstrt),MPARID,global_communicator)
+    call interface_MPI_BCAST(cent,size(cent),MPARID,global_communicator)
+    call interface_MPI_BCAST(nucnum,size(nucnum),MPARID,global_communicator)
+    call interface_MPI_BCAST(mult,size(mult),MPARID,global_communicator)
+    call interface_MPI_BCAST(lvalub,size(lvalub),MPARID,global_communicator)
+    call interface_MPI_BCAST(mvalub,size(mvalub),MPARID,global_communicator)
+    call interface_MPI_BCAST(nvalub,size(nvalub),MPARID,global_communicator)
+    call interface_MPI_BCAST(fmult,size(fmult),MPARID,global_communicator)
+
+!
+!      LOGICAL SHARE(MXSHEL), SEGM(MXSHEL), SPHR(MXSHEL)
+!
+!     &        NRCO(MXSHEL), NBCH(MXSHEL), KSTRT(MXSHEL), &
+!     &        IPTSHL(MXSHEL), NUMCFT(MXSHEL)
+!     &        NSMLSH, NORBS,                                    &
+!     &        MST(MXSHEL), MBSID(MXSHEL), MBIDBT(MXSHEL)
+!
+#endif
+
       if (nbsym > 1) then
          call quit('ESP calculation cannot handle symmetry!')
       end if
@@ -296,14 +337,14 @@ module electrostatic_potential
 ! Loop over bras <mu|      
 
       ! gosia: not all variables are visible in parallel when called from visual; but OK when called from embedding...
-      write(*, '(a,i6,e16.8,3i6,3l6)') 'IN ELECTRONIC_MEP ',my_rank,tols,idxmax,kmax,nlrgsh,nosmlv,skipss_block,levyle
+      !write(*, '(a,i6,e16.8,3i6,3l6)') 'IN ELECTRONIC_MEP ',my_rank,tols,idxmax,kmax,nlrgsh,nosmlv,skipss_block,levyle
 !!!!
 !! aspg, 23/10/2015
 !! debug printouts
 !     print *,'debug: mc, skipss_block, idxmax, kmax, nlrgsh:',my_rank,mc,skipss_block,idxmax,kmax,nlrgsh
 !
 !!!
-
+ 
       idena = 0
       do ishela = 1, idxmax
         ica   = lclass(ishela)
@@ -376,6 +417,7 @@ module electrostatic_potential
 !             write (*, '(A,6I4)') "khkta, khktb, multa, multb, idena, idenb:", khkta, khktb, multa, multb,idena, idenb
 !             print *, "      i, j, Dij, Vij, DV, sum"
 !!!!
+      !write(*, '(a,7i6)') 'IN ELECTRONIC_MEP ',my_rank,khkta, khktb, multa, multb,idena, idenb
               if (do_matrix) then
                  do ib = 1, kcktb
                    do ia = 1, kckta 
@@ -395,11 +437,12 @@ module electrostatic_potential
 !!!!
 !! aspg, 23/10/2015
 !! debug printouts
-!                     debug_dij  = matrix(idxa,idxb,1)
-!                     debug_vij  = ader(ipoint, ia, ib)
-!                     debug_prod = debug_dij * debug_vij 
-!                     debug_sum  = debug_sum + debug_prod 
+                     debug_dij  = matrix(idxa,idxb,1)
+                     debug_vij  = ader(ipoint, ia, ib)
+                     debug_prod = debug_dij * debug_vij 
+                     debug_sum  = debug_sum + debug_prod 
 !                     write (*,'(5x,2i4,e20.8,2i4,e20.8,2e20.8)') idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
+                     write (*,'(a,i4,5x,2i4,e20.8,2i4,e20.8,2e20.8)') 'IN ELECTRONIC_MEP ',my_rank,idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
 !!!!
                    end do
                    end do

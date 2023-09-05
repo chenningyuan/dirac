@@ -76,7 +76,6 @@ contains
     real(8):: b, c, v1, v2(3), v3(3,3)
     real(8):: eigenvalues(3),eigenvectors(3, 3)
     real(8):: temp(3), temp2(9)
-! ------------------------------------------------------------------------------
 
      !px = grid%points(1, ipoint)
      !py = grid%points(2, ipoint)
@@ -260,18 +259,17 @@ contains
     real(8), intent(in):: buffer(*)
     integer, intent(in):: ndim,nr_points
     real(8), intent(in):: grid_points(ndim,nr_points)
-    type(grid_function_t), intent(in):: grid_function
-    real(8), intent(inout):: grid_function_values(:,:)
+    type(grid_function_t), intent(inout):: grid_function
+    real(8), intent(out):: grid_function_values(:,:)
 
     integer  :: mat_dim, mat_nz, mat_irep
-! ------------------------------------------------------------------------------
 
     if (grid_function%name .eq. 'espe') then
       mat_dim  = dmat_0%mat_dim
       mat_nz   = dmat_0%mat_nz
       mat_irep = 0
       call get_esp(nr_points,&
-                   grid_function_values(1,1:nr_points),&
+                   grid_function_values(1:1,1:nr_points),&
                    mat_irep, &
                    mat_dim,  &
                    dmat_0%elements,   &
@@ -279,7 +277,7 @@ contains
                    include_nuc_part=.false., &
                    include_el_part=.true., my_rank=my_rank)
 !     gosia: figure out why this should be scaled
-      grid_function_values = 0.5d0*grid_function_values
+      grid_function_values(1:1,1:nr_points) = 0.5d0*grid_function_values
     end if
 
   end subroutine
