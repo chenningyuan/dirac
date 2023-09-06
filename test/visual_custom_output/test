@@ -180,6 +180,9 @@ if h5py_available:
     compare_with_ref(ftest='kinlap.h5', fref='result/kinlap.h5', typ='single', gf_name='kinlap')
     compare_with_ref(ftest='kinlap.h5', fref='result/kinlap.h5', typ='array',  gf_name='kinlap', gf_test_key='t0_icomp_1')
 
+    compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='single', gf_name='s')
+    compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='array',  gf_name='s', gf_test_key='t1_icomp_2')
+
 
 
 # cleanup

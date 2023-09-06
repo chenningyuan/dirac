@@ -65,9 +65,8 @@
 1
 id=1 input=import file_inp=grid2.h5
 .GRIDFUNCTIONS    
-2
-name=kinlap id_grid=1 purpose=visualization export=yes file_out=kinlap.h5
-name=kinnr id_grid=1 purpose=visualization export=yes file_out=kinnr.h5
+1
+name=s id_grid=1 purpose=visualization export=yes file_out=s.h5
 !in prep
 !1
 !name=espe id_grid=1 purpose=visualization export=yes file_out=espe.h5

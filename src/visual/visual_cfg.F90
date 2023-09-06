@@ -536,7 +536,6 @@ contains
     select case (grid_function%name)
       case ('density', &
             'gamma5', &
-            's', &
             'esp', &
             'espe', &
             'espn', &
@@ -562,6 +561,11 @@ contains
         grid_function%wf_order = 0
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 1
+        grid_function%max_ao_m_order = 0
+      case ('s')
+        grid_function%wf_order = 0
+        grid_function%tensor_order = 1
+        grid_function%max_ao_g_order = 0
         grid_function%max_ao_m_order = 0
       case ('density_gradient')
         grid_function%wf_order = 0

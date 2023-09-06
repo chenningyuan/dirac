@@ -360,6 +360,19 @@ contains
         grid_function_values(1:1,ipoint:ipoint) = &
                  grid_function_values(1:1,ipoint:ipoint)+0.5d0*v1
 
+      case ('s')
+!       spin density: \psi^\dag \Sigma \psi
+        v2 = 0.0d0
+        call get_s(v2,       &
+                   mat_irep, &
+                   mat_dim,  &
+                   dmat_0%elements,   &
+                   buffer,   &
+                   ao)
+        grid_function_values(1:1,ipoint:ipoint) = v2(1)
+        grid_function_values(2:2,ipoint:ipoint) = v2(2)
+        grid_function_values(3:3,ipoint:ipoint) = v2(3)
+
 
     end select
 
