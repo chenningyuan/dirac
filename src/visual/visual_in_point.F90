@@ -73,7 +73,8 @@ contains
 
     integer:: mat_dim, mat_nz, mat_irep
     integer:: imat,i,j,itemp(3)
-    real(8):: b, c, v1, v2(3), v3(3,3)
+    real(8):: a, b, c, f, v1, v2(3), v3(3,3)
+    real(8):: elf_chi, tau
     real(8):: eigenvalues(3),eigenvectors(3, 3)
     real(8):: temp(3), temp2(9)
 
@@ -82,168 +83,287 @@ contains
      !pz = grid%points(3, ipoint)
      !todo: call grid%points%get_cartesian_coords()
 
-     mat_dim = dmat_0%mat_dim
-     mat_nz  = dmat_0%mat_nz
-     mat_irep= 0
+    mat_dim = dmat_0%mat_dim
+    mat_nz  = dmat_0%mat_nz
+    mat_irep= 0
 
-     select case (grid_function%name)
+    select case (grid_function%name)
 
-       case ('gamma5')
-!        gamma5 density: \psi^\dag \gamma^5 \psi GOSIA-DONE
-         v1 = 0.0d0
-         call get_gamma5(v1,       &
-                         mat_irep, &
-                         mat_dim,  &
-                         dmat_0%elements,   &
-                         buffer,   &
-                         ao)
-         grid_function_values(1:1,ipoint:ipoint) = v1
+      case ('gamma5')
+!       gamma5 density: \psi^\dag \gamma^5 \psi
+        v1 = 0.0d0
+        call get_gamma5(v1,       &
+                        mat_irep, &
+                        mat_dim,  &
+                        dmat_0%elements,   &
+                        buffer,   &
+                        ao)
+        grid_function_values(1:1,ipoint:ipoint) = v1
 
-       case ('density')
-!        electron density
-         v1 = 0.0d0
-         call get_n(v1,       &
+      case ('density')
+!       electron density
+        v1 = 0.0d0
+        call get_n(v1,       &
+                   mat_irep, &
+                   mat_dim,  &
+                   dmat_0%elements,   &
+                   buffer,   &
+                   ao)
+        grid_function_values(1:1,ipoint:ipoint) = v1
+
+      case ('density_gradient')
+!       electron density gradient
+        v1 = 0.0d0
+        v2 = 0.0d0
+        call get_gn(v1,      &
+                    v2,      &
+                    mat_irep,&
+                    mat_dim, &
+                    dmat_0%elements,   &
+                    buffer,  &
+                    ao)               
+        grid_function_values(1:1,ipoint:ipoint) = v2(1)
+        grid_function_values(2:2,ipoint:ipoint) = v2(2)
+        grid_function_values(3:3,ipoint:ipoint) = v2(3)
+
+      case ('density_hessian')
+!       gosia fixme:
+!       density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!       todo: add a warning
+        v1 = 0.0d0
+        v2 = 0.0d0
+        v3 = 0.0d0
+        call get_hn(v1,       &
+                    v2,       &
+                    v3,       &
+                    mat_irep, &
+                    mat_dim,  &
+                    dmat_0%elements,   &
+                    buffer,   &
+                    ao)               
+        grid_function_values(1:1,ipoint:ipoint) = v3(1, 1)   ! xx
+        grid_function_values(2:2,ipoint:ipoint) = v3(1, 2)   ! xy
+        grid_function_values(3:3,ipoint:ipoint) = v3(1, 3)   ! xz
+        grid_function_values(4:4,ipoint:ipoint) = v3(2, 1)   ! yx
+        grid_function_values(5:5,ipoint:ipoint) = v3(2, 2)   ! yy
+        grid_function_values(6:6,ipoint:ipoint) = v3(2, 3)   ! yz
+        grid_function_values(7:7,ipoint:ipoint) = v3(3, 1)   ! zx
+        grid_function_values(8:8,ipoint:ipoint) = v3(3, 2)   ! zy
+        grid_function_values(9:9,ipoint:ipoint) = v3(3, 3)   ! zz
+
+      case ('rdg')
+!       reduced density gradient
+        v1 = 0.0d0
+        v2 = 0.0d0
+        call get_gn(v1,       &
+                    v2,       &
                     mat_irep, &
                     mat_dim,  &
                     dmat_0%elements,   &
                     buffer,   &
                     ao)
-         grid_function_values(1:1,ipoint:ipoint) = v1
 
-       case ('density_gradient')
-!        electron density gradient
-         v1 = 0.0d0
-         v2 = 0.0d0
-         call get_gn(v1,      &
-                     v2,      &
-                     mat_irep,&
-                     mat_dim, &
-                     dmat_0%elements,   &
-                     buffer,  &
-                     ao)               
-         grid_function_values(1:1,ipoint:ipoint) = v2(1)
-         grid_function_values(2:2,ipoint:ipoint) = v2(2)
-         grid_function_values(3:3,ipoint:ipoint) = v2(3)
+        b = sqrt(v2(1)*v2(1) + v2(2)*v2(2) + v2(3)*v2(3))
+        c = v1**(4.0d0/3.0d0)
+!       0.161620459674d0 = 1/(2.0d0*((3.0d0*pi*pi)**(1.0d0/3.0d0))
+        grid_function_values(1:1,ipoint:ipoint) = 0.161620459674d0*(b/c)
 
-       case ('density_hessian')
-!        gosia fixme:
-!        density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
-!        todo: add a warning
-         v1 = 0.0d0
-         v2 = 0.0d0
-         v3 = 0.0d0
-         call get_hn(v1,       &
-                     v2,       &
-                     v3,       &
+      case ('ed_sign_lambda2')
+!       sign(lambda2), where lambda2=the second eigenvalue of the Hessian
+!       of the electron density
+!
+!       gosia fixme:
+!       density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!       todo: add a warning
+        v1 = 0.0d0
+        v2 = 0.0d0
+        v3 = 0.0d0
+        call get_hn(v1,       &
+                    v2,       &
+                    v3,       &
+                    mat_irep, &
+                    mat_dim,  &
+                    dmat_0%elements,   &
+                    buffer,   &
+                    ao)               
+        eigenvalues  = 0.0d0
+        eigenvectors = 1.0d0
+        temp         = 0.0d0
+        itemp        = 0
+        temp2 = reshape(v3, (/9/))
+
+        call jaco(temp2, eigenvectors, 3, 3, 3, temp, itemp)
+
+        temp(1)        = temp2(1)
+        temp(2)        = temp2(3)
+        temp(3)        = temp2(6)
+        eigenvalues(1) = temp2(1)
+        eigenvalues(2) = temp2(3)
+        eigenvalues(3) = temp2(6)
+        do i = 1, 3
+           do j = 1, 3
+              if (j .ne. i) then
+                 if (eigenvalues(i) .lt. eigenvalues(j)) then
+                    eigenvalues(i) = temp(j)
+                 end if  
+              end if  
+           end do
+        end do
+
+        if (eigenvalues(2) .gt. 0.0d0) then
+           grid_function_values(1:1,ipoint:ipoint) = v1
+        else if (eigenvalues(2) .lt. 0.0d0) then
+           grid_function_values(1:1,ipoint:ipoint) = -v1
+        end if
+
+
+      case ('ed_laplacian')
+!
+!       gosia fixme:
+!       density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!       todo: add a warning
+        v1 = 0.0d0
+        v2 = 0.0d0
+        v3 = 0.0d0
+        call get_hn(v1,       &
+                    v2,       &
+                    v3,       &
+                    mat_irep, &
+                    mat_dim,  &
+                    dmat_0%elements,   &
+                    buffer,   &
+                    ao)               
+        eigenvectors = 1.0d0
+        temp         = 0.0d0
+        itemp        = 0
+        temp2 = reshape(v3, (/9/))
+
+        call jaco(temp2, eigenvectors, 3, 3, 3, temp, itemp)
+
+        grid_function_values(1:1,ipoint:ipoint) = temp2(1) + temp2(3) + temp2(6)
+
+      case ('elf')
+!       elf: electron localization function
+        tau = 0.0d0
+        v1 = 0.0d0
+        v2 = 0.0d0
+        call get_kin_tau(tau,      &
+                         mat_irep, &
+                         mat_dim,  &
+                         dmat_0%elements,&
+                         buffer,   &
+                         ao)
+        call get_gn(v1,&
+                    v2,&
+                    mat_irep, &
+                    mat_dim,  &
+                    dmat_0%elements,&
+                    buffer,  &
+                    ao)
+
+        a = v2(1)*v2(1)+v2(2)*v2(2)+v2(3)*v2(3)
+        b = a/(8.0d0*v1)
+
+!           2.87123400018819d0 = 0.3d0*((3.0d0*pi*pi)**(2.0d0/3.0d0))
+        f = 2.87123400018819d0*(v1**(5.0d0/3.0d0))
+        elf_chi = (tau-b)/f
+
+        grid_function_values(1:1,ipoint:ipoint) = 1.0d0/(1.0d0+elf_chi*elf_chi)
+
+      case ('kin')
+!       kin: 
+        v1 = 0.0d0
+        call get_kin(v1,       &
+                     visual_cfg_cval,&
                      mat_irep, &
                      mat_dim,  &
-                     dmat_0%elements,   &
-                     buffer,   &
-                     ao)               
-         grid_function_values(1:1,ipoint:ipoint) = v3(1, 1)   ! xx
-         grid_function_values(2:2,ipoint:ipoint) = v3(1, 2)   ! xy
-         grid_function_values(3:3,ipoint:ipoint) = v3(1, 3)   ! xz
-         grid_function_values(4:4,ipoint:ipoint) = v3(2, 1)   ! yx
-         grid_function_values(5:5,ipoint:ipoint) = v3(2, 2)   ! yy
-         grid_function_values(6:6,ipoint:ipoint) = v3(2, 3)   ! yz
-         grid_function_values(7:7,ipoint:ipoint) = v3(3, 1)   ! zx
-         grid_function_values(8:8,ipoint:ipoint) = v3(3, 2)   ! zy
-         grid_function_values(9:9,ipoint:ipoint) = v3(3, 3)   ! zz
-
-       case ('rdg')
-!        reduced density gradient
-         v1 = 0.0d0
-         v2 = 0.0d0
-         call get_gn(v1,       &
-                     v2,       &
-                     mat_irep, &
-                     mat_dim,  &
-                     dmat_0%elements,   &
+                     dmat_0%elements,&
                      buffer,   &
                      ao)
 
-         b = sqrt(v2(1)*v2(1) + v2(2)*v2(2) + v2(3)*v2(3))
-         c = v1**(4.0d0/3.0d0)
-!        0.161620459674d0 = 1/(2.0d0*((3.0d0*pi*pi)**(1.0d0/3.0d0))
-         grid_function_values(1:1,ipoint:ipoint) = 0.161620459674d0*(b/c)
-
-       case ('ed_sign_lambda2')
-!        sign(lambda2), where lambda2=the second eigenvalue of the Hessian
-!        of the electron density
-!
-!        gosia fixme:
-!        density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
-!        todo: add a warning
-         v1 = 0.0d0
-         v2 = 0.0d0
-         v3 = 0.0d0
-         call get_hn(v1,       &
-                     v2,       &
-                     v3,       &
-                     mat_irep, &
-                     mat_dim,  &
-                     dmat_0%elements,   &
-                     buffer,   &
-                     ao)               
-         eigenvalues  = 0.0d0
-         eigenvectors = 1.0d0
-         temp         = 0.0d0
-         itemp        = 0
-         temp2 = reshape(v3, (/9/))
-
-         call jaco(temp2, eigenvectors, 3, 3, 3, temp, itemp)
-
-         temp(1)        = temp2(1)
-         temp(2)        = temp2(3)
-         temp(3)        = temp2(6)
-         eigenvalues(1) = temp2(1)
-         eigenvalues(2) = temp2(3)
-         eigenvalues(3) = temp2(6)
-         do i = 1, 3
-            do j = 1, 3
-               if (j .ne. i) then
-                  if (eigenvalues(i) .lt. eigenvalues(j)) then
-                     eigenvalues(i) = temp(j)
-                  end if  
-               end if  
-            end do
-         end do
-
-         if (eigenvalues(2) .gt. 0.0d0) then
-            grid_function_values(1:1,ipoint:ipoint) = v1
-         else if (eigenvalues(2) .lt. 0.0d0) then
-            grid_function_values(1:1,ipoint:ipoint) = -v1
-         end if
+        grid_function_values(1:1,ipoint:ipoint) = v1
 
 
-       case ('ed_laplacian')
-!
-!        gosia fixme:
-!        density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
-!        todo: add a warning
-         v1 = 0.0d0
-         v2 = 0.0d0
-         v3 = 0.0d0
-         call get_hn(v1,       &
-                     v2,       &
-                     v3,       &
-                     mat_irep, &
-                     mat_dim,  &
-                     dmat_0%elements,   &
-                     buffer,   &
-                     ao)               
-         eigenvectors = 1.0d0
-         temp         = 0.0d0
-         itemp        = 0
-         temp2 = reshape(v3, (/9/))
+      case ('kinls')
+!       kin: 
+        v1 = 0.0d0
+        call get_kin_ls(v1,       &
+                        visual_cfg_cval,&
+                        mat_irep, &
+                        mat_dim,  &
+                        dmat_0%elements,&
+                        buffer,   &
+                        ao)
 
-         call jaco(temp2, eigenvectors, 3, 3, 3, temp, itemp)
+        grid_function_values(1:1,ipoint:ipoint) = v1
 
-         grid_function_values(1:1,ipoint:ipoint) = temp2(1) + temp2(3) + temp2(6)
 
-     end select
+      case ('kinsl')
+!       kin: 
+        v1 = 0.0d0
+        call get_kin_sl(v1,       &
+                        visual_cfg_cval,&
+                        mat_irep, &
+                        mat_dim,  &
+                        dmat_0%elements,&
+                        buffer,   &
+                        ao)
 
-   end subroutine
+        grid_function_values(1:1,ipoint:ipoint) = v1
+
+
+      case ('kintau')
+!       kin: 
+        v1 = 0.0d0
+        call get_kin_tau(v1,       &
+                         mat_irep, &
+                         mat_dim,  &
+                         dmat_0%elements,&
+                         buffer,   &
+                         ao)
+
+        grid_function_values(1:1,ipoint:ipoint) = v1
+
+
+      case ('kinlap')
+!       kin: 
+        v1 = 0.0d0
+        call get_kin_lap(v1,       &
+                         mat_irep, &
+                         mat_dim,  &
+                         dmat_0%elements,&
+                         buffer,   &
+                         ao)
+
+        grid_function_values(1:1,ipoint:ipoint) = v1
+
+
+      case ('kinnr')
+!       kin: 
+        v1 = 0.0d0
+        call get_kin_tau(v1,       &
+                         mat_irep, &
+                         mat_dim,  &
+                         dmat_0%elements,&
+                         buffer,   &
+                         ao)
+ 
+        grid_function_values(1:1,ipoint:ipoint) = 0.5d0*v1
+
+        call get_kin_lap(v1,       &
+                         mat_irep, &
+                         mat_dim,  &
+                         dmat_0%elements,&
+                         buffer,   &
+                         ao)
+
+        grid_function_values(1:1,ipoint:ipoint) = &
+                 grid_function_values(1:1,ipoint:ipoint)+0.5d0*v1
+
+
+    end select
+
+  end subroutine
 
 
 ! ------------------------------------------------------------------------------

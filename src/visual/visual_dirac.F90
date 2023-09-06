@@ -147,6 +147,7 @@ contains
 #endif
 
     ! then, the rest happens on master only
+    call import_dirac_cb_variables()
 
 #ifdef VAR_MPI
     if (is_parallel()) call sync_visual_cfg()
@@ -347,6 +348,7 @@ contains
     call interface_mpi_bcast(cmo%coeff_q,ncoeff,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%symmetry,nmo,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%index,nmo,irank_master,global_communicator)
+
 
   end subroutine synchronize_data_from_dirac
 

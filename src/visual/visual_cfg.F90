@@ -14,6 +14,9 @@ module visual_cfg
   public verify_grid_input_cfg
   public verify_grid_function_input_cfg
 
+  public import_dirac_cb_variables
+
+!  public import_dirac_cb_variables
 #ifdef VAR_MPI
   public sync_visual_cfg
 #endif
@@ -24,6 +27,8 @@ module visual_cfg
 !  stays; remember to bcast!!!
    real(8), public, allocatable :: visual_cfg_occupation(:, :)
    logical, public              :: visual_cfg_use_orbital_string = .false.
+
+   real(8), public:: visual_cfg_cval
 
 !
 
@@ -531,6 +536,7 @@ contains
     select case (grid_function%name)
       case ('density', &
             'gamma5', &
+            's', &
             'esp', &
             'espe', &
             'espn', &
@@ -545,9 +551,9 @@ contains
       case ('rdg', &
             'elf', &
             'kin', &
-            'kin_ls', &
-            'kin_sl', &
-            'kin_tau', &
+            'kinls', &
+            'kinsl', &
+            'kintau', &
             'divs', &
             'rots', &
             'divj', &
@@ -569,8 +575,8 @@ contains
         grid_function%max_ao_m_order = 0
       case ('ed_laplacian',&
             'ed_sign_lambda2',&
-            'kin_lap',&
-            'kin_nr') 
+            'kinlap',&
+            'kinnr') 
         grid_function%wf_order = 0
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 2
@@ -612,6 +618,10 @@ contains
    end subroutine
 
 
+  subroutine import_dirac_cb_variables()
+#include "dcbgen.h"
+   visual_cfg_cval = cval  ! speed of light used in Dirac                             
+  end subroutine 
 
 #ifdef VAR_MPI
   subroutine sync_visual_cfg()
@@ -633,8 +643,9 @@ contains
       allocate(rs_input%grid_functions(rs_input%nr_grid_functions))
     end if
 
-    ! legacy
+    ! legacy and variables from DIRAC's common blocks
     call interface_mpi_bcast_l0(visual_cfg_global_refactor,1,irank_master,global_communicator)
+    call interface_mpi_bcast(visual_cfg_cval,1,irank_master,global_communicator)
 
     !if (rs_input%print_level > 0) call logprint
   end subroutine sync_visual_cfg
