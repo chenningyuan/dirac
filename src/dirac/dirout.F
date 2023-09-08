@@ -1720,49 +1720,31 @@ C
       ENDDO
       NCDIM = NCDIM*NZ
 C
-C     Read coefficients in C1 form if available, otherwise with symmetry
-C     ==================================================================
+C     Read coefficients 
+C     ==================
 C    
-      call lab_query (fragfile,
-     & '/result/wavefunctions/scf/mobasis/orbitals_C1',exist=C1_read)
       IF(LBIT(IOPT_TMP,2)) THEN
-         if (C1_read) then
-           call lab_read (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/orbitals_C1',
-     &      rdata=cmo(1:ncdim))
-         else
            call lab_read (fragfile,
      &     '/result/wavefunctions/scf/mobasis/orbitals',
      &      rdata=cmo(1:ncdim))
-         endif
       ENDIF
 C
 C     Read eigenvalues
 C     ================
 C
       IF(LBIT(IOPT_TMP,3)) THEN 
-         if (C1_read) then
-           call lab_read (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/eigenvalues_C1',
-     &      rdata=eig(1:nedim))
-         else
            call lab_read (fragfile,
      &     '/result/wavefunctions/scf/mobasis/eigenvalues',
      &      rdata=eig(1:nedim))
-         endif
       ENDIF
 C
 C     Read boson irrep info
 C     =====================
 C
       IF(LBIT(IOPT_TMP,4)) THEN
-         if (C1_read) then
-           ibeig(1:nedim) = 0
-         else
           call lab_read (fragfile,
      &     '/result/wavefunctions/scf/mobasis/symmetry',
      &     idata=ibeig(1:nedim))
-         endif
       ENDIF
 C
 C     Select and adjust format to molecular basis

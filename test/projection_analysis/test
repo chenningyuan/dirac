@@ -31,7 +31,6 @@ test.run(['C.inp'], ['C.mol'],args='--outcmo')
 shutil.move('CHECKPOINT'+ext, 'C'+ext)
 
 test.run(['CH4.inp'], ['CH4.xyz'], f, args='--outcmo --put="H.h5 C.h5"')
-shutil.copy('CHECKPOINT'+ext, 'DFACMO'+ext)
 
 f = Filter()
 f.add(from_string = '* Total gross contributions',
@@ -39,6 +38,5 @@ f.add(from_string = '* Total gross contributions',
       rel_tolerance   = 1.0e-4)
 
 test.run(['CH4_repolar.inp'], ['CH4.xyz'], f, args='--incmo --put="H.h5 C.h5"')
-test.run(['CH4_C1.inp'], ['CH4.xyz'], f, args='--put="DFACMO.h5 H.h5 C.h5"')
 
 sys.exit(test.return_code)
