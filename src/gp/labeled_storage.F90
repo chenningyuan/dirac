@@ -91,7 +91,7 @@ module labeled_storage
          elseif (present(idata)) then
             call read_dirac(file_info%unit,label,idata=idata)
          elseif (present(sdata)) then
-            stop "reading strings is not supported in DIRAC format"
+            error stop "reading strings is not supported in DIRAC format"
          end if
       case (2)
          ! We use HDF5 files
@@ -132,7 +132,7 @@ module labeled_storage
          elseif (present(idata)) then
             call write_dirac(file_info%unit,label,idata=idata)
          elseif (present(sdata)) then
-            stop "writing strings is not supported in DIRAC format"
+            error stop "writing strings is not supported in DIRAC format"
          end if
       case (2)
          ! We use HDF5 files
@@ -168,7 +168,7 @@ module labeled_storage
       case (1)
          ! We use DIRAC files (FORTRAN unformatted sequential)
          if (present(exist)) then
-            stop "query functionality is not supported in DIRAC format"
+            error stop "query functionality is not supported in DIRAC format"
          end if
       case (2)
          ! We use HDF5 files
@@ -289,7 +289,7 @@ module labeled_storage
 
       select case (file_info%type)
       case (1)
-         stop "writing strings is not supported in DIRAC format"
+         error stop "writing strings is not supported in DIRAC format"
       case (2,3)
          ! There might be better ways to flatten an array of strings in Fortran, 
          ! but I could not find one and wasted already enough time on this.
@@ -319,7 +319,7 @@ module labeled_storage
 
       select case (file_info%type)
       case (1)
-         stop "reading strings is not supported in DIRAC format"
+         error stop "reading strings is not supported in DIRAC format"
       case (2,3)
          if (file_info%type==2) then
              call read_hdf5(file_info,label,sdata=sdata)
@@ -486,7 +486,7 @@ module labeled_storage
            ! can not be used, toggle back and stop
            call toggle_fallback(file_info)
            write (*,*) " ERROR: trying to read non-existent data set ",trim(label)," from ",trim(file_info%name)
-           stop ' error detected by read_hdf5 '
+           error stop ' error detected by read_hdf5 '
          end if
          if (present(rdata)) then
             call read_nohdf5(file_info,label,rdata=rdata)
@@ -506,21 +506,21 @@ module labeled_storage
       call query_hdf5 (file_info,label,exist,data_size)
       if (.not.exist) then
         write (*,*) " ERROR: trying to read non-existent data set ",trim(label)," from ",trim(file_info%name)
-        stop ' error detected by read_hdf5 '
+        error stop ' error detected by read_hdf5 '
       end if
 
       if (present(rdata)) then
          if (data_size > size(rdata)) then
            write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(rdata) 
-           stop ' error detected by read_hdf5 '
+           error stop ' error detected by read_hdf5 '
          end if
          call mh5_fetch_dset(file_info%id,label,rdata)
       elseif (present(idata)) then
          if (data_size > size(idata)) then
            write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(idata) 
-           stop ' error detected by read_hdf5 '
+           error stop ' error detected by read_hdf5 '
          end if
          allocate (i8buf(size(idata)))
          i8buf = 0
@@ -732,7 +732,7 @@ module labeled_storage
       call execute_command_line ('mkdir '//topdir,exitstat=ierr)
       if (ierr.ne.0) then
          print*, " ERROR: could not create directory ",topdir
-         stop " error in init_nohdf5 "
+         error stop " error in init_nohdf5 "
       end if
       call execute_command_line ('date >'//topdir//'/.initialized')
       file_info%status = 1
@@ -743,7 +743,7 @@ module labeled_storage
           call execute_command_line ('mkdir '//subdir,exitstat=ierr)
           if (ierr.ne.0) then
              print*, " ERROR: could not create directory ",subdir
-             stop " error in create_group_nohdf5 "
+             error stop " error in create_group_nohdf5 "
           end if
           call execute_command_line ('date >'//subdir//'/.initialized')
       end do
@@ -768,7 +768,7 @@ module labeled_storage
       call query_nohdf5 (file_info,label,file_exists,data_size)
       if (.not.file_exists) then
         write (*,*) " ERROR: trying to read non-existent data set ",trim(label)," from ",trim(file_info%name)
-        stop ' error detected by read_hdf5 '
+        error stop ' error detected by read_hdf5 '
       end if
 
       data_file = './'//trim(file_info%name)//'/'//label
@@ -780,14 +780,14 @@ module labeled_storage
          if (data_size > size(rdata)) then
            write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(rdata) 
-           stop ' error detected by read_hdf5 '
+           error stop ' error detected by read_hdf5 '
          end if
          read (file_unit) rdata(1:data_size)
       elseif (present(idata)) then
          if (data_size > size(idata)) then
            write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(idata) 
-           stop ' error detected by read_hdf5 '
+           error stop ' error detected by read_hdf5 '
          end if
          read (file_unit) idata(1:data_size)
       elseif (present(sdata)) then
@@ -903,7 +903,7 @@ module labeled_storage
         call execute_command_line ('mkdir '//subdir,exitstat=ierr)
         if (ierr.ne.0) then
            print*, " ERROR: could not create directory ",trim(file_name)
-           stop " error in create_group_nohdf5 "
+           error stop " error in create_group_nohdf5 "
         end if
         call execute_command_line ('date >'//subdir//'/.initialized')
         group_exists = .true.
@@ -912,7 +912,7 @@ module labeled_storage
         call execute_command_line ('mkdir '//subdir,exitstat=ierr)
         if (ierr.ne.0) then
            print*, " ERROR: could not create directory ",trim(file_name)
-           stop " error in create_group_nohdf5 "
+           error stop " error in create_group_nohdf5 "
         end if
         call execute_command_line ('date >'//subdir//'/.initialized')
         group_exists = .true.
