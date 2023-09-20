@@ -97,7 +97,7 @@ We are now ready for the projection analysis itself. We prepare the input file `
 .. literalinclude:: ../../../../test/tutorial_projection_analysis/prj.inp
 
 In the ``*PROJEC`` section we specify the two atomic types identified by the name of 
-their coefficient files as well as an orbital string (see :ref:`orbital_strings`) listing 
+their checkpoint files as well as an orbital string (see :ref:`orbital_strings`) listing 
 what orbitals to include for each atom. DIRAC will assume that each atom has been calculated 
 in its proper basis.
 
@@ -159,7 +159,7 @@ We turn to this section::
        AFHX 4  E     1       0.87162     -0.23118508E+00
    
 which gives the accumulated gross population of each fragment orbital. We can identify 
-the fragments from the name of the coefficient file and its orbital energy. For instance
+the fragments from the name of the checkpoint file and its orbital energy. For instance
 the first orbital on the list is clearly carbon *1s* followed by carbon *2s*. Next comes three
 orbitals that are almost degenerate. These are cleary the carbon *2p* orbitals, the first one
 being :math:`2p_{1/2}` followed by the two :math:`2p_{3/2}`. By furthermore looking into the
@@ -224,9 +224,9 @@ Exercises
    in the methane molecule and on atomic charges of these constituent atoms.
 
 
------------------
-Example 2: Uranyl
------------------
+-------------------------
+Example 2: Carbon dioxide
+-------------------------
 
 Introduction
 ------------
@@ -288,7 +288,7 @@ We are now ready to do the projection analysis. We prepare the input file ``prj.
 
 .. literalinclude:: prj_UO2.inp
 
-and prepare the coefficient files::
+and prepare the checkpoint files::
 
    $ ln -s U_U.h5 U.h5
    $ ln -s O_O.h5 O1.h5
@@ -304,15 +304,15 @@ Interpreting the output
 
 As in the methane case above we first look at the polarization contribution::
 
-   * Total gross contributions:
-      AFUXXX              89.0635   E -    89.0635   P -     0.0000
-      AFO1XX               8.3098   E -     8.3098   P -     0.0000
-      AFO2XX               8.3098   E -     8.3098   P -     0.0000
-      Polarization:     0.3169
+  * Total gross contributions:
+     U.h5                89.5355   E -    89.5355   P -     0.0000
+     O1.h5                8.0833   E -     8.0833   P -     0.0000
+     O2.h5                8.0833   E -     8.0833   P -     0.0000
+     Polarization:     0.2979
 
 We see that it is more sizable than before. If we eliminate the polarization contribution using the :ref:`PROJECTION_.POLREF` keyword, we obtain::
 
-   * Total gross contributions:
+  * Total gross contributions:
       AFUXXX              89.1586   E -    89.1586   P -     0.0000
       AFO1XX               8.4207   E -     8.4207   P -     0.0000
       AFO2XX               8.4207   E -     8.4207   P -     0.0000
@@ -323,79 +323,99 @@ considerably far from the formal oxidation state +VI.
 
 We next turn to the electron configuration of the atoms in the molecule by looking at the section::
 
-   * Total reference orbital contributions:
-       AFUXXX  E     1       2.00000     -0.42818128E+04   1s
-       AFUXXX  E     2       2.00000     -0.80663682E+03   2s
-       AFUXXX  E     3       2.00000     -0.77703498E+03   2p-
-       AFUXXX  E     4       2.00000     -0.63578312E+03   2p+
-       AFUXXX  E     5       2.00000     -0.63578312E+03   2p+
-       AFUXXX  E     6       2.00000     -0.20673001E+03   3s
-       AFUXXX  E     7       2.00000     -0.19325143E+03   3p-
-       AFUXXX  E     8       2.00000     -0.16037784E+03   3p+
-       AFUXXX  E     9       2.00000     -0.16037784E+03   3p+
-       AFUXXX  E    10       2.00000     -0.13906994E+03   3d-
-       AFUXXX  E    11       2.00000     -0.13906994E+03   3d-
-       AFUXXX  E    12       2.00000     -0.13242590E+03   3d+
-       AFUXXX  E    13       2.00000     -0.13242590E+03   3d+
-       AFUXXX  E    14       2.00000     -0.13242590E+03   3d+
-       AFUXXX  E    15       2.00000     -0.54355461E+02   4s
-       AFUXXX  E    16       2.00000     -0.48231971E+02   4p-
-       AFUXXX  E    17       2.00000     -0.39554187E+02   4p+
-       AFUXXX  E    18       2.00000     -0.39554187E+02   4p+
-       AFUXXX  E    19       2.00000     -0.29743891E+02   4d-
-       AFUXXX  E    20       2.00000     -0.29743891E+02   4d-
-       AFUXXX  E    21       2.00000     -0.28130201E+02   4d+
-       AFUXXX  E    22       2.00000     -0.28130201E+02   4d+
-       AFUXXX  E    23       2.00000     -0.28130201E+02   4d+
-       AFUXXX  E    24       2.00000     -0.15202067E+02   4f-
-       AFUXXX  E    25       2.00000     -0.15202067E+02   4f-
-       AFUXXX  E    26       2.00000     -0.15202067E+02   4f-
-       AFUXXX  E    27       2.00000     -0.14785575E+02   4f+
-       AFUXXX  E    28       2.00000     -0.14785575E+02   4f+
-       AFUXXX  E    29       2.00000     -0.14785575E+02   4f+
-       AFUXXX  E    30       2.00000     -0.14785575E+02   4f+
-       AFUXXX  E    31       2.00001     -0.12603340E+02   5s 
-       AFUXXX  E    32       1.99989     -0.10135890E+02   5p-
-       AFUXXX  E    33       1.99952     -0.80948982E+01   5p+
-       AFUXXX  E    34       1.99993     -0.80948982E+01   5p+
-       AFUXXX  E    35       1.99983     -0.43524477E+01   5d-
-       AFUXXX  E    36       1.99914     -0.43524477E+01   5d-
-       AFUXXX  E    37       1.99872     -0.40407150E+01   5d+
-       AFUXXX  E    38       1.99956     -0.40407150E+01   5d+
-       AFUXXX  E    39       1.99990     -0.40407150E+01   5d+
-       AFUXXX  E    40       1.98417     -0.21392050E+01   6s
-       AFUXXX  E    41       1.93819     -0.13442976E+01   6p-
-       AFUXXX  E    42       1.75124     -0.98481977E+00   6p+ (1/2)
-       AFUXXX  E    43       1.98199     -0.98481977E+00   6p+ (3/2)
-       AFUXXX  E    44       0.03906     -0.20241412E+00   7s
-       AFUXXX  E    45       0.82745     -0.34596371E+00   5f- (1/2)
-       AFUXXX  E    46       0.15661     -0.34596371E+00   5f- (3/2)
-       AFUXXX  E    47       0.00000     -0.34596371E+00   5f- (5/2)
-       AFUXXX  E    48       0.00000     -0.31822326E+00   5f+ (7/2)
-       AFUXXX  E    49       0.00000     -0.31822326E+00   5f+ (5/2)
-       AFUXXX  E    50       0.33927     -0.31822326E+00   5f+ (3/2)
-       AFUXXX  E    51       0.94161     -0.31822326E+00   5f+ (1/2)
-       AFUXXX  E    52       0.42621     -0.19266767E+00   6d- (1/2)
-       AFUXXX  E    53       0.09667     -0.19266767E+00   6d- (3/2)
-       AFUXXX  E    54       0.34518     -0.18309790E+00   6d+ (1/2)
-       AFUXXX  E    55       0.33432     -0.18309790E+00   6d+ (3/2)
-       AFUXXX  E    56       0.00010     -0.18309790E+00   6d+ (5/2)
-       AFO1XX  E     1       2.00005     -0.20696087E+02   1s
-       AFO1XX  E     2       1.89709     -0.12503665E+01   2s
-       AFO1XX  E     3       1.51690     -0.61398417E+00   2p-
-       AFO1XX  E     4       1.46077     -0.61259798E+00   2p+
-       AFO1XX  E     5       1.54590     -0.61259798E+00   2p+
-       AFO2XX  E     1       2.00005     -0.20696087E+02   1s
-       AFO2XX  E     2       1.89709     -0.12503665E+01   2s
-       AFO2XX  E     3       1.51690     -0.61398417E+00   2p-
-       AFO2XX  E     4       1.46077     -0.61259798E+00   2p+
-       AFO2XX  E     5       1.54590     -0.61259798E+00   2p+
+  * Total reference orbital contributions:
+      U.h5    E     1       2.00000     -0.42540265E+04   1s
+      U.h5    E     2       2.00000     -0.79454094E+03   2s
+      U.h5    E     3       2.00000     -0.76701589E+03   2p-
+      U.h5    E     4       2.00000     -0.62584540E+03   2p+
+      U.h5    E     5       2.00000     -0.62584540E+03   2p+
+      U.h5    E     6       2.00000     -0.20055934E+03   3s
+      U.h5    E     7       2.00000     -0.18784209E+03   3p-
+      U.h5    E     8       2.00000     -0.15532828E+03   3p+
+      U.h5    E     9       2.00000     -0.15532828E+03   3p+
+      U.h5    E    10       2.00000     -0.13488736E+03   3d-
+      U.h5    E    11       2.00000     -0.13488736E+03   3d-
+      U.h5    E    12       2.00000     -0.12826632E+03   3d+
+      U.h5    E    13       2.00000     -0.12826632E+03   3d+
+      U.h5    E    14       2.00000     -0.12826632E+03   3d+
+      U.h5    E    15       2.00000     -0.51094916E+02   4s
+      U.h5    E    16       2.00000     -0.45328009E+02   4p-
+      U.h5    E    17       2.00000     -0.36852950E+02   4p+
+      U.h5    E    18       2.00000     -0.36852950E+02   4p+
+      U.h5    E    19       2.00000     -0.27589819E+02   4d-
+      U.h5    E    20       2.00000     -0.27589819E+02   4d-
+      U.h5    E    21       2.00000     -0.26025387E+02   4d+
+      U.h5    E    22       2.00000     -0.26025387E+02   4d+
+      U.h5    E    23       2.00000     -0.26025387E+02   4d+
+      U.h5    E    24       2.00000     -0.13857922E+02   4f-
+      U.h5    E    25       2.00000     -0.13857922E+02   4f-
+      U.h5    E    26       2.00000     -0.13857922E+02   4f-
+      U.h5    E    27       2.00000     -0.13449030E+02   4f+
+      U.h5    E    28       2.00000     -0.13449030E+02   4f+
+      U.h5    E    29       2.00000     -0.13449030E+02   4f+
+      U.h5    E    30       2.00000     -0.13449030E+02   4f+
+      U.h5    E    31       2.00006     -0.11340683E+02   5s 
+      U.h5    E    32       1.99985     -0.90978058E+01   5p-
+      U.h5    E    33       1.99990     -0.70954196E+01   5p+
+      U.h5    E    34       1.99942     -0.70954196E+01   5p+
+      U.h5    E    35       1.99995     -0.37973229E+01   5d-
+      U.h5    E    36       1.99970     -0.37973229E+01   5d-
+      U.h5    E    37       1.99998     -0.34992701E+01   5d+
+      U.h5    E    38       1.99984     -0.34992701E+01   5d+
+      U.h5    E    39       1.99957     -0.34992701E+01   5d+
+      U.h5    E    40       1.98838     -0.17475069E+01   6s
+      U.h5    E    41       1.95199     -0.10998688E+01   6p-
+      U.h5    E    42       1.98505     -0.77331755E+00   6p+ (1/2)
+      U.h5    E    43       1.79414     -0.77331755E+00   6p+ (3/2)
+      U.h5    E    44       0.04649     -0.15556420E+00   7s
+      U.h5    E    45       0.00000     -0.13518385E+00   5f- (1/2)
+      U.h5    E    46       0.27411     -0.13518385E+00   5f- (3/2)
+      U.h5    E    47       0.96909     -0.13518385E+00   5f- (5/2)
+      U.h5    E    48       0.00000     -0.10440860E+00   5f+ (7/2)
+      U.h5    E    49       0.00000     -0.10440860E+00   5f+ (5/2)
+      U.h5    E    50       0.47334     -0.10440860E+00   5f+ (3/2)
+      U.h5    E    51       1.02801     -0.10440860E+00   5f+ (1/2)
+      U.h5    E    52       0.09748     -0.96703023E-01   6d- (1/2)
+      U.h5    E    53       0.40489     -0.96703023E-01   6d- (3/2)
+      U.h5    E    54       0.00002     -0.78515378E-01   6d+ (1/2)
+      U.h5    E    55       0.29771     -0.78515378E-01   6d+ (3/2)
+      U.h5    E    56       0.30471     -0.78515378E-01   6d+ (5/2)
+      O1.h5   E     1       2.00006     -0.18913024E+02   1s
+      O1.h5   E     2       1.90887     -0.87951960E+00   2s
+      O1.h5   E     3       1.41399     -0.33082479E+00   2p-
+      O1.h5   E     4       1.43511     -0.33082479E+00   2p+
+      O1.h5   E     5       1.43511     -0.33082479E+00   2p+
+      O2.h5   E     1       2.00006     -0.18913024E+02   1s
+      O2.h5   E     2       1.90887     -0.87951960E+00   2s
+      O2.h5   E     3       1.41399     -0.33082479E+00   2p-
+      O2.h5   E     4       1.43511     -0.33082479E+00   2p+
+      O2.h5   E     5       1.43511     -0.33082479E+00   2p+
 
 We can to a large extent deduce the identity of the various atomic orbitals by just looking at orbital energies 
 and I have added it by hand to the above output in a hopefully obvious notation. Even more precise information, 
 such as :math:`m_j` value (indicated in parenthesis) can be obtained from looking at the Mulliken population analysis of each atom. 
-From this list of gross population we extract the atomic valence configuration :math:`5f^{2.25}6d^{1.16}7s^{0.04}` for 
-the uranium atom and :math:`2s^{1.90}2p^{4.41}` for oxygen. An interesting feature is that the uranium *6p* population 
-adds up to *5.64* and not six electrons. This is a manifestation of the so-called *6p-hole*, due to overlap with the oxygen ligands, 
+From this list of gross population we extract the atomic valence configuration :math:`5f^{2.74}6d^{1.10}7s^{0.05}` for 
+the uranium atom and :math:`2s^{1.91}2p^{4.28}` for oxygen. An interesting feature is that the uranium *6p* population 
+adds up to *5.73* and not six electrons. This is a manifestation of the so-called *6p-hole*, due to overlap with the oxygen ligands, 
 and mostly located to the :math:`6p_{3/2.1/2}` orbital.
 
+It is also possible to carry out the projection analysis using the :ref:`PROJECTION_.ATOMS` keyword. We prepare the input file ``aproj.inp``
+
+.. literalinclude:: aproj_UO2.inp
+
+and prepare the checkpoint files::
+
+   $ ln -s U_U.h5 U.h5
+   $ ln -s O_O.h5 O.h5
+   $ ln -s HF_UO2.h5 CHECKPOINT.h5
+
+We run the projection analysis::
+
+   pam --incmo --inp=aproj --mol=UO2 --copy="U.h5 O.h5"
+
+The reader may convince himself that the output agrees with the projection analysis reported above.   
+
+Projection analysis in localized orbitals
+-----------------------------------------
+
+It is instructive to carry out the projection analysis in *localized* orbitals; this allows us to "see" chemical bonds.

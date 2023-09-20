@@ -1,0 +1,19 @@
+**DIRAC                                                                                             
+.ANALYZE                                                                                            
+**INTEGRALS
+*READIN
+.UNCONT
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+*SCF
+.CLOSED SHELL                                                                                                
+106
+**ANALYZE
+.PROJEC
+*PROJEC
+.ATOMS
+U.h5
+1..56
+O.h5
+1..5
+**END OF
