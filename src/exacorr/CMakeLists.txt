@@ -8,16 +8,16 @@ if(ENABLE_EXATENSOR)
   )
 
   set(FREE_EXACORR_FORTRAN_SOURCES
-   talsh_auto_ccd_spinor.F90
-   talsh_auto_ccsd_spinor.F90
-   talsh_auto_ccsdt_spinor.F90
-   talsh_auto_ccsdtq_spinor.F90
-   talsh_auto_ccsdtqp_spinor.F90
-   exatensor_auto_ccd_spinor.F90
-   exatensor_auto_ccsd_spinor.F90
-   exatensor_auto_ccsdt_spinor.F90
-   exatensor_auto_ccsdtq_spinor.F90
-   exatensor_auto_ccsdtqp_spinor.F90
+   talsh_auto_ccd_spinor_clean.F90
+   talsh_auto_ccsd_spinor_clean.F90
+   talsh_auto_ccsdt_spinor_clean.F90
+   talsh_auto_ccsdtq_spinor_clean.F90
+   talsh_auto_ccsdtqp_spinor_clean.F90
+   exatensor_auto_ccd_spinor_clean.F90
+   exatensor_auto_ccsd_spinor_clean.F90
+   exatensor_auto_ccsdt_spinor_clean.F90
+   exatensor_auto_ccsdtq_spinor_clean.F90
+   exatensor_auto_ccsdtqp_spinor_clean.F90
    exacorr_main.F90
    exacorr_datatypes.F90
    exacorr_global.F90
