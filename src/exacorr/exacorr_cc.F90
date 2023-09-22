@@ -388,6 +388,8 @@ module exacorr_cc
                return
             end if
 
+            call print_iterative_wavefunction_choice(iterative_level,iterative_scheme)
+
             if (exa_input%auto_kernels) then
                write(*,*) " ccdriver: calling solve_t_equations_automatic"
                call solve_t_equations_automatic(comm_t,int_t,dims,t_target_precision,cc_energy,&
@@ -5129,10 +5131,10 @@ module exacorr_cc
               call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,t_convergence=t_convergence)
           end if
 
-!!!!!!
-! coming from Z26/Z48/Z52
-          ierr=exatns_tensor_get_scalar(result_t_tensor,result_val)
-          print *,'debug auto:',result_val
+!!!!!!!
+!! coming from Z26/Z48/Z52
+!          ierr=exatns_tensor_get_scalar(result_t_tensor,result_val)
+!          print *,'debug auto:',result_val
 
           ierr=exatns_tensor_init(result_t_tensor)
 

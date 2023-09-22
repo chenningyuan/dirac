@@ -332,7 +332,7 @@ module talsh_cc
 !        Start CCSD iterations
          call print_date('-Start- CC Iterations')
 
-         write(*,*) "The wavefunction chosen is CC(",iterative_level,",",iterative_scheme,")"
+         call print_iterative_wavefunction_choice(iterative_level,iterative_scheme)
 
          if (.not.CCD) then
             if (iterative_level.eq.5) then
@@ -3038,8 +3038,8 @@ module talsh_cc
 
          do iccsd = 1, ncycles
 
-!         if (print_level.gt.2) then
-          if (.true.) then
+          if (print_level.gt.2) then
+!         if (.true.) then
             if (.not.CCD) then 
                write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
                if (iterative_level.ge.3) write(*,*) "t3    = ",tensor_norm2(comm_t%t3)
@@ -3204,8 +3204,8 @@ module talsh_cc
             end if
           end if
 
-!         if (print_level.gt.2) then
-          if (.true.) then
+          if (print_level.gt.2) then
+!         if (.true.) then
             if (.not.CCD) then
                write(*,*) "s1    = ",tensor_norm2(s1_tensor)
                if (iterative_level.ge.3)  write(*,*) "s3    = ",tensor_norm2(s3_tensor)
@@ -3270,9 +3270,9 @@ module talsh_cc
             call diis (t2_tensor=comm_t%t2,t_convergence=t_convergence)
           end if
 
-! coming from Z26/Z48/Z52
-          ccsd_energy = result_tens(1)
-          print *,'debug auto:',ccsd_energy
+!! coming from Z26/Z48/Z52
+!          ccsd_energy = result_tens(1)
+!          print *,'debug auto:',ccsd_energy
 
 !!aspg, checking energy calculation/printout
           if (.true.) then

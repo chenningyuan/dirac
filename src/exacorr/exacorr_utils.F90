@@ -18,6 +18,7 @@ module exacorr_utils
   public print_exaoutput
   public shift_orbital_energy
   public print_orbital_energy
+  public print_iterative_wavefunction_choice
 
   contains
 
@@ -416,5 +417,35 @@ module exacorr_utils
       end do
 
     end subroutine print_orbital_energy
+
+    subroutine print_iterative_wavefunction_choice(iterative_level,iterative_scheme)
+      integer, intent(in) :: iterative_level,iterative_scheme
+      character(12) :: wavefunction
+
+      if (iterative_scheme .eq. 10) wavefunction = "CCS         " 
+
+      if (iterative_scheme .eq. 20) wavefunction = "CCD         " 
+      if (iterative_scheme .eq. 21) wavefunction = "CCSD        " 
+      if (iterative_scheme .eq. 22) wavefunction = "CC2         " 
+
+      if (iterative_scheme .eq. 30) wavefunction = "CCSDT       " 
+      if (iterative_scheme .eq. 31) wavefunction = "CCSDT-1     " 
+      if (iterative_scheme .eq. 32) wavefunction = "CCSDT-1a    " 
+      if (iterative_scheme .eq. 33) wavefunction = "CCSDT-1b    " 
+      if (iterative_scheme .eq. 34) wavefunction = "CCSDT-2     " 
+      if (iterative_scheme .eq. 34) wavefunction = "CCSDT-3     " 
+      if (iterative_scheme .eq. 35) wavefunction = "CC3         " 
+
+      if (iterative_scheme .eq. 40) wavefunction = "CCSDTQ      " 
+      if (iterative_scheme .eq. 41) wavefunction = "CCSDTQ-1    " 
+
+      if (iterative_scheme .eq. 50) wavefunction = "CCSDTQP-xyz " 
+
+      if (iterative_scheme .eq. 99) wavefunction = "CCSDTQP-xyz " 
+
+      write(*,'(A)') ""
+      write(*,'(1X,A,I4,A,I4,A)') "Iterations with CC(",iterative_level,",",iterative_scheme,") model: "//wavefunction
+   end subroutine
+
 
 end module exacorr_utils
