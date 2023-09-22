@@ -438,8 +438,6 @@ module talsh_cc
             call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,int_t=int_t)
           end if
           call print_date('-End- Lambda Equations')
-         else
-            write(*,*) 'Lambda equations with CC2 wavefunctions not supported in this release' 
          end if
 
 !        Destruct tensors no longer needed for ground-state

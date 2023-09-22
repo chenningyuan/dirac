@@ -484,8 +484,6 @@ module exacorr_cc
              if (.not.CCD) ierr=exatns_tensor_destroy(l1_tensor)
              ierr=exatns_tensor_destroy(l2_tensor)
              call print_date('-End- Lambda Equations')
-            else
-               write(*,*) 'Lambda equations with CC2 wavefunctions not supported in this release'
             end if
 
             ierr=exatns_tensor_destroy(comm_t%goo)
