@@ -224,9 +224,9 @@ Exercises
    in the methane molecule and on atomic charges of these constituent atoms.
 
 
--------------------------
-Example 2: Carbon dioxide
--------------------------
+-----------------
+Example 2: Uranyl
+-----------------
 
 Introduction
 ------------
