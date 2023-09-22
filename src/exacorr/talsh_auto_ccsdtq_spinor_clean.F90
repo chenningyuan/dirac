@@ -923,10 +923,10 @@ subroutine talsh_CCSDTQ_codegen_call(nocc,nvir, &
         Z134_2,S44,H25,scale=(-0.5d0,0.0d0))
 !   original expression: Z134_2(e1b,l1b,l2b|m1bm2bm3b)+=S44(e1b,d1b|m1bm3b)*H25(l1b,l2b|m2b,d1b)*+0.5
     ierr=talsh_tensor_contract("Z134_2(e1,l1,l2,m1,m2,m3)+=S44(e1,d1,m1,m3)*H25(l1,l2,m2,d1)", &
-        Z134_2,S44,H25,scale=(1.0d0,0.0d0))
+        Z134_2,S44,H25,scale=(0.5d0,0.0d0))
 !   original expression: Z134_2(e1b,l1b,l2b|m1bm2bm3b)+=S44(e1b,d1b|m2bm3b)*H25(l1b,l2b|m1b,d1b)*+0.5
     ierr=talsh_tensor_contract("Z134_2(e1,l1,l2,m1,m2,m3)+=S44(e1,d1,m2,m3)*H25(l1,l2,m1,d1)", &
-        Z134_2,S44,H25,scale=(1.0d0,0.0d0))
+        Z134_2,S44,H25,scale=(0.5d0,0.0d0))
     ierr=talsh_tensor_construct(Z86_1, C8, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z86_1(e1be2b,l1b|m1bm2bm3b)+=S43(e1b|l2b)*Z134_2(e2b,l1b,l2b|m1bm2bm3b)
     ierr=talsh_tensor_contract("Z86_1(e1,e2,l1,m1,m2,m3)+=S43(e1,l2)*Z134_2(e2,l1,l2,m1,m2,m3)", &
@@ -2978,13 +2978,13 @@ subroutine talsh_CCSDTQ_codegen_call(nocc,nvir, &
         Z140_2,S45,H25,scale=(-0.5d0,0.0d0))
 !   original expression: Z140_2(e1be2b,l1b,l2b|m1bm2bm3bm4b)+=S45(e1be2b,d1b|m1bm2bm4b)*H25(l1b,l2b|m3b,d1b)*+0.5
     ierr=talsh_tensor_contract("Z140_2(e1,e2,l1,l2,m1,m2,m3,m4)+=S45(e1,e2,d1,m1,m2,m4)*H25(l1,l2,m3,d1)", &
-        Z140_2,S45,H25,scale=(1.0d0,0.0d0))
+        Z140_2,S45,H25,scale=(0.5d0,0.0d0))
 !   original expression: Z140_2(e1be2b,l1b,l2b|m1bm2bm3bm4b)+=S45(e1be2b,d1b|m1bm3bm4b)*H25(l1b,l2b|m2b,d1b)*+0.5
     ierr=talsh_tensor_contract("Z140_2(e1,e2,l1,l2,m1,m2,m3,m4)+=S45(e1,e2,d1,m1,m3,m4)*H25(l1,l2,m2,d1)", &
-        Z140_2,S45,H25,scale=(1.0d0,0.0d0))
+        Z140_2,S45,H25,scale=(0.5d0,0.0d0))
 !   original expression: Z140_2(e1be2b,l1b,l2b|m1bm2bm3bm4b)+=S45(e1be2b,d1b|m2bm3bm4b)*H25(l1b,l2b|m1b,d1b)*+0.5
     ierr=talsh_tensor_contract("Z140_2(e1,e2,l1,l2,m1,m2,m3,m4)+=S45(e1,e2,d1,m2,m3,m4)*H25(l1,l2,m1,d1)", &
-        Z140_2,S45,H25,scale=(1.0d0,0.0d0))
+        Z140_2,S45,H25,scale=(0.5d0,0.0d0))
     ierr=talsh_tensor_construct(Z93_1, C8, (/nvir,nvir,nvir,nocc,nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z93_1(e1be2be3b,l1b|m1bm2bm3bm4b)+=S43(e1b|l2b)*Z140_2(e2be3b,l1b,l2b|m1bm2bm3bm4b)
     ierr=talsh_tensor_contract("Z93_1(e1,e2,e3,l1,m1,m2,m3,m4)+=S43(e1,l2)*Z140_2(e2,e3,l1,l2,m1,m2,m3,m4)", &
@@ -3663,10 +3663,10 @@ subroutine talsh_CCSDTQ_codegen_call(nocc,nvir, &
         Z95_1,H3,S44,scale=(-0.5d0,0.0d0))
 !   original expression: Z95_1(e1be2be3b|m1bm2b,d1b)+=H3(e1be3b|d1b,d2b)*S44(e2b,d2b|m1bm2b)*+0.5
     ierr=talsh_tensor_contract("Z95_1(e1,e2,e3,m1,m2,d1)+=H3(e1,e3,d1,d2)*S44(e2,d2,m1,m2)", &
-        Z95_1,H3,S44,scale=(1.0d0,0.0d0))
+        Z95_1,H3,S44,scale=(0.5d0,0.0d0))
 !   original expression: Z95_1(e1be2be3b|m1bm2b,d1b)+=H3(e2be3b|d1b,d2b)*S44(e1b,d2b|m1bm2b)*+0.5
     ierr=talsh_tensor_contract("Z95_1(e1,e2,e3,m1,m2,d1)+=H3(e2,e3,d1,d2)*S44(e1,d2,m1,m2)", &
-        Z95_1,H3,S44,scale=(1.0d0,0.0d0))
+        Z95_1,H3,S44,scale=(0.5d0,0.0d0))
 !   original expression: Z61(e1be2be3be4b|m1bm2bm3bm4b)+=S44(e1b,d1b|m1bm2b)*Z95_1(e2be3be4b|m3bm4b,d1b)
     ierr=talsh_tensor_contract("Z61(e1,e2,e3,e4,m1,m2,m3,m4)+=S44(e1,d1,m1,m2)*Z95_1(e2,e3,e4,m3,m4,d1)", &
         Z61,S44,Z95_1,scale=(1.0d0,0.0d0))
@@ -5047,7 +5047,7 @@ subroutine talsh_CCSDTQ_codegen_call(nocc,nvir, &
         Z127_2,H25,S43,scale=(-0.5d0,0.0d0))
 !   original expression: Z127_2(l1b,l2b|m1bm2b)+=H25(l1b,l2b|m2b,d1b)*S43(d1b|m1b)*+0.5
     ierr=talsh_tensor_contract("Z127_2(l1,l2,m1,m2)+=H25(l1,l2,m2,d1)*S43(d1,m1)", &
-        Z127_2,H25,S43,scale=(1.0d0,0.0d0))
+        Z127_2,H25,S43,scale=(0.5d0,0.0d0))
     ierr=talsh_tensor_construct(Z86_1, C8, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z86_1(e1be2b,l1b|m1bm2bm3b)+=S44(e1be2b|m1b,l2b)*Z127_2(l1b,l2b|m2bm3b)
     ierr=talsh_tensor_contract("Z86_1(e1,e2,l1,m1,m2,m3)+=S44(e1,e2,m1,l2)*Z127_2(l1,l2,m2,m3)", &
@@ -5234,10 +5234,10 @@ subroutine talsh_CCSDTQ_codegen_call(nocc,nvir, &
         Z86_1,S44,H26,scale=(-0.5d0,0.0d0))
 !   original expression: Z86_1(e1be2b,l1b|m1bm2bm3b)+=S44(e1be2b|m2b,l2b)*H26(l1b,l2b|m1bm3b)*+0.5
     ierr=talsh_tensor_contract("Z86_1(e1,e2,l1,m1,m2,m3)+=S44(e1,e2,m2,l2)*H26(l1,l2,m1,m3)", &
-        Z86_1,S44,H26,scale=(1.0d0,0.0d0))
+        Z86_1,S44,H26,scale=(0.5d0,0.0d0))
 !   original expression: Z86_1(e1be2b,l1b|m1bm2bm3b)+=S44(e1be2b|m3b,l2b)*H26(l1b,l2b|m1bm2b)*+0.5
     ierr=talsh_tensor_contract("Z86_1(e1,e2,l1,m1,m2,m3)+=S44(e1,e2,m3,l2)*H26(l1,l2,m1,m2)", &
-        Z86_1,S44,H26,scale=(1.0d0,0.0d0))
+        Z86_1,S44,H26,scale=(0.5d0,0.0d0))
 !   original expression: Z61(e1be2be3be4b|m1bm2bm3bm4b)+=S44(e1be2b|m1b,l1b)*Z86_1(e3be4b,l1b|m2bm3bm4b)
     ierr=talsh_tensor_contract("Z61(e1,e2,e3,e4,m1,m2,m3,m4)+=S44(e1,e2,m1,l1)*Z86_1(e3,e4,l1,m2,m3,m4)", &
         Z61,S44,Z86_1,scale=(1.0d0,0.0d0))

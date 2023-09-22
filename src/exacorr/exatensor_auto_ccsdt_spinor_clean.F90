@@ -1468,10 +1468,10 @@ subroutine exatensor_CCSDT_codegen(nocc_id,nvir_id,nocc_root,nvir_root, &
         Z98_2,S44,H25,prefactor=(-0.5d0,0.0d0))
 !   original expression: Z98_2(e1b,l1b,l2b|m1bm2bm3b)+=S44(e1b,d1b|m1bm3b)*H25(l1b,l2b|m2b,d1b)*+0.5
     ierr=exatns_tensor_contract("Z98_2(e1,l1,l2,m1,m2,m3)+=S44(e1,d1,m1,m3)*H25(l1,l2,m2,d1)", &
-        Z98_2,S44,H25,prefactor=(1.0d0,0.0d0))
+        Z98_2,S44,H25,prefactor=(0.5d0,0.0d0))
 !   original expression: Z98_2(e1b,l1b,l2b|m1bm2bm3b)+=S44(e1b,d1b|m2bm3b)*H25(l1b,l2b|m1b,d1b)*+0.5
     ierr=exatns_tensor_contract("Z98_2(e1,l1,l2,m1,m2,m3)+=S44(e1,d1,m2,m3)*H25(l1,l2,m1,d1)", &
-        Z98_2,S44,H25,prefactor=(1.0d0,0.0d0))
+        Z98_2,S44,H25,prefactor=(0.5d0,0.0d0))
     
     allocate(tens_id(6), tens_root(6))
     tens_id   = (/nvir_id,nvir_id,nocc_id,nocc_id,nocc_id,nocc_id/)
