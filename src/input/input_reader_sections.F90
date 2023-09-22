@@ -1095,6 +1095,11 @@
          exa_input%iterative_scheme = 30
       end if
 
+      if (kw_matches(word, '.CC-iT1b     ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 33
+      end if
+
       if (kw_matches(word, '.CC-iQ    ')) then
          exa_input%iterative_level  = 4
          exa_input%iterative_scheme = 40

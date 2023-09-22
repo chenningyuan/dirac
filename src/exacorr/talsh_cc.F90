@@ -3142,6 +3142,33 @@ module talsh_cc
             else if (auto_scheme.eq.2) then 
             ! tenpi
             end if
+          else if ((iterative_level.eq.3).and.(iterative_scheme.eq.33)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+             call talsh_CCSDT_1b_codegen_call(nocc,nvir,          &
+                                           int_t%oovv,     &  !  OOVV
+                                           comm_t%t1,      &  !  VO
+                                           comm_t%fov,     &  !  OV
+                                           comm_t%t2,      &  !  VVOO
+                                           hvo_aux_tensor,  &  !  VO
+                                           comm_t%fvv,      &  !  VV
+                                           int_t%vovv,     &  !  VOVV
+                                           voov_aux_tensor,&  !  VOOV
+                                           int_t%ooov,     &  !  OOOV
+                                           comm_t%foo,     &  !  OO
+                                           comm_t%t3,      &  !  VVVOOO
+                                           vvoo_aux_tensor, &  !  VVOO
+                                           int_t%vvvv,      &  !  VVVV
+                                           vooo_aux_tensor,&  !  VOOO
+                                           vvov_aux_tensor, &  !  VVOV
+                                           int_t%oooo,     &  !  OOOO
+                                           result_tensor,  &  !  UnitTensor
+                                           s1_tensor,      &  !  VO
+                                           s2_tensor,      &  !  VVOO
+                                           s3_tensor)         !  VVVOOO
+            else if (auto_scheme.eq.2) then
+            ! tenpi
+            end if
           else if ((iterative_level.eq.4).and.(iterative_scheme.eq.40)) then 
             if (auto_scheme.eq.1) then
             ! mb-codegen
