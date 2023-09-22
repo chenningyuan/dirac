@@ -1,6 +1,6 @@
-(lldb) target create "/tmp/andre/dirac/testing/andre/DIRAC_lih_test_contracted_lih_test_97852/dirac.x"
-Current executable set to '/tmp/andre/dirac/testing/andre/DIRAC_lih_test_contracted_lih_test_97852/dirac.x' (arm64).
-Process 97874 launched: '/tmp/andre/dirac/testing/andre/DIRAC_lih_test_contracted_lih_test_97852/dirac.x' (arm64)
+(lldb) target create "/tmp/andre/dirac/testing/andre/DIRAC_lih_test_contracted_lih_test_97852/dirac.x
+Current executable set to '/tmp/andre/dirac/testing/andre/DIRAC_lih_test_contracted_lih_test_97852/dirac.x' (arm64)
+Process 97874 launched: '/tmp/andre/dirac/testing/andre/DIRAC_lih_test_contracted_lih_test_97852/dirac.x' (arm64
 DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 256000000 words (   1953.12 MB -      1.907 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
@@ -1115,5 +1115,5 @@ tot.num. of pos.erg shells:   19
  MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-Process 97874 exited with status = 0 (0x00000000) 
+Process 97874 exited with status = 0 (0x00000000)
 
