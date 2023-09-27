@@ -32,10 +32,17 @@ contains
   call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_occ,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_vir,1,exa_MPI_RANK,global_communicator)
+
+  call interface_mpi_bcast_l0(exa_input%do_perturbative,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%do_iterative,1,exa_MPI_RANK,global_communicator)
+
   call interface_mpi_bcast_l0(exa_input%tripl_lap,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_triples,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_1rdm_gs,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_2rdm_gs,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%do_cis,1,exa_MPI_RANK,global_communicator)
+
+  call interface_mpi_bcast_l0(exa_input%auto_kernels,1,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%exa_blocksize,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%talsh_buff,1,exa_MPI_RANK,global_communicator)
@@ -46,6 +53,10 @@ contains
   call interface_mpi_bcast(exa_input%tripl_block,2,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%n_laplace,1,exa_MPI_RANK,global_communicator)
 
+  call interface_mpi_bcast(exa_input%iterative_level,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%iterative_scheme,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%perturbative_level,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%perturbative_scheme,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%nkr_occ,1,exa_MPI_rank,global_communicator)
   if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%mokr_occ(exa_input%nkr_occ))
   call interface_mpi_bcast(exa_input%nkr_vir,1,exa_MPI_rank,global_communicator)

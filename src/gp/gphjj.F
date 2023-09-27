@@ -969,7 +969,8 @@ C
 
 #if !defined VAR_IFORT
 !miro: ifort 10.1 does not know the "iomsg" parameter ....
-      WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) 
+!     WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) 
+      WRITE (LU,ERR=1000,IOSTAT=IOSVAL) 
      &              LSTARS,LDATE,LTIME,LABEL
 #else
       WRITE (LU,ERR=1000,IOSTAT=IOSVAL) LSTARS,LDATE,LTIME,LABEL

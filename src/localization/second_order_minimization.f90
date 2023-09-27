@@ -220,6 +220,7 @@ contains
   allocate( xvec(mnf%ndim), stat=ier ); call errall(ier,'minimization_drv','xvec')
   grad = d0; etmp = d0; xvec = d0
 
+
   ! nullify pointers for later allocation of pointers
   nullify(iorig); nullify(gradt); nullify(eval); nullify(xvect); nullify(hmat)
 
@@ -261,7 +262,6 @@ contains
       call get_date(daytid)
       write(mnf%l,'(/6x,a,a24)')'--- ',daytid
     endif
-
     ! get new kappa
     shift = d0
     if(rejected) call get_mu(eval,gradt,tradius,nref,shift,nstep,tpred)
@@ -343,10 +343,8 @@ contains
           endif
         endif
       endif
-
       if(itr == mnf%maxitr)exit
     endif
-
     if(ist > 2*mnf%maxitr)exit
 
   enddo
@@ -388,10 +386,18 @@ contains
   deallocate( etmp )
   deallocate( xvec )
 
-  if(associated(iorig)) deallocate( iorig )
-  if(associated(xvect)) deallocate( xvect )
-  if(associated(gradt)) deallocate( gradt )
-  if(associated(eval )) deallocate( eval  )
+  if(associated(iorig)) then 
+    deallocate( iorig ); nullify(iorig)
+  endif
+  if(associated(xvect)) then
+    deallocate( xvect ); nullify(xvect)
+  endif
+  if(associated(gradt)) then
+    deallocate( gradt ); nullify(gradt)
+  endif
+  if(associated(eval )) then
+    deallocate( eval  ); nullify(eval)
+  endif
 
   end subroutine minimization_drv
 
@@ -505,7 +511,7 @@ contains
 
   integer, intent(in ), pointer :: iorig(:)
   real*8,  intent(in ), pointer :: gradt(:), eval(:)
-  real*8,  intent(out), pointer :: xvect(:)
+  real*8,  intent(inout), pointer :: xvect(:)
 
   ! Internal variables
   integer :: i, j, ndim, nred, ier
@@ -517,8 +523,11 @@ contains
   nred  = size(eval,1)
 
   ! allocate arrays
-  if(associated(xvect)) deallocate( xvect )
+  if(associated(xvect)) then
+    deallocate( xvect ); nullify(xvect)
+  endif
   allocate( xvect(nred), stat=ier ); call errall(ier,'get_X','xvect(pointer)')
+  call flush(6)
 
   ! calculate tilde{X}
   if(nstep)then
@@ -542,7 +551,7 @@ contains
   endif
 
   ! print \tilde{X}
-  if(mnf%iprint.ge.1)then
+  if(mnf%iprint.ge.3)then
     write(mnf%l,'(/a)') ' U^T*X vector: '
     write(mnf%l,'(8d12.4)') (xvect(i),i=1,nred)
   endif
@@ -561,9 +570,11 @@ contains
 
   ! Norm of the X
   dnrmk = dnrm2(ndim,xvec,1)
-  if(mnf%iprint.ge.1)then
+  if(mnf%iprint.ge.3)then
     write(mnf%l,'(/a)') ' X vector: '
     write(mnf%l,'(8d12.4)') (xvec(i),i=1,ndim)
+  endif
+  if(mnf%iprint.ge.1)then
     write(mnf%l,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
   endif
 
@@ -587,9 +598,9 @@ contains
   real*8,  intent(in ), dimension(:) :: gradient
   real*8,  intent(out), dimension(:) :: etmp
 
-  integer, intent(  out), pointer :: iorig(:)
+  integer, intent(inout), pointer :: iorig(:)
   real*8,  intent(inout), pointer :: hmat(:,:)
-  real*8,  intent(  out), pointer :: gradt(:), eval(:)
+  real*8,  intent(inout), pointer :: gradt(:), eval(:)
 
   ! Internal variables
   integer :: i, j, k, ndim, nred, ier, lwork, ilaenv, nb, icur
@@ -620,7 +631,9 @@ contains
 
   else
   
-    if(associated(iorig)) deallocate( iorig )
+    if(associated(iorig)) then
+      deallocate( iorig );nullify(iorig)
+    endif
     allocate( iorig(ndim), stat=ier ); call errall(ier,'hdiag','iorig(pointer)')
 
     ! get eigenvalues (etmp)
@@ -654,8 +667,8 @@ contains
     if(dabs(etmp(i)) > thresh) nred = nred + 1
   enddo
   if(associated(eval))then
-    deallocate( gradt )
-    deallocate( eval  )
+    deallocate( gradt );nullify(gradt)
+    deallocate( eval  );nullify(eval)
   endif
   allocate( gradt(nred), stat=ier ); call errall(ier,'hdiag','gradt(pointer)')
   allocate( eval (nred), stat=ier ); call errall(ier,'hdiag','eval(pointer)')
@@ -701,7 +714,7 @@ contains
   if(nem == 0)Iminmin = .true.  ! we have reached the minimum of the function
   if(nem /= 0)Iminmin = .false.
 
-  if(mnf%iprint.ge.1)then
+  if(mnf%iprint.ge.3)then
     write(mnf%l,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',nep,nem,nez
     write(mnf%l,'(8d12.4)') (etmp(i),i=1,ndim)
   endif

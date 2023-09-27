@@ -181,18 +181,11 @@ module talsh_cis
          end do 
 
 
-        call diagoanl_cis_matrix(sigma1,eValues,eVectorsR) ! Get CIS eigenvector and excitation energy
+        call diagonalize_cis_matrix(sigma1,eValues,eVectorsR) ! Get CIS eigenvector and excitation energy
 !   Sort the eigenvector according to the excitation energy 
         call sort_cis_eig(eValues,eVectorsR)
-        call talsh_cis_pro_driver(exa_input,eValues,eVectorsR)
+!       call talsh_cis_pro_driver(exa_input,eValues,eVectorsR)
 
-         
-        ! do i=1, size(eVectorsR,1)
-        !     print "(*(F6.2,1X),/)", abs(eVectorsR(i,:))
-        ! end do
-
-!   Print CIS energy
-        ! n =10  !number of state print
         n = size(eValues)
         call print_energy_CIS(eValues,size(eValues),n)
 
@@ -205,7 +198,7 @@ module talsh_cis
 
     
 !----------------------------------------------------------------------------------------------------------------------    
-    subroutine diagoanl_cis_matrix(M,eVal,eVectorsR)
+    subroutine diagonalize_cis_matrix(M,eVal,eVectorsR)
 
 !       Set parameter needed in zgeev
         integer :: lwork, info,i,j
@@ -221,7 +214,7 @@ module talsh_cis
 
         vectors_R = size(M,1)
         vectors_L = size(M,2)
-        lwork = 100000*vectors_R	
+        lwork = 100000*vectors_R
         allocate(eVectorsL(vectors_L,vectors_R))
         allocate(eVectorsR(vectors_L,vectors_R))
         allocate(eVal(vectors_R))
@@ -233,7 +226,7 @@ module talsh_cis
 
 
         
-    end subroutine diagoanl_cis_matrix
+    end subroutine diagonalize_cis_matrix
 
 !-----------------------------------------------------------------------------------------------------------------------
 subroutine sort_cis_eig(eValues,eVectors)

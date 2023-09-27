@@ -8,6 +8,16 @@ if(ENABLE_EXATENSOR)
   )
 
   set(FREE_EXACORR_FORTRAN_SOURCES
+   talsh_auto_ccd_spinor.F90
+   talsh_auto_ccsd_spinor.F90
+   talsh_auto_ccsdt_spinor.F90
+   talsh_auto_ccsdtq_spinor.F90
+   talsh_auto_ccsdtqp_spinor.F90
+   exatensor_auto_ccd_spinor.F90
+   exatensor_auto_ccsd_spinor.F90
+   exatensor_auto_ccsdt_spinor.F90
+   exatensor_auto_ccsdtq_spinor.F90
+   exatensor_auto_ccsdtqp_spinor.F90
    exacorr_main.F90
    exacorr_datatypes.F90
    exacorr_global.F90
@@ -36,12 +46,14 @@ if(ENABLE_EXATENSOR)
    talsh_triples.F90
    talsh_cc.F90
    talsh_cis.F90
-   talsh_cis_property.F90
    talsh_cis_density.F90
-   talsh_cc_ci.F90
+   talsh_cis_property.F90
+   talsh_ccrsp.F90
+   talsh_ccrsp_common.F90
    talsh_eom_QR.F90
    talsh_eom_LR.F90
    talsh_eom_rspeq_solver.F90
+   talsh_eom_TPA.F90
    davidson/talsh_davidson.F90
    talsh_mp2lap.F90
    talsh_mp2no.F90

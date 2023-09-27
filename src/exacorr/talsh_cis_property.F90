@@ -194,30 +194,31 @@ subroutine get_exc_grd(exa_input, onetdmeg, All_opera, eVectors)
     integer                       :: nvir, nocc
     complex(kind=8)               :: onetdmeg_tem
 
-    type(talsh_dm_tens_t)       :: Tra_Den_exe_grd_tensor
-    type(talsh_tens_t)        :: orb_inte_exe_grd_tensor
+    type(talsh_dm_tens_t)         :: Tra_Den_exe_grd_tensor
+    type(talsh_tens_t)            :: orb_inte_exe_grd_tensor
 
 
     nvir = exa_input%nvir
     nocc = exa_input%nocc
     all_state = size(eVectors,2)
-    ! call print_date('Enter exc-grd routine')
+    call print_date('Enter exc-grd routine')
     allocate(onetdmeg(all_state,All_opera))
     do ope=1, All_opera
         do f_state =1, all_state 
+            print *, "before get_prop_integral"
             call get_prop_integral(exa_input, orb_inte_exe_grd_tensor,& 
                         nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,ope)
-            ! print *, "get integral"
+            print *, "before get_cis_density_exe_grd"
             call get_cis_density_exe_grd(exa_input,eVectors,f_state,Tra_Den_exe_grd_tensor)
 
-            ! print *, "get density mat"
+            print *, "get density mat"
             call get_propeg(onetdmeg_tem, orb_inte_exe_grd_tensor, Tra_Den_exe_grd_tensor)
 
-            ! print *, "onetdmeg", onetdmeg_tem
+            print *, "onetdmeg", onetdmeg_tem
             onetdmeg(f_state,ope) = onetdmeg_tem
         end do
     end do
-    ! call print_date('Leave exc-grd routine')
+    call print_date('Leave exc-grd routine')
 
 end subroutine get_exc_grd
 
@@ -234,7 +235,7 @@ subroutine get_exc_exc(exa_input, onetdmee, All_opera, eVectors)
     integer                       :: all_state
     integer                       :: nvir, nocc
     complex(kind=8)               :: onetdmee_tem
-    type(talsh_dm_tens_t)           :: Tra_Den_exe_exe_tensor
+    type(talsh_dm_tens_t)         :: Tra_Den_exe_exe_tensor
     type(talsh_tens_t)            :: orb_inte_exe_exe_vv_tensor
     type(talsh_tens_t)            :: orb_inte_exe_exe_oo_tensor
 
@@ -246,18 +247,18 @@ subroutine get_exc_exc(exa_input, onetdmee, All_opera, eVectors)
     do ope=1, All_opera
         do ini_state =1, all_state
             do f_state =1, all_state 
-                ! print *, "error before get integ vv?"
+                print *, "error before get integ vv?"
                 call get_prop_integral(exa_input,orb_inte_exe_exe_vv_tensor,&
                 nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,ope)
                 
-                ! print *, "error before get integ oo?"
+                print *, "error before get integ oo?"
                 call get_prop_integral(exa_input,orb_inte_exe_exe_oo_tensor,&
                 nocc,exa_input%mo_occ,nocc,exa_input%mo_occ,ope)
 
-                ! print *, "error before getcisden?"
+                print *, "error before getcisden?"
                 call get_cis_density_exe_exe(exa_input,eVectors,f_state,ini_state,Tra_Den_exe_exe_tensor)
 
-                ! print *, "error before gpe?"
+                print *, "error before gpe?"
                 call get_propee(onetdmee_tem, orb_inte_exe_exe_vv_tensor, orb_inte_exe_exe_oo_tensor, Tra_Den_exe_exe_tensor)
                 
                 ! print *, "onetdmee", onetdmee_tem
@@ -299,12 +300,19 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_lis
     ierr=talsh_tensor_get_body_access(orb_int_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,orbital_integral_tens,mo_dims)
 
+    print *,"mo1_list",mo1_list
+    print *,"mo2_list",mo2_list
 
     min_occ = minval(exa_input%mo_occ)
+    print *,"min_occ",min_occ
+    print *,"nmo1",nmo1
+    print *,"nmo2",nmo2
     !call add_finitefield(orbital_integral_tens,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+    call print_date('Get property integrals')    
     call get_ff_mat (orbital_integral_tens,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ)
-    ! call print_date('Get property integrals')    
+    call print_date('Get property integrals')    
 
+    
 
 
 end subroutine get_prop_integral
@@ -318,7 +326,7 @@ subroutine get_propeg(onetdmeg_tem, orb_inte_exe_grd_tensor, Tra_Den_exe_grd_ten
     complex(kind=8)               :: onetdmeg_tem
 
 
-    type(talsh_dm_tens_t)           :: Tra_Den_exe_grd_tensor
+    type(talsh_dm_tens_t)         :: Tra_Den_exe_grd_tensor
     type(talsh_tens_t)            :: orb_inte_exe_grd_tensor
     type(talsh_tens_t)            :: TDM_exe_grd_tensor
 
@@ -351,7 +359,7 @@ subroutine get_propee(onetdmee_tem, orb_inte_exe_exe_vv_tensor, orb_inte_exe_exe
 
 
     complex(kind=8)           :: onetdmee_tem
-    type(talsh_dm_tens_t)       :: Tra_Den_exe_exe_tensor
+    type(talsh_dm_tens_t)     :: Tra_Den_exe_exe_tensor
     type(talsh_tens_t)        :: orb_inte_exe_exe_vv_tensor
     type(talsh_tens_t)        :: orb_inte_exe_exe_oo_tensor
     type(talsh_tens_t)        :: TDM_exe_exe_vv_tensor, TDM_exe_exe_oo_tensor

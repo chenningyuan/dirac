@@ -157,7 +157,7 @@ C***********************************************************************
 
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
-!       use talsh_cis,only            : talsh_cis_driver
+      use talsh_cis,only            : talsh_cis_driver
       use talsh_mp2no,only          : talsh_mp2no_driver
       use talsh_mp2lap,only         : talsh_mp2lap_driver
       use mp2no_driver,only         : get_no_driver
@@ -221,8 +221,8 @@ C
 #endif
 
       if (exa_input%talsh) then
-       if (exa_input%cis) then
-       !   call talsh_cis_driver (exa_input)
+       if (exa_input%do_cis) then
+         call talsh_cis_driver (exa_input)
        else if (exa_input%do_no) then
          call get_no_driver (exa_input)
        else if (exa_input%mp2no > 0 ) then

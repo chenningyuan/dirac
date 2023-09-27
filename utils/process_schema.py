@@ -151,26 +151,33 @@ def read_xyz(file_name):
     """
     Read plain text xyz file and return the data
     """
+    from periodic_table import get_element_number
     lines = []
     with open(file_name) as f:
         lines = f.readlines()
 
     # first line has the number of atoms
-    n_atoms = int(lines[0].rstrip())
+    n_atoms = [int(lines[0].rstrip())]
     symbols = []
     coordinates = []
+    nuc_charges = []
+
     for count, line in enumerate(lines[2:]):
         symbol, x, y, z = line.rstrip().split()[0:4]
-        # List of strings are tricky in h5py, simple is to convert them to numpy arrays
-        # the method chosen here avoids loading numpy, thus reducing dependencies on user
-        # Python installs.
+        # List of strings are tricky in h5py, simplest is to convert them to numpy arrays,
+        # this is done below, after first processing them to get nuclear charges.
         symbols.append(symbol.encode('utf-8'))
         coordinates.append(float(x))
         coordinates.append(float(y))
         coordinates.append(float(z))
+        nuc_charges.append(float(get_element_number(symbol.title())))
         if count+1 == n_atoms:
            break
-    return n_atoms, symbols, coordinates
+
+    import numpy as np
+    symbols = np.array(symbols)
+
+    return n_atoms, symbols, coordinates, nuc_charges
 
 ###### Functions to fill the data object with information from DIRAC files
 ###### Note that all labels are hardwired in this part !
@@ -181,11 +188,12 @@ def load_XYZ(file_name,data):
 
     """
     # Read xyz file for the geometry
-    n_atoms, symbols, coordinates = read_xyz(file_name)
+    n_atoms, symbols, coordinates, nuc_charges = read_xyz(file_name)
     # Fill in the data for the molecular topology
     data['/input/molecule/n_atoms']['value']       = n_atoms
     data['/input/molecule/symbols']['value']       = symbols
     data['/input/molecule/geometry']['value']      = coordinates
+    data['/input/molecule/nuc_charge']['value']    = nuc_charges
 
     
 def load_DFCOEF(file_name,data):
@@ -200,16 +208,16 @@ def load_DFCOEF(file_name,data):
     except:
         dfcoef = read_DFCOEF(file_name,dtype_int='<i8')
     # Fill in the data for the aobasis
-    data['/input/aobasis/aobasis_id']['value']   = 1 # DFCOEF contains only one basis set definition
-    data['/input/aobasis/n_shells']['value']     = dfcoef['ao_nshells']
-    data['/input/aobasis/n_ao']['value']         = dfcoef['ao_nbas'] 
-    data['/input/aobasis/angular']['value']      = 1 # hardwired in DIRAC
-    data['/input/aobasis/center']['value']       = dfcoef['ao_cent']
-    data['/input/aobasis/orbmom']['value']       = dfcoef['ao_orbmom']    
-    data['/input/aobasis/n_prim']['value']       = dfcoef['ao_nprim']
-    data['/input/aobasis/n_cont']['value']       = dfcoef['ao_ncnt']    
-    data['/input/aobasis/exponents']['value']    = dfcoef['ao_priexp']
-    data['/input/aobasis/contractions']['value'] = dfcoef['ao_priccf']
+    data['/input/aobasis/1/aobasis_id']['value']   = [1] # DFCOEF contains only one basis set definition
+    data['/input/aobasis/1/n_shells']['value']     = dfcoef['ao_nshells']
+    data['/input/aobasis/1/n_ao']['value']         = dfcoef['ao_nbas']
+    data['/input/aobasis/1/angular']['value']      = [1] # hardwired in DIRAC
+    data['/input/aobasis/1/center']['value']       = dfcoef['ao_cent']
+    data['/input/aobasis/1/orbmom']['value']       = dfcoef['ao_orbmom']
+    data['/input/aobasis/1/n_prim']['value']       = dfcoef['ao_nprim']
+    data['/input/aobasis/1/n_cont']['value']       = dfcoef['ao_numcf']
+    data['/input/aobasis/1/exponents']['value']    = dfcoef['ao_priexp']
+    data['/input/aobasis/1/contractions']['value'] = dfcoef['ao_priccf']
 
     # Fill in the data for the execution
     data['/result/execution/status']['value']    = 2 # Calculations was finished, otherwise we would not have this DFCOEF
@@ -218,8 +226,9 @@ def load_DFCOEF(file_name,data):
 
     # Fill in the data for the scf wave function
     data['/result/wavefunctions/scf/energy']['value']      = dfcoef['energy']
-    data['/result/wavefunctions/scf/mobasis/mobasis_id']['value']  = 1 # DFCOEF contains only one set of MOs
+    data['/result/wavefunctions/scf/mobasis/mobasis_id']['value']  = [1] # DFCOEF contains only one set of MOs
     data['/result/wavefunctions/scf/mobasis/nz']['value']          = dfcoef['nz']
+    data['/result/wavefunctions/scf/mobasis/n_fsym']['value']      = dfcoef['nfsym']
     data['/result/wavefunctions/scf/mobasis/orbitals']['value']    = dfcoef['mo_coeff']
     data['/result/wavefunctions/scf/mobasis/eigenvalues']['value'] = dfcoef['eigenval']
     data['/result/wavefunctions/scf/mobasis/symmetry']['value']    = dfcoef['ibeig']
@@ -377,10 +386,14 @@ def write_hdf5(file_name,data):
     cp = h5py.File(file_name, 'w')
     for label, dataset in data.items():
         if 'value' in dataset: 
-           if (len(dataset['value']) == 1):
-               cp.create_dataset(label, data=dataset['value'])
+           # Arrays should be written as extendable datasets, single strings or scalars can be fixed size
+           if hasattr(dataset['value'],'__len__'):
+               if (len(dataset['value']) == 1 or isinstance(dataset['value'], str)):
+                   cp.create_dataset(label, data=[dataset['value']])
+               else:
+                   cp.create_dataset(label, data=dataset['value'], maxshape=(h5py.h5s.UNLIMITED))
            else:
-               cp.create_dataset(label, data=dataset['value'], maxshape=(h5py.h5s.UNLIMITED))
+               cp.create_dataset(label, data=dataset['value'])
     cp.close()
 
 # Simple use of these functions:

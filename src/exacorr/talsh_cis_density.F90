@@ -29,10 +29,10 @@ subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,N_state,Tra_Den_
     complex(kind=8), pointer      :: eVectors(:,:)
     integer                       :: tar_state,N_state
 
-    type(talsh_dm_tens_t)            :: Tra_Den_exe_exe_tensor
-    type(talsh_tens_t)             :: Diagonal_tensor
+    type(talsh_dm_tens_t)         :: Tra_Den_exe_exe_tensor
+    type(talsh_tens_t)            :: Diagonal_tensor
 
-    !complex(kind=8), pointer      :: Den_eff(:,:)
+    !complex(kind=8), pointer     :: Den_eff(:,:)
     type(C_PTR):: body_p
     integer(C_INT)       :: ierr
     integer(C_INT)     :: one_dims(1)
@@ -102,7 +102,7 @@ subroutine get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_te
     type(exacc_input), intent(in) :: exa_input
     complex(kind=8), pointer      :: eVectors(:,:)
     integer                       :: N_state
-    type(talsh_dm_tens_t)            :: Tra_Den_exe_grd_tensor
+    type(talsh_dm_tens_t)         :: Tra_Den_exe_grd_tensor
 
 
     !complex(kind=8), pointer      :: Den_eff(:,:)

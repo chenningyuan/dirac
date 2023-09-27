@@ -6,7 +6,7 @@ module talsh_ao_to_mo
 
         use tensor_algebra
         use talsh
-        use talsh_common_routines, only : tensor_norm2
+        use talsh_common_routines, only : tensor_norm2, talsh_get_number_gpus
         use exacorr_utils
         use, intrinsic:: ISO_C_BINDING
 
@@ -39,7 +39,7 @@ module talsh_ao_to_mo
          use exacorr_datatypes
          use exacorr_global
          use module_interest_interface
-         use talsh_cholesky_routines
+         use talsh_CD_routines
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          use interface_to_mpi
 #endif
@@ -71,6 +71,7 @@ module talsh_ao_to_mo
          type(talsh_tens_t)              :: upq_tens, urs_tens
          integer(C_INT)                  :: dim3(1:3), dim_chol(1:3)
 
+         integer :: num_gpus = 0, igpu
 
 !        Make some noise so that we know we are here
          call print_date('Entered compute_mo_integrals routine')
@@ -85,9 +86,11 @@ module talsh_ao_to_mo
          if (my_MPI_rank /= 0) return ! TALSH is not parallelized, leave the work to master
          call print_date('Initialized global data')
 
+         call talsh_get_number_gpus(num_gpus)
+
 !        Initialize libraries
          buf_size=talsh_buff*buf_size
-         ierr=talsh_init(buf_size,host_arg_max)
+         ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
          call print_date('Initialized talsh library')
          write(*,'(" Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
          call interest_initialize(.true.)

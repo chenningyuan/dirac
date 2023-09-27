@@ -1698,6 +1698,8 @@ module exacorr_ao_to_mo
           character(len=12)          :: vs_str
 
           if (print_level.gt.0) call print_date(" === entering decompose_cholesky_exatensor === ")
+! aspg, deactivating this now for sorting out the rest of merge
+#if 0
 
           ierr=exatns_tensor_create(one_element,"one_element",EXA_DATA_KIND_C8)
           ierr=exatns_tensor_init(one_element,ONE)
@@ -1727,13 +1729,13 @@ module exacorr_ao_to_mo
           else
             ao_level=1
           end if
-          if (print_level.gt.5) then
-            write (*,*) ' --- ao_level =     ',ao_level  
-            do i=1,nao
-              write(*,*) ' i =',i,', id = ',ao_space%get_ancestor_id_of_level(int(i-1,INTL),ao_level,ierr),&
-                         ', shell=',get_shell_index(i)
-            end do
-          end if
+!         if (print_level.gt.5) then
+!           write (*,*) ' --- ao_level =     ',ao_level  
+!           do i=1,nao
+!             write(*,*) ' i =',i,', id = ',ao_space%get_ancestor_id_of_level(int(i-1,INTL),ao_level,ierr),&
+!                        ', shell=',get_shell_index(i)
+!           end do
+!         end if
 
           allocate(CD(nao*nao))
 
@@ -1891,6 +1893,7 @@ module exacorr_ao_to_mo
 
           !cholesky tensor needs to be destroyed elsewhere
 
+#endif
           if (print_level.gt.0) call print_date(" === leaving decompose_cholesky_exatensor === ")
 
         end subroutine decompose_cholesky_exatensor
@@ -1922,7 +1925,9 @@ module exacorr_ao_to_mo
           complex(8)                 :: scal_fac, D_max
           character(len=12)          :: vs_str
 
+
           if (print_level.gt.0) call print_date(" === entering decompose_cholesky_exatensor_full === ")
+#if 0
 
           ierr=exatns_tensor_create(one_element,"one_element",EXA_DATA_KIND_C8)
           ierr=exatns_tensor_init(one_element,ONE)
@@ -2034,6 +2039,7 @@ module exacorr_ao_to_mo
 
           !cholesky tensor needs to be destroyed elsewhere
 
+#endif
           if (print_level.gt.0) call print_date("=== leaving decompose_cholesky_exatensor_full === ")
 
         end subroutine decompose_cholesky_exatensor_full

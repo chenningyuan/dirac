@@ -57,10 +57,12 @@
             logical                 :: talsh = .true.           ! if false, use ExaTensor
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: cc2 = .false.            !L if true CC2
-            logical                 :: cis = .false.            ! enables CIS, and branch off away from the CC driver 
+            logical                 :: do_cis = .false.         ! enables CIS, and branch off away from the CC driver 
             logical                 :: lambda = .false.
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
+            logical                 :: do_iterative   = .true.  ! this provides a way to switch off iterative methods, e.g. if we want to do only MP2 
+            logical                 :: do_perturbative = .true. ! this generalizes the do_triples
             logical                 :: do_triples = .true.
             logical                 :: tripl_lap = .false.
             logical                 :: do_no = .false.          ! if true, generate natural orbital
@@ -68,6 +70,9 @@
             
             logical                 :: do_1rdm_gs=.false.
             logical                 :: do_2rdm_gs=.false.
+
+            logical                 :: auto_kernels = .false.   ! if true, use automatically generated kernels for t/l equations
+            integer                 :: auto_scheme  = 1         ! 1: autogen;  2: tenpi
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
@@ -77,28 +82,58 @@
             integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
             integer                 :: nocc, nvir               ! number of spinors
+            integer                 :: iterative_level = 2      ! at which excitation level iterative amplitudes/lagrange mult. will be calculated: 1, 2, 3, 4...
+            integer                 :: iterative_scheme = 21    ! scheme/variant for the iterative determination of amplitudes 
+                                                                ! 10: CCS (not currently implemented, but logically should follow as this)
+                                                                ! 20: CCD      ; 21: CCSD      ; 22: CC2       ; 
+                                                                ! 30: CCSDT    ; 31: CCSDT-1   ; 32: CCSDT-1a  ; 33: CCSDT-1b  ; 34: CCSDT-2   ; 35: CCSDT-3; 36: CC3           ;
+                                                                ! 40: CCSDTQ   ; 41: CCSDTQ-1  ; 
+            integer                 :: perturbative_level = 3   ! at which excitation level pertubative corrections will be calculated: 2, 3, 4...
+            integer                 :: perturbative_scheme = 30 ! scheme/variant for the iterative determination of energies/amplitudes/... 
+                                                                ! 20: MP2 (MP2 is always performed)
+                                                                ! 30: CCSD(T)
+
+!  aspg, TODO: harmonize this tripl_block with the more general setup of excitation rank
             integer                 :: tripl_block(1:2) = -1    ! for running triples
             integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
             integer                 :: n_laplace = 10           ! number of laplace points to use
-            integer                 :: N_eom_trail = 1          ! number of trial vectors in CC linear response
+            integer                 :: N_eom_trial = 5          ! number of trial vectors in CC linear response
             integer                 :: wf_type = 2              ! wave-function type
+            integer                 :: N_Prop_A, N_Prop_B    ! number of property
+            integer                 :: N_Prop_C, N_Prop_D    ! number of property
+            integer                 :: N_omega_lr = 1               ! number of frequency in cclr
+            integer                 :: N_omega_qr1 = 1               ! number of frequency1 in ccqr
+            integer                 :: N_omega_qr2 = 1               ! number of frequency2 in ccqr
+           
             
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
             integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
+            integer, allocatable    :: Prop_A(:), Prop_B(:), Prop_C(:), Prop_D(:) ! index of Property
+            INTEGER                 ::  TPA_state             ! index of final excited state in eom-tpa
+            real(REALD), allocatable :: w_lr_re(:)            ! real frequency in CC linear response
+            real(REALD), allocatable :: w_lr_im(:)            ! imaginary frequency in CC response
+
+            real(REALD), allocatable :: w_qr1_re(:)            ! 1st real frequency in CC quadratic response
+            real(REALD), allocatable :: w_qr1_im(:)            ! 1st imaginary frequency in CC quadratic response
+            real(REALD), allocatable :: w_qr2_re(:)            ! 2nd real frequency in CC quadratic response
+            real(REALD), allocatable :: w_qr2_im(:)            ! 2nd imaginary frequency in CC quadratic response
+           
 
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
             real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
             real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
-            real(REALD)             :: w_lr_re =  0.0            ! real frequency in CC response
-            real(REALD)             :: w_lr_im =  0.0            ! imaginary frequency in CC response
+            
+           
 
+            real(REALD), allocatable:: rew_energies(:,:) ! restricted excitation window, in terms of energy thresholds (a.u.)
 
 ! this just signals we should handle *EOMCC inputs under **EXACC
             logical                 :: eom = .false.
             integer                 :: current_eom_input = -1
         !     logical                 :: eom_lr = .false.
             logical                 :: eom_qr = .false.
+            logical                 :: eom_tpa = .false.
 ! handle one or more *EOMCC blocks 
             type(eom_config_t), allocatable :: eom_input(:)
 
@@ -124,7 +159,7 @@
          type(tens_rcrsv_t) :: goo, gvv
          type(tens_rcrsv_t) :: hoo, hov, hvv
          type(tens_rcrsv_t) :: a_int, h_int
-         type(tens_rcrsv_t) :: t1, t2, tau
+         type(tens_rcrsv_t) :: t1, t2, t3, t4, t5, tau
         end type exatns_comm_tens_t
 
         type, public :: exatns_lambda_tens_t
@@ -180,7 +215,7 @@
          type(talsh_tens_t) :: goo, gvv
          type(talsh_tens_t) :: hoo, hov, hvv
          type(talsh_tens_t) :: a_int, h_int
-         type(talsh_tens_t) :: t1, t2, tau
+         type(talsh_tens_t) :: t1, t2, t3, t4, t5, tau
         end type talsh_comm_tens_t
 
         type, public :: talsh_lambda_tens_t
@@ -196,7 +231,7 @@
 
 
         type, public :: talsh_orb_prop_integ_tens_t
-         type(talsh_tens_t) :: prop_oo, prop_ov, prop_vv
+         type(talsh_tens_t) :: prop_oo, prop_ov, prop_vv, prop_vo
         end type talsh_orb_prop_integ_tens_t
 
         

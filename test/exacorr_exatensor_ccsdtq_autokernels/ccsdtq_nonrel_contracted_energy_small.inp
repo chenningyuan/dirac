@@ -1,0 +1,42 @@
+!
+! This test calculates the CC energy with the X2C Hamiltonian
+!
+**DIRAC
+.TITLE
+NR Hamiltonian. CCSDTQ energies, small test.
+.WAVE F
+**INTEGRALS
+.NUCMOD
+ 1
+**HAMILTONIAN
+.NONREL
+**WAVE FUNCTIONS
+.SCF
+.EXACC
+*SCF
+.EVCCNV
+1.0E-9 1.0E-7
+.MAXITR
+30
+**EXACC
+.OCCUPIED
+3..5
+.VIRTUAL
+6..10
+.CC-iQ
+.AUTOKERNEL
+.EXATENSOR
+.PRINT
+2
+#.TALSH_BUFF
+#10
+**MOLECULE
+*COORDINATES
+.UNITS
+AU
+*SYMMETRY
+.NOSYM
+*BASIS
+.DEFAULT
+STO-3G
+*END OF
