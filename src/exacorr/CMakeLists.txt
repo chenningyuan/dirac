@@ -11,7 +11,10 @@ if(ENABLE_EXATENSOR)
    talsh_auto_ccd_spinor_clean.F90
    talsh_auto_ccsd_spinor_clean.F90
    talsh_auto_ccsdt_spinor_clean.F90
+   talsh_auto_ccsdt-1a_spinor_clean.F90
    talsh_auto_ccsdt-1b_spinor_clean.F90
+   talsh_auto_ccsdt-2_spinor_clean.F90
+   talsh_auto_ccsdt-3_spinor_clean.F90
    talsh_auto_ccsdtq_spinor_clean.F90
    talsh_auto_ccsdtqp_spinor_clean.F90
    exatensor_auto_ccd_spinor_clean.F90
