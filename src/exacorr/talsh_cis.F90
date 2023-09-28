@@ -164,7 +164,7 @@ module talsh_cis
 
 
 !        Constrcut two body integral tensor and Create CIS Hamiltonian tensor 
-         ierr=talsh_tensor_contract("HCIS(b,i,j,a)+=TB(b,i,a,j)*M()",result_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("HCIS(b,i,j,a)+=TB(i,a,j,b)*M()",result_tensor,int_t%ovov,one_tensor,scale=MINUS_ONE)
          ierr=talsh_tensor_add("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,body_one_tensor)
 
 
@@ -304,7 +304,7 @@ end subroutine
              type(talsh_intg_tens_t),intent(inout)  :: int_t ! target integral tensors to be filled and given back to the caller
              integer, intent(in)                  :: print_level
     
-             integer(INTD) :: oooo_dims(1:4),vovo_dims(1:4)
+             integer(INTD) :: oooo_dims(1:4),vovo_dims(1:4),ovov_dims(1:4),oovv_dims(1:4)
     
              integer(INTD)                      :: ierr
              complex(8), pointer, contiguous    :: ao_tens(:,:,:,:)
@@ -344,44 +344,51 @@ end subroutine
              call print_date('finished ao integral calculation')
         
 !            Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
-!            Get vovo tensor
-             vovo_dims(1) = nvir
-             vovo_dims(2) = nocc
-             vovo_dims(3) = nvir
-             vovo_dims(4) = nocc
-             ierr=talsh_tensor_construct(int_t%vovo,C8,vovo_dims,init_val=ZERO)
+!            Get oovv tensor
+             oovv_dims(1) = nocc
+             oovv_dims(2) = nocc
+             oovv_dims(3) = nvir
+             oovv_dims(4) = nvir
+             ierr=talsh_tensor_construct(int_t%oovv,C8,oovv_dims,init_val=ZERO)
+
              allocate (mo_list(2*nvir+2*nocc))
-             nmo(1:2) = nvir
-             nmo(3:4) = nocc
-             mo_list(1:nvir)                      = mo_vir(1:nvir)
-             mo_list(nvir+1:2*nvir)               = mo_vir(1:nvir)
-             mo_list(2*nvir+1:2*nvir+nocc)        = mo_occ(1:nocc)
-             mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-             call get_integral_tensor (aoint_tensor,int_t%vovo,0,nmo,mo_list)
-             deallocate (mo_list)
-!            Get ovvo tensor
-             ovvo_dims(1) = nocc
-             ovvo_dims(2) = nvir
-             ovvo_dims(3) = nvir
-             ovvo_dims(4) = nocc
-             ierr=talsh_tensor_construct(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
-             allocate (mo_list(2*nvir+2*nocc))
+
              nmo(1) = nocc
              nmo(2) = nvir
-             nmo(3) = nvir
-             nmo(4) = nocc
+             nmo(3) = nocc
+             nmo(4) = nvir
+             mo_list(1:nocc)                        = mo_occ(1:nocc)
+             mo_list(nocc+1:nocc+nvir)              = mo_vir(1:nvir)
+             mo_list(nocc+nvir+1:2*nocc+nvir)       = mo_occ(1:nocc)
+             mo_list(2*nocc+nvir+1:2*nvir+2*nocc)   = mo_vir(1:nvir)
+             call get_integral_tensor (aoint_tensor,int_t%oovv,0,nmo,mo_list)
+
+             deallocate (mo_list)
+!            Get ovov tensor
+
+
+             ovov_dims(1) = nocc
+             ovov_dims(2) = nvir
+             ovov_dims(3) = nocc
+             ovov_dims(4) = nvir
+             ierr=talsh_tensor_construct(int_t%ovov,C8,ovov_dims,init_val=ZERO)
+             allocate (mo_list(2*nvir+2*nocc))
+
+             nmo(1:2) = nocc
+             nmo(3:4) = nvir
              mo_list(1:nocc)                      = mo_occ(1:nocc)
-             mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
-             mo_list(nvir+nocc+1:2*nvir+nocc)     = mo_vir(1:nvir)
-             mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-             call get_integral_tensor (aoint_tensor,ovvo_tensor,0,nmo,mo_list)
+             mo_list(nocc+1:2*nocc)               = mo_occ(1:nocc)
+             mo_list(2*nocc+1:2*nocc+nvir)        = mo_vir(1:nvir)
+             mo_list(2*nocc+nvir+1:2*nvir+2*nocc) = mo_vir(1:nvir)
+             call get_integral_tensor (aoint_tensor,int_t%ovov,0,nmo,mo_list)
              deallocate (mo_list)
 !            Make anti-symmetrized vovo tensor
              minusone_dims(1) = 1
              ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
-             ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
-             ierr=talsh_tensor_destruct(ovvo_tensor)
-             call print_date('finished vovo integrals')
+             ierr=talsh_tensor_contract("V(i,a,j,b)+=V(i,j,a,b)*C()",int_t%ovov,int_t%oovv,minusone_tensor)
+             ierr=talsh_tensor_destruct(int_t%oovv)
+             call print_date('finished ovov integrals')
+            
     
 !            Clean-up
              ierr=talsh_tensor_destruct(aoint_tensor)

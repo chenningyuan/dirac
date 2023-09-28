@@ -203,7 +203,7 @@
         type, public :: talsh_intg_tens_t
          type(talsh_tens_t) :: oooo
          type(talsh_tens_t) :: ooov
-         type(talsh_tens_t) :: oovv, vovo
+         type(talsh_tens_t) :: oovv, vovo, ovov
          type(talsh_tens_t) :: vovv
          type(talsh_tens_t) :: vvvv
          type(talsh_tens_t) :: foo, fov, fvv
