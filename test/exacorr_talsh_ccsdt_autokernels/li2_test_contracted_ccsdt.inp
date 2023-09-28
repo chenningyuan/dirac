@@ -22,7 +22,7 @@ NR Hamiltonian, Li2, energies.
 1..3
 .VIRTUAL
 4..28
-.CC-iT
+.CCiT
 .AUTOKERNELS
 .AUTOSCHEME
 1

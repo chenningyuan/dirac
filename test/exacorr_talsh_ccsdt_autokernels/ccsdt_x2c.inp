@@ -19,7 +19,7 @@ Water molecule. X2C Hamiltonian. CC energies.
 3..5
 .VIRTUAL
 6..17
-.CC-iT
+.CCiT
 .AUTOKERNELS
 .LAMBDA
 .TALSH_BUFF

@@ -4774,7 +4774,7 @@ module exacorr_cc
          integer(INTD) :: ierr
 
          print *,''
-         print *,'ExaTensor CCD/SD/SDT/SDTQ/SDTQP implementation with automatically generated residual equations'
+         print *,'ExaTensor implementation with automatically generated residual equations'
          print *,''
 
          occ_space_id=dims%occ_space_id

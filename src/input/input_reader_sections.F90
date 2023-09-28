@@ -1090,24 +1090,94 @@
          exa_input%iterative_scheme = 22
       end if
 
-      if (kw_matches(word, '.CC-iT       ')) then 
+      if (kw_matches(word, '.CCiT        ')) then 
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 30
       end if
 
-      if (kw_matches(word, '.CC-iT1b     ')) then 
+      if (kw_matches(word, '.CCiT1a      ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 31
+      end if
+
+      if (kw_matches(word, '.CCiT1b      ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 32
+      end if
+
+      if (kw_matches(word, '.CCiT2       ')) then 
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 33
       end if
 
-      if (kw_matches(word, '.CC-iQ    ')) then
+      if (kw_matches(word, '.CCiT3       ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 34
+      end if
+
+      if (kw_matches(word, '.CC3         ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 35
+      end if
+
+      if (kw_matches(word, '.CCiQ      ')) then
          exa_input%iterative_level  = 4
          exa_input%iterative_scheme = 40
       end if
 
-      if (kw_matches(word, '.CC-iP    ')) then
+      if (kw_matches(word, '.CCiQ1a      ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 41
+      end if
+
+      if (kw_matches(word, '.CCiQ1b      ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 42
+      end if
+
+      if (kw_matches(word, '.CCiQ2       ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 43
+      end if
+
+      if (kw_matches(word, '.CCiQ3       ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 44
+      end if
+
+      if (kw_matches(word, '.CC4         ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 45
+      end if
+
+      if (kw_matches(word, '.CCiP     ')) then
          exa_input%iterative_level  = 5
          exa_input%iterative_scheme = 50
+      end if
+
+      if (kw_matches(word, '.CCiP1a      ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 51
+      end if
+
+      if (kw_matches(word, '.CCiP1b      ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 52
+      end if
+
+      if (kw_matches(word, '.CCiP2       ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 53
+      end if
+
+      if (kw_matches(word, '.CCiP3       ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 54
+      end if
+
+      if (kw_matches(word, '.CC5         ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 55
       end if
 
       if (kw_matches(word, '.TCONVERG')) then

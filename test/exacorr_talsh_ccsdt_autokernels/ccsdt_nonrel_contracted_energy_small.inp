@@ -23,7 +23,7 @@ NR Hamiltonian. CCSDT energies, small test.
 3..5
 .VIRTUAL
 6..10
-.CC-iT
+.CCiT
 .AUTOKERNEL
 .PRINT
 2

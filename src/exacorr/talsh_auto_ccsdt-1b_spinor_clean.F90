@@ -717,8 +717,28 @@ subroutine talsh_CCSDT_1b_codegen_call(nocc,nvir,&
 !   original expression: Z54(e1be2b|m1bm2b)+=S45(e1be2b,d1b|m1bm2b,l1b)*H15(l1b|d1b)
     ierr=talsh_tensor_contract("Z54(e1,e2,m1,m2)+=S45(e1,e2,d1,m1,m2,l1)*H15(l1,d1)",Z54,S45,H15,&
          scale=(1.0d0,0.0d0))
+!
+! T2a and T2b
+!   original expression: Z55(e1be2be3b|m1bm2bm3b)+=S45(e1be2b,d1b|m1bm2bm3b)*H1(e3b|d1b)            
+    ierr=talsh_tensor_contract("Z55(e1,e2,e3,m1,m2,m3)+=S45(e1,e2,d1,m1,m2,m3)*H1(e3,d1)",Z55,S45,H1,&
+         scale=(1.0d0,0.0d0))                                                                      
+!   original expression: Z55(e1be2be3b|m1bm2bm3b)+=S45(e1be3b,d1b|m1bm2bm3b)*H1(e2b|d1b)*-1.        
+    ierr=talsh_tensor_contract("Z55(e1,e2,e3,m1,m2,m3)+=S45(e1,e3,d1,m1,m2,m3)*H1(e2,d1)",Z55,S45,H1,&
+         scale=(-1.0d0,0.0d0))                                                                     
+!   original expression: Z55(e1be2be3b|m1bm2bm3b)+=S45(e2be3b,d1b|m1bm2bm3b)*H1(e1b|d1b)            
+    ierr=talsh_tensor_contract("Z55(e1,e2,e3,m1,m2,m3)+=S45(e2,e3,d1,m1,m2,m3)*H1(e1,d1)",Z55,S45,H1,&
+         scale=(1.0d0,0.0d0))          
+!   original expression: Z55(e1be2be3b|m1bm2bm3b)+=S45(e1be2be3b|m1bm2b,l1b)*H16(l1b|m3b)*-1.       
+    ierr=talsh_tensor_contract("Z55(e1,e2,e3,m1,m2,m3)+=S45(e1,e2,e3,m1,m2,l1)*H16(l1,m3)",Z55,S45,H16,&
+         scale=(-1.0d0,0.0d0))                                                                     
+!   original expression: Z55(e1be2be3b|m1bm2bm3b)+=S45(e1be2be3b|m1bm3b,l1b)*H16(l1b|m2b)           
+    ierr=talsh_tensor_contract("Z55(e1,e2,e3,m1,m2,m3)+=S45(e1,e2,e3,m1,m3,l1)*H16(l1,m2)",Z55,S45,H16,&
+         scale=(1.0d0,0.0d0))                                                                      
+!   original expression: Z55(e1be2be3b|m1bm2bm3b)+=S45(e1be2be3b|m2bm3b,l1b)*H16(l1b|m1b)*-1.       
+    ierr=talsh_tensor_contract("Z55(e1,e2,e3,m1,m2,m3)+=S45(e1,e2,e3,m2,m3,l1)*H16(l1,m1)",Z55,S45,H16,&
+         scale=(-1.0d0,0.0d0))   
 
-
+! T1a and T1b
 !   original expression: Z55(e1be2be3b|m1bm2bm3b)+=H4(e1be2b|m1b,d1b)*S44(e3b,d1b|m2bm3b)*-1.
     ierr=talsh_tensor_contract("Z55(e1,e2,e3,m1,m2,m3)+=H4(e1,e2,m1,d1)*S44(e3,d1,m2,m3)",Z55,H4,S44,&
          scale=(-1.0d0,0.0d0))
