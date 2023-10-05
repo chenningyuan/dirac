@@ -164,7 +164,7 @@ contains
   integer :: itr, ist, ier, nep, nem, nez, nref
 
   real*8  :: funcg, funcq, funco, dnrmk, dnrmg, diffg, diffq, diffa
-  real*8  :: totdiag, totnond, shift, tradius, tpred
+  real*8  :: totdiag, totnond, shift, tradius, tpred, hmin
 
   real*8,  allocatable, dimension(:) :: grad, etmp, xvec
 
@@ -234,13 +234,13 @@ contains
 
   write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
     '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
-  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
-    '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
+  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a,6x,a)') &
+    '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)',' e: +,-,0  ','H','DIFFG','DIFFQ','HMIN'
 
   ! zero step
   call get_hessian(hmat,full,totdiag,totnond)
   call get_gradient(grad,dnrmg)
-  call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+  call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
 
   shift = d0
   dnrmk = d0
@@ -249,8 +249,8 @@ contains
   diffa = d0
   itr   = 0
   ist   = 0
-  write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
-    '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+  write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i6,3x,a,3d11.2)') &
+    '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq,hmin
 
   do
     ist = ist + 1
@@ -293,7 +293,7 @@ contains
       !---------------------------------------------!
       call get_hessian(hmat,full,totdiag,totnond)
       call get_gradient(grad,dnrmg)
-      call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+      call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
 
       itr = itr + 1
 
@@ -304,10 +304,10 @@ contains
       if(full) hessian = 'FULL'
       funco = funcg
 
-      write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
-        '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
-      write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
-        '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+      write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a, 6x,a)') &
+        '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ','HMIN'
+      write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i6,3x,a,3d11.2)') &
+        '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq,hmin
 
       !----------------------------!
       ! check convergence criteria !
@@ -335,10 +335,10 @@ contains
           if(full)then
             call get_hessian(hmat,full,totdiag,totnond)
             call get_gradient(grad,dnrmg)
-            call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+            call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
             hessian = 'FULL'
-            write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
-              '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+            write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i6,3x,a,3d11.2)') &
+              '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq,hmin
             if(mnf%lgchck) exit
           endif
         endif
@@ -583,7 +583,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,gradient,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+  subroutine hdiag(hmat,gradient,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
   !******************************************************************************!
   !                                                                              !
   !               Diagonalize real representation of the hessian                 !
@@ -597,6 +597,7 @@ contains
   integer, intent(out) :: nep, nem, nez
   real*8,  intent(in ), dimension(:) :: gradient
   real*8,  intent(out), dimension(:) :: etmp
+  real*8,  intent(out) :: hmin
 
   integer, intent(inout), pointer :: iorig(:)
   real*8,  intent(inout), pointer :: hmat(:,:)
@@ -702,10 +703,14 @@ contains
   enddo
 
   ! count number of positive, negative and zero eigenvalues
+  hmin=d0
   nep=0; nem=0; nez=0
   do i=1,ndim
     if(dabs(etmp(i)) > thresh)then
-      if(etmp(i) < d0)nem = nem + 1
+      if(etmp(i) < d0) then
+        nem = nem + 1
+        hmin=min(hmin,etmp(i))
+      endif
       if(etmp(i) > d0)nep = nep + 1
     else
       nez = nez + 1
@@ -1111,6 +1116,7 @@ contains
     rejected  = .true.
     if(cond(3:3) == ' ') cond(3:3) = 's'
     if(cond(3:3) == '.') cond(3:3) = 'd'
+    if( cond(1:3) == '0rs' ) rejected  = .false.
   endif
 
   if(tradius /= tradold) trdef = .false.
