@@ -5,8 +5,8 @@ star(LOCALIZATION)
 
 Performs molecular orbitals localization using the Pipek-Mezey
 criterion. The implementation uses an exponential parametrization and a
-Trus region minimization method instead of the Edminston-Ruedenberg
-algorithm. It works with the *C*\ :sub:`1`\ symmetry and for the occupied orbitals.
+trust region minimization method instead of the Edminston-Ruedenberg
+algorithm. It works with :math:`C_1`  symmetry and for the occupied orbitals.
 
 
 keyword(PRJLOC)
