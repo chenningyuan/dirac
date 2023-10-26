@@ -232,9 +232,9 @@ contains
   funcg = get_func()
   funco = funcg
 
-  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
+  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 8x,a, 6x,a)') &
     '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
-  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a,6x,a)') &
+  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 7x,a, 6x,a, 6x,a,6x,a)') &
     '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)',' e: +,-,0  ','H','DIFFG','DIFFQ','HMIN'
 
   ! zero step
@@ -304,7 +304,7 @@ contains
       if(full) hessian = 'FULL'
       funco = funcg
 
-      write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a, 6x,a)') &
+      write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 7x,a, 6x,a, 6x,a, 6x,a)') &
         '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ','HMIN'
       write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i6,3x,a,3d11.2)') &
         '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq,hmin
@@ -869,7 +869,7 @@ contains
   ! Internal variables
   logical       :: flat
   logical, save :: was_flat = .false.
-  character*6   :: cond
+  character*9   :: cond
   integer       :: i, nred
   integer, save :: nrun  = 0, ncount(4) = 0
 
@@ -885,29 +885,29 @@ contains
   R       = diffg / diffq
 
   !------------------------------------------------------------------------------!
-  !                            Trus-radius update                                !
+  !                            Trust-radius update                                !
   !------------------------------------------------------------------------------!
   if( dabs(diffg)<thresh .or. dabs(diffq)<thresh )then
-    cond = '0     '
+    cond = '0        '
     if(rejected)then
-      if(diffq > d0)then
-        cond = '0r q>0'
+      if(diffq > d0)then 
+        cond = '0r q>0.00'
         tradius  = tradius / 10.0d0
       else
-        cond = '0r    '
+        cond = '0r       '
         rejected = .false.
       endif
     endif
   else
     if(rejected)then
       if(diffq > d0)then
-        cond = 'r  q>0'
+        cond = 'r  q>0.00'
         tradius  = tradius / 10.0d0
       else
-        cond = 'r     '
-        if(R < d0 ) cond = 'r  R<0'
-        if(R < d1q) cond = 'r  R<1'
-        if(R > d3q) cond = 'r  R>3'
+        cond = 'r        '
+        if(R < d0 ) cond = 'r  R<0.00'
+        if(R < d1q) cond = 'r  R<0.25'
+        if(R > d3q) cond = 'r  R>0.75'
         rejected = .false.
         if(R < d0 ) rejected = .true.
         if(R < d1q) tradius  = d1q* tradius
@@ -917,34 +917,34 @@ contains
       if(dnrmk > tradius)then
         if(full)then
           if(diffq < d0)then
-            cond = 'Tq    '
-            if(R < d0 ) cond = 'Tq R<0'
-            if(R < d1q) cond = 'Tq R<1'
-            if(R > d5q) cond = 'Tq R>5'
+            cond = 'Tq       '
+            if(R < d0 ) cond = 'Tq R<0.00'
+            if(R < d1q) cond = 'Tq R<0.25'
+            if(R > d5q) cond = 'Tq R>1.25'
             tradius = dnrmk
             if(R < d0 ) rejected = .true.
             if(R < d1q) tradius  = d1q*tradius
             if(R > d5q) tradius  = d2*tradius
           else 
             cond = 'TQ    '
-            if(R > d0 ) cond = 'TQ R>0'
-            if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>7'
-            if((R > d3q).and.(R < d5q))   cond = 'TQ R<5'
+            if(R > d0 ) cond = 'TQ R>0.00'
+            if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>1.75'
+            if((R > d3q).and.(R < d5q))   cond = 'TQ R<1.25'
             tradius = dnrmk
             if(R > d0 ) rejected = .true.
             if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
             if((R > d3q).and.(R < d5q))   tradius = d2*tradius
           endif
         else
-          cond = 'T  dia'
+          cond = 'T  dia   '
           rejected = .true.
         endif
       else
         if(diffq < d0)then
           cond = 'tq     '
-          if(R < d0 ) cond = 'tq R<0'
-          if(R < d1q) cond = 'tq R<1'
-          if(R > d5q) cond = 'tq R>5'
+          if(R < d0 ) cond = 'tq R<0.00'
+          if(R < d1q) cond = 'tq R<0.25'
+          if(R > d5q) cond = 'tq R>1.25'
           tradius = tradold
           if(trdef) tradius = dnrmk
           if(R < d0 ) rejected = .true.
@@ -952,9 +952,9 @@ contains
           if(R > d5q) tradius  = max(d2*dnrmk,tradold)
         else 
           cond = 'tQ    '
-          if(R > d0 ) cond = 'tQ R>0'
-          if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>7'
-          if((R > d3q).and.(R < d5q))   cond = 'tQ R<5'
+          if(R > d0 ) cond = 'tQ R>0.00'
+          if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>1.75'
+          if((R > d3q).and.(R < d5q))   cond = 'tQ R<1.25'
           tradius = tradold
           if(trdef) tradius = dnrmk
           if(R > d0 ) rejected = .true.
@@ -1121,7 +1121,7 @@ contains
 
   if(tradius /= tradold) trdef = .false.
 
-  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
+  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 8x,a, 6x,a)') &
     '  ','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
   write(mnf%l,'(a,2x,i4,3d11.2,f11.5,3x,l1,3x,a,4d11.2)') &
     '*T',itr+1,tradold,tradius,dnrmk,R,rejected,cond,diffg,diffq
