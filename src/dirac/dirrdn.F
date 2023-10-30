@@ -6529,7 +6529,6 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
         ENDDO
       ENDIF
 #endif      
-#ifdef MOD_UNRELEASED
       IF(DOASHIFT) THEN
         WRITE(LUPRI,'(3X,A)') 'Atomic shift projectors added.'
         WRITE(LUPRI,'(6X,A)') 'Parameters:'
@@ -6551,7 +6550,6 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
            ENDDO
         ENDDO
       ENDIF
-#endif      
 #ifdef MOD_UNRELEASED
       IF (VACPOL) THEN
         WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
