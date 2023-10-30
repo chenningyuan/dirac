@@ -121,80 +121,10 @@ module talsh_ao_to_mo
              print*, "additional transform to get anti-symmetrized integrals"
            end if
 
-         else if (.FALSE.) then
-            call print_date(' Cholesky method 41')
-            !determine cholesky vectors for ao integrals
-            call decompose_cholesky_talsh_vec (chol_tensor, m, th_cholesky, nao, print_level)
-            
-            allocate(temp(m))
-            allocate(upq(m))
-            allocate(urs(m))
-
-            ! transform first part
-            dim2=nao
-            dim2(1)=nmo(1)
-            do i=1,m
-              ierr=talsh_tensor_construct(temp(i),C8,dim2,init_val=ZERO)
-              ierr=talsh_tensor_construct(upq(i),C8,nmo(1:2),init_val=ZERO)
-            end do
-
-            call ao2mo_vec(chol_tensor,temp,m,nmo(1),mo_list(1:nmo(1)),11)
-            call ao2mo_vec(temp,upq,m,nmo(2),mo_list(nmo(1)+1:sum(nmo(1:2))),21)
-            do i=1,m
-              ierr=talsh_tensor_init(temp(i))
-            end do
-            call ao2mo_vec(chol_tensor,temp,m,nmo(1),mo_list(1:nmo(1)),12)
-            call ao2mo_vec(temp,upq,m,nmo(2),mo_list(nmo(1)+1:sum(nmo(1:2))),22)
-
-            call print_date(' upq done ')
-
-            ! transform second part
-            dim2=nao
-            dim2(1)=nmo(3)
-            do i=1,m
-              ierr=talsh_tensor_destruct(temp(i))
-              ierr=talsh_tensor_construct(urs(i),C8,nmo(3:4),init_val=ZERO)
-              ierr=talsh_tensor_construct(temp(i),C8,dim2,init_val=ZERO)
-            end do
-
-            call ao2mo_vec(chol_tensor,temp,m,nmo(3),mo_list(sum(nmo(1:2))+1:sum(nmo(1:3))),11)
-            call ao2mo_vec(temp,urs,m,nmo(4),mo_list(sum(nmo(1:3))+1:sum(nmo(1:4))),21)
-            do i=1,m
-              ierr=talsh_tensor_init(temp(i))
-            end do
-            call ao2mo_vec(chol_tensor,temp,m,nmo(3),mo_list(sum(nmo(1:2))+1:sum(nmo(1:3))),12)
-            call ao2mo_vec(temp,urs,m,nmo(4),mo_list(sum(nmo(1:3))+1:sum(nmo(1:4))),22)
-
-            ! delete cholesky vector
-            do i=1,m
-              ierr=talsh_tensor_destruct(chol_tensor(i))
-              ierr=talsh_tensor_destruct(temp(i))
-            end do
-            deallocate(chol_tensor)
-            deallocate(temp)
-
-            call print_date(' urs done ')
-
-            ! get the tensor
-            ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=ZERO)
-            do i=1,m
-              ierr=talsh_tensor_contract("T(p,q,r,s)+=K(p,q)*L(r,s)",moint_tensor,upq(i),urs(i))
-            end do
-            if (ierr.ne.0) stop 'program error: cholesky not working'
-            if (print_level.gt.2) write (*,*) "MOint = ",tensor_norm2(moint_tensor)
-
-            ! Clean-up
-            do i=1,m
-              ierr=talsh_tensor_destruct(upq(i))
-              ierr=talsh_tensor_destruct(urs(i))
-            end do 
-            deallocate(upq)
-            deallocate(urs)
-
          else
             call print_date('Cholesky method 42')
             !determine cholesky vectors for ao integrals
-            call decompose_cholesky_talsh_all (chol_tens, th_cholesky, nao, print_level)
+            call decompose_cholesky_talsh (chol_tens, th_cholesky, print_level)
             ierr = talsh_tensor_dimensions(chol_tens,i,dim_chol)
 
             !  transform upq

@@ -57,6 +57,7 @@ implicit none
 !            False - the functional value criterion or criterion of the number                !
 !                    of negative eigenvalues equals zero will be used                         !
 !   thgrad - threshold; see lggrad for the explanation                                        !
+!   thxvec - threshold for removing relativitely small elements of the solution vector        !
 !   lgdiag - if heskey = DIAG it have the the same purpose as lgfull;                         !
 !            for threshold is used thdiag variable                                            !
 !          - if heskey = COMB it is used to switch from the first to the second               !
@@ -77,7 +78,7 @@ type :: minimization_flags
   character*4 :: heskey
   logical     :: lgfull, lgdiag, lggrad, lgchck
   integer     :: iprint, maxitr, l, ndim
-  real*8      :: thfull, thdiag, thgrad
+  real*8      :: thfull, thdiag, thgrad, thxvec
 end type minimization_flags
 
 type( minimization_flags ), private :: mnf
@@ -120,6 +121,7 @@ contains
   read(iunit,*) chdum,mnf%thfull
   read(iunit,*) chdum,mnf%thdiag
   read(iunit,*) chdum,mnf%thgrad
+  read(iunit,*) chdum,mnf%thxvec
   read(iunit,*) chdum,mnf%lgfull
   read(iunit,*) chdum,mnf%lgdiag
   read(iunit,*) chdum,mnf%lggrad
@@ -203,15 +205,16 @@ contains
   restore = .false.
 
   if(mnf%iprint.ge.4)then
-    write(mnf%l,*) 'full  =',full
-    write(mnf%l,*) 'thdiag=',mnf%thdiag
-    write(mnf%l,*) 'thfull=',mnf%thfull
-    write(mnf%l,*) 'thgrad=',mnf%thgrad
-    write(mnf%l,*) 'lgdiag=',mnf%lgdiag
-    write(mnf%l,*) 'lgfull=',mnf%lgfull
-    write(mnf%l,*) 'lggrad=',mnf%lggrad
-    write(mnf%l,*) 'lgchck=',mnf%lgchck
-    write(mnf%l,*) 'heskey=',mnf%heskey
+    write(mnf%l,*) 'full  = ',full
+    write(mnf%l,*) 'thdiag= ',mnf%thdiag
+    write(mnf%l,*) 'thfull= ',mnf%thfull
+    write(mnf%l,*) 'thgrad= ',mnf%thgrad
+    write(mnf%l,*) 'thxvec= ',mnf%thxvec
+    write(mnf%l,*) 'lgdiag= ',mnf%lgdiag
+    write(mnf%l,*) 'lgfull= ',mnf%lgfull
+    write(mnf%l,*) 'lggrad= ',mnf%lggrad
+    write(mnf%l,*) 'lgchck= ',mnf%lgchck
+    write(mnf%l,*) 'heskey= ',mnf%heskey
   endif
 
   ! Memory allocation
@@ -219,6 +222,7 @@ contains
   allocate( etmp(mnf%ndim), stat=ier ); call errall(ier,'minimization_drv','etmp')
   allocate( xvec(mnf%ndim), stat=ier ); call errall(ier,'minimization_drv','xvec')
   grad = d0; etmp = d0; xvec = d0
+
 
   ! nullify pointers for later allocation of pointers
   nullify(iorig); nullify(gradt); nullify(eval); nullify(xvect); nullify(hmat)
@@ -261,7 +265,6 @@ contains
       call get_date(daytid)
       write(mnf%l,'(/6x,a,a24)')'--- ',daytid
     endif
-
     ! get new kappa
     shift = d0
     if(rejected) call get_mu(eval,gradt,tradius,nref,shift,nstep,tpred)
@@ -343,10 +346,8 @@ contains
           endif
         endif
       endif
-
       if(itr == mnf%maxitr)exit
     endif
-
     if(ist > 2*mnf%maxitr)exit
 
   enddo
@@ -388,10 +389,18 @@ contains
   deallocate( etmp )
   deallocate( xvec )
 
-  if(associated(iorig)) deallocate( iorig )
-  if(associated(xvect)) deallocate( xvect )
-  if(associated(gradt)) deallocate( gradt )
-  if(associated(eval )) deallocate( eval  )
+  if(associated(iorig)) then 
+    deallocate( iorig ); nullify(iorig)
+  endif
+  if(associated(xvect)) then
+    deallocate( xvect ); nullify(xvect)
+  endif
+  if(associated(gradt)) then
+    deallocate( gradt ); nullify(gradt)
+  endif
+  if(associated(eval )) then
+    deallocate( eval  ); nullify(eval)
+  endif
 
   end subroutine minimization_drv
 
@@ -505,11 +514,11 @@ contains
 
   integer, intent(in ), pointer :: iorig(:)
   real*8,  intent(in ), pointer :: gradt(:), eval(:)
-  real*8,  intent(out), pointer :: xvect(:)
+  real*8,  intent(inout), pointer :: xvect(:)
 
   ! Internal variables
-  integer :: i, j, ndim, nred, ier
-  real*8  :: dnrm2, dtmp
+  integer :: i, j, ndim, nred, ier, ixvec
+  real*8  :: dnrm2, dtmp, xmax
 
   !------------------------------------------------------------------------------!
   ! Get some dimensions
@@ -517,8 +526,11 @@ contains
   nred  = size(eval,1)
 
   ! allocate arrays
-  if(associated(xvect)) deallocate( xvect )
+  if(associated(xvect)) then
+    deallocate( xvect ); nullify(xvect)
+  endif
   allocate( xvect(nred), stat=ier ); call errall(ier,'get_X','xvect(pointer)')
+  call flush(6)
 
   ! calculate tilde{X}
   if(nstep)then
@@ -542,7 +554,7 @@ contains
   endif
 
   ! print \tilde{X}
-  if(mnf%iprint.ge.1)then
+  if(mnf%iprint.ge.3)then
     write(mnf%l,'(/a)') ' U^T*X vector: '
     write(mnf%l,'(8d12.4)') (xvect(i),i=1,nred)
   endif
@@ -559,12 +571,31 @@ contains
     endif
   enddo
 
+  ! Find largest element
+  xmax=maxval(abs(xvec))
+  if(mnf%iprint.ge.1)then
+    write(mnf%l,'(a,d12.4)') ' Largest kappa: ',xmax
+  endif
+  xmax=xmax*mnf%thxvec
+  ixvec=0
+  do i = 1,ndim
+    if(abs(xvec(i)).lt.xmax) then
+      xvec(i) = d0
+      ixvec = ixvec + 1
+    endif
+  enddo
+  if(mnf%iprint.ge.1)then
+    write(mnf%l,'(a,2(I8,A))') ' Removed (',ixvec,'/',ndim,') rotations'
+  endif
+
   ! Norm of the X
   dnrmk = dnrm2(ndim,xvec,1)
-  if(mnf%iprint.ge.1)then
+  if(mnf%iprint.ge.3)then
     write(mnf%l,'(/a)') ' X vector: '
     write(mnf%l,'(8d12.4)') (xvec(i),i=1,ndim)
-    write(mnf%l,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
+  endif
+  if(mnf%iprint.ge.1)then
+    write(mnf%l,'(/a,d12.4)') ' Norm of kappa: ',dnrmk
   endif
 
   end subroutine get_X
@@ -587,9 +618,9 @@ contains
   real*8,  intent(in ), dimension(:) :: gradient
   real*8,  intent(out), dimension(:) :: etmp
 
-  integer, intent(  out), pointer :: iorig(:)
+  integer, intent(inout), pointer :: iorig(:)
   real*8,  intent(inout), pointer :: hmat(:,:)
-  real*8,  intent(  out), pointer :: gradt(:), eval(:)
+  real*8,  intent(inout), pointer :: gradt(:), eval(:)
 
   ! Internal variables
   integer :: i, j, k, ndim, nred, ier, lwork, ilaenv, nb, icur
@@ -620,7 +651,9 @@ contains
 
   else
   
-    if(associated(iorig)) deallocate( iorig )
+    if(associated(iorig)) then
+      deallocate( iorig );nullify(iorig)
+    endif
     allocate( iorig(ndim), stat=ier ); call errall(ier,'hdiag','iorig(pointer)')
 
     ! get eigenvalues (etmp)
@@ -654,8 +687,8 @@ contains
     if(dabs(etmp(i)) > thresh) nred = nred + 1
   enddo
   if(associated(eval))then
-    deallocate( gradt )
-    deallocate( eval  )
+    deallocate( gradt );nullify(gradt)
+    deallocate( eval  );nullify(eval)
   endif
   allocate( gradt(nred), stat=ier ); call errall(ier,'hdiag','gradt(pointer)')
   allocate( eval (nred), stat=ier ); call errall(ier,'hdiag','eval(pointer)')
@@ -701,8 +734,8 @@ contains
   if(nem == 0)Iminmin = .true.  ! we have reached the minimum of the function
   if(nem /= 0)Iminmin = .false.
 
-  if(mnf%iprint.ge.1)then
-    write(mnf%l,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',nep,nem,nez
+  if(mnf%iprint.ge.3)then
+    write(mnf%l,'(/a,3i8)')' Eigenvalues of the hessian;  +,-,0  =  ',nep,nem,nez
     write(mnf%l,'(8d12.4)') (etmp(i),i=1,ndim)
   endif
 

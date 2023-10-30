@@ -38,6 +38,19 @@ The molecular input file `NF3.mol` uses the experimental geometry and automatic 
 
 .. literalinclude:: NF3.mol
 
+Upon input one of the nitrogen atom is at the origin with one of the N-F bonds aligned with the z-axis.
+DIRAC detects the full symmetry :math:`C_{3v}`. but uses the Abelian subgroup :math:`C_s`.
+
+.. literalinclude:: NF3sym.txt
+
+The molecule is furthere centered at the center of mass with the :math:`C_3`-axis aligned with the z-axis; this
+is seen from the xyz-file given in the output
+
+
+.. literalinclude:: NF3geo.txt
+
+
+
 Generating the HF wave function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -103,15 +116,14 @@ result as well as basis set convergence.
 Gauge-origin dependence
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-To investigate gauge-origin dependence we do a CGO and LAO calculation with the gauge origin placed at::
+To investigate gauge-origin dependence we do a CGO and LAO calculation with the gauge origin placed along 
+the :math:`C_3` axis:
 
-   **INTEGRALS
-   .GO ANG ! gauge origin in Angstrom
-   10.00 0.0 0.0
+.. literalinclude:: shift.inp
 
-that is, along the :math:`C_3` axis. Please note that when shifting the gauge origin in this manner you should 
+Please note that when shifting the gauge origin in this manner you should 
 limit the gauge origin to symmetry-independent points, that is, you should stay on symmetry elements like the
-*xy* mirror plane in this case. The CGO calculation now gives
+*xz* mirror plane in this case. The CGO calculation now gives
 
 .. literalinclude:: cgo2_NF3_total
 
