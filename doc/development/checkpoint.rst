@@ -1,5 +1,8 @@
 :orphan:
 
+.. _checkpoint:
+
+
 The CHECKPOINT.h5 file
 ======================
 

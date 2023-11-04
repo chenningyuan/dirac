@@ -231,6 +231,19 @@ C     Initialize PE library
       if (dirac_cfg_dft_calculation) then
         call consistency_after_dft_input()
         call report_after_dft_input()
+        IF (GAUNT) THEN
+           IF (LSCALE_DFT_GAUNT) THEN
+              WRITE (LUPRI,*) '* WARNING: Gaunt integrals will be '//
+     &        'scaled as HF exchange '
+              WRITE (LUPRI,*) '  according to the selected DFT '//
+     &        'functional.'
+           ELSE
+              WRITE (LUPRI,*) '* WARNING: Gaunt integrals will be '//
+     &        'included to 100%'
+              WRITE (LUPRI,*) '  independently of the selected '//
+     &        'DFT functional.'
+           ENDIF
+        ENDIF
 !       fixme num grid report should be independent of DFT
         call report_num_grid()
       end if
@@ -4391,7 +4404,7 @@ C
 ! HJAAJ TODO : new parameter to set ADD_ALL = .TRUE. /Jan 2010
       SAVE SET
       DATA TABLE /'.AOLAB ','.LABDEF','.VECPOP','.LABEL ',
-     &            '.PRINT ','.INDSML','.NETPOP','.XXXXXX'/
+     &            '.PRINT ','.INDSML','.NETPOP','.PR TOL'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4418,8 +4431,9 @@ C
       ORBDEF   = .TRUE.
 CSK   ... only if MP2-NO orbitals are available - set in MP2NOGE1
       MP2NATPOP = .FALSE.
+      POP_DTOL = 1.D-2
 C
-C     Process input from CBIPOP
+C     Process input for *MULPOP
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*MULPOP')
@@ -4444,9 +4458,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in POPINP.'
+     *            '" not recognized for *MULPOP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in POPINP.')
+               CALL QUIT('Illegal keyword for *MULPOP.')
     1          CONTINUE
 C&&&& AOLAB:  Base definition of labels on AO-labels:
                  ILABDF = 1
@@ -4475,7 +4489,7 @@ C&&&& LABEL: pre-define labels
                  ELSEIF(WORD.EQ.'SHELL  ') THEN
                    LABOPT = 2
                  ELSE
-                   CALL QUIT('*POPINP: Unknown word after LABEL')
+                   CALL QUIT('*MULPOP: Unknown word after .LABEL')
                  ENDIF
                GO TO 100
     5          CONTINUE
@@ -4490,15 +4504,17 @@ C&&&& INDSML: Do not collect labels of small components of given center/symmetry
 C&&&& NETPOP: Mulliken Net populations
                  DONETP = .TRUE.
                GO TO 100
+C&&&& PR TOL: print tolerance, only print VECPOP contributions > POP_DTOL
     8          CONTINUE
+                  READ(LUCMD,*) POP_DTOL
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in POPINP.'
+     *            '" not recognized for *MULPOP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in POPINP.')
+               CALL QUIT('Illegal prompt for *MULPOP.')
             END IF
       END IF
   300 CONTINUE
@@ -4627,7 +4643,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       MAYER  = .FALSE.
       POLNRM = .FALSE.
 C
-C     Process input from CBIPRJ
+C     Process *PROJEC input
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*PROJEC')
@@ -4803,10 +4819,10 @@ C
       IF(MAYER) THEN
         IF(OWNBAS) THEN
           CALL QUIT
-     &     ('ANAINP: Mayer polarization only possible with SELOWN=T')
+     &     ('*PROJEC: Mayer polarization only possible with SELOWN=T')
         ELSE
-          WRITE(LUPRI,'(1X,A,A)')
-     &      '* Reference orbitals will be polarized according to ',
+          WRITE(LUPRI,'(1X,A)')
+     &      '* Reference orbitals will be polarized according to'//
      &      ' a modified Mayer scheme'
         ENDIF
       ENDIF
@@ -6513,7 +6529,6 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
         ENDDO
       ENDIF
 #endif      
-#ifdef MOD_UNRELEASED
       IF(DOASHIFT) THEN
         WRITE(LUPRI,'(3X,A)') 'Atomic shift projectors added.'
         WRITE(LUPRI,'(6X,A)') 'Parameters:'
@@ -6535,7 +6550,6 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
            ENDDO
         ENDDO
       ENDIF
-#endif      
 #ifdef MOD_UNRELEASED
       IF (VACPOL) THEN
         WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
@@ -6593,17 +6607,6 @@ CMI    ... quantum dots
           call dftreport()
         end if
 
-         IF (IGTINT.EQ.1) THEN
-            IF (LSCALE_DFT_GAUNT) THEN
-               WRITE (LUPRI,*) 'WARNING: Gaunt integrals will be'//
-     &              'scaled as HF exchange according to the selected'
-               WRITE (LUPRI,*) ' DFT functional.'
-            ELSE
-               WRITE (LUPRI,*) 'WARNING: Gaunt integrals will be'//
-     &              'included to 100% independently of the selected'
-               WRITE (LUPRI,*) ' DFT functional.'
-            ENDIF
-         ENDIF
 
       ENDIF
 C
@@ -7631,29 +7634,6 @@ C.........define label
       deallocate(ibuf)
       RETURN
       END 
-#ifdef NOT_USED
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck READREORDER*/
-      SUBROUTINE READREORDER(STRING,IREORD,IMOORD,MXREORD)
-C***********************************************************************
-C
-C     Read in new order of orbitals
-C
-C     Written by J. Thyssen, Sep 1 1998
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      DIMENSION IMOORD(MXREORD)
-      CHARACTER STRING*90
-
-      string(90:90) = char(0)
-!     ... call C-routine
-        write(LUPRI,*) 'got string:',STRING
-      call creadreorder(string,ireord,imoord,mxreord)
-      RETURN
-      END
-#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mvoinp */
       SUBROUTINE MVOINP(WORD,RESET,WORK,LWORK)
@@ -8494,7 +8474,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (NTABLE = 12)
+      PARAMETER (NTABLE = 16)
 C
 #include "dcbgen.h"
 #include "dcbana.h"
@@ -8512,7 +8492,8 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
      &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
-     &            '.THDIAG','.THGRAD','.CHECK ','.SELECT'/
+     &            '.THDIAG','.THGRAD','.CHECK ','.SELECT',
+     &            '.THXVEC','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -8541,6 +8522,7 @@ C
       THFULL = 1.0D-13
       THDIAG = 1.0D-05
       THGRAD = 1.0D-07
+      THXVEC = 1.0D-15
       SELMOS = 'allocc'
 C
 C     Process input from CBILOC
@@ -8560,7 +8542,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
                   END IF
  200                        CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -8634,6 +8616,15 @@ C   After last iteration using diagonal approximation calculate one step using f
  12                      CONTINUE
 C   SELMOS: Select MOs for localization
                READ(LUCMD,'(A72)') SELMOS
+               GO TO 100
+ 13            CONTINUE
+C   THXVEC: Set threshold for removal of small rotations
+               READ(LUCMD,*) THXVEC
+ 14            CONTINUE
+               GO TO 100
+ 15            CONTINUE
+               GO TO 100
+ 16            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -8787,6 +8778,9 @@ C
         WRITE(LUPRI,'(1X,A)') '* User defined MOs for localization:'
         WRITE(LUPRI,'(1X,A)') '    --> ',SELMOS
       ENDIF
+      WRITE(6,'(1X,A,1P,E8.2)') 
+     &    '* Threshold for removal of small rotations: ',
+     &    THXVEC          
 C     -----------------------------------------------------------------
 C     Fragments of spinors used in the projection analysis
 C
@@ -9395,7 +9389,10 @@ C
       subroutine set_lscale_dft_gaunt()
       implicit none
 #include "dcbham.h"
+#include "dcbgen.h"
       lscale_dft_gaunt = .true.
+      IF (PARCAL) CALL QUIT('GAUNTSCALE keyword not working for'//
+     &                      ' parallel calculations')
       end subroutine
 
       function word_count(s)

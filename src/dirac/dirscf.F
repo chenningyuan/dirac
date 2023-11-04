@@ -5503,7 +5503,7 @@ C.......Read atomic coefficients in C1 format
      &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
         IF(.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,A6,A)') 
-     &     'ATOMIC_DNES: Atomic coefficient file ',ATOMFIL(IATOM),
+     &     'ATOMIC_DENS: Atomic coefficient file ',ATOMFIL(IATOM),
      &     ' not found !'
            CALL QUIT
      &     ('ATOMIC_DENS: Atomic coefficient file not found !')

@@ -123,7 +123,7 @@ Example 2: DCG Hamiltonian with Uehling and PZ potentials
 
 
 Note on the application to core-properties
-================================
+==========================================
 
 The above two SE potentials give very similar results in the case of valence properties :cite:`Sunaga2022`, but they may give different results in the case of core-properties :cite:`Sunaga2021`.
 

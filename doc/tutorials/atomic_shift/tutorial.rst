@@ -16,7 +16,7 @@ an example of its use.
 Degeneracy-driven covalency: the case of CO
 -------------------------------------------
 
-We consider carbon monoxide. We run a straightforward HF calculation using the input files *CO.inp* 
+We consider carbon monoxide. We run a straightforward HF calculation using the input files *CO.xyz* 
 
 .. literalinclude:: CO.xyz
 
@@ -30,25 +30,25 @@ using the command::
 
 Looking at the Mulliken population analysis in the output, we find for the lowest two occupied molecular orbitals::
 
-   * Electronic eigenvalue no.  1: -20.684805986761       (Occupation : f = 1.0000)  m_j=  1/2
-   ==========================================================================================
-   
-   * Gross populations greater than 0.00010
-   
-   Gross     Total   |    L A1 O  s      A1 O  _small   B1 O  _small   B2 O  _small
-   -----------------------------------------------------------------------------------
-    alpha    0.9995  |      0.9992         0.0003         0.0000         0.0000
-    beta     0.0005  |      0.0000         0.0000         0.0003         0.0003
-   
-   * Electronic eigenvalue no.  2: -11.369805634671       (Occupation : f = 1.0000)  m_j=  1/2
-   ==========================================================================================
-   
-   * Gross populations greater than 0.00010
-   
-   Gross     Total   |    L A1 C  s      L A1 O  s      L A1 O  pz     A1 C  _small   B1 C  _small   B2 C  _small
-   -----------------------------------------------------------------------------------------------------------------
-    alpha    0.9997  |      0.9990         0.0002         0.0003         0.0001         0.0000         0.0000
-    beta     0.0003  |      0.0000         0.0000         0.0000         0.0000         0.0001         0.0001
+  * Electronic eigenvalue no.   1: -20.684805978278       (Occupation : f = 1.0000)  m_j=  1/2
+  ============================================================================================
+  
+  * Gross populations greater than 0.01000
+  
+  Gross     Total   |    L A1 O  s   
+  --------------------------------------
+   alpha    0.9995  |      0.9992
+   beta     0.0005  |      0.0000
+  
+  * Electronic eigenvalue no.   2: -11.369805624916       (Occupation : f = 1.0000)  m_j=  1/2
+  ============================================================================================
+  
+  * Gross populations greater than 0.01000
+  
+  Gross     Total   |    L A1 C  s   
+  --------------------------------------
+   alpha    0.9997  |      0.9990
+   beta     0.0003  |      0.0000
 
 We see that the first and second lowest occupied MO are :math:`O1s` and :math:`C1s`, respectively, separated by a sizable energy of :math:`9.315\ E_h`.
      
@@ -63,11 +63,15 @@ and *C.inp*
 
 and the command::		    
 
-   pam --inp=C --mol=C.xyz --get "DFACMO=ac.C"
+   pam --inp=C --mol=C.xyz 
 
-where we recover the file of :math:`C_1` coefficients.
+The checkpoint file *C_C.h5* contains the :math:`C_1` coefficients::
+
+  h5dump -n C_C.h5 | grep C1
+   dataset    /result/wavefunctions/scf/mobasis/eigenvalues_C1
+   dataset    /result/wavefunctions/scf/mobasis/orbitals_C1
    
-We then prepare the input file *COshift.inp*
+We next prepare the input file *COshift.inp*
 
 .. literalinclude:: COshift.inp
 
