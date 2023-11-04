@@ -100,7 +100,6 @@ C
 C     Self-energy(3component)
 C
       ELSEIF (CLSINT(I)(3:6).EQ.'FGMG') THEN
-C        CALL NUMINT_ANGOLD(I,COMB,IPRONE) 
         CALL NUMINT(I,COMB,3,'AN',IPRONE) 
 C
 C     Self-energy(Flambaum)
@@ -197,6 +196,10 @@ C
 C On iuput: IOP   ... Index of operator: e.g. CLSINT(IOP)='UEHLING'
 C           IXYZ  ... Index of XYZ, which is used in angular roop
 C                     ( WT8 = WT8 * ANG(IY,IXYZ) )
+C           NXYZ  ... 0 for scalar operator, 3 for vector operator
+C           MATINF... SY : Symmetric
+C                     AN : Anti-symmetrix
+C                     OF : Off-diagonal
 C      
 C The numerical integration for constructing AO basis matrix
 C
@@ -672,7 +675,7 @@ C     In the case of m>100, a special treatment is needed.
 C
         m_NUM_MAX = INT(m/100) + 1               
 C
-C    GET AO's
+C    GET AO's (from dirac_ao_eval.F90, but adapted for this routine)
 C
         IOFM = 1
         DO m_NUM = 1, m_NUM_MAX
@@ -680,6 +683,9 @@ C
           nblock_length = min(nblock_length, m)
           allocate( GAO2(nblock_length, NTBAS(0)) )
           CALL DZERO(GAO2,nblock_length*NTBAS(0))
+C         The spherical grid (R(IR), ANG(IOFM,JXYZ)) is transfromed to
+C         Cartesian grid (pxyz(nblock_size,3))
+C         to use get_cartesian_ao_g0 routine
           DO JXYZ = 1,3
              XYZ8(:,JXYZ) = C(JXYZ,1)
              CALL DAXPY(nblock_length,R(IR),ANG(IOFM,JXYZ),1,
@@ -1270,7 +1276,6 @@ C
       WA = C2*(PARM1*PARM1)
       FAC3 = FACTOR*TWO*WA/5.0D00
       FAC5 = FAC3*WA/7.0D00
-!      write(*,*)"WA,FAC3,FAC5",WA,FAC3,FAC5
       GO TO 5
 C
 C   OTHER DISTRIBUTIONS (EQUATION (6))
