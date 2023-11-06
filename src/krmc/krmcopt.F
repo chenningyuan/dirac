@@ -322,6 +322,9 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "frame.h"
+
+c mvh remove later
+#include "dgroup.h"
 C
       LOGICAL   WFCONV, MOISNO
       DIMENSION WORK(*)
@@ -488,6 +491,7 @@ C        ***************************************************
 C
 C
          JRDCMO = 0
+         write(6,*) 'mvh: dit is een test'
          CALL RREADMO(CMO,JRDCMO,1,LUKRMC)
 C        read orbital symmetry info
          call izero(ibeig,norbt)
@@ -496,6 +500,13 @@ C        read orbital symmetry info
          else if(opt_chckjz)then
            call ireakrmc(lukrmc,'MJVEC   ',ibeig,norbt)
          end if
+
+c mvh debug
+      write(6,*) 'cmo at end location 1'
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          CALL PRQMAT(CMO(1),NORBT,NORBT,
+     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+ 
 C
 C
 C        ***************************************************
@@ -548,6 +559,12 @@ C
                end if
 
             END IF
+c mvh debug
+      write(6,*) 'cmo at end location 2'
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          CALL PRQMAT(CMO(1),NORBT,NORBT,
+     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+
 C
 C           *** Now do the transformation
 C
@@ -585,7 +602,12 @@ C
 C
          GNRMSV = GNORM(5)
          CALL RGRDINF(GCI,GOEE,GOEP)
-         write(6,*) 'martingradtest', gci(1:NZCONF)
+c mvh debug
+      write(6,*) 'cmo at end location 3'
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          CALL PRQMAT(CMO(1),NORBT,NORBT,
+     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+
 C
 C
          EMCSCF = POTNUC + EMY + EACTIV + E_LVCORR_MC
@@ -868,6 +890,7 @@ C
       DIMENSION WORK(*)
       DIMENSION FCAC_MOLF(2*nasht,2*nasht,2)
       DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+      DIMENSION DVMOLF(2*NASHT,2*NASHT,2)
 C
 C     Local variable
 C
@@ -890,6 +913,15 @@ C
 C
       DFAC(1) = D1
       DFAC(2) = DM1
+c mvh debug
+c      write(6,*) 'cmo at begining RGRAD'
+c        DO 20 I = 1,NFSYM
+c        IF(NORB(I).EQ.0) GOTO 20
+c          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+c          CALL PRQMAT(CMO,NORBT,NORBT,
+c     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+c   20   CONTINUE
+
 C
 C     ***************************************************
 C     *** Clean file KRMC FOCK **************************
@@ -908,9 +940,11 @@ C
       IF (NASHT .NE. 0) THEN
          CALL RMAKDM(.TRUE.,.TRUE.,DV,KDVMOLF,PV,PVMOLF,CREF,WORK,
      &       KFREE,LFREE)
-c         WRITE(6,*) 'GETPV FROM RGRAD'
-c         CALL GETPV(PVMOLF)
+C         WRITE(6,*) 'GETPV FROM RGRAD'
+C         CALL GETPV(PVMOLF)
+C         CALL TRACEPV(PVMOLF)
       END IF
+
 C
 C
 C     ***************************************************
@@ -933,8 +967,10 @@ C        FCAC is written to KRMC FOCK.
 C
 
          CALL RGETAC(FC,FCAC,IPRINT)
+         call blabla(fcac,N2ASHX,NZ,0)
          CALL QFC2MFC(FCAC,FCAC_MOLF,1,1,IPROPT)
-         call blabla(fcac,N2ASHX,4,0)
+c         CALL QFC2MFC(DV,DVMOLF,1,1,IPROPT)
+
 C
       END IF
 C
@@ -949,17 +985,19 @@ C
 c         WRITE(LUPRI,*) 'RELEVANT OUTPUT PVGET'
          CALL RGETH2(FQ,H2AC,PV,PVMOLF,ibeig,dofq,doh2ac,
      &               .true.,WORK(KFREE),LFREE)
+
 c      WRITE(LUPRI,*) 'VALUE KPVMOLF INSIDE RGRAD ', KPVMOLF
 
 C
 C        Active energy.
 C
-        EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
-         !EMCACT = RENRACT(WORK(KDVMOLF),FCAC_MOLF,FQ,IPROPT)
+c        EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
+         EMCACT = RENRACT(WORK(KDVMOLF),FCAC_MOLF,FQ,IPROPT)
+         write(6,*) 'EMCACT = ', EMCACT
 C
       ELSE IF (NASHT. EQ. 1) THEN
          CALL DZERO(FQ,NZ*NASHT*NORBT)
-         EMCACT = RENRACT(WORK(KDVMOLF),FCAC_MOLF,FQ,IPROPT)
+         EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
       ELSE
          EMCACT = D0
       END IF
@@ -1103,6 +1141,16 @@ C     ----------
 C     (we have to read & write CREF again as CREF is placed after NEWORB
 C      and is therefore deleted when rewriting CMO
 C
+
+c mvh debug
+c      write(6,*) 'cmo at end RGRAD'
+c        DO 30 I = 1,NFSYM
+c        IF(NORB(I).EQ.0) GOTO 30
+c          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+c          CALL PRQMAT(CMO,NORBT,NORBT,
+c     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+c   30   CONTINUE
+
       IF (COMPROT) THEN
          IF (NZCONF .GT. 0) CALL REAKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
          CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
@@ -1113,6 +1161,7 @@ C
       CALL MEMREL('RORBGRD',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C
+
       CALL FLSHFO(LUPRI)
       CALL RTKTIME(.FALSE.,9)
       CALL QEXIT('RGRAD')
@@ -1159,7 +1208,87 @@ C      ENDDO
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE TRACEPV(PVMOLF)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "dcborb.h"
+#include "priunit.h"
+C
+#include "consts.h"
+C
+#include "dgroup.h"
+      DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+      DIMENSION DVMOLF(2*NASHT,2*NASHT,2)
+      real THR_PRINT
 
+
+
+ 9001 FORMAT(4I5,5X,2F20.10)
+      CALL DZERO(DVMOLF, 8*NASHT)
+
+
+
+         DO I = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO K = 1,2*NASHT
+c                  DO ICOMP = 1,2
+            DVMOLF(I,J,1) = DVMOLF(I,J,1)+ PVMOLF(K,K,I,J,1)
+            DVMOLF(I,J,2) = DVMOLF(I,J,2)+ PVMOLF(K,K,I,J,2)
+c                  ENDDO
+               END DO
+            END DO
+         END DO
+      WRITE(6,*) 'THIS IS THE OUTPUT FROM TRACEPV: PVMOLF(KKIJ)'
+         CALL PRQMAT(DVMOLF,2*NASHT,2*NASHT,2*NASHT,2*NASHT,2,
+     &        IPQTOQ(1,0),LUPRI)
+
+      CALL DZERO(DVMOLF, 8*NASHT)
+
+
+         DO I = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO K = 1,2*NASHT
+c                  DO ICOMP = 1,2
+            DVMOLF(I,J,1) = DVMOLF(I,J,1)+ PVMOLF(I,J,K,K,1)
+            DVMOLF(I,J,2) = DVMOLF(I,J,2)+ PVMOLF(I,J,K,K,2)
+c                  ENDDO
+               END DO
+            END DO
+         END DO
+      WRITE(6,*) 'THIS IS THE OUTPUT FROM TRACEPV: PVMOLF(IJKK)'
+         CALL PRQMAT(DVMOLF,2*NASHT,2*NASHT,2*NASHT,2*NASHT,2,
+     &        IPQTOQ(1,0),LUPRI)
+      CALL DZERO(DVMOLF, 8*NASHT)
+         DO I = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO K = 1,2*NASHT
+c                  DO ICOMP = 1,2
+            DVMOLF(I,J,1) = DVMOLF(I,J,1)+ PVMOLF(I,K,J,K,1)
+            DVMOLF(I,J,2) = DVMOLF(I,J,2)+ PVMOLF(I,K,J,K,2)
+c                  ENDDO
+               END DO
+            END DO
+         END DO
+      WRITE(6,*) 'THIS IS THE OUTPUT FROM TRACEPV: PVMOLF(IKJK)'
+         CALL PRQMAT(DVMOLF,2*NASHT,2*NASHT,2*NASHT,2*NASHT,2,
+     &        IPQTOQ(1,0),LUPRI)
+      CALL DZERO(DVMOLF, 8*NASHT)
+         DO I = 1,2*NASHT
+            DO J = 1,2*NASHT
+               DO K = 1,2*NASHT
+c                  DO ICOMP = 1,2
+            DVMOLF(I,J,1) = DVMOLF(I,J,1)+ PVMOLF(I,K,K,J,1)
+            DVMOLF(I,J,2) = DVMOLF(I,J,2)+ PVMOLF(I,K,K,J,2)
+c                  ENDDO
+               END DO
+            END DO
+         END DO
+      WRITE(6,*) 'THIS IS THE OUTPUT FROM TRACEPV: PVMOLF(IKKJ)'
+         CALL PRQMAT(DVMOLF,2*NASHT,2*NASHT,2*NASHT,2*NASHT,2,
+     &        IPQTOQ(1,0),LUPRI)
+      RETURN
+      END
 
 
 
@@ -1269,13 +1398,20 @@ C         WRITE(6,*) 'GETPV FROM RGRAD AFTER M2DNZ390'
 C         CALL GETPV(PVMOLF)
          END IF
 
+c         WRITE(LUPRI,*) 'MVH TEST OUTPUT PVMOLF'
+c         CALL DZERO(PVMOLF,2*(2*NASHT)**4)  
+c          CALL DNZ32M(PV,PVMOLF,IPRINT)
+c         WRITE(LUPRI,*) 'THIS IS THE TEST YOU HAVE TO LOOK AT'
+c         CALL TRACEPV(PVMOLF)
+c
+c         CALL QUIT('MVH STOP CALCULATION')
 C         !mvh debug
-c         write(lupri,*) 'relevant output part 2'
-c         CALL DNZ32M(PV,WORK(KPVMOLF),IPROPT)
-c         CALL M2DNZ390(.FALSE.,.TRUE.,.TRUE.,
-c     &           WORK(KPVMOLF),PV,PVMOLF,IPROPT,
-c     &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
-c     &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
+C         write(lupri,*) 'relevant output part 2'
+C         CALL DNZ32M(PV,WORK(KPVMOLF),IPROPT)
+C         CALL M2DNZ390(.TRUE.,.FALSE.,.FALSE.,
+C     &           WORK(KPVMOLF),PV,PVMOLF,IPROPT,
+C     &           IPQTOQ,NASH,NASHT,NNASHX,NZ,NZ_in_CI,NM5,
+C     &           NBSYM,NFSYM,LUPRI,SPINFR,LEVYLE)
          !mvh debug
 CSK      IPROPT = 00
 c MvH: still need to release memory elswhere.
@@ -1539,9 +1675,23 @@ C     ***************************************************
 C
 C     Construct DCAO
 C
+
+
+
       IF (NISHT .GT. 0) THEN
          CALL DENSTY(WORK(KDCAO),CMO,IPROPT)
       END IF
+
+c mvh debug
+      write(6,*) 'this is cmo from rFCKMAT'
+        DO 20 I = 1,NFSYM
+        IF(NORB(I).EQ.0) GOTO 20
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          CALL PRQMAT(CMO,NFBAS(I,0),NFBAS(I,0),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+   20   CONTINUE
+
+      
 C
 C     Construct DVAO
 C
@@ -2817,8 +2967,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck renract */
-      FUNCTION RENRACT(DV,FCAC,FQ,IPRINT)
-!      FUNCTION RENRACT(DV,FCAC_MOLF,FQ,IPRINT)
+      FUNCTION RENRACT(DVMOLF,FCACMOLF,FQ,IPRINT)
 C***********************************************************************
 C
 C     Calculate active electronic energy of the KR-MCSCF state
@@ -2846,8 +2995,9 @@ C
 #include "dgroup.h"
 #include "dcbidx.h"
 C
-      DIMENSION DV(2*NASHT,2*NASHT,2),FCAC_MOLF(2*NASHT,2*NASHT,2)
+      DIMENSION DV(NASHT,NASHT,NZ),FCAC(NASHT,NASHT,NZ)
       DIMENSION FQ(NORBT,NASHT,NZ)
+      DIMENSION DVMOLF(2*NASHT,2*NASHT,2),FCACMOLF(2*NASHT,2*NASHT,2)
 C
       CALL QENTER('RENRACT')
 C
@@ -2860,31 +3010,50 @@ C
 C
 C     Print FCAC
 C
-c      IF (IPRINT .GE. 8) THEN
-c         write(lupri,*) 'n2asht',N2ASHT
-c         CALL HEADER('rEnract: FCAC matrix',-1)
-c         CALL PRQMAT(FCAC,NASHT,NASHT,NASHT,NASHT,
-c     &               NZ,IPQTOQ(1,0),LUPRI)
-c         CALL HEADER('rEnract: DV matrix',-1)
-c         CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,
-c     &               NZ,IPQTOQ(1,0),LUPRI)
-c         CALL HEADER('rEnract: FQ matrix',-1)
-c         CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,
-c     &               NZ,IPQTOQ(1,0),LUPRI)
-c      END IF
+      IF (IPRINT .GE. 8) THEN
+         write(lupri,*) 'n2asht',N2ASHT
+         CALL HEADER('rEnract: FCAC matrix',-1)
+         CALL PRQMAT(FCAC,NASHT,NASHT,NASHT,NASHT,
+     &               NZ,IPQTOQ(1,0),LUPRI)
+         CALL HEADER('rEnract: DV matrix',-1)
+         CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,
+     &               NZ,IPQTOQ(1,0),LUPRI)
+         CALL HEADER('rEnract: FQ matrix',-1)
+         CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,
+     &               NZ,IPQTOQ(1,0),LUPRI)
+      END IF
 C
 C     \sum_{uv} DV_{uv} FC_{uv}
 C     -------------------------
 C
-      EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
-    !  EACT = D0
-    !  DO IU = 1, 2*NASHT 
-    !        DO IV = 1, 2*NASHT
-    !              EACT = EACT + DV(IU,IV,1)*FCAC_MOLF(IU,IV,1)
-    !              EACT = EACT - DV(IU,IV,2)*FCAC_MOLF(IU,IV,2)
-    !        ENDDO
-    !  ENDDO
+C      EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
 
+      WRITE(LUPRI,*) 'MVH: TEST OUTPUT DVMOLF'
+      DO IC = 1, NZ_in_CI
+            WRITE(LUPRI,*) 'OUTPUT OF MATRIX COMPONENT ', IC
+            call OUTPUT (DVMOLF(1,1,IC),1,2*NASHT,1,2*NASHT,2*NASHT,
+     &                  2*NASHT,1,LUPRI)             
+      ENDDO 
+
+      WRITE(LUPRI,*) 'MVH: TEST OUTPUT FCACMOLF'
+      DO IC = 1, NZ_in_CI
+            WRITE(LUPRI,*) 'OUTPUT OF MATRIX COMPONENT ', IC
+            call OUTPUT (FCACMOLF(1,1,IC),1,2*NASHT,1,2*NASHT,2*NASHT,
+     &                  2*NASHT,1,LUPRI)             
+      ENDDO 
+
+
+c MVH PUT THIS BACK LATER
+      EACT = D0
+      DO IU = 1, 2*NASHT 
+            DO IV = 1, 2*NASHT
+                  EACT = EACT + DVMOLF(IU,IV,1)*FCACMOLF(IU,IV,1)
+                  IF (NZ.GE.2) THEN
+                        EACT = EACT - DVMOLF(IU,IV,2)*FCACMOLF(IU,IV,2)
+                  ENDIF
+            ENDDO
+      ENDDO
+ 
 
       IF (IPRINT .GE. 4)
      &   WRITE(LUPRI,9000) EACT
@@ -3024,6 +3193,7 @@ C
 C
       CALL MOLLAB(LABEL,LUNIT,IERR)
       IF (IERR .GE. 0) THEN
+         write(6,*) 'readingtest LUINT, NCMOTQ:', LUINT, NCMOTQ
          CALL READT(LUNIT,NCMOTQ,CMO)
       ELSE IF (IERR .EQ. -1) THEN
          IF (NOSTOP) THEN
@@ -3304,6 +3474,12 @@ C
             WRITE(LUPRI,'(/A)')
      &            ' (ROPTST)  Start orbitals read from' //
      &            ' CHECKPOINT file'
+c mvh debug
+      write(6,*) 'cmo just after read from CHECKPOINT'
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          CALL PRQMAT(CMO(1),NORBT,NORBT,
+     &                NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+ 
          END IF
          GO TO 1000
       END IF
@@ -3338,25 +3514,25 @@ C
 C
 C     Make sure start guess orbitals are orthonormal !!!
 C
-      IF (IPROPT .GE. 10) THEN
-         DO I = 1, NFSYM
-            WRITE(LUPRI,'(A,I2)') ' (ROPTST)  Coefficients, irrep ',I
-            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
-     &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-         END DO
-      END IF
-C
-      CALL RGMCMO(CMO,WORK(KFREE),LFREE)
-C
-      IF (IPROPT .GE. 10) THEN
-         DO I = 1, NFSYM
-            WRITE(LUPRI,'(A,I3)')
-     &         ' Coefficients (after Gram-Schmidt), irrep',I
-            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
-     &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-         END DO
-      END IF
-!
+c      IF (IPROPT .GE. 10) THEN
+c         DO I = 1, NFSYM
+c            WRITE(LUPRI,'(A,I2)') ' (ROPTST)  Coefficients, irrep ',I
+c            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+c     &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+c         END DO
+c      END IF
+cC
+cc MvH might uncomment later      CALL RGMCMO(CMO,WORK(KFREE),LFREE)
+cC
+c      IF (IPROPT .GE. 10) THEN
+c         DO I = 1, NFSYM
+c            WRITE(LUPRI,'(A,I3)')
+c     &         ' Coefficients (after Gram-Schmidt), irrep',I
+c            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+c     &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+c         END DO
+c      END IF
+c!
 !     intermediate step:
 !     save additional required information (integer arrays) to file KRMCSCF
 

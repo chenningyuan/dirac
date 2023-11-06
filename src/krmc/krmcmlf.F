@@ -410,7 +410,7 @@ C
 C
  9001 FORMAT(4I5,5X,4F20.10)
 C
-      IF (IPRINT .GE. 30) THEN
+c mvh      IF (IPRINT .GE. 30) THEN
          THR_PRINT = 1.0D-12
          WRITE(LUPRI,'(/A,3(1X,L1)//A)')
      &        ' (M2DNZ3) TSYMM, KSYMM, PSYMM = ',TSYMM,KSYMM,PSYMM,
@@ -427,7 +427,7 @@ C
                END DO
             END DO
          END DO
-      END IF
+c      END IF
 C
 C
       IJ = 0
@@ -963,11 +963,11 @@ C
          JJ = JJ + NASH(IFSYM)
       ENDDO
 C
-c MvH      IF (iprint_local .GE. 30) THEN
+C      IF (iprint_local .GE. 30) THEN
          WRITE(LUPRI,'(/1X,A)')
      &        '(DNZ32M) Input VUUUU matrix in Dirac (NZ,3) format'
          CALL PRDNZ3(VDUUUU,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
-c      END IF
+C      END IF
 C
       DO II = 1, NASHT
          DO JJ = 1, II
@@ -1136,6 +1136,19 @@ C                       (KL|jI) = -(kl|Ji)^* = -(lk|iJ)
                         VMUUUU(KTR,LTR,J,ITR,1) = - VDUUUU(LL,KK,IJ,3,1)
                         VMUUUU(KTR,LTR,J,ITR,2) = - VDUUUU(LL,KK,IJ,4,1)
                      END IF
+c MvH inserted my code here
+c                        VMUUUU(KTR,LTR,I,JTR,1) = VDUUUU(LL,KK,IJ,3,1)
+c                        VMUUUU(KTR,LTR,I,JTR,2) = VDUUUU(LL,KK,IJ,4,1)
+c                       IF (II .NE. JJ) THEN
+cC                       (KL|Ji) = -(kl|jI)^* = -(jI|kl)^*
+c                        VMUUUU(KTR,LTR,JTR,I,1) = VDUUUU(KK,LL,IJ,3,1)
+c                        VMUUUU(KTR,LTR,JTR,I,2) = -VDUUUU(KK,LL,IJ,4,1)
+c                       END IF
+
+
+
+
+c MVH original code below
 
                      IF (KK .GE. LL) THEN
                         KL = (KK*(KK-1))/2 + LL
@@ -1162,7 +1175,7 @@ C                       (KL|Ji) = -(kl|jI)^* = -(jI|kl)^* = -(Ij|lk)
                         VMUUUU(KTR,LTR,JTR,I,2) = - VDUUUU(II,JJ,LK,4,3)
                        END IF
                      END IF
-C
+
                   END IF
                END DO
             END DO
@@ -1198,7 +1211,8 @@ C
 C
 !9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
  9001 FORMAT(4I5,5X,4F20.10)
-c MvH      IF (iprint_local .GE. 30) THEN
+C      IF (iprint_local .GE. 30) THEN
+        WRITE(LUPRI,*) 'SHOULD COPY THIS COLUMNS'
          WRITE(LUPRI,'(A,1P,D10.2)')
      &   ' (DNZ32M) Output VUUUU matrix in Molfdir format,'//
      &   ' print threshold =',THROUT
@@ -1211,9 +1225,10 @@ c#ifdef old_code
             DO K = 1,2*NASHT
                DO J = 1,2*NASHT
                   DO I = 1,2*NASHT
-                     IF ( ABS(VMUUUU(I,J,K,L,1)) .GT. THROUT .OR.
-     &                    ABS(VMUUUU(I,J,K,L,NZ_in_CI)) .GT. THROUT)
-     &                    WRITE(LUPRI,9001)
+                    !MVH ORIGINAL CODE WITH 2*NASHT
+                    ! IF ( ABS(VMUUUU(I,J,K,L,1)) .GT. THROUT .OR.
+!     &                    ABS(VMUUUU(I,J,K,L,NZ_in_CI)) .GT. THROUT)
+                         WRITE(LUPRI,9001)
      &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,NZ_in_CI)
                   END DO
                END DO
@@ -1239,7 +1254,7 @@ c                  END DO
 c               END DO
 c            END DO
 c         END DO
-c      END IF
+C      END IF
 C
       RETURN
       END

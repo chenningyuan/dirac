@@ -1147,15 +1147,17 @@ C
 #include "dcbham.h"
 C
       DIMENSION FQ(NORBT,NASHT,NZ)
-      DIMENSION FQ_TEST(NORBT,NASHT,NZ)
+      DIMENSION FQ_TEST(2*NASHT,2*NASHT,2)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
+      DIMENSION H2AC_MLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
       dimension hmat(*),h2xy(*),h2yx(*), ibeig(*)
-      DIMENSION HMAT44(NORBT,NORBT,NZ,NZ), H2GU(NORBT,NASHT,NZ,NZ)
-      DIMENSION H2UG(NASHT,NORBT,NZ,NZ)
+      DIMENSION HMAT44(NORBT,NORBT,NZ,NZ)
+      DIMENSION H2GAC(NORBT,NORBT,NNASHX,NZ,3)
+      DIMENSION H2FULL(2*NORBT,2*NORBT,2*NASHT,2*NASHT,2)
       dimension idxkr12(2,*),indxb12(2,*),indxb34(2,*)
       DIMENSION PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
-      LOGICAL DOFQ, DOH2AC
+      LOGICAL DOFQ, DOH2AC, DOC1
 !     controls whether or not we read only from the integral file
 !     associated with the master process.
       logical, intent(in) :: int_file_is_master_file
@@ -1281,10 +1283,15 @@ C     Read integrals (x>y)
 C     --------------------
 C
 C     initialize output arrays
+c      DOC1 = .TRUE. !MVH to be changed later
       IF(DOFQ)   CALL DZERO(FQ,NASHT*NORBT*NZ)
       IF(DOH2AC) CALL DZERO(H2AC,NASHT*NASHT*NNASHX*NZ*3)
+c      IF (DOC1) THEN
+c        CALL DZERO(H2FULL,(2*NORBT)**2*(2*NASHT)**2*2)
+c        CALL DZERO(H2GAC,NORBT*NORBT*NNASHX*NZ*3)
+c      ENDIF
+      CALL DZERO(FQ_TEST,8*NASHT*NASHT)
 
-      CALL DZERO(FQ_TEST,NASHT*NORBT*NZ)
 C
 C     Loop over records in integrals files.
 C
@@ -1300,14 +1307,14 @@ C
             IREC = IREC + 1
             CALL GTXY(NXY,IX,IY,IXU,IYU,idxkr12)
             call dzero(h2xy,nclass*n2orbx)
-#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+c#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
       write(print_unit,'(2x,a,2i8)') ' active : ',ixu,iyu
       write(print_unit,'(2x,a, i8)') ' IXY is     : ',IXY
       write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(1,ixy)',
      &                              idxkr12(1,ixy)
       write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(2,ixy)',
      &                              idxkr12(2,ixy)
-#endif
+c#endif
 C           We only need active-active distributions.
 C
             IF (IXU .LT. 0 .OR. IYU .LT. 0) GOTO 20
@@ -1345,7 +1352,7 @@ C
             call dzero(h2yx,n2orbx*nclass)
 C
 c mvh
-            call blabla(h2xy,nclass, nkl,2)
+c            call blabla(h2xy,nclass, nkl,0)
             IREPABR = 0
             DO IREPAB = 0, NBSYM - 1
                IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
@@ -1397,24 +1404,28 @@ C
      &                  indxb34_reod(1,1),
      &                  set_qphaseFAC)
 
-            IF (NZ.EQ.4.AND.DOFQ) THEN
-                CALL DZERO(H2UG, NORBT*NASHT*NZ*NZ)
-                CALL DZERO(H2GU, NORBT*NASHT*NZ*NZ)
-                CALL DZERO(HMAT44,NORBT*NORBT*NZ*NZ)
-C                CALL CL244(H2YX,HMAT44,N2ORBX,irepij,
-C     &                  indxb12(1,ixy+nijoff),
-C     &                  indxb34_reod(1,1))
-                
-                CALL INT44GU(H2YX,H2GU,H2UG,IXU .EQ. IYU)
-                CALL raddfq90_TEST(FQ,h2gu,h2ug,pv,
-     &               nxy,ix,iy,nz,lupri,norbt,nasht,NFSYM,NNASHX,ipqtoq)
-            ENDIF
+         !   IF (NZ.EQ.4.AND.DOFQ) THEN
+         !       CALL DZERO(H2UG, NORBT*NASHT*NZ*NZ)
+         !       CALL DZERO(H2GU, NORBT*NASHT*NZ*NZ)
+         !       CALL DZERO(HMAT44,NORBT*NORBT*NZ*NZ)
+C        !        CALL CL244(H2YX,HMAT44,N2ORBX,irepij,
+C     &  !                indxb12(1,ixy+nijoff),
+C     &  !                indxb34_reod(1,1))
+         !       
+         !       CALL INT44GU(H2YX,H2GU,H2UG,IXU .EQ. IYU)
+         !       CALL raddfq90_mlf(FQ_TEST,h2gu,h2ug,pvmolf,
+     &   !            IUU,IXU,IYU,nz,lupri,norbt,nasht,NFSYM,NASH,ipqtoq)
+!        !    CALL raddfq90_test(FQ,h2gu,h2ug,pv,
+!     &  !           IUU,IXU,IYU,nz,lupri,norbt,nasht,NFSYM,NNASHX,ipqtoq)                   
+         !   ENDIF
 
 
 C
 C           Get (gu) and (ug) blocks + H2AC
 C           -------------------------------
 C
+c            CALL X2GU(hmat,h2xy,h2yx,
+c     &                H2AC,H2GAC,IUU,IXU .EQ. IYU, DOFQ, DOH2AC)
             CALL X2GU(hmat,h2xy,h2yx,
      &                H2AC,IUU,IXU .EQ. IYU, DOFQ, DOH2AC)
 C           CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
@@ -1441,7 +1452,7 @@ C
 
 
             IF (DOFQ) THEN
-               CALL RADDFQ90(FQ_TEST,H2XY,H2YX,PV,
+               CALL RADDFQ90(FQ,H2XY,H2YX,PV,
      &              IUU,IXU,IYU,IREPIJ,IPRINT,
      &              NZ,IPQTOQ,LUPRI,NORBT,NASHT,NNASHX)
             END IF
@@ -1449,6 +1460,96 @@ C
  20      CONTINUE
          NIJOFF  = NIJOFF  + NFPCK12(IREPIJ)
  10   CONTINUE
+
+      if (dofq) then
+      WRITE(6,*) 'BELOW YOU CAN FIND THE H2AC TRANSFORMATION TEST'
+      CALL CHKNZ3R(H2AC)
+
+
+
+
+
+      CALL DNZ32M(H2AC,H2AC_MLF,IPROPT)
+
+
+c         CALL M2DNZ390(.FALSE.,.FALSE.,.FALSE.,
+c     &           H2AC_MLF,H2AC,PVMOLF,IPROPT,
+c     &           IPQTOQ,NASH,NASHT,NNASHX,NZ,2,2,
+c     &           NBSYM,NFSYM,6,.false.,.false.)
+c      call quit("MVH STOP CALCULATION")
+c      WRITE(6,*) 'DIT IS NOG EEN TEST'
+c      WRITE(6,*) 'HIERONDER H2AC IN MOLFDIR FORMAT'
+c      CALL GETPV(PVMOLF)
+
+c      DO I = 1, 2*NASHT 
+c        DO J = 1, 2*NASHT 
+c          DO K = 1, 2*NASHT 
+c            DO L = 1, 2*NASHT  
+c            PVMOLF(I,J,K,L,1) = PVMOLF(I,J,K,L,1) + PVMOLF(K,L,I,J,1)
+c            PVMOLF(I,J,K,L,2) = PVMOLF(I,J,K,L,2) + PVMOLF(K,L,I,J,2)
+c            END DO 
+c          ENDDO 
+c        ENDDO 
+c      ENDDO
+c      WRITE(6,*) 'TRACEPV FROM KRMCTRA'
+c      CALL TRACEPV(PVMOLF)
+c
+      ETEST = 0.0D00
+      DO I = 1, 2*NASHT 
+        DO J = 1, 2*NASHT 
+          DO K = 1, 2*NASHT 
+            DO L = 1, 2*NASHT  
+                ETEST = ETEST + PVMOLF(I,J,K,L,1)*H2AC_MLF(I,J,K,L,1)
+                IF (NZ.GE.2) THEN
+                ETEST = ETEST - PVMOLF(I,J,K,L,2)*H2AC_MLF(I,J,K,L,2)
+                ENDIF
+            END DO 
+          ENDDO 
+        ENDDO 
+      ENDDO
+
+      DO I = 1, 2*NASHT 
+        DO J = 1, 2*NASHT 
+          DO K = 1, 2*NASHT 
+            DO L = 1, 2*NASHT 
+                DO M = 1, 2*NASHT 
+c   original                FQ_TEST(I,J,1) = FQ_TEST(I,J,1)
+c     &             + PVMOLF(I,K,L,M,1)*H2AC_MLF(J,K,L,M,1)
+                   FQ_TEST(I,J,1) = FQ_TEST(I,J,1)
+     &             + PVMOLF(I,K,L,M,1)*H2AC_MLF(J,K,L,M,1)
+                   IF (NZ.GE.2) THEN
+                   FQ_TEST(I,J,1) = FQ_TEST(I,J,1)
+     &             - PVMOLF(I,K,L,M,2)*H2AC_MLF(J,K,L,M,2)
+                    FQ_TEST(I,J,2) = FQ_TEST(I,J,2)
+     &             + PVMOLF(I,K,L,M,1)*H2AC_MLF(J,K,L,M,2)
+                    FQ_TEST(I,J,2) = FQ_TEST(I,J,2)
+     &             - PVMOLF(I,K,L,M,2)*H2AC_MLF(J,K,L,M,1)
+                   ENDIF
+                ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+
+      WRITE(6,*) 'MVH: THIS IS FQ THAT I CONSTRUCTED'
+      DO IC = 1,NZ_in_CI
+        WRITE(6,*) 'MATRIX COMPONENT ', IC
+        CALL OUTPUT(FQ_TEST(1,1,IC),1,2*NASHT,1,2*NASHT,2*NASHT,2*NASHT 
+     &                      ,2,LUPRI ) 
+      ENDDO
+
+      ETEST = ETEST*0.5D00
+      WRITE(6,*) 'MVH ACTIVE ENERGY TEST: ', ETEST
+      endif
+
+      !MvH: remove later
+!      IF (DOFQ) THEN
+!        WRITE(6,*) 'output H2AC_MLF'
+!        CALL GGUUDNZ32M(H2GAC,H2FULL,NORBT,NORB,NASHT,NASH,NNASHX, 
+!     &                       NZ,NBSYM,NFSYM,IPQTOQ,IPRINT,idxu2g,maxash)
+!        CALL raddfq90_mlf(fq_test,h2full,pvmolf,nz,lupri,norbt,nasht
+!     &                                        ,maxash,idxu2g)
+c      ENDIF
 
 C
 C     Close integral files
@@ -1461,11 +1562,11 @@ C
          CLOSE (LUINT + IFSYM, STATUS = 'KEEP')
       END DO
 C
-      IF (IPRINT .GE. 10) THEN
+c      IF (IPRINT .GE. 30) THEN
          IF (DOH2AC) THEN
             WRITE(print_unit,'(A)') ' (RGETH21) H2AC matrix'
             CALL PRDNZ3(H2AC,NASHT,NNASHX,NZ,IPQTOQ(1,0),print_unit)
-         END IF
+c         END IF
 C
          IF (DOFQ) THEN
             WRITE(print_unit,'(A)') ' (RGETH21) FQ matrix'
@@ -2863,10 +2964,10 @@ C
 C                 Add contribution to FQX
 C                 -----------------------
 C
-                  CALL RADDFQX(FQX(1,1,1,I),
+               CALL RADDFQX(FQX(1,1,1,I),
      &                         WORK(KH2XY),PV,
      &                         IX,IY,IREPXY,IPRINT)
-C
+
                END DO
 C
             END IF

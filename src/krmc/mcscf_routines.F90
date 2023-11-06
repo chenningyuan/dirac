@@ -1,12 +1,12 @@
 module mcscf_routines
 
-public :: raddfq90,raddfq90_mlf, m2dnz390
+public :: raddfq90,raddfq90_mlf, m2dnz390, raddfq90_test
 
 private :: get_fq, geth2gu
 
 contains
 
-  subroutine raddfq90_mlf(fq,h2gu,h2ug,pv,nxy,ix,iy,nz,lupri,norbt,nasht, &
+  subroutine raddfq90_test(fq,h2gu,h2ug,pv,nxy,ix,iy,nz,lupri,norbt,nasht, &
                                      NFSYM,NASH,ipqtoq)
   !***********************************************************************
   !
@@ -56,8 +56,8 @@ contains
     write(lupri,'(a,i3)') 'nxy       = ',nxy
     write(lupri,'(a,i3)') 'ix        = ',ix
     write(lupri,'(a,i3)') 'iy        = ',iy
- !   call getpv(pv)
-   ! call get_h2gu(h2gu, h2ug,norbt,nasht,nz)
+    call getpv(pv)
+    call get_h2gu(h2gu, h2ug,norbt,nasht,nz)
 
 
 
@@ -97,25 +97,41 @@ contains
       DO IV = 1, NASHT
         IVTR = KR(-IV)
         IUTR = KR(-IU)
-    !    WRITE(6,*) 'IU,IV,IX,IY,P ',IU,IV,IX,IY, PV(IU,IV,IX,IY,1)
-    !    WRITE(6,*) 'IU,IV,IYTR,IXTR,P ',IU,IV,IYTR,IXTR,PV(IU,IV,IYTR,IXTR,1)
-    !    WRITE(6,*) 'IVTR,IUTR,IX,IY,P ',IVTR,IUTR,IX,IY,PV(IVTR,IUTR,IX,IY,1)
-    !    WRITE(6,*) 'IVTR,IUTR,IYTR,IXTR,P ',IVTR,IUTR,IYTR,IXTR,PV(IVTR,IUTR,IYTR,IXTR,1)
-    !    WRITE(6,*) 'IX,IY,IU,IV,P ',IX,IY,IU,IV,PV(IX,IY,IU,IV,1)
-    !    WRITE(6,*) 'IYTR,IXTR,IU,IV,P ',IYTR,IXTR,IU,IV,PV(IYTR,IXTR,IU,IV,1)
-    !    WRITE(6,*) 'IX,IY,IVTR,IUTR,P ',IX,IY,IVTR,IUTR,PV(IX,IY,IVTR,IUTR,1)
-    !    WRITE(6,*) 'IYTR,IXTR,IVTR,IUTR,P ',IYTR,IXTR,IVTR,IUTR,PV(IYTR,IXTR,IVTR,IUTR,1)
+      !  WRITE(6,*) 'IU,IV,IX,IY,P ',IU,IV,IX,IY, PV(IU,IV,IX,IY,1)
+      !  WRITE(6,*) 'IU,IV,IYTR,IXTR,P ',IU,IV,IYTR,IXTR,PV(IU,IV,IYTR,IXTR,1)
+      !  WRITE(6,*) 'IVTR,IUTR,IX,IY,P ',IVTR,IUTR,IX,IY,PV(IVTR,IUTR,IX,IY,1)
+      !  WRITE(6,*) 'IVTR,IUTR,IYTR,IXTR,P ',IVTR,IUTR,IYTR,IXTR,PV(IVTR,IUTR,IYTR,IXTR,1)
+      !  WRITE(6,*) 'IX,IY,IU,IV,P ',IX,IY,IU,IV,PV(IX,IY,IU,IV,1)
+      !  WRITE(6,*) 'IYTR,IXTR,IU,IV,P ',IYTR,IXTR,IU,IV,PV(IYTR,IXTR,IU,IV,1)
+      !  WRITE(6,*) 'IX,IY,IVTR,IUTR,P ',IX,IY,IVTR,IUTR,PV(IX,IY,IVTR,IUTR,1)
+      !  WRITE(6,*) 'IYTR,IXTR,IVTR,IUTR,P ',IYTR,IXTR,IVTR,IUTR,PV(IYTR,IXTR,IVTR,IUTR,1)
+
+! correct code
+! 1<->3 2<->4
+!        P = PV(IU,IV,IX,IY,2) + PV(IU,IV,IYTR,IXTR,2) + PV(IVTR,IUTR,IX,IY,2) &
+!       +   PV(IVTR,IUTR,IYTR,IXTR,2) + PV(IX,IY,IU,IV,2)+ PV(IYTR,IXTR,IU,IV,2)&
+!       + PV(IX,IY,IVTR,IUTR,2)+ PV(IYTR,IXTR,IVTR,IUTR,2)
 
 
+! 1<->2 3<->4
+!        P = PV(IU,IV,IX,IY,2) + PV(IU,IV,IYTR,IXTR,2) + PV(IVTR,IUTR,IX,IY,2) &
+!       +   PV(IVTR,IUTR,IYTR,IXTR,2) &
+!       + PV(IV,IU,IY,IX,2) + PV(IV,IU,IXTR,IYTR,2) + PV(IUTR,IVTR,IY,IX,2) &
+!       +   PV(IUTR,IVTR,IXTR,IYTR,2) 
+
+! 1<->4 2<->3
         P = PV(IU,IV,IX,IY,2) + PV(IU,IV,IYTR,IXTR,2) + PV(IVTR,IUTR,IX,IY,2) &
-       +   PV(IVTR,IUTR,IYTR,IXTR,2) !+ PV(IX,IY,IU,IV,1)+ PV(IYTR,IXTR,IU,IV,1)&
-      ! + PV(IX,IY,IVTR,IUTR,1)+ PV(IYTR,IXTR,IVTR,IUTR,1)
+       +   PV(IVTR,IUTR,IYTR,IXTR,2) &
+       + PV(IY,IX,IV,IU,2) + PV(IXTR,IYTR,IV,IU,2) + PV(IY,IX,IUTR,IVTR,2) &
+       +   PV(IXTR,IYTR,IUTR,IVTR,2) 
+
+
       !  P = PV(IU,IV,IX,IY,2) + PV(IU,IV,IYTR,IXTR,2) + PV(IVTR,IUTR,IX,IY,2) &
       ! +   PV(IVTR,IUTR,IYTR,IXTR,2) + PV(IX,IY,IU,IV,2)+ PV(IYTR,IXTR,IU,IV,2)&
       ! +  PV(IX,IY,IVTR,IUTR,2) +  PV(IYTR,IXTR,IVTR,IUTR,2)
 
       
-        FQ(IP,IU,1) = FQ(IP,IU,1) - H2GU(IP,IV,2,1)*P*2.0D0
+        FQ(IP,IU,1) = FQ(IP,IU,1) - H2GU(IP,IV,1,2)*P
       !  IF (P.GT.1E-12) THEN
  !         WRITE(6,*) 'IU,IV,IX,IY,PTOTAL ', IU,IV,IX,IY,P
        ! ENDIF
@@ -144,12 +160,33 @@ contains
       !     + PV(IUTR,IVTR,IYTR,IXTR,1) + PV(IX,IY,IV,IU,1)+ PV(IYTR,IXTR,IV,IU,1)&
       !     + PV(IX,IY,IUTR,IVTR,1) + PV(IYTR,IXTR,IUTR,IVTR,1)
 
-          P = PV(IV,IU,IX,IY,2) + PV(IV,IU,IYTR,IXTR,2) + PV(IUTR,IVTR,IX,IY,2) &
-           + PV(IUTR,IVTR,IYTR,IXTR,2) 
-           !+ PV(IX,IY,IV,IU,2)+ PV(IYTR,IXTR,IUTR,IVTR,2)&
-           !+  PV(IYTR,IXTR,IV,IU,2) +  PV(IX,IY,IUTR,IVTR,2)
+! correct code
+! 1<->3 2<->4
+!          P = PV(IV,IU,IX,IY,2) + PV(IV,IU,IYTR,IXTR,2) + PV(IUTR,IVTR,IX,IY,2) &
+!           + PV(IUTR,IVTR,IYTR,IXTR,2) &
+!           + PV(IX,IY,IV,IU,2)+ PV(IYTR,IXTR,IUTR,IVTR,2)&
+!           +  PV(IYTR,IXTR,IV,IU,2) +  PV(IX,IY,IUTR,IVTR,2)
+!
 
-          FQ(IP,IU,1) = FQ(IP,IU,1) - H2UG(IV,IP,2,1)*P*2.0D0
+
+
+
+! 1<->2 3<->4
+!          P = PV(IV,IU,IX,IY,2) + PV(IV,IU,IYTR,IXTR,2) + PV(IUTR,IVTR,IX,IY,2)&
+!           + PV(IUTR,IVTR,IYTR,IXTR,2) &
+!           + PV(IU,IV,IY,IX,2) + PV(IU,IV,IXTR,IYTR,2) + PV(IVTR,IUTR,IY,IX,2)&
+!           + PV(IVTR,IUTR,IXTR,IYTR,2) 
+
+! 1<->4 2<->3
+          P = PV(IV,IU,IX,IY,2) + PV(IV,IU,IYTR,IXTR,2) + PV(IUTR,IVTR,IX,IY,2)&
+           + PV(IUTR,IVTR,IYTR,IXTR,2) &
+           + PV(IY,IX,IU,IV,2) + PV(IXTR,IYTR,IU,IV,2) + PV(IY,IX,IVTR,IUTR,2)&
+           + PV(IXTR,IYTR,IVTR,IUTR,2) 
+
+
+
+
+          FQ(IP,IU,1) = FQ(IP,IU,1) - H2UG(IV,IP,1,2)*P
       !  IF (P.GT.1E-12) THEN
   !        WRITE(6,*) 'IV,IU,IX,IY,PTOTAL ', IV,IU,IX,IY,P
        ! ENDIF
@@ -165,10 +202,9 @@ contains
 
 
 
-  end subroutine raddfq90_mlf
+  end subroutine raddfq90_test
 
-  subroutine raddfq90_test(fq,h2gu,h2ug,pv,nxy,ix,iy,nz,lupri,norbt,nasht, &
-                                     NFSYM,NNASHX,ipqtoq)
+  subroutine raddfq90_mlf(fq,h2full,pvmolf,nz,lupri,norbt,nasht,maxash,idxu2g)
   !***********************************************************************
   !
   !     Add up the infinite number of terms that constitutes the FQ fock
@@ -195,30 +231,22 @@ contains
   implicit none
 
   ! External variables
-  integer, intent(in) :: nxy, ix, iy,ipqtoq(4,0:7)
-  integer, intent(in) :: nz,lupri, norbt, nasht,nnashx
-  real*8,  intent(in) :: h2gu(norbt,nasht,nz,nz), h2ug(nasht,norbt,nz,nz)
-  real*8,  intent(in) :: pv(nasht,nasht,nnashx,nz,3)
-  real*8,  intent(inout) :: fq(norbt,nasht,nz)
+  integer, intent(in) :: nz, norbt, nasht,maxash,IDXU2G(MAXASH),lupri
+  real*8,  intent(in) :: H2FULL(2*NORBT,2*NORBT,2*NASHT,2*NASHT,2)
+  real*8,  intent(in) :: PVMOLF(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+  real*8,  intent(inout) :: fq(2*norbt,2*nasht,2)
 
   ! Internal variables
-  integer :: izz, npvcol, IV, IP,IU, KRIV,KRIU, KRIX, KRIY
-  INTEGER :: I, J, K, L, M, IJ, II, JJ, KK, LL, ITR, JTR, KTR, LTR
-  INTEGER :: IER, NCLASS, IFSYM,NFSYM, IZ, KR(-300:300), NASH(2)
-  REAL*8  :: P 
-
-  real*8, parameter   :: d1 = 1.0d0, dm1 = -1.0d0
+  real*8 :: H2GAC(2*NORBT,2*NASHT,2*NASHT,2*NASHT,2)
+  real*8 :: PVMOLF_SYM(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
+  integer :: IG, IV, IVG, IX, IY, IU, IZ, P, Q
+  real*8  :: trace(2)
+  real*8, parameter   :: d1 = 1.0d0, dm1 = -1.0d0, d0 = 0.0d0
 
   !------------------------------------------------------------------------------!
   !                               Print section                                  !
   !------------------------------------------------------------------------------!
-!  if(iprint .ge. 20)then
-    call header('Output from raddfq90_mlf',-1)
-    write(lupri,'(a,i3)') 'nxy       = ',nxy
-    write(lupri,'(a,i3)') 'ix        = ',ix
-    write(lupri,'(a,i3)') 'iy        = ',iy
-    call getpv(pv)
-    call get_h2gu(h2gu, h2ug,norbt,nasht,nz)
+
 
   !    II = 0
   !    JJ = 0
@@ -233,47 +261,100 @@ contains
   !    ENDDO
 
 
-  !------------------------------------------------------------------------------!
-  !                          *** Real part of FQ ***                             !
-  !------------------------------------------------------------------------------!
-  ! (B.40): each "term" is a line of the formula
 
-  !--------------------!
-  ! Term 1 (real part) !
-  !--------------------!
-
-  ! \sum_{x >= y} \sum_v -[pv|xy]_{2,1} Im[P_{qv,xy}]
-
-
-  DO IP = 1, NORBT
-    DO IU= 1, NASHT
+    DO IG = 1, 2*NORBT
       DO IV = 1, NASHT
-        FQ(IP,IU,1) = FQ(IP,IU,1) + H2GU(IP,IV,1,1)*PV(IU,IV,NXY,1,1)
-  !      WRITE(6,*) 'IU,IV,IX,IY,PV ',IU,IV,IX,IY,P
-      ENDDO
-    ENDDO
-  ENDDO
-
-  if(ix /= iy)then
-    ! \sum_{x > y} \sum_v -[vp|xy]_{2,1} Im[P_{vq,xy}]
-    DO IP = 1, NORBT 
-      DO IU = 1, NASHT 
-        DO IV = 1, NASHT 
-          FQ(IP,IU,1) = FQ(IP,IU,1) + H2UG(IV,IP,1,1)*PV(IV,IU,NXY,1,1)
-  !        WRITE(6,*) 'IV,IU,IX,IY,PV ',IV,IU,IX,IY,P
+        IVG = IDXU2G(IV)
+        DO IX = 1, 2*NASHT
+          DO IY = 1, 2*NASHT
+            DO IZ = 1, MIN(2,NZ)
+              H2GAC(IG,IV,IX,IY,IZ) = H2FULL(IG,IVG,IX,IY,IZ) 
+              H2GAC(IG,IV+NASHT,IX,IY,IZ) = H2FULL(IG,IVG+NORBT,IX,IY,IZ) 
+              !WRITE(LUPRI,*) 'H2GAC(IG,IV,IX,IY,IZ) ', &
+              !IG,IV,IX,IY,IZ,H2GAC(IG,IV,IX,IY,IZ)
+              !WRITE(LUPRI,*) 'H2GAC(IG,IV+NASHT,IX,IY,IZ) '&
+              !,IG,IV+NASHT,IX,IY,IZ,H2GAC(IG,IV+NASHT,IX,IY,IZ)
+            ENDDO
+          ENDDO
         ENDDO
       ENDDO
     ENDDO
-  WRITE(6,*) 'OUTPUT FQ_TEST ON EXIT raddfq90_mlf'
-  call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
 
-  ENDIF
+    DO IV = 1, 2*NASHT
+      DO IU = 1, 2*NASHT
+        DO IX = 1, 2*NASHT
+          DO IY = 1, 2*NASHT 
+            PVMOLF_SYM(IV,IU,IX,IY,1) = PVMOLF(IX,IY,IV,IU,1) + PVMOLF(IV,IU,IX,IY,1)
+            PVMOLF_SYM(IV,IU,IX,IY,2) = PVMOLF(IX,IY,IV,IU,2) + PVMOLF(IV,IU,IX,IY,2)
+          ENDDO
+        ENDDO
+      ENDDO
+    ENDDO
+
+
+     CALL DZERO(FQ, 8*norbt*nasht)
+ !   CALL GETPV(PVMOLF)
+    DO IU = 1, 2*NASHT
+      DO IG = 1, 2*NORBT
+        DO IV = 1, 2*NASHT
+          DO IX = 1, 2*NASHT
+            DO IY = 1, 2*NASHT
+              FQ(IG,IU,1) = FQ(IG,IU,1) + PVMOLF_SYM(IU,IV,IX,IY,1)*H2GAC(IG,IV,IX,IY,1) &
+                           -PVMOLF_SYM(IU,IV,IX,IY,2)*H2GAC(IG,IV,IX,IY,2) 
+              FQ(IG,IU,2) = FQ(IG,IU,2) + PVMOLF_SYM(IU,IV,IX,IY,2)*H2GAC(IG,IV,IX,IY,1) &
+                           +PVMOLF_SYM(IU,IV,IX,IY,1)*H2GAC(IG,IV,IX,IY,2)
+            !  write(lupri,*) 'IU,IG,IV,IX,IY', IU,IG,IV,IX,IY
+            !  write(lupri,*) 'PVMOLF(IU,IV,IX,IY,1)*H2GAC(IG,IV,IX,IY,1)'&
+            !                  ,PVMOLF_SYM(IU,IV,IX,IY,1)*H2GAC(IG,IV,IX,IY,1)
+            !  write(lupri,*) '-PVMOLF(IU,IV,IX,IY,1)*H2GAC(IG,IV,IX,IY,1)'&
+            !                  ,-PVMOLF_SYM(IU,IV,IX,IY,2)*H2GAC(IG,IV,IX,IY,2)
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+    ENDDO 
+ 9001 FORMAT(4I5,5X,4F20.10)
+
+!        WRITE(LUPRI,*) 'RADDFQ90_MLF: PRINT H2GAC'
+!         DO IU = 1,2*NASHT
+!            DO IV = 1,2*NASHT
+!               DO IX = 1,NASHT
+!                  DO IY = 1,2*NORBT
+!                    P = IDXU2G(IY)
+!                    Q = IDXU2G(IX)
+!                         WRITE(LUPRI,9001) &
+!                         P,Q,IV,IU,(H2FULL(IY,Q,IV,IU,IZ),IZ=1,MIN(NZ,2))
+!                  END DO
+!               END DO
+!            END DO
+!         END DO
+!
+
+
+
+    trace = d0
+
+    DO IV = 1, 2*NASHT
+      IVG = IDXU2G(IV)
+      TRACE(1) = TRACE(1) + FQ(IVG,IV,1)
+      TRACE(2) = TRACE(2) + FQ(IVG,IV,2)
+    ENDDO
+
+    WRITE(LUPRI,*) 'OUTPUT: RADDFQ90_MLF'
+    WRITE(LUPRI,*) 'The trace of ReFQ is: ', TRACE(1)
+    WRITE(LUPRI,*) 'The trace of ImFQ is: ', TRACE(2)
+
+    WRITE(LUPRI,*) 'BELOW IS FQ'
+    DO IG = 1, 2*NORBT
+      DO IV = 1, 2*NASHT
+        WRITE(LUPRI,*) 'FQ, IG, IV, ',IG,IV,(FQ(IG,IV,IZ),IZ=1,2)
+      ENDDO
+    ENDDO
 
 
 
 
-
-  end subroutine raddfq90_test
+  end subroutine raddfq90_mlf
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
@@ -887,10 +968,10 @@ contains
   ! Output section !
   !----------------!
 
-  if (iprint .ge. 20) then
+ ! mvh uncomment later if (iprint .ge. 20) then
     write(lupri,'(a)') 'fq on exit'
     call prqmat(fq,norbt,nasht,norbt,nasht,nz,ipqtoq(1,0),lupri)
-  end if
+  !end if
 
   !------------------------------------------------------------------------------!
   !           Write to the file ouput information for unit testing               !
@@ -1089,13 +1170,19 @@ contains
          END DO
 !      END IF
 
+      CALL DZERO(MMOLF,NASHT*32)
+       WRITE(LUPRI,'(/A,3(1X,L1)//A)') &
+              ' (M2DNZ3) TSYMM, KSYMM, PSYMM = ',TSYMM,KSYMM,PSYMM, &
+              ' (M2DNZ3) Input MMOLF matrix '
       DO L = 1,2*NASHT
          DO K = 1,2*NASHT
             DO J = 1,2*NASHT
                DO I = 1,2*NASHT
-                  DO IZ = 1, 2
-                    MMOLF(I,J,K,L,IZ) = VMUUUU(I,J,K,L,IZ)
+                  DO IZ = 1, NZ_IN_CI
+                    MMOLF(I,J,K,L,IZ) = VMUUUU(I,J,K,L,IZ) + VMUUUU(K,L,I,J,IZ)
                   ENDDO
+                  WRITE(LUPRI,9001) &
+                          I,J,K,L,(MMOLF(I,J,K,L,IZ),IZ=1,NZ_IN_CI)
                END DO
             END DO
          END DO
@@ -1748,10 +1835,10 @@ contains
         end do
       end if
 
-!      IF (IPRINT .GE. 30) THEN
+ !     IF (IPRINT .GE. 30) THEN
          CALL HEADER('VUUUU matrix in Dirac (NZ,3) format',-1)
          CALL PRDNZ3(VDUUUU,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
-!      END IF
+ !     END IF
 
   !------------------------------------------------------------------------------!
   !           Write to the file ouput information for unit testing               !
@@ -1762,5 +1849,367 @@ contains
 #endif
 
   end subroutine m2dnz390
+
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!  /* Deck dnz32m */
+      SUBROUTINE GGUUDNZ32M(VDGGUU,VMGGUU,NORBT,NORB,NASHT,NASH,NNASHX &
+        ,NZ,NBSYM,NFSYM,IPQTOQ,IPRINT,idxu2g,maxash)
+!***********************************************************************
+!
+!     Transform a UUUU matrix in Dirac (NZ,3) format to a UUUU matrix
+!     in Molfdir format.
+!
+!     Written by J. Thyssen - Nov 20 2000
+!     Last revision :
+!
+!***********************************************************************
+
+      INTEGER, INTENT(IN) :: NORBT,NASHT,NNASHX,NZ,NBSYM,NFSYM,NORB(2),NASH(2)
+      INTEGER, INTENT(IN) :: IPQTOQ(4,0:7),maxash,IDXU2G(MAXASH)
+      REAL*8, INTENT(IN) :: VDGGUU(NORBT,NORBT,NNASHX,NZ,*)
+      PARAMETER (THROUT = 1.0D-15)
+      REAL*8, INTENT(OUT) :: VMGGUU(2*NORBT,2*NORBT,2*NASHT,2*NASHT,*)
+
+      INTEGER :: P,J,Q,PP,QQ,JJ,IJ,PTR,JTR,QTR,KR(-300:300),IFSYM
+      INTEGER :: KRG(-NORBT:NORBT)
+      DIMENSION DINT(8,2)
+
+!
+      NCLASS = NZ * NZ * NBSYM / NFSYM
+      CALL DZERO(VMGGUU, (2*NASHT)**2*(2*NORBT)**2 * MIN(NZ,2))
+!
+      iprint_local = iprint
+#ifdef DMRG_DEBUG
+!     debug
+      iprint_local = 30
+#endif
+      II = 0
+      JJ = 0
+      DO IFSYM = 1, NFSYM
+         DO I = 1, NASH(IFSYM)
+            II = II + 1
+            JJ = JJ + 1
+            KR(II) = JJ
+            KR(-II) = JJ + NASH(IFSYM)
+         ENDDO
+         JJ = JJ + NASH(IFSYM)
+      ENDDO
+
+      PP = 0
+      QQ = 0 
+      DO IFSYM = 1, NFSYM 
+        DO I = 1, NORB(IFSYM)
+          PP = PP + 1
+          QQ = QQ + 1
+          KRG(PP) = QQ
+          KRG(-PP) = QQ + NORB(IFSYM)
+        ENDDO
+        QQ = QQ + NORB(IFSYM)
+      ENDDO
+
+
+!
+! MvH      IF (iprint_local .GE. 30) THEN
+!         WRITE(LUPRI,'(/1X,A)') '(DNZ32M) Input VUUUU matrix in Dirac (NZ,3) format'
+!         CALL PRDNZ3(VDGGUU,NORBT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
+!      END IF
+!
+      DO II = 1, NASHT
+         DO JJ = 1, II
+            IJ = (II * (II - 1))/2 + JJ
+            DO QQ = 1, NORBT
+               DO PP = 1, NORBT
+                  I = KR(II)
+                  J = KR(JJ)
+                  P = KRG(PP)
+                  Q = KRG(QQ)
+                  ITR = KR(-II)
+                  JTR = KR(-JJ)
+                  PTR = KRG(-PP)
+                  QTR = KRG(-QQ)
+
+                 ! write(6,*) 'I,J,P,Q,ITR,JTR,PTR,QTR ',I,J,P,Q,ITR,JTR,PTR,QTR
+
+!
+!                 Canonical integrals (I>=J)
+!                 (pl|ij), (pL|iJ), (Pl|iJ)
+!
+                  VMGGUU(P,Q,I,J,1)     = VDGGUU(PP,QQ,IJ,1,1)
+                  VMGGUU(P,QTR,I,JTR,1) = VDGGUU(PP,QQ,IJ,1,2)
+                  VMGGUU(PTR,Q,I,JTR,1) = VDGGUU(PP,QQ,IJ,1,3)
+!
+!                 The rest:
+!
+!                 (Pl|Ij) = (pL|iJ)^*
+
+                  VMGGUU(PTR,Q,ITR,J,1) =  VDGGUU(PP,QQ,IJ,1,2)
+!                 (PL|ij) = (LP|IJ)^* = (pl|ji)
+                  VMGGUU(PTR,QTR,I,J,1) = VDGGUU(QQ,PP,IJ,1,1)
+!                 (KL|IJ) = (lk|ji) = (kl|ij)^*
+                  VMGGUU(PTR,QTR,ITR,JTR,1) = VDGGUU(PP,QQ,IJ,1,1)
+!                 (kl|IJ) = (kl|ji) = (lk|ij)
+                  VMGGUU(P,Q,ITR,JTR,1) = VDGGUU(QQ,PP,IJ,1,1)
+!                 (kL|Ij) = - (kL|Ji) = - (Lk|iJ)^*
+                  VMGGUU(P,QTR,ITR,J,1) = - VDGGUU(QQ,PP,IJ,1,3)
+!
+                  IF (II .NE. JJ) THEN
+!
+                     VMGGUU(Q,P,J,I,1)     = VDGGUU(PP,QQ,IJ,1,1)
+                     VMGGUU(QTR,P,JTR,I,1) = VDGGUU(PP,QQ,IJ,1,2)
+                     VMGGUU(Q,PTR,JTR,I,1) = VDGGUU(PP,QQ,IJ,1,3)
+!
+                     VMGGUU(Q,PTR,J,ITR,1) = - VDGGUU(QQ,PP,IJ,1,2)
+                     VMGGUU(QTR,PTR,J,I,1) =   VDGGUU(QQ,PP,IJ,1,1)
+                     VMGGUU(QTR,PTR,JTR,ITR,1) = VDGGUU(PP,QQ,IJ,1,1)
+                     VMGGUU(Q,P,JTR,ITR,1) =   VDGGUU(QQ,PP,IJ,1,1)
+                     VMGGUU(QTR,P,J,ITR,1) = - VDGGUU(QQ,PP,IJ,1,3)
+                  END IF
+!
+!
+                  IF (NZ .GE. 2) THEN
+!
+!                    Canonical integrals (I>=J)
+!                    (kl|ij), (kL|iJ), (Kl|iJ)
+!
+                     VMGGUU(P,Q,I,J,2)     = VDGGUU(PP,QQ,IJ,2,1)
+                     VMGGUU(P,QTR,I,JTR,2) = VDGGUU(PP,QQ,IJ,2,2)
+                     VMGGUU(PTR,Q,I,JTR,2) = VDGGUU(PP,QQ,IJ,2,3)
+!
+!                    The rest:
+!
+!                    (Kl|Ij) = - (Kl|Ji) = - (lK|iJ)^*
+                     VMGGUU(PTR,Q,ITR,J,2) = VDGGUU(QQ,PP,IJ,2,2)
+!                    (KL|ij) = (lk|ij)
+                     VMGGUU(PTR,QTR,I,J,2) = VDGGUU(QQ,PP,IJ,2,1)
+!                    (KL|IJ) = (lk|ji) = (kl|ij)^*
+                     VMGGUU(PTR,QTR,ITR,JTR,2) = - VDGGUU(PP,QQ,IJ,2,1)
+!                    (kl|IJ) = (kl|ji) = (lk|ij)^*
+                     VMGGUU(P,Q,ITR,JTR,2) = - VDGGUU(QQ,PP,IJ,2,1)
+!                    (kL|Ij) = - (kL|Ji) = - (Lk|iJ)^*
+                     VMGGUU(P,QTR,ITR,J,2) = VDGGUU(QQ,PP,IJ,2,3)
+!
+                     IF (II .NE. JJ) THEN
+!
+!                       (lk|ji) = (kl|ij)^*
+                        VMGGUU(Q,P,J,I,2)     = - VDGGUU(PP,QQ,IJ,2,1)
+!                       (Lk|Ji) = (kL|iJ)^*
+                        VMGGUU(QTR,P,JTR,I,2) = - VDGGUU(PP,QQ,IJ,2,2)
+!                       (lK|Ji) = (Kl|iJ)^*
+                        VMGGUU(Q,PTR,JTR,I,2) = - VDGGUU(PP,QQ,IJ,2,3)
+!
+!                       (lK|jI) = (kL|iJ)
+                        VMGGUU(Q,PTR,J,ITR,2) =   VDGGUU(PP,QQ,IJ,2,2)
+!                       (LK|ji) = (kl|ji) = (lk|ij)^*
+                        VMGGUU(QTR,PTR,J,I,2) = - VDGGUU(QQ,PP,IJ,2,1)
+!                       (LK|JI) = (kl|ij)
+                        VMGGUU(QTR,PTR,JTR,ITR,2) = VDGGUU(PP,QQ,IJ,2,1)
+!                       (lk|JI) = (lk|ij)
+                        VMGGUU(Q,P,JTR,ITR,2) = VDGGUU(QQ,PP,IJ,2,1)
+!                       (Lk|jI) = (Kl|iJ)
+                        VMGGUU(QTR,P,J,ITR,2) = VDGGUU(PP,QQ,IJ,2,3)
+                     END IF
+!
+                  END IF
+!
+                  IF (NZ .EQ. 4) THEN
+!
+!                    (Kl|ij) (canonical)
+!
+                     VMGGUU(PTR,Q,I,J,1) = VDGGUU(PP,QQ,IJ,3,3)
+                     VMGGUU(PTR,Q,I,J,2) = VDGGUU(PP,QQ,IJ,4,3)
+                     IF (II .NE. JJ) THEN
+!                       (lK|ji) = (Kl|ij)^*
+                        VMGGUU(Q,PTR,J,I,1) =   VDGGUU(PP,QQ,IJ,3,3)
+                        VMGGUU(Q,PTR,J,I,2) = - VDGGUU(PP,QQ,IJ,4,3)
+                     END IF
+!
+!                    (kL|ij) (canonical)
+!
+                     VMGGUU(P,QTR,I,J,1) = VDGGUU(PP,QQ,IJ,3,2)
+                     VMGGUU(P,QTR,I,J,2) = VDGGUU(PP,QQ,IJ,4,2)
+                     IF (II .NE. JJ) THEN
+!                       (Lk|ji) = (kL|ij)^*
+                        VMGGUU(QTR,P,J,I,1) =   VDGGUU(PP,QQ,IJ,3,2)
+                        VMGGUU(QTR,P,J,I,2) = - VDGGUU(PP,QQ,IJ,4,2)
+                     END IF
+!
+!                    (kl|Ij) = - (kl|Ji) = - (lk|iJ)^*
+!
+                     VMGGUU(P,Q,ITR,J,1) = - VDGGUU(QQ,PP,IJ,3,1)
+                     VMGGUU(P,Q,ITR,J,2) =   VDGGUU(QQ,PP,IJ,4,1)
+                     IF (II .NE. JJ) THEN
+!                       (lk|jI) = - (lk|iJ)
+                        VMGGUU(Q,P,J,ITR,1) = - VDGGUU(QQ,PP,IJ,3,1)
+                        VMGGUU(Q,P,J,ITR,2) = - VDGGUU(QQ,PP,IJ,4,1)
+                     END IF
+!
+!                    (kl|iJ) (canonical)
+!
+                     VMGGUU(P,Q,I,JTR,1) = VDGGUU(PP,QQ,IJ,3,1)
+                     VMGGUU(P,Q,I,JTR,2) = VDGGUU(PP,QQ,IJ,4,1)
+                     IF (II .NE. JJ) THEN
+!                       (lk|Ji) = (kl|iJ)^*
+                        VMGGUU(Q,P,JTR,I,1) =   VDGGUU(PP,QQ,IJ,3,1)
+                        VMGGUU(Q,P,JTR,I,2) = - VDGGUU(PP,QQ,IJ,4,1)
+                     END IF
+!
+!
+!                    (3 bars)
+!
+!                    (kL|IJ) = -(Kl|ij)^*
+!
+                     VMGGUU(P,QTR,ITR,JTR,1) = - VDGGUU(PP,QQ,IJ,3,3)
+                     VMGGUU(P,QTR,ITR,JTR,2) =   VDGGUU(PP,QQ,IJ,4,3)
+                     IF (II .NE. JJ) THEN
+!                       (Lk|JI) = (kL|IJ)^* = -(Kl|ij)
+                        VMGGUU(QTR,P,JTR,ITR,1) = - VDGGUU(PP,QQ,IJ,3,3)
+                        VMGGUU(QTR,P,JTR,ITR,2) = - VDGGUU(PP,QQ,IJ,4,3)
+                     END IF
+!
+!                    (Kl|IJ) = -(kL|ij)^*
+!
+                     VMGGUU(PTR,Q,ITR,JTR,1) = - VDGGUU(PP,QQ,IJ,3,2)
+                     VMGGUU(PTR,Q,ITR,JTR,2) =   VDGGUU(PP,QQ,IJ,4,2)
+                     IF (II .NE. JJ) THEN
+!                       (lK|JI) = (Kl|IJ)^* = -(kL|ij)
+                        VMGGUU(Q,PTR,JTR,ITR,1) = - VDGGUU(PP,QQ,IJ,3,2)
+                        VMGGUU(Q,PTR,JTR,ITR,2) = - VDGGUU(PP,QQ,IJ,4,2)
+                     END IF
+!
+!                    (KL|Ij) = -(kl|iJ)^*
+!
+                        VMGGUU(PTR,QTR,ITR,J,1) = - VDGGUU(PP,QQ,IJ,3,1)
+                        VMGGUU(PTR,QTR,ITR,J,2) =   VDGGUU(PP,QQ,IJ,4,1)
+                     IF (II .NE. JJ) THEN
+!                       (KL|jI) = -(kl|Ji)^* = -(lk|iJ)
+                        VMGGUU(PTR,QTR,J,ITR,1) = - VDGGUU(QQ,PP,IJ,3,1)
+                        VMGGUU(PTR,QTR,J,ITR,2) = - VDGGUU(QQ,PP,IJ,4,1)
+                     END IF
+! MvH inserted my code here
+                        VMGGUU(PTR,QTR,I,JTR,1) = VDGGUU(QQ,PP,IJ,3,1)
+                        VMGGUU(PTR,QTR,I,JTR,2) = VDGGUU(QQ,PP,IJ,4,1)
+                       IF (II .NE. JJ) THEN
+!                       (KL|Ji) = -(kl|jI)^* = -(jI|kl)^*
+                        VMGGUU(PTR,QTR,JTR,I,1) =  VDGGUU(QQ,PP,IJ,3,1)
+                        VMGGUU(PTR,QTR,JTR,I,2) = -VDGGUU(QQ,PP,IJ,4,1)
+                       END IF
+
+
+
+
+! MVH original code below
+
+!                     IF (KK .GE. LL) THEN
+!                        KL = (KK*(KK-1))/2 + LL
+!!
+!!                    (KL|iJ) = -(kl|Ij)^* = -(Ij|kl)^*
+!!
+!                        VMUUUU(KTR,LTR,I,JTR,1) = - VDUUUU(II,JJ,KL,3,3)
+!                        VMUUUU(KTR,LTR,I,JTR,2) =   VDUUUU(II,JJ,KL,4,3)
+!                       IF (II .NE. JJ) THEN
+!!                       (KL|Ji) = -(kl|jI)^* = -(jI|kl)^*
+!                        VMUUUU(KTR,LTR,JTR,I,1) = - VDUUUU(JJ,II,KL,3,2)
+!                        VMUUUU(KTR,LTR,JTR,I,2) =   VDUUUU(JJ,II,KL,4,2)
+!                       END IF
+!                     ELSE ! KK .lt. LL
+!                        LK = (LL*(LL-1))/2 + KK
+!!
+!!                    (KL|iJ) = -(kl|Ij)^* = -(Ij|kl)^* = -(jI|lk)
+!!
+!                        VMUUUU(KTR,LTR,I,JTR,1) = - VDUUUU(JJ,II,LK,3,2)
+!                        VMUUUU(KTR,LTR,I,JTR,2) = - VDUUUU(JJ,II,LK,4,2)
+!                       IF (II .NE. JJ) THEN
+!!                       (KL|Ji) = -(kl|jI)^* = -(jI|kl)^* = -(Ij|lk)
+!                        VMUUUU(KTR,LTR,JTR,I,1) = - VDUUUU(II,JJ,LK,3,3)
+!                        VMUUUU(KTR,LTR,JTR,I,2) = - VDUUUU(II,JJ,LK,4,3)
+!                       END IF
+!                     END IF
+!
+                  END IF
+               END DO
+            END DO
+         END DO
+      END DO
+!
+
+
+!
+!!9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
+! 9002 FORMAT(6I3,5X,4F20.10)
+!! MvH      IF (iprint_local .GE. 30) THEN
+!         WRITE(LUPRI,'(A,1P,D10.2)')  ' (GGUUDNZ32M) Input VGGUU matrix in Molfdir format,'&
+!         //' print threshold =',THROUT
+!!#ifdef old_code
+!! hjaaj mar 2018: new code below groups the 2-electron integrals,
+!! making it easier to spot some problems (particle symmetry, hermiticity)
+!! but not Kramers conjugation problems - that requires 2**4=16 times lot more
+!! lines for each quadruplet, but with "DO I = 1,NASHT" instead.
+!         DO IZ = 1, NZ
+!            DO I = 1,NNASHX
+!              DO Q = 1,NORBT
+!                DO P = 1,NORBT
+!                  WRITE(LUPRI,9001) &
+!                         P,Q,I,IZ,(VDGGUU(P,Q,I,IZ,I3),I3=1,3)
+!                END DO
+!              END DO
+!            END DO
+!        END DO
+!         
+!
+
+
+
+!!
+!!9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
+! 9001 FORMAT(4I5,5X,4F20.10)
+!! MvH      IF (iprint_local .GE. 30) THEN
+!         WRITE(LUPRI,'(A,1P,D10.2)')  ' (GGUUDNZ32M) Output VGGUU matrix in Molfdir format,'&
+!         //' print threshold =',THROUT
+!!#ifdef old_code
+!! hjaaj mar 2018: new code below groups the 2-electron integrals,
+!! making it easier to spot some problems (particle symmetry, hermiticity)
+!! but not Kramers conjugation problems - that requires 2**4=16 times lot more
+!! lines for each quadruplet, but with "DO I = 1,NASHT" instead.
+!         DO J = 1,2*NASHT
+!            DO I = 1,2*NASHT
+!               DO K = 1,NASHT
+!                  DO L = 1,2*NORBT
+!                    P = IDXU2G(L)
+!                    Q = IDXU2G(K)
+!                         WRITE(LUPRI,*) &
+!                         L,Q,I,J,(VMGGUU(L,Q,I,J,IZ),IZ=1,MIN(NZ,2))
+!                  END DO
+!               END DO
+!            END DO
+!         END DO
+!      ELSE IF (iprint_local .GE. 10) THEN
+!#endif
+!         DO I = 1, 2*NASHT
+!            DO J = 1, I
+!               DO L = 1, I
+!                  DO K = 1, L
+!                  WRITE(LUPRI,'(A)')
+!     & 'New quadruplet re(ij|kl), re(kl|ij), im(ij|kl), im(kl|ij)'
+!                  WRITE(LUPRI,9001)
+!     & I,J,K,L,(VMUUUU(I,J,K,L,IZ),VMUUUU(K,L,I,J,IZ),IZ=1,NZ_in_CI)
+!                  WRITE(LUPRI,9001)
+!     & J,I,L,K,(VMUUUU(J,I,L,K,IZ),VMUUUU(L,K,J,I,IZ),IZ=1,NZ_in_CI)
+!                  WRITE(LUPRI,9001)
+!     & I,J,L,K,(VMUUUU(I,J,L,K,IZ),VMUUUU(L,K,I,J,IZ),IZ=1,NZ_in_CI)
+!                  WRITE(LUPRI,9001)
+!     & J,I,K,L,(VMUUUU(J,I,K,L,IZ),VMUUUU(K,L,J,I,IZ),IZ=1,NZ_in_CI)
+!                  END DO
+!               END DO
+!            END DO
+!         END DO
+!      END IF
+!
+      RETURN
+      END SUBROUTINE GGUUDNZ32M
+
+
+
 
 end module mcscf_routines
