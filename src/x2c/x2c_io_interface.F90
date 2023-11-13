@@ -34,6 +34,7 @@ contains
   subroutine x2c_write(flabel,fmat,nlen,funit)
 !**********************************************************************
      use checkpoint
+     use labeled_storage
      real(8),            intent(in)     :: fmat(*)
      integer,            intent(in)     :: nlen
      integer,            intent(in)     :: funit
@@ -46,10 +47,16 @@ contains
 !**********************************************************************
 
      ! write essential x2c information to CHECKPOINT
-     if (flabel(1:8)=='prpint2c'.or.flabel(1:7)=='pctmtAO'.or.flabel(1:4)=='h12c') then
+     if (flabel(1:7)=='pctmtAO'.or.flabel(1:4)=='h12c') then
        group = '/result/hamiltonian/x2c/ao_matrices/'
        if (nlen>0) then
           call checkpoint_write(group//flabel,fmat(1:nlen))
+       endif
+       return
+     elseif (flabel(1:8)=='prpint2c') then
+       group = '/result/x2c_operators/ao_matrices/'
+       if (nlen>0) then
+          call lab_write(dirac_datafiles(1),group//flabel,fmat(1:nlen))
        endif
        return
      end if
@@ -78,6 +85,7 @@ contains
   subroutine x2c_read(flabel,fmat,nlen,funit)
 !**********************************************************************
      use checkpoint
+     use labeled_storage
      real(8),            intent(inout)  :: fmat(*)
      integer,            intent(in)     :: nlen
      integer,            intent(in)     :: funit
@@ -92,10 +100,16 @@ contains
 !**********************************************************************
  
      ! read essential x2c information from CHECKPOINT
-     if (flabel(1:8)=='prpint2c'.or.flabel(1:7)=='pctmtAO'.or.flabel(1:4)=='h12c') then
+     if (flabel(1:7)=='pctmtAO'.or.flabel(1:4)=='h12c') then
        group = '/result/hamiltonian/x2c/ao_matrices/'
        if (nlen>0) then
           call checkpoint_read(group//flabel,fmat(1:nlen))
+       endif
+       return
+     elseif (flabel(1:8)=='prpint2c') then
+       group = '/result/x2c_operators/ao_matrices/'
+       if (nlen>0) then
+          call lab_read(dirac_datafiles(1),group//flabel,fmat(1:nlen))
        endif
        return
      end if
