@@ -6,6 +6,8 @@ module talsh_cis
     use exacorr_utils
     use talsh_common_routines
     use talsh_cis_property
+    use talsh_cis_density
+
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                  ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
@@ -22,7 +24,7 @@ module talsh_cis
     contains
 !---------------------------------------------------------------------------------------------------------------
 
-    subroutine talsh_cis_driver (exa_input)
+    subroutine talsh_cis_driver (exa_input,CIS_vv_effden)
     ! This routine drives CIS calculation including construction of CIS Hamiltonian and diagnolization
     ! Written by Xiang Yuan, June 2020
         use exacorr_global
@@ -30,6 +32,7 @@ module talsh_cis
 
 
         type(exacc_input), intent(in) :: exa_input
+        type(talsh_tens_t), optional   :: CIS_vv_effden
 
          integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
@@ -188,6 +191,10 @@ module talsh_cis
 
         n = size(eValues)
         call print_energy_CIS(eValues,size(eValues),n)
+
+        if (present(CIS_vv_effden)) then
+            call generate_cis_effden(exa_input,CIS_vv_effden,eVectorsR,eValues)
+        end if
 
 
          ierr=talsh_tensor_destruct(id_mat_occ)
@@ -394,6 +401,62 @@ end subroutine
              ierr=talsh_tensor_destruct(aoint_tensor)
     
            end subroutine get_CIS_integrals
+
+!-----------------------------------------------------------------------------------------------------------
+
+    subroutine generate_cis_effden(exa_input,CIS_vv_effden,eVectorsR,eValues)
+        type(exacc_input), intent(in) :: exa_input
+        type(talsh_tens_t)   :: CIS_vv_effden
+        complex(kind=8), pointer :: eVectorsR(:,:)
+        complex(kind=8), pointer :: eValues(:)
+        
+
+        type(talsh_tens_t), pointer :: CIS_eigen_tensors_left(:), CIS_eigen_tensors_right(:)
+        integer            :: N_states, i_state
+        integer            :: i,j
+        integer            :: nvir, nocc
+        integer            :: ierr
+        integer(INTD), dimension(2) :: vv_dims 
+        integer(INTD), dimension(2) :: cis_eig_dims
+        complex(kind=8)    :: C_cocc
+
+        nvir = exa_input%nvir
+        nocc = exa_input%nocc
+        cis_eig_dims(1) = nvir
+        cis_eig_dims(2) = nocc
+        vv_dims = nvir
+
+
+        ierr=talsh_tensor_construct(CIS_vv_effden,C8,vv_dims,init_val=ZERO)
+        ! N_states = size(eVectorsR,2)
+        N_states = 20
+        allocate(CIS_eigen_tensors_left(N_states))
+        allocate(CIS_eigen_tensors_right(N_states))
+
+        do i_state=1, N_states
+            ! ierr=talsh_tensor_construct(CIS_eigen_tensors_left(i_state),C8,cis_eig_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(CIS_eigen_tensors_right(i_state),C8,cis_eig_dims,init_val=ZERO)
+            ! call reshape_cis(eVectorsR,CIS_eigen_tensors_left(i_state),cis_eig_dims,i_state)
+            call reshape_cis(eVectorsR,CIS_eigen_tensors_right(i_state),cis_eig_dims,i_state)
+        end do
+
+        do i_state=1, N_states
+            ! ierr=talsh_tensor_contract("D(a,b)+=CISL+(a,i)*CISR(b,i)",CIS_vv_effden,&
+            !                     CIS_eigen_tensors_left(i_state),CIS_eigen_tensors_right(i_state),scale=ONE)
+            ! C_cocc = (eValues(1)/eValues(i_state))*(eValues(1)/eValues(i_state))
+            C_cocc = ONE
+            ! print *, "C_cocc: ", C_cocc
+            ierr=talsh_tensor_contract("D(a,b)+=CISL+(a,i)*CISR(b,i)",CIS_vv_effden,&
+                CIS_eigen_tensors_right(i_state),CIS_eigen_tensors_right(i_state),scale=C_cocc)
+        end do
+
+        do i_state=1, N_states
+            ! ierr=talsh_tensor_destruct(CIS_eigen_tensors_left(i_state))
+            ierr=talsh_tensor_destruct(CIS_eigen_tensors_right(i_state))
+        end do
+
+    end subroutine 
+
 
 !-----------------------------------------------------------------------------------------------------------
     subroutine print_energy_CIS(eValues,size,n)

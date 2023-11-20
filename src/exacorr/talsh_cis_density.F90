@@ -17,17 +17,17 @@ module talsh_cis_density
 
     private
 
-    public get_cis_density_exe_exe, get_cis_density_exe_grd
+    public get_cis_density_exe_exe, get_cis_density_exe_grd, reshape_cis
 
     contains
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,N_state,Tra_Den_exe_exe_tensor)  
+subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,ini_state,Tra_Den_exe_exe_tensor)  
                  
     type(exacc_input), intent(in) :: exa_input
     complex(kind=8), pointer      :: eVectors(:,:)
-    integer                       :: tar_state,N_state
+    integer                       :: tar_state,ini_state
 
     type(talsh_dm_tens_t)         :: Tra_Den_exe_exe_tensor
     type(talsh_tens_t)            :: Diagonal_tensor
@@ -63,7 +63,7 @@ subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,N_state,Tra_Den_
 
 
     !       Reshape CIS eigenvector matrix
-    call reshape_cis(eVectors,CIS_eigen_tensor_left,cis_eig_dims,N_state)
+    call reshape_cis(eVectors,CIS_eigen_tensor_left,cis_eig_dims,ini_state)
     call reshape_cis(eVectors,CIS_eigen_tensor_right,cis_eig_dims,tar_state)
 
     ! print *, "error befre tdmab"

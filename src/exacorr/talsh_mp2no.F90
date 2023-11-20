@@ -10,6 +10,7 @@ module talsh_mp2no
         use exacorr_global
         use mp2no_matrixtransforms
         use mp2no_fileinterfaces
+        use talsh_cis
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -93,6 +94,7 @@ module talsh_mp2no
 
 !        Intermediate tensors (same notation as in relccsd)
          type(talsh_tens_t)          :: MP2_vv_density
+         type(talsh_tens_t)          :: CIS_vv_effden
          type(talsh_tens_t)          :: result_tensor
          integer(INTD), dimension(4) :: vvoo_dims
          integer(INTD), dimension(2) :: vv_dims
@@ -198,6 +200,11 @@ module talsh_mp2no
 
 !        Make some noise so that we know we are proceeding 
          call print_date('finished MP2_DM_VV calculation and save it to file DM_complex')
+
+         if (exa_input%do_neo) then
+            call generate_effec_densive(exa_input,MP2_vv_density,CIS_vv_effden)
+         end if
+
          call write_talsh_matrix(nvir,MP2_vv_density,'DM_complex')
 
         end subroutine talsh_generate_MP2_VNO_MObasis
@@ -407,6 +414,22 @@ module talsh_mp2no
 
             call print_rMP2FVNO(New_orbital_energy,N_OCCUPATION_reduced)
       end subroutine
+
+!------------------------------------------------------------------------------------------------------------------------------
+      subroutine generate_effec_densive(exa_input,MP2_vv_density,CIS_vv_effden)
+
+            type(exacc_input), intent(in) :: exa_input
+            type(talsh_tens_t)          :: MP2_vv_density
+            type(talsh_tens_t)          :: CIS_vv_effden
+            integer(INTD)               :: ierr
+
+            call print_date('Start computing CIS effective density matrix')
+            call talsh_cis_driver(exa_input,CIS_vv_effden)
+            ierr=talsh_tensor_add('D(a,b)+=DC(a,b)',MP2_vv_density,CIS_vv_effden,scale=ONE)
+            call print_date('Add CIS effective density matrix into MP2 desnity matrix')
+
+      end subroutine
+
 
 end module talsh_mp2no
 

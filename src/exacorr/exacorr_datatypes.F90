@@ -66,6 +66,7 @@
             logical                 :: do_triples = .true.
             logical                 :: tripl_lap = .false.
             logical                 :: do_no = .false.          ! if true, generate natural orbital
+            logical                 :: do_neo = .false.          ! if true, generate natural effective orbital
             logical                 :: eom_lr = .false.
             
             logical                 :: do_1rdm_gs=.false.

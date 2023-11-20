@@ -226,6 +226,9 @@ C
        else if (exa_input%do_no) then
          call get_no_driver (exa_input)
        else if (exa_input%mp2no > 0 ) then
+         if (exa_input%mp2no==2) then 
+              exa_input%do_neo = .true.
+         end if 
          call talsh_mp2no_driver (exa_input,n_mp2no)
        elseif (exa_input%mp2no < 0) then
          call talsh_mp2lap_driver (exa_input)
