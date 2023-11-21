@@ -102,7 +102,7 @@ Maximum number of primitive functions in a given block in basis file.
 Default::
 
   .MAXPRI
-   22
+   35
 
 
 star(TWOINT)
