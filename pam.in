@@ -134,6 +134,8 @@ class pam_enviroment:
         else:
         #   Linux, Windows, ...
             self.mpirun = find_executable('mpirun')
+            if self.mpirun is None:
+              self.mpirun = find_executable('srun')
 
         #  restrict distribution of working files over nodes by own flag/variable
         self.distribute = []

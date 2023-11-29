@@ -1792,8 +1792,8 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 FF_STRENGTH(2)
       CHARACTER*8 PROP_NAME
-      integer i,icase,ii,ij,ijoo,ijvo,ind,ioper,irep,ityp,j,ncase,nspq
-      real*8, allocatable :: buf1(:),buf2(:)
+      integer i,j,icase,ij,ind,ioper,irep,ityp,ncase,nspq
+      real*8, allocatable :: buf1(:),buf2(:),boo(:),bvo(:),bvv(:)
 C
 C---------------Executable code--------------------------------------
 C
@@ -1823,6 +1823,12 @@ C
          NCASE = 1
       ENDIF
 C
+      allocate(boo(rcw*nfoo),bvo(rcw*nfvo),bvv(rcw*nfvv))
+      BOO = 0.D0
+      BVO = 0.D0
+      BVV = 0.D0
+      ! Note : elements of POO, PVO and PVV are adressed multiple times in this loop construct,
+      ! so we can not add directly to the Fock matrix.
       DO ICASE = 1, NCASE
          IJ = 0
          DO J = 1, NSP
@@ -1834,31 +1840,35 @@ C
                IF (IND.NE.0) THEN
                IF (ITYP.EQ.1) THEN
                   IF (CARITH) THEN
-                     FOO(RCW*IND-1) = FOO(RCW*IND-1) + BUF1(IJ)
-                     FOO(RCW*IND)   = FOO(RCW*IND)   + BUF2(IJ)
+                     BOO(RCW*IND-1) = BUF1(IJ)
+                     BOO(RCW*IND)   = BUF2(IJ)
                   ELSE
-                     FOO(IND) = FOO(IND) + BUF1(IJ)
+                     BOO(IND) = BUF1(IJ)
                   ENDIF
                ELSEIF (ITYP.EQ.2) THEN
                   IF (CARITH) THEN
-                     FVO(RCW*IND-1) = FVO(RCW*IND-1) + BUF1(IJ)
-                     FVO(RCW*IND)   = FVO(RCW*IND)   + BUF2(IJ)
+                     BVO(RCW*IND-1) = BUF1(IJ)
+                     BVO(RCW*IND)   = BUF2(IJ)
                   ELSE
-                     FVO(IND) = FVO(IND) + BUF1(IJ)
+                     BVO(IND) = BUF1(IJ)
                   ENDIF
                ELSEIF (ITYP.EQ.4) THEN
                   IF (CARITH) THEN
-                     FVV(RCW*IND-1) = FVV(RCW*IND-1) + BUF1(IJ)
-                     FVV(RCW*IND)   = FVV(RCW*IND)   + BUF2(IJ)
+                     BVV(RCW*IND-1) = BUF1(IJ)
+                     BVV(RCW*IND)   = BUF2(IJ)
                   ELSE
-                     FVV(IND) = FVV(IND) + BUF1(IJ)
+                     BVV(IND) = BUF1(IJ)
                   ENDIF
                ENDIF
                ENDIF
             ENDDO
          ENDDO
       ENDDO
-      deallocate (buf1,buf2)
+      ! Arrays are filled, now we can add
+      CALL XAXPY (NFOO,1.D0,BOO,1,FOO,1)
+      CALL XAXPY (NFVO,1.D0,BVO,1,FVO,1)
+      CALL XAXPY (NFVV,1.D0,BVV,1,FVV,1)
+      deallocate (buf1,buf2,boo,bvo,bvv)
 C
       RETURN
       END
