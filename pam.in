@@ -410,6 +410,21 @@ class pam_enviroment:
             sys.stderr.flush()
             sys.exit(13)
 
+    def move_file(self, src, dest):
+        """move file from directory "scr" to "dest"
+     for the printout use 'purified' file names"""
+        try:
+            if self.verbose:
+                print("  Moveing %s to %s" % (src, dest))
+            shutil.move(src, dest)
+        except:
+            print("Moving of files - shutil.move(src, dest) - failed, error exit ", file=sys.stderr)
+            print(' src full path:', src, file=sys.stderr)
+            print('dest full path:', dest, file=sys.stderr)
+            print('  input dir   :', self.input_directory, file=sys.stderr)
+            sys.stderr.flush()
+            sys.exit(13)
+
     def copy_with_replacement(self, src, dst):
         try:
             if self.verbose:
