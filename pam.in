@@ -488,8 +488,6 @@ class pam_enviroment:
     def remove_scratch_dir(self):
         ''' remove the scratch directory (if it exists) after Dirac run '''
         if os.path.isdir(self.scratch_dir):
-            if self.verbose and os.path.isdir(self.scratch_dir):
-                self.list_scratch_dir()
             if not self.keep_scratch:
                 # leave the scratch dir to be able to remove it (Windows demand)
                 os.chdir(self.input_directory)
@@ -1790,6 +1788,8 @@ Options are also read from ~/.diracrc"""
             # flush out the final sdterr message on details about the dirac run
             self.stderr_message()
             # clean the working directory and exit
+            if self.verbose and os.path.isdir(self.scratch_dir):
+                self.list_scratch_dir()
             self.remove_scratch_dir()
             return_code = self.exit_function()
         sys.exit()
@@ -2129,6 +2129,8 @@ class pam_run(pam_enviroment):
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_cmd()
         self.pam_variables.execute_dirac()
+        if self.verbose and os.path.isdir(self.scratch_dir):
+            self.list_scratch_dir()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()
         return_code = self.pam_variables.exit_function()
