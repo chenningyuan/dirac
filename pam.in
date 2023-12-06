@@ -2129,8 +2129,8 @@ class pam_run(pam_enviroment):
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_cmd()
         self.pam_variables.execute_dirac()
-        if self.verbose and os.path.isdir(self.scratch_dir):
-            self.list_scratch_dir()
+        if self.pam_variables.verbose and os.path.isdir(self.pam_variables.scratch_dir):
+            self.pam_variables.list_scratch_dir()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()
         return_code = self.pam_variables.exit_function()
