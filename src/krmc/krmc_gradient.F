@@ -138,7 +138,7 @@ C
      &           EMCACT,EMCACX
 cmvh
             WRITE(LUPRI,*) 'ratio ', EMCACT/EMCACX
-            CALL QUIT('*** ERROR in RCIGRAD ***')
+CTROND            CALL QUIT('*** ERROR in RCIGRAD ***')
          ELSE
             WRITE(LUPRI,9000)
      &           '*** WARNING in RCIGRAD ***',

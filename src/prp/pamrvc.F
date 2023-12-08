@@ -3179,7 +3179,8 @@ C
 C
 C           Update conv. threshold
 C
-            THCXRS = RCNVTHR()
+C     TROND            THCXRS = RCNVTHR()
+            THCXRS=1.0D-05
 C
 C           We are doing a MCSCF opt.
 C           Use abs. norm as conv. measure.

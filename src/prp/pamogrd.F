@@ -277,13 +277,13 @@ C
      &           FAC,IPQTOQ(1,0),
      &           FGEN(1,1+IASH(I),1),NORBT,NASH(I),NZ)
          END IF
-c         IF (IPRINT .GE. 5) THEN
-c            WRITE(LUPRI,9000) I
-c9000 FORMAT(/'Generalized Fock matrix irrep ',I1,
-c    &        ' with second index active')
-c            CALL PRQMAT(FGEN(1,1+IASH(I),1),NORBT,NASH(I),NORBT,NASHT,
-c     &           NZ,IPQTOQ(1,0),LUPRI)
-c         END IF
+CTROND         IF (IPRINT .GE. 5) THEN
+            WRITE(LUPRI,9000) I
+9000        FORMAT(/'Generalized Fock matrix irrep ',I1,
+     &        ' with second index active')
+            CALL PRQMAT(FGEN(1,1+IASH(I),1),NORBT,NASH(I),NORBT,NASHT,
+     &           NZ,IPQTOQ(1,0),LUPRI)
+CTROND         END IF
       END DO
 C
       CALL QEXIT('FGEN_PV')

@@ -4105,7 +4105,8 @@ C
 C     Calculate initial micro it. convergence threshold
 C
       RBETA = D0
-      THR = RCNVTHR()
+CTROND      THR = RCNVTHR()
+      THR=1.0D-08     
 C
       WRITE(LUPRI,'(/A,1P,D10.2/)')
      &'(DIRNR) Starting micro iterations. Convergence threshold:',THR
@@ -5269,8 +5270,6 @@ C
 C
 C           Hessian has incorrect structure, and it's not worth
 C           the effort to converge better than 50% (we think!)
-C
-C           (TODO FIXME: put DP5 = 50% in common block/input)
 C
             THRQN = DP5 * D2 * GNORM(5)
          ELSE
