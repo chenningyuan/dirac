@@ -1165,7 +1165,7 @@ C
       CALL FLSHFO(LUPRI)
       CALL RTKTIME(.FALSE.,9)
       CALL QEXIT('RGRAD')
-!      CALL QUIT('call quit from RGRAD')
+c      CALL QUIT('call quit from RGRAD')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1383,8 +1383,9 @@ C
 c         write(lupri,*) 'relevant output is here'
          IF (CALCDV) CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
          !mvh debug
+c         write(6,*) 'ONE BODY DENS DEBUG'
 c         call QFC2MFC(DV,WORK(KDVMOLF),1,1,IPROPT)
-c         CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
+c         CALL MFC2QFC(.FALSE.,WORK(KDVMOLF),DV,IPROPT)
          !mvh debug
 
 C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)

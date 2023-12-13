@@ -331,7 +331,8 @@ C
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
+      SUBROUTINE X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY
+     &                                           ,DOFQ,DOH2AC)
 C***********************************************************************
 C
 C     Make (ug) block integrals from (gu) block.
@@ -359,6 +360,7 @@ C
       DIMENSION H2XY(NORBT,NASHT,NZ,3)
       DIMENSION H2YX(NORBT,NASHT,NZ,3)
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
+      DIMENSION H2GAC(NORBT,NORBT,NNASHX,NZ,3)
       LOGICAL   ONLYXY, DOH2AC, DOFQ
 C
 !     IPRINT_local = max(IPROPT,31)
@@ -438,6 +440,28 @@ C
                  END DO
               END DO
            END DO
+           DO I3 = 1, 3
+              DO IZ = 1, NZ
+                 DO IP = 1, NORBT
+                    DO IQ = 1, NORBT
+                        H2GAC(IQ,IP,IUU,IZ,I3) = HX(IQ,IP,IZ,I3)
+                    ENDDO
+                 ENDDO
+              ENDDO
+           ENDDO         
+!           WRITE(LUPRI,'(1X,A,I3,A)') '(X2GU) output H2AC(*,*,',IUU,'):'
+!           DO I3 = 1, 3
+!              DO IZ = 1, NZ
+!                 WRITE(LUPRI,'(A,I3,A,I3,A)')
+!     &                ' H2AC (NZ,3) matrix no. (',IZ,',',I3,'): '
+!                 CALL OUTPUT(H2AC(1,1,IUU,IZ,I3),1,NASHT,1,NASHT,
+!     &                       NASHT,NASHT,-1,LUPRI)
+!                 WRITE(LUPRI,'(A,I3,A,I3,A,I3,A)')
+!     &             ' H2GAC (NZ,3) matrix no. (',IZ,',',I3,',',IUU,',): '
+!                 CALL OUTPUT(H2GAC(1,1,IUU,IZ,I3),1,norbt,1,norbt,
+!     &                norbt,norbt,-1,LUPRI)
+!              END DO
+!           END DO
          else  ! I3 = 1 and NZ = 1 for spin-free
            DO IG = 1, NORBT
              DO IU = 1, NASHT
