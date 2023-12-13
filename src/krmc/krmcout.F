@@ -325,8 +325,9 @@ C
         IF (IPROPT .GE. 1) THEN
 C
           WRITE(LUPRI,9500)
+          MZ = MIN(NZ,2) 
           IF (IPROPT .GT. 2) CALL RPRVEC(NZCONF,WORK(KCREF),
-     &       1,NZ,IPQTOQ(1,0),THRPCI,200,LUPRI)
+     &       1,MZ,IPQTOQ(1,0),THRPCI,200,LUPRI)
 C
 C           Analyze CI vectors
 C
