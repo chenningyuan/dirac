@@ -450,6 +450,8 @@ CTROND
 C
 C     Print section
 C
+
+
       IF(IPRINT.GE.10) THEN
         CALL TITLER('Output from DENSTY','*',103)
         DO 20 I = 1,NFSYM
@@ -489,6 +491,20 @@ C
         WRITE(6,*) 'DENST1: Negative number of vectors: ', NVEC
         CALL QUIT('DENST1: Negative number of vectors !')
       ENDIF
+
+
+c mvh debug
+      write(6,*) 'this is cmo from DENSTY'
+        DO 20 I = 1,NFSYM
+        IF(NORB(I).EQ.0) GOTO 20
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          CALL PRQMAT(CMO,NFBAS(I,0),NFBAS(I,0),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+   20   CONTINUE
+
+
+
+
       CALL QGEMM(NBAS,NBAS,NVEC,ALPHA,
      &     'N','N',IQ,CMO(1,JVEC,1),LRC,LCC,NZ,
      &     'H','N',IQ,CMO(1,JVEC,1),LRC,LCC,NZ,

@@ -236,8 +236,7 @@ C
 C
 C        Print ?
 C
-c MvH: original        IF ( IPRXRS .GE. 30 ) THEN
-         IF ( IPRXRS .GE. 5 ) THEN
+         IF ( IPRXRS .GE. 30 ) THEN
             WRITE(LUPRI,'(A,I2,A)') '( XRSSCIM)   B(',I,')>'
             IF (MZ.EQ.2) WRITE(LUPRI,'(T12,A)') '(real and imag parts)'
             CALL OUTPUT(BCVEC(1,I),1,NZCONF,1,MZ,
@@ -252,8 +251,7 @@ C        Finish sigma vector: - E[0] b_{\mu}
 C
          CALL DAXPY(NZCONFQ,-ENRGY,
      &              BCVEC(1,I),1,SCVEC(1,I+NOSIM),1)
-C MvH
-         IF ( IPRXRS .GE. 5 ) THEN
+         IF ( IPRXRS .GE. 30 ) THEN
             WRITE(LUPRI,'(A,I2,A)') '( XRSSCIM) SCVEC(',I,')>'
             IF (MZ.EQ.2) WRITE(LUPRI,'(T12,A)') '(real and imag parts)'
             CALL OUTPUT(SCVEC(1,I+NOSIM),1,NZCONF,1,MZ,
@@ -3440,7 +3438,7 @@ CHJ 16-jun-2004: try use BNRMP instead of THCXRS to zero BCVEC elements
 CHJ could this give problems for MZ.eq.2 (e.g. real part included, imag. not)?
             ELSE
               THRBVEC = THRZER
-              THRBVEC = 1.0D-10 !MvH
+c              THRBVEC = 1.0D-10 !MvH
 !sk+hjaaj testTHRBVEC = THCXRS*1.0D-4
             END IF
             DO IZ = 1,MZ
@@ -5226,6 +5224,7 @@ C
          CALL PRBVEC(LUPRI,SPVEC(1,1,1),NOSIM,NXOPP)
         ENDIF
       ENDIF
+      call quit('call quit from RSIGOO')
 C
       CALL RTKTIME(.FALSE.,16)
       CALL QEXIT('RSIGOO')
@@ -5473,8 +5472,7 @@ C
       END DO
 C
 C
-c MvH: original code      IF(IPRXRS.GE.30) THEN
-      IF(IPRXRS.GE.5) THEN      
+      IF(IPRXRS.GE.30) THEN
          WRITE(LUPRI,'(/1X,A,I5,A)')
      &        '(RSIGOOGB1) ',NESIM,' (e-e) orbital part(s) of orbital'//
      &        ' sigma vector(s) after G * B'
@@ -5641,8 +5639,7 @@ C        FIXME: document this factor -2
 C        (the 2 is easy (cref normalized to 0.5))
 C
          CALL DSCAL(NZCONFQ,-D2,SCVEC(1,I),1)
-c MvH: original code         IF ( IPRXRS .GE. 30 ) THEN
-         IF ( IPRXRS .GE. 5 ) THEN
+         IF ( IPRXRS .GE. 30 ) THEN
             WRITE(LUPRI,'(/1X,A,I2,A)')
      &           '(RSIGCOM) conf. part of orbital sigma vector',I
             CALL RPRCI(SCVEC(1,I),NZCONF,NZ,

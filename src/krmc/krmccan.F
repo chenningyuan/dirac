@@ -378,7 +378,7 @@ C
      &               NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
              END IF
 C
- 10       CONTINUE
+  10       CONTINUE
           MOISNO = .TRUE.
         END IF
  

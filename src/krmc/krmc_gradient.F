@@ -266,7 +266,7 @@ C MVH
       ENDDO
       EMC(1) = DDOT(NZCONF,CREF(1,1),1,GCI(1,1),1)
 C
-      IF (NZ .GE. 2) THEN
+      IF (NZ .GE. 2) THEN          
          EMC(1) = EMC(1) + DDOT(NZCONF,CREF(1,2),1,GCI(1,2),1)
          EMC(2) =
      &        - DDOT(NZCONF,CREF(1,2),1,GCI(1,1),1)
