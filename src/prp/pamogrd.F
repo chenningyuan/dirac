@@ -85,7 +85,7 @@ C
  9002 FORMAT(' F_{',A,'} factor: ',F4.1)
  9003 FORMAT(' Fock matrix ',A,' not included in grad. calc.: ',L1)
 C
-      IF ( IPRINT .GE. 20 ) THEN
+c      IF ( IPRINT .GE. 20 ) THEN
          CALL HEADER('Output from RORBGRD',-1)
          WRITE(LUPRI,9000) LORBTRI
          WRITE(LUPRI,9003) 'NOFC',NOFC
@@ -117,7 +117,7 @@ C
             CALL PRQMAT(FPV,NORBT,NASHT,NORBT,NASHT,NZ,IPQ,LUPRI)
          END IF
 C
-      END IF
+c      END IF
 C     
 C
 C     ***************************************************
@@ -134,6 +134,7 @@ C
          ITYPL = IOBTYP(L)
          ISYMK = IFSMO(K)
          ISYML = IFSMO(L)
+
 C        
 C        First index (K)
 C        ---------------
@@ -200,6 +201,7 @@ C
                   GORB(IG,IZ) = GORB(IG,IZ) - DFAC(2) * FPV(K,LU,IZ)
                END IF
             END DO
+
 C        ELSE
 C
 C           Second index is secondary
@@ -255,7 +257,7 @@ C
 C
       IF (NASHT .LE. 1) THEN
          FAC = D0
-      ELSE
+      ELSE     
          FAC = D1
          CALL DCOPY(NORBT * NASHT * NZ, FQ, 1, FGEN, 1)
       END IF
@@ -272,7 +274,7 @@ C
      &           'N','N',IPQTOQ(1,0),
      &           FC(1,1+IORB(I)+NPSH(I)+NISH(I),1),
      &           NORBT,NORBT,NZ,
-     &           'T','N',IPQTOQ(1,0),DV(1+IASH(I),1+IASH(I),1),
+     &           'N','N',IPQTOQ(1,0),DV(1+IASH(I),1+IASH(I),1),
      &           NASHT,NASHT,NZ,
      &           FAC,IPQTOQ(1,0),
      &           FGEN(1,1+IASH(I),1),NORBT,NASH(I),NZ)
