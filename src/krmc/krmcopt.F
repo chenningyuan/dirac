@@ -967,7 +967,7 @@ C        FCAC is written to KRMC FOCK.
 C
 
          CALL RGETAC(FC,FCAC,IPRINT)
-c         call blabla(fcac,N2ASHX,NZ,0)
+!         call blabla(fcac,N2ASHX,NZ,0)
          CALL QFC2MFC(FCAC,FCAC_MOLF,1,1,IPROPT)
 c         CALL QFC2MFC(DV,DVMOLF,1,1,IPROPT)
 

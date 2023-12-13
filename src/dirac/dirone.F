@@ -3656,7 +3656,7 @@ C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prprea */
       SUBROUTINE PRPREA(LU1INT,PRPLBL,RTNLBL,PCOMB,PRPINT,NDIM,IPRINT)
-      use checkpoint
+      use labeled_storage
 C***********************************************************************
 C
 C     Read property integrals from file with the label PRPLBL
@@ -3700,20 +3700,20 @@ C
       ENDIF
       label = '/result/operators/ao_matrices/'//
      &        PRPLBL//COMB
-      call checkpoint_query(label,label_present)
+      call lab_query(dirac_datafiles(1),label,label_present)
       if (label_present) then
-        call checkpoint_read(label,rdata=prpint(1:ndim))
+        call lab_read(dirac_datafiles(1),label,rdata=prpint(1:ndim))
         IF (IPRINT.GE.17) THEN
            WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
-     &    'succesfully read from CHECKPOINT '
+     &    'succesfully read from '//dirac_datafiles(1)%name
         ENDIF
       ELSE
         WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
-     &                     ' not found on CHECKPOINT'
+     &                     ' not found on '//dirac_datafiles(1)%name
         CALL QUIT('PRPREA:Property '//PRPLBL//
-     &   ' of COMB '//COMB//' not found on CHECKPOINT')
+     &   ' of COMB '//COMB//' not found')
       ENDIF
 C
       CALL FLSHFO(LUPRI)
@@ -5852,13 +5852,23 @@ C
         ATOMIC = .FALSE.
         IPRHAM = 5
       END IF
-      DO IATOM = 1, NUCIND
-        IF(NINT(CHARGE(IATOM)).EQ.0)THEN
-        IF(NOORBT(IATOM).EQV. .FALSE.)THEN
-          ATOMIC = .FALSE.         
-        ENDIF
-        ENDIF
-      ENDDO   
+C
+C The following part is needed to turn off ATOMIC
+C in the BSSE calculation, that is
+C   - NINT(CHARGE(IATOM)).EQ.0 ... ghost center
+C   - NOORBT(IATOM).EQV. .FALSE. ... ghost with basis set
+C However, when a single ghost center (NUCIND.EQ.1), 
+C ATOMIC is not turned off.
+C
+      IF(NUCIND.GT.1)THEN
+        DO IATOM = 1, NUCIND
+          IF(NINT(CHARGE(IATOM)).EQ.0)THEN
+          IF(NOORBT(IATOM).EQV. .FALSE.)THEN
+            ATOMIC = .FALSE.         
+          ENDIF
+          ENDIF
+        ENDDO
+      ENDIF    
       IF(ATOMIC)THEN
        CALL ATMSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
        IF (IPRHAM.GE.1) THEN
@@ -8432,16 +8442,18 @@ C     when there is no subblock ... allows single code
         NQ(1) = 0
         NQ(2) = 0
         IF(IPRINT.GE.5) THEN
-           WRITE(6,*) '* Energies and symmetry labels of coefficients:'
-           DO IVEC = 1,NVECS(IFRP)
+          IF(NVECS(IFRP).GT.0) THEN
+            WRITE(6,*) '* Energies and symmetry labels of coefficients:'
+            DO IVEC = 1,NVECS(IFRP)
               WRITE(6,*) IVEC,ESEL(IVOFF+IVEC),ISEL(IVOFF+IVEC)
-           ENDDO
-           WRITE(6,*)
-     &       '  Input selected coefficients: '
-           CALL PRQMAT(CSEL(ICOFF+1),
+            ENDDO
+            WRITE(6,*)
+     &        '  Input selected coefficients: '
+            CALL PRQMAT(CSEL(ICOFF+1),
      &              NFBAS(IFRP,0),NVECS(IFRP),
      &              NFBAS(IFRP,0),NVECS(IFRP),
      &              NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
         ENDIF
         allocate(NVECS_SUB(N_SUB_BL(IFRP)))
 C.......First find how the selected vectors are distributed on subblocks

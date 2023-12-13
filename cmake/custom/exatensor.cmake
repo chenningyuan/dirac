@@ -24,14 +24,21 @@ if(ENABLE_EXATENSOR)
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
    set (EXATENSOR_GIT_REPO_LOCATION "https://github.com/RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
-   set (EXATENSOR_GIT_HASH 559373c25f80dfc39e6c081516e692db31d9d434 CACHE STRING "ExaTENSOR Git repository hash in use")
+   set (EXATENSOR_GIT_HASH 35caded68340657186be190a2d68a98c9e2159bb CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type
    if (DEFINED ENV{BUILD_TYPE})
-      set(EXATENSOR_MPIENV BUILD_TYPE=$ENV{BUILD_TYPE})
+	   set(EXATENSOR_BUILD BUILD_TYPE=$ENV{BUILD_TYPE})
    else()
-      set(EXATENSOR_MPIENV BUILD_TYPE=OPT)
+	   set(EXATENSOR_BUILD BUILD_TYPE=OPT)
+   endif()
+
+   # check wrapping
+   if (DEFINED ENV{WRAP})
+	   set(EXATENSOR_WRAP WRAP=$ENV{WRAP})
+   else()
+	   set(EXATENSOR_WRAP WRAP=NOWRAP)
    endif()
 
    # The supported operating systems for ExaTensor are Linux(default) and MacOSX
@@ -148,7 +155,7 @@ if(ENABLE_EXATENSOR)
    endif()
 
    # Collect everything in one string (also including the hardwires ones that need not be changed) and store this in a file (direct passing appears to be impossible within cmake)
-   set(EXATENSOR_ENV "WRAP=NOWRAP BUILD_TYPE=OPT ${EXATENSOR_TALSH} ${TALSH_COMPILERS} ${EXATENSOR_TOOLKIT} ${EXATENSOR_OS} ${EXATENSOR_GPUENV} ${EXATENSOR_MPIENV} ${EXATENSOR_BLAS}")
+   set(EXATENSOR_ENV "${EXATENSOR_WRAP} ${EXATENSOR_BUILD} ${EXATENSOR_TALSH} ${TALSH_COMPILERS} ${EXATENSOR_TOOLKIT} ${EXATENSOR_OS} ${EXATENSOR_GPUENV} ${EXATENSOR_MPIENV} ${EXATENSOR_BLAS}")
    message(STATUS "The environment variables used to build ExaTensor are collected in the file ExaTensor_ENV (can be inspected/changed if necessary)")
    file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV ${EXATENSOR_ENV})
    file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP "${EXATENSOR_ENV}  EXA_NO_BUILD=YES")
@@ -171,11 +178,13 @@ if(ENABLE_EXATENSOR)
    
    #In case of problems with the build, one may manually add ExaTENSOR dependencies here (BLAS, OpenMP, CUDA, C++):
    #set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-5/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/10.1.243/lib64 -lcublas -lcudart -lnvToolsExt -lstdc++ -lgomp)
+   # note: the same line could be added to CMAKE_EXE_LINKER_FLAGS
 
    include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/include)
 
    #Add also the tests (weird to do this here, but this whole test set up needs an overhaul).
    #disabled some tests waiting for code verification/efficiency improvement
+    dirac_test(exacorr_symmstart "cc;talsh;short" "")
     dirac_test(exacorr_talsh_memory "cc;talsh;short" "")
     dirac_test(exacorr_talsh_debug "cc;talsh;short" "")
     dirac_test(exacorr_talsh_nr_contracted "cc;talsh;short" "")
@@ -192,8 +201,8 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_mp2no "mp2no;talsh;long" "")
     dirac_test(exacorr_talsh_mp2no_restart "mp2no_re;talsh;long" "")
     #dirac_test(exacorr_talsh_lambda_cc2 "cc;talsh" "")
-    dirac_test(exacorr_talsh_mp2lap "mp2lap;talsh;long" "")
-    dirac_test(exacorr_talsh_tripl_lap "cc;talsh;long" "")
+    dirac_test(exacorr_talsh_mp2lap "mp2lap;talsh" "")
+    dirac_test(exacorr_talsh_tripl_lap "cc;talsh" "")
 
    if (ENABLE_MPI AND NOT EXATENSOR_TALSH)
         dirac_test(exacorr_exatensor_memory "cc;exatensor;short" "")

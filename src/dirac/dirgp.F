@@ -1749,6 +1749,7 @@ C
       call checkpoint_write 
      & ('/result/wavefunctions/scf/mobasis/orbitals_C1',
      &  rdata=cao(1:ndim))
+      call write_basis_fromcommon(.true.) ! write also the C1 format of the ao_basis
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       IF( IREADMO .eq. 1 )THEN
@@ -3309,13 +3310,9 @@ C
       IPRINT = IPRGEN
 C
 C     Allocate arrays
-      allocate(CMO1(N2BBASX*4))
       allocate(CMO2(N2BBASX*4))
-      allocate(EIG1(NORBT))
       allocate(EIG2(NORBT))
-      allocate(IBEIG1(NORBT))
       allocate(IBEIG2(NORBT))
-      allocate(IBUF(NTBAS(0)*2))
 C
 C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
@@ -3324,47 +3321,59 @@ C
       dfacmo%name = 'DFACMO.h5'
       dfacmo%status = -1
       call lab_read (dfacmo,
-     & '/result/wavefunctions/scf/energy',toterg)
+     &     '/result/wavefunctions/scf/energy',toterg)
       call lab_read (dfacmo,
      & '/result/wavefunctions/scf/mobasis/orbitals_C1',cmo2)
       call lab_read (dfacmo,
-     & '/result/wavefunctions/scf/mobasis/eigenvalues_C1',eig2)
+     &     '/result/wavefunctions/scf/mobasis/eigenvalues_C1',eig2)
       CALL IZERO(IBEIG2,NORBT)
-
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
      &    '* ACMOIN : Coefficients read from DFACMO'
           CALL PRQMAT(CMO2,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
       ENDIF
-C     Find correct ordering of nuclei
-      CALL NUCORD(IBUF)
+      IF(NZ.EQ.4) THEN
+         IF(NFSYM.EQ.1) THEN
+           CALL ICOPY (NORBT,0,0,IBEIG2,1) 
+           CALL WRICMO(LUCOEF,CMO2,EIG2,IBEIG2,TOTERG)
+        ELSE
+          CALL QUIT('ACMOIN: Ci symmetry not written yet !')
+        ENDIF
+      ELSE
 C
+C     Allocate arrays
+      allocate(CMO1(N2BBASX*4))
+      allocate(EIG1(NORBT))
+      allocate(IBEIG1(NORBT))
+      allocate(IBUF(NTBAS(0)*2))
+C       Find correct ordering of nuclei
+        CALL NUCORD(IBUF)
 C
-C     Get correct row ordering (NBAS) --> stored in CMO1     
-C     ==================================================
+C       Get correct row ordering (NBAS) --> stored in CMO1     
+C       ==================================================
 C
-      CALL ACMOU2(CMO1,NORBT,CMO2,NORBT,NTBAS(0),IBUF,4)
-      IF(IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(A)') 
-     &    '* ACMOIN : row-ordered coefficients'
-          CALL PRQMAT(CMO1,NTBAS(0),NORBT,
-     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
-      ENDIF
+        CALL ACMOU2(CMO1,NORBT,CMO2,NORBT,NTBAS(0),IBUF,4)
+        IF(IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(A)') 
+     &      '* ACMOIN : row-ordered coefficients'
+            CALL PRQMAT(CMO1,NTBAS(0),NORBT,
+     &                  NTBAS(0),NORBT,4,IQDEF,LUPRI)
+        ENDIF
 C
-C     Transform to symmetry-adapted (SO) basis (unsorted) -> CMO2
+C       Transform to symmetry-adapted (SO) basis (unsorted) -> CMO2
 C
-      NDIM = NORBT*4
-      CALL VTAOSO(CMO1,CMO2,NTBAS(0),NDIM,0)
-      IF(IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(A)') 
-     &    '* ACMOIN : raw SO coefficients'
-          CALL PRQMAT(CMO2,NTBAS(0),NORBT,
-     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
-      ENDIF
+        NDIM = NORBT*4
+        CALL VTAOSO(CMO1,CMO2,NTBAS(0),NDIM,0)
+        IF(IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(A)') 
+     &      '* ACMOIN : raw SO coefficients'
+            CALL PRQMAT(CMO2,NTBAS(0),NORBT,
+     &                  NTBAS(0),NORBT,4,IQDEF,LUPRI)
+        ENDIF
 C
-C     Analyze distribution of symmetry on quaternion units
-C     and prepare for compression
+C       Analyze distribution of symmetry on quaternion units
+C       and prepare for compression
 C
         CALL QSYMANA(CMO2,NTBAS(0),NORBT,NBF,IBUF)
         DO IFRP = 1,NFSYM
@@ -3377,35 +3386,37 @@ C
           ENDIF
         ENDDO
 C
-C     Compact orbitals (and orbital energies) to sorted basis -> CMO1
+C       Compact orbitals (and orbital energies) to sorted basis -> CMO1
 C
-      CALL MKQCMO(CMO2,EIG2,IBEIG2,CMO1,EIG1,IBEIG1,NBF,IBUF)
-      IF(IPRINT.GE.3) THEN
-        DO IFRP = 1,NFSYM
-          WRITE(LUPRI,'(A,A,I2)') 
-     &      '* ACMOIN : final SO coefficients.',
-     &      ' Fermion ircop ',IFRP
-          CALL PRQMAT(CMO1,NTBAS(0),NORBT,
+        CALL MKQCMO(CMO2,EIG2,IBEIG2,CMO1,EIG1,IBEIG1,NBF,IBUF)
+        IF(IPRINT.GE.3) THEN
+          DO IFRP = 1,NFSYM
+            WRITE(LUPRI,'(A,A,I2)') 
+     &        '* ACMOIN : final SO coefficients.',
+     &        ' Fermion ircop ',IFRP
+            CALL PRQMAT(CMO1,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,NZ,IPQTOQ(1,0),LUPRI)
-        ENDDO
+          ENDDO
+        ENDIF
+C
+C       tsaue:
+C       A possible source of error is that IBEIG1 may contain information
+C       about linear or boson symmetry, and the reduction of the variational
+C       space will not work in the default case. This needs some thinking; for 
+C       now I simply set IBEIG1 to zero.
+        CALL ICOPY (NORBT,0,0,IBEIG1,1) 
+        CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG)
+C       De-allocate arrays
+        deallocate(CMO1)
+        deallocate(EIG1)
+        deallocate(IBEIG1)
+        deallocate(IBUF)
       ENDIF
 C
-C     tsaue:
-C     A possible source of error is that IBEIG1 may contain information
-C     about linear or boson symmetry, and the reduction of the variational
-C     space will not work in the default case. This needs some thinking; for 
-C     now I simply set IBEIG1 to zero.
-      CALL ICOPY (NORBT,0,0,IBEIG1,1) 
-      CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG)
-C
 C     De-allocate arrays
-      deallocate(CMO1)
       deallocate(CMO2)
-      deallocate(EIG1)
       deallocate(EIG2)
-      deallocate(IBEIG1)
       deallocate(IBEIG2)
-      deallocate(IBUF)
 C
       RETURN
       END
@@ -3550,6 +3561,7 @@ C
 C
 C       Decide parity of MO
 C
+        WRITE(6,*) 'TEST..TMP1/2..',JORB,TMP(1),TMP(2)
         IF(TMP(1).GT.TMP(2)) THEN
           IBUF(JORB,1) = 1
           NBF(1) = NBF(1) + 1
@@ -4282,6 +4294,7 @@ C     NBSYM.EQ.1, implies C1 !!! Check how to handle that...
           IZOFF = ICAO
           ISOFF = 1
           DO IZ = 1,NZC1
+            WRITE(6,*) 'TEST..IZ =',IZ
             CALL WTSOAO_mod(CBUF(ISOFF),CAO(IZOFF),IFRP,
      &                  NFBAS(IFRP,0),NTBAS(0),NVEC(IFRP),IBUF,0)
             IZOFF = IZOFF + NTBAS(0)*NTOT
@@ -4369,11 +4382,13 @@ C
       IOFF = 1
       DO IFRP = 1,NFSYM
          DO IFRAG = 1,NFRAG
-            CALL IICOPY(NSTR(IFRP,0,IFRAG),WORK(KVEC(IFRP,IFRAG)),1,1,
-     &           INFOSEL(1,IOFF),2,1)
-            CALL ICOPY(NSTR(IFRP,0,IFRAG),IFRAG,0,
-     &           INFOSEL(2,IOFF),2)
-            IOFF = IOFF + NSTR(IFRP,0,IFRAG)
+           IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
+             CALL IICOPY(NSTR(IFRP,0,IFRAG),WORK(KVEC(IFRP,IFRAG)),1,1,
+     &             INFOSEL(1,IOFF),2,1)
+             CALL ICOPY(NSTR(IFRP,0,IFRAG),IFRAG,0,
+     &             INFOSEL(2,IOFF),2)
+             IOFF = IOFF + NSTR(IFRP,0,IFRAG)
+           ENDIF
          ENDDO
       ENDDO
       RETURN
@@ -4531,17 +4546,25 @@ C***********************************************************************
 
       end
 
-      subroutine write_basis_fromcommon
+      subroutine write_basis_fromcommon (C1_format)
 
 !      write basis set stored in common blocks to checkpoint
        use basis_set_datatypes, only: basis_set_info_t
        use checkpoint
-       type(basis_set_info_t) :: ao_basis
+       logical, intent(in) ::  C1_format
+       type(basis_set_info_t) :: ao_basis(4)
 
-       call get_aobasis_fromcommon (ao_basis,.false.)
-       call write_basis_tocheckpoint(ao_basis,'/input/aobasis/1') ! LC basis
-       call get_aobasis_fromcommon (ao_basis,.true.)
-       call write_basis_tocheckpoint(ao_basis,'/input/aobasis/2') ! SC basis
+       call get_aobasis_fromcommon (ao_basis(1),.false.)
+       call get_aobasis_fromcommon (ao_basis(2),.true.)
+       if (.not.C1_format) then
+          call write_basis_tocheckpoint(ao_basis(1),'/input/aobasis/1') ! LC basis
+          call write_basis_tocheckpoint(ao_basis(2),'/input/aobasis/2') ! SC basis
+       else
+          call aobasis_to_C1 (ao_basis(1),ao_basis(3))
+          call write_basis_tocheckpoint(ao_basis(3),'/input/aobasis/3') ! LC basis for use with C1 symmetry
+          call aobasis_to_C1 (ao_basis(2),ao_basis(4))
+          call write_basis_tocheckpoint(ao_basis(4),'/input/aobasis/4') ! SC basis for use with C1 symmetry
+       endif
 
       end subroutine write_basis_fromcommon
 
@@ -4644,3 +4667,137 @@ C***********************************************************************
 
        return
        end
+
+       subroutine aobasis_to_C1 (ao_basis,ao_basis_C1)
+
+!      Add symmetry-dependent atoms in the basis set
+!      uses the basis_set_info_t, but requires symmetry information from common blocks
+!      could be improved by storing symmetry info in a data_type 
+
+       use basis_set_datatypes
+       implicit none
+
+#include "mxcent.h"
+#include "nuclei.h"
+
+       type(basis_set_info_t), intent(inout) :: ao_basis, ao_basis_C1
+       integer, allocatable :: iunique_to_all(:,:)
+       real(8), allocatable :: all_coord(:,:)
+       integer :: icent, icent_next, jcent, ndep, nao_C1
+       integer :: nshells_C1, ishell, jshell, kshell, ishell_start
+       real(8) :: coord(3)
+       integer nfunctions_in_shell
+
+       allocate (iunique_to_all(2,nucdep))
+       allocate (all_coord(3,nucdep))
+       call get_all_coordinates (iunique_to_all,all_coord)
+       
+       ! count number of shells and aos for C1 symmetry
+       nshells_C1 = 0
+       nao_C1     = 0
+       do ishell = 1, ao_basis%nshells
+        icent =  ao_basis%gtos(ishell)%atom_number
+        ndep = iunique_to_all(2,icent) - iunique_to_all(1,icent) + 1
+        nshells_C1 = nshells_C1 + ndep
+        nao_C1     = nao_C1 + ndep *
+     &  nfunctions_in_shell(ao_basis%gtos(ishell)%orb_momentum,
+     &                      ao_basis%basis_angular)
+       end do
+
+       ! set global information about the basis set and allocate shell arrays
+       ao_basis_C1%basis_angular = ao_basis%basis_angular
+       ao_basis_C1%nshells       = nshells_C1
+       ao_basis_C1%nao           = nao_C1
+       allocate(ao_basis_C1%gtos(nshells_C1))
+
+       ! copy information for each shell
+       ishell_start = 1
+       jshell = 0
+       do ishell = 1, ao_basis%nshells
+        icent =  ao_basis%gtos(ishell)%atom_number
+        if (ishell < ao_basis%nshells) then
+           icent_next = ao_basis%gtos(ishell+1)%atom_number
+        else
+           icent_next = 0
+        end if
+        if (icent /= icent_next) then
+           ! last shell of this center, copy all ao information of this center
+           do jcent = iunique_to_all(1,icent), iunique_to_all(2,icent)
+              do kshell = ishell_start, ishell
+                 jshell = jshell + 1
+                 ao_basis_C1%gtos(jshell)%atom_number  = jcent
+                 ao_basis_C1%gtos(jshell)%orb_momentum = 
+     &           ao_basis%gtos(kshell)%orb_momentum
+                 ao_basis_C1%gtos(jshell)%n_primitives =
+     &           ao_basis%gtos(kshell)%n_primitives
+                 allocate (ao_basis_C1%gtos(jshell)%exponent(
+     &           ao_basis%gtos(kshell)%n_primitives))
+                 allocate (ao_basis_C1%gtos(jshell)%coefficient(
+     &           ao_basis%gtos(kshell)%n_primitives))
+                 ao_basis_C1%gtos(jshell)%exponent =
+     &           ao_basis%gtos(kshell)%exponent
+                 ao_basis_C1%gtos(jshell)%coefficient =
+     &           ao_basis%gtos(kshell)%coefficient
+                 ao_basis_C1%gtos(jshell)%coord = 
+     &           all_coord(:,jcent)
+              end do
+           end do
+           ishell_start = ishell + 1
+        end if
+       end do
+
+       end
+
+       subroutine get_all_coordinates (iunique_to_all,all_coord)
+
+!      Use the symmetry operations to generate all coordinates and make a pointer array
+!      to easily expand the list of unique atoms to the list of all atoms
+!      requires symmetry information from common blocks
+!      could be improved by storing symmetry info in a data_type 
+
+       implicit none
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+
+       integer, intent(out) :: iunique_to_all(2,*) 
+       real(8), intent(out) :: all_coord(3,*) 
+       integer :: icent, jcent
+       integer :: isymop, mulcnt
+       integer :: nfunctions_in_shell
+
+       ! icent: symmetry-unique atoms, jcent: all atoms
+       jcent = 0
+       do icent = 1, nucind
+          mulcnt = istbnu(icent)
+          iunique_to_all(1,icent) = jcent + 1 ! first of the dependent nuclei
+          do isymop = 0, maxopr
+              if (iand(isymop, mulcnt) == 0) then
+                 jcent = jcent + 1
+                 all_coord(1,jcent) = pt(iand(isymax(1,1),isymop)) 
+     &                             * cord(1,icent)
+                 all_coord(2,jcent) = pt(iand(isymax(2,1),isymop)) 
+     &                             * cord(2,icent)
+                 all_coord(3,jcent) = pt(iand(isymax(3,1),isymop)) 
+     &                             * cord(3,icent)
+              end if
+          end do
+          iunique_to_all(2,icent) = jcent ! last of the dependent nuclei
+       end do
+       end
+
+       integer function nfunctions_in_shell(l_value,basis_angular)
+         ! Computes number of Cartesian/spherical functions for a given l-value
+             integer, intent(in) :: l_value
+             integer, intent(in) :: basis_angular
+             if (basis_angular == 1) then
+!               Cartesian
+                nfunctions_in_shell = l_value * ( l_value + 1 ) / 2
+             else if (basis_angular == 2) then
+!               spherical
+                nfunctions_in_shell = 2 * (l_value - 1) + 1
+             end if
+        end function nfunctions_in_shell
+

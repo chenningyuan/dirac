@@ -41,5 +41,5 @@ STO-3G
 foo NOBASIS
 *CENTERS
 .NUCLEUS
-foo -5
+foo -5.0
 **END OF

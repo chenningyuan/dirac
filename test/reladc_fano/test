@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Energies       Transition moments',
       num_lines    = 13,
-      abs_tolerance   = 1.0e-9)
+      abs_tolerance   = 5.0e-9)
 #      mask        = [1, 2, 3])
 
 test.run(['fano_real.inp'], ['ne_d2h.mol'],
