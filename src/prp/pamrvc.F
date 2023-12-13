@@ -5225,7 +5225,6 @@ C
          CALL PRBVEC(LUPRI,SPVEC(1,1,1),NOSIM,NXOPP)
         ENDIF
       ENDIF
-      call quit('call quit from RSIGOO')
 C
       CALL RTKTIME(.FALSE.,16)
       CALL QEXIT('RSIGOO')
