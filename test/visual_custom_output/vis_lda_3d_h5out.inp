@@ -1,0 +1,83 @@
+**DIRAC
+.TITLE
+ calculate the electron density and its derivatives on a 3D regular grid and export it to an external h5 file
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**HAMILTONIAN
+.DFT
+LDA
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+10
+**VISUAL
+.REFACT
+.PRINT
+1
+.OUTPRI
+!.DENSITY
+! DFCOEF
+!.DENGRA
+! DFCOEF
+!.DENHES
+! DFCOEF
+!.ELF
+! DFCOEF
+! gosia: the grid under ".LIST" is the same as the one stored in grid2.h5 file
+! this is now left for debugging the new code against the old code (then - comment out the .REFACT above)
+.LIST 
+27
+6.76588605e-03 4.24902337e-01 7.15868641e-01
+2.60518074e-01 3.57375773e-01 4.62083841e-01
+8.64906143e-01 8.18115662e-01 4.80333594e-01
+4.69478627e-01 2.59496335e-01 9.54375316e-01
+5.87989393e-01 1.75654794e-01 2.39331230e-01
+4.85692857e-01 2.02483375e-01 6.91409530e-01
+7.22429734e-01 7.95048332e-01 7.58606717e-01
+6.12533700e-01 8.30515788e-01 1.70355039e-01
+1.28240046e-01 9.24721728e-01 5.35929531e-01
+3.10193139e-01 5.35633410e-01 7.98299580e-01
+5.00775429e-01 7.90312874e-01 7.14011423e-01
+4.50152916e-01 1.29131995e-01 2.21419736e-01
+6.15302574e-01 1.11344372e-01 7.89866450e-01
+9.57295734e-01 3.64829931e-01 9.09649606e-01
+9.60008142e-01 4.73087238e-01 2.36656120e-01
+1.60214658e-01 6.46043259e-01 6.20521411e-01
+5.75713335e-01 3.49934787e-01 5.97888260e-01
+1.00938434e-01 8.69771417e-01 9.94327750e-01
+5.71050787e-01 3.28187135e-01 4.34289561e-01
+6.18776930e-01 6.88940035e-01 3.90733652e-01
+3.63904839e-01 5.72311358e-01 7.89775964e-01
+6.63039526e-01 9.05748473e-01 4.82639867e-01
+7.20261855e-01 1.59108989e-01 7.03395211e-01
+2.14322338e-01 5.25989253e-01 7.88909762e-01
+8.19376187e-01 7.25696339e-01 6.05258743e-01
+1.05427324e-01 1.64186075e-02 5.43015084e-01
+2.85057151e-01 6.76376272e-01 9.96919008e-01
+!.3D_IMP
+!grid_file
+!au
+!.PLTTXT
+!3d propname scalar_field_3d.txt e8.2
+! next in line:
+! 1. test this
+! 2. add .GRIDPOINTS if you want to work on a list of points from this input
+.GRIDS    
+1
+id=1 input=import file_inp=grid2.h5
+.GRIDFUNCTIONS    
+1
+name=espe id_grid=1 purpose=visualization export=yes file_out=espe.h5
+!1
+!name=espe id_grid=1 purpose=visualization export=yes file_out=espe.h5
+!7
+!name=density id_grid=1 purpose=visualization export=yes file_out=density.h5
+!name=density_gradient id_grid=1 purpose=visualization export=yes file_out=density_gradient.h5
+!name=density_hessian id_grid=1 purpose=visualization export=yes file_out=density_hessian.h5
+!name=ed_laplacian id_grid=1 purpose=visualization export=yes file_out=ed_laplacian.h5
+!name=ed_sign_lambda2 id_grid=1 purpose=visualization export=yes file_out=ed_sign_lambda2.h5
+!name=rdg id_grid=1 purpose=visualization export=yes file_out=rdg.h5
+!name=gamma5 id_grid=1 purpose=visualization export=yes file_out=gamma5.h5
+*END OF

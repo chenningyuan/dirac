@@ -70,6 +70,7 @@ module visual_datatypes
     procedure, pass, public:: get_dmat_sector
     procedure, pass, public:: erase   => erase_dmat
     procedure, pass, public:: display => display_dmat
+    procedure, pass, public:: reshape_to_q => reshape_dmat_to_q
   end type dmat_t
 
   type:: rs_input_t
@@ -100,11 +101,11 @@ module visual_datatypes
   end type rs_label_t
 
   type:: grid_t
-    ! gosia todo:
-    ! - store units; now this is messed up: 
-    !   molecule data (from DIRAC CHECKPOINT) 
-    !   and all that the user can provide in input (margin and spacing) is originally in Angstroms, 
-    !   but then everything is converted to a.u. (in grid_input_cfg) and stored in a.u.
+    ! todo fixme
+    ! - also store units; now be careful:
+    !   molecule data (from DIRAC CHECKPOINT) and all that the user can provide 
+    !   in input (margin and spacing) is originally in Angstroms;
+    !   then, everything is converted to a.u. (in grid_input_cfg) and stored in a.u.
     private
     integer, public:: id = 0
     integer, public:: ndim = 0                              ! grid dimensionality (0= a single vertex, 1=line, 2=2D, 3=3D)
@@ -163,9 +164,8 @@ module visual_datatypes
   end type grid_function_t
 
 !  type, extends(grid_function_t):: grid_function_dirac_t
-!!   this type allows to compose a property density 
+!!   WIP: the idea is to allow to compose a property density 
 !!   in a similar way as is done with 1-el operators in DIRAC
-!!   see: 
 !    character(len=:), allocatable:: operator_type
 !    character(len=:), allocatable:: operator_label
 !    real(8):: factor
@@ -356,6 +356,21 @@ contains
   end subroutine
 
 
+  subroutine reshape_dmat_to_q(self)
+    class(dmat_t), intent(inout):: self
+    integer :: ndim, nz
+
+    if (.not. self%associated_elements() .and.&
+        .not. self%associated_elements_q()) return
+
+    ndim = self%mat_dim
+    nz   = self%mat_nz
+
+    self%elements_q  = reshape(self%elements,(/ndim,ndim,nz/))
+
+  end subroutine
+
+
   subroutine allocate_cmo_all(self)
     class(cmo_t), intent(inout):: self
     integer :: n, m
@@ -415,14 +430,27 @@ contains
     self%elements_q(1:self%mat_dim,1:self%mat_dim,1:self%mat_nz) = 0.0d0
   end subroutine
 
-  subroutine scale_elements(self, f)
+  subroutine scale_elements(self, f, range_start, range_end)
     class(dmat_t), intent(inout):: self
     real(8), intent(in):: f
-    integer:: s1,s2,e1,e2
+    integer, intent(in), optional:: range_start, range_end
+    integer:: s,e
 
     if (.not. self%associated_elements()) return
 
-    self%elements = f * self%elements
+    if (present(range_start)) then
+      s = range_start
+    else
+      s = 1
+    end if
+
+    if (present(range_end)) then
+      e = range_end
+    else
+      e = size(self%elements)
+    end if
+
+    self%elements(s:e) = f * self%elements(s:e)
   end subroutine
 
 

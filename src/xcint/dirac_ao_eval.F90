@@ -135,6 +135,8 @@ contains
       real(8)                :: sz
 !     --------------------------------------------------------------------------
 
+      ao(1:block_length,1:nr_ao_slices*nr_ao_cartesian) = 0.0d0
+      buffer(1:block_length,1:nr_ao_slices*nr_ao_cartesian) = 0.0d0
       i = 1
       do ishell = 1, nr_shells
          do isym = 0, nr_boson_ireps - 1

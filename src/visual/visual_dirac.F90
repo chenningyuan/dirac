@@ -70,7 +70,10 @@ contains
         dmat_ao%mat_nz  = nz
         call dmat_ao%alloc()
         call dmat_transform_mo2ao(cmo, dmat_mo_from_occupation, dmat_ao)
+        !call dmat_ao%scale_elements(2.0d0,range_start=dmat_ao%mat_dim*dmat_ao%mat_dim+1,range_end=4*dmat_ao%mat_dim*dmat_ao%mat_dim)
         call dmat_ao%scale_elements(2.0d0)
+        call dmat_ao%alloc_q()
+        call dmat_ao%reshape_to_q()
       end if
 
       deallocate(occupation)
@@ -366,10 +369,10 @@ contains
     if (.not.mpi_is_master()) then
       call dmat%alloc()
 !gosia fixme
-      !call dmat%alloc_q()
+      call dmat%alloc_q()
     end if
     call interface_mpi_bcast(dmat%elements,n,irank_master,global_communicator)
-    !call interface_mpi_bcast(dmat%elements_q,n,irank_master,global_communicator)
+    call interface_mpi_bcast(dmat%elements_q,n,irank_master,global_communicator)
 
   end subroutine
 

@@ -125,6 +125,8 @@ contains
 
     walltime = visual_walltime()
 
+!temp fixme
+    visual_cfg_london = .true.
 
 #ifdef VAR_MPI
     ! gosia, spring 2023
@@ -564,12 +566,38 @@ contains
 !     write (lupri,'(/A,I2)')," * Opening checkpoint file for real-space data (VISUAL) "
 !     call checkpoint_rs_open
 ! 
+      if (mpi_is_master()) then
+      do iz=1,4
+        do i=1,dmat_0%mat_dim
+          do j=1,dmat_0%mat_dim
+            off_ij = j + (i-1)*dmat_0%mat_dim + (iz-1)*dmat_0%mat_dim*dmat_0%mat_dim
+            write(*, '(a,3i4,es16.8e2)') 'debug dmat_0 matrix: ', j, i, iz, dmat_0%elements(off_ij)
+          end do
+        end do
+      end do
+      end if
       call visual_driver_refactored(mol,mo_data,dmat_0)
 
 !     call checkpoint_rs_close
       call dmat_0%erase()
 
     else !if (visual_cfg_global_refactor) then
+
+     write(*,'(a,4i4)') 'nrow, irep of dmats, legacy: ', D(imat)%nrow, D(imat)%irep, D_0%nrow, D_0%irep 
+      do iz=1,4
+        do i=1,ntbas(0)
+          do j=1,ntbas(0)
+            off_ij = j + (i-1)*ntbas(0) + (iz-1)*ntbas(0)*ntbas(0)
+            !write(*, '(a,3i4,es16.8e2)') 'debug dmat_0 matrix legacy: ', j, i, iz, D(1)%elms(off_ij)
+            write(*, '(a,3i4,es16.8e2)') 'debug dmat_0 matrix legacy: ', j, i, iz, D_0%elms(off_ij)
+          end do
+        end do
+      end do
+      !write(*,*) 'size of dmats, legacy: ', size(D(1)%elms), size(D_0%elms)
+      !do i=1,size(D_0%elms)
+      !  write(*, '(a,i4,es16.8e2)') 'debug dmat_0 matrix legacy: ', i, D_0%elms(i)
+      !end do
+
       call visual_driver(visual_cfg_nr_dmat, &
                          D,                  &
                          D_0,                &
@@ -624,7 +652,9 @@ contains
     real(8), allocatable              :: ao(:,:)
     real(8), allocatable              :: buffer(:,:)
     type(grid_t):: grid
+    type(grid_t):: this_grid
     type(grid_t), allocatable:: grids(:)
+    type(grid_function_t):: this_grid_function
     type(grid_function_t), allocatable:: grid_functions(:)
     real(8), allocatable:: grid_function_values(:,:)
     integer:: ig, igf
@@ -637,6 +667,19 @@ contains
 ! ------------------------------------------------------------------------------
 
     if (mpi_is_master()) call rs_input%display
+
+      write(*,'(a,i4,2es16.8e2)') 'D_0 before get_s NEW:'
+      if (associated(dmat_0%elements_q)) then
+        call prqmat(dmat_0%elements_q, &
+                    dmat_0%mat_dim, &
+                    dmat_0%mat_dim, &
+                    dmat_0%mat_dim, &
+                    dmat_0%mat_dim, &
+                    dmat_0%mat_nz,   &
+                    ipqtoq(1, 0), &
+                    lupri)
+      end if
+
 
     do ig = 1, rs_input%nr_grids
 
@@ -786,7 +829,10 @@ contains
           rs_input%grid_functions(igf)%values = 0.0d0
 
           write(*, *) 'AFTER WORK_ON_GRID'
-          write(*, *) 'values: ', ((grid_function_values(i,j),j=1,n_this_proc),i=1,gf_ndim), get_my_rank()
+          !write(*, *) 'values: ', ((grid_function_values(i,j),j=1,n_this_proc),i=1,gf_ndim), get_my_rank()
+          do j = 1, n_this_proc
+            write(*, '(a,i4,3es16.8e2)') 'values: ', j, (grid_function_values(i,j),i=1,gf_ndim)
+          end do
  
           if (is_parallel()) then
             do idim_gf = 1, gf_ndim
@@ -891,10 +937,12 @@ contains
     else
       do ipoint = 1, nr_points
       
+        !ao(1:nr_ao_slices*nr_ao_cartesian*max_batch_length) = 0.0d0
+        !buffer(1:nr_ao_slices*nr_ao_cartesian*max_batch_length) = 0.0d0
         call get_ao(1,                     &
-                    grid_points(1, ipoint),&
-                    grid_points(2, ipoint),&
-                    grid_points(3, ipoint),&
+                    (/grid_points(1, ipoint)/),&
+                    (/grid_points(2, ipoint)/),&
+                    (/grid_points(3, ipoint)/),&
                     ao,                    &
                     buffer)
       
@@ -1002,6 +1050,27 @@ contains
 
       allocate(atom_xyz(4, nucdep))
 
+      write(*,'(a,i4,2es16.8e2)') 'D_0 before get_s OLD:'
+      !if (associated(D_0%elms)) then
+      !  call prqmat(D_0%elms, &
+      !              D_0%nrow, &
+      !              D_0%ncol, &
+      !              D_0%nrow, &
+      !              D_0%ncol, &
+      !              D_0%nz,   &
+      !              ipqtoq(1, 0), &
+      !              lupri)
+      !end if
+      if (associated(D(1)%elms)) then
+        call prqmat(D(1)%elms, &
+                    D(1)%nrow, &
+                    D(1)%ncol, &
+                    D(1)%nrow, &
+                    D(1)%ncol, &
+                    D(1)%nz,   &
+                    ipqtoq(1, 0), &
+                    lupri)
+      end if
 
 !     prepare input data (incoming grids and grid functions)
 !     ======================================================

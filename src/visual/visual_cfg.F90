@@ -527,11 +527,11 @@ contains
   end subroutine grid_function_input_cfg
 
 
+! ------------------------------------------------------------------------------
   subroutine verify_grid_function_predefined(grid_function)
-!   ----------------------------------------------------------------------------
     class(grid_function_t), intent(inout):: grid_function
-    ! gosia: now, grid_function%name also defines a label on HDF5
-!   ----------------------------------------------------------------------------
+!
+!   gosia: grid_function%name also defines a label on HDF5
 
     select case (grid_function%name)
       case ('density', &
