@@ -27,6 +27,8 @@ set(ExternalProjectCMakeArgs
     -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
     )
 
+add_dependencies(gen1int_interface gen1int)
+
 # added -DPARENT_INCLUDE_DIR line above;
 # we need to add the module directory to the include directories explicitly,
 # otherwise the IBM xlf compiler will not find the .mod files. /hjaaj Aug 2017

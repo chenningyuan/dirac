@@ -73,7 +73,6 @@ if(ENABLE_GEN1INT)
 endif()
 
 if(ENABLE_PELIB)
-    add_dependencies(gen1int_interface gen1int)
     add_dependencies(pelib gen1int_interface)
     add_dependencies(dirac pelib)
 endif()
