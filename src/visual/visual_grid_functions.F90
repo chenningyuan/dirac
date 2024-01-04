@@ -1,15 +1,15 @@
 module visual_grid_functions
 
 
-   use visual_io
-   use visual_cfg
-   use visual_utils
-   use visual_datatypes
+  use visual_io
+  use visual_cfg
+  use visual_utils
+  use visual_datatypes
 
-   implicit none
+  implicit none
 
-   public get_grid_function_info
-   public get_grid_function_values
+  public get_grid_function_info
+  public get_grid_function_values
 
 contains
 
@@ -17,7 +17,6 @@ contains
   subroutine get_grid_function_info(grid_function_id, grid_function)
     integer, intent(in):: grid_function_id
     type(grid_function_t), intent(inout):: grid_function
-! ------------------------------------------------------------------------------
 
     if (grid_function%input  ==  1) then
       ! gosia todo:
@@ -42,7 +41,6 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine get_grid_function_values(grid_function)
     type(grid_function_t), intent(inout):: grid_function
-! ------------------------------------------------------------------------------
 
     if (.not. grid_function%allocated_values()) return
 

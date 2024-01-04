@@ -363,24 +363,21 @@ contains
 
       case ('s')
 !       spin density: \psi^\dag \Sigma \psi
+!       FIXME!
         v2 = 0.0d0
         buffer(1:nr_ao_slices*nr_ao_cartesian) = 0.0d0
-    !write(*,'(a,2i4,3es16.8e2)') 'before get_s NEW dims: ', mat_irep, mat_dim,v2(1),v2(2),v2(3)
-     !write(*,'(a,3es16.8e2)') 'before get_s NEW: ',ao(1), ao(20), ao(147)
+        !write(*,'(a,2i4,3es16.8e2)') 'before get_s NEW dims: ', mat_irep, mat_dim,v2(1),v2(2),v2(3)
+        !write(*,'(a,3es16.8e2)') 'before get_s NEW: ',ao(1), ao(20), ao(147)
         call get_s(v2,       &
                    mat_irep, &
                    mat_dim,  &
-                   !dmat_0%elements, &
-                   !dmat_0%elements(1+mat_dim*mat_dim:mat_dim*mat_dim*4),   &
                    dmat_0%elements,&
                    buffer,   &
                    ao,r=(/px, py, pz/))
         grid_function_values(1:1,ipoint:ipoint) = v2(1)
         grid_function_values(2:2,ipoint:ipoint) = v2(2)
         grid_function_values(3:3,ipoint:ipoint) = v2(3)
-        !write(*,'(a,i4,3es16.8e2)') 'after get_s NEW: ', ipoint, v2(1), v2(2), v2(3)
-        write(*,'(a,3es16.8e2)') 'after get_s NEW: ', v2(1), v2(2), v2(3)
-
+        !write(*,'(a,3es16.8e2)') 'after get_s NEW: ', v2(1), v2(2), v2(3)
 
     end select
 
@@ -760,11 +757,10 @@ contains
 
 !           spin density: \psi^\dag \Sigma \psi
             if (visual_cfg_property(imat) == iq_s) then
-        !write(*,'(a,2i4,3es16.8e2)') 'before get_s OLD dims: ',D_0%irep,D_0%nrow,v(1),v(2),v(3)
-        v  = 0.0d0
-        buffer(1:nr_ao_slices*nr_ao_cartesian) = 0.0d0
-     !write(*,'(a,2i4,3es16.8e2)') 'before get_s OLD dims: ',D(imat)%irep,D(imat)%nrow,v(1),v(2),v(3)
-     !write(*,'(a,3es16.8e2)') 'before get_s OLD: ',ao(1), ao(20), ao(147)
+              v  = 0.0d0
+              buffer(1:nr_ao_slices*nr_ao_cartesian) = 0.0d0
+             !write(*,'(a,2i4,3es16.8e2)') 'before get_s OLD dims: ',D(imat)%irep,D(imat)%nrow,v(1),v(2),v(3)
+             !write(*,'(a,3es16.8e2)') 'before get_s OLD: ',ao(1), ao(20), ao(147)
                call get_s(v,            &
                           D(imat)%irep, &
                           D(imat)%nrow, &
@@ -775,8 +771,7 @@ contains
                           buffer,       &
                           ao,r=(/px, py, pz/))
                result(1:3) = result(1:3) + v(1:3)
-               !write(*,'(a,i4,3es16.8e2)') 'after get_s OLD: ', ipoint, v(1), v(2), v(3)
-               write(*,'(a,3es16.8e2)') 'after get_s OLD: ', v(1), v(2), v(3)
+               !write(*,'(a,3es16.8e2)') 'after get_s OLD: ', v(1), v(2), v(3)
             end if
 
 !           divergence or curl of spin density

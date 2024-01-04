@@ -55,6 +55,9 @@ module visual_datatypes
   end type cmo_t
 
   type dmat_t
+!   gosia fixme: 
+!   this is a temporary solution for handling density matrices;
+!   also see https://gitlab.com/dirac/dirac-private/-/issues/550
     private
     integer, public:: mat_dim = 0
     integer, public:: mat_nz = 0

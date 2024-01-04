@@ -80,12 +80,7 @@ contains
     type(cmo_t):: mo_data
     real(8) :: walltime
     logical :: legacy_prep
-
-!   gosia: this is to be replaced once we have a more generic way to handle density matrices
     type(dmat_t):: dmat_0
-    !real(8), pointer             :: dmat_0(:, :, :)
-    !real(8), allocatable, target :: dmat_0_container(:, :, :)
-    !real(8), allocatable, target :: dmat_0_temp(:, :, :)
 
 
 
@@ -109,7 +104,7 @@ contains
     integer              :: ioff, imat, iq, iz, m, ivector
     integer, parameter   :: file_unit = 137
 
-    logical              :: debug_me = .false.
+    logical              :: debug_print
     logical              :: krmcscf_found
     logical              :: natorb_found
     logical, external    :: fndlab
@@ -125,8 +120,9 @@ contains
 
     walltime = visual_walltime()
 
-!temp fixme
     visual_cfg_london = .true.
+
+    debug_print = .true.
 
 #ifdef VAR_MPI
     ! gosia, spring 2023
@@ -138,219 +134,223 @@ contains
     ! in the latter case - we only want to wake up nodes, 
     ! pass initial information, and leave the rest to master - this is handled with "launch+only" flag
     call visual_initialize_and_sync_nodes(launch_only)
-    print *, 'VISUAL parallel? ', is_parallel()
-    print *, 'size of communicator: ', mpi_get_nr_proc()
-    print *, 'rank of the process: ', get_my_rank()
+    if (debug_print) then
+      print *, 'VISUAL parallel? ', is_parallel()
+      print *, 'size of communicator: ', mpi_get_nr_proc()
+      print *, 'rank of the process: ', get_my_rank()
+    end if
 #endif
 
-    if (visual_cfg_global_refactor) visual_cfg_nr_dmat = 1
-
-    if (mpi_is_master()) then !temp
-    max_ao_g_order = 0
-    do imat = 1, visual_cfg_nr_dmat
-       if (                                                        &
-           (visual_cfg_property(imat) == iq_elf)              .or. &
-           (visual_cfg_property(imat) == iq_kin)              .or. &
-           (visual_cfg_property(imat) == iq_kin_ls)           .or. &
-           (visual_cfg_property(imat) == iq_kin_sl)           .or. &
-           (visual_cfg_property(imat) == iq_kin_tau)          .or. &
-           (visual_cfg_property(imat) == iq_divs)             .or. &
-           (visual_cfg_property(imat) == iq_rots)             .or. &
-           (visual_cfg_property(imat) == iq_divj)             .or. &
-           (visual_cfg_property(imat) == iq_rotj)             .or. &
-           (visual_cfg_property(imat) == iq_gradj)                 &
-          ) then
-          if (max_ao_g_order < 1) then
-             max_ao_g_order = 1
-          end if
-       end if
-       if (                                                       &
-           (visual_cfg_property(imat) == iq_kin_lap)          .or. &
-           (visual_cfg_property(imat) == iq_kin_nr)               &
-          ) then
-          if (max_ao_g_order < 2) then
-             max_ao_g_order = 2
-          end if
-       end if
-       if (levyle) then
-!         here we obtain the paramagnetic part of the current density
-!         via the nr paramagnetic current density expression
-!         for this we need the cartesian gradient
-          if (                                             &
-              (visual_cfg_property(imat) == iq_j)     .or. &
-              (visual_cfg_property(imat) == iq_ndipx) .or. &
-              (visual_cfg_property(imat) == iq_ndipy) .or. &
-              (visual_cfg_property(imat) == iq_ndipz) .or. &
-              (visual_cfg_property(imat) == iq_bdipx) .or. &
-              (visual_cfg_property(imat) == iq_bdipy) .or. &
-              (visual_cfg_property(imat) == iq_bdipz)      &
-             ) then
-             if (max_ao_g_order < 1) then
-                max_ao_g_order = 1
-             end if
-          end if
-       end if
-    end do
-
-    max_ao_m_order = 0
-    if (visual_cfg_london) then
-       max_ao_m_order = 1
+    if (visual_cfg_global_refactor) then
+      ! temporary, until legacy code is cleaned
+      visual_cfg_nr_dmat = 1
     end if
 
-    write(LUPRI, '(/,2x, a)') '*** Visualisation module ***'
-    call verify_input_keywords()
+    if (mpi_is_master()) then
+      ! old code only sequential
+      max_ao_g_order = 0
+      do imat = 1, visual_cfg_nr_dmat
+         if (                                                        &
+             (visual_cfg_property(imat) == iq_elf)              .or. &
+             (visual_cfg_property(imat) == iq_kin)              .or. &
+             (visual_cfg_property(imat) == iq_kin_ls)           .or. &
+             (visual_cfg_property(imat) == iq_kin_sl)           .or. &
+             (visual_cfg_property(imat) == iq_kin_tau)          .or. &
+             (visual_cfg_property(imat) == iq_divs)             .or. &
+             (visual_cfg_property(imat) == iq_rots)             .or. &
+             (visual_cfg_property(imat) == iq_divj)             .or. &
+             (visual_cfg_property(imat) == iq_rotj)             .or. &
+             (visual_cfg_property(imat) == iq_gradj)                 &
+            ) then
+            if (max_ao_g_order < 1) then
+               max_ao_g_order = 1
+            end if
+         end if
+         if (                                                       &
+             (visual_cfg_property(imat) == iq_kin_lap)          .or. &
+             (visual_cfg_property(imat) == iq_kin_nr)               &
+            ) then
+            if (max_ao_g_order < 2) then
+               max_ao_g_order = 2
+            end if
+         end if
+         if (levyle) then
+!           here we obtain the paramagnetic part of the current density
+!           via the nr paramagnetic current density expression
+!           for this we need the cartesian gradient
+            if (                                             &
+                (visual_cfg_property(imat) == iq_j)     .or. &
+                (visual_cfg_property(imat) == iq_ndipx) .or. &
+                (visual_cfg_property(imat) == iq_ndipy) .or. &
+                (visual_cfg_property(imat) == iq_ndipz) .or. &
+                (visual_cfg_property(imat) == iq_bdipx) .or. &
+                (visual_cfg_property(imat) == iq_bdipy) .or. &
+                (visual_cfg_property(imat) == iq_bdipz)      &
+               ) then
+               if (max_ao_g_order < 1) then
+                  max_ao_g_order = 1
+               end if
+            end if
+         end if
+      end do
 
-!   get coefficients
+      max_ao_m_order = 0
+      if (visual_cfg_london) then
+         max_ao_m_order = 1
+      end if
+      
+      write(LUPRI, '(/,2x, a)') '*** Visualisation module ***'
+      call verify_input_keywords()
+      
+!     get coefficients
+      
+      allocate(cmo_from_file(n2bbasxq))
+      cmo_from_file = 0.0d0
+      allocate(occ_from_file(norbt))
+      occ_from_file = 0.0d0
+      
+      inquire(file='KRMCSCF', exist = krmcscf_found)
 
-    allocate(cmo_from_file(n2bbasxq))
-    cmo_from_file = 0.0d0
-    allocate(occ_from_file(norbt))
-    occ_from_file = 0.0d0
+      if (krmcscf_found) then
+!        read from KRMCSCF
+      
+         call opnfil(file_unit, 'KRMCSCF', 'OLD', 'visual.F90')
+         rewind(file_unit)
+      
+         natorb_found = .FALSE.
+         natorb_found = fndlab('MCCINATO', file_unit)
+         rewind(file_unit)
+         jrdmo = -1
+      
+         IF (natorb_found) THEN
+            call rreadmo(cmo_from_file, jrdmo, 4, file_unit)
+            call reakrmc(file_unit, 'MCNATOCC', occ_from_file, norbt)
+            if (jrdmo == 0) then
+               print *, 'orbitals read from label mccinato on file krmcscf'
+            end if
+         else
+            call rreadmo(cmo_from_file, jrdmo, 1, file_unit)
+            if (jrdmo == 0) then
+               print *, 'orbitals read from label neworb on file krmcscf'
+            end if
+         end if
+      
+         close(file_unit)
+      else
+!        read from CHECKPOINT FILE
+      
+         call alloc(eigenvalues, norbt)
+         eigenvalues = 0.0d0
+         call reacmo_new(cmo = cmo_from_file, eig = eigenvalues, toterg = energy)
+      
+         write(LUPRI, '(2x, a)') 'Visualisation : CHECKPOINT file read'
+      
+!  fixme verify whether this is really needed
+!        when i introduced it i needed it so that certain arrays were properly set
+!        when restarting from DFCOEF
+         call fndocc(eigenvalues, .true.)
+         call dealloc(eigenvalues)
+      end if
 
-    inquire(file='KRMCSCF', exist = krmcscf_found)
-
-    if (krmcscf_found) then
-!      read from KRMCSCF
-
-       call opnfil(file_unit, 'KRMCSCF', 'OLD', 'visual.F90')
-       rewind(file_unit)
-
-       natorb_found = .FALSE.
-       natorb_found = fndlab('MCCINATO', file_unit)
-       rewind(file_unit)
-       jrdmo = -1
-
-       IF (natorb_found) THEN
-          call rreadmo(cmo_from_file, jrdmo, 4, file_unit)
-          call reakrmc(file_unit, 'MCNATOCC', occ_from_file, norbt)
-          if (jrdmo == 0) then
-             print *, 'orbitals read from label mccinato on file krmcscf'
-          end if
-       else
-          call rreadmo(cmo_from_file, jrdmo, 1, file_unit)
-          if (jrdmo == 0) then
-             print *, 'orbitals read from label neworb on file krmcscf'
-          end if
-       end if
-
-       close(file_unit)
-    else
-!      read from CHECKPOINT FILE
-
-       call alloc(eigenvalues, norbt)
-       eigenvalues = 0.0d0
-       call reacmo_new(cmo = cmo_from_file, eig = eigenvalues, toterg = energy)
-
-       write(LUPRI, '(2x, a)') 'Visualisation : CHECKPOINT file read'
-
-!fixme verify whether this is really needed
-!      when i introduced it i needed it so that certain arrays were properly set
-!      when restarting from DFCOEF
-       call fndocc(eigenvalues, .true.)
-       call dealloc(eigenvalues)
-    end if
-
-!   get orbital string
-    call alloc(occupation, norbt)
-    call setup_orbital_string(occupation)
+!     get orbital string
+      call alloc(occupation, norbt)
+      call setup_orbital_string(occupation)
 
 !warning: when reading from KRMCSCF many assumptions below are either incorrect
 !         or become a hack (occupation 2, only inactive and secondary)
 !         it's ok if you plot a single orbital but not ok for many things
 !         need to add careful checks
 
-    call get_c(C,   cmo_from_file, i = 1.0d0, s = 1.0d0, g = 1.0d0, u = 1.0d0)
-    call get_c(Cig, cmo_from_file, i = 1.0d0, s = 0.0d0, g = 1.0d0, u = 0.0d0)
-    call get_c(Csg, cmo_from_file, i = 0.0d0, s = 1.0d0, g = 1.0d0, u = 0.0d0)
-    if (debug_me) then
-       call print_mat(C,   label='debug C')
-       call print_mat(Cig, label='debug Cig')
-       call print_mat(Csg, label='debug Csg')
-    end if
+      call get_c(C,   cmo_from_file, i = 1.0d0, s = 1.0d0, g = 1.0d0, u = 1.0d0)
+      call get_c(Cig, cmo_from_file, i = 1.0d0, s = 0.0d0, g = 1.0d0, u = 0.0d0)
+      call get_c(Csg, cmo_from_file, i = 0.0d0, s = 1.0d0, g = 1.0d0, u = 0.0d0)
+      if (debug_print) then
+         call print_mat(C,   label='debug C')
+         call print_mat(Cig, label='debug Cig')
+         call print_mat(Csg, label='debug Csg')
+      end if
+      
+      if (nfsym == 2) then
+         call get_c(Ciu, cmo_from_file, i = 1.0d0, s = 0.0d0, g = 0.0d0, u = 1.0d0)
+         call get_c(Csu, cmo_from_file, i = 0.0d0, s = 1.0d0, g = 0.0d0, u = 1.0d0)
+         if (debug_print) then
+            call print_mat(Ciu, label='debug Ciu')
+            call print_mat(Csu, label='debug Csu')
+         end if
+      end if
+      deallocate(cmo_from_file)
+      deallocate(occ_from_file)
 
-    if (nfsym == 2) then
-       call get_c(Ciu, cmo_from_file, i = 1.0d0, s = 0.0d0, g = 0.0d0, u = 1.0d0)
-       call get_c(Csu, cmo_from_file, i = 0.0d0, s = 1.0d0, g = 0.0d0, u = 1.0d0)
-       if (debug_me) then
-          call print_mat(Ciu, label='debug Ciu')
-          call print_mat(Csu, label='debug Csu')
-       end if
-    end if
-    deallocate(cmo_from_file)
-    deallocate(occ_from_file)
-
-    call init_mat(D_mo, norbt, norbt)
-
-    if (visual_cfg_london) then
-
-       D_mo%elms = 0.0d0
-       do m = 1, norbt
-          D_mo%elms((m-1)*norbt+m) = occupation(m)
-       end do
-       D(imat) = C*(D_mo*dag(C))
-
-       D_0 = C*(D_mo*dag(C))
-       D_0 = 2.0d0*D_0
-
-       if (.not. visual_cfg_london_skip_ro) then
-          ! get T^B matrix in MO basis
-
-          call init_mat(D_con_mo, norbt, norbt)
-          D_con_mo%elms = 0.0d0
-
-          if (visual_cfg_london_none) then
-
-             call init_mat(D_con_mo_ai, norbt, norbt)
-             D_con_mo_ai%elms = 0.0d0
-
-             call get_d_con_mo(D_con_mo, occupation, &
-                               D_con_mo_ai = D_con_mo_ai)
-
-             call copy_matrix_sym(D_con_mo_ai, D_con_mo)
-
-          else
-
-             call get_d_con_mo(D_con_mo, occupation)
-
-          end if
+      call init_mat(D_mo, norbt, norbt)
+      
+      if (visual_cfg_london) then
+      
+         D_mo%elms = 0.0d0
+         do m = 1, norbt
+            D_mo%elms((m-1)*norbt+m) = occupation(m)
+         end do
+         D(imat) = C*(D_mo*dag(C))
+      
+         D_0 = C*(D_mo*dag(C))
+         D_0 = 2.0d0*D_0
+      
+         if (.not. visual_cfg_london_skip_ro) then
+            ! get T^B matrix in MO basis
+      
+            call init_mat(D_con_mo, norbt, norbt)
+            D_con_mo%elms = 0.0d0
+      
+            if (visual_cfg_london_none) then
+      
+               call init_mat(D_con_mo_ai, norbt, norbt)
+               D_con_mo_ai%elms = 0.0d0
+      
+               call get_d_con_mo(D_con_mo, occupation, &
+                                 D_con_mo_ai = D_con_mo_ai)
+      
+               call copy_matrix_sym(D_con_mo_ai, D_con_mo)
+      
+            else
+      
+               call get_d_con_mo(D_con_mo, occupation)
+      
+            end if
 
 !gosia:
 ! comparison with getmdm shows that this factor is not needed for 4cDC Hamiltonian; yet this works...
-          if (.not. levyle) then
-!            radovan: magic factor for levyle
-!                     need to find the reason for it
-             D_con_mo = 0.5d0*D_con_mo
-             if (visual_cfg_london_none) D_con_mo_ai = 0.5d0*D_con_mo_ai
-          end if
+            if (.not. levyle) then
+!             radovan: magic factor for levyle
+!                      need to find the reason for it
+              D_con_mo = 0.5d0*D_con_mo
+              if (visual_cfg_london_none) D_con_mo_ai = 0.5d0*D_con_mo_ai
+            end if
 
-!         build 'modified' (by T^B) density matrices:
+!           build 'modified' (by T^B) density matrices:
 
-          call init_mat(D_con, norbt, norbt)
-          D_con%elms = 0.0d0
-          call copy_matrix_sym(D_con, D_con_mo)
+            call init_mat(D_con, norbt, norbt)
+            D_con%elms = 0.0d0
+            call copy_matrix_sym(D_con, D_con_mo)
 
           if (nfsym == 2) then
-             call get_mdm_con(D_con,                     &
-                              D_con_mo,                  &
-                              C, Cig, Csg,               &
-                              Ciu = Ciu,                 &
-                              Csu = Csu)
+            call get_mdm_con(D_con,                     &
+                             D_con_mo,                  &
+                             C, Cig, Csg,               &
+                             Ciu = Ciu,                 &
+                             Csu = Csu)
           else
-             call get_mdm_con(D_con,                     &
-                              D_con_mo,                  &
-                              C, Cig, Csg)
+            call get_mdm_con(D_con,                     &
+                             D_con_mo,                  &
+                             C, Cig, Csg)
           end if
-       end if
+        end if
+      end if !if (visual_cfg_london) then
 
-    end if
+      allocate(matrix_is_unperturbed(visual_cfg_nr_dmat))
+      matrix_is_unperturbed = .false.
 
-    allocate(matrix_is_unperturbed(visual_cfg_nr_dmat))
-    matrix_is_unperturbed = .false.
+      do imat = 1, visual_cfg_nr_dmat
 
-    do imat = 1, visual_cfg_nr_dmat
-
-       if (visual_cfg_global_refactor) then
-!FIXME
+        if (visual_cfg_global_refactor) then
 
           D_mo%elms = 0.0d0
           do m = 1, norbt
@@ -362,180 +362,176 @@ contains
           D_mo%irep   = 0
 
           D(imat) = C*(D_mo*dag(C))
-       else !if (visual_cfg_global_refactor) then
-       if (visual_cfg_dmat_file(imat) == 'DFCOEF') then
-          matrix_is_unperturbed(imat) = .true.
-!         get unperturbed density matrix
-
-          D_mo%elms = 0.0d0
-          do m = 1, norbt
-             D_mo%elms((m-1)*norbt+m) = occupation(m)
-          end do
-
-          D_mo%ih_sym = 1
-          D_mo%tr_sym = 1
-          D_mo%irep   = 0
-
-          D(imat) = C*(D_mo*dag(C))
-          if (debug_me) then
-             call print_mat(D_mo,    label = 'debug MO D matrix')
-             call print_mat(D(imat), label = 'debug AO D matrix')
-          end if
-
-       else
-!         get perturbed density matrix
-
-          call setup_fo_dmat_ao(imat, occupation, D_mo)
-
-          if (visual_cfg_london .and. visual_cfg_london_none) then
-             TP = D_mo-dag(D_con_mo_ai)
-             TM = D_mo-D_con_mo_ai
+        else
+          if (visual_cfg_dmat_file(imat) == 'DFCOEF') then
+             matrix_is_unperturbed(imat) = .true.
+!            get unperturbed density matrix
+          
+             D_mo%elms = 0.0d0
+             do m = 1, norbt
+                D_mo%elms((m-1)*norbt+m) = occupation(m)
+             end do
+          
+             D_mo%ih_sym = 1
+             D_mo%tr_sym = 1
+             D_mo%irep   = 0
+          
+             D(imat) = C*(D_mo*dag(C))
+             if (debug_print) then
+                call print_mat(D_mo,    label = 'debug MO D matrix')
+                call print_mat(D(imat), label = 'debug AO D matrix')
+             end if
+          
           else
-             TP = 1.0d0*D_mo
-             TM = 1.0d0*D_mo
-          end if
-
-          if (nfsym == 2) then
-             if (jbtof(D_mo%irep, 1) == 2) then
-!               ungerade perturbation
-                D(imat) = (Cig*(TP*dag(Csu))) &
-                        + (Ciu*(TP*dag(Csg))) &
-                        - (Csg*(TM*dag(Ciu))) &
-                        - (Csu*(TM*dag(Cig)))
+!            get perturbed density matrix
+          
+             call setup_fo_dmat_ao(imat, occupation, D_mo)
+          
+             if (visual_cfg_london .and. visual_cfg_london_none) then
+                TP = D_mo-dag(D_con_mo_ai)
+                TM = D_mo-D_con_mo_ai
              else
-!               gerade perturbation
+                TP = 1.0d0*D_mo
+                TM = 1.0d0*D_mo
+             end if
+          
+             if (nfsym == 2) then
+                if (jbtof(D_mo%irep, 1) == 2) then
+!                  ungerade perturbation
+                   D(imat) = (Cig*(TP*dag(Csu))) &
+                           + (Ciu*(TP*dag(Csg))) &
+                           - (Csg*(TM*dag(Ciu))) &
+                           - (Csu*(TM*dag(Cig)))
+                else
+!                  gerade perturbation
+                   D(imat) = (Cig*(TP*dag(Csg))) &
+                           + (Ciu*(TP*dag(Csu))) &
+                           - (Csg*(TM*dag(Cig))) &
+                           - (Csu*(TM*dag(Ciu)))
+                end if
+             else
                 D(imat) = (Cig*(TP*dag(Csg))) &
-                        + (Ciu*(TP*dag(Csu))) &
-                        - (Csg*(TM*dag(Cig))) &
-                        - (Csu*(TM*dag(Ciu)))
+                        - (Csg*(TM*dag(Cig)))
              end if
-          else
-             D(imat) = (Cig*(TP*dag(Csg))) &
-                     - (Csg*(TM*dag(Cig)))
+             call copy_matrix_sym(D(imat), D_mo)
           end if
-          call copy_matrix_sym(D(imat), D_mo)
-       end if
-       end if !if (visual_cfg_global_refactor) then
-    end do
+        end if !if (visual_cfg_global_refactor) then
+      end do
 
-!   insert half phases
-    if (nz < 4) then
-       do iz = 1, nz
-         ioff = ntbas(0)*ntbas(0)*(iz-1)
-         if (visual_cfg_london) then
-            iq   = ipqtoq(iz, D_0%irep)
-            call q2bphase('D', iq, 1, D_0%elms(1+ioff))
-            iq   = ipqtoq(iz, D_con%irep)
-            call q2bphase('D', iq, 1, D_con%elms(1+ioff))
-         end if
-         do imat = 1, visual_cfg_nr_dmat
-            iq   = ipqtoq(iz, D(imat)%irep)
-            call q2bphase('D', iq, 1, D(imat)%elms(1+ioff))
+!     insert half phases
+      if (nz < 4) then
+         do iz = 1, nz
+           ioff = ntbas(0)*ntbas(0)*(iz-1)
+           if (visual_cfg_london) then
+              iq   = ipqtoq(iz, D_0%irep)
+              call q2bphase('D', iq, 1, D_0%elms(1+ioff))
+              iq   = ipqtoq(iz, D_con%irep)
+              call q2bphase('D', iq, 1, D_con%elms(1+ioff))
+           end if
+           do imat = 1, visual_cfg_nr_dmat
+              iq   = ipqtoq(iz, D(imat)%irep)
+              call q2bphase('D', iq, 1, D(imat)%elms(1+ioff))
+           end do
          end do
-       end do
-    end if
+      end if
 
-    do imat = 1, visual_cfg_nr_dmat
-       if (visual_cfg_london) then
-          if (visual_cfg_london_skip_kappa) then
-!            zero out kappa contribution
-!            this is useful to isolate direct and/or reortho contributions
-             D(imat) = tiny(0.0d0)*D(imat)
-          end if
-
-          if (.not. visual_cfg_london_skip_ro) then
-!            dirty trick add D_con on top of D
-!            on trunk we will have to check that this only
-!            happes to the current, mag field, and so on
-             if (.not. matrix_is_unperturbed(imat)) then
-                ! don't do it with unp matrices, otherwise double counting
-                D(imat) = D(imat) + D_con
-             end if
-          end if
-
-       end if
-
-!      scale density matrix
-       D(imat) = 2.0d0*D(imat)
-
-!      collect matrices for identical densities to save time
-       if (visual_cfg_property(imat) /= iq_elf) then
-       !if (visual_cfg_property(imat) /= iq_elf .and. visual_cfg_property(imat) /= iq_gradj) then
-       ! gosia TODO: i need to figure out a better way to sum up contribs involving the same densities
-       ! for a moment it's messing up the "GRADJ" calculations if done in the same input as "J" calculations
-
-!         elf has nonlinear dependence
-          j = visual_cfg_property_to_matrix(visual_cfg_property(imat))
-          if (j == 0) then
-             visual_cfg_property_to_matrix(visual_cfg_property(imat)) = imat
-          else
-             D(j) = D(j) + D(imat)
-             if (visual_cfg_london) then
-                T   = 1.0d0*D_0
-                D_0 = D_0+T
-                T   = 0
-             end if
-             visual_cfg_skip(imat) = .true.
-          end if
-       end if
-    end do
+      do imat = 1, visual_cfg_nr_dmat
+         if (visual_cfg_london) then
+            if (visual_cfg_london_skip_kappa) then
+!              zero out kappa contribution
+!              this is useful to isolate direct and/or reortho contributions
+               D(imat) = tiny(0.0d0)*D(imat)
+            end if
+      
+            if (.not. visual_cfg_london_skip_ro) then
+!              dirty trick add D_con on top of D
+!              on trunk we will have to check that this only
+!              happes to the current, mag field, and so on
+               if (.not. matrix_is_unperturbed(imat)) then
+                  ! don't do it with unp matrices, otherwise double counting
+                  D(imat) = D(imat) + D_con
+               end if
+            end if
+      
+         end if
+      
+!        scale density matrix
+         D(imat) = 2.0d0*D(imat)
+      
+!        collect matrices for identical densities to save time
+         if (visual_cfg_property(imat) /= iq_elf) then
+         !if (visual_cfg_property(imat) /= iq_elf .and. visual_cfg_property(imat) /= iq_gradj) then
+         ! gosia TODO: i need to figure out a better way to sum up contribs involving the same densities
+         ! for a moment it's messing up the "GRADJ" calculations if done in the same input as "J" calculations
+      
+!           elf has nonlinear dependence
+            j = visual_cfg_property_to_matrix(visual_cfg_property(imat))
+            if (j == 0) then
+               visual_cfg_property_to_matrix(visual_cfg_property(imat)) = imat
+            else
+               D(j) = D(j) + D(imat)
+               if (visual_cfg_london) then
+                  T   = 1.0d0*D_0
+                  D_0 = D_0+T
+                  T   = 0
+               end if
+               visual_cfg_skip(imat) = .true.
+            end if
+         end if
+      end do
 
 !
-!   deallocate various things
-!   =========================
-
-    deallocate(matrix_is_unperturbed)
-    call dealloc(occupation)
-
-    C    = 0
-    Cig  = 0
-    Csg  = 0
-
-    if (nfsym == 2) then
-      Ciu = 0
-      Csu = 0
-    end if
-
-   
-    if (.not.visual_cfg_global_refactor) then
-!   initialize ao module
-!   ====================
-    call dirac_ao_eval_init(max_ao_g_order, &
-                      max_ao_m_order, &
-                      .false.)
-   
-    call alloc(ao,     nr_ao_slices*nr_ao_cartesian*max_batch_length)
-    call alloc(buffer, nr_ao_slices*nr_ao_cartesian*max_batch_length)
-   
-    if (visual_cfg_london) then
-       if (.not. visual_cfg_london_skip_ro) then
-          D_con_mo = 0
-          D_con    = 0
-          if (visual_cfg_london_none) D_con_mo_ai = 0
-       end if
-    end if
-    end if !if (.not.visual_cfg_global_refactor) then
-
-!   plot and integrate
-!   ==================
-    if (visual_cfg_tensor) then
-      q_max_dim = 12
-    else
-      q_max_dim = 3
-    end if
-
-    if (visual_cfg_nics) then
-      write(*,*)"VISUAL: nics value in ", visual_cfg_nics_origin(1), &
-                                          visual_cfg_nics_origin(2), &
-                                          visual_cfg_nics_origin(3)
-    end if
-    time_start = second()
+!     deallocate various things
+!     =========================
+      
+      deallocate(matrix_is_unperturbed)
+      call dealloc(occupation)
+      
+      C    = 0
+      Cig  = 0
+      Csg  = 0
+      
+      if (nfsym == 2) then
+        Ciu = 0
+        Csu = 0
+      end if
+      
+     
+      if (.not.visual_cfg_global_refactor) then
+!     initialize ao module
+!     ====================
+      call dirac_ao_eval_init(max_ao_g_order, &
+                        max_ao_m_order, &
+                        .false.)
+     
+      call alloc(ao,     nr_ao_slices*nr_ao_cartesian*max_batch_length)
+      call alloc(buffer, nr_ao_slices*nr_ao_cartesian*max_batch_length)
+     
+      if (visual_cfg_london) then
+         if (.not. visual_cfg_london_skip_ro) then
+            D_con_mo = 0
+            D_con    = 0
+            if (visual_cfg_london_none) D_con_mo_ai = 0
+         end if
+      end if
+      end if !if (.not.visual_cfg_global_refactor) then
+      
+!     plot and integrate
+!     ==================
+      if (visual_cfg_tensor) then
+        q_max_dim = 12
+      else
+        q_max_dim = 3
+      end if
+      
+      if (visual_cfg_nics) then
+        write(*,*)"VISUAL: nics value in ", visual_cfg_nics_origin(1), &
+                                            visual_cfg_nics_origin(2), &
+                                            visual_cfg_nics_origin(3)
+      end if
+      time_start = second()
 
     end if ! if (mpi_is_master()) then
-
-    !end if ! if (legacy_prep) then
-
-
 
 
 
@@ -548,10 +544,6 @@ contains
 
       if (mpi_is_master()) then
         call visual_initialize_data_from_dirac(mol,mo_data)
-
-!       gosia fixme: 
-!       this is a temporary solution for handling density matrices;
-!       also see https://gitlab.com/dirac/dirac-private/-/issues/550
         call dirac_dmat_init(0, mo_data, dmat_ao=dmat_0)
       end if
 
@@ -562,20 +554,24 @@ contains
       end if
 #endif
 
-!     gosia todo - when developing a separate schema, here: open rs-checkpoint
+!     gosia todo
+!     open rs-checkpoint (once a separate RS schema is ready)
 !     write (lupri,'(/A,I2)')," * Opening checkpoint file for real-space data (VISUAL) "
 !     call checkpoint_rs_open
 ! 
-      if (mpi_is_master()) then
-      do iz=1,4
-        do i=1,dmat_0%mat_dim
-          do j=1,dmat_0%mat_dim
-            off_ij = j + (i-1)*dmat_0%mat_dim + (iz-1)*dmat_0%mat_dim*dmat_0%mat_dim
-            write(*, '(a,3i4,es16.8e2)') 'debug dmat_0 matrix: ', j, i, iz, dmat_0%elements(off_ij)
+      if (debug_print) then
+        if (mpi_is_master()) then
+          do iz=1,4
+            do i=1,dmat_0%mat_dim
+              do j=1,dmat_0%mat_dim
+                off_ij = j + (i-1)*dmat_0%mat_dim + (iz-1)*dmat_0%mat_dim*dmat_0%mat_dim
+                write(*, '(a,3i4,es16.8e2)') 'debug dmat_0 matrix: ', j, i, iz, dmat_0%elements(off_ij)
+              end do
+            end do
           end do
-        end do
-      end do
+        end if
       end if
+
       call visual_driver_refactored(mol,mo_data,dmat_0)
 
 !     call checkpoint_rs_close
@@ -583,20 +579,22 @@ contains
 
     else !if (visual_cfg_global_refactor) then
 
-     write(*,'(a,4i4)') 'nrow, irep of dmats, legacy: ', D(imat)%nrow, D(imat)%irep, D_0%nrow, D_0%irep 
-      do iz=1,4
-        do i=1,ntbas(0)
-          do j=1,ntbas(0)
-            off_ij = j + (i-1)*ntbas(0) + (iz-1)*ntbas(0)*ntbas(0)
-            !write(*, '(a,3i4,es16.8e2)') 'debug dmat_0 matrix legacy: ', j, i, iz, D(1)%elms(off_ij)
-            write(*, '(a,3i4,es16.8e2)') 'debug dmat_0 matrix legacy: ', j, i, iz, D_0%elms(off_ij)
+      if (debug_print) then
+        write(*,'(a,4i4)') 'nrow, irep of dmats, legacy: ', D(imat)%nrow, D(imat)%irep, D_0%nrow, D_0%irep 
+        do iz=1,4
+          do i=1,ntbas(0)
+            do j=1,ntbas(0)
+              off_ij = j + (i-1)*ntbas(0) + (iz-1)*ntbas(0)*ntbas(0)
+              !write(*, '(a,3i4,es16.8e2)') 'debug dmat_0 matrix legacy: ', j, i, iz, D(1)%elms(off_ij)
+              write(*, '(a,3i4,es16.8e2)') 'debug dmat_0 matrix legacy: ', j, i, iz, D_0%elms(off_ij)
+            end do
           end do
         end do
-      end do
-      !write(*,*) 'size of dmats, legacy: ', size(D(1)%elms), size(D_0%elms)
-      !do i=1,size(D_0%elms)
-      !  write(*, '(a,i4,es16.8e2)') 'debug dmat_0 matrix legacy: ', i, D_0%elms(i)
-      !end do
+        !write(*,*) 'size of dmats, legacy: ', size(D(1)%elms), size(D_0%elms)
+        !do i=1,size(D_0%elms)
+        !  write(*, '(a,i4,es16.8e2)') 'debug dmat_0 matrix legacy: ', i, D_0%elms(i)
+        !end do
+      end if
 
       call visual_driver(visual_cfg_nr_dmat, &
                          D,                  &
@@ -634,9 +632,6 @@ contains
     end do
     end if !if (mpi_is_master()) then !temp
 
-
-! ---- legacy end ----    
-
     walltime = walltime - visual_walltime()
     if (mpi_is_master()) print *, 'Elapsed walltime in run_visual: ', walltime
 
@@ -668,21 +663,7 @@ contains
 
     if (mpi_is_master()) call rs_input%display
 
-      write(*,'(a,i4,2es16.8e2)') 'D_0 before get_s NEW:'
-      if (associated(dmat_0%elements_q)) then
-        call prqmat(dmat_0%elements_q, &
-                    dmat_0%mat_dim, &
-                    dmat_0%mat_dim, &
-                    dmat_0%mat_dim, &
-                    dmat_0%mat_dim, &
-                    dmat_0%mat_nz,   &
-                    ipqtoq(1, 0), &
-                    lupri)
-      end if
-
-
     do ig = 1, rs_input%nr_grids
-
 !
 !     get necessary information about the grid and share with workers
 !
@@ -719,7 +700,7 @@ contains
       end if
 
       if (rs_input%grids(ig)%export) then
-!       export grid to a separate file 
+!       export this grid to a separate file 
         if (mpi_is_master()) then
           call store_grid(rs_input%grids(ig))
           if (rs_input%print_level > 0) then

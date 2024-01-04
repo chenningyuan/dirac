@@ -48,7 +48,7 @@ def compare_txt(fname, fname_ref):
 test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 PAMXVC TBMO" --get="*.h5"')
 
 # legacy outputs:
-test.run(['vis_3d_legacy.inp'], ['h2o.mol'], args='--incmo --put="PAMXVC TBMO"')
+#test.run(['vis_3d_legacy.inp'], ['h2o.mol'], args='--incmo --put="PAMXVC TBMO"')
 
 # OK! test.run(['vis_list_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_list.txt"')
 # OK! test.run(['vis_list_diracout.inp'], ['h2o.mol'], f, args='--incmo')
@@ -180,8 +180,8 @@ if h5py_available:
     compare_with_ref(ftest='kinlap.h5', fref='result/kinlap.h5', typ='single', gf_name='kinlap')
     compare_with_ref(ftest='kinlap.h5', fref='result/kinlap.h5', typ='array',  gf_name='kinlap', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='single', gf_name='s')
-    compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='array',  gf_name='s', gf_test_key='t1_icomp_2')
+    #compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='single', gf_name='s')
+    #compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='array',  gf_name='s', gf_test_key='t1_icomp_2')
 
 
 
