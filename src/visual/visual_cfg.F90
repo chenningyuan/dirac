@@ -553,11 +553,10 @@ contains
             'kinls', &
             'kinsl', &
             'kintau', &
-            'divs', &
-            'rots', &
             'divj', &
             'rotj', &
-            'gradj') 
+            'gradj',&
+            'divs') 
         grid_function%wf_order = 0
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 1
@@ -567,7 +566,8 @@ contains
         grid_function%tensor_order = 1
         grid_function%max_ao_g_order = 0
         grid_function%max_ao_m_order = 0
-      case ('density_gradient')
+      case ('density_gradient',&
+            'rots')
         grid_function%wf_order = 0
         grid_function%tensor_order = 1
         grid_function%max_ao_g_order = 1

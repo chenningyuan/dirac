@@ -363,10 +363,7 @@ contains
 
       case ('s')
 !       spin density: \psi^\dag \Sigma \psi
-!       FIXME!
         v2 = 0.0d0
-        !write(*,'(a,2i4,3es16.8e2)') 'before get_s NEW dims: ', mat_irep, mat_dim,v2(1),v2(2),v2(3)
-        !write(*,'(a,3es16.8e2)') 'before get_s NEW: ',ao(1), ao(20), ao(147)
         call get_s(v2,       &
                    mat_irep, &
                    mat_dim,  &
@@ -376,7 +373,35 @@ contains
         grid_function_values(1:1,ipoint:ipoint) = v2(1)
         grid_function_values(2:2,ipoint:ipoint) = v2(2)
         grid_function_values(3:3,ipoint:ipoint) = v2(3)
-        !write(*,'(a,3es16.8e2)') 'after get_s NEW: ', v2(1), v2(2), v2(3)
+
+      case ('divs')
+!       divergence of spin density:
+        v2 = 0.0d0
+        v3 = 0.0d0
+        call get_gs(v2,       &
+                    v3,       &
+                    mat_irep, &
+                    mat_dim,  &
+                    dmat_0%elements,&
+                    buffer,   &
+                    ao)
+        grid_function_values(1:1,ipoint:ipoint) = v3(1,1) + v3(2,2) + v3(3,3)
+
+      case ('rots')
+!       divergence of spin density:
+        v2 = 0.0d0
+        v3 = 0.0d0
+        call get_gs(v2,       &
+                    v3,       &
+                    mat_irep, &
+                    mat_dim,  &
+                    dmat_0%elements,&
+                    buffer,   &
+                    ao)
+        grid_function_values(1:1,ipoint:ipoint) = -v3(2,3) + v3(3,2)
+        grid_function_values(2:2,ipoint:ipoint) = -v3(3,1) + v3(1,3)
+        grid_function_values(3:3,ipoint:ipoint) = -v3(1,2) + v3(2,1)
+
 
     end select
 
