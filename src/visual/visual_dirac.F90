@@ -7,6 +7,7 @@ module visual_dirac
 
 ! DIRAC modules
   use checkpoint
+  use basis_set_datatypes
 
 #ifdef VAR_MPI
    use interface_to_mpi
@@ -27,12 +28,13 @@ module visual_dirac
   public synchronize_dmat
 #endif
 
+
   private
 
 contains
 
+! -----------------------------------------------------------------------------
   subroutine dirac_dmat_init(wf_order, cmo, dmat_ao, dmat_mo)
-!   ----------------------------------------------------------------------------
     integer, intent(in) :: wf_order
     type(cmo_t), intent(in) :: cmo
     type(dmat_t), optional, intent(inout) :: dmat_ao
@@ -41,7 +43,6 @@ contains
     real(8), allocatable :: occupation(:)
     integer :: nao, nmo, nz
     integer :: i
-!   ----------------------------------------------------------------------------
 
     if (wf_order == 0) then
 !     initialize unperturbed density matrix from occupation numbers
@@ -70,10 +71,9 @@ contains
         dmat_ao%mat_nz  = nz
         call dmat_ao%alloc()
         call dmat_transform_mo2ao(cmo, dmat_mo_from_occupation, dmat_ao)
-        !call dmat_ao%scale_elements(2.0d0,range_start=dmat_ao%mat_dim*dmat_ao%mat_dim+1,range_end=4*dmat_ao%mat_dim*dmat_ao%mat_dim)
         call dmat_ao%scale_elements(2.0d0)
-        call dmat_ao%alloc_q()
-        call dmat_ao%reshape_to_q()
+        !call dmat_ao%alloc_q()
+        !call dmat_ao%reshape_to_q()
       end if
 
       deallocate(occupation)
@@ -97,7 +97,6 @@ contains
 !            .OCCUPATION
 !   if this is not given, then it will occupy all
 !   "occupied" electrons with 1.0
-! -----------------------------------------------------------------------------
 
     occupation = 0.0d0
 
@@ -124,6 +123,7 @@ contains
 
   end subroutine
 
+! ------------------------------------------------------------------------------
   subroutine visual_initialize_and_sync_nodes(hello)
     use dirac_cfg, only: dirac_cfg_visual
     use visual_mpi
@@ -160,20 +160,23 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine visual_initialize_data_from_dirac(mol, mo, print_level)
+  subroutine visual_initialize_data_from_dirac(mol, mo, ao_basis, print_level)
     type(mol_t), intent(out):: mol
     type(cmo_t), intent(out):: mo
-    integer, optional :: print_level
-    character*(:),allocatable:: group,section
-    logical:: tobe_dirac
+    type(basis_set_info_t), intent(out) :: ao_basis
+    integer, intent(in), optional :: print_level
+    character*(:),allocatable:: group, section
+    logical:: small_component
+    logical:: dirac_mol, dirac_mo, dirac_ao
 !
 !   read data from DIRAC's CHECKPOINT file(s) into DTs
-! ------------------------------------------------------------------------------
+!
 
     group = '/input/molecule/'
-    call checkpoint_query(group, tobe_dirac)
-    if (tobe_dirac) then
+    call checkpoint_query(group, dirac_mol)
+    if (dirac_mol) then
       call read_mol_from_dirac(mol, group)
+
       if (present(print_level)) then
         if (print_level > 0) then
           write(*, *) 'Molecule data read from DIRAC CHECKPOINT'
@@ -187,15 +190,37 @@ contains
       !  write(*, *) 'Molecule data written to DIRAC RS-CHECKPOINT'
     end if
 
-!   gosia FIXME - the code is validated for scf only
-    section = 'scf'
-    call read_mo_from_dirac(section, mo)
+    group = '/result/wavefunctions/'
+    call checkpoint_query(group, dirac_mo)
+    if (dirac_mo) then
+!     todo: generalize to other wfs
+      section = 'scf'
+      call read_mo_from_dirac(section, mo)
       if (present(print_level)) then
         if (print_level > 0) then
           write(*, *) 'MO data read from DIRAC CHECKPOINT'
           call mo%display
         end if
       end if
+    end if
+
+    group = '/input/aobasis/'
+    call checkpoint_query(group, dirac_ao)
+    if (dirac_ao) then
+!     gosia fixme (visual_cfg_force_small_ao from visual_cfg.F90)
+      small_component = visual_cfg_force_small_ao
+      call read_ao_from_dirac(ao_basis, small_component)
+      if (present(print_level)) then
+        if (print_level > 0) then
+          write(*, *) 'AO basis data read from DIRAC CHECKPOINT'
+          call mo%display
+        end if
+      end if
+    end if
+
+    if (dirac_mo .and. dirac_ao) then
+      call check_data_consistency(ao_basis, mo)
+    end if
 
   end subroutine visual_initialize_data_from_dirac
 
@@ -205,7 +230,6 @@ contains
     type(mol_t), intent(out) :: mol
     character(len=*),intent(in) :: group
     real(8), allocatable :: temp(:)
-! ------------------------------------------------------------------------------
 
     call checkpoint_read(group//'n_atoms', idata=mol%n_atoms)
 
@@ -236,11 +260,24 @@ contains
     real(8):: total_energy
     integer, allocatable   :: ibeig(:), index(:)
     real(8), allocatable   :: eig(:), mo_coeff(:), mo_coeff_q(:,:,:)
+    integer:: maxopr,inversion
+    logical:: sym_info
     integer:: i
 !
 !   this subroutine is based on how things are done in dircmo.F90 and exacorr
-!   gosia, summer 2023
-! ------------------------------------------------------------------------------
+!
+
+    call checkpoint_query ('/result/symmetry',sym_info)
+    if (.not.sym_info) then
+       print*, "WARNING: old CHECKPOINT, assuming NOSYM"
+       maxopr = 0
+       inversion = 1
+    else
+       call checkpoint_read ('/result/symmetry/maxopr',idata=maxopr)
+       call checkpoint_read ('/result/symmetry/inversion',&
+            idata=inversion)
+    end if
+
 
     group = '/result/wavefunctions/'//trim(section)//'/'
     call checkpoint_query(group//'mobasis', tobe_dirac)
@@ -249,17 +286,24 @@ contains
     n_basis = 0
     n_mo = 0
     n_po = 0
- 
+    total_energy = 0.0d0
     call checkpoint_read(group//'mobasis/nz',idata=nz)
-    call checkpoint_read(group//'mobasis/n_fsym',idata=nfsym)
     call checkpoint_read(group//'mobasis/n_basis',idata=n_basis)
     call checkpoint_read(group//'mobasis/n_mo',idata=n_mo)
     call checkpoint_read(group//'mobasis/n_po',idata=n_po)
     call checkpoint_read(group//'energy',rdata=total_energy)
 
-    nao = sum(n_basis)
-    npo = sum(n_po)
-    nmo = sum(n_mo)
+    ! check symmetry and get dimensions of the coefficient array
+    if (inversion == 2) then
+       nao = sum(n_basis)
+       npo = sum(n_po)
+       nmo = sum(n_mo)
+    else
+       nao = n_basis(1)
+       npo = n_po(1)
+       nmo = n_mo(1)
+    end if
+    nto = npo+nmo
     ncoef = nz * sum(n_basis*n_mo)
 
     cmo%n_ao = n_basis
@@ -308,7 +352,121 @@ contains
 !   switch to unrestricted spinor picture
     !call convert_mo_to_complex(cmo)
 
-  end subroutine read_mo_from_dirac
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine read_ao_from_dirac(ao_basis,small_component)
+    type(basis_set_info_t), intent(inout) :: ao_basis
+    logical, intent(in) ::  small_component
+    character*(:),allocatable:: group
+    integer, allocatable:: orbmom(:),n_prim(:),n_cont(:)
+    real(8), allocatable:: priexp(:),priccf(:),coord(:)
+    integer:: nao, nshells, npriexp, iPrimStart, iPrimEnd
+    integer:: iao, ibas, ishell, ierr
+    integer:: maxopr,inversion
+    logical:: sym_info
+!
+!   this subroutine is based on how things are done in dirgp.F and exacorr
+!   gosia, 2023/2024
+!
+
+    call checkpoint_query ('/result/symmetry',sym_info)
+    if (.not.sym_info) then
+       print*, "WARNING: old CHECKPOINT, assuming NOSYM"
+       maxopr = 0
+       inversion = 1
+    else
+       call checkpoint_read ('/result/symmetry/maxopr',idata=maxopr)
+       call checkpoint_read ('/result/symmetry/inversion',&
+            idata=inversion)
+    end if
+
+!   read general AO basis information
+    if (maxopr == 0) then
+!     SCF was done in C1
+      if (.not. small_component) then
+!       read the LC basis
+        group = '/input/aobasis/1/'
+      else
+!       read the SC basis
+        group = '/input/aobasis/2/'
+      end if
+    else
+!     we need the AO basis expanded from the symmetry-packed form
+      group = '/input/aobasis/3/'
+    end if
+
+    call checkpoint_read(group//'angular',idata=ao_basis%basis_angular)
+    call checkpoint_read(group//'n_ao',idata=nao)
+    call checkpoint_read(group//'n_shells',idata=nshells)
+    allocate (orbmom(nshells))
+    allocate (n_prim(nshells))
+    allocate (n_cont(nshells))
+    allocate (coord(3*nshells))
+!   read information that is defined for each shell
+    call checkpoint_read (group//'orbmom',idata=orbmom)
+    call checkpoint_read (group//'n_prim',idata=n_prim)
+    call checkpoint_read (group//'n_cont',idata=n_cont)
+    call checkpoint_read (group//'center',rdata=coord)
+!   values of the exponents and coefficients for all shells (packed into a 1-d arrays)
+    npriexp = sum(n_prim)
+    allocate (priexp(npriexp))
+    allocate (priccf(npriexp))
+    call checkpoint_read (group//'exponents',rdata=priexp)
+    call checkpoint_read (group//'contractions',rdata=priccf)
+
+    ao_basis%nshells       = nshells
+    ao_basis%nao           = nao
+    nullify(ao_basis%gtos)
+    allocate(ao_basis%gtos(nshells))
+    iPrimStart = 1
+    do ishell = 1, nshells
+      ao_basis%gtos(ishell)%orb_momentum = orbmom(ishell)
+      ao_basis%gtos(ishell)%n_primitives = n_prim(ishell)
+      nullify  (ao_basis%gtos(ishell)%exponent) 
+      allocate (ao_basis%gtos(ishell)%exponent(n_prim(ishell)))
+      nullify  (ao_basis%gtos(ishell)%coefficient)
+      allocate (ao_basis%gtos(ishell)%coefficient(n_prim(ishell)))
+      iPrimEnd   = iPrimStart+n_prim(ishell)-1
+      ao_basis%gtos(ishell)%exponent   = priexp(iPrimStart:iPrimEnd)
+      ao_basis%gtos(ishell)%coefficient= priccf(iPrimStart:iPrimEnd)
+      ao_basis%gtos(ishell)%coord = coord(ishell*3-2:3*ishell)
+!     In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
+      call compress_unc_shell (ao_basis%gtos(ishell),ierr)
+      iPrimStart = iPrimStart + n_prim(ishell)
+    end do
+
+    deallocate(orbmom)
+    deallocate(n_prim)
+    deallocate(n_cont)
+    deallocate(coord)
+    deallocate(priexp)
+    deallocate(priccf)
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine check_data_consistency(ao_basis,mo)
+    type(basis_set_info_t), intent(in) :: ao_basis
+    type(cmo_t), intent(in) :: mo
+    integer:: ierr
+    integer:: inconsis
+
+!   gosia fixme, after excorr_dirac.F
+    if (sum(mo%n_ao) < ao_basis%nao) then
+       ierr = INCONSIS
+       return
+    else if (ao_basis%nao > sum(mo%n_ao)) then
+       print*,"WARNING: assuming Levy-Leblond Hamiltonian"
+       print*,"Reading fewer basis functions than MO-coefficients"
+       !allocate (ao_map(2,nao_bas))
+       !forall (i=1:nao_bas) ao_map(:,i)=i
+       !call compress_mo (cspinor,ao_map)
+    end if
+
+
+  end subroutine
 
 
 #ifdef VAR_MPI
@@ -369,10 +527,10 @@ contains
     if (.not.mpi_is_master()) then
       call dmat%alloc()
 !gosia fixme
-      call dmat%alloc_q()
+      !call dmat%alloc_q()
     end if
     call interface_mpi_bcast(dmat%elements,n,irank_master,global_communicator)
-    call interface_mpi_bcast(dmat%elements_q,n,irank_master,global_communicator)
+    !call interface_mpi_bcast(dmat%elements_q,n,irank_master,global_communicator)
 
   end subroutine
 
