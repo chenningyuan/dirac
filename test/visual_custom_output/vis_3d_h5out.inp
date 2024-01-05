@@ -65,20 +65,10 @@
 1
 id=1 input=import file_inp=grid2.h5
 .GRIDFUNCTIONS    
-13
-name=density id_grid=1 purpose=visualization export=yes file_out=density.h5
+2
+name=s id_grid=1 purpose=visualization export=yes file_out=s.h5
 name=density_gradient id_grid=1 purpose=visualization export=yes file_out=density_gradient.h5
-name=density_hessian id_grid=1 purpose=visualization export=yes file_out=density_hessian.h5
-name=ed_laplacian id_grid=1 purpose=visualization export=yes file_out=ed_laplacian.h5
-name=ed_sign_lambda2 id_grid=1 purpose=visualization export=yes file_out=ed_sign_lambda2.h5
-name=rdg id_grid=1 purpose=visualization export=yes file_out=rdg.h5
-name=gamma5 id_grid=1 purpose=visualization export=yes file_out=gamma5.h5
-name=elf id_grid=1 purpose=visualization export=yes file_out=elf.h5
-name=kinls id_grid=1 purpose=visualization export=yes file_out=kinls.h5
-name=kinsl id_grid=1 purpose=visualization export=yes file_out=kinsl.h5
-name=kinlap id_grid=1 purpose=visualization export=yes file_out=kinlap.h5
-name=kintau id_grid=1 purpose=visualization export=yes file_out=kintau.h5
-name=kinnr id_grid=1 purpose=visualization export=yes file_out=kinnr.h5
+#name=density_hessian id_grid=1 purpose=visualization export=yes file_out=density_hessian.h5
 !WIP (needs debugging)
 !1
 !name=s id_grid=1 purpose=visualization export=yes file_out=s.h5

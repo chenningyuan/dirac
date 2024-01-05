@@ -393,7 +393,13 @@ contains
       end if
     else
 !     we need the AO basis expanded from the symmetry-packed form
-      group = '/input/aobasis/3/'
+      if (.not. small_component) then
+!       read the LC basis
+        group = '/input/aobasis/3/'
+      else
+!       read the SC basis
+        group = '/input/aobasis/4/'
+      end if
     end if
 
     call checkpoint_read(group//'angular',idata=ao_basis%basis_angular)

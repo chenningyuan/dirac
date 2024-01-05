@@ -16,11 +16,16 @@ module visual
   use visual_datatypes
   use visual_io
   use visual_mpi
+
+! DIRAC modules
+  use checkpoint
+  use basis_set_datatypes
+
 #ifdef VAR_MPI
   use interface_to_mpi
   use integer_kind_mpilib
 #endif
-  use checkpoint
+
 
 !   ---- legacy ----    
   use memory_allocator
@@ -78,6 +83,7 @@ contains
 
     type(mol_t):: mol
     type(cmo_t):: mo_data
+    type(basis_set_info_t):: ao_basis
     real(8) :: walltime
     logical :: legacy_prep
     type(dmat_t):: dmat_0
@@ -120,9 +126,9 @@ contains
 
     walltime = visual_walltime()
 
-    visual_cfg_london = .true.
+    !visual_cfg_london = .true.
 
-    debug_print = .true.
+    debug_print = .false.
 
 #ifdef VAR_MPI
     ! gosia, spring 2023
@@ -543,7 +549,8 @@ contains
 !     and data (molecular information+wave function) is read from one DIRAC's CHECKPOINT file
 
       if (mpi_is_master()) then
-        call visual_initialize_data_from_dirac(mol,mo_data)
+!       fixme: ao_basis not used (WIP)
+        call visual_initialize_data_from_dirac(mol, mo_data, ao_basis)
         call dirac_dmat_init(0, mo_data, dmat_ao=dmat_0)
       end if
 
@@ -691,21 +698,22 @@ contains
 !       fixme: grid generation should be done in parallel (now - done sequentially, on master)
       if (mpi_is_master()) then
         call get_grid_points(rs_input%grids(ig))
-        if (rs_input%print_level > 0) then
-          write(*, *) 'Grid points of grid ', ig
-          do j = 1, npoints
-            write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
-          end do
-        end if
+        !if (rs_input%print_level > 0) then
+        !  write(*, *) 'Grid points of grid ', ig
+        !  do j = 1, npoints
+        !    write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
+        !    !write(*, '(3es28.18e2)') (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
+        !  end do
+        !end if
       end if
 
       if (rs_input%grids(ig)%export) then
 !       export this grid to a separate file 
         if (mpi_is_master()) then
           call store_grid(rs_input%grids(ig))
-          if (rs_input%print_level > 0) then
-            write(*, *) 'Grid ', rs_input%grids(ig)%id, ' exported to file ', rs_input%grids(ig)%file_out
-          end if
+          !if (rs_input%print_level > 0) then
+          !  write(*, *) 'Grid ', rs_input%grids(ig)%id, ' exported to file ', rs_input%grids(ig)%file_out
+          !end if
         end if
       end if
 
@@ -809,11 +817,11 @@ contains
           allocate(rs_input%grid_functions(igf)%values(gf_ndim, npoints))
           rs_input%grid_functions(igf)%values = 0.0d0
 
-          write(*, *) 'AFTER WORK_ON_GRID'
-          !write(*, *) 'values: ', ((grid_function_values(i,j),j=1,n_this_proc),i=1,gf_ndim), get_my_rank()
-          do j = 1, n_this_proc
-            write(*, '(a,i4,3es16.8e2)') 'values: ', j, (grid_function_values(i,j),i=1,gf_ndim)
-          end do
+          !write(*, *) 'AFTER WORK_ON_GRID'
+          !!write(*, *) 'values: ', ((grid_function_values(i,j),j=1,n_this_proc),i=1,gf_ndim), get_my_rank()
+          !do j = 1, n_this_proc
+          !  write(*, '(a,i4,3es28.18e2)') 'values: ', j, (grid_function_values(i,j),i=1,gf_ndim)
+          !end do
  
           if (is_parallel()) then
             do idim_gf = 1, gf_ndim
@@ -827,10 +835,10 @@ contains
             end do
           end if
 
-          if (mpi_is_master()) then
-            write(*, *) 'AFTER GATHERING'
-            write(*, *) 'gathered values: ', rs_input%grid_functions(igf)%values
-          end if
+          !if (mpi_is_master()) then
+          !  write(*, *) 'AFTER GATHERING'
+          !  write(*, *) 'gathered values: ', rs_input%grid_functions(igf)%values
+          !end if
  
           deallocate(grid_function_values)
 
@@ -844,10 +852,10 @@ contains
              end if
           end if
 
-          if (mpi_is_master()) then
-            write(*, *) 'AFTER STORING'
-            write(*, *) 'stored values?: ', rs_input%grid_functions(igf)%values
-          end if
+          !if (mpi_is_master()) then
+          !  write(*, *) 'AFTER STORING'
+          !  write(*, *) 'stored values?: ', rs_input%grid_functions(igf)%values
+          !end if
  
           if (allocated(rs_input%grid_functions(igf)%values))   deallocate(rs_input%grid_functions(igf)%values)
         end if ! if (rs_input%grid_functions(igf)%id_assigned_grid == ig) then
@@ -874,7 +882,7 @@ contains
       call rs_input%grids(ig)%erase()
     end do
 
-  end subroutine visual_driver_refactored
+  end subroutine
 
 
 ! ------------------------------------------------------------------------------
@@ -918,8 +926,6 @@ contains
     else
       do ipoint = 1, nr_points
       
-        !ao(1:nr_ao_slices*nr_ao_cartesian*max_batch_length) = 0.0d0
-        !buffer(1:nr_ao_slices*nr_ao_cartesian*max_batch_length) = 0.0d0
         call get_ao(1,                     &
                     (/grid_points(1, ipoint)/),&
                     (/grid_points(2, ipoint)/),&

@@ -32,7 +32,7 @@ contains
     data_file%name = grid%file_out
     data_file%status = -1
     if (data_file%status == -1) then
-      write(*,*) " Opening new HDF5 file for grid export", data_file%name
+      write(*,*) " Opening new HDF5 file for grid export: ", data_file%name
       data_file%type = 2
       data_file%status = 0
     end if
@@ -60,7 +60,7 @@ contains
     data_file%name = grid_function%file_out
     data_file%status = -1
     if (data_file%status == -1) then
-      write(*,*) " Opening new HDF5 file for full data export", data_file%name
+      write(*,*) " Opening new HDF5 file for grid function export: ", data_file%name
       data_file%type = 2
       data_file%status = 0
     end if

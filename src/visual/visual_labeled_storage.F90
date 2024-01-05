@@ -56,7 +56,7 @@ contains
     end select
 
     if (len(group_label) > 80) then
-      ! gosia todo - check whether this limitation is due to DIRAC or HDF5
+      ! todo - check whether this limitation is due to DIRAC or HDF5
       write (errmsg, '(a)') 'STOP. Grid function label is too long. ', group_label
       call visual_quit(errmsg)
     else
@@ -90,7 +90,7 @@ contains
     end select
 
     if (len(group_label) > 80) then
-      ! gosia todo - check whether this limitation is due to DIRAC or HDF5
+      !  todo - check whether this limitation is due to DIRAC or HDF5
       write (errmsg, '(a)') 'STOP. Grid function label is too long. ', group_label
       call visual_quit(errmsg)
     else

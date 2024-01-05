@@ -65,7 +65,7 @@ contains
 
     type(dmat_t), intent(in):: dmat_0
     real(8), intent(in):: ao(*)
-    real(8)            :: buffer(*)
+    real(8), intent(in):: buffer(*)
     type(grid_function_t), intent(inout):: grid_function
     real(8), intent(out):: grid_function_values(:,:)
     real(8), intent(in):: px, py, pz
@@ -365,7 +365,6 @@ contains
 !       spin density: \psi^\dag \Sigma \psi
 !       FIXME!
         v2 = 0.0d0
-        buffer(1:nr_ao_slices*nr_ao_cartesian) = 0.0d0
         !write(*,'(a,2i4,3es16.8e2)') 'before get_s NEW dims: ', mat_irep, mat_dim,v2(1),v2(2),v2(3)
         !write(*,'(a,3es16.8e2)') 'before get_s NEW: ',ao(1), ao(20), ao(147)
         call get_s(v2,       &

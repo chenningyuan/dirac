@@ -337,7 +337,7 @@ contains
       integer, intent(in)  :: irep
       integer, intent(in)  :: mat_dim
       real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-      real(8), intent(in)  :: buffer(*)
+      real(8), intent(in)  :: buffer(mat_dim)
       real(8), intent(in)  :: ao(*)
       real(8), intent(in),optional:: r(3)
 !     --------------------------------------------------------------------------
@@ -351,7 +351,7 @@ contains
       !write(*, '(a,4es16.8e2)') 'BUBA: ',dmat(1,1,iq(jxyz)),dmat(41,41,iq(jxyz)),&
       !                                   dmat(42,42,iq(jxyz)),dmat(147,147,iq(jxyz))
 
-      if (present(r)) write(*, '(a,7es16.8e2)') 'BUBA: ',r(1),r(2),r(3),ao(1),ao(41),ao(42),ao(147)
+      if (present(r)) write(*, '(a,7es28.14e2)') 'BUBA: ',r(1),r(2),r(3),ao(1),ao(41),ao(42),ao(147)
          do iblock = 1, nr_ao_blocks
             nr1 = ao_block_nr(iblock)
             st1 = ao_block_start(iblock)
