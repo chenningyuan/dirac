@@ -42,6 +42,7 @@ set(FREE_PRP_FORTRAN_SOURCES
    london_reorth.F90
    paminp.F90
    pamxqr.F90 
+   dirac_rsp_utils.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

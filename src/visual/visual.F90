@@ -132,8 +132,9 @@ contains
 
 #ifdef VAR_MPI
     ! gosia, spring 2023
-    ! We should have initial information from user input stored in rs_input dt
-    ! and other config information in visual_cfg* variables (legacy) available at this point.
+    ! on input, we have:
+    ! * information from user input is stored in rs_input dt
+    ! * config information in visual_cfg* variables (legacy)
     ! So first, we make sure that all workers have this information to start.
     ! Also, run_visual() is called from master (from subroutine dirac) 
     ! and from workers (from subroutine dirnod);
@@ -155,31 +156,8 @@ contains
     if (mpi_is_master()) then
       ! old code only sequential
       max_ao_g_order = 0
+      max_ao_m_order = 0
       do imat = 1, visual_cfg_nr_dmat
-         if (                                                        &
-             (visual_cfg_property(imat) == iq_elf)              .or. &
-             (visual_cfg_property(imat) == iq_kin)              .or. &
-             (visual_cfg_property(imat) == iq_kin_ls)           .or. &
-             (visual_cfg_property(imat) == iq_kin_sl)           .or. &
-             (visual_cfg_property(imat) == iq_kin_tau)          .or. &
-             (visual_cfg_property(imat) == iq_divs)             .or. &
-             (visual_cfg_property(imat) == iq_rots)             .or. &
-             (visual_cfg_property(imat) == iq_divj)             .or. &
-             (visual_cfg_property(imat) == iq_rotj)             .or. &
-             (visual_cfg_property(imat) == iq_gradj)                 &
-            ) then
-            if (max_ao_g_order < 1) then
-               max_ao_g_order = 1
-            end if
-         end if
-         if (                                                       &
-             (visual_cfg_property(imat) == iq_kin_lap)          .or. &
-             (visual_cfg_property(imat) == iq_kin_nr)               &
-            ) then
-            if (max_ao_g_order < 2) then
-               max_ao_g_order = 2
-            end if
-         end if
          if (levyle) then
 !           here we obtain the paramagnetic part of the current density
 !           via the nr paramagnetic current density expression
@@ -199,10 +177,8 @@ contains
             end if
          end if
       end do
-
-      max_ao_m_order = 0
       if (visual_cfg_london) then
-         max_ao_m_order = 1
+         if (max_ao_m_order < 1) max_ao_m_order = 1
       end if
       
       write(LUPRI, '(/,2x, a)') '*** Visualisation module ***'
@@ -546,10 +522,10 @@ contains
 
 !     gosia 19/5/2023: 
 !     calculations are done on one molecular system,
-!     and data (molecular information+wave function) is read from one DIRAC's CHECKPOINT file
+!     and data (molecular information+wave function) is read from DIRAC's CHECKPOINT file
 
       if (mpi_is_master()) then
-!       fixme: ao_basis not used (WIP)
+!       fixme: ao_basis not used now (WIP)
         call visual_initialize_data_from_dirac(mol, mo_data, ao_basis)
         call dirac_dmat_init(0, mo_data, dmat_ao=dmat_0)
       end if
@@ -567,6 +543,7 @@ contains
 !     call checkpoint_rs_open
 ! 
       if (debug_print) then
+        !call debug_print_dmat(dmat_0, node_id)
         if (mpi_is_master()) then
           do iz=1,4
             do i=1,dmat_0%mat_dim
@@ -650,6 +627,9 @@ contains
     type(mol_t), intent(inout):: mol
     type(cmo_t), intent(in):: cmo
     type(dmat_t), intent(in):: dmat_0
+    !type(dmat_t), intent(in):: dmat(ndmat)
+    type(dmat_t):: dmat
+    !type(dmat_t), allocatable:: dmat(:)
 
     real(8), allocatable              :: ao(:,:)
     real(8), allocatable              :: buffer(:,:)
@@ -765,15 +745,17 @@ contains
 !         gosia fixme 
 !         this is a temporary solution for handling density matrices;
 !         also see https://gitlab.com/dirac/dirac-private/-/issues/550
-!          if (rs_input%grid_functions(igf)%wf_order > 0) then
-!            if (mpi_is_master()) then
-!              call dirac_dmat_init(rs_input%grid_functions(igf)%wf_order,&
-!                                   cmo,dmat_ao=dmat) 
-!            end if
+          if (rs_input%grid_functions(igf)%wf_order > 0) then
+            if (mpi_is_master()) then
+              call dirac_dmat_init(rs_input%grid_functions(igf)%wf_order,cmo,&
+                                   dmat_ao=dmat, &
+                                   rspvec_file=rs_input%grid_functions(igf)%rspvec_file,&
+                                   rspvec_id=rs_input%grid_functions(igf)%rspvec_id)
+            end if
 !#ifdef VAR_MPI
 !            if (is_parallel()) call synchronize_dmat(dmat)
 !#endif
-!          end if
+          end if
 
 !
 !         distribute grid points over nodes
@@ -914,14 +896,14 @@ contains
       !              buffer)
       !end do
 
-      call get_esp_functions_in_points(get_my_rank(),&
-                                       dmat_0,&
-                                       ao,buffer,&
-                                       ndim,nr_points,&
-                                       grid_points,&
-                                       grid_function,grid_function_values)
-      call TEMP_test_values_in_points('grid_function_values in point', &
-                             nr_points, grid_points, v1=grid_function_values)
+      !call get_esp_functions_in_points(get_my_rank(),&
+      !                                 dmat_0,&
+      !                                 ao,buffer,&
+      !                                 ndim,nr_points,&
+      !                                 grid_points,&
+      !                                 grid_function,grid_function_values)
+      !call TEMP_test_values_in_points('grid_function_values in point', &
+      !                       nr_points, grid_points, v1=grid_function_values)
 
     else
       do ipoint = 1, nr_points
@@ -1037,27 +1019,28 @@ contains
 
       allocate(atom_xyz(4, nucdep))
 
-      write(*,'(a,i4,2es16.8e2)') 'D_0 before get_s OLD:'
-      !if (associated(D_0%elms)) then
-      !  call prqmat(D_0%elms, &
-      !              D_0%nrow, &
-      !              D_0%ncol, &
-      !              D_0%nrow, &
-      !              D_0%ncol, &
-      !              D_0%nz,   &
+      write(*,'(a,i4,2es16.8e2)') 'D before get_j OLD:'
+      !write(*,'(a,i4,2es16.8e2)') 'D_0 before get_s OLD:'
+      !!if (associated(D_0%elms)) then
+      !!  call prqmat(D_0%elms, &
+      !!              D_0%nrow, &
+      !!              D_0%ncol, &
+      !!              D_0%nrow, &
+      !!              D_0%ncol, &
+      !!              D_0%nz,   &
+      !!              ipqtoq(1, 0), &
+      !!              lupri)
+      !!end if
+      !if (associated(D(1)%elms)) then
+      !  call prqmat(D(1)%elms, &
+      !              D(1)%nrow, &
+      !              D(1)%ncol, &
+      !              D(1)%nrow, &
+      !              D(1)%ncol, &
+      !              D(1)%nz,   &
       !              ipqtoq(1, 0), &
       !              lupri)
       !end if
-      if (associated(D(1)%elms)) then
-        call prqmat(D(1)%elms, &
-                    D(1)%nrow, &
-                    D(1)%ncol, &
-                    D(1)%nrow, &
-                    D(1)%ncol, &
-                    D(1)%nz,   &
-                    ipqtoq(1, 0), &
-                    lupri)
-      end if
 
 !     prepare input data (incoming grids and grid functions)
 !     ======================================================
@@ -1772,7 +1755,6 @@ contains
       integer              :: JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2, IVECTOR
       real(8)              :: FREQ1, FREQ2, ERGRSP, unused
 
-!gosia, i'll remove it later
       integer:: i, j
       character(10):: pattern
       character(16):: text
@@ -1992,23 +1974,23 @@ contains
     real(8), intent(in), optional :: v3(3)
     real(8), intent(in), optional :: v9(9)
 
-    if (present(v1)) then
-      write(*, '(A,2I6,3E16.8,ES30.20E3)') text, get_my_rank(), ipoint, &
-                                           r3(1:3), &
-                                           v1
-    end if
+    !if (present(v1)) then
+    !  write(*, '(A,2I6,3E16.8,ES30.20E3)') text, get_my_rank(), ipoint, &
+    !                                       r3(1:3), &
+    !                                       v1
+    !end if
 
-    if (present(v3)) then
-      write(*, '(A,2I6,3E16.8,3ES30.20E3)') text, get_my_rank(), ipoint, &
-                                           r3(1:3), &
-                                           v3(1:3)
-    end if
+    !if (present(v3)) then
+    !  write(*, '(A,2I6,3E16.8,3ES30.20E3)') text, get_my_rank(), ipoint, &
+    !                                       r3(1:3), &
+    !                                       v3(1:3)
+    !end if
 
-    if (present(v9)) then
-      write(*, '(A,2I6,3E16.8,9ES30.20E3)') text, get_my_rank(), ipoint, &
-                                           r3(1:3), &
-                                           v9(1:9)
-    end if
+    !if (present(v9)) then
+    !  write(*, '(A,2I6,3E16.8,9ES30.20E3)') text, get_my_rank(), ipoint, &
+    !                                       r3(1:3), &
+    !                                       v9(1:9)
+    !end if
 
   end subroutine
 
@@ -2021,29 +2003,29 @@ contains
     real(8), intent(in), optional :: v9(9,nr_points)
     integer :: ipoint
 
-    if (present(v1)) then
-      do ipoint = 1, nr_points
-        write(*, '(A,2I6,3E16.8,ES30.20E3)') text, get_my_rank(), ipoint, &
-                                             r3(1:3,ipoint), &
-                                             v1(ipoint)
-      end do
-    end if
+    !if (present(v1)) then
+    !  do ipoint = 1, nr_points
+    !    write(*, '(A,2I6,3E16.8,ES30.20E3)') text, get_my_rank(), ipoint, &
+    !                                         r3(1:3,ipoint), &
+    !                                         v1(ipoint)
+    !  end do
+    !end if
 
-    if (present(v3)) then
-      do ipoint = 1, nr_points
-        write(*, '(A,2I6,3E16.8,3ES30.20E3)') text, get_my_rank(), ipoint, &
-                                              r3(1:3,ipoint), &
-                                              v3(1:3,ipoint)
-      end do
-    end if
+    !if (present(v3)) then
+    !  do ipoint = 1, nr_points
+    !    write(*, '(A,2I6,3E16.8,3ES30.20E3)') text, get_my_rank(), ipoint, &
+    !                                          r3(1:3,ipoint), &
+    !                                          v3(1:3,ipoint)
+    !  end do
+    !end if
 
-    if (present(v9)) then
-      do ipoint = 1, nr_points
-        write(*, '(A,2I6,3E16.8,9ES30.20E3)') text, get_my_rank(), ipoint, &
-                                              r3(1:3,ipoint), &
-                                              v9(1:9,ipoint)
-      end do
-    end if
+    !if (present(v9)) then
+    !  do ipoint = 1, nr_points
+    !    write(*, '(A,2I6,3E16.8,9ES30.20E3)') text, get_my_rank(), ipoint, &
+    !                                          r3(1:3,ipoint), &
+    !                                          v9(1:9,ipoint)
+    !  end do
+    !end if
 
   end subroutine
 

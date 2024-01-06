@@ -5,9 +5,12 @@ module visual_dirac
   use visual_utils
   use visual_mpi
 
+  !use dirac_rsp_utils
+
 ! DIRAC modules
   use checkpoint
   use basis_set_datatypes
+  use dirac_rsp_utils
 
 #ifdef VAR_MPI
    use interface_to_mpi
@@ -34,15 +37,26 @@ module visual_dirac
 contains
 
 ! -----------------------------------------------------------------------------
-  subroutine dirac_dmat_init(wf_order, cmo, dmat_ao, dmat_mo)
+  subroutine dirac_dmat_init(wf_order, cmo, &
+                             dmat_ao, dmat_mo, &
+                             rspvec_file, rspvec_id)
+                             !fixme: later pass rspvec DT
     integer, intent(in) :: wf_order
     type(cmo_t), intent(in) :: cmo
     type(dmat_t), optional, intent(inout) :: dmat_ao
     type(dmat_t), optional, intent(inout) :: dmat_mo
+    character(*), optional, intent(in) :: rspvec_file
+    integer, optional, intent(in) :: rspvec_id
     type(dmat_t) :: dmat_mo_from_occupation
+    type(dmat_t) :: response_vector_scattered_to_matrix
+    type(gp_info_t) :: gp_info
+    type(response_info_t) :: rsp_info
     real(8), allocatable :: occupation(:)
+    real(8), allocatable :: response_vector(:)
     integer :: nao, nmo, nz
-    integer :: i
+    integer :: i, ivec
+    integer :: f_unit
+    character(80) :: f_name
 
     if (wf_order == 0) then
 !     initialize unperturbed density matrix from occupation numbers
@@ -79,7 +93,73 @@ contains
       deallocate(occupation)
 
     else if (wf_order == 1) then
-!     use PAMXVC
+!     construct the perturbed density matrix from rsp vectors on PAMXVC
+!     D = \sum_{\mu\nu} C^\dagger_{\mu p} \kappa_{pq} C_q\nu, 
+!     where \kappa are elements of the LR solution vector
+
+      nao = sum(cmo%n_ao)
+      nmo = sum(cmo%n_mo)
+      nz  = cmo%nz
+
+      f_name = 'response_helper.txt'
+      call read_gp_data(gp_info, f_name)
+      call read_rsp_data(rsp_info, f_name)
+      call rsp_info%init()
+
+      if (present(rspvec_file)) then
+        f_name = trim(rspvec_file)
+      else
+        stop
+      end if
+      rsp_info%rspvec_file = f_name
+
+      if (present(rspvec_id)) then
+        ivec = rspvec_id
+      else
+        stop
+      end if
+
+      !open(newunit = f_unit,&
+      !     file = trim(f_name),&
+      !     status = 'OLD',&
+      !     form   = 'unformatted',&
+      !     access = 'sequential',&
+      !     position = 'rewind')
+
+      f_name = 'PAMXVC'
+      !call read_response_file(f_name, gp_info, rsp_info)
+      call read_response_file(f_name, gp_info, rsp_info, .true., rspvec_id=ivec)
+      call print_gp_info(gp_info)
+      call print_xlr_info(rsp_info)
+
+
+      !call read_response_file(rsp_info%rspvec_file, gp_info, rsp_info)
+      !call read_response_file(rsp_info%rspvec_file, gp_info, rsp_info, .true.)
+      !close(f_unit, status = 'keep')
+
+      !allocate(bmat(nmo*nmo*nz, rsp_info%nr_rsp_vectors))
+      !bmat = 0.0d0
+
+      !deallocate(bmat)
+
+
+      !! dmat_mo to dmat_ao
+
+      !if (present(dmat_mo)) then
+      !  dmat_mo = response_vector_scattered_to_matrix
+      !end if
+
+      !if (present(dmat_ao)) then
+      !  dmat_ao%mat_dim = nao
+      !  dmat_ao%mat_nz  = nz
+      !  call dmat_ao%alloc()
+      !  call dmat_transform_mo2ao(cmo, dmat_mo_from_occupation, dmat_ao)
+      !  call dmat_ao%scale_elements(2.0d0)
+      !  !call dmat_ao%alloc_q()
+      !  !call dmat_ao%reshape_to_q()
+      !end if
+
+
     end if
   end subroutine dirac_dmat_init
 
@@ -594,10 +674,15 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine synchronize_grid_function_data(grid_function)
     type(grid_function_t), intent(inout):: grid_function
-    integer:: len_gffn_inp, len_gffn_out, len_gf_name
+    integer:: len_gffn_rsp, len_gffn_inp, len_gffn_out, len_gf_name
 ! ------------------------------------------------------------------------------
 
     if (mpi_is_master()) then
+      if (allocated(grid_function%rspvec_file)) then
+        len_gffn_rsp = len_trim(grid_function%rspvec_file)
+      else
+        len_gffn_rsp = 0
+      end if
       if (allocated(grid_function%file_inp)) then
         len_gffn_inp = len_trim(grid_function%file_inp)
       else
@@ -623,6 +708,7 @@ contains
     call interface_mpi_bcast(grid_function%status,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%input,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%wf_order,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%rspvec_id,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%tensor_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_g_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_m_order,1,irank_master,global_communicator)
@@ -630,11 +716,13 @@ contains
     call interface_mpi_bcast_l0(grid_function%export,1,irank_master,global_communicator)
 
     if (.not.mpi_is_master()) then
+      if (len_gffn_rsp > 0) allocate(character(len_gffn_rsp):: grid_function%rspvec_file)
       if (len_gffn_inp > 0) allocate(character(len_gffn_inp):: grid_function%file_inp)
       if (len_gffn_out > 0) allocate(character(len_gffn_out):: grid_function%file_out)
       if (len_gf_name > 0) allocate(character(len_gf_name):: grid_function%name)
     end if
 
+    call interface_mpi_bcast(grid_function%rspvec_file,len_gffn_rsp,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%file_inp,len_gffn_inp,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%file_out,len_gffn_out,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%name,len_gf_name,irank_master,global_communicator)

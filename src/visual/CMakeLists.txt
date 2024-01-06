@@ -26,6 +26,8 @@ set(FREE_VISUAL_FORTRAN_SOURCES
     visual_txt_storage.F90
     visual_labeled_storage.F90
     visual_mpi.F90
+    # gosia - fixme!
+    ${PROJECT_SOURCE_DIR}/src/prp/dirac_rsp_utils.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

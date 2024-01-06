@@ -80,8 +80,8 @@ module visual_datatypes
     private
     integer, public:: print_level = 0
     logical, public:: outpri = .false.   ! if true, print to DIRAC output
-    !logical:: small_ao = .false. ! if true, force small ao
-    !logical:: occup_ao = .false. ! if true, use orbital strings
+    !logical:: small_ao = .false. ! legacy; if true, force small ao
+    !logical:: occup_ao = .false. ! legacy; if true, use orbital strings
     integer, public:: nr_grids = 0
     integer, public:: nr_grid_functions = 0
     type(grid_t), allocatable, public:: grids(:)
@@ -147,11 +147,13 @@ module visual_datatypes
     integer, public:: input = 0                             ! 0 = calculate, 1 = import
     logical, public:: export = .true.                       ! export to file
     integer, public:: wf_order = 0                          ! 0 = depends on unperturbed wave function only, >0 requires perturbed wave functions (1 = linear response, 2 = quadratic response, etc.)
+    integer, public:: rspvec_id = 0                         ! now: record ID on PAMXVC file
     integer, public:: tensor_order = 0                      ! 0 = a scalar field, 1 = a vector field, 2 = a tensor field of rank 2, etc.
     integer, public:: max_ao_g_order = 0 !legacy
     integer, public:: max_ao_m_order = 0 !legacy
     integer, public:: id_assigned_grid = 0                  ! id of assigned grid
     integer, public:: purpose = 0                           ! 0 = visualization, 1 = integration
+    character(len=:), public, allocatable:: rspvec_file     ! name of a file with response parameters
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid function import
     character(len=:), public, allocatable:: file_out        ! name of a file for grid function export
     real(8), public, allocatable:: values(:,:)
@@ -162,6 +164,8 @@ module visual_datatypes
     procedure, pass, public:: allocated_values
     procedure, pass, public:: get_ndim
     procedure, pass, public:: get_npoints
+    !procedure, pass, public:: should_depend_on_rsp_data
+    !procedure, pass, public:: should_depend_on_pertAOs
     procedure, pass, public:: erase   => erase_grid_function
     procedure, pass, public:: display => display_grid_function
   end type grid_function_t
@@ -643,11 +647,13 @@ contains
       write(*, *) 'input =           ', self%input, my_rank
       write(*, *) 'export =          ', self%export, my_rank
       write(*, *) 'wf_order =        ', self%wf_order, my_rank
-      write(*, *) 'tensor_order      ', self%tensor_order, my_rank
-      write(*, *) 'max_ao_g_order    ', self%max_ao_g_order, my_rank
-      write(*, *) 'max_ao_m_order    ', self%max_ao_m_order, my_rank
+      write(*, *) 'rspvec_id =       ', self%rspvec_id, my_rank
+      write(*, *) 'tensor_order =    ', self%tensor_order, my_rank
+      write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order, my_rank
+      write(*, *) 'max_ao_m_order =  ', self%max_ao_m_order, my_rank
       write(*, *) 'id_assigned_grid =', self%id_assigned_grid, my_rank
       write(*, *) 'purpose =         ', self%purpose, my_rank
+      if (allocated(self%rspvec_file)) write(*, *) 'rspvec_file =        ', self%rspvec_file, my_rank
       if (allocated(self%file_inp)) write(*, *) 'file_inp =        ', self%file_inp, my_rank
       if (allocated(self%file_out)) write(*, *) 'file_out =        ', self%file_out, my_rank
     else
@@ -657,11 +663,13 @@ contains
       write(*, *) 'input =           ', self%input
       write(*, *) 'export =          ', self%export
       write(*, *) 'wf_order =        ', self%wf_order
-      write(*, *) 'tensor_order      ', self%tensor_order
-      write(*, *) 'max_ao_g_order    ', self%max_ao_g_order
-      write(*, *) 'max_ao_m_order    ', self%max_ao_m_order
+      write(*, *) 'rspvec_id =       ', self%rspvec_id
+      write(*, *) 'tensor_order =    ', self%tensor_order
+      write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order
+      write(*, *) 'max_ao_m_order =  ', self%max_ao_m_order
       write(*, *) 'id_assigned_grid =', self%id_assigned_grid
       write(*, *) 'purpose =         ', self%purpose
+      if (allocated(self%rspvec_file)) write(*, *) 'rspvec_file =        ', self%rspvec_file
       if (allocated(self%file_inp)) write(*, *) 'file_inp =        ', self%file_inp
       if (allocated(self%file_out)) write(*, *) 'file_out =        ', self%file_out
     end if

@@ -442,7 +442,8 @@ module electrostatic_potential
                      debug_prod = debug_dij * debug_vij 
                      debug_sum  = debug_sum + debug_prod 
 !                     write (*,'(5x,2i4,e20.8,2i4,e20.8,2e20.8)') idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
-                     write (*,'(a,i4,5x,2i4,e20.8,2i4,e20.8,2e20.8)') 'IN ELECTRONIC_MEP ',my_rank,idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
+                     write (*,'(a,i4,5x,2i4,e20.8,2i4,e20.8,2e20.8)') 'IN ELECTRONIC_MEP ',&
+                      my_rank,idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
 !!!!
                    end do
                    end do

@@ -498,6 +498,22 @@ contains
           write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"'
           stop
         end if
+      case ('rspvec_file')
+!       fixme
+        if (val == 'PAMXVC') then
+          grid_function%rspvec_file = val
+          grid_function%wf_order = 1
+        else
+          write(*, *) 'wrong argument; argument to "rsp" must be "PAMXVC"'
+          stop
+        end if
+      case ('rspvec_id')
+!       fixme
+          if (grid_function%wf_order /= 1) then
+            write(*, *) 'rsp is not set up'
+            stop
+          end if
+          call str2int(val, grid_function%rspvec_id, stat)
       case ('purpose')
         if (val == 'visualization') then
           grid_function%purpose = 0
@@ -522,16 +538,21 @@ contains
         stop
     end select
 
+    call modify_grid_function_due_to_method(grid_function)
+
     if (grid_function%id == 0) grid_function%id = id_grid_function
 
-  end subroutine grid_function_input_cfg
+  end subroutine
 
 
 ! ------------------------------------------------------------------------------
   subroutine verify_grid_function_predefined(grid_function)
     class(grid_function_t), intent(inout):: grid_function
 !
-!   gosia: grid_function%name also defines a label on HDF5
+!   gosia, summer 2023:
+!   * initial setup of grid_function based on its name;
+!   * grid_function%name also defines a label on HDF5
+!
 
     select case (grid_function%name)
       case ('density', &
@@ -541,8 +562,7 @@ contains
             'espn', &
             'esprho', &
             'esperho', &
-            'espnrho', &
-            'j')
+            'espnrho')
         grid_function%wf_order = 0
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 0
@@ -561,7 +581,8 @@ contains
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 1
         grid_function%max_ao_m_order = 0
-      case ('s')
+      case ('s', &
+            'j')
         grid_function%wf_order = 0
         grid_function%tensor_order = 1
         grid_function%max_ao_g_order = 0
@@ -590,10 +611,43 @@ contains
         stop
     end select
 
-! fixme: add others; + if (levyle) + if london
+  end subroutine
 
-  end subroutine verify_grid_function_predefined
 
+! ------------------------------------------------------------------------------
+  subroutine modify_grid_function_due_to_method(grid_function)
+    class(grid_function_t), intent(inout):: grid_function
+
+    if (visual_cfg_london .and. grid_function%max_ao_m_order < 1) then
+      grid_function%max_ao_m_order = 1
+    end if
+
+    !if (levyle) then
+    !  if ((grid_function%name == 'j') .or. &
+    !      (grid_function%name == 'ndipx') .or. &
+    !      (grid_function%name == 'ndipy') .or. &
+    !      (grid_function%name == 'ndipz') .or. &
+    !      (grid_function%name == 'bdipx') .or. &
+    !      (grid_function%name == 'bdipy') .or. &
+    !      (grid_function%name == 'bdipz')) then
+    !    if (grid_function%max_ao_g_order < 1) then
+    !      grid_function%max_ao_g_order = 1
+    !    end if
+    !  end if
+    !end if
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine should_depend_on_rsp_data(grid_function)
+    class(grid_function_t), intent(inout):: grid_function
+
+    if (grid_function%wf_order == 1) then
+      !
+    end if
+
+  end subroutine
 
 
 ! strings

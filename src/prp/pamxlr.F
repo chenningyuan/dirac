@@ -374,6 +374,11 @@ C
  20     CONTINUE
  10   CONTINUE
       CALL MEMREL('PRPXL1',WORK,1,KXLR,KFREE,LFREE)
+!
+!     if requested, additionally export response information to file:
+      if (XLR_RSPEXP) then
+        call export_rsp_info_to_helper()
+      end if
 C
 C     Final print section
 C
@@ -437,7 +442,7 @@ C
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
      &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
      &            '.DAMPIN','.FREQ I','.LAOMOD','.EPOLE ',
-     &            '.MPOLE ','.NMFREQ','.ANATHR','.XXXXXX'/
+     &            '.MPOLE ','.NMFREQ','.ANATHR','.RSPEXP'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -532,6 +537,7 @@ C     Calculation of C6 dispersion coefficient
       NOSPIA     = .FALSE.
       NOSPIB     = .FALSE.
       XLR_E2CHEK = .FALSE.
+      XLR_RSPEXP = .FALSE.
       DO I = 1,NFSYM
          XLR_INDSTR(2,I) = ' '
          XLR_INDSTR(1,I) = ' '
@@ -906,6 +912,8 @@ C&&&& ANATHR: Threshold for analysis of linear response function
                READ(LUCMD,*) XLR_ANATHR
                GO TO 100
  44            CONTINUE
+C&&&& RSPEXP: export response data on txt file (gosia fixme will be hdf5)
+               XLR_RSPEXP = .true.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -2522,3 +2530,41 @@ C***********************************************************************
       ENDDO
       RETURN
       END
+!     ------------------------------------------------------------------
+!
+!     subroutines enabling the additional export of response data;
+!     used in VISUAL and FDE
+!     Gosia Olejniczak, 16/01/2024
+!
+!     ------------------------------------------------------------------
+      subroutine export_rsp_info_to_helper()
+        use dirac_rsp_utils
+        implicit none
+        type(gp_info_t) :: gp_info
+        type(response_info_t) :: rsp_info
+        character(80) :: f_name
+        integer :: f_unit
+
+        call read_gp_data(gp_info)
+        call rsp_info%init()
+
+        f_name(1:6) = 'PAMXVC'
+        rsp_info%rspvec_file = f_name
+        call read_response_file(trim(f_name), gp_info, rsp_info) 
+        call read_response_file(trim(f_name), gp_info, rsp_info, .true.)
+        close(f_unit, status = 'keep')
+
+        f_name = 'response_helper.txt'
+        open(newunit = f_unit,
+     &       file = trim(f_name),
+     &       status = 'NEW',
+     &       form   = 'formatted',
+     &       access = 'sequential')
+
+        call write_nonallocatables_to_helper(f_unit,gp_info,rsp_info)
+        call write_allocatables_to_helper(f_unit,rsp_info)
+
+        close(f_unit, status = 'keep')
+
+      end subroutine
+

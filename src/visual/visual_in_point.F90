@@ -402,8 +402,39 @@ contains
         grid_function_values(2:2,ipoint:ipoint) = -v3(3,1) + v3(1,3)
         grid_function_values(3:3,ipoint:ipoint) = -v3(1,2) + v3(2,1)
 
+      case ('j')
+!       current density: -ec \psi^\dag \alpha \psi
+        v2 = 0.0d0
+        call get_j(v2,       &
+                   cval,     &
+                   mat_irep, &
+                   mat_dim,  &
+                   dmat_0%elements,&
+                   buffer,   &
+                   ao)
+        grid_function_values(1:1,ipoint:ipoint) = v2(1)
+        grid_function_values(2:2,ipoint:ipoint) = v2(2)
+        grid_function_values(3:3,ipoint:ipoint) = v2(3)
+
 
     end select
+
+!    if (pointwise_modification) then
+!!     Multiply with Cartesian powers
+!      do i = 1, visual_cfg_cartesian_power(1)
+!        result = px*result    
+!      enddo
+!      do i = 1, visual_cfg_cartesian_power(2)
+!        result = py*result    
+!      enddo
+!      do i = 1, visual_cfg_cartesian_power(3)
+!        result = pz*result    
+!      enddo
+!      
+!!     Scale result 
+!      result = visual_cfg_scale*result
+!
+!    end if
 
   end subroutine
 
@@ -661,75 +692,6 @@ contains
                result(0) = result(0) +         esp(1)
             end if
 
-            if (visual_cfg_property(imat) == iq_kin) then
-               call get_kin(density,      &
-                            cval,         &
-                            D(imat)%irep, &
-                            D(imat)%nrow, &
-                            D(imat)%elms, &
-                            buffer,       &
-                            ao)
-               result(0) = result(0) + density
-            end if
-
-            if (visual_cfg_property(imat) == iq_kin_ls) then
-               call get_kin_ls(density,      &
-                               cval,         &
-                               D(imat)%irep, &
-                               D(imat)%nrow, &
-                               D(imat)%elms, &
-                               buffer,       &
-                               ao)
-               result(0) = result(0) + density
-            end if
-
-            if (visual_cfg_property(imat) == iq_kin_sl) then
-               call get_kin_sl(density,      &
-                               cval,         &
-                               D(imat)%irep, &
-                               D(imat)%nrow, &
-                               D(imat)%elms, &
-                               buffer,       &
-                               ao)
-               result(0) = result(0) + density
-            end if
-
-            if (visual_cfg_property(imat) == iq_kin_tau) then
-               call get_kin_tau(density,      &
-                                D(imat)%irep, &
-                                D(imat)%nrow, &
-                                D(imat)%elms, &
-                                buffer,       &
-                                ao)
-               result(0) = result(0) + density
-            end if
-
-            if (visual_cfg_property(imat) == iq_kin_lap) then
-               call get_kin_lap(density,      &
-                                D(imat)%irep, &
-                                D(imat)%nrow, &
-                                D(imat)%elms, &
-                                buffer,       &
-                                ao)
-               result(0) = result(0) + density
-            end if
-
-            if (visual_cfg_property(imat) == iq_kin_nr) then
-               call get_kin_tau(density,      &
-                                D(imat)%irep, &
-                                D(imat)%nrow, &
-                                D(imat)%elms, &
-                                buffer,       &
-                                ao)
-               result(0) = result(0) + 0.5d0*density
-               call get_kin_lap(density,      &
-                                D(imat)%irep, &
-                                D(imat)%nrow, &
-                                D(imat)%elms, &
-                                buffer,       &
-                                ao)
-               result(0) = result(0) + 0.5d0*density
-            end if
 
 !           current density: -ec \psi^\dag \alpha \psi
             if (visual_cfg_property(imat) == iq_j) then
@@ -779,44 +741,6 @@ contains
                end if
             end if
 
-!           spin density: \psi^\dag \Sigma \psi
-            if (visual_cfg_property(imat) == iq_s) then
-              v  = 0.0d0
-              buffer(1:nr_ao_slices*nr_ao_cartesian) = 0.0d0
-             !write(*,'(a,2i4,3es16.8e2)') 'before get_s OLD dims: ',D(imat)%irep,D(imat)%nrow,v(1),v(2),v(3)
-             !write(*,'(a,3es16.8e2)') 'before get_s OLD: ',ao(1), ao(20), ao(147)
-               call get_s(v,            &
-                          D(imat)%irep, &
-                          D(imat)%nrow, &
-                          D(imat)%elms, &
-                          !D_0%irep, &
-                          !D_0%nrow, &
-                          !D_0%elms, &
-                          buffer,       &
-                          ao,r=(/px, py, pz/))
-               result(1:3) = result(1:3) + v(1:3)
-               !write(*,'(a,3es16.8e2)') 'after get_s OLD: ', v(1), v(2), v(3)
-            end if
-
-!           divergence or curl of spin density
-            if ((visual_cfg_property(imat) == iq_divs) .or. &
-                (visual_cfg_property(imat) == iq_rots)) then
-               call get_gs(v,               &
-                           matrix_33,       &
-                           D(imat)%irep,    &
-                           D(imat)%nrow,    &
-                           D(imat)%elms,    &
-                           buffer,          &
-                           ao)
-               if (visual_cfg_property(imat) == iq_divs) then
-                  result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
-               end if
-               if (visual_cfg_property(imat) == iq_rots) then
-                  result(1) = result(1) - matrix_33(2, 3) + matrix_33(3, 2)
-                  result(2) = result(2) - matrix_33(3, 1) + matrix_33(1, 3)
-                  result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)
-               end if
-            end if
 
 !           divergence or curl or gradient of current density
             if ((visual_cfg_property(imat) == iq_divj)  .or.  &
