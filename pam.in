@@ -134,6 +134,8 @@ class pam_enviroment:
         else:
         #   Linux, Windows, ...
             self.mpirun = find_executable('mpirun')
+            if self.mpirun is None:
+              self.mpirun = find_executable('srun')
 
         #  restrict distribution of working files over nodes by own flag/variable
         self.distribute = []
@@ -408,6 +410,21 @@ class pam_enviroment:
             sys.stderr.flush()
             sys.exit(13)
 
+    def move_file(self, src, dest):
+        """move file from directory "scr" to "dest"
+     for the printout use 'purified' file names"""
+        try:
+            if self.verbose:
+                print("  Moveing %s to %s" % (src, dest))
+            shutil.move(src, dest)
+        except:
+            print("Moving of files - shutil.move(src, dest) - failed, error exit ", file=sys.stderr)
+            print(' src full path:', src, file=sys.stderr)
+            print('dest full path:', dest, file=sys.stderr)
+            print('  input dir   :', self.input_directory, file=sys.stderr)
+            sys.stderr.flush()
+            sys.exit(13)
+
     def copy_with_replacement(self, src, dst):
         try:
             if self.verbose:
@@ -471,8 +488,6 @@ class pam_enviroment:
     def remove_scratch_dir(self):
         ''' remove the scratch directory (if it exists) after Dirac run '''
         if os.path.isdir(self.scratch_dir):
-            if self.verbose and os.path.isdir(self.scratch_dir):
-                self.list_scratch_dir()
             if not self.keep_scratch:
                 # leave the scratch dir to be able to remove it (Windows demand)
                 os.chdir(self.input_directory)
@@ -1773,6 +1788,8 @@ Options are also read from ~/.diracrc"""
             # flush out the final sdterr message on details about the dirac run
             self.stderr_message()
             # clean the working directory and exit
+            if self.verbose and os.path.isdir(self.scratch_dir):
+                self.list_scratch_dir()
             self.remove_scratch_dir()
             return_code = self.exit_function()
         sys.exit()
@@ -1882,7 +1899,10 @@ Options are also read from ~/.diracrc"""
                 if not self.nobackup:
                     # backup file if it's there
                     backup_file(some_file=full_file_name_local, upto=None)
-                self.copy_file(full_file_name_scratch, full_file_name_local)
+                if self.keep_scratch:
+                    self.copy_file(full_file_name_scratch, full_file_name_local)
+                else:
+                    self.move_file(full_file_name_scratch, full_file_name_local)
                 #print '  Copy %s to %s' % (full_file_name_scratch, full_file_name_local)
             else:
                 print_error_message('  File %s not found in the scratch directory !' % file_name_scratch)
@@ -2109,6 +2129,8 @@ class pam_run(pam_enviroment):
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_cmd()
         self.pam_variables.execute_dirac()
+        if self.pam_variables.verbose and os.path.isdir(self.pam_variables.scratch_dir):
+            self.pam_variables.list_scratch_dir()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()
         return_code = self.pam_variables.exit_function()

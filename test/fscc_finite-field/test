@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from runtest import version_info, get_filter, cli, run
+from runtest_config import configure
+
+assert version_info.major == 2
+
+f = [
+    get_filter(from_string='Relative real eigenvalues in other units;',
+               to_string='Analysis of eigenvectors',
+               rel_tolerance=1.0e-8)
+]
+
+options = cli()
+
+ierr = 0
+for inp in ['fscc-Bz.inp']:
+    for mol in ['BeF-nosym.mol', 'BeF-sym.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    extra_args='--mw=100 --aw=128',
+                    filters={'out': f})
+
+for inp in ['fscc-HSC-Bez.inp']:
+    for mol in ['BeF-nosym.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    extra_args='--mw=100 --aw=128',
+                    filters={'out': f})
+
+for inp in ['fscc-HSC-Bez-sym.inp']:
+    for mol in ['BeF-sym.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    extra_args='--mw=100 --aw=128',
+                    filters={'out': f})
+
+sys.exit(ierr)

@@ -1,5 +1,15 @@
 :orphan:
 
+24.0
+----
+
+Bugfix:
+
+- Fixed Fock-space coupled cluster calculations with finite fields.
+  The values obtained with the versions that range between v21.0 and v23.0 are incorrect (Agustín Aucar).
+
+-----------------------------------------------------------------------------------------------------
+
 23.0
 ----
 
