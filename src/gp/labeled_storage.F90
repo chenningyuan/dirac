@@ -602,18 +602,18 @@ module labeled_storage
 
       if (present(rdata)) then
          dyn = size(rdata) > 1 ! Do not create resizable (chunked) arrays for single numbers
-         if (dset_id == 0) dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)],dyn)
+         if (.not.dset_log) dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)],dyn)
          call mh5_put_dset(dset_id, rdata)
       elseif (present(idata)) then
          dyn = size(idata) > 1 ! Do not create resizable (chunked) arrays for single numbers
-         if (dset_id == 0) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)],dyn)
+         if (.not.dset_log) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)],dyn)
          call mh5_put_dset(dset_id, int8(idata))
       elseif (present(sdata).and.present(slen).and.present(sdim)) then
          dyn = .true.
-         if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(1), [int8(sdim)], int8(slen),dyn)
+         if (.not.dset_log) dset_id = mh5_create_dset_str(file_id, label, int8(1), [int8(sdim)], int8(slen),dyn)
          call mh5_put_dset(dset_id, sdata)
       elseif (present(sdata)) then
-         if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(len(sdata)))
+         if (.not.dset_log) dset_id = mh5_create_dset_str(file_id, label, int8(len(sdata)))
          call mh5_put_dset(dset_id, sdata)
       end if
 
