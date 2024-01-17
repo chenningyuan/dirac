@@ -627,9 +627,7 @@ contains
     type(mol_t), intent(inout):: mol
     type(cmo_t), intent(in):: cmo
     type(dmat_t), intent(in):: dmat_0
-    !type(dmat_t), intent(in):: dmat(ndmat)
     type(dmat_t):: dmat
-    !type(dmat_t), allocatable:: dmat(:)
 
     real(8), allocatable              :: ao(:,:)
     real(8), allocatable              :: buffer(:,:)
@@ -646,6 +644,7 @@ contains
     real(8) :: walltime
     integer:: n_this_proc, idim_grid, idim_gf
     integer:: i,j
+    integer:: iz, off_ij
 ! ------------------------------------------------------------------------------
 
     if (mpi_is_master()) call rs_input%display
@@ -751,6 +750,16 @@ contains
                                    dmat_ao=dmat, &
                                    rspvec_file=rs_input%grid_functions(igf)%rspvec_file,&
                                    rspvec_id=rs_input%grid_functions(igf)%rspvec_id)
+              do iz=1,4
+                do i=1,dmat%mat_dim
+                  do j=1,dmat%mat_dim
+                    off_ij = j + (i-1)*dmat%mat_dim + (iz-1)*dmat%mat_dim*dmat%mat_dim
+                    write(*, '(a,3i4,es16.8e2)') 'debug dmat matrix: ', &
+                          j, i, iz, dmat%elements(off_ij)
+                  end do
+                end do
+              end do
+
             end if
 !#ifdef VAR_MPI
 !            if (is_parallel()) call synchronize_dmat(dmat)
@@ -790,7 +799,7 @@ contains
                             rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
                             rs_input%grid_functions(igf), &
                             grid_function_values, &
-                            dmat_0,                &
+                            dmat_0,dmat,           &
                             ao, buffer)
 
           deallocate(ao)
@@ -823,6 +832,7 @@ contains
           !end if
  
           deallocate(grid_function_values)
+          call dmat%erase()
 
 !
 !         save data
@@ -872,7 +882,7 @@ contains
                           grid_points,   &
                           grid_function, &
                           grid_function_values, &
-                          dmat_0,     &
+                          dmat_0, dmat,     &
                           ao, buffer)
 
     integer, intent(in):: ndim
@@ -881,6 +891,7 @@ contains
     type(grid_function_t), intent(inout):: grid_function
     real(8), intent(out):: grid_function_values(:,:)
     type(dmat_t), intent(in):: dmat_0
+    type(dmat_t), intent(in):: dmat
     real(8), intent(inout):: ao(*)
     real(8), intent(inout):: buffer(*)
     integer:: ipoint
@@ -915,7 +926,7 @@ contains
                     ao,                    &
                     buffer)
       
-        call get_quantity_in_point_refactored(dmat_0,&
+        call get_quantity_in_point_refactored(dmat_0,dmat,&
                                               ao,buffer,&
                                               grid_function,grid_function_values,&
                                               grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&

@@ -54,7 +54,7 @@ contains
     real(8), allocatable :: occupation(:)
     real(8), allocatable :: response_vector(:)
     integer :: nao, nmo, nz
-    integer :: i, ivec
+    integer :: i, ivec, rspvec_ndim, rspvec_nz
     integer :: f_unit
     character(80) :: f_name
 
@@ -119,45 +119,35 @@ contains
         stop
       end if
 
-      !open(newunit = f_unit,&
-      !     file = trim(f_name),&
-      !     status = 'OLD',&
-      !     form   = 'unformatted',&
-      !     access = 'sequential',&
-      !     position = 'rewind')
-
-      f_name = 'PAMXVC'
-      !call read_response_file(f_name, gp_info, rsp_info)
       call read_response_file(f_name, gp_info, rsp_info, .true., rspvec_id=ivec)
       call print_gp_info(gp_info)
       call print_xlr_info(rsp_info)
 
+      response_vector_scattered_to_matrix%mat_dim = nmo
+      response_vector_scattered_to_matrix%mat_nz = nz
+      call response_vector_scattered_to_matrix%alloc()
+      call read_response_file(f_name, gp_info, rsp_info, .false., rspvec_id=ivec,&
+                              bmat=response_vector_scattered_to_matrix%elements)
 
-      !call read_response_file(rsp_info%rspvec_file, gp_info, rsp_info)
-      !call read_response_file(rsp_info%rspvec_file, gp_info, rsp_info, .true.)
-      !close(f_unit, status = 'keep')
+      if (present(dmat_mo)) then
+        dmat_mo = response_vector_scattered_to_matrix
+      end if
 
-      !allocate(bmat(nmo*nmo*nz, rsp_info%nr_rsp_vectors))
-      !bmat = 0.0d0
-
-      !deallocate(bmat)
-
-
-      !! dmat_mo to dmat_ao
-
-      !if (present(dmat_mo)) then
-      !  dmat_mo = response_vector_scattered_to_matrix
-      !end if
-
-      !if (present(dmat_ao)) then
-      !  dmat_ao%mat_dim = nao
-      !  dmat_ao%mat_nz  = nz
-      !  call dmat_ao%alloc()
-      !  call dmat_transform_mo2ao(cmo, dmat_mo_from_occupation, dmat_ao)
-      !  call dmat_ao%scale_elements(2.0d0)
+      if (present(dmat_ao)) then
+        dmat_ao%mat_dim = nao
+        dmat_ao%mat_nz  = nz
+        call dmat_ao%alloc()
+        call dmat_transform_mo2ao(cmo, response_vector_scattered_to_matrix, dmat_ao)
+        !call construct_perturbed_dmat(dmat_ao%elements,&
+        !                response_vector_scattered_to_matrix%elements,&
+        !                ivec, &
+        !                gp_info, rsp_info, cmo%coeff)
+        call dmat_ao%scale_elements(2.0d0)
       !  !call dmat_ao%alloc_q()
       !  !call dmat_ao%reshape_to_q()
-      !end if
+      end if
+
+      call response_vector_scattered_to_matrix%erase()
 
 
     end if
@@ -772,5 +762,6 @@ contains
                     iprint)
 
   end subroutine
+
 
 end module

@@ -7,7 +7,7 @@ module dirac_rsp_utils
 
   public gp_info_t
   public response_info_t
-!  public construct_perturbed_dmat
+  public construct_perturbed_dmat
 ! temp:
   public read_gp_data
   public read_rsp_data
@@ -249,11 +249,14 @@ contains
   subroutine read_rspdim_data_from_helper_file(tmp, f_name)
     type(response_info_t), intent(inout) :: tmp
     character(*), intent(in) :: f_name
-    integer :: f_unit, idummy
+    integer :: f_unit
+    integer :: idummy
     logical :: ldummy
 !
 !   read from a "rsp helper" file
 !
+    call tmp%erase()
+
     open(newunit = f_unit,&
          file = trim(f_name),&
          status = 'OLD',&
@@ -261,10 +264,11 @@ contains
          access = 'sequential',&
          position = 'rewind')
 
+!   first 4 rows are for other data
     read(f_unit, '(i8)')  idummy
     read(f_unit, '(i8)')  idummy
     read(f_unit, '(i8)')  idummy
-    read(f_unit, '(l)')   ldummy
+    read(f_unit, '(l)')  ldummy
 
     read(f_unit, '(i8)')  tmp%ndamp
     read(f_unit, '(i8)')  tmp%nfreq
@@ -284,32 +288,72 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine read_rspvec_data_from_helper_file(self, f_unit, ivec)
-    type(response_info_t), intent(inout) :: self
-    integer, intent(in) :: f_unit
-    integer, intent(inout) :: ivec
+  subroutine read_rspvec_data_from_helper_file(tmp, f_name, ivec_selected)
+    type(response_info_t), intent(inout) :: tmp
+    character(*), intent(in) :: f_name
+    integer, intent(in) :: ivec_selected
+    integer :: f_unit, ivec
+    integer :: idummy
+    logical :: ldummy
 !
 !   read from a "rsp helper" file
 !
-    read(f_unit, '(5i8,a20,a5,i8,2es28.18,8i8)')  &
-                                      ivec,                      &
-                                      self%nzxope(ivec),          &
-                                      self%nzxopeq(ivec),         &
-                                      self%nzxopp(ivec),          &
-                                      self%nzxoppq(ivec),         &
-                                      self%rspvec_lab(ivec),      &
-                                      self%rspvec_type(ivec),     &
-                                      self%rspvec_ih(ivec),       &
-                                      self%rspvec_freq(ivec),     &
-                                      self%rspvec_rnorm(ivec),    &
-                                      self%rspvec_fsym(ivec),     &
-                                      self%rspvec_irep(ivec),     &
-                                      self%rspvec_trsym(ivec),    &
-                                      self%rspvec_ifckop(ivec),   &
-                                      self%jz_spfexc(ivec),       &
-                                      self%jrep_spfexc(ivec),     &
-                                      self%from_full_to_ee(ivec), &
-                                      self%from_full_to_ep(ivec)
+    call tmp%erase()
+
+    open(newunit = f_unit,&
+         file = trim(f_name),&
+         status = 'OLD',&
+         form   = 'formatted',&
+         access = 'sequential',&
+         position = 'rewind')
+
+!   first 13 rows are for other data
+    read(f_unit, '(i8)')  idummy
+    read(f_unit, '(i8)')  idummy
+    read(f_unit, '(i8)')  idummy
+    read(f_unit, '(i8)')  idummy
+    read(f_unit, '(i8)')  idummy
+    read(f_unit, '(i8)')  idummy
+    read(f_unit, '(i8)')  idummy
+    read(f_unit, '(l)')  ldummy
+    read(f_unit, '(l)')  ldummy
+    read(f_unit, '(l)')  ldummy
+    read(f_unit, '(i8)')  idummy
+    read(f_unit, '(i8)')  idummy
+    read(f_unit, '(i8)')  idummy
+
+ 1  continue
+    read(f_unit, '(i8)')  ivec
+    if (ivec == ivec_selected) then
+      backspace(f_unit) 
+      read(f_unit, '(5i8,a20,a5,i8,2es28.18,8i8)')  &
+                                        ivec,                      &
+                                        tmp%nzxope(ivec),          &
+                                        tmp%nzxopeq(ivec),         &
+                                        tmp%nzxopp(ivec),          &
+                                        tmp%nzxoppq(ivec),         &
+                                        tmp%rspvec_lab(ivec),      &
+                                        tmp%rspvec_type(ivec),     &
+                                        tmp%rspvec_ih(ivec),       &
+                                        tmp%rspvec_freq(ivec),     &
+                                        tmp%rspvec_rnorm(ivec),    &
+                                        tmp%rspvec_fsym(ivec),     &
+                                        tmp%rspvec_irep(ivec),     &
+                                        tmp%rspvec_trsym(ivec),    &
+                                        tmp%rspvec_ifckop(ivec),   &
+                                        tmp%jz_spfexc(ivec),       &
+                                        tmp%jrep_spfexc(ivec),     &
+                                        tmp%from_full_to_ee(ivec), &
+                                        tmp%from_full_to_ep(ivec)
+
+      tmp%rspvec_data_is_read(ivec) = .true.
+      go to 2
+    else
+      go to 1
+    end if
+
+ 2  continue
+    close(f_unit, status = 'keep')
 
   end subroutine
 
@@ -375,209 +419,148 @@ contains
   
   end subroutine
 
-!! ------------------------------------------------------------------------------
-!  subroutine construct_perturbed_dmat(level,dmat,bmat,  &
-!                                      gp_info,rsp_info,&
-!                                      cmo)
+
+! ------------------------------------------------------------------------------
+  subroutine construct_perturbed_dmat(dmat,bmat,  &
+                                      ivec, &
+                                      gp_info,rsp_info,&
+                                      cmo)
+
+    integer, intent(in)  :: ivec
+    type(gp_info_t), intent(in)  :: gp_info
+    type(response_info_t), intent(in) :: rsp_info
+    real(kind=8), intent(in) :: bmat(gp_info%nmo, gp_info%nmo, gp_info%nz)
+    real(kind=8), intent(out) :: dmat(gp_info%nao*gp_info%nao,  gp_info%nz)
+    real(kind=8), intent(in) :: cmo(*)
+
+    integer :: irep,iopsy,itim
+    integer :: iprint
+    integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
+    logical :: debug_print
 !
-!    character(len=4),intent(in) :: level
-!    type(gp_info_t), intent(in)  :: gp_info
-!    type(response_info_t), intent(in) :: rsp_info
-!    real(kind=8), intent(in) :: bmat(gp_info%nmo, gp_info%nmo, gp_info%nz, rsp_info%nr_rsp_vectors)
+!   on input:
+!   bmat - a matrix with scattered response parameters
+!   cmo  - MOs
 !
-!    real(kind=8), intent(out) :: dmat(gp_info%nao*gp_info%nao,  gp_info%nz, rsp_info%nr_rsp_vectors)
-!    real(kind=8), optional, intent(in) :: cmo(*)
+!   on output:
+!   dmat - perturbed density matrix:
+!          symmetrized or antisymmetrized depending on rsp_info%ih
 !
-!    integer :: ivec
-!    integer :: irep,iopsy,itim
-!    integer :: iprint
-!    integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
-!    logical :: debug_print
-!!
-!!   on input:
-!!   level - fixme
-!!   bmat - a matrix with scattered response parameters
-!!   cmo  - MOs
-!!
-!!   on output:
-!!   dmat - perturbed density matrix:
-!!          symmetrized or antisymmetrized depending on rsp_info%ih
-!!
-!!   code adapted after DMOLI3 subroutine from prp/pamrvc.F90
-!!
+!   code adapted after DMOLI3 subroutine from prp/pamrvc.F90
 !
-!    iprint = 0  ! needed for qtrans
-!    debug_print = .false.
+
+    iprint = 0  ! needed for qtrans
+
+!   construct half dmat = Ci*bmat*dag(Ca)
+
+    dmat(1:gp_info%nao*gp_info%nao, 1:gp_info%nz) = 0.0d0
+
+    irep   = rsp_info%rspvec_irep(ivec)
+    iopsy  = rsp_info%rspvec_ifckop(ivec) ! 1-gerade, 2-ungerade perturbation
+    itim   = rsp_info%rspvec_trsym(ivec)
+
+    do i1 = 1, gp_info%nfsym
+      i2 = mod(i1+iopsy,2) + 1
+
+!     second index: inactive index:
+      ni = gp_info%nish(i2)
+      ii = gp_info%iorb(i2) + gp_info%npsh(i2) + 1
+      ji = gp_info%icmoq(i2) + gp_info%npsh(i2)*gp_info%nfbas(i2,0)+1
+
+!     first index: secondary index:
+      if (rsp_info%rspvec_type(ivec)(1:1) == 'E') then
+!        .. secondary index is electronic:
+         ns = gp_info%nesh(i1)
+         is = gp_info%iorb(i1) + gp_info%npsh(i1) + 1
+         js = gp_info%icmoq(i1) + gp_info%npsh(i1)*gp_info%nfbas(i1, 0) + 1
+      else if (rsp_info%rspvec_type(ivec)(1:1) == 'P') then
+!        .. secondary index is positronic:
+         ns = gp_info%npsh(i1)
+         is = gp_info%iorb(i1) + 1
+         js = gp_info%icmoq(i1) + 1
+      end if
+
+      if (ni > 0 .and. ns > 0) then
+
+        call qtrans90('MOAO', &
+                      'S',    &
+                      0.0d0,  &
+                      gp_info%nfbas(i1,0), gp_info%nfbas(i2,0), &
+                      ns, ni, &
+!                     ------------------------------------------------------
+                      dmat(gp_info%i2basx(i1,i2)+1, 1),   &
+                      gp_info%nao, gp_info%nao, gp_info%nz,     &
+                      gp_info%ipqtoq(1, irep),                  &
+!                     ------------------------------------------------------
+                      bmat(is, ii, 1),                    &
+                      gp_info%nmo, gp_info%nmo, gp_info%nz,     &
+                      gp_info%ipqtoq(1, irep),                  &
+!                     ------------------------------------------------------
+                      cmo(js),                                  &
+                      gp_info%nfbas(i1,0), gp_info%norb(i1), gp_info%nz,&
+                      gp_info%ipqtoq(1, 0),                     &
+!                     ------------------------------------------------------
+                      cmo(ji),                                  &
+                      gp_info%nfbas(i2,0), gp_info%norb(i2), gp_info%nz,&
+                      gp_info%ipqtoq(1, 0),                     &
+!                     ------------------------------------------------------
+                      iprint)
+      end if
+
+     end do
+
+!    construct full dmat = (half dmat) +/- dag(half dmat)
+!    take symmetric/antisymmetric combinations depending on the hermiticity of response vectors
+     call pertdenmat_sym(mat_dim = gp_info%nao,   &
+                         mat_nz  = gp_info%nz,    &
+                         mat     = dmat(1,1), &
+                         ih      = rsp_info%rspvec_ih(ivec),    &
+                         irep    = rsp_info%rspvec_irep(ivec),  &
+                         ipqtoq  = gp_info%ipqtoq,  &
+                         ihqmat  = gp_info%ihqmat,  &
+                         imat    = ivec)
+
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine pertdenmat_sym(mat_dim,mat_nz,mat, &
+                            ih,irep,ipqtoq,ihqmat,imat)
+
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: mat_nz
+    real(8), intent(inout) :: mat(mat_dim, mat_dim, mat_nz)
+    integer, intent(in)    :: ih
+    integer, intent(in)    :: irep
+    integer, intent(in)    :: ipqtoq(4,0:7)
+    integer, intent(in)    :: ihqmat(4,-1:1)
+    integer, intent(in)    :: imat
+    integer :: i, j, iz, iq, im
+    real(8) :: fullmat
+    real(8) :: f
 !
-!    if (debug_print) then
-!      write(*, *) 'rsp_info in construct_perturbed_dmat'
-!      call fde_print_rsp_info(rsp_info)
-!      write(*, *) 'cmo entering construct_perturbed_dmat'
-!      !call dirac_print_arr(cmo, gp_info%nao, gp_info%nmo, gp_info%nz, &
-!      !                     1, 6)
-!    end if
+!   after dmoli3 in prp/pamrvc.F and fulmat in gp/gpsaue.F
 !
-!
-!!   construct half dmat = Ci*bmat*dag(Ca)
-!
-!    call dzero(dmat, gp_info%n2bbasxq*rsp_info%nr_rsp_vectors)
-!
-!    do ivec = 1, rsp_info%nr_rsp_vectors
-!
-!       if (debug_print) then
-!         write(*, *) 'bmat entering construct_perturbed_dmat for ivec=', ivec
-!         write(*, *) 'ih = ', rsp_info%rspvec_ih(ivec)
-!         write(*, *) 'tr_sym = ', rsp_info%rspvec_trsym(ivec)
-!         write(*, *) 'irep   = ', rsp_info%rspvec_irep(ivec)
-!         !call dirac_print_arr(bmat(1,1,1,ivec), &
-!         !                     gp_info%nmo, gp_info%nmo, gp_info%nz, &
-!         !                     1, 6)
-!       end if
-!
-!       irep   = rsp_info%rspvec_irep(ivec)
-!       iopsy  = rsp_info%rspvec_ifckop(ivec) ! 1-gerade, 2-ungerade perturbation
-!       itim   = rsp_info%rspvec_trsym(ivec)
-!
-!       do i1 = 1, gp_info%nfsym
-!          i2 = mod(i1+iopsy,2) + 1
-!
-!!         second index: inactive index:
-!          ni = gp_info%nish(i2)
-!          ii = gp_info%iorb(i2) + gp_info%npsh(i2) + 1
-!          ji = gp_info%icmoq(i2) + gp_info%npsh(i2)*gp_info%nfbas(i2,0)+1
-!
-!!         first index: secondary index:
-!          if (rsp_info%rspvec_type(ivec)(1:1) == 'E') then
-!!            .. secondary index is electronic:
-!             ns = gp_info%nesh(i1)
-!             is = gp_info%iorb(i1) + gp_info%npsh(i1) + 1
-!             js = gp_info%icmoq(i1) + gp_info%npsh(i1)*gp_info%nfbas(i1, 0) + 1
-!          else if (rsp_info%rspvec_type(ivec)(1:1) == 'P') then
-!!            .. secondary index is positronic:
-!             ns = gp_info%npsh(i1)
-!             is = gp_info%iorb(i1) + 1
-!             js = gp_info%icmoq(i1) + 1
-!          end if
-!
-!          if (ni > 0 .and. ns > 0) then
-!
-!             if (debug_print) then
-!                write(*, *) 'check dimensions before qtrans in construct_perturbed_dmat:'
-!                write(*, *) '.. ivec, i1, i2 = ', ivec, i1, i2
-!                write(*, *) '.. ni, ii, ji = ', ni, ii, ji
-!                write(*, *) '.. ns, is, js = ', ns, is, js
-!                write(*, *) '.. gp_info%nfbas(i1,0)',gp_info%nfbas(i1,0)
-!                write(*, *) '.. gp_info%nfbas(i2,0)',gp_info%nfbas(i2,0)
-!                write(*, *) '.. gp_info%norb(i1)',gp_info%norb(i1)
-!                write(*, *) '.. gp_info%norb(i2)',gp_info%norb(i2)
-!                write(*, *) '.. gp_info%iorb(i1)',gp_info%iorb(i1)
-!                write(*, *) '.. gp_info%i2basx(i1,i2)',gp_info%i2basx(i1,i2)
-!                write(*, *) '.. gp_info%nao',gp_info%nao
-!                write(*, *) '.. gp_info%nmo',gp_info%nmo
-!                write(*, *) '.. gp_info%nz',gp_info%nz
-!                write(*, *) '.. gp_info%ipqtoq(1, irep)',gp_info%ipqtoq(1, irep)
-!                write(*, *) '.. gp_info%ipqtoq(1, 0)',gp_info%ipqtoq(1, 0)
-!                write(*, *) '.. iprint',iprint
-!             end if
-!
-!            call qtrans90('MOAO',                                              &
-!                          'S',                                                 &
-!                          0.0d0,                                               &
-!                          gp_info%nfbas(i1,0), gp_info%nfbas(i2,0),          &
-!                          ns, ni,                                              &
-!!                         ------------------------------------------------------
-!                          dmat(gp_info%i2basx(i1,i2)+1, 1, ivec),             &
-!                          gp_info%nao, gp_info%nao, gp_info%nz,             &
-!                          gp_info%ipqtoq(1, irep),                            &
-!!                         ------------------------------------------------------
-!                          bmat(is, ii, 1, ivec),                               &
-!                          gp_info%nmo, gp_info%nmo, gp_info%nz,             &
-!                          gp_info%ipqtoq(1, irep),                            &
-!!                         ------------------------------------------------------
-!                          cmo(js),                                             &
-!                          gp_info%nfbas(i1,0), gp_info%norb(i1), gp_info%nz,&
-!                          gp_info%ipqtoq(1, 0),                               &
-!!                         ------------------------------------------------------
-!                          cmo(ji),                                             &
-!                          gp_info%nfbas(i2,0), gp_info%norb(i2), gp_info%nz,&
-!                          gp_info%ipqtoq(1, 0),                               &
-!!                         ------------------------------------------------------
-!                          iprint)
-!          end if
-!
-!       end do
-!
-!       if (debug_print) then
-!          write(*, *) 'partial perturbed dmat (in construct_perturbed_dmat) for ivec = ', ivec
-!          !call dirac_print_arr(dmat(1,1,ivec), gp_info%nao, gp_info%nao, gp_info%nz, &
-!          !                     1, 6, &
-!          !                     gp_info%ipqtoq(1,irep))
-!       end if
-!
-!
-!!      construct full dmat = (half dmat) +/- dag(half dmat)
-!!      take symmetric/antisymmetric combinations depending on the hermiticity of response vectors
-!       call fde_pertdenmat_sym(mat_dim = gp_info%nao,   &
-!                               mat_nz  = gp_info%nz,    &
-!                               mat     = dmat(1,1,ivec), &
-!                               ih      = rsp_info%rspvec_ih(ivec),    &
-!                               irep    = rsp_info%rspvec_irep(ivec),  &
-!                               ipqtoq  = gp_info%ipqtoq,  &
-!                               ihqmat  = gp_info%ihqmat,  &
-!                               imat    = ivec)
-!
-!       if (debug_print) then
-!          write(*, *) 'Symmetrized perturbed dmat for ivec = ', ivec
-!!         fixme
-!!         in FDE, the elements of this matrix will be 2 times smaller than in VISUAL;
-!!         because we multiply it by 2 in emb_dirac_integration.F90
-!          !call dirac_print_arr(dmat(1,1,ivec), gp_info%nao, gp_info%nao, gp_info%nz, &
-!          !                     1, 6, &
-!          !                     gp_info%ipqtoq(1,irep))
-!       end if
-!
-!    end do
-!
-!  end subroutine
-!
-!
-!! ------------------------------------------------------------------------------
-!  subroutine fde_pertdenmat_sym(mat_dim,mat_nz,mat, &
-!                                ih,irep,ipqtoq,ihqmat,imat)
-!
-!    integer, intent(in)    :: mat_dim
-!    integer, intent(in)    :: mat_nz
-!    real(8), intent(inout) :: mat(mat_dim, mat_dim, mat_nz)
-!    integer, intent(in)    :: ih
-!    integer, intent(in)    :: irep
-!    integer, intent(in)    :: ipqtoq(4,0:7)
-!    integer, intent(in)    :: ihqmat(4,-1:1)
-!    integer, intent(in)    :: imat
-!    integer :: i, j, iz, iq, im
-!    real(8) :: fullmat
-!    real(8) :: f
-!!
-!!   after dmoli3 in prp/pamrvc.F and fulmat in gp/gpsaue.F
-!!
-!    do iz = 1, mat_nz
-!      iq = ipqtoq(iz, irep)
-!      im = ihqmat(iq, ih)
-!      if (im .eq. 1) then
-!        f = 1.0d0
-!      else if (im .eq. 2) then
-!        f =-1.0d0
-!      end if
-!
-!      do j = 1, mat_dim
-!        do i = j, mat_dim
-!          fullmat = mat(i, j, iz) + f*mat(j, i, iz)
-!          mat(i, j, iz) =  fullmat
-!          mat(j, i, iz) =  f*fullmat
-!        end do
-!      end do
-!    end do
-!
-!   end subroutine fde_pertdenmat_sym
+    do iz = 1, mat_nz
+      iq = ipqtoq(iz, irep)
+      im = ihqmat(iq, ih)
+      if (im .eq. 1) then
+        f = 1.0d0
+      else if (im .eq. 2) then
+        f =-1.0d0
+      end if
+
+      do j = 1, mat_dim
+        do i = j, mat_dim
+          fullmat = mat(i, j, iz) + f*mat(j, i, iz)
+          mat(i, j, iz) =  fullmat
+          mat(j, i, iz) =  f*fullmat
+        end do
+      end do
+    end do
+
+  end subroutine
 
 ! ------------------------------------------------------------------------------
   subroutine read_rspdim_data_from_response_file(f_name, gp_info, rsp_info)
@@ -663,7 +646,7 @@ contains
     logical, intent(in) :: rspvec_info_full_update
     integer, intent(in), optional :: rspvec_id
 
-    real(8), optional, intent(out) :: bmat(*)
+    real(8), optional, intent(inout) :: bmat(*)
       logical,     intent(in),   optional :: rspvec_to_dxfile
       integer,     intent(in),   optional :: dxfile_unit
       character(*),intent(in),   optional :: dxfile_name
@@ -755,7 +738,7 @@ contains
     logical, intent(out), optional :: vec_pp
     logical, intent(out), optional :: vec_pn
     real(8), intent(inout), optional     :: fullvec(*)
-    real(8), intent(out), optional       :: bmat(*)
+    real(8), intent(inout), optional     :: bmat(*)
     integer, intent(in),  optional       :: ibeig(*)
     integer, intent(out), optional       :: fullvec_off
     integer, intent(out), optional       :: ind_ee(*)
@@ -779,7 +762,7 @@ contains
 !   save information about ONE response vector to rsp_info
 !
 
-    debug_print = .true.
+    debug_print = .false.
 
     if (present(vec_pp)) vec_pp = .false.
     if (present(vec_pn)) vec_pn = .false.
@@ -948,7 +931,7 @@ contains
 !                 1,                               &
 !                 rspvec(1+ioff:ioff+length*gp_info%nz),  &
 !                 1)
-!
+
 
       if (present(fullvec_to_memory)) then
         if (fullvec_to_memory) then
@@ -963,26 +946,30 @@ contains
 
       if (present(bmat)) then
 !        scatter vector -> matrix
+         debug_print = .true.
          if (debug_print) then
             write(*, *) '.... response_vector as a vector=', ivec
+            !call prqmat(vector, length, 1, length, 1, gp_info%nz,&
+            !         gp_info%nz,gp_info%ipqtoq(1,jsymop1-1),6)
             !call dirac_print_arr(vector, length, 1, gp_info%nz, &
             !                     1, 6)
          end if
-         ioff=gp_info%nmo*gp_info%nmo*gp_info%nz*(ivec-1)+1
+         !ioff=gp_info%nmo*gp_info%nmo*gp_info%nz*(ivec-1)+1
          call scatter_vector_onto_matrix(length, &
                                          gp_info%nmo, gp_info%nz,&
                                          gp_info%ipqtoq,             &
                                          gp_info%ihqmat,             &
                                          rsp_info%rspvec_irep(ivec),  &
                                          rsp_info%rspvec_ih(ivec),    &
+                                         ih_factor,    &
                                          orbital_rotation_indices,    &
                                          vector,                      &
-                                         bmat(ioff))
+                                         bmat)
          if (debug_print) then
             write(*, *) '.... response_vector as a matrix: ',ivec
-            !call dirac_print_arr(bmat(ioff), gp_info%nmo, gp_info%nmo, gp_info%nz, &
-            !                     1, 6, &
-            !                     gp_info%ipqtoq(1,jsymop1-1))
+            call prqmat(bmat,&
+                 gp_info%nmo, gp_info%nmo,gp_info%nmo, gp_info%nmo,&
+                 gp_info%nz,gp_info%ipqtoq(1,0),6)
          end if
       end if
 
@@ -999,11 +986,13 @@ contains
                                         ndim, nz, &
                                         ipqtoq, ihqmat, &
                                         irep, ih, &
+                                        ih_factor, &
                                         orbital_rotation_indices, &
                                         response_vector, &
                                         matrix)
 
     integer, intent(in)  :: length, ndim, nz, irep, ih
+    real(8), intent(in)  :: ih_factor
     integer, intent(in)  :: ipqtoq(4,0:7)
     integer, intent(in)  :: ihqmat(4,-1:1)
     integer, intent(in)  :: orbital_rotation_indices(2, length)
@@ -1031,10 +1020,17 @@ contains
         else if (im.eq.2) then
           f =  1.0d0
         end if
+        !if (iq > 1) then
+        !  f =  -1.0d0
+        !else
+        !  f =  1.0d0
+        !end if
 
-        matrix(s, i, iz) = response_vector(is, iz)
+        matrix(s, i, iz) =  matrix(s, i, iz) &
+                         + response_vector(is, iz)
         matrix(i, s, iz) = matrix(i, s, iz) &
                          + f*response_vector(is, iz)
+                         !- f*ih_factor*response_vector(is, iz)
       end do
     end do
 
@@ -1046,11 +1042,10 @@ contains
 
 ! ------------------------------------------------------------------------------
   function open_rsp_file(fname)
-!   mv to IO
     character(*), intent(in) :: fname
     integer :: open_rsp_file
     integer :: funit
-    logical :: exists, is_opened, old_dx, debug_print
+    logical :: exists, is_opened
     character(len=100) :: errmsg
 
     inquire(file=fname, exist=exists, opened=is_opened)

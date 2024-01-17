@@ -56,7 +56,7 @@ module visual_in_point
 contains
 
 ! ------------------------------------------------------------------------------
-  subroutine get_quantity_in_point_refactored(dmat_0,&
+  subroutine get_quantity_in_point_refactored(dmat_0,dmat,&
                                               ao,buffer,&
                                               grid_function,&
                                               grid_function_values,&
@@ -64,6 +64,7 @@ contains
                                               ipoint)
 
     type(dmat_t), intent(in):: dmat_0
+    type(dmat_t), intent(in):: dmat
     real(8), intent(in):: ao(*)
     real(8), intent(in):: buffer(*)
     type(grid_function_t), intent(inout):: grid_function
@@ -409,7 +410,8 @@ contains
                    cval,     &
                    mat_irep, &
                    mat_dim,  &
-                   dmat_0%elements,&
+                   !dmat_0%elements,&
+                   dmat%elements,&
                    buffer,   &
                    ao)
         grid_function_values(1:1,ipoint:ipoint) = v2(1)
