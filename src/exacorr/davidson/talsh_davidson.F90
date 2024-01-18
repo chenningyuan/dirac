@@ -1791,7 +1791,9 @@ contains
 
 
         N = size(root_vect,1)
-        N_state = size(root_vect,2)
+!       N_state = size(root_vect,2)
+! aspg: we only transform to the original basis the number of roots we solved for
+        N_state = workspace_t%nroots
         ! print *, "N in get_tensor_linear_systems", N
 
 
@@ -1816,7 +1818,8 @@ contains
             allocate(result_t%values_rhs(N_state,1))
         end if 
 
-        ! print *, "N_state: ", N_state
+        print *, "number of states: ", N_state
+        print *, "problem dimension:",N
         ! print *, "N_state of e_small: ", size(e_small)
 
         do istate=1, N_state
