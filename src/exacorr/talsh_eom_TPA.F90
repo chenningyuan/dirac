@@ -1118,36 +1118,43 @@ subroutine check_biorthognal(eom_results_t,eom_results_t_left,i_state)
     integer(C_INT)          :: ierr
     type(talsh_tens_t)      :: result_tensor
     complex(8), pointer     :: result_tens(:)
+    complex(8)              :: LRnorm
     type(C_PTR)             :: body_p
     integer                 :: i, j, N
+    real(8) :: upper = 0.99, lower = 1.0d-10
 
 
     ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
     ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,result_tens,one_dims)
 
-    N = size(eom_results_t_left%value_vectors_t%lhs1)
+     N = size(eom_results_t_left%value_vectors_t%lhs1)
+    print *, "Verifying biorthogonality of CC eigenvectors in TPA calculation"
+    print *, "  Number of states:", N 
+    print *, "  Target state: ",i_state
 
-    do i=1, 5
-        do j=1, 5
+    do i=1, N ! i_state
+        do j=1, N ! i_state 
 
-        ierr=talsh_tensor_init(result_tensor)
+           ierr=talsh_tensor_init(result_tensor)
 
-        print *, "i, j: ", i, j
+           ierr=talsh_tensor_contract("Bio()+=LState(i,a)*RState(a,i)",& 
+               result_tensor,eom_results_t_left%value_vectors_t%lhs1(i),&
+               eom_results_t%value_vectors_t%rhs1(j),scale=ONE)
 
-        ierr=talsh_tensor_contract("Bio()+=LState(i,a)*RState(a,i)",& 
-            result_tensor,eom_results_t_left%value_vectors_t%lhs1(i),&
-            eom_results_t%value_vectors_t%rhs1(j),scale=ONE)
+           ierr=talsh_tensor_contract("Bio()+=LState(i,j,a,b)*RState(a,b,i,j)",& 
+               result_tensor,eom_results_t_left%value_vectors_t%lhs2(i),&
+               eom_results_t%value_vectors_t%rhs2(j),scale=ONE_QUARTER_C)
 
-
-        ierr=talsh_tensor_contract("Bio()+=LState(i,j,a,b)*RState(a,b,i,j)",& 
-            result_tensor,eom_results_t_left%value_vectors_t%lhs2(i),&
-            eom_results_t%value_vectors_t%rhs2(j),scale=ONE_QUARTER_C)
-
-        print *, "Bio: ", result_tens(1)
-
+           LRnorm = result_tens(1) 
+!       print *, "I(i,j) = L(",i,")R(",j,") = ",result_tens(1)
+           if ((abs(LRnorm).le.upper).and.(i.eq.j)) then
+              print *, 'Warning ! State',i,' L*R = ',LRnorm,' when it should be unity'
+           end if
+           if ((abs(LRnorm).gt.lower).and.(i.ne.j)) then
+              print *, 'Warning ! States',i,'and',j,'not strictly biorthogonal, L*R = ',LRnorm,' !' 
+           end if
         end do
-    
     end do
 
     ierr=talsh_tensor_destruct(result_tensor)
