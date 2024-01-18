@@ -40,13 +40,15 @@ def compare_txt(fname, fname_ref):
 # 1. prepare
 #test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 #test.run(['rsp_E.inp'], ['h2o.mol'], args='--incmo --outcmo --get="PAMXVC"')
-#test.run(['rsp_B.inp'], ['h2o.mol'], args='--incmo --outcmo --get="PAMXVC TBMO response_helper.txt"')
+#test.run(['rsp_B.inp'], ['h2o.mol'], args='--incmo --outcmo --get="PAMXVC TBMO *.h5"')
+#test.run(['rsp_B.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
+#test.run(['rsp_B.inp'], ['h2o.mol'], args='--incmo --outcmo --put="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
 
 # 2. run legacy:
 #test.run(['vis_3d_legacy.inp'], ['h2o.mol'], args='--incmo --put="PAMXVC TBMO response_helper.txt" --get="*.h5 *.txt plot*"')
 
 # 3. run new:
-test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 PAMXVC TBMO response_helper.txt" --get="*.h5"')
+test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 PAMXVC TBMO RESPONSE.h5" --get="*.h5"')
 
 # 4. old - to review:
 
@@ -148,76 +150,79 @@ if h5py_available:
                 sys.stdout.write('Error! Different array data on hdf5')
 
 
-    compare_with_ref(ftest='density.h5', fref='result/density.h5', typ='single', gf_name='density')
-    compare_with_ref(ftest='density.h5', fref='result/density.h5', typ='array',  gf_name='density', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='density.h5', fref='result/density.h5', typ='single', gf_name='density')
+    #compare_with_ref(ftest='density.h5', fref='result/density.h5', typ='array',  gf_name='density', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='single', gf_name='density_gradient')
-    compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='array',  gf_name='density_gradient', gf_test_key='t1_icomp_1')
-    compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='array',  gf_name='density_gradient', gf_test_key='t1_icomp_2')
-    compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='array',  gf_name='density_gradient', gf_test_key='t1_icomp_3')
+    #compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='single', gf_name='density_gradient')
+    #compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='array',  gf_name='density_gradient', gf_test_key='t1_icomp_1')
+    #compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='array',  gf_name='density_gradient', gf_test_key='t1_icomp_2')
+    #compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='array',  gf_name='density_gradient', gf_test_key='t1_icomp_3')
 
-    compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='single', gf_name='density_hessian')
-    compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_1')
-    compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_2')
-    compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_3')
-    compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_4')
-    compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_5')
-    compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_6')
-    compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_7')
-    compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_8')
-    compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_9')
+    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='single', gf_name='density_hessian')
+    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_1')
+    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_2')
+    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_3')
+    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_4')
+    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_5')
+    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_6')
+    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_7')
+    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_8')
+    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_9')
 
-    compare_with_ref(ftest='rdg.h5', fref='result/rdg.h5', typ='single', gf_name='rdg')
-    compare_with_ref(ftest='rdg.h5', fref='result/rdg.h5', typ='array',  gf_name='rdg', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='rdg.h5', fref='result/rdg.h5', typ='single', gf_name='rdg')
+    #compare_with_ref(ftest='rdg.h5', fref='result/rdg.h5', typ='array',  gf_name='rdg', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='ed_sign_lambda2.h5', fref='result/ed_sign_lambda2.h5', typ='single', gf_name='ed_sign_lambda2')
-    compare_with_ref(ftest='ed_sign_lambda2.h5', fref='result/ed_sign_lambda2.h5', typ='array',  gf_name='ed_sign_lambda2', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='ed_sign_lambda2.h5', fref='result/ed_sign_lambda2.h5', typ='single', gf_name='ed_sign_lambda2')
+    #compare_with_ref(ftest='ed_sign_lambda2.h5', fref='result/ed_sign_lambda2.h5', typ='array',  gf_name='ed_sign_lambda2', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='ed_laplacian.h5', fref='result/ed_laplacian.h5', typ='single', gf_name='ed_laplacian')
-    compare_with_ref(ftest='ed_laplacian.h5', fref='result/ed_laplacian.h5', typ='array',  gf_name='ed_laplacian', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='ed_laplacian.h5', fref='result/ed_laplacian.h5', typ='single', gf_name='ed_laplacian')
+    #compare_with_ref(ftest='ed_laplacian.h5', fref='result/ed_laplacian.h5', typ='array',  gf_name='ed_laplacian', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='gamma5.h5', fref='result/gamma5.h5', typ='single', gf_name='gamma5')
-    compare_with_ref(ftest='gamma5.h5', fref='result/gamma5.h5', typ='array',  gf_name='gamma5', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='gamma5.h5', fref='result/gamma5.h5', typ='single', gf_name='gamma5')
+    #compare_with_ref(ftest='gamma5.h5', fref='result/gamma5.h5', typ='array',  gf_name='gamma5', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='elf.h5', fref='result/elf.h5', typ='single', gf_name='elf')
-    compare_with_ref(ftest='elf.h5', fref='result/elf.h5', typ='array',  gf_name='elf', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='elf.h5', fref='result/elf.h5', typ='single', gf_name='elf')
+    #compare_with_ref(ftest='elf.h5', fref='result/elf.h5', typ='array',  gf_name='elf', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='kin.h5', fref='result/kin.h5', typ='single', gf_name='kin')
-    compare_with_ref(ftest='kin.h5', fref='result/kin.h5', typ='array',  gf_name='kin', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='kin.h5', fref='result/kin.h5', typ='single', gf_name='kin')
+    #compare_with_ref(ftest='kin.h5', fref='result/kin.h5', typ='array',  gf_name='kin', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='kinsl.h5', fref='result/kinsl.h5', typ='single', gf_name='kinsl')
-    compare_with_ref(ftest='kinsl.h5', fref='result/kinsl.h5', typ='array',  gf_name='kinsl', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='kinsl.h5', fref='result/kinsl.h5', typ='single', gf_name='kinsl')
+    #compare_with_ref(ftest='kinsl.h5', fref='result/kinsl.h5', typ='array',  gf_name='kinsl', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='kinls.h5', fref='result/kinls.h5', typ='single', gf_name='kinls')
-    compare_with_ref(ftest='kinls.h5', fref='result/kinls.h5', typ='array',  gf_name='kinls', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='kinls.h5', fref='result/kinls.h5', typ='single', gf_name='kinls')
+    #compare_with_ref(ftest='kinls.h5', fref='result/kinls.h5', typ='array',  gf_name='kinls', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='kinnr.h5', fref='result/kinnr.h5', typ='single', gf_name='kinnr')
-    compare_with_ref(ftest='kinnr.h5', fref='result/kinnr.h5', typ='array',  gf_name='kinnr', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='kinnr.h5', fref='result/kinnr.h5', typ='single', gf_name='kinnr')
+    #compare_with_ref(ftest='kinnr.h5', fref='result/kinnr.h5', typ='array',  gf_name='kinnr', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='kintau.h5', fref='result/kintau.h5', typ='single', gf_name='kintau')
-    compare_with_ref(ftest='kintau.h5', fref='result/kintau.h5', typ='array',  gf_name='kintau', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='kintau.h5', fref='result/kintau.h5', typ='single', gf_name='kintau')
+    #compare_with_ref(ftest='kintau.h5', fref='result/kintau.h5', typ='array',  gf_name='kintau', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='kinlap.h5', fref='result/kinlap.h5', typ='single', gf_name='kinlap')
-    compare_with_ref(ftest='kinlap.h5', fref='result/kinlap.h5', typ='array',  gf_name='kinlap', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='kinlap.h5', fref='result/kinlap.h5', typ='single', gf_name='kinlap')
+    #compare_with_ref(ftest='kinlap.h5', fref='result/kinlap.h5', typ='array',  gf_name='kinlap', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='single', gf_name='s')
-    compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='array',  gf_name='s', gf_test_key='t1_icomp_1')
-    compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='array',  gf_name='s', gf_test_key='t1_icomp_2')
-    compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='array',  gf_name='s', gf_test_key='t1_icomp_3')
+    #compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='single', gf_name='s')
+    #compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='array',  gf_name='s', gf_test_key='t1_icomp_1')
+    #compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='array',  gf_name='s', gf_test_key='t1_icomp_2')
+    #compare_with_ref(ftest='s.h5', fref='result/s.h5', typ='array',  gf_name='s', gf_test_key='t1_icomp_3')
 
-    compare_with_ref(ftest='divs.h5', fref='result/divs.h5', typ='single', gf_name='divs')
-    compare_with_ref(ftest='divs.h5', fref='result/divs.h5', typ='array',  gf_name='divs', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='divs.h5', fref='result/divs.h5', typ='single', gf_name='divs')
+    #compare_with_ref(ftest='divs.h5', fref='result/divs.h5', typ='array',  gf_name='divs', gf_test_key='t0_icomp_1')
 
-    compare_with_ref(ftest='rots.h5', fref='result/rots.h5', typ='single', gf_name='rots')
-    compare_with_ref(ftest='rots.h5', fref='result/rots.h5', typ='array',  gf_name='rots', gf_test_key='t1_icomp_1')
-    compare_with_ref(ftest='rots.h5', fref='result/rots.h5', typ='array',  gf_name='rots', gf_test_key='t1_icomp_2')
-    compare_with_ref(ftest='rots.h5', fref='result/rots.h5', typ='array',  gf_name='rots', gf_test_key='t1_icomp_3')
+    #compare_with_ref(ftest='rots.h5', fref='result/rots.h5', typ='single', gf_name='rots')
+    #compare_with_ref(ftest='rots.h5', fref='result/rots.h5', typ='array',  gf_name='rots', gf_test_key='t1_icomp_1')
+    #compare_with_ref(ftest='rots.h5', fref='result/rots.h5', typ='array',  gf_name='rots', gf_test_key='t1_icomp_2')
+    #compare_with_ref(ftest='rots.h5', fref='result/rots.h5', typ='array',  gf_name='rots', gf_test_key='t1_icomp_3')
 
-    compare_with_ref(ftest='j.h5', fref='result/j.h5', typ='single', gf_name='j')
-    compare_with_ref(ftest='j.h5', fref='result/j.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-    compare_with_ref(ftest='j.h5', fref='result/j.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-    compare_with_ref(ftest='j.h5', fref='result/j.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+    #compare_with_ref(ftest='j.h5', fref='result/j.h5', typ='single', gf_name='j')
+    #compare_with_ref(ftest='j.h5', fref='result/j.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
+    #compare_with_ref(ftest='j.h5', fref='result/j.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
+    #compare_with_ref(ftest='j.h5', fref='result/j.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
 
+    compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
+    compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
+    compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
 
 
 

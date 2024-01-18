@@ -375,15 +375,15 @@ C
  10   CONTINUE
       CALL MEMREL('PRPXL1',WORK,1,KXLR,KFREE,LFREE)
 !
-!     if requested, additionally export response information to file:
-      if (XLR_RSPEXP) then
-        call export_rsp_info_to_helper()
-      end if
 C
 C     Final print section
 C
       CALL XLROUT(ABLRF,RCNV,WORK,KFREE,LFREE)
       CLOSE(LUXVC,STATUS = 'KEEP')
+!     if requested, additionally export response information to file:
+      if (XLR_RSPEXP) then
+        call export_rsp_info_to_helper()
+      end if
       CALL MEMREL('PRPXL1',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPXL1')
       RETURN
@@ -415,7 +415,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 44,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 45,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -442,7 +442,8 @@ C
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
      &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
      &            '.DAMPIN','.FREQ I','.LAOMOD','.EPOLE ',
-     &            '.MPOLE ','.NMFREQ','.ANATHR','.RSPEXP'/
+     &            '.MPOLE ','.NMFREQ','.ANATHR','.RSPEXP',
+     &            '.RSPIMP'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -538,6 +539,7 @@ C     Calculation of C6 dispersion coefficient
       NOSPIB     = .FALSE.
       XLR_E2CHEK = .FALSE.
       XLR_RSPEXP = .FALSE.
+      XLR_RSPIMP = .FALSE.
       DO I = 1,NFSYM
          XLR_INDSTR(2,I) = ' '
          XLR_INDSTR(1,I) = ' '
@@ -571,7 +573,7 @@ C
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
-     &                     41,42,43,44), I
+     &                     41,42,43,44,45), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -912,8 +914,12 @@ C&&&& ANATHR: Threshold for analysis of linear response function
                READ(LUCMD,*) XLR_ANATHR
                GO TO 100
  44            CONTINUE
-C&&&& RSPEXP: export response data on txt file (gosia fixme will be hdf5)
+C&&&& RSPEXP: export response data to hdf5
                XLR_RSPEXP = .true.
+               GO TO 100
+ 45            CONTINUE
+C&&&& RSPIMP: import response data from hdf5
+               XLR_RSPIMP = .true.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -2540,31 +2546,30 @@ C***********************************************************************
       subroutine export_rsp_info_to_helper()
         use dirac_rsp_utils
         implicit none
-        type(gp_info_t) :: gp_info
         type(response_info_t) :: rsp_info
-        character(80) :: f_name
-        integer :: f_unit
+        character(len=:),allocatable :: f_name
 
-        call read_gp_data(gp_info)
-        call rsp_info%init()
+        f_name = 'PAMXVC'
+        call rsp_info%read_from_DIRAC(trim(f_name))
 
-        f_name(1:6) = 'PAMXVC'
-        rsp_info%rspvec_file = f_name
-        call read_response_file(trim(f_name), gp_info, rsp_info) 
-        call read_response_file(trim(f_name), gp_info, rsp_info, .true.)
-        close(f_unit, status = 'keep')
+        f_name = 'RESPONSE.h5'
+        call rsp_info%write_to_checkpoint(trim(f_name))
 
-        f_name = 'response_helper.txt'
-        open(newunit = f_unit,
-     &       file = trim(f_name),
-     &       status = 'NEW',
-     &       form   = 'formatted',
-     &       access = 'sequential')
+      end subroutine
 
-        call write_nonallocatables_to_helper(f_unit,gp_info,rsp_info)
-        call write_allocatables_to_helper(f_unit,rsp_info)
+      subroutine import_rsp_info_from_helper(rspvec,ndim,id)
+        use dirac_rsp_utils
+        implicit none
+        integer, intent(in)  :: id
+        integer, intent(in)  :: ndim
+        real(8), intent(out) :: rspvec(ndim)
+        type(response_info_t) :: rsp_info
+        character(len=:),allocatable :: f_name
+        real(8) :: n
 
-        close(f_unit, status = 'keep')
+        f_name = 'RESPONSE.h5'
+        call rsp_info%read_from_checkpoint(trim(f_name))
+        call rsp_info%vectors(id)%get_copy_of_values(rspvec,ndim)
 
       end subroutine
 

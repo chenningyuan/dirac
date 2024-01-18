@@ -741,24 +741,21 @@ contains
 !
 !         prepare density matrices
 !
-!         gosia fixme 
-!         this is a temporary solution for handling density matrices;
-!         also see https://gitlab.com/dirac/dirac-private/-/issues/550
           if (rs_input%grid_functions(igf)%wf_order > 0) then
             if (mpi_is_master()) then
               call dirac_dmat_init(rs_input%grid_functions(igf)%wf_order,cmo,&
                                    dmat_ao=dmat, &
                                    rspvec_file=rs_input%grid_functions(igf)%rspvec_file,&
                                    rspvec_id=rs_input%grid_functions(igf)%rspvec_id)
-              do iz=1,4
-                do i=1,dmat%mat_dim
-                  do j=1,dmat%mat_dim
-                    off_ij = j + (i-1)*dmat%mat_dim + (iz-1)*dmat%mat_dim*dmat%mat_dim
-                    write(*, '(a,3i4,es16.8e2)') 'debug dmat matrix: ', &
-                          j, i, iz, dmat%elements(off_ij)
-                  end do
-                end do
-              end do
+              !do iz=1,4
+              !  do i=1,dmat%mat_dim
+              !    do j=1,dmat%mat_dim
+              !      off_ij = j + (i-1)*dmat%mat_dim + (iz-1)*dmat%mat_dim*dmat%mat_dim
+              !      write(*, '(a,3i4,es16.8e2)') 'debug dmat matrix: ', &
+              !            j, i, iz, dmat%elements(off_ij)
+              !    end do
+              !  end do
+              !end do
 
             end if
 !#ifdef VAR_MPI

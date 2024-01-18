@@ -148,6 +148,7 @@ module visual_datatypes
     logical, public:: export = .true.                       ! export to file
     integer, public:: wf_order = 0                          ! 0 = depends on unperturbed wave function only, >0 requires perturbed wave functions (1 = linear response, 2 = quadratic response, etc.)
     integer, public:: rspvec_id = 0                         ! now: record ID on PAMXVC file
+    integer, public:: lao = 0                               ! 0 = no LAOs, 1 = LAOs (all contributions), 2 = LAOs (no 'reorthonormalization contribution'), 3 = ...
     integer, public:: tensor_order = 0                      ! 0 = a scalar field, 1 = a vector field, 2 = a tensor field of rank 2, etc.
     integer, public:: max_ao_g_order = 0 !legacy
     integer, public:: max_ao_m_order = 0 !legacy
@@ -461,20 +462,30 @@ contains
   end subroutine
 
 
-  !subroutine get_mat_q_sector(self, sector_start, sector_end)
-  !end subroutine
-
   subroutine get_dmat_sector(self, sector)
     class(dmat_t), intent(inout):: self
     character(2), intent(in):: sector
     integer:: s1,s2,e1,e2
 
-    if (.not. self%associated_elements_q()) return
+    if (.not. self%associated_elements()) return
 
-    select case (sector)
-      case ('ii')
-        self%elements_q(s1:e1,s2:e2,1:self%mat_nz) = 0.0d0
-    end select
+    if (.not. self%associated_elements_q()) then
+      call self%alloc_q()
+      call self%reshape_to_q()
+    end if
+
+    !select case (sector)
+    !  case ('ii')
+    !    s1 = 1
+    !    e1 = s1 + 
+    !    s2 = 
+    !    e2 = 
+    !    self%elements_q(s1:e1,s2:e2,1:self%mat_nz) = 0.0d0
+    !  case ('ip')
+    !  case default
+    !    if (present(range_start)) then
+    !    self%elements_q(s1:e1,s2:e2,1:self%mat_nz) = 0.0d0
+    !end select
   end subroutine
 
 
@@ -648,6 +659,7 @@ contains
       write(*, *) 'export =          ', self%export, my_rank
       write(*, *) 'wf_order =        ', self%wf_order, my_rank
       write(*, *) 'rspvec_id =       ', self%rspvec_id, my_rank
+      write(*, *) 'lao =             ', self%lao, my_rank
       write(*, *) 'tensor_order =    ', self%tensor_order, my_rank
       write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order, my_rank
       write(*, *) 'max_ao_m_order =  ', self%max_ao_m_order, my_rank
@@ -664,6 +676,7 @@ contains
       write(*, *) 'export =          ', self%export
       write(*, *) 'wf_order =        ', self%wf_order
       write(*, *) 'rspvec_id =       ', self%rspvec_id
+      write(*, *) 'lao =             ', self%lao
       write(*, *) 'tensor_order =    ', self%tensor_order
       write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order
       write(*, *) 'max_ao_m_order =  ', self%max_ao_m_order

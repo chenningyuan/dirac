@@ -499,14 +499,9 @@ contains
           stop
         end if
       case ('rspvec_file')
-!       fixme
-        if (val == 'PAMXVC') then
-          grid_function%rspvec_file = val
-          grid_function%wf_order = 1
-        else
-          write(*, *) 'wrong argument; argument to "rsp" must be "PAMXVC"'
-          stop
-        end if
+!       fixme: verify, generalize (now: expected 'RESPONSE.h5' file; linear response only)
+        grid_function%rspvec_file = val
+        grid_function%wf_order = 1
       case ('rspvec_id')
 !       fixme
           if (grid_function%wf_order /= 1) then
@@ -514,6 +509,12 @@ contains
             stop
           end if
           call str2int(val, grid_function%rspvec_id, stat)
+      case ('lao')
+        if (grid_function%wf_order /= 1) then
+          write(*, *) 'LAO activated for linear response only'
+          stop
+        end if
+        call str2int(val, grid_function%lao, stat)
       case ('purpose')
         if (val == 'visualization') then
           grid_function%purpose = 0

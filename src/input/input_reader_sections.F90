@@ -201,7 +201,7 @@
       integer                          :: isym, istart, iend
       real(8)                          :: f, s, v(3), v_12(3), v_13(3)
       integer                          :: nr_lines
-      character(100)                   :: line
+      character(180)                   :: line !gosia fixme:make the length more flexible, since now the line can be long
       character(80), allocatable       :: word_array(:)
       integer                          :: nr_words
 !     --------------------------------------------------------------------------

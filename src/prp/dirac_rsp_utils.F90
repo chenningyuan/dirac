@@ -1,26 +1,21 @@
 module dirac_rsp_utils
 
 ! general DIRAC modules
+  use labeled_storage
   use checkpoint
 
   implicit none
 
   public gp_info_t
   public response_info_t
-  public construct_perturbed_dmat
-! temp:
-  public read_gp_data
-  public read_rsp_data
-  public read_response_file
-  public write_nonallocatables_to_helper
-  public write_allocatables_to_helper
-  public print_gp_info
-  public print_xlr_info
+  !public response_vector_t
 
   private
 
   type gp_info_t
     private
+    ! this DT is intended for data not available in CHECKPOINT, but needed in response;
+    ! now, it has all data needed in response, so there is some duplication...(gosia fixme)
     integer :: nmo           = 0
     integer :: nao           = 0
     integer :: n2bbasxq      = 0
@@ -33,6 +28,7 @@ module dirac_rsp_utils
     integer :: nesh(2)       = 0
     integer :: nfsym         = 0
     integer :: nbsym         = 0
+    integer :: ncmotq        = 0
     integer :: nfbas(2, 0:2) = 0
     integer :: i2basx(2,2)   = 0
     integer :: i2orbx(2,2)   = 0
@@ -41,16 +37,68 @@ module dirac_rsp_utils
     integer :: ihrmop(10)    = 0
     integer :: icmoq(2)      = 0
     integer :: ihqmat(4,-1:1)= 0
-    integer :: ncmotq        = 0
     integer :: ipqtoq(4,0:7) = 0
     logical :: spinfr        = .false.
     integer :: intflg        = 0
     logical :: data_is_read  = .false.
   contains
+    private
     procedure, pass, public :: erase => erase_gp_data
-!#ifdef VAR_MPI
-!    procedure, pass, public :: bcast => bcast_gp_data
-!#endif
+    procedure, pass, public :: display => display_gp_data
+  end type
+
+  type response_vector_t
+    private
+    ! --- these are variables for each response vector --- !
+    character(len=:), allocatable :: desc
+    real(8), allocatable  :: values(:,:)
+    integer, allocatable  :: orbital_rotation_indices(:,:)
+    integer           :: id      = 0
+    integer           :: nzxope  = 0
+    integer           :: nzxopp  = 0
+    integer           :: nzxopeq = 0
+    integer           :: nzxoppq = 0
+    character(len=16) :: lab
+    character(2)      :: typ
+    integer           :: ih       = 0
+    real(8)           :: freq     = 0.0d0
+    real(8)           :: rnorm    = 0.0d0
+    integer           :: fsym     = 0
+    integer           :: irep     = 0
+    integer           :: trsym    = 0
+    integer           :: ifckop   = 0
+    integer           :: jz_spfexc   = -1
+    integer           :: jrep_spfexc = 0
+    logical           :: rspvec_data_is_initiated = .false.
+    logical           :: data_is_read = .false.
+!   FIXME - data transferred from gp_info_t...
+    integer :: ipqtoq(4)= 0
+    integer :: ihqmat(4)= 0
+    integer :: spinfr= 0
+  contains
+    private
+    !procedure, pass, public :: init => init_rspvec_data
+    procedure, pass, public :: erase => erase_rspvec_data
+    procedure, pass, public :: get_size_of_values
+    procedure, pass, public :: get_size_of_orbital_rotation_indices
+    procedure, pass, public :: get_copy_of_values
+    procedure, pass, public :: get_symmetry_info
+    procedure, pass, public :: scatter_to_matrix_q
+    procedure, pass, public :: get_ipqtoq
+    procedure, pass, public :: get_ihqmat
+    procedure, pass   :: transfer_gp_data_to_rsp
+    procedure, pass   :: allocated_values
+    procedure, pass   :: allocated_orbital_rotation_indices
+    procedure, pass   :: alloc_values => alloc_rspvec_values
+    procedure, pass   :: alloc_orbital_rotation_indices => alloc_rspvec_orbital_rotation_indices
+    procedure, pass   :: read_values => read_rspvec_values_from_checkpoint
+    procedure, pass   :: read_orbital_rotation_indices => &
+                         read_rspvec_orbital_rotation_indices_from_checkpoint
+    procedure, pass, public :: display => display_rspvec_data
+    !procedure, pass, public :: display_orbital_rotation_indices => &
+    !                           display_rspvec_orbital_rotation_indices
+    !procedure, pass, public :: values_are_read
+    !procedure, pass, public :: orbital_rotation_indices_are_read
   end type
 
   type response_info_t
@@ -64,518 +112,60 @@ module dirac_rsp_utils
     integer                     :: nr_B_operators     = 0       ! number of B-operators
     integer                     :: ndamp              = 0       ! 1 - no damping, 2 - damped response
     integer                     :: nfreq              = 0       ! number of frequencies
-    logical                     :: static             = .false. ! .true. if static calculations
-    logical                     :: xlr_skipep         = .false. ! skip e-p orbital rotations
-    logical                     :: xlr_skipee         = .false. ! skip e-e orbital rotations
-    logical                     :: rsp_diminfo_is_read= .false.
-    ! --- these are variables for each response vector --- !
-    ! number of orbital rotations
-    integer, pointer            :: nzxope(:)          => null()
-    integer, pointer            :: nzxopp(:)          => null()
-    integer, pointer            :: nzxopeq(:)         => null()
-    integer, pointer            :: nzxoppq(:)         => null()
-    ! variables read/written from/to PAMXVC file(s)
-    ! (if used in FDE, there can be more than one PAMXVC)
-    character(len=:),allocatable, public:: rspvec_file
-    character(len=16), pointer  :: rspvec_lab(:)      => null()
-    character(2), pointer       :: rspvec_type(:)     => null()
-    integer, pointer            :: rspvec_ih(:)       => null()
-    real(8), pointer            :: rspvec_freq(:)     => null()
-    real(8), pointer            :: rspvec_rnorm(:)    => null()
-    integer, pointer            :: rspvec_fsym(:)     => null()
-    integer, pointer            :: rspvec_irep(:)     => null()
-    integer, pointer            :: rspvec_trsym(:)    => null()
-    integer, pointer            :: rspvec_ifckop(:)   => null()
-    integer, pointer            :: jz_spfexc(:)       => null() ! -1
-    integer, pointer            :: jrep_spfexc(:)     => null()
-    integer, pointer            :: from_full_to_ee(:) => null()
-    integer, pointer            :: from_full_to_ep(:) => null()
-    logical, pointer            :: rspvec_data_is_initiated(:) => null()
-    logical, pointer            :: rspvec_data_is_read(:) => null()
+    integer                     :: static             = 0       ! 0/1 - static calculations
+    integer                     :: xlr_skipep         = 0       ! 0/1 - skip e-p orbital rotations
+    integer                     :: xlr_skipee         = 0       ! 0/1 - skip e-e orbital rotations
+    logical                     :: data_is_read= .false.
+    type(response_vector_t), allocatable, public :: vectors(:)
   contains
-    procedure, pass, public :: init => init_rsp_data
+    private
+    procedure, pass         :: allocated_vectors
+    procedure, pass         :: alloc => alloc_rsp_vectors
     procedure, pass, public :: erase => erase_rsp_data
+    procedure, pass, public :: display => display_rsp_data
+    !procedure, pass, public :: get_vectors
+    procedure, pass, public :: read_from_DIRAC => read_rsp_data_from_DIRAC
+    procedure, pass, public :: read_from_checkpoint => read_rsp_data_from_checkpoint
+    procedure, pass, public :: write_to_checkpoint => write_rsp_data_to_checkpoint
   end type
 
-  interface read_gp_data
-    module procedure read_gp_data_from_cbs
-    module procedure read_gp_data_from_helper_file
-  end interface
-
-  interface read_response_file
-    ! read response information from 'PAMXVC'
-    module procedure read_rspdim_data_from_response_file
-    module procedure read_rspvec_from_response_file
-  end interface
-
-  interface read_rsp_data
-    ! read response information from 'helper' or common blocks
-    module procedure read_rspdim_data_from_cbs
-    module procedure read_rspdim_data_from_helper_file
-    module procedure read_rspvec_data_from_helper_file
+  interface flatten
+    module procedure flatten_real_2d_to_1d
+    module procedure flatten_int_2d_to_1d
   end interface
 
 contains
 
 ! ------------------------------------------------------------------------------
-  subroutine init_rsp_data(self)
+  pure function allocated_vectors(self)
+    class(response_info_t), intent(in):: self
+    logical:: allocated_vectors
+    allocated_vectors = allocated(self%vectors)
+  end function
+
+! ------------------------------------------------------------------------------
+  subroutine alloc_rsp_vectors(self)
     class(response_info_t), intent(inout):: self
-    integer :: ivec
     integer :: nr_vec
-
-    if (.not. self%rsp_diminfo_is_read) then
-      ! read from DIRAC's common blocks (non-allocatables, dimensions, ...)
-      call read_rsp_data(self)
-    end if
-
+    if (self%allocated_vectors()) return
     nr_vec = self%nr_rsp_vectors
+    allocate(self%vectors(nr_vec))
+  end subroutine
 
-    do ivec = 1, nr_vec
-      if (associated(self%rspvec_data_is_initiated)) then
-        if (self%rspvec_data_is_initiated(ivec) .eqv. .true.) return
-      end if
-    end do
-
-    nullify(self%nzxope)
-    allocate(self%nzxope(nr_vec))
-    self%nzxope(1:nr_vec) = 0
-
-    nullify(self%nzxopeq)
-    allocate(self%nzxopeq(nr_vec))
-    self%nzxopeq(1:nr_vec) = 0
-
-    nullify(self%nzxopp)
-    allocate(self%nzxopp(nr_vec))
-    self%nzxopp(1:nr_vec) = 0
-
-    nullify(self%nzxoppq)
-    allocate(self%nzxoppq(nr_vec))
-    self%nzxoppq(1:nr_vec) = 0
-
-    nullify(self%rspvec_lab)
-    allocate(self%rspvec_lab(nr_vec))
-    self%rspvec_lab(1:nr_vec) = '                '
-
-    nullify(self%rspvec_type)
-    allocate(self%rspvec_type(nr_vec))
-    self%rspvec_type(1:nr_vec) = '  '
-
-    nullify(self%rspvec_ih)
-    allocate(self%rspvec_ih(nr_vec))
-    self%rspvec_ih(1:nr_vec) = 0
-
-    nullify(self%rspvec_freq)
-    allocate(self%rspvec_freq(nr_vec))
-    self%rspvec_freq(1:nr_vec) = 0.0d0
-
-    nullify(self%rspvec_rnorm)
-    allocate(self%rspvec_rnorm(nr_vec))
-    self%rspvec_rnorm(1:nr_vec) = 0.0d0
-
-    nullify(self%rspvec_fsym)
-    allocate(self%rspvec_fsym(nr_vec))
-    self%rspvec_fsym(1:nr_vec) = 0
-
-    nullify(self%rspvec_irep)
-    allocate(self%rspvec_irep(nr_vec))
-    self%rspvec_irep(1:nr_vec) = 0
-
-    nullify(self%rspvec_trsym)
-    allocate(self%rspvec_trsym(nr_vec))
-    self%rspvec_trsym(1:nr_vec) = 0
-
-    nullify(self%rspvec_ifckop)
-    allocate(self%rspvec_ifckop(nr_vec))
-    self%rspvec_ifckop(1:nr_vec) = 0
-
-    nullify(self%jz_spfexc)
-    allocate(self%jz_spfexc(nr_vec))
-    self%jz_spfexc(1:nr_vec) = 0
-
-    nullify(self%jrep_spfexc)
-    allocate(self%jrep_spfexc(nr_vec))
-    self%jrep_spfexc(1:nr_vec) = 0
-
-    nullify(self%from_full_to_ee)
-    allocate(self%from_full_to_ee(nr_vec))
-    self%from_full_to_ee(1:nr_vec) = 0
-
-    nullify(self%from_full_to_ep)
-    allocate(self%from_full_to_ep(nr_vec))
-    self%from_full_to_ep(1:nr_vec) = 0
-
-    nullify(self%rspvec_data_is_initiated)
-    allocate(self%rspvec_data_is_initiated(nr_vec))
-    self%rspvec_data_is_initiated(1:nr_vec) = .true.
-
-    nullify(self%rspvec_data_is_read)
-    allocate(self%rspvec_data_is_read(nr_vec))
-    self%rspvec_data_is_read(1:nr_vec) = .false.
-
-
+! ------------------------------------------------------------------------------
+  subroutine erase_rsp_data(self)
+    class(response_info_t), intent(out) :: self
   end subroutine
 
 
 ! ------------------------------------------------------------------------------
-  subroutine read_gp_data_from_helper_file(tmp, f_name)
-    type(gp_info_t), intent(inout) :: tmp
-    character(*), intent(in) :: f_name
-    integer :: f_unit
-!
-!   read from a "rsp helper" file
-!
-    call tmp%erase()
-
-    open(newunit = f_unit,&
-         file = trim(f_name),&
-         status = 'OLD',&
-         form   = 'formatted',&
-         access = 'sequential',&
-         position = 'rewind')
-
-    read(f_unit, '(i8)')  tmp%nao
-    read(f_unit, '(i8)')  tmp%nmo
-    read(f_unit, '(i8)')  tmp%nz
-    read(f_unit, '(l)')   tmp%spinfr
-
-    close(f_unit, status = 'keep')
-
-    tmp%data_is_read = .true.
-
-  end subroutine
-
-
-! ------------------------------------------------------------------------------
-  subroutine read_rspdim_data_from_helper_file(tmp, f_name)
-    type(response_info_t), intent(inout) :: tmp
-    character(*), intent(in) :: f_name
-    integer :: f_unit
-    integer :: idummy
-    logical :: ldummy
-!
-!   read from a "rsp helper" file
-!
-    call tmp%erase()
-
-    open(newunit = f_unit,&
-         file = trim(f_name),&
-         status = 'OLD',&
-         form   = 'formatted',&
-         access = 'sequential',&
-         position = 'rewind')
-
-!   first 4 rows are for other data
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(l)')  ldummy
-
-    read(f_unit, '(i8)')  tmp%ndamp
-    read(f_unit, '(i8)')  tmp%nfreq
-    read(f_unit, '(i8)')  tmp%nr_B_operators
-    read(f_unit, '(l)')   tmp%static
-    read(f_unit, '(l)')   tmp%xlr_skipep
-    read(f_unit, '(l)')   tmp%xlr_skipee
-    read(f_unit, '(i8)')  tmp%nr_rsp_vectors
-    read(f_unit, '(i8)')  tmp%nr_rsp_vectors_ee
-    read(f_unit, '(i8)')  tmp%nr_rsp_vectors_ep
-
-    close(f_unit, status = 'keep')
-
-    tmp%rsp_diminfo_is_read = .true.
-
-  end subroutine
-
-
-! ------------------------------------------------------------------------------
-  subroutine read_rspvec_data_from_helper_file(tmp, f_name, ivec_selected)
-    type(response_info_t), intent(inout) :: tmp
-    character(*), intent(in) :: f_name
-    integer, intent(in) :: ivec_selected
-    integer :: f_unit, ivec
-    integer :: idummy
-    logical :: ldummy
-!
-!   read from a "rsp helper" file
-!
-    call tmp%erase()
-
-    open(newunit = f_unit,&
-         file = trim(f_name),&
-         status = 'OLD',&
-         form   = 'formatted',&
-         access = 'sequential',&
-         position = 'rewind')
-
-!   first 13 rows are for other data
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(l)')  ldummy
-    read(f_unit, '(l)')  ldummy
-    read(f_unit, '(l)')  ldummy
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(i8)')  idummy
-    read(f_unit, '(i8)')  idummy
-
- 1  continue
-    read(f_unit, '(i8)')  ivec
-    if (ivec == ivec_selected) then
-      backspace(f_unit) 
-      read(f_unit, '(5i8,a20,a5,i8,2es28.18,8i8)')  &
-                                        ivec,                      &
-                                        tmp%nzxope(ivec),          &
-                                        tmp%nzxopeq(ivec),         &
-                                        tmp%nzxopp(ivec),          &
-                                        tmp%nzxoppq(ivec),         &
-                                        tmp%rspvec_lab(ivec),      &
-                                        tmp%rspvec_type(ivec),     &
-                                        tmp%rspvec_ih(ivec),       &
-                                        tmp%rspvec_freq(ivec),     &
-                                        tmp%rspvec_rnorm(ivec),    &
-                                        tmp%rspvec_fsym(ivec),     &
-                                        tmp%rspvec_irep(ivec),     &
-                                        tmp%rspvec_trsym(ivec),    &
-                                        tmp%rspvec_ifckop(ivec),   &
-                                        tmp%jz_spfexc(ivec),       &
-                                        tmp%jrep_spfexc(ivec),     &
-                                        tmp%from_full_to_ee(ivec), &
-                                        tmp%from_full_to_ep(ivec)
-
-      tmp%rspvec_data_is_read(ivec) = .true.
-      go to 2
-    else
-      go to 1
-    end if
-
- 2  continue
-    close(f_unit, status = 'keep')
-
-  end subroutine
-
-
-! ------------------------------------------------------------------------------
-  subroutine write_nonallocatables_to_helper(f_unit,gp_info,rsp_info) 
+  subroutine read_rspdim_data_from_response_file(f_unit, gp_info, rsp_info)
     integer, intent(in) :: f_unit
-    type(gp_info_t), intent(in) :: gp_info
-    type(response_info_t), intent(in) :: rsp_info
-
-    write(f_unit, '(i8)')  gp_info%nao !on checkpoint!
-    write(f_unit, '(i8)')  gp_info%nmo !on checkpoint!
-    write(f_unit, '(i8)')  gp_info%nz  !on checkpoint!
-    write(f_unit, '(l)')   gp_info%spinfr
-  
-    write(f_unit, '(i8)')  rsp_info%ndamp
-    write(f_unit, '(i8)')  rsp_info%nfreq
-    write(f_unit, '(i8)')  rsp_info%nr_B_operators
-    write(f_unit, '(l)')   rsp_info%static
-    write(f_unit, '(l)')   rsp_info%xlr_skipep
-    write(f_unit, '(l)')   rsp_info%xlr_skipee
-    write(f_unit, '(i8)')  rsp_info%nr_rsp_vectors
-    write(f_unit, '(i8)')  rsp_info%nr_rsp_vectors_ee
-    write(f_unit, '(i8)')  rsp_info%nr_rsp_vectors_ep
-    !write(f_unit, '(I8)')  rsp_info%ndim_ee_total
-    !write(f_unit, '(I8)')  rsp_info%ndim_ep_total
-
-  end subroutine
-
-! ------------------------------------------------------------------------------
-  subroutine write_allocatables_to_helper(f_unit, rsp_info, ivec_selected)
-    integer, intent(in) :: f_unit
-    type(response_info_t), intent(in) :: rsp_info
-    integer, intent(in), optional :: ivec_selected
-    integer :: ivec, nr_vec
-  
-    nr_vec = rsp_info%nr_rsp_vectors
-
-    do ivec = 1, nr_vec
-      if (present(ivec_selected)) then
-        if (ivec .ne. ivec_selected) cycle
-      end if
-      write(f_unit, '(5i8,a20,a5,i8,2es28.18,8i8)') &
-                    ivec,                        &
-                    rsp_info%nzxope(ivec),       &
-                    rsp_info%nzxopeq(ivec),      &
-                    rsp_info%nzxopp(ivec),       &
-                    rsp_info%nzxoppq(ivec),      &
-                    rsp_info%rspvec_lab(ivec),   &
-                    rsp_info%rspvec_type(ivec),  &
-                    rsp_info%rspvec_ih(ivec),    &
-                    rsp_info%rspvec_freq(ivec),  &
-                    rsp_info%rspvec_rnorm(ivec), &
-                    rsp_info%rspvec_fsym(ivec),  &
-                    rsp_info%rspvec_irep(ivec),  &
-                    rsp_info%rspvec_trsym(ivec), &
-                    rsp_info%rspvec_ifckop(ivec),&
-                    rsp_info%jz_spfexc(ivec),    &
-                    rsp_info%jrep_spfexc(ivec),  &
-                    rsp_info%from_full_to_ee(ivec), &
-                    rsp_info%from_full_to_ep(ivec)
-    end do
-  
-  end subroutine
-
-
-! ------------------------------------------------------------------------------
-  subroutine construct_perturbed_dmat(dmat,bmat,  &
-                                      ivec, &
-                                      gp_info,rsp_info,&
-                                      cmo)
-
-    integer, intent(in)  :: ivec
-    type(gp_info_t), intent(in)  :: gp_info
-    type(response_info_t), intent(in) :: rsp_info
-    real(kind=8), intent(in) :: bmat(gp_info%nmo, gp_info%nmo, gp_info%nz)
-    real(kind=8), intent(out) :: dmat(gp_info%nao*gp_info%nao,  gp_info%nz)
-    real(kind=8), intent(in) :: cmo(*)
-
-    integer :: irep,iopsy,itim
-    integer :: iprint
-    integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
-    logical :: debug_print
-!
-!   on input:
-!   bmat - a matrix with scattered response parameters
-!   cmo  - MOs
-!
-!   on output:
-!   dmat - perturbed density matrix:
-!          symmetrized or antisymmetrized depending on rsp_info%ih
-!
-!   code adapted after DMOLI3 subroutine from prp/pamrvc.F90
-!
-
-    iprint = 0  ! needed for qtrans
-
-!   construct half dmat = Ci*bmat*dag(Ca)
-
-    dmat(1:gp_info%nao*gp_info%nao, 1:gp_info%nz) = 0.0d0
-
-    irep   = rsp_info%rspvec_irep(ivec)
-    iopsy  = rsp_info%rspvec_ifckop(ivec) ! 1-gerade, 2-ungerade perturbation
-    itim   = rsp_info%rspvec_trsym(ivec)
-
-    do i1 = 1, gp_info%nfsym
-      i2 = mod(i1+iopsy,2) + 1
-
-!     second index: inactive index:
-      ni = gp_info%nish(i2)
-      ii = gp_info%iorb(i2) + gp_info%npsh(i2) + 1
-      ji = gp_info%icmoq(i2) + gp_info%npsh(i2)*gp_info%nfbas(i2,0)+1
-
-!     first index: secondary index:
-      if (rsp_info%rspvec_type(ivec)(1:1) == 'E') then
-!        .. secondary index is electronic:
-         ns = gp_info%nesh(i1)
-         is = gp_info%iorb(i1) + gp_info%npsh(i1) + 1
-         js = gp_info%icmoq(i1) + gp_info%npsh(i1)*gp_info%nfbas(i1, 0) + 1
-      else if (rsp_info%rspvec_type(ivec)(1:1) == 'P') then
-!        .. secondary index is positronic:
-         ns = gp_info%npsh(i1)
-         is = gp_info%iorb(i1) + 1
-         js = gp_info%icmoq(i1) + 1
-      end if
-
-      if (ni > 0 .and. ns > 0) then
-
-        call qtrans90('MOAO', &
-                      'S',    &
-                      0.0d0,  &
-                      gp_info%nfbas(i1,0), gp_info%nfbas(i2,0), &
-                      ns, ni, &
-!                     ------------------------------------------------------
-                      dmat(gp_info%i2basx(i1,i2)+1, 1),   &
-                      gp_info%nao, gp_info%nao, gp_info%nz,     &
-                      gp_info%ipqtoq(1, irep),                  &
-!                     ------------------------------------------------------
-                      bmat(is, ii, 1),                    &
-                      gp_info%nmo, gp_info%nmo, gp_info%nz,     &
-                      gp_info%ipqtoq(1, irep),                  &
-!                     ------------------------------------------------------
-                      cmo(js),                                  &
-                      gp_info%nfbas(i1,0), gp_info%norb(i1), gp_info%nz,&
-                      gp_info%ipqtoq(1, 0),                     &
-!                     ------------------------------------------------------
-                      cmo(ji),                                  &
-                      gp_info%nfbas(i2,0), gp_info%norb(i2), gp_info%nz,&
-                      gp_info%ipqtoq(1, 0),                     &
-!                     ------------------------------------------------------
-                      iprint)
-      end if
-
-     end do
-
-!    construct full dmat = (half dmat) +/- dag(half dmat)
-!    take symmetric/antisymmetric combinations depending on the hermiticity of response vectors
-     call pertdenmat_sym(mat_dim = gp_info%nao,   &
-                         mat_nz  = gp_info%nz,    &
-                         mat     = dmat(1,1), &
-                         ih      = rsp_info%rspvec_ih(ivec),    &
-                         irep    = rsp_info%rspvec_irep(ivec),  &
-                         ipqtoq  = gp_info%ipqtoq,  &
-                         ihqmat  = gp_info%ihqmat,  &
-                         imat    = ivec)
-
-
-  end subroutine
-
-
-! ------------------------------------------------------------------------------
-  subroutine pertdenmat_sym(mat_dim,mat_nz,mat, &
-                            ih,irep,ipqtoq,ihqmat,imat)
-
-    integer, intent(in)    :: mat_dim
-    integer, intent(in)    :: mat_nz
-    real(8), intent(inout) :: mat(mat_dim, mat_dim, mat_nz)
-    integer, intent(in)    :: ih
-    integer, intent(in)    :: irep
-    integer, intent(in)    :: ipqtoq(4,0:7)
-    integer, intent(in)    :: ihqmat(4,-1:1)
-    integer, intent(in)    :: imat
-    integer :: i, j, iz, iq, im
-    real(8) :: fullmat
-    real(8) :: f
-!
-!   after dmoli3 in prp/pamrvc.F and fulmat in gp/gpsaue.F
-!
-    do iz = 1, mat_nz
-      iq = ipqtoq(iz, irep)
-      im = ihqmat(iq, ih)
-      if (im .eq. 1) then
-        f = 1.0d0
-      else if (im .eq. 2) then
-        f =-1.0d0
-      end if
-
-      do j = 1, mat_dim
-        do i = j, mat_dim
-          fullmat = mat(i, j, iz) + f*mat(j, i, iz)
-          mat(i, j, iz) =  fullmat
-          mat(j, i, iz) =  f*fullmat
-        end do
-      end do
-    end do
-
-  end subroutine
-
-! ------------------------------------------------------------------------------
-  subroutine read_rspdim_data_from_response_file(f_name, gp_info, rsp_info)
-    character(*), intent(in) :: f_name
     type(gp_info_t), intent(in) :: gp_info
     type(response_info_t), intent(inout) :: rsp_info
-    integer :: f_unit
-    integer :: nr_vectors
-    integer :: ivec
-    integer :: ivec_ee, ivec_ep
-    logical :: vec_pp, vec_pn, rspvec_update
+    integer :: ivec, ivec_ee, ivec_ep
+    logical :: vec_pp, vec_pn
     character(len=16) :: lab1
-
-    rspvec_update = .false.
-    f_unit = open_rsp_file(f_name)
 
     rewind(f_unit)
 
@@ -592,23 +182,17 @@ contains
        call read_one_record_of_pamxvc(f_unit, &
                                       read_dim_only = .true., &
                                       ivec = ivec, &
-                                      gp_info = gp_info, &
+                                      gp_info  = gp_info, &
                                       rsp_info = rsp_info, &
-                                      rspvec_info_update = rspvec_update, &
+                                      rspvec_info_update = .false., &
                                       vec_pp = vec_pp, &
                                       vec_pn = vec_pn)
 
        if (vec_pp) then
           ivec_ee = ivec_ee + 1
-          if (rspvec_update) then
-             rsp_info%from_full_to_ee(ivec) = ivec_ee
-          end if
        end if
        if (vec_pn) then
           ivec_ep = ivec_ep + 1
-          if (rspvec_update) then
-             rsp_info%from_full_to_ep(ivec) = ivec_ep
-          end if
        end if
 
        go to 1
@@ -616,53 +200,21 @@ contains
 
  2  continue
 
-    nr_vectors    = ivec
     rsp_info%nr_rsp_vectors = ivec
     rsp_info%nr_rsp_vectors_ee = ivec_ee
     rsp_info%nr_rsp_vectors_ep = ivec_ep
-    rsp_info%rsp_diminfo_is_read = .true.
 
-    close(f_unit, status = 'keep')
   end subroutine
 
 
 ! ------------------------------------------------------------------------------
-  subroutine read_rspvec_from_response_file(f_name, gp_info, rsp_info, &
-                  rspvec_info_full_update, &
-                  rspvec_id, &
-                                          bmat,             &
-                                          rspvec_to_dxfile, &
-                                          dxfile_unit,      &
-                                          dxfile_name,      &
-                                          fullvec_to_memory,&
-                                          fullvec,          &
-                                          ibeig,            &
-                                          ind_ee,           &
-                                          ind_ep,           &
-                                          get_jz_spfexc)
-    character(*), intent(in) :: f_name
+  subroutine read_rspvec_from_response_file(f_unit, gp_info, rsp_info)
+    integer, intent(in) :: f_unit
     type(gp_info_t), intent(in) :: gp_info
     type(response_info_t), intent(inout) :: rsp_info
-    logical, intent(in) :: rspvec_info_full_update
-    integer, intent(in), optional :: rspvec_id
+    integer :: ivec, ioff, fullvec_off
+    character(len=16) :: lab1
 
-    real(8), optional, intent(inout) :: bmat(*)
-      logical,     intent(in),   optional :: rspvec_to_dxfile
-      integer,     intent(in),   optional :: dxfile_unit
-      character(*),intent(in),   optional :: dxfile_name
-      logical,     intent(in),   optional :: fullvec_to_memory
-      real(8),     intent(inout),optional :: fullvec(*)
-      integer,     intent(in),   optional :: ibeig(*)
-      integer,     intent(out),  optional :: ind_ee(*)
-      integer,     intent(out),  optional :: ind_ep(*)
-      logical,     intent(in),   optional :: get_jz_spfexc
-
-      integer :: f_unit
-      integer           :: ivec, ivec_selected, ioff, fullvec_off
-      character(len=16) :: lab1
-!  ----------------------------------------------------------------------------
-
-    f_unit = open_rsp_file(f_name)
     rewind(f_unit)
     ivec = 0
     ioff = 1
@@ -674,31 +226,14 @@ contains
        go to 2
     else
        ivec = ivec + 1
-       if (present(rspvec_id)) then
-         ivec_selected = rspvec_id
-         if (ivec_selected .ne. ivec) then
-           read(f_unit)
-           read(f_unit)
-           ioff = ioff + fullvec_off
-           go to 1
-         end if
-       end if
        backspace(f_unit)
-       write(*, *) 'READING RECORD ivec = ', ivec
        call read_one_record_of_pamxvc(f_unit, &
                                       read_dim_only = .false., &
                                       ivec     = ivec, &
                                       gp_info  = gp_info, &
                                       rsp_info = rsp_info, &
-                                      bmat     = bmat, &
-                                      rspvec_info_update = rspvec_info_full_update, &
-                                      fullvec_to_memory = fullvec_to_memory,&
-                                      fullvec = fullvec(ioff), &
-                                      fullvec_off = fullvec_off, &
-                                      ibeig = ibeig, &
-                                      ind_ee = ind_ee, &
-                                      ind_ep = ind_ep, &
-                                      get_jz_spfexc = get_jz_spfexc)
+                                      rspvec_info_update = .true., &
+                                      fullvec_off = fullvec_off)
        ioff = ioff + fullvec_off
        go to 1
     end if
@@ -717,32 +252,18 @@ contains
                                        rsp_info,         &
                                        vec_pp,           &
                                        vec_pn,           &
-                                       bmat,             &
                                        rspvec_info_update,  &
-                                       fullvec_to_memory,&
-                                       fullvec,          &
-                                       fullvec_off,      &
-                                       ibeig,            &
-                                       ind_ee,           &
-                                       ind_ep,           &
-                                       get_jz_spfexc)
+                                       fullvec_off)
 
     integer, intent(in) :: f_unit
     logical, intent(in) :: read_dim_only
     integer, intent(in) :: ivec
     type(gp_info_t), intent(in) :: gp_info
     type(response_info_t), intent(inout) :: rsp_info
-    logical, intent(in),  optional       :: rspvec_info_update
-    logical, intent(in),  optional       :: fullvec_to_memory
-    logical, intent(in),  optional       :: get_jz_spfexc
+    logical, intent(in), optional :: rspvec_info_update
     logical, intent(out), optional :: vec_pp
     logical, intent(out), optional :: vec_pn
-    real(8), intent(inout), optional     :: fullvec(*)
-    real(8), intent(inout), optional     :: bmat(*)
-    integer, intent(in),  optional       :: ibeig(*)
-    integer, intent(out), optional       :: fullvec_off
-    integer, intent(out), optional       :: ind_ee(*)
-    integer, intent(out), optional       :: ind_ep(*)
+    integer, intent(out), optional :: fullvec_off
 
     character(len=100) :: errmsg
     character(len=16) :: lab1, lab2, lbuf
@@ -754,12 +275,8 @@ contains
     integer :: i, idum, length, ih, ioff
     logical :: rspvec_update
     logical :: debug_print
-    integer, allocatable :: orbital_rotation_indices(:, :)
-    real(8), allocatable :: vector(:, :)
-    integer :: ii,jj
 !
-!   read ONE record of PAMXVC file;
-!   save information about ONE response vector to rsp_info
+!   read one record of PAMXVC file;
 !
 
     debug_print = .false.
@@ -780,7 +297,8 @@ contains
     length  = lenrec/(gp_info%nz)
 
     if (debug_print) then
-      write(*, *) 'Solution vector nr. ', ivec, ' read from ', rsp_info%rspvec_file
+      write(*, *) 'Solution vector nr. ', ivec !, &
+                  !' read from ', rsp_info%rspvec_file
       write(*, '(a30,a16)')   '.... lab              = ', lab1
       write(*, '(a30,a8)')    '.... type             = ', typ1
       write(*, '(a30,i8)')    '.... pg sym (jsymop1) = ', jsymop1
@@ -795,8 +313,8 @@ contains
       case ('E')
         vector_type = 'pp'
         if (rspvec_update) then
-          rsp_info%nzxope(ivec)  = length
-          rsp_info%nzxopeq(ivec) = lenrec
+          rsp_info%vectors(ivec)%nzxope  = length
+          rsp_info%vectors(ivec)%nzxopeq = lenrec
           if (ivec.eq.1) then
             rsp_info%ndim_ee_total = 0
           else
@@ -807,8 +325,8 @@ contains
       case ('P')
         vector_type = 'pn'
         if (rspvec_update) then
-          rsp_info%nzxopp(ivec)  = length
-          rsp_info%nzxoppq(ivec) = lenrec
+          rsp_info%vectors(ivec)%nzxopp  = length
+          rsp_info%vectors(ivec)%nzxoppq = lenrec
           if (ivec.eq.1) then
             rsp_info%ndim_ep_total = 0
           else
@@ -834,25 +352,21 @@ contains
     end select
 
     if (rspvec_update) then
-      rsp_info%rspvec_lab(ivec)    = lab1
-      rsp_info%rspvec_type(ivec)   = typ1
-      rsp_info%rspvec_freq(ivec)   = freq1
-      rsp_info%rspvec_rnorm(ivec)  = rnorm
-      rsp_info%rspvec_ih(ivec)     = ih    
-      rsp_info%rspvec_fsym(ivec)   = jsymop1
-      rsp_info%rspvec_irep(ivec)   = jsymop1-1
-      rsp_info%rspvec_trsym(ivec)  = jtimop1
-      rsp_info%rspvec_ifckop(ivec) = gp_info%jbtof(rsp_info%rspvec_irep(ivec), 1)
-
-      if (debug_print) then
-        write(*, *) 'rsp_info%rspvec_lab(ivec)   ', rsp_info%rspvec_lab(ivec)
-        write(*, *) 'rsp_info%rspvec_type(ivec)  ', rsp_info%rspvec_type(ivec)
-        write(*, *) 'rsp_info%rspvec_ih(ivec)    ', rsp_info%rspvec_ih(ivec)
-        write(*, *) 'rsp_info%rspvec_fsym(ivec)  ', rsp_info%rspvec_fsym(ivec)
-        write(*, *) 'rsp_info%rspvec_irep(ivec)  ', rsp_info%rspvec_irep(ivec)
-        write(*, *) 'rsp_info%rspvec_trsym(ivec) ', rsp_info%rspvec_trsym(ivec)
-        write(*, *) 'rsp_info%rspvec_ifckop(ivec)', rsp_info%rspvec_ifckop(ivec)
-      end if
+      rsp_info%vectors(ivec)%id     = ivec
+      rsp_info%vectors(ivec)%lab    = lab1
+      rsp_info%vectors(ivec)%typ    = typ1
+      rsp_info%vectors(ivec)%freq   = freq1
+      rsp_info%vectors(ivec)%rnorm  = rnorm
+      rsp_info%vectors(ivec)%ih     = ih    
+      rsp_info%vectors(ivec)%fsym   = jsymop1
+      rsp_info%vectors(ivec)%irep   = jsymop1-1
+      rsp_info%vectors(ivec)%trsym  = jtimop1
+      rsp_info%vectors(ivec)%ifckop = gp_info%jbtof(jsymop1-1, 1)
+      rsp_info%vectors(ivec)%data_is_read = .true.
+      call rsp_info%vectors(ivec)%transfer_gp_data_to_rsp(&
+                               gp_info%ipqtoq(1:gp_info%nz,jsymop1-1), &
+                               gp_info%ihqmat(1:gp_info%nz,ih),   &
+                               gp_info%spinfr)
     end if
 
     if (read_dim_only) then
@@ -862,182 +376,16 @@ contains
       return
     else
 !     allocate and read response vector
-      allocate(vector(length, gp_info%nz))
-      vector=0.0d0
-      read(f_unit) vector
+      call rsp_info%vectors(ivec)%alloc_values(length, gp_info%nz)
+      read(f_unit) rsp_info%vectors(ivec)%values
       
 !     allocate and read orbital rotation array
-      allocate(orbital_rotation_indices(2, length))
-      orbital_rotation_indices=0
-      read(f_unit) orbital_rotation_indices
-      
-!     fixme: test this:
-         !if (freq1 .ne. 0.0d0) then
-         !   call dscal(lenrec, 1/freq1, vector, 1)
-         !end if
-      
-      if (present(get_jz_spfexc)) then
-!       jz is needed for spinfree case
-!       here the code follows prp/pamrvc.F: jrep_spfexc is set to 0
-        if (get_jz_spfexc) then
-          if (gp_info%spinfr .and. (rsp_info%rspvec_trsym(ivec)==1)) then
-            if (rsp_info%rspvec_type(ivec)(1:1) == 'E') then
-              call spfexc(vector,                    &
-                          orbital_rotation_indices,  &
-                          rsp_info%nzxope(ivec),     &
-                          ibeig,                     &
-                          rsp_info%jz_spfexc(ivec),  &
-                          rsp_info%jrep_spfexc(ivec))
-      
-            else if (rsp_info%rspvec_type(ivec)(1:1) == 'P') then
-              call spfexc(vector,                    &
-                          orbital_rotation_indices,  &
-                          rsp_info%nzxopp(ivec),     &
-                          ibeig,                     &
-                          rsp_info%jz_spfexc(ivec),  &
-                          rsp_info%jrep_spfexc(ivec))
-            end if
-          end if
-        end if
-      end if
-    
-      if (rspvec_update) rsp_info%rspvec_data_is_read(ivec) = .true.
-
-!     fixme test offsets!
-      if (present(ind_ee) .and. rsp_info%rspvec_type(ivec)(1:1) == 'E') then
-!       save information on 'ee' orbital rotation indices
-        ioff=length*2*(ivec-1)
-        call icopy(length*2,                        &
-                   orbital_rotation_indices,        &
-                   1,                               &
-                   ind_ee(1+ioff:ioff+length*2),    &
-                   1)
-      end if
-      if (present(ind_ep) .and. rsp_info%rspvec_type(ivec)(1:1) == 'P') then
-!       save information on 'ep' orbital rotation indices
-        ioff=length*2*(ivec-1)
-        call icopy(length*2,                        &
-                   orbital_rotation_indices,        &
-                   1,                               &
-                   ind_ep(1+ioff:ioff+length*2),    &
-                   1)
-      end if
-!
-!      save the currently read vector
-!
-!      ioff=length*gp_info%nz*(ivec-1)
-!      call dcopy(length*gp_info%nz,              &
-!                 vector,                 &
-!                 1,                               &
-!                 rspvec(1+ioff:ioff+length*gp_info%nz),  &
-!                 1)
-
-
-      if (present(fullvec_to_memory)) then
-        if (fullvec_to_memory) then
-          call dcopy(length*gp_info%nz, &
-                     vector,             &
-                     1,                  &
-                     fullvec,            &
-                     1)
-          fullvec_off = length*gp_info%nz
-        end if
-      end if
-
-      if (present(bmat)) then
-!        scatter vector -> matrix
-         debug_print = .true.
-         if (debug_print) then
-            write(*, *) '.... response_vector as a vector=', ivec
-            !call prqmat(vector, length, 1, length, 1, gp_info%nz,&
-            !         gp_info%nz,gp_info%ipqtoq(1,jsymop1-1),6)
-            !call dirac_print_arr(vector, length, 1, gp_info%nz, &
-            !                     1, 6)
-         end if
-         !ioff=gp_info%nmo*gp_info%nmo*gp_info%nz*(ivec-1)+1
-         call scatter_vector_onto_matrix(length, &
-                                         gp_info%nmo, gp_info%nz,&
-                                         gp_info%ipqtoq,             &
-                                         gp_info%ihqmat,             &
-                                         rsp_info%rspvec_irep(ivec),  &
-                                         rsp_info%rspvec_ih(ivec),    &
-                                         ih_factor,    &
-                                         orbital_rotation_indices,    &
-                                         vector,                      &
-                                         bmat)
-         if (debug_print) then
-            write(*, *) '.... response_vector as a matrix: ',ivec
-            call prqmat(bmat,&
-                 gp_info%nmo, gp_info%nmo,gp_info%nmo, gp_info%nmo,&
-                 gp_info%nz,gp_info%ipqtoq(1,0),6)
-         end if
-      end if
-
-      deallocate(vector)
-      deallocate(orbital_rotation_indices)
+      call rsp_info%vectors(ivec)%alloc_orbital_rotation_indices(2, length)
+      read(f_unit) rsp_info%vectors(ivec)%orbital_rotation_indices
 
     end if
 
    end subroutine
-
-
-! ------------------------------------------------------------------------------
-  subroutine scatter_vector_onto_matrix(length, &
-                                        ndim, nz, &
-                                        ipqtoq, ihqmat, &
-                                        irep, ih, &
-                                        ih_factor, &
-                                        orbital_rotation_indices, &
-                                        response_vector, &
-                                        matrix)
-
-    integer, intent(in)  :: length, ndim, nz, irep, ih
-    real(8), intent(in)  :: ih_factor
-    integer, intent(in)  :: ipqtoq(4,0:7)
-    integer, intent(in)  :: ihqmat(4,-1:1)
-    integer, intent(in)  :: orbital_rotation_indices(2, length)
-    real(8), intent(in)  :: response_vector(length, *)
-    real(8), intent(out) :: matrix(ndim, ndim, nz)
-    integer :: i, s, is, iz, iq, im
-    real(8) :: f
-!
-!   reused scatter_vector subroutine from visual/visual.F90
-!   the resulting matrix is already symmetric/antisymmetric
-!
-
-    do is = 1, length
-
-      i = orbital_rotation_indices(1, is)
-      s = orbital_rotation_indices(2, is)
-
-      do iz = 1, nz
-
-        iq = ipqtoq(iz, irep)
-        im = ihqmat(iq, ih)
-
-        if (im.eq.1) then
-          f = -1.0d0
-        else if (im.eq.2) then
-          f =  1.0d0
-        end if
-        !if (iq > 1) then
-        !  f =  -1.0d0
-        !else
-        !  f =  1.0d0
-        !end if
-
-        matrix(s, i, iz) =  matrix(s, i, iz) &
-                         + response_vector(is, iz)
-        matrix(i, s, iz) = matrix(i, s, iz) &
-                         + f*response_vector(is, iz)
-                         !- f*ih_factor*response_vector(is, iz)
-      end do
-    end do
-
-!   this matrix is scaled by -1.0 in dmolitx1 subroutine, so we do the same here:
-    call dscal(ndim*ndim*nz, -1.0d0, matrix, 1)
-
-  end subroutine
 
 
 ! ------------------------------------------------------------------------------
@@ -1046,24 +394,21 @@ contains
     integer :: open_rsp_file
     integer :: funit
     logical :: exists, is_opened
-    character(len=100) :: errmsg
+    character(len=:),allocatable :: errmsg
 
-    inquire(file=fname, exist=exists, opened=is_opened)
+    inquire(file=trim(fname), exist=exists, opened=is_opened)
     if (exists) then
       if (.not.is_opened) then
-        open(file = fname, &
-             newunit = funit,   &
-             status = 'old',    &
+        open(file = trim(fname), &
+             newunit = funit, &
+             status = 'old',  &
              access = 'sequential',&
-             form   = 'unformatted', &
-             position = 'rewind')
+             form   = 'unformatted')
       else
-        inquire(file=fname, number=funit)
-        rewind(funit)
+        inquire(file=trim(fname), number=funit)
       end if
     else
-      write(errmsg, *) 'file ', fname, ' does not exist',&
-                       ' Stopping now!'
+      write(errmsg, '(a)') 'file ',trim(fname),' does not exist. Stopping now!'
       call quit(errmsg)
     end if
     open_rsp_file = funit
@@ -1071,7 +416,194 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine read_gp_data_from_cbs(self)
+  subroutine flatten_real_2d_to_1d(arr_2d, arr_1d)
+    real(8), intent(in) :: arr_2d(:,:)
+    real(8), pointer, intent(out) :: arr_1d(:)
+    integer :: n
+
+    n = size(arr_2d)
+    nullify(arr_1d)
+    allocate(arr_1d(n))
+    arr_1d(1:n) = 0.0d0
+    arr_1d(1:n) = reshape(arr_2d, (/n/)) 
+
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine flatten_int_2d_to_1d(arr_2d, arr_1d)
+    integer, intent(in) :: arr_2d(:,:)
+    integer, pointer, intent(out) :: arr_1d(:)
+    integer :: n
+
+    n = size(arr_2d)
+    nullify(arr_1d)
+    allocate(arr_1d(n))
+    arr_1d(1:n) = 0
+    arr_1d(1:n) = reshape(arr_2d, (/n/)) 
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  pure function allocated_values(self)
+    class(response_vector_t), intent(in):: self
+    logical:: allocated_values
+    allocated_values = allocated(self%values)
+  end function
+
+! ------------------------------------------------------------------------------
+  pure function allocated_orbital_rotation_indices(self)
+    class(response_vector_t), intent(in):: self
+    logical:: allocated_orbital_rotation_indices
+    allocated_orbital_rotation_indices = allocated(self%orbital_rotation_indices)
+  end function
+
+
+! ------------------------------------------------------------------------------
+  subroutine alloc_rspvec_values(self, ndim1, ndim2)
+    class(response_vector_t), intent(inout):: self
+    integer, intent(in) :: ndim1, ndim2
+    if (self%allocated_values()) return
+    allocate(self%values(ndim1, ndim2))
+    self%values = 0.0d0
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine alloc_rspvec_orbital_rotation_indices(self, ndim1, ndim2)
+    class(response_vector_t), intent(inout):: self
+    integer, intent(in) :: ndim1, ndim2
+    if (self%allocated_orbital_rotation_indices()) return
+    allocate(self%orbital_rotation_indices(ndim1, ndim2))
+    self%orbital_rotation_indices = 0
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine erase_rspvec_data(self)
+    class(response_vector_t), intent(out) :: self
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine erase_gp_data(self)
+    class(gp_info_t), intent(out) :: self
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine display_gp_data(self)
+    class(gp_info_t), intent(in) :: self
+
+    write(*,*) 'data on gp_info_t:'
+    write(*,*) ' nmo        = ', self%nmo
+    write(*,*) ' nao        = ', self%nao
+    write(*,*) ' n2bbasxq   = ', self%n2bbasxq
+    write(*,*) ' n2orbxq    = ', self%n2orbxq
+    write(*,*) ' nz         = ', self%nz
+    write(*,*) ' nocc       = ', self%nocc
+    write(*,*) ' norb       = ', self%norb
+    write(*,*) ' npsh       = ', self%npsh
+    write(*,*) ' nish       = ', self%nish
+    write(*,*) ' nesh       = ', self%nesh
+    write(*,*) ' nfsym      = ', self%nfsym
+    write(*,*) ' nbsym      = ', self%nbsym
+    write(*,*) ' nfbas      = ', self%nfbas
+    write(*,*) ' i2basx     = ', self%i2basx
+    write(*,*) ' i2orbx     = ', self%i2orbx
+    write(*,*) ' iorb       = ', self%iorb
+    write(*,*) ' jbtof      = ', self%jbtof
+    write(*,*) ' ihrmop     = ', self%ihrmop
+    write(*,*) ' icmoq      = ', self%icmoq
+    write(*,*) ' ihqmat     = ', self%ihqmat
+    write(*,*) ' ncmotq     = ', self%ncmotq
+    write(*,*) ' ipqtoq     = ', self%ipqtoq
+    write(*,*) ' spinfr     = ', self%spinfr
+    write(*,*) ' intflg     = ', self%intflg
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine display_rsp_data(self)
+    class(response_info_t), intent(in) :: self
+    integer :: i
+
+    write(*,*) 'data on response_info_t:'
+    write(*,*) ' nr_rsp_vectors    =', self%nr_rsp_vectors
+    write(*,*) ' nr_rsp_vectors_ee =', self%nr_rsp_vectors_ee
+    write(*,*) ' nr_rsp_vectors_ep =', self%nr_rsp_vectors_ep
+    write(*,*) ' ndim_ee_total     =', self%ndim_ee_total
+    write(*,*) ' ndim_ep_total     =', self%ndim_ep_total
+    write(*,*) ' nr_B_operators    =', self%nr_B_operators
+    write(*,*) ' ndamp             =', self%ndamp
+    write(*,*) ' nfreq             =', self%nfreq
+    write(*,*) ' static            =', self%static
+    write(*,*) ' xlr_skipep        =', self%xlr_skipep
+    write(*,*) ' xlr_skipee        =', self%xlr_skipee
+
+    if (self%nr_rsp_vectors > 0) then
+      !if (self%allocated_vectors()) then
+        do i = 1, self%nr_rsp_vectors
+          write(*,*) 'data on response_vector_t ', i
+          call self%vectors(i)%display()
+        end do
+      !else
+      !  write(*,*) 'response vectors NOT ALLOCATED '
+      !end if
+    end if
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine display_rspvec_data(self)
+    class(response_vector_t), intent(in) :: self
+    integer :: i, j, k, n1, n2
+
+    if (self%data_is_read) then
+      i = self%id
+      write(*,*) 'data on response_vector_t ', i
+      write(*,*) ' nzxope   =', self%nzxope
+      write(*,*) ' nzxopp   =', self%nzxopp
+      write(*,*) ' nzxopeq  =', self%nzxopeq
+      write(*,*) ' nzxoppq  =', self%nzxoppq
+      write(*,*) ' lab      =', self%lab
+      write(*,*) ' typ      =', self%typ
+      write(*,*) ' ih       =', self%ih
+      write(*,*) ' freq     =', self%freq
+      write(*,*) ' rnorm    =', self%rnorm
+      write(*,*) ' fsym     =', self%fsym
+      write(*,*) ' irep     =', self%irep
+      write(*,*) ' trsym    =', self%trsym
+      write(*,*) ' ifckop   =', self%ifckop
+      write(*,*) ' jz_spfexc   =', self%jz_spfexc
+      write(*,*) ' jrep_spfexc =', self%jrep_spfexc
+      if (self%allocated_values()) then
+        call self%get_size_of_values(ndim1=n1, ndim2=n2)
+        do j = 1, n2
+          do k = 1, n1
+            write(*,*) ' response_vector value =', k, j, self%values(k, j)
+          end do
+        end do
+      else
+        write(*,*) ' response_vector value NOT ALLOCATED'
+      end if
+      if (self%allocated_orbital_rotation_indices()) then
+        call self%get_size_of_orbital_rotation_indices(ndim1=n1, ndim2=n2)
+        do j = 1, n2
+          do k = 1, n1
+            write(*,*) ' response_vector orbital_rotation_indices =', &
+                  k, j, self%orbital_rotation_indices(k, j)
+          end do
+        end do
+      else
+        write(*,*) ' response_vector orbital_rotation_indices NOT ALLOCATED'
+      end if
+    end if
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine read_gp_data_from_common_blocks(self)
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
@@ -1084,11 +616,7 @@ contains
 #include "dcborb.h"
 #include "dcbham.h"
     type(gp_info_t), intent(out) :: self
-!
-!   read information from common blocks to a derived type
-!   fixme - this information can be read from CHECKPOINT, but not
-!   everything is avalable there, so I use the old code for now
-!
+
     call self%erase()
 
     self%nmo         = norbt
@@ -1121,177 +649,567 @@ contains
   end subroutine
 
 
-! ------------------------------------------------------------------------------
-  subroutine erase_rsp_data(self)
-    class(response_info_t), intent(out) :: self
-  end subroutine
-
-! ------------------------------------------------------------------------------
-  subroutine erase_gp_data(self)
-    class(gp_info_t), intent(out) :: self
-  end subroutine
-
 ! ----------------------------------------------------------------------------
-  subroutine read_rspdim_data_from_cbs(self)
+  subroutine read_rsp_data_from_common_blocks(self)
 #include "implicit.h"
-#include "dcbxlr.h"
-#include "dcbxrs.h"
-#include "dcbxpr.h"
+#include "dcbxrs.h" !nfreq, ndamp, static
+#include "dcbxlr.h" !nlrbpt, xlr_skipep, xlr_skipee
     type(response_info_t), intent(out) :: self
     integer :: n_ee, n_ep
-    logical :: debug_print
-!
-!   read information from common blocks to a derived type:
-!     * transferred variables are set in SETXLR subroutine,
-!       and passed through dcbxlr.h,dcbxrs.h,dcbxpr.h
-!     * only nonallocatable variables of response_info_t are set
-!
-    debug_print = .false.
-
-    call self%erase()
 
     self%nfreq           = nfreq
     self%ndamp           = ndamp
-    self%static          = static
     self%nr_B_operators  = nlrbpt
-    self%xlr_skipep      = xlr_skipep
-    self%xlr_skipee      = xlr_skipee
-
-    n_ee = 1
-    n_ep = 1
-    if (xlr_skipep) n_ep = 0
-    if (xlr_skipee) n_ee = 0
 
     if (static) then
-       !self%nr_rsp_vectors_ee = n_ee*nfreq*nlrbpt*ndamp
-       !self%nr_rsp_vectors_ep = n_ep*nfreq*nlrbpt*ndamp
-       self%nr_rsp_vectors_ee = n_ee*nfreq*nlrbpt
-       self%nr_rsp_vectors_ep = n_ep*nfreq*nlrbpt
+      self%static = 1
     else
-       ! we will have vectors of + and - time-reversal symmetry
-       !self%nr_rsp_vectors_ee = 2*n_ee*nfreq*nlrbpt*ndamp
-       !self%nr_rsp_vectors_ep = 2*n_ep*nfreq*nlrbpt*ndamp
-       self%nr_rsp_vectors_ee = 2*n_ee*nfreq*nlrbpt
-       self%nr_rsp_vectors_ep = 2*n_ep*nfreq*nlrbpt
-    end if
-    self%nr_rsp_vectors    = self%nr_rsp_vectors_ee + self%nr_rsp_vectors_ep
-
-    if (debug_print) then
-       write(*,*) '--- output from fde_dirac_xlr_data_interface: ---'
-       write(*,*) 'self%nfreq             = ', self%nfreq
-       write(*,*) 'self%ndamp             = ', self%ndamp
-       write(*,*) 'self%static            = ', self%static
-       write(*,*) 'self%nr_B_operators    = ', self%nr_B_operators
-       write(*,*) 'self%xlr_skipep        = ', self%xlr_skipep
-       write(*,*) 'self%xlr_skipee        = ', self%xlr_skipee
-       write(*,*) 'self%nr_rsp_vectors_ee = ', self%nr_rsp_vectors_ee
-       write(*,*) 'self%nr_rsp_vectors_ep = ', self%nr_rsp_vectors_ep
-       write(*,*) 'self%nr_rsp_vectors    = ', self%nr_rsp_vectors
+      self%static = 0
     end if
 
-    self%rsp_diminfo_is_read = .true.
+    if (xlr_skipep) then
+      self%xlr_skipep = 1
+    else
+      self%xlr_skipep = 0
+    end if
+
+    if (xlr_skipee) then
+      self%xlr_skipee = 1
+    else
+      self%xlr_skipee = 0
+    end if
+
   end subroutine
 
-!  ----------------------------------------------------------------------------
-   subroutine print_nonallocatables_from_helper(gp_info, rsp_info)
-!  ----------------------------------------------------------------------------
-      type(gp_info_t), intent(in)       :: gp_info
-      type(response_info_t), intent(in) :: rsp_info
-!  ----------------------------------------------------------------------------
 
-      write(*,*) '   gp_info%nao                ',  gp_info%nao
-      write(*,*) '   gp_info%nmo                ',  gp_info%nmo
-      write(*,*) '   gp_info%nz                 ',  gp_info%nz
-      write(*,*) '   gp_info%spinfr             ',  gp_info%spinfr
-      write(*,*) '   rsp_info%ndamp              ',  rsp_info%ndamp
-      write(*,*) '   rsp_info%nfreq              ',  rsp_info%nfreq
-      write(*,*) '   rsp_info%nr_B_operators     ',  rsp_info%nr_B_operators
-      write(*,*) '   rsp_info%static             ',  rsp_info%static
-      write(*,*) '   rsp_info%xlr_skipep         ',  rsp_info%xlr_skipep
-      write(*,*) '   rsp_info%xlr_skipee         ',  rsp_info%xlr_skipee
-      write(*,*) '   rsp_info%nr_rsp_vectors     ',  rsp_info%nr_rsp_vectors
-      write(*,*) '   rsp_info%nr_rsp_vectors_ee  ',  rsp_info%nr_rsp_vectors_ee
-      write(*,*) '   rsp_info%nr_rsp_vectors_ep  ',  rsp_info%nr_rsp_vectors_ep
-      !read(f_unit, '(I8)')  rsp_info%ndim_ee_total
-      !read(f_unit, '(I8)')  rsp_info%ndim_ep_total
+! ----------------------------------------------------------------------------
+  subroutine read_rsp_data_from_DIRAC(self, f_name)
+!   data is read from DIRAC's common blocks and from 'PAMXVC' file
+!   caution: it should be called when doing response, otherwise the
+!   data on common blocks is not set!
+!   this will be fixed, once all necessary data is transfered to files
+    class(response_info_t), intent(out) :: self
+    character(*), intent(in) :: f_name
+    type(gp_info_t) :: gp_info
+    integer :: f_unit
 
-   end subroutine print_nonallocatables_from_helper
+    call read_gp_data_from_common_blocks(gp_info)
+    call gp_info%display()
+
+!   read: nfreq, ndamp, static, nlrbpt, xlr_skipep, xlr_skipee
+    call read_rsp_data_from_common_blocks(self)
+
+    f_unit = open_rsp_file(f_name)
+!   read: nr_rsp_vectors, nr_rsp_vectors_ee, nr_rsp_vectors_ep
+    call read_rspdim_data_from_response_file(f_unit, gp_info, self)
+    self%data_is_read = .true.
+!   alloc+read: data related to response vectors
+    call self%alloc()
+    call read_rspvec_from_response_file(f_unit, gp_info, self)
+    close(f_unit, status = 'keep')
+
+    call self%display()
+
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine write_rsp_data_to_checkpoint(self, f_name)
+    class(response_info_t), intent(in) :: self
+    character(*), intent(in) :: f_name
+    type(file_info_t) :: rsp_file
+
+    call init_rsp_checkpoint(f_name, rsp_file)
+    call write_rsp_nonallocatables_to_checkpoint(self, rsp_file)
+    call write_rsp_allocatables_to_checkpoint(self, rsp_file)
+    call rsp_checkpoint_close(rsp_file)
+
+  end subroutine
 
 
 ! ------------------------------------------------------------------------------
-  subroutine print_xlr_info(tmp)
-    type(response_info_t), intent(in) :: tmp
-    integer :: i
+  subroutine read_rsp_data_from_checkpoint(self, f_name)
+    class(response_info_t), intent(out) :: self
+    character(*), intent(in) :: f_name
+    type(file_info_t) :: rsp_file
 
-    write(*,*) 'tmp%nr_rsp_vectors             =', tmp%nr_rsp_vectors
-    write(*,*) 'tmp%nr_rsp_vectors_ee          =', tmp%nr_rsp_vectors_ee
-    write(*,*) 'tmp%nr_rsp_vectors_ep          =', tmp%nr_rsp_vectors_ep
-    write(*,*) 'tmp%ndim_ee_total              =', tmp%ndim_ee_total
-    write(*,*) 'tmp%ndim_ep_total              =', tmp%ndim_ep_total
-    write(*,*) 'tmp%nr_B_operators             =', tmp%nr_B_operators
-    write(*,*) 'tmp%ndamp                      =', tmp%ndamp
-    write(*,*) 'tmp%nfreq                      =', tmp%nfreq
-    write(*,*) 'tmp%static                     =', tmp%static
-    write(*,*) 'tmp%xlr_skipep                 =', tmp%xlr_skipep
-    write(*,*) 'tmp%xlr_skipee                 =', tmp%xlr_skipee
+    call init_rsp_checkpoint(f_name, rsp_file, valid=.true.)
+    call read_rsp_nonallocatables_from_checkpoint(self, rsp_file)
+    call read_rsp_allocatables_from_checkpoint(self, rsp_file)
+    call rsp_checkpoint_close(rsp_file)
 
-    if (tmp%nr_rsp_vectors > 0) then
-      do i = 1, tmp%nr_rsp_vectors
-        write(*,*) 'data for response vector ', i
-        if (associated(tmp%rspvec_data_is_read) .and. &
-            tmp%rspvec_data_is_read(i)) then
-          write(*,*) 'tmp%nzxope          =', tmp%nzxope(i)
-          write(*,*) 'tmp%nzxopp          =', tmp%nzxopp(i)
-          write(*,*) 'tmp%nzxopeq         =', tmp%nzxopeq(i)
-          write(*,*) 'tmp%nzxoppq         =', tmp%nzxoppq(i)
-          write(*,*) 'tmp%rspvec_lab      =', tmp%rspvec_lab(i)
-          write(*,*) 'tmp%rspvec_type     =', tmp%rspvec_type(i)
-          write(*,*) 'tmp%rspvec_ih       =', tmp%rspvec_ih(i)
-          write(*,*) 'tmp%rspvec_freq     =', tmp%rspvec_freq(i)
-          write(*,*) 'tmp%rspvec_rnorm    =', tmp%rspvec_rnorm(i)
-          write(*,*) 'tmp%rspvec_fsym     =', tmp%rspvec_fsym(i)
-          write(*,*) 'tmp%rspvec_irep     =', tmp%rspvec_irep(i)
-          write(*,*) 'tmp%rspvec_trsym    =', tmp%rspvec_trsym(i)
-          write(*,*) 'tmp%rspvec_ifckop   =', tmp%rspvec_ifckop(i)
-          write(*,*) 'tmp%jz_spfexc       =', tmp%jz_spfexc(i)
-          write(*,*) 'tmp%jrep_spfexc     =', tmp%jrep_spfexc(i)
-          write(*,*) 'tmp%from_full_to_ee =', tmp%from_full_to_ee(i)
-          write(*,*) 'tmp%from_full_to_ep =', tmp%from_full_to_ep(i)
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine read_rsp_nonallocatables_from_checkpoint(rsp_info, rsp_file)
+    type(response_info_t), intent(inout) :: rsp_info
+    type(file_info_t), intent(inout) :: rsp_file
+    character(len=80):: group
+
+    group = '/result/response'
+    call lab_read(rsp_file, trim(group)//'/nr_rsp_vectors', &
+                  idata=rsp_info%nr_rsp_vectors)
+    call lab_read(rsp_file, trim(group)//'/nr_rsp_vectors_ee',&
+                  idata = rsp_info%nr_rsp_vectors_ee)
+    call lab_read(rsp_file, trim(group)//'/nr_rsp_vectors_ep',&
+                  idata = rsp_info%nr_rsp_vectors_ep)
+    call lab_read(rsp_file, trim(group)//'/ndim_ee_total',&
+                  idata = rsp_info%ndim_ee_total)
+    call lab_read(rsp_file, trim(group)//'/ndim_ep_total',&
+                  idata = rsp_info%ndim_ep_total)
+    call lab_read(rsp_file, trim(group)//'/nr_B_operators',&
+                  idata = rsp_info%nr_B_operators)
+    call lab_read(rsp_file, trim(group)//'/ndamp',&
+                  idata = rsp_info%ndamp)
+    call lab_read(rsp_file, trim(group)//'/nfreq',&
+                  idata = rsp_info%nfreq)
+    call lab_read(rsp_file, trim(group)//'/static',&
+                  idata = rsp_info%static)
+    call lab_read(rsp_file, trim(group)//'/xlr_skipep',&
+                  idata = rsp_info%xlr_skipep)
+    call lab_read(rsp_file, trim(group)//'/xlr_skipee',&
+                  idata = rsp_info%xlr_skipee)
+
+    rsp_info%data_is_read = .true.
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine read_rsp_allocatables_from_checkpoint(rsp_info, rsp_file)
+    type(response_info_t), intent(inout) :: rsp_info
+    type(file_info_t), intent(inout) :: rsp_file
+    character(len=80):: group
+    character(len=4):: ich
+    real(8), pointer:: tmp_rdata(:)
+    integer, pointer:: tmp_idata(:)
+    integer:: ivec, nr_vec
+
+    if (.not. rsp_info%allocated_vectors()) then
+      call rsp_info%alloc()
+    end if
+
+    nr_vec = rsp_info%nr_rsp_vectors
+    do ivec = 1, nr_vec
+      write(ich, '(i4)') ivec
+      group = '/result/response/vectors/vec_'//trim(adjustl(ich))
+      call lab_read(rsp_file, trim(group)//'/id', &
+                   idata=rsp_info%vectors(ivec)%id)
+      call lab_read(rsp_file, trim(group)//'/nzxope', &
+                   idata=rsp_info%vectors(ivec)%nzxope)
+      call lab_read(rsp_file, trim(group)//'/nzxopp', &
+                   idata=rsp_info%vectors(ivec)%nzxopp)
+      call lab_read(rsp_file, trim(group)//'/nzxopeq', &
+                   idata=rsp_info%vectors(ivec)%nzxopeq)
+      call lab_read(rsp_file, trim(group)//'/nzxoppq', &
+                   idata=rsp_info%vectors(ivec)%nzxoppq)
+      call lab_read(rsp_file, trim(group)//'/lab', &
+                   sdata=rsp_info%vectors(ivec)%lab)
+      call lab_read(rsp_file, trim(group)//'/typ', &
+                   sdata=rsp_info%vectors(ivec)%typ)
+      call lab_read(rsp_file, trim(group)//'/ih', &
+                   idata=rsp_info%vectors(ivec)%ih)
+      call lab_read(rsp_file, trim(group)//'/freq', &
+                   rdata=rsp_info%vectors(ivec)%freq)
+      call lab_read(rsp_file, trim(group)//'/rnorm', &
+                   rdata=rsp_info%vectors(ivec)%rnorm)
+      call lab_read(rsp_file, trim(group)//'/fsym', &
+                   idata=rsp_info%vectors(ivec)%fsym)
+      call lab_read(rsp_file, trim(group)//'/irep', &
+                   idata=rsp_info%vectors(ivec)%irep)
+      call lab_read(rsp_file, trim(group)//'/trsym', &
+                   idata=rsp_info%vectors(ivec)%trsym)
+      call lab_read(rsp_file, trim(group)//'/ifckop', &
+                   idata=rsp_info%vectors(ivec)%ifckop)
+      call lab_read(rsp_file, trim(group)//'/jz_spfexc', &
+                   idata=rsp_info%vectors(ivec)%jz_spfexc)
+      call lab_read(rsp_file, trim(group)//'/jrep_spfexc', &
+                   idata=rsp_info%vectors(ivec)%jrep_spfexc)
+
+      !FIXME
+      call lab_read(rsp_file, trim(group)//'/ipqtoq', &
+                    idata=rsp_info%vectors(ivec)%ipqtoq)
+      call lab_read(rsp_file, trim(group)//'/ihqmat', &
+                    idata=rsp_info%vectors(ivec)%ihqmat)
+      call lab_read(rsp_file, trim(group)//'/spinfr', &
+                    idata=rsp_info%vectors(ivec)%spinfr)
+
+!     all non-allocatables of vector ivec are read, so alloc and read allocatables
+      rsp_info%vectors(ivec)%data_is_read = .true.
+
+      call rsp_info%vectors(ivec)%read_values(rsp_file, group)
+      call rsp_info%vectors(ivec)%read_orbital_rotation_indices(rsp_file, group)
+    end do
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine init_rsp_checkpoint(f_name, rsp_file, valid)
+    character(*), intent(in) :: f_name
+    type(file_info_t), intent(inout) :: rsp_file
+    logical, optional, intent(in) :: valid
+    character(len=80) :: top_groups(1)
+    logical :: exists
+    character(100) :: errmsg
+
+    inquire(file=trim(f_name), exist=exists)
+    if (.not. exists) then
+
+      if (present(valid)) then
+        if (valid) then
+          write(errmsg, *) 'file ',trim(f_name),' does not exist. Stopping now!'
+          call quit(errmsg)
         end if
-      end do
+      end if
+
+      write(*,*) " Opening new HDF5 file for rsp data export: ", rsp_file%name
+      top_groups(1) = '/result'
+      rsp_file%name = trim(f_name)
+      rsp_file%type = 2
+      rsp_file%status = -1
+      call lab_init(rsp_file, top_groups)
+    else
+      write(*,*) " Opening existing HDF5 file for rsp data export: ", rsp_file%name
+      rsp_file%name = trim(f_name)
+      rsp_file%type = 2
+      rsp_file%status = 0
     end if
 
   end subroutine
 
 
 ! ------------------------------------------------------------------------------
-  subroutine print_gp_info(tmp)
-    type(gp_info_t), intent(in) :: tmp
+  subroutine write_rsp_nonallocatables_to_checkpoint(rsp_info, rsp_file)
+    type(response_info_t), intent(in) :: rsp_info
+    type(file_info_t), intent(inout) :: rsp_file
+    character(len=80):: group
 
-    write(*,*) 'tmp%nmo        = ', tmp%nmo
-    write(*,*) 'tmp%nao        = ', tmp%nao
-    write(*,*) 'tmp%n2bbasxq   = ', tmp%n2bbasxq
-    write(*,*) 'tmp%n2orbxq    = ', tmp%n2orbxq
-    write(*,*) 'tmp%nz         = ', tmp%nz
-    write(*,*) 'tmp%nocc       = ', tmp%nocc
-    write(*,*) 'tmp%norb       = ', tmp%norb
-    write(*,*) 'tmp%npsh       = ', tmp%npsh
-    write(*,*) 'tmp%nish       = ', tmp%nish
-    write(*,*) 'tmp%nesh       = ', tmp%nesh
-    write(*,*) 'tmp%nfsym      = ', tmp%nfsym
-    write(*,*) 'tmp%nbsym      = ', tmp%nbsym
-    write(*,*) 'tmp%nfbas      = ', tmp%nfbas
-    write(*,*) 'tmp%i2basx     = ', tmp%i2basx
-    write(*,*) 'tmp%i2orbx     = ', tmp%i2orbx
-    write(*,*) 'tmp%iorb       = ', tmp%iorb
-    write(*,*) 'tmp%jbtof      = ', tmp%jbtof
-    write(*,*) 'tmp%ihrmop     = ', tmp%ihrmop
-    write(*,*) 'tmp%icmoq      = ', tmp%icmoq
-    write(*,*) 'tmp%ihqmat     = ', tmp%ihqmat
-    write(*,*) 'tmp%ncmotq     = ', tmp%ncmotq
-    write(*,*) 'tmp%ipqtoq     = ', tmp%ipqtoq
-    write(*,*) 'tmp%spinfr     = ', tmp%spinfr
-    write(*,*) 'tmp%intflg     = ', tmp%intflg
+    group = '/result/response'
+    call lab_write(rsp_file, trim(group)//'/nr_rsp_vectors', &
+                   idata=rsp_info%nr_rsp_vectors)
+    call lab_write(rsp_file, trim(group)//'/nr_rsp_vectors_ee',&
+                   idata = rsp_info%nr_rsp_vectors_ee)
+    call lab_write(rsp_file, trim(group)//'/nr_rsp_vectors_ep',&
+                   idata = rsp_info%nr_rsp_vectors_ep)
+    call lab_write(rsp_file, trim(group)//'/ndim_ee_total',&
+                   idata = rsp_info%ndim_ee_total)
+    call lab_write(rsp_file, trim(group)//'/ndim_ep_total',&
+                   idata = rsp_info%ndim_ep_total)
+    call lab_write(rsp_file, trim(group)//'/nr_B_operators',&
+                   idata = rsp_info%nr_B_operators)
+    call lab_write(rsp_file, trim(group)//'/ndamp',&
+                   idata = rsp_info%ndamp)
+    call lab_write(rsp_file, trim(group)//'/nfreq',&
+                   idata = rsp_info%nfreq)
+    call lab_write(rsp_file, trim(group)//'/static',&
+                   idata = rsp_info%static)
+    call lab_write(rsp_file, trim(group)//'/xlr_skipep',&
+                   idata = rsp_info%xlr_skipep)
+    call lab_write(rsp_file, trim(group)//'/xlr_skipee',&
+                   idata = rsp_info%xlr_skipee)
+
+  end subroutine
+
+
+
+! ------------------------------------------------------------------------------
+  subroutine write_rsp_allocatables_to_checkpoint(rsp_info, rsp_file)
+    type(response_info_t), intent(in) :: rsp_info
+    type(file_info_t), intent(inout) :: rsp_file
+    character(len=80):: group
+    character(len=4):: ich
+    real(8), pointer:: tmp_rdata(:)
+    integer, pointer:: tmp_idata(:)
+    integer:: ivec, nr_vec
+
+    if (.not. rsp_info%allocated_vectors()) return
+
+    nr_vec = rsp_info%nr_rsp_vectors
+    do ivec = 1, nr_vec
+      write(ich, '(i4)') ivec
+      group = '/result/response/vectors/vec_'//trim(adjustl(ich))
+      call lab_write(rsp_file, trim(group)//'/id', &
+                   idata=rsp_info%vectors(ivec)%id)
+      call lab_write(rsp_file, trim(group)//'/nzxope', &
+                   idata=rsp_info%vectors(ivec)%nzxope)
+      call lab_write(rsp_file, trim(group)//'/nzxopp', &
+                   idata=rsp_info%vectors(ivec)%nzxopp)
+      call lab_write(rsp_file, trim(group)//'/nzxopeq', &
+                   idata=rsp_info%vectors(ivec)%nzxopeq)
+      call lab_write(rsp_file, trim(group)//'/nzxoppq', &
+                   idata=rsp_info%vectors(ivec)%nzxoppq)
+      call lab_write(rsp_file, trim(group)//'/lab', &
+                   sdata=rsp_info%vectors(ivec)%lab)
+      call lab_write(rsp_file, trim(group)//'/typ', &
+                   sdata=rsp_info%vectors(ivec)%typ)
+      call lab_write(rsp_file, trim(group)//'/ih', &
+                   idata=rsp_info%vectors(ivec)%ih)
+      call lab_write(rsp_file, trim(group)//'/freq', &
+                   rdata=rsp_info%vectors(ivec)%freq)
+      call lab_write(rsp_file, trim(group)//'/rnorm', &
+                   rdata=rsp_info%vectors(ivec)%rnorm)
+      call lab_write(rsp_file, trim(group)//'/fsym', &
+                   idata=rsp_info%vectors(ivec)%fsym)
+      call lab_write(rsp_file, trim(group)//'/irep', &
+                   idata=rsp_info%vectors(ivec)%irep)
+      call lab_write(rsp_file, trim(group)//'/trsym', &
+                   idata=rsp_info%vectors(ivec)%trsym)
+      call lab_write(rsp_file, trim(group)//'/ifckop', &
+                   idata=rsp_info%vectors(ivec)%ifckop)
+      call lab_write(rsp_file, trim(group)//'/jz_spfexc', &
+                   idata=rsp_info%vectors(ivec)%jz_spfexc)
+      call lab_write(rsp_file, trim(group)//'/jrep_spfexc', &
+                   idata=rsp_info%vectors(ivec)%jrep_spfexc)
+      if (rsp_info%vectors(ivec)%allocated_values()) then
+        call flatten(rsp_info%vectors(ivec)%values, tmp_rdata)
+        call lab_write(rsp_file, trim(group)//'/values', &
+                   rdata=tmp_rdata)
+        deallocate(tmp_rdata)
+      end if
+      if (rsp_info%vectors(ivec)%allocated_orbital_rotation_indices()) then
+        call flatten(rsp_info%vectors(ivec)%orbital_rotation_indices, tmp_idata)
+        call lab_write(rsp_file, trim(group)//'/orbital_rotation_indices', &
+                     idata=tmp_idata)
+        deallocate(tmp_idata)
+      end if
+      !FIXME
+      call lab_write(rsp_file, trim(group)//'/ipqtoq', &
+                     idata=rsp_info%vectors(ivec)%ipqtoq)
+      call lab_write(rsp_file, trim(group)//'/ihqmat', &
+                     idata=rsp_info%vectors(ivec)%ihqmat)
+      call lab_write(rsp_file, trim(group)//'/spinfr', &
+                     idata=rsp_info%vectors(ivec)%spinfr)
+    end do
+
+  end subroutine
+
+
+
+! ------------------------------------------------------------------------------
+  function get_ihqmat(self, iq)
+    class(response_vector_t), intent(in) :: self
+    integer, intent(in) :: iq
+    integer :: get_ihqmat
+
+    get_ihqmat = self%ihqmat(iq)
+  end function
+
+! ------------------------------------------------------------------------------
+  function get_ipqtoq(self, iz)
+    class(response_vector_t), intent(in) :: self
+    integer, intent(in) :: iz
+    integer :: get_ipqtoq
+
+    get_ipqtoq = self%ipqtoq(iz)
+  end function
+
+
+! ------------------------------------------------------------------------------
+  subroutine transfer_gp_data_to_rsp(self, ipqtoq, ihqmat, spinfr)
+    class(response_vector_t), intent(inout) :: self
+    integer, intent(in) :: ipqtoq(4)
+    integer, intent(in) :: ihqmat(4)
+    logical, intent(in) :: spinfr
+
+    self%ipqtoq = ipqtoq
+    self%ihqmat = ihqmat
+    if (spinfr) then
+      self%spinfr = 1
+    else
+      self%spinfr = 0
+    end if
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine get_symmetry_info(self, irep,ifckop,trsym,typ)
+    class(response_vector_t), intent(in) :: self
+    integer, intent(out) :: irep,ifckop,trsym
+    character(2), intent(out) :: typ
+
+    irep = self%irep
+    ifckop = self%ifckop
+    trsym = self%trsym
+    typ = self%typ
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine get_copy_of_values(self, mat, mat_ndim)
+    class(response_vector_t), intent(in) :: self
+    integer, intent(in):: mat_ndim
+    real(8), intent(out):: mat(mat_ndim)
+    integer :: n, n1, n2, i, i1, i2
+
+    call self%get_size_of_values(ndim=n, ndim1=n1, ndim2=n2)
+    if (mat_ndim < n) stop
+    mat = 0.0d0
+    i = 1
+    do i2 = 1, n2
+      do i1 = 1, n1
+        mat(i) = self%values(i1,i2)
+        i = i + 1
+      end do
+    end do
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine get_size_of_values(self, ndim, ndim1, ndim2)
+    class(response_vector_t), intent(in) :: self
+    integer, optional, intent(out) :: ndim, ndim1, ndim2
+    integer :: n, n1, n2
+
+    if (self%typ(1:1) .eq. 'E') then
+      n  = self%nzxopeq
+      n1 = self%nzxope
+      if (n1 /= 0) n2 = n/n1
+    else if (self%typ(1:1) .eq. 'P') then
+      n  = self%nzxoppq
+      n1 = self%nzxopp
+      if (n1 /= 0) n2 = n/n1
+    end if
+
+    if (present(ndim))  ndim  = n
+    if (present(ndim1)) ndim1 = n1
+    if (present(ndim2)) ndim2 = n2
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine get_size_of_orbital_rotation_indices(self, ndim, ndim1, ndim2)
+    class(response_vector_t), intent(in) :: self
+    integer, optional, intent(out) :: ndim, ndim1, ndim2
+    integer :: n, n1, n2
+
+    if (self%typ(1:1) .eq. 'E') then
+      n1 = 2
+      n2 = self%nzxope
+      n = n1*n2
+    else if (self%typ(1:1) .eq. 'P') then
+      n1 = 2
+      n2 = self%nzxopp
+      n = n1*n2
+    end if
+
+    if (present(ndim))  ndim  = n
+    if (present(ndim1)) ndim1 = n1
+    if (present(ndim2)) ndim2 = n2
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine read_rspvec_values_from_checkpoint(self, rsp_file, group)
+    class(response_vector_t), intent(inout) :: self
+    type(file_info_t), intent(inout) :: rsp_file
+    character(len=80), intent(in):: group
+    integer :: ndim, ndim1, ndim2
+    real(8), pointer:: tmp_rdata(:)
+
+    call self%get_size_of_values(ndim, ndim1, ndim2)
+
+    nullify(tmp_rdata)
+    allocate(tmp_rdata(ndim))
+    tmp_rdata = 0.0d0
+    call lab_read(rsp_file, trim(group)//'/values', &
+                   rdata=tmp_rdata)
+
+    if (.not.self%allocated_values()) then
+      call self%alloc_values(ndim1, ndim2)
+    end if
+
+    self%values = reshape(tmp_rdata, (/ndim1,ndim2/))
+
+    deallocate(tmp_rdata)
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine read_rspvec_orbital_rotation_indices_from_checkpoint(self, &
+                                                       rsp_file, group)
+    class(response_vector_t), intent(inout) :: self
+    type(file_info_t), intent(inout) :: rsp_file
+    character(len=80), intent(in):: group
+    integer :: ndim, ndim1, ndim2
+    integer, pointer:: tmp_idata(:)
+
+    call self%get_size_of_orbital_rotation_indices(ndim, ndim1, ndim2)
+
+    nullify(tmp_idata)
+    allocate(tmp_idata(ndim))
+    tmp_idata = 0
+    call lab_read(rsp_file, trim(group)//'/orbital_rotation_indices', &
+                   idata=tmp_idata)
+
+    if (.not.self%allocated_orbital_rotation_indices()) then
+      call self%alloc_orbital_rotation_indices(ndim1, ndim2)
+    end if
+
+    self%orbital_rotation_indices = reshape(tmp_idata, (/ndim1,ndim2/))
+
+    deallocate(tmp_idata)
+
+  end subroutine
+
+ 
+! ------------------------------------------------------------------------------
+  subroutine rsp_checkpoint_close(rsp_file)
+    type(file_info_t), intent(inout) :: rsp_file
+    rsp_file%status = 0
+    print*, " RSP Checkpoint file closed"
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine scatter_to_matrix_q(self, mat, mat_ndim, mat_nz)
+    class(response_vector_t), intent(in) :: self
+    integer, intent(in) :: mat_ndim, mat_nz
+    real(8), intent(out) :: mat(mat_ndim, mat_ndim, mat_nz)
+
+    real(8)              :: ih_factor
+    character(100) :: errmsg
+    integer :: length, rsp_nz,   ndim, nz, irep, ih
+    integer :: i, s, is, iz, iq, im
+    real(8) :: f
+!
+!   based on scatter_vector (from old visual) and dmoli* subroutines (prp);
+!   the resulting matrix is already symmetric/antisymmetric
+!
+   
+    call self%get_size_of_values(ndim1=length,ndim2=rsp_nz)
+
+    if (rsp_nz /= mat_nz) then
+      write(errmsg, *) 'Inconsistent nz in scatter_to_matrix_q. Stop.'
+      call quit(errmsg)
+    end if
+
+    do is = 1, length
+
+      i = self%orbital_rotation_indices(1, is)
+      s = self%orbital_rotation_indices(2, is)
+
+      do iz = 1, mat_nz
+
+        iq = self%get_ipqtoq(iz)
+        im = self%get_ihqmat(iq)
+
+        if (im.eq.1) then
+          f = -1.0d0
+        else if (im.eq.2) then
+          f =  1.0d0
+        end if
+
+        mat(s, i, iz) =  mat(s, i, iz) &
+                      + self%values(is, iz)
+        mat(i, s, iz) = mat(i, s, iz) &
+                         + f*self%values(is, iz)
+      end do
+    end do
+
+!   this matrix is scaled by -1.0 in dmolitx1 subroutine, so we do the same here:
+    mat = -1.0d0*mat
 
   end subroutine
 

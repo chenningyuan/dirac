@@ -830,12 +830,20 @@ C
 C
 C     Print section
 C
-      IF(IPRXRS.GE.8) THEN
+      !IF(IPRXRS.GE.8) THEN
         CALL HEADER('DMOLI3: Symmetrized AO modified density matrix',-1)
-        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
-     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+!        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
+!     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+        ioff=0
+        do iz = 1, nz
+        do i = 1, n2bbasx
+          ioff = ioff + 1
+          write(*, '(a,i6,es16.8e2)') 'elements(i) = ', 
+     &         ioff, dmat(i,iz)
+        end do
+        end do
         CALL FLSHFO(LUPRI)
-      ENDIF
+      !ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4010,6 +4018,7 @@ C
 #include "dcbham.h"
 #include "dcbgen.h"
 C
+!gosia testing #include "dcbxlr.h"
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
       DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
@@ -4041,6 +4050,11 @@ C     Note: reuse memory and save in FMO:
 C        DVT(1..NCSIM), [DCX, DVX](1..NESIM), [DCX, DVX](1..NPSIM)
 C     Only the necessary matrices are saved.
 C
+!gosia testing
+!      if (XLR_RSPIMP) then
+!        call import_rsp_info_from_helper(bpvec,nzxoppq,6)
+!      end if
+
       CALL DMOLITX(FMO,BEVEC,BPVEC,CMO,DVT,DV,IHRMOP,NDMAT,
      &     WORK,KFREE,LFREE)
 C

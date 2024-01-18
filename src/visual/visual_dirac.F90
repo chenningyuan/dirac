@@ -40,23 +40,21 @@ contains
   subroutine dirac_dmat_init(wf_order, cmo, &
                              dmat_ao, dmat_mo, &
                              rspvec_file, rspvec_id)
-                             !fixme: later pass rspvec DT
     integer, intent(in) :: wf_order
     type(cmo_t), intent(in) :: cmo
     type(dmat_t), optional, intent(inout) :: dmat_ao
     type(dmat_t), optional, intent(inout) :: dmat_mo
     character(*), optional, intent(in) :: rspvec_file
     integer, optional, intent(in) :: rspvec_id
-    type(dmat_t) :: dmat_mo_from_occupation
-    type(dmat_t) :: response_vector_scattered_to_matrix
-    type(gp_info_t) :: gp_info
+    type(dmat_t) :: mat
     type(response_info_t) :: rsp_info
     real(8), allocatable :: occupation(:)
-    real(8), allocatable :: response_vector(:)
     integer :: nao, nmo, nz
-    integer :: i, ivec, rspvec_ndim, rspvec_nz
+    integer :: i, ivec, rspvec_ndim, rspvec_nz, n1
     integer :: f_unit
-    character(80) :: f_name
+    character(len=:),allocatable :: f_name
+    integer :: iq, im, iz, ipqtoq(4), ihqmat(4)
+    real(8) :: factor(4)
 
     if (wf_order == 0) then
 !     initialize unperturbed density matrix from occupation numbers
@@ -69,28 +67,27 @@ contains
       allocate(occupation(nmo))
       call setup_orbital_string(cmo,occupation)
 
-      dmat_mo_from_occupation%mat_dim = nmo
-      dmat_mo_from_occupation%mat_nz  = nz
-      call dmat_mo_from_occupation%alloc()
+      mat%mat_dim = nmo
+      mat%mat_nz  = nz
+      call mat%alloc()
       do i = 1, nmo
-        dmat_mo_from_occupation%elements((i-1)*nmo + i) = occupation(i)
+        mat%elements((i-1)*nmo + i) = occupation(i)
       end do
 
       if (present(dmat_mo)) then
-        dmat_mo = dmat_mo_from_occupation
+        dmat_mo = mat
       end if
 
       if (present(dmat_ao)) then
         dmat_ao%mat_dim = nao
         dmat_ao%mat_nz  = nz
         call dmat_ao%alloc()
-        call dmat_transform_mo2ao(cmo, dmat_mo_from_occupation, dmat_ao)
+        call dmat_transform_mo2ao(cmo, mat, dmat_ao)
         call dmat_ao%scale_elements(2.0d0)
-        !call dmat_ao%alloc_q()
-        !call dmat_ao%reshape_to_q()
       end if
 
       deallocate(occupation)
+      call mat%erase()
 
     else if (wf_order == 1) then
 !     construct the perturbed density matrix from rsp vectors on PAMXVC
@@ -101,17 +98,15 @@ contains
       nmo = sum(cmo%n_mo)
       nz  = cmo%nz
 
-      f_name = 'response_helper.txt'
-      call read_gp_data(gp_info, f_name)
-      call read_rsp_data(rsp_info, f_name)
-      call rsp_info%init()
-
+!     read response data from 'RESPONSE.h5' file
       if (present(rspvec_file)) then
         f_name = trim(rspvec_file)
       else
         stop
       end if
-      rsp_info%rspvec_file = f_name
+      call rsp_info%read_from_checkpoint(trim(f_name))
+      write(*,*) 'rspvec read from checkpoint'
+      call rsp_info%display()
 
       if (present(rspvec_id)) then
         ivec = rspvec_id
@@ -119,36 +114,52 @@ contains
         stop
       end if
 
-      call read_response_file(f_name, gp_info, rsp_info, .true., rspvec_id=ivec)
-      call print_gp_info(gp_info)
-      call print_xlr_info(rsp_info)
-
-      response_vector_scattered_to_matrix%mat_dim = nmo
-      response_vector_scattered_to_matrix%mat_nz = nz
-      call response_vector_scattered_to_matrix%alloc()
-      call read_response_file(f_name, gp_info, rsp_info, .false., rspvec_id=ivec,&
-                              bmat=response_vector_scattered_to_matrix%elements)
+!     scatter response vector to matrix:
+      mat%mat_dim = nmo
+      mat%mat_nz = nz
+      call mat%alloc()
+      call rsp_info%vectors(ivec)%scatter_to_matrix_q(mat%elements, nmo, nz)
+      !write(*,*) 'rspvec scattered to matrix:'
+      !call mat%display()
 
       if (present(dmat_mo)) then
-        dmat_mo = response_vector_scattered_to_matrix
+        dmat_mo = mat
       end if
 
       if (present(dmat_ao)) then
         dmat_ao%mat_dim = nao
         dmat_ao%mat_nz  = nz
         call dmat_ao%alloc()
-        call dmat_transform_mo2ao(cmo, response_vector_scattered_to_matrix, dmat_ao)
-        !call construct_perturbed_dmat(dmat_ao%elements,&
-        !                response_vector_scattered_to_matrix%elements,&
-        !                ivec, &
-        !                gp_info, rsp_info, cmo%coeff)
+        call construct_perturbed_dmat(dmat_ao%elements,&
+                        mat%elements,&
+                        ivec, &
+                        rsp_info, cmo%coeff)
+        !write(*,*) 'non-symmetrized AO dmat: '
+        !call dmat_ao%display()
+        do iz = 1, nz
+          iq = rsp_info%vectors(ivec)%get_ipqtoq(iz)
+          im = rsp_info%vectors(ivec)%get_ihqmat(iq)
+          if (im .eq. 1) then
+            factor(iz) = 1.0d0
+          else if (im .eq. 2) then
+            factor(iz) =-1.0d0
+          end if
+          factor(1) =-1.0d0
+          factor(2:4) =1.0d0
+        end do
+        call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
+        !write(*,*) 'symmetrized AO dmat: '
+        !call dmat_ao%display()
+
         call dmat_ao%scale_elements(2.0d0)
-      !  !call dmat_ao%alloc_q()
-      !  !call dmat_ao%reshape_to_q()
+
+      end if
+      if (rsp_info%lao > 0) then
+        write(*, *) 'Calculating LAO contributions'
       end if
 
-      call response_vector_scattered_to_matrix%erase()
-
+      call mat%erase()
+      call rsp_info%erase()
 
     end if
   end subroutine dirac_dmat_init
@@ -762,6 +773,133 @@ contains
                     iprint)
 
   end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine construct_perturbed_dmat(dmat,bmat,  &
+                                      ivec, &
+                                      rsp_info,&
+                                      cmo)
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbbas.h"
+#include "maxaqn.h"
+#include "onecom.h"
+#include "ccom.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbham.h"
+
+    integer, intent(in)  :: ivec
+    type(response_info_t), intent(in) :: rsp_info
+    real(kind=8), intent(out) :: dmat(ntbas(0)*ntbas(0), nz)
+    real(kind=8), intent(in) :: bmat(norbt, norbt, nz)
+    real(kind=8), intent(in) :: cmo(*)
+
+    integer :: irep,iopsy,itim
+    integer :: iprint
+    integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
+    character(2) ::typ
+    logical :: debug_print
+!
+
+    iprint = 0  ! needed for qtrans
+
+!   construct half dmat = Ci*bmat*dag(Ca)
+
+    dmat(1:ntbas(0)*ntbas(0), 1:nz) = 0.0d0
+
+    call rsp_info%vectors(ivec)%get_symmetry_info(irep,&
+            iopsy,itim,typ)
+
+    do i1 = 1, nfsym
+      i2 = mod(i1+iopsy,2) + 1
+
+!     second index: inactive index:
+      ni = nish(i2)
+      ii = iorb(i2) + npsh(i2) + 1
+      ji = icmoq(i2) + npsh(i2)*nfbas(i2,0)+1
+
+!     first index: secondary index:
+      if (typ(1:1) == 'E') then
+!        .. secondary index is electronic:
+         ns = nesh(i1)
+         is = iorb(i1) + npsh(i1) + 1
+         js = icmoq(i1) + npsh(i1)*nfbas(i1, 0) + 1
+      else if (typ(1:1) == 'P') then
+!        .. secondary index is positronic:
+         ns = npsh(i1)
+         is = iorb(i1) + 1
+         js = icmoq(i1) + 1
+      end if
+
+      if (ni > 0 .and. ns > 0) then
+
+        call qtrans90('MOAO', &
+                      'S',    &
+                      0.0d0,  &
+                      nfbas(i1,0), nfbas(i2,0), &
+                      ns, ni, &
+!                     ------------------------------------------------------
+                      dmat(i2basx(i1,i2)+1, 1),   &
+                      ntbas(0), ntbas(0), nz,     &
+                      ipqtoq(1, irep),                  &
+!                     ------------------------------------------------------
+                      bmat(is, ii, 1),                    &
+                      norbt, norbt, nz, &
+                      ipqtoq(1, irep),                  &
+!                     ------------------------------------------------------
+                      cmo(js),                                  &
+                      nfbas(i1,0), norb(i1), nz,&
+                      ipqtoq(1, 0),                     &
+!                     ------------------------------------------------------
+                      cmo(ji),                                  &
+                      nfbas(i2,0), norb(i2), nz,&
+                      ipqtoq(1, 0),                     &
+!                     ------------------------------------------------------
+                      iprint)
+      end if
+
+     end do
+
+  end subroutine
+
+!
+! ------------------------------------------------------------------------------
+  subroutine pertdenmat_sym(mat_dim,mat_nz,mat, f)
+
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: mat_nz
+    real(8), intent(inout) :: mat(mat_dim, mat_dim, mat_nz)
+    real(8), intent(in)    :: f(4)
+    integer :: i, j, iz
+    real(8) :: fullmat
+!
+!   after dmoli3 in prp/pamrvc.F and fulmat in gp/gpsaue.F
+!
+    do iz = 1, mat_nz
+      do j = 1, mat_dim
+        do i = j, mat_dim
+          fullmat = mat(i, j, iz) + f(iz)*mat(j, i, iz)
+          mat(i, j, iz) =  fullmat
+          mat(j, i, iz) =  f(iz)*fullmat
+        end do
+      end do
+    end do
+
+  end subroutine
+
+
+
+
+
+
+
+
+
+
 
 
 end module
