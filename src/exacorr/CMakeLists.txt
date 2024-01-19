@@ -18,6 +18,14 @@ if(ENABLE_EXATENSOR)
    exatensor_auto_ccsdt_spinor.F90
    exatensor_auto_ccsdtq_spinor.F90
    exatensor_auto_ccsdtqp_spinor.F90
+   talsh_tenpi_ccd.F90
+   talsh_tenpi_ccsd.F90
+   talsh_tenpi_ccsdt.F90
+   talsh_tenpi_ccsdtq.F90
+   exatensor_tenpi_ccd.F90
+   exatensor_tenpi_ccsd.F90
+   exatensor_tenpi_ccsdt.F90
+   exatensor_tenpi_ccsdtq.F90
    exacorr_main.F90
    exacorr_datatypes.F90
    exacorr_global.F90
