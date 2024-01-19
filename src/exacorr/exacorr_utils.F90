@@ -81,6 +81,7 @@ module exacorr_utils
       print*, "                   ***                   - Loic Halbert              ***"
       print*, "                   ***                   - Xiang Yuan                ***"
       print*, "                   ***                   - Chima Chibueze            ***"
+      print*, "                   ***                   - Jan Brandejs              ***"
       print*, "                   ***  Features:        - CCD/CC2/CCSD              ***"
       print*, "                   ***                   - MP2 NOs                   ***"
       print*, "                   ***                   - 1RDM CCD/CCSD, 2RDM CCSD  ***"
