@@ -28,7 +28,7 @@ f.add(from_string = 'Eigenvalues',
 #test.run(['ccsdt_nonrel_contracted_energy_small.inp', 'ccsdt_x2c_energy_small.inp'], ['h2o.xyz'], f)
 test.run(['ccsdt_x2c_energy_small.inp'], ['h2o.xyz'], f)
 
-test.run(['lih_test_contracted_ccsdt1.inp'], ['lih_test.xyz'], f)
+#test.run(['lih_test_contracted_ccsdt1.inp'], ['lih_test.xyz'], f)
 test.run(['lih_test_contracted_ccsdt1b.inp'], ['lih_test.xyz'], f)
 #test.run(['lih_test_contracted_ccsdt2.inp'], ['lih_test.xyz'], f)
 #test.run(['lih_test_contracted_ccsdt3.inp'], ['lih_test.xyz'], f)

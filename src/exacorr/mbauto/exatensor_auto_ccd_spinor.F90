@@ -195,54 +195,6 @@ subroutine exatensor_CCD_codegen(nocc_id,nvir_id,nocc_root,nvir_root, &
     ierr=exatns_tensor_contract("Z27(e1,e2,m1,m2)+=S23(e2,d1,m2,l1)*H10(e1,l1,m1,d1)", &
         Z27,S23,H10,prefactor=(1.0d0,0.0d0))
     
-    allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nvir_id,nvir_id/)
-    tens_root = (/nvir_root,nvir_root/)
-    ierr=exatns_tensor_create(Z30_1,"Z30_1",tens_id, tens_root,EXA_DATA_KIND_C8)
-    deallocate(tens_id,tens_root)
-    ierr=exatns_tensor_init(Z30_1,'ZERO')
-!   original expression: Z30_1(e1b|d1b)+=S23(e1b,d2b|l1bl2b)*H13(l1bl2b|d1b,d2b)*-1.
-    ierr=exatns_tensor_contract("Z30_1(e1,d1)+=S23(e1,d2,l1,l2)*H13(l1,l2,d1,d2)", &
-        Z30_1,S23,H13,prefactor=(-0.5d0,0.0d0))
-    ierr=exatns_tensor_destroy(Z30_1)
-    
-    allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nvir_id,nvir_id/)
-    tens_root = (/nvir_root,nvir_root/)
-    ierr=exatns_tensor_create(Z30_1,"Z30_1",tens_id, tens_root,EXA_DATA_KIND_C8)
-    deallocate(tens_id,tens_root)
-    ierr=exatns_tensor_init(Z30_1,'ZERO')
-    ierr=exatns_tensor_destroy(Z30_1)
-    
-    allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nocc_id,nocc_id/)
-    tens_root = (/nocc_root,nocc_root/)
-    ierr=exatns_tensor_create(Z32_1,"Z32_1",tens_id, tens_root,EXA_DATA_KIND_C8)
-    deallocate(tens_id,tens_root)
-    ierr=exatns_tensor_init(Z32_1,'ZERO')
-!   original expression: Z32_1(l1b|m1b)+=S23(d1bd2b|m1b,l2b)*H13(l1b,l2b|d1bd2b)*-1.
-    ierr=exatns_tensor_contract("Z32_1(l1,m1)+=S23(d1,d2,m1,l2)*H13(l1,l2,d1,d2)", &
-        Z32_1,S23,H13,prefactor=(-0.5d0,0.0d0))
-    ierr=exatns_tensor_destroy(Z32_1)
-    
-    allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nocc_id,nocc_id/)
-    tens_root = (/nocc_root,nocc_root/)
-    ierr=exatns_tensor_create(Z32_1,"Z32_1",tens_id, tens_root,EXA_DATA_KIND_C8)
-    deallocate(tens_id,tens_root)
-    ierr=exatns_tensor_init(Z32_1,'ZERO')
-    ierr=exatns_tensor_destroy(Z32_1)
-    
-    allocate(tens_id(4), tens_root(4))
-    tens_id   = (/nvir_id,nocc_id,nocc_id,nvir_id/)
-    tens_root = (/nvir_root,nocc_root,nocc_root,nvir_root/)
-    ierr=exatns_tensor_create(Z37_1,"Z37_1",tens_id, tens_root,EXA_DATA_KIND_C8)
-    deallocate(tens_id,tens_root)
-    ierr=exatns_tensor_init(Z37_1,'ZERO')
-!   original expression: Z37_1(e1b,l1b|m1b,d1b)+=S23(e1b,d2b|m1b,l2b)*H13(l1b,l2b|d1b,d2b)
-    ierr=exatns_tensor_contract("Z37_1(e1,l1,m1,d1)+=S23(e1,d2,m1,l2)*H13(l1,l2,d1,d2)", &
-        Z37_1,S23,H13,prefactor=(1.0d0,0.0d0))
-    ierr=exatns_tensor_destroy(Z37_1)
 
     ierr=exatns_tensor_destroy(one_tensor)
 
