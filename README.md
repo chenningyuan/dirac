@@ -23,7 +23,7 @@ or a particular release:
 ```
 $ git clone --recursive --branch v22.0 git@gitlab.com:dirac/dirac.git
 ```
-```
+
 
 If you have downloaded a zip/tar.gz/tar.bz2/tar archive directly from GitLab,
 you will require Git installed to build the code. After extracting the archive

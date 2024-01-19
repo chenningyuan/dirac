@@ -1,0 +1,17 @@
+DIRAC  
+Benzene D2h symmetry with unique atoms in random order
+Small basis set for efficiency and to have more diversity in the tests
+C   4    3  Y  X  Z 
+      6.    1
+C1  1.32182350      -2.28946548        0.00000000
+LARGE BASIS 3-21G
+      1.    1
+H1  2.35371439       4.07675290        0.00000000
+LARGE BASIS 3-21G
+      1.    1
+H2  -4.70742876      0.00000000        0.00000000
+LARGE BASIS 3-21G
+      6.    1
+C2  2.64364700       0.00000000        0.00000000
+LARGE BASIS 3-21G
+FINISH

@@ -1,0 +1,60 @@
+**DIRAC
+.TITLE
+ Test
+.WAVE FUNCTION
+.4INDEX       
+**GENERAL     
+.PCMOUT
+.CODATA
+ CODATA18
+**INTEGRALS   
+*TWOINT       
+.SCREEN       
+1.0D-15       
+**WAVE FUNCTION
+.SCF
+.RELCCSD       
+*SCF           
+.CLOSED SHELL  
+12
+.ERGCNV        
+1.0D-12
+.MAXITR        
+40             
+**MOLTRA
+.ACTIVE 
+energy -1 1 1.0                                                                                   
+.PRPTRA 
+*PRPTRA
+.OPERATOR
+ 'NUC-1_z'
+ ZAVECTOR
+ 'NEF 005'
+ 'NEF 003'
+ CMULT
+ COMFACTOR
+ 1.0
+**RELCC
+.TIMING                                                                                             
+.ENERGY                                                                                             
+.FOCKSP                                                                                             
+*CCFSPC                                                                                             
+.DOEA                                                                                               
+.NACTP                                                                                              
+1,1
+.NTOL                                                                                               
+12                                                                                                  
+.MAXIT                                                                                              
+50                                                                                                  
+*CCENER                                                                                             
+.MAXIT                                                                                              
+150                                                                                                 
+.NTOL                                                                                               
+12                                                                                                  
+.NOSDT                                                                                             
+*CCSORT                                                                                             
+.NFFOPER                                                                                            
+1                                                                                                   
+NUC-1_z
+0.000,0.00001
+**END OF
