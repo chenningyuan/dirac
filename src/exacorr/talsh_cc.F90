@@ -2574,24 +2574,21 @@ module talsh_cc
 
                 if (CCSDitT) then 
                    ierr = talsh_tensor_dimensions(t3_tensor,tens_rank,t3_dims)
-                   print *,'t3_tensor: tens_rank',tens_rank,'ierr',ierr
                    if (ierr.ne.0 .or. tens_rank.ne.6) stop 'input t3-tensor corrupted in diis'
                 end if
 
                 if (CCSDitTQ) then 
                    ierr = talsh_tensor_dimensions(t4_tensor,tens_rank,t4_dims)
-                   print *,'t4_tensor: tens_rank',tens_rank,'ierr',ierr
                    if (ierr.ne.0 .or. tens_rank.ne.8) stop 'input t4-tensor corrupted in diis'
                 end if
 
                 if (CCSDitTQP) then 
                    ierr = talsh_tensor_dimensions(t5_tensor,tens_rank,t5_dims)
-                   print *,'t5_tensor: tens_rank',tens_rank,'ierr',ierr
                    if (ierr.ne.0 .or. tens_rank.ne.10) stop 'input t5-tensor corrupted in diis'
                 end if
             end if
             ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
-            if (ierr.ne.0 .or. tens_rank.ne.4) stop 'input t2-tensor corrupted in diis'
+            if (ierr.ne.0 .or. tens_rank.ne.4) stop 'input t2-tensor corrupted in diis '
 !           initialize DIIS matrix
             b_diis      = ZERO
 !           create storage for input, result and error tensors (in memory for the time being)
