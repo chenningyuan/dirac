@@ -164,6 +164,7 @@ print *, '*    Olivier Visser           University of Groningen           Nether
 print *, '*    Toke Winther             University of Southern Denmark    Denmark       *'
 print *, '*    Shigeyoshi Yamamoto      Chukyo University                 Japan         *'
 print *, '*    Xiang Yuan               Universite de Lille               France        *'
+print *, '*    Jan Brandejs             Universite Toulouse III           France        *'
 print *, '*                                                                             *'
 print *, '*    For more information about the DIRAC code see http://diracprogram.org    *'
 print *, '*                                                                             *'
