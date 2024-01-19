@@ -23,7 +23,7 @@ f.add(from_string = 'Eigenvalues',
       rel_tolerance   = 1.0e-5)
 f.add(from_string = 'Final CC',
       num_lines   = 1,
-      rel_tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-8)
 #
 #f.add(from_string = 'Total contribution to principal components',
 #      to_string   = '1 a.u. =',

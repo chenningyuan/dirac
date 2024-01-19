@@ -237,8 +237,8 @@ Execution time and host
 -----------------------
 
 
-     Date and time (Linux)  : Tue Jan 16 20:10:19 2024
-     Host name              : olympecomp210
+     Date and time (Linux)  : Tue Jan 16 20:27:19 2024
+     Host name              : olympecomp327
 
  * Opening checkpoint file
     - New checkpoint file created
@@ -269,13 +269,13 @@ NR Hamiltonian. CCD energies, small test.
 30
 **EXACC
 .OCCUPIED
-3..5
+4..5
 .VIRTUAL
 energy 0.1 200.0 0.001
 # 6..7
 # .CCDOUBLES
 .NOTRIPLES
-.CC-iT
+.CC-iQ
 .AUTOKERNELS
 .AUTOSCHEME
 2
@@ -283,7 +283,7 @@ energy 0.1 200.0 0.001
 .PRINT
 2
 .TALSH_BUFF
-40
+180
 **MOLECULE
 *COORDINATES
 .UNITS
@@ -649,8 +649,8 @@ H      0.0000000000   0.8018426428  -0.4934041911
 No. of positive energy orbitals (NESH):    13
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    13
- >>> CPU  time used in PAMSET is   1.26 seconds
- >>> WALL time used in PAMSET is   0.23 seconds
+ >>> CPU  time used in PAMSET is   2.15 seconds
+ >>> WALL time used in PAMSET is   0.16 seconds
 
 
    ****************************************************************************
@@ -664,144 +664,144 @@ Total no. of orbitals           (NORB):    13
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.   1 ##########   Tue Jan 16 20:27:20 2024
 
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.61574    6  -0.14344
 
 => Calculating sum of orbital energies
-It.    1    -36.64930073591      0.00D+00  0.00D+00  0.00D+00               0.02199800s   Atom. scrpot   Tue Jan 16
+It.    1    -36.64930073591      0.00D+00  0.00D+00  0.00D+00               0.02129300s   Atom. scrpot   Tue Jan 16
 
-########## START ITERATION NO.   2 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.   2 ##########   Tue Jan 16 20:27:20 2024
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   38.92%    0.00%    0.00%   0.00000000s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.23896    6   0.30574
->>> Total wall time:  0.02400000s, and total CPU time :  0.01559600s
+>>> Total wall time:  0.02530000s, and total CPU time :  0.01632800s
 
-########## END ITERATION NO.   2 ##########   Tue Jan 16 20:10:19 2024
+########## END ITERATION NO.   2 ##########   Tue Jan 16 20:27:20 2024
 
-It.    2    -75.39755837815      3.87D+01  1.06D+00  1.07D+00               0.02400000s   LL             Tue Jan 16
+It.    2    -75.39755837815      3.87D+01  1.06D+00  1.07D+00               0.02530000s   LL             Tue Jan 16
 
-########## START ITERATION NO.   3 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.   3 ##########   Tue Jan 16 20:27:20 2024
 
     3 *** Differential density matrix. DCOVLP     = 0.9743
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   38.92%    0.00%    0.00%   0.00000000s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.46156    6   0.25770
->>> Total wall time:  0.01870000s, and total CPU time :  0.01236600s
+>>> Total wall time:  0.01820000s, and total CPU time :  0.01208100s
 
-########## END ITERATION NO.   3 ##########   Tue Jan 16 20:10:19 2024
+########## END ITERATION NO.   3 ##########   Tue Jan 16 20:27:20 2024
 
-It.    3    -75.53905444354      1.41D-01 -7.43D-01  5.69D-01   DIIS   2    0.01870000s   LL             Tue Jan 16
+It.    3    -75.53905444354      1.41D-01 -7.43D-01  5.69D-01   DIIS   2    0.01820000s   LL             Tue Jan 16
 
-########## START ITERATION NO.   4 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.   4 ##########   Tue Jan 16 20:27:20 2024
 
     4 *** Differential density matrix. DCOVLP     = 0.9839
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   38.92%    0.00%    0.00%   0.00000000s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.47160    6   0.25866
->>> Total wall time:  0.01670000s, and total CPU time :  0.01204700s
+>>> Total wall time:  0.01570000s, and total CPU time :  0.01163000s
 
-########## END ITERATION NO.   4 ##########   Tue Jan 16 20:10:19 2024
+########## END ITERATION NO.   4 ##########   Tue Jan 16 20:27:20 2024
 
-It.    4    -75.58533440129      4.63D-02  2.43D-01  2.37D-02   DIIS   3    0.01670000s   LL             Tue Jan 16
+It.    4    -75.58533440129      4.63D-02  2.43D-01  2.37D-02   DIIS   3    0.01570000s   LL             Tue Jan 16
 
-########## START ITERATION NO.   5 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.   5 ##########   Tue Jan 16 20:27:20 2024
 
     5 *** Differential density matrix. DCOVLP     = 0.9993
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   38.92%    0.00%    0.00%   0.00000000s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.47487    6   0.25794
->>> Total wall time:  0.01740000s, and total CPU time :  0.01200400s
+>>> Total wall time:  0.01710000s, and total CPU time :  0.01175600s
 
-########## END ITERATION NO.   5 ##########   Tue Jan 16 20:10:19 2024
+########## END ITERATION NO.   5 ##########   Tue Jan 16 20:27:20 2024
 
-It.    5    -75.58548702416      1.53D-04 -1.88D-03  5.73D-03   DIIS   4    0.01740000s   LL             Tue Jan 16
+It.    5    -75.58548702416      1.53D-04 -1.88D-03  5.73D-03   DIIS   4    0.01710000s   LL             Tue Jan 16
 
-########## START ITERATION NO.   6 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.   6 ##########   Tue Jan 16 20:27:20 2024
 
     6 *** Differential density matrix. DCOVLP     = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   38.92%    0.00%    0.00%   0.00000000s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.47495    6   0.25806
->>> Total wall time:  0.01740000s, and total CPU time :  0.01224500s
+>>> Total wall time:  0.01510000s, and total CPU time :  0.01147900s
 
-########## END ITERATION NO.   6 ##########   Tue Jan 16 20:10:19 2024
+########## END ITERATION NO.   6 ##########   Tue Jan 16 20:27:20 2024
 
-It.    6    -75.58549863026      1.16D-05  7.24D-04  4.21D-04   DIIS   5    0.01740000s   LL             Tue Jan 16
+It.    6    -75.58549863026      1.16D-05  7.24D-04  4.21D-04   DIIS   5    0.01510000s   LL             Tue Jan 16
 
-########## START ITERATION NO.   7 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.   7 ##########   Tue Jan 16 20:27:20 2024
 
     7 *** Differential density matrix. DCOVLP     = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   38.92%    0.00%    0.00%   0.00000000s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.47496    6   0.25805
->>> Total wall time:  0.01670000s, and total CPU time :  0.01181900s
+>>> Total wall time:  0.01550000s, and total CPU time :  0.01160600s
 
-########## END ITERATION NO.   7 ##########   Tue Jan 16 20:10:19 2024
+########## END ITERATION NO.   7 ##########   Tue Jan 16 20:27:20 2024
 
-It.    7    -75.58549874256      1.12D-07 -7.46D-05  1.19D-04   DIIS   6    0.01670000s   LL             Tue Jan 16
+It.    7    -75.58549874256      1.12D-07 -7.46D-05  1.19D-04   DIIS   6    0.01550000s   LL             Tue Jan 16
 
-########## START ITERATION NO.   8 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.   8 ##########   Tue Jan 16 20:27:20 2024
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   38.92%    0.00%    0.00%   0.00000000s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.47497    6   0.25806
->>> Total wall time:  0.01790000s, and total CPU time :  0.01215300s
+>>> Total wall time:  0.01570000s, and total CPU time :  0.01158600s
 
-########## END ITERATION NO.   8 ##########   Tue Jan 16 20:10:19 2024
+########## END ITERATION NO.   8 ##########   Tue Jan 16 20:27:20 2024
 
-It.    8    -75.58549875365      1.11D-08  2.95D-05  2.70D-05   DIIS   7    0.01790000s   LL             Tue Jan 16
+It.    8    -75.58549875365      1.11D-08  2.95D-05  2.70D-05   DIIS   7    0.01570000s   LL             Tue Jan 16
 
-########## START ITERATION NO.   9 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.   9 ##########   Tue Jan 16 20:27:20 2024
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   38.92%    0.00%    0.00%   0.00000000s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.47497    6   0.25806
->>> Total wall time:  0.01730000s, and total CPU time :  0.01239900s
+>>> Total wall time:  0.01540000s, and total CPU time :  0.01147500s
 
-########## END ITERATION NO.   9 ##########   Tue Jan 16 20:10:19 2024
+########## END ITERATION NO.   9 ##########   Tue Jan 16 20:27:20 2024
 
-It.    9    -75.58549875421      5.58D-10  7.37D-06  2.23D-06   DIIS   8    0.01730000s   LL             Tue Jan 16
+It.    9    -75.58549875421      5.58D-10  7.37D-06  2.23D-06   DIIS   8    0.01540000s   LL             Tue Jan 16
 
-########## START ITERATION NO.  10 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.  10 ##########   Tue Jan 16 20:27:20 2024
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   38.92%    0.00%    0.00%   0.00000000s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.47497    6   0.25806
->>> Total wall time:  0.01700000s, and total CPU time :  0.01196700s
+>>> Total wall time:  0.01570000s, and total CPU time :  0.01171800s
 
-########## END ITERATION NO.  10 ##########   Tue Jan 16 20:10:19 2024
+########## END ITERATION NO.  10 ##########   Tue Jan 16 20:27:20 2024
 
-It.   10    -75.58549875422      3.48D-12  5.27D-07  1.05D-07   DIIS   9    0.01700000s   LL             Tue Jan 16
+It.   10    -75.58549875422      3.48D-12  5.27D-07  1.05D-07   DIIS   9    0.01570000s   LL             Tue Jan 16
 
-########## START ITERATION NO.  11 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.  11 ##########   Tue Jan 16 20:27:20 2024
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   39.08%    0.00%    0.00%   0.00000000s
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.47497    6   0.25806
->>> Total wall time:  0.01640000s, and total CPU time :  0.01169400s
+>>> Total wall time:  0.01660000s, and total CPU time :  0.01150200s
 
-########## END ITERATION NO.  11 ##########   Tue Jan 16 20:10:19 2024
+########## END ITERATION NO.  11 ##########   Tue Jan 16 20:27:20 2024
 
-It.   11    -75.58549875422      5.68D-14  2.16D-08  5.09D-09   DIIS   8    0.01640000s   LL             Tue Jan 16
+It.   11    -75.58549875422      5.68D-14  2.16D-08  5.09D-09   DIIS   8    0.01660000s   LL             Tue Jan 16
 
-########## START ITERATION NO.  12 ##########   Tue Jan 16 20:10:19 2024
+########## START ITERATION NO.  12 ##########   Tue Jan 16 20:27:20 2024
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   41.92%    0.00%    0.00%   0.00000000s
->>> Total wall time:  0.00920000s, and total CPU time :  0.00806800s
+>>> Total wall time:  0.00940000s, and total CPU time :  0.00830200s
 
-########## END ITERATION NO.  12 ##########   Tue Jan 16 20:10:19 2024
+########## END ITERATION NO.  12 ##########   Tue Jan 16 20:27:20 2024
 
-It.   12    -75.58549875422     -1.05D-12 -4.64D-10  8.93D-10   DIIS   8    0.00920000s   LL             Tue Jan 16
+It.   12    -75.58549875422     -1.05D-12 -4.64D-10  8.93D-10   DIIS   8    0.00940000s   LL             Tue Jan 16
 
 
                                    SCF - CYCLE
@@ -817,23 +817,23 @@ It.   12    -75.58549875422     -1.05D-12 -4.64D-10  8.93D-10   DIIS   8    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -36.64930073591      0.00D+00  0.00D+00  0.00D+00               0.02199800s   Atom. scrpot   Tue Jan 16
-It.    2    -75.39755837815      3.87D+01  1.06D+00  1.07D+00               0.02400000s   LL             Tue Jan 16
-It.    3    -75.53905444354      1.41D-01 -7.43D-01  5.69D-01   DIIS   2    0.01870000s   LL             Tue Jan 16
-It.    4    -75.58533440129      4.63D-02  2.43D-01  2.37D-02   DIIS   3    0.01670000s   LL             Tue Jan 16
-It.    5    -75.58548702416      1.53D-04 -1.88D-03  5.73D-03   DIIS   4    0.01740000s   LL             Tue Jan 16
-It.    6    -75.58549863026      1.16D-05  7.24D-04  4.21D-04   DIIS   5    0.01740000s   LL             Tue Jan 16
-It.    7    -75.58549874256      1.12D-07 -7.46D-05  1.19D-04   DIIS   6    0.01670000s   LL             Tue Jan 16
-It.    8    -75.58549875365      1.11D-08  2.95D-05  2.70D-05   DIIS   7    0.01790000s   LL             Tue Jan 16
-It.    9    -75.58549875421      5.58D-10  7.37D-06  2.23D-06   DIIS   8    0.01730000s   LL             Tue Jan 16
-It.   10    -75.58549875422      3.48D-12  5.27D-07  1.05D-07   DIIS   9    0.01700000s   LL             Tue Jan 16
-It.   11    -75.58549875422      5.68D-14  2.16D-08  5.09D-09   DIIS   8    0.01640000s   LL             Tue Jan 16
-It.   12    -75.58549875422     -1.05D-12 -4.64D-10  8.93D-10   DIIS   8    0.00920000s   LL             Tue Jan 16
+It.    1    -36.64930073591      0.00D+00  0.00D+00  0.00D+00               0.02129300s   Atom. scrpot   Tue Jan 16
+It.    2    -75.39755837815      3.87D+01  1.06D+00  1.07D+00               0.02530000s   LL             Tue Jan 16
+It.    3    -75.53905444354      1.41D-01 -7.43D-01  5.69D-01   DIIS   2    0.01820000s   LL             Tue Jan 16
+It.    4    -75.58533440129      4.63D-02  2.43D-01  2.37D-02   DIIS   3    0.01570000s   LL             Tue Jan 16
+It.    5    -75.58548702416      1.53D-04 -1.88D-03  5.73D-03   DIIS   4    0.01710000s   LL             Tue Jan 16
+It.    6    -75.58549863026      1.16D-05  7.24D-04  4.21D-04   DIIS   5    0.01510000s   LL             Tue Jan 16
+It.    7    -75.58549874256      1.12D-07 -7.46D-05  1.19D-04   DIIS   6    0.01550000s   LL             Tue Jan 16
+It.    8    -75.58549875365      1.11D-08  2.95D-05  2.70D-05   DIIS   7    0.01570000s   LL             Tue Jan 16
+It.    9    -75.58549875421      5.58D-10  7.37D-06  2.23D-06   DIIS   8    0.01540000s   LL             Tue Jan 16
+It.   10    -75.58549875422      3.48D-12  5.27D-07  1.05D-07   DIIS   9    0.01570000s   LL             Tue Jan 16
+It.   11    -75.58549875422      5.68D-14  2.16D-08  5.09D-09   DIIS   8    0.01660000s   LL             Tue Jan 16
+It.   12    -75.58549875422     -1.05D-12 -4.64D-10  8.93D-10   DIIS   8    0.00940000s   LL             Tue Jan 16
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   12 iterations.
 * Average elapsed time per iteration:
-      No 2-ints    :    0.04030000s
-      LL           :    0.01715455s
+      No 2-ints    :    0.03880000s
+      LL           :    0.01633636s
 
 
                                    TOTAL ENERGY
@@ -902,14 +902,12 @@ tot.num. of pos.erg shells:   13
                     *****************************************************
 
 
-  16 Jan 24 20:10:19 Found Dirac SCF orbitals file. using it.
-  16 Jan 24 20:10:19 scf data read from the checkpoint file
-  16 Jan 24 20:10:19 retrieved basis set information
-  16 Jan 24 20:10:19 Initialized global data
+  16 Jan 24 20:27:20 Found Dirac SCF orbitals file. using it.
+  16 Jan 24 20:27:20 scf data read from the checkpoint file
+  16 Jan 24 20:27:20 retrieved basis set information
+  16 Jan 24 20:27:20 Initialized global data
   --- read active occupied spinors ---
     #             E
-       5  -0.684873965E+00
-       6  -0.684873965E+00
        7  -0.522756879E+00
        8  -0.522756879E+00
        9  -0.474965479E+00
@@ -932,10 +930,10 @@ tot.num. of pos.erg shells:   13
       24   0.203454289E+01
       25   0.309383113E+01
       26   0.309383113E+01
-  16 Jan 24 20:10:19 Entered cc_driver routine
+  16 Jan 24 20:27:20 Entered cc_driver routine
  Checking Nvidia GPU availability ... Status           0: Number of GPUs =   0
-  16 Jan 24 20:10:19 Initialized talsh library
-  Status           0: Size (Bytes) =   42948624384: Max args in HAB =   12288
+  16 Jan 24 20:27:20 Initialized talsh library
+  Status           0: Size (Bytes) =  193273528320: Max args in HAB =   12288
 
   Integral module InteRest is initialized
   Last commit rev         | af67681897b1ecc14a7668475bd13b62471f8211
@@ -943,8 +941,8 @@ tot.num. of pos.erg shells:   13
   Last commit time        | Oct 16 14:37:58 2018 +0200
   Last update time        | Feb 20 15:39:00 2020 +0200
 
-  16 Jan 24 20:10:19 Initialized interest library
-  16 Jan 24 20:10:19 MO occupation data to EXACC file
+  16 Jan 24 20:27:20 Initialized interest library
+  16 Jan 24 20:27:20 MO occupation data to EXACC file
 
 -----------------------------------------------
       Characteristics of this calculation
@@ -957,11 +955,11 @@ tot.num. of pos.erg shells:   13
  - Target precision of amplitudes :     1.0E-09
 
  - Number of atomic orbitals :         13
- - Number of occupied spinors :         6
+ - Number of occupied spinors :         4
  - Number of virtual spinors :         16
 
  Using the single-node TALSH library
- - TALSH buffer size:                  40 GB
+ - TALSH buffer size:                 180 GB
 
  - Print Level :                        2
 
@@ -970,38 +968,36 @@ tot.num. of pos.erg shells:   13
  -- nvir ( scheme 4/42 ) :         0 GB
 -----------------------------------------------
 
-  16 Jan 24 20:10:19 Getting orbital energies
-  16 Jan 24 20:10:19 Retrieved orbital energies
-  16 Jan 24 20:10:19 -Start- Integral Transformation
-  16 Jan 24 20:10:19 allocated AO integral tensor
-  16 Jan 24 20:10:20 finished ao integral calculation
-  16 Jan 24 20:10:20 finished oovv integrals
-  16 Jan 24 20:10:20 finished oooo integrals
-  16 Jan 24 20:10:20 finished vovo integrals
-  16 Jan 24 20:10:20 finished vvvv integrals
-  16 Jan 24 20:10:20 finished ooov integrals
-  16 Jan 24 20:10:20 finished vovv integrals
-  16 Jan 24 20:10:20 -End- Integral Transformation
+  16 Jan 24 20:27:20 Getting orbital energies
+  16 Jan 24 20:27:20 Retrieved orbital energies
+  16 Jan 24 20:27:20 -Start- Integral Transformation
+  16 Jan 24 20:27:20 allocated AO integral tensor
+  16 Jan 24 20:27:21 finished ao integral calculation
+  16 Jan 24 20:27:21 finished oovv integrals
+  16 Jan 24 20:27:21 finished oooo integrals
+  16 Jan 24 20:27:21 finished vovo integrals
+  16 Jan 24 20:27:21 finished vvvv integrals
+  16 Jan 24 20:27:21 finished ooov integrals
+  16 Jan 24 20:27:21 finished vovv integrals
+  16 Jan 24 20:27:21 -End- Integral Transformation
 
     SCF energy ( read ) =     -75.585498754216118
 
-  16 Jan 24 20:10:20 Fock matrix initialized
-  16 Jan 24 20:10:20 Succesfully allocated all tensors
+  16 Jan 24 20:27:21 Fock matrix initialized
+  16 Jan 24 20:27:21 Succesfully allocated all tensors
 
-     MP2 energy =  -8.108745877883432E-002
+     MP2 energy =  -3.269635884692063E-002
 
 
  =======================================
    Matrix of pair correlation energies
  =============================================
-  0.00E+00 -1.49E-02 -3.12E-03 -6.52E-03 -3.07E-03 -4.05E-03
- -1.49E-02  0.00E+00 -6.52E-03 -3.12E-03 -4.05E-03 -3.07E-03
- -3.12E-03 -6.52E-03  0.00E+00 -9.99E-03 -3.03E-03 -4.19E-03
- -6.52E-03 -3.12E-03 -9.99E-03  0.00E+00 -4.19E-03 -3.03E-03
- -3.07E-03 -4.05E-03 -3.03E-03 -4.19E-03  0.00E+00 -8.25E-03
- -4.05E-03 -3.07E-03 -4.19E-03 -3.03E-03 -8.25E-03  0.00E+00
- Sum of pair correlation energies :  -0.162174917557669
- Correlation energy               :  -8.108745877883429E-002
+  0.00E+00 -9.99E-03 -3.03E-03 -4.19E-03
+ -9.99E-03  0.00E+00 -4.19E-03 -3.03E-03
+ -3.03E-03 -4.19E-03  0.00E+00 -8.25E-03
+ -4.19E-03 -3.03E-03 -8.25E-03  0.00E+00
+ Sum of pair correlation energies :  -6.539271769384124E-002
+ Correlation energy               :  -3.269635884692062E-002
  =============================================
  =======================================
 
@@ -1010,191 +1006,202 @@ tot.num. of pos.erg shells:   13
      Norm of Fock matrix (OV, all        ) =   0.000000000000000E+000
      Norm of Fock matrix (VV, no diagonal) =   0.000000000000000E+000
 
-  16 Jan 24 20:10:20 -Start- CC Iterations
- The wavefunction chosen is CC(           3 ,          30 )
+  16 Jan 24 20:27:22 -Start- CC Iterations
+ The wavefunction chosen is CC(           4 ,          40 )
  t3_tensor: tens_rank           6 ierr           0
+ t4_tensor: tens_rank           8 ierr           0
 
  CCD/SD/SDT/SDTQ/SDTQP implementation with automatically generated residual equa
  tions
 
  t1    =   0.000000000000000E+000
  t3    =   0.000000000000000E+000
- t2    =   8.892116126957958E-002
+ t4    =   0.000000000000000E+000
+ t2    =   3.240710485381181E-002
      Running code generated by tenpi.
- s1    =   1.024966470698461E-003
- s3    =   0.150847156420193
- s2    =    1.42065280043747
- debug auto: -8.108745877883433E-002
+ s1    =   9.337424904964946E-005
+ s3    =   1.512246509622759E-002
+ s4    =   5.235526370026992E-003
+ s2    =   0.726678130355830
+ debug auto: -3.269635884692063E-002
 
  -----------------------------------------------
    It.     Energy                  Convergence
  -----------------------------------------------
-    1      -0.085256986425951      0.8E-01
- t1    =   3.061116601841493E-004
- t3    =   4.196700864085021E-003
- t2    =   0.102203498997619
+    1      -0.037039853724745      0.4E-01
+ t1    =   4.197189634322234E-005
+ t3    =   4.487417366339733E-004
+ t4    =   7.232712909522529E-005
+ t2    =   4.221663348485123E-002
      Running code generated by tenpi.
- s1    =   1.335253027382035E-003
- s3    =   0.194949807193802
- s2    =    1.48384362948704
- debug auto: -8.525698642595064E-002
-    2      -0.087846781917110      0.2E-01
- t1    =   6.633587051351280E-004
- t3    =   6.007085165880711E-003
- t2    =   0.111750417436447
+ s1    =   1.552753307944947E-004
+ s3    =   2.490251151553432E-002
+ s4    =   9.475390951731678E-003
+ s2    =   0.755724283165233
+ debug auto: -3.703985372474498E-002
+    2      -0.038084547351506      0.1E-01
+ t1    =   1.128679958753139E-004
+ t3    =   8.647990320722036E-004
+ t4    =   1.530231057450772E-004
+ t2    =   4.535960848859305E-002
      Running code generated by tenpi.
- s1    =   1.656267278906487E-003
- s3    =   0.218055708191377
- s2    =    1.50280506161588
- debug auto: -8.784678191711005E-002
-    3      -0.088306341471361      0.8E-02
- t1    =   9.581579154414534E-004
- t3    =   6.838835133803913E-003
- t2    =   0.114492318841814
+ s1    =   1.955959601097656E-004
+ s3    =   2.930180587763626E-002
+ s4    =   1.152143277920192E-002
+ s2    =   0.763999263487390
+ debug auto: -3.808454735150596E-002
+    3      -0.038094530520693      0.3E-02
+ t1    =   1.529503709967650E-004
+ t3    =   9.325645660492961E-004
+ t4    =   1.634844405256344E-004
+ t2    =   4.562252890526786E-002
      Running code generated by tenpi.
- s1    =   1.812788804474743E-003
- s3    =   0.224390116950648
- s2    =    1.51006069463171
- debug auto: -8.830634147136115E-002
-    4      -0.088372981187136      0.2E-02
- t1    =   1.084158629314967E-003
- t3    =   6.875784610135044E-003
- t2    =   0.115052063814219
+ s1    =   2.110202218903198E-004
+ s3    =   2.984955638797650E-002
+ s4    =   1.172375024944859E-002
+ s2    =   0.764338937498323
+ debug auto: -3.809453052069327E-002
+    4      -0.038098214866131      0.7E-03
+ t1    =   1.692811521778357E-004
+ t3    =   9.400260942316852E-004
+ t4    =   1.646098189338698E-004
+ t2    =   4.569255702061110E-002
      Running code generated by tenpi.
- s1    =   1.868910667105970E-003
- s3    =   0.225296162713348
- s2    =    1.51078552309632
- debug auto: -8.837298118713574E-002
-    5      -0.088375335835967      0.7E-03
- t1    =   1.127303038070600E-003
- t3    =   6.890660273960705E-003
- t2    =   0.115107858650550
+ s1    =   2.168933193067408E-004
+ s3    =   2.994922717931366E-002
+ s4    =   1.174165253690898E-002
+ s2    =   0.764347780864883
+ debug auto: -3.809821486613055E-002
+    5      -0.038102276314968      0.2E-03
+ t1    =   1.739302000171211E-004
+ t3    =   9.420889730636950E-004
+ t4    =   1.648780919613549E-004
+ t2    =   4.571204419385339E-002
      Running code generated by tenpi.
- s1    =   1.884258248834598E-003
- s3    =   0.225389082879167
- s2    =    1.51080237622176
- debug auto: -8.837533583596680E-002
-    6      -0.088375788068065      0.2E-03
- t1    =   1.133380302802135E-003
- t3    =   6.899050180345463E-003
- t2    =   0.115110845789717
+ s1    =   2.184892112313326E-004
+ s3    =   2.997408464558387E-002
+ s4    =   1.175266914551859E-002
+ s2    =   0.764361362028865
+ debug auto: -3.810227631496792E-002
+    6      -0.038103448403284      0.6E-04
+ t1    =   1.752796657599005E-004
+ t3    =   9.429656177575076E-004
+ t4    =   1.652128464127076E-004
+ t2    =   4.571756036969263E-002
      Running code generated by tenpi.
- s1    =   1.886393701154404E-003
- s3    =   0.225433835484922
- s2    =    1.51081587015705
- debug auto: -8.837578806806506E-002
-    7      -0.088376534043304      0.4E-04
- t1    =   1.133704533605405E-003
- t3    =   6.900705250873988E-003
- t2    =   0.115111537179348
+ s1    =   2.189494119278043E-004
+ s3    =   2.998400603487497E-002
+ s4    =   1.175860998663509E-002
+ s2    =   0.764366679594796
+ debug auto: -3.810344840328445E-002
+    7      -0.038103459311708      0.1E-04
+ t1    =   1.755092549967551E-004
+ t3    =   9.431647520581215E-004
+ t4    =   1.652774390506308E-004
+ t2    =   4.571838490645848E-002
      Running code generated by tenpi.
- s1    =   1.886573477702327E-003
- s3    =   0.225446066211623
- s2    =    1.51081791028532
- debug auto: -8.837653404330442E-002
-    8      -0.088376426480410      0.9E-05
- t1    =   1.133496112040473E-003
- t3    =   6.900781532208607E-003
- t2    =   0.115111022318353
+ s1    =   2.190324120219665E-004
+ s3    =   2.998612642086727E-002
+ s4    =   1.175964573060835E-002
+ s2    =   0.764366987522077
+ debug auto: -3.810345931170827E-002
+    8      -0.038103474495398      0.4E-05
+ t1    =   1.755613913782215E-004
+ t3    =   9.432325420134530E-004
+ t4    =   1.652801306147885E-004
+ t2    =   4.571860770666522E-002
      Running code generated by tenpi.
- s1    =   1.886510350848429E-003
- s3    =   0.225445565806516
- s2    =    1.51081834415475
- debug auto: -8.837642648040955E-002
-    9      -0.088376382494196      0.2E-05
- t1    =   1.133390312290368E-003
- t3    =   6.900733471735293E-003
- t2    =   0.115110708731332
+ s1    =   2.190518438610013E-004
+ s3    =   2.998656684003461E-002
+ s4    =   1.175974613062115E-002
+ s2    =   0.764367217268300
+ debug auto: -3.810347449539820E-002
+    9      -0.038103490715840      0.7E-06
+ t1    =   1.755698620787007E-004
+ t3    =   9.432421535734850E-004
+ t4    =   1.652828073196340E-004
+ t2    =   4.571866946287394E-002
      Running code generated by tenpi.
- s1    =   1.886469000467405E-003
- s3    =   0.225444757352324
- s2    =    1.51081789244641
- debug auto: -8.837638249419563E-002
-   10      -0.088376362795922      0.9E-06
- t1    =   1.133339834814436E-003
- t3    =   6.900688601159185E-003
- t2    =   0.115110562827339
+ s1    =   2.190549123396998E-004
+ s3    =   2.998665283806526E-002
+ s4    =   1.175978467695355E-002
+ s2    =   0.764367310838135
+ debug auto: -3.810349071584021E-002
+   10      -0.038103493498596      0.2E-06
+ t1    =   1.755722159778547E-004
+ t3    =   9.432447090099816E-004
+ t4    =   1.652840392319666E-004
+ t2    =   4.571868186048063E-002
      Running code generated by tenpi.
- s1    =   1.886449195861786E-003
- s3    =   0.225444388371932
- s2    =    1.51081755389682
- debug auto: -8.837636279592161E-002
-   11      -0.088376350931535      0.3E-06
- t1    =   1.133323926329273E-003
- t3    =   6.900674018501668E-003
- t2    =   0.115110493693434
+ s1    =   2.190556991999010E-004
+ s3    =   2.998667583935731E-002
+ s4    =   1.175980453499762E-002
+ s2    =   0.764367323142145
+ debug auto: -3.810349349859593E-002
+   11      -0.038103493479942      0.5E-07
+ t1    =   1.755730435331849E-004
+ t3    =   9.432453535749958E-004
+ t4    =   1.652844480179344E-004
+ t2    =   4.571868429605482E-002
      Running code generated by tenpi.
- s1    =   1.886442570604514E-003
- s3    =   0.225444247798560
- s2    =    1.51081743330280
- debug auto: -8.837635093153536E-002
-   12      -0.088376349372011      0.7E-07
- t1    =   1.133321882663618E-003
- t3    =   6.900670235408853E-003
- t2    =   0.115110482260939
+ s1    =   2.190559748559795E-004
+ s3    =   2.998668240377084E-002
+ s4    =   1.175981055886662E-002
+ s2    =   0.764367321455949
+ debug auto: -3.810349347994194E-002
+   12      -0.038103493558161      0.1E-07
+ t1    =   1.755733424080143E-004
+ t3    =   9.432455180532157E-004
+ t4    =   1.652845053386273E-004
+ t2    =   4.571868542153329E-002
      Running code generated by tenpi.
- s1    =   1.886441617151553E-003
- s3    =   0.225444224345035
- s2    =    1.51081741370443
- debug auto: -8.837634937201128E-002
-   13      -0.088376349421541      0.2E-07
- t1    =   1.133321976247243E-003
- t3    =   6.900669819778386E-003
- t2    =   0.115110482180802
+ s1    =   2.190560808688354E-004
+ s3    =   2.998668445071000E-002
+ s4    =   1.175981160131820E-002
+ s2    =   0.764367321702284
+ debug auto: -3.810349355816101E-002
+   13      -0.038103493642783      0.3E-08
+ t1    =   1.755734308814540E-004
+ t3    =   9.432455806946010E-004
+ t4    =   1.652845089190763E-004
+ t2    =   4.571868586836999E-002
      Running code generated by tenpi.
- s1    =   1.886441624910181E-003
- s3    =   0.225444222224948
- s2    =    1.51081741399374
- debug auto: -8.837634942154060E-002
-   14      -0.088376349510224      0.5E-08
- t1    =   1.133322151696977E-003
- t3    =   6.900669839756656E-003
- t2    =   0.115110482877102
-     Running code generated by tenpi.
- s1    =   1.886441696523450E-003
- s3    =   0.225444222991728
- s2    =    1.51081741531820
- debug auto: -8.837634951022381E-002
-   15      -0.088376349560174      0.1E-08
- t1    =   1.133322225214413E-003
- t3    =   6.900669912313856E-003
- t2    =   0.115110483193719
-     Running code generated by tenpi.
- s1    =   1.886441727575015E-003
- s3    =   0.225444223621299
- s2    =    1.51081741588108
- debug auto: -8.837634956017450E-002
-   16      -0.088376349573653      0.4E-09
+ s1    =   2.190561126259180E-004
+ s3    =   2.998668507373270E-002
+ s4    =   1.175981173732311E-002
+ s2    =   0.764367322295059
+ debug auto: -3.810349364278303E-002
+   14      -0.038103493668455      0.1E-08
  -----------------------------------------------
 
 
-  16 Jan 24 20:11:30 -End- CC Iterations
+  16 Jan 24 21:04:13 -End- CC Iterations
 
 -----------------------------------------------
      -     Final results from EXACORR     -
 -----------------------------------------------
  Using the single-node TALSH library
 
-  MP2 energy :                        -0.081087458778834
-  Final CCSDT energy :                -0.088376349573653
-  T1 diagnostic      :                 0.000462676868078
+  MP2 energy :                        -0.032696358846921
+  Final CCSDTQ energy :               -0.038103493668455
+  T1 diagnostic      :                 0.000087786727808
 
   SCF energy :                       -75.585498754216118
-  Total MP2 energy :                 -75.666586212994957
-  Total CCSDT energy :               -75.673875103789769
+  Total MP2 energy :                 -75.618195113063038
+  Total CCSDTQ energy :              -75.623602247884577
 
 -----------------------------------------------
 
  Lambda equations with CC2 wavefunctions not supported in this release
 #MSG(TAL-SH::CP-TAL): Statistics on CPU:
- Number of Flops processed    :      0.15712865283200D+12
- Average GEMM GFlop/s rate    :      0.27713477372719D+03
- Number of Bytes permuted     :      0.24656948742400D+12
- Average permute GB/s rate    :      0.11261382520692D+03
- Average contract GFlop/s rate:      0.27094472625078D+01
+ Number of Flops processed    :      0.23774425017600D+13
+ Average GEMM GFlop/s rate    :      0.27268004120894D+03
+ Number of Bytes permuted     :      0.25605958455744D+14
+ Average permute GB/s rate    :      0.81447420540833D+02
+ Average contract GFlop/s rate:      0.16542825971540D+01
 #END_MSG
 
-  16 Jan 24 20:11:30 Leaving cc_driver routine
+  16 Jan 24 21:04:15 Leaving cc_driver routine
 
  * Closing HDF5 checkpoint file
     - Checkpoint file contains all required data, can be used for restarts
@@ -1206,11 +1213,11 @@ tot.num. of pos.erg shells:   13
 
 
 
-     Date and time (Linux)  : Tue Jan 16 20:11:30 2024
-     Host name              : olympecomp210
+     Date and time (Linux)  : Tue Jan 16 21:04:15 2024
+     Host name              : olympecomp327
 
->>>> Node 0, utime: 705, stime: 53, minflt: 285321, majflt: 16, nvcsw: 35196826, nivcsw: 67329, maxrss: 948624
->>>> Total WALL time used in DIRAC: 1min11s
+>>>> Node 0, utime: 33267, stime: 922, minflt: 5922340, majflt: 16, nvcsw: 888018660, nivcsw: 94559, maxrss: 23487704
+>>>> Total WALL time used in DIRAC: 36min56s
 
   Dynamical Memory Usage Summary for Master
 
@@ -1237,7 +1244,7 @@ tot.num. of pos.erg shells:   13
  MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /tmpdir/brandejs/higher/h2o-t
+DIRAC pam run in /tmpdir/brandejs/higher/h2o-q__
 
  ====  below this line is the stderr stream  ====
 

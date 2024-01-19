@@ -3,7 +3,7 @@
 !
 **DIRAC
 .TITLE
-NR Hamiltonian. CCSDT energies, small test.
+NR Hamiltonian. CCD energies, small test.
 .WAVE F
 **INTEGRALS
 .NUCMOD
@@ -23,14 +23,14 @@ NR Hamiltonian. CCSDT energies, small test.
 3..5
 .VIRTUAL
 energy 0.1 200.0 0.001
-# 6..7
-# .CCDOUBLES
 .NOTRIPLES
 .CC-iT
 .AUTOKERNELS
 .AUTOSCHEME
 2
-# .EXATENSOR
+.EXATENSOR
+.EXA_BLOCKSIZE
+20
 .PRINT
 2
 .TALSH_BUFF
@@ -43,7 +43,6 @@ AU
 .NOSYM
 *BASIS
 .DEFAULT
-#STO-3G
 3-21G
 #aug-cc-pVDZ
 *END OF
