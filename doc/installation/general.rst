@@ -5,12 +5,25 @@ Basic installation
 ==================
 
 
-If you have cloned or downloaded from GitLab
---------------------------------------------
+Getting the Code
+----------------
 
-If you clone the code directly from GitLab, please clone with ``--recursive``::
+**We recommend users who do not plan to make any code changes
+to download from** https://zenodo.org/doi/10.5281/zenodo.7670748
 
-  $ git clone --recursive --branch v22.0 https://gitlab.com/dirac/dirac.git
+In this case the release tarballs are self-contained, and in addition we get useful download metrics which we can use
+in future funding applications.
+
+
+If you clone the code directly from GitLab, please clone with ``--recursive``, e.g. the latest master::
+
+    $ git clone --recursive --branch master https://gitlab.com/dirac/dirac.git
+
+By replacing ``master`` with a version number ``v23.0`` one can select a specific version.
+In order to get the latest revision only::
+
+    $ git clone --depth 1 --recursive git@gitlab.com:dirac/dirac.git
+
 
 If you have downloaded a zip/tar.gz/tar.bz2/tar archive directly from GitLab,
 you will require Git installed to build the code. After extracting the archive
@@ -19,32 +32,23 @@ dependencies::
 
   $ git submodule update --init --recursive
 
-**However, we recommend users who do not plan to make any code changes
-to download from** https://doi.org/10.5281/zenodo.4836495.
-In this case the above extra step is not needed as the release tarballs are
-self-contained, and in addition we get useful download metrics which we can use
-in future funding applications.
 
+Building
+--------
 
-General
--------
+The default installation (sequential) proceeds through four commands::
 
-DIRAC is configured using `CMake <http://www.cmake.org/>`_ , typically via the ``setup`` script,
+  $ cd dirac
+  $ ./setup
+  $ cd build
+  $ make -j
+
+DIRAC is configured using `CMake <https://www.cmake.org/>`_ , typically via the ``setup`` script,
 and subsequently compiled using make (or gmake).
 The ``setup`` script is a useful front-end to CMake.
 You need python to run ``setup``. To see all options, run::
 
   $ ./setup --help
-
-
-Sequential build
-----------------
-
-The default installation proceeds through three commands::
-
-  $ ./setup [--flags]
-  $ cd build
-  $ make
 
 The ``setup`` script creates the directory "build" and
 calls CMake with appropriate environment variables and flags.
@@ -61,12 +65,29 @@ You can compile the code on all available cores::
 
   $ make -j
 
+
+Testing
+-------
+
 We strongly recommend that the installation is followed by testing your installation::
 
-  make test
+  $ ctest 
+
+or ::
+
+  $ make test
 
 For more information about testing, see `here <testing.html>`_.
 
+If you encounter any problems check the issues under `DIRAC <https://gitlab.com/dirac/dirac>`_ and create a new one if your problem is not mentioned.
+
+
+Contributing
+------------
+
+- `Working with the public and private repositories <https://diracprogram.org/doc/master/development/multiple-remotes.html>`_
+- `External contributions <https://diracprogram.org/doc/master/development/contributing-changes.html>`_
+- `DIRAC testing dashboard <https://testboard.org/cdash/index.php?project=DIRAC>`_
 
 Parallel build
 --------------
@@ -128,6 +149,6 @@ If it is a cluster, please ask the Administrator to install/upgrade CMake.
 
 If it is a cluster, but you prefer to install it yourself (it's easy):
 
-1. `Download <http://www.cmake.org/cmake/resources/software.html>`_ the latest pre-compiled CMake tarball
+1. `Download <https://www.cmake.org/cmake/resources/software.html>`_ the latest pre-compiled CMake tarball
 2. Extract the tarball
 3. Set correct PATH variable
