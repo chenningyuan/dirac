@@ -5,6 +5,7 @@
 
 Bugfix:
 
+- Fixed orbital analysis with .VECPRI for X2C, issue #79 (H. J. Aa. Jensen)
 - Fixed Fock-space coupled cluster calculations with finite fields.
   The values obtained with the versions that range between v21.0 and v23.0 are incorrect (Agustín Aucar).
 
