@@ -49,6 +49,8 @@ environment::
   $ python -m pip install sphinx sphinx_rtd_theme sphinxcontrib-bibtex
 
 Again, on some systems you need ``python3 -m pip ...`` instead.
+You may need to specify the version of sphinx, e.g.,
+``python3 -m pip install sphinx==6.1.3...`` .
 Next time you log on, you do not need to install it again, you just activate (source) it
 like above, you do not need to install the dependencies again.
 

@@ -40,12 +40,12 @@ SCF calculations are followed by two CC calculations, where in the second one us
  pam --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2S12.scf_cc33e_oe.2fs.inp
 
 Input files to download are
-:download:`Ir.dyall_v2z.lsym.mol <../../../../test/tutorial_Ir_16plus/Ir.dyall_v2z.lsym.mol>`, 
-:download:`Z61.x2c.2S12.scf_cc33e.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2S12.scf_cc33e.2fs.inp>`,
-:download:`Z61.x2c.2S12.scf_cc33e_oe.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2S12.scf_cc33e_oe.2fs.inp>`.
+:download:`Ir.dyall_v2z.lsym.mol <Ir.dyall_v2z.lsym.mol>`, 
+:download:`Z61.x2c.2S12.scf_cc33e.2fs.inp <Z61.x2c.2S12.scf_cc33e.2fs.inp>`,
+:download:`Z61.x2c.2S12.scf_cc33e_oe.2fs.inp <Z61.x2c.2S12.scf_cc33e_oe.2fs.inp>`.
 Corresponding output files are 
-:download:`Z61.x2c.2S12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2S12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out>`, 
-:download:`Z61.x2c.2S12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2S12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out>`.
+:download:`Z61.x2c.2S12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.2S12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out>`, 
+:download:`Z61.x2c.2S12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.2S12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out>`.
 
 
 The SCF :math:`^{2}P_{1/2}`, :math:`^{2}P_{3/2}` excited states
@@ -58,11 +58,11 @@ By placing the unpaired electron into 2nd irrep one gets the :math:`^{2}P_{1/2}`
  pam  --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2P12.scf_cc33e_oe.2fs.inp 
 
 Input files to download
-:download:`Z61.x2c.2P12.scf_cc33e.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2P12.scf_cc33e.2fs.inp>`,
-:download:`Z61.x2c.2P12.scf_cc33e_oe.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2P12.scf_cc33e_oe.2fs.inp>`.
+:download:`Z61.x2c.2P12.scf_cc33e.2fs.inp <Z61.x2c.2P12.scf_cc33e.2fs.inp>`,
+:download:`Z61.x2c.2P12.scf_cc33e_oe.2fs.inp <Z61.x2c.2P12.scf_cc33e_oe.2fs.inp>`.
 Corresponding output files are
-:download:`Z61.x2c.2P12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2P12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out>`, 
-:download:`Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out>`.
+:download:`Z61.x2c.2P12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.2P12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out>`, 
+:download:`Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out>`.
 
 How to obtain the :math:`^{2}P_{3/2}` second excited state at the SCF level, and, consequently, at the CC level ? 
 For that, we utilize the :ref:`WAVE_FUNCTION_.REORDER MO` keyword with reading of the  *DFCOEF.v2z.2P12* file from the previous run.
@@ -73,11 +73,11 @@ Likewise one uses overlap selection in the SCF step:
   pam --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2P32.scf_cc33e_oe.2fs.inp --put "DFCOEF.v2z.2P12=DFCOEF"
 
 Corresponding input files to download are
-:download:`Z61.x2c.2P32.scf_cc33e.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2P32.scf_cc33e.2fs.inp>`,
-:download:`Z61.x2c.2P32.scf_cc33e_oe.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2P32.scf_cc33e_oe.2fs.inp>`.
+:download:`Z61.x2c.2P32.scf_cc33e.2fs.inp <Z61.x2c.2P32.scf_cc33e.2fs.inp>`,
+:download:`Z61.x2c.2P32.scf_cc33e_oe.2fs.inp <Z61.x2c.2P32.scf_cc33e_oe.2fs.inp>`.
 Output files are 
-:download:`Z61.x2c.2P12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2P12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out>`, 
-:download:`Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out>`.
+:download:`Z61.x2c.2P12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.2P12.scf_cc33e.2fs_Ir.dyall_v2z.lsym.out>`, 
+:download:`Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out>`.
 
 
 The CCSD(T) :math:`^{2}P_{1/2}`, :math:`^{2}P_{3/2}` excited states
@@ -93,8 +93,8 @@ First we test the averaged, :math:`^{2}P_{aver}`, state:
  pam --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2Paver.scf_cc33e_oe.2fs.inp
 
 Files to download are
-:download:`Z61.x2c.2Paver.scf_cc33e.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2Paver.scf_cc33e.2fs.inp>`,
-:download:`Z61.x2c.2Paver.scf_cc33e_oe.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2Paver.scf_cc33e_oe.2fs.inp>`.
+:download:`Z61.x2c.2Paver.scf_cc33e.2fs.inp <Z61.x2c.2Paver.scf_cc33e.2fs.inp>`,
+:download:`Z61.x2c.2Paver.scf_cc33e_oe.2fs.inp <Z61.x2c.2Paver.scf_cc33e_oe.2fs.inp>`.
 
 Afterwards we can proceed to the individual spin-orbit distinguished states, based on :math:`M_{J}` splitted occupation of each fermion irrep
 at the Coupled Cluster level.
@@ -106,11 +106,11 @@ First the first excited state, :math:`^{2}P_{1/2}`:
  pam --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs.inp
 
 Input files to download are
-:download:`Z61.x2c.2Paver.scf_cc33e_2P12.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2Paver.scf_cc33e_2P12.2fs.inp>`,
-:download:`Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs.inp>`.
+:download:`Z61.x2c.2Paver.scf_cc33e_2P12.2fs.inp <Z61.x2c.2Paver.scf_cc33e_2P12.2fs.inp>`,
+:download:`Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs.inp <Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs.inp>`.
 Corresponding output files are
-:download:`Z61.x2c.2Paver.scf_cc33e_2P12.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2Paver.scf_cc33e_2P12.2fs_Ir.dyall_v2z.lsym.out>`, 
-:download:`Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs_Ir.dyall_v2z.lsym.out>`.
+:download:`Z61.x2c.2Paver.scf_cc33e_2P12.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.2Paver.scf_cc33e_2P12.2fs_Ir.dyall_v2z.lsym.out>`, 
+:download:`Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.2Paver.scf_cc33e_oe_2P12.2fs_Ir.dyall_v2z.lsym.out>`.
 
 
 Then we proceed to the second excited state, :math:`^{2}P_{3/2}`:
@@ -120,11 +120,11 @@ Then we proceed to the second excited state, :math:`^{2}P_{3/2}`:
  pam --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.2Paver.scf_cc33e_oe_2P32.2fs.inp
 
 Files to download are
-:download:`Z61.x2c.2Paver.scf_cc33e_2P32.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2Paver.scf_cc33e_2P32.2fs.inp>`,
-:download:`Z61.x2c.2Paver.scf_cc33e_oe_2P32.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.2Paver.scf_cc33e_oe_2P32.2fs.inp>`.
+:download:`Z61.x2c.2Paver.scf_cc33e_2P32.2fs.inp <Z61.x2c.2Paver.scf_cc33e_2P32.2fs.inp>`,
+:download:`Z61.x2c.2Paver.scf_cc33e_oe_2P32.2fs.inp <Z61.x2c.2Paver.scf_cc33e_oe_2P32.2fs.inp>`.
 Corresponding output files are
-:download:`Z61.x2c.2Paver.scf_cc33e_2P32.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2Paver.scf_cc33e_2P32.2fs_Ir.dyall_v2z.lsym.out>`, 
-:download:`Z61.x2c.2Paver.scf_cc33e_oe_2P32.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2Paver.scf_cc33e_oe_2P32.2fs_Ir.dyall_v2z.lsym.out>`.
+:download:`Z61.x2c.2Paver.scf_cc33e_2P32.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.2Paver.scf_cc33e_2P32.2fs_Ir.dyall_v2z.lsym.out>`, 
+:download:`Z61.x2c.2Paver.scf_cc33e_oe_2P32.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.2Paver.scf_cc33e_oe_2P32.2fs_Ir.dyall_v2z.lsym.out>`.
 
 
 The :math:`^{2}S_{1/2}`, :math:`^{2}P_{1/2}` and :math:`^{2}P_{3/2}` FSCCSD states
@@ -139,9 +139,9 @@ all three correlated states of interest, :math:`^{2}S_{1/2}`, :math:`^{2}P_{1/2}
  pam --noarch --mw=120  --mol=Ir.dyall_v2z.lsym.mol --inp=Z61.x2c.scf_fscc01_33ce_5s5p.2fs.inp
 
 The input file to download is
-:download:`Z61.x2c.scf_fscc01_33ce_5s5p.2fs.inp <../../../../test/tutorial_Ir_16plus/Z61.x2c.scf_fscc01_33ce_5s5p.2fs.inp>`.
+:download:`Z61.x2c.scf_fscc01_33ce_5s5p.2fs.inp <Z61.x2c.scf_fscc01_33ce_5s5p.2fs.inp>`.
 Corresponding output file is
-:download:`Z61.x2c.scf_fscc01_33ce_5s5p.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.scf_fscc01_33ce_5s5p.2fs_Ir.dyall_v2z.lsym.out>`. 
+:download:`Z61.x2c.scf_fscc01_33ce_5s5p.2fs_Ir.dyall_v2z.lsym.out <Z61.x2c.scf_fscc01_33ce_5s5p.2fs_Ir.dyall_v2z.lsym.out>`. 
 
 
 Overview of excitation energies
