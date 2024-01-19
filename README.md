@@ -9,7 +9,7 @@ There is also a google group: https://groups.google.com/g/dirac-users
 ## Getting the Code
 
 - **We recommend users who do not plan to make any code changes
-to download from** https://zenodo.org/doi/10.5281/zenodo.7670748
+to download from** https://zenodo.org/doi/10.5281/zenodo.7670748 (DIRAC23)
 
   In this case the release tarballs are self-contained, and in addition we get useful download metrics which we can use
 in future funding applications.
@@ -20,7 +20,7 @@ in future funding applications.
   $ git clone --recursive --branch master https://gitlab.com/dirac/dirac.git
   ```
 
-  By replacing ``master`` with a version number ``v23.0`` one can select a specific version.
+  By replacing ``master`` with a version number, for instance ``v23.0``,  one can select a specific version.
   In order to get the latest revision only:
   ```
   $ git clone --depth 1 --recursive git@gitlab.com:dirac/dirac.git
