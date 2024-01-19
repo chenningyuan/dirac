@@ -200,10 +200,8 @@ module talsh_cc
          ! print *,' eps_vir:',eps_vir
 !        Get fixed two-body tensors
          call print_date('-Start- Integral Transformation')
-         if (exa_input%moint_scheme.eq.41) then
-           call get_CC_integrals_chol_vec (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
-         else if (exa_input%moint_scheme.eq.42) then
-           call get_CC_integrals_chol_all (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
+         if (exa_input%moint_scheme.eq.42) then
+           call get_CC_integrals_chol (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
          else
            call get_CC_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%moint_scheme,exa_input%print_level)
          end if

@@ -46,8 +46,6 @@ module exacorr_cc
          use exacorr_tensor_methods
          use exacorr_ao_to_mo
          use exacorr_gradient
-         use talsh_cholesky_integrals
-         
 
          implicit none
 

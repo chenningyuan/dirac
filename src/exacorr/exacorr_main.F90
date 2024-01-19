@@ -18,6 +18,7 @@
       use exacc_cfg
       use exacorr_global
       use exacorr_utils
+      use checkpoint
       use, intrinsic:: ISO_C_BINDING
 
       implicit none
@@ -58,6 +59,7 @@
         call get_free_fileunit(file_unit)
         call read_menu_input('exacorr.inp',file_unit,'**EXACC',input_found) 
         if (.not.input_found) call quit('Input was not found!')
+        call checkpoint_open
       end if
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))

@@ -1869,7 +1869,7 @@ C
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,F12.8,A)') '  1 a.u. = ',CONV,' MHz'
       RETURN
- 9000 FORMAT (/2X,A9,A4,1X,A,I3,3X,A,I3,3X,A6,F4.1,3X,A19,F12.7,/)
+ 9000 FORMAT (/2X,A9,A4,1X,A,I3,3X,A,I3,3X,A6,F4.1,3X,A23,F12.7,/)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck el_efg */

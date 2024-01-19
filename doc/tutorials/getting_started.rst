@@ -45,27 +45,23 @@ together with the following example geometry file (:file:`methanol.xyz`)::
 
   6
   my first DIRAC calculation # anything can be in this line
-  C       0.000000000000       0.138569980000       0.355570700000   
-  O       0.000000000000       0.187935770000      -1.074466460000  
-  H       0.882876920000      -0.383123830000       0.697839450000  
-  H      -0.882876940000      -0.383123830000       0.697839450000  
-  H       0.000000000000       1.145042790000       0.750208830000  
+  C       0.000000000000       0.138569980000       0.355570700000
+  O       0.000000000000       0.187935770000      -1.074466460000
+  H       0.882876920000      -0.383123830000       0.697839450000
+  H      -0.882876940000      -0.383123830000       0.697839450000
+  H       0.000000000000       1.145042790000       0.750208830000
   H       0.000000000000      -0.705300580000      -1.426986340000
+
 
 Now start the calculation by executing::
 
   pam --mol=methanol.xyz --inp=hf.inp
 
 If everything works fine the results of the calculation will be written
-to :file:`hf\_methanol.out`. In addition an archive file :file:`hf\_methanol.tgz`
-will be created. Depending on the type of calculation the archive file
-may include:
+to :file:`hf\_methanol.out`. In addition a `HDF5 <https://en.wikipedia.org/wiki/Hierarchical_Data_Format>`_
+checkpoint file :file:`hf\_methanol.h5` will be created (see :ref:`checkpoint` for detailed information), To see the actual content of the file you may execute::
 
--  DFCOEF containing molecular orbital coefficients and possibly
-   energies.
--  cube files containing plots of molecular properties, typically
-   electron densities, in the gridded Gaussian Cube format.
--  Additional files for restarting particular types of calculations.
+  h5dump -n hf_methanol.h5
 
 
 Closed shell CCSD
@@ -111,9 +107,111 @@ Now start the calculation by executing::
   pam --mol=clf.xyz --inp=cc.inp
 
 If everything works fine the results of the calculation will be written
-to :file:`cc_clf.out`. In addition an archive file :file:`cc_clf.tgz` will be
+to :file:`cc_clf.out`. In addition an HDF5 checkpoint file :file:`cc_clf.h5` will be
 created, as mentioned above. 
 
-You can suppress creation of the archive file by::
+You can suppress having the checkpoint file copied back to your home directory using::
 
-  pam --noarch
+  pam --noh5
+
+Cheap relativistic calculations
+-------------------------------
+
+Relativistic calculations are more expensive than non-relativistic ones, but this is accentuated
+by the fact that relativistic effects are associated with heavy elements, which also implies
+many electrons and increased computational cost. However, as explained in :cite:`Dubillard2006`,
+we can induce strong relativistic effects in molecules of light atoms by playing with the speed of
+light. The starting point is the observation that a diagnostic of relativistic effects is provided
+by the Lorentz factor
+
+.. math::
+
+   \gamma = \frac{1}{\sqrt{1-(v/c)^2}},
+
+where :math:`v` is the speed of the particle and :math:`c` is the speed of light.
+In atomic units we have::
+
+   * The speed of light :        137.0359992
+
+as shown in the DIRAC output. Scalar relativistic effects are associated with the high speeds of
+electrons in the vicinty of heavy nuclei. In fact, for a one-electron atom the average speed of
+the *1s* electron in atomic units is :math:`v_{1s}=Z`. This explains why relativistic effects
+become so pronounced for heavy atoms; what counts is the nuclear charge, not the atomic mass.
+On the other hand, we see that relativistic effects are sensitive to the ratio :math:`(v/c)`,
+so one way to accentuate relativistic effects is to *reduce* the speed of light.
+
+Let us look at an example of this. We shall look at the geometry of the water molecule as a
+function of the speed of light. The molecular geometry is given by :file:`h2o.xyz`
+
+.. literalinclude:: h2o.xyz
+
+For a standard geometry optimization we use the input file :file:`geo.inp`
+
+.. literalinclude:: geo.inp
+
+We run DIRAC using ::
+
+  pam --inp=geo --mol=h2o.xyz
+
+From the DIRAC output we find that the initial geometry is::
+
+    Bond distances (angstroms):
+    ---------------------------
+  
+                    atom 1     atom 2                           distance
+                    ------     ------                           --------
+    bond distance:    H  1       O                              0.957897
+    bond distance:    H  2       O                              0.957897
+  
+  
+    Bond angles (degrees):
+    ----------------------
+
+                    atom 1     atom 2     atom 3                   angle
+                    ------     ------     ------                   -----
+    bond angle:       H  2       O          H  1                 104.120
+
+whereas at the end of optimization we have::
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H  1       O                              0.942905
+  bond distance:    H  2       O                              0.942905
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H  2       O          H  1                 105.667
+
+Now let's play. We now do a geometry optimization using the file :file:`geo_ultra.inp`
+
+.. literalinclude:: geo_ultra.inp
+
+where the speed of light is reduced all the way down to 10 :math:`a_0 E_h/\hbar`.
+In the DIRAC output the final geometry is now::
+
+    Bond distances (angstroms):
+    ---------------------------
+
+                    atom 1     atom 2                           distance
+                    ------     ------                           --------
+    bond distance:    H  1       O                              1.066701
+    bond distance:    H  2       O                              1.066701
+
+
+    Bond angles (degrees):
+    ----------------------
+
+                    atom 1     atom 2     atom 3                   angle
+                    ------     ------     ------                   -----
+    bond angle:       H  2       O          H  1                  89.505
+
+That is quite a change ! The reader is encouraged to play with other speeds of light. It is also
+possible to turn off spin-orbit interaction by setting :ref:`HAMILTONIAN_.SPINFREE`.
+
