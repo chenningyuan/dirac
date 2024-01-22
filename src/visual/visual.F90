@@ -16,6 +16,7 @@ module visual
   use visual_datatypes
   use visual_io
   use visual_mpi
+  use dirac_dmat_factory
 
 ! DIRAC modules
   use checkpoint
@@ -528,6 +529,7 @@ contains
 !       fixme: ao_basis not used now (WIP)
         call visual_initialize_data_from_dirac(mol, mo_data, ao_basis)
         call dirac_dmat_init(0, mo_data, dmat_ao=dmat_0)
+        !make it: call dirac_dmat_init(wf_order=0, mo_data, dmat_ao=dmat_0)
       end if
 
 #ifdef VAR_MPI
@@ -747,6 +749,9 @@ contains
                                    dmat_ao=dmat, &
                                    rspvec_file=rs_input%grid_functions(igf)%rspvec_file,&
                                    rspvec_id=rs_input%grid_functions(igf)%rspvec_id)
+        !make it: call dirac_dmat_init(wf_order=1, plab="kappa", cmo=mo_data, dmat_ao=dmat)
+        !and for laos:
+        !make it: call dirac_dmat_init(wf_order=1, plab="conmat", cmo=mo_data, dmat_ao=dmat. op="add")
               !do iz=1,4
               !  do i=1,dmat%mat_dim
               !    do j=1,dmat%mat_dim

@@ -13,6 +13,7 @@ set(FIXED_VISUAL_FORTRAN_SOURCES
 set(FREE_VISUAL_FORTRAN_SOURCES
     integration.F90
     visual_cfg.F90
+    dirac_dmat_factory.F90
     visual.F90
     visual_in_point.F90
     visual_london.F90

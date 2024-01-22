@@ -29,6 +29,7 @@ module visual_in_point
   use xc_london_c1
 
   use visual_datatypes
+  use dirac_dmat_factory
 
   implicit none
 

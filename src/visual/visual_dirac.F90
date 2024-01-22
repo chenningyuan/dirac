@@ -4,6 +4,7 @@ module visual_dirac
   use visual_cfg
   use visual_utils
   use visual_mpi
+  use dirac_dmat_factory
 
   !use dirac_rsp_utils
 
@@ -47,6 +48,7 @@ contains
     character(*), optional, intent(in) :: rspvec_file
     integer, optional, intent(in) :: rspvec_id
     type(dmat_t) :: mat
+    type(dmat_t) :: mat_ao
     type(response_info_t) :: rsp_info
     real(8), allocatable :: occupation(:)
     integer :: nao, nmo, nz
@@ -154,11 +156,16 @@ contains
         call dmat_ao%scale_elements(2.0d0)
 
       end if
-      if (rsp_info%vectors(ivec)%should_use_lao()) then
-        write(*, *) 'Calculating LAO contributions'
-      end if
 
       call mat%erase()
+
+      if (rsp_info%vectors(ivec)%should_use_lao()) then
+!       gosia fixme:
+!       now, i'm reusing old code here
+        write(*, *) 'Calculating LAO contributions'
+        call add_lao_to_dmat_ao(cmo,dmat_ao,rsp_info)
+      end if
+
       call rsp_info%erase()
 
     end if
@@ -893,7 +900,57 @@ contains
 
 
 
+  subroutine add_lao_to_dmat_ao(cmo, dmat_ao,rsp_info)
+use matrix_defop_old
+use visual_london
+    type(response_info_t),intent(in) :: rsp_info
+    integer::ivec
+    integer :: nmo, nao, nz, i
+    type(dmat_t), intent(inout) :: dmat_ao
+    type(dmat_t) :: mat_mo, mat_ao
+    real(8), allocatable :: occupation(:)
+    type(cmo_t), intent(in) :: cmo
+    type(matrix)            :: D_con_mo
 
+    nao = sum(cmo%n_ao)
+    nmo = sum(cmo%n_mo)
+    nz  = cmo%nz
+
+    allocate(occupation(nmo))
+    call setup_orbital_string(cmo,occupation)
+
+    call init_mat(D_con_mo, nmo, nmo)
+    D_con_mo%elms = 0.0d0
+    call get_d_con_mo(D_con_mo, occupation)
+    D_con_mo = 0.5d0*D_con_mo
+
+    mat_mo%mat_dim = nmo
+    mat_mo%mat_nz = nz
+    call mat_mo%alloc()
+    mat_mo%elements = D_con_mo%elms
+
+    mat_ao%mat_dim = nao
+    mat_ao%mat_nz  = nz
+    call mat_ao%alloc()
+    call dmat_transform_mo2ao(cmo, mat_mo, mat_ao)
+    !ivec=3
+    !    call construct_perturbed_dmat(dmat_ao%elements,&
+    !                    mat_ao%elements,&
+    !                    ivec, &
+    !                    rsp_info, cmo%coeff)
+    do i = 1, nao*nao*nz
+      dmat_ao%elements(i) = dmat_ao%elements(i) + mat_ao%elements(i)
+    end do
+
+    call mat_ao%erase()
+    call mat_mo%erase()
+    D_con_mo = 0
+
+    deallocate(occupation)
+
+
+
+  end subroutine
 
 
 
