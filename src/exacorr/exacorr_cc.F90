@@ -390,7 +390,6 @@ module exacorr_cc
             call print_iterative_wavefunction_choice(iterative_scheme)
 
             if (exa_input%auto_kernels) then
-               write(*,*) " ccdriver: calling solve_t_equations_automatic"
                call solve_t_equations_automatic(comm_t,int_t,dims,t_target_precision,cc_energy,&
                                                CCD,iterative_level,iterative_scheme,exa_input%auto_scheme,&
                                                ncycles,denom,exa_input%print_level)
@@ -4912,18 +4911,9 @@ module exacorr_cc
           end if
           ierr=exatns_tensor_init(s2_tensor,'ZERO')
 
-          if (.true.) then
-             if (.not.CCD) then
-                write(*,'(A7,F20.15)') "b s1    = ",print_tensornorm2 (s1_tensor)
-                write(*,'(A7,F20.15)') "b T1amp = ",print_tensornorm2 (comm_t%t1)
-             end if
-             write(*,'(A7,F20.15)') "b s2    = ",print_tensornorm2 (s2_tensor)
-             write(*,'(A7,F20.15)') "b T2amp = ",print_tensornorm2 (comm_t%t2)
-          end if
 
           if ((iterative_level.eq.2).and.(iterative_scheme.eq.21)) then
             if (auto_scheme.eq.1) then
-             print *,'calling exatensor_CCSD_codegen'
             call exatensor_CCSD_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
                                     int_t%oovv,         &   ! H24 OOVV 
@@ -4969,7 +4959,6 @@ module exacorr_cc
              end if
           else if ((iterative_level.eq.2).and.(iterative_scheme.eq.20)) then
             if (auto_scheme.eq.1) then
-             print *,'calling exatensor_CCD_codegen'
             call exatensor_CCD_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
                                         comm_t%t2,      &   ! S23 
@@ -4999,7 +4988,6 @@ module exacorr_cc
              end if
           else if ((iterative_level.eq.3).and.(iterative_scheme.eq.30)) then
             if (auto_scheme.eq.1) then
-             print *,'calling exatensor_CCSDT_codegen'
              call exatensor_CCSDT_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
                                            int_t%oovv,     &  !  OOVV
@@ -5049,7 +5037,6 @@ module exacorr_cc
              end if
           else if ((iterative_level.eq.4).and.(iterative_scheme.eq.40)) then
             if (auto_scheme.eq.1) then
-             print *,'calling exatensor_CCSDTQ_codegen'
              call exatensor_CCSDTQ_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
                                            int_t%oovv,     &  !  OOVV
@@ -5103,7 +5090,6 @@ module exacorr_cc
              end if
           else if ((iterative_level.eq.5).and.(iterative_scheme.eq.50)) then 
             if (auto_scheme.eq.1) then
-             print *,'calling exatensor_CCSDTQP_codegen'
              call exatensor_CCSDTQP_codegen(occ_space_id,vir_space_id,&
                                     occ_space_root,vir_space_root,&
                                            int_t%oovv,     &  !  OOVV
