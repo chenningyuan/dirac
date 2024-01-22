@@ -283,28 +283,28 @@ This menu controls the parameters for the definition of the EOM model used and t
 
 Currently the implementation supports the excitation energy (EE), single electron attachment (EA) and detachment (IP) models for CCSD wavefunctions only.
 
-Note that there is no default, if no options are selected no calculations will be performed.
-
+Note that there is no default, if no options are selected no calculations will be performed. Specify the number of roots in the calculation.
 
 ::
 
    .NROOTS
    4
 
-Specify the number of roots in the calculation.
-
+Specify the flavor of EOM: EE (excitation energy), EA (single electron attachment energies), and IP (single electron detachment energies)
 ::
 
    .FLAVOR
    EE
 
-Specify the flavor of EOM: EE (excitation energy), EA (single electron attachment energies), and IP (single electron detachment energies)
-
-
 
 keyword(CCCILR)
 
-Perform coupled-cluster (CCSD) linear response calculation. The current code can run both static and frequency-dependent(complex frequency) response calculation. There are two wave-function models can be used in the calculation: CC-CC and CC-CI(EOM). CC-CC is the standard CC-LR, and CC-CI is the approximation version, which give the same results as EOM-LR.
+Perform coupled-cluster (CCSD) linear response calculation:
+
+.. math:: 
+   \langle\langle A; B \rangle\rangle_{\omega_{k}} 
+
+The current code can run both static and frequency-dependent (complex frequency) response calculation. There are two wave-function models can be used: CC-CC and CC-CI (EOM). CC-CC is the standard CC-LR, and CC-CI is the approximation version, which give the same results as EOM-LR.
 
 To run this code, users need to first do AO to MO transformation for the required property by activating the PRPTRA in MOLTRA. In addition, one also need to solve Lamda-equations.
 
@@ -317,19 +317,24 @@ To run this code, users need to first do AO to MO transformation for the require
 
 keyword(CCCIQR)
 
-Perform coupled-cluster (CCSD) quadratic response calculation. The current code can run both static and frequency-dependent(complex frequency) response calculation. There are two wave-function models can be used in the calculation: CC-CC and CC-CI(EOM). CC-CC is the standard CC-QR, and CC-CI is the approximation version, which give the same results as EOM-QR.
+Perform coupled-cluster (CCSD) quadratic response calculation: 
+
+.. math::
+  \langle\langle A;B,C\rangle\rangle_{\omega_{B},\omega_{C}}
+
+The current code can run both static and frequency-dependent (complex frequency) response calculation. There are two wave-function models can be used: CC-CC and CC-CI (EOM). CC-CC is the standard CC-QR, and CC-CI is the approximation version, which give the same results as EOM-QR.
 
 ::
 
     .CCCIQR
     1
 
-1 indicates CC-CC type wave-function, and other numbers indicate CC-CI(EOM) type wave-function. Note: At the moment, CC-CC quadratic response is not supported. 
+1 indicates CC-CC type wave-function, and other numbers indicate CC-CI (EOM) type wave-function. Note: CC-CC quadratic response is not supported. 
 
 
 keyword(LRFRE)
 
-Specify the frequencies (in atomic unit) in the coupled cluster linear response calculation
+Specify :math:`\omega_{k}` (in atomic unit) in the coupled cluster linear response calculation
 
 ::
 
@@ -343,7 +348,7 @@ The first line contains the number of frequencies to be used. The second line in
 
 keyword(QR1FRE)
 
-Specify the first frequencies in the coupled cluster quadratic response calculation
+Specify :math:`\omega_{B}` (in atomic unit) in the coupled cluster quadratic response calculation
 
 ::
 
@@ -352,11 +357,11 @@ Specify the first frequencies in the coupled cluster quadratic response calculat
    0.1
    0.0
 
-The setup for the frequency is the same as LRFRE above.
+The setup for :math:`\omega_{B}` is the same as LRFRE above.
 
 keyword(QR2FRE)
 
-Specify the second frequencies in the coupled cluster quadratic response calculation
+Specify :math:`\omega_{C}` (in atomic unit) in the coupled cluster quadratic response calculation
 
 ::
 
@@ -365,7 +370,7 @@ Specify the second frequencies in the coupled cluster quadratic response calcula
    0.15
    0.0
 
-The setup for the frequency is the same as LRFRE above.
+The setup for :math:`\omega_{C}` is the same as LRFRE above.
 
 
 keyword(AProp)
@@ -380,7 +385,6 @@ Specify the A operator in the response functions.
 
 The first line contains the number of A operators. The second line indicates property number, which is consistent with the number PRPTRA section of MOLTRA.
 
-
 keyword(BProp)
 
 Specify the B operator in the response functions.
@@ -390,9 +394,6 @@ Specify the B operator in the response functions.
    .BProp
    3
    1,2,3
-
-The first line contains the number of B operators. The second line indicates property number, which is consistent with the number PRPTRA section
-of MOLTRA.
 
 The code always calculates all possible combinations of A,B for linear response functions.
 
@@ -407,19 +408,24 @@ Specify the C operator in the response functions.
    3
    1,2,3
 
-The first line contains the number of C operators. The second line indicates property number, which is consistent with the number PRPTRA section
-of MOLTRA.
-
 The code always calculates all possible combinations of A,B,C for quadratic response functions.
 
 
 keyword(CCTPA)
 
-Evaluate the coupled-cluster two-photon scattering amplitudes (S_(AB,CD)), obtained by combining EOM-EE and quadratic response.
+Evaluate the coupled-cluster two-photon scattering amplitudes :math:`S_{AB,CD}`, obtained by combining EOM-EE and quadratic response.
+
+.. math::
+
+  S_{AB,CD}=T_{AB}^{0f}(\omega)T_{CD}^{f0}(\omega) = \frac{1}{2} [T_{AB}^{0f}(\omega)T_{CD}^{f0}(\omega) +  (T_{CD}^{0f}(\omega)T_{AB}^{f0}(\omega))^{*}]
+
+.. math::
+
+  T_{AB}^{f0}(\omega) = \sum_{n}\left[ \frac{\bra{f}\hat{A}\ket{n}\bra{n}\hat{B}\ket{0}}{\omega_{n}-{(\omega+i\gamma})}+\frac{\bra{f}\hat{B}\ket{n}\bra{n}\hat{A}\ket{0}}{\omega_{n}-(\omega^\prime+i\gamma)} \right]
 
 .. warning:: This code is experimental. At the moment, we only can do calculations for the target state, which is non-degenerate, and it may have problems using gcc complier. Only CC-CI (EOM) version works, CC-CC is in development.
 
-*Example:* requesting CC-CI (EOM) two-photon scattering amplitudes between the reference state (ground state) and the target state (number 4 excited state in EOM-EE). The frequency used in the response equastions is a fixed value, which is half of the excitation energy of the target state ::
+*Example:* requesting CC-CI (EOM) two-photon scattering amplitudes between the reference state (ground state) and the target state (number 4 excited state obtained in EOM-EE)::
 
         .CCTPA
         20
@@ -437,4 +443,10 @@ Evaluate the coupled-cluster two-photon scattering amplitudes (S_(AB,CD)), obtai
 	1
 	3 
 
+The setup for D operator is the same as A,B,C operators above.
 
+The two frequencies are both equal to the half of the excitation energy of the target state:
+
+.. math::
+
+   \omega = \omega^\prime = \frac{1}{2}\omega_{f}
