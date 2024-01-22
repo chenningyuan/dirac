@@ -1,5 +1,6 @@
 module exacorr_cc
 
+
 !This module contains the routines needed to calculate a coupled cluster wave function
 !almost everything requires MPI, but we provide a stub function to make compilation of 
 !non-MPI versions of DIRAC possible.
@@ -386,7 +387,7 @@ module exacorr_cc
                return
             end if
 
-            call print_iterative_wavefunction_choice(iterative_level,iterative_scheme)
+            call print_iterative_wavefunction_choice(iterative_scheme)
 
             if (exa_input%auto_kernels) then
                write(*,*) " ccdriver: calling solve_t_equations_automatic"
