@@ -23,9 +23,9 @@ In the :math:`D_{2h}` / :math:`D_{\infty h}`  symmetries the electrons are place
    1
    2/4,0
 
-(See the :download:`DIRAC.INP <../../../../test/fscc_highspin/hf.inp>` and 
-the :download:`MOLECULE.MOL <../../../../test/fscc_highspin/O2.mol>` input files, 
-and the associated :download:`output file <../../../../test/fscc_highspin/result/hf_O2.out>`.)
+(See the :download:`DIRAC.INP <hf.inp>` and 
+the :download:`MOLECULE.MOL <O2.mol>` input files, 
+and the associated :download:`output file <hf_O2.out>`.)
 
 The overall electronic occupation of the oxygen molecule 
 can be displayed in the following MO diagram (`see also here <https://en.wikipedia.org/wiki/Triplet_oxygen>`_):
@@ -58,8 +58,8 @@ This gives - at the Coupled Cluster level - the following occupation::
   .NELEC
   4 2 3 3
 
-(See the :download:`input file <../../../../test/fscc_highspin/uccsd.inp>`
-and the :download:`output file <../../../../test/fscc_highspin/result/uccsd_O2.out>`.)
+(See the :download:`input file <uccsd.inp>`
+and the :download:`output file <uccsd_O2.out>`.)
 
 Note that this determinant does not represent the exact ground state of the oxygen molecule as this triplet is split by a few wave numbers 
 due to spin-spin and (second order) spin-orbit interactions. 
@@ -86,8 +86,8 @@ This makes the input for our example: ::
   .NEL_F2
   2 2 1 1 
 
-(The :download:`input file <../../../../test/fscc_highspin/uccsd_linsym.inp>`,
-and the resulting :download:`output file <../../../../test/fscc_highspin/result/uccsd_linsym_O2.out>`.)
+(The :download:`input file <uccsd_linsym.inp>`,
+and the resulting :download:`output file <uccsd_linsym_O2.out>`.)
 
 Fock-space Coupled-Cluster calculations
 ----------------------------------------
@@ -106,18 +106,18 @@ degenerate open shell singlet a and the singlet b state in one single
 Fock space run, which involves sectors sequence of (0,0)->(0,1)->(0,2).
 
 The complete FSCCSD input 
-:download:`reads then <../../../../test/fscc_highspin/fsccsd.inp>`. 
+:download:`reads then <fsccsd.inp>`. 
 The corresponding output file is
-:download:`here <../../../../test/fscc_highspin/result/fsccsd_O2.out>`.
+:download:`here <fsccsd_O2.out>`.
 These FSCCSD correlated energy states can be compared against the uncorrelated COSCI states, 
-see :download:`here <../../../../test/fscc_highspin/result/hf_O2.out>`.
+see :download:`here <hf_O2.out>`.
 
 Another way of running FSCCSD calculations is starting from the closed-shell anion, :math:`O_{2}^{2-}`, 
 and removing two-electrons in the sequence of (0,0)->(1,0)->(2,0) sectors.
 The FSCCSD input file is
-:download:`here <../../../../test/fscc_highspin/fsccsd_IE2.inp>`,
+:download:`here <fsccsd_IE2.inp>`,
 and the downloadable output file is
-:download:`here <../../../../test/fscc_highspin/result/fsccsd_IE2_O2.out>`.
+:download:`here <fsccsd_IE2_O2.out>`.
 
 The reader can check the experimental values of excitation energies in the 
 `NIST web page <http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1000#Diatomic>`_.

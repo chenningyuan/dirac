@@ -231,6 +231,19 @@ C     Initialize PE library
       if (dirac_cfg_dft_calculation) then
         call consistency_after_dft_input()
         call report_after_dft_input()
+        IF (GAUNT) THEN
+           IF (LSCALE_DFT_GAUNT) THEN
+              WRITE (LUPRI,*) '* WARNING: Gaunt integrals will be '//
+     &        'scaled as HF exchange '
+              WRITE (LUPRI,*) '  according to the selected DFT '//
+     &        'functional.'
+           ELSE
+              WRITE (LUPRI,*) '* WARNING: Gaunt integrals will be '//
+     &        'included to 100%'
+              WRITE (LUPRI,*) '  independently of the selected '//
+     &        'DFT functional.'
+           ENDIF
+        ENDIF
 !       fixme num grid report should be independent of DFT
         call report_num_grid()
       end if
@@ -6476,17 +6489,6 @@ CMI    ... quantum dots
           call dftreport()
         end if
 
-         IF (IGTINT.EQ.1) THEN
-            IF (LSCALE_DFT_GAUNT) THEN
-               WRITE (LUPRI,*) 'WARNING: Gaunt integrals will be'//
-     &              'scaled as HF exchange according to the selected'
-               WRITE (LUPRI,*) ' DFT functional.'
-            ELSE
-               WRITE (LUPRI,*) 'WARNING: Gaunt integrals will be'//
-     &              'included to 100% independently of the selected'
-               WRITE (LUPRI,*) ' DFT functional.'
-            ENDIF
-         ENDIF
 
       ENDIF
 C
@@ -8354,7 +8356,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (NTABLE = 12)
+      PARAMETER (NTABLE = 16)
 C
 #include "dcbgen.h"
 #include "dcbana.h"
@@ -8372,7 +8374,8 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
      &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
-     &            '.THDIAG','.THGRAD','.CHECK ','.SELECT'/
+     &            '.THDIAG','.THGRAD','.CHECK ','.SELECT',
+     &            '.THXVEC','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -8401,6 +8404,7 @@ C
       THFULL = 1.0D-13
       THDIAG = 1.0D-05
       THGRAD = 1.0D-07
+      THXVEC = 1.0D-15
       SELMOS = 'allocc'
 C
 C     Process input from CBILOC
@@ -8420,7 +8424,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
                   END IF
  200                        CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -8494,6 +8498,15 @@ C   After last iteration using diagonal approximation calculate one step using f
  12                      CONTINUE
 C   SELMOS: Select MOs for localization
                READ(LUCMD,'(A72)') SELMOS
+               GO TO 100
+ 13            CONTINUE
+C   THXVEC: Set threshold for removal of small rotations
+               READ(LUCMD,*) THXVEC
+ 14            CONTINUE
+               GO TO 100
+ 15            CONTINUE
+               GO TO 100
+ 16            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -8647,6 +8660,9 @@ C
         WRITE(LUPRI,'(1X,A)') '* User defined MOs for localization:'
         WRITE(LUPRI,'(1X,A)') '    --> ',SELMOS
       ENDIF
+      WRITE(6,'(1X,A,1P,E8.2)') 
+     &    '* Threshold for removal of small rotations: ',
+     &    THXVEC          
 C     -----------------------------------------------------------------
 C     Fragments of spinors used in the projection analysis
 C
@@ -9255,7 +9271,10 @@ C
       subroutine set_lscale_dft_gaunt()
       implicit none
 #include "dcbham.h"
+#include "dcbgen.h"
       lscale_dft_gaunt = .true.
+      IF (PARCAL) CALL QUIT('GAUNTSCALE keyword not working for'//
+     &                      ' parallel calculations')
       end subroutine
 
       function word_count(s)

@@ -5,8 +5,6 @@
 *READIN
 .UNCONT
 **WAVE FUNCTION                                                                                     
-.REORDER
-1..43,51,44..50,52..56
 .SCF                                                                                                
 *SCF
 .CLOSED SHELL                                                                                                
@@ -15,8 +13,12 @@
 2
 3/14
 1/10
-.OVLSEL
-.NODYNSEL
+.KPSELE
+7
+-1  1 -2  2 -3  3 -4
+14 10 20 12 18  6  8                                                                                
+ 0  0  0  0  0  6  8                                                                                
+ 0  0  0  4  6  0  0
 **ANALYZE
 .MULPOP
 *MULPOP

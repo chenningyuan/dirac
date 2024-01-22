@@ -46,7 +46,7 @@ if (ENABLE_MATH_INT_TEST)
 
     if (MKL_FLAG)
       # MKL_FLAG belong to CMAKE_REQUIRED_FLAGS !
-      set(CMAKE_REQUIRED_FLAGS "${CMAKE_Fortran_FLAGS} -mkl=${MKL_FLAG}")
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_Fortran_FLAGS} -qmkl=${MKL_FLAG}")
     else()
       if (MATH_LIBS AND EXPLICIT_LIBS)
         #Miro: both MATH_LIBS and EXPLICIT_LIBS are active !

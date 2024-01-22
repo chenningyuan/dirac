@@ -3656,7 +3656,7 @@ C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prprea */
       SUBROUTINE PRPREA(LU1INT,PRPLBL,RTNLBL,PCOMB,PRPINT,NDIM,IPRINT)
-      use checkpoint
+      use labeled_storage
 C***********************************************************************
 C
 C     Read property integrals from file with the label PRPLBL
@@ -3700,20 +3700,20 @@ C
       ENDIF
       label = '/result/operators/ao_matrices/'//
      &        PRPLBL//COMB
-      call checkpoint_query(label,label_present)
+      call lab_query(dirac_datafiles(1),label,label_present)
       if (label_present) then
-        call checkpoint_read(label,rdata=prpint(1:ndim))
+        call lab_read(dirac_datafiles(1),label,rdata=prpint(1:ndim))
         IF (IPRINT.GE.17) THEN
            WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
-     &    'succesfully read from CHECKPOINT '
+     &    'succesfully read from '//dirac_datafiles(1)%name
         ENDIF
       ELSE
         WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
-     &                     ' not found on CHECKPOINT'
+     &                     ' not found on '//dirac_datafiles(1)%name
         CALL QUIT('PRPREA:Property '//PRPLBL//
-     &   ' of COMB '//COMB//' not found on CHECKPOINT')
+     &   ' of COMB '//COMB//' not found')
       ENDIF
 C
       CALL FLSHFO(LUPRI)
