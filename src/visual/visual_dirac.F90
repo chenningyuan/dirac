@@ -154,7 +154,7 @@ contains
         call dmat_ao%scale_elements(2.0d0)
 
       end if
-      if (rsp_info%lao > 0) then
+      if (rsp_info%vectors(ivec)%should_use_lao()) then
         write(*, *) 'Calculating LAO contributions'
       end if
 

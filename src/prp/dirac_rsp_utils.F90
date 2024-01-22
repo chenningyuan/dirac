@@ -54,6 +54,7 @@ module dirac_rsp_utils
     real(8), allocatable  :: values(:,:)
     integer, allocatable  :: orbital_rotation_indices(:,:)
     integer           :: id      = 0
+    integer           :: lao     = 0
     integer           :: nzxope  = 0
     integer           :: nzxopp  = 0
     integer           :: nzxopeq = 0
@@ -86,6 +87,8 @@ module dirac_rsp_utils
     procedure, pass, public :: scatter_to_matrix_q
     procedure, pass, public :: get_ipqtoq
     procedure, pass, public :: get_ihqmat
+    procedure, pass, public :: should_use_lao
+    procedure, pass   :: assign_lao_order
     procedure, pass   :: transfer_gp_data_to_rsp
     procedure, pass   :: allocated_values
     procedure, pass   :: allocated_orbital_rotation_indices
@@ -363,6 +366,7 @@ contains
       rsp_info%vectors(ivec)%trsym  = jtimop1
       rsp_info%vectors(ivec)%ifckop = gp_info%jbtof(jsymop1-1, 1)
       rsp_info%vectors(ivec)%data_is_read = .true.
+      call rsp_info%vectors(ivec)%assign_lao_order()
       call rsp_info%vectors(ivec)%transfer_gp_data_to_rsp(&
                                gp_info%ipqtoq(1:gp_info%nz,jsymop1-1), &
                                gp_info%ihqmat(1:gp_info%nz,ih),   &
@@ -442,6 +446,33 @@ contains
     arr_1d(1:n) = reshape(arr_2d, (/n/)) 
 
   end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine assign_lao_order(self)
+!   gosia fixme this is a temporary solution; needs to be generalized for higher-order LAO derivatives
+    class(response_vector_t), intent(inout):: self
+    character(len=100) :: errmsg
+    if (lao_available(self)) then
+      self%lao = 1
+    else
+      write (errmsg,*) 'WARNING: LAOs not available'
+    end if
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  pure function lao_available(rspvec)
+    class(response_vector_t), intent(in):: rspvec
+    logical:: lao_available
+    lao_available = (rspvec%lab(1:3) == "LAO")
+  end function
+
+! ------------------------------------------------------------------------------
+  pure function should_use_lao(self)
+    class(response_vector_t), intent(in):: self
+    logical:: should_use_lao
+    should_use_lao = (self%lao > 0 .and. lao_available(self))
+  end function
 
 
 ! ------------------------------------------------------------------------------
@@ -561,6 +592,7 @@ contains
     if (self%data_is_read) then
       i = self%id
       write(*,*) 'data on response_vector_t ', i
+      write(*,*) ' lao      =', self%lao
       write(*,*) ' nzxope   =', self%nzxope
       write(*,*) ' nzxopp   =', self%nzxopp
       write(*,*) ' nzxopeq  =', self%nzxopeq
@@ -678,7 +710,6 @@ contains
     else
       self%xlr_skipee = 0
     end if
-
   end subroutine
 
 
@@ -795,6 +826,8 @@ contains
       group = '/result/response/vectors/vec_'//trim(adjustl(ich))
       call lab_read(rsp_file, trim(group)//'/id', &
                    idata=rsp_info%vectors(ivec)%id)
+      call lab_read(rsp_file, trim(group)//'/lao', &
+                   idata=rsp_info%vectors(ivec)%lao)
       call lab_read(rsp_file, trim(group)//'/nzxope', &
                    idata=rsp_info%vectors(ivec)%nzxope)
       call lab_read(rsp_file, trim(group)//'/nzxopp', &
@@ -931,6 +964,8 @@ contains
       group = '/result/response/vectors/vec_'//trim(adjustl(ich))
       call lab_write(rsp_file, trim(group)//'/id', &
                    idata=rsp_info%vectors(ivec)%id)
+      call lab_write(rsp_file, trim(group)//'/lao', &
+                   idata=rsp_info%vectors(ivec)%lao)
       call lab_write(rsp_file, trim(group)//'/nzxope', &
                    idata=rsp_info%vectors(ivec)%nzxope)
       call lab_write(rsp_file, trim(group)//'/nzxopp', &

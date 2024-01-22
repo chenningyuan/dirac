@@ -41,8 +41,8 @@ def compare_txt(fname, fname_ref):
 #test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 #test.run(['rsp_E.inp'], ['h2o.mol'], args='--incmo --outcmo --get="PAMXVC"')
 #test.run(['rsp_B.inp'], ['h2o.mol'], args='--incmo --outcmo --get="PAMXVC TBMO *.h5"')
-#test.run(['rsp_B.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
-#test.run(['rsp_B.inp'], ['h2o.mol'], args='--incmo --outcmo --put="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
+#test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
+#test.run(['rsp_B_useh5.inp'], ['h2o.mol'], args='--incmo --outcmo --put="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
 
 # 2. run legacy:
 #test.run(['vis_3d_legacy.inp'], ['h2o.mol'], args='--incmo --put="PAMXVC TBMO response_helper.txt" --get="*.h5 *.txt plot*"')
@@ -223,6 +223,10 @@ if h5py_available:
     compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
     compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
     compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+
+    compare_with_ref(ftest='j_Bz_lao_rspvec6.h5', fref='result/j_Bz_lao_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
+    compare_with_ref(ftest='j_Bz_lao_rspvec6.h5', fref='result/j_Bz_lao_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
+    compare_with_ref(ftest='j_Bz_lao_rspvec6.h5', fref='result/j_Bz_lao_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
 
 
 
