@@ -244,22 +244,30 @@
 !&&&& MAGNET - magnetic susceptibilities
             DOXLR  = .TRUE.
             MSUSCP = .TRUE.
+            IF (GAUNT) & 
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   105    CONTINUE
 !&&&& NMR parameters:
             DOXLR  = .TRUE.
             SHIELD = .TRUE.
             SPNSPN = .TRUE.
+            IF (GAUNT) &
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   106    CONTINUE
 !&&&& SPIN-S: NMR indirect spin-spin coupling constants:
             DOXLR  = .TRUE.
             SPNSPN = .TRUE.
+            IF (GAUNT) & 
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   107    CONTINUE
 !&&&& SHIELD: NMR shielding constants:
             DOXLR = .TRUE.
             SHIELD = .TRUE.
+            IF (GAUNT) &
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   108    CONTINUE
 !&&&& PRINT: print level
@@ -292,6 +300,8 @@
 !&&&& NSTDIA - nonrel. diamagnetic contribution to nuclear shielding tensor
             NSTDIA   = .TRUE.
             DOEXP = .TRUE.
+            IF (GAUNT) & 
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   115    CONTINUE
 !&&&& ESR parameters
@@ -319,6 +329,8 @@
             DOXLR      = .TRUE.
             PVC_SHIELD = .TRUE.
             IF(NBSYM .GT. 1) CALL QUIT('.PVCSHI only for C1 symmetry')
+            IF (GAUNT) & 
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GOTO 100
   120    CONTINUE
 !&&&& EFN: Electric field at nuclei
@@ -372,12 +384,16 @@
 !&&&& MSTDIA - diamagnetic contribution to the magnetizabilities
             MSUSCDIA = .TRUE.
             DOEXP    = .TRUE.
+            IF (GAUNT) &
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   128    CONTINUE 
 !&&&& PV contribution to spin-spin coupling
             DOXLR        = .TRUE.
             PVC_SPINSPIN = .TRUE.
             IF(NBSYM .GT. 1) CALL QUIT('.PVCSPN only for C1 symmetry')
+            IF (GAUNT) & 
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   129    CONTINUE 
 !&&&& NOPCT - even if DOPCT is .true. (because of default settings) 
@@ -415,18 +431,24 @@
             bxlao  = .true.
             doxlr  = .true.
             london = .true.
+            IF (GAUNT) &
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   136    CONTINUE
 !&&&& BYLAO 
             bylao  = .true.
             doxlr  = .true.
             london = .true.
+            IF (GAUNT) &
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   137    CONTINUE
 !&&&& BZLAO 
             bzlao  = .true.
             doxlr  = .true.
             london = .true.
+            IF (GAUNT) &
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   138    CONTINUE
 !&&&& EFFDEN; calculate effective electronic densities at the nuclei
@@ -444,6 +466,8 @@
             DOXLR  = .TRUE.
             LONDON = .TRUE.
             call set_london_keywords('shiel2')
+            IF (GAUNT) &
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
 !gosia: todo now we have two logical variables: SHIEL2 and shielding_rearrange to indicate the same thing
 ! i will have to fix that...
 #endif
