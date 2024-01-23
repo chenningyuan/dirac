@@ -22,6 +22,7 @@ module visual_dirac
 
   public visual_initialize_and_sync_nodes
   public visual_initialize_data_from_dirac
+  public visual_update_data_this_run
 
   public dirac_dmat_init
 
@@ -38,178 +39,141 @@ module visual_dirac
 contains
 
 ! -----------------------------------------------------------------------------
-  subroutine dirac_dmat_init(wf_order, cmo, &
+  subroutine dirac_dmat_init(mode, cmo, &
                              dmat_ao, dmat_mo, &
+                             wf_order, &
                              rspvec_file, rspvec_id)
-    integer, intent(in) :: wf_order
+    character(*), intent(in) :: mode
     type(cmo_t), intent(in) :: cmo
-    type(dmat_t), optional, intent(inout) :: dmat_ao
-    type(dmat_t), optional, intent(inout) :: dmat_mo
+    type(dmat_t), optional, intent(out) :: dmat_ao
+    type(dmat_t), optional, intent(out) :: dmat_mo
+    integer, optional, intent(in) :: wf_order
     character(*), optional, intent(in) :: rspvec_file
     integer, optional, intent(in) :: rspvec_id
-    type(dmat_t) :: mat
-    type(dmat_t) :: mat_ao
-    type(response_info_t) :: rsp_info
-    real(8), allocatable :: occupation(:)
+
+    type(response_info_t) :: rsp_info ! in dirac_rsp_utils 
+    type(dmat_t) :: tmpmat_ao, tmpmat_mo
     integer :: nao, nmo, nz
     integer :: i, ivec, rspvec_ndim, rspvec_nz, n1
+
+
+    real(8), allocatable :: occupation(:)
     integer :: f_unit
     character(len=:),allocatable :: f_name
     integer :: iq, im, iz, ipqtoq(4), ihqmat(4)
     real(8) :: factor(4)
+!
+!   this is based on how density matrices were set in old VISUAL code;
+!   I group the old code here, so that it is in one place:
+!   * it should now be easier to modify it, e.g., to read density matrices from outside,
+!   * but still, the code is too coupled to other structures (cmo, response, etc.)
 
-    if (wf_order == 0) then
-!     initialize unperturbed density matrix from occupation numbers
+    nao = sum(cmo%n_ao)
+    nmo = sum(cmo%n_mo)
+    nz  = cmo%nz
 
-      nao = sum(cmo%n_ao)
-      nmo = sum(cmo%n_mo)
-      nz  = cmo%nz
+    select case (trim(mode))
+      case ('unperturbed')
 
-!     get orbital string
-      allocate(occupation(nmo))
-      call setup_orbital_string(cmo,occupation)
-
-      mat%mat_dim = nmo
-      mat%mat_nz  = nz
-      call mat%alloc()
-      do i = 1, nmo
-        mat%elements((i-1)*nmo + i) = occupation(i)
-      end do
-
-      if (present(dmat_mo)) then
-        dmat_mo = mat
-      end if
-
-      if (present(dmat_ao)) then
-        dmat_ao%mat_dim = nao
-        dmat_ao%mat_nz  = nz
-        call dmat_ao%alloc()
-        call dmat_transform_mo2ao(cmo, mat, dmat_ao)
-        call dmat_ao%scale_elements(2.0d0)
-      end if
-
-      deallocate(occupation)
-      call mat%erase()
-
-    else if (wf_order == 1) then
-!     construct the perturbed density matrix from rsp vectors on PAMXVC
-!     D = \sum_{\mu\nu} C^\dagger_{\mu p} \kappa_{pq} C_q\nu, 
-!     where \kappa are elements of the LR solution vector
-
-      nao = sum(cmo%n_ao)
-      nmo = sum(cmo%n_mo)
-      nz  = cmo%nz
-
-!     read response data from 'RESPONSE.h5' file
-      if (present(rspvec_file)) then
-        f_name = trim(rspvec_file)
-      else
-        stop
-      end if
-      call rsp_info%read_from_checkpoint(trim(f_name))
-      write(*,*) 'rspvec read from checkpoint'
-      call rsp_info%display()
-
-      if (present(rspvec_id)) then
-        ivec = rspvec_id
-      else
-        stop
-      end if
-
-!     scatter response vector to matrix:
-      mat%mat_dim = nmo
-      mat%mat_nz = nz
-      call mat%alloc()
-      call rsp_info%vectors(ivec)%scatter_to_matrix_q(mat%elements, nmo, nz)
-      !write(*,*) 'rspvec scattered to matrix:'
-      !call mat%display()
-
-      if (present(dmat_mo)) then
-        dmat_mo = mat
-      end if
-
-      if (present(dmat_ao)) then
-        dmat_ao%mat_dim = nao
-        dmat_ao%mat_nz  = nz
-        call dmat_ao%alloc()
-        call construct_perturbed_dmat(dmat_ao%elements,&
-                        mat%elements,&
-                        ivec, &
-                        rsp_info, cmo%coeff)
-        !write(*,*) 'non-symmetrized AO dmat: '
-        !call dmat_ao%display()
-        do iz = 1, nz
-          iq = rsp_info%vectors(ivec)%get_ipqtoq(iz)
-          im = rsp_info%vectors(ivec)%get_ihqmat(iq)
-          if (im .eq. 1) then
-            factor(iz) = 1.0d0
-          else if (im .eq. 2) then
-            factor(iz) =-1.0d0
-          end if
-          factor(1) =-1.0d0
-          factor(2:4) =1.0d0
+!       construct unperturbed density matrix from occupation numbers
+    
+        tmpmat_mo%mat_dim = nmo
+        tmpmat_mo%mat_nz  = nz
+        call tmpmat_mo%alloc()
+        do i = 1, nmo
+          tmpmat_mo%elements((i-1)*nmo + i) = cmo%occupation(i)
         end do
-        call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
-        !write(*,*) 'symmetrized AO dmat: '
-        !call dmat_ao%display()
+    
+        if (present(dmat_mo)) dmat_mo = tmpmat_mo
+    
+        if (present(dmat_ao)) then
+          dmat_ao%mat_dim = nao
+          dmat_ao%mat_nz  = nz
+!         fixme symmetries hardcoded!
+          dmat_ao%irep = 0
+          dmat_ao%ih_sym = 1
+          dmat_ao%tr_sym = 1
+          call dmat_ao%alloc()
+          call dmat_transform_mo2ao(cmo, tmpmat_mo, dmat_ao)
+          call dmat_ao%scale_elements(2.0d0)
+        end if
+    
+        call tmpmat_mo%erase()
 
-        call dmat_ao%scale_elements(2.0d0)
+      case ('xlr')
 
-      end if
+!       construct perturbed density matrix from rsp vectors on PAMXVC
+!       D = \sum_{\mu\nu} C^\dagger_{\mu p} \kappa_{pq} C_q\nu, 
+!       where \kappa are elements of the LR solution vector
 
-      call mat%erase()
+!       read response data from 'RESPONSE.h5' file
+        if (present(rspvec_file)) then
+          f_name = trim(rspvec_file)
+        else
+          stop
+        end if
+        call rsp_info%read_from_checkpoint(trim(f_name))
+     
+        if (present(rspvec_id)) then
+          ivec = rspvec_id
+        else
+          stop
+        end if
 
-      if (rsp_info%vectors(ivec)%should_use_lao()) then
-!       gosia fixme:
-!       now, i'm reusing old code here
-        write(*, *) 'Calculating LAO contributions'
-        call add_lao_to_dmat_ao(cmo,dmat_ao,rsp_info)
-      end if
+!       scatter response vector to matrix:
+        tmpmat_mo%mat_dim = nmo
+        tmpmat_mo%mat_nz = nz
+        call tmpmat_mo%alloc()
+        call rsp_info%vectors(ivec)%scatter_to_matrix_q(tmpmat_mo%elements, nmo, nz)
 
-      call rsp_info%erase()
+!       dmat inherits symmetry of the response vector:
+        !call tmpmat_mo%assign_ih(rsp_info%vectors(ivec)%get_ih_sym())
+        !call tmpmat_mo%assign_tr(rsp_info%vectors(ivec)%get_tr_sym())
+        !call tmpmat_mo%assign_irep(rsp_info%vectors(ivec)%get_irep())
+ 
+        if (present(dmat_mo)) dmat_mo = tmpmat_mo
 
-    end if
+        if (present(dmat_ao)) then
+          dmat_ao%mat_dim = nao
+          dmat_ao%mat_nz  = nz
+          call dmat_ao%alloc()
+!         construct non-symmetrized AO dmat:
+          call construct_perturbed_dmat(dmat_ao%elements,&
+                                        tmpmat_mo%elements,&
+                                        ivec, rsp_info, cmo%coeff)
+          !call symmetrize_mat(dmat_ao%elements)
+          do iz = 1, nz
+            iq = rsp_info%vectors(ivec)%get_ipqtoq(iz)
+            im = rsp_info%vectors(ivec)%get_ihqmat(iq)
+            if (im .eq. 1) then
+              factor(iz) = 1.0d0
+            else if (im .eq. 2) then
+              factor(iz) =-1.0d0
+            end if
+            factor(1) =-1.0d0
+            factor(2:4) =1.0d0
+          end do
+          call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
+          call dmat_ao%scale_elements(2.0d0)
+        end if
+
+        call tmpmat_mo%erase()
+        call rsp_info%erase()
+
+      case ('lao-connection-1')
+
+!        if (rsp_info%vectors(ivec)%should_use_lao()) then
+!!         gosia fixme:
+!!         now, i'm reusing old code here
+!          write(*, *) 'Calculating LAO contributions'
+!          !call add_lao_to_dmat_ao(cmo,dmat_ao,rsp_info)
+!        end if
+
+      case default
+        stop
+    end select
   end subroutine dirac_dmat_init
 
-
-! -----------------------------------------------------------------------------
-  subroutine setup_orbital_string(cmo,occupation)
-!   "dcborb.h" has missing nish(ifsym) and nash(ifsym) information
-#include "dcborb.h"
-    type(cmo_t), intent(in) :: cmo
-    real(8), intent(out):: occupation(:)
-    integer:: i, ifsym, ioff
-
-!   this routine will set up occupation vector
-!   based on**VISUAL
-!            .OCCUPATION
-!   if this is not given, then it will occupy all
-!   "occupied" electrons with 1.0
-
-    occupation = 0.0d0
-
-    ioff = 0
-    do ifsym = 1, cmo%n_fsym
-      ioff = ioff+cmo%n_po(ifsym)
-      if (visual_cfg_use_orbital_string) then
-        do i = 1, (cmo%n_mo(ifsym) - cmo%n_po(ifsym))
-          occupation(ioff+i) = visual_cfg_occupation(i, ifsym)
-        end do
-      else
-        if (nash(ifsym) > 0) then
-          print *, 'ERROR: with open shells you should use .OCCUPATION'
-          print *, '       otherwise occupation will be wrong'
-          print *, '       so we better stop here'
-          stop 1
-        end if
-        do i = 1, nish(ifsym)
-          occupation(ioff+i) = 1.0d0
-        end do
-      end if
-      ioff = cmo%n_mo(ifsym)
-    end do
-
-  end subroutine
 
 ! ------------------------------------------------------------------------------
   subroutine visual_initialize_and_sync_nodes(hello)
@@ -248,6 +212,20 @@ contains
 
 
 ! ------------------------------------------------------------------------------
+  subroutine visual_update_data_this_run(cmo, print_level)
+    type(cmo_t), intent(inout):: cmo
+    integer, intent(in), optional :: print_level
+    logical:: small_component
+
+!   update MO data that was not read from CHECKPOINT:
+    call setup_orbital_string(cmo, &
+          visual_cfg_use_orbital_string,visual_cfg_occupation)
+    call setup_mo_offsets(cmo)
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
   subroutine visual_initialize_data_from_dirac(mol, mo, ao_basis, print_level)
     type(mol_t), intent(out):: mol
     type(cmo_t), intent(out):: mo
@@ -259,23 +237,16 @@ contains
 !
 !   read data from DIRAC's CHECKPOINT file(s) into DTs
 !
-
     group = '/input/molecule/'
     call checkpoint_query(group, dirac_mol)
     if (dirac_mol) then
       call read_mol_from_dirac(mol, group)
-
       if (present(print_level)) then
         if (print_level > 0) then
           write(*, *) 'Molecule data read from DIRAC CHECKPOINT'
           call mol%display
         end if
       end if
-
-      ! todo - move this to a separate subroutine + decide what to save on checkpoint
-      !call write_to_rs_checkpoint('/input/molecule', mol)
-      !if (print_level > 0) &
-      !  write(*, *) 'Molecule data written to DIRAC RS-CHECKPOINT'
     end if
 
     group = '/result/wavefunctions/'
@@ -295,15 +266,15 @@ contains
     group = '/input/aobasis/'
     call checkpoint_query(group, dirac_ao)
     if (dirac_ao) then
-!     gosia fixme (visual_cfg_force_small_ao from visual_cfg.F90)
+!     gosia fixme (visual_cfg_force_small_ao from visual_cfg.F90 not passed)
       small_component = visual_cfg_force_small_ao
       call read_ao_from_dirac(ao_basis, small_component)
-      if (present(print_level)) then
-        if (print_level > 0) then
-          write(*, *) 'AO basis data read from DIRAC CHECKPOINT'
-          call mo%display
-        end if
-      end if
+      !if (present(print_level)) then
+      !  if (print_level > 0) then
+      !    write(*, *) 'AO basis data read from DIRAC CHECKPOINT'
+      !    call ao_basis%display
+      !  end if
+      !end if
     end if
 
     if (dirac_mo .and. dirac_ao) then
@@ -392,7 +363,7 @@ contains
        nmo = n_mo(1)
     end if
     nto = npo+nmo
-    ncoef = nz * sum(n_basis*n_mo)
+    ncoef = nz*nao*nmo
 
     cmo%n_ao = n_basis
     cmo%n_mo = n_mo
@@ -429,7 +400,6 @@ contains
       deallocate(ibeig)
     end if
 
-    ! fill in index values
     allocate(index(nmo))
     do i = 1, nmo
        index(i) = i ! we set the index compatible with the fact that we store all mo's
@@ -437,8 +407,7 @@ contains
     cmo%index    = index(npo+1:nmo)
     deallocate(index)
 
-!   switch to unrestricted spinor picture
-    !call convert_mo_to_complex(cmo)
+    cmo%data_is_read = .true.
 
   end subroutine
 
@@ -455,7 +424,7 @@ contains
     logical:: sym_info
 !
 !   this subroutine is based on how things are done in dirgp.F and exacorr
-!   gosia, 2023/2024
+!   gosia fixme unused now (WIP)
 !
 
     call checkpoint_query ('/result/symmetry',sym_info)
@@ -572,7 +541,8 @@ contains
 !
 !   this subroutine syncs data stored in cmo and mol DTs, 
 !   if any new variable has been added to these DTs, please also add it here
-! ------------------------------------------------------------------------------
+!   fixme: needs an update!
+!
 
     call interface_mpi_bcast(mol%n_atoms,1,irank_master,global_communicator)
 
@@ -605,14 +575,13 @@ contains
     call interface_mpi_bcast(cmo%index,nmo,irank_master,global_communicator)
 
 
-  end subroutine synchronize_data_from_dirac
+  end subroutine
 
 
 ! ------------------------------------------------------------------------------
   subroutine synchronize_dmat(dmat)
     type(dmat_t), intent(inout):: dmat
     integer:: n
-! ------------------------------------------------------------------------------
 
     call interface_mpi_bcast(dmat%mat_dim,1,irank_master,global_communicator)
     call interface_mpi_bcast(dmat%mat_nz,1,irank_master,global_communicator)
@@ -741,10 +710,9 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine dmat_transform_mo2ao(cmo, dmat_mo, dmat_ao)
-
     type(cmo_t), intent(in):: cmo
     type(dmat_t), intent(inout):: dmat_ao
-    type(dmat_t), intent(inout):: dmat_mo
+    type(dmat_t), intent(in):: dmat_mo
     integer:: iprint
     integer:: nao, nmo, nz, nrao, ncao, nrmo, ncmo, irep
     integer:: i2basx(2, 2), i2orbx(2, 2), icmoq(2), ipqtoq(2, 0:7)
@@ -905,19 +873,17 @@ use matrix_defop_old
 use visual_london
     type(response_info_t),intent(in) :: rsp_info
     integer::ivec
-    integer :: nmo, nao, nz, i
+    integer :: nmo, nao, nz, i, mo_ioffs(6)
     type(dmat_t), intent(inout) :: dmat_ao
     type(dmat_t) :: mat_mo, mat_ao
     real(8), allocatable :: occupation(:)
-    type(cmo_t), intent(in) :: cmo
+    type(cmo_t), intent(inout) :: cmo !in
     type(matrix)            :: D_con_mo
+    real(8) :: f(4)
 
     nao = sum(cmo%n_ao)
     nmo = sum(cmo%n_mo)
     nz  = cmo%nz
-
-    allocate(occupation(nmo))
-    call setup_orbital_string(cmo,occupation)
 
     call init_mat(D_con_mo, nmo, nmo)
     D_con_mo%elms = 0.0d0
@@ -928,11 +894,16 @@ use visual_london
     mat_mo%mat_nz = nz
     call mat_mo%alloc()
     mat_mo%elements = D_con_mo%elms
+    call mat_mo%get_dmat_q_mo_sector('pi ', mo_ioffs, cmo%n_mo, cmo%n_fsym)
 
     mat_ao%mat_dim = nao
     mat_ao%mat_nz  = nz
     call mat_ao%alloc()
     call dmat_transform_mo2ao(cmo, mat_mo, mat_ao)
+    f(1:4) = -1.0d0
+    !f(1) = -1.0d0
+    !f(2:4) = 1.0d0
+    call pertdenmat_sym(nao, nz, mat_ao%elements, f)
     !ivec=3
     !    call construct_perturbed_dmat(dmat_ao%elements,&
     !                    mat_ao%elements,&
@@ -941,22 +912,98 @@ use visual_london
     do i = 1, nao*nao*nz
       dmat_ao%elements(i) = dmat_ao%elements(i) + mat_ao%elements(i)
     end do
+        call dmat_ao%scale_elements(2.0d0)
 
     call mat_ao%erase()
     call mat_mo%erase()
     D_con_mo = 0
-
     deallocate(occupation)
+  end subroutine
 
 
+! ------------------------------------------------------------------------------
+  subroutine setup_orbital_string(cmo, &
+                                  use_orbital_string, &
+                                  occupation)
+#include "dcborb.h" !nish, nash
+#include "maxorb.h" !mxprim
+    type(cmo_t), intent(inout) :: cmo
+    logical, intent(in) :: use_orbital_string
+    real(8), intent(in) :: occupation(mxprim, 2)
+    integer:: i, ifsym, ioff
+
+!   this routine will set up occupation vector
+!   based on**VISUAL
+!            .OCCUPATION
+!   if this is not given, then it will occupy all
+!   "occupied" electrons with 1.0
+
+    if (.not. cmo%data_is_read) return
+    if (.not. cmo%allocated_occupation()) return
+
+    cmo%occupation = 0.0d0
+
+    ioff = 0
+    do ifsym = 1, cmo%n_fsym
+      ioff = ioff+cmo%n_po(ifsym)
+      if (use_orbital_string) then
+        do i = 1, (cmo%n_mo(ifsym) - cmo%n_po(ifsym))
+          cmo%occupation(ioff+i) = occupation(i, ifsym)
+        end do
+      else
+        if (nash(ifsym) > 0) then
+          print *, 'ERROR: with open shells you should use .OCCUPATION'
+          print *, '       otherwise occupation will be wrong'
+          print *, '       so we better stop here'
+          stop 1
+        end if
+        do i = 1, nish(ifsym)
+          cmo%occupation(ioff+i) = 1.0d0
+        end do
+      end if
+      ioff = cmo%n_mo(ifsym)
+      if (cmo%n_ip(ifsym) == 0) then
+        cmo%n_ip(ifsym) = nish(ifsym)
+      end if
+    end do
+
+    ! todo: most of cmo data is first read from checkpoint,
+    ! but it lacks information on n_ip and occupation, which are set here;
+    ! this is to catch any inconsistency: 
+    !call check_cmo_consistency(cmo)
+    cmo%data_is_verified = .true.
 
   end subroutine
 
 
+! ------------------------------------------------------------------------------
+  subroutine setup_mo_offsets(cmo)
+    type(cmo_t), intent(inout) :: cmo
+    integer:: i, ifsym, ioff
+!
+!   order of offsets for MOs:
+!   ioffs(1) - start of gerade secondary negative energy
+!   ioffs(2) - start of gerade inactive positive energy
+!   ioffs(3) - start of gerade secondary positive energy
+!   ioffs(4) - start of ungerade secondary negative energy
+!   ioffs(5) - start of ungerade inactive positive energy
+!   ioffs(6) - start of ungerade secondary positive energy
+!
 
+    if (.not. cmo%data_is_verified) return
 
+    cmo%ioffs = 0
 
+    cmo%ioffs(1) = 1
+    cmo%ioffs(2) = cmo%ioffs(1) + cmo%n_po(1)
+    cmo%ioffs(3) = cmo%ioffs(2) + cmo%n_ip(1)
 
+    if (cmo%n_fsym == 2) then
+      cmo%ioffs(4) = 1 + cmo%n_mo(1)
+      cmo%ioffs(5) = cmo%ioffs(4) + cmo%n_po(2)
+      cmo%ioffs(6) = cmo%ioffs(5) + cmo%n_ip(2)
+    end if
 
+  end subroutine
 
 end module

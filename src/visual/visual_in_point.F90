@@ -57,14 +57,13 @@ module visual_in_point
 contains
 
 ! ------------------------------------------------------------------------------
-  subroutine get_quantity_in_point_refactored(dmat_0,dmat,&
+  subroutine get_quantity_in_point_refactored(dmat,&
                                               ao,buffer,&
                                               grid_function,&
                                               grid_function_values,&
                                               px,py,pz,&
                                               ipoint)
 
-    type(dmat_t), intent(in):: dmat_0
     type(dmat_t), intent(in):: dmat
     real(8), intent(in):: ao(*)
     real(8), intent(in):: buffer(*)
@@ -86,9 +85,9 @@ contains
      !pz = grid%points(3, ipoint)
      !todo: call grid%points%get_cartesian_coords()
 
-    mat_dim = dmat_0%mat_dim
-    mat_nz  = dmat_0%mat_nz
-    mat_irep= 0
+    mat_dim = dmat%mat_dim
+    mat_nz  = dmat%mat_nz
+    mat_irep= dmat%irep
 
     select case (grid_function%name)
 
@@ -98,23 +97,23 @@ contains
         call get_gamma5(v1,       &
                         mat_irep, &
                         mat_dim,  &
-                        dmat_0%elements,   &
+                        dmat%elements,   &
                         buffer,   &
                         ao)
         grid_function_values(1:1,ipoint:ipoint) = v1
 
-      case ('density')
+      case ('ed')
 !       electron density
         v1 = 0.0d0
         call get_n(v1,       &
                    mat_irep, &
                    mat_dim,  &
-                   dmat_0%elements,   &
+                   dmat%elements,   &
                    buffer,   &
                    ao)
         grid_function_values(1:1,ipoint:ipoint) = v1
 
-      case ('density_gradient')
+      case ('ed_gradient')
 !       electron density gradient
         v1 = 0.0d0
         v2 = 0.0d0
@@ -122,16 +121,16 @@ contains
                     v2,      &
                     mat_irep,&
                     mat_dim, &
-                    dmat_0%elements,   &
+                    dmat%elements,   &
                     buffer,  &
                     ao)               
         grid_function_values(1:1,ipoint:ipoint) = v2(1)
         grid_function_values(2:2,ipoint:ipoint) = v2(2)
         grid_function_values(3:3,ipoint:ipoint) = v2(3)
 
-      case ('density_hessian')
+      case ('ed_hessian')
 !       gosia fixme:
-!       density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!       electron density Hessian is implemented for hermitian density matrices (such as dmat)
 !       todo: add a warning
         v1 = 0.0d0
         v2 = 0.0d0
@@ -141,7 +140,7 @@ contains
                     v3,       &
                     mat_irep, &
                     mat_dim,  &
-                    dmat_0%elements,   &
+                    dmat%elements,   &
                     buffer,   &
                     ao)               
         grid_function_values(1:1,ipoint:ipoint) = v3(1, 1)   ! xx
@@ -162,7 +161,7 @@ contains
                     v2,       &
                     mat_irep, &
                     mat_dim,  &
-                    dmat_0%elements,   &
+                    dmat%elements,   &
                     buffer,   &
                     ao)
 
@@ -176,7 +175,7 @@ contains
 !       of the electron density
 !
 !       gosia fixme:
-!       density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!       electron density Hessian is implemented for hermitian density matrices (such as dmat)
 !       todo: add a warning
         v1 = 0.0d0
         v2 = 0.0d0
@@ -186,7 +185,7 @@ contains
                     v3,       &
                     mat_irep, &
                     mat_dim,  &
-                    dmat_0%elements,   &
+                    dmat%elements,   &
                     buffer,   &
                     ao)               
         eigenvalues  = 0.0d0
@@ -233,7 +232,7 @@ contains
                     v3,       &
                     mat_irep, &
                     mat_dim,  &
-                    dmat_0%elements,   &
+                    dmat%elements,   &
                     buffer,   &
                     ao)               
         eigenvectors = 1.0d0
@@ -253,14 +252,14 @@ contains
         call get_kin_tau(tau,      &
                          mat_irep, &
                          mat_dim,  &
-                         dmat_0%elements,&
+                         dmat%elements,&
                          buffer,   &
                          ao)
         call get_gn(v1,&
                     v2,&
                     mat_irep, &
                     mat_dim,  &
-                    dmat_0%elements,&
+                    dmat%elements,&
                     buffer,  &
                     ao)
 
@@ -280,7 +279,7 @@ contains
                      visual_cfg_cval,&
                      mat_irep, &
                      mat_dim,  &
-                     dmat_0%elements,&
+                     dmat%elements,&
                      buffer,   &
                      ao)
 
@@ -294,7 +293,7 @@ contains
                         visual_cfg_cval,&
                         mat_irep, &
                         mat_dim,  &
-                        dmat_0%elements,&
+                        dmat%elements,&
                         buffer,   &
                         ao)
 
@@ -308,7 +307,7 @@ contains
                         visual_cfg_cval,&
                         mat_irep, &
                         mat_dim,  &
-                        dmat_0%elements,&
+                        dmat%elements,&
                         buffer,   &
                         ao)
 
@@ -321,7 +320,7 @@ contains
         call get_kin_tau(v1,       &
                          mat_irep, &
                          mat_dim,  &
-                         dmat_0%elements,&
+                         dmat%elements,&
                          buffer,   &
                          ao)
 
@@ -334,7 +333,7 @@ contains
         call get_kin_lap(v1,       &
                          mat_irep, &
                          mat_dim,  &
-                         dmat_0%elements,&
+                         dmat%elements,&
                          buffer,   &
                          ao)
 
@@ -347,7 +346,7 @@ contains
         call get_kin_tau(v1,       &
                          mat_irep, &
                          mat_dim,  &
-                         dmat_0%elements,&
+                         dmat%elements,&
                          buffer,   &
                          ao)
  
@@ -356,7 +355,7 @@ contains
         call get_kin_lap(v1,       &
                          mat_irep, &
                          mat_dim,  &
-                         dmat_0%elements,&
+                         dmat%elements,&
                          buffer,   &
                          ao)
 
@@ -369,9 +368,9 @@ contains
         call get_s(v2,       &
                    mat_irep, &
                    mat_dim,  &
-                   dmat_0%elements,&
+                   dmat%elements,&
                    buffer,   &
-                   ao,r=(/px, py, pz/))
+                   ao)
         grid_function_values(1:1,ipoint:ipoint) = v2(1)
         grid_function_values(2:2,ipoint:ipoint) = v2(2)
         grid_function_values(3:3,ipoint:ipoint) = v2(3)
@@ -384,7 +383,7 @@ contains
                     v3,       &
                     mat_irep, &
                     mat_dim,  &
-                    dmat_0%elements,&
+                    dmat%elements,&
                     buffer,   &
                     ao)
         grid_function_values(1:1,ipoint:ipoint) = v3(1,1) + v3(2,2) + v3(3,3)
@@ -397,7 +396,7 @@ contains
                     v3,       &
                     mat_irep, &
                     mat_dim,  &
-                    dmat_0%elements,&
+                    dmat%elements,&
                     buffer,   &
                     ao)
         grid_function_values(1:1,ipoint:ipoint) = -v3(2,3) + v3(3,2)
@@ -411,7 +410,6 @@ contains
                    cval,     &
                    mat_irep, &
                    mat_dim,  &
-                   !dmat_0%elements,&
                    dmat%elements,&
                    buffer,   &
                    ao)

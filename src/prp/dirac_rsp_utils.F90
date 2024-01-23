@@ -49,7 +49,7 @@ module dirac_rsp_utils
 
   type response_vector_t
     private
-    ! --- these are variables for each response vector --- !
+    ! --- variables for a single response vector --- !
     character(len=:), allocatable :: desc
     real(8), allocatable  :: values(:,:)
     integer, allocatable  :: orbital_rotation_indices(:,:)
@@ -87,6 +87,9 @@ module dirac_rsp_utils
     procedure, pass, public :: scatter_to_matrix_q
     procedure, pass, public :: get_ipqtoq
     procedure, pass, public :: get_ihqmat
+    procedure, pass, public :: get_ih_sym
+    procedure, pass, public :: get_tr_sym
+    procedure, pass, public :: get_irep
     procedure, pass, public :: should_use_lao
     procedure, pass   :: assign_lao_order
     procedure, pass   :: transfer_gp_data_to_rsp
@@ -106,7 +109,7 @@ module dirac_rsp_utils
 
   type response_info_t
     private
-    ! --- these are general variables used in linear response --- !
+    ! --- general variables used in linear response --- !
     integer                     :: nr_rsp_vectors     = 0       ! total number of response vectors (as read from/written to PAMXVC file)
     integer                     :: nr_rsp_vectors_ee  = 0       ! total number of response vectors corresponding to e-e orbital rotations
     integer                     :: nr_rsp_vectors_ep  = 0       ! total number of response vectors corresponding to e-p orbital rotations
@@ -1039,6 +1042,44 @@ contains
     get_ipqtoq = self%ipqtoq(iz)
   end function
 
+
+! ------------------------------------------------------------------------------
+  function get_ih_sym(self)
+    class(response_vector_t), intent(in) :: self
+    integer :: get_ih_sym
+    if (self%data_is_read) then
+      get_ih_sym = self%ih
+    else
+      print *, 'response_vector data is not read. get_ih_sym unknown. stop'
+      stop
+    end if
+  end function
+
+
+! ------------------------------------------------------------------------------
+  function get_tr_sym(self)
+    class(response_vector_t), intent(in) :: self
+    integer :: get_tr_sym
+    if (self%data_is_read) then
+      get_tr_sym = self%trsym
+    else
+      print *, 'response_vector data is not read. get_tr_sym unknown. stop'
+      stop
+    end if
+  end function
+
+
+! ------------------------------------------------------------------------------
+  function get_irep(self)
+    class(response_vector_t), intent(in) :: self
+    integer :: get_irep
+    if (self%data_is_read) then
+      get_irep = self%irep
+    else
+      print *, 'response_vector data is not read. get_irep unknown. stop'
+      stop
+    end if
+  end function
 
 ! ------------------------------------------------------------------------------
   subroutine transfer_gp_data_to_rsp(self, ipqtoq, ihqmat, spinfr)

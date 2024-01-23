@@ -30,27 +30,34 @@ module visual_datatypes
     private
     integer, public:: n_ao(2) = 0               ! number of AOs in each fermion symmetry
     integer, public:: n_mo(2) = 0               ! number of all (positronic+electronic) MOs in each fermion symmetry
+    integer, public:: n_ip(2) = 0               ! number of inactive positive energy MOs in each fermion symmetry
     integer, public:: n_po(2) = 0               ! number of positronic MOs in each fermion symmetry
     integer, public:: n_fsym  = 1               ! Number of fermion symmetries (no inversion 1, inversion 2); default=1
     integer, public:: nz   = 4                  ! number of quaternion units; default=4
     real(8), public:: total_energy              ! total SCF energy, as read from DIRAC CHECKPOINT
-    real(8), public, pointer:: energy(:)        ! orbital energies, as read from DIRAC CHECKPOINT
-    real(8), public, pointer:: coeff(:)         ! MO coefficients
-    real(8), public, pointer:: coeff_q(:,:,:)   ! MO coefficients in quaternion representation, i.e., coeff(sum(n_ao),sum(n_mo),nz)
-    integer, public, pointer:: symmetry(:)      ! additional symmetry label; used in spinfree
-    integer, public, pointer:: index(:)         ! index of the spinor for this fermion symmetry
+    real(8), allocatable, public:: energy(:)        ! orbital energies, as read from DIRAC CHECKPOINT
+    real(8), allocatable, public:: coeff(:)         ! MO coefficients
+    real(8), allocatable, public:: coeff_q(:,:,:)   ! MO coefficients in quaternion representation, i.e., coeff(sum(n_ao),sum(n_mo),nz)
+    integer, allocatable, public:: symmetry(:)      ! additional symmetry label; used in spinfree
+    integer, allocatable, public:: index(:)         ! index of the spinor for this fermion symmetry
+    real(8), allocatable, public:: occupation(:)    ! occupation vector
+    integer, public :: ioffs(6)                 ! MO offsets
+    logical, public :: data_is_read  = .false.
+    logical, public :: data_is_verified  = .false.
   contains
     private
+    procedure, pass, public:: allocated_energy
+    procedure, pass, public:: allocated_coeff
+    procedure, pass, public:: allocated_coeff_q
+    procedure, pass, public:: allocated_symmetry
+    procedure, pass, public:: allocated_index
+    procedure, pass, public:: allocated_occupation
     procedure, pass, public:: alloc_all => allocate_cmo_all
-    procedure, pass, public:: associated_cmo_energy
-    procedure, pass, public:: associated_cmo_coeff
-    procedure, pass, public:: associated_cmo_coeff_q
-    procedure, pass, public:: associated_cmo_symmetry
-    procedure, pass, public:: associated_cmo_index
     procedure, pass, public:: erase   => erase_cmo
     procedure, pass, public:: display => display_cmo
     procedure, pass, public:: reshape_to_q => reshape_cmo_to_q
     procedure, pass, public:: reshape_from_q => reshape_cmo_from_q
+    procedure, pass, public:: get_cmo_q_sector
   end type cmo_t
 
   type:: rs_input_t
@@ -159,70 +166,90 @@ module visual_datatypes
 
 contains
 
-  pure function associated_cmo_energy(self)
+! ------------------------------------------------------------------------------
+  pure function allocated_energy(self)
     class(cmo_t), intent(in):: self
-    logical:: associated_cmo_energy
-    associated_cmo_energy = associated(self%energy)
+    logical:: allocated_energy
+    allocated_energy = allocated(self%energy)
   end function
 
-  pure function associated_cmo_coeff(self)
+! ------------------------------------------------------------------------------
+  pure function allocated_coeff(self)
     class(cmo_t), intent(in):: self
-    logical:: associated_cmo_coeff
-    associated_cmo_coeff = associated(self%coeff)
+    logical:: allocated_coeff
+    allocated_coeff = allocated(self%coeff)
   end function
 
-  pure function associated_cmo_coeff_q(self)
+! ------------------------------------------------------------------------------
+  pure function allocated_coeff_q(self)
     class(cmo_t), intent(in):: self
-    logical:: associated_cmo_coeff_q
-    associated_cmo_coeff_q = associated(self%coeff_q)
+    logical:: allocated_coeff_q
+    allocated_coeff_q = allocated(self%coeff_q)
   end function
 
-  pure function associated_cmo_symmetry(self)
+! ------------------------------------------------------------------------------
+  pure function allocated_symmetry(self)
     class(cmo_t), intent(in):: self
-    logical:: associated_cmo_symmetry
-    associated_cmo_symmetry = associated(self%symmetry)
+    logical:: allocated_symmetry
+    allocated_symmetry = allocated(self%symmetry)
   end function
 
-  pure function associated_cmo_index(self)
+! ------------------------------------------------------------------------------
+  pure function allocated_index(self)
     class(cmo_t), intent(in):: self
-    logical:: associated_cmo_index
-    associated_cmo_index = associated(self%index)
+    logical:: allocated_index
+    allocated_index = allocated(self%index)
   end function
 
+! ------------------------------------------------------------------------------
+  pure function allocated_occupation(self)
+    class(cmo_t), intent(in):: self
+    logical:: allocated_occupation
+    allocated_occupation = allocated(self%occupation)
+  end function
+
+
+! ------------------------------------------------------------------------------
   subroutine erase_cmo(self)
     class(cmo_t), intent(out):: self
   end subroutine
 
+! ------------------------------------------------------------------------------
   pure function allocated_points(self)
     class(grid_t), intent(in):: self
     logical:: allocated_points
     allocated_points = allocated(self%points)
   end function
 
+! ------------------------------------------------------------------------------
   pure function allocated_values(self)
     class(grid_function_t), intent(in):: self
     logical:: allocated_values
     allocated_values = allocated(self%values)
   end function
 
+! ------------------------------------------------------------------------------
   pure function allocated_grids(self)
     class(rs_input_t), intent(in):: self
     logical:: allocated_grids
     allocated_grids = allocated(self%grids)
   end function
 
+! ------------------------------------------------------------------------------
   pure function allocated_grid_functions(self)
     class(rs_input_t), intent(in):: self
     logical:: allocated_grid_functions
     allocated_grid_functions = allocated(self%grid_functions)
   end function
 
+! ------------------------------------------------------------------------------
   pure function get_ndim(self)
     class(grid_function_t), intent(in):: self
     integer:: get_ndim
     get_ndim = 3**(self%tensor_order)
   end function
 
+! ------------------------------------------------------------------------------
   function get_npoints(self, grid)
     class(grid_function_t), intent(in):: self
     type(grid_t), intent(in):: grid
@@ -231,40 +258,48 @@ contains
     get_npoints = grid%nr_points_total
   end function
 
+! ------------------------------------------------------------------------------
   pure function rs_label_in_use(self)
     class(rs_label_t), intent(in):: self
     logical:: rs_label_in_use
     rs_label_in_use = (len(self%name) > 0)
   end function
 
+! ------------------------------------------------------------------------------
   pure function mol_in_use(self)
     class(mol_t), intent(in):: self
     logical:: mol_in_use
     mol_in_use = ((self%n_atoms) > 0)
   end function
 
+! ------------------------------------------------------------------------------
   pure function assigned_to_grid(self)
     class(grid_function_t), intent(in):: self
     logical:: assigned_to_grid
     assigned_to_grid = (self%id_assigned_grid > 0)
   end function
 
+! ------------------------------------------------------------------------------
   subroutine erase_rs_input(self)
     class(rs_input_t), intent(out):: self
   end subroutine
 
+! ------------------------------------------------------------------------------
   subroutine erase_mol(self)
     class(mol_t), intent(out):: self
   end subroutine
 
+! ------------------------------------------------------------------------------
   subroutine erase_grid(self)
     class(grid_t), intent(out):: self
   end subroutine
 
+! ------------------------------------------------------------------------------
   subroutine erase_grid_function(self)
     class(grid_function_t), intent(out):: self
   end subroutine
 
+! ------------------------------------------------------------------------------
   function get_coord(self, id)
     class(grid_t), target, intent(in):: self
     integer, intent(in):: id
@@ -277,6 +312,7 @@ contains
     get_coord(1:self%nr_points_total)  => self%points(id, 1:self%nr_points_total)
   end function
 
+! ------------------------------------------------------------------------------
   function get_coord_label(self, id)
     class(grid_t), intent(in):: self
     integer, intent(in):: id
@@ -292,12 +328,13 @@ contains
     end if
   end function
 
+! ------------------------------------------------------------------------------
   subroutine reshape_cmo_to_q(self)
     class(cmo_t), intent(inout):: self
     integer :: nao,npo,nmo,nz
 
-    if (.not. self%associated_cmo_coeff() .and.&
-        .not. self%associated_cmo_coeff_q()) return
+    if (.not. self%allocated_coeff() .and.&
+        .not. self%allocated_coeff_q()) return
 
     nao = sum(self%n_ao)
     nmo = sum(self%n_mo)
@@ -308,12 +345,13 @@ contains
   end subroutine
 
 
+! ------------------------------------------------------------------------------
   subroutine reshape_cmo_from_q(self)
     class(cmo_t), intent(inout):: self
     integer :: nao,nmo,nz,ncoeff
 
-    if (.not. self%associated_cmo_coeff() .and.&
-        .not. self%associated_cmo_coeff_q()) return
+    if (.not. self%allocated_coeff() .and.&
+        .not. self%allocated_coeff_q()) return
 
     nao = sum(self%n_ao)
     nmo = sum(self%n_mo)
@@ -326,44 +364,45 @@ contains
 
 
 
+! ------------------------------------------------------------------------------
   subroutine allocate_cmo_all(self)
     class(cmo_t), intent(inout):: self
     integer :: n, m
     integer :: nao,nmo,nz,ncoeff
 
-    if (self%associated_cmo_energy()   .or.&
-        self%associated_cmo_symmetry() .or.&
-        self%associated_cmo_index()    .or.&
-        self%associated_cmo_coeff()    .or.&
-        self%associated_cmo_coeff_q()) return
+    if (self%allocated_energy()   .or.&
+        self%allocated_symmetry() .or.&
+        self%allocated_index()    .or.&
+        self%allocated_coeff()    .or.&
+        self%allocated_coeff_q()    .or.&
+        self%allocated_occupation()) return
 
     nao = sum(self%n_ao)
     nmo = sum(self%n_mo)
     nz  = self%nz
     ncoeff = nmo*nao*nz
 
-    nullify(self%energy)
     allocate(self%energy(nmo))
     self%energy(1:nmo) = 0.0d0
 
-    nullify(self%coeff)
     allocate(self%coeff(ncoeff))
     self%coeff(1:ncoeff) = 0.0d0
 
-    nullify(self%coeff_q)
     allocate(self%coeff_q(nao,nmo,nz))
     self%coeff_q(1:nao,1:nmo,1:nz) = 0.0d0
 
-    nullify(self%symmetry)
     allocate(self%symmetry(nmo))
     self%symmetry(1:nmo) = 0
 
-    nullify(self%index)
     allocate(self%index(nmo))
     self%index(1:nmo) = 0
+
+    allocate(self%occupation(nmo))
+    self%occupation(1:nmo) = 0.0d0
   end subroutine
 
 
+! ------------------------------------------------------------------------------
   subroutine display_cmo(self)
     class(cmo_t), intent(in):: self
     integer:: nao,nmo,nz,ncoeff
@@ -377,19 +416,21 @@ contains
     write(*, *) ' CMO:'
     write(*, *) 'n_ao =         ', self%n_ao
     write(*, *) 'n_mo =         ', self%n_mo
+    write(*, *) 'n_ip =         ', self%n_ip
     write(*, *) 'n_po =         ', self%n_po
     write(*, *) 'n_fsym =       ', self%n_fsym
     write(*, *) 'nz   =         ', self%nz
     write(*, *) 'total_energy = ', self%total_energy
-    if (self%associated_cmo_energy())   write(*,*) 'energy   = ', (self%energy(i), i=1,nmo)
-    if (self%associated_cmo_symmetry()) write(*,*) 'symmetry = ', (self%symmetry(i), i=1,nmo)
-    if (self%associated_cmo_index())    write(*,*) 'index    = ', (self%index(i), i=1,nmo)
-    if (self%associated_cmo_coeff()) then
+    if (self%allocated_energy())   write(*,*) 'energy   = ', (self%energy(i), i=1,nmo)
+    if (self%allocated_symmetry()) write(*,*) 'symmetry = ', (self%symmetry(i), i=1,nmo)
+    if (self%allocated_index())    write(*,*) 'index    = ', (self%index(i), i=1,nmo)
+    if (self%allocated_occupation())   write(*,*) 'occupation = ', (self%occupation(i), i=1,nmo)
+    if (self%allocated_coeff()) then
       do i = 1, ncoeff
         write(*, '(a,i6,es16.8e2)') 'coeff(i) = ', i, self%coeff(i)
       end do
     end if
-    if (self%associated_cmo_coeff_q()) then
+    if (self%allocated_coeff_q()) then
       do k = 1, nz
         do j = 1, nmo
           do i = 1, nao
@@ -402,6 +443,7 @@ contains
   end subroutine
 
 
+! ------------------------------------------------------------------------------
   subroutine display_mol(self)
     class(mol_t), intent(in):: self
     integer:: i, j
@@ -417,6 +459,7 @@ contains
    end subroutine
 
 
+! ------------------------------------------------------------------------------
   subroutine display_rs_setup(self)
     class(rs_input_t), intent(in):: self
     write(*, *)
@@ -428,6 +471,7 @@ contains
     write(*, *)
    end subroutine
 
+! ------------------------------------------------------------------------------
   subroutine display_grid(self,my_rank)
     class(grid_t), intent(in):: self
     integer, intent(in), optional:: my_rank
@@ -485,6 +529,7 @@ contains
     write(*, *)
    end subroutine
 
+! ------------------------------------------------------------------------------
   subroutine display_grid_function(self,my_rank)
     class(grid_function_t), intent(in):: self
     integer, intent(in), optional:: my_rank
@@ -535,6 +580,7 @@ contains
     write(*, *)
   end subroutine
 
+! ------------------------------------------------------------------------------
   subroutine display_grid_points(self,my_rank)
     class(grid_t), intent(in):: self
     integer, intent(in), optional:: my_rank
@@ -557,6 +603,7 @@ contains
     end if
   end subroutine
 
+! ------------------------------------------------------------------------------
   subroutine print_rs_2d(array, n, m, my_rank)
     real(8), intent(in):: array(n, m)
     integer, intent(in):: n, m
@@ -577,5 +624,26 @@ contains
       end do
     end if
   end subroutine
+
+
+
+
+
+! ------------------------------------------------------------------------------
+  subroutine get_cmo_q_sector(self, sector, ioffs)
+    class(cmo_t), intent(inout):: self
+    character(2), intent(in):: sector
+    integer, intent(in):: ioffs(6)
+    integer:: ns(2), pi(2), ps(2), n_mo(2)
+    integer:: i,j,isym,iz
+!
+!   return cmo with all elements zeroed-out
+!   except the ones defined by sector
+!
+
+  end subroutine
+
+
+
 
 end module

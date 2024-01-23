@@ -330,28 +330,22 @@ contains
                     mat_dim, &
                     dmat,    &
                     buffer,  &
-                    ao,r)
+                    ao)
    
 !     --------------------------------------------------------------------------
       real(8), intent(out):: s(3)
       integer, intent(in)  :: irep
       integer, intent(in)  :: mat_dim
       real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-      real(8), intent(in)  :: buffer(mat_dim)
+      real(8), intent(in)  :: buffer(*)
       real(8), intent(in)  :: ao(*)
-      real(8), intent(in),optional:: r(3)
 !     --------------------------------------------------------------------------
       integer              :: nr1, nr2, st1, st2, iblock, jxyz
       real(8), external    :: ddot
-      integer:: i
 !     --------------------------------------------------------------------------
    
       s = 0.0d0
       do jxyz = jxyz_start, 3
-      !write(*, '(a,4es16.8e2)') 'BUBA: ',dmat(1,1,iq(jxyz)),dmat(41,41,iq(jxyz)),&
-      !                                   dmat(42,42,iq(jxyz)),dmat(147,147,iq(jxyz))
-
-      if (present(r)) write(*, '(a,7es28.14e2)') 'BUBA: ',r(1),r(2),r(3),ao(1),ao(41),ao(42),ao(147)
          do iblock = 1, nr_ao_blocks
             nr1 = ao_block_nr(iblock)
             st1 = ao_block_start(iblock)
@@ -359,8 +353,6 @@ contains
             st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
             if ((nr1 < 1) .or. (nr2 < 1)) cycle
      
-      !write(*, '(a,9i4)') 'BUBA: ',jxyz,jxyz_start,nr_ao_blocks,nr1,st1,nr2,st2,mat_dim,iq(jxyz)
-
             call dgemv('N',                      &
                        nr1,                      &
                        nr2,                      &
@@ -376,7 +368,6 @@ contains
             s(jxyz) = s(jxyz) &
                     + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
          end do
-      !write(*, '(a,2i4,3es16.8e2)') 'BUBA: ', jxyz,iq(jxyz),dmat(st1, st2, iq(jxyz)),ao(st2),s(jxyz)
       end do
    
    end subroutine

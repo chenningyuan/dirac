@@ -38,10 +38,10 @@ def compare_txt(fname, fname_ref):
 
 
 # 1. prepare
-#test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
+test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 #test.run(['rsp_E.inp'], ['h2o.mol'], args='--incmo --outcmo --get="PAMXVC"')
 #test.run(['rsp_B.inp'], ['h2o.mol'], args='--incmo --outcmo --get="PAMXVC TBMO *.h5"')
-#test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
+test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
 #test.run(['rsp_B_useh5.inp'], ['h2o.mol'], args='--incmo --outcmo --put="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
 
 # 2. run legacy:
@@ -150,24 +150,24 @@ if h5py_available:
                 sys.stdout.write('Error! Different array data on hdf5')
 
 
-    #compare_with_ref(ftest='density.h5', fref='result/density.h5', typ='single', gf_name='density')
-    #compare_with_ref(ftest='density.h5', fref='result/density.h5', typ='array',  gf_name='density', gf_test_key='t0_icomp_1')
+    #compare_with_ref(ftest='ed.h5', fref='result/ed.h5', typ='single', gf_name='ed')
+    #compare_with_ref(ftest='ed.h5', fref='result/ed.h5', typ='array',  gf_name='ed', gf_test_key='t0_icomp_1')
 
-    #compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='single', gf_name='density_gradient')
-    #compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='array',  gf_name='density_gradient', gf_test_key='t1_icomp_1')
-    #compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='array',  gf_name='density_gradient', gf_test_key='t1_icomp_2')
-    #compare_with_ref(ftest='density_gradient.h5', fref='result/density_gradient.h5', typ='array',  gf_name='density_gradient', gf_test_key='t1_icomp_3')
+    #compare_with_ref(ftest='ed_gradient.h5', fref='result/ed_gradient.h5', typ='single', gf_name='ed_gradient')
+    #compare_with_ref(ftest='ed_gradient.h5', fref='result/ed_gradient.h5', typ='array',  gf_name='ed_gradient', gf_test_key='t1_icomp_1')
+    #compare_with_ref(ftest='ed_gradient.h5', fref='result/ed_gradient.h5', typ='array',  gf_name='ed_gradient', gf_test_key='t1_icomp_2')
+    #compare_with_ref(ftest='ed_gradient.h5', fref='result/ed_gradient.h5', typ='array',  gf_name='ed_gradient', gf_test_key='t1_icomp_3')
 
-    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='single', gf_name='density_hessian')
-    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_1')
-    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_2')
-    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_3')
-    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_4')
-    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_5')
-    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_6')
-    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_7')
-    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_8')
-    #compare_with_ref(ftest='density_hessian.h5', fref='result/density_hessian.h5', typ='array',  gf_name='density_hessian', gf_test_key='t2_icomp_9')
+    #compare_with_ref(ftest='ed_hessian.h5', fref='result/ed_hessian.h5', typ='single', gf_name='ed_hessian')
+    #compare_with_ref(ftest='ed_hessian.h5', fref='result/ed_hessian.h5', typ='array',  gf_name='ed_hessian', gf_test_key='t2_icomp_1')
+    #compare_with_ref(ftest='ed_hessian.h5', fref='result/ed_hessian.h5', typ='array',  gf_name='ed_hessian', gf_test_key='t2_icomp_2')
+    #compare_with_ref(ftest='ed_hessian.h5', fref='result/ed_hessian.h5', typ='array',  gf_name='ed_hessian', gf_test_key='t2_icomp_3')
+    #compare_with_ref(ftest='ed_hessian.h5', fref='result/ed_hessian.h5', typ='array',  gf_name='ed_hessian', gf_test_key='t2_icomp_4')
+    #compare_with_ref(ftest='ed_hessian.h5', fref='result/ed_hessian.h5', typ='array',  gf_name='ed_hessian', gf_test_key='t2_icomp_5')
+    #compare_with_ref(ftest='ed_hessian.h5', fref='result/ed_hessian.h5', typ='array',  gf_name='ed_hessian', gf_test_key='t2_icomp_6')
+    #compare_with_ref(ftest='ed_hessian.h5', fref='result/ed_hessian.h5', typ='array',  gf_name='ed_hessian', gf_test_key='t2_icomp_7')
+    #compare_with_ref(ftest='ed_hessian.h5', fref='result/ed_hessian.h5', typ='array',  gf_name='ed_hessian', gf_test_key='t2_icomp_8')
+    #compare_with_ref(ftest='ed_hessian.h5', fref='result/ed_hessian.h5', typ='array',  gf_name='ed_hessian', gf_test_key='t2_icomp_9')
 
     #compare_with_ref(ftest='rdg.h5', fref='result/rdg.h5', typ='single', gf_name='rdg')
     #compare_with_ref(ftest='rdg.h5', fref='result/rdg.h5', typ='array',  gf_name='rdg', gf_test_key='t0_icomp_1')

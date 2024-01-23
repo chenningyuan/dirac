@@ -127,20 +127,18 @@ contains
 
     walltime = visual_walltime()
 
-    !visual_cfg_london = .true.
-
     debug_print = .false.
 
 #ifdef VAR_MPI
     ! gosia, spring 2023
-    ! on input, we have:
-    ! * information from user input is stored in rs_input dt
+    ! data available on input:
+    ! * information from user input stored in rs_input dt
     ! * config information in visual_cfg* variables (legacy)
     ! So first, we make sure that all workers have this information to start.
     ! Also, run_visual() is called from master (from subroutine dirac) 
     ! and from workers (from subroutine dirnod);
-    ! in the latter case - we only want to wake up nodes, 
-    ! pass initial information, and leave the rest to master - this is handled with "launch+only" flag
+    ! in the latter case - we only want to wake up nodes, pass initial information, 
+    ! and leave the rest to master - this is handled with "launch+only" flag
     call visual_initialize_and_sync_nodes(launch_only)
     if (debug_print) then
       print *, 'VISUAL parallel? ', is_parallel()
@@ -526,10 +524,12 @@ contains
 !     and data (molecular information+wave function) is read from DIRAC's CHECKPOINT file
 
       if (mpi_is_master()) then
-!       fixme: ao_basis not used now (WIP)
+!       fixme: ao_basis is not used now - AOs are still calculated via dirac_ao_eval_init,
+!       as it also sets up all offsets used in xcint/density_eval.F90
         call visual_initialize_data_from_dirac(mol, mo_data, ao_basis)
-        call dirac_dmat_init(0, mo_data, dmat_ao=dmat_0)
-        !make it: call dirac_dmat_init(wf_order=0, mo_data, dmat_ao=dmat_0)
+        call visual_update_data_this_run(mo_data)
+        call mo_data%display()
+        call dirac_dmat_init('unperturbed', mo_data, dmat_ao=dmat_0)
       end if
 
 #ifdef VAR_MPI
@@ -544,6 +544,7 @@ contains
 !     write (lupri,'(/A,I2)')," * Opening checkpoint file for real-space data (VISUAL) "
 !     call checkpoint_rs_open
 ! 
+      !debug_print = .true.
       if (debug_print) then
         !call debug_print_dmat(dmat_0, node_id)
         if (mpi_is_master()) then
@@ -557,6 +558,7 @@ contains
           end do
         end if
       end if
+      !debug_print = .false.
 
       call visual_driver_refactored(mol,mo_data,dmat_0)
 
@@ -626,9 +628,9 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine visual_driver_refactored(mol,cmo,dmat_0)
-    type(mol_t), intent(inout):: mol
+    type(mol_t), intent(in):: mol
     type(cmo_t), intent(in):: cmo
-    type(dmat_t), intent(in):: dmat_0
+    type(dmat_t), intent(inout):: dmat_0
     type(dmat_t):: dmat
 
     real(8), allocatable              :: ao(:,:)
@@ -745,11 +747,11 @@ contains
 !
           if (rs_input%grid_functions(igf)%wf_order > 0) then
             if (mpi_is_master()) then
-              call dirac_dmat_init(rs_input%grid_functions(igf)%wf_order,cmo,&
+              call dirac_dmat_init('xlr', cmo, &
+                                   wf_order=rs_input%grid_functions(igf)%wf_order,&
                                    dmat_ao=dmat, &
                                    rspvec_file=rs_input%grid_functions(igf)%rspvec_file,&
                                    rspvec_id=rs_input%grid_functions(igf)%rspvec_id)
-        !make it: call dirac_dmat_init(wf_order=1, plab="kappa", cmo=mo_data, dmat_ao=dmat)
         !and for laos:
         !make it: call dirac_dmat_init(wf_order=1, plab="conmat", cmo=mo_data, dmat_ao=dmat. op="add")
               !do iz=1,4
@@ -797,12 +799,24 @@ contains
           ! gosia todo:
           ! add "visualize"/"integrate" procedures in this call; now - visualization only
           !
+!fixme:
+          if (rs_input%grid_functions(igf)%wf_order > 0) then
+!         pass dmat:
           call work_on_grid(g_ndim, n_this_proc, &
                             rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
                             rs_input%grid_functions(igf), &
                             grid_function_values, &
-                            dmat_0,dmat,           &
+                            dmat,           &
                             ao, buffer)
+          else
+!         pass dmat_0:
+          call work_on_grid(g_ndim, n_this_proc, &
+                            rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
+                            rs_input%grid_functions(igf), &
+                            grid_function_values, &
+                            dmat_0,           &
+                            ao, buffer)
+          end if
 
           deallocate(ao)
           deallocate(buffer)
@@ -884,7 +898,7 @@ contains
                           grid_points,   &
                           grid_function, &
                           grid_function_values, &
-                          dmat_0, dmat,     &
+                          dmat,     &
                           ao, buffer)
 
     integer, intent(in):: ndim
@@ -892,7 +906,6 @@ contains
     real(8), intent(in):: grid_points(ndim, nr_points)
     type(grid_function_t), intent(inout):: grid_function
     real(8), intent(out):: grid_function_values(:,:)
-    type(dmat_t), intent(in):: dmat_0
     type(dmat_t), intent(in):: dmat
     real(8), intent(inout):: ao(*)
     real(8), intent(inout):: buffer(*)
@@ -928,7 +941,7 @@ contains
                     ao,                    &
                     buffer)
       
-        call get_quantity_in_point_refactored(dmat_0,dmat,&
+        call get_quantity_in_point_refactored(dmat,&
                                               ao,buffer,&
                                               grid_function,grid_function_values,&
                                               grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
@@ -1032,8 +1045,8 @@ contains
 
       allocate(atom_xyz(4, nucdep))
 
-      write(*,'(a,i4,2es16.8e2)') 'D before get_j OLD:'
-      !write(*,'(a,i4,2es16.8e2)') 'D_0 before get_s OLD:'
+      !write(*,'(a,i4,2es16.8e2)') 'D before get_j OLD:'
+      write(*,'(a,i4,2es16.8e2)') 'D_0 before get_s OLD:'
       !!if (associated(D_0%elms)) then
       !!  call prqmat(D_0%elms, &
       !!              D_0%nrow, &
