@@ -967,7 +967,7 @@
 !       i[beta*gamma5] P           * i beta*gamma5 times scalar operator
 !
 !
-!  Operator types 5,6 and 7 form the components of a vectorproduct 
+!  Operator types 5, 6 and 7 form the components of a vector product
 !  of the alpha matrices and some scalar operator.
 !
 !  The scalar operators may be supplied with factors, e.g. field strengths.
@@ -1550,10 +1550,10 @@
            CALL QUIT('XPRADD: Illegal IPTYP (not 1-22)!')
          ENDIF
          GO TO (1,2,2,2,2,2,2,2,2,                                      &
-     &          5,5,5,3,3,3,4,4,4,3,1,4),IPTYP
+     &          5,5,5,3,3,3,4,4,4,3,5,4),IPTYP
 !
 !
-!        Operator types: DIAGONAL, SIGMA
+!        Operator types: DIAGONAL
 !
     1    PCOMB = '+00+'
 !JTH DEBUG!!
@@ -1566,7 +1566,7 @@
 #endif
          GO TO 100
 !
-!        Operator types: ALPHA, GAMMA5
+!        Operator types: ALPHA, AVECTOR, ALPHADOT, GAMMA5
 !
     2    PCOMB = '0++0'
          GO TO 100
@@ -1582,7 +1582,7 @@
     4    PCOMB = '0+-0'
          GO TO 100
 !
-!        Operator types: SIGMA
+!        Operator types: SIGMA, SIGMADOT
 !
     5    PCOMB = '+00+'
          IF (LEVYLE) PCOMB = '+000'
