@@ -199,7 +199,7 @@ INT mh5c_create_file (char* filename) {
 }
 
 INT mh5c_open_file_a (char* filename) {
-        herr_t (*old_func)(void*);
+        herr_t (*old_func)(INT, void*);
   	void *old_client_data;
   	INT mySTATUS = -1;
   	H5Eget_auto(H5E_DEFAULT, &old_func, &old_client_data);
@@ -257,7 +257,7 @@ INT mh5c_open_group (INT file_id, char* name) {
 }
 
 INT mh5c_exists_group(INT file_id, char* name){
-	herr_t (*old_func)(void*);
+	herr_t (*old_func)(INT, void*);
 	void *old_client_data;
 	INT mySTATUS = -1;
 	H5Eget_auto(H5E_DEFAULT, &old_func, &old_client_data);
