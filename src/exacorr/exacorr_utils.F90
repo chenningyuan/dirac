@@ -143,6 +143,13 @@ module exacorr_utils
       write(*,'(A)') "-----------------------------------------------"
       write(*,'(A)') "      Characteristics of this calculation      "
       write(*,'(A)') "-----------------------------------------------"
+      if (exa_input%auto_kernels) then
+         if (exa_input%auto_scheme.eq.2) then
+            write(*,'(A,L1)') " - Using kernels generated with TENPI"
+         elseif(exa_input%auto_scheme.eq.1) then
+            write(*,'(A,L1)') " - Using kernels generated with mbauto"
+         endif
+      endif
       write(*,'(A,L1)') " - Solve CCD equations :                ", exa_input%ccd
       write(*,'(A,L1)') " - Solve Lambda equations :             ", exa_input%lambda
       write(*,'(A,L1)') " - Compute perturbative corrections :   ", exa_input%do_perturbative
