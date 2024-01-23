@@ -22,8 +22,8 @@ f.add(from_string = 'Eigenvalues',
 test.run(['lih_test_contracted_ccsdt-1a.inp'], ['lih_test.xyz'], f)
 test.run(['lih_test_contracted_ccsdt-1b.inp'], ['lih_test.xyz'], f)
 test.run(['lih_test_contracted_ccsdt-2.inp'], ['lih_test.xyz'], f)
-test.run(['lih_test_contracted_ccsdt-3.inp'], ['lih_test.xyz'], f)
-# this is generall too long to run as part of the testset
+# these are generally too long to run as part of the testset, need to spin this off to another test
+#test.run(['lih_test_contracted_ccsdt-3.inp'], ['lih_test.xyz'], f)
 #test.run(['lih_test_contracted_ccsdt-3.inp'], ['lih_test.xyz'], f)
 
 #test.run(['li2_test_contracted_ccsdt-1a.inp'], ['li2_test.xyz'], f)
