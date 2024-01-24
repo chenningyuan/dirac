@@ -61,6 +61,9 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
             integer                       :: ierr
 
             complex(kind=8)               :: eom_lr
+            integer                       :: T
+            real(kind=8)                  :: tem_real, tem_imag
+
             logical :: CC_CC
             logical :: debug_get_lrresp = .false.
             type(talsh_tens_t)    :: total_t_t1, total_t_t2
@@ -115,7 +118,7 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
                     Tprop_tensors(1), Tprop_tensors(2), &
                     l1_tensor, l2_tensor, linrsp, B1, B2, CC_CC)
 
-            print *, "linrsp +w: ", linrsp
+            
             if (debug_get_lrresp) then
                 if (CC_CC) then 
                     call print_date('Evaluate CC-CC LR (-w)')
@@ -124,23 +127,31 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
                 end if 
             end if 
 
-
             call get_linrspf(interm_t, Interm_t_tensors_A(i), Interm_t_tensors_B(j), &
                     Tprop_tensors_min_w(1), Tprop_tensors_min_w(2),&
                     l1_tensor, l2_tensor, linrsp_con, B1_minus_fre, B2_minus_fre, CC_CC)
 
-            print *, "linrsp -w: ", linrsp_con
+            print *, "linear response: +w", linrsp
+            print *, "linear response: -w", linrsp_con
+
+            T = (-1)**(exa_input%N_Time_anti)
+
+            if (T==-1) then
+                print *, "We now flip the real and imaginary parts"
+                tem_real = real(linrsp)
+                tem_imag = aimag(linrsp)
+                linrsp = cmplx(tem_imag,tem_real)
+
+                tem_real = real(linrsp_con)
+                tem_imag = aimag(linrsp_con)
+                linrsp_con = cmplx(tem_imag,tem_real)
+
+                print *, "New linear response: +w", linrsp
+                print *, "New linear response: -w", linrsp_con
+            end if
 
             linrsp_con=conjg(linrsp_con)
             eom_lr=(linrsp+linrsp_con)*0.5
-
-            if (debug_get_lrresp) then
-                print *, "linear response: +w", linrsp
-                print *, "linear response: -w", linrsp_con
-            end if
-
-
-            
 
 
 !*********************           Test perturbated T tensors         *********************************

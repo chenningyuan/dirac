@@ -410,7 +410,21 @@ Specify the C operator in the response functions.
 
 The code always calculates all possible combinations of A,B,C for quadratic response functions.
 
+keyword(NTA)
 
+Indicate the number of time-asymmetric operators in the response function. The code will determine if the response function is real or imaginary according to this number.
+
+::
+
+    .NTA
+    1
+
+*Default:*
+
+::
+
+    NTA is 0
+    
 keyword(CCTPA)
 
 Evaluate the coupled-cluster two-photon scattering amplitudes :math:`S_{AB,CD}`, obtained by combining EOM-EE and quadratic response.

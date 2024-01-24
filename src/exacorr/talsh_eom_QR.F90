@@ -32,7 +32,7 @@ subroutine get_eom_qr(exa_input, interm_t,&
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
                         i, j, k, l1_tensor, l2_tensor, eom_qr)
    
-!   This subroutine drives the CC-CI Quadratic response property calculation
+!   This subroutine drives the EOM-CCSD Quadratic response property calculation
 !   Written by Xiang Yuan Janunary 2022, Lille, France
 
         use talsh_sigma_eomccsd
@@ -49,12 +49,14 @@ subroutine get_eom_qr(exa_input, interm_t,&
         type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
 
         integer                       :: i, j, k
+        integer                       :: T
         
         complex(kind=8)               :: quarsp, quarsp_con
 
         integer                       :: ierr
 
         complex(kind=8)               :: eom_qr
+        real(kind=8)                  :: tem_real, tem_imag
 
         type(talsh_tens_t)          :: result_tensor
         integer(C_INT)              :: one_dims(1)
@@ -75,18 +77,26 @@ subroutine get_eom_qr(exa_input, interm_t,&
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
                         i, j, k, l1_tensor, l2_tensor, quarsp_con)
 
+        print *, "quadratic response: +w", quarsp
+        print *, "quadratic response: -w", quarsp_con
 
-        print *, "quarrsp: ", quarsp
+        T = (-1)**(exa_input%N_Time_anti)
+
+        if (T==-1) then
+            print *, "We now flip the real and imaginary parts"
+            tem_real = real(quarsp)
+            tem_imag = aimag(quarsp)
+            quarsp = cmplx(tem_imag,tem_real)
+
+            tem_real = real(quarsp_con)
+            tem_imag = aimag(quarsp_con)
+            quarsp_con = cmplx(tem_imag,tem_real)
+
+            print *, "New quadratic response: +w", quarsp
+            print *, "New quadratic response: -w", quarsp_con
+        end if
+
         quarsp_con=conjg(quarsp_con)
-        print *, "quarrsp_conjugate: ", quarsp_con
-
-        print *, "Print the results for testset: "
-        print *, real(quarsp)
-        print *, aimag(quarsp)
-        print *, real(quarsp_con)
-        print *, aimag(quarsp_con)
-
-
         eom_qr=(quarsp+quarsp_con)*0.5
 
 end subroutine get_eom_qr

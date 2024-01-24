@@ -1243,6 +1243,10 @@
          call kw_read(word, exa_input%Prop_D,exa_input%N_prop_D)
       end if
 
+      if (kw_matches(word, '.NTA   ')) then
+         call kw_read(word, exa_input%N_Time_anti)
+      end if
+
 
       if (kw_matches(word, '.EXEOM ')) then
          exa_input%eom = .true.
