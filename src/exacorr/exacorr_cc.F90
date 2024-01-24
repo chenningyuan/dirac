@@ -152,8 +152,6 @@ module exacorr_cc
          if (CCD.or.CC2.or.CCSDT.or.CCSDTQ.or.CCSDTQP) then
             do_perturbative = .false.
          end if
-         write (*,*) 'rank: ',my_MPI_rank,' iterative_level ',iterative_level
-         write (*,*) 'rank: ',my_MPI_rank,' WFs ',CCSDT,CCSDTQ,CCSDTQP
 
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
@@ -230,15 +228,11 @@ module exacorr_cc
             call lab_write(exacc_file,'nocc',idata=exa_input%nocc)
             call lab_write(exacc_file,'mo_occ',idata=exa_input%mo_occ)
 
-            write(*,*) " ccdriver: debug A"
 !           Create and initialize scalars that are to be used as tensors in contractions
             ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)
-            write(*,*) " ccdriver: debug B"
             ierr=exatns_tensor_create(one_tensor,"another_one_tensor",EXA_DATA_KIND_C8)
-            write(*,*) " ccdriver: debug C"
             ! Note:  also get_integral_tensors will define a one_tensor and call it "one_tensor", so we needed another name
             ierr=exatns_tensor_init(one_tensor,ONE)
-            write(*,*) " ccdriver: debug D"
             
 !           Get fixed two-body tensors
             call print_date('-Start- Integral Transformation')
