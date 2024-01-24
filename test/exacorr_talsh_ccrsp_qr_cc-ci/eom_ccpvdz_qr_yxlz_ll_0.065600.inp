@@ -78,6 +78,8 @@ energy 0.0 5.0 0.00001
 .CProp
 1
 5
+.NTA
+1
 .NOTRIPLES
 .TALSH_BUFF
 50

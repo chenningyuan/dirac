@@ -33,8 +33,15 @@ f3.add(from_string = '*************CC-CC(LR-CC) linear response*************',
       num_lines   = 19,
       rel_tolerance   = 1.0e-7)
 
+f4 = Filter()
+
+f4.add(from_string = '*************CC-CC(LR-CC) linear response*************',
+      num_lines   = 3,
+      rel_tolerance   = 1.0e-7)
+
 # test.run(['cc_sto_numlist_h2_relccsd.inp', 'cc_sto_numlist_h2.inp'], ['h2.xyz'], f)
 test.run(['cc-cc_ccpvdz_lr_0.1.inp'], ['h2o.xyz'], f1)
 test.run(['cc-cc_ccpvdz_lr_0.1_z_qua.inp'], ['h2o.xyz'], f2)
 test.run(['cc-cc_ccpvdz_lr_0.1_x2c.inp'], ['h2o.xyz'], f3)
+test.run(['cc-cc_ccpvdz_lr_x2c_opt_bx.inp'], ['h2o2.xyz'], f4)
 sys.exit(test.return_code)
