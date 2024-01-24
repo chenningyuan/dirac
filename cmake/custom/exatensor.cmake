@@ -24,7 +24,7 @@ if(ENABLE_EXATENSOR)
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
    set (EXATENSOR_GIT_REPO_LOCATION "git@github.com:RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
-   set (EXATENSOR_GIT_HASH c16d0df0e6d5613824981d1250d89e73cb19b21b CACHE STRING "ExaTENSOR Git repository hash in use")
+   set (EXATENSOR_GIT_HASH a5be81f3ec590e29fa34c08e5202335162ce7dcd CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type
@@ -118,6 +118,15 @@ if(ENABLE_EXATENSOR)
            set(EXATENSOR_TALSH EXA_TALSH_ONLY=YES)
            set(EXATENSOR_MPIENV MPILIB=NONE)
          endif()
+       endif()
+       if (DEFINED ENV{INTEL_MPI_WRAPPER_FC})
+          set(EXATENSOR_MPIENV "${EXATENSOR_MPIENV} INTEL_MPI_WRAPPER_FC=$ENV{INTEL_MPI_WRAPPER_FC}") 
+       endif()
+       if (DEFINED ENV{INTEL_MPI_WRAPPER_CC})
+          set(EXATENSOR_MPIENV "${EXATENSOR_MPIENV} INTEL_MPI_WRAPPER_CC=$ENV{INTEL_MPI_WRAPPER_CC}") 
+       endif()
+       if (DEFINED ENV{INTEL_MPI_WRAPPER_CPP})
+          set(EXATENSOR_MPIENV "${EXATENSOR_MPIENV} INTEL_MPI_WRAPPER_CPP=$ENV{INTEL_MPI_WRAPPER_CPP}") 
        endif()
    endif()
 
