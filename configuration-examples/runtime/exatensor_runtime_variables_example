@@ -1,0 +1,19 @@
+
+export QF_NUM_PROCS=4             # total number of MPI ranks in the calculation. Must be at least 4 for ExaCorr/ExaTENSOR to work properly. 
+export QF_PROCS_PER_NODE=4        # number of MPI ranks executing per node
+export QF_CORES_PER_PROCESS=2     # Number of CPU cores attached to each MPI rank
+export QF_NVMEM_PER_PROCESS=0     #
+export QF_HOST_BUFFER_SIZE=1000   # Memory available on the node, divided by the number of MPI ranks 
+export QF_MEM_PER_PROCESS=750     # about 75% of QF_HOST_BUFFER_SIZE
+
+export QF_GPUS_PER_PROCESS=0 # Number of NVIDIA or AMD GPUs to be used per MPI rank
+export QF_MICS_PER_PROCESS=0 # this should always be set to zero
+export QF_AMDS_PER_PROCESS=0 # this should always be set to zero, even in the case of AMD GPU systems
+
+export OMP_NUM_THREADS=$QF_CORES_PER_PROCESS
+export OMP_DYNAMIC=false
+export OMP_MAX_ACTIVE_LEVELS=3
+export OMP_THREAD_LIMIT=256
+export OMP_WAIT_POLICY=PASSIVE
+export OMP_PROC_BIND="spread"
+export OMP_PLACES="{0:4},{4:4},{8:4},{12:4}"
