@@ -581,6 +581,7 @@ contains
         grid_function%max_ao_g_order = 1
         grid_function%max_ao_m_order = 0
       case ('s', &
+            'jdiaBz', &
             'j')
         grid_function%tensor_order = 1
         grid_function%max_ao_g_order = 0

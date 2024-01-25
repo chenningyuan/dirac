@@ -418,6 +418,48 @@ contains
         grid_function_values(3:3,ipoint:ipoint) = v2(3)
 
 
+!      case ('jdiaBz')
+!!       nonrel diamagnetic current density (hardcoded for B along z)
+!        v3 = 0.0d0
+!        call j_dia(v3,       &
+!                   .false.,  & !london fixme
+!                   visual_cfg_gauge_origin, &
+!                   mat_irep, &
+!                   mat_dim,  &
+!                   dmat%elements, &
+!                   ao,       &
+!                   (/px, py, pz/))
+!        grid_function_values(1:1,ipoint:ipoint) = v3(1,3)
+!        grid_function_values(2:2,ipoint:ipoint) = v3(2,3)
+!        grid_function_values(3:3,ipoint:ipoint) = v3(3,3)
+!
+
+!      case ('ndipx', 'ndipy', 'ndipz')
+!!       responding operator is nuclear magnetic dipole
+!        v = 0.0d0
+!        if (levyle) then
+!          call get_gn(density,      &
+!                      v,            &
+!                      D(imat)%irep, &
+!                      D(imat)%nrow, &
+!                      D(imat)%elms, &
+!                      buffer,       &
+!                      ao)
+!          v = -0.5d0*v
+!        else
+!          !if (present(jb_input)) then
+!          !  v = jb_input
+!          !else
+!           call get_j(v,            &
+!                      cval,         &
+!                      D(imat)%irep, &
+!                      D(imat)%nrow, &
+!                      D(imat)%elms, &
+!                      buffer,       &
+!                      ao)
+!          !end if
+!        end if
+
     end select
 
 !    if (pointwise_modification) then
