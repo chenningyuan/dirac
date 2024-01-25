@@ -6,7 +6,6 @@ module talsh_eom_LR
     use talsh_common_routines
     use exacorr_global
     use talsh_eom_rspeq_solver
-    ! use talsh_cc_ci
 
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -21,7 +20,7 @@ module talsh_eom_LR
 
     private
 
-    public get_eom_lr
+    public get_eom_lr, get_tF
 
     contains
 
