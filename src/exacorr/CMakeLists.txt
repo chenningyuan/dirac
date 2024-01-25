@@ -18,6 +18,14 @@ if(ENABLE_EXATENSOR)
    exatensor_auto_ccsdt_spinor.F90
    exatensor_auto_ccsdtq_spinor.F90
    exatensor_auto_ccsdtqp_spinor.F90
+   talsh_tenpi_ccd.F90
+   talsh_tenpi_ccsd.F90
+   talsh_tenpi_ccsdt.F90
+   talsh_tenpi_ccsdtq.F90
+   exatensor_tenpi_ccd.F90
+   exatensor_tenpi_ccsd.F90
+   exatensor_tenpi_ccsdt.F90
+   exatensor_tenpi_ccsdtq.F90
    exacorr_main.F90
    exacorr_datatypes.F90
    exacorr_global.F90
@@ -51,6 +59,7 @@ if(ENABLE_EXATENSOR)
    talsh_ccrsp.F90
    talsh_ccrsp_common.F90
    talsh_eom_QR.F90
+   talsh_cc_QR.F90
    talsh_eom_LR.F90
    talsh_eom_rspeq_solver.F90
    talsh_eom_TPA.F90
@@ -67,7 +76,7 @@ if(ENABLE_EXATENSOR)
     set_source_files_properties(${FIXED_EXACORR_FORTRAN_SOURCES} EXACORR COMPILE_FLAGS "-qfixed")
   endif()
 
-  if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel" AND "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "20")
+  if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel" AND "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "22")
     if (CMAKE_BUILD_TYPE MATCHES "release") 
       set_source_files_properties(${PROJECT_SOURCE_DIR}/src/exacorr/exacorr_cc.F90 PROPERTY COMPILE_FLAGS "-O0")
       message(STATUS "src/exacorr/exacorr_cc.F90: disabling inteprocedural optimization for Intel compiler")

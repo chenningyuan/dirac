@@ -46,8 +46,6 @@ module exacorr_cc
          use exacorr_tensor_methods
          use exacorr_ao_to_mo
          use exacorr_gradient
-         use talsh_cholesky_integrals
-         
 
          implicit none
 
@@ -4947,6 +4945,26 @@ module exacorr_cc
                                     s2_tensor)              ! Z50 VVOO
              else if (auto_scheme.eq.2) then
              ! tenpi 
+               call exatensor_tenpi_ccsd(occ_space_id,vir_space_id,&
+                                    occ_space_root,vir_space_root,&
+                                    comm_t%foo,         &    !       OO
+                                    comm_t%fov,         &    !       OV
+                                    hvo_aux_tensor,     &    !       f_VO
+                                    comm_t%fvv,         &    !       VV
+                                    comm_t%t1,          &    !       t1_VO
+                                    comm_t%t2,          &    !       t2_VVOO
+                                    int_t%oooo,         &    !       OOOO
+                                    int_t%ooov,         &    !       OOOV
+                                    int_t%oovv,         &    !       OOVV
+                                    vooo_aux_tensor,    &    !       VOOO
+                                    voov_aux_tensor,    &    !       VOOV
+                                    int_t%vovv,         &    !       VOVV
+                                    vvoo_aux_tensor,    &    !       v_VVOO
+                                    vvov_aux_tensor,    &    !       VVOV
+                                    int_t%vvvv,         &    !       VVVV
+                                    result_t_tensor,      &  !       UnitTensor
+                                    s1_tensor,          &    !       r_VO
+                                    s2_tensor)               !       r_VVOO
              end if
           else if ((iterative_level.eq.2).and.(iterative_scheme.eq.20)) then
             if (auto_scheme.eq.1) then
@@ -4965,6 +4983,18 @@ module exacorr_cc
                                         s2_tensor)          ! Z27   VVOO
              else if (auto_scheme.eq.2) then
              ! tenpi 
+               call exatensor_tenpi_ccd(occ_space_id,vir_space_id,&
+                                       occ_space_root,vir_space_root,&
+                                       comm_t%foo,         &    !       OO
+                                       comm_t%fvv,         &    !       VV
+                                       comm_t%t2,          &    !       VVOO
+                                       int_t%oooo,         &    !       OOOO
+                                       int_t%oovv,         &    !       OOVV
+                                       voov_aux_tensor,    &    !       VOOV
+                                       vvoo_aux_tensor,    &    !       v_VVOO
+                                       int_t%vvvv,         &    !       VVVV
+                                       result_t_tensor,      &  !       UnitTensor
+                                       s2_tensor)               !       r_VVOO
              end if
           else if ((iterative_level.eq.3).and.(iterative_scheme.eq.30)) then
             if (auto_scheme.eq.1) then
@@ -4993,6 +5023,28 @@ module exacorr_cc
                                            s3_tensor)         !  VVVOOO
              else if (auto_scheme.eq.2) then
              ! tenpi 
+               call exatensor_tenpi_ccsdt(occ_space_id,vir_space_id,&
+                                          occ_space_root,vir_space_root,&
+                                          comm_t%foo,         &    ! F2     OO
+                                          comm_t%fov,         &    ! F1     OV
+                                          hvo_aux_tensor,     &    ! F4      VO
+                                          comm_t%fvv,         &    ! F3      VV
+                                          comm_t%t1,          &    ! T1      VO
+                                          comm_t%t2,          &    ! T2      VVOO
+                                          comm_t%t3,          &    ! T3      VVVOOO
+                                          int_t%oooo,         &    ! V7      OOOO
+                                          int_t%ooov,         &    ! V3      OOOV
+                                          int_t%oovv,         &    ! V1      OOVV
+                                          vooo_aux_tensor,    &    ! V8      VOOO
+                                          voov_aux_tensor,    &    ! V4      VOOV
+                                          int_t%vovv,         &    ! V2      VOVV
+                                          vvoo_aux_tensor,    &    ! V9      v_VVOO
+                                          vvov_aux_tensor,    &    ! V6      VVOV
+                                          int_t%vvvv,         &    ! V5      VVVV
+                                          result_t_tensor,      &  !       UnitTensor
+                                          s1_tensor,          &    !       r_VO
+                                          s2_tensor,          &    !       r_VVOO
+                                          s3_tensor)               !       r_VVVOOO
              end if
           else if ((iterative_level.eq.4).and.(iterative_scheme.eq.40)) then
             if (auto_scheme.eq.1) then
@@ -5023,6 +5075,30 @@ module exacorr_cc
                                            s4_tensor)         !  VVVVOOOO
              else if (auto_scheme.eq.2) then
              ! tenpi 
+               call exatensor_tenpi_ccsdtq(occ_space_id,vir_space_id,&
+                                          occ_space_root,vir_space_root,&
+                                          comm_t%foo,         &    ! F2     OO
+                                          comm_t%fov,         &    ! F1     OV
+                                          hvo_aux_tensor,     &    ! F4      VO
+                                          comm_t%fvv,         &    ! F3      VV
+                                          comm_t%t1,          &    ! T1      VO
+                                          comm_t%t2,          &    ! T2      VVOO
+                                          comm_t%t3,          &    ! T3      VVVOOO
+                                          comm_t%t4,          &    ! T4      VVVVOOOO
+                                          int_t%oooo,         &    ! V7      OOOO
+                                          int_t%ooov,         &    ! V3      OOOV
+                                          int_t%oovv,         &    ! V1      OOVV
+                                          vooo_aux_tensor,    &    ! V5      VOOO
+                                          voov_aux_tensor,    &    ! V2      VOOV
+                                          int_t%vovv,         &    ! V4      VOVV
+                                          vvoo_aux_tensor,    &    ! V9      v_VVOO
+                                          vvov_aux_tensor,    &    ! V8      VVOV
+                                          int_t%vvvv,         &    ! V6      VVVV
+                                          result_t_tensor,      &  !       UnitTensor
+                                          s1_tensor,          &    !       r_VO
+                                          s2_tensor,          &    !       r_VVOO
+                                          s3_tensor,          &    !       r_VVVOOO
+                                          s4_tensor)               !       r_VVVVOOOO
              end if
           else if ((iterative_level.eq.5).and.(iterative_scheme.eq.50)) then 
             if (auto_scheme.eq.1) then
@@ -5055,6 +5131,7 @@ module exacorr_cc
                                            s5_tensor)         !  VVVVVOOOOO 
              else if (auto_scheme.eq.2) then
              ! tenpi 
+               call quit ('Error: CCSDTQP not yet implemented in tenpi.')
              end if
           end if
 

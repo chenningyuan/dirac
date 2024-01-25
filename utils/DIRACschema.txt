@@ -10,6 +10,7 @@ aobasis          composite array     required    # atomic orbital basis set desc
 
 *result
 execution        composite single    required    # information about the run
+symmetry         composite single    optional    # point group symmetry information
 operators        composite single    optional    # matrix representations of operators
 wavefunctions    composite single    optional    # results for each wave function that was optimized
 hamiltonian      composite single    optional    # results from hamiltonian transformations
@@ -20,6 +21,12 @@ n_atoms          integer   single    required    # number of atoms in the system
 geometry         real      array     required    # xyz-coordinates for each atom
 nuc_charge       real      array     required    # nuclear charges for each atom
 symbols          string    array     required    # atomic symbol for each atom
+*end
+
+*symmetry
+inversion        integer   single    required    # 1: system has no inversion symmetry; 2: system has inversion symmetry
+maxopr           integer   single    required    # maximum number of symmetry operations active from the set {x, y, z, yz, zx, xy, xyz}
+isymax           integer   array     required    # behavior of principal axes (x, y, z) and rotations (yz, zx, xy) under basic operations
 *end
 
 *aobasis

@@ -62,9 +62,9 @@ The molecular input file ``CH4.xyz`` (:download:`download <../../../../test/tuto
 
 Suppose that we have run a DFT(PBE) calculation using::
 
-   pam --inp=PBE  --mol=CH4.xyz --outcmo
+   pam --inp=PBE  --mol=CH4.xyz 
 
-where we keep the coefficients and the menu file ``PBE.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/PBE.inp>`) is
+and the menu file ``PBE.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/PBE.inp>`) is
 
 .. literalinclude:: ../../../../test/tutorial_projection_analysis/PBE.inp
 
@@ -79,8 +79,8 @@ This allows a very precise identification
 of the individual atomic orbitals (including :math:`m_j` quantum number). 
 We accordingly run calculations where we save MO files, each as the unique file::
 
-   pam --inp=H  --mol=H --get "DFACMO=AFHXXX"
-   pam --inp=C  --mol=C --get "DFACMO=AFCXXX"
+   pam --inp=H  --mol=H 
+   pam --inp=C  --mol=C 
 
 with corresponding input files ``H.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/H.inp>`),
 ``H.mol`` (:download:`download <../../../../test/tutorial_projection_analysis/H.mol>`), 
@@ -103,8 +103,9 @@ in its proper basis.
 
 We now run the projection analysis using::
 
-   pam --inp=prj --mol=CH4.xyz --incmo --copy="AF*"
+   pam --inp=prj --mol=CH4.xyz --put "C_C.h5=C.h5 H_H.h5=H.h5 PBE_CH4.h5=CHECKPOINT.h5" --noh5
 
+Note that we set the pam flag ``--noh5`` to avoid generating a new HDF5 checkpoint file, since nothing new is added to the existing one.   
 
 
 Interpreting the output
@@ -250,11 +251,11 @@ Using the menu file ``HF.inp``
 
 we run 4-component Hartree-Fock::
 
-   pam --mw=120 --inp=HF --mol=UO2 --get "DFCOEF=cf.UO2"
+   pam --mw=150 --inp=HF --mol=UO2 
 
-saving the coefficients. Next we generate atomic reference orbitals. For oxygen this is quite straightforward::
+Coefficients are saved on the h5 checkpoint file. Next we generate atomic reference orbitals. For oxygen this is quite straightforward::
 
-   pam --inp=O --mol=O --get "DFCOEF=cf.O"
+   pam --inp=O --mol=O 
 
 using molecule input ``O.mol``
 
@@ -276,7 +277,7 @@ and the inp file ``U.inp``
 Note that :ref:`SCF_.KPSELE` is needed for getting the convergence in this case.
 Convergence is now straightforward ::
 
-   pam --incmo --inp=U --mol=U --get "DFCOEF=cf.U"
+   pam --inp=U --mol=U 
 
 and the correct configuration is confirmed by Mulliken population analysis. 
 
@@ -289,14 +290,14 @@ We are now ready to do the projection analysis. We prepare the input file ``prj.
 
 and prepare the coefficient files::
 
-   $ ln -s cf.O AFO1XX
-   $ ln -s cf.O AFO2XX
-   $ ln -s cf.U AFUXXX
-   $ cp cf.UO2 DFCOEF
+   $ ln -s U_U.h5 U.h5
+   $ ln -s O_O.h5 O1.h5
+   $ ln -s O_O.h5 O2.h5
+   $ ln -s HF_UO2.h5 CHECKPOINT.h5
 
 We run the projection analysis::
 
-   pam --incmo --inp=prj --mol=UO2 --copy="AF*" --mw=120
+   pam --incmo --inp=prj --mol=UO2 --copy="U.h5 O1.h5 O2.h5"
 
 Interpreting the output
 -----------------------

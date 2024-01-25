@@ -19,8 +19,8 @@ module talsh_eom_rspeq_solver
       private 
 
       public solve_eom_lr_right
-      public solve_eom_lr_left
-      public get_left_bvec
+      public solve_eom_lr_left, solve_cc_lr_left
+      public get_left_bvec, get_left_bvec_ccci, get_left_bvec_cccc 
 
       contains
 
@@ -113,7 +113,7 @@ module talsh_eom_rspeq_solver
 
             ! write(*,*) ""
             ! write(*,'(A)') "*******************************************************************************"
-            ! write(*,'(A)') "***************************** CC-CI LR Left ******************************"
+            ! write(*,'(A)') "***************************** EOM LR Left ******************************"
             ! write(*,'(A)') "*******************************************************************************"
             ! write(*,*) ""
       
@@ -184,11 +184,88 @@ module talsh_eom_rspeq_solver
 
 !---------------------------------------------------------------------------------------------------------------------
       
+      subroutine solve_cc_lr_left(exa_input, interm_t, int_t, interm_t_prop, omega, bvec_tensor, tprop_bar_tensor)
+            use talsh_sigma_eomccsd
+            use mfsolver_dirac_input
+
+            ! write(*,*) ""
+            ! write(*,'(A)') "*******************************************************************************"
+            ! write(*,'(A)') "***************************** CC-CI LR Left ******************************"
+            ! write(*,'(A)') "*******************************************************************************"
+            ! write(*,*) ""
+      
+      
+      !     input variables
+                  type(exacc_input), intent(in) :: exa_input
+                  type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
+                  type(talsh_intg_tens_t), intent(inout) :: int_t
+                  type(talsh_rsp_interm_tens_t) :: interm_t_prop
+                  complex(kind=8),INTENT(IN)              :: omega
+      
+
+                  type(talsh_eom_results_tens_t)  :: results_t
+                  type(talsh_comm_tens_t)       :: tprop_bar_tensor
+                  type(talsh_comm_tens_t)       :: bvec_tensor
+      !     workspace
+                  type(talsh_davidson_workspace_tens_t) :: workspace_t
+                  type(talsh_projectors_tens_t) :: projector_t
+      !     error code
+                  integer :: ierr
+                  integer :: nroots = 1
+                  character(len=2) :: flavor = "EE"
+
+                  integer(INTD), dimension(2) :: ov_dims
+                  integer(INTD), dimension(4) :: oovv_dims
+                 
+                  call talsh_davidson_setup(unit_output=6, &
+                              convergence_threshold=mfsolver_options_convergence_threshold, &
+                              max_subspace_size=mfsolver_options_max_subspace_size,&
+                              verbose=mfsolver_options_verbose,&
+                              solve_right=.false.,&
+                              solve_left=.true.,&
+                              solve_linear_sys=.true.,&
+                              symmetric=.false., &
+                              use_preconditioner=.true.,&
+                              max_iterations=mfsolver_options_max_iterations,&
+                              complex_mode=.true.)
+      
+                  call print_date("Entering CC-CI Left Linear Systems calculation")
+      
+                  call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
+                  call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, 'L')
+                  ! call talsh_eomccsd_ee_trial_create(workspace_t)
+                  call talsh_eomccsd_LR_proper_create(workspace_t,bvec_tensor%t1)
+                  call talsh_eomccsd_LR_trial_create(workspace_t)
+      
+      !     set pointers to sigma vector subroutines 
+                  interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ee
+
+                  ov_dims(1) = exa_input%nocc
+                  ov_dims(2) = exa_input%nvir
+                  oovv_dims(1:2) = exa_input%nocc
+                  oovv_dims(3:4) = exa_input%nvir
+
+      
+                  ierr=talsh_tensor_construct(tprop_bar_tensor%t1,C8,ov_dims,init_val=ZERO)
+                  ierr=talsh_tensor_construct(tprop_bar_tensor%t2,C8,oovv_dims,init_val=ZERO)
+
+      
+                  call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,&
+                                          -omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)   !left equation use -omega
+                                          
+                  call print_date("Finishing CC-CI Left Linear Systems calculation")
+      
+                  call talsh_davidson_workspace_destroy(workspace_t)
+
+      end subroutine solve_cc_lr_left
+
+!---------------------------------------------------------------------------------------------------------------------
+      
       subroutine get_left_bvec(exa_input,int_t,interm_t,interm_t_prop,l1_tensor,l2_tensor,bvec_tensor)
 
       !XY: Although the final QR result of EOM is same as CC-CI, the response equations and 
       ! the left perturbed ampiltudes tbar are not same. The point is the left bevctor EOM used is not the one of CC-CI 
-      ! CC-CI left bvector is depended on the right perturbed ampiltudes. So, here we choose the EOM type and comment out the CC-CI as backup
+      ! CC-CI left bvector depends on the right perturbed ampiltudes. So, here we choose the EOM type and comment out the CC-CI as backup
       ! see more details: J. Chem Phys, 142, p.114109, 2015, & J. Chem Phys, 144, p.024102, 2016
 
             use tensor_algebra
@@ -205,7 +282,6 @@ module talsh_eom_rspeq_solver
             type(talsh_rsp_interm_tens_t) :: interm_t_prop
             type(talsh_tens_t), intent(inout)  :: l2_tensor
             type(talsh_tens_t), intent(inout)  :: l1_tensor
-            ! type(talsh_comm_tens_t)       :: Tprop_tensor    !for CC-CI, we need right-vectors
             type(talsh_comm_tens_t)       :: bvec_tensor
 
 
@@ -252,49 +328,172 @@ module talsh_eom_rspeq_solver
             ierr=talsh_tensor_destruct(Aux_tensor1)
 
 
-
-!--------------------------------------           CC-CI for doubel check    ----------------------------------------------------------
-            ! call get_eta(int_t,interm_t,l1_tensor,l2_tensor,interm_t%eta_ov,interm_t%eta_oovv)
-            ! ierr=talsh_tensor_contract("A1()+=l1(i,a)*T(a,i)",Aux_tensor1,l1_tensor,Tprop_tensor%t1,scale=ONE)
-            ! ierr=talsh_tensor_contract("A1()+=l2(i,j,a,b)*T(a,b,i,j)",Aux_tensor1,l2_tensor,&
-            !                               Tprop_tensor%t2,scale=ONE_QUARTER_C)
-      
-
-            ! ierr=talsh_tensor_contract("B(i,a)+=n(i,a)*A1()",bvec_tensor%t1,interm_t%eta_ov,Aux_tensor1,scale=ONE) 
-            ! ierr=talsh_tensor_contract("B(i,j,a,b)+=n(i,j,a,b)*A1()",bvec_tensor%t2,interm_t%eta_oovv, &
-            !                               Aux_tensor1,scale=ONE)  
-
-
-            ! ierr=talsh_tensor_init(Aux_tensor1)
-            ! ! call get_eta(int_t,interm_t,l1_tensor,l2_tensor,interm_t%eta_ov,interm_t%eta_oovv)
-
-            ! ierr=talsh_tensor_contract("A1()+=n1(i,a)*T(a,i)",Aux_tensor1,interm_t%eta_ov,Tprop_tensor%t1,scale=MINUS_ONE)
-            ! ierr=talsh_tensor_contract("A1()+=n2(i,j,a,b)*T(a,b,i,j)",Aux_tensor1,interm_t%eta_oovv,&
-            !                               Tprop_tensor%t2,scale=MINUS_ONE_QUARTER_C)
-
-
-            ! ierr=talsh_tensor_get_body_access(Aux_tensor1,body_p,C8,int(0,C_INT),DEV_HOST)
-            ! call c_f_pointer(body_p,aux_tens,one_dims)
-            ! print *, "Aux for lamda*epsilon:", aux_tens
-
-
-            ! ierr=talsh_tensor_contract("B(i,a)+=l1(i,a)*A1()",bvec_tensor%t1,l1_tensor,Aux_tensor1,scale=MINUS_ONE) 
-            ! ierr=talsh_tensor_contract("B(i,j,a,b)+=l2(i,j,a,b)*A1()",bvec_tensor%t2,l2_tensor, &
-            !                               Aux_tensor1,scale=MINUS_ONE)  
-
-            ! ierr=talsh_tensor_destruct(Aux_tensor1)
-            ! ierr=talsh_tensor_destruct(one_tensor)
-!--------------------------------------           CC-CI for doubel check    ----------------------------------------------------------
-
       end subroutine get_left_bvec
 
 
 
-
+!-----------------------------------------------------------------------------------------------------------------------------
       
+      subroutine get_left_bvec_ccci(exa_input,int_t,interm_t,interm_t_prop,l1_tensor,l2_tensor,Tprop_tensor,bvec_tensor)
+
+            !XY: the ccci left bvector in the left response equations. 
+            !    This routine is just for backup since we implemented EOM for quadratic response
+      
+                  use tensor_algebra
+                  use talsh
+                  use exacorr_datatypes
+                  use exacorr_utils
+                  use talsh_common_routines
+                  use exacorr_global
+      
+      
+                  type(exacc_input), intent(in) :: exa_input
+                  type(talsh_intg_tens_t), intent(inout) :: int_t
+                  type(talsh_intermediates_tens_t),intent(inout) :: interm_t
+                  type(talsh_rsp_interm_tens_t) :: interm_t_prop
+                  type(talsh_tens_t), intent(inout)  :: l2_tensor
+                  type(talsh_tens_t), intent(inout)  :: l1_tensor
+                  type(talsh_comm_tens_t)       :: Tprop_tensor    !for CC-CI, we need right-vectors
+                  type(talsh_comm_tens_t)       :: bvec_tensor
+      
+      
+                  type(talsh_tens_t)       :: Aux_tensor1, one_tensor
+      
+                  integer(INTD), dimension(4)   :: oovv_dims
+                  integer(INTD), dimension(2)   :: ov_dims
+                  integer(C_INT)              :: one_dims(1)
+                  complex(8), pointer         :: aux_tens(:)
+                  type(C_PTR):: body_p
+      
+                  integer :: ierr
+      
+      
+                  one_dims(1) = 1
+                  oovv_dims(1:2) = exa_input%nocc
+                  oovv_dims(3:4) = exa_input%nvir
+                  ov_dims(1) = exa_input%nocc
+                  ov_dims(2) = exa_input%nvir
+      
+      
+                  ierr=talsh_tensor_construct(bvec_tensor%t1,C8,ov_dims,init_val=ZERO)
+                  ierr=talsh_tensor_construct(bvec_tensor%t2,C8,oovv_dims,init_val=ZERO)
+                  ierr=talsh_tensor_construct(Aux_tensor1,C8,one_dims(1:0),init_val=ZERO)
+      
+      
+      
+                  ierr=talsh_tensor_add('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov,scale=ONE) 
+                  ierr=talsh_tensor_contract("B(i,a)+=l2(i,j,a,b)*E(b,j)",bvec_tensor%t1,l2_tensor,& 
+                                                      interm_t_prop%epsilon_prop_vo,scale=ONE)  
+      
+                  ierr=talsh_tensor_add('B(i,j,a,b)+=Y(i,j,a,b)',bvec_tensor%t2,interm_t_prop%eta_prop_oovv,scale=ONE)  
+      
+                  
+                  ierr=talsh_tensor_contract("A1()+=l1(i,a)*E(a,i)",Aux_tensor1,l1_tensor,interm_t_prop%epsilon_prop_vo,scale=ONE)
+                  ierr=talsh_tensor_contract("A1()+=l2(i,j,a,b)*E(a,b,i,j)",Aux_tensor1,l2_tensor,&
+                                                interm_t_prop%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+       
+                  ierr=talsh_tensor_contract("B(i,a)+=l1(i,a)*A1()",bvec_tensor%t1,l1_tensor,Aux_tensor1,scale=MINUS_ONE) 
+                  ierr=talsh_tensor_contract("B(i,j,a,b)+=l2(i,j,a,b)*A1()",bvec_tensor%t2,l2_tensor, &
+                                                      Aux_tensor1,scale=MINUS_ONE) 
+      
+                  ierr=talsh_tensor_destruct(Aux_tensor1)
+      
+
+                  call get_eta(int_t,interm_t,l1_tensor,l2_tensor,interm_t%eta_ov,interm_t%eta_oovv)
+                  ierr=talsh_tensor_contract("A1()+=l1(i,a)*T(a,i)",Aux_tensor1,l1_tensor,Tprop_tensor%t1,scale=ONE)
+                  ierr=talsh_tensor_contract("A1()+=l2(i,j,a,b)*T(a,b,i,j)",Aux_tensor1,l2_tensor,&
+                                                Tprop_tensor%t2,scale=ONE_QUARTER_C)
+            
+      
+                  ierr=talsh_tensor_contract("B(i,a)+=n(i,a)*A1()",bvec_tensor%t1,interm_t%eta_ov,Aux_tensor1,scale=ONE) 
+                  ierr=talsh_tensor_contract("B(i,j,a,b)+=n(i,j,a,b)*A1()",bvec_tensor%t2,interm_t%eta_oovv, &
+                                                Aux_tensor1,scale=ONE)  
+      
+      
+                  ierr=talsh_tensor_init(Aux_tensor1)
+                  ! call get_eta(int_t,interm_t,l1_tensor,l2_tensor,interm_t%eta_ov,interm_t%eta_oovv)
+      
+                  ierr=talsh_tensor_contract("A1()+=n1(i,a)*T(a,i)",Aux_tensor1,interm_t%eta_ov,Tprop_tensor%t1,scale=MINUS_ONE)
+                  ierr=talsh_tensor_contract("A1()+=n2(i,j,a,b)*T(a,b,i,j)",Aux_tensor1,interm_t%eta_oovv,&
+                                                Tprop_tensor%t2,scale=MINUS_ONE_QUARTER_C)
+      
+      
+                  ierr=talsh_tensor_get_body_access(Aux_tensor1,body_p,C8,int(0,C_INT),DEV_HOST)
+      
+      
+                  ierr=talsh_tensor_contract("B(i,a)+=l1(i,a)*A1()",bvec_tensor%t1,l1_tensor,Aux_tensor1,scale=MINUS_ONE) 
+                  ierr=talsh_tensor_contract("B(i,j,a,b)+=l2(i,j,a,b)*A1()",bvec_tensor%t2,l2_tensor, &
+                                                Aux_tensor1,scale=MINUS_ONE)  
+      
+                  ierr=talsh_tensor_destruct(Aux_tensor1)
+                  ierr=talsh_tensor_destruct(one_tensor)
+      
+            end subroutine get_left_bvec_ccci
+
+!-----------------------------------------------------------------------------------------------------------------------------
+      
+            subroutine get_left_bvec_cccc(exa_input,int_t,interm_t,interm_t_prop,l1_tensor,l2_tensor,Tprop_tensor,bvec_tensor)
+
+                  !The cc-cc left bvector in the left response equations. 
+                  !This routine can be used in cc-cc quadratic response function 
+                  !and asymmetric cc-cc linear response function
+                  !Written by Xiang Yuan Janunary 2024, Lille, France
+
+            
+                  use tensor_algebra
+                  use talsh
+                  use exacorr_datatypes
+                  use exacorr_utils
+                  use talsh_common_routines
+                  use exacorr_global
+                  use talsh_eom_LR
+            
+            
+                  type(exacc_input), intent(in) :: exa_input
+                  type(talsh_intg_tens_t), intent(inout) :: int_t
+                  type(talsh_intermediates_tens_t),intent(inout) :: interm_t
+                  type(talsh_rsp_interm_tens_t) :: interm_t_prop
+                  type(talsh_tens_t), intent(inout)  :: l2_tensor
+                  type(talsh_tens_t), intent(inout)  :: l1_tensor
+                  type(talsh_comm_tens_t)       :: Tprop_tensor    !for CC-CI, we need right-vectors
+                  type(talsh_comm_tens_t)       :: bvec_tensor
+            
+            
+                  type(talsh_tens_t)       :: Aux_tensor1, one_tensor
+                  type(talsh_comm_tens_t)  :: B  !Ft^x
+            
+                  integer(INTD), dimension(4)   :: oovv_dims
+                  integer(INTD), dimension(2)   :: ov_dims
+                  integer(C_INT)              :: one_dims(1)
+                  complex(8), pointer         :: aux_tens(:)
+                  type(C_PTR):: body_p
+            
+                  integer :: ierr
+            
+                  one_dims(1) = 1
+                  oovv_dims(1:2) = exa_input%nocc
+                  oovv_dims(3:4) = exa_input%nvir
+                  ov_dims(1) = exa_input%nocc
+                  ov_dims(2) = exa_input%nvir
+            
+            
+                  ierr=talsh_tensor_construct(bvec_tensor%t1,C8,ov_dims,init_val=ZERO)
+                  ierr=talsh_tensor_construct(bvec_tensor%t2,C8,oovv_dims,init_val=ZERO)
+                  call get_tF(B%t1,B%t2,Tprop_tensor%t1,Tprop_tensor%t2,l1_tensor,l2_tensor,&
+                        interm_t,int_t,exa_input%nocc,exa_input%nvir)
+            
+                  ierr=talsh_tensor_add('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov,scale=ONE)             
+                  ierr=talsh_tensor_add('B(i,j,a,b)+=Y(i,j,a,b)',bvec_tensor%t2,interm_t_prop%eta_prop_oovv,scale=ONE)  
+
+                  ierr=talsh_tensor_add('B(i,a)+=Ft(i,a)',bvec_tensor%t1,B%t1,scale=ONE)             
+                  ierr=talsh_tensor_add('B(i,j,a,b)+=Ft(i,j,a,b)',bvec_tensor%t2,B%t2,scale=ONE) 
+            
+      end subroutine get_left_bvec_cccc
+
 !------------------------------------------------------------------------------------------------------------------------------------
+
       subroutine get_eta(int_t,interm_t,l1_tensor,l2_tensor,sigma1_tensor,sigma2_tensor)
-            ! Used in CC-CI left equation to construct eta vector
+            ! Used in CC-CI left equation to construct eta vector. In EOM-QR, we don't need this term.
 
             !     input variables
                   type(talsh_intg_tens_t), intent(inout) :: int_t

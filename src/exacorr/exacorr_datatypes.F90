@@ -105,6 +105,7 @@
             integer                 :: N_omega_lr = 1               ! number of frequency in cclr
             integer                 :: N_omega_qr1 = 1               ! number of frequency1 in ccqr
             integer                 :: N_omega_qr2 = 1               ! number of frequency2 in ccqr
+            integer                 :: N_Time_anti = 0          ! Number of time-antisymmetric operators
            
             
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs

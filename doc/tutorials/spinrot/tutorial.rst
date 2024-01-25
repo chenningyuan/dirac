@@ -35,7 +35,7 @@ In tensorial notation, the nuclear spin-rotation contributions of a nucleus :mat
 
 where :math:`{\bf R}_{MN}` is the position of nucleus :math:`M` with respect to the position of nucleus :math:`N`; :math:`{\bf R}_{N,CM}` is the position of nucleus :math:`N` with respect to the molecular center of mass; :math:`{\bf I}` is the inertia tensor of the molecule and :math:`{\bf J}_e = \left({\bf r} - {\bf R}_{CM} \right) \times {\bf p}+{\bf S}_e` is the electronic total angular momentum.
 
-For molecules at their equilibrium geometry, it is found that the sum of the first two terms, :math:`{\bf M}_N^{NU} (eq) + {\bf M}_N^{EV} (eq)`, is equal to a new tensor which is independent of the electronic dynamics (see Eq. 60 of :cite:`Aucar_JCP2012`),
+For molecules at their equilibrium geometry, it is found that the sum of the first two terms, :math:`{\bf M}_N^{NU} (eq) + {\bf M}_N^{EV} (eq)`, is equal to a new tensor which is independent of the electronic variables (see Eq. 60 of :cite:`Aucar_JCP2012`),
 
 .. math::
 

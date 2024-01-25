@@ -332,7 +332,7 @@ C
        integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
        integer, parameter     :: INCONSIS = 6 ! CHECKPOINT does not contain consistent information wrt number of basis functions
        character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
-       integer                :: nsym
+       integer                :: maxopr,inversion
        real(8)                :: total_energy,e_corr
        integer                :: i, j, k, ishell, iprimstart, iprimend
        integer                :: nao, nao_bas, nshells, iao, ibas
@@ -348,7 +348,20 @@ C
        integer                :: n_mo(2),n_po(2),n_basis(2)
        integer,allocatable    :: n_prim(:),n_cont(:)
        character*(:),allocatable :: group
+       logical                :: C1_info,sym_info
 
+       ! check whether the MO coefficients were generated with symmetry, we then need to read the C1 form therof
+       ! for backwards compatibility we first check whether the symmetry section itself is available
+       call checkpoint_query ('/result/symmetry',sym_info)
+       if (.not.sym_info) then
+          print*, "WARNING: old CHECKPOINT, assuming NOSYM"
+          maxopr = 0
+          inversion = 1
+       else
+          call checkpoint_read ('/result/symmetry/maxopr',idata=maxopr)
+          call checkpoint_read ('/result/symmetry/inversion',
+     &         idata=inversion)
+       end if
 
        group = '/result/wavefunctions/'//trim(section)//'/'
        ierr = NOERROR
@@ -363,32 +376,40 @@ C
           total_energy = total_energy - e_corr
        end if
 
-       if (n_basis(2) == 0) then
-         nsym = 1
-       else
-         nsym = 2
-       end if
        ! check symmetry and get dimensions of the coefficient array
-       if (nsym > 1) then
-          ierr = SYMMETRY
-          return
+       if (inversion == 2) then
+          nao = sum(n_basis)
+          npo = sum(n_po)
+          nmo = sum(n_mo)
+          nto = npo+nmo
        else
           nao = n_basis(1) ! number of ao's
           npo = n_po(1)    ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
           nmo = n_mo(1)    ! "electronic" (= positive energy) solutions (we only need these)
           nto = npo+nmo    ! total number of solutions on this file
-          if (npo>0) print*, "warning: reading 4C CHECKPOINT file" ! this warning will go once we have the full index transform implemented
        end if
+       if (npo>0) print*, "warning: reading 4C CHECKPOINT file" ! this warning will go once we have the full index transform implemented
 
-       allocate(coeff(nao*nto*nzbuf))
+       allocate(coeff(nao*nto*nz))
        allocate(coeff_q(nao,nto,nz))
        allocate(eig(nto))
        allocate(ibeig(nto))
        allocate(index(nmo))
         
        ! read the mo coefficients and orbital eigenvalues
-       call checkpoint_read (group//'mobasis/orbitals',rdata=coeff)
-       call checkpoint_read (group//'mobasis/eigenvalues',rdata=eig)
+       if (maxopr == 0) then
+        call checkpoint_read (group//'mobasis/orbitals',rdata=coeff)
+        call checkpoint_read (group//'mobasis/eigenvalues',rdata=eig)
+       else
+        ! check whether the C1 formatted coefficients were written
+        call checkpoint_query (group//'mobasis/orbitals_C1',C1_info)
+        if (.not. C1_info) then
+         print*," Activate the ACMOUT option in the SCF stage"
+         call quit ("no C1 formatted MO coefficients available ")
+        end if
+        call checkpoint_read (group//'mobasis/orbitals_C1',rdata=coeff)
+        call checkpoint_read (group//'mobasis/eigenvalues_C1',rdata=eig)
+       endif
        call checkpoint_read (group//'mobasis/symmetry',idata=ibeig)
        ! fill in index values
        do i = 1, nmo
@@ -396,7 +417,7 @@ C
        end do
 
        ! put in cmo in quaternion format
-       coeff_q = reshape(coeff,(/nao,nto,nzbuf/))
+       coeff_q = reshape(coeff,(/nao,nto,nz/))
        cspinor%algebra = 'q'
        call alloc_mo (cspinor,nao,nmo)
        cspinor%total_energy = total_energy
@@ -413,7 +434,11 @@ C
        call convert_mo_to_complex(cspinor)
 
        ! read general AO basis information
-       group = '/input/aobasis/1/'
+       if (maxopr == 0) then
+          group = '/input/aobasis/1/' ! SCF was done in C1
+       else
+          group = '/input/aobasis/3/' ! we need the AO basis expanded from the symmetry-packed form
+       end if
        call checkpoint_read 
      & (group//'angular',idata=ao_basis%basis_angular)
        call checkpoint_read (group//'n_ao',idata=nao_bas)
