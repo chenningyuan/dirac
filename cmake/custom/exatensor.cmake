@@ -24,7 +24,7 @@ if(ENABLE_EXATENSOR)
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
    set (EXATENSOR_GIT_REPO_LOCATION "https://github.com/RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
-   set (EXATENSOR_GIT_HASH 35caded68340657186be190a2d68a98c9e2159bb CACHE STRING "ExaTENSOR Git repository hash in use")
+   set (EXATENSOR_GIT_HASH 1a4ae3e4db8ae6843e27899e72cbc2de046498cc CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type
@@ -81,6 +81,8 @@ if(ENABLE_EXATENSOR)
            set(EXATENSOR_MPIENV "MPILIB=MPICH PATH_MPICH=${PATH_MPI}")
          elseif (${PYTHON_OUTPUT} MATCHES "OPENMPI")
            set(EXATENSOR_MPIENV "MPILIB=OPENMPI PATH_OPENMPI=${PATH_MPI}")
+         elseif (${PYTHON_OUTPUT} MATCHES "INTEL")
+           set(EXATENSOR_MPIENV "MPILIB=MPICH PATH_MPICH=${PATH_MPI}")
          else()
            message(STATUS "WARNING: The MPI compiler ${PYTHON_OUTPUT} is not supported by ExaTENSOR")
            message(STATUS "Only MPICH (3.2.1+) and OpenMPI (4.1.1+) are currently supported by ExaTENSOR")
