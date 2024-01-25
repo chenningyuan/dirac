@@ -51,10 +51,11 @@ contains
     character(*), optional, intent(in) :: rspvec_file
     integer, optional, intent(in) :: rspvec_id
 
+    type(cmo_t) :: cmo_i
     type(response_info_t) :: rsp_info ! in dirac_rsp_utils 
     type(dmat_t) :: tmpmat_ao, tmpmat_mo
     integer :: nao, nmo, nz
-    integer :: i, ivec, rspvec_ndim, rspvec_nz, n1
+    integer :: i, ivec, ivec_con, rspvec_ndim, rspvec_nz, n1
 
 
     real(8), allocatable :: occupation(:)
@@ -165,21 +166,69 @@ contains
 !        if (rsp_info%vectors(ivec)%should_use_lao()) then
 !         gosia fixme:
 !         now, i'm reusing old code here
-          write(*, *) 'Calculating LAO contributions'
-      
+        write(*, *) 'Calculating LAO contributions'
+
+        if (present(dmat_ao)) then
+          dmat_ao%mat_dim = nao
+          dmat_ao%mat_nz  = nz
+          call dmat_ao%alloc()
+
+!         temp - fixme:
+          if (present(rspvec_file)) then
+            f_name = trim(rspvec_file)
+          else
+            stop
+          end if
+          call rsp_info%read_from_checkpoint(trim(f_name))
+       
           if (present(rspvec_id)) then
             ivec = rspvec_id
           else
             stop
           end if
 
+          if (rsp_info%vectors(ivec)%get_label() == 'LAO-XRM1H1') then
+            ivec_con = 1
+          else if (rsp_info%vectors(ivec)%get_label() == 'LAO-YRM1H1') then
+            ivec_con = 2
+          else if (rsp_info%vectors(ivec)%get_label() == 'LAO-ZRM1H1') then
+            ivec_con = 3
+          end if
+
           tmpmat_mo%mat_dim = nmo
           tmpmat_mo%mat_nz = nz
           call tmpmat_mo%alloc()
-          call get_d_con_mo(tmpmat_mo)
+          call get_d_con_mo(tmpmat_mo, ivec_con)
           call tmpmat_mo%scale_elements(0.5d0) ! if (.not. levyle) fixme
-          call add_lao_to_dmat_ao(cmo, tmpmat_mo, dmat_ao, rsp_info)
+
+          !call tmpmat_mo%get_dmat_q_mo_sector('si ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
+          !call construct_perturbed_dmat_lao(dmat_ao%elements,&
+          !              tmpmat_mo%elements,&
+          !              cmo%coeff)
+
+          cmo_i%n_ao = cmo%n_ao
+          cmo_i%n_mo = cmo%n_mo
+          cmo_i%nz   = cmo%nz
+          cmo_i%n_fsym=cmo%n_fsym
+          call cmo_i%alloc_all()
+          cmo_i%coeff(1:nao*nmo*nz) = cmo%coeff(1:nao*nmo*nz)
+          call cmo_i%reshape_to_q()
+          cmo_i%ioffs   = cmo%ioffs
+          write(*,*) 'CMOIIIII'
+          call cmo_i%display()
+          call cmo_i%get_cmo_q_mo_sector('i ', cmo%ioffs)
+
+          !call tmpmat_mo%get_dmat_q_mo_sector('si ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
+          dmat_ao%elements = cmo%coeff*(tmpmat_mo%elements*cmo_i%coeff)
+
+          factor(1) = -1.0d0
+          factor(2:4) = 1.0d0
+          call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
+          call dmat_ao%scale_elements(2.0d0)
           call tmpmat_mo%erase()
+          call rsp_info%erase()
+          call cmo_i%erase()
+        end if
 !        end if
 
       case default
@@ -854,6 +903,91 @@ contains
 
   end subroutine
 
+
+! ------------------------------------------------------------------------------
+  subroutine construct_perturbed_dmat_lao(dmat,bmat,  &
+                                      cmo)
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbbas.h"
+#include "maxaqn.h"
+#include "onecom.h"
+#include "ccom.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbham.h"
+
+    real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
+    real(kind=8), intent(inout) :: bmat(norbt, norbt, nz)
+    real(kind=8), intent(in) :: cmo(*)
+
+    integer :: irep,iopsy,itim
+    integer :: iprint
+    integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
+    character(2) ::typ
+    logical :: debug_print
+!
+
+    iprint = 0
+    irep = 0
+    typ = 'P-'
+
+    dmat(1:ntbas(0)*ntbas(0), 1:nz) = 0.0d0
+
+    do i1 = 1, 1
+      i2 = 1
+
+!     second index: inactive index:
+      ni = nish(i2)
+      ii = iorb(i2) + npsh(i2) + 1
+      ji = icmoq(i2) + npsh(i2)*nfbas(i2,0)+1
+
+!     first index: secondary index:
+      if (typ(1:1) == 'E') then
+!        .. secondary index is electronic:
+         ns = nesh(i1)
+         is = iorb(i1) + npsh(i1) + 1
+         js = icmoq(i1) + npsh(i1)*nfbas(i1, 0) + 1
+      else if (typ(1:1) == 'P') then
+!        .. secondary index is positronic:
+         ns = npsh(i1)
+         is = iorb(i1) + 1
+         js = icmoq(i1) + 1
+      end if
+
+      if (ni > 0 .and. ns > 0) then
+
+        call qtrans90('MOAO', &
+                      'S',    &
+                      0.0d0,  &
+                      nfbas(i1,0), nfbas(i2,0), &
+                      ns, ni, &
+!                     ------------------------------------------------------
+                      dmat(i2basx(i1,i2)+1, 1),   &
+                      ntbas(0), ntbas(0), nz,     &
+                      ipqtoq(1, irep),                  &
+!                     ------------------------------------------------------
+                      bmat(is, ii, 1),                    &
+                      norbt, norbt, nz, &
+                      ipqtoq(1, irep),                  &
+!                     ------------------------------------------------------
+                      cmo(js),                                  &
+                      nfbas(i1,0), norb(i1), nz,&
+                      ipqtoq(1, 0),                     &
+!                     ------------------------------------------------------
+                      cmo(ji),                                  &
+                      nfbas(i2,0), norb(i2), nz,&
+                      ipqtoq(1, 0),                     &
+!                     ------------------------------------------------------
+                      iprint)
+      end if
+
+     end do
+
+  end subroutine
+
 !
 ! ------------------------------------------------------------------------------
   subroutine pertdenmat_sym(mat_dim,mat_nz,mat, f)
@@ -879,52 +1013,6 @@ contains
 
   end subroutine
 
-
-
-  subroutine add_lao_to_dmat_ao(cmo, dmat_mo, dmat_ao, rsp_info)
-use matrix_defop_old
-use visual_london
-    type(cmo_t), intent(in) :: cmo
-    type(dmat_t), intent(inout) :: dmat_mo
-    type(dmat_t), intent(inout) :: dmat_ao
-    type(response_info_t),intent(in) :: rsp_info
-
-    type(dmat_t) :: tmpmat_ao
-    integer :: nmo, nao, nz, i
-    real(8) :: f(4)
-
-    write(*,*) 'in add_lao_to_dmat_ao'
-    nao = sum(cmo%n_ao)
-    nmo = sum(cmo%n_mo)
-    nz  = cmo%nz
-    write(*,*) 'ioffs: ', cmo%ioffs
-
-    call dmat_mo%get_dmat_q_mo_sector('pi ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
-
-    tmpmat_ao%mat_dim = nao
-    tmpmat_ao%mat_nz  = nz
-    call tmpmat_ao%alloc()
-    !write(*,*) 'in add_lao_to_dmat_ao before transfrorm'
-    !call dmat_transform_mo2ao(cmo, dmat_mo, tmpmat_ao)
-    !f(1:4) = -1.0d0
-    !f(1) = -1.0d0
-    !f(2:4) = 1.0d0
-    write(*,*) 'in add_lao_to_dmat_ao before pertden'
-    !call pertdenmat_sym(nao, nz, tmpmat_ao%elements, f)
-    !ivec=3
-    !    call construct_perturbed_dmat(dmat_ao%elements,&
-    !                    mat_ao%elements,&
-    !                    ivec, &
-    !                    rsp_info, cmo%coeff)
-    write(*,*) 'in add_lao_to_dmat_ao before add'
-    do i = 1, nao*nao*nz
-      dmat_ao%elements(i) = dmat_ao%elements(i) + tmpmat_ao%elements(i)
-    end do
-    write(*,*) 'in add_lao_to_dmat_ao before scale'
-        call dmat_ao%scale_elements(2.0d0)
-
-    call tmpmat_ao%erase()
-  end subroutine
 
 
 ! ------------------------------------------------------------------------------
@@ -1015,14 +1103,15 @@ use visual_london
 
 
 !OLD
-  subroutine get_d_con_mo(D_con_mo)!, occupation, D_con_mo_ai)
+  subroutine get_d_con_mo(D_con_mo, icomp)! occupation, D_con_mo_ai)
 !   ----------------------------------------------------------------------------
-    type(dmat_t),intent(out):: D_con_mo
+    type(dmat_t),intent(inout):: D_con_mo
+    integer, intent(in) :: icomp
     !real(8)                 :: occupation(*)
     !type(matrix), optional  :: D_con_mo_ai
 
     real(8), allocatable    :: D_ai(:, :, :), D_ji(:, :, :)
-    integer                 :: file_unit, icomp, nr_xyz_comp, which_icomp
+    integer                 :: file_unit, nr_xyz_comp, which_icomp
     logical                 :: debug_me, dummy , sum_ep_rn
 
 !   gosia, note for me:
@@ -1051,23 +1140,10 @@ use visual_london
     read(file_unit) sum_ep_rn
     read(file_unit) D_con_mo%elements
 
-    if (nr_xyz_comp > 1) then
-!      for example after calculating full shielding tensor in preceding response
-!      there will be three matrices on TBMO file: T^Bx, T^By and T^Bz
-!      read here the requested one:
-       if (visual_cfg_london_component == 'Y') then
-          if (which_icomp == 2) then
-             go to 2
-          else
-             go to 1
-          end if
-       else if (visual_cfg_london_component == 'Z') then
-          if (which_icomp == 3) then
-             go to 2
-          else
-             go to 1
-          end if
-       end if
+    if (icomp == which_icomp) then
+      go to 2
+    else
+      go to 1
     end if
 
 2   continue
@@ -1076,9 +1152,10 @@ use visual_london
 
     write(*, *) 'visual: connection matrix (T^B in MO basis) read from TBMO file'
     write(*, *) 'nr_xyz_comp = ', nr_xyz_comp
-    write(*, *) 'component = ', which_icomp
+    write(*, *) 'component = ', icomp
     write(*, *) 'irep = ', D_con_mo%irep
     write(*, *) 'sum over e+p shells = ', sum_ep_rn
+    write(*, *) 'mat = ', D_con_mo%elements
 
 !    if (visual_cfg_use_orbital_string) then
 !       call select_orbitals_reortho(D_con_mo%elms, occupation)

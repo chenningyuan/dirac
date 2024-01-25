@@ -189,7 +189,7 @@ contains
           end do
         end do
 
-      case ('pi ')
+      case ('si ')
       ! get secondary-inactive and inactive-secondary blocks
       ! (both: positive and negative energy secondary blocks)
 
@@ -222,7 +222,7 @@ contains
            end do
         end do
 
-      case ('pi+')
+      case ('si+')
       ! get secondary-inactive and inactive-secondary blocks;
       ! only positive energy secondary
 
@@ -255,7 +255,7 @@ contains
            end do
         end do
 
-      case ('pi-')
+      case ('si-')
       ! get secondary-inactive and inactive-secondary blocks
       ! (both: positive and negative energy secondary blocks)
 
@@ -281,6 +281,33 @@ contains
               end do
               do j = ps(isym), n_mo(isym)
                  do i = ns(isym), n_mo(isym)
+                    self%elements_q(i, j, iz) = 0.0d0
+                 end do
+              end do
+       
+           end do
+        end do
+
+      case ('pi ')
+      ! get general-inactive and inactive-general blocks
+      ! (both: positive and negative energy general blocks)
+
+        do iz = 1, self%mat_nz
+           do isym = 1, nfsym
+       
+              do j = ns(isym), pi(isym) - 1
+                 do i = ns(isym), pi(isym) - 1
+                    self%elements_q(i, j, iz) = 0.0d0
+                 end do
+                 do i = ps(isym), n_mo(isym)
+                    self%elements_q(i, j, iz) = 0.0d0
+                 end do
+              end do
+              do j = ps(isym), n_mo(isym)
+                 do i = ns(isym), pi(isym) - 1
+                    self%elements_q(i, j, iz) = 0.0d0
+                 end do
+                 do i = ps(isym), n_mo(isym)
                     self%elements_q(i, j, iz) = 0.0d0
                  end do
               end do

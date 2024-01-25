@@ -57,7 +57,7 @@ module visual_datatypes
     procedure, pass, public:: display => display_cmo
     procedure, pass, public:: reshape_to_q => reshape_cmo_to_q
     procedure, pass, public:: reshape_from_q => reshape_cmo_from_q
-    procedure, pass, public:: get_cmo_q_sector
+    procedure, pass, public:: get_cmo_q_mo_sector
   end type cmo_t
 
   type:: rs_input_t
@@ -142,6 +142,7 @@ module visual_datatypes
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid function import
     character(len=:), public, allocatable:: file_out        ! name of a file for grid function export
     real(8), public, allocatable:: values(:,:)
+    logical, public:: composite = .false. ! is a sum of a few contributions (e.g., depends on a few density matrices)
   contains
     private
     !procedure, pass, public:: in_use  => grid_function_in_use
@@ -150,7 +151,7 @@ module visual_datatypes
     procedure, pass, public:: get_ndim
     procedure, pass, public:: get_npoints
     !procedure, pass, public:: should_depend_on_rsp_data
-    !procedure, pass, public:: should_depend_on_pertAOs
+    procedure, pass, public:: should_depend_on_LAOs
     procedure, pass, public:: erase   => erase_grid_function
     procedure, pass, public:: display => display_grid_function
   end type grid_function_t
@@ -277,6 +278,14 @@ contains
     class(grid_function_t), intent(in):: self
     logical:: assigned_to_grid
     assigned_to_grid = (self%id_assigned_grid > 0)
+  end function
+
+! ------------------------------------------------------------------------------
+  pure function should_depend_on_LAOs(self, lao_mode)
+    class(grid_function_t), intent(in):: self
+    logical, intent(in):: lao_mode
+    logical:: should_depend_on_LAOs
+    should_depend_on_LAOs = (self%lao > 0 .and. (lao_mode))
   end function
 
 ! ------------------------------------------------------------------------------
@@ -630,16 +639,85 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine get_cmo_q_sector(self, sector, ioffs)
+  subroutine get_cmo_q_mo_sector(self, sector, ioffs)
     class(cmo_t), intent(inout):: self
     character(2), intent(in):: sector
     integer, intent(in):: ioffs(6)
-    integer:: ns(2), pi(2), ps(2), n_mo(2)
-    integer:: i,j,isym,iz
+    integer:: ns(2), pi(2), ps(2)
+    integer:: i,isym,iz
 !
 !   return cmo with all elements zeroed-out
 !   except the ones defined by sector
 !
+
+    if (.not. self%allocated_coeff_q()) return
+
+    ns(1)   = ioffs(1)
+    pi(1)   = ioffs(2) 
+    ps(1)   = ioffs(3) 
+    if (self%n_fsym == 2) then
+      ns(2)   = ioffs(4)
+      pi(2)   = ioffs(5) 
+      ps(2)   = ioffs(6) 
+    end if
+
+!   todo: consistency check
+
+    select case (sector)
+      case ('i ')
+      ! inactive MOs
+
+        do iz = 1, self%nz
+          do isym = 1, self%n_fsym
+            do i = ns(isym), pi(isym) - 1
+              self%coeff_q(1:self%n_ao(isym), i, iz) = 0.0d0
+            end do
+            do i = ps(isym), self%n_mo(isym)
+              self%coeff_q(1:self%n_ao(isym), i, iz) = 0.0d0
+            end do
+          end do
+        end do
+
+      case ('s ')
+      ! secondary MOs (both: positive and negative energy)
+
+        do iz = 1, self%nz
+          do isym = 1, self%n_fsym
+            do i = pi(isym), ps(isym) - 1
+              self%coeff_q(1:self%n_ao(isym), i, iz) = 0.0d0
+            end do
+          end do
+        end do
+
+      case ('s+')
+      ! secondary positive energy
+
+        do iz = 1, self%nz
+          do isym = 1, self%n_fsym
+            do i = ns(isym), pi(isym) - 1
+              self%coeff_q(1:self%n_ao(isym), i, iz) = 0.0d0
+            end do
+          end do
+        end do
+
+      case ('s-')
+      ! secondary negative energy
+
+        do iz = 1, self%nz
+          do isym = 1, self%n_fsym
+            do i = pi(isym), self%n_mo(isym)
+              self%coeff_q(1:self%n_ao(isym), i, iz) = 0.0d0
+            end do
+          end do
+        end do
+
+
+      case default
+        stop
+    end select
+
+    call self%reshape_from_q()
+
 
   end subroutine
 

@@ -342,17 +342,6 @@
          call read_input_visual_helper(iq_jdia)
       end if
 
-      if (kw_matches(word, '.JX    ')) then
-         call read_input_visual_helper(iq_jx)
-      end if
-
-      if (kw_matches(word, '.JY    ')) then
-         call read_input_visual_helper(iq_jy)
-      end if
-
-      if (kw_matches(word, '.JZ    ')) then
-         call read_input_visual_helper(iq_jz)
-      end if
 
       if (kw_matches(word, '.KIN   ')) then
          call read_input_visual_helper(iq_kin)
@@ -391,17 +380,6 @@
          call read_input_visual_helper(iq_gradj)
       end if
 
-      if (kw_matches(word, '.S     ')) then
-         call read_input_visual_helper(iq_s)
-      end if
-
-      if (kw_matches(word, '.DIVS  ')) then
-         call read_input_visual_helper(iq_divs)
-      end if
-
-      if (kw_matches(word, '.ROTS  ')) then
-         call read_input_visual_helper(iq_rots)
-      end if
 
       if (kw_matches(word, '.EDIPX ')) then
          call read_input_visual_helper(iq_edipx)
@@ -561,24 +539,24 @@
          end do
       end if
 
-      if (kw_matches(word, '.LONDON')) then
-         visual_cfg_london = .true.
-         read(get_file_unit(), *) visual_cfg_london_component
-      end if
 
       if (kw_matches(word, '.NONE  ')) then
+         visual_cfg_london = .true.
          visual_cfg_london_none      = .true.
       end if
 
       if (kw_matches(word, '.NODIRE')) then
+         visual_cfg_london = .true.
          visual_cfg_london_skip_direct = .true.
       end if
 
       if (kw_matches(word, '.NOREOR')) then
+         visual_cfg_london = .true.
          visual_cfg_london_skip_ro = .true.
       end if
 
       if (kw_matches(word, '.NOKAPP')) then
+         visual_cfg_london = .true.
          visual_cfg_london_skip_kappa = .true.
       end if
 

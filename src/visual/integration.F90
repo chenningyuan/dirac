@@ -276,30 +276,30 @@ contains
       DO IPOINT = 1, NR_POINTS
 
 !temp fixme
-           if (present(grid_function)) then
-           call get_quantity_in_point(visual_cfg_nr_dmat, &
-                                      D,                  &
-                                      D_0,                &
-                                      px(ipoint),         &
-                                      py(ipoint),         &
-                                      pz(ipoint),         &
-                                      ao,                 &
-                                      buffer,             &
-                                      QUANTITY_INTEGRAL_MAX_DIM, &
-                                      quantity, &
-                                    grid_function=grid_function, ipoint=ipoint)
-           else
-           call get_quantity_in_point(visual_cfg_nr_dmat, &
-                                      D,                  &
-                                      D_0,                &
-                                      px(ipoint),         &
-                                      py(ipoint),         &
-                                      pz(ipoint),         &
-                                      ao,                 &
-                                      buffer,             &
-                                      QUANTITY_INTEGRAL_MAX_DIM, &
-                                      quantity)
-           end if
+           !if (present(grid_function)) then
+           !call get_quantity_in_point(visual_cfg_nr_dmat, &
+           !                           D,                  &
+           !                           D_0,                &
+           !                           px(ipoint),         &
+           !                           py(ipoint),         &
+           !                           pz(ipoint),         &
+           !                           ao,                 &
+           !                           buffer,             &
+           !                           QUANTITY_INTEGRAL_MAX_DIM, &
+           !                           quantity, &
+           !                         grid_function=grid_function, ipoint=ipoint)
+           !else
+           !call get_quantity_in_point(visual_cfg_nr_dmat, &
+           !                           D,                  &
+           !                           D_0,                &
+           !                           px(ipoint),         &
+           !                           py(ipoint),         &
+           !                           pz(ipoint),         &
+           !                           ao,                 &
+           !                           buffer,             &
+           !                           QUANTITY_INTEGRAL_MAX_DIM, &
+           !                           quantity)
+           !end if
 
         CALL DAXPY(QUANTITY_INTEGRAL_MAX_DIM+1, WEIGHT(IPOINT), QUANTITY, 1, &
      &                              QUANTITY_INTEGRAL, 1)

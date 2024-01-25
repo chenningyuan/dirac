@@ -90,6 +90,7 @@ module dirac_rsp_utils
     procedure, pass, public :: get_ih_sym
     procedure, pass, public :: get_tr_sym
     procedure, pass, public :: get_irep
+    procedure, pass, public :: get_label
     procedure, pass, public :: should_use_lao
     procedure, pass   :: assign_lao_order
     procedure, pass   :: transfer_gp_data_to_rsp
@@ -1080,6 +1081,19 @@ contains
       stop
     end if
   end function
+
+! ------------------------------------------------------------------------------
+  function get_label(self)
+    class(response_vector_t), intent(in) :: self
+    character(len=16) :: get_label
+    if (self%data_is_read) then
+      get_label = self%lab
+    else
+      print *, 'response_vector data is not read. get_label unknown. stop'
+      stop
+    end if
+  end function
+
 
 ! ------------------------------------------------------------------------------
   subroutine transfer_gp_data_to_rsp(self, ipqtoq, ihqmat, spinfr)

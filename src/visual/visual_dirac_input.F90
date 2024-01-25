@@ -31,10 +31,6 @@ module visual_dirac_input
           end if
       end if
 
-      if (visual_cfg_plot_file_format .eq. 'hdf5') then
-         call quit('export to hdf5 unavailable in this version. quitting')
-      end if
-
       if (.not. visual_cfg_txt_plot_file_use_legacy &
         .and..not.visual_cfg_cube_plot_file_use_legacy) then
          visual_cfg_plot_file_custom = .true.

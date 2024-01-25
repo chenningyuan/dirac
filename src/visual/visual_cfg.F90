@@ -51,8 +51,6 @@ module visual_cfg
    character(60), public           :: visual_cfg_out_scalar_file_name
    character(60), public           :: visual_cfg_out_vector_file_name
    character(60), public           :: visual_cfg_out_2ndtensor_file_name
-   logical,      public            :: visual_cfg_london_skip_cube = .false.
-   logical,      public            :: visual_cfg_london_skip_vtk  = .false.
 
    logical,      public            :: visual_cfg_global_refactor = .false.
 
@@ -214,6 +212,8 @@ module visual_cfg
    logical,      public:: visual_cfg_london_skip_ro       = .false.
    logical,      public:: visual_cfg_london_none          = .false.
    character(1), public:: visual_cfg_london_component
+   logical,      public            :: visual_cfg_london_skip_cube = .false.
+   logical,      public            :: visual_cfg_london_skip_vtk  = .false.
 
    integer,      public:: visual_cfg_irep_conmat = 0
    integer,      public:: visual_cfg_itim_conmat = 0
@@ -607,8 +607,6 @@ contains
         stop
     end select
 
-!fixme:
-        grid_function%wf_order = 0
 
   end subroutine
 
@@ -617,9 +615,13 @@ contains
   subroutine modify_grid_function_due_to_method(grid_function)
     class(grid_function_t), intent(inout):: grid_function
 
-    if (visual_cfg_london .and. grid_function%max_ao_m_order < 1) then
-      grid_function%max_ao_m_order = 1
+    if (grid_function%lao > 0) then
+      if (grid_function%max_ao_m_order < 1) grid_function%max_ao_m_order = 1
     end if
+
+!fixme:
+    !grid_function%wf_order = 0
+
 
     !if (levyle) then
     !  if ((grid_function%name == 'j') .or. &
