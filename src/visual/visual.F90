@@ -752,6 +752,12 @@ contains
                                    dmat_ao=dmat, &
                                    rspvec_file=rs_input%grid_functions(igf)%rspvec_file,&
                                    rspvec_id=rs_input%grid_functions(igf)%rspvec_id)
+              if (rs_input%grid_functions(igf)%lao > 0) then
+                call dirac_dmat_init('lao-connection-1', cmo, &
+                                     wf_order=rs_input%grid_functions(igf)%wf_order,&
+                                     dmat_ao=dmat, &
+                                     rspvec_id=rs_input%grid_functions(igf)%rspvec_id)
+              end if
         !and for laos:
         !make it: call dirac_dmat_init(wf_order=1, plab="conmat", cmo=mo_data, dmat_ao=dmat. op="add")
               !do iz=1,4
