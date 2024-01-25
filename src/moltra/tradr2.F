@@ -51,7 +51,6 @@ C
       CALL QENTER('TRDR2T')
       KFRSAV = KFREE
 C
-C     TODO (/hjaaj aug 2001):
       IF (.NOT. LMP2)
      &     CALL QUIT('TRDR2T: Only MP2 is implemented for strategy 2')
 C
@@ -2588,6 +2587,7 @@ C     Initialize
 C        Get hold of the slaves and initialize them
 C        (ITASK = 2 for parallel integral transformation)
 C     
+      cmmnfo = .true.
       CALL DIRAC_PARCTL( MOLTRA_PAR )
       KFRSAV = KFREE
       TMMP2 = 0.D0
@@ -2757,6 +2757,11 @@ C
             END IF
             CALL FLSHFO(LUPRI)
          END IF
+
+         IF (ISLVRL .GT. NODES) THEN
+            CALL QUIT('Program error, counter for number of '//
+     &         'released slaves is greater than number of nodes')
+         END IF
 C
 C     Check if current batch is finished
 C
@@ -2918,6 +2923,7 @@ C
 C
 C     Initialization
 C
+      cmmnfo = .true. ! hjaaj
       KFRSAV = KFREE
       CALL MKNSTT(NSTR,NSTRT)
       CALL DZERO(TIM1,7)
@@ -3027,9 +3033,13 @@ C ----------------------------------------------------------------------
 C     End inner loop over tasks
 C ----------------------------------------------------------------------
  200  CONTINUE
+      IF (CMMNFO) WRITE(LUPRI,'(A,I4,A,6I4,I8)') ' <COMMINFO> Node #',
+     &     MYTID, ' released; INTGTH, task:', INTGTH,IDSNFO
 C     
 C     4/4 transformation
 C
+      IF (INTGTH .GT. 0) THEN ! some integrals to transfer to master
+
       IF (IPRINT .GE. 1) WRITE (LUPRI,1012) N4QMT*8./(1024.*1024.)
       CALL MEMGET('REAL',K4QMAT,N4QMT,WORK,KFREE,LFREE)
       CALL DZERO(WORK(K4QMAT),N4QMT)
@@ -3077,6 +3087,9 @@ C
 #endif
       IF (CMMNFO) WRITE(LUPRI,'(A,I4,A,I4)') ' <COMMINFO> Node #',
      &     MYTID, ' sent fully transformed integrals for batch ', IJBTCH
+
+      END IF ! (INTGTH .GT. 0)
+
 C
 C     If master sends MP2FIN = .TRUE., there are no more batches
 C

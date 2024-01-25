@@ -822,7 +822,7 @@ C
 #endif
 
       IF (MYTID .EQ. MPARID .and. IPRSYM > 0) WRITE(LUPRI,'(/A)')
-     &   '    The molecule has been centered at center of mass'
+     &   '    The molecule has been centered at center of mass.'
 #if HERSYM_DEBUG > 0
       CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
 #endif
@@ -998,10 +998,19 @@ C
 
       IF (ITURN .LE. 1) GO TO 10
 
- 100  IF (MYTID .EQ. MPARID) WRITE(LUPRI,'(/A/A)')
+ 100  IF (MYTID .EQ. MPARID) THEN
+         IF (IPRSYM > 0) THEN
+            WRITE(LUPRI,'(/A/A)')
+     &   '    The molecule has been rotated so principal'//
+     &      ' axes of inertia',
+     &   '    are along the coordinate axes.'
+         ELSE
+            WRITE(LUPRI,'(/A/A)')
      &   '    The molecule has been centered at center of mass and',
      &   '    rotated so principal axes of inertia are along'//
      &      ' the coordinate axes.'
+         END IF
+      END IF
 #if HERSYM_DEBUG > 0
       CALL PRNARR('PRINCIPLE_AXIS_MOLECULE: coord.s now',
      &   N_ATOMS, ATMARR)
