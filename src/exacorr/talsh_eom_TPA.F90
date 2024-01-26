@@ -281,6 +281,21 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
 
 
 
+        write(*,"(A54)"), "*************CC-CI(EOM-CC) Two-photon absorption************"
+        do n=1, N_omega1
+            do m=1, N_prop_A
+              do i=1, N_prop_B
+                do j=1, N_prop_C
+                  do k=1, N_prop_D  
+                      write(*,"(F16.8,A2,F16.8)"), real(eom_tpas(k,j,i,m,n)), '\', aimag(eom_tpas(k,j,i,m,n))
+                  end do
+                end do 
+              end do
+            end do 
+          end do
+        write(*,"(A54)"), "**********************************************************"  
+
+
 
         do i=1, N_prop_A
             call destroy_Interm_t_tensors(Interm_t_tensors_A(i),CC_CC)
@@ -297,23 +312,6 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
         do i=1, N_prop_D
             call destroy_Interm_t_tensors(Interm_t_tensors_D(i),CC_CC)
         end do
-
-
-        write(*,"(A54)"), "*************CC-CI(EOM-CC) Two-photon absorption************"
-        do n=1, N_omega1
-            do m=1, N_prop_A
-              do i=1, N_prop_B
-                do j=1, N_prop_C
-                  do k=1, N_prop_D  
-                      write(*,"(F16.8,A2,F16.8)"), real(eom_tpas(k,j,i,m,n)), '\', aimag(eom_tpas(k,j,i,m,n))
-                  end do
-                end do 
-              end do
-            end do 
-          end do
-        write(*,"(A54)"), "**********************************************************"  
-
-
 
 
         DEALLOCATE(omega)
