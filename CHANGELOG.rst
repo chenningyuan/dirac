@@ -3,8 +3,21 @@
 24.0
 ----
 
+Infrastructure changes and fixes:
+
+- Minor changes in the DIRAC data schema
+   - Matrix representations of non-default property integrals moved to a separate file to save file space.
+   - Original input is preserved in the CHECKPOINT file.
+   - Symmetry information added.
+
+- Improved use of the no symmetry (C1) case
+   - Easier restart as C1 version of coefficients are now stored on CHECKPOINT.
+   - Possibility to run SCF with symmetry and ExaCorr without symmetry in the same job.
+   
+
 Bugfix:
 
+- Fixed orbital analysis with .VECPRI for X2C, issue #79 (H. J. Aa. Jensen)
 - Fixed Fock-space coupled cluster calculations with finite fields.
   The values obtained with the versions that range between v21.0 and v23.0 are incorrect (Agustín Aucar).
 
