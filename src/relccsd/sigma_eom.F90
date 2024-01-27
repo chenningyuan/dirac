@@ -796,7 +796,7 @@ integer :: ierr
  !!                       irrep_left=1,irrep_right=state_sym)
 
        call contraction_422 ((/"p1","o2","o1","p2"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_ejmb, &
-                  irrep_left=1,irrep_right=state_sym)
+                  irrep_left=1,irrep_right=state_sym)   !Used
 
 !   call contraction_242 ((/"p2","o2"/),(/"o2","p1","p2","o1"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_mbej, &
 !                      irrep_left=state_sym,irrep_right=1)
@@ -841,17 +841,18 @@ integer :: ierr
 
      call contraction_244 ((/"p1","o3"/),(/"o3","p2","o1","o2"/), &
     &    (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,righttensor=b%w_iemn, &
-    &   LeftTensor=r1,irrep_left=state_sym,irrep_right=1) 
+    &   LeftTensor=r1,irrep_left=state_sym,irrep_right=1) !Used
 
     if (iprnt.ge.2) &
-    write(iw,*)'diagram 7 ', dot_product(sigma2,sigma2)
+    ! write(iw,*)'diagram 7 ', dot_product(sigma2,sigma2)
+    write(iw,*) "test diagram 7 ", sigma2
 
 !!S(ab,ij) = S(ab,ij) + P(ij) w_efam(ab,ej)*r1(e,i)
 !!-------------------------------------------------
 
     call contraction_424 ((/"p1","p2","p3","o2"/),(/"p3","o1"/), &
    &    (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%W_efam, &
-   &    RightTensor=r1,irrep_left=1,irrep_right=state_sym) 
+   &    RightTensor=r1,irrep_left=1,irrep_right=state_sym) !Used
 
 !   call contraction_424 ((/"p1","p2","o2","p3"/),(/"p3","o1"/), &
 !  &    (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep, &
@@ -861,8 +862,9 @@ integer :: ierr
 !  &    (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=r1, &
 !  &    RightTensor=B%W_efam,irrep_right=1,irrep_left=state_sym) 
 
-       if (iprnt.ge.2) &
-    write(iw,*)'diagram 8 ', dot_product(sigma2,sigma2)
+    !    if (iprnt.ge.2) &
+    ! write(iw,*)'diagram 8 ', dot_product(sigma2,sigma2)
+    ! write(iw,*) "test diagram 8 ", sigma2
 
 ! int_1b(b,f) = int_1b(b,f) + w_amef (bm,fe)*r1(e,m)
 ! S(ab,ij) = S(ab,ij) + P(ab) int_1b(b,f)*t2(af,ij)
@@ -877,19 +879,20 @@ integer :: ierr
     int_1b = 0.0d0
 
    call contraction_422 ((/"p2","o3","p3","p4"/),(/"p3","o3"/),(/"p2","p4"/),r1,int_1b,-1.0d0,1.0d0,nrep,B%W_amef, &
-          irrep_left=1,irrep_right=state_sym)
+          irrep_left=1,irrep_right=state_sym)  !Used
 
 !   call contraction_424 ((/"p1","p4","o1","o2"/),(/"p2","p4"/),(/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0, &
 !  &                       nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)
 
     call contraction_244 ((/"p2","p4"/),(/"p4","p1","o1","o2"/),(/"p2","p1","o1","o2"/),sigma2,-1.0d0,-1.0d0, &
-   &                       nrep,LeftTensor=int_1b,RightTensor=B%t2,irrep_left=state_sym,irrep_right=1)
+   &                       nrep,LeftTensor=int_1b,RightTensor=B%t2,irrep_left=state_sym,irrep_right=1) !Used
 
     deallocate(int_1b)
       call dealloc_array(f)
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 9 ',dot_product(sigma2,sigma2)
+    ! write(iw,*) "test diagram 9 ", sigma2
 
 ! int_1b(n,j) = int_1b(n,j) + w_mnie(nm,je)*r1(e,m)
 ! S(ab,ij) = S(ab,ij) - int_1b(n,j) * t2(ab,in)
@@ -905,10 +908,10 @@ integer :: ierr
     int_1b = 0.0d0
 
     call contraction_422 ((/"o4","o3","o2","p3"/),(/"p3","o3"/),(/"o4","o2"/),r1,int_1b,1.0d0,1.0d0,nrep,LeftTensor=B%W_mnie, &
-        irrep_left=1,irrep_right=state_sym)
+        irrep_left=1,irrep_right=state_sym) !Used
 
     call contraction_424 ((/"p1","p2","o1","o4"/),(/"o4","o2"/), &
-   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)
+   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)   !Used
 
     deallocate(int_1b)
 
@@ -928,7 +931,7 @@ integer :: ierr
 
 
     call contraction_244 ((/"p2","p3"/),(/"p1","p3","o1","o2"/), &
-   & (/"p2","p1","o1","o2"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2,irrep_right=state_sym,irrep_left=1)
+   & (/"p2","p1","o1","o2"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2,irrep_right=state_sym,irrep_left=1)  !Used
 
 
        if (iprnt.ge.2) &
@@ -938,7 +941,7 @@ integer :: ierr
 !!----------------------------------------------------
 
     call contraction_424 ((/"p1","p2","o1","o3"/),(/"o3","o2"/), &
-   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)
+   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)  !Used
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 12 ',dot_product(sigma2,sigma2)
@@ -947,7 +950,7 @@ integer :: ierr
 !--------------------------------------------------
 
       call contraction_444((/"p1","p2","o3","o4"/),(/"o3","o4","o1","o2"/), &
-     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2,RightTensor=B%W_ijmn,irrep_left=state_sym,irrep_right=1)
+     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2,RightTensor=B%W_ijmn,irrep_left=state_sym,irrep_right=1)  !Used
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 14 ',dot_product(sigma2,sigma2)
@@ -956,7 +959,7 @@ integer :: ierr
 !----------------------------------------------------------
 
       call contraction_444((/"p1","p3","o1","o3"/),(/"o3","p2","p3","o2"/), &
-     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej,irrep_left=state_sym,irrep_right=1)
+     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej,irrep_left=state_sym,irrep_right=1)  !Used
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 15 ',dot_product(sigma2,sigma2)
@@ -969,10 +972,10 @@ integer :: ierr
     int_1b = 0.0d0
 
      call contraction_442 ((/"p1","p3","o4","o3"/),(/"o4","o3","p4","p3"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,&
-    &                     LeftTensor=r2,irrep_left=state_sym,irrep_right=1)
+    &                     LeftTensor=r2,irrep_left=state_sym,irrep_right=1)     !Used
 
      call contraction_244 ((/"p1","p4"/),(/"p4","p2","o1","o2"/), &
-    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2,irrep_left=state_sym,irrep_right=1)
+    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2,irrep_left=state_sym,irrep_right=1)    !Used
 
     deallocate(int_1b)
 
@@ -987,10 +990,10 @@ integer :: ierr
     int_1b = 0.0d0
 
     call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o4","o1"/),int_1b,1.0d0,1.0d0,nrep,&
-   &                      RightTensor=r2, irrep_left=1,irrep_right=state_sym)
+   &                      RightTensor=r2, irrep_left=1,irrep_right=state_sym)   !Used
 
     call contraction_424 ((/"p1","p2","o2","o4"/),(/"o4","o1"/), &
-    & (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)
+    & (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)  !Used
 
     deallocate(int_1b)
 
@@ -1109,13 +1112,24 @@ integer :: ierr
   type(Offset) :: f,g
   integer  ::row(nrep), column(nrep)
   real*8, allocatable :: some_buf2(:), some_buf3(:)
+  real*8 :: norm_s, norm_s_prev
 !--------------------------------------------------
 
+  real(8), pointer, contiguous :: sigma_test(:)  ! test-sigma-vectors
+  real(8), pointer, contiguous :: sigma_test1(:)  ! test-sigma-vectors
+!---------------------------------------------------
   N1 = size(sigma1,1)
   N2 = size(sigma2,1)
 
   ndimr1 = N1/rcw
   ndimr2 = N2/rcw
+
+  norm_s_prev = 0.0d0
+  allocate(sigma_test(N2))
+  sigma_test=0.0
+
+  allocate(sigma_test1(N1))
+  sigma_test1=0.0
 
 !------------------------------------------
 ! S(a*,i) = S(a*,i) - Fbar_mi(m,i)*r(a*,m)
@@ -1123,26 +1137,46 @@ integer :: ierr
 
   call contraction_222 ((/"c1","o2"/),(/"o2","o1"/),(/"c1","o1"/),r1,B%Fbar_mi,sigma1,-1.0d0,1.0d0,nrep)
 
-  if (iprnt.ge.2) &
-  write(iw,*)'diagram 1 ', dot_product(sigma1,sigma1)
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma1,sigma1)
+      write(iw,*) "diagram 1 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      norm_s_prev = norm_s
+  end if
 !--------------------------------------------
 ! S(a*,i) = S(a*,i) + Fbar_me(m,e)*r2(a*e,im)
 !--------------------------------------------
 
     call contraction_422 ((/"c1","p2","o1","o2"/),(/"o2","p2"/),(/"c1","o1"/),B%Fbar_me, &
-  &                      sigma1,1.0d0,1.0d0,nrep,r2)
+  &                      sigma1,1.0d0,1.0d0,nrep,r2)  !diam2
 
-  if (iprnt.ge.2) &
-  write(iw,*)'diagram 2 ', dot_product(sigma1,sigma1)
+  ! Test
+  ! call contraction_422 ((/"c1","p2","o1","o2"/),(/"o2","p2"/),(/"c1","o1"/),B%Fbar_me, &
+  ! &                      sigma_test1,1.0d0,1.0d0,nrep,r2)  !diam2
+
+  if (iprnt.ge.2) then 
+      norm_s = dot_product(sigma1,sigma1)
+      write(iw,*) "diagram 2 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      ! write(iw,*) "fbar_me ", B%Fbar_me
+      ! write(iw,*) "test diagram 2 ", sigma_test1
+      norm_s_prev = norm_s
+  end if
 !-------------------------------------
 !S(a*,i) = S(a*,i) - W_mnie(mn,ie)*r2(a*e,mn)
 !-------------------------------------
 
     call contraction_442((/"c1","p2","o2","o3"/),(/"o2","o3","o1","p2"/),(/"c1","o1"/),sigma1,-1.0d0,1.0d0,nrep, &
-   &         RightTensor=B%W_mnie,LeftTensor=r2)
+   &         RightTensor=B%W_mnie,LeftTensor=r2)  !diam3
 
-  if (iprnt.ge.2) &
-  write(iw,*)'diagram 3 ',dot_product(sigma1,sigma1)
+! ! Test
+!    call contraction_442((/"c1","p2","o2","o3"/),(/"o2","o3","o1","p2"/),(/"c1","o1"/),sigma_test1,-1.0d0,1.0d0,nrep, &
+!    &         RightTensor=B%W_mnie,LeftTensor=r2)  !diam3
+
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma1,sigma1)
+      write(iw,*) "diagram 3 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      ! write(iw,*) "test diagram 3 ", sigma_test1
+      norm_s_prev = norm_s 
+  end if
 
 !--------------------------------------------
 !  S(a*b,ij) = S(a*b,ij)-W(mb,ij)*r(a*,m)
@@ -1150,53 +1184,99 @@ integer :: ierr
 
    call contraction_244 ((/"c1","o3"/),(/"o3","p2","o1","o2"/), &
   &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%W_iemn, &
-  &    LeftTensor=r1) 
+  &    LeftTensor=r1) !diam4
 
-       if (iprnt.ge.2) &
-  write(iw,*)'diagram 4 ',dot_product(sigma2,sigma2)
+  ! ! ! test
+  ! call contraction_244 ((/"c1","o3"/),(/"o3","p2","o1","o2"/), &
+  ! &    (/"c1","p2","o1","o2"/),sigma_test,-1.0d0,1.0d0,nrep,RightTensor=B%W_iemn, &
+  ! &    LeftTensor=r1) 
+
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma2,sigma2)
+      write(iw,*) "diagram 4 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      ! write(iw,*) "test diagram 4 ", sigma_test
+      norm_s_prev = norm_s
+  end if
 
 !----------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
 !-----------------------------------------------------
 
     call contraction_424 ((/"c1","p2","o1","o3"/),(/"o3","o2"/), &
-   & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
+   & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)  !diam5
 
 !   call contraction_244 ((/"o3","o2"/),(/"c1","p2","o3","o1"/), &
 !  & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2)
 
-       if (iprnt.ge.2) &
-  write(iw,*)'diagram 5 ',dot_product(sigma2,sigma2)
+  !test
+  !  call contraction_424 ((/"c1","p2","o1","o3"/),(/"o3","o2"/), &
+  !  & (/"c1","p2","o1","o2"/),sigma_test,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
+
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma2,sigma2)
+      write(iw,*) "diagram 5 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      ! write(iw,*) "test diagram 5 ", sigma_test
+      norm_s_prev = norm_s
+  end if
+
+!--------------------------------------------------
+! S(a*b,ij) = S(a*b,ij) + w_ijmn(mn,ij) * r2(a*b,mn)
+!--------------------------------------------------
+
+  call contraction_444((/"c1","p2","o3","o4"/), (/"o3","o4","o1","o2"/),&
+  &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2,RightTensor=B%W_ijmn)  !diam6
+
+  !test
+  ! call contraction_444((/"c1","p2","o3","o4"/), (/"o3","o4","o1","o2"/),&
+  ! &    (/"c1","p2","o1","o2"/),sigma_test,1.0d0,1.0d0,nrep,LeftTensor=r2,RightTensor=B%W_ijmn)
+
+if (iprnt.ge.2) then
+   norm_s = dot_product(sigma2,sigma2)
+   write(iw,*) "diagram 6 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+  !  write(iw,*) "test diagram 6 ", sigma_test
+   norm_s_prev = norm_s
+end if
+
 
 !---------------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + P(ij) w_mbej(mb,ej)*r2(a*e,im)
 !----------------------------------------------------------
 
       call contraction_444((/"c1","p3","o3","o1"/),(/"o3","p2","p3","o2"/), &
-     &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej)
+     &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej)  !diam7
 
-       if (iprnt.ge.2) &
-  write(iw,*)'diagram 6 ',dot_product(sigma2,sigma2)
+    ! test
+    !  call contraction_444((/"c1","p3","o3","o1"/),(/"o3","p2","p3","o2"/), &
+    !  &    (/"c1","p2","o1","o2"/),sigma_test,-1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej)
 
-!--------------------------------------------------
-! S(a*b,ij) = S(a*b,ij) + w_ijmn(mn,ij) * r2(a*b,mn)
-!--------------------------------------------------
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma2,sigma2)
+      write(iw,*) "diagram 7 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      ! write(iw,*) "test diagram 7 ", sigma_test
+      ! write(iw,*) "test w_mbej ", B%W_mbej
+      ! write(iw,*) "test size w_mbej ", size(B%W_mbej,1)
+      norm_s_prev = norm_s
+  end if
 
-      call contraction_444((/"c1","p2","o3","o4"/), (/"o3","o4","o1","o2"/),&
-     &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2,RightTensor=B%W_ijmn)
 
-       if (iprnt.ge.2) &
-  write(iw,*)'diagram 7 ',dot_product(sigma2,sigma2)
 
 !------------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + f_bar_ae(b,e) * r2(a*e,ij)
 !------------------------------------------------------
 
     call contraction_424 ((/"c1","p3","o1","o2"/),(/"p2","p3"/), &
-   & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2)
+   & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2)    !diam8
 
-       if (iprnt.ge.2) &
-  write(iw,*)'diagram 8 ',dot_product(sigma2,sigma2)
+   !test
+  !  call contraction_424 ((/"c1","p3","o1","o2"/),(/"p2","p3"/), &
+  !  & (/"c1","p2","o1","o2"/),sigma_test,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2)
+
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma2,sigma2)
+      write(iw,*) "diagram 8 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      ! write(iw,*) "test diagram 8 ", sigma_test
+      norm_s_prev = norm_s
+  end if
 
 !int_1b(a*,f) = int_1b(a*,f) - V(nm,fe)*r2(a*e,nm)  
 !S(a*b,ij) = S(a*b,ij) + int_1b(a*,f)*t2(fb,ij)  
@@ -1210,13 +1290,21 @@ integer :: ierr
     call contraction_442 ((/"c1","p3","o4","o3"/),(/"o4","o3","p4","p3"/),(/"c1","p4"/),int_1b,-1.0d0,1.0d0,nrep,LeftTensor=r2)
 
     call contraction_244 ((/"c1","p4"/),(/"p4","p2","o1","o2"/), &
-    & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)
+    & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)   !diam9
+
+    !test
+    ! call contraction_244 ((/"c1","p4"/),(/"p4","p2","o1","o2"/), &
+    ! & (/"c1","p2","o1","o2"/),sigma_test,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)
 
     deallocate(int_1b)
    call dealloc_array(e)
 
- if (iprnt.ge.2) &
-  write(iw,*)'diagram 9 ',dot_product(sigma2,sigma2)
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma2,sigma2)
+      write(iw,*) "diagram 9 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      ! write(iw,*) "test diagram 9 ", sigma_test
+      norm_s_prev = norm_s
+  end if
 
  end subroutine
 
