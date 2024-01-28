@@ -923,6 +923,9 @@
       logical :: setup = .true. 
       character(kw_length) :: wordtemp
 
+#ifndef MOD_EXACORR
+      call quit(kw_section//' not available in this version')
+#else
       call reset_available_kw_list()
 
       if (setup) then
@@ -999,6 +1002,7 @@
          call quit('more *EXEOM blocks defined than specified in EXACC input block') 
       end if
       call check_whether_kw_found(word, kw_section)
+#endif
 
    end subroutine
 
