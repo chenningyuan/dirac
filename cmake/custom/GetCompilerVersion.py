@@ -96,7 +96,7 @@ elif Fortran_COMPILER_VENDOR == 'Intel':
         Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'/V','\d+\.\d+')
     else:
         Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-V','\d+\.\d+')
-elif Fortran_COMPILER_VENDOR == 'PGI':
+elif Fortran_COMPILER_VENDOR == 'PGI' or Fortran_COMPILER_VENDOR == 'Cray':
     Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-V','\d+\.\d+')
 elif Fortran_COMPILER_VENDOR == 'XL':
     Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-qversion','\d+\.\d+')

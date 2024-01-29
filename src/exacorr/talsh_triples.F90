@@ -409,8 +409,8 @@ module talsh_triples
 !       Implementation by Johann Pototschnig, Summer 2021
         use type_laplace, only : laplace_info, deallocate_laplace
         real(8), intent(out)                 :: t_energy(3)
-        type(talsh_comm_tens), intent(inout) :: comm_t
-        type(talsh_intg_tens), intent(inout) :: int_t
+        type(talsh_comm_tens_t), intent(inout) :: comm_t
+        type(talsh_intg_tens_t), intent(inout) :: int_t
         real(8), intent(in)                  :: eps_occ(:),eps_vir(:)
         type(exacc_input), intent(in)        :: exa_input
 

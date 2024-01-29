@@ -8,7 +8,7 @@ module talsh_cholesky_integrals
         use talsh_common_routines
         use exacorr_global
         use talsh_ao_to_mo
-        use talsh_cholesky_routines
+        use talsh_CD_routines
 
         use, intrinsic:: ISO_C_BINDING
 
@@ -36,7 +36,7 @@ module talsh_cholesky_integrals
 
          integer, intent(in)                  :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
-         type(talsh_intg_tens),intent(inout)  :: int_t ! arget integral tensors to be filled and given back to the caller
+         type(talsh_intg_tens_t),intent(inout)  :: int_t ! arget integral tensors to be filled and given back to the caller
          real(8), intent(in)                  :: t_cholesky ! cholesky threshold
          integer, intent(in)                  :: print_level
 
