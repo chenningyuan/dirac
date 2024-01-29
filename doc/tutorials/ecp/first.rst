@@ -25,7 +25,7 @@ together with the molecular input (:download:`HI_sorep.mol <HI_sorep.mol>`)
 This is the two-component spin-orbit relativistic effective core potential (SOREP) calulation. 
 (For the detail of input, see :ref:`ecp_input`)
 
-In the calculation output, the two-component molecular spinors (see also the :download:`full output <result/HF_HI_sorep.out>`) 
+In the calculation output, the two-component molecular spinors (see also the :download:`full output <HF_HI_sorep.out>`) 
 are listed as ::
 
   * Fermion symmetry E1
