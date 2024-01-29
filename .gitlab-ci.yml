@@ -85,7 +85,7 @@ ubuntu_intel_mkl_int64-check:
     - pip install scipy
     - pip install h5py
     - pip install cmake
-    - pip install sphinx sphinx_rtd_theme sphinxcontrib-bibtex
+    - pip install sphinx<7.0.0 sphinx_rtd_theme sphinxcontrib-bibtex
   script:
     - export TOOLKIT="INTEL"
     - ulimit -s unlimited
