@@ -110,4 +110,3 @@ cp *.rsd_mos RSD_MOS
 
 #jsrun --smpiargs="-mca common_pami_use_odp 1" -D PAMI_IBV_DISABLE_ODP=0 -n $QF_NUM_PROCS -r $QF_PROCS_PER_NODE -a 1 -c $QF_CORES_PER_PROCESS -g $QF_GPUS_PER_PROCESS -bnone ./exacorr.x #>& exacorr.log
 #jsrun --smpiargs="-mca common_pami_use_odp 1" -D PAMI_IBV_DISABLE_ODP=0 -n $QF_NUM_PROCS -r $QF_PROCS_PER_NODE -a 1 -c $QF_CORES_PER_PROCESS -g $QF_GPUS_PER_PROCESS -bnone nvprof -o trace.%q{OMPI_COMM_WORLD_RANK} ./exacorr.x #>& exacorr.log
-
