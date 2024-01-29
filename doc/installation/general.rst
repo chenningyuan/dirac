@@ -152,3 +152,9 @@ If it is a cluster, but you prefer to install it yourself (it's easy):
 1. `Download <https://www.cmake.org/cmake/resources/software.html>`_ the latest pre-compiled CMake tarball
 2. Extract the tarball
 3. Set correct PATH variable
+
+What to do if hdf5 is not installed on your machine
+---------------------------------------------------
+
+You can download the latest version of hdf5 from: `https://www.hdfgroup.org/downloads/hdf5/`
+
