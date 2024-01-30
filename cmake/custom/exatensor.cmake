@@ -18,13 +18,15 @@ endif()
 
 if(ENABLE_EXATENSOR)
 
+   add_definitions(-DUSE_EXATENSOR)
+
    # Provide information about the location of the repository and the specific version (HASH) that should be used. 
    # This is configurable to make it possible to configure on machines
    # on which the repository resides locally but where network cannot be accessed
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
    set (EXATENSOR_GIT_REPO_LOCATION "https://github.com/RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
-   set (EXATENSOR_GIT_HASH 1a4ae3e4db8ae6843e27899e72cbc2de046498cc CACHE STRING "ExaTENSOR Git repository hash in use")
+   set (EXATENSOR_GIT_HASH c9059163dd91067d954d1a7edbc2feaaa93393ab CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type

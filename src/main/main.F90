@@ -29,6 +29,10 @@ program dirac_program
 
 use iso_c_binding
 
+#ifdef USE_EXATENSOR
+  use exatensor
+#endif
+
 #ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
@@ -67,6 +71,10 @@ end interface
   iparex  = 0
 ! detect machine parameters
   call get_machine_parameters()
+!fix for rocm on frontier
+#ifdef USE_EXATENSOR
+  call hip_start()
+#endif
 #ifdef VAR_MPI
 ! check for sequential run with parallel executable 
 ! iparex = 1 for parallel run mode with MPI executable (default)
