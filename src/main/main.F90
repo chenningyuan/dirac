@@ -73,7 +73,7 @@ end interface
   call get_machine_parameters()
 !fix for rocm on frontier
 #ifdef USE_EXATENSOR
-  call hip_start()
+  ierr=hip_start()
 #endif
 #ifdef VAR_MPI
 ! check for sequential run with parallel executable 
