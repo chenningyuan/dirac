@@ -1827,7 +1827,7 @@ module exacorr_tensor_methods
                           do a = 1, tens_dims(1)
                             denominator = eps_occ(l+tens_bases(8)-1) + eps_occ(k+tens_bases(7)-1) &
                                         + eps_occ(j+tens_bases(6)-1) + eps_occ(i+tens_bases(5)-1) &
-                                        - eps_occ(d+tens_bases(4)-1) - eps_vir(c+tens_bases(3)-1) &
+                                        - eps_vir(d+tens_bases(4)-1) - eps_vir(c+tens_bases(3)-1) &
                                         - eps_vir(b+tens_bases(2)-1) - eps_vir(a+tens_bases(1)-1)
                             t4_tens(a,b,c,d,i,j,k,l) = t4_tens(a,b,c,d,i,j,k,l) / denominator
                           end do
@@ -1848,7 +1848,7 @@ module exacorr_tensor_methods
                         do b = 1, tens_dims(6)
                           do a = 1, tens_dims(5)
                             denominator = eps_occ(l+tens_bases(4)-1) + eps_occ(k+tens_bases(3)-1) &
-                                        + eps_occ(j+tens_bases(2)-1) + eps_vir(i+tens_bases(1)-1) &
+                                        + eps_occ(j+tens_bases(2)-1) + eps_occ(i+tens_bases(1)-1) &
                                         - eps_vir(d+tens_bases(8)-1) - eps_vir(c+tens_bases(7)-1) &
                                         - eps_vir(b+tens_bases(6)-1) - eps_vir(a+tens_bases(5)-1)
                             t4_tens(i,j,k,l,a,b,c,d) = t4_tens(i,j,k,l,a,b,c,d) / denominator
@@ -1878,7 +1878,7 @@ module exacorr_tensor_methods
                                 denominator = eps_occ(m+tens_bases(10)-1) + eps_occ(l+tens_bases(9)-1) &
                                             + eps_occ(k+tens_bases(8)-1) + eps_occ(j+tens_bases(7)-1) &
                                             + eps_occ(i+tens_bases(6)-1) - eps_vir(e+tens_bases(5)-1) &
-                                            - eps_occ(d+tens_bases(4)-1) - eps_vir(c+tens_bases(3)-1) &
+                                            - eps_vir(d+tens_bases(4)-1) - eps_vir(c+tens_bases(3)-1) &
                                             - eps_vir(b+tens_bases(2)-1) - eps_vir(a+tens_bases(1)-1)
                                 t5_tens(a,b,c,d,e,i,j,k,l,m) = t5_tens(a,b,c,d,e,i,j,k,l,m) / denominator
                               end do
@@ -1903,8 +1903,8 @@ module exacorr_tensor_methods
                             do b = 1, tens_dims(7)
                               do a = 1, tens_dims(6)
                                 denominator = eps_occ(m+tens_bases(5)-1) + eps_occ(l+tens_bases(4)-1) &
-                                            + eps_occ(k+tens_bases(3)-1) + eps_vir(j+tens_bases(2)-1) &
-                                            + eps_vir(i+tens_bases(1)-1) - eps_vir(e+tens_bases(10)-1) &
+                                            + eps_occ(k+tens_bases(3)-1) + eps_occ(j+tens_bases(2)-1) &
+                                            + eps_occ(i+tens_bases(1)-1) - eps_vir(e+tens_bases(10)-1) &
                                             - eps_vir(d+tens_bases(9)-1) - eps_vir(c+tens_bases(8)-1) &
                                             - eps_vir(b+tens_bases(7)-1) - eps_vir(a+tens_bases(6)-1)
                                 t5_tens(i,j,k,l,m,a,b,c,d,e) = t5_tens(i,j,k,l,m,a,b,c,d,e) / denominator
