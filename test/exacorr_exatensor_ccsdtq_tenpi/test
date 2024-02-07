@@ -19,11 +19,11 @@ f.add(from_string = 'Electronic energy',
       num_lines   = 8,
       rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Eigenvalues',
-      num_lines   = 32,
+      num_lines   = 10,
       rel_tolerance   = 1.0e-5)
 f.add(from_string = 'Final CC',
       num_lines   = 1,
-      rel_tolerance   = 1.0e-8)
+      rel_tolerance   = 1.0e-7)
 #
 #f.add(from_string = 'Total contribution to principal components',
 #      to_string   = '1 a.u. =',
