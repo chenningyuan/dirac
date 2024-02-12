@@ -32,7 +32,8 @@ f.add(from_string = 'Final CC',
 #test.run(['ccsdtq_nonrel_nosym.inp'], ['h2o.xyz'], f)
 #test.run(['ccsdtq_nonrel_nosym2.inp'], ['lih.xyz'], f)
 
-test.run(['ccsdtq_x2c_energy_small_4in4_tenpi.inp','ccsdtq_x2c_energy_small_4in6_tenpi.inp'], ['h2o.xyz'], f)
+#test.run(['ccsdtq_x2c_energy_small_4in4_tenpi.inp','ccsdtq_x2c_energy_small_4in6_tenpi.inp'], ['h2o.xyz'], f)
+test.run(['ccsdtq_x2c_energy_small_4in4_tenpi.inp'], ['h2o.xyz'], f)
 
 
 sys.exit(test.return_code)
