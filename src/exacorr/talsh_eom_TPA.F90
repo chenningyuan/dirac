@@ -71,7 +71,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
     type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
-    type(talsh_eom_results_tens_t)              :: eom_results_t, eom_results_t_left
+    type(talsh_eom_results_tens_t),intent(inout):: eom_results_t, eom_results_t_left
     logical                                     :: CC_CC
     integer                    :: i_state  !i excited state
     
@@ -131,6 +131,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
     allocate(omega(N_omega1))
     allocate(omega_min(N_omega1))
 
+    print *, N_prop_A
+    print *, N_prop_B
+    print *, N_prop_C
+    print *, N_prop_D
 
     allocate(Interm_t_tensors_A(N_prop_A))
     allocate(Interm_t_tensors_B(N_prop_B))
@@ -201,19 +205,23 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
 
 
         do n=1, N_prop_A
+          print *,'A',n
             call solve_eom_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensors_A(n),l1_tensor,l2_tensor, &
                 Bvec_tensors(1),omega(2), Tprop_tensors(1), omega_min(2), Tprop_bar_tensors_min_w(1))
     
             do m=1, N_prop_B
+          print *,'B',m
                 call solve_eom_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensors_B(m),l1_tensor,l2_tensor, &
                     Bvec_tensors(2),omega(1), Tprop_tensors(2), omega_min(1), Tprop_bar_tensors_min_w(2))
 
 
                 do k=1, N_prop_C
+          print *,'C',k
                     call solve_eom_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensors_C(k),l1_tensor,l2_tensor, &
                         Bvec_tensors(3),omega(2), Tprop_tensors(3), omega_min(2), Tprop_bar_tensors_min_w(3))
                 
                     do l=1, N_prop_D
+          print *,'D',l
                         call solve_eom_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensors_D(l),l1_tensor,l2_tensor, &
                         Bvec_tensors(4),omega(1), Tprop_tensors(4), omega_min(1), Tprop_bar_tensors_min_w(4))
 
@@ -344,13 +352,13 @@ subroutine solve_eom_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensor,l1_tens
     type(exacc_input), intent(in) :: exa_input
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(talsh_rsp_interm_tens_t)               :: Interm_t_tensor
-    type(talsh_comm_tens_t)                     :: Bvec_tensor
-    complex(kind=8)                             :: omega1, omega2
+    type(talsh_rsp_interm_tens_t),intent(inout) :: Interm_t_tensor
+    type(talsh_comm_tens_t),intent(inout)       :: Bvec_tensor
+    complex(kind=8),intent(in)                  :: omega1, omega2
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
-    type(talsh_comm_tens_t)                     :: Tprop_tensor  !right_vector
-    type(talsh_comm_tens_t)                     :: Tprop_bar_tensor !left_vector
+    type(talsh_comm_tens_t),intent(inout)       :: Tprop_tensor  !right_vector
+    type(talsh_comm_tens_t),intent(inout)       :: Tprop_bar_tensor !left_vector
 
 
     call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, Bvec_tensor)
@@ -373,11 +381,11 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
-    type(talsh_eom_results_tens_t)              :: eom_results_t
-    type(talsh_comm_tens_t)  ::  Tprop_bar_tensor_X, Tprop_bar_tensor_min_Y !QR
-    type(talsh_rsp_interm_tens_t)   :: Interm_t_tensor_X,Interm_t_tensor_Y
-    complex(kind=8)               :: eom_tran_left_XY
-    integer                    :: i_state  !i excited state
+    type(talsh_eom_results_tens_t), intent(inout):: eom_results_t
+    type(talsh_comm_tens_t), intent(inout)       ::  Tprop_bar_tensor_X, Tprop_bar_tensor_min_Y !QR
+    type(talsh_rsp_interm_tens_t), intent(inout) :: Interm_t_tensor_X,Interm_t_tensor_Y
+    complex(kind=8), intent(inout)             :: eom_tran_left_XY
+    integer,intent(in)                    :: i_state  !i excited state
 
 
     type(talsh_tens_t)         :: aux_1, aux_2, aux_3, aux_4
@@ -626,11 +634,11 @@ subroutine get_tran_right(exa_input, interm_t,&
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
-    type(talsh_eom_results_tens_t)              :: eom_results_t
-    type(talsh_comm_tens_t)  ::  Tprop_tensor_Y, Tprop_tensor_min_w_X !QR
-    type(talsh_rsp_interm_tens_t)   :: Interm_t_tensor_X,Interm_t_tensor_Y
-    complex(kind=8)               :: eom_tran_right_XY
-    integer                    :: i_state  !i excited state
+    type(talsh_eom_results_tens_t), intent(inout) :: eom_results_t
+    type(talsh_comm_tens_t), intent(inout)  ::  Tprop_tensor_Y, Tprop_tensor_min_w_X !QR
+    type(talsh_rsp_interm_tens_t), intent(inout)   :: Interm_t_tensor_X,Interm_t_tensor_Y
+    complex(kind=8), intent(inout)               :: eom_tran_right_XY
+    integer, intent(in)                    :: i_state  !i excited state
             
             
     type(talsh_tens_t)         :: aux_1, aux_2, aux_3, aux_4
@@ -928,9 +936,9 @@ end subroutine
 subroutine get_scattering_amplitudes(eom_tran_left_AB, eom_tran_left_CD, &
                 eom_tran_right_AB,eom_tran_right_CD,eom_tpa)
 
-    complex(kind=8)               :: eom_tran_left_AB, eom_tran_left_CD
-    complex(kind=8)               :: eom_tran_right_AB, eom_tran_right_CD
-    complex(kind=8)               :: eom_tpa
+    complex(kind=8)    :: eom_tran_left_AB, eom_tran_left_CD
+    complex(kind=8)    :: eom_tran_right_AB, eom_tran_right_CD
+    complex(kind=8)    :: eom_tpa
 
     eom_tpa = (eom_tran_left_AB*eom_tran_right_CD)*0.5 
     eom_tpa = eom_tpa + conjg(eom_tran_left_CD*eom_tran_right_AB)*0.5
@@ -943,12 +951,12 @@ end subroutine
 subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor, t2_tensor,t1_tensor,&
                                 l2_tensor,l1_tensor,Interm_t_tensor,ov_dims)
 
-    type(talsh_tens_t) :: eta_prop_ov_tensor
+    type(talsh_tens_t),intent(inout) :: eta_prop_ov_tensor
     ! type(talsh_orb_prop_integ_tens_t) :: orb_int_tensor
-    type(talsh_rsp_interm_tens_t) :: Interm_t_tensor
-    type(talsh_tens_t) :: t2_tensor,t1_tensor
-    type(talsh_tens_t) :: l2_tensor,l1_tensor
-    integer(INTD), dimension(2)   :: ov_dims
+    type(talsh_rsp_interm_tens_t),intent(inout) :: Interm_t_tensor
+    type(talsh_tens_t),intent(inout) :: t2_tensor,t1_tensor
+    type(talsh_tens_t),intent(inout) :: l2_tensor,l1_tensor
+    integer(INTD), dimension(2), intent(in)   :: ov_dims
 
 
     type(talsh_tens_t)            :: LR_Aux_oo,LR_Aux_vv,LR_Aux_vo
@@ -1035,10 +1043,10 @@ end subroutine
 !-------------------------------------------------------------------------------------------------------------------------------
 subroutine get_eta_prop_oovv_prime( eta_prop_oovv_tensor,t1_tensor,l2_tensor,l1_tensor,Interm_t_tensor,ov_dims)
 
-    type(talsh_tens_t) :: eta_prop_oovv_tensor
-    type(talsh_rsp_interm_tens_t) :: Interm_t_tensor
-    type(talsh_tens_t) :: t1_tensor
-    type(talsh_tens_t) :: l2_tensor,l1_tensor
+    type(talsh_tens_t), intent(inout) :: eta_prop_oovv_tensor
+    type(talsh_rsp_interm_tens_t), intent(inout) :: Interm_t_tensor
+    type(talsh_tens_t), intent(inout) :: t1_tensor
+    type(talsh_tens_t), intent(inout) :: l2_tensor,l1_tensor
     integer(INTD), dimension(2)   :: ov_dims
 
 
@@ -1107,9 +1115,9 @@ end subroutine
 !------------------------------------------------------------------------------------------------------------------------------
 
 subroutine check_biorthognal(eom_results_t,eom_results_t_left,i_state)
-    type(talsh_eom_results_tens_t)              :: eom_results_t
-    type(talsh_eom_results_tens_t)              :: eom_results_t_left
-    integer                    :: i_state  !i excited state
+    type(talsh_eom_results_tens_t), intent(inout)        :: eom_results_t
+    type(talsh_eom_results_tens_t), intent(inout)        :: eom_results_t_left
+    integer, intent(in)                    :: i_state  !i excited state
 
 
 

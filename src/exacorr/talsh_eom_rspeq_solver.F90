@@ -42,11 +42,11 @@ module talsh_eom_rspeq_solver
             type(exacc_input), intent(in) :: exa_input
             type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
             type(talsh_intg_tens_t), intent(inout) :: int_t
-            type(talsh_rsp_interm_tens_t) :: interm_t_prop
+            type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop
             complex(kind=8), intent(in)               :: omega
 
-            type(talsh_eom_results_tens_t)  :: results_t
-            type(talsh_comm_tens_t)       :: tprop_tensor
+            type(talsh_eom_results_tens_t)                 :: results_t
+            type(talsh_comm_tens_t) , intent(inout)      :: tprop_tensor
 
 !     workspace
             type(talsh_davidson_workspace_tens_t) :: workspace_t
@@ -122,7 +122,7 @@ module talsh_eom_rspeq_solver
                   type(exacc_input), intent(in) :: exa_input
                   type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
                   type(talsh_intg_tens_t), intent(inout) :: int_t
-                  type(talsh_rsp_interm_tens_t) :: interm_t_prop
+                  type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop
                   complex(kind=8),INTENT(IN)              :: omega
       
 
@@ -202,10 +202,10 @@ module talsh_eom_rspeq_solver
             type(exacc_input), intent(in) :: exa_input
             type(talsh_intg_tens_t), intent(inout) :: int_t
             type(talsh_intermediates_tens_t),intent(inout) :: interm_t
-            type(talsh_rsp_interm_tens_t) :: interm_t_prop
+            type(talsh_rsp_interm_tens_t),intent(inout) :: interm_t_prop
             type(talsh_tens_t), intent(inout)  :: l2_tensor
             type(talsh_tens_t), intent(inout)  :: l1_tensor
-            type(talsh_comm_tens_t)       :: bvec_tensor
+            type(talsh_comm_tens_t), intent(inout)       :: bvec_tensor
 
 
             type(talsh_tens_t)       :: Aux_tensor1, one_tensor
@@ -227,28 +227,39 @@ module talsh_eom_rspeq_solver
 
 
             ierr=talsh_tensor_construct(bvec_tensor%t1,C8,ov_dims,init_val=ZERO)
+            print *,'ierr 1',ierr
             ierr=talsh_tensor_construct(bvec_tensor%t2,C8,oovv_dims,init_val=ZERO)
+            print *,'ierr 2',ierr
             ierr=talsh_tensor_construct(Aux_tensor1,C8,one_dims(1:0),init_val=ZERO)
+            print *,'ierr 3',ierr
 
 
 
             ierr=talsh_tensor_add('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov,scale=ONE) 
+            print *,'ierr 4',ierr
             ierr=talsh_tensor_contract("B(i,a)+=l2(i,j,a,b)*E(b,j)",bvec_tensor%t1,l2_tensor,& 
                                                 interm_t_prop%epsilon_prop_vo,scale=ONE)  
+            print *,'ierr 5',ierr
 
             ierr=talsh_tensor_add('B(i,j,a,b)+=Y(i,j,a,b)',bvec_tensor%t2,interm_t_prop%eta_prop_oovv,scale=ONE)  
+            print *,'ierr 6',ierr
 
             
 !           EOM-CC
             ierr=talsh_tensor_contract("A1()+=l1(i,a)*E(a,i)",Aux_tensor1,l1_tensor,interm_t_prop%epsilon_prop_vo,scale=ONE)
+            print *,'ierr 7',ierr
             ierr=talsh_tensor_contract("A1()+=l2(i,j,a,b)*E(a,b,i,j)",Aux_tensor1,l2_tensor,&
                                           interm_t_prop%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+            print *,'ierr 8',ierr
  
             ierr=talsh_tensor_contract("B(i,a)+=l1(i,a)*A1()",bvec_tensor%t1,l1_tensor,Aux_tensor1,scale=MINUS_ONE) 
+            print *,'ierr 9',ierr
             ierr=talsh_tensor_contract("B(i,j,a,b)+=l2(i,j,a,b)*A1()",bvec_tensor%t2,l2_tensor, &
                                                 Aux_tensor1,scale=MINUS_ONE) 
+            print *,'ierr 10',ierr
 
             ierr=talsh_tensor_destruct(Aux_tensor1)
+            print *,'ierr 11',ierr
 
 
       end subroutine get_left_bvec
@@ -276,8 +287,8 @@ module talsh_eom_rspeq_solver
                   type(talsh_rsp_interm_tens_t) :: interm_t_prop
                   type(talsh_tens_t), intent(inout)  :: l2_tensor
                   type(talsh_tens_t), intent(inout)  :: l1_tensor
-                  type(talsh_comm_tens_t)       :: Tprop_tensor    !for CC-CI, we need right-vectors
-                  type(talsh_comm_tens_t)       :: bvec_tensor
+                  type(talsh_comm_tens_t), intent(inout)       :: Tprop_tensor    !for CC-CI, we need right-vectors
+                  type(talsh_comm_tens_t), intent(inout)       :: bvec_tensor
       
       
                   type(talsh_tens_t)       :: Aux_tensor1, one_tensor
