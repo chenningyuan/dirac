@@ -288,28 +288,18 @@ subroutine destroy_Interm_t_tensors(interm_t_prop1, CC_CC)
     integer          :: ierr
 
     ierr=talsh_tensor_destruct(interm_t_prop1%epsilon_prop_vo)
-    print *,'destroy A1',ierr
     ierr=talsh_tensor_destruct(interm_t_prop1%epsilon_prop_vvoo)
-    print *,'destroy A2',ierr
-
     ierr=talsh_tensor_destruct(interm_t_prop1%eta_prop_oovv)
-    print *,'destroy A3',ierr
     ierr=talsh_tensor_destruct(interm_t_prop1%eta_prop_ov)
-    print *,'destroy A4',ierr
 
     if(.not.CC_CC) then
         ierr=talsh_tensor_destruct(interm_t_prop1%eta_prop_ov_eom)
-    print *,'destroy A5',ierr
     end if
 
     ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_oo)
-    print *,'destroy A6',ierr
     ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_ov)    
-    print *,'destroy A7',ierr
     ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_vv)
-    print *,'destroy A8',ierr
     ierr=talsh_tensor_destruct(interm_t_prop1%O_vo)
-    print *,'destroy A9',ierr
 
 end subroutine
 
