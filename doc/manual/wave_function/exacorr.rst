@@ -103,7 +103,7 @@ This calculation generates the file CCDENS, which contains the CC ground-state d
 matrix in AO basis. In this release, CCDENS is used by the property module to calculate 
 ground-state expectation values.
 
-If saved, CCDENS can be used in a property calculation (see :ref:`PROPERTIES_.RDCCDENS`) 
+If saved, CCDENS can be used in a property calculation (see :ref:`PROPERTIES_.RDCCDM`) 
 without the need to invoke this module.
 
 
@@ -112,6 +112,20 @@ without the need to invoke this module.
 ::
 
     Lambda equations are not solved
+
+keyword(GS2RDM)
+
+Forms the 2-body reduced density matrix (2RDM) for the ground-state CCSD wavefunction. When generated, the 2RDM and the 1RDM generated
+after solving the Lambda-equations are used to calculate the correlation energy (which can be compared to the one calculated with the
+CCSD method). 
+
+The 2RDM is saved to a binary file in MO basis format (CCSD2RDM) written to the scratch directory.  If this file is of interest the user should take action to copy it back to the work directory. There is no functionality yet in DIRAC to transform the 2RDM to AO basis.
+
+*Default:*
+
+::
+
+    2-body reduced density matrix is not formed
 
 keyword(NOTRIPLES)
 
