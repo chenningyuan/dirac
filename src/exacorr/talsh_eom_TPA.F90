@@ -110,8 +110,6 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
     omega_fin = eom_results_t%value_vectors_t%values_rhs(i_state,1)
     print *, "The excitation energy of specied state: ", omega_fin
 
-    N_oper_tpa = 3
-
     Prop_A = exa_input%Prop_A
     Prop_B = exa_input%Prop_B
     Prop_C = exa_input%Prop_C
@@ -127,14 +125,23 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
 
     N_omega1 = exa_input%N_omega_qr1
 
+! aspg, 13/02/2024:
+!       the allocations below, and the use of temporary omega and omega_min variables 
+!       needs to be revised when dealing with more than one frequency. 
+!       in the loops below there's a hardcoded access to elements (1) and (2) of 
+!       omega() and omega_min() when these are used as arguments to the LR solvers.
+!       this means that either we don't need 2*N_omega1 elements, or that the indexing
+!       should be changed for the arguments.
+!       whatever the case, prior to adding a factor of two in front of N_omega1  was 
+!       one of the reasons making the TPA code segfault with heap corruption, since
+!       in the loop 2 elements were being access, whereas only 1 was allocated when 
+!       N_omega1 = 1...
+!   
+    allocate(omega(2*N_omega1))
+    allocate(omega_min(2*N_omega1))
 
-    allocate(omega(N_omega1))
-    allocate(omega_min(N_omega1))
-
-    print *, N_prop_A
-    print *, N_prop_B
-    print *, N_prop_C
-    print *, N_prop_D
+    omega = (0d0, 0d0)
+    omega_min = omega 
 
     allocate(Interm_t_tensors_A(N_prop_A))
     allocate(Interm_t_tensors_B(N_prop_B))
@@ -192,6 +199,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
         omega1 = omega_fin/2.0
         omega2 = omega_fin/2.0
 
+        print *, 'omega1',omega1,'omega2',omega2,'omega',omega
+
         omega(1) = omega1
         omega(2) = omega2
         print *, "Read frequency1:", omega(1)
@@ -205,23 +214,19 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
 
 
         do n=1, N_prop_A
-          print *,'A',n
             call solve_eom_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensors_A(n),l1_tensor,l2_tensor, &
                 Bvec_tensors(1),omega(2), Tprop_tensors(1), omega_min(2), Tprop_bar_tensors_min_w(1))
     
             do m=1, N_prop_B
-          print *,'B',m
                 call solve_eom_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensors_B(m),l1_tensor,l2_tensor, &
                     Bvec_tensors(2),omega(1), Tprop_tensors(2), omega_min(1), Tprop_bar_tensors_min_w(2))
 
 
                 do k=1, N_prop_C
-          print *,'C',k
                     call solve_eom_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensors_C(k),l1_tensor,l2_tensor, &
                         Bvec_tensors(3),omega(2), Tprop_tensors(3), omega_min(2), Tprop_bar_tensors_min_w(3))
                 
                     do l=1, N_prop_D
-          print *,'D',l
                         call solve_eom_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensors_D(l),l1_tensor,l2_tensor, &
                         Bvec_tensors(4),omega(1), Tprop_tensors(4), omega_min(1), Tprop_bar_tensors_min_w(4))
 
@@ -1131,7 +1136,7 @@ subroutine check_biorthognal(eom_results_t,eom_results_t_left,i_state)
     integer                 :: i, j, N
     real(8) :: upper = 0.99, lower = 1.0d-10
 
-
+    one_dims(1) = 1
     ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
     ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,result_tens,one_dims)
@@ -1144,7 +1149,7 @@ subroutine check_biorthognal(eom_results_t,eom_results_t_left,i_state)
     do i=1, N ! i_state
         do j=1, N ! i_state 
 
-           ierr=talsh_tensor_init(result_tensor)
+           ierr=talsh_tensor_init(result_tensor, ZERO)
 
            ierr=talsh_tensor_contract("Bio()+=LState(i,a)*RState(a,i)",& 
                result_tensor,eom_results_t_left%value_vectors_t%lhs1(i),&
@@ -1155,7 +1160,6 @@ subroutine check_biorthognal(eom_results_t,eom_results_t_left,i_state)
                eom_results_t%value_vectors_t%rhs2(j),scale=ONE_QUARTER_C)
 
            LRnorm = result_tens(1) 
-!       print *, "I(i,j) = L(",i,")R(",j,") = ",result_tens(1)
            if ((abs(LRnorm).le.upper).and.(i.eq.j)) then
               print *, 'Warning ! State',i,' L*R = ',LRnorm,' when it should be unity'
            end if
