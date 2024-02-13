@@ -50,7 +50,7 @@ This calculation generates the file CCDENS, which contains the MP2 or CC ground-
 matrix in AO basis. In this release, CCDENS is used by the property module to calculate 
 ground-state expectation values. 
 
-If saved, CCDENS can be used in a property calculation (see :ref:`PROPERTIES_.RDCCDENS`) 
+If saved, CCDENS can be used in a property calculation (see :ref:`PROPERTIES_.RDCCDM`) 
 without the need to invoke this module.
 
 
