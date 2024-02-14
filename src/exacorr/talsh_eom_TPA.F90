@@ -139,7 +139,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
     allocate(omega(2*N_omega1))
     allocate(omega_min(2*N_omega1))
 
-    omega = (0d0, 0d0)
+    omega = ZERO
     omega_min = omega 
 
     allocate(Interm_t_tensors_A(N_prop_A))
@@ -235,6 +235,11 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
 
 
                         call check_biorthognal(eom_results_t,eom_results_t_left,i_state)
+
+                        eom_tran_left_AB = ZERO
+                        eom_tran_left_CD = ZERO
+                        eom_tran_right_AB = ZERO
+                        eom_tran_right_CD = ZERO
 
                         call get_tran_left(exa_input, interm_t,&
                             Interm_t_tensors_A(n),Interm_t_tensors_B(m),& 
@@ -902,9 +907,9 @@ end subroutine
 subroutine get_scattering_amplitudes(eom_tran_left_AB, eom_tran_left_CD, &
                 eom_tran_right_AB,eom_tran_right_CD,eom_tpa)
 
-    complex(kind=8)    :: eom_tran_left_AB, eom_tran_left_CD
-    complex(kind=8)    :: eom_tran_right_AB, eom_tran_right_CD
-    complex(kind=8)    :: eom_tpa
+    complex(kind=8), intent(in)    :: eom_tran_left_AB, eom_tran_left_CD
+    complex(kind=8), intent(in)    :: eom_tran_right_AB, eom_tran_right_CD
+    complex(kind=8), intent(out)    :: eom_tpa
 
     eom_tpa = (eom_tran_left_AB*eom_tran_right_CD)*0.5 
     eom_tpa = eom_tpa + conjg(eom_tran_left_CD*eom_tran_right_AB)*0.5
