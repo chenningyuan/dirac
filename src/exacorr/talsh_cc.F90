@@ -272,7 +272,7 @@ module talsh_cc
          call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
          ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
          call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
-                        exa_input%level_shift,-1,fock_mode,exa_input%nff(1))
+                        exa_input%level_shift,-1,fock_mode,exa_input%nff(1),CCD)
 
 !        Initialize t1 amplitudes to fov
          if (.not.CCD) then 
@@ -325,7 +325,7 @@ module talsh_cc
          call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,iff)
          ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
          call define_H0 (scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
-                         exa_input%level_shift,exa_input%print_level,fock_mode,exa_input%nff(1))
+                         exa_input%level_shift,exa_input%print_level,fock_mode,exa_input%nff(1),CCD)
 
 !        Start CCSD iterations
          call print_date('-Start- CC Iterations')
@@ -471,7 +471,7 @@ module talsh_cc
          call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
          ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
          call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
-                        exa_input%level_shift,-1,fock_mode,exa_input%nff(1),keep_diagonal=.true.)
+                        exa_input%level_shift,-1,fock_mode,exa_input%nff(1),CCD,keep_diagonal=.true.)
 
 ! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
             ! if (exa_input%eom_input(1)%do_expval) then
@@ -510,11 +510,9 @@ module talsh_cc
 
                call talsh_eom_eigval_driver(eom_results_t_left,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.false.,solve_left=.true.)
-                  print *, "eom-tpa?" 
                   call talsh_eom_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, eom_results_t_left)
                   
             else 
-               print *, "eom?"
                call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                             solve_right=.true.,solve_left=.false.)
 
@@ -2064,7 +2062,7 @@ module talsh_cc
 
         end subroutine init_fock_talsh
 
-        subroutine define_H0 (scf_energy,eps_occ,eps_vir,comm_t,oooo,level_shift,print_level,mode,nff,keep_diagonal)
+        subroutine define_H0 (scf_energy,eps_occ,eps_vir,comm_t,oooo,level_shift,print_level,mode,nff,CCD,keep_diagonal)
 
 !        Written by Lucas Visscher, spring 2021
 !        Shifts diagonal part of the T1-equations to the LHS, defines these epsilons ("orbital energies") as H0 
@@ -2081,6 +2079,7 @@ module talsh_cc
          integer, intent(in)                  :: print_level
          integer, intent(in)                  :: nff
          real(8), intent(inout)               :: scf_energy            ! recomputed single determinant UHF energy
+         logical, intent(in)                  :: CCD
 
 
 !        common tensors: the foo and fvv parts get modfied here (diagonal is shifted to the left)
@@ -2163,7 +2162,8 @@ module talsh_cc
            else
               write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", tensor_norm2(comm_t%foo)
            end if
-           write(*,*) "    Norm of Fock matrix (OV, all        ) = ", tensor_norm2(comm_t%fov)
+           ! for CCD comm_t%fov is not constructed
+           if (.not.CCD) write(*,*) "    Norm of Fock matrix (OV, all        ) = ", tensor_norm2(comm_t%fov)
            if (keep_diagonal_local) then
               write(*,*) "    Norm of Fock matrix (VV, all        ) = ", tensor_norm2(comm_t%fvv)
            else
