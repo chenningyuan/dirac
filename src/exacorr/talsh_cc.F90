@@ -510,11 +510,9 @@ module talsh_cc
 
                call talsh_eom_eigval_driver(eom_results_t_left,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.false.,solve_left=.true.)
-                  print *, "eom-tpa?" 
                   call talsh_eom_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, eom_results_t_left)
                   
             else 
-               print *, "eom?"
                call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                             solve_right=.true.,solve_left=.false.)
 
