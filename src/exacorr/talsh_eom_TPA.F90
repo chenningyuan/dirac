@@ -1140,8 +1140,8 @@ subroutine check_biorthognal(eom_results_t,eom_results_t_left,f_state, biorth_si
 
            LRnorm_re_is_zero = .false.
            LRnorm_im_is_zero = .false.
-           if (abs(LRnorm%re).lt.threshold_small) LRnorm_re_is_zero = .true.
-           if (abs(LRnorm%im).lt.threshold_small) LRnorm_im_is_zero = .true.
+           if (abs(real(LRnorm)).lt.threshold_small) LRnorm_re_is_zero = .true.
+           if (abs(aimag(LRnorm)).lt.threshold_small) LRnorm_im_is_zero = .true.
    
            ! L(i)*R(i) = ONE  and L(i)*R(j) = ZERO  when  L and R should be biorthonormal. 
            ! when that is not the case we issue warnings
@@ -1152,7 +1152,7 @@ subroutine check_biorthognal(eom_results_t,eom_results_t_left,f_state, biorth_si
 
               LRnorm_re_is_one = .false.
               if (.not.LRnorm_re_is_zero) then
-                 LRnorm_re_residual = (LRnorm%re - ONE%re)
+                 LRnorm_re_residual = (real(LRnorm) - real(ONE))
                  if (abs(LRnorm_re_residual).lt.threshold_small) LRnorm_re_is_one = .true.
               end if
               
