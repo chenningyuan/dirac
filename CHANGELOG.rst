@@ -1,5 +1,28 @@
 :orphan:
 
+24.0
+----
+
+Infrastructure changes and fixes:
+
+- Minor changes in the DIRAC data schema
+   - Matrix representations of non-default property integrals moved to a separate file to save file space.
+   - Original input is preserved in the CHECKPOINT file.
+   - Symmetry information added.
+
+- Improved use of the no symmetry (C1) case
+   - Easier restart as C1 version of coefficients are now stored on CHECKPOINT.
+   - Possibility to run SCF with symmetry and ExaCorr without symmetry in the same job.
+   
+
+Bugfix:
+
+- Fixed orbital analysis with .VECPRI for X2C, issue #79 (H. J. Aa. Jensen)
+- Fixed Fock-space coupled cluster calculations with finite fields.
+  The values obtained with the versions that range between v21.0 and v23.0 are incorrect (Agustín Aucar).
+
+-----------------------------------------------------------------------------------------------------
+
 23.0
 ----
 
@@ -13,7 +36,7 @@ New features:
    
 - Calculation of oscillator strenghts beyond the electric dipole approximation in the generalized velocity representation
    - Contributors: Martin van Horn, Trond Saue, and Nanna Holmgaard List.
-   - Reference: `M. van Horn, T. Saue, N. H. List. Probing Chirality across the Electromagnetic Spectrum with the Full Semi-Classical Light-Matter Interaction. J. Chem. Phys. 156, 054113 (2022) < https://doi.org/10.1063/5.0077502>`__
+   - Reference: `M. van Horn, T. Saue, N. H. List. Probing Chirality across the Electromagnetic Spectrum with the Full Semi-Classical Light-Matter Interaction. J. Chem. Phys. 156, 054113 (2022) <https://doi.org/10.1063/5.0077502>`__
    - Manual: `VPOL <http://www.diracprogram.org/doc/release-23/manual/properties/excitation.html#vpole>`__
    - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/x_ray/BED_Ba/tutorial.html>`__
 

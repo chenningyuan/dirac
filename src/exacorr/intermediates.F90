@@ -252,9 +252,9 @@ module intermediates
        subroutine get_tau_exatns(comm_t,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_comm_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t
 
-        type(exatns_comm_tens),intent(inout) :: comm_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
         logical, intent(in) :: CCD
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
@@ -273,9 +273,9 @@ module intermediates
        subroutine get_hoo_exatns(comm_t,oovv_tensor,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_comm_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t
 
-        type(exatns_comm_tens),intent(inout) :: comm_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
         type(tens_rcrsv_t),intent(inout) :: oovv_tensor
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
@@ -290,9 +290,9 @@ module intermediates
        subroutine get_hov_exatns(comm_t,oovv_tensor,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_comm_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t
 
-        type(exatns_comm_tens),intent(inout) :: comm_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
         type(tens_rcrsv_t),intent(inout) :: oovv_tensor
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
@@ -307,9 +307,9 @@ module intermediates
        subroutine get_hvv_exatns(comm_t,oovv_tensor,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_comm_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t
 
-        type(exatns_comm_tens),intent(inout) :: comm_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
         type(tens_rcrsv_t),intent(inout) :: oovv_tensor
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
@@ -324,9 +324,9 @@ module intermediates
        subroutine get_goo_exatns(comm_t,ooov_tensor,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_comm_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t
 
-        type(exatns_comm_tens),intent(inout) :: comm_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
         type(tens_rcrsv_t),intent(inout) :: ooov_tensor
         logical, intent(in) :: CCD
         type(tens_rcrsv_t),intent(inout) :: one_tensor
@@ -344,9 +344,9 @@ module intermediates
        subroutine get_gvv_exatns(comm_t,vovv_tensor,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_comm_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t
 
-        type(exatns_comm_tens),intent(inout) :: comm_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
         type(tens_rcrsv_t),intent(inout) :: vovv_tensor
         logical, intent(in) :: CCD
         type(tens_rcrsv_t),intent(inout) :: one_tensor
@@ -364,10 +364,10 @@ module intermediates
        subroutine get_a_exatns(comm_t,int_t,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_comm_tens,exatns_intg_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t,exatns_intg_tens_t
 
-        type(exatns_comm_tens),intent(inout) :: comm_t
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         logical, intent(in) :: CCD
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
@@ -386,10 +386,10 @@ module intermediates
        subroutine get_h_exatns(comm_t,int_t,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_comm_tens,exatns_intg_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t,exatns_intg_tens_t
 
-        type(exatns_comm_tens),intent(inout) :: comm_t
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         logical, intent(in) :: CCD
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
@@ -407,9 +407,9 @@ module intermediates
        subroutine get_fbar_oo_exatns(fbar_oo,comm_t,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_comm_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t
 
-        type(exatns_comm_tens),intent(inout) :: comm_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
         type(tens_rcrsv_t),intent(inout) :: fbar_oo
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         logical,intent(in) :: CCD
@@ -438,7 +438,7 @@ module intermediates
        subroutine get_fbar_vv_exatns(fbar_vv,gvv_tensor,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t,exatns_comm_tens_t
 
         type(tens_rcrsv_t),intent(inout) :: gvv_tensor
         type(tens_rcrsv_t),intent(inout) :: fbar_vv
@@ -467,10 +467,10 @@ module intermediates
        subroutine get_w_ooov_exatns(w_ooov,t1_tensor,int_t,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t
 
         type(tens_rcrsv_t),intent(inout) :: t1_tensor
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: w_ooov
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         logical, intent(in) :: CCD
@@ -486,11 +486,11 @@ module intermediates
        subroutine get_w_ovoo_exatns(lambda_t,comm_t,int_t,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens,exatns_lambda_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t,exatns_comm_tens_t,exatns_lambda_tens_t
 
-        type(exatns_lambda_tens),intent(inout) :: lambda_t
-        type(exatns_comm_tens),intent(inout) :: comm_t
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_lambda_tens_t),intent(inout) :: lambda_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         logical, intent(in) :: CCD
         integer :: ierr
@@ -515,10 +515,10 @@ module intermediates
                                         vir_space_id,vir_space_root,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_comm_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t
 
         type(tens_rcrsv_t),intent(inout) :: w_vovo
-        type(exatns_comm_tens),intent(inout) :: comm_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
         type(tens_rcrsv_t),intent(inout) :: oovv_tensor
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         type(tens_rcrsv_t) :: tau2_tensor
@@ -549,11 +549,11 @@ module intermediates
        subroutine get_wbar_vovo_exatns(wbar_vovo,t2_tensor,int_t,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t
 
         type(tens_rcrsv_t),intent(inout) :: wbar_vovo
         type(tens_rcrsv_t),intent(inout) :: t2_tensor
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
@@ -566,11 +566,11 @@ module intermediates
        subroutine get_w_vvvo_exatns(lambda_t,comm_t,int_t,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens,exatns_lambda_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t,exatns_comm_tens_t,exatns_lambda_tens_t
 
-        type(exatns_lambda_tens),intent(inout) :: lambda_t
-        type(exatns_comm_tens),intent(inout) :: comm_t
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_lambda_tens_t),intent(inout) :: lambda_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         logical, intent(in) :: CCD
         integer :: ierr
@@ -594,11 +594,11 @@ module intermediates
        subroutine get_w_vovv_exatns(w_vovv,t1_tensor,int_t,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t
 
         type(tens_rcrsv_t),intent(inout) :: w_vovv
         type(tens_rcrsv_t),intent(inout) :: t1_tensor
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         logical, intent(in) :: CCD
         integer :: ierr
@@ -612,11 +612,11 @@ module intermediates
        subroutine get_w_vvvv_exatns(w_vvvv,comm_t,int_t,CCD,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t,exatns_comm_tens_t
 
         type(tens_rcrsv_t),intent(inout) :: w_vvvv
-        type(exatns_comm_tens),intent(inout) :: comm_t
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         logical, intent(in) :: CCD
         integer :: ierr
@@ -664,9 +664,9 @@ module intermediates
        subroutine get_tauCC2_exatns(comm_t,one_tensor) !L
 
         use exatensor
-        use exacorr_datatypes, only : exatns_comm_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t
 
-        type(exatns_comm_tens),intent(inout) :: comm_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
@@ -681,13 +681,13 @@ module intermediates
        subroutine get_fbar_vv_CC2_exatns(fbar_vv,comm_t_CC2,int_t,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens,exatns_lambda_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t,exatns_comm_tens_t,exatns_lambda_tens_t
 
-!        type(exatns_lambda_tens),intent(inout) :: lambda_t_CC2
+!        type(exatns_lambda_tens_t),intent(inout) :: lambda_t_CC2
         type(tens_rcrsv_t),intent(inout) :: fbar_vv
 
-        type(exatns_comm_tens),intent(inout) :: comm_t_CC2
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t_CC2
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
@@ -705,12 +705,12 @@ module intermediates
        subroutine get_fbar_oo_CC2_exatns(fbar_oo,comm_t_CC2,int_t,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens,exatns_lambda_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t,exatns_comm_tens_t,exatns_lambda_tens_t
 
-!        type(exatns_lambda_tens),intent(inout) :: lambda_t_CC2
+!        type(exatns_lambda_tens_t),intent(inout) :: lambda_t_CC2
         type(tens_rcrsv_t),intent(inout) :: fbar_oo
-        type(exatns_comm_tens),intent(inout) :: comm_t_CC2
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t_CC2
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
@@ -728,11 +728,11 @@ module intermediates
        subroutine get_fbar_ov_CC2_exatns(lambda_t_CC2,comm_t_CC2,int_t,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens,exatns_lambda_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t,exatns_comm_tens_t,exatns_lambda_tens_t
 
-        type(exatns_lambda_tens),intent(inout) :: lambda_t_CC2
-        type(exatns_comm_tens),intent(inout) :: comm_t_CC2
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_lambda_tens_t),intent(inout) :: lambda_t_CC2
+        type(exatns_comm_tens_t),intent(inout) :: comm_t_CC2
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
@@ -747,10 +747,10 @@ module intermediates
 
         use exatensor
         use tensor_algebra
-        use exacorr_datatypes, only : exatns_comm_tens
+        use exacorr_datatypes, only : exatns_comm_tens_t
 
         type(tens_rcrsv_t),intent(inout) :: w_vovo
-        type(exatns_comm_tens),intent(inout) :: comm_t_CC2
+        type(exatns_comm_tens_t),intent(inout) :: comm_t_CC2
         type(tens_rcrsv_t),intent(inout) :: oovv_tensor
         type(tens_rcrsv_t) :: t1t1_tensor
         type(tens_rcrsv_t),intent(inout) :: one_tensor
@@ -777,11 +777,11 @@ module intermediates
        subroutine get_w_oooo_CC2_exatns(w_oooo_CC2,comm_t_CC2,int_t,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t,exatns_comm_tens_t
 
         type(tens_rcrsv_t),intent(inout) :: w_oooo_CC2
-        type(exatns_comm_tens),intent(inout) :: comm_t_CC2
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t_CC2
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
@@ -799,11 +799,11 @@ module intermediates
        subroutine get_w_vvvv_CC2_exatns(w_vvvv_CC2,comm_t_CC2,int_t,one_tensor)
 
         use exatensor
-        use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens
+        use exacorr_datatypes, only : exatns_intg_tens_t,exatns_comm_tens_t
         
         type(tens_rcrsv_t),intent(inout) :: w_vvvv_CC2
-        type(exatns_comm_tens),intent(inout) :: comm_t_CC2
-        type(exatns_intg_tens),intent(inout) :: int_t
+        type(exatns_comm_tens_t),intent(inout) :: comm_t_CC2
+        type(exatns_intg_tens_t),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
@@ -827,9 +827,9 @@ module intermediates
        subroutine get_tau_talsh(comm_t,CCD)
 
         use talsh
-        use exacorr_datatypes, only : talsh_comm_tens
+        use exacorr_datatypes, only : talsh_comm_tens_t
 
-        type(talsh_comm_tens),intent(inout) :: comm_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
         logical, intent(in) :: CCD
         integer :: ierr
 
@@ -847,9 +847,9 @@ module intermediates
        subroutine get_hoo_talsh(comm_t,oovv_tensor)
 
         use talsh
-        use exacorr_datatypes, only : talsh_comm_tens
+        use exacorr_datatypes, only : talsh_comm_tens_t
 
-        type(talsh_comm_tens),intent(inout) :: comm_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
         type(talsh_tens_t),intent(inout) :: oovv_tensor
         integer :: ierr
 
@@ -863,9 +863,9 @@ module intermediates
        subroutine get_hov_talsh(comm_t,oovv_tensor)
 
         use talsh
-        use exacorr_datatypes, only : talsh_comm_tens
+        use exacorr_datatypes, only : talsh_comm_tens_t
 
-        type(talsh_comm_tens),intent(inout) :: comm_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
         type(talsh_tens_t),intent(inout) :: oovv_tensor
         integer :: ierr
 
@@ -879,9 +879,9 @@ module intermediates
        subroutine get_hvv_talsh(comm_t,oovv_tensor)
 
         use talsh
-        use exacorr_datatypes, only : talsh_comm_tens
+        use exacorr_datatypes, only : talsh_comm_tens_t
 
-        type(talsh_comm_tens),intent(inout) :: comm_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
         type(talsh_tens_t),intent(inout) :: oovv_tensor
         integer :: ierr
 
@@ -895,9 +895,9 @@ module intermediates
        subroutine get_goo_talsh(comm_t,ooov_tensor,CCD)
 
         use talsh
-        use exacorr_datatypes, only : talsh_comm_tens
+        use exacorr_datatypes, only : talsh_comm_tens_t
 
-        type(talsh_comm_tens),intent(inout) :: comm_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
         type(talsh_tens_t),intent(inout) :: ooov_tensor
         logical, intent(in) :: CCD
         integer :: ierr
@@ -915,9 +915,9 @@ module intermediates
        subroutine get_gvv_talsh(comm_t,vovv_tensor,CCD)
 
         use talsh
-        use exacorr_datatypes, only : talsh_comm_tens
+        use exacorr_datatypes, only : talsh_comm_tens_t
 
-        type(talsh_comm_tens),intent(inout) :: comm_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
         type(talsh_tens_t),intent(inout) :: vovv_tensor
         logical, intent(in) :: CCD
         integer :: ierr
@@ -935,10 +935,10 @@ module intermediates
        subroutine get_a_talsh(comm_t,int_t,CCD)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens,talsh_comm_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t,talsh_comm_tens_t
 
-        type(talsh_comm_tens),intent(inout) :: comm_t
-        type(talsh_intg_tens),intent(inout) :: int_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         logical, intent(in) :: CCD
         integer :: ierr
 
@@ -958,10 +958,10 @@ module intermediates
        subroutine get_h_talsh(comm_t,int_t,CCD)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens,talsh_comm_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t,talsh_comm_tens_t
 
-        type(talsh_comm_tens),intent(inout) :: comm_t
-        type(talsh_intg_tens),intent(inout) :: int_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         logical, intent(in) :: CCD
         integer :: ierr
 
@@ -978,10 +978,10 @@ module intermediates
        subroutine get_fbar_oo_talsh(fbar_oo,comm_t,CCD)
 
         use talsh
-        use exacorr_datatypes, only : talsh_comm_tens
+        use exacorr_datatypes, only : talsh_comm_tens_t
 
         type(talsh_tens_t),intent(inout)   :: fbar_oo
-        type(talsh_comm_tens),intent(inout)   :: comm_t
+        type(talsh_comm_tens_t),intent(inout)   :: comm_t
         logical, intent(in) :: CCD
         integer :: ierr
 
@@ -1005,7 +1005,7 @@ module intermediates
        subroutine get_fbar_vv_talsh(fbar_vv,gvv_tensor)
 
         use talsh
-        use exacorr_datatypes, only : talsh_comm_tens
+        use exacorr_datatypes, only : talsh_comm_tens_t
 
         type(talsh_tens_t),intent(inout)   :: fbar_vv
         type(talsh_tens_t),intent(inout)   :: gvv_tensor
@@ -1030,10 +1030,10 @@ module intermediates
        subroutine get_w_ooov_talsh(w_ooov,t1_tensor,int_t,CCD)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t
 
         type(talsh_tens_t),intent(inout)   :: w_ooov
-        type(talsh_intg_tens),intent(inout)   :: int_t
+        type(talsh_intg_tens_t),intent(inout)   :: int_t
         type(talsh_tens_t),intent(inout) :: t1_tensor
         logical, intent(in) :: CCD
         integer :: ierr
@@ -1046,11 +1046,11 @@ module intermediates
        subroutine get_w_ovoo_talsh(lambda_t,comm_t,int_t,CCD,one_tensor)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens,talsh_comm_tens,talsh_lambda_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t,talsh_comm_tens_t,talsh_lambda_tens_t
 
-        type(talsh_lambda_tens),intent(inout) :: lambda_t
-        type(talsh_comm_tens),intent(inout) :: comm_t
-        type(talsh_intg_tens),intent(inout) :: int_t
+        type(talsh_lambda_tens_t),intent(inout) :: lambda_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         logical, intent(in) :: CCD
         type(talsh_tens_t) :: one_tensor
         integer :: ierr
@@ -1074,10 +1074,10 @@ module intermediates
 
         use talsh
         use tensor_algebra
-        use exacorr_datatypes, only : talsh_comm_tens
+        use exacorr_datatypes, only : talsh_comm_tens_t
 
         type(talsh_tens_t),intent(inout) :: w_vovo
-        type(talsh_comm_tens),intent(inout) :: comm_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
         type(talsh_tens_t),intent(inout) :: oovv_tensor
         integer,intent(in) :: nocc, nvir
         logical, intent(in) :: CCD
@@ -1101,11 +1101,11 @@ module intermediates
        subroutine get_wbar_vovo_talsh(wbar_vovo,t2_tensor,int_t)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t
 
         type(talsh_tens_t),intent(inout) :: wbar_vovo
         type(talsh_tens_t),intent(inout) :: t2_tensor
-        type(talsh_intg_tens),intent(inout) :: int_t
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         integer :: ierr
 
         ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(b,f,n,j)",wbar_vovo,int_t%oovv,t2_tensor)
@@ -1116,11 +1116,11 @@ module intermediates
        subroutine get_w_vvvo_talsh(lambda_t,comm_t,int_t,CCD,one_tensor)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens,talsh_comm_tens,talsh_lambda_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t,talsh_comm_tens_t,talsh_lambda_tens_t
 
-        type(talsh_lambda_tens),intent(inout) :: lambda_t
-        type(talsh_comm_tens),intent(inout) :: comm_t
-        type(talsh_intg_tens),intent(inout) :: int_t
+        type(talsh_lambda_tens_t),intent(inout) :: lambda_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         logical, intent(in) :: CCD
         type(talsh_tens_t) :: one_tensor
         integer :: ierr
@@ -1143,11 +1143,11 @@ module intermediates
        subroutine get_w_vovv_talsh(w_vovv,t1_tensor,int_t,CCD)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t
         
         type(talsh_tens_t),intent(inout) :: w_vovv
         type(talsh_tens_t),intent(inout) :: t1_tensor
-        type(talsh_intg_tens),intent(inout) :: int_t
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         logical, intent(in) :: CCD
         integer :: ierr
 
@@ -1159,11 +1159,11 @@ module intermediates
        subroutine get_w_vvvv_talsh(w_vvvv,comm_t,int_t,CCD)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens,talsh_comm_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t,talsh_comm_tens_t
         
         type(talsh_tens_t),intent(inout) :: w_vvvv
-        type(talsh_comm_tens),intent(inout) :: comm_t
-        type(talsh_intg_tens),intent(inout) :: int_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         logical, intent(in) :: CCD
         integer :: ierr
 
@@ -1209,9 +1209,9 @@ module intermediates
        subroutine get_tauCC2_talsh(comm_t_CC2)  !L
 
         use talsh
-        use exacorr_datatypes, only : talsh_comm_tens
+        use exacorr_datatypes, only : talsh_comm_tens_t
 
-        type(talsh_comm_tens),intent(inout) :: comm_t_CC2
+        type(talsh_comm_tens_t),intent(inout) :: comm_t_CC2
         integer :: ierr
 
         logical :: shunt_CC2=.false.
@@ -1238,12 +1238,12 @@ module intermediates
        subroutine get_fbar_oo_CC2_talsh(fbar_oo,comm_t_CC2,int_t)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens,talsh_comm_tens,talsh_lambda_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t,talsh_comm_tens_t,talsh_lambda_tens_t
       
         type(talsh_tens_t),intent(inout)   :: fbar_oo
-!        type(talsh_lambda_tens),intent(inout) :: lambda_t_CC2
-        type(talsh_comm_tens),intent(inout) :: comm_t_CC2
-        type(talsh_intg_tens),intent(inout) :: int_t
+!        type(talsh_lambda_tens_t),intent(inout) :: lambda_t_CC2
+        type(talsh_comm_tens_t),intent(inout) :: comm_t_CC2
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         integer :: ierr
 
 !      \Ft im =\f im +\SUMs e \f ie \ts em +\SUMd en \V inme \ts en +\ undemi
@@ -1260,12 +1260,12 @@ module intermediates
        subroutine get_fbar_vv_CC2_talsh(fbar_vv,comm_t_CC2,int_t)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens,talsh_comm_tens,talsh_lambda_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t,talsh_comm_tens_t,talsh_lambda_tens_t
 
-!        type(talsh_lambda_tens),intent(inout) :: lambda_t_CC2
+!        type(talsh_lambda_tens_t),intent(inout) :: lambda_t_CC2
         type(talsh_tens_t),intent(inout)   :: fbar_vv
-        type(talsh_comm_tens),intent(inout) :: comm_t_CC2
-        type(talsh_intg_tens),intent(inout) :: int_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t_CC2
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         integer :: ierr
 
 !       \Ft ea =\f ea -\SUMs \f ma \ts em - \SUMd mf \V mefa \ts fm - \undemi
@@ -1282,12 +1282,12 @@ module intermediates
        subroutine get_fbar_ov_CC2_talsh(fbar_ov,comm_t_CC2,int_t)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens,talsh_comm_tens,talsh_lambda_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t,talsh_comm_tens_t,talsh_lambda_tens_t
 
         type(talsh_tens_t),intent(inout)   :: fbar_ov
-!        type(talsh_lambda_tens),intent(inout) :: lambda_t_CC2
-        type(talsh_comm_tens),intent(inout) :: comm_t_CC2
-        type(talsh_intg_tens),intent(inout) :: int_t
+!        type(talsh_lambda_tens_t),intent(inout) :: lambda_t_CC2
+        type(talsh_comm_tens_t),intent(inout) :: comm_t_CC2
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         integer :: ierr
 
 !      \Ft me =\f me +\SUMd nf \V mnef \ts fn (Eq. A6)
@@ -1301,10 +1301,10 @@ module intermediates
 
         use talsh
         use tensor_algebra
-        use exacorr_datatypes, only : talsh_comm_tens
+        use exacorr_datatypes, only : talsh_comm_tens_t
 
         type(talsh_tens_t),intent(inout) :: w_vovo
-        type(talsh_comm_tens),intent(inout) :: comm_t_CC2
+        type(talsh_comm_tens_t),intent(inout) :: comm_t_CC2
         type(talsh_tens_t),intent(inout) :: oovv_tensor
         integer,intent(in) :: nocc, nvir
         type(talsh_tens_t) :: t1t1_aux_tensor
@@ -1344,11 +1344,11 @@ module intermediates
        subroutine get_w_oooo_CC2_talsh(w_oooo_CC2,comm_t_CC2,int_t)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens,talsh_comm_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t,talsh_comm_tens_t
 
-        type(talsh_comm_tens),intent(inout) :: comm_t_CC2
+        type(talsh_comm_tens_t),intent(inout) :: comm_t_CC2
         type(talsh_tens_t),intent(inout) :: w_oooo_CC2
-        type(talsh_intg_tens),intent(inout) :: int_t
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         integer :: ierr
 
 !       \W mnij = \V mnij + \Pm mn \SUMs e \V ijen \ts em + \undemi \SUMd ef \V ijef \taup efmn
@@ -1365,11 +1365,11 @@ module intermediates
        subroutine get_w_vvvv_CC2_talsh(w_vvvv_CC2,comm_t_CC2,int_t)
 
         use talsh
-        use exacorr_datatypes, only : talsh_intg_tens,talsh_comm_tens
+        use exacorr_datatypes, only : talsh_intg_tens_t,talsh_comm_tens_t
         
         type(talsh_tens_t),intent(inout) :: w_vvvv_CC2
-        type(talsh_comm_tens),intent(inout) :: comm_t_CC2
-        type(talsh_intg_tens),intent(inout) :: int_t
+        type(talsh_comm_tens_t),intent(inout) :: comm_t_CC2
+        type(talsh_intg_tens_t),intent(inout) :: int_t
         integer :: ierr
 
 ! \W efab=\V efab -\Pm ef \Vmfab \ts em + \undemi \V mnab \taup efmn

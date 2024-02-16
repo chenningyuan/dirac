@@ -1,4 +1,4 @@
-module talsh_cholesky_routines
+module talsh_CD_routines
 
 !routines to perform cholesky decomposition
 
@@ -10,7 +10,7 @@ use tensor_algebra
 use talsh
 use talsh_common_routines
 use exacorr_utils
-use, intrinsic:: ISO_C_BINDING
+!use, intrinsic:: ISO_C_BINDING
 
 implicit none
 
@@ -649,4 +649,4 @@ subroutine talsh_square_el(h_tensor)
 
 end subroutine talsh_square_el
 
-end module talsh_cholesky_routines
+end module talsh_CD_routines
