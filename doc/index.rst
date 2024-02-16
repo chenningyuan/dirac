@@ -167,7 +167,7 @@ Tutorials and walkthrus
   :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>`
 
 * **Case studies:**
-  :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
+  :doc:`Ir(16+) cation <tutorials/case_studies/Ir/Ir_16plus>` |
   :doc:`CmF molecule <tutorials/case_studies/CmF/CmF>` |
   :doc:`MnO6 system <tutorials/case_studies/MnO6>` |
   :doc:`UF6 molecule <tutorials/case_studies/UF6_molecule/UF6>` |

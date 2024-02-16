@@ -30,6 +30,11 @@ C
 #endif
 #endif
 !
+      integer function lnblnk(string)
+         character string*(*)
+         lnblnk = len_trim(string)
+      end
+
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
       CHARACTER HEAD*(*)
