@@ -1730,7 +1730,7 @@ contains
 
     subroutine get_tensor_linear_systems(t_tensor,root_vect,workspace_t)
       
-        type(talsh_comm_tens_t)              :: t_tensor
+        type(talsh_comm_tens_t), intent(inout)   :: t_tensor
         complex(kind=8), pointer, contiguous :: root_vect(:,:)
         type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
         
@@ -1769,7 +1769,7 @@ contains
 
     subroutine get_tensor_eigenvector(result_t,root_vect,e_small,workspace_t,left)
       
-        type(talsh_davidson_results_tens_t) :: result_t
+        type(talsh_davidson_results_tens_t), intent(inout) :: result_t
         complex(kind=8), pointer, contiguous :: root_vect(:,:)
         complex(kind=8), pointer, contiguous :: e_small(:)
         type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
@@ -2447,7 +2447,7 @@ contains
 ! removed property gradient since that will be avaliable from within workspace_t
    subroutine talsh_get_values_vectors_davidson(results_t,int_t,interm_t, &
  &               workspace_t, projector_t,flavor, frequency, prop_grad1, prop_grad2, tprop_tensor)
-      type(talsh_davidson_results_tens_t) :: results_t
+      type(talsh_davidson_results_tens_t), intent(inout) :: results_t
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
       type(talsh_projectors_tens_t), intent(inout) :: projector_t
