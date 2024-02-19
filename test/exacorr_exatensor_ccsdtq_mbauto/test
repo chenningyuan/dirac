@@ -20,6 +20,10 @@ f.add(from_string = 'Eigenvalues',
       rel_tolerance   = 1.0e-5)
 
 #test.run(['ccsdtq_nr_contracted_energy_small.inp', 'ccsdtq_x2c_energy_small.inp'], ['h2o.xyz'], f)
-test.run(['ccsdtq_x2c_energy_small.inp'], ['h2o.xyz'], f)
+#test.run(['ccsdtq_x2c_energy_small.inp'], ['h2o.xyz'], f)
+
+#test.run(['ccsdtq_x2c_energy_small_4in4.inp','ccsdtq_x2c_energy_small_4in6.inp'], ['h2o.xyz'], f)
+test.run(['ccsdtq_x2c_energy_small_4in4.inp'], ['h2o.xyz'], f)
+
 
 sys.exit(test.return_code)

@@ -929,20 +929,15 @@
       call reset_available_kw_list()
 
       if (setup) then
-         print *,'debug: entering setup'
          setup = .false.
-         print *,'debug: setup not set to ',setup
          exa_input%current_eom_input = exa_input%current_eom_input + 1
-         print *,'debug: current eom input is',exa_input%current_eom_input
       end if
 
 !     consistency check on reading
-      print *,'debug, before check:',size(exa_input%eom_input,1),exa_input%current_eom_input
       if (size(exa_input%eom_input,1).ge.exa_input%current_eom_input) then
 
          if (kw_matches(word, '.NROOTS')) then
             call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%nroots) 
-            print *,'read #roots',exa_input%eom_input(exa_input%current_eom_input)%nroots
          end if
 
 !        expectation values between the number of right
@@ -975,7 +970,6 @@
          if (kw_matches(word, '.FLAVOR')) then
             call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%flavor)
             wordtemp = exa_input%eom_input(exa_input%current_eom_input)%flavor
-            print '(A)','debug, flavor read:_'//wordtemp//'_'
             if ( (kw_matches(wordtemp, 'EE     ') .or. &
                 & kw_matches(wordtemp, 'EA     ') .or. &
                 & kw_matches(wordtemp, 'IP     ') .or. &
@@ -991,7 +985,6 @@
                 & kw_matches(wordtemp, 'P-P2-EE') .or. &
                 & kw_matches(wordtemp, 'P-P2-EA') .or. &
                 & kw_matches(wordtemp, 'P-P2-IP'))) then
-               print '(A)','debug:_'//wordtemp//'_ is a supported flavor'
                exa_input%current_eom_input = exa_input%current_eom_input + 1
                setup = .true.
             else
