@@ -155,21 +155,21 @@ subroutine talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
 
         do i=1, N_prop_A
             call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
-            if (omega(1).ne.0.0) then
+            if (omega(1).ne.ZERO) then
                 call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                     Interm_t_tensors_A(i), omega_min(1), Tprop_tensors_min_w(1))
             end if
 
             do j=1, N_prop_B
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
-                if (omega(2).ne.0.0) then
+                if (omega(2).ne.ZERO) then
                     call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                             Interm_t_tensors_B(j), omega_min(2), Tprop_tensors_min_w(2))
                 end if
 
                 call print_date('Solved All 1st response right equations')
 
-                if (omega(1).ne.0.0) then
+                if (omega(1).ne.ZERO) then
                     call get_eom_lr(exa_input,interm_t, int_t, &
                         Interm_t_tensors_A,Interm_t_tensors_B,& 
                         Tprop_tensors, Tprop_tensors_min_w, i,j,& 
@@ -393,6 +393,8 @@ subroutine do_eom_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     allocate(omega(N_oper_qr))
     allocate(omega_min(N_oper_qr))
 
+    omega = ZERO 
+    omega_min = ZERO 
 
     allocate(Bvec_tensors(N_oper_qr))
     allocate(Tprop_tensors(N_oper_qr))
@@ -428,7 +430,7 @@ subroutine do_eom_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
         do i=1, N_prop_A
 
             call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
-            if (omega(2).ne.0.0.or.omega(3).ne.0.0) then 
+            if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega_min(1), Tprop_tensors_min_w(1))
             end if 
 
@@ -437,7 +439,7 @@ subroutine do_eom_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 
             call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), &
                     Bvec_tensors(1), Tprop_bar_tensors(1))
-            if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
+            if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
                 call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega_min(1),&
                     Bvec_tensors(1), Tprop_bar_tensors_min_w(1))
             end if
@@ -445,7 +447,7 @@ subroutine do_eom_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
             do j=1, N_prop_B
                 
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
-                if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
+                if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
                     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega_min(2), Tprop_tensors_min_w(2))
                 end if 
 
@@ -454,7 +456,7 @@ subroutine do_eom_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 
                 call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), &
                         Bvec_tensors(2), Tprop_bar_tensors(2))
-                if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
+                if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
                     call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega_min(2),&
                         Bvec_tensors(2), Tprop_bar_tensors_min_w(2))
                 end if 
@@ -462,7 +464,7 @@ subroutine do_eom_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                 do k=1, N_prop_C
 
                     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_C(k), omega(3), Tprop_tensors(3))
-                    if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
+                    if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
                         call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_C(k), &
                             omega_min(3), Tprop_tensors_min_w(3))
                     end if      
@@ -472,14 +474,14 @@ subroutine do_eom_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 
                     call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_C(k), omega(3), &
                             Bvec_tensors(3), Tprop_bar_tensors(3))
-                    if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
+                    if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
                         call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_C(k), omega_min(3),&
                             Bvec_tensors(3), Tprop_bar_tensors_min_w(3))
                     end if 
 
                     call print_date('Solved All 1st response equations') 
 
-                    if (omega(1).ne.0.0.or.omega(2).ne.0.0) then
+                    if ((omega(1).ne.ZERO).or.(omega(2).ne.ZERO)) then
                         call get_eom_qr(exa_input, interm_t,&
                                     Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C,& 
                                     Tprop_tensors, Tprop_bar_tensors,& 

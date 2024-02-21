@@ -32,6 +32,7 @@ test.run(['lih_test_contracted_ccsdt-2.inp'], ['lih_test.xyz'], f)
 #test.run(['li2_test_contracted_ccsdt-3.inp'], ['li2_test.xyz'], f)
 #test.run(['li2_test_contracted_ccsdt-3.inp'], ['li2_test.xyz'], f)
 
-test.run(['ccsdt_x2c_energy_small.inp'], ['h2o.xyz'], f)
+#test.run(['ccsdt_x2c_energy_small.inp'], ['h2o.xyz'], f)
+test.run(['ccsdt_x2c_energy_small_4in4.inp','ccsdt_x2c_energy_small_4in6.inp'], ['h2o.xyz'], f)
 
 sys.exit(test.return_code)
