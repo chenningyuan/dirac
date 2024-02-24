@@ -57,7 +57,6 @@ implicit none
 !            False - the functional value criterion or criterion of the number                !
 !                    of negative eigenvalues equals zero will be used                         !
 !   thgrad - threshold; see lggrad for the explanation                                        !
-!   thxvec - threshold for removing relativitely small elements of the solution vector        !
 !   lgdiag - if heskey = DIAG it have the the same purpose as lgfull;                         !
 !            for threshold is used thdiag variable                                            !
 !          - if heskey = COMB it is used to switch from the first to the second               !
@@ -78,7 +77,7 @@ type :: minimization_flags
   character*4 :: heskey
   logical     :: lgfull, lgdiag, lggrad, lgchck
   integer     :: iprint, maxitr, l, ndim
-  real*8      :: thfull, thdiag, thgrad, thxvec
+  real*8      :: thfull, thdiag, thgrad
 end type minimization_flags
 
 type( minimization_flags ), private :: mnf
@@ -121,7 +120,6 @@ contains
   read(iunit,*) chdum,mnf%thfull
   read(iunit,*) chdum,mnf%thdiag
   read(iunit,*) chdum,mnf%thgrad
-  read(iunit,*) chdum,mnf%thxvec
   read(iunit,*) chdum,mnf%lgfull
   read(iunit,*) chdum,mnf%lgdiag
   read(iunit,*) chdum,mnf%lggrad
@@ -166,7 +164,7 @@ contains
   integer :: itr, ist, ier, nep, nem, nez, nref
 
   real*8  :: funcg, funcq, funco, dnrmk, dnrmg, diffg, diffq, diffa
-  real*8  :: totdiag, totnond, shift, tradius, tpred
+  real*8  :: totdiag, totnond, shift, tradius, tpred, hmin
 
   real*8,  allocatable, dimension(:) :: grad, etmp, xvec
 
@@ -209,7 +207,6 @@ contains
     write(mnf%l,*) 'thdiag= ',mnf%thdiag
     write(mnf%l,*) 'thfull= ',mnf%thfull
     write(mnf%l,*) 'thgrad= ',mnf%thgrad
-    write(mnf%l,*) 'thxvec= ',mnf%thxvec
     write(mnf%l,*) 'lgdiag= ',mnf%lgdiag
     write(mnf%l,*) 'lgfull= ',mnf%lgfull
     write(mnf%l,*) 'lggrad= ',mnf%lggrad
@@ -235,15 +232,15 @@ contains
   funcg = get_func()
   funco = funcg
 
-  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
+  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 8x,a, 6x,a)') &
     '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
-  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
-    '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
+  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 7x,a, 6x,a, 6x,a,6x,a)') &
+    '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)',' e: +,-,0  ','H','DIFFG','DIFFQ','HMIN'
 
   ! zero step
   call get_hessian(hmat,full,totdiag,totnond)
   call get_gradient(grad,dnrmg)
-  call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+  call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
 
   shift = d0
   dnrmk = d0
@@ -252,8 +249,8 @@ contains
   diffa = d0
   itr   = 0
   ist   = 0
-  write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
-    '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+  write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i6,3x,a,3d11.2)') &
+    '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq,hmin
 
   do
     ist = ist + 1
@@ -296,7 +293,7 @@ contains
       !---------------------------------------------!
       call get_hessian(hmat,full,totdiag,totnond)
       call get_gradient(grad,dnrmg)
-      call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+      call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
 
       itr = itr + 1
 
@@ -307,10 +304,10 @@ contains
       if(full) hessian = 'FULL'
       funco = funcg
 
-      write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
-        '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
-      write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
-        '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+      write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 7x,a, 6x,a, 6x,a, 6x,a)') &
+        '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ','HMIN'
+      write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i6,3x,a,3d11.2)') &
+        '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq,hmin
 
       !----------------------------!
       ! check convergence criteria !
@@ -338,10 +335,10 @@ contains
           if(full)then
             call get_hessian(hmat,full,totdiag,totnond)
             call get_gradient(grad,dnrmg)
-            call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+            call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
             hessian = 'FULL'
-            write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
-              '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+            write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i6,3x,a,3d11.2)') &
+              '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq,hmin
             if(mnf%lgchck) exit
           endif
         endif
@@ -571,23 +568,6 @@ contains
     endif
   enddo
 
-  ! Find largest element
-  xmax=maxval(abs(xvec))
-  if(mnf%iprint.ge.1)then
-    write(mnf%l,'(a,d12.4)') ' Largest kappa: ',xmax
-  endif
-  xmax=xmax*mnf%thxvec
-  ixvec=0
-  do i = 1,ndim
-    if(abs(xvec(i)).lt.xmax) then
-      xvec(i) = d0
-      ixvec = ixvec + 1
-    endif
-  enddo
-  if(mnf%iprint.ge.1)then
-    write(mnf%l,'(a,2(I8,A))') ' Removed (',ixvec,'/',ndim,') rotations'
-  endif
-
   ! Norm of the X
   dnrmk = dnrm2(ndim,xvec,1)
   if(mnf%iprint.ge.3)then
@@ -603,7 +583,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,gradient,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+  subroutine hdiag(hmat,gradient,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
   !******************************************************************************!
   !                                                                              !
   !               Diagonalize real representation of the hessian                 !
@@ -617,6 +597,7 @@ contains
   integer, intent(out) :: nep, nem, nez
   real*8,  intent(in ), dimension(:) :: gradient
   real*8,  intent(out), dimension(:) :: etmp
+  real*8,  intent(out) :: hmin
 
   integer, intent(inout), pointer :: iorig(:)
   real*8,  intent(inout), pointer :: hmat(:,:)
@@ -722,10 +703,14 @@ contains
   enddo
 
   ! count number of positive, negative and zero eigenvalues
+  hmin=d0
   nep=0; nem=0; nez=0
   do i=1,ndim
     if(dabs(etmp(i)) > thresh)then
-      if(etmp(i) < d0)nem = nem + 1
+      if(etmp(i) < d0) then
+        nem = nem + 1
+        hmin=min(hmin,etmp(i))
+      endif
       if(etmp(i) > d0)nep = nep + 1
     else
       nez = nez + 1
@@ -884,7 +869,7 @@ contains
   ! Internal variables
   logical       :: flat
   logical, save :: was_flat = .false.
-  character*6   :: cond
+  character*9   :: cond
   integer       :: i, nred
   integer, save :: nrun  = 0, ncount(4) = 0
 
@@ -900,29 +885,29 @@ contains
   R       = diffg / diffq
 
   !------------------------------------------------------------------------------!
-  !                            Trus-radius update                                !
+  !                            Trust-radius update                                !
   !------------------------------------------------------------------------------!
   if( dabs(diffg)<thresh .or. dabs(diffq)<thresh )then
-    cond = '0     '
+    cond = '0        '
     if(rejected)then
-      if(diffq > d0)then
-        cond = '0r q>0'
+      if(diffq > d0)then 
+        cond = '0r q>0.00'
         tradius  = tradius / 10.0d0
       else
-        cond = '0r    '
+        cond = '0r       '
         rejected = .false.
       endif
     endif
   else
     if(rejected)then
       if(diffq > d0)then
-        cond = 'r  q>0'
+        cond = 'r  q>0.00'
         tradius  = tradius / 10.0d0
       else
-        cond = 'r     '
-        if(R < d0 ) cond = 'r  R<0'
-        if(R < d1q) cond = 'r  R<1'
-        if(R > d3q) cond = 'r  R>3'
+        cond = 'r        '
+        if(R < d0 ) cond = 'r  R<0.00'
+        if(R < d1q) cond = 'r  R<0.25'
+        if(R > d3q) cond = 'r  R>0.75'
         rejected = .false.
         if(R < d0 ) rejected = .true.
         if(R < d1q) tradius  = d1q* tradius
@@ -932,34 +917,34 @@ contains
       if(dnrmk > tradius)then
         if(full)then
           if(diffq < d0)then
-            cond = 'Tq    '
-            if(R < d0 ) cond = 'Tq R<0'
-            if(R < d1q) cond = 'Tq R<1'
-            if(R > d5q) cond = 'Tq R>5'
+            cond = 'Tq       '
+            if(R < d0 ) cond = 'Tq R<0.00'
+            if(R < d1q) cond = 'Tq R<0.25'
+            if(R > d5q) cond = 'Tq R>1.25'
             tradius = dnrmk
             if(R < d0 ) rejected = .true.
             if(R < d1q) tradius  = d1q*tradius
             if(R > d5q) tradius  = d2*tradius
           else 
             cond = 'TQ    '
-            if(R > d0 ) cond = 'TQ R>0'
-            if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>7'
-            if((R > d3q).and.(R < d5q))   cond = 'TQ R<5'
+            if(R > d0 ) cond = 'TQ R>0.00'
+            if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>1.75'
+            if((R > d3q).and.(R < d5q))   cond = 'TQ R<1.25'
             tradius = dnrmk
             if(R > d0 ) rejected = .true.
             if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
             if((R > d3q).and.(R < d5q))   tradius = d2*tradius
           endif
         else
-          cond = 'T  dia'
+          cond = 'T  dia   '
           rejected = .true.
         endif
       else
         if(diffq < d0)then
           cond = 'tq     '
-          if(R < d0 ) cond = 'tq R<0'
-          if(R < d1q) cond = 'tq R<1'
-          if(R > d5q) cond = 'tq R>5'
+          if(R < d0 ) cond = 'tq R<0.00'
+          if(R < d1q) cond = 'tq R<0.25'
+          if(R > d5q) cond = 'tq R>1.25'
           tradius = tradold
           if(trdef) tradius = dnrmk
           if(R < d0 ) rejected = .true.
@@ -967,9 +952,9 @@ contains
           if(R > d5q) tradius  = max(d2*dnrmk,tradold)
         else 
           cond = 'tQ    '
-          if(R > d0 ) cond = 'tQ R>0'
-          if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>7'
-          if((R > d3q).and.(R < d5q))   cond = 'tQ R<5'
+          if(R > d0 ) cond = 'tQ R>0.00'
+          if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>1.75'
+          if((R > d3q).and.(R < d5q))   cond = 'tQ R<1.25'
           tradius = tradold
           if(trdef) tradius = dnrmk
           if(R > d0 ) rejected = .true.
@@ -1131,11 +1116,12 @@ contains
     rejected  = .true.
     if(cond(3:3) == ' ') cond(3:3) = 's'
     if(cond(3:3) == '.') cond(3:3) = 'd'
+    if( cond(1:3) == '0rs' ) rejected  = .false.
   endif
 
   if(tradius /= tradold) trdef = .false.
 
-  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
+  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 8x,a, 6x,a)') &
     '  ','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
   write(mnf%l,'(a,2x,i4,3d11.2,f11.5,3x,l1,3x,a,4d11.2)') &
     '*T',itr+1,tradold,tradius,dnrmk,R,rejected,cond,diffg,diffq

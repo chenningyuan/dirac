@@ -147,7 +147,8 @@ Tutorials and walkthrus
   :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
 
 * **Analysis:**
-  :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
+  :doc:`Projection analysis <tutorials/analysis/projection_analysis>` |
+  :doc:`Localization of orbitals <tutorials/localization/tutorial>`     
 
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
