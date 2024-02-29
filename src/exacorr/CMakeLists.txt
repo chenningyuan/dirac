@@ -60,6 +60,7 @@ if(ENABLE_EXATENSOR)
    talsh_ccrsp_common.F90
    talsh_eom_QR.F90
    talsh_cc_QR.F90
+   talsh_ccci_QR.F90
    talsh_eom_LR.F90
    talsh_eom_rspeq_solver.F90
    talsh_eom_TPA.F90
