@@ -92,6 +92,7 @@ For the atomic run of H, we use the following input (``h.inp``)
    .DOSSSS
    .DFT
     PBE
+   .ONESYS
    *X-AMFI
    .amf
    .eamf
