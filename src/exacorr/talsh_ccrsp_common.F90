@@ -8,9 +8,6 @@ module talsh_ccrsp_common
     use exacorr_utils
     use talsh_common_routines
     use exacorr_global
-    use talsh_eom_rspeq_solver
-    use talsh_eom_QR
-    use talsh_eom_LR
 
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
