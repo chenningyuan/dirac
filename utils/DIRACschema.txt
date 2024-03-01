@@ -6,6 +6,8 @@ result           composite single    required    # results of the calculation
 *input
 molecule         composite single    required    # topology of the molecular system
 aobasis          composite array     required    # atomic orbital basis set descriptions
+dirac_inp        string    array     optional    # the .inp file that specified the keywords used
+molecule_inp     string    array     optional    # the .xyz or .mol file that specified the geometry
 *end
 
 *result

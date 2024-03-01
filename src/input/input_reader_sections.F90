@@ -923,23 +923,21 @@
       logical :: setup = .true. 
       character(kw_length) :: wordtemp
 
+#ifndef MOD_EXACORR
+      call quit(kw_section//' not available in this version')
+#else
       call reset_available_kw_list()
 
       if (setup) then
-         print *,'debug: entering setup'
          setup = .false.
-         print *,'debug: setup not set to ',setup
          exa_input%current_eom_input = exa_input%current_eom_input + 1
-         print *,'debug: current eom input is',exa_input%current_eom_input
       end if
 
 !     consistency check on reading
-      print *,'debug, before check:',size(exa_input%eom_input,1),exa_input%current_eom_input
       if (size(exa_input%eom_input,1).ge.exa_input%current_eom_input) then
 
          if (kw_matches(word, '.NROOTS')) then
             call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%nroots) 
-            print *,'read #roots',exa_input%eom_input(exa_input%current_eom_input)%nroots
          end if
 
 !        expectation values between the number of right
@@ -972,7 +970,6 @@
          if (kw_matches(word, '.FLAVOR')) then
             call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%flavor)
             wordtemp = exa_input%eom_input(exa_input%current_eom_input)%flavor
-            print '(A)','debug, flavor read:_'//wordtemp//'_'
             if ( (kw_matches(wordtemp, 'EE     ') .or. &
                 & kw_matches(wordtemp, 'EA     ') .or. &
                 & kw_matches(wordtemp, 'IP     ') .or. &
@@ -988,7 +985,6 @@
                 & kw_matches(wordtemp, 'P-P2-EE') .or. &
                 & kw_matches(wordtemp, 'P-P2-EA') .or. &
                 & kw_matches(wordtemp, 'P-P2-IP'))) then
-               print '(A)','debug:_'//wordtemp//'_ is a supported flavor'
                exa_input%current_eom_input = exa_input%current_eom_input + 1
                setup = .true.
             else
@@ -999,6 +995,7 @@
          call quit('more *EXEOM blocks defined than specified in EXACC input block') 
       end if
       call check_whether_kw_found(word, kw_section)
+#endif
 
    end subroutine
 
@@ -1090,19 +1087,94 @@
          exa_input%iterative_scheme = 22
       end if
 
-      if (kw_matches(word, '.CC-iT       ')) then 
+      if (kw_matches(word, '.CCiT        ')) then 
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 30
       end if
 
-      if (kw_matches(word, '.CC-iQ    ')) then
+      if (kw_matches(word, '.CCiT1a      ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 31
+      end if
+
+      if (kw_matches(word, '.CCiT1b      ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 32
+      end if
+
+      if (kw_matches(word, '.CCiT2       ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 33
+      end if
+
+      if (kw_matches(word, '.CCiT3       ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 34
+      end if
+
+      if (kw_matches(word, '.CC3         ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 35
+      end if
+
+      if (kw_matches(word, '.CCiQ      ')) then
          exa_input%iterative_level  = 4
          exa_input%iterative_scheme = 40
       end if
 
-      if (kw_matches(word, '.CC-iP    ')) then
+      if (kw_matches(word, '.CCiQ1a      ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 41
+      end if
+
+      if (kw_matches(word, '.CCiQ1b      ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 42
+      end if
+
+      if (kw_matches(word, '.CCiQ2       ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 43
+      end if
+
+      if (kw_matches(word, '.CCiQ3       ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 44
+      end if
+
+      if (kw_matches(word, '.CC4         ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 45
+      end if
+
+      if (kw_matches(word, '.CCiP     ')) then
          exa_input%iterative_level  = 5
          exa_input%iterative_scheme = 50
+      end if
+
+      if (kw_matches(word, '.CCiP1a      ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 51
+      end if
+
+      if (kw_matches(word, '.CCiP1b      ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 52
+      end if
+
+      if (kw_matches(word, '.CCiP2       ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 53
+      end if
+
+      if (kw_matches(word, '.CCiP3       ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 54
+      end if
+
+      if (kw_matches(word, '.CC5         ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 55
       end if
 
       if (kw_matches(word, '.TCONVERG')) then

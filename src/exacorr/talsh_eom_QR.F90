@@ -66,6 +66,8 @@ subroutine get_eom_qr(exa_input, interm_t,&
 
         call print_date('Evaluate CC-CI QR')
 
+        quarsp = ZERO
+        quarsp_con = ZERO
 
         call get_quarspf(exa_input, interm_t, &
                         Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C,&

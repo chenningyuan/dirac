@@ -265,7 +265,7 @@ module talsh_eom_rspeq_solver
 
       !XY: Although the final QR result of EOM is same as CC-CI, the response equations and 
       ! the left perturbed ampiltudes tbar are not same. The point is the left bevctor EOM used is not the one of CC-CI 
-      ! CC-CI left bvector depends on the right perturbed ampiltudes. So, here we choose the EOM type and comment out the CC-CI as backup
+      ! CC-CI left bvector is depended on the right perturbed ampiltudes. So, here we choose the EOM type and comment out the CC-CI as backup
       ! see more details: J. Chem Phys, 142, p.114109, 2015, & J. Chem Phys, 144, p.024102, 2016
 
             use tensor_algebra
@@ -279,10 +279,10 @@ module talsh_eom_rspeq_solver
             type(exacc_input), intent(in) :: exa_input
             type(talsh_intg_tens_t), intent(inout) :: int_t
             type(talsh_intermediates_tens_t),intent(inout) :: interm_t
-            type(talsh_rsp_interm_tens_t) :: interm_t_prop
+            type(talsh_rsp_interm_tens_t),intent(inout) :: interm_t_prop
             type(talsh_tens_t), intent(inout)  :: l2_tensor
             type(talsh_tens_t), intent(inout)  :: l1_tensor
-            type(talsh_comm_tens_t)       :: bvec_tensor
+            type(talsh_comm_tens_t), intent(inout)       :: bvec_tensor
 
 
             type(talsh_tens_t)       :: Aux_tensor1, one_tensor
@@ -306,7 +306,6 @@ module talsh_eom_rspeq_solver
             ierr=talsh_tensor_construct(bvec_tensor%t1,C8,ov_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(bvec_tensor%t2,C8,oovv_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(Aux_tensor1,C8,one_dims(1:0),init_val=ZERO)
-
 
 
             ierr=talsh_tensor_add('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov,scale=ONE) 
@@ -353,8 +352,8 @@ module talsh_eom_rspeq_solver
                   type(talsh_rsp_interm_tens_t) :: interm_t_prop
                   type(talsh_tens_t), intent(inout)  :: l2_tensor
                   type(talsh_tens_t), intent(inout)  :: l1_tensor
-                  type(talsh_comm_tens_t)       :: Tprop_tensor    !for CC-CI, we need right-vectors
-                  type(talsh_comm_tens_t)       :: bvec_tensor
+                  type(talsh_comm_tens_t), intent(inout)       :: Tprop_tensor    !for CC-CI, we need right-vectors
+                  type(talsh_comm_tens_t), intent(inout)       :: bvec_tensor
       
       
                   type(talsh_tens_t)       :: Aux_tensor1, one_tensor

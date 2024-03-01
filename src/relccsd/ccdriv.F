@@ -4167,7 +4167,7 @@ C
 C        ... if we don't want to restart we trash any existing files and start over
 C
             write (IW,*)
-            write (IW,*) 'INFO: Restart file(s) will be overwriten!'
+            write (IW,*) 'INFO: Restart file(s) will be overwritten!'
             write (IW,*)
             OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &            STATUS='REPLACE',RECL=IRECL)

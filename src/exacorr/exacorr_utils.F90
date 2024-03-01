@@ -18,6 +18,7 @@ module exacorr_utils
   public print_exaoutput
   public shift_orbital_energy
   public print_orbital_energy
+  public print_iterative_wavefunction_choice
 
   contains
 
@@ -142,6 +143,13 @@ module exacorr_utils
       write(*,'(A)') "-----------------------------------------------"
       write(*,'(A)') "      Characteristics of this calculation      "
       write(*,'(A)') "-----------------------------------------------"
+      if (exa_input%auto_kernels) then
+         if (exa_input%auto_scheme.eq.2) then
+            write(*,'(A,L1)') " - Using kernels generated with TENPI"
+         elseif(exa_input%auto_scheme.eq.1) then
+            write(*,'(A,L1)') " - Using kernels generated with mbauto"
+         endif
+      endif
       write(*,'(A,L1)') " - Solve CCD equations :                ", exa_input%ccd
       write(*,'(A,L1)') " - Solve Lambda equations :             ", exa_input%lambda
       write(*,'(A,L1)') " - Compute perturbative corrections :   ", exa_input%do_perturbative
@@ -196,21 +204,26 @@ module exacorr_utils
       real(8), intent(in), optional :: t1diag
       real(8), intent(in), optional :: pert_energy(3)
       character(len=23) :: label_iterative
-      
+
+!     character(len=12) :: wf_label
+!      
+!     call print_iterative_wavefunction_choice(iterative_scheme, wf_label)
       write(label_iterative,'(A)') "                    "
       if (iterative_scheme.eq.20) write(label_iterative,'(A)') "CCD energy :           "
       if (iterative_scheme.eq.21) write(label_iterative,'(A)') "CCSD energy :          "
       if (iterative_scheme.eq.22) write(label_iterative,'(A)') "CC2 energy :           "
 
       if (iterative_scheme.eq.30) write(label_iterative,'(A)') "CCSDT energy :         "
-      if (iterative_scheme.eq.31) write(label_iterative,'(A)') "CCSDT-1 energy :       "
-      if (iterative_scheme.eq.32) write(label_iterative,'(A)') "CCSDT-1a energy :      "
-      if (iterative_scheme.eq.33) write(label_iterative,'(A)') "CCSDT-1b energy :      "
-      if (iterative_scheme.eq.34) write(label_iterative,'(A)') "CCSDT-2 energy :       "
-      if (iterative_scheme.eq.36) write(label_iterative,'(A)') "CCSDT-3 energy :       "
-      if (iterative_scheme.eq.37) write(label_iterative,'(A)') "CC3 energy :           "
+      if (iterative_scheme.eq.31) write(label_iterative,'(A)') "CCSDT-1a energy :      "
+      if (iterative_scheme.eq.32) write(label_iterative,'(A)') "CCSDT-1b energy :      "
+      if (iterative_scheme.eq.33) write(label_iterative,'(A)') "CCSDT-2 energy :       "
+      if (iterative_scheme.eq.34) write(label_iterative,'(A)') "CCSDT-3 energy :       "
+      if (iterative_scheme.eq.35) write(label_iterative,'(A)') "CC3 energy :           "
 
       if (iterative_scheme.eq.40) write(label_iterative,'(A)') "CCSDTQ energy :        "
+      if (iterative_scheme.eq.41) write(label_iterative,'(A)') "CCSDTQ-1a energy :     "
+      if (iterative_scheme.eq.42) write(label_iterative,'(A)') "CCSDTQ-1b energy :     "
+
       if (iterative_scheme.eq.50) write(label_iterative,'(A)') "CCSDTQP energy :       "
 
       write(*,*) ""
@@ -224,7 +237,7 @@ module exacorr_utils
       end if
       write(*,*) ""
       write (*,'(A,F20.15)') "  MP2 energy :                      ",mp2_energy
-      write (*,'(2A,F25.15)') "  Final ",label_iterative,cc_energy
+      write (*,'(A31,F25.15)') "Final "//label_iterative,cc_energy
       if (present(pert_energy).and.(perturbative_scheme.eq.30)) then 
             write (*,'(A,F20.15)') "  4th order triples correction :    ",pert_energy(1)
             write (*,'(A,F20.15)') "  5th order triples (T) correction :",pert_energy(2)
@@ -239,7 +252,8 @@ module exacorr_utils
       write(*,*) ""
       write (*,'(A,F25.15)') "  SCF energy :                 ",scf_energy
       write (*,'(A,F25.15)') "  Total MP2 energy :           ",scf_energy+mp2_energy
-      write (*,'(2A,F25.15)') "  Total ",label_iterative,scf_energy+cc_energy
+      write (*,'(A31,F25.15)') "Total "//label_iterative,(scf_energy+cc_energy)
+
       if (present(pert_energy).and.(perturbative_scheme.eq.30)) then
          write (*,'(A,F25.15)') "  Total CCSD+T  energy :       ",scf_energy+cc_energy+pert_energy(1)
          write (*,'(A,F25.15)') "  Total CCSD(T) energy :       ",scf_energy+cc_energy+pert_energy(1)+pert_energy(2)
@@ -448,5 +462,47 @@ module exacorr_utils
       end do
 
     end subroutine print_orbital_energy
+
+    subroutine print_iterative_wavefunction_choice(iterative_scheme, wf_label)
+      integer, intent(in) :: iterative_scheme
+      character(12), optional, intent(inout) :: wf_label
+      character(12) :: wavefunction
+
+      if (iterative_scheme .eq. 10) wavefunction = "CCS" 
+
+      if (iterative_scheme .eq. 20) wavefunction = "CCD" 
+      if (iterative_scheme .eq. 21) wavefunction = "CCSD" 
+      if (iterative_scheme .eq. 22) wavefunction = "CC2" 
+
+      if (iterative_scheme .eq. 30) wavefunction = "CCSDT" 
+      if (iterative_scheme .eq. 31) wavefunction = "CCSDT-1a" 
+      if (iterative_scheme .eq. 32) wavefunction = "CCSDT-1b" 
+      if (iterative_scheme .eq. 33) wavefunction = "CCSDT-2" 
+      if (iterative_scheme .eq. 34) wavefunction = "CCSDT-3" 
+      if (iterative_scheme .eq. 35) wavefunction = "CC3" 
+
+      if (iterative_scheme .eq. 40) wavefunction = "CCSDTQ" 
+      if (iterative_scheme .eq. 41) wavefunction = "CCSDTQ-1a" 
+      if (iterative_scheme .eq. 42) wavefunction = "CCSDTQ-1b" 
+      if (iterative_scheme .eq. 43) wavefunction = "CCSDTQ-2" 
+      if (iterative_scheme .eq. 44) wavefunction = "CCSDTQ-3" 
+      if (iterative_scheme .eq. 45) wavefunction = "CC4" 
+
+      if (iterative_scheme .eq. 50) wavefunction = "CCSDTQP" 
+      if (iterative_scheme .eq. 51) wavefunction = "CCSDTQP-1a" 
+      if (iterative_scheme .eq. 52) wavefunction = "CCSDTQP-1b" 
+      if (iterative_scheme .eq. 53) wavefunction = "CCSDTQP-2" 
+      if (iterative_scheme .eq. 54) wavefunction = "CCSDTQP-3" 
+      if (iterative_scheme .eq. 55) wavefunction = "CC5" 
+
+      if (iterative_scheme .eq. 99) wavefunction = "CCSDTQP-xyz " 
+
+      if (.not.present(wf_label)) then
+         write(*,'(A)') ""
+         write(*,'(1X,A,I4,A,I4,A)') "Iterations with CC(",iterative_scheme,") model: "//wavefunction
+      else
+         write(wf_label,'(A)') wavefunction
+      end if   
+   end subroutine
 
 end module exacorr_utils

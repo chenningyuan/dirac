@@ -8,16 +8,20 @@ if(ENABLE_EXATENSOR)
   )
 
   set(FREE_EXACORR_FORTRAN_SOURCES
-   talsh_auto_ccd_spinor.F90
-   talsh_auto_ccsd_spinor.F90
-   talsh_auto_ccsdt_spinor.F90
-   talsh_auto_ccsdtq_spinor.F90
-   talsh_auto_ccsdtqp_spinor.F90
-   exatensor_auto_ccd_spinor.F90
-   exatensor_auto_ccsd_spinor.F90
-   exatensor_auto_ccsdt_spinor.F90
-   exatensor_auto_ccsdtq_spinor.F90
-   exatensor_auto_ccsdtqp_spinor.F90
+   mbauto/talsh_auto_ccd_spinor.F90
+   mbauto/talsh_auto_ccsd_spinor.F90
+   mbauto/talsh_auto_ccsdt_spinor.F90
+   mbauto/talsh_auto_ccsdt-1a_spinor.F90
+   mbauto/talsh_auto_ccsdt-1b_spinor.F90
+   mbauto/talsh_auto_ccsdt-2_spinor.F90
+   mbauto/talsh_auto_ccsdt-3_spinor.F90
+   mbauto/talsh_auto_ccsdtq_spinor.F90
+   mbauto/talsh_auto_ccsdtqp_spinor.F90
+   mbauto/exatensor_auto_ccd_spinor.F90
+   mbauto/exatensor_auto_ccsd_spinor.F90
+   mbauto/exatensor_auto_ccsdt_spinor.F90
+   mbauto/exatensor_auto_ccsdtq_spinor.F90
+   mbauto/exatensor_auto_ccsdtqp_spinor.F90
    talsh_tenpi_ccd.F90
    talsh_tenpi_ccsd.F90
    talsh_tenpi_ccsdt.F90

@@ -85,9 +85,10 @@
             integer                 :: iterative_level = 2      ! at which excitation level iterative amplitudes/lagrange mult. will be calculated: 1, 2, 3, 4...
             integer                 :: iterative_scheme = 21    ! scheme/variant for the iterative determination of amplitudes 
                                                                 ! 10: CCS (not currently implemented, but logically should follow as this)
-                                                                ! 20: CCD      ; 21: CCSD      ; 22: CC2       ; 
-                                                                ! 30: CCSDT    ; 31: CCSDT-1   ; 32: CCSDT-1a  ; 33: CCSDT-1b  ; 34: CCSDT-2   ; 35: CCSDT-3; 36: CC3           ;
-                                                                ! 40: CCSDTQ   ; 41: CCSDTQ-1  ; 
+                                                                ! 20: CCD      ; 21: CCSD       ; 22: CC2        ; 
+                                                                ! 30: CCSDT    ; 31: CCSDT-1a   ; 32: CCSDT-1b   ; 33: CCSDT-2   ; 34: CCSDT-3   ; 35:  CC3
+                                                                ! 40: CCSDTQ   ; 41: CCSDTQ-1a  ; 42: CCSDTQ-1b  ; 43: CCSDTQ-2  ; 44: CCSDTQ-3  ; 45:  CC4
+                                                                ! 50: CCSDTQP  ; 51: CCSDTQP-1a ; 52: CCSDTQP-1b ; 53: CCSDTQP-2 ; 54: CCSDTQP-3 ; 55:  CC5
             integer                 :: perturbative_level = 3   ! at which excitation level pertubative corrections will be calculated: 2, 3, 4...
             integer                 :: perturbative_scheme = 30 ! scheme/variant for the iterative determination of energies/amplitudes/... 
                                                                 ! 20: MP2 (MP2 is always performed)
@@ -97,7 +98,7 @@
             integer                 :: tripl_block(1:2) = -1    ! for running triples
             integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
             integer                 :: n_laplace = 10           ! number of laplace points to use
-            integer                 :: N_eom_trial = 5          ! number of trial vectors in CC linear response
+            integer                 :: N_eom_trial = 1          ! number of trial vectors in CC linear response
             integer                 :: wf_type = 2              ! wave-function type
             integer                 :: N_Prop_A, N_Prop_B    ! number of property
             integer                 :: N_Prop_C, N_Prop_D    ! number of property

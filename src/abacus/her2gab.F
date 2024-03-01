@@ -1773,11 +1773,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Gabgen */
       SUBROUTINE GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,JATOM,NOCONT,
      &                  recompute_Gab_,IPRINT,WORK,LWORK)
-      use checkpoint
+      use labeled_storage
 C***********************************************************************
 C
 C     This routine will generate the reduced matrix of
-C     Cauchy-Schwartz integrals and write it to CHECKPOINT
+C     Cauchy-Schwartz integrals and write it to property file (HDF5)
 C
 C     Written by T.Saue Mar 19 1997
 C
@@ -1840,8 +1840,9 @@ C     Search for GAB-integrals; return if they are there
 C
       if(.not.recompute_Gab_)then !> by default we reuse GAB-integrals
           DO I = 1,NGAB
-              call checkpoint_query (group//gablab(i),gabdone,gabsize)
-              IF(.not.gabdone.or.gabsize.ne.nsymbl**2) GOTO 10
+            call lab_query(dirac_datafiles(1),group//gablab(i),
+     &           gabdone,gabsize)
+            IF(.not.gabdone.or.gabsize.ne.nsymbl**2) GOTO 10
           END DO
           GOTO 999
       end if
@@ -1919,8 +1920,9 @@ C
             CALL NEWLB2('EOFLABEL',RTNLBL,104,LUPRI)
             close(104,status="keep")
          else
-           call checkpoint_write (group//gablab(i),
-     &          rdata=WORK(KGAB+IOFF:KGAB+IOFF+N2GAB-1))
+!          the subroutine expects a character*16 label, hence the padding            
+           call prop_to_propfile (gablab(i)//'        ',
+     &           WORK(KGAB+IOFF:KGAB+IOFF+N2GAB-1),N2GAB)
          end if
          IOFF = IOFF + N2GAB
       END DO
@@ -1936,7 +1938,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck Getgab */
       SUBROUTINE GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,IPRINT,
      &     GABM,WORK,LWORK)
-       use checkpoint
+      use labeled_storage      
 C***********************************************************************
 C
 C     Fetch compressed matrix of Cauchy-Scwartz-integrals from file
@@ -1998,14 +2000,15 @@ C
       DO I = 1,NGAB
          WRITE(GABLAB(I)(6:6),'(I1)') IGTYP
       ENDDO
-
 C
 C     Get GAB-matrix
 C     --------------
 C
       DO IGAB = 1, NGAB
-         if(.not.recompute_Gab) 
-     &   call checkpoint_query (group//gablab(igab),gabdone,gabsize)
+         if(.not.recompute_Gab) then
+            call lab_query(dirac_datafiles(1),group//gablab(igab),
+     &           gabdone,gabsize)
+         endif
          IF(.not.gabdone.or.gabsize.ne.nsymbl**2) THEN
             WRITE(LUPRI,'(/3A)')
      &           '* GETGAB: label "',GABLAB(IGAB),'" not found; '//
@@ -2022,7 +2025,8 @@ C
                 close(104,status="delete")
               END IF
          else
-           call checkpoint_read (group//gablab(igab),rdata=gab1d)
+           call lab_read(dirac_datafiles(1),group//gablab(igab),
+     &                   rdata=gab1d)
            gabm(:,:,igab) = reshape(gab1d,(/nsymbl,nsymbl/))
          end if
          IF(IPRINT.GE.5) THEN

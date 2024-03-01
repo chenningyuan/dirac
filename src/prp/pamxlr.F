@@ -1159,6 +1159,8 @@ C
        DO I = 1,NLRAPT
         INDXPR = LLRAPU(I)
         CALL WRIXPR(I,INDXPR)
+        IF (IPRPTIM(INDXPR)==-1 .AND. GAUNT)
+     &  CALL QUIT('Mag. Prop. for Gaunt not implemented yet')
        ENDDO
       ENDIF
 C
@@ -1172,6 +1174,8 @@ C
        DO I = 1,NLRBPT
         INDXPR = LLRBPU(I)
         CALL WRIXPR(I,INDXPR)
+        IF (IPRPTIM(INDXPR)==-1 .AND. GAUNT)
+     &  CALL QUIT('Mag. Prop. for Gaunt not implemented yet')
        ENDDO
       ENDIF
 C
