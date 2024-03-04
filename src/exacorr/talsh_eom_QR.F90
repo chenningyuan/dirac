@@ -5,7 +5,6 @@ module talsh_eom_QR
     use exacorr_utils
     use talsh_common_routines
     use exacorr_global
-    use talsh_eom_rspeq_solver
 
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -66,6 +65,8 @@ subroutine get_eom_qr(exa_input, interm_t,&
 
         call print_date('Evaluate CC-CI QR')
 
+        quarsp = ZERO
+        quarsp_con = ZERO
 
         call get_quarspf(exa_input, interm_t, &
                         Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C,&

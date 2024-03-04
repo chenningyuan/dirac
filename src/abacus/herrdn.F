@@ -4923,7 +4923,6 @@ C     for a Gaussian charge distribution approximation to the finite
 C     Nucleus. Uses the Formula and Nuclear Masses from
 C     REHE Newsletter No. 13 (14. June 1995), L. Visscher and K. Dyall.
 C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
-C     Conversion Factor Bohr/fm 52917.7249.
 C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
 #include "implicit.h"

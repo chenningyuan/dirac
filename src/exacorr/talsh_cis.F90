@@ -463,8 +463,8 @@ end subroutine
         complex(kind=8), pointer :: eValues(:)
         integer :: size, n, i  
         print *,'         -     CIS excitation energy     -'
-        print *,'-----------------------------------------------------------------------------------------'
-        print *,'state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1) |'
+        print *,'---------------------------------------------------------------------'
+        print *,'state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1)'
         if (n > size) then
             print *,'wrong number of state, please revise n'
         end if 
@@ -472,7 +472,7 @@ end subroutine
         do i=1,n,1
              print "(I5,(F18.5),(F23.5),(F27.5))",i,abs(eValues(i)),abs(eValues(i))*27.211386245988,abs(eValues(i))*219474.63137
         end do
-        print *,'-----------------------------------------------------------------------------------------'
+        print *,'---------------------------------------------------------------------'
 
     end subroutine print_energy_CIS
 

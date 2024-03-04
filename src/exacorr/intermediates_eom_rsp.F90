@@ -82,10 +82,10 @@ module intermediates_eom_rsp
 !-----------------------------------------------------------------------------------------------------------------------
      subroutine get_epsilon_prop_vo_talsh(epsilon_prop_vo_tensor,orb_int_tensor,t2_tensor,t1_tensor,LR_Aux_oo,vo_dims)
 
-         type(talsh_tens_t) :: epsilon_prop_vo_tensor
-         type(talsh_orb_prop_integ_tens_t) :: orb_int_tensor
-         type(talsh_tens_t) :: t2_tensor,t1_tensor
-         type(talsh_tens_t)            :: LR_Aux_oo
+         type(talsh_tens_t), intent(inout) :: epsilon_prop_vo_tensor
+         type(talsh_orb_prop_integ_tens_t), intent(inout) :: orb_int_tensor
+         type(talsh_tens_t), intent(inout) :: t2_tensor,t1_tensor
+         type(talsh_tens_t), intent(inout)            :: LR_Aux_oo
          type(talsh_tens_t)            :: Transpose_vo
          type(talsh_tens_t) :: one_tensor
          integer(INTD), dimension(2)   :: vo_dims
@@ -135,10 +135,10 @@ module intermediates_eom_rsp
      subroutine get_epsilon_prop_vvoo_talsh(epsilon_prop_vvoo_tensor,orb_int_tensor, &
                                     t2_tensor,t1_tensor,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
              
-               type(talsh_tens_t) :: epsilon_prop_vvoo_tensor
-               type(talsh_orb_prop_integ_tens_t) :: orb_int_tensor
-               type(talsh_tens_t) :: t2_tensor,t1_tensor
-               type(talsh_tens_t)            :: LR_Aux_oo,LR_Aux_vv
+               type(talsh_tens_t), intent(inout) :: epsilon_prop_vvoo_tensor
+               type(talsh_orb_prop_integ_tens_t), intent(inout) :: orb_int_tensor
+               type(talsh_tens_t), intent(inout) :: t2_tensor,t1_tensor
+               type(talsh_tens_t), intent(inout)            :: LR_Aux_oo,LR_Aux_vv
                integer(INTD), dimension(4)   :: vvoo_dims
                integer :: ierr
                logical :: debug_local = .false.
@@ -205,11 +205,11 @@ module intermediates_eom_rsp
      subroutine get_eta_prop_ov_talsh(eta_prop_ov_tensor,orb_int_tensor,l1_tensor,l2_tensor,&
                            t2_tensor,t1_tensor,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
                
-         type(talsh_tens_t) :: eta_prop_ov_tensor
-         type(talsh_orb_prop_integ_tens_t) :: orb_int_tensor
-         type(talsh_tens_t) :: t2_tensor,t1_tensor
-         type(talsh_tens_t) :: l2_tensor,l1_tensor
-         type(talsh_tens_t)            :: LR_Aux_oo,LR_Aux_vv,LR_Aux_vo
+         type(talsh_tens_t), intent(inout) :: eta_prop_ov_tensor
+         type(talsh_orb_prop_integ_tens_t), intent(inout) :: orb_int_tensor
+         type(talsh_tens_t), intent(inout) :: t2_tensor,t1_tensor
+         type(talsh_tens_t), intent(inout) :: l2_tensor,l1_tensor
+         type(talsh_tens_t), intent(inout)            :: LR_Aux_oo,LR_Aux_vv,LR_Aux_vo
          type(talsh_tens_t) :: one_tensor
          integer(INTD), dimension(2)   :: ov_dims
          integer :: ierr
@@ -329,11 +329,11 @@ module intermediates_eom_rsp
      subroutine get_eta_prop_oovv_talsh(eta_prop_oovv_tensor,orb_int_tensor,&
                         l1_tensor,l2_tensor,t1_tensor,LR_Aux_oo,LR_Aux_vv,oovv_dims)
 
-      type(talsh_tens_t) :: eta_prop_oovv_tensor
-      type(talsh_orb_prop_integ_tens_t) :: orb_int_tensor
-      type(talsh_tens_t) :: t1_tensor
-      type(talsh_tens_t) :: l2_tensor,l1_tensor
-      type(talsh_tens_t)            :: LR_Aux_oo,LR_Aux_vv
+      type(talsh_tens_t), intent(inout) :: eta_prop_oovv_tensor
+      type(talsh_orb_prop_integ_tens_t), intent(inout) :: orb_int_tensor
+      type(talsh_tens_t), intent(inout) :: t1_tensor
+      type(talsh_tens_t), intent(inout) :: l2_tensor,l1_tensor
+      type(talsh_tens_t), intent(inout)            :: LR_Aux_oo,LR_Aux_vv
       integer(INTD), dimension(4)   :: oovv_dims
       integer :: ierr
       logical :: debug_local = .false.
@@ -394,10 +394,10 @@ module intermediates_eom_rsp
      subroutine get_eta_prop_ov_eom_talsh(eta_prop_ov_eom_tensor,eta_prop_ov_tensor,epsilon_prop_vo_tensor,&
                                     l2_tensor,ov_dims)
 
-         type(talsh_tens_t) :: eta_prop_ov_eom_tensor
-         type(talsh_tens_t) :: eta_prop_ov_tensor
-         type(talsh_tens_t) :: epsilon_prop_vo_tensor
-         type(talsh_tens_t) :: l2_tensor
+         type(talsh_tens_t), intent(inout) :: eta_prop_ov_eom_tensor
+         type(talsh_tens_t), intent(inout) :: eta_prop_ov_tensor
+         type(talsh_tens_t), intent(inout) :: epsilon_prop_vo_tensor
+         type(talsh_tens_t), intent(inout) :: l2_tensor
          integer(INTD), dimension(2)   :: ov_dims
          type(C_PTR) :: body_p, body_p1
          complex(8), pointer, contiguous:: etaX_tens(:,:), etaXeom_tens(:,:)
@@ -429,8 +429,8 @@ module intermediates_eom_rsp
 
      subroutine get_O_vo_talsh(O_vo_tensor,orb_int_tensor,vo_dims)
         
-        type(talsh_tens_t) :: O_vo_tensor
-        type(talsh_orb_prop_integ_tens_t) :: orb_int_tensor
+        type(talsh_tens_t), intent(inout) :: O_vo_tensor
+        type(talsh_orb_prop_integ_tens_t), intent(inout) :: orb_int_tensor
         integer(INTD), dimension(2)   :: vo_dims
         integer :: ierr
 
@@ -449,9 +449,9 @@ module intermediates_eom_rsp
 
      subroutine get_prop_bar_oo_talsh(prop_bar_oo_tensor,orb_int_tensor,t1_tensor,oo_dims)
 
-        type(talsh_tens_t) :: prop_bar_oo_tensor
-        type(talsh_orb_prop_integ_tens_t) :: orb_int_tensor
-        type(talsh_tens_t) :: t1_tensor
+        type(talsh_tens_t), intent(inout) :: prop_bar_oo_tensor
+        type(talsh_orb_prop_integ_tens_t), intent(inout) :: orb_int_tensor
+        type(talsh_tens_t), intent(inout) :: t1_tensor
         integer(INTD), dimension(2)   :: oo_dims
         integer :: ierr
 
@@ -464,9 +464,9 @@ module intermediates_eom_rsp
 
      subroutine get_prop_bar_vv_talsh(prop_bar_vv_tensor,orb_int_tensor,t1_tensor,vv_dims)
 
-        type(talsh_tens_t) :: prop_bar_vv_tensor
-        type(talsh_orb_prop_integ_tens_t) :: orb_int_tensor
-        type(talsh_tens_t) :: t1_tensor
+        type(talsh_tens_t), intent(inout) :: prop_bar_vv_tensor
+        type(talsh_orb_prop_integ_tens_t), intent(inout) :: orb_int_tensor
+        type(talsh_tens_t), intent(inout) :: t1_tensor
         integer(INTD), dimension(2)   :: vv_dims
         integer :: ierr
 
@@ -479,8 +479,8 @@ module intermediates_eom_rsp
 
      subroutine get_prop_bar_ov_talsh(prop_bar_ov_tensor,orb_int_tensor,ov_dims)
 
-        type(talsh_tens_t) :: prop_bar_ov_tensor
-        type(talsh_orb_prop_integ_tens_t) :: orb_int_tensor
+        type(talsh_tens_t), intent(inout) :: prop_bar_ov_tensor
+        type(talsh_orb_prop_integ_tens_t), intent(inout) :: orb_int_tensor
         integer(INTD), dimension(2)   :: ov_dims
         integer :: ierr
 
@@ -495,9 +495,9 @@ module intermediates_eom_rsp
         use talsh
         use exacorr_datatypes
 
-        type(talsh_tens_t) :: Q_ovoo_tensor
-        type(talsh_tens_t) :: prop_bar_ov_tensor
-        type(talsh_tens_t) :: t2_tensor
+        type(talsh_tens_t), intent(inout) :: Q_ovoo_tensor
+        type(talsh_tens_t), intent(inout) :: prop_bar_ov_tensor
+        type(talsh_tens_t), intent(inout) :: t2_tensor
         integer(INTD), dimension(4)   :: ovoo_dims
         integer :: ierr
 
@@ -509,9 +509,9 @@ module intermediates_eom_rsp
 
      subroutine get_Q_vvvo_talsh(Q_vvvo_tensor,prop_bar_ov_tensor,t2_tensor,vvvo_dims)
 
-        type(talsh_tens_t) :: Q_vvvo_tensor
-        type(talsh_tens_t) :: prop_bar_ov_tensor
-        type(talsh_tens_t) :: t2_tensor
+        type(talsh_tens_t), intent(inout) :: Q_vvvo_tensor
+        type(talsh_tens_t), intent(inout) :: prop_bar_ov_tensor
+        type(talsh_tens_t), intent(inout) :: t2_tensor
         integer(INTD), dimension(4)   :: vvvo_dims
         integer :: ierr
 
