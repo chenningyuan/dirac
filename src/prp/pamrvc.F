@@ -3301,8 +3301,9 @@ C
 C     Configuration type trial vectors
 C
       IF(NZCONF.GT.0) THEN
-        KPREC  = KFREE
-        KCDIAS = KFREE
+        CALL MEMGET('REAL',KPREC,0,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KCDIAS,NZCONF,WORK,KFREE,LFREE)
+        WORK(KCDIAS:KCDIAS-1+NZCONF) = 1.0D0 ! metric is one for CI parameters
         CALL XBVGEN(BCVEC,USEXVC,WORK(KCDIAH),WORK(KCDIAS),EVALR,EVECR,
      &              IBTYP,IBCVC,IVECS(1,IPCP),
      &              MFREQ,JBCNDX,IBOFF,NCPREV,NZCONF,
