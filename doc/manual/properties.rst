@@ -63,7 +63,7 @@ In two-component infinite-order relativistic calculations (with :ref:`HAMILTONIA
 of four-component property operators to avoid the picture change transformation.
 Experimental option, use with care.
 
-keyword(RDCCDENS)
+keyword(RDCCDM)
 
 Activates the reading of the file CCDENS obtained from a previous CC calculation with either the 
 :ref:`WAVE_FUNCTION_.RELCCSD` or with :ref:`WAVE_FUNCTION_.EXACC` modules.  It is not necessary to 

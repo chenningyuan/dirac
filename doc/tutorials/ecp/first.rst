@@ -14,18 +14,18 @@ The first example is the SCF calculation of Hydrogen Iodide.
 SOREP calculation
 -----------------
 
-The simplest SCF input file (:download:`HF.inp <../../../../test/ecp/HF.inp>`) for ECP calculation is 
+The simplest SCF input file (:download:`HF.inp <HF.inp>`) for ECP calculation is 
 
-.. literalinclude:: ../../../../test/ecp/HF.inp
+.. literalinclude:: HF.inp
 
-together with the molecular input (:download:`HI_sorep.mol <../../../../test/ecp/HI_sorep.mol>`)
+together with the molecular input (:download:`HI_sorep.mol <HI_sorep.mol>`)
 
-.. literalinclude:: ../../../../test/ecp/HI_sorep.mol
+.. literalinclude:: HI_sorep.mol
 
 This is the two-component spin-orbit relativistic effective core potential (SOREP) calulation. 
 (For the detail of input, see :ref:`ecp_input`)
 
-In the calculation output, the two-component molecular spinors (see also the :download:`full output <../../../../test/ecp/result/HF_HI_sorep.out>`) 
+In the calculation output, the two-component molecular spinors (see also the :download:`full output <HF_HI_sorep.out>`) 
 are listed as ::
 
   * Fermion symmetry E1
@@ -58,12 +58,12 @@ AREP calculation
 ----------------
 
 We set the one-component scalar relativistic effective core potential (AREP) calculation 
-by omitting the SO parameters in SOREP (:download:`HI_arep.mol <../../../../test/ecp/HI_arep.mol>`).
+by omitting the SO parameters in SOREP (:download:`HI_arep.mol <HI_arep.mol>`).
 
-.. literalinclude:: ../../../../test/ecp/HI_arep.mol 
+.. literalinclude:: HI_arep.mol 
 
 After the SCF step, the following molecular orbitals are generated
-(see also the :download:`full output <../../../../test/ecp/result/HF_HI_arep.out>`) ::
+(see also the :download:`full output <HF_HI_arep.out>`) ::
 
   * Fermion symmetry E1
     * Closed shell, f = 1.0000

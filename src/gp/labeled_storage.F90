@@ -26,6 +26,8 @@ module labeled_storage
      character(len=:),allocatable :: name ! file name
   end type file_info_t
 
+  type(file_info_t), save, public   :: dirac_datafiles(3) ! keep a limited number of file_info's here for convenience.
+
   interface lab_init
       module procedure init_general
   end interface
@@ -89,7 +91,7 @@ module labeled_storage
          elseif (present(idata)) then
             call read_dirac(file_info%unit,label,idata=idata)
          elseif (present(sdata)) then
-            stop "reading strings is not supported in DIRAC format"
+            error stop "reading strings is not supported in DIRAC format"
          end if
       case (2)
          ! We use HDF5 files
@@ -130,7 +132,7 @@ module labeled_storage
          elseif (present(idata)) then
             call write_dirac(file_info%unit,label,idata=idata)
          elseif (present(sdata)) then
-            stop "writing strings is not supported in DIRAC format"
+            error stop "writing strings is not supported in DIRAC format"
          end if
       case (2)
          ! We use HDF5 files
@@ -166,7 +168,7 @@ module labeled_storage
       case (1)
          ! We use DIRAC files (FORTRAN unformatted sequential)
          if (present(exist)) then
-            stop "query functionality is not supported in DIRAC format"
+            error stop "query functionality is not supported in DIRAC format"
          end if
       case (2)
          ! We use HDF5 files
@@ -287,7 +289,7 @@ module labeled_storage
 
       select case (file_info%type)
       case (1)
-         stop "writing strings is not supported in DIRAC format"
+         error stop "writing strings is not supported in DIRAC format"
       case (2,3)
          ! There might be better ways to flatten an array of strings in Fortran, 
          ! but I could not find one and wasted already enough time on this.
@@ -317,7 +319,7 @@ module labeled_storage
 
       select case (file_info%type)
       case (1)
-         stop "reading strings is not supported in DIRAC format"
+         error stop "reading strings is not supported in DIRAC format"
       case (2,3)
          if (file_info%type==2) then
              call read_hdf5(file_info,label,sdata=sdata)
@@ -484,7 +486,7 @@ module labeled_storage
            ! can not be used, toggle back and stop
            call toggle_fallback(file_info)
            write (*,*) " ERROR: trying to read non-existent data set ",trim(label)," from ",trim(file_info%name)
-           stop ' error detected by read_hdf5 '
+           error stop ' error detected by read_hdf5 '
          end if
          if (present(rdata)) then
             call read_nohdf5(file_info,label,rdata=rdata)
@@ -504,21 +506,21 @@ module labeled_storage
       call query_hdf5 (file_info,label,exist,data_size)
       if (.not.exist) then
         write (*,*) " ERROR: trying to read non-existent data set ",trim(label)," from ",trim(file_info%name)
-        stop ' error detected by read_hdf5 '
+        error stop ' error detected by read_hdf5 '
       end if
 
       if (present(rdata)) then
          if (data_size > size(rdata)) then
            write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(rdata) 
-           stop ' error detected by read_hdf5 '
+           error stop ' error detected by read_hdf5 '
          end if
          call mh5_fetch_dset(file_info%id,label,rdata)
       elseif (present(idata)) then
          if (data_size > size(idata)) then
            write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(idata) 
-           stop ' error detected by read_hdf5 '
+           error stop ' error detected by read_hdf5 '
          end if
          allocate (i8buf(size(idata)))
          i8buf = 0
@@ -548,7 +550,7 @@ module labeled_storage
       integer :: ierr
       integer(kind=8) :: file_id, dset_id
       logical(kind=8) :: dyn
-      logical :: group_exists
+      logical :: group_exists, dset_log
 
       !  check first whether we can actually use mh5
       if (.not.mh5_is_available()) then
@@ -577,9 +579,9 @@ module labeled_storage
       file_id = file_info%id
 
       group_exists = create_group_hdf5(file_id,group_from_label(label)) ! check whether group is present and create it if not
-      dset_id = mh5_exists_dset(file_id, label)                         ! check whether we already have data
+      dset_log = mh5_exists_dset(file_id, label)                         ! check whether we already have data
 
-      if (dset_id /= 0) then
+      if (dset_log) then
           dset_id = mh5_open_dset(file_id, label)
           call mh5_get_dset_dims(dset_id,dims)
           if (dims(1) > 1) then
@@ -600,18 +602,18 @@ module labeled_storage
 
       if (present(rdata)) then
          dyn = size(rdata) > 1 ! Do not create resizable (chunked) arrays for single numbers
-         if (dset_id == 0) dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)],dyn)
+         if (.not.dset_log) dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)],dyn)
          call mh5_put_dset(dset_id, rdata)
       elseif (present(idata)) then
          dyn = size(idata) > 1 ! Do not create resizable (chunked) arrays for single numbers
-         if (dset_id == 0) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)],dyn)
+         if (.not.dset_log) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)],dyn)
          call mh5_put_dset(dset_id, int8(idata))
       elseif (present(sdata).and.present(slen).and.present(sdim)) then
          dyn = .true.
-         if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(1), [int8(sdim)], int8(slen),dyn)
+         if (.not.dset_log) dset_id = mh5_create_dset_str(file_id, label, int8(1), [int8(sdim)], int8(slen),dyn)
          call mh5_put_dset(dset_id, sdata)
       elseif (present(sdata)) then
-         if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(len(sdata)))
+         if (.not.dset_log) dset_id = mh5_create_dset_str(file_id, label, int8(len(sdata)))
          call mh5_put_dset(dset_id, sdata)
       end if
 
@@ -730,7 +732,7 @@ module labeled_storage
       call execute_command_line ('mkdir '//topdir,exitstat=ierr)
       if (ierr.ne.0) then
          print*, " ERROR: could not create directory ",topdir
-         stop " error in init_nohdf5 "
+         error stop " error in init_nohdf5 "
       end if
       call execute_command_line ('date >'//topdir//'/.initialized')
       file_info%status = 1
@@ -741,7 +743,7 @@ module labeled_storage
           call execute_command_line ('mkdir '//subdir,exitstat=ierr)
           if (ierr.ne.0) then
              print*, " ERROR: could not create directory ",subdir
-             stop " error in create_group_nohdf5 "
+             error stop " error in create_group_nohdf5 "
           end if
           call execute_command_line ('date >'//subdir//'/.initialized')
       end do
@@ -766,7 +768,7 @@ module labeled_storage
       call query_nohdf5 (file_info,label,file_exists,data_size)
       if (.not.file_exists) then
         write (*,*) " ERROR: trying to read non-existent data set ",trim(label)," from ",trim(file_info%name)
-        stop ' error detected by read_hdf5 '
+        error stop ' error detected by read_hdf5 '
       end if
 
       data_file = './'//trim(file_info%name)//'/'//label
@@ -778,14 +780,14 @@ module labeled_storage
          if (data_size > size(rdata)) then
            write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(rdata) 
-           stop ' error detected by read_hdf5 '
+           error stop ' error detected by read_hdf5 '
          end if
          read (file_unit) rdata(1:data_size)
       elseif (present(idata)) then
          if (data_size > size(idata)) then
            write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(idata) 
-           stop ' error detected by read_hdf5 '
+           error stop ' error detected by read_hdf5 '
          end if
          read (file_unit) idata(1:data_size)
       elseif (present(sdata)) then
@@ -901,7 +903,7 @@ module labeled_storage
         call execute_command_line ('mkdir '//subdir,exitstat=ierr)
         if (ierr.ne.0) then
            print*, " ERROR: could not create directory ",trim(file_name)
-           stop " error in create_group_nohdf5 "
+           error stop " error in create_group_nohdf5 "
         end if
         call execute_command_line ('date >'//subdir//'/.initialized')
         group_exists = .true.
@@ -910,7 +912,7 @@ module labeled_storage
         call execute_command_line ('mkdir '//subdir,exitstat=ierr)
         if (ierr.ne.0) then
            print*, " ERROR: could not create directory ",trim(file_name)
-           stop " error in create_group_nohdf5 "
+           error stop " error in create_group_nohdf5 "
         end if
         call execute_command_line ('date >'//subdir//'/.initialized')
         group_exists = .true.

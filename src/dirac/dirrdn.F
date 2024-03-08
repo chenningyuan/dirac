@@ -33,6 +33,7 @@ C               Febr.2006 - MI to modify for pure two-comp. mode
 C
 C***********************************************************************
 
+      use checkpoint
       use dirac_cfg
       use memory_allocator
       use num_grid_cfg
@@ -66,7 +67,8 @@ C***********************************************************************
       integer, parameter   :: file_unit = 137
       logical              :: inp_exists, mol_exists, xyz_exists
       logical              :: input_found
-
+      integer              :: iline, nlines
+      character*100, allocatable    :: lines(:)
 C
       CALL QENTER('PAMINP')
       call alloc(WORK,LWORK, id="PAMINP WORK array")
@@ -87,14 +89,31 @@ C
       else
          call quit('*.inp file not found')
       end if
-      write(lupri, '(//a)') 'Contents of the input file'
-      write(lupri, '(a/)')  '--------------------------'
+      ! count how many lines we have
+      nlines = 0
       do while (.true.)
          read(file_unit, '(a100)', end=1) line
-         write(lupri, '(a)') line
+         nlines = nlines + 1
       end do
  1    continue
+      ! allocate a buffer
+      allocate(lines(nlines))
+
+      ! echo and collect the input
+      rewind(file_unit)
+      write(lupri, '(//a)') 'Contents of the input file'
+      write(lupri, '(a/)')  '--------------------------'
+      do iline = 1, nlines
+         read(file_unit, '(a100)') line
+         write(lupri, '(a)') line
+         lines(iline) = line
+      end do
       close(file_unit, status = 'keep')
+      ! write the collected input to checkpoint
+      call checkpoint_write 
+     & ('/input/dirac_inp',sarray=lines,slen=100)
+      deallocate(lines)
+
 
 !     print contents of molecule file to output
       inquire(file = 'MOLECULE.MOL', exist = mol_exists)
@@ -118,14 +137,31 @@ C
             call quit('*.mol/*.xyz file not found')
          end if
       end if
-      write(lupri, '(//a)') 'Contents of the molecule file'
-      write(lupri, '(a/)')  '-----------------------------'
+
+      ! count how many lines we have
+      nlines = 0
       do while (.true.)
          read(file_unit, '(a100)', end=2) line
-         write(lupri, '(a)') line
+         nlines = nlines + 1
       end do
  2    continue
+      ! allocate a buffer
+      allocate(lines(nlines))
+
+      ! echo and collect the input
+      rewind(file_unit)
+      write(lupri, '(//a)') 'Contents of the molecule file'
+      write(lupri, '(a/)')  '-----------------------------'
+      do iline = 1, nlines
+         read(file_unit, '(a100)') line
+         write(lupri, '(a)') line
+         lines(iline) = line
+      end do
       close(file_unit, status = 'keep')
+      ! write the collected input to checkpoint
+      call checkpoint_write 
+     & ('/input/molecule_inp',sarray=lines,slen=100)
+      deallocate(lines)
 
 #ifdef DO_KEYWORD_SCAN
 
@@ -8375,7 +8411,7 @@ C
       DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
      &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
      &            '.THDIAG','.THGRAD','.CHECK ','.SELECT',
-     &            '.THXVEC','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -8404,7 +8440,6 @@ C
       THFULL = 1.0D-13
       THDIAG = 1.0D-05
       THGRAD = 1.0D-07
-      THXVEC = 1.0D-15
       SELMOS = 'allocc'
 C
 C     Process input from CBILOC
@@ -8500,8 +8535,6 @@ C   SELMOS: Select MOs for localization
                READ(LUCMD,'(A72)') SELMOS
                GO TO 100
  13            CONTINUE
-C   THXVEC: Set threshold for removal of small rotations
-               READ(LUCMD,*) THXVEC
  14            CONTINUE
                GO TO 100
  15            CONTINUE
@@ -8660,9 +8693,6 @@ C
         WRITE(LUPRI,'(1X,A)') '* User defined MOs for localization:'
         WRITE(LUPRI,'(1X,A)') '    --> ',SELMOS
       ENDIF
-      WRITE(6,'(1X,A,1P,E8.2)') 
-     &    '* Threshold for removal of small rotations: ',
-     &    THXVEC          
 C     -----------------------------------------------------------------
 C     Fragments of spinors used in the projection analysis
 C
