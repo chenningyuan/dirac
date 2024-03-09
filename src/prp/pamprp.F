@@ -1404,6 +1404,7 @@ C
 C     PV contribution to NMR shielding
 C
       IF(PVC_SHIELD) THEN
+         IF(LONDON) CALL QUIT('.PVCSHI only implemented for CGO')
          CALL DEF_PVC_SHIELD(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
@@ -7944,7 +7945,7 @@ C=======================================================================
 C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
-C     Agustin Aucar                        Revision: December 2021
+C     Agustin Aucar                        Revision: March 2024
 C=======================================================================
       use memory_allocator
 C
@@ -8360,7 +8361,7 @@ C
 C
                END IF
 C
-                CALL HEADER('J^PV(e-p)',-1)
+               CALL HEADER('J^PV(e-p)',-1)
 C
                IF(IZATOM(IATOM).NE.IZATOM(JATOM)) THEN
 C
