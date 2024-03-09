@@ -7586,7 +7586,7 @@ C     Output routine for Parity-violation contribution
 C     to NMR shielding constants
 C
 C     Radovan Bast                         Revision:      september 2006
-C     Agustin Aucar                        Last revision: november  2022
+C     Agustin Aucar                        Last revision:  november 2022
 C
 C***********************************************************************
       use memory_allocator
@@ -7766,6 +7766,7 @@ C
 C     This routine is modelled after SPRRES subroutine
 C
 C     Agustin Aucar - Nov 2022
+C     Last revision: Agustin Aucar - March 2024
 C
 C***********************************************************************
       implicit none
@@ -7870,9 +7871,9 @@ C
              CALL HEADER('Total PVC to NMR shielding '//
      &              'tensor',-1)
              WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'x', (GTRANT(I,1,IATOM),I = 1,3),
-     &                 'y', (GTRANT(I,2,IATOM),I = 1,3),
-     &                 'z', (GTRANT(I,3,IATOM),I = 1,3)
+     &                 'x', (GTRANT(1,I,IATOM),I = 1,3),
+     &                 'y', (GTRANT(2,I,IATOM),I = 1,3),
+     &                 'z', (GTRANT(3,I,IATOM),I = 1,3)
              WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANT(1,1,IATOM)
      &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
@@ -7883,17 +7884,17 @@ C
            IF (IPRINT .GE. 1) THEN
              CALL HEADER('sigma^PV(e-e)',-1)
              WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'x', (GTRANPEE(I,1,IATOM),I = 1,3),
-     &                 'y', (GTRANPEE(I,2,IATOM),I = 1,3),
-     &                 'z', (GTRANPEE(I,3,IATOM),I = 1,3)
+     &                 'x', (GTRANPEE(1,I,IATOM),I = 1,3),
+     &                 'y', (GTRANPEE(2,I,IATOM),I = 1,3),
+     &                 'z', (GTRANPEE(3,I,IATOM),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPEE(1,1,IATOM)
      &              +GTRANPEE(2,2,IATOM)+GTRANPEE(3,3,IATOM))/3
              CALL HEADER('sigma^PV(e-p)',-1)
              WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'x', (GTRANPEP(I,1,IATOM),I = 1,3),
-     &                 'y', (GTRANPEP(I,2,IATOM),I = 1,3),
-     &                 'z', (GTRANPEP(I,3,IATOM),I = 1,3)
+     &                 'x', (GTRANPEP(1,I,IATOM),I = 1,3),
+     &                 'y', (GTRANPEP(2,I,IATOM),I = 1,3),
+     &                 'z', (GTRANPEP(3,I,IATOM),I = 1,3)
              WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPEP(1,1,IATOM)
      &              +GTRANPEP(2,2,IATOM)+GTRANPEP(3,3,IATOM))/3
@@ -7944,8 +7945,8 @@ C     /* deck PRP_PVC_SPINSPIN */
 C=======================================================================
 C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
-C     radovan bast                         last revision: september 2006
-C     Agustin Aucar                        Revision: March 2024
+C     radovan bast                                    september 2006
+C     Agustin Aucar                        Last revision: March 2024
 C=======================================================================
       use memory_allocator
 C
@@ -8257,9 +8258,9 @@ C
                 ENDIF
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
-     &               'x', (RESP1(I,1,IATOM,JATOM),I = 1,3),
-     &               'y', (RESP1(I,2,IATOM,JATOM),I = 1,3),
-     &               'z', (RESP1(I,3,IATOM,JATOM),I = 1,3)
+     &               'x', (RESP1(1,I,IATOM,JATOM),I = 1,3),
+     &               'y', (RESP1(2,I,IATOM,JATOM),I = 1,3),
+     &               'z', (RESP1(3,I,IATOM,JATOM),I = 1,3)
                 WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
      &               'iso', (RESP1(1,1,IATOM,JATOM)
      &            +RESP1(2,2,IATOM,JATOM)+RESP1(3,3,IATOM,JATOM))/3
@@ -8284,9 +8285,9 @@ C
                 ENDIF
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
-     &               'x', (RESP2(I,1,IATOM,JATOM),I = 1,3),
-     &               'y', (RESP2(I,2,IATOM,JATOM),I = 1,3),
-     &               'z', (RESP2(I,3,IATOM,JATOM),I = 1,3)
+     &               'x', (RESP2(1,I,IATOM,JATOM),I = 1,3),
+     &               'y', (RESP2(2,I,IATOM,JATOM),I = 1,3),
+     &               'z', (RESP2(3,I,IATOM,JATOM),I = 1,3)
                 WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
      &               'iso', (RESP2(1,1,IATOM,JATOM)
      &            +RESP2(2,2,IATOM,JATOM)+RESP2(3,3,IATOM,JATOM))/3
@@ -8304,9 +8305,9 @@ C
      &                'J^PV(',NAMDEP(IATOM),', ',NAMDEP(JATOM),')'
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
-     &               'x', (RESP(I,1,IATOM,JATOM),I = 1,3),
-     &               'y', (RESP(I,2,IATOM,JATOM),I = 1,3),
-     &               'z', (RESP(I,3,IATOM,JATOM),I = 1,3)
+     &               'x', (RESP(1,I,IATOM,JATOM),I = 1,3),
+     &               'y', (RESP(2,I,IATOM,JATOM),I = 1,3),
+     &               'z', (RESP(3,I,IATOM,JATOM),I = 1,3)
                 WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
      &               'iso', (RESP(1,1,IATOM,JATOM)
      &            +RESP(2,2,IATOM,JATOM)+RESP(3,3,IATOM,JATOM))/3
@@ -8329,9 +8330,9 @@ C
      &                NAMDEP(JATOM),') >>'
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
-     &               'x', (RESPEE1(I,1,IATOM,JATOM),I = 1,3),
-     &               'y', (RESPEE1(I,2,IATOM,JATOM),I = 1,3),
-     &               'z', (RESPEE1(I,3,IATOM,JATOM),I = 1,3)
+     &               'x', (RESPEE1(1,I,IATOM,JATOM),I = 1,3),
+     &               'y', (RESPEE1(2,I,IATOM,JATOM),I = 1,3),
+     &               'z', (RESPEE1(3,I,IATOM,JATOM),I = 1,3)
                 WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
      &               'iso', (RESPEE1(1,1,IATOM,JATOM)
      &            +RESPEE1(2,2,IATOM,JATOM)+RESPEE1(3,3,IATOM,JATOM))/3
@@ -8342,9 +8343,9 @@ C
      &                NAMDEP(IATOM),') >>'
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
-     &               'x', (RESPEE2(I,1,IATOM,JATOM),I = 1,3),
-     &               'y', (RESPEE2(I,2,IATOM,JATOM),I = 1,3),
-     &               'z', (RESPEE2(I,3,IATOM,JATOM),I = 1,3)
+     &               'x', (RESPEE2(1,I,IATOM,JATOM),I = 1,3),
+     &               'y', (RESPEE2(2,I,IATOM,JATOM),I = 1,3),
+     &               'z', (RESPEE2(3,I,IATOM,JATOM),I = 1,3)
                 WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
      &               'iso', (RESPEE2(1,1,IATOM,JATOM)
      &            +RESPEE2(2,2,IATOM,JATOM)+RESPEE2(3,3,IATOM,JATOM))/3
@@ -8352,9 +8353,9 @@ C
                ELSE
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
-     &               'x', (RESPEE(I,1,IATOM,JATOM),I = 1,3),
-     &               'y', (RESPEE(I,2,IATOM,JATOM),I = 1,3),
-     &               'z', (RESPEE(I,3,IATOM,JATOM),I = 1,3)
+     &               'x', (RESPEE(1,I,IATOM,JATOM),I = 1,3),
+     &               'y', (RESPEE(2,I,IATOM,JATOM),I = 1,3),
+     &               'z', (RESPEE(3,I,IATOM,JATOM),I = 1,3)
                 WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
      &               'iso', (RESPEE(1,1,IATOM,JATOM)
      &            +RESPEE(2,2,IATOM,JATOM)+RESPEE(3,3,IATOM,JATOM))/3
@@ -8371,9 +8372,9 @@ C
      &                NAMDEP(JATOM),') >>'
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
-     &               'x', (RESPEP1(I,1,IATOM,JATOM),I = 1,3),
-     &               'y', (RESPEP1(I,2,IATOM,JATOM),I = 1,3),
-     &               'z', (RESPEP1(I,3,IATOM,JATOM),I = 1,3)
+     &               'x', (RESPEP1(1,I,IATOM,JATOM),I = 1,3),
+     &               'y', (RESPEP1(2,I,IATOM,JATOM),I = 1,3),
+     &               'z', (RESPEP1(3,I,IATOM,JATOM),I = 1,3)
                 WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
      &               'iso', (RESPEP1(1,1,IATOM,JATOM)
      &            +RESPEP1(2,2,IATOM,JATOM)+RESPEP1(3,3,IATOM,JATOM))/3
@@ -8384,9 +8385,9 @@ C
      &                NAMDEP(IATOM),') >>'
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
-     &               'x', (RESPEP2(I,1,IATOM,JATOM),I = 1,3),
-     &               'y', (RESPEP2(I,2,IATOM,JATOM),I = 1,3),
-     &               'z', (RESPEP2(I,3,IATOM,JATOM),I = 1,3)
+     &               'x', (RESPEP2(1,I,IATOM,JATOM),I = 1,3),
+     &               'y', (RESPEP2(2,I,IATOM,JATOM),I = 1,3),
+     &               'z', (RESPEP2(3,I,IATOM,JATOM),I = 1,3)
                 WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
      &               'iso', (RESPEP2(1,1,IATOM,JATOM)
      &            +RESPEP2(2,2,IATOM,JATOM)+RESPEP2(3,3,IATOM,JATOM))/3
@@ -8394,9 +8395,9 @@ C
                ELSE
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
-     &               'x', (RESPEP(I,1,IATOM,JATOM),I = 1,3),
-     &               'y', (RESPEP(I,2,IATOM,JATOM),I = 1,3),
-     &               'z', (RESPEP(I,3,IATOM,JATOM),I = 1,3)
+     &               'x', (RESPEP(1,I,IATOM,JATOM),I = 1,3),
+     &               'y', (RESPEP(2,I,IATOM,JATOM),I = 1,3),
+     &               'z', (RESPEP(3,I,IATOM,JATOM),I = 1,3)
                 WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
      &               'iso', (RESPEP(1,1,IATOM,JATOM)
      &            +RESPEP(2,2,IATOM,JATOM)+RESPEP(3,3,IATOM,JATOM))/3
@@ -9186,6 +9187,7 @@ C     PMATL - contribution from orbital angular moment to linear response term
 C     PMATS - contribution from spin angular moment to linear response term
 C
 C     Agustin Aucar - November 2019
+C     Last revision: Agustin Aucar - March 2024
 C
 C***********************************************************************
       implicit none
@@ -9279,9 +9281,9 @@ C
          CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
          WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
-     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
-     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
-     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
+     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(1,I),I = 1,3),
+     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(2,I),I = 1,3),
+     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(3,I),I = 1,3)
 C
          WRITE (LUPRI,'(/,2X,A)') 'Components of molecular rotational'//
      &                     ' g-tensor in the principal axis system'
@@ -9389,25 +9391,25 @@ C    Inertia tensor of a non-linear molecule (with and without symmetry):
           IF (IPRINT .GE. 0) THEN
             CALL HEADER('Total molecular rotational g-tensor',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANT(I,1),I = 1,3),
-     &               'B', (GTRANT(I,2),I = 1,3),
-     &               'C', (GTRANT(I,3),I = 1,3)
+     &               'A', (GTRANT(1,I),I = 1,3),
+     &               'B', (GTRANT(2,I),I = 1,3),
+     &               'C', (GTRANT(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANT(1,1)
      &            +GTRANT(2,2)+GTRANT(3,3))/3
             CALL HEADER('Nuclear contribution (g^nuc)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANN(I,1),I = 1,3),
-     &               'B', (GTRANN(I,2),I = 1,3),
-     &               'C', (GTRANN(I,3),I = 1,3)
+     &               'A', (GTRANN(1,I),I = 1,3),
+     &               'B', (GTRANN(2,I),I = 1,3),
+     &               'C', (GTRANN(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANN(1,1)
      &            +GTRANN(2,2)+GTRANN(3,3))/3
             CALL HEADER('Electronic contribution (g^LR)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANP(I,1),I = 1,3),
-     &               'B', (GTRANP(I,2),I = 1,3),
-     &               'C', (GTRANP(I,3),I = 1,3)
+     &               'A', (GTRANP(1,I),I = 1,3),
+     &               'B', (GTRANP(2,I),I = 1,3),
+     &               'C', (GTRANP(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANP(1,1)
      &            +GTRANP(2,2)+GTRANP(3,3))/3
@@ -9418,33 +9420,33 @@ C
           IF (IPRINT .GE. 1) THEN
             CALL HEADER('g^LR-L(e-e)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANPLEE(I,1),I = 1,3),
-     &               'B', (GTRANPLEE(I,2),I = 1,3),
-     &               'C', (GTRANPLEE(I,3),I = 1,3)
+     &               'A', (GTRANPLEE(1,I),I = 1,3),
+     &               'B', (GTRANPLEE(2,I),I = 1,3),
+     &               'C', (GTRANPLEE(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANPLEE(1,1)
      &            +GTRANPLEE(2,2)+GTRANPLEE(3,3))/3
             CALL HEADER('g^LR-S(e-e)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANPSEE(I,1),I = 1,3),
-     &               'B', (GTRANPSEE(I,2),I = 1,3),
-     &               'C', (GTRANPSEE(I,3),I = 1,3)
+     &               'A', (GTRANPSEE(1,I),I = 1,3),
+     &               'B', (GTRANPSEE(2,I),I = 1,3),
+     &               'C', (GTRANPSEE(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANPSEE(1,1)
      &            +GTRANPSEE(2,2)+GTRANPSEE(3,3))/3
             CALL HEADER('g^LR-L(e-p)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANPLEP(I,1),I = 1,3),
-     &               'B', (GTRANPLEP(I,2),I = 1,3),
-     &               'C', (GTRANPLEP(I,3),I = 1,3)
+     &               'A', (GTRANPLEP(1,I),I = 1,3),
+     &               'B', (GTRANPLEP(2,I),I = 1,3),
+     &               'C', (GTRANPLEP(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANPLEP(1,1)
      &              +GTRANPLEP(2,2)+GTRANPLEP(3,3))/3
             CALL HEADER('g^LR-S(e-p)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &               'A', (GTRANPSEP(I,1),I = 1,3),
-     &               'B', (GTRANPSEP(I,2),I = 1,3),
-     &               'C', (GTRANPSEP(I,3),I = 1,3)
+     &               'A', (GTRANPSEP(1,I),I = 1,3),
+     &               'B', (GTRANPSEP(2,I),I = 1,3),
+     &               'C', (GTRANPSEP(3,I),I = 1,3)
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANPSEP(1,1)
      &            +GTRANPSEP(2,2)+GTRANPSEP(3,3))/3
@@ -11786,8 +11788,8 @@ C     DMAT  - expectation value term of NSR
 C     PMATL - contribution from orbital angular moment to linear response term
 C     PMATS - contribution from spin angular moment to linear response term
 C
-C     Agustin Aucar and Trond Saue
-C     June 2014
+C     Agustin Aucar and Trond Saue -  June 2014
+C     Last revision: Agustin Aucar - March 2024
 C
 C***********************************************************************
       implicit none
@@ -11903,9 +11905,9 @@ C
          CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
          WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
-     &       'IA ',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
-     &       'IB ',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
-     &       'IC ',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
+     &       'IA ',XFAMU/EIGVAL(1), (EIGVEC(1,I),I = 1,3),
+     &       'IB ',XFAMU/EIGVAL(2), (EIGVEC(2,I),I = 1,3),
+     &       'IC ',XFAMU/EIGVAL(3), (EIGVEC(3,I),I = 1,3)
          WRITE (LUPRI,'(/,2X,A)') 'Nuclear spin-rotation tensor'//
      &               ' elements are given in the principal axis system.'
         END IF
@@ -12143,27 +12145,27 @@ C           Total NSR for molecules in equilibrium
 C
              CALL HEADER('Total nuclear spin-rotation tensor (NSRT)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANT(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANT(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANT(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANT(1,1,IATOM)
      &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
 C           Nuclear contribution to NSR for molecules in equilibrium
               CALL HEADER('Nuclear contribution to NSRT (M^nuc)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANNEQ(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANNEQ(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANNEQ(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANNEQ(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANNEQ(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANNEQ(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANNEQ(1,1,IATOM)
      &              +GTRANNEQ(2,2,IATOM)+GTRANNEQ(3,3,IATOM))/3
 C           Total linear response contribution to NSR
               CALL HEADER('Electronic contribution to NSRT (M^LR)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANP(1,1,IATOM)
      &              +GTRANP(2,2,IATOM)+GTRANP(3,3,IATOM))/3
@@ -12174,33 +12176,33 @@ C
              IF (IPRINT .GE. 2*KHZPPM-1) THEN
               CALL HEADER('M^LR-L(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPLEE(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPLEE(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEE(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEE(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPLEE(1,1,IATOM)
      &              +GTRANPLEE(2,2,IATOM)+GTRANPLEE(3,3,IATOM))/3
               CALL HEADER('M^LR-S(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPSEE(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPSEE(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEE(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEE(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPSEE(1,1,IATOM)
      &              +GTRANPSEE(2,2,IATOM)+GTRANPSEE(3,3,IATOM))/3
               CALL HEADER('M^LR-L(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPLEP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPLEP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPLEP(1,1,IATOM)
      &              +GTRANPLEP(2,2,IATOM)+GTRANPLEP(3,3,IATOM))/3
               CALL HEADER('M^LR-S(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPSEP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPSEP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPSEP(1,1,IATOM)
      &              +GTRANPSEP(2,2,IATOM)+GTRANPSEP(3,3,IATOM))/3
@@ -12214,18 +12216,18 @@ C           Total nuclear contribution to NSR
      & '*************************************************************'
               CALL HEADER('M^NU',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANNUC(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANNUC(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANNUC(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANNUC(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANNUC(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANNUC(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANNUC(1,1,IATOM)
      &              +GTRANNUC(2,2,IATOM)+GTRANNUC(3,3,IATOM))/3
 C           Total expectation value contribution to NSR
               CALL HEADER('M^EV',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANEXP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANEXP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANEXP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANEXP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANEXP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANEXP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANEXP(1,1,IATOM)
      &              +GTRANEXP(2,2,IATOM)+GTRANEXP(3,3,IATOM))/3
@@ -12813,7 +12815,8 @@ C   INPUT:
 C     PMATL - contribution from orbital angular moment to linear response term
 C     PMATS - contribution from spin angular moment to linear response term
 C
-C     Agustin Aucar - Nov 2022
+C     Agustin Aucar                - November 2022
+C     Last revision: Agustin Aucar -    March 2024
 C
 C***********************************************************************
       implicit none
@@ -12929,9 +12932,9 @@ C
          CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
          WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
-     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
-     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
-     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
+     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(1,I),I = 1,3),
+     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(2,I),I = 1,3),
+     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(3,I),I = 1,3)
          WRITE (LUPRI,'(/,2X,A)') 'Components of PVC to nuclear '//
      &             'spin-rotation tensor in the principal axis system'
       END IF
@@ -12994,9 +12997,9 @@ C
               CALL HEADER('Total PVC to nuclear spin-rotation '//
      &              'constant',-1)
               WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANT(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANT(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANT(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANT(1,1,IATOM)
      &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
@@ -13007,33 +13010,33 @@ C
              IF (IPRINT .GE. 1) THEN
               CALL HEADER('M^LR-L(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPLEE(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPLEE(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEE(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEE(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPLEE(1,1,IATOM)
      &              +GTRANPLEE(2,2,IATOM)+GTRANPLEE(3,3,IATOM))/3
               CALL HEADER('M^LR-S(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPSEE(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPSEE(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEE(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEE(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPSEE(1,1,IATOM)
      &              +GTRANPSEE(2,2,IATOM)+GTRANPSEE(3,3,IATOM))/3
               CALL HEADER('M^LR-L(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPLEP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPLEP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPLEP(1,1,IATOM)
      &              +GTRANPLEP(2,2,IATOM)+GTRANPLEP(3,3,IATOM))/3
               CALL HEADER('M^LR-S(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3E16.8)')
-     &                 'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANPSEP(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANPSEP(1,I,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEP(2,I,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEP(3,I,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,E16.8)')
      &                 'iso', (GTRANPSEP(1,1,IATOM)
      &              +GTRANPSEP(2,2,IATOM)+GTRANPSEP(3,3,IATOM))/3
