@@ -7586,7 +7586,7 @@ C     Output routine for Parity-violation contribution
 C     to NMR shielding constants
 C
 C     Radovan Bast                         Revision:      september 2006
-C     Agustin Aucar                        Last revision:  november 2022
+C     Agustin Aucar                        Last revision: november  2022
 C
 C***********************************************************************
       use memory_allocator
@@ -7945,8 +7945,8 @@ C     /* deck PRP_PVC_SPINSPIN */
 C=======================================================================
 C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
-C     radovan bast                                    september 2006
-C     Agustin Aucar                        Last revision: March 2024
+C     radovan bast                                    September 2006
+C     Agustin Aucar                         Revision: March     2024
 C=======================================================================
       use memory_allocator
 C
@@ -9261,7 +9261,7 @@ C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be def
       IF (IPRINT .GE. 8) THEN
        CALL HEADER
      &    ('Nuclear angular velocity (a.u.)',0)
-       WRITE (LUPRI,'(3X,A,F16.8)')
+       WRITE (LUPRI,'(3X,A,2X,F16.8)')
      &       'Omega_A',OMEGA(1),
      &       'Omega_B',OMEGA(2),
      &       'Omega_C',OMEGA(3)
@@ -9271,22 +9271,21 @@ C    Print inertia tensor or moment
 C
       IF (IPRINT .GE. 0) THEN
        IF (LINEAR) THEN      ! Linear molecule detected using symmetry
-              WRITE (LUPRI,'(2X,A,F16.8,/)')
+              WRITE (LUPRI,'(/,2X,A,F16.8,/)')
      &         'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
        ELSE
         IF(LINMOL) THEN      ! Linear molecule (without symmetry detection)
-         WRITE (LUPRI,'(2X,A,F16.8,/)')
+         WRITE (LUPRI,'(/,2X,A,F16.8,/)')
      &         'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
         ELSE                 ! Non-linear molecule
          CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
-         WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
+         WRITE (LUPRI,'(3X,A,2X,F16.8,6X,3F16.8)')
      &       'IA',XFAMU/EIGVAL(1), (EIGVEC(1,I),I = 1,3),
      &       'IB',XFAMU/EIGVAL(2), (EIGVEC(2,I),I = 1,3),
      &       'IC',XFAMU/EIGVAL(3), (EIGVEC(3,I),I = 1,3)
-C
-         WRITE (LUPRI,'(/,2X,A)') 'Components of molecular rotational'//
-     &                     ' g-tensor in the principal axis system'
+         WRITE (LUPRI,'(/,2X,A)') 'Molecular rotational g-tensor '    //
+     &                'elements are given in the principal axis system.'
         END IF
        END IF
       END IF
@@ -11876,7 +11875,7 @@ C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be def
       IF (IPRINT .GE. 8) THEN
        CALL HEADER
      &    ('Nuclear angular velocity (a.u.)',0)
-       WRITE (LUPRI,'(3X,A,F16.8)')
+       WRITE (LUPRI,'(3X,A,2X,F16.8)')
      &       'Omega_A',OMEGA(1),
      &       'Omega_B',OMEGA(2),
      &       'Omega_C',OMEGA(3)
@@ -11904,11 +11903,11 @@ C
         ELSE                 ! Non-linear molecule
          CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
-         WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
-     &       'IA ',XFAMU/EIGVAL(1), (EIGVEC(1,I),I = 1,3),
-     &       'IB ',XFAMU/EIGVAL(2), (EIGVEC(2,I),I = 1,3),
-     &       'IC ',XFAMU/EIGVAL(3), (EIGVEC(3,I),I = 1,3)
-         WRITE (LUPRI,'(/,2X,A)') 'Nuclear spin-rotation tensor'//
+         WRITE (LUPRI,'(3X,A,2X,F16.8,6X,3F16.8)')
+     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(1,I),I = 1,3),
+     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(2,I),I = 1,3),
+     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(3,I),I = 1,3)
+         WRITE (LUPRI,'(/,2X,A)') 'Nuclear spin-rotation tensor'      //
      &               ' elements are given in the principal axis system.'
         END IF
        END IF
@@ -12816,7 +12815,7 @@ C     PMATL - contribution from orbital angular moment to linear response term
 C     PMATS - contribution from spin angular moment to linear response term
 C
 C     Agustin Aucar                - November 2022
-C     Last revision: Agustin Aucar -    March 2024
+C     Last revision: Agustin Aucar - March    2024
 C
 C***********************************************************************
       implicit none
@@ -12920,7 +12919,7 @@ C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be def
       IF (IPRINT .GE. 8) THEN
        CALL HEADER
      &    ('Nuclear angular velocity (a.u.)',0)
-       WRITE (LUPRI,'(3X,A,F16.8)')
+       WRITE (LUPRI,'(3X,A,2X,F16.8)')
      &       'Omega_A',OMEGA(1),
      &       'Omega_B',OMEGA(2),
      &       'Omega_C',OMEGA(3)
@@ -12931,12 +12930,12 @@ C
       IF (IPRINT .GE. 0) THEN
          CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
-         WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
+         WRITE (LUPRI,'(3X,A,2X,F16.8,6X,3F16.8)')
      &       'IA',XFAMU/EIGVAL(1), (EIGVEC(1,I),I = 1,3),
      &       'IB',XFAMU/EIGVAL(2), (EIGVEC(2,I),I = 1,3),
      &       'IC',XFAMU/EIGVAL(3), (EIGVEC(3,I),I = 1,3)
-         WRITE (LUPRI,'(/,2X,A)') 'Components of PVC to nuclear '//
-     &             'spin-rotation tensor in the principal axis system'
+         WRITE (LUPRI,'(/,2X,A)') 'PVC to nuclear spin-rotation '     //
+     &         'tensor elements are given in the principal axis system.'
       END IF
 C
 C    Print PVC to nuclear spin-rotation constants or tensors
