@@ -757,8 +757,8 @@ C*****************************************************************************
 #include "dcbgen.h"
 C
       CHARACTER A*(*)
-      DIMENSION ILIST(NLIST)
-      LOGICAL TOBE
+      INTEGER   NLIST, ILIST(NLIST), IRNGE1, IRNGE2, IFRP, IP
+      LOGICAL   TOBE
   
       real(8), allocatable :: eig(:)
       integer, allocatable :: ibg(:)
@@ -1119,22 +1119,16 @@ C
 C
 C     Set start and end of search region
 C
-      IF (IRNGE1.LT.0) THEN
+      IF (IRNGE1.LE.0) THEN
          ISTART = IRNGE1 + 1
       ELSEIF (IRNGE1.GT.0) THEN
          ISTART = IRNGE1
-      ELSE
-         WRITE(LUPRI,*) ' IRNGE1:',IRNGE1
-         CALL QUIT ("Error in energy-based vector selection (NUMLST)")
       ENDIF
 C
-      IF (IRNGE2.LT.0) THEN
+      IF (IRNGE2.LE.0) THEN
          IEND = IRNGE2 + 1
       ELSEIF (IRNGE2.GT.0) THEN
          IEND = IRNGE2
-      ELSE
-         WRITE(LUPRI,*) 'IRNGE2:',IRNGE2
-         CALL QUIT ("Error in energy-based vector selection (NUMLST)")
       ENDIF
 C
       DO I = ISTART, IEND
@@ -3936,7 +3930,7 @@ C
       ILOW = NISH(IFRP)+1
       DO IOPEN = 1,NOPEN
       IF(NACSH(IFRP,IOPEN).GT.0) THEN
-         IHIGH = ILOW + NACSH(IFRP,IOPEN)
+         IHIGH = ILOW + NACSH(IFRP,IOPEN)-1
          IF ( (IORBITAL .GE. ILOW) .AND. (IORBITAL .LE. IHIGH) ) THEN
             GETIOPEN = IOPEN
             RETURN

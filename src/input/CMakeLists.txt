@@ -30,3 +30,4 @@ target_include_directories(input
   PRIVATE
     ${PROJECT_SOURCE_DIR}/src/include
   )
+

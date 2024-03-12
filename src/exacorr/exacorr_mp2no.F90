@@ -119,14 +119,14 @@ module exacorr_mp2no
          integer(INTD)         :: ierr
          complex(8)            :: result_val
 !        Common tensors
-         type(exatns_comm_tens):: comm_t
+         type(exatns_comm_tens_t):: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(exatns_intg_tens):: int_t
+         type(exatns_intg_tens_t):: int_t
 !        Lambda tensors
          type(tens_rcrsv_t)    :: l1_tensor, l2_tensor
 !        scalars (need to be defined as tensor types)
          type(tens_rcrsv_t)    :: result_tensor
-         type(exatns_dm_tens)  :: MP2_density_tensor
+         type(exatns_dm_tens_t):: MP2_density_tensor
 !        space ids and roots
          type(space_dims)      :: dims
 !        CCSD control and result variables
@@ -627,7 +627,7 @@ module exacorr_mp2no
          integer(INTD),intent(in)              :: ao_space_id
          class(h_space_t), pointer, intent(in) :: ao_space
 !        target integral tensors to be filled and given back to the caller
-         type(exatns_intg_tens), intent(inout) :: int_t
+         type(exatns_intg_tens_t), intent(inout):: int_t
          integer, intent(in)                   :: print_level 
 
          integer(INTL)              :: ao_space_root,subspace_id(4),num_subspaces

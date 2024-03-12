@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+# f.add(from_string = 'Electronic energy',
+#       num_lines   = 8,
+#       rel_tolerance   = 1.0e-9)
+f.add(from_string = '*****************EOM-CC Eigenvalules******************',
+      num_lines   = 28,
+      rel_tolerance   = 1.0e-6)
+
+#f.add(from_string = ' *** EXCITATIONS OF BOSON IRREP    a( 1) ***',
+#      num_lines   = 34,
+#      rel_tolerance   = 1.0e-6)
+
+# test.run(['cc_sto_numlist_h2_relccsd.inp', 'cc_sto_numlist_h2.inp'], ['h2.xyz'], f)
+test.run(['cc_sto_numlist_h2.inp'], ['h2.xyz'], f)
+
+sys.exit(test.return_code)

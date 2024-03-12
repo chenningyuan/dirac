@@ -99,10 +99,10 @@ module talsh_mp2no
          integer(C_INT)              :: one_dims(1)
 
 !        Common tensors
-         type(talsh_comm_tens) :: comm_t
+         type(talsh_comm_tens_t) :: comm_t
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_intg_tens)       :: int_t
+         type(talsh_intg_tens_t)       :: int_t
 
 !        Point connected with tensors 
          integer(C_INT)              :: ierr
@@ -215,7 +215,7 @@ module talsh_mp2no
       integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
       integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 !     target integral tensors to be filled and given back to the caller
-      type(talsh_intg_tens),intent(inout)  :: int_t
+      type(talsh_intg_tens_t),intent(inout)  :: int_t
       integer, intent(in)                  :: print_level 
       integer(INTD)                        :: oovv_dims(1:4)
       integer(INTD)                        :: ierr

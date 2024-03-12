@@ -591,6 +591,7 @@ c
       use relcc_cfg
       use xmlout
       use eom_driver
+      use mfsolver_dirac_input
 C
       IMPLICIT NONE
 C
@@ -705,6 +706,7 @@ C     Read input from file (old namelist) / transfer input (new style) from relc
 !     sync co-workers and master with variables from new input...
 #ifdef VAR_MPI
       call relcc_sync_cw()
+      call mfsolver_dirac_input_sync_cw()
 #endif
 C
       CALL CCINPT (IN,IW)
@@ -4165,7 +4167,7 @@ C
 C        ... if we don't want to restart we trash any existing files and start over
 C
             write (IW,*)
-            write (IW,*) 'INFO: Restart file(s) will be overwriten!'
+            write (IW,*) 'INFO: Restart file(s) will be overwritten!'
             write (IW,*)
             OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &            STATUS='REPLACE',RECL=IRECL)

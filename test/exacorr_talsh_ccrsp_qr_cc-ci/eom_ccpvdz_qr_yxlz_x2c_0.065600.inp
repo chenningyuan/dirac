@@ -1,0 +1,92 @@
+**DIRAC
+.WAVE FUNCTION
+.4INDEX
+**INTEGRALS
+#.NUCMOD
+# 1
+*READIN
+.UNCONTRACT
+**HAMILTONIAN
+.X2C
+**WAVE FUNCTION
+.SCF
+.EXACC
+**MOLTRA
+.ACTIVE
+energy -2.0 5.0 0.00001
+.NO4IND
+.PRPTRA
+*PRPTRA
+.OPERATOR
+ XDIPLEN
+ COMFACTOR
+ 1.000
+.OPERATOR
+ YDIPLEN
+ COMFACTOR
+ 1.000
+.OPERATOR
+ ZDIPLEN
+ COMFACTOR
+ 1.000
+.OPERATOR                                                                                           
+ 'ZMAGCOUP'                                                                                              
+ ZAVECTOR                                                                                           
+ YDIPLEN                                                                                            
+ XDIPLEN                                                                                            
+ COMFACTOR                                                                                          
+ 137.03599916727
+**EXACC  
+.OCCUPIED
+energy -2.0 0.0 0.00001
+.VIRTUAL
+energy 0.0 5.0 0.00001
+.MOINT_SCHEME
+42
+.CHOLESKY
+ 1.0D-9
+.EXEOM
+1
+.PRINT
+1
+.TCONVERG
+1.0D-12
+.LAMBDA
+.CCCIQR
+20
+.QR1FRE
+1
+0.0656
+0.0
+.QR2FRE
+1
++0.0
+0.0
+.AProp
+1
+2
+.BProp
+1
+1
+.CProp
+1
+4
+.NTA
+1
+.NOTRIPLES
+.TALSH_BUFF
+50
+*CCDIAG
+.CONVERG
+1.0d-7
+.MAXSIZE
+50
+.MAXITER
+50
+**MOLECULE
+*SYMMETRY
+.NOSYM
+*BASIS
+.DEFAULT 
+cc-pVDZ
+*END OF 
