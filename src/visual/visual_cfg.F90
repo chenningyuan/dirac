@@ -138,6 +138,7 @@ module visual_cfg
    real(8), public :: visual_cfg_radial_length   = 0
    
    real(8),       public :: visual_cfg_scale              = 1.0d0
+   integer,       public :: visual_cfg_radial_power       = 0
    real(8),       public :: visual_cfg_cartesian_power(3) = 0.0   
    real(8),       public :: visual_cfg_gauge_origin(3)    = 0.0d0
    real(8),       public :: visual_cfg_wave_vector(3)     = 0.0d0
