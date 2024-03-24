@@ -5,8 +5,12 @@
 
 Bugfix:
 
-- Fixed implementation of Parity-Violating Nuclear Indirect Spin-Spin Coupling Tensors.
-  There was a wrong factor of 1/(2*pi) in the previous implementation. Besides, wrong values of these tensors were obtained when requesting more than one response property. I. A. Aucar.
+- Fixed implementation of parity-violating indirect nuclear spin-spin coupling tensors (activated with ``.PVCSPN``).
+   - There was a wrong factor of :math:`(2\pi)^{-1}` in the previous implementations.
+   - Wrong values of these tensors were obtained when requesting more than one response property.
+   - New functionality: Print both terms contributing to this property (please see manual). In previous implementations, only one of them was calculated.
+   - New content for the manual: `PVCSPN <http://www.diracprogram.org/doc/master/manual/properties.html#pvcspn>`__.
+   - Contributor: I. Agustín Aucar.
 
 -----------------------------------------------------------------------------------------------------
 
@@ -38,7 +42,7 @@ Bugfix:
 
 New features:
 
-- Calculation of Parity-Violating Nuclear Spin-Rotation Tensors. Activated with ".PVCSR"
+- Calculation of parity-Violating nuclear spin-rotation tensors. Activated with ".PVCSR"
    - Contributor: I. Agustín Aucar.
    - Reference: `Ignacio Agustín Aucar and Anastasia Borschevsky, Relativistic study of parity-violating nuclear spin-rotation tensors. J. Chem. Phys. 155, 134307 (2021) <https://doi.org/10.1063/5.0065487>`__
    - Manual: `PVCSR <http://www.diracprogram.org/doc/release-23/manual/properties.html#pvcsr>`__
