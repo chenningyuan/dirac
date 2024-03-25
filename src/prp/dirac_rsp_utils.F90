@@ -1082,7 +1082,6 @@ contains
     end if
   end function
 
-! ------------------------------------------------------------------------------
   function get_label(self)
     class(response_vector_t), intent(in) :: self
     character(len=16) :: get_label

@@ -85,7 +85,6 @@ contains
     self%elements(s:e) = f * self%elements(s:e)
   end subroutine
 
-
 ! ------------------------------------------------------------------------------
   subroutine assign_ih(self, ih)
     class(dmat_t), intent(inout):: self
@@ -323,8 +322,6 @@ contains
 
   end subroutine
 
-
-
 ! ------------------------------------------------------------------------------
   pure function allocated_elements(self)
     class(dmat_t), intent(in):: self
@@ -403,41 +400,5 @@ contains
     end if
     write(*, *)
   end subroutine
-
-!
-!! ------------------------------------------------------------------------------
-!  subroutine transform_from_mo_to_ao_c1(cmo, mat_mo, mat_ao)
-!!OK
-!
-!    real(8), intent(in):: cmo
-!    type(dmat_t), intent(inout):: dmat_ao
-!    type(dmat_t), intent(inout):: dmat_mo
-!    integer:: iprint
-!    integer:: nao, nmo, nz
-!!
-!!   dmat_ao(mu,nu)=cmo(mu,p)*dmat_mo(p,q)*cmo^{-1}(q,nu)
-!!   gosia fixme: no symmetry
-!! ------------------------------------------------------------------------------
-!
-!    if (.not. mat_ao%is_allocated()) stop
-!    if (.not. mat_mo%is_allocated()) stop
-!    if (mat_mo%mat_nz /= mat_ao%mat_nz) stop
-!
-!    iprint = 0
-!
-!    nao  = mat_ao%mat_dim
-!    nmo  = mat_mo%mat_dim
-!    nz   = mat_ao%mat_nz
-!
-!    call qtrans90('MOAO','S',0.D0,nao,nao,nmo,nmo,&
-!                  mat_ao%elements,nao,nao,nz,(/1,2,3,4/),& 
-!                  mat_mo%elements,nmo,nmo,nz,(/1,2,3,4/),& 
-!                  cmo,nao,nmo,nz,(/1,2,3,4/), &
-!                  cmo,nao,nmo,nz,(/1,2,3,4/), &
-!                  iprint)
-!
-!  end subroutine
-!
-
 
 end module

@@ -11,8 +11,6 @@ module visual_datatypes
   public mol_t
   public cmo_t
 
-  !integer, parameter, private:: kind_real = 8
-
   type mol_t
     private
     integer, public :: n_atoms = 0
@@ -208,7 +206,6 @@ contains
     logical:: allocated_occupation
     allocated_occupation = allocated(self%occupation)
   end function
-
 
 ! ------------------------------------------------------------------------------
   subroutine erase_cmo(self)
@@ -636,6 +633,83 @@ contains
 
 
 
+! ------------------------------------------------------------------------------
+!????????
+  subroutine setup_orbital_string(self, &
+                                  use_orbital_string, &
+                                  occupation)
+#include "dcborb.h" !nish, nash
+#include "maxorb.h" !mxprim
+    class(cmo_t), intent(inout) :: self
+    logical, intent(in) :: use_orbital_string
+    real(8), intent(in) :: occupation(mxprim, 2)
+    integer:: i, ifsym, ioff
+
+!   this routine will set up occupation vector
+!   based on**VISUAL
+!            .OCCUPATION
+!   if this is not given, then it will occupy all
+!   "occupied" electrons with 1.0
+
+    self%occupation = 0.0d0
+
+    ioff = 0
+    do ifsym = 1, self%n_fsym
+      ioff = ioff+self%n_po(ifsym)
+      if (use_orbital_string) then
+        do i = 1, (self%n_mo(ifsym) - self%n_po(ifsym))
+          self%occupation(ioff+i) = occupation(i, ifsym)
+        end do
+      else
+        if (nash(ifsym) > 0) then
+          print *, 'ERROR: with open shells you should use .OCCUPATION'
+          print *, '       otherwise occupation will be wrong'
+          print *, '       so we better stop here'
+          stop 1
+        end if
+        do i = 1, nish(ifsym)
+          self%occupation(ioff+i) = 1.0d0
+        end do
+      end if
+      ioff = self%n_mo(ifsym)
+      if (self%n_ip(ifsym) == 0) then
+        self%n_ip(ifsym) = nish(ifsym)
+      end if
+    end do
+
+  end subroutine
+
+
+
+! ------------------------------------------------------------------------------
+  subroutine setup_mo_offsets(self)
+    class(cmo_t), intent(inout) :: self
+    integer:: i, ifsym, ioff
+!
+!   order of offsets for MOs:
+!   ioffs(1) - start of gerade secondary negative energy
+!   ioffs(2) - start of gerade inactive positive energy
+!   ioffs(3) - start of gerade secondary positive energy
+!   ioffs(4) - start of ungerade secondary negative energy
+!   ioffs(5) - start of ungerade inactive positive energy
+!   ioffs(6) - start of ungerade secondary positive energy
+!
+
+    !if (.not. self%data_is_set) return
+
+    self%ioffs = 0
+
+    self%ioffs(1) = 1
+    self%ioffs(2) = self%ioffs(1) + self%n_po(1)
+    self%ioffs(3) = self%ioffs(2) + self%n_ip(1)
+
+    if (self%n_fsym == 2) then
+      self%ioffs(4) = 1 + self%n_mo(1)
+      self%ioffs(5) = self%ioffs(4) + self%n_po(2)
+      self%ioffs(6) = self%ioffs(5) + self%n_ip(2)
+    end if
+
+  end subroutine
 
 
 ! ------------------------------------------------------------------------------
@@ -720,8 +794,5 @@ contains
 
 
   end subroutine
-
-
-
 
 end module

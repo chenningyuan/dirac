@@ -128,15 +128,18 @@ contains
     walltime = visual_walltime()
 
 #ifdef VAR_MPI
-    ! gosia, spring 2023
-    ! data available on input:
-    ! * information from user input stored in rs_input dt
-    ! * config information in visual_cfg* variables (legacy)
-    ! So first, we make sure that all workers have this information to start.
-    ! Also, run_visual() is called from master (from subroutine dirac) 
-    ! and from workers (from subroutine dirnod);
-    ! in the latter case - we only want to wake up nodes, pass initial information, 
-    ! and leave the rest to master - this is handled with "launch+only" flag
+!
+!   data available on input:
+!     * information from user input stored in rs_input dt
+!     * config information in visual_cfg* variables (legacy)
+!
+!   purpose:
+!     * make sure that all workers have all information to start
+!     * if launch_only then wake up nodes, pass initial information,
+!       and leave the rest to master 
+!       (happens when called from dirnod; on workers),
+!       otherwise - calculate (happens when called from dirac; on master)
+!    
     call visual_initialize_and_sync_nodes(launch_only)
     if (debug_print) then
       print *, 'VISUAL parallel? ', is_parallel()
@@ -151,15 +154,21 @@ contains
     end if
 
 
-!   gosia 19/5/2023: 
-!   calculations are done on one molecular system,
-!   and data (molecular information+wave function) is read from DIRAC's CHECKPOINT file
-
     if (mpi_is_master()) then
-!     fixme: ao_basis is not used now - AOs are still calculated via dirac_ao_eval_init,
-!     as it also sets up all offsets used in xcint/density_eval.F90
+!
+!     limitations:
+!     * calculations are done on one molecular system,
+!     * data (molecular information+wave function) is read from DIRAC's CHECKPOINT file
+
+!
+!     fixme list: 
+!     * ao_basis is kept as a placeholder:
+!       now, AOs are still calculated via dirac_ao_eval_init,
+!       as it also sets up all offsets used in xcint/density_eval.F90;
+!       to fix this, we would need to think of decoupling visual from xcint
+!
       call visual_initialize_data_from_dirac(mol, mo_data, ao_basis)
-      call visual_update_data_this_run(mo_data)
+      call visual_update_data(mo_data)
       call dirac_dmat_init('unperturbed', mo_data, dmat_ao=dmat_0)
     end if
 

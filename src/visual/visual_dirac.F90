@@ -22,7 +22,7 @@ module visual_dirac
 
   public visual_initialize_and_sync_nodes
   public visual_initialize_data_from_dirac
-  public visual_update_data_this_run
+  public visual_update_data
 
   public dirac_dmat_init
 
@@ -52,7 +52,7 @@ contains
     integer, optional, intent(in) :: rspvec_id
 
     type(cmo_t) :: cmo_i
-    type(response_info_t) :: rsp_info ! in dirac_rsp_utils 
+    type(response_info_t) :: rsp_info
     type(dmat_t) :: tmpmat_ao, tmpmat_mo
     integer :: nao, nmo, nz
     integer :: i, ivec, ivec_con, rspvec_ndim, rspvec_nz, n1
@@ -68,6 +68,7 @@ contains
 !   I group the old code here, so that it is in one place:
 !   * it should now be easier to modify it, e.g., to read density matrices from outside,
 !   * but still, the code is too coupled to other structures (cmo, response, etc.)
+!
 
     nao = sum(cmo%n_ao)
     nmo = sum(cmo%n_mo)
@@ -90,7 +91,7 @@ contains
         if (present(dmat_ao)) then
           dmat_ao%mat_dim = nao
           dmat_ao%mat_nz  = nz
-!         fixme symmetries hardcoded!
+!         fixme symmetries hardcoded! assuming C1
           dmat_ao%irep = 0
           dmat_ao%ih_sym = 1
           dmat_ao%tr_sym = 1
@@ -173,7 +174,12 @@ contains
           dmat_ao%mat_nz  = nz
           call dmat_ao%alloc()
 
-!         temp - fixme:
+!
+!         fixme list:
+!         * reading again rspvec_file, only to get the label and set ivec_con
+!         * this is to ensure that the same vector component is read from "TBMO" file,
+!         * but it should be changed once TBMO is refactored (as now is PAMXVC)
+!
           if (present(rspvec_file)) then
             f_name = trim(rspvec_file)
           else
@@ -201,41 +207,42 @@ contains
           call get_d_con_mo(tmpmat_mo, ivec_con)
           call tmpmat_mo%scale_elements(0.5d0) ! if (.not. levyle) fixme
 
-          !call tmpmat_mo%get_dmat_q_mo_sector('si ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
-          !call construct_perturbed_dmat_lao(dmat_ao%elements,&
-          !              tmpmat_mo%elements,&
-          !              cmo%coeff)
+    write(*, *) 'T^B in MO basis,icomp, after levyle scale = '
+         call prqmat(tmpmat_mo%elements, &
+                     tmpmat_mo%mat_dim, tmpmat_mo%mat_dim, tmpmat_mo%mat_dim,tmpmat_mo%mat_dim, &
+                     tmpmat_mo%mat_nz, (/1,2,3,4/), 6)
 
-          cmo_i%n_ao = cmo%n_ao
-          cmo_i%n_mo = cmo%n_mo
-          cmo_i%nz   = cmo%nz
-          cmo_i%n_fsym=cmo%n_fsym
-          call cmo_i%alloc_all()
-          cmo_i%coeff(1:nao*nmo*nz) = cmo%coeff(1:nao*nmo*nz)
-          call cmo_i%reshape_to_q()
-          cmo_i%ioffs   = cmo%ioffs
-          write(*,*) 'CMOIIIII'
-          call cmo_i%display()
-          call cmo_i%get_cmo_q_mo_sector('i ', cmo%ioffs)
 
-          !call tmpmat_mo%get_dmat_q_mo_sector('si ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
-          dmat_ao%elements = cmo%coeff*(tmpmat_mo%elements*cmo_i%coeff)
+          call tmpmat_mo%get_dmat_q_mo_sector('pi ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
+
+          call construct_perturbed_dmat_lao_e(dmat_ao%elements,&
+                        tmpmat_mo%elements,&
+                        cmo%coeff)
+          call construct_perturbed_dmat_lao_p(dmat_ao%elements,&
+                        tmpmat_mo%elements,&
+                        cmo%coeff)
 
           factor(1) = -1.0d0
           factor(2:4) = 1.0d0
           call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
+
+
+    write(*, *) 'T^B in AO basis,icomp, after getmdmcon(fake) = '
+         call prqmat(dmat_ao%elements, &
+                     dmat_ao%mat_dim, dmat_ao%mat_dim, dmat_ao%mat_dim,dmat_ao%mat_dim, &
+                     dmat_ao%mat_nz, (/1,2,3,4/), 6)
+
+
+
           call dmat_ao%scale_elements(2.0d0)
           call tmpmat_mo%erase()
           call rsp_info%erase()
-          call cmo_i%erase()
         end if
-!        end if
 
       case default
         stop
     end select
   end subroutine dirac_dmat_init
-
 
 ! ------------------------------------------------------------------------------
   subroutine visual_initialize_and_sync_nodes(hello)
@@ -274,7 +281,7 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine visual_update_data_this_run(cmo, print_level)
+  subroutine visual_update_data(cmo, print_level)
     type(cmo_t), intent(inout):: cmo
     integer, intent(in), optional :: print_level
     logical:: small_component
@@ -325,10 +332,14 @@ contains
       end if
     end if
 
+!
+!   fixme list:
+!   * ao_basis is kept as a placeholder (unused now)
+!   * visual_cfg_force_small_ao from visual_cfg.F90 not passed
+!
     group = '/input/aobasis/'
     call checkpoint_query(group, dirac_ao)
     if (dirac_ao) then
-!     gosia fixme (visual_cfg_force_small_ao from visual_cfg.F90 not passed)
       small_component = visual_cfg_force_small_ao
       call read_ao_from_dirac(ao_basis, small_component)
       !if (present(print_level)) then
@@ -342,6 +353,10 @@ contains
     if (dirac_mo .and. dirac_ao) then
       call check_data_consistency(ao_basis, mo)
     end if
+
+!
+!   read data from DIRAC's common blocks
+!
 
   end subroutine visual_initialize_data_from_dirac
 
@@ -904,8 +919,11 @@ contains
   end subroutine
 
 
+
+
+
 ! ------------------------------------------------------------------------------
-  subroutine construct_perturbed_dmat_lao(dmat,bmat,  &
+  subroutine construct_perturbed_dmat_lao_e(dmat,bmat,  &
                                       cmo)
 #include "implicit.h"
 #include "priunit.h"
@@ -934,8 +952,6 @@ contains
     irep = 0
     typ = 'P-'
 
-    dmat(1:ntbas(0)*ntbas(0), 1:nz) = 0.0d0
-
     do i1 = 1, 1
       i2 = 1
 
@@ -945,23 +961,16 @@ contains
       ji = icmoq(i2) + npsh(i2)*nfbas(i2,0)+1
 
 !     first index: secondary index:
-      if (typ(1:1) == 'E') then
 !        .. secondary index is electronic:
          ns = nesh(i1)
          is = iorb(i1) + npsh(i1) + 1
          js = icmoq(i1) + npsh(i1)*nfbas(i1, 0) + 1
-      else if (typ(1:1) == 'P') then
-!        .. secondary index is positronic:
-         ns = npsh(i1)
-         is = iorb(i1) + 1
-         js = icmoq(i1) + 1
-      end if
 
       if (ni > 0 .and. ns > 0) then
 
         call qtrans90('MOAO', &
                       'S',    &
-                      0.0d0,  &
+                      1.0d0,  &
                       nfbas(i1,0), nfbas(i2,0), &
                       ns, ni, &
 !                     ------------------------------------------------------
@@ -987,6 +996,80 @@ contains
      end do
 
   end subroutine
+  subroutine construct_perturbed_dmat_lao_p(dmat,bmat,  &
+                                      cmo)
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbbas.h"
+#include "maxaqn.h"
+#include "onecom.h"
+#include "ccom.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbham.h"
+
+    real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
+    real(kind=8), intent(inout) :: bmat(norbt, norbt, nz)
+    real(kind=8), intent(in) :: cmo(*)
+
+    integer :: irep,iopsy,itim
+    integer :: iprint
+    integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
+    character(2) ::typ
+    logical :: debug_print
+!
+
+    iprint = 0
+    irep = 0
+    typ = 'P-'
+
+    do i1 = 1, 1
+      i2 = 1
+
+!     second index: inactive index:
+      ni = nish(i2)
+      ii = iorb(i2) + npsh(i2) + 1
+      ji = icmoq(i2) + npsh(i2)*nfbas(i2,0)+1
+
+!     first index:
+!        .. secondary index is positronic:
+         ns = npsh(i1)
+         is = iorb(i1) + 1
+         js = icmoq(i1) + 1
+
+      if (ni > 0 .and. ns > 0) then
+
+        call qtrans90('MOAO', &
+                      'S',    &
+                      1.0d0,  &
+                      nfbas(i1,0), nfbas(i2,0), &
+                      ns, ni, &
+!                     ------------------------------------------------------
+                      dmat(i2basx(i1,i2)+1, 1),   &
+                      ntbas(0), ntbas(0), nz,     &
+                      ipqtoq(1, irep),                  &
+!                     ------------------------------------------------------
+                      bmat(is, ii, 1),                    &
+                      norbt, norbt, nz, &
+                      ipqtoq(1, irep),                  &
+!                     ------------------------------------------------------
+                      cmo(js),                                  &
+                      nfbas(i1,0), norb(i1), nz,&
+                      ipqtoq(1, 0),                     &
+!                     ------------------------------------------------------
+                      cmo(ji),                                  &
+                      nfbas(i2,0), norb(i2), nz,&
+                      ipqtoq(1, 0),                     &
+!                     ------------------------------------------------------
+                      iprint)
+      end if
+
+     end do
+
+  end subroutine
+
 
 !
 ! ------------------------------------------------------------------------------
@@ -1156,6 +1239,11 @@ contains
     write(*, *) 'irep = ', D_con_mo%irep
     write(*, *) 'sum over e+p shells = ', sum_ep_rn
     write(*, *) 'mat = ', D_con_mo%elements
+
+    write(*, *) 'T^B in MO basis,icomp, just read from TBMO FILE!!! = ', which_icomp
+         call prqmat(D_con_mo%elements, &
+                     D_con_mo%mat_dim, D_con_mo%mat_dim, D_con_mo%mat_dim,D_con_mo%mat_dim, &
+                     D_con_mo%mat_nz, (/1,2,3,4/), 6)
 
 !    if (visual_cfg_use_orbital_string) then
 !       call select_orbitals_reortho(D_con_mo%elms, occupation)

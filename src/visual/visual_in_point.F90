@@ -412,13 +412,16 @@ contains
                    mat_irep, &
                    mat_dim,  &
                    dmat%elements,&
+                   !dmat_0%elements,&
                    buffer,   &
                    ao)
         grid_function_values(1:1,ipoint:ipoint) = v2(1)
         grid_function_values(2:2,ipoint:ipoint) = v2(2)
         grid_function_values(3:3,ipoint:ipoint) = v2(3)
 
-        if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
+! gosia - fixme
+        !if (visual_cfg_london) then
+        !if (.not. visual_cfg_london_skip_direct) then
             v2=0.0d0
             xyzcomp='Z'
             call get_jblao(xyzcomp, cval, dmat_0%elements, &
@@ -428,13 +431,14 @@ contains
                            v2)
                   
         grid_function_values(1:1,ipoint:ipoint) = &
-         grid_function_values(1:1,ipoint:ipoint)+v2(1)
+         grid_function_values(1:1,ipoint:ipoint) + v2(1)
         grid_function_values(2:2,ipoint:ipoint) = &
-         grid_function_values(2:2,ipoint:ipoint)+v2(2)
+         grid_function_values(2:2,ipoint:ipoint) + v2(2)
         grid_function_values(3:3,ipoint:ipoint) = &
-         grid_function_values(3:3,ipoint:ipoint)+v2(3)
+         grid_function_values(3:3,ipoint:ipoint) + v2(3)
 
-        end if
+        !end if
+        !end if
 
 
 !      case ('jdiaBz')
