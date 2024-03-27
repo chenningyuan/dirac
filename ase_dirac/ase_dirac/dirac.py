@@ -131,7 +131,7 @@ class DIRAC(FileIOCalculator):
         """
         recognized_key_sections: List[str] = [
             'dirac', 'general', 'molecule',
-            'hamiltonian', 'wave_function', 'analyse', 'properties',
+            'hamiltonian', 'wave_function', 'analyze', 'properties',
             'visual', 'integrals', 'grid', 'moltra'
             ]
 
