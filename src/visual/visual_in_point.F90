@@ -77,7 +77,7 @@ contains
     real(8):: a, b, c, f, v1, v2(3), v3(3,3)
     real(8):: elf_chi, tau
     real(8):: eigenvalues(3),eigenvectors(3, 3)
-    real(8):: temp(3), temp2(9)
+    real(8):: temp(3), temp2(9), temp_33(3,3)
   integer:: ioff
   character(1):: xyzcomp
 
@@ -419,10 +419,13 @@ contains
         grid_function_values(2:2,ipoint:ipoint) = v2(2)
         grid_function_values(3:3,ipoint:ipoint) = v2(3)
 
-! gosia - fixme
-        !if (visual_cfg_london) then
-        !if (.not. visual_cfg_london_skip_direct) then
-            v2=0.0d0
+!       gosia - fixme
+!       * code does not set this visual_cfg_london flag now...
+!       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
+!
+!       if (visual_cfg_london) then
+        if (.not. visual_cfg_london_skip_direct) then
+            v2 = 0.0d0
             xyzcomp='Z'
             call get_jblao(xyzcomp, cval, dmat_0%elements, &
                            dmat_0%mat_dim,         &
@@ -437,8 +440,91 @@ contains
         grid_function_values(3:3,ipoint:ipoint) = &
          grid_function_values(3:3,ipoint:ipoint) + v2(3)
 
+        end if
         !end if
+
+      case ('divj', &
+            'gradj',&
+            'rotj')
+!       divergence or curl or gradient of current density
+
+        !if (levyle) then
+        !   print *, 'error: Levy-Leblond not implemented'
+        !   stop
         !end if
+
+        v2 = 0.0d0
+        v3 = 0.0d0
+
+        call get_gj(v2,            &
+                    v3,            &
+                    cval,          &
+                    mat_irep,      &
+                    mat_dim,       &
+                    dmat%elements, &
+                    buffer,        &
+                    ao)
+!
+!       gosia - fixme
+!       * code does not set this visual_cfg_london flag now...
+!       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
+!
+!       if (visual_cfg_london) then
+        if (.not. visual_cfg_london_skip_direct) then
+          !if (levyle) then
+          !    print *, 'error: Levy-Leblond divj and rotj and gradj not implemented'
+          !    stop
+          !else
+            temp_33 = 0.0d0
+            xyzcomp='Z'
+            call get_gjblao(xyzcomp,         &
+                            cval,            &
+                            dmat_0%elements, &
+                            dmat_0%mat_dim,  &
+                            ao,              &
+                            (/px, py, pz/),  &
+                            temp_33)
+          !end if
+          v3(1:3, 1:3) = v3(1:3, 1:3) + temp_33(1:3, 1:3)
+        end if
+        !end if
+
+!
+!       the order of elements on v3(1:3, 1:3) from get_gj* subroutines is as follows:
+!      
+!       (1, 1) (1, 2) (1, 3)        d(jx)/dx d(jy)/dx d(jz)/dx
+!       (2, 1) (2, 2) (2, 3)  -->   d(jx)/dy d(jy)/dy d(jz)/dy
+!       (3, 1) (3, 2) (3, 3)        d(jx)/dz d(jy)/dz d(jz)/dz
+!      
+        if (grid_function%name == 'divj') then
+          grid_function_values(1:1,ipoint:ipoint) = v3(1,1) + v3(2,2) + v3(3,3)
+        end if
+
+        if (grid_function%name == 'rotj') then
+!         gosia fixme todo: i think the signs should be reversed here (to test):
+          grid_function_values(1:1,ipoint:ipoint) = -v3(2,3) + v3(3,2)
+          grid_function_values(2:2,ipoint:ipoint) = -v3(3,1) + v3(1,3)
+          grid_function_values(3:3,ipoint:ipoint) = -v3(1,2) + v3(2,1)
+        end if
+
+        if (grid_function%name == 'gradj') then
+          grid_function_values(1:1,ipoint:ipoint) = v3(1, 1)  ! xx: d(jx)/dx
+          grid_function_values(2:2,ipoint:ipoint) = v3(2, 1)  ! xy: d(jx)/dy
+          grid_function_values(3:3,ipoint:ipoint) = v3(3, 1)  ! xz: d(jx)/dz
+          grid_function_values(4:4,ipoint:ipoint) = v3(1, 2)  ! yx: d(jy)/dx
+          grid_function_values(5:5,ipoint:ipoint) = v3(2, 2)  ! yy: d(jy)/dy
+          grid_function_values(6:6,ipoint:ipoint) = v3(3, 2)  ! yz: d(jy)/dz
+          grid_function_values(7:7,ipoint:ipoint) = v3(1, 3)  ! zx: d(jz)/dx
+          grid_function_values(8:8,ipoint:ipoint) = v3(2, 3)  ! zy: d(jz)/dy
+          grid_function_values(9:9,ipoint:ipoint) = v3(3, 3)  ! zz: d(jz)/dz
+        end if
+
+! gosia todo fixme - there was a comment that it is "better not to run it with .J,
+! see debug tests in visual_lao_current", check what was this about
+
+
+
+
 
 
 !      case ('jdiaBz')
@@ -796,79 +882,6 @@ contains
 !                  v(1:3) = v(1:3) + v2(1:3)
 !               end if
 !               result(1:3) = result(1:3) + v(1:3)
-!            end if
-!
-!
-!!           divergence or curl or gradient of current density
-!            if ((visual_cfg_property(imat) == iq_divj)  .or.  &
-!                (visual_cfg_property(imat) == iq_rotj)  .or.  &
-!                (visual_cfg_property(imat) == iq_gradj)) then
-!
-!               if (levyle) then
-!                  print *, 'error: Levy-Leblond divj and rotj not implemented'
-!                  stop
-!               end if
-!
-!               call get_gj(v,            &
-!                           matrix_33,    &
-!                           cval,         &
-!                           D(imat)%irep, &
-!                           D(imat)%nrow, &
-!                           D(imat)%elms, &
-!                           buffer,       &
-!                           ao)
-!
-!               if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
-!                  if (levyle) then
-!                     print *, 'error: Levy-Leblond divj and rotj and gradj not implemented'
-!                     stop
-!                  else
-!                     call get_gjblao(visual_cfg_london_component, &
-!                                     cval,                        &
-!                                     D_0%elms,                    &
-!                                     ntbas(0),                    &
-!                                     ao,                          &
-!                                     (/px, py, pz/),              &
-!                                     temp_33)
-!                  end if
-!                  matrix_33(1:3, 1:3) = matrix_33(1:3, 1:3) + temp_33(1:3, 1:3)
-!               end if
-!
-!               ! the order of elements on matrix_33(1:3, 1:3) from get_gj*subroutines:
-!               !
-!               !  (1, 1) (1, 2) (1, 3)        d(jx)/dx d(jy)/dx d(jz)/dx
-!               !  (2, 1) (2, 2) (2, 3)  -->   d(jx)/dy d(jy)/dy d(jz)/dy
-!               !  (3, 1) (3, 2) (3, 3)        d(jx)/dz d(jy)/dz d(jz)/dz
-!               !
-!
-!               if (visual_cfg_property(imat) == iq_divj) then
-!                  result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
-!               end if
-!               if (visual_cfg_property(imat) == iq_rotj) then
-!                  ! gosia: i think the signs should be reversed here (to test):
-!                  result(1) = result(1) - matrix_33(2, 3) + matrix_33(3, 2)
-!                  result(2) = result(2) - matrix_33(3, 1) + matrix_33(1, 3)
-!                  result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)
-!               end if
-!               if (visual_cfg_property(imat) == iq_gradj) then
-!                  result(4)  = result(4)  + matrix_33(1, 1)  ! xx: d(jx)/dx
-!                  result(5)  = result(5)  + matrix_33(2, 1)  ! xy: d(jx)/dy
-!                  result(6)  = result(6)  + matrix_33(3, 1)  ! xz: d(jx)/dz
-!                  result(7)  = result(7)  + matrix_33(1, 2)  ! yx: d(jy)/dx
-!                  result(8)  = result(8)  + matrix_33(2, 2)  ! yy: d(jy)/dy
-!                  result(9)  = result(9)  + matrix_33(3, 2)  ! yz: d(jy)/dz
-!                  result(10) = result(10) + matrix_33(1, 3)  ! zx: d(jz)/dx
-!                  result(11) = result(11) + matrix_33(2, 3)  ! zy: d(jz)/dy
-!                  result(12) = result(12) + matrix_33(3, 3)  ! zz: d(jz)/dz
-!               end if
-!               if (gosia_debug_print) then
-!                ! its better not to run it with .J
-!                ! see debug tests in visual_lao_current
-!                 write(*, *) 'result1 after iq_gradj: ', result(1)
-!                 if (result_max_dim > 3) then
-!                   write(*, *) 'result4 after iq_gradj: ', result(4)
-!                 end if
-!               end if
 !            end if
 !
 !!           nonrel diamagnetic current density (hardcoded for B along z)

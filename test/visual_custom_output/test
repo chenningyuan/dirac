@@ -38,11 +38,12 @@ def compare_txt(fname, fname_ref):
 
 
 # 1. prepare
-test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
+#now:
+#test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 #test.run(['rsp_E.inp'], ['h2o.mol'], args='--incmo --outcmo --get="PAMXVC"')
 #test.run(['rsp_B.inp'], ['h2o.mol'], args='--incmo --outcmo --get="PAMXVC TBMO *.h5"')
 #now:
-test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
+#test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
 #test.run(['rsp_B_useh5.inp'], ['h2o.mol'], args='--incmo --outcmo --put="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
 
 # 2. run legacy:
@@ -50,9 +51,11 @@ test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPON
 
 # 3. run new:
 test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
-test.run(['vis_3d_h5out_testlao_nodire_nokappa.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
-test.run(['vis_3d_h5out_testlao_nodire_noreor.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
-test.run(['vis_3d_h5out_testlao_noreor_nokappa.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
+### specific to jblao-bz:
+#test.run(['vis_3d_h5out_testlao.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
+#test.run(['vis_3d_h5out_testlao_nodire_nokappa.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
+#test.run(['vis_3d_h5out_testlao_nodire_noreor.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
+#test.run(['vis_3d_h5out_testlao_noreor_nokappa.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
 
 
 # 4. old - to review:
@@ -233,9 +236,9 @@ if h5py_available:
     compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
     compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
 
-    #compare_with_ref(ftest='j_Bz_lao_rspvec6.h5', fref='result/j_Bz_lao_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-    #compare_with_ref(ftest='j_Bz_lao_rspvec6.h5', fref='result/j_Bz_lao_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-    #compare_with_ref(ftest='j_Bz_lao_rspvec6.h5', fref='result/j_Bz_lao_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+    compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon.h5', fref='result/j_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
+    compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon.h5', fref='result/j_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
+    compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon.h5', fref='result/j_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
 
     #compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
     #compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
@@ -245,10 +248,25 @@ if h5py_available:
     #compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
     #compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
 
-    compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-    compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-    compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+    #compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
+    #compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
+    #compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
 
+    compare_with_ref(ftest='divj_Bz_lao_rspvec6_symcon.h5', fref='result/divj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='divj', gf_test_key='t0_icomp_1')
+
+    compare_with_ref(ftest='rotj_Bz_lao_rspvec6_symcon.h5', fref='result/rotj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='rotj', gf_test_key='t1_icomp_1')
+    compare_with_ref(ftest='rotj_Bz_lao_rspvec6_symcon.h5', fref='result/rotj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='rotj', gf_test_key='t1_icomp_2')
+    compare_with_ref(ftest='rotj_Bz_lao_rspvec6_symcon.h5', fref='result/rotj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='rotj', gf_test_key='t1_icomp_3')
+
+    compare_with_ref(ftest='gradj_Bz_lao_rspvec6_symcon.h5', fref='result/gradj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='gradj', gf_test_key='t2_icomp_1')
+    compare_with_ref(ftest='gradj_Bz_lao_rspvec6_symcon.h5', fref='result/gradj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='gradj', gf_test_key='t2_icomp_2')
+    compare_with_ref(ftest='gradj_Bz_lao_rspvec6_symcon.h5', fref='result/gradj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='gradj', gf_test_key='t2_icomp_3')
+    compare_with_ref(ftest='gradj_Bz_lao_rspvec6_symcon.h5', fref='result/gradj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='gradj', gf_test_key='t2_icomp_4')
+    compare_with_ref(ftest='gradj_Bz_lao_rspvec6_symcon.h5', fref='result/gradj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='gradj', gf_test_key='t2_icomp_5')
+    compare_with_ref(ftest='gradj_Bz_lao_rspvec6_symcon.h5', fref='result/gradj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='gradj', gf_test_key='t2_icomp_6')
+    compare_with_ref(ftest='gradj_Bz_lao_rspvec6_symcon.h5', fref='result/gradj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='gradj', gf_test_key='t2_icomp_7')
+    compare_with_ref(ftest='gradj_Bz_lao_rspvec6_symcon.h5', fref='result/gradj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='gradj', gf_test_key='t2_icomp_8')
+    compare_with_ref(ftest='gradj_Bz_lao_rspvec6_symcon.h5', fref='result/gradj_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name='gradj', gf_test_key='t2_icomp_9')
 
 # cleanup
 #os.unlink('DFCOEF')

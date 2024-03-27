@@ -207,10 +207,10 @@ contains
           call get_d_con_mo(tmpmat_mo, ivec_con)
           call tmpmat_mo%scale_elements(0.5d0) ! if (.not. levyle) fixme
 
-    write(*, *) 'T^B in MO basis,icomp, after levyle scale = '
-         call prqmat(tmpmat_mo%elements, &
-                     tmpmat_mo%mat_dim, tmpmat_mo%mat_dim, tmpmat_mo%mat_dim,tmpmat_mo%mat_dim, &
-                     tmpmat_mo%mat_nz, (/1,2,3,4/), 6)
+    !write(*, *) 'T^B in MO basis,icomp, after levyle scale = '
+    !     call prqmat(tmpmat_mo%elements, &
+    !                 tmpmat_mo%mat_dim, tmpmat_mo%mat_dim, tmpmat_mo%mat_dim,tmpmat_mo%mat_dim, &
+    !                 tmpmat_mo%mat_nz, (/1,2,3,4/), 6)
 
 
           call tmpmat_mo%get_dmat_q_mo_sector('pi ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
@@ -227,10 +227,10 @@ contains
           call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
 
 
-    write(*, *) 'T^B in AO basis,icomp, after getmdmcon(fake) = '
-         call prqmat(dmat_ao%elements, &
-                     dmat_ao%mat_dim, dmat_ao%mat_dim, dmat_ao%mat_dim,dmat_ao%mat_dim, &
-                     dmat_ao%mat_nz, (/1,2,3,4/), 6)
+    !write(*, *) 'T^B in AO basis,icomp, after getmdmcon(fake) = '
+    !     call prqmat(dmat_ao%elements, &
+    !                 dmat_ao%mat_dim, dmat_ao%mat_dim, dmat_ao%mat_dim,dmat_ao%mat_dim, &
+    !                 dmat_ao%mat_nz, (/1,2,3,4/), 6)
 
 
 

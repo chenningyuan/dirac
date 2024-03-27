@@ -495,7 +495,7 @@ contains
         else if (val == 'import') then
           grid_function%input = 1
         else
-          write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"'
+          write(*, *) 'Input error. Wrong argument; argument to "input" must be one of "create"/"import". Stopping now.'
           stop
         end if
       case ('rspvec_file')
@@ -511,7 +511,7 @@ contains
           call str2int(val, grid_function%rspvec_id, stat)
       case ('lao')
         if (grid_function%wf_order /= 1) then
-          write(*, *) 'LAO activated for linear response only'
+          write(*, *) 'Input error. LAO can be used for linear response properties only. Stopping now.'
           stop
         end if
         call str2int(val, grid_function%lao, stat)
@@ -527,7 +527,7 @@ contains
         else if (val == 'yes') then
           grid_function%export = .true.
         else
-          write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
+          write(*, *) 'Input error. Wrong argument; argument to "weights" must be one of "yes"/"no". Stopping now.}'
           stop
         end if
       case ('file_inp')
@@ -535,7 +535,7 @@ contains
       case ('file_out')
         grid_function%file_out = val
       case default
-        print *, 'unknown key'
+        print *, 'Input error. Unknown key. Stopping now.'
         stop
     end select
 
@@ -574,8 +574,6 @@ contains
             'kinsl', &
             'kintau', &
             'divj', &
-            'rotj', &
-            'gradj',&
             'divs') 
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 1
@@ -587,8 +585,13 @@ contains
         grid_function%max_ao_g_order = 0
         grid_function%max_ao_m_order = 0
       case ('ed_gradient',&
-            'rots')
+            'rots', &
+            'rotj')
         grid_function%tensor_order = 1
+        grid_function%max_ao_g_order = 1
+        grid_function%max_ao_m_order = 0
+      case ('gradj')
+        grid_function%tensor_order = 2
         grid_function%max_ao_g_order = 1
         grid_function%max_ao_m_order = 0
       case ('ed_hessian')

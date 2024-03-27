@@ -252,20 +252,23 @@ contains
 !
 !     get grid points
 !
-!     gosia:
-!     * TODO: for optimization - try making all arrays 1-dimensional, then reshape?
+!     todo list:
+!     * test whether reshaping to 1-dimensional arrays is better for optimization:
 !     grid_points = reshape(rs_input%grids(ig)%points(g_ndim, npoints))
-!     * grid can be read from file or generated;
-!       fixme: grid generation should be done in parallel (now - done sequentially, on master)
+!
+!     fixme list:
+!     * the grid can be read from file or generated;
+!       now, grid generation is done sequentially (on master), it should be done in parallel
+!
       if (mpi_is_master()) then
         call get_grid_points(rs_input%grids(ig))
-        !if (rs_input%print_level > 0) then
-        !  write(*, *) 'Grid points of grid ', ig
-        !  do j = 1, npoints
-        !    write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
-        !    !write(*, '(3es28.18e2)') (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
-        !  end do
-        !end if
+        if (rs_input%print_level > 0) then
+          write(*, *) 'Grid points of grid ', ig
+          do j = 1, npoints
+            write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
+            !write(*, '(3es28.18e2)') (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
+          end do
+        end if
       end if
 
       if (rs_input%grids(ig)%export) then
