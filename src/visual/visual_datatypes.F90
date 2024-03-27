@@ -137,6 +137,7 @@ module visual_datatypes
     integer, public:: id_assigned_grid = 0                  ! id of assigned grid
     integer, public:: purpose = 0                           ! 0 = visualization, 1 = integration
     character(len=:), public, allocatable:: rspvec_file     ! name of a file with response parameters
+    character(len=:), public, allocatable:: gf_type         ! "unperturbed", "response", "composite"
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid function import
     character(len=:), public, allocatable:: file_out        ! name of a file for grid function export
     real(8), public, allocatable:: values(:,:)
@@ -563,6 +564,7 @@ contains
       write(*, *) 'id_assigned_grid =', self%id_assigned_grid, my_rank
       write(*, *) 'purpose =         ', self%purpose, my_rank
       if (allocated(self%rspvec_file)) write(*, *) 'rspvec_file =        ', self%rspvec_file, my_rank
+      if (allocated(self%gf_type)) write(*, *) 'gf_type =        ', self%gf_type, my_rank
       if (allocated(self%file_inp)) write(*, *) 'file_inp =        ', self%file_inp, my_rank
       if (allocated(self%file_out)) write(*, *) 'file_out =        ', self%file_out, my_rank
     else
@@ -580,6 +582,7 @@ contains
       write(*, *) 'id_assigned_grid =', self%id_assigned_grid
       write(*, *) 'purpose =         ', self%purpose
       if (allocated(self%rspvec_file)) write(*, *) 'rspvec_file =        ', self%rspvec_file
+      if (allocated(self%gf_type)) write(*, *) 'gf_type =        ', self%gf_type
       if (allocated(self%file_inp)) write(*, *) 'file_inp =        ', self%file_inp
       if (allocated(self%file_out)) write(*, *) 'file_out =        ', self%file_out
     end if

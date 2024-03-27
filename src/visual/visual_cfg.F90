@@ -618,8 +618,17 @@ contains
   subroutine modify_grid_function_due_to_method(grid_function)
     class(grid_function_t), intent(inout):: grid_function
 
+!   make this a default:
+    grid_function%gf_type = "unperturbed"
+    if (grid_function%wf_order > 0) then
+      grid_function%gf_type = "response"
+    end if
+
     if (grid_function%lao > 0) then
       if (grid_function%max_ao_m_order < 1) grid_function%max_ao_m_order = 1
+      if (.not.visual_cfg_london_skip_direct) then
+        grid_function%gf_type = "composite"
+      end if
     end if
 
 !fixme:

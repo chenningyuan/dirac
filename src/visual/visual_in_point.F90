@@ -1,19 +1,3 @@
-!dirac_copyright_start
-!      Copyright (c) by the authors of DIRAC.
-!
-!      This program is free software; you can redistribute it and/or
-!      modify it under the terms of the GNU Lesser General Public
-!      License version 2.1 as published by the Free Software Foundation.
-!
-!      This program is distributed in the hope that it will be useful, 
-!      but WITHOUT ANY WARRANTY; without even the implied warranty of
-!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-!      Lesser General Public License for more details.
-!
-!      If a copy of the GNU LGPL v2.1 was not distributed with this
-!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
-!dirac_copyright_end
-
 module visual_in_point
 
   use memory_allocator
@@ -53,17 +37,21 @@ module visual_in_point
 #include "symmet.h"
 #include "ccom.h"
 
+  interface get_quantity_in_point_refactored
+    module procedure get_quantity_in_point_single
+    module procedure get_quantity_in_point_composite
+  end interface
+
 contains
 
 ! ------------------------------------------------------------------------------
-  subroutine get_quantity_in_point_refactored(dmat_0, dmat,&
-                                              ao,buffer,&
-                                              grid_function,&
-                                              grid_function_values,&
-                                              px,py,pz,&
-                                              ipoint)
+  subroutine get_quantity_in_point_single(dmat, &
+                                          ao,buffer,&
+                                          grid_function,&
+                                          grid_function_values,&
+                                          px,py,pz,&
+                                          ipoint)
 
-    type(dmat_t), intent(in):: dmat_0
     type(dmat_t), intent(in):: dmat
     real(8), intent(in):: ao(*)
     real(8), intent(in):: buffer(*)
@@ -73,101 +61,99 @@ contains
     integer, intent(in), optional  :: ipoint !thiswill not be optional
 
     integer:: mat_dim, mat_nz, mat_irep
+    real(8), pointer::mat_elements(:)
     integer:: imat,i,j,itemp(3)
-    real(8):: a, b, c, f, v1, v2(3), v3(3,3)
+    real(8):: a, b, c, f, t0, t1(3), t2_33(3,3)
     real(8):: elf_chi, tau
     real(8):: eigenvalues(3),eigenvectors(3, 3)
     real(8):: temp(3), temp2(9), temp_33(3,3)
-  integer:: ioff
-  character(1):: xyzcomp
+    integer:: ioff
+    character(1):: xyzcomp
+
 
      !px = grid%points(1, ipoint)
      !py = grid%points(2, ipoint)
      !pz = grid%points(3, ipoint)
      !todo: call grid%points%get_cartesian_coords()
 
-    mat_dim = dmat%mat_dim
-    mat_nz  = dmat%mat_nz
-    mat_irep= dmat%irep
-
     select case (grid_function%name)
 
       case ('gamma5')
 !       gamma5 density: \psi^\dag \gamma^5 \psi
-        v1 = 0.0d0
-        call get_gamma5(v1,       &
-                        mat_irep, &
-                        mat_dim,  &
-                        dmat%elements,   &
-                        buffer,   &
+        t0 = 0.0d0
+        call get_gamma5(t0,        &
+                        dmat%irep, &
+                        dmat%mat_dim,  &
+                        dmat%elements, &
+                        buffer,    &
                         ao)
-        grid_function_values(1:1,ipoint:ipoint) = v1
+        grid_function_values(1:1,ipoint:ipoint) = t0
 
       case ('ed')
 !       electron density
-        v1 = 0.0d0
-        call get_n(v1,       &
-                   mat_irep, &
-                   mat_dim,  &
-                   dmat%elements,   &
-                   buffer,   &
+        t0 = 0.0d0
+        call get_n(t0,        &
+                   dmat%irep, &
+                   dmat%mat_dim,  &
+                   dmat%elements, &
+                   buffer,    &
                    ao)
-        grid_function_values(1:1,ipoint:ipoint) = v1
+        grid_function_values(1:1,ipoint:ipoint) = t0
 
       case ('ed_gradient')
 !       electron density gradient
-        v1 = 0.0d0
-        v2 = 0.0d0
-        call get_gn(v1,      &
-                    v2,      &
-                    mat_irep,&
-                    mat_dim, &
-                    dmat%elements,   &
-                    buffer,  &
+        t0 = 0.0d0
+        t1 = 0.0d0
+        call get_gn(t0,        &
+                    t1,        &
+                    dmat%irep, &
+                    dmat%mat_dim,  &
+                    dmat%elements, &
+                    buffer,    &
                     ao)               
-        grid_function_values(1:1,ipoint:ipoint) = v2(1)
-        grid_function_values(2:2,ipoint:ipoint) = v2(2)
-        grid_function_values(3:3,ipoint:ipoint) = v2(3)
+        grid_function_values(1:1,ipoint:ipoint) = t1(1)
+        grid_function_values(2:2,ipoint:ipoint) = t1(2)
+        grid_function_values(3:3,ipoint:ipoint) = t1(3)
 
       case ('ed_hessian')
 !       gosia fixme:
 !       electron density Hessian is implemented for hermitian density matrices (such as dmat)
 !       todo: add a warning
-        v1 = 0.0d0
-        v2 = 0.0d0
-        v3 = 0.0d0
-        call get_hn(v1,       &
-                    v2,       &
-                    v3,       &
-                    mat_irep, &
-                    mat_dim,  &
-                    dmat%elements,   &
+        t0 = 0.0d0
+        t1 = 0.0d0
+        t2_33 = 0.0d0
+        call get_hn(t0,       &
+                    t1,       &
+                    t2_33,       &
+                    dmat%irep,     &
+                    dmat%mat_dim,  &
+                    dmat%elements, &
                     buffer,   &
                     ao)               
-        grid_function_values(1:1,ipoint:ipoint) = v3(1, 1)   ! xx
-        grid_function_values(2:2,ipoint:ipoint) = v3(1, 2)   ! xy
-        grid_function_values(3:3,ipoint:ipoint) = v3(1, 3)   ! xz
-        grid_function_values(4:4,ipoint:ipoint) = v3(2, 1)   ! yx
-        grid_function_values(5:5,ipoint:ipoint) = v3(2, 2)   ! yy
-        grid_function_values(6:6,ipoint:ipoint) = v3(2, 3)   ! yz
-        grid_function_values(7:7,ipoint:ipoint) = v3(3, 1)   ! zx
-        grid_function_values(8:8,ipoint:ipoint) = v3(3, 2)   ! zy
-        grid_function_values(9:9,ipoint:ipoint) = v3(3, 3)   ! zz
+        grid_function_values(1:1,ipoint:ipoint) = t2_33(1, 1)   ! xx
+        grid_function_values(2:2,ipoint:ipoint) = t2_33(1, 2)   ! xy
+        grid_function_values(3:3,ipoint:ipoint) = t2_33(1, 3)   ! xz
+        grid_function_values(4:4,ipoint:ipoint) = t2_33(2, 1)   ! yx
+        grid_function_values(5:5,ipoint:ipoint) = t2_33(2, 2)   ! yy
+        grid_function_values(6:6,ipoint:ipoint) = t2_33(2, 3)   ! yz
+        grid_function_values(7:7,ipoint:ipoint) = t2_33(3, 1)   ! zx
+        grid_function_values(8:8,ipoint:ipoint) = t2_33(3, 2)   ! zy
+        grid_function_values(9:9,ipoint:ipoint) = t2_33(3, 3)   ! zz
 
       case ('rdg')
 !       reduced density gradient
-        v1 = 0.0d0
-        v2 = 0.0d0
-        call get_gn(v1,       &
-                    v2,       &
-                    mat_irep, &
-                    mat_dim,  &
-                    dmat%elements,   &
+        t0 = 0.0d0
+        t1 = 0.0d0
+        call get_gn(t0,       &
+                    t1,       &
+                    dmat%irep,     &
+                    dmat%mat_dim,  &
+                    dmat%elements, &
                     buffer,   &
                     ao)
 
-        b = sqrt(v2(1)*v2(1) + v2(2)*v2(2) + v2(3)*v2(3))
-        c = v1**(4.0d0/3.0d0)
+        b = sqrt(t1(1)*t1(1) + t1(2)*t1(2) + t1(3)*t1(3))
+        c = t0**(4.0d0/3.0d0)
 !       0.161620459674d0 = 1/(2.0d0*((3.0d0*pi*pi)**(1.0d0/3.0d0))
         grid_function_values(1:1,ipoint:ipoint) = 0.161620459674d0*(b/c)
 
@@ -178,22 +164,22 @@ contains
 !       gosia fixme:
 !       electron density Hessian is implemented for hermitian density matrices (such as dmat)
 !       todo: add a warning
-        v1 = 0.0d0
-        v2 = 0.0d0
-        v3 = 0.0d0
-        call get_hn(v1,       &
-                    v2,       &
-                    v3,       &
-                    mat_irep, &
-                    mat_dim,  &
-                    dmat%elements,   &
+        t0 = 0.0d0
+        t1 = 0.0d0
+        t2_33 = 0.0d0
+        call get_hn(t0,       &
+                    t1,       &
+                    t2_33,       &
+                    dmat%irep,     &
+                    dmat%mat_dim,  &
+                    dmat%elements, &
                     buffer,   &
                     ao)               
         eigenvalues  = 0.0d0
         eigenvectors = 1.0d0
         temp         = 0.0d0
         itemp        = 0
-        temp2 = reshape(v3, (/9/))
+        temp2 = reshape(t2_33, (/9/))
 
         call jaco(temp2, eigenvectors, 3, 3, 3, temp, itemp)
 
@@ -214,9 +200,9 @@ contains
         end do
 
         if (eigenvalues(2) .gt. 0.0d0) then
-           grid_function_values(1:1,ipoint:ipoint) = v1
+           grid_function_values(1:1,ipoint:ipoint) = t0
         else if (eigenvalues(2) .lt. 0.0d0) then
-           grid_function_values(1:1,ipoint:ipoint) = -v1
+           grid_function_values(1:1,ipoint:ipoint) = -t0
         end if
 
 
@@ -225,21 +211,21 @@ contains
 !       gosia fixme:
 !       density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
 !       todo: add a warning
-        v1 = 0.0d0
-        v2 = 0.0d0
-        v3 = 0.0d0
-        call get_hn(v1,       &
-                    v2,       &
-                    v3,       &
-                    mat_irep, &
-                    mat_dim,  &
-                    dmat%elements,   &
-                    buffer,   &
+        t0 = 0.0d0
+        t1 = 0.0d0
+        t2_33 = 0.0d0
+        call get_hn(t0,        &
+                    t1,        &
+                    t2_33,        &
+                    dmat%irep, &
+                    dmat%mat_dim,  &
+                    dmat%elements, &
+                    buffer,    &
                     ao)               
         eigenvectors = 1.0d0
         temp         = 0.0d0
         itemp        = 0
-        temp2 = reshape(v3, (/9/))
+        temp2 = reshape(t2_33, (/9/))
 
         call jaco(temp2, eigenvectors, 3, 3, 3, temp, itemp)
 
@@ -248,176 +234,303 @@ contains
       case ('elf')
 !       elf: electron localization function
         tau = 0.0d0
-        v1 = 0.0d0
-        v2 = 0.0d0
-        call get_kin_tau(tau,      &
-                         mat_irep, &
-                         mat_dim,  &
-                         dmat%elements,&
-                         buffer,   &
+        t0 = 0.0d0
+        t1 = 0.0d0
+        call get_kin_tau(tau,       &
+                         dmat%irep, &
+                         dmat%mat_dim,  &
+                         dmat%elements, &
+                         buffer,    &
                          ao)
-        call get_gn(v1,&
-                    v2,&
-                    mat_irep, &
-                    mat_dim,  &
-                    dmat%elements,&
-                    buffer,  &
+        call get_gn(t0, &
+                    t1, &
+                    dmat%irep, &
+                    dmat%mat_dim,  &
+                    dmat%elements, &
+                    buffer,    &
                     ao)
 
-        a = v2(1)*v2(1)+v2(2)*v2(2)+v2(3)*v2(3)
-        b = a/(8.0d0*v1)
+        a = t1(1)*t1(1)+t1(2)*t1(2)+t1(3)*t1(3)
+        b = a/(8.0d0*t0)
 
 !           2.87123400018819d0 = 0.3d0*((3.0d0*pi*pi)**(2.0d0/3.0d0))
-        f = 2.87123400018819d0*(v1**(5.0d0/3.0d0))
+        f = 2.87123400018819d0*(t0**(5.0d0/3.0d0))
         elf_chi = (tau-b)/f
 
         grid_function_values(1:1,ipoint:ipoint) = 1.0d0/(1.0d0+elf_chi*elf_chi)
 
       case ('kin')
 !       kin: 
-        v1 = 0.0d0
-        call get_kin(v1,       &
-                     visual_cfg_cval,&
-                     mat_irep, &
-                     mat_dim,  &
-                     dmat%elements,&
-                     buffer,   &
+        t0 = 0.0d0
+        call get_kin(t0,        &
+                     visual_cfg_cval, &
+                     dmat%irep, &
+                     dmat%mat_dim,    &
+                     dmat%elements,   &
+                     buffer,    &
                      ao)
 
-        grid_function_values(1:1,ipoint:ipoint) = v1
+        grid_function_values(1:1,ipoint:ipoint) = t0
 
 
       case ('kinls')
 !       kin: 
-        v1 = 0.0d0
-        call get_kin_ls(v1,       &
-                        visual_cfg_cval,&
-                        mat_irep, &
-                        mat_dim,  &
-                        dmat%elements,&
-                        buffer,   &
+        t0 = 0.0d0
+        call get_kin_ls(t0,        &
+                        visual_cfg_cval, &
+                        dmat%irep, &
+                        dmat%mat_dim,    &
+                        dmat%elements,   &
+                        buffer,    &
                         ao)
 
-        grid_function_values(1:1,ipoint:ipoint) = v1
+        grid_function_values(1:1,ipoint:ipoint) = t0
 
 
       case ('kinsl')
 !       kin: 
-        v1 = 0.0d0
-        call get_kin_sl(v1,       &
+        t0 = 0.0d0
+        call get_kin_sl(t0,       &
                         visual_cfg_cval,&
-                        mat_irep, &
-                        mat_dim,  &
-                        dmat%elements,&
+                        dmat%irep,      &
+                        dmat%mat_dim,   &
+                        dmat%elements,  &
                         buffer,   &
                         ao)
 
-        grid_function_values(1:1,ipoint:ipoint) = v1
+        grid_function_values(1:1,ipoint:ipoint) = t0
 
 
       case ('kintau')
 !       kin: 
-        v1 = 0.0d0
-        call get_kin_tau(v1,       &
-                         mat_irep, &
-                         mat_dim,  &
-                         dmat%elements,&
-                         buffer,   &
+        t0 = 0.0d0
+        call get_kin_tau(t0,        &
+                         dmat%irep, &
+                         dmat%mat_dim,  &
+                         dmat%elements, &
+                         buffer,    &
                          ao)
 
-        grid_function_values(1:1,ipoint:ipoint) = v1
+        grid_function_values(1:1,ipoint:ipoint) = t0
 
 
       case ('kinlap')
 !       kin: 
-        v1 = 0.0d0
-        call get_kin_lap(v1,       &
-                         mat_irep, &
-                         mat_dim,  &
-                         dmat%elements,&
-                         buffer,   &
+        t0 = 0.0d0
+        call get_kin_lap(t0,        &
+                         dmat%irep, &
+                         dmat%mat_dim,  &
+                         dmat%elements, &
+                         buffer,    &
                          ao)
 
-        grid_function_values(1:1,ipoint:ipoint) = v1
+        grid_function_values(1:1,ipoint:ipoint) = t0
 
 
       case ('kinnr')
 !       kin: 
-        v1 = 0.0d0
-        call get_kin_tau(v1,       &
-                         mat_irep, &
-                         mat_dim,  &
-                         dmat%elements,&
-                         buffer,   &
+        t0 = 0.0d0
+        call get_kin_tau(t0,            &
+                         dmat%irep,     &
+                         dmat%mat_dim,  &
+                         dmat%elements, &
+                         buffer,        &
                          ao)
  
-        grid_function_values(1:1,ipoint:ipoint) = 0.5d0*v1
+        grid_function_values(1:1,ipoint:ipoint) = 0.5d0*t0
 
-        call get_kin_lap(v1,       &
-                         mat_irep, &
-                         mat_dim,  &
-                         dmat%elements,&
-                         buffer,   &
+        call get_kin_lap(t0,         &
+                         dmat%irep,  &
+                         dmat%mat_dim,  &
+                         dmat%elements, &
+                         buffer,     &
                          ao)
 
         grid_function_values(1:1,ipoint:ipoint) = &
-                 grid_function_values(1:1,ipoint:ipoint)+0.5d0*v1
+                 grid_function_values(1:1,ipoint:ipoint)+0.5d0*t0
 
       case ('s')
 !       spin density: \psi^\dag \Sigma \psi
-        v2 = 0.0d0
-        call get_s(v2,       &
-                   mat_irep, &
-                   mat_dim,  &
-                   dmat%elements,&
-                   buffer,   &
+        t1 = 0.0d0
+        call get_s(t1,        &
+                   dmat%irep, &
+                   dmat%mat_dim,  &
+                   dmat%elements, &
+                   buffer,    &
                    ao)
-        grid_function_values(1:1,ipoint:ipoint) = v2(1)
-        grid_function_values(2:2,ipoint:ipoint) = v2(2)
-        grid_function_values(3:3,ipoint:ipoint) = v2(3)
+        grid_function_values(1:1,ipoint:ipoint) = t1(1)
+        grid_function_values(2:2,ipoint:ipoint) = t1(2)
+        grid_function_values(3:3,ipoint:ipoint) = t1(3)
 
       case ('divs')
 !       divergence of spin density:
-        v2 = 0.0d0
-        v3 = 0.0d0
-        call get_gs(v2,       &
-                    v3,       &
-                    mat_irep, &
-                    mat_dim,  &
-                    dmat%elements,&
-                    buffer,   &
+        t1 = 0.0d0
+        t2_33 = 0.0d0
+        call get_gs(t1,        &
+                    t2_33,        &
+                    dmat%irep, &
+                    dmat%mat_dim,  &
+                    dmat%elements, &
+                    buffer,    &
                     ao)
-        grid_function_values(1:1,ipoint:ipoint) = v3(1,1) + v3(2,2) + v3(3,3)
+        grid_function_values(1:1,ipoint:ipoint) = t2_33(1,1) + t2_33(2,2) + t2_33(3,3)
 
       case ('rots')
 !       divergence of spin density:
-        v2 = 0.0d0
-        v3 = 0.0d0
-        call get_gs(v2,       &
-                    v3,       &
-                    mat_irep, &
-                    mat_dim,  &
-                    dmat%elements,&
-                    buffer,   &
+        t1 = 0.0d0
+        t2_33 = 0.0d0
+        call get_gs(t1,        &
+                    t2_33,        &
+                    dmat%irep, &
+                    dmat%mat_dim,  &
+                    dmat%elements, &
+                    buffer,    &
                     ao)
-        grid_function_values(1:1,ipoint:ipoint) = -v3(2,3) + v3(3,2)
-        grid_function_values(2:2,ipoint:ipoint) = -v3(3,1) + v3(1,3)
-        grid_function_values(3:3,ipoint:ipoint) = -v3(1,2) + v3(2,1)
+        grid_function_values(1:1,ipoint:ipoint) = -t2_33(2,3) + t2_33(3,2)
+        grid_function_values(2:2,ipoint:ipoint) = -t2_33(3,1) + t2_33(1,3)
+        grid_function_values(3:3,ipoint:ipoint) = -t2_33(1,2) + t2_33(2,1)
 
       case ('j')
 !       current density: -ec \psi^\dag \alpha \psi
-        v2 = 0.0d0
-        call get_j(v2,       &
+        t1 = 0.0d0
+        call get_j(t1,        &
+                   cval,      &
+                   dmat%irep, &
+                   dmat%mat_dim,  &
+                   dmat%elements, &
+                   buffer,    &
+                   ao)
+        grid_function_values(1:1,ipoint:ipoint) = t1(1)
+        grid_function_values(2:2,ipoint:ipoint) = t1(2)
+        grid_function_values(3:3,ipoint:ipoint) = t1(3)
+
+      case ('divj', &
+            'gradj',&
+            'rotj')
+!       divergence or curl or gradient of current density
+
+        !if (levyle) then
+        !   print *, 'error: Levy-Leblond not implemented'
+        !   stop
+        !end if
+
+        t1 = 0.0d0
+        t2_33 = 0.0d0
+
+        call get_gj(t1,            &
+                    t2_33,            &
+                    cval,          &
+                    dmat%irep,     &
+                    dmat%mat_dim,  &
+                    dmat%elements, &
+                    buffer,        &
+                    ao)
+!
+!       the order of elements on t2_33(1:3, 1:3) from get_gj* subroutines is as follows:
+!      
+!       (1, 1) (1, 2) (1, 3)        d(jx)/dx d(jy)/dx d(jz)/dx
+!       (2, 1) (2, 2) (2, 3)  -->   d(jx)/dy d(jy)/dy d(jz)/dy
+!       (3, 1) (3, 2) (3, 3)        d(jx)/dz d(jy)/dz d(jz)/dz
+!      
+        if (grid_function%name == 'divj') then
+          grid_function_values(1:1,ipoint:ipoint) = t2_33(1,1) + t2_33(2,2) + t2_33(3,3)
+        end if
+
+        if (grid_function%name == 'rotj') then
+!         gosia fixme todo: i think the signs should be reversed here (to test):
+          grid_function_values(1:1,ipoint:ipoint) = -t2_33(2,3) + t2_33(3,2)
+          grid_function_values(2:2,ipoint:ipoint) = -t2_33(3,1) + t2_33(1,3)
+          grid_function_values(3:3,ipoint:ipoint) = -t2_33(1,2) + t2_33(2,1)
+        end if
+
+        if (grid_function%name == 'gradj') then
+          grid_function_values(1:1,ipoint:ipoint) = t2_33(1, 1)  ! xx: d(jx)/dx
+          grid_function_values(2:2,ipoint:ipoint) = t2_33(2, 1)  ! xy: d(jx)/dy
+          grid_function_values(3:3,ipoint:ipoint) = t2_33(3, 1)  ! xz: d(jx)/dz
+          grid_function_values(4:4,ipoint:ipoint) = t2_33(1, 2)  ! yx: d(jy)/dx
+          grid_function_values(5:5,ipoint:ipoint) = t2_33(2, 2)  ! yy: d(jy)/dy
+          grid_function_values(6:6,ipoint:ipoint) = t2_33(3, 2)  ! yz: d(jy)/dz
+          grid_function_values(7:7,ipoint:ipoint) = t2_33(1, 3)  ! zx: d(jz)/dx
+          grid_function_values(8:8,ipoint:ipoint) = t2_33(2, 3)  ! zy: d(jz)/dy
+          grid_function_values(9:9,ipoint:ipoint) = t2_33(3, 3)  ! zz: d(jz)/dz
+        end if
+
+! gosia todo fixme - there was a comment that it is "better not to run it with .J,
+! see debug tests in visual_lao_current", check what was this about
+
+
+
+
+    end select
+
+!    if (pointwise_modification) then
+!!     Multiply with Cartesian powers
+!      do i = 1, visual_cfg_cartesian_power(1)
+!        result = px*result    
+!      enddo
+!      do i = 1, visual_cfg_cartesian_power(2)
+!        result = py*result    
+!      enddo
+!      do i = 1, visual_cfg_cartesian_power(3)
+!        result = pz*result    
+!      enddo
+!      
+!!     Scale result 
+!      result = visual_cfg_scale*result
+!
+!    end if
+
+  end subroutine
+
+
+
+! ------------------------------------------------------------------------------
+  subroutine get_quantity_in_point_composite(dmat_0, dmat_other, &
+                                             ao,buffer,&
+                                             grid_function,&
+                                             grid_function_values,&
+                                             px,py,pz,&
+                                             ipoint)
+
+    type(dmat_t), intent(in):: dmat_0
+    type(dmat_t), intent(in):: dmat_other
+    real(8), intent(in):: ao(*)
+    real(8), intent(in):: buffer(*)
+    type(grid_function_t), intent(inout):: grid_function
+    real(8), intent(out):: grid_function_values(:,:)
+    real(8), intent(in):: px, py, pz
+    integer, intent(in), optional  :: ipoint !thiswill not be optional
+
+    integer:: mat_dim, mat_nz, mat_irep
+    real(8), pointer::mat_elements(:)
+    integer:: imat,i,j,itemp(3)
+    real(8):: a, b, c, f, t0, t1(3), t2_33(3,3)
+    real(8):: elf_chi, tau
+    real(8):: eigenvalues(3),eigenvectors(3, 3)
+    real(8):: temp(3), temp2(9), temp_33(3,3)
+  integer:: ioff
+  character(1):: xyzcomp
+
+
+     !px = grid%points(1, ipoint)
+     !py = grid%points(2, ipoint)
+     !pz = grid%points(3, ipoint)
+     !todo: call grid%points%get_cartesian_coords()
+    select case (grid_function%name)
+
+      case ('j')
+!       current density: -ec \psi^\dag \alpha \psi
+        t1 = 0.0d0
+        call get_j(t1,       &
                    cval,     &
-                   mat_irep, &
-                   mat_dim,  &
-                   dmat%elements,&
-                   !dmat_0%elements,&
+                   dmat_other%irep, &
+                   dmat_other%mat_dim,  &
+                   dmat_other%elements, &
                    buffer,   &
                    ao)
-        grid_function_values(1:1,ipoint:ipoint) = v2(1)
-        grid_function_values(2:2,ipoint:ipoint) = v2(2)
-        grid_function_values(3:3,ipoint:ipoint) = v2(3)
+        grid_function_values(1:1,ipoint:ipoint) = t1(1)
+        grid_function_values(2:2,ipoint:ipoint) = t1(2)
+        grid_function_values(3:3,ipoint:ipoint) = t1(3)
 
 !       gosia - fixme
 !       * code does not set this visual_cfg_london flag now...
@@ -425,20 +538,21 @@ contains
 !
 !       if (visual_cfg_london) then
         if (.not. visual_cfg_london_skip_direct) then
-            v2 = 0.0d0
+            t1 = 0.0d0
             xyzcomp='Z'
-            call get_jblao(xyzcomp, cval, dmat_0%elements, &
-                           dmat_0%mat_dim,         &
+            call get_jblao(xyzcomp, cval, &
+                           dmat_0%elements, &
+                           dmat_0%mat_dim,  &
                            ao, &
-                           (/px, py, pz/),   &
-                           v2)
+                           (/px, py, pz/),  &
+                           t1)
                   
         grid_function_values(1:1,ipoint:ipoint) = &
-         grid_function_values(1:1,ipoint:ipoint) + v2(1)
+         grid_function_values(1:1,ipoint:ipoint) + t1(1)
         grid_function_values(2:2,ipoint:ipoint) = &
-         grid_function_values(2:2,ipoint:ipoint) + v2(2)
+         grid_function_values(2:2,ipoint:ipoint) + t1(2)
         grid_function_values(3:3,ipoint:ipoint) = &
-         grid_function_values(3:3,ipoint:ipoint) + v2(3)
+         grid_function_values(3:3,ipoint:ipoint) + t1(3)
 
         end if
         !end if
@@ -453,15 +567,15 @@ contains
         !   stop
         !end if
 
-        v2 = 0.0d0
-        v3 = 0.0d0
+        t1 = 0.0d0
+        t2_33 = 0.0d0
 
-        call get_gj(v2,            &
-                    v3,            &
+        call get_gj(t1,            &
+                    t2_33,            &
                     cval,          &
-                    mat_irep,      &
-                    mat_dim,       &
-                    dmat%elements, &
+                    dmat_other%irep,     &
+                    dmat_other%mat_dim,  &
+                    dmat_other%elements, &
                     buffer,        &
                     ao)
 !
@@ -485,89 +599,42 @@ contains
                             (/px, py, pz/),  &
                             temp_33)
           !end if
-          v3(1:3, 1:3) = v3(1:3, 1:3) + temp_33(1:3, 1:3)
+          t2_33(1:3, 1:3) = t2_33(1:3, 1:3) + temp_33(1:3, 1:3)
         end if
         !end if
 
 !
-!       the order of elements on v3(1:3, 1:3) from get_gj* subroutines is as follows:
+!       the order of elements on t2_33(1:3, 1:3) from get_gj* subroutines is as follows:
 !      
 !       (1, 1) (1, 2) (1, 3)        d(jx)/dx d(jy)/dx d(jz)/dx
 !       (2, 1) (2, 2) (2, 3)  -->   d(jx)/dy d(jy)/dy d(jz)/dy
 !       (3, 1) (3, 2) (3, 3)        d(jx)/dz d(jy)/dz d(jz)/dz
 !      
         if (grid_function%name == 'divj') then
-          grid_function_values(1:1,ipoint:ipoint) = v3(1,1) + v3(2,2) + v3(3,3)
+          grid_function_values(1:1,ipoint:ipoint) = t2_33(1,1) + t2_33(2,2) + t2_33(3,3)
         end if
 
         if (grid_function%name == 'rotj') then
 !         gosia fixme todo: i think the signs should be reversed here (to test):
-          grid_function_values(1:1,ipoint:ipoint) = -v3(2,3) + v3(3,2)
-          grid_function_values(2:2,ipoint:ipoint) = -v3(3,1) + v3(1,3)
-          grid_function_values(3:3,ipoint:ipoint) = -v3(1,2) + v3(2,1)
+          grid_function_values(1:1,ipoint:ipoint) = -t2_33(2,3) + t2_33(3,2)
+          grid_function_values(2:2,ipoint:ipoint) = -t2_33(3,1) + t2_33(1,3)
+          grid_function_values(3:3,ipoint:ipoint) = -t2_33(1,2) + t2_33(2,1)
         end if
 
         if (grid_function%name == 'gradj') then
-          grid_function_values(1:1,ipoint:ipoint) = v3(1, 1)  ! xx: d(jx)/dx
-          grid_function_values(2:2,ipoint:ipoint) = v3(2, 1)  ! xy: d(jx)/dy
-          grid_function_values(3:3,ipoint:ipoint) = v3(3, 1)  ! xz: d(jx)/dz
-          grid_function_values(4:4,ipoint:ipoint) = v3(1, 2)  ! yx: d(jy)/dx
-          grid_function_values(5:5,ipoint:ipoint) = v3(2, 2)  ! yy: d(jy)/dy
-          grid_function_values(6:6,ipoint:ipoint) = v3(3, 2)  ! yz: d(jy)/dz
-          grid_function_values(7:7,ipoint:ipoint) = v3(1, 3)  ! zx: d(jz)/dx
-          grid_function_values(8:8,ipoint:ipoint) = v3(2, 3)  ! zy: d(jz)/dy
-          grid_function_values(9:9,ipoint:ipoint) = v3(3, 3)  ! zz: d(jz)/dz
+          grid_function_values(1:1,ipoint:ipoint) = t2_33(1, 1)  ! xx: d(jx)/dx
+          grid_function_values(2:2,ipoint:ipoint) = t2_33(2, 1)  ! xy: d(jx)/dy
+          grid_function_values(3:3,ipoint:ipoint) = t2_33(3, 1)  ! xz: d(jx)/dz
+          grid_function_values(4:4,ipoint:ipoint) = t2_33(1, 2)  ! yx: d(jy)/dx
+          grid_function_values(5:5,ipoint:ipoint) = t2_33(2, 2)  ! yy: d(jy)/dy
+          grid_function_values(6:6,ipoint:ipoint) = t2_33(3, 2)  ! yz: d(jy)/dz
+          grid_function_values(7:7,ipoint:ipoint) = t2_33(1, 3)  ! zx: d(jz)/dx
+          grid_function_values(8:8,ipoint:ipoint) = t2_33(2, 3)  ! zy: d(jz)/dy
+          grid_function_values(9:9,ipoint:ipoint) = t2_33(3, 3)  ! zz: d(jz)/dz
         end if
 
 ! gosia todo fixme - there was a comment that it is "better not to run it with .J,
 ! see debug tests in visual_lao_current", check what was this about
-
-
-
-
-
-
-!      case ('jdiaBz')
-!!       nonrel diamagnetic current density (hardcoded for B along z)
-!        v3 = 0.0d0
-!        call j_dia(v3,       &
-!                   .false.,  & !london fixme
-!                   visual_cfg_gauge_origin, &
-!                   mat_irep, &
-!                   mat_dim,  &
-!                   dmat%elements, &
-!                   ao,       &
-!                   (/px, py, pz/))
-!        grid_function_values(1:1,ipoint:ipoint) = v3(1,3)
-!        grid_function_values(2:2,ipoint:ipoint) = v3(2,3)
-!        grid_function_values(3:3,ipoint:ipoint) = v3(3,3)
-!
-
-!      case ('ndipx', 'ndipy', 'ndipz')
-!!       responding operator is nuclear magnetic dipole
-!        v = 0.0d0
-!        if (levyle) then
-!          call get_gn(density,      &
-!                      v,            &
-!                      D(imat)%irep, &
-!                      D(imat)%nrow, &
-!                      D(imat)%elms, &
-!                      buffer,       &
-!                      ao)
-!          v = -0.5d0*v
-!        else
-!          !if (present(jb_input)) then
-!          !  v = jb_input
-!          !else
-!           call get_j(v,            &
-!                      cval,         &
-!                      D(imat)%irep, &
-!                      D(imat)%nrow, &
-!                      D(imat)%elms, &
-!                      buffer,       &
-!                      ao)
-!          !end if
-!        end if
 
     end select
 
@@ -661,7 +728,7 @@ contains
 !  integer:: ioff
 !!     --------------------------------------------------------------------------
 !      integer              :: imat, i, j, ij, icomp
-!      real(8)              :: v(3), v2(3)
+!      real(8)              :: v(3), t1(3)
 !      real(8)              :: matrix_33(3, 3)
 !      real(8)              :: temp_33(3, 3)
 !      real(8)              :: elf_chi, tau
@@ -871,15 +938,15 @@ contains
 !                                       ntbas(0),                      &
 !                                       ao, &
 !                                       (/px, py, pz/),                &
-!                                       v2)
+!                                       t1)
 !                  else
 !                     call get_jblao(visual_cfg_london_component, cval, D_0%elms,                      &
 !                                    ntbas(0),                      &
 !                                    ao, &
 !                                    (/px, py, pz/),                &
-!                                    v2)
+!                                    t1)
 !                  end if
-!                  v(1:3) = v(1:3) + v2(1:3)
+!                  v(1:3) = v(1:3) + t1(1:3)
 !               end if
 !               result(1:3) = result(1:3) + v(1:3)
 !            end if
@@ -1031,15 +1098,15 @@ contains
 !                                       ntbas(0),                      &
 !                                       ao, &
 !                                       (/px, py, pz/),                &
-!                                       v2)
-!                     v = v2-v
+!                                       t1)
+!                     v = t1-v
 !                  else
 !                     call get_jblao(visual_cfg_london_component, cval, D_0%elms,                      &
 !                                    ntbas(0),                      &
 !                                    ao, &
 !                                    (/px, py, pz/),                &
-!                                    v2)
-!                     v = v2+v
+!                                    t1)
+!                     v = t1+v
 !                  end if
 !               end if
 !
@@ -1104,12 +1171,12 @@ contains
 !                  r(3) = pz-cord(3, visual_cfg_ref_nucleus(imat))
 !               end if
 !
-!               v2(1) = r(2)*v(3) - r(3)*v(2)
-!               v2(2) = r(3)*v(1) - r(1)*v(3)
-!               v2(3) = r(1)*v(2) - r(2)*v(1)
+!               t1(1) = r(2)*v(3) - r(3)*v(2)
+!               t1(2) = r(3)*v(1) - r(1)*v(3)
+!               t1(3) = r(1)*v(2) - r(2)*v(1)
 !
 !               f = -1.0d0/((r(1)*r(1) + r(2)*r(2) + r(3)*r(3))**1.5d0)
-!               result(0) = result(0) + f*v2(i)
+!               result(0) = result(0) + f*t1(i)
 !
 !            end if
 !

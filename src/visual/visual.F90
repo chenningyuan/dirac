@@ -532,12 +532,30 @@ contains
                     ao,                    &
                     buffer)
       
-        call get_quantity_in_point_refactored(dmat_0, dmat,&
-                                              ao,buffer,&
-                                              grid_function,grid_function_values,&
-                                              grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
-                                              ipoint)
-      
+        select case (grid_function%gf_type)
+!         this is a clumsy way to handle grid functions
+!         that depend on a single density matrix (either dmat_0 or dmat)
+!         or on multiple density matrices (dmat_0 and dmat, as in LAO case)
+          case ("composite")
+            call get_quantity_in_point_refactored(dmat_0, dmat,&
+                                                  ao,buffer,&
+                                                  grid_function,grid_function_values,&
+                                                  grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
+                                                  ipoint=ipoint)
+          case ("response")
+            call get_quantity_in_point_refactored(dmat, &
+                                                  ao,buffer,&
+                                                  grid_function,grid_function_values,&
+                                                  grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
+                                                  ipoint=ipoint)
+          case ("unperturbed")
+            call get_quantity_in_point_refactored(dmat_0, &
+                                                  ao,buffer,&
+                                                  grid_function,grid_function_values,&
+                                                  grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
+                                                  ipoint=ipoint)
+        end select
+
         !call TEMP_test_values_in_point('grid_function_values in point', &
         !                       ipoint, grid_points(1:3, ipoint), v3=grid_function_values(1:3,ipoint))
       

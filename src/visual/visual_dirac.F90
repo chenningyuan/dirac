@@ -728,7 +728,7 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine synchronize_grid_function_data(grid_function)
     type(grid_function_t), intent(inout):: grid_function
-    integer:: len_gffn_rsp, len_gffn_inp, len_gffn_out, len_gf_name
+    integer:: len_gffn_rsp, len_gffn_inp, len_gffn_out, len_gf_name, len_gf_typ
 ! ------------------------------------------------------------------------------
 
     if (mpi_is_master()) then
@@ -752,10 +752,16 @@ contains
       else
         len_gf_name = 0
       end if
+      if (allocated(grid_function%gf_type)) then
+        len_gf_typ = len_trim(grid_function%gf_type)
+      else
+        len_gf_typ = 0
+      end if
     end if
     call interface_mpi_bcast(len_gffn_inp,1,irank_master,global_communicator)
     call interface_mpi_bcast(len_gffn_out,1,irank_master,global_communicator)
     call interface_mpi_bcast(len_gf_name,1,irank_master,global_communicator)
+    call interface_mpi_bcast(len_gf_typ,1,irank_master,global_communicator)
 
     call interface_mpi_bcast(grid_function%id,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%id_assigned_grid,1,irank_master,global_communicator)
@@ -774,12 +780,14 @@ contains
       if (len_gffn_inp > 0) allocate(character(len_gffn_inp):: grid_function%file_inp)
       if (len_gffn_out > 0) allocate(character(len_gffn_out):: grid_function%file_out)
       if (len_gf_name > 0) allocate(character(len_gf_name):: grid_function%name)
+      if (len_gf_typ > 0) allocate(character(len_gf_typ):: grid_function%gf_type)
     end if
 
     call interface_mpi_bcast(grid_function%rspvec_file,len_gffn_rsp,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%file_inp,len_gffn_inp,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%file_out,len_gffn_out,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%name,len_gf_name,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%gf_type,len_gf_typ,irank_master,global_communicator)
 
   end subroutine synchronize_grid_function_data
 
@@ -1240,10 +1248,10 @@ contains
     write(*, *) 'sum over e+p shells = ', sum_ep_rn
     write(*, *) 'mat = ', D_con_mo%elements
 
-    write(*, *) 'T^B in MO basis,icomp, just read from TBMO FILE!!! = ', which_icomp
-         call prqmat(D_con_mo%elements, &
-                     D_con_mo%mat_dim, D_con_mo%mat_dim, D_con_mo%mat_dim,D_con_mo%mat_dim, &
-                     D_con_mo%mat_nz, (/1,2,3,4/), 6)
+    !write(*, *) 'T^B in MO basis,icomp, just read from TBMO FILE!!! = ', which_icomp
+    !     call prqmat(D_con_mo%elements, &
+    !                 D_con_mo%mat_dim, D_con_mo%mat_dim, D_con_mo%mat_dim,D_con_mo%mat_dim, &
+    !                 D_con_mo%mat_nz, (/1,2,3,4/), 6)
 
 !    if (visual_cfg_use_orbital_string) then
 !       call select_orbitals_reortho(D_con_mo%elms, occupation)
