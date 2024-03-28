@@ -486,7 +486,44 @@ contains
 !       'bdipz'
         grid_function_values(3:3,ipoint:ipoint) = f*(rx*t1(2) - ry*t1(1))
 
+      case ('ndip')
+!       responding operator is nuclear magnetic dipole
 
+        t1 = 0.0d0
+        t2_33 = 0.0d0
+
+        call get_j(t1,        &
+                   cval,      &
+                   dmat%irep, &
+                   dmat%mat_dim,  &
+                   dmat%elements, &
+                   buffer,    &
+                   ao)
+
+!       we either calculate the NMR shielding of a given nucleus
+!       or a "NICS" value in a given point
+!       (for a true NICS value multiply by "-1")
+        if (visual_cfg_nics) then
+           rx = px-visual_cfg_nics_origin(1)
+           ry = py-visual_cfg_nics_origin(2)
+           rz = pz-visual_cfg_nics_origin(3)
+        else
+           rx = px-cord(1, grid_function%nuc)
+           ry = py-cord(2, grid_function%nuc)
+           rz = pz-cord(3, grid_function%nuc)
+        end if
+
+        f = -1.0d0/((rx*rx+ry*ry+rz*rz)**1.5d0)
+
+!       'ndipx'
+        grid_function_values(1:1,ipoint:ipoint) = f*(ry*t1(3) - rz*t1(2))
+!       'ndipy'
+        grid_function_values(2:2,ipoint:ipoint) = f*(rz*t1(1) - rx*t1(3))
+!       'ndipz'
+        grid_function_values(3:3,ipoint:ipoint) = f*(rx*t1(2) - ry*t1(1))
+
+
+ 
 ! todo list:
 !           nonrel diamagnetic current density (hardcoded for B along z)
 !            if (visual_cfg_property(imat) == iq_jdia) then
@@ -494,18 +531,10 @@ contains
 !            if ((visual_cfg_property(imat) == iq_edipx) .or. &
 !                (visual_cfg_property(imat) == iq_edipy) .or. &
 !                (visual_cfg_property(imat) == iq_edipz)) then
-!!           responding operator is magnetic dipole
-!            if ((visual_cfg_property(imat) == iq_bdipx) .or. &
-!                (visual_cfg_property(imat) == iq_bdipy) .or. &
-!                (visual_cfg_property(imat) == iq_bdipz)) then
 !!           full light-matter interaction: cosine part
 !            if (visual_cfg_property(imat) == iq_tcos) then
 !!           full light-matter interaction: sine part
 !            if (visual_cfg_property(imat) == iq_tsin) then
-!           responding operator is nuclear magnetic dipole
-!            if ((visual_cfg_property(imat) == iq_ndipx) .or. &
-!                (visual_cfg_property(imat) == iq_ndipy) .or. &
-!                (visual_cfg_property(imat) == iq_ndipz)) then
 !!           responding operator is nuclear magnetic dipole
 !            if ((visual_cfg_property(imat) == iq_ndipxdia) .or. &
 !                (visual_cfg_property(imat) == iq_ndipydia) .or. &
@@ -568,6 +597,7 @@ contains
     real(8):: temp(3), temp2(9), temp_33(3,3)
   integer:: ioff
   character(1):: xyzcomp
+    real(8):: rx, ry, rz
 
 
      !px = grid%points(1, ipoint)
@@ -693,6 +723,64 @@ contains
 
 ! gosia todo fixme - there was a comment that it is "better not to run it with .J,
 ! see debug tests in visual_lao_current", check what was this about
+
+      case ('ndip')
+!       responding operator is nuclear magnetic dipole
+
+        t1 = 0.0d0
+        t2_33 = 0.0d0
+
+        call get_j(t1,        &
+                   cval,      &
+                   dmat_other%irep, &
+                   dmat_other%mat_dim,  &
+                   dmat_other%elements, &
+                   buffer,    &
+                   ao)
+!
+!       gosia - fixme
+!       * code does not set this visual_cfg_london flag now...
+!       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
+!
+!       if (visual_cfg_london) then
+        if (.not. visual_cfg_london_skip_direct) then
+            temp = 0.0d0
+            xyzcomp='Z'
+            call get_jblao(xyzcomp,         &
+                           cval,            &
+                           dmat_0%elements, &
+                           dmat_0%mat_dim,  &
+                           ao,              &
+                           (/px, py, pz/),  &
+                           temp)
+          !end if
+          t1(1:3) = t1(1:3) + temp(1:3)
+        end if
+        !end if
+
+
+!       we either calculate the NMR shielding of a given nucleus
+!       or a "NICS" value in a given point
+!       (for a true NICS value multiply by "-1")
+        if (visual_cfg_nics) then
+           rx = px-visual_cfg_nics_origin(1)
+           ry = py-visual_cfg_nics_origin(2)
+           rz = pz-visual_cfg_nics_origin(3)
+        else
+           rx = px-cord(1, grid_function%nuc)
+           ry = py-cord(2, grid_function%nuc)
+           rz = pz-cord(3, grid_function%nuc)
+        end if
+
+        f = -1.0d0/((rx*rx+ry*ry+rz*rz)**1.5d0)
+
+!       'ndipx'
+        grid_function_values(1:1,ipoint:ipoint) = f*(ry*t1(3) - rz*t1(2))
+!       'ndipy'
+        grid_function_values(2:2,ipoint:ipoint) = f*(rz*t1(1) - rx*t1(3))
+!       'ndipz'
+        grid_function_values(3:3,ipoint:ipoint) = f*(rx*t1(2) - ry*t1(1))
+
 
     end select
 

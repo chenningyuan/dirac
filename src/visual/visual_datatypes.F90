@@ -128,6 +128,7 @@ module visual_datatypes
     integer, public:: status = -1                           ! -1 = never used, 0 = initialized, but not assigned, 1 = assigned (ready to work on)
     integer, public:: input = 0                             ! 0 = calculate, 1 = import
     logical, public:: export = .true.                       ! export to file
+    integer, public:: nuc = 0                               ! id of a nucleus (for grid functions specific to atomic centers)
     integer, public:: wf_order = 0                          ! 0 = depends on unperturbed wave function only, >0 requires perturbed wave functions (1 = linear response, 2 = quadratic response, etc.)
     integer, public:: rspvec_id = 0                         ! now: record ID on PAMXVC file
     integer, public:: lao = 0                               ! 0 = no LAOs, 1 = LAOs (all contributions), 2 = LAOs (no 'reorthonormalization contribution'), 3 = ...
@@ -557,6 +558,7 @@ contains
       write(*, *) 'export =          ', self%export, my_rank
       write(*, *) 'wf_order =        ', self%wf_order, my_rank
       write(*, *) 'rspvec_id =       ', self%rspvec_id, my_rank
+      write(*, *) 'nuc =             ', self%nuc, my_rank
       write(*, *) 'lao =             ', self%lao, my_rank
       write(*, *) 'tensor_order =    ', self%tensor_order, my_rank
       write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order, my_rank
@@ -575,6 +577,7 @@ contains
       write(*, *) 'export =          ', self%export
       write(*, *) 'wf_order =        ', self%wf_order
       write(*, *) 'rspvec_id =       ', self%rspvec_id
+      write(*, *) 'nuc =             ', self%nuc
       write(*, *) 'lao =             ', self%lao
       write(*, *) 'tensor_order =    ', self%tensor_order
       write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order

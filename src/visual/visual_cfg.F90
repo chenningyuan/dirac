@@ -509,6 +509,8 @@ contains
             stop
           end if
           call str2int(val, grid_function%rspvec_id, stat)
+      case ('nuc')
+          call str2int(val, grid_function%nuc, stat)
       case ('lao')
         if (grid_function%wf_order /= 1) then
           write(*, *) 'Input error. LAO can be used for linear response properties only. Stopping now.'

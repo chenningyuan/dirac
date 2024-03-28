@@ -769,6 +769,7 @@ contains
     call interface_mpi_bcast(grid_function%input,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%wf_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%rspvec_id,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%nuc,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%tensor_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_g_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_m_order,1,irank_master,global_communicator)
