@@ -584,7 +584,8 @@ contains
             'jdiaBz', &
             'j', &
             'bdip',   &
-            'ndip')
+            'ndip',   &
+            'edip')
         grid_function%tensor_order = 1
         grid_function%max_ao_g_order = 0
         grid_function%max_ao_m_order = 0

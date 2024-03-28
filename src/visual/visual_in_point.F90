@@ -523,6 +523,27 @@ contains
         grid_function_values(3:3,ipoint:ipoint) = f*(rx*t1(2) - ry*t1(1))
 
 
+      case ('edip')
+!       responding operator is electric dipole
+
+        t0 = 0.0d0
+        call get_n(t0,        &
+                   dmat%irep, &
+                   dmat%mat_dim,  &
+                   dmat%elements, &
+                   buffer,    &
+                   ao)
+
+!       'edipx'
+        grid_function_values(1:1,ipoint:ipoint) = px*t0
+!       'edipy'
+        grid_function_values(2:2,ipoint:ipoint) = py*t0
+!       'edipz'
+        grid_function_values(3:3,ipoint:ipoint) = pz*t0
+
+ 
+
+
  
 ! todo list:
 !           nonrel diamagnetic current density (hardcoded for B along z)

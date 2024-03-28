@@ -18,6 +18,7 @@
 !.NODIRE
 !.NOREOR
 !.NOKAPP
+.3D_INTEGRATE
 .PRINT
 1
 .OUTPRI
@@ -26,7 +27,7 @@
 id=1 input=import file_inp=grid2.h5
 .GRIDFUNCTIONS    
 1
-name=ndip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 nuc=1 lao=1 file_out=ndip_Bz_lao_rspvec6_nuc1.h5
+name=edip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 file_out=edip_Ez_rspvec6.h5
 !!
 !
 ! testing:
@@ -44,7 +45,7 @@ name=ndip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rsp
 !NOTworking
 !name=jdiaBz id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=5 file_out=jdia_Bz_rspvec5.h5
 !working
-!26
+!27
 !name=ed id_grid=1 purpose=visualization export=yes file_out=ed.h5
 !name=ed_gradient id_grid=1 purpose=visualization export=yes file_out=ed_gradient.h5
 !name=ed_hessian id_grid=1 purpose=visualization export=yes file_out=ed_hessian.h5
@@ -71,4 +72,5 @@ name=ndip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rsp
 !name=divj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=divj_Bz_lao_rspvec6_symcon.h5
 !name=bdip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 file_out=bdip_Bz_rspvec6.h5
 !name=ndip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 nuc=1 file_out=ndip_Bz_rspvec6_nuc1.h5
+!name=ndip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 nuc=1 lao=1 file_out=ndip_Bz_lao_rspvec6_nuc1.h5
 *END OF
