@@ -558,14 +558,16 @@ contains
 !
 
     select case (grid_function%name)
-      case ('ed', &
-            'gamma5', &
-            'esp', &
-            'espe', &
-            'espn', &
-            'esprho', &
+      case ('ed',      &
+            'gamma5',  &
+            'esp',     &
+            'espe',    &
+            'espn',    &
+            'esprho',  &
             'esperho', &
-            'espnrho')
+            'espnrho', & 
+            'bedcos',  & 
+            'bedsin')
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 0
         grid_function%max_ao_m_order = 0

@@ -490,7 +490,6 @@ contains
 !       responding operator is nuclear magnetic dipole
 
         t1 = 0.0d0
-        t2_33 = 0.0d0
 
         call get_j(t1,        &
                    cval,      &
@@ -542,16 +541,63 @@ contains
         grid_function_values(3:3,ipoint:ipoint) = pz*t0
 
  
+      case ('bedcos')
+!       full light-matter interaction: cosine part
+
+        t1 = 0.0d0
+!       hardcoded for testing:
+        CALL ANGLES(0.0d0,0.0d0,0.0d0,visual_cfg_wave_vector,visual_cfg_pol_vector)
+        visual_cfg_freq = 49.138
+
+        call get_j(t1,        &
+                   cval,      &
+                   dmat%irep, &
+                   dmat%mat_dim,  &
+                   dmat%elements, &
+                   buffer,    &
+                   ao)
+
+        f = (visual_cfg_wave_vector(1)*px+   &
+             visual_cfg_wave_vector(2)*py+   &
+             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/cval
+        grid_function_values(1:1,ipoint:ipoint) = & 
+            -(t1(1)*visual_cfg_pol_vector(1)+  &
+              t1(2)*visual_cfg_pol_vector(2)+  &
+              t1(3)*visual_cfg_pol_vector(3))*cos(f)/visual_cfg_freq
+
+
+      case ('bedsin')
+!       full light-matter interaction: sine part
+
+        t1 = 0.0d0
+!       hardcoded for testing:
+        CALL ANGLES(0.0d0,0.0d0,0.0d0,visual_cfg_wave_vector,visual_cfg_pol_vector)
+        visual_cfg_freq = 49.138
+
+
+        call get_j(t1,        &
+                   cval,      &
+                   dmat%irep, &
+                   dmat%mat_dim,  &
+                   dmat%elements, &
+                   buffer,    &
+                   ao)
+
+        f = (visual_cfg_wave_vector(1)*px+   &
+             visual_cfg_wave_vector(2)*py+   &
+             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/cval
+        grid_function_values(1:1,ipoint:ipoint) = &
+            -(t1(1)*visual_cfg_pol_vector(1)+  &
+              t1(2)*visual_cfg_pol_vector(2)+  &
+              t1(3)*visual_cfg_pol_vector(3))*sin(f)/visual_cfg_freq
+
+
 
 
  
 ! todo list:
 !           nonrel diamagnetic current density (hardcoded for B along z)
 !            if (visual_cfg_property(imat) == iq_jdia) then
-!           responding operator is electric dipole
-!            if ((visual_cfg_property(imat) == iq_edipx) .or. &
-!                (visual_cfg_property(imat) == iq_edipy) .or. &
-!                (visual_cfg_property(imat) == iq_edipz)) then
 !!           full light-matter interaction: cosine part
 !            if (visual_cfg_property(imat) == iq_tcos) then
 !!           full light-matter interaction: sine part
