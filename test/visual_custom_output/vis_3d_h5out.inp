@@ -25,31 +25,8 @@
 1
 id=1 input=import file_inp=grid2.h5
 .GRIDFUNCTIONS    
-24
-name=ed id_grid=1 purpose=visualization export=yes file_out=ed.h5
-name=ed_gradient id_grid=1 purpose=visualization export=yes file_out=ed_gradient.h5
-name=ed_hessian id_grid=1 purpose=visualization export=yes file_out=ed_hessian.h5
-name=ed_laplacian id_grid=1 purpose=visualization export=yes file_out=ed_laplacian.h5
-name=ed_sign_lambda2 id_grid=1 purpose=visualization export=yes file_out=ed_sign_lambda2.h5
-name=rdg id_grid=1 purpose=visualization export=yes file_out=rdg.h5
-name=gamma5 id_grid=1 purpose=visualization export=yes file_out=gamma5.h5
-name=elf id_grid=1 purpose=visualization export=yes file_out=elf.h5
-name=kin id_grid=1 purpose=visualization export=yes file_out=kin.h5
-name=kinls id_grid=1 purpose=visualization export=yes file_out=kinls.h5
-name=kinsl id_grid=1 purpose=visualization export=yes file_out=kinsl.h5
-name=kinlap id_grid=1 purpose=visualization export=yes file_out=kinlap.h5
-name=kintau id_grid=1 purpose=visualization export=yes file_out=kintau.h5
-name=kinnr id_grid=1 purpose=visualization export=yes file_out=kinnr.h5
-name=s id_grid=1 purpose=visualization export=yes file_out=s.h5
-name=divs id_grid=1 purpose=visualization export=yes file_out=divs.h5
-name=rots id_grid=1 purpose=visualization export=yes file_out=rots.h5
-name=j id_grid=1 purpose=visualization export=yes file_out=j.h5
-name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=1 file_out=j_Bx_rspvec1.h5
-name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 file_out=j_Bz_rspvec6.h5
-name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=j_Bz_lao_rspvec6_symcon.h5
-name=rotj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=rotj_Bz_lao_rspvec6_symcon.h5
-name=gradj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=gradj_Bz_lao_rspvec6_symcon.h5
-name=divj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=divj_Bz_lao_rspvec6_symcon.h5
+1
+name=ndip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 file_out=ndip_Bz_rspvec6.h5
 !!
 !
 ! testing:
@@ -67,7 +44,7 @@ name=divj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rsp
 !NOTworking
 !name=jdiaBz id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=5 file_out=jdia_Bz_rspvec5.h5
 !working
-!24
+!25
 !name=ed id_grid=1 purpose=visualization export=yes file_out=ed.h5
 !name=ed_gradient id_grid=1 purpose=visualization export=yes file_out=ed_gradient.h5
 !name=ed_hessian id_grid=1 purpose=visualization export=yes file_out=ed_hessian.h5
@@ -92,4 +69,5 @@ name=divj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rsp
 !name=rotj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=rotj_Bz_lao_rspvec6_symcon.h5
 !name=gradj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=gradj_Bz_lao_rspvec6_symcon.h5
 !name=divj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=divj_Bz_lao_rspvec6_symcon.h5
+!name=bdip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 file_out=bdip_Bz_rspvec6.h5
 *END OF

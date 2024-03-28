@@ -69,6 +69,7 @@ contains
     real(8):: temp(3), temp2(9), temp_33(3,3)
     integer:: ioff
     character(1):: xyzcomp
+    real(8):: rx, ry, rz
 
 
      !px = grid%points(1, ipoint)
@@ -458,6 +459,63 @@ contains
 ! gosia todo fixme - there was a comment that it is "better not to run it with .J,
 ! see debug tests in visual_lao_current", check what was this about
 
+      case ('bdip')
+!       responding operator is magnetic dipole
+
+        t1 = 0.0d0
+        t2_33 = 0.0d0
+
+        call get_j(t1,        &
+                   cval,      &
+                   dmat%irep, &
+                   dmat%mat_dim,  &
+                   dmat%elements, &
+                   buffer,    &
+                   ao)
+
+        rx = px-visual_cfg_gauge_origin(1)
+        ry = py-visual_cfg_gauge_origin(2)
+        rz = pz-visual_cfg_gauge_origin(3)
+
+        f = -0.5d0
+
+!       'bdipx'
+        grid_function_values(1:1,ipoint:ipoint) = f*(ry*t1(3) - rz*t1(2))
+!       'bdipy'
+        grid_function_values(2:2,ipoint:ipoint) = f*(rz*t1(1) - rx*t1(3))
+!       'bdipz'
+        grid_function_values(3:3,ipoint:ipoint) = f*(rx*t1(2) - ry*t1(1))
+
+
+! todo list:
+!           nonrel diamagnetic current density (hardcoded for B along z)
+!            if (visual_cfg_property(imat) == iq_jdia) then
+!           responding operator is electric dipole
+!            if ((visual_cfg_property(imat) == iq_edipx) .or. &
+!                (visual_cfg_property(imat) == iq_edipy) .or. &
+!                (visual_cfg_property(imat) == iq_edipz)) then
+!!           responding operator is magnetic dipole
+!            if ((visual_cfg_property(imat) == iq_bdipx) .or. &
+!                (visual_cfg_property(imat) == iq_bdipy) .or. &
+!                (visual_cfg_property(imat) == iq_bdipz)) then
+!!           full light-matter interaction: cosine part
+!            if (visual_cfg_property(imat) == iq_tcos) then
+!!           full light-matter interaction: sine part
+!            if (visual_cfg_property(imat) == iq_tsin) then
+!           responding operator is nuclear magnetic dipole
+!            if ((visual_cfg_property(imat) == iq_ndipx) .or. &
+!                (visual_cfg_property(imat) == iq_ndipy) .or. &
+!                (visual_cfg_property(imat) == iq_ndipz)) then
+!!           responding operator is nuclear magnetic dipole
+!            if ((visual_cfg_property(imat) == iq_ndipxdia) .or. &
+!                (visual_cfg_property(imat) == iq_ndipydia) .or. &
+!                (visual_cfg_property(imat) == iq_ndipzdia)) then
+!            all esp functions
+
+
+
+
+
 
 
 
@@ -476,7 +534,7 @@ contains
 !      enddo
 !      
 !!     Scale result 
-!      result = visual_cfg_scale*result
+!      grid_function_values(:,ipoint:ipoint) = visual_cfg_scale*grid_function_values(:,ipoint:ipoint)
 !
 !    end if
 
@@ -651,7 +709,7 @@ contains
 !      enddo
 !      
 !!     Scale result 
-!      result = visual_cfg_scale*result
+!      grid_function_values(:,ipoint:ipoint) = visual_cfg_scale*grid_function_values(:,ipoint:ipoint)
 !
 !    end if
 
