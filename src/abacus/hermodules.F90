@@ -777,6 +777,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 #include "nucdata.h"
 
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
+      REAL(KIND=8) :: XMASS
 
       CALL QENTER('WRITE_ATOMS')
 
@@ -808,7 +809,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
           IF (GAUNUC.AND.nq.GT.0) THEN
 
             IF (mol%nucexp.EQ.D0) THEN
-              CALL NUCSIZ(nq,mol%nucexp)
+              CALL NUCSIZ(nq,mol%nucexp,xmass)
             END IF
             IF (mol%nucexp .LE. 1.0D8) WRITE(lupri,*)                   &
      &         'WARNING!!! Nuclear gaussian exponent small: ',mol%nucexp
