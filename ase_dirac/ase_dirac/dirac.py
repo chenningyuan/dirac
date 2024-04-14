@@ -94,7 +94,7 @@ class DIRAC(FileIOCalculator):
         ...        '*scf': {'.itrint': '5 50', '.maxitr': '25'},
         ...        '*mp2cal': {'.occup': '2..5', '.virtual': 'all', '.virthr': '2.0D00'}
         ...    },
-        ...    molecule={'*basis': {'.default': 'sto-3g'}}
+        ...    molecule={'*basis': {'.default': 'STO-3G'}}
         >>> )
         >>> energy = h2o_molecule.get_potential_energy()
 
@@ -131,7 +131,7 @@ class DIRAC(FileIOCalculator):
         """
         recognized_key_sections: List[str] = [
             'dirac', 'general', 'molecule',
-            'hamiltonian', 'wave_function', 'analyse', 'properties',
+            'hamiltonian', 'wave_function', 'analyze', 'properties',
             'visual', 'integrals', 'grid', 'moltra'
             ]
 
@@ -156,7 +156,7 @@ class DIRAC(FileIOCalculator):
             self.parameters.update(wave_function={'.scf': ''})
 
         if 'molecule' not in self.parameters:
-            self.parameters.update(molecule={'*basis': {'.default': 'sto-3g'}})
+            self.parameters.update(molecule={'*basis': {'.default': 'STO-3G'}})
 
         if 'integrals' not in self.parameters:
             # useful to compare with nonrel calc done with other programs
