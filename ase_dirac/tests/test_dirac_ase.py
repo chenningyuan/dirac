@@ -40,7 +40,7 @@ def create_test_atoms():
 def dirac_calculator():
     """Fixture to set up a test instance of the DIRAC calculator."""
     atoms = create_test_atoms()
-    calc = DIRAC(molecule={'*basis': {'.default': '6-31g'}})
+    calc = DIRAC(molecule={'*basis': {'.default': '6-31G'}})
     atoms.calc = calc
     return atoms
 
@@ -62,7 +62,7 @@ def test_DIRAC_energy_rks():
     # run calc and convert electronic energy into atomic units
     h2_molecule.calc = DIRAC(dirac={'.wave function': ''},
                              hamiltonian={'.nonrel': '', '.dft': 'b3lyp'},
-                             molecule={'*basis': {'.default': 'sto-3g'}}
+                             molecule={'*basis': {'.default': 'STO-3G'}}
                              )
     energy_Eh = h2_molecule.get_potential_energy() / Ha
 
@@ -72,7 +72,7 @@ def test_DIRAC_energy_rks():
 
 
 def test_DIRAC_energy_hf():
-    """Test case # 2 - Testing ASE-DIRAC default parameters - HF/sto-3g."""
+    """Test case # 2 - Testing ASE-DIRAC default parameters - HF/STO-3G."""
     h_atom = Atoms('H')
 
     h_atom.calc = DIRAC()
@@ -98,7 +98,7 @@ def test_DIRAC_energy_mp2():
                                              '*mp2cal': {'.occup': '2..5',
                                                          '.virtual': 'all',
                                                          '.virthr': '2.0D00'}},
-                              molecule={'*basis': {'.default': 'sto-3g'}})
+                              molecule={'*basis': {'.default': 'STO-3G'}})
     energy_Eh = h2o_molecule.get_potential_energy() / Ha
 
     # compare with the energy retrieved from DIRAC test set results.
@@ -136,7 +136,7 @@ def test_DIRAC_energy_open_shell():
 
     c_atom.calc = DIRAC(hamiltonian={'.x2c': ''},
                         integrals={'*readin': {'.uncontracted': "#"}},
-                        molecule={'*basis': {'.default': 'sto-3g'},
+                        molecule={'*basis': {'.default': 'STO-3G'},
                                   '*charge': {'.charge': '0'},
                                   '*symmetry': {'.d2h': '#'}},
                         wave_function={'.scf': '',
@@ -151,4 +151,3 @@ def test_DIRAC_energy_open_shell():
     # compare with the energy obtained using dirac alone
     # => assuming convergence up to ~1e-6
     assert energy_Eh == pytest.approx(-37.253756513429018, 1e-6)
-
