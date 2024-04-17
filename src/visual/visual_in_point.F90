@@ -459,6 +459,22 @@ contains
 ! gosia todo fixme - there was a comment that it is "better not to run it with .J,
 ! see debug tests in visual_lao_current", check what was this about
 
+      case ('jdiaBz')
+!       nonrel diamagnetic current density (hardcoded for B along z)
+        t2_33 = 0.0d0
+        call j_dia(t2_33,      &
+                   (grid_function%lao > 0),&
+                   visual_cfg_gauge_origin,&
+                   dmat%irep,     &
+                   dmat%mat_dim,  &
+                   dmat%elements, &
+                   ao,            &
+                   (/px, py, pz/))
+
+        grid_function_values(1:1,ipoint:ipoint) = t2_33(1, 3)
+        grid_function_values(2:2,ipoint:ipoint) = t2_33(2, 3)
+        grid_function_values(3:3,ipoint:ipoint) = t2_33(3, 3)
+
       case ('bdip')
 !       responding operator is magnetic dipole
 
@@ -790,6 +806,23 @@ contains
 
 ! gosia todo fixme - there was a comment that it is "better not to run it with .J,
 ! see debug tests in visual_lao_current", check what was this about
+
+      case ('jdiaBz')
+!       nonrel diamagnetic current density (hardcoded for B along z)
+        t2_33 = 0.0d0
+        call j_dia(t2_33,      &
+                   (grid_function%lao > 0),&
+                   visual_cfg_gauge_origin,&
+                   dmat_other%irep,     &
+                   dmat_other%mat_dim,  &
+                   dmat_other%elements, &
+                   ao,            &
+                   (/px, py, pz/))
+
+        grid_function_values(1:1,ipoint:ipoint) = t2_33(1, 3)
+        grid_function_values(2:2,ipoint:ipoint) = t2_33(2, 3)
+        grid_function_values(3:3,ipoint:ipoint) = t2_33(3, 3)
+
 
       case ('ndip')
 !       responding operator is nuclear magnetic dipole
