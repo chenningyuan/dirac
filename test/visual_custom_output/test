@@ -48,10 +48,11 @@ def compare_txt(fname, fname_ref):
 
 # 3. run new:
 # response-B
-#test.run(['rsp_B.inp'], ['h2o.mol'], args='--incmo --outcmo --get="PAMXVC TBMO *.h5"')
-#test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
+test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
+test.run(['rsp_B.inp'], ['h2o.mol'], args='--incmo --outcmo --get="PAMXVC TBMO *.h5"')
+test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
 #test.run(['rsp_B_useh5.inp'], ['h2o.mol'], args='--incmo --outcmo --put="RESPONSE.h5" --get="PAMXVC TBMO *.h5"')
-#test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
+test.run(['vis_3d_h5out_rspB.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
 
 ### specific to jblao-bz:
 #test.run(['vis_3d_h5out_testlao.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
@@ -60,7 +61,7 @@ def compare_txt(fname, fname_ref):
 #test.run(['vis_3d_h5out_testlao_noreor_nokappa.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO RESPONSE.h5" --get="*.h5"')
 
 # response-E
-#test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
+test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 test.run(['rsp_E.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5"')
 test.run(['vis_3d_h5out_rspE.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 RESPONSE.h5" --get="*.h5"')
 
@@ -212,6 +213,13 @@ if h5py_available:
         compare_with_ref(ftest=t+'_Bz_lao_rspvec6_symcon.h5', fref='result/'+t+'_Bz_lao_rspvec6_symcon.h5', typ='single', gf_name=t)
         for i in range(1,10):
             compare_with_ref(ftest=t+'_Bz_lao_rspvec6_symcon.h5', fref='result/'+t+'_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name=t, gf_test_key='t2_icomp_'+str(i))
+
+    testset = ['edip']
+    for t in testset:
+        compare_with_ref(ftest=t+'_Ez_rspvec5.h5', fref='result/'+t+'_Ez_rspvec5.h5', typ='single', gf_name=t)
+        for i in range(1,4):
+            compare_with_ref(ftest=t+'_Ez_rspvec5.h5', fref='result/'+t+'_Ez_rspvec5.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
+
 
 
 

@@ -152,12 +152,18 @@ contains
             else if (im .eq. 2) then
               factor(iz) =-1.0d0
             end if
-            factor(1) =-1.0d0
-            factor(2:4) =1.0d0
+            !factor(1) =-1.0d0
+            !factor(2:4) =1.0d0
           end do
           call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
           call dmat_ao%scale_elements(2.0d0)
         end if
+
+        write(*,*) 'final xlr AO dmat: '
+        call prqmat(dmat_ao%elements, &
+                    dmat_ao%mat_dim, dmat_ao%mat_dim, dmat_ao%mat_dim,dmat_ao%mat_dim, &
+                    dmat_ao%mat_nz, (/1,2,3,4/), 6)
+
 
         call tmpmat_mo%erase()
         call rsp_info%erase()
@@ -874,6 +880,11 @@ contains
 
     call rsp_info%vectors(ivec)%get_symmetry_info(irep,&
             iopsy,itim,typ)
+
+    write(*,*) 'in construct_perturbed_dmat: typ  = ', typ
+    write(*,*) 'in construct_perturbed_dmat: itim = ', itim
+    write(*,*) 'in construct_perturbed_dmat: irep = ', irep
+    write(*,*) 'in construct_perturbed_dmat: iopsy = ', iopsy
 
     do i1 = 1, nfsym
       i2 = mod(i1+iopsy,2) + 1

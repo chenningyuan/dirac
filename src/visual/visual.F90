@@ -1,9 +1,9 @@
 module visual
 
 ! This module contains routines that calculate 
-! various quantities on the real-space grids,
+! various quantities on real-space grids,
 ! Written by Radovan Bast.
-! Refactored by Gosia Olejniczak, spring-summer 2023.
+! Refactored by Gosia Olejniczak.
 ! Full description of features: LINK
 
   use visual_cfg
@@ -328,6 +328,7 @@ contains
 !
           if (rs_input%grid_functions(igf)%wf_order > 0) then
             if (mpi_is_master()) then
+              write(*,*) 'init rsp dmat: '
               call dirac_dmat_init('xlr', cmo, &
                                    wf_order=rs_input%grid_functions(igf)%wf_order,&
                                    dmat_ao=dmat, &

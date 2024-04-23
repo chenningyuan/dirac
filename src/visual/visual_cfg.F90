@@ -93,7 +93,7 @@ module visual_cfg
 
    integer, public:: iq_elf      =  3
    integer, public:: iq_j        =  4
-   integer, public:: iq_rotj     =  5
+   integer, public:: iq_rotj     =  5 
    integer, public:: iq_divj     =  6
    integer, public:: iq_s        =  7
    integer, public:: iq_rots     =  8

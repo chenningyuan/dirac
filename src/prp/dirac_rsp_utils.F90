@@ -612,6 +612,8 @@ contains
       write(*,*) ' ifckop   =', self%ifckop
       write(*,*) ' jz_spfexc   =', self%jz_spfexc
       write(*,*) ' jrep_spfexc =', self%jrep_spfexc
+      write(*,*) ' ihqmat (temp)', self%ihqmat
+      write(*,*) ' ipqtoq (temp)', self%ipqtoq
       if (self%allocated_values()) then
         call self%get_size_of_values(ndim1=n1, ndim2=n2)
         do j = 1, n2
