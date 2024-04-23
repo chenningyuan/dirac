@@ -66,10 +66,7 @@ module visual
 #include "codata.h"
 #include "orgcom.h"
 
-    integer, parameter:: file_unit = 137
-
 !   ---- end ----    
-
 
   public run_visual
 
@@ -81,48 +78,12 @@ contains
 ! -----------------------------------------------------------------------------
   subroutine run_visual(launch_only)
     logical, intent(in), optional :: launch_only
-
     type(mol_t):: mol
     type(cmo_t):: mo_data
     type(basis_set_info_t):: ao_basis
     real(8) :: walltime
-    logical :: legacy_prep
     type(dmat_t):: dmat_0
-
-
-
-!   ---- legacy ----    
-    type(matrix)         :: D_mo
-    type(matrix)         :: D(max_para)
-    !type(matrix),target         :: D(max_para)
-    type(matrix)         :: D_0
-    type(matrix)         :: D_con_mo, D_con_mo_ai, D_con, D_test
-    type(matrix)         :: C, Cig, Ciu, Csg, Csu
-
-    real(8), allocatable:: eigenvalues(:)
-    real(8), allocatable:: occupation(:)
-    real(8), allocatable:: ao(:)
-    real(8), allocatable:: buffer(:)
-    real(8), allocatable:: cmo_from_file(:)
-    real(8), allocatable:: occ_from_file(:)
-
-    real(8)              :: energy, time_start, second
-    integer              :: max_ao_g_order, max_ao_m_order
-    integer              :: ioff, imat, iq, iz, m, ivector
-    integer, parameter   :: file_unit = 137
-
-    logical              :: debug_print
-    logical              :: krmcscf_found
-    logical              :: natorb_found
-    logical, external    :: fndlab
-
-    integer              :: q_max_dim
-    integer              :: irank
-
-    integer:: i, j, off_ij, off_iz, off_ij_s, off_ij_e, jrdmo
-    type(matrix):: D_mo_dagger, TP, TM, T
-    logical, allocatable:: matrix_is_unperturbed(:)
-!   ---- end ----    
+    logical:: debug_print
 ! -----------------------------------------------------------------------------
 
     walltime = visual_walltime()
@@ -184,11 +145,10 @@ contains
 !   write (lupri,'(/A,I2)')," * Opening checkpoint file for real-space data (VISUAL) "
 !   call checkpoint_rs_open
 ! 
-    call visual_driver_refactored(mol,mo_data,dmat_0)
+    call visual_driver(mol,mo_data,dmat_0)
 
 !   call checkpoint_rs_close
     call dmat_0%erase()
-
 
     if (allocated(rs_input%grids)) deallocate(rs_input%grids)
     if (allocated(rs_input%grid_functions)) deallocate(rs_input%grid_functions)
@@ -197,7 +157,6 @@ contains
       call mol%erase()
     end if
 
-
     walltime = walltime - visual_walltime()
     if (mpi_is_master()) print *, 'Elapsed walltime in run_visual: ', walltime
 
@@ -205,7 +164,7 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine visual_driver_refactored(mol,cmo,dmat_0)
+  subroutine visual_driver(mol,cmo,dmat_0)
     type(mol_t), intent(in):: mol
     type(cmo_t), intent(in):: cmo
     type(dmat_t), intent(in):: dmat_0
@@ -520,8 +479,6 @@ contains
       !                                 ndim,nr_points,&
       !                                 grid_points,&
       !                                 grid_function,grid_function_values)
-      !call TEMP_test_values_in_points('grid_function_values in point', &
-      !                       nr_points, grid_points, v1=grid_function_values)
 
     else
       do ipoint = 1, nr_points
@@ -557,376 +514,11 @@ contains
                                                   ipoint=ipoint)
         end select
 
-        !call TEMP_test_values_in_point('grid_function_values in point', &
-        !                       ipoint, grid_points(1:3, ipoint), v3=grid_function_values(1:3,ipoint))
       
       end do
 
     end if
 
-  end subroutine work_on_grid
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   subroutine setup_orbital_string(occupation)
-
-      ! this routine will set up occupation vector
-      ! based on**VISUAL
-      !          .OCCUPATION
-      ! if this is not given, then it will occupy all
-      ! "occupied" electrons with 1.0
-      real(8):: occupation(norbt)
-
-      integer:: i, ifsym, ioff
-
-      occupation = 0.0d0
-
-      ioff = 0
-      do ifsym = 1, nfsym
-         ioff = ioff+npsh(ifsym)
-         if (visual_cfg_use_orbital_string) then
-            do i = 1, nesh(ifsym)
-               occupation(ioff+i) = visual_cfg_occupation(i, ifsym)
-            end do
-         else
-            if (nash(ifsym) > 0) then
-               print *, 'ERROR: with open shells you should use .OCCUPATION'
-               print *, '       otherwise occupation will be wrong'
-               print *, '       so we better stop here'
-               stop 1
-            end if
-            do i = 1, nish(ifsym)
-               occupation(ioff+i) = 1.0d0
-            end do
-         end if
-         ioff = norb(ifsym)
-      end do
-
-   end subroutine
-
-      SUBROUTINE SETUP_FO_DMAT_AO(IXVECTOR, &
-     &                            STRING, D_mo)
-
-      CHARACTER LAB1*16, &
-     &          LAB2*16, &
-     &          TYP1*2, &
-     &          TYP2*2, &
-     &          LBUF*16, &
-     &          PBUF*1
-      LOGICAL   FILE_EXISTS
-      type(matrix):: D_mo
-      real(8):: STRING(*)
-
-      real(8), allocatable:: bvec(:)
-
-      integer, allocatable:: orbital_rotation_indices(:, :)
-      real(8), allocatable:: response_vector(:, :)
-      integer              :: length
-      character(2)         :: vector_type
-      real(8)              :: ih_factor
-
-      integer              :: nr_vectors, LUNIT_XVECTOR
-      integer              :: ixvector, NBAS, NORBS, len
-      integer              :: JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2, IVECTOR
-      real(8)              :: FREQ1, FREQ2, ERGRSP, unused
-
-      integer:: i, j
-      character(10):: pattern
-      character(16):: text
-
-      INQUIRE(FILE = visual_cfg_dmat_file(IXVECTOR), EXIST = FILE_EXISTS)
-      IF(.NOT. FILE_EXISTS) THEN
-        WRITE(LUPRI, '(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI, '(A, A6, A)') 'solution vector file ', &
-     &    visual_cfg_dmat_file(IXVECTOR), ' not found'
-        CALL QUIT('ERROR in VISUAL')
-      ENDIF
-      LUNIT_XVECTOR = 17
-      OPEN(LUNIT_XVECTOR, &
-     &     FILE = visual_cfg_dmat_file(IXVECTOR), &
-     &     STATUS = 'OLD', &
-     &     ACCESS = 'SEQUENTIAL', &
-     &     FORM = 'UNFORMATTED')
-
-!     get number of vectors on file
-
-      NR_VECTORS = 0
-      REWIND LUNIT_XVECTOR
- 1    CONTINUE
-      READ(LUNIT_XVECTOR) LAB1
-      IF(LAB1 .EQ. 'END_OF_THIS_FILE') THEN
-        GOTO 2
-      ELSE
-        NR_VECTORS = NR_VECTORS+1
-!       skip solution vector
-        READ(LUNIT_XVECTOR)
-!       skip orbital rotations
-        READ(LUNIT_XVECTOR)
-        GOTO 1
-      ENDIF
- 2    CONTINUE
-
-!     errors
-
-      if ((visual_cfg_dmat_file_record(ixvector) > nr_vectors) &
-          .or. (visual_cfg_dmat_file_record(ixvector) < 1)) then
-         write(lupri, '(a)') 'error in visual:'
-         write(lupri, '(a)') 'you try to read an invalid record number from file '//visual_cfg_dmat_file(ixvector)
-         call quit('error in visual')
-      end if
-
-!     move to the right record
-
-      IVECTOR = 0
-      REWIND LUNIT_XVECTOR
- 3    CONTINUE
-      READ(LUNIT_XVECTOR)
-      IVECTOR = IVECTOR+1
-      IF(IVECTOR .EQ. visual_cfg_dmat_file_record(IXVECTOR)) THEN
-        BACKSPACE(LUNIT_XVECTOR)
-        GOTO 4
-      ELSE
-        READ(LUNIT_XVECTOR)
-        READ(LUNIT_XVECTOR)
-        GOTO 3
-      ENDIF
- 4    CONTINUE
-
-
-!     get type and dimensions of record IWHICH_XVECTOR(IXVECTOR)
-
-      READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2, &
-     &                    JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2, &
-     &                    UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
-
-
-
-      visual_cfg_irep_xvector(IXVECTOR) = JSYMOP1-1
-      length  = LEN/NZ
-      D_mo%irep   = JSYMOP1-1
-
-
-    select case (typ1(1:1))
-      case ('E')
-        vector_type = 'pp'
-      case ('P')
-        vector_type = 'pn'
-      case default
-        call quit('unexpected typ1(1:1)')
-    end select
-
-    select case (typ1(2:2))
-      case ('+')
-        D_mo%ih_sym =  1
-        ih_factor   =  1.0d0
-      case ('-')
-        D_mo%ih_sym = -1
-        ih_factor   = -1.0d0
-      case default
-        call quit('unexpected typ1(2:2)')
-    end select
-
-
-!   allocate and read response vector
-    call alloc(response_vector, length, nz)
-    call readt(lunit_xvector, length*nz, response_vector)
-!   allocate and read orbital rotation array
-    call alloc(orbital_rotation_indices, 2, length)
-    call readi(lunit_xvector, length*2, orbital_rotation_indices)
-!   close file of solution vectors
-    close(lunit_xvector, status = 'keep')
-
-!fixme: this is a good place to zero elements according to occupation
-
-    D_mo%elms = 0.0d0
-    call scatter_vector(length,                   &
-                        orbital_rotation_indices, &
-                        ih_factor,                &
-                        response_vector,          &
-                        D_mo%elms,                &
-                        D_mo%irep)
-
-    call dealloc(orbital_rotation_indices)
-    call dealloc(response_vector)
-
   end subroutine
-
-  subroutine scatter_vector(length,                   &
-                            orbital_rotation_indices, &
-                            h,                        &
-                            response_vector,          &
-                            matrix,                   &
-                            irep)
-
-!   ----------------------------------------------------------------------------
-    integer, intent(in)  :: length
-    integer, intent(in)  :: orbital_rotation_indices(2, length)
-    real(8), intent(in)  :: h
-    real(8), intent(in)  :: response_vector(length, nz)
-    real(8), intent(out):: matrix(norbt, norbt, nz)
-    integer, intent(in)  :: irep
-!   ----------------------------------------------------------------------------
-    integer              :: i, s, is, iz
-    real(8)              :: f
-!   ----------------------------------------------------------------------------
-
-    do is = 1, length
-
-      i = orbital_rotation_indices(1, is)
-      s = orbital_rotation_indices(2, is)
-
-      do iz = 1, nz
-
-        if (ipqtoq(iz, irep) > 1) then
-          f = -1.0
-        else
-          f =  1.0
-        end if
-
-!              row
-!              |
-!              |  column
-!              |  |
-        matrix(s, i, iz) = matrix(s, i, iz) &
-                         +     response_vector(is, iz)
-        matrix(i, s, iz) = matrix(i, s, iz) &
-                         - f*h*response_vector(is, iz)
-      end do
-    end do
-
-  end subroutine
-
-
-  subroutine write_data_to_dirac_output()
-
-!   ----------------------------------------------------------------------------
-!   ----------------------------------------------------------------------------
-
-    if (visual_cfg_2d .or. &
-        visual_cfg_3d .or. visual_cfg_3d_fast .or. &
-        visual_cfg_list .or. visual_cfg_line) then
-
-       call around('Requested density at point(s)')
-       
-       write(lupri, *)
-       if (visual_cfg_tensor) then
-         write(lupri, '(a200)') &
-              'in columns: r_x, r_y, r_z, '//&
-              'scalar, x-component, y-component, z-component, '//&
-              'xx-component, xy-component, xz-component, '//&
-              'yx-component, yy-component, yz-component, '//&
-              'zx-component, zy-component, zz-component'
-       else
-         write(lupri, '(a80)') &
-              'in columns: r_x, r_y, r_z, '//&
-              'scalar, x-component, y-component, z-component'
-       end if
-       
-    else if (visual_cfg_radial) then
-    end if
-
-    write(lupri, *)
-
-    if (visual_cfg_list) then
-    end if
- 
-    !write(lupri, *)
-    !call prsymb(lupri, '-', 100, 0)
-    !write(lupri, *)
-    !write(lupri, *)
-
-  end subroutine
-
-
-!   ---- end ----    
-
-
-  subroutine TEMP_test_values_in_point(text, ipoint, r3, v1, v3, v9)
-    character(*), intent(in) :: text
-    integer, intent(in) :: ipoint
-    real(8), intent(in) :: r3(3)
-    real(8), intent(in), optional :: v1
-    real(8), intent(in), optional :: v3(3)
-    real(8), intent(in), optional :: v9(9)
-
-    !if (present(v1)) then
-    !  write(*, '(A,2I6,3E16.8,ES30.20E3)') text, get_my_rank(), ipoint, &
-    !                                       r3(1:3), &
-    !                                       v1
-    !end if
-
-    !if (present(v3)) then
-    !  write(*, '(A,2I6,3E16.8,3ES30.20E3)') text, get_my_rank(), ipoint, &
-    !                                       r3(1:3), &
-    !                                       v3(1:3)
-    !end if
-
-    !if (present(v9)) then
-    !  write(*, '(A,2I6,3E16.8,9ES30.20E3)') text, get_my_rank(), ipoint, &
-    !                                       r3(1:3), &
-    !                                       v9(1:9)
-    !end if
-
-  end subroutine
-
-  subroutine TEMP_test_values_in_points(text, nr_points, r3, v1, v3, v9)
-    character(*), intent(in) :: text
-    integer, intent(in) :: nr_points
-    real(8), intent(in) :: r3(3,nr_points)
-    real(8), intent(in), optional :: v1(nr_points)
-    real(8), intent(in), optional :: v3(3,nr_points)
-    real(8), intent(in), optional :: v9(9,nr_points)
-    integer :: ipoint
-
-    !if (present(v1)) then
-    !  do ipoint = 1, nr_points
-    !    write(*, '(A,2I6,3E16.8,ES30.20E3)') text, get_my_rank(), ipoint, &
-    !                                         r3(1:3,ipoint), &
-    !                                         v1(ipoint)
-    !  end do
-    !end if
-
-    !if (present(v3)) then
-    !  do ipoint = 1, nr_points
-    !    write(*, '(A,2I6,3E16.8,3ES30.20E3)') text, get_my_rank(), ipoint, &
-    !                                          r3(1:3,ipoint), &
-    !                                          v3(1:3,ipoint)
-    !  end do
-    !end if
-
-    !if (present(v9)) then
-    !  do ipoint = 1, nr_points
-    !    write(*, '(A,2I6,3E16.8,9ES30.20E3)') text, get_my_rank(), ipoint, &
-    !                                          r3(1:3,ipoint), &
-    !                                          v9(1:9,ipoint)
-    !  end do
-    !end if
-
-  end subroutine
-
 
 end module
