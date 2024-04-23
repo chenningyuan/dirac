@@ -131,7 +131,8 @@ module visual_datatypes
     integer, public:: nuc = 0                               ! id of a nucleus (for grid functions specific to atomic centers)
     integer, public:: wf_order = 0                          ! 0 = depends on unperturbed wave function only, >0 requires perturbed wave functions (1 = linear response, 2 = quadratic response, etc.)
     integer, public:: rspvec_id = 0                         ! now: record ID on PAMXVC file
-    integer, public:: lao = 0                               ! 0 = no LAOs, 1 = LAOs (all contributions), 2 = LAOs (no 'reorthonormalization contribution'), 3 = ...
+    integer, public:: lao = 0                               ! 0 = no LAOs, 1 = LAOs (all contributions)
+    integer, public:: lao_skip(1:3) = 0                     ! 0 = skip, 1 = do not skip LAO contributions: ('response', 'direct', 'reorthonormalization')
     integer, public:: tensor_order = 0                      ! 0 = a scalar field, 1 = a vector field, 2 = a tensor field of rank 2, etc.
     integer, public:: max_ao_g_order = 0 !legacy
     integer, public:: max_ao_m_order = 0 !legacy
@@ -560,6 +561,7 @@ contains
       write(*, *) 'rspvec_id =       ', self%rspvec_id, my_rank
       write(*, *) 'nuc =             ', self%nuc, my_rank
       write(*, *) 'lao =             ', self%lao, my_rank
+      write(*, *) 'lao_skip =        ', self%lao_skip, my_rank
       write(*, *) 'tensor_order =    ', self%tensor_order, my_rank
       write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order, my_rank
       write(*, *) 'max_ao_m_order =  ', self%max_ao_m_order, my_rank
@@ -579,6 +581,7 @@ contains
       write(*, *) 'rspvec_id =       ', self%rspvec_id
       write(*, *) 'nuc =             ', self%nuc
       write(*, *) 'lao =             ', self%lao
+      write(*, *) 'lao_skip =        ', self%lao_skip
       write(*, *) 'tensor_order =    ', self%tensor_order
       write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order
       write(*, *) 'max_ao_m_order =  ', self%max_ao_m_order

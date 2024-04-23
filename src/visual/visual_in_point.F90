@@ -707,26 +707,28 @@ contains
 !       * code does not set this visual_cfg_london flag now...
 !       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
 !
-!       if (visual_cfg_london) then
-        if (.not. visual_cfg_london_skip_direct) then
-            t1 = 0.0d0
-            xyzcomp='Z'
-            call get_jblao(xyzcomp, cval, &
-                           dmat_0%elements, &
-                           dmat_0%mat_dim,  &
-                           ao, &
-                           (/px, py, pz/),  &
-                           t1)
-                  
-        grid_function_values(1:1,ipoint:ipoint) = &
-         grid_function_values(1:1,ipoint:ipoint) + t1(1)
-        grid_function_values(2:2,ipoint:ipoint) = &
-         grid_function_values(2:2,ipoint:ipoint) + t1(2)
-        grid_function_values(3:3,ipoint:ipoint) = &
-         grid_function_values(3:3,ipoint:ipoint) + t1(3)
-
+        if (grid_function%lao > 0) then
+          if (grid_function%lao_skip(2) == 0) then
+!           skip direct contribution ('nodirect')
+          
+              t1 = 0.0d0
+              xyzcomp='Z'
+              call get_jblao(xyzcomp, cval, &
+                             dmat_0%elements, &
+                             dmat_0%mat_dim,  &
+                             ao, &
+                             (/px, py, pz/),  &
+                             t1)
+                    
+          grid_function_values(1:1,ipoint:ipoint) = &
+           grid_function_values(1:1,ipoint:ipoint) + t1(1)
+          grid_function_values(2:2,ipoint:ipoint) = &
+           grid_function_values(2:2,ipoint:ipoint) + t1(2)
+          grid_function_values(3:3,ipoint:ipoint) = &
+           grid_function_values(3:3,ipoint:ipoint) + t1(3)
+          
+          end if
         end if
-        !end if
 
       case ('divj', &
             'gradj',&

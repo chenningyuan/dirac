@@ -297,17 +297,19 @@ contains
 
               if (rs_input%grid_functions(igf)%lao > 0) then
 
-                if (visual_cfg_london_skip_kappa) then
+                if (rs_input%grid_functions(igf)%lao_skip(1) > 0) then
+!                 skip response contribution ('nokappa')
                   dmat%elements = 0.0d0
                 end if
 
-                if (.not. visual_cfg_london_skip_ro) then
-                call dirac_dmat_init('lao-connection-1', cmo, &
-                                     wf_order=rs_input%grid_functions(igf)%wf_order,&
-                                     rspvec_file=rs_input%grid_functions(igf)%rspvec_file,&
-                                     dmat_ao=dmat_lao, &
-                                     rspvec_id=rs_input%grid_functions(igf)%rspvec_id)
-                dmat%elements = dmat%elements + dmat_lao%elements
+                if (rs_input%grid_functions(igf)%lao_skip(3) > 0) then
+!                 skip reorthonormalization contribution ('noreorth')
+                  call dirac_dmat_init('lao-connection-1', cmo, &
+                                       wf_order=rs_input%grid_functions(igf)%wf_order,&
+                                       rspvec_file=rs_input%grid_functions(igf)%rspvec_file,&
+                                       dmat_ao=dmat_lao, &
+                                       rspvec_id=rs_input%grid_functions(igf)%rspvec_id)
+                  dmat%elements = dmat%elements + dmat_lao%elements
                 end if
 
               end if
