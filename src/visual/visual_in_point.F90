@@ -704,12 +704,11 @@ contains
         grid_function_values(3:3,ipoint:ipoint) = t1(3)
 
 !       gosia - fixme
-!       * code does not set this visual_cfg_london flag now...
 !       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
 !
         if (grid_function%lao > 0) then
           if (grid_function%lao_skip(2) == 0) then
-!           skip direct contribution ('nodirect')
+!           do not skip direct contribution ('nodirect')
           
               t1 = 0.0d0
               xyzcomp='Z'
@@ -753,11 +752,12 @@ contains
                     ao)
 !
 !       gosia - fixme
-!       * code does not set this visual_cfg_london flag now...
 !       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
 !
-!       if (visual_cfg_london) then
-        if (.not. visual_cfg_london_skip_direct) then
+        if (grid_function%lao > 0) then
+          if (grid_function%lao_skip(2) == 0) then
+!           do not skip direct contribution ('nodirect')
+!
           !if (levyle) then
           !    print *, 'error: Levy-Leblond divj and rotj and gradj not implemented'
           !    stop
@@ -772,9 +772,9 @@ contains
                             (/px, py, pz/),  &
                             temp_33)
           !end if
-          t2_33(1:3, 1:3) = t2_33(1:3, 1:3) + temp_33(1:3, 1:3)
+            t2_33(1:3, 1:3) = t2_33(1:3, 1:3) + temp_33(1:3, 1:3)
+          end if
         end if
-        !end if
 
 !
 !       the order of elements on t2_33(1:3, 1:3) from get_gj* subroutines is as follows:
@@ -841,11 +841,12 @@ contains
                    ao)
 !
 !       gosia - fixme
-!       * code does not set this visual_cfg_london flag now...
 !       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
-!
-!       if (visual_cfg_london) then
-        if (.not. visual_cfg_london_skip_direct) then
+
+        if (grid_function%lao > 0) then
+          if (grid_function%lao_skip(2) == 0) then
+!           do not skip direct contribution ('nodirect')
+
             temp = 0.0d0
             xyzcomp='Z'
             call get_jblao(xyzcomp,         &
@@ -855,10 +856,9 @@ contains
                            ao,              &
                            (/px, py, pz/),  &
                            temp)
-          !end if
-          t1(1:3) = t1(1:3) + temp(1:3)
+            t1(1:3) = t1(1:3) + temp(1:3)
+          end if
         end if
-        !end if
 
 
 !       we either calculate the NMR shielding of a given nucleus

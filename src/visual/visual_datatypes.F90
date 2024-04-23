@@ -132,7 +132,7 @@ module visual_datatypes
     integer, public:: wf_order = 0                          ! 0 = depends on unperturbed wave function only, >0 requires perturbed wave functions (1 = linear response, 2 = quadratic response, etc.)
     integer, public:: rspvec_id = 0                         ! now: record ID on PAMXVC file
     integer, public:: lao = 0                               ! 0 = no LAOs, 1 = LAOs (all contributions)
-    integer, public:: lao_skip(1:3) = 0                     ! 0 = skip, 1 = do not skip LAO contributions: ('response', 'direct', 'reorthonormalization')
+    integer, public:: lao_skip(1:3) = 0                     ! 0 = skip, 1 = do not skip LAO contributions; ('response', 'direct', 'reorthonormalization')
     integer, public:: tensor_order = 0                      ! 0 = a scalar field, 1 = a vector field, 2 = a tensor field of rank 2, etc.
     integer, public:: max_ao_g_order = 0 !legacy
     integer, public:: max_ao_m_order = 0 !legacy

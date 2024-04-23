@@ -124,7 +124,7 @@ contains
 !
 !     fixme list: 
 !     * ao_basis is kept as a placeholder:
-!       now, AOs are still calculated via dirac_ao_eval_init,
+!       now, AOs are still calculated in an external dirac_ao_eval_init,
 !       as it also sets up all offsets used in xcint/density_eval.F90;
 !       to fix this, we would need to think of decoupling visual from xcint
 !
@@ -269,10 +269,11 @@ contains
 !
 !         initialize ao module
 !
-!         gosia fixme(?)
-!         VISUAL uses AO evaluation routines from xcint;
-!         which also set up all offsets used in subroutines in xcint/density_eval.F90,
-!         called from visual_in_point.F90
+!         fixme list:
+!         now, AOs are still calculated in an external dirac_ao_eval_init,
+!         as it also sets up all offsets used in xcint/density_eval.F90;
+!         to fix this, we would need to think of decoupling visual from xcint
+!
           call dirac_ao_eval_init(rs_input%grid_functions(igf)%max_ao_g_order, &
                                   rs_input%grid_functions(igf)%max_ao_m_order, &
                                   .true.)
@@ -302,8 +303,8 @@ contains
                   dmat%elements = 0.0d0
                 end if
 
-                if (rs_input%grid_functions(igf)%lao_skip(3) > 0) then
-!                 skip reorthonormalization contribution ('noreorth')
+                if (rs_input%grid_functions(igf)%lao_skip(3) == 0) then
+!                 do not skip reorthonormalization contribution ('noreorth')
                   call dirac_dmat_init('lao-connection-1', cmo, &
                                        wf_order=rs_input%grid_functions(igf)%wf_order,&
                                        rspvec_file=rs_input%grid_functions(igf)%rspvec_file,&
@@ -493,9 +494,11 @@ contains
                     buffer)
       
         select case (grid_function%gf_type)
+!         fixme:
 !         this is a clumsy way to handle grid functions
-!         that depend on a single density matrix (either dmat_0 or dmat)
-!         or on multiple density matrices (dmat_0 and dmat, as in LAO case)
+!         that depend on a single density matrix (dmat_0 .or. dmat)
+!         or on multiple density matrices (dmat_0 .and. dmat), as in LAO case;
+!         now, this causes some code duplication in visual_in_point.F90 and should be refactored
           case ("composite")
             call get_quantity_in_point_refactored(dmat_0, dmat,&
                                                   ao,buffer,&

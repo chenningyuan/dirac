@@ -15,9 +15,6 @@
 1.0D-8
 **VISUAL
 .REFACT
-!.NODIRE
-!.NOREOR
-!.NOKAPP
 !.3D_INTEGRATE
 .PRINT
 1
@@ -26,10 +23,19 @@
 1
 id=1 input=import file_inp=grid2.h5
 .GRIDFUNCTIONS    
-5
+8
+name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 lao_skip=[1,1,0] file_out=j_Bz_lao_rspvec6_symcon_nodirect_nokappa.h5
+name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 lao_skip=[0,1,1] file_out=j_Bz_lao_rspvec6_symcon_nodirect_noreorth.h5
+name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 lao_skip=[1,0,1] file_out=j_Bz_lao_rspvec6_symcon_noreorth_nokappa.h5
 name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=j_Bz_lao_rspvec6_symcon.h5
 name=rotj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=rotj_Bz_lao_rspvec6_symcon.h5
 name=gradj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=gradj_Bz_lao_rspvec6_symcon.h5
 name=jdiaBz id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=5 lao=1 file_out=jdiaBz_lao_rspvec5_symcon.h5
 name=divj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=divj_Bz_lao_rspvec6_symcon.h5
+!
+!test these 3:
+!name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 lao_skip=[1,0,0] file_out=j_Bz_lao_rspvec6_symcon_nokappa.h5
+!name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 lao_skip=[0,1,0] file_out=j_Bz_lao_rspvec6_symcon_nodirect.h5
+!name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 lao_skip=[0,0,1] file_out=j_Bz_lao_rspvec6_symcon_noreorth.h5
+!
 *END OF

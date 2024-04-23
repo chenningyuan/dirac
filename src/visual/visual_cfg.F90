@@ -479,8 +479,13 @@ contains
     character(len=*), intent(in):: key, val
     type(grid_function_t),intent(inout)::grid_function
     integer, intent(in)::id_grid_function
-    character(len=len(key))::temp
-    integer::stat
+    !character(len=len(key))::temp
+    character(len=len_trim(val))::temp
+    integer::stat, np
+    real(8)::s
+    integer::nr_words, i
+    character(len=10),allocatable::chvalues(:)
+
 
     select case (key)
       case ('name')
@@ -517,6 +522,30 @@ contains
           stop
         end if
         call str2int(val, grid_function%lao, stat)
+      case ('lao_skip')
+        if (grid_function%lao == 0) then
+          write(*, *) 'Input error. LAO not activated. Stopping now.'
+          stop
+        end if
+        temp = val
+        call trim_ch(temp, val,  '[')
+        call trim_ch(temp, temp, ']')
+        if (index(val, ',') > 0) then
+          nr_words = word_count(temp, ',')
+          if (nr_words .ne. 3) then
+            write(*,*) 'Warning! More than three values are in the array'
+          end if
+          allocate(chvalues(nr_words))
+          call split_string(temp, nr_words, chvalues, separator=',')
+          do i = 1, nr_words
+            call str2int(trim(chvalues(i)), np, stat)
+            grid_function%lao_skip(i) = np
+          end do
+          deallocate(chvalues)
+        else
+          write(*,*) 'Expected argument is an array of integer values. Stopping now'
+          stop
+        end if
       case ('purpose')
         if (val == 'visualization') then
           grid_function%purpose = 0
