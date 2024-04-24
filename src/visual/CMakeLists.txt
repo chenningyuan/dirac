@@ -29,6 +29,7 @@ set(FREE_VISUAL_FORTRAN_SOURCES
     visual_mpi.F90
     # gosia - fixme!
     ${PROJECT_SOURCE_DIR}/src/prp/dirac_rsp_utils.F90
+    ${PROJECT_SOURCE_DIR}/src/prp/dirac_conmat_lao_utils.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

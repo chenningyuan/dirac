@@ -12,6 +12,7 @@ module visual_dirac
   use checkpoint
   use basis_set_datatypes
   use dirac_rsp_utils
+  use dirac_conmat_lao_utils
 
 #ifdef VAR_MPI
    use interface_to_mpi
@@ -53,6 +54,7 @@ contains
 
     type(cmo_t) :: cmo_i
     type(response_info_t) :: rsp_info
+    type(conmat_info_t) :: conmat_info
     type(dmat_t) :: tmpmat_ao, tmpmat_mo
     integer :: nao, nmo, nz
     integer :: i, ivec, ivec_con, rspvec_ndim, rspvec_nz, n1
@@ -207,42 +209,38 @@ contains
             ivec_con = 3
           end if
 
-          tmpmat_mo%mat_dim = nmo
-          tmpmat_mo%mat_nz = nz
-          call tmpmat_mo%alloc()
-          call get_d_con_mo(tmpmat_mo, ivec_con)
-          call tmpmat_mo%scale_elements(0.5d0) ! if (.not. levyle) fixme
+          call conmat_info%read_from_checkpoint('TBMO.h5')
+          do ivec = 1, conmat_info%nr_comp
 
-    !write(*, *) 'T^B in MO basis,icomp, after levyle scale = '
-    !     call prqmat(tmpmat_mo%elements, &
-    !                 tmpmat_mo%mat_dim, tmpmat_mo%mat_dim, tmpmat_mo%mat_dim,tmpmat_mo%mat_dim, &
-    !                 tmpmat_mo%mat_nz, (/1,2,3,4/), 6)
+            if (conmat_info%vectors(ivec)%id == ivec_con) then
+              write(*,*) 'IN LAO-CON visual_dirac: ivec_con = ', ivec_con
+              tmpmat_mo%mat_dim = nmo
+              tmpmat_mo%mat_nz = nz
+              call tmpmat_mo%alloc()
+              call conmat_info%vectors(ivec)%get_copy_of_values(tmpmat_mo%elements,nmo*nmo*nz)
+              call tmpmat_mo%scale_elements(0.5d0) ! if (.not. levyle) fixme
+              
+              call tmpmat_mo%get_dmat_q_mo_sector('pi ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
+              
+              call construct_perturbed_dmat_lao_e(dmat_ao%elements,&
+                            tmpmat_mo%elements,&
+                            cmo%coeff)
+              call construct_perturbed_dmat_lao_p(dmat_ao%elements,&
+                            tmpmat_mo%elements,&
+                            cmo%coeff)
+              
+              factor(1) = -1.0d0
+              factor(2:4) = 1.0d0
+              call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
+  
 
-
-          call tmpmat_mo%get_dmat_q_mo_sector('pi ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
-
-          call construct_perturbed_dmat_lao_e(dmat_ao%elements,&
-                        tmpmat_mo%elements,&
-                        cmo%coeff)
-          call construct_perturbed_dmat_lao_p(dmat_ao%elements,&
-                        tmpmat_mo%elements,&
-                        cmo%coeff)
-
-          factor(1) = -1.0d0
-          factor(2:4) = 1.0d0
-          call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
-
-
-    !write(*, *) 'T^B in AO basis,icomp, after getmdmcon(fake) = '
-    !     call prqmat(dmat_ao%elements, &
-    !                 dmat_ao%mat_dim, dmat_ao%mat_dim, dmat_ao%mat_dim,dmat_ao%mat_dim, &
-    !                 dmat_ao%mat_nz, (/1,2,3,4/), 6)
-
-
+            end if
+          end do
 
           call dmat_ao%scale_elements(2.0d0)
           call tmpmat_mo%erase()
           call rsp_info%erase()
+          call conmat_info%erase()
         end if
 
       case default
@@ -1202,87 +1200,5 @@ contains
     end if
 
   end subroutine
-
-
-
-!OLD
-  subroutine get_d_con_mo(D_con_mo, icomp)! occupation, D_con_mo_ai)
-!   ----------------------------------------------------------------------------
-    type(dmat_t),intent(inout):: D_con_mo
-    integer, intent(in) :: icomp
-    !real(8)                 :: occupation(*)
-    !type(matrix), optional  :: D_con_mo_ai
-
-    real(8), allocatable    :: D_ai(:, :, :), D_ji(:, :, :)
-    integer                 :: file_unit, nr_xyz_comp, which_icomp
-    logical                 :: debug_me, dummy , sum_ep_rn
-
-!   gosia, note for me:
-!   if natural connection-T^B matrix was built from 'd|S>/dB' integrals
-!   if symmetric connection-T^B matrix was built from 'dS/dB' integrals
-!   ----------------------------------------------------------------------------
-
-!   read T^B matrix in MO basis to D_con_mo
-!   ---------------------------------------
-
-    file_unit = 71
-
-    open(file_unit,                 &
-         file   = 'TBMO',           &
-         status = 'old',            &
-         form   = 'unformatted',    &
-         access = 'sequential',     &
-         position = 'rewind',       &
-         action = 'read')
-
-1   continue
-
-    read(file_unit) nr_xyz_comp
-    read(file_unit) which_icomp
-    read(file_unit) D_con_mo%irep
-    read(file_unit) sum_ep_rn
-    read(file_unit) D_con_mo%elements
-
-    if (icomp == which_icomp) then
-      go to 2
-    else
-      go to 1
-    end if
-
-2   continue
-
-    close(file_unit, status = 'keep')
-
-    write(*, *) 'visual: connection matrix (T^B in MO basis) read from TBMO file'
-    write(*, *) 'nr_xyz_comp = ', nr_xyz_comp
-    write(*, *) 'component = ', icomp
-    write(*, *) 'irep = ', D_con_mo%irep
-    write(*, *) 'sum over e+p shells = ', sum_ep_rn
-    write(*, *) 'mat = ', D_con_mo%elements
-
-    !write(*, *) 'T^B in MO basis,icomp, just read from TBMO FILE!!! = ', which_icomp
-    !     call prqmat(D_con_mo%elements, &
-    !                 D_con_mo%mat_dim, D_con_mo%mat_dim, D_con_mo%mat_dim,D_con_mo%mat_dim, &
-    !                 D_con_mo%mat_nz, (/1,2,3,4/), 6)
-
-!    if (visual_cfg_use_orbital_string) then
-!       call select_orbitals_reortho(D_con_mo%elms, occupation)
-!    end if
-!
-!    if (visual_cfg_london_none) then
-!
-!!      here discern occ-occ and occ-virt blocks of T^B
-!!      write occ-occ  to D_con_mo
-!!      and   occ-virt to D_con_mo_ai
-!       call alloc(D_ji, norbt, norbt, nz)
-!       call partition_connection_matrix(D_con_mo%elms, D_con_mo_ai%elms, D_ji, sum_ep_rn)
-!       D_con_mo%elms = 0.0d0
-!       call dcopy(norbt*norbt*nz, D_ji, 1, D_con_mo%elms, 1)
-!       call dealloc(D_ji)
-!
-!    end if
-
-  end subroutine
-
 
 end module
