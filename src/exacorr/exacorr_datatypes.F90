@@ -58,6 +58,7 @@
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: cc2 = .false.            !L if true CC2
             logical                 :: do_cis = .false.         ! enables CIS, and branch off away from the CC driver 
+            logical                 :: do_cis_d = .false.       ! enables CIS(D), and branch off away from the CC driver 
             logical                 :: lambda = .false.
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
@@ -107,6 +108,8 @@
             integer                 :: N_omega_qr1 = 1               ! number of frequency1 in ccqr
             integer                 :: N_omega_qr2 = 1               ! number of frequency2 in ccqr
             integer                 :: N_Time_anti = 0          ! Number of time-antisymmetric operators
+            integer                 :: cis_d_pmin = 0  
+            integer                 :: cis_d_pmax = 5
            
             
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
@@ -206,9 +209,10 @@
         type, public :: talsh_intg_tens_t
          type(talsh_tens_t) :: oooo
          type(talsh_tens_t) :: ooov
-         type(talsh_tens_t) :: oovv, vovo, ovov
+         type(talsh_tens_t) :: oovv, vovo, ovov, voov
          type(talsh_tens_t) :: vovv
          type(talsh_tens_t) :: vvvv
+         type(talsh_tens_t) :: oovo, ovvv
          type(talsh_tens_t) :: foo, fov, fvv
         end type talsh_intg_tens_t
 
