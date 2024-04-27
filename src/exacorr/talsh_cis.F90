@@ -406,7 +406,6 @@ end subroutine
              voov_dims(4) = nvir
              ierr=talsh_tensor_construct(int_t%voov,C8,voov_dims,init_val=ZERO)
              allocate (mo_list(2*nvir+2*nocc))
-
              nmo(1) = nvir
              nmo(2) = nocc
              nmo(3) = nocc
@@ -423,7 +422,7 @@ end subroutine
              minusone_dims(1) = 1
              ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
             !  ierr=talsh_tensor_contract("V(i,a,j,b)+=V(i,j,a,b)*C()",int_t%ovov,int_t%oovv,minusone_tensor)
-             ierr=talsh_tensor_destruct(int_t%oovv)
+            !  ierr=talsh_tensor_destruct(int_t%oovv)
 
              ierr=talsh_tensor_contract("V(i,a,j,b)+=V(a,j,i,b)*C()",int_t%ovov,int_t%voov,minusone_tensor)
              ierr=talsh_tensor_destruct(int_t%voov)
