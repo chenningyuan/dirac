@@ -246,7 +246,7 @@ Expert option: Level shift of orbital energies, ignored for values smaller 0.
 
 keyword(MP2NO)
 
-Perform a closed shell MP2 calculation and generate the frozen natural orbitals(FNOs) by diagonalization of the virtual-virtual block of the MP2 density matrix, outputting the original occupied orbitals and a set of truncated virtuals in AO basis (the FNOs are transformed into AO basis and saved on file MP2NOs\_AO, which has the same structure as DFCOEF.)
+Perform a closed shell MP2 calculation and generate the frozen natural orbitals (FNOs) by diagonalization of the virtual-virtual block of the MP2 density matrix, outputting the original occupied orbitals and a set of truncated virtuals in AO basis. These are saved in the checkpoint file.
 
 The user must specify a threshold indicating a NO occupation number, and orbitals with occupation below that will not be retained in the truncated AO basis. 
 
@@ -255,11 +255,19 @@ The user must specify a threshold indicating a NO occupation number, and orbital
     .MP2NO
     1.0d-3
 
-If one would like to use the new set including the FNOs to do higher-level computation like CC, the MP2NOs\_AO should be retrieved from the work directory for the calculati, and used as a standard DFCOEF file in subsequent calculations (currently a run in which FNOs are generated and used in the same post-SCF calculation is not supported).  
-    
-Apart from MP2NOs\_AO, this option also ouputs the full, untruncated FNOs space (MO basis) in file NOs\_MO. The Fock matrix (FNO basis) is also outputted to file FM\_in\_NatOrb. 
+If one would like to use the new set including the FNOs to carry out higher-level calculations (e.g. CC), the checkpoint file should be retrieved from the work directory for the calculation, and used as a restart file in subsequent calculations. 
 
-The NOs\_MO is provided so that users wishing to change the truncation thresold above don't have to repeat the same MP2 calculation (If present in the scratch directory, the NOs\_MO will make the code skip the MP2 calculation). 
+When carrying out the restart calculations, SCF iterations must be disabled (e.g. by setting :ref:`SCF_.MAXITR` to 1), otherwise the FNOs will be destroyed. See examples in the test suite. 
+
+For implementation reasons, the total number of virtuals in the checkpoint file remains equal to that of the initial calculation employing canonical orbitals.  The high-energy degenerate orbitals appearing in the output and/or checkpoint file correspond to the low occupation number orbitals removed in the truncation. These have no physical meaning and should not be used in subsequent calculations.
+
+Currently a run in which FNOs are generated and used in the same post-SCF calculation is not supported.  
+    
+Apart from the orbitals present in the checkpoint file, this option also ouputs the full, untruncated FNOs space (MO basis) in file NOs\_MO, and the Fock matrix (FNO basis) to file FM\_in\_NatOrb. By default both files are not copied back from the work directory. 
+
+The NOs\_MO is provided so that users wishing to change the truncation thresold above don't have to repeat the same MP2 calculation. If present in the scratch directory, the NOs\_MO will make the code skip the MP2 calculation. 
+
+.. warning:: The information contained in NOs\_MO is currently not integrated into the checkpoint files (the same applies to FM\_in\_NatOrb). It is therefore necessary to copy NOs\_MO to and from the work directory, alongside the checkpoint file, if one wishes to use it.
 
     
 *Default:*
