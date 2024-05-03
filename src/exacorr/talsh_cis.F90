@@ -200,9 +200,11 @@ module talsh_cis
          ierr=talsh_tensor_destruct(id_mat_vir)
          ierr=talsh_tensor_destruct(result_tensor)
 
-         if(exa_input%do_cis_d .eqv. .true.) then
-            call talsh_cis_d_driver(exa_input,int_t)
-         end if 
+        if(exa_input%do_cis_d .eqv. .true.) then
+            call print_date('Starting CIS(D) computation')
+            call talsh_cis_d_driver(exa_input,int_t,eVectorsR,eValues,nocc,nvir,eps_occ,eps_vir)
+        end if 
+
 
     end subroutine talsh_cis_driver 
 
@@ -429,7 +431,6 @@ end subroutine
              call print_date('finished ovov integrals')
             
 
-             
              if(present(perturbation)) then
                 if(perturbation .eqv. .true.) then
                     !get oovo tensor
@@ -468,7 +469,7 @@ end subroutine
                     mo_list(2*nvir+nocc+1:3*nvir+nocc) = mo_vir(1:nvir)
                     call get_integral_tensor (aoint_tensor,int_t%ovvv,34,nmo,mo_list)
                     deallocate (mo_list)
-                    call print_date('finished oovv integrals')
+                    call print_date('finished ovvv integrals')
 
 
 
@@ -590,19 +591,24 @@ end subroutine
     end subroutine print_energy_CIS
 
 !---------------------------------------------------------------------------------------------------------
-    subroutine talsh_cis_d_driver(exa_input,int_t)
+    subroutine talsh_cis_d_driver(exa_input,int_t,eVectorsR,eValues,nocc,nvir,eps_occ,eps_vir)
 
         type(exacc_input), intent(in) :: exa_input
         !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
         type(talsh_intg_tens_t), intent(inout) :: int_t
+        complex(kind=8), pointer, intent(inout) :: eVectorsR(:,:)
+        complex(kind=8), pointer, intent(inout) :: eValues(:)
+        integer,intent(inout)                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
+        !        orbital energies
+        real(8), allocatable,intent(inout)     :: eps_occ(:),eps_vir(:) 
 
-        integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
+        
         integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
         integer(C_INT)       :: ierr
         complex(8), pointer :: result_tens(:,:,:,:),sigma1(:,:),check_tens(:,:)
         integer(INTD)       :: fo_dims(1:2),fv_dims(1:2)
-        complex(kind=8), pointer :: eValues(:) 
-        complex(kind=8), pointer :: eVectorsR(:,:)
+        
+       
         type(C_PTR):: body_p
         integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
         integer(C_INT):: host_arg_max
@@ -621,8 +627,7 @@ end subroutine
 !        scalars (need to be defined as tensor types)
         type(talsh_tens_t) :: result_tensor,sigma_tensor
         integer(C_INT)     :: one_dims(1)
-!        orbital energies
-        real(8), allocatable :: eps_occ(:),eps_vir(:)
+
 !        CIS control and result variables
         real(8) :: tem
         integer :: ncycles
@@ -650,7 +655,6 @@ end subroutine
        type(talsh_tens_t)              :: eps_diag_tensor
        complex(8), dimension(:),  allocatable :: e_vector
 
-       
         pmin = exa_input%cis_d_pmin
         pmax = exa_input%cis_d_pmax
 
@@ -658,6 +662,10 @@ end subroutine
         oovv_dims(1:2) = nocc
         oovv_dims(3:4) = nvir
         ov_dims(:)     = [nocc, nvir]
+        vvoo_dims(1:2) = nvir 
+        vvoo_dims(3:4) = nocc
+        vv_dims(:)     = [nvir, nvir]
+        oo_dims(:)     = [nocc, nocc]
 
         allocate(e_vector(pmax-pmin+1))
 !           Initializing tensors before the loop
@@ -676,6 +684,7 @@ end subroutine
         ierr = talsh_tensor_init(temp_tensor1, ZERO)
         
         e_vector(:) = ZERO
+        
 
 !            MP2 amplitudes
         ierr = talsh_tensor_contract("T(a,b,i,j)+=I+(i,j,a,b)*C()", t2_tensor, int_t%oovv, one_tensor, SCALE=MINUS_ONE)
@@ -684,6 +693,7 @@ end subroutine
 !           Initializing temporary tensor that will be use in tensor contraction
         
         ierr = talsh_tensor_contract("TMP(j,i)+=I(j,k,b,c)*T2(b,c,i,k)", temp_tensor1, int_t%oovv, t2_tensor)
+        
         
 !           Loop on needed excitations level
         do p = pmin, pmax

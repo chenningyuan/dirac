@@ -1067,6 +1067,12 @@
          exa_input%do_cis = .true.
       end if
 
+      if (kw_matches(word, '.CIS(D)')) then
+         exa_input%do_cis = .true.
+         exa_input%do_cis_d = .true.
+          call kw_read(word, exa_input%cis_d_pmax)
+      end if
+
       if (kw_matches(word, '.MP2NO         ')) then
          exa_input%mp2no = 1
          call kw_read(word, exa_input%t_mp2no)
