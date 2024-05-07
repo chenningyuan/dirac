@@ -330,77 +330,6 @@
          visual_cfg_scale = 1.0D0/visual_cfg_scale
       end if
 
-      if (kw_matches(word, '.ELF   ')) then
-         call read_input_visual_helper(iq_elf)
-      end if
-
-      if (kw_matches(word, '.J     ')) then
-         call read_input_visual_helper(iq_j)
-      end if
-
-      if (kw_matches(word, '.JDIA  ')) then
-         call read_input_visual_helper(iq_jdia)
-      end if
-
-
-      if (kw_matches(word, '.KIN   ')) then
-         call read_input_visual_helper(iq_kin)
-      end if
-
-      if (kw_matches(word, '.KINLS ')) then
-         call read_input_visual_helper(iq_kin_ls)
-      end if
-
-      if (kw_matches(word, '.KINSL ')) then
-         call read_input_visual_helper(iq_kin_sl)
-      end if
-
-      if (kw_matches(word, '.KINTAU')) then
-         call read_input_visual_helper(iq_kin_tau)
-      end if
-
-      if (kw_matches(word, '.KINLAP')) then
-         call read_input_visual_helper(iq_kin_lap)
-      end if
-
-      if (kw_matches(word, '.KINNR ')) then
-         call read_input_visual_helper(iq_kin_nr)
-      end if
-
-      if (kw_matches(word, '.DIVJ  ')) then
-         call read_input_visual_helper(iq_divj)
-      end if
-
-      if (kw_matches(word, '.ROTJ  ')) then
-         call read_input_visual_helper(iq_rotj)
-      end if
-
-      if (kw_matches(word, '.GRADJ ')) then
-         visual_cfg_tensor = .true.
-         call read_input_visual_helper(iq_gradj)
-      end if
-
-
-      if (kw_matches(word, '.EDIPX ')) then
-         call read_input_visual_helper(iq_edipx)
-      end if
-      if (kw_matches(word, '.EDIPY ')) then
-         call read_input_visual_helper(iq_edipy)
-      end if
-      if (kw_matches(word, '.EDIPZ ')) then
-         call read_input_visual_helper(iq_edipz)
-      end if
-
-      if (kw_matches(word, '.BDIPX ')) then
-         call read_input_visual_helper(iq_bdipx)
-      end if
-      if (kw_matches(word, '.BDIPY ')) then
-         call read_input_visual_helper(iq_bdipy)
-      end if
-      if (kw_matches(word, '.BDIPZ ')) then
-         call read_input_visual_helper(iq_bdipz)
-      end if
-
       if (kw_matches(word, '.BEDCOS')) then
          call read_input_visual_helper(iq_tcos)
       end if
@@ -410,55 +339,6 @@
       if (kw_matches(word, '.BEDFIX')) then
          call kw_read(word, v(1), v(2), v(3), visual_cfg_freq)
          CALL ANGLES(v(1), v(2), v(3), visual_cfg_wave_vector, visual_cfg_pol_vector)
-      end if
-
-      if (kw_matches(word, '.NDIPX ')) then
-         call read_input_visual_helper2(iq_ndipx)
-      end if
-      if (kw_matches(word, '.NDIPY ')) then
-         call read_input_visual_helper2(iq_ndipy)
-      end if
-      if (kw_matches(word, '.NDIPZ ')) then
-         call read_input_visual_helper2(iq_ndipz)
-      end if
-
-      if (kw_matches(word, '.BDIPXD')) then
-         call read_input_visual_helper(iq_bdipxdia)
-      end if
-      if (kw_matches(word, '.BDIPYD')) then
-         call read_input_visual_helper(iq_bdipydia)
-      end if
-      if (kw_matches(word, '.BDIPZD')) then
-         call read_input_visual_helper(iq_bdipzdia)
-      end if
-
-      if (kw_matches(word, '.NDIPXD')) then
-         call read_input_visual_helper2(iq_ndipxdia)
-      end if
-      if (kw_matches(word, '.NDIPYD')) then
-         call read_input_visual_helper2(iq_ndipydia)
-      end if
-      if (kw_matches(word, '.NDIPZD')) then
-         call read_input_visual_helper2(iq_ndipzdia)
-      end if
-
-      if (kw_matches(word, '.ESP   ')) then
-         call read_input_visual_helper(iq_esp)
-      end if
-      if (kw_matches(word, '.ESPE  ')) then
-         call read_input_visual_helper(iq_espe)
-      end if
-      if (kw_matches(word, '.ESPN  ')) then
-         call read_input_visual_helper(iq_espn)
-      end if
-      if (kw_matches(word, '.ESPRHO')) then
-         call read_input_visual_helper(iq_esprho)
-      end if
-      if (kw_matches(word, '.ESPERH')) then
-         call read_input_visual_helper(iq_esperho)
-      end if
-      if (kw_matches(word, '.ESPNRH')) then
-         call read_input_visual_helper(iq_espnrho)
       end if
 
       if (kw_matches(word, '.NICS  ')) then
@@ -537,27 +417,6 @@
             print *, '       occupation    = ', f
             deallocate(word_array)
          end do
-      end if
-
-
-      if (kw_matches(word, '.NONE  ')) then
-         visual_cfg_london = .true.
-         visual_cfg_london_none      = .true.
-      end if
-
-      if (kw_matches(word, '.NODIRE')) then
-         visual_cfg_london = .true.
-         visual_cfg_london_skip_direct = .true.
-      end if
-
-      if (kw_matches(word, '.NOREOR')) then
-         visual_cfg_london = .true.
-         visual_cfg_london_skip_ro = .true.
-      end if
-
-      if (kw_matches(word, '.NOKAPP')) then
-         visual_cfg_london = .true.
-         visual_cfg_london_skip_kappa = .true.
       end if
 
       if (kw_matches(word, '.ADDGRE')) then

@@ -46,19 +46,27 @@ module electrostatic_potential
 
    esp = 0.0d0
    if (nuc_part) then
+      if (present(my_rank)) then
       call get_nuclear_mep(nr_points, r, esp, 0,my_rank=my_rank)
+      else
+      call get_nuclear_mep(nr_points, r, esp, 0)
+      end if
    end if
    if (el_part) then
       call legacy_lwork_get(lwork)
       call alloc(work, lwork, id='temporary work array in electrostatic potential')
 ! Never neglect SS-block for visualization purposes
-      write(*, '(a,4i12)') 'BEFORE CALLING ELECTRONIC_MEP ', my_rank, nr_points, mat_dim, lwork
+      !write(*, '(a,4i12)') 'BEFORE CALLING ELECTRONIC_MEP ', my_rank, nr_points, mat_dim, lwork
       do i = 1, nr_points
-        write(*, '(a,2i6,4E16.8)') 'points BEFORE CALLING ELECTRONIC_MEP ', my_rank, i, r(1:3,i), esp(i)
+        !write(*, '(a,2i6,4E16.8)') 'points BEFORE CALLING ELECTRONIC_MEP ', my_rank, i, r(1:3,i), esp(i)
       end do
+      if (present(my_rank)) then
       call get_electronic_mep(nr_points, dmat, mat_dim, r, esp, work, lwork, 0, .false., .false.,my_rank=my_rank)
+      else
+      call get_electronic_mep(nr_points, dmat, mat_dim, r, esp, work, lwork, 0, .false., .false.)
+      end if
       do i = 1, nr_points
-        write(*, '(a,2i6,4E16.8)') 'points AFTER CALLING ELECTRONIC_MEP ', my_rank, i, r(1:3,i), esp(i)
+        !write(*, '(a,2i6,4E16.8)') 'points AFTER CALLING ELECTRONIC_MEP ', my_rank, i, r(1:3,i), esp(i)
       end do
       call dealloc(work)
    end if
@@ -117,7 +125,7 @@ module electrostatic_potential
       if (iprint > 5) then
           do ipoint = 1, nr_points
             if (present(my_rank)) then
-              write(*,'(a,2i6,3E16.8,ES30.20E3)') "Nuclear ESP @point", my_rank, ipoint, points(1:3,ipoint),nuc_mep(ipoint)
+              !write(*,'(a,2i6,3E16.8,ES30.20E3)') "Nuclear ESP @point", my_rank, ipoint, points(1:3,ipoint),nuc_mep(ipoint)
             else
               print *, "Nuclear ESP @point", ipoint, nuc_mep(ipoint)
             end if
@@ -442,8 +450,8 @@ module electrostatic_potential
                      debug_prod = debug_dij * debug_vij 
                      debug_sum  = debug_sum + debug_prod 
 !                     write (*,'(5x,2i4,e20.8,2i4,e20.8,2e20.8)') idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
-                     write (*,'(a,i4,5x,2i4,e20.8,2i4,e20.8,2e20.8)') 'IN ELECTRONIC_MEP ',&
-                      my_rank,idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
+                     !write (*,'(a,i4,5x,2i4,e20.8,2i4,e20.8,2e20.8)') 'IN ELECTRONIC_MEP ',&
+                     ! my_rank,idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
 !!!!
                    end do
                    end do
@@ -470,14 +478,14 @@ module electrostatic_potential
        !if (iprint > 5) then
           do ipoint = 1, nr_points
                if (present(my_rank)) then
-                 write(*,'(a,2i6,3E16.8,ES30.20E3)') "Electronic ESP @point", my_rank, ipoint, points(1:3,ipoint),vector(ipoint)
+                 !write(*,'(a,2i6,3E16.8,ES30.20E3)') "Electronic ESP @point", my_rank, ipoint, points(1:3,ipoint),vector(ipoint)
                end if
             !print *, "Electronic ESP @point", ipoint, vector(ipoint)
           end do
           if (do_matrix) then
-            write(*, *) 'matrix from get_electronic_mep'
-           CALL PRQMAT(matrix(1,1,1),mat_dim, mat_dim, mat_dim, &
-                        mat_dim, 1,(/1, 2, 3, 4/), 6)
+            !write(*, *) 'matrix from get_electronic_mep'
+           !CALL PRQMAT(matrix(1,1,1),mat_dim, mat_dim, mat_dim, &
+           !             mat_dim, 1,(/1, 2, 3, 4/), 6)
           end if
        !end if
 

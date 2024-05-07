@@ -91,47 +91,18 @@ module visual_cfg
    logical,      public                     :: visual_cfg_inp_data_files_use_legacy= .false.
    integer,      public                     :: visual_cfg_nr_plot_files = 0
 
-   integer, public:: iq_elf      =  3
-   integer, public:: iq_j        =  4
-   integer, public:: iq_rotj     =  5 
-   integer, public:: iq_divj     =  6
-   integer, public:: iq_s        =  7
-   integer, public:: iq_rots     =  8
-   integer, public:: iq_divs     =  9
    integer, public:: iq_jdia     = 10
-   integer, public:: iq_edipx    = 11
-   integer, public:: iq_edipy    = 12
-   integer, public:: iq_edipz    = 13
-   integer, public:: iq_bdipx    = 14
-   integer, public:: iq_bdipy    = 15
-   integer, public:: iq_bdipz    = 16
-   integer, public:: iq_ndipx    = 17
-   integer, public:: iq_ndipy    = 18
-   integer, public:: iq_ndipz    = 19
    integer, public:: iq_bdipxdia = 20
    integer, public:: iq_bdipydia = 21
    integer, public:: iq_bdipzdia = 22
    integer, public:: iq_ndipxdia = 23
    integer, public:: iq_ndipydia = 24
    integer, public:: iq_ndipzdia = 25
-   integer, public:: iq_esp      = 26
-   integer, public:: iq_espe     = 27
-   integer, public:: iq_espn     = 28
-   integer, public:: iq_esprho   = 29
-   integer, public:: iq_esperho  = 30
-   integer, public:: iq_espnrho  = 31
-   integer, public:: iq_kin      = 32
-   integer, public:: iq_kin_ls   = 33
-   integer, public:: iq_kin_sl   = 34
-   integer, public:: iq_kin_tau  = 35
-   integer, public:: iq_kin_lap  = 36
-   integer, public:: iq_kin_nr   = 37
    integer, public:: iq_jx       = 38
    integer, public:: iq_jy       = 39
    integer, public:: iq_jz       = 40
    integer, public:: iq_tcos     = 41
    integer, public:: iq_tsin     = 42   
-   integer, public:: iq_gradj    = 48
    
 
    logical, public:: visual_cfg_print_data_to_dirac_output = .false.

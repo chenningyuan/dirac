@@ -465,27 +465,34 @@ contains
     real(8), intent(inout):: buffer(*)
     integer:: ipoint
 
-    if (grid_function%name .eq. 'espe') then
+    if ((grid_function%name .eq. 'esp') .or. &
+        (grid_function%name .eq. 'espe') .or. &
+        (grid_function%name .eq. 'espn')) then
 
-      !do ipoint = 1, nr_points
-      !  call get_ao(1,                     &
-      !              grid_points(1, ipoint),&
-      !              grid_points(2, ipoint),&
-      !              grid_points(3, ipoint),&
-      !              ao,                    &
-      !              buffer)
-      !end do
+!     esp* subroutines work on batches of points
+!     so we can speed things up a bit
 
-      !call get_esp_functions_in_points(get_my_rank(),&
-      !                                 dmat_0,&
-      !                                 ao,buffer,&
-      !                                 ndim,nr_points,&
-      !                                 grid_points,&
-      !                                 grid_function,grid_function_values)
+      do ipoint = 1, nr_points
+        call get_ao(1,                     &
+                    grid_points(1, ipoint),&
+                    grid_points(2, ipoint),&
+                    grid_points(3, ipoint),&
+                    ao,                    &
+                    buffer)
+      end do
+
+      call get_esp_functions_in_points(get_my_rank(),&
+                                       dmat_0,&
+                                       ao,buffer,&
+                                       ndim,nr_points,&
+                                       grid_points,&
+                                       grid_function,grid_function_values)
 
     else
       do ipoint = 1, nr_points
       
+!       otherwise, other densities have to be calculated in one grid point at a time
+
         call get_ao(1,                     &
                     (/grid_points(1, ipoint)/),&
                     (/grid_points(2, ipoint)/),&
