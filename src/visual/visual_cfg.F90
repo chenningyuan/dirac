@@ -623,6 +623,7 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine modify_grid_function_due_to_method(grid_function)
+#include "dcbham.h"
     class(grid_function_t), intent(inout):: grid_function
 
 !   make this a default:
@@ -641,20 +642,14 @@ contains
 !fixme:
     !grid_function%wf_order = 0
 
-
-    !if (levyle) then
-    !  if ((grid_function%name == 'j') .or. &
-    !      (grid_function%name == 'ndipx') .or. &
-    !      (grid_function%name == 'ndipy') .or. &
-    !      (grid_function%name == 'ndipz') .or. &
-    !      (grid_function%name == 'bdipx') .or. &
-    !      (grid_function%name == 'bdipy') .or. &
-    !      (grid_function%name == 'bdipz')) then
-    !    if (grid_function%max_ao_g_order < 1) then
-    !      grid_function%max_ao_g_order = 1
-    !    end if
-    !  end if
-    !end if
+    if (levyle) then
+      if ((grid_function%name == 'j') .or. &
+          (grid_function%name == 'ndip')) then
+        if (grid_function%max_ao_g_order < 1) then
+          grid_function%max_ao_g_order = 1
+        end if
+      end if
+    end if
 
   end subroutine
 

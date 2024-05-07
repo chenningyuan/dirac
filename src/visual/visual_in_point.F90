@@ -394,27 +394,45 @@ contains
 
       case ('j')
 !       current density: -ec \psi^\dag \alpha \psi
-        t1 = 0.0d0
-        call get_j(t1,        &
-                   cval,      &
-                   dmat%irep, &
-                   dmat%mat_dim,  &
-                   dmat%elements, &
-                   buffer,    &
-                   ao)
-        grid_function_values(1:1,ipoint:ipoint) = t1(1)
-        grid_function_values(2:2,ipoint:ipoint) = t1(2)
-        grid_function_values(3:3,ipoint:ipoint) = t1(3)
+
+        if (levyle) then
+          t0 = 0.0d0
+          t1 = 0.0d0
+          call get_gn(t0,        &
+                      t1,        &
+                      dmat%irep, &
+                      dmat%mat_dim,  &
+                      dmat%elements, &
+                      buffer,    &
+                      ao)               
+          grid_function_values(1:1,ipoint:ipoint) = 0.5d0*t1(1)
+          grid_function_values(2:2,ipoint:ipoint) = 0.5d0*t1(2)
+          grid_function_values(3:3,ipoint:ipoint) = 0.5d0*t1(3)
+
+        else
+          t1 = 0.0d0
+          call get_j(t1,        &
+                     cval,      &
+                     dmat%irep, &
+                     dmat%mat_dim,  &
+                     dmat%elements, &
+                     buffer,    &
+                     ao)
+          grid_function_values(1:1,ipoint:ipoint) = t1(1)
+          grid_function_values(2:2,ipoint:ipoint) = t1(2)
+          grid_function_values(3:3,ipoint:ipoint) = t1(3)
+
+        end if
 
       case ('divj', &
             'gradj',&
             'rotj')
 !       divergence or curl or gradient of current density
 
-        !if (levyle) then
-        !   print *, 'error: Levy-Leblond not implemented'
-        !   stop
-        !end if
+        if (levyle) then
+           print *, 'error: Levy-Leblond not implemented'
+           stop
+        end if
 
         t1 = 0.0d0
         t2_33 = 0.0d0
@@ -506,15 +524,31 @@ contains
       case ('ndip')
 !       responding operator is nuclear magnetic dipole
 
-        t1 = 0.0d0
+        if (levyle) then
+          t0 = 0.0d0
+          t1 = 0.0d0
+          call get_gn(t0,        &
+                      t1,        &
+                      dmat%irep, &
+                      dmat%mat_dim,  &
+                      dmat%elements, &
+                      buffer,    &
+                      ao)               
+          t1(1) = -0.5d0*t1(1)
+          t1(2) = -0.5d0*t1(2)
+          t1(3) = -0.5d0*t1(3)
 
-        call get_j(t1,        &
-                   cval,      &
-                   dmat%irep, &
-                   dmat%mat_dim,  &
-                   dmat%elements, &
-                   buffer,    &
-                   ao)
+        else
+
+          t1 = 0.0d0
+          call get_j(t1,        &
+                     cval,      &
+                     dmat%irep, &
+                     dmat%mat_dim,  &
+                     dmat%elements, &
+                     buffer,    &
+                     ao)
+        end if
 
 !       we either calculate the NMR shielding of a given nucleus
 !       or a "NICS" value in a given point
@@ -773,17 +807,36 @@ contains
 
       case ('j')
 !       current density: -ec \psi^\dag \alpha \psi
-        t1 = 0.0d0
-        call get_j(t1,       &
-                   cval,     &
-                   dmat_other%irep, &
-                   dmat_other%mat_dim,  &
-                   dmat_other%elements, &
-                   buffer,   &
-                   ao)
-        grid_function_values(1:1,ipoint:ipoint) = t1(1)
-        grid_function_values(2:2,ipoint:ipoint) = t1(2)
-        grid_function_values(3:3,ipoint:ipoint) = t1(3)
+
+        if (levyle) then
+          t0 = 0.0d0
+          t1 = 0.0d0
+          call get_gn(t0,        &
+                      t1,        &
+                      dmat_other%irep, &
+                      dmat_other%mat_dim,  &
+                      dmat_other%elements, &
+                      buffer,    &
+                      ao)               
+          grid_function_values(1:1,ipoint:ipoint) = 0.5d0*t1(1)
+          grid_function_values(2:2,ipoint:ipoint) = 0.5d0*t1(2)
+          grid_function_values(3:3,ipoint:ipoint) = 0.5d0*t1(3)
+
+        else
+
+          t1 = 0.0d0
+          call get_j(t1,       &
+                     cval,     &
+                     dmat_other%irep, &
+                     dmat_other%mat_dim,  &
+                     dmat_other%elements, &
+                     buffer,   &
+                     ao)
+          grid_function_values(1:1,ipoint:ipoint) = t1(1)
+          grid_function_values(2:2,ipoint:ipoint) = t1(2)
+          grid_function_values(3:3,ipoint:ipoint) = t1(3)
+
+        end if
 
 !       gosia - fixme
 !       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
@@ -791,6 +844,18 @@ contains
         if (grid_function%lao > 0) then
           if (grid_function%lao_skip(2) == 0) then
 !           do not skip direct contribution ('nodirect')
+
+            if (levyle) then
+
+              t1 = 0.0d0
+              xyzcomp='Z'
+              call get_jblao_ll(xyzcomp, &
+                                dmat_0%elements, &
+                                dmat_0%mat_dim,  &
+                                ao, &
+                                (/px, py, pz/),  &
+                                t1)
+            else
           
               t1 = 0.0d0
               xyzcomp='Z'
@@ -800,14 +865,15 @@ contains
                              ao, &
                              (/px, py, pz/),  &
                              t1)
+            end if
                     
-          grid_function_values(1:1,ipoint:ipoint) = &
-           grid_function_values(1:1,ipoint:ipoint) + t1(1)
-          grid_function_values(2:2,ipoint:ipoint) = &
-           grid_function_values(2:2,ipoint:ipoint) + t1(2)
-          grid_function_values(3:3,ipoint:ipoint) = &
-           grid_function_values(3:3,ipoint:ipoint) + t1(3)
-          
+            grid_function_values(1:1,ipoint:ipoint) = &
+              grid_function_values(1:1,ipoint:ipoint) + t1(1)
+            grid_function_values(2:2,ipoint:ipoint) = &
+              grid_function_values(2:2,ipoint:ipoint) + t1(2)
+            grid_function_values(3:3,ipoint:ipoint) = &
+              grid_function_values(3:3,ipoint:ipoint) + t1(3)
+
           end if
         end if
 
@@ -911,16 +977,32 @@ contains
       case ('ndip')
 !       responding operator is nuclear magnetic dipole
 
-        t1 = 0.0d0
-        t2_33 = 0.0d0
+        if (levyle) then
+          t0 = 0.0d0
+          t1 = 0.0d0
+          call get_gn(t0,        &
+                      t1,        &
+                      dmat_other%irep, &
+                      dmat_other%mat_dim,  &
+                      dmat_other%elements, &
+                      buffer,    &
+                      ao)               
+          t1(1) = -0.5d0*t1(1)
+          t1(2) = -0.5d0*t1(2)
+          t1(3) = -0.5d0*t1(3)
 
-        call get_j(t1,        &
-                   cval,      &
-                   dmat_other%irep, &
-                   dmat_other%mat_dim,  &
-                   dmat_other%elements, &
-                   buffer,    &
-                   ao)
+        else
+
+          t1 = 0.0d0
+          
+          call get_j(t1,        &
+                     cval,      &
+                     dmat_other%irep, &
+                     dmat_other%mat_dim,  &
+                     dmat_other%elements, &
+                     buffer,    &
+                     ao)
+        end if
 !
 !       gosia - fixme
 !       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
@@ -929,16 +1011,30 @@ contains
           if (grid_function%lao_skip(2) == 0) then
 !           do not skip direct contribution ('nodirect')
 
-            temp = 0.0d0
-            xyzcomp='Z'
-            call get_jblao(xyzcomp,         &
-                           cval,            &
-                           dmat_0%elements, &
-                           dmat_0%mat_dim,  &
-                           ao,              &
-                           (/px, py, pz/),  &
-                           temp)
-            t1(1:3) = t1(1:3) + temp(1:3)
+            if (levyle) then
+
+              temp = 0.0d0
+              xyzcomp='Z'
+              call get_jblao_ll(xyzcomp, &
+                                dmat_0%elements, &
+                                dmat_0%mat_dim,  &
+                                ao, &
+                                (/px, py, pz/),  &
+                                temp)
+              t1(1:3) = temp(1:3) - t1(1:3)
+            else
+          
+              temp = 0.0d0
+              xyzcomp='Z'
+              call get_jblao(xyzcomp,         &
+                             cval,            &
+                             dmat_0%elements, &
+                             dmat_0%mat_dim,  &
+                             ao,              &
+                             (/px, py, pz/),  &
+                             temp)
+              t1(1:3) = temp(1:3) + t1(1:3)
+            end if
           end if
         end if
 

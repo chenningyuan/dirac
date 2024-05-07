@@ -44,6 +44,7 @@ contains
                              dmat_ao, dmat_mo, &
                              wf_order, &
                              rspvec_file, rspvec_id)
+#include "dcbham.h"
     character(*), intent(in) :: mode
     type(cmo_t), intent(in) :: cmo
     type(dmat_t), optional, intent(out) :: dmat_ao
@@ -218,7 +219,9 @@ contains
               tmpmat_mo%mat_nz = nz
               call tmpmat_mo%alloc()
               call conmat_info%vectors(ivec)%get_copy_of_values(tmpmat_mo%elements,nmo*nmo*nz)
-              call tmpmat_mo%scale_elements(0.5d0) ! if (.not. levyle) fixme
+              if (.not. levyle) then
+                call tmpmat_mo%scale_elements(0.5d0) ! if (.not. levyle) fixme
+              end if
               
               call tmpmat_mo%get_dmat_q_mo_sector('pi ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
               
