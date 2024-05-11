@@ -722,7 +722,7 @@ end subroutine
             ierr = talsh_tensor_contract("TMP(k,c)+=I(j,k,b,c)*C(j,b)", temp_tensor3, int_t%oovv, coefs_tensor)
             ierr = talsh_tensor_contract("NU(i,a)+=TMP(k,c)*T2+(c,a,i,k)", nu_tensor, temp_tensor3, t2_tensor)
             
-            ierr = talsh_tensor_contract("E()+=C(i,a)*NU(i,a)", e_tensor, coefs_tensor, nu_tensor)
+            ierr = talsh_tensor_contract("E()+=C+(i,a)*NU(i,a)", e_tensor, coefs_tensor, nu_tensor)
 
             ierr = talsh_tensor_contract("U(i,j,a,b)+=I(i,c,a,b)*B(j,c)", u_tensor, int_t%ovvv, coefs_tensor)
             ierr = talsh_tensor_contract("U(i,j,a,b)+=I(j,c,a,b)*B(i,c)", u_tensor, int_t%ovvv, coefs_tensor, scale=MINUS_ONE)
@@ -744,7 +744,7 @@ end subroutine
                 end do
             end do
 
-            ierr = talsh_tensor_contract("E()+=B(i,j,a,b)*U(i,j,a,b)", e_tensor, b_tensor, u_tensor, scale=ONE_QUARTER_C)
+            ierr = talsh_tensor_contract("E()+=B+(i,j,a,b)*U(i,j,a,b)", e_tensor, b_tensor, u_tensor, scale=ONE_QUARTER_C)
             ierr = talsh_tensor_get_body_access(e_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,s_tens,one_dims) ! to use as a regular Fortran array
             e_vector(p-pmin+1) = s_tens(1) + eValues(p)

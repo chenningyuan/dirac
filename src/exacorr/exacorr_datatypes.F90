@@ -108,7 +108,7 @@
             integer                 :: N_omega_qr1 = 1               ! number of frequency1 in ccqr
             integer                 :: N_omega_qr2 = 1               ! number of frequency2 in ccqr
             integer                 :: N_Time_anti = 0          ! Number of time-antisymmetric operators
-            integer                 :: cis_d_pmin = 0  
+            integer                 :: cis_d_pmin = 1  
             integer                 :: cis_d_pmax = 5
            
             
