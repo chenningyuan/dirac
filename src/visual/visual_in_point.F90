@@ -14,6 +14,7 @@ module visual_in_point
 
   use visual_datatypes
   use dirac_dmat_factory
+  use visual_dirac
 
   implicit none
 
@@ -69,7 +70,6 @@ contains
     real(8):: eigenvalues(3),eigenvectors(3, 3)
     real(8):: temp(3), temp2(9), temp_33(3,3)
     integer:: ioff
-    character(1):: xyzcomp
     real(8):: rx, ry, rz
 
 
@@ -848,7 +848,7 @@ contains
             if (levyle) then
 
               t1 = 0.0d0
-              xyzcomp='Z'
+              call get_xyzcomp_from_rspvec(grid_function, xyzcomp)
               call get_jblao_ll(xyzcomp, &
                                 dmat_0%elements, &
                                 dmat_0%mat_dim,  &
@@ -858,7 +858,7 @@ contains
             else
           
               t1 = 0.0d0
-              xyzcomp='Z'
+              call get_xyzcomp_from_rspvec(grid_function, xyzcomp)
               call get_jblao(xyzcomp, cval, &
                              dmat_0%elements, &
                              dmat_0%mat_dim,  &
@@ -911,7 +911,7 @@ contains
           !    stop
           !else
             temp_33 = 0.0d0
-            xyzcomp='Z'
+            call get_xyzcomp_from_rspvec(grid_function, xyzcomp)
             call get_gjblao(xyzcomp,         &
                             cval,            &
                             dmat_0%elements, &
@@ -1014,7 +1014,7 @@ contains
             if (levyle) then
 
               temp = 0.0d0
-              xyzcomp='Z'
+              call get_xyzcomp_from_rspvec(grid_function, xyzcomp)
               call get_jblao_ll(xyzcomp, &
                                 dmat_0%elements, &
                                 dmat_0%mat_dim,  &
@@ -1025,7 +1025,7 @@ contains
             else
           
               temp = 0.0d0
-              xyzcomp='Z'
+              call get_xyzcomp_from_rspvec(grid_function, xyzcomp)
               call get_jblao(xyzcomp,         &
                              cval,            &
                              dmat_0%elements, &

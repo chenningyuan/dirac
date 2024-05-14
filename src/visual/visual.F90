@@ -290,10 +290,8 @@ contains
             if (mpi_is_master()) then
               write(*,*) 'init rsp dmat: '
               call dirac_dmat_init('xlr', cmo, &
-                                   wf_order=rs_input%grid_functions(igf)%wf_order,&
-                                   dmat_ao=dmat, &
-                                   rspvec_file=rs_input%grid_functions(igf)%rspvec_file,&
-                                   rspvec_id=rs_input%grid_functions(igf)%rspvec_id)
+                                   grid_function=rs_input%grid_functions(igf), &
+                                   dmat_ao=dmat)
 
 
               if (rs_input%grid_functions(igf)%lao > 0) then
@@ -306,10 +304,8 @@ contains
                 if (rs_input%grid_functions(igf)%lao_skip(3) == 0) then
 !                 do not skip reorthonormalization contribution ('noreorth')
                   call dirac_dmat_init('lao-connection-1', cmo, &
-                                       wf_order=rs_input%grid_functions(igf)%wf_order,&
-                                       rspvec_file=rs_input%grid_functions(igf)%rspvec_file,&
-                                       dmat_ao=dmat_lao, &
-                                       rspvec_id=rs_input%grid_functions(igf)%rspvec_id)
+                                       grid_function=rs_input%grid_functions(igf), &
+                                       dmat_ao=dmat_lao)
                   dmat%elements = dmat%elements + dmat_lao%elements
                 end if
 

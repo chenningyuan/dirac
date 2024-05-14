@@ -26,6 +26,8 @@ module visual_dirac
   public visual_update_data
 
   public dirac_dmat_init
+  public get_xyzcomp_from_rspvec
+
 
 #ifdef VAR_MPI
   public synchronize_grid_data
@@ -37,28 +39,30 @@ module visual_dirac
 
   private
 
+  interface get_xyzcomp_from_rspvec
+    module procedure get_xyzicomp_from_rspvec
+    module procedure get_xyzscomp_from_rspvec
+  end interface
+
 contains
 
 ! -----------------------------------------------------------------------------
   subroutine dirac_dmat_init(mode, cmo, &
                              dmat_ao, dmat_mo, &
-                             wf_order, &
-                             rspvec_file, rspvec_id)
+                             grid_function)
 #include "dcbham.h"
     character(*), intent(in) :: mode
     type(cmo_t), intent(in) :: cmo
     type(dmat_t), optional, intent(out) :: dmat_ao
     type(dmat_t), optional, intent(out) :: dmat_mo
-    integer, optional, intent(in) :: wf_order
-    character(*), optional, intent(in) :: rspvec_file
-    integer, optional, intent(in) :: rspvec_id
+    type(grid_function_t), optional, intent(in):: grid_function
 
     type(cmo_t) :: cmo_i
     type(response_info_t) :: rsp_info
     type(conmat_info_t) :: conmat_info
     type(dmat_t) :: tmpmat_ao, tmpmat_mo
     integer :: nao, nmo, nz
-    integer :: i, ivec, ivec_con, rspvec_ndim, rspvec_nz, n1
+    integer :: i, ivec, ivec_rsp, ivec_con, rspvec_ndim, rspvec_nz, n1
 
 
     real(8), allocatable :: occupation(:)
@@ -67,7 +71,9 @@ contains
     integer :: iq, im, iz, ipqtoq(4), ihqmat(4)
     real(8) :: factor(4)
 !
-!   this is based on how density matrices were set in old VISUAL code;
+!   this subroutine constructs density matrices for one specific grid function
+!
+!   it is based on how density matrices were set in old VISUAL code;
 !   I group the old code here, so that it is in one place:
 !   * it should now be easier to modify it, e.g., to read density matrices from outside,
 !   * but still, the code is too coupled to other structures (cmo, response, etc.)
@@ -112,29 +118,21 @@ contains
 !       where \kappa are elements of the LR solution vector
 
 !       read response data from 'RESPONSE.h5' file
-        if (present(rspvec_file)) then
-          f_name = trim(rspvec_file)
-        else
-          stop
-        end if
+        if (.not.present(grid_function)) stop
+        f_name = grid_function%rspvec_file
         call rsp_info%read_from_checkpoint(trim(f_name))
-     
-        if (present(rspvec_id)) then
-          ivec = rspvec_id
-        else
-          stop
-        end if
+        ivec_rsp = grid_function%rspvec_id
 
 !       scatter response vector to matrix:
         tmpmat_mo%mat_dim = nmo
         tmpmat_mo%mat_nz = nz
         call tmpmat_mo%alloc()
-        call rsp_info%vectors(ivec)%scatter_to_matrix_q(tmpmat_mo%elements, nmo, nz)
+        call rsp_info%vectors(ivec_rsp)%scatter_to_matrix_q(tmpmat_mo%elements, nmo, nz)
 
 !       dmat inherits symmetry of the response vector:
-        !call tmpmat_mo%assign_ih(rsp_info%vectors(ivec)%get_ih_sym())
-        !call tmpmat_mo%assign_tr(rsp_info%vectors(ivec)%get_tr_sym())
-        !call tmpmat_mo%assign_irep(rsp_info%vectors(ivec)%get_irep())
+        !call tmpmat_mo%assign_ih(rsp_info%vectors(ivec_rsp)%get_ih_sym())
+        !call tmpmat_mo%assign_tr(rsp_info%vectors(ivec_rsp)%get_tr_sym())
+        !call tmpmat_mo%assign_irep(rsp_info%vectors(ivec_rsp)%get_irep())
  
         if (present(dmat_mo)) dmat_mo = tmpmat_mo
 
@@ -145,11 +143,11 @@ contains
 !         construct non-symmetrized AO dmat:
           call construct_perturbed_dmat(dmat_ao%elements,&
                                         tmpmat_mo%elements,&
-                                        ivec, rsp_info, cmo%coeff)
+                                        ivec_rsp, rsp_info, cmo%coeff)
           !call symmetrize_mat(dmat_ao%elements)
           do iz = 1, nz
-            iq = rsp_info%vectors(ivec)%get_ipqtoq(iz)
-            im = rsp_info%vectors(ivec)%get_ihqmat(iq)
+            iq = rsp_info%vectors(ivec_rsp)%get_ipqtoq(iz)
+            im = rsp_info%vectors(ivec_rsp)%get_ihqmat(iq)
             if (im .eq. 1) then
               factor(iz) = 1.0d0
             else if (im .eq. 2) then
@@ -173,7 +171,6 @@ contains
 
       case ('lao-connection-1')
 
-!        if (rsp_info%vectors(ivec)%should_use_lao()) then
 !         gosia fixme:
 !         now, i'm reusing old code here
         write(*, *) 'Calculating LAO contributions'
@@ -189,26 +186,8 @@ contains
 !         * this is to ensure that the same vector component is read from "TBMO" file,
 !         * but it should be changed once TBMO is refactored (as now is PAMXVC)
 !
-          if (present(rspvec_file)) then
-            f_name = trim(rspvec_file)
-          else
-            stop
-          end if
-          call rsp_info%read_from_checkpoint(trim(f_name))
-       
-          if (present(rspvec_id)) then
-            ivec = rspvec_id
-          else
-            stop
-          end if
-
-          if (rsp_info%vectors(ivec)%get_label() == 'LAO-XRM1H1') then
-            ivec_con = 1
-          else if (rsp_info%vectors(ivec)%get_label() == 'LAO-YRM1H1') then
-            ivec_con = 2
-          else if (rsp_info%vectors(ivec)%get_label() == 'LAO-ZRM1H1') then
-            ivec_con = 3
-          end if
+          if (.not.present(grid_function)) stop
+          call get_xyzcomp_from_rspvec(grid_function, ivec_con)
 
           call conmat_info%read_from_checkpoint('TBMO.h5')
           do ivec = 1, conmat_info%nr_comp
@@ -242,7 +221,6 @@ contains
 
           call dmat_ao%scale_elements(2.0d0)
           call tmpmat_mo%erase()
-          call rsp_info%erase()
           call conmat_info%erase()
         end if
 
@@ -1203,5 +1181,46 @@ contains
     end if
 
   end subroutine
+
+
+  subroutine get_xyzscomp_from_rspvec(grid_function, svec)
+    type(grid_function_t), intent(in):: grid_function
+    character(len=1),intent(out)::svec
+    type(response_info_t):: rsp_info
+    integer:: rspvec_id
+
+    call rsp_info%read_from_checkpoint(trim(grid_function%rspvec_file))
+    rspvec_id = grid_function%rspvec_id
+ 
+    if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-XRM1H1') then
+      svec = 'X'
+    else if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-YRM1H1') then
+      svec = 'Y'
+    else if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-ZRM1H1') then
+      svec = 'Z'
+    end if
+
+    call rsp_info%erase()
+  end
+
+  subroutine get_xyzicomp_from_rspvec(grid_function, ivec)
+    type(grid_function_t), intent(in):: grid_function
+    integer,intent(out)::ivec
+    type(response_info_t):: rsp_info
+    integer:: rspvec_id
+
+    call rsp_info%read_from_checkpoint(trim(grid_function%rspvec_file))
+    rspvec_id = grid_function%rspvec_id
+ 
+    if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-XRM1H1') then
+      ivec = 1
+    else if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-YRM1H1') then
+      ivec = 2
+    else if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-ZRM1H1') then
+      ivec = 3
+    end if
+
+    call rsp_info%erase()
+  end
 
 end module
