@@ -27,7 +27,6 @@ set(FREE_VISUAL_FORTRAN_SOURCES
     visual_txt_storage.F90
     visual_labeled_storage.F90
     visual_mpi.F90
-    # gosia - fixme!
     ${PROJECT_SOURCE_DIR}/src/prp/dirac_rsp_utils.F90
     ${PROJECT_SOURCE_DIR}/src/prp/dirac_conmat_lao_utils.F90
 )

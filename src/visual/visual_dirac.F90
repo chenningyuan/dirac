@@ -153,17 +153,15 @@ contains
             else if (im .eq. 2) then
               factor(iz) =-1.0d0
             end if
-            !factor(1) =-1.0d0
-            !factor(2:4) =1.0d0
           end do
           call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
           call dmat_ao%scale_elements(2.0d0)
         end if
 
-        write(*,*) 'final xlr AO dmat: '
-        call prqmat(dmat_ao%elements, &
-                    dmat_ao%mat_dim, dmat_ao%mat_dim, dmat_ao%mat_dim,dmat_ao%mat_dim, &
-                    dmat_ao%mat_nz, (/1,2,3,4/), 6)
+        !write(*,*) 'final xlr AO dmat: '
+        !call prqmat(dmat_ao%elements, &
+        !            dmat_ao%mat_dim, dmat_ao%mat_dim, dmat_ao%mat_dim,dmat_ao%mat_dim, &
+        !            dmat_ao%mat_nz, (/1,2,3,4/), 6)
 
 
         call tmpmat_mo%erase()
@@ -173,7 +171,6 @@ contains
 
 !         gosia fixme:
 !         now, i'm reusing old code here
-        write(*, *) 'Calculating LAO contributions'
 
         if (present(dmat_ao)) then
           dmat_ao%mat_dim = nao
@@ -182,9 +179,9 @@ contains
 
 !
 !         fixme list:
-!         * reading again rspvec_file, only to get the label and set ivec_con
-!         * this is to ensure that the same vector component is read from "TBMO" file,
-!         * but it should be changed once TBMO is refactored (as now is PAMXVC)
+!         * reading again rspvec_file, only to get the label and set ivec_con;
+!           this is to ensure that the same vector component is read from "TBMO" file,
+!           but it should be changed once TBMO is refactored (as now is PAMXVC)
 !
           if (.not.present(grid_function)) stop
           call get_xyzcomp_from_rspvec(grid_function, ivec_con)
@@ -193,7 +190,6 @@ contains
           do ivec = 1, conmat_info%nr_comp
 
             if (conmat_info%vectors(ivec)%id == ivec_con) then
-              write(*,*) 'IN LAO-CON visual_dirac: ivec_con = ', ivec_con
               tmpmat_mo%mat_dim = nmo
               tmpmat_mo%mat_nz = nz
               call tmpmat_mo%alloc()

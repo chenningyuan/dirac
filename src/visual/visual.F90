@@ -188,8 +188,6 @@ contains
     integer:: iz, off_ij
 ! ------------------------------------------------------------------------------
 
-    if (mpi_is_master()) call rs_input%display
-
     do ig = 1, rs_input%nr_grids
 !
 !     get necessary information about the grid and share with workers
@@ -234,9 +232,9 @@ contains
 !       export this grid to a separate file 
         if (mpi_is_master()) then
           call store_grid(rs_input%grids(ig))
-          !if (rs_input%print_level > 0) then
-          !  write(*, *) 'Grid ', rs_input%grids(ig)%id, ' exported to file ', rs_input%grids(ig)%file_out
-          !end if
+          if (rs_input%print_level > 0) then
+            write(*, *) 'Grid ', rs_input%grids(ig)%id, ' exported to file ', rs_input%grids(ig)%file_out
+          end if
         end if
       end if
 
@@ -288,7 +286,6 @@ contains
 !
           if (rs_input%grid_functions(igf)%wf_order > 0) then
             if (mpi_is_master()) then
-              write(*,*) 'init rsp dmat: '
               call dirac_dmat_init('xlr', cmo, &
                                    grid_function=rs_input%grid_functions(igf), &
                                    dmat_ao=dmat)
@@ -346,9 +343,6 @@ contains
           ! gosia todo:
           ! add "visualize"/"integrate" procedures in this call; now - visualization only
           !
-!fixme:
-          !if (rs_input%grid_functions(igf)%wf_order > 0) then
-!         pass dmat:
           call work_on_grid(g_ndim, n_this_proc, &
                             rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
                             rs_input%grid_functions(igf), &
@@ -356,15 +350,6 @@ contains
                             dmat_0,           &
                             dmat,           &
                             ao, buffer)
-          !else
-!         !pass dmat_0:
-          !call work_on_grid(g_ndim, n_this_proc, &
-          !                  rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
-          !                  rs_input%grid_functions(igf), &
-          !                  grid_function_values, &
-          !                  dmat_0,           &
-          !                  ao, buffer)
-          !end if
 
           deallocate(ao)
           deallocate(buffer)

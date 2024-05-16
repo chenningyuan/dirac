@@ -1,6 +1,5 @@
 module visual_cfg
 
-! change: visual_datatypes->rs_datatypes and visual_cfg -> rs_cfg
   use visual_datatypes, only : rs_input_t, grid_t, grid_function_t
   implicit none
 
