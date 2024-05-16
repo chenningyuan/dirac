@@ -4957,7 +4957,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 C
-      LOGICAL SET, NEWDEF, RESET
+      LOGICAL SET, NEWDEF, ORBDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
@@ -4981,16 +4981,9 @@ C     Initialize /CBIVEC/
 C     ===================
 C
       IPRCMP    = 1
-      DO I = 1,NFSYM
-        VECPRI(I) = ' '
-        IF(NOCC(I).EQ.1) THEN
-          WRITE(VECPRI(I),'(I1)') 1
-        ELSEIF(NOCC(I).GT.1) THEN
-          WRITE(VECPRI(I),'(I1,A2,I4)') 1,'..',NOCC(I)
-        ENDIF
-      ENDDO
       ILABDF  = 2
       IPRVEC  = 0
+      ORBDEF  = .TRUE.
 C
 C     Process input from CBIPOP
 C     =========================
@@ -5032,6 +5025,7 @@ C&&&& AOLAB : Print coefficients in AO-basis
     3          CONTINUE
 C&&&& VECPRI: Number of spinors to print
                   READ(LUCMD,'(A72)') (VECPRI(I),I=1,NFSYM)
+                  ORBDEF = .FALSE.
                GO TO 100
     4          CONTINUE
 C&&&& PRINT: General print level
@@ -5056,6 +5050,21 @@ C&&&& PRINT: General print level
       END IF
   300 CONTINUE
 C
+C     Process section
+C
+      IF(ORBDEF) THEN
+        DO I = 1,NFSYM
+          VECPRI(I) = 'UNDEFINED'
+          IF(NOCC(I).GT.0) THEN
+            IF(NOCC(I).EQ.1) THEN
+              WRITE(VECPRI(I),'(I4)') 1
+            ELSE
+              WRITE(VECPRI(I),'(I4,A2,I4)') 1,'..',NOCC(I)
+            ENDIF
+          ENDIF
+        ENDDO
+      ENDIF
+C
 C     Print section
 C     =============
 C
@@ -5072,15 +5081,20 @@ C
       NTOT = 0
       DO I = 1,NFSYM
         NVEC = 0
-        CALL  NUMLST(VECPRI(I),IDUMMY,NFBAS(I,0),
-     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC)
-        IF(NVEC.EQ.0) THEN
+        IF (VECPRI(I) .eq. 'UNDEFINED') THEN
           WRITE(LUPRI,'(4X,A,A3)')
-     &       '- No orbital string specified in fermion ircop ',FREP(I)
+     &      '- All occupied orbitals in fermion ircop ',FREP(I)
         ELSE
-          NTOT = NTOT + NVEC
-          WRITE(LUPRI,'(4X,A,A3,A,A72)')
+          CALL  NUMLST(VECPRI(I),IDUMMY,NFBAS(I,0),
+     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC)
+          IF(NVEC.EQ.0) THEN
+            WRITE(LUPRI,'(4X,A,A3)')
+     &       '- No orbital string specified in fermion ircop ',FREP(I)
+          ELSE
+            NTOT = NTOT + NVEC
+            WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &      '- Orbitals in fermion ircop ',FREP(I),' :',VECPRI(I)
+          ENDIF
         ENDIF
       ENDDO
 Cluuk IF(NTOT.EQ.0) IPRCMP = 0
