@@ -380,6 +380,8 @@ contains
     type(file_info_t), intent(inout) :: conmat_file
     character(len=80):: group
 
+    if (conmat_info%data_is_read) return
+
     group = '/result/conmat'
     call lab_read(conmat_file, trim(group)//'/nr_comp', &
                   idata=conmat_info%nr_comp)
@@ -399,12 +401,15 @@ contains
     integer, pointer:: tmp_idata(:)
     integer:: ivec, nr_vec
 
+    if (.not. conmat_info%data_is_read) return
+
     if (.not. conmat_info%allocated_vectors()) then
       call conmat_info%alloc()
     end if
 
     nr_vec = conmat_info%nr_comp
     do ivec = 1, nr_vec
+      if (conmat_info%vectors(ivec)%data_is_read) return
       write(ich, '(i4)') ivec
       group = '/result/conmat/vectors/vec_'//trim(adjustl(ich))
       call lab_read(conmat_file, trim(group)//'/id', &

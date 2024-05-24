@@ -61,7 +61,14 @@ module visual_datatypes
   type:: rs_input_t
     private
     integer, public:: print_level = 0
-    logical, public:: outpri = .false.   ! if true, print to DIRAC output
+    integer, public:: print_unit  = 6
+    logical, public:: outpri = .false.              ! if true, print to DIRAC output
+    logical, public:: set_occupation = .false.      ! if true, modify orbital occupations
+    logical, public:: force_small_ao = .false.      ! if true, force evaluation of small component basis functions
+    logical, public:: set_cvalue     = .false.      ! if true, modify cvalue
+    real(8), public:: cvalue = 0.0d0                ! cvalue in VISUAL
+    real(8), public:: gauge_origin(1:3) = 0.0d0     ! gauge origin in VISUAL
+    real(8), allocatable, public:: occupation(:,:)  ! occupation vector
     !logical:: small_ao = .false. ! legacy; if true, force small ao
     !logical:: occup_ao = .false. ! legacy; if true, use orbital strings
     integer, public:: nr_grids = 0
@@ -75,6 +82,7 @@ module visual_datatypes
     procedure, public:: display => display_rs_setup
     procedure, pass, public:: allocated_grids
     procedure, pass, public:: allocated_grid_functions
+    procedure, pass, public:: allocated_occupation => allocated_occupation_from_input
     procedure, pass, public:: erase   => erase_rs_input
   end type rs_input_t
 
@@ -108,6 +116,7 @@ module visual_datatypes
     character(len=:), public, allocatable:: file_out        ! name of a file for grid export
     !type(grid_point_t), public, allocatable:: points(:,:)
     real(8), public, allocatable:: points(:,:)
+    !real(8), public, allocatable:: weights(:)
     logical, public:: ndim_known = .false.
     logical, public:: origin_known = .false.
     logical, public:: nr_points_total_known = .false.
@@ -132,12 +141,17 @@ module visual_datatypes
     integer, public:: wf_order = 0                          ! 0 = depends on unperturbed wave function only, >0 requires perturbed wave functions (1 = linear response, 2 = quadratic response, etc.)
     integer, public:: rspvec_id = 0                         ! now: record ID on PAMXVC file
     integer, public:: lao = 0                               ! 0 = no LAOs, 1 = LAOs (all LAO-contributions)
-    integer, public:: lao_skip(1:3) = 0                     ! 0 = skip, 1 = do not skip LAO contributions; ('response', 'direct', 'reorthonormalization')
+    integer, public:: lao_skip(1:3) = 0                     ! 0/1 = do not/do skip LAO contributions; ('response', 'direct', 'reorthonormalization')
+    character(len=1), public:: lao_comp = ' '               ! temp: 'X', 'Y', 'Z'
     integer, public:: tensor_order = 0                      ! 0 = a scalar field, 1 = a vector field, 2 = a tensor field of rank 2, etc.
     integer, public:: max_ao_g_order = 0 !legacy
     integer, public:: max_ao_m_order = 0 !legacy
     integer, public:: id_assigned_grid = 0                  ! id of assigned grid
     integer, public:: purpose = 0                           ! 0 = visualization, 1 = integration
+    integer, public:: modify = 0                            ! 0/1 do not/do modify grid function
+    integer, public:: cartesian_power(1:3) = 0.0d0
+    real(8), public:: up_scale = 1.0d0
+    real(8), public:: down_scale = 1.0d0
     character(len=:), public, allocatable:: rspvec_file     ! name of a file with response parameters
     character(len=:), public, allocatable:: gf_type         ! "unperturbed", "response", "composite"
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid function import
@@ -241,6 +255,13 @@ contains
     class(rs_input_t), intent(in):: self
     logical:: allocated_grid_functions
     allocated_grid_functions = allocated(self%grid_functions)
+  end function
+
+! ------------------------------------------------------------------------------
+  pure function allocated_occupation_from_input(self)
+    class(rs_input_t), intent(in):: self
+    logical:: allocated_occupation_from_input
+    allocated_occupation_from_input = allocated(self%occupation)
   end function
 
 ! ------------------------------------------------------------------------------
@@ -471,12 +492,27 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine display_rs_setup(self)
     class(rs_input_t), intent(in):: self
+    integer :: i, j
+
     write(*, *)
-    write(*, *) ' RS SETUP:'
+    write(*, *) ' VISUAL: rs_input'
     write(*, *) 'print_level =         ', self%print_level
+    write(*, *) 'print_unit  =         ', self%print_unit
     write(*, *) 'outpri =              ', self%outpri
+    write(*, *) 'set_occupation =      ', self%set_occupation
+    write(*, *) 'force_small_ao =      ', self%force_small_ao
+    write(*, *) 'cvalue =              ', self%cvalue
+    write(*, *) 'gauge_origin =        ', self%gauge_origin
+    write(*, *) 'set_cvalue     =      ', self%set_cvalue
     write(*, *) 'nr_grids =            ', self%nr_grids
     write(*, *) 'nr_grid_functions =   ', self%nr_grid_functions
+    if (self%allocated_occupation()) then  
+      do j = 1, size(self%occupation,2)
+        do i = 1, size(self%occupation,1)
+          write(*,*) 'occupation   = ', self%occupation(i,j)
+        end do
+      end do
+    end if
     write(*, *)
    end subroutine
 
@@ -493,7 +529,7 @@ contains
     if (present(my_rank)) with_rank_info = .true.
 
     write(*, *)
-    write(*, *) ' GRID:'
+    write(*, *) ' VISUAL: grid'
     if (with_rank_info) then
       write(*, *) 'id =              ', self%id, my_rank
       write(*, *) 'ndim =            ', self%ndim, my_rank 
@@ -550,7 +586,7 @@ contains
     if (present(my_rank)) with_rank_info = .true.
 
     write(*, *)
-    write(*, *) ' GRID FUNCTION:'
+    write(*, *) ' VISUAL: grid function'
     if (with_rank_info) then
       write(*, *) 'id =              ', self%id, my_rank
       if (allocated(self%name)) write(*, *) 'name =            ', self%name, my_rank
@@ -562,9 +598,14 @@ contains
       write(*, *) 'nuc =             ', self%nuc, my_rank
       write(*, *) 'lao =             ', self%lao, my_rank
       write(*, *) 'lao_skip =        ', self%lao_skip, my_rank
+      write(*, *) 'lao_comp =        ', self%lao_comp, my_rank
       write(*, *) 'tensor_order =    ', self%tensor_order, my_rank
       write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order, my_rank
       write(*, *) 'max_ao_m_order =  ', self%max_ao_m_order, my_rank
+      write(*, *) 'modify          = ', self%modify, my_rank
+      write(*, *) 'cartesian_power = ', self%cartesian_power, my_rank
+      write(*, *) 'up_scale        = ', self%up_scale, my_rank
+      write(*, *) 'down_scale      = ', self%down_scale, my_rank
       write(*, *) 'id_assigned_grid =', self%id_assigned_grid, my_rank
       write(*, *) 'purpose =         ', self%purpose, my_rank
       if (allocated(self%rspvec_file)) write(*, *) 'rspvec_file =        ', self%rspvec_file, my_rank
@@ -582,9 +623,14 @@ contains
       write(*, *) 'nuc =             ', self%nuc
       write(*, *) 'lao =             ', self%lao
       write(*, *) 'lao_skip =        ', self%lao_skip
+      write(*, *) 'lao_comp =        ', self%lao_comp
       write(*, *) 'tensor_order =    ', self%tensor_order
       write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order
       write(*, *) 'max_ao_m_order =  ', self%max_ao_m_order
+      write(*, *) 'modify          = ', self%modify
+      write(*, *) 'cartesian_power  = ', self%cartesian_power
+      write(*, *) 'up_scale         = ', self%up_scale
+      write(*, *) 'down_scale       = ', self%down_scale
       write(*, *) 'id_assigned_grid =', self%id_assigned_grid
       write(*, *) 'purpose =         ', self%purpose
       if (allocated(self%rspvec_file)) write(*, *) 'rspvec_file =        ', self%rspvec_file

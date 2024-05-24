@@ -37,6 +37,7 @@ module visual_london
 
 contains
 
+!!legacy
   subroutine get_d_con_mo(D_con_mo, occupation, D_con_mo_ai)
 !   ----------------------------------------------------------------------------
     type(matrix)            :: D_con_mo
@@ -46,84 +47,84 @@ contains
     real(8), allocatable    :: D_ai(:, :, :), D_ji(:, :, :)
     integer                 :: file_unit, icomp
     logical                 :: debug_me, dummy
-
-!   gosia, note for me:
-!   if natural connection-T^B matrix was built from 'd|S>/dB' integrals
-!   if symmetric connection-T^B matrix was built from 'dS/dB' integrals
-!   ----------------------------------------------------------------------------
-
-!   read T^B matrix in MO basis to D_con_mo
-!   ---------------------------------------
-
-    file_unit = 71
-
-    open(file_unit,                 &
-         file   = 'TBMO',           &
-         status = 'old',            &
-         form   = 'unformatted',    &
-         access = 'sequential',     &
-         position = 'rewind',       &
-         action = 'read')
-
-1   continue
-
-    read(file_unit) nr_xyz_comp
-    read(file_unit) which_icomp
-    read(file_unit) D_con_mo%irep
-    read(file_unit) sum_ep_rn
-    read(file_unit) D_con_mo%elms
-
-    if (nr_xyz_comp > 1) then
-!      for example after calculating full shielding tensor in preceding response
-!      there will be three matrices on TBMO file: T^Bx, T^By and T^Bz
-!      read here the requested one:
-       if (visual_cfg_london_component == 'Y') then
-          if (which_icomp == 2) then
-             go to 2
-          else
-             go to 1
-          end if
-       else if (visual_cfg_london_component == 'Z') then
-          if (which_icomp == 3) then
-             go to 2
-          else
-             go to 1
-          end if
-       end if
-    end if
-
-2   continue
-
-    close(file_unit, status = 'keep')
-
-    write(lupri, *) 'visual: connection matrix (T^B in MO basis) read from TBMO file'
-    write(lupri, *) 'nr_xyz_comp = ', nr_xyz_comp
-    write(lupri, *) 'component = ', which_icomp
-    write(lupri, *) 'irep = ', D_con_mo%irep
-    write(lupri, *) 'sum over e+p shells = ', sum_ep_rn
-
-    debug_me = .false.
-    if (debug_me) then
-       call print_mat(D_con_mo, label = 'D_con_mo read from TBMO')
-    end if
-
-    if (visual_cfg_use_orbital_string) then
-       call select_orbitals_reortho(D_con_mo%elms, occupation)
-    end if
-
-    if (visual_cfg_london_none) then
-
-!      here discern occ-occ and occ-virt blocks of T^B
-!      write occ-occ  to D_con_mo
-!      and   occ-virt to D_con_mo_ai
-       call alloc(D_ji, norbt, norbt, nz)
-       call partition_connection_matrix(D_con_mo%elms, D_con_mo_ai%elms, D_ji, sum_ep_rn)
-       D_con_mo%elms = 0.0d0
-       call dcopy(norbt*norbt*nz, D_ji, 1, D_con_mo%elms, 1)
-       call dealloc(D_ji)
-
-    end if
-
+!
+!!   gosia, note for me:
+!!   if natural connection-T^B matrix was built from 'd|S>/dB' integrals
+!!   if symmetric connection-T^B matrix was built from 'dS/dB' integrals
+!!   ----------------------------------------------------------------------------
+!
+!!   read T^B matrix in MO basis to D_con_mo
+!!   ---------------------------------------
+!
+!    file_unit = 71
+!
+!    open(file_unit,                 &
+!         file   = 'TBMO',           &
+!         status = 'old',            &
+!         form   = 'unformatted',    &
+!         access = 'sequential',     &
+!         position = 'rewind',       &
+!         action = 'read')
+!
+!1   continue
+!
+!    read(file_unit) nr_xyz_comp
+!    read(file_unit) which_icomp
+!    read(file_unit) D_con_mo%irep
+!    read(file_unit) sum_ep_rn
+!    read(file_unit) D_con_mo%elms
+!
+!    if (nr_xyz_comp > 1) then
+!!      for example after calculating full shielding tensor in preceding response
+!!      there will be three matrices on TBMO file: T^Bx, T^By and T^Bz
+!!      read here the requested one:
+!       if (visual_cfg_london_component == 'Y') then
+!          if (which_icomp == 2) then
+!             go to 2
+!          else
+!             go to 1
+!          end if
+!       else if (visual_cfg_london_component == 'Z') then
+!          if (which_icomp == 3) then
+!             go to 2
+!          else
+!             go to 1
+!          end if
+!       end if
+!    end if
+!
+!2   continue
+!
+!    close(file_unit, status = 'keep')
+!
+!    write(lupri, *) 'visual: connection matrix (T^B in MO basis) read from TBMO file'
+!    write(lupri, *) 'nr_xyz_comp = ', nr_xyz_comp
+!    write(lupri, *) 'component = ', which_icomp
+!    write(lupri, *) 'irep = ', D_con_mo%irep
+!    write(lupri, *) 'sum over e+p shells = ', sum_ep_rn
+!
+!    debug_me = .false.
+!    if (debug_me) then
+!       call print_mat(D_con_mo, label = 'D_con_mo read from TBMO')
+!    end if
+!
+!    if (rs_input%set_occupations) then
+!       call select_orbitals_reortho(D_con_mo%elms, occupation)
+!    end if
+!
+!    if (visual_cfg_london_none) then
+!
+!!      here discern occ-occ and occ-virt blocks of T^B
+!!      write occ-occ  to D_con_mo
+!!      and   occ-virt to D_con_mo_ai
+!       call alloc(D_ji, norbt, norbt, nz)
+!       call partition_connection_matrix(D_con_mo%elms, D_con_mo_ai%elms, D_ji, sum_ep_rn)
+!       D_con_mo%elms = 0.0d0
+!       call dcopy(norbt*norbt*nz, D_ji, 1, D_con_mo%elms, 1)
+!       call dealloc(D_ji)
+!
+!    end if
+!
   end subroutine
 
    subroutine select_orbitals_reortho(A, occupation)
@@ -264,47 +265,47 @@ contains
 
 !   ----------------------------------------------------------------------------
 
-    if (visual_cfg_london_none) then
-
-!      here build density matrix modified by first-order overlap
-!      (c^+_\mu j)*(S^B)_ij*(c_\nu i) where (S^B)_ij = (T^B)_ij + (T^B+)_ij
-
-       D_con = D_con_mo-dag(D_con_mo)
-!      check that it gives the same regardless of connection used
-!      due to: T^B + (T^B)^+ = -S^B
-!      call print_mat(D_con, label = '-S^B')
-
-       if (nfsym == 2) then
-          if (jbtof(D_con_mo%irep, 1) == 2) then
-!            ungerade perturbation
-             D_con = Cig*(D_con*dag(Ciu)) &
-                   + Ciu*(D_con*dag(Cig))
-          else
-!            gerade perturbation
-             D_con = Cig*(D_con*dag(Cig)) &
-                   + Ciu*(D_con*dag(Ciu))
-          end if
-       else
-          D_con = Cig*(D_con*dag(Cig))
-       end if
-
-    else
-!      symmetric or natural connection used in preceding response run
-!      "-" is because dag() does only transposition and T^B is antihermitian
-
-       if (nfsym == 2) then
-          D_con = C*(D_con_mo*dag(Cig)) &
-                + C*(D_con_mo*dag(Ciu))
-          D_con = D_con-dag(D_con)
-       else
-
-          D_con = C*(D_con_mo*dag(Cig))
-          D_con = D_con-dag(D_con)
-
-       end if
-
-
-    end if
+!    if (visual_cfg_london_none) then
+!
+!!      here build density matrix modified by first-order overlap
+!!      (c^+_\mu j)*(S^B)_ij*(c_\nu i) where (S^B)_ij = (T^B)_ij + (T^B+)_ij
+!
+!       D_con = D_con_mo-dag(D_con_mo)
+!!      check that it gives the same regardless of connection used
+!!      due to: T^B + (T^B)^+ = -S^B
+!!      call print_mat(D_con, label = '-S^B')
+!
+!       if (nfsym == 2) then
+!          if (jbtof(D_con_mo%irep, 1) == 2) then
+!!            ungerade perturbation
+!             D_con = Cig*(D_con*dag(Ciu)) &
+!                   + Ciu*(D_con*dag(Cig))
+!          else
+!!            gerade perturbation
+!             D_con = Cig*(D_con*dag(Cig)) &
+!                   + Ciu*(D_con*dag(Ciu))
+!          end if
+!       else
+!          D_con = Cig*(D_con*dag(Cig))
+!       end if
+!
+!    else
+!!      symmetric or natural connection used in preceding response run
+!!      "-" is because dag() does only transposition and T^B is antihermitian
+!
+!       if (nfsym == 2) then
+!          D_con = C*(D_con_mo*dag(Cig)) &
+!                + C*(D_con_mo*dag(Ciu))
+!          D_con = D_con-dag(D_con)
+!       else
+!
+!          D_con = C*(D_con_mo*dag(Cig))
+!          D_con = D_con-dag(D_con)
+!
+!       end if
+!
+!
+!    end if
 
   end subroutine
 

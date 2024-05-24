@@ -44,7 +44,6 @@ module visual
 
   use labeled_storage
   use visual_txt_storage
-  use visual_dirac_input
 !   ---- end ----    
 
   implicit none
@@ -83,7 +82,6 @@ contains
     type(basis_set_info_t):: ao_basis
     real(8) :: walltime
     type(dmat_t):: dmat_0
-    logical:: debug_print
 ! -----------------------------------------------------------------------------
 
     walltime = visual_walltime()
@@ -102,7 +100,7 @@ contains
 !       otherwise - calculate (happens when called from dirac; on master)
 !    
     call visual_initialize_and_sync_nodes(launch_only)
-    if (debug_print) then
+    if ( rs_input%print_level > 2 ) then
       print *, 'VISUAL parallel? ', is_parallel()
       print *, 'size of communicator: ', mpi_get_nr_proc()
       print *, 'rank of the process: ', get_my_rank()
@@ -110,8 +108,8 @@ contains
 #endif
 
     if (mpi_is_master()) then
-      write(*, '(/,2x, a)') '*** Visualisation module ***'
-      call verify_input_keywords()
+      write(*, '(/,2x, a)') '*** Visualization module ***'
+      call visual_input_show_setup()
     end if
 
 
@@ -168,19 +166,16 @@ contains
     type(mol_t), intent(in):: mol
     type(cmo_t), intent(in):: cmo
     type(dmat_t), intent(in):: dmat_0
-    type(dmat_t):: dmat, dmat_lao
 
-    real(8), allocatable              :: ao(:,:)
-    real(8), allocatable              :: buffer(:,:)
+    type(dmat_t):: dmat, dmat_lao
+    real(8), allocatable:: ao(:,:)
+    real(8), allocatable:: buffer(:,:)
     type(grid_t):: grid
-    type(grid_t):: this_grid
     type(grid_t), allocatable:: grids(:)
-    type(grid_function_t):: this_grid_function
     type(grid_function_t), allocatable:: grid_functions(:)
     real(8), allocatable:: grid_function_values(:,:)
     integer:: ig, igf
     integer:: g_ndim, gf_ndim, npoints
-    real(8):: extents(0:1, 3)
     integer:: my_rank
     real(8) :: walltime
     integer:: n_this_proc, idim_grid, idim_gf
@@ -219,7 +214,7 @@ contains
 !
       if (mpi_is_master()) then
         call get_grid_points(rs_input%grids(ig))
-        if (rs_input%print_level > 0) then
+        if (rs_input%print_level > 1) then
           write(*, *) 'Grid points of grid ', ig
           do j = 1, npoints
             write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
@@ -232,8 +227,9 @@ contains
 !       export this grid to a separate file 
         if (mpi_is_master()) then
           call store_grid(rs_input%grids(ig))
-          if (rs_input%print_level > 0) then
-            write(*, *) 'Grid ', rs_input%grids(ig)%id, ' exported to file ', rs_input%grids(ig)%file_out
+          if (rs_input%print_level > 2) then
+            write(*, *) 'Grid ', rs_input%grids(ig)%id, ' exported to file ', &
+                         rs_input%grids(ig)%file_out
           end if
         end if
       end if
@@ -293,7 +289,7 @@ contains
 
               if (rs_input%grid_functions(igf)%lao > 0) then
 
-                if (rs_input%grid_functions(igf)%lao_skip(1) > 0) then
+                if (rs_input%grid_functions(igf)%lao_skip(1) == 1) then
 !                 skip response contribution ('nokappa')
                   dmat%elements = 0.0d0
                 end if
@@ -304,14 +300,15 @@ contains
                                        grid_function=rs_input%grid_functions(igf), &
                                        dmat_ao=dmat_lao)
                   dmat%elements = dmat%elements + dmat_lao%elements
+                  call dmat_lao%erase()
                 end if
 
               end if
 
             end if
-!#ifdef VAR_MPI
-!            if (is_parallel()) call synchronize_dmat(dmat)
-!#endif
+#ifdef VAR_MPI
+            if (is_parallel()) call synchronize_dmat(dmat)
+#endif
           end if
 
 !
@@ -357,11 +354,13 @@ contains
           allocate(rs_input%grid_functions(igf)%values(gf_ndim, npoints))
           rs_input%grid_functions(igf)%values = 0.0d0
 
-          !write(*, *) 'AFTER WORK_ON_GRID'
-          !!write(*, *) 'values: ', ((grid_function_values(i,j),j=1,n_this_proc),i=1,gf_ndim), get_my_rank()
-          !do j = 1, n_this_proc
-          !  write(*, '(a,i4,3es28.18e2)') 'values: ', j, (grid_function_values(i,j),i=1,gf_ndim)
-          !end do
+          if (rs_input%print_level > 1) then
+            write(*, *) 'Grid_function values on this proc: '
+            do j = 1, n_this_proc
+              write(*, *) 'values: ', j, (grid_function_values(i,j),i=1,gf_ndim)
+              !write(*, '(a,i4,3es28.18e2)') 'values: ', j, (grid_function_values(i,j),i=1,gf_ndim)
+            end do
+          end if
  
           if (is_parallel()) then
             do idim_gf = 1, gf_ndim
@@ -375,10 +374,12 @@ contains
             end do
           end if
 
-          !if (mpi_is_master()) then
-          !  write(*, *) 'AFTER GATHERING'
-          !  write(*, *) 'gathered values: ', rs_input%grid_functions(igf)%values
-          !end if
+          if (mpi_is_master()) then
+            if (rs_input%print_level > 1) then
+              write(*, *) 'Grid_function values on master, after gather: '
+              write(*, *) 'values: ', j, (rs_input%grid_functions(igf)%values(i,j),i=1,gf_ndim)
+            end if
+          end if
  
           deallocate(grid_function_values)
           call dmat%erase()
@@ -412,6 +413,7 @@ contains
       if (allocated(rs_input%grids(ig)%points)) deallocate(rs_input%grids(ig)%points)
       if (allocated(rs_input%grids(ig)%file_inp)) deallocate(rs_input%grids(ig)%file_inp)
       if (allocated(rs_input%grids(ig)%file_out)) deallocate(rs_input%grids(ig)%file_out)
+
 
     end do ! do ig = 1, rs_input%nr_grids
 

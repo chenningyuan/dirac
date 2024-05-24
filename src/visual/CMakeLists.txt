@@ -23,7 +23,6 @@ set(FREE_VISUAL_FORTRAN_SOURCES
     visual_datatypes.F90
     visual_utils.F90
     visual_dirac.F90
-    visual_dirac_input.F90
     visual_txt_storage.F90
     visual_labeled_storage.F90
     visual_mpi.F90

@@ -14,13 +14,13 @@
 **VISUAL
 .REFACT
 !.3D_INTEGRATE
-.PRINT
-1
+!.PRINTL
+!1
 .OUTPRI
-.GRIDS    
+.GRIDS 
 1
 id=1 input=import file_inp=grid2.h5
-.GRIDFUNCTIONS    
+.GRIDFUNCTIONS
 24
 name=ed id_grid=1 purpose=visualization export=yes file_out=ed.h5
 name=ed_gradient id_grid=1 purpose=visualization export=yes file_out=ed_gradient.h5

@@ -207,13 +207,12 @@
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
-#include "maxorb.h"
+#include "maxorb.h" ! mxprim
 ! orgcom.h : GAGORG
 #include "orgcom.h"
 
       call reset_available_kw_list()
 
-      visual_cfg_gauge_origin(1:3) = GAGORG(1:3)  ! use magnetic gauge origin defined globally in Dirac
       dirac_cfg_visual = .true.
 
       !temp
@@ -221,156 +220,35 @@
          visual_cfg_global_refactor = .true.
       end if
 
+      ! general setup
+
       if (kw_matches(word, '.OUTPRI')) then
-         visual_cfg_print_data_to_dirac_output = .true.
          rs_input%outpri=.true.
       end if
 
-      if (kw_matches(word, '.PRINT ')) then
+      if (kw_matches(word, '.PRINTL')) then
          call kw_read(word, rs_input%print_level)
       end if
 
-
-      if (kw_matches(word, '.LIST  ')) then
-         visual_cfg_list = .true.
-         call kw_read(word, visual_cfg_nr_points_in_list)
-         allocate(visual_cfg_xyz_list(visual_cfg_nr_points_in_list, 3))
-         do i = 1, visual_cfg_nr_points_in_list
-            call kw_read(word, visual_cfg_xyz_list(i, 1), &
-                               visual_cfg_xyz_list(i, 2), &
-                               visual_cfg_xyz_list(i, 3))
-         end do
+      if (kw_matches(word, '.PRINTU')) then
+         call kw_read(word, rs_input%print_unit)
       end if
 
-      if (kw_matches(word, '.LINE  ')) then
-         visual_cfg_line = .true.
-         call kw_read(word, visual_cfg_line_from(1), &
-                            visual_cfg_line_from(2), &
-                            visual_cfg_line_from(3))
-         call kw_read(word, visual_cfg_line_to(1), &
-                            visual_cfg_line_to(2), &
-                            visual_cfg_line_to(3))
-         call kw_read(word, visual_cfg_line_nr_steps)
+
+      ! modify physics
+
+      if (kw_matches(word, '.CVALUE')) then
+         rs_input%set_cvalue=.true.
+         call kw_read(word, rs_input%cvalue)
       end if
 
-      if (kw_matches(word, '.2D    ')) then
-         visual_cfg_2d = .true.
-         read(get_file_unit(), *) visual_cfg_2d_p_origin(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_p_right(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_nr_right
-         read(get_file_unit(), *) visual_cfg_2d_p_top(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_nr_top
-!        check that angle between 1-2 and 1-3 is 90 degs
-         v_12 = visual_cfg_2d_p_right-visual_cfg_2d_p_origin
-         v_13 = visual_cfg_2d_p_top   - visual_cfg_2d_p_origin
-         s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
-         if (s > tiny(0.0d0)) then
-            call quit('.2D: lines connecting points 1-2 and 1-3 do not enclose 90 degrees')
-         end if
-      end if
 
-      if (kw_matches(word, '.2D_INT')) then
-         visual_cfg_2d_integration = .true.
-         read(get_file_unit(), *) visual_cfg_2d_integration_p_origin(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_integration_p_right(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_integration_nr_right
-         read(get_file_unit(), *) visual_cfg_2d_integration_p_top(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_integration_nr_top
-         read(get_file_unit(), *) visual_cfg_2d_integration_order
-!        check that angle between 1-2 and 1-3 is 90 degs
-         v_12 = visual_cfg_2d_integration_p_right-visual_cfg_2d_integration_p_origin
-         v_13 = visual_cfg_2d_integration_p_top   - visual_cfg_2d_integration_p_origin
-         s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
-         if (s > tiny(0.0d0)) then
-            call quit('.2D_INT: lines connecting points 1-2 and 1-3 do not enclose 90 degrees')
-         end if
-      end if
-
-      if (kw_matches(word, '.3D    ')) then
-         visual_cfg_3d = .true.
-         call kw_read(word, visual_cfg_ncube(1), &
-                            visual_cfg_ncube(2), &
-                            visual_cfg_ncube(3))
-      end if
-
-      if (kw_matches(word, '.3DFAST')) then
-         visual_cfg_3d_fast = .true.
-         call kw_read(word, visual_cfg_ncube(1), &
-                            visual_cfg_ncube(2), &
-                            visual_cfg_ncube(3))
-      end if
-
-      if (kw_matches(word, '.3D_ADD')) then
-         call kw_read(word, visual_cfg_add_3d)
-      end if
-
-      if (kw_matches(word, '.3D_INT')) then
-         visual_cfg_3d_integration = .true.
-      end if
-
-      if (kw_matches(word, '.3D_IMP')) then
-         visual_cfg_3d_gridimp = .true.
-         visual_cfg_inp_data_files_use_legacy = .true.
-         read(get_file_unit(), *) visual_cfg_3d_gridfil
-         read(get_file_unit(), *) visual_cfg_3d_grid_units
-      end if
-
-      if (kw_matches(word, '.SCALE ')) then
-         call kw_read(word, visual_cfg_scale)
-      end if
-
-      if (kw_matches(word, '.CARPOW')) then
-         call kw_read(word, visual_cfg_cartesian_power(1), &
-                            visual_cfg_cartesian_power(2), &
-                            visual_cfg_cartesian_power(3))
-      end if
-
-      if (kw_matches(word, '.DSCALE ')) then
-         call kw_read(word, visual_cfg_scale)
-         visual_cfg_scale = 1.0D0/visual_cfg_scale
-      end if
-
-      if (kw_matches(word, '.BEDCOS')) then
-         call read_input_visual_helper(iq_tcos)
-      end if
-      if (kw_matches(word, '.BEDSIN')) then
-         call read_input_visual_helper(iq_tsin)
-      end if
-      if (kw_matches(word, '.BEDFIX')) then
-         call kw_read(word, v(1), v(2), v(3), visual_cfg_freq)
-         CALL ANGLES(v(1), v(2), v(3), visual_cfg_wave_vector, visual_cfg_pol_vector)
-      end if
-
-      if (kw_matches(word, '.NICS  ')) then
-         visual_cfg_nics = .true.
-         call kw_read(word, visual_cfg_nics_origin(1), &
-                            visual_cfg_nics_origin(2), &
-                            visual_cfg_nics_origin(3))
-      end if
-
-      if (kw_matches(word, '.READJB')) then
-         visual_cfg_3d_readjb = .true.
-         visual_cfg_inp_data_files_use_legacy = .true.
-         read(get_file_unit(), *) visual_cfg_3d_jbfile
-      end if
-
-      if (kw_matches(word, '.RADIAL')) then
-         visual_cfg_radial = .true.
-         call kw_read(word, visual_cfg_radial_from(1), &
-                            visual_cfg_radial_from(2), &
-                            visual_cfg_radial_from(3))
-         call kw_read(word, visual_cfg_radial_length)         
-         call kw_read(word, visual_cfg_radial_nr_steps)
-      end if
-
-      if (kw_matches(word, '.SMALLA')) then
-         visual_cfg_force_small_ao = .true.
-      end if
+      ! modify the system
 
       if (kw_matches(word, '.OCCUPA')) then
-         visual_cfg_use_orbital_string = .true.
-         allocate(visual_cfg_occupation(mxprim, 2))
-         visual_cfg_occupation = 0.0d0
+         rs_input%set_occupation=.true.
+         allocate(rs_input%occupation(mxprim, 2))
+         rs_input%occupation = 0.0d0
          ! read nr of lines
          call kw_read(word, nr_lines)
          print *, 'reading .OCCUPATION, nr lines:', nr_lines
@@ -408,7 +286,7 @@
             read(word_array(3), *) f
             ! update occupation vector
             do j = istart, iend
-               visual_cfg_occupation(j, isym) = f
+               rs_input%occupation(j, isym) = f
             end do
             ! print confirmation to screen
             print *, 'occupy symmetry      = ', isym
@@ -419,75 +297,12 @@
          end do
       end if
 
-      if (kw_matches(word, '.ADDGRE')) then
-         visual_cfg_add_grid_points_grad_ed = .true.
-      end if
-      if (kw_matches(word, '.ADDGRS')) then
-         visual_cfg_add_grid_points_grad_ed_scaled = .true.
+      if (kw_matches(word, '.SMALLA')) then
+         rs_input%force_small_ao=.true.
       end if
 
-      if (kw_matches(word, '.NOCUBE')) then
-         visual_cfg_london_skip_cube  = .true.
-      end if
 
-      if (kw_matches(word, '.NOVTK ')) then
-         visual_cfg_london_skip_vtk   = .true.
-      end if
-
-      if (kw_matches(word, '.PLTFMT')) then
-         !gosia-this is now redundant? todo remove
-         call kw_read(word, visual_cfg_plot_file_format)
-      end if
-
-      if (kw_matches(word, '.TXTTHR')) then
-         !gosia-this is temporary threshold: avoid writing small numbers to txt files
-         call kw_read(word, visual_cfg_txt_print_threshold)
-      end if
-
-      if (kw_matches(word, '.PLTTXT')) then
-
-         visual_cfg_plot_file_format = 'txt'
-
-         ! 'turn off' all legacy options
-         visual_cfg_txt_plot_file_use_legacy = .false.
-         visual_cfg_cube_plot_file_use_legacy = .false.
-
-         read(get_file_unit(), '(a)') line
-         nr_words = word_count(line)
-         allocate(word_array(nr_words))
-         read(line, *) (word_array(j), j = 1, nr_words)
-         visual_cfg_plot_domain   = trim(word_array(1))
-         visual_cfg_plot_property = trim(word_array(2))
-         if (nr_words > 2) then 
-            visual_cfg_txt_plot_file_name = trim(word_array(3))
-         end if
-         if (nr_words > 3) then 
-            visual_cfg_txt_plot_file_float_format = trim(word_array(4))
-         end if
-         deallocate(word_array)
-      end if
-
-      if (kw_matches(word, '.PLTCUB')) then
-
-         visual_cfg_plot_file_format = 'cube'
-
-         ! 'turn off' all legacy options
-         visual_cfg_txt_plot_file_use_legacy = .false.
-         visual_cfg_cube_plot_file_use_legacy = .false.
-
-         read(get_file_unit(), '(a)') line
-         nr_words = word_count(line)
-         allocate(word_array(nr_words))
-         read(line, *) (word_array(j), j = 1, nr_words)
-         visual_cfg_plot_property = trim(word_array(1))
-         if (nr_words > 1) then 
-            visual_cfg_cube_plot_file_name = trim(word_array(2))
-         end if
-         if (nr_words > 2) then 
-            visual_cfg_cube_plot_file_float_format = trim(word_array(3))
-         end if
-         deallocate(word_array)
-      end if
+      ! grid specification
 
       if (kw_matches(word, '.GRIDS ')) then
          call kw_read(word, rs_input%nr_grids)
@@ -505,6 +320,8 @@
             call verify_grid_input_cfg(rs_input%grids(i))
          end do
       end if
+
+      ! grid function specification
 
       if (kw_matches(word, '.GRIDFU')) then
          call kw_read(word, rs_input%nr_grid_functions)

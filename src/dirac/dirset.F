@@ -102,11 +102,11 @@ C     ===================
 #endif
 
 !     radovan: don't restart if you do a geometry optimization!
-!     gosia: don't restart and don't generate integrals if visual_cfg_london
       tobe = .false. ! disable restart of property integral calculation, too hard to make fullproof (LV, 2022)
-      if (tobe .and. visual_cfg_london) then
-        goto 11
-      endif
+!     gosia: don't restart and don't generate integrals if visual_cfg_london -> needs testing
+      !if (tobe .and. visual_cfg_london) then
+      !  goto 11
+      !endif
       IF(TOBE) THEN
         WRITE(LUPRI,'(A)')
      &  '* WARNING: DIRAC found '//

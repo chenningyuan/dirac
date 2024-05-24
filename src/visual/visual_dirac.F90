@@ -21,12 +21,13 @@ module visual_dirac
 
   implicit none
 
+  public visual_input_show_setup
+
   public visual_initialize_and_sync_nodes
   public visual_initialize_data_from_dirac
   public visual_update_data
 
   public dirac_dmat_init
-  public get_xyzcomp_from_rspvec
 
 
 #ifdef VAR_MPI
@@ -39,11 +40,6 @@ module visual_dirac
 
   private
 
-  interface get_xyzcomp_from_rspvec
-    module procedure get_xyzicomp_from_rspvec
-    module procedure get_xyzscomp_from_rspvec
-  end interface
-
 contains
 
 ! -----------------------------------------------------------------------------
@@ -55,7 +51,7 @@ contains
     type(cmo_t), intent(in) :: cmo
     type(dmat_t), optional, intent(out) :: dmat_ao
     type(dmat_t), optional, intent(out) :: dmat_mo
-    type(grid_function_t), optional, intent(in):: grid_function
+    type(grid_function_t), optional, intent(inout):: grid_function
 
     type(cmo_t) :: cmo_i
     type(response_info_t) :: rsp_info
@@ -119,6 +115,8 @@ contains
 
 !       read response data from 'RESPONSE.h5' file
         if (.not.present(grid_function)) stop
+        write(*,*) 'DEBUG NOW1'
+        call grid_function%display()
         f_name = grid_function%rspvec_file
         call rsp_info%read_from_checkpoint(trim(f_name))
         ivec_rsp = grid_function%rspvec_id
@@ -169,8 +167,16 @@ contains
 
       case ('lao-connection-1')
 
-!         gosia fixme:
-!         now, i'm reusing old code here
+!       gosia fixme:
+!       now, i'm reusing old code here
+
+!       read response data from 'RESPONSE.h5' file
+        if (.not.present(grid_function)) stop
+
+        write(*,*) 'DEBUG NOW2'
+        call grid_function%display()
+
+        call get_xyzcomp_from_rspvec(grid_function, ivec_con)
 
         if (present(dmat_ao)) then
           dmat_ao%mat_dim = nao
@@ -183,8 +189,6 @@ contains
 !           this is to ensure that the same vector component is read from "TBMO" file,
 !           but it should be changed once TBMO is refactored (as now is PAMXVC)
 !
-          if (.not.present(grid_function)) stop
-          call get_xyzcomp_from_rspvec(grid_function, ivec_con)
 
           call conmat_info%read_from_checkpoint('TBMO.h5')
           do ivec = 1, conmat_info%nr_comp
@@ -237,6 +241,8 @@ contains
 ! legacy
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "dcbgen.h" ! cvalue
+#include "orgcom.h" ! gagorg
 
     logical, intent(in), optional :: hello
 
@@ -252,7 +258,11 @@ contains
 #endif
 
     ! then, the rest happens on master only
-    call import_dirac_cb_variables()
+    if (.not. rs_input%set_cvalue) then
+      rs_input%cvalue = cval  ! speed of light used in Dirac
+    end if
+
+    rs_input%gauge_origin(1:3) = gagorg(1:3) ! magnetic gauge origin defined globally in Dirac
 
 #ifdef VAR_MPI
     if (is_parallel()) call sync_visual_cfg()
@@ -268,8 +278,7 @@ contains
     logical:: small_component
 
 !   update MO data that was not read from CHECKPOINT:
-    call setup_orbital_string(cmo, &
-          visual_cfg_use_orbital_string,visual_cfg_occupation)
+    call setup_orbital_string(cmo)
     call setup_mo_offsets(cmo)
 
   end subroutine
@@ -282,7 +291,6 @@ contains
     type(basis_set_info_t), intent(out) :: ao_basis
     integer, intent(in), optional :: print_level
     character*(:),allocatable:: group, section
-    logical:: small_component
     logical:: dirac_mol, dirac_mo, dirac_ao
 !
 !   read data from DIRAC's CHECKPOINT file(s) into DTs
@@ -316,13 +324,11 @@ contains
 !
 !   fixme list:
 !   * ao_basis is kept as a placeholder (unused now)
-!   * visual_cfg_force_small_ao from visual_cfg.F90 not passed
 !
     group = '/input/aobasis/'
     call checkpoint_query(group, dirac_ao)
     if (dirac_ao) then
-      small_component = visual_cfg_force_small_ao
-      call read_ao_from_dirac(ao_basis, small_component)
+      call read_ao_from_dirac(ao_basis)
       !if (present(print_level)) then
       !  if (print_level > 0) then
       !    write(*, *) 'AO basis data read from DIRAC CHECKPOINT'
@@ -470,9 +476,9 @@ contains
   end subroutine
 
 ! ------------------------------------------------------------------------------
-  subroutine read_ao_from_dirac(ao_basis,small_component)
+  subroutine read_ao_from_dirac(ao_basis)
     type(basis_set_info_t), intent(inout) :: ao_basis
-    logical, intent(in) ::  small_component
+    logical ::  small_component
     character*(:),allocatable:: group
     integer, allocatable:: orbmom(:),n_prim(:),n_cont(:)
     real(8), allocatable:: priexp(:),priccf(:),coord(:)
@@ -485,6 +491,7 @@ contains
 !   gosia fixme unused now (WIP)
 !
 
+
     call checkpoint_query ('/result/symmetry',sym_info)
     if (.not.sym_info) then
        print*, "WARNING: old CHECKPOINT, assuming NOSYM"
@@ -495,6 +502,8 @@ contains
        call checkpoint_read ('/result/symmetry/inversion',&
             idata=inversion)
     end if
+
+    small_component = rs_input%force_small_ao
 
 !   read general AO basis information
     if (maxopr == 0) then
@@ -599,7 +608,6 @@ contains
 !
 !   this subroutine syncs data stored in cmo and mol DTs, 
 !   if any new variable has been added to these DTs, please also add it here
-!   fixme: needs an update!
 !
 
     call interface_mpi_bcast(mol%n_atoms,1,irank_master,global_communicator)
@@ -632,9 +640,7 @@ contains
     call interface_mpi_bcast(cmo%symmetry,nmo,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%index,nmo,irank_master,global_communicator)
 
-
   end subroutine
-
 
 ! ------------------------------------------------------------------------------
   subroutine synchronize_dmat(dmat)
@@ -643,24 +649,23 @@ contains
 
     call interface_mpi_bcast(dmat%mat_dim,1,irank_master,global_communicator)
     call interface_mpi_bcast(dmat%mat_nz,1,irank_master,global_communicator)
-    n = dmat%mat_dim*dmat%mat_dim*dmat%mat_nz
+    call interface_mpi_bcast(dmat%ih_sym,1,irank_master,global_communicator)
+    call interface_mpi_bcast(dmat%tr_sym,1,irank_master,global_communicator)
+    call interface_mpi_bcast(dmat%irep,1,irank_master,global_communicator)
 
     if (.not.mpi_is_master()) then
       call dmat%alloc()
-!gosia fixme
-      !call dmat%alloc_q()
     end if
+
+    n = dmat%mat_dim*dmat%mat_dim*dmat%mat_nz
     call interface_mpi_bcast(dmat%elements,n,irank_master,global_communicator)
-    !call interface_mpi_bcast(dmat%elements_q,n,irank_master,global_communicator)
 
   end subroutine
-
 
 ! ------------------------------------------------------------------------------
   subroutine synchronize_grid_data(grid)
     type(grid_t), intent(inout):: grid
     integer:: len_gfn_inp, len_gfn_out
-! ------------------------------------------------------------------------------
 
     if (mpi_is_master()) then
       if (allocated(grid%file_inp)) then
@@ -680,18 +685,18 @@ contains
     call interface_mpi_bcast(grid%id,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%ndim,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%nr_points_total,1,irank_master,global_communicator)
-    call interface_mpi_bcast(grid%status,1,irank_master,global_communicator)
-    call interface_mpi_bcast(grid%input,1,irank_master,global_communicator)
-    call interface_mpi_bcast(grid%typ,1,irank_master,global_communicator)
-    call interface_mpi_bcast(grid%weights,1,irank_master,global_communicator)
-    call interface_mpi_bcast(grid%margin,1,irank_master,global_communicator)
-    call interface_mpi_bcast_l0(grid%export,1,irank_master,global_communicator)
-    call interface_mpi_bcast_l0(grid%origin_known,1,irank_master,global_communicator)
-    call interface_mpi_bcast_l0(grid%nr_points_total_known,1,irank_master,global_communicator)
-
     call interface_mpi_bcast(grid%nr_points,grid%ndim,irank_master,global_communicator)
     call interface_mpi_bcast(grid%origin,grid%ndim,irank_master,global_communicator)
     call interface_mpi_bcast(grid%spacing,grid%ndim,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%status,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%input,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid%export,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%typ,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%weights,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%margin,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid%ndim_known,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid%origin_known,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid%nr_points_total_known,1,irank_master,global_communicator)
     call interface_mpi_bcast_l0(grid%nr_points_known,grid%ndim,irank_master,global_communicator)
     call interface_mpi_bcast_l0(grid%spacing_known,grid%ndim,irank_master,global_communicator)
 
@@ -705,12 +710,10 @@ contains
 
   end subroutine synchronize_grid_data
 
-
 ! ------------------------------------------------------------------------------
   subroutine synchronize_grid_function_data(grid_function)
     type(grid_function_t), intent(inout):: grid_function
     integer:: len_gffn_rsp, len_gffn_inp, len_gffn_out, len_gf_name, len_gf_typ
-! ------------------------------------------------------------------------------
 
     if (mpi_is_master()) then
       if (allocated(grid_function%rspvec_file)) then
@@ -739,23 +742,31 @@ contains
         len_gf_typ = 0
       end if
     end if
+    call interface_mpi_bcast(len_gffn_rsp,1,irank_master,global_communicator)
     call interface_mpi_bcast(len_gffn_inp,1,irank_master,global_communicator)
     call interface_mpi_bcast(len_gffn_out,1,irank_master,global_communicator)
     call interface_mpi_bcast(len_gf_name,1,irank_master,global_communicator)
     call interface_mpi_bcast(len_gf_typ,1,irank_master,global_communicator)
 
     call interface_mpi_bcast(grid_function%id,1,irank_master,global_communicator)
-    call interface_mpi_bcast(grid_function%id_assigned_grid,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%status,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%input,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid_function%export,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%nuc,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%wf_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%rspvec_id,1,irank_master,global_communicator)
-    call interface_mpi_bcast(grid_function%nuc,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%lao,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%lao_skip,3,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%lao_comp,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%tensor_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_g_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_m_order,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%id_assigned_grid,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%purpose,1,irank_master,global_communicator)
-    call interface_mpi_bcast_l0(grid_function%export,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%modify,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%cartesian_power,3,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%up_scale,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%down_scale,1,irank_master,global_communicator)
 
     if (.not.mpi_is_master()) then
       if (len_gffn_rsp > 0) allocate(character(len_gffn_rsp):: grid_function%rspvec_file)
@@ -1094,14 +1105,10 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine setup_orbital_string(cmo, &
-                                  use_orbital_string, &
-                                  occupation)
+  subroutine setup_orbital_string(cmo)
 #include "dcborb.h" !nish, nash
 #include "maxorb.h" !mxprim
     type(cmo_t), intent(inout) :: cmo
-    logical, intent(in) :: use_orbital_string
-    real(8), intent(in) :: occupation(mxprim, 2)
     integer:: i, ifsym, ioff
 
 !   this routine will set up occupation vector
@@ -1118,9 +1125,11 @@ contains
     ioff = 0
     do ifsym = 1, cmo%n_fsym
       ioff = ioff+cmo%n_po(ifsym)
-      if (use_orbital_string) then
+      if (rs_input%set_occupation) then
+        if (.not. rs_input%allocated_occupation()) return
+        print *, 'Orbital occupations will be modified according to .OCCUPATION'
         do i = 1, (cmo%n_mo(ifsym) - cmo%n_po(ifsym))
-          cmo%occupation(ioff+i) = occupation(i, ifsym)
+          cmo%occupation(ioff+i) = rs_input%occupation(i, ifsym)
         end do
       else
         if (nash(ifsym) > 0) then
@@ -1178,45 +1187,42 @@ contains
 
   end subroutine
 
-
-  subroutine get_xyzscomp_from_rspvec(grid_function, svec)
-    type(grid_function_t), intent(in):: grid_function
-    character(len=1),intent(out)::svec
-    type(response_info_t):: rsp_info
-    integer:: rspvec_id
-
-    call rsp_info%read_from_checkpoint(trim(grid_function%rspvec_file))
-    rspvec_id = grid_function%rspvec_id
- 
-    if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-XRM1H1') then
-      svec = 'X'
-    else if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-YRM1H1') then
-      svec = 'Y'
-    else if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-ZRM1H1') then
-      svec = 'Z'
-    end if
-
-    call rsp_info%erase()
-  end
-
-  subroutine get_xyzicomp_from_rspvec(grid_function, ivec)
-    type(grid_function_t), intent(in):: grid_function
+  subroutine get_xyzcomp_from_rspvec(grid_function, ivec)
+    type(grid_function_t), intent(inout):: grid_function
     integer,intent(out)::ivec
-    type(response_info_t):: rsp_info
+    character(len=:),allocatable :: f_name
+    type(response_info_t):: rsp_info_this
     integer:: rspvec_id
 
-    call rsp_info%read_from_checkpoint(trim(grid_function%rspvec_file))
+    f_name = grid_function%rspvec_file
+    call rsp_info_this%read_from_checkpoint(f_name)
+    call rsp_info_this%display
     rspvec_id = grid_function%rspvec_id
  
-    if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-XRM1H1') then
+    if (rsp_info_this%vectors(rspvec_id)%get_label() == 'LAO-XRM1H1') then
       ivec = 1
-    else if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-YRM1H1') then
+      grid_function%lao_comp = 'X'
+    else if (rsp_info_this%vectors(rspvec_id)%get_label() == 'LAO-YRM1H1') then
       ivec = 2
-    else if (rsp_info%vectors(rspvec_id)%get_label() == 'LAO-ZRM1H1') then
+      grid_function%lao_comp = 'Y'
+    else if (rsp_info_this%vectors(rspvec_id)%get_label() == 'LAO-ZRM1H1') then
       ivec = 3
+      grid_function%lao_comp = 'Z'
     end if
 
-    call rsp_info%erase()
+    call rsp_info_this%erase()
   end
+
+! ------------------------------------------------------------------------------
+  subroutine visual_input_show_setup()
+ 
+ 
+   end subroutine
+
+
+   subroutine verify_input_keywords()
+
+   end subroutine verify_input_keywords
+
 
 end module

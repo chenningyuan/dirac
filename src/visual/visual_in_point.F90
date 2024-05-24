@@ -483,7 +483,7 @@ contains
         t2_33 = 0.0d0
         call j_dia(t2_33,      &
                    (grid_function%lao > 0),&
-                   visual_cfg_gauge_origin,&
+                   rs_input%gauge_origin,&
                    dmat%irep,     &
                    dmat%mat_dim,  &
                    dmat%elements, &
@@ -508,9 +508,9 @@ contains
                    buffer,    &
                    ao)
 
-        rx = px-visual_cfg_gauge_origin(1)
-        ry = py-visual_cfg_gauge_origin(2)
-        rz = pz-visual_cfg_gauge_origin(3)
+        rx = px-rs_input%gauge_origin(1)
+        ry = py-rs_input%gauge_origin(2)
+        rz = pz-rs_input%gauge_origin(3)
 
         f = -0.5d0
 
@@ -553,15 +553,16 @@ contains
 !       we either calculate the NMR shielding of a given nucleus
 !       or a "NICS" value in a given point
 !       (for a true NICS value multiply by "-1")
-        if (visual_cfg_nics) then
-           rx = px-visual_cfg_nics_origin(1)
-           ry = py-visual_cfg_nics_origin(2)
-           rz = pz-visual_cfg_nics_origin(3)
-        else
+        !if (visual_cfg_nics) then
+           !FIXME
+           !rx = px-visual_cfg_nics_origin(1)
+           !ry = py-visual_cfg_nics_origin(2)
+           !rz = pz-visual_cfg_nics_origin(3)
+        !else
            rx = px-cord(1, grid_function%nuc)
            ry = py-cord(2, grid_function%nuc)
            rz = pz-cord(3, grid_function%nuc)
-        end if
+        !end if
 
         f = -1.0d0/((rx*rx+ry*ry+rz*rz)**1.5d0)
 
@@ -723,48 +724,14 @@ contains
               t1(2)*visual_cfg_pol_vector(2)+  &
               t1(3)*visual_cfg_pol_vector(3))*sin(f)/visual_cfg_freq
 
-
-
-
- 
-! todo list:
-!           nonrel diamagnetic current density (hardcoded for B along z)
-!            if (visual_cfg_property(imat) == iq_jdia) then
-!!           full light-matter interaction: cosine part
-!            if (visual_cfg_property(imat) == iq_tcos) then
-!!           full light-matter interaction: sine part
-!            if (visual_cfg_property(imat) == iq_tsin) then
-!!           responding operator is nuclear magnetic dipole
-!            if ((visual_cfg_property(imat) == iq_ndipxdia) .or. &
-!                (visual_cfg_property(imat) == iq_ndipydia) .or. &
-!                (visual_cfg_property(imat) == iq_ndipzdia)) then
-!            all esp functions
-
-
-
-
-
-
-
-
     end select
 
-!    if (pointwise_modification) then
-!!     Multiply with Cartesian powers
-!      do i = 1, visual_cfg_cartesian_power(1)
-!        result = px*result    
-!      enddo
-!      do i = 1, visual_cfg_cartesian_power(2)
-!        result = py*result    
-!      enddo
-!      do i = 1, visual_cfg_cartesian_power(3)
-!        result = pz*result    
-!      enddo
-!      
-!!     Scale result 
-!      grid_function_values(:,ipoint:ipoint) = visual_cfg_scale*grid_function_values(:,ipoint:ipoint)
-!
-!    end if
+    if (grid_function%modify == 1) then
+      call modify_grid_function_pointwise(grid_function,&
+                                          grid_function_values,&
+                                          px,py,pz,&
+                                          ipoint=ipoint)
+    end if
 
   end subroutine
 
@@ -848,8 +815,7 @@ contains
             if (levyle) then
 
               t1 = 0.0d0
-              call get_xyzcomp_from_rspvec(grid_function, xyzcomp)
-              call get_jblao_ll(xyzcomp, &
+              call get_jblao_ll(grid_function%lao_comp,&
                                 dmat_0%elements, &
                                 dmat_0%mat_dim,  &
                                 ao, &
@@ -858,8 +824,8 @@ contains
             else
           
               t1 = 0.0d0
-              call get_xyzcomp_from_rspvec(grid_function, xyzcomp)
-              call get_jblao(xyzcomp, cval, &
+              call get_jblao(grid_function%lao_comp,&
+                             cval,&
                              dmat_0%elements, &
                              dmat_0%mat_dim,  &
                              ao, &
@@ -911,8 +877,7 @@ contains
           !    stop
           !else
             temp_33 = 0.0d0
-            call get_xyzcomp_from_rspvec(grid_function, xyzcomp)
-            call get_gjblao(xyzcomp,         &
+            call get_gjblao(grid_function%lao_comp,&
                             cval,            &
                             dmat_0%elements, &
                             dmat_0%mat_dim,  &
@@ -962,7 +927,7 @@ contains
         t2_33 = 0.0d0
         call j_dia(t2_33,      &
                    (grid_function%lao > 0),&
-                   visual_cfg_gauge_origin,&
+                   rs_input%gauge_origin,&
                    dmat_other%irep,     &
                    dmat_other%mat_dim,  &
                    dmat_other%elements, &
@@ -1014,8 +979,7 @@ contains
             if (levyle) then
 
               temp = 0.0d0
-              call get_xyzcomp_from_rspvec(grid_function, xyzcomp)
-              call get_jblao_ll(xyzcomp, &
+              call get_jblao_ll(grid_function%lao_comp,&
                                 dmat_0%elements, &
                                 dmat_0%mat_dim,  &
                                 ao, &
@@ -1025,8 +989,7 @@ contains
             else
           
               temp = 0.0d0
-              call get_xyzcomp_from_rspvec(grid_function, xyzcomp)
-              call get_jblao(xyzcomp,         &
+              call get_jblao(grid_function%lao_comp,&
                              cval,            &
                              dmat_0%elements, &
                              dmat_0%mat_dim,  &
@@ -1042,15 +1005,16 @@ contains
 !       we either calculate the NMR shielding of a given nucleus
 !       or a "NICS" value in a given point
 !       (for a true NICS value multiply by "-1")
-        if (visual_cfg_nics) then
-           rx = px-visual_cfg_nics_origin(1)
-           ry = py-visual_cfg_nics_origin(2)
-           rz = pz-visual_cfg_nics_origin(3)
-        else
+        !if (visual_cfg_nics) then
+           !FIXME
+           !rx = px-visual_cfg_nics_origin(1)
+           !ry = py-visual_cfg_nics_origin(2)
+           !rz = pz-visual_cfg_nics_origin(3)
+        !else
            rx = px-cord(1, grid_function%nuc)
            ry = py-cord(2, grid_function%nuc)
            rz = pz-cord(3, grid_function%nuc)
-        end if
+        !end if
 
         f = -1.0d0/((rx*rx+ry*ry+rz*rz)**1.5d0)
 
@@ -1064,22 +1028,12 @@ contains
 
     end select
 
-!    if (pointwise_modification) then
-!!     Multiply with Cartesian powers
-!      do i = 1, visual_cfg_cartesian_power(1)
-!        result = px*result    
-!      enddo
-!      do i = 1, visual_cfg_cartesian_power(2)
-!        result = py*result    
-!      enddo
-!      do i = 1, visual_cfg_cartesian_power(3)
-!        result = pz*result    
-!      enddo
-!      
-!!     Scale result 
-!      grid_function_values(:,ipoint:ipoint) = visual_cfg_scale*grid_function_values(:,ipoint:ipoint)
-!
-!    end if
+    if (grid_function%modify == 1) then
+      call modify_grid_function_pointwise(grid_function,&
+                                          grid_function_values,&
+                                          px,py,pz,&
+                                          ipoint=ipoint)
+    end if
 
   end subroutine
 
@@ -1162,7 +1116,97 @@ contains
 
     end select
 
+    if (grid_function%modify == 1) then
+      call modify_grid_function(grid_function,&
+                                grid_function_values,&
+                                ndim, nr_points,&
+                                grid_points)
+    end if
+
   end subroutine
 
+! ------------------------------------------------------------------------------
+  subroutine modify_grid_function_pointwise(grid_function,&
+                                            grid_function_values,&
+                                            px,py,pz,&
+                                            ipoint)
+
+    type(grid_function_t), intent(inout):: grid_function
+    real(8), intent(inout):: grid_function_values(:,:)
+    real(8), intent(in):: px, py, pz
+    integer, intent(in):: ipoint
+    real(8):: f
+
+    f = 1.0d0
+
+!   Multiply with Cartesian powers
+    if (grid_function%cartesian_power(1) .ne. 0) then
+      f = f * (px**grid_function%cartesian_power(1))
+    end if
+    if (grid_function%cartesian_power(2) .ne. 0) then
+      f = f * (py**grid_function%cartesian_power(2))
+    end if
+    if (grid_function%cartesian_power(3) .ne. 0) then
+      f = f * (pz**grid_function%cartesian_power(3))
+    end if
+
+!   Scale result 
+    if (grid_function%up_scale .ne. 1.0d0) then
+      f = f * grid_function%up_scale 
+    end if
+
+    if (grid_function%down_scale .ne. 1.0d0) then
+        f = f / grid_function%down_scale
+    end if
+
+    grid_function_values(:, ipoint:ipoint) = f*grid_function_values(:, ipoint:ipoint)
+
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine modify_grid_function(grid_function,&
+                                  grid_function_values,&
+                                  ndim, nr_points,&
+                                  grid_points)
+
+    type(grid_function_t), intent(inout):: grid_function
+    real(8), intent(inout):: grid_function_values(:,:)
+    integer, intent(in):: ndim,nr_points
+    real(8), intent(in):: grid_points(ndim,nr_points)
+    integer:: ipoint
+    real(8):: f, px, py, pz
+
+    f = 1.0d0
+
+!   Multiply with Cartesian powers
+    do ipoint = 1, nr_points
+      px = grid_points(1,ipoint)
+      py = grid_points(2,ipoint)
+      pz = grid_points(3,ipoint)
+
+      if (grid_function%cartesian_power(1) .ne. 0) then
+        f = f * (px**grid_function%cartesian_power(1))
+      end if
+      if (grid_function%cartesian_power(2) .ne. 0) then
+        f = f * (py**grid_function%cartesian_power(2))
+      end if
+      if (grid_function%cartesian_power(3) .ne. 0) then
+        f = f * (pz**grid_function%cartesian_power(3))
+      end if
+
+      grid_function_values(:, ipoint:ipoint) = f*grid_function_values(:, ipoint:ipoint)
+    end do
+
+!   Scale result 
+    if (grid_function%up_scale .ne. 1.0d0) then
+      f = grid_function%up_scale 
+      grid_function_values(:, 1:nr_points) = f*grid_function_values(:, 1:nr_points)
+    end if
+    if (grid_function%down_scale .ne. 1.0d0) then
+      f = 1.0d0 / grid_function%down_scale
+      grid_function_values(:, 1:nr_points) = f*grid_function_values(:, 1:nr_points)
+    end if
+
+  end subroutine
 
 end module

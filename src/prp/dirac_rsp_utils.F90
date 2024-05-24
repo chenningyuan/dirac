@@ -783,6 +783,8 @@ contains
     type(file_info_t), intent(inout) :: rsp_file
     character(len=80):: group
 
+    if (rsp_info%data_is_read) return
+
     group = '/result/response'
     call lab_read(rsp_file, trim(group)//'/nr_rsp_vectors', &
                   idata=rsp_info%nr_rsp_vectors)
@@ -822,12 +824,15 @@ contains
     integer, pointer:: tmp_idata(:)
     integer:: ivec, nr_vec
 
+    if (.not. rsp_info%data_is_read) return
+
     if (.not. rsp_info%allocated_vectors()) then
       call rsp_info%alloc()
     end if
 
     nr_vec = rsp_info%nr_rsp_vectors
     do ivec = 1, nr_vec
+      if (rsp_info%vectors(ivec)%data_is_read) return
       write(ich, '(i4)') ivec
       group = '/result/response/vectors/vec_'//trim(adjustl(ich))
       call lab_read(rsp_file, trim(group)//'/id', &
@@ -909,7 +914,13 @@ contains
       rsp_file%status = -1
       call lab_init(rsp_file, top_groups)
     else
-      write(*,*) " Opening existing HDF5 file for rsp data export: ", rsp_file%name
+      if (present(valid)) then
+        if (valid) then
+          write(*,*) " Opening existing HDF5 file for rsp data import: ", rsp_file%name
+        else
+          write(*,*) " Opening existing HDF5 file for rsp data export: ", rsp_file%name
+        end if
+      end if
       rsp_file%name = trim(f_name)
       rsp_file%type = 2
       rsp_file%status = 0

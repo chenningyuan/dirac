@@ -13,19 +13,12 @@ module visual_cfg
   public verify_grid_input_cfg
   public verify_grid_function_input_cfg
 
-  public import_dirac_cb_variables
 
-!  public import_dirac_cb_variables
 #ifdef VAR_MPI
   public sync_visual_cfg
 #endif
 
    save
-
-
-!  stays; remember to bcast!!!
-   real(8), public, allocatable :: visual_cfg_occupation(:, :)
-   logical, public              :: visual_cfg_use_orbital_string = .false.
 
    real(8), public:: visual_cfg_cval
 
@@ -90,21 +83,6 @@ module visual_cfg
    logical,      public                     :: visual_cfg_inp_data_files_use_legacy= .false.
    integer,      public                     :: visual_cfg_nr_plot_files = 0
 
-   integer, public:: iq_jdia     = 10
-   integer, public:: iq_bdipxdia = 20
-   integer, public:: iq_bdipydia = 21
-   integer, public:: iq_bdipzdia = 22
-   integer, public:: iq_ndipxdia = 23
-   integer, public:: iq_ndipydia = 24
-   integer, public:: iq_ndipzdia = 25
-   integer, public:: iq_jx       = 38
-   integer, public:: iq_jy       = 39
-   integer, public:: iq_jz       = 40
-   integer, public:: iq_tcos     = 41
-   integer, public:: iq_tsin     = 42   
-   
-
-   logical, public:: visual_cfg_print_data_to_dirac_output = .false.
 
 !                     visualization in 2d
    logical, public:: visual_cfg_2d             = .false.
@@ -167,29 +145,10 @@ module visual_cfg
    
    real(8),       public:: visual_cfg_scale              = 1.0d0
    real(8),       public:: visual_cfg_cartesian_power(3) = 0.0   
-   real(8),       public:: visual_cfg_gauge_origin(3)    = 0.0d0
    real(8),       public:: visual_cfg_wave_vector(3)     = 0.0d0
    real(8),       public:: visual_cfg_freq               = 0.0d0   
    real(8),       public:: visual_cfg_pol_vector(3)      = 0.0d0   
-   logical,       public:: visual_cfg_force_small_ao     = .false.
 
-   logical,       public:: visual_cfg_nics              = .false.
-   real(8),       public:: visual_cfg_nics_origin(3)    = 0.0d0
-
-   logical,      public:: visual_cfg_london               = .false.
-   logical,      public:: visual_cfg_london_skip_kappa    = .false.
-   logical,      public:: visual_cfg_london_skip_direct   = .false.
-   logical,      public:: visual_cfg_london_skip_ro       = .false.
-   logical,      public:: visual_cfg_london_none          = .false.
-   character(1), public:: visual_cfg_london_component
-   logical,      public            :: visual_cfg_london_skip_cube = .false.
-   logical,      public            :: visual_cfg_london_skip_vtk  = .false.
-
-   integer,      public:: visual_cfg_irep_conmat = 0
-   integer,      public:: visual_cfg_itim_conmat = 0
-
-
-   logical,      public:: visual_cfg_tensor          = .false.
 
    private
 
@@ -452,7 +411,7 @@ contains
     !character(len=len(key))::temp
     character(len=len_trim(val))::temp
     integer::stat, np
-    real(8)::s
+    real(8)::s,fac
     integer::nr_words, i
     character(len=10),allocatable::chvalues(:)
 
@@ -535,6 +494,33 @@ contains
         grid_function%file_inp = val
       case ('file_out')
         grid_function%file_out = val
+      case ('uscale')
+        grid_function%modify = 1
+        call str2flt(val, grid_function%up_scale, stat)
+      case ('dscale')
+        grid_function%modify = 1
+        call str2flt(val, grid_function%down_scale, stat)
+      case ('carpow')
+        grid_function%modify = 1
+        temp = val
+        call trim_ch(temp, val,  '[')
+        call trim_ch(temp, temp, ']')
+        if (index(val, ',') > 0) then
+          nr_words = word_count(temp, ',')
+          if (nr_words .ne. 3) then
+            write(*,*) 'Warning! More than three values are in the array'
+          end if
+          allocate(chvalues(nr_words))
+          call split_string(temp, nr_words, chvalues, separator=',')
+          do i = 1, nr_words
+            call str2int(trim(chvalues(i)), np, stat)
+            grid_function%cartesian_power(i) = np
+          end do
+          deallocate(chvalues)
+        else
+          write(*,*) 'Expected argument is an array of floats. Stopping now'
+          stop
+        end if
       case default
         print *, 'Input error. Unknown key. Stopping now.'
         stop
@@ -633,7 +619,8 @@ contains
 
     if (grid_function%lao > 0) then
       if (grid_function%max_ao_m_order < 1) grid_function%max_ao_m_order = 1
-      if (.not.visual_cfg_london_skip_direct) then
+      if (grid_function%lao_skip(2) == 0) then
+!       do not skip LAO-direct contributions
         grid_function%gf_type = "composite"
       end if
     end if
@@ -690,10 +677,6 @@ contains
    end subroutine
 
 
-  subroutine import_dirac_cb_variables()
-#include "dcbgen.h"
-   visual_cfg_cval = cval  ! speed of light used in Dirac                             
-  end subroutine 
 
 #ifdef VAR_MPI
   subroutine sync_visual_cfg()
@@ -707,6 +690,9 @@ contains
 
     call interface_mpi_bcast_l0(rs_input%outpri,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%print_level,1,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_input%print_unit,1,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_input%cvalue,1,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_input%gauge_origin,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%nr_grids,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%nr_grid_functions,1,irank_master,global_communicator)
     if (.not.mpi_is_master()) then

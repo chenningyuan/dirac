@@ -63,23 +63,23 @@ module visual_txt_storage
       integer:: i, j
 !  -----------------------------------------------------------------------------
 
-      if (visual_cfg_print_data_to_dirac_output) then
+      if (rs_input%outpri) then
          ! write to DIRAC output
          fmt = '(*(es18.8e3, :))'
          write(*, fmt) (grid_point(j), j = 1, size(grid_point)), &
                                         (grid_function(j), j = 1, size(grid_function))
       else
          ! write to files
-         do i = 1, visual_cfg_nr_plot_files
-         
-            fmt = '(*('//trim(plot_files(i)%float_format)//',:))'
-         
-            if (plot_files(i)%is_opened) then
-               write(plot_files(i)%unit, fmt) (grid_point(j), j = 1, size(grid_point)), &
-                                              (grid_function(j), j = 1, size(grid_function))
-            end if
-         
-         end do
+         !do i = 1, visual_cfg_nr_plot_files
+         !
+         !   fmt = '(*('//trim(plot_files(i)%float_format)//',:))'
+         !
+         !   if (plot_files(i)%is_opened) then
+         !      write(plot_files(i)%unit, fmt) (grid_point(j), j = 1, size(grid_point)), &
+         !                                     (grid_function(j), j = 1, size(grid_function))
+         !   end if
+         !
+         !end do
       end if
  
    end subroutine
@@ -410,12 +410,13 @@ module visual_txt_storage
          plot_files(i)%name = 'plot.3d.scalar'
          plot_files(i)%data_type = 'scalar'
 
-         if (.not. visual_cfg_london_skip_cube) then
-            i = i+1
-            plot_files(i)%unit = lunit_3d_cube
-            plot_files(i)%name = 'plot.3d.cube'
-            plot_files(i)%data_type = 'scalar'
-         end if
+         !legacy
+         !if (.not. visual_cfg_london_skip_cube) then
+         !   i = i+1
+         !   plot_files(i)%unit = lunit_3d_cube
+         !   plot_files(i)%name = 'plot.3d.cube'
+         !   plot_files(i)%data_type = 'scalar'
+         !end if
 
          ! data_type = 'vector'
          i = i+1
@@ -423,12 +424,13 @@ module visual_txt_storage
          plot_files(i)%name = 'plot.3d.vector'
          plot_files(i)%data_type = 'vector'
 
-         if (.not. visual_cfg_london_skip_vtk) then
-            i = i+1
-            plot_files(i)%unit = lunit_3d_vector_vtk
-            plot_files(i)%name = 'plot.3d.vector_vtk'
-            plot_files(i)%data_type = 'vector'
-         end if
+         !legacy
+         !if (.not. visual_cfg_london_skip_vtk) then
+         !   i = i+1
+         !   plot_files(i)%unit = lunit_3d_vector_vtk
+         !   plot_files(i)%name = 'plot.3d.vector_vtk'
+         !   plot_files(i)%data_type = 'vector'
+         !end if
 
          ! data_type = 'tensor'
          i = i+1
@@ -445,114 +447,114 @@ module visual_txt_storage
             plot_files(i)%float_format= 'es20.10e3'
          end do   
 
-         visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
+         !visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
 
       end if
 
-      if (visual_cfg_line) then
-         allocate(plot_files(size(visual_cfg_line_data_types)))
+      !if (visual_cfg_line) then
+      !   allocate(plot_files(size(visual_cfg_line_data_types)))
 
-         ! data_type = 'scalar'
-         i = 1
-         plot_files(i)%unit = lunit_line_scalar 
-         plot_files(i)%name = 'plot.line.scalar'
-         plot_files(i)%data_type = 'scalar'
+      !   ! data_type = 'scalar'
+      !   i = 1
+      !   plot_files(i)%unit = lunit_line_scalar 
+      !   plot_files(i)%name = 'plot.line.scalar'
+      !   plot_files(i)%data_type = 'scalar'
 
-         ! data_type = 'vector'
-         i = i+1
-         plot_files(i)%unit = lunit_line_vector 
-         plot_files(i)%name = 'plot.line.vector'
-         plot_files(i)%data_type = 'vector'
+      !   ! data_type = 'vector'
+      !   i = i+1
+      !   plot_files(i)%unit = lunit_line_vector 
+      !   plot_files(i)%name = 'plot.line.vector'
+      !   plot_files(i)%data_type = 'vector'
 
-         ! data_type = 'tensor'
-         i = i+1
-         plot_files(i)%unit = lunit_line_tensor 
-         plot_files(i)%name = 'plot.line.tensor'
-         plot_files(i)%data_type = 'tensor'
+      !   ! data_type = 'tensor'
+      !   i = i+1
+      !   plot_files(i)%unit = lunit_line_tensor 
+      !   plot_files(i)%name = 'plot.line.tensor'
+      !   plot_files(i)%data_type = 'tensor'
 
-         nfiles = i
+      !   nfiles = i
 
-         ! file attributes common to all data types
-         do i = 1, nfiles
-            plot_files(i)%format = 'txt'
-            plot_files(i)%domain = 'line'
-            plot_files(i)%float_format= 'es20.10e3'
-         end do   
+      !   ! file attributes common to all data types
+      !   do i = 1, nfiles
+      !      plot_files(i)%format = 'txt'
+      !      plot_files(i)%domain = 'line'
+      !      plot_files(i)%float_format= 'es20.10e3'
+      !   end do   
 
-         visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
+      !   visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
 
-      end if
+      !end if
 
-      if (visual_cfg_list) then
-         allocate(plot_files(size(visual_cfg_list_data_types)))
+      !if (visual_cfg_list) then
+      !   allocate(plot_files(size(visual_cfg_list_data_types)))
 
-         ! data_type = 'scalar'
-         i = 1
-         plot_files(i)%unit = lunit_list_scalar 
-         plot_files(i)%name = 'plot.list.scalar'
-         plot_files(i)%data_type = 'scalar'
+      !   ! data_type = 'scalar'
+      !   i = 1
+      !   plot_files(i)%unit = lunit_list_scalar 
+      !   plot_files(i)%name = 'plot.list.scalar'
+      !   plot_files(i)%data_type = 'scalar'
 
-         ! data_type = 'vector'
-         i = i+1
-         plot_files(i)%unit = lunit_list_vector 
-         plot_files(i)%name = 'plot.list.vector'
-         plot_files(i)%data_type = 'vector'
+      !   ! data_type = 'vector'
+      !   i = i+1
+      !   plot_files(i)%unit = lunit_list_vector 
+      !   plot_files(i)%name = 'plot.list.vector'
+      !   plot_files(i)%data_type = 'vector'
 
-         ! data_type = 'tensor'
-         i = i+1
-         plot_files(i)%unit = lunit_list_tensor 
-         plot_files(i)%name = 'plot.list.tensor'
-         plot_files(i)%data_type = 'tensor'
+      !   ! data_type = 'tensor'
+      !   i = i+1
+      !   plot_files(i)%unit = lunit_list_tensor 
+      !   plot_files(i)%name = 'plot.list.tensor'
+      !   plot_files(i)%data_type = 'tensor'
 
-         nfiles = i
+      !   nfiles = i
 
-         ! file attributes common to all data types
-         do i = 1, nfiles
-            plot_files(i)%format = 'txt'
-            plot_files(i)%domain = 'list'
-            plot_files(i)%float_format= 'es20.10e3'
-         end do   
+      !   ! file attributes common to all data types
+      !   do i = 1, nfiles
+      !      plot_files(i)%format = 'txt'
+      !      plot_files(i)%domain = 'list'
+      !      plot_files(i)%float_format= 'es20.10e3'
+      !   end do   
 
-         visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
+      !   visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
 
-      end if
+      !end if
 
-      if (visual_cfg_radial) then
-         allocate(plot_files(size(visual_cfg_radial_data_types)))
+      !if (visual_cfg_radial) then
+      !   allocate(plot_files(size(visual_cfg_radial_data_types)))
 
-         ! data_type = 'scalar'
-         i = 1
-         plot_files(i)%unit = lunit_radial_scalar 
-         plot_files(i)%name = 'plot.radial.scalar'
-         plot_files(i)%data_type = 'scalar'
+      !   ! data_type = 'scalar'
+      !   i = 1
+      !   plot_files(i)%unit = lunit_radial_scalar 
+      !   plot_files(i)%name = 'plot.radial.scalar'
+      !   plot_files(i)%data_type = 'scalar'
 
-         ! data_type = 'vector'
-         i = i+1
-         plot_files(i)%unit = lunit_radial_vector 
-         plot_files(i)%name = 'plot.radial.vector'
-         plot_files(i)%data_type = 'vector'
+      !   ! data_type = 'vector'
+      !   i = i+1
+      !   plot_files(i)%unit = lunit_radial_vector 
+      !   plot_files(i)%name = 'plot.radial.vector'
+      !   plot_files(i)%data_type = 'vector'
 
-         ! data_type = 'tensor'
-         i = i+1
-         plot_files(i)%unit = lunit_radial_tensor 
-         plot_files(i)%name = 'plot.radial.tensor'
-         plot_files(i)%data_type = 'tensor'
+      !   ! data_type = 'tensor'
+      !   i = i+1
+      !   plot_files(i)%unit = lunit_radial_tensor 
+      !   plot_files(i)%name = 'plot.radial.tensor'
+      !   plot_files(i)%data_type = 'tensor'
 
-         nfiles = i
+      !   nfiles = i
 
-         ! file attributes common to all data types
-         do i = 1, nfiles
-            plot_files(i)%format = 'txt'
-            plot_files(i)%domain = 'radial'
-            plot_files(i)%float_format= 'es20.10e3'
-         end do   
+      !   ! file attributes common to all data types
+      !   do i = 1, nfiles
+      !      plot_files(i)%format = 'txt'
+      !      plot_files(i)%domain = 'radial'
+      !      plot_files(i)%float_format= 'es20.10e3'
+      !   end do   
 
-         visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
+      !   visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
 
-      end if
+      !end if
 
 
-   end subroutine visual_legacy_files_for_data_export
+   end subroutine
 
 
    subroutine print_plot_files_info(plot_files)
@@ -571,6 +573,6 @@ module visual_txt_storage
          write(*,*) plot_files(i)%exists
          write(*,*) plot_files(i)%is_opened
       end do
-   end subroutine print_plot_files_info
+   end subroutine
 
 end module
