@@ -20,10 +20,11 @@ contains
 
     if (grid_function%input  ==  1) then
       ! gosia todo:
-      ! read grid function data from file
+      ! read grid function data from file (hdf5 or txt)
       !call get_grid_function_info_from_file(grid_function)
       if (grid_function%id == 0) grid_function%id = grid_function_id
     else
+      ! calculate grid function
       if (grid_function_id /= grid_function%id) then
         print *, 'ERROR: problem with grid function id in get_grid_function_info:'
         print *, ' * grid_function%id=', grid_function%id

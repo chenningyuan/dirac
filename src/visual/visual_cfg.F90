@@ -20,7 +20,6 @@ module visual_cfg
 
    save
 
-   real(8), public:: visual_cfg_cval
 
 !
 
@@ -628,7 +627,7 @@ contains
 !fixme:
     !grid_function%wf_order = 0
 
-    if (levyle) then
+    if (rs_input%levyle) then
       if ((grid_function%name == 'j') .or. &
           (grid_function%name == 'ndip')) then
         if (grid_function%max_ao_g_order < 1) then
@@ -692,9 +691,10 @@ contains
     call interface_mpi_bcast(rs_input%print_level,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%print_unit,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%cvalue,1,irank_master,global_communicator)
-    call interface_mpi_bcast(rs_input%gauge_origin,1,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_input%gauge_origin,3,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%nr_grids,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%nr_grid_functions,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(rs_input%levyle,1,irank_master,global_communicator)
     if (.not.mpi_is_master()) then
       ! the allocation on master happens during DIRAC input reading (input/input_reader_sections.F90)
       allocate(rs_input%grids(rs_input%nr_grids))
@@ -703,7 +703,6 @@ contains
 
     ! legacy and variables from DIRAC's common blocks
     call interface_mpi_bcast_l0(visual_cfg_global_refactor,1,irank_master,global_communicator)
-    call interface_mpi_bcast(visual_cfg_cval,1,irank_master,global_communicator)
 
     !if (rs_input%print_level > 0) call logprint
   end subroutine sync_visual_cfg

@@ -75,6 +75,7 @@ module visual_datatypes
     integer, public:: nr_grid_functions = 0
     type(grid_t), allocatable, public:: grids(:)
     type(grid_function_t), allocatable, public:: grid_functions(:)
+    logical, public:: levyle    = .false.
 !   default values, thresholds, convergence criteria
   contains
     private
@@ -490,18 +491,29 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine display_rs_setup(self)
+  subroutine display_rs_setup(self,my_rank)
     class(rs_input_t), intent(in):: self
+    integer, intent(in), optional:: my_rank
+    logical:: with_rank_info
     integer :: i, j
 
+    with_rank_info = .false.
+    if (present(my_rank)) with_rank_info = .true.
+
+
     write(*, *)
-    write(*, *) ' VISUAL: rs_input'
+    if (with_rank_info) then
+      write(*, *) ' VISUAL: rs_input on node ', my_rank
+    else
+      write(*, *) ' VISUAL: rs_input'
+    end if
     write(*, *) 'print_level =         ', self%print_level
     write(*, *) 'print_unit  =         ', self%print_unit
     write(*, *) 'outpri =              ', self%outpri
     write(*, *) 'set_occupation =      ', self%set_occupation
     write(*, *) 'force_small_ao =      ', self%force_small_ao
     write(*, *) 'cvalue =              ', self%cvalue
+    write(*, *) 'levyle =              ', self%levyle
     write(*, *) 'gauge_origin =        ', self%gauge_origin
     write(*, *) 'set_cvalue     =      ', self%set_cvalue
     write(*, *) 'nr_grids =            ', self%nr_grids
@@ -515,6 +527,7 @@ contains
     end if
     write(*, *)
    end subroutine
+
 
 ! ------------------------------------------------------------------------------
   subroutine display_grid(self,my_rank)

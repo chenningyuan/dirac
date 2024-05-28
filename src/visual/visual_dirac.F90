@@ -115,8 +115,6 @@ contains
 
 !       read response data from 'RESPONSE.h5' file
         if (.not.present(grid_function)) stop
-        write(*,*) 'DEBUG NOW1'
-        call grid_function%display()
         f_name = grid_function%rspvec_file
         call rsp_info%read_from_checkpoint(trim(f_name))
         ivec_rsp = grid_function%rspvec_id
@@ -198,7 +196,7 @@ contains
               tmpmat_mo%mat_nz = nz
               call tmpmat_mo%alloc()
               call conmat_info%vectors(ivec)%get_copy_of_values(tmpmat_mo%elements,nmo*nmo*nz)
-              if (.not. levyle) then
+              if (.not. rs_input%levyle) then
                 call tmpmat_mo%scale_elements(0.5d0) ! if (.not. levyle) fixme
               end if
               
@@ -243,6 +241,7 @@ contains
 #include "dgroup.h"
 #include "dcbgen.h" ! cvalue
 #include "orgcom.h" ! gagorg
+#include "dcbham.h" ! levyle
 
     logical, intent(in), optional :: hello
 
@@ -263,6 +262,7 @@ contains
     end if
 
     rs_input%gauge_origin(1:3) = gagorg(1:3) ! magnetic gauge origin defined globally in Dirac
+    if (levyle) rs_input%levyle = .true.
 
 #ifdef VAR_MPI
     if (is_parallel()) call sync_visual_cfg()

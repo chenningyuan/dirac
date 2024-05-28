@@ -265,7 +265,7 @@ contains
 !       kin: 
         t0 = 0.0d0
         call get_kin(t0,        &
-                     visual_cfg_cval, &
+                     rs_input%cvalue, &
                      dmat%irep, &
                      dmat%mat_dim,    &
                      dmat%elements,   &
@@ -279,7 +279,7 @@ contains
 !       kin: 
         t0 = 0.0d0
         call get_kin_ls(t0,        &
-                        visual_cfg_cval, &
+                        rs_input%cvalue, &
                         dmat%irep, &
                         dmat%mat_dim,    &
                         dmat%elements,   &
@@ -293,7 +293,7 @@ contains
 !       kin: 
         t0 = 0.0d0
         call get_kin_sl(t0,       &
-                        visual_cfg_cval,&
+                        rs_input%cvalue,&
                         dmat%irep,      &
                         dmat%mat_dim,   &
                         dmat%elements,  &
@@ -395,7 +395,7 @@ contains
       case ('j')
 !       current density: -ec \psi^\dag \alpha \psi
 
-        if (levyle) then
+        if (rs_input%levyle) then
           t0 = 0.0d0
           t1 = 0.0d0
           call get_gn(t0,        &
@@ -412,7 +412,7 @@ contains
         else
           t1 = 0.0d0
           call get_j(t1,        &
-                     cval,      &
+                     rs_input%cvalue,      &
                      dmat%irep, &
                      dmat%mat_dim,  &
                      dmat%elements, &
@@ -429,7 +429,7 @@ contains
             'rotj')
 !       divergence or curl or gradient of current density
 
-        if (levyle) then
+        if (rs_input%levyle) then
            print *, 'error: Levy-Leblond not implemented'
            stop
         end if
@@ -439,7 +439,7 @@ contains
 
         call get_gj(t1,            &
                     t2_33,            &
-                    cval,          &
+                    rs_input%cvalue,          &
                     dmat%irep,     &
                     dmat%mat_dim,  &
                     dmat%elements, &
@@ -501,7 +501,7 @@ contains
         t2_33 = 0.0d0
 
         call get_j(t1,        &
-                   cval,      &
+                   rs_input%cvalue,      &
                    dmat%irep, &
                    dmat%mat_dim,  &
                    dmat%elements, &
@@ -524,7 +524,7 @@ contains
       case ('ndip')
 !       responding operator is nuclear magnetic dipole
 
-        if (levyle) then
+        if (rs_input%levyle) then
           t0 = 0.0d0
           t1 = 0.0d0
           call get_gn(t0,        &
@@ -542,7 +542,7 @@ contains
 
           t1 = 0.0d0
           call get_j(t1,        &
-                     cval,      &
+                     rs_input%cvalue,      &
                      dmat%irep, &
                      dmat%mat_dim,  &
                      dmat%elements, &
@@ -683,7 +683,7 @@ contains
         visual_cfg_freq = 49.138
 
         call get_j(t1,        &
-                   cval,      &
+                   rs_input%cvalue,      &
                    dmat%irep, &
                    dmat%mat_dim,  &
                    dmat%elements, &
@@ -692,7 +692,7 @@ contains
 
         f = (visual_cfg_wave_vector(1)*px+   &
              visual_cfg_wave_vector(2)*py+   &
-             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/cval
+             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/rs_input%cvalue
         grid_function_values(1:1,ipoint:ipoint) = & 
             -(t1(1)*visual_cfg_pol_vector(1)+  &
               t1(2)*visual_cfg_pol_vector(2)+  &
@@ -709,7 +709,7 @@ contains
 
 
         call get_j(t1,        &
-                   cval,      &
+                   rs_input%cvalue,      &
                    dmat%irep, &
                    dmat%mat_dim,  &
                    dmat%elements, &
@@ -718,7 +718,7 @@ contains
 
         f = (visual_cfg_wave_vector(1)*px+   &
              visual_cfg_wave_vector(2)*py+   &
-             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/cval
+             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/rs_input%cvalue
         grid_function_values(1:1,ipoint:ipoint) = &
             -(t1(1)*visual_cfg_pol_vector(1)+  &
               t1(2)*visual_cfg_pol_vector(2)+  &
@@ -775,7 +775,7 @@ contains
       case ('j')
 !       current density: -ec \psi^\dag \alpha \psi
 
-        if (levyle) then
+        if (rs_input%levyle) then
           t0 = 0.0d0
           t1 = 0.0d0
           call get_gn(t0,        &
@@ -793,7 +793,7 @@ contains
 
           t1 = 0.0d0
           call get_j(t1,       &
-                     cval,     &
+                     rs_input%cvalue,     &
                      dmat_other%irep, &
                      dmat_other%mat_dim,  &
                      dmat_other%elements, &
@@ -812,7 +812,7 @@ contains
           if (grid_function%lao_skip(2) == 0) then
 !           do not skip direct contribution ('nodirect')
 
-            if (levyle) then
+            if (rs_input%levyle) then
 
               t1 = 0.0d0
               call get_jblao_ll(grid_function%lao_comp,&
@@ -825,7 +825,7 @@ contains
           
               t1 = 0.0d0
               call get_jblao(grid_function%lao_comp,&
-                             cval,&
+                             rs_input%cvalue,&
                              dmat_0%elements, &
                              dmat_0%mat_dim,  &
                              ao, &
@@ -848,7 +848,7 @@ contains
             'rotj')
 !       divergence or curl or gradient of current density
 
-        !if (levyle) then
+        !if (rs_input%levyle) then
         !   print *, 'error: Levy-Leblond not implemented'
         !   stop
         !end if
@@ -858,7 +858,7 @@ contains
 
         call get_gj(t1,            &
                     t2_33,            &
-                    cval,          &
+                    rs_input%cvalue,          &
                     dmat_other%irep,     &
                     dmat_other%mat_dim,  &
                     dmat_other%elements, &
@@ -872,13 +872,13 @@ contains
           if (grid_function%lao_skip(2) == 0) then
 !           do not skip direct contribution ('nodirect')
 !
-          !if (levyle) then
+          !if (rs_input%levyle) then
           !    print *, 'error: Levy-Leblond divj and rotj and gradj not implemented'
           !    stop
           !else
             temp_33 = 0.0d0
             call get_gjblao(grid_function%lao_comp,&
-                            cval,            &
+                            rs_input%cvalue,            &
                             dmat_0%elements, &
                             dmat_0%mat_dim,  &
                             ao,              &
@@ -942,7 +942,7 @@ contains
       case ('ndip')
 !       responding operator is nuclear magnetic dipole
 
-        if (levyle) then
+        if (rs_input%levyle) then
           t0 = 0.0d0
           t1 = 0.0d0
           call get_gn(t0,        &
@@ -961,7 +961,7 @@ contains
           t1 = 0.0d0
           
           call get_j(t1,        &
-                     cval,      &
+                     rs_input%cvalue,      &
                      dmat_other%irep, &
                      dmat_other%mat_dim,  &
                      dmat_other%elements, &
@@ -976,7 +976,7 @@ contains
           if (grid_function%lao_skip(2) == 0) then
 !           do not skip direct contribution ('nodirect')
 
-            if (levyle) then
+            if (rs_input%levyle) then
 
               temp = 0.0d0
               call get_jblao_ll(grid_function%lao_comp,&
@@ -990,7 +990,7 @@ contains
           
               temp = 0.0d0
               call get_jblao(grid_function%lao_comp,&
-                             cval,            &
+                             rs_input%cvalue,            &
                              dmat_0%elements, &
                              dmat_0%mat_dim,  &
                              ao,              &

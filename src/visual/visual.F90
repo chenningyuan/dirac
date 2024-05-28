@@ -112,6 +112,9 @@ contains
       call visual_input_show_setup()
     end if
 
+      write(*, *) "DEBUG: rs_input:"
+      call rs_input%display(my_rank=get_my_rank())
+
 
     if (mpi_is_master()) then
 !
@@ -307,7 +310,14 @@ contains
 
             end if
 #ifdef VAR_MPI
-            if (is_parallel()) call synchronize_dmat(dmat)
+            if (is_parallel()) then
+              call synchronize_dmat(dmat)
+              if (rs_input%grid_functions(igf)%lao_skip(3) == 0) then
+                call interface_mpi_bcast(rs_input%grid_functions(igf)%lao_comp,1,irank_master,global_communicator)
+              end if
+            end if
+            !write(*,*) "DEBUG1: after dmat synchronize:"
+            !call dmat%display(node_id=get_my_rank())
 #endif
           end if
 
