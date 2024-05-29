@@ -1,6 +1,8 @@
 module visual_cfg
 
   use visual_datatypes, only : rs_input_t, grid_t, grid_function_t
+  use visual_utils
+
   implicit none
 
   type(rs_input_t), public:: rs_input
@@ -9,6 +11,7 @@ module visual_cfg
   !public setup_grid
   !public setup_grid_function
   public grid_input_cfg
+  public grid_user_input_cfg
   public grid_function_input_cfg
   public verify_grid_input_cfg
   public verify_grid_function_input_cfg
@@ -43,7 +46,6 @@ module visual_cfg
    character(60), public           :: visual_cfg_out_vector_file_name
    character(60), public           :: visual_cfg_out_2ndtensor_file_name
 
-   logical,      public            :: visual_cfg_global_refactor = .false.
 
 
 !
@@ -153,9 +155,9 @@ module visual_cfg
 
 contains
 
+! ------------------------------------------------------------------------------
   elemental subroutine str2int(str,int1,stat)
     implicit none
-    ! Arguments
     character(len=*),intent(in) :: str
     integer,intent(out)         :: int1
     integer,intent(out)         :: stat
@@ -163,15 +165,44 @@ contains
     read(str,*,iostat=stat)  int1
   end subroutine str2int
 
+! ------------------------------------------------------------------------------
   elemental subroutine str2flt(str,flt,stat)
     implicit none
-    ! Arguments
     character(len=*),intent(in) :: str
     real(8),intent(out)         :: flt
     integer,intent(out)         :: stat
 
     read(str,*,iostat=stat)  flt
   end subroutine str2flt
+
+! ------------------------------------------------------------------------------
+  !subroutine replace_str(str1,pattern1,pattern2,str2)
+  !  character(len=*),intent(in) :: str1
+  !  character(len=1),intent(in) :: pattern1,pattern2
+  !  character(len=len_trim(str1)),intent(out) :: str2
+  !  integer:: i
+
+  !  do i = 1, len_trim(str1)
+  !    if (str1(i:i)==pattern1) then
+  !      str2 = str1(1:i-1)//pattern2//str1(i+1:)
+  !      exit
+  !    end if
+  !  end do
+  !  if (.not.allocated(str2)) str2 = str1
+
+  !end subroutine
+
+! ------------------------------------------------------------------------------
+  !elemental subroutine str2flt_arrs(strarr,fltarr,decor,sep,fltarr,stat)
+  !  implicit none
+  !  character(len=*),intent(in):: strarr(*)
+  !  character(len=*),intent(in):: decor(2)
+  !  character(len=*),intent(in):: sep
+  !  real(8),allocatable,intent(out):: fltarr(:)
+  !  integer,intent(out):: stat
+
+  !  read(str,*,iostat=stat)  flt
+  !end subroutine str2flt
 
 
    function word_count(s,sep)
@@ -306,12 +337,23 @@ contains
           grid%spacing(1) = grid%spacing(1)/xtang
         end if
       case ('input')
+!todo: all inp to lower case!
         if (val == 'create') then
           grid%input = 0
         else if (val == 'import') then
           grid%input = 1
+        else if (val == 'list') then
+          grid%input = 2
+        else if (val == 'line') then
+          grid%input = 3
+        else if (val == '2d') then
+          grid%input = 4
+        else if (val == '3d') then
+          grid%input = 5
+        else if (val == 'radial') then
+          grid%input = 6
         else
-          write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"'
+          write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"/"list"'
           stop
         end if
       case ('typ')
@@ -347,8 +389,74 @@ contains
         stop
     end select
     if (grid%id == 0) grid%id = id_grid
+
   end subroutine grid_input_cfg
 
+! ------------------------------------------------------------------------------
+  subroutine grid_user_input_cfg(grid, domain, user_input_lines)
+#include "codata.h"
+    type(grid_t),intent(inout)::grid
+    character(*), intent(in):: domain
+    character(*), dimension(:), intent(in):: user_input_lines
+    integer::stat, np
+    real(8)::s
+    integer::nr_words, i,j
+    character(len=len_trim(user_input_lines(1))),allocatable::chvalues(:)
+
+    select case (domain)
+      case ('list')
+        grid%nr_points_total = size(user_input_lines)
+        if (index(user_input_lines(1), ',') > 0) then
+          nr_words = word_count(user_input_lines(1), ',')
+          grid%ndim = nr_words
+        end if
+        allocate(grid%points(grid%ndim, grid%nr_points_total))
+        grid%points = 0.0d0
+        do i = 1, grid%nr_points_total
+          allocate(chvalues(grid%ndim))
+          call split_string(user_input_lines(i),grid%ndim,chvalues,separator=',')
+          do j = 1, grid%ndim
+            call str2flt(trim(chvalues(j)), s, stat)
+            grid%points(j,i) = s
+          end do
+          deallocate(chvalues)
+        end do
+        grid%nr_points_total_known = .true.
+
+      case ('line')
+        grid%nr_points_total_known = .true.
+
+      case ('2d')
+        grid%ndim = 2
+        grid%nr_points_total_known = .true.
+
+      case ('3d')
+        grid%ndim = 3
+        grid%nr_points_total_known = .true.
+
+      case ('radial')
+
+        grid%ndim = 3
+        !allocate(chvalues(grid%ndim))
+        !call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
+        !do j = 1, grid%ndim
+        !  call str2flt(trim(chvalues(j)), s, stat)
+        !  tmp_origin(j) = s
+        !end do
+        !deallocate(chvalues)
+        !call str2flt(trim(user_input_lines(2)), tmp_length, stat)
+        !call str2int(trim(user_input_lines(2)), tmp_nr_steps, stat)
+        !call generate_radial_grid(grid, tmp_origin, tmp_length, tmp_nr_steps)
+        grid%nr_points_total_known = .true.
+
+      case default
+        print *, 'unknown key'
+        stop
+    end select
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
   subroutine verify_grid_input_cfg(grid)
     type(grid_t),intent(inout)::grid
     integer::i
@@ -380,45 +488,69 @@ contains
       end if
     end do
 
-  end subroutine verify_grid_input_cfg
+  end subroutine
 
 
+! ------------------------------------------------------------------------------
   subroutine verify_grid_function_input_cfg(grid_function)
     type(grid_function_t),intent(in)::grid_function
 
     if (grid_function%id_assigned_grid == 0) then
-      write(*, *) 'ERROR: missing information about the grid ("id_grid").'
+      write(*, *) 'Input error. Missing information about the grid.'
       stop
     end if
 
     if (grid_function%input == 1) then
       if (len_trim(grid_function%file_inp) == 0) then
-        write(*, *) 'ERROR: missing file for grid_function import.'
+        write(*, *) 'Input error: Missing file for grid_function import.'
         stop
       end if
-    !else if (grid_function%input == 0) then
-    !  call verify_grid_function_predefined(grid_function)
     end if
+
+    if (grid_function%rspvec_id /= 0) then
+      if (len_trim(grid_function%rspvec_file) == 0) then
+        write(*, *) 'Input error: Missing response file for grid_function.'
+        stop
+      end if
+    end if
+
+    if (grid_function%lao /= 0) then
+      if (grid_function%wf_order /= 1) then
+        write(*, *) 'Input error. LAOs can be used for linear response properties only.'
+        stop
+      end if
+      if (len_trim(grid_function%rspvec_file) == 0) then
+        write(*, *) 'Input error: Requested LAOs, but no information '// &
+                    'about response file for grid_function.'
+        stop
+      end if
+    end if
+
+    if (any(grid_function%lao_skip /= 0)) then
+      if (grid_function%lao == 0) then
+        write(*, *) 'Input error: "lao_skip" option presented, but LAOs are not requested.'
+        stop
+      end if
+    end if
+
 
   end subroutine verify_grid_function_input_cfg
 
 
+! ------------------------------------------------------------------------------
   subroutine grid_function_input_cfg(key, val, grid_function, id_grid_function)
     character(len=*), intent(in):: key, val
     type(grid_function_t),intent(inout)::grid_function
     integer, intent(in)::id_grid_function
-    !character(len=len(key))::temp
     character(len=len_trim(val))::temp
     integer::stat, np
     real(8)::s,fac
     integer::nr_words, i
     character(len=10),allocatable::chvalues(:)
 
-
     select case (key)
       case ('name')
         grid_function%name = val
-        ! gosia fixme: this call will be moved up to verify_grid_function_input_cfg subroutine
         call verify_grid_function_predefined(grid_function)
       case ('id_grid')
         call str2int(val, grid_function%id_assigned_grid, stat)
@@ -428,40 +560,29 @@ contains
         else if (val == 'import') then
           grid_function%input = 1
         else
-          write(*, *) 'Input error. Wrong argument; argument to "input" must be one of "create"/"import". Stopping now.'
+          write(*, *) 'Input error. Wrong argument: '// &
+                      'argument to "input" must be one of "calculate"/"import"'
           stop
         end if
       case ('rspvec_file')
-!       fixme: verify, generalize (now: expected 'RESPONSE.h5' file; linear response only)
+!       fixme: expected 'RESPONSE.h5' file; linear response only
         grid_function%rspvec_file = val
         grid_function%wf_order = 1
       case ('rspvec_id')
-!       fixme
-          if (grid_function%wf_order /= 1) then
-            write(*, *) 'rsp is not set up'
-            stop
-          end if
           call str2int(val, grid_function%rspvec_id, stat)
       case ('nuc')
           call str2int(val, grid_function%nuc, stat)
       case ('lao')
-        if (grid_function%wf_order /= 1) then
-          write(*, *) 'Input error. LAO can be used for linear response properties only. Stopping now.'
-          stop
-        end if
         call str2int(val, grid_function%lao, stat)
       case ('lao_skip')
-        if (grid_function%lao == 0) then
-          write(*, *) 'Input error. LAO not activated. Stopping now.'
-          stop
-        end if
         temp = val
         call trim_ch(temp, val,  '[')
         call trim_ch(temp, temp, ']')
         if (index(val, ',') > 0) then
           nr_words = word_count(temp, ',')
           if (nr_words .ne. 3) then
-            write(*,*) 'Warning! More than three values are in the array'
+            write(*,*) 'Input error. More than three values are in the "lao_skip".'
+            stop
           end if
           allocate(chvalues(nr_words))
           call split_string(temp, nr_words, chvalues, separator=',')
@@ -471,7 +592,7 @@ contains
           end do
           deallocate(chvalues)
         else
-          write(*,*) 'Expected argument is an array of integer values. Stopping now'
+          write(*,*) 'Input error. "lao_skip" expects an array of integer values.'
           stop
         end if
       case ('purpose')
@@ -479,6 +600,11 @@ contains
           grid_function%purpose = 0
         else if (val == 'integration') then
           grid_function%purpose = 1
+        else
+          write(*, *) 'Input error. Wrong argument: '// &
+                      'argument to "purpose" must be one of '//&
+                      '"visualization"/"integration".'
+          stop
         end if
       case ('export')
         if (val == 'no') then
@@ -486,7 +612,8 @@ contains
         else if (val == 'yes') then
           grid_function%export = .true.
         else
-          write(*, *) 'Input error. Wrong argument; argument to "weights" must be one of "yes"/"no". Stopping now.}'
+          write(*, *) 'Input error. Wrong argument: '// &
+                      'argument to "export" must be one of "yes"/"no".'
           stop
         end if
       case ('file_inp')
@@ -507,7 +634,8 @@ contains
         if (index(val, ',') > 0) then
           nr_words = word_count(temp, ',')
           if (nr_words .ne. 3) then
-            write(*,*) 'Warning! More than three values are in the array'
+            write(*,*) 'Input error. More than three values are in the "lao_skip".'
+            stop
           end if
           allocate(chvalues(nr_words))
           call split_string(temp, nr_words, chvalues, separator=',')
@@ -517,11 +645,11 @@ contains
           end do
           deallocate(chvalues)
         else
-          write(*,*) 'Expected argument is an array of floats. Stopping now'
+          write(*,*) 'Input error. "carpow" expects an array of floats.'
           stop
         end if
       case default
-        print *, 'Input error. Unknown key. Stopping now.'
+        print *, 'Input error. Unknown key.'
         stop
     end select
 
@@ -531,16 +659,12 @@ contains
 
   end subroutine
 
-
 ! ------------------------------------------------------------------------------
   subroutine verify_grid_function_predefined(grid_function)
     class(grid_function_t), intent(inout):: grid_function
 !
-!   gosia, summer 2023:
-!   * initial setup of grid_function based on its name;
-!   * grid_function%name also defines a label on HDF5
+!   note: grid_function%name also defines a label on HDF5
 !
-
     select case (grid_function%name)
       case ('ed',      &
             'gamma5',  &
@@ -597,20 +721,17 @@ contains
         grid_function%max_ao_g_order = 2
         grid_function%max_ao_m_order = 0
       case default
-        write(*, *) 'unknown grid function name. stop'
+        write(*, *) 'Input error. Unknown grid function name.'
         stop
     end select
-
 
   end subroutine
 
 
 ! ------------------------------------------------------------------------------
   subroutine modify_grid_function_due_to_method(grid_function)
-#include "dcbham.h"
     class(grid_function_t), intent(inout):: grid_function
 
-!   make this a default:
     grid_function%gf_type = "unperturbed"
     if (grid_function%wf_order > 0) then
       grid_function%gf_type = "response"
@@ -702,11 +823,9 @@ contains
     end if
 
     ! legacy and variables from DIRAC's common blocks
-    call interface_mpi_bcast_l0(visual_cfg_global_refactor,1,irank_master,global_communicator)
 
-    !if (rs_input%print_level > 0) call logprint
+    if (rs_input%print_level > 1) call logprint
   end subroutine sync_visual_cfg
-
 
   subroutine logprint
     use visual_mpi

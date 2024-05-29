@@ -200,10 +200,9 @@
       integer                          :: i, j
       integer                          :: isym, istart, iend
       real(8)                          :: f, s, v(3), v_12(3), v_13(3)
-      integer                          :: nr_lines
-      character(180)                   :: line !gosia fixme:make the length more flexible, since now the line can be long
-      character(80), allocatable       :: word_array(:)
-      integer                          :: nr_words
+      character(200)                   :: line !gosia fixme:make the length more flexible, since now the line can be long
+      character(100), allocatable      :: word_array(:)
+      integer                          :: nr_words, nr_lines, idx
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
@@ -214,11 +213,6 @@
       call reset_available_kw_list()
 
       dirac_cfg_visual = .true.
-
-      !temp
-      if (kw_matches(word, '.REFACT')) then
-         visual_cfg_global_refactor = .true.
-      end if
 
       ! general setup
 
@@ -234,14 +228,12 @@
          call kw_read(word, rs_input%print_unit)
       end if
 
-
       ! modify physics
 
       if (kw_matches(word, '.CVALUE')) then
          rs_input%set_cvalue=.true.
          call kw_read(word, rs_input%cvalue)
       end if
-
 
       ! modify the system
 
@@ -320,6 +312,59 @@
             call verify_grid_input_cfg(rs_input%grids(i))
          end do
       end if
+
+      if (kw_matches(word, '.LIST  ')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".LIST" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           ! get id of the grid:
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == 2) then
+               call kw_read(word, nr_lines)
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
+                  read(get_file_unit(), '(a)') line
+                  if (line(1:1) == '!' .or. line(1:1) == '#') cycle
+                  word_array(j) = line
+               end do
+               call grid_user_input_cfg(rs_input%grids(i), 'list', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
+         end if
+      end if
+
+      !if (kw_matches(word, '.LINE  ')) then
+      !if (kw_matches(word, '.2D    ')) then
+      !if (kw_matches(word, '.3D    ')) then
+
+      if (kw_matches(word, '.RADIAL')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".RADIAL" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           ! get id of the grid:
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == 6) then
+               allocate(word_array(3))
+               j = 0
+               do
+                  read(get_file_unit(), '(a)') line
+                  if (line(1:1) == '!' .or. line(1:1) == '#') cycle
+                  j = j + 1
+                  word_array(j) = line
+                  if (j == 3) exit
+               end do
+               call grid_user_input_cfg(rs_input%grids(i), 'radial', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
+         end if
+      end if
+
 
       ! grid function specification
 

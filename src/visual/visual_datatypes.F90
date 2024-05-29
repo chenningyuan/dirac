@@ -108,7 +108,7 @@ module visual_datatypes
     real(8), public:: origin(1:3) = 0                       ! grid origin
     real(8), public:: spacing(1:3) = 0                      ! grid spacing
     integer, public:: status = -1                           ! -1 = never used, 0 = ready to work on
-    integer, public:: input = 0                             ! 0 = create, 1 = import
+    integer, public:: input = 0                             ! 0 = create, 1 = import from file, 2 = 'list', 3 = 'line', 4 = '2D', 5 = '3D', 6 = 'radial'
     logical, public:: export = .false.                      ! also export to a separate file
     integer, public:: typ = 0                               ! 0 = unknown, 1 = rectilinear
     integer, public:: weights = 0                           ! 0/1 = points w/wo weights
@@ -154,7 +154,7 @@ module visual_datatypes
     real(8), public:: up_scale = 1.0d0
     real(8), public:: down_scale = 1.0d0
     character(len=:), public, allocatable:: rspvec_file     ! name of a file with response parameters
-    character(len=:), public, allocatable:: gf_type         ! "unperturbed", "response", "composite"
+    character(len=:), public, allocatable:: gf_type         ! must be one of: "unperturbed", "response", "composite"
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid function import
     character(len=:), public, allocatable:: file_out        ! name of a file for grid function export
     real(8), public, allocatable:: values(:,:)

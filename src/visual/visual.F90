@@ -7,11 +7,11 @@ module visual
 ! Full description of features: LINK
 
   use visual_cfg
-  use visual_utils
   use visual_dirac
   use visual_in_point
   use visual_dirac
-  use visual_grids
+  use visual_grids !OK
+  use visual_utils !OK
   use visual_grid_functions
   use visual_datatypes
   use visual_io
@@ -201,8 +201,10 @@ contains
       g_ndim  = rs_input%grids(ig)%ndim
       npoints = rs_input%grids(ig)%nr_points_total
 
-      allocate(rs_input%grids(ig)%points(g_ndim, npoints))
-      rs_input%grids(ig)%points = 0.0d0
+      if (.not. rs_input%grids(ig)%allocated_points()) then
+        allocate(rs_input%grids(ig)%points(g_ndim, npoints))
+        rs_input%grids(ig)%points = 0.0d0
+      end if
 
 !
 !     get grid points

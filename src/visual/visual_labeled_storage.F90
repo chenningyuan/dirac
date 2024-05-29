@@ -1,17 +1,18 @@
 module visual_labeled_storage
 
   use labeled_storage
+  use visual_utils
   use visual_datatypes, only: rs_label_t, grid_t, grid_function_t
-  use visual_utils, only: visual_quit
 
   implicit none
-  private
 
   public write_grid_to_checkpoint
   public write_grid_function_to_checkpoint
   public get_grid_info_from_labeled_storage
   public get_grid_points_from_labeled_storage
   public get_grid_function_info_from_labeled_storage
+
+  private
 
 contains
 
@@ -99,15 +100,15 @@ contains
   end subroutine assign_label_grid
 
 
+! ------------------------------------------------------------------------------
   subroutine write_grid_to_checkpoint(data_file, grid)
-!   ----------------------------------------------------------------------------
     type(file_info_t), intent(inout):: data_file
     type(grid_t), intent(in):: grid
     type(rs_label_t):: label
-    character*(:), allocatable  :: group
+    character*(:), allocatable:: group
     character(len=1):: ich
     integer:: i
-!   ----------------------------------------------------------------------------
+
     call assign_label_grid(grid, label, top_section='result', level=1)
     group = label%name
     call lab_write(data_file, trim(group)//'/nr_points_total',idata = grid%nr_points_total)
@@ -122,15 +123,15 @@ contains
   end subroutine
 
 
+! ------------------------------------------------------------------------------
   subroutine write_grid_function_to_checkpoint(data_file, grid_function)
-!   ----------------------------------------------------------------------------
     type(file_info_t), intent(inout):: data_file
     type(grid_function_t), intent(in):: grid_function
     type(rs_label_t):: label
     character*(:), allocatable  :: group
     character(len=1):: ich
     integer:: i
-!   ----------------------------------------------------------------------------
+
     call assign_label_grid_function(grid_function, label, top_section='result', level=2)
     group = label%name
     call lab_write(data_file, group)
@@ -143,9 +144,8 @@ contains
     end do
   end subroutine
 
-
+! ------------------------------------------------------------------------------
   subroutine get_grid_info_from_labeled_storage(data_file, grid)
-!   ----------------------------------------------------------------------------
     ! gosia todo:
     ! - add support for other formats (now, hdf5 format only: data_file%type = 2)
     ! - check whether "grid" group is under "input" or "result"
@@ -154,7 +154,7 @@ contains
     type(rs_label_t)::label
     integer:: i
     character*(:), allocatable  :: group
-!   ----------------------------------------------------------------------------
+
     call assign_label_grid(grid, label, top_section='result', level=1)
     group = label%name
     call lab_read(data_file, trim(group)//'/ndim',idata = grid%ndim)
@@ -164,9 +164,8 @@ contains
   end subroutine
 
 
+! ------------------------------------------------------------------------------
   subroutine get_grid_points_from_labeled_storage(data_file, grid)
-!   ----------------------------------------------------------------------------
-    ! gosia fixme - unused thus far
     ! gosia todo:
     ! - add support for other formats (now, hdf5 format only: data_file%type = 2)
     ! - check whether "grid" group is under "input" or "result"
