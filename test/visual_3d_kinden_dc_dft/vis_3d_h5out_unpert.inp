@@ -1,0 +1,28 @@
+**DIRAC
+.TITLE
+ calculate selected grid function on a 3D regular grid and export it to an external h5 file
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+10
+.EVCCNV
+1.0D-8
+**VISUAL
+!.3D_INTEGRATE
+.OUTPRI
+.GRIDS 
+1
+id=1 input=import file_inp=grid2.h5
+.GRIDFUNCTIONS
+6
+name=kin id_grid=1 purpose=visualization export=yes file_out=kin.h5
+name=kinls id_grid=1 purpose=visualization export=yes file_out=kinls.h5
+name=kinsl id_grid=1 purpose=visualization export=yes file_out=kinsl.h5
+name=kinlap id_grid=1 purpose=visualization export=yes file_out=kinlap.h5
+name=kintau id_grid=1 purpose=visualization export=yes file_out=kintau.h5
+name=kinnr id_grid=1 purpose=visualization export=yes file_out=kinnr.h5
+*END OF
