@@ -36,14 +36,11 @@ def compare_txt(fname, fname_ref):
 # run tests
 #
 
-# 2. run legacy:
-#test.run(['vis_3d_legacy.inp'], ['h2o.mol'], args='--incmo --put="PAMXVC TBMO response_helper.txt" --get="*.h5 *.txt plot*"')
-
 # ==========================================
 # tests dependent on the unperturbed density
 # ==========================================
 test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
-test.run(['vis_3d_h5out_unpert.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="*.h5"')
+test.run(['vis_3d_h5out_unpert.inp'], ['h2o.mol'], args='--incmo --put="grid*.h5" --get="*.h5"')
 
 test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
 test.run(['vis_ll_3d_h5out_unpert.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="*.h5"')
@@ -54,11 +51,11 @@ test.run(['vis_ll_3d_h5out_unpert.inp'], ['h2o.mol'], args='--incmo --put="grid2
 test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 test.run(['rsp_E.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5"')
 test.run(['vis_3d_h5out_rspE.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 RESPONSE.h5" --get="*.h5"')
-#
+
 # ================================================================
 # tests dependent on the density perturbed with the magnetic field
 # ================================================================
-## without LAOs:
+# without LAOs:
 test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="*.h5"')
 #test.run(['rsp_B_useh5.inp'], ['h2o.mol'], args='--incmo --outcmo --put="RESPONSE.h5" --get="*.h5"')
@@ -68,10 +65,10 @@ test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
 test.run(['rsp_B_ll_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="*.h5"')
 test.run(['vis_ll_3d_h5out_rspB.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 RESPONSE.h5" --get="*.h5"')
 
-## with LAOs:
+# with LAOs:
 test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="*.h5"')
-#test.run(['rsp_B_useh5.inp'], ['h2o.mol'], args='--incmo --outcmo --put="RESPONSE.h5" --get="*.h5"')
+test.run(['rsp_B_useh5.inp'], ['h2o.mol'], args='--incmo --outcmo --put="RESPONSE.h5" --get="*.h5"')
 test.run(['vis_3d_h5out_rspB_lao.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO.h5 RESPONSE.h5" --get="*.h5"')
 
 test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
@@ -162,6 +159,7 @@ if h5py_available:
     testset = ['ed', 'rdg', 'ed_sign_lambda2', 'ed_laplacian', 'gamma5',
                'elf', 'kin', 'kinsl', 'kinls', 'kinnr', 'kintau', 'kinlap',
                'divs', 'esp', 'espe', 'espn', 'esprho', 'esperho', 'espnrho']
+
     for t in testset:
         compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='single', gf_name=t)
         compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='array',  gf_name=t, gf_test_key='t0_icomp_1')
@@ -253,33 +251,33 @@ if h5py_available:
             for i in range(1,4):
                 compare_with_ref(ftest=t+'_Bz_lao_rspvec6_symcon_'+s+'.h5', fref='result/'+t+'_Bz_lao_rspvec6_symcon_'+s+'.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
 
-
-
-
-    #compare_with_ref(ftest='j_Bx_rspvec1.h5', fref='result/j_Bx_rspvec1.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-    #compare_with_ref(ftest='j_Bx_rspvec1.h5', fref='result/j_Bx_rspvec1.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-    #compare_with_ref(ftest='j_Bx_rspvec1.h5', fref='result/j_Bx_rspvec1.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
-
-    #compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-    #compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-    #compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
-
-    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
-
-    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
-
-    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
-
-
-
-# cleanup
-#os.unlink('DFCOEF')
-#os.unlink('PAMXVC')
-#os.unlink('TBMO')
-
+#
+#
+#
+#    #compare_with_ref(ftest='j_Bx_rspvec1.h5', fref='result/j_Bx_rspvec1.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
+#    #compare_with_ref(ftest='j_Bx_rspvec1.h5', fref='result/j_Bx_rspvec1.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
+#    #compare_with_ref(ftest='j_Bx_rspvec1.h5', fref='result/j_Bx_rspvec1.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+#
+#    #compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
+#    #compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
+#    #compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+#
+#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
+#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
+#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+#
+#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
+#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
+#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+#
+#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
+#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
+#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+#
+#
+#
+## cleanup
+##os.unlink('DFCOEF')
+##os.unlink('PAMXVC')
+##os.unlink('TBMO')
+#
