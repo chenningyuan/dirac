@@ -96,7 +96,7 @@ We are now ready for the projection analysis itself. We prepare the input file `
 
 .. literalinclude:: ../../../../test/tutorial_projection_analysis/prj.inp
 
-In the ``*PROJEC`` section we specify the two atomic types identified by the name of 
+In the :ref:`*PROJECTION` section we specify the two atomic types identified by the name of 
 their coefficient files as well as an orbital string (see :ref:`orbital_strings`) listing 
 what orbitals to include for each atom. DIRAC will assume that each atom has been calculated 
 in its proper basis.
