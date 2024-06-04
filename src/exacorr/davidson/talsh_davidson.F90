@@ -2629,8 +2629,11 @@ contains
                exit
             end if
 
-            if (config%refresh_trial_vectors.and.(mod(niter,config%trial_vector_refresh_rate).eq.0)) then
-                print *,'debug : refreshing trial vectors not implemented in this version'
+            if (config%refresh_trial_vectors) then
+!              if (mod(niter,config%trial_vector_refresh_rate).eq.0) then
+!                  print *,'debug : refreshing trial vectors not implemented in this version'
+!              end if
+               print *,'debug : refreshing trial vectors not implemented in this version'
             else
                call update_trial_vectors(delta,workspace_t,flavor,Index_small_v,isv)
             end if
