@@ -5,9 +5,25 @@ xamfX2C: Two-electon picture change corrections for the X2C Hamiltonian
 =======================================================================
 
 This tutorial demonstrates the usage and usefulness of the (extended) atomic mean-field 
-two-electron picture-change corrections for the X2C Hamiltonian. 
-For more information on the actual details of the theory and implementation 
-see Ref. :cite:`Knecht2022`.
+two-electron picture-change corrections for the X2C Hamiltonian.
+
+Short theory
+============
+
+The goal is to reproduce total energy and orbital energies of a 4-component SCF calculation as accurate as possible at the 2-component level.
+Restricting ourselves first to Hartree-Fock theory, this would require using the correctly transformed set of one- and two-electron integrals
+
+.. math::
+
+   \begin{array}{lcl}
+   \tilde{h}^{2c}_{\mu\nu}&=&\displaystyle\sum_{XY}\sum_{\alpha\beta}\left[U^\dagger\right]^{LX}_{\mu\alpha}\left[h^4c\right]^{XY}_{\alpha\beta}\left[U\right]^{YL}_{\beta\nu}\\
+   \tilde{G}^{2c}_{\mu\nu,\kappa\lambda}&=&\displaystyle\sum_{XYUV}\sum_{\alpha\beta\gamma\delta}\left[U^\dagger\right]^{LX}_{\mu\alpha}\left[U^\dagger\right]^{LU}_{\lambda\gamma}\left[G^{4c}\right]^{XY,UV}_{\alpha,\beta,\gamma\delta}\left[U\right]^{VL}_{\delta\kappa}\left[U\right]^{YL}_{\beta\nu}
+   \end{array}
+
+where :math:`X,Y,U,V\in L,S` and :math:`U` is the picture-change transformation matrix that correctly block-diagonalizes the converged 4-component Fock matrix :math:`F^{4c}`.
+
+
+For more information on the actual details of the theory and implementation see Ref. :cite:`Knecht2022`.
 
 A gold complex: :math:`[{\rm Au(Cl)}_4]^-`
 ==========================================
@@ -177,7 +193,81 @@ as well as orbital energies::
          -0.898559198  ( 2)         -0.333966781  ( 2)         -0.325040872  ( 2)         -0.316260263  ( 2)         -0.284482236  ( 2)
          -0.270861088  ( 2)         -0.268373653  ( 2)
 
-Comparison with the 4-component reference, shows that the total energy has an error of -0.7 mH, whereas the mean absolute error in the orbital energies is 5.7 :math:`\mu\mbox{H}`.
+Comparison with the 4-component reference, shows that the total energy has an error of -0.7 mH, whereas the mean absolute error in the orbital energies is 5.69 :math:`\mu\mbox{H}`.
+If we do *not* use the (SS|SS)-integrals, that is, we remove the keyword :ref:`HAMILTONIAN_.DOSSSS` from the preparatory 4-component atomic calculations, as well as the 4-component
+molecular reference calculation, then the error in the total energy is still -0.7 mH, but the mean absolute error in the orbital energies increases to 51.1 :math:`\mu\mbox{H}`.
+It is also possible to go the other way: If we do add the Gaunt term using the keyword :ref:`HAMILTONIAN_.GAUNT`, then the error in total energy is -1.73 mH, and the mean absolute
+error in orbital energies is -3.79 :math:`\mu\mbox{H}`.
+
+Core-ionization energies
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+A very nice feature of the amfX2C approach is that the two-electron picture-change corrections adapt to the computational setup. For instance, if we do a Kohn-Sham calculation instead
+of Hartree-Fock, the corrections are generated for our specific choice of functional as well as basis set. As an example, let us consider core-ionization energies, arising from gold :math:`2p_{1/2}\ (L_2)` and :math:`2p_{3/2}\ L_3` for our gold complex,
+calculated using the PBE0 functional.  The preparatory atomic calculations as well as the amfX2C calculation proceeds as before, except that we have inserted::
+
+  .DFT
+  PBE0
+  
+in the **HAMILTONIAN section. In the amfX2C calculation, we have also asked for a Mulliken population analysis and find for fermion ircip :math:`E_{1u}`::
+
+  * Electronic eigenvalue no.   1: -503.04886526180       (Occupation : f = 1.0000)           
+  ============================================================================================
+  
+  * Gross populations greater than 0.01000
+  
+  Gross     Total   |    L B3uAu px     L B2uAu py     L B1uAu pz  
+  --------------------------------------------------------------------
+   alpha    0.3333  |      0.0000         0.0000         0.3333
+   beta     0.6667  |      0.3333         0.3333         0.0000
+  
+  * Electronic eigenvalue no.   2: -435.57080277128       (Occupation : f = 1.0000)           
+  ============================================================================================
+  
+  * Gross populations greater than 0.01000
+  
+  Gross     Total   |    L B3uAu px     L B2uAu py  
+  -----------------------------------------------------
+   alpha    0.0000  |      0.0000         0.0000
+   beta     1.0000  |      0.5000         0.5000
+  
+  * Electronic eigenvalue no.   3: -435.56940890418       (Occupation : f = 1.0000)           
+  ============================================================================================
+  
+  * Gross populations greater than 0.01000
+  
+  Gross     Total   |    L B3uAu px     L B2uAu py     L B1uAu pz  
+  --------------------------------------------------------------------
+   alpha    0.6667  |      0.0000         0.0000         0.6667
+   beta     0.3333  |      0.1667         0.1667         0.0000
+
+Let us now calculate binding energy of these orbitals by :math:`\Delta SCF`. For the :math:`L_2`-edge we prepare the menu file `L2_amfX2C.inp`
+
+.. literalinclude:: L2_amfX2C.inp
+
+This is an open-shell system, at the Kohn-Sham level calculated using fractional occupation. In DIRAC, positive-energy solutions are
+sorted first with respect to orbital class (closed, open, virtual), then with respect to orbital energies. We there fore use the keyword  :ref:`WAVE_FUNCTION_.REORDER MO` to bring the now singly occupied gold :math:`2p_{1/2}` orbital just after the occupied orbitals of *ungerade* symmetry. We also use overlap selection to keep the orbital in that position during the SCF iteration. Specifially, we active overlap selection with the keyword :ref:`SCF_.OVLSEL` and in addition use :ref:`SCF_.NODYNSEL` so that overlap is always calculated with respect to the inital set of orbitals. We run the calculation using::
+
+  pam --inp=L2_amfX2C.inp --mol=AuCl4.xyz --put "amfX2C_AuCl4.h5=CHECKPOINT.h5 amfPCEC.h5" --noh5
+
+
+Note that we added the `--noh5` flag since we do not want to keep the associated checkpoint file. For each of the two :math:`2p_{3/2}` we proceed in similar manner, simply modifying the reordering, using::
+
+  .REORDER
+  1..37
+  1,3..37,2
+
+and::
+
+  .REORDER
+  1..37
+  1,2,4..37,3
+
+  
+
+
+
+
 
 
 

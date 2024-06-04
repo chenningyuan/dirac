@@ -170,12 +170,12 @@ C=============================================================
         INTDEF    = INTGEN_SAVE
         INTGEN    = INTDEF 
         SSMTRC    = SSMTRC_SAVE
-        ERGCNV = ERGCNV_SAVE
-        EVCCNV = EVCCNV_SAVE
-        FCKCNV = FCKCNV_SAVE
+        ERGCNV    = ERGCNV_SAVE
+        EVCCNV    = EVCCNV_SAVE
+        FCKCNV    = FCKCNV_SAVE
         SCFCNV(1) = SCFCNV1_SAVE
         SCFCNV(2) = SCFCNV2_SAVE
-        MAXITR = MAXITR_SAVE
+        MAXITR    = MAXITR_SAVE
         CALL GO2C4C()
         DO2C4C = .FALSE.
       ENDIF
@@ -6069,6 +6069,9 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GO4C2C()
 C***********************************************************************
+C
+C     Go from 4c to 2c mode
+C      
 C***********************************************************************
       use memory_allocator
       use dirac_cfg
@@ -6100,7 +6103,9 @@ C
       START2C = .FALSE.
 !
 !     call the x2c/bss transformation module (branch 2 inside gmotra)
+      WRITE(6,*) 'TEST..enter GMOTRA'
       CALL GMOTRA(.FALSE.)
+      WRITE(6,*) 'TEST..done with GMOTRA'
       call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in GO4C2C')

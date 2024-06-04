@@ -2289,7 +2289,8 @@ C
 !       Case 1: Unrestricted kinetic balance
 !               or 2-component non-relativistic calculation
 !       ---------------------------------------------------
-  7   IF(URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run))then
+ 7    CONTINUE
+      IF(URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run))then
         NZT = 1
         KTMAT = KVMAT
         DO IFRP = 1,NFSYM
@@ -2481,7 +2482,8 @@ C.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
         CALL TIMER2('mk_h2c',TIMSTR,TIMEND)
 
 !       case 2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
-!       -------------------------------------------------------------------------------
+!     -------------------------------------------------------------------------------
+        WRITE(6,*) 'TEST inside GMOTA..',twocompbss,x2c,x2cmod_mmf
         if(.not.(twocompbss.or.x2c).or.x2cmod_mmf)then
 
 
@@ -2512,7 +2514,7 @@ C.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
         else
 C
           if(.not.x2c)
-     &    CALL MEMREL('BSS.2c',WORK,KWORK,KWORK,KFREE,LFREE)
+     &      CALL MEMREL('BSS.2c',WORK,KWORK,KWORK,KFREE,LFREE)
 
           TWOCOMP = .TRUE.
           RDINPC = .FALSE.
@@ -2624,10 +2626,12 @@ C
 
 #ifdef MOD_XAMFI
       !> store common block variables while still being in 4c mode
-      if(aoomod.and. .not. x2c)then
-         call xamfi_set_cb("set-4c")
-      else if(aoomod .and. x2c)then
-         call xamfi_set_cb("set-2c")
+      if(aoomod)then
+        if (x2c) then
+          call xamfi_set_cb("set-2c")
+        else
+          call xamfi_set_cb("set-4c")
+        endif
       endif
 #endif
 C
@@ -2715,7 +2719,6 @@ C     Write transformation matrices
       CALL ORBDAT
 
       CLOSE(LUTMAT,STATUS='KEEP')
-
 #ifdef MOD_XAMFI
       if(.not.x2c.and.x2cmod_mmf.and.aoomod.and.nucdep==1
      &   .and.nucind==1)then
@@ -2760,15 +2763,15 @@ C     Write transformation matrices
             x2c_save = x2c
             x2c      = .false.
 
-!           !> generate density matrix - incoming variable to the aoosoc module
+!           !> generate 4c density matrix - incoming variable to the aoosoc module
             allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
             allocate(cmo_aoosoc(ncmotq))
             dmat_aoosoc = 0.0d0
             cmo_aoosoc  = 0.0d0
-!           read coefficients
+!           read 4c coefficients
             call reacmo_new(cmo=cmo_aoosoc)
 
-!           !> generate density matrix
+!           !> generate 4c density matrix
             call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
 
             allocate(pctm_aoosoc(ntbas(0)**2*4))
@@ -2787,9 +2790,9 @@ C     Write transformation matrices
             close(lux2c,status='keep')
 
 !           !> ensure to not calculate any spurious 2e-SO+scalar corrections for actual 1e-systems
-            call rmolchr(ichrg) ! sum of charge of all constituents, here only one atom
+            call rmolchr(ichrg) ! sumn of all nuclear charges, here only a single atom
                        no1esystem_aoosoc = .false.
-                       no1esystem_aoosoc = (ichrg - kcharg > 1)
+                       no1esystem_aoosoc = (ichrg - kcharg > 1) ! KCHARG is the charge of the molecule, so zero for neutral
             if(onesys) no1esystem_aoosoc = .false.
 
             lwork_local = lwork - ntbas(0)**2*nz*nfmat
@@ -2984,7 +2987,7 @@ C
           !> read 2c-mos
           call reacmo_new(cmo=cmo_mmf)
 
-          !> calculate inactive (and possibly active) density matrix
+          !> calculate inactive (and possibly active) 2c density matrix
           call denmat(tbuf_mmf,cmo_mmf,iprham)
 
 #ifdef MOD_XAMFI
@@ -3014,35 +3017,35 @@ C
 
 #ifdef MOD_XAMFI
           if(.not.onesys)
-     &    call get_scso_2e_fock(dmat                  = tbuf_mmf,
-     &                          cmo                   = cmo_mmf,
-     &                          fmat                  = tmat_mmf,
-     &                          nrows                 = ntbas(0),
-     &                          ncols                 = ntbas(0),
-     &                          nr_2e_fock_matrices   = nfmat,
-     &                          intflg                = intflg,
-     &                          nz                    = nz,
-     &                          ipqtoq                = ipqtoq,
-     &                          x_nopen               = nopen,
-     &                          x_dfopen              = df(0:nopen),
-     &                          x_n2tmt               = n2tmt,
-     &                          nzt_x                 = nzt,
-     &                          nr_fsym               = nfsym,
-     &                          N2BBASXQ_dim_x        = n2bbasxq,
-     &                          nr_tmo                = ntmo,
-     &                          nr_ao_all             =nfbas(1:nfsym,0),
-     &                          nr_mo_all             = norb(1:nfsym),
-     &                          ioff_tmot             = i2tmot,
-     &                          ioff_tmt              = i2tmt,
-     &                          ioff_aomat_x          = i2basx,
-     &                          myAOMOMAT             = 'AOMOMAT   ',
-     &                          isDFT                 =
+     &    call get_scso_2e_fock(dmat                 = tbuf_mmf,
+     &                          cmo                  = cmo_mmf,
+     &                          fmat                 = tmat_mmf,
+     &                          nrows                = ntbas(0),
+     &                          ncols                = ntbas(0),
+     &                          nr_2e_fock_matrices  = nfmat,
+     &                          intflg               = intflg,
+     &                          nz                   = nz,
+     &                          ipqtoq               = ipqtoq,
+     &                          x_nopen              = nopen,
+     &                          x_dfopen             = df(0:nopen),
+     &                          x_n2tmt              = n2tmt,
+     &                          nzt_x                = nzt,
+     &                          nr_fsym              = nfsym,
+     &                          N2BBASXQ_dim_x       = n2bbasxq,
+     &                          nr_tmo               = ntmo,
+     &                          nr_ao_all            = nfbas(1:nfsym,0),
+     &                          nr_mo_all            = norb(1:nfsym),
+     &                          ioff_tmot            = i2tmot,
+     &                          ioff_tmt             = i2tmt,
+     &                          ioff_aomat_x         = i2basx,
+     &                          myAOMOMAT            = 'AOMOMAT   ',
+     &                          isDFT                =
      &                          dirac_cfg_dft_calculation,
-     &                          isLoA                 =
+     &                          isLoA                =
      &                          (linear.or.atomic),
-     &                          xcmode                = 2,
-     &                          lwork_ext             = lfree,
-     &                          print_lvl             = iprham
+     &                          xcmode               = 2,
+     &                          lwork_ext            = lfree,
+     &                          print_lvl            = iprham
      &                         )
 
           !> subtract XC_energy_2c

@@ -60,23 +60,22 @@ contains
                                   print_lvl   &
                                   )
 !**********************************************************************
-     real(8), intent(inout)             :: dmat(nrows,ncols,nr_quat,nr_2e_fock_matrices)
-     real(8), intent(inout)             :: cmo(*)
-     real(8), intent(in)                :: pct_mat(*)
-     logical, intent(in)                :: calc_2esoc
-     logical, intent(in)                :: isDFT
-     logical, intent(in)                :: isLoA
+     real(8), intent(inout)             :: dmat(nrows,ncols,nr_quat,nr_2e_fock_matrices)  ! 4c density matrix
+     real(8), intent(inout)             :: cmo(*)                                         ! 4c coefficients
+     real(8), intent(in)                :: pct_mat(*)                                     ! 4c -> 2c transformation matrix
+     logical, intent(in)                :: calc_2esoc                                     ! calculate 2e pc-corrections ?
+     logical, intent(in)                :: isDFT                                          ! DFT run
+     logical, intent(in)                :: isLoA                                          ! is linear or atomic
      integer, intent(in)                :: lwork_ext
-     integer, intent(in)                :: print_lvl
+     integer, intent(in)                :: print_lvl                                      ! print level
 !----------------------------------------------------------------------
      real(8), allocatable               :: fmat(:), tmp(:)
 !----------------------------------------------------------------------
 
       !> atomic run - there is only one center
       call xamfi_set_e_configuration(center = 1)
-
       if(aooeamf)then
-        !> save atomic density matrix (of atom(1) ... == atomic fragment)
+        !> save 4c atomic density matrix (of atom(1) ... == atomic fragment) in C1 symmetry
         allocate(tmp(nrows*ncols*nr_quat*nr_2e_fock_matrices)); tmp = 0
         call dcopy(nrows*ncols*nr_quat*nr_2e_fock_matrices,dmat,1,tmp,1)
         call dump_Xc_c1_dens(                            &
@@ -147,7 +146,7 @@ contains
 #endif
 
       if(aoo2ediag)then
-        !> save atomic 2e-Fock on file (of atom(1) ... == atomic fragment)
+        !> save 4c atomic 2e-Fock on file (of atom(1) ... == atomic fragment)
         !> never mind the confusing naming of the routine that we call...
         allocate(tmp(nrows*ncols*nr_quat*nr_2e_fock_matrices)); tmp = 0
         call dcopy(nrows*ncols*nr_quat*nr_2e_fock_matrices,fmat,1,tmp,1)
@@ -164,7 +163,7 @@ contains
         aoo2ediag = .false.; deallocate(tmp)
       end if
 
-      !> normalize (picture-change transform) 2e-SO-fock matrix
+      !> normalize (picture-change transform) 2e-Fock matrix
       call get_normalized_2e_soc(                      &
                                  fmat,                 &
                                  pct_mat,              &
@@ -194,7 +193,7 @@ contains
                          )
 #endif
 
-      !> save spin-orbit parts on file (of atom(1) ... == atomic fragment)
+      !> save picture-changed 2c 2e Fock matrix on file (of atom(1) ... == atomic fragment)
       call dump_normalized_2e_soc(                            &
                                   fmat,                       &
                                   nr_ao_large_aoo,            &
