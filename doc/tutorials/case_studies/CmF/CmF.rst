@@ -51,7 +51,7 @@ The menu file for the first step of the molecular calculation reads
 
 .. literalinclude:: CmF_5f_frz.inp
 
-In the SCF section it may be noted that we specify 49 closed-shell orbitals, followed by seven open-shell ones, with seven active electrons. Next we specify that we will take orbitals 45 to 51 from the coefficient file of the cerium atom, that we name AFCMXX, put them in position 50 to 56 and keep them frozen. This also implies that we are effectively doing a closed-shell calculation, which helps convergence as well. We run the calculation using the command::
+In the :ref:`*SCF` section it may be noted that we specify 49 closed-shell orbitals, followed by seven open-shell ones, with seven active electrons. Next we specify that we will take orbitals 45 to 51 from the coefficient file of the cerium atom, that we name AFCMXX, put them in position 50 to 56 and keep them frozen. This also implies that we are effectively doing a closed-shell calculation, which helps convergence as well. We run the calculation using the command::
 		      
   pam --mw=200 --inp=CmF_5f_frz --mol=CmF.xyz --put "cf.Cm=AFCMXX"  --get "DFCOEF=cf.CmF_5f_frz"
 		    
