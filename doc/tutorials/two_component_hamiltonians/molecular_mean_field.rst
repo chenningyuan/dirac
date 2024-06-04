@@ -23,7 +23,7 @@ One-step X2Cmmf
 ---------------
 
 In order to perform a two-component (MR)CC after a four-component SCF calculation add the keyword .X2Cmmf 
-to the \*\*HAMILTONIAN keyword section:
+to the :ref:`**HAMILTONIAN` keyword section:
 
 ::
 
