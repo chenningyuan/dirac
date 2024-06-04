@@ -7,7 +7,14 @@ if(ENABLE_EXATENSOR)
     exacorr_dirac.F
   )
 
+  if (EXATENSOR_TALSH)
+   set(FREE_EXACORR_FORTRAN_SOURCES exatensor_placeholders.F90)
+   message(STATUS "ExaTensor not available or requested: activating placeholder")
+  endif()
+
   set(FREE_EXACORR_FORTRAN_SOURCES
+   ${FREE_EXACORR_FORTRAN_SOURCES}
+   exacorr_tensor_interface.F90
    mbauto/talsh_auto_ccd_spinor.F90
    mbauto/talsh_auto_ccsd_spinor.F90
    mbauto/talsh_auto_ccsdt_spinor.F90

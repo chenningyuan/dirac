@@ -1,9 +1,7 @@
 !This module defines the unified tensor interface
        module exacorr_tensor_interface
 
-#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         use exatensor
-#endif
         use talsh
         use, intrinsic:: ISO_C_BINDING
 
