@@ -782,7 +782,7 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "maxorb.h"
-#include "gfac.h"
+#include "codata.h"
 #include "pi.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -3973,7 +3973,7 @@ C***********************************************************************
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "gfac.h"
+#include "codata.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -4708,7 +4708,7 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "maxorb.h"
-#include "gfac.h"
+#include "codata.h"
 #include "pi.h"
 #include "consts.h"
 #include "maxash.h"
@@ -4993,7 +4993,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "gfac.h"
+#include "codata.h"
 #include "pi.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -5217,7 +5217,7 @@ C-----------------------------------------------------------------------
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "gfac.h"
+#include "codata.h"
 #include "pi.h"
 #include "nuclei.h"
 #include "dgroup.h"
@@ -8237,13 +8237,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "gfac.h"
+#include "codata.h"
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D4 = 4.0D0, D3 = 3.0D0)
-      PARAMETER (DFAC = D4*GFAC*PI/D3)
 C
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -8256,6 +8255,9 @@ C
 #include "dcbexp.h"
 C
 #include "ibtfun.h"
+C
+      DFAC = D4*GFAC*PI/D3
+C
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = D1/DFAC
@@ -9231,7 +9233,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "gfac.h"
+#include "codata.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -9471,7 +9473,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "gfac.h"
+#include "codata.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -9661,7 +9663,7 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "maxorb.h"
-#include "gfac.h"
+#include "codata.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -11883,7 +11885,7 @@ C
 #include "dcbgen.h"
 #include "spinro.h"
 #include "consts.h"
-#include "gfac.h"
+#include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
 #include "ibtfun.h"
