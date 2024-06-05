@@ -26,20 +26,20 @@ module visual_datatypes
 
   type cmo_t
     private
-    integer, public:: n_ao(2) = 0               ! number of AOs in each fermion symmetry
-    integer, public:: n_mo(2) = 0               ! number of all (positronic+electronic) MOs in each fermion symmetry
-    integer, public:: n_ip(2) = 0               ! number of inactive positive energy MOs in each fermion symmetry
-    integer, public:: n_po(2) = 0               ! number of positronic MOs in each fermion symmetry
-    integer, public:: n_fsym  = 1               ! Number of fermion symmetries (no inversion 1, inversion 2); default=1
-    integer, public:: nz   = 4                  ! number of quaternion units; default=4
-    real(8), public:: total_energy              ! total SCF energy, as read from DIRAC CHECKPOINT
+    integer, public:: n_ao(2) = 0                   ! number of AOs in each fermion symmetry
+    integer, public:: n_mo(2) = 0                   ! number of all (positronic+electronic) MOs in each fermion symmetry
+    integer, public:: n_ip(2) = 0                   ! number of inactive positive energy MOs in each fermion symmetry
+    integer, public:: n_po(2) = 0                   ! number of positronic MOs in each fermion symmetry
+    integer, public:: n_fsym  = 1                   ! Number of fermion symmetries (no inversion 1, inversion 2); default=1
+    integer, public:: nz   = 4                      ! number of quaternion units; default=4
+    real(8), public:: total_energy                  ! total SCF energy, as read from DIRAC CHECKPOINT
     real(8), allocatable, public:: energy(:)        ! orbital energies, as read from DIRAC CHECKPOINT
     real(8), allocatable, public:: coeff(:)         ! MO coefficients
     real(8), allocatable, public:: coeff_q(:,:,:)   ! MO coefficients in quaternion representation, i.e., coeff(sum(n_ao),sum(n_mo),nz)
     integer, allocatable, public:: symmetry(:)      ! additional symmetry label; used in spinfree
     integer, allocatable, public:: index(:)         ! index of the spinor for this fermion symmetry
     real(8), allocatable, public:: occupation(:)    ! occupation vector
-    integer, public :: ioffs(6)                 ! MO offsets
+    integer, public :: ioffs(6)                     ! MO offsets
     logical, public :: data_is_read  = .false.
     logical, public :: data_is_verified  = .false.
   contains

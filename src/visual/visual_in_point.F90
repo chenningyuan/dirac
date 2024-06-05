@@ -51,9 +51,10 @@ contains
                                           grid_function,&
                                           grid_function_values,&
                                           px,py,pz,&
+                                          mol,&
                                           ipoint)
-
     type(dmat_t), intent(in):: dmat
+    type(mol_t), intent(in):: mol
     real(8), intent(in):: ao(*)
     real(8), intent(in):: buffer(*)
     type(grid_function_t), intent(inout):: grid_function
@@ -559,9 +560,9 @@ contains
            !ry = py-visual_cfg_nics_origin(2)
            !rz = pz-visual_cfg_nics_origin(3)
         !else
-           rx = px-cord(1, grid_function%nuc)
-           ry = py-cord(2, grid_function%nuc)
-           rz = pz-cord(3, grid_function%nuc)
+           rx = px-mol%geometry(1, grid_function%nuc)
+           ry = py-mol%geometry(2, grid_function%nuc)
+           rz = pz-mol%geometry(3, grid_function%nuc)
         !end if
 
         f = -1.0d0/((rx*rx+ry*ry+rz*rz)**1.5d0)
@@ -743,10 +744,12 @@ contains
                                              grid_function,&
                                              grid_function_values,&
                                              px,py,pz,&
+                                             mol,&
                                              ipoint)
 
     type(dmat_t), intent(in):: dmat_0
     type(dmat_t), intent(in):: dmat_other
+    type(mol_t), intent(in):: mol
     real(8), intent(in):: ao(*)
     real(8), intent(in):: buffer(*)
     type(grid_function_t), intent(inout):: grid_function
@@ -1011,9 +1014,9 @@ contains
            !ry = py-visual_cfg_nics_origin(2)
            !rz = pz-visual_cfg_nics_origin(3)
         !else
-           rx = px-cord(1, grid_function%nuc)
-           ry = py-cord(2, grid_function%nuc)
-           rz = pz-cord(3, grid_function%nuc)
+           rx = px-mol%geometry(1, grid_function%nuc)
+           ry = py-mol%geometry(2, grid_function%nuc)
+           rz = pz-mol%geometry(3, grid_function%nuc)
         !end if
 
         f = -1.0d0/((rx*rx+ry*ry+rz*rz)**1.5d0)

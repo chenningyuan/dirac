@@ -359,6 +359,7 @@ contains
           ! add "visualize"/"integrate" procedures in this call; now - visualization only
           !
           call work_on_grid(g_ndim, n_this_proc, &
+                            mol,&
                             rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
                             rs_input%grid_functions(igf), &
                             grid_function_values, &
@@ -448,6 +449,7 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine work_on_grid(ndim, nr_points, &
+                          mol,&
                           grid_points,   &
                           grid_function, &
                           grid_function_values, &
@@ -458,6 +460,7 @@ contains
     integer, intent(in):: ndim
     integer, intent(in):: nr_points
     real(8), intent(in):: grid_points(ndim, nr_points)
+    type(mol_t), intent(in):: mol
     type(grid_function_t), intent(inout):: grid_function
     real(8), intent(out):: grid_function_values(:,:)
     type(dmat_t), intent(in):: dmat_0
@@ -512,18 +515,21 @@ contains
                                                   ao,buffer,&
                                                   grid_function,grid_function_values,&
                                                   grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
+                                                  mol,&
                                                   ipoint=ipoint)
           case ("response")
             call get_quantity_in_point_refactored(dmat, &
                                                   ao,buffer,&
                                                   grid_function,grid_function_values,&
                                                   grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
+                                                  mol,&
                                                   ipoint=ipoint)
           case ("unperturbed")
             call get_quantity_in_point_refactored(dmat_0, &
                                                   ao,buffer,&
                                                   grid_function,grid_function_values,&
                                                   grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
+                                                  mol,&
                                                   ipoint=ipoint)
         end select
 

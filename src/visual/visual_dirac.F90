@@ -351,6 +351,7 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine read_mol_from_dirac(mol, group)
+#include "codata.h" !xtang
     type(mol_t), intent(out) :: mol
     character(len=*),intent(in) :: group
     real(8), allocatable :: temp(:)
@@ -366,6 +367,9 @@ contains
     call checkpoint_read(group//'geometry',   rdata=temp)
     call checkpoint_read(group//'nuc_charge', rdata=mol%nuc_charge)
 
+!   warning - these coordinates are stored on CHECKPOINT in Angstroms;
+!   in VISUAL - everything operates in AU, so let's rescale it here for consistency
+    temp = temp/xtang
     mol%geometry = reshape(temp, (/3, mol%n_atoms/))
 
     deallocate(temp)

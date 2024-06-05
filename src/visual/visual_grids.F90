@@ -223,16 +223,28 @@ contains
     real(8):: atoms_min(1:3), atoms_max(1:3)
     integer::i, j
 
-    ! mol%geometry is in Angstroms, so we rescale it
-    atoms_min(1:3) = mol%geometry(1:3, 1)/xtang
-    atoms_max(1:3) = mol%geometry(1:3, 1)/xtang
+    ! mol%geometry is originally in Angstroms, but we rescaled it when reading from checkpoint
+! fixme: ensure the units are OK
+    atoms_min(1:3) = mol%geometry(1:3, 1)
+    atoms_max(1:3) = mol%geometry(1:3, 1)
 
     do i = 1, mol%n_atoms
       do j = 1, 3
-        atoms_min(j) = min(mol%geometry(j, i)/xtang, atoms_min(j))
-        atoms_max(j) = max(mol%geometry(j, i)/xtang, atoms_max(j))
+        atoms_min(j) = min(mol%geometry(j, i), atoms_min(j))
+        atoms_max(j) = max(mol%geometry(j, i), atoms_max(j))
       end do
     end do
+
+!    ! mol%geometry is in Angstroms, so we rescale it
+!    atoms_min(1:3) = mol%geometry(1:3, 1)/xtang
+!    atoms_max(1:3) = mol%geometry(1:3, 1)/xtang
+!
+!    do i = 1, mol%n_atoms
+!      do j = 1, 3
+!        atoms_min(j) = min(mol%geometry(j, i)/xtang, atoms_min(j))
+!        atoms_max(j) = max(mol%geometry(j, i)/xtang, atoms_max(j))
+!      end do
+!    end do
 
     ! add space around
     do i = 1, 3
