@@ -1320,7 +1320,8 @@ contains
 
 ! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
 ! new trial vectors
-            if (config%refresh_trial_vectors.and.(mod(niter,config%trial_vector_refresh_rate).eq.0)) then
+            if (config%refresh_trial_vectors) then
+              if (mod(niter,config%trial_vector_refresh_rate).eq.0) then
                 write(config%output_file_unit,*) "Resetting trial vectors at iteration",niter
                 call form_eigenvalues_full_problem(results%eValues, nroots, e_small)
                 if (config%solve_lhs) then
@@ -1347,6 +1348,7 @@ contains
                    b = results%eVectorsR
                 end if
                 deallocate(sigma_vector)
+              end if
             else
 
                b => updated_subspace_vectors_R(b, delta, verbose=config%debug)
