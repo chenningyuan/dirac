@@ -306,6 +306,11 @@ contains
                                        dmat_ao=dmat_lao)
                   dmat%elements = dmat%elements + dmat_lao%elements
                   call dmat_lao%erase()
+                else
+                  if (rs_input%grid_functions(igf)%lao_skip(2) == 0) then
+!                   do not skip direct contribution ('nodirect')
+                    call get_xyzcomp_from_rspvec(rs_input%grid_functions(igf))
+                  end if
                 end if
 
               end if
@@ -314,10 +319,11 @@ contains
 #ifdef VAR_MPI
             if (is_parallel()) then
               call synchronize_dmat(dmat)
-              if (rs_input%grid_functions(igf)%lao_skip(3) == 0) then
+              if (rs_input%grid_functions(igf)%lao_skip(2)==0 .or. rs_input%grid_functions(igf)%lao_skip(3)==0) then
                 call interface_mpi_bcast(rs_input%grid_functions(igf)%lao_comp,1,irank_master,global_communicator)
               end if
             end if
+            write(*,*) "DEBUG1: lao_comp: ", rs_input%grid_functions(igf)%lao_comp
             !write(*,*) "DEBUG1: after dmat synchronize:"
             !call dmat%display(node_id=get_my_rank())
 #endif

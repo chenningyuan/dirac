@@ -28,6 +28,7 @@ module visual_dirac
   public visual_update_data
 
   public dirac_dmat_init
+  public get_xyzcomp_from_rspvec
 
 
 #ifdef VAR_MPI
@@ -757,7 +758,7 @@ contains
     call interface_mpi_bcast(grid_function%rspvec_id,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%lao,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%lao_skip,3,irank_master,global_communicator)
-    call interface_mpi_bcast(grid_function%lao_comp,1,irank_master,global_communicator)
+    !call interface_mpi_bcast(grid_function%lao_comp,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%tensor_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_g_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_m_order,1,irank_master,global_communicator)
@@ -1189,7 +1190,7 @@ contains
 
   subroutine get_xyzcomp_from_rspvec(grid_function, ivec)
     type(grid_function_t), intent(inout):: grid_function
-    integer,intent(out)::ivec
+    integer,intent(out),optional::ivec
     character(len=:),allocatable :: f_name
     type(response_info_t):: rsp_info_this
     integer:: rspvec_id
@@ -1200,13 +1201,13 @@ contains
     rspvec_id = grid_function%rspvec_id
  
     if (rsp_info_this%vectors(rspvec_id)%get_label() == 'LAO-XRM1H1') then
-      ivec = 1
+      if (present(ivec)) ivec = 1
       grid_function%lao_comp = 'X'
     else if (rsp_info_this%vectors(rspvec_id)%get_label() == 'LAO-YRM1H1') then
-      ivec = 2
+      if (present(ivec)) ivec = 2
       grid_function%lao_comp = 'Y'
     else if (rsp_info_this%vectors(rspvec_id)%get_label() == 'LAO-ZRM1H1') then
-      ivec = 3
+      if (present(ivec)) ivec = 3
       grid_function%lao_comp = 'Z'
     end if
 
