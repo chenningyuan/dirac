@@ -5,7 +5,7 @@ module exacorr_tensor_interface
 
         use exatensor
         use talsh
-!        use standard_iterface
+!        use standard_interface
 
         use, intrinsic:: ISO_C_BINDING
 
@@ -126,9 +126,14 @@ module exacorr_tensor_interface
                         character(len = *)               :: addition_str, d_indices, a_indices, b_indices, c_indices  
                         logical                          :: a_conj, b_conj, c_conj  
                         
+                        ! here the einsum_str has to be parsed to get the indices of D (addition_str). e.g. "D(m1,e1)+=C(m1,e1)*beta()"
+                        ! parse using the standard to avoid code duplicate? (standard api will have to do this anyway)
+                        ierr=standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj)
+                        ierr=indices2addition_str(d_indices, c_conj, addition_str)
+
+
                         SELECT CASE(a%which_library)
                         CASE(1)
-                                ierr=standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj)
                                 ierr=standard_contract(d, d_indices, &
                                         alpha, a, a_indices, a_conj, b, b_indices, b_conj, beta, c, c_indices, c_conj)
                         CASE(2)
@@ -139,15 +144,9 @@ module exacorr_tensor_interface
                                 ! beta_tensor scalar is just a workaround that replaces exatensor's problematic addition by a contraction
                                 ierr=exatns_tensor_create(beta_tensor,"aux_beta_tensor",a%data_type)
                                 ierr=exatns_tensor_init(beta_tensor,beta)
-                                ! here the einsum_str has to be parsed to get the indices of D (addition_str). e.g. "D(m1,e1)+=C(m1,e1)*beta()"
-                                ! parse using the standard to avoid code duplicate? (standard api will have to do this anyway)
-                                ierr=standard_parse_einsum(einsum_str, d_indices)
-                                ierr=indices2addition_str(d_indices, addition_str)
                                 ierr=exatns_tensor_contract(addition_str, d, a, beta_tensor) 
                         CASE(3)
                                 ierr=talsh_tensor_contract(einsum_str,d,a,b, scale=alpha)
-                                ierr=standard_parse_einsum(einsum_str, d_indices)
-                                ierr=indices2addition_str(d_indices, addition_str)
                                 ierr=talsh_tensor_add(addition_str, d,c, scale=beta)
                 END SELECT
 
@@ -165,9 +164,12 @@ module exacorr_tensor_interface
                         character(len = *)               :: addition_str, d_indices, a_indices, b_indices, c_indices  
                         logical                          :: a_conj, b_conj, c_conj  
 
+                        ierr=standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj)
+                        ierr=indices2addition_str(d_indices, c_conj, addition_str)
+
+
                         SELECT CASE(a%which_library)
                         CASE(1)
-                                ierr=standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj)
                                 ierr=standard_contract(d, d_indices, &
                                         alpha, a, a_indices, a_conj, b, b_indices, b_conj, beta, c, c_indices, c_conj)
                         CASE(2)
@@ -176,13 +178,9 @@ module exacorr_tensor_interface
                                 ! addition
                                 ierr=exatns_tensor_create(beta_tensor,"aux_beta_tensor",a%data_type)
                                 ierr=exatns_tensor_init(beta_tensor,beta)
-                                ierr=standard_parse_einsum(einsum_str, d_indices)
-                                ierr=indices2addition_str(d_indices, addition_str)
                                 ierr=exatns_tensor_contract(addition_str, d, a, beta_tensor)
                         CASE(3)
                                 ierr=talsh_tensor_contract(einsum_str,d,a,b, scale=alpha)
-                                ierr=standard_parse_einsum(einsum_str, d_indices)
-                                ierr=indices2addition_str(d_indices, addition_str)
                                 ierr=talsh_tensor_add(addition_str, d,c, scale=beta)
                 END SELECT
                 END SUBROUTINE
@@ -199,9 +197,12 @@ module exacorr_tensor_interface
                         character(len = *)               :: addition_str, d_indices, a_indices, b_indices, c_indices  
                         logical                          :: a_conj, b_conj, c_conj
 
+                        ierr=standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj)
+                        ierr=indices2addition_str(d_indices, c_conj, addition_str)
+
+
                         SELECT CASE(a%which_library)
                         CASE(1)
-                                ierr=standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj)
                                 ierr=standard_contract(d, d_indices, &
                                         alpha, a, a_indices, a_conj, b, b_indices, b_conj, beta, c, c_indices, c_conj)
                                 
@@ -211,13 +212,9 @@ module exacorr_tensor_interface
                                 ! addition
                                 ierr=exatns_tensor_create(beta_tensor,"aux_beta_tensor",a%data_type)
                                 ierr=exatns_tensor_init(beta_tensor,beta)
-                                ierr=standard_parse_einsum(einsum_str, d_indices)
-                                ierr=indices2addition_str(d_indices, addition_str)
                                 ierr=exatns_tensor_contract(addition_str, d, a, beta_tensor)
                         CASE(3)
                                 ierr=talsh_tensor_contract(einsum_str,d,a,b, scale=alpha)
-                                ierr=standard_parse_einsum(einsum_str, d_indices)
-                                ierr=indices2addition_str(d_indices, addition_str)
                                 ierr=talsh_tensor_add(addition_str, d,c, scale=beta)
                 END SELECT
                 END SUBROUTINE
@@ -234,9 +231,11 @@ module exacorr_tensor_interface
                         character(len = *)               :: addition_str, d_indices, a_indices, b_indices, c_indices  
                         logical                          :: a_conj, b_conj, c_conj
 
+                        ierr=standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj)
+                        ierr=indices2addition_str(d_indices, c_conj, addition_str)
+
                         SELECT CASE(a%which_library)
                         CASE(1)
-                                ierr=standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj)
                                 ierr=standard_contract(d, d_indices, &
                                         alpha, a, a_indices, a_conj, b, b_indices, b_conj, beta, c, c_indices, c_conj)
                                 
@@ -246,13 +245,9 @@ module exacorr_tensor_interface
                                 ! addition
                                 ierr=exatns_tensor_create(beta_tensor,"aux_beta_tensor",a%data_type)
                                 ierr=exatns_tensor_init(beta_tensor,beta)
-                                ierr=standard_parse_einsum(einsum_str, d_indices)
-                                ierr=indices2addition_str(d_indices, addition_str)
                                 ierr=exatns_tensor_contract(addition_str, d, a, beta_tensor)
                         CASE(3)
                                 ierr=talsh_tensor_contract(einsum_str,d,a,b, scale=alpha)
-                                ierr=standard_parse_einsum(einsum_str, d_indices)
-                                ierr=indices2addition_str(d_indices, addition_str)
                                 ierr=talsh_tensor_add(addition_str, d,c, scale=beta)
                 END SELECT
                 END SUBROUTINE
@@ -269,8 +264,9 @@ module exacorr_tensor_interface
      
         END SUBROUTINE
 
-        SUBROUTINE indices2addition_str(d_indices, addition_str)
-                character(len = *), intent(in)   :: d_indices     
+        SUBROUTINE indices2addition_str(d_indices, c_conj, addition_str)
+                character(len = *), intent(in)   :: d_indices
+                logical , intent(in)             :: c_conj     
                 character(len = *), intent(out)  :: addition_str
      
         END SUBROUTINE
