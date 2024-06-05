@@ -14,8 +14,9 @@ module exacorr_tensor_interface
 !PARAMETERS:
 !Generic:
         !integer, parameter, private:: REALD=8 ! default real for this module
-        integer(4) INTL=8
-        integer(4) INTD=4
+! aspg: to check whether definitions such as these do not clash with imported modules
+        integer(4) :: T_INTL=8
+        integer(4) :: T_INTD=4
         
 !DERIVED TYPES:
         public :: tensor_data_type_real_8, tensor_data_type_complex_8
@@ -62,17 +63,28 @@ module exacorr_tensor_interface
 
         end type index_symmetry_structure
 
+        public contract
+
+        interface contract
+           module procedure contract_r
+           module procedure contract_c
+           module procedure contract_r_r
+           module procedure contract_c_c
+           module procedure contract_r_c
+           module procedure contract_c_r
+        end interface
+
         contains
 
         !performs D += alpha A * B (+ beta C ), with possible complex conjugates
         !implement +beta C as part of this function?
-        INTERFACE contract
+!       INTERFACE contract
                 SUBROUTINE contract_r(einsum_str, d, alpha, a, b) ! D += alpha A * B, with alpha real
-                        Import :: tensor_t
+!                       Import :: tensor_t
                         character(len = *), intent(in)   :: einsum_str
-                        type(tensor_t), intent(inout)      :: d
+                        type(tensor_t), intent(inout)    :: d
                         real(8), intent(in)              :: alpha
-                        type(tensor_t), intent(in)         :: a,b
+                        type(tensor_t), intent(inout)    :: a,b
                         integer(INTD)                    :: ierr
                         character(len = *)               :: d_indices, a_indices, b_indices  
                         logical                          :: a_conj, b_conj
@@ -91,11 +103,11 @@ module exacorr_tensor_interface
                 END SUBROUTINE
 
                 SUBROUTINE contract_c(einsum_str, d, alpha, a, b) ! D += alpha A * B, with alpha complex
-                        Import :: tensor_t
+!                       Import :: tensor_t
                         character(len = *), intent(in)   :: einsum_str
                         type(tensor_t), intent(inout)      :: d
                         complex(8), intent(in)           :: alpha
-                        type(tensor_t), intent(in)         :: a,b
+                        type(tensor_t), intent(inout)    :: a,b
                         integer(INTD)                    :: ierr
                         character(len = *)               :: d_indices, a_indices, b_indices  
                         logical                          :: a_conj, b_conj
@@ -115,14 +127,14 @@ module exacorr_tensor_interface
 
                 !the following routine is present four times in this file, with different data types of alpha and beta
                 SUBROUTINE contract_r_r(einsum_str, d, alpha, a, b, beta, c) ! D += alpha A * B + beta C, with alpha real, beta real
-                        Import :: tensor_t
+                  !     Import :: tensor_t
                         character(len = *), intent(in)   :: einsum_str
                         type(tensor_t), intent(inout)      :: d
                         real(8), intent(in)              :: alpha
                         real(8), intent(in)              :: beta
-                        type(tensor_t), intent(in)         :: a, b, c
+                        type(tensor_t), intent(inout)    :: a, b, c
                         integer(INTD)                    :: ierr
-                        type(tensor_t)                     :: beta_tensor
+                        type(tensor_t), intent(inout)    :: beta_tensor
                         character(len = *)               :: addition_str, d_indices, a_indices, b_indices, c_indices  
                         logical                          :: a_conj, b_conj, c_conj  
                         
@@ -153,14 +165,14 @@ module exacorr_tensor_interface
                 END SUBROUTINE
 
                 SUBROUTINE contract_c_c(einsum_str, d, alpha, a, b, beta, c) ! D += alpha A * B + beta C, with alpha complex, beta complex 
-                        Import :: tensor_t
+                       !Import :: tensor_t
                         character(len = *), intent(in)   :: einsum_str
                         type(tensor_t), intent(inout)      :: d
                         complex(8), intent(in)           :: alpha
                         complex(8), intent(in)           :: beta
-                        type(tensor_t), intent(in)         :: a, b, c
+                        type(tensor_t), intent(inout)    :: a, b, c
                         integer(INTD)                    :: ierr
-                        type(tensor_t)                     :: beta_tensor
+                        type(tensor_t), intent(inout)    :: beta_tensor
                         character(len = *)               :: addition_str, d_indices, a_indices, b_indices, c_indices  
                         logical                          :: a_conj, b_conj, c_conj  
 
@@ -186,14 +198,14 @@ module exacorr_tensor_interface
                 END SUBROUTINE
 
                 SUBROUTINE contract_r_c(einsum_str, d, alpha, a, b, beta, c) ! D += alpha A * B + beta C, with alpha real, beta complex  
-                        Import :: tensor_t
+                       !Import :: tensor_t
                         character(len = *), intent(in)   :: einsum_str         
                         type(tensor_t), intent(inout)      :: d
                         real(8), intent(in)             :: alpha
                         complex(8), intent(in)           :: beta
-                        type(tensor_t), intent(in)         :: a, b, c
+                        type(tensor_t), intent(inout)    :: a, b, c
                         integer(INTD)                    :: ierr
-                        type(tensor_t)                     :: beta_tensor
+                        type(tensor_t), intent(inout)    :: beta_tensor
                         character(len = *)               :: addition_str, d_indices, a_indices, b_indices, c_indices  
                         logical                          :: a_conj, b_conj, c_conj
 
@@ -220,14 +232,14 @@ module exacorr_tensor_interface
                 END SUBROUTINE
 
                 SUBROUTINE contract_c_r(einsum_str, d, alpha, a, b, beta, c) ! D += alpha A * B + beta C, with alpha complex, beta real 
-                        Import :: tensor_t
+                       !Import :: tensor_t
                         character(len = *), intent(in)   :: einsum_str         
-                        type(tensor_t), intent(inout)      :: d
+                        type(tensor_t), intent(inout)    :: d
                         complex(8), intent(in)           :: alpha
                         real(8), intent(in)              :: beta
-                        type(tensor_t), intent(in)         :: a, b, c
+                        type(tensor_t), intent(inout)    :: a, b, c
                         integer(INTD)                    :: ierr
-                        type(tensor_t)                     :: beta_tensor
+                        type(tensor_t), intent(inout)    :: beta_tensor
                         character(len = *)               :: addition_str, d_indices, a_indices, b_indices, c_indices  
                         logical                          :: a_conj, b_conj, c_conj
 
@@ -250,10 +262,11 @@ module exacorr_tensor_interface
                                 ierr=talsh_tensor_contract(einsum_str,d,a,b, scale=alpha)
                                 ierr=talsh_tensor_add(addition_str, d,c, scale=beta)
                 END SELECT
-                END SUBROUTINE
-        END INTERFACE
+!               END SUBROUTINE
+!       END INTERFACE
         
-        SUBROUTINE standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj)
+        function standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj)
+                integer(INTD) :: standard_parse_einsum 
                 character(len = *), intent(in)   :: einsum_str     
                 character(len = *), intent(out)  :: d_indices, a_indices, b_indices 
                 logical , intent(out)            :: a_conj, b_conj
@@ -261,15 +274,19 @@ module exacorr_tensor_interface
                 logical , intent(out), optional  :: c_conj
 
                 !should this function be a feature of the standard c-api instead?
+                standard_parse_einsum = -1
      
-        END SUBROUTINE
+        END function 
 
-        SUBROUTINE indices2addition_str(d_indices, c_conj, addition_str)
+        function indices2addition_str(d_indices, c_conj, addition_str)
+                integer(INTD) :: indices2addition_str
                 character(len = *), intent(in)   :: d_indices
                 logical , intent(in)             :: c_conj     
                 character(len = *), intent(out)  :: addition_str
+
+                indices2addition_str = -1
      
-        END SUBROUTINE
+        END function 
 
         !todo:
         !add
