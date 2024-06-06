@@ -209,7 +209,7 @@ calculated using the PBE0 functional.  The preparatory atomic calculations as we
   .DFT
   PBE0
   
-in the **HAMILTONIAN section. In the amfX2C calculation, we have also asked for a Mulliken population analysis and find for fermion ircip :math:`E_{1u}`::
+in the :ref:`**HAMILTONIAN` section. In the amfX2C calculation, we have also asked for a Mulliken population analysis and find for fermion ircip :math:`E_{1u}`::
 
   * Electronic eigenvalue no.   1: -503.04886526180       (Occupation : f = 1.0000)           
   ============================================================================================
