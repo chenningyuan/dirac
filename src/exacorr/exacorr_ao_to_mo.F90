@@ -5,9 +5,7 @@ module exacorr_ao_to_mo
 
         use exacorr_utils
         use, intrinsic:: ISO_C_BINDING
-#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         use exatensor
-#endif
         implicit none
         private
         public exacorr_compute_mo_integrals

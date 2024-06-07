@@ -14,7 +14,7 @@ if(ENABLE_EXATENSOR)
 
   set(FREE_EXACORR_FORTRAN_SOURCES
    ${FREE_EXACORR_FORTRAN_SOURCES}
-   exacorr_tensor_interface.F90
+   #exacorr_tensor_interface.F90
    mbauto/talsh_auto_ccd_spinor.F90
    mbauto/talsh_auto_ccsd_spinor.F90
    mbauto/talsh_auto_ccsdt_spinor.F90

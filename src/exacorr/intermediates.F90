@@ -12,9 +12,7 @@ module intermediates
     real(8), parameter     :: ONE_QUARTER=0.25D0
 
      interface get_tau
-#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_tau_exatns
-#endif
         module procedure get_tau_talsh
      end interface get_tau
 
@@ -248,7 +246,6 @@ module intermediates
 
      contains
 
-#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
        subroutine get_tau_exatns(comm_t,CCD,one_tensor)
 
         use exatensor
@@ -280,7 +277,6 @@ module intermediates
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
-!       oo ! validated
         ierr=exatns_tensor_init(comm_t%hoo,'ZERO')
         ierr=exatns_tensor_contract("H(k,i)+=F(k,i)*K()",comm_t%hoo,comm_t%foo,one_tensor, MINUS_ONE)
         ierr=exatns_tensor_contract("H(k,i)+=V(k,l,c,d)*T(c,d,l,i)",comm_t%hoo,oovv_tensor,comm_t%tau,ONE_HALF) ! o(3)v(2)
@@ -297,7 +293,6 @@ module intermediates
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
-!       ov ! validated
         ierr=exatns_tensor_init(comm_t%hov,'ZERO')
         ierr=exatns_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,oovv_tensor,comm_t%t1) ! o(2)v(2)
         ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",comm_t%hov,comm_t%fov,one_tensor)           ! add fock matrix
@@ -314,7 +309,6 @@ module intermediates
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
-!       vv ! validated
         ierr=exatns_tensor_init(comm_t%hvv,'ZERO')
         ierr=exatns_tensor_contract("H(a,c)+=F(a,c)*K()",comm_t%hvv,comm_t%fvv,one_tensor)
         ierr=exatns_tensor_contract("H(a,c)+=V(k,l,c,d)*T(d,a,k,l)",comm_t%hvv,oovv_tensor,comm_t%tau,ONE_HALF) ! o(2)v(3)
@@ -372,7 +366,6 @@ module intermediates
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
-!       oooo ! validated
         ierr=exatns_tensor_init(comm_t%a_int,'ZERO')
         ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,j)*K()",comm_t%a_int,int_t%oooo,one_tensor)
         if (.not.CCD) then 
@@ -394,7 +387,6 @@ module intermediates
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
-!       vovo ! more tests
         ierr=exatns_tensor_init(comm_t%h_int,'ZERO')
         if (.not.CCD) then
             ierr=exatns_tensor_contract("H(a,k,c,i)+=V(a,k,c,d)*T(d,i)",comm_t%h_int,int_t%vovv,comm_t%t1) ! o(2)v(3)
@@ -476,7 +468,6 @@ module intermediates
         logical, intent(in) :: CCD
         integer :: ierr
 
-!       ooov
         ierr=exatns_tensor_init(w_ooov,'ZERO')
         if (.not.CCD) ierr=exatns_tensor_contract("W(m,n,i,e)+=T(f,i)*V(m,n,f,e)",w_ooov,t1_tensor,int_t%oovv)
         ierr=exatns_tensor_contract("W(m,n,i,e)+=V(m,n,i,e)*K()",w_ooov,int_t%ooov,one_tensor)
@@ -528,11 +519,13 @@ module intermediates
         integer(INTL) :: vvoo_root(4)
         logical, intent(in) :: CCD
         integer(INTD) :: ierr
+        integer(INTD) :: idum
 
         !Auxiliary tensor
         vvoo_id   = (/vir_space_id, vir_space_id, occ_space_id, occ_space_id/)
         vvoo_root = (/vir_space_root, vir_space_root, occ_space_root, occ_space_root/)
-        ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,idum)
+        !ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
 
         ierr=exatns_tensor_init(tau2_tensor,'ZERO')
         ierr=exatns_tensor_init(w_vovo,'ZERO')
@@ -746,7 +739,7 @@ module intermediates
        subroutine get_w_vovo_CC2_exatns(w_vovo,comm_t_CC2,oovv_tensor,vvoo_id,vvoo_root,one_tensor)
 
         use exatensor
-        use tensor_algebra
+        !use tensor_algebra
         use exacorr_datatypes, only : exatns_comm_tens_t
 
         type(tens_rcrsv_t),intent(inout) :: w_vovo
@@ -821,8 +814,6 @@ module intermediates
 !!!!!!!!!!!!!!!!!!!!!!!
 !!!!!  End CC2 Exatens
 !!!!!!!!!!!!!!!!!!!!!!!
-
-#endif
 
        subroutine get_tau_talsh(comm_t,CCD)
 
