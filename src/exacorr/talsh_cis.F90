@@ -209,7 +209,7 @@ module talsh_cis
         end if 
 
         cisrt = .true.
-        if(cisrt .eqv. .true.) then
+        if(cisrt) then
             call print_date('Starting Real-time CIS computation')
             call talsh_cis_rt_solver_driver(exa_input,eVectorsR,eValues)
         end if 
