@@ -2284,7 +2284,8 @@ C     Get number of coordinates
          DO ISYMOP = 0, MAXOPR
             IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                !If charge of IATOM is greater than 0
-               IF (IZATOM(IATOM) .GT. 0) THEN
+!               IF (IZATOM(IATOM) .GT. 0) THEN
+               IF (CHARGE(IATOM) .GT. 0) THEN
                   DO KCOOR = 1, 3
                      GEOM(KCOOR,JATOM+1) =
      &                    PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
@@ -2300,10 +2301,14 @@ C     Get number of coordinates
 
 C     Nuclei charge barycenter calculation
       DO IATOM = 1, NNATOM
-         ICHTOT = ICHTOT + IZATOM(IATOM)
-         NCHBC(1) = NCHBC(1) + IZATOM(IATOM)*GEOM(1,IATOM)
-         NCHBC(2) = NCHBC(2) + IZATOM(IATOM)*GEOM(2,IATOM)
-         NCHBC(3) = NCHBC(3) + IZATOM(IATOM)*GEOM(3,IATOM)
+!         ICHTOT = ICHTOT + IZATOM(IATOM)
+!         NCHBC(1) = NCHBC(1) + IZATOM(IATOM)*GEOM(1,IATOM)
+!         NCHBC(2) = NCHBC(2) + IZATOM(IATOM)*GEOM(2,IATOM)
+!         NCHBC(3) = NCHBC(3) + IZATOM(IATOM)*GEOM(3,IATOM)
+         ICHTOT = ICHTOT + CHARGE(IATOM)
+         NCHBC(1) = NCHBC(1) + CHARGE(IATOM)*GEOM(1,IATOM)
+         NCHBC(2) = NCHBC(2) + CHARGE(IATOM)*GEOM(2,IATOM)
+         NCHBC(3) = NCHBC(3) + CHARGE(IATOM)*GEOM(3,IATOM)
       END DO
       IF (ICHTOT.NE.0.0D0) THEN
         NCHBC = NCHBC / ICHTOT
