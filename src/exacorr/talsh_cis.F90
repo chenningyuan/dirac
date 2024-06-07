@@ -7,6 +7,7 @@ module talsh_cis
     use talsh_common_routines
     use talsh_cis_property
     use talsh_cis_density
+    
 
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -29,6 +30,7 @@ module talsh_cis
     ! Written by Xiang Yuan, June 2020
         use exacorr_global
         use talsh_ao_to_mo
+        use talsh_rt_solver
 
 
         type(exacc_input), intent(in) :: exa_input
@@ -47,6 +49,7 @@ module talsh_cis
          complex(8), pointer, contiguous :: h_tens(:,:)
          integer :: i,j,a,b,n
          integer :: bj,ai
+         logical :: cisrt
 
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
@@ -205,6 +208,11 @@ module talsh_cis
             call talsh_cis_d_driver(exa_input,int_t,eVectorsR,eValues,nocc,nvir,eps_occ,eps_vir)
         end if 
 
+        cisrt = .true.
+        if(cisrt .eqv. .true.) then
+            call print_date('Starting Real-time CIS computation')
+            call talsh_cis_rt_solver_driver(exa_input,eVectorsR,eValues)
+        end if 
 
     end subroutine talsh_cis_driver 
 
