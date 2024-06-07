@@ -915,12 +915,20 @@ C     Consistency checks
 C     ------------------
 
       ! symmetry: LUCIAREL does not work with C1/Ci symmetry
-      if(KRCI_CIPROGRAM == 'LUCIAREL')then
-        if(nfsym == 1 .and. nz == 4)then
-          call quit('LUCIAREL does not work with C1/Ci symmetry.'//
-     &              ' Either you use GASCIP or wait for a patch to'//
-     &              ' Dirac14. For further information contact '//
-     &              ' dirac-users@googlegroups.com .')
+      if (KRCI_CIPROGRAM == 'LUCIAREL') then
+#if !defined (VAR_MPI)
+C Note: the sequential code runs, but it may give wrong results. Therefore the quit.
+C       The fix of the problem by Andreas Nyvang in 2022 is only implemented in the subroutines used when
+C       compiled with MPI. It is not worth the time to rewrite the old subroutines for non-MPI compilation.
+C       /4-Jun-2024, hjaaj. See git log d5d4e3ff7547f4d8e831f3699fb8ce6c95d39a57 for more info about why
+C       the parallel version is much better.
+        call quit(
+     &     'LUCIAREL only works reliably if DIRAC compiled with MPI.'//
+     &     ' You can run sequential with MPI code, if desired.')
+#endif
+        if(nz == 4)then
+          call quit('LUCIAREL does not work with C1/Ci symmetry. You'//
+     &      ' may try to use GASCIP instead if it can handle your case')
         end if 
       end if
 
