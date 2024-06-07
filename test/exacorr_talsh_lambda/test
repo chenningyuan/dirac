@@ -21,7 +21,7 @@ f.add(from_string = 'Total contribution to principal components',
       abs_tolerance   = 1.0e-6)
 
 test.run(['ccsd_x2c.inp'], ['H2O_nosym.mol'], f)
-test.run(['ccd_x2c.inp'], ['H2O_nosym.mol'], f)
+test.run(['ccd_x2c.inp','ccd_x2c_full_a.inp','ccd_x2c_full_b.inp'], ['H2O_nosym.mol'], f)
 #test.run(['ccsd_energy_large_cvalue.inp'], ['h2o.xyz'], f)
 
 #f = Filter()
