@@ -556,16 +556,20 @@ module talsh_common_routines
          ierr=talsh_tensor_get_body_access(dm_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
          dm_mo_fort(1:nvir,1:nvir) = dm_block
-         
+          
          call get_free_fileunit(mp2dm)
-         if (present(mode) .and. mode==2) then
-           open (mp2dm,file=file_out,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
-           ! write dimension of the matrix 
-           write(mp2dm,*) nvir
-           ! write matrix element
-           do ierr=1,nvir
-             write(mp2dm,*) dm_mo_fort(ierr,1:nvir)
-           end do
+         if (present(mode)) then
+           if (mode==2) then
+              open (mp2dm,file=file_out,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
+              ! write dimension of the matrix 
+              write(mp2dm,*) nvir
+              ! write matrix element
+              do ierr=1,nvir
+                write(mp2dm,*) dm_mo_fort(ierr,1:nvir)
+              end do
+            else
+               call quit('error in choice of mode for writing mp2nos')
+            end if
          else 
            open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
            ! write dimension of the matrix 
