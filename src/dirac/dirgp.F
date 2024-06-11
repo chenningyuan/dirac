@@ -3301,6 +3301,7 @@ C
       integer, allocatable :: IBUF(:)
       type(file_info_t)    :: dfacmo
 C
+      CALL QENTER('ACMOIN')
       IPRINT = IPRGEN
 C
 C     Allocate arrays
@@ -3318,6 +3319,11 @@ C
       dfacmo%type = 2
       dfacmo%name = 'DFACMO.h5'
       dfacmo%status = -1
+      INQUIRE(FILE=dfacmo%name,EXIST=TOBE)
+      IF(.NOT.TOBE) THEN
+         WRITE(6,*) '* ERROR: Missing HDF5-file :',dfacmo%name
+         CALL QUIT('ACMOIN: missing HDF5-file')
+       ENDIF
       call lab_read (dfacmo,
      & '/result/wavefunctions/scf/energy',toterg)
       call lab_read (dfacmo,
@@ -3402,6 +3408,7 @@ C     De-allocate arrays
       deallocate(IBEIG2)
       deallocate(IBUF)
 C
+      CALL QEXIT('ACMOIN')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
