@@ -750,7 +750,8 @@ contains
 
     if (rs_input%levyle) then
       if ((grid_function%name == 'j') .or. &
-          (grid_function%name == 'ndip')) then
+          (grid_function%name == 'ndip') .or. &
+          (grid_function%name == 'bdip')) then
         if (grid_function%max_ao_g_order < 1) then
           grid_function%max_ao_g_order = 1
         end if

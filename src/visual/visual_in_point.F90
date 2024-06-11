@@ -808,9 +808,6 @@ contains
 
         end if
 
-!       gosia - fixme
-!       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
-!
         if (grid_function%lao > 0) then
           if (grid_function%lao_skip(2) == 0) then
 !           do not skip direct contribution ('nodirect')
@@ -851,10 +848,10 @@ contains
             'rotj')
 !       divergence or curl or gradient of current density
 
-        !if (rs_input%levyle) then
-        !   print *, 'error: Levy-Leblond not implemented'
-        !   stop
-        !end if
+        if (rs_input%levyle) then
+           print *, 'error: Levy-Leblond not implemented'
+           stop
+        end if
 
         t1 = 0.0d0
         t2_33 = 0.0d0
@@ -867,27 +864,24 @@ contains
                     dmat_other%elements, &
                     buffer,        &
                     ao)
-!
-!       gosia - fixme
-!       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
-!
+
         if (grid_function%lao > 0) then
           if (grid_function%lao_skip(2) == 0) then
 !           do not skip direct contribution ('nodirect')
 !
-          !if (rs_input%levyle) then
-          !    print *, 'error: Levy-Leblond divj and rotj and gradj not implemented'
-          !    stop
-          !else
-            temp_33 = 0.0d0
-            call get_gjblao(grid_function%lao_comp,&
-                            rs_input%cvalue,            &
-                            dmat_0%elements, &
-                            dmat_0%mat_dim,  &
-                            ao,              &
-                            (/px, py, pz/),  &
-                            temp_33)
-          !end if
+            if (rs_input%levyle) then
+                print *, 'error: Levy-Leblond divj and rotj and gradj not implemented'
+                stop
+            else
+              temp_33 = 0.0d0
+              call get_gjblao(grid_function%lao_comp,&
+                              rs_input%cvalue,            &
+                              dmat_0%elements, &
+                              dmat_0%mat_dim,  &
+                              ao,              &
+                              (/px, py, pz/),  &
+                              temp_33)
+            end if
             t2_33(1:3, 1:3) = t2_33(1:3, 1:3) + temp_33(1:3, 1:3)
           end if
         end if
@@ -971,9 +965,6 @@ contains
                      buffer,    &
                      ao)
         end if
-!
-!       gosia - fixme
-!       * hardcoded for "z" (for testing); need a better scheme to make PAMXVC-TBMO files match
 
         if (grid_function%lao > 0) then
           if (grid_function%lao_skip(2) == 0) then

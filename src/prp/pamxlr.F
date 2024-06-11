@@ -2542,8 +2542,12 @@ C***********************************************************************
       END
 !     ------------------------------------------------------------------
 !
-!     subroutines enabling the additional export of response data;
-!     used in VISUAL and FDE
+!     The following subroutines enable additional export of 
+!     response data to hdf5 format.
+!     All data stored in PAMXVC is transfered to RESPONSE.h5, so,
+!     in principle, RESPONSE.h5 could replace PAMXVC.
+!
+!     This is now used only in VISUAL and FDE
 !     Gosia Olejniczak, 16/01/2024
 !
 !     ------------------------------------------------------------------
