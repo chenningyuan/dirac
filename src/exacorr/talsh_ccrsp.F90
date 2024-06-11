@@ -154,15 +154,19 @@ subroutine talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
 
 
         do i=1, N_prop_A
+            call print_lr_setup("R","A",i,omega(1))
             call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
             if (omega(1).ne.ZERO) then
+                call print_lr_setup("R","A",i,omega_min(1))
                 call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                     Interm_t_tensors_A(i), omega_min(1), Tprop_tensors_min_w(1))
             end if
 
             do j=1, N_prop_B
+                call print_lr_setup("R","B",j,omega(2))
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
                 if (omega(2).ne.ZERO) then
+                    call print_lr_setup("R","B",j,omega_min(2))
                     call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                             Interm_t_tensors_B(j), omega_min(2), Tprop_tensors_min_w(2))
                 end if
@@ -429,42 +433,52 @@ subroutine do_eom_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 ! This loop is to determine which three properties to calculate
         do i=1, N_prop_A
 
+            call print_lr_setup("R","A",i,omega(1))
             call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
             if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
+                call print_lr_setup("R","A",i,omega_min(1))
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega_min(1), Tprop_tensors_min_w(1))
             end if 
 
             call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_A(i),l1_tensor,l2_tensor, &
                     Bvec_tensors(1))
 
+            call print_lr_setup("L","A",i,omega(1))
             call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), &
                     Bvec_tensors(1), Tprop_bar_tensors(1))
             if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
+                call print_lr_setup("L","A",i,omega_min(1))
                 call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega_min(1),&
                     Bvec_tensors(1), Tprop_bar_tensors_min_w(1))
             end if
 
             do j=1, N_prop_B
                 
+                call print_lr_setup("R","B",j,omega(2))
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
                 if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
+                    call print_lr_setup("R","B",j,omega_min(2))
                     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega_min(2), Tprop_tensors_min_w(2))
                 end if 
 
                 call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_B(j),l1_tensor,l2_tensor, &
                         Bvec_tensors(2))
 
+                call print_lr_setup("L","B",j,omega(2))
                 call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), &
                         Bvec_tensors(2), Tprop_bar_tensors(2))
                 if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
+                    call print_lr_setup("L","B",j,omega_min(2))
                     call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega_min(2),&
                         Bvec_tensors(2), Tprop_bar_tensors_min_w(2))
                 end if 
 
                 do k=1, N_prop_C
 
+                    call print_lr_setup("R","C",k,omega(3))
                     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_C(k), omega(3), Tprop_tensors(3))
                     if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
+                        call print_lr_setup("R","C",k,omega_min(3))
                         call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_C(k), &
                             omega_min(3), Tprop_tensors_min_w(3))
                     end if      
@@ -472,9 +486,11 @@ subroutine do_eom_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                     call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_C(k),l1_tensor,l2_tensor, &
                             Bvec_tensors(3))
 
+                    call print_lr_setup("L","C",k,omega(3))
                     call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_C(k), omega(3), &
                             Bvec_tensors(3), Tprop_bar_tensors(3))
                     if ((omega(2).ne.ZERO).or.(omega(3).ne.ZERO)) then 
+                        call print_lr_setup("L","C",k,omega_min(3))
                         call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_C(k), omega_min(3),&
                             Bvec_tensors(3), Tprop_bar_tensors_min_w(3))
                     end if 
@@ -663,42 +679,52 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 ! This loop is to determine which three properties to calculate
         do i=1, N_prop_A
 
+            call print_lr_setup("R","A",i,omega(1))
             call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
             if (omega(2).ne.0.0.or.omega(3).ne.0.0) then 
+                call print_lr_setup("R","A",i,omega_min(1))
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega_min(1), Tprop_tensors_min_w(1))
             end if 
 
             call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_A(i),l1_tensor,l2_tensor, &
                     Bvec_tensors(1))
 
+            call print_lr_setup("L","A",i,omega(1))
             call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), &
                     Bvec_tensors(1), Tprop_bar_tensors(1))
             if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
+                call print_lr_setup("L","A",i,omega_min(1))
                 call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega_min(1),&
                     Bvec_tensors(1), Tprop_bar_tensors_min_w(1))
             end if
 
             do j=1, N_prop_B
                 
+                call print_lr_setup("R","B",j,omega(2))
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
                 if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
+                    call print_lr_setup("R","B",j,omega_min(2))
                     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega_min(2), Tprop_tensors_min_w(2))
                 end if 
 
                 call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_B(j),l1_tensor,l2_tensor, &
                         Bvec_tensors(2))
 
+                call print_lr_setup("L","B",j,omega(2))
                 call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), &
                         Bvec_tensors(2), Tprop_bar_tensors(2))
                 if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
+                    call print_lr_setup("L","B",j,omega_min(2))
                     call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega_min(2),&
                         Bvec_tensors(2), Tprop_bar_tensors_min_w(2))
                 end if 
 
                 do k=1, N_prop_C
 
+                    call print_lr_setup("R","C",k,omega(3))
                     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_C(k), omega(3), Tprop_tensors(3))
                     if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
+                        call print_lr_setup("R","C",k,omega_min(3))
                         call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_C(k), &
                             omega_min(3), Tprop_tensors_min_w(3))
                     end if      
@@ -706,9 +732,11 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                     call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_C(k),l1_tensor,l2_tensor, &
                             Bvec_tensors(3))
 
+                    call print_lr_setup("L","C",k,omega(3))
                     call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_C(k), omega(3), &
                             Bvec_tensors(3), Tprop_bar_tensors(3))
                     if (omega(2).ne.0.0.or.omega(3).ne.0.0) then
+                        call print_lr_setup("L","C",k,omega_min(3))
                         call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_C(k), omega_min(3),&
                             Bvec_tensors(3), Tprop_bar_tensors_min_w(3))
                     end if 
