@@ -21,6 +21,10 @@ test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 test.run(['dc_rspB_makeh5.inp'], ['h2o.mol'], args='--incmo --get="RESPONSE.h5=RESPONSE_dc.h5"')
 test.run(['dc_rspB_useh5.inp'], ['h2o.mol'], args='--incmo  --put="RESPONSE_dc.h5=RESPONSE.h5"')
 
+test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
+test.run(['ll_rspE_makeh5.inp'], ['h2o.mol'], args='--incmo --get="RESPONSE.h5=RESPONSE_ll.h5"')
+test.run(['ll_rspE_useh5.inp'], ['h2o.mol'], args='--incmo  --put="RESPONSE_ll.h5=RESPONSE.h5"')
+
 
 #
 # compare generated data with reference
@@ -106,12 +110,19 @@ if h5py_available:
                 sys.stdout.write('Error! Different array data on hdf5')
 
 
-    # test scalar grid functions
     testset = ['RESPONSE_dc']
 
     for t in testset:
         compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rsp')
         for i in range(1,7):
+            compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rspvec', rspvec='vec_'+str(i))
+            compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rspvec_arrays', rspvec='vec_'+str(i))
+
+    testset = ['RESPONSE_ll']
+
+    for t in testset:
+        compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rsp')
+        for i in range(1,4):
             compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rspvec', rspvec='vec_'+str(i))
             compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rspvec_arrays', rspvec='vec_'+str(i))
 
