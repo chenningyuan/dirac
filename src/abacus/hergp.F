@@ -2283,9 +2283,8 @@ C     Get number of coordinates
       DO IATOM = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
             IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               !If charge of IATOM is greater than 0
-!               IF (IZATOM(IATOM) .GT. 0) THEN
-               IF (CHARGE(IATOM) .GT. 0) THEN
+               !If charge of IATOM is greater than 0 (i.e. not point charge)
+               IF (IZATOM(IATOM) .GT. 0) THEN
                   DO KCOOR = 1, 3
                      GEOM(KCOOR,JATOM+1) =
      &                    PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
@@ -2305,7 +2304,8 @@ C     Nuclei charge barycenter calculation
 !         NCHBC(1) = NCHBC(1) + IZATOM(IATOM)*GEOM(1,IATOM)
 !         NCHBC(2) = NCHBC(2) + IZATOM(IATOM)*GEOM(2,IATOM)
 !         NCHBC(3) = NCHBC(3) + IZATOM(IATOM)*GEOM(3,IATOM)
-         ICHTOT = ICHTOT + CHARGE(IATOM)
+! use effective nuclear charge (less than real charge for ECPs) instead of real nuclear charge
+         ICHTOT = ICHTOT + NINT(CHARGE(IATOM))
          NCHBC(1) = NCHBC(1) + CHARGE(IATOM)*GEOM(1,IATOM)
          NCHBC(2) = NCHBC(2) + CHARGE(IATOM)*GEOM(2,IATOM)
          NCHBC(3) = NCHBC(3) + CHARGE(IATOM)*GEOM(3,IATOM)
