@@ -2173,8 +2173,6 @@ C
  10   CONTINUE
 C
       CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT-1)
-
-
       TELCMAS = ICHTOT/XFAMU
       TNUCMAS = TOTMAS - TELCMAS
 C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
@@ -2234,95 +2232,6 @@ C
       END IF
       RETURN
       END
-
-C  /* Deck chargebc */
-      SUBROUTINE CHARGEBC
-C     Determine nuclei charge barycenter in orgcom.h(NCHBC) from information in common blocks
-C     J. J. Aucar, 2024
-
-      use memory_allocator
-      IMPLICIT NONE
-
-#include "priunit.h"
-#include "mxcent.h"
-#include "nuclei.h"
-#include "codata.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "orgcom.h"
-#include "symmet.h"
-
-C     Variables Declaration
-      INTEGER :: IATOM, JATOM, ICHTOT, IPRINT
-      INTEGER :: ISYMOP, KCOOR, NNATOM, GEOMSIZE
-      REAL(8), allocatable, dimension(:,:) :: GEOM
-
-C     Initialize array
-      CALL DZERO(NCHBC,3)
-
-C     Initialize total charge to Zero
-      ICHTOT = 0
-
-C     Get number of coordinates
-      GEOMSIZE  = 0
-      DO IATOM = 1, NUCIND
-         DO ISYMOP = 0, MAXOPR
-            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               !If charge of IATOM is greater than 0
-               IF (IZATOM(IATOM) .GT. 0) THEN
-                  GEOMSIZE = GEOMSIZE + 1
-               END IF
-            END IF
-         END DO
-      END DO
-
-      ! Allocate memory to array with nuclei coordinates
-      call alloc(GEOM,3,GEOMSIZE)
-
-      JATOM  = 0
-      DO IATOM = 1, NUCIND
-         DO ISYMOP = 0, MAXOPR
-            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               !If charge of IATOM is greater than 0
-!               IF (IZATOM(IATOM) .GT. 0) THEN
-               IF (CHARGE(IATOM) .GT. 0) THEN
-                  DO KCOOR = 1, 3
-                     GEOM(KCOOR,JATOM+1) =
-     &                    PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
-     &                    *CORD(KCOOR,IATOM)
-                  END DO
-                  JATOM = JATOM + 1
-               END IF
-            END IF
-         END DO
-      END DO
-      NNATOM=JATOM
-
-
-C     Nuclei charge barycenter calculation
-      DO IATOM = 1, NNATOM
-!         ICHTOT = ICHTOT + IZATOM(IATOM)
-!         NCHBC(1) = NCHBC(1) + IZATOM(IATOM)*GEOM(1,IATOM)
-!         NCHBC(2) = NCHBC(2) + IZATOM(IATOM)*GEOM(2,IATOM)
-!         NCHBC(3) = NCHBC(3) + IZATOM(IATOM)*GEOM(3,IATOM)
-         ICHTOT = ICHTOT + CHARGE(IATOM)
-         NCHBC(1) = NCHBC(1) + CHARGE(IATOM)*GEOM(1,IATOM)
-         NCHBC(2) = NCHBC(2) + CHARGE(IATOM)*GEOM(2,IATOM)
-         NCHBC(3) = NCHBC(3) + CHARGE(IATOM)*GEOM(3,IATOM)
-      END DO
-      IF (ICHTOT.NE.0.0D0) THEN
-        NCHBC = NCHBC / ICHTOT
-      ELSE
-         WRITE (LUPRI,'(//A/2A//)') ' ERROR in CHARGEBC ',
-     &          '     - Total nuclei charge equals zero.'
-         CALL QUIT('Total nuclei charge equals zero.')
-      END IF
-
-      call dealloc(GEOM)
-
-      RETURN
-      END
-
       SUBROUTINE TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,IPRINT)
 C
 C     Sets up transformation matrices between Cartesian (ITYPE=1)

@@ -89,8 +89,6 @@ Evaluate the electronic electric dipole moment
 
 Expectation values: :math:`\langle\hat{\mu}_\alpha\rangle=-e\langle r_\alpha\rangle`
 
-*Note:* for charged molecules the total electric dipole moment will depend on the gauge origin. It is possible to set the nuclei charge barycenter as the gauge origin so that the computed (total) dipole magnitude is representative for the electronic system as the nuclei electric dipole moment is constrained to vanish. Check for USEBC under :ref:`*NMR`.
-
 keyword(QUADRUPOLE)
 
 Evaluate the electronic traceless electric quadrupole moment

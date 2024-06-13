@@ -26,9 +26,6 @@ keyword(USECM)
 
 Use the center of mass as the gauge origin.
 
-keyword(USEBC)
-Use the nuclei charge barycenter as the gauge origin.
-
 keyword(INTFLG)
 
 Specify what two-electron integrals to include in the two-electron
