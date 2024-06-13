@@ -1,0 +1,14 @@
+**DIRAC                                                                                             
+.TITLE                                                                                              
+ Test for electric dipole choosing its origin at the nuclei charge barycenter
+.WAVE FUNCTION
+.PROPERTIES                                                                                         
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+**PROPERTIES                                                                                        
+.DIPOLE
+*NMR
+.USEBC
+*EXPECTATION VALUES
+.ORBANA
+*END OF
