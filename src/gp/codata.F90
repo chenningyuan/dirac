@@ -31,6 +31,7 @@ module codata
 ! emass    : m_e in kg
 ! ccm      : c (speed of light) in m/s
 ! autk     : Hartree-Kelvin relationship E_h/k
+! gfac     : Electron g-factor
 ! fermicc  : Fermi coupling constant G_F/(hbar.c)^3 in GeV^-2
 ! s2thetaw : Weak mixing angle [sen^2(theta_W)], based on
 !             particular variant of modified minimal subtraction (MS) scheme
@@ -49,6 +50,7 @@ module codata
   real(8), parameter :: emass1986    = 9.1093897d-31
   real(8), parameter :: ccm1986      = 2.99792458d8
   real(8), parameter :: autk1986     = 3.157733d5
+  real(8), parameter :: gfac1986     = 2.002319304386d0
 !  real(8), parameter :: fermicc1986  = Values not reported
 !  real(8), parameter :: s2thetaw1986 = Values not reported
 
@@ -70,6 +72,7 @@ module codata
   real(8), parameter :: emass1998    = 9.10938188d-31
   real(8), parameter :: ccm1998      = 2.997924580d8
   real(8), parameter :: autk1998     = 3.1577465d5
+  real(8), parameter :: gfac1998     = 2.0023193043737d0
   real(8), parameter :: fermicc1998  = 1.16639d-5
   real(8), parameter :: s2thetaw1998 = 0.23124d0    ! on-shell scheme value: 0.2224d0
 
@@ -85,6 +88,7 @@ module codata
   real(8), parameter :: emass2002    = 9.1093826d-31
   real(8), parameter :: ccm2002      = 2.99792458d8
   real(8), parameter :: autk2002     = 3.1577465d5
+  real(8), parameter :: gfac2002     = 2.0023193043718d0
   real(8), parameter :: fermicc2002  = 1.16639d-5
   real(8), parameter :: s2thetaw2002 = 0.23124d0    ! on-shell scheme value: 0.22215d0
 
@@ -100,6 +104,7 @@ module codata
   real(8), parameter :: emass2006    = 9.10938215d-31
   real(8), parameter :: ccm2006      = 2.99792458d8
   real(8), parameter :: autk2006     = 3.1577465d5
+  real(8), parameter :: gfac2006     = 2.0023193043622d0
   real(8), parameter :: fermicc2006  = 1.16637d-5
   real(8), parameter :: s2thetaw2006 = 0.23122d0    ! on-shell scheme value: 0.22255d0
 
@@ -115,6 +120,7 @@ module codata
   real(8), parameter :: emass2010    = 9.10938291d-31
   real(8), parameter :: ccm2010      = 2.99792458d8
   real(8), parameter :: autk2010     = 3.1577504d5
+  real(8), parameter :: gfac2010     = 2.00231930436153d0
   real(8), parameter :: fermicc2010  = 1.166364d-5
   real(8), parameter :: s2thetaw2010 = 0.23116d0    ! on-shell scheme value: 0.2223d0
 
@@ -130,6 +136,7 @@ module codata
   real(8), parameter :: emass2014    = 9.10938356d-31
   real(8), parameter :: ccm2014      = 2.99792458d8
   real(8), parameter :: autk2014     = 3.1577513d5
+  real(8), parameter :: gfac2014     = 2.00231930436182d0
   real(8), parameter :: fermicc2014  = 1.1663787d-5
   real(8), parameter :: s2thetaw2014 = 0.23126d0    ! on-shell scheme value: 0.2223d0
 
@@ -145,6 +152,7 @@ module codata
   real(8), parameter :: emass2018    = 9.1093837015d-31
   real(8), parameter :: ccm2018      = 2.99792458d8
   real(8), parameter :: autk2018     = 3.1577502480407d5
+  real(8), parameter :: gfac2018     = 2.00231930436256d0
   real(8), parameter :: fermicc2018  = 1.1663787d-5
   real(8), parameter :: s2thetaw2018 = 0.23122d0    ! on-shell scheme value: 0.22290d0
 
@@ -165,6 +173,7 @@ module codata
     emass    = emass2018
     ccm      = ccm2018
     autk     = autk2018
+    gfac     = gfac2018
     fermicc  = fermicc2018
     s2thetaw = s2thetaw2018
 
@@ -179,6 +188,7 @@ module codata
     emass    = emass1986
     ccm      = ccm1986
     autk     = autk1986
+    gfac     = gfac1986
 ! Warning! As the oldest values of fermicc and s2thetaw are from 1994,
 !          we use them also for the 1986's series.
     fermicc  = fermicc1994
@@ -196,6 +206,7 @@ module codata
     emass    = emass1998
     ccm      = ccm1998
     autk     = autk1998
+    gfac     = gfac1998
     fermicc  = fermicc1998
     s2thetaw = s2thetaw1998
    elseif(CODAT.eq.'CODATA02') then
@@ -208,6 +219,7 @@ module codata
     emass    = emass2002
     ccm      = ccm2002
     autk     = autk2002
+    gfac     = gfac2002
     fermicc  = fermicc2002
     s2thetaw = s2thetaw2002
    elseif(CODAT.eq.'CODATA06') then
@@ -220,6 +232,7 @@ module codata
     emass    = emass2006
     ccm      = ccm2006
     autk     = autk2006
+    gfac     = gfac2006
     fermicc  = fermicc2006
     s2thetaw = s2thetaw2006
    elseif(CODAT.eq.'CODATA10') then
@@ -232,6 +245,7 @@ module codata
     emass    = emass2010
     ccm      = ccm2010
     autk     = autk2010
+    gfac     = gfac2010
     fermicc  = fermicc2010
     s2thetaw = s2thetaw2010
    elseif(CODAT.eq.'CODATA14') then
@@ -244,6 +258,7 @@ module codata
     emass    = emass2014
     ccm      = ccm2014
     autk     = autk2014
+    gfac     = gfac2014
     fermicc  = fermicc2014
     s2thetaw = s2thetaw2014
    elseif(CODAT.eq.'CODATA18') then
@@ -256,6 +271,7 @@ module codata
     emass    = emass2018
     ccm      = ccm2018
     autk     = autk2018
+    gfac     = gfac2018
     fermicc  = fermicc2018
     s2thetaw = s2thetaw2018
    end if
@@ -313,6 +329,8 @@ module codata
   nm       = 1.0d1/xtang      !1 nanometer in au
 ! gfermi   = 2.222...d-14
   gfermi   = (1.0d-18*hbar*ccm**3*fermicc*emass)/(echarge**2*xtangm10)
+! g1fac    = -0.9976...
+  g1fac    = gfac/2.0d0-1.0d0
 
   end subroutine set_codata_values
 

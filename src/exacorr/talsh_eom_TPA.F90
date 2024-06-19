@@ -376,7 +376,9 @@ subroutine solve_eom_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensor,l1_tens
 
     call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, Bvec_tensor)
 
+    call print_lr_setup("R"," ",-1,omega1)
     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensor, omega1, Tprop_tensor)
+    call print_lr_setup("L"," ",-1,omega2)
     call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega2, Bvec_tensor, Tprop_bar_tensor)
 
 end subroutine solve_eom_rsp_driver
