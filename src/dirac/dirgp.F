@@ -3289,7 +3289,6 @@ C
 #include "dcblab.h"
 #include "dgroup.h"
 #include "nuclei.h"
-      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       DIMENSION IDIM(3),NBF(2)
       real(8), allocatable :: CMO1(:)
@@ -3319,11 +3318,6 @@ C
       dfacmo%type = 2
       dfacmo%name = 'DFACMO.h5'
       dfacmo%status = -1
-      INQUIRE(FILE=dfacmo%name,EXIST=TOBE)
-      IF(.NOT.TOBE) THEN
-         WRITE(6,*) '* ERROR: Missing HDF5-file :',dfacmo%name
-         CALL QUIT('ACMOIN: missing HDF5-file')
-       ENDIF
       call lab_read (dfacmo,
      & '/result/wavefunctions/scf/energy',toterg)
       call lab_read (dfacmo,
@@ -3334,7 +3328,7 @@ C
 
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
-     &    '* ACMOIN : Coefficients read from DFACMO'
+     &    '* ACMOIN : Coefficients read from '//dfacmo%name
           CALL PRQMAT(CMO2,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
       ENDIF
