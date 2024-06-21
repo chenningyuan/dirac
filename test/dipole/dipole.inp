@@ -5,6 +5,9 @@
 .PROPERTIES                                                                                         
 **WAVE FUNCTIONS                                                                                    
 .SCF                                                                                                
+*SCF
+.EVCCNV
+ 1.e-4
 **PROPERTIES                                                                                        
 .DIPOLE
 *NMR
