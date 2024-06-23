@@ -965,7 +965,7 @@ C
 C
 C     Set "constant" CI internal variables
 C
-      NMAX_SYM    = IKRMC_SYMMETRY
+      NMAX_SYM    = 2*NBSYM ! max double group irreps
       NCIROOT     =    1
       ISHMEM_TYPE =  - 1
       CSHMEMO     = .FALSE.

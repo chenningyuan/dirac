@@ -166,6 +166,10 @@ C
       CALL SETDCBIDX()
       CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
+
+      IF (NZCONF .EQ. 0) THEN
+         CALL QUIT('FATAL INPUT ERROR: zero configurations in KRMCSCF')
+      END IF
 C
 #if defined (VAR_MPI2)
 C
@@ -2364,7 +2368,7 @@ C***********************************************************************
 C
 C Used from common blocks:
 C  dcbgen: LUKRMC
-C  dgroup: NZ
+C  dgroup: NZ,NBSYM
 C  dcbopt: NZCONF,NZCONFQ,KZCONF,IOPT_SYMMETRY,LZCONF
 C  dcborb: NAELEC,NASHT
 C
@@ -2462,7 +2466,7 @@ C        hjaaj July 2002: also include NASHT .eq. 1
 C                         (giving 1-2 determinants)
 C         for debug
          if(fcidump .and. USE_CIPROGRAM .NE. 'GASCIP' ) THEN
-           call quit('fcidump option only for GASCIP available')
+           call quit('fcidump option only available for GASCIP')
          end if
 
          if(fcidump)then
@@ -2515,6 +2519,14 @@ C
            END IF
 #endif
          ELSE IF ( USE_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+
+            IF (.NOT. LINEAR) THEN
+            ! LUCIAREL has first boson symmetries, then fermion symmetries (GASCIP etc. have fermion symmetries first)
+            ! *KRMCSCF .SYMMETRY input counts interally in fermion or boson symmetries
+               IF ( MOD(NAELEC,2) .NE. 0) THEN ! fermions
+                  IOPT_SYMMETRY = IOPT_SYMMETRY + NBSYM
+               END IF
+            END IF
 C
 C           Call driver routine for getting NZCONF
             CALL LUCI_NDET(NZCONF,IOPT_SYMMETRY,WORK(KFREE),LFREE)
@@ -2557,7 +2569,8 @@ C
      &      ' CPU (Wall) time for generation of determinants: ',
      &      CPUTID,'(',WALLTID,')'
       IF (NASHT .GT. 0 .AND. NZCONF .LE. 0) THEN
-         WRITE(LUPRI,'(/A)') ' INFO: no determinants in this symmetry!'
+         WRITE(LUPRI,'(/A,I0)') ' INFO: no determinants in symmetry ',
+     &   IOPT_SYMMETRY
       END IF
 C
 C
