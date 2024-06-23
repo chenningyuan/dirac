@@ -409,8 +409,8 @@ C         WRITE(6,*) ' SYMFLABEL is now ',SYMFLABEL
         ELSE 
           WRITE(LUWRT,*) '  *** Error in DISKUN_REL *** assignment of'//
      &                   ' symmetry label to KRCI_CVECS file failed'   
-          CALL QUIT("*** Error in DISKUN_REL *** assignment of 
-     &              symmetry label to KRCI_CVECS file failed ")
+          CALL QUIT("*** Error in DISKUN_REL *** assignment of '//
+     &              'symmetry label to KRCI_CVECS file failed ")
         END IF
         IF( .not. RUNXPROP )THEN
            WRITE (NLUC_MPI,'(A10,A1,A3)') LUC_MPIN,'.',SYMFLABEL
