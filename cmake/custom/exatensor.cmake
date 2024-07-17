@@ -29,9 +29,16 @@ if(ENABLE_EXATENSOR)
 
    # check build type
    if (DEFINED ENV{BUILD_TYPE})
-      set(EXATENSOR_MPIENV BUILD_TYPE=$ENV{BUILD_TYPE})
+	   set(EXATENSOR_BUILD BUILD_TYPE=$ENV{BUILD_TYPE})
    else()
-      set(EXATENSOR_MPIENV BUILD_TYPE=OPT)
+	   set(EXATENSOR_BUILD BUILD_TYPE=OPT)
+   endif()
+
+   # check wrapping
+   if (DEFINED ENV{WRAP})
+	   set(EXATENSOR_WRAP WRAP=$ENV{WRAP})
+   else()
+	   set(EXATENSOR_WRAP WRAP=NOWRAP)
    endif()
 
    # The supported operating systems for ExaTensor are Linux(default) and MacOSX
@@ -148,7 +155,7 @@ if(ENABLE_EXATENSOR)
    endif()
 
    # Collect everything in one string (also including the hardwires ones that need not be changed) and store this in a file (direct passing appears to be impossible within cmake)
-   set(EXATENSOR_ENV "WRAP=NOWRAP BUILD_TYPE=OPT ${EXATENSOR_TALSH} ${TALSH_COMPILERS} ${EXATENSOR_TOOLKIT} ${EXATENSOR_OS} ${EXATENSOR_GPUENV} ${EXATENSOR_MPIENV} ${EXATENSOR_BLAS}")
+   set(EXATENSOR_ENV "${EXATENSOR_WRAP} ${EXATENSOR_BUILD} ${EXATENSOR_TALSH} ${TALSH_COMPILERS} ${EXATENSOR_TOOLKIT} ${EXATENSOR_OS} ${EXATENSOR_GPUENV} ${EXATENSOR_MPIENV} ${EXATENSOR_BLAS}")
    message(STATUS "The environment variables used to build ExaTensor are collected in the file ExaTensor_ENV (can be inspected/changed if necessary)")
    file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV ${EXATENSOR_ENV})
    file(WRITE ${PROJECT_BINARY_DIR}/ExaTensor_ENV_UP "${EXATENSOR_ENV}  EXA_NO_BUILD=YES")

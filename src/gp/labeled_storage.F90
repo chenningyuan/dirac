@@ -550,7 +550,7 @@ module labeled_storage
       integer :: ierr
       integer(kind=8) :: file_id, dset_id
       logical(kind=8) :: dyn
-      logical :: group_exists
+      logical :: group_exists, dset_log
 
       !  check first whether we can actually use mh5
       if (.not.mh5_is_available()) then
@@ -579,9 +579,9 @@ module labeled_storage
       file_id = file_info%id
 
       group_exists = create_group_hdf5(file_id,group_from_label(label)) ! check whether group is present and create it if not
-      dset_id = mh5_exists_dset(file_id, label)                         ! check whether we already have data
+      dset_log = mh5_exists_dset(file_id, label)                         ! check whether we already have data
 
-      if (dset_id /= 0) then
+      if (dset_log) then
           dset_id = mh5_open_dset(file_id, label)
           call mh5_get_dset_dims(dset_id,dims)
           if (dims(1) > 1) then
@@ -602,18 +602,18 @@ module labeled_storage
 
       if (present(rdata)) then
          dyn = size(rdata) > 1 ! Do not create resizable (chunked) arrays for single numbers
-         if (dset_id == 0) dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)],dyn)
+         if (.not.dset_log) dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)],dyn)
          call mh5_put_dset(dset_id, rdata)
       elseif (present(idata)) then
          dyn = size(idata) > 1 ! Do not create resizable (chunked) arrays for single numbers
-         if (dset_id == 0) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)],dyn)
+         if (.not.dset_log) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)],dyn)
          call mh5_put_dset(dset_id, int8(idata))
       elseif (present(sdata).and.present(slen).and.present(sdim)) then
          dyn = .true.
-         if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(1), [int8(sdim)], int8(slen),dyn)
+         if (.not.dset_log) dset_id = mh5_create_dset_str(file_id, label, int8(1), [int8(sdim)], int8(slen),dyn)
          call mh5_put_dset(dset_id, sdata)
       elseif (present(sdata)) then
-         if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(len(sdata)))
+         if (.not.dset_log) dset_id = mh5_create_dset_str(file_id, label, int8(len(sdata)))
          call mh5_put_dset(dset_id, sdata)
       end if
 
