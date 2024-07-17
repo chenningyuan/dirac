@@ -10,7 +10,7 @@ from runtest_config import configure
 assert version_info.major == 2
 
 f = [
-    get_filter(from_string='Spin-rotation constants (kHz) for',
+    get_filter(from_string='Nuclear spin-rotation constant (in kHz) for',
                to_string='E N D   of   D I R A C  output',
                rel_tolerance=1.0e-4)
 ]

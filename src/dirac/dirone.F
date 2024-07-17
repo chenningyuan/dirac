@@ -7232,7 +7232,7 @@ C*****************************************************************************
      &          D6 = 6.0D0, D8 = 8.0D0, D10=10.0D0, D14=14.0D0,
      &          D18=18.0D0)
       LOGICAL MAXSHELL
-      DIMENSION STO1G(7), XN_EFF(7), SHELE(NNUC,7)
+      DIMENSION STO1G(8), XN_EFF(8), SHELE(NNUC,8)
       SAVE STO1G
 C     STO1G(n) is the exponent of the 1s-Gaussian that
 C     best fits the ns Slater-type atomic orbitals of exponent 1.
@@ -7241,9 +7241,10 @@ C     This article provides exponent up to the n=5 shell. The exponents
 C     for the last two shells have been generated from a fit :
 C     (y = 0.28196 x^-1.5532)
       DATA STO1G /0.2709D0, 0.1012D0, 0.05297D0,0.03265D0,0.02217D0,
-     &            0.01744D0,0.01373D0/
+     &            0.01744D0,0.01373D0,0.01116D0/
 !     DATA XN_EFF/1.0D0, 2.0D0, 3.0D0, 3.7D0, 4.0D0, 4.2D0, 4.4D0/
-      DATA XN_EFF/1.0D0, 2.0D0, 3.0D0, 3.7D0, 4.4D0, 5.1D0, 5.8D0/
+      DATA XN_EFF/1.0D0, 2.0D0, 3.0D0, 3.7D0, 4.4D0, 5.1D0, 5.8D0, 
+     & 6.5D0/
 C     ... Slater's n_eff according to wikipedia for n=1:6,
 C         I extrapolated to n=7 /hjaaj Sep 2011.
 C     ... Empirical modification Feb. 2012 hjaaj: XeF6 did not
@@ -7251,75 +7252,98 @@ C         converge with the Sep 2011 values; on the other hand
 C         we had an example in Sep 2011 which benefitted from the
 C         n_eff values.
 C
-C     Table of s,p,d,f orbital occupations of the elements
+C     Table of s,p,d,f,g  orbital occupations of the elements
 C     (from which the electron-configuration can be deduced)
-      DIMENSION NOCC(118*4)
+      DIMENSION NOCC(127*5)
       SAVE NOCC
       DATA NOCC
 C     Periode 1
-     &          / 1, 0, 0, 0, 2, 0, 0, 0,
+     &          / 1, 0, 0, 0, 0, 2, 0, 0, 0, 0,
 C     Periode 2
-     &            3, 0, 0, 0, 4, 0, 0, 0,
-     &            4, 1, 0, 0, 4, 2, 0, 0, 4, 3, 0, 0,
-     &            4, 4, 0, 0, 4, 5, 0, 0, 4, 6, 0, 0,
+     &            3, 0, 0, 0, 0, 4, 0, 0, 0, 0,
+     &            4, 1, 0, 0, 0, 4, 2, 0, 0, 0,
+     &            4, 3, 0, 0, 0, 4, 4, 0, 0, 0, 
+     &            4, 5, 0, 0, 0, 4, 6, 0, 0, 0,
 C     Periode 3
-     &            5, 6, 0, 0, 6, 6, 0, 0,
-     &            6, 7, 0, 0, 6, 8, 0, 0, 6, 9, 0, 0,
-     &            6,10, 0, 0, 6,11, 0, 0, 6,12, 0, 0,
+     &            5, 6, 0, 0, 0, 6, 6, 0, 0, 0,
+     &            6, 7, 0, 0, 0, 6, 8, 0, 0, 0,
+     &            6, 9, 0, 0, 0, 6,10, 0, 0, 0,
+     &            6,11, 0, 0, 0, 6,12, 0, 0, 0,
 C     Periode 4
-     &            7,12, 0, 0, 8,12, 0, 0,
-     &            8,12, 1, 0, 8,12, 2, 0, 8,12, 3, 0,
-     &            8,12, 4, 0, 8,12, 5, 0, 8,12, 6, 0,
-     &            8,12, 7, 0, 8,12, 8, 0, 8,12, 9, 0,
-     &            8,12,10, 0,
-     &            8,13,10, 0, 8,14,10, 0, 8,15,10, 0,
-     &            8,16,10, 0, 8,17,10, 0, 8,18,10, 0,
+     &            7,12, 0, 0, 0, 8,12, 0, 0, 0,
+     &            8,12, 1, 0, 0, 8,12, 2, 0, 0,
+     &            8,12, 3, 0, 0, 8,12, 4, 0, 0,
+     &            8,12, 5, 0, 0, 8,12, 6, 0, 0,
+     &            8,12, 7, 0, 0, 8,12, 8, 0, 0,
+     &            8,12, 9, 0, 0, 8,12,10, 0, 0,
+     &            8,13,10, 0, 0, 8,14,10, 0, 0,
+     &            8,15,10, 0, 0, 8,16,10, 0, 0,
+     &            8,17,10, 0, 0, 8,18,10, 0, 0,
 C     Periode 5 (5s block)
-     &            9,18,10, 0, 10,18,10, 0,
+     &            9,18,10, 0, 0, 10,18,10, 0, 0,
 C     (4d block)
-     &           10,18,11, 0, 10,18,12, 0, 10,18,13, 0,
-     &           10,18,14, 0, 10,18,15, 0, 10,18,16, 0,
-     &           10,18,17, 0, 10,18,18, 0, 10,18,19, 0,
-     &           10,18,20, 0,
+     &           10,18,11, 0, 0, 10,18,12, 0, 0, 
+     &           10,18,13, 0, 0, 10,18,14, 0, 0, 
+     &           10,18,15, 0, 0, 10,18,16, 0, 0,
+     &           10,18,17, 0, 0, 10,18,18, 0, 0, 
+     &           10,18,19, 0, 0, 10,18,20, 0, 0,
 C     (5p block)
-     &           10,19,20, 0, 10,20,20, 0, 10,21,20, 0,
-     &           10,22,20, 0, 10,23,20, 0, 10,24,20, 0,
+     &           10,19,20, 0, 0, 10,20,20, 0, 0, 
+     &           10,21,20, 0, 0, 10,22,20, 0, 0, 
+     &           10,23,20, 0, 0, 10,24,20, 0, 0,
 C     Periode 6 (6s block)
-     &           11,24,20, 0, 12,24,20, 0, 12,24,21, 0,
+     &           11,24,20, 0, 0, 12,24,20, 0, 0,
+     &           12,24,21, 0, 0,
 C    --> Lanthanides (4f block)
-     &           12,24,21, 1, 12,24,20, 3, 12,24,20, 4,
-     &           12,24,20, 5, 12,24,20, 6, 12,24,20, 7,
-     &           12,24,20, 8, 12,24,20, 9, 12,24,20,10,
-     &           12,24,20,11, 12,24,20,12, 12,24,20,13,
-     &           12,24,20,14, 12,24,21,14,
+     &           12,24,21, 1, 0, 12,24,20, 3, 0, 
+     &           12,24,20, 4, 0, 12,24,20, 5, 0, 
+     &           12,24,20, 6, 0, 12,24,20, 7, 0,
+     &           12,24,20, 8, 0, 12,24,20, 9, 0, 
+     &           12,24,20,10, 0, 12,24,20,11, 0, 
+     &           12,24,20,12, 0, 12,24,20,13, 0,
+     &           12,24,20,14, 0, 12,24,21,14, 0,
 C    <-- Lanthanides; Hf -> Hg (5d block)
-     &           12,24,22,14, 12,24,23,14, 12,24,24,14,
-     &           12,24,25,14, 12,24,26,14, 12,24,27,14,
-     &           12,24,28,14, 12,24,29,14, 12,24,30,14,
+     &           12,24,22,14, 0, 12,24,23,14, 0,
+     &           12,24,24,14, 0, 12,24,25,14, 0,
+     &           12,24,26,14, 0, 12,24,27,14, 0,
+     &           12,24,28,14, 0, 12,24,29,14, 0, 
+     &           12,24,30,14, 0,
 C     Tl -> Rn (6p block)
-     &           12,25,30,14, 12,26,30,14, 12,27,30,14,
-     &           12,28,30,14, 12,29,30,14, 12,30,30,14,
+     &           12,25,30,14, 0, 12,26,30,14, 0, 
+     &           12,27,30,14, 0, 12,28,30,14, 0, 
+     &           12,29,30,14, 0, 12,30,30,14, 0,
 C     Periode 7 (7s block)
-     &           13,30,30,14,
-     &           14,30,30,14,
-     &           14,30,31,14,
+     &           13,30,30,14, 0, 14,30,30,14, 0,
+     &           14,30,31,14, 0,
 C    --> Actinides
-     &           14,30,32,14, 14,30,31,16, 14,30,31,17,
-     &           14,30,31,18, 14,30,30,20, 14,30,30,21,
-     &           14,30,31,21, 14,30,30,23, 14,30,30,24,
-     &           14,30,30,25, 14,30,30,26, 14,30,30,27,
-     &           14,30,30,28, 14,30,31,28,
+     &           14,30,32,14, 0, 14,30,31,16, 0, 
+     &           14,30,31,17, 0, 14,30,31,18, 0, 
+     &           14,30,30,20, 0, 14,30,30,21, 0,
+     &           14,30,31,21, 0, 14,30,30,23, 0, 
+     &           14,30,30,24, 0, 14,30,30,25, 0, 
+     &           14,30,30,26, 0, 14,30,30,27, 0,
+     &           14,30,30,28, 0, 14,30,31,28, 0,
 C    <-- Actinides; (6d block and 7p block)
-     &           14,30,32,28, 14,30,33,28, 14,30,34,28,
-     &           14,30,35,28, 14,30,36,28, 14,30,37,28,
-     &           13,30,39,28, 13,30,40,28, 14,30,40,28,
-     &           14,31,40,28, 14,32,40,28, 14,33,40,28,
-     &           14,34,40,28, 14,35,40,28, 14,36,40,28/
+     &           14,30,32,28, 0, 14,30,33,28, 0,
+     &           14,30,34,28, 0, 14,30,35,28, 0, 
+     &           14,30,36,28, 0, 14,30,37,28, 0,
+     &           13,30,39,28, 0, 13,30,40,28, 0, 
+     &           14,30,40,28, 0, 14,31,40,28, 0, 
+     &           14,32,40,28, 0, 14,33,40,28, 0,
+     &           14,34,40,28, 0, 14,35,40,28, 0, 
+     &           14,36,40,28, 0,
+C     Periode 8 (8s block)
+     &           15,36,40,28,0,  16,36,40,28,0,
+     &           16,37,40,28,0,
+C    --> superlanthanides
+     &           16,37,41,28,0,  16,37,41,29,0,
+     &           16,37,41,30,0,  16,37,41,30,1,
+     &           16,37,41,30,2,  16,37,41,30,3/
       CALL QENTER('BNCOR1')
 c
-      IF (NINT(Z) .GT. 118) THEN
+      IF (NINT(Z) .GT. 127) THEN
          WRITE(LUPRI,'(2(A/))') ' FATAL : The bare nucleus '//
-     &   'correction is only implemented for elemtents 1-118',
+     &   'correction is only implemented for elemtents 1-127',
      &   '         You can disable BNCORR with the .NOBNCR keyword '//
      &   'in *SCF'
          CALL QUIT('BNCORR : Unsupported element!')
@@ -7335,7 +7359,7 @@ C         correction) we return (charge is zero in BNCORR)
       IF (MAXSHELL) THEN
 C    ... just find maximum number of shells we need to run over
 C        and return number in L-variable (used in BNCORR)
-         NST = NOCC((NINT(Z)-1)*4 + 1)
+         NST = NOCC((NINT(Z)-1)*5 + 1)
          L = NST/2
          IF(MOD(NST,2).NE.0) L = L + 1
          GOTO 9000
@@ -7360,16 +7384,18 @@ c     ... special case for the (2-1) 1s electron
       ENDIF
 c     ... Generel case. We are past H and He and have thus accounted
 c         for two electrons.
-c     ... Find numbers of s,p,d,f-electrons for element (Z)
+c     ... Find numbers of s,p,d,f,g-electrons for element (Z)
          NST=0
          NPT=0
          NDT=0
          NFT=0
+         NGT=0
       IF (Z.GE.1.0D0) THEN ! miro: prevent NOCC of out-of-bounds
-         NST = NOCC((NINT(Z)-1)*4 + 1)
-         NPT = NOCC((NINT(Z)-1)*4 + 2)
-         NDT = NOCC((NINT(Z)-1)*4 + 3)
-         NFT = NOCC((NINT(Z)-1)*4 + 4)
+         NST = NOCC((NINT(Z)-1)*5 + 1)
+         NPT = NOCC((NINT(Z)-1)*5 + 2)
+         NDT = NOCC((NINT(Z)-1)*5 + 3)
+         NFT = NOCC((NINT(Z)-1)*5 + 4)
+         NGT = NOCC((NINT(Z)-1)*5 + 5)
       ENDIF
 C
 c     ... Now figure out the occupation used for the Slater rules (N >= 2) :
@@ -7422,9 +7448,21 @@ c
       ELSEIF (NF.GE.14) THEN
          NF = 14
       ENDIF
+c     =================================
+c     How many g-electron in this shell
+c     =================================
+c
+      NG = NGT - (N-5)*18
+c
+      IF (NG .LE. 0) THEN
+         NG = 0
+      ELSEIF (NG.GE.18) THEN
+         NF = 18
+      ENDIF
       IF (L.EQ.1) ZEFF = NS + NP
       IF (L.EQ.2) ZEFF = ND
       IF (L.EQ.3) ZEFF = NF
+      IF (L.EQ.4) ZEFF = NG
       SHELE(INUC,N) = SHELE(INUC,N) + ZEFF
       IF (ZEFF.EQ.D0) GO TO 9000
 C
@@ -7440,7 +7478,7 @@ c        [nsnp]
          SEXP = (Z - ((ZEFF-1.0)*0.35D0 + SHELE(INUC,N-1)*0.85D0 + EMN))
          SEXP = SEXP / XN_EFF(N)
       ELSE
-c        [nd],[nf]
+c        [nd],[nf], [ng]
          EMN = D0
          DO I = 1,N-1
             EMN = EMN + SHELE(INUC,I)

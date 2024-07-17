@@ -2034,6 +2034,21 @@ C
 C
       IF(IPRCMP.LE.0) RETURN
       CALL TITLER('Vector print','*',130)
+
+C     If VECPRI is UNDEFINED, then set it to blank or 1 or 1..NOCC(I) based on the NOCC(I) value.
+      DO I = 1, NFSYM
+        IF (VECPRI(I)(1:9).eq.'UNDEFINED') THEN
+          NOCCI = NOCC(I)
+          IF (NOCCI .eq. 0) THEN
+            VECPRI(I) = '   '
+          ELSE IF( NOCCI .eq. 1 )THEN
+            VECPRI(I) = '1  '
+          ELSE
+            WRITE(VECPRI(I),'(A3,I4)') '1..',NOCCI
+          END IF
+        END IF
+      END DO
+
 C
 C     Check if MCSCF coefficients are on file
 C

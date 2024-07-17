@@ -87,6 +87,10 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:pdpack> ${EXTERNAL_OBJECTS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/interface_mpi)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interface_mpi> ${EXTERNAL_OBJECTS})
 
+# Making mfsolver as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/mfsolver)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:mfsolver> ${EXTERNAL_OBJECTS})
+
 # gp as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/gp)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:gp> ${EXTERNAL_OBJECTS})
@@ -114,9 +118,9 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:moltra> ${EXTERNAL_OBJECTS})
 
-#    embedding as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/embedding)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:embedding> ${EXTERNAL_OBJECTS})
+#    frozen density embedding as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/fde)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:fde> ${EXTERNAL_OBJECTS})
 
 # Making x2c as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/x2c)

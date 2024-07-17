@@ -757,8 +757,8 @@ C*****************************************************************************
 #include "dcbgen.h"
 C
       CHARACTER A*(*)
-      DIMENSION ILIST(NLIST)
-      LOGICAL TOBE
+      INTEGER   NLIST, ILIST(NLIST), IRNGE1, IRNGE2, IFRP, IP
+      LOGICAL   TOBE
   
       real(8), allocatable :: eig(:)
       integer, allocatable :: ibg(:)
@@ -1119,22 +1119,16 @@ C
 C
 C     Set start and end of search region
 C
-      IF (IRNGE1.LT.0) THEN
+      IF (IRNGE1.LE.0) THEN
          ISTART = IRNGE1 + 1
       ELSEIF (IRNGE1.GT.0) THEN
          ISTART = IRNGE1
-      ELSE
-         WRITE(LUPRI,*) ' IRNGE1:',IRNGE1
-         CALL QUIT ("Error in energy-based vector selection (NUMLST)")
       ENDIF
 C
-      IF (IRNGE2.LT.0) THEN
+      IF (IRNGE2.LE.0) THEN
          IEND = IRNGE2 + 1
       ELSEIF (IRNGE2.GT.0) THEN
          IEND = IRNGE2
-      ELSE
-         WRITE(LUPRI,*) 'IRNGE2:',IRNGE2
-         CALL QUIT ("Error in energy-based vector selection (NUMLST)")
       ENDIF
 C
       DO I = ISTART, IEND
@@ -3295,7 +3289,6 @@ C
 #include "dcblab.h"
 #include "dgroup.h"
 #include "nuclei.h"
-      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       DIMENSION IDIM(3),NBF(2)
       real(8), allocatable :: CMO1(:)
@@ -3307,6 +3300,7 @@ C
       integer, allocatable :: IBUF(:)
       type(file_info_t)    :: dfacmo
 C
+      CALL QENTER('ACMOIN')
       IPRINT = IPRGEN
 C
 C     Allocate arrays
@@ -3334,7 +3328,7 @@ C
 
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
-     &    '* ACMOIN : Coefficients read from DFACMO'
+     &    '* ACMOIN : Coefficients read from '//dfacmo%name
           CALL PRQMAT(CMO2,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
       ENDIF
@@ -3408,6 +3402,7 @@ C     De-allocate arrays
       deallocate(IBEIG2)
       deallocate(IBUF)
 C
+      CALL QEXIT('ACMOIN')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

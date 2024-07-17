@@ -63,7 +63,7 @@ In two-component infinite-order relativistic calculations (with :ref:`HAMILTONIA
 of four-component property operators to avoid the picture change transformation.
 Experimental option, use with care.
 
-keyword(RDCCDENS)
+keyword(RDCCDM)
 
 Activates the reading of the file CCDENS obtained from a previous CC calculation with either the 
 :ref:`WAVE_FUNCTION_.RELCCSD` or with :ref:`WAVE_FUNCTION_.EXACC` modules.  It is not necessary to 
@@ -88,6 +88,8 @@ keyword(DIPOLE)
 Evaluate the electronic electric dipole moment
 
 Expectation values: :math:`\langle\hat{\mu}_\alpha\rangle=-e\langle r_\alpha\rangle`
+
+*Note:* for charged molecules the total electric dipole moment will depend on the gauge origin. It is possible to set the nuclei charge barycenter as the gauge origin so that the computed (total) dipole magnitude is representative for the electronic system as the nuclei electric dipole moment is constrained to vanish. Check for USEBC under :ref:`*NMR`.
 
 keyword(QUADRUPOLE)
 

@@ -55,7 +55,7 @@ Using the same molecular input structure we run the MRCISD+Q calculation using t
 
 with the following start command::
 
-   pam --inp=scf-casscf.inp  --mol=h2o.xyz --inkrmc --put="refvec.luci"
+   pam --inp=krci-q.inp  --mol=h2o.xyz --inkrmc --put="refvec.luci"
 
 We will find a summary of different *+Q* corrections printed at the end of the output: 
 

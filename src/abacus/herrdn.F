@@ -1960,16 +1960,20 @@ C
 
       IF (GAUNUC .AND. NQ.GT.0) THEN
         IF(QEXP.EQ.D0) THEN
-           CALL NUCSIZ(NQ,GEXP)
+           CALL NUCSIZ(NQ,GEXP,XMASS)
+        WRITE(LUPRI,'(A,F8.3,A,1P,D20.10,A,F6.1,A)')
+     &       '  Nuclear Gaussian exponent for atom of charge',
+     &       Q,' :',GEXP,'   (using mass ',xmass/10,')'
+c.. I have no idea why xmass needs to be divided by 10 to print correctly.  kap
         ELSE
            GEXP = QEXP
+        WRITE(LUPRI,'(A,F8.3,A,1P,D20.10,A)')
+     &       '  Nuclear Gaussian exponent for atom of charge',
+     &       Q,' :',GEXP,'  (specified through input)'
         ENDIF
 C
 C       Print out warning if GEXP < 1.0D8
 C
-        WRITE(LUPRI,'(A,F8.3,A,1P,D20.10)')
-     &       '  Nuclear Gaussian exponent for atom of charge',
-     &       Q,' :',GEXP
         IF (GEXP .LE. 1.0D8) WRITE(LUPRI,'(A)')
      &       '  -- WARNING!!! Nuclear Gaussian exponent is small!'
       ELSE
@@ -4915,7 +4919,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nucsiz */
-      SUBROUTINE NUCSIZ(INUC,DELTA)
+      SUBROUTINE NUCSIZ(INUC,DELTA,A)
 C.......................................................................
 C
 C     For a nucleus of atomic no. "INUC", calculate the exponent DELTA
@@ -4923,7 +4927,6 @@ C     for a Gaussian charge distribution approximation to the finite
 C     Nucleus. Uses the Formula and Nuclear Masses from
 C     REHE Newsletter No. 13 (14. June 1995), L. Visscher and K. Dyall.
 C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
-C     Conversion Factor Bohr/fm 52917.7249.
 C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
 #include "implicit.h"
@@ -4936,11 +4939,14 @@ C.......................................................................
 C
       IF (INUC.LE.109.AND.INUC.GT.0) THEN
          A = NUCMASS(INUC)
-      ELSE
+c.. the following for compatibility
+      ELSEIF (INUC.LE.118) THEN
          A = INUC*FAC2
+      ELSE
+         A = NUCMASS(INUC)
       END IF
-      A = A**DP3
-      DELTA = (XTANG/(BF*A+CF))
+      A1 = A**DP3
+      DELTA = (XTANG/(BF*A1+CF))
       DELTA = FAC*DELTA*DELTA
       RETURN
       END

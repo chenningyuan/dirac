@@ -33,6 +33,7 @@ C               Febr.2006 - MI to modify for pure two-comp. mode
 C
 C***********************************************************************
 
+      use checkpoint
       use dirac_cfg
       use memory_allocator
       use num_grid_cfg
@@ -66,7 +67,8 @@ C***********************************************************************
       integer, parameter   :: file_unit = 137
       logical              :: inp_exists, mol_exists, xyz_exists
       logical              :: input_found
-
+      integer              :: iline, nlines
+      character*100, allocatable    :: lines(:)
 C
       CALL QENTER('PAMINP')
       call alloc(WORK,LWORK, id="PAMINP WORK array")
@@ -87,14 +89,31 @@ C
       else
          call quit('*.inp file not found')
       end if
-      write(lupri, '(//a)') 'Contents of the input file'
-      write(lupri, '(a/)')  '--------------------------'
+      ! count how many lines we have
+      nlines = 0
       do while (.true.)
          read(file_unit, '(a100)', end=1) line
-         write(lupri, '(a)') line
+         nlines = nlines + 1
       end do
  1    continue
+      ! allocate a buffer
+      allocate(lines(nlines))
+
+      ! echo and collect the input
+      rewind(file_unit)
+      write(lupri, '(//a)') 'Contents of the input file'
+      write(lupri, '(a/)')  '--------------------------'
+      do iline = 1, nlines
+         read(file_unit, '(a100)') line
+         write(lupri, '(a)') line
+         lines(iline) = line
+      end do
       close(file_unit, status = 'keep')
+      ! write the collected input to checkpoint
+      call checkpoint_write 
+     & ('/input/dirac_inp',sarray=lines,slen=100)
+      deallocate(lines)
+
 
 !     print contents of molecule file to output
       inquire(file = 'MOLECULE.MOL', exist = mol_exists)
@@ -118,14 +137,31 @@ C
             call quit('*.mol/*.xyz file not found')
          end if
       end if
-      write(lupri, '(//a)') 'Contents of the molecule file'
-      write(lupri, '(a/)')  '-----------------------------'
+
+      ! count how many lines we have
+      nlines = 0
       do while (.true.)
          read(file_unit, '(a100)', end=2) line
-         write(lupri, '(a)') line
+         nlines = nlines + 1
       end do
  2    continue
+      ! allocate a buffer
+      allocate(lines(nlines))
+
+      ! echo and collect the input
+      rewind(file_unit)
+      write(lupri, '(//a)') 'Contents of the molecule file'
+      write(lupri, '(a/)')  '-----------------------------'
+      do iline = 1, nlines
+         read(file_unit, '(a100)') line
+         write(lupri, '(a)') line
+         lines(iline) = line
+      end do
       close(file_unit, status = 'keep')
+      ! write the collected input to checkpoint
+      call checkpoint_write 
+     & ('/input/molecule_inp',sarray=lines,slen=100)
+      deallocate(lines)
 
 #ifdef DO_KEYWORD_SCAN
 
@@ -832,11 +868,9 @@ C
 C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
      &             '.WAVE F','.ANALYZ','.PROPER','xxxxxx ',
-     &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI',
-     &             '.XMLOUT','.xxxxxx'/
+     &             '.NO4IND','xxxxxxx','.OPTIMI','.MINIMI',
+     &             '.XMLOUT','xxxxxxx'/
 c     .XMLOUT can be removed after adapting the tests, is now always active
-C
-      NOSFCRASH=.FALSE.
 C
 C     Read menu file
 C     ==============
@@ -912,8 +946,7 @@ C&&&& deactivate 4-INDEX transformation (on by default for CC and CI)
             NOTRA = .TRUE.
             GO TO 100
   110    CONTINUE
-C&&& .NOSFCR: no Segm.fault crash when quit for creating profiling output,gmon.out
-            NOSFCRASH=.TRUE.
+C&&&
             GO TO 100
  111     CONTINUE
 C&&&& OPTIMIZE: Geometry optimization
@@ -958,19 +991,6 @@ C
       IF(DOTRA)   WRITE(LUPRI,'(3X,A)') '* Transformation to '//
      &    'Molecular Spinor basis'
       IF(INPTES)  WRITE(LUPRI,'(3X,A)') '* Input test run only'
-
-C     LV: This option is badly out of place, has nothing to do with jobs !
-      IF (NOSFCRASH) THEN
-         WRITE(LUPRI,'(3X,A)')
-     &   '* If crash, do NOT end with segmentation fault.'//
-     &   'Necessary for getting profiling file, gmon.out.'
-!radovan: commented out the following message about this default situation
-!         this is strange for users to see under jobs
-!     ELSE
-!        WRITE(LUPRI,'(3X,A)')
-!    &   '* If crash, end with a forced segmentation fault.'//
-!    &   ' Useful for debugging.'
-      END IF
 C
  666  CONTINUE
 C
@@ -4921,7 +4941,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 C
-      LOGICAL SET, NEWDEF, RESET
+      LOGICAL SET, NEWDEF, ORBDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
@@ -4945,16 +4965,9 @@ C     Initialize /CBIVEC/
 C     ===================
 C
       IPRCMP    = 1
-      DO I = 1,NFSYM
-        VECPRI(I) = ' '
-        IF(NOCC(I).EQ.1) THEN
-          WRITE(VECPRI(I),'(I1)') 1
-        ELSEIF(NOCC(I).GT.1) THEN
-          WRITE(VECPRI(I),'(I1,A2,I4)') 1,'..',NOCC(I)
-        ENDIF
-      ENDDO
       ILABDF  = 2
       IPRVEC  = 0
+      ORBDEF  = .TRUE.
 C
 C     Process input from CBIPOP
 C     =========================
@@ -4996,6 +5009,7 @@ C&&&& AOLAB : Print coefficients in AO-basis
     3          CONTINUE
 C&&&& VECPRI: Number of spinors to print
                   READ(LUCMD,'(A72)') (VECPRI(I),I=1,NFSYM)
+                  ORBDEF = .FALSE.
                GO TO 100
     4          CONTINUE
 C&&&& PRINT: General print level
@@ -5020,6 +5034,21 @@ C&&&& PRINT: General print level
       END IF
   300 CONTINUE
 C
+C     Process section
+C
+      IF(ORBDEF) THEN
+        DO I = 1,NFSYM
+          VECPRI(I) = 'UNDEFINED'
+          IF(NOCC(I).GT.0) THEN
+            IF(NOCC(I).EQ.1) THEN
+              WRITE(VECPRI(I),'(I4)') 1
+            ELSE
+              WRITE(VECPRI(I),'(I4,A2,I4)') 1,'..',NOCC(I)
+            ENDIF
+          ENDIF
+        ENDDO
+      ENDIF
+C
 C     Print section
 C     =============
 C
@@ -5036,15 +5065,20 @@ C
       NTOT = 0
       DO I = 1,NFSYM
         NVEC = 0
-        CALL  NUMLST(VECPRI(I),IDUMMY,NFBAS(I,0),
-     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC)
-        IF(NVEC.EQ.0) THEN
+        IF (VECPRI(I) .eq. 'UNDEFINED') THEN
           WRITE(LUPRI,'(4X,A,A3)')
-     &       '- No orbital string specified in fermion ircop ',FREP(I)
+     &      '- All occupied orbitals in fermion ircop ',FREP(I)
         ELSE
-          NTOT = NTOT + NVEC
-          WRITE(LUPRI,'(4X,A,A3,A,A72)')
+          CALL  NUMLST(VECPRI(I),IDUMMY,NFBAS(I,0),
+     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC)
+          IF(NVEC.EQ.0) THEN
+            WRITE(LUPRI,'(4X,A,A3)')
+     &       '- No orbital string specified in fermion ircop ',FREP(I)
+          ELSE
+            NTOT = NTOT + NVEC
+            WRITE(LUPRI,'(4X,A,A3,A,A72)')
      &      '- Orbitals in fermion ircop ',FREP(I),' :',VECPRI(I)
+          ENDIF
         ENDIF
       ENDDO
 Cluuk IF(NTOT.EQ.0) IPRCMP = 0
@@ -8493,7 +8527,7 @@ C
       DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
      &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
      &            '.THDIAG','.THGRAD','.CHECK ','.SELECT',
-     &            '.THXVEC','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -8522,7 +8556,6 @@ C
       THFULL = 1.0D-13
       THDIAG = 1.0D-05
       THGRAD = 1.0D-07
-      THXVEC = 1.0D-15
       SELMOS = 'allocc'
 C
 C     Process input from CBILOC
@@ -8618,8 +8651,6 @@ C   SELMOS: Select MOs for localization
                READ(LUCMD,'(A72)') SELMOS
                GO TO 100
  13            CONTINUE
-C   THXVEC: Set threshold for removal of small rotations
-               READ(LUCMD,*) THXVEC
  14            CONTINUE
                GO TO 100
  15            CONTINUE
@@ -8778,9 +8809,6 @@ C
         WRITE(LUPRI,'(1X,A)') '* User defined MOs for localization:'
         WRITE(LUPRI,'(1X,A)') '    --> ',SELMOS
       ENDIF
-      WRITE(6,'(1X,A,1P,E8.2)') 
-     &    '* Threshold for removal of small rotations: ',
-     &    THXVEC          
 C     -----------------------------------------------------------------
 C     Fragments of spinors used in the projection analysis
 C

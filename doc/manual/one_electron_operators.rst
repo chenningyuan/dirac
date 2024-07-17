@@ -95,58 +95,70 @@ Component factors as well as the common factor are all one if not specified.
 List of one-electron operators
 ------------------------------
 
-+-------------+----------------------------------+----------------+----------------+----------------------------------+
-| **Operator**| **Description**                  | **Symmetry**   | **Components** | **Operators**                    |
-| **label**   |                                  |                |                |                                  |
-+=============+==================================+================+================+==================================+
-| MOLFIELD    | Nuclear attraction integrals     | Symmetric      | MOLFIELD       | :math:`\Omega_1 = \sum_K V_{iK}` |
-+-------------+----------------------------------+----------------+----------------+----------------------------------+
-| OVERLAP     | Overlap integrals                | Symmetric      | OVERLAP        | :math:`\Omega_1 = 1`             |
-+-------------+----------------------------------+----------------+----------------+----------------------------------+
-| BETAMAT     | Overlap integrals, only SS-block | Symmetric      | BETAMAT        | :math:`\Omega_1 = 1`             |
-+-------------+----------------------------------+----------------+----------------+----------------------------------+
-| DIPLEN      | Dipole length integrals          | Symmetric      | XDIPLEN        | :math:`\Omega_1 = x`             |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | YDIPLEN        | :math:`\Omega_2 = y`             |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | ZDIPLEN        | :math:`\Omega_3 = z`             |
-+-------------+----------------------------------+----------------+----------------+----------------------------------+
-| DIPVEL      | Dipole velocity integrals        | Anti-symmetric | XDIPVEL        |                                  |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | YDIPVEL        |                                  |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | ZDIPVEL        |                                  |
-+-------------+----------------------------------+----------------+----------------+----------------------------------+
-| QUADRUP     | Quadrupole moments integrals     | Symmetric      | XXQUADRU       |                                  |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | XYQUADRU       |                                  |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | XZQUADRU       |                                  |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | YYQUADRU       |                                  |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | YZQUADRU       |                                  |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | ZZQUADRU       |                                  |
-+-------------+----------------------------------+----------------+----------------+----------------------------------+
-| SPNORB      | Spatial spin-orbit integrals     | Anti-symmetric | X1SPNORB       |                                  |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | Y1SPNORB       |                                  |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | Z1SPNORB       |                                  |
-+-------------+----------------------------------+----------------+----------------+----------------------------------+
-| SECMOM      | Second moments integrals         | Symmetric      | XXSECMOM       | :math:`\Omega_1 = xx`            |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | XYSECMOM       | :math:`\Omega_2 = xy`            |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | XZSECMOM       | :math:`\Omega_3 = xz`            |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | YYSECMOM       | :math:`\Omega_4 = yy`            |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | YZSECMOM       | :math:`\Omega_5 = yz`            |
-|             |                                  |                +----------------+----------------------------------+
-|             |                                  |                | ZZSECMOM       | :math:`\Omega_6 = zz`            |
-+-------------+----------------------------------+----------------+----------------+----------------------------------+
++-------------+----------------------------------+----------------+----------------+------------------------------------------------------+
+| **Operator**| **Description**                  | **Symmetry**   | **Components** | **Operators**                                        |
+| **label**   |                                  |                |                |                                                      |
++=============+==================================+================+================+======================================================+
+| MOLFIELD    | Nuclear attraction integrals     | Symmetric      | MOLFIELD       | :math:`\Omega_1 = \sum_K V_{iK}`                     |
++-------------+----------------------------------+----------------+----------------+------------------------------------------------------+
+| OVERLAP     | Overlap integrals                | Symmetric      | OVERLAP        | :math:`\Omega_1 = 1`                                 |
++-------------+----------------------------------+----------------+----------------+------------------------------------------------------+
+| BETAMAT     | Overlap integrals, only SS-block | Symmetric      | BETAMAT        | :math:`\Omega_1 = 1`                                 |
++-------------+----------------------------------+----------------+----------------+------------------------------------------------------+
+| DIPLEN      | Dipole length integrals          | Symmetric      | XDIPLEN        | :math:`\Omega_1 = x`                                 |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | YDIPLEN        | :math:`\Omega_2 = y`                                 |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | ZDIPLEN        | :math:`\Omega_3 = z`                                 |
++-------------+----------------------------------+----------------+----------------+------------------------------------------------------+
+| DIPVEL      | Dipole velocity integrals        | Anti-symmetric | XDIPVEL        |                                                      |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | YDIPVEL        |                                                      |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | ZDIPVEL        |                                                      |
++-------------+----------------------------------+----------------+----------------+------------------------------------------------------+
+| SPNORB      | Spatial spin-orbit integrals     | Anti-symmetric | X1SPNORB       |                                                      |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | Y1SPNORB       |                                                      |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | Z1SPNORB       |                                                      |
++-------------+----------------------------------+----------------+----------------+------------------------------------------------------+
+| QUADRUP     | Quadrupole moments integrals     | Symmetric      | XXQUADRU       | :math:`\Omega_1 = \frac{1}{4} (x^2-r^2)`             |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | XYQUADRU       | :math:`\Omega_2 = \frac{1}{4} xy`                    |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | XZQUADRU       | :math:`\Omega_3 = \frac{1}{4} xz`                    |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | YYQUADRU       | :math:`\Omega_4 = \frac{1}{4} (y^2-r^2)`             |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | YZQUADRU       | :math:`\Omega_5 = \frac{1}{4} yz`                    |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | ZZQUADRU       | :math:`\Omega_6 = \frac{1}{4} (z^2-r^2)`             |
++-------------+----------------------------------+----------------+----------------+------------------------------------------------------+
+| SECMOM      | Second moments integrals         | Symmetric      | XXSECMOM       | :math:`\Omega_1 = - x^2`                             |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | XYSECMOM       | :math:`\Omega_2 = - xy`                              |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | XZSECMOM       | :math:`\Omega_3 = - xz`                              |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | YYSECMOM       | :math:`\Omega_4 = - y^2`                             |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | YZSECMOM       | :math:`\Omega_5 = - yz`                              |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | ZZSECMOM       | :math:`\Omega_6 = - z^2`                             |
++-------------+----------------------------------+----------------+----------------+------------------------------------------------------+
+| THETA       | Traceless quadrupole integrals   | Symmetric      | XXTHETA        | :math:`\Omega_1 = - \frac{3}{2} (x^2-\frac{1}{3}r^2)`|
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | XYTHETA        | :math:`\Omega_2 = - \frac{3}{2} xy`                  |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | XZTHETA        | :math:`\Omega_3 = - \frac{3}{2} xz`                  |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | YYTHETA        | :math:`\Omega_4 = - \frac{3}{2} (y^2-\frac{1}{3}r^2)`|
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | YZTHETA        | :math:`\Omega_5 = - \frac{3}{2} yz`                  |
+|             |                                  |                +----------------+------------------------------------------------------+
+|             |                                  |                | ZZTHETA        | :math:`\Omega_6 = - \frac{3}{2} (z^2-\frac{1}{3}r^2)`|
++-------------+----------------------------------+----------------+----------------+------------------------------------------------------+
 | SEFGMG      | Magnetic term of Flambaum-Ginges | Anti-symmetric | XSEFGMG        |                                  |
 |             | self-energy potential            |                +----------------+----------------------------------+
 |             |                                  |                | YSEFGMG        |                                  |
@@ -158,44 +170,43 @@ List of one-electron operators
 =========== ====================================================================================================================
 **Keyword** **Description**
 =========== ====================================================================================================================
-THETA       Traceless theta quadrupole integrals
-CARMOM      Cartesian moments integrals, symmetric integrals, (l + 1)(l + 2)/2 components ( l = i + j + k)
-SPHMOM      Spherical moments integrals (real combinations), symmetric integrals, (2l + 1) components ( m = +0, -1, +1, ..., +l)
-SOLVENT     Electronic solvent integrals
-FERMI C     One-electron Fermi contact integrals
-PSO         Paramagnetic spin-orbit integrals
-SPIN-DI     Spin-dipole integrals
-DSO         Diamagnetic spin-orbit integrals
-SDFC        Spin-dipole + Fermi contact integrals
-HDO         Half-derivative overlap integrals
-S1MAG       Second order contribution from overlap matrix to magnetic properties
 ANGLON      Angular momentum around the nuclei
 ANGMOM      Electronic angular momentum around the molecular center of mass
-LONMOM      London orbital contribution to angular momentum
-MAGMOM      One-electron contributions to magnetic moment
-KINENER     Electronic kinetic energy
-DSUSNOL     Diamagnetic susceptibility without London contribution
-DSUSLH      Angular London orbital contribution to diamagnetic susceptibility
-DIASUS      Angular London orbital contribution to diamagnetic susceptibility
-NUCSNLO     Nuclear shielding integrals without London orbital contribution
-NUCSLO      London orbital contribution to nuclear shielding tensor integrals
-NUCSHI      Nuclear shielding tensor integrals
-NEFIELD     Electric field at the individual nuclei
-ELFGRDC     Electric field gradient at the individual nuclei, cartesian
-ELFGRDS     Electric field gradient at the individual nuclei, spherical
-S1MAGL      Bra-differentiation of overlap matrix with respect to magnetic field
-S1MAGR      Ket-differentiation of overlap matrix with respect to magnetic field
-HDOBR       Ket-differentiation of HDO-integrals with respect to magnetic field
-NUCPOT      Potential energy of the interaction of electrons with individual nuclei, divided by the nuclear charge
-HBDO        Half B-differentiated overlap matrix
-SQHDO       Half-derivative overlap integrals not to be antisymmetrized
-DSUSCGO     Diamagnetic susceptibility with common gauge origin
-NSTCGO      Nuclear shielding integrals with common gauge origin
-EXPIKR      Cosine and sine integrals
-MASSVEL     Mass velocity integrals
-DARWIN      Darwin type integrals
+CARMOM      Cartesian moments integrals, symmetric integrals, (l + 1)(l + 2)/2 components ( l = i + j + k)
 CM1         First order magnetic field derivatives of electric field
 CM2         Second order magnetic field derivatives of electric field
+DARWIN      Darwin type integrals
+DIASUS      Angular London orbital contribution to diamagnetic susceptibility
+DSO         Diamagnetic spin-orbit integrals
+DSUSCGO     Diamagnetic susceptibility with common gauge origin
+DSUSLH      Angular London orbital contribution to diamagnetic susceptibility
+DSUSNOL     Diamagnetic susceptibility without London contribution
+ELFGRDC     Electric field gradient at the individual nuclei, cartesian
+ELFGRDS     Electric field gradient at the individual nuclei, spherical
+EXPIKR      Cosine and sine integrals
+FERMI C     One-electron Fermi contact integrals
+HBDO        Half B-differentiated overlap matrix
+HDO         Half-derivative overlap integrals
+HDOBR       Ket-differentiation of HDO-integrals with respect to magnetic field
+KINENER     Electronic (non-relativistic) kinetic energy (operator: :math:`\nabla^2`)
+LONMOM      London orbital contribution to angular momentum
+MAGMOM      One-electron contributions to magnetic moment
+MASSVEL     Mass velocity integrals
+NEFIELD     Electric field at the individual nuclei
+NSTCGO      Nuclear shielding integrals with common gauge origin
+NUCPOT      Potential energy of the interaction of electrons with individual nuclei, divided by the nuclear charge
+NUCSHI      Nuclear shielding tensor integrals
+NUCSLO      London orbital contribution to nuclear shielding tensor integrals
+NUCSNLO     Nuclear shielding integrals without London orbital contribution
+PSO         Paramagnetic spin-orbit integrals
+S1MAG       Second order contribution from overlap matrix to magnetic properties
+S1MAGL      Bra-differentiation of overlap matrix with respect to magnetic field
+S1MAGR      Ket-differentiation of overlap matrix with respect to magnetic field
+SDFC        Spin-dipole + Fermi contact integrals
+SOLVENT     Electronic solvent integrals
+SPHMOM      Spherical moments integrals (real combinations), symmetric integrals, (2l + 1) components ( m = +0, -1, +1, ..., +l)
+SPIN-DI     Spin-dipole integrals
+SQHDO       Half-derivative overlap integrals not to be antisymmetrized
 SQHDOR      Half-derivative overlap integrals not to be anti-symmetrized
 SQOVLAP     Second order derivatives overlap integrals
 UEHLING     Uehling potential

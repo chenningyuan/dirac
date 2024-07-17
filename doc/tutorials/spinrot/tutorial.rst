@@ -82,7 +82,7 @@ The SR constant of the fluorine nucleus, in kHz, will look like:
 
 .. literalinclude:: SR-HF-khz
 
-One should recall that in the case of linear molecules, as the present one, only one tensor element is printed out (the spin-rotation constant) because for these molecules the SR tensor has only two equal and non-zero elements.
+One should recall that in the case of linear molecules, as the present one, only one tensor element is printed out (the nuclear spin-rotation constant) because for these molecules the SR tensor has only two equal and non-zero diagonal elements.
 
 As it can be seen, the total SR constant of the fluorine nucleus is given, and then separated in its two terms (nuc and LR). The latter contribution, the linear response function, is further separated in their (e-e) and (e-p) parts, as well as in their :math:`\mathbf{L}` and :math:`\mathbf{S}` parts. It is seen how the (e-p) contribution to the linear response term of the SR constants is almost zero.
 

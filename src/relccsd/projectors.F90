@@ -1,4 +1,5 @@
   module projectors
+  use mfsolver_dirac_input
   use relcc_cfg
   implicit none
 
@@ -57,7 +58,7 @@ function create_projector(eom_type, ndet, state_sym, eps)
    logical :: spinors_in_occupied_window(2)
    logical :: spinors_in_virtuals_window(2)
 
-!   if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
+!   if (.not.(mfsolver_projectors_do_core_valence_separation.or.mfsolver_projectors_do_restricted_excitation_window)) then
 !      create_projector => NULL()
 !      return
 !
@@ -75,8 +76,8 @@ function create_projector(eom_type, ndet, state_sym, eps)
          if (allocated(det_map%det(i)%occupied_energies)) then 
             ndim_occ = size(det_map%det(i)%occupied_energies,1)
             do j = 1, ndim_occ
-               if ( (det_map%det(i)%occupied_energies(j).le.relcc_projectors_rew_occ_max_energy).and. &
-                  & (det_map%det(i)%occupied_energies(j).ge.relcc_projectors_rew_occ_min_energy) ) then
+               if ( (det_map%det(i)%occupied_energies(j).le.mfsolver_projectors_rew_occ_max_energy).and. &
+                  & (det_map%det(i)%occupied_energies(j).ge.mfsolver_projectors_rew_occ_min_energy) ) then
                   spinors_in_occupied_window(j) = .true.
                else
                   spinors_in_occupied_window(j) = .false.
@@ -84,7 +85,7 @@ function create_projector(eom_type, ndet, state_sym, eps)
             end do
             if (ndim_occ.eq.1) spinors_in_occupied_window(2) = spinors_in_occupied_window(1) 
 
-            if ((ndim_occ.eq.2).and.relcc_projectors_rew_remove_double_occupied) then
+            if ((ndim_occ.eq.2).and.mfsolver_projectors_rew_remove_double_occupied) then
 ! if we require to remove doubly excited determinants with both indices in the
 ! occupied window, force these out
                 if (spinors_in_occupied_window(1).and.spinors_in_occupied_window(2)) then
@@ -97,8 +98,8 @@ function create_projector(eom_type, ndet, state_sym, eps)
          if (allocated(det_map%det(i)%virtuals_energies)) then
             ndim_virt = size(det_map%det(i)%virtuals_energies,1)
             do j = 1, ndim_virt
-               if ( (det_map%det(i)%virtuals_energies(j).ge.relcc_projectors_rew_virt_min_energy).and. &
-                  & (det_map%det(i)%virtuals_energies(j).le.relcc_projectors_rew_virt_max_energy) ) then
+               if ( (det_map%det(i)%virtuals_energies(j).ge.mfsolver_projectors_rew_virt_min_energy).and. &
+                  & (det_map%det(i)%virtuals_energies(j).le.mfsolver_projectors_rew_virt_max_energy) ) then
                      spinors_in_virtuals_window(j) = .true.
                else
                      spinors_in_virtuals_window(j) = .false.
@@ -106,7 +107,7 @@ function create_projector(eom_type, ndet, state_sym, eps)
             end do
             if (ndim_virt.eq.1) spinors_in_virtuals_window(2) = spinors_in_virtuals_window(1)
          end if 
-         if (relcc_projectors_rew_strict) then 
+         if (mfsolver_projectors_rew_strict) then 
 ! strictly enforces that only configurations with ionization/excitations/attachments within the window are kept
             create_projector(i) = spinors_in_occupied_window(1).and.spinors_in_virtuals_window(1)
             create_projector(i) = create_projector(i).and.spinors_in_occupied_window(2).and.spinors_in_virtuals_window(2)
@@ -156,7 +157,7 @@ function create_t_projector(ndet, eps)
          if (allocated(det_map%det(i)%occupied_energies)) then 
             ndim_occ = size(det_map%det(i)%occupied_energies,1)
             do j = 1, ndim_occ
-               if ( (det_map%det(i)%occupied_energies(j).le.relcc_projectors_frozen_core_max_energy) ) then
+               if ( (det_map%det(i)%occupied_energies(j).le.mfsolver_projectors_frozen_core_max_energy) ) then
                   spinors_in_occupied_window(j) = .true.
                else
                   spinors_in_occupied_window(j) = .false.
