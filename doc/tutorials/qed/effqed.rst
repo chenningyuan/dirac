@@ -125,6 +125,12 @@ Example 2: DCG Hamiltonian with Uehling and PZ potentials
 Note on the application to core-properties
 ==========================================
 
-The above two SE potentials give very similar results in the case of valence properties :cite:`Sunaga2022`, but they may give different results in the case of core-properties :cite:`Sunaga2021`.
+The PZ potential was developed to reproduce the QED effects on the hyperfine coupling constant (1s and 2s orbitals),
+and the FG potential was developed for the atomic parity violation effects (valence s and p orbitals).
 
+However, we have confirmed that these potentials cannot accurately account for QED effects on the orbital energies for core orbitals.
+In fact, these potential provide different QED effects on the parity-violating energy :cite:`Sunaga2021`.
 
+Therefore, these potential would not accurately provide QED effects on the core properties, such as XPS, Mössbauer, and NMR.
+
+It has been confirmed that these SE potentials yield very similar results in the case of valence properties :cite:`Sunaga2022`.

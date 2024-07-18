@@ -190,15 +190,11 @@ be printed.
     .INTCHK
      2
 
-keyword(EFFQED)
-
-Activate the effQED module. This option will be user-friendly command to add
-effQED potentials, but in the current version, it is under development.
-
      
 star(EFFQED)
 
-Options for the numerical integration of effective QED potentials.
+Options for the numerical integration of effective QED potentials described in :cite:`Sunaga2022`
+An example of the input is shown in `tutorial <http://www.diracprogram.org/doc/master/tutorials/qed/effqed.html>`__
 
 keyword(GRASP)
 Activate the radial grid of GRASP code.
@@ -220,7 +216,9 @@ Angular momentum of Lebedev quadrature for the numerical intebration of effectiv
      15
 
 keyword(UEHCUT)
-Cutoff of the radial integration based on Uehling potential.
+Due to the very local nature of the effective QED potentials, the upper limit of
+the radial integration over a potential associated with atomic center A is cut off.
+The radial integration is cut off based on the Uehling potential and is performed in a shorter region. 
 
 *Default:*
 
