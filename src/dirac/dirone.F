@@ -305,13 +305,9 @@ C
       NAT = 0
       ISYMOP = 0
       DO 10 IATOM = 1, NUCIND !change
-!      DO 10 ISYMOP = 0, MAXOPR ! needed for h2se2
-!       IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
         IF(.NOT.NOORBT(IATOM)) THEN 
          IF(NINT(CHARGE(IATOM)).GE.NCUTZ .OR.
      &      num_grid_cfg_allatom.EQV. .TRUE.) THEN
-!     ayaki   IBTAND=IAND, but I am not sure what it is.     
-!         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 20
          NAT = NAT + 1
          GEXP = GNUEXP(IATOM)
          NDEG = MULT(ISTBNU(IATOM))
@@ -374,7 +370,7 @@ C     writing the matrix in output
      &       NAMN(IATOM),"atom"
            CALL HEADER(TITLE_PRINT,-1)
            CALL OUTPUT(INTAOTRI,1,NTBAS(0),1,NTBAS(0),
-     &                 NTBAS(0),NTBAS(0),-1,LUPRI) ! debug, title
+     &                 NTBAS(0),NTBAS(0),-1,LUPRI) 
          ENDIF   
 
 C       Scale weights with multiplicity of center
@@ -389,16 +385,15 @@ C     Here, INTAOTRI is a buffer
          deallocate(NUMIR)
          deallocate(R)
          ENDIF    ! IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)
-        ELSE ! Ghost center case
-          IF(num_grid_cfg_numint_print)THEN
+        ELSE      ! Ghost center case
+         IF(num_grid_cfg_numint_print)THEN
             WRITE(LUPRI,'(A,A)')" - For ", NAMN(IATOM)
             WRITE(LUPRI,'(A,/)')"     effQED potential is skipped"
-          ENDIF  
+         ENDIF  
         ENDIF   ! IF(NOORBT(IATOM))  
         IF(IATOM.EQ.NUCIND)THEN
           num_grid_cfg_numint_print = .FALSE.
         ENDIF
-!        ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
 10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
 C
       IF(IPRINT.GE.6)THEN
@@ -406,7 +401,7 @@ C
      &    'NUMINT: ',LABEL,'Total AO-matrix'
         CALL HEADER(TITLE_PRINT,-1)
         CALL OUTPUT(INTAO,1,NTBAS(0),1,NTBAS(0),
-     &              NTBAS(0),NTBAS(0),-1,LUPRI) ! debug, title
+     &              NTBAS(0),NTBAS(0),-1,LUPRI) 
       ENDIF  
 C
 C    Transformation from full-matrix to triangle-matrix
@@ -1531,7 +1526,7 @@ C
         WB = GEXP                 !THREE/(TWO*RAD*RAD)
         WA = SQRT(WB)
         ZNORM = 4.0D0*Z
-        ZNORM = ZNORM*WB*WA/SQRT(PI)
+        ZNORM = ZNORM*WB*WA/SQRT(PI) ! ZNORM = Z * (xi/pi)^3/2 * 4pi
         DO 6 I = 1,N
            TA(I) = ( EXP(-WB*R(I)*R(I)) ) * R(I)*R(I)        
   6     CONTINUE
@@ -1542,7 +1537,7 @@ C
 C   FERMI CHARGE DISTRIBUTION
 C
       ELSEIF(NUCTYP.EQ.3)THEN
-C Ayaki: Normalization should be implemented 
+C Ayaki: Normalization has not been implemented yet
         GO TO 9  
         TFM = 2.30D00
         T = TFM*1.0D-5/xtang  !xtang = 0.5291772083d0. See gp/codata.F90
