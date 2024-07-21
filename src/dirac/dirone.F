@@ -303,14 +303,15 @@ C
       CALL DZERO(INTAO   ,NDIM2)
       CALL DZERO(INTAOTRI,NDIM2)
       NAT = 0
+      ISYMOP = 0
       DO 10 IATOM = 1, NUCIND !change
-      DO 10 ISYMOP = 0, MAXOPR ! needed for h2se2
-       IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
-         IF(NINT(CHARGE(IATOM)).GE.NCUTZ .OR.
+!      DO 10 ISYMOP = 0, MAXOPR ! needed for h2se2
+!       IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
+        IF(NINT(CHARGE(IATOM)).GE.NCUTZ .OR.
      &      num_grid_cfg_allatom.EQV. .TRUE.) THEN
 !     ayaki   IBTAND=IAND, but I am not sure what it is.     
-         IF(NOORBT(IATOM)) GOTO 10 
-         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
+         IF(.NOT.NOORBT(IATOM)) THEN 
+!         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 20
          NAT = NAT + 1
          GEXP = GNUEXP(IATOM)
          NDEG = MULT(ISTBNU(IATOM))
@@ -361,7 +362,6 @@ C     Print out the information
            ENDIF           
 C R**2 is multiplized in NUMPOT
            CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
-C           CALL NUMPOT(IOP,NUMIR,R,ZAN(NAT),GEXP,MXNP,IPRINT)
            W = (RNT+GRDC)*H 
            NUMIR(1) = NUMIR(1) * W
            DO IR = 2,MXNP
@@ -383,26 +383,29 @@ C     writing the matrix in output
            CALL OUTPUT(INTAOTRI,1,NTBAS(0),1,NTBAS(0),
      &                 NTBAS(0),NTBAS(0),-1,LUPRI) ! debug, title
          ENDIF   
-!         IF(NDEG.GT.0) THEN
+
 C       Scale weights with multiplicity of center
-!           FAC = dble(NDEG) 
-!           CALL DSCAL(NDIM2,FAC,INTAOTRI,1)
-!         ENDIF
+         IF(NDEG.GT.0) THEN
+            FAC = dble(NDEG) 
+            CALL DSCAL(NDIM2,FAC,INTAOTRI,1)
+         ENDIF
+         
 C     Here, INTAOTRI is a buffer
          CALL DAXPY(NDIM2,D1,INTAOTRI,1,INTAO,1)
          CALL DZERO(INTAOTRI,NDIM2)
          deallocate(NUMIR)
          deallocate(R)
-        ELSE
+         ELSE
           IF(num_grid_cfg_numint_print)THEN
             WRITE(LUPRI,'(A,A)')" - For ", NAMN(IATOM)
             WRITE(LUPRI,'(A,/)')"     effQED potential is skipped"
-          ENDIF    
-          IF(IATOM.EQ.NUCIND)THEN
-            num_grid_cfg_numint_print = .FALSE.
-          ENDIF
-        ENDIF                   !IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)  
-        ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
+          ENDIF  
+         ENDIF   ! IF(NOORBT(IATOM))  
+       ENDIF    ! IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)
+         IF(IATOM.EQ.NUCIND)THEN
+           num_grid_cfg_numint_print = .FALSE.
+         ENDIF
+!        ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
 10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
 C
       IF(IPRINT.GE.6)THEN
@@ -995,7 +998,7 @@ C
 C     In the atomic case (GRASP), 'DO 10 J = 1,"NR"' is fine, because
 C     normally TE(II,nuclear region) >> TE(II,NR).          
 C     In the case of molecule, a situation TE(II,nuclear region) < TE(II,NR)
-C     can occur. So, I changed from 'DO 10 J = 1,"NR"' to 'DO 10 J = 1,"NR-4"'
+C     can occur. So, Ayaki changed from 'DO 10 J = 1,"NR"' to 'DO 10 J = 1,"NR-4"'
 C     "4" is the minumum number for JJ+3 =< NR        
 C         
       DO 10 J = 1,NR-4
@@ -1109,7 +1112,7 @@ C
            ENDIF   
            RTEMP = RTEMP*EPH
 C
-c     sunaga
+c     Ayaki
 c     As far as I check GRASP, the number of grid (MXNP) must be odd number,
 c     for the integral of Vacuum polarization using Ne and Hg atoms.         
 c     If it is even number, the value of QUAD
@@ -1168,7 +1171,7 @@ C
           ENDDO
         ENDIF
       ENDIF    !num_grid_cfg_grasp
-C      
+C
       IF (IPRINT.GE.6) THEN
          WRITE(LUPRI,'(2X,A)')'**Truncation of radial grid'
          WRITE(LUPRI,'(2X,A,E8.2e2,A,/)')
@@ -1209,20 +1212,15 @@ C
 ************************************************************************
 #include "implicit.h"
 C      
-      DIMENSION TB(N),R(N)
-      
-      IF (NUCTYP .EQ. 0) GO TO 3 !change
-C
-C   SET UP R*1 TIMES NUCLEAR CHARGE DISTRIBUTION
-C
-      write(*,*)""  ! this is needed
-C
+      DIMENSION TB(N), R(N)  
+C     
 C   SECOND-ORDER VACUUM POLARISATION
 C
-    3 CALL VAC2(TB,R,Z,GEXP,N,NNUC,NUCTYP)
+      IF(NVPORD.EQ.1)THEN
+        CALL VAC2(TB,R,Z,GEXP,N,NNUC,NUCTYP)
+      ENDIF   
 C
-C   FOURTH-ORDER VACUUM POLARIZATION
-C
+C   FOURTH-ORDER VACUUM POLARIZATION ... future implementation
 C
       RETURN
       END
@@ -1288,7 +1286,7 @@ C
       ELSE
         NG = 4000  
         CALL MEMSET_NUM(Z,IATOM,NG,RNT,H,EPH,GRDC,
-     &                   .TRUE.,IPRINT)
+     &                   .TRUE.,1)
         allocate(RG(NG))
         RG(1) = RNT
         DO J = 2,NG
