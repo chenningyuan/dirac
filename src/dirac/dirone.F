@@ -655,7 +655,15 @@ C
       nr_points_on_this_proc=MXNP*m
 C
 C     Determination of the maximum value for each (isym,ishell)
-C     for cutoff of the numerical integration 
+C     for cutoff of the numerical integration. The flow is
+C      
+C     1. Several AOs are picked up in the numerical integration region
+C       do IR = 1, MXNP_ODD, (MXNP_ODD-1)/2
+C     2. Getting the GMAX(isym,ishell), which is the largest AO at (isym,ishell)
+C      
+C     3. If the GMAX is smaller than the SCREEN, the get AO step is skipped.
+C        at all radial grid.      
+C         IF(GMAX(isym,ishell).GE.SCREEN)THEN
 C      
       CALL DZERO(GMAX, nr_boson_ireps*nr_shells)
       MXNP_ODD = MXNP - mod(MXNP,2)

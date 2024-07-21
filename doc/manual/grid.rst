@@ -193,8 +193,8 @@ be printed.
      
 star(EFFQED)
 
-Options for the numerical integration of effective QED potentials described in :cite:`Sunaga2022`
-An example of the input is shown in `tutorial <http://www.diracprogram.org/doc/master/tutorials/qed/effqed.html>`__
+Options for the numerical integration of effective QED potentials described in :cite:`Sunaga2022`.
+An example of the input is shown in `tutorial <http://www.diracprogram.org/doc/master/tutorials/qed/effqed.html>`__.
 
 keyword(GRASP)
 Activate the radial grid of GRASP code.
@@ -247,5 +247,17 @@ Incorporating effective QED potentials for all atoms in the molecule.
 
     The element with Z < 19 is not calculated.
 
+keyword(SCREEN)
+The AO basis set less than the threshold in a grid point is omitted in the numerical integration,
+which is done in the region close the nucleus.
+For example, in AB molecule, tight exponent of atom B would not be considered
+in the numerical integration of atom A's effQED potentials. 
+*Default:*
+
+::
+
+    .SCREEN                                                  
+     1.0E-10
+    
 
 

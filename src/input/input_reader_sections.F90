@@ -3199,6 +3199,10 @@
          call kw_read(word, num_grid_cfg_minz)
       end if
 
+      if (kw_matches(word, '.SCREEN')) then
+         call kw_read(word, num_grid_cfg_screen)
+      end if
+
       if (kw_matches(word, '.UEHCUT')) then
          num_grid_cfg_uehcut = .true.
       end if
