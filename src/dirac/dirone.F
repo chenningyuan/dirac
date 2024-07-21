@@ -307,10 +307,10 @@ C
       DO 10 IATOM = 1, NUCIND !change
 !      DO 10 ISYMOP = 0, MAXOPR ! needed for h2se2
 !       IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
-        IF(NINT(CHARGE(IATOM)).GE.NCUTZ .OR.
+        IF(.NOT.NOORBT(IATOM)) THEN 
+         IF(NINT(CHARGE(IATOM)).GE.NCUTZ .OR.
      &      num_grid_cfg_allatom.EQV. .TRUE.) THEN
 !     ayaki   IBTAND=IAND, but I am not sure what it is.     
-         IF(.NOT.NOORBT(IATOM)) THEN 
 !         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 20
          NAT = NAT + 1
          GEXP = GNUEXP(IATOM)
@@ -322,15 +322,8 @@ C
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          MXNP = 4000            !same to GRASP
-         NUCTYP = 0
-         IF(GAUNUC) NUCTYP = 3
          CALL MEMSET_NUM(CHARGE(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
      &                    num_grid_cfg_grasp,IPRINT)
-C         
-C NUCPRM is for making nuclear parameter of Fermi and Uniform nucleus. 
-C We do not have to use it for the Gaussian nucleus.
-C         
-C        CALL NUCPRM(ZAN(IATOM),GEXP,NNUC,RNT,EPH,NUCTYP)
 C
          allocate( NUMIR(MXNP) )
          allocate( R(MXNP)     )
@@ -395,16 +388,16 @@ C     Here, INTAOTRI is a buffer
          CALL DZERO(INTAOTRI,NDIM2)
          deallocate(NUMIR)
          deallocate(R)
-         ELSE
+         ENDIF    ! IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)
+        ELSE ! Ghost center case
           IF(num_grid_cfg_numint_print)THEN
             WRITE(LUPRI,'(A,A)')" - For ", NAMN(IATOM)
             WRITE(LUPRI,'(A,/)')"     effQED potential is skipped"
           ENDIF  
-         ENDIF   ! IF(NOORBT(IATOM))  
-       ENDIF    ! IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)
-         IF(IATOM.EQ.NUCIND)THEN
-           num_grid_cfg_numint_print = .FALSE.
-         ENDIF
+        ENDIF   ! IF(NOORBT(IATOM))  
+        IF(IATOM.EQ.NUCIND)THEN
+          num_grid_cfg_numint_print = .FALSE.
+        ENDIF
 !        ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
 10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
 C
@@ -477,9 +470,9 @@ C
       REAL*8 NUMIR(MXNP), R(MXNP)
 C     
       IF(GAUNUC)THEN
-         NUCTYP = 3
+         NUCTYP = 2
       ELSE   
-         NUCTYP = 0
+         NUCTYP = 1
       ENDIF   
 C
       IF(CLSINT(IOP).EQ.'SEFGMG')THEN
@@ -1186,10 +1179,10 @@ C
       SUBROUTINE VCMPOL(TB,R,Z,GEXP,N,NNUC,NUCTYP,NVPORD)
 *      
 *     NUCTYP:
-*     0  Point
-*     1  Uniform
-*     2  Fermi
-*     3  Gauss
+*     1  Point
+*     2  Gauss
+*     3  Fermi
+*     Ayaki: NUCTYP is optimized to the definition of the DIRAC code      
 *
 *     NVPORD:
 *     1  second (Uehling)
@@ -1220,7 +1213,7 @@ C
         CALL VAC2(TB,R,Z,GEXP,N,NNUC,NUCTYP)
       ENDIF   
 C
-C   FOURTH-ORDER VACUUM POLARIZATION ... future implementation
+C   FOURTH-ORDER VACUUM POLARIZATION ... not implemented yet
 C
       RETURN
       END
@@ -1262,19 +1255,7 @@ C
          X = WD*R(I)
          TB(I) = FACTOR*FUNK (X,1)
     1 CONTINUE
-      IF (NUCTYP .EQ. 0) RETURN
-C
-C   SERIES EXPANSION FOR FINITE NUCLEUS. CALCULATE EXPANSION
-C   COEFFICIENTS USING EQUATION (7)
-C
-      IF (NUCTYP .GT. 1) GO TO 2
-C
-C   UNIFORM NUCLEUS
-C
-      WA = C2*(PARM1*PARM1)
-      FAC3 = FACTOR*TWO*WA/5.0D00
-      FAC5 = FAC3*WA/7.0D00
-      GO TO 5
+      IF (NUCTYP .EQ. 1) RETURN
 C
 C   OTHER DISTRIBUTIONS (EQUATION (6))
 C
@@ -1297,7 +1278,9 @@ C
       allocate(TA(NG))
       allocate(ZCHARG(NG))
       CALL DZERO(ZCHARG,NG)
-      CALL DZERO(TA,NG)      
+      CALL DZERO(TA,NG)
+
+C     Nuclear charge distribution (e.g., Gauss)
       CALL NCHARG(ZCHARG,RG,Z,GEXP,NG,NNUC,NUCTYP)
 !      
       DO 3 I = 1,NG
@@ -1317,7 +1300,6 @@ C
          X = WD*R(I)
          TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5) 
     6 CONTINUE
-C RETURN !change      
 C
 C   TABULATE POTENTIAL BY INTEGRATING EQUATION (4)
 C
@@ -1334,7 +1316,6 @@ C
          X = X*FACTOR
          IF (X .EQ. ZERO) GO TO 11
          IF (ABS ((TB(K)-X)/X) .LT. EPS) RETURN
-!         write(*,*)'K,R(K),X,NNUC',K,R(K),X,NNUC
          TB(K) = X
     8 CONTINUE
       RETURN
@@ -1517,19 +1498,19 @@ C
 *                                                                      *
 *   ----------------   SECTION 11   SUBPROGRAM 19   ----------------   *
 *                                                                      *
-*   EVALUATE  R*1  TIMES THE NUCLEAR CHARGE DISTRIBUTION (NORMALIZED). *
+*   EVALUATE  THE normalized NUCLEAR CHARGE DISTRIBUTION (TZ).         *
 *                                                                      *
-*   (Uniform and Fermi is UNnormalized distribution (10/04/2019)       *
+*   (Fermi is UNnormalized distribution (10/04/2019)       *
 *                                                                      *
-*   NUCTYP  =  1 : UNIFORM DISTRIBUTION                                *
-*              2 : FERMI <NPARM>-PARAMETER DISTRIBUTION                *
-*              3 : GAUSSIAN <NPARM>-PARAMETER DISTRIBUTION             *
+*   NUCTYP  =  1 : Point                                               *
+*              2 : GAUSSIAN                                            *
+*              3 : FERMI                                               *
 *                                                                      *
 *   NO SUBROUTINES CALLED.                                             *
 *                                                                      *
 *                                         LAST REVISION: 08 FEB 1988   *
 *                                                                      *
-*   Modified to DIRAC A. Sunaga Apr. 2019                              *
+*   Adapted to DIRAC A. Sunaga Apr. 2019                               *
 *                                                                      *
 ************************************************************************
       use num_grid_cfg
@@ -1540,76 +1521,50 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
       DIMENSION TA(N),R(N)
 C
-!      IF (RAD .LE. ZERO) GO TO 99
       IF (GEXP .LE. ZERO) GO TO 99
-      IF (NUCTYP .GT. 1) GO TO 3
-C
-C   UNIFORM DISTRIBUTION
-C
-      DO 2 I = 1,NNUC
-         TA(I) = R(I)*R(I)
-    2 CONTINUE
-      GO TO 9
-C
-C   FERMI CHARGE DISTRIBUTION
-C
-    3 IF (NUCTYP .GT. 2) GO TO 5
-      TFM = 2.30D00
-      T = TFM*1.0D-5/xtang  !xtang = 0.5291772083d0. See gp/codata.F90
-      SKI = T/(4.0D0*LOG (3.0d0))      
-!      IF (SKI .LE. ZERO) GO TO 98
-      write(*,*)"NNUC",NNUC
-      DO 4 I = 1,NNUC
-         TA(I) = (R(I)*R(I))/(ONE+EXP ((R(I)-RAD)/SKI))
-!         write(*,*)"R,RAD,SKI",R(I),RAD,SKI,TA(I)
-    4 CONTINUE
-      GO TO 9 
-!      RETURN
+      IF (NUCTYP .EQ. 1) GO TO 200
 C
 C   GAUSSIAN CHARGE DISTRIBUTION
 C
-    5 IF (NUCTYP .GT. 3) GO TO 97
-      NNUC = N
-      WB = GEXP                 !THREE/(TWO*RAD*RAD)
-      WA = SQRT(WB)
-      ZNORM = 4.0D0*Z
-      ZNORM = ZNORM*WB*WA/SQRT(PI)
-      DO 6 I = 1,N
-         TA(I) = (EXP (-WB*R(I)*R(I)))* R(I)*R(I)        
-  6   CONTINUE
-C
+      IF (NUCTYP .EQ. 2)THEN
+        NNUC = N
+        WB = GEXP                 !THREE/(TWO*RAD*RAD)
+        WA = SQRT(WB)
+        ZNORM = 4.0D0*Z
+        ZNORM = ZNORM*WB*WA/SQRT(PI)
+        DO 6 I = 1,N
+           TA(I) = ( EXP(-WB*R(I)*R(I)) ) * R(I)*R(I)        
+  6     CONTINUE
 C Normalization
-C      
-  8   CALL DSCAL(NNUC,ZNORM,TA,1)
+  8     CALL DSCAL(NNUC,ZNORM,TA,1)
+     
 C
-C  Multiplying additional R(I) for QUAD
-C      
-!      IF(num_grid_cfg_grasp)THEN
-!        DO 7 I = 1,N
-!           TA(I) = TA(I)*R(I)        
-! 7      CONTINUE
-!      ENDIF
+C   FERMI CHARGE DISTRIBUTION
+C
+      ELSEIF(NUCTYP.EQ.3)THEN
+C Ayaki: Normalization should be implemented 
+        GO TO 9  
+        TFM = 2.30D00
+        T = TFM*1.0D-5/xtang  !xtang = 0.5291772083d0. See gp/codata.F90
+        SKI = T/(4.0D0*LOG (3.0d0))      
+        IF (SKI .LE. ZERO) GO TO 98
+        write(*,*)"NNUC",NNUC
+        DO 4 I = 1,NNUC
+           TA(I) = (R(I)*R(I))/(ONE+EXP ((R(I)-RAD)/SKI))
+!           write(*,*)"R,RAD,SKI",R(I),RAD,SKI,TA(I)
+    4   CONTINUE
+      ENDIF
+
       RETURN
 C      
- 9    write(*,*)'ZNORM has not been made in the present version'
+ 200  write(*,*)'Point charge should not use NCHARGE routine.
+     &           Something is wrong.'
       stop
-c$$$C
-c$$$C   THREE-PARAMETER DISTRIBUTION
-c$$$C
-c$$$    7 IF (NPARM .EQ. 2) RETURN
-c$$$      W = PARM(3)
-c$$$      DO 8 I = 1,NNUC
-c$$$         TA(I) = TA(I)*(ONE+W*(R(I)/RAD)**2)
-c$$$    8 CONTINUE
-c$$$      IF (NPARM .EQ. 3) RETURN
-c$$$C
-c$$$C   SIX-PARAMETER DISTRIBUTION (NOT IMPLEMENTED)
-c$$$C
-c$$$      WRITE (LUPRI,300)
-c$$$      WRITE (LUPRI,301)
-c$$$      STOP '111901'
-c$$$C
-C   ERROR SECTION
+ 9    write(*,*)'Fermi has not been made in NCHARGE'
+      stop
+
+C      
+C     ERROR SECTION
 C
    97 WRITE (LUPRI,300)
       WRITE (LUPRI,302)
@@ -1629,261 +1584,6 @@ C
 C
       END
 C
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE NUCPRM(Z,GEXP,NNUC,RNT,EPH,NUCTYP)
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C
-C deciding nuclear paramerer
-C
-C     On input:  RNT     ... initial grid 
-C                EPH=exp(H), H is the step size
-C                IORDER   ...
-C      
-C     On output: NNUC     ...  Number of grid of inner nucleus
-C                COMB     ... integral characteritics
-C                IORDER   ...
-C     copied from /datain.F/GRASP
-C Modified to DIRAC A. Sunaga Nov. 2018       
-C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use codata
-
-#include "implicit.h"
-#include "priunit.h"
-#include "nucdata.h"
-CCCCCCCCCCCCCC      
-C datain.F
-CCCCCCCCCCCCCC
-!     PARAMETER (THREE = 3.0D0, FIVE = 5.0D0, SEVEN = 7.0D0)
-!     PARAMETER (FMTOAU = 1.88972598858D-5)
-C     sunaga
-C     If I write these parameter, error messages appear.
-!      H = 1.0D-2
-      IF (NUCTYP .EQ. 0)   RETURN
-C
-      
-      FMTOAU = 1.0D-05/xtang  !xtang = 0.5291772083d0. See gp/codata.F90
-C      
-C     If you want to compare with GRASP's value, you have to take care CVAC, FMTOAU.
-C     Because, the physical constants in each version (branch) of GRASP are different.
-C
-C     In additin, the value of AMASS is modified in GRASP.
-C     For example, AMASS of Hg is not 202, but 202-0.0293680D0, as follows.
-C
-!      AT3 = (DBLE(20)-7.5609D-003) **  (1.0D0/3.0D0) !for debug, comparing with GRASP
-!      write(*,*)'AT3 correction for Ne'
-!      AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP
-C
-C     7.5609D-003 is DMASS(I) in datain.F ande grasp.F
-C
-!      write(*,*)"NUCMASS",NUCMASS(INT(Z))
-!      AT3 = NUCMASS(INT(Z))**3.33333333333333D-01
-!      write(*,*)'AT3 NO correction'
-      IF (NUCTYP .EQ. 1 .OR. NUCTYP .EQ. 3) THEN
-         RFM = 0.836D00*AT3+0.570D00
-         NPARM = 1
-         write(*,*)"AT3,FMTOAU",AT3,FMTOAU
-         IF (NUCTYP .EQ. 1) RFM = RFM*SQRT(5.0D0/3.0D0)
-         PARM1 = RFM*FMTOAU
-         IF ((NUCTYP .EQ. 1) .AND. (PARM1 .LE. RNT)) GO TO 103
-      ELSEIF (NUCTYP .EQ. 2) THEN
-         RRMSFM = 0.836D00*AT3+0.570D00
-         TFM = 2.30D00
-         NPARM = 2
-         RRMS = RRMSFM*FMTOAU
-         T = TFM*FMTOAU
-         PARM2 = T/(4.0D0*LOG (3.0d0))
-         ARG = (RRMS**2)-(7.0D0/5.0D0)*((PI*PARM2)**2)
-!         ARG = (RRMS**2)-(SEVEN/THREE)*((PI*PARM(2))**2)
-         IF (ARG .LE. 0.0d0) THEN
-            PARM1 = 2.2291D-05*AT3-0.90676D-05
-            write(*,*)"AT3",AT3
-         ELSE
-            PARM1 = SQRT (ARG*5.0D0/3.0D0)
-            write(*,*)"ARG",ARG
-!            PARM1 = SQRT (ARG)    ! This line is correct.
-         ENDIF
-c$$$         IF (PARM(1) .LE. RNT) GO TO 103
-c$$$      ELSE
-c$$$         GO TO 103
-      ENDIF
-C
-C   ADJUST GRID SO THAT NUCLEAR BOUNDARY FALLS ON GRID POINT
-C
-      IF (NUCTYP .GT. 0 .AND. NUCTYP .NE. 3) THEN
-Csunaga
-C     Note that it is for GRASP grid.
-C     In order to use DIRAC grid, you should check.
-C      
-         NRAD = INT ((LOG (PARM1) - LOG (RNT))/H)
-         RNEW = PARM1/(EPH**NRAD)
-         IF (RNEW .GT. RNT) THEN
-            RNEW = PARM1/(EPH**(NRAD+1)) !This line means RNEW/EPH
-            NRAD = NRAD+1
-         ENDIF
-C bug fix 96/08/14
-         NRAD = NRAD+1
-C end
-         write(*,*)"NRAD",NRAD         
-         RNT = RNEW
-      ENDIF
-CCCCCCCCCCCCCC      
-C mcdf.F, NUCPOT
-CCCCCCCCCCCCCC
-C     This part is for usual nuclear potential.
-C     It is not the operator, but the potential without minus(-).      
-C
-C   POINT NUCLEUS
-C
-!      IF (NUCTYP .EQ. 0) THEN
-!C         Z1 = ZERO
-!C         Z3 = ZERO
-!         DO 1 I = 1,MXNP
-!            ZZ(I) = Z
-!    1    CONTINUE
-!         WRITE (LUPRI,300)
-!        NNUC = 0
-C
-C   FINITE NUCLEI
-C
-      IF (NUCTYP .LE. 2) THEN
-        WRITE (LUPRI,301)
-        RAD = PARM1
-        WA = RAD*RAD
-        FAC = Z/(RAD*WA)
-        ZNORM = 3.0D0*FAC
-        write(*,*)"Z,RAD",Z,RAD
-        FAC = FAC/TWO
-        WA = WA*3.0D0
-C        Z1 = 3.0D0*Z/(2.0D0*RAD)
-C        Z3 = -FAC
-C
-C   UNIFORM CHARGE DISTRIBUTION
-C
-!         DO 3 I = 1,NRAD
-!            ZZ(I) = FAC*R(I)*(WA-R(I)*R(I))
-!    3    CONTINUE
-!         DO 4 I = NRAD+1,MXNP
-!            ZZ(I) = Z
-!    4    CONTINUE
-         NNUC = NRAD
-!        IF (NUCTYP .EQ. 1) THEN
-!            WRITE (LUPRI,302) RAD
-C
-C   FERMI DISTRIBUTION
-C
-        IF (NUCTYP .EQ. 2) THEN
-           PRECIS = 2.0D0**(-53) !same to GRASP
-           SKI = PARM2
-           RS = RAD/SKI
-           write(*,*)"RAD,SKI",RAD,SKI
-           X = EXP (-RS)
-           SR = SKI/RAD
-           SR2 = SR*SR
-           SR3 = SR2*SR
-           SUM2 = XKONKN (X,2,PRECIS) * SR2
-           SUM3 = XKONKN (X,3,PRECIS) * SR3
-           SRE2 = XKONKN (1.0D0,2,PRECIS)*SR2
-           SRE3 = XKONKN (1.0D0,3,PRECIS)*SR3
-           DEN = 1.0D0 + 6.0D0*(SUM3+SRE2+SRE2)
-           write(*,*)"ZNORM,SUM3,SRE2,DEN",ZNORM,SUM3,SRE2,DEN
-           ZNORM = ZNORM/DEN
-           VNFAC = Z1/DEN
-!           Z1 = VNFAC*(1.0D0+2.0D0)*(SRE2+SRE2-SUM2))
-!           Z3 = Z3/(DEN*(1.0D0+X))
-!           RAD2 = RAD+RAD
-           VNFAC = VNFAC+VNFAC
-!           DO 5 I = 1,NRAD-1
-!              X = EXP (R(I)/SKI-RS)
-!              SUMR2 = XKONKN (X,2,PRECIS) * SR2
-!              SUMR3 = XKONKN (X,3,PRECIS) * SR3
-!              ZZ(I) = ZZ(I)/DEN + VNFAC*( R(I)*(SRE2+SRE2+SUMR2)
-!    &                                     +RAD2*(SUM3-SUMR3) )
-!   5       CONTINUE
-           VNFAC = 3.0D0/DEN
-!           ZZ(NRAD) = ZZ(NRAD)*(1.0D0 - VNFAC*(SRE2+SRE3+SRE3) )
-           WA = LOG (VNFAC)+LOG (SR2)+LOG (1.0D0+SR+SR)-LOG (PRECIS)
-           NNUC = NRAD+NINT (LOG (1.0D0+WA*SR)/H)+1
-           write(*,*)"NINT",NINT (LOG (1.0D0+WA*SR)/H)
-           write(*,*)"WA,SR,NRAD,NNUC",WA,SR,NRAD,NNUC
-C The below part is not needed for Vacuum potential            
-!           DO 6 I = NRAD+1,NNUC
-!              X = EXP (RS-R(I)/SKI)
-!              SUMR2 = XKONKN (X,2,PRECIS) * SR2
-!              SUMR3 = XKONKN (X,3,PRECIS) * SR3
-!              ZZ(I) = ZZ(I)*(ONE - VNFAC*(SUMR3+SUMR3+SUMR2*R(I)/RAD))
-!    6      CONTINUE
-C           WRITE (LUPRI,303) NPARM
-C           WRITE (LUPRI,304) RAD,SKI
-        ENDIF !        IF (NUCTYP .EQ. 1) THEN 
-!         WRITE (LUPRI,305) NRAD
-      ELSEIF (NUCTYP .EQ. 3) THEN !      IF (NUCTYP .LE. 2) THEN
-C
-C   GAUSSIAN DISTRIBUTION
-C
-!         WRITE (LUPRI,301)
-!         RAD = PARM1
-!         WB = GEXP !3.0D0/(2.0D0*RAD*RAD)
-!         WA = SQRT(WB)
-!         Z1 = TWO*Z*WA/SQRT(PI)
-!         Z3 = -Z1*WB/THREE
-!         ZNORM = 2.0D0*2.0D0*Z
-!         ZNORM = ZNORM*WB*WA/SQRT(PI)
-C 
-C In DIRAC, ZNORM is needed only in NCHARGE. So, ZNORM is calculated in NCHARG
-C         
-!         write(*,*)'PARM1,WB,WA,Z1',RAD,WB,WA,Z
-!         DO 7 I = 1,N
-!            ZZ(I) = Z*ERF(WA*R(I))
-!    7    CONTINUE
-C
-C   OTHER DISTRIBUTIONS : NOT CURRENTLY IMPLEMENTED
-C
-      ELSE !      IF (NUCTYP .LE. 2) THEN
-         write(*,*)"error"
-         stop
-      ENDIF
-      
-      RETURN
-C
-  101 WRITE (LUPRI,300)
-      WRITE (LUPRI,301)
-      STOP '020401'
-  102 WRITE (LUPRI,300)
-      WRITE (LUPRI,302)
-      STOP '020402'
-  103 WRITE (LUPRI,300)
-      WRITE (LUPRI,303)
-      STOP '020403'
-  104 WRITE (LUPRI,300)
-      WRITE (LUPRI,304)
-      STOP '020404'
-  105 WRITE (LUPRI,300)
-      WRITE (LUPRI,305)
-      STOP '020405'
-  106 WRITE (LUPRI,300)
-      WRITE (LUPRI,306)
-      STOP '020406'
-  107 WRITE (LUPRI,300)
-      WRITE (LUPRI,307)
-      STOP '020407'
-CCCCCCCCC
-C mcdf.F 
-CCCCCCCCC
-  300 FORMAT (/' ***** ERROR ON ABOVE DATA CARD *****')
-  301 FORMAT (/' INCORRECT NUMBER OF VALUES GIVEN')
-  302 FORMAT (/' STRING GIVEN WHERE NUMBER EXPECTED')
-  303 FORMAT (/' INCORRECT VALUE GIVEN')
-  304 FORMAT (/' NUMBER GIVEN WHERE STRING EXPECTED')
-  305 FORMAT (/' CONFLICTING OPTIONS SELECTED OR OPTION REPEATED')
-  306 FORMAT (/' LOGICAL VALUE ILLEGAL IN THIS CONTEXT')
-  307 FORMAT (/' INFINITE NUCLEAR MASS - SPECIFY NUCLEAR SIZE.')
-  308 FORMAT (///' ***** WARNING *****',//,' (E)OL CALCULATION WITH ',
-     & 'ONLY ONE CSF IS EQUIVALENT TO (E)AL CALCULATION.',
-     & ' PROCEEDING WITH (E)AL CALCULATION.')
-C
-      END      
 *****************************************************************************
 *
       SUBROUTINE INTMG(TB,R,Z,GEXP,N,NUCTYP)
@@ -1903,7 +1603,7 @@ C
       DIMENSION TB(N),R(N)
       PARAMETER(ONE=1.0D0,TWO=2.0D0)
 C
-      IF(NUCTYP.EQ.0)THEN
+      IF(NUCTYP.EQ.1)THEN
 *     POINT
         POTIR=Z 
         DO 10 I = 1,N
@@ -1955,31 +1655,15 @@ C     From this, we have to remove TWO from GRASP's source.
 C      
       CALL G1TGRID(TT,TTX,NTMAX,NT,RI)
       CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
-C        write(*,*)""
-C        write(*,*)"TT,RESULT" ,TT(1),TT(2),NTMAX,NT,RESULT
-C        write(*,*)"TTX,R" ,TTX(1),TTX(2)
+
 *     radial derivative of the nuclear potential
       G1A = RESULT*DIFFNUCPOT
       G1B = DIFFNUCPOT
-C      write(*,*)"ERF,WA,R(I),I"
-C      write(*,*)"ERF,WA,R(I),I",ERF(WA*R(I)),WA,R(I),I
-C      write(*,*)"POTIR,XI,a,",POTIR,XI,TWO*Z*WA/(R(I)*SQRTPI)
-C      write(*,*)"1,2,total",POTIR/R(I)**TWO,
-C     &     - TWO*Z*SQRT(XI/PI)/(R(I))*EXP(-XI*R(I)*R(I)),DIFFNUCPOT
-C      write(*,*)"RESULT,NUCPOT",RESULT,DIFFNUCPOT
-C     write(*,*)"exp",EXP(-XI*R(I)*R(I))
 *
       CALL G2TGRID(TT,TTX,NTMAX,NT,RI)
-C      write(*,*)"TT",TT(1),TT(2),TT(3)
-C      write(*,*)"TTX",TTX(1),TTX(2),TTX(3)
-C      write(*,*)"NTMAX,NT,R(I)",NTMAX,NT,R(1),R(2),R(3)
-C      write(*,*)""
       CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
       G2 = TWO*RESULT*CVAL*POTIR/RI
-C      write(*,*)"TWO,RESULT,CVAL,POTIR", TWO,RESULT,CVAL,POTIR!sunaga
-C      write(*,*)"PREFAC,G1A,G1B,G2",PREFAC,G1A,G1B,G2,I !sunaga
-C      write(*,*)""
-      TBI = PREFAC*(G1A - G1B + G2) !*R(I)
+      TBI = PREFAC*(G1A - G1B + G2) 
 C      
       deallocate(TT)
       deallocate(TTX)
@@ -2016,7 +1700,6 @@ C
            NT = J
            GOTO 2
         END IF
-C        write(*,*)"T,J",T(J)
 *
     1 CONTINUE
     2 RETURN
@@ -2046,7 +1729,6 @@ C        write(*,*)"T,J",T(J)
       X2 = EXP(-TWO*T*R*CVAL)
 *
       PHI_G1_INNER = X1*X2
-C      write(*,*)"X1,X2,inner",X1,X2,PHI_G1_INNER
 *
       RETURN
 *
@@ -2079,8 +1761,6 @@ C      write(*,*)"X1,X2,inner",X1,X2,PHI_G1_INNER
 *   TO PREVENT DIVIDING BY ZERO.
 *
       SUM = 0.0D0
-C         write(*,*)
-C         write(*,*)
       DO 1 J = 1,NT-3,2
          J1 = J
          J2 = J + 1
@@ -2095,12 +1775,8 @@ C         write(*,*)
          X2 = F1*(T2-T3)*(2.0D0*T1-3*T2+T3)
          X3 = F3*(T1-T2)*(T1-3.0D0*T2+2.0D0*T3)
          SUM = SUM - (T1-T3)*(X1+X2-X3)/(6.0D0*(T1-T2)*(T2-T3))
-!         write(*,*)"T1,T3,X1,SUM,J",T1,T3,X1,SUM,J
     1 CONTINUE
-!      stop!sunaga
-C      write(*,*)"RESULT1",RESULT
       RESULT = SUM
-C      write(*,*)"RESULT2",RESULT
       RETURN
 *
       END
@@ -2181,9 +1857,6 @@ C      write(*,*)"RESULT2",RESULT
 #include "dcbgen.h"
 C      
       DIMENSION TB(N),R(N)
-C      real(8), allocatable :: BUF(:)
-C
-C      allocate(BUF(N))
 C
       BZ = 0.074D0 + 0.35D0*Z/CVAL
       CVAL3 = CVAL*CVAL*CVAL
@@ -2192,11 +1865,6 @@ C
          TB(I) = EXP(-Z*R(I))
  1    CONTINUE
       CALL DSCAL(N,PREFAC,TB,1)
-C      DO 1 I = 1,N
-C         TB(I) = PREFAC*EXP(-Z*R(I))
-C         TAT(I) = TB(I)
-C 1    CONTINUE
-C      deallocate(BUF) 
 C      
       RETURN
       END
@@ -2232,7 +1900,7 @@ C
       ZC7 = 0.07D0 * Z*Z/(CVAL*CVAL)      
       AZ1COEF = 1.071D0 - 1.976D0*X2 - 2.128D0*X3 + 0.169D0*X4
       PREFAC  = ONE/(CVAL*PI)
-      IF(NUCTYP.EQ.3)THEN
+      IF(NUCTYP.EQ.2)THEN
         XI = GEXP !1.5D0/(RAD*RAD)
         WA = SQRT(XI)
       ENDIF
@@ -2241,7 +1909,7 @@ C
       CALL DSCAL(N,CVAL,TB,1) 
 C
       DO 5 I = 1,N
-        IF (NUCTYP .EQ. 0) THEN
+        IF (NUCTYP .EQ. 1) THEN
 *     POINT
           POT = Z/R(I) 
         ELSE
@@ -2352,12 +2020,12 @@ C
 C     
       DIMENSION TB(N),R(N)
 C
-      B0 = -48.6166
-      B1 = 1.53666
-      B2 = 0.0301129
-      BETA0 = -12751.3
-      BETA1 = 916.038
-      BETA2 = 5.7797
+      B0 = -48.6166D0
+      B1 = 1.53666D0
+      B2 = 0.0301129D0
+      BETA0 = -12751.3D0
+      BETA1 = 916.038D0
+      BETA2 = 5.7797D0
       BFIT = B0 + B1*Z + B2*Z*Z
       BETAFIT = BETA0 + BETA1*Z + BETA2*Z*Z
 C
@@ -2378,7 +2046,7 @@ C
 C Numerical radial integral for one dimension
 C
 C copied from /QUAD/grasp.F/GRASP
-C Modified to DIRAC A. Sunaga Nov. 2018       
+C Adapted to DIRAC A. Sunaga Nov. 2018       
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
