@@ -40,7 +40,7 @@ def compare_txt(fname, fname_ref):
 # tests dependent on the unperturbed density
 # ==========================================
 test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
-test.run(['vis_3d_h5out_unpert.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="*.h5"')
+test.run(['vis.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="*.h5"')
 
 
 
