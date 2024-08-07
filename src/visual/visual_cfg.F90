@@ -748,7 +748,7 @@ contains
 !fixme:
     !grid_function%wf_order = 0
 
-    if (rs_input%levyle) then
+    !if (rs_input%levyle) then
       if ((grid_function%name == 'j') .or. &
           (grid_function%name == 'ndip') .or. &
           (grid_function%name == 'bdip')) then
@@ -756,7 +756,7 @@ contains
           grid_function%max_ao_g_order = 1
         end if
       end if
-    end if
+    !end if
 
   end subroutine
 
