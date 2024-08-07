@@ -5,6 +5,7 @@ module visual_datatypes
 
   public rs_input_t
   public rs_label_t
+  public rs_wf_t
   public grid_t
   public grid_function_t
   !public grid_function_dirac_t
@@ -75,7 +76,7 @@ module visual_datatypes
     integer, public:: nr_grid_functions = 0
     type(grid_t), allocatable, public:: grids(:)
     type(grid_function_t), allocatable, public:: grid_functions(:)
-    logical, public:: levyle    = .false.
+    !logical, public:: levyle    = .false.
 !   default values, thresholds, convergence criteria
   contains
     private
@@ -93,6 +94,16 @@ module visual_datatypes
   contains
     procedure, pass, public:: in_use => rs_label_in_use
   end type rs_label_t
+
+  type:: rs_wf_t
+    ! store information on 
+    ! relates to 'wavefunctions' sections on CHECKPOINT.h5
+    private
+    character(len=:), public, allocatable:: hamiltonian
+    character(len=:), public, allocatable:: xc_functional
+  contains
+    procedure, public:: display => display_rs_wf
+  end type rs_wf_t
 
   type:: grid_t
     ! todo fixme
@@ -513,7 +524,7 @@ contains
     write(*, *) 'set_occupation =      ', self%set_occupation
     write(*, *) 'force_small_ao =      ', self%force_small_ao
     write(*, *) 'cvalue =              ', self%cvalue
-    write(*, *) 'levyle =              ', self%levyle
+    !write(*, *) 'levyle =              ', self%levyle
     write(*, *) 'gauge_origin =        ', self%gauge_origin
     write(*, *) 'set_cvalue     =      ', self%set_cvalue
     write(*, *) 'nr_grids =            ', self%nr_grids
@@ -525,6 +536,32 @@ contains
         end do
       end do
     end if
+    write(*, *)
+   end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine display_rs_wf(self,my_rank)
+    class(rs_wf_t), intent(in):: self
+    integer, intent(in), optional:: my_rank
+    logical:: with_rank_info
+
+    with_rank_info = .false.
+    if (present(my_rank)) with_rank_info = .true.
+
+    write(*, *)
+
+    write(*, *)
+    if (with_rank_info) then
+      write(*, *) ' VISUAL: rs_wf on node ', my_rank
+    else
+      write(*, *) ' VISUAL: rs_wf'
+    end if
+    write(*, *) ' Hamiltonian and method used for the wavefunction optimization:'
+    if (allocated(self%hamiltonian)) &
+      write(*, *) 'hamiltonian =   ', trim(self%hamiltonian)
+    if (allocated(self%xc_functional)) &
+      write(*, *) 'xc_functional = ', self%xc_functional
     write(*, *)
    end subroutine
 

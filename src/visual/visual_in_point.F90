@@ -396,7 +396,7 @@ contains
       case ('j')
 !       current density: -ec \psi^\dag \alpha \psi
 
-        if (rs_input%levyle) then
+        if (rs_wf%hamiltonian=='LEVYLE') then
           t0 = 0.0d0
           t1 = 0.0d0
           call get_gn(t0,        &
@@ -430,7 +430,7 @@ contains
             'rotj')
 !       divergence or curl or gradient of current density
 
-        if (rs_input%levyle) then
+        if (rs_wf%hamiltonian=='LEVYLE') then
            print *, 'error: Levy-Leblond not implemented'
            stop
         end if
@@ -498,16 +498,19 @@ contains
       case ('bdip')
 !       responding operator is magnetic dipole
 
-        t1 = 0.0d0
-        t2_33 = 0.0d0
-
-        call get_j(t1,        &
-                   rs_input%cvalue,      &
-                   dmat%irep, &
-                   dmat%mat_dim,  &
-                   dmat%elements, &
-                   buffer,    &
-                   ao)
+        if (rs_wf%hamiltonian=='LEVYLE') then
+           print *, 'error: Levy-Leblond not implemented'
+           stop
+        else
+          t1 = 0.0d0
+          call get_j(t1,        &
+                     rs_input%cvalue,      &
+                     dmat%irep, &
+                     dmat%mat_dim,  &
+                     dmat%elements, &
+                     buffer,    &
+                     ao)
+        end if
 
         rx = px-rs_input%gauge_origin(1)
         ry = py-rs_input%gauge_origin(2)
@@ -525,7 +528,7 @@ contains
       case ('ndip')
 !       responding operator is nuclear magnetic dipole
 
-        if (rs_input%levyle) then
+        if (rs_wf%hamiltonian=='LEVYLE') then
           t0 = 0.0d0
           t1 = 0.0d0
           call get_gn(t0,        &
@@ -778,7 +781,7 @@ contains
       case ('j')
 !       current density: -ec \psi^\dag \alpha \psi
 
-        if (rs_input%levyle) then
+        if (rs_wf%hamiltonian=='LEVYLE') then
           t0 = 0.0d0
           t1 = 0.0d0
           call get_gn(t0,        &
@@ -812,7 +815,7 @@ contains
           if (grid_function%lao_skip(2) == 0) then
 !           do not skip direct contribution ('nodirect')
 
-            if (rs_input%levyle) then
+            if (rs_wf%hamiltonian=='LEVYLE') then
 
               t1 = 0.0d0
               call get_jblao_ll(grid_function%lao_comp,&
@@ -848,7 +851,7 @@ contains
             'rotj')
 !       divergence or curl or gradient of current density
 
-        if (rs_input%levyle) then
+        if (rs_wf%hamiltonian=='LEVYLE') then
            print *, 'error: Levy-Leblond not implemented'
            stop
         end if
@@ -869,7 +872,7 @@ contains
           if (grid_function%lao_skip(2) == 0) then
 !           do not skip direct contribution ('nodirect')
 !
-            if (rs_input%levyle) then
+            if (rs_wf%hamiltonian=='LEVYLE') then
                 print *, 'error: Levy-Leblond divj and rotj and gradj not implemented'
                 stop
             else
@@ -939,7 +942,7 @@ contains
       case ('ndip')
 !       responding operator is nuclear magnetic dipole
 
-        if (rs_input%levyle) then
+        if (rs_wf%hamiltonian=='LEVYLE') then
           t0 = 0.0d0
           t1 = 0.0d0
           call get_gn(t0,        &
@@ -970,7 +973,7 @@ contains
           if (grid_function%lao_skip(2) == 0) then
 !           do not skip direct contribution ('nodirect')
 
-            if (rs_input%levyle) then
+            if (rs_wf%hamiltonian=='LEVYLE') then
 
               temp = 0.0d0
               call get_jblao_ll(grid_function%lao_comp,&

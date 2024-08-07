@@ -317,9 +317,6 @@ contains
                 call interface_mpi_bcast(rs_input%grid_functions(igf)%lao_comp,1,irank_master,global_communicator)
               end if
             end if
-            write(*,*) "DEBUG1: lao_comp: ", rs_input%grid_functions(igf)%lao_comp
-            !write(*,*) "DEBUG1: after dmat synchronize:"
-            !call dmat%display(node_id=get_my_rank())
 #endif
           end if
 
@@ -407,18 +404,13 @@ contains
              end if
           end if
 
-          !if (mpi_is_master()) then
-          !  write(*, *) 'AFTER STORING'
-          !  write(*, *) 'stored values?: ', rs_input%grid_functions(igf)%values
-          !end if
- 
           if (allocated(rs_input%grid_functions(igf)%values))   deallocate(rs_input%grid_functions(igf)%values)
         end if ! if (rs_input%grid_functions(igf)%id_assigned_grid == ig) then
 
         if (.not. mpi_is_master()) then
-        if (allocated(rs_input%grid_functions(igf)%name)) deallocate(rs_input%grid_functions(igf)%name)
-        if (allocated(rs_input%grid_functions(igf)%file_inp)) deallocate(rs_input%grid_functions(igf)%file_inp)
-        if (allocated(rs_input%grid_functions(igf)%file_out)) deallocate(rs_input%grid_functions(igf)%file_out)
+          if (allocated(rs_input%grid_functions(igf)%name)) deallocate(rs_input%grid_functions(igf)%name)
+          if (allocated(rs_input%grid_functions(igf)%file_inp)) deallocate(rs_input%grid_functions(igf)%file_inp)
+          if (allocated(rs_input%grid_functions(igf)%file_out)) deallocate(rs_input%grid_functions(igf)%file_out)
         end if
 
       end do ! do igf = 1, rs_input%nr_grid_functions
@@ -426,7 +418,6 @@ contains
       if (allocated(rs_input%grids(ig)%points)) deallocate(rs_input%grids(ig)%points)
       if (allocated(rs_input%grids(ig)%file_inp)) deallocate(rs_input%grids(ig)%file_inp)
       if (allocated(rs_input%grids(ig)%file_out)) deallocate(rs_input%grids(ig)%file_out)
-
 
     end do ! do ig = 1, rs_input%nr_grids
 

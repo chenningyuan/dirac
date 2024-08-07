@@ -1,11 +1,12 @@
 module visual_cfg
 
-  use visual_datatypes, only : rs_input_t, grid_t, grid_function_t
+  use visual_datatypes, only : rs_input_t, rs_wf_t, grid_t, grid_function_t
   use visual_utils
 
   implicit none
 
   type(rs_input_t), public:: rs_input
+  type(rs_wf_t), public:: rs_wf
 
 
   !public setup_grid
@@ -653,7 +654,7 @@ contains
         stop
     end select
 
-    call modify_grid_function_due_to_method(grid_function)
+    !call modify_grid_function_due_to_method(grid_function)
 
     if (grid_function%id == 0) grid_function%id = id_grid_function
 
@@ -729,39 +730,6 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine modify_grid_function_due_to_method(grid_function)
-    class(grid_function_t), intent(inout):: grid_function
-
-    grid_function%gf_type = "unperturbed"
-    if (grid_function%wf_order > 0) then
-      grid_function%gf_type = "response"
-    end if
-
-    if (grid_function%lao > 0) then
-      if (grid_function%max_ao_m_order < 1) grid_function%max_ao_m_order = 1
-      if (grid_function%lao_skip(2) == 0) then
-!       do not skip LAO-direct contributions
-        grid_function%gf_type = "composite"
-      end if
-    end if
-
-!fixme:
-    !grid_function%wf_order = 0
-
-    !if (rs_input%levyle) then
-      if ((grid_function%name == 'j') .or. &
-          (grid_function%name == 'ndip') .or. &
-          (grid_function%name == 'bdip')) then
-        if (grid_function%max_ao_g_order < 1) then
-          grid_function%max_ao_g_order = 1
-        end if
-      end if
-    !end if
-
-  end subroutine
-
-
-! ------------------------------------------------------------------------------
   subroutine should_depend_on_rsp_data(grid_function)
     class(grid_function_t), intent(inout):: grid_function
 
@@ -816,7 +784,6 @@ contains
     call interface_mpi_bcast(rs_input%gauge_origin,3,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%nr_grids,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%nr_grid_functions,1,irank_master,global_communicator)
-    call interface_mpi_bcast_l0(rs_input%levyle,1,irank_master,global_communicator)
     if (.not.mpi_is_master()) then
       ! the allocation on master happens during DIRAC input reading (input/input_reader_sections.F90)
       allocate(rs_input%grids(rs_input%nr_grids))

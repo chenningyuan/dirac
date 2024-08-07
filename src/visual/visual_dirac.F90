@@ -47,7 +47,6 @@ contains
   subroutine dirac_dmat_init(mode, cmo, &
                              dmat_ao, dmat_mo, &
                              grid_function)
-#include "dcbham.h"
     character(*), intent(in) :: mode
     type(cmo_t), intent(in) :: cmo
     type(dmat_t), optional, intent(out) :: dmat_ao
@@ -61,9 +60,6 @@ contains
     integer :: nao, nmo, nz
     integer :: i, ivec, ivec_rsp, ivec_con, rspvec_ndim, rspvec_nz, n1
 
-
-    real(8), allocatable :: occupation(:)
-    integer :: f_unit
     character(len=:),allocatable :: f_name
     integer :: iq, im, iz, ipqtoq(4), ihqmat(4)
     real(8) :: factor(4)
@@ -155,12 +151,6 @@ contains
           call dmat_ao%scale_elements(2.0d0)
         end if
 
-        !write(*,*) 'final xlr AO dmat: '
-        !call prqmat(dmat_ao%elements, &
-        !            dmat_ao%mat_dim, dmat_ao%mat_dim, dmat_ao%mat_dim,dmat_ao%mat_dim, &
-        !            dmat_ao%mat_nz, (/1,2,3,4/), 6)
-
-
         call tmpmat_mo%erase()
         call rsp_info%erase()
 
@@ -171,9 +161,6 @@ contains
 
 !       read response data from 'RESPONSE.h5' file
         if (.not.present(grid_function)) stop
-
-        write(*,*) 'DEBUG NOW2'
-        call grid_function%display()
 
         call get_xyzcomp_from_rspvec(grid_function, ivec_con)
 
@@ -197,8 +184,8 @@ contains
               tmpmat_mo%mat_nz = nz
               call tmpmat_mo%alloc()
               call conmat_info%vectors(ivec)%get_copy_of_values(tmpmat_mo%elements,nmo*nmo*nz)
-              if (.not. rs_input%levyle) then
-                call tmpmat_mo%scale_elements(0.5d0) ! if (.not. levyle) fixme
+              if (rs_wf%hamiltonian/='LEVYLE') then
+                call tmpmat_mo%scale_elements(0.5d0)
               end if
               
               call tmpmat_mo%get_dmat_q_mo_sector('pi ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
@@ -242,7 +229,6 @@ contains
 #include "dgroup.h"
 #include "dcbgen.h" ! cvalue
 #include "orgcom.h" ! gagorg
-#include "dcbham.h" ! levyle
 
     logical, intent(in), optional :: hello
 
@@ -263,7 +249,6 @@ contains
     end if
 
     rs_input%gauge_origin(1:3) = gagorg(1:3) ! magnetic gauge origin defined globally in Dirac
-    if (levyle) rs_input%levyle = .true.
 
 #ifdef VAR_MPI
     if (is_parallel()) call sync_visual_cfg()
@@ -277,10 +262,46 @@ contains
     type(cmo_t), intent(inout):: cmo
     integer, intent(in), optional :: print_level
     logical:: small_component
+    integer:: i
 
 !   update MO data that was not read from CHECKPOINT:
     call setup_orbital_string(cmo)
     call setup_mo_offsets(cmo)
+
+!   update grid function data with information specific to this job
+    do i = 1, rs_input%nr_grid_functions
+      call modify_grid_function_due_to_method(rs_input%grid_functions(i))
+    end do
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine modify_grid_function_due_to_method(grid_function)
+    class(grid_function_t), intent(inout):: grid_function
+
+    grid_function%gf_type = "unperturbed"
+    if (grid_function%wf_order > 0) then
+      grid_function%gf_type = "response"
+    end if
+
+    if (grid_function%lao > 0) then
+      if (grid_function%max_ao_m_order < 1) grid_function%max_ao_m_order = 1
+      if (grid_function%lao_skip(2) == 0) then
+!       do not skip LAO-direct contributions
+        grid_function%gf_type = "composite"
+      end if
+    end if
+
+    if (rs_wf%hamiltonian=='LEVYLE') then
+      if ((grid_function%name == 'j') .or. &
+          (grid_function%name == 'ndip') .or. &
+          (grid_function%name == 'bdip')) then
+        if (grid_function%max_ao_g_order < 1) then
+          grid_function%max_ao_g_order = 1
+        end if
+      end if
+    end if
 
   end subroutine
 
@@ -291,7 +312,8 @@ contains
     type(cmo_t), intent(out):: mo
     type(basis_set_info_t), intent(out) :: ao_basis
     character*(:),allocatable:: group, section
-    logical:: dirac_mol, dirac_mo, dirac_ao
+    character(len=80) :: wf_data
+    logical:: dirac_mol, dirac_mo, dirac_ao, tobe
 !
 !   read data from DIRAC's CHECKPOINT file(s) into DTs
 !
@@ -314,6 +336,29 @@ contains
       if ( rs_input%print_level > 2 ) then
         write(*, *) 'MO data read from DIRAC CHECKPOINT'
         call mo%display
+      end if
+
+!     read other data stored in this section:
+      call checkpoint_query(group//trim(section)//'/hamiltonian', tobe)
+      if (tobe) then
+        wf_data=''
+        call checkpoint_read(group//trim(section)//'/hamiltonian',sdata=wf_data)
+        if (len_trim(wf_data) > 0) rs_wf%hamiltonian = trim(wf_data)
+      else
+        print*, "WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb"
+      end if
+
+      call checkpoint_query(group//trim(section)//'/xc_functional', tobe)
+      if (tobe) then
+        wf_data=''
+        call checkpoint_read(group//trim(section)//'/xc_functional',sdata=wf_data)
+        if (len_trim(wf_data) > 0) rs_wf%xc_functional = trim(wf_data)
+      else
+        print*, "WARNING: no xc_functional on CHECKPOINT. Assuming non-DFT job"
+      end if
+      if ( rs_input%print_level > 2 ) then
+        write(*, *) 'WF data read from DIRAC CHECKPOINT'
+        call rs_wf%display
       end if
     end if
 
@@ -601,11 +646,27 @@ contains
   subroutine synchronize_data_from_dirac(mol, cmo)
     type(mol_t), intent(inout):: mol
     type(cmo_t), intent(inout):: cmo
+    integer:: len_hamiltonian, len_xc_functional
     integer:: nmo,nao,nz,ncoeff
 !
-!   this subroutine syncs data stored in cmo and mol DTs, 
+!   this subroutine syncs data stored in cmo, mol, and rs_wf DTs, 
 !   if any new variable has been added to these DTs, please also add it here
 !
+
+    if (mpi_is_master()) then
+      !if (allocated(rs_wf%hamiltonian)) then
+        len_hamiltonian = len_trim(rs_wf%hamiltonian)
+      !else
+      !  len_hamiltonian = 0
+      !end if
+      if (allocated(rs_wf%xc_functional)) then
+        len_xc_functional = len_trim(rs_wf%xc_functional)
+      else
+        len_xc_functional = 0
+      end if
+    end if
+    call interface_mpi_bcast(len_hamiltonian,1,irank_master,global_communicator)
+    call interface_mpi_bcast(len_xc_functional,1,irank_master,global_communicator)
 
     call interface_mpi_bcast(mol%n_atoms,1,irank_master,global_communicator)
 
@@ -613,7 +674,12 @@ contains
       allocate(mol%symbols(mol%n_atoms))
       allocate(mol%geometry(3, mol%n_atoms))
       allocate(mol%nuc_charge(mol%n_atoms))
+      if (len_hamiltonian > 0) allocate(character(len_hamiltonian):: rs_wf%hamiltonian)
+      if (len_xc_functional > 0) allocate(character(len_xc_functional):: rs_wf%xc_functional)
     end if
+
+    call interface_mpi_bcast(rs_wf%hamiltonian,len_hamiltonian,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_wf%xc_functional,len_xc_functional,irank_master,global_communicator)
 
     call interface_mpi_bcast(mol%symbols,mol%n_atoms,irank_master,global_communicator)
     call interface_mpi_bcast(mol%geometry,3*mol%n_atoms,irank_master,global_communicator)
