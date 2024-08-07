@@ -286,11 +286,10 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine visual_initialize_data_from_dirac(mol, mo, ao_basis, print_level)
+  subroutine visual_initialize_data_from_dirac(mol, mo, ao_basis)
     type(mol_t), intent(out):: mol
     type(cmo_t), intent(out):: mo
     type(basis_set_info_t), intent(out) :: ao_basis
-    integer, intent(in), optional :: print_level
     character*(:),allocatable:: group, section
     logical:: dirac_mol, dirac_mo, dirac_ao
 !
@@ -300,11 +299,9 @@ contains
     call checkpoint_query(group, dirac_mol)
     if (dirac_mol) then
       call read_mol_from_dirac(mol, group)
-      if (present(print_level)) then
-        if (print_level > 0) then
-          write(*, *) 'Molecule data read from DIRAC CHECKPOINT'
-          call mol%display
-        end if
+      if ( rs_input%print_level > 2 ) then
+        write(*, *) 'Molecule data read from DIRAC CHECKPOINT'
+        call mol%display
       end if
     end if
 
@@ -314,11 +311,9 @@ contains
 !     todo: generalize to other wfs
       section = 'scf'
       call read_mo_from_dirac(section, mo)
-      if (present(print_level)) then
-        if (print_level > 0) then
-          write(*, *) 'MO data read from DIRAC CHECKPOINT'
-          call mo%display
-        end if
+      if ( rs_input%print_level > 2 ) then
+        write(*, *) 'MO data read from DIRAC CHECKPOINT'
+        call mo%display
       end if
     end if
 
@@ -326,21 +321,19 @@ contains
 !   fixme list:
 !   * ao_basis is kept as a placeholder (unused now)
 !
-    group = '/input/aobasis/'
-    call checkpoint_query(group, dirac_ao)
-    if (dirac_ao) then
-      call read_ao_from_dirac(ao_basis)
-      !if (present(print_level)) then
-      !  if (print_level > 0) then
-      !    write(*, *) 'AO basis data read from DIRAC CHECKPOINT'
-      !    call ao_basis%display
-      !  end if
-      !end if
-    end if
+    !group = '/input/aobasis/'
+    !call checkpoint_query(group, dirac_ao)
+    !if (dirac_ao) then
+    !  call read_ao_from_dirac(ao_basis)
+    !  if ( rs_input%print_level > 2 ) then
+    !    write(*, *) 'AO basis data read from DIRAC CHECKPOINT'
+    !    call ao_basis%display
+    !  end if
+    !end if
 
-    if (dirac_mo .and. dirac_ao) then
-      call check_data_consistency(ao_basis, mo)
-    end if
+    !if (dirac_mo .and. dirac_ao) then
+    !  call check_data_consistency(ao_basis, mo)
+    !end if
 
 !
 !   read data from DIRAC's common blocks
@@ -405,7 +398,6 @@ contains
        call checkpoint_read ('/result/symmetry/inversion',&
             idata=inversion)
     end if
-
 
     group = '/result/wavefunctions/'//trim(section)//'/'
     call checkpoint_query(group//'mobasis', tobe_dirac)
@@ -1220,14 +1212,20 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine visual_input_show_setup()
+
+    write(*, '(/,2x, a)') '*** Visualization module ***' 
+    if ( rs_input%print_level > 2 ) then
+      write(*, *) "DEBUG: rs_input:"
+      call rs_input%display(my_rank=get_my_rank())
+    end if
  
- 
-   end subroutine
+  end subroutine
 
 
-   subroutine verify_input_keywords()
+! ------------------------------------------------------------------------------
+  subroutine verify_input_keywords()
 
-   end subroutine verify_input_keywords
+  end subroutine verify_input_keywords
 
 
 end module

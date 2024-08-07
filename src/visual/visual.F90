@@ -1,10 +1,14 @@
 module visual
 
 ! This module contains routines that calculate 
-! various quantities on real-space grids,
+! various densities on real-space grids,
 ! Written by Radovan Bast.
 ! Refactored by Gosia Olejniczak.
 ! Full description of features: LINK
+!
+! current limitations:
+! * calculations are done on one molecular system,
+! * data is read from DIRAC's CHECKPOINT.h5 (molecular information+wave function) and from RESPONSE.h5 (response parameters)
 
   use visual_cfg
   use visual_dirac
@@ -108,20 +112,10 @@ contains
 #endif
 
     if (mpi_is_master()) then
-      write(*, '(/,2x, a)') '*** Visualization module ***'
       call visual_input_show_setup()
     end if
 
-      write(*, *) "DEBUG: rs_input:"
-      call rs_input%display(my_rank=get_my_rank())
-
-
     if (mpi_is_master()) then
-!
-!     limitations:
-!     * calculations are done on one molecular system,
-!     * data (molecular information+wave function) is read from DIRAC's CHECKPOINT file
-
 !
 !     fixme list: 
 !     * ao_basis is kept as a placeholder:
