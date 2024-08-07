@@ -36,6 +36,8 @@ C***********************************************************************
          use dirac_cfg
          use x2cmod_cfg
          use xmlout
+         use labeled_storage
+         use checkpoint
 
 #include "implicit.h"
 #include "priunit.h"
@@ -52,6 +54,7 @@ C
      &          TRIVEC_SAVE, TRIFCK_SAVE, ERGCNV_SAVE,
      &          EVCCNV_SAVE, FCKCNV_SAVE 
       real(8), allocatable :: WORK(:)
+      character*(:),allocatable:: hamiltonian
 C
       CALL QENTER('PSISCF')
       call legacy_lwork_get(LWORK)
@@ -156,6 +159,18 @@ CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
      &       WORK(KIBE),WORK(KFREE),LFREE)
         CALL MEMREL('PSISCF.CMOTR4C',WORK,KWORK,K1,KFREE,LFREE)
       ENDIF
+C
+C     gosia: save information about the Hamiltonian;
+C     the same flags as in dcbham.h are used, not all Hamiltonians are covered (https://gitlab.com/dirac/dirac-private/-/issues/554)
+C     
+      if (GAUNT) hamiltonian='GAUNT'
+      if (X2C) hamiltonian='X2C'
+      if (LEVYLE) hamiltonian='LEVYLE'
+      if (allocated(hamiltonian)) then
+        call checkpoint_write ('/result/wavefunctions/scf/hamiltonian',
+     &       sdata=trim(hamiltonian))
+      end if
+C
 C
 C     Memory deallocation of the rest..
 C

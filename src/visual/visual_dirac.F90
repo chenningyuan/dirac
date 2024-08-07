@@ -277,10 +277,49 @@ contains
     type(cmo_t), intent(inout):: cmo
     integer, intent(in), optional :: print_level
     logical:: small_component
+    integer:: i
 
 !   update MO data that was not read from CHECKPOINT:
     call setup_orbital_string(cmo)
     call setup_mo_offsets(cmo)
+
+!   update grid function data with information specific to this job
+    do i = 1, rs_input%nr_grid_functions
+      call modify_grid_function_due_to_method(rs_input%grid_functions(i))
+    end do
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine modify_grid_function_due_to_method(grid_function)
+    class(grid_function_t), intent(inout):: grid_function
+
+    grid_function%gf_type = "unperturbed"
+    if (grid_function%wf_order > 0) then
+      grid_function%gf_type = "response"
+    end if
+
+    if (grid_function%lao > 0) then
+      if (grid_function%max_ao_m_order < 1) grid_function%max_ao_m_order = 1
+      if (grid_function%lao_skip(2) == 0) then
+!       do not skip LAO-direct contributions
+        grid_function%gf_type = "composite"
+      end if
+    end if
+
+!fixme:
+    !grid_function%wf_order = 0
+
+    if (rs_input%levyle) then
+      if ((grid_function%name == 'j') .or. &
+          (grid_function%name == 'ndip') .or. &
+          (grid_function%name == 'bdip')) then
+        if (grid_function%max_ao_g_order < 1) then
+          grid_function%max_ao_g_order = 1
+        end if
+      end if
+    end if
 
   end subroutine
 
@@ -290,7 +329,7 @@ contains
     type(mol_t), intent(out):: mol
     type(cmo_t), intent(out):: mo
     type(basis_set_info_t), intent(out) :: ao_basis
-    character*(:),allocatable:: group, section
+    character*(:),allocatable:: group, section,hamiltonian
     logical:: dirac_mol, dirac_mo, dirac_ao
 !
 !   read data from DIRAC's CHECKPOINT file(s) into DTs
@@ -315,6 +354,9 @@ contains
         write(*, *) 'MO data read from DIRAC CHECKPOINT'
         call mo%display
       end if
+!     read other data stored in this section:
+      call checkpoint_read (group//trim(section)//'/hamiltonian',sdata=hamiltonian)
+      if (hamiltonian=='LEVYLE') rs_input%levyle=.true.
     end if
 
 !

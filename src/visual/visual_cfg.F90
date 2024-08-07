@@ -653,7 +653,7 @@ contains
         stop
     end select
 
-    call modify_grid_function_due_to_method(grid_function)
+    !call modify_grid_function_due_to_method(grid_function)
 
     if (grid_function%id == 0) grid_function%id = id_grid_function
 
@@ -724,39 +724,6 @@ contains
         write(*, *) 'Input error. Unknown grid function name.'
         stop
     end select
-
-  end subroutine
-
-
-! ------------------------------------------------------------------------------
-  subroutine modify_grid_function_due_to_method(grid_function)
-    class(grid_function_t), intent(inout):: grid_function
-
-    grid_function%gf_type = "unperturbed"
-    if (grid_function%wf_order > 0) then
-      grid_function%gf_type = "response"
-    end if
-
-    if (grid_function%lao > 0) then
-      if (grid_function%max_ao_m_order < 1) grid_function%max_ao_m_order = 1
-      if (grid_function%lao_skip(2) == 0) then
-!       do not skip LAO-direct contributions
-        grid_function%gf_type = "composite"
-      end if
-    end if
-
-!fixme:
-    !grid_function%wf_order = 0
-
-    !if (rs_input%levyle) then
-      if ((grid_function%name == 'j') .or. &
-          (grid_function%name == 'ndip') .or. &
-          (grid_function%name == 'bdip')) then
-        if (grid_function%max_ao_g_order < 1) then
-          grid_function%max_ao_g_order = 1
-        end if
-      end if
-    !end if
 
   end subroutine
 
