@@ -3,6 +3,8 @@
  calculate selected grid function on a 3D regular grid and export it to an external h5 file
 **HAMILTONIAN
 .URKBAL
+.DFT
+ B3LYP
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -20,7 +22,7 @@
 .OUTPRI
 .GRIDS    
 1
-id=1 input=import file_inp=grid2.h5
+id=1 input=import file_inp=grid.h5
 .GRIDFUNCTIONS    
 8
 name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=j_Bz_lao_rspvec6_symcon.h5
@@ -31,9 +33,4 @@ name=rotj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rsp
 name=gradj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=gradj_Bz_lao_rspvec6_symcon.h5
 name=divj id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=divj_Bz_lao_rspvec6_symcon.h5
 name=ndip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 nuc=1 file_out=ndip_Bz_lao_rspvec6_symcon.h5
-!WIP
-!name=jdiaBz id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=5 lao=1 file_out=jdiaBz_lao_rspvec5_symcon.h5
-!name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 lao_skip=[1,0,0] file_out=j_Bz_lao_rspvec6_symcon_nokappa.h5
-!name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 lao_skip=[0,1,0] file_out=j_Bz_lao_rspvec6_symcon_nodirect.h5
-!name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 lao_skip=[0,0,1] file_out=j_Bz_lao_rspvec6_symcon_noreorth.h5
 *END OF

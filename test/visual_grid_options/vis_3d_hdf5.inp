@@ -1,0 +1,27 @@
+**DIRAC
+.TITLE
+ calculate the electron density and its derivatives on a 3D regular grid and export it to an external h5 file
+**HAMILTONIAN
+.DFT
+ B3LYP
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+10
+.EVCCNV
+1.0D-8
+**VISUAL
+!.3D_INTEGRATE
+.PRINTL
+1
+.GRIDS    
+1
+id=1 input=import file_inp=grid_3d.h5
+.GRIDFUNCTIONS    
+1
+name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on3Dgrid.h5
+*END OF

@@ -3,6 +3,8 @@
  calculate selected grid functions on a 3D regular grid and export them to hdf5 files
 **HAMILTONIAN
 .LEVY-LEBLOND
+.DFT
+ B3LYP
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -17,7 +19,7 @@
 .OUTPRI
 .GRIDS 
 1
-id=1 input=import file_inp=grid2.h5
+id=1 input=import file_inp=grid.h5
 .GRIDFUNCTIONS
 6
 name=ed id_grid=1 purpose=visualization export=yes file_out=ed.h5

@@ -1,0 +1,33 @@
+**DIRAC
+.TITLE
+ calculate selected grid function on a 3D regular grid and export it to an external h5 file
+**HAMILTONIAN
+.LEVY-LEBLOND
+.DFT
+ B3LYP
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+10
+.EVCCNV
+1.0D-8
+**VISUAL
+!.3D_INTEGRATE
+.PRINTL
+1
+.OUTPRI
+.GRIDS    
+1
+id=1 input=import file_inp=grid.h5
+.GRIDFUNCTIONS    
+5
+name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=3 lao=1 file_out=j_Bz_lao_ll_rspvec3_symcon.h5
+name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=3 lao=1 lao_skip=[1,1,0] file_out=j_Bz_lao_ll_rspvec3_symcon_nodirect_nokappa.h5
+name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=3 lao=1 lao_skip=[0,1,1] file_out=j_Bz_lao_ll_rspvec3_symcon_nodirect_noreorth.h5
+name=j id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=3 lao=1 lao_skip=[1,0,1] file_out=j_Bz_lao_ll_rspvec3_symcon_noreorth_nokappa.h5
+name=ndip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=3 lao=1 nuc=1 file_out=ndip_Bz_lao_ll_rspvec3_symcon.h5
+*END OF

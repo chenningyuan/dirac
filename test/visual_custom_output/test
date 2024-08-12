@@ -2,7 +2,6 @@
 
 import os
 import sys
-from subprocess import Popen, PIPE
 
 #
 # prepare environment, define functions
@@ -10,274 +9,54 @@ from subprocess import Popen, PIPE
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
+from runtest_rs import CompareHDF5
+
+#
+# run tests: output to HDF5
+#
 
 test = TestRun(__file__, sys.argv)
 
-f = Filter()
-f.add(from_string = '! Requested density at point(s) !',
-      num_lines   = 11,
-      rel_tolerance   = 1.0e-5)
+os.symlink(os.path.join(os.path.dirname(__file__), '..', 'testdata', 'grid_visual_3D.h5'), os.path.join(test.work_dir, 'grid_3d.h5'))
 
-def compare_txt(fname, fname_ref):
-    p = Popen(["diff", fname, fname_ref], stdin=PIPE)
-    p.communicate()
-    if p.returncode == 0:
-        print('{} and {} are the same'.format(fname, fname_ref))
-        sys.stdout.write('{} and {} are the same'.format(fname, fname_ref))
-    elif p.returncode == 1:
-        print('{} and {} are different'.format(fname, fname_ref))
-        sys.stdout.write('{} and {} are different'.format(fname, fname_ref))
-        sys.exit(1)
-    else:
-        print('error %s' % p.returncode)
-        sys.stdout.write('error %s' % p.returncode)
-
-#
-# run tests
-#
-
-# ==========================================
-# tests dependent on the unperturbed density
-# ==========================================
 test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
-test.run(['vis_3d_h5out_unpert.inp'], ['h2o.mol'], args='--incmo --put="grid*.h5" --get="*.h5"')
 
-test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
-test.run(['vis_ll_3d_h5out_unpert.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="*.h5"')
-
-# ================================================================
-# tests dependent on the density perturbed with the electric field
-# ================================================================
-test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
-test.run(['rsp_E.inp'], ['h2o.mol'], args='--incmo --outcmo --get="RESPONSE.h5"')
-test.run(['vis_3d_h5out_rspE.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 RESPONSE.h5" --get="*.h5"')
-
-# ================================================================
-# tests dependent on the density perturbed with the magnetic field
-# ================================================================
-# without LAOs:
-test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
-test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="*.h5"')
-#test.run(['rsp_B_useh5.inp'], ['h2o.mol'], args='--incmo --outcmo --put="RESPONSE.h5" --get="*.h5"')
-test.run(['vis_3d_h5out_rspB.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 RESPONSE.h5" --get="*.h5"')
-
-test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
-test.run(['rsp_B_ll_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="*.h5"')
-test.run(['vis_ll_3d_h5out_rspB.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 RESPONSE.h5" --get="*.h5"')
-
-# with LAOs:
-test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
-test.run(['rsp_B_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="*.h5"')
-test.run(['rsp_B_useh5.inp'], ['h2o.mol'], args='--incmo --outcmo --put="RESPONSE.h5" --get="*.h5"')
-test.run(['vis_3d_h5out_rspB_lao.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO.h5 RESPONSE.h5" --get="*.h5"')
-
-test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
-test.run(['rsp_B_ll_makeh5.inp'], ['h2o.mol'], args='--incmo --outcmo --get="*.h5"')
-test.run(['vis_ll_3d_h5out_rspB_lao.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5 TBMO.h5 RESPONSE.h5" --get="*.h5"')
-
-
-
-# 4. old - to review:
-
-# OK! test.run(['vis_list_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_list.txt"')
-# OK! test.run(['vis_list_diracout.inp'], ['h2o.mol'], f, args='--incmo')
-
-#test.run(['vis_line_out.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_line.txt"')
-#test.run(['vis_radial_out.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_radial.txt"')
-#test.run(['vis_2d_out.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_2d.txt"')
-
-#test.run(['vis_3d_legacy.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5"')
-#test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="*.h5"')
-
-#test.run(['vis_3d_h5out.inp'], ['h2o.mol'], args='--incmo --put="grid2.h5" --get="scalar_field_3d.txt *.h5"')
-#test.run(['vis_3d_txtout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_3d.txt"')
-#test.run(['vis_3d_cubeout.inp'], ['h2o.mol'], args='--incmo --get="scalar_field_3d.cube"')
-#test.run(['vis_3d_diracout.inp'], ['h2o.mol'], f, args='--incmo')
-
+test.run(['vis_3d_hdf5out.inp'], ['h2o.mol'], args='--incmo --put="grid.h5" --get="ed.h5"')
 
 #
 # compare generated data with reference
 #
 
-try:
-    import h5py
-    h5py_available = True
-except:
-    h5py_available = False
+rs = CompareHDF5(test.work_dir)
 
-if h5py_available:
+testset = ['ed']
+for t in testset:
 
-    # gosia 19/5/2023
-    # alternatively, there is h5diff tool,
-    # but this may not always work, e.g.:
-    # https://forum.hdfgroup.org/t/identical-hdf5-files-according-to-h5diff-differ-in-comparison-with-diff-unix-command/3285/5
-    # so instead, we compare selected datasets
+    rs.verify(ftest=t+'.h5',\
+              fref='result/'+t+'.h5',\
+              typ='array',\
+              gf_label='/result/grid_function/'+t+'/visualize/values/',
+              gf_test_key='t0_icomp_1')
 
-    def test_hdf5_single(fname, gf_name):
-        data_file = h5py.File(fname, 'r')
-        grid_ndim     = data_file['/result/grid/ndim']
-        grid_npoints  = data_file['/result/grid/nr_points_total']
-        return grid_ndim[0], grid_npoints[0]
- 
-    def test_hdf5_array(fname, gf_name, gf_test_key):
-        data_file = h5py.File(fname, 'r')
-        grid_functions = data_file['/result/grid_function']
-        try:
-            grid_function_values = data_file['/result/grid_function/'+gf_name+'/visualize/values/']
-        except:
-            sys.stdout.write(gf_name+' not found in '+fname)
-            sys.exit(1)
-        return grid_function_values[gf_test_key][()]
-
-    def close_values(this_value, ref_value, rtol=None, atol=None):
-      if atol is None:
-          #atol = 0.05*ref_value 
-          atol = 1.0e-20
-      if rtol is None:
-          #rtol = 0.05
-          rtol = 1.0e-6
-      is_close = abs(this_value-ref_value) <= max(rtol * max(abs(this_value), abs(ref_value)), atol)
-      return is_close
- 
-    def compare_with_ref(ftest, fref, typ, gf_name, gf_test_key=None):
-        if typ == 'single':
-            test = test_hdf5_single(ftest, gf_name)
-            ref  = test_hdf5_single(fref,  gf_name)
-            res = tuple(i == j for i, j in zip(test, ref))
-            if False in res:
-                sys.stdout.write('Error! Different data on hdf5')
-
-        elif typ == 'array':
-            test = test_hdf5_array(ftest, gf_name, gf_test_key)
-            ref  = test_hdf5_array(fref,  gf_name, gf_test_key)
-            res = tuple(close_values(i, j) for i, j in zip(test, ref))
-            if False in res:
-                sys.stdout.write('Error! Different array data on hdf5')
-
-
-    # test scalar grid functions
-    testset = ['ed', 'rdg', 'ed_sign_lambda2', 'ed_laplacian', 'gamma5',
-               'elf', 'kin', 'kinsl', 'kinls', 'kinnr', 'kintau', 'kinlap',
-               'divs', 'esp', 'espe', 'espn', 'esprho', 'esperho', 'espnrho']
-
-    for t in testset:
-        compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='single', gf_name=t)
-        compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='array',  gf_name=t, gf_test_key='t0_icomp_1')
-
-
-    # test vector grid functions
-    testset = ['ed_gradient', 's', 'rots', 'j']
-    for t in testset:
-        compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='single', gf_name=t)
-        for i in range(1,4):
-            compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
-
-
-    # test tensor grid functions
-    testset = ['ed_hessian']
-    for t in testset:
-        compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='single', gf_name=t)
-        for i in range(1,10):
-            print('testing t0_3, icomp : ', t, i)
-            compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='array',  gf_name=t, gf_test_key='t2_icomp_'+str(i))
-
-    # test special cases
-    # ------------------
-    testset = ['divj']
-    for t in testset:
-        compare_with_ref(ftest=t+'_Bz_lao_rspvec6_symcon.h5', fref='result/'+t+'_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name=t, gf_test_key='t0_icomp_1')
-
-    testset = ['jdiaBz']
-    for t in testset:
-        compare_with_ref(ftest=t+'_lao_rspvec5_symcon.h5', fref='result/'+t+'_lao_rspvec5_symcon.h5', typ='single', gf_name=t)
-        for i in range(1,4):
-            compare_with_ref(ftest=t+'_lao_rspvec5_symcon.h5', fref='result/'+t+'_lao_rspvec5_symcon.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
-
-    testset = ['j', 'rotj']
-    for t in testset:
-        compare_with_ref(ftest=t+'_Bz_lao_rspvec6_symcon.h5', fref='result/'+t+'_Bz_lao_rspvec6_symcon.h5', typ='single', gf_name=t)
-        for i in range(1,4):
-            compare_with_ref(ftest=t+'_Bz_lao_rspvec6_symcon.h5', fref='result/'+t+'_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
-
-    testset = ['j']
-    for t in testset:
-        compare_with_ref(ftest=t+'_Bz_ll_rspvec3.h5', fref='result/'+t+'_Bz_ll_rspvec3.h5', typ='single', gf_name=t)
-        for i in range(1,4):
-            compare_with_ref(ftest=t+'_Bz_ll_rspvec3.h5', fref='result/'+t+'_Bz_ll_rspvec3.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
-
-    testset = ['j']
-    for t in testset:
-        compare_with_ref(ftest=t+'_Bz_lao_ll_rspvec3_symcon.h5', fref='result/'+t+'_Bz_lao_ll_rspvec3_symcon.h5', typ='single', gf_name=t)
-        for i in range(1,4):
-            compare_with_ref(ftest=t+'_Bz_lao_ll_rspvec3_symcon.h5', fref='result/'+t+'_Bz_lao_ll_rspvec3_symcon.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
-
-
-    testset = ['gradj']
-    for t in testset:
-        compare_with_ref(ftest=t+'_Bz_lao_rspvec6_symcon.h5', fref='result/'+t+'_Bz_lao_rspvec6_symcon.h5', typ='single', gf_name=t)
-        for i in range(1,10):
-            compare_with_ref(ftest=t+'_Bz_lao_rspvec6_symcon.h5', fref='result/'+t+'_Bz_lao_rspvec6_symcon.h5', typ='array',  gf_name=t, gf_test_key='t2_icomp_'+str(i))
-
-    testset = ['edip']
-    for t in testset:
-        compare_with_ref(ftest=t+'_Ez_rspvec5.h5', fref='result/'+t+'_Ez_rspvec5.h5', typ='single', gf_name=t)
-        for i in range(1,4):
-            compare_with_ref(ftest=t+'_Ez_rspvec5.h5', fref='result/'+t+'_Ez_rspvec5.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
-
-    testset = ['bdip']
-    for t in testset:
-        compare_with_ref(ftest=t+'_Bz_ll_rspvec3.h5', fref='result/'+t+'_Bz_ll_rspvec3.h5', typ='single', gf_name=t)
-        for i in range(1,4):
-            compare_with_ref(ftest=t+'_Bz_ll_rspvec3.h5', fref='result/'+t+'_Bz_ll_rspvec3.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
-
-
-    testset = ['ndip']
-    for t in testset:
-        compare_with_ref(ftest=t+'_Bz_ll_rspvec3_nuc1.h5', fref='result/'+t+'_Bz_ll_rspvec3_nuc1.h5', typ='single', gf_name=t)
-        for i in range(1,4):
-            compare_with_ref(ftest=t+'_Bz_ll_rspvec3_nuc1.h5', fref='result/'+t+'_Bz_ll_rspvec3_nuc1.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
-
-    testset = ['ndip']
-    for t in testset:
-        compare_with_ref(ftest=t+'_Bz_lao_ll_rspvec3_symcon_nuc1.h5', fref='result/'+t+'_Bz_lao_ll_rspvec3_symcon_nuc1.h5', typ='single', gf_name=t)
-        for i in range(1,4):
-            compare_with_ref(ftest=t+'_Bz_lao_ll_rspvec3_symcon_nuc1.h5', fref='result/'+t+'_Bz_lao_ll_rspvec3_symcon_nuc1.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
-
-    testset = ['j']
-    subtest = ['nodirect_nokappa', 'nodirect_noreorth', 'noreorth_nokappa']
-    for t in testset:
-        for s in subtest:
-            compare_with_ref(ftest=t+'_Bz_lao_rspvec6_symcon_'+s+'.h5', fref='result/'+t+'_Bz_lao_rspvec6_symcon_'+s+'.h5', typ='single', gf_name=t)
-            for i in range(1,4):
-                compare_with_ref(ftest=t+'_Bz_lao_rspvec6_symcon_'+s+'.h5', fref='result/'+t+'_Bz_lao_rspvec6_symcon_'+s+'.h5', typ='array',  gf_name=t, gf_test_key='t1_icomp_'+str(i))
 
 #
+# run tests: output to text files
 #
+
+test.run(['vis_3d_txtout.inp'], ['h2o.mol'], args='--incmo --put="grid.h5" --get="plot.3d.scalar"')
+test.run(['vis_3d_cubeout.inp'], ['h2o.mol'], args='--incmo --put="grid.h5" --get="plot.3d.cube"')
+test.run(['vis_3d_diracout.inp'], ['h2o.mol'], args='--incmo --put="grid.h5"')
+
 #
-#    #compare_with_ref(ftest='j_Bx_rspvec1.h5', fref='result/j_Bx_rspvec1.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-#    #compare_with_ref(ftest='j_Bx_rspvec1.h5', fref='result/j_Bx_rspvec1.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-#    #compare_with_ref(ftest='j_Bx_rspvec1.h5', fref='result/j_Bx_rspvec1.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+# compare generated data with reference
 #
-#    #compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-#    #compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-#    #compare_with_ref(ftest='j_Bz_rspvec6.h5', fref='result/j_Bz_rspvec6.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+#WIP
+
 #
-#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_noreor_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
+# clean
 #
-#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_noreor.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
-#
-#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_1')
-#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_2')
-#    ##compare_with_ref(ftest='j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', fref='result/j_Bz_lao_rspvec6_symcon_nodire_nokappa.h5', typ='array',  gf_name='j', gf_test_key='t1_icomp_3')
-#
-#
-#
-## cleanup
-##os.unlink('DFCOEF')
-##os.unlink('PAMXVC')
-##os.unlink('TBMO')
-#
+
+os.remove(os.path.join(test.work_dir, 'CHECKPOINT.h5'))   
+os.remove(os.path.join(test.work_dir, 'OPERATORS.h5'))   
+os.unlink(os.path.join(test.work_dir, 'grid.h5'))
+

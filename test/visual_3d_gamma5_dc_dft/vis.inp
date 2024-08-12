@@ -1,6 +1,9 @@
 **DIRAC
 .TITLE
  calculate selected grid function on a 3D regular grid and export it to an external h5 file
+**HAMILTONIAN
+.DFT
+ B3LYP
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -16,7 +19,7 @@
 .OUTPRI
 .GRIDS 
 1
-id=1 input=import file_inp=grid2.h5
+id=1 input=import file_inp=grid.h5
 .GRIDFUNCTIONS
 1
 name=gamma5 id_grid=1 purpose=visualization export=yes file_out=gamma5.h5

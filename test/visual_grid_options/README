@@ -1,9 +1,0 @@
-!
-! This tests different I/O options/formats for the VISUAL module:
-! - writing real-space data to the DIRAC output (*diracout.inp) and to external files (*txtout.inp)
-! - importing grids from files (text and HDF5 formats)
-! - exporting real-space data as:
-!   - txt (*txtout.inp)   - this is compatible with export format in old VISUAL code (as in plot.* files)
-!   - cube (*cubeout.inp) - as available in old VISUAL code; only for scalar fields (as in plot*.cube files)
-!   - csv (*csvout.inp)   - same as plot.* files but with coma separators and a header line
-!   - hdf5 (*hdf5out.inp) - export to HDF5 format
