@@ -208,7 +208,7 @@ module talsh_cis
             call talsh_cis_d_driver(exa_input,int_t,eVectorsR,eValues,nocc,nvir,eps_occ,eps_vir)
         end if 
 
-        cisrt = .true.
+        cisrt = exa_input%do_cisrt
         if(cisrt) then
             call print_date('Starting Real-time CIS computation')
             call talsh_cis_rt_solver_driver(exa_input,eVectorsR,eValues)

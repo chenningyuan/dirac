@@ -1073,6 +1073,14 @@
           call kw_read(word, exa_input%cis_d_pmax)
       end if
 
+      if (kw_matches(word, '.CISRT ')) then
+         exa_input%do_cis = .true.
+         exa_input%do_cisrt = .true.
+         call kw_read(word, exa_input%rt_Nsteps)
+         call kw_read(word, exa_input%rt_dt)
+         call kw_read(word, exa_input%rt_fieldtype)
+      end if
+
       if (kw_matches(word, '.MP2NO         ')) then
          exa_input%mp2no = 1
          call kw_read(word, exa_input%t_mp2no)

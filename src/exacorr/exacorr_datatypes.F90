@@ -69,6 +69,7 @@
             logical                 :: do_no = .false.          ! if true, generate natural orbital
             logical                 :: do_neo = .false.          ! if true, generate natural effective orbital
             logical                 :: eom_lr = .false.
+            logical                 :: do_cisrt = .false.
             
             logical                 :: do_1rdm_gs=.false.
             logical                 :: do_2rdm_gs=.false.
@@ -110,6 +111,8 @@
             integer                 :: N_Time_anti = 0          ! Number of time-antisymmetric operators
             integer                 :: cis_d_pmin = 1  
             integer                 :: cis_d_pmax = 5
+            integer                 :: rt_Nsteps = 300        
+            integer                 :: rt_fieldtype = 1        
            
             
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
@@ -129,6 +132,7 @@
             real(REALD)             :: level_shift = 0.D0       ! level shift
             real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
             real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
+            real(REALD)             :: rt_dt = 1.0D-2         ! threshold for mp2 natural orbital occupation number
             
            
 

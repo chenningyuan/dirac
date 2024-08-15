@@ -45,7 +45,8 @@ subroutine talsh_cis_rt_solver_driver(exa_input,eVectorsR,eValues)
     type(talsh_orb_prop_integ_tens_t), pointer  :: orb_int_tensors(:)   ! property integral in MO 
     real(kind=8), pointer       :: Fs(:) ! external field    
     integer            :: i_prop
-    logical            :: exchange        
+    logical            :: exchange     
+    integer            :: field_type   
     type(talsh_tens_t) :: M_prop_inter, M_prop_inter_notime    
     ! type(talsh_tens_t), intent(inout) :: DiaM_prop_inter
     type(talsh_tens_t) :: ECIS_tensor    
@@ -140,9 +141,10 @@ subroutine talsh_cis_rt_solver_driver(exa_input,eVectorsR,eValues)
 
 
     t0 = 0.0
-    dt = 0.01  
     t = 0.0
-    N_steps = 300
+    dt = exa_input%rt_dt  
+    N_steps = exa_input%rt_Nsteps
+    field_type = exa_input%rt_fieldtype
 
     i_prop = 1    !to calculaye the time-dependent ith prop
     
@@ -154,7 +156,7 @@ subroutine talsh_cis_rt_solver_driver(exa_input,eVectorsR,eValues)
     do i=1, N_steps
         call get_submatrix(t,Fs,orb_int_tensors,&
                         Tra_Den_exe_exe_tensors,Tra_Den_exe_grd_tensors,&
-                        oo_dims,M_dims,M_prop_inter)
+                        oo_dims,M_dims,M_prop_inter,field_type)
         print *,'rounds', i
         call propagate_R(dt,ECIS_tensor,M_prop_inter,R_dim,R_tensor)
         t = t0+dt
@@ -224,12 +226,15 @@ end subroutine
     end subroutine
 
 !---------------------------------------------------------------------------------------------------------------
-    function fieldfunc(t)
+    function fieldfunc(t,field_type)
         implicit none
         real(kind=8) :: fieldfunc
         real(kind=8), intent(in) :: t
+        integer, intent(in)     :: field_type   
 
-        fieldfunc = 1.0
+        if (field_type == 1) then
+            fieldfunc = 0.0005
+        end if
     end function fieldfunc
 !---------------------------------------------------------------------------------------------------------------
     subroutine get_cis_den_exe_grd(exa_input,CIS_eigen_tensor,&
@@ -299,7 +304,7 @@ end subroutine
 
     subroutine get_submatrix(t,Fs,orb_int_tensors,&
                         Tra_Den_exe_exe_tensors,Tra_Den_exe_grd_tensors,&
-                        oo_dims,M_dims,M_prop_inter)
+                        oo_dims,M_dims,M_prop_inter,field_type)
 
         real(kind=8), intent(in) :: t
         real(kind=8)       :: Fs(:) ! external field   
@@ -309,6 +314,7 @@ end subroutine
         integer(INTD), dimension(2) :: oo_dims
         integer(INTD), dimension(2) :: M_dims
         type(talsh_tens_t), intent(inout) :: M_prop_inter
+        integer, intent(in)            :: field_type   
 
 
 
@@ -346,7 +352,7 @@ end subroutine
                 ierr=talsh_tensor_init(result_tensor)
 
                 do i=1, N_props
-                    Fs(i) = fieldfunc(t)
+                    Fs(i) = fieldfunc(t,field_type)
                     com_f = complex(Fs(i), 0.0)
                     ierr=talsh_tensor_contract("M()+=Prop(a,b)*DM(a,b)",result_tensor,&
                              orb_int_tensors(i)%prop_vv,&
@@ -370,7 +376,7 @@ end subroutine
         do i_state = 1, N_states-1
             ierr=talsh_tensor_init(result_tensor)
             do i=1, N_props
-                Fs(i) = fieldfunc(t)
+                Fs(i) = fieldfunc(t,field_type)
                 com_f = complex(Fs(i), 0.0)
                 ierr=talsh_tensor_contract("M()+=Prop(a,i)*DM(a,i)",result_tensor,&
                     orb_int_tensors(i)%prop_vo,&
@@ -385,7 +391,7 @@ end subroutine
 
 !       HF-HF block
         do i=1, N_props
-            Fs(i) = fieldfunc(t)
+            Fs(i) = fieldfunc(t,field_type)
             com_f = complex(Fs(i), 0.0)
             ierr=talsh_tensor_get_body_access(orb_int_tensors(i)%prop_oo,body_p3,&
                                             C8,int(0,C_INT),DEV_HOST)
