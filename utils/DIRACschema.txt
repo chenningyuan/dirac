@@ -101,7 +101,7 @@ mobasis_id       integer   single    optional    # pointer to the explicit defin
 *end
 
 *scf
-hamiltonian      string    single    optional    # Hamiltonian used to produce final SCF wave function
+hamiltonian      string    single    optional    # Hamiltonian used to produce final SCF wave function. Omitted implies Dirac-Coulomb (old "LVCORR")
 xc_functional    string    single    optional    # for DFT the XC-functional description. Omitted implies Hartree-Fock
 energy           real      single    required    # energy of the SCF wave function
 mobasis          composite single    required    # molecular orbitals obtained in this calculation
