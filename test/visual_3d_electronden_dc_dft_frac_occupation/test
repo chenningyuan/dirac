@@ -54,7 +54,7 @@ for t in testset:
     rs.verify(ftest=t+'.h5',\
               fref='result/'+t+'.h5',\
               typ='array',\
-              gf_label='/result/grid_function/'+t+'/visualize/values/',
+              gf_label='/result/grid_function/ed/visualize/values/',
               gf_test_key='t0_icomp_1')
 
 
