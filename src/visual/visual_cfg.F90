@@ -354,7 +354,7 @@ contains
         else if (val == 'radial') then
           grid%input = 6
         else
-          write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"/"list"'
+          write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"/"list"/"line"/"2d"/"3d"/"radial"'
           stop
         end if
       case ('typ')

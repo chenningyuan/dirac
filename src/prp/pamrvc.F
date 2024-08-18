@@ -830,20 +830,12 @@ C
 C
 C     Print section
 C
-      !IF(IPRXRS.GE.8) THEN
+      IF(IPRXRS.GE.8) THEN
         CALL HEADER('DMOLI3: Symmetrized AO modified density matrix',-1)
-!        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
-!     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-        ioff=0
-        do iz = 1, nz
-        do i = 1, n2bbasx
-          ioff = ioff + 1
-          write(*, '(a,i6,es16.8e2)') 'elements(i) = ', 
-     &         ioff, dmat(i,iz)
-        end do
-        end do
+        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
+     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
-      !ENDIF
+      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

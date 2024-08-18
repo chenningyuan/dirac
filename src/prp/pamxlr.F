@@ -235,7 +235,7 @@ c.........reorthonormalization contribution
 !         Instead, there is a contribution from magnetic derivatives 
 !         of overlap matrix (modifications in london_reorth.F90)
           if (.not. noonei) then
-            call london_reort_hb(cmo, ibeig, work(kfree), lfree)
+            call london_reort_hb(cmo, ibeig, work(kfree), lfree, IPRXLR)
           end if
          
           call dealloc(cmo)
@@ -382,7 +382,7 @@ C
       CLOSE(LUXVC,STATUS = 'KEEP')
 !     if requested, additionally export response information to file:
       if (XLR_RSPEXP) then
-        call export_rsp_info_to_helper()
+        call export_rsp_info_to_helper(iprxlr)
       end if
       CALL MEMREL('PRPXL1',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPXL1')
@@ -2551,14 +2551,15 @@ C***********************************************************************
 !     Gosia Olejniczak, 16/01/2024
 !
 !     ------------------------------------------------------------------
-      subroutine export_rsp_info_to_helper()
+      subroutine export_rsp_info_to_helper(print_level)
         use dirac_rsp_utils
         implicit none
+        integer, intent(in) :: print_level
         type(response_info_t) :: rsp_info
         character(len=:),allocatable :: f_name
 
         f_name = 'PAMXVC'
-        call rsp_info%read_from_DIRAC(trim(f_name))
+        call rsp_info%read_from_DIRAC(trim(f_name), print_level)
 
         f_name = 'RESPONSE.h5'
         call rsp_info%write_to_checkpoint(trim(f_name))

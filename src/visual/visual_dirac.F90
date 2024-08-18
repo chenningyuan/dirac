@@ -1259,7 +1259,7 @@ contains
 
     f_name = grid_function%rspvec_file
     call rsp_info_this%read_from_checkpoint(f_name)
-    call rsp_info_this%display
+    if ( rs_input%print_level > 2 ) call rsp_info_this%display
     rspvec_id = grid_function%rspvec_id
  
     if (rsp_info_this%vectors(rspvec_id)%get_label() == 'LAO-XRM1H1') then

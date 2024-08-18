@@ -720,18 +720,21 @@ contains
 
 
 ! ----------------------------------------------------------------------------
-  subroutine read_rsp_data_from_DIRAC(self, f_name)
+  subroutine read_rsp_data_from_DIRAC(self, f_name, print_level)
 !   data is read from DIRAC's common blocks and from 'PAMXVC' file
 !   caution: it should be called when doing response, otherwise the
 !   data on common blocks is not set!
 !   this will be fixed, once all necessary data is transfered to files
     class(response_info_t), intent(out) :: self
     character(*), intent(in) :: f_name
+    integer, intent(in) :: print_level
     type(gp_info_t) :: gp_info
     integer :: f_unit
 
     call read_gp_data_from_common_blocks(gp_info)
-    call gp_info%display()
+    if (print_level > 2) then
+      call gp_info%display()
+    end if
 
 !   read: nfreq, ndamp, static, nlrbpt, xlr_skipep, xlr_skipee
     call read_rsp_data_from_common_blocks(self)
@@ -745,7 +748,9 @@ contains
     call read_rspvec_from_response_file(f_unit, gp_info, self)
     close(f_unit, status = 'keep')
 
-    call self%display()
+    if (print_level > 2) then
+      call self%display()
+    end if
 
   end subroutine
 

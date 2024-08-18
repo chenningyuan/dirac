@@ -280,14 +280,14 @@ contains
     write(*,*) ' epreorth   =', self%epreorth
 
     if (self%nr_comp > 0) then
-      !if (self%allocated_vectors()) then
+      if (self%allocated_vectors()) then
         do i = 1, self%nr_comp
           write(*,*) 'data on conmat_vector_t ', i
           call self%vectors(i)%display()
         end do
-      !else
-      !  write(*,*) 'conmat vectors NOT ALLOCATED '
-      !end if
+      else
+        write(*,*) 'conmat vectors NOT ALLOCATED '
+      end if
     end if
 
   end subroutine
@@ -323,11 +323,12 @@ contains
 
 
 ! ----------------------------------------------------------------------------
-  subroutine init_conmat_data_from_DIRAC(self, nr_comp)
+  subroutine init_conmat_data_from_DIRAC(self, nr_comp, print_level)
 #include "implicit.h"
 #include "dcbnmr.h"  ! epreorth
     class(conmat_info_t), intent(inout) :: self
     integer, intent(in):: nr_comp
+    integer, intent(in):: print_level
 
 !   non-allocatable data
     if (epreorth) then
@@ -341,7 +342,9 @@ contains
 !   allocatable data
     call self%alloc()
 
-    call self%display()
+    if (print_level > 2) then
+      call self%display()
+    end if
 
   end subroutine
 

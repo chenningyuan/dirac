@@ -77,7 +77,7 @@ module london_reorth_hb
 
 contains
 
-  subroutine london_reort_hb(cmo, ibeig, work, lwork)
+  subroutine london_reort_hb(cmo, ibeig, work, lwork, print_level)
 
 ! calculates the reorthonormalization contribution to dH(0)/dB|B=0
 ! when London atomic orbitals are used:
@@ -93,6 +93,8 @@ contains
 
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
+
+    integer, intent(in)    :: print_level
 
     real(8), allocatable   :: fao(:), fmo(:), tb_dmat(:)
     integer :: size_tb_dmat, size_fao, size_fmo
@@ -113,7 +115,7 @@ contains
        nr_xyz_comp = 3
     end if
 
-    call conmat_info%init(nr_xyz_comp)
+    call conmat_info%init(nr_xyz_comp, print_level)
 
     size_tb_dmat = n2bbasxq*nr_xyz_comp
     call alloc(tb_dmat, size_tb_dmat)
