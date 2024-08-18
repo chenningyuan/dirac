@@ -41,19 +41,19 @@ rs = CompareHDF5(test.work_dir)
 testset = ['edip']
 for t in testset:
 
-    rs.verify(ftest=t+'_Ez_rspvec3.h5',\
-              fref='result/'+t+'_Ez_rspvec3.h5',\
+    rs.verify(ftest=t+'_Ez_rspvec5.h5',\
+              fref='result/'+t+'_Ez_rspvec5.h5',\
               typ='single',\
               gf_label='/result/grid/ndim')
 
-    rs.verify(ftest=t+'_Ez_rspvec3.h5',\
-              fref='result/'+t+'_Ez_rspvec3.h5',\
+    rs.verify(ftest=t+'_Ez_rspvec5.h5',\
+              fref='result/'+t+'_Ez_rspvec5.h5',\
               typ='single',\
               gf_label='/result/grid/nr_points_total')
 
     for i in range(1,4):
-        rs.verify(ftest=t+'_Ez_rspvec3.h5',\
-                  fref='result/'+t+'_Ez_rspvec3.h5',\
+        rs.verify(ftest=t+'_Ez_rspvec5.h5',\
+                  fref='result/'+t+'_Ez_rspvec5.h5',\
                   typ='array',\
                   gf_label='/result/grid_function/'+t+'/visualize/values/',
                   gf_test_key='t1_icomp_'+str(i))
