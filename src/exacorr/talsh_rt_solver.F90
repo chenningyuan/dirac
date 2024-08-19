@@ -233,7 +233,11 @@ end subroutine
         integer, intent(in)     :: field_type   
 
         if (field_type == 1) then
-            fieldfunc = 0.0005
+            if(t<= 0.00001) then
+                fieldfunc = 0.0005
+            else 
+                fieldfunc = 0.0
+            end if
         end if
     end function fieldfunc
 !---------------------------------------------------------------------------------------------------------------
@@ -556,26 +560,83 @@ end subroutine
         complex(8), pointer         :: R_tens(:)
         
 
-        type(talsh_tens_t)   :: R_temp_tensor
-        complex(8)           :: com_f
+        type(talsh_tens_t)   :: R_temp_tensor, R_temp_tensor2
+        complex(8)           :: com_f_real, com_f_imag
 
         ierr=talsh_tensor_get_body_access(R_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
         call c_f_pointer(body_p,R_tens,R_dim)
         ! print *, 'ierr1: ', ierr
 
-        com_f = complex(dt, 0.0)
+        com_f_real = complex(dt, 0.0)
+        com_f_imag = complex(0.0, dt)
+
         ierr=talsh_tensor_construct(R_temp_tensor,C8,R_dim,init_val=ZERO)
+        ierr=talsh_tensor_construct(R_temp_tensor2,C8,R_dim,init_val=ZERO)
         ! print *, 'ierr2: ', ierr
 
         ierr=talsh_tensor_contract("RTemp(i)+=ECIS(i,j)*R(j)",R_temp_tensor,&
-                             ECIS_tensor,R_tensor,scale=com_f)
+                             ECIS_tensor,R_tensor,scale=-com_f_imag)
+
+        ierr=talsh_tensor_add("R(i)+=RTemp(i)",R_tensor,R_temp_tensor)
+
+
+        ierr=talsh_tensor_init(R_temp_tensor)
+        ierr=talsh_tensor_contract("RTemp(i)+=M(i,j)*R(j)",R_temp_tensor,&
+                             M_prop_inter,R_tensor,scale=com_f_imag)
+
+        ierr=talsh_tensor_add("R(i)+=RTemp(i)",R_tensor,R_temp_tensor)
+
+
+        ierr=talsh_tensor_init(R_temp_tensor)
+        ierr=talsh_tensor_contract("RTemp(i)+=ECIS(i,j)*R(j)",R_temp_tensor,&
+                             ECIS_tensor,R_tensor,scale=com_f_real)
 
 
         ierr=talsh_tensor_contract("R(i)+=M(i,j)*RTemp(j)",R_tensor,&
-                             M_prop_inter,R_temp_tensor,scale=com_f)
+                             M_prop_inter,R_temp_tensor,scale=com_f_real)
 
+
+        ierr=talsh_tensor_init(R_temp_tensor)
+        ierr=talsh_tensor_contract("RTemp(i)+=ECIS(i,j)*R(j)",R_temp_tensor,&
+                             ECIS_tensor,R_tensor,scale=com_f_real)
+
+
+        ierr=talsh_tensor_contract("R(i)+=ECIS(i,j)*RTemp(j)",R_tensor,&
+                             ECIS_tensor,R_temp_tensor,scale=com_f_real*0.5)
        
+        
+
+        ierr=talsh_tensor_init(R_temp_tensor)
+        ierr=talsh_tensor_contract("RTemp(i)+=M(i,j)*R(j)",R_temp_tensor,&
+                             M_prop_inter,R_tensor,scale=com_f_real)
+
+
+        ierr=talsh_tensor_contract("R(i)+=M(i,j)*RTemp(j)",R_tensor,&
+                             M_prop_inter,R_temp_tensor,scale=com_f_real*0.5)
+
+
+        ierr=talsh_tensor_init(R_temp_tensor)
+        ierr=talsh_tensor_contract("RTemp(i)+=ECIS(i,j)*R(j)",R_temp_tensor,&
+                             ECIS_tensor,R_tensor,scale=com_f_real)
+        ierr=talsh_tensor_contract("RTemp2(i)+=ECIS(i,j)*Rtemp1(j)",R_temp_tensor2,&
+                             ECIS_tensor,R_temp_tensor,scale=com_f_real)
+
+        ierr=talsh_tensor_contract("R(i)+=M(i,j)*RTemp2(j)",R_tensor,&
+                             M_prop_inter,R_temp_tensor2,scale=-(com_f_imag *0.5))
+
+
+        ierr=talsh_tensor_init(R_temp_tensor)
+        ierr=talsh_tensor_init(R_temp_tensor2)
+        ierr=talsh_tensor_contract("RTemp(i)+=ECIS(i,j)*R(j)",R_temp_tensor,&
+                             ECIS_tensor,R_tensor,scale=com_f_real)
+        ierr=talsh_tensor_contract("RTemp2(i)+=M(i,j)*Rtemp1(j)",R_temp_tensor2,&
+                             M_prop_inter,R_temp_tensor,scale=com_f_real)
+
+        ierr=talsh_tensor_contract("R(i)+=M(i,j)*RTemp2(j)",R_tensor,&
+                             M_prop_inter,R_temp_tensor2,scale=(com_f_imag *0.5))
+
         ierr=talsh_tensor_destruct(R_temp_tensor)
+        ierr=talsh_tensor_destruct(R_temp_tensor2)
 
     end subroutine 
 !---------------------------------------------------------------------------------------------------------------
@@ -592,6 +653,7 @@ end subroutine
         complex(8), pointer         :: result_tens(:)
         integer(C_INT)     :: one_dims(1)
         type(talsh_tens_t) :: temp_tensor, result_tensor
+        complex(8) :: norm
 
 
         one_dims(1) = 1
@@ -599,15 +661,23 @@ end subroutine
         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
         call c_f_pointer(body_p,result_tens,one_dims)
 
-        ierr=talsh_tensor_construct(temp_tensor,C8,R_dim,init_val=ZERO)
+        ierr=talsh_tensor_contract("Norm()+=R+(i)*R(i)",result_tensor,&
+                            R_tensor,R_tensor,scale=ONE)
+        
+        ! print *, 'Norm: ', result_tens(1)
+        norm = result_tens(1)
 
+
+        ierr=talsh_tensor_init(result_tensor)
+        ierr=talsh_tensor_construct(temp_tensor,C8,R_dim,init_val=ZERO)
+        
         ierr=talsh_tensor_contract("Temp(i)+=M(i,j)*R(j)",temp_tensor,&
                             M_prop_inter_notime,R_tensor,scale=ONE)
 
-        ierr=talsh_tensor_contract("Result()+=R(i)*Temp(i)",result_tensor,&
+        ierr=talsh_tensor_contract("Result()+=R+(i)*Temp(i)",result_tensor,&
                             R_tensor,temp_tensor,scale=ONE)
 
-        print *, 'Time-dependent prop: ', result_tens(1)
+        print *, 'Time-dependent prop: ', result_tens(1)/norm
 
         ierr=talsh_tensor_destruct(temp_tensor)
         ierr=talsh_tensor_destruct(result_tensor)
