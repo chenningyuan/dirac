@@ -401,7 +401,7 @@ end subroutine
           end do 
         end do
 
-        ! call print_tensor(M_prop_inter,1.0d-6,"M_prop_inter")
+        ! call print_tensor(orb_int_tensors(1)%prop_oo,1.0d-6,"HF_Propoo")
 
     end subroutine 
 !---------------------------------------------------------------------------------------------------------------
@@ -490,6 +490,8 @@ end subroutine
         do j = 1, oo_dims(1)
             M_prop_inter_tens(1, 1) = M_prop_inter_tens(1, 1) + orb_int_tens(j,j) 
         end do 
+
+        print *, "Time-independent prop(HF):", M_prop_inter_tens(1, 1)
 
     end subroutine
 
@@ -593,7 +595,7 @@ end subroutine
 
 
         one_dims(1) = 1
-        ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ONE)
+        ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
         call c_f_pointer(body_p,result_tens,one_dims)
 
