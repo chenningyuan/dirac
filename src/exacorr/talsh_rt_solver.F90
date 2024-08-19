@@ -63,6 +63,7 @@ subroutine talsh_cis_rt_solver_driver(exa_input,eVectorsR,eValues)
 !   Propagate
     real(kind=8) t, t0, dt
     type(talsh_tens_t) :: R_tensor
+    complex(8) :: td_prop   
 
 !   Talsh 
     integer(C_INT)       :: ierr
@@ -153,6 +154,8 @@ subroutine talsh_cis_rt_solver_driver(exa_input,eVectorsR,eValues)
             oo_dims,M_dims,M_prop_inter_notime)
 
 !   Propagate R
+    open(unit=10, file='TDProp.out', status='new', action='write', iostat=i)
+
     do i=1, N_steps
         call get_submatrix(t,Fs,orb_int_tensors,&
                         Tra_Den_exe_exe_tensors,Tra_Den_exe_grd_tensors,&
@@ -162,8 +165,12 @@ subroutine talsh_cis_rt_solver_driver(exa_input,eVectorsR,eValues)
         t = t0+dt
         t0 = t
 
-        call gen_time_prop(M_prop_inter_notime,R_tensor,R_dim)
+        call gen_time_prop(M_prop_inter_notime,R_tensor,R_dim, td_prop)
+
+        write(10, '(F14.12, A, F14.12)')  real(td_prop), ' + ', aimag(td_prop)
     end do
+
+    close(10)
 
     call print_date('Finishing Real-time CIS computation')
 
@@ -641,11 +648,12 @@ end subroutine
     end subroutine 
 !---------------------------------------------------------------------------------------------------------------
 
-    subroutine gen_time_prop(M_prop_inter_notime,R_tensor,R_dim)
+    subroutine gen_time_prop(M_prop_inter_notime,R_tensor,R_dim, td_prop)
 
         type(talsh_tens_t) :: M_prop_inter_notime
         type(talsh_tens_t) :: R_tensor 
-        integer(INTD), dimension(1) :: R_dim   
+        integer(INTD), dimension(1) :: R_dim
+        complex(8) :: td_prop   
 
 
         integer     :: ierr
@@ -677,7 +685,8 @@ end subroutine
         ierr=talsh_tensor_contract("Result()+=R+(i)*Temp(i)",result_tensor,&
                             R_tensor,temp_tensor,scale=ONE)
 
-        print *, 'Time-dependent prop: ', result_tens(1)/norm
+        td_prop = result_tens(1)/norm
+        print *, 'Time-dependent prop: ', td_prop
 
         ierr=talsh_tensor_destruct(temp_tensor)
         ierr=talsh_tensor_destruct(result_tensor)
