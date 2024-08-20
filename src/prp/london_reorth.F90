@@ -798,6 +798,7 @@ contains
 
     call alloc(tb, n2orbxq)
     tb = 0.0d0
+    call conmat_info%write_to_checkpoint('TBMO.h5')
 
     do icomp = 1, nr_xyz_comp
       indxpr       = ipcon(icomp)
@@ -915,7 +916,7 @@ contains
       call conmat_info%vectors(icomp)%alloc_values(norbt*norbt, nz)
       call conmat_info%vectors(icomp)%fill_values(tb, n2orbxq)
 ! TODO: fulmat2 is called before writing data to old 'TBMO' file; test this
-      call conmat_info%write_to_checkpoint('TBMO.h5')
+      call conmat_info%vectors(icomp)%write_to_checkpoint('TBMO.h5',icomp)
 
     end do
 

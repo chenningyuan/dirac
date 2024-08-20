@@ -32,6 +32,7 @@ module dirac_conmat_lao_utils
     procedure, pass, public :: get_label
     procedure, pass, public :: get_copy_of_values
     procedure, pass   :: read_values => read_conmatvec_values_from_checkpoint
+    procedure, pass, public :: write_to_checkpoint => write_conmatvec_to_checkpoint
     procedure, pass, public :: display => display_conmatvec_data
   end type
 
@@ -93,6 +94,8 @@ contains
     integer, intent(in):: mat_dim
     real(8), intent(in):: mat(mat_dim)
     integer :: n, n1, n2, i, i1, i2
+
+    if (.not.self%allocated_values()) return
 
     n1=self%ndim1
     n2=self%ndim2
@@ -357,7 +360,19 @@ contains
 
     call init_conmat_checkpoint(f_name, conmat_file)
     call write_conmat_nonallocatables_to_checkpoint(self, conmat_file)
-    call write_conmat_allocatables_to_checkpoint(self, conmat_file)
+    call conmat_checkpoint_close(conmat_file)
+
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine write_conmatvec_to_checkpoint(self, f_name, ivec)
+    class(conmat_vector_t), intent(in) :: self
+    character(*), intent(in) :: f_name
+    integer, intent(in) :: ivec
+    type(file_info_t) :: conmat_file
+
+    call init_conmat_checkpoint(f_name, conmat_file)
+    call write_conmat_allocatables_to_checkpoint(self, conmat_file, ivec)
     call conmat_checkpoint_close(conmat_file)
 
   end subroutine
@@ -487,46 +502,45 @@ contains
                    idata=conmat_info%nr_comp)
     call lab_write(conmat_file, trim(group)//'/epreorth',&
                    idata = conmat_info%epreorth)
+
   end subroutine
 
 ! ------------------------------------------------------------------------------
-  subroutine write_conmat_allocatables_to_checkpoint(conmat_info, conmat_file)
-    type(conmat_info_t), intent(in) :: conmat_info
+  subroutine write_conmat_allocatables_to_checkpoint(conmat_vector, conmat_file, &
+                                                     ivec)
+    type(conmat_vector_t), intent(in) :: conmat_vector
     type(file_info_t), intent(inout) :: conmat_file
+    integer, intent(in) :: ivec
     character(len=80):: group
     character(len=4):: ich
     real(8), pointer:: tmp_rdata(:)
-    integer:: ivec, nr_vec
 
-    if (.not. conmat_info%allocated_vectors()) return
+    !if (.not. conmat_info%allocated_vectors()) return
 
-    nr_vec = conmat_info%nr_comp
-    do ivec = 1, nr_vec
-      write(ich, '(i4)') ivec
-      group = '/result/conmat/vectors/vec_'//trim(adjustl(ich))
-      call lab_write(conmat_file, trim(group)//'/id', &
-                   idata=conmat_info%vectors(ivec)%id)
-      call lab_write(conmat_file, trim(group)//'/ind', &
-                   idata=conmat_info%vectors(ivec)%ind)
-      call lab_write(conmat_file, trim(group)//'/irep', &
-                   idata=conmat_info%vectors(ivec)%irep)
-      call lab_write(conmat_file, trim(group)//'/trsym', &
-                   idata=conmat_info%vectors(ivec)%trsym)
-      call lab_write(conmat_file, trim(group)//'/iopsy', &
-                   idata=conmat_info%vectors(ivec)%iopsy)
-      call lab_write(conmat_file, trim(group)//'/ndim1', &
-                   idata=conmat_info%vectors(ivec)%ndim1)
-      call lab_write(conmat_file, trim(group)//'/ndim2', &
-                   idata=conmat_info%vectors(ivec)%ndim2)
-      call lab_write(conmat_file, trim(group)//'/lab', &
-                   sdata=conmat_info%vectors(ivec)%lab)
-      if (conmat_info%vectors(ivec)%allocated_values()) then
-        call flatten(conmat_info%vectors(ivec)%values, tmp_rdata)
-        call lab_write(conmat_file, trim(group)//'/values', &
-                   rdata=tmp_rdata)
-        deallocate(tmp_rdata)
-      end if
-    end do
+    write(ich, '(i4)') ivec
+    group = '/result/conmat/vectors/vec_'//trim(adjustl(ich))
+    call lab_write(conmat_file, trim(group)//'/id', &
+                 idata=conmat_vector%id)
+    call lab_write(conmat_file, trim(group)//'/ind', &
+                 idata=conmat_vector%ind)
+    call lab_write(conmat_file, trim(group)//'/irep', &
+                 idata=conmat_vector%irep)
+    call lab_write(conmat_file, trim(group)//'/trsym', &
+                 idata=conmat_vector%trsym)
+    call lab_write(conmat_file, trim(group)//'/iopsy', &
+                 idata=conmat_vector%iopsy)
+    call lab_write(conmat_file, trim(group)//'/ndim1', &
+                 idata=conmat_vector%ndim1)
+    call lab_write(conmat_file, trim(group)//'/ndim2', &
+                 idata=conmat_vector%ndim2)
+    call lab_write(conmat_file, trim(group)//'/lab', &
+                 sdata=conmat_vector%lab)
+    if (conmat_vector%allocated_values()) then
+      call flatten(conmat_vector%values, tmp_rdata)
+      call lab_write(conmat_file, trim(group)//'/values', &
+                 rdata=tmp_rdata)
+      deallocate(tmp_rdata)
+    end if
 
   end subroutine
 

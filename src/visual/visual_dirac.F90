@@ -217,7 +217,17 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine visual_initialize_and_sync_nodes(hello)
-    use dirac_cfg, only: dirac_cfg_visual
+
+!   hello = .true.:
+!   * make sure that all workers have all information to start
+!   * wake up nodes, pass initial information,
+!     and leave the rest to master 
+!   * happens when called from dirnod; on workers
+!
+!   hello = .false.:
+!   * proceed to calculations
+!   * happens when called from dirac; on master
+!
     use visual_mpi
 #ifdef VAR_MPI
     use interface_to_mpi
@@ -1282,7 +1292,11 @@ contains
     write(*, '(/,2x, a)') '*** Visualization module ***' 
     if ( rs_input%print_level > 2 ) then
       write(*, *) "DEBUG: rs_input:"
+#ifdef VAR_MPI
       call rs_input%display(my_rank=get_my_rank())
+#else
+      call rs_input%display()
+#endif
     end if
  
   end subroutine
