@@ -90,20 +90,13 @@ contains
 
     walltime = visual_walltime()
 
-#ifdef VAR_MPI
 !
 !   data available on input:
 !     * information from user input stored in rs_input dt
 !     * config information in visual_cfg* variables (legacy)
-!
-!   purpose:
-!     * make sure that all workers have all information to start
-!     * if launch_only then wake up nodes, pass initial information,
-!       and leave the rest to master 
-!       (happens when called from dirnod; on workers),
-!       otherwise - calculate (happens when called from dirac; on master)
-!    
+!   
     call visual_initialize_and_sync_nodes(launch_only)
+#ifdef VAR_MPI
     if ( rs_input%print_level > 2 ) then
       print *, 'VISUAL parallel? ', is_parallel()
       print *, 'size of communicator: ', mpi_get_nr_proc()
@@ -372,6 +365,7 @@ contains
             end do
           end if
  
+#ifdef VAR_MPI
           if (is_parallel()) then
             do idim_gf = 1, gf_ndim
               call visual_interface_mpi_gatherv(grid_function_values(idim_gf,:),&
@@ -383,6 +377,11 @@ contains
               rs_input%grid_functions(igf)%values(idim_gf,:) = grid_function_values(idim_gf,:)
             end do
           end if
+#else
+            do idim_gf = 1, gf_ndim
+              rs_input%grid_functions(igf)%values(idim_gf,:) = grid_function_values(idim_gf,:)
+            end do
+#endif
 
           if (mpi_is_master()) then
             if (rs_input%print_level > 1) then
@@ -470,6 +469,7 @@ contains
                     buffer)
       end do
 
+#ifdef VAR_MPI
       call get_esp_functions_in_points(get_my_rank(),&
                                        dmat_0,&
                                        ao,buffer,&
@@ -477,6 +477,15 @@ contains
                                        grid_points,&
                                        grid_function,grid_function_values)
 
+#else
+      call get_esp_functions_in_points(0,&
+                                       dmat_0,&
+                                       ao,buffer,&
+                                       ndim,nr_points,&
+                                       grid_points,&
+                                       grid_function,grid_function_values)
+
+#endif
     else
       do ipoint = 1, nr_points
       
