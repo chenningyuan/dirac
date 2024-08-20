@@ -464,30 +464,25 @@ contains
     logical:: err
 
     if (grid%input == 1) then
-      ! when reading grid from file
-      write(*, *) 'WARNING: grid information will be read from file'
-      write(*, *) 'These input options will be ignored (if present): ndim, npoints, spacing, margin.'
+      write(*, *) 'VISUAL: Grid information will be read from file'
+      write(*, *) '  WARNING: These input options will be ignored (if present):'//&
+                  ' ndim, npoints, spacing, margin.'
 
     else if (grid%input == 0) then
-      ! when creating grid
+      write(*, *) 'VISUAL: Grid will be created'
       if (grid%ndim == 0) then
-        write(*, *) 'ERROR: grid "ndim" information is missing.'
+        write(*, *) ' ERROR: grid "ndim" information is missing.'
         stop
       end if
       do i = 1, grid%ndim
         if (grid%nr_points(i) ==0 .and. grid%spacing(i) ==0) then
-          write(*, *) 'ERROR: grid "npoints" or "spacing" information is missing for dimension ', i
+          write(*, *) ' ERROR: grid "npoints" or "spacing" information is missing for dimension ', i
           stop
+        else if (grid%nr_points(i) /=0 .and. grid%spacing(i) /=0) then
+          write(*, *) ' ERROR: grid exclusive options: "npoints" and "spacing".'
         end if
       end do
     end if
-
-    do i = 1, grid%ndim
-      if (grid%nr_points(i) /=0 .and. grid%spacing(i) /=0) then
-        write(*, *) 'ERROR: exclusive options: "npoints" and "spacing".'
-        stop
-      end if
-    end do
 
   end subroutine
 

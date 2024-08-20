@@ -192,7 +192,7 @@ dirac_test(cosci_energy_blockd "short;cosci" "")
 #
 # OK:
 #RETHINK:dirac_test(visual_custom_output "short;visual" "")
-#ALLPREPARED,FIXMEcode:dirac_test(visual_grid_options "short;visual" "")
+dirac_test(visual_grid_options "short;visual" "")
 #
 dirac_test(visual_3d_electronden_dc_dft_frac_occupation "short;visual" "")
 dirac_test(visual_3d_electronden_dc_dft "short;visual" "")
