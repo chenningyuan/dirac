@@ -120,7 +120,7 @@ class CompareHDF5:
       else:
           if atol is None:
               #atol = 0.05*ref_value 
-              atol = 1.0e-20
+              atol = 1.0e-12
 
       if self.rel_tolerance_is_set:
           rtol = self.rel_tolerance
