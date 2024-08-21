@@ -415,8 +415,8 @@ contains
     call checkpoint_read(group//'geometry',   rdata=temp)
     call checkpoint_read(group//'nuc_charge', rdata=mol%nuc_charge)
 
-!   warning - these coordinates are stored on CHECKPOINT in Angstroms;
-!   in VISUAL - everything operates in AU, so let's rescale it here for consistency
+!   Note: on CHECKPOINT.h5, atomic coordinates are stored in Angstroms;
+!   here, they are rescaled to AU, because in VISUAL module we work in AU
     temp = temp/xtang
     mol%geometry = reshape(temp, (/3, mol%n_atoms/))
 

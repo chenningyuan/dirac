@@ -22,136 +22,6 @@ module visual_cfg
   public sync_visual_cfg
 #endif
 
-   save
-
-
-!
-
-   integer,      public, parameter:: max_batch_length = 500
-   integer,      public, parameter:: max_para = 100
-   integer,      public            :: visual_cfg_nr_dmat = 0 !FIXME
-   character(6), public            :: visual_cfg_dmat_file(max_para)
-   integer,      public            :: visual_cfg_dmat_file_record(max_para)
-   integer,      public            :: visual_cfg_ref_nucleus(max_para)
-   integer,      public            :: visual_cfg_property(max_para)
-   logical,      public            :: visual_cfg_skip(max_para) = .false.
-   integer,      public            :: visual_cfg_property_to_matrix(max_para) = 0
-   integer,      public            :: visual_cfg_irep_xvector(max_para)
-   logical,      public            :: visual_cfg_out_file_custom = .false.
-   logical,      public            :: visual_cfg_out_scalar_file_custom = .false.
-   logical,      public            :: visual_cfg_out_vector_file_custom = .false.
-   logical,      public            :: visual_cfg_out_2ndtensor_file_custom = .false.
-   logical,      public            :: visual_cfg_add_grid_points_grad_ed = .false.
-   logical,      public            :: visual_cfg_add_grid_points_grad_ed_scaled = .false.
-   character(60), public           :: visual_cfg_out_scalar_file_name
-   character(60), public           :: visual_cfg_out_vector_file_name
-   character(60), public           :: visual_cfg_out_2ndtensor_file_name
-
-
-
-!
-!  options for exporting real-space data to files
-!
-! WIP
-!  character(len = :), public               :: visual_cfg_plot_file_formats(2) = (/'txt', 'cube', 'csv', 'hdf5'/)
-   character(len = 6), public               :: visual_cfg_txt_plot_file_domains(4) = &
-                                              [character(len = 6):: '2D', '3D', 'line', 'radial']
-
-   logical,      public                     :: visual_cfg_plot_file_custom = .false.
-   character(len = :), allocatable, public  :: visual_cfg_plot_file_format
-   character(len = :), allocatable, public  :: visual_cfg_plot_domain
-   character(len = :), allocatable, public  :: visual_cfg_plot_property
-
-!  options for exporting to txt files
-!  by default, export real-space data to txt files and use legacy file names ("plot.3d.scalar", etc.)
-   logical,      public                     :: visual_cfg_txt_plot_file_use_legacy = .true.
-   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_name
-   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_float_format
-
-!  options for exporting to cube files (applies to scalar fields on 3D cube grids)
-!  by default, use old export to cube files
-   logical,      public                     :: visual_cfg_cube_plot_file_use_legacy = .true.
-   character(len = :), allocatable, public  :: visual_cfg_cube_plot_file_name
-   character(len = :), allocatable, public  :: visual_cfg_cube_plot_file_float_format
-
-!  options for grid manipulation
-   integer, public:: visual_cfg_nr_grid_files = 1
-
-   real(8), public  :: visual_cfg_txt_print_threshold = 1.0e-8
-
-!
-!  option for input data files
-!
-   logical,      public                     :: visual_cfg_inp_data_files_use_legacy= .false.
-   integer,      public                     :: visual_cfg_nr_plot_files = 0
-
-
-!                     visualization in 2d
-   logical, public:: visual_cfg_2d             = .false.
-   real(8), public:: visual_cfg_2d_p_origin(3) = 0.0d0
-   real(8), public:: visual_cfg_2d_p_right(3)  = 0.0d0
-   real(8), public:: visual_cfg_2d_p_top(3)    = 0.0d0
-   integer, public:: visual_cfg_2d_nr_right    = 0
-   integer, public:: visual_cfg_2d_nr_top      = 0
-   character(len = 6), public:: visual_cfg_2d_data_types(4) = &
-                       [character(len = 6):: 'scalar', 'vector', 'tensor', 'flow']
-
-!                     integration in 2d
-   logical, public:: visual_cfg_2d_integration             = .false.
-   real(8), public:: visual_cfg_2d_integration_p_origin(3) = 0.0d0
-   real(8), public:: visual_cfg_2d_integration_p_right(3)  = 0.0d0
-   real(8), public:: visual_cfg_2d_integration_p_top(3)    = 0.0d0
-   integer, public:: visual_cfg_2d_integration_nr_right    = 0
-   integer, public:: visual_cfg_2d_integration_nr_top      = 0
-   integer, public:: visual_cfg_2d_integration_order       = 0
-
-!                     visualization in 3d
-   logical, public:: visual_cfg_3d         = .false.
-   logical, public:: visual_cfg_3d_fast    = .false.
-   integer, public:: visual_cfg_ncube(1:3) = 0
-   real(8), public:: visual_cfg_add_3d     = 4.0d0
-   logical, public:: visual_cfg_3d_gridimp = .false.
-   logical, public:: visual_cfg_3d_readjb  = .false.
-   character(80), public:: visual_cfg_3d_gridfil
-   character(80), public:: visual_cfg_3d_grid_units
-   character(80), public:: visual_cfg_3d_jbfile
-   character(len = 10), public:: visual_cfg_3d_data_types(5) = &
-                       [character(len = 10)::'scalar', 'vector', 'tensor', 'cube', 'vector_vtk']
-
-!                     integration in 3d
-   logical, public:: visual_cfg_3d_integration = .false.
-
-!                     visualization along line
-   logical, public:: visual_cfg_line          = .false.
-   real(8), public:: visual_cfg_line_from(3)  = 0.0d0
-   real(8), public:: visual_cfg_line_to(3)    = 0.0d0
-   integer, public:: visual_cfg_line_nr_steps = 0
-   character(len = 6), public:: visual_cfg_line_data_types(3) = &
-                       [character(len = 6)::'scalar', 'vector', 'tensor']
-
-!                                  densities for a list of points
-   logical, public              :: visual_cfg_list              = .false.
-   integer, public              :: visual_cfg_nr_points_in_list = 0
-   real(8), public, allocatable:: visual_cfg_xyz_list(:, :)
-   character(len = 6), public:: visual_cfg_list_data_types(3) = &
-                       [character(len = 6)::'scalar', 'vector', 'tensor']
-
-
-!                     radial distributions
-   logical, public:: visual_cfg_radial          = .false.
-   real(8), public:: visual_cfg_radial_from(3)  = 0.0d0
-   integer, public:: visual_cfg_radial_nr_steps = 0
-   real(8), public:: visual_cfg_radial_length   = 0
-   character(len = 6), public:: visual_cfg_radial_data_types(3) = &
-                       [character(len = 6)::'scalar', 'vector', 'tensor']
-   
-   real(8),       public:: visual_cfg_scale              = 1.0d0
-   real(8),       public:: visual_cfg_cartesian_power(3) = 0.0   
-   real(8),       public:: visual_cfg_wave_vector(3)     = 0.0d0
-   real(8),       public:: visual_cfg_freq               = 0.0d0   
-   real(8),       public:: visual_cfg_pol_vector(3)      = 0.0d0   
-
-
    private
 
 contains
@@ -278,8 +148,8 @@ contains
 
    end subroutine
 
+! ------------------------------------------------------------------------------
   subroutine grid_input_cfg(key, val, grid, id_grid)
-#include "codata.h"
     character(len=*), intent(in):: key, val
     type(grid_t),intent(inout)::grid
     integer, intent(in)::id_grid
@@ -288,9 +158,6 @@ contains
     real(8)::s
     integer::nr_words, i
     character(len=10),allocatable::chvalues(:)
-
-!   gosia: possibly do sth tht mimics python parser here:
-!   write(*, *) ' ".GRIDS" arguments available in this version:'
 
     select case (key)
       case ('id')
@@ -325,33 +192,31 @@ contains
           allocate(chvalues(nr_words))
           call split_string(temp, nr_words, chvalues, separator=',')
           do i = 1, nr_words
+!           units: a.u.
             call str2flt(trim(chvalues(i)), s, stat)
-            ! scale to a.u.
-            grid%spacing(i) = s/xtang
+            grid%spacing(i) = s
             grid%spacing_known(i) = .true.
           end do
           deallocate(chvalues)
         else
+!         units: a.u.
           call str2flt(temp, grid%spacing(1), stat)
           grid%spacing_known(1) = .true.
-          ! scale to a.u.
-          grid%spacing(1) = grid%spacing(1)/xtang
         end if
       case ('input')
-!todo: all inp to lower case!
-        if (val == 'create') then
+        if (lowercase(val) == 'create') then
           grid%input = 0
-        else if (val == 'import') then
+        else if (lowercase(val) == 'import') then
           grid%input = 1
-        else if (val == 'list') then
+        else if (lowercase(val) == 'list') then
           grid%input = 2
-        else if (val == 'line') then
+        else if (lowercase(val) == 'line') then
           grid%input = 3
-        else if (val == '2d') then
+        else if (lowercase(val) == '2d') then
           grid%input = 4
-        else if (val == '3d') then
+        else if (lowercase(val) == '3d') then
           grid%input = 5
-        else if (val == 'radial') then
+        else if (lowercase(val) == 'radial') then
           grid%input = 6
         else
           write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"/"list"/"line"/"2d"/"3d"/"radial"'
@@ -369,13 +234,12 @@ contains
           stop
         end if
       case ('margin')
+!       units: a.u.
         call str2flt(val, grid%margin, stat)
-        ! scale to a.u.
-        grid%margin = grid%margin/xtang
       case ('export')
-        if (val == 'no') then
+        if (lowercase(val) == 'no') then
           grid%export = .false.
-        else if (val == 'yes') then
+        else if (lowercase(val) == 'yes') then
           grid%export = .true.
         else
           write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
@@ -395,7 +259,6 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine grid_user_input_cfg(grid, domain, user_input_lines)
-#include "codata.h"
     type(grid_t),intent(inout)::grid
     character(*), intent(in):: domain
     character(*), dimension(:), intent(in):: user_input_lines
@@ -433,6 +296,22 @@ contains
 
       case ('3d')
         grid%ndim = 3
+        if (index(user_input_lines(1), ',') > 0) then
+          nr_words = word_count(user_input_lines(1), ',')
+          grid%ndim = nr_words
+        end if
+        allocate(grid%points(grid%ndim, grid%nr_points_total))
+        grid%points = 0.0d0
+        do i = 1, grid%nr_points_total
+          allocate(chvalues(grid%ndim))
+          call split_string(user_input_lines(i),grid%ndim,chvalues,separator=',')
+          do j = 1, grid%ndim
+            call str2flt(trim(chvalues(j)), s, stat)
+            grid%points(j,i) = s
+          end do
+          deallocate(chvalues)
+        end do
+
         grid%nr_points_total_known = .true.
 
       case ('radial')
@@ -529,7 +408,6 @@ contains
       end if
     end if
 
-
   end subroutine verify_grid_function_input_cfg
 
 
@@ -546,14 +424,14 @@ contains
 
     select case (key)
       case ('name')
-        grid_function%name = val
+        grid_function%name = lowercase(val)
         call verify_grid_function_predefined(grid_function)
       case ('id_grid')
         call str2int(val, grid_function%id_assigned_grid, stat)
       case ('input')
-        if (val == 'calculate') then
+        if (lowercase(val) == 'calculate') then
           grid_function%input = 0
-        else if (val == 'import') then
+        else if (lowercase(val) == 'import') then
           grid_function%input = 1
         else
           write(*, *) 'Input error. Wrong argument: '// &
@@ -592,9 +470,9 @@ contains
           stop
         end if
       case ('purpose')
-        if (val == 'visualization') then
+        if (lowercase(val) == 'visualization') then
           grid_function%purpose = 0
-        else if (val == 'integration') then
+        else if (lowercase(val) == 'integration') then
           grid_function%purpose = 1
         else
           write(*, *) 'Input error. Wrong argument: '// &
@@ -603,9 +481,9 @@ contains
           stop
         end if
       case ('export')
-        if (val == 'no') then
+        if (lowercase(val) == 'no') then
           grid_function%export = .false.
-        else if (val == 'yes') then
+        else if (lowercase(val) == 'yes') then
           grid_function%export = .true.
         else
           write(*, *) 'Input error. Wrong argument: '// &

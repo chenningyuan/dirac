@@ -40,7 +40,6 @@ module visual
   use matrix_defop_old
   use matrix_genop_old, only: copy_matrix_sym
   use dirac_interface
-  use visual_london
   use xc_london_c1
   use visual_integrate
   use electrostatic_potential

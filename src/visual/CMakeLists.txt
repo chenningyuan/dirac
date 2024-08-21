@@ -16,7 +16,6 @@ set(FREE_VISUAL_FORTRAN_SOURCES
     dirac_dmat_factory.F90
     visual.F90
     visual_in_point.F90
-    visual_london.F90
     visual_io.F90
     visual_grids.F90
     visual_grid_functions.F90

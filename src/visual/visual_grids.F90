@@ -49,6 +49,14 @@ contains
       end do
     end do
 
+    do i = 1, 3
+       write(*,*) 'TESTME: i, origin  = ', i, grid%origin(i)
+       write(*,*) 'TESTME: i, spacing = ', i, grid%spacing(i)
+    end do
+    write(*,*) 'TESTME: margin = ', grid%margin
+
+
+
   end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -216,15 +224,12 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine grid_extents_from_mol(mol, grid, extents)
-#include "codata.h"
     type(mol_t), intent(in):: mol
     type(grid_t), intent(in):: grid
     real(8), intent(out):: extents(0:1, 3)
     real(8):: atoms_min(1:3), atoms_max(1:3)
     integer::i, j
 
-    ! mol%geometry is originally in Angstroms, but we rescaled it when reading from checkpoint
-! fixme: ensure the units are OK
     atoms_min(1:3) = mol%geometry(1:3, 1)
     atoms_max(1:3) = mol%geometry(1:3, 1)
 
@@ -235,16 +240,11 @@ contains
       end do
     end do
 
-!    ! mol%geometry is in Angstroms, so we rescale it
-!    atoms_min(1:3) = mol%geometry(1:3, 1)/xtang
-!    atoms_max(1:3) = mol%geometry(1:3, 1)/xtang
-!
-!    do i = 1, mol%n_atoms
-!      do j = 1, 3
-!        atoms_min(j) = min(mol%geometry(j, i)/xtang, atoms_min(j))
-!        atoms_max(j) = max(mol%geometry(j, i)/xtang, atoms_max(j))
-!      end do
-!    end do
+
+    do i = 1, 3
+       write(*,*) 'TESTME: i, BEFORE step_3d(i, 0) = origin  = ', atoms_min(i)
+       write(*,*) 'TESTME: i, BEFORE step_3d(i, i) = spacing = ', atoms_max(i)
+    end do
 
     ! add space around
     do i = 1, 3
@@ -424,8 +424,9 @@ contains
       case (1)
         call generate_grid_rectilinear(grid)
       case default
+        stop
         !FIXME
-        call random_number(grid%points)
+        !call random_number(grid%points)
     end select
   end subroutine
 

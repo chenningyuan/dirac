@@ -5,11 +5,9 @@ module visual_in_point
   use interface_ao
   use interface_mo
   use visual_cfg
-  use visual_london
   use dirac_ao_eval
   use density_eval
   use matrix_defop_old
-  use visual_london
   use xc_london_c1
 
   use visual_datatypes
@@ -681,52 +679,52 @@ contains
       case ('bedcos')
 !       full light-matter interaction: cosine part
 
-        t1 = 0.0d0
-!       hardcoded for testing:
-        CALL ANGLES(0.0d0,0.0d0,0.0d0,visual_cfg_wave_vector,visual_cfg_pol_vector)
-        visual_cfg_freq = 49.138
-
-        call get_j(t1,        &
-                   rs_input%cvalue,      &
-                   dmat%irep, &
-                   dmat%mat_dim,  &
-                   dmat%elements, &
-                   buffer,    &
-                   ao)
-
-        f = (visual_cfg_wave_vector(1)*px+   &
-             visual_cfg_wave_vector(2)*py+   &
-             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/rs_input%cvalue
-        grid_function_values(1:1,ipoint:ipoint) = & 
-            -(t1(1)*visual_cfg_pol_vector(1)+  &
-              t1(2)*visual_cfg_pol_vector(2)+  &
-              t1(3)*visual_cfg_pol_vector(3))*cos(f)/visual_cfg_freq
-
+!        t1 = 0.0d0
+!!       hardcoded for testing:
+!        CALL ANGLES(0.0d0,0.0d0,0.0d0,visual_cfg_wave_vector,visual_cfg_pol_vector)
+!        visual_cfg_freq = 49.138
+!
+!        call get_j(t1,        &
+!                   rs_input%cvalue,      &
+!                   dmat%irep, &
+!                   dmat%mat_dim,  &
+!                   dmat%elements, &
+!                   buffer,    &
+!                   ao)
+!
+!        f = (visual_cfg_wave_vector(1)*px+   &
+!             visual_cfg_wave_vector(2)*py+   &
+!             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/rs_input%cvalue
+!        grid_function_values(1:1,ipoint:ipoint) = & 
+!            -(t1(1)*visual_cfg_pol_vector(1)+  &
+!              t1(2)*visual_cfg_pol_vector(2)+  &
+!              t1(3)*visual_cfg_pol_vector(3))*cos(f)/visual_cfg_freq
+!
 
       case ('bedsin')
 !       full light-matter interaction: sine part
 
-        t1 = 0.0d0
-!       hardcoded for testing:
-        CALL ANGLES(0.0d0,0.0d0,0.0d0,visual_cfg_wave_vector,visual_cfg_pol_vector)
-        visual_cfg_freq = 49.138
-
-
-        call get_j(t1,        &
-                   rs_input%cvalue,      &
-                   dmat%irep, &
-                   dmat%mat_dim,  &
-                   dmat%elements, &
-                   buffer,    &
-                   ao)
-
-        f = (visual_cfg_wave_vector(1)*px+   &
-             visual_cfg_wave_vector(2)*py+   &
-             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/rs_input%cvalue
-        grid_function_values(1:1,ipoint:ipoint) = &
-            -(t1(1)*visual_cfg_pol_vector(1)+  &
-              t1(2)*visual_cfg_pol_vector(2)+  &
-              t1(3)*visual_cfg_pol_vector(3))*sin(f)/visual_cfg_freq
+!        t1 = 0.0d0
+!!       hardcoded for testing:
+!        CALL ANGLES(0.0d0,0.0d0,0.0d0,visual_cfg_wave_vector,visual_cfg_pol_vector)
+!        visual_cfg_freq = 49.138
+!
+!
+!        call get_j(t1,        &
+!                   rs_input%cvalue,      &
+!                   dmat%irep, &
+!                   dmat%mat_dim,  &
+!                   dmat%elements, &
+!                   buffer,    &
+!                   ao)
+!
+!        f = (visual_cfg_wave_vector(1)*px+   &
+!             visual_cfg_wave_vector(2)*py+   &
+!             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/rs_input%cvalue
+!        grid_function_values(1:1,ipoint:ipoint) = &
+!            -(t1(1)*visual_cfg_pol_vector(1)+  &
+!              t1(2)*visual_cfg_pol_vector(2)+  &
+!              t1(3)*visual_cfg_pol_vector(3))*sin(f)/visual_cfg_freq
 
     end select
 
