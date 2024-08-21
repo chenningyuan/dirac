@@ -5,7 +5,6 @@ module visual_utils
   public newunit
   public visual_quit
   public visual_walltime
-  public lowercase
 
 contains
 
@@ -52,33 +51,5 @@ contains
     write(*,'(a)') local_text
     stop
   end subroutine
-
-! ------------------------------------------------------------------------------
-! string mangling subroutines
-! probably deserve a separate module and a better interface
-
-   function lowercase(s)
-
-!     copied from input/input_reader.F90
-!     --------------------------------------------------------------------------
-      character(*), intent(in) :: s
-      character(len(s))        :: lowercase
-!     --------------------------------------------------------------------------
-      integer                  :: off, i, ia
-!     --------------------------------------------------------------------------
-
-      lowercase = s
-
-      off = iachar('a') - iachar('A')
-
-      do i = 1, len(s)
-         ia = iachar(s(i:i))
-         if (ia >= iachar('A') .and. ia <= iachar('Z')) then
-            lowercase(i:i) = achar(ia + off)
-         end if
-      enddo
-
-   end function
-
 
 end module

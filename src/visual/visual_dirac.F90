@@ -664,11 +664,11 @@ contains
 !
 
     if (mpi_is_master()) then
-      !if (allocated(rs_wf%hamiltonian)) then
+      if (allocated(rs_wf%hamiltonian)) then
         len_hamiltonian = len_trim(rs_wf%hamiltonian)
-      !else
-      !  len_hamiltonian = 0
-      !end if
+      else
+        len_hamiltonian = 0
+      end if
       if (allocated(rs_wf%xc_functional)) then
         len_xc_functional = len_trim(rs_wf%xc_functional)
       else
@@ -830,7 +830,6 @@ contains
     call interface_mpi_bcast(grid_function%rspvec_id,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%lao,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%lao_skip,3,irank_master,global_communicator)
-    !call interface_mpi_bcast(grid_function%lao_comp,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%tensor_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_g_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_m_order,1,irank_master,global_communicator)

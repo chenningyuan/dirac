@@ -8,15 +8,11 @@ module visual_cfg
   type(rs_input_t), public:: rs_input
   type(rs_wf_t), public:: rs_wf
 
-
-  !public setup_grid
-  !public setup_grid_function
   public grid_input_cfg
   public grid_user_input_cfg
   public grid_function_input_cfg
   public verify_grid_input_cfg
   public verify_grid_function_input_cfg
-
 
 #ifdef VAR_MPI
   public sync_visual_cfg
@@ -25,128 +21,6 @@ module visual_cfg
    private
 
 contains
-
-! ------------------------------------------------------------------------------
-  elemental subroutine str2int(str,int1,stat)
-    implicit none
-    character(len=*),intent(in) :: str
-    integer,intent(out)         :: int1
-    integer,intent(out)         :: stat
-
-    read(str,*,iostat=stat)  int1
-  end subroutine str2int
-
-! ------------------------------------------------------------------------------
-  elemental subroutine str2flt(str,flt,stat)
-    implicit none
-    character(len=*),intent(in) :: str
-    real(8),intent(out)         :: flt
-    integer,intent(out)         :: stat
-
-    read(str,*,iostat=stat)  flt
-  end subroutine str2flt
-
-! ------------------------------------------------------------------------------
-  !subroutine replace_str(str1,pattern1,pattern2,str2)
-  !  character(len=*),intent(in) :: str1
-  !  character(len=1),intent(in) :: pattern1,pattern2
-  !  character(len=len_trim(str1)),intent(out) :: str2
-  !  integer:: i
-
-  !  do i = 1, len_trim(str1)
-  !    if (str1(i:i)==pattern1) then
-  !      str2 = str1(1:i-1)//pattern2//str1(i+1:)
-  !      exit
-  !    end if
-  !  end do
-  !  if (.not.allocated(str2)) str2 = str1
-
-  !end subroutine
-
-! ------------------------------------------------------------------------------
-  !elemental subroutine str2flt_arrs(strarr,fltarr,decor,sep,fltarr,stat)
-  !  implicit none
-  !  character(len=*),intent(in):: strarr(*)
-  !  character(len=*),intent(in):: decor(2)
-  !  character(len=*),intent(in):: sep
-  !  real(8),allocatable,intent(out):: fltarr(:)
-  !  integer,intent(out):: stat
-
-  !  read(str,*,iostat=stat)  flt
-  !end subroutine str2flt
-
-
-   function word_count(s,sep)
-
-!     --------------------------------------------------------------------------
-      character(*), intent(in) :: s
-      character(len=1), intent(in) :: sep
-      integer                  :: word_count
-!     --------------------------------------------------------------------------
-      integer                  :: i
-      logical                  :: is_blank
-!     --------------------------------------------------------------------------
-
-      word_count = 0
-
-      if (len(s) <= 0) return
-
-      is_blank = .true.
-
-      do i = 1, len(s)
-         if (s(i:i) == sep) then
-            is_blank = .true.
-         else if (is_blank) then
-            word_count = word_count + 1
-            is_blank = .false.
-         end if
-      end do
-
-   end function
-
-   subroutine split_string(str, nr_words, word_array, separator)
-
-!     --------------------------------------------------------------------------
-      integer, intent(in)   :: nr_words
-      character(len=*), intent(in) :: str
-      character(len=*), intent(inout):: word_array(nr_words)
-      character(len=1), optional, intent(in) :: separator
-!     --------------------------------------------------------------------------
-      integer                  :: i,j
-      integer,allocatable::pos(:)
-      integer                  :: len_str
-      character(len=1):: sep
-!     --------------------------------------------------------------------------
-
-      len_str = len_trim(str)
-      if (len_str <= 0) return
-
-      if (present(separator)) then
-        sep=separator
-      else
-        sep=' '
-      end if
-
-      allocate(pos(nr_words-1))
-      pos = 0
-
-      j = 0
-      do i = 1, len_str
-         if (str(i:i) == sep) then
-            j = j + 1
-            pos(j) = i
-         end if
-      end do
-
-      word_array(1)(1:) = str(1:pos(1)-1)
-      do i = 1, nr_words-2
-        word_array(i+1)(1:) = str(pos(i)+1:pos(i+1)-1)
-      end do
-      word_array(nr_words)(1:) = str(pos(nr_words-1)+1:)
-
-      deallocate(pos)
-
-   end subroutine
 
 ! ------------------------------------------------------------------------------
   subroutine grid_input_cfg(key, val, grid, id_grid)
@@ -678,5 +552,126 @@ contains
   end subroutine logprint
 
 #endif
+
+! ------------------------------------------------------------------------------
+! string mangling subroutines
+! probably deserve a separate module and a better interface
+
+   function lowercase(s)
+
+!     copied from input/input_reader.F90
+!     --------------------------------------------------------------------------
+      character(*), intent(in) :: s
+      character(len(s))        :: lowercase
+!     --------------------------------------------------------------------------
+      integer                  :: off, i, ia
+!     --------------------------------------------------------------------------
+
+      lowercase = s
+
+      off = iachar('a') - iachar('A')
+
+      do i = 1, len(s)
+         ia = iachar(s(i:i))
+         if (ia >= iachar('A') .and. ia <= iachar('Z')) then
+            lowercase(i:i) = achar(ia + off)
+         end if
+      enddo
+
+   end function
+
+
+! ------------------------------------------------------------------------------
+  elemental subroutine str2int(str,int1,stat)
+    implicit none
+    character(len=*),intent(in) :: str
+    integer,intent(out)         :: int1
+    integer,intent(out)         :: stat
+
+    read(str,*,iostat=stat)  int1
+  end subroutine str2int
+
+! ------------------------------------------------------------------------------
+  elemental subroutine str2flt(str,flt,stat)
+    implicit none
+    character(len=*),intent(in) :: str
+    real(8),intent(out)         :: flt
+    integer,intent(out)         :: stat
+
+    read(str,*,iostat=stat)  flt
+  end subroutine str2flt
+
+
+   function word_count(s,sep)
+
+!     --------------------------------------------------------------------------
+      character(*), intent(in) :: s
+      character(len=1), intent(in) :: sep
+      integer                  :: word_count
+!     --------------------------------------------------------------------------
+      integer                  :: i
+      logical                  :: is_blank
+!     --------------------------------------------------------------------------
+
+      word_count = 0
+
+      if (len(s) <= 0) return
+
+      is_blank = .true.
+
+      do i = 1, len(s)
+         if (s(i:i) == sep) then
+            is_blank = .true.
+         else if (is_blank) then
+            word_count = word_count + 1
+            is_blank = .false.
+         end if
+      end do
+
+   end function
+
+   subroutine split_string(str, nr_words, word_array, separator)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)   :: nr_words
+      character(len=*), intent(in) :: str
+      character(len=*), intent(inout):: word_array(nr_words)
+      character(len=1), optional, intent(in) :: separator
+!     --------------------------------------------------------------------------
+      integer                  :: i,j
+      integer,allocatable::pos(:)
+      integer                  :: len_str
+      character(len=1):: sep
+!     --------------------------------------------------------------------------
+
+      len_str = len_trim(str)
+      if (len_str <= 0) return
+
+      if (present(separator)) then
+        sep=separator
+      else
+        sep=' '
+      end if
+
+      allocate(pos(nr_words-1))
+      pos = 0
+
+      j = 0
+      do i = 1, len_str
+         if (str(i:i) == sep) then
+            j = j + 1
+            pos(j) = i
+         end if
+      end do
+
+      word_array(1)(1:) = str(1:pos(1)-1)
+      do i = 1, nr_words-2
+        word_array(i+1)(1:) = str(pos(i)+1:pos(i+1)-1)
+      end do
+      word_array(nr_words)(1:) = str(pos(nr_words-1)+1:)
+
+      deallocate(pos)
+
+   end subroutine
 
 end module
