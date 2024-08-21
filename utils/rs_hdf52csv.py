@@ -5,11 +5,12 @@ import pandas as pd
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-fh5')
-parser.add_argument('-fcsv')
-parser.add_argument('-fcube')
-parser.add_argument('-data')
-parser.add_argument('-data_labels')
+parser.add_argument('-fh5', help='HDF5 file on input')
+parser.add_argument('-fcsv', help='CSV file on output')
+parser.add_argument('-ftxt', help='TXT file on output (old DIRAC)')
+parser.add_argument('-fcube', help='CUBE file on output')
+parser.add_argument('-data', help='data to focus on: "grid" or "grid_function"')
+parser.add_argument('-data_labels', help='select labels of grid functions')
 args = parser.parse_args()
 
 #
@@ -52,6 +53,23 @@ if args.data == 'grid':
     df=pd.DataFrame.from_dict(grid_xyz)
     if args.fcsv is not None:
         df.to_csv(args.fcsv,index=False,float_format="%.8e")
+    else:
+        print('grid can only be converted to CSV file')
 
 elif args.data == 'grid_function':
-    pass
+    if args.data_labels is not None:
+        data_values={}
+        for k in data_labels:
+            for x in data.keys():
+                if k in x:
+                    data_values[k] = data[x]["value"]
+    else:
+        print('specify grid function labels')
+        sys.exit()
+else:
+    print('unknown argument to "-data"')
+    sys.exit()
+
+
+
+
