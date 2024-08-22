@@ -26,6 +26,7 @@ contains
     real(8):: v(3)
 
     if (grid%ndim /= 3) return
+    write(*, *) 'HERENOw!'
 
     ipoint = 1
     do i = 1, grid%nr_points(1)
@@ -221,8 +222,9 @@ contains
     type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
 
-    if (grid%input  ==  0) then
-      ! generate grid
+    !if (grid%input  ==  0) then ! .or. grid%input  ==  5) then
+    if (grid%input==0 .or. grid%input==5) then
+      ! generate 3d grid
       if (grid_id /= grid%id) then
         call visual_quit('ERROR: problem with grid id in get_grid_info')
         print *, 'ERROR: problem with grid id in get_grid_info'
@@ -241,6 +243,10 @@ contains
     else if (grid%input  ==  2) then
       ! read grid data from user input: look for '.LINE'
       !call get_grid_info_from_txt_storage(grid, 'line')
+    else if (grid%input  ==  3) then
+    else if (grid%input  ==  4) then
+    !else if (grid%input  ==  5) then
+    else if (grid%input  ==  6) then
     end if
 
     ! we should now have all information to work on the grid
@@ -255,7 +261,8 @@ contains
 
     if (.not. grid%allocated_points()) return
 
-    if (grid%input == 0) then
+    !if (grid%input == 0) then ! .or. grid%input == 5) then
+    if (grid%input== 0 .or. grid%input==5) then
       call generate_grid_points(grid)
     else if (grid%input == 1) then
       call get_grid_points_from_file(grid)

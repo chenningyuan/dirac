@@ -170,23 +170,19 @@ contains
 
       case ('3d')
         grid%ndim = 3
-        if (index(user_input_lines(1), ',') > 0) then
-          nr_words = word_count(user_input_lines(1), ',')
-          grid%ndim = nr_words
-        end if
-        allocate(grid%points(grid%ndim, grid%nr_points_total))
-        grid%points = 0.0d0
-        do i = 1, grid%nr_points_total
-          allocate(chvalues(grid%ndim))
-          call split_string(user_input_lines(i),grid%ndim,chvalues,separator=',')
-          do j = 1, grid%ndim
-            call str2flt(trim(chvalues(j)), s, stat)
-            grid%points(j,i) = s
-          end do
-          deallocate(chvalues)
+        grid%typ = 1
+        allocate(chvalues(grid%ndim))
+        call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
+        grid%nr_points_total = 1
+        do i = 1, grid%ndim
+          call str2int(trim(chvalues(i)), np, stat)
+          grid%nr_points(i) = np
+          grid%nr_points_known(i) = .true.
+          grid%nr_points_total = grid%nr_points_total*grid%nr_points(i)
         end do
-
+        deallocate(chvalues)
         grid%nr_points_total_known = .true.
+
 
       case ('radial')
 
@@ -235,6 +231,9 @@ contains
           write(*, *) ' ERROR: grid exclusive options: "npoints" and "spacing".'
         end if
       end do
+
+    else
+      write(*, *) 'VISUAL: Grid will be created according to information passed in a separate line'
     end if
 
   end subroutine

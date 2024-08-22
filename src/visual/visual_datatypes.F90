@@ -117,13 +117,13 @@ module visual_datatypes
     integer, public:: nr_points_total = 0
     integer, public:: nr_points(1:3) = 0
     real(8), public:: origin(1:3) = 0                       ! grid origin
-    real(8), public:: spacing(1:3) = 0                      ! grid spacing
+    real(8), public:: spacing(1:3) = 0                      ! grid spacing (in a.u.)
     integer, public:: status = -1                           ! -1 = never used, 0 = ready to work on
     integer, public:: input = 0                             ! 0 = create, 1 = import from file, 2 = 'list', 3 = 'line', 4 = '2D', 5 = '3D', 6 = 'radial'
     logical, public:: export = .false.                      ! also export to a separate file
     integer, public:: typ = 0                               ! 0 = unknown, 1 = rectilinear
     integer, public:: weights = 0                           ! 0/1 = points w/wo weights
-    real(8), public:: margin = 0.0d0                        ! margin (in Angstrom) to be added around molecule when creating the grid
+    real(8), public:: margin = 4.0d0                        ! margin (in a.u.) to be added around molecule when creating the grid
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid import
     character(len=:), public, allocatable:: file_out        ! name of a file for grid export
     !type(grid_point_t), public, allocatable:: points(:,:)

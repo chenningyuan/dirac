@@ -337,7 +337,26 @@
       end if
 
       !if (kw_matches(word, '.LINE  ')) then
-      !if (kw_matches(word, '.2D    ')) then
+
+      if (kw_matches(word, '.2D    ')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".2D" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           ! get id of the grid:
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == 4) then
+               read(get_file_unit(), '(a)') line
+               allocate(word_array(1))
+               word_array(1) = line
+               call grid_user_input_cfg(rs_input%grids(i), '2d', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
+         end if
+      end if
+
       if (kw_matches(word, '.3D    ')) then
          if (.not. rs_input%allocated_grids()) then
            write(*,*) 'Error: ".3D" requires prior specification of ".GRIDS". Stop.'
@@ -346,6 +365,7 @@
            ! get id of the grid:
            do i = 1, rs_input%nr_grids
              if (rs_input%grids(i)%input == 5) then
+               !rs_input%grids(i)%ndim = 3
                read(get_file_unit(), '(a)') line
                allocate(word_array(1))
                word_array(1) = line
@@ -356,7 +376,6 @@
            end do
          end if
       end if
-
 
       if (kw_matches(word, '.RADIAL')) then
          if (.not. rs_input%allocated_grids()) then
