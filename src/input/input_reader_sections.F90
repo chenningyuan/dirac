@@ -346,9 +346,12 @@
            ! get id of the grid:
            do i = 1, rs_input%nr_grids
              if (rs_input%grids(i)%input == 4) then
-               read(get_file_unit(), '(a)') line
-               allocate(word_array(1))
-               word_array(1) = line
+               nr_lines = 5
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
+                  read(get_file_unit(), '(a)') line
+                  word_array(j) = line
+               end do
                call grid_user_input_cfg(rs_input%grids(i), '2d', word_array)
                deallocate(word_array)
                call verify_grid_input_cfg(rs_input%grids(i))

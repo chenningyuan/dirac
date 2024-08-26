@@ -18,13 +18,13 @@ from runtest_rs import CompareHDF5
 test = TestRun(__file__, sys.argv)
 
 os.symlink(os.path.join(os.path.dirname(__file__), '..', 'testdata', 'grid_visual_3D.h5'), os.path.join(test.work_dir, 'grid_3d.h5'))
-#os.symlink(os.path.join(os.path.dirname(__file__), '..', 'testdata', 'grid_visual_2D.h5'), os.path.join(test.work_dir, 'grid_2d.h5'))
+os.symlink(os.path.join(os.path.dirname(__file__), '..', 'testdata', 'grid_visual_2D.h5'), os.path.join(test.work_dir, 'grid_2d.h5'))
 #os.symlink(os.path.join(os.path.dirname(__file__), '..', 'testdata', 'grid_visual_3D.txt'), os.path.join(test.work_dir, 'grid_3d.txt'))
 
 test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 
 #test.run(['vis_2d_hdf5.inp'], ['h2o.mol'], args='--incmo --put="grid_2d.h5" --get="ed_on2Dgrid.h5"')
-#test.run(['vis_2d.inp'], ['h2o.mol'], args='--incmo --put="grid_2d.h5" --get="ed_on2Dgrid.h5"')
+test.run(['vis_2d.inp'], ['h2o.mol'], args='--incmo --put="grid_2d.h5" --get="ed_on2Dgrid.h5"')
 
 test.run(['vis_3d_hdf5.inp'], ['h2o.mol'], args='--incmo --put="grid_3d.h5" --get="ed_on3Dgrid.h5"')
 test.run(['vis_3d.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dgrid_generated.h5 grid_3d_generated.h5"')

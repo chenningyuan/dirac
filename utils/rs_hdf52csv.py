@@ -43,7 +43,9 @@ def recursively_load_dict_contents_from_group(h5file, data_dict, path):
 # other functions added for backward compatibility with older DIRAC
 #
 
-def write_cube():
+#def write_cube():
+
+#
 
 data=read_hdf5(args.fh5)
 

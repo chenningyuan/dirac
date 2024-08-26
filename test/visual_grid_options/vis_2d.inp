@@ -15,10 +15,12 @@
 .EVCCNV
 1.0D-8
 **VISUAL
-.OUTPRI
+!.3D_INTEGRATE
+.PRINTL
+1
 .GRIDS 
 1
-id=1 input=2d
+id=1 input=2d export=yes file_out=grid_2d_generated.h5
 .2D
  0.0  0.0  0.0     !origin
  0.0  0.0  2.0     !"right"
@@ -27,5 +29,5 @@ id=1 input=2d
  20                !nr of points origin-"top"
 .GRIDFUNCTIONS
 1
-name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on2Dgrid.h5
+name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on2Dgrid_generated.h5
 *END OF

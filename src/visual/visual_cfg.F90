@@ -166,6 +166,46 @@ contains
 
       case ('2d')
         grid%ndim = 2
+        grid%typ = 1
+!
+!0.0  0.0  0.0     !origin
+!0.0  0.0  2.0     !"right"
+!20                !nr of points origin-"right"
+!0.0  2.0  0.0     !"top"
+!20                !nr of points origin-"top"
+        allocate(chvalues(3))
+        ! 1st line: origin
+        call split_string(user_input_lines(1),3,chvalues,separator=',')
+        do i = 1, 3
+          call str2int(trim(chvalues(i)), np, stat)
+          grid%origin(i) = np
+        end do
+        ! 2nd line: "right"
+        call split_string(user_input_lines(2),3,chvalues,separator=',')
+        do i = 1, 3
+          call str2int(trim(chvalues(i)), np, stat)
+          extents_right(i) = np
+        end do
+        ! 3rd line: nr of points origin-"right"
+        ! 4th line: "top"
+        call split_string(user_input_lines(4),3,chvalues,separator=',')
+        do i = 1, 3
+          call str2int(trim(chvalues(i)), np, stat)
+          extents_top(i) = np
+        end do
+        ! 5th line: nr of points origin-"top"
+        nr_points_top = np
+
+        grid%nr_points_total = 1
+        do i = 1, grid%ndim
+          call str2int(trim(chvalues(i)), np, stat)
+          grid%nr_points(i) = np
+          grid%nr_points_known(i) = .true.
+          grid%nr_points_total = grid%nr_points_total*grid%nr_points(i)
+        end do
+
+        deallocate(chvalues)
+
         grid%nr_points_total_known = .true.
 
       case ('3d')
