@@ -52,9 +52,4 @@ contains
     stop
   end subroutine
 
-! ------------------------------------------------------------------------------
-! string mangling subroutines
-! probably deserve a separate module and a better interface
-
-
 end module

@@ -495,7 +495,7 @@ contains
     do i = 1, self%n_atoms
       write(*, *) 'position of    ', i, (self%geometry(j,i), j = 1, 3)
       write(*, *) 'nuc_charge of  ', i, self%nuc_charge(i)
-      !gosia fixme write(*, *) 'symbol of      ', i, self%symbols(i)
+      !write(*, *) 'symbol of      ', i, self%symbols(i)
     end do
     write(*, *)
    end subroutine
@@ -524,7 +524,6 @@ contains
     write(*, *) 'set_occupation =      ', self%set_occupation
     write(*, *) 'force_small_ao =      ', self%force_small_ao
     write(*, *) 'cvalue =              ', self%cvalue
-    !write(*, *) 'levyle =              ', self%levyle
     write(*, *) 'gauge_origin =        ', self%gauge_origin
     write(*, *) 'set_cvalue     =      ', self%set_cvalue
     write(*, *) 'nr_grids =            ', self%nr_grids

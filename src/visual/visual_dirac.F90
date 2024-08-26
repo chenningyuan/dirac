@@ -415,8 +415,8 @@ contains
     call checkpoint_read(group//'geometry',   rdata=temp)
     call checkpoint_read(group//'nuc_charge', rdata=mol%nuc_charge)
 
-!   warning - these coordinates are stored on CHECKPOINT in Angstroms;
-!   in VISUAL - everything operates in AU, so let's rescale it here for consistency
+!   Note: on CHECKPOINT.h5, atomic coordinates are stored in Angstroms;
+!   here, they are rescaled to AU, because in VISUAL module we work in AU
     temp = temp/xtang
     mol%geometry = reshape(temp, (/3, mol%n_atoms/))
 
@@ -664,11 +664,11 @@ contains
 !
 
     if (mpi_is_master()) then
-      !if (allocated(rs_wf%hamiltonian)) then
+      if (allocated(rs_wf%hamiltonian)) then
         len_hamiltonian = len_trim(rs_wf%hamiltonian)
-      !else
-      !  len_hamiltonian = 0
-      !end if
+      else
+        len_hamiltonian = 0
+      end if
       if (allocated(rs_wf%xc_functional)) then
         len_xc_functional = len_trim(rs_wf%xc_functional)
       else
@@ -830,7 +830,6 @@ contains
     call interface_mpi_bcast(grid_function%rspvec_id,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%lao,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%lao_skip,3,irank_master,global_communicator)
-    !call interface_mpi_bcast(grid_function%lao_comp,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%tensor_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_g_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_m_order,1,irank_master,global_communicator)

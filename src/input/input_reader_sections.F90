@@ -338,7 +338,25 @@
 
       !if (kw_matches(word, '.LINE  ')) then
       !if (kw_matches(word, '.2D    ')) then
-      !if (kw_matches(word, '.3D    ')) then
+      if (kw_matches(word, '.3D    ')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".3D" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           ! get id of the grid:
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == 5) then
+               read(get_file_unit(), '(a)') line
+               allocate(word_array(1))
+               word_array(1) = line
+               call grid_user_input_cfg(rs_input%grids(i), '3d', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
+         end if
+      end if
+
 
       if (kw_matches(word, '.RADIAL')) then
          if (.not. rs_input%allocated_grids()) then
@@ -386,56 +404,6 @@
       end if
 
       call check_whether_kw_found(word, kw_section)
-
-   end subroutine
-
-   subroutine read_input_visual_helper(j)
-
-      use visual_cfg
-      use input_reader
-
-      implicit none
-
-!     --------------------------------------------------------------------------
-      integer, intent(in):: j
-!     --------------------------------------------------------------------------
-      integer             :: i
-      character(80)       :: line
-!     --------------------------------------------------------------------------
-
-      visual_cfg_nr_dmat = visual_cfg_nr_dmat+1
-      i = visual_cfg_nr_dmat
-      visual_cfg_property(i) = j
-      read(get_file_unit(), *) line
-      backspace(get_file_unit())
-      if (word_contains(line, 'DFCOEF')) then
-         read(get_file_unit(), *) visual_cfg_dmat_file(i)
-      else
-         read(get_file_unit(), *) visual_cfg_dmat_file(i), &
-                          visual_cfg_dmat_file_record(i)
-      end if
-
-   end subroutine
-
-   subroutine read_input_visual_helper2(j)
-
-      use visual_cfg
-      use input_reader
-
-      implicit none
-
-!     --------------------------------------------------------------------------
-      integer, intent(in):: j
-!     --------------------------------------------------------------------------
-      integer             :: i
-!     --------------------------------------------------------------------------
-
-      visual_cfg_nr_dmat = visual_cfg_nr_dmat+1
-      i = visual_cfg_nr_dmat
-      visual_cfg_property(i) = j
-      read(get_file_unit(), *) visual_cfg_ref_nucleus(i), &
-                       visual_cfg_dmat_file(i),   &
-                       visual_cfg_dmat_file_record(i)
 
    end subroutine
 

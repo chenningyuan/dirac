@@ -18,10 +18,19 @@
 !.3D_INTEGRATE
 .PRINTL
 1
+<<<<<<< HEAD
 .GRIDS    
 1
 id=1 input=create ndim=3 npoints=[3,3,3] margin=8.0 export=yes file_out=grid_3d_generated.h5
 .GRIDFUNCTIONS    
 1
 name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on3Dgrid.h5
+=======
+.GRIDS
+1
+id=1 input=create typ=1 ndim=3 npoints=[3,3,3] margin=4.0 export=yes file_out=grid_3d_generated.h5
+.GRIDFUNCTIONS
+1
+name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on3Dgrid_generated.h5
+>>>>>>> cdffa83a85e633a2bda41952571923ff37136cfd
 *END OF
