@@ -16,7 +16,12 @@
 
 C
 C
-#if defined (VAR_MPI2)
+#if (defined (VAR_MPI2) && defined(CRAY_COMPILER)) 
+      SUBROUTINE BLOCK_DISTR_DRV_REL(NPARBLOCK,IBLOCKL_S,IBLOCKL_C,
+     &                               RCCTOS,IT_TTPL,IGROUPLIST)
+        call quit('unsupported code')
+      end subroutine
+#elif (defined (VAR_MPI2) && !defined(CRAY_COMPILER)) 
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
@@ -381,6 +386,8 @@ C     flush local memory
       CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'BLOCKD')
 C
       END
+#endif
+#if defined (VAR_MPI2) 
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *

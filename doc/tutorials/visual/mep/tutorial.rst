@@ -118,8 +118,8 @@ where dc-mep.inp contains::
   *END OF
 
 Notice that no `.WAVE FUNCTION` directive is present, since we are restarting from a DFCOEF file.
-Furthermore, the `.3DFAST` directive is used in the `**VISUAL` section.
-To run using the Levy-Leblond Hamiltonian, just add the right keyword to the `**HAMILTONIAN` section,
+Furthermore, the :ref:`VISUAL_.3DFAST` directive is used in the :ref:`**VISUAL` section.
+To run using the Levy-Leblond Hamiltonian, just add the right keyword to the :ref:`**HAMILTONIAN` section,
 as in ll-mep.inp::
    
   **DIRAC

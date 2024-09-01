@@ -27,8 +27,6 @@
 !
 !  These flags should be passed on to every module
 !
-! NOSFCRASH - No Seg.Fault crash (by call quit). This is important for preserving gmon.out
-!
 ! DIRAC_WF(1:N_WF) the wave function jobs to be done in this dirac run, set in dirac/dirrdn.F
 !
       INTEGER LBASDIR
@@ -44,7 +42,7 @@
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG,             &
      &        TWOCOMP, TWOCOMPBSS, NOSET,                               &
-     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO,     &
+     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, DOQJACO,                &
      &        QM3, QMMM, BARNUC, DOHUCKEL, force_bnc, BNSPON
       LOGICAL OPTWLK, OPTNEW,  NMWALK
 !     hjaaj: preparing for implementation of QMMM /Jan 2010
@@ -57,7 +55,7 @@
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
      &                BNCRON, DOACUT, MP2ORG, TWOCOMP,                  &
      &                TWOCOMPBSS, NOSET,                                &
-     &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
+     &                DOACIN, CBKRINI, SKIP2E, LOWJACO,                 &
      &                DOQJACO, QM3, QMMM, BARNUC, DOHUCKEL,             &
      &                OPTWLK, OPTNEW, NMWALK, force_bnc, BNSPON
 

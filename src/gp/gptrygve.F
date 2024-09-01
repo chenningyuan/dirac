@@ -30,6 +30,11 @@ C
 #endif
 #endif
 !
+      integer function lnblnk(string)
+         character string*(*)
+         lnblnk = len_trim(string)
+      end
+
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
       CHARACTER HEAD*(*)
@@ -316,21 +321,8 @@ C 3 = pretty print traceback to stdout...
       CALL interface_MPI_ABORT(global_communicator,IERR)
 #   endif
 #endif
-
-CMI ... .*F -> *.p dependency brings -DNO_SF_QUIT
-#if defined (NO_SF_QUIT)
       CALL FLSHFO(LUPRI)
       STOP 1000
-#else
-CMI ... might be input defined restriction for some reasons
-      IF (.NOT.NOSFCRASH) THEN
-        CALL FLSHFO(LUPRI)
-        CALL CRASH()
-      ELSE
-        CALL FLSHFO(LUPRI)
-        STOP 1001
-      ENDIF
-#endif
       END
 
 C  /* Deck opendx */

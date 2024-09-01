@@ -32,6 +32,7 @@ module input_reader
       module procedure kw_read_r3
       module procedure kw_read_r4
       module procedure kw_read_ivec
+      module procedure kw_read_rvec
       module procedure kw_read_ivec_all
       module procedure kw_append_ivec
    end interface
@@ -296,6 +297,21 @@ contains
 1     call kw_read_error(kw_input)
 
    end subroutine
+
+   subroutine kw_read_rvec(kw_input, v, k)
+
+      character(kw_length), intent(in)  :: kw_input
+      real(8),              intent(out) :: v(:)
+      integer,              intent(in)  :: k
+      integer                           :: j
+
+      read(get_file_unit(), *,err=1) (v(j), j=1,k)
+      return
+
+1     call kw_read_error(kw_input)
+
+   end subroutine
+
 
    subroutine kw_read_ivec(kw_input, v, k)
 

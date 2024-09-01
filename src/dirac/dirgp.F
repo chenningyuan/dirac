@@ -3289,7 +3289,6 @@ C
 #include "dcblab.h"
 #include "dgroup.h"
 #include "nuclei.h"
-      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       DIMENSION IDIM(3),NBF(2)
       real(8), allocatable :: CMO1(:)
@@ -3301,6 +3300,7 @@ C
       integer, allocatable :: IBUF(:)
       type(file_info_t)    :: dfacmo
 C
+      CALL QENTER('ACMOIN')
       IPRINT = IPRGEN
 C
 C     Allocate arrays
@@ -3328,7 +3328,7 @@ C
 
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
-     &    '* ACMOIN : Coefficients read from DFACMO'
+     &    '* ACMOIN : Coefficients read from '//dfacmo%name
           CALL PRQMAT(CMO2,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
       ENDIF
@@ -3402,6 +3402,7 @@ C     De-allocate arrays
       deallocate(IBEIG2)
       deallocate(IBUF)
 C
+      CALL QEXIT('ACMOIN')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -167,6 +167,16 @@ is equivalent to the specification::
 
    .EDIPX
 
+keyword(RADPOW)
+
+Scale densities by a radial power :math:`r^{n}`. The keyword is followed by three integers specifying the exponent :math:`n`. Example::
+
+  .DENSITY
+  .RADPOW
+  1
+
+allows to the calculation of radial expectation values :math:`<r>` with respect to the origin.  
+
 keyword(SCALE)
 
 Scale densities by a factor.

@@ -1,0 +1,27 @@
+**DIRAC
+.TITLE
+ calculate selected grid functions on a 3D regular grid and export them to hdf5 files
+**HAMILTONIAN
+.DFT
+ B3LYP
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+10
+.EVCCNV
+1.0D-8
+**VISUAL
+.OUTPRI
+.GRIDS 
+1
+id=1 input=import file_inp=grid_3d.h5
+.GRIDFUNCTIONS
+1
+name=ed id_grid=1 purpose=visualization export=yes file_out=ed_3d.h5
+#.PLTTXT
+#list density scalar_field_list.txt e12.4
+*END OF

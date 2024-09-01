@@ -27,6 +27,7 @@ module talsh_common_routines
     public tensor_norm2
     public laplace_mult
     public laplace_testing
+    public print_tensor_elements
 
     contains
 
@@ -40,20 +41,30 @@ module talsh_common_routines
 
       end subroutine
 
-      subroutine scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor,t2_tensor,t3_tensor,eps_ijk)
+      subroutine scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor,t2_tensor,t3_tensor, &
+                                          full_t3_tensor,full_t4_tensor,full_t5_tensor,eps_ijk)
 
        type(talsh_tens_t), optional, intent(inout)  :: t1_tensor, t2_tensor, t3_tensor
+       type(talsh_tens_t), optional, intent(inout)  :: full_t3_tensor
+       type(talsh_tens_t), optional, intent(inout)  :: full_t4_tensor
+       type(talsh_tens_t), optional, intent(inout)  :: full_t5_tensor
        real(8), intent(in)                          :: eps_occ(:),eps_vir(:)
        real(8), intent(in), optional                :: eps_ijk
 
        real(8)  :: denominator
        complex(8), pointer, contiguous:: t1_tens(:,:), t2_tens(:,:,:,:), t3_tens(:,:,:)
+       complex(8), pointer, contiguous:: full_t3_tens(:,:,:,:,:,:)
+       complex(8), pointer, contiguous:: full_t4_tens(:,:,:,:,:,:,:,:)
+       complex(8), pointer, contiguous:: full_t5_tens(:,:,:,:,:,:,:,:,:,:)
        type(C_PTR):: body_p
 
        integer(INTD) :: t1_dims(1:2), t2_dims(1:4), t3_dims(1:3)
+       integer(INTD) :: full_t3_dims(1:6)
+       integer(INTD) :: full_t4_dims(1:8)
+       integer(INTD) :: full_t5_dims(1:10)
 
        integer(INTD) :: ierr, tens_rank
-       integer       :: a, b, c, i, j
+       integer       :: a, b, c, d, e, i, j, k, l, m
 
        integer, optional, intent(in) :: nocc
 
@@ -120,6 +131,174 @@ module talsh_common_routines
           end if
 
        end if
+
+       if (present(full_t3_tensor)) then
+
+          ierr = talsh_tensor_dimensions(full_t3_tensor,tens_rank,full_t3_dims)
+          if (ierr.ne.0 .or. tens_rank.ne.6) stop 'program error: full t3 tensor corrupted' 
+          ierr=talsh_tensor_get_body_access(full_t3_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,full_t3_tens,full_t3_dims(1:6)) 
+
+          if (full_t3_dims(4) .eq. nocc) then
+            !t amplitudes
+            do k = 1, full_t3_dims(6)
+              do j = 1, full_t3_dims(5)
+                do i = 1, full_t3_dims(4)
+                  do c = 1, full_t3_dims(3)
+                    do b = 1, full_t3_dims(2)
+                      do a = 1, full_t3_dims(1)
+                        denominator = eps_occ(i) + eps_occ(j) + eps_occ(k) 
+                        denominator = denominator - eps_vir(a) - eps_vir(b) - eps_vir(c)
+                        full_t3_tens(a,b,c,i,j,k) = full_t3_tens(a,b,c,i,j,k) / denominator
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+
+          else
+            !Lambda
+            do i = 1, full_t3_dims(1)
+              do j = 1, full_t3_dims(2)
+                do k = 1, full_t3_dims(3)
+                  do a = 1, full_t3_dims(4)
+                    do b = 1, full_t3_dims(5)
+                      do c = 1, full_t3_dims(6)
+                        denominator = eps_occ(i) + eps_occ(j) + eps_occ(k) 
+                        denominator = denominator - eps_vir(a) - eps_vir(b) - eps_vir(c)
+                        full_t3_tens(i,j,k,a,b,c) = full_t3_tens(i,j,k,a,b,c) / denominator
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+
+          end if
+
+       end if
+
+       if (present(full_t4_tensor)) then
+
+          ierr = talsh_tensor_dimensions(full_t4_tensor,tens_rank,full_t4_dims)
+          if (ierr.ne.0 .or. tens_rank.ne.8) stop 'program error: full t4 tensor corrupted'
+          ierr=talsh_tensor_get_body_access(full_t4_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,full_t4_tens,full_t4_dims(1:8))
+
+          if (full_t4_dims(5) .eq. nocc) then
+            !t amplitudes
+            do l = 1, full_t4_dims(8)
+              do k = 1, full_t4_dims(7)
+                do j = 1, full_t4_dims(6)
+                  do i = 1, full_t4_dims(5)
+                    do d = 1, full_t4_dims(4)
+                      do c = 1, full_t4_dims(3)
+                        do b = 1, full_t4_dims(2)
+                          do a = 1, full_t4_dims(1)
+                            denominator = eps_occ(i) + eps_occ(j) + eps_occ(k) + eps_occ(l) 
+                            denominator = denominator - eps_vir(a) - eps_vir(b) - eps_vir(c) - eps_vir(d)
+                            full_t4_tens(a,b,c,d,i,j,k,l) = full_t4_tens(a,b,c,d,i,j,k,l) / denominator
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+
+          else
+            !Lambda
+            do i = 1, full_t4_dims(1)
+              do j = 1, full_t4_dims(2)
+                do k = 1, full_t4_dims(3)
+                  do l = 1, full_t4_dims(4)
+                    do a = 1, full_t4_dims(5)
+                      do b = 1, full_t4_dims(6)
+                        do c = 1, full_t4_dims(7)
+                          do d = 1, full_t4_dims(8)
+                            denominator = eps_occ(i) + eps_occ(j) + eps_occ(k) + eps_occ(l) 
+                            denominator = denominator - eps_vir(a) - eps_vir(b) - eps_vir(c) - eps_vir(d)
+                            full_t4_tens(i,j,k,l,a,b,c,d) = full_t4_tens(i,j,k,l,a,b,c,d) / denominator
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+
+          end if
+
+       end if
+
+       if (present(full_t5_tensor)) then
+
+          ierr = talsh_tensor_dimensions(full_t5_tensor,tens_rank,full_t5_dims)
+          if (ierr.ne.0 .or. tens_rank.ne.10) stop 'program error: full t5 tensor corrupted'
+          ierr=talsh_tensor_get_body_access(full_t5_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,full_t5_tens,full_t5_dims(1:10))
+
+          if (full_t5_dims(6) .eq. nocc) then
+            !t amplitudes
+            do m = 1, full_t5_dims(10)
+              do l = 1, full_t5_dims(9)
+                do k = 1, full_t5_dims(8)
+                  do j = 1, full_t5_dims(7)
+                    do i = 1, full_t5_dims(6)
+                      do e = 1, full_t5_dims(5)
+                        do d = 1, full_t5_dims(4)
+                          do c = 1, full_t5_dims(3)
+                            do b = 1, full_t5_dims(2)
+                              do a = 1, full_t5_dims(1)
+                                denominator = eps_occ(i) + eps_occ(j) + eps_occ(k) + eps_occ(l) + eps_occ(m)
+                                denominator = denominator &
+                                            - eps_vir(a) - eps_vir(b) - eps_vir(c) - eps_vir(d) - eps_vir(e)
+                                full_t5_tens(a,b,c,d,e,i,j,k,l,m) = full_t5_tens(a,b,c,d,e,i,j,k,l,m) / denominator
+                              end do
+                            end do
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+
+          else
+            !Lambda
+            do i = 1, full_t5_dims(1)
+              do j = 1, full_t5_dims(2)
+                do k = 1, full_t5_dims(3)
+                  do l = 1, full_t5_dims(4)
+                    do m = 1, full_t5_dims(5)
+                      do a = 1, full_t5_dims(6)
+                        do b = 1, full_t5_dims(7)
+                          do c = 1, full_t5_dims(8)
+                            do d = 1, full_t5_dims(9)
+                              do e = 1, full_t5_dims(10)
+                                denominator = eps_occ(i) + eps_occ(j) + eps_occ(k) + eps_occ(l) + eps_occ(m)
+                                denominator = denominator & 
+                                            - eps_vir(a) - eps_vir(b) - eps_vir(c) - eps_vir(d) - eps_vir(e)
+                                full_t5_tens(i,j,k,l,m,a,b,c,d,e) = full_t5_tens(i,j,k,l,m,a,b,c,d,e) / denominator
+                              end do
+                            end do
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+
+          end if
+
+       end if ! full_t5_tensor
+
 
        if (present(t3_tensor)) then
 
@@ -377,16 +556,20 @@ module talsh_common_routines
          ierr=talsh_tensor_get_body_access(dm_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
          dm_mo_fort(1:nvir,1:nvir) = dm_block
-         
+          
          call get_free_fileunit(mp2dm)
-         if (present(mode) .and. mode==2) then
-           open (mp2dm,file=file_out,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
-           ! write dimension of the matrix 
-           write(mp2dm,*) nvir
-           ! write matrix element
-           do ierr=1,nvir
-             write(mp2dm,*) dm_mo_fort(ierr,1:nvir)
-           end do
+         if (present(mode)) then
+           if (mode==2) then
+              open (mp2dm,file=file_out,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
+              ! write dimension of the matrix 
+              write(mp2dm,*) nvir
+              ! write matrix element
+              do ierr=1,nvir
+                write(mp2dm,*) dm_mo_fort(ierr,1:nvir)
+              end do
+            else
+               call quit('error in choice of mode for writing mp2nos')
+            end if
          else 
            open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
            ! write dimension of the matrix 
@@ -551,6 +734,10 @@ module talsh_common_routines
         integer(INTD)  ::  dims4(1:4)
         integer(INTD)  ::  dims5(1:5)
         integer(INTD)  ::  dims6(1:6)
+        integer(INTD)  ::  dims7(1:7)
+        integer(INTD)  ::  dims8(1:8)
+        integer(INTD)  ::  dims9(1:9)
+        integer(INTD)  ::  dims10(1:10)
         integer(C_INT) ::  ierr
         integer(INTD)  ::  rank, rrank
         type(C_PTR)         :: body_p
@@ -560,6 +747,10 @@ module talsh_common_routines
         complex(8), pointer :: tens4(:, :, :, :)
         complex(8), pointer :: tens5(:, :, :, :, :)
         complex(8), pointer :: tens6(:, :, :, :, :, :)
+        complex(8), pointer :: tens7(:, :, :, :, :, :, :)
+        complex(8), pointer :: tens8(:, :, :, :, :, :, :, :)
+        complex(8), pointer :: tens9(:, :, :, :, :, :, :, :, :)
+        complex(8), pointer :: tens10(:, :, :, :, :,:, :, :, :, :)
         integer             :: DataKind(1),nData
 
         ierr=talsh_tensor_data_kind(h_tensor,nData,DataKind)
@@ -616,8 +807,36 @@ module talsh_common_routines
           call c_f_pointer(body_p,tens6,dims6)
           tens6=val
 
+        else if (rank.eq.7) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims7)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens7,dims7)
+          tens7=val
+
+        else if (rank.eq.8) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens8,dims8)
+          tens8=val
+
+        else if (rank.eq.9) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims9)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens9,dims9)
+          tens9=val
+
+        else if (rank.eq.10) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims10)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens10,dims10)
+          tens10=val
+
         else
-          stop 'error in talsh_init: only ranks 0 to 6 implemented'
+          stop 'error in talsh_init: only ranks 0 to 10 implemented'
         end if
 
       end subroutine talsh_init_C8
@@ -638,6 +857,10 @@ module talsh_common_routines
         integer(INTD)  ::  dims4(1:4)
         integer(INTD)  ::  dims5(1:5)
         integer(INTD)  ::  dims6(1:6)
+        integer(INTD)  ::  dims7(1:7)
+        integer(INTD)  ::  dims8(1:8)
+        integer(INTD)  ::  dims9(1:9)
+        integer(INTD)  ::  dims10(1:10)
         integer(C_INT) ::  ierr
         integer(INTD)  ::  rank, rrank
         type(C_PTR)         :: body_p
@@ -647,6 +870,10 @@ module talsh_common_routines
         real(8), pointer :: tens4(:, :, :, :)
         real(8), pointer :: tens5(:, :, :, :, :)
         real(8), pointer :: tens6(:, :, :, :, :, :)
+        real(8), pointer :: tens7(:, :, :, :, :, :, :)
+        real(8), pointer :: tens8(:, :, :, :, :, :, :, :)
+        real(8), pointer :: tens9(:, :, :, :, :, :, :, :, :)
+        real(8), pointer :: tens10(:, :, :, :, :,:, :, :, :, :)
         integer             :: DataKind(1),nData
 
         ierr=talsh_tensor_data_kind(h_tensor,nData,DataKind)
@@ -703,8 +930,36 @@ module talsh_common_routines
           call c_f_pointer(body_p,tens6,dims6)
           tens6=val
 
+        else if (rank.eq.7) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims7)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens7,dims7)
+          tens7=val
+
+        else if (rank.eq.8) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens8,dims8)
+          tens8=val
+
+        else if (rank.eq.9) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims9)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens9,dims9)
+          tens9=val
+
+        else if (rank.eq.10) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims10)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens10,dims10)
+          tens10=val
+
         else
-          stop 'error in talsh_init: only ranks 0 to 6 implemented'
+          stop 'error in talsh_init: only ranks 0 to 10 implemented'
         end if
 
       end subroutine talsh_init_R8
@@ -715,7 +970,7 @@ module talsh_common_routines
 
          type(talsh_tens_t), intent(inout):: a_tensor
 
-         integer(INTD) :: a_dims(1:4)
+         integer(INTD) :: a_dims(1:10)
          integer(INTD) :: ierr, a_rank
 
 !        scalars (need to be defined as tensor types)
@@ -743,6 +998,18 @@ module talsh_common_routines
             ierr=talsh_tensor_contract("R()+=A+(p,q,r)*A(p,q,r)",result_tensor,a_tensor,a_tensor)
          case (4)
             ierr=talsh_tensor_contract("R()+=A+(p,q,r,s)*A(p,q,r,s)",result_tensor,a_tensor,a_tensor)
+         case (5)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t)*A(p,q,r,s,t)",result_tensor,a_tensor,a_tensor)
+         case (6)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u)*A(p,q,r,s,t,u)",result_tensor,a_tensor,a_tensor)
+         case (7)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u,v)*A(p,q,r,s,t,u,v)",result_tensor,a_tensor,a_tensor)
+         case (8)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u,v,x)*A(p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
+         case (9)
+            ierr=talsh_tensor_contract("R()+=A+(a,p,q,r,s,t,u,v,x)*A(a,p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
+         case (10)
+            ierr=talsh_tensor_contract("R()+=A+(a,b,p,q,r,s,t,u,v,x)*A(a,b,p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
          case default
             call quit ('wrong dimension in tensor_norm2')
          end select
@@ -951,6 +1218,122 @@ module talsh_common_routines
       end if
 
     end subroutine laplace_testing
+
+    subroutine print_tensor_elements(tensor, relccsd_order)
+       implicit none
+
+       type(talsh_tens_t), intent(inout)    :: tensor
+       logical, intent(in), optional :: relccsd_order
+
+       integer(INTD)  ::  rank
+       integer(INTD)  ::  dims1(1)
+       integer(INTD)  ::  dims2(1:2)
+       integer(INTD)  ::  dims3(1:3)
+       integer(INTD)  ::  dims4(1:4)
+       integer(INTD)  ::  ierr
+       integer  ::  i, j, k, l, b
+       integer, pointer :: index_i_talsh_to_relccsd(:)
+       integer, pointer :: index_j_talsh_to_relccsd(:)
+       integer :: ku, kb, num_kr_pairs_i, num_kr_pairs_j, num_spinors_i, num_spinors_j
+       type(C_PTR)         :: body
+       complex(8), pointer :: tens1(:)
+       complex(8), pointer :: tens2(:,:)
+       complex(8) :: value_to_print
+       logical :: print_in_relccsd_order
+
+       rank=talsh_tensor_rank(tensor)
+
+       if (rank.eq.1) then
+         ierr = talsh_tensor_dimensions(tensor,rank,dims1)
+         ierr=talsh_tensor_get_body_access(tensor,body,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body,tens1,dims1)
+
+         b = 0
+         do i = 1, dims1(1)
+            b = b + 1
+            value_to_print = tens1(i)
+            write(6,'(3X,2I4,2x,2E28.14)') b, value_to_print
+         end do
+
+       else if (rank.eq.2) then
+         ierr = talsh_tensor_dimensions(tensor,rank,dims2)
+         ierr=talsh_tensor_get_body_access(tensor,body,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body,tens2,dims2)
+
+         if (present(relccsd_order)) then
+            print_in_relccsd_order = relccsd_order
+         else
+            print_in_relccsd_order = .false.
+         end if
+
+         if (print_in_relccsd_order) then
+            num_spinors_i = dims2(1)
+            num_spinors_j = dims2(2)
+
+            num_kr_pairs_i= num_spinors_i / 2
+            num_kr_pairs_j= num_spinors_j / 2
+
+            allocate(index_i_talsh_to_relccsd(num_spinors_i))
+            allocate(index_j_talsh_to_relccsd(num_spinors_j))
+            index_i_talsh_to_relccsd = 0
+            index_j_talsh_to_relccsd = 0
+
+            ku = 1
+            kb = 1
+            do i = 1, num_spinors_i
+               if (mod(i,2).eq.0) then
+                  index_i_talsh_to_relccsd(num_kr_pairs_i + kb) = i
+                  kb = kb + 1
+               else
+                  index_i_talsh_to_relccsd(ku) = i
+                  ku = ku + 1
+               end if
+            end do
+
+            ku = 1
+            kb = 1
+            do j = 1, num_spinors_j
+               if (mod(j,2).eq.0) then
+                  index_j_talsh_to_relccsd(num_kr_pairs_j + kb) = j
+                  kb = kb + 1
+               else
+                  index_j_talsh_to_relccsd(ku) = j
+                  ku = ku + 1
+               end if
+            end do
+            print *,'index_j_talsh_to_relccsd:',index_j_talsh_to_relccsd
+
+            b = 0
+            do j = 1, dims2(2)
+               do i = 1, dims2(1)
+                  b = b + 1
+                  value_to_print = tens2(index_i_talsh_to_relccsd(i),index_j_talsh_to_relccsd(j))
+                  write(6,'(3X,I4,2x,2F28.10,4I4)') b, value_to_print, i, j, &
+          &            index_i_talsh_to_relccsd(i), index_j_talsh_to_relccsd(j)
+               end do
+            end do
+
+            deallocate(index_i_talsh_to_relccsd)
+            deallocate(index_j_talsh_to_relccsd)
+
+          else
+            b = 0
+            do j = 1, dims2(2)
+               do i = 1, dims2(1)
+                  b = b + 1
+                  value_to_print = tens2(i,j)
+                  write(6,'(3X,I4,2x,2F28.10,2I4)') b, value_to_print, i, j
+               end do
+            end do
+          end if
+
+       else
+          call quit('unsupported tensor rank in print_tensor_elements')
+       end if
+
+    end subroutine
+
+
 
 
 end module talsh_common_routines

@@ -134,24 +134,38 @@ module exacorr_global
                end if
              end if
 
-             ! read property integrals (requires also readding of nsp from mrconee, so testing for this as well)
-             if (exa_input%nff(1)>0) then
-               inquire (file='MDPROP',exist=tobe)
-             else
-              exa_input%nff(2)=1
-              tobe=.FALSE.
-             end if
+             ! YX: MDPROP not only for finite gradient. So, we check if MDPROP first. 
+             inquire (file = 'MDPROP', exist=tobe)
              if (tobe.and.one_el_exist) then
-                call read_mdprop (int_1el, ierr)
-                if (ierr == 0) then
-                  call print_date("read property integrals from MDPROP")
-                else
-                  call print_date("could not read property integrals from MDPROP")
-                  int_1el%n_prop = 0
-                endif
+              call read_mdprop (int_1el, ierr)
+              if (ierr == 0) then
+                call print_date("read property integrals from MDPROP")
+              else
+                call print_date("could not read property integrals from MDPROP")
+                int_1el%n_prop = 0
+              endif
              else
-               int_1el%n_prop = 0
+                int_1el%n_prop = 0
              end if
+
+             ! read property integrals (requires also readding of nsp from mrconee, so testing for this as well)
+             if (exa_input%nff(1)<=0) then
+              !  inquire (file='MDPROP',exist=tobe)
+            !  else
+              exa_input%nff(2)=1
+              ! tobe=.FALSE.
+             end if
+            !  if (tobe.and.one_el_exist) then
+            !     call read_mdprop (int_1el, ierr)
+            !     if (ierr == 0) then
+            !       call print_date("read property integrals from MDPROP")
+            !     else
+            !       call print_date("could not read property integrals from MDPROP")
+            !       int_1el%n_prop = 0
+            !     endif
+            !  else
+            !    int_1el%n_prop = 0
+            !  end if
 
              call synchronize_global_data
 
@@ -501,9 +515,11 @@ module exacorr_global
         integer,optional                      :: mo_list(:)
 
         integer :: str_len, sl, p_len, check, nmo_all
+        integer :: infty_len
         integer :: mo1, mo2, i, j, k, i_mo, size_mo
         character(len=20) :: sav_str
         character(len=10) :: num_str
+        character(len=1)  :: infty_str
         character(len=1)  :: p_str, c_str, e_str
         real(8)                  :: e_min, e_max, e_dist
         real(8), allocatable     :: dist_a(:), eps(:)
@@ -526,11 +542,13 @@ module exacorr_global
 
         str_len=len(inp_str)
         num_str='0123456789'
+        infty_str='o'
         p_str='.'
         c_str=','
         e_str=' '
         sl=0
         p_len=0
+        infty_len=0
         check=0
         nmo_all = cspinor_all%nmo/2
 
@@ -629,6 +647,13 @@ module exacorr_global
               else if (p_len>2) then
                 stop 'wrong number of points in string2mo'
               end if
+            else if (inp_str(i:i)==infty_str) then
+               infty_len=infty_len+1
+               if (infty_len==1) then
+                  sl=1
+               else if (infty_len>2) then
+                  stop 'infinity sign ill defined in string2mo'
+               end if
             else if (inp_str(i:i)==c_str) then
               if(p_len==0) then
                 read(sav_str(1:sl) , *) mo1
@@ -642,8 +667,12 @@ module exacorr_global
                   end if
                 end if
                 sl=0
-              else if (p_len==2) then
-                read(sav_str(1:sl) , *) mo2
+             else if (p_len==2) then
+                if (infty_len==2) then
+                   mo2 = nmo_all
+                else
+                   read(sav_str(1:sl) , *) mo2
+                end if
                 if (mo1>mo2) then
                   k=mo1
                   mo1=mo2
@@ -694,7 +723,11 @@ module exacorr_global
               end if
               sl=0
             else if (p_len==2) then
-              read(sav_str(1:sl) , *) mo2
+              if (infty_len==2) then
+                  mo2 = nmo_all
+              else
+                  read(sav_str(1:sl) , *) mo2
+              end if
               if (mo1>mo2) then
                 k=mo1
                 mo1=mo2
