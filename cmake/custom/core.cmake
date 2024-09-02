@@ -151,7 +151,7 @@ foreach(
       
     endif()
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
+    if(CMAKE_CXX_COMPILER_ID MATCHES NVHPC)
     # added -libstdc++ linking flag for each ${_executable} due to pgCC and xcfun
         target_link_libraries(${_executable} -lstdc++)
     endif()

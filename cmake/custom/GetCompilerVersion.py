@@ -60,7 +60,7 @@ elif C_COMPILER_VENDOR == 'Intel':
         C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'\V','\d+\.\d+')
     else:
         C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'-V','\d+\.\d+')
-elif C_COMPILER_VENDOR == 'PGI':
+elif C_COMPILER_VENDOR == 'NVHPC':
     C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'-V','\d+\.\d+')
 elif C_COMPILER_VENDOR == 'XL':
     C_COMPILER_VERSION = get_compiler_version(C_COMPILER,'-qversion','\d+\.\d+')
@@ -78,7 +78,7 @@ elif CXX_COMPILER_VENDOR == 'Intel':
         CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'/V','\d+\.\d+\.\d+')
     else:
         CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'-V','\d+\.\d+\.\d+')
-elif CXX_COMPILER_VENDOR == 'PGI':
+elif CXX_COMPILER_VENDOR == 'NVHPC':
     CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'-V','\d+\.\d+')
 elif CXX_COMPILER_VENDOR == 'XL':
     CXX_COMPILER_VERSION = get_compiler_version(CXX_COMPILER,'-qversion','\d+\.\d+')
@@ -96,7 +96,7 @@ elif Fortran_COMPILER_VENDOR == 'Intel':
         Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'/V','\d+\.\d+')
     else:
         Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-V','\d+\.\d+')
-elif Fortran_COMPILER_VENDOR == 'PGI' or Fortran_COMPILER_VENDOR == 'Cray':
+elif Fortran_COMPILER_VENDOR == 'NVHPC' or Fortran_COMPILER_VENDOR == 'Cray':
     Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-V','\d+\.\d+')
 elif Fortran_COMPILER_VENDOR == 'XL':
     Fortran_COMPILER_VERSION = get_compiler_version(Fortran_COMPILER,'-qversion','\d+\.\d+')

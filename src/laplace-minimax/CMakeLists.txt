@@ -32,10 +32,10 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     )
 endif()
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+if(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
   target_compile_options(laplace-minimax
     PRIVATE
-      $<$<COMPILE_LANGUAGE:Fortran>:${Fortran_FLAGS}> -O4 -fast -fastsse -Mfree -Mlarge_arrays -Mcache_align -Msmart -Msmartalloc -Minform=inform
+      $<$<COMPILE_LANGUAGE:Fortran>:${Fortran_FLAGS}> -O4 -fast -fastsse -Mfree -Mlarge_arrays -Mcache_align -Minform=inform
     )
 endif()
 
