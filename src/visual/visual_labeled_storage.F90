@@ -113,6 +113,10 @@ contains
     group = label%name
     call lab_write(data_file, trim(group)//'/nr_points_total',idata = grid%nr_points_total)
     call lab_write(data_file, trim(group)//'/ndim',idata = grid%ndim)
+    do i = 1, grid%ndim
+      write(ich, '(i1)') i
+      call lab_write(data_file, trim(group)//'/nr_points_dim_'//trim(ich), idata = grid%nr_points(i))
+    end do
 
     call assign_label_grid(grid, label, top_section='result', level=2)
     group = label%name
@@ -154,13 +158,19 @@ contains
     type(rs_label_t)::label
     integer:: i
     character*(:), allocatable  :: group
+    character(len=1):: ich
 
     call assign_label_grid(grid, label, top_section='result', level=1)
     group = label%name
     call lab_read(data_file, trim(group)//'/ndim',idata = grid%ndim)
     call lab_read(data_file, trim(group)//'/nr_points_total',idata = grid%nr_points_total)
-    grid%ndim_known = .true.
-    grid%nr_points_total_known = .true.
+    do i = 1, grid%ndim
+      write(ich, '(i1)') i
+      call lab_read(data_file, trim(group)//'/nr_points_dim_'//trim(ich), idata = grid%nr_points(i))
+      grid%nr_points_known(i) = .true.
+    end do
+    if (grid%ndim > 0) grid%ndim_known = .true.
+    if (grid%nr_points_total > 0) grid%nr_points_total_known = .true.
   end subroutine
 
 
