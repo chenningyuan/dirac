@@ -26,7 +26,6 @@ contains
     real(8):: v(3)
 
     if (grid%ndim /= 3) return
-    write(*, *) 'HERENOw!'
 
     ipoint = 1
     do i = 1, grid%nr_points(1)
@@ -35,9 +34,7 @@ contains
         v(2) = grid%origin(2) + (j - 1)*grid%spacing(2)
         do k = 1, grid%nr_points(3)
           v(3) = grid%origin(3) + (k - 1)*grid%spacing(3)
-
           grid%points(1:3, ipoint) = v(1:3)
-
           ipoint = ipoint + 1
         end do
       end do
@@ -173,7 +170,8 @@ contains
       extents(0, i) = grid%origin(i)
       extents(1, i) = grid%origin(i) + (grid%nr_points(i) - 1)*grid%spacing(i)
       cm_0 = 0.5d0*(extents(1, i) + extents(0, i))
-      cm_1 = cmxyz(i)  ! this is center-of-mass from "orgcom.h" in a.u.
+      !cm_1 = cmxyz(i)  ! this is center-of-mass from "orgcom.h" in a.u.
+      cm_1 = gagorg(i) ! this is a "magnetic gauge origin" (from "orgcom.h" in a.u.), was used in old DIRAC-VISUAL code 
       extents(0, i) = extents(0, i) + (cm_1 - cm_0)
       extents(1, i) = extents(1, i) + (cm_1 - cm_0)
     end do
