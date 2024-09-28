@@ -88,9 +88,7 @@ subroutine talsh_cis_rt_solver_driver(exa_input,eVectorsR,eValues)
     allocate(CIS_eigen_tensors(N_states))
     do i_state=1, N_states
         ierr=talsh_tensor_construct(CIS_eigen_tensors(i_state),C8,cis_eig_dims,init_val=ZERO)
-        ! print *, "ierr_CIS_eigen: ", ierr
         call reshape_cis(eVectorsR,CIS_eigen_tensors(i_state),cis_eig_dims,i_state)
-        ! print *, "issue in reshape?"
     end do
 
 !   Get property integrals
@@ -100,31 +98,22 @@ subroutine talsh_cis_rt_solver_driver(exa_input,eVectorsR,eValues)
     exchange = .false.
     do i=1, N_props
         call get_prop_integral(exa_input,orb_int_tensors(i),i_prop,exchange)
-        ! print *, "issues?"
     end do 
 
 !   Constrcut talsh cis_density_matrix
     allocate(Tra_Den_exe_grd_tensors(N_states))
     allocate(Tra_Den_exe_exe_tensors(N_states,N_states))
-    ierr=talsh_tensor_construct(Tra_Den_exe_grd_tensor%prime_vo,C8,vo_dims,init_val=ZERO)
-    ! print *, "ierrtra_exe_grd: ", ierr
-    ierr=talsh_tensor_construct(Tra_Den_exe_exe_tensor%prime_vv,C8,vv_dims,init_val=ZERO)
-    ! print *, "ierrtra_exe_exe1: ", ierr
-    ierr=talsh_tensor_construct(Tra_Den_exe_exe_tensor%prime_oo,C8,oo_dims,init_val=ZERO)
-    ! print *, "ierrtra_exe_exe2: ", ierr
 
     do i_state = 1, N_states
         call get_cis_den_exe_grd(exa_input,CIS_eigen_tensors(i_state),&
-                                    Tra_Den_exe_grd_tensor, vo_dims)
-        Tra_Den_exe_grd_tensors(i_state) = Tra_Den_exe_grd_tensor
+                                    Tra_Den_exe_grd_tensors(i_state), vo_dims)
     end do 
 
     do j_state = 1, N_states
         do i_state = j_state, N_states
             call get_cis_den_exe_exe(exa_input,CIS_eigen_tensors(i_state),&
-                                        CIS_eigen_tensors(j_state),Tra_Den_exe_exe_tensor,&
+                                        CIS_eigen_tensors(j_state),Tra_Den_exe_exe_tensors(i_state,j_state),&
                                         oo_dims, vv_dims)
-            Tra_Den_exe_exe_tensors(i_state,j_state) = Tra_Den_exe_exe_tensor
 
             if (i_state > j_state) then
                 Tra_Den_exe_exe_tensors(j_state,i_state) = Tra_Den_exe_exe_tensors(i_state,j_state)
@@ -266,11 +255,10 @@ end subroutine
 
     integer :: i, a
 
+    ierr=talsh_tensor_construct(Tra_Den_exe_grd_tensor%prime_vo,C8,vo_dims,init_val=ZERO)
     ierr=talsh_tensor_init(Tra_Den_exe_grd_tensor%prime_vo)
-    ! print *, "ierr_get_tra_exe_grd1: ", ierr
     one_dims(1) = 1
     ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-    ! print *, "ierr_get_tra_exe_grd2: ", ierr
     
     ierr=talsh_tensor_contract("TDM(a,i)+=CISR(a,i)*I()",Tra_Den_exe_grd_tensor%prime_vo,&
                                 CIS_eigen_tensor,one_tensor,scale=ONE)
@@ -297,6 +285,11 @@ end subroutine
         complex(8), pointer, contiguous :: Tra_Den_exe_exe_vv_tens(:,:)
 
         integer :: i, j, a, b
+
+        ierr=talsh_tensor_construct(Tra_Den_exe_exe_tensor%prime_vv,C8,vv_dims,init_val=ZERO)
+        ! print *, "ierrtra_exe_exe1: ", ierr
+        ierr=talsh_tensor_construct(Tra_Den_exe_exe_tensor%prime_oo,C8,oo_dims,init_val=ZERO)
+        ! print *, "ierrtra_exe_exe2: ", ierr
 
         ierr=talsh_tensor_init(Tra_Den_exe_exe_tensor%prime_oo)
         ! print *, "ierr_get_tra_exe_exe1: ", ierr
@@ -490,8 +483,11 @@ end subroutine
                     scale=ONE)
             M_prop_inter_tens(i_state+1, 1) = result_tens(1)
             M_prop_inter_tens(1, i_state+1) = conjg(result_tens(1))
+            print *, "TDM: ", result_tens(1)
                 
         end do
+            ! call print_tensor(Tra_Den_exe_grd_tensors(4)%prime_vo,1.0d-6,"DM_exe_grd_state_4th")
+            ! call print_tensor(orb_int_tensors(i_prop)%prop_vo,1.0d-6,"prop_vo")
 
 !       HF-HF block
         ierr=talsh_tensor_get_body_access(orb_int_tensors(i_prop)%prop_oo,body_p3,&
