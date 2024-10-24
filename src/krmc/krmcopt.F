@@ -2387,6 +2387,11 @@ C
       CALL QENTER('RSETCI')
       CALL GETTIM(CPU1,WLL1)
 
+      if (IPROPT .ge. 2) then
+         write(lupri,'(/2A/A,2L5)')
+     &      ' RSETCI: USE_CIPROGRAM = ',USE_CIPROGRAM,
+     &      ' RSETCI: linear, spinfr_krmc',linear,spinfr_krmc
+      end if
 
       if(linear.or.spinfr_krmc)then
 
