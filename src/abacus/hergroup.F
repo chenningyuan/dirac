@@ -196,7 +196,6 @@ C
 #include "ibtfun.h"
 #include "argoscom.h"
 #include "argoscomch.h"
-#include "dgroup.h"  ! ATOMIC
       DO 5 I = 0,7
         LSYMOP(I) = .FALSE.
     5 CONTINUE
