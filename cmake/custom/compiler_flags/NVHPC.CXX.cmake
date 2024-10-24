@@ -1,5 +1,5 @@
 if(CMAKE_CXX_COMPILER_ID MATCHES NVHPC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -traceback")
     set(CMAKE_CXX_FLAGS_RELEASE "-fast")
     set(CMAKE_CXX_FLAGS_DEBUG "-O0")
 endif()
