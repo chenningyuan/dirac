@@ -49,7 +49,7 @@ endif()
 set(_configuration_time "unknown")
 # get configuration time in UTC
 execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} -c "import datetime; print(datetime.datetime.utcnow())"
+    COMMAND ${PYTHON_EXECUTABLE} -c "import datetime; print(datetime.datetime.now(datetime.UTC))"
     OUTPUT_VARIABLE _configuration_time
     )
 string(STRIP ${_configuration_time} _configuration_time) # delete newline
