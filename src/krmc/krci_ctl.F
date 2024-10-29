@@ -93,7 +93,7 @@ C
      &            '.THRPCI','.MXVCBL','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
-     &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
+     &            '.USE PB','xxxxxxx','.TRA NO','.LOWSRT','.SEL ST',
      &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX',
      &            '.EEDM  ','.MHYP  ','.ENSPS ','.NMQM  ','.THRGCI',
      &            '.XXXXXX','.TERSE '/ !MKN
@@ -140,7 +140,6 @@ C
       NATOLCR_KRCI      = .FALSE.
       CHCKPT_KRCI       = .FALSE.
       CUSE_PBLFL_KRCI   = .FALSE.
-      GENFOCK_KRCI      = .FALSE.
       TRANATO_KRCI      = .FALSE.
       LOWSORT_KRCI      = .FALSE.
       STATE_SELECT_KRCI = .FALSE.
@@ -655,9 +654,7 @@ C              distribution
                CUSE_PBLFL_KRCI = .TRUE.
                GO TO 100
    37          CONTINUE
-C&&& .GENFOC:  transform positronic/inactive/virtual spinors to
-C              Fock-type spinors
-               GENFOCK_KRCI = .TRUE.
+C&&& .xxxxxx:
                GO TO 100
    38          CONTINUE
 C&&& .TRA NO:  transform to natural CI spinors
@@ -1349,10 +1346,6 @@ C
       IF( CHCKPT_KRCI ) THEN
         WRITE(LUPRI,'(/A)') ' * Write check point file in parallel'//
      &                      ' CI calculation'
-      END IF
-      IF( GENFOCK_KRCI ) THEN
-        WRITE(LUPRI,'(/A)') ' * Transform positronic/inactive/virtual'//
-     &                      ' spinors to Fock-type spinors'
       END IF
       IF( (.NOT. CINT_REORD_KRCI) .and. LOWSORT_KRCI ) THEN
         WRITE(LUPRI,'(/A)') ' *** Warning *** low-memory sorting'//

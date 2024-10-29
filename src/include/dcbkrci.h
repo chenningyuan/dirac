@@ -7,7 +7,7 @@
 !
       LOGICAL KRCI_MKCNST, KRCI_UCIBOS, CRDFO_MAT_KRCI, CWRTFO_MAT_KRCI,&
      &        CSHMEMO_KRCI, CINT_REORD_KRCI, CINT_SPLIT_KRCI,           &
-     &        NATOLCR_KRCI, CHCKPT_KRCI, CUSE_PBLFL_KRCI, GENFOCK_KRCI, &
+     &        NATOLCR_KRCI, CHCKPT_KRCI, CUSE_PBLFL_KRCI,               &
      &        TRANATO_KRCI, LOWSORT_KRCI, STATE_SELECT_KRCI,            &
      &        domcana_krci, save_reordered_nos_krci, fcidump_krci,      &
      &        XPSINTERFACE_KRCI
@@ -15,7 +15,7 @@
       COMMON /DCLKRCI/ KRCI_MKCNST, KRCI_UCIBOS, CRDFO_MAT_KRCI,        &
      &                 CWRTFO_MAT_KRCI, CSHMEMO_KRCI, CINT_REORD_KRCI,  &
      &                 CINT_SPLIT_KRCI, NATOLCR_KRCI, CHCKPT_KRCI,      &
-     &                 CUSE_PBLFL_KRCI, GENFOCK_KRCI, TRANATO_KRCI,     &
+     &                 CUSE_PBLFL_KRCI,               TRANATO_KRCI,     &
      &                 LOWSORT_KRCI, STATE_SELECT_KRCI, domcana_krci,   &
      &                 save_reordered_nos_krci, fcidump_krci,           &
      &        XPSINTERFACE_KRCI
