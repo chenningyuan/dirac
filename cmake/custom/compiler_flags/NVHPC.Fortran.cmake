@@ -1,5 +1,5 @@
 if(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DVAR_PGF90 -g -traceback")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DVAR_NVFORTRAN -g -traceback")
     set(CMAKE_Fortran_FLAGS_RELEASE "-fast")
     set(CMAKE_Fortran_FLAGS_DEBUG "-g")
 endif()

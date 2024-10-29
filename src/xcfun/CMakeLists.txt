@@ -49,7 +49,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
         set (CMAKE_CXX_FLAGS_RELEASE "/Z7 /O2 /DNDEBUG")
         set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS}")
     else ()
-        set (CMAKE_CXX_FLAGS "-wd981 -wd279 -wd383 -wd1572 -wd177 -fno-rtti -fno-exceptions")
+        set (CMAKE_CXX_FLAGS "-fno-rtti -fno-exceptions")
         set (CMAKE_CXX_FLAGS_DEBUG "-g -O0")
         # radovan: do not use -fast with Intel 11 (possibly 12, to be checked)
         # -fast causes a miscompile with intel 11

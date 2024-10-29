@@ -92,7 +92,7 @@ ubuntu_intel_mkl_int64-check:
     - uname -a
     - lscpu
     - free -h -g
-    - ifort --version
+    - ifx --version
     - icx --version
     - icpx --version
     - echo "MKLROOT=$MKLROOT"
@@ -101,7 +101,7 @@ ubuntu_intel_mkl_int64-check:
     - echo "The shell is $SHELL"
     - let "N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)"
     - echo "Number of processors/jobs for the serial build step is $N_PROC"
-    - ./setup --cmake-options="-DENABLE_UNIT_TESTS=ON" --int64 --fc=ifort --cc=icx --cxx=icpx --mkl=parallel  build_serial_intel
+    - ./setup --cmake-options="-DENABLE_UNIT_TESTS=ON" --int64 --fc=ifx --cc=icx --cxx=icpx --mkl=parallel  build_serial_intel
     - cd build_serial_intel
     - echo  "=== First, check the DIRAC documentation generation ==="
     - make -j $N_PROC html

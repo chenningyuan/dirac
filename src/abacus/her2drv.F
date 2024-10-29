@@ -1354,7 +1354,6 @@ C
 !radovan: these memgets are easily called 25 million times
 !         if somebody modifies the code
 !         please allocate buffers further upstream
-!miro: I have replaced some of them with MEMGET2 to track response-magnetizability bug ifort-parallel
       CALL MEMGET2('REAL','KPSO',KPSO,NPMAT,WORK,KFREE,LFREE) ! 1
       CALL MEMGET2('REAL','KPSA',KPSA,NPMATA,WORK,KFREE,LFREE)
       CALL MEMGET2('INTE','KNPCOA',KNPCOA,2*NSETA*(NODCAB + 1),
@@ -1441,7 +1440,6 @@ C
      &            DINTSKP,IREPDM,INDX,INDXAB,GENCNT)
       LWTOT  = LWTOT - KFREE + 1
  999  CONTINUE
-      ! miro: an error occurs here for mpi=2,ifort optimized !
       CALL MEMREL('TWOODS',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('TWOODS')
       RETURN

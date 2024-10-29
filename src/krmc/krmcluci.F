@@ -96,16 +96,6 @@ C     set "I/O node master" + "shared memory node master"
 !     generalized routine for handling of all double groups including
 !     linear symmetry (dougrp == 10 or 11)
 !     write(lupri,*) 'bla - go in here???? '
-#if defined VAR_IFORT && !defined INT_STAR8
-!     write(lupri,*) 'bla - go in here, yes!!!! '
-      if(myproc .eq. master)then
-        luxxx = lupri
-      else
-        luxxx = luwrt
-      end if
-      write(luxxx,*) ' '
-      call flshfo(luxxx)
-#endif
       call match_spinor_2_boson_irrep(ngsob,ngsob2,ibosym,ngsh,
      &                                orb_sym_vec,iorb,npsh,nish,
      &                                mxndgirr,mxpngas,nfsym,ngas,
@@ -124,10 +114,6 @@ C     set "I/O node master" + "shared memory node master"
 !     types of determinants to be included
       CALL DETTYP(IPRSTR)
 
-#if defined VAR_IFORT && !defined INT_STAR8
-      write(luxxx,*) ' '
-      call flshfo(luxxx)
-#endif
 !     number of string types
       CALL STRTYP_GAS_REL(IPRSTR)
 

@@ -9,8 +9,9 @@ module birefring
    use prop_contribs     !property contractions and integrals
    use rsp_equations     !response equation contractor/solver
 #ifdef PRG_DIRAC
-   use dirac_interface   !provides lsquit
+   use dirac_interface
    use openrsp_cfg
+   use codata
 #endif
 
    implicit none
@@ -30,9 +31,11 @@ module birefring
 
    private
 
+#ifndef PRG_DIRAC
    !wavenumber, velocity of light, and nanometer (in au), pi
    real(8), parameter :: cminv = 1/XTKAYS,       &
                          nm  = 10/XTANG
+#endif
 
    !field component lables for printing
    character(2) :: fc(3) = (/'Fx','Fy','Fz'/)
@@ -340,9 +343,10 @@ contains
                                Pfb(3,3),Pfq(3,6),Pfff(3,3,3),Pffv(3,3,3), &
                                Pffo(3,3,3),Pffb(3,3,3),Pffq(3,3,6),Pffs(3,3,6)
       integer,intent(in)    :: o !outputting unit (lupri or stdout)
-      real(8) :: tr3,trm3(3,3),Jprio,Jpril,Bten,Bcal
+      real(8) :: tr3,trm3(3,3),Jprio,Jpril,Bten,Bcal,c4
       real(8),parameter:: c1=3.75874d-21,c2=63154.9d0,c3=6.18385d-14
-      real(8),parameter:: hz=1/48168836676d0,c4=0.164518d0*c1/cminv
+      real(8),parameter:: hz=1/48168836676d0
+      c4=0.164518d0*c1/cminv
       !calculate tensor averages sum J'_ijk eps_ijk
       Jprio = Pffo(1,2,3) + Pffo(3,1,2) + Pffo(2,3,1) & !no-London
             - Pffo(3,2,1) - Pffo(2,1,3) - Pffo(1,3,2)
@@ -809,11 +813,12 @@ contains
 
 
    subroutine cme_output(w,Al,Xn,Xi,Etn,Eta,o)
-      real(8) :: w,Al(3,3),Xn(3,3),Etn(3,3,3,3),Xi(3,3),Eta(3,3,3,3),deta,dalxi
+      real(8) :: w,Al(3,3),Xn(3,3),Etn(3,3,3,3),Xi(3,3),Eta(3,3,3,3),deta,dalxi,c4
       integer :: o,i,j,k
       character*7 :: pw
       real(8),parameter :: c1=3.75874d-21,c2=63154.9d0,c3=6.18385d-14
-      real(8),parameter :: hz=1/48168836676d0,c4=0.164518d0*c1/cminv
+      real(8),parameter :: hz=1/48168836676d0
+      c4=0.164518d0*c1/cminv
       write (o,'(//26x,a/26x,a/)') 'Polarizability (au)' &
                                   ,'-------------------'
       write (o,'(4x,a,f6.3,a,i7,a,i4,a/)') 'For frequency w = ',w &
