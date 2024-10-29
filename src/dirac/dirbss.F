@@ -9956,8 +9956,8 @@ C     CALL TITLER('AMFI/RELSCF input reading','*',127)
 C
 C        *** Initialize the default values ***
 C
-        IPR_AMFI = 222
-      IPR_RELSCF = 222
+        IPR_AMFI = 0
+      IPR_RELSCF = 0
 
 !    ... maximum number of iterations
       MXXTRP_INP     = 50
