@@ -7,13 +7,21 @@
 #   define:
 #     - "'-DENABLE_EXATENSOR={0}'.format(arguments['--exatensor'])"
 
-#Check whether ExaTensor can be used
 option(ENABLE_EXATENSOR "Enable ExaTENSOR library" ON)
 option(TALSH_ONLY "Enable only TALSH component of ExaTENSOR library" OFF)
 
-if(ENABLE_64BIT_INTEGERS)
-   message(STATUS "ExaTensor library can not work with 64 bit integers, switched off")
-   set(ENABLE_EXATENSOR OFF)
+#Check whether ExaTensor can be used (if enabled)
+if(ENABLE_EXATENSOR)
+   if(ENABLE_64BIT_INTEGERS)
+      message(STATUS "ExaTensor library cannot work with 64 bit integers, switched off")
+      set(ENABLE_EXATENSOR OFF)
+   endif()
+
+# nvidia NVHPC cannot currently compile exatensor, not even EXA_TALSH_ONLY for some reason /2-Sep-2024 hjaaj
+   if(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
+      message(STATUS "ExaTensor library cannot work with nvfortran currently, switched off")
+      set(ENABLE_EXATENSOR OFF)
+   endif()
 endif()
 
 if(ENABLE_EXATENSOR)
@@ -157,7 +165,9 @@ if(ENABLE_EXATENSOR)
    elseif(CMAKE_Fortran_COMPILER_ID MATCHES XL)
       set (EXATENSOR_TOOLKIT TOOLKIT=IBM)
    elseif(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
-      set (EXATENSOR_TOOLKIT TOOLKIT=NVHPC)
+      # not defined in EXATENSOR and TALSH, use its old name: PGI
+      set (EXATENSOR_TOOLKIT TOOLKIT=PGI)
+      set(EXATENSOR_TALSH EXA_TALSH_ONLY=YES)
    else()
       message(STATUS "WARNING: ExaTensor TOOLKIT not found, setting to GNU")
       set (EXATENSOR_TOOLKIT TOOLKIT=GNU)
@@ -310,5 +320,10 @@ if(ENABLE_EXATENSOR)
     endif()
 
 endif()
+
+# redefine ENABLE_EXATENSOR with current value in CmakeCache.txt, used by e.g. ccmake and cmake-gui
+# otherwise it would still apear as ON to ccmake .., even if it has been set OFF above
+set(ENABLE_EXATENSOR ${ENABLE_EXATENSOR} CACHE BOOL "Enable ExaTENSOR library" FORCE)
+set(TALSH_ONLY ${TALSH_ONLY} CACHE BOOL "Enable only TALSH component of ExaTENSOR library" FORCE)
 
 message(STATUS "Enable ExaTENSOR library: ${ENABLE_EXATENSOR}")
