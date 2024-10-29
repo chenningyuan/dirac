@@ -2503,10 +2503,10 @@ C           KZCONF is saved in dcbopt.h and is used in other GASCIP routines
 C           to obtain determinant information.
 C           (LZCONF = 2 * NCONF because "INTEGER*8 IDET(NZCONF,2)")
 C
-            IF (KZCONF .NE. KIDET) CALL QUIT('RSETCI after GENDET: '//
-     &         'KZCONF .ne. KIDET -- indicates programming error!')
             LZCONF = 2 * NZCONF
             CALL MEMGET2('INT8','ZCONF',KZCONF,LZCONF,WORK,KFREE,LFREE)
+            IF (KZCONF .NE. KIDET) CALL QUIT('RSETCI after GENDET: '//
+     &         'KZCONF .ne. KIDET -- indicates programming error!')
 C
 #ifdef MOD_DEBUG
 C
