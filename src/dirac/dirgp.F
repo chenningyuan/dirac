@@ -38,7 +38,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
-#include "dcbpsi.h"      
+#include "dcbpsi.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -176,8 +176,8 @@ C*****************************************************************************
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbbas.h"
-#include "dcborb.h"`
-#include "dgroup.h"`      
+#include "dcborb.h"
+#include "dgroup.h"
 C
       real(8), allocatable :: CMO(:),EIG(:)
       integer, allocatable :: IBEIG(:,:)
@@ -271,8 +271,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbbas.h"
-#include "dcborb.h"`
-#include "dgroup.h"`      
+#include "dcborb.h"
+#include "dgroup.h"
       integer, intent(out) :: idims(*)
       IDIMS(1) = NZ
       IDIMS(2) = NFSYM
