@@ -44,7 +44,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
     # Intel has special flags on Windows
     # ihrasko: here I tried to translate all flags from Linux to Windows flags
     if (CMAKE_SYSTEM_NAME MATCHES "Windows")
-        set (CMAKE_CXX_FLAGS "/Qwd981 /Qwd279 /Qwd383 /Qwd1572 /Qwd177")
+        set (CMAKE_CXX_FLAGS " ")
         set (CMAKE_CXX_FLAGS_DEBUG "/Z7 /Od")
         set (CMAKE_CXX_FLAGS_RELEASE "/Z7 /O2 /DNDEBUG")
         set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS}")
@@ -71,12 +71,12 @@ elseif (CMAKE_C_COMPILER_ID MATCHES Intel)
     # Intel has special flags on Windows
     # ihrasko: here I tried to translate all flags from Linux to Windows flags
     if (CMAKE_SYSTEM_NAME MATCHES "Windows")
-        set (CMAKE_C_FLAGS "/Qwd981 /Qwd279 /Qwd383 /Qwd1572 /Qwd177")
+        set (CMAKE_C_FLAGS " ")
         set (CMAKE_C_FLAGS_DEBUG "/Z7 /Od")
         set (CMAKE_C_FLAGS_RELEASE "/Z7 /O2 /DNDEBUG")
         set (CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS}")
     else ()
-        set (CMAKE_C_FLAGS "-wd981 -wd279 -wd383 -wd1572 -wd177")
+        set (CMAKE_C_FLAGS " ")
         set (CMAKE_C_FLAGS_DEBUG "-g -O0")
         set (CMAKE_C_FLAGS_RELEASE "-g -O2 -DNDEBUG")
         set (CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
