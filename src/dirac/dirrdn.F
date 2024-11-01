@@ -5332,11 +5332,11 @@ C
       GAUNT = .FALSE.
       GAUNT_SAVE = GAUNT
       INTFLG_CHANGE = .FALSE.
-      IOTC = .FALSE.
+      IOTC   = .FALSE.
       SYMSTP = .FALSE.
       TRSSTP = .FALSE.
       INPERR = 0
-      ICHANG  = 0 ! mi-to satisfy ifort runtime check
+      ICHANG = 0
       CALL TITLER('Hamiltonian defined','*',127)
 C
 C

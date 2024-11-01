@@ -1667,7 +1667,7 @@ Options are also read from ~/.diracrc"""
         if not is_windows:
             # this is pure linux way to obatin size of static allocations
             size_command = \
-            "echo -e 'Size of all static allocations: \c'; size " \
+            r"echo -e 'Size of all static allocations: \c'; size " \
             + self.dirac_exe + ' 2> /dev/null | grep ' + self.dirac_exe \
             + " 2> /dev/null | awk '{printf $3/(1024*1024)} ' 2> /dev/null; echo ' MB ' || echo 'can not be determined' "
             subprocess.Popen(shlex.split(size_command),

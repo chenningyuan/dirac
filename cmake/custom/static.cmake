@@ -8,7 +8,7 @@ if(ENABLE_STATIC_LINKING)
        # ld-linkers, fix for older linkers
        set(_no_dyn_export "-Wl,--no-export-dynamic")
     endif()
-    if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+    if(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Bstatic ${_no_dyn_export}")
     else()
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static ${_no_dyn_export}")
