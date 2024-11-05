@@ -42,7 +42,7 @@ Bugfix:
 
   * Restart from density matrices of CC for first-order properties. 
     * Contributors: Trond Saue, Andre Gomes
-      * Manual: RDCCDM https://diracprogram.org/doc/release-24/manual/properties.html#rdccdm
+    * Manual: RDCCDM https://diracprogram.org/doc/release-24/manual/properties.html#rdccdm
   * Update of DIRAC schema which defines the information stored on CHECKPOINT.h5.
     * Essential symmetry information added.
     * MO coefficients for C<sub>1</sub> symmetry optionally stored for restarts without use of symmetry.
@@ -56,7 +56,7 @@ Bugfix:
   * Support for AMD GPUs with ExaCorr (TAL-SH, work in progress to enable distributed calculations with ExaTensor), in addition to the NVIDIA GPU support (TAL-SH and ExaTensor).
     * Contributors: Johann Pototschnig, Jan Brandejs and Andre Gomes.
     * For further information on ExaTensor and TAL-SH as used in DIRAC, see https://github.com/RelMBdev/ExaTENSOR/tree/dirac
-      * Note : ROCM versions 5.7+ should be used. Earlier ROCM versions may result in code that compiles but may show runtime errors (e.g. HSA_STATUS_ERROR_MEMORY_APERTURE_VIOLATION, or values different than reference ones in the tests). A potential workaround for earlier versions is to reduce hipcc optimization level to -O1.
+    * Note : ROCM versions 5.7+ should be used. Earlier ROCM versions may result in code that compiles but may show runtime errors (e.g. HSA_STATUS_ERROR_MEMORY_APERTURE_VIOLATION, or values different than reference ones in the tests). A potential workaround for earlier versions is to reduce hipcc optimization level to -O1.
 
 == Bugfixes ==
 
