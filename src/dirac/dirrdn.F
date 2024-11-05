@@ -5316,7 +5316,7 @@ C
 !                   53        54        55        56
      &            '.NOSFMU','.DFTAUT','xxxxxxx','.MO4C2C',
 !                   57        58        59        60
-     &            '.PCM   ','.HFXATT','.XB    ','.XC    ',
+     &            '.PCM   ','.HFXATT','xxxxxxx','xxxxxxx',
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
@@ -5964,13 +5964,11 @@ CMI&& Activate 4c-2c MO transformation
   158     CONTINUE
           READ(LUCMD,*) HFXATT
           GOTO 100
-! .xB
+!
   159     CONTINUE
-          call quit('.xB not implemented in this version')
           GOTO 100
-! .xC
+!
   160     CONTINUE
-          call quit('.xC not implemented in this version')
           GOTO 100
 
 ! .ECP
