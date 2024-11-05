@@ -5314,7 +5314,7 @@ C
 !                   49        50        51        52
      &            '.NOAMFI','.QDOTS ','.IOTC  ','.X2C4  ',
 !                   53        54        55        56
-     &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C',
+     &            '.NOSFMU','.DFTAUT','xxxxxxx','.MO4C2C',
 !                   57        58        59        60
      &            '.PCM   ','.HFXATT','.XB    ','.XC    ',
 !                   61        62        63        64
@@ -5348,7 +5348,6 @@ C
       IPRHAM  = 0
       DOLVC   = .TRUE.
       QED     = .FALSE.
-      MOLMF   = .FALSE.
       X2CMMF  = .FALSE.
       ONESYS  = .FALSE.
       FREEPJ  = .FALSE.
@@ -5947,9 +5946,6 @@ C    (see MRCON1 of the MOLTRA module)
           go to 100
 
   155     CONTINUE
-C&&& Activate : molecular mean field approximation for correlated calculations
-C               using LL integrals only that is ^4 DC(G)**.
-          MOLMF = .TRUE.
           GOTO 100
   156     CONTINUE
 CMI&& Activate 4c-2c MO transformation

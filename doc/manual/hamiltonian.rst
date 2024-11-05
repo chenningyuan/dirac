@@ -706,11 +706,6 @@ keyword(QDOTS)
 .. warning:: documentation missing
 
 
-keyword(MMF)
-
-.. warning:: documentation missing
-
-
 keyword(xB)
 
 .. warning:: documentation missing
