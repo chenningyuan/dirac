@@ -3116,6 +3116,166 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
         end subroutine talsh_calc_dm_2rdm_ccsd_EA_mo
 
+    subroutine talsh_calc_dm_1rdm_ccsd_LR_mo(gamma,t2_tensor,l2_tensor,tX2_tensor,lX2_tensor,&
+                                                        nocc,nvir,print_level,t1_tensor,l1_tensor, &
+                                                                        tX1_tensor,lX1_tensor)
+
+!     input variables
+      type(talsh_dm_tens_t), intent(inout) :: gamma
+      type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
+      type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
+      type(talsh_tens_t),  intent(inout) :: tX2_tensor, lX2_tensor
+      type(talsh_tens_t),  intent(inout), optional :: tX1_tensor, lX1_tensor
+      integer,             intent(in   ) :: nocc, nvir, print_level
+!     auxiliary tensors
+      type(talsh_tens_t) :: one_tensor
+      type(talsh_tens_t) :: tau2_tensor
+      type(talsh_tens_t) :: oo_aux_tensor, vv_aux_tensor
+!     tensor dimensions
+      integer(C_INT)              :: one_dims(1)=1
+!     CCD switch
+      logical :: CCD = .false.
+!     error code
+      integer :: ierr
+
+      if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
+
+!*********************************
+!     construct auxiliary tensor *
+!*********************************
+ 
+      ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+      if (.not.CCD) then
+        ierr=talsh_tensor_construct(tau2_tensor,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+        ierr=talsh_tensor_construct(vv_aux_tensor,C8,(/nvir,nvir/),init_val=ZERO)
+        ierr=talsh_tensor_construct(oo_aux_tensor,C8,(/nocc,nocc/),init_val=ZERO)
+      end if
+
+
+!********************
+!     calculate DMs *
+!********************
+
+
+! Gamma ia
+!     \partial \gammas ia /  \partial t * tX  = O
+
+!    \partial \gammas ia /  \partial lambda * lambdaX  = lambdaX ia
+        ierr=talsh_tensor_init(gamma%prime_ov,ZERO)
+        ierr=talsh_tensor_add("G(i,a)+=L(i,a)",gamma%prime_ov,lX1_tensor)
+        if (print_level.gt.8) print *,'G(i,a) term a',tensor_norm2(gamma%prime_ov)
+
+ 
+
+! Gamma ji
+!     \partial \gammas ji /  \partial t * tX  = - 1/2 \tXd  feim  \ld jmfe  - \tXs ei \ls je
+      ierr=talsh_tensor_init(gamma%prime_oo,ZERO)
+      ierr=talsh_tensor_contract("G(j,i)+=TX(f,e,i,m)*L(j,m,f,e)",gamma%prime_oo,tX2_tensor,l2_tensor,scale=MINUS_ONE_HALF)
+      if (print_level.gt.8) print *,'G(j,i) a',tensor_norm2(gamma%prime_oo)
+      if (.not.CCD) ierr=talsh_tensor_contract("G(i,j)+=TX(e,i)*L(j,e)",gamma%prime_oo,tX1_tensor,l1_tensor,scale=MINUS_ONE)
+      if (print_level.gt.8) print *,'G(j,i) b',tensor_norm2(gamma%prime_oo)
+!     \partial \gamas ji /  \partial lambda * lambdaX  = - 1/2 \td  feim  \lXd jmfe  - \ts ei \lXs je
+      ierr=talsh_tensor_init(gamma%prime_oo,ZERO)
+      ierr=talsh_tensor_contract("G(j,i)+=T(f,e,i,m)*LX(j,m,f,e)",gamma%prime_oo,t2_tensor,lX2_tensor,scale=MINUS_ONE_HALF)
+      if (print_level.gt.8) print *,'G(j,i) a',tensor_norm2(gamma%prime_oo)
+      if (.not.CCD)  ierr=talsh_tensor_contract("G(i,j)+=T(e,i)*LX(j,e)",gamma%prime_oo,t1_tensor,lX1_tensor,scale=MINUS_ONE)
+      if (print_level.gt.8) print *,'G(j,i) b',tensor_norm2(gamma%prime_oo)
+
+
+! Gamma ab
+!      \partial \gammas ab / \partial t *tX =   1/2 \tXd eamn * \ld mnbe + \tXs am \ls mb
+      ierr=talsh_tensor_init(gamma%prime_vv,ZERO)
+      ierr=talsh_tensor_contract("G(a,b)+=TX(a,e,m,n)*L(m,n,b,e)",gamma%prime_vv,tX2_tensor,l2_tensor,scale=ONE_HALF)
+      if (print_level.gt.8) print *,'G(a,b) a',tensor_norm2(gamma%prime_vv)
+      if (.not.CCD) ierr=talsh_tensor_contract("G(a,b)+=TX(a,m)*L(m,b)",gamma%prime_vv,tX1_tensor,l1_tensor)
+      if (print_level.gt.8) print *,'G(a,b) b',tensor_norm2(gamma%prime_vv)
+!      \partial \gammas ab / \partial lambda * lambdaX =   1/2 \td eamn * \lXd mnbe + \ts am \lXs mb
+      ierr=talsh_tensor_init(gamma%prime_vv,ZERO)
+      ierr=talsh_tensor_contract("G(a,b)+=T(a,e,m,n)*LX(m,n,b,e)",gamma%prime_vv,t2_tensor,lX2_tensor,scale=ONE_HALF)
+      if (print_level.gt.8) print *,'G(a,b) a',tensor_norm2(gamma%prime_vv)
+      if (.not.CCD) ierr=talsh_tensor_contract("G(a,b)+=T(a,m)*LX(m,b)",gamma%prime_vv,t1_tensor,lX1_tensor)
+      if (print_level.gt.8) print *,'G(a,b) b',tensor_norm2(gamma%prime_vv)
+
+
+!     no off-diagonal terms in CCD
+! LH No idea if we must not keep those diag in CCD ???
+      if (.not.CCD) then
+
+        ! derivative with respect to lambda : same but l1 is lX1 et l2 is lX2
+        ! the first equation disapear
+
+!       \gammas ai = +  lX(m,e) * (t(ae,im) - t(e,i) * t(a,m)) |
+        ierr=talsh_tensor_init(tau2_tensor,ZERO)
+        ierr=talsh_tensor_add("T(a,e,i,m)+=R(a,e,i,m)",tau2_tensor,t2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) tau2 a',tensor_norm2(tau2_tensor)
+        ierr=talsh_tensor_contract("T(a,e,i,m)+=T(e,i)*T(a,m)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
+        if (print_level.gt.8) print *,'G(a,i) tau2 b',tensor_norm2(tau2_tensor)
+        ierr=talsh_tensor_contract("G(a,i)+=LX(m,e)*T(a,e,i,m)",gamma%prime_vo,lX1_tensor,tau2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) b',tensor_norm2(gamma%prime_vo)
+!       \gammas ai  = - 1/2 lX(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
+        ierr=talsh_tensor_init(oo_aux_tensor,ZERO)
+        ierr=talsh_tensor_init(vv_aux_tensor,ZERO)
+        ierr=talsh_tensor_contract("X(m,i)+=LX(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,lX2_tensor,t2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) aux oo',tensor_norm2(oo_aux_tensor)
+        ierr=talsh_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF) 
+        if (print_level.gt.8) print *,'G(a,i) term c',tensor_norm2(gamma%prime_vo)
+        ierr=talsh_tensor_contract("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,lX2_tensor,t2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) aux vv',tensor_norm2(vv_aux_tensor)
+        ierr=talsh_tensor_contract("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+        if (print_level.gt.8) print *,'G(a,i) term d',tensor_norm2(gamma%prime_vo)
+
+
+        ! Dervative with respect to t
+!     vo: \gamma ai += tX(a,i) 
+        ierr=talsh_tensor_init(gamma%prime_vo,ZERO)
+        ierr=talsh_tensor_add("G(a,i)+=TX(a,i)",gamma%prime_vo,tX1_tensor)
+        if (print_level.gt.8) print *,'G(a,i) a',tensor_norm2(gamma%prime_vo)
+
+!        \gammas ai = \lambdas me ( \tXs aeim - \tXs ei \ts am -\ts ei \tXs am)) 
+        ierr=talsh_tensor_init(tau2_tensor,ZERO)
+        ierr=talsh_tensor_add("T(a,e,i,m)+=TX(a,e,i,m)",tau2_tensor,tX2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) tau2 a',tensor_norm2(tau2_tensor)
+        ierr=talsh_tensor_contract("T(a,e,i,m)+=TX(e,i)*T(a,m)",tau2_tensor,tX1_tensor,t1_tensor,scale=MINUS_ONE)
+        if (print_level.gt.8) print *,'G(a,i) tau2 b',tensor_norm2(tau2_tensor)
+        ierr=talsh_tensor_contract("T(a,e,i,m)+=T(e,i)*TX(a,m)",tau2_tensor,t1_tensor,tX1_tensor,scale=MINUS_ONE)
+        if (print_level.gt.8) print *,'G(a,i) tau2 b',tensor_norm2(tau2_tensor)
+        ierr=talsh_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) b',tensor_norm2(gamma%prime_vo)
+
+!       \gammas ai = - \undemi \lambdad mnef (\td efin \tX am + \txD efin \ts am)
+        ierr=talsh_tensor_init(oo_aux_tensor,ZERO)
+        ierr=talsh_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
+        ierr=talsh_tensor_contract("G(a,i)+=X(m,i)*TX(a,m)",gamma%prime_vo,oo_aux_tensor,tX1_tensor,scale=MINUS_ONE_HALF)
+        ierr=talsh_tensor_init(oo_aux_tensor,ZERO)
+        ierr=talsh_tensor_contract("X(m,i)+=L(m,n,e,f)*TX(e,f,i,n)",oo_aux_tensor,l2_tensor,tX2_tensor)
+        ierr=talsh_tensor_contract("G(a,i)+=X(m,i)*TX(a,m)",gamma%prime_vo,oo_aux_tensor,tX1_tensor,scale=MINUS_ONE_HALF) 
+         if (print_level.gt.8) print *,'G(a,i) term d',tensor_norm2(gamma%prime_vo)
+
+!       \gammas ai = -\undemi lambdad mnef (\txd afmn \ts ei + \td afmn \tXei)
+        ierr=talsh_tensor_init(vv_aux_tensor,ZERO)
+        ierr=talsh_tensor_contract("X(a,e)+=L(m,n,e,f)*TX(a,f,m,n)",vv_aux_tensor,l2_tensor,tX2_tensor)
+        ierr=talsh_tensor_contract("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+        ierr=talsh_tensor_init(vv_aux_tensor,ZERO)
+        ierr=talsh_tensor_contract("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
+        ierr=talsh_tensor_contract("G(a,i)+=X(a,e)*TX(e,i)",gamma%prime_vo,vv_aux_tensor,tX1_tensor,scale=MINUS_ONE_HALF)
+        if (print_level.gt.8) print *,'G(a,i) term d',tensor_norm2(gamma%prime_vo)
+
+    
+      end if
+
+!**************
+!     cleanup *
+!**************
+
+      ierr=talsh_tensor_destruct(one_tensor)
+      if (.not.CCD) then
+        ierr=talsh_tensor_destruct(tau2_tensor)
+        ierr=talsh_tensor_destruct(vv_aux_tensor)
+        ierr=talsh_tensor_destruct(oo_aux_tensor)
+      end if
+
+    end subroutine talsh_calc_dm_1rdm_ccsd_LR_mo
+
 
 end module 
 
