@@ -243,20 +243,20 @@ ierr=talsh_tensor_construct(Aux_vo,C8,vo_dims,init_val=ZERO)
 
 
 ! Asymmetric LR
-! ierr=talsh_tensor_contract("E()+=nx(i,a)*Ty(a,i)",& 
-!                             result_tensor,bvec_tensor%t1,tprop_tensor1%t1,scale=ONE)
+  ierr=talsh_tensor_contract("E()+=nx(i,a)*Ty(a,i)",& 
+                              result_tensor,bvec_tensor%t1,tprop_tensor1%t1,scale=ONE)
 
-! ierr=talsh_tensor_contract("E()+=nx(i,j,a,b)*Ty(a,b,i,j)", &
-!                             result_tensor,bvec_tensor%t2,tprop_tensor1%t2,scale=ONE_QUARTER_C)
+  ierr=talsh_tensor_contract("E()+=nx(i,j,a,b)*Ty(a,b,i,j)", &
+                              result_tensor,bvec_tensor%t2,tprop_tensor1%t2,scale=ONE_QUARTER_C)
 
-! print *, "n*t of Aym LR:", result_tens(1)
-! ierr=talsh_tensor_contract("E()+=tbar(i,a)*Ep(a,i)",& 
-!                             result_tensor,tprop_bar_tensor1%t1,interm_t_prop1%epsilon_prop_vo,scale=ONE)
+  print *, "n*t of Aym LR:", result_tens(1)
+  ierr=talsh_tensor_contract("E()+=tbar(i,a)*Ep(a,i)",& 
+                              result_tensor,tprop_bar_tensor1%t1,interm_t_prop1%epsilon_prop_vo,scale=ONE)
 
-! ierr=talsh_tensor_contract("E()+=tbar(i,j,a,b)*Ep(a,b,i,j)", &
-!                             result_tensor,tprop_bar_tensor1%t2,interm_t_prop1%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+  ierr=talsh_tensor_contract("E()+=tbar(i,j,a,b)*Ep(a,b,i,j)", &
+                              result_tensor,tprop_bar_tensor1%t2,interm_t_prop1%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
 
-! print *, "Aym LR:", result_tens(1)
+  print *, "Aym LR:", result_tens(1)
 
 
 

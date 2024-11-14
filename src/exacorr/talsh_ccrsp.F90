@@ -51,13 +51,20 @@ subroutine talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     if (exa_input%wf_type == 1) then 
         CC_CC = .true.
         call print_date('Activate CC-CC(LR-CC) response')
+!       call print_date('Activate     CC (CC-CC) response')
     else 
         CC_CC = .false.
         call print_date('Activate CC-CI(EOM-CC) response')
+!       call print_date('Activate EOM-CC (CC-CI) response')
     end if 
 
     if (rr == 1) then
+!     if (symmetric) then
         call talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+!     endif
+!     if (asymmetric) then
+!       call talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+!     endif
     else
         call talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
     end if
