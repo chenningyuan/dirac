@@ -36,6 +36,8 @@ module talsh_1rdm_2rdm_ccsd_kernels
     public talsh_calc_dm_1rdm_ccsd_IP_mo
     public talsh_calc_dm_1rdm_ccsd_EA_mo
 
+    public talsh_calc_dm_1rdm_ccsd_LR_mo
+
     public calc_dmSandD_CCD_mo_bis
 
     public talsh_calc_dm_2rdm_ccsd_GS_mo
