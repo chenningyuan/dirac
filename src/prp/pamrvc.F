@@ -3456,7 +3456,7 @@ C
             BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
 C           retain norm for numerical stability !
             CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
-          ENDIF
+          ENDIF   !  (TEST.AND.IVECS(IP).EQ.1)
 C         No X(-) - vector
           IF(.NOT.STATIC) THEN
             IBTYP(1,IBOFF+IM) = JBTYP
@@ -3464,7 +3464,7 @@ C         No X(-) - vector
             IBVEC(NBPREV+IM)  = IBOFF + IM
             IVECS(IM)          = 0
           ENDIF
-        ELSE
+        ELSE ! .not.(FREQ.EQ.D0 .OR. FKRMC)
 CPP need modification for cpp
           DO IDAMP = 0,NDAMP-1
             IBTYP(1,IBOFF+IP+IDAMP)     = JBTYP

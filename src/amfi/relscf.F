@@ -1,7 +1,4 @@
 C
-C Authorship of this program should be dicussed before
-C distributing it within the DIRAC package (MI,jan 2005);
-C see email from Timo (Atomares SCF).
 C
 C NOTE: The previous  value of NDIMPQ was 500000. 
 C  Replaced by a parameter in scfarr.h, NDIMPQPAR.
@@ -42,7 +39,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "priunit.h"
 #include "relscf_dim.h"
 #include "amfi_if.h"
-C     DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(*),SMIN(*),THRE(*),EPS(2),
@@ -113,8 +109,8 @@ CMI  ... rather error exit !
 
    95 CONTINUE
       WRITE (LUPRI,100) NBVAR1,IIII,ZETDIF,DMNXP
-  100 FORMAT(/,6X,'EXPONENT REDUNDANCY FOR ORBITALS',I2,1X,'AND',
-     *I2,2X,'ZEDIF',F9.5,1X,'SMALLER THAN DMNXP',F9.5)
+  100 FORMAT(/,6X,'EXPONENT REDUNDANCY FOR ORBITALS',I2,' AND',
+     *I2,'  ZEDIF',F9.5,' SMALLER THAN DMNXP',F9.5)
       CALL FLSHFO(LUPRI)
       CALL QUIT('relscf error exit on EXPONENT REDUNDANCY FOR ORBITALS')
 
@@ -360,7 +356,6 @@ C
 Cvec  VERSION INCLUDING IDK ARRAY
 C
 #include "amfi_if.h"
-c     logical relscf_verbose
       DIMENSION WORK(LWORK)
 CMI   DIMENSION C(LDIMC),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
       DIMENSION C(*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
@@ -597,13 +592,11 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "amfi_if.h"
-c     logical relscf_verbose
       CHARACTER*8 TEXT
       DATA MSK /0/, KSK /5000000/
 C
 C     GENUEGEND KERNSPEICHER VORHANDEN?
 C
-c     relscf_verbose = .false.
 C
       IF (ICORE.EQ.0) GOTO 4
 
@@ -630,7 +623,6 @@ C
       L=MSK-KSK
       IC=(L+1023)/1024
 
-CMI   if (relscf_verbose) WRITE (LUPRI,101) L,IC
       IF (IPR_RELSCF.GE.2) THEN
           WRITE (LUPRI,101) L,IC
       ENDIF
@@ -643,7 +635,6 @@ C
 4     IC=(MSK+1023)/1024
       KSK=MSK-KSK
       L=(KSK+1023)/1024
-CMI   if (relscf_verbose) WRITE (LUPRI,102) MSK,IC,KSK,L
       if (IPR_RELSCF.GE.2)  THEN
           WRITE (LUPRI,102) MSK,IC,KSK,L
 102   FORMAT(' DYNAMIC STORAGE: ',I8,' WORDS (',I5,'K ) - USED ',
@@ -769,11 +760,8 @@ C
 #include "implicit.h"
 #include "relscf_crelop.h"
 #include "amfi_if.h"
-c     logical relscf_verbose
       INTEGER IS1(3),IS2(3),I1(2,3),I2(2,3)
       REAL*8 F(2),G(2)
-
-c     relscf_verbose = .false.
 
       DO I=1,3
         DO J=1,2
@@ -1098,7 +1086,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "amfi_if.h"
-c     logical relscf_verbose
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
      *QCAP(*),FC(*),FO(*),CM1SCF(MXBF,*),CM2SCF(MXBF,*),
      *CSAV1(MXBF,*),CSAV2(MXBF,*),GMIN(*),SMIN(*),THRE(*),EPS(*),
@@ -1107,7 +1094,6 @@ c     logical relscf_verbose
      *ITRAN(*),NROW(*),NBVAR(*),IORCN(*)
       COMMON /CLOCKX/ CPU,CLK
 C
-c     relscf_verbose = .false.
       POT  = 0.D0
       POTN = 0.D0
       CIN  = 0.D0
@@ -1115,28 +1101,22 @@ c     relscf_verbose = .false.
       IPQ=NDIMPQ
       IF(NDIMPQ.EQ.NDIMPQPAR) IPQ=0
 C
-      K=0
-      ENERG=DT(1)
-      K=K+1
       IPQ=IPQ+1
-      POT=POT+0.5D0*(ENERG*P(IPQ)*DT(1)-DOS(1)*Q(IPQ)*DOS(1))
-      POTN=POTN+U(1)*ENERG
-      CIN=CIN+T(1)*ENERG
+      POT=POT+0.5D0*(DT(1)*P(IPQ)*DT(1)-DOS(1)*Q(IPQ)*DOS(1))
+      POTN=POTN+U(1)*DT(1)
+      CIN=CIN+T(1)*DT(1)
       IF(N1T.EQ.1) GOTO 21
 C
       DO I=2,N1T
-        ENERG=DT(I)
         DO J=1,I-1
-          K=K+1
           IPQ=IPQ+1
-          TERM=ENERG*P(IPQ)*DT(J)-DOS(I)*Q(IPQ)*DOS(J)
+          TERM=DT(I)*P(IPQ)*DT(J)-DOS(I)*Q(IPQ)*DOS(J)
           POT=POT+TERM
         END DO
-        K=K+1
         IPQ=IPQ+1
-        POT=POT+0.5D0* ( ENERG*P(IPQ)*DT(I)-DOS(I)*Q(IPQ)*DOS(I) )
-        POTN=POTN+U(I)*ENERG
-        CIN=CIN+T(I)*ENERG
+        POT=POT+0.5D0* ( DT(I)*P(IPQ)*DT(I)-DOS(I)*Q(IPQ)*DOS(I) )
+        POTN=POTN+U(I)*DT(I)
+        CIN=CIN+T(I)*DT(I)
       END DO
 21    CONTINUE
       POT=POT-ZN*POTN
@@ -1154,8 +1134,9 @@ C
       CPU=SECONDX()
 
       IF (IPR_RELSCF.GE.2) THEN
+       write (lupri,*) 'NUMVAR',NUMVAR
        WRITE (LUPRI,65) NBVAR1,ZETA(NBVAR1),ENERG,CIN,POT,VIR,NITSCF,CPU
-   65  FORMAT(I5,5(1X,D16.10),I5,F14.2)
+   65  FORMAT(I5,1P,5D17.10,I5,F14.2)
       ENDIF
 
       RETURN
@@ -2113,7 +2094,7 @@ CMI  &          ZADD(MX100,4),C(MXBF,1),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),
         FATT(I)=IM1*FATT(IM1)
       END DO
       IF(NVAR.NE.0) WRITE (6,1000)
- 1000 FORMAT('1INTERMEDIATE OPTIMIZATION DATA',//)
+ 1000 FORMAT(' INTERMEDIATE OPTIMIZATION DATA',//)
       NUMVAR=0
       NALARM=0
       MVAR=0
@@ -2744,7 +2725,6 @@ C
       CHARACTER*8 OPER(3)
       EQUIVALENCE (AJMN(1),VCC(1)),(TITLE(1),NAME(1))
 #include "amfi_if.h"
-c     logical relscf_verbose
 C
 C     SET DEFAULT VALUES
 C
@@ -2762,7 +2742,6 @@ CMI   DATA IBLANK /4H    /
 CMI   write(LUPRI,*) 'INPUT_AT34: NBLANK=',NBLANK
 CMI   write(LUPRI,*) 'INPUT_AT34: IBLANK=',IBLANK
 C
-c     relscf_verbose = .false.
 C
 #include "memint.h"
       NDIMC=MXOCC*MXOCC
@@ -3814,8 +3793,12 @@ C**** ORDER EIGENVECTORS AND EIGENVALUES WITHIN SYMMETRY
               IND=1
  29           CONTINUE
               iMIN=1
+              EMIN=EPSI(1)
               DO J=2,NBAS1
-                 IF (EPSI(iMIN).GT.EPSI(J)) iMIN=J
+                 IF (EPSI(J).LT.EMIN) THEN
+                    iMIN=J
+                    EMIN=EPSI(J)
+                 END IF
               END DO
               IF (ITOS.EQ.1) GO TO 28
               IF (IND.EQ.NSTEP2) GO TO 28
@@ -3831,9 +3814,9 @@ C**** ORDER EIGENVECTORS AND EIGENVALUES WITHIN SYMMETRY
               NSTEP1=NSTEP1+1
               NSTEP2=NSTEP2+1
            END DO
-        END DO
+        END DO ! I=1,ILOOP
         M1=N1(N)+M1
-      END DO
+      END DO ! ISH=1,IFIN
       RETURN
       END
 
@@ -3849,7 +3832,7 @@ C
 C     A(2N+1) = N+BETA
 C     A(2N)   = N-1/2
 C
-C#    WRITE (6,900) BETA,X
+C#    WRITE (LUPRI,900) BETA,X
 C#900 FORMAT(' KBR - BETA,X ',2D16.8)
       THR=1.D-12
       THR1=1.D-8
@@ -3863,19 +3846,20 @@ C#900 FORMAT(' KBR - BETA,X ',2D16.8)
       J=J-1
       IF (J.GT.0) GOTO 3
       SUM=1.D0/(1.D0-0.5D0*X/SUM)
-      IF (I.GT.2000) WRITE (6,991) I,BETA,X,SUM
-C#    WRITE (6,991) I,BETA,X,SUM
+      IF (I.GT.2000) WRITE (LUPRI,991) I,BETA,X,SUM
+C#    WRITE (LUPRI,991) I,BETA,X,SUM
   991 FORMAT(' KBR - I,BETA,X,SUM ',I5,F10.3,D20.10,D30.20)
       I=I+100
       IF (I.LT.300 .OR. DABS(OLD-SUM).GT.THR.AND. I.LT.3000) GOTO 1
-C#    WRITE (6,991) I,SUM
+C#    WRITE (LUPRI,991) I,SUM
       RESULT=SUM
       IF (I.LT.3000) RETURN
       DEL=OLD-SUM
-      WRITE (6,999) DEL,THR
-999   FORMAT(' CONTINUED FRACTION DEL=',D20.10,' LARGER THAN THR=',
-     *D20.10)
-      IF (DEL.GT.THR1) STOP 999
+      WRITE (LUPRI,999) DEL,THR
+999   FORMAT(' CONTINUED FRACTION DEL=',1P,D20.10,' LARGER THAN THR=',
+     &D20.10)
+      IF (DEL.GT.THR1)
+     &   CALL QUIT('Problem with continued fraction, see output')
       RETURN
       END
 
@@ -3922,21 +3906,17 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "amfi_if.h"
-c     logical relscf_verbose
 
       REAL*8 GJ0,GK0
       REAL*8 WORK
       DIMENSION WORK(LWORK)
 
-!     if (relscf_verbose) WRITE (LUPRI,100)
-C     if (IPR_RELSCF.GE.2) WRITE (LUPRI,100)
-C100   FORMAT(' *** PROGRAM AT34 - ALLIANT - @V ***'/)
+      IPR_RELSCF = 222
+
       IF (IPR_RELSCF.GE.0) THEN
         CALL FLSHFO(LUPRI)
         CALL HEADER('*** PROGRAM AT34 - ALLIANT - @V ***',-1)
       ENDIF
-
-C     CALL FLSHFO(LUPRI)
 
       CALL AT3(WORK,LWORK)
 
@@ -4228,7 +4208,6 @@ C
 C     PUNCH BASIS SET AND VECTORS FOR INPUT TO IBMOL-H
       LOGICAL LLIE(4), EX
 #include "amfi_if.h"
-c     logical relscf_verbose
 CMI   DATA LLIE/1HS,1HP,1HD,1HF/, NTYSM/1,3,6,10/
       DATA LLIE/.false.,.false.,.false.,.false./, NTYSM/1,3,6,10/
 #include "memint.h"
@@ -4883,10 +4862,7 @@ CMI  *C(MXBF,1),CTRAN(*),PQN(*),ZETA(*),ZETINC(*),
      *ITRAN(*),NROW(*),NBVAR(*),IORCN(*)
       COMMON /CLOCKX/ CPU,CLK
 #include "amfi_if.h"
-c     logical relscf_verbose
-c     relscf_verbose = .false.
 C
-CMI   IF (NITSCF.EQ.1.and.relscf_verbose) THEN
 CMI   IF (NITSCF.EQ.1.and.IPR_RELSCF.GE.2) THEN
       IF (NITSCF.EQ.1.and.IPR_RELSCF.GE.0) THEN
          IF (IPARAM.EQ.0) THEN
@@ -4929,12 +4905,9 @@ C
       ENERG=CIN+POT
       VIR=POT/CIN
 C
-CMI   if (relscf_verbose) WRITE (6,65) NITSCF,ENERG,POT,CIN,VIR
 CMI   if (IPR_RELSCF.GE.2) THEN
       if (IPR_RELSCF.GE.0) THEN
-CMI      WRITE (LUPRI,65) NITSCF,ENERG,POT,CIN,VIR
          WRITE (LUPRI,'(5X,I5,4(3X,D20.10))') NITSCF,ENERG,POT,CIN,VIR
-CMI65 FORMAT(5X,I5,4(3X,D20.10))
       ENDIF
 
       RETURN
@@ -5033,10 +5006,7 @@ C     THE RELOP PACKAGE
 C     V 1.0 - 12.3.86 - BERND HESS
 C
 #include "amfi_if.h"
-c     logical relscf_verbose
-c     relscf_verbose = .false.
 
-CMI   if (relscf_verbose) WRITE (6,100)
       if (IPR_RELSCF.GE.2)  THEN
          WRITE (LUPRI,100)
 100      FORMAT(/,
@@ -5942,8 +5912,6 @@ CMI   DIMENSION NOSH(2),AJMN(24),NCCUP(2),IANUM(90),IADEN(90)
      X            17745,13013,507507/
 
 #include "amfi_if.h"
-c     logical relscf_verbose
-c     relscf_verbose = .false.
 
       IEXCHG = 20
       DO I = 1,24  ! MI: AJMN has range 1-24 !

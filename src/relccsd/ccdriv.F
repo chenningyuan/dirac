@@ -2363,7 +2363,8 @@ C
 #include "eqns.inc"
 #include "results.inc"
 #include "complex.inc"
-#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
+! ccpar.inc not needed, because there is no parallelization in this subroutine
+! include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
