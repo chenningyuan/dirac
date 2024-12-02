@@ -868,11 +868,9 @@ C
 C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
      &             '.WAVE F','.ANALYZ','.PROPER','xxxxxx ',
-     &             '.NO4IND','.NOSFCR','.OPTIMI','.MINIMI',
-     &             '.XMLOUT','.xxxxxx'/
+     &             '.NO4IND','xxxxxxx','.OPTIMI','.MINIMI',
+     &             '.XMLOUT','xxxxxxx'/
 c     .XMLOUT can be removed after adapting the tests, is now always active
-C
-      NOSFCRASH=.FALSE.
 C
 C     Read menu file
 C     ==============
@@ -948,8 +946,7 @@ C&&&& deactivate 4-INDEX transformation (on by default for CC and CI)
             NOTRA = .TRUE.
             GO TO 100
   110    CONTINUE
-C&&& .NOSFCR: no Segm.fault crash when quit for creating profiling output,gmon.out
-            NOSFCRASH=.TRUE.
+C&&&
             GO TO 100
  111     CONTINUE
 C&&&& OPTIMIZE: Geometry optimization
@@ -994,19 +991,6 @@ C
       IF(DOTRA)   WRITE(LUPRI,'(3X,A)') '* Transformation to '//
      &    'Molecular Spinor basis'
       IF(INPTES)  WRITE(LUPRI,'(3X,A)') '* Input test run only'
-
-C     LV: This option is badly out of place, has nothing to do with jobs !
-      IF (NOSFCRASH) THEN
-         WRITE(LUPRI,'(3X,A)')
-     &   '* If crash, do NOT end with segmentation fault.'//
-     &   'Necessary for getting profiling file, gmon.out.'
-!radovan: commented out the following message about this default situation
-!         this is strange for users to see under jobs
-!     ELSE
-!        WRITE(LUPRI,'(3X,A)')
-!    &   '* If crash, end with a forced segmentation fault.'//
-!    &   ' Useful for debugging.'
-      END IF
 C
  666  CONTINUE
 C
@@ -5348,11 +5332,11 @@ C
       GAUNT = .FALSE.
       GAUNT_SAVE = GAUNT
       INTFLG_CHANGE = .FALSE.
-      IOTC = .FALSE.
+      IOTC   = .FALSE.
       SYMSTP = .FALSE.
       TRSSTP = .FALSE.
       INPERR = 0
-      ICHANG  = 0 ! mi-to satisfy ifort runtime check
+      ICHANG = 0
       CALL TITLER('Hamiltonian defined','*',127)
 C
 C

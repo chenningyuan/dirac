@@ -10,9 +10,10 @@
      &            fermicc,s2thetaw,autk,planck,xtangm10,cvel,alphac,    &
      &            alpha2,xtj,xtkays,xthz,xtev,xkjmol,xkcmol,xtnm,       &
      &            xajoul,autime,xfsec,tesla,debye,xtkmml,xfamu,xfmp,    &
-     &            nmagn,nmagnau,efaumksa,cminv,nm,gfermi
+     &            nmagn,nmagnau,efaumksa,cminv,nm,gfermi,gfac,g1fac
       COMMON/CODVAL/CODSET,xtang,echarge,hbar,xfmol,umass,pmass,emass,  &
      &              ccm,fermicc,s2thetaw,autk,planck,xtangm10,cvel,     &
      &              alphac,alpha2,xtj,xtkays,xthz,xtev,xkjmol,xkcmol,   &
      &              xtnm,xajoul,autime,xfsec,tesla,debye,xtkmml,xfamu,  &
-     &              xfmp,nmagn,nmagnau,efaumksa,cminv,nm,gfermi
+     &              xfmp,nmagn,nmagnau,efaumksa,cminv,nm,gfermi,gfac,   &
+     &              g1fac

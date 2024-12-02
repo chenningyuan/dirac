@@ -38,7 +38,7 @@ add_library(
 # deal with intermodule dependencies
 add_dependencies(main gp)
 add_dependencies(main visual)
-add_dependencies(main embedding)
+add_dependencies(main fde)
 add_dependencies(main interest)
 if (ENABLE_STIELTJES)
     add_dependencies(main stieltjes)

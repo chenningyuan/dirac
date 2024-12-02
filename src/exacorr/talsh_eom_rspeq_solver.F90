@@ -21,10 +21,28 @@ module talsh_eom_rspeq_solver
       public solve_eom_lr_right
       public solve_eom_lr_left
       public get_left_bvec
+      public print_lr_setup
 
       contains
 
 !----------------------------------------------------------------------------------------------------------------
+
+      subroutine print_lr_setup(rspeq_side,operator_label,operator_index,freq)
+         complex(kind=8), intent(in) :: freq
+         integer, intent(in) :: operator_index
+         character(1), intent(in) :: rspeq_side 
+         character(1), intent(in) :: operator_label
+
+         print *, ""
+         print *, "Solving "//rspeq_side//"HS linear response equation"
+!        when forming e.g 2-photon transition moments, do not print information on indivudial operators 
+         if (operator_index.gt.0) then
+             print *, "   Operator "//operator_label//" : ",operator_index
+         endif
+         print *, "   Frequency  : ",freq
+         print *, ""
+      end subroutine
+
 
       subroutine solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop, &
                                     omega, tprop_tensor)

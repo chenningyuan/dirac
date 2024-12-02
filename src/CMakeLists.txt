@@ -16,9 +16,9 @@ if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
 
-if (CMAKE_Fortran_COMPILER_ID MATCHES XL OR CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+if (CMAKE_Fortran_COMPILER_ID MATCHES XL OR CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
 # xlf compiler does not support isnan used
-# pgfortran compiler does not suppore real*16
+# nvfortran compiler does not suppore real*16
     option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
 else()
     option(ENABLE_STIELTJES "Enable stieltjes library" ON)
@@ -118,9 +118,9 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:moltra> ${EXTERNAL_OBJECTS})
 
-#    embedding as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/embedding)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:embedding> ${EXTERNAL_OBJECTS})
+#    frozen density embedding as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/fde)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:fde> ${EXTERNAL_OBJECTS})
 
 # Making x2c as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/x2c)

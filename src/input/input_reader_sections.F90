@@ -312,6 +312,10 @@
                             visual_cfg_cartesian_power(3))
       end if
 
+      if (kw_matches(word, '.RADPOW')) then
+         call kw_read(word, visual_cfg_radial_power)
+      end if
+
       if (kw_matches(word, '.DSCALE ')) then
          call kw_read(word, visual_cfg_scale)
          visual_cfg_scale=1.0D0/visual_cfg_scale

@@ -7,13 +7,21 @@
 #   define:
 #     - "'-DENABLE_EXATENSOR={0}'.format(arguments['--exatensor'])"
 
-#Check whether ExaTensor can be used
 option(ENABLE_EXATENSOR "Enable ExaTENSOR library" ON)
 option(TALSH_ONLY "Enable only TALSH component of ExaTENSOR library" OFF)
 
-if(ENABLE_64BIT_INTEGERS)
-   message(STATUS "ExaTensor library can not work with 64 bit integers, switched off")
-   set(ENABLE_EXATENSOR OFF)
+#Check whether ExaTensor can be used (if enabled)
+if(ENABLE_EXATENSOR)
+   if(ENABLE_64BIT_INTEGERS)
+      message(STATUS "ExaTensor library cannot work with 64 bit integers, switched off")
+      set(ENABLE_EXATENSOR OFF)
+   endif()
+
+# nvidia NVHPC cannot currently compile exatensor, not even EXA_TALSH_ONLY for some reason /2-Sep-2024 hjaaj
+   if(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
+      message(STATUS "ExaTensor library cannot work with nvfortran currently, switched off")
+      set(ENABLE_EXATENSOR OFF)
+   endif()
 endif()
 
 if(ENABLE_EXATENSOR)
@@ -24,7 +32,7 @@ if(ENABLE_EXATENSOR)
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
    set (EXATENSOR_GIT_REPO_LOCATION "https://github.com/RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
-   set (EXATENSOR_GIT_HASH 1a4ae3e4db8ae6843e27899e72cbc2de046498cc CACHE STRING "ExaTENSOR Git repository hash in use")
+   set (EXATENSOR_GIT_HASH 5a92dde43901604a2fde96f0c8141a38fccfa5db CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type
@@ -156,8 +164,10 @@ if(ENABLE_EXATENSOR)
       set (EXATENSOR_TOOLKIT TOOLKIT=CRAY)
    elseif(CMAKE_Fortran_COMPILER_ID MATCHES XL)
       set (EXATENSOR_TOOLKIT TOOLKIT=IBM)
-   elseif(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+   elseif(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
+      # not defined in EXATENSOR and TALSH, use its old name: PGI
       set (EXATENSOR_TOOLKIT TOOLKIT=PGI)
+      set(EXATENSOR_TALSH EXA_TALSH_ONLY=YES)
    else()
       message(STATUS "WARNING: ExaTensor TOOLKIT not found, setting to GNU")
       set (EXATENSOR_TOOLKIT TOOLKIT=GNU)
@@ -250,7 +260,7 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_eomip_full "cc;exacorr" "")
     dirac_test(exacorr_talsh_eomee "cc;exacorr" "")
     dirac_test(exacorr_talsh_eomee_full "cc;exacorr" "")
-    dirac_test(exacorr_talsh_eomea "cc;exacorr" "")
+    dirac_test(exacorr_talsh_eomea "cc;exacorr;short" "")
     dirac_test(exacorr_talsh_eomea_full "cc;exacorr" "")
     dirac_test(exacorr_talsh_cis "cis;talsh;short" "")
     dirac_test(exacorr_talsh_ccrsp_lr_static "ccrsp;talsh" "")
@@ -259,7 +269,7 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_ccrsp_cpp "ccrsp;talsh" "")
     dirac_test(exacorr_talsh_ccrsp_spsp "ccrsp;talsh" "")
     dirac_test(exacorr_talsh_ccrsp_qr_static "ccrsp;talsh" "")
-    dirac_test(exacorr_talsh_ccrsp_qr_cc-ci "ccrsp;talsh" "")
+    dirac_test(exacorr_talsh_ccrsp_qr_cc-ci "ccrsp;talsh;short" "")
     dirac_test(exacorr_talsh_ccrsp_eomtpa "ccrsp;talsh" "")
     dirac_test(exacorr_talsh_cc2 "cc;talsh;medium" "")
     dirac_test(exacorr_talsh_spinfree "cc;talsh;medium" "")
@@ -310,5 +320,10 @@ if(ENABLE_EXATENSOR)
     endif()
 
 endif()
+
+# redefine ENABLE_EXATENSOR with current value in CmakeCache.txt, used by e.g. ccmake and cmake-gui
+# otherwise it would still apear as ON to ccmake .., even if it has been set OFF above
+set(ENABLE_EXATENSOR ${ENABLE_EXATENSOR} CACHE BOOL "Enable ExaTENSOR library" FORCE)
+set(TALSH_ONLY ${TALSH_ONLY} CACHE BOOL "Enable only TALSH component of ExaTENSOR library" FORCE)
 
 message(STATUS "Enable ExaTENSOR library: ${ENABLE_EXATENSOR}")

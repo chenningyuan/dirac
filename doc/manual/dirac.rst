@@ -96,11 +96,6 @@ and the one-electron integrals specified under :ref:`**INTEGRALS`.  The integral
 are written to disk.
 
 
-keyword(NOSFCR)
-
-.. warning:: documentation missing
-
-
 keyword(MINIMI)
 
 .. warning:: documentation missing

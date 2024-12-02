@@ -1129,11 +1129,18 @@ C
      &        WORK(KCMO+I2ORBT(I)),WORK(KRDUM))
       END DO
 C
-c     IF (IPRINT .GE. 3) THEN
-         WRITE(LUPRI,'(/A)')
-     &        ' (RAPPBOS) Approximate boson symmetries: '
+      IF (NZ .LT. 4 .OR. NFSYM .EQ. 2) THEN ! irrelevant output if only one symmetry
+      IF (IPRINT .GE. 3) THEN
+         WRITE(LUPRI,'(/A)') ' (RAPPBOS) Approximate boson symmetries:'
          WRITE(LUPRI,9000) (REP(IBOSYM(I)),I=1,NORBT)
-c     END IF
+      ELSE
+         WRITE(LUPRI,'(/A)')
+     &   ' (RAPPBOS) Approximate boson symmetries of occupied orbitals:'
+         DO J = 1, NFSYM
+            WRITE(LUPRI,9000) (REP(IBOSYM(IORB(J)+I)),I=1,NOCC(J))
+         END DO
+      END IF
+      END IF
 
 #if defined MCSCF_DEBUG_SPINFREE
 !     additional check: ibosym <--> ibeig
@@ -1159,7 +1166,7 @@ c     END IF
       end if
 #endif
 
- 9000 FORMAT(10X,15(A4))
+ 9000 FORMAT(5X,10A4,4X,10A4)
 C
       CALL MEMREL('RAPPBOS',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
