@@ -5206,7 +5206,7 @@ C
 #include "dcbxlr.h"   ! common block for linear reponse
 #include "dcbgen.h"
 #include "consts.h"
-#include "gfac.h"
+#include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
 #include "ibtfun.h"
