@@ -10,94 +10,98 @@ QED effects are high-order relativistic effects that cannot be captured in the f
 of the no-pair approximation. A rough explanation of the QED effects that
 contribute to the Lamb shift of bound-state electrons is as follows:
 
--  Vacuum polarization (VP): A charge in space is surrounded by virtual electron-positron pairs
--  Self-energy (SE): The electron drags along its electromagnetic field
+-  Vacuum polarization (VP): A charge in space is surrounded by virtual electron-positron pairs which contributes to its observed charge.
+-  Self-energy (SE): The electron drags along its electromagnetic field which contributes to its observed mass.
 
-Effective QED potential is an approximate way to include QED effects to all-electron relativistic Hamiltonians. In the current implementation,
-the following potentials are available: For more information see Ref. :cite:`Sunaga2022`.
+Effective QED potentials are an approximate way to include QED effects in all-electron relativistic Hamiltonians. In the current implementation (see Ref. :cite:`Sunaga2022`) the following potentials are available: 
 
 Vacuum polarization
-================================
+===================
 
 1) Uehling potential
-------------------------------------------
+--------------------
 
-This the lowest-order term, but the dominant contribution to the vacuum polarization
-effect. This is directly derived from the scattering matrix of bound-state electrons :cite:`Uehling1935`.
+The Uehling potential is the dominant contribution to the vacuum polarization. It is extracted from the
+term linear in nuclear charge after regularization and renormalization. For a spherically symmetric
+nuclear charge distribution it reads
 
 .. math::
+   
    \varphi_{\text {Ueh. }} (\boldsymbol{x})= & \frac{Z e}{4 \pi \varepsilon_0 r_x} \bar{\lambda} \frac{2 \alpha}{3} \int_0^{\infty} r_y d r_y \rho^{\text {nuc. }}\left(r_y\right) \\ & \times\left[K_0\left(\frac{2}{\bar{\lambda}}\left|r_x-r_y\right|\right)-K_0\left(\frac{2}{\bar{\lambda}}\left|r_x+r_y\right|\right)\right]
 
-where
+where :math:`\bar{\lambda}=\hbar/mc` is the reduced Compton length and
 
 .. math::
 
    K_0(x)=\int_1^{\infty} d \zeta e^{-x \zeta}\left(\frac{1}{\zeta^3}+\frac{1}{2 \zeta^5}\right) \sqrt{\zeta^2-1}.
 
    
-Self-energy
-================================
+Electron self-energy
+====================
 
-Actually, the self-energy effect is represented by a nonlocal matrix potential,
-but the following local potentials can be approximately derived or fitted to reproduce
-the self-energy correction calculations of few-electron atoms. 
+The electron self-energy effect is delocal and hence exchange-like. However, some effective local potentials are
+available in the literature.
 
-1) Flambaum-Ginges' potential
-------------------------------------------------------
 
-The following magnetic (:math:`\varphi_{\text {mag }}`) and high-frequency (:math:`\varphi_{\text {HF}}`) potentials are obtained from
-the scattering of a free electron due to the interaction with a classical external potential
-(the vertex correction problem). The low-frequency part cannot be taken into account in (:math:`\varphi_{\text {HF}}`)
-because of the energy parameter in the original equation. The low-frequency term (:math:`\varphi_{\text {LF}}`) is
-artificially obtained, assuming that the low-frequency part should have the range of a 1s orbital of
-hydrogen-like atoms :cite:`Flambaum2005`. 
+1) Flambaum and Ginges SE potential
+-----------------------------------
+
+The Flambaum-Ginges potential :cite:`Flambaum2005` is derived from the linear contribution to the self-energy process, but has been further modeled and
+parametrized to to account for the full self-energy process to all orders in :math:`(Z\alpha)`. It splits into two terms, associated
+with electric and magnetic form factors. The electric contribution is further divided into a high-frequency (HF) and low-frequency (LF) part. The high-frequency
+is properly derived from the electric form factor, but comes with a cutoff parameter :math:`\lambda` to eliminate infrared divergency, whereas the
+low-frequency is simply modeled as a hydrogen-like function. The final forms are
 
 .. math::
-   \varphi_{\text {FG }} = \varphi_{\text {mag }} + \varphi_{\text {HF }} + \varphi_{\text {LF}},
    
+   \varphi_{\text {FG }} = \varphi_{\text {mag }} + \varphi_{\text {HF }} + \varphi_{\text {LF}},
+
 where
 
 .. math::
+   
    \varphi_{\mathrm{mag}} (\boldsymbol{x})=\frac{\alpha \hbar}{4 \pi m_e c} i {\gamma} \cdot \nabla_x\left[ \Phi(\boldsymbol{x}) \left(K_m\left(\frac{2 r_x}{\bar{\lambda}}\right)-1\right)\right],
+   
+.. math::
+   
+  \varphi_{\text {HF }}(\boldsymbol{x}, \lambda)=-\frac{\alpha}{\pi} A(Z,\boldsymbol{x})\Phi(\boldsymbol{x}) K_e\left(\frac{2 r_x}{\bar{\lambda}}\right),
 
 .. math::
-  \varphi_{\text {HF }}(\boldsymbol{x}, \lambda)=-\frac{\alpha}{\pi} A(Z,\boldsymbol{x})\Phi(\boldsymbol{x}) K_e\left(\frac{2 r_x}{\lambda}\right),
-
-.. math::
+   
    \varphi_{\mathrm{LF}} (\boldsymbol{x})=-\frac{B(Z)}{e} Z^4 \alpha^5 m_e c^2 e^{-Z r_x / a_0}.
 
 The functions :math:`K_m(x)` and :math:`K_e(x)` are as follows:
 
 .. math::
+   
    K_m(x)=\int_1^{\infty} d \zeta \frac{e^{-x \zeta}}{\zeta^2 \sqrt{\zeta^2-1}};
 
 .. math::
+   
    K_e(x)= & \int_1^{\infty} d \zeta \frac{e^{-x \zeta}}{\sqrt{\zeta^2-1}}\left\{-\frac{3}{2}+\frac{1}{\zeta^2}+\left(1-\frac{1}{2 \zeta^2}\right)\right. \\ & \left.\times\left[\ln \left(\zeta^2-1\right)+  4 \ln \left(\frac{1}{Z \alpha}+\frac{1}{2}\right)   \right]\right\} .
 
-:math:`A` and :math:`B` are fitting functions.
-:math:`\Phi(\boldsymbol{x})` is the nuclear electrostatic potential,
-which is :math:`\frac{Z e}{4 \pi \varepsilon_0 r_x}` in the case of the point-charge model.
-The coefficients in :math:`A` and :math:`B` are
-adjusted to reproduces the self-energy corrections of the hydrogen-like atoms.
-The above equation is correct in the case of the point nucleus, but not the exact form of
-the finite-size nuclear charge model.
-However, it is confirmed that this approximation works well in the case of the Uehling potential :cite:`Artemyev1997`. 
+:math:`A` and :math:`B` are fitting functions adjusted to reproduce the self-energy corrections of hydrogen-like atoms.
+:math:`\Phi(\boldsymbol{x})` is the nuclear electrostatic potential.
+The above forms are strictly only correct for a point-charge nuclei, that is, for :math:`\Phi(\boldsymbol{x})=\frac{Z e}{4 \pi \varepsilon_0 r_x}`.
+The corresponding potentials for extended nuclei are properly obtained by convolution with the nuclear charge distribution.
+However, the above approximation has been reported to work well in the case of the Uehling potential :cite:`Artemyev1997`. 
 
 
-2) Pyykko-Zhao's potential 
------------------------------------------------
+2) Pyykko and Zhao SE potential 
+--------------------------------
 
 This is a Gaussian-type model potential where the parameters are fitted to reproduce
 the orbital energy and M1 hyperfine splitting within the range  :math:`29 \leq Z \leq 83` :cite:`Pyykko2003`.
       
 .. math::
+   
    \varphi_{\mathrm{PZ}}(\boldsymbol{x})=B(Z) e^{-\beta(Z) r_x^2}
 
 :math:`B` and :math:`\beta` are fitting functions.
 
    
 How to use
-================================
+==========
 
 Effective QED potentials, which are one-electron operators,
 should be added to the one electron Hamiltonian, as follows:
@@ -107,6 +111,10 @@ should be added to the one electron Hamiltonian, as follows:
 
 .. math::
    \varphi_{\mathrm{effQED}}  =\sum_A\left(\varphi_A^{\mathrm{SE}}+\varphi_A^{\mathrm{VP}}\right)
+
+The DIRAC implementation was obtained by grafting code from the numerical atomic code GRASP :cite:`GRASP`
+onto the DFT of grid. See :ref:`**GRID` for tuning options.
+The present input gives precise control, but is admittedly somewhat cumbersome.   
    
 Example 1: DCG Hamiltonian with Uehling and FG potentials
 -------------------------------------------------------------
