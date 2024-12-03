@@ -200,7 +200,7 @@ Tutorials and walkthrus
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
 * **Quantum electrodynamics (QED):**
-  :doc:`effective QED potential <tutorials/qed/effqed>`
+  :doc:`effective QED potentials <tutorials/qed/effqed>`
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
