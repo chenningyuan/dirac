@@ -93,7 +93,7 @@ C
      &            '.THRPCI','.MXVCBL','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
-     &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
+     &            '.USE PB','xxxxxxx','.TRA NO','.LOWSRT','.SEL ST',
      &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX',
      &            '.EEDM  ','.MHYP  ','.ENSPS ','.NMQM  ','.THRGCI',
      &            '.XXXXXX','.TERSE '/ !MKN
@@ -140,7 +140,6 @@ C
       NATOLCR_KRCI      = .FALSE.
       CHCKPT_KRCI       = .FALSE.
       CUSE_PBLFL_KRCI   = .FALSE.
-      GENFOCK_KRCI      = .FALSE.
       TRANATO_KRCI      = .FALSE.
       LOWSORT_KRCI      = .FALSE.
       STATE_SELECT_KRCI = .FALSE.
@@ -371,16 +370,16 @@ C              symmetry
      & '  *** input error: Dinfh contains the inversion operation'//
      & ' as group element.',
      & '  please specify either g or u in addition to the mj value. ***'
-                        call quit('  *** input error: Dinfh contains
-     & the inversion operation as group element. ***')
+                        call quit('  *** input error: Dinfh contains '//
+     & 'the inversion operation as group element. ***')
                       end if
                     else
                       gerade_mcci_wf   = .true.
                       length_of_string = length_of_string + 1
                       if(ascii_lchar .eq. iachar('g')
      &                   .or. ascii_lchar .eq. iachar('u'))then
-                        call quit(' *** input error: Cinfv does not
-     & have inversion as group element. ***')
+                        call quit(' *** input error: Cinfv does not '//
+     & 'have inversion as group element. ***')
                       end if
                     end if
 
@@ -414,11 +413,12 @@ C&&& .MXCIVE: Number of CI vectors allowed for subspace
 C&&& .KTRLVL: default integral transformation level.
                  READ(LUCMD,*) KTRLVL_KRCI
                IF (KTRLVL_KRCI .LE. -2 .OR. KTRLVL_KRCI .GT. 5) THEN
-                  WRITE(LUPRI,'(//2A,I10)')
-     &                '*** ERROR in KRCI_INP *** ',
-     &                'Illegal transformation level: ',KTRLVL_KRCI
+                  WRITE(LUPRI,'(//2A,I10/A)')
+     &             '*** ERROR in KRCI_INP *** ',
+     &             'Illegal .KTRLVL transformation level: ',KTRLVL_KRCI,
+     &             ' Allowed values: -1 to 5'
                   CALL QUIT('*** ERROR in KRCI_INP *** ' //
-     &                 'Illegal transformation level')
+     &                 'Illegal .KTRLVL transformation level')
                END IF
                GO TO 100
     8          CONTINUE
@@ -501,18 +501,12 @@ C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode
                   WRITE(LUPRI,'(//A)')
      &               ' unknown shared memory run-level! '
                   WRITE(LUPRI,'(A)')
-     &               ' LEVEL 0: no shared memory in use'
-                  WRITE(LUPRI,'(A)')
-     &               ' LEVEL 1: sharing node-wise (ij|kl)'
-                  WRITE(LUPRI,'(A)')
-     &               ' LEVEL 2: sharing node-wise |C> '
-                  WRITE(LUPRI,'(A)')
-     &               ' LEVEL 3: sharing node-wise (ij|kl) + |C>'
-                  WRITE(LUPRI,'(A)')
-     &               ' LEVEL 4: sharing global (ij|kl) + node-wise |C>'
-                  WRITE(LUPRI,'(A)')
-     &               ' LEVEL 5: sharing global |C> + node-wise (ij|kl)'
-                  WRITE(LUPRI,'(A)')
+     &               ' LEVEL 0: no shared memory in use',
+     &               ' LEVEL 1: sharing node-wise (ij|kl)',
+     &               ' LEVEL 2: sharing node-wise |C> ',
+     &               ' LEVEL 3: sharing node-wise (ij|kl) + |C>',
+     &               ' LEVEL 4: sharing global (ij|kl) + node-wise |C>',
+     &               ' LEVEL 5: sharing global |C> + node-wise (ij|kl)',
      &               ' LEVEL 6: sharing global (ij|kl) + |C> '
                   WRITE(LUPRI,'(//A,I3)')
      &               ' you asked for LEVEL ',ISHMEM_TYPE
@@ -660,9 +654,7 @@ C              distribution
                CUSE_PBLFL_KRCI = .TRUE.
                GO TO 100
    37          CONTINUE
-C&&& .GENFOC:  transform positronic/inactive/virtual spinors to
-C              Fock-type spinors
-               GENFOCK_KRCI = .TRUE.
+C&&& .xxxxxx:
                GO TO 100
    38          CONTINUE
 C&&& .TRA NO:  transform to natural CI spinors
@@ -719,16 +711,16 @@ C              subsequent MCSCF...
      & '  *** input error: Dinfh contains the inversion operation'//
      & ' as group element.',
      & '  please specify either g or u in addition to the mj value. ***'
-                        call quit('  *** input error: Dinfh contains
-     & the inversion operation as group element. ***')
+                        call quit('  *** input error: Dinfh contains '//
+     & 'he inversion operation as group element, specify g or u. ***')
                     end if
                   else
                     gerade_mcci_wf   = .true.
                     length_of_string = length_of_string + 1
                     if(ascii_lchar .eq. iachar('g')
      &                 .or. ascii_lchar .eq. iachar('u'))then
-                      call quit(' *** input error: Cinfv does not
-     & have inversion as group element. ***')
+                      call quit(' *** input error: Cinfv does not '//
+     & 'have inversion as group element. No g or u ! ***')
                     end if
                   end if
 
@@ -893,9 +885,9 @@ C&&& TERSE  : Old LUCIAREL output for iterations and final info
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in *KRCICALC.'
+     *            '" not recognized for *KRCICALC.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in *KRCICALC')
+               CALL QUIT('Illegal prompt for *KRCICALC')
             END IF
       END IF
   300 CONTINUE
@@ -1354,10 +1346,6 @@ C
       IF( CHCKPT_KRCI ) THEN
         WRITE(LUPRI,'(/A)') ' * Write check point file in parallel'//
      &                      ' CI calculation'
-      END IF
-      IF( GENFOCK_KRCI ) THEN
-        WRITE(LUPRI,'(/A)') ' * Transform positronic/inactive/virtual'//
-     &                      ' spinors to Fock-type spinors'
       END IF
       IF( (.NOT. CINT_REORD_KRCI) .and. LOWSORT_KRCI ) THEN
         WRITE(LUPRI,'(/A)') ' *** Warning *** low-memory sorting'//

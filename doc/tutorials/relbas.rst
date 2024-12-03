@@ -122,7 +122,7 @@ The ration of normalization constants in the above relation is given by
 
    \frac{N^{\alpha}_{ijk}}{N^{\alpha}_{i+2,j,k}}=\frac{1}{4\alpha}\sqrt{\frac{F_{i+2,j,k}}{F_{ijk}}}
 
-However, the expression is much simplified by the fact that factors :math:`F_{ijk}` area set to one in HERMIT, such that
+However, the expression is much simplified by the fact that factors :math:`F_{ijk}` are set to one in HERMIT, such that
 
 .. math::
 

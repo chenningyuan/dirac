@@ -1118,9 +1118,6 @@ C     Written by J. Thyssen - Dec 29 2000
 C                    Added CI keyword NOOCCN. Stefan Knecht October 2007
 C                    New start guess code 1531. Read MP2 natural 
 C                    orbitals from KRMCOLD as default. Stefan Knecht 07.07.2008
-C                    Added CI/KRMC keyword GENFOC. Read in orbitals
-C                    and vector to generate Fock-type orbitals for 
-C                    positronic/inactive/secondary space. Stefan Knecht 17.07.2008
 C                    
 C
 C     Major revision by S. Knecht: 08.08.2008
@@ -1149,7 +1146,7 @@ C
      &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
      &            '.NO PFQ','.NO FQX','.ANALYZ','-------','.MXCIVE',
      &            '.KTRLVL','.PARINT','-------','.NOOCCN','.RDFOCK',
-     &            '.WRTFCK','-------','-------','-------','.GENFOC'/
+     &            '.WRTFCK','-------','-------','-------','-------'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -1179,7 +1176,6 @@ C
       NATONL      = .FALSE.
       FOCKON      = .FALSE.
       COMPROT     = .FALSE.
-      GENFOCK     = .FALSE.
       NATOLCR     = .FALSE.
       TRA_NATO    = .FALSE.
       CRDFO_MAT   = .FALSE.
@@ -1347,10 +1343,7 @@ C&&& .WRTFCK: write fock matrix in CI start guess module
    24          CONTINUE
                GO TO 100
    25          CONTINUE
-C&&& .GENFOC: generate Fock-type orbitals as start orbitals for CI 
-C             calculations (starting, e.g., from a previous (converged) 
-C             MCSCF wavefunction.
-               GENFOCK = .TRUE.
+C&&& .xxxxxx:
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1468,12 +1461,6 @@ C
 C
       WRITE(LUPRI,'(A,I3)')
      &     ' * Default integral transformation level  :',KTRLVL
-      
-      IF( GENFOCK )THEN
-        WRITE(LUPRI,'(A)') 
-     &     ' * Generate Fock-type positronic/inactive/virtual '//
-     &     '   starting orbitals'
-      END IF
 C
   400 RETURN
       END

@@ -967,14 +967,8 @@ C
       character*100 msg
       CALL GETDAT(LDATE,LTIME)
 
-#if !defined VAR_IFORT
-!miro: ifort 10.1 does not know the "iomsg" parameter ....
-!     WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) 
-      WRITE (LU,ERR=1000,IOSTAT=IOSVAL) 
+      WRITE (LU,ERR=1000,IOSTAT=IOSVAL,iomsg=msg) 
      &              LSTARS,LDATE,LTIME,LABEL
-#else
-      WRITE (LU,ERR=1000,IOSTAT=IOSVAL) LSTARS,LDATE,LTIME,LABEL
-#endif
       RETURN
 C
  1000 IF (LUERR .LT. 0) THEN
@@ -986,9 +980,7 @@ C
      &      '         IOSTAT value',IOSVAL
          WRITE(LUERR,*) 'LSTARS=',LSTARS
          WRITE(LUERR,*) 'LDATE=',LDATE,' LTIME=',LTIME
-#if !defined VAR_IFORT
-         WRITE (LUERR,'(A,A)') 'message:',msg
-#endif
+         WRITE (LUERR,'(A,A)') 'error message:',msg
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLAB: output error writing label')
       END IF

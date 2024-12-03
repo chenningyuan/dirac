@@ -1618,12 +1618,14 @@ contains
 
             active_nucpot(1) = -active_nucpot(1)
 !
+#ifdef HAVE_INTRINSIC_ISNAN
             if (isnan(derv_total(1, d0000000))) then
                if (fde_mpi_is_master()) print *,'at point',ipoint,'derv_total is NaN' 
             endif
             if (isnan(derv_frozen(1, d0000000))) then
                if (fde_mpi_is_master()) print *,'at point',ipoint,'derv_frozen is NaN' 
             endif
+#endif
 
             non_additive_interaction = non_additive_interaction &
                               + (derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000))

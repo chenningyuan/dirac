@@ -5879,7 +5879,8 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "onecom.h"             !contains KCKTAB
+! onecom.h : KCKTAB
+#include "onecom.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &     SHLINT(KCKTAB,NINTS),WORK(LWORK)
 #include "memint.h"
@@ -5910,7 +5911,8 @@ C***********************************************************************
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &     SHLINT(KCKTAB,NINTS),TMPARR(KCKTAB,8)
       INTEGER T, U, V, NINTS
-#include "onecom.h" !contains KCKTAB
+! onecom.h :  KCKTAB
+#include "onecom.h"
 #include "lmns.h"
 #include "symmet.h"
 #include "inforb.h"
