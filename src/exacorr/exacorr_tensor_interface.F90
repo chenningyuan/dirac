@@ -37,7 +37,7 @@ module exacorr_tensor_interface
 
          !tens_rcrsv_t has to have a placeholder too
 
-         integer, public:: which_library = 1 !set this default value by CMAKE
+         integer, public:: which_library = 1 !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
          
          !context, metadata
                 !dimensions?
@@ -68,7 +68,7 @@ module exacorr_tensor_interface
         contains
 
         !contract performs D += alpha A * B (+ beta C ) in einsum notation with possible complex conjugates
-        FUNCTION contract(einsum_str, d, alpha, a, b, beta, c) result(ierr) ! D += alpha A * B + beta C
+        FUNCTION einsum(einsum_str, d, alpha, a, b, beta, c) result(ierr) ! D += alpha A * B + beta C
         !Import :: tensor_t
                 character(len = *), intent(in)   :: einsum_str
                 type(tensor_t), intent(inout)    :: d

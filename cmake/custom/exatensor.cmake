@@ -27,6 +27,13 @@ if(ENABLE_EXATENSOR)
    set (EXATENSOR_GIT_HASH 1a4ae3e4db8ae6843e27899e72cbc2de046498cc CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
+   # check if standard tensor interface TAPP present 
+   if (DEFINED ENV{TAPP_ROOT})
+     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} $ENV{TAPP_ROOT}/lib/tapp.so)
+   else()
+     message(STATUS "WARNING: TAPP_ROOT not specified. Will attempt to compile without TAPP standard tensor interface.") 
+   endif()
+
    # check build type
    if (DEFINED ENV{BUILD_TYPE})
 	   set(EXATENSOR_BUILD BUILD_TYPE=$ENV{BUILD_TYPE})

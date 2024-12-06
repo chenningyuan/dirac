@@ -29,6 +29,12 @@ if(ENABLE_EXATENSOR)
    mbauto/exatensor_auto_ccsdt_spinor.F90
    mbauto/exatensor_auto_ccsdtq_spinor.F90
    mbauto/exatensor_auto_ccsdtqp_spinor.F90
+   tapp.F90
+   tapp_utils.F90
+   tapp_tenpi_ccd.F90
+   tapp_tenpi_ccsd.F90
+   tapp_tenpi_ccsdt.F90
+   tapp_tenpi_ccsdtq.F90
    talsh_tenpi_ccd.F90
    talsh_tenpi_ccsd.F90
    talsh_tenpi_ccsdt.F90

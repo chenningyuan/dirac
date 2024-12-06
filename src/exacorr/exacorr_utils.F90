@@ -148,6 +148,8 @@ module exacorr_utils
             write(*,'(A,L1)') " - Using kernels generated with TENPI"
          elseif(exa_input%auto_scheme.eq.1) then
             write(*,'(A,L1)') " - Using kernels generated with mbauto"
+          elseif(exa_input%auto_scheme.eq.3) then
+            write(*,'(A,L1)') " - Using TENPI kernels with TAPP reference implementation"
          endif
       endif
       write(*,'(A,L1)') " - Solve CCD equations :                ", exa_input%ccd

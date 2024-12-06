@@ -1,0 +1,76 @@
+#!/bin/bash
+
+module purge
+source /opt/cray/pe/cpe/23.09/restore_lmod_system_defaults.sh
+module load DefApps/default
+module load Core/24.00
+module load libfabric/1.15.2.0
+module load cmake/3.23.2
+
+#module load PrgEnv-gnu/8.4.0
+module load PrgEnv-gnu gcc
+#module unload cray-mpich
+#module load craype-network-ucx
+module load gcc/12.2.0
+# module load gcc-native/12.3
+module load craype/2.7.23
+#module load cray-mpich-ucx/8.1.27
+module load cray-mpich/8.1.27
+module load cray-pmi/6.1.12
+module load cray-libsci/23.09.1.1
+module load craype-hugepages1G
+module load cray-python
+module load xpmem
+#module load cray-hdf5-parallel/1.12.2.7
+module load cray-hdf5/1.12.2.7
+module load openblas/0.3.17-omp
+#module load netlib-scalapack/2.2.0
+#export MATH_ROOT=/sw/frontier/spack-envs/base/opt/cray-sles15-zen3/gcc-12.2.0/netlib-scalapack-2.2.0-kzytlxfmxnkivuy4dm7re2zrd5trw66d
+
+# libraries for graphic card
+module load craype-x86-trento
+module load craype-accel-amd-gfx90a
+module load rocm/5.7.1
+#module load cray-libsci_acc/23.09.1.1
+
+# Debugging / Performance
+module load perftools-base
+module load gdb4hpc
+#module load ums ums023 hpctoolkit
+#module unload darshan-runtime
+
+# Required for non-default CPE modules
+export LD_LIBRARY_PATH=${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
+
+#export BUILD_TYPE=PRF #for debugging
+export BUILD_TYPE=OPT
+
+export WRAP=WRAP
+export TOOLKIT=GNU
+export MPILIB=MPICH
+export PATH_MPICH=${CRAY_MPICH_PREFIX}
+export BLASLIB=LIBSCI
+export EXA_OS=LINUX
+export PATH_BLAS_LIBSCI=${CRAY_LIBSCI_PREFIX_DIR}/lib
+export WITH_LAPACK=NO
+## export EXA_GPU="AMD"; #uncomment this line to use gpus
+export EXA_TALSH_ONLY=NO
+
+#export GPU_CUDA=NONE
+export GPU_SM_ARCH=90
+#export USE_HIP=NO
+export PATH_ROCM=${ROCM_PATH}
+
+export TAPP_ROOT=/lustre/orion/chp109/world-shared/Tensor_Product
+
+#missing linking - seems to be included
+#-I${MPICH_DIR}/include
+#-L${MPICH_DIR}/lib -lmpi ${CRAY_XPMEM_POST_LINK_OPTS} -lxpmem ${PE_MPICH_GTL_DIR_amd_gfx90a} ${PE_MPICH_GTL_LIBS_amd_gfx90a}
+
+
+# ./setup --mpi --fc=ftn --cc=cc --cxx=CC --type=release --cmake-options=" -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.09.1.1/GNU/10.3/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -L/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/lib -lmpi -L/opt/cray/xpmem/2.6.2-2.5_2.22__gd067c3f.shasta/lib64 -lxpmem -L/opt/cray/pe/mpich/8.1.27/gtl/lib -lmpi_gtl_hsa ' " build-cpu_
+
+
+export LD_LIBRARY_PATH=/lustre/orion/chp109/world-shared/tblis/lib:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=/lustre/orion/chp109/world-shared/Tensor_Product/lib:${LD_LIBRARY_PATH}
+# /lustre/orion/chp109/world-shared/Tensor_Product/obj
