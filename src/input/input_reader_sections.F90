@@ -319,7 +319,6 @@
            write(*,*) 'Error: ".LIST" requires prior specification of ".GRIDS". Stop.'
            stop
          else
-           ! get id of the grid:
            do i = 1, rs_input%nr_grids
              if (rs_input%grids(i)%input == 2) then
                call kw_read(word, nr_lines)
@@ -337,14 +336,33 @@
          end if
       end if
 
-      !if (kw_matches(word, '.LINE  ')) then
+      if (kw_matches(word, '.LINE  ')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".LINE" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == 3) then
+               nr_lines = 3
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
+                  read(get_file_unit(), '(a)') line
+                  if (line(1:1) == '!' .or. line(1:1) == '#') cycle
+                  word_array(j) = line
+               end do
+               call grid_user_input_cfg(rs_input%grids(i), 'line', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
+         end if
+      end if
 
       if (kw_matches(word, '.2D    ')) then
          if (.not. rs_input%allocated_grids()) then
            write(*,*) 'Error: ".2D" requires prior specification of ".GRIDS". Stop.'
            stop
          else
-           ! get id of the grid:
            do i = 1, rs_input%nr_grids
              if (rs_input%grids(i)%input == 4) then
                nr_lines = 5
@@ -366,10 +384,8 @@
            write(*,*) 'Error: ".3D" requires prior specification of ".GRIDS". Stop.'
            stop
          else
-           ! get id of the grid:
            do i = 1, rs_input%nr_grids
              if (rs_input%grids(i)%input == 5) then
-               !rs_input%grids(i)%ndim = 3
                read(get_file_unit(), '(a)') line
                allocate(word_array(1))
                word_array(1) = line

@@ -127,6 +127,7 @@ contains
         print *, 'unknown key'
         stop
     end select
+
     if (grid%id == 0) grid%id = id_grid
 
   end subroutine grid_input_cfg
@@ -137,7 +138,7 @@ contains
     character(*), intent(in):: domain
     character(*), dimension(:), intent(in):: user_input_lines
     integer::stat, np
-    real(8)::s
+    real(8)::s, v(3), w(3)
     integer::nr_words, i,j
     character(len=len_trim(user_input_lines(1))),allocatable::chvalues(:)
 
@@ -155,6 +156,7 @@ contains
           call split_string(user_input_lines(i),grid%ndim,chvalues,separator=',')
           do j = 1, grid%ndim
             call str2flt(trim(chvalues(j)), s, stat)
+!           in this case, we fill grid%points array directly here;
             grid%points(j,i) = s
           end do
           deallocate(chvalues)
@@ -162,51 +164,61 @@ contains
         grid%nr_points_total_known = .true.
 
       case ('line')
+        grid%ndim = 1
+        call str2int(trim(user_input_lines(3)), np, stat)
+        grid%nr_points(1) = np
+        grid%nr_points_total = np
+        allocate(grid%points(grid%ndim, grid%nr_points_total))
+        grid%points = 0.0d0
+        allocate(chvalues(3))
+        call split_string(user_input_lines(1),3,chvalues,separator=',')
+        do i = 1, 3
+          call str2flt(trim(chvalues(i)), grid%points(i,1), stat)
+        end do
+        call split_string(user_input_lines(2),3,chvalues,separator=',')
+        do i = 1, 3
+          call str2flt(trim(chvalues(i)), grid%points(i,grid%nr_points_total), stat)
+        end do
+        deallocate(chvalues)
+!todo fixme - generate points elsewhere
+        v(1:3) = grid%points(1:3,grid%nr_points_total) - grid%points(1:3,1)
+        do i = 2, grid%nr_points_total-1
+          grid%points(1:3,i) = grid%points(1:3,1) + v(1:3)*(i-1)/grid%nr_points_total
+        end do
+        grid%nr_points_known(1) = .true.
         grid%nr_points_total_known = .true.
 
       case ('2d')
-!        grid%ndim = 2
-!        grid%typ = 1
-!!
-!!0.0  0.0  0.0     !origin
-!!0.0  0.0  2.0     !"right"
-!!20                !nr of points origin-"right"
-!!0.0  2.0  0.0     !"top"
-!!20                !nr of points origin-"top"
-!        allocate(chvalues(3))
-!        ! 1st line: origin
-!        call split_string(user_input_lines(1),3,chvalues,separator=',')
-!        do i = 1, 3
-!          call str2int(trim(chvalues(i)), np, stat)
-!          grid%origin(i) = np
-!        end do
-!        ! 2nd line: "right"
-!        call split_string(user_input_lines(2),3,chvalues,separator=',')
-!        do i = 1, 3
-!          call str2int(trim(chvalues(i)), np, stat)
-!          extents_right(i) = np
-!        end do
-!        ! 3rd line: nr of points origin-"right"
-!        ! 4th line: "top"
-!        call split_string(user_input_lines(4),3,chvalues,separator=',')
-!        do i = 1, 3
-!          call str2int(trim(chvalues(i)), np, stat)
-!          extents_top(i) = np
-!        end do
-!        ! 5th line: nr of points origin-"top"
-!        nr_points_top = np
-!
-!        grid%nr_points_total = 1
-!        do i = 1, grid%ndim
-!          call str2int(trim(chvalues(i)), np, stat)
-!          grid%nr_points(i) = np
-!          grid%nr_points_known(i) = .true.
-!          grid%nr_points_total = grid%nr_points_total*grid%nr_points(i)
-!        end do
-!
-!        deallocate(chvalues)
-!
-!        grid%nr_points_total_known = .true.
+        grid%ndim = 2
+        grid%typ = 1
+        call str2int(trim(user_input_lines(3)), np, stat)
+        grid%nr_points(1) = np
+        grid%nr_points_known(1) = .true.
+        call str2int(trim(user_input_lines(5)), np, stat)
+        grid%nr_points(2) = np
+        grid%nr_points_known(2) = .true.
+        grid%nr_points_total = grid%nr_points(1)*grid%nr_points(2)
+        allocate(chvalues(3))
+        call split_string(user_input_lines(1),3,chvalues,separator=',')
+        do i = 1, 3
+          call str2int(trim(chvalues(i)), np, stat)
+          grid%origin(i) = np
+        end do
+        call split_string(user_input_lines(2),3,chvalues,separator=',')
+        do i = 1, 3
+          call str2int(trim(chvalues(i)), np, stat)
+          v(i) = np
+        end do
+        call split_string(user_input_lines(4),3,chvalues,separator=',')
+        do i = 1, 3
+          call str2int(trim(chvalues(i)), np, stat)
+          w(i) = np
+        end do
+!todo fixme - generate points elsewhere
+! v=extents right; w=extents top
+
+        deallocate(chvalues)
+        grid%nr_points_total_known = .true.
 
       case ('3d')
         grid%ndim = 3
@@ -268,7 +280,7 @@ contains
           write(*, *) ' ERROR: grid "npoints" or "spacing" information is missing for dimension ', i
           stop
         else if (grid%nr_points(i) /=0 .and. grid%spacing(i) /=0) then
-          write(*, *) ' ERROR: grid exclusive options: "npoints" and "spacing".'
+          write(*, *) ' ERROR: grid mutually exclusive options: "npoints" and "spacing".'
         end if
       end do
 

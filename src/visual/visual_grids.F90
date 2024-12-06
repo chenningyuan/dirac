@@ -13,11 +13,63 @@ module visual_grids
     module procedure generate_grid_rectilinear
   end interface
 
-  character(len = 16):: float_format_txt = '(*(es18.8e3, :))'
-
   private
 
 contains
+
+! ------------------------------------------------------------------------------
+  subroutine get_grid_info(grid_id, grid, mol)
+    integer, intent(in):: grid_id
+    type(mol_t), intent(in):: mol
+    type(grid_t), intent(inout):: grid
+    character(len = 150):: errmsg
+
+    if (grid%input==0 .or. grid%input==5) then
+      ! generate 3d grid
+      if (grid_id /= grid%id) then
+        write (errmsg, *) 'ERROR: problem with grid id in get_grid_info: ',&
+                          ' grid%id=', grid%id,&
+                          ' grid_id=', grid_id
+        call visual_quit(errmsg)
+      end if
+      call get_grid_essentials(grid, mol)
+      ! center grid around molecule,
+      ! modify grid extents and grid%origin (but do not move molecule)
+      call center_mol_in_grid(grid)
+    else if (grid%input  ==  1) then
+      ! read grid data from file
+      call get_grid_info_from_file(grid)
+      if (grid%id == 0) grid%id = grid_id
+    else if (grid%input  ==  2) then
+      write (*, *) 'grid info is read from ".LIST"'
+    else if (grid%input  ==  3) then
+      write (*, *) 'grid info is read from ".LINE"'
+    else if (grid%input  ==  4) then
+      write (*, *) 'grid info is read from ".2D"'
+    else if (grid%input  ==  6) then
+      write (*, *) 'grid info is read from ".RADIAL"'
+    end if
+
+    ! we should now have all information to work on the grid
+    grid%status = 0
+
+  end subroutine get_grid_info
+
+
+! ------------------------------------------------------------------------------
+  subroutine get_grid_points(grid)
+    type(grid_t), intent(inout):: grid
+
+    if (.not. grid%allocated_points()) return
+
+    !if (grid%input == 0) then ! .or. grid%input == 5) then
+    if (grid%input== 0 .or. grid%input==5) then
+      call generate_grid_points(grid)
+    else if (grid%input == 1) then
+      call get_grid_points_from_file(grid)
+    end if
+  end subroutine
+
 
 ! ------------------------------------------------------------------------------
   subroutine generate_grid_rectilinear(grid)
@@ -80,7 +132,7 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine grid_extents_from_mol(mol, grid, extents)
     type(mol_t), intent(in):: mol
-    type(grid_t), intent(in):: grid
+    type(grid_t), intent(inout):: grid
     real(8), intent(out):: extents(0:1, 3)
     real(8):: atoms_min(1:3), atoms_max(1:3)
     integer::i, j
@@ -102,6 +154,11 @@ contains
       extents(0, i) = atoms_min(i)
       extents(1, i) = atoms_max(i)
     end do
+
+    ! update grid origin
+    grid%origin(1:3) = extents(0, 1:3)
+    grid%origin_known = .true.
+
   end subroutine grid_extents_from_mol
 
 
@@ -154,6 +211,7 @@ contains
     if (.not. present(extents)) call grid_extents_from_mol(mol, grid, extents)
     grid%origin(1:3) = extents(0, 1:3)
     grid%origin_known = .true.
+
   end subroutine grid_origin_from_mol
 
 
@@ -215,71 +273,18 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine get_grid_info(grid_id, grid, mol)
-    integer, intent(in):: grid_id
-    type(mol_t), intent(in):: mol
-    type(grid_t), intent(inout):: grid
-
-    !if (grid%input  ==  0) then ! .or. grid%input  ==  5) then
-    if (grid%input==0 .or. grid%input==5) then
-      ! generate 3d grid
-      if (grid_id /= grid%id) then
-        call visual_quit('ERROR: problem with grid id in get_grid_info')
-        print *, 'ERROR: problem with grid id in get_grid_info'
-        print *, ' * grid%id=', grid%id
-        print *, ' * grid_id=', grid_id
-        return
-      end if
-      call get_grid_essentials(grid, mol)
-      ! center grid around molecule,
-      ! modify grid extents and grid%origin (but do not move molecule)
-      call center_mol_in_grid(grid)
-    else if (grid%input  ==  1) then
-      ! read grid data from file
-      call get_grid_info_from_file(grid)
-      if (grid%id == 0) grid%id = grid_id
-    else if (grid%input  ==  2) then
-      ! read grid data from user input: look for '.LINE'
-      !call get_grid_info_from_txt_storage(grid, 'line')
-    else if (grid%input  ==  3) then
-    else if (grid%input  ==  4) then
-    !else if (grid%input  ==  5) then
-    else if (grid%input  ==  6) then
-    end if
-
-    ! we should now have all information to work on the grid
-    grid%status = 0
-
-  end subroutine get_grid_info
-
-
-! ------------------------------------------------------------------------------
-  subroutine get_grid_points(grid)
-    type(grid_t), intent(inout):: grid
-
-    if (.not. grid%allocated_points()) return
-
-    !if (grid%input == 0) then ! .or. grid%input == 5) then
-    if (grid%input== 0 .or. grid%input==5) then
-      call generate_grid_points(grid)
-    else if (grid%input == 1) then
-      call get_grid_points_from_file(grid)
-    end if
-  end subroutine
-
-
-! ------------------------------------------------------------------------------
   subroutine generate_grid_points(grid)
     type(grid_t), intent(inout):: grid
     integer :: i
+    character(len = 150):: errmsg
 
     select case (grid%typ)
       case (1)
         call generate_grid_rectilinear(grid)
       case default
-        stop
-        !FIXME
-        !call random_number(grid%points)
+        write (errmsg, *) 'ERROR: generation of grids other than ',&
+                          '3d-rectilinear is not implemented'
+        call visual_quit(errmsg)
     end select
   end subroutine
 

@@ -8,7 +8,6 @@ module visual_datatypes
   public rs_wf_t
   public grid_t
   public grid_function_t
-  !public grid_function_dirac_t
   public mol_t
   public cmo_t
 
@@ -70,17 +69,12 @@ module visual_datatypes
     real(8), public:: cvalue = 0.0d0                ! cvalue in VISUAL
     real(8), public:: gauge_origin(1:3) = 0.0d0     ! gauge origin in VISUAL
     real(8), allocatable, public:: occupation(:,:)  ! occupation vector
-    !logical:: small_ao = .false. ! legacy; if true, force small ao
-    !logical:: occup_ao = .false. ! legacy; if true, use orbital strings
     integer, public:: nr_grids = 0
     integer, public:: nr_grid_functions = 0
     type(grid_t), allocatable, public:: grids(:)
     type(grid_function_t), allocatable, public:: grid_functions(:)
-    !logical, public:: levyle    = .false.
-!   default values, thresholds, convergence criteria
   contains
     private
-!    procedure, public:: setup_grids
     procedure, public:: display => display_rs_setup
     procedure, pass, public:: allocated_grids
     procedure, pass, public:: allocated_grid_functions
@@ -96,8 +90,8 @@ module visual_datatypes
   end type rs_label_t
 
   type:: rs_wf_t
-    ! store information on 
-    ! relates to 'wavefunctions' sections on CHECKPOINT.h5
+    ! store information on wavefunction
+    ! (read from 'wavefunctions' sections on CHECKPOINT.h5)
     private
     character(len=:), public, allocatable:: hamiltonian
     character(len=:), public, allocatable:: xc_functional
@@ -107,28 +101,26 @@ module visual_datatypes
 
   type:: grid_t
     ! todo fixme
-    ! - also store units; now be careful:
+    ! - store units; now:
     !   molecule data (from DIRAC CHECKPOINT) and all that the user can provide 
     !   in input (margin and spacing) is originally in Angstroms;
-    !   then, everything is converted to a.u. (in grid_input_cfg) and stored in a.u.
+    !   then, everything in VISUAL is converted to a.u. (in grid_input_cfg) and stored in a.u.
     private
     integer, public:: id = 0
     integer, public:: ndim = 0                              ! grid dimensionality (0= a single vertex, 1=line, 2=2D, 3=3D)
     integer, public:: nr_points_total = 0
     integer, public:: nr_points(1:3) = 0
-    real(8), public:: origin(1:3) = 0                       ! grid origin
-    real(8), public:: spacing(1:3) = 0                      ! grid spacing (in a.u.)
+    real(8), public:: origin(1:3) = 0                       ! grid origin [a.u.]
+    real(8), public:: spacing(1:3) = 0                      ! grid spacing [a.u.]
     integer, public:: status = -1                           ! -1 = never used, 0 = ready to work on
     integer, public:: input = 0                             ! 0 = create, 1 = import from file, 2 = 'list', 3 = 'line', 4 = '2D', 5 = '3D', 6 = 'radial'
     logical, public:: export = .false.                      ! also export to a separate file
     integer, public:: typ = 0                               ! 0 = unknown, 1 = rectilinear
     integer, public:: weights = 0                           ! 0/1 = points w/wo weights
-    real(8), public:: margin = 4.0d0                        ! margin (in a.u.) to be added around molecule when creating the grid
+    real(8), public:: margin = 4.0d0                        ! margin [a.u.] to be added around molecule when creating the grid
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid import
     character(len=:), public, allocatable:: file_out        ! name of a file for grid export
-    !type(grid_point_t), public, allocatable:: points(:,:)
     real(8), public, allocatable:: points(:,:)
-    !real(8), public, allocatable:: weights(:)
     logical, public:: ndim_known = .false.
     logical, public:: origin_known = .false.
     logical, public:: nr_points_total_known = .false.
@@ -172,25 +164,14 @@ module visual_datatypes
     logical, public:: composite = .false. ! is a sum of a few contributions (e.g., depends on a few density matrices)
   contains
     private
-    !procedure, pass, public:: in_use  => grid_function_in_use
     procedure, pass, public:: assigned_to_grid
     procedure, pass, public:: allocated_values
     procedure, pass, public:: get_ndim
     procedure, pass, public:: get_npoints
-    !procedure, pass, public:: should_depend_on_rsp_data
     procedure, pass, public:: should_depend_on_LAOs
     procedure, pass, public:: erase   => erase_grid_function
     procedure, pass, public:: display => display_grid_function
   end type grid_function_t
-
-!  type, extends(grid_function_t):: grid_function_dirac_t
-!!   WIP: the idea is to allow to compose a property density 
-!!   in a similar way as is done with 1-el operators in DIRAC
-!    character(len=:), allocatable:: operator_type
-!    character(len=:), allocatable:: operator_label
-!    real(8):: factor
-!    real(8):: comfactor
-!  end type grid_function_dirac_t
 
 contains
 

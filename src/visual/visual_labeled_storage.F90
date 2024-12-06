@@ -159,6 +159,7 @@ contains
     integer:: i
     character*(:), allocatable  :: group
     character(len=1):: ich
+    logical::data_available
 
     call assign_label_grid(grid, label, top_section='result', level=1)
     group = label%name
@@ -166,8 +167,12 @@ contains
     call lab_read(data_file, trim(group)//'/nr_points_total',idata = grid%nr_points_total)
     do i = 1, grid%ndim
       write(ich, '(i1)') i
-      call lab_read(data_file, trim(group)//'/nr_points_dim_'//trim(ich), idata = grid%nr_points(i))
-      grid%nr_points_known(i) = .true.
+      call lab_query(data_file, trim(group)//'/nr_points_dim_'//trim(ich), &
+                     exist=data_available)
+      if (data_available) then
+        call lab_read(data_file, trim(group)//'/nr_points_dim_'//trim(ich), idata = grid%nr_points(i))
+        grid%nr_points_known(i) = .true.
+      end if
     end do
     if (grid%ndim > 0) grid%ndim_known = .true.
     if (grid%nr_points_total > 0) grid%nr_points_total_known = .true.
