@@ -1,4 +1,6 @@
 module tapp_utils
+! This module contains utilities for tha usage of TAPP standard tensor interface
+! Written by Jan Brandejs, Dec 2024
 
  use talsh
  use tensor_algebra

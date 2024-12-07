@@ -1,4 +1,6 @@
 module tapp
+! This module contains the fortran bindings of TAPP standard tensor interface
+! Written by Jan Brandejs, Dec 2024
 
     use, intrinsic:: ISO_C_BINDING
     ! use TAPP_create_tensor_info
