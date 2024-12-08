@@ -18,6 +18,7 @@ Keyword reference
 
 * :doc:`**HAMILTONIAN <hamiltonian>` --- Specify the Hamiltonian
    - :doc:`*DFT <dft>` --- DFT directives
+   - :doc:`*EFFQED <effqed>` --- effective QED potential directives
    - :doc:`*XAMFI <xamfi>` --- X-AMFI directives
    - :doc:`*AMFI <amfi>` --- AMFI directives
    - :doc:`*X2C <x2c>` --- X2C directives

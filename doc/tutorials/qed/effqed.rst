@@ -134,7 +134,8 @@ Note on the application to core-properties
 ==========================================
 
 The PZ potential was fitted to reproduce the QED effects on the hyperfine coupling constant and orbital energies (1s and 2s orbitals),
-and the FG potential was developed for the atomic parity violation effects (valence s and p orbitals).
+and the fitting functions for the FG potential were adjusted to reproduce the self-energy corrections 
+to high s- and p-states (principal quantum number n=3,4,5) of hydrogenic ions.
 
 However, we have confirmed that these potentials cannot accurately account for QED effects on the orbital energies for core orbitals.
 In fact, these potential provide different QED effects on the parity-violating energy :cite:`Sunaga2021`.
