@@ -7211,11 +7211,7 @@ CMI  ... reading input routine for AMFI+RELSCF
         go to 200
 !       *EFFQED
    13 continue
-        write(*,*)"effqed",word
-!        if(WORD(1:1).EQ."*")
-!        call move_to_next_star(word, lucmd)
         call read_input_effqed(word, "*EFFQED ")
-        write(*,*)"effqed2",word
         go to 200
 C
     1 CONTINUE
