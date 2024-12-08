@@ -3173,48 +3173,85 @@
      call check_whether_kw_found(word, kw_section)
    end subroutine
 
-   subroutine read_input_effqed(word, kw_section)
+   ! This routine is called from in HAMINP routine in dirac/dirrdn.F
+   subroutine read_input_effqed(word,kw_section)
 
       use input_reader
       use num_grid_cfg
 
-      implicit none
-
+      implicit none   
 !     ---------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
+      character(kw_length), intent(inout) :: word
       character(kw_length), intent(in) :: kw_section
 !     ---------------------------------------------------------------------------
+      CHARACTER PROMPT*1 !, WORD*7
 
-      call reset_available_kw_list()
+#include "priunit.h"      
 
-      if (kw_matches(word, '.GRASP ')) then
-         num_grid_cfg_grasp = .true.
-      end if
+!     100 CONTINUE  
+!100  write(*,*)
+      write(*,*)"LUCMD",LUCMD
+      READ (LUCMD, '(A7)') WORD
+      write(*,*)"LUCMD",LUCMD
+      CALL UPCASE(WORD)
+      write(*,*)"WORD",WORD
+      PROMPT = WORD(1:1)
+      IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#')THEN
+        RETURN
+      ELSEIF(PROMPT .EQ. '*') THEN
+        call move_to_next_star(word, lucmd)
+        RETURN
+      ELSE
+        write(*,*)"WORD1",WORD
+        call reset_available_kw_list()
+        write(*,*)"WORD2",WORD
 
-      if (kw_matches(word, '.ANGQED')) then
-         call kw_read(word, num_grid_cfg_angqed)
-      end if
+        if (kw_matches(word, '.GRASP ')) then
+           num_grid_cfg_grasp = .true.
+           write(*,*)"num_grid_cfg_grasp",num_grid_cfg_grasp
+      !     GOTO 100
+        end if
 
-      if (kw_matches(word, '.MINIMUM')) then
-         call kw_read(word, num_grid_cfg_minz)
-      end if
+        if (kw_matches(word, '.ANGQED')) then
+           write(*,*)"angqed",num_grid_cfg_angqed
+           read(LUCMD, *) num_grid_cfg_angqed
+!           call kw_read(word, num_grid_cfg_angqed)
+           write(*,*)"num_grid_cfg_angqed",num_grid_cfg_angqed
+      !     GOTO 100
+        end if
 
-      if (kw_matches(word, '.SCREEN')) then
-         call kw_read(word, num_grid_cfg_screen)
-      end if
+        if (kw_matches(word, '.MINIMUM')) then
+!           call kw_read(word, num_grid_cfg_minz)
+           read(LUCMD, *) num_grid_cfg_minz
+      !     GOTO 100
+        end if
 
-      if (kw_matches(word, '.UEHCUT')) then
-         num_grid_cfg_uehcut = .true.
-      end if
+        if (kw_matches(word, '.SCREEN')) then
+!           call kw_read(word, num_grid_cfg_screen)
+           read(LUCMD, *) num_grid_cfg_screen
+      !     GOTO 100
+        end if
 
-      if (kw_matches(word, '.ALLATOM')) then
-         num_grid_cfg_allatom = .true.
-      end if
+        if (kw_matches(word, '.UEHCUT')) then
+           num_grid_cfg_uehcut = .true.
+      !     GOTO 100
+        end if
 
-      if (kw_matches(word, '.PRINTPOT')) then
-         num_grid_cfg_printpot = .true.
-      end if
+        if (kw_matches(word, '.ALLATOM')) then
+           num_grid_cfg_allatom = .true.
+      !     GOTO 100
+        end if
 
-      call check_whether_kw_found(word, kw_section)
+        if (kw_matches(word, '.PRINTPOT')) then
+           num_grid_cfg_printpot = .true.
+      !     GOTO 100
+        end if
 
+        write(*,*)"WORD3",WORD
+        call check_whether_kw_found(word, kw_section)
+        write(*,*)"WORD4",WORD
+
+
+      ENDIF
+   
    end subroutine

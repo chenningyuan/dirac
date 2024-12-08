@@ -5252,7 +5252,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 76,NDIR = 12)
+      PARAMETER (NTABLE = 76,NDIR = 16)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -5285,7 +5285,8 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*X-AMFI','*PEQM  ','*PCMSOL'/
+     &             '*PCM   ','*X-AMFI','*PEQM  ','*PCMSOL',
+     &             '*EFFQED','*XXXXXX','*XXXXXX','*XXXXXX'/ 
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -7121,7 +7122,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -7207,6 +7208,14 @@ CMI  ... reading input routine for AMFI+RELSCF
       ! this is a cheat so that *PCMSOL section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
+        go to 200
+!       *EFFQED
+   13 continue
+        write(*,*)"effqed",word
+!        if(WORD(1:1).EQ."*")
+!        call move_to_next_star(word, lucmd)
+        call read_input_effqed(word, "*EFFQED ")
+        write(*,*)"effqed2",word
         go to 200
 C
     1 CONTINUE
