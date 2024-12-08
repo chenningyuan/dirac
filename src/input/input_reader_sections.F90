@@ -19,8 +19,6 @@
 
         case ('**GRID ')
            call read_input_grid(word, kw_section)
-        case ('*EFFQED ')
-           call read_input_effqed(word, kw_section)
 
 !       *VISUAL is for backward compatibility
 !       *VISUAL used to be under **ANALYZE
@@ -194,10 +192,6 @@
          call kw_read(word, num_grid_cfg_integration_check_level)
       end if
 
-      if (kw_matches(word, '.effQED')) then
-!         num_grid_cfg_effQED = .TRUE.
-      end if
-      
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
