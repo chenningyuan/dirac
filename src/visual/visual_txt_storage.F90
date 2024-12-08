@@ -148,7 +148,6 @@ contains
     call open_txt_file(plot_file)
     call close_txt_file(plot_file)
 
-    grid%ndim_known = .true.
     grid%nr_points_total_known = .true.
   end subroutine
 

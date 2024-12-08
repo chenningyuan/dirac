@@ -24,30 +24,41 @@ contains
     type(grid_t), intent(inout):: grid
     character(len = 150):: errmsg
 
-    if (grid%input==0 .or. grid%input==5) then
-      ! generate 3d grid
+    if (grid%input  ==  1) then
+!
+!   read grid information from file
+!
+      call get_grid_info_from_file(grid)
+      if (grid%id == 0) grid%id = grid_id
+
+!
+!   in other cases - set up information to generate grid points
+!
+    else if (grid%input==0 .or. grid%input==5) then
+!     set up information to generate 3d grid
       if (grid_id /= grid%id) then
         write (errmsg, *) 'ERROR: problem with grid id in get_grid_info: ',&
                           ' grid%id=', grid%id,&
                           ' grid_id=', grid_id
         call visual_quit(errmsg)
       end if
-      call get_grid_essentials(grid, mol)
+      call get_3d_grid_essentials(grid, mol)
       ! center grid around molecule,
       ! modify grid extents and grid%origin (but do not move molecule)
-      call center_mol_in_grid(grid)
-    else if (grid%input  ==  1) then
-      ! read grid data from file
-      call get_grid_info_from_file(grid)
-      if (grid%id == 0) grid%id = grid_id
+      ! todo - maybe add a keyword + an option to control grid extents
+      call center_mol_in_3d_grid(grid)
+
     else if (grid%input  ==  2) then
       write (*, *) 'grid info is read from ".LIST"'
+      !todocall get_2d_grid_essentials(grid)
+
     else if (grid%input  ==  3) then
-      write (*, *) 'grid info is read from ".LINE"'
+      ! set up information to generate grid points along a line:
+      call get_line_grid_essentials(grid)
+
     else if (grid%input  ==  4) then
+      ! set up information to generate 2d grid
       write (*, *) 'grid info is read from ".2D"'
-    else if (grid%input  ==  6) then
-      write (*, *) 'grid info is read from ".RADIAL"'
     end if
 
     ! we should now have all information to work on the grid
@@ -62,35 +73,58 @@ contains
 
     if (.not. grid%allocated_points()) return
 
-    !if (grid%input == 0) then ! .or. grid%input == 5) then
-    if (grid%input== 0 .or. grid%input==5) then
-      call generate_grid_points(grid)
-    else if (grid%input == 1) then
+    if (grid%input == 1) then
       call get_grid_points_from_file(grid)
+    else
+      call generate_grid_points(grid)
     end if
   end subroutine
 
 
 ! ------------------------------------------------------------------------------
-  subroutine generate_grid_rectilinear(grid)
+  subroutine generate_grid_radial(grid)
     type(grid_t), intent(inout):: grid
     integer:: i,j,k, ipoint
     real(8):: v(3)
 
-    if (grid%ndim /= 3) return
+    if (grid%typ /= 2) return
 
-    ipoint = 1
-    do i = 1, grid%nr_points(1)
-      v(1) = grid%origin(1) + (i - 1)*grid%spacing(1)
-      do j = 1, grid%nr_points(2)
-        v(2) = grid%origin(2) + (j - 1)*grid%spacing(2)
-        do k = 1, grid%nr_points(3)
-          v(3) = grid%origin(3) + (k - 1)*grid%spacing(3)
-          grid%points(1:3, ipoint) = v(1:3)
-          ipoint = ipoint + 1
+
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine generate_grid_rectilinear(grid)
+! rectilinear equidistant
+    type(grid_t), intent(inout):: grid
+    integer:: i,j,k, ipoint, N(grid%ndim)
+    real(8):: v(3)
+
+    if (grid%typ /= 1) return
+
+    if (grid%input == 0 .or. grid%input == 5) then
+      ipoint = 1
+      do i = 1, grid%nr_points(1)
+        v(1) = grid%origin(1) + (i - 1)*grid%spacing(1)
+        do j = 1, grid%nr_points(2)
+          v(2) = grid%origin(2) + (j - 1)*grid%spacing(2)
+          do k = 1, grid%nr_points(3)
+            v(3) = grid%origin(3) + (k - 1)*grid%spacing(3)
+            grid%points(1:3, ipoint) = v(1:3)
+            ipoint = ipoint + 1
+          end do
         end do
       end do
-    end do
+    else if (grid%input == 4) then
+!2d
+    else if (grid%input == 3) then
+!line
+      ipoint = 1
+      do i = 1, grid%nr_points(1)
+        v(1:3) = grid%origin(1:3) + (i - 1)*grid%spacing(1:3)
+        grid%points(1:3, ipoint) = v(1:3)
+        ipoint = ipoint + 1
+      end do
+    end if
 
   end subroutine
 
@@ -130,10 +164,10 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine grid_extents_from_mol(mol, grid, extents)
+  subroutine grid_origin_extents_from_mol(mol, grid)
     type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
-    real(8), intent(out):: extents(0:1, 3)
+    real(8):: extents(0:1, 3)
     real(8):: atoms_min(1:3), atoms_max(1:3)
     integer::i, j
 
@@ -155,23 +189,25 @@ contains
       extents(1, i) = atoms_max(i)
     end do
 
-    ! update grid origin
+    ! update grid info
     grid%origin(1:3) = extents(0, 1:3)
     grid%origin_known = .true.
+    grid%extents(0, 1:3) = extents(0, 1:3)
+    grid%extents(1, 1:3) = extents(1, 1:3)
+    grid%extents_known = .true.
 
-  end subroutine grid_extents_from_mol
+  end subroutine grid_origin_extents_from_mol
 
 
 ! ------------------------------------------------------------------------------
-  subroutine grid_npoints_from_spacing(grid, extents)
+  subroutine grid_npoints_from_spacing(grid)
     type(grid_t), intent(inout):: grid
-    real(8), intent(in):: extents(0:1, 3)
     integer:: i
 
-    do i = 1, grid%ndim
+    do i = 1, 3
       if (grid%nr_points_known(i)) return
       if (grid%spacing(i) /= 0) then
-        grid%nr_points(i) = int((extents(1, i) - extents(0, i))/grid%spacing(i)) + 1
+        grid%nr_points(i) = int((grid%extents(1,i) - grid%extents(0,i))/grid%spacing(i)) + 1
         if (grid%nr_points(i) <= 0) then
           ! assign 1 point to this dimension;
           ! we do this because we work in grid%ndim dimensions
@@ -185,38 +221,38 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine grid_spacing_from_npoints(grid, extents)
+  subroutine grid_spacing_from_npoints(grid)
     type(grid_t), intent(inout):: grid
-    real(8), intent(in):: extents(0:1, 3)
     integer:: i
 
     do i = 1, grid%ndim
       if (grid%spacing_known(i)) return
       grid%spacing(i) = 0.0d0
-      if (grid%nr_points(i) > 1) then
-        grid%spacing(i) = (extents(1, i) - extents(0, i))/(grid%nr_points(i) - 1)
+      if (grid%nr_points_known(i)) then
+        if (grid%nr_points(i) > 1) then
+          grid%spacing(i) = (grid%extents(1,i) - grid%extents(0, i))/(grid%nr_points(i) - 1)
+        else
+          grid%spacing(i) = grid%extents(1,i) - grid%extents(0,i)
+        end if
+        grid%spacing_known(i) = .true.
+      else if (grid%nr_points_total_known.and..not.grid%nr_points_known(i)) then
+!       the case for 2D or line
+        if (grid%nr_points_total > 1) then
+          grid%spacing(i) = (grid%extents(1,i) - grid%extents(0, i))/(grid%nr_points_total - 1)
+        else
+          grid%spacing(i) = grid%extents(1,i) - grid%extents(0,i)
+        end if
+        grid%spacing_known(i) = .true.
       else
-        grid%spacing(i) = extents(1, i) - extents(0, i)
+        stop
+        !fixme
       end if
-      grid%spacing_known(i) = .true.
     end do
   end subroutine grid_spacing_from_npoints
 
-! ------------------------------------------------------------------------------
-  subroutine grid_origin_from_mol(grid, mol, extents)
-    type(mol_t), intent(in):: mol
-    type(grid_t), intent(inout):: grid
-    real(8), intent(inout), optional:: extents(0:1, 3)
-
-    if (.not. present(extents)) call grid_extents_from_mol(mol, grid, extents)
-    grid%origin(1:3) = extents(0, 1:3)
-    grid%origin_known = .true.
-
-  end subroutine grid_origin_from_mol
-
 
 ! ------------------------------------------------------------------------------
-  subroutine center_mol_in_grid(grid)
+  subroutine center_mol_in_3d_grid(grid)
 #include "orgcom.h"
     type(grid_t), intent(inout):: grid
     real(8):: extents(0:1, 3)
@@ -235,7 +271,7 @@ contains
     end do
     grid%origin(1:3) = extents(0, 1:3)
     grid%origin_known = .true.
-  end subroutine center_mol_in_grid
+  end subroutine center_mol_in_3d_grid
 
 
 ! ------------------------------------------------------------------------------
@@ -245,31 +281,51 @@ contains
 
     if (grid%nr_points_total_known) return
     grid%nr_points_total = 1
-    do i = 1, grid%ndim
-      grid%nr_points_total = grid%nr_points_total * grid%nr_points(i)
+    do i = 1, 3
+      if (grid%nr_points(i) > 0) then
+        grid%nr_points_total = grid%nr_points_total * grid%nr_points(i)
+      end if
     end do
     grid%nr_points_total_known = .true.
   end subroutine grid_get_nr_points_total
 
 
 ! ------------------------------------------------------------------------------
-  subroutine get_grid_essentials(grid, mol)
+  subroutine get_3d_grid_essentials(grid, mol)
     type(mol_t), intent(in):: mol
+    type(grid_t), intent(inout):: grid
+    integer:: i
+
+    if (grid%typ /= 1) return
+
+    call grid_origin_extents_from_mol(mol, grid)
+
+    do i = 1, 3
+      if (.not. grid%spacing_known(i)) call grid_spacing_from_npoints(grid)
+      if (.not. grid%nr_points_known(i)) call grid_npoints_from_spacing(grid)
+    end do
+
+    if (.not. grid%nr_points_total_known) call grid_get_nr_points_total(grid)
+  end subroutine get_3d_grid_essentials
+
+
+! ------------------------------------------------------------------------------
+  subroutine get_line_grid_essentials(grid)
     type(grid_t), intent(inout):: grid
     real(8):: origin(3)
     real(8):: extents(0:1, 3)
     integer:: i
 
-    call grid_extents_from_mol(mol, grid, extents)
-    if (.not. grid%origin_known) call grid_origin_from_mol(grid, mol, extents)
+    if (grid%typ /= 1) return
 
-    do i = 1, grid%ndim
-      if (.not. grid%spacing_known(i)) call grid_spacing_from_npoints(grid, extents)
-      if (.not. grid%nr_points_known(i)) call grid_npoints_from_spacing(grid, extents)
-    end do
+    if (.not. grid%extents_known) then
+      stop
+    end if
 
-    if (.not. grid%nr_points_total_known) call grid_get_nr_points_total(grid)
-  end subroutine get_grid_essentials
+    grid%origin(1:3) = grid%extents(0,1:3)
+    call grid_spacing_from_npoints(grid)
+
+  end subroutine get_line_grid_essentials
 
 
 ! ------------------------------------------------------------------------------

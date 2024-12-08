@@ -8,13 +8,15 @@
 .CLOSED_SHELL
 10
 **VISUAL
-.DENSITY
- DFCOEF
+.OUTPRI
+.GRIDS 
+1
+id=1 input=line export=yes file_out=grid_fromLINE.h5
 .LINE
-0.0 0.0 0.0
-5.0 0.0 0.0
+0.0, 0.0, 0.0
+4.5, 0.9, 4.5
 10
-.PLTTXT
-line density scalar_field_line.txt e8.2
-#.OUTPRI
+.GRIDFUNCTIONS
+1
+name=ed id_grid=1 purpose=visualization export=yes file_out=ed_onLINE.h5
 *END OF

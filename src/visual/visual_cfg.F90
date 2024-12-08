@@ -37,8 +37,8 @@ contains
       case ('id')
         call str2int(val, grid%id, stat)
       case ('ndim')
-        call str2int(val, grid%ndim, stat)
-        grid%ndim_known = .true.
+!       fixme
+        if (val /= '3') stop
       case ('npoints')
         temp = val
         call trim_ch(temp, val,  '[')
@@ -73,9 +73,8 @@ contains
           end do
           deallocate(chvalues)
         else
-!         units: a.u.
-          call str2flt(temp, grid%spacing(1), stat)
-          grid%spacing_known(1) = .true.
+          write(*, *) 'three values are expected. stop.'
+          stop
         end if
       case ('input')
         if (lowercase(val) == 'create') then
@@ -144,10 +143,20 @@ contains
 
     select case (domain)
       case ('list')
+!
+!       on input: a list of points in 3D
+!       .LIST
+!       x1, y1, z1
+!       x2, y2, z2
+!       ...
+!
         grid%nr_points_total = size(user_input_lines)
         if (index(user_input_lines(1), ',') > 0) then
           nr_words = word_count(user_input_lines(1), ',')
-          grid%ndim = nr_words
+          if (nr_words /= grid%ndim) then
+            stop
+            !fixme
+          end if
         end if
         allocate(grid%points(grid%ndim, grid%nr_points_total))
         grid%points = 0.0d0
@@ -164,64 +173,73 @@ contains
         grid%nr_points_total_known = .true.
 
       case ('line')
-        grid%ndim = 1
-        call str2int(trim(user_input_lines(3)), np, stat)
-        grid%nr_points(1) = np
-        grid%nr_points_total = np
-        allocate(grid%points(grid%ndim, grid%nr_points_total))
-        grid%points = 0.0d0
-        allocate(chvalues(3))
-        call split_string(user_input_lines(1),3,chvalues,separator=',')
-        do i = 1, 3
-          call str2flt(trim(chvalues(i)), grid%points(i,1), stat)
-        end do
-        call split_string(user_input_lines(2),3,chvalues,separator=',')
-        do i = 1, 3
-          call str2flt(trim(chvalues(i)), grid%points(i,grid%nr_points_total), stat)
-        end do
-        deallocate(chvalues)
-!todo fixme - generate points elsewhere
-        v(1:3) = grid%points(1:3,grid%nr_points_total) - grid%points(1:3,1)
-        do i = 2, grid%nr_points_total-1
-          grid%points(1:3,i) = grid%points(1:3,1) + v(1:3)*(i-1)/grid%nr_points_total
-        end do
-        grid%nr_points_known(1) = .true.
-        grid%nr_points_total_known = .true.
-
-      case ('2d')
-        grid%ndim = 2
+!
+!       on input:
+!       .LINE
+!       x1, y1, z1  <--- coordinates of line start (a point in 3D)
+!       x2, y2, z2  <--- coordinates of line end (a point in 3D)
+!       N           <--- number of points
+!
         grid%typ = 1
         call str2int(trim(user_input_lines(3)), np, stat)
-        grid%nr_points(1) = np
+        grid%nr_points(1) = np     ! arbitrary assignment
+        grid%nr_points_total = np
+        allocate(chvalues(grid%ndim))
+        ! line start
+        call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
+        do i = 1, grid%ndim
+          call str2flt(trim(chvalues(i)), grid%extents(0,i), stat)
+        end do
+        ! line end
+        call split_string(user_input_lines(2),grid%ndim,chvalues,separator=',')
+        do i = 1, grid%ndim
+          call str2flt(trim(chvalues(i)), grid%extents(1,i), stat)
+        end do
+        deallocate(chvalues)
+        grid%nr_points_known(1) = .true.
+        grid%nr_points_total_known = .true.
+        grid%extents_known=.true.
+
+      case ('2d')
+!
+!       on input:
+!       .2D
+!       fixme
+!
+        grid%typ = 1
+        call str2int(trim(user_input_lines(3)), np, stat)
+        grid%nr_points(1) = np     ! arbitrary assignment
         grid%nr_points_known(1) = .true.
         call str2int(trim(user_input_lines(5)), np, stat)
-        grid%nr_points(2) = np
+        grid%nr_points(2) = np     ! arbitrary assignment
         grid%nr_points_known(2) = .true.
         grid%nr_points_total = grid%nr_points(1)*grid%nr_points(2)
-        allocate(chvalues(3))
-        call split_string(user_input_lines(1),3,chvalues,separator=',')
-        do i = 1, 3
+        allocate(chvalues(grid%ndim))
+        call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
+        do i = 1, grid%ndim
           call str2int(trim(chvalues(i)), np, stat)
           grid%origin(i) = np
         end do
-        call split_string(user_input_lines(2),3,chvalues,separator=',')
-        do i = 1, 3
+        call split_string(user_input_lines(2),grid%ndim,chvalues,separator=',')
+        do i = 1, grid%ndim
           call str2int(trim(chvalues(i)), np, stat)
           v(i) = np
         end do
-        call split_string(user_input_lines(4),3,chvalues,separator=',')
-        do i = 1, 3
+        call split_string(user_input_lines(4),grid%ndim,chvalues,separator=',')
+        do i = 1, grid%ndim
           call str2int(trim(chvalues(i)), np, stat)
           w(i) = np
         end do
-!todo fixme - generate points elsewhere
-! v=extents right; w=extents top
 
         deallocate(chvalues)
         grid%nr_points_total_known = .true.
 
       case ('3d')
-        grid%ndim = 3
+!
+!       on input:
+!       .3D
+!       Nx, Ny, Nz  <--- number of points in x/y/z directions
+!
         grid%typ = 1
         allocate(chvalues(grid%ndim))
         call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
@@ -237,8 +255,12 @@ contains
 
 
       case ('radial')
+!
+!       on input:
+!       .RADIAL
+!       fixme
+!
 
-        grid%ndim = 3
         !allocate(chvalues(grid%ndim))
         !call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
         !do j = 1, grid%ndim
@@ -265,17 +287,17 @@ contains
     logical:: err
 
     if (grid%input == 1) then
-      write(*, *) 'VISUAL: Grid information will be read from file'
+      write(*, *) 'VISUAL: Grid information will be read from grid file'
       write(*, *) '  WARNING: These input options will be ignored (if present):'//&
                   ' ndim, npoints, spacing, margin.'
 
     else if (grid%input == 0) then
-      write(*, *) 'VISUAL: Grid will be created'
+      write(*, *) 'VISUAL: 3d grid will be created'
       if (grid%ndim == 0) then
         write(*, *) ' ERROR: grid "ndim" information is missing.'
         stop
       end if
-      do i = 1, grid%ndim
+      do i = 1, 3
         if (grid%nr_points(i) ==0 .and. grid%spacing(i) ==0) then
           write(*, *) ' ERROR: grid "npoints" or "spacing" information is missing for dimension ', i
           stop
@@ -285,7 +307,7 @@ contains
       end do
 
     else
-      write(*, *) 'VISUAL: Grid will be created according to information passed in a separate line'
+      write(*, *) 'VISUAL: Grid will be created according to information in the input'
     end if
 
   end subroutine

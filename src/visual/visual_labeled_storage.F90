@@ -174,7 +174,6 @@ contains
         grid%nr_points_known(i) = .true.
       end if
     end do
-    if (grid%ndim > 0) grid%ndim_known = .true.
     if (grid%nr_points_total > 0) grid%nr_points_total_known = .true.
   end subroutine
 

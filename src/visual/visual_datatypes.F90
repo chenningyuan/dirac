@@ -107,22 +107,23 @@ module visual_datatypes
     !   then, everything in VISUAL is converted to a.u. (in grid_input_cfg) and stored in a.u.
     private
     integer, public:: id = 0
-    integer, public:: ndim = 0                              ! grid dimensionality (0= a single vertex, 1=line, 2=2D, 3=3D)
+    integer, public:: ndim = 3                              ! grid dimensionality; all grids are embedded in 3D space
     integer, public:: nr_points_total = 0
     integer, public:: nr_points(1:3) = 0
-    real(8), public:: origin(1:3) = 0                       ! grid origin [a.u.]
-    real(8), public:: spacing(1:3) = 0                      ! grid spacing [a.u.]
+    real(8), public:: origin(1:3) = 0.0d0                   ! grid origin [a.u.]
+    real(8), public:: spacing(1:3) = 0.0d0                  ! grid spacing [a.u.]
+    real(8), public:: extents(0:1,1:3) = 0.0d0              ! grid extents [a.u.]
     integer, public:: status = -1                           ! -1 = never used, 0 = ready to work on
-    integer, public:: input = 0                             ! 0 = create, 1 = import from file, 2 = 'list', 3 = 'line', 4 = '2D', 5 = '3D', 6 = 'radial'
+    integer, public:: input = 0                             ! 0 = create, 1 = import from file, 2 = 'list', 3 = 'line', 4 = '2D', 5 = '3D'
     logical, public:: export = .false.                      ! also export to a separate file
-    integer, public:: typ = 0                               ! 0 = unknown, 1 = rectilinear
+    integer, public:: typ = 0                               ! 0 = unknown, 1 = rectilinear, 2 = radial
     integer, public:: weights = 0                           ! 0/1 = points w/wo weights
     real(8), public:: margin = 4.0d0                        ! margin [a.u.] to be added around molecule when creating the grid
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid import
     character(len=:), public, allocatable:: file_out        ! name of a file for grid export
     real(8), public, allocatable:: points(:,:)
-    logical, public:: ndim_known = .false.
     logical, public:: origin_known = .false.
+    logical, public:: extents_known = .false.
     logical, public:: nr_points_total_known = .false.
     logical, public:: nr_points_known(1:3) = .false.
     logical, public:: spacing_known(1:3) = .false.
@@ -563,10 +564,11 @@ contains
     if (with_rank_info) then
       write(*, *) 'id =              ', self%id, my_rank
       write(*, *) 'ndim =            ', self%ndim, my_rank 
-      write(*, *) 'nr_points       = ', (self%nr_points(i), i=1,self%ndim), my_rank
+      write(*, *) 'nr_points       = ', (self%nr_points(i), i=1,3), my_rank
       write(*, *) 'nr_points_total = ', self%nr_points_total, my_rank
-      write(*, *) 'origin [a.u.]     = ', (self%origin(i), i=1,self%ndim), my_rank
-      write(*, *) 'spacing [a.u.]    = ', (self%spacing(i), i=1,self%ndim), my_rank
+      write(*, *) 'origin [a.u.]     = ', (self%origin(i), i=1,3), my_rank
+      write(*, *) 'spacing [a.u.]    = ', (self%spacing(i), i=1,3), my_rank
+      write(*, *) 'extents [a.u.]    = ', (self%extents(0:1,i), i=1,3), my_rank
       write(*, *) 'status =          ', self%status, my_rank
       write(*, *) 'input =           ', self%input, my_rank
       write(*, *) 'export =          ', self%export, my_rank
@@ -575,18 +577,19 @@ contains
       write(*, *) 'margin =          ', self%margin, my_rank
       write(*, *) 'file_inp =        ', self%file_inp, my_rank
       write(*, *) 'file_out =        ', self%file_out, my_rank
-      write(*, *) 'ndim_known =      ', self%ndim_known, my_rank
       write(*, *) 'origin_known =    ', self%origin_known, my_rank
+      write(*, *) 'extents_known =   ', self%extents_known, my_rank
       write(*, *) 'nr_points_total_known = ', self%nr_points_total_known, my_rank
-      write(*, *) 'nr_points_known(1:3) = ', (self%nr_points_known(i), i=1,self%ndim), my_rank
-      write(*, *) 'spacing_known(1:3) = ', (self%spacing_known(i), i=1,self%ndim), my_rank
+      write(*, *) 'nr_points_known(1:3) = ', (self%nr_points_known(i), i=1,3), my_rank
+      write(*, *) 'spacing_known(1:3) = ', (self%spacing_known(i), i=1,3), my_rank
     else
       write(*, *) 'id =              ', self%id
       write(*, *) 'ndim =            ', self%ndim
-      write(*, *) 'nr_points       = ', (self%nr_points(i), i=1,self%ndim)
+      write(*, *) 'nr_points       = ', (self%nr_points(i), i=1,3)
       write(*, *) 'nr_points_total = ', self%nr_points_total
-      write(*, *) 'origin [a.u.]     = ', (self%origin(i), i=1,self%ndim)
-      write(*, *) 'spacing [a.u.]    = ', (self%spacing(i), i=1,self%ndim)
+      write(*, *) 'origin [a.u.]     = ', (self%origin(i), i=1,3)
+      write(*, *) 'spacing [a.u.]    = ', (self%spacing(i), i=1,3)
+      write(*, *) 'extents [a.u.]    = ', (self%extents(0:1,i), i=1,3)
       write(*, *) 'status =          ', self%status
       write(*, *) 'input =           ', self%input
       write(*, *) 'export =          ', self%export
@@ -595,11 +598,11 @@ contains
       write(*, *) 'margin =          ', self%margin
       write(*, *) 'file_inp =        ', self%file_inp
       write(*, *) 'file_out =        ', self%file_out
-      write(*, *) 'ndim_known =      ', self%ndim_known
       write(*, *) 'origin_known =    ', self%origin_known
+      write(*, *) 'extents_known =   ', self%extents_known
       write(*, *) 'nr_points_total_known = ', self%nr_points_total_known
-      write(*, *) 'nr_points_known(1:3) = ', (self%nr_points_known(i), i=1,self%ndim)
-      write(*, *) 'spacing_known(1:3) = ', (self%spacing_known(i), i=1,self%ndim)
+      write(*, *) 'nr_points_known(1:3) = ', (self%nr_points_known(i), i=1,3)
+      write(*, *) 'spacing_known(1:3) = ', (self%spacing_known(i), i=1,3)
     end if
     write(*, *)
    end subroutine
