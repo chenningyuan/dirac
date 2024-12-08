@@ -3185,73 +3185,85 @@
       character(kw_length), intent(in) :: kw_section
 !     ---------------------------------------------------------------------------
       CHARACTER PROMPT*1 !, WORD*7
-
+      INTEGER :: I, MXXTRP_INP
 #include "priunit.h"      
 
 !     100 CONTINUE  
-!100  write(*,*)
+      !100  write(*,*)
+      MXXTRP_INP = 50
+      
+      DO WHILE (.TRUE.)
+      write(*,*)
       write(*,*)"LUCMD",LUCMD
-      READ (LUCMD, '(A7)') WORD
+!      READ (LUCMD, '(A7)') WORD
+      READ (LUCMD, *) WORD
       write(*,*)"LUCMD",LUCMD
-      CALL UPCASE(WORD)
+!      CALL UPCASE(WORD)
       write(*,*)"WORD",WORD
-      PROMPT = WORD(1:1)
-      IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#')THEN
-        RETURN
-      ELSEIF(PROMPT .EQ. '*') THEN
-        call move_to_next_star(word, lucmd)
-        RETURN
-      ELSE
-        write(*,*)"WORD1",WORD
-        call reset_available_kw_list()
-        write(*,*)"WORD2",WORD
+      select case (word(1:1))
+        case ('!', '#')
+        case ('*')
+          RETURN
+        case default   
+!       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#')THEN
+!          write(*,*)"WORD",WORD
+!          EXIT
+! !         RETURN
+!       ELSEIF(PROMPT .EQ. '*') THEN
+!          RETURN
+! !        call move_to_next_star(word, lucmd)
+! !        EXIT
+!       ELSE
+!         write(*,*)"WORD1",WORD
+!         call reset_available_kw_list()
+!         write(*,*)"WORD2",WORD
 
-        if (kw_matches(word, '.GRASP ')) then
-           num_grid_cfg_grasp = .true.
-           write(*,*)"num_grid_cfg_grasp",num_grid_cfg_grasp
-      !     GOTO 100
-        end if
+         if (kw_matches(word, '.GRASP ')) then
+            num_grid_cfg_grasp = .true.
+            write(*,*)"num_grid_cfg_grasp",num_grid_cfg_grasp
+       !     GOTO 100
+         end if
 
-        if (kw_matches(word, '.ANGQED')) then
-           write(*,*)"angqed",num_grid_cfg_angqed
-           read(LUCMD, *) num_grid_cfg_angqed
-!           call kw_read(word, num_grid_cfg_angqed)
-           write(*,*)"num_grid_cfg_angqed",num_grid_cfg_angqed
-      !     GOTO 100
-        end if
+         if (kw_matches(word, '.ANGQED')) then
+            write(*,*)"angqed",num_grid_cfg_angqed
+            read(LUCMD, *) num_grid_cfg_angqed
+ !           call kw_read(word, num_grid_cfg_angqed)
+            write(*,*)"num_grid_cfg_angqed",num_grid_cfg_angqed
+       !     GOTO 100
+         end if
 
-        if (kw_matches(word, '.MINIMUM')) then
-!           call kw_read(word, num_grid_cfg_minz)
-           read(LUCMD, *) num_grid_cfg_minz
-      !     GOTO 100
-        end if
+         if (kw_matches(word, '.MINIMUM')) then
+ !           call kw_read(word, num_grid_cfg_minz)
+            read(LUCMD, *) num_grid_cfg_minz
+       !     GOTO 100
+         end if
 
-        if (kw_matches(word, '.SCREEN')) then
-!           call kw_read(word, num_grid_cfg_screen)
-           read(LUCMD, *) num_grid_cfg_screen
-      !     GOTO 100
-        end if
+         if (kw_matches(word, '.SCREEN')) then
+ !           call kw_read(word, num_grid_cfg_screen)
+            read(LUCMD, *) num_grid_cfg_screen
+       !     GOTO 100
+         end if
 
-        if (kw_matches(word, '.UEHCUT')) then
-           num_grid_cfg_uehcut = .true.
-      !     GOTO 100
-        end if
+         if (kw_matches(word, '.UEHCUT')) then
+            num_grid_cfg_uehcut = .true.
+       !     GOTO 100
+         end if
 
-        if (kw_matches(word, '.ALLATOM')) then
-           num_grid_cfg_allatom = .true.
-      !     GOTO 100
-        end if
+         if (kw_matches(word, '.ALLATOM')) then
+            num_grid_cfg_allatom = .true.
+       !     GOTO 100
+         end if
 
-        if (kw_matches(word, '.PRINTPOT')) then
-           num_grid_cfg_printpot = .true.
-      !     GOTO 100
-        end if
+         if (kw_matches(word, '.PRINTPOT')) then
+            num_grid_cfg_printpot = .true.
+       !     GOTO 100
+         end if
 
         write(*,*)"WORD3",WORD
         call check_whether_kw_found(word, kw_section)
         write(*,*)"WORD4",WORD
 
-
-      ENDIF
+      end select
+      ENDDO
    
    end subroutine
