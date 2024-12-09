@@ -226,7 +226,7 @@ module tapp_utils
    arr_idx_B(:), arr_idx_C(:), arr_idx_D(:)
   integer(c_int), intent(out) :: op_A, op_B, op_C, op_D ! 0 .. identitity, 1 .. conjugate
 
-  character(len=50), allocatable :: tensor_names(:)
+  character(len=50), allocatable :: tensor_names(:), algebraic_operations(:)
   character(len=10), allocatable :: indices(:,:)
   integer, allocatable :: index_count(:), tensor_conjugate(:)
   character(len=50), allocatable :: distinct_indices(:)
@@ -236,7 +236,7 @@ module tapp_utils
   integer :: ierr, i, j, k
   integer :: parse_t_einsum
 
-  ierr = pre_parse_t_einsum(expression, tensor_names, indices, index_count, tensor_conjugate)
+  ierr = pre_parse_t_einsum(expression, tensor_names, indices, index_count, tensor_conjugate, algebraic_operations)
   do i = 1, size(indices, 1)
     do j = 1, index_count(i)
       if (allocated(distinct_indices)) then
@@ -291,12 +291,12 @@ module tapp_utils
     end do
     op_C = tensor_conjugate(4)
   end if 
-
-  deallocate(tensor_names, indices, index_count, distinct_indices, map_to)
+  
+  deallocate(tensor_names, indices, index_count, distinct_indices, map_to, tensor_conjugate, algebraic_operations)
   parse_t_einsum = ierr
  end function parse_t_einsum 
 
- function pre_parse_t_einsum(expression, tensor_names, indices, index_count, tensor_conjugate)
+ function pre_parse_t_einsum(expression, tensor_names, indices, index_count, tensor_conjugate, algebraic_operations)
   implicit none
 
   character(len=*), intent(in) :: expression
@@ -304,11 +304,13 @@ module tapp_utils
   character(len=10), allocatable, intent(out) :: indices(:,:)
   integer, allocatable, intent(out) :: index_count(:)
   integer, allocatable, intent(out) :: tensor_conjugate(:)
+  character(len=50), allocatable, intent(out) :: algebraic_operations(:)
   integer :: pre_parse_t_einsum
 
   ! Internal variables
   character(len=50) :: current_tensor
   character(len=10) :: current_index
+  character(len=50) :: current_operator
   integer :: i, j, k, l, parenthesis_level, ierr, ntens, current_conjugate
 
   ! Initialize
@@ -324,6 +326,7 @@ module tapp_utils
   current_tensor = ""
   current_index = ""
   current_conjugate = 0
+  current_operator = ""
   do i = 1, len_trim(expression)
     ! Extract tensor names
     if (expression(i:i) == '(') then
@@ -336,9 +339,17 @@ module tapp_utils
         call add_str_row(indices)
         call push_back_int(index_count, 0)
         call push_back_int(tensor_conjugate, current_conjugate)
+        call add_str(algebraic_operations)
+        algebraic_operations(ntens) = ""
+        if (ntens > 1) then ! otherwise current_operator should be empty
+          algebraic_operations(ntens-1) = trim(current_operator)
+        endif
+        
         current_tensor = ""
         current_conjugate = 0
+        current_operator = ""
         k = 1
+        l = 1
       end if
     elseif (expression(i:i) == ')' .or. expression(i:i) == ',') then
       if (parenthesis_level == 1 .and. j>1) then
@@ -353,13 +364,17 @@ module tapp_utils
       if (expression(i:i) == ')') then
         parenthesis_level = parenthesis_level - 1
       endif
-    elseif (expression(i:i) == '+') then
-      if (k > 1 .and. parenthesis_level == 0) then ! tensor name not empty
+    elseif (expression(i:i) == '+' .and. k > 1 .and. parenthesis_level == 0) then
         current_conjugate = 1
+    elseif (expression(i:i) == '=' .or. &
+            expression(i:i) == '+' .or. &
+            expression(i:i) == '-' .or. &
+            expression(i:i) == '*') then
+      if (k == 1 .and. parenthesis_level == 0) then
+        current_operator(l:l) = expression(i:i)
+        l = l + 1
       endif 
-    elseif (expression(i:i) /= '=' .and. &
-            expression(i:i) /= '*' .and. &
-            expression(i:i) /= ' ') then
+    elseif (expression(i:i) /= ' ') then
       if (parenthesis_level == 0) then
         current_tensor(k:k) = expression(i:i)
         k = k + 1
@@ -369,6 +384,8 @@ module tapp_utils
       end if
     end if
   end do
+
+  ! current_operator should be empty at this point
 
   ierr = 0
   pre_parse_t_einsum = ierr
