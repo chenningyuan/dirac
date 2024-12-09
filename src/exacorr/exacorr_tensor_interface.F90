@@ -5,7 +5,7 @@ module exacorr_tensor_interface
 
         use exatensor
         use talsh
-!        use standard_interface
+!        use tapp
 
         use, intrinsic:: ISO_C_BINDING
 
@@ -59,7 +59,7 @@ module exacorr_tensor_interface
          ! h_space_t in exatensor
          class(h_space_t), pointer :: struct_exatensor
          type(c_ptr) :: struct_talsh
-         type(c_ptr) :: struct_standard
+         type(c_ptr) :: struct_tapp
 
         end type index_symmetry_structure
 
@@ -88,8 +88,6 @@ module exacorr_tensor_interface
 
                 integer(INTD) :: t_einsum
                 ! here the einsum_str has to be parsed to get the indices of D (addition_str). e.g. "D(m1,e1)+=C(m1,e1)*beta()"
-                ! standard_parse_einsum will be a part of the standard interface, implemented inside the c code of the c-api
-                ! but it should possibly also be implemented in fortran in the placeholder file "just in case"
                 ierr=standard_parse_einsum(expresssion, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj)
                 ierr=indices2addition_str(d_indices, c_conj, addition_str)
 
@@ -152,7 +150,7 @@ module exacorr_tensor_interface
 
         ! external tensor body initialization/transformation (unary) method
         INTERFACE tensor_method_register
-                FUNCTION tensor_method_register_standard(method_name, method) result(ierr)
+                FUNCTION tensor_method_register_tapp(method_name, method) result(ierr)
                         character(*), intent(in):: method_name         
                         integer(T_INTD)                    :: ierr
                         interface 
@@ -161,7 +159,7 @@ module exacorr_tensor_interface
                                 end function
                         end interface
 
-                        ierr = standard_method_register(method_name,method)
+                        ierr = tapp_method_register(method_name,method)
                 END FUNCTION
 
                 FUNCTION tensor_method_register_exa(method_name, method) result(ierr)

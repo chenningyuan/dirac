@@ -62,7 +62,7 @@ module tapp_utils
     integer :: tapp_einsum
 
 
-    ierr = parse_einsum(expression, arr_idx_A, arr_idx_B, arr_idx_C, arr_idx_D)
+    ierr = parse_t_einsum(expression, arr_idx_A, op_A, arr_idx_B, op_B, arr_idx_C, op_C, arr_idx_D, op_D)
 
     nmode_A = talsh_tensor_rank(A_talsh)
     allocate(out_dimsA(nmode_A))
@@ -147,10 +147,6 @@ module tapp_utils
     nmode_C = nmode_D
 
     handle = c_null_ptr
-    op_A = 0 ! identity
-    op_B = 0
-    op_C = 0
-    op_D = 0
 
     idx_A = c_loc(arr_idx_A(1)) 
     idx_B = c_loc(arr_idx_B(1)) 
@@ -220,22 +216,27 @@ module tapp_utils
 
   tapp_einsum = ierr
  end function tapp_einsum
- function parse_einsum(expression, arr_idx_A, arr_idx_B, arr_idx_C, arr_idx_D)
+
+
+ ! parses the talsh format einsum string into 
+ function parse_t_einsum(expression, arr_idx_A, op_A, arr_idx_B, op_B, arr_idx_C, op_C, arr_idx_D, op_D)
   implicit none
   character(len=*), intent(in) :: expression
-  character(len=50), allocatable :: tensor_names(:)
-  character(len=10), allocatable :: indices(:,:)
-  integer, allocatable :: index_count(:)
-  character(len=50), allocatable :: distinct_indices(:)
   integer(c_int64_t), allocatable, target, intent(inout) :: arr_idx_A(:), &
    arr_idx_B(:), arr_idx_C(:), arr_idx_D(:)
+  integer(c_int), intent(out) :: op_A, op_B, op_C, op_D ! 0 .. identitity, 1 .. conjugate
+
+  character(len=50), allocatable :: tensor_names(:)
+  character(len=10), allocatable :: indices(:,:)
+  integer, allocatable :: index_count(:), tensor_conjugate(:)
+  character(len=50), allocatable :: distinct_indices(:)
   integer(c_int64_t), allocatable :: map_to(:)
   
   integer(c_int64_t) :: i8
   integer :: ierr, i, j, k
-  integer :: parse_einsum
+  integer :: parse_t_einsum
 
-  ierr = pre_parse_einsum(expression, tensor_names, indices, index_count)
+  ierr = pre_parse_t_einsum(expression, tensor_names, indices, index_count, tensor_conjugate)
   do i = 1, size(indices, 1)
     do j = 1, index_count(i)
       if (allocated(distinct_indices)) then
@@ -267,43 +268,48 @@ module tapp_utils
     do j = 1, index_count(1)
       arr_idx_D(j) = map_str_to_i8(indices(1,j), distinct_indices, map_to)
     end do
+    op_D = tensor_conjugate(1)
   end if 
   if (size(indices, 1) > 1) then
     allocate(arr_idx_A(index_count(2)))
     do j = 1, index_count(2)
       arr_idx_A(j) = map_str_to_i8(indices(2,j), distinct_indices, map_to)
     end do
+    op_A = tensor_conjugate(2)
   end if 
   if (size(indices, 1) > 2) then
     allocate(arr_idx_B(index_count(3)))
     do j = 1, index_count(3)
       arr_idx_B(j) = map_str_to_i8(indices(3,j), distinct_indices, map_to)
     end do
+    op_B = tensor_conjugate(3)
   end if 
   if (size(indices, 1) > 3) then
     allocate(arr_idx_C(index_count(4)))
     do j = 1, index_count(4)
       arr_idx_C(j) = map_str_to_i8(indices(4,j), distinct_indices, map_to)
     end do
+    op_C = tensor_conjugate(4)
   end if 
 
   deallocate(tensor_names, indices, index_count, distinct_indices, map_to)
-  parse_einsum = ierr
- end function parse_einsum 
+  parse_t_einsum = ierr
+ end function parse_t_einsum 
 
- function pre_parse_einsum(expression, tensor_names, indices, index_count)
+ function pre_parse_t_einsum(expression, tensor_names, indices, index_count, tensor_conjugate)
   implicit none
 
   character(len=*), intent(in) :: expression
   character(len=50), allocatable, intent(out) :: tensor_names(:)
   character(len=10), allocatable, intent(out) :: indices(:,:)
   integer, allocatable, intent(out) :: index_count(:)
-  integer :: pre_parse_einsum
+  integer, allocatable, intent(out) :: tensor_conjugate(:)
+  integer :: pre_parse_t_einsum
 
   ! Internal variables
   character(len=50) :: current_tensor
   character(len=10) :: current_index
-  integer :: i, j, k, l, parenthesis_level, ierr, ntens
+  integer :: i, j, k, l, parenthesis_level, ierr, ntens, current_conjugate
 
   ! Initialize
   ierr = -1
@@ -317,6 +323,7 @@ module tapp_utils
   ntens = 0
   current_tensor = ""
   current_index = ""
+  current_conjugate = 0
   do i = 1, len_trim(expression)
     ! Extract tensor names
     if (expression(i:i) == '(') then
@@ -328,7 +335,9 @@ module tapp_utils
         
         call add_str_row(indices)
         call push_back_int(index_count, 0)
+        call push_back_int(tensor_conjugate, current_conjugate)
         current_tensor = ""
+        current_conjugate = 0
         k = 1
       end if
     elseif (expression(i:i) == ')' .or. expression(i:i) == ',') then
@@ -344,8 +353,11 @@ module tapp_utils
       if (expression(i:i) == ')') then
         parenthesis_level = parenthesis_level - 1
       endif
-    elseif (expression(i:i) /= '+' .and. &
-            expression(i:i) /= '=' .and. &
+    elseif (expression(i:i) == '+') then
+      if (k > 1 .and. parenthesis_level == 0) then ! tensor name not empty
+        current_conjugate = 1
+      endif 
+    elseif (expression(i:i) /= '=' .and. &
             expression(i:i) /= '*' .and. &
             expression(i:i) /= ' ') then
       if (parenthesis_level == 0) then
@@ -359,8 +371,8 @@ module tapp_utils
   end do
 
   ierr = 0
-  pre_parse_einsum = ierr
- end function pre_parse_einsum 
+  pre_parse_t_einsum = ierr
+ end function pre_parse_t_einsum 
 
  subroutine add_str(list)
   IMPLICIT NONE
