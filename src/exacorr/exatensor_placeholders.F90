@@ -58,8 +58,12 @@ private
   !Copy a tensor:
        interface exatns_tensor_copy
        !module procedure exatns_tensor_copy_us
-       !module procedure exatns_tensor_copy_eu
+        module procedure exatns_tensor_copy_eu
        end interface exatns_tensor_copy
+  !Copy a tensor:
+       interface exatns_tensor_scale
+        module procedure exatns_tensor_scale
+       end interface exatns_tensor_sacle
   !Contract tensors:
        interface exatns_tensor_contract
         module procedure exatns_tensor_contract_eu

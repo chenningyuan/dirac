@@ -1,5 +1,5 @@
-module tapp_utils
-! This module contains utilities for tha usage of TAPP standard tensor interface
+module tapp_top
+! This module is a high-level generalization of TAPP standard tensor interface. See github.com/TAPPorg
 ! Written by Jan Brandejs, Dec 2024
 
  use talsh
@@ -8,9 +8,181 @@ module tapp_utils
  use tapp
     
  implicit none
+
+!DERIVED TYPES:
+        public :: TAPP_F64, TAPP_C64
+        enum, bind(c)
+                ! we follow TAPP_datatype enumeration
+                enumerator :: TAPP_datatype = 0 ! name of the enum
+                enumerator :: TAPP_F64 = 1 ! double precision real
+                enumerator :: TAPP_C64 = 3 ! double precision complex
+        end enum
  
+  !tapp_top's own tensor type (not part of low level TAPP)
+        type, public  :: tapp_tensor_t
+          !library_tensor_instance_pointer
+          type(C_PTR) :: tensor_info  ! TAPP_tensor_info       
+
+          ! TAPP reference implementation does not store data
+          complex(c_double_complex), allocatable, target :: data_complex(:) !Do not access in your code outside this file (and tapp_top)!
+          real(c_double),            allocatable, target :: data_real(:)    !Do not access in your code outside this file (and tapp_top)!
+          ! integer(c_int64_t),        allocatable, target :: tapp_tens_data_int64(:)   !Do not access in your code outside this file (and tapp_top)!
+
+          integer(kind(tensor_data_type)) :: datatype
+        end type tapp_tensor_t
+
  contains
- function tapp_einsum(expression, D_talsh, A_talsh, B_talsh, scale)
+
+ function tapp_einsum(D, arr_idx_D, op_D, A, arr_idx_A, op_A, B, arr_idx_B, op_B, C, arr_idx_C, op_C, &
+                                       alpha, beta)
+    implicit none
+    type(tapp_tensor_t), intent(inout)    :: D
+    type(tapp_tensor_t), intent(inout), optional    :: A, B, C
+    integer(c_int64_t), allocatable, target, intent(in) :: arr_idx_D(:)
+    integer(c_int64_t), allocatable, target, intent(in), optional :: arr_idx_A(:), &
+      arr_idx_B(:), arr_idx_C(:)
+    integer(c_int), intent(in), optional :: op_A, op_B, op_C, op_D ! 0 .. identitity, 1 .. conjugate
+    complex(c_double_complex), intent(in), optional :: alpha, beta
+    integer(c_int) :: tapp_einsum
+    
+    ! TAPP_create_tensor_product 
+    integer(c_int) :: tapp_err, prec !  TAPP_prectype -1 .. default auto
+    type(C_PTR) :: handle, plan ! TAPP_handle, plan=TAPP_tensor_product
+    type(C_PTR) :: info_A, info_B, info_C, info_D ! TAPP_tensor_info
+    type(C_PTR):: idx_A, idx_B, idx_C, idx_D
+    integer(c_int) :: op_A_, op_B_, op_C_, op_D_ ! 0 .. identitity, 1 .. conjugate
+
+    ! TAPP_execute_product
+    type(C_PTR) :: exec, status ! TAPP_executor, TAPP_status
+    type(C_PTR):: A_, B_, C_, D_
+    
+    ! TAPP_create_tensor_info
+    integer(c_int) :: datatype, nmodes ! datatype = TAPP_datatype
+    type(C_PTR):: extents, strides
+    real(c_double), target :: tmpr           ! just a temporary to make a scalar tensor
+    complex(c_double_complex) target :: tmpc ! just a temporary to make a scalar tensor
+
+    alpha_ = 1.0 ! default values of alpha and beta are 1.0
+    beta_ = 1.0
+    if (present(alpha)) alpha_ = alpha
+    if (present(beta)) beta_ = beta
+    ! to.do throw error when alpha or beta complex but the tensors are real?
+
+    prec = -1 ! default prec: computational precision is determined as *at least* the lowest precision 
+              ! of the storage data types of all input and output operands. See TAPP_prectype for further options
+
+    handle = c_null_ptr ! tapp library handle will need to be stored somewhere. to.do
+
+    op_A_ = 0 
+    op_B_ = 0
+    op_C_ = 0 
+    op_D_ = 0
+    if (present(op_A)) op_A_ = op_A
+    if (present(op_B)) op_B_ = op_B
+    if (present(op_C)) op_C_ = op_C
+    if (present(op_D)) op_D_ = op_D
+
+    D_ = get_data_ptr(D)
+    info_D = D%tensor_info 
+    idx_D = c_loc(arr_idx_D(1)) 
+    if (present(A)) then
+      A_ = get_data_ptr(A)
+      info_A = A%tensor_info 
+      idx_A = c_loc(arr_idx_A(1)) 
+    endif
+    if (present(B)) then
+      B_ = get_data_ptr(B)
+      info_B = B%tensor_info 
+      idx_B = c_loc(arr_idx_B(1)) 
+    endif
+    if (present(C)) then
+      C_ = get_data_ptr(C)
+      info_C = C%tensor_info 
+      idx_C = c_loc(arr_idx_C(1)) 
+    endif
+
+    if (present(a) .and. present(b) .and. present(c)) then ! D = alpha A * B + beta C
+      ! all set
+    elseif (present(a) .and. present(b)) then ! this defaults to D = alpha A * B + beta D
+      C_ = D_
+      info_C = info_D
+      idx_C = idx_D
+      op_C_ = op_D_
+    elseif (present(a)) then ! this defaults to D = alpha A + beta D
+      C_ = D_
+      info_C = info_D
+      idx_C = idx_D
+      op_C_ = op_D_
+      
+      ! B has to be created as a scalar. 
+      ! to.do : check that contracting with scalar tensor stays a part of the standard
+      ! to.do : make this code part of create_tensor routine
+      nmodes = 0
+      extents = c_null_ptr
+      strides = c_null_ptr
+      tapp_err = TAPP_create_tensor_info(info_B, A%datatype, nmodes, extents, strides)
+      if (tapp_err.ne.0) then
+        write(*,'("  Error. Creating temporary TAPP tensor info in tapp_einsum failed with error code: ",i11,".")') &
+          tapp_err
+        stop 40
+      end if
+      if (A%datatype == 1 ) then
+        tmpr   = 1.0
+        B_ = c_loc(tmpr) 
+      elseif (A%datatype == 3 ) then
+        tmpc   = 1.0
+        B_ = c_loc(tmpc) 
+      endif
+      idx_B = c_null_ptr 
+      
+    else ! this is interpreted elementwise as D = alpha and requires alpha defined
+      if (.not. present(alpha)) then
+        write(*,'("  Error. At least a scalar alpha has to be given in tapp_einsum when A,B,C not specified.")')
+        stop 48
+      end if
+      if (D%datatype == 1 .and. allocated(D%data_real)) then
+        do i=1:size(D%data_real)
+          D%data_real(i) = alpha_%re
+        enddo
+        tapp_einsum = tapp_err
+        return
+      elseif (D%datatype == 3 .and. allocated(D%data_complex)) then
+        do i=1:size(D%data_complex)
+          D%data_complex(i) = alpha_
+        enddo
+        tapp_einsum = tapp_err
+        return
+      else
+        ! to.do create a new tensor
+        write(*,'("  Error. The case D = alpha without D allocated is not implemented yet in tapp_einsum.")')
+        stop 47
+      endif
+    endif
+    
+    ! prepare a contraction plan
+    tapp_err = TAPP_create_tensor_product(plan, handle, op_A_, info_A, idx_A, op_B_, info_B, idx_B, &
+      op_C_, info_C, idx_C, op_D_, info_D, idx_D, prec)
+
+    if (tapp_err.ne.0) then
+      write(*,'("  Error. Creating TAPP contraction plan failed with error code: ",i11,".")') tapp_err
+      stop 41
+    end if
+
+    exec = c_null_ptr ! executor library, in case TAPP works with multiple executors at the same time
+
+    ! execute the contraction plan
+    tapp_err = TAPP_execute_product(plan, exec, status, c_loc(alpha_), A_, B_, c_loc(alpha_), C_, D_) ! diff between plan par here and elsewhere?
+
+    if (tapp_err.ne.0) then
+      write(*,'("  Error. TAPP tensor product failed with error code: ",i11,".")') tapp_err
+      stop 42
+    end if
+
+    tapp_err = TAPP_destory_tensor_product(plan)
+    tapp_einsum = tapp_err
+ end function tapp_einsum
+
+ function tapp_einsum_talsh_tensors(expression, D_talsh, A_talsh, B_talsh, scale)
     implicit none
     character(len=*), intent(in) :: expression
     type(talsh_tens_t), intent(inout) :: D_talsh, A_talsh, B_talsh
@@ -52,14 +224,14 @@ module tapp_utils
     type(C_PTR):: extents
 
     ! internal + talsh
-    integer :: i, k, stride, numel
+    integer :: i, k, stride
     integer(INTD), allocatable, target :: out_dimsA(:), out_dimsB(:), out_dimsD(:)
     integer(INTD), allocatable, target :: lin_dim(:)
     complex(8), pointer  :: lin_tens(:)
 
     ! err
     integer :: ierr
-    integer :: tapp_einsum
+    integer :: tapp_einsum_talsh_tensors
 
 
     ierr = parse_t_einsum(expression, arr_idx_A, op_A, arr_idx_B, op_B, arr_idx_C, op_C, arr_idx_D, op_D)
@@ -214,8 +386,8 @@ module tapp_utils
     if (allocated(lin_dim)) deallocate(lin_dim)
     deallocate(arr_extents, out_dimsA, out_dimsB, out_dimsD)
 
-  tapp_einsum = ierr
- end function tapp_einsum
+  tapp_einsum_talsh_tensors = ierr
+ end function tapp_einsum_talsh_tensors
 
 
  ! parses the talsh format einsum string into 
@@ -290,6 +462,10 @@ module tapp_utils
       arr_idx_C(j) = map_str_to_i8(indices(4,j), distinct_indices, map_to)
     end do
     op_C = tensor_conjugate(4)
+    if (trim(algebraic_operations(3)) /= "+" .and. trim(algebraic_operations(3)) /= "-") then
+      write(*,'("  Error after parsing t_einsum expression: tesor C can follow only after + or -.")')
+      stop 49
+    end if
   end if 
   
   deallocate(tensor_names, indices, index_count, distinct_indices, map_to, tensor_conjugate, algebraic_operations)
@@ -533,4 +709,18 @@ module tapp_utils
     map_str_to_i8 = i8
  end function map_str_to_i8
 
-end module tapp_utils
+ function get_data_ptr(tensor)
+    implicit none
+    type(tapp_tensor_t), intent(inout)    :: tensor
+    type(C_PTR):: get_data_ptr
+    
+    get_data_ptr = c_null_ptr
+
+    if (tensor%datatype == 1 ) then
+      get_data_ptr = c_loc(tensor%data_real(1)) 
+    elseif (tensor%datatype == 3 ) then
+      get_data_ptr = c_loc(tensor%data_complex(1)) 
+    endif
+ end function get_data_ptr
+
+end module tapp_top

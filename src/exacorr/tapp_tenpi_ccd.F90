@@ -8,8 +8,7 @@ subroutine tapp_tenpi_ccd(nocc,nvir,F1,F2,T1,V4,V1, &
     use talsh
     use tensor_algebra
     use, intrinsic:: ISO_C_BINDING
-    use tapp
-    use tapp_utils
+    use tapp_top
 
     ! use TAPP_create_tensor_info
     
@@ -50,20 +49,20 @@ subroutine tapp_tenpi_ccd(nocc,nvir,F1,F2,T1,V4,V1, &
 
 
     !Diagram      0; Contraction 1; Tree Level  0; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  0/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("Z0()+=V1(m1,n1,e1,f1)*T1(e1,f1,m1,n1)", &
+    ierr=tapp_einsum_talsh_tensors("Z0()+=V1(m1,n1,e1,f1)*T1(e1,f1,m1,n1)", &
     Z0,V1,T1,scale=(2.5d-1,0.0d0))
     
     ierr=talsh_tensor_construct(D1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 2; Tree Level  2; Scaling  4/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("D1(f1,e1,m1,n1)+=F1(l1,m1)*T1(f1,e1,n1,l1)", &
+    ierr=tapp_einsum_talsh_tensors("D1(f1,e1,m1,n1)+=F1(l1,m1)*T1(f1,e1,n1,l1)", &
     D1,F1,T1,scale=(1.0d0,0.0d0))
 
     
     !ierr=talsh_tensor_destruct(F1)
     
     !Diagram      0; Contraction 3; Tree Level  0; Scaling  2/ 6/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("Z2(e1,f1,m1,n1)+=V2(e1,f1,d1,e2)*T1(d1,e2,m1,n1)", &
+    ierr=tapp_einsum_talsh_tensors("Z2(e1,f1,m1,n1)+=V2(e1,f1,d1,e2)*T1(d1,e2,m1,n1)", &
     Z2,V2,T1,scale=(5.0d-1,0.0d0))
     
     !ierr=talsh_tensor_destruct(V2)
@@ -71,7 +70,7 @@ subroutine tapp_tenpi_ccd(nocc,nvir,F1,F2,T1,V4,V1, &
     ierr=talsh_tensor_construct(G1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 4; Tree Level  2; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("G1(e1,f1,m1,n1)+=V3(e1,l1,m1,d1)*T1(f1,d1,n1,l1)", &
+    ierr=tapp_einsum_talsh_tensors("G1(e1,f1,m1,n1)+=V3(e1,l1,m1,d1)*T1(f1,d1,n1,l1)", &
     G1,V3,T1,scale=(1.0d0,0.0d0))
     
     !ierr=talsh_tensor_destruct(V3)
@@ -79,7 +78,7 @@ subroutine tapp_tenpi_ccd(nocc,nvir,F1,F2,T1,V4,V1, &
     ierr=talsh_tensor_construct(I1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 5; Tree Level  2; Scaling  2/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("I1(e1,f1,n1,m1)+=F2(e1,d1)*T1(f1,d1,n1,m1)", &
+    ierr=tapp_einsum_talsh_tensors("I1(e1,f1,n1,m1)+=F2(e1,d1)*T1(f1,d1,n1,m1)", &
     I1,F2,T1,scale=(1.0d0,0.0d0))
     
     !ierr=talsh_tensor_destruct(F2)
@@ -87,13 +86,13 @@ subroutine tapp_tenpi_ccd(nocc,nvir,F1,F2,T1,V4,V1, &
     ierr=talsh_tensor_construct(J1, C8, (/nvir,nvir/), init_val=ZERO)
     
     !Diagram      0; Contraction 6; Tree Level  3; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  0/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("J1(f1,d1)+=V1(l1,m2,d1,e2)*T1(e2,f1,l1,m2)", &
+    ierr=tapp_einsum_talsh_tensors("J1(f1,d1)+=V1(l1,m2,d1,e2)*T1(e2,f1,l1,m2)", &
     J1,V1,T1,scale=(1.0d0,0.0d0))
     
     ierr=talsh_tensor_construct(M1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 7; Tree Level  2; Scaling  2/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("M1(e1,f1,m1,n1)+=T1(e1,d1,m1,n1)*J1(f1,d1)", &
+    ierr=tapp_einsum_talsh_tensors("M1(e1,f1,m1,n1)+=T1(e1,d1,m1,n1)*J1(f1,d1)", &
     M1,T1,J1,scale=(1.0d0,0.0d0))
     
     ierr=talsh_tensor_destruct(J1)
@@ -101,13 +100,13 @@ subroutine tapp_tenpi_ccd(nocc,nvir,F1,F2,T1,V4,V1, &
     ierr=talsh_tensor_construct(X1, C8, (/nocc,nvir,nvir,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 8; Tree Level  3; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("X1(l1,f1,d1,n1)+=V1(l1,m2,d1,e2)*T1(e2,f1,m2,n1)", &
+    ierr=tapp_einsum_talsh_tensors("X1(l1,f1,d1,n1)+=V1(l1,m2,d1,e2)*T1(e2,f1,m2,n1)", &
     X1,V1,T1,scale=(1.0d0,0.0d0))
     
     ierr=talsh_tensor_construct(Y1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 9; Tree Level  2; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("Y1(e1,f1,m1,n1)+=T1(e1,d1,m1,l1)*X1(l1,f1,d1,n1)", &
+    ierr=tapp_einsum_talsh_tensors("Y1(e1,f1,m1,n1)+=T1(e1,d1,m1,l1)*X1(l1,f1,d1,n1)", &
     Y1,T1,X1,scale=(1.0d0,0.0d0))
     
     ierr=talsh_tensor_destruct(X1)
@@ -116,16 +115,16 @@ subroutine tapp_tenpi_ccd(nocc,nvir,F1,F2,T1,V4,V1, &
     
     !Diagram      0; Contraction 10; Tree Level  3; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
     !                              l,n        l,m,d,e        d,e,m,n
-    ! ierr=tapp_einsum("A2(l1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m2,n1)", &
+    ! ierr=tapp_einsum_talsh_tensors("A2(l1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m2,n1)", &
     ! A2,V1,T1,scale=(1.0d0,0.0d0))
 
-    ierr=tapp_einsum("A2(l1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m2,n1)", &
+    ierr=tapp_einsum_talsh_tensors("A2(l1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m2,n1)", &
     A2,V1,T1,scale=(1.0d0,0.0d0))
 
     ierr=talsh_tensor_construct(E2, C8, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 11; Tree Level  2; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  4/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("E2(l1,m2,m1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m1,n1)", &
+    ierr=tapp_einsum_talsh_tensors("E2(l1,m2,m1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m1,n1)", &
     E2,V1,T1,scale=(1.0d0,0.0d0))
     
     !ierr=talsh_tensor_destruct(V1)
@@ -139,13 +138,13 @@ subroutine tapp_tenpi_ccd(nocc,nvir,F1,F2,T1,V4,V1, &
     ierr=talsh_tensor_construct(G2, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 13; Tree Level  2; Scaling  4/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("G2(e1,f1,m1,n1)+=T1(e1,f1,m1,l1)*A2(l1,n1)", &
+    ierr=tapp_einsum_talsh_tensors("G2(e1,f1,m1,n1)+=T1(e1,f1,m1,l1)*A2(l1,n1)", &
     G2,T1,A2,scale=(1.0d0,0.0d0))
     
     ierr=talsh_tensor_destruct(A2)
     
     !Diagram      0; Contraction 14; Tree Level  1; Scaling  6/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum("Z2(e1,f1,m1,n1)+=T1(e1,f1,l1,m2)*E2(l1,m2,m1,n1)", &
+    ierr=tapp_einsum_talsh_tensors("Z2(e1,f1,m1,n1)+=T1(e1,f1,l1,m2)*E2(l1,m2,m1,n1)", &
     Z2,T1,E2,scale=(2.5d-1,0.0d0))
     
     ierr=talsh_tensor_destruct(E2)
