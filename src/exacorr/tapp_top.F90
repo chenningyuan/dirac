@@ -726,6 +726,54 @@ module tapp_top
     endif
  end function get_data_ptr
 
+ ! splits talsh-formatter einsum expression into contraction part and addition part for D = AB + C
+ function split_DABC_expression_str(expression, op_C, contraction_str, addition_str)
+         character(len = *), intent(in)   :: expression
+         integer(c_int), intent(in) :: op_C ! 0 .. identitity, 1 .. element-wise complex conjugate
+         character(len = len_trim(expression)), intent(out)  :: contraction_str, addition_str
+         integer(INTD)  :: split_DABC_expression_str
+         integer :: i, pos, curr, curr2, eq_found
+         
+         pos = -1
+         do i=1,len_trim(expression)
+           curr = len_trim(expression)-i+1
+           if (expression(curr:curr) == '+') then
+             if (op_C == 1 .and. pos /= -1) then
+               pos = curr
+               exit
+             elseif (op_C == 1 .and. pos == -1) then
+               pos = curr
+             else
+               pos = curr
+               exit
+             endif
+           endif
+         enddo
+         if (pos == -1) then ! assumes that + is used for addition
+           write(*,'("  Error. + not found in expression D = A*B+C.")')
+           stop 45
+         end if
+         contraction_str = ""
+         eq_found = 0
+         do i=1,(pos-1)
+           contraction_str(i:i)=expression(i:i)
+           if (eq_found == 0) addition_str(i:i)=expression(i:i)
+           if (expression(i:i) == '=') eq_found = i
+         enddo
+         addition_str = ""
+         do i=1,(len_trim(expression)-pos)
+           curr = eq_found + i
+           curr2 = pos + i
+           addition_str(curr:curr)=expression(curr2:curr2)
+           if (addition_str(curr:curr) == '*') then ! assumes that + operation is on the right of *
+             write(*,'("  Error. in expression D = A*B+C we assume + on the right of *.")')
+             stop 46
+           end if
+         enddo
+
+         split_DABC_expression_str = 0
+ end function
+
  ! constructor for tapp_tensor_t
  function construct_tapp_tensor_t(tensor, datatype, extents, init_val)
    implicit none
@@ -733,8 +781,9 @@ module tapp_top
    integer(c_int), intent(in), optional    :: datatype ! 1=real double, 3 = complex double
    integer(c_int64_t), allocatable, target, intent(in), optional :: extents(:)
    complex(c_double_complex), intent(in), optional    :: init_val
+   complex(c_double_complex)     :: init_val_
 
-   integer(c_int)       :: tapp_err, nmodes, construct_tapp_tensor_t
+   integer(c_int)       :: tapp_err, nmodes, datatype_,  construct_tapp_tensor_t
    integer(c_int64_t), allocatable, target :: strides(:)
    integer(8) :: i, k, stride, numel
 
@@ -742,8 +791,8 @@ module tapp_top
    real(c_double), allocatable, target :: arr_r(:)
 
    if (present(datatype)) tensor%datatype = datatype
-   if (present(executor)) tensor%which_executor = executor
-   if (.not. present(init_val)) init_val = 0.0
+   init_val_ = 0.0
+   if (present(init_val)) init_val_ = init_val
 
    nmodes = 0
    if (present(extents)) then
@@ -753,11 +802,11 @@ module tapp_top
                  c_null_ptr, c_null_ptr)
      if (tensor%datatype == 1) then
        allocate(arr_r(1))
-       arr_r(1) = init_val%re 
+       arr_r(1) = init_val_%re 
        tensor%data_real = arr_r
      elseif (tensor%datatype == 3) then
        allocate(arr_c(1))
-       arr_c(1) = init_val 
+       arr_c(1) = init_val_ 
        tensor%data_complex = arr_c
      endif 
      
@@ -777,9 +826,9 @@ module tapp_top
      numel = numel * extents(i)
    enddo
    
-   datatype = tensor%datatype
+   datatype_ = tensor%datatype
    
-   tapp_err = TAPP_create_tensor_info(tensor%tensor_info, datatype, nmodes, &
+   tapp_err = TAPP_create_tensor_info(tensor%tensor_info, datatype_, nmodes, &
                  c_loc(extents(1)), c_loc(strides(1)))
    if (tapp_err.ne.0) then
      write(*,'("  Error. Creating TAPP tensor info failed with error code: ",i11,".")') tapp_err
@@ -787,16 +836,13 @@ module tapp_top
    end if
 
    ! allocate and initialize data
-   allocate(lin_dim(1))
-   lin_dim(1) = numel
-  
    if (tensor%datatype == 1 ) then
      allocate(arr_r(numel)) 
-     call dscal(numel, init_val%re, arr_r, 1)
+     call dscal(numel, init_val_%re, arr_r, 1)
      tensor%data_real = arr_r
    elseif (tensor%datatype == 3 ) then
      allocate(arr_c(numel)) 
-     call zscal(numel, init_val, arr_c, 1)
+     call zscal(numel, init_val_, arr_c, 1)
      tensor%data_complex = arr_c
    endif
 
@@ -806,7 +852,7 @@ module tapp_top
  ! destructor for tapp_tensor_t
  function destroy_tapp_tensor_t(tensor)
    implicit none
-   type(tensor_t), intent(inout)    :: tensor
+   type(tapp_tensor_t), intent(inout)    :: tensor
 
    integer(c_int)       :: tapp_err, destroy_tapp_tensor_t
    
@@ -819,6 +865,6 @@ module tapp_top
    if (allocated(tensor%data_complex)) deallocate(tensor%data_complex)
     
    destroy_tapp_tensor_t = tapp_err
- end function destroy_tensor_t
+ end function destroy_tapp_tensor_t
 
 end module tapp_top

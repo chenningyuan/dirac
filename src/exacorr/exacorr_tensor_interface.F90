@@ -52,7 +52,31 @@ module exacorr_tensor_interface
 
         end type index_symmetry_structure
 
-        public contract
+        ! external tensor body initialization/transformation (unary) method
+        INTERFACE tensor_method_register
+                FUNCTION tensor_method_register_tapp(method_name, method) result(ierr)
+                        character(*), intent(in):: method_name         
+                        integer(8)                    :: ierr
+                        interface 
+                                integer(8) function method(a,b,i,j)  !some function
+                                        integer, intent(in) :: a,b,i,j
+                                end function
+                        end interface
+
+                        ! ierr = tapp_method_register(method_name,method)
+                END FUNCTION
+
+                FUNCTION tensor_method_register_exa(method_name, method) result(ierr)
+                        character(*), intent(in):: method_name            
+                        ! class(tens_method_uni_t), intent(inout):: method  !exatensor
+                        integer(8)                    :: ierr
+                        ! procedure(tens_method_uni_i), public, deferred:: apply ! possible implementation
+
+                        !ierr = exatns_method_register(method_name,method)
+                END FUNCTION
+        END INTERFACE
+
+        ! public contract
 
         contains
 
@@ -140,9 +164,11 @@ module exacorr_tensor_interface
                           ierr=split_DABC_expression_str(expression, op_C, contraction_str, addition_str)
                           ierr=exatns_tensor_copy(trim(addition_str), d%tens_talsh,c%tens_talsh)
                           ierr=exatns_tensor_scale(d%tens_talsh, beta)
-                          ierr=exatns_tensor_contract(trim(contraction_str),d%tens_exatensor,a%tens_exatensor,b%tens_exatensor, prefactor=alpha)
+                          ierr=exatns_tensor_contract(trim(contraction_str),d%tens_exatensor,a%tens_exatensor, &
+                                 b%tens_exatensor, prefactor=alpha)
                         elseif (present(a) .and. present(b)) then
-                          ierr=exatns_tensor_contract(trim(expression),d%tens_exatensor,a%tens_exatensor,b%tens_exatensor, prefactor=alpha)
+                          ierr=exatns_tensor_contract(trim(expression),d%tens_exatensor,a%tens_exatensor, &
+                                 b%tens_exatensor, prefactor=alpha)
                         elseif (present(a)) then
                           ierr=exatns_tensor_create(one_tensor%tens_exatensor,"autokern_one_tensor",EXA_DATA_KIND_C8)
                           ierr=exatns_tensor_init(one_tensor,1.0d0)
@@ -151,7 +177,7 @@ module exacorr_tensor_interface
                                          one_tensor%tens_exatensor, prefactor=alpha) 
                           ierr=exatns_tensor_destroy(one_tensor%tens_exatensor)
                         else
-                          ierr==exatns_tensor_init(d%tens_exatensor, alpha)
+                          ierr=exatns_tensor_init(d%tens_exatensor, alpha)
                         endif
                               
                 END SELECT
@@ -164,51 +190,6 @@ module exacorr_tensor_interface
         t_einsum = ierr
         end function t_einsum
 
-        function split_DABC_expression_str(expression, op_C, contraction_str, addition_str)
-                character(len = *), intent(in)   :: expression
-                integer(c_int), intent(in) :: op_C ! 0 .. identitity, 1 .. element-wise complex conjugate
-                character(len = len_trim(expression)), intent(out)  :: contraction_str, addition_str
-                integer(INTD)  :: split_DABC_expression_str
-                integer :: i, pos, curr, curr2, eq_found
-                
-                pos = -1
-                do i=1:len_trim(expression)
-                  curr = len_trim(expression)-i+1
-                  if (expression(curr:curr) == '+') then
-                    if (op_C == 1 .and. pos /= -1) then
-                      pos = curr
-                      exit
-                    elseif (op_C == 1 .and. pos == -1) then
-                      pos = curr
-                    else
-                      pos = curr
-                      exit
-                    endif
-                enddo
-                if (pos == -1) then ! assumes that + is used for addition
-                  write(*,'("  Error. + not found in expression D = A*B+C.")')
-                  stop 45
-                end if
-                contraction_str = ""
-                eq_found = 0
-                do i=1:(pos-1)
-                  contraction_str(i:i)=expression(i:i)
-                  if (eq_found == 0) addition_str(i:i)=expression(i:i)
-                  if (expression(i:i) == '=') eq_found = i
-                enddo
-                addition_str = ""
-                do i=1:(len_trim(expression)-pos)
-                  curr = eq_found + i
-                  curr2 = pos + i
-                  addition_str(curr:curr)=expression(curr2:curr2)
-                  if (addition_str(curr:curr) == '*') then ! assumes that + operation is on the right of *
-                    write(*,'("  Error. in expression D = A*B+C we assume + on the right of *.")')
-                    stop 46
-                  end if
-                enddo
-
-                split_DABC_expression_str = 0
-        end function
  
         ! copies data and destroys the source talsh tensor, unless staying in talsh
         function talsh_to_tensor_t(tens_talsh, out_tens, out_executor)
@@ -299,14 +280,14 @@ module exacorr_tensor_interface
               lin_dim(1) = numel
 
               if (out_tens%datatype == 1 ) then
-                ierr=talsh_tensor_construct(out_tens%tens_talsh, R8, out_dims, init_val=ZERO)
+                ierr=talsh_tensor_construct(out_tens%tens_talsh, R8, out_dims, init_val=0.0)
                 ierr=talsh_tensor_get_body_access(out_tens%tens_talsh,talshsptr,R8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
                 call dcopy(numel, in_tens%tens_tapp%data_real, 1, lin_tens_r, 1)
                 deallocate(in_tens%tens_tapp%data_real)
 
               elseif (out_tens%datatype == 3 ) then
-                ierr=talsh_tensor_construct(out_tens%tens_talsh, C8, out_dims, init_val=ZERO)
+                ierr=talsh_tensor_construct(out_tens%tens_talsh, C8, out_dims, init_val=(0.D0,0.D0))
                 ierr=talsh_tensor_get_body_access(out_tens%tens_talsh,talshsptr,C8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 call zcopy(numel, in_tens%tens_tapp%data_complex, 1, lin_tens_c, 1)
@@ -364,7 +345,7 @@ module exacorr_tensor_interface
               ierr=talsh_tensor_destruct(in_tens%tens_talsh)
 
             CASE(202) 
-              out_tens%tens_talsh = tens_talsh
+              out_tens%tens_talsh = in_tens%tens_talsh
             CASE default 
               write(*,'("  Error. Conversion from executor ",i11," to ",i11," not yet implemented.")') &
                 in_tens%which_executor, out_executor
@@ -386,30 +367,38 @@ module exacorr_tensor_interface
           implicit none
           type(tensor_t), intent(inout)    :: tensor
           integer, intent(in), optional    :: datatype ! 1=real double, 3 = complex double
-          integer(INTD), allocatable, optional :: extents(:)
+          integer(INTD), allocatable, intent(in), optional :: extents(:)
           integer, intent(in), optional    :: executor 
           complex(c_double_complex), intent(in), optional    :: init_val
+          complex(c_double_complex)     :: init_val_
 
           integer(INTD)       :: ierr, construct_tensor_t
           integer(c_int)       :: tapp_err
+          integer(c_int64_t), allocatable :: extents_(:)
 
           if (present(executor)) tensor%which_executor = executor
 
-          if (.not. present(init_val)) init_val = 0.0
+          init_val_ = 0.0
+          if (present(init_val)) init_val_ = init_val
           
           if (present(datatype)) tensor%datatype = datatype
-          if (tensor%datatype == C8) tensor%datatype = 3
-          elseif (tensor%datatype == R8) tensor%datatype = 1
+          if (tensor%datatype == C8) then
+            tensor%datatype = 3
+          elseif (tensor%datatype == R8) then
+            tensor%datatype = 1
+          endif
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
-              tapp_err=construct_tapp_tensor_t(tensor%tens_tapp, tensor%datatype, extents, init_val)
+              extents_ = int(extents, kind=8)
+              tapp_err=construct_tapp_tensor_t(tensor%tens_tapp, tensor%datatype, extents_, init_val)
               ierr = tapp_err
           CASE(2)
             if (tensor%datatype == 3) then
               ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents, init_val=init_val)
             elseif (tensor%datatype == 1) then
               ierr=talsh_tensor_construct(tensor%tens_talsh, R8, extents, init_val=init_val%re)
+            endif
           CASE default 
             write(*,'("  Error. construct_tensor_t for executor ",i11," not yet implemented.")') &
               tensor%which_executor
@@ -443,29 +432,6 @@ module exacorr_tensor_interface
           destroy_tensor_t = ierr
         end function destroy_tensor_t
 
-        ! external tensor body initialization/transformation (unary) method
-        INTERFACE tensor_method_register
-                FUNCTION tensor_method_register_tapp(method_name, method) result(ierr)
-                        character(*), intent(in):: method_name         
-                        integer(T_INTD)                    :: ierr
-                        interface 
-                                integer(T_INTD) function method(a,b,i,j)  !some function
-                                        integer, intent(in) :: a,b,i,j
-                                end function
-                        end interface
-
-                        ierr = tapp_method_register(method_name,method)
-                END FUNCTION
-
-                FUNCTION tensor_method_register_exa(method_name, method) result(ierr)
-                        character(*), intent(in):: method_name            
-                        class(tens_method_uni_t), intent(inout):: method  !exatensor
-                        integer(T_INTD)                    :: ierr
-                        ! procedure(tens_method_uni_i), public, deferred:: apply ! possible implementation
-
-                        ierr = exatns_method_register(method_name,method)
-                END FUNCTION
-        END INTERFACE
 
         ! this will be a part of the standard interface, implemented inside the c code of the c-api, but also here for practical reasons in case of problems with the compilation of the c part
         ! FUNCTION standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj) result (ierr)
