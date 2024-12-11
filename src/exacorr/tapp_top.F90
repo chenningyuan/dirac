@@ -726,4 +726,99 @@ module tapp_top
     endif
  end function get_data_ptr
 
+ ! constructor for tapp_tensor_t
+ function construct_tapp_tensor_t(tensor, datatype, extents, init_val)
+   implicit none
+   type(tapp_tensor_t), intent(inout)    :: tensor
+   integer(c_int), intent(in), optional    :: datatype ! 1=real double, 3 = complex double
+   integer(c_int64_t), allocatable, target, intent(in), optional :: extents(:)
+   complex(c_double_complex), intent(in), optional    :: init_val
+
+   integer(c_int)       :: tapp_err, nmodes, construct_tapp_tensor_t
+   integer(c_int64_t), allocatable, target :: strides(:)
+   integer(8) :: i, k, stride, numel
+
+   complex(c_double_complex), allocatable, target :: arr_c(:)
+   real(c_double), allocatable, target :: arr_r(:)
+
+   if (present(datatype)) tensor%datatype = datatype
+   if (present(executor)) tensor%which_executor = executor
+   if (.not. present(init_val)) init_val = 0.0
+
+   nmodes = 0
+   if (present(extents)) then
+     nmodes = size(extents)
+   else ! scalar
+     tapp_err = TAPP_create_tensor_info(tensor%tensor_info, tensor%datatype, nmodes, &
+                 c_null_ptr, c_null_ptr)
+     if (tensor%datatype == 1) then
+       allocate(arr_r(1))
+       arr_r(1) = init_val%re 
+       tensor%data_real = arr_r
+     elseif (tensor%datatype == 3) then
+       allocate(arr_c(1))
+       arr_c(1) = init_val 
+       tensor%data_complex = arr_c
+     endif 
+     
+     construct_tapp_tensor_t = tapp_err
+     return
+   endif
+
+   allocate(strides(nmodes))
+   ! to.do replace with unified create_tensor
+   numel = 1
+   do i=1,nmodes
+     stride = 1
+     do k=1,i-1
+       stride = stride * extents(k)
+     enddo
+     strides(i) = stride
+     numel = numel * extents(i)
+   enddo
+   
+   datatype = tensor%datatype
+   
+   tapp_err = TAPP_create_tensor_info(tensor%tensor_info, datatype, nmodes, &
+                 c_loc(extents(1)), c_loc(strides(1)))
+   if (tapp_err.ne.0) then
+     write(*,'("  Error. Creating TAPP tensor info failed with error code: ",i11,".")') tapp_err
+     stop 40
+   end if
+
+   ! allocate and initialize data
+   allocate(lin_dim(1))
+   lin_dim(1) = numel
+  
+   if (tensor%datatype == 1 ) then
+     allocate(arr_r(numel)) 
+     call dscal(numel, init_val%re, arr_r, 1)
+     tensor%data_real = arr_r
+   elseif (tensor%datatype == 3 ) then
+     allocate(arr_c(numel)) 
+     call zscal(numel, init_val, arr_c, 1)
+     tensor%data_complex = arr_c
+   endif
+
+   construct_tapp_tensor_t = tapp_err
+ end function construct_tapp_tensor_t
+
+ ! destructor for tapp_tensor_t
+ function destroy_tapp_tensor_t(tensor)
+   implicit none
+   type(tensor_t), intent(inout)    :: tensor
+
+   integer(c_int)       :: tapp_err, destroy_tapp_tensor_t
+   
+   tapp_err = 0
+   if (c_associated(tensor%tensor_info)) then
+     tapp_err = TAPP_destory_tensor_info(tensor%tensor_info)
+   endif
+
+   if (allocated(tensor%data_real)) deallocate(tensor%data_real)
+   if (allocated(tensor%data_complex)) deallocate(tensor%data_complex)
+    
+   destroy_tapp_tensor_t = tapp_err
+ end function destroy_tensor_t
+
 end module tapp_top

@@ -63,7 +63,7 @@ module exacorr_tensor_interface
         ! if C not defined, this function assumes C=D and scale_c=1
         ! if B and C not defined, performs D += scale A
         ! if neither of A,B,C is defined, sets each element of D to scale value
-        function t_einsum(expresssion, d, a, b, c, scale, scale_c)  
+        function t_einsum(expression, d, a, b, c, scale, scale_c)  
           !Import :: tensor_t
                 character(len = *), intent(in)   :: expression
                 type(tensor_t), intent(inout)    :: d
@@ -381,26 +381,35 @@ module exacorr_tensor_interface
           convert = ierr
         end function convert
 
-        ! c
+        ! constructor for tensor_t
         function construct_tensor_t(tensor, datatype, extents, executor, init_val)
           implicit none
           type(tensor_t), intent(inout)    :: tensor
-          integer, intent(in)    :: datatype ! 1=real double, 3 = complex double
+          integer, intent(in), optional    :: datatype ! 1=real double, 3 = complex double
           integer(INTD), allocatable, optional :: extents(:)
           integer, intent(in), optional    :: executor 
           complex(c_double_complex), intent(in), optional    :: init_val
 
           integer(INTD)       :: ierr, construct_tensor_t
+          integer(c_int)       :: tapp_err
 
           if (present(executor)) tensor%which_executor = executor
-          tensor%datatype = datatype
+
+          if (.not. present(init_val)) init_val = 0.0
+          
+          if (present(datatype)) tensor%datatype = datatype
+          if (tensor%datatype == C8) tensor%datatype = 3
+          elseif (tensor%datatype == R8) tensor%datatype = 1
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
-            write(*,'("  Error. construct_tensor_t for executor ",i11," not yet implemented.")') &
-              tensor%which_executor
+              tapp_err=construct_tapp_tensor_t(tensor%tens_tapp, tensor%datatype, extents, init_val)
+              ierr = tapp_err
           CASE(2)
-            ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents)
+            if (tensor%datatype == 3) then
+              ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents, init_val=init_val)
+            elseif (tensor%datatype == 1) then
+              ierr=talsh_tensor_construct(tensor%tens_talsh, R8, extents, init_val=init_val%re)
           CASE default 
             write(*,'("  Error. construct_tensor_t for executor ",i11," not yet implemented.")') &
               tensor%which_executor
@@ -410,25 +419,25 @@ module exacorr_tensor_interface
 
           construct_tensor_t = ierr
         end function construct_tensor_t
-        ! c
 
+        ! destructor for tensor_t
         function destroy_tensor_t(tensor)
           implicit none
           type(tensor_t), intent(inout)    :: tensor
 
           integer(INTD)       :: ierr, destroy_tensor_t
+          integer(c_int)       :: tapp_err
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
-            write(*,'("  Error. destroy_tensor_t for executor ",i11," not yet implemented.")') &
-              tensor%which_executor
+             tapp_err=destroy_tapp_tensor_t(tensor%tens_tapp)
+             ierr = tapp_err
           CASE(2)
             ierr=talsh_tensor_destruct(tensor%tens_talsh)
           CASE default 
             write(*,'("  Error. destroy_tensor_t for executor ",i11," not yet implemented.")') &
               tensor%which_executor
             stop 55
-             
           END SELECT
 
           destroy_tensor_t = ierr
