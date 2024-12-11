@@ -90,13 +90,14 @@ contains
         else if (lowercase(val) == '3d') then
           grid%input = 5
         else if (lowercase(val) == 'radial') then
-          grid%input = 6
+          grid%input = 5  !only 3d radial grids
         else
           write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"/"list"/"line"/"2d"/"3d"/"radial"'
           stop
         end if
       case ('typ')
         call str2int(val, grid%typ, stat)
+!fixme
       case ('weights')
         if (val == 'no') then
           grid%weights = 0
@@ -185,10 +186,12 @@ contains
         grid%nr_points(1) = np     ! arbitrary assignment
         grid%nr_points_total = np
         allocate(chvalues(grid%ndim))
+        ! line extents: arbitrary assignment to grid%extents(0:1,i)
         ! line start
         call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
         do i = 1, grid%ndim
           call str2flt(trim(chvalues(i)), grid%extents(0,i), stat)
+          grid%origin(i) = grid%extents(0,i)
         end do
         ! line end
         call split_string(user_input_lines(2),grid%ndim,chvalues,separator=',')
@@ -199,12 +202,17 @@ contains
         grid%nr_points_known(1) = .true.
         grid%nr_points_total_known = .true.
         grid%extents_known=.true.
+        grid%origin_known=.true.
 
       case ('2d')
 !
 !       on input:
 !       .2D
-!       fixme
+!       0.0  0.0  0.0  <--- coordinates of grid origin
+!       0.0  0.0  2.0  <--- coordinates of grid "right" point
+!       20             <--- nr of points origin-"right"
+!       0.0  2.0  0.0  <--- coordinates of grid "top" point
+!       20             <--- nr of points origin-"top"
 !
         grid%typ = 1
         call str2int(trim(user_input_lines(3)), np, stat)
@@ -215,24 +223,27 @@ contains
         grid%nr_points_known(2) = .true.
         grid%nr_points_total = grid%nr_points(1)*grid%nr_points(2)
         allocate(chvalues(grid%ndim))
+        ! line extents: arbitrary assignment to grid%extents(0:1,i)
+        ! line start
         call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
         do i = 1, grid%ndim
-          call str2int(trim(chvalues(i)), np, stat)
-          grid%origin(i) = np
+          call str2flt(trim(chvalues(i)), grid%extents(0,i), stat)
+          grid%origin(i) = grid%extents(0,i)
         end do
+        ! line end
         call split_string(user_input_lines(2),grid%ndim,chvalues,separator=',')
         do i = 1, grid%ndim
-          call str2int(trim(chvalues(i)), np, stat)
-          v(i) = np
+          call str2flt(trim(chvalues(i)), grid%extents(1,i), stat)
         end do
+        ! line extents: arbitrary assignment to grid%extents(2,i)
         call split_string(user_input_lines(4),grid%ndim,chvalues,separator=',')
         do i = 1, grid%ndim
-          call str2int(trim(chvalues(i)), np, stat)
-          w(i) = np
+          call str2flt(trim(chvalues(i)), grid%extents(2,i), stat)
         end do
-
         deallocate(chvalues)
         grid%nr_points_total_known = .true.
+        grid%extents_known=.true.
+        grid%origin_known=.true.
 
       case ('3d')
 !
@@ -258,20 +269,20 @@ contains
 !
 !       on input:
 !       .RADIAL
-!       fixme
+!       0.0  0.0  0.0  <--- coordinates of grid origin
+!       2.0            <--- radial length 
+!       10             <--- number of steps
 !
-
-        !allocate(chvalues(grid%ndim))
-        !call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
-        !do j = 1, grid%ndim
-        !  call str2flt(trim(chvalues(j)), s, stat)
-        !  tmp_origin(j) = s
-        !end do
-        !deallocate(chvalues)
-        !call str2flt(trim(user_input_lines(2)), tmp_length, stat)
-        !call str2int(trim(user_input_lines(2)), tmp_nr_steps, stat)
-        !call generate_radial_grid(grid, tmp_origin, tmp_length, tmp_nr_steps)
-        grid%nr_points_total_known = .true.
+        grid%typ = 2
+        allocate(chvalues(grid%ndim))
+        call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
+        do i = 1, grid%ndim
+          call str2flt(trim(chvalues(i)), grid%origin(i), stat)
+        end do
+        call str2flt(trim(user_input_lines(2)), grid%radial_length, stat)
+        call str2int(trim(user_input_lines(3)), grid%radial_nr_steps, stat)
+        deallocate(chvalues)
+        grid%origin_known=.true.
 
       case default
         print *, 'unknown key'

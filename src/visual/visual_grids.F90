@@ -35,30 +35,29 @@ contains
 !   in other cases - set up information to generate grid points
 !
     else if (grid%input==0 .or. grid%input==5) then
-!     set up information to generate 3d grid
+!     3d grid
       if (grid_id /= grid%id) then
         write (errmsg, *) 'ERROR: problem with grid id in get_grid_info: ',&
                           ' grid%id=', grid%id,&
                           ' grid_id=', grid_id
         call visual_quit(errmsg)
       end if
-      call get_3d_grid_essentials(grid, mol)
-      ! center grid around molecule,
-      ! modify grid extents and grid%origin (but do not move molecule)
-      ! todo - maybe add a keyword + an option to control grid extents
-      call center_mol_in_3d_grid(grid)
-
-    else if (grid%input  ==  2) then
-      write (*, *) 'grid info is read from ".LIST"'
-      !todocall get_2d_grid_essentials(grid)
+      if (grid%typ == 1) then
+        ! rectilinear uniform 3d grid
+        call get_3d_grid_essentials(grid, mol)
+        ! center grid around molecule,
+        ! modify grid extents and grid%origin (but do not move molecule)
+        ! todo - maybe add a keyword + an option to control grid extents
+        call center_mol_in_3d_grid(grid)
+      else if (grid%typ == 2) then
+        ! radial 3d grid
+        call get_3d_radial_grid_essentials(grid, mol)
+      end if
 
     else if (grid%input  ==  3) then
-      ! set up information to generate grid points along a line:
+      ! line
       call get_line_grid_essentials(grid)
 
-    else if (grid%input  ==  4) then
-      ! set up information to generate 2d grid
-      write (*, *) 'grid info is read from ".2D"'
     end if
 
     ! we should now have all information to work on the grid
@@ -75,33 +74,77 @@ contains
 
     if (grid%input == 1) then
       call get_grid_points_from_file(grid)
-    else
+    else if (grid%input /= 2) then
+      ! grid%input = 2 is for .LIST;
+      ! in this case, the points should already be read from input
       call generate_grid_points(grid)
     end if
   end subroutine
 
 
+
 ! ------------------------------------------------------------------------------
   subroutine generate_grid_radial(grid)
+use num_grid_cfg
     type(grid_t), intent(inout):: grid
-    integer:: i,j,k, ipoint
-    real(8):: v(3)
+    real(8),allocatable:: temp(:,:)
+    real(8):: rad, radial_spacing
+    integer:: nleb, i, m, n, istep, ipoint
+    character(len = 150):: errmsg
 
     if (grid%typ /= 2) return
 
+    if (grid%input == 0 .or. grid%input == 5) then
+
+      ! Get angular points and weights
+      m = NLEB(num_grid_cfg_angint)
+      write(*, '(/,4x, a)')  '** Radial distribution **'
+      write(*, '(6x, A, I3)')  '   Lebedev angular grid L = ',num_grid_cfg_angint
+      write(*, '(6x, A, I10)') '   Angular points:   ',m
+      allocate(temp(m, 4))
+      temp=0.0d0
+      CALL LEBEDEV(num_grid_cfg_angint,temp(1,1),temp(1,2),temp(1,3),temp(1, 4),n)
+      CALL DSCAL(m, 4*ACOS(-1.0D0), temp(1, 4), 1)
+
+      ! Loop over radial points
+      if (grid%radial_nr_steps > 1) then
+        radial_spacing = grid%radial_length/(grid%radial_nr_steps - 1)
+      else
+        radial_spacing = grid%radial_length
+      end if
+
+      ipoint = 1
+      do istep = 1, grid%radial_nr_steps
+        rad = (istep-1)*radial_spacing
+        do i = 1, m
+          grid%points(1:3, ipoint) = grid%origin(1:3) + rad*temp(i, 1:3)
+          ipoint = ipoint + 1
+        end do
+      end do
+      deallocate(temp)
+
+    else
+      write (errmsg, *) 'ERROR: generation of radial grids other than ',&
+                        '3d is not implemented'
+      call visual_quit(errmsg)
+    end if
 
   end subroutine
+
 
 ! ------------------------------------------------------------------------------
   subroutine generate_grid_rectilinear(grid)
 ! rectilinear equidistant
     type(grid_t), intent(inout):: grid
     integer:: i,j,k, ipoint, N(grid%ndim)
-    real(8):: v(3)
+    real(8):: v(3), vx(3), vy(3), vz(3)
+    real(8):: vx_norm, vy_norm, vz_norm
+    character(len = 150):: errmsg
 
     if (grid%typ /= 1) return
 
     if (grid%input == 0 .or. grid%input == 5) then
+!     3d
       ipoint = 1
       do i = 1, grid%nr_points(1)
         v(1) = grid%origin(1) + (i - 1)*grid%spacing(1)
@@ -115,15 +158,34 @@ contains
         end do
       end do
     else if (grid%input == 4) then
-!2d
+!     2d
+      ipoint = 1
+      vx(1:3) = (grid%extents(1,1:3) - grid%extents(0,1:3))/(grid%nr_points(1)-1)
+      vy(1:3) = (grid%extents(2,1:3) - grid%extents(0,1:3))/(grid%nr_points(2)-1)
+      vz(1) = vx(2)*vy(3) - vx(3)*vy(2)
+      vz(2) = vx(3)*vy(1) - vx(1)*vy(3)
+      vz(3) = vx(1)*vy(2) - vx(2)*vy(1)
+      vx_norm = dsqrt(vx(1)*vx(1) + vx(2)*vx(2) + vx(3)*vx(3))
+      vy_norm = dsqrt(vy(1)*vy(1) + vy(2)*vy(2) + vy(3)*vy(3))
+      vz_norm = dsqrt(vz(1)*vz(1) + vz(2)*vz(2) + vz(3)*vz(3))
+      ipoint = 1
+      do i = 1, grid%nr_points(1)
+        do j = 1, grid%nr_points(2)
+          grid%points(1:3, ipoint) = grid%origin(1:3) + (i-1)*vx(1:3) + (j-1)*vy
+          ipoint = ipoint + 1
+        end do
+      end do
     else if (grid%input == 3) then
-!line
+!     line
       ipoint = 1
       do i = 1, grid%nr_points(1)
         v(1:3) = grid%origin(1:3) + (i - 1)*grid%spacing(1:3)
         grid%points(1:3, ipoint) = v(1:3)
         ipoint = ipoint + 1
       end do
+    else
+      write (errmsg, *) 'ERROR: unsupported grid input '
+      call visual_quit(errmsg)
     end if
 
   end subroutine
@@ -200,30 +262,28 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine grid_npoints_from_spacing(grid)
+  subroutine grid_3d_npoints_from_spacing(grid)
     type(grid_t), intent(inout):: grid
     integer:: i
 
-    do i = 1, 3
-      if (grid%nr_points_known(i)) return
-      if (grid%spacing(i) /= 0) then
-        grid%nr_points(i) = int((grid%extents(1,i) - grid%extents(0,i))/grid%spacing(i)) + 1
-        if (grid%nr_points(i) <= 0) then
-          ! assign 1 point to this dimension;
-          ! we do this because we work in grid%ndim dimensions
-          ! and so we cannot have 0 points in one of the dimensions
-          grid%nr_points(i) = 1
-        end if
-      end if
+    if (.not.grid%extents_known) return
+    do i = 1, grid%ndim
+      if (grid%nr_points_known(i) .or. &
+          grid%spacing(i) == 0    .or. &
+          .not.grid%spacing_known(i) .or. &
+          grid%nr_points(i) <= 0) return
+
+      grid%nr_points(i) = int((grid%extents(1,i) - grid%extents(0,i))/grid%spacing(i)) + 1
       grid%nr_points_known(i) = .true.
     end do
-  end subroutine grid_npoints_from_spacing
+  end subroutine grid_3d_npoints_from_spacing
 
 
 ! ------------------------------------------------------------------------------
-  subroutine grid_spacing_from_npoints(grid)
+  subroutine grid_3d_spacing_from_npoints(grid)
     type(grid_t), intent(inout):: grid
     integer:: i
+    character(len = 150):: errmsg
 
     do i = 1, grid%ndim
       if (grid%spacing_known(i)) return
@@ -235,8 +295,23 @@ contains
           grid%spacing(i) = grid%extents(1,i) - grid%extents(0,i)
         end if
         grid%spacing_known(i) = .true.
-      else if (grid%nr_points_total_known.and..not.grid%nr_points_known(i)) then
-!       the case for 2D or line
+      else
+        write (errmsg, *) 'ERROR in grid_3d_spacing_from_npoints'
+        call visual_quit(errmsg)
+      end if
+    end do
+  end subroutine grid_3d_spacing_from_npoints
+
+! ------------------------------------------------------------------------------
+  subroutine grid_line_spacing_from_npoints(grid)
+    type(grid_t), intent(inout):: grid
+    integer:: i
+    character(len = 150):: errmsg
+
+    do i = 1, grid%ndim
+      if (grid%spacing_known(i)) return
+      grid%spacing(i) = 0.0d0
+      if (grid%nr_points_total_known) then
         if (grid%nr_points_total > 1) then
           grid%spacing(i) = (grid%extents(1,i) - grid%extents(0, i))/(grid%nr_points_total - 1)
         else
@@ -244,11 +319,11 @@ contains
         end if
         grid%spacing_known(i) = .true.
       else
-        stop
-        !fixme
+        write (errmsg, *) 'ERROR in grid_3d_spacing_from_npoints'
+        call visual_quit(errmsg)
       end if
     end do
-  end subroutine grid_spacing_from_npoints
+  end subroutine grid_line_spacing_from_npoints
 
 
 ! ------------------------------------------------------------------------------
@@ -301,12 +376,28 @@ contains
     call grid_origin_extents_from_mol(mol, grid)
 
     do i = 1, 3
-      if (.not. grid%spacing_known(i)) call grid_spacing_from_npoints(grid)
-      if (.not. grid%nr_points_known(i)) call grid_npoints_from_spacing(grid)
+      if (.not. grid%spacing_known(i)) call grid_3d_spacing_from_npoints(grid)
+      if (.not. grid%nr_points_known(i)) call grid_3d_npoints_from_spacing(grid)
     end do
 
     if (.not. grid%nr_points_total_known) call grid_get_nr_points_total(grid)
   end subroutine get_3d_grid_essentials
+
+
+! ------------------------------------------------------------------------------
+  subroutine get_3d_radial_grid_essentials(grid, mol)
+use num_grid_cfg
+    type(mol_t), intent(in):: mol
+    type(grid_t), intent(inout):: grid
+    integer:: m, nleb
+
+    if (grid%typ /= 2) return
+
+    m = NLEB(num_grid_cfg_angint)
+    grid%nr_points_total = m*grid%radial_nr_steps
+    grid%nr_points_total_known = .true.
+
+  end subroutine get_3d_radial_grid_essentials
 
 
 ! ------------------------------------------------------------------------------
@@ -317,13 +408,7 @@ contains
     integer:: i
 
     if (grid%typ /= 1) return
-
-    if (.not. grid%extents_known) then
-      stop
-    end if
-
-    grid%origin(1:3) = grid%extents(0,1:3)
-    call grid_spacing_from_npoints(grid)
+    call grid_line_spacing_from_npoints(grid)
 
   end subroutine get_line_grid_essentials
 
@@ -337,9 +422,11 @@ contains
     select case (grid%typ)
       case (1)
         call generate_grid_rectilinear(grid)
+      case (2)
+        call generate_grid_radial(grid)
       case default
         write (errmsg, *) 'ERROR: generation of grids other than ',&
-                          '3d-rectilinear is not implemented'
+                          '3d-rectilinear or radial is not implemented'
         call visual_quit(errmsg)
     end select
   end subroutine

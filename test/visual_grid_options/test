@@ -19,29 +19,20 @@ grid_3d_h5=Path(test.work_dir, 'grid_3d.h5')
 grid_3d_h5.unlink(missing_ok=True)
 grid_3d_h5=grid_3d_h5.symlink_to(Path(Path(__file__).parents[1].resolve(), 'testdata', 'grid_visual_3D.h5'))
 
-grid_2d_txt=Path(test.work_dir, 'grid_2d.txt')
-grid_2d_txt.unlink(missing_ok=True)
-grid_2d_txt=grid_2d_txt.symlink_to(Path(Path(__file__).parents[1].resolve(), 'testdata', 'grid_visual_2D.txt'))
-
-grid_3d_txt=Path(test.work_dir, 'grid_3d.txt')
-grid_3d_txt.unlink(missing_ok=True)
-grid_3d_txt=grid_3d_txt.symlink_to(Path(Path(__file__).parents[1].resolve(), 'testdata', 'grid_visual_3D.txt'))
-
 #
-# run tests: output to HDF5
+# run tests
 #
-#test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
+test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 
-#test.run(['vis_2d_hdf5.inp'], ['h2o.mol'], args='--incmo --put="grid_2d.h5" --get="ed_on2Dgrid.h5"')
-#test.run(['vis_2d.inp'], ['h2o.mol'], args='--incmo --put="grid_2d.h5" --get="ed_on2Dgrid.h5"')
-
-#test.run(['vis_3d_hdf5.inp'], ['h2o.mol'], args='--incmo --put="grid_3d.h5" --get="ed_on3Dgrid.h5"')
-#test.run(['vis_3d.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dgrid_generated.h5 grid_3d_generated.h5"')
-#test.run(['vis_3d_old.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dgrid_generated_old.h5 grid_3d_generated_old.h5"')
-#
-#test.run(['vis_3d_list.inp'], ['h2o.mol'], args='--incmo --get="ed_on3DgridLIST.h5 grid_3d_fromLIST.h5"')
+test.run(['vis_2d.inp'], ['h2o.mol'], args='--incmo --get="ed_on2Dgrid_generated.h5 grid_2d_generated.h5"')
+test.run(['vis_3d_list.inp'], ['h2o.mol'], args='--incmo --get="ed_on3DgridLIST.h5 grid_3d_fromLIST.h5"')
 test.run(['vis_line.inp'], ['h2o.mol'], args='--incmo --get="ed_onLINE.h5 grid_fromLINE.h5"')
-#test.run(['vis_radial.inp'], ['h2o.mol'], args='--incmo --get="ed_onRADIAL.h5"')
+
+test.run(['vis_3d_hdf5.inp'], ['h2o.mol'], args='--incmo --put="grid_3d.h5" --get="ed_on3Dgrid.h5"')
+test.run(['vis_3d.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dgrid_generated.h5 grid_3d_generated.h5"')
+test.run(['vis_3d_old.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dgrid_generated_old.h5 grid_3d_generated_old.h5"')
+
+test.run(['vis_3d_radial.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dradial.h5 grid_3d_fromRADIAL.h5"')
 
 #
 # compare generated data with reference
@@ -50,9 +41,7 @@ rs = CompareHDF5(test.work_dir)
 
 # test grid functions
 
-#testset = ["ed_on3Dgrid.h5", "ed_on3DgridTXT.h5", "ed_on3DgridCUBE.h5",  "ed_on3DgridLIST.h5"]
 testset = ["ed_on3Dgrid.h5", "ed_on3DgridLIST.h5"]
-#testset = ["ed_on3DgridLIST.h5"]
 for t in testset:
 
     rs.verify(ftest=t,\
@@ -61,7 +50,7 @@ for t in testset:
               gf_label='/result/grid_function/ed/visualize/values/',
               gf_test_key='t0_icomp_1')
 
-testset = ["ed_onLINE.h5"]
+testset = ["ed_onLINE.h5", "ed_on2Dgrid_generated.h5", "ed_on3Dradial.h5"]
 for t in testset:
 
     rs.verify(ftest=t,\
@@ -70,15 +59,15 @@ for t in testset:
               gf_label='/result/grid_function/ed/visualize/values/',
               gf_test_key='t0_icomp_1')
 
-#testset = ["ed_on3Dgrid_generated.h5", "ed_on3Dgrid_generated_old.h5"]
-#for t in testset:
-#
-#    rs.verify(ftest=t,\
-#              fref='result/ed_on3Dgrid_generated.h5',\
-#              typ='array',\
-#              gf_label='/result/grid_function/ed/visualize/values/',
-#              gf_test_key='t0_icomp_1')
-#
+testset = ["ed_on3Dgrid_generated.h5", "ed_on3Dgrid_generated_old.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/ed_on3Dgrid_generated.h5',\
+              typ='array',\
+              gf_label='/result/grid_function/ed/visualize/values/',
+              gf_test_key='t0_icomp_1')
+
 
 # test generated grids
 
@@ -103,7 +92,7 @@ for t in testset:
                   gf_test_key=l)
 
 
-testset = ["grid_fromLINE.h5"]
+testset = ["grid_fromLINE.h5", "grid_3d_fromRADIAL.h5"]
 for t in testset:
 
     rs.verify(ftest=t,\
@@ -146,15 +135,24 @@ for t in testset:
                   gf_test_key=l)
 
 
-#WIPtestset = ["ed_on2Dgrid.h5", "ed_onRADIAL.h5"]
+testset = ["grid_2d_generated.h5"]
+for t in testset:
 
-#
-# clean
-#
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='single',\
+              gf_label='/result/grid/ndim')
 
-#os.remove(os.path.join(test.work_dir, 'CHECKPOINT.h5'))   
-#os.unlink(os.path.join(test.work_dir, 'grid_2d.h5'))
-#os.unlink(os.path.join(test.work_dir, 'grid_3d.h5'))
-#os.unlink(os.path.join(test.work_dir, 'grid_3d.txt'))
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='single',\
+              gf_label='/result/grid/nr_points_total')
+
+    for l in ['coor_1', 'coor_2', 'coor_3']:
+        rs.verify(ftest=t,\
+                  fref='result/'+t,\
+                  typ='array',\
+                  gf_label='/result/grid/points/',\
+                  gf_test_key=l)
 
 

@@ -402,22 +402,19 @@
            write(*,*) 'Error: ".RADIAL" requires prior specification of ".GRIDS". Stop.'
            stop
          else
-           ! get id of the grid:
            do i = 1, rs_input%nr_grids
-             if (rs_input%grids(i)%input == 6) then
-               allocate(word_array(3))
-               j = 0
-               do
+             !if (rs_input%grids(i)%typ == 2) then
+               nr_lines = 3
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
                   read(get_file_unit(), '(a)') line
                   if (line(1:1) == '!' .or. line(1:1) == '#') cycle
-                  j = j + 1
                   word_array(j) = line
-                  if (j == 3) exit
                end do
                call grid_user_input_cfg(rs_input%grids(i), 'radial', word_array)
                deallocate(word_array)
                call verify_grid_input_cfg(rs_input%grids(i))
-             end if
+             !end if
            end do
          end if
       end if

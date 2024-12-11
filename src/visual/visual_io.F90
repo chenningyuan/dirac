@@ -52,6 +52,8 @@ contains
     type(grid_t), intent(in):: grid
     type(grid_function_t), intent(in):: grid_function
     type(file_info_t):: data_file
+    integer::i
+    character(len=:), allocatable:: fmt
     ! todo:
     ! - add support for other formats, now - hdf5 format only
     ! - check what file%status == -1 means ('never used' = 'file not exists'?)
@@ -72,6 +74,12 @@ contains
       case default
         call visual_quit('programming error in store_data; unsupported file type')
     end select
+
+!   test
+    !fmt = '(*(es18.8e3, :))'
+    !do i = 1, grid%nr_points_total
+    !  write(*, fmt) grid%points(1,i), grid%points(2,i), grid%points(3,i)
+    !end do
 
   end subroutine
 

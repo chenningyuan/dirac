@@ -112,11 +112,13 @@ module visual_datatypes
     integer, public:: nr_points(1:3) = 0
     real(8), public:: origin(1:3) = 0.0d0                   ! grid origin [a.u.]
     real(8), public:: spacing(1:3) = 0.0d0                  ! grid spacing [a.u.]
-    real(8), public:: extents(0:1,1:3) = 0.0d0              ! grid extents [a.u.]
+    real(8), public:: extents(0:2,1:3) = 0.0d0              ! grid extents [a.u.]
+    real(8), public:: radial_length = 0.0d0                 ! radial length [a.u.]
+    integer, public:: radial_nr_steps = 0                   ! number of steps for radial grids
     integer, public:: status = -1                           ! -1 = never used, 0 = ready to work on
     integer, public:: input = 0                             ! 0 = create, 1 = import from file, 2 = 'list', 3 = 'line', 4 = '2D', 5 = '3D'
     logical, public:: export = .false.                      ! also export to a separate file
-    integer, public:: typ = 0                               ! 0 = unknown, 1 = rectilinear, 2 = radial
+    integer, public:: typ = 0                               ! 0 = unknown, 1 = rectilinear uniform, 2 = radial
     integer, public:: weights = 0                           ! 0/1 = points w/wo weights
     real(8), public:: margin = 4.0d0                        ! margin [a.u.] to be added around molecule when creating the grid
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid import
@@ -551,59 +553,40 @@ contains
   subroutine display_grid(self,my_rank)
     class(grid_t), intent(in):: self
     integer, intent(in), optional:: my_rank
-    logical:: with_rank_info
-    integer::i, j
+    integer::i, j, my_rank_local
 
     if (self%id == 0) return
 
-    with_rank_info = .false.
-    if (present(my_rank)) with_rank_info = .true.
+    if (present(my_rank)) then
+      my_rank_local = my_rank
+    else
+      my_rank_local = 0
+    end if
 
     write(*, *)
-    write(*, *) ' VISUAL: grid'
-    if (with_rank_info) then
-      write(*, *) 'id =              ', self%id, my_rank
-      write(*, *) 'ndim =            ', self%ndim, my_rank 
-      write(*, *) 'nr_points       = ', (self%nr_points(i), i=1,3), my_rank
-      write(*, *) 'nr_points_total = ', self%nr_points_total, my_rank
-      write(*, *) 'origin [a.u.]     = ', (self%origin(i), i=1,3), my_rank
-      write(*, *) 'spacing [a.u.]    = ', (self%spacing(i), i=1,3), my_rank
-      write(*, *) 'extents [a.u.]    = ', (self%extents(0:1,i), i=1,3), my_rank
-      write(*, *) 'status =          ', self%status, my_rank
-      write(*, *) 'input =           ', self%input, my_rank
-      write(*, *) 'export =          ', self%export, my_rank
-      write(*, *) 'typ =             ', self%typ, my_rank
-      write(*, *) 'weights =         ', self%weights, my_rank
-      write(*, *) 'margin =          ', self%margin, my_rank
-      write(*, *) 'file_inp =        ', self%file_inp, my_rank
-      write(*, *) 'file_out =        ', self%file_out, my_rank
-      write(*, *) 'origin_known =    ', self%origin_known, my_rank
-      write(*, *) 'extents_known =   ', self%extents_known, my_rank
-      write(*, *) 'nr_points_total_known = ', self%nr_points_total_known, my_rank
-      write(*, *) 'nr_points_known(1:3) = ', (self%nr_points_known(i), i=1,3), my_rank
-      write(*, *) 'spacing_known(1:3) = ', (self%spacing_known(i), i=1,3), my_rank
-    else
-      write(*, *) 'id =              ', self%id
-      write(*, *) 'ndim =            ', self%ndim
-      write(*, *) 'nr_points       = ', (self%nr_points(i), i=1,3)
-      write(*, *) 'nr_points_total = ', self%nr_points_total
-      write(*, *) 'origin [a.u.]     = ', (self%origin(i), i=1,3)
-      write(*, *) 'spacing [a.u.]    = ', (self%spacing(i), i=1,3)
-      write(*, *) 'extents [a.u.]    = ', (self%extents(0:1,i), i=1,3)
-      write(*, *) 'status =          ', self%status
-      write(*, *) 'input =           ', self%input
-      write(*, *) 'export =          ', self%export
-      write(*, *) 'typ =             ', self%typ
-      write(*, *) 'weights =         ', self%weights
-      write(*, *) 'margin =          ', self%margin
-      write(*, *) 'file_inp =        ', self%file_inp
-      write(*, *) 'file_out =        ', self%file_out
-      write(*, *) 'origin_known =    ', self%origin_known
-      write(*, *) 'extents_known =   ', self%extents_known
-      write(*, *) 'nr_points_total_known = ', self%nr_points_total_known
-      write(*, *) 'nr_points_known(1:3) = ', (self%nr_points_known(i), i=1,3)
-      write(*, *) 'spacing_known(1:3) = ', (self%spacing_known(i), i=1,3)
-    end if
+    write(*, *) ' VISUAL: grid data on proc' 
+    write(*, *) '  id = ', self%id, my_rank_local
+    write(*, *) '  ndim = ', self%ndim, my_rank_local 
+    write(*, *) '  nr_points = ', (self%nr_points(i), i=1,3), my_rank_local
+    write(*, *) '  nr_points_total = ', self%nr_points_total, my_rank_local
+    write(*, *) '  origin [a.u.] = ', (self%origin(i), i=1,3), my_rank_local
+    write(*, *) '  spacing [a.u.] = ', (self%spacing(i), i=1,3), my_rank_local
+    write(*, *) '  extents [a.u.] = ', (self%extents(0:2,i), i=1,3), my_rank_local
+    write(*, *) '  radial_length [a.u.] = ', self%radial_length, my_rank_local
+    write(*, *) '  radial_nr_steps  = ', self%radial_nr_steps, my_rank_local
+    write(*, *) '  status = ', self%status, my_rank_local
+    write(*, *) '  input = ', self%input, my_rank_local
+    write(*, *) '  export = ', self%export, my_rank_local
+    write(*, *) '  typ = ', self%typ, my_rank_local
+    write(*, *) '  weights = ', self%weights, my_rank_local
+    write(*, *) '  margin = ', self%margin, my_rank_local
+    write(*, *) '  file_inp = ', self%file_inp, my_rank_local
+    write(*, *) '  file_out = ', self%file_out, my_rank_local
+    write(*, *) '  origin_known = ', self%origin_known, my_rank_local
+    write(*, *) '  extents_known = ', self%extents_known, my_rank_local
+    write(*, *) '  nr_points_total_known = ', self%nr_points_total_known, my_rank_local
+    write(*, *) '  nr_points_known(1:3) = ', (self%nr_points_known(i), i=1,3), my_rank_local
+    write(*, *) '  spacing_known(1:3) = ', (self%spacing_known(i), i=1,3), my_rank_local
     write(*, *)
    end subroutine
 
@@ -611,66 +594,46 @@ contains
   subroutine display_grid_function(self,my_rank)
     class(grid_function_t), intent(in):: self
     integer, intent(in), optional:: my_rank
-    logical:: with_rank_info
+    integer:: my_rank_local
 
     if (self%id == 0) return
 
-    with_rank_info = .false.
-    if (present(my_rank)) with_rank_info = .true.
+    if (present(my_rank)) then
+      my_rank_local = my_rank
+    else
+      my_rank_local = 0
+    end if
 
     write(*, *)
-    write(*, *) ' VISUAL: grid function'
-    if (with_rank_info) then
-      write(*, *) 'id =              ', self%id, my_rank
-      if (allocated(self%name)) write(*, *) 'name =            ', self%name, my_rank
-      write(*, *) 'status =          ', self%status, my_rank
-      write(*, *) 'input =           ', self%input, my_rank
-      write(*, *) 'export =          ', self%export, my_rank
-      write(*, *) 'wf_order =        ', self%wf_order, my_rank
-      write(*, *) 'rspvec_id =       ', self%rspvec_id, my_rank
-      write(*, *) 'nuc =             ', self%nuc, my_rank
-      write(*, *) 'lao =             ', self%lao, my_rank
-      write(*, *) 'lao_skip =        ', self%lao_skip, my_rank
-      write(*, *) 'lao_comp =        ', self%lao_comp, my_rank
-      write(*, *) 'tensor_order =    ', self%tensor_order, my_rank
-      write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order, my_rank
-      write(*, *) 'max_ao_m_order =  ', self%max_ao_m_order, my_rank
-      write(*, *) 'modify          = ', self%modify, my_rank
-      write(*, *) 'cartesian_power = ', self%cartesian_power, my_rank
-      write(*, *) 'up_scale        = ', self%up_scale, my_rank
-      write(*, *) 'down_scale      = ', self%down_scale, my_rank
-      write(*, *) 'id_assigned_grid =', self%id_assigned_grid, my_rank
-      write(*, *) 'purpose =         ', self%purpose, my_rank
-      if (allocated(self%rspvec_file)) write(*, *) 'rspvec_file =        ', self%rspvec_file, my_rank
-      if (allocated(self%gf_type)) write(*, *) 'gf_type =        ', self%gf_type, my_rank
-      if (allocated(self%file_inp)) write(*, *) 'file_inp =        ', self%file_inp, my_rank
-      if (allocated(self%file_out)) write(*, *) 'file_out =        ', self%file_out, my_rank
-    else
-      write(*, *) 'id =              ', self%id
-      if (allocated(self%name)) write(*, *) 'name =            ', self%name
-      write(*, *) 'status =          ', self%status
-      write(*, *) 'input =           ', self%input
-      write(*, *) 'export =          ', self%export
-      write(*, *) 'wf_order =        ', self%wf_order
-      write(*, *) 'rspvec_id =       ', self%rspvec_id
-      write(*, *) 'nuc =             ', self%nuc
-      write(*, *) 'lao =             ', self%lao
-      write(*, *) 'lao_skip =        ', self%lao_skip
-      write(*, *) 'lao_comp =        ', self%lao_comp
-      write(*, *) 'tensor_order =    ', self%tensor_order
-      write(*, *) 'max_ao_g_order =  ', self%max_ao_g_order
-      write(*, *) 'max_ao_m_order =  ', self%max_ao_m_order
-      write(*, *) 'modify          = ', self%modify
-      write(*, *) 'cartesian_power  = ', self%cartesian_power
-      write(*, *) 'up_scale         = ', self%up_scale
-      write(*, *) 'down_scale       = ', self%down_scale
-      write(*, *) 'id_assigned_grid =', self%id_assigned_grid
-      write(*, *) 'purpose =         ', self%purpose
-      if (allocated(self%rspvec_file)) write(*, *) 'rspvec_file =        ', self%rspvec_file
-      if (allocated(self%gf_type)) write(*, *) 'gf_type =        ', self%gf_type
-      if (allocated(self%file_inp)) write(*, *) 'file_inp =        ', self%file_inp
-      if (allocated(self%file_out)) write(*, *) 'file_out =        ', self%file_out
-    end if
+    write(*, *) ' VISUAL: grid function on proc'
+    write(*, *) '  id = ', self%id, my_rank_local
+    if (allocated(self%name)) write(*, *) 'name = ', self%name, my_rank_local
+    write(*, *) '  status = ', self%status, my_rank_local
+    write(*, *) '  input = ', self%input, my_rank_local
+    write(*, *) '  export = ', self%export, my_rank_local
+    write(*, *) '  wf_order = ', self%wf_order, my_rank_local
+    write(*, *) '  rspvec_id = ', self%rspvec_id, my_rank_local
+    write(*, *) '  nuc = ', self%nuc, my_rank_local
+    write(*, *) '  lao = ', self%lao, my_rank_local
+    write(*, *) '  lao_skip = ', self%lao_skip, my_rank_local
+    write(*, *) '  lao_comp = ', self%lao_comp, my_rank_local
+    write(*, *) '  tensor_order = ', self%tensor_order, my_rank_local
+    write(*, *) '  max_ao_g_order = ', self%max_ao_g_order, my_rank_local
+    write(*, *) '  max_ao_m_order = ', self%max_ao_m_order, my_rank_local
+    write(*, *) '  modify = ', self%modify, my_rank_local
+    write(*, *) '  cartesian_power = ', self%cartesian_power, my_rank_local
+    write(*, *) '  up_scale = ', self%up_scale, my_rank_local
+    write(*, *) '  down_scale = ', self%down_scale, my_rank_local
+    write(*, *) '  id_assigned_grid =', self%id_assigned_grid, my_rank_local
+    write(*, *) '  purpose = ', self%purpose, my_rank_local
+    if (allocated(self%rspvec_file)) &
+    write(*, *) '  rspvec_file = ', self%rspvec_file, my_rank_local
+    if (allocated(self%gf_type)) &
+    write(*, *) '  gf_type = ', self%gf_type, my_rank_local
+    if (allocated(self%file_inp)) &
+    write(*, *) '  file_inp = ', self%file_inp, my_rank_local
+    if (allocated(self%file_out)) &
+    write(*, *) '  file_out = ', self%file_out, my_rank_local
     write(*, *)
   end subroutine
 
@@ -678,23 +641,21 @@ contains
   subroutine display_grid_points(self,my_rank)
     class(grid_t), intent(in):: self
     integer, intent(in), optional:: my_rank
-    logical:: with_rank_info
-    integer::i
+    integer::i, my_rank_local
 
     if (self%id == 0) return
     if (.not. self%allocated_points()) return
 
-    with_rank_info = .false.
-    if (present(my_rank)) with_rank_info = .true.
+    if (present(my_rank)) then
+      my_rank_local = my_rank
+    else
+      my_rank_local = 0
+    end if
 
     write(*, *)
-    if (with_rank_info) then
-      write(*, *) ' GRID points (grid id = ):', self%id, my_rank
-      call print_rs_2d(self%points, self%ndim, self%nr_points_total, my_rank)
-    else
-      write(*, *) ' GRID points (grid id = ):', self%id
-      call print_rs_2d(self%points, self%ndim, self%nr_points_total)
-    end if
+    write(*, *) ' GRID points (grid id, proc):', self%id, my_rank_local
+    call print_rs_2d(self%points, &
+                     self%ndim, self%nr_points_total, my_rank_local)
   end subroutine
 
 ! ------------------------------------------------------------------------------
@@ -702,27 +663,22 @@ contains
     real(8), intent(in):: array(n, m)
     integer, intent(in):: n, m
     integer, intent(in), optional:: my_rank
-    logical:: with_rank_info
-    integer :: i, j
+    integer :: i, j, my_rank_local
 
-    with_rank_info = .false.
-    if (present(my_rank)) with_rank_info = .true.
-
-    if (with_rank_info) then
-      do j = 1, m
-        write(*, *) my_rank, (array(i, j), i = 1, n)
-      end do
+    if (present(my_rank)) then
+      my_rank_local = my_rank
     else
-      do j = 1, m
-        write(*, *) (array(i, j), i = 1, n)
-      end do
+      my_rank_local = 0
     end if
+
+    do j = 1, m
+      write(*, *) my_rank_local, (array(i, j), i = 1, n)
+    end do
   end subroutine
 
 
 
 ! ------------------------------------------------------------------------------
-!????????
   subroutine setup_orbital_string(self, &
                                   use_orbital_string, &
                                   occupation)
@@ -766,8 +722,6 @@ contains
     end do
 
   end subroutine
-
-
 
 ! ------------------------------------------------------------------------------
   subroutine setup_mo_offsets(self)
@@ -882,7 +836,4 @@ contains
 
 
   end subroutine
-
-
-
 end module
