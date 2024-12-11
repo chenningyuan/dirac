@@ -381,6 +381,58 @@ module exacorr_tensor_interface
           convert = ierr
         end function convert
 
+        ! c
+        function construct_tensor_t(tensor, datatype, extents, executor, init_val)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          integer, intent(in)    :: datatype ! 1=real double, 3 = complex double
+          integer(INTD), allocatable, optional :: extents(:)
+          integer, intent(in), optional    :: executor 
+          complex(c_double_complex), intent(in), optional    :: init_val
+
+          integer(INTD)       :: ierr, construct_tensor_t
+
+          if (present(executor)) tensor%which_executor = executor
+          tensor%datatype = datatype
+
+          SELECT CASE(tensor%which_executor)
+          CASE(1)
+            write(*,'("  Error. construct_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+          CASE(2)
+            ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents)
+          CASE default 
+            write(*,'("  Error. construct_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+             
+          END SELECT
+
+          construct_tensor_t = ierr
+        end function construct_tensor_t
+        ! c
+
+        function destroy_tensor_t(tensor)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+
+          integer(INTD)       :: ierr, destroy_tensor_t
+
+          SELECT CASE(tensor%which_executor)
+          CASE(1)
+            write(*,'("  Error. destroy_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+          CASE(2)
+            ierr=talsh_tensor_destruct(tensor%tens_talsh)
+          CASE default 
+            write(*,'("  Error. destroy_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+             
+          END SELECT
+
+          destroy_tensor_t = ierr
+        end function destroy_tensor_t
 
         ! external tensor body initialization/transformation (unary) method
         INTERFACE tensor_method_register

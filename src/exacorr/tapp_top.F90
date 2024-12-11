@@ -24,11 +24,11 @@ module tapp_top
           type(C_PTR) :: tensor_info  ! TAPP_tensor_info       
 
           ! TAPP reference implementation does not store data
-          complex(c_double_complex), allocatable, target :: data_complex(:) !Do not access in your code outside this file (and tapp_top)!
-          real(c_double),            allocatable, target :: data_real(:)    !Do not access in your code outside this file (and tapp_top)!
+          complex(c_double_complex), allocatable :: data_complex(:) !Do not access in your code outside this file (and tapp_top)!
+          real(c_double),            allocatable :: data_real(:)    !Do not access in your code outside this file (and tapp_top)!
           ! integer(c_int64_t),        allocatable, target :: tapp_tens_data_int64(:)   !Do not access in your code outside this file (and tapp_top)!
 
-          integer(kind(tensor_data_type)) :: datatype
+          integer(kind(TAPP_datatype)) :: datatype
         end type tapp_tensor_t
 
  contains
@@ -36,8 +36,8 @@ module tapp_top
  function tapp_einsum(D, arr_idx_D, op_D, A, arr_idx_A, op_A, B, arr_idx_B, op_B, C, arr_idx_C, op_C, &
                                        alpha, beta)
     implicit none
-    type(tapp_tensor_t), intent(inout)    :: D
-    type(tapp_tensor_t), intent(inout), optional    :: A, B, C
+    type(tapp_tensor_t), target, intent(inout)    :: D
+    type(tapp_tensor_t), target, intent(inout), optional    :: A, B, C
     integer(c_int64_t), allocatable, target, intent(in) :: arr_idx_D(:)
     integer(c_int64_t), allocatable, target, intent(in), optional :: arr_idx_A(:), &
       arr_idx_B(:), arr_idx_C(:)
@@ -55,12 +55,15 @@ module tapp_top
     ! TAPP_execute_product
     type(C_PTR) :: exec, status ! TAPP_executor, TAPP_status
     type(C_PTR):: A_, B_, C_, D_
+    complex(c_double_complex), target :: alpha_, beta_
     
     ! TAPP_create_tensor_info
     integer(c_int) :: datatype, nmodes ! datatype = TAPP_datatype
     type(C_PTR):: extents, strides
     real(c_double), target :: tmpr           ! just a temporary to make a scalar tensor
-    complex(c_double_complex) target :: tmpc ! just a temporary to make a scalar tensor
+    complex(c_double_complex), target :: tmpc ! just a temporary to make a scalar tensor
+    
+    integer :: i
 
     alpha_ = 1.0 ! default values of alpha and beta are 1.0
     beta_ = 1.0
@@ -141,13 +144,13 @@ module tapp_top
         stop 48
       end if
       if (D%datatype == 1 .and. allocated(D%data_real)) then
-        do i=1:size(D%data_real)
+        do i=1,size(D%data_real)
           D%data_real(i) = alpha_%re
         enddo
         tapp_einsum = tapp_err
         return
       elseif (D%datatype == 3 .and. allocated(D%data_complex)) then
-        do i=1:size(D%data_complex)
+        do i=1,size(D%data_complex)
           D%data_complex(i) = alpha_
         enddo
         tapp_einsum = tapp_err
@@ -711,7 +714,7 @@ module tapp_top
 
  function get_data_ptr(tensor)
     implicit none
-    type(tapp_tensor_t), intent(inout)    :: tensor
+    type(tapp_tensor_t), target, intent(inout)    :: tensor
     type(C_PTR):: get_data_ptr
     
     get_data_ptr = c_null_ptr
