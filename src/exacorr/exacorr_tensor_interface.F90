@@ -11,7 +11,7 @@ module exacorr_tensor_interface
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-        private
+!         private
 !PARAMETERS:
 !Generic:
         !integer, parameter, private:: REALD=8 ! default real for this module
@@ -30,7 +30,7 @@ module exacorr_tensor_interface
 
          integer(kind(TAPP_datatype)) :: datatype
 
-         integer, public:: which_executor = 1 !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
+         integer, public:: which_executor = 2 !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
          
         end type tensor_t
 
@@ -76,7 +76,12 @@ module exacorr_tensor_interface
                 END FUNCTION
         END INTERFACE
 
-        ! public contract
+        public t_einsum
+        public talsh_to_tensor_t
+        public tensor_t_to_talsh
+        public convert
+        public construct_tensor_t
+        public destroy_tensor_t
 
         contains
 
@@ -103,9 +108,10 @@ module exacorr_tensor_interface
                 integer(c_int64_t), allocatable, target :: arr_idx_A(:), arr_idx_B(:), arr_idx_C(:), arr_idx_D(:)
                 complex(c_double_complex)        :: alpha, beta
                 character(len=(len_trim(expression)+6))               :: contraction_str,addition_str
+                complex(8), parameter :: ONE_c=(1.D0,0.D0)
 
                 ! exatensor
-                type(tensor_t)                   :: one_tensor
+                type(tens_rcrsv_t)                   :: one_tensor
 
 
                 ! here the einsum_str has to be parsed to get indices and throw errors if any
@@ -162,20 +168,20 @@ module exacorr_tensor_interface
                           ! the case D=C has to be supported 
                           ! to.do check if complex conjugate works in copy 
                           ierr=split_DABC_expression_str(expression, op_C, contraction_str, addition_str)
-                          ierr=exatns_tensor_copy(trim(addition_str), d%tens_talsh,c%tens_talsh)
-                          ierr=exatns_tensor_scale(d%tens_talsh, beta)
+                          ierr=exatns_tensor_copy(trim(addition_str), d%tens_exatensor,c%tens_exatensor)
+                          ierr=exatns_tensor_scale(d%tens_exatensor, beta)
                           ierr=exatns_tensor_contract(trim(contraction_str),d%tens_exatensor,a%tens_exatensor, &
                                  b%tens_exatensor, prefactor=alpha)
                         elseif (present(a) .and. present(b)) then
                           ierr=exatns_tensor_contract(trim(expression),d%tens_exatensor,a%tens_exatensor, &
                                  b%tens_exatensor, prefactor=alpha)
                         elseif (present(a)) then
-                          ierr=exatns_tensor_create(one_tensor%tens_exatensor,"autokern_one_tensor",EXA_DATA_KIND_C8)
-                          ierr=exatns_tensor_init(one_tensor,1.0d0)
+                          ierr=exatns_tensor_create(one_tensor,"autokern_one_tensor",EXA_DATA_KIND_C8)
+                          ierr=exatns_tensor_init(one_tensor,ONE_c)
                           addition_str = trim(expression) // "*O01()"
-                          addition_str=exatns_tensor_contract(trim(addition_str), d%tens_exatensor, a%tens_exatensor, &
-                                         one_tensor%tens_exatensor, prefactor=alpha) 
-                          ierr=exatns_tensor_destroy(one_tensor%tens_exatensor)
+                          ierr=exatns_tensor_contract(trim(addition_str), d%tens_exatensor, a%tens_exatensor, &
+                                         one_tensor, prefactor=alpha) 
+                          ierr=exatns_tensor_destroy(one_tensor)
                         else
                           ierr=exatns_tensor_init(d%tens_exatensor, alpha)
                         endif
@@ -246,14 +252,15 @@ module exacorr_tensor_interface
           integer(c_int) :: dtype, nmodes, tapp_err
           integer(c_int64_t), allocatable, target :: extents(:), strides(:)
           integer(8) :: i, k, stride, numel
-          integer(INTD), allocatable, target :: out_dims(:)
+          integer(INTD), allocatable :: out_dims(:)
 
           complex(c_double_complex), allocatable, target :: arr_c(:)
           real(c_double), allocatable, target :: arr_r(:)
           integer(INTD), allocatable, target :: lin_dim(:)
-          complex(8), pointer  :: lin_tens_c(:)
-          real(8), pointer  :: lin_tens_r(:)
+          complex(8), pointer, contiguous  :: lin_tens_c(:)
+          real(8), pointer, contiguous  :: lin_tens_r(:)
           type(C_PTR) :: talshsptr
+          complex(8), parameter :: ZERO_c=(0.D0,0.D0)
            
           if (present(out_executor)) then
             out_tens%which_executor = out_executor
@@ -280,14 +287,14 @@ module exacorr_tensor_interface
               lin_dim(1) = numel
 
               if (out_tens%datatype == 1 ) then
-                ierr=talsh_tensor_construct(out_tens%tens_talsh, R8, out_dims, init_val=0.0)
+                ierr=talsh_tensor_construct(out_tens%tens_talsh, R8, out_dims, init_val=ZERO_c)
                 ierr=talsh_tensor_get_body_access(out_tens%tens_talsh,talshsptr,R8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
                 call dcopy(numel, in_tens%tens_tapp%data_real, 1, lin_tens_r, 1)
                 deallocate(in_tens%tens_tapp%data_real)
 
               elseif (out_tens%datatype == 3 ) then
-                ierr=talsh_tensor_construct(out_tens%tens_talsh, C8, out_dims, init_val=(0.D0,0.D0))
+                ierr=talsh_tensor_construct(out_tens%tens_talsh, C8, out_dims, init_val=ZERO_c)
                 ierr=talsh_tensor_get_body_access(out_tens%tens_talsh,talshsptr,C8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 call zcopy(numel, in_tens%tens_tapp%data_complex, 1, lin_tens_c, 1)
@@ -356,25 +363,28 @@ module exacorr_tensor_interface
           if (allocated(strides)) deallocate(strides)
           if (allocated(out_dims)) deallocate(out_dims)
           if (allocated(lin_dim)) deallocate(lin_dim)
-          if (allocated(lin_tens_r)) deallocate(lin_tens_r)
-          if (allocated(lin_tens_c)) deallocate(lin_tens_c)
+          ! if (allocated(lin_tens_r)) deallocate(lin_tens_r)
+          ! if (allocated(lin_tens_c)) deallocate(lin_tens_c)
 
           convert = ierr
         end function convert
 
         ! constructor for tensor_t
-        function construct_tensor_t(tensor, datatype, extents, executor, init_val)
+        function construct_tensor_t(tensor, datatype, extents, init_val, executor)
           implicit none
           type(tensor_t), intent(inout)    :: tensor
           integer, intent(in), optional    :: datatype ! 1=real double, 3 = complex double
-          integer(INTD), allocatable, intent(in), optional :: extents(:)
-          integer, intent(in), optional    :: executor 
+          integer(INTD), intent(in), optional :: extents(:)
+          ! integer(INTD), pointer, intent(in), optional :: extents(:)     
+          integer(INTD), allocatable :: out_dims(:)
           complex(c_double_complex), intent(in), optional    :: init_val
           complex(c_double_complex)     :: init_val_
+          integer, intent(in), optional    :: executor 
 
           integer(INTD)       :: ierr, construct_tensor_t
           integer(c_int)       :: tapp_err
           integer(c_int64_t), allocatable :: extents_(:)
+          integer(INTD) :: extents_scalar(1)
 
           if (present(executor)) tensor%which_executor = executor
 
@@ -382,22 +392,37 @@ module exacorr_tensor_interface
           if (present(init_val)) init_val_ = init_val
           
           if (present(datatype)) tensor%datatype = datatype
-          if (tensor%datatype == C8) then
-            tensor%datatype = 3
-          elseif (tensor%datatype == R8) then
+          if (tensor%datatype == R8) then
             tensor%datatype = 1
+          elseif (tensor%datatype == C8) then
+            tensor%datatype = 3
           endif
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
+            if(.not. present(extents)) then ! scalar
+              tapp_err=construct_tapp_tensor_t(tensor%tens_tapp, tensor%datatype, init_val=init_val_)
+            else
+              allocate(extents_(size(extents)))
               extents_ = int(extents, kind=8)
-              tapp_err=construct_tapp_tensor_t(tensor%tens_tapp, tensor%datatype, extents_, init_val)
-              ierr = tapp_err
+              tapp_err=construct_tapp_tensor_t(tensor%tens_tapp, tensor%datatype, extents_, init_val_)
+              deallocate(extents_)
+            endif
+            ierr = tapp_err
           CASE(2)
-            if (tensor%datatype == 3) then
-              ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents, init_val=init_val)
-            elseif (tensor%datatype == 1) then
-              ierr=talsh_tensor_construct(tensor%tens_talsh, R8, extents, init_val=init_val%re)
+            extents_scalar = 1
+            if (tensor%datatype == 1) then
+              if(.not. present(extents)) then ! scalar
+                ierr=talsh_tensor_construct(tensor%tens_talsh, R8, extents_scalar(1:0), init_val=init_val_)
+              else
+                ierr=talsh_tensor_construct(tensor%tens_talsh, R8, extents, init_val=init_val_)
+              endif
+            elseif (tensor%datatype == 3) then
+              if(.not. present(extents)) then ! scalar
+                ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents_scalar(1:0), init_val=init_val_)
+              else
+                ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents, init_val=init_val_)
+              endif
             endif
           CASE default 
             write(*,'("  Error. construct_tensor_t for executor ",i11," not yet implemented.")') &
