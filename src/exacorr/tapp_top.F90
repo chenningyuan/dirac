@@ -174,7 +174,7 @@ module tapp_top
     exec = c_null_ptr ! executor library, in case TAPP works with multiple executors at the same time
 
     ! execute the contraction plan
-    tapp_err = TAPP_execute_product(plan, exec, status, c_loc(alpha_), A_, B_, c_loc(alpha_), C_, D_) ! diff between plan par here and elsewhere?
+    tapp_err = TAPP_execute_product(plan, exec, status, c_loc(alpha_), A_, B_, c_loc(beta_), C_, D_) ! diff between plan par here and elsewhere?
 
     if (tapp_err.ne.0) then
       write(*,'("  Error. TAPP tensor product failed with error code: ",i11,".")') tapp_err

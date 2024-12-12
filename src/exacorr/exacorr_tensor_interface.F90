@@ -247,11 +247,10 @@ module exacorr_tensor_interface
           integer, intent(in), optional:: out_executor 
           integer(INTD)       :: ierr, convert
           integer             :: in_out_exec
-          ! TAPP_create_tensor_info
-          type(C_PTR) :: info
-          integer(c_int) :: dtype, nmodes, tapp_err
-          integer(c_int64_t), allocatable, target :: extents(:), strides(:)
-          integer(8) :: i, k, stride, numel
+
+          integer(c_int) :: tapp_err, nmodes
+          integer(c_int64_t), allocatable, target :: extents(:)
+          integer(8) :: i, numel
           integer(INTD), allocatable :: out_dims(:)
 
           complex(c_double_complex), allocatable, target :: arr_c(:)
@@ -272,29 +271,34 @@ module exacorr_tensor_interface
           SELECT CASE( in_out_exec) ! e.g. 201 means convert from exec 2 to 1 
             CASE(102) 
               nmodes = TAPP_get_nmodes(in_tens%tens_tapp%tensor_info)
-              
-              ! to.do replace with unified get_dims
-              allocate(extents(nmodes))
-              call TAPP_get_extents(in_tens%tens_tapp%tensor_info, c_loc(extents(1)))
               numel = 1
-              do i=1,nmodes
-                numel = numel * extents(i)
-              enddo
-              
-              allocate(out_dims(nmodes))
-              out_dims = int(extents, kind=INTD)
+              if (nmodes == 0) then !scalar
+                allocate(extents(1))
+                extents = 1
+                ierr = construct_tensor_t(out_tens, out_tens%datatype, executor=out_tens%which_executor)
+              else
+                ! to.do replace with unified get_dims
+                allocate(extents(nmodes))
+                call TAPP_get_extents(in_tens%tens_tapp%tensor_info, c_loc(extents(1)))
+
+                allocate(out_dims(nmodes))
+                out_dims = int(extents, kind=INTD)
+                do i=1,nmodes
+                  numel = numel * out_dims(i)
+                enddo
+                ierr = construct_tensor_t(out_tens, out_tens%datatype, out_dims, executor=out_tens%which_executor)
+              endif
+
               allocate(lin_dim(1))
               lin_dim(1) = numel
 
               if (out_tens%datatype == 1 ) then
-                ierr=talsh_tensor_construct(out_tens%tens_talsh, R8, out_dims, init_val=ZERO_c)
                 ierr=talsh_tensor_get_body_access(out_tens%tens_talsh,talshsptr,R8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
                 call dcopy(numel, in_tens%tens_tapp%data_real, 1, lin_tens_r, 1)
                 deallocate(in_tens%tens_tapp%data_real)
 
               elseif (out_tens%datatype == 3 ) then
-                ierr=talsh_tensor_construct(out_tens%tens_talsh, C8, out_dims, init_val=ZERO_c)
                 ierr=talsh_tensor_get_body_access(out_tens%tens_talsh,talshsptr,C8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 call zcopy(numel, in_tens%tens_tapp%data_complex, 1, lin_tens_c, 1)
@@ -305,32 +309,25 @@ module exacorr_tensor_interface
 
             CASE(201) 
               nmodes = talsh_tensor_rank(in_tens%tens_talsh)
-              allocate(out_dims(nmodes))
-              ierr = talsh_tensor_dimensions(in_tens%tens_talsh,nmodes,out_dims)
-              
-              allocate(extents(nmodes), strides(nmodes))
-              extents = int(out_dims, kind=8)
-              
-              ! to.do replace with unified create_tensor
               numel = 1
-              do i=1,nmodes
-                stride = 1
-                do k=1,i-1
-                  stride = stride * extents(k)
+              if (nmodes == 0) then !scalar
+                allocate(out_dims(1))
+                out_dims = 1
+                ierr = construct_tensor_t(out_tens, out_tens%datatype, executor=out_tens%which_executor)
+              else
+                allocate(out_dims(nmodes))
+                ierr = talsh_tensor_dimensions(in_tens%tens_talsh,nmodes,out_dims)
+              
+                do i=1,nmodes
+                  numel = numel * out_dims(i)
                 enddo
-                strides(i) = stride
-                numel = numel * extents(i)
-              enddo
-              
-              dtype = out_tens%datatype
-              
-              tapp_err = TAPP_create_tensor_info(out_tens%tens_tapp%tensor_info, dtype, nmodes, &
-                            c_loc(extents(1)), c_loc(strides(1)))
-              if (tapp_err.ne.0) then
-                write(*,'("  Error. Creating TAPP tensor info failed with error code: ",i11,".")') tapp_err
-                stop 40
+                ierr = construct_tensor_t(out_tens, out_tens%datatype, out_dims, executor=out_tens%which_executor)
+              endif
+              if (ierr.ne.0) then
+                write(*,'("  Error. Converting tensor_t failed with error code: ",i11,".")') ierr
+                stop 53
               end if
-
+              
               ! copy data
               allocate(lin_dim(1))
               lin_dim(1) = numel
@@ -360,7 +357,6 @@ module exacorr_tensor_interface
           END SELECT
 
           if (allocated(extents)) deallocate(extents)
-          if (allocated(strides)) deallocate(strides)
           if (allocated(out_dims)) deallocate(out_dims)
           if (allocated(lin_dim)) deallocate(lin_dim)
           ! if (allocated(lin_tens_r)) deallocate(lin_tens_r)
