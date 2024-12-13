@@ -1,8 +1,17 @@
 $ Relativistic prolapse-free Gaussian basis sets of double-zeta quality:  RPF-2Z
 $
 $  REFERENCE
-$  J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke.
-$        J. Chem. Theory Comput. 20 (2024) 9991.
+$
+$ Primitives:               E. F. Gusmão and R. L. A. Haiduke,
+$                           J. Comput. Chem. 43 (2022) 1901-1910.
+$                           E. F. Gusmão and R. L. A. Haiduke,
+$                           J. Comput. Chem. 44 (2023) 2478-2485.
+$                           A. K. N. R. Dias, J. S. Sousa, E. F. Gusmão, and R. L. A. Haiduke,
+$                           (2024), unpublished.
+$ s- and p-block elements:  J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke,
+$                           J. Chem. Theory Comput. 20 (2024) 9991−9998.
+$ d-block elements:
+$ f-block elements:
 $
 $
 a 1
