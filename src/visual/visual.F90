@@ -163,6 +163,7 @@ contains
     type(grid_t), allocatable:: grids(:)
     type(grid_function_t), allocatable:: grid_functions(:)
     real(8), allocatable:: grid_function_values(:,:)
+    real(8), allocatable:: grid_function_integrated_values(:)
     integer:: ig, igf
     integer:: g_ndim, gf_ndim, npoints
     integer:: my_rank
@@ -179,6 +180,7 @@ contains
 
       if (mpi_is_master()) then
         call get_grid_info(ig, rs_input%grids(ig), mol)
+        call rs_input%grids(ig)%display
       end if
 #ifdef VAR_MPI
       if (is_parallel()) call synchronize_grid_data(rs_input%grids(ig))
@@ -190,6 +192,14 @@ contains
       if (.not. rs_input%grids(ig)%allocated_points()) then
         allocate(rs_input%grids(ig)%points(g_ndim, npoints))
         rs_input%grids(ig)%points = 0.0d0
+      end if
+
+      if (rs_input%grids(ig)%typ == 2) then
+!       if radial grid, allocate weights by default
+        if (.not. rs_input%grids(ig)%allocated_weights()) then
+          allocate(rs_input%grids(ig)%weights(npoints))
+          rs_input%grids(ig)%weights = 0.0d0
+        end if
       end if
 
 !
@@ -206,10 +216,12 @@ contains
       if (mpi_is_master()) then
         call get_grid_points(rs_input%grids(ig))
         if (rs_input%print_level > 1) then
-          write(*, *) 'Grid points of grid ', ig
           do j = 1, npoints
-            write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
-            !write(*, '(3es28.18e2)') (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
+            if (rs_input%grids(ig)%typ == 2) then
+              write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim), rs_input%grids(ig)%weights(j)
+            else
+              write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
+            end if
           end do
         end if
       end if
@@ -326,6 +338,11 @@ contains
                          rs_input%grids(ig)%points(idim_grid,:), &
                          npoints, n_this_proc)
             end do
+            if (rs_input%grids(ig)%allocated_weights()) then
+              call visual_interface_mpi_distribute_points(&
+                         rs_input%grids(ig)%weights(:), &
+                         npoints, n_this_proc)
+            end if
           end if
 #endif
 
@@ -337,30 +354,47 @@ contains
 
           allocate(grid_function_values(gf_ndim, n_this_proc))
           grid_function_values = 0.0d0
+          if (rs_input%grid_functions(igf)%purpose == 1) then
+            allocate(grid_function_integrated_values(gf_ndim))
+            grid_function_integrated_values = 0.0d0
+          end if
  
-          ! gosia todo:
-          ! add "visualize"/"integrate" procedures in this call; now - visualization only
-          !
-          call work_on_grid(g_ndim, n_this_proc, &
-                            mol,&
-                            rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
-                            rs_input%grid_functions(igf), &
-                            grid_function_values, &
-                            dmat_0,           &
-                            dmat,           &
-                            ao, buffer)
+          if (rs_input%grid_functions(igf)%purpose == 1) then
+            call work_on_grid(g_ndim, n_this_proc, &
+                              mol,&
+                              rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
+                              rs_input%grid_functions(igf), &
+                              grid_function_values, &
+                              dmat_0,           &
+                              dmat,           &
+                              ao, buffer, &
+                              rs_input%grids(ig)%weights(1:n_this_proc), &
+                              grid_function_integrated_values)
+          else
+            call work_on_grid(g_ndim, n_this_proc, &
+                              mol,&
+                              rs_input%grids(ig)%points(1:g_ndim,1:n_this_proc), &
+                              rs_input%grid_functions(igf), &
+                              grid_function_values, &
+                              dmat_0,           &
+                              dmat,           &
+                              ao, buffer)
+          end if
 
           deallocate(ao)
           deallocate(buffer)
 
           allocate(rs_input%grid_functions(igf)%values(gf_ndim, npoints))
           rs_input%grid_functions(igf)%values = 0.0d0
-
+          if (rs_input%grid_functions(igf)%purpose == 1) then
+            allocate(rs_input%grid_functions(igf)%integrated_values(gf_ndim))
+            rs_input%grid_functions(igf)%integrated_values = 0.0d0
+          end if
+ 
           if (rs_input%print_level > 1) then
             write(*, *) 'Grid_function values on this proc: '
             do j = 1, n_this_proc
               write(*, *) 'values: ', j, (grid_function_values(i,j),i=1,gf_ndim)
-              !write(*, '(a,i4,3es28.18e2)') 'values: ', j, (grid_function_values(i,j),i=1,gf_ndim)
             end do
           end if
  
@@ -370,26 +404,46 @@ contains
               call visual_interface_mpi_gatherv(grid_function_values(idim_gf,:),&
                                                 rs_input%grid_functions(igf)%values(idim_gf,:),&
                                                 n_this_proc)
+              if (rs_input%grid_functions(igf)%purpose == 1) then
+                call visual_interface_mpi_reduce(&
+                             grid_function_integrated_values(idim_gf), &
+                             rs_input%grid_functions(igf)%integrated_values(idim_gf))
+              end if
             end do
           else
             do idim_gf = 1, gf_ndim
               rs_input%grid_functions(igf)%values(idim_gf,:) = grid_function_values(idim_gf,:)
+              if (rs_input%grid_functions(igf)%purpose == 1) then
+                rs_input%grid_functions(igf)%integrated_values(idim_gf) = &
+                         grid_function_integrated_values(idim_gf)
+              end if
             end do
           end if
 #else
-            do idim_gf = 1, gf_ndim
-              rs_input%grid_functions(igf)%values(idim_gf,:) = grid_function_values(idim_gf,:)
-            end do
+          do idim_gf = 1, gf_ndim
+            rs_input%grid_functions(igf)%values(idim_gf,:) = grid_function_values(idim_gf,:)
+              if (rs_input%grid_functions(igf)%purpose == 1) then
+                rs_input%grid_functions(igf)%integrated_values(idim_gf) = &
+                         grid_function_integrated_values(idim_gf)
+              end if
+          end do
 #endif
 
           if (mpi_is_master()) then
             if (rs_input%print_level > 1) then
               write(*, *) 'Grid_function values on master, after gather: '
-              write(*, *) 'values: ', j, (rs_input%grid_functions(igf)%values(i,j),i=1,gf_ndim)
+              write(*, *) 'values: ', i,j, (rs_input%grid_functions(igf)%values(i,j),i=1,gf_ndim)
+              if (rs_input%grid_functions(igf)%purpose == 1) then
+                write(*, *) 'integrated values: ', i, (rs_input%grid_functions(igf)%integrated_values(i),i=1,gf_ndim)
+              end if
             end if
           end if
- 
+
           deallocate(grid_function_values)
+          if (rs_input%grid_functions(igf)%purpose == 1) then
+            deallocate(grid_function_integrated_values)
+          end if
+ 
           call dmat%erase()
 
 !
@@ -402,7 +456,10 @@ contains
              end if
           end if
 
-          if (allocated(rs_input%grid_functions(igf)%values))   deallocate(rs_input%grid_functions(igf)%values)
+          if (rs_input%grid_functions(igf)%allocated_values()) &
+                        deallocate(rs_input%grid_functions(igf)%values)
+          if (rs_input%grid_functions(igf)%allocated_integrated_values()) &
+                        deallocate(rs_input%grid_functions(igf)%integrated_values)
         end if ! if (rs_input%grid_functions(igf)%id_assigned_grid == ig) then
 
         if (.not. mpi_is_master()) then
@@ -413,7 +470,8 @@ contains
 
       end do ! do igf = 1, rs_input%nr_grid_functions
 
-      if (allocated(rs_input%grids(ig)%points)) deallocate(rs_input%grids(ig)%points)
+      if (rs_input%grids(ig)%allocated_points()) deallocate(rs_input%grids(ig)%points)
+      if (rs_input%grids(ig)%allocated_weights()) deallocate(rs_input%grids(ig)%weights)
       if (allocated(rs_input%grids(ig)%file_inp)) deallocate(rs_input%grids(ig)%file_inp)
       if (allocated(rs_input%grids(ig)%file_out)) deallocate(rs_input%grids(ig)%file_out)
 
@@ -438,7 +496,9 @@ contains
                           grid_function_values, &
                           dmat_0,     &
                           dmat,     &
-                          ao, buffer)
+                          ao, buffer, &
+                          grid_weights, &
+                          grid_function_integrated_values)
 
     integer, intent(in):: ndim
     integer, intent(in):: nr_points
@@ -446,6 +506,8 @@ contains
     type(mol_t), intent(in):: mol
     type(grid_function_t), intent(inout):: grid_function
     real(8), intent(out):: grid_function_values(:,:)
+    real(8), intent(in), optional:: grid_weights(nr_points)
+    real(8), intent(out), optional:: grid_function_integrated_values(:)
     type(dmat_t), intent(in):: dmat_0
     type(dmat_t), intent(in):: dmat
     real(8), intent(inout):: ao(*)
@@ -525,6 +587,12 @@ contains
                                                   mol,&
                                                   ipoint=ipoint)
         end select
+
+        if (grid_function%purpose == 1) then
+          !call daxpy(ndim,1.0d0,grid_weights(ipoint),1,grid_function_integrated_values,1)
+          grid_function_integrated_values(1:ndim) = grid_function_integrated_values(1:ndim) &
+                                                  + grid_function_values(1:ndim,ipoint)*grid_weights(ipoint)
+        end if
 
       
       end do

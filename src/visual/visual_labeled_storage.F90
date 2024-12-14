@@ -10,6 +10,7 @@ module visual_labeled_storage
   public write_grid_function_to_checkpoint
   public get_grid_info_from_labeled_storage
   public get_grid_points_from_labeled_storage
+  public get_grid_weights_from_labeled_storage
   public get_grid_function_info_from_labeled_storage
 
   private
@@ -34,12 +35,12 @@ contains
 
     select case (grid_function%purpose)
       case (0)
-        l2 = l1 // "/visualize"
+        l2 = l1 // "/visualization"
+        l3 = l2 // '/values'
       case (1)
-        l2 = l1 // "/integrate"
+        l2 = l1 // "/integration"
+        l3 = l2 // '/integrated_values'
     end select
-
-    l3 = l2 // '/values'
 
     write(temp, '(i1)') grid_function%tensor_order
 
@@ -124,6 +125,9 @@ contains
       write(ich, '(i1)') i
       call lab_write(data_file, trim(group)//'/coor_'//trim(ich), rdata = grid%points(i, :))
     end do
+    if (grid%allocated_weights()) then
+      call lab_write(data_file, trim(group)//'/weights', rdata = grid%weights(:))
+    end if
   end subroutine
 
 
@@ -144,7 +148,14 @@ contains
     group = label%name
     do i = 1, grid_function%get_ndim()
       write(ich, '(i1)') i
-      call lab_write(data_file, group//'_icomp_'//ich, rdata = grid_function%values(i, :))
+      if (grid_function%allocated_values()) then
+        call lab_write(data_file, group//'_icomp_'//ich, &
+             rdata = grid_function%values(i, :))
+      end if
+      if (grid_function%allocated_integrated_values()) then
+        call lab_write(data_file, group//'_icomp_'//ich, &
+             rdata = grid_function%integrated_values(i))
+      end if
     end do
   end subroutine
 
@@ -197,6 +208,24 @@ contains
       write(*,*) 'will read ', trim(group)//'/coor_'//trim(ich), ' from ', data_file%name
       call lab_read(data_file, trim(group)//'/coor_'//trim(ich), rdata = grid%points(i,:))
     end do
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine get_grid_weights_from_labeled_storage(data_file, grid)
+    ! gosia todo:
+    ! - add support for other formats (now, hdf5 format only: data_file%type = 2)
+    ! - check whether "grid" group is under "input" or "result"
+    type(file_info_t), intent(inout):: data_file
+    type(grid_t), intent(inout):: grid
+    type(rs_label_t)::label
+    integer:: i
+    character*(:), allocatable  :: group
+    character(len=1):: ich
+!   ----------------------------------------------------------------------------
+    call assign_label_grid(grid, label, top_section='result', level=2)
+    group = label%name
+    write(*,*) 'will read ', trim(group)//'/coor_'//trim(ich), ' from ', data_file%name
+    call lab_read(data_file, trim(group)//'/weights', rdata = grid%weights(:))
   end subroutine
 
 

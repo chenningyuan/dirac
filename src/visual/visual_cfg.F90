@@ -13,6 +13,7 @@ module visual_cfg
   public grid_function_input_cfg
   public verify_grid_input_cfg
   public verify_grid_function_input_cfg
+  public verify_grid_and_grid_function_input_cfg
 
 #ifdef VAR_MPI
   public sync_visual_cfg
@@ -90,23 +91,13 @@ contains
         else if (lowercase(val) == '3d') then
           grid%input = 5
         else if (lowercase(val) == 'radial') then
-          grid%input = 5  !only 3d radial grids
+          grid%input = 5         !only 3d radial grids
         else
           write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"/"list"/"line"/"2d"/"3d"/"radial"'
           stop
         end if
       case ('typ')
         call str2int(val, grid%typ, stat)
-!fixme
-      case ('weights')
-        if (val == 'no') then
-          grid%weights = 0
-        else if (val == 'yes') then
-          grid%weights = 1
-        else
-          write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
-          stop
-        end if
       case ('margin')
 !       units: a.u.
         call str2flt(val, grid%margin, stat)
@@ -116,7 +107,7 @@ contains
         else if (lowercase(val) == 'yes') then
           grid%export = .true.
         else
-          write(*, *) 'wrong argument; argument to "weights" must be one of "yes"/"no"}'
+          write(*, *) 'wrong argument; argument to "export" must be one of "yes"/"no"}'
           stop
         end if
       case ('file_inp')
@@ -368,6 +359,24 @@ contains
 
   end subroutine verify_grid_function_input_cfg
 
+
+! ------------------------------------------------------------------------------
+  subroutine verify_grid_and_grid_function_input_cfg()
+    integer::ig,igf
+
+    do ig = 1, rs_input%nr_grids
+      do igf = 1, rs_input%nr_grid_functions
+        if (rs_input%grid_functions(igf)%id_assigned_grid == rs_input%grids(ig)%id) then 
+          if (rs_input%grid_functions(igf)%purpose == 1) then
+            if (rs_input%grids(ig)%typ /= 2) then 
+              write(*,*) 'integration possible only on 3d radial grid. stop'
+              stop
+            end if
+          end if
+        end if
+      end do
+    end do
+  end subroutine
 
 ! ------------------------------------------------------------------------------
   subroutine grid_function_input_cfg(key, val, grid_function, id_grid_function)

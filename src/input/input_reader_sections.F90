@@ -439,6 +439,8 @@
          end do
       end if
 
+      call verify_grid_and_grid_function_input_cfg()
+      
       call check_whether_kw_found(word, kw_section)
 
    end subroutine

@@ -21,10 +21,15 @@ module visual_mpi
   public get_my_rank
   public visual_interface_mpi_gatherv
   public visual_interface_mpi_distribute_points
+  public visual_interface_mpi_reduce
 
   interface visual_interface_mpi_distribute_points
     module procedure mpi_distribute_r1
     module procedure mpi_distribute_r3
+  end interface
+
+  interface visual_interface_mpi_reduce
+    module procedure mpi_reduce_r0
   end interface
 #endif
 
@@ -71,6 +76,13 @@ contains
 #endif
 
 #ifdef VAR_MPI
+  subroutine mpi_reduce_r0(x, y)
+    real(8):: x, y
+
+    call interface_mpi_reduce(x,y,1,op_mpi_sum,&
+                              irank_master,global_communicator)
+  end subroutine
+
   subroutine visual_interface_mpi_gatherv(x, y, n)
     real(8):: x(:), y(:)
     integer, intent(in):: n

@@ -125,6 +125,9 @@ contains
     select case (data_file%type)
       case (2)
         call get_grid_points_from_labeled_storage(data_file, grid)
+        if (grid%allocated_weights()) then
+          call get_grid_weights_from_labeled_storage(data_file, grid)
+        end if
       case default
         call visual_quit('programming error in get_grid_points_from_file; unsupported file type')
     end select

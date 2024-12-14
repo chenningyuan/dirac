@@ -118,6 +118,7 @@ use num_grid_cfg
         rad = (istep-1)*radial_spacing
         do i = 1, m
           grid%points(1:3, ipoint) = grid%origin(1:3) + rad*temp(i, 1:3)
+          if (grid%allocated_weights()) grid%weights(ipoint) = temp(i, 4)
           ipoint = ipoint + 1
         end do
       end do

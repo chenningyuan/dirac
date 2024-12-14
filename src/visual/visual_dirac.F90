@@ -768,7 +768,6 @@ contains
     call interface_mpi_bcast(grid%input,1,irank_master,global_communicator)
     call interface_mpi_bcast_l0(grid%export,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%typ,1,irank_master,global_communicator)
-    call interface_mpi_bcast(grid%weights,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%margin,1,irank_master,global_communicator)
     call interface_mpi_bcast_l0(grid%origin_known,1,irank_master,global_communicator)
     call interface_mpi_bcast_l0(grid%extents_known,1,irank_master,global_communicator)

@@ -119,11 +119,11 @@ module visual_datatypes
     integer, public:: input = 0                             ! 0 = create, 1 = import from file, 2 = 'list', 3 = 'line', 4 = '2D', 5 = '3D'
     logical, public:: export = .false.                      ! also export to a separate file
     integer, public:: typ = 0                               ! 0 = unknown, 1 = rectilinear uniform, 2 = radial
-    integer, public:: weights = 0                           ! 0/1 = points w/wo weights
     real(8), public:: margin = 4.0d0                        ! margin [a.u.] to be added around molecule when creating the grid
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid import
     character(len=:), public, allocatable:: file_out        ! name of a file for grid export
     real(8), public, allocatable:: points(:,:)
+    real(8), public, allocatable:: weights(:)
     logical, public:: origin_known = .false.
     logical, public:: extents_known = .false.
     logical, public:: nr_points_total_known = .false.
@@ -132,9 +132,11 @@ module visual_datatypes
   contains
     private
     procedure, pass, public:: allocated_points
+    procedure, pass, public:: allocated_weights
     procedure, pass, public:: erase   => erase_grid
     procedure, pass, public:: display => display_grid
     procedure, pass, public:: display_points => display_grid_points
+    procedure, pass, public:: display_weights => display_grid_weights
   end type grid_t
 
   type:: grid_function_t
@@ -163,11 +165,13 @@ module visual_datatypes
     character(len=:), public, allocatable:: gf_type         ! must be one of: "unperturbed", "response", "composite"
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid function import
     character(len=:), public, allocatable:: file_out        ! name of a file for grid function export
+    real(8), public, allocatable:: integrated_values(:)
     real(8), public, allocatable:: values(:,:)
     logical, public:: composite = .false. ! is a sum of a few contributions (e.g., depends on a few density matrices)
   contains
     private
     procedure, pass, public:: assigned_to_grid
+    procedure, pass, public:: allocated_integrated_values
     procedure, pass, public:: allocated_values
     procedure, pass, public:: get_ndim
     procedure, pass, public:: get_npoints
@@ -233,10 +237,24 @@ contains
   end function
 
 ! ------------------------------------------------------------------------------
+  pure function allocated_weights(self)
+    class(grid_t), intent(in):: self
+    logical:: allocated_weights
+    allocated_weights = allocated(self%weights)
+  end function
+
+! ------------------------------------------------------------------------------
   pure function allocated_values(self)
     class(grid_function_t), intent(in):: self
     logical:: allocated_values
     allocated_values = allocated(self%values)
+  end function
+
+! ------------------------------------------------------------------------------
+  pure function allocated_integrated_values(self)
+    class(grid_function_t), intent(in):: self
+    logical:: allocated_integrated_values
+    allocated_integrated_values = allocated(self%integrated_values)
   end function
 
 ! ------------------------------------------------------------------------------
@@ -578,7 +596,6 @@ contains
     write(*, *) '  input = ', self%input, my_rank_local
     write(*, *) '  export = ', self%export, my_rank_local
     write(*, *) '  typ = ', self%typ, my_rank_local
-    write(*, *) '  weights = ', self%weights, my_rank_local
     write(*, *) '  margin = ', self%margin, my_rank_local
     write(*, *) '  file_inp = ', self%file_inp, my_rank_local
     write(*, *) '  file_out = ', self%file_out, my_rank_local
@@ -656,6 +673,27 @@ contains
     write(*, *) ' GRID points (grid id, proc):', self%id, my_rank_local
     call print_rs_2d(self%points, &
                      self%ndim, self%nr_points_total, my_rank_local)
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine display_grid_weights(self,my_rank)
+    class(grid_t), intent(in):: self
+    integer, intent(in), optional:: my_rank
+    integer::i, my_rank_local
+
+    if (self%id == 0) return
+    if (.not. self%allocated_weights()) return
+
+    if (present(my_rank)) then
+      my_rank_local = my_rank
+    else
+      my_rank_local = 0
+    end if
+
+    write(*, *)
+    write(*, *) ' GRID weights (grid id, proc):', self%id, my_rank_local
+    call print_rs_2d(self%weights, &
+                     1, self%nr_points_total, my_rank_local)
   end subroutine
 
 ! ------------------------------------------------------------------------------
