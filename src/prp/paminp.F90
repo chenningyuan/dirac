@@ -2012,6 +2012,11 @@
       ELSE IF(LABINT(1:3).EQ.'NEF') THEN
         CLASLB = 'NEFIELD'
 !
+!     Electric field at the individual nuclei
+!
+      ELSE IF(LABINT(1:4).EQ.'EFNU') THEN
+        CLASLB = 'NEFNUC'
+!
 !     traceless electric field third derivatives
 !
       ELSE IF(LABINT(5:5).EQ.'V') THEN
