@@ -403,6 +403,11 @@ C     type 58 already defined (NUCFIEL)
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.80) THEN
+         JMAXD = 0
+         JMAXM = 0
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
 
       else if (inttyp == 100) then
 !        g1o
@@ -820,6 +825,7 @@ C
      &                    .OR. (INTTYP .EQ. 56)
      &                    .OR. (INTTYP .EQ. 57)
      &                    .or. (inttyp == 101)
+     &                    .OR. (INTTYP .EQ. 80)
      &                    .OR. (INTTYP .EQ. 62)) THEN
          JMAX = NHKTA + NHKTB - 2
          IF (INTTYP .EQ.  5) JMAX = JMAX + 1
@@ -845,6 +851,7 @@ C
          IF (INTTYP .EQ. 56) JMAX = JMAX + 4
          IF (INTTYP .EQ. 57) JMAX = JMAX + 4
          IF (INTTYP .EQ. 58) JMAX = JMAX + 1
+         IF (INTTYP .EQ. 80) JMAX = JMAX + 1
          if (inttyp == 101) jmax = jmax + 1
          IF (INTTYP .EQ. 203) JMAX = JMAX + 1 ! RM1H2
          IF (INTTYP .EQ. 204) JMAX = JMAX + 2 ! RNST
@@ -974,7 +981,7 @@ C
             CALL NSTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IORBA,IORBB,NBAST,INTTYP,
      &                  IPRINT,INTADR)
-         ELSE IF (INTTYP .EQ. 29) THEN
+         ELSE IF ((INTTYP .EQ. 29) .OR. (INTTYP .EQ. 80)) THEN
             CALL EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
          ELSE IF (INTTYP .EQ. 30 .OR. INTTYP .EQ. 31) THEN
@@ -1226,7 +1233,8 @@ C
      &            (INTTYP .EQ. 8)  .OR. (INTTYP .EQ. 29) .OR.
      &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
      &            (INTTYP .EQ. 53) .OR. (INTTYP .EQ. 56) .OR.
-     &            (INTTYP .EQ. 57) .OR. (INTTYP .EQ. 58)) THEN
+     &            (INTTYP .EQ. 57) .OR. (INTTYP .EQ. 58) .OR.
+     &            (INTTYP .EQ. 80)) THEN
             TEMP(1) = DIPORG(1)
             TEMP(2) = DIPORG(2)
             TEMP(3) = DIPORG(3)
@@ -1300,6 +1308,7 @@ C
      &                       .OR. (INTTYP .EQ. 55)
      &                       .OR. (INTTYP .EQ. 56)
      &                       .OR. (INTTYP .EQ. 57)
+     &                       .OR. (INTTYP .EQ. 80)
      &                       .or. (inttyp == 101)
      &                       .OR. (INTTYP .EQ. 203) ! RM1H2
      &                       .OR. (INTTYP .EQ. 204) ! RNST
@@ -1329,6 +1338,7 @@ C
                DIFCPZ = CORCZ(IATOMC) - CORPZ
                if ((inttyp == 54 .or.
      &              inttyp == 58 .or.
+     &              inttyp == 80 .or.
 !101: first geo derivatives of nuclear attraction integrals
      &              inttyp == 101 .or.
      &              inttyp == 203) .and.
@@ -1565,6 +1575,13 @@ C        ---------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 29 .OR. INTTYP .EQ. 58) THEN
             CALL EF1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
+     &                  SHLINT,NOPTYP,NATOMC,INTTYP)
+C
+C        Electric field from the individual nuclei (type 80) - point/finite nuclei
+C        -------------------------------------------------------------------------
+C
+         ELSE IF (INTTYP .EQ. 80) THEN
+            CALL EF1INTNUC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC,INTTYP)
 C
 C        Electric field gradient from the individual nuclei
@@ -4334,6 +4351,64 @@ C                 ... total field from all nuclei
                      SHLINT(INT,3) = SHLINT(INT,3) - EEE*AH0V
                   ELSE
 C                 ... (INTTYP 29): field from individual nuclei
+                    IOFF = 0
+                    DO 500 IATOM = 1, NATOMC
+                     IX = 3*(IATOM - 1) + 1
+                     IY = 3*(IATOM - 1) + 2
+                     IZ = 3*(IATOM - 1) + 3
+                     AH0T = AHGTF(IOFF + IADRAU + IT + 1)
+                     AH0U = AHGTF(IOFF + IADRAU + IT + ISTEPU)
+                     AH0V = AHGTF(IOFF + IADRAU + IT + ISTEPV)
+                     SHLINT(INT,IX) = SHLINT(INT,IX) - EEE*AH0T
+                     SHLINT(INT,IY) = SHLINT(INT,IY) - EEE*AH0U
+                     SHLINT(INT,IZ) = SHLINT(INT,IZ) - EEE*AH0V
+                     IOFF = IOFF + NAHGTF
+ 500                CONTINUE
+                  END IF
+ 400           CONTINUE
+               IADRAU = IADRAU + ISTEPU
+ 300        CONTINUE
+            IADRAV = IADRAV + ISTEPV
+ 200     CONTINUE
+         INT = INT + 1
+ 100  CONTINUE
+      RETURN
+      END
+C  /* Deck ef1intnuc */
+      SUBROUTINE EF1INTNUC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
+     &                     SHLINT,NOPTYP,NATOMC,INTTYP)
+C
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
+#include "onecom.h"
+#include "lmns.h"
+      INT = 1
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         MAXT = LVALA + LVALB
+         MAXU = MVALA + MVALB
+         MAXV = NVALA + NVALB
+         IADRAV = 1
+         DO 200 IV = 0, MAXV
+            EV = ODC(NVALA,NVALB,IV,0,0,3)
+            IADRAU = IADRAV
+            DO 300 IU = 0, MAXU
+               EU = ODC(MVALA,MVALB,IU,0,0,2)
+               DO 400 IT = 0, MAXT
+                  ET = ODC(LVALA,LVALB,IT,0,0,1)
+                  EEE = ET*EU*EV
+                  IF (INTTYP .EQ. 80) THEN
+C                 ... (INTTYP 80): field from individual nuclei (point/finite nuclei)
                     IOFF = 0
                     DO 500 IATOM = 1, NATOMC
                      IX = 3*(IATOM - 1) + 1
@@ -7728,5 +7803,3 @@ ckr                  FACSYM = HKAB*PT(IBTAND(IREPCL,ISYMOP))
  100  CONTINUE
       RETURN
       END
-
-

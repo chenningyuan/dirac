@@ -328,7 +328,7 @@ C
 !                  77         78         79         80
      &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ', 
 !                  81         82         83         84
-     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'xxxxxxx', 
+     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'NEFNUC ', 
 !                  85         86         87         88
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
 !                  89         90         91         92
@@ -971,6 +971,18 @@ C
      &        'Calculation of electric field strength at the nuclei'
          CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
+         ANTI = .FALSE.
+      GOTO 200
+C
+C     Electric field at the individual point/finite nuclei
+C     ----------------------------------------------------
+C
+ 84   CONTINUE
+         INTTYP = 80
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &        'Calculation of electric field strength at the nuclei'
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
+         CALL EFNTYPNUC(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
          ANTI = .FALSE.
       GOTO 200
 C
@@ -2082,7 +2094,6 @@ C     Miro Ilias, Malaya K Nayak
          ANTI = .FALSE. 
       GO TO 200
 
- 84   continue
  85   continue
  86   continue
  87   continue
@@ -3255,6 +3266,45 @@ C
       RETURN
       END
 
+      SUBROUTINE EFNTYPNUC(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      DIMENSION INTREP(9*MXCENT),INTADR(*)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(9*MXCENT)*8, NAME*2
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "ibtfun.h"
+      NOPTYP = 3*NATOM
+      CALL NTYPTS(NOPTYP)
+C
+      ITYP = 0
+      DO 50 IREP = 0, MAXREP
+         DO 100 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               DO 200 ICOOR = 1, 3
+                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+                  IF (ISCOOR .GT. 0) THEN
+                     ITYP = ITYP + 1
+                     IFIRST=ISCOOR/100
+                     ISECND=MOD(ISCOOR,100)/10
+                     ITHIRD = MOD(MOD(ISCOOR,100),10)
+                     LABINT(ITYP) = 'EFNU'//CHRNOS(IFIRST)
+     &                       //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
+                     INTREP(ITYP) = IREP
+                     INTADR(ISCOOR) = ITYP
+                  END IF
+ 200           CONTINUE
+            END IF
+ 100     CONTINUE
+ 50   CONTINUE 
+      RETURN
+      END
 
 C  /* Deck efgtyp */
       SUBROUTINE EFGTYP(NOPTYP,INTREP,IFGTBL,LABINT,DOATOM,NATOM)
