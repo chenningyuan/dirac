@@ -4,17 +4,20 @@
 --------
 
 New features:
+
 - Basis set library has been extended with "relativistic prolapse-free Gaussian basis sets" RPF-2Z, RPF-3Z, aug-RPF-2Z, and aug-RPF-3Z (H. J. Aa. Jensen)
-   - Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke,
-     Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z.
-     J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
+- Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke,
+Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z.
+J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
 
 Infrastructure changes and fixes:
+
 - changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025 (H. J. Aa. Jensen)
 - made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers) (H. J. Aa. Jensen)
 - quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI) (H. J. Aa. Jensen)
 
 Bugfix:
+
 - fix of symmetry problem for KRMCSCF with LUCIAREL and odd number of electrons (H. J. Aa. Jensen)
 
 
@@ -23,46 +26,47 @@ Bugfix:
 
 ==== New features in DIRAC24 ====
 
- New functionality with ExaCorr:
-    * Calculation of linear response properties with CCSD wavefunctions.
-      * Contributors: Xiang Yuan,  Loic Halbert, Johann Pototschnig, Anastasios Papadopoulos, Lucas Visscher and Andre Gomes.
-      * Reference: Xiang Yuan, Loic Halbert, Johann Valentin Pototschnig, Anastasios Papadopoulos, Sonia Coriani, Lucas Visscher, and Andre Severo Pereira Gomes, Formulation and Implementation of Frequency-Dependent Linear Response Properties with Relativistic Coupled Cluster Theory for GPU-Accelerated Computer Architectures, J. Chem. Theory Comput. 20, 677 (2024) https://doi.org/10.1021/acs.jctc.3c00812
-      * Manual: CCCILR https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#cccilr
-      * Tutorial: not yet available; please have a look at examples in the testset.
-    * Calculation of quadratic response properties CCSD wavefunctions. 
-      * Contributors: Xiang Yuan,  Loic Halbert, Lucas Visscher and Andre Gomes.
-      * Reference: Xiang Yuan, Loic Halbert, Lucas Visscher, and Andre Severo Pereira Gomes, Frequency-Dependent Quadratic Response Properties and Two-Photon Absorption from Relativistic Equation-of-Motion Coupled Cluster Theory, J. Chem. Theory Comput. 19, 9248 (2023) https://doi.org/10.1021/acs.jctc.3c01011
-      * Manual: CCCIQR https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#ccciqr
-      * Tutorial: not yet available; please have a look at examples in the testset.      
-    * Calculation of energies with equation of motion coupled cluster for excitation (EOM-EE-CCSD), ionization  (EOM-IP-CCSD), and electron affinity (EOM-EA-CCSD) models.
-      * Contributors: Xiang Yuan,  Loic Halbert, Lucas Visscher and Andre Gomes.
-      * Reference: Xiang Yuan, PhD thesis (2024), https://doi.org/10.5463/thesis.505
-      * Manual: EXEOM https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#exeom  see also https://www.diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#id10
-      * Tutorial: not yet available; please have a look at examples in the testset.
-    * Two-body reduced density matrix for CCSD ground-state wavefunctions.
-      * Contributors: Loic Halbert, Andre Gomes
-      * Manual: GS2RDM https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#gs2rdm
-      * Tutorial: not yet available; please have a look at examples in the testset.
+New functionality with ExaCorr:
+
+- Calculation of linear response properties with CCSD wavefunctions.
+   - Contributors: Xiang Yuan,  Loic Halbert, Johann Pototschnig, Anastasios Papadopoulos, Lucas Visscher and Andre Gomes.
+   - Reference: Xiang Yuan, Loic Halbert, Johann Valentin Pototschnig, Anastasios Papadopoulos, Sonia Coriani, Lucas Visscher, and Andre Severo Pereira Gomes, Formulation and Implementation of Frequency-Dependent Linear Response Properties with Relativistic Coupled Cluster Theory for GPU-Accelerated Computer Architectures, J. Chem. Theory Comput. 20, 677 (2024) https://doi.org/10.1021/acs.jctc.3c00812
+   - Manual: CCCILR https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#cccilr
+   - Tutorial: not yet available; please have a look at examples in the testset.
+- Calculation of quadratic response properties CCSD wavefunctions. 
+   - Contributors: Xiang Yuan,  Loic Halbert, Lucas Visscher and Andre Gomes.
+   - Reference: Xiang Yuan, Loic Halbert, Lucas Visscher, and Andre Severo Pereira Gomes, Frequency-Dependent Quadratic Response Properties and Two-Photon Absorption from Relativistic Equation-of-Motion Coupled Cluster Theory, J. Chem. Theory Comput. 19, 9248 (2023) https://doi.org/10.1021/acs.jctc.3c01011
+   - Manual: CCCIQR https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#ccciqr
+   - Tutorial: not yet available; please have a look at examples in the testset.      
+- Calculation of energies with equation of motion coupled cluster for excitation (EOM-EE-CCSD), ionization  (EOM-IP-CCSD), and electron affinity (EOM-EA-CCSD) models.
+   - Contributors: Xiang Yuan,  Loic Halbert, Lucas Visscher and Andre Gomes.
+   - Reference: Xiang Yuan, PhD thesis (2024), https://doi.org/10.5463/thesis.505
+   - Manual: EXEOM https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#exeom  see also https://www.diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#id10
+   - Tutorial: not yet available; please have a look at examples in the testset.
+- Two-body reduced density matrix for CCSD ground-state wavefunctions.
+   - Contributors: Loic Halbert, Andre Gomes
+   - Manual: GS2RDM https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#gs2rdm
+   - Tutorial: not yet available; please have a look at examples in the testset.
 
 == Revised features in DIRAC24 ==
 
-  * Restart from density matrices of CC for first-order properties. 
-    * Contributors: Trond Saue, Andre Gomes
-    * Manual: RDCCDM https://diracprogram.org/doc/release-24/manual/properties.html#rdccdm
-  * Update of DIRAC schema which defines the information stored on CHECKPOINT.h5.
-    * Essential symmetry information added.
-    * MO coefficients for C<sub>1</sub> symmetry optionally stored for restarts without use of symmetry.
-    * Occupation of spinors in SCF added. 
-    * Non-default property integrals stored on separate file to reduce the size of the checkpoint file.
-    - Original input is preserved in the CHECKPOINT file.
-    * Contributors: Lucas Visscher, Trond Saue
+- Restart from density matrices of CC for first-order properties. 
+   - Contributors: Trond Saue, Andre Gomes
+   - Manual: RDCCDM https://diracprogram.org/doc/release-24/manual/properties.html#rdccdm
+- Update of DIRAC schema which defines the information stored on CHECKPOINT.h5.
+   - Essential symmetry information added.
+   - MO coefficients for C<sub>1</sub> symmetry optionally stored for restarts without use of symmetry.
+   - Occupation of spinors in SCF added. 
+   - Non-default property integrals stored on separate file to reduce the size of the checkpoint file.
+   - Original input is preserved in the CHECKPOINT file.
+   - Contributors: Lucas Visscher, Trond Saue
 
 == Improvements ==
 
-  * Support for AMD GPUs with ExaCorr (TAL-SH, work in progress to enable distributed calculations with ExaTensor), in addition to the NVIDIA GPU support (TAL-SH and ExaTensor).
-    * Contributors: Johann Pototschnig, Jan Brandejs and Andre Gomes.
-    * For further information on ExaTensor and TAL-SH as used in DIRAC, see https://github.com/RelMBdev/ExaTENSOR/tree/dirac
-    * Note : ROCM versions 5.7+ should be used. Earlier ROCM versions may result in code that compiles but may show runtime errors (e.g. HSA_STATUS_ERROR_MEMORY_APERTURE_VIOLATION, or values different than reference ones in the tests). A potential workaround for earlier versions is to reduce hipcc optimization level to -O1.
+- Support for AMD GPUs with ExaCorr (TAL-SH, work in progress to enable distributed calculations with ExaTensor), in addition to the NVIDIA GPU support (TAL-SH and ExaTensor).
+   - Contributors: Johann Pototschnig, Jan Brandejs and Andre Gomes.
+   - For further information on ExaTensor and TAL-SH as used in DIRAC, see https://github.com/RelMBdev/ExaTENSOR/tree/dirac
+   - Note : ROCM versions 5.7+ should be used. Earlier ROCM versions may result in code that compiles but may show runtime errors (e.g. HSA_STATUS_ERROR_MEMORY_APERTURE_VIOLATION, or values different than reference ones in the tests). A potential workaround for earlier versions is to reduce hipcc optimization level to -O1.
 
 == Bugfixes ==
 

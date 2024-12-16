@@ -1,12 +1,18 @@
 $ Augmented relativistic prolapse-free Gaussian basis sets of quadruple-zeta quality: aug-RPF-4Z
 $
 $  REFERENCE
+$ Primitives:              R. L. A. Haiduke and A. B. F. da Silva,
+$                          J. Comput. Chem. 27 (2006) 61-71.
+$                          R. L. A. Haiduke and A. B. F. da Silva,
+$                          J. Comput. Chem. 27 (2006) 1970-1979.
+$                          T. Q. Teodoro and R. L. A. Haiduke,
+$                          J. Comput. Chem. 34 (2013) 2372–2379.
 $ s- and p-block elements: T. Q. Teodoro, A. B. F. da Silva, and R. L. A. Haiduke,
-$                          J. Chem. Theory Comput. 10 (2014) 3800.
+$                          J. Chem. Theory Comput. 10 (2014) 3800-3806.
 $ d-block elements:        T. Q. Teodoro, A. B. F. da Silva, and R. L. A. Haiduke,
-$                          J. Chem. Theory Comput. 10 (2014) 4761.
+$                          J. Chem. Theory Comput. 10 (2014) 4761-4764.
 $ f-block elements:        T. Q. Teodoro, L. Visscher, A. B. F. da Silva, and R. L. A. Haiduke,
-$                          J. Chem. Theory Comput. 13 (2017) 1094.
+$                          J. Chem. Theory Comput. 13 (2017) 1094-1101.
 $
 $
 a 1
