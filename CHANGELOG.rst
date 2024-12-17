@@ -20,6 +20,11 @@ Bugfix:
 
 - fix of symmetry problem for KRMCSCF with LUCIAREL and odd number of electrons (H. J. Aa. Jensen)
 
+New default:
+- The CODATA2022 set of physical constants is now used as default (taken from http://physics.nist.gov/constants on June 4, 2024).
+
+
+-----------------------------------------------------------------------------------------------------
 
 24.0
 ----
