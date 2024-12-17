@@ -116,7 +116,7 @@ module visual_datatypes
     real(8), public:: radial_length = 0.0d0                 ! radial length [a.u.]
     integer, public:: radial_nr_steps = 0                   ! number of steps for radial grids
     integer, public:: status = -1                           ! -1 = never used, 0 = ready to work on
-    integer, public:: input = 0                             ! 0 = create, 1 = import from file, 2 = 'list', 3 = 'line', 4 = '2D', 5 = '3D'
+    integer, public:: input = 0                             ! 0 = create, 1 = import from hdf5 file, -1 = import from 'numerical_grid', 2 = 'list', 3 = 'line', 4 = '2D', 5 = '3D'
     logical, public:: export = .false.                      ! also export to a separate file
     integer, public:: typ = 0                               ! 0 = unknown, 1 = rectilinear uniform, 2 = radial
     real(8), public:: margin = 4.0d0                        ! margin [a.u.] to be added around molecule when creating the grid

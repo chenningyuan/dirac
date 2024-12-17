@@ -88,24 +88,27 @@ contains
   subroutine get_grid_info_from_file(grid)
     type(grid_t), intent(inout):: grid
     type(file_info_t):: data_file
-    ! todo:
-    ! - add support for other formats, now - hdf5 format only
-    ! - check what file%status == -1 means ('never used' = 'file not exists'?)
-    !   now - hardcoded (after labeled_storage)
 
-    if (grid%input  /=  1) return
+    if (grid%input  ==  1) then
+      ! todo:
+      ! - add support for other formats, now - hdf5 format only
+      ! - check what file%status == -1 means ('never used' = 'file not exists'?)
+      !   now - hardcoded (after labeled_storage)
 
-    !if (data_file%status == -1) return ! file not exists
-    data_file%status = 0 ! assuming file present and closed
-    data_file%name = grid%file_inp
-    data_file%type = 2
-
-    select case (data_file%type)
-      case (2)
-        call get_grid_info_from_labeled_storage(data_file, grid)
-      case default
-        call visual_quit('programming error in get_grid_info_from_file; unsupported file type')
-    end select
+      !if (data_file%status == -1) return ! file not exists
+      data_file%status = 0 ! assuming file present and closed
+      data_file%name = grid%file_inp
+      data_file%type = 2
+  
+      select case (data_file%type)
+        case (2)
+          call get_grid_info_from_labeled_storage(data_file, grid)
+        case default
+          call visual_quit('programming error in get_grid_info_from_file; unsupported file type')
+      end select
+    else if (grid%input  == -1) then
+      call get_grid_info_from_txt_storage(grid)
+    end if
 
   end subroutine get_grid_info_from_file
 
@@ -115,22 +118,26 @@ contains
     type(grid_t), intent(inout):: grid
     type(file_info_t):: data_file
 
-    if (grid%input  /=  1) return
+    if (grid%input  ==  1) then
 
-    !if (data_file%status == -1) return ! file not exists
-    data_file%status = 0
-    data_file%name = grid%file_inp
-    data_file%type = 2
-
-    select case (data_file%type)
-      case (2)
-        call get_grid_points_from_labeled_storage(data_file, grid)
-        if (grid%allocated_weights()) then
-          call get_grid_weights_from_labeled_storage(data_file, grid)
-        end if
-      case default
-        call visual_quit('programming error in get_grid_points_from_file; unsupported file type')
-    end select
+      !if (data_file%status == -1) return ! file not exists
+      data_file%status = 0
+      data_file%name = grid%file_inp
+      data_file%type = 2
+     
+      select case (data_file%type)
+        case (2)
+          call get_grid_points_from_labeled_storage(data_file, grid)
+          if (grid%allocated_weights()) then
+            call get_grid_weights_from_labeled_storage(data_file, grid)
+          end if
+        case default
+          call visual_quit('programming error in get_grid_points_from_file; unsupported file type')
+      end select
+    else if (grid%input  == -1) then
+      if (.not.grid%allocated_weights()) return
+      call get_grid_points_from_txt_storage(grid)
+    end if
   end subroutine get_grid_points_from_file
 
 

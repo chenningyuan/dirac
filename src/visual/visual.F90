@@ -180,7 +180,6 @@ contains
 
       if (mpi_is_master()) then
         call get_grid_info(ig, rs_input%grids(ig), mol)
-        call rs_input%grids(ig)%display
       end if
 #ifdef VAR_MPI
       if (is_parallel()) call synchronize_grid_data(rs_input%grids(ig))
@@ -453,6 +452,13 @@ contains
           if (rs_input%grid_functions(igf)%export) then
              if (mpi_is_master()) then
                call store_data(rs_input%grids(ig), rs_input%grid_functions(igf))
+
+               if (rs_input%outpri) then
+                 ! the user requested to print final results to DIRAC output
+                 call write_plot_data_to_DIRAC_output(rs_input%grids(ig), &
+                                               rs_input%grid_functions(igf))
+               end if
+
              end if
           end if
 
@@ -589,7 +595,7 @@ contains
         end select
 
         if (grid_function%purpose == 1) then
-          !call daxpy(ndim,1.0d0,grid_weights(ipoint),1,grid_function_integrated_values,1)
+          !call daxpy(ndim,grid_weights(ipoint),1,grid_function_values,1,grid_function_integrated_values,1)
           grid_function_integrated_values(1:ndim) = grid_function_integrated_values(1:ndim) &
                                                   + grid_function_values(1:ndim,ipoint)*grid_weights(ipoint)
         end if

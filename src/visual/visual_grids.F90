@@ -24,7 +24,7 @@ contains
     type(grid_t), intent(inout):: grid
     character(len = 150):: errmsg
 
-    if (grid%input  ==  1) then
+    if (grid%input  ==  1 .or. grid%input  ==  -1) then
 !
 !   read grid information from file
 !
@@ -72,7 +72,7 @@ contains
 
     if (.not. grid%allocated_points()) return
 
-    if (grid%input == 1) then
+    if (grid%input == 1 .or. grid%input == -1) then
       call get_grid_points_from_file(grid)
     else if (grid%input /= 2) then
       ! grid%input = 2 is for .LIST;
@@ -118,7 +118,7 @@ use num_grid_cfg
         rad = (istep-1)*radial_spacing
         do i = 1, m
           grid%points(1:3, ipoint) = grid%origin(1:3) + rad*temp(i, 1:3)
-          if (grid%allocated_weights()) grid%weights(ipoint) = temp(i, 4)
+          if (grid%allocated_weights()) grid%weights(ipoint) = temp(i, 4) !/(4*acos(-1.0d0))
           ipoint = ipoint + 1
         end do
       end do

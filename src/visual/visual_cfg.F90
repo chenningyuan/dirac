@@ -82,6 +82,8 @@ contains
           grid%input = 0
         else if (lowercase(val) == 'import') then
           grid%input = 1
+        else if (lowercase(val) == 'dft') then
+          grid%input = -1
         else if (lowercase(val) == 'list') then
           grid%input = 2
         else if (lowercase(val) == 'line') then
@@ -293,8 +295,15 @@ contains
       write(*, *) '  WARNING: These input options will be ignored (if present):'//&
                   ' ndim, npoints, spacing, margin.'
 
+    else if (grid%input == -1) then
+      write(*, *) 'VISUAL: Grid information will be read from numerical_grid file'
+      write(*, *) '  WARNING: These input options will be ignored (if present):'//&
+                  ' ndim, npoints, spacing, margin, file_inp.'
+      grid%file_inp = 'numerical_grid'
+      grid%typ = 2
+
     else if (grid%input == 0) then
-      write(*, *) 'VISUAL: 3d grid will be created'
+      write(*, *) 'VISUAL: 3d grid will be created according to information in .GRID'
       if (grid%ndim == 0) then
         write(*, *) ' ERROR: grid "ndim" information is missing.'
         stop
@@ -309,7 +318,8 @@ contains
       end do
 
     else
-      write(*, *) 'VISUAL: Grid will be created according to information in the input'
+      write(*, *) 'VISUAL: Grid will be created according to information in the separate input lines:'
+      write(*, *) ' .LINE/.LIST/.2D/.3D/.RADIAL'
     end if
 
   end subroutine

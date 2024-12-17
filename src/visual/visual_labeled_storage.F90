@@ -148,11 +148,11 @@ contains
     group = label%name
     do i = 1, grid_function%get_ndim()
       write(ich, '(i1)') i
-      if (grid_function%allocated_values()) then
+      if (grid_function%purpose == 0 .and. grid_function%allocated_values()) then
         call lab_write(data_file, group//'_icomp_'//ich, &
              rdata = grid_function%values(i, :))
       end if
-      if (grid_function%allocated_integrated_values()) then
+      if (grid_function%purpose == 1 .and. grid_function%allocated_integrated_values()) then
         call lab_write(data_file, group//'_icomp_'//ich, &
              rdata = grid_function%integrated_values(i))
       end if
