@@ -299,7 +299,6 @@ C
       LOGICAL          :: HERMIT,NEWFILE,SET,FEXIST
       CHARACTER(LEN=6) :: KEYWRD
       INTEGER          :: inpfile
-
 C     JHS
       INTEGER :: i
       REAL :: time1,time2
