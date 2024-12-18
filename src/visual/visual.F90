@@ -193,8 +193,8 @@ contains
         rs_input%grids(ig)%points = 0.0d0
       end if
 
-      if (rs_input%grids(ig)%typ == 2) then
-!       if radial grid, allocate weights by default
+      if (rs_input%grids(ig)%typ == 2 .or. rs_input%grids(ig)%input == -4) then
+!       fixme if radial/2d_int grid, allocate weights by default
         if (.not. rs_input%grids(ig)%allocated_weights()) then
           allocate(rs_input%grids(ig)%weights(npoints))
           rs_input%grids(ig)%weights = 0.0d0
@@ -216,7 +216,7 @@ contains
         call get_grid_points(rs_input%grids(ig))
         if (rs_input%print_level > 1) then
           do j = 1, npoints
-            if (rs_input%grids(ig)%typ == 2) then
+            if (rs_input%grids(ig)%typ == 2 .or. rs_input%grids(ig)%input == -4) then
               write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim), rs_input%grids(ig)%weights(j)
             else
               write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim)
@@ -446,21 +446,25 @@ contains
           call dmat%erase()
 
 !
-!         save data
+!         save and print data
 !
 
           if (rs_input%grid_functions(igf)%export) then
              if (mpi_is_master()) then
                call store_data(rs_input%grids(ig), rs_input%grid_functions(igf))
-
-               if (rs_input%outpri) then
-                 ! the user requested to print final results to DIRAC output
-                 call write_plot_data_to_DIRAC_output(rs_input%grids(ig), &
-                                               rs_input%grid_functions(igf))
-               end if
-
              end if
           end if
+
+          if (rs_input%outpri) then
+            if (mpi_is_master()) then
+              call write_plot_data_to_DIRAC_output(rs_input%grids(ig), &
+                                          rs_input%grid_functions(igf))
+            end if
+          end if
+
+!
+!         clean up
+!
 
           if (rs_input%grid_functions(igf)%allocated_values()) &
                         deallocate(rs_input%grid_functions(igf)%values)

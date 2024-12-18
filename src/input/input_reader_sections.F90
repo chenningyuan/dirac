@@ -379,6 +379,27 @@
          end if
       end if
 
+      if (kw_matches(word, '.2D_INT')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".2D_INT" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == -4) then
+               nr_lines = 6
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
+                  read(get_file_unit(), '(a)') line
+                  word_array(j) = line
+               end do
+               call grid_user_input_cfg(rs_input%grids(i), '2d_int', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
+         end if
+      end if
+
       if (kw_matches(word, '.3D    ')) then
          if (.not. rs_input%allocated_grids()) then
            write(*,*) 'Error: ".3D" requires prior specification of ".GRIDS". Stop.'

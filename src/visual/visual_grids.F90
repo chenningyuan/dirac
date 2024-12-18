@@ -23,32 +23,41 @@ contains
     type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
     character(len = 150):: errmsg
+!   here, we get the information about the grid,
+!   which was not set up via user input
+!   (input/input_reader_sections.F90)
+
+    if (grid%status == 0) return
 
     if (grid%input  ==  1 .or. grid%input  ==  -1) then
 !
-!   read grid information from file
+!     read grid information from file
 !
       call get_grid_info_from_file(grid)
       if (grid%id == 0) grid%id = grid_id
 
 !
-!   in other cases - set up information to generate grid points
+!     in other cases - set up information to generate grid points
 !
     else if (grid%input==0 .or. grid%input==5) then
-!     3d grid
+      ! 3d grid
+
       if (grid_id /= grid%id) then
-        write (errmsg, *) 'ERROR: problem with grid id in get_grid_info: ',&
+        write (errmsg, *) 'ERROR: problem with id in get_grid_info:',&
                           ' grid%id=', grid%id,&
                           ' grid_id=', grid_id
         call visual_quit(errmsg)
       end if
+
       if (grid%typ == 1) then
         ! rectilinear uniform 3d grid
         call get_3d_grid_essentials(grid, mol)
+
         ! center grid around molecule,
         ! modify grid extents and grid%origin (but do not move molecule)
         ! todo - maybe add a keyword + an option to control grid extents
         call center_mol_in_3d_grid(grid)
+
       else if (grid%typ == 2) then
         ! radial 3d grid
         call get_3d_radial_grid_essentials(grid, mol)
@@ -70,7 +79,11 @@ contains
   subroutine get_grid_points(grid)
     type(grid_t), intent(inout):: grid
 
+    if (grid%status /= 0) return
     if (.not. grid%allocated_points()) return
+    if (grid%input == -4 .or. grid%input == -1 .or. grid%typ == 2) then
+      if (.not. grid%allocated_weights()) return
+    end if
 
     if (grid%input == 1 .or. grid%input == -1) then
       call get_grid_points_from_file(grid)
@@ -108,17 +121,17 @@ use num_grid_cfg
 
       ! Loop over radial points
       if (grid%radial_nr_steps > 1) then
-        radial_spacing = grid%radial_length/(grid%radial_nr_steps - 1)
+        radial_spacing = grid%radial_length/grid%radial_nr_steps
       else
         radial_spacing = grid%radial_length
       end if
 
       ipoint = 1
-      do istep = 1, grid%radial_nr_steps
-        rad = (istep-1)*radial_spacing
+      do istep = 0, grid%radial_nr_steps-1
+        rad = istep*radial_spacing
         do i = 1, m
           grid%points(1:3, ipoint) = grid%origin(1:3) + rad*temp(i, 1:3)
-          if (grid%allocated_weights()) grid%weights(ipoint) = temp(i, 4) !/(4*acos(-1.0d0))
+          if (grid%allocated_weights()) grid%weights(ipoint) = temp(i, 4)*rad*rad*radial_spacing
           ipoint = ipoint + 1
         end do
       end do
@@ -138,8 +151,10 @@ use num_grid_cfg
 ! rectilinear equidistant
     type(grid_t), intent(inout):: grid
     integer:: i,j,k, ipoint, N(grid%ndim)
-    real(8):: v(3), vx(3), vy(3), vz(3)
-    real(8):: vx_norm, vy_norm, vz_norm
+    integer:: ix,iy 
+    real(8):: v(3), vx(3), vy(3), vz(3), p(3), p_off(3)
+    real(8):: vx_norm, vy_norm, vz_norm, s, f
+    real(8),allocatable::x(:),w(:)
     character(len = 150):: errmsg
 
     if (grid%typ /= 1) return
@@ -160,7 +175,6 @@ use num_grid_cfg
       end do
     else if (grid%input == 4) then
 !     2d
-      ipoint = 1
       vx(1:3) = (grid%extents(1,1:3) - grid%extents(0,1:3))/(grid%nr_points(1)-1)
       vy(1:3) = (grid%extents(2,1:3) - grid%extents(0,1:3))/(grid%nr_points(2)-1)
       vz(1) = vx(2)*vy(3) - vx(3)*vy(2)
@@ -176,6 +190,41 @@ use num_grid_cfg
           ipoint = ipoint + 1
         end do
       end do
+    else if (grid%input == -4) then
+    ! check that angle between 1-2 and 1-3 is 90 degs
+      s = vx(1)*vy(1) + vx(2)*vy(2) + vx(3)*vy(3)
+      if (s > tiny(0.0d0)) then
+        call visual_quit('2d integration: lines connecting points 1-2 and 1-3'//&
+                         ' do not enclose 90 degrees')
+      end if
+      vx(1:3) = grid%extents(1,1:3) - grid%extents(0,1:3)
+      vy(1:3) = grid%extents(2,1:3) - grid%extents(0,1:3)
+      vx_norm = dsqrt(vx(1)*vx(1) + vx(2)*vx(2) + vx(3)*vx(3))
+      vy_norm = dsqrt(vy(1)*vy(1) + vy(2)*vy(2) + vy(3)*vy(3))
+      allocate(x(grid%integration_order_2d))
+      allocate(w(grid%integration_order_2d))
+      ! nodes, weights in [-1,1]
+      call lobatto_1d_grid(grid%integration_order_2d, x, w)
+      ! nodes, weights in an interval set by grid%extents
+      ipoint = 0
+      f = 4.0d0*grid%nr_points(1)*grid%nr_points(2)
+      do ix = 0, grid%nr_points(1)-1
+         do iy = 0, grid%nr_points(2)-1
+            p_off = grid%origin + ix*vx/grid%nr_points(1) + iy*vy/grid%nr_points(2)
+            do i = 1, grid%integration_order_2d
+               do j = 1, grid%integration_order_2d
+                  ipoint = ipoint+1
+                  p = p_off + 0.5d0*(x(i) + 1.0d0)*vx/grid%nr_points(1)  &
+                            + 0.5d0*(x(j) + 1.0d0)*vy/grid%nr_points(2)
+                  grid%points(1:3, ipoint) = p(1:3)
+                  grid%weights(ipoint) = &
+                  w(i)*w(j)*vx_norm*vy_norm/f
+               end do
+            end do
+         end do
+      end do
+      deallocate(x)
+      deallocate(w)
     else if (grid%input == 3) then
 !     line
       ipoint = 1
@@ -430,6 +479,98 @@ use num_grid_cfg
                           '3d-rectilinear or radial is not implemented'
         call visual_quit(errmsg)
     end select
+  end subroutine
+
+! ---- copied from old VISUAL:
+
+  subroutine legendre_polynomial(p, n, x)
+    integer,intent(in)::n
+    real(8),intent(in)::x
+    real(8),intent(out)::p(*)
+    integer::i
+    p(0) = 1
+    p(1) = x
+    do i = 1, n-1
+      p(i+1) = (2*i + 1)*x*p(i) - i*p(i-1)
+      p(i+1) = p(i+1)/(i+1)
+    enddo
+  end subroutine
+
+  subroutine legendre_polynomial_derivatives(p, dp, n, x)
+    integer,intent(in)::n
+    real(8),intent(in)::x
+    real(8),intent(out)::p(*),dp(*)
+    integer::i
+    do i = 1, n
+      dp(i) = (i*x*p(i) - i*p(i-1))/(x*x - 1.0d0)
+    enddo
+  end subroutine
+
+  subroutine lobatto_1d_grid(n, x, w)
+    integer,intent(in)::n
+    real(8),intent(out)::w(*)
+    real(8),intent(out)::x(*)
+    integer,parameter::nmax = 1000
+    real(8),parameter::threshold = 1.0d-12
+    real(8)::p(0:nmax),dp(nmax)
+    real(8)::x_old,y_old,x_new,y_new,step
+    integer::i
+
+    x_old = -1.0d0+threshold
+    call legendre_polynomial(p, n, x_old)
+    call legendre_polynomial_derivatives(p, dp, n, x_old)
+    do i = 2, n-1
+      step  = 1.0d-4
+      do while(dabs(step) .gt. threshold)
+        y_old = dp(n-1)
+        x_new = x_old+step
+        call legendre_polynomial(p, n, x_new)
+        call legendre_polynomial_derivatives(p, dp, n, x_new)
+        y_new = dp(n-1)
+        if((y_old/y_new) .lt. 0.0d0) then
+          step = -step/10.0d0
+        endif
+        x_old = x_new
+      enddo
+      x(i) = x_new
+      w(i) = n*(n-1)*p(n-1)*p(n-1)
+      w(i) = 2.0d0/w(i)
+    enddo
+!   end points
+    x(1) = -1.0d0
+    x(n) =  1.0d0
+    w(1) = 2.0d0/(n*(n-1.0d0))
+    w(n) = w(1)
+  end subroutine
+
+  subroutine legendre_1d_grid(n, x, w)
+    integer,intent(in)::n
+    real(8),intent(inout)::w(*)
+    real(8),intent(inout)::x(*)
+    integer,parameter::nmax = 1000
+    real(8),parameter::threshold = 1.0d-12
+    real(8)::p(0:nmax),dp(nmax)
+    real(8)::x_old,y_old,x_new,y_new,step
+    integer::i
+    x_old = -1.0d0
+    call legendre_polynomial(p, n, x_old)
+    do i = 1, n
+      step  = 1.0d-4
+      do while(dabs(step) .gt. threshold)
+        y_old = p(n)
+        x_new = x_old+step
+        call legendre_polynomial(p, n, x_new)
+        y_new = p(n)
+        if((y_old/y_new) .lt. 0.0d0) then
+          step = -step/10.0d0
+        endif
+        x_old = x_new
+      enddo
+      x(i) = x_new
+      call legendre_polynomial_derivatives(p, dp, n, x(i))
+      w(i) = (1.0d0-x(i)*x(i))*dp(n)*dp(n)
+      w(i) = 2.0d0/w(i)
+    enddo
   end subroutine
 
 end module

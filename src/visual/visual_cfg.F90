@@ -90,6 +90,8 @@ contains
           grid%input = 3
         else if (lowercase(val) == '2d') then
           grid%input = 4
+        else if (lowercase(val) == '2d_int') then
+          grid%input = -4
         else if (lowercase(val) == '3d') then
           grid%input = 5
         else if (lowercase(val) == 'radial') then
@@ -108,9 +110,6 @@ contains
           grid%export = .false.
         else if (lowercase(val) == 'yes') then
           grid%export = .true.
-        else
-          write(*, *) 'wrong argument; argument to "export" must be one of "yes"/"no"}'
-          stop
         end if
       case ('file_inp')
         grid%file_inp = val
@@ -165,6 +164,8 @@ contains
           deallocate(chvalues)
         end do
         grid%nr_points_total_known = .true.
+!       grid ready to work on
+        grid%status = 0
 
       case ('line')
 !
@@ -214,7 +215,9 @@ contains
         call str2int(trim(user_input_lines(5)), np, stat)
         grid%nr_points(2) = np     ! arbitrary assignment
         grid%nr_points_known(2) = .true.
-        grid%nr_points_total = grid%nr_points(1)*grid%nr_points(2)
+        ! this is a 2d plane in a 3d world:
+        grid%nr_points(3) = 1
+        grid%nr_points_known(3) = .true.
         allocate(chvalues(grid%ndim))
         ! line extents: arbitrary assignment to grid%extents(0:1,i)
         ! line start
@@ -234,9 +237,62 @@ contains
           call str2flt(trim(chvalues(i)), grid%extents(2,i), stat)
         end do
         deallocate(chvalues)
+        grid%nr_points_total = grid%nr_points(1)*grid%nr_points(2)
         grid%nr_points_total_known = .true.
         grid%extents_known=.true.
         grid%origin_known=.true.
+!       grid ready to work on
+        grid%status = 0
+
+      case ('2d_int')
+!
+!       on input:
+!       .2D
+!       0.0  0.0  0.0  <--- coordinates of grid origin
+!       0.0  0.0  2.0  <--- coordinates of grid "right" point
+!       20             <--- nr of points origin-"right"
+!       0.0  2.0  0.0  <--- coordinates of grid "top" point
+!       20             <--- nr of points origin-"top"
+!       2              <--- integration order
+!
+        grid%typ = 1
+        call str2int(trim(user_input_lines(3)), np, stat)
+        grid%nr_points(1) = np     ! arbitrary assignment
+        grid%nr_points_known(1) = .true.
+        call str2int(trim(user_input_lines(5)), np, stat)
+        grid%nr_points(2) = np     ! arbitrary assignment
+        grid%nr_points_known(2) = .true.
+        ! this is a 2d plane in a 3d world:
+        grid%nr_points(3) = 1
+        grid%nr_points_known(3) = .true.
+        call str2int(trim(user_input_lines(6)), np, stat)
+        grid%integration_order_2d = np
+        allocate(chvalues(grid%ndim))
+        ! line extents: arbitrary assignment to grid%extents(0:1,i)
+        ! line start
+        call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
+        do i = 1, grid%ndim
+          call str2flt(trim(chvalues(i)), grid%extents(0,i), stat)
+          grid%origin(i) = grid%extents(0,i)
+        end do
+        ! line end
+        call split_string(user_input_lines(2),grid%ndim,chvalues,separator=',')
+        do i = 1, grid%ndim
+          call str2flt(trim(chvalues(i)), grid%extents(1,i), stat)
+        end do
+        ! line extents: arbitrary assignment to grid%extents(2,i)
+        call split_string(user_input_lines(4),grid%ndim,chvalues,separator=',')
+        do i = 1, grid%ndim
+          call str2flt(trim(chvalues(i)), grid%extents(2,i), stat)
+        end do
+        deallocate(chvalues)
+        grid%nr_points_total = grid%nr_points(1)*grid%nr_points(2) &
+                             * (grid%integration_order_2d)**2
+        grid%nr_points_total_known = .true.
+        grid%extents_known=.true.
+        grid%origin_known=.true.
+!       grid ready to work on
+        grid%status = 0
 
       case ('3d')
 !
@@ -319,9 +375,15 @@ contains
 
     else
       write(*, *) 'VISUAL: Grid will be created according to information in the separate input lines:'
-      write(*, *) ' .LINE/.LIST/.2D/.3D/.RADIAL'
+      write(*, *) ' .LINE/.LIST/.2D/.2D_INT/.3D/.RADIAL'
     end if
 
+    if (grid%export) then
+      if (.not. allocated(grid%file_out)) then
+        write(*,*) 'VISUAL: Grid export requested, but file for export not specified.'
+        stop
+      end if
+    end if
   end subroutine
 
 
@@ -367,6 +429,13 @@ contains
       end if
     end if
 
+    if (grid_function%export) then
+      if (.not. allocated(grid_function%file_out)) then
+        write(*,*) 'VISUAL: Grid function export requested, but file for export not specified.'
+        stop
+      end if
+    end if
+
   end subroutine verify_grid_function_input_cfg
 
 
@@ -378,8 +447,16 @@ contains
       do igf = 1, rs_input%nr_grid_functions
         if (rs_input%grid_functions(igf)%id_assigned_grid == rs_input%grids(ig)%id) then 
           if (rs_input%grid_functions(igf)%purpose == 1) then
-            if (rs_input%grids(ig)%typ /= 2) then 
-              write(*,*) 'integration possible only on 3d radial grid. stop'
+            if (rs_input%grids(ig)%typ == 2) then
+              if (rs_input%grids(ig)%input == -1) then 
+                write(*,*) 'integration on DFT grid on "numerical_grid" file'
+              else
+                write(*,*) 'integration on 3d radial grid'
+              end if
+            else if (rs_input%grids(ig)%input == -4) then 
+              write(*,*) 'integration on 2d lobatto grid'
+            else
+              write(*,*) 'integration not possible for this grid. stop'
               stop
             end if
           end if
@@ -462,10 +539,6 @@ contains
           grid_function%export = .false.
         else if (lowercase(val) == 'yes') then
           grid_function%export = .true.
-        else
-          write(*, *) 'Input error. Wrong argument: '// &
-                      'argument to "export" must be one of "yes"/"no".'
-          stop
         end if
       case ('file_inp')
         grid_function%file_inp = val

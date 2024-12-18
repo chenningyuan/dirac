@@ -36,6 +36,7 @@ contains
     g_ndim  = grid%ndim
     gf_ndim = grid_function%get_ndim()
 
+    write(*, '(a)') '**************************************'
     if (grid_function%purpose == 1) then 
       write(*, '(a)') 'Final grid_function values integrated:'
       write(*, float_fmt) (grid_function%integrated_values(i),i=1,gf_ndim)
@@ -57,6 +58,7 @@ contains
         end if
       end do
     end if
+    write(*, '(a)') '**************************************'
 
    end subroutine
 
