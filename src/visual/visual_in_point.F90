@@ -1130,7 +1130,7 @@ contains
     real(8), intent(inout):: grid_function_values(:,:)
     real(8), intent(in):: px, py, pz
     integer, intent(in):: ipoint
-    real(8):: f
+    real(8):: f, r2
 
     f = 1.0d0
 
@@ -1145,12 +1145,19 @@ contains
       f = f * (pz**grid_function%cartesian_power(3))
     end if
 
+!   Multiply with radial powers
+    if (grid_function%radial_power .ne. 0) then
+      r2 = px**2 + py**2 + pz**2
+      f  = f * r2**(grid_function%radial_power/2.0d0)
+    end if
+
 !   Scale result 
     if (grid_function%up_scale .ne. 1.0d0) then
       f = f * grid_function%up_scale 
     end if
 
-    if (grid_function%down_scale .ne. 1.0d0) then
+    if (grid_function%down_scale .ne. 1.0d0 .and. &
+        grid_function%down_scale .ne. 0.0d0) then
         f = f / grid_function%down_scale
     end if
 

@@ -132,6 +132,8 @@ use num_grid_cfg
         do i = 1, m
           grid%points(1:3, ipoint) = grid%origin(1:3) + rad*temp(i, 1:3)
           if (grid%allocated_weights()) grid%weights(ipoint) = temp(i, 4)*rad*rad*radial_spacing
+!         todo
+!         add angular integration; then: weights = temp(i, 4)*rad*rad 
           ipoint = ipoint + 1
         end do
       end do

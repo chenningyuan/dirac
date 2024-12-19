@@ -159,6 +159,7 @@ module visual_datatypes
     integer, public:: id_assigned_grid = 0                  ! id of assigned grid
     integer, public:: purpose = 0                           ! 0 = visualization, 1 = integration
     integer, public:: modify = 0                            ! 0/1 do not/do modify grid function
+    integer, public:: radial_power = 0
     integer, public:: cartesian_power(1:3) = 0.0d0
     real(8), public:: up_scale = 1.0d0
     real(8), public:: down_scale = 1.0d0
@@ -640,6 +641,7 @@ contains
     write(*, *) '  max_ao_g_order = ', self%max_ao_g_order, my_rank_local
     write(*, *) '  max_ao_m_order = ', self%max_ao_m_order, my_rank_local
     write(*, *) '  modify = ', self%modify, my_rank_local
+    write(*, *) '  radial_power = ', self%radial_power, my_rank_local
     write(*, *) '  cartesian_power = ', self%cartesian_power, my_rank_local
     write(*, *) '  up_scale = ', self%up_scale, my_rank_local
     write(*, *) '  down_scale = ', self%down_scale, my_rank_local

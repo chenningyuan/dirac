@@ -839,6 +839,7 @@ contains
     call interface_mpi_bcast(grid_function%id_assigned_grid,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%purpose,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%modify,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%radial_power,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%cartesian_power,3,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%up_scale,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%down_scale,1,irank_master,global_communicator)

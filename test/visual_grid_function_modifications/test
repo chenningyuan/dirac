@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from pathlib import Path
+
+#
+# prepare environment, define functions
+#
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final grid_function values in grid points:',
+      num_lines = 28,
+      rel_tolerance = 1.0e-6)
+
+
+#
+# run tests
+#
+#test.run(['dc.inp'], ['h2o.mol'], args='--outcmo --get="numerical_grid"')
+
+test.run(['vis_3d_scale_pointwise.inp'], ['h2o.mol'], f, args='--incmo')
+#test.run(['vis_3d_old.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dgrid_generated_old.h5 grid_3d_generated_old.h5"')
+
+#test.run(['vis_3d_radial.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dradial.h5 grid_3d_fromRADIAL.h5"')
+#test.run(['vis_3d_dftgrid.inp'], ['h2o.mol'], args='--incmo --put="numerical_grid" --get="ed_on3Ddftgrid.h5 dftgrid_3d.h5"')
+#test.run(['vis_3d_multigrid.inp'], ['h2o.mol'], args='--incmo --put="numerical_grid" --get="ed_on3Ddftgrid_multi.h5 ed_on3Dgrid_generated_multi.h5"')
+
+#
+# compare generated data with reference
+#
+

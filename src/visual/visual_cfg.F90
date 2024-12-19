@@ -550,6 +550,9 @@ contains
       case ('dscale')
         grid_function%modify = 1
         call str2flt(val, grid_function%down_scale, stat)
+      case ('radpow')
+        grid_function%modify = 1
+        call str2int(val, grid_function%radial_power, stat)
       case ('carpow')
         grid_function%modify = 1
         temp = val
@@ -558,7 +561,7 @@ contains
         if (index(val, ',') > 0) then
           nr_words = word_count(temp, ',')
           if (nr_words .ne. 3) then
-            write(*,*) 'Input error. More than three values are in the "lao_skip".'
+            write(*,*) 'Input error. Three values are expected for "carpow".'
             stop
           end if
           allocate(chvalues(nr_words))
@@ -569,7 +572,7 @@ contains
           end do
           deallocate(chvalues)
         else
-          write(*,*) 'Input error. "carpow" expects an array of floats.'
+          write(*,*) 'Input error. "carpow" expects an array of three floats.'
           stop
         end if
       case default
