@@ -34,6 +34,7 @@ test.run(['vis_3d_old.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dgrid_gener
 
 test.run(['vis_3d_radial.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dradial.h5 grid_3d_fromRADIAL.h5"')
 test.run(['vis_3d_dftgrid.inp'], ['h2o.mol'], args='--incmo --put="numerical_grid" --get="ed_on3Ddftgrid.h5 dftgrid_3d.h5"')
+test.run(['vis_3d_multigrid.inp'], ['h2o.mol'], args='--incmo --put="numerical_grid" --get="ed_on3Ddftgrid_multi.h5 ed_on3Dgrid_generated_multi.h5"')
 
 #
 # compare generated data with reference
@@ -60,7 +61,7 @@ for t in testset:
               gf_label='/result/grid_function/ed/visualization/values/',
               gf_test_key='t0_icomp_1')
 
-testset = ["ed_on3Dgrid_generated.h5", "ed_on3Dgrid_generated_old.h5"]
+testset = ["ed_on3Dgrid_generated.h5", "ed_on3Dgrid_generated_old.h5", "ed_on3Dgrid_generated_multi.h5"]
 for t in testset:
 
     rs.verify(ftest=t,\
@@ -185,24 +186,24 @@ for t in testset:
 
 # test grid and grid functions
 
-testset = ["ed_on3Ddftgrid.h5"]
+testset = ["ed_on3Ddftgrid.h5", "ed_on3Ddftgrid_multi.h5"]
 for t in testset:
 
     rs.verify(ftest=t,\
-              fref='result/'+t,\
+              fref='result/ed_on3Ddftgrid.h5',\
               typ='single',\
               gf_label='/result/grid_function/ed/integration/integrated_values/',
               gf_test_key='t0_icomp_1')
 
     for l in ['coor_1', 'coor_2', 'coor_3']:
         rs.verify(ftest=t,\
-                  fref='result/'+t,\
+                  fref='result/ed_on3Ddftgrid.h5',\
                   typ='array',\
                   gf_label='/result/grid/points/',\
                   gf_test_key=l)
 
     rs.verify(ftest=t,\
-              fref='result/'+t,\
+              fref='result/ed_on3Ddftgrid.h5',\
               typ='array',\
               gf_label='/result/grid/points/',\
               gf_test_key='weights')

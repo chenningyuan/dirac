@@ -1,6 +1,4 @@
 **DIRAC
-.TITLE
- calculate the electron density and its derivatives on a 3D regular grid and export it to an external h5 file
 **HAMILTONIAN
 .DFT
  B3LYP
@@ -15,9 +13,6 @@
 .EVCCNV
 1.0D-8
 **VISUAL
-!.3D_INTEGRATE
-.PRINTL
-1
 .GRIDS    
 1
 id=1 input=import file_inp=grid_3d.h5
