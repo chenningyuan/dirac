@@ -1,6 +1,4 @@
 **DIRAC
-.TITLE
- calculate selected grid functions on a 3D regular grid and export them to hdf5 files
 **HAMILTONIAN
 .DFT
  B3LYP
@@ -16,8 +14,7 @@
 1.0D-8
 **VISUAL
 .OUTPRI
-! OCCUPATION will affect all gridfunctions
-.OCCUPATION
+.OCCUPATION   ! this will affect all gridfunctions
  1
  1 1 1.0
 .GRIDS 

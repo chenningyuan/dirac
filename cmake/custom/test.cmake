@@ -197,12 +197,12 @@ dirac_test(cosci_energy_blockd "short;cosci" "")
 #WAITINGFORREV:visual_div_rot,visual_lao_shielding/
 #
 # OK:
-#RETHINK:dirac_test(visual_custom_output "short;visual" "")
 dirac_test(visual_grid_options "short;visual" "")
 dirac_test(visual_integration "short;visual" "")
 dirac_test(visual_grid_function_modifications "short;visual" "")
-#
 dirac_test(visual_3d_electronden_dc_dft_frac_occupation "short;visual" "")
+#RETHINK:dirac_test(visual_custom_output "short;visual" "")
+#
 dirac_test(visual_3d_electronden_dc_dft "short;visual" "")
 #ALLPREPARED,FIXMEcode:dirac_test(visual_3d_esp_dc_dft "short;visual" "")
 dirac_test(visual_3d_elf_dc_dft "short;visual" "")
