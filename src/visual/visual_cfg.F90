@@ -102,6 +102,7 @@ contains
         end if
       case ('typ')
         call str2int(val, grid%typ, stat)
+        if (grid%typ==0) grid%typ=np
       case ('margin')
 !       units: a.u.
         call str2flt(val, grid%margin, stat)
@@ -390,15 +391,17 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine verify_grid_function_input_cfg(grid_function)
     type(grid_function_t),intent(in)::grid_function
+    character*(:),allocatable:: errmsg
+
+    ! catch errors
 
     if (grid_function%id_assigned_grid == 0) then
-      write(*, *) 'Input error. Missing information about the grid.'
-      stop
+      errmsg='Input error. Missing information about the grid.\n'
     end if
 
     if (grid_function%input == 1) then
       if (len_trim(grid_function%file_inp) == 0) then
-        write(*, *) 'Input error: Missing file for grid_function import.'
+        errmsg=errmsg//'Input error: Missing file for grid_function import.'
         stop
       end if
     end if
@@ -435,6 +438,8 @@ contains
         stop
       end if
     end if
+
+    if (allocated(errmsg)) call visual_quit(errmsg)
 
   end subroutine verify_grid_function_input_cfg
 

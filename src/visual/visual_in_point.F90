@@ -1131,6 +1131,7 @@ contains
     real(8), intent(in):: px, py, pz
     integer, intent(in):: ipoint
     real(8):: f, r2
+    logical:: modified
 
     f = 1.0d0
 

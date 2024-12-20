@@ -569,7 +569,7 @@ contains
                     ao,                    &
                     buffer)
       
-        select case (grid_function%gf_type)
+        select case (trim(grid_function%gf_type))
 !         fixme:
 !         this is a clumsy way to handle grid functions
 !         that depend on a single density matrix (dmat_0 .or. dmat)
