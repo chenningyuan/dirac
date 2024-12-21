@@ -19,7 +19,7 @@ module electrostatic_potential
                       dmat,             &
                       r,                &
                       include_nuc_part, &
-                      include_el_part,my_rank)
+                      include_el_part)
 
 !  --------------------------------------------------------------------------
    integer, intent(in)           :: nr_points
@@ -27,10 +27,9 @@ module electrostatic_potential
    integer, intent(in)           :: irep
    integer, intent(in)           :: mat_dim
    real(8), intent(in)           :: dmat(mat_dim, mat_dim, *)
-   real(8), intent(in)           :: r(3, nr_points)
+   real(8), intent(in)           :: r(nr_points, 3)
    logical, intent(in), optional :: include_nuc_part
    logical, intent(in), optional :: include_el_part
-   integer, intent(in), optional :: my_rank
 !  --------------------------------------------------------------------------
    logical                       :: nuc_part
    logical                       :: el_part
@@ -46,34 +45,19 @@ module electrostatic_potential
 
    esp = 0.0d0
    if (nuc_part) then
-      if (present(my_rank)) then
-      call get_nuclear_mep(nr_points, r, esp, 0,my_rank=my_rank)
-      else
       call get_nuclear_mep(nr_points, r, esp, 0)
-      end if
    end if
    if (el_part) then
       call legacy_lwork_get(lwork)
       call alloc(work, lwork, id='temporary work array in electrostatic potential')
 ! Never neglect SS-block for visualization purposes
-      !write(*, '(a,4i12)') 'BEFORE CALLING ELECTRONIC_MEP ', my_rank, nr_points, mat_dim, lwork
-      do i = 1, nr_points
-        !write(*, '(a,2i6,4E16.8)') 'points BEFORE CALLING ELECTRONIC_MEP ', my_rank, i, r(1:3,i), esp(i)
-      end do
-      if (present(my_rank)) then
-      call get_electronic_mep(nr_points, dmat, mat_dim, r, esp, work, lwork, 0, .false., .false.,my_rank=my_rank)
-      else
       call get_electronic_mep(nr_points, dmat, mat_dim, r, esp, work, lwork, 0, .false., .false.)
-      end if
-      do i = 1, nr_points
-        !write(*, '(a,2i6,4E16.8)') 'points AFTER CALLING ELECTRONIC_MEP ', my_rank, i, r(1:3,i), esp(i)
-      end do
       call dealloc(work)
    end if
 
    end subroutine
 
-   subroutine get_nuclear_mep(nr_points, points, nuc_mep, iprint,my_rank)
+   subroutine get_nuclear_mep(nr_points, points, nuc_mep, iprint)
 !      
 ! Routine for the calculation of the nuclear part of the molecular 
 ! electrostatic potential on a certain grid of points {r_i}:
@@ -95,7 +79,6 @@ module electrostatic_potential
       real(8), intent(in)  :: points(3, nr_points)
       real(8), intent(out) :: nuc_mep(nr_points)
       integer :: iprint
-      integer,optional,intent(in) :: my_rank
 
 !     Local variables
       real(8) :: coora(3, nucdep), charges(nucdep), dist
@@ -124,11 +107,7 @@ module electrostatic_potential
 
       if (iprint > 5) then
           do ipoint = 1, nr_points
-            if (present(my_rank)) then
-              !write(*,'(a,2i6,3E16.8,ES30.20E3)') "Nuclear ESP @point", my_rank, ipoint, points(1:3,ipoint),nuc_mep(ipoint)
-            else
-              print *, "Nuclear ESP @point", ipoint, nuc_mep(ipoint)
-            end if
+            print *, "Nuclear ESP @point", ipoint, nuc_mep(ipoint)
           end do
       end if
 
@@ -196,7 +175,7 @@ module electrostatic_potential
    end subroutine
 
    subroutine get_electronic_mep(nr_points, matrix, mat_dim, points, vector,    &
-                        work, lwork, iprint, get_matrix, skipss_block,my_rank)
+                        work, lwork, iprint, get_matrix, skipss_block)
 !      
 ! Driver routine for the calculation of the electronic part of the molecular 
 ! electrostatic potential on a certain grid of points {r_i}:
@@ -221,10 +200,6 @@ module electrostatic_potential
 !            get_matrix logical is absent or is present and FALSE:
 !            density matrix as input, potentials vector as output.                        
 !                        
-#ifdef VAR_MPI
-    use interface_to_mpi
-#include "infpar.h"
-#endif
 
 #include "pi.h"
 #include "mxcent.h"
@@ -234,7 +209,7 @@ module electrostatic_potential
 #ifdef prg_dirac
 #include "dcbgrd.h"
 #endif
-!#include "ccom.h" gosia - set THRS as a parameter here; otherwise cause trubles in VISUAL
+#include "ccom.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -254,7 +229,6 @@ module electrostatic_potential
       real(8)             :: matrix(mat_dim,mat_dim, *)
 ! Triggers whether we want PCM Fock matrix contribution or just the
 ! potential.      
-      integer, optional, intent(in) :: my_rank
       logical, optional   :: get_matrix 
       real(8)             :: vector(nr_points)
       real(8), intent(in) :: points(3, nr_points)
@@ -271,46 +245,6 @@ module electrostatic_potential
       logical :: do_matrix
       real(8) :: debug_dij , debug_vij,  debug_prod , debug_sum
       integer :: idxa, idxb
-!gosia - set THRS as a parameter here; otherwise cause trubles in VISUAL;
-! its value is taken from REAINI subroutine in abacus/herrdn.F
-      real(8), parameter :: THRS = 1.0D-15
-
-
-!gosia, first pass variables from common blocks
-#ifdef VAR_MPI
-    call interface_MPI_BCAST_l0(nosmlv,1,MPARID,global_communicator)
-    call interface_MPI_BCAST_l0(levyle,1,MPARID,global_communicator)
-    call interface_MPI_BCAST_l0(bss,1,MPARID,global_communicator)
-    call interface_MPI_BCAST_l0(x2c,1,MPARID,global_communicator)
-    call interface_MPI_BCAST(nlrgsh,1,MPARID,global_communicator)
-    call interface_MPI_BCAST(kmax,1,MPARID,global_communicator)
-    call interface_MPI_BCAST(nhkt,size(nhkt),MPARID,global_communicator)
-    call interface_MPI_BCAST(khkt,size(khkt),MPARID,global_communicator)
-    call interface_MPI_BCAST(kckt,size(kckt),MPARID,global_communicator)
-    call interface_MPI_BCAST(istbao,size(istbao),MPARID,global_communicator)
-    call interface_MPI_BCAST(nuco,size(nuco),MPARID,global_communicator)
-    call interface_MPI_BCAST(nstrt,size(nstrt),MPARID,global_communicator)
-    call interface_MPI_BCAST(ncent,size(ncent),MPARID,global_communicator)
-    call interface_MPI_BCAST(numcf,size(numcf),MPARID,global_communicator)
-    call interface_MPI_BCAST(lclass,size(lclass),MPARID,global_communicator)
-    call interface_MPI_BCAST(jstrt,size(jstrt),MPARID,global_communicator)
-    call interface_MPI_BCAST(cent,size(cent),MPARID,global_communicator)
-    call interface_MPI_BCAST(nucnum,size(nucnum),MPARID,global_communicator)
-    call interface_MPI_BCAST(mult,size(mult),MPARID,global_communicator)
-    call interface_MPI_BCAST(lvalub,size(lvalub),MPARID,global_communicator)
-    call interface_MPI_BCAST(mvalub,size(mvalub),MPARID,global_communicator)
-    call interface_MPI_BCAST(nvalub,size(nvalub),MPARID,global_communicator)
-    call interface_MPI_BCAST(fmult,size(fmult),MPARID,global_communicator)
-
-!
-!      LOGICAL SHARE(MXSHEL), SEGM(MXSHEL), SPHR(MXSHEL)
-!
-!     &        NRCO(MXSHEL), NBCH(MXSHEL), KSTRT(MXSHEL), &
-!     &        IPTSHL(MXSHEL), NUMCFT(MXSHEL)
-!     &        NSMLSH, NORBS,                                    &
-!     &        MST(MXSHEL), MBSID(MXSHEL), MBIDBT(MXSHEL)
-!
-#endif
 
       if (nbsym > 1) then
          call quit('ESP calculation cannot handle symmetry!')
@@ -344,15 +278,13 @@ module electrostatic_potential
       end if
 ! Loop over bras <mu|      
 
-      ! gosia: not all variables are visible in parallel when called from visual; but OK when called from embedding...
-      !write(*, '(a,i6,e16.8,3i6,3l6)') 'IN ELECTRONIC_MEP ',my_rank,tols,idxmax,kmax,nlrgsh,nosmlv,skipss_block,levyle
 !!!!
 !! aspg, 23/10/2015
 !! debug printouts
-!     print *,'debug: mc, skipss_block, idxmax, kmax, nlrgsh:',my_rank,mc,skipss_block,idxmax,kmax,nlrgsh
+!     print *,'debug: mc, skipss_block, idxmax, kmax, nlrgsh:',mc,skipss_block,idxmax,kmax,nlrgsh
 !
 !!!
- 
+
       idena = 0
       do ishela = 1, idxmax
         ica   = lclass(ishela)
@@ -425,7 +357,6 @@ module electrostatic_potential
 !             write (*, '(A,6I4)') "khkta, khktb, multa, multb, idena, idenb:", khkta, khktb, multa, multb,idena, idenb
 !             print *, "      i, j, Dij, Vij, DV, sum"
 !!!!
-      !write(*, '(a,7i6)') 'IN ELECTRONIC_MEP ',my_rank,khkta, khktb, multa, multb,idena, idenb
               if (do_matrix) then
                  do ib = 1, kcktb
                    do ia = 1, kckta 
@@ -445,13 +376,11 @@ module electrostatic_potential
 !!!!
 !! aspg, 23/10/2015
 !! debug printouts
-                     debug_dij  = matrix(idxa,idxb,1)
-                     debug_vij  = ader(ipoint, ia, ib)
-                     debug_prod = debug_dij * debug_vij 
-                     debug_sum  = debug_sum + debug_prod 
+!                     debug_dij  = matrix(idxa,idxb,1)
+!                     debug_vij  = ader(ipoint, ia, ib)
+!                     debug_prod = debug_dij * debug_vij 
+!                     debug_sum  = debug_sum + debug_prod 
 !                     write (*,'(5x,2i4,e20.8,2i4,e20.8,2e20.8)') idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
-                     !write (*,'(a,i4,5x,2i4,e20.8,2i4,e20.8,2e20.8)') 'IN ELECTRONIC_MEP ',&
-                     ! my_rank,idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
 !!!!
                    end do
                    end do
@@ -475,20 +404,17 @@ module electrostatic_potential
 !          do ipoint = 1, nr_points
 !            print *, "Electronic ESP @point", ipoint, vector(ipoint)
 !          end do
-       !if (iprint > 5) then
+      if (iprint > 5) then
           do ipoint = 1, nr_points
-               if (present(my_rank)) then
-                 !write(*,'(a,2i6,3E16.8,ES30.20E3)') "Electronic ESP @point", my_rank, ipoint, points(1:3,ipoint),vector(ipoint)
-               end if
-            !print *, "Electronic ESP @point", ipoint, vector(ipoint)
+            print *, "Electronic ESP @point", ipoint, vector(ipoint)
           end do
           if (do_matrix) then
-            !write(*, *) 'matrix from get_electronic_mep'
-           !CALL PRQMAT(matrix(1,1,1),mat_dim, mat_dim, mat_dim, &
-           !             mat_dim, 1,(/1, 2, 3, 4/), 6)
+            write(*, *) 'matrix from get_electronic_mep'
+           CALL PRQMAT(matrix(1,1,1),mat_dim, mat_dim, mat_dim, &
+                        mat_dim, 1,(/1, 2, 3, 4/), 6)
           end if
-       !end if
 
+      end if
 
    end subroutine 
 

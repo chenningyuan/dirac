@@ -524,90 +524,55 @@ contains
     real(8), intent(inout):: buffer(*)
     integer:: ipoint
 
-    if ((grid_function%name .eq. 'esp') .or. &
-        (grid_function%name .eq. 'espe') .or. &
-        (grid_function%name .eq. 'espn')) then
+    do ipoint = 1, nr_points
+    
+!     otherwise, other densities have to be calculated in one grid point at a time
 
-!     esp* subroutines work on batches of points
-!     so we can speed things up a bit
+      call get_ao(1,                     &
+                  (/grid_points(1, ipoint)/),&
+                  (/grid_points(2, ipoint)/),&
+                  (/grid_points(3, ipoint)/),&
+                  ao,                    &
+                  buffer)
+    
+      select case (trim(grid_function%gf_type))
+!       fixme:
+!       this is a clumsy way to handle grid functions
+!       that depend on a single density matrix (dmat_0 .or. dmat)
+!       or on multiple density matrices (dmat_0 .and. dmat), as in LAO case;
+!       now, this causes some code duplication in visual_in_point.F90 and should be refactored
+        case ("composite")
+          call get_quantity_in_point_refactored(dmat_0, dmat,&
+                                                ao,buffer,&
+                                                grid_function,grid_function_values,&
+                                                grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
+                                                mol,&
+                                                ipoint=ipoint)
+        case ("response")
+          call get_quantity_in_point_refactored(dmat, &
+                                                ao,buffer,&
+                                                grid_function,grid_function_values,&
+                                                grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
+                                                mol,&
+                                                ipoint=ipoint)
+        case ("unperturbed")
+          call get_quantity_in_point_refactored(dmat_0, &
+                                                ao,buffer,&
+                                                grid_function,grid_function_values,&
+                                                grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
+                                                mol,&
+                                                ipoint=ipoint)
+      end select
 
-      do ipoint = 1, nr_points
-        call get_ao(1,                     &
-                    grid_points(1, ipoint),&
-                    grid_points(2, ipoint),&
-                    grid_points(3, ipoint),&
-                    ao,                    &
-                    buffer)
-      end do
+      if (grid_function%purpose == 1) then
+        !call daxpy(ndim,grid_weights(ipoint),1,grid_function_values,1,grid_function_integrated_values,1)
+        grid_function_integrated_values(1:ndim) = grid_function_integrated_values(1:ndim) &
+                                                + grid_function_values(1:ndim,ipoint)*grid_weights(ipoint)
+      end if
 
-#ifdef VAR_MPI
-      call get_esp_functions_in_points(get_my_rank(),&
-                                       dmat_0,&
-                                       ao,buffer,&
-                                       ndim,nr_points,&
-                                       grid_points,&
-                                       grid_function,grid_function_values)
+    
+    end do
 
-#else
-      call get_esp_functions_in_points(0,&
-                                       dmat_0,&
-                                       ao,buffer,&
-                                       ndim,nr_points,&
-                                       grid_points,&
-                                       grid_function,grid_function_values)
-
-#endif
-    else
-      do ipoint = 1, nr_points
-      
-!       otherwise, other densities have to be calculated in one grid point at a time
-
-        call get_ao(1,                     &
-                    (/grid_points(1, ipoint)/),&
-                    (/grid_points(2, ipoint)/),&
-                    (/grid_points(3, ipoint)/),&
-                    ao,                    &
-                    buffer)
-      
-        select case (trim(grid_function%gf_type))
-!         fixme:
-!         this is a clumsy way to handle grid functions
-!         that depend on a single density matrix (dmat_0 .or. dmat)
-!         or on multiple density matrices (dmat_0 .and. dmat), as in LAO case;
-!         now, this causes some code duplication in visual_in_point.F90 and should be refactored
-          case ("composite")
-            call get_quantity_in_point_refactored(dmat_0, dmat,&
-                                                  ao,buffer,&
-                                                  grid_function,grid_function_values,&
-                                                  grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
-                                                  mol,&
-                                                  ipoint=ipoint)
-          case ("response")
-            call get_quantity_in_point_refactored(dmat, &
-                                                  ao,buffer,&
-                                                  grid_function,grid_function_values,&
-                                                  grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
-                                                  mol,&
-                                                  ipoint=ipoint)
-          case ("unperturbed")
-            call get_quantity_in_point_refactored(dmat_0, &
-                                                  ao,buffer,&
-                                                  grid_function,grid_function_values,&
-                                                  grid_points(1, ipoint),grid_points(2, ipoint),grid_points(3, ipoint),&
-                                                  mol,&
-                                                  ipoint=ipoint)
-        end select
-
-        if (grid_function%purpose == 1) then
-          !call daxpy(ndim,grid_weights(ipoint),1,grid_function_values,1,grid_function_integrated_values,1)
-          grid_function_integrated_values(1:ndim) = grid_function_integrated_values(1:ndim) &
-                                                  + grid_function_values(1:ndim,ipoint)*grid_weights(ipoint)
-        end if
-
-      
-      end do
-
-    end if
 
   end subroutine
 

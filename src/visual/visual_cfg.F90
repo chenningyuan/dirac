@@ -390,6 +390,7 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine verify_grid_function_input_cfg(grid_function)
+    use visual_mpi
     type(grid_function_t),intent(in)::grid_function
     character*(:),allocatable:: errmsg
 
@@ -438,6 +439,18 @@ contains
         stop
       end if
     end if
+
+#ifdef VAR_MPI
+    if (is_parallel().and.(grid_function%name == 'esp'&
+                       .or.grid_function%name == 'espe'&
+                       .or.grid_function%name == 'espn'&
+                       .or.grid_function%name == 'esprho'&
+                       .or.grid_function%name == 'esperho'&
+                       .or.grid_function%name == 'espnrho')) then
+      write(*,*) 'VISUAL: ESP functions can only be calculated in serial mode. stop.'
+      stop
+    end if
+#endif
 
     if (allocated(errmsg)) call visual_quit(errmsg)
 

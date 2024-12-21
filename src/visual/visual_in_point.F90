@@ -17,7 +17,6 @@ module visual_in_point
   implicit none
 
   public get_quantity_in_point_refactored
-  public get_esp_functions_in_points
 
   private
 
@@ -594,6 +593,63 @@ contains
 !       'edipz'
         grid_function_values(3:3,ipoint:ipoint) = pz*t0
 
+      case ('espe')
+!       electrostatic potential-electronic part
+
+        temp1 = 0.0d0
+        call get_esp(1,  &
+                     temp1, &
+                     dmat%irep, &
+                     dmat%mat_dim,  &
+                     dmat%elements,   &
+                     (/px, py, pz/), &
+                     include_nuc_part=.false., &
+                     include_el_part=.true.)
+!       gosia: figure out why this should be scaled
+        grid_function_values(1:1,ipoint:ipoint) = 0.5d0*temp1(1)
+
+      case ('espn')
+!       electrostatic potential-nuclear part
+
+        temp1 = 0.0d0
+        call get_esp(1,&
+                     temp1,&
+                     dmat%irep, &
+                     dmat%mat_dim,  &
+                     dmat%elements,   &
+                     (/px, py, pz/), &
+                     include_nuc_part=.true., &
+                     include_el_part=.false.)
+        grid_function_values(1:1,ipoint:ipoint) = temp1(1)
+
+      case ('esp')
+!       electrostatic potential-total
+
+        temp1 = 0.0d0
+        call get_esp(1,&
+                     temp1,&
+                     dmat%irep, &
+                     dmat%mat_dim,  &
+                     dmat%elements,   &
+                     (/px, py, pz/), &
+                     include_nuc_part=.false., &
+                     include_el_part=.true.)
+!       gosia: figure out why this should be scaled
+        grid_function_values(1:1,ipoint:ipoint) = 0.5d0*temp1(1)
+
+        temp1 = 0.0d0
+        call get_esp(1,&
+                     temp1,&
+                     dmat%irep, &
+                     dmat%mat_dim,  &
+                     dmat%elements,   &
+                     (/px, py, pz/), &
+                     include_nuc_part=.true., &
+                     include_el_part=.false.)
+        grid_function_values(1:1,ipoint:ipoint) = &
+        grid_function_values(1:1,ipoint:ipoint)+temp1(1)
+
+
       case ('esperho')
 !       electrostatic potential-electronic part multiplied with density
 
@@ -1028,94 +1084,6 @@ contains
                                           grid_function_values,&
                                           px,py,pz,&
                                           ipoint=ipoint)
-    end if
-
-  end subroutine
-
-
-! ------------------------------------------------------------------------------
-  subroutine get_esp_functions_in_points(my_rank,&
-                                         dmat,&
-                                         ao,buffer,&
-                                         ndim,nr_points,grid_points,&
-                                         grid_function,grid_function_values)
-
-    integer, intent(in) :: my_rank
-    type(dmat_t), intent(in):: dmat
-    real(8), intent(in):: ao(*)
-    real(8), intent(in):: buffer(*)
-    integer, intent(in):: ndim,nr_points
-    real(8), intent(in):: grid_points(ndim,nr_points)
-    type(grid_function_t), intent(inout):: grid_function
-    real(8), intent(out):: grid_function_values(:,:)
-    real(8), allocatable:: temp(:,:)
-
-    integer  :: mat_dim, mat_nz, mat_irep
-
-    select case (grid_function%name)
-
-      case ('espe')
-!       electrostatic potential-electronic part
-
-        call get_esp(nr_points,&
-                     grid_function_values(1:1,1:nr_points), &
-                     dmat%irep, &
-                     dmat%mat_dim,  &
-                     dmat%elements,   &
-                     grid_points(1:3,1:nr_points),&
-                     include_nuc_part=.false., &
-                     include_el_part=.true., my_rank=my_rank)
-!       gosia: figure out why this should be scaled
-        grid_function_values(1:1,1:nr_points) = 0.5d0*grid_function_values(1:1,1:nr_points)
-
-      case ('espn')
-!       electrostatic potential-nuclear part
-
-        call get_esp(nr_points,&
-                     grid_function_values(1:1,1:nr_points),&
-                     dmat%irep, &
-                     dmat%mat_dim,  &
-                     dmat%elements,   &
-                     grid_points(1:3,1:nr_points),&
-                     include_nuc_part=.true., &
-                     include_el_part=.false., my_rank=my_rank)
-
-      case ('esp')
-!       electrostatic potential-total
-
-        allocate(temp(1,nr_points))
-        temp = 0.0d0
-        call get_esp(nr_points,&
-                     temp, &
-                     dmat%irep, &
-                     dmat%mat_dim,  &
-                     dmat%elements,   &
-                     grid_points(1:3,1:nr_points),&
-                     include_nuc_part=.false., &
-                     include_el_part=.true., my_rank=my_rank)
-!       gosia: figure out why this should be scaled
-        grid_function_values(1:1,1:nr_points) = 0.5d0*temp(1:1,1:nr_points)
-
-        temp = 0.0d0
-        call get_esp(nr_points,&
-                     temp, &
-                     dmat%irep, &
-                     dmat%mat_dim,  &
-                     dmat%elements,   &
-                     grid_points(1:3,1:nr_points),&
-                     include_nuc_part=.true., &
-                     include_el_part=.false., my_rank=my_rank)
-        grid_function_values(1:1,1:nr_points) = grid_function_values(1:1,1:nr_points)+temp(1:1,1:nr_points)
-
-        deallocate(temp)
-
-    end select
-
-    if (grid_function%modify == 1) then
-      call modify_grid_function(grid_function,&
-                                grid_function_values,&
-                                ndim, nr_points,&
-                                grid_points)
     end if
 
   end subroutine
