@@ -214,18 +214,19 @@ dirac_test(visual_3d_rspB_ll_dft_rkb_lao "medium;visual;lao" "")
 dirac_test(visual_3d_rspB_ll_dft_rkb_nolao "short;visual" "")
 dirac_test(visual_3d_rspE_ll_dft "short;visual" "")
 #
-dirac_test(visual_3d_gamma5_dc_dft "short;visual" "")
-dirac_test(visual_3d_spinden_dc_dft "short;visual" "")
+dirac_test(visual_3d_gamma5_dc_dft "medium;visual" "")
+dirac_test(visual_3d_spinden_dc_dft "medium;visual" "")
 #
 # related:
 dirac_test(response_hdf5 "short;response" "")
 ########################
+#ALLPREPARED,FIXMEcode:
+dirac_test(visual_3d_esp_dc_dft "short;visual" "")
+dirac_test(visual_3d_esp_ll_dft "short;visual" "")
+########################
 #RETHINK:dirac_test(visual_custom_output "short;visual" "")
 #
-#ALLPREPARED,FIXMEcode:dirac_test(visual_3d_esp_dc_dft "short;visual" "")
 #FIXME:WIP:dirac_test(visual_3d_bed_dc_dft "short;visual" "")
-#
-#ALLPREPARED,FIXMEcode:dirac_test(visual_3d_esp_ll_dft "short;visual" "")
 # FIXME:
 #dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao_micd_specific "short;visual;lao" "")
 #

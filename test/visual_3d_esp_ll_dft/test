@@ -2,6 +2,7 @@
 
 import os
 import sys
+from pathlib import Path
 
 #
 # prepare environment, define functions
@@ -10,25 +11,22 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
 from runtest_rs import CompareHDF5
+test = TestRun(__file__, sys.argv)
+
+#
+# prepare grid files
+#
+grid_3d_h5=Path(test.work_dir, 'grid.h5')
+grid_3d_h5.unlink(missing_ok=True)
+grid_3d_h5=grid_3d_h5.symlink_to(Path(Path(__file__).parents[1].resolve(), 'testdata', 'grid_visual_3D.h5'))
 
 #
 # run tests
 #
 
-test = TestRun(__file__, sys.argv)
-
-os.symlink(os.path.join(os.path.dirname(__file__), '..', 'testdata', 'grid_visual_3D.h5'), os.path.join(test.work_dir, 'grid.h5'))
-
 test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
+
 test.run(['vis.inp'], ['h2o.mol'], args='--incmo --put="grid.h5" --get="*.h5"')
-
-#
-# clean
-#
-
-os.remove(os.path.join(test.work_dir, 'CHECKPOINT.h5'))   
-os.remove(os.path.join(test.work_dir, 'OPERATORS.h5'))   
-os.unlink(os.path.join(test.work_dir, 'grid.h5'))
 
 #
 # compare generated data with reference
@@ -52,6 +50,6 @@ for t in testset:
     rs.verify(ftest=t+'.h5',\
               fref='result/'+t+'.h5',\
               typ='array',\
-              gf_label='/result/grid_function/'+t+'/visualize/values/',
+              gf_label='/result/grid_function/'+t+'/visualization/values/',
               gf_test_key='t0_icomp_1')
 
