@@ -201,29 +201,33 @@ dirac_test(visual_grid_options "short;visual" "")
 dirac_test(visual_integration "short;visual" "")
 dirac_test(visual_grid_function_modifications "short;visual" "")
 dirac_test(visual_3d_electronden_dc_dft_frac_occupation "short;visual" "")
-#RETHINK:dirac_test(visual_custom_output "short;visual" "")
-#
 dirac_test(visual_3d_electronden_dc_dft "short;visual" "")
-#ALLPREPARED,FIXMEcode:dirac_test(visual_3d_esp_dc_dft "short;visual" "")
 dirac_test(visual_3d_elf_dc_dft "short;visual" "")
 dirac_test(visual_3d_kinden_dc_dft "short;visual" "")
-#ALLPREPARED,FIXME-differs from legacy:dirac_test(visual_3d_gamma5_dc_dft "short;visual" "")
-#ALLPREPARED,FIXME-differs from legacy:dirac_test(visual_3d_spinden_dc_dft "short;visual" "")
 dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao "short;visual;lao" "")
 dirac_test(visual_3d_rspB_dc_dft_rkb_nolao "short;visual" "")
 dirac_test(visual_3d_rspE_dc_dft "short;visual" "")
-#FIXME:WIP:dirac_test(visual_3d_bed_dc_dft "short;visual" "")
-#
 dirac_test(visual_3d_electronden_ll_dft "short;visual" "")
-#ALLPREPARED,FIXMEcode:dirac_test(visual_3d_esp_ll_dft "short;visual" "")
 dirac_test(visual_3d_elf_ll_dft "short;visual" "")
 dirac_test(visual_3d_kinden_ll_dft "short;visual" "")
-dirac_test(visual_3d_rspB_ll_dft_rkb_lao "short;visual;lao" "")
+dirac_test(visual_3d_rspB_ll_dft_rkb_lao "medium;visual;lao" "")
 dirac_test(visual_3d_rspB_ll_dft_rkb_nolao "short;visual" "")
 dirac_test(visual_3d_rspE_ll_dft "short;visual" "")
+#
+dirac_test(visual_3d_gamma5_dc_dft "short;visual" "")
+dirac_test(visual_3d_spinden_dc_dft "short;visual" "")
+#
+# related:
+dirac_test(response_hdf5 "short;response" "")
+########################
+#RETHINK:dirac_test(visual_custom_output "short;visual" "")
+#
+#ALLPREPARED,FIXMEcode:dirac_test(visual_3d_esp_dc_dft "short;visual" "")
+#FIXME:WIP:dirac_test(visual_3d_bed_dc_dft "short;visual" "")
+#
+#ALLPREPARED,FIXMEcode:dirac_test(visual_3d_esp_ll_dft "short;visual" "")
 # FIXME:
 #dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao_micd_specific "short;visual;lao" "")
-dirac_test(response_hdf5 "short;response" "")
 #
 #----------------------------------------------------------------------------------------
 #
