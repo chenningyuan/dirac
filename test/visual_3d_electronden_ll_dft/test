@@ -52,7 +52,7 @@ for t in testset:
     rs.verify(ftest=t+'.h5',\
               fref='result/'+t+'.h5',\
               typ='array',\
-              gf_label='/result/grid_function/'+t+'/visualize/values/',
+              gf_label='/result/grid_function/'+t+'/visualization/values/',
               gf_test_key='t0_icomp_1')
 
 
@@ -73,7 +73,7 @@ for t in testset:
         rs.verify(ftest=t+'.h5',\
                   fref='result/'+t+'.h5',\
                   typ='array',\
-                  gf_label='/result/grid_function/'+t+'/visualize/values/',
+                  gf_label='/result/grid_function/'+t+'/visualization/values/',
                   gf_test_key='t1_icomp_'+str(i))
 
 testset = ['ed_hessian']
@@ -93,6 +93,6 @@ for t in testset:
         rs.verify(ftest=t+'.h5',\
                   fref='result/'+t+'.h5',\
                   typ='array',\
-                  gf_label='/result/grid_function/'+t+'/visualize/values/',
+                  gf_label='/result/grid_function/'+t+'/visualization/values/',
                   gf_test_key='t2_icomp_'+str(i))
 

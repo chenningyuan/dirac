@@ -135,6 +135,7 @@ contains
     real(8)::s, v(3), temp(4)
     integer::nr_words, i,j
     character(len=len_trim(user_input_lines(1))),allocatable::chvalues(:)
+    character*(:),allocatable:: errmsg
 
     select case (key)
       case ('bedfix')
@@ -143,13 +144,7 @@ contains
 !       .BEDFIX
 !       theta, phi, chi, freq
 !
-        if (index(user_input_lines(1), ',') > 0) then
-          nr_words = word_count(user_input_lines(1), ',')
-          if (nr_words /= 4) then
-            stop
-            !fixme
-          end if
-        end if
+        nr_words = 4
         allocate(chvalues(nr_words))
         call split_string(user_input_lines(1),nr_words,chvalues,separator=',')
         do j = 1, nr_words
@@ -174,6 +169,7 @@ contains
     real(8)::s, v(3), w(3)
     integer::nr_words, i,j
     character(len=len_trim(user_input_lines(1))),allocatable::chvalues(:)
+    character*(:),allocatable:: errmsg
 
     select case (domain)
       case ('list')
@@ -185,13 +181,6 @@ contains
 !       ...
 !
         grid%nr_points_total = size(user_input_lines)
-        if (index(user_input_lines(1), ',') > 0) then
-          nr_words = word_count(user_input_lines(1), ',')
-          if (nr_words /= grid%ndim) then
-            stop
-            !fixme
-          end if
-        end if
         allocate(grid%points(grid%ndim, grid%nr_points_total))
         grid%points = 0.0d0
         do i = 1, grid%nr_points_total
@@ -243,10 +232,10 @@ contains
 !
 !       on input:
 !       .2D
-!       0.0  0.0  0.0  <--- coordinates of grid origin
-!       0.0  0.0  2.0  <--- coordinates of grid "right" point
+!       0.0, 0.0, 0.0  <--- coordinates of grid origin
+!       0.0, 0.0, 2.0  <--- coordinates of grid "right" point
 !       20             <--- nr of points origin-"right"
-!       0.0  2.0  0.0  <--- coordinates of grid "top" point
+!       0.0, 2.0, 0.0  <--- coordinates of grid "top" point
 !       20             <--- nr of points origin-"top"
 !
         grid%typ = 1
@@ -289,10 +278,10 @@ contains
 !
 !       on input:
 !       .2D
-!       0.0  0.0  0.0  <--- coordinates of grid origin
-!       0.0  0.0  2.0  <--- coordinates of grid "right" point
+!       0.0, 0.0, 0.0  <--- coordinates of grid origin
+!       0.0, 0.0, 2.0  <--- coordinates of grid "right" point
 !       20             <--- nr of points origin-"right"
-!       0.0  2.0  0.0  <--- coordinates of grid "top" point
+!       0.0, 2.0, 0.0  <--- coordinates of grid "top" point
 !       20             <--- nr of points origin-"top"
 !       2              <--- integration order
 !
@@ -359,7 +348,7 @@ contains
 !
 !       on input:
 !       .RADIAL
-!       0.0  0.0  0.0  <--- coordinates of grid origin
+!       0.0, 0.0, 0.0  <--- coordinates of grid origin
 !       2.0            <--- radial length 
 !       10             <--- number of steps
 !
