@@ -460,6 +460,29 @@
          end do
       end if
 
+      if (kw_matches(word, '.BEDFIX')) then
+         if (.not. rs_input%allocated_grid_functions()) then
+           write(*,*) 'Error: ".BEDFIX" requires prior specification of ".GRIDFUNCTIONS". Stop.'
+           stop
+         else
+           do i = 1, rs_input%nr_grid_functions
+             if (rs_input%grid_functions(i)%name == 'bedcos' .or. &
+                 rs_input%grid_functions(i)%name == 'bedsin') then
+               nr_lines = 1
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
+                  read(get_file_unit(), '(a)') line
+                  if (line(1:1) == '!' .or. line(1:1) == '#') cycle
+                  word_array(j) = line
+               end do
+               call grid_function_user_input_cfg(rs_input%grid_functions(i), 'bedfix', word_array)
+               deallocate(word_array)
+               call verify_grid_function_input_cfg(rs_input%grid_functions(i))
+             end if
+           end do
+         end if
+      end if
+
       call verify_grid_and_grid_function_input_cfg()
       
       call check_whether_kw_found(word, kw_section)

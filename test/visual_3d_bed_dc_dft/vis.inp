@@ -1,0 +1,28 @@
+**DIRAC
+.TITLE
+ calculate selected grid function on a 3D regular grid and export it to an external h5 file
+**HAMILTONIAN
+.DFT
+ B3LYP
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+10
+.EVCCNV
+1.0D-8
+**VISUAL
+.OUTPRI
+.GRIDS    
+1
+id=1 input=import file_inp=grid.h5
+.GRIDFUNCTIONS    
+2
+name=bedsin id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=5 file_out=bedsin_rspvec5.h5
+name=bedcos id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=5 file_out=bedcos_rspvec5.h5
+.BEDFIX
+0.0, 0.0, 0.0, 49.138
+*END OF

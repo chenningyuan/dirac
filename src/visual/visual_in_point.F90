@@ -735,52 +735,44 @@ contains
       case ('bedcos')
 !       full light-matter interaction: cosine part
 
-!        t1 = 0.0d0
-!!       hardcoded for testing:
-!        CALL ANGLES(0.0d0,0.0d0,0.0d0,visual_cfg_wave_vector,visual_cfg_pol_vector)
-!        visual_cfg_freq = 49.138
-!
-!        call get_j(t1,        &
-!                   rs_input%cvalue,      &
-!                   dmat%irep, &
-!                   dmat%mat_dim,  &
-!                   dmat%elements, &
-!                   buffer,    &
-!                   ao)
-!
-!        f = (visual_cfg_wave_vector(1)*px+   &
-!             visual_cfg_wave_vector(2)*py+   &
-!             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/rs_input%cvalue
-!        grid_function_values(1:1,ipoint:ipoint) = & 
-!            -(t1(1)*visual_cfg_pol_vector(1)+  &
-!              t1(2)*visual_cfg_pol_vector(2)+  &
-!              t1(3)*visual_cfg_pol_vector(3))*cos(f)/visual_cfg_freq
-!
+        t1 = 0.0d0
+        call get_j(t1,        &
+                   rs_input%cvalue,      &
+                   dmat%irep, &
+                   dmat%mat_dim,  &
+                   dmat%elements, &
+                   buffer,    &
+                   ao)
+
+        f = (grid_function%bed_wave_vector(1)*px+   &
+             grid_function%bed_wave_vector(2)*py+   &
+             grid_function%bed_wave_vector(3)*pz)*grid_function%bed_freq/rs_input%cvalue
+        grid_function_values(1:1,ipoint:ipoint) = & 
+            -(t1(1)*grid_function%bed_pol_vector(1)+  &
+              t1(2)*grid_function%bed_pol_vector(2)+  &
+              t1(3)*grid_function%bed_pol_vector(3))*cos(f)/grid_function%bed_freq
+
 
       case ('bedsin')
 !       full light-matter interaction: sine part
 
-!        t1 = 0.0d0
-!!       hardcoded for testing:
-!        CALL ANGLES(0.0d0,0.0d0,0.0d0,visual_cfg_wave_vector,visual_cfg_pol_vector)
-!        visual_cfg_freq = 49.138
-!
-!
-!        call get_j(t1,        &
-!                   rs_input%cvalue,      &
-!                   dmat%irep, &
-!                   dmat%mat_dim,  &
-!                   dmat%elements, &
-!                   buffer,    &
-!                   ao)
-!
-!        f = (visual_cfg_wave_vector(1)*px+   &
-!             visual_cfg_wave_vector(2)*py+   &
-!             visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/rs_input%cvalue
-!        grid_function_values(1:1,ipoint:ipoint) = &
-!            -(t1(1)*visual_cfg_pol_vector(1)+  &
-!              t1(2)*visual_cfg_pol_vector(2)+  &
-!              t1(3)*visual_cfg_pol_vector(3))*sin(f)/visual_cfg_freq
+        t1 = 0.0d0
+
+        call get_j(t1,        &
+                   rs_input%cvalue,      &
+                   dmat%irep, &
+                   dmat%mat_dim,  &
+                   dmat%elements, &
+                   buffer,    &
+                   ao)
+
+        f = (grid_function%bed_wave_vector(1)*px+   &
+             grid_function%bed_wave_vector(2)*py+   &
+             grid_function%bed_wave_vector(3)*pz)*grid_function%bed_freq/rs_input%cvalue
+        grid_function_values(1:1,ipoint:ipoint) = & 
+            -(t1(1)*grid_function%bed_pol_vector(1)+  &
+              t1(2)*grid_function%bed_pol_vector(2)+  &
+              t1(3)*grid_function%bed_pol_vector(3))*sin(f)/grid_function%bed_freq
 
     end select
 

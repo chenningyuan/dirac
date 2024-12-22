@@ -10,6 +10,7 @@ module visual_cfg
 
   public grid_input_cfg
   public grid_user_input_cfg
+  public grid_function_user_input_cfg
   public grid_function_input_cfg
   public verify_grid_input_cfg
   public verify_grid_function_input_cfg
@@ -124,6 +125,45 @@ contains
     if (grid%id == 0) grid%id = id_grid
 
   end subroutine grid_input_cfg
+
+! ------------------------------------------------------------------------------
+  subroutine grid_function_user_input_cfg(grid_function, key, user_input_lines)
+    type(grid_function_t),intent(inout)::grid_function
+    character(*), intent(in):: key
+    character(*), dimension(:), intent(in):: user_input_lines
+    integer::stat, np
+    real(8)::s, v(3), temp(4)
+    integer::nr_words, i,j
+    character(len=len_trim(user_input_lines(1))),allocatable::chvalues(:)
+
+    select case (key)
+      case ('bedfix')
+!
+!       on input:
+!       .BEDFIX
+!       theta, phi, chi, freq
+!
+        if (index(user_input_lines(1), ',') > 0) then
+          nr_words = word_count(user_input_lines(1), ',')
+          if (nr_words /= 4) then
+            stop
+            !fixme
+          end if
+        end if
+        allocate(chvalues(nr_words))
+        call split_string(user_input_lines(1),nr_words,chvalues,separator=',')
+        do j = 1, nr_words
+          call str2flt(trim(chvalues(j)), temp(j), stat)
+        end do
+        deallocate(chvalues)
+        grid_function%bed_freq = temp(4)
+        call angles(temp(1),temp(2),temp(3),&
+             grid_function%bed_wave_vector,grid_function%bed_pol_vector)
+        grid_function%bedfix_known = .true.
+
+    end select
+
+  end subroutine grid_function_user_input_cfg
 
 ! ------------------------------------------------------------------------------
   subroutine grid_user_input_cfg(grid, domain, user_input_lines)
@@ -397,62 +437,67 @@ contains
     ! catch errors
 
     if (grid_function%id_assigned_grid == 0) then
-      errmsg='Input error. Missing information about the grid.\n'
+      errmsg='Input error: Missing information about the grid.\n'
     end if
 
     if (grid_function%input == 1) then
       if (len_trim(grid_function%file_inp) == 0) then
-        errmsg=errmsg//'Input error: Missing file for grid_function import.'
-        stop
+        errmsg=errmsg//'Missing file for grid_function import.\n'
       end if
     end if
 
     if (grid_function%rspvec_id /= 0) then
       if (len_trim(grid_function%rspvec_file) == 0) then
-        write(*, *) 'Input error: Missing response file for grid_function.'
-        stop
+        errmsg=errmsg//'Missing response file for grid_function.\n'
       end if
     end if
 
     if (grid_function%lao /= 0) then
       if (grid_function%wf_order /= 1) then
-        write(*, *) 'Input error. LAOs can be used for linear response properties only.'
-        stop
+        errmsg=errmsg//'LAOs can be used for linear response properties only.\n'
       end if
       if (len_trim(grid_function%rspvec_file) == 0) then
-        write(*, *) 'Input error: Requested LAOs, but no information '// &
-                    'about response file for grid_function.'
-        stop
+        errmsg=errmsg//'Requested LAOs, but no information '// &
+                    'about response file for grid_function.\n'
       end if
     end if
 
     if (any(grid_function%lao_skip /= 0)) then
       if (grid_function%lao == 0) then
-        write(*, *) 'Input error: "lao_skip" option presented, but LAOs are not requested.'
-        stop
+        errmsg=errmsg//'"lao_skip" option presented, but LAOs are not requested.\n'
       end if
     end if
 
     if (grid_function%export) then
       if (.not. allocated(grid_function%file_out)) then
-        write(*,*) 'VISUAL: Grid function export requested, but file for export not specified.'
-        stop
+        errmsg=errmsg//'Grid function export requested, but file for export not specified.\n'
       end if
     end if
 
 #ifdef VAR_MPI
+    !fixme
     if (is_parallel().and.(grid_function%name == 'esp'&
                        .or.grid_function%name == 'espe'&
                        .or.grid_function%name == 'espn'&
                        .or.grid_function%name == 'esprho'&
                        .or.grid_function%name == 'esperho'&
                        .or.grid_function%name == 'espnrho')) then
-      write(*,*) 'VISUAL: ESP functions can only be calculated in serial mode. stop.'
-      stop
+      errmsg=errmsg//'ESP functions can only be calculated in serial mode'
     end if
 #endif
 
     if (allocated(errmsg)) call visual_quit(errmsg)
+
+    ! additional setup
+
+
+    if (grid_function%name=='bedcos' .or. grid_function%name=='bedsin') then
+      if (.not.grid_function%bedfix_known) then
+        !errmsg=errmsg//'Missing data: check .BEDFIX keyword for bedcos/bedsin calculations.\n'
+        write(*, *) 'Additional data for bedcos/bedsin calculations will be read from .BEDFIX'
+      end if
+    end if
+
 
   end subroutine verify_grid_function_input_cfg
 

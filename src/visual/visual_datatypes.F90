@@ -163,6 +163,10 @@ module visual_datatypes
     integer, public:: cartesian_power(1:3) = 0.0d0
     real(8), public:: up_scale = 1.0d0
     real(8), public:: down_scale = 1.0d0
+    real(8), public:: bed_wave_vector(1:3) = 0.0d0
+    real(8), public:: bed_pol_vector(1:3) = 0.0d0
+    real(8), public:: bed_freq = 0.0d0
+    logical, public:: bedfix_known= .false.
     character(len=:), public, allocatable:: rspvec_file     ! name of a file with response parameters
     character(len=:), public, allocatable:: gf_type         ! must be one of: "unperturbed", "response", "composite"
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid function import
@@ -645,6 +649,10 @@ contains
     write(*, *) '  cartesian_power = ', self%cartesian_power, my_rank_local
     write(*, *) '  up_scale = ', self%up_scale, my_rank_local
     write(*, *) '  down_scale = ', self%down_scale, my_rank_local
+    write(*, *) '  bed_wave_vector = ', self%bed_wave_vector, my_rank_local
+    write(*, *) '  bed_pol_vector = ', self%bed_pol_vector, my_rank_local
+    write(*, *) '  bed_freq = ', self%bed_freq, my_rank_local
+    write(*, *) '  bedfix_known = ', self%bedfix_known, my_rank_local
     write(*, *) '  id_assigned_grid =', self%id_assigned_grid, my_rank_local
     write(*, *) '  purpose = ', self%purpose, my_rank_local
     if (allocated(self%rspvec_file)) &

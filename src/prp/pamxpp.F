@@ -352,7 +352,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 40,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 41,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -382,7 +382,8 @@ C
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
      &            '.GNOISE','.GCLEAN','.BEDCON','.NOVELR',
-     &            '.NOLENR','.ANGPLO','.BEDECD','.VPOLE'/
+     &            '.NOLENR','.ANGPLO','.BEDECD','.VPOLE',
+     &            '.RSPEXP'/
 C
 #include "ibtfun.h"
 C
@@ -461,6 +462,7 @@ Chj: MAXRM, MXLOAD
          XPP_INDSTR(1,I) = ' '
          XPP_INDSTR(3,I) = ' '
       ENDDO
+      XPP_RSPEXP = .FALSE.
 C
 C     Initialize user-defined transition properties
 C     =============================================
@@ -489,7 +491,8 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38,39,40) I
+     &                     31,32,33,34,35,36,37,38,39,40,
+     &                     41) I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -725,6 +728,10 @@ C&&&& VPOLE: Electric multipole moments in the generalized velocity representati
                ENDIF
                CALL DEF_VPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
                NPPAPT = NPPAPT + NDEG
+               GO TO 100
+ 41            CONTINUE
+C&&&& RSPEXP: export response data to hdf5
+               XPP_RSPEXP = .true.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -2671,6 +2678,9 @@ C
           ENDDO          
         ENDDO
       ENDDO    
+      if (XPP_RSPEXP) then
+        call export_rsp_info_to_helper(iprint)
+      end if
       deallocate(symlab)
       deallocate(excerg)
       deallocate(indx)

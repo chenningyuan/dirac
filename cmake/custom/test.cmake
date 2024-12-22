@@ -224,9 +224,11 @@ dirac_test(response_hdf5 "short;response" "")
 dirac_test(visual_3d_esp_dc_dft "short;visual" "")
 dirac_test(visual_3d_esp_ll_dft "short;visual" "")
 ########################
+#WIP:
+dirac_test(visual_3d_bed_dc_dft "short;visual" "")
+########################
 #RETHINK:dirac_test(visual_custom_output "short;visual" "")
 #
-#FIXME:WIP:dirac_test(visual_3d_bed_dc_dft "short;visual" "")
 # FIXME:
 #dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao_micd_specific "short;visual;lao" "")
 #

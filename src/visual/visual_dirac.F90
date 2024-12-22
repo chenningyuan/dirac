@@ -861,8 +861,13 @@ contains
     call interface_mpi_bcast(grid_function%modify,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%radial_power,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%cartesian_power,3,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%bed_wave_vector,3,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%bed_pol_vector,3,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%bed_freq,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid_function%bedfix_known,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%up_scale,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%down_scale,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid_function%composite,1,irank_master,global_communicator)
 
     if (.not.mpi_is_master()) then
       if (len_gffn_rsp(grid_function%id) > 0.and..not.allocated(grid_function%rspvec_file)) &
