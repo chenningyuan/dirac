@@ -7,8 +7,8 @@ New features:
 
 - Basis set library has been extended with "relativistic prolapse-free Gaussian basis sets" RPF-2Z, RPF-3Z, aug-RPF-2Z, and aug-RPF-3Z (H. J. Aa. Jensen)
 - Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke,
-Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z.
-J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
+  Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z.
+  J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
 
 Infrastructure changes and fixes:
 

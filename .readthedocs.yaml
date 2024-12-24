@@ -22,9 +22,12 @@ build:
     post_checkout: 
       - git submodule update --init --recursive
     install:
-      - pip install "sphinx<7.0.0" sphinx_rtd_theme sphinxcontrib-bibtex
+      - python3 -m venv venv
+      - source venv/bin/activate
+      - python3 -m pip install "sphinx<7.0.0" docutils==0.19 sphinx_rtd_theme sphinxcontrib-bibtexa
+      - pip list
     pre_build:
         - ./setup $READTHEDOCS_OUTPUT
     build:
       html:
-        - cd $READTHEDOCS_OUTPUT; echo "I am in the directory:";pwd; make html; ls -lt
+        - cd $READTHEDOCS_OUTPUT; echo "I am in the directory:";pwd; make html; cd html; echo "content of html:"; ls -lt
