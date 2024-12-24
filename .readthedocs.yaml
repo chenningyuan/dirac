@@ -24,7 +24,7 @@ build:
     install:
       - python3 -m venv venv
       - . venv/bin/activate
-      - python3 -m pip install "sphinx<7.0.0" docutils==0.19 sphinx_rtd_theme sphinxcontrib-bibtexa
+      - python3 -m pip install "sphinx<7.0.0" sphinx_rtd_theme sphinxcontrib-bibtex
       - pip list
     pre_build:
         - ./setup $READTHEDOCS_OUTPUT
