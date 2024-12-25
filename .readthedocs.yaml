@@ -30,4 +30,4 @@ build:
         - ./setup $READTHEDOCS_OUTPUT
     build:
       html:
-        - cd $READTHEDOCS_OUTPUT; echo "I am in the directory:";pwd; make html; cd html; echo "content of html:"; ls -lt
+        - cd $READTHEDOCS_OUTPUT; echo "I am in the directory:";pwd; make VERBOSE=1 html; cd html; echo "content of html:"; ls -lt; ls -lt _static
