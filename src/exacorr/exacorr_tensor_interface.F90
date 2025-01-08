@@ -198,15 +198,22 @@ module exacorr_tensor_interface
 
  
         ! copies data and destroys the source talsh tensor, unless staying in talsh
-        function talsh_to_tensor_t(tens_talsh, out_tens, out_executor)
+        function talsh_to_tensor_t(tens_talsh, out_tens, out_executor, destroy)
           implicit none
           type(talsh_tens_t), intent(inout)    :: tens_talsh
           type(tensor_t), intent(inout)    :: out_tens
           integer, intent(in), optional :: out_executor ! If not set value set by Cmake is used. 1=tapp, 2=talsh, 3=exatensor.
+          integer, intent(in), optional:: destroy ! if set to 0 source tensor not destroyed, 1 it's destroyed (default) 
 
           integer             :: DataKind(1),nData
           integer(INTD)       :: ierr, talsh_to_tensor_t
+          integer             :: destroy_
           type(tensor_t)    :: in_tens
+
+          destroy_ = 1
+          if (present(destroy)) then
+            destroy_ = destroy
+          endif
 
           ierr=talsh_tensor_data_kind(tens_talsh,nData,DataKind)
           if (DataKind(1) == R8) in_tens%datatype = 1
@@ -216,37 +223,44 @@ module exacorr_tensor_interface
           in_tens%tens_talsh = tens_talsh
 
           if (present(out_executor)) then
-            ierr=convert(in_tens, out_tens, out_executor)
+            ierr=convert(in_tens, out_tens, out_executor, destroy=destroy_)
           else
-            ierr=convert(in_tens, out_tens)
+            ierr=convert(in_tens, out_tens, destroy=destroy_)
           endif
 
           talsh_to_tensor_t = ierr
         end function talsh_to_tensor_t
 
         ! copies data and destroys the source talsh tensor, unless staying in talsh
-        function tensor_t_to_talsh(in_tens, tens_talsh)
+        function tensor_t_to_talsh(in_tens, tens_talsh, destroy)
           implicit none
           type(tensor_t), intent(inout)    :: in_tens
           type(talsh_tens_t), intent(inout)    :: tens_talsh
+          integer, intent(in), optional:: destroy ! if set to 0 source tensor not destroyed, 1 it's destroyed (default) 
 
           integer(INTD)       :: ierr, tensor_t_to_talsh
+          integer             :: destroy_
           type(tensor_t)    :: out_tens
           
-          ierr=convert(in_tens, out_tens, out_executor=2)
+          destroy_ = 1
+          if (present(destroy)) then
+            destroy_ = destroy
+          endif
+          ierr=convert(in_tens, out_tens, out_executor=2, destroy=destroy_)
           tens_talsh = out_tens%tens_talsh
 
           tensor_t_to_talsh = ierr
         end function tensor_t_to_talsh
 
         ! copies data and destroys the source tensor, unless staying in the same executor
-        function convert(in_tens, out_tens, out_executor) ! If out_executor not set value set by Cmake is used.
+        function convert(in_tens, out_tens, out_executor, destroy) ! If out_executor not set value set by Cmake is used.
           implicit none
           type(tensor_t), intent(inout)    :: in_tens
           type(tensor_t), intent(inout)    :: out_tens
           integer, intent(in), optional:: out_executor 
+          integer, intent(in), optional:: destroy ! if set to 0 source tensor not destroyed, 1 it's destroyed (default) 
           integer(INTD)       :: ierr, convert
-          integer             :: in_out_exec
+          integer             :: in_out_exec, destroy_
 
           integer(c_int) :: tapp_err, nmodes
           integer(c_int64_t), allocatable, target :: extents(:)
@@ -263,6 +277,10 @@ module exacorr_tensor_interface
            
           if (present(out_executor)) then
             out_tens%which_executor = out_executor
+          endif
+          destroy_ = 1
+          if (present(destroy)) then
+            destroy_ = destroy
           endif
 
           out_tens%datatype = in_tens%datatype
@@ -296,16 +314,22 @@ module exacorr_tensor_interface
                 ierr=talsh_tensor_get_body_access(out_tens%tens_talsh,talshsptr,R8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
                 call dcopy(numel, in_tens%tens_tapp%data_real, 1, lin_tens_r, 1)
-                deallocate(in_tens%tens_tapp%data_real)
+                if (destroy_ == 1) then
+                  deallocate(in_tens%tens_tapp%data_real)
+                endif
 
               elseif (out_tens%datatype == 3 ) then
                 ierr=talsh_tensor_get_body_access(out_tens%tens_talsh,talshsptr,C8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 call zcopy(numel, in_tens%tens_tapp%data_complex, 1, lin_tens_c, 1)
-                deallocate(in_tens%tens_tapp%data_complex)
+                if (destroy_ == 1) then
+                  deallocate(in_tens%tens_tapp%data_complex)
+                endif
               endif
 
-              tapp_err = TAPP_destory_tensor_info(in_tens%tens_tapp%tensor_info)
+              if (destroy_ == 1) then
+                tapp_err = TAPP_destory_tensor_info(in_tens%tens_tapp%tensor_info)
+              endif
 
             CASE(201) 
               nmodes = talsh_tensor_rank(in_tens%tens_talsh)
@@ -346,7 +370,9 @@ module exacorr_tensor_interface
                 out_tens%tens_tapp%data_complex = arr_c
               endif
 
-              ierr=talsh_tensor_destruct(in_tens%tens_talsh)
+              if (destroy_ == 1) then
+                ierr=talsh_tensor_destruct(in_tens%tens_talsh)
+              endif
 
             CASE(202) 
               out_tens%tens_talsh = in_tens%tens_talsh

@@ -114,27 +114,33 @@ subroutine tapp_tenpi_ccsd(nocc,nvir,F2_,F1_,F4_,F3_,T2_, &
     type(tensor_t) :: D11    !       VVOO
          
     integer :: ierr
+    ! integer(INTD)      :: result_dims(1)
          
     write(*,'("    Running code from tenpi with executor ",i11,".")') executor
-    ierr=talsh_to_tensor_t(F2_, F2, executor)
-    ierr=talsh_to_tensor_t(F1_, F1, executor)
-    ierr=talsh_to_tensor_t(F4_, F4, executor)
-    ierr=talsh_to_tensor_t(F3_, F3, executor)
-    ierr=talsh_to_tensor_t(T2_, T2, executor)
-    ierr=talsh_to_tensor_t(T1_, T1, executor)
-    ierr=talsh_to_tensor_t(V8_, V8, executor)
-    ierr=talsh_to_tensor_t(V3_, V3, executor)
-    ierr=talsh_to_tensor_t(V1_, V1, executor)
-    ierr=talsh_to_tensor_t(V6_, V6, executor)
-    ierr=talsh_to_tensor_t(V4_, V4, executor)
-    ierr=talsh_to_tensor_t(V2_, V2, executor)
-    ierr=talsh_to_tensor_t(V9_, V9, executor)
-    ierr=talsh_to_tensor_t(V5_, V5, executor)
-    ierr=talsh_to_tensor_t(V7_, V7, executor)
-    ierr=talsh_to_tensor_t(Z0_, Z0, executor)
-    ierr=talsh_to_tensor_t(Z1_, Z1, executor)
-    ierr=talsh_to_tensor_t(Z2_, Z2, executor)
+    ierr=talsh_to_tensor_t(F2_, F2, executor, destroy=0)
+    ierr=talsh_to_tensor_t(F1_, F1, executor, destroy=0)
+    ierr=talsh_to_tensor_t(F4_, F4, executor, destroy=0)
+    ierr=talsh_to_tensor_t(F3_, F3, executor, destroy=0)
+    ierr=talsh_to_tensor_t(T2_, T2, executor, destroy=0)
+    ierr=talsh_to_tensor_t(T1_, T1, executor, destroy=0)
+    ierr=talsh_to_tensor_t(V8_, V8, executor, destroy=0)
+    ierr=talsh_to_tensor_t(V3_, V3, executor, destroy=0)
+    ierr=talsh_to_tensor_t(V1_, V1, executor, destroy=0)
+    ierr=talsh_to_tensor_t(V6_, V6, executor, destroy=0)
+    ierr=talsh_to_tensor_t(V4_, V4, executor, destroy=0)
+    ierr=talsh_to_tensor_t(V2_, V2, executor, destroy=0)
+    ierr=talsh_to_tensor_t(V9_, V9, executor, destroy=0)
+    ierr=talsh_to_tensor_t(V5_, V5, executor, destroy=0)
+    ierr=talsh_to_tensor_t(V7_, V7, executor, destroy=0)
+    ierr=talsh_to_tensor_t(Z0_, Z0, executor, destroy=0)
+    ierr=talsh_to_tensor_t(Z1_, Z1, executor, destroy=0)
+    ierr=talsh_to_tensor_t(Z2_, Z2, executor, destroy=0)
+                                            
+    ! result_dims = 1                       
     
+    ! ierr=construct_tensor_t(Z0, C8, result_dims(1:0), init_val=ZERO, executor=executor)
+    ! ierr=construct_tensor_t(Z1, C8, (/nocc,nvir/), init_val=ZERO, executor=executor)
+    ! ierr=construct_tensor_t(Z2, C8, (/nocc,nocc,nvir,nvir/), init_val=ZERO, executor=executor)
     !Diagram      0; Contraction 1; Tree Level  0; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  0/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("Z0()+=V1(m1,n1,e1,f1)*T1(e1,f1,m1,n1)", &
     Z0,V1,T1,scale=(2.5d-1,0.0d0))
@@ -912,8 +918,14 @@ subroutine tapp_tenpi_ccsd(nocc,nvir,F2_,F1_,F4_,F3_,T2_, &
     ierr=tensor_t_to_talsh(Z0, Z0__)
     ierr=tensor_t_to_talsh(Z1, Z1__)
     ierr=tensor_t_to_talsh(Z2, Z2__)
-    Z0_ = Z0__
-    Z1_ = Z1__
-    Z2_ = Z2__
+    ierr=talsh_tensor_add("Z0()+=Z0A()", &
+    Z0_,Z0__,scale=(1.0d0,0.0d0))
+    ierr=talsh_tensor_add("Z1(e1,m1)+=Z1A(e1,m1)", &
+    Z1_,Z1__,scale=(1.0d0,0.0d0))
+    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=Z2A(e1,f1,m1,n1)", &
+    Z2_,Z2__,scale=(1.0d0,0.0d0))
+    ! Z0_ = Z0__
+    ! Z1_ = Z1__
+    ! Z2_ = Z2__
     
 end subroutine tapp_tenpi_ccsd
