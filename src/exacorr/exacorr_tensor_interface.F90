@@ -82,6 +82,7 @@ module exacorr_tensor_interface
         public convert
         public construct_tensor_t
         public destroy_tensor_t
+        public direct_data_pointer
 
         contains
 
@@ -310,16 +311,15 @@ module exacorr_tensor_interface
               allocate(lin_dim(1))
               lin_dim(1) = numel
 
+              ierr=direct_data_pointer(out_tens,talshsptr)
+
               if (out_tens%datatype == 1 ) then
-                ierr=talsh_tensor_get_body_access(out_tens%tens_talsh,talshsptr,R8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
                 call dcopy(numel, in_tens%tens_tapp%data_real, 1, lin_tens_r, 1)
                 if (destroy_ == 1) then
                   deallocate(in_tens%tens_tapp%data_real)
                 endif
-
               elseif (out_tens%datatype == 3 ) then
-                ierr=talsh_tensor_get_body_access(out_tens%tens_talsh,talshsptr,C8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 call zcopy(numel, in_tens%tens_tapp%data_complex, 1, lin_tens_c, 1)
                 if (destroy_ == 1) then
@@ -356,14 +356,14 @@ module exacorr_tensor_interface
               allocate(lin_dim(1))
               lin_dim(1) = numel
   
+              ierr=direct_data_pointer(in_tens,talshsptr)
+
               if (out_tens%datatype == 1 ) then
-                ierr=talsh_tensor_get_body_access(in_tens%tens_talsh,talshsptr,R8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
                 allocate(arr_r(numel)) 
                 call dcopy(numel, lin_tens_r, 1, arr_r, 1)
                 out_tens%tens_tapp%data_real = arr_r
               elseif (out_tens%datatype == 3 ) then
-                ierr=talsh_tensor_get_body_access(in_tens%tens_talsh,talshsptr,C8,int(0,C_INT),DEV_HOST)
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 allocate(arr_c(numel)) 
                 call zcopy(numel, lin_tens_c, 1, arr_c, 1)
@@ -479,6 +479,38 @@ module exacorr_tensor_interface
           destroy_tensor_t = ierr
         end function destroy_tensor_t
 
+
+        ! get direct access to the tensor's elements
+        function direct_data_pointer(tensor, ptr)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          type(C_PTR), intent(out) :: ptr
+
+          integer(INTD)       :: ierr, direct_data_pointer   
+
+          SELECT CASE(tensor%which_executor)
+          CASE(1)
+             ptr = get_data_ptr(tensor%tens_tapp)
+             ierr = 0
+          CASE(2)
+              if (tensor%datatype == 1 ) then
+                ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,R8,int(0,C_INT),DEV_HOST)
+                ! call c_f_pointer(talshsptr,lin_tens_r,lin_dim) ! todo: get dims and return a fortran tensor
+              elseif (tensor%datatype == 3 ) then
+                ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,C8,int(0,C_INT),DEV_HOST)
+              endif
+          CASE default 
+            write(*,'("  Error. direct_data_pointer for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          END SELECT
+
+          if ( .not. c_associated(ptr) ) then
+            write(*,'("  Error. Null pointer exception in direct_data_pointer.")') 
+            stop 99
+          endif
+          direct_data_pointer = ierr
+        end function direct_data_pointer
 
         ! this will be a part of the standard interface, implemented inside the c code of the c-api, but also here for practical reasons in case of problems with the compilation of the c part
         ! FUNCTION standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj) result (ierr)

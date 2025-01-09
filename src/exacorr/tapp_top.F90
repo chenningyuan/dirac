@@ -24,9 +24,9 @@ module tapp_top
           type(C_PTR) :: tensor_info  ! TAPP_tensor_info       
 
           ! TAPP reference implementation does not store data
-          complex(c_double_complex), allocatable :: data_complex(:) !Do not access in your code outside this file (and tapp_top)!
-          real(c_double),            allocatable :: data_real(:)    !Do not access in your code outside this file (and tapp_top)!
-          ! integer(c_int64_t),        allocatable, target :: tapp_tens_data_int64(:)   !Do not access in your code outside this file (and tapp_top)!
+          complex(c_double_complex), allocatable :: data_complex(:) !Do not access in your code outside this file (and exacorr_tensor_interface)!
+          real(c_double),            allocatable :: data_real(:)    !Do not access in your code outside this file (and exacorr_tensor_interface)!
+          ! integer(c_int64_t),        
 
           integer(kind(TAPP_datatype)) :: datatype
         end type tapp_tensor_t
