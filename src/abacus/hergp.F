@@ -2136,8 +2136,6 @@ C
 C     Determine center of mass in orgcom.h(CMXYZ) from information in common blocks
 C     K.Ruud, June-94
 C
-C     radovan: AMASS is not used !?
-C     hjaaj:   AMASS is passed on to VIBMAS
 C
 #include "implicit.h"
 #include "codata.h"

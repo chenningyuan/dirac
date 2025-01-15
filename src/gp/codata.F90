@@ -38,8 +38,8 @@ module codata
 !             and commented are also the on-shell scheme values
 ! ----------------------------------------------------------------------------
 
-!  "The 1986 adjustment of the fundamental physical constants"
-!                     E. Richard Cohen and Barry N. Taylor
+!  The 1986 adjustment of the fundamental physical constants
+!  E. Richard Cohen and Barry N. Taylor
 !  Reviews of Modern Physics, Vol. 59, No. 4, 1987
   real(8), parameter :: xtang1986    = 0.529177249d0
   real(8), parameter :: echarge1986  = 1.60217733d-19
@@ -54,9 +54,9 @@ module codata
 !  real(8), parameter :: fermicc1986  = Values not reported
 !  real(8), parameter :: s2thetaw1986 = Values not reported
 
-!  "Review of Particle Properties"
-!    L. Montanet et al. (Particle Data Group)
-!    Phys. Rev. D, Vol. 50, 1173, 1994; Erratum Phys. Rev. D, Vol. 51, 3975, 1995
+!  Review of Particle Properties
+!  L. Montanet et al. (Particle Data Group)
+!  Phys. Rev. D, Vol. 50, 1173, 1994; Erratum Phys. Rev. D, Vol. 51, 3975, 1995
   real(8), parameter :: fermicc1994  = 1.16639d-5
   real(8), parameter :: s2thetaw1994 = 0.2319d0    ! on-shell scheme value: not reported
 
@@ -76,8 +76,8 @@ module codata
   real(8), parameter :: fermicc1998  = 1.16639d-5
   real(8), parameter :: s2thetaw1998 = 0.23124d0    ! on-shell scheme value: 0.2224d0
 
-!  "CODATA Recommended Values of the Fundamental Physical Constants: 2002"
-!                     Peter J. Mohr and Barry N. Taylor
+!  CODATA Recommended Values of the Fundamental Physical Constants: 2002
+!  Peter J. Mohr and Barry N. Taylor
 !  Reviews of Modern Physics, Vol. 77, No. 1, 2005
   real(8), parameter :: xtang2002    = 0.5291772108d0
   real(8), parameter :: echarge2002  = 1.60217653d-19
@@ -92,8 +92,8 @@ module codata
   real(8), parameter :: fermicc2002  = 1.16639d-5
   real(8), parameter :: s2thetaw2002 = 0.23124d0    ! on-shell scheme value: 0.22215d0
 
-!  "CODATA Recommended Values of the Fundamental Physical Constants: 2006"
-!                     Peter J. Mohr, Barry N. Taylor and David B. Newell
+!  CODATA Recommended Values of the Fundamental Physical Constants: 2006
+!  Peter J. Mohr, Barry N. Taylor and David B. Newell
 !  Journal of Physical and Chemical Reference Data, Vol. 37, No. 3, 2008
   real(8), parameter :: xtang2006    = 0.52917720859d0
   real(8), parameter :: echarge2006  = 1.602176487d-19
@@ -108,8 +108,8 @@ module codata
   real(8), parameter :: fermicc2006  = 1.16637d-5
   real(8), parameter :: s2thetaw2006 = 0.23122d0    ! on-shell scheme value: 0.22255d0
 
-!  "CODATA Recommended Values of the Fundamental Physical Constants: 2010"
-!                     Peter J. Mohr, Barry N. Taylor and David B. Newell
+!  CODATA Recommended Values of the Fundamental Physical Constants: 2010
+!  Peter J. Mohr, Barry N. Taylor and David B. Newell
 !  Journal of Physical and Chemical Reference Data, Vol. 41, No. 4, 2012
   real(8), parameter :: xtang2010    = 0.52917721092d0
   real(8), parameter :: echarge2010  = 1.602176565d-19
@@ -124,8 +124,8 @@ module codata
   real(8), parameter :: fermicc2010  = 1.166364d-5
   real(8), parameter :: s2thetaw2010 = 0.23116d0    ! on-shell scheme value: 0.2223d0
 
-!  "CODATA Recommended Values of the Fundamental Physical Constants: 2014"
-!                     Peter J. Mohr, David B. Newell and Barry N. Taylor
+!  CODATA Recommended Values of the Fundamental Physical Constants: 2014
+!  Peter J. Mohr, David B. Newell and Barry N. Taylor
 !  Journal of Physical and Chemical Reference Data, Vol. 45, No. 4, 2016
   real(8), parameter :: xtang2014    = 0.52917721067d0
   real(8), parameter :: echarge2014  = 1.6021766208d-19
@@ -140,8 +140,8 @@ module codata
   real(8), parameter :: fermicc2014  = 1.1663787d-5
   real(8), parameter :: s2thetaw2014 = 0.23126d0    ! on-shell scheme value: 0.2223d0
 
-!  "CODATA Recommended Values of the Fundamental Physical Constants: 2018"
-!      Eite Tiesinga, Peter J. Mohr, David B. Newell and Barry N. Taylor
+!  CODATA Recommended Values of the Fundamental Physical Constants: 2018
+!  Eite Tiesinga, Peter J. Mohr, David B. Newell and Barry N. Taylor
 !  Journal of Physical and Chemical Reference Data, Vol. 50, No. 3, 2021
   real(8), parameter :: xtang2018    = 0.529177210903d0
   real(8), parameter :: echarge2018  = 1.602176634d-19
@@ -156,6 +156,22 @@ module codata
   real(8), parameter :: fermicc2018  = 1.1663787d-5
   real(8), parameter :: s2thetaw2018 = 0.23122d0    ! on-shell scheme value: 0.22290d0
 
+!  Codata Internationally Recommended 2022 Values of the Fundamental Physical Constants [online]
+!  P. Mohr, E. Tiesinga, E., D. Newell and B. Taylor
+!  https://physics.nist.gov/constants (Accessed June 4, 2024)
+  real(8), parameter :: xtang2022    = 0.529177210544d0
+  real(8), parameter :: echarge2022  = 1.602176634d-19
+  real(8), parameter :: hbar2022     = 1.054571817d-34
+  real(8), parameter :: xfmol2022    = 6.02214076d23
+  real(8), parameter :: umass2022    = 1.66053906892d-27
+  real(8), parameter :: pmass2022    = 1.0072764665789d0
+  real(8), parameter :: emass2022    = 9.1093837139d-31
+  real(8), parameter :: ccm2022      = 2.99792458d8
+  real(8), parameter :: autk2022     = 3.1577502480398d5
+  real(8), parameter :: gfac2022     = 2.00231930436092d0
+  real(8), parameter :: fermicc2022  = 1.1663787d-5
+  real(8), parameter :: s2thetaw2022 = 0.23121d0    ! on-shell scheme value: 0.22305d0
+
 
   contains
 
@@ -163,21 +179,7 @@ module codata
   implicit none
   character*8 CODAT
 
-!   Set default fundamental constants, from the last CODATA set
-    xtang    = xtang2018
-    echarge  = echarge2018
-    hbar     = hbar2018
-    xfmol    = xfmol2018
-    umass    = umass2018
-    pmass    = pmass2018
-    emass    = emass2018
-    ccm      = ccm2018
-    autk     = autk2018
-    gfac     = gfac2018
-    fermicc  = fermicc2018
-    s2thetaw = s2thetaw2018
-
-!  Define another explicitly requested data set to be used in the calculation
+!  Define CODATA data set to be used in the calculation
    if(CODAT.eq.'CODATA86') then
     xtang    = xtang1986
     echarge  = echarge1986
@@ -274,6 +276,33 @@ module codata
     gfac     = gfac2018
     fermicc  = fermicc2018
     s2thetaw = s2thetaw2018
+   elseif(CODAT.eq.'CODATA22') then
+    xtang    = xtang2022
+    echarge  = echarge2022
+    hbar     = hbar2022
+    xfmol    = xfmol2022
+    umass    = umass2022
+    pmass    = pmass2022
+    emass    = emass2022
+    ccm      = ccm2022
+    autk     = autk2022
+    gfac     = gfac2022
+    fermicc  = fermicc2022
+    s2thetaw = s2thetaw2022
+   else
+!   Set default fundamental constants, from the last CODATA set
+    xtang    = xtang2022
+    echarge  = echarge2022
+    hbar     = hbar2022
+    xfmol    = xfmol2022
+    umass    = umass2022
+    pmass    = pmass2022
+    emass    = emass2022
+    ccm      = ccm2022
+    autk     = autk2022
+    gfac     = gfac2022
+    fermicc  = fermicc2022
+    s2thetaw = s2thetaw2022
    end if
 
 ! -------------------- common derived constants --------------------------
@@ -379,27 +408,32 @@ module codata
 
    elseif(CODAT.eq.'CODATA18') then
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2018  "
-   write(LUPRI,*)   "            Peter J. Mohr, David B. Newell and Barry N. Taylor           "
+   write(LUPRI,*)   "    Eite Tiesinga, Peter J. Mohr, David B. Newell and Barry N. Taylor    "
    write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 93, 025010 (2021)                "
+
+   elseif(CODAT.eq.'CODATA22') then
+   write(LUPRI,*)   "  Codata Internationally Recommended 2022 Values of the Fundamental Physical Constants  "
+   write(LUPRI,*)   "           Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor            "
+   write(LUPRI,*)   "           https://physics.nist.gov/constants (Accessed June 4, 2024)                   "
 
 !  Default CODATA values
    elseif(CODAT.eq.'NOCODATA') then
-   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2018  "
-   write(LUPRI,*)   "            Peter J. Mohr, David B. Newell and Barry N. Taylor           "
-   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 93, 025010 (2021)                "
+   write(LUPRI,*)   "  Codata Internationally Recommended 2022 Values of the Fundamental Physical Constants  "
+   write(LUPRI,*)   "           Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor            "
+   write(LUPRI,*)   "           https://physics.nist.gov/constants (Accessed June 4, 2024)                   "
 
 !  If the user asks for non existing data sets, we set default values and print a WARNING
    else
    write(LUPRI,*)   " *** WARNING: CODATA set ", CODAT, " does not exist. Default is used. ***"
-   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2018  "
-   write(LUPRI,*)   "            Peter J. Mohr, David B. Newell and Barry N. Taylor           "
-   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 93, 025010 (2021)                "
+   write(LUPRI,*)   "  Codata Internationally Recommended 2022 Values of the Fundamental Physical Constants  "
+   write(LUPRI,*)   "           Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor            "
+   write(LUPRI,*)   "           https://physics.nist.gov/constants (Accessed June 4, 2024)                   "
    end if
 !  Constants other than s2thetaw and fermicc will be taken from the default CODATA set
    if(CODAT.eq.'PDG94') then
-   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2018  "
-   write(LUPRI,*)   "            Peter J. Mohr, David B. Newell and Barry N. Taylor           "
-   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 93, 025010 (2021)                "
+   write(LUPRI,*)   "  Codata Internationally Recommended 2022 Values of the Fundamental Physical Constants  "
+   write(LUPRI,*)   "           Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor            "
+   write(LUPRI,*)   "           https://physics.nist.gov/constants (Accessed June 4, 2024)                   "
    end if
 
   end subroutine print_codata_reference
