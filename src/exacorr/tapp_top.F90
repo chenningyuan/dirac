@@ -56,6 +56,8 @@ module tapp_top
     type(C_PTR) :: exec, status ! TAPP_executor, TAPP_status
     type(C_PTR):: A_, B_, C_, D_
     complex(c_double_complex), target :: alpha_, beta_
+    complex(c_double), target :: alpha_r, beta_r
+    type(C_PTR):: alpha_ptr, beta_ptr
     
     ! TAPP_create_tensor_info
     integer(c_int) :: datatype, nmodes ! datatype = TAPP_datatype
@@ -104,14 +106,14 @@ module tapp_top
       idx_C = c_loc(arr_idx_C(1)) 
     endif
 
-    if (present(a) .and. present(b) .and. present(c)) then ! D = alpha A * B + beta C
+    if (present(A) .and. present(A) .and. present(C)) then ! D = alpha A * B + beta C
       ! all set
-    elseif (present(a) .and. present(b)) then ! this defaults to D = alpha A * B + beta D
+    elseif (present(A) .and. present(B)) then ! this defaults to D = alpha A * B + beta D
       C_ = D_
       info_C = info_D
       idx_C = idx_D
       op_C_ = op_D_
-    elseif (present(a)) then ! this defaults to D = alpha A + beta D
+    elseif (present(A)) then ! this defaults to D = alpha A + beta D
       C_ = D_
       info_C = info_D
       idx_C = idx_D
@@ -161,7 +163,7 @@ module tapp_top
         stop 47
       endif
     endif
-    
+
     ! prepare a contraction plan
     tapp_err = TAPP_create_tensor_product(plan, handle, op_A_, info_A, idx_A, op_B_, info_B, idx_B, &
       op_C_, info_C, idx_C, op_D_, info_D, idx_D, prec)
@@ -171,10 +173,20 @@ module tapp_top
       stop 41
     end if
 
+    if (A%datatype == 1 .and. (.not. present(B) .or. B%datatype == 1) ) then ! A is present at this point
+        alpha_r=alpha_%re
+        beta_r=beta_%re ! todo separate condition for beta?
+        alpha_ptr = c_loc(alpha_r) 
+        beta_ptr = c_loc(beta_r) 
+    else 
+        alpha_ptr = c_loc(alpha_) 
+        beta_ptr = c_loc(beta_) 
+    endif
+    
     exec = c_null_ptr ! executor library, in case TAPP works with multiple executors at the same time
 
     ! execute the contraction plan
-    tapp_err = TAPP_execute_product(plan, exec, status, c_loc(alpha_), A_, B_, c_loc(beta_), C_, D_) ! diff between plan par here and elsewhere?
+    tapp_err = TAPP_execute_product(plan, exec, status, alpha_ptr, A_, B_, beta_ptr, C_, D_) ! diff between plan par here and elsewhere?
 
     if (tapp_err.ne.0) then
       write(*,'("  Error. TAPP tensor product failed with error code: ",i11,".")') tapp_err
