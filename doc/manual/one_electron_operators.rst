@@ -363,15 +363,48 @@ function::
 Quaternion algebra and time-reversal symmetry
 ---------------------------------------------
 
-All of the :math:`M_{4 \times 4}` matrices described in Section `Syntax for the specification of one-electron operators`_ can be written as the Kronecker product of two :math:`2 \times 2` matrices, such that :math:`M_{4 \times 4} = A_{2 \times 2}\otimes B_{2 \times 2}`. In particular, :math:`A_{2 \times 2}` is one of the following real matrices: :math:`I_{2 \times 2}`, :math:`\sigma_x`, :math:`i \sigma_y`, and :math:`\sigma_z`, whereas :math:`B_{2 \times 2}` can be equal to :math:`I_{2 \times 2}`, :math:`i \sigma_x`, :math:`i \sigma_y`, or :math:`i \sigma_z`. Here, :math:`\sigma_x`, :math:`\sigma_y`, and :math:`\sigma_z` are the Pauli matrices, and :math:`i=\sqrt{-1}` is the imaginary unit. The individual elements of the :math:`M_{4 \times 4}` matrices are related to the matrix elements of the Pauli matrices by :math:`M_{pq}=A_{ij}B_{kl}`, where :math:`p=2(i-1)+k` and :math:`q=2(j-1)+l`.
+All of the :math:`4 \times 4` matrices :math:`\boldsymbol{M}` described in Section `Syntax for the specification of one-electron operators`_ can be written as the Kronecker product of two :math:`2 \times 2` matrices :math:`\boldsymbol{A}` and :math:`\boldsymbol{B}`, such that :math:`\boldsymbol{M} = \boldsymbol{A} \otimes \boldsymbol{B}`.
 
+In particular, :math:`\boldsymbol{A}` is one of the following real matrices: :math:`I_{2 \times 2}`, :math:`\sigma_x`, :math:`i \sigma_y`, and :math:`\sigma_z`, whereas :math:`\boldsymbol{B}` can be equal to :math:`I_{2 \times 2}`, :math:`i \sigma_x`, :math:`i \sigma_y`, or :math:`i \sigma_z`. Here, :math:`\sigma_x`, :math:`\sigma_y`, and :math:`\sigma_z` are the Pauli matrices, and :math:`i=\sqrt{-1}` is the imaginary unit. The individual matrix elements of :math:`\boldsymbol{M}` are given as :math:`M_{pq}=A_{ij}B_{kl}`, where :math:`p=2(i-1)+k` and :math:`q=2(j-1)+l`.
 
-In DIRAC, the structure of the Dirac equation with respect to time-reversal symmetry is displayed by using reordered Dirac 4-spinors where the components are grouped on spin labels (:math:`\alpha`, :math:`\beta`) rather than large (upper) and small (lower) components (:math:`L`, :math:`S`), according to Eq. (7) of Ref. :cite:`Saue1999`. The same reordering applies to all the matrices :math:`M_{4 \times 4}`. In the original ordering elements, these matrices are given by :math:`M_{X\tau,X^\prime\tau^\prime}=A_{XX^\prime}B_{\tau\tau^\prime}`, where :math:`X=L,S` and :math:`\tau=\alpha,\beta`. After reordering, one clearly has :math:`M\rightarrow M^\text{Tr}_{4 \times 4} = B_{2 \times 2}\otimes A_{2 \times 2}`. This reordering guaranties that all the matrices :math:`M^\text{Tr}` are time-reversal symmetric.
+In DIRAC, the structure of the Dirac equation with respect to time-reversal symmetry is displayed by using reordered Dirac 4-spinors, where the components are grouped on spin labels (:math:`\alpha`, :math:`\beta`) rather than large (upper) and small (lower) components (:math:`L`, :math:`S`), according to Eq. (7) of Ref. :cite:`Saue1999`. The same reordering applies to all the matrices :math:`\boldsymbol{M}`, which are then transformed accordingly.
 
-Additionally, following the arguments given in Ref. :cite:`Saue1999` it is possible to make the following mapping, that involves the quaternion units: :math:`I_{2 \times 2} \rightarrow 1`, :math:`i \sigma_z \rightarrow \check{\imath}`, :math:`i \sigma_y \rightarrow \check{\jmath}`, and :math:`i \sigma_x \rightarrow \check{k}`. In this way, the matrices :math:`M^\text{Tr}_{4 \times 4}` can be mapped to :math:`2 \times 2` matrices that are linear combinations of the quaternion units. The relationship between them is given in the following Table:
+In the original ordering, these matrices are given as
+
+.. math::
+
+    \boldsymbol{M} = \boldsymbol{A} \otimes \boldsymbol{B} =
+    \begin{pmatrix}
+    M_{L\alpha,L\alpha} & M_{L\alpha,L\beta} & M_{L\alpha,S\alpha} & M_{L\alpha,S\beta} \\
+    M_{L\beta,L\alpha}  & M_{L\beta,L\beta}  & M_{L\beta,S\alpha}  & M_{L\beta,S\beta}  \\
+    M_{S\alpha,L\alpha} & M_{S\alpha,L\beta} & M_{S\alpha,S\alpha} & M_{S\alpha,S\beta} \\
+    M_{S\beta,L\alpha}  & M_{S\beta,L\beta}  & M_{S\beta,S\alpha}  & M_{S\beta,S\beta}
+    \end{pmatrix}.
+
+::
+
+However, after reordering one clearly has the transformed matrices
+
+.. math::
+
+    \boldsymbol{M}^\prime = \boldsymbol{B} \otimes \boldsymbol{A} = 
+    \begin{pmatrix}
+    M_{L\alpha,L\alpha} & M_{L\alpha,S\alpha} & M_{L\alpha,L\beta} & M_{L\alpha,S\beta} \\
+    M_{S\alpha,L\alpha} & M_{S\alpha,S\alpha} & M_{S\alpha,L\beta} & M_{S\alpha,S\beta} \\
+    M_{L\beta,L\alpha}  & M_{L\beta,S\alpha}  & M_{L\beta,L\beta}  & M_{L\beta,S\beta}  \\
+    M_{S\beta,L\alpha}  & M_{S\beta,S\alpha}  & M_{S\beta,L\beta}  & M_{S\beta,S\beta}
+    \end{pmatrix}.
+
+::
+
+This reordering guaranties that all the matrices :math:`\boldsymbol{M}^\prime` are time-reversal symmetric.
+
+Additionally, following the arguments given in Ref. :cite:`Saue1999` it is possible to make the following mapping, that involves the quaternion units: :math:`I_{2 \times 2} \rightarrow 1`, :math:`i \sigma_z \rightarrow \check{\imath}`, :math:`i \sigma_y \rightarrow \check{\jmath}`, and :math:`i \sigma_x \rightarrow \check{k}`. In this way, the matrices :math:`\boldsymbol{M}^\prime` can be mapped to :math:`2 \times 2` matrices that are linear combinations of the quaternion units.
+
+The relationship between :math:`\boldsymbol{M}` and the quaternion form of the :math:`2 \times 2` mapped matrices (arising from :math:`\boldsymbol{M}^\prime`) is given in the following Table:
 
 +------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`M_{4 \times 4}` | :math:`M` as Kronecker products (original ordering) | Quaternion form of :math:`M^\text{Tr}_{4 \times 4}` |
+| :math:`\boldsymbol{M}` | :math:`\boldsymbol{A} \otimes \boldsymbol{B}`       | Quaternion form of :math:`\boldsymbol{M}^\prime`    |
 +========================+=====================================================+=====================================================+
 | :math:`I_{4 \times 4}` | :math:`I_{2 \times 2} \otimes I_{2 \times 2}`       | :math:`I_{2 \times 2}`                              |
 +------------------------+-----------------------------------------------------+-----------------------------------------------------+
