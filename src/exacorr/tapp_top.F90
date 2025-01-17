@@ -879,4 +879,37 @@ module tapp_top
    destroy_tapp_tensor_t = tapp_err
  end function destroy_tapp_tensor_t
 
+ ! get nmodes (rank) from tapp_tensor_t
+ function get_nmodes_tapp_tensor_t(tensor, nmodes)
+   implicit none
+   type(tapp_tensor_t), intent(inout)    :: tensor
+   integer(c_int), intent(out) :: nmodes
+
+   integer(c_int)       :: tapp_err, get_nmodes_tapp_tensor_t
+   
+   tapp_err = 0
+   nmodes = TAPP_get_nmodes(tensor%tensor_info)
+   get_nmodes_tapp_tensor_t = tapp_err
+ end function get_nmodes_tapp_tensor_t
+
+ ! get extents (dimensions) of a tensor
+ function get_extents_tapp_tensor_t(tensor, extents)
+   implicit none
+   type(tensor_t), intent(inout)    :: tensor
+   integer(c_int64_t), allocatable, target, intent(inout) :: extents(:)
+   integer(c_int)          :: nmodes
+
+   integer(c_int)       :: ierr, get_extents_tapp_tensor_t 
+
+   tapp_err = 0
+   if (.not. allocated(extents)) then
+     tapp_err =  get_nmodes_tapp_tensor_t(tensor, nmodes)
+     allocate(extents(nmodes))
+   endif
+
+   call TAPP_get_extents(tensor%tensor_info, c_loc(extents(1)))
+
+   get_extents_tapp_tensor_t = tapp_err
+ end function get_extents_tapp_tensor_t
+
 end module tapp_top

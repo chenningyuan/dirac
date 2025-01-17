@@ -32,6 +32,9 @@ module exacorr_tensor_interface
 
          integer, public:: which_executor = 2 !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
          
+         contains
+           procedure :: copy_tensor_t
+           generic :: assignment(=) => copy_tensor_t
         end type tensor_t
 
         
@@ -83,6 +86,11 @@ module exacorr_tensor_interface
         public construct_tensor_t
         public destroy_tensor_t
         public direct_data_pointer
+        public get_extents
+        public get_nmodes
+        public initialize_tensor_t
+        ! public copy_tensor_t
+        ! public tensor_t_equal
 
         contains
 
@@ -289,6 +297,21 @@ module exacorr_tensor_interface
           in_out_exec = 100 * in_tens%which_executor + out_executor 
           SELECT CASE( in_out_exec) ! e.g. 201 means convert from exec 2 to 1 
             CASE(102) 
+              ierr = copy_tensor_t(in_tens, out_tens)
+
+              if (out_tens%datatype == 1 ) then
+                if (destroy_ == 1) then
+                  deallocate(in_tens%tens_tapp%data_real)
+                endif
+              elseif (out_tens%datatype == 3 ) then
+                if (destroy_ == 1) then
+                  deallocate(in_tens%tens_tapp%data_complex)
+                endif
+              endif
+              if (destroy_ == 1) then
+                tapp_err = TAPP_destory_tensor_info(in_tens%tens_tapp%tensor_info)
+              endif
+            CASE(102) 
               nmodes = TAPP_get_nmodes(in_tens%tens_tapp%tensor_info)
               numel = 1
               if (nmodes == 0) then !scalar
@@ -375,7 +398,11 @@ module exacorr_tensor_interface
               endif
 
             CASE(202) 
-              out_tens%tens_talsh = in_tens%tens_talsh
+              ! out_tens%tens_talsh = in_tens%tens_talsh
+              ierr = copy_tensor_t(in_tens, out_tens)
+              if (destroy_ == 1) then
+                ierr=talsh_tensor_destruct(in_tens%tens_talsh)
+              endif
             CASE default 
               write(*,'("  Error. Conversion from executor ",i11," to ",i11," not yet implemented.")') &
                 in_tens%which_executor, out_executor
@@ -512,6 +539,182 @@ module exacorr_tensor_interface
           direct_data_pointer = ierr
         end function direct_data_pointer
 
+        ! get nmodes (number of indices) of a tensor
+        function get_nmodes(tensor, nmodes)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          integer(c_int), intent(out) :: nmodes
+
+          integer(INTD)       :: ierr, get_nmodes   
+
+          SELECT CASE(tensor%which_executor)
+          CASE(1)
+             ierr =  get_nmodes_tapp_tensor_t(tensor%tens_tapp, nmodes)
+          CASE(2)
+             nmodes = talsh_tensor_rank(tensor%tens_talsh)
+             ierr = 0 
+          CASE default 
+            write(*,'("  Error. get_nmodes for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          END SELECT
+
+          get_nmodes = ierr
+        end function get_nmodes
+
+        ! get extents (dimensions) of a tensor
+        function get_extents(tensor, extents)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          integer(INTD), allocatable, intent(inout) :: extents(:)
+          integer(c_int64_t), allocatable :: extents_(:)
+          integer(c_int)          :: nmodes
+
+          integer(INTD)       :: ierr, get_extents 
+
+          ierr =  get_nmodes(tensor, nmodes)
+          if (.not. allocated(extents)) then
+            allocate(extents(nmodes))
+          endif
+
+          select case(tensor%which_executor)
+          case(1)
+                allocate(extents_(nmodes))
+                ierr = get_extents_tapp_tensor_t(tensor%tens_tapp, extents_)
+
+                extents = int(extents_, kind=INTD)
+                deallocate(extents_) 
+          case(2)
+             ierr = talsh_tensor_dimensions(tensor%tens_talsh,nmodes,extents)
+          case default 
+            write(*,'("  Error. get_extents for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          end select
+
+          get_extents = ierr
+        end function get_extents
+
+        ! initialize tensor_t to a given scalar value
+        function initialize_tensor_t(tensor, init_val)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          complex(c_double_complex), intent(in), optional    :: init_val
+          complex(c_double_complex)     :: init_val_
+
+          integer(INTD), allocatable, target :: lin_dim(:)
+          complex(8), pointer, contiguous  :: lin_tens_c(:)
+          real(8), pointer, contiguous  :: lin_tens_r(:)
+          integer(INTD), allocatable :: extents(:)
+          integer(8) :: i, numel
+
+          integer(INTD)       :: ierr, initialize_tensor_t
+          type(C_PTR) :: ptr
+          integer(c_int)       :: tapp_err, nmodes
+          
+          init_val_ = 0.0
+          if (present(init_val)) init_val_ = init_val
+
+          ierr = get_nmodes(tensor, nmodes)
+          allocate(extents(nmodes))
+          ierr = get_extents(tensor, extents)
+          do i=1,nmodes
+            numel = numel * extents(i)
+          enddo
+
+          allocate(lin_dim(1))
+          lin_dim(1) = numel
+          ierr = direct_data_pointer(tensor, ptr)
+          SELECT CASE(tensor%which_executor)
+          CASE(1)
+              if (tensor%datatype == 1 ) then
+                call c_f_pointer(ptr,lin_tens_r,lin_dim)
+                lin_tens_r = init_val_%re
+              elseif (tensor%datatype == 3 ) then
+                call c_f_pointer(ptr,lin_tens_c,lin_dim)
+                lin_tens_c = init_val_
+              endif
+          CASE(2)
+            ierr=talsh_tensor_init(tensor%talsh_tens,init_val_)
+          CASE default 
+            write(*,'("  Error. initialize_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          END SELECT
+
+          if (allocated(extents)) deallocate(extents)
+          if (allocated(lin_dim)) deallocate(lin_dim)
+          initialize_tensor_t = ierr
+        end function initialize_tensor_t
+
+        ! copies a tensor (copy constructor, deep copy)
+        function copy_tensor_t(src_tens, dest_tens)
+          implicit none
+          type(tensor_t), intent(inout)    :: src_tens
+          type(tensor_t), intent(inout)    :: dest_tens
+
+          integer(INTD), allocatable, target :: lin_dim(:)
+          complex(8), pointer, contiguous  :: lin_src_tens_c(:)
+          complex(8), pointer, contiguous  :: lin_dest_tens_c(:)
+          real(8), pointer, contiguous  :: lin_src_tens_r(:)
+          real(8), pointer, contiguous  :: lin_dest_tens_r(:)
+          integer(INTD), allocatable :: out_dims(:)
+          integer(8) :: i, numel, destroy
+          type(C_PTR) :: src_ptr, dest_ptr
+          integer(INTD)       :: ierr, copy_tensor_t
+
+          ierr = get_nmodes(src_tens, nmodes)
+          allocate(extents(nmodes))
+          ierr = get_extents(src_tens, out_dims)
+          do i=1,nmodes
+            numel = numel * out_dims(i)
+          enddo
+          
+          allocate(lin_dim(1))
+          lin_dim(1) = numel
+          
+          destroy = 0
+          ! if the destination tensor already exists, destroy it
+          SELECT CASE(dest_tens%which_executor)
+          CASE(1)
+              if (out_tens%datatype == 1 ) then
+                if (allocated(in_tens%tens_tapp%data_real)) then
+                  destroy = 1
+                endif
+              elseif (out_tens%datatype == 3 ) then
+                if (allocated(in_tens%tens_tapp%data_complex)) then
+                  destroy = 1
+                endif
+              endif
+          CASE(2)
+            ! todo check if talsh tensor exists
+            destroy = 1
+          CASE default 
+            ! fine
+          END SELECT
+          
+          if(destroy == 1) then
+            ierr = destroy_tensor_t(dest_tens)
+          endif
+
+          ierr = construct_tensor_t(dest_tens, src_tens%datatype, out_dims, executor=src_tens%which_executor)
+
+          ierr = direct_data_pointer(src_tens, src_ptr)
+          ierr = direct_data_pointer(dest_tens, dest_ptr)
+
+          if (src_tens%datatype == 1 ) then
+            call c_f_pointer(src_ptr,lin_src_tens_r,lin_dim)
+            call c_f_pointer(dest_ptr,lin_dest_tens_r,lin_dim)
+            call dcopy(numel, lin_src_tens_r, 1, lin_dest_tens_r, 1)
+          elseif (src_tens%datatype == 3 ) then
+            call c_f_pointer(src_ptr,lin_src_tens_c,lin_dim)
+            call c_f_pointer(dest_ptr,lin_dest_tens_c,lin_dim)
+            call zcopy(numel, lin_src_tens_c, 1, lin_dest_tens_c, 1)
+          endif
+
+          if (allocated(out_dims)) deallocate(out_dims)
+          copy_tensor_t = ierr
+        end function copy_tensor_t
         ! this will be a part of the standard interface, implemented inside the c code of the c-api, but also here for practical reasons in case of problems with the compilation of the c part
         ! FUNCTION standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj) result (ierr)
         !         integer :: ierr
