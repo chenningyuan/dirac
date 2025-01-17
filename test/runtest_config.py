@@ -1,3 +1,7 @@
+from run_test import version_info
+
+assert version_info.major == 2
+
 def configure(options, input_files, extra_args):
     """
     This function is used by runtest to configure runtest
