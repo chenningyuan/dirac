@@ -5,23 +5,28 @@
 
 New features:
 
-- Basis set library has been extended with "relativistic prolapse-free Gaussian basis sets" RPF-2Z, RPF-3Z, aug-RPF-2Z, and aug-RPF-3Z (H. J. Aa. Jensen)
-- Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke,
-  Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z.
-  J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
+- Basis set library has been extended with "relativistic prolapse-free Gaussian basis sets" RPF-2Z, RPF-3Z, aug-RPF-2Z, and aug-RPF-3Z.
+   - Contributor: H. J. Aa. Jensen.
+   - Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke, Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z. J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
 
 Infrastructure changes and fixes:
 
-- changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025 (H. J. Aa. Jensen)
-- made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers) (H. J. Aa. Jensen)
-- quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI) (H. J. Aa. Jensen)
+- Changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025.
+   - Contributor: H. J. Aa. Jensen.
+- Made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers).
+   - Contributor: H. J. Aa. Jensen.
+- Quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI).
+   - Contributor: H. J. Aa. Jensen.
 
 Bugfix:
 
-- fix of symmetry problem for KRMCSCF with LUCIAREL and odd number of electrons (H. J. Aa. Jensen)
+- Fix of symmetry problem for KRMCSCF with LUCIAREL and odd number of electrons.
+   - Contributor: H. J. Aa. Jensen.
 
 New default:
+
 - The CODATA2022 set of physical constants is now used as default (taken from http://physics.nist.gov/constants on June 4, 2024).
+   - Contributor: I. A. Aucar.
 
 
 -----------------------------------------------------------------------------------------------------
@@ -29,10 +34,9 @@ New default:
 24.0
 ----
 
-==== New features in DIRAC24 ====
+New features:
 
 New functionality with ExaCorr:
-
 - Calculation of linear response properties with CCSD wavefunctions.
    - Contributors: Xiang Yuan,  Loic Halbert, Johann Pototschnig, Anastasios Papadopoulos, Lucas Visscher and Andre Gomes.
    - Reference: Xiang Yuan, Loic Halbert, Johann Valentin Pototschnig, Anastasios Papadopoulos, Sonia Coriani, Lucas Visscher, and Andre Severo Pereira Gomes, Formulation and Implementation of Frequency-Dependent Linear Response Properties with Relativistic Coupled Cluster Theory for GPU-Accelerated Computer Architectures, J. Chem. Theory Comput. 20, 677 (2024) https://doi.org/10.1021/acs.jctc.3c00812
@@ -53,7 +57,7 @@ New functionality with ExaCorr:
    - Manual: GS2RDM https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#gs2rdm
    - Tutorial: not yet available; please have a look at examples in the testset.
 
-== Revised features in DIRAC24 ==
+Revised features:
 
 - Restart from density matrices of CC for first-order properties. 
    - Contributors: Trond Saue, Andre Gomes
@@ -66,17 +70,17 @@ New functionality with ExaCorr:
    - Original input is preserved in the CHECKPOINT file.
    - Contributors: Lucas Visscher, Trond Saue
 
-== Improvements ==
+Improvements:
 
 - Support for AMD GPUs with ExaCorr (TAL-SH, work in progress to enable distributed calculations with ExaTensor), in addition to the NVIDIA GPU support (TAL-SH and ExaTensor).
    - Contributors: Johann Pototschnig, Jan Brandejs and Andre Gomes.
    - For further information on ExaTensor and TAL-SH as used in DIRAC, see https://github.com/RelMBdev/ExaTENSOR/tree/dirac
    - Note : ROCM versions 5.7+ should be used. Earlier ROCM versions may result in code that compiles but may show runtime errors (e.g. HSA_STATUS_ERROR_MEMORY_APERTURE_VIOLATION, or values different than reference ones in the tests). A potential workaround for earlier versions is to reduce hipcc optimization level to -O1.
 
-== Bugfixes ==
+Bugfixes:
 
 - Fixed orbital analysis with .VECPRI for X2C, issue #79 (H. J. Aa. Jensen)
-- Fixed Fock-space coupled cluster calculations with finite fields
+- Fixed Fock-space coupled cluster calculations with finite fields.
 
 
 -----------------------------------------------------------------------------------------------------
