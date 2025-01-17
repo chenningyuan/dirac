@@ -1,4 +1,4 @@
-from run_test import version_info
+from runtest import version_info
 
 assert version_info.major == 2
 
