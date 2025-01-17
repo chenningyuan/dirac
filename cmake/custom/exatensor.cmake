@@ -17,11 +17,6 @@ if(ENABLE_EXATENSOR)
       set(ENABLE_EXATENSOR OFF)
    endif()
 
-# nvidia NVHPC cannot currently compile exatensor, not even EXA_TALSH_ONLY for some reason /2-Sep-2024 hjaaj
-   if(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
-      message(STATUS "ExaTensor library cannot work with nvfortran currently, switched off")
-      set(ENABLE_EXATENSOR OFF)
-   endif()
 endif()
 
 if(ENABLE_EXATENSOR)
@@ -32,7 +27,7 @@ if(ENABLE_EXATENSOR)
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
    set (EXATENSOR_GIT_REPO_LOCATION "https://github.com/RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
-   set (EXATENSOR_GIT_HASH 5a92dde43901604a2fde96f0c8141a38fccfa5db CACHE STRING "ExaTENSOR Git repository hash in use")
+   set (EXATENSOR_GIT_HASH 8cdddfba0a283bf48b574d3b82921426d4f85949 CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type
@@ -165,9 +160,7 @@ if(ENABLE_EXATENSOR)
    elseif(CMAKE_Fortran_COMPILER_ID MATCHES XL)
       set (EXATENSOR_TOOLKIT TOOLKIT=IBM)
    elseif(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
-      # not defined in EXATENSOR and TALSH, use its old name: PGI
-      set (EXATENSOR_TOOLKIT TOOLKIT=PGI)
-      set(EXATENSOR_TALSH EXA_TALSH_ONLY=YES)
+      set (EXATENSOR_TOOLKIT TOOLKIT=NVHPC)
    else()
       message(STATUS "WARNING: ExaTensor TOOLKIT not found, setting to GNU")
       set (EXATENSOR_TOOLKIT TOOLKIT=GNU)
