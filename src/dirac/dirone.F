@@ -9041,14 +9041,14 @@ C***********************************************************************
       integer,intent (inout) :: n_exp
       real*8,intent (out)    :: fit_exp(*),fit_coef(*)
 
-      integer                :: i,intorb,intisg, lupot, lu_not_used
+      integer                :: i,intorb, lupot, lu_not_used
       logical                :: newel, early_exit, emsl_type
       integer, parameter     :: iprint=0
 
       lupot  = lu_not_used(91)
       early_exit = n_exp .eq. -1 ! Use this to query the number of exponents
       call find_element ('SCRPOT',n_charge,lupot,iprint,emsl_type)
-      call find_pos (newel,n_exp,intorb,intisg,lupot,iprint)
+      call find_pos (newel,n_exp,intorb,lupot,iprint,emsl_type)
 
       if (.not. early_exit) then
          do i = 1, n_exp
