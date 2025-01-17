@@ -94,40 +94,40 @@ One-electron scalar operator labels
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 +-------------+----------------------------------+----------------+--------------------------------------------------------------------------------------+
-| **Operator**| **Description**                  | **Components** | **Operators**                                                                        |
+| **Operator**| **Integral description**         | **Components** | **Operators**                                                                        |
 | **label**   |                                  |                |                                                                                      |
 +=============+==================================+================+======================================================================================+
-| KINENER     | NR kinetic energy integral       | KINENER        | :math:`\hat{\Omega}_1 = -\frac{1}{2}\hat{\nabla}^2`                                  |
+| KINENER     | NR kinetic energy                | KINENER        | :math:`\hat{\Omega}_1 = -\frac{1}{2}\hat{\nabla}^2`                                  |
 +-------------+----------------------------------+----------------+--------------------------------------------------------------------------------------+
-| MOLFIELD    | Nuclear attraction integral      | MOLFIELD       | :math:`\hat{\Omega}_1 = \sum_K Z_K |\boldsymbol{r}-\boldsymbol{R}_K|^{-1}`           |
+| MOLFIELD    | Nuclear attraction               | MOLFIELD       | :math:`\hat{\Omega}_1 = \sum_K Z_K |\boldsymbol{r}-\boldsymbol{R}_K|^{-1}`           |
 +-------------+----------------------------------+----------------+--------------------------------------------------------------------------------------+
-| OVERLAP     | Overlap integral                 | OVERLAP        | :math:`\hat{\Omega}_1 = 1`                                                           |
+| OVERLAP     | Overlap                          | OVERLAP        | :math:`\hat{\Omega}_1 = 1`                                                           |
 +-------------+----------------------------------+----------------+--------------------------------------------------------------------------------------+
-| ANGMOM      | Electronic angular momentum      | XANGMOM        | :math:`\hat{\Omega}_1 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_x` |
-|             | integrals (around the center of  +----------------+--------------------------------------------------------------------------------------+
-|             | mass of the molecular nuclei)    | YANGMOM        | :math:`\hat{\Omega}_2 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_y` |
+| ANGMOM      | Orbital angular momentum         | XANGMOM        | :math:`\hat{\Omega}_1 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_x` |
+|             | around CM                        +----------------+--------------------------------------------------------------------------------------+
+|             |                                  | YANGMOM        | :math:`\hat{\Omega}_2 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_y` |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | ZANGMOM        | :math:`\hat{\Omega}_3 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_z` |
 +-------------+----------------------------------+----------------+--------------------------------------------------------------------------------------+
-| DIPLEN      | Dipole length integrals          | XDIPLEN        | :math:`\hat{\Omega}_1 = x`                                                           |
+| DIPLEN      | Dipole length                    | XDIPLEN        | :math:`\hat{\Omega}_1 = x`                                                           |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | YDIPLEN        | :math:`\hat{\Omega}_2 = y`                                                           |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | ZDIPLEN        | :math:`\hat{\Omega}_3 = z`                                                           |
 +-------------+----------------------------------+----------------+--------------------------------------------------------------------------------------+
-| DIPVEL      | Dipole velocity integrals        | XDIPVEL        | :math:`\hat{\Omega}_1 = -\frac{\partial}{\partial x}`                                |
+| DIPVEL      | Dipole velocity                  | XDIPVEL        | :math:`\hat{\Omega}_1 = -\frac{\partial}{\partial x}`                                |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | YDIPVEL        | :math:`\hat{\Omega}_2 = -\frac{\partial}{\partial y}`                                |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | ZDIPVEL        | :math:`\hat{\Omega}_3 = -\frac{\partial}{\partial z}`                                |
 +-------------+----------------------------------+----------------+--------------------------------------------------------------------------------------+
-| SPNORB      | Spatial spin-orbit integrals     | X1SPNORB       |                                                                                      |
+| SPNORB      | Spatial spin-orbit               | X1SPNORB       |                                                                                      |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | Y1SPNORB       |                                                                                      |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | Z1SPNORB       |                                                                                      |
 +-------------+----------------------------------+----------------+--------------------------------------------------------------------------------------+
-| QUADRUP     | Quadrupole moments integrals     | XXQUADRU       | :math:`\hat{\Omega}_1 = \frac{1}{4} (x^2-r^2)`                                       |
+| QUADRUP     | Quadrupole moment                | XXQUADRU       | :math:`\hat{\Omega}_1 = \frac{1}{4} (x^2-r^2)`                                       |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | XYQUADRU       | :math:`\hat{\Omega}_2 = \frac{1}{4} xy`                                              |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
@@ -139,7 +139,7 @@ One-electron scalar operator labels
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | ZZQUADRU       | :math:`\hat{\Omega}_6 = \frac{1}{4} (z^2-r^2)`                                       |
 +-------------+----------------------------------+----------------+--------------------------------------------------------------------------------------+
-| SECMOM      | Second moments integrals         | XXSECMOM       | :math:`\hat{\Omega}_1 = - x^2`                                                       |
+| SECMOM      | Second moment                    | XXSECMOM       | :math:`\hat{\Omega}_1 = - x^2`                                                       |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | XYSECMOM       | :math:`\hat{\Omega}_2 = - xy`                                                        |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
@@ -151,7 +151,7 @@ One-electron scalar operator labels
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | ZZSECMOM       | :math:`\hat{\Omega}_6 = - z^2`                                                       |
 +-------------+----------------------------------+----------------+--------------------------------------------------------------------------------------+
-| THETA       | Traceless quadrupole integrals   | XXTHETA        | :math:`\hat{\Omega}_1 = - \frac{3}{2} (x^2-\frac{1}{3}r^2)`                          |
+| THETA       | Traceless quadrupole             | XXTHETA        | :math:`\hat{\Omega}_1 = - \frac{3}{2} (x^2-\frac{1}{3}r^2)`                          |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
 |             |                                  | XYTHETA        | :math:`\hat{\Omega}_2 = - \frac{3}{2} xy`                                            |
 |             |                                  +----------------+--------------------------------------------------------------------------------------+
@@ -230,7 +230,7 @@ The kinetic part of the Dirac Hamiltonian may be specified by::
    COMFACTOR
    -137.03599916727
 
-where -137.03599916727 is :math:`-c` (CODATA18 value).
+where -137.03599916727 is the CODATA18 value for :math:`-c`.
 
 The speed of light :math:`c` is an important parameter in relativistic theory, but its explicit value in atomic units not necessarily remembered.
 A simpler way to specify the kinetic energy operator is therefore::
