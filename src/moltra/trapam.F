@@ -5519,8 +5519,7 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAPAM */
-      SUBROUTINE ADDCORE2(NLIST,TLIST,TNUM,
-     &                     SLIST,SNUM)
+      SUBROUTINE ADDCORE2(NLIST,TLIST,TNUM,SLIST,SNUM)
 C***********************************************************************
 C
 C     Written by J.Pototschnig, Fall 2019
@@ -5539,7 +5538,7 @@ C     add SLIST to TLIST
 
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine atomic_to_linear (ibeig,norbt)
          implicit none
          ! replace the atomic symmetry information by just the mj value

@@ -59,8 +59,8 @@ C
 C     Transform core-fock matrix to active MO basis
 C     ---------------------------------------------
 C
-      IF(NSPC2(1,3).GT.0) THEN
-        Allocate(FMO(N2BBASXQ*2)) ! core density matrix
+      IF(NSPC2(1,3).GT.0) THEN ! check for open-shell core orbitals
+        Allocate(FMO(N2BBASXQ*2)) ! core density matrix with open-shell ones
       ELSE
         Allocate(FMO(N2BBASXQ)) ! core density matrix
       ENDIF

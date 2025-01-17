@@ -842,7 +842,7 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
                   READ(LUCMD,*) MOFILE_TRAINP
                GO TO 100
    28          CONTINUE
-C&&&& "CORE2 " - Range of open shell CORE orbitals in 2-index transformation module
+C&&&& "CORE2 " - Range of open-shell CORE orbitals in 2-index transformation module
                   WRITE (LUPRI,'(A)') '* use open-shell core:'
                   READ(LUCMD,*) NCORE2
                   WRITE (LUPRI,'(I4,A)') NCORE2,' el. in'
