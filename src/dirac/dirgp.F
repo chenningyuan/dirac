@@ -3289,6 +3289,7 @@ C
 #include "dcblab.h"
 #include "dgroup.h"
 #include "nuclei.h"
+      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       DIMENSION IDIM(3),NBF(2)
       real(8), allocatable :: CMO1(:)
@@ -3300,17 +3301,12 @@ C
       integer, allocatable :: IBUF(:)
       type(file_info_t)    :: dfacmo
 C
-      CALL QENTER('ACMOIN')
       IPRINT = IPRGEN
 C
 C     Allocate arrays
-      allocate(CMO1(N2BBASX*4))
       allocate(CMO2(N2BBASX*4))
-      allocate(EIG1(NORBT))
       allocate(EIG2(NORBT))
-      allocate(IBEIG1(NORBT))
       allocate(IBEIG2(NORBT))
-      allocate(IBUF(NTBAS(0)*2))
 C
 C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
@@ -3319,47 +3315,59 @@ C
       dfacmo%name = 'DFACMO.h5'
       dfacmo%status = -1
       call lab_read (dfacmo,
-     & '/result/wavefunctions/scf/energy',toterg)
+     &     '/result/wavefunctions/scf/energy',toterg)
       call lab_read (dfacmo,
      & '/result/wavefunctions/scf/mobasis/orbitals_C1',cmo2)
       call lab_read (dfacmo,
-     & '/result/wavefunctions/scf/mobasis/eigenvalues_C1',eig2)
+     &     '/result/wavefunctions/scf/mobasis/eigenvalues_C1',eig2)
       CALL IZERO(IBEIG2,NORBT)
-
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
-     &    '* ACMOIN : Coefficients read from '//dfacmo%name
+     &    '* ACMOIN : Coefficients read from DFACMO'
           CALL PRQMAT(CMO2,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
       ENDIF
-C     Find correct ordering of nuclei
-      CALL NUCORD(IBUF)
+      IF(NZ.EQ.4) THEN
+         IF(NFSYM.EQ.1) THEN
+           CALL ICOPY (NORBT,0,0,IBEIG2,1) 
+           CALL WRICMO(LUCOEF,CMO2,EIG2,IBEIG2,TOTERG)
+        ELSE
+          CALL QUIT('ACMOIN: Ci symmetry not written yet !')
+        ENDIF
+      ELSE
 C
+C     Allocate arrays
+      allocate(CMO1(N2BBASX*4))
+      allocate(EIG1(NORBT))
+      allocate(IBEIG1(NORBT))
+      allocate(IBUF(NTBAS(0)*2))
+C       Find correct ordering of nuclei
+        CALL NUCORD(IBUF)
 C
-C     Get correct row ordering (NBAS) --> stored in CMO1     
-C     ==================================================
+C       Get correct row ordering (NBAS) --> stored in CMO1     
+C       ==================================================
 C
-      CALL ACMOU2(CMO1,NORBT,CMO2,NORBT,NTBAS(0),IBUF,4)
-      IF(IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(A)') 
-     &    '* ACMOIN : row-ordered coefficients'
-          CALL PRQMAT(CMO1,NTBAS(0),NORBT,
-     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
-      ENDIF
+        CALL ACMOU2(CMO1,NORBT,CMO2,NORBT,NTBAS(0),IBUF,4)
+        IF(IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(A)') 
+     &      '* ACMOIN : row-ordered coefficients'
+            CALL PRQMAT(CMO1,NTBAS(0),NORBT,
+     &                  NTBAS(0),NORBT,4,IQDEF,LUPRI)
+        ENDIF
 C
-C     Transform to symmetry-adapted (SO) basis (unsorted) -> CMO2
+C       Transform to symmetry-adapted (SO) basis (unsorted) -> CMO2
 C
-      NDIM = NORBT*4
-      CALL VTAOSO(CMO1,CMO2,NTBAS(0),NDIM,0)
-      IF(IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(A)') 
-     &    '* ACMOIN : raw SO coefficients'
-          CALL PRQMAT(CMO2,NTBAS(0),NORBT,
-     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
-      ENDIF
+        NDIM = NORBT*4
+        CALL VTAOSO(CMO1,CMO2,NTBAS(0),NDIM,0)
+        IF(IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(A)') 
+     &      '* ACMOIN : raw SO coefficients'
+            CALL PRQMAT(CMO2,NTBAS(0),NORBT,
+     &                  NTBAS(0),NORBT,4,IQDEF,LUPRI)
+        ENDIF
 C
-C     Analyze distribution of symmetry on quaternion units
-C     and prepare for compression
+C       Analyze distribution of symmetry on quaternion units
+C       and prepare for compression
 C
         CALL QSYMANA(CMO2,NTBAS(0),NORBT,NBF,IBUF)
         DO IFRP = 1,NFSYM
@@ -3372,37 +3380,38 @@ C
           ENDIF
         ENDDO
 C
-C     Compact orbitals (and orbital energies) to sorted basis -> CMO1
+C       Compact orbitals (and orbital energies) to sorted basis -> CMO1
 C
-      CALL MKQCMO(CMO2,EIG2,IBEIG2,CMO1,EIG1,IBEIG1,NBF,IBUF)
-      IF(IPRINT.GE.3) THEN
-        DO IFRP = 1,NFSYM
-          WRITE(LUPRI,'(A,A,I2)') 
-     &      '* ACMOIN : final SO coefficients.',
-     &      ' Fermion ircop ',IFRP
-          CALL PRQMAT(CMO1,NTBAS(0),NORBT,
+        CALL MKQCMO(CMO2,EIG2,IBEIG2,CMO1,EIG1,IBEIG1,NBF,IBUF)
+        IF(IPRINT.GE.3) THEN
+          DO IFRP = 1,NFSYM
+            WRITE(LUPRI,'(A,A,I2)') 
+     &        '* ACMOIN : final SO coefficients.',
+     &        ' Fermion ircop ',IFRP
+            CALL PRQMAT(CMO1,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,NZ,IPQTOQ(1,0),LUPRI)
-        ENDDO
+          ENDDO
+        ENDIF
+C
+C       tsaue:
+C       A possible source of error is that IBEIG1 may contain information
+C       about linear or boson symmetry, and the reduction of the variational
+C       space will not work in the default case. This needs some thinking; for 
+C       now I simply set IBEIG1 to zero.
+        CALL ICOPY (NORBT,0,0,IBEIG1,1) 
+        CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG)
+C       De-allocate arrays
+        deallocate(CMO1)
+        deallocate(EIG1)
+        deallocate(IBEIG1)
+        deallocate(IBUF)
       ENDIF
 C
-C     tsaue:
-C     A possible source of error is that IBEIG1 may contain information
-C     about linear or boson symmetry, and the reduction of the variational
-C     space will not work in the default case. This needs some thinking; for 
-C     now I simply set IBEIG1 to zero.
-      CALL ICOPY (NORBT,0,0,IBEIG1,1) 
-      CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG)
-C
 C     De-allocate arrays
-      deallocate(CMO1)
       deallocate(CMO2)
-      deallocate(EIG1)
       deallocate(EIG2)
-      deallocate(IBEIG1)
       deallocate(IBEIG2)
-      deallocate(IBUF)
 C
-      CALL QEXIT('ACMOIN')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
