@@ -381,8 +381,6 @@ In the original ordering, these matrices are given as
     M_{S\beta,L\alpha}  & M_{S\beta,L\beta}  & M_{S\beta,S\alpha}  & M_{S\beta,S\beta}
     \end{pmatrix}.
 
-::
-
 However, after reordering one clearly has the transformed matrices
 
 .. math::
@@ -394,8 +392,6 @@ However, after reordering one clearly has the transformed matrices
     M_{L\beta,L\alpha}  & M_{L\beta,S\alpha}  & M_{L\beta,L\beta}  & M_{L\beta,S\beta}  \\
     M_{S\beta,L\alpha}  & M_{S\beta,S\alpha}  & M_{S\beta,L\beta}  & M_{S\beta,S\beta}
     \end{pmatrix}.
-
-::
 
 This reordering guaranties that all the matrices :math:`\boldsymbol{M}^\prime` are time-reversal symmetric.
 
