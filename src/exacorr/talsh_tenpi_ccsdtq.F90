@@ -17622,7 +17622,7 @@ subroutine talsh_tenpi_ccsdtq(nocc,nvir,F2,F1,F4,F3,T1, &
     ierr=talsh_tensor_destruct(D22)
     
 #else
-    stop 'functionality unsupported with NVFORTRAN'
+    stop 'Tensors with more than 7 dimensions not supported by NVFORTRAN'
 #endif
     
 end subroutine talsh_tenpi_ccsdtq

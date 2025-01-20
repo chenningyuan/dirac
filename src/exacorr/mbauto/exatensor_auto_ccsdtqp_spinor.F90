@@ -23502,7 +23502,7 @@ subroutine exatensor_CCSDTQP_codegen(nocc_id,nvir_id,nocc_root,nvir_root, &
     ierr=exatns_tensor_destroy(one_tensor)
 
 #else
-    stop 'functionality unsupported with NVFORTRAN'
+    stop 'Tensors with more than 7 dimensions not supported by NVFORTRAN'
 #endif
 
 end subroutine exatensor_CCSDTQP_codegen

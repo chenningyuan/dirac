@@ -19277,7 +19277,7 @@ subroutine talsh_CCSDTQP_codegen_call(nocc,nvir, &
         Z68,S47,H18,scale=(1.0d0,0.0d0))
 
 #else
-    stop 'functionality unsupported with NVFORTRAN'
+    stop 'Tensors with more than 7 dimensions not supported by NVFORTRAN'
 #endif
 
 end subroutine talsh_CCSDTQP_codegen_call

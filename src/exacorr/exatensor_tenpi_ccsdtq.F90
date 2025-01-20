@@ -18881,7 +18881,7 @@ subroutine exatensor_tenpi_ccsdtq(nocc_id,nvir_id,nocc_root,nvir_root,F2,F1,F4,F
     ierr=exatns_tensor_destroy(one_tensor)
     
 #else
-    stop 'functionality unsupported with NVFORTRAN'
+    stop 'Tensors with more than 7 dimensions not supported by NVFORTRAN'
 #endif
     
 end subroutine exatensor_tenpi_ccsdtq
