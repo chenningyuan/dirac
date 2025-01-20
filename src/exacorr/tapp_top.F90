@@ -861,7 +861,7 @@ module tapp_top
    construct_tapp_tensor_t = tapp_err
  end function construct_tapp_tensor_t
 
- ! destructor for tapp_tensor_t
+ ! destructor for tapp_tensor_t. Safe to call for an empty tensor as well.
  function destroy_tapp_tensor_t(tensor)
    implicit none
    type(tapp_tensor_t), intent(inout)    :: tensor
@@ -892,24 +892,48 @@ module tapp_top
    get_nmodes_tapp_tensor_t = tapp_err
  end function get_nmodes_tapp_tensor_t
 
- ! get extents (dimensions) of a tensor
+ ! get extents (dimensions) of a tensor. Returns an empty array in case of a scalar
  function get_extents_tapp_tensor_t(tensor, extents)
    implicit none
-   type(tensor_t), intent(inout)    :: tensor
+   type(tapp_tensor_t), intent(inout)    :: tensor
    integer(c_int64_t), allocatable, target, intent(inout) :: extents(:)
    integer(c_int)          :: nmodes
 
-   integer(c_int)       :: ierr, get_extents_tapp_tensor_t 
+   integer(c_int)       :: tapp_err, get_extents_tapp_tensor_t 
 
-   tapp_err = 0
+   tapp_err =  get_nmodes_tapp_tensor_t(tensor, nmodes)
    if (.not. allocated(extents)) then
-     tapp_err =  get_nmodes_tapp_tensor_t(tensor, nmodes)
      allocate(extents(nmodes))
    endif
+   if (.not. size(extents) == nmodes) then 
+     write(*,'("  Error. An array of wrong size passed to get_extents_tapp_tensor_t.")') 
+     stop 58
+   endif
 
-   call TAPP_get_extents(tensor%tensor_info, c_loc(extents(1)))
+   if (size(extents) .ne. 0) then 
+     call TAPP_get_extents(tensor%tensor_info, c_loc(extents(1)))
+   endif
 
    get_extents_tapp_tensor_t = tapp_err
  end function get_extents_tapp_tensor_t
+
+ ! check if a tensor is empty (constructor not used)
+ function is_empty_tapp_tensor_t(tensor)
+   implicit none
+   type(tapp_tensor_t), intent(inout)    :: tensor
+   logical             :: ret, is_empty_tapp_tensor_t   
+   
+   ret = .TRUE.
+   if (c_associated(tensor%tensor_info) .or. allocated(tensor%data_real) .or. allocated(tensor%data_complex)) then
+     ret = .FALSE.
+     if ( .not. (c_associated(tensor%tensor_info) .and. &
+          ( allocated(tensor%data_real) .or. allocated(tensor%data_complex))) ) then
+       write(*,'("  Error. Failed sanity check in is_empty_tapp_tensor_t.")') 
+       stop 98
+     endif
+   endif
+
+   is_empty_tapp_tensor_t = ret
+ end function is_empty_tapp_tensor_t
 
 end module tapp_top

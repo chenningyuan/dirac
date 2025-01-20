@@ -14,31 +14,29 @@ module exacorr_tensor_interface
 !         private
 !PARAMETERS:
 !Generic:
-        !integer, parameter, private:: REALD=8 ! default real for this module
         ! aspg: to check whether definitions such as integer(4) :: T_INTL=8 do not clash with imported modules
         ! jan: this is defined in exatensor_placeholders
         
 !DERIVED TYPES:
-        ! we follow TAPP_datatype enumeration
 
-!Unified tensor type
+  !Unified tensor type
         type, public  :: tensor_t
          !library_tensor_instance_pointer
          type(tapp_tensor_t) :: tens_tapp     ! executor 1       !Do not access in your code directly outside this file (and tapp_top)!
          type(talsh_tens_t) :: tens_talsh     ! executor 2       !Do not access in your code directly outside this file. Will be deprecated soon.
          type(tens_rcrsv_t) :: tens_exatensor ! executor 3       !Do not access in your code directly outside this file. Will be deprecated soon.
 
+         ! we follow TAPP_datatype enumeration
          integer(kind(TAPP_datatype)) :: datatype
 
          integer, public:: which_executor = 2 !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
          
-         contains
-           procedure :: copy_tensor_t
-           generic :: assignment(=) => copy_tensor_t
+         ! contains
+         !   procedure :: copy_tensor_t
+         !   generic :: assignment(=) => copy_tensor_t
         end type tensor_t
 
         
-
         type, public  :: index_label
          !tensor index label
          character :: val = 'a'
@@ -56,40 +54,25 @@ module exacorr_tensor_interface
         end type index_symmetry_structure
 
         ! external tensor body initialization/transformation (unary) method
-        INTERFACE tensor_method_register
-                FUNCTION tensor_method_register_tapp(method_name, method) result(ierr)
-                        character(*), intent(in):: method_name         
-                        integer(8)                    :: ierr
-                        interface 
-                                integer(8) function method(a,b,i,j)  !some function
-                                        integer, intent(in) :: a,b,i,j
-                                end function
-                        end interface
+        ! INTERFACE tensor_method_register
 
-                        ! ierr = tapp_method_register(method_name,method)
-                END FUNCTION
-
-                FUNCTION tensor_method_register_exa(method_name, method) result(ierr)
-                        character(*), intent(in):: method_name            
-                        ! class(tens_method_uni_t), intent(inout):: method  !exatensor
-                        integer(8)                    :: ierr
-                        ! procedure(tens_method_uni_i), public, deferred:: apply ! possible implementation
-
-                        !ierr = exatns_method_register(method_name,method)
-                END FUNCTION
-        END INTERFACE
-
+!Functions
+        public construct_tensor_t
         public t_einsum
         public talsh_to_tensor_t
         public tensor_t_to_talsh
         public convert
-        public construct_tensor_t
         public destroy_tensor_t
         public direct_data_pointer
         public get_extents
         public get_nmodes
+        public get_numel
+        public is_scalar_tensor_t
+        public is_empty_tensor_t
         public initialize_tensor_t
         ! public copy_tensor_t
+        ! public get_scalar
+        ! public get_real_scalar
         ! public tensor_t_equal
 
         contains
@@ -150,7 +133,8 @@ module exacorr_tensor_interface
                           tapp_err = tapp_einsum(d%tens_tapp, arr_idx_D, op_D, a%tens_tapp, arr_idx_A, op_A, &
                             alpha=alpha, beta=beta)
                         else
-                          tapp_err = tapp_einsum(d%tens_tapp, arr_idx_D, op_D, alpha=alpha, beta=beta)
+                          ! tapp_err = tapp_einsum(d%tens_tapp, arr_idx_D, op_D, alpha=alpha, beta=beta)
+                          tapp_err = 0
                         endif
                         ierr = tapp_err
                 CASE(2) ! talsh
@@ -165,11 +149,10 @@ module exacorr_tensor_interface
                           ierr=talsh_tensor_contract(trim(expression),d%tens_talsh,a%tens_talsh,b%tens_talsh, scale=alpha)
                         elseif (present(a)) then
                           ierr=talsh_tensor_add(trim(expression), d%tens_talsh,a%tens_talsh, scale=alpha)
-                        else
-                          ierr=talsh_tensor_init(d%tens_talsh, alpha)
+                        ! else
+                        !   ierr=talsh_tensor_init(d%tens_talsh, alpha)
                         endif
 
-                        ! if (a%datatype == 1) then
                         ! IF (alpha%im .ne. 0.D0 .and. beta%im .ne. 0.D0) THEN
 
                 CASE(3) ! exatensor
@@ -191,11 +174,15 @@ module exacorr_tensor_interface
                           ierr=exatns_tensor_contract(trim(addition_str), d%tens_exatensor, a%tens_exatensor, &
                                          one_tensor, prefactor=alpha) 
                           ierr=exatns_tensor_destroy(one_tensor)
-                        else
-                          ierr=exatns_tensor_init(d%tens_exatensor, alpha)
+                        ! else
+                        !   ierr=exatns_tensor_init(d%tens_exatensor, alpha)
                         endif
                               
                 END SELECT
+        
+        if (.not. (present(a) .or. present(b) .or. present(c))) then
+          ierr = initialize_tensor_t(d, alpha)
+        endif
 
         if (allocated(arr_idx_A)) deallocate(arr_idx_A)
         if (allocated(arr_idx_B)) deallocate(arr_idx_B)
@@ -273,7 +260,7 @@ module exacorr_tensor_interface
 
           integer(c_int) :: tapp_err, nmodes
           integer(c_int64_t), allocatable, target :: extents(:)
-          integer(8) :: i, numel
+          integer(8) :: numel
           integer(INTD), allocatable :: out_dims(:)
 
           complex(c_double_complex), allocatable, target :: arr_c(:)
@@ -284,6 +271,11 @@ module exacorr_tensor_interface
           type(C_PTR) :: talshsptr
           complex(8), parameter :: ZERO_c=(0.D0,0.D0)
            
+          if ( is_empty_tensor_t(in_tens) ) then
+            write(*,'("  Error. Input tensor empty tensor in convert.")') 
+            stop 98
+          endif
+
           if (present(out_executor)) then
             out_tens%which_executor = out_executor
           endif
@@ -296,41 +288,13 @@ module exacorr_tensor_interface
           
           in_out_exec = 100 * in_tens%which_executor + out_executor 
           SELECT CASE( in_out_exec) ! e.g. 201 means convert from exec 2 to 1 
-            CASE(102) 
+            CASE(101, 202) 
               ierr = copy_tensor_t(in_tens, out_tens)
-
-              if (out_tens%datatype == 1 ) then
-                if (destroy_ == 1) then
-                  deallocate(in_tens%tens_tapp%data_real)
-                endif
-              elseif (out_tens%datatype == 3 ) then
-                if (destroy_ == 1) then
-                  deallocate(in_tens%tens_tapp%data_complex)
-                endif
-              endif
-              if (destroy_ == 1) then
-                tapp_err = TAPP_destory_tensor_info(in_tens%tens_tapp%tensor_info)
-              endif
             CASE(102) 
-              nmodes = TAPP_get_nmodes(in_tens%tens_tapp%tensor_info)
-              numel = 1
-              if (nmodes == 0) then !scalar
-                allocate(extents(1))
-                extents = 1
-                ierr = construct_tensor_t(out_tens, out_tens%datatype, executor=out_tens%which_executor)
-              else
-                ! to.do replace with unified get_dims
-                allocate(extents(nmodes))
-                call TAPP_get_extents(in_tens%tens_tapp%tensor_info, c_loc(extents(1)))
+              ierr = get_extents(in_tens, out_dims)
+              ierr = construct_tensor_t(out_tens, out_tens%datatype, out_dims, executor=out_tens%which_executor)
 
-                allocate(out_dims(nmodes))
-                out_dims = int(extents, kind=INTD)
-                do i=1,nmodes
-                  numel = numel * out_dims(i)
-                enddo
-                ierr = construct_tensor_t(out_tens, out_tens%datatype, out_dims, executor=out_tens%which_executor)
-              endif
-
+              ierr = get_numel(in_tens, numel)
               allocate(lin_dim(1))
               lin_dim(1) = numel
 
@@ -339,43 +303,22 @@ module exacorr_tensor_interface
               if (out_tens%datatype == 1 ) then
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
                 call dcopy(numel, in_tens%tens_tapp%data_real, 1, lin_tens_r, 1)
-                if (destroy_ == 1) then
-                  deallocate(in_tens%tens_tapp%data_real)
-                endif
               elseif (out_tens%datatype == 3 ) then
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 call zcopy(numel, in_tens%tens_tapp%data_complex, 1, lin_tens_c, 1)
-                if (destroy_ == 1) then
-                  deallocate(in_tens%tens_tapp%data_complex)
-                endif
-              endif
-
-              if (destroy_ == 1) then
-                tapp_err = TAPP_destory_tensor_info(in_tens%tens_tapp%tensor_info)
               endif
 
             CASE(201) 
-              nmodes = talsh_tensor_rank(in_tens%tens_talsh)
-              numel = 1
-              if (nmodes == 0) then !scalar
-                allocate(out_dims(1))
-                out_dims = 1
-                ierr = construct_tensor_t(out_tens, out_tens%datatype, executor=out_tens%which_executor)
-              else
-                allocate(out_dims(nmodes))
-                ierr = talsh_tensor_dimensions(in_tens%tens_talsh,nmodes,out_dims)
+              ierr = get_extents(in_tens, out_dims)
+              ierr = construct_tensor_t(out_tens, out_tens%datatype, out_dims, executor=out_tens%which_executor)
               
-                do i=1,nmodes
-                  numel = numel * out_dims(i)
-                enddo
-                ierr = construct_tensor_t(out_tens, out_tens%datatype, out_dims, executor=out_tens%which_executor)
-              endif
               if (ierr.ne.0) then
                 write(*,'("  Error. Converting tensor_t failed with error code: ",i11,".")') ierr
                 stop 53
               end if
-              
+
               ! copy data
+              ierr = get_numel(in_tens, numel)
               allocate(lin_dim(1))
               lin_dim(1) = numel
   
@@ -393,28 +336,19 @@ module exacorr_tensor_interface
                 out_tens%tens_tapp%data_complex = arr_c
               endif
 
-              if (destroy_ == 1) then
-                ierr=talsh_tensor_destruct(in_tens%tens_talsh)
-              endif
-
-            CASE(202) 
-              ! out_tens%tens_talsh = in_tens%tens_talsh
-              ierr = copy_tensor_t(in_tens, out_tens)
-              if (destroy_ == 1) then
-                ierr=talsh_tensor_destruct(in_tens%tens_talsh)
-              endif
             CASE default 
               write(*,'("  Error. Conversion from executor ",i11," to ",i11," not yet implemented.")') &
                 in_tens%which_executor, out_executor
               stop 55
           END SELECT
 
+          if (destroy_ == 1) then
+            ierr = destroy_tensor_t(in_tens)
+          endif
+
           if (allocated(extents)) deallocate(extents)
           if (allocated(out_dims)) deallocate(out_dims)
           if (allocated(lin_dim)) deallocate(lin_dim)
-          ! if (allocated(lin_tens_r)) deallocate(lin_tens_r)
-          ! if (allocated(lin_tens_c)) deallocate(lin_tens_c)
-
           convert = ierr
         end function convert
 
@@ -435,6 +369,11 @@ module exacorr_tensor_interface
           integer(c_int64_t), allocatable :: extents_(:)
           integer(INTD) :: extents_scalar(1)
 
+          if ( .not. is_empty_tensor_t(tensor) ) then
+            write(*,'("  Error. Tensor already constructed in construct_tensor_t.")') 
+            stop 98
+          endif
+
           if (present(executor)) tensor%which_executor = executor
 
           init_val_ = 0.0
@@ -449,7 +388,7 @@ module exacorr_tensor_interface
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
-            if(.not. present(extents)) then ! scalar
+            if(.not. present(extents) .or. size(extents) == 0) then ! scalar
               tapp_err=construct_tapp_tensor_t(tensor%tens_tapp, tensor%datatype, init_val=init_val_)
             else
               allocate(extents_(size(extents)))
@@ -461,13 +400,13 @@ module exacorr_tensor_interface
           CASE(2)
             extents_scalar = 1
             if (tensor%datatype == 1) then
-              if(.not. present(extents)) then ! scalar
+              if(.not. present(extents) .or. size(extents) == 0) then ! scalar
                 ierr=talsh_tensor_construct(tensor%tens_talsh, R8, extents_scalar(1:0), init_val=init_val_)
               else
                 ierr=talsh_tensor_construct(tensor%tens_talsh, R8, extents, init_val=init_val_)
               endif
             elseif (tensor%datatype == 3) then
-              if(.not. present(extents)) then ! scalar
+              if(.not. present(extents) .or. size(extents) == 0) then ! scalar
                 ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents_scalar(1:0), init_val=init_val_)
               else
                 ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents, init_val=init_val_)
@@ -483,7 +422,7 @@ module exacorr_tensor_interface
           construct_tensor_t = ierr
         end function construct_tensor_t
 
-        ! destructor for tensor_t
+        ! destructor for tensor_t. Safe to call for an empty tensor too.
         function destroy_tensor_t(tensor)
           implicit none
           type(tensor_t), intent(inout)    :: tensor
@@ -491,17 +430,27 @@ module exacorr_tensor_interface
           integer(INTD)       :: ierr, destroy_tensor_t
           integer(c_int)       :: tapp_err
 
+          if ( is_empty_tensor_t(tensor) ) then
+            destroy_tensor_t = 0
+            return
+          endif
+
           SELECT CASE(tensor%which_executor)
           CASE(1)
              tapp_err=destroy_tapp_tensor_t(tensor%tens_tapp)
              ierr = tapp_err
           CASE(2)
-            ierr=talsh_tensor_destruct(tensor%tens_talsh)
+             ierr=talsh_tensor_destruct(tensor%tens_talsh)
           CASE default 
             write(*,'("  Error. destroy_tensor_t for executor ",i11," not yet implemented.")') &
               tensor%which_executor
             stop 55
           END SELECT
+
+          if ( .not. is_empty_tensor_t(tensor) ) then
+            write(*,'("  Error. Failed sanity check in destroy_tensor_t.")') 
+            stop 98
+          endif
 
           destroy_tensor_t = ierr
         end function destroy_tensor_t
@@ -515,6 +464,11 @@ module exacorr_tensor_interface
 
           integer(INTD)       :: ierr, direct_data_pointer   
 
+          if ( is_empty_tensor_t(tensor) ) then
+            write(*,'("  Error. Attempting to access data of an empty tensor in direct_data_pointer.")') 
+            stop 98
+          endif
+
           SELECT CASE(tensor%which_executor)
           CASE(1)
              ptr = get_data_ptr(tensor%tens_tapp)
@@ -522,7 +476,6 @@ module exacorr_tensor_interface
           CASE(2)
               if (tensor%datatype == 1 ) then
                 ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,R8,int(0,C_INT),DEV_HOST)
-                ! call c_f_pointer(talshsptr,lin_tens_r,lin_dim) ! todo: get dims and return a fortran tensor
               elseif (tensor%datatype == 3 ) then
                 ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,C8,int(0,C_INT),DEV_HOST)
               endif
@@ -539,13 +492,21 @@ module exacorr_tensor_interface
           direct_data_pointer = ierr
         end function direct_data_pointer
 
-        ! get nmodes (number of indices) of a tensor
+        ! get nmodes (number of indices) of a tensor. Returns 0 for a scalar.
         function get_nmodes(tensor, nmodes)
           implicit none
           type(tensor_t), intent(inout)    :: tensor
           integer(c_int), intent(out) :: nmodes
 
           integer(INTD)       :: ierr, get_nmodes   
+
+          if ( is_empty_tensor_t(tensor) ) then
+            nmodes = 0
+            get_nmodes = 0
+            return
+            ! write(*,'("  error. attempting to access data of an empty tensor in get_nmodes.")') 
+            ! stop 98
+          endif
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
@@ -562,7 +523,7 @@ module exacorr_tensor_interface
           get_nmodes = ierr
         end function get_nmodes
 
-        ! get extents (dimensions) of a tensor
+        ! get extents (dimensions) of a tensor. In case of scalar, it returns empty array
         function get_extents(tensor, extents)
           implicit none
           type(tensor_t), intent(inout)    :: tensor
@@ -572,9 +533,18 @@ module exacorr_tensor_interface
 
           integer(INTD)       :: ierr, get_extents 
 
+          if ( is_empty_tensor_t(tensor) ) then
+            write(*,'("  Error. Attempting to access an empty tensor in get_extents.")') 
+            stop 98
+          endif
+
           ierr =  get_nmodes(tensor, nmodes)
           if (.not. allocated(extents)) then
             allocate(extents(nmodes))
+          endif
+          if (.not. size(extents) == nmodes) then 
+            write(*,'("  Error. An array of wrong size passed to get_extents.")') 
+            stop 58
           endif
 
           select case(tensor%which_executor)
@@ -582,7 +552,9 @@ module exacorr_tensor_interface
                 allocate(extents_(nmodes))
                 ierr = get_extents_tapp_tensor_t(tensor%tens_tapp, extents_)
 
-                extents = int(extents_, kind=INTD)
+                if (size(extents_) .ne. 0) then 
+                  extents = int(extents_, kind=INTD)
+                endif
                 deallocate(extents_) 
           case(2)
              ierr = talsh_tensor_dimensions(tensor%tens_talsh,nmodes,extents)
@@ -591,9 +563,83 @@ module exacorr_tensor_interface
               tensor%which_executor
             stop 55
           end select
+          
+          if ( .not. size(extents) == 0 .and. is_scalar_tensor_t(tensor)) then
+            write(*,'("  Error. Failed sanity check in get_extents.")') 
+            stop 98
+          endif
 
           get_extents = ierr
         end function get_extents
+
+        ! get the total number of elements (scalars) which the tensor occupies in memory
+        function get_numel(tensor, numel)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          integer(c_int)       :: i, nmodes
+          integer(INTD), allocatable :: extents(:)
+
+          integer(8)       :: numel   
+          integer(INTD)       :: ierr, get_numel   
+          
+          if (is_empty_tensor_t(tensor)) then
+            numel = 0
+            ierr = 0
+          else
+            ierr = get_nmodes(tensor, nmodes)
+            numel = 1
+            if (nmodes .ne. 0) then !not scalar
+              ierr = get_extents(tensor, extents)
+              do i=1,nmodes ! problem: assumes a dense tensor
+                numel = numel * extents(i)
+              enddo
+            endif
+          endif 
+
+          if (allocated(extents)) deallocate(extents)
+          get_numel = ierr
+        end function get_numel
+
+        ! check if a tensor is empty (constructor not used)
+        function is_empty_tensor_t(tensor)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          logical             :: ret, is_empty_tensor_t   
+          
+          SELECT CASE(tensor%which_executor)
+          CASE(1)
+             ret=is_empty_tapp_tensor_t(tensor%tens_tapp)
+          CASE(2)
+             ret=talsh_tensor_is_empty(tensor%tens_talsh)
+          CASE default 
+            write(*,'("  Error.  is_empty_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          END SELECT
+ 
+          is_empty_tensor_t = ret
+        end function is_empty_tensor_t
+
+        ! check if tensor_t is a scalar (0 indices, i.e. can be different to a vector with 1 index and 1 element)
+        function is_scalar_tensor_t(tensor)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          integer(INTD)       :: ierr   
+          integer(c_int) ::  nmodes
+          logical             :: ret, is_scalar_tensor_t  
+          
+          if (is_empty_tensor_t(tensor)) then
+            ret = .FALSE.
+          else
+            ierr = get_nmodes(tensor, nmodes)
+            if (nmodes == 0) then !scalar
+              ret = .TRUE.
+            else
+              ret = .FALSE.
+            endif
+          endif 
+          is_scalar_tensor_t = ret
+        end function is_scalar_tensor_t
 
         ! initialize tensor_t to a given scalar value
         function initialize_tensor_t(tensor, init_val)
@@ -606,7 +652,7 @@ module exacorr_tensor_interface
           complex(8), pointer, contiguous  :: lin_tens_c(:)
           real(8), pointer, contiguous  :: lin_tens_r(:)
           integer(INTD), allocatable :: extents(:)
-          integer(8) :: i, numel
+          integer(8) :: numel
 
           integer(INTD)       :: ierr, initialize_tensor_t
           type(C_PTR) :: ptr
@@ -615,12 +661,7 @@ module exacorr_tensor_interface
           init_val_ = 0.0
           if (present(init_val)) init_val_ = init_val
 
-          ierr = get_nmodes(tensor, nmodes)
-          allocate(extents(nmodes))
-          ierr = get_extents(tensor, extents)
-          do i=1,nmodes
-            numel = numel * extents(i)
-          enddo
+          ierr = get_numel(tensor, numel)
 
           allocate(lin_dim(1))
           lin_dim(1) = numel
@@ -635,14 +676,13 @@ module exacorr_tensor_interface
                 lin_tens_c = init_val_
               endif
           CASE(2)
-            ierr=talsh_tensor_init(tensor%talsh_tens,init_val_)
+            ierr=talsh_tensor_init(tensor%tens_talsh,init_val_)
           CASE default 
             write(*,'("  Error. initialize_tensor_t for executor ",i11," not yet implemented.")') &
               tensor%which_executor
             stop 55
           END SELECT
 
-          if (allocated(extents)) deallocate(extents)
           if (allocated(lin_dim)) deallocate(lin_dim)
           initialize_tensor_t = ierr
         end function initialize_tensor_t
@@ -659,46 +699,27 @@ module exacorr_tensor_interface
           real(8), pointer, contiguous  :: lin_src_tens_r(:)
           real(8), pointer, contiguous  :: lin_dest_tens_r(:)
           integer(INTD), allocatable :: out_dims(:)
-          integer(8) :: i, numel, destroy
+          integer(8) :: numel
           type(C_PTR) :: src_ptr, dest_ptr
           integer(INTD)       :: ierr, copy_tensor_t
 
-          ierr = get_nmodes(src_tens, nmodes)
-          allocate(extents(nmodes))
+          if ( is_empty_tensor_t(src_tens) ) then
+            write(*,'("  Error. Source tensor empty tensor in copy_tensor_t.")') 
+            stop 98
+          endif
+
           ierr = get_extents(src_tens, out_dims)
-          do i=1,nmodes
-            numel = numel * out_dims(i)
-          enddo
+          ierr = get_numel(src_tens, numel)
           
           allocate(lin_dim(1))
           lin_dim(1) = numel
-          
-          destroy = 0
+
           ! if the destination tensor already exists, destroy it
-          SELECT CASE(dest_tens%which_executor)
-          CASE(1)
-              if (out_tens%datatype == 1 ) then
-                if (allocated(in_tens%tens_tapp%data_real)) then
-                  destroy = 1
-                endif
-              elseif (out_tens%datatype == 3 ) then
-                if (allocated(in_tens%tens_tapp%data_complex)) then
-                  destroy = 1
-                endif
-              endif
-          CASE(2)
-            ! todo check if talsh tensor exists
-            destroy = 1
-          CASE default 
-            ! fine
-          END SELECT
-          
-          if(destroy == 1) then
-            ierr = destroy_tensor_t(dest_tens)
-          endif
+          ierr = destroy_tensor_t(dest_tens)
 
           ierr = construct_tensor_t(dest_tens, src_tens%datatype, out_dims, executor=src_tens%which_executor)
 
+          ! copy data
           ierr = direct_data_pointer(src_tens, src_ptr)
           ierr = direct_data_pointer(dest_tens, dest_ptr)
 
