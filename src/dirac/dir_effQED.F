@@ -20,53 +20,6 @@
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck ashift */
-      SUBROUTINE ASHIFT(FOCK,IPRINT,WORK,KFREE,LFREE)
-C***********************************************************************
-C
-C     Build contribution from all-electron pseudopotential representing
-C     QED effects.
-C
-C     Written by Trond Saue
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
-C     
-#include "mxcent.h"
-C
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "nuclei.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcb_ashift.h"      
-      DIMENSION FOCK(*),WORK(*)
-      CHARACTER TEXT*74
-      KFRSAV = KFREE
-      NDIM=N2BBASX*NZ
-      CALL MEMGET2('REAL','KBUF',KBUF,NDIM,WORK,KFREE,LFREE)      
-C      CALL ATOMIC_DENS(WORK(KBUF),MAXAREF,MAXAVAL,AREFFIL,AVECREF,
-C     &     ASHIFT_NVAL,ASHIFT_PAR,IPRINT,WORK,KFREE,LFREE)
-      CALL MEMGET2('REAL','KSMAT',KSMAT,N2BAST,WORK,KFREE,LFREE)
-      CALL GTOVLT(WORK(KSMAT),SSMTRC,IPRINT)
-      DO I = 1,NFSYM
-         CALL QTRANS('AOMO','S',D1,
-     &              NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),
-     &              WORK(I2BASX(I,I)+KBUF),NTBAS(0),NTBAS(0),
-     &                 NZ,IPQTOQ(1,0),
-     &              FOCK(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),
-     &                 NZ,IPQTOQ(1,0),
-     &              WORK(I2BAST(I)+KSMAT),NFBAS(I,0),NFBAS(I,0),1,1,
-     &              WORK(I2BAST(I)+KSMAT),NFBAS(I,0),NFBAS(I,0),1,1,      
-     &              WORK(KFREE),LFREE,IPRINT)
-      ENDDO
-      CALL MEMREL('ASHIFT',WORK,1,KFRSAV,KFREE,LFREE)
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck effqed */
       SUBROUTINE EFFQED(FOCK,WORK,KFREE,LFREE)
 C***********************************************************************

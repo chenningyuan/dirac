@@ -5445,13 +5445,9 @@ C.....  Rotate orbitals into place
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ATOMIC_START(DMAT,IPRINT,WORK,KFREE,LFREE)
       use dircmo
-      use labeled_storage
 C***********************************************************************
 C
 C     Routine for atomic start
-C     NNEG - number of positronic solutions
-C     NPOS - number of electronic solutions
-C     NBAS - number of AO-basis functions
 C
 C***********************************************************************
       use quaternion_algebra
@@ -5471,15 +5467,51 @@ C.....Local variables
       LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       INTEGER NNEG,NPOS,NBAS,IDIM(3),idims(12)
-      real(8), allocatable :: atom_cmo(:)
-      type(file_info_t)    :: atomfile
-      integer              :: n_mo(2),n_po(2), n_basis(2)
 C
       KFRSAV=KFREE
 C.....Say hello
       IF(IPRINT.GE.1) THEN
         CALL HEADER('Atomic start',-1)
       ENDIF
+      CALL ATOMIC_DENS(DMAT,MAXATOM,MXOPEN,ATOMFIL,VECATOM,
+     &     NVECATOM,OCCATOM,IPRINT,WORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ATOMIC_DENS(DMAT,MATOM,MSHEL,ATOMFIL,VECATOM,
+     &     NVECATOM,SHELLFAC,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Routine for atomic start
+C     NNEG - number of positronic solutions
+C     NPOS - number of electronic solutions
+C     NBAS - number of AO-basis functions
+C
+C***********************************************************************
+      use quaternion_algebra
+      use labeled_storage
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "mxcent.h"
+C
+#include "dcbdhf.h"
+#include "nuclei.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      CHARACTER*6  ATOMFIL(MATOM)
+      CHARACTER*72 VECATOM(MSHEL,MATOM)
+      INTEGER      NVECATOM(MATOM)
+      REAL*8       SHELLFAC(MSHEL,MATOM)
+      DIMENSION DMAT(NTBAS(0),NTBAS(0),NZ),WORK(*)
+C.....Local variables
+      LOGICAL TOBE
+      CHARACTER TEXT*74
+      INTEGER NNEG,NPOS,NBAS,IDIM(3),idims(12)
+      real(8), allocatable :: atom_cmo(:)
+      type(file_info_t)    :: atomfile
+      integer              :: n_mo(2),n_po(2), n_basis(2)
 C     
       KFRSAV=KFREE
 C.....Initialize buffer density matrix
@@ -5492,6 +5524,7 @@ C.....Loop over atomic types
       CALL MEMGET2('INTE','INFO',KINF,NTBAS(0),WORK,KFREE,LFREE)
       ICENT = 1
       DO IATOM = 1,NONTYP
+      IF(NVECATOM(IATOM).GT.0) THEN         
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
         IF (MBAS == 0) CYCLE
@@ -5576,7 +5609,7 @@ C.........extract selected vectors from CMO and place in CBUF
      &                NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
 C.........Generate contribution to atomic density matrix from this shell
-          CALL DENST1(WORK(KADE),NBAS,NBAS,NZC1,OCCATOM(ISHELL,IATOM),
+          CALL DENST1(WORK(KADE),NBAS,NBAS,NZC1,SHELLFAC(ISHELL,IATOM),
      &                FAC,WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
           IF(IPRINT.GE.4) THEN
             WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
@@ -5603,8 +5636,9 @@ C.......Release memory
         CALL MEMREL('ATOMIC_START',WORK,1,KADE,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
         write(lupri,*) 'added block for center ',icent,
-     &  NONT(IATOM),iatom,NUCDEG(ICENT)
-        ICENT = ICENT+NONT(IATOM)
+     &       NONT(IATOM),iatom,NUCDEG(ICENT)
+      ENDIF  
+      ICENT = ICENT+NONT(IATOM)
       ENDDO
 C
       IF(NBSYM.EQ.1) THEN
