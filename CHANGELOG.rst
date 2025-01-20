@@ -15,6 +15,8 @@ Infrastructure changes and fixes:
    - Contributor: H. J. Aa. Jensen.
 - Made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers).
    - Contributor: H. J. Aa. Jensen.
+- Include support in ExaCorr for NVHPC, and added hints for compilation with OneAPI and NVHPC. Please note that calculations beyond iterative triples (e.g. CCSDTQ) are not supported with NVHPC.
+   - Contributor: A. Gomes
 - Quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI).
    - Contributor: H. J. Aa. Jensen.
 
@@ -27,6 +29,8 @@ New default:
 
 - The CODATA2022 set of physical constants is now used as default (taken from http://physics.nist.gov/constants on June 4, 2024).
    - Contributor: I. A. Aucar.
+- Tenpi-generated code is now the default choice for automatically generated T equation codes. 
+   - Contributor: A. Gomes
 
 
 -----------------------------------------------------------------------------------------------------

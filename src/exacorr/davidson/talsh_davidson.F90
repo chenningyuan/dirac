@@ -17,7 +17,7 @@ public talsh_davidson_get_eigenvalue_shift
 public talsh_davidson_setup
 public talsh_davidson_destroy
 public talsh_davidson_driver
-public davidson_print_vectors_complex
+!public davidson_print_vectors_complex
 public talsh_solve_values_vectors
 public talsh_sort_values_vectors
 public talsh_davidson_workspace_create
@@ -942,14 +942,14 @@ contains
                       "Eigenvalue ",i," : ", vr
             end if
         end do
-        if (left) then
-            label = "Left Eigenvectors            "
-            call davidson_print_vectors(eVectorsL, label=label) 
-        end if
-        if (right) then
-            label = "Right Eigenvectors           "
-            call davidson_print_vectors(eVectorsR, label=label) 
-        end if
+!       if (left) then
+!           label = "Left Eigenvectors            "
+!           call davidson_print_vectors(eVectorsL, label=label) 
+!       end if
+!       if (right) then
+!           label = "Right Eigenvectors           "
+!           call davidson_print_vectors(eVectorsR, label=label) 
+!       end if
 
     end subroutine 
 
