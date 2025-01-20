@@ -136,6 +136,10 @@ Performance improvements:
      In particular, the truncation of the reduced space in the Davidson iterations is now done
      in a much better way, leading to the improvement in convergence rate. Both for real and complex parallel cases.
 
+New defaults:
+
+- Default of MOLTRA changed from scheme 6 to scheme 4 (A. Sunaga).
+
 Bugfix:
 
 - Default for .MVO has been corrected, so it now behaves as expected: modified virtual orbitals
