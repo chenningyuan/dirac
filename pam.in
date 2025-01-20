@@ -1927,7 +1927,8 @@ Options are also read from ~/.diracrc"""
             if os.path.isfile(chpfile):
               # Checkpoint file exists, copy to input directory
               self.copy_file(chpfile,os.path.join(self.input_directory, self.output_name+'.h5'))
-              print('  Native hdf5 checkpoint file was retrieved from scratch directory')
+              if self.verbose:
+                  print('  Native hdf5 checkpoint file was retrieved from scratch directory')
             else:
                 try:
                     import h5py
@@ -2073,7 +2074,7 @@ Options are also read from ~/.diracrc"""
                 print('  rsh/rcp        :', self.rsh, '/', self.rcp)
                 print('  machine file   :', self.machinefile)
         else:
-            print('  running', os.path.join(pam_directory, 'pam'), ' '.join(self.pam_args))
+            print(f' starting DIRAC for molecule {self.input_molecule} with input {self.input_dirac}')
 
         if self.timeout and not is_windows():
             print('  Allowed runtime:', self.timeout, 

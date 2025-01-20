@@ -677,7 +677,7 @@ C
       fact(1) = 1.0d0
      
       do i = 2, 30
-        fact(i) = float(i)*fact(i - 1)
+        fact(i) = dfloat(i)*fact(i - 1)
       end do
 
       end subroutine
