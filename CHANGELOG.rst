@@ -18,11 +18,15 @@ Infrastructure changes and fixes:
 - Quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI).
    - Contributor: H. J. Aa. Jensen.
 
-Basis set corrections:
+Basis set library:
 
-- Transferred fixes of Dalton basis sets from Dalton (Contritor: H. J. Aa. Jensen):
-  - Corrected some references in correlation consistent basis sets (as e.g. aug-cc-pVTZ)
-  - Fixed Scandium in aug-cc-pVTZ-J (two lines missing, would have given error if used)
+- Transferred fixes of Dalton basis sets from Dalton (Contributor: H. J. Aa. Jensen):
+   - Corrected some references in correlation consistent basis sets (as e.g. aug-cc-pVTZ)
+   - Fixed Scandium in aug-cc-pVTZ-J (two lines missing, would have given error if used)
+- Added special basis sets for spin-spin coupling and hyperfine coupling from Frank Jensen group (Aarhus University)
+   - pcJ, ccJ and pcH sets
+   - Copied from Dalton basis set directory
+   - Contributor: H. J. Aa. Jensen.
 
 Bugfix:
 
