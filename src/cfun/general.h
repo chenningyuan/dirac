@@ -38,10 +38,6 @@
 #endif
 #endif
 
-#if defined(VAR_PGF77)
-#define __FUNCTION__ "PGI_does_not_define__FUNCTION__"
-#endif
-
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
 
 typedef struct FirstDrv_  FirstDrv;

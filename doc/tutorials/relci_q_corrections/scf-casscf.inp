@@ -1,6 +1,6 @@
 **DIRAC
 .TITLE
-qcorr
+qcorr step 1 - GASSCF
 .WAVE FUNCTION
 **INTEGRALS
 *READIN

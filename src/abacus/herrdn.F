@@ -299,7 +299,6 @@ C
       LOGICAL          :: HERMIT,NEWFILE,SET,FEXIST
       CHARACTER(LEN=6) :: KEYWRD
       INTEGER          :: inpfile
-
 C     JHS
       INTEGER :: i
       REAL :: time1,time2
@@ -727,6 +726,7 @@ C
      &               CLASS,TOL_SYMADD,IPREAD,.true.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
+      IF (LINEAR) WRITE(LUPRI,'(/A)') ' The molecule is linear.'
 
 C     Fix a problem with ADDSYM for some D(2) cases, also corrects for wrong user inputs (e.g. specifying X Y and XY as generators)
       CALL FIX_DUPLICATE_GENERATORS (NSYMOP,KASYM)

@@ -431,7 +431,7 @@ C
       CPUTID  = SECTID(CPUE-CPU0)
       WALLTID = SECTID(WALLE-WALL0)
       WRITE(LUPRI,'(6A)')
-     &     'Total time used in ',CLSINT(IOP),' (CPU) ',CPUTID,
+     &     '  Total time used in ',CLSINT(IOP),' (CPU) ',CPUTID,
      &     ' and (WALL) ',WALLTID    
       CALL QEXIT('NUMINT')
       RETURN         
@@ -2269,7 +2269,8 @@ C
      &"     stepsize = ",H,", # of radial grid = ",MXNP 
 C
       IF(IATOM.EQ.NUCIND)THEN
-       num_grid_cfg_numint_print = .FALSE.
+         num_grid_cfg_numint_print = .FALSE.
+         WRITE(LUPRI,'(A)')         
       ENDIF
       RETURN
       END       
