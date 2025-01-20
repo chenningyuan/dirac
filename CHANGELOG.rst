@@ -12,9 +12,11 @@ New features:
 
 Infrastructure changes and fixes:
 
-- changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025 (H. J. Aa. Jensen)
-- made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers) (H. J. Aa. Jensen)
-- quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI) (H. J. Aa. Jensen)
+- Changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025 (H. J. Aa. Jensen)
+- Made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers) (H. J. Aa. Jensen), 
+- Include support in ExaCorr for NVHPC, and added hints for compilation with OneAPI and NVHPC (A. Gomes). Please note that calculations beyond iterative triples (e.g. CCSDTQ) are not supported with NVHPC. 
+- Quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI) (H. J. Aa. Jensen)
+
 
 Bugfix:
 
@@ -22,6 +24,7 @@ Bugfix:
 
 New default:
 - The CODATA2022 set of physical constants is now used as default (taken from http://physics.nist.gov/constants on June 4, 2024).
+- Tenpi-generated code is now the default choice for automatically generated T equation codes. 
 
 
 -----------------------------------------------------------------------------------------------------
