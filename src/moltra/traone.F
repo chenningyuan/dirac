@@ -64,9 +64,8 @@ C
       ELSE
         Allocate(FMO(N2BBASXQ)) ! core density matrix
       ENDIF
-!Miro: used parameter DUMMY -no need for full set of MOs
       CALL GTCFCK(FMO,IPRTRA,WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &        WORK(KQC(1)),DUMMY,NDMOQR,ICMOQR,NSTR,NDMOQC,ICMOQC,NSPC,
+     &        WORK(KQC(1)),NDMOQR,ICMOQR,NSTR,NDMOQC,ICMOQC,NSPC,
      &        NSPC2,ITRA_INTFL2,WORK,KFREE,LFREE)
 C
 C     Write MOLFDIR file MRCONEE
@@ -95,12 +94,18 @@ C
       END      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gtcfck */
-      SUBROUTINE GTCFCK(FMO,IPRINT,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
+      SUBROUTINE GTCFCK(FMO,IPRINT,Q1,Q2,QCO,NDMOQR,ICMOQR,NSTR,
      &          NDMOQC,ICMOQC,NSPC,NSPC2,INTFLG2,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
 C     use active coefficients for MO-transformation
+C
+C     NDMOQR : 1st dimension row/column dimension of coefficient array
+C              2nd dimension fermion irrep
+C              3rd dimension transformation index
+C
+C     ICMOQR : Index to start of representation in the coefficient array
 C
 C     Called from traone.F/TRAONE - uses DUMMY instead of CMO
 C                 trapam.F/RESOLV - uses CMO
@@ -121,7 +126,7 @@ C
       DIMENSION FMO(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),NSPC2(2,0:3)
-      DIMENSION Q1(*),Q2(*),QCO(*),CMO(*)
+      DIMENSION Q1(*),Q2(*),QCO(*)
       Real(8), Allocatable :: FAO(:),DMAT(:),DMATfull(:)
 C
       CALL QENTER('GTCFCK')
@@ -132,15 +137,15 @@ C
       INTFLG = INTFLG2
 C
       Allocate(FAO(N2BBASXQ))
-      IF(NSPC2(1,3).GT.0) THEN
+      IF(NSPC2(1,3).GT.0) THEN ! checking for open-shell core
         Allocate(DMAT(N2BBASXQ*2)) ! core density matrix
       ELSE
         Allocate(DMAT(N2BBASXQ)) ! core density matrix
       ENDIF
       Allocate(DMATfull(N2BBASXQ))! Miro: full density matrix
 C
-      CALL GTCFC1(FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,
-     &      NSTR,NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
+      CALL GTCFC1(FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,NDMOQR,ICMOQR,
+     &      NSTR,NDMOQC,ICMOQC,NSPC,NSPC2,IPRINT,WORK,KFREE,LFREE)
 C
 C     Print section
 C
@@ -167,19 +172,18 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck GTCFC1 */
-      SUBROUTINE GTCFC1(
-     &   FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
-     &          NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
+C     /* Deck GTCFC1 */
+      SUBROUTINE GTCFC1(FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,NDMOQR,ICMOQR,
+     &                  NSTR,NDMOQC,ICMOQC,NSPC,NSPC2,IPRINT,
+     &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
 C     use active coefficients for MO-transformation
 C
-C     On input: QCO - core MOs 
-C               CMO - full set of MOs
-C               DMAT - variable for core density mtx
-C               DMATfull - variable for full density matrix
+C     On input: QCO      - core MOs 
+C               DMAT     - core density mtx
+C               DMATfull - full density matrix
 C
 C     Called from  GTCFCK
 C
@@ -207,12 +211,12 @@ C
 #include "cbihr2.h"
 #include "dcbres.h"
       LOGICAL TOBE, SAVEFLAGS(4)
-      LOGICAL ::  remove_spinfree_terms=.false.
+      LOGICAL :: remove_spinfree_terms=.false.
       LOGICAL :: dirac_cfg_dft_calculation_save
       DIMENSION FMO(*),FAO(*),DMAT(*),DMATfull(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),NSPC2(2,0:3)
-      DIMENSION Q1(*),Q2(*),QCO(*),QCO2(*),CMO(*)
+      DIMENSION Q1(*),Q2(*),QCO(*)
 
       Integer, Allocatable :: POS(:)
       real(8)              :: f_occ
@@ -259,6 +263,7 @@ C
 
 C       Modified Fall 2019 by J. Pototschnig to allow for open shell core
         IF(NSPC2(1,3).GT.0) THEN
+C           
 C         with  frozen open-shell
 C         ===========================
 C         Get density matrix
@@ -358,7 +363,8 @@ C
        else 
           dirac_cfg_dft_calculation_save=.false.
        endif
-C      Calculate total energy
+C
+C     Calculate total energy
 C      ======================
        inquire(file='XAMFI-ss-soc-contributions',exist=tobe)
        if(tobe)then
@@ -444,10 +450,10 @@ C
 #endif
       DO 10 I = 1,NFSYM
         IF(NSTR(I,0,1).EQ.0.OR.NSTR(I,0,2).EQ.0) GOTO 10
-        NRQ1 = NDMOQR(1,I,1)
-        NCQ1 = NDMOQR(2,I,1)
-        NRQ2 = NDMOQR(1,I,2)
-        NCQ2 = NDMOQR(2,I,2)
+        NRQ1 = NDMOQR(1,I,1) ! = NFBAS(IFRP,0): row dimension
+        NCQ1 = NDMOQR(2,I,1) ! = NSTR(IFRP,0,1): column dimension
+        NRQ2 = NDMOQR(1,I,2) ! = NFBAS(IFRP,0): row dimension
+        NCQ2 = NDMOQR(2,I,2) ! = NSTR(IFRP,0,2): column dimension
         IF(IPRINT.GE.5) THEN
           CALL HEADER('GTCFC1:First transformation matrix',-1)
           CALL PRQMAT(Q1(ICMOQR(I,1)),NRQ1,NCQ1,NRQ1,NCQ1,NZ,
@@ -464,6 +470,11 @@ C
      &            Q2(ICMOQR(I,2)),NRQ2,NCQ2,NZ,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRINT)
  10   CONTINUE
+      IF(IPRINT.GE.5) THEN
+          CALL HEADER('GTCFC1:Total Fock matrix in MO-basis',-1)
+          CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,
+     &                NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
 C
 C     Restore NOPEN
 C

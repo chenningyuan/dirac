@@ -61,9 +61,9 @@ C
       Integer, Allocatable :: IBEIG(:)
       real(8), allocatable :: WORK(:)
 C     Initialize (for debug mode)
-      KE=0
-      KIBE=0
-      KQC=0
+      KE   = 0
+      KIBE = 0
+      KQC  = 0
 C
       CALL QENTER('PAMTRA')
       call legacy_lwork_get(LWORK)
@@ -4031,14 +4031,15 @@ C
 C
 C       don't use frozen open shells
         NSPC2=-1
-C       Transform core-fock matrix to active MO basis
+C
+C     Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
 C Miro/Aug 2016 - introduced DFT-COSCI, core-fock mtx contains xc contrib 
 
         CALL GTCFCK(WORK(KBUF),IPRRES,WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &            WORK(KQC(1)),WORK(KBUF1),NDMOQR,ICMOQR,NSTR(1,0,1),
-     &             NDMOQC,ICMOQC,NSPC(1,0),NSPC2,
-     &             INTRES,WORK,KFREE,LFREE)
+     &          WORK(KQC(1)),NDMOQR,ICMOQR,NSTR(1,0,1),
+     &          NDMOQC,ICMOQC,NSPC(1,0),NSPC2,
+     &          INTRES,WORK,KFREE,LFREE)
 C 
 C       Write MOLFDIR file MRCONEE
 C       --------------------------
@@ -4163,7 +4164,6 @@ CTROND: to fix !
       real(8), allocatable :: WORK(:)
 !----------------------------------------------------------------------
 C
-!@m   CALL QENTER('RESOLV')
       CALL QENTER('SY_COSCI')
       call legacy_lwork_get(LWORK)
 #include "memint.h"
@@ -4176,18 +4176,13 @@ C
       IPRBUF = 0
       ISTBUF = 0
       KFRSAV = KFREE
-!@m   CALL TITLER('Resolution of open-shell states','*',120)
       CALL TITLER('Stand-alone COS_CI','*',120)
 C
 C     Determine number of active electrons
 C
       IF (NAELEC.EQ.0) THEN
-!@m      WRITE(LUPRI,'(A)')
-!@m  &   '*WARNING: No open-shell electrons, no states to resolve!'
         WRITE(LUPRI,'(A)')
      &    '*WARNING: No open-shell electrons, no states to sy_cosci!'
-!.s/sya,2007.06.14
-!#       GOTO 9999
         IF( NAELEC .EQ. 0 ) THEN
           IACEL = 0
           DO I = 1, SYA_NOPEN
@@ -4208,7 +4203,6 @@ C
      &        I5)") IACEL
           END IF
         END IF
-!.q
       END IF
       IND = 1
       NGAS = NOPEN
@@ -4349,112 +4343,6 @@ C
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
      &               TOTERG,14)
       if (atomic) call atomic_to_linear (work(kibeig),norbt)
-C
-C     Select active orbitals
-C     ======================
-C
-!@d   DO IFRP = 1, NFSYM
-!@d     CALL SELCFS (WORK(KBUF+ICMOQ(IFRP)),
-!@d  &       IFRP,WORK(KQ(IFRP,1)),NSTR(IFRP,0,1),WORK(KVEC(IFRP,1)),
-!@d  &       NSTR(IFRP,2,1),NSTR(IFRP,1,1),
-!@d  &       NFBAS(IFRP,0),NORB(IFRP))
-!@d     CALL SELEIG (WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,1)),
-!@d  &               WORK(KVEC(IFRP,1)),NSTR(IFRP,2,1),NSTR(IFRP,1,1))
-!@d     CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
-!@d  &                WORK(KIBE(IFRP,1)),WORK(KVEC(IFRP,1)),
-!@d  &                NSTR(IFRP,2,1),NSTR(IFRP,1,1))
-!@d   ENDDO
-!@d   IF(.NOT.SKPONE) THEN
-C
-C       Select core orbitals
-C       ======================
-C
-!@d     DO IFRP = 1, NFSYM
-!@d       CALL SELCFS (WORK(KBUF+ICMOQ(IFRP)),
-!@d  &         IFRP,WORK(KQC(IFRP)),NSPC(IFRP,0),WORK(KVEC(IFRP,2)),
-!@d  &         NSPC(IFRP,2),NSPC(IFRP,1),
-!@d  &         NFBAS(IFRP,0),NORB(IFRP))
-!@d     ENDDO
-C
-C       2-index transformation
-C       ======================
-C
-!@d     CALL TRAHI(IPRRES,2)
-C
-C       Get hold of the slaves if we run in parallel.
-C        ( ITASK = 1 for Fock matrices )
-C
-!@d     IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
-C
-C       Transform core-fock matrix to active MO basis
-C       ---------------------------------------------
-C
-!@d     CALL GTCFCK(WORK(KBUF),IPRRES,WORK(KQ(1,1)),WORK(KQ(1,2)),
-!@d  &              WORK(KQC(1)),NDMOQR,ICMOQR,NSTR(1,0,1),
-!@d  &              NDMOQC,ICMOQC,NSPC(1,0),
-!@d  &              INTRES,WORK,KFREE,LFREE)
-C
-C       Write MOLFDIR file MRCONEE
-C       --------------------------
-C
-!@d     CALL MEMGET('REAL',KORBE,NSTRT(1),WORK,KFREE,LFREE)
-!@d     CALL MEMGET('INTE',KIBORB,NSTRT(1),WORK,KFREE,LFREE)
-C
-!@d     CALL MRCONE(WORK(KBUF),WORK(KORBE),WORK(KE(1,1)),WORK(KE(2,1)),
-!@d  &              WORK(KIBORB),WORK(KIBE(1,1)),WORK(KIBE(2,1)),
-!@d  &              NSPC,NSTR,NSTRT,IPRRES,
-!@d  &              WORK,KFREE,LFREE)
-C
-C       Release the slaves if we run in parallel.
-C        ( ITASK = -1 )
-C
-!@d     IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
-!@d   ENDIF
-C
-C     Release buffer memory
-C     ---------------------
-C
-!@d   CALL MEMREL('RESOLV.buf',WORK,KFRSAV,KTEMP,KFREE,LFREE)
-C
-C     4-index transformation
-C     ======================
-C
-!@d   IF(.NOT.SKPTWO) THEN
-!@d     CALL GETTIM(CPU1,WALL1)
-!@d     CALL TRAHI(IPRRES,3)
-C
-C       Call driver for 4-index transformation
-C       --------------------------------------
-C
-!@d     CALL PAMTR1(WORK,KFREE,LFREE,IPRRES,KQ,KE,KIBE,
-!@d  &              NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
-!@d  &              .TRUE.,.FALSE.,INTRES)
-C
-C        Print timing information
-C
-!@d     CALL GETTIM(CPU2,WALL2)
-!@d     WALL   = WALL2 - WALL1
-!@d     CPU    = CPU2 - CPU1
-!@d     CPUTID = SECTID(WALL)
-!@m     WRITE(LUPRI,'(//A,A12)')
-!@m  &      ' Total wall time used in RESOLV :',CPUTID
-!@d     WRITE(LUPRI,'(//A,A12)')
-!@d  &      ' Total wall time used in SY_COSCI :',CPUTID
-!@d     CPUTID = SECTID(CPU)
-!@m     WRITE(LUPRI,'(A,A12)')
-!@m  &      ' Total CPU  time used in RESOLV :',CPUTID
-!@d     WRITE(LUPRI,'(A,A12)')
-!@d  &      ' Total CPU  time used in SY_COSCI :',CPUTID
-C
-!@d     CALL GTINFO(DAYTID)
-!@d     WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
-!@d   ENDIF
-C
-C     Release all memory
-C     ------------------
-C
-!@m   CALL MEMREL('RESOLV',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
-!@d   CALL MEMREL('SY_COSC',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
 C     Do full CI in open-shell manifold
 C     =================================

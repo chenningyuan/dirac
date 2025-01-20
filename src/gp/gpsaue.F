@@ -3047,19 +3047,9 @@ C
 C
 C     Add the results on to the contents of the MO matrix ?
 C
-!#define DEBUG
-#ifdef DEBUG
-      print*, 'QTRANS: The AO matrix'
-      CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM1'
-      CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM2'
-      CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
-#undef DEBUG
-#endif
-!     write(6,*) " BLUBB QTRANS: LRAO,LCAO,LR1,LC1,LR2,LC2,LRMO,LCMO",
-!    &LRAO,LCAO,LR1,LC1,LR2,LC2,LRMO,LCMO," columns: AO, MO: ",
-!    &NRAO,NCAO,NRMO,NCMO,TREV," ",TYP
+C       write(6,*) " BLUBB QTRANS: LRAO,LCAO,LR1,LC1,LR2,LC2,LRMO,LCMO",
+C     & LRAO,LCAO,LR1,LC1,LR2,LC2,LRMO,LCMO," columns: AO, MO: ",
+C     & NRAO,NCAO,NRMO,NCMO,TREV," ",TYP
 C
 C     Time reversal symmetry of F-matrix
 C
@@ -3076,6 +3066,24 @@ C     *****  AO - to - MO -transformation : F' = (C+)FC *****
 C     *******************************************************
 C
       IF(TYP.EQ.'AOMO') THEN
+         
+        IF (IPRINT.GE.12) THEN
+          CALL HEADER('QTRANS: AO-to-MO-transformation',-1)
+          WRITE(LUPRI,'(2X,A,4I2)')
+     &      'QTRANS: The AO matrix; IQAO=',(IQAO(IZ),IZ=1,NZAO)
+          WRITE(LUPRI,'(2X,A,A1)') ' Time rev=',TREV
+            CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
+
+          WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: The transformation matrix TM1; IQTM1=',
+     &      (IQTM1(IZ),IZ=1,NZTM1)
+          CALL PRQMAT(TM1,NRAO,NRMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+
+          WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: The transformation matrix TM2; IQTM2=',
+     &      (IQTM2(IZ),IZ=1,NZTM2)
+          CALL PRQMAT(TM2,NCAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+        ENDIF
 C
 C       Look for the most efficient transformation
 C       ------------------------------------------
@@ -3095,24 +3103,6 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
 
-          IF (IPRINT.GE.12) THEN
-            CALL HEADER('QTRANS: AO-to-MO-transformation',-1)
-
-            WRITE(LUPRI,'(2X,A,4I2)')
-     &      'QTRANS: The AO matrix; IQAO=',(IQAO(IZ),IZ=1,NZAO)
-            WRITE(LUPRI,'(2X,A,A1)') ' Time rev=',TREV
-            CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
-
-            WRITE(LUPRI,'(/2X,A,4I2)')
-     &      'QTRANS: The transformation matrix TM1; IQTM1=',
-     &      (IQTM1(IZ),IZ=1,NZTM1)
-            CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
-
-            WRITE(LUPRI,'(/2X,A,4I2)')
-     &      'QTRANS: The transformation matrix TM2; IQTM2=',
-     &      (IQTM2(IZ),IZ=1,NZTM2)
-            CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
-          ENDIF
 C
 C         First part of transformation: W = Fao C
 C         ------------------------------------
@@ -3195,14 +3185,25 @@ C     *******************************************************
 C
       ELSEIF(TYP.EQ.'MOAO') THEN
 C
-#ifdef DEBUG
-      print*, 'QTRANS: The MO matrix'
-      CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM1'
-      CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM2'
-      CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
-#endif
+        IF (IPRINT.GE.12) THEN
+          CALL HEADER('QTRANS: MO-to-AO-transformation',-1)
+          WRITE(LUPRI,'(2X,A,4I2)')
+     &      'QTRANS: The MO matrix; IQAO=',(IQMO(IZ),IZ=1,NZMO)
+          WRITE(LUPRI,'(2X,A,A1)') ' Time rev=',TREV
+          CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)          
+
+          WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: The transformation matrix TM1; IQTM1=',
+     &      (IQTM1(IZ),IZ=1,NZTM1)
+          CALL PRQMAT(TM1,NRMO,NRMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+
+          WRITE(LUPRI,'(/2X,A,4I2)')
+     &      'QTRANS: The transformation matrix TM2; IQTM2=',
+     &      (IQTM2(IZ),IZ=1,NZTM2)
+          CALL PRQMAT(TM2,NCMO,NCAO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+
+        ENDIF
+      
 C       Look for the most efficient transformation
 C       ------------------------------------------
 C
