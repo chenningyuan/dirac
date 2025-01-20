@@ -18,6 +18,12 @@ Infrastructure changes and fixes:
 - Quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI).
    - Contributor: H. J. Aa. Jensen.
 
+Basis set corrections:
+
+- Transferred fixes of Dalton basis sets from Dalton (Contritor: H. J. Aa. Jensen):
+  - Corrected some references in correlation consistent basis sets (as e.g. aug-cc-pVTZ)
+  - Fixed Scandium in aug-cc-pVTZ-J (two lines missing, would have given error if used)
+
 Bugfix:
 
 - Fix of symmetry problem for KRMCSCF with LUCIAREL and odd number of electrons.
