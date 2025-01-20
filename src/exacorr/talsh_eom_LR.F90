@@ -11,7 +11,7 @@ module talsh_eom_LR
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                ONE_HALF=(0.5D0,0.D0), &
+                                ONE_HALF=(0.5D0,0.D0), IMAGINARY=(0.0d0,1.0d0), &
                                 MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0), &
                                 ONE_EIGHTH_C=(0.125D0,0.D0)
@@ -59,6 +59,8 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
             complex(kind=8)               :: linrsp, linrsp_con
 
             integer                       :: ierr
+
+            complex(kind=8)               :: phase_factor
 
             complex(kind=8)               :: eom_lr
             integer                       :: T
@@ -134,24 +136,37 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
             print *, "linear response: +w", linrsp
             print *, "linear response: -w", linrsp_con
 
-            T = (-1)**(exa_input%N_Time_anti)
+!           T = (-1)**(exa_input%N_Time_anti)
 
-            if (T==-1) then
-                print *, "We now flip the real and imaginary parts"
-                tem_real = real(linrsp)
-                tem_imag = aimag(linrsp)
-                linrsp = cmplx(tem_imag,tem_real)
+!           if (T==-1) then
+!               print *, "We now flip the real and imaginary parts"
+!               tem_real = real(linrsp)
+!               tem_imag = aimag(linrsp)
+!               linrsp = cmplx(tem_imag,tem_real)
 
-                tem_real = real(linrsp_con)
-                tem_imag = aimag(linrsp_con)
-                linrsp_con = cmplx(tem_imag,tem_real)
+!               tem_real = real(linrsp_con)
+!               tem_imag = aimag(linrsp_con)
+!               linrsp_con = cmplx(tem_imag,tem_real)
 
-                print *, "New linear response: +w", linrsp
-                print *, "New linear response: -w", linrsp_con
-            end if
+!               print *, "New linear response: +w", linrsp
+!               print *, "New linear response: -w", linrsp_con
+!           end if
+
+            print *, "Number of time-antisymmetric operators in response function",exa_input%N_Time_anti
+            print *, "Correcting phase of response function components before symmetrization"
+
+            phase_factor = IMAGINARY**(exa_input%N_Time_anti)
+
+            linrsp = linrsp*phase_factor
+            linrsp_con = linrsp_con*phase_factor
+
+            print *, "Corrected linear response: +w", linrsp
+            print *, "Corrected linear response: -w", linrsp_con
 
             linrsp_con=conjg(linrsp_con)
             eom_lr=(linrsp+linrsp_con)*0.5
+
+            print *, "LR after symmetrization ",eom_lr
 
 
 !*********************           Test perturbated T tensors         *********************************

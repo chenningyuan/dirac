@@ -10,7 +10,7 @@ module talsh_eom_QR
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                ONE_HALF=(0.5D0,0.D0), &
+                                ONE_HALF=(0.5D0,0.D0), IMAGINARY=(0.0D0,1.0D0), &
                                 MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
@@ -55,6 +55,8 @@ subroutine get_eom_qr(exa_input, interm_t,&
 
         integer                       :: ierr
 
+        complex(kind=8)               :: phase_factor 
+
         complex(kind=8)               :: eom_qr
         real(kind=8)                  :: tem_real, tem_imag
 
@@ -82,24 +84,37 @@ subroutine get_eom_qr(exa_input, interm_t,&
         print *, "quadratic response: +w", quarsp
         print *, "quadratic response: -w", quarsp_con
 
-        T = (-1)**(exa_input%N_Time_anti)
+!       T = (-1)**(exa_input%N_Time_anti)
 
-        if (T==-1) then
-            print *, "We now flip the real and imaginary parts"
-            tem_real = real(quarsp)
-            tem_imag = aimag(quarsp)
-            quarsp = cmplx(tem_imag,tem_real)
+!       if (T==-1) then
+!           print *, "We now flip the real and imaginary parts"
+!           tem_real = real(quarsp)
+!           tem_imag = aimag(quarsp)
+!           quarsp = cmplx(tem_imag,tem_real)
 
-            tem_real = real(quarsp_con)
-            tem_imag = aimag(quarsp_con)
-            quarsp_con = cmplx(tem_imag,tem_real)
+!           tem_real = real(quarsp_con)
+!           tem_imag = aimag(quarsp_con)
+!           quarsp_con = cmplx(tem_imag,tem_real)
 
-            print *, "New quadratic response: +w", quarsp
-            print *, "New quadratic response: -w", quarsp_con
-        end if
+!           print *, "New quadratic response: +w", quarsp
+!           print *, "New quadratic response: -w", quarsp_con
+!       end if
+
+        print *, "Number of time-antisymmetric operators in response function",exa_input%N_Time_anti
+        print *, "Correcting phase of response function components before symmetrization"
+
+        phase_factor = IMAGINARY**(exa_input%N_Time_anti)
+
+        quarsp     = quarsp*phase_factor
+        quarsp_con = quarsp_con*phase_factor
+
+        print *, "Corrected quadratic response: +w", quarsp
+        print *, "Corrected quadratic response: -w", quarsp_con
 
         quarsp_con=conjg(quarsp_con)
         eom_qr=(quarsp+quarsp_con)*0.5
+
+        print *, "EOM-QR after symmetrization ",eom_qr
 
 end subroutine get_eom_qr
 
