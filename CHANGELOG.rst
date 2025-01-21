@@ -15,7 +15,19 @@ Infrastructure changes and fixes:
    - Contributor: H. J. Aa. Jensen.
 - Made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers).
    - Contributor: H. J. Aa. Jensen.
+- Include support in ExaCorr for NVHPC, and added hints for compilation with OneAPI and NVHPC. Please note that calculations beyond iterative triples (e.g. CCSDTQ) are not supported with NVHPC.
+   - Contributor: A. Gomes
 - Quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI).
+   - Contributor: H. J. Aa. Jensen.
+
+Basis set library:
+
+- Transferred fixes of Dalton basis sets from Dalton (Contributor: H. J. Aa. Jensen):
+   - Corrected some references in correlation consistent basis sets (as e.g. aug-cc-pVTZ)
+   - Fixed Scandium in aug-cc-pVTZ-J (two lines missing, would have given error if used)
+- Added special basis sets for spin-spin coupling and hyperfine coupling from Frank Jensen group (Aarhus University)
+   - pcJ, ccJ and pcH sets
+   - Copied from Dalton basis set directory
    - Contributor: H. J. Aa. Jensen.
 
 Bugfix:
@@ -27,6 +39,8 @@ New default:
 
 - The CODATA2022 set of physical constants is now used as default (taken from http://physics.nist.gov/constants on June 4, 2024).
    - Contributor: I. A. Aucar.
+- Tenpi-generated code is now the default choice for automatically generated T equation codes. 
+   - Contributor: A. Gomes
 
 
 -----------------------------------------------------------------------------------------------------
@@ -135,6 +149,10 @@ Performance improvements:
    - convergence algorithm has also been changed, with considerable improvement in convergence rate.
      In particular, the truncation of the reduced space in the Davidson iterations is now done
      in a much better way, leading to the improvement in convergence rate. Both for real and complex parallel cases.
+
+New defaults:
+
+- Default of MOLTRA changed from scheme 6 to scheme 4 (A. Sunaga).
 
 Bugfix:
 

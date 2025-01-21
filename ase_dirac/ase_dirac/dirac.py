@@ -26,8 +26,7 @@ class DIRAC(FileIOCalculator):
     """
     implemented_properties: List[str] = ['energy']
     label: str = 'dirac'
-    command: str = 'pam --inp=PREFIX.inp --mol=PREFIX.xyz --silent ' \
-        '--get="AOMOMAT MRCONEE MDCINT"'
+    command: str = 'pam --inp=PREFIX.inp --mol=PREFIX.xyz --silent'
 
     def __init__(self,
                  restart: Optional[bool] = None,
@@ -115,7 +114,7 @@ class DIRAC(FileIOCalculator):
         # initialize ASE base class Calculator.
         # see ase/ase/calculators/calculator.py.
         FileIOCalculator.__init__(self, restart, ignore_bad_restart_file,
-                                  label, atoms, command, **kwargs)
+                                  label, atoms, self.command, **kwargs)
 
         self.prefix = self.label
 
