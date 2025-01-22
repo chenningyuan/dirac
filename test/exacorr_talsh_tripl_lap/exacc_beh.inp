@@ -3,6 +3,9 @@
 BeH molecule. X2C Hamiltonian. CC energies.
 .WAVE FUNCTION
 .4INDEX
+**GENERAL
+.CODATA
+ CODATA18
 **INTEGRALS
 *READIN
 .UNCONTRACT
