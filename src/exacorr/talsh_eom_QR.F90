@@ -81,6 +81,63 @@ subroutine get_eom_qr(exa_input, interm_t,&
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
                         i, j, k, l1_tensor, l2_tensor, quarsp_con)
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ASPG+LV: Note concerning the addition of a phase to the response functions below
+!
+! The 1-body integrals over time-antisymmetric operators are already in the AO basis
+! of DIRAC scaled by imaginary i  so that they can be treated as time-symmetric (real)
+! operators. Such an auxiliary phase factor takes over to the MO basis in which we solve
+! the CC response equations:
+!
+! RHS (for linear and quadratic response)
+!  (\bar{H} - \omega_y I)t^Y(\omega_y) = - \xi^Y  (RHS, for linear and quadratic response)
+! LHS (for quadratic response and asymmetric linear response)
+! \bar{t}^X(\omega_x)(\bar{H} - \omega_x I) = - \eta^X - Ft^X(\omega_x)
+!
+! where \xi^Y and \eta^X involve the one-body operators (see 10.1021/acs.jctc.3c00812 and 10.1021/acs.jctc.3c01011).
+!
+! These auxiliary phase factors are therefore present when assembling the response functions, e.g.
+!
+!   LR, symmetric formulation
+!   <<X; Y>>_{\omega_y} = 1/2 C^{\pm\omega} P(X,Y) [ \eta_Y + 1/2 Ft^X(\omega_x) ] t^Y(omega_y)
+!
+!   LR, asymmetric formulation
+!   <<X; Y>>_{\omega_y} = 1/2 [\eta^X t^Y(\omega_y) + \bar{t}^Y(\omega_y)\xi^X]
+!
+!   QR, symmetric formulation
+!   <<X; Y, Z>>_{\omega} = 1/2 C^{\pm\omega} P(X,Y,Z) [[ 1/2 F^Y + 1/6 Gt^Y]t^Y + \bar{t}^X [ A^Y + 1/2 Bt^Y]] t^Z
+!
+!   etc (see aforementioned papers for the QR-EOM expression)
+!
+!   where
+!    - \omega_x = -(\omega_y + \omega_z) or \omega_x = -\omega_y,
+!    - P a permutation operation exchanging the role of X and Y,
+!    - C a symmetrization operator with respect to simultaneous complex conjugation and inversion
+!      of the signs of the frequencies,
+!      C^{\pm\omega} = f^{XY}(\omega_x, \omega_y) + [f^{XY}(-\omega_x, -\omega_y)]^*
+!
+! and we need to correct for this to obtain the final result.
+!
+! We can do so by multiplying the terms, for example f^{XY}(\omega_x, \omega_y) and f^{XY}(-\omega_x, -\omega_y)
+! for linear response, by a phase factor G
+!
+! G = i^{N_a},
+!
+! where N_a is the number of time-antisymmetric operators among X, Y, Z,...; and this should be made BEFORE
+! the action of C^{\pm\omega} if that is applied.
+!
+! With this, for example :
+! - in the case of the elements of the dipole polarizability tensor ((<<x; y>>)), we have two time-symmetric
+!   operators (x,y) so N_a = 0, there is no change
+! - in the case of the optical rotation (<<x; \hat{m}_y>>), we have one time-symmetric (x) and one
+!   time-antisymmetric (the magnetic dipole component \hat{m}_y) operator, so N_a = 1 and we have as result G = i; by
+!   applying it the real and imaginary parts of the response function are interchanged
+! - in the case of spin-spin couplings between centers M and N (<<\hat{h}_M;\hat{h}_M>>), we have two
+!   time-antisymmetric operators, so N_a = 2 and G = i^2 = -1, as a result we change the sign of f^{XY}
+!
+! and so on for the possible combinations in the case of quadratic response functions.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
         print *, "Number of time-antisymmetric operators in response function",exa_input%N_Time_anti
         if (exa_input%N_Time_anti.ge.1) &
         print *, "Adding phase to response function components (due to how DIRAC scales time-antisymmetric operators)"
