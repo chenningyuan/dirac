@@ -81,35 +81,17 @@ subroutine get_eom_qr(exa_input, interm_t,&
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
                         i, j, k, l1_tensor, l2_tensor, quarsp_con)
 
-        print *, "quadratic response: +w", quarsp
-        print *, "quadratic response: -w", quarsp_con
-
-!       T = (-1)**(exa_input%N_Time_anti)
-
-!       if (T==-1) then
-!           print *, "We now flip the real and imaginary parts"
-!           tem_real = real(quarsp)
-!           tem_imag = aimag(quarsp)
-!           quarsp = cmplx(tem_imag,tem_real)
-
-!           tem_real = real(quarsp_con)
-!           tem_imag = aimag(quarsp_con)
-!           quarsp_con = cmplx(tem_imag,tem_real)
-
-!           print *, "New quadratic response: +w", quarsp
-!           print *, "New quadratic response: -w", quarsp_con
-!       end if
-
         print *, "Number of time-antisymmetric operators in response function",exa_input%N_Time_anti
-        print *, "Correcting phase of response function components before symmetrization"
+        if (exa_input%N_Time_anti.ge.1) &
+        print *, "Adding phase to response function components (due to how DIRAC scales time-antisymmetric operators)"
 
         phase_factor = IMAGINARY**(exa_input%N_Time_anti)
 
         quarsp     = quarsp*phase_factor
         quarsp_con = quarsp_con*phase_factor
 
-        print *, "Corrected quadratic response: +w", quarsp
-        print *, "Corrected quadratic response: -w", quarsp_con
+        print *, "quadratic response: +w", quarsp
+        print *, "quadratic response: -w", quarsp_con
 
         quarsp_con=conjg(quarsp_con)
         eom_qr=(quarsp+quarsp_con)*0.5

@@ -133,54 +133,23 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
                     Tprop_tensors_min_w(1), Tprop_tensors_min_w(2),&
                     l1_tensor, l2_tensor, linrsp_con, B1_minus_fre, B2_minus_fre, CC_CC)
 
-            print *, "linear response: +w", linrsp
-            print *, "linear response: -w", linrsp_con
-
-!           T = (-1)**(exa_input%N_Time_anti)
-
-!           if (T==-1) then
-!               print *, "We now flip the real and imaginary parts"
-!               tem_real = real(linrsp)
-!               tem_imag = aimag(linrsp)
-!               linrsp = cmplx(tem_imag,tem_real)
-
-!               tem_real = real(linrsp_con)
-!               tem_imag = aimag(linrsp_con)
-!               linrsp_con = cmplx(tem_imag,tem_real)
-
-!               print *, "New linear response: +w", linrsp
-!               print *, "New linear response: -w", linrsp_con
-!           end if
-
             print *, "Number of time-antisymmetric operators in response function",exa_input%N_Time_anti
-            print *, "Correcting phase of response function components before symmetrization"
+            if (exa_input%N_Time_anti.ge.1) &
+            print *, "Adding phase to response function components (due to how DIRAC scales time-antisymmetric operators)"
 
             phase_factor = IMAGINARY**(exa_input%N_Time_anti)
 
             linrsp = linrsp*phase_factor
             linrsp_con = linrsp_con*phase_factor
 
-            print *, "Corrected linear response: +w", linrsp
-            print *, "Corrected linear response: -w", linrsp_con
+            print *, "linear response: +w", linrsp
+            print *, "linear response: -w", linrsp_con
 
             linrsp_con=conjg(linrsp_con)
             eom_lr=(linrsp+linrsp_con)*0.5
 
             print *, "LR after symmetrization ",eom_lr
 
-
-!*********************           Test perturbated T tensors         *********************************
-            ! ierr=talsh_tensor_construct(total_t_t1,C8,vo_dims,init_val=ZERO)
-            ! ierr=talsh_tensor_construct(total_t_t2,C8,vvoo_dims,init_val=ZERO)
-            ! ierr=talsh_tensor_add("T(a,i)+=R(a,i)",total_t_t1,interm_t%t1,scale=ONE)
-            ! ierr=talsh_tensor_add("T(a,i)+=R(a,i)",total_t_t1,tprop_tensor1%t1,scale=ONE)
-            ! ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",total_t_t2,interm_t%t2,scale=ONE)
-            ! ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",total_t_t2,tprop_tensor1%t2,scale=ONE)
-            ! call print_tensor(total_t_t1, 0.0d-18, "total_t1")
-            ! call print_tensor(total_t_t2, 0.0d-18, "total_t2")
-            ! ierr=talsh_tensor_destruct(total_t_t1)
-            ! ierr=talsh_tensor_destruct(total_t_t2)
-!****************************************************************************************************
 
 end subroutine get_eom_lr
 
