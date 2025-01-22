@@ -19,7 +19,7 @@ Infrastructure changes and fixes:
    - Contributor: H. J. Aa. Jensen.
 - Made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers).
    - Contributor: H. J. Aa. Jensen.
-- Include support in ExaCorr for NVHPC, and added hints for compilation with OneAPI and NVHPC. Please note that calculations beyond iterative triples (e.g. CCSDTQ) are not supported with NVHPC.
+- Include support in ExaCorr for NVHPC, and added hints for compilation with OneAPI and NVHPC, and a way to control via environment variable CUDA_SM_ARCH which NVIDIA GPU architeture to compile for.  Please note that calculations beyond iterative triples (e.g. CCSDTQ) are not supported with NVHPC.
    - Contributor: A. Gomes
 - Quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI).
    - Contributor: H. J. Aa. Jensen.
@@ -38,6 +38,8 @@ Bugfix:
 
 - Fix of symmetry problem for KRMCSCF with LUCIAREL and odd number of electrons.
    - Contributor: H. J. Aa. Jensen.
+- Set the correct sign of CC linear and quadratic response functions in the case of more than one time-antisymmetric perturbation operator
+   - Contributor: A. Gomes
 
 New default:
 
