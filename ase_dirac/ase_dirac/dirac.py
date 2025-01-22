@@ -199,6 +199,6 @@ class DIRAC(FileIOCalculator):
 
     def read_results(self):
         """Read energy from DIRAC output file."""
-        out_file = self.prefix + "_" + self.prefix + ".out"
+        out_file = self.label + ".out"
         output = read_dirac_out(out_file)
         self.results = output

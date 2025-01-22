@@ -9,6 +9,10 @@ New features:
    - Contributor: H. J. Aa. Jensen.
    - Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke, Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z. J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
 
+ - DIRAC calculator for the Atomistic Simulation Environment (ASE) is available.
+   - Contributors: Carlos M. R. Rocha, Lucas Visscher
+   - Reference (DIRAC calculator): https://qc2.readthedocs.io
+   - Reference (ASE): https://wiki.fysik.dtu.dk/ase/
 Infrastructure changes and fixes:
 
 - Changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025.
