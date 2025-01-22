@@ -34,13 +34,16 @@ contains
     real(8)::s
     integer::nr_words, i
     character(len=10),allocatable::chvalues(:)
+    character*(:),allocatable:: errmsg
 
     select case (key)
       case ('id')
         call str2int(val, grid%id, stat)
       case ('ndim')
-!       fixme
-        if (val /= '3') stop
+        if (val /= '3') then
+        !fixme
+        stop
+        end if
       case ('npoints')
         temp = val
         call trim_ch(temp, val,  '[')
@@ -95,10 +98,14 @@ contains
           grid%input = -4
         else if (lowercase(val) == '3d') then
           grid%input = 5
+        else if (lowercase(val) == '3d_int') then
+          grid%input = -5
         else if (lowercase(val) == 'radial') then
-          grid%input = 5         !only 3d radial grids
+          grid%input = 6
+        else if (lowercase(val) == 'radial_int') then
+          grid%input = -6
         else
-          write(*, *) 'wrong argument; argument to "input" must be one of "create"/"import"/"list"/"line"/"2d"/"3d"/"radial"'
+          write(*, *) 'wrong argument to grid%input'
           stop
         end if
       case ('typ')
@@ -374,46 +381,51 @@ contains
   subroutine verify_grid_input_cfg(grid)
     type(grid_t),intent(inout)::grid
     integer::i
-    logical:: err
+    character*(:),allocatable:: errmsg
+
+    ! catch errors
 
     if (grid%input == 1) then
       write(*, *) 'VISUAL: Grid information will be read from grid file'
-      write(*, *) '  WARNING: These input options will be ignored (if present):'//&
-                  ' ndim, npoints, spacing, margin.'
+      write(*, *) 'WARNING: These options will be ignored (if present):'//&
+                  'ndim, npoints, spacing, margin.'
 
     else if (grid%input == -1) then
       write(*, *) 'VISUAL: Grid information will be read from numerical_grid file'
-      write(*, *) '  WARNING: These input options will be ignored (if present):'//&
+      write(*, *) 'WARNING: These options will be ignored (if present):'//&
                   ' ndim, npoints, spacing, margin, file_inp.'
       grid%file_inp = 'numerical_grid'
-      grid%typ = 2
 
     else if (grid%input == 0) then
-      write(*, *) 'VISUAL: 3d grid will be created according to information in .GRID'
+      write(*, *) 'VISUAL: 3d grid will be created according to .GRID options'
       if (grid%ndim == 0) then
-        write(*, *) ' ERROR: grid "ndim" information is missing.'
-        stop
+        errmsg='Input error: grid "ndim" information is missing.\n'
       end if
       do i = 1, 3
         if (grid%nr_points(i) ==0 .and. grid%spacing(i) ==0) then
-          write(*, *) ' ERROR: grid "npoints" or "spacing" information is missing for dimension ', i
-          stop
+          errmsg=errmsg//'Grid "npoints" or "spacing" information is missing.\n'
         else if (grid%nr_points(i) /=0 .and. grid%spacing(i) /=0) then
-          write(*, *) ' ERROR: grid mutually exclusive options: "npoints" and "spacing".'
+          errmsg=errmsg//'Grid mutually exclusive options: "npoints" and "spacing".\n'
         end if
       end do
 
     else
-      write(*, *) 'VISUAL: Grid will be created according to information in the separate input lines:'
-      write(*, *) ' .LINE/.LIST/.2D/.2D_INT/.3D/.RADIAL'
+      write(*, *) 'VISUAL: Grid will be created according to information '//&
+                  'in the separate input lines:'
+      write(*, *) ' .LINE/.LIST/.2D/.2D_INT/.3D/.3D_INT/.RADIAL'
     end if
+
+    ! additional setup/check
 
     if (grid%export) then
       if (.not. allocated(grid%file_out)) then
-        write(*,*) 'VISUAL: Grid export requested, but file for export not specified.'
+        errmsg=errmsg//'Grid export requested, but file for export not specified.'
         stop
       end if
     end if
+
+    if (allocated(errmsg)) call visual_quit(errmsg)
+
   end subroutine
 
 
@@ -475,10 +487,7 @@ contains
     end if
 #endif
 
-    if (allocated(errmsg)) call visual_quit(errmsg)
-
-    ! additional setup
-
+    ! additional setup/check
 
     if (grid_function%name=='bedcos' .or. grid_function%name=='bedsin') then
       if (.not.grid_function%bedfix_known) then
@@ -487,6 +496,7 @@ contains
       end if
     end if
 
+    if (allocated(errmsg)) call visual_quit(errmsg)
 
   end subroutine verify_grid_function_input_cfg
 
@@ -500,16 +510,16 @@ contains
         if (rs_input%grid_functions(igf)%id_assigned_grid == rs_input%grids(ig)%id) then 
           if (rs_input%grid_functions(igf)%purpose == 1) then
             if (rs_input%grids(ig)%typ == 2) then
+                write(*,*) 'integration on 3d radial grid'
+            else
               if (rs_input%grids(ig)%input == -1) then 
                 write(*,*) 'integration on DFT grid on "numerical_grid" file'
+              else if (rs_input%grids(ig)%input == -4) then 
+                write(*,*) 'integration on 2d lobatto grid'
               else
-                write(*,*) 'integration on 3d radial grid'
+                write(*,*) 'integration not possible for this grid. stop'
+                stop
               end if
-            else if (rs_input%grids(ig)%input == -4) then 
-              write(*,*) 'integration on 2d lobatto grid'
-            else
-              write(*,*) 'integration not possible for this grid. stop'
-              stop
             end if
           end if
         end if

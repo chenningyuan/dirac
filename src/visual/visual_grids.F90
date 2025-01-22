@@ -23,9 +23,9 @@ contains
     type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
     character(len = 150):: errmsg
-!   here, we get the information about the grid,
-!   which was not set up via user input
-!   (input/input_reader_sections.F90)
+!   get additional information about the grid,
+!   (which was not set up via user input in 
+!   input/input_reader_sections.F90)
 
     if (grid%status == 0) return
 
@@ -35,11 +35,10 @@ contains
 !
       call get_grid_info_from_file(grid)
       if (grid%id == 0) grid%id = grid_id
-
 !
-!     in other cases - set up information to generate grid points
+!     in other cases - set up what is needed to generate grid points
 !
-    else if (grid%input==0 .or. grid%input==5) then
+    else if (grid%input==0 .or. grid%input==5 .or. grid%input==6) then
       ! 3d grid
 
       if (grid_id /= grid%id) then
@@ -55,12 +54,12 @@ contains
 
         ! center grid around molecule,
         ! modify grid extents and grid%origin (but do not move molecule)
-        ! todo - maybe add a keyword + an option to control grid extents
+        ! todo - add a keyword + an option to control grid extents
         call center_mol_in_3d_grid(grid)
 
       else if (grid%typ == 2) then
         ! radial 3d grid
-        call get_3d_radial_grid_essentials(grid, mol)
+        call get_3d_radial_grid_essentials(grid)
       end if
 
     else if (grid%input  ==  3) then
@@ -81,69 +80,69 @@ contains
 
     if (grid%status /= 0) return
     if (.not. grid%allocated_points()) return
-    if (grid%input == -4 .or. grid%input == -1 .or. grid%typ == 2) then
-      if (.not. grid%allocated_weights()) return
-    end if
+    if (grid%requires_weights() .and..not. grid%allocated_weights()) return
+    if (grid%input == 2) return ! grid points should already be read from input
 
     if (grid%input == 1 .or. grid%input == -1) then
       call get_grid_points_from_file(grid)
-    else if (grid%input /= 2) then
-      ! grid%input = 2 is for .LIST;
-      ! in this case, the points should already be read from input
+    else
       call generate_grid_points(grid)
     end if
   end subroutine
-
 
 
 ! ------------------------------------------------------------------------------
   subroutine generate_grid_radial(grid)
 use num_grid_cfg
     type(grid_t), intent(inout):: grid
-    real(8),allocatable:: temp(:,:)
+    real(8),allocatable:: tmp(:,:)
     real(8):: rad, radial_spacing
-    integer:: nleb, i, m, n, istep, ipoint
+    integer:: nleb, i, m, n, istep, ipoint, grid_angint
     character(len = 150):: errmsg
 
-    if (grid%typ /= 2) return
+    ! Get angular points and weights
+    allocate(tmp(grid%radial_nr_points_angular, 4))
+    tmp=0.0d0
+    CALL LEBEDEV(grid%radial_lebedev_l,&
+                 tmp(1,1),tmp(1,2),tmp(1,3),tmp(1, 4),n)
+    CALL DSCAL(grid%radial_nr_points_angular, 4*ACOS(-1.0D0), tmp(1,4), 1)
 
-    if (grid%input == 0 .or. grid%input == 5) then
+    call generate_grid_radial_points_weights(grid,tmp)
 
-      ! Get angular points and weights
-      m = NLEB(num_grid_cfg_angint)
-      write(*, '(/,4x, a)')  '** Radial distribution **'
-      write(*, '(6x, A, I3)')  '   Lebedev angular grid L = ',num_grid_cfg_angint
-      write(*, '(6x, A, I10)') '   Angular points:   ',m
-      allocate(temp(m, 4))
-      temp=0.0d0
-      CALL LEBEDEV(num_grid_cfg_angint,temp(1,1),temp(1,2),temp(1,3),temp(1, 4),n)
-      CALL DSCAL(m, 4*ACOS(-1.0D0), temp(1, 4), 1)
+    deallocate(tmp)
 
-      ! Loop over radial points
-      if (grid%radial_nr_steps > 1) then
-        radial_spacing = grid%radial_length/grid%radial_nr_steps
-      else
-        radial_spacing = grid%radial_length
-      end if
+  end subroutine
 
-      ipoint = 1
-      do istep = 0, grid%radial_nr_steps-1
-        rad = istep*radial_spacing
-        do i = 1, m
-          grid%points(1:3, ipoint) = grid%origin(1:3) + rad*temp(i, 1:3)
-          if (grid%allocated_weights()) grid%weights(ipoint) = temp(i, 4)*rad*rad*radial_spacing
-!         todo
-!         add angular integration; then: weights = temp(i, 4)*rad*rad 
-          ipoint = ipoint + 1
-        end do
-      end do
-      deallocate(temp)
 
+! ------------------------------------------------------------------------------
+  subroutine generate_grid_radial_points_weights(grid,tmp)
+    type(grid_t), intent(inout):: grid
+    real(8),intent(in):: tmp(grid%radial_nr_points_angular,*)
+    real(8):: rad, radial_spacing
+    integer:: i, istep, ipoint
+
+    ! Loop over radial points
+    if (grid%radial_nr_steps > 1) then
+      radial_spacing = grid%radial_length/grid%radial_nr_steps
     else
-      write (errmsg, *) 'ERROR: generation of radial grids other than ',&
-                        '3d is not implemented'
-      call visual_quit(errmsg)
+      radial_spacing = grid%radial_length
     end if
+
+    ipoint = 1
+    do istep = 0, grid%radial_nr_steps-1
+      rad = istep*radial_spacing
+      do i = 1, grid%radial_nr_points_angular
+        grid%points(1:3,ipoint) = grid%origin(1:3) + rad*tmp(i, 1:3)
+        ! grid%weights will be used for angular integration:
+        if (grid%allocated_weights()) then
+          grid%weights(ipoint) = tmp(i, 4)*rad*rad
+        end if
+        ipoint = ipoint + 1
+      end do
+      if (grid%allocated_radial_coord()) then
+        grid%radial_coord(istep+1) = rad
+      end if
+    end do
 
   end subroutine
 
@@ -437,17 +436,25 @@ use num_grid_cfg
 
 
 ! ------------------------------------------------------------------------------
-  subroutine get_3d_radial_grid_essentials(grid, mol)
+  subroutine get_3d_radial_grid_essentials(grid)
 use num_grid_cfg
-    type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
     integer:: m, nleb
 
     if (grid%typ /= 2) return
 
     m = NLEB(num_grid_cfg_angint)
-    grid%nr_points_total = m*grid%radial_nr_steps
-    grid%nr_points_total_known = .true.
+
+    write(*, '(/,4x, a)')  '** Radial distribution **'
+    write(*, '(6x, A, I3)')  '   Lebedev angular grid L = ',num_grid_cfg_angint
+    write(*, '(6x, A, I10)') '   Angular points:   ',m
+
+    grid%radial_lebedev_l = num_grid_cfg_angint
+    grid%radial_nr_points_angular = m
+    if (.not. grid%nr_points_total_known) then
+      grid%nr_points_total = m*grid%radial_nr_steps
+      grid%nr_points_total_known = .true.
+    end if
 
   end subroutine get_3d_radial_grid_essentials
 

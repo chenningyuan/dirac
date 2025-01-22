@@ -82,7 +82,11 @@ contains
 
     l0 = trim(top_section)
     l1 = l0//'/grid'
-    l2 = l0//'/grid/points'
+    if (grid%typ == 2) then
+      l2 = l0//'/grid/radial_points'
+    else
+      l2 = l0//'/grid/points'
+    end if
 
     select case (level)
       case (1)
@@ -112,21 +116,36 @@ contains
 
     call assign_label_grid(grid, label, top_section='result', level=1)
     group = label%name
-    call lab_write(data_file, trim(group)//'/nr_points_total',idata = grid%nr_points_total)
-    call lab_write(data_file, trim(group)//'/ndim',idata = grid%ndim)
-    do i = 1, grid%ndim
-      write(ich, '(i1)') i
-      call lab_write(data_file, trim(group)//'/nr_points_dim_'//trim(ich), idata = grid%nr_points(i))
-    end do
+    if (grid%typ == 2) then
+      call lab_write(data_file, trim(group)//'/radial_nr_steps',&
+                     idata = grid%radial_nr_steps)
+      call lab_write(data_file, trim(group)//'/radial_nr_points_angular',&
+                     idata = grid%radial_nr_points_angular)
+    else
+      call lab_write(data_file, trim(group)//'/nr_points_total',&
+                     idata = grid%nr_points_total)
+      call lab_write(data_file, trim(group)//'/ndim',idata = grid%ndim)
+      do i = 1, grid%ndim
+        write(ich, '(i1)') i
+        call lab_write(data_file, trim(group)//'/nr_points_dim_'//trim(ich), idata = grid%nr_points(i))
+      end do
+    end if
 
     call assign_label_grid(grid, label, top_section='result', level=2)
     group = label%name
-    do i = 1, grid%ndim
-      write(ich, '(i1)') i
-      call lab_write(data_file, trim(group)//'/coor_'//trim(ich), rdata = grid%points(i, :))
-    end do
-    if (grid%allocated_weights()) then
-      call lab_write(data_file, trim(group)//'/weights', rdata = grid%weights(:))
+    if (grid%typ == 2) then
+      if (grid%allocated_radial_coord()) then
+        !call lab_write(data_file, trim(group)//'/radial_coord', rdata = grid%radial_coord(:))
+        call lab_write(data_file, trim(group), rdata = grid%radial_coord(:))
+      end if
+    else
+      do i = 1, grid%ndim
+        write(ich, '(i1)') i
+        call lab_write(data_file, trim(group)//'/coor_'//trim(ich), rdata = grid%points(i, :))
+      end do
+      if (grid%allocated_weights()) then
+        call lab_write(data_file, trim(group)//'/weights', rdata = grid%weights(:))
+      end if
     end if
   end subroutine
 

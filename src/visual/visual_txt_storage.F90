@@ -29,10 +29,11 @@ contains
   subroutine write_plot_data_to_DIRAC_output(grid, grid_function)
     type(grid_t), intent(in):: grid
     type(grid_function_t), intent(in):: grid_function
-    integer:: g_ndim, gf_ndim, npoints
+    integer:: g_ndim, gf_ndim, npoints, npoints_radial
     integer:: i, j
 
     npoints = grid%nr_points_total
+    npoints_radial = grid%radial_nr_steps
     g_ndim  = grid%ndim
     gf_ndim = grid_function%get_ndim()
 
@@ -42,21 +43,33 @@ contains
       write(*, float_fmt) (grid_function%integrated_values(i),i=1,gf_ndim)
     else if (grid_function%purpose == 0) then
       write(*, '(a)') 'Final grid_function values in grid points:'
-      if (grid%allocated_weights()) then
+!add radial!
+      if (grid%allocated_radial_coord()) then
+        write(*, '(a)') 'radial_step,grid_function values'
+      else if (grid%allocated_weights()) then
         write(*, '(a)') 'x,y,z,w,grid_function values'
       else
         write(*, '(a)') 'x,y,z,grid_function values'
       end if
-      do j = 1, npoints
+      if (grid%allocated_radial_coord()) then
+        do j = 1, npoints_radial
+          write(*, float_fmt) (grid%radial_coord(j)), &
+                              (grid_function%values(i,j),i=1,gf_ndim)
+        end do
+      else
         if (grid%allocated_weights()) then
-          write(*, float_fmt) (grid%points(i,j),i=1,g_ndim), &
-                               grid%weights(j), &
-                              (grid_function%values(i,j),i=1,gf_ndim)
+          do j = 1, npoints
+            write(*, float_fmt) (grid%points(i,j),i=1,g_ndim), &
+                                 grid%weights(j), &
+                                (grid_function%values(i,j),i=1,gf_ndim)
+          end do
         else
-          write(*, float_fmt) (grid%points(i,j),i=1,g_ndim), &
-                              (grid_function%values(i,j),i=1,gf_ndim)
+          do j = 1, npoints
+            write(*, float_fmt) (grid%points(i,j),i=1,g_ndim), &
+                                (grid_function%values(i,j),i=1,gf_ndim)
+          end do
         end if
-      end do
+      end if
     end if
     write(*, '(a)') '**************************************'
 
@@ -125,7 +138,6 @@ use interface_grid
 
     call close_txt_file(grid_file)
 
-
   end subroutine
 
 
@@ -157,9 +169,6 @@ use interface_grid
     ioff = nr_points + ioff
     GOTO 1
  2  CONTINUE
-
-    !if (grid%nr_points_total /= ioff) stop
-
 
     call close_txt_file(grid_file)
 

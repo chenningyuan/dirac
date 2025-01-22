@@ -1,4 +1,7 @@
 **DIRAC
+**HAMILTONIAN
+.DFT
+ B3LYP
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -7,16 +10,20 @@
 *SCF
 .CLOSED_SHELL
 10
+.EVCCNV
+1.0D-8
 **VISUAL
 .OUTPRI
 .GRIDS 
 1
 id=1 input=radial
 .RADIAL
-0.00000,  -1.0000000000,   0.00000
-2.0
-11
+0.0,  -0.1190150732,   0.0
+10.0
+500
 .GRIDFUNCTIONS
 1
 name=ed id_grid=1 purpose=integration
+#integration with export:
+#name=ed id_grid=1 purpose=visualization export=yes file_out=dens_radial_vis.h5
 *END OF

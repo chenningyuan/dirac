@@ -100,8 +100,8 @@ module visual_datatypes
   end type rs_wf_t
 
   type:: grid_t
-    ! todo fixme
-    ! - store units; now:
+    ! todo
+    ! - add information about units; now:
     !   molecule data (from DIRAC CHECKPOINT) and all that the user can provide 
     !   in input (margin and spacing) is originally in Angstroms;
     !   then, everything in VISUAL is converted to a.u. (in grid_input_cfg) and stored in a.u.
@@ -115,6 +115,8 @@ module visual_datatypes
     real(8), public:: extents(0:2,1:3) = 0.0d0         ! grid extents [a.u.]
     real(8), public:: radial_length = 0.0d0            ! radial length [a.u.] ->todo fixme make sure it is in a.u....
     integer, public:: radial_nr_steps = 0              ! number of steps for radial grids
+    integer, public:: radial_nr_points_angular = 0     ! number of angular points for radial grids
+    integer, public:: radial_lebedev_l = 0             ! Lebedev grid L (now, set up to = num_grid_cfg_angint)
     integer, public:: status = -1                      ! -1 = never used, 0 = ready to work on
     integer, public:: input = 0                        ! 0=create, 1=import from hdf5 file, -1=import from 'numerical_grid', 2='list', 3='line', 4='2d', -4='2d_int', 5='3d'
     logical, public:: export = .false.                 ! also export to a separate file
@@ -123,6 +125,7 @@ module visual_datatypes
     integer, public:: integration_order_2d = 0         ! order of integration in 2d
     character(len=:), public, allocatable:: file_inp   ! name of a file for grid import
     character(len=:), public, allocatable:: file_out   ! name of a file for grid export
+    real(8), public, allocatable:: radial_coord(:)
     real(8), public, allocatable:: points(:,:)
     real(8), public, allocatable:: weights(:)
     logical, public:: origin_known = .false.
@@ -133,7 +136,9 @@ module visual_datatypes
   contains
     private
     procedure, pass, public:: allocated_points
+    procedure, pass, public:: allocated_radial_coord
     procedure, pass, public:: allocated_weights
+    procedure, pass, public:: requires_weights
     procedure, pass, public:: erase   => erase_grid
     procedure, pass, public:: display => display_grid
     procedure, pass, public:: display_points => display_grid_points
@@ -243,10 +248,27 @@ contains
   end function
 
 ! ------------------------------------------------------------------------------
+  pure function allocated_radial_coord(self)
+    class(grid_t), intent(in):: self
+    logical:: allocated_radial_coord
+    allocated_radial_coord = allocated(self%radial_coord)
+  end function
+
+! ------------------------------------------------------------------------------
   pure function allocated_weights(self)
     class(grid_t), intent(in):: self
     logical:: allocated_weights
     allocated_weights = allocated(self%weights)
+  end function
+
+! ------------------------------------------------------------------------------
+  pure function requires_weights(self)
+    class(grid_t), intent(in):: self
+    logical:: requires_weights
+    requires_weights = (self%typ == 2    & ! radial grid 
+                  .or.  self%input == -1 & ! integration on dft grid ("numerical_grid")
+                  .or.  self%input == -4 & ! integration on 2d grid ("2d_int")
+                  .or.  self%input == -5)  ! integration on 3d grid ("3d_int")
   end function
 
 ! ------------------------------------------------------------------------------
@@ -598,6 +620,8 @@ contains
     write(*, *) '  extents [a.u.] = ', (self%extents(0:2,i), i=1,3), my_rank_local
     write(*, *) '  radial_length [a.u.] = ', self%radial_length, my_rank_local
     write(*, *) '  radial_nr_steps  = ', self%radial_nr_steps, my_rank_local
+    write(*, *) '  radial_nr_points_angular  = ', self%radial_nr_points_angular, my_rank_local
+    write(*, *) '  radial_lebedev_l  = ', self%radial_lebedev_l, my_rank_local
     write(*, *) '  status = ', self%status, my_rank_local
     write(*, *) '  input = ', self%input, my_rank_local
     write(*, *) '  export = ', self%export, my_rank_local

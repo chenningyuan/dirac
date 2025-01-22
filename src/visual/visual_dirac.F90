@@ -769,6 +769,8 @@ contains
     call interface_mpi_bcast(grid%spacing,3,irank_master,global_communicator)
     call interface_mpi_bcast(grid%radial_length,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%radial_nr_steps,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%radial_nr_points_angular,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid%radial_lebedev_l,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%status,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%input,1,irank_master,global_communicator)
     call interface_mpi_bcast_l0(grid%export,1,irank_master,global_communicator)

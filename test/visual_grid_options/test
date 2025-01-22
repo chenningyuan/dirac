@@ -105,7 +105,7 @@ for t in testset:
                   gf_test_key=l)
 
 
-testset = ["grid_fromLINE.h5", "grid_3d_fromRADIAL.h5"]
+testset = ["grid_fromLINE.h5"]
 for t in testset:
 
     rs.verify(ftest=t,\
@@ -125,6 +125,24 @@ for t in testset:
                   gf_label='/result/grid/points/',\
                   gf_test_key=l)
 
+testset = ["grid_3d_fromRADIAL.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='single',\
+              gf_label='/result/grid/radial_nr_steps')
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='single',\
+              gf_label='/result/grid/radial_nr_points_angular')
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='array',\
+              gf_label='/result/grid/',\
+              gf_test_key='radial_points')
 
 
 testset = ["grid_3d_generated.h5", "grid_3d_generated_old.h5", "grid_3d_generated_multi_2gf.h5"]
