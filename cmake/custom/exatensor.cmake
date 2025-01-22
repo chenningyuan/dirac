@@ -27,7 +27,7 @@ if(ENABLE_EXATENSOR)
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
    set (EXATENSOR_GIT_REPO_LOCATION "https://github.com/RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
-   set (EXATENSOR_GIT_HASH 8cdddfba0a283bf48b574d3b82921426d4f85949 CACHE STRING "ExaTENSOR Git repository hash in use")
+   set (EXATENSOR_GIT_HASH bd54760b100ebe00fd18bf1b85fb652c835ef88d CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type
@@ -263,6 +263,7 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_ccrsp_lr_cc-ci "ccrsp;talsh" "")
     dirac_test(exacorr_talsh_ccrsp_cpp "ccrsp;talsh" "")
     dirac_test(exacorr_talsh_ccrsp_spsp "ccrsp;talsh" "")
+    dirac_test(exacorr_talsh_ccrsp_qr_spsp_pol "ccrsp;talsh" "")
     dirac_test(exacorr_talsh_ccrsp_qr_static "ccrsp;talsh" "")
     dirac_test(exacorr_talsh_ccrsp_qr_cc-ci "ccrsp;talsh;short" "")
     dirac_test(exacorr_talsh_ccrsp_eomtpa "ccrsp;talsh" "")
