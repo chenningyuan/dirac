@@ -15,7 +15,7 @@ set (BASE_LIB_SRCS
 
 set(FUNCTIONAL_SRCS
     functionals/beckex.cpp
-    functionals/brx.cpp
+#    functionals/brx.cpp
     functionals/ktx.cpp
 #    functionals/lb94.cpp
     functionals/ldaerfc.cpp
