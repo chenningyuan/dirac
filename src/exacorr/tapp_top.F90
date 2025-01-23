@@ -807,7 +807,7 @@ module tapp_top
    if (present(init_val)) init_val_ = init_val
 
    nmodes = 0
-   if (present(extents)) then
+   if (present(extents) .and. size(extents) .gt. 0) then
      nmodes = size(extents)
    else ! scalar
      tapp_err = TAPP_create_tensor_info(tensor%tensor_info, tensor%datatype, nmodes, &
@@ -924,13 +924,12 @@ module tapp_top
    logical             :: ret, is_empty_tapp_tensor_t   
    
    ret = .TRUE.
-   if (c_associated(tensor%tensor_info) .or. allocated(tensor%data_real) .or. allocated(tensor%data_complex)) then
+   if (allocated(tensor%data_real) .or. allocated(tensor%data_complex)) then
      ret = .FALSE.
-     if ( .not. (c_associated(tensor%tensor_info) .and. &
-          ( allocated(tensor%data_real) .or. allocated(tensor%data_complex))) ) then
-       write(*,'("  Error. Failed sanity check in is_empty_tapp_tensor_t.")') 
-       stop 98
-     endif
+     ! if ( .not. (c_associated(tensor%tensor_info) .and. &
+     !      ( allocated(tensor%data_real) .or. allocated(tensor%data_complex)) ) then
+     !   write(*,'("  Error. Failed sanity check in is_empty_tapp_tensor_t.")') 
+     !   stop 98
    endif
 
    is_empty_tapp_tensor_t = ret

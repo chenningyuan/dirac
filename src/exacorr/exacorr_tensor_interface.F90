@@ -70,9 +70,9 @@ module exacorr_tensor_interface
         public is_scalar_tensor_t
         public is_empty_tensor_t
         public initialize_tensor_t
-        ! public copy_tensor_t
-        ! public get_scalar
-        ! public get_real_scalar
+        public copy_tensor_t
+        public get_scalar_tensor_t
+        public get_real_scalar_tensor_t
         ! public tensor_t_equal
 
         contains
@@ -271,14 +271,14 @@ module exacorr_tensor_interface
           type(C_PTR) :: talshsptr
           complex(8), parameter :: ZERO_c=(0.D0,0.D0)
            
+          if (present(out_executor)) then
+            out_tens%which_executor = out_executor
+          endif
           if ( is_empty_tensor_t(in_tens) ) then
             write(*,'("  Error. Input tensor empty tensor in convert.")') 
             stop 98
           endif
 
-          if (present(out_executor)) then
-            out_tens%which_executor = out_executor
-          endif
           destroy_ = 1
           if (present(destroy)) then
             destroy_ = destroy
@@ -612,9 +612,7 @@ module exacorr_tensor_interface
           CASE(2)
              ret=talsh_tensor_is_empty(tensor%tens_talsh)
           CASE default 
-            write(*,'("  Error.  is_empty_tensor_t for executor ",i11," not yet implemented.")') &
-              tensor%which_executor
-            stop 55
+             ret=.TRUE.
           END SELECT
  
           is_empty_tensor_t = ret
@@ -640,6 +638,62 @@ module exacorr_tensor_interface
           endif 
           is_scalar_tensor_t = ret
         end function is_scalar_tensor_t
+
+        ! get the first scalar (returns complex) or a scalar at linear index at_index if specified
+        function get_scalar_tensor_t(tensor, at_index)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          integer(8), intent(in), optional    :: at_index
+          integer(INTD)       :: ierr   
+          integer(8) :: numel, at_index_
+          complex(8), pointer, contiguous  :: lin_tens_c(:)
+          real(8), pointer, contiguous  :: lin_tens_r(:)
+          type(C_PTR) :: ptr 
+          integer(INTD), allocatable, target :: lin_dim(:)
+          complex(c_double_complex)             :: ret, get_scalar_tensor_t  
+
+          at_index_ = 1
+          if ( present(at_index)) then
+            at_index_ = at_index
+          endif
+
+          if ( is_empty_tensor_t(tensor) ) then
+            write(*,'("  Error. Tensor empty tensor in get_scalar_tensor_t.")') 
+            stop 98
+          endif
+          ierr = get_numel(tensor, numel)
+          allocate(lin_dim(1))
+          lin_dim(1) = numel
+
+          ierr = direct_data_pointer(tensor, ptr)
+          ret = 0
+          if (tensor%datatype == 1 ) then
+            call c_f_pointer(ptr,lin_tens_r,lin_dim)
+            ret = lin_tens_r(at_index_)
+          elseif (tensor%datatype == 3 ) then
+            call c_f_pointer(ptr,lin_tens_c,lin_dim)
+            ret = lin_tens_c(at_index_)
+          endif
+          if (allocated(lin_dim)) deallocate(lin_dim)
+          get_scalar_tensor_t = ret
+        end function get_scalar_tensor_t
+
+        ! get the first scalar (returns real part) or a scalar at linear index at_index if specified
+        function get_real_scalar_tensor_t(tensor, at_index)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          integer(8), intent(in), optional    :: at_index
+          integer(8) :: at_index_
+          complex(c_double_complex)             :: ret  
+          real(c_double)             :: get_real_scalar_tensor_t  
+
+          at_index_ = 1
+          if ( present(at_index)) then
+            at_index_ = at_index
+          endif
+          ret = get_scalar_tensor_t(tensor, at_index_)
+          get_real_scalar_tensor_t = ret%re
+        end function get_real_scalar_tensor_t
 
         ! initialize tensor_t to a given scalar value
         function initialize_tensor_t(tensor, init_val)
@@ -734,6 +788,7 @@ module exacorr_tensor_interface
           endif
 
           if (allocated(out_dims)) deallocate(out_dims)
+          if (allocated(lin_dim)) deallocate(lin_dim)
           copy_tensor_t = ierr
         end function copy_tensor_t
         ! this will be a part of the standard interface, implemented inside the c code of the c-api, but also here for practical reasons in case of problems with the compilation of the c part
