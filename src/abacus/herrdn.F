@@ -3599,7 +3599,6 @@ C*****************************************************************************
                      NUMCF (ISHELL) = KK
                      NUMCFT(ISHELL) = KKK
                      NBCH  (ISHELL) = KBCH
-                     SHARE (ISHELL) = .FALSE.
                      ISTBAO(ISHELL) = ISTBNU(ICENT)
                      NHKT  (ISHELL) = J
                      KHKT  (ISHELL) = NCOMP
@@ -3737,7 +3736,6 @@ C*****************************************************************************
                      NUMCF_FIT (ISHELL_FIT) = KK
                      NUMCFT_FIT(ISHELL_FIT) = KKK
                      NBCH_FIT  (ISHELL_FIT) = KBCH
-                     SHARE_FIT (ISHELL_FIT) = .FALSE.
                      ISTBAO_FIT(ISHELL_FIT) = ISTBNU(ICENT)
                      NHKT_FIT  (ISHELL_FIT) = J
                      KHKT_FIT  (ISHELL_FIT) = NCOMP
@@ -5717,7 +5715,6 @@ C
       print *, ' jstrt ',(jstrt(i),i=1,kmax)
       print *, ' nstrt ',(nstrt(i),i=1,kmax)
       print *, ' ncent ',(ncent(i),i=1,kmax)
-      print *, ' share ',(share(i),i=1,kmax)
       print *, ' nrco ',(nrco(i),i=1,kmax)
       print *, ' numcf ',(numcf(i),i=1,kmax)
       print *, ' nbch ',(nbch(i),i=1,kmax)

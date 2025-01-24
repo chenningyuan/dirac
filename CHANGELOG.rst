@@ -9,13 +9,17 @@ New features:
    - Contributor: H. J. Aa. Jensen.
    - Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke, Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z. J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
 
+ - DIRAC calculator for the Atomistic Simulation Environment (ASE) is available.
+   - Contributors: Carlos M. R. Rocha, Lucas Visscher
+   - Reference (DIRAC calculator): https://qc2.readthedocs.io
+   - Reference (ASE): https://wiki.fysik.dtu.dk/ase/
 Infrastructure changes and fixes:
 
 - Changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025.
    - Contributor: H. J. Aa. Jensen.
 - Made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers).
    - Contributor: H. J. Aa. Jensen.
-- Include support in ExaCorr for NVHPC, and added hints for compilation with OneAPI and NVHPC. Please note that calculations beyond iterative triples (e.g. CCSDTQ) are not supported with NVHPC.
+- Include support in ExaCorr for NVHPC, and added hints for compilation with OneAPI and NVHPC, and a way to control via environment variable CUDA_SM_ARCH which NVIDIA GPU architeture to compile for.  Please note that calculations beyond iterative triples (e.g. CCSDTQ) are not supported with NVHPC.
    - Contributor: A. Gomes
 - Quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI).
    - Contributor: H. J. Aa. Jensen.
@@ -34,6 +38,8 @@ Bugfix:
 
 - Fix of symmetry problem for KRMCSCF with LUCIAREL and odd number of electrons.
    - Contributor: H. J. Aa. Jensen.
+- Set the correct sign of CC linear and quadratic response functions in the case of more than one time-antisymmetric perturbation operator
+   - Contributor: A. Gomes
 
 New default:
 

@@ -4059,7 +4059,11 @@ C
       RSBASF='MCCRES'
 C
 #if defined (VAR_MPI)
-      IF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
+      IF (MYPROC .EQ. 0) THEN    !  MPI ID has one digit
+         ! do not write extension for master node
+         WRITE (RSFILN,'(A6)') RSBASF
+         LRSFIL=6
+      ELSEIF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
          WRITE (RSFILN,'(A6,A1,I1)') RSBASF,'.',MYPROC
          LRSFIL=8
       ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
