@@ -314,7 +314,7 @@ The FC integrals are called using the label 'FC NAMab' (see `One-electron scalar
    'FC Pb 01'
    FACTORS
    0.000000001
-   
+
 **Important note:** The values obtained after the fit of the finite-field energies need to be scaled by :math:`\frac{3}{4 \pi g_{e}} = \frac{1}{8.3872954891254192}` in order to get the raw density :math:`\delta(\boldsymbol{r}-\boldsymbol{R}_\text{Pb})`.
 
 The next example shows how to calculate the electronic density at the nucleus as the expectation value :math:`\langle 0 \vert \delta(\boldsymbol{r}-\boldsymbol{R}_K) \vert 0 \rangle` for a Dirac-Coulomb Hartree-Fock wave function including a decomposition of the molecular orbital contributions to the density::
@@ -362,8 +362,8 @@ In particular, :math:`\boldsymbol{A}` is one of the following real matrices: :ma
 
 .. math::
 
-    M_{pq} = A_{ij} \, B_{kl} \,,
-    
+    M_{pq} = A_{ij} \, B_{kl} \, ,
+
 where :math:`p=2(i-1)+k` and :math:`q=2(j-1)+l`.
 
 In the DIRAC code, the structure of the Dirac equation with respect to time-reversal symmetry is displayed by using reordered Dirac 4-spinors, where the components are grouped on spin labels (:math:`\alpha`, :math:`\beta`) rather than large (upper) and small (lower) components (:math:`L`, :math:`S`), according to Eq. (7) of Ref. :cite:`Saue1999`. The same reordering applies to all the matrices :math:`\boldsymbol{M}`, which are then transformed accordingly.
@@ -384,7 +384,7 @@ However, after reordering one clearly has the transformed matrices
 
 .. math::
 
-    \boldsymbol{M}^\prime = \boldsymbol{B} \otimes \boldsymbol{A} = 
+    \boldsymbol{M}^\prime = \boldsymbol{B} \otimes \boldsymbol{A} =
     \begin{pmatrix}
     M_{L\alpha,L\alpha} & M_{L\alpha,S\alpha} & M_{L\alpha,L\beta} & M_{L\alpha,S\beta} \\
     M_{S\alpha,L\alpha} & M_{S\alpha,S\alpha} & M_{S\alpha,L\beta} & M_{S\alpha,S\beta} \\
