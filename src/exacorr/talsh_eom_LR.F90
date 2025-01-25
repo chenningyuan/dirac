@@ -202,51 +202,82 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_A, &
 
     complex(kind=8)             :: linrsp, linrsp_con, phase_factor
 
-
+    
+    print *, 'Combination (A,B)',i,j
     ! create and zero out result_tensor to accumulate +\omega contribution
     one_dims(1) = 1
     ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+    print *, 'ierr 1.a',ierr
     ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    print *, 'ierr 1.b',ierr
     call c_f_pointer(body_p,result_tens,one_dims)
 
     ierr=talsh_tensor_init(result_tensor, ZERO)
+    print *, 'ierr 1.c',ierr, result_tens(1)
 
     ! build \eta^A t^B(+omega)
+    
+    call print_tensor(Interm_t_tensors_A(i)%eta_prop_ov, 1.0d-8, "etaA_1_i")
+    call print_tensor(Interm_t_tensors_A(i)%eta_prop_oovv, 1.0d-8, "etaA_2_i")
+
+    call print_tensor(Interm_t_tensors_A(i)%epsilon_prop_vo, 1.0d-8, "xiA_1_i")
+    call print_tensor(Interm_t_tensors_A(i)%epsilon_prop_vvoo, 1.0d-8, "xiA_2_i")
+
+    call print_tensor(Tprop_tensors(j)%t1, 1.0d-8, "TB_1_j")
+    call print_tensor(Tprop_tensors(j)%t2, 1.0d-8, "TB_2_j")
+
+    call print_tensor(Tprop_bar_tensors(j)%t1, 1.0d-8, "barTB_1_j")
+    call print_tensor(Tprop_bar_tensors(j)%t2, 1.0d-8, "barTB_2_j")
 
     ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
             Interm_t_tensors_A(i)%eta_prop_ov,Tprop_tensors(j)%t1)
+    print *, 'ierr 2.a',ierr,result_tens(1)
+ 
     ierr=talsh_tensor_contract("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
             Interm_t_tensors_A(i)%eta_prop_oovv,Tprop_tensors(j)%t2)
-
+   print *, 'ierr 2.b',ierr,result_tens(1)
+ 
     ! build \bar(t)^B(+omega)\epsilon^A 
     
     ierr=talsh_tensor_contract("E()+=barTB(i,a)*XiA(a,i)", result_tensor, &
             Tprop_bar_tensors(j)%t1,Interm_t_tensors_A(i)%epsilon_prop_vo)
+    print *, 'ierr 3.a',ierr,result_tens(1)
+
     ierr=talsh_tensor_contract("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
             Tprop_bar_tensors(j)%t2,Interm_t_tensors_A(i)%epsilon_prop_vvoo)
+    print *, 'ierr 3.b',ierr,result_tens(1)
 
     ! save result
     linrsp =  result_tens(1)
+    print *, 'linrsp',linrsp
 
     ! zero out result_tensor to accumulate -\omega contribution
     ierr=talsh_tensor_init(result_tensor, ZERO)
+    print *, 'ierr 4.a',ierr,result_tens(1)
 
     ! build \eta^A t^B(-omega)
 
     ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
             Interm_t_tensors_A(i)%eta_prop_ov,Tprop_tensors_min_w(j)%t1)
+    print *, 'ierr 5.a',ierr,result_tens(1)
+
     ierr=talsh_tensor_contract("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
             Interm_t_tensors_A(i)%eta_prop_oovv,Tprop_tensors_min_w(j)%t2)
+    print *, 'ierr 5.b',ierr,result_tens(1)
 
     ! build \bar(t)^B(-omega)\epsilon^A 
 
     ierr=talsh_tensor_contract("E()+=barTB(i,a)*XiA(a,i)", result_tensor, &
             Tprop_bar_tensors_min_w(j)%t1,Interm_t_tensors_A(i)%epsilon_prop_vo)
+    print *, 'ierr 6.a',ierr,result_tens(1)
+
     ierr=talsh_tensor_contract("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
             Tprop_bar_tensors_min_w(j)%t2,Interm_t_tensors_A(i)%epsilon_prop_vvoo)
+    print *, 'ierr 6.b',ierr,result_tens(1)
 
     ! save result
     linrsp_con = result_tens(1)
+    print *, 'linrsp_con',linrsp_con
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ASPG+LV: Note concerning the addition of a phase to the response functions below 
@@ -324,6 +355,7 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_A, &
 
 ! cleanup
             ierr=talsh_tensor_destruct(result_tensor)
+            print *, 'ierr 7.a',ierr
 
 
 end subroutine get_asym_lr

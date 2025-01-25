@@ -191,7 +191,7 @@ module talsh_eom_rspeq_solver
 
             ! write(*,*) ""
             ! write(*,'(A)') "*******************************************************************************"
-            ! write(*,'(A)') "***************************** CC-CI LR Left ******************************"
+            ! write(*,'(A)') "***************************** CC-CC LR Left ******************************"
             ! write(*,'(A)') "*******************************************************************************"
             ! write(*,*) ""
       
@@ -230,7 +230,7 @@ module talsh_eom_rspeq_solver
                               max_iterations=mfsolver_options_max_iterations,&
                               complex_mode=.true.)
       
-                  call print_date("Entering CC-CI Left Linear Systems calculation")
+                  call print_date("Entering CC-CC Left Linear Systems calculation")
       
                   call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
                   call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, 'L')
@@ -254,7 +254,7 @@ module talsh_eom_rspeq_solver
                   call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,&
                                           -omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)   !left equation use -omega
                                           
-                  call print_date("Finishing CC-CI Left Linear Systems calculation")
+                  call print_date("Finishing CC-CC Left Linear Systems calculation")
       
                   call talsh_davidson_workspace_destroy(workspace_t)
 

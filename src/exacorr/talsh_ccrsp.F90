@@ -62,7 +62,7 @@ subroutine talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         if (exa_input%ccrsp_symmetric) then
             call talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
         else
-            call talsh_ccsd_lr_asymmetric_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+            call talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
         endif
     else if (rr==2) then
         call talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
@@ -251,19 +251,19 @@ end subroutine talsh_ccsd_lr_driver
 
 !------------------------------------------------------------------------------------------------------------------
 
-subroutine talsh_ccsd_lr_asymmetric_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
-    logical                                     :: CC_CC
+    logical, intent(in)                         :: CC_CC
     
 
 !   Wave-function tensor needed to construct the response function
 
-    complex(kind=8)               :: omega1, omega2
+    complex(kind=8)               :: omega1, omega2, omega_B, minus_omega_B
     complex(kind=8),allocatable   :: omega(:), omega_min(:)
     complex(kind=8)               :: eom_lr
     complex(kind=8),allocatable   :: eom_lrs(:,:,:)
@@ -285,7 +285,8 @@ subroutine talsh_ccsd_lr_asymmetric_driver(exa_input,interm_t,int_t,l1_tensor,l2
     integer                       :: N_oper_lr
     integer                       :: N_omega
     integer                       :: i, j, k, n, m
-    integer                       :: B_index
+
+    integer                       :: A, B ! indices for operators in <<A;B>>, so A=1, B=2 but here 
 
     ! mapping to the list of selected property integrals, out of those available (e.g. in MDPROP)
     integer, allocatable          :: Prop_A(:), Prop_B(:)
@@ -303,9 +304,13 @@ subroutine talsh_ccsd_lr_asymmetric_driver(exa_input,interm_t,int_t,l1_tensor,l2
     Prop_A = exa_input%Prop_A
     Prop_B = exa_input%Prop_B
 
-    N_oper_lr  = 1 ! will only solve for T^B 
-    B_index    = 1 ! operator B will have index 1 here, since we're only solving for it
+    N_oper_lr  = 2 ! will only solve for T^B, so once debugged see if this can be set to 1
+    
+    A    = 1
+    B    = 2 ! operator B will later have index 1 here, since we're only solving for it ?
+
     N_omega = exa_input%N_omega_lr
+
     N_prop_A = size(Prop_A)
     N_prop_B = size(Prop_B)
 
@@ -342,144 +347,148 @@ subroutine talsh_ccsd_lr_asymmetric_driver(exa_input,interm_t,int_t,l1_tensor,l2
 
 
     do n=1, N_omega
-        omega1 =  dcmplx(exa_input%w_lr_re(n), exa_input%w_lr_im(n))
+        omega1 =   dcmplx(exa_input%w_lr_re(n), exa_input%w_lr_im(n))
         omega2 =  -omega1
-        omega(1) = omega1
-        omega(2) = omega2
-        print *, "Read frequency1:", omega(1)
-        print *, "Read frequency2:", omega(2)
+        omega(A) = omega1
+        omega(B) = omega2
+        print *, "Read frequency  w_A:", omega(A)
+        print *, "Read frequency  w_B:", omega(B)
 
-        omega_min(1) = dcmplx(-real(omega(1)),aimag(omega(1)))
-        omega_min(2) = dcmplx(-real(omega(2)),aimag(omega(2)))
-        print *, "Read frequency min_1:", omega_min(1)
-        print *, "Read frequency min_2:", omega_min(2)
+        omega_min(A) = dcmplx(-real(omega(A)),aimag(omega(A)))
+        omega_min(B) = dcmplx(-real(omega(B)),aimag(omega(B)))
+        print *, "Read frequency -w_A: ", omega_min(A),A
+        print *, "Read frequency -w_B: ", omega_min(B),B
 
 !
 ! note the asymmetric response only requires the solutiion of equations for perturbation B
 !
         do j=1, N_prop_B
+            print *, 'B number',j
             if (CC_CC) then
 !
 !               solve for +w
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
-                     omega(2), Tprop_tensors(B_index))
+                     omega(B), Tprop_tensors(B))
                 call get_left_bvec_cccc(exa_input,int_t,interm_t,Interm_t_tensors_B(j), &
-                    l1_tensor,l2_tensor, Tprop_tensors(B_index), Bvec_tensors(B_index))
+                    l1_tensor,l2_tensor, Tprop_tensors(B), Bvec_tensors(B))
                 call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
-                    omega(2), Bvec_tensors(B_index), Tprop_bar_tensors(B_index))
+                    omega(B), Bvec_tensors(B), Tprop_bar_tensors(B))
 !                    
 !               solve for -w
-                if (omega(2).ne.ZERO) then 
+                if (omega(B).ne.ZERO) then 
                     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
-                         omega_min(2), Tprop_tensors_min_w(2))
+                         omega_min(B), Tprop_tensors_min_w(B))
                     call get_left_bvec_cccc(exa_input,int_t,interm_t,Interm_t_tensors_B(j), &
-                         l1_tensor,l2_tensor, Tprop_tensors_min_w(B_index), &
-                         Bvec_tensors_min_w(B_index))
+                         l1_tensor,l2_tensor, Tprop_tensors_min_w(B), Bvec_tensors_min_w(B))
                     call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
-                             omega_min(2), Bvec_tensors_min_w(B_index), &
-                             Tprop_bar_tensors_min_w(B_index))
-                    end if 
+                             omega_min(B),Bvec_tensors_min_w(B),Tprop_bar_tensors_min_w(B))
+                end if 
 
-                else ! CC-CI
+            else ! CC-CI
+                call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
+                     omega(B), Tprop_tensors(B))
+                call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_B(j), &
+                     l1_tensor,l2_tensor, Bvec_tensors(B))
+                call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
+                     omega(B), Bvec_tensors(B), Tprop_bar_tensors(B))
+!               solve for -w
+                if (omega(B).ne.ZERO) then 
                     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
-                         omega(2), Tprop_tensors(B_index))
+                         omega_min(B), Tprop_tensors_min_w(B))
                     call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_B(j), &
-                         l1_tensor,l2_tensor, Bvec_tensors(B_index))
+                         l1_tensor,l2_tensor, Bvec_tensors_min_w(B))
                     call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
-                         omega(2), Bvec_tensors(B_index), Tprop_bar_tensors(B_index))
-!                   solve for -w
-                    if (omega(2).ne.ZERO) then 
-                        call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
-                             omega_min(2), Tprop_tensors_min_w(B_index))
-                        call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_B(j), &
-                             l1_tensor,l2_tensor, Bvec_tensors_min_w(B_index))
-                        call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
-                             omega_min(2), Bvec_tensors_min_w(B_index), &
-                             Tprop_bar_tensors_min_w(B_index))
-                    end if 
+                         omega_min(B), Bvec_tensors_min_w(B), Tprop_bar_tensors_min_w(B))
+                end if 
 
+            end if ! cc-cc or cc-ci
+
+            call print_date('Solved All 1st response right and left equations for operator B')
+
+            ! build/save density matrices here ?
+            !
+            call print_date('Saving density matrix for operator B(+w)')
+            print *, 'not yet implemented'
+            if (omega(B).ne.ZERO) then
+                call print_date('Saving density matrix for operator B(-w)')
+                print *, 'not yet implemented'
+            end if
+
+            do i=1, N_prop_A 
+                print *, 'A number',i
+                if (omega(B).ne.ZERO) then
+                    call get_asym_lr(exa_input,interm_t, int_t, &
+                         Interm_t_tensors_A,  & 
+                         Tprop_tensors, Tprop_tensors_min_w, &
+                         Tprop_bar_tensors, Tprop_bar_tensors_min_w, i, j, &
+                         l1_tensor,l2_tensor,eom_lr)
+                else
+                    call print_date('Note: Calculating static linear response.')
+                    call get_asym_lr(exa_input,interm_t, int_t, &
+                         Interm_t_tensors_A,  & 
+                         Tprop_tensors, Tprop_tensors, &
+                         Tprop_bar_tensors, Tprop_bar_tensors, i, j, &
+                         l1_tensor,l2_tensor,eom_lr)
                 end if
 
-                call print_date('Solved All 1st response right and left equations for operator B')
+                eom_lrs(n,i,j) = eom_lr
+                write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
+                write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
+            end do ! loop over A operators for a given B
 
-                ! build/save density matrices here ?
-                !
-!                call print_date('Saved density matrix for operator B(+w)')
-!                call print_date('Saved density matrix for operator B(-w)')
+! instead of destroy, should save these to file or to results variable for later reuse
+                
+            call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,2)
 
-                do i=1, N_prop_A 
-                    if (omega(2).ne.ZERO) then
-                        call get_asym_lr(exa_input,interm_t, int_t, &
-                             Interm_t_tensors_A,  & 
-                             Tprop_tensors, Tprop_tensors_min_w, &
-                             Tprop_bar_tensors, Tprop_bar_tensors_min_w, i, j, &
-                             l1_tensor,l2_tensor,eom_lr)
-                    else
-                        call print_date('Note: Calculating static linear response.')
-                        call get_asym_lr(exa_input,interm_t, int_t, &
-                             Interm_t_tensors_A,  & 
-                             Tprop_tensors, Tprop_tensors, &
-                             Tprop_bar_tensors, Tprop_bar_tensors, i, j, &
-                             l1_tensor,l2_tensor,eom_lr)
-                    end if
-
-                    eom_lrs(n,i,j) = eom_lr
-                    write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
-                    write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
-                end do
-
-                call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,2)
-            end do ! 
-        end do ! omega 
+            end do ! loop over B operators
+    end do ! omega 
 
 
+    do i=1, N_prop_A
+        call destroy_Interm_t_tensors(Interm_t_tensors_A(i),CC_CC)
+    end do
+
+    do i=1, N_prop_B
+        call destroy_Interm_t_tensors(Interm_t_tensors_B(i),CC_CC)
+    end do
+    
+    if (CC_CC) then 
+        write(*,"(A54)"), "*************CC-CC(LR-CC) linear response*************"
+    else
+        write(*,"(A54)"), "*************CC-CI(EOM-CC) linear response************"
+    end if
+        
+    do n=1, N_omega
         do i=1, N_prop_A
-            call destroy_Interm_t_tensors(Interm_t_tensors_A(i),CC_CC)
-        end do
-
-        do i=1, N_prop_B
-            call destroy_Interm_t_tensors(Interm_t_tensors_B(i),CC_CC)
-        end do
-        
-
-
-        if (CC_CC) then 
-            write(*,"(A54)"), "*************CC-CC(LR-CC) linear response*************"
-        else
-            write(*,"(A54)"), "*************CC-CI(EOM-CC) linear response************"
-        end if
-        
-        do n=1, N_omega
-            do i=1, N_prop_A
-                do j=1, N_prop_B
-                    write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
-                    write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
-                end do
+            do j=1, N_prop_B
+                write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
+                write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
             end do
         end do
+    end do
 
 
-        DEALLOCATE(omega)
-        DEALLOCATE(omega_min)
-        DEALLOCATE(Tprop_tensors)
-        DEALLOCATE(Tprop_tensors_min_w)
-        DEALLOCATE(Tprop_bar_tensors)
-        DEALLOCATE(Tprop_bar_tensors_min_w)
-        DEALLOCATE(Interm_t_tensors_A)
-        DEALLOCATE(Interm_t_tensors_B)
-        DEALLOCATE(Bvec_tensors)
-        DEALLOCATE(eom_lrs)
+    DEALLOCATE(omega)
+    DEALLOCATE(omega_min)
+    DEALLOCATE(Tprop_tensors)
+    DEALLOCATE(Tprop_tensors_min_w)
+    DEALLOCATE(Tprop_bar_tensors)
+    DEALLOCATE(Tprop_bar_tensors_min_w)
+    DEALLOCATE(Interm_t_tensors_A)
+    DEALLOCATE(Interm_t_tensors_B)
+    DEALLOCATE(Bvec_tensors)
+    DEALLOCATE(eom_lrs)
 
-        write(*,"(A54)"), "**********************************************************"  
+    write(*,"(A54)"), "**********************************************************"  
 
-        if (CC_CC) then     
-            call print_date("Finish asymmetric CC-CC Linear Response Calculations")
-        else
+    if (CC_CC) then     
+        call print_date("Finish asymmetric CC-CC Linear Response Calculations")
+    else
             call print_date("Finish asymmetric CC-CI Linear Response Calculations")
-        end if 
+    end if 
 
 
-end subroutine talsh_ccsd_lr_asymmetric_driver
+end subroutine talsh_ccsd_lr_asym_driver
 
 !------------------------------------------------------------------------------------------------------------------
 
