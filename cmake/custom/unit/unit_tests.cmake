@@ -10,7 +10,7 @@ if(ENABLE_UNIT_TESTS)
         )
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_BINARY_DIR}/unit)
 
-    #miro: OBJECT libraries throughout the DIRCA suite
+    #miro: OBJECT libraries throughout the DIRAC suite
     add_library(objlib.UNIT_TEST_LIBS ${EXTERNAL_OBJECTS})
 
     find_package(HDF5 COMPONENTS C HL)
