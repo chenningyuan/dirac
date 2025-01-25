@@ -100,7 +100,7 @@ module talsh_gradient
     
     end subroutine
 
-    subroutine talsh_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, int_t)
+    subroutine talsh_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, int_t, tX1_tensor, lX1_tensor, tX2_tensor, lX2_tensor)
       use exacorr_datatypes
 
 !     Routine for obtaining the density matrices in the MO basis
@@ -109,6 +109,8 @@ module talsh_gradient
       type(exacc_input), intent(in   ) :: exa_input
       type(talsh_tens_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
       type(talsh_tens_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
+      type(talsh_tens_t),intent(inout), optional :: tX1_tensor, lX1_tensor ! linear response solution tensors
+      type(talsh_tens_t),intent(inout), optional :: tX2_tensor, lX2_tensor ! linear response solution tensors
       type(talsh_intg_tens_t), intent(inout), optional :: int_t
 !     density matrices type, output
       type(talsh_dm_tens_t) :: gamma
@@ -143,6 +145,14 @@ module talsh_gradient
                 exa_input%print_level)
          end if
          call print_date("Calculated 1-RDM density matrices in MO basis")
+      else if (exa_input%do_1rdm_lr) then
+         if (.not.CCD) then
+           call talsh_calc_dm_1rdm_ccsd_LR_mo(gamma,t2_tensor,l2_tensor,tX2_tensor,lX2_tensor,exa_input%nocc,&
+                exa_input%nvir,exa_input%print_level,t1_tensor,l1_tensor,tX1_tensor,lX1_tensor)
+         else
+           stop "CCD response 1rdm not implemented"
+         end if
+         call print_date("Calculated perturbed (LR) 1-RDM density matrices in MO basis")
       end if
 
 !*****************************************

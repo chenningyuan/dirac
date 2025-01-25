@@ -59,14 +59,15 @@ subroutine talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     end if 
 
     if (rr == 1) then
-!     if (symmetric) then
-        call talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
-!     endif
-!     if (asymmetric) then
-!       call talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
-!     endif
-    else
+        if (exa_input%ccrsp_symmetric) then
+            call talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+        else
+            call talsh_ccsd_lr_asymmetric_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+        endif
+    else if (rr==2) then
         call talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+    else 
+        stop 'Unknown option in response calculation. Only LR and QR are implemented.'
     end if
 
 
@@ -247,6 +248,238 @@ subroutine talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
 
 
 end subroutine talsh_ccsd_lr_driver
+
+!------------------------------------------------------------------------------------------------------------------
+
+subroutine talsh_ccsd_lr_asymmetric_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+
+    type(exacc_input), intent(in) :: exa_input
+    type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+    type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+    type(talsh_tens_t), intent(inout)           :: l2_tensor
+    type(talsh_tens_t), intent(inout)           :: l1_tensor
+    logical                                     :: CC_CC
+    
+
+!   Wave-function tensor needed to construct the response function
+
+    complex(kind=8)               :: omega1, omega2
+    complex(kind=8),allocatable   :: omega(:), omega_min(:)
+    complex(kind=8)               :: eom_lr
+    complex(kind=8),allocatable   :: eom_lrs(:,:,:)
+    ! RHS response vectors 
+    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:) 
+    type(talsh_comm_tens_t), allocatable :: Tprop_tensors_min_w(:) 
+    ! LHS response vectors
+    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:) 
+    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors_min_w(:) 
+    ! ??
+    type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:)
+    type(talsh_comm_tens_t), allocatable :: Bvec_tensors_min_w(:)
+
+    ! intermediates for response
+    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:)
+
+
+    integer                       :: N_prop, N_prop_A, N_prop_B
+    integer                       :: N_oper_lr
+    integer                       :: N_omega
+    integer                       :: i, j, k, n, m
+    integer                       :: B_index
+
+    ! mapping to the list of selected property integrals, out of those available (e.g. in MDPROP)
+    integer, allocatable          :: Prop_A(:), Prop_B(:)
+
+! 
+    type(C_PTR) :: body_p
+    complex(8), pointer    ::prop_tens(:,:,:,:)
+    integer            :: tens_rank
+    integer :: ierr
+    
+    N_prop = 3 ! why this value ?
+
+    call print_date('Do linear response, asymmetric formulation')
+
+    Prop_A = exa_input%Prop_A
+    Prop_B = exa_input%Prop_B
+
+    N_oper_lr  = 1 ! will only solve for T^B 
+    B_index    = 1 ! operator B will have index 1 here, since we're only solving for it
+    N_omega = exa_input%N_omega_lr
+    N_prop_A = size(Prop_A)
+    N_prop_B = size(Prop_B)
+
+    allocate(Interm_t_tensors_A(N_prop_A))
+    allocate(Interm_t_tensors_B(N_prop_B))
+
+    allocate(eom_lrs(N_omega,N_prop_A,N_prop_B))
+
+    allocate(omega(N_oper_lr))
+    allocate(omega_min(N_oper_lr))
+
+    allocate(Tprop_tensors(N_oper_lr))
+    allocate(Tprop_tensors_min_w(N_oper_lr))
+    allocate(Tprop_bar_tensors(N_oper_lr))
+    allocate(Tprop_bar_tensors_min_w(N_oper_lr))
+
+    allocate(Bvec_tensors(N_oper_lr))
+    allocate(Bvec_tensors_min_w(N_oper_lr))
+
+    do  i=1, N_prop_A
+        m = Prop_A(i)
+        ! calculates \epsilon^A, \eta^A
+        call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
+                                      int_t, l1_tensor, l2_tensor, CC_CC)
+    end do
+    
+    do  i=1, N_prop_B
+        m = Prop_B(i)
+        call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
+                                      int_t, l1_tensor, l2_tensor, CC_CC)
+    end do
+
+    call print_date('Constructed intermediates needed in asymmetric CC Linear Response')
+
+
+    do n=1, N_omega
+        omega1 =  dcmplx(exa_input%w_lr_re(n), exa_input%w_lr_im(n))
+        omega2 =  -omega1
+        omega(1) = omega1
+        omega(2) = omega2
+        print *, "Read frequency1:", omega(1)
+        print *, "Read frequency2:", omega(2)
+
+        omega_min(1) = dcmplx(-real(omega(1)),aimag(omega(1)))
+        omega_min(2) = dcmplx(-real(omega(2)),aimag(omega(2)))
+        print *, "Read frequency min_1:", omega_min(1)
+        print *, "Read frequency min_2:", omega_min(2)
+
+!
+! note the asymmetric response only requires the solutiion of equations for perturbation B
+!
+        do j=1, N_prop_B
+            if (CC_CC) then
+!
+!               solve for +w
+                call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
+                     omega(2), Tprop_tensors(B_index))
+                call get_left_bvec_cccc(exa_input,int_t,interm_t,Interm_t_tensors_B(j), &
+                    l1_tensor,l2_tensor, Tprop_tensors(B_index), Bvec_tensors(B_index))
+                call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
+                    omega(2), Bvec_tensors(B_index), Tprop_bar_tensors(B_index))
+!                    
+!               solve for -w
+                if (omega(2).ne.ZERO) then 
+                    call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
+                         omega_min(2), Tprop_tensors_min_w(2))
+                    call get_left_bvec_cccc(exa_input,int_t,interm_t,Interm_t_tensors_B(j), &
+                         l1_tensor,l2_tensor, Tprop_tensors_min_w(B_index), &
+                         Bvec_tensors_min_w(B_index))
+                    call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
+                             omega_min(2), Bvec_tensors_min_w(B_index), &
+                             Tprop_bar_tensors_min_w(B_index))
+                    end if 
+
+                else ! CC-CI
+                    call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
+                         omega(2), Tprop_tensors(B_index))
+                    call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_B(j), &
+                         l1_tensor,l2_tensor, Bvec_tensors(B_index))
+                    call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
+                         omega(2), Bvec_tensors(B_index), Tprop_bar_tensors(B_index))
+!                   solve for -w
+                    if (omega(2).ne.ZERO) then 
+                        call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
+                             omega_min(2), Tprop_tensors_min_w(B_index))
+                        call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_B(j), &
+                             l1_tensor,l2_tensor, Bvec_tensors_min_w(B_index))
+                        call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
+                             omega_min(2), Bvec_tensors_min_w(B_index), &
+                             Tprop_bar_tensors_min_w(B_index))
+                    end if 
+
+                end if
+
+                call print_date('Solved All 1st response right and left equations for operator B')
+
+                ! build/save density matrices here ?
+                !
+!                call print_date('Saved density matrix for operator B(+w)')
+!                call print_date('Saved density matrix for operator B(-w)')
+
+                do i=1, N_prop_A 
+                    if (omega(2).ne.ZERO) then
+                        call get_asym_lr(exa_input,interm_t, int_t, &
+                             Interm_t_tensors_A,  & 
+                             Tprop_tensors, Tprop_tensors_min_w, &
+                             Tprop_bar_tensors, Tprop_bar_tensors_min_w, i, j, &
+                             l1_tensor,l2_tensor,eom_lr)
+                    else
+                        call print_date('Note: Calculating static linear response.')
+                        call get_asym_lr(exa_input,interm_t, int_t, &
+                             Interm_t_tensors_A,  & 
+                             Tprop_tensors, Tprop_tensors, &
+                             Tprop_bar_tensors, Tprop_bar_tensors, i, j, &
+                             l1_tensor,l2_tensor,eom_lr)
+                    end if
+
+                    eom_lrs(n,i,j) = eom_lr
+                    write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
+                    write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
+                end do
+
+                call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,2)
+            end do ! 
+        end do ! omega 
+
+
+        do i=1, N_prop_A
+            call destroy_Interm_t_tensors(Interm_t_tensors_A(i),CC_CC)
+        end do
+
+        do i=1, N_prop_B
+            call destroy_Interm_t_tensors(Interm_t_tensors_B(i),CC_CC)
+        end do
+        
+
+
+        if (CC_CC) then 
+            write(*,"(A54)"), "*************CC-CC(LR-CC) linear response*************"
+        else
+            write(*,"(A54)"), "*************CC-CI(EOM-CC) linear response************"
+        end if
+        
+        do n=1, N_omega
+            do i=1, N_prop_A
+                do j=1, N_prop_B
+                    write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
+                    write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
+                end do
+            end do
+        end do
+
+
+        DEALLOCATE(omega)
+        DEALLOCATE(omega_min)
+        DEALLOCATE(Tprop_tensors)
+        DEALLOCATE(Tprop_tensors_min_w)
+        DEALLOCATE(Tprop_bar_tensors)
+        DEALLOCATE(Tprop_bar_tensors_min_w)
+        DEALLOCATE(Interm_t_tensors_A)
+        DEALLOCATE(Interm_t_tensors_B)
+        DEALLOCATE(Bvec_tensors)
+        DEALLOCATE(eom_lrs)
+
+        write(*,"(A54)"), "**********************************************************"  
+
+        if (CC_CC) then     
+            call print_date("Finish asymmetric CC-CC Linear Response Calculations")
+        else
+            call print_date("Finish asymmetric CC-CI Linear Response Calculations")
+        end if 
+
+
+end subroutine talsh_ccsd_lr_asymmetric_driver
 
 !------------------------------------------------------------------------------------------------------------------
 

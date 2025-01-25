@@ -9,7 +9,7 @@ module talsh_eom_LR
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                ONE_HALF=(0.5D0,0.D0), &
+                                ONE_HALF=(0.5D0,0.D0), IMAGINARY=(0.0d0, 1.0d0), &
                                 MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0), &
                                 ONE_EIGHTH_C=(0.125D0,0.D0)
@@ -20,6 +20,7 @@ module talsh_eom_LR
     private
 
     public get_eom_lr
+    public get_asym_lr
 
     contains
 
@@ -166,6 +167,166 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
 !****************************************************************************************************
 
 end subroutine get_eom_lr
+
+!------------------------------------------------------------------------------------------------------------------
+subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_A, & 
+                       Tprop_tensors, Tprop_tensors_min_w, &
+                       Tprop_bar_tensors, Tprop_bar_tensors_min_w, &
+                       i, j, l1_tensor,l2_tensor,value_lr)
+!   This subroutine drives the CC-CI and CC-CC linear response property calculation
+!   in the asymmetric formulation
+!   Written by Andre Gomes
+
+    use talsh_sigma_eomccsd
+
+    type(exacc_input), intent(in) :: exa_input
+    type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !  t1, t2 tensor
+    type(talsh_intg_tens_t),intent(inout)       :: int_t 
+    type(talsh_tens_t), intent(inout)           :: l2_tensor
+    type(talsh_tens_t), intent(inout)           :: l1_tensor
+    integer, intent(in)                         :: i,j 
+    complex(kind=8), intent(inout)              :: value_lr
+    ! \eta and \xi (or epsilon) terms for operators A
+    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:)
+    ! RHS response vectors 
+    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_tensors(:) 
+    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_tensors_min_w(:) 
+    ! LHS response vectors
+    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_bar_tensors(:) 
+    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_bar_tensors_min_w(:) 
+
+    integer(C_INT)              :: ierr, one_dims(1)
+    complex(8), pointer         :: result_tens(:)
+    type(C_PTR)                 :: body_p
+    type(talsh_tens_t)          :: result_tensor
+
+    complex(kind=8)             :: linrsp, linrsp_con, phase_factor
+
+
+    ! create and zero out result_tensor to accumulate +\omega contribution
+    one_dims(1) = 1
+    ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    call c_f_pointer(body_p,result_tens,one_dims)
+
+    ierr=talsh_tensor_init(result_tensor, ZERO)
+
+    ! build \eta^A t^B(+omega)
+
+    ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
+            Interm_t_tensors_A(i)%eta_prop_ov,Tprop_tensors(j)%t1)
+    ierr=talsh_tensor_contract("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
+            Interm_t_tensors_A(i)%eta_prop_oovv,Tprop_tensors(j)%t2)
+
+    ! build \bar(t)^B(+omega)\epsilon^A 
+    
+    ierr=talsh_tensor_contract("E()+=barTB(i,a)*XiA(a,i)", result_tensor, &
+            Tprop_bar_tensors(j)%t1,Interm_t_tensors_A(i)%epsilon_prop_vo)
+    ierr=talsh_tensor_contract("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
+            Tprop_bar_tensors(j)%t2,Interm_t_tensors_A(i)%epsilon_prop_vvoo)
+
+    ! save result
+    linrsp =  result_tens(1)
+
+    ! zero out result_tensor to accumulate -\omega contribution
+    ierr=talsh_tensor_init(result_tensor, ZERO)
+
+    ! build \eta^A t^B(-omega)
+
+    ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
+            Interm_t_tensors_A(i)%eta_prop_ov,Tprop_tensors_min_w(j)%t1)
+    ierr=talsh_tensor_contract("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
+            Interm_t_tensors_A(i)%eta_prop_oovv,Tprop_tensors_min_w(j)%t2)
+
+    ! build \bar(t)^B(-omega)\epsilon^A 
+
+    ierr=talsh_tensor_contract("E()+=barTB(i,a)*XiA(a,i)", result_tensor, &
+            Tprop_bar_tensors_min_w(j)%t1,Interm_t_tensors_A(i)%epsilon_prop_vo)
+    ierr=talsh_tensor_contract("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
+            Tprop_bar_tensors_min_w(j)%t2,Interm_t_tensors_A(i)%epsilon_prop_vvoo)
+
+    ! save result
+    linrsp_con = result_tens(1)
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ASPG+LV: Note concerning the addition of a phase to the response functions below 
+!
+! The 1-body integrals over time-antisymmetric operators are already in the AO basis 
+! of DIRAC scaled by imaginary i  so that they can be treated as time-symmetric (real) 
+! operators. Such an auxiliary phase factor takes over to the MO basis in which we solve 
+! the CC response equations:
+!
+! RHS (for linear and quadratic response)
+!  (\bar{H} - \omega_y I)t^Y(\omega_y) = - \xi^Y  (RHS, for linear and quadratic response)
+! LHS (for quadratic response and asymmetric linear response)  
+! \bar{t}^X(\omega_x)(\bar{H} - \omega_x I) = - \eta^X - Ft^X(\omega_x) 
+!
+! where \xi^Y and \eta^X involve the one-body operators (see 10.1021/acs.jctc.3c00812 and 10.1021/acs.jctc.3c01011).
+!
+! These auxiliary phase factors are therefore present when assembling the response functions, e.g.
+!
+!   LR, symmetric formulation
+!   <<X; Y>>_{\omega_y} = 1/2 C^{\pm\omega} P(X,Y) [ \eta_Y + 1/2 Ft^X(\omega_x) ] t^Y(omega_y)
+!
+!   LR, asymmetric formulation 
+!   <<X; Y>>_{\omega_y} = 1/2 C^{\pm\omega} [\eta^X t^Y(\omega_y) + \bar{t}^Y(\omega_y)\xi^X]
+!   
+!   QR, symmetric formulation
+!   <<X; Y, Z>>_{\omega} = 1/2 C^{\pm\omega} P(X,Y,Z) [[ 1/2 F^Y + 1/6 Gt^Y]t^Y + \bar{t}^X [ A^Y + 1/2 Bt^Y]] t^Z 
+!    
+!   etc (see aforementioned papers for the QR-EOM expression)
+!
+!   where
+!    - \omega_x = -(\omega_y + \omega_z) or \omega_x = -\omega_y,
+!    - P a permutation operation exchanging the role of X and Y,
+!    - C a symmetrization operator with respect to simultaneous complex conjugation and inversion 
+!      of the signs of the frequencies,
+!      C^{\pm\omega} = f^{XY}(\omega_x, \omega_y) + [f^{XY}(-\omega_x, -\omega_y)]^*
+!
+! and we need to correct for this to obtain the final result.
+!
+! We can do so by multiplying the terms, for example f^{XY}(\omega_x, \omega_y) and f^{XY}(-\omega_x, -\omega_y) 
+! for linear response, by a phase factor G
+!
+! G = i^{N_a},
+!
+! where N_a is the number of time-antisymmetric operators among X, Y, Z,...; and this should be made BEFORE 
+! the action of C^{\pm\omega} if that is applied.
+!
+! With this, for example :
+! - in the case of the elements of the dipole polarizability tensor ((<<x; y>>)), we have two time-symmetric 
+!   operators (x,y) so N_a = 0, there is no change
+! - in the case of the optical rotation (<<x; \hat{m}_y>>), we have one time-symmetric (x) and one 
+!   time-antisymmetric (the magnetic dipole component \hat{m}_y) operator, so N_a = 1 and we have as result G = i; by 
+!   applying it the real and imaginary parts of the response function are interchanged
+! - in the case of spin-spin couplings between centers M and N (<<\hat{h}_M;\hat{h}_M>>), we have two 
+!   time-antisymmetric operators, so N_a = 2 and G = i^2 = -1, as a result we change the sign of f^{XY}
+!
+! and so on for the possible combinations in the case of quadratic response functions.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            print *, "Number of time-antisymmetric operators in response function",exa_input%N_Time_anti
+            if (exa_input%N_Time_anti.ge.1) &
+            print *, "Adding phase to response function components (due to how DIRAC scales time-antisymmetric operators)"
+
+            phase_factor = IMAGINARY**(exa_input%N_Time_anti)
+
+            linrsp = linrsp*phase_factor
+            linrsp_con = linrsp_con*phase_factor
+
+            print *, "linear response: +w", linrsp
+            print *, "linear response: -w", linrsp_con
+
+            linrsp_con=conjg(linrsp_con)
+            value_lr=(linrsp+linrsp_con)*0.5
+
+            print *, "LR after symmetrization ",value_lr
+
+! cleanup
+            ierr=talsh_tensor_destruct(result_tensor)
+
+
+end subroutine get_asym_lr
 
 !------------------------------------------------------------------------------------------------------------------
 

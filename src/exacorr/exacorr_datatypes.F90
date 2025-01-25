@@ -69,6 +69,7 @@
             logical                 :: eom_lr = .false.
             
             logical                 :: do_1rdm_gs=.false.
+            logical                 :: do_1rdm_lr=.false.
             logical                 :: do_2rdm_gs=.false.
 
             logical                 :: auto_kernels = .false.   ! if true, use automatically generated kernels for t/l equations
@@ -98,6 +99,8 @@
             integer                 :: tripl_block(1:2) = -1    ! for running triples
             integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
             integer                 :: n_laplace = 10           ! number of laplace points to use
+
+! aspg, response-related 
             integer                 :: N_eom_trial = 1          ! number of trial vectors in CC linear response
             integer                 :: wf_type = 2              ! wave-function type
             integer                 :: N_Prop_A, N_Prop_B    ! number of property
@@ -106,10 +109,9 @@
             integer                 :: N_omega_qr1 = 1               ! number of frequency1 in ccqr
             integer                 :: N_omega_qr2 = 1               ! number of frequency2 in ccqr
             integer                 :: N_Time_anti = 0          ! Number of time-antisymmetric operators
+
+            logical                 :: ccrsp_symmetric = .true. ! Use symmetric formulation in CC response 
            
-            
-            integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
-            integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
             integer, allocatable    :: Prop_A(:), Prop_B(:), Prop_C(:), Prop_D(:) ! index of Property
             INTEGER                 ::  TPA_state             ! index of final excited state in eom-tpa
             real(REALD), allocatable :: w_lr_re(:)            ! real frequency in CC linear response
@@ -120,13 +122,17 @@
             real(REALD), allocatable :: w_qr2_re(:)            ! 2nd real frequency in CC quadratic response
             real(REALD), allocatable :: w_qr2_im(:)            ! 2nd imaginary frequency in CC quadratic response
            
+! aspg, other variables
+
+            integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
+            integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
 
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
             real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
             real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
             
-           
+! aspg, eom-related options           
 
             real(REALD), allocatable:: rew_energies(:,:) ! restricted excitation window, in terms of energy thresholds (a.u.)
 
