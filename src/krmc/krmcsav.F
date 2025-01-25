@@ -53,14 +53,16 @@ C
       CALL QENTER('KRMCSAV')
       KFRSAV = KFREE
 C
-C     Write file KRMCSCF:
+C     Write to file KRMCSCF in each macro iteration after SODLABEL (start of data label):
 C
 C     (1) MJVEC .or. IBEIG: orbital mj-vector or boson irreps orbital-vector
 C     (2) OLDORB  : old MO orbitals
+C         OLDCREF : old CI vector
 C     (3) RESTART : info needed for restart
 C     (4) LREDUCED: info needed for backsteps
 C     (5) CREF    : new CI vector
 C     (6) NEWORB  : new MO orbitals
+C         EOFLABEL
 C
       if(.not.spinfr_krmc)then
         IF( OPT_CHCKJZ .AND. LINEAR )THEN
