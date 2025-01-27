@@ -384,7 +384,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                              omega_min(B),Bvec_tensors_min_w(B),Tprop_bar_tensors_min_w(B))
                 end if 
 
-            else ! CC-CI
+            else ! using EOM approximation to LHS equation, consistent with QR
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), &
                      omega(B), Tprop_tensors(B))
                 call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_B(j), &
@@ -401,7 +401,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                          omega_min(B), Bvec_tensors_min_w(B), Tprop_bar_tensors_min_w(B))
                 end if 
 
-            end if ! cc-cc or cc-ci
+            end if ! cc-cc or eom; do something for actual cc-ci ?
 
             call print_date('Solved All 1st response right and left equations for operator B')
 

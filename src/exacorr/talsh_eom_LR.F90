@@ -215,24 +215,13 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
 
     ! build \eta^A t^B(+omega)
     
-!    call print_tensor(Interm_t_tensor_A%eta_prop_ov, 1.0d-8, "etaA_1_i")
-!    call print_tensor(Interm_t_tensor_A%eta_prop_oovv, 1.0d-8, "etaA_2_i")
-
-!    call print_tensor(Interm_t_tensor_A%epsilon_prop_vo, 1.0d-8, "xiA_1_i")
-!    call print_tensor(Interm_t_tensor_A%epsilon_prop_vvoo, 1.0d-8, "xiA_2_i")
-
-!    call print_tensor(Tprop_tensors(2)%t1, 1.0d-8, "TB_1_j")
-!    call print_tensor(Tprop_tensors(2)%t2, 1.0d-8, "TB_2_j")
-
-!    call print_tensor(Tprop_bar_tensors(2)%t1, 1.0d-8, "barTB_1_j")
-!    call print_tensor(Tprop_bar_tensors(2)%t2, 1.0d-8, "barTB_2_j")
-
     ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
             Interm_t_tensor_A%eta_prop_ov,Tprop_tensors(2)%t1)
     print *, 'ierr 2.a',ierr,result_tens(1)
  
     ierr=talsh_tensor_contract("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
-            Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors(2)%t2)
+            Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors(2)%t2, &
+            scale=ONE_QUARTER_C)
    print *, 'ierr 2.b',ierr,result_tens(1)
  
     ! build \bar(t)^B(+omega)\epsilon^A 
@@ -242,7 +231,8 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
     print *, 'ierr 3.a',ierr,result_tens(1)
 
     ierr=talsh_tensor_contract("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
-            Tprop_bar_tensors(2)%t2,Interm_t_tensor_A%epsilon_prop_vvoo)
+            Tprop_bar_tensors(2)%t2,Interm_t_tensor_A%epsilon_prop_vvoo, &
+            scale=ONE_QUARTER_C)
     print *, 'ierr 3.b',ierr,result_tens(1)
 
     ! save result
@@ -250,6 +240,7 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
     print *, 'linrsp',linrsp
 
     ! zero out result_tensor to accumulate -\omega contribution
+
     ierr=talsh_tensor_init(result_tensor, ZERO)
     print *, 'ierr 4.a',ierr,result_tens(1)
 
@@ -260,7 +251,8 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
     print *, 'ierr 5.a',ierr,result_tens(1)
 
     ierr=talsh_tensor_contract("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
-            Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors_min_w(2)%t2)
+            Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors_min_w(2)%t2, &
+            scale=ONE_QUARTER_C)
     print *, 'ierr 5.b',ierr,result_tens(1)
 
     ! build \bar(t)^B(-omega)\epsilon^A 
@@ -270,7 +262,8 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
     print *, 'ierr 6.a',ierr,result_tens(1)
 
     ierr=talsh_tensor_contract("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
-            Tprop_bar_tensors_min_w(2)%t2,Interm_t_tensor_A%epsilon_prop_vvoo)
+            Tprop_bar_tensors_min_w(2)%t2,Interm_t_tensor_A%epsilon_prop_vvoo, &
+            scale=ONE_QUARTER_C)
     print *, 'ierr 6.b',ierr,result_tens(1)
 
     ! save result
