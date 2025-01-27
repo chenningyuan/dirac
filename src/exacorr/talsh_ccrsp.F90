@@ -253,6 +253,8 @@ end subroutine talsh_ccsd_lr_driver
 
 subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
 
+    use talsh_gradient, only : talsh_dm_driver
+
     type(exacc_input), intent(in) :: exa_input
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
@@ -405,13 +407,30 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
 
             call print_date('Solved All 1st response right and left equations for operator B')
 
+            if (exa_input%do_1rdm_lr) then
             ! build/save density matrices here ?
             !
-            call print_date('Saving density matrix for operator B(+w)')
-            print *, 'not yet implemented'
-            if (omega(B).ne.ZERO) then
-                call print_date('Saving density matrix for operator B(-w)')
-                print *, 'not yet implemented'
+               call print_date('Saving density matrix for operator B(+w)')
+               call talsh_dm_driver(exa_input, &
+                                 interm_t%t2,l2_tensor, &
+                                 interm_t%t1,l1_tensor, &
+                                 int_t, &
+                                 Tprop_tensors(B)%t1, &
+                                 Tprop_bar_tensors(B)%t1, &
+                                 Tprop_tensors(B)%t2, &
+                                 Tprop_bar_tensors(B)%t2)
+            
+                if (omega(B).ne.ZERO) then
+                   call print_date('Saving density matrix for operator B(-w)')
+                   call talsh_dm_driver(exa_input, &
+                                 interm_t%t2,l2_tensor, &
+                                 interm_t%t1,l1_tensor, &
+                                 int_t, &
+                                 Tprop_tensors_min_w(B)%t1, &
+                                 Tprop_bar_tensors_min_w(B)%t1, &
+                                 Tprop_tensors_min_w(B)%t2, &
+                                 Tprop_bar_tensors_min_w(B)%t2)
+               end if
             end if
 
             do i=1, N_prop_A 
