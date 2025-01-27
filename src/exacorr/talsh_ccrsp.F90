@@ -339,6 +339,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
     
     do  i=1, N_prop_B
         m = Prop_B(i)
+        ! calculates \epsilon^B, \eta^B
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
                                       int_t, l1_tensor, l2_tensor, CC_CC)
     end do
@@ -363,7 +364,6 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
 ! note the asymmetric response only requires the solutiion of equations for perturbation B
 !
         do j=1, N_prop_B
-            print *, 'B number',j
             if (CC_CC) then
 !
 !               solve for +w
@@ -415,7 +415,6 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
             end if
 
             do i=1, N_prop_A 
-                print *, 'A number',i
                 if (omega(B).eq.ZERO) then
                     call print_date('Note: Calculating static linear response.')
                     ! Tprop_*_tensors_min_w not used/initialized
