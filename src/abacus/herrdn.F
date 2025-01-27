@@ -4109,8 +4109,11 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
       IF (LINEAR) THEN
-        IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) 
-     &    ATOMIC = .TRUE.
+        IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) THEN
+          IF(NONATM .eqv. .FALSE.)THEN            
+             ATOMIC = .TRUE.
+          ENDIF   
+        ENDIF   
       ENDIF
       IF (NUCDEP .GT. MXCENT) GOTO 5010
 C     
