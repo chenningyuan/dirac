@@ -96,17 +96,6 @@ C
      &        ' not implemented for this open-shell DHF')
          END IF
 
-         if (dirac_cfg_dft_calculation) then
-            if (nopen > 0) then
-               call quit('error in molecular gradient:' // 
-     &        ' not implemented for open-shell DFT')
-            end if
-            if (maxrep > 0) then
-               call quit('error in molecular gradient:' // 
-     &        ' not implemented for DFT with symmetry')
-            end if
-         end if
-
          if (bss .or. x2c) then
             call quit('error in molecular gradient:' // 
      &      ' not implemented for X2C')
