@@ -6426,7 +6426,7 @@ C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
       RETURN
- 1000 FORMAT (/' Parity   MJ  Functions(total) Functions(LC)'//
+ 1000 FORMAT (/' Parity   MJ  Functions(total) Functions(LC)'
      &         ' Functions(SC)')
  1010 FORMAT (T5,I2,T9,I3,'/2',T20,I5,T33,I5,T46,I5)
       END
@@ -7049,7 +7049,7 @@ C
 C     Construct mj matrix in AO basis
       allocate(TMPA(NTBAS(0)*NTBAS(0)))
       CALL DZERO(TMPA,NTBAS(0)*NTBAS(0))      
-      CALL AMJMAT(TMPA,IPRHAM,WORK,LWORK) !sunaga
+      CALL AMJMAT(TMPA,IPRHAM,WORK,LWORK) 
 C
 C     Output    
 C  
@@ -7192,7 +7192,7 @@ C Small AO-MO transformation (diagonal in kappa because of VMAT => VU)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC         
          IF (NS.GT.0) THEN
            CALL TSBBL2(IFRP,2,KPADD,TMPA,WORK(KFSS),VMAT,VMAT,
-     &                 WORK(KFREE),LFREE,IPRHAM) !sunaga
+     &                 WORK(KFREE),LFREE,IPRHAM) 
 CCCCCCCCCCCCCCCCCCCCCCC         
 C Small diagonalization
 CCCCCCCCCCCCCCCCCCCCCCC         
