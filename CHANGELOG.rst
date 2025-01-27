@@ -13,6 +13,7 @@ New features:
    - Contributors: Carlos M. R. Rocha, Lucas Visscher
    - Reference (DIRAC calculator): https://qc2.readthedocs.io
    - Reference (ASE): https://wiki.fysik.dtu.dk/ase/
+
 Infrastructure changes and fixes:
 
 - Changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025.
@@ -57,22 +58,22 @@ New default:
 New features:
 
 New functionality with ExaCorr:
-- Calculation of linear response properties with CCSD wavefunctions.
+   - Calculation of linear response properties with CCSD wavefunctions.
    - Contributors: Xiang Yuan,  Loic Halbert, Johann Pototschnig, Anastasios Papadopoulos, Lucas Visscher and Andre Gomes.
    - Reference: Xiang Yuan, Loic Halbert, Johann Valentin Pototschnig, Anastasios Papadopoulos, Sonia Coriani, Lucas Visscher, and Andre Severo Pereira Gomes, Formulation and Implementation of Frequency-Dependent Linear Response Properties with Relativistic Coupled Cluster Theory for GPU-Accelerated Computer Architectures, J. Chem. Theory Comput. 20, 677 (2024) https://doi.org/10.1021/acs.jctc.3c00812
    - Manual: CCCILR https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#cccilr
    - Tutorial: not yet available; please have a look at examples in the testset.
-- Calculation of quadratic response properties CCSD wavefunctions. 
+   - Calculation of quadratic response properties CCSD wavefunctions. 
    - Contributors: Xiang Yuan,  Loic Halbert, Lucas Visscher and Andre Gomes.
    - Reference: Xiang Yuan, Loic Halbert, Lucas Visscher, and Andre Severo Pereira Gomes, Frequency-Dependent Quadratic Response Properties and Two-Photon Absorption from Relativistic Equation-of-Motion Coupled Cluster Theory, J. Chem. Theory Comput. 19, 9248 (2023) https://doi.org/10.1021/acs.jctc.3c01011
    - Manual: CCCIQR https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#ccciqr
    - Tutorial: not yet available; please have a look at examples in the testset.      
-- Calculation of energies with equation of motion coupled cluster for excitation (EOM-EE-CCSD), ionization  (EOM-IP-CCSD), and electron affinity (EOM-EA-CCSD) models.
+   - Calculation of energies with equation of motion coupled cluster for excitation (EOM-EE-CCSD), ionization  (EOM-IP-CCSD), and electron affinity (EOM-EA-CCSD) models.
    - Contributors: Xiang Yuan,  Loic Halbert, Lucas Visscher and Andre Gomes.
    - Reference: Xiang Yuan, PhD thesis (2024), https://doi.org/10.5463/thesis.505
    - Manual: EXEOM https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#exeom  see also https://www.diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#id10
    - Tutorial: not yet available; please have a look at examples in the testset.
-- Two-body reduced density matrix for CCSD ground-state wavefunctions.
+   - Two-body reduced density matrix for CCSD ground-state wavefunctions.
    - Contributors: Loic Halbert, Andre Gomes
    - Manual: GS2RDM https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#gs2rdm
    - Tutorial: not yet available; please have a look at examples in the testset.

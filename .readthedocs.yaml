@@ -13,6 +13,7 @@ build:
   tools:
     python: "3.12"
   apt_packages:
+    - bash
     - cmake
     - gfortran
     - gcc
@@ -24,11 +25,11 @@ build:
     install:
       - python3 -m venv venv
       - . venv/bin/activate
-      - python3 -m pip install "sphinx<7.0.0" sphinx_rtd_theme sphinxcontrib-bibtex
+      - python3 -m pip install sphinx==7.2.6 sphinx_rtd_theme sphinxcontrib-bibtex
       - pip list
       - lsb_release -a
     pre_build:
         - ./setup $READTHEDOCS_OUTPUT
     build:
       html:
-        - cd $READTHEDOCS_OUTPUT; echo "I am in the directory:";pwd; make VERBOSE=1 html; cd html; echo "content of html:"; ls -lt; ls -lt _static
+        - cd $READTHEDOCS_OUTPUT; echo "SHELL=$SHELL"; echo "I am in the directory:";pwd; make VERBOSE=1 html; cd html; echo "content of html:"; ls -lt; ls -lt _static
