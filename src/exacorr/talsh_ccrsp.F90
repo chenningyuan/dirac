@@ -416,21 +416,22 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
 
             do i=1, N_prop_A 
                 print *, 'A number',i
-                if (omega(B).ne.ZERO) then
-                    call get_asym_lr(exa_input,interm_t, int_t, &
-                         Interm_t_tensors_A,  & 
-                         Tprop_tensors, Tprop_tensors_min_w, &
-                         Tprop_bar_tensors, Tprop_bar_tensors_min_w, i, j, &
-                         l1_tensor,l2_tensor,eom_lr)
-                else
+                if (omega(B).eq.ZERO) then
                     call print_date('Note: Calculating static linear response.')
+                    ! Tprop_*_tensors_min_w not used/initialized
                     call get_asym_lr(exa_input,interm_t, int_t, &
-                         Interm_t_tensors_A,  & 
-                         Tprop_tensors, Tprop_tensors, &
-                         Tprop_bar_tensors, Tprop_bar_tensors, i, j, &
-                         l1_tensor,l2_tensor,eom_lr)
-                end if
-
+                            Interm_t_tensors_A(i),  & 
+                            Tprop_tensors, Tprop_tensors, &
+                            Tprop_bar_tensors, Tprop_bar_tensors, &
+                            l1_tensor,l2_tensor,eom_lr)
+                else
+                    call get_asym_lr(exa_input,interm_t, int_t, &
+                            Interm_t_tensors_A(i),  & 
+                            Tprop_tensors, Tprop_tensors_min_w, &
+                            Tprop_bar_tensors, Tprop_bar_tensors_min_w, &
+                            l1_tensor,l2_tensor,eom_lr)
+                end if 
+                
                 eom_lrs(n,i,j) = eom_lr
                 write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
                 write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
@@ -484,7 +485,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
     if (CC_CC) then     
         call print_date("Finish asymmetric CC-CC Linear Response Calculations")
     else
-            call print_date("Finish asymmetric CC-CI Linear Response Calculations")
+        call print_date("Finish asymmetric CC-CI Linear Response Calculations")
     end if 
 
 

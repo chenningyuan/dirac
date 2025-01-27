@@ -169,10 +169,10 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
 end subroutine get_eom_lr
 
 !------------------------------------------------------------------------------------------------------------------
-subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_A, & 
+subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, & 
                        Tprop_tensors, Tprop_tensors_min_w, &
                        Tprop_bar_tensors, Tprop_bar_tensors_min_w, &
-                       i, j, l1_tensor,l2_tensor,value_lr)
+                       l1_tensor,l2_tensor,value_lr)
 !   This subroutine drives the CC-CI and CC-CC linear response property calculation
 !   in the asymmetric formulation
 !   Written by Andre Gomes
@@ -184,16 +184,15 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_A, &
     type(talsh_intg_tens_t),intent(inout)       :: int_t 
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
-    integer, intent(in)                         :: i,j 
     complex(kind=8), intent(inout)              :: value_lr
     ! \eta and \xi (or epsilon) terms for operators A
-    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:)
+    type(talsh_rsp_interm_tens_t), intent(inout) :: Interm_t_tensor_A
     ! RHS response vectors 
-    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_tensors(:) 
-    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_tensors_min_w(:) 
+    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:)
+    type(talsh_comm_tens_t), allocatable :: Tprop_tensors_min_w(:)
     ! LHS response vectors
-    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_bar_tensors(:) 
-    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_bar_tensors_min_w(:) 
+    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:) 
+    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors_min_w(:) 
 
     integer(C_INT)              :: ierr, one_dims(1)
     complex(8), pointer         :: result_tens(:)
@@ -203,7 +202,6 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_A, &
     complex(kind=8)             :: linrsp, linrsp_con, phase_factor
 
     
-    print *, 'Combination (A,B)',i,j
     ! create and zero out result_tensor to accumulate +\omega contribution
     one_dims(1) = 1
     ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
@@ -217,34 +215,34 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_A, &
 
     ! build \eta^A t^B(+omega)
     
-    call print_tensor(Interm_t_tensors_A(i)%eta_prop_ov, 1.0d-8, "etaA_1_i")
-    call print_tensor(Interm_t_tensors_A(i)%eta_prop_oovv, 1.0d-8, "etaA_2_i")
+!    call print_tensor(Interm_t_tensor_A%eta_prop_ov, 1.0d-8, "etaA_1_i")
+!    call print_tensor(Interm_t_tensor_A%eta_prop_oovv, 1.0d-8, "etaA_2_i")
 
-    call print_tensor(Interm_t_tensors_A(i)%epsilon_prop_vo, 1.0d-8, "xiA_1_i")
-    call print_tensor(Interm_t_tensors_A(i)%epsilon_prop_vvoo, 1.0d-8, "xiA_2_i")
+!    call print_tensor(Interm_t_tensor_A%epsilon_prop_vo, 1.0d-8, "xiA_1_i")
+!    call print_tensor(Interm_t_tensor_A%epsilon_prop_vvoo, 1.0d-8, "xiA_2_i")
 
-    call print_tensor(Tprop_tensors(j)%t1, 1.0d-8, "TB_1_j")
-    call print_tensor(Tprop_tensors(j)%t2, 1.0d-8, "TB_2_j")
+!    call print_tensor(Tprop_tensors(2)%t1, 1.0d-8, "TB_1_j")
+!    call print_tensor(Tprop_tensors(2)%t2, 1.0d-8, "TB_2_j")
 
-    call print_tensor(Tprop_bar_tensors(j)%t1, 1.0d-8, "barTB_1_j")
-    call print_tensor(Tprop_bar_tensors(j)%t2, 1.0d-8, "barTB_2_j")
+!    call print_tensor(Tprop_bar_tensors(2)%t1, 1.0d-8, "barTB_1_j")
+!    call print_tensor(Tprop_bar_tensors(2)%t2, 1.0d-8, "barTB_2_j")
 
     ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
-            Interm_t_tensors_A(i)%eta_prop_ov,Tprop_tensors(j)%t1)
+            Interm_t_tensor_A%eta_prop_ov,Tprop_tensors(2)%t1)
     print *, 'ierr 2.a',ierr,result_tens(1)
  
     ierr=talsh_tensor_contract("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
-            Interm_t_tensors_A(i)%eta_prop_oovv,Tprop_tensors(j)%t2)
+            Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors(2)%t2)
    print *, 'ierr 2.b',ierr,result_tens(1)
  
     ! build \bar(t)^B(+omega)\epsilon^A 
     
     ierr=talsh_tensor_contract("E()+=barTB(i,a)*XiA(a,i)", result_tensor, &
-            Tprop_bar_tensors(j)%t1,Interm_t_tensors_A(i)%epsilon_prop_vo)
+            Tprop_bar_tensors(2)%t1,Interm_t_tensor_A%epsilon_prop_vo)
     print *, 'ierr 3.a',ierr,result_tens(1)
 
     ierr=talsh_tensor_contract("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
-            Tprop_bar_tensors(j)%t2,Interm_t_tensors_A(i)%epsilon_prop_vvoo)
+            Tprop_bar_tensors(2)%t2,Interm_t_tensor_A%epsilon_prop_vvoo)
     print *, 'ierr 3.b',ierr,result_tens(1)
 
     ! save result
@@ -258,21 +256,21 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_A, &
     ! build \eta^A t^B(-omega)
 
     ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
-            Interm_t_tensors_A(i)%eta_prop_ov,Tprop_tensors_min_w(j)%t1)
+            Interm_t_tensor_A%eta_prop_ov,Tprop_tensors_min_w(2)%t1)
     print *, 'ierr 5.a',ierr,result_tens(1)
 
     ierr=talsh_tensor_contract("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
-            Interm_t_tensors_A(i)%eta_prop_oovv,Tprop_tensors_min_w(j)%t2)
+            Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors_min_w(2)%t2)
     print *, 'ierr 5.b',ierr,result_tens(1)
 
     ! build \bar(t)^B(-omega)\epsilon^A 
 
     ierr=talsh_tensor_contract("E()+=barTB(i,a)*XiA(a,i)", result_tensor, &
-            Tprop_bar_tensors_min_w(j)%t1,Interm_t_tensors_A(i)%epsilon_prop_vo)
+            Tprop_bar_tensors_min_w(2)%t1,Interm_t_tensor_A%epsilon_prop_vo)
     print *, 'ierr 6.a',ierr,result_tens(1)
 
     ierr=talsh_tensor_contract("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
-            Tprop_bar_tensors_min_w(j)%t2,Interm_t_tensors_A(i)%epsilon_prop_vvoo)
+            Tprop_bar_tensors_min_w(2)%t2,Interm_t_tensor_A%epsilon_prop_vvoo)
     print *, 'ierr 6.b',ierr,result_tens(1)
 
     ! save result
