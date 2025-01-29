@@ -28,15 +28,12 @@ build:
       - set
       - lsb_release -a
       - python3 -m pip install sphinx sphinx_rtd_theme sphinxcontrib-bibtex
-      - export PATH=/home/docs/.asdf/installs/python/3.12.7/bin:$PATH; set
-      - echo "again set:"; set
       - pip list
       - pip show -f sphinx
-      - export PATH=/home/docs/.asdf/installs/python/3.12.7/bin:$PATH; which sphinx-build
-      - export PATH=/home/docs/.asdf/installs/python/3.12.7/bin:$PATH; sphinx-build --help
+      - export PATH=/home/docs/.asdf/installs/python/3.12.7/bin:$PATH; which sphinx-build; sphinx-build --help
       - set  
     pre_build:
         - ./setup $READTHEDOCS_OUTPUT
     build:
       html:
-        - cd $READTHEDOCS_OUTPUT; echo "I am in the directory:";pwd; make VERBOSE=1 html; cd html; echo "content of html:"; ls -lt; ls -lt _static
+        - cd $READTHEDOCS_OUTPUT; echo "I am in the directory:";pwd; export PATH=/home/docs/.asdf/installs/python/3.12.7/bin:$PATH; make VERBOSE=1 html; cd html; echo "content of html:"; ls -lt; ls -lt _static
