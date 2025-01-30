@@ -16,6 +16,7 @@
 !dirac_copyright_end
 
 C
+C File: herpar.F
 C
 #ifdef UNDEF
 /* Comdeck notes */
@@ -83,12 +84,14 @@ C           RETUR  - Program will exit after spec. shells
 C           TKTIME - Take time in TWOINT
 C           TIMING - Take time for each integralbatch IJ
 C           DOREPS -
-C           DOSYM  -
 C           DOCOOR -
+C           DOSYM  -
 C           NMLINE - Number of lines in MOLECULE.INP
 C           MLINE  - MOLECULE.INP as internal file
 C           NDMAT  - Number of density-matrices
 C           DMAT   - Density-matrices.
+C           HFXFAC - HF exchange factor
+C
 C
 C
       use interface_to_mpi
@@ -448,8 +451,6 @@ C----------------------------
 C     Set common-block PARINT
 C----------------------------
 C
-      JCODE  = 0
-C     ... not used any more (was used for PVM)
       JATOM  = IATOM
       JLUDAS = LUDASP
       JLUINT = LUINTA

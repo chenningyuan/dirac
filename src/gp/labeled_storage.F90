@@ -484,8 +484,8 @@ module labeled_storage
          inquire(file=file_info%name//'/.initialized',exist=exist)
          if (.not.exist) then
            ! can not be used, toggle back and stop
-           call toggle_fallback(file_info)
-           write (*,*) " ERROR: trying to read non-existent data set ",trim(label)," from ",trim(file_info%name)
+           if (mh5_is_available()) call toggle_fallback(file_info)
+           write (*,*) " ERROR: trying to read data set ",trim(label)," from non-existing file ",trim(file_info%name)
            error stop ' error detected by read_hdf5 '
          end if
          if (present(rdata)) then

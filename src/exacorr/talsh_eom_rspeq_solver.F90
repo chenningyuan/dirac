@@ -22,10 +22,28 @@ module talsh_eom_rspeq_solver
       public solve_eom_lr_left 
       public get_left_bvec
       public solve_cc_lr_left, get_left_bvec_ccci, get_left_bvec_cccc 
+      public print_lr_setup
 
       contains
 
 !----------------------------------------------------------------------------------------------------------------
+
+      subroutine print_lr_setup(rspeq_side,operator_label,operator_index,freq)
+         complex(kind=8), intent(in) :: freq
+         integer, intent(in) :: operator_index
+         character(1), intent(in) :: rspeq_side 
+         character(1), intent(in) :: operator_label
+
+         print *, ""
+         print *, "Solving "//rspeq_side//"HS linear response equation"
+!        when forming e.g 2-photon transition moments, do not print information on indivudial operators 
+         if (operator_index.gt.0) then
+             print *, "   Operator "//operator_label//" : ",operator_index
+         endif
+         print *, "   Frequency  : ",freq
+         print *, ""
+      end subroutine
+
 
       subroutine solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop, &
                                     omega, tprop_tensor)
@@ -43,11 +61,11 @@ module talsh_eom_rspeq_solver
             type(exacc_input), intent(in) :: exa_input
             type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
             type(talsh_intg_tens_t), intent(inout) :: int_t
-            type(talsh_rsp_interm_tens_t), intent(inout)  :: interm_t_prop
+            type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop
             complex(kind=8), intent(in)               :: omega
 
-            type(talsh_eom_results_tens_t)  :: results_t
-            type(talsh_comm_tens_t), intent(inout)        :: tprop_tensor
+            type(talsh_eom_results_tens_t)                 :: results_t
+            type(talsh_comm_tens_t) , intent(inout)      :: tprop_tensor
 
 !     workspace
             type(talsh_davidson_workspace_tens_t) :: workspace_t
@@ -123,7 +141,7 @@ module talsh_eom_rspeq_solver
                   type(exacc_input), intent(in) :: exa_input
                   type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
                   type(talsh_intg_tens_t), intent(inout) :: int_t
-                  type(talsh_rsp_interm_tens_t), intent(inout)  :: interm_t_prop
+                  type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop
                   complex(kind=8),INTENT(IN)              :: omega
       
 
@@ -282,7 +300,7 @@ module talsh_eom_rspeq_solver
             type(talsh_rsp_interm_tens_t),intent(inout) :: interm_t_prop
             type(talsh_tens_t), intent(inout)  :: l2_tensor
             type(talsh_tens_t), intent(inout)  :: l1_tensor
-            type(talsh_comm_tens_t), intent(inout) :: bvec_tensor
+            type(talsh_comm_tens_t), intent(inout)       :: bvec_tensor
 
 
             type(talsh_tens_t) :: Aux_tensor1, one_tensor

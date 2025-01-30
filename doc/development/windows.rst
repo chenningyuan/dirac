@@ -193,7 +193,7 @@ Further development plans
 
 So far we have tested DIRAC in sequential buildups (only) with the MinGW64 (free of charge) suite of compilers.
 To profit from multithreading under Windows, enthusiastic developers (where are you?) should investigate Open MPI parallelization, www.open-mpi.org. 
-Also, one should try some commercial compilers, like Intel, PGI...
+Also, one should try some commercial compilers, like Intel, Nvidia, ...
 
 Concerning mathematical libraries, we have to resort to DIRAC own BLAS & LAPACK libraries. 
 The ATLAS library preparation for Windows is only in the experimental phase (http://math-atlas.sourceforge.net/errata.html#win64).

@@ -711,7 +711,7 @@ C
       subroutine do_partial_precon(vvoo_in,vvoo_ou)
       implicit none
 !
-      real*8,allocatable,dimension (:)    :: vvoo_in, vvoo_ou
+      real*8,dimension (:)                :: vvoo_in, vvoo_ou
 
 #include  "polprp_servercodes.h"
 #include  "../relccsd/symm.inc"

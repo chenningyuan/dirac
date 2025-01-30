@@ -33,9 +33,14 @@
 
   {% endif %}
 
+   {# MathJax #}
+   <script type="text/javascript" async
+     src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+   </script>
+
   {# RTD hosts this file, so just load on non RTD builds #}
   {% if not READTHEDOCS %}
-    <link rel="stylesheet" href="{{ pathto('_static/' + style, 1) }}" type="text/css" />
+    <link rel="stylesheet" href="{{ pathto('_static/' + styles[-1], 1) }}" type="text/css" />
   {% endif %}
 
   {% for cssfile in css_files %}

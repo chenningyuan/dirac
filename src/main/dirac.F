@@ -120,6 +120,7 @@ C  /* Deck dirctl */
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcbdhf.h"
 
       logical run_pamset, tobe
       integer ierr
@@ -166,6 +167,17 @@ C***********************************************************************
         write(lupri, '(//A/)') 'PCMSolver initialized.'
       end if
 #endif
+
+      if (dirac_cfg_dft_calculation .and. OPTIMI) then
+        if (nopen > 0) then
+          call quit('error in molecular gradient:' //
+     &         ' not implemented for open-shell DFT')
+        end if
+        if (nbsym > 1) then
+          call quit('error in molecular gradient:' //
+     &    ' not implemented for DFT with symmetry')
+        end if
+      end if
 C
 C
 C***********************************************************************
@@ -965,7 +977,7 @@ C
 C
 C     Set "constant" CI internal variables
 C
-      NMAX_SYM    = IKRMC_SYMMETRY
+      NMAX_SYM    = 2*NBSYM ! max double group irreps
       NCIROOT     =    1
       ISHMEM_TYPE =  - 1
       CSHMEMO     = .FALSE.
@@ -1105,7 +1117,6 @@ C
       NATONL      = .FALSE.
       FOCKON      = .FALSE.
       COMPROT     = .FALSE.
-      GENFOCK     = GENFOCK_KRCI
       NATOLCR     = NATOLCR_KRCI
       TRA_NATO    = TRANATO_KRCI
       CRDFO_MAT   = CRDFO_MAT_KRCI
@@ -1781,7 +1792,6 @@ C parallel stuff
       FOCKON      = .FALSE.
       COMPROT     = .FALSE.
 C at the moment no fock type orbitlas
-      GENFOCK     = .FALSE. !GENFOCK_KRCI
       NATOLCR     = .FALSE. !NATOLCR_KRCI
       TRA_NATO    = .FALSE. !TRANATO_KRCI
       CRDFO_MAT   = .FALSE. !CRDFO_MAT_KRCI
