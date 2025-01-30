@@ -426,15 +426,17 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                !                   lX1_tensor=Tprop_bar_tensors(B)%t2)
                call talsh_dm_driver(exa_input, &
                                  interm_t%t2,l2_tensor, &
-                                 interm_t%t1,l1_tensor, &
-                                 int_t, &
+                                 t1_tensor=interm_t%t1, &
+                                 l1_tensor=l1_tensor, &
+                                 int_t=int_t, &
                                  tX1_tensor=Tprop_tensors(B)%t1, &
                                  tX2_tensor=Tprop_tensors(B)%t2)
                call talsh_dm_set_1rdm_dump_filename('CL+'//char_omega//'_'//char_a//'_'//char_b)
                call talsh_dm_driver(exa_input, &
                                  interm_t%t2,l2_tensor, &
-                                 interm_t%t1,l1_tensor, &
-                                 int_t, &
+                                 t1_tensor=interm_t%t1, &
+                                 l1_tensor=l1_tensor, &
+                                 int_t=int_t, &
                                  lX1_tensor=Tprop_bar_tensors(B)%t1, &
                                  lX2_tensor=Tprop_bar_tensors(B)%t2)
            
@@ -452,15 +454,17 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                     call talsh_dm_set_1rdm_dump_filename('CR-'//char_omega//'_'//char_a//'_'//char_b)
                     call talsh_dm_driver(exa_input, &
                                  interm_t%t2,l2_tensor, &
-                                 interm_t%t1,l1_tensor, &
-                                 int_t, &
+                                 t1_tensor=interm_t%t1, &
+                                 l1_tensor=l1_tensor, &
+                                 int_t=int_t, &
                                  tX1_tensor=Tprop_tensors_min_w(B)%t1, &
                                  tX2_tensor=Tprop_tensors_min_w(B)%t2)
                     call talsh_dm_set_1rdm_dump_filename('CL-'//char_omega//'_'//char_a//'_'//char_b)
                     call talsh_dm_driver(exa_input, &
                                  interm_t%t2,l2_tensor, &
-                                 interm_t%t1,l1_tensor, &
-                                 int_t, &
+                                 t1_tensor=interm_t%t1, &
+                                 l1_tensor=l1_tensor, &
+                                 int_t=int_t, &
                                  lX1_tensor=Tprop_bar_tensors_min_w(B)%t1, &
                                  lX2_tensor=Tprop_bar_tensors_min_w(B)%t2)
                end if

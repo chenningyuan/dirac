@@ -142,7 +142,7 @@ module talsh_gradient
 !*****************************************
 !     calculate 1-RDM blocks in MO basis *
 !*****************************************
-      if (exa_input%do_1rdm_gs) then
+      if (exa_input%do_1rdm_gs.and..not.present(tX2_tensor).and..not.present(lX2_tensor)) then
         ! calculate ground-state density matrix
          if (.not.CCD) then
            call talsh_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
