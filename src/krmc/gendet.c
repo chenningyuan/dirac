@@ -149,7 +149,7 @@ cgendet1( unsigned long long int anStr[], integer n, integer m,
  * nMaxStr : max number of strings
  */
  
-   integer k1, k2, k3;
+   integer k1, k2;
    unsigned long long int pre;
    const unsigned long long int i8_one = 1;
 

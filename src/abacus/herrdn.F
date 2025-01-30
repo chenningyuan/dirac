@@ -299,7 +299,6 @@ C
       LOGICAL          :: HERMIT,NEWFILE,SET,FEXIST
       CHARACTER(LEN=6) :: KEYWRD
       INTEGER          :: inpfile
-
 C     JHS
       INTEGER :: i
       REAL :: time1,time2
@@ -727,6 +726,7 @@ C
      &               CLASS,TOL_SYMADD,IPREAD,.true.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
+      IF (LINEAR) WRITE(LUPRI,'(/A)') ' The molecule is linear.'
 
 C     Fix a problem with ADDSYM for some D(2) cases, also corrects for wrong user inputs (e.g. specifying X Y and XY as generators)
       CALL FIX_DUPLICATE_GENERATORS (NSYMOP,KASYM)
@@ -3599,7 +3599,6 @@ C*****************************************************************************
                      NUMCF (ISHELL) = KK
                      NUMCFT(ISHELL) = KKK
                      NBCH  (ISHELL) = KBCH
-                     SHARE (ISHELL) = .FALSE.
                      ISTBAO(ISHELL) = ISTBNU(ICENT)
                      NHKT  (ISHELL) = J
                      KHKT  (ISHELL) = NCOMP
@@ -3737,7 +3736,6 @@ C*****************************************************************************
                      NUMCF_FIT (ISHELL_FIT) = KK
                      NUMCFT_FIT(ISHELL_FIT) = KKK
                      NBCH_FIT  (ISHELL_FIT) = KBCH
-                     SHARE_FIT (ISHELL_FIT) = .FALSE.
                      ISTBAO_FIT(ISHELL_FIT) = ISTBNU(ICENT)
                      NHKT_FIT  (ISHELL_FIT) = J
                      KHKT_FIT  (ISHELL_FIT) = NCOMP
@@ -4111,8 +4109,11 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
       IF (LINEAR) THEN
-        IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) 
-     &    ATOMIC = .TRUE.
+        IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) THEN
+          IF(NONATM .eqv. .FALSE.)THEN            
+             ATOMIC = .TRUE.
+          ENDIF   
+        ENDIF   
       ENDIF
       IF (NUCDEP .GT. MXCENT) GOTO 5010
 C     
@@ -5717,7 +5718,6 @@ C
       print *, ' jstrt ',(jstrt(i),i=1,kmax)
       print *, ' nstrt ',(nstrt(i),i=1,kmax)
       print *, ' ncent ',(ncent(i),i=1,kmax)
-      print *, ' share ',(share(i),i=1,kmax)
       print *, ' nrco ',(nrco(i),i=1,kmax)
       print *, ' numcf ',(numcf(i),i=1,kmax)
       print *, ' nbch ',(nbch(i),i=1,kmax)

@@ -20,6 +20,8 @@ in each optimization iteration and at the converged geometry.
 Depending on convergence criteria for energies and gradients the values of the
 thresholds may be automatically adjusted.
 
+The Hartee-Fock method works with/without symmetry,
+but the DFT method only works without symmetry for optimization.
 
 keyword(NO SKIP)
 

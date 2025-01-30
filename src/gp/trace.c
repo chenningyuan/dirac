@@ -137,7 +137,7 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
 
 size_t findnext_internal_symbols(size_t size, char **strings)
 {
-   size_t i, j, next = 1;
+   size_t j, next = 1;
    char symbol_name[MAXSIZE_SYMBOL];
 
 //

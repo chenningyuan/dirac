@@ -16,13 +16,7 @@ if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
 
-if (CMAKE_Fortran_COMPILER_ID MATCHES XL OR CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-# xlf compiler does not support isnan used
-# pgfortran compiler does not suppore real*16
-    option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
-else()
-    option(ENABLE_STIELTJES "Enable stieltjes library" ON)
-endif()
+option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
 if(ENABLE_STIELTJES)
     add_definitions(-DHAS_STIELTJES)
 endif()
