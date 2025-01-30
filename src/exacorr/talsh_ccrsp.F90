@@ -253,7 +253,7 @@ end subroutine talsh_ccsd_lr_driver
 
 subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
 
-    use talsh_gradient, only : talsh_dm_driver
+    use talsh_gradient, only : talsh_dm_driver, talsh_dm_set_1rdm_dump_filename
 
     type(exacc_input), intent(in) :: exa_input
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
@@ -298,6 +298,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
     complex(8), pointer    ::prop_tens(:,:,:,:)
     integer            :: tens_rank
     integer :: ierr
+    character(len=1)   :: char_a, char_b, char_omega
     
     N_prop = 3 ! why this value ?
 
@@ -410,26 +411,58 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
             if (exa_input%do_1rdm_lr) then
             ! build/save density matrices here ?
             !
-               call print_date('Saving density matrix for operator B(+w)')
+               call print_date('Saving perturbed density matrices for operator B(+w)')
+               write (char_a,'(I1)'), i
+               write (char_b,'(I1)'), j
+               write (char_omega,'(I1)'), n
+               call talsh_dm_set_1rdm_dump_filename('CR+'//char_omega//'_'//char_a//'_'//char_b)
+               ! call talsh_dm_driver(exa_input, &
+               !                   interm_t%t2,l2_tensor, &
+               !                   interm_t%t1,l1_tensor, &
+               !                   int_t, &
+               !                   tX1_tensor=Tprop_tensors(B)%t1, &
+               !                   lX1_tensor=Tprop_bar_tensors(B)%t1, &
+               !                   tX1_tensor=Tprop_tensors(B)%t2, &
+               !                   lX1_tensor=Tprop_bar_tensors(B)%t2)
                call talsh_dm_driver(exa_input, &
                                  interm_t%t2,l2_tensor, &
                                  interm_t%t1,l1_tensor, &
                                  int_t, &
-                                 Tprop_tensors(B)%t1, &
-                                 Tprop_bar_tensors(B)%t1, &
-                                 Tprop_tensors(B)%t2, &
-                                 Tprop_bar_tensors(B)%t2)
-            
-                if (omega(B).ne.ZERO) then
-                   call print_date('Saving density matrix for operator B(-w)')
-                   call talsh_dm_driver(exa_input, &
+                                 tX1_tensor=Tprop_tensors(B)%t1, &
+                                 tX2_tensor=Tprop_tensors(B)%t2)
+               call talsh_dm_set_1rdm_dump_filename('CL+'//char_omega//'_'//char_a//'_'//char_b)
+               call talsh_dm_driver(exa_input, &
                                  interm_t%t2,l2_tensor, &
                                  interm_t%t1,l1_tensor, &
                                  int_t, &
-                                 Tprop_tensors_min_w(B)%t1, &
-                                 Tprop_bar_tensors_min_w(B)%t1, &
-                                 Tprop_tensors_min_w(B)%t2, &
-                                 Tprop_bar_tensors_min_w(B)%t2)
+                                 lX1_tensor=Tprop_bar_tensors(B)%t1, &
+                                 lX2_tensor=Tprop_bar_tensors(B)%t2)
+           
+                if (omega(B).ne.ZERO) then
+                    call print_date('Saving perturbed density matrices for operator B(-w)')
+                    ! call talsh_dm_set_1rdm_dump_filename('cc-'//char_omega//'_'//char_a//'_'//char_b)
+                    ! call talsh_dm_driver(exa_input, &
+                    !              interm_t%t2,l2_tensor, &
+                    !              interm_t%t1,l1_tensor, &
+                    !              int_t, &
+                    !              tX1_tensor=Tprop_tensors_min_w(B)%t1, &
+                    !              lX1_tensor=Tprop_bar_tensors_min_w(B)%t1, &
+                    !              tX2_tensor=Tprop_tensors_min_w(B)%t2, &
+                    !              lX2_tensor=Tprop_bar_tensors_min_w(B)%t2)
+                    call talsh_dm_set_1rdm_dump_filename('CR-'//char_omega//'_'//char_a//'_'//char_b)
+                    call talsh_dm_driver(exa_input, &
+                                 interm_t%t2,l2_tensor, &
+                                 interm_t%t1,l1_tensor, &
+                                 int_t, &
+                                 tX1_tensor=Tprop_tensors_min_w(B)%t1, &
+                                 tX2_tensor=Tprop_tensors_min_w(B)%t2)
+                    call talsh_dm_set_1rdm_dump_filename('CL-'//char_omega//'_'//char_a//'_'//char_b)
+                    call talsh_dm_driver(exa_input, &
+                                 interm_t%t2,l2_tensor, &
+                                 interm_t%t1,l1_tensor, &
+                                 int_t, &
+                                 lX1_tensor=Tprop_bar_tensors_min_w(B)%t1, &
+                                 lX2_tensor=Tprop_bar_tensors_min_w(B)%t2)
                end if
             end if
 

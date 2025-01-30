@@ -1199,6 +1199,7 @@
       end if
 
       if (kw_matches(word, '.LR1RDM')) then
+         exa_input%lambda = .true.
          exa_input%do_1rdm_lr = .true.
       end if
 

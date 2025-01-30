@@ -31,6 +31,12 @@ module talsh_gradient
   public talsh_dm_store_mo
   public talsh_kudm_store_mo
 
+  public talsh_dm_set_1rdm_dump_filename
+
+  integer, parameter ::  talsh_dm_dump_filename_len = 8 
+  character(len=talsh_dm_dump_filename_len), save :: talsh_dm_1rdm_dump_filename = "CCSD1RDM"
+  character(len=talsh_dm_dump_filename_len), save :: talsh_dm_2rdm_dump_filename = "CCSD2RDM"
+
   contains
 
     subroutine talsh_dm_energy_from_1rdm_2rdm(recalculated_energy,exa_input,gamma,int_t)
@@ -137,6 +143,7 @@ module talsh_gradient
 !     calculate 1-RDM blocks in MO basis *
 !*****************************************
       if (exa_input%do_1rdm_gs) then
+        ! calculate ground-state density matrix
          if (.not.CCD) then
            call talsh_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
                 exa_input%print_level,t1_tensor,l1_tensor)
@@ -146,13 +153,54 @@ module talsh_gradient
          end if
          call print_date("Calculated 1-RDM density matrices in MO basis")
       else if (exa_input%do_1rdm_lr) then
+         ! calculate excited state or perturbed densiry matrices.
+         ! use the 1RDM formula for EOM-EE, or the GS formula with perturbed L or R amplitudes
          if (.not.CCD) then
+            if (     present(tX1_tensor) &
+                .and.present(tX2_tensor) &
+                .and.present(lX1_tensor) &
+                .and.present(lX2_tensor) ) then
            call talsh_calc_dm_1rdm_ccsd_LR_mo(gamma,t2_tensor,l2_tensor,tX2_tensor,lX2_tensor,exa_input%nocc,&
                 exa_input%nvir,exa_input%print_level,t1_tensor,l1_tensor,tX1_tensor,lX1_tensor)
+!               call talsh_calc_dm_1rdm_ccsd_LR_mo(gamma,t2_tensor,l2_tensor, &
+!                                              tX2_tensor,lX2_tensor, &
+!                                              exa_input%nocc, exa_input%nvir, &
+!                                              exa_input%print_level, &
+!                                              t1_tensor,l1_tensor, &
+!                                              tX1_tensor,lX1_tensor)
+               call print_date("Calculated EE (LR) 1-RDM density matrices in MO basis")
+
+             else if (    present(tX1_tensor)      &
+                     .and.present(tX2_tensor)      &
+                     .and..not.present(lX1_tensor) &
+                     .and..not.present(lX2_tensor) ) then
+            ! perturbed density matrix as defined in eq. 43 of F. F. Summa et al., JCTC 2023, 19. 7242
+            ! DOI: 10.1021/acs.jctc.3c00753
+               call talsh_calc_dm_1rdm_ccsd_GS_mo(gamma, tX2_tensor,l2_tensor, &
+                                                  exa_input%nocc,exa_input%nvir,&
+                                                  exa_input%print_level, &
+                                                  tX1_tensor,l1_tensor)
+               call print_date("Calculated RHS perturbed 1-RDM density matrices in MO basis")
+
+            else if (     present(lX1_tensor)      &
+                     .and.present(lX2_tensor)      &
+                     .and..not.present(tX1_tensor) &
+                     .and..not.present(tX2_tensor) ) then
+            ! perturbed density matrix as defined in eq. 44 of F. F. Summa et al., JCTC 2023, 19. 7242
+            ! DOI: 10.1021/acs.jctc.3c00753
+               call talsh_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor,lX2_tensor, &
+                                                  exa_input%nocc,exa_input%nvir,&
+                                                  exa_input%print_level, &
+                                                  t1_tensor,lX1_tensor)
+               call print_date("Calculated LHS perturbed 1-RDM density matrices in MO basis")
+
+            else
+                stop "Option for excited/perturbed 1-RDM not implemented"
+            end if 
          else
-           stop "CCD response 1rdm not implemented"
+           stop "CCD excited/perturbed 1rdm not implemented"
          end if
-         call print_date("Calculated perturbed (LR) 1-RDM density matrices in MO basis")
+         
       end if
 
 !*****************************************
@@ -192,7 +240,7 @@ module talsh_gradient
 !     error code
       integer(INTD) :: ierr
 
-      if (exa_input%do_1rdm_gs) then
+      if (exa_input%do_1rdm_gs.or.exa_input%do_1rdm_lr) then
          ierr=talsh_tensor_destruct(dmat%prime_oo)
          if (.not.exa_input%ccd) then
            ierr=talsh_tensor_destruct(dmat%prime_ov)
@@ -268,7 +316,7 @@ module talsh_gradient
 !     construct gamma prime and symm tensors *
 !*********************************************
 
-       if (exa_input%do_1rdm_gs) then
+       if (exa_input%do_1rdm_gs.or.exa_input%do_1rdm_lr) then
           oo_dims = nocc
           ierr=talsh_tensor_construct(dmat%prime_oo,C8,oo_dims,init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%symm_oo,C8,oo_dims,init_val=ZERO)
@@ -391,8 +439,10 @@ module talsh_gradient
 ! form MO basis density matrix, then AO basis density matrix, and finally save AO basis density matrix to file
       call talsh_dm_1rdm_form_mo_fort_from_tensors(dm_1rdm_mo_fort, gamma, nocc, nvir, CCD)
       call talsh_dm_1rdm_form_ao_diracformat_from_dm_mo(dm_1rdm_diracformat, dm_1rdm_mo_fort, mo_list, norbt)
-      call store_cc_density (wavefun, dm_1rdm_diracformat, nesh, 4)
-      call dump_dm_1rdm_to_file_as_binary(4241,"CCSD1RDM",dm_1rdm_mo_fort)
+      if (exa_input%do_1rdm_gs.and..not.exa_input%do_1rdm_lr) then ! will only use store_cc_density for the groupd state
+         call store_cc_density (wavefun, dm_1rdm_diracformat, nesh, 4)
+      end if
+      call dump_dm_1rdm_to_file_as_binary(4241,talsh_dm_1rdm_dump_filename,dm_1rdm_mo_fort)
 
       deallocate (dm_1rdm_diracformat)
       deallocate (dm_1rdm_mo_fort)
@@ -408,7 +458,7 @@ module talsh_gradient
 ! aspg: while we do noy yet have a definitive writing to AO basis, we dump the MO basis 2RDM to file using 
 !       either a FCDUMP-style format (p q r s Re(Gamma(p,q,r,s) Im(Gamma(p,q,r,s)) or put the whole matrix
 !       in a single record and write that to file in binary format 
-         call dump_dm_2rdm_to_file_as_binary(4242,"CCSD2RDM",dm_2rdm_mo_fort)
+         call dump_dm_2rdm_to_file_as_binary(4242,talsh_dm_2rdm_dump_filename,dm_2rdm_mo_fort)
       end if
 
       deallocate (mo_list)
@@ -773,5 +823,19 @@ module talsh_gradient
         print *,' Wrote 2RDM(o+v,o+v,o+v,o+v) (MO) to binary file ',filename
         print *,''
     end subroutine
+
+    subroutine talsh_dm_set_1rdm_dump_filename(filename)
+        character(len=*), intent(in) :: filename
+        integer :: i
+
+        i = len(filename)
+        if (i .eq. talsh_dm_dump_filename_len) then
+           talsh_dm_1rdm_dump_filename = filename 
+        else if (i .lt. talsh_dm_dump_filename_len) then
+           talsh_dm_1rdm_dump_filename = filename(1:talsh_dm_dump_filename_len)
+        else
+           stop 'incorrect length'
+        endif 
+    end subroutine 
 
 end module talsh_gradient
