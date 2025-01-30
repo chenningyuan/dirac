@@ -1249,7 +1249,7 @@ C
 C     Written by Miro ILIAS/Strasbourg, March 2006
 C
 C*****************************************************************************
-      use x2c_fio
+!     use x2c_fio
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
@@ -2095,7 +2095,7 @@ C*****************************************************************************
       use dirx2c
       use x2c_pct_ao, only:
      &    pctrafo_all_op_driver
-      use x2c_fio
+!     use x2c_fio
       use x2c_utils, only:
      &    write_fock_matrices_saao_basis_x2c,
      &    read_fock_matrices_saao_basis_x2c
@@ -4506,8 +4506,7 @@ C
 C    Last modifications: March 2006/MI,Strasbourg
 C
 C*****************************************************************************
-      use x2c_fio, only:
-     &    x2c_read
+!     use x2c_fio, only: x2c_read
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
