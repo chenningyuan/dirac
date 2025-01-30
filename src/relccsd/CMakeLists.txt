@@ -23,7 +23,6 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    ccgetv.F
    ccintm.F
    ccints.F
-   ccmain.F
    ccpam.F
    ccrpa.F
    ccxblas.F

@@ -10,7 +10,6 @@ endif()
 
 set(FIXED_DIRAC_FORTRAN_SOURCES
    atom2molecule_utils.F
-   dftaux.F
    dirana.F
    diraos.F
    dirbss.F

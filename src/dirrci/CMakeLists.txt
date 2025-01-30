@@ -12,7 +12,6 @@ set(FIXED_DIRRCI_FORTRAN_SOURCES
    cidirr.F
    cigenp.F
    cigosc.F
-   cimain.F
 )
 
 set(FREE_DIRRCI_FORTRAN_SOURCES
