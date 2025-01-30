@@ -39,5 +39,4 @@ add_library(
 if (ENABLE_INTEREST)
     add_dependencies(x-amfi interest)
 endif()
-add_dependencies(x-amfi x2c)
 add_dependencies(x-amfi grid)

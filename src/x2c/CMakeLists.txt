@@ -30,23 +30,6 @@ set(FREE_X2C_FORTRAN_SOURCES
     x2c_utility_routines.F90
 )
 
-
-if (ENABLE_XAMFI)
-# X2C depends on some XAMFI files and vice versa
-    set(FREE_X2C_FORTRAN_SOURCES
-        ${FREE_X2C_FORTRAN_SOURCES}
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_global_parameters.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_driver.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_utils.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_internal_parameters.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_environment.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/x_fock.F90
-	    ${PROJECT_SOURCE_DIR}/src/x-amfi/amfDataStorage.F90
-        ${PROJECT_SOURCE_DIR}/src/x-amfi/amfH5Interface.F90
-
-    )
-endif()
-
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_X2C_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_X2C_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
@@ -70,3 +53,4 @@ add_dependencies(x2c gp)
 add_dependencies(x2c grid)
 add_dependencies(x2c interest)
 add_dependencies(x2c abacus)
+add_dependencies(x2c x-amfi)
