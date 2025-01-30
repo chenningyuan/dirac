@@ -15,11 +15,7 @@
 !dirac_copyright_end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GTDOAV(mat_dim,
-     &                  nz,
-     &                  nr_dmat,
-     &                  dmat,
-     &                  ifac)
+      SUBROUTINE emb_GTDOAV(mat_dim, nz, nr_dmat, dmat)
 !***********************************************************************
 !
 !     Get average density from open shells; only real part !
@@ -29,13 +25,12 @@
       implicit none
 #include"dcbdhf.h"
       integer :: mat_dim, nz, nr_dmat
-      integer :: ifac, ishell
       real(8) :: DMAT(mat_dim, mat_dim, nz, nr_dmat)
-      real(8) :: fac
+      integer :: ishell
+      ! if fractional occupation (NOPEN>0, but not AOC), then DMAT is already total DMAT
       IF(AOC) THEN
         DO ISHELL = 1, NOPEN
-          FAC = IFAC*DF(ISHELL)
-          CALL DAXPY(mat_dim*mat_dim,FAC,
+          CALL DAXPY(mat_dim*mat_dim,DF(ISHELL),
      &        DMAT(1,1,1,ISHELL+1),1,DMAT,1)
         ENDDO
       ENDIF
