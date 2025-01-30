@@ -25,11 +25,11 @@ foreach(_lang C CXX)
     endif()
 endforeach()
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-    # remove -rdynamic flag offensive for PGI Fortran in static linking
+if(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
+    # remove -rdynamic flag offensive for NVHPC Fortran in static linking
     if (CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS)
         list(REMOVE_ITEM CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS "-rdynamic")
-        message(STATUS "pgf90 flag -rdynamic fremoved from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS")
+        message(STATUS "pgf90 flag -rdynamic removed from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS")
     endif()
 endif()
 

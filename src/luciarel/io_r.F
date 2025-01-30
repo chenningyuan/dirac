@@ -407,10 +407,11 @@ C
           SYMFLABEL = XSYMFLAB(IREFSM)
 C         WRITE(6,*) ' SYMFLABEL is now ',SYMFLABEL
         ELSE 
-          WRITE(LUWRT,*) '  *** Error in DISKUN_REL *** assignment of'//
+          WRITE(LUOUT,*) '  *** Error in DISKUN_REL *** assignment of'//
      &                   ' symmetry label to KRCI_CVECS file failed'   
-          CALL QUIT("*** Error in DISKUN_REL *** assignment of 
-     &              symmetry label to KRCI_CVECS file failed ")
+          WRITE(LUOUT,*) 'IREFSM > NMAX_SYM_CI :',IREFSM,NMAX_SYM_CI
+          CALL QUIT('*** Error in DISKUN_REL *** assignment of '//
+     &              'symmetry label to KRCI_CVECS file failed')
         END IF
         IF( .not. RUNXPROP )THEN
            WRITE (NLUC_MPI,'(A10,A1,A3)') LUC_MPIN,'.',SYMFLABEL

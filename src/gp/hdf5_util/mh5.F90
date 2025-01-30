@@ -1604,4 +1604,9 @@ subroutine mh5_fetch_dset_array_real_3d(lu,dsetname,buffer,exts,offs)
   call mh5_close_dset(dsetid)
 end subroutine mh5_fetch_dset_array_real_3d
 
+subroutine abend
+   implicit none
+   error stop 'error in hdf5 I/O'
+end subroutine abend
+
 end module mh5

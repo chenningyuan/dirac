@@ -238,7 +238,7 @@ With this setup the calculations on the test system gave the following results:
     v+w11+w12, ALL terms                 2370.2536
     ===================================  =========
 
-Here the two results are the same within 0.0001 ppm accuracy, as the contributions from the Coulomb embedding contribution to the perturbed Fock matrix are very small (can be printed in the output with the print level set at least to 5 under ``**PROPERTIES`` section).
+Here the two results are the same within 0.0001 ppm accuracy, as the contributions from the Coulomb embedding contribution to the perturbed Fock matrix are very small (can be printed in the output with the print level set at least to 5 under :ref:`**PROPERTIES` section).
 
 
 

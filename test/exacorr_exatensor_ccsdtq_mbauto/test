@@ -16,7 +16,7 @@ f.add(from_string = 'Electronic energy',
       num_lines   = 8,
       rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Eigenvalues',
-      num_lines   = 32,
+      to_string = ' gap ',
       rel_tolerance   = 1.0e-5)
 
 #test.run(['ccsdtq_nr_contracted_energy_small.inp', 'ccsdtq_x2c_energy_small.inp'], ['h2o.xyz'], f)

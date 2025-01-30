@@ -1,25 +1,108 @@
 :orphan:
 
-24.0
-----
+25.alpha
+--------
+
+New features:
+
+- Basis set library has been extended with "relativistic prolapse-free Gaussian basis sets" RPF-2Z, RPF-3Z, aug-RPF-2Z, and aug-RPF-3Z.
+   - Contributor: H. J. Aa. Jensen.
+   - Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke, Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z. J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
+
+ - DIRAC calculator for the Atomistic Simulation Environment (ASE) is available.
+   - Contributors: Carlos M. R. Rocha, Lucas Visscher
+   - Reference (DIRAC calculator): https://qc2.readthedocs.io
+   - Reference (ASE): https://wiki.fysik.dtu.dk/ase/
 
 Infrastructure changes and fixes:
 
-- Minor changes in the DIRAC data schema
-   - Matrix representations of non-default property integrals moved to a separate file to save file space.
-   - Original input is preserved in the CHECKPOINT file.
-   - Symmetry information added.
+- Changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025.
+   - Contributor: H. J. Aa. Jensen.
+- Made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers).
+   - Contributor: H. J. Aa. Jensen.
+- Include support in ExaCorr for NVHPC, and added hints for compilation with OneAPI and NVHPC, and a way to control via environment variable CUDA_SM_ARCH which NVIDIA GPU architeture to compile for.  Please note that calculations beyond iterative triples (e.g. CCSDTQ) are not supported with NVHPC.
+   - Contributor: A. Gomes
+- Quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI).
+   - Contributor: H. J. Aa. Jensen.
 
-- Improved use of the no symmetry (C1) case
-   - Easier restart as C1 version of coefficients are now stored on CHECKPOINT.
-   - Possibility to run SCF with symmetry and ExaCorr without symmetry in the same job.
-   
+Basis set library:
+
+- Transferred fixes of Dalton basis sets from Dalton (Contributor: H. J. Aa. Jensen):
+   - Corrected some references in correlation consistent basis sets (as e.g. aug-cc-pVTZ)
+   - Fixed Scandium in aug-cc-pVTZ-J (two lines missing, would have given error if used)
+- Added special basis sets for spin-spin coupling and hyperfine coupling from Frank Jensen group (Aarhus University)
+   - pcJ, ccJ and pcH sets
+   - Copied from Dalton basis set directory
+   - Contributor: H. J. Aa. Jensen.
 
 Bugfix:
 
+- Fix of symmetry problem for KRMCSCF with LUCIAREL and odd number of electrons.
+   - Contributor: H. J. Aa. Jensen.
+- Set the correct sign of CC linear and quadratic response functions in the case of more than one time-antisymmetric perturbation operator
+   - Contributor: A. Gomes
+
+New default:
+
+- The CODATA2022 set of physical constants is now used as default (taken from http://physics.nist.gov/constants on June 4, 2024).
+   - Contributor: I. A. Aucar.
+- Tenpi-generated code is now the default choice for automatically generated T equation codes. 
+   - Contributor: A. Gomes
+
+
+-----------------------------------------------------------------------------------------------------
+
+24.0
+----
+
+New features:
+
+New functionality with ExaCorr:
+   - Calculation of linear response properties with CCSD wavefunctions.
+   - Contributors: Xiang Yuan,  Loic Halbert, Johann Pototschnig, Anastasios Papadopoulos, Lucas Visscher and Andre Gomes.
+   - Reference: Xiang Yuan, Loic Halbert, Johann Valentin Pototschnig, Anastasios Papadopoulos, Sonia Coriani, Lucas Visscher, and Andre Severo Pereira Gomes, Formulation and Implementation of Frequency-Dependent Linear Response Properties with Relativistic Coupled Cluster Theory for GPU-Accelerated Computer Architectures, J. Chem. Theory Comput. 20, 677 (2024) https://doi.org/10.1021/acs.jctc.3c00812
+   - Manual: CCCILR https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#cccilr
+   - Tutorial: not yet available; please have a look at examples in the testset.
+   - Calculation of quadratic response properties CCSD wavefunctions. 
+   - Contributors: Xiang Yuan,  Loic Halbert, Lucas Visscher and Andre Gomes.
+   - Reference: Xiang Yuan, Loic Halbert, Lucas Visscher, and Andre Severo Pereira Gomes, Frequency-Dependent Quadratic Response Properties and Two-Photon Absorption from Relativistic Equation-of-Motion Coupled Cluster Theory, J. Chem. Theory Comput. 19, 9248 (2023) https://doi.org/10.1021/acs.jctc.3c01011
+   - Manual: CCCIQR https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#ccciqr
+   - Tutorial: not yet available; please have a look at examples in the testset.      
+   - Calculation of energies with equation of motion coupled cluster for excitation (EOM-EE-CCSD), ionization  (EOM-IP-CCSD), and electron affinity (EOM-EA-CCSD) models.
+   - Contributors: Xiang Yuan,  Loic Halbert, Lucas Visscher and Andre Gomes.
+   - Reference: Xiang Yuan, PhD thesis (2024), https://doi.org/10.5463/thesis.505
+   - Manual: EXEOM https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#exeom  see also https://www.diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#id10
+   - Tutorial: not yet available; please have a look at examples in the testset.
+   - Two-body reduced density matrix for CCSD ground-state wavefunctions.
+   - Contributors: Loic Halbert, Andre Gomes
+   - Manual: GS2RDM https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#gs2rdm
+   - Tutorial: not yet available; please have a look at examples in the testset.
+
+Revised features:
+
+- Restart from density matrices of CC for first-order properties. 
+   - Contributors: Trond Saue, Andre Gomes
+   - Manual: RDCCDM https://diracprogram.org/doc/release-24/manual/properties.html#rdccdm
+- Update of DIRAC schema which defines the information stored on CHECKPOINT.h5.
+   - Essential symmetry information added.
+   - MO coefficients for C<sub>1</sub> symmetry optionally stored for restarts without use of symmetry.
+   - Occupation of spinors in SCF added. 
+   - Non-default property integrals stored on separate file to reduce the size of the checkpoint file.
+   - Original input is preserved in the CHECKPOINT file.
+   - Contributors: Lucas Visscher, Trond Saue
+
+Improvements:
+
+- Support for AMD GPUs with ExaCorr (TAL-SH, work in progress to enable distributed calculations with ExaTensor), in addition to the NVIDIA GPU support (TAL-SH and ExaTensor).
+   - Contributors: Johann Pototschnig, Jan Brandejs and Andre Gomes.
+   - For further information on ExaTensor and TAL-SH as used in DIRAC, see https://github.com/RelMBdev/ExaTENSOR/tree/dirac
+   - Note : ROCM versions 5.7+ should be used. Earlier ROCM versions may result in code that compiles but may show runtime errors (e.g. HSA_STATUS_ERROR_MEMORY_APERTURE_VIOLATION, or values different than reference ones in the tests). A potential workaround for earlier versions is to reduce hipcc optimization level to -O1.
+
+Bugfixes:
+
 - Fixed orbital analysis with .VECPRI for X2C, issue #79 (H. J. Aa. Jensen)
 - Fixed Fock-space coupled cluster calculations with finite fields.
-  The values obtained with the versions that range between v21.0 and v23.0 are incorrect (Agustín Aucar).
+
 
 -----------------------------------------------------------------------------------------------------
 
@@ -73,6 +156,10 @@ Performance improvements:
    - convergence algorithm has also been changed, with considerable improvement in convergence rate.
      In particular, the truncation of the reduced space in the Davidson iterations is now done
      in a much better way, leading to the improvement in convergence rate. Both for real and complex parallel cases.
+
+New defaults:
+
+- Default of MOLTRA changed from scheme 6 to scheme 4 (A. Sunaga).
 
 Bugfix:
 

@@ -4169,7 +4169,7 @@ C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in SY_COSCI')
 
-! .. definitions to satisfy ifort runtime check
+! .. definitions to satisfy runtime check
       TRANOP = .false.
       SCRBUF = 0.0D0
       THRBUF = 0.0D0

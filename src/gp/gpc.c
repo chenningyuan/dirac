@@ -184,15 +184,6 @@ int icommsize_(const fortran_int_t *istart, const fortran_int_t *iend)
   return iend-istart+1;
 }
 
-
-/* Try to cause a segmentation fault, to enable debuggers to
-   trap this and inspect the program.
-*/
-void crash_(void)
-{
-  *(int *)0 = 0;
-}
-
 /*
  Often  we need to detect "ill" real numbers - NaN, +Inf, -Inf.
  For that we use C <math.h> functions isnan(x), isinf(x).

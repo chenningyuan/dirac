@@ -89,6 +89,8 @@ Evaluate the electronic electric dipole moment
 
 Expectation values: :math:`\langle\hat{\mu}_\alpha\rangle=-e\langle r_\alpha\rangle`
 
+*Note:* for charged molecules the total electric dipole moment will depend on the gauge origin. It is possible to set the nuclei charge barycenter as the gauge origin so that the computed (total) dipole magnitude is representative for the electronic system as the nuclei electric dipole moment is constrained to vanish. Check for USEBC under :ref:`*NMR`.
+
 keyword(QUADRUPOLE)
 
 Evaluate the electronic traceless electric quadrupole moment
@@ -418,7 +420,7 @@ where appears the nuclear spin-dependent parity-violating operator
 
    \hat{h}^\text{PV2}_K = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}\,c}\sum_{i}\frac{1}{\hslash \gamma_K}c\boldsymbol{\alpha}\cdot\mathbf{m}_K\rho_K(\mathbf{r}_i)
 
-where appears the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2018, but it can change if you use other CODATA set),
+where appears the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2022, but it can change if you use other CODATA set),
 the gyromagnetic ratio :math:`\gamma_K`, the nuclear magnetic dipole moment :math:`\mathbf{m}_K=\gamma_K\mathbf{I}_K` and the normalized nuclear charge density :math:`\rho_K`.
 
 The relativistic Zeeman operator
@@ -452,7 +454,7 @@ where appears the nuclear spin-dependent parity-violating operator
 
    \hat{h}^{PV2}_{K} = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}\,c}\sum_{i}\frac{1}{\hslash}c\boldsymbol{\alpha}\cdot\mathbf{I}_K\rho_K(\mathbf{r}_i)
 
-expressed in terms of the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2018, but it can change if you use other CODATA set),
+expressed in terms of the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2022, but it can change if you use other CODATA set),
 the nuclear spin :math:`\mathbf{I}_K` and the normalized nuclear charge density :math:`\rho_K` (in units of the inverse of cube distances),
 and the first order correction to the Born-Oppenheimer (BO) approximation
 
