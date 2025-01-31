@@ -57,10 +57,6 @@
 #include "infpar.h"
 #endif
 
-/* C-wide constants */
-const int  ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;
-const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
-
 /* =================================================================== */
 /* dftinput:
 
@@ -611,13 +607,13 @@ dalton_quit(const char* format, ...)
 }
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */
-extern void fortwrt_(const char *line, const integer* linelen, integer ln);
-integer
+extern void fortwrt_(const char *line, const int* linelen, int ln);
+int
 fort_print(const char* format, ...)
 {
     char line[128];
-    integer len;
-    integer l;
+    int len;
+    int l;
     va_list a;
 
     va_start(a, format);
