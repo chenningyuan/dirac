@@ -51,7 +51,7 @@ endif()
 
 add_library(
    fde
-   OBJECT
+   STATIC
    ${FIXED_FDE_FORTRAN_SOURCES}
    ${FREE_FDE_FORTRAN_SOURCES}
    ${FREE_FDE_FORTRAN_SOURCES_noruntimecheck}

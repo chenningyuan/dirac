@@ -36,7 +36,5 @@ add_library(
 #
 # deal with intedependencies
 #
-if (ENABLE_INTEREST)
-    add_dependencies(x-amfi interest)
-endif()
-add_dependencies(x-amfi grid)
+add_dependencies(x-amfi grid)   # module num_grid
+add_dependencies(x-amfi abacus) # module aobasis_container

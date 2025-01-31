@@ -40,7 +40,7 @@ endif()
 
 add_library(
     laplace
-    OBJECT
+    STATIC
     ${FREE_F95_LAPLACE_FORTRAN_SOURCES}
     ${FREE_F03_LAPLACE_FORTRAN_SOURCES}
     )

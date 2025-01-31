@@ -127,7 +127,7 @@ endif()
 if(ENABLE_HDF5)
   add_library(
     gp
-    OBJECT
+    STATIC
     ${FIXED_GP_FORTRAN_SOURCES}
     ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_GP_FORTRAN_SOURCES}
@@ -138,7 +138,7 @@ if(ENABLE_HDF5)
 else()
   add_library(
     gp
-    OBJECT
+    STATIC
     ${FIXED_GP_FORTRAN_SOURCES}
     ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_GP_FORTRAN_SOURCES}

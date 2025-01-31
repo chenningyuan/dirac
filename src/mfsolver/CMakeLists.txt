@@ -9,7 +9,7 @@ set(FREE_EXACORR_FORTRAN_SOURCES
 
 add_library(
   mfsolver
-  OBJECT
+  STATIC
   ${FREE_EXACORR_FORTRAN_SOURCES}
 )
 

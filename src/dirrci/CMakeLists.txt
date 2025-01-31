@@ -31,7 +31,7 @@ endif()
 # Create the module library
 add_library(
     dirrci 
-    OBJECT
+    STATIC
     ${FIXED_DIRRCI_FORTRAN_SOURCES}
     ${FREE_DIRRCI_FORTRAN_SOURCES}
 )
