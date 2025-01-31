@@ -29,7 +29,7 @@ if(ENABLE_EXATENSOR)
 
    # check if standard tensor interface TAPP present 
    if (DEFINED ENV{TAPP_ROOT})
-     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} $ENV{TAPP_ROOT}/lib/tapp.so)
+     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} $ENV{TAPP_ROOT}/lib/libtapp.so)
    else()
      message(STATUS "WARNING: TAPP_ROOT not specified. Will attempt to compile without TAPP standard tensor interface.") 
    endif()

@@ -57,6 +57,7 @@ module tapp_top
     type(C_PTR):: A_, B_, C_, D_
     complex(c_double_complex), target :: alpha_, beta_
     complex(c_double), target :: alpha_r, beta_r
+    integer(c_int), target  :: executor_id ! 1 = bruteforce, 2 = tblis, 12 = tblis + bruteforce check
     type(C_PTR):: alpha_ptr, beta_ptr
     
     ! TAPP_create_tensor_info
@@ -183,13 +184,15 @@ module tapp_top
         beta_ptr = c_loc(beta_) 
     endif
     
-    exec = c_null_ptr ! executor library, in case TAPP works with multiple executors at the same time
+    executor_id = 2 ! 1 = bruteforce, 2 = tblis, 12 = tblis + bruteforce check
+    exec = c_loc(executor_id)
 
     ! execute the contraction plan
     tapp_err = TAPP_execute_product(plan, exec, status, alpha_ptr, A_, B_, beta_ptr, C_, D_) ! diff between plan par here and elsewhere?
 
     if (tapp_err.ne.0) then
       write(*,'("  Error. TAPP tensor product failed with error code: ",i11,".")') tapp_err
+      call quit(" failed product")
       stop 42
     end if
 
@@ -229,6 +232,7 @@ module tapp_top
     COMPLEX(c_double_complex), target :: alpha, beta
     type(C_PTR) :: alpha_ptr, beta_ptr 
     ! COMPLEX(c_double_complex), allocatable, target :: arr_A(:), arr_B(:), arr_C(:), arr_D(:)
+    integer(c_int), target  :: executor_id ! 1 = bruteforce, 2 = tblis, 12 = tblis + bruteforce check
     type(C_PTR):: A, B, C, D
 
     ! TAPP_get_nmodes
@@ -347,7 +351,9 @@ module tapp_top
       stop 41
     end if
     
-    exec = c_null_ptr
+    executor_id = 12 ! 1 = bruteforce, 2 = tblis, 12 = tblis + bruteforce check
+    exec = c_loc(executor_id)
+
     alpha = 1.0
     if (present(scale)) then
       alpha = scale

@@ -13,7 +13,7 @@ subroutine tapp_tenpi_ccsd(nocc,nvir,F2_,F1_,F4_,F3_,T2_, &
     
     implicit none
     
-    integer, parameter :: executor = 1
+    integer, parameter :: executor= 1
     
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
                              MINUS_ONE=(-1.D0,0.D0),ONE=(1.0D0,0.D0), MINUS_ONE_HALF=(-0.5D0,0.D0), &
