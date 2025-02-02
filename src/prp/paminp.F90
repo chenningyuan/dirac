@@ -1609,7 +1609,7 @@
 !        Operator types: SIGMA, SIGMADOT
 !
     5    PCOMB = '+00+'
-         IF (LEVYLE) PCOMB = '+000'
+         IF (LEVYLE.OR.(ZORA.AND..NOT.ZORA4)) PCOMB = '+000'
          GO TO 100
 !
   100    CONTINUE
