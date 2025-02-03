@@ -192,7 +192,7 @@ An SCF-calculation (HF or DFT) may be initiated in seven different ways:
 -  Using an **atomic start** based on densities from atomic SCF runs for the individual centers, see e.g. :cite:`vanLenthe2006`.
 -  Using an **extended Hückel start** based on *atomic fragments*.
 
-The default is to start from MO coefficients if the file DFCOEF is present. Otherwise the corrected bare nucleus approach (:ref:`SCF_.SCRPOT`) is followed.
+The default is to start from MO coefficients if the CHECKPOINT file is present. Otherwise the corrected bare nucleus approach (:ref:`SCF_.SCRPOT`) is followed.
 In all cases linear dependencies are removed in the zeroth iteration.
 
 keyword(ATOMST)
@@ -306,7 +306,7 @@ This keyword collects most start guess possibilities. It is followed by a second
     .MOSTART
     BNCORR
 
-- Start SCF-iterations from the vector file DFCOEF::
+- Start SCF-iterations from the MO coefficients on the CHECKPOINT file::
 
     .MOSTART
     TRIVEC
