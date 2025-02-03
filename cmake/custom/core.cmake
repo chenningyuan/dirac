@@ -110,7 +110,9 @@ foreach(
         SET_TARGET_PROPERTIES(${_executable} PROPERTIES LINK_FLAGS "-Wl,-E")
     endif()
 
-    target_link_libraries( ${_executable} diracobj qcorr laplace ${EXTERNAL_LIBS} )
+    target_link_libraries( ${_executable} diracobj ${EXTERNAL_LIBS} laplace laplace-minimax qcorr )
+    # laplace and qcorr libraries must be after diracobj and laplace-minimax must be after laplace
+    # (because search in libraries is not recursive, the order matters). /hjaaj Feb 2025
 
     if(HDF5_FOUND)
         target_link_libraries(${_executable} HDF5::HDF5)

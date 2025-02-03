@@ -97,5 +97,6 @@ if(ENABLE_EXATENSOR)
   add_dependencies(exacorr  dirac_main)
   add_dependencies(exacorr  exatensor)
   add_dependencies(exacorr  interest)
+  add_dependencies(exacorr  laplace) # uses module type_laplace
 #  add_dependencies(exacorr  mfsolver)
 endif()

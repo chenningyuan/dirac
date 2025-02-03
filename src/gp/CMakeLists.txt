@@ -81,7 +81,6 @@ set(FREE_GP_FORTRAN_SOURCES
     quaternion_algebra.F90
     selftests.F90
     string_manipulations.f90
-    type_laplace.F90
     unit_test_generator.f90
     unit_testing.F90
     vector_functions.F90
