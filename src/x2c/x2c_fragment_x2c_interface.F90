@@ -30,7 +30,7 @@ module x2c_fragment_x2c_interface
 !
 
   use fragment_x2c_cfg
-  use x2c_fio
+ !use x2c_fio
   use x2c_pct_ao, only: &
       pctrafo_h1_4cto2c_saao_bas
 

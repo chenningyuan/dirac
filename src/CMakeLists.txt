@@ -62,7 +62,7 @@ endif()
 # variable.
 #
 # The resulting ${EXTERNAL_LIBS} variable contains localized source libraries of all functionality modules
-# of DIRAC (main,dirac,relccsd,prp,reladc, interest ...)
+# of DIRAC (dirac_main,dirac,relccsd,prp,reladc, interest ...)
 #
 # Due to entanglements between libraries (like dirac depends localization and vise versa) it is necessary
 # to keep source files (modules) as localized as possible and with minimal interdependencie on other modules.
@@ -347,7 +347,7 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:input> ${EXTERNAL_OBJECTS})
 
 # main directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
-set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:main> ${EXTERNAL_OBJECTS})
+set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:dirac_main> ${EXTERNAL_OBJECTS})
 
 # make these variables visible to the cmake one level up
 set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)

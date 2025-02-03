@@ -542,7 +542,7 @@ C
      $        '*** ERROR in PSIOP1 *** File with coefficients not found'
                CALL QUIT('*** ERROR in PSIOP1   ***')
             ELSE
-               JRDMO = 1
+               JRDMO = 0
                CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
 
                if(spinfr_krmc)then
@@ -1087,15 +1087,11 @@ C
          CALL WRTKRMC(LUKRM3,'H2AC    ',H2AC,NASHT*NASHT*NNASHX*NZ*3)
       END IF
 C
-C     CMO & CREF
-C     ----------
-C     (we have to read & write CREF again as CREF is placed after NEWORB
-C      and is therefore deleted when rewriting CMO
+C     CMO
+C     ---
 C
-      IF (COMPROT) THEN
-         IF (NZCONF .GT. 0) CALL REAKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
+      IF (COMPROT) THEN ! CMO updated for frozen CI coefficients
          CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
-         IF (NZCONF .GT. 0) CALL WRTKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
       END IF
 C
 C
@@ -2867,20 +2863,22 @@ C     Retrieve MO coefficients from file
 C
 C     Input:
 C
+C        JRDMO < 0 : NOSTOP true
 C        IOPT = 1: read from label NEWORB
 C        IOPT = 2: read from label OLDORB
 C        IOPT = 3: read from label NEWNATOB
 C        IOPT = 4: read from label MCCINATO
 C
 C     Output:
+C        JRDMO   - >0 if NOSTOP and CMO not found on file LUNIT
 C        CMO     - MO coefficients
 C
 C     Written by J. Thyssen - Nov 3 1998
 C     Last revision :
 C
-C                S. Knecht  - Jul 7 2008
+C         S. Knecht  - Jul 7 2008
 C
-C                read from label NEWNATOB (MP2, later also MCSCF...)
+C         read from label NEWNATOB (MP2, later also MCSCF...)
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2892,8 +2890,9 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 C
-      DIMENSION CMO(*)
-      LOGICAL NOSTOP
+      REAL*8    CMO(*)
+      INTEGER   JRDMO, IOPT, LUNIT
+      LOGICAL   NOSTOP
       CHARACTER LABEL*8
 C
       CALL QENTER('RREADMO')
@@ -2904,17 +2903,10 @@ C
          NOSTOP = .FALSE.
       END IF
       IF (IOPT .LT. 1 .OR. IOPT .GT. 4) THEN
-          WRITE(LUPRI,'(/A,I10)')
-     &       ' rREADMO: ERROR: Unknown option ',IOPT
-          CALL QUIT('rREADMO: ERROR: Unknown option.')
       END IF
-      GOTO (100,100), IOPT
-  100 CONTINUE
 C
 C     Read orbitals from label 'xxxxXXXX'
 C
-      REWIND(LUNIT)
-      IERR = -1
       IF ( IOPT .EQ. 1 ) THEN
          LABEL = 'NEWORB  '
       ELSE IF( IOPT .EQ. 2 )THEN
@@ -2923,8 +2915,14 @@ C
          LABEL = 'NEWNATOB'
       ELSE IF( IOPT .EQ. 4 )THEN
          LABEL = 'MCCINATO'
+      ELSE
+         WRITE(LUPRI,'(/A,I10)')
+     &       ' rREADMO  ERROR: Unknown option ',IOPT
+         CALL QUIT('rREADMO  ERROR: Unknown option.')
       END IF
 C
+      REWIND(LUNIT)
+      IERR = -1
       CALL MOLLAB(LABEL,LUNIT,IERR)
       IF (IERR .GE. 0) THEN
          CALL READT(LUNIT,NCMOTQ,CMO)
@@ -2942,7 +2940,7 @@ C
             CALL QUIT('rREADMO: ERROR: error reading file "KRMCSCF"')
          END IF
       END IF
-      IF ( JRDMO .GT. 0 ) THEN
+      IF ( NOSTOP .AND. JRDMO .GT. 0 ) THEN
          GO TO 1010
       ELSE
          GO TO 1000
@@ -2951,8 +2949,6 @@ C
 C     End:
 C
  1000 CONTINUE
-      IPROPT_SAVE = IPROPT
-csk   IPROPT      = 10
       IF (IPROPT .GE. 10) THEN
          CALL HEADER('Output from rREADMO:',-1)
          DO I = 1,NFSYM
@@ -2963,7 +2959,6 @@ csk   IPROPT      = 10
      &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
       END IF
-      IPROPT = IPROPT_SAVE
  1010 CONTINUE
       CALL QEXIT('RREADMO')
       RETURN

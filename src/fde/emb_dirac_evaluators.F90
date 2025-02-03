@@ -577,7 +577,7 @@ module fde_evaluators_dirac
             allocate(dmat2(mat_dim_quat_as_1d*nfmat))
             dmat2 = 0.0d0
             call denmat(dmat2,cmo,1)
-            call gtdoav(nba, nz, nfmat, dmat2, 1)
+            call emb_gtdoav(nba, nz, nfmat, dmat2)
             dmat = dmat2(1:mat_dim_quat_as_1d)
             deallocate(dmat2)
          else

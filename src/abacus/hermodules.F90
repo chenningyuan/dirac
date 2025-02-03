@@ -533,14 +533,14 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
               ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
      &                 section(3)=='.NOSYM') THEN
                        ADDSYM=.FALSE.
+#ifdef HAS_PELIB
+                       pelib_sym_xyz = .false.
+#endif
 
 !            Use linear symmetry even when single atom
               ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
      &                 section(3)=='.LINEAR') THEN
                        NONATM=.TRUE.
-#ifdef HAS_PELIB
-              pelib_sym_xyz = .false.
-#endif
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
      &                 section(3)=='.DEFAULT') THEN

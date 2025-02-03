@@ -17,7 +17,7 @@ keyword(WAVE FUNCTION)
 
 Activates the wave function module(s).  This activates the reading of the
 :ref:`**WAVE FUNCTION` section, where the desired wave function type(s) must be
-specified.  If you read in converged MO coefficients from the file DFCOEF and
+specified.  If you read in converged MO coefficients from the CHECKPOINT file and
 you want to skip the SCF step and proceed directly to properties or the
 post-SCF step, then a trick to do this is to comment out (or remove) this
 keyword.
