@@ -182,11 +182,12 @@ an automatic initial occupation if neither
 Trial function
 ==============
 
-An SCF-calculation (HF or DFT) may be initiated in six different ways:
+An SCF-calculation (HF or DFT) may be initiated in seven different ways:
 
--  Using **MO coefficients** from a previous calculation.
+-  Using **MO coefficients** from a previous calculation. This is default when a CHECKPOINT file with MO coefficients is found.
+-  Using a sum of atomic LDA potentials (see :cite:`Lehtola2020`). This default when no MO coefficients are provided.
 -  Using coefficients obtained by diagonalization of the one-electron Fock matrix: the **bare nucleus approach**.
--  The **corrected bare nucleus approach**. There are two flavors: 1) :ref:`SCF_.SCRPOT`, for a sum of atomic LDA potentials (see :cite:`Lehtola2020`), and 2) the older method :ref:`SCF_.BNCORR`, which is based on screening factors from Slater's rules.
+-  The **corrected bare nucleus approach**. In this approach :ref:`SCF_.BNCORR` screening factors from Slater's rules are used to correct the too attractive bare nucleus potential.
 -  Using the **two-electron Fock matrix** from a previous calculation; this may be thought of as starting from a converged SCF potential.
 -  Using an **atomic start** based on densities from atomic SCF runs for the individual centers, see e.g. :cite:`vanLenthe2006`.
 -  Using an **extended Hückel start** based on *atomic fragments*.
