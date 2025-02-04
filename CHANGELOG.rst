@@ -16,6 +16,8 @@ New features:
 
 Infrastructure changes and fixes:
 
+- Better cmake structure for compiling dirac. Now utility programs are small and not the same size as dirac.x.
+   - Contributor: H. J. Aa. Jensen
 - Changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025.
    - Contributor: H. J. Aa. Jensen.
 - Made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers).

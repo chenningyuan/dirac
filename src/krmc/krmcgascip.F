@@ -58,6 +58,13 @@ C
 C
 C
       CALL QENTER('GASCIP_SETUP')
+
+      IF (NASHT .GT. MAXASH_GASCIP) THEN
+         WRITE(LUPRI,'(//A,I0,A,I0)')
+     &      ' *** ERROR in GASCIP_SETUP *** Number of active'//
+     &      ' orbitals ( ',NASHT,' ) must be ',MAXASH_GASCIP
+         CALL QUIT('*** ERROR: too many active orbitals for GASCIP ***')
+      END IF
 C
 C     Setup symmetry mult. table
 C     --------------------------
