@@ -1123,7 +1123,7 @@ C
 C     Major revision by S. Knecht: 08.08.2008
 C
 C                    All CI-related keywords have been moved to a new 
-C                    input section *KRCICALC. 
+C                    input section *KRCI
 C                    Purpose: disentanglement of MCSCF/CI optimization
 C                    input.
 C
