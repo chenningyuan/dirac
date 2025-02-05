@@ -1064,9 +1064,6 @@ C
         END IF
 
         nkrci_max_sym = 2*nrep ! set to max allowed for current symmetry in luciarel
-        write(LUPRI,'(/A,I4/A,128I4)')
-     &    ' nkrci_max_sym after check',nkrci_max_sym,
-     &    ' nkrci_ciroots after check',nkrci_ciroots(1:2*nrep)
 
       end if !> not for linear symmetry
 C
@@ -1118,8 +1115,11 @@ C
      &     ' * CI program used       : ',KRCI_CIPROGRAM
       write(lupri,'(A,4L4)') ' * atomic, linear, spinfr, levyle:',
      &                      atomic, linear, spinfr, levyle
-      write(lupri,'(A,128(1x,A))') ' * Fermion irreps',repna(1:nrep)
-      write(lupri,'(A,128(1x,A))') ' * Boson   irreps',repna(nrep+1:2*nrep)
+      if (.not. linear) then
+         write(lupri,'(A,4(1x,A))') ' * Fermion irreps',repna(1:nrep)
+         write(lupri,'(A,4(1x,A))') ' * Boson   irreps',
+     &      repna(nrep+1:2*nrep)
+      end if
 C
 C     Symmetry of the wave function:
 C     ------------------------------
