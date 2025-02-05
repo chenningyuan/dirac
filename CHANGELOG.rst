@@ -14,6 +14,10 @@ New features:
    - Reference (DIRAC calculator): https://qc2.readthedocs.io
    - Reference (ASE): https://wiki.fysik.dtu.dk/ase/
 
+ - Approximations to EOM-CCSD (Partitioned EOM (P-EOM-CCSD); second-order perturbation theory-based EOM (EOM-MBPT(2) and P-EOM-MBPT(2)) are available in the RELCCSD module for excitation and ionization energies.
+   - Contributors: L. Halbert, A. Gomes
+   - Reference: `L. Halbert and A. S. P. Gomes, The performance of approximate equation of motion coupled cluster for valence and core states of heavy element systems, Mol. Phys. (2023) e2246592`__
+
 Infrastructure changes and fixes:
 
 - Better cmake structure for compiling dirac. Now utility programs are small and not the same size as dirac.x.

@@ -854,7 +854,6 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-
       CALL XCOPY (NDIMT2,T2,1,TAU,1)
 C
       ABIJOFF = 0
@@ -918,6 +917,7 @@ C--------------------------------------------------------
       ENDDO
  10   CONTINUE
       ENDDO
+C      ENDIF
 C
       RETURN
       END
@@ -1087,6 +1087,7 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+      PRINT *, 'LOIC IN NORMAL GATTAU3'
       CALL XCOPY (NDIMT2,T2,1,TAU,1)
 C
       ABIJOFF = 0
