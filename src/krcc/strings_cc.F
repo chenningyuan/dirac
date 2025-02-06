@@ -2121,10 +2121,11 @@ C
 *. Number of spin-orbital exctation operators in H
       CALL MEMGET('INTE',KLSOBEX_TEMP,4*NGAS,WORK,KFREE,LFREE)
       IFLAG = 1
+
       CALL GET_HX_RELA_KRCC(IFLAG,IHTYPE,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
-     &                 DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                 JCMBSPC,IPRNT)
+     &                 IDUMMY,IDUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,
+     &                 IDUMMY,JCMBSPC,IPRNT)
       NSPOBEX_TP = NHX
 *
 *. and the actual spin-orbital excitations
@@ -2147,7 +2148,7 @@ C All arrays will be keept since they will be needed
      &                 IFTONE,IFTTWO,ILTTWO,WORK(KLSOBEX_TEMP),
      &                 WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),
      &                 WORK(KLABEXTP),WORK(KLOP_REO),
-     &                 WORK(KSIOPREO),JCMBSPC,IPRNT)
+     &                 WORK(KSIOPREO),IDUMMY,JCMBSPC,IPRNT)
 C     CALL STUPID_ROUTINE(WORK(KLSOBEX),NSPOBEX_TP,NGAS)
 *
 *. Space for info in the different parts of Hamiltonian

@@ -87,7 +87,7 @@ contains
       real(8)              :: temp(3), temp2(9)
       integer              :: itemp(3)
       real(8)              :: density_gradient_squared
-      real(8)              :: b, c, f, distance_to_origin
+      real(8)              :: b, c, f, r2
       real(8)              :: rx, ry, rz, r(3)
 
       logical:: gosia_debug_print
@@ -525,7 +525,7 @@ contains
                end if
                result(1:3) = result(1:3) + v(1:3)
                if (gosia_debug_print) then
-                 ! gosia: "v2" contribution depends on D_0-be careful when calculaing more than 1 density
+                 ! gosia: "v2" contribution depends on D_0-be careful when calculating more than 1 density
                  ! at once (see 'collect matrices for identical densities to save time' in visual.F90)
                  write(*, *) 'after iq_j: visual_cfg_london_component, v2: ', visual_cfg_london_component, v2 
                  write(*, *) 'result1 after iq_j: ', result(1)
@@ -877,7 +877,12 @@ contains
            end if
          end if
       end do
-
+!     Multiply with radial powers
+      if (visual_cfg_radial_power.ne.0) then
+         r2 = px**2 + py**2 + pz**2
+         result = result*r2**(visual_cfg_radial_power/2.0d0)
+      endif
+      
 !     Multiply with Cartesian powers
       do i = 1, visual_cfg_cartesian_power(1)
         result = px*result    

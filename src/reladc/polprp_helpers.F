@@ -589,14 +589,16 @@ C
 !
 !   function interfaces
 !
+      ! why this ??
       interface
 
         SUBROUTINE denomvvoo_pp(ra1,ra2)
-          real*8, dimension(:)         :: ra1,ra2
+          real*8, dimension(:)         :: ra1
+          real*8, allocatable, dimension(:)         :: ra2
         END SUBROUTINE
 
         SUBROUTINE do_partial_precon(ra1,ra2)
-          real*8, dimension(:)         :: ra1,ra2
+          real*8,  allocatable,dimension(:)         :: ra1,ra2
         END SUBROUTINE
 
       end interface
@@ -709,7 +711,7 @@ C
       subroutine do_partial_precon(vvoo_in,vvoo_ou)
       implicit none
 !
-      real*8,allocatable,dimension (:)    :: vvoo_in, vvoo_ou
+      real*8,dimension (:)                :: vvoo_in, vvoo_ou
 
 #include  "polprp_servercodes.h"
 #include  "../relccsd/symm.inc"

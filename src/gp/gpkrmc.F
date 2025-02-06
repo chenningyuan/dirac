@@ -732,7 +732,7 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION IVECTOR(ISIZE)
-      CHARACTER LABEL*8
+      CHARACTER LABEL*8, FILENAME*24
       LOGICAL   FNDLAB
 C
       REWIND(LUNIT)
@@ -743,9 +743,12 @@ C
          CALL READI(LUNIT,ISIZE,IVECTOR)
 C
       ELSE
-         WRITE(LUPRI,'(//A/,3A,I3)')
-     $        '*** ERROR in IREAKRMC ***',
-     $        'Label <',LABEL,'> does not exists on unit ',LUNIT
+         INQUIRE(LUNIT, NAME=FILENAME)
+         WRITE(LUPRI,'(//A/3A,I3,2A)')
+     &        '*** ERROR in IREAKRMC ***',
+     &        'Label <',LABEL,'> does not exists on unit ',LUNIT,
+     &        ' : ',FILENAME
+         CALL DMPLAB(LUNIT,LUPRI)
          CALL QUIT('*** ERROR in IREAKRMC ***')
       END IF
 C

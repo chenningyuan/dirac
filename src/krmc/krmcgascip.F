@@ -75,7 +75,13 @@ C
       IF (NASHT .LE. 0)
      &   CALL QUIT('GASCIP_SETUP error: no active orbitals.')
 
-C
+      IF (NASHT .GT. MAXASH_GASCIP) THEN
+         WRITE(LUPRI,'(//A,I0,A,I0)')
+     &      ' *** ERROR in GASCIP_SETUP *** Number of active'//
+     &      ' orbitals ( ',NASHT,' ) must be ',MAXASH_GASCIP
+         CALL QUIT('*** ERROR: too many active orbitals for GASCIP ***')
+      END IF
+
 C     Setup symmetry mult. table
 C     --------------------------
 C

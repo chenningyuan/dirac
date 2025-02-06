@@ -16,7 +16,12 @@
 
 C
 C
-#if defined (VAR_MPI2)
+#if (defined (VAR_MPI2) && defined(CRAY_COMPILER)) 
+      SUBROUTINE BLOCK_DISTR_DRV_REL(NPARBLOCK,IBLOCKL_S,IBLOCKL_C,
+     &                               RCCTOS,IT_TTPL,IGROUPLIST)
+        call quit('unsupported code')
+      end subroutine
+#elif (defined (VAR_MPI2) && !defined(CRAY_COMPILER)) 
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
@@ -381,6 +386,8 @@ C     flush local memory
       CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'BLOCKD')
 C
       END
+#endif
+#if defined (VAR_MPI2) 
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
@@ -3529,6 +3536,8 @@ C     scratch
       INTEGER IONE, INT_IOFF1, INT_IOFF2, INT_IOFF1_C, INT_IOFF2_C
       LOGICAL CHECK_TSPLIT
 C
+      NTEST = 00000 ! no debug output
+C
       IONE = 1
       INT_IOFF1 = 0
       INT_IOFF2 = 0
@@ -3725,7 +3734,7 @@ C               keep track of correct offset
       KDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'FNDSC2')
 *
-      L0BLOCK = MXSOOB_AS
+      L0BLOCK = MXSOOB
       LSCR1 = MAX(L0BLOCK,L2BLOCK)
 *. Offsets for alpha and beta supergroups
 *
@@ -3910,6 +3919,8 @@ C     release local memory
 *. T-coefficients
       DIMENSION ITSPOBEX_TP(4*NGAS,*)
       LOGICAL CHECK_TSPLIT
+*
+      NTEST = 00000 ! no debug print
 *
       ONEM = -1.0D0
       IZERO = 0

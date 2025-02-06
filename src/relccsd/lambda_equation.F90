@@ -154,7 +154,7 @@
 
        call getoovv (ResL2)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL2 after initialization',dot_product(ResL2,ResL2)
 !-------------------------------------------------
 !   term1 : ResL2 = ResL2 + P(ab) L2 (ij,ae)*f_bar_ae(e,b)
@@ -164,7 +164,7 @@
      &    (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,LeftTensor=L2, &
      &    RightTensor=hv)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
 
      & write(iw,*)'RESL2 after term1',dot_product(ResL2,ResL2)
 !----------------------------------------------
@@ -175,7 +175,7 @@
      &    (/"o1","o2","p1","p2"/),ResL2,-1.0d0,1.0d0,nrep, &
      &    LeftTensor=L2,RightTensor=ho)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
 
      & write(iw,*)'RESL2 after term2',dot_product(ResL2,ResL2)
 !--------------------------------------------------------
@@ -186,7 +186,7 @@
      &    (/"o1","o2","p1","p2"/),ResL2, &
      &    1.0d0,1.0d0,nrep,RightTensor=L2,LeftTensor=w_oooo)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL2 after term3', dot_product(ResL2,ResL2)
 
 !--------------------------------------------------------
@@ -203,7 +203,7 @@
       call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/), &
      &        (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,RightTensor=G_vv)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL2 after term5',dot_product(ResL2,ResL2)
 
 !---------------------------------------------------------------------------
@@ -214,7 +214,7 @@
      &   (/"o1","o2","p2","p1"/),ResL2,-1.0d0,-1.0d0,nrep,RightTensor=L1, &
      &   LeftTensor=int_wooop)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL2 after term6',dot_product(ResL2,ResL2)
 !--------------------------------------------------------------------
 !    term7 : ResL2 = ResL2 - P(ij) V(im,ab)*G_oo(j,m)
@@ -224,7 +224,7 @@
      &        (/"o1","o2","p1","p2"/),ResL2,-1.0d0, &
      &        1.0d0,nrep,RightTensor=G_oo)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
       & write(iw,*)'RESL2 after term7',dot_product(ResL2,ResL2)
 
 !-------------------------------------------------------------------------
@@ -235,7 +235,7 @@
     &  (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,LeftTensor=L1, &
     &   RightTensor=w_v_temp)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL2 after term8',dot_product(ResL2,ResL2)
 !-------------------------------------------------------------------------
 !   term 9 : ResL2 = ResL2 + P(ij)P(ab) L1(i,a)*f_bar_me(j,b)
@@ -243,7 +243,7 @@
 
       call lambda2_disconnected(l1,hov,ResL2)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL2 after term9',dot_product(ResL2,ResL2)
 
 !--------------------------------------------------------
@@ -325,7 +325,7 @@
           call xaxpy (ndimt2,A1,buf2,1,ResL2,1)
 #endif
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL2 after term10',dot_product(ResL2,ResL2)
 
       end subroutine
@@ -513,7 +513,7 @@
 
       call xcopy (ndimt1,hov,1,ResL1,1)
 
-     if (iprnt.ge.1) &
+     if (iprnt.ge.2) &
      &   write(iw,*)'RESL1: init',dot_product(resL1,resL1)
 !---------------------------------
 !    ResL1 = ResL1 + L(i,e) * f_bar_ae(e,a)
@@ -522,7 +522,7 @@
        call contraction_222 ((/"o1","p2"/),(/"p2","p1"/),(/"o1","p1"/), &
      &    L1,hv,ResL1,1.0d0,1.0d0,nrep)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL1: after term1',dot_product(resL1,resL1)
 !----------------------------------------
 !    ResL1 = ResL1 - L(m,a)*f_bar_mi(i,m)
@@ -531,7 +531,7 @@
         call contraction_222 ((/"o2","p1"/),(/"o1","o2"/),(/"o1","p1"/), &
      &    L1,ho,ResL1,-1.0d0,1.0d0,nrep)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL1: after term2',dot_product(resL1,resL1)
 !----------------------------------------------
 !      ResL1 = ResL1 - G(m,n) * W(mi,na)
@@ -541,7 +541,7 @@
       call contraction_242 ((/"o3","o2"/),(/"o2","o1","o3","p1"/), &
      & (/"o1","p1"/),G_oo,ResL1,-1.0d0,1.0d0,nrep,RightTensor=int_wooop)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL1: after term3',dot_product(resL1,resL1)
 !-------------------------------------------------
 !      ResL1 = ResL1 + L1(m,e) * W(ie,am)
@@ -550,7 +550,7 @@
       call contraction_242 ((/"o2","p2"/),(/"o1","p2","p1","o2"/), &
      &   (/"o1","p1"/),L1,ResL1,1.0d0,1.0d0,nrep,RightTensor=w_voov)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL1 after term4',dot_product(resL1,resL1)
 !-----------------------------------------------------
 !       ResL1 = ResL1 -  L2(mn,ae)*W(ie,mn)
@@ -560,7 +560,7 @@
      &          /),(/"o1","p1"/),ResL1,-1.0d0,1.0d0,nrep,LeftTensor=L2,  &
      &          RightTensor=w_ovoo)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL1 after term5',dot_product(resL1,resL1)
 
 !-------------------------------------------------------
@@ -570,7 +570,7 @@
       call contraction_442((/"o1","o2","p2","p3"/),(/"p2","p3","p1","o2"/),(/"o1","p1"/),ResL1,1.0d0,1.0d0,nrep, &
        &         LeftTensor=L2,RightTensor=w_vvvo)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL1 after term6',dot_product(resL1,resL1)
 
 !-------------------------------------------------------
@@ -580,7 +580,7 @@
       call contraction_242 ((/"p3","p2"/),(/"p2","o1","p3","p1"/), &
      &  (/"o1","p1"/),G_vv,ResL1,-1.0d0,1.0d0,nrep,RightTensor=w_v_temp)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
      & write(iw,*)'RESL1 after term7',dot_product(resL1,resL1)
 
       end subroutine

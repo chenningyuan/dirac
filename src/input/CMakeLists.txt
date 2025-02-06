@@ -1,4 +1,4 @@
-add_library(input)
+add_library(input STATIC)
 
 target_sources(input
   PRIVATE
@@ -7,26 +7,32 @@ target_sources(input
     parse_input.F90
   )
 
-target_link_libraries(input
-  PRIVATE
-    reladc
-    gp
-    dirac
-    main
-    visual
-    relccsd
-    grid
-    qcorr
-  )
+#target_link_libraries(input
+#  PRIVATE
+#    reladc
+#    gp
+#    dirac
+#    dirac_main
+#    visual
+#    relccsd
+#    grid
+#    qcorr
+#  )
+
+# dependencies, because input needs fortran modules compiled in the listed libraries
+add_dependencies(input reladc gp dirac dirac_main visual relccsd grid qcorr)
 
 if(ENABLE_EXATENSOR)
-  target_link_libraries(input
-    PRIVATE
-      exacorr
-    )
+#  target_link_libraries(input
+#    PRIVATE
+#      exacorr
+#    )
+  add_dependencies(input exacorr)
 endif()
 
 target_include_directories(input
   PRIVATE
     ${PROJECT_SOURCE_DIR}/src/include
   )
+
+

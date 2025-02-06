@@ -16,6 +16,25 @@
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
 #include "dirac_partask.h"
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C Variables related to indices in two- and four-electron integrals
+C  ifrp denotes fermion symmetry g/u (max 2)
+C
+C 4-electron integrals:
+C     KQ(ifrp,n)     - adresses of coefficient set for index n, fermion symmetry ifrp
+C     NQ(ifrp,n)     - number of MOs in coefficient set for index n, fermion symmetry ifrp
+C     NQT(n)         - number of MOs in coefficient set for index n, all fermion symmetries
+C     KIBE(ifrp,n)   - adresses of single group identification (for spinfree calculation)
+C     NSTR(ifrp,0,n) - total number of orbitals for index n
+C     NSTR(ifrp,1,n) - number of electronic orbitals for index n
+C     NSTR(ifrp,2,n) - number of positronic orbitals for index n
+C
+C 2-electron "core" integrals:
+C     KQC(ifrp,n)    - adresses of coefficient set for index n, fermion symmetry ifrp
+C
+C Other:
+C     KE(ifrp,2)     - adresses of eigenvalues (for MP2 calculation)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PAMTRA */
       SUBROUTINE PAMTRA()
@@ -4036,9 +4055,9 @@ C       ---------------------------------------------
 C Miro/Aug 2016 - introduced DFT-COSCI, core-fock mtx contains xc contrib 
 
         CALL GTCFCK(WORK(KBUF),IPRRES,WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &            WORK(KQC(1)),WORK(KBUF1),NDMOQR,ICMOQR,NSTR(1,0,1),
-     &             NDMOQC,ICMOQC,NSPC(1,0),NSPC2,
-     &             INTRES,WORK,KFREE,LFREE)
+     &              WORK(KQC(1)),WORK(KBUF1),NDMOQR,ICMOQR,NSTR(1,0,1),
+     &              NDMOQC,ICMOQC,NSPC(1,0),NSPC2,
+     &              INTRES,WORK,KFREE,LFREE)
 C 
 C       Write MOLFDIR file MRCONEE
 C       --------------------------
@@ -4169,7 +4188,7 @@ C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in SY_COSCI')
 
-! .. definitions to satisfy ifort runtime check
+! .. definitions to satisfy runtime check
       TRANOP = .false.
       SCRBUF = 0.0D0
       THRBUF = 0.0D0

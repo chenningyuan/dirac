@@ -16,13 +16,7 @@ if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
 
-if (CMAKE_Fortran_COMPILER_ID MATCHES XL OR CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-# xlf compiler does not support isnan used
-# pgfortran compiler does not suppore real*16
-    option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
-else()
-    option(ENABLE_STIELTJES "Enable stieltjes library" ON)
-endif()
+option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
 if(ENABLE_STIELTJES)
     add_definitions(-DHAS_STIELTJES)
 endif()
@@ -68,7 +62,7 @@ endif()
 # variable.
 #
 # The resulting ${EXTERNAL_LIBS} variable contains localized source libraries of all functionality modules
-# of DIRAC (main,dirac,relccsd,prp,reladc, interest ...)
+# of DIRAC (dirac_main,dirac,relccsd,prp,reladc, interest ...)
 #
 # Due to entanglements between libraries (like dirac depends localization and vise versa) it is necessary
 # to keep source files (modules) as localized as possible and with minimal interdependencie on other modules.
@@ -86,6 +80,10 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:pdpack> ${EXTERNAL_OBJECTS})
 # Making interface_mpi as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/interface_mpi)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interface_mpi> ${EXTERNAL_OBJECTS})
+
+# Making mfsolver as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/mfsolver)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:mfsolver> ${EXTERNAL_OBJECTS})
 
 # gp as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/gp)
@@ -114,9 +112,9 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:moltra> ${EXTERNAL_OBJECTS})
 
-#    embedding as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/embedding)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:embedding> ${EXTERNAL_OBJECTS})
+#    frozen density embedding as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/fde)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:fde> ${EXTERNAL_OBJECTS})
 
 # Making x2c as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/x2c)
@@ -349,7 +347,7 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:input> ${EXTERNAL_OBJECTS})
 
 # main directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
-set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:main> ${EXTERNAL_OBJECTS})
+set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:dirac_main> ${EXTERNAL_OBJECTS})
 
 # make these variables visible to the cmake one level up
 set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)

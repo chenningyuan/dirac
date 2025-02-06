@@ -3610,6 +3610,10 @@ C
 #endif
 #include "cintfo.inc"
 #include "parluci.h"
+#if defined (CRAY_COMPILER)
+      call quit('unsupported compiler')
+      end
+#else
 #if defined (VAR_MPI2)
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
@@ -3849,6 +3853,8 @@ C
       IF( IT_SHL .ge. 0 ) CALL REL_MEM_T_SCR(T_SCR_CC)
 #endif
       END
+C end of preprocessing for cray compiler
+#endif 
 ***********************************************************************
 
       SUBROUTINE SIGDEN_REL4(NSBLOCK,ISBLOCK,CB,SB,

@@ -1232,7 +1232,7 @@ C
       END
 
       SUBROUTINE FCORE(T1,T2,EPS)
-      use relcc_cfg  
+      use mfsolver_dirac_input
       use projectors 
 C
       implicit none
@@ -1264,7 +1264,7 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      if (.not.relcc_projectors_frozen_core) RETURN
+      if (.not.mfsolver_projectors_frozen_core) RETURN
 
       projector => create_t_projector(NDIMT1+NDIMT2,EPS)
        

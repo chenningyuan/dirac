@@ -1759,7 +1759,7 @@
     ! only calculates DCAO
     get_dc = .true.
     get_dv = .false.
-    ! lenght of the left workspace
+    ! length of the left workspace
     len_left_wrk = len_work-start_left_wrk+1
     ! checks if the workspace is enough
     if (len_left_wrk<0) &

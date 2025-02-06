@@ -16,6 +16,7 @@ include_directories(${PROJECT_BINARY_DIR}/external/gen1int-build)
         )   
 
 set(ExternalProjectCMakeArgs
+    -DCMAKE_WARN_DEPRECATED=FALSE
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
     -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
@@ -26,6 +27,8 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
     )
+
+add_dependencies(gen1int_interface gen1int)
 
 # added -DPARENT_INCLUDE_DIR line above;
 # we need to add the module directory to the include directories explicitly,

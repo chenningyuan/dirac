@@ -18,6 +18,7 @@ module exacorr_utils
   public print_exaoutput
   public shift_orbital_energy
   public print_orbital_energy
+  public print_iterative_wavefunction_choice
 
   contains
 
@@ -75,25 +76,63 @@ module exacorr_utils
       print*, "                   ***                                               ***"
       print*, "                   ***  Authors:         - Lucas Visscher            ***"
       print*, "                   ***                   - Anastasios Papadopoulos   ***"
-      print*, "                   ***  Contributors:    - Johann Pototschnig        ***"
+      print*, "                   ***                   - Johann Pototschnig        ***"
       print*, "                   ***                   - Michal Repisky            ***"
       print*, "                   ***                   - Andre Severo Pereira Gomes***"
       print*, "                   ***                   - Loic Halbert              ***"
       print*, "                   ***                   - Xiang Yuan                ***"
       print*, "                   ***                   - Chima Chibueze            ***"
+      print*, "                   ***                   - Jan Brandejs              ***"
       print*, "                   ***  Features:        - CCD/CC2/CCSD              ***"
+      print*, "                   ***                   - Higher-order CC methods   ***"
       print*, "                   ***                   - MP2 NOs                   ***"
-      print*, "                   ***                   - 1DM                       ***"
+      print*, "                   ***                   - 1RDM CCD/CCSD, 2RDM CCSD  ***"
+      print*, "                   ***                   - CIS                       ***"
+      print*, "                   ***                   - EOM-CCSD                  ***"
+      print*, "                   ***                   - LR and QR CCSD            ***"
       print*, "                   ***                   - ReSpect interface         ***"
       print*, "                   ***                                               ***"
       print*, "                   ***  Relativistic Coupled Cluster code using the  ***"
       print*, "                   ***  TALSH and ExaTensor libraries developed by   ***"
       print*, "                   ***  Dmitry Lyakh                                 ***"
       print*, "                   ***                                               ***"
-      print*, "                   ***  Reference DOI: 10.1021/acs.jctc.1c00260      ***"
-      print*, "                   ***                                               ***"
       print*, "                   *****************************************************"
       print*, ""
+      print*, "References"
+      print*, ""
+      print*, " - Ground-state CCD/CC2/CCSD/CCSD(T) energies, CCD/CCSD expectation values:"
+      print*, "    JV Pototschnig et al., J. Chem. Theory Comput. 17, 5509 (2021)." 
+      print*, "    doi: 10.1021/acs.jctc.1c00260"
+      print*, ""
+      print*, " - MP2 virtual frozen natural orbitals, generation of CC natural orbitals:"
+      print*, "    X Yuan, L Visscher, ASP Gomes, J. Chem. Phys. 156, 224108 (2022). "
+      print*, "    doi: 10.1063/5.0087243"
+      print*, ""
+      print*, " - Equation of motion coupled cluster (EOM-CCSD) for IP, EE and EA:"
+      print*, "    X Yuan, PhD thesis, Vrije Universiteit Amsterdam and Universite de Lille"
+      print*, "    doi: 10.5463/thesis.505"
+      print*, ""
+      print*, " - EOM-CCSD 1RDMs and CCSD 2RDM"
+      print*, "    L Halbert, ASP Gomes, in preparation (2025)"
+      print*, ""
+      print*, " - CI-singles (CIS) excitation energies and transition moments"
+      print*, "    X Yuan, ASP Gomes, in preparation (2025)"
+      print*, ""
+      print*, " - Orbital-unrelaxed linear response EOM-(EE-)CCSD and CCSD theory:"
+      print*, "    X Yuan et al., J. Chem. Theory Comput. (2024). "
+      print*, "    doi: 10.1021/acs.jctc.3c00812"
+      print*, ""
+      print*, " - Orbital-unrelaxed quadratic response EOM-(EE-)CCSD theory:"
+      print*, "    X Yuan, L Halbert, L Visscher, ASP Gomes, J. Chem. Theory Comput. 19, 9248 (2023). "
+      print*, "    doi: 10.1021/acs.jctc.3c01011"
+      print*, ""
+      print*, " - Higher-order coupled cluster methods"
+      print*, "  - code generated with the Tenpi framework (https://gitlab.com/janbrandejs/tenpi)"
+      print*, "    - ground-state energies (CCSDT, CCSDTQ) " 
+      print*, "      J Brandejs, J Pototschnig, T Saue,  https://doi.org/10.48550/arXiv.2409.06759"
+      print*, "  - code generated with the mb-autogen framework (doi: 10.5281/zenodo.8094429)"
+      print*, "    - ground-state energies (CCSDT/-1a/-1b/-2/-3, CCSDTQ, CCSDTQP) " 
+      print*, "      L Halbert, ASP Gomes, in preparation (2025)"
       print*, ""
 
     end subroutine print_exacorr_logo
@@ -110,9 +149,16 @@ module exacorr_utils
       write(*,'(A)') "-----------------------------------------------"
       write(*,'(A)') "      Characteristics of this calculation      "
       write(*,'(A)') "-----------------------------------------------"
+      if (exa_input%auto_kernels) then
+         if (exa_input%auto_scheme.eq.2) then
+            write(*,'(A,L1)') " - Using kernels generated with TENPI"
+         elseif(exa_input%auto_scheme.eq.1) then
+            write(*,'(A,L1)') " - Using kernels generated with mbauto"
+         endif
+      endif
       write(*,'(A,L1)') " - Solve CCD equations :                ", exa_input%ccd
       write(*,'(A,L1)') " - Solve Lambda equations :             ", exa_input%lambda
-      write(*,'(A,L1)') " - Compute perturbative Triples :       ", exa_input%do_triples
+      write(*,'(A,L1)') " - Compute perturbative corrections :   ", exa_input%do_perturbative
       write(*,'(A,I5)') " - Integral transformation scheme : ", exa_input%moint_scheme
       write(*,'(A,I5)') " - Maximum number of cycles :       ", exa_input%ncycles
       write(*,'(A,ES10.1)') " - Target precision of amplitudes :  ", exa_input%t_econv
@@ -155,13 +201,37 @@ module exacorr_utils
 
     end subroutine print_exainput
 
-    subroutine print_exaoutput(talsh, ccd, cc2, scf_energy, mp2_energy, cc_energy, t1diag, t_energy)
+    subroutine print_exaoutput(talsh, iterative_scheme, perturbative_scheme,scf_energy, mp2_energy, cc_energy, t1diag, pert_energy)
 
-      logical, intent(in)           :: talsh, ccd, cc2
+      logical, intent(in)           :: talsh
+      integer, intent(in)           :: iterative_scheme
+      integer, intent(in)           :: perturbative_scheme
       real(8), intent(in)           :: scf_energy, mp2_energy, cc_energy
       real(8), intent(in), optional :: t1diag
-      real(8), intent(in), optional :: t_energy(3)
-      
+      real(8), intent(in), optional :: pert_energy(3)
+      character(len=23) :: label_iterative
+
+!     character(len=12) :: wf_label
+!      
+!     call print_iterative_wavefunction_choice(iterative_scheme, wf_label)
+      write(label_iterative,'(A)') "                    "
+      if (iterative_scheme.eq.20) write(label_iterative,'(A)') "CCD energy :           "
+      if (iterative_scheme.eq.21) write(label_iterative,'(A)') "CCSD energy :          "
+      if (iterative_scheme.eq.22) write(label_iterative,'(A)') "CC2 energy :           "
+
+      if (iterative_scheme.eq.30) write(label_iterative,'(A)') "CCSDT energy :         "
+      if (iterative_scheme.eq.31) write(label_iterative,'(A)') "CCSDT-1a energy :      "
+      if (iterative_scheme.eq.32) write(label_iterative,'(A)') "CCSDT-1b energy :      "
+      if (iterative_scheme.eq.33) write(label_iterative,'(A)') "CCSDT-2 energy :       "
+      if (iterative_scheme.eq.34) write(label_iterative,'(A)') "CCSDT-3 energy :       "
+      if (iterative_scheme.eq.35) write(label_iterative,'(A)') "CC3 energy :           "
+
+      if (iterative_scheme.eq.40) write(label_iterative,'(A)') "CCSDTQ energy :        "
+      if (iterative_scheme.eq.41) write(label_iterative,'(A)') "CCSDTQ-1a energy :     "
+      if (iterative_scheme.eq.42) write(label_iterative,'(A)') "CCSDTQ-1b energy :     "
+
+      if (iterative_scheme.eq.50) write(label_iterative,'(A)') "CCSDTQP energy :       "
+
       write(*,*) ""
       write(*,'(A)') "-----------------------------------------------"
       write(*,'(A)') "     -     Final results from EXACORR     -    "
@@ -173,42 +243,27 @@ module exacorr_utils
       end if
       write(*,*) ""
       write (*,'(A,F20.15)') "  MP2 energy :                      ",mp2_energy
-      if (ccd) then 
-        write (*,'(A,F20.15)') "  Final  CCD energy :               ",cc_energy
-      else 
-        if (cc2) then
-          write (*,'(A,F20.15)') "  Final  CC2 energy :               ",cc_energy
-        else
-          write (*,'(A,F20.15)') "  Final CCSD energy :               ",cc_energy
-          if (present(t_energy)) then 
-            write (*,'(A,F20.15)') "  4th order triples correction :    ",t_energy(1)
-            write (*,'(A,F20.15)') "  5th order triples (T) correction :",t_energy(2)
-            write (*,'(A,F20.15)') "  5th order triples -T  correction :",t_energy(3)
-            write (*,'(A,F20.15)') "  CCSD+T  correlation energy :      ",cc_energy+t_energy(1)
-            write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",cc_energy+t_energy(1)+t_energy(2)
-            write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",cc_energy+t_energy(1)+t_energy(3)
-          end if
-        end if
-        if (present(t1diag)) then
-          write (*,'(A,F20.15)') "  T1 diagnostic      :              ",t1diag
-        end if
+      write (*,'(A31,F25.15)') "Final "//label_iterative,cc_energy
+      if (present(pert_energy).and.(perturbative_scheme.eq.30)) then 
+            write (*,'(A,F20.15)') "  4th order triples correction :    ",pert_energy(1)
+            write (*,'(A,F20.15)') "  5th order triples (T) correction :",pert_energy(2)
+            write (*,'(A,F20.15)') "  5th order triples -T  correction :",pert_energy(3)
+            write (*,'(A,F20.15)') "  CCSD+T  correlation energy :      ",cc_energy+pert_energy(1)
+            write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",cc_energy+pert_energy(1)+pert_energy(2)
+            write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",cc_energy+pert_energy(1)+pert_energy(3)
+      end if
+      if (present(t1diag)) then
+         write (*,'(A,F20.15)') "  T1 diagnostic      :              ",t1diag
       end if
       write(*,*) ""
       write (*,'(A,F25.15)') "  SCF energy :                 ",scf_energy
       write (*,'(A,F25.15)') "  Total MP2 energy :           ",scf_energy+mp2_energy
-      if (ccd) then 
-        write (*,'(A,F25.15)') "  Total  CCD energy :          ",scf_energy+cc_energy
-      else 
-        if (cc2) then
-          write (*,'(A,F25.15)') "  Total  CC2 energy :          ",scf_energy+cc_energy
-        else
-          write (*,'(A,F25.15)') "  Total CCSD energy :          ",scf_energy+cc_energy
-          if (present(t_energy)) then 
-            write (*,'(A,F25.15)') "  Total CCSD+T  energy :       ",scf_energy+cc_energy+t_energy(1)
-            write (*,'(A,F25.15)') "  Total CCSD(T) energy :       ",scf_energy+cc_energy+t_energy(1)+t_energy(2)
-            write (*,'(A,F25.15)') "  Total CCSD-T  energy :       ",scf_energy+cc_energy+t_energy(1)+t_energy(3)
-          end if
-        end if
+      write (*,'(A31,F25.15)') "Total "//label_iterative,(scf_energy+cc_energy)
+
+      if (present(pert_energy).and.(perturbative_scheme.eq.30)) then
+         write (*,'(A,F25.15)') "  Total CCSD+T  energy :       ",scf_energy+cc_energy+pert_energy(1)
+         write (*,'(A,F25.15)') "  Total CCSD(T) energy :       ",scf_energy+cc_energy+pert_energy(1)+pert_energy(2)
+         write (*,'(A,F25.15)') "  Total CCSD-T  energy :       ",scf_energy+cc_energy+pert_energy(1)+pert_energy(3)
       end if
       write(*,*) ""
       write(*,'(A)') "-----------------------------------------------"
@@ -413,5 +468,47 @@ module exacorr_utils
       end do
 
     end subroutine print_orbital_energy
+
+    subroutine print_iterative_wavefunction_choice(iterative_scheme, wf_label)
+      integer, intent(in) :: iterative_scheme
+      character(12), optional, intent(inout) :: wf_label
+      character(12) :: wavefunction
+
+      if (iterative_scheme .eq. 10) wavefunction = "CCS" 
+
+      if (iterative_scheme .eq. 20) wavefunction = "CCD" 
+      if (iterative_scheme .eq. 21) wavefunction = "CCSD" 
+      if (iterative_scheme .eq. 22) wavefunction = "CC2" 
+
+      if (iterative_scheme .eq. 30) wavefunction = "CCSDT" 
+      if (iterative_scheme .eq. 31) wavefunction = "CCSDT-1a" 
+      if (iterative_scheme .eq. 32) wavefunction = "CCSDT-1b" 
+      if (iterative_scheme .eq. 33) wavefunction = "CCSDT-2" 
+      if (iterative_scheme .eq. 34) wavefunction = "CCSDT-3" 
+      if (iterative_scheme .eq. 35) wavefunction = "CC3" 
+
+      if (iterative_scheme .eq. 40) wavefunction = "CCSDTQ" 
+      if (iterative_scheme .eq. 41) wavefunction = "CCSDTQ-1a" 
+      if (iterative_scheme .eq. 42) wavefunction = "CCSDTQ-1b" 
+      if (iterative_scheme .eq. 43) wavefunction = "CCSDTQ-2" 
+      if (iterative_scheme .eq. 44) wavefunction = "CCSDTQ-3" 
+      if (iterative_scheme .eq. 45) wavefunction = "CC4" 
+
+      if (iterative_scheme .eq. 50) wavefunction = "CCSDTQP" 
+      if (iterative_scheme .eq. 51) wavefunction = "CCSDTQP-1a" 
+      if (iterative_scheme .eq. 52) wavefunction = "CCSDTQP-1b" 
+      if (iterative_scheme .eq. 53) wavefunction = "CCSDTQP-2" 
+      if (iterative_scheme .eq. 54) wavefunction = "CCSDTQP-3" 
+      if (iterative_scheme .eq. 55) wavefunction = "CC5" 
+
+      if (iterative_scheme .eq. 99) wavefunction = "CCSDTQP-xyz " 
+
+      if (.not.present(wf_label)) then
+         write(*,'(A)') ""
+         write(*,'(1X,A,I4,A,I4,A)') "Iterations with CC(",iterative_scheme,") model: "//wavefunction
+      else
+         write(wf_label,'(A)') wavefunction
+      end if   
+   end subroutine
 
 end module exacorr_utils

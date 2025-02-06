@@ -872,7 +872,7 @@ end subroutine mh5_close_attr
 ! dset
 
 function mh5_exists_dset(id,dsetname) result(exists)
-  logical(kind=iwp) :: exists
+  logical :: exists
   integer(kind=iwp), intent(in) :: id
   character(len=*), intent(in) :: dsetname
   character(len=MH5_MAX_LBL_LEN) :: mh5_lbl
@@ -1603,5 +1603,10 @@ subroutine mh5_fetch_dset_array_real_3d(lu,dsetname,buffer,exts,offs)
   end if
   call mh5_close_dset(dsetid)
 end subroutine mh5_fetch_dset_array_real_3d
+
+subroutine abend
+   implicit none
+   error stop 'error in hdf5 I/O'
+end subroutine abend
 
 end module mh5

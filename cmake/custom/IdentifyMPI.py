@@ -40,15 +40,11 @@ def identify_mpi_type(compiler,version_flag):
     elif re.search('Spectrum', output_compiler.decode('utf-8'),re.IGNORECASE):
         #IBM Spectrum MPI
         mpitype='OPENMPI' 
+#   elif re.search('Cray', output_compiler.decode('utf-8'),re.IGNORECASE):
+#       #IBM Spectrum MPI
+#       mpitype='MPICH'
     else:
         mpitype='None'
-
-    #! if not identified stderr is used 
-    #! this is really needed probably only by Intel which uses stderr 
-    if mpitype=='None':
-        if re.search('intel', stderr.decode('utf-8'),re.IGNORECASE):
-            mpitype='INTEL'
-
 
     return mpitype
 

@@ -26,9 +26,9 @@ might "disappear" when the optimization is completely turned off, because not al
 compilers have bug-free optimization procedure.
 
 Ensure that proper debugger, installed on your machine,  is called with the "pam" script.
-For example, for the GNU compilers set this is the gdb-debugger.
-Also commercial compilers are providing their own debuggers: Intel suite brings 
-the idbg, the PGI suite has the pgdbg debugger etc.
+For example, for the GNU compilers set this is the debugger "gdb".
+Some commercial compilers are providing their own debuggers: Intel OneAPI includes 
+the gdb-oneapi.
 
 Debugging with the "pam" script
 -------------------------------

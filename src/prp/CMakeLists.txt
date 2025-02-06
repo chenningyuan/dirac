@@ -30,7 +30,7 @@ set(FIXED_PRP_FORTRAN_SOURCES
    bed_tm.F
    bed_osc.F90
    # fix missing rmolgrd
-   ${PROJECT_SOURCE_DIR}/src/dirac/dirgrd.F
+#  ${PROJECT_SOURCE_DIR}/src/dirac/dirgrd.F
 )
 
 
@@ -60,7 +60,7 @@ endif()
 
 add_library(
     prp
-    OBJECT
+    STATIC
     ${FREE_PRP_FORTRAN_SOURCES}
     ${FIXED_PRP_FORTRAN_SOURCES}
 )
@@ -68,7 +68,7 @@ add_library(
 # deal with intermodule dependencies
 add_dependencies(prp  gp)
 add_dependencies(prp  dirac)
-add_dependencies(prp  main)
+add_dependencies(prp  dirac_main)
 add_dependencies(prp  krmc)
 add_dependencies(prp  relccsd)
 add_dependencies(prp  esr)

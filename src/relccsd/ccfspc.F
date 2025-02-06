@@ -51,7 +51,8 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
+! ccpar.inc not needed, because there is no parallelization in this subroutine
+! include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C

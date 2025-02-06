@@ -780,7 +780,7 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "maxorb.h"
-#include "gfac.h"
+#include "codata.h"
 #include "pi.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -1867,7 +1867,7 @@ C
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,F12.8,A)') '  1 a.u. = ',CONV,' MHz'
       RETURN
- 9000 FORMAT (/2X,A9,A4,1X,A,I3,3X,A,I3,3X,A6,F4.1,3X,A19,F12.7,/)
+ 9000 FORMAT (/2X,A9,A4,1X,A,I3,3X,A,I3,3X,A6,F4.1,3X,A23,F12.7,/)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck el_efg */
@@ -3967,13 +3967,11 @@ C***********************************************************************
 #endif
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
-     &          DMI2 = -0.5D0)
-C
+#include "consts.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "gfac.h"
+#include "codata.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -3997,14 +3995,21 @@ C
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSHIELD,3+MXCOOR)
 C
+C     Here we set up the operators needed for the linear reponse part
+C
+C     Define left-hand operators: -c alpha x r/r^3
+C     ============================================
+C
 C     XAVECTOR
       IOP(1) = 5
 C     YAVECTOR
       IOP(2) = 6
 C     ZAVECTOR
       IOP(3) = 7
+C
 CMI previously were here + signs (old TEC's convention)
 CMI but the - sign is correct, so everything is rearranged
+C
       PFAC(1)  = -CVAL
       PFAC(2)  = -CVAL
       NPCOMP   = 2
@@ -4014,8 +4019,6 @@ C
       DO 100 IREPO = 0, MAXREP
 C
 C       Atoms
-C
-C       First define left-hand operators
 C
         DO 200 IATOM1 = 1, NUCIND
         IF(DOATOM(IATOM1)) THEN
@@ -4113,7 +4116,9 @@ C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
   200   CONTINUE
   100 CONTINUE
 C
-C     Define right hand operators
+C
+C     Define right-hand operators: (c/2) alpha x r
+C     ============================================
 C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
       IF (LONDON) THEN
@@ -4122,10 +4127,10 @@ C
 C
 C  Conventional atomic orbitals (common gauge origin approach)
 C
+      PFAC(1)  = -0.5D0*CVAL
+      PFAC(2)  = -0.5D0*CVAL
+      PFAC(3)  =  0.5D0*G1FAC
       NCOMP = 2
-      PFAC(1)  = DMI2*CVAL
-      PFAC(2)  = DMI2*CVAL
-      PFAC(3)  = -DMI2*G1FAC
 C X component of B-field
       PNAME     = 'X magnetic field'
 C     PNAME     = 'MAGFLDX'
@@ -4701,7 +4706,7 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "maxorb.h"
-#include "gfac.h"
+#include "codata.h"
 #include "pi.h"
 #include "consts.h"
 #include "maxash.h"
@@ -4986,7 +4991,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "gfac.h"
+#include "codata.h"
 #include "pi.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -5123,7 +5128,6 @@ C     PNAME     = 'MAGFLDZ'
       CALL OP1IND('ZSHIELB',IP_PVC_SHIELD(3+MXCOOR),
      &            LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
-C
 C     Print section for parity-violation contribution to NMR shielding:
 C
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -5211,7 +5215,7 @@ C-----------------------------------------------------------------------
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "gfac.h"
+#include "codata.h"
 #include "pi.h"
 #include "nuclei.h"
 #include "dgroup.h"
@@ -8231,13 +8235,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "gfac.h"
+#include "codata.h"
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D4 = 4.0D0, D3 = 3.0D0)
-      PARAMETER (DFAC = D4*GFAC*PI/D3)
 C
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -8250,6 +8253,9 @@ C
 #include "dcbexp.h"
 C
 #include "ibtfun.h"
+C
+      DFAC = D4*GFAC*PI/D3
+C
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = D1/DFAC
@@ -9225,7 +9231,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "gfac.h"
+#include "codata.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -9465,7 +9471,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "gfac.h"
+#include "codata.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -9655,7 +9661,7 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "maxorb.h"
-#include "gfac.h"
+#include "codata.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -10709,7 +10715,7 @@ C
 C     Print section for spin-rotation:
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 'Nuclear spin-rotation constant:'
+      WRITE(LUPRI,'(1X,A)') 'Nuclear spin-rotation:'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
 C     Print reference
@@ -10719,7 +10725,7 @@ C     ============================
 C
       CALL PRSYMB(LUPRI,'-',75,0)
          WRITE(LUPRI,'(1X,A)')
-     &   '** Expectation values operators for spin-rotation **'
+     &   '** Expectation value operators for nuclear spin-rotation **'
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1,NSCOOR
         INDOP1 = IPEFN(I)
@@ -10734,7 +10740,7 @@ C     ===========
 C
       CALL PRSYMB(LUPRI,'-',75,0)
       WRITE(LUPRI,'(1X,A)')
-     &   '** A operators for spin-rotation **'
+     &   '** A operators for nuclear spin-rotation **'
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1,NSCOOR
         INDOP1 = IPSPINRO(I)
@@ -10749,7 +10755,7 @@ C     ===========
 C
       CALL PRSYMB(LUPRI,'-',75,0)
       WRITE(LUPRI,'(1X,A)')
-     &   '** B operators for spin-rotation **'
+     &   '** B operators for nuclear spin-rotation **'
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1,6
         INDOP1 = IPSPINRO(I+MXCOOR)
@@ -10908,7 +10914,7 @@ C
 C--------------------------------------------------------------------
 C--------------------------------------------------------------------
 C
-C     *** Extract spin-rotation constants ***
+C     *** Extract nuclear spin-rotation constants ***
 C
 C     The NSCOOR nucl. magn. dipole operators as A operators in <<A;B>> :
       NA = 0
@@ -10994,7 +11000,7 @@ C--------------------------------------------------------------------
 C
 C     LINEAR RESPONSE PART OF NSR TENSOR
 C
-C     Fill spin-rotation matrices
+C     Fill nuclear spin-rotation matrices
 C
       IF (XLR_SKIPEE) THEN
         IABLRF_EE = -999999999
@@ -11157,7 +11163,7 @@ C  /* Deck  nucspr */
       SUBROUTINE NUCSPR(GEOM,ORIGIN,IPRINT)
 C***********************************************************************
 C
-C     Calculate nuclear contribution to spin-rotation constants
+C     Calculate nuclear contribution to nuclear spin-rotation constants
 C     K.Ruud, October-94
 C
 C***********************************************************************
@@ -11310,7 +11316,7 @@ C  /* Deck diaspr */
 C***********************************************************************
 C
 C     Routine for calculating the expectation value contribution to the
-C     spin-rotation constant, K.Ruud - Oct.-95
+C     nuclear spin-rotation constant, K.Ruud - Oct.-95
 C
 C***********************************************************************
 C
@@ -11472,7 +11478,7 @@ C        EIGVEC - corresponding eigenvectors
 C        PLANAR=T : planar molecule
 C        LINMOL=T : linear molecule (EIGVAL(1) = 0.0)
 C
-C     Transform each spin-rotation constant to principal axis system,
+C     Transform each nuclear spin-rotation constant to principal axis system,
 C     and multiply by inverse moment of inertia and various constants
 C
 C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
@@ -11485,33 +11491,39 @@ C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be def
      &       'Omega_C',OMEGA(3)
       END IF
 C
-      WRITE (LUPRI,'(/,1X,A)')' Results are valid only for '//
-     &                     'molecules in their equilibrium geometry'
+      WRITE (LUPRI,'(/,2X,A,/,11X,A,//,11X,A,/,11X,A,/,11X,A)')
+     &      'WARNING: Nuclear contributions to the NSR'           //
+     &              ' tensors/constants are','only valid for'     //
+     &              ' molecules in their equilibrium geometry.',
+     &              'To get valid results out of the equilibrium,'//
+     &              ' please use','the .PRINT keyword of the'     //
+     &              ' **PROPERTIES module with',
+     &              'at least a value of 4.'
 C
 C    Print inertia tensor or moment
 C
       IF (IPRINT .GE. 0) THEN
        IF (LINEAR) THEN      ! Linear molecule detected using symmetry
-              WRITE (LUPRI,'(2X,A,F16.8,/)')
+              WRITE (LUPRI,'(/,2X,A,F16.8,/)')
      &         'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
        ELSE
         IF(LINMOL) THEN      ! Linear molecule (without symmetry detection)
-         WRITE (LUPRI,'(2X,A,F16.8,/)')
+         WRITE (LUPRI,'(/,2X,A,F16.8,/)')
      &         'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
         ELSE                 ! Non-linear molecule
          CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
          WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
-     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
-     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
-     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
-         WRITE (LUPRI,'(/,2X,A)') 'Components of spin-rotation'//
-     &               ' tensor in the principal axis system'
+     &       'IA ',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
+     &       'IB ',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
+     &       'IC ',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
+         WRITE (LUPRI,'(/,2X,A)') 'Nuclear spin-rotation tensor'//
+     &               ' elements are given in the principal axis system.'
         END IF
        END IF
       END IF
 C
-C    Print spin-rotation constants or tensors
+C    Print nuclear spin-rotation constants or tensors
 C
       IATOM = 0
       DO 98 K = 1, NUCIND
@@ -11526,16 +11538,17 @@ C
           IF (GVAL(IATOM) .NE. D0) THEN
            FACTHOMAS=(CHARGE(IATOM)*PMASS)/(AMASS(IATOM)*GVAL(IATOM))
            IF (IPRINT .GE. 0) THEN
-            CALL HEADER('Spin-rotation constants (kHz) for '//
-     &                     NAMDEP(IATOM),-1)
+            CALL HEADER('Nuclear spin-rotation constant (in kHz) for '//
+     &                   NAMDEP(IATOM),-1)
             WRITE (LUPRI,'(2X,A17,F12.6,/)')
      &                 'Nuclear g-value: ',GVAL(IATOM)
            END IF
           ELSE   !   if GVAL = 0
            FACTHOMAS=(CHARGE(IATOM)*PMASS)/(AMASS(IATOM))
            IF (IPRINT .GE. 0) THEN
-          CALL HEADER('Artificial spin-rotation constants (kHz) for '//
-     &                     NAMDEP(IATOM),-1)
+          CALL HEADER('Artificial nuclear spin-rotation constant'//
+     &                ' (in kHz) for '//
+     &                 NAMDEP(IATOM),-1)
             WRITE (LUPRI,'(2X,A,F8.3)')
      &  'WARNING: Nuclear g-value NOT available for isotope of mass ',
      &  AMASS(IATOM)
@@ -11559,8 +11572,8 @@ C
             IF (KHZPPM.EQ.2) THEN
             FACTOT = FACPPM
              IF (IPRINT .GE. 2) THEN
-             CALL HEADER('Spin-rotation constants (in ppm) for '//
-     &                          NAMDEP(IATOM),-1)
+            CALL HEADER('Nuclear spin-rotation constant (in ppm) for '//
+     &                    NAMDEP(IATOM),-1)
              END IF
             END IF
 C           Nuclear contribution to NSR for molecules in equilibrium
@@ -11625,8 +11638,8 @@ C
 C
            DO 47 KHZPPM= 1,2          ! Results in 1: kHz ; 2: ppm
             IF (KHZPPM.EQ.2.AND.IPRINT.GE.2) THEN
-             CALL HEADER('Spin-rotation constants (in ppm) for '//
-     &                          NAMDEP(IATOM),-1)
+            CALL HEADER('Nuclear spin-rotation constant (in ppm) for '//
+     &                    NAMDEP(IATOM),-1)
             END IF
 C
             CALL DZERO(GTRANT,9*NUCDEP)
@@ -11739,7 +11752,7 @@ C    Inertia tensor of a non-linear molecule (with and without symmetry):
 C
 C           Total NSR for molecules in equilibrium
 C
-              CALL HEADER('Total spin-rotation constant',-1)
+             CALL HEADER('Total nuclear spin-rotation tensor (NSRT)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
@@ -11748,7 +11761,7 @@ C
      &                 'iso', (GTRANT(1,1,IATOM)
      &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
 C           Nuclear contribution to NSR for molecules in equilibrium
-              CALL HEADER('Nuclear contribution to SRC (M^nuc)',-1)
+              CALL HEADER('Nuclear contribution to NSRT (M^nuc)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANNEQ(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANNEQ(I,2,IATOM),I = 1,3),
@@ -11757,7 +11770,7 @@ C           Nuclear contribution to NSR for molecules in equilibrium
      &                 'iso', (GTRANNEQ(1,1,IATOM)
      &              +GTRANNEQ(2,2,IATOM)+GTRANNEQ(3,3,IATOM))/3
 C           Total linear response contribution to NSR
-              CALL HEADER('Electronic contribution to SRC (M^LR)',-1)
+              CALL HEADER('Electronic contribution to NSRT (M^LR)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANP(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANP(I,2,IATOM),I = 1,3),
@@ -11870,7 +11883,7 @@ C
 #include "dcbgen.h"
 #include "spinro.h"
 #include "consts.h"
-#include "gfac.h"
+#include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
 #include "ibtfun.h"
@@ -12434,17 +12447,19 @@ C
      &        JATOM,JX,JY,NATTYP,NUMIS
 C
       double precision FACTOR,CONST,GEOM(KATOM,3),AMASS(KATOM),
-     &                 EIGVAL(3),EIGVEC(3,3),OMEGA(3),
-     &                 TINERT(9),DISOTP,ANGUMOM(3),
+     &                 EIGVAL(3),EIGVEC(3,3),LEIGVAL(3),LEIGVEC(3,3),
+     &                 OMEGA(3),TINERT(9),DISOTP,ANGUMOM(3),
      &                 PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
      &                 NSRTOT,NSRLRLEE,NSRLRLEP,NSRLRSEE,NSRLRSEP,
      &                 GTRANPLEE(3,3,KATOM),GTRANPLEP(3,3,KATOM),
      &                 GTRANPSEE(3,3,KATOM),GTRANPSEP(3,3,KATOM)
 C
-      LOGICAL PLANAR,LINMOL,DOATOM(NUCIND)
+      LOGICAL PLANAR,LINMOL,DOATOM(NUCIND),LINNOZ
 C
       FACTOR = (-GFERMI*(D1-D4*S2THETAW)/(CVEL*SQRT(D2)))*(XTHZ/XFAMU)
 C
+C
+      LINNOZ = .FALSE. ! Only true for linear molecules, and when they are along the z axis
 C
 Ciaa  Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
       DO 300 I = 1,3
@@ -12484,6 +12499,31 @@ C
 C     Transform each PVC to NSR constant to principal axis system,
 C     and multiply by inverse moment of inertia and various constants
 C
+      IF(LINMOL) THEN
+        LEIGVAL(1)=EIGVAL(3)
+        LEIGVAL(3)=EIGVAL(1)
+        DO I=1,3
+          LEIGVEC(I,1)=EIGVEC(I,3)
+          LEIGVEC(I,3)=EIGVEC(I,1)
+        END DO
+        EIGVAL(1)=LEIGVAL(1)
+        EIGVAL(3)=LEIGVAL(3)
+        DO I=1,3
+          EIGVEC(I,1)=LEIGVEC(I,1)
+          EIGVEC(I,3)=LEIGVEC(I,3)
+        END DO
+        IF((EIGVEC(1,1).NE.D1).OR.
+     &     (EIGVEC(2,2).NE.D1).OR.
+     &     (EIGVEC(3,3).NE.D1)) THEN
+          LINNOZ=.TRUE.
+        END IF
+      END IF
+C
+      IF(LINNOZ) THEN
+        WRITE (LUPRI,'(/,2X,A)') '*** WARNING: In the current'//
+     & ' implementation of PVCSR, the linear molecule should'//
+     & ' be placed along the z axis. ***'
+      ELSE
 C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
       IF (IPRINT .GE. 8) THEN
        CALL HEADER
@@ -12615,5 +12655,6 @@ C
         END IF
  200   CONTINUE
  98   CONTINUE
+      END IF        ! LINNOZ
       RETURN
       END
