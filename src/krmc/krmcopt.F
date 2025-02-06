@@ -2841,41 +2841,6 @@ C
  9002 FORMAT(/2X,'rENRACT: Total active energy      : ',F25.15)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck renrac1 */
-      FUNCTION RENRAC1(FQ,NORBT,INASH,IOFF)
-C***********************************************************************
-C
-C     Calculate \sum_{u} FQ_{u,u}
-C
-C     Input:
-C        FQ      - the Q Fock matrix for a given symmetry
-C
-C     Returns:
-C        RENRAC1 - \sum_{u} FQ_{u,u}
-C
-C     Written by J. Thyssen - Oct 29 1998
-C     Last revision :
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
-C
-      DIMENSION FQ(NORBT,INASH)
-C
-      CALL QENTER('RENRAC1')
-C
-      E = D0
-      DO I = 1,INASH
-         E = E + FQ(I+IOFF,I)
-      END DO
-      RENRAC1 = E
-C
-      CALL QEXIT('RENRAC1')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rreadmo */
       SUBROUTINE RREADMO(CMO,JRDMO,IOPT,LUNIT)
 C***********************************************************************
