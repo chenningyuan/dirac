@@ -2364,7 +2364,7 @@ C***********************************************************************
 C
 C Used from common blocks:
 C  dcbgen: LUKRMC
-C  dgroup: NZ,NBSYM
+C  dgroup: NZ,NBSYM,NFSYM, linear
 C  dcbopt: NZCONF,NZCONFQ,KZCONF,IOPT_SYMMETRY,LZCONF
 C  dcborb: NAELEC,NASHT
 C
@@ -2521,9 +2521,20 @@ C
 
             IF (.NOT. LINEAR) THEN
             ! LUCIAREL has first boson symmetries, then fermion symmetries (GASCIP etc. have fermion symmetries first)
-            ! *KRMCSCF .SYMMETRY input counts interally in fermion or boson symmetries
+            ! *KRMCSCF .SYMMETRY input counts internally in fermion or boson symmetries
+            ! *KRCI .CIROOTS can be both ways, the code below should take care of all possibilities
+               ! nrep calculated here must have same value as defined in GMULTA
+               if (nbsym .eq. nfsym) then ! C1 or Ci
+                  nrep = nfsym
+               else
+                  nrep = 2*nfsym ! a, b or ag, bg, au, bu for boson symmetries
+               end if
                IF ( MOD(NAELEC,2) .NE. 0) THEN ! fermions
-                  IOPT_SYMMETRY = IOPT_SYMMETRY + NBSYM
+                  IF (IOPT_SYMMETRY .LE. nrep)
+     &               IOPT_SYMMETRY = IOPT_SYMMETRY + nrep
+               ELSE ! bosons
+                  IF (IOPT_SYMMETRY .GT. nrep)
+     &               IOPT_SYMMETRY = IOPT_SYMMETRY - nrep
                END IF
             END IF
 C
