@@ -640,7 +640,7 @@ C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
       INTEGER MAXSP
-      PARAMETER (MAXSP=1000)
+      PARAMETER (MAXSP=1102)
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,CA

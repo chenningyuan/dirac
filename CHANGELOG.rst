@@ -5,16 +5,12 @@
 
 New features:
 
-- Basis set library has been extended with "relativistic prolapse-free Gaussian basis sets" RPF-2Z, RPF-3Z, aug-RPF-2Z, and aug-RPF-3Z.
-   - Contributor: H. J. Aa. Jensen.
-   - Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke, Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z. J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
-
- - DIRAC calculator for the Atomistic Simulation Environment (ASE) is available.
+- DIRAC calculator for the Atomistic Simulation Environment (ASE) is available.
    - Contributors: Carlos M. R. Rocha, Lucas Visscher
    - Reference (DIRAC calculator): https://qc2.readthedocs.io
    - Reference (ASE): https://wiki.fysik.dtu.dk/ase/
 
- - Approximations to EOM-CCSD (Partitioned EOM (P-EOM-CCSD); second-order perturbation theory-based EOM (EOM-MBPT(2) and P-EOM-MBPT(2)) are available in the RELCCSD module for excitation and ionization energies.
+- Approximations to EOM-CCSD (Partitioned EOM (P-EOM-CCSD); second-order perturbation theory-based EOM (EOM-MBPT(2) and P-EOM-MBPT(2)) are available in the RELCCSD module for excitation and ionization energies.
    - Contributors: L. Halbert, A. Gomes
    - Reference: `L. Halbert and A. S. P. Gomes, The performance of approximate equation of motion coupled cluster for valence and core states of heavy element systems, Mol. Phys. (2023) e2246592`__
 
@@ -33,6 +29,11 @@ Infrastructure changes and fixes:
 
 Basis set library:
 
+- Basis set library has been extended with "relativistic prolapse-free Gaussian basis sets" RPF-2Z, RPF-3Z, aug-RPF-2Z, and aug-RPF-3Z.
+   - Contributor: H. J. Aa. Jensen.
+   - Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke, Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z. J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
+- Basis set library has been extended with ECP basis sets cc-pVnZ-PP and cc-pwCVnZ-PP, for n = D,T,Q,5, and the augmented versions aug-cc-pVnZ-PP and aug-cc-pwCVnZ-PP
+   - Contributor: Kirk Peterson
 - Transferred fixes of Dalton basis sets from Dalton (Contributor: H. J. Aa. Jensen):
    - Corrected some references in correlation consistent basis sets (as e.g. aug-cc-pVTZ)
    - Fixed Scandium in aug-cc-pVTZ-J (two lines missing, would have given error if used)
