@@ -268,7 +268,6 @@ Development
   :doc:`Transfering uncommitted code <development/transfering_uncommitted_code>`
 
 * **Notes:**
-  :doc:`DFCOEF <development/dfcoef>` |
   :doc:`Screening <development/screening>` |
   :doc:`64bit integers <development/int8>` |
   :doc:`Numerical constants <development/num_constants>` |
