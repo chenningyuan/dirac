@@ -12,7 +12,7 @@ New features:
 
 - Approximations to EOM-CCSD (Partitioned EOM (P-EOM-CCSD); second-order perturbation theory-based EOM (EOM-MBPT(2) and P-EOM-MBPT(2)) are available in the RELCCSD module for excitation and ionization energies.
    - Contributors: L. Halbert, A. Gomes
-   - Reference: `L. Halbert and A. S. P. Gomes, The performance of approximate equation of motion coupled cluster for valence and core states of heavy element systems, Mol. Phys. (2023) e2246592`__
+   - Reference: `L. Halbert and A. S. P. Gomes, The performance of approximate equation of motion coupled cluster for valence and core states of heavy element systems, Mol. Phys. (2023) e2246592 <https://doi.org/10.1080/00268976.2023.2246592>`__
 
 Infrastructure changes and fixes:
 

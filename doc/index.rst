@@ -44,12 +44,6 @@ Setting up DIRAC
   :doc:`String replacement <pam/replace>`
 
 
-Updates and patches
-===================
-
- :doc:`ChangeLog <patches/CHANGELOG>` |
- :doc:`Known problems <patches/KNOWN-PROBLEMS>`
-
 .. _FirstSteps:
 
 First steps in DIRAC territory
@@ -268,7 +262,6 @@ Development
   :doc:`Transfering uncommitted code <development/transfering_uncommitted_code>`
 
 * **Notes:**
-  :doc:`DFCOEF <development/dfcoef>` |
   :doc:`Screening <development/screening>` |
   :doc:`64bit integers <development/int8>` |
   :doc:`Numerical constants <development/num_constants>` |

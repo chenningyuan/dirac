@@ -156,5 +156,5 @@ If it is a cluster, but you prefer to install it yourself (it's easy):
 What to do if hdf5 is not installed on your machine
 ---------------------------------------------------
 
-You can download the latest version of hdf5 from: `https://www.hdfgroup.org/downloads/hdf5/`
+You can download the latest version of hdf5 from `the hdfgroup website <https://www.hdfgroup.org/download-hdf5>`_
 
