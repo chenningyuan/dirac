@@ -1846,7 +1846,7 @@ C
       if (dirac_cfg_exacc) then
          if (dirac_cfg_scf_calculation.or.
      &       dirac_cfg_dft_calculation.or.
-     &      dirac_cfg_mcsrdft_calculation) then
+     &       dirac_cfg_mcsrdft_calculation) then
             RUN_PAMSET = .TRUE.
          else
             RUN_PAMSET = .FALSE.
