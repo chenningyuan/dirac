@@ -288,6 +288,7 @@ keyword(MOFILE)
 Name of file with MO coefficients to be used for integral transformation.
 Valid options: "DFCOEF", "KRMCSCF", "KRMCOLD", and "UNKNOWN".
 The "UNKNOWN" option means use the first one found of "KRMCSCF", "KRMCOLD", "DFCOEF" in this order.
+(Note: the option "DFCOEF" means the MO coefficients are read from the CHECKPOINT file)
 
 *Default:*
 
