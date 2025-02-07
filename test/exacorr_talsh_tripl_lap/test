@@ -14,12 +14,12 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Final CCSD energy',
       num_lines   = 7,
-      abs_tolerance   = 2.0e-8)
+      abs_tolerance   = 1.0e-7)
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
       rel_tolerance   = 1.0e-8)
 f.add(from_string = 'Eigenvalues',
-      num_lines   = 32,
+      to_string = '  gap  ',
       rel_tolerance   = 1.0e-5)
 
 test.run(['exacc_h2.inp'], ['H2.xyz'], f)

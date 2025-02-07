@@ -46,9 +46,6 @@ C
 C
 C  .ACTIVE  - (string) Spinors to be included in the MP2 calculation
 C             Default: "energy -10.0 20.0 0.2"
-C  .MAX VS  - (integer) maximum number of virtuals in MP2
-C             if energy criterium gives more then max energy will be
-C             reduced
 C  .SCHEME  - transformation scheme used for MOLTRA (default taken from moltra)
 C  .SEL NO  - select min NO for active orbitals afterwards (relccsd,
 C             lucita, kr-mcscf, luciarel, ...)
@@ -62,7 +59,7 @@ C  .FOCKNO  - transform selected NO's to canonical Fock orbitals in
 C             subspace (?? for better convergence in CI?)
 C  
       SAVE SET
-      DATA TABLE /'.ACTIVE','.PRINT ','.INTFLG','.F2CONT','.MAX VS',
+      DATA TABLE /'.ACTIVE','.PRINT ','.INTFLG','.F2CONT','xxxxxxx',
      &            '.SCHEME','.SEL NO','.MULPOP'/
       DATA SET/.FALSE./
 C
@@ -82,7 +79,6 @@ C
 C     Initialize /CBIMP2NO/
 C     =====================
 C
-      DEF_EN   = .TRUE. ! VECMP2NO(I) is default with energy criterium
 #ifdef DEBUG_MP2_NO
       IPRMP2NO = MAX(10,IPRGEN)
 #else
@@ -104,7 +100,6 @@ C     step
         VECMP2NO(I) = 'energy -10.0 20.0 0.2 '
         VECNOSEL(I) = 'NO-occ 1.99999999 0.0001 0.1 '
       ENDDO
-      IMAXVSP     = JMAXVSP
 Caspg, default changed from scheme 4 to scheme 6
 cayaki_03_06_2022
 c     default changed from scheme 6 to scheme 4, because scheme 4 is faster
@@ -143,7 +138,6 @@ C
     1          CONTINUE
 C&&&& ACTIVE: Spinors to be included in the MP2 calculation
                   READ(LUCMD,'(A72)') (VECMP2NO(I),I=1,NFSYM)
-                  DEF_EN = .FALSE.
                GO TO 100
     2          CONTINUE
 C&&&& PRINT: General print level
@@ -162,8 +156,7 @@ C&&& F2CONT: Specify Coulomb/exchange contributions
                   READ(LUCMD,*) IFCMP2NO,IFEMP2NO
                GO TO 100
     5          CONTINUE
-C&&& MAX VS: Specify max. number of virtual. spinors in NO-MP2 calculation
-                  READ(LUCMD,*) IMAXVSP
+C&&& 
                GO TO 100
     6          CONTINUE
 C&&& SCHEME: Specify integral transformation scheme for MP2 (RELCCSD
@@ -216,8 +209,6 @@ C
       ENDDO
       WRITE(LUPRI,'(A,I3)') ' * Integral transformation scheme: ',
      &                          IAOMOSCHEME
-      WRITE(LUPRI,'(A,I3)') ' * Maximum number of virtual spinors: ',
-     &                          IMAXVSP    
       IF(ILLINT.EQ.0) WRITE(LUPRI,'(A)') ' * No LL contributions'
       IF(ISLINT.EQ.0) WRITE(LUPRI,'(A)') ' * No SL contributions'
       IF(ISSINT.EQ.0) WRITE(LUPRI,'(A)') ' * No SS contributions'
@@ -983,17 +974,6 @@ C
          NAVIR(IFRP) = NSTR(IFRP,0,1) - NAOCC(IFRP)
          NAVIRT = NAVIRT + NAVIR(IFRP)
       ENDDO
-C
-C     if selection criterion is set check for max. virt. 
-C
-      IF( DEF_EN )THEN
-        IF( NAVIRT .gt. IMAXVSP ) THEN
-          WRITE(LUPRI,'(/A,I5/A,I5/A)')
-     &       ' NOTE: number of active virt.:',NAVIRT,
-     &       ' Maximum number of act. virt.:',IMAXVSP,
-     &       ' You may reconsider your choice of active space'
-        END IF
-      END IF
 C     
 C     number of inactive virtuals
 C 

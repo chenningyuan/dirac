@@ -3456,7 +3456,7 @@ C     '*MP2 NO' - MP2 Natural Orbitals
    10 CONTINUE
         CALL MP2NOINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
-C     '*KRCICALC' - Kramers Restricted CI CALCulation
+C     '*KRCICALC' - Kramers Restricted CI CALCulation (deprecated, use *KRCI )
    11 CONTINUE
         CALL KRCI_INP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200

@@ -9,6 +9,16 @@
 
 #include <stdlib.h>
 
+#if defined(INT_STAR8)
+   typedef long integer;
+#else
+   typedef int integer;
+#endif
+
+#if !defined(M_PI)
+#define M_PI		3.14159265358979323846
+#endif
+
 #if !defined(RESTRICT)
 #define RESTRICT
 #endif
@@ -156,13 +166,14 @@ typedef void (*DFTPropEvalMaster)(void);
 typedef void (*DFTPropEvalSlave)(real* work, int* lwork, const int* iprint);
 #if defined(VAR_MPI)
 #include <mpi.h>
-void dft_kohn_sham_slave(real* work, int* lwork, const int* iprint);
-void dft_lin_resp_slave (real* work, int* lwork, const int* iprint);
-void dft_lin_respf_slave (real* work, int* lwork, const int* iprint);
-void dft_kohn_shamab_slave(real* work, int* lwork, const int* iprint);
-void dft_lin_respab_slave (real* work, int* lwork, const int* iprint);
-void dft_mol_grad_slave (real* work, int* lwork, const int* iprint);
-void dft_qr_resp_slave  (real* work, int* lwork, const int* iprint);
+void dft_kohn_sham_slave    (real* work, int* lwork, const int* iprint);
+void dft_lin_resp_slave     (real* work, int* lwork, const int* iprint);
+void dft_lin_respf_slave    (real* work, int* lwork, const int* iprint);
+void dft_kohn_shamab_slave  (real* work, int* lwork, const int* iprint);
+void dft_lin_respab_slave   (real* work, int* lwork, const int* iprint);
+
+void dft_mol_grad_slave     (real* work, int* lwork, const int* iprint);
+void dft_qr_resp_slave      (real* work, int* lwork, const int* iprint);
 void dft_wake_slaves(DFTPropEvalMaster);
 typedef struct {
     void*        data;
@@ -192,7 +203,7 @@ void gtdmso_(real* udv, real* cmo, real* di, real* dv, real* work);
 void dftdnsab_(real* dmata,real* dmatb, real* work, int* lwork, int* iprint);
 void udftmolgrdab_(real* gao, real* damta, real* dmatb, real* rha, real* rhb, 
                    real* vra, real* vrb, real* vza, real* vzb, real* vzg); 
-int FSYM2(ishell_cnt)(void);
+integer FSYM2(ishell_cnt)(void);
 void dalton_quit(const char* format, ...);
 
 /* BLAS and other linear algebra routines */
@@ -223,13 +234,13 @@ void dgemm_(const char* transa, const char* transb, const int* nrowc,
 real* alloc_mat_MO(int cnt);
 
 void FSYM2(dft_get_ao_dens_mat)(const real* cmo, real* dmat,
-                                real* work, int* lwork);
+                                real* work, integer* lwork);
 void FSYM2(dft_get_ao_dens_matab)(real* cmo, real* dmata, real* dmatb,
-                                  real* work, int* lwork);
+                                  real* work, integer* lwork);
 
 /* useful  constants for fortran interfacing */
-extern const int  ZEROI, ONEI, THREEI, FOURI;
-extern const real ZEROR, ONER, TWOR, FOURR;
+extern const integer ZEROI, ONEI, THREEI, FOURI;
+extern const real    ZEROR, ONER, TWOR,   FOURR;
 
 #if !defined __inline__
 /* inline some stuff whenever possible */
