@@ -9,7 +9,7 @@ Getting the Code
 ----------------
 
 **We recommend users who do not plan to make any code changes
-to download from** https://zenodo.org/records/10680561 (DIRAC24).
+to download from** https://zenodo.org/doi/10.5281/zenodo.14833106 (DIRAC25).
 
 In this case the release tarballs are self-contained, and in addition we get useful download metrics which we can use
 in future funding applications.
