@@ -3397,6 +3397,10 @@ C
          if(DOKRMC .or. DOGASCIP .or. DOKRCI)
      &   call quit(" X2Cmmf does not work with KRMC/KRCI/GASCIP")
       end if
+
+      if (spinfr .and. domp2no) then
+         call quit('.MP2 NO does not work for spin-free calculations')
+      end if
 C
 C     Process input for various program sections
 C     ==========================================

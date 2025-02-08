@@ -702,6 +702,8 @@ C
 C
 C     NSTR(I): Number of Spinors to be Transformed for index I
 C
+      NSTR(:,:,:) = 0
+      NSTRT(:) = 0
       DO I = 1,4
         NSTRT(I) = 0
         DO IFRP = 1,NFSYM
@@ -894,8 +896,8 @@ C
       deallocate (ibeig)
 C
 C     If necessary recanonize (virtual) orbitals
-C     Assuming that all sets are equal, we use the first index !!!
-C     ============================================================
+C     Assuming that first index corresponds to the most general set
+C     =============================================================
 C
       IF (RCORBS) THEN
          WRITE(LUPRI,'(/A)') 'Info: RCORBS set, calling VIRCAN'
@@ -1069,8 +1071,10 @@ C     by making all the MO coefficients for these orbitals zero.
 
       IF (.NOT.NO2IND) THEN
          NSPC2=-1
+         KQ_ONE(1:2,1) = KQ(1:2,1) ! we know index 1 is the general index in (go|go)
+         KQ_ONE(1:2,2) = KQ(1:2,1)
          CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR_ONE,NSTRT_ONE,NSPC,
-     &               KQ,KQC,KE_ONE,KIBE_ONE,NSPC2)
+     &               KQ_ONE,KQC,KE_ONE,KIBE_ONE,NSPC2)
       END IF
 
       CALL FLSHFO(LUPRI)
@@ -1314,6 +1318,11 @@ C
 
        reorder_fermion = -1
        reorder_list    =  0
+
+#ifdef DEBUG_MP2_NO
+       write(lupri,*) ' mp2 occupation numbers'
+       write(lupri,'(10F10.6)') occ(1:nesht)
+#endif
 
 !      create list for reordering in descending order according to occupation numbers
 !      ------------------------------------------------------------------------------
