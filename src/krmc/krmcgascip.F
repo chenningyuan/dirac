@@ -1173,6 +1173,7 @@ C  /* Deck gascip_symok */
 C***********************************************************************
 C
 C     Find symmetry of determinant (IA,IB).
+C     IRRP in dcbgascip.h specifies the wf symmetry
 C
 C     Written by J. Thyssen - Jan 2 2001
 C     Last revision :
@@ -2654,7 +2655,6 @@ C
 C     Set general parameters (which later maybe should be set by input?)
 C
 !d      write(lupri,*) 'THR_PCI, THR_CONV', THR_PCI,THR_CONV
-      NDETQ  = NZ_in_CI*NDET
 C
       IF (N_ROOTS .LT. 1 .OR. N_ROOTS .GE. MAX_ROOTS) THEN
 C        MAX_ROOTS must be greater than  N_ROOTS to be sure
@@ -2668,6 +2668,8 @@ C        to include all members of quasidegenerate sets.
      &      N_ROOTS,NDET
          CALL QUIT('N_ROOTS .gt. number of determinants')
       END IF
+
+      NDETQ  = NZ_in_CI*NDET
 
 C
 C     ************************************
@@ -2743,6 +2745,9 @@ C
 
       CALL MEMREL('GASCIP_RCISTD.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
 
+!     Assume we can have all sigma and trial vectors in memory.
+!     This could get a little expensive for large CI's.
+
 !     Allocate memory for reduced space and for b- and sigma-vectors
 
       MAX_HRED = N_ROOTS*(MAX_CI_IT+1) + N_CSIM_EXTRA_START
@@ -2773,12 +2778,11 @@ C
       CALL MEMGET2('REAL','SEIGVL',KSEIGVL,MAX_HRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','S_MHLF',KS_MHLF,LHRED,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KSRED),LHRED)
-      KSREDI = KSRED + MAX_HRED*MAX_HRED
+      KSREDI   = KSRED   + MAX_HRED*MAX_HRED
       KS_MHLFI = KS_MHLF + MAX_HRED*MAX_HRED
-C
-C     Assume we can have all sigma and trial vectors in memory.
-C     This could get a little expensive for large CI's.
-C
+
+!     Allocate memory for all trial and sigma vectors in memory
+
       CALL MEMGET2('REAL','BCVEC',KBCVEC,MAX_HRED * NDETQ,
      &     WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','SCVEC',KSCVEC,MAX_HRED * NDETQ,
@@ -2789,7 +2793,6 @@ C
 C     ********************************
 C     *** Find start trial vectors ***
 C     ********************************
-C
 C
       CALL MEMGET2('REAL','HDIAG',KHDIAG,NDET,WORK,KFREE,LFREE)
 C

@@ -2383,10 +2383,6 @@ C
       CALL QENTER('RSETCI')
       CALL GETTIM(CPU1,WLL1)
 
-      write(lupri,'(/2A/A,2L5)')
-     &      ' RSETCI: Using CI program ',USE_CIPROGRAM,
-     &      ' RSETCI: linear, spinfr_krmc',linear,spinfr_krmc
-
       if(linear.or.spinfr_krmc)then
 
 !       may be oversized if not all orbitals are active
@@ -3562,7 +3558,7 @@ C
 C     MAXCIT < 0:
 C
 C     Diagonalize the full CI matrix now.
-C     This is of course only possible for sufficiently small CI's.
+C     This is of course only possible for sufficiently small CI dimension.
 C
 !     fcidump: generate FCIDUMP file and return
       if(fcidump)then
@@ -3585,7 +3581,7 @@ C           MAXCIT Davidson CI iterations.
 C
             CALL MEMGET2('REAL','ECI',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
-            THRGCI = 0.1D0 * SQRT(OPT_THRECI)   ! GASCIP uses gradient threshold, not energy threshold
+            THRGCI = opt_thrgrd
             CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
      &                         OPT_THR_CVEC,IOPT_STATE,ICONV_TOT,
