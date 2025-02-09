@@ -430,11 +430,11 @@ C
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
-      DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
+      DATA TABLE  /'.DIRECT','.CVALUE','xxxxxxx','.DOJACO',
      &             '.PRINT ','.PRJTHR','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
      &             '.ACMOUT','.ACMOIN','.IMPMOS','.CODATA',
-     &             '.SKIP2E','.LOWJAC','.RKBIMP','.XXXXXX',
+     &             'xxxxxxx','.LOWJAC','.RKBIMP','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP and USER_STOL
@@ -444,7 +444,6 @@ C
       USER_STOL  = .FALSE.
       TWOCOMP    = .FALSE.
       TWOCOMPBSS = .FALSE.
-      SKIP2E     = .FALSE.
       LOWJACO    = .FALSE.
       LOGMEMGET  = .FALSE.
       DOQJACO    = .FALSE.
@@ -531,8 +530,7 @@ C&&&& CVALUE: Set a different value of speed of light (in a.u.)
             CSCALE = CVAL
             GO TO 100
   103    CONTINUE
-C&&&& NOSET: Skip the PAMSET module
-            NOSET = .TRUE.
+C&&&& 
             GO TO 100
   104    CONTINUE
 C&&& DOJACO: Do Jacobi diagonalization if real group
@@ -609,8 +607,7 @@ C&&&& CODATA: Choose between CODATA sets
             END IF
             GO TO 100
   117    CONTINUE
-C&&&& SKIP2E
-            SKIP2E = .TRUE.
+C&&&& 
             GO TO 100
   118    CONTINUE
 C&&&& LOWJAC
@@ -793,8 +790,6 @@ C
       ENDIF
       WRITE(LUPRI,'(1X,A,I3)')
      &     '* General print level   : ',IPRGEN
-      IF(NOSET) WRITE(LUPRI,'(1X,A)')
-     &     '* Skipping the PAMSET module. Crossing my fingers ...'
 C
 C     Process input for various program sections
 C     ==========================================
@@ -3402,6 +3397,10 @@ C
          if(DOKRMC .or. DOGASCIP .or. DOKRCI)
      &   call quit(" X2Cmmf does not work with KRMC/KRCI/GASCIP")
       end if
+
+      if (spinfr .and. domp2no) then
+         call quit('.MP2 NO does not work for spin-free calculations')
+      end if
 C
 C     Process input for various program sections
 C     ==========================================
@@ -5155,7 +5154,6 @@ C
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
-      NOSET    = .FALSE.
       OPTWLK   = .FALSE.
       OPTNEW   = .FALSE.
       NMWALK   = .FALSE.
