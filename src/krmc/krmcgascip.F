@@ -34,12 +34,12 @@
 !   itask=1) -> GASCIP_NODE_CISIG
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GASCIP_SETUP(UCIBOS,ICIREP,IPRINT)
+      SUBROUTINE GASCIP_SETUP(UCIBOS,ICIREP,IPRINT_in)
 C***********************************************************************
 C
 C     Setup and initialize variables in dcbgascip.h
 C
-C     Input : UCIBOS, ICIREP, IPRINT
+C     Input : UCIBOS, ICIREP, IPRINT_in
 C
 C     Output: in common blocks
 C
@@ -54,7 +54,7 @@ C***********************************************************************
 #include "maxash.h"
 
       LOGICAL UCIBOS
-      INTEGER ICIREP, IPRINT
+      INTEGER ICIREP, IPRINT_in, IPRINT
 C
 C Used from include files:
 C  dcbopt.h : IOPT_MINMK2, ...
@@ -71,6 +71,8 @@ C
 C
 C
       CALL QENTER('GASCIP_SETUP')
+
+      IPRINT = MAX(IPRINT_in, GASCIP_DEBUG)
 
       IF (NASHT .LE. 0)
      &   CALL QUIT('GASCIP_SETUP error: no active orbitals.')
@@ -134,11 +136,19 @@ C        ... code for include all symmetries
          IRRP = IRP
       ELSE IF ( MOD ( NAELEC, 2 ) .EQ. 0 ) THEN
 C        ...boson symmetry
-         IRRP = NREP + IRP
+         if (irp .gt. nrep) then ! IRP is already set to boson symmetry, e.g. for *KRCI
+            IRRP = IRP
+         else ! *KRMC input, IRP must be redefined to boson symmetry in MULTB etc.
+            IRRP = NREP + IRP
+         end if
       ELSE
 C        ...fermion symmetry
          IRRP = IRP
       END IF
+
+C     should never happen, but check for programming error:
+      if (irrp .gt. 2*nrep) call quit(
+     &  'Error in GASCIP_SETUP, irrp > 2*nrep')
 C
 C     Setup orbital symmetries
 C     ------------------------
@@ -233,15 +243,13 @@ C
       write(lupri,*) '*** DEBUG OUTPUT GASCIP_SETUP:'
       write(lupri,*) 'MULTB:'
       do i = 1, 2*nrep
-         write(lupri,'(i5,a,65i3)') i,' :',multb(i,0:2*nrep)
+         write(lupri,'(i5,a,64i3)') multb(i,0),' :',multb(i,1:2*nrep)
       end do
-      write(lupri,*) 'I, IPTA2O, IPTB2O:'
+      write(lupri,*) 'I, ia=IPTA2O, IRPAMO(ia); ib=IPTB2O, IRPAMO(ib):'
       do i = 1, nasht
-         write(lupri,*) i, ipta2o(i), iptb2o(i)
-      end do
-      write(lupri,*) 'I, irpamo(i), irpamo(nasht+i)'
-      do i = 1, nasht
-         write(lupri,*) i, irpamo(i), irpamo(nasht+i)
+         IA = IPTA2O(I)
+         IB = IPTB2O(I)
+         write(lupri,*) i, ' a ',IA,IRPAMO(IA), '; b ',IB,IRPAMO(IB)
       end do
 #endif
 C
@@ -368,7 +376,7 @@ C
 C
 #if GASCIP_DEBUG > 1
          DO I = 1, NGAS_DC
-            write(lupri,'(I5,A,B64.64)')
+            write(lupri,'(I5,A,B0.20)')
      &      I,' gas bit mask            : ',mskgas(i)
          END DO
 #endif
@@ -379,7 +387,7 @@ C
 C
 #if GASCIP_DEBUG > 1
          DO I = 1, NGAS_DC
-            write(lupri,'(I5,A,B64.64)')
+            write(lupri,'(I5,A,B0.20)')
      &      I,' gas bit mask accumulated: ',mskgas(i)
          END DO
 #endif
@@ -523,7 +531,7 @@ C     Generate determinants:
 C     -----------------------
 
       IF (IPRINT.GT.2) WRITE(LUPRI,'(/A)') 
-     &' MK2, NASTR, NBSTR, NASTR*NBSTR, NMK2(MK2,3), MDPS, DOK, time'
+     &' MK2,  NASTR,  NBSTR, NASTR*NBSTR, NMK2(MK2,3),   Mdets/s,   %OK'
       NDET    = 0
       IMK2(:,:) = -1234567890
       DO 10 IAEL = MINAEL, MAXAEL
@@ -572,7 +580,7 @@ C
          END DO
   110    CONTINUE
 #if GASCIP_DEBUG > 1
-         write(lupri,'(A,I60)') 'after check NDET',NDET
+         write(lupri,'(A,I0.8)') 'after GASOK and SYMOK checks, NDET = ',NDET
          call flshfo(lupri)
 #endif
          NMK2(MK2,1) = NASTR
@@ -585,10 +593,14 @@ C
             WALLTID = SECTID(WLL2-WLL1)
 C
             xMDPS = (NASTR*NBSTR)*1.D-6 / (CPU2-CPU1)
-            DOK = 100.0D0*NMK2(MK2,3) / (NASTR*NBSTR)
-            IF (IPRINT.LE.2) WRITE(LUPRI,'(A)') 
-     &' MK2, NASTR, NBSTR, NASTR*NBSTR, NMK2(MK2,3), MDPS, DOK'
-            WRITE(LUPRI,'(I3,2I8,2I15,F10.2,F10.3,1X,4A)') 
+            if (nastr*nbstr .eq. 0) then
+               DOK = 0.0d0
+            else
+               DOK = 100.0D0*NMK2(MK2,3) / (NASTR*NBSTR)
+            end if
+            IF (IPRINT.LE.2 .or. GASCIP_DEBUG > 1) WRITE(LUPRI,'(A)') 
+     &' MK2,  NASTR,  NBSTR, NASTR*NBSTR, NMK2(MK2,3),   Mdets/s,   %OK'
+            WRITE(LUPRI,'(I4,2I8,2I13,F10.2,F8.3,1X,4A)') 
      &  MK2, NASTR, NBSTR, NASTR*NBSTR, NMK2(MK2,3),xMDPS, DOK,
      &      CPUTID,'(',WALLTID,')'
          END IF
@@ -664,7 +676,7 @@ C     Write statistics about determinants
  9103 FORMAT(3X,56('-') / 5X,'all',T23,3I10)
 C
 C
-      IF (IPRINT .GE. 20 .OR. (IPRINT .GE. 3 .AND. NDET .LE. 50) ) THEN
+      IF (IPRINT .GE. 20 .OR. (IPRINT .GE. NDET/20) ) THEN
          WRITE(LUPRI,9001)
          DO MK2 = MINMK2, MAXMK2
             IF (NMK2(MK2,3) .GT. 0) THEN
@@ -948,11 +960,11 @@ C***********************************************************************
 #if GASCIP_DEBUG > 10
             write(lupri,*) 'GASCIP_STR_GASINFO: fnbits i,igas,ng',
      &         i,igas,ng_str(igas,i)
-            WRITE (LUPRI,'(10X,B64/10X,B64)') JSTR(I),IG
+            WRITE (LUPRI,'(10X,B0.20/10X,B0.20)') JSTR(I),IG
 #endif
          END DO
 #if GASCIP_DEBUG > 4
-         write(lupri,'(A,I10,1X,B64,20I5)')
+         write(lupri,'(A,I10,1X,B0.20,20I5)')
      &         'GASCIP_STR_GASINFO: string, NG',
      &         I,JSTR(I), NG_STR(1:NGAS_DC,I)
 #endif
@@ -1044,8 +1056,8 @@ C
             END IF
  20      CONTINUE
          WRITE(LUPRI,*) 'ERROR: No Kramers partner found for det.',I
-         WRITE(LUPRI,'(A,B64)') '   a-string: ',IDET(1,I),
-     &                          '   b-string: ',IDET(2,I)
+         WRITE(LUPRI,'(A,B0.20)') '   a-string: ',IDET(1,I),
+     &                            '   b-string: ',IDET(2,I)
          IERROR = IERROR + 1
  30      CONTINUE
  10   CONTINUE
@@ -1160,8 +1172,8 @@ C
          SYM_STR(1,J) = JRRP_A
          SYM_STR(2,J) = JRRP_B
 #if GASCIP_DEBUG > 4
-         WRITE(LUPRI,'(A,I10,1X,B64,2I5)')
-     &   'string, string symmetry A B',J,JSTR(J),JRRP_A,JRRP_B
+         WRITE(LUPRI,'(A,I10,1X,B0.20,2I5)')
+     &   ' #, string, symmetry A & B',J,JSTR(J),JRRP_A,JRRP_B
 #endif
       END DO ! J = 1, NSTR
 
@@ -1197,8 +1209,9 @@ C        ... include all symmetries
          IREPAB = MULTB(IREPA,IREPB)
          GASCIP_SYMOK = (IREPAB .EQ. IRRP)
 #if GASCIP_DEBUG > 4
-         WRITE(LUPRI,*) 'GASIP_SYMOK, IREPA, IREPB, IREPAB, IRRP',
-     &   GASCIP_SYMOK, IREPA, IREPB, IREPAB, IRRP
+         WRITE(LUPRI,'(A,L5,4I5)')
+     &     'GASCIP_SYMOK, IREPA, IREPB, IREPAB, IRRP',
+     &      GASCIP_SYMOK, IREPA, IREPB, IREPAB, IRRP
 #endif
       ELSE
 C
@@ -1209,8 +1222,9 @@ C
          IREPAB = IEOR(IREPA,IREPB)
          GASCIP_SYMOK = (IREPAB .EQ. IRP-1)
 #if GASCIP_DEBUG > 4
-         WRITE(LUPRI,*) 'GASIP_SYMOK, IREPA, IREPB, IREPAB, IRP-1',
-     &   GASCIP_SYMOK, IREPA, IREPB, IREPAB, IRP-1
+         WRITE(LUPRI,'(A,L5,4I5)')
+     &     'GASCIP_SYMOK, IREPA, IREPB, IREPAB, IRP-1',
+     &      GASCIP_SYMOK, IREPA, IREPB, IREPAB, IRP-1
 #endif
       ENDIF
 C
@@ -1957,9 +1971,9 @@ C        ... only one electron terms
       END IF
 #if GASCIP_DEBUG > 30
       write (lupri,'(/A)')
-     &   '  GASCIP_MAKEH: Test output of IDET(2,NDET):)'
+     &   '  GASCIP_MAKEH: Test output of IDET(1:2,1:NDET):)'
       DO I = 1, NDET
-         WRITE (LUPRI,'(/I5,5X,B64/10X,B64)') I, IDET(1,I), IDET(2,I)
+         WRITE (LUPRI,'(/I5,5X,B0.20/10X,B0.20)') I, IDET(1,I), IDET(2,I)
       END DO
 #endif
 C
@@ -1992,8 +2006,8 @@ C
          END DO
          IF (IELEC .NE. NAELEC) THEN
             WRITE(LUPRI,*) 'GASCIP_MAKEH: IELEC.ne.NAELEC',IELEC,NAELEC
-            WRITE(LUPRI,'(A,B64)') 'IDA ',IDA
-            WRITE(LUPRI,'(A,B64)') 'IDB ',IDB
+            WRITE(LUPRI,'(A,B0.20)') 'IDA ',IDA
+            WRITE(LUPRI,'(A,B0.20)') 'IDB ',IDB
             CALL QUIT('GASCIP_MAKEH: IELEC.ne.NAELEC')
          END IF
 C
@@ -3928,7 +3942,7 @@ C***********************************************************************
       implicit none
 #include "priunit.h"
 C
-#include "dcbgascip.h"
+!include "dcbgascip.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -3943,11 +3957,11 @@ C
       DO J = 1, NASHT
          IF (BTEST(IA,J-1)) THEN
             IAELEC = IAELEC + 1
-            JASTR(IAELEC) = IPTA2O(J)
+            JASTR(IAELEC) = J
          END IF
          IF (BTEST(IB,J-1)) THEN
             IBELEC = IBELEC + 1
-            JBSTR(IBELEC) = IPTB2O(J)
+            JBSTR(IBELEC) = J
          END IF
       END DO
 
@@ -4025,11 +4039,11 @@ C
                WRITE(LUPRI,'(3X,A,(T21,40I4))')
      &            '  P-string     : ',(JASTR(J),J=1,IA)
                WRITE(LUPRI,'(3X,A,(T21,40I4))')
-     &            '  P(bar)-string: ',(JBSTR(J)-NASHT,J=1,IB)
+     &            '  P(bar)-string: ',(JBSTR(J),J=1,IB)
 #if GASCIP_DEBUG > 8
-               WRITE(LUPRI,'(3X,A,B64.64)')
+               WRITE(LUPRI,'(3X,A,B0.20)')
      &            '  P-string     : ',IDET(1,I)
-               WRITE(LUPRI,'(3X,A,B64.64)')
+               WRITE(LUPRI,'(3X,A,B0.20)')
      &            '  P(bar)-string: ',IDET(2,I)
 #endif
 
@@ -4204,7 +4218,7 @@ C     NGASSP(1:2,i) give accumulated minimum and maximum number of
 C     all electrons in gas space i.
 C
 #if GASCIP_DEBUG > 5
-      write (lupri,*) 'gascip_genstr: iel, naelec,ngas_dc',
+      write (lupri,*) '=== gascip_genstr: iel, naelec,ngas_dc',
      &    iel,naelec,ngas_dc
 #endif
       NGTOT = 0
@@ -4224,18 +4238,17 @@ C
          !   zero
 
 #if GASCIP_DEBUG > 5
-         write (lupri,*) 'GAS space, constraints, NGTOT',
+         write (lupri,*) 'GAS space, constraints, NGTOT         ',
      &      I,NGASSP(1,I),NGASSP(2,I),NGTOT
-         write (lupri,*) 'min_a_el,max_a_el,max_b_el',
+         write (lupri,*) 'min_a_el,max_a_el,max_b_el            ',
      &                    min_a_el,max_a_el,max_b_el
 #endif
 
          IF ( MAX_A_EL .LT. MIN_A_EL ) THEN
             ! IEL A electrons is not compatible with GAS constraint
 #if GASCIP_DEBUG > 5
-            WRITE (LUPRI,'(/A/A,3I10)')
-     &       "This is not compatible with GAS constraints!",
-     &       "gas space, MAX_A_EL, MIN_A_EL",I,MAX_A_EL,MIN_A_EL
+            WRITE (LUPRI,'(A)') " Not OK! max_a_el < min_a_el"//
+     &       "=> not compatible with GAS constraints!"
 #endif
             NSTR = 0
             GO TO 9000
@@ -4244,7 +4257,8 @@ C
          nGASSpc(2,I) = MAX_A_EL
 #if GASCIP_DEBUG > 5
          write(lupri,*)
-     &       'gascip_genstr: gas, ngsht, nGASsp(1:2), nGASSpc(1:2) : ',
+     &       'gascip_genstr: gas, ngsht, nGASsp(1:2), nGASSpc(1:2) : '
+         write(lupri,*)
      &      I,ngsht(I),ngassp(1,i),ngassp(2,i),nGASSpc(1,I),nGASSpc(2,I)
 #endif
       END DO
@@ -4252,7 +4266,7 @@ C
       CALL cgendet(IEL,NASHT,NSTR,JSTR,
      &             NGAS_DC,nGASTOT,MSKGAS,nGASSpc,MAXSTR)
 #if GASCIP_DEBUG > 5
-      write (lupri,*) 'After cgendet ..., NSTR ',NSTR
+      write (lupri,'(A,I20/)') 'After cgendet ..., NSTR ',NSTR
 #endif
 C
  9000 RETURN
