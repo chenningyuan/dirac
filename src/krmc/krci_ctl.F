@@ -186,9 +186,11 @@ C                                sufficiently well. More testing
 C                                required.
 C      DKRCI_THRECI = 0.8d-12 
       !September 25 2019: Changed to more moderate value - A. Nyvang
-      DKRCI_THRECI = 1.0d-10 ! CI energy change convergence threshold;
+!     DKRCI_THRECI = 1.0d-10 ! CI energy change convergence threshold;
       ! set so low that the DKRCI_THRGCI takes precedence
-      DKRCI_THRGCI = 1.0d-4 ! CI gradient convergence threshold
+!     DKRCI_THRGCI = 1.0d-4 ! CI gradient convergence threshold
+      DKRCI_THRECI = -1.0d0
+      DKRCI_THRGCI = -1.0D0
 C
 C     Initialize /DCOKRCI/
 C     ===================
@@ -215,7 +217,7 @@ C
 C     Initialize /DCICKRCI/
 C     ===================
 C
-      MAXCIT_KRCI   =    4
+      MAXCIT_KRCI   =   40
       MXCIV_KRCI    =    0
       IANACI_KRCI   =    0
       KTRLVL_KRCI   =    3
@@ -905,7 +907,8 @@ C&&& TERSE  : Old LUCIAREL output for iterations and final info
       END IF
   300 CONTINUE
 C
-      IF (.NOT. NEWDEF) GOTO 400
+! hjaaj Feb. 2025: we want to print the KR-CI info, also if default values are used.
+!     IF (.NOT. NEWDEF) GOTO 400 
 C
 !     Warnings for options not implemented (yet)
 !     ------------------------------------------
@@ -1202,10 +1205,60 @@ C
      &   ' Control parameters for KR-CI optimization'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
-      WRITE(LUPRI,'(A,1P,D10.2)')
-     &     ' * Gradient convergence threshold:', DKRCI_THRGCI
-      WRITE(LUPRI,'(A,1P,D10.2)')
-     &     ' * Energy convergence threshold:  ', DKRCI_THRECI
+!     Convergence thresholds.
+!     A CI root is converged in LUCIAREL if one of the criteria is fulfilled.
+!     GASCIP ignores the DKRCI_THRECI
+!     Usually the two thresholds will be fulfilled in the same micro-iteration +/- 1
+!     if DKRCI_THRECI = DKRCI_GHRGCI**2
+      IF (DKRCI_THRGCI .LT. 0.0D0 .AND. DKRCI_THRECI .LT. 0.0D0) THEN
+      ! no user input, use default values
+         IF ( DOPROP_KRCI ) THEN
+            DKRCI_THRGCI = 1.D-4
+            DKRCI_THRECI = 1.D-9 ! thrgci takes precedence
+            WRITE(LUPRI,'(A,1P,D10.2,A)')
+     &    ' * Gradient convergence threshold:',DKRCI_THRGCI,
+     &    ' (default for property calculation)',
+     &    ' * Energy convergence threshold:  ',DKRCI_THRECI,
+     &    ' (default for property calculation)'
+            WRITE(LUPRI,'(A)')
+     & '   (These thresholds will give approx. 4 digits in properties,'
+     & //' and 8 decimal places in energies.)'
+         ELSE
+            DKRCI_THRGCI = 3.D-3 ! enough for 0.1 mH accuracy
+            DKRCI_THRECI = 1.D-5
+            WRITE(LUPRI,'(A,1P,D10.2,A)')
+     &    ' * Gradient convergence threshold:',DKRCI_THRGCI,
+     &    ' (default for energy calculation)',
+     &    ' * Energy convergence threshold:  ',DKRCI_THRECI,
+     &    ' (default for energy calculation)'
+            WRITE(LUPRI,'(A)')
+     & '   (These thresholds will give approx. 5 digits in energies,'
+     & //' 0.01 mH, but only 2-3 digits for properties.)'
+         END IF
+      ELSE IF (DKRCI_THRECI .LT. 0.0D0) THEN
+      ! user only specified .THRGCI
+            DKRCI_THRECI = 0.1D0*DKRCI_THRGCI**2 ! user specified value takes precedence
+            WRITE(LUPRI,'(A,1P,D10.2,A)')
+     &    ' * Gradient convergence threshold:',DKRCI_THRGCI,
+     &    ' (input)',
+     &    ' * Energy convergence threshold:  ',DKRCI_THRECI,
+     &    ' (generated from gradient threshold)'
+      ELSE IF (DKRCI_THRGCI .LT. 0.0D0) THEN
+      ! user only specified .THRECI
+            DKRCI_THRGCI = 0.1D0*SQRT(DKRCI_THRECI) ! user specified value takes precedence
+            WRITE(LUPRI,'(A,1P,D10.2,A)')
+     &    ' * Energy convergence threshold:  ',DKRCI_THRECI,
+     &    ' (input)',
+     &    ' * Gradient convergence threshold:',DKRCI_THRGCI,
+     &    ' (generated from energy threshold)'
+      ELSE
+      ! user specified both .THRGCI and .THRECI
+         WRITE(LUPRI,'(A,1P,D10.2,A)')
+     & ' * Gradient convergence threshold:',DKRCI_THRGCI,' (input)',
+     & ' * Energy convergence threshold:  ',DKRCI_THRECI,' (input)'
+      END IF
+      IF (KRCI_CIPROGRAM .EQ. 'GASCIP') WRITE(LUPRI,'(A)')
+     &   ' - NB! GASCIP ignores the energy convergence threshold.'
       IF (MAXCIT_KRCI .GE. 0) THEN
          WRITE(LUPRI,'(A,I3)')
      &     ' * Maximum number of CI iterations for each symmetry: ',

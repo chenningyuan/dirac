@@ -1159,7 +1159,7 @@ C
         ! make <j|S_x|jp1> value purely real
         ! and  <j|S_y|jp1> value purely imaginary
         IF (ABS(SX_I) .gt. THR_ZERO) THEN
-           PHI = -ATAN(SX_I,SX_R)
+           PHI = -ATAN2(SX_I,SX_R)
            C_PHI = COS(PHI)
            S_PHI = SIN(PHI)
            SX_R_tmp = C_PHI*SX_R - S_PHI*SX_I

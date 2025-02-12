@@ -616,8 +616,8 @@ C
      &           ' Total orbital grad.(It. ',I3,') : ',F25.15,/,
      &           ' Total gradient     (It. ',I3,') : ',F25.15,/)
 C
-         IF (IPROPT .GE. 1) THEN
-              IDENSLR_STATE = 1
+         IF (IPROPT .GE. 1 .OR. NATOLCR) THEN
+              IDENSLR_STATE = -1 ! signal RGETNO that MCSCF and not KRCI
               NATOLCR       = .TRUE.
               IPRNO = 3*IPROPT
               CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT  ,
@@ -631,6 +631,8 @@ C             erase old occupation numbers
 
               CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
      &                    .FALSE.,MOISNO,.FALSE.,IPRNO,WORK,KFREE,LFREE)
+!             CALL RGETNO(CREF,OCCNO,UNO,CMO,
+!    &                    NATORB,MOISNO,save_1pdens,IPRNO,WORK,KFREE,LFREE)
               CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,
      &                    KFREE,LFREE)
               IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
@@ -3538,7 +3540,7 @@ C
 #include "dcbopt.h"
 #include "krmcluci_inf.h"
 C
-      DIMENSION CMO(*), CREF(*), WORK(*)
+      DIMENSION CMO(*), CREF(NZCONFQ,*), WORK(*)
       LOGICAL   MOISNO, EX
 C
       CALL QENTER('RCIST')
@@ -3667,13 +3669,13 @@ C
      &'  *************************************************************'
 C
 C
-        DO ICNON = 1, NCIROOT
+        DO ICIROOT = 1, NCIROOT
 C
 C         erase old occupation numbers
           CALL DZERO(WORK(KOCCNO),NORBT)
           CALL DZERO(WORK(KUNO),N2ASHXQ)
 C
-          IDENSLR_STATE = ICNON
+          IDENSLR_STATE = ICIROOT
 C
 C         NOTE: IF MOPT_MXMACRO < 0: CREF is not allocated!
 C               requires appropriate treatment in LUCI_DENS ...
@@ -3682,7 +3684,7 @@ C         SK - Feb 2009: introduced TRA_NATO for transformation to
 C                        natural CI/MCSCF orbitals. They can be useful
 C                        for further analysis, e.g., visualization.
 C
-          CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
+          CALL RGETNO(CREF(1,ICIROOT),WORK(KOCCNO),WORK(KUNO),CMO,
      &                TRA_NATO,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
 C
         END DO

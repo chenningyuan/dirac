@@ -829,7 +829,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       write(lupri,'(/A)') 'INFO: old GASCIP.RST file deleted because '//
      &    'content is not compatible with this calculation.'
       if (IPRINT .ge. 5) then
-         write(lupri,'(/A/20I5)')
+         write(lupri,'(/A/A,8I5/A,8I5)')
      &   ' NASH(1:2), IRRP, IRP, NREP, MINMK2, MAXMK2, NGAS_DC:',
      &   ' on GASCIP.RST:',
      &   NASH_S,IRRP_S,IRP_S,NREP_S,MINMK2_S,MAXMK2_S,NGAS_DC_S,
@@ -3387,10 +3387,10 @@ C
      &         WORK,KWORK,KTMPRED,KFREE,LFREE)
 
 C
-         IF (IPRINT .GE. 4) THEN
+         IF (IPRINT .GE. 3) THEN
             WRITE(LUPRI,'(/A)')
      &         ' (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian'
-            CALL OUTPUT(WORK(KEIGVL),1,1,1,N_CRED,1,MAX_HRED,-1,LUPRI)
+            WRITE(LUPRI,'(5F15.8)') WORK(KEIGVL:KEIGVL-1 + N_ROOTS)
          END IF
          IF (IPRINT .GE. 5) THEN
             WRITE(LUPRI,'(/A)') ' (GASCIP_RCISTD)'//
@@ -3404,20 +3404,21 @@ C
      &                  MAX_HRED,MAX_HRED,-1,LUPRI)
            END IF
          END IF
-         ECIOLD(1:N_CSIM) = ECI(1:N_CSIM)
-         ECIA(1:N_CSIM)   = WORK(KEIGVL:KEIGVL-1 + N_CSIM)
-         ECI(1:N_CSIM)    = ECORE + ECIA(1:N_CSIM)
+         N_save = MAX(N_ROOTS,N_CSIM)
+         ECIOLD(1:N_save) = ECI(1:N_save)
+         ECIA(1:N_save)   = WORK(KEIGVL:KEIGVL-1 + N_save)
+         ECI(1:N_save)    = ECORE + ECIA(1:N_save)
          IF (IPRINT .GE. 10) THEN
             WRITE(LUPRI,'(/A,F20.8)')
      &        ' (GASCIP_RCISTD) Core energy        =',ECORE
             WRITE(LUPRI,'(A,4F20.8,/,(37X,4F20.8))')
-     &        '                 Active energy      =',ECIA(1:N_CSIM)
+     &        '                 Active energy      =',ECIA(1:save)
          END IF
          WRITE(LUPRI,'(A,4F20.8/,(37X,4F20.8))')
-     &        ' (GASCIP_RCISTD) Total energy       =',ECI(1:N_CSIM)
+     &        ' (GASCIP_RCISTD) Total energy       =',ECI(1:N_save)
          WRITE(LUPRI,'(A,4F20.8/,(37X,4F20.8))')
      &        '                 Lowering of energy =',
-     &        (ECIOLD(I)-ECI(I),I=1,N_CSIM)
+     &        (ECIOLD(I)-ECI(I),I=1,N_save)
 
          IF (IPRINT .GE. 3) THEN
             CALL GETTIM(CPU_end,WALL_end)
@@ -3801,7 +3802,7 @@ C
      &         ITMIC,': ',CPUTID,' (',WALLTID,')'
          END IF
 C
-      GOTO 100  ! iterations loop
+      GOTO 100  ! micro iteration loop
 C
 C ==========================================================================
 C
@@ -3849,7 +3850,6 @@ C
          END IF
       END IF
 C
-      MAX_CI_IT = ITMIC
       ECI(1:N_ROOTS) = ECORE + ECIA(1:N_ROOTS)
       WRITE(LUPRI,'(/A,F20.8)')
      &     ' (GASCIP_RCISTD) Core energy        = ',ECORE

@@ -973,7 +973,7 @@ C
       OPT_CNVINT(1)  = DKRMC_CNVINT(1)
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
-      OPT_THRECI     = MAX(DKRCI_THRECI, OPT_THRGRD**2)
+      OPT_THRECI     = OPT_THRGRD**2
       THRPCI         = DKRMC_THRPCI
       E_LVCORR_MC    = 0.0d0
       OPT_THR_CVEC   = 1.0D-4
@@ -1096,7 +1096,7 @@ C
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
       THRPCI         = DKRCI_THRPCI
       E_LVCORR_MC    = 0.0d0
-      OPT_THR_CVEC   = 1.0d-04
+      OPT_THR_CVEC   = 1.0d-02
       OPT_THRGRD     = DKRCI_THRGCI
       OPT_THRECI     = DKRCI_THRECI
 C

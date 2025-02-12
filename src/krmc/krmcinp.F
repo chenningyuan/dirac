@@ -1325,7 +1325,7 @@ C                   necessary! - SK- 20-03-2008
    18          CONTINUE
                GO TO 100
    19          CONTINUE
-C&&& .NOOCCN: calculate natural orbitals occupation numbers (with LUCIAREL)
+C&&& .NOOCCN: calculate natural orbitals occupation numbers
                NATOLCR      = .TRUE.
                GO TO 100
    20          CONTINUE
