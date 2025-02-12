@@ -14,7 +14,7 @@ corrections to the CI equations which will improve the energy and the wave funct
 referred to as *Davidson-type* corrections or *+Q*) to the energy have become quite popular. A comprehensive overview on this topic has been
 given recently in a `review paper on multiconfigurational and multirefernce methods
 <http://dx.doi.org/10.1021/cr200137a>`_. Starting with Dirac14 we have implemented a number of different flavors of the latter *a posteriori* corrections to the
-energy for the modules KRCI and LUCITA. The nomenclature and detailed equations for each correction is explained in great
+energy for the modules KRCI with LUCIAREL or with LUCITA. The nomenclature and detailed equations for each correction is explained in great
 detail in the above review article (see chapter 2.1.3.1). 
 
 --------------
