@@ -16,6 +16,12 @@ New ESR features (Contributor: H. J. Aa. Jensen):
 
 New features:
 
+- KRCI module:
+  - '.CIROOTS' input has been made easier, description in manual has been updated.
+  - The KRCI module now again works with both LUCIAREL and GASCIP (a fix from 2021 fixed symmetry specification for LUCIAREL but made it not work for GASCIP).
+  - GASCIP code optimized, much faster now.
+  - Contributor: H. J. Aa. Jensen.
+
 - DIRAC calculator for the Atomistic Simulation Environment (ASE) is available.
    - Contributors: Carlos M. R. Rocha, Lucas Visscher
    - Reference (DIRAC calculator): https://qc2.readthedocs.io
@@ -59,6 +65,7 @@ Bugfix:
    - Contributor: H. J. Aa. Jensen.
 - Set the correct sign of CC linear and quadratic response functions in the case of more than one time-antisymmetric perturbation operator
    - Contributor: A. Gomes
+- Default CI gradient convergence threshold for \*KRCI is now 3.d-3 for energy calculations and 1.d-4 for property calculations. The 3.d-3 value is sufficient for total energies, accurate to ca. 0.01 mHartree, and saves a lot of unnecessary CPU time, but it will only give 2-3 digits in properties, which have linear accuracy in the CI wavefunction.
 
 New default:
 
