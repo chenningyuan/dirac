@@ -6,8 +6,6 @@ module visual_dirac
   use visual_mpi
   use dirac_dmat_factory
 
-  !use dirac_rsp_utils
-
 ! DIRAC modules
   use checkpoint
   use basis_set_datatypes
@@ -65,11 +63,8 @@ contains
     real(8) :: factor(4)
 !
 !   this subroutine constructs density matrices for one specific grid function
-!
 !   it is based on how density matrices were set in old VISUAL code;
-!   I group the old code here, so that it is in one place:
-!   * it should now be easier to modify it, e.g., to read density matrices from outside,
-!   * but still, the code is too coupled to other structures (cmo, response, etc.)
+!   todo: decouple from DIRAC and use the data from CHECKPOINTs
 !
 
     nao = sum(cmo%n_ao)
@@ -93,13 +88,18 @@ contains
         if (present(dmat_ao)) then
           dmat_ao%mat_dim = nao
           dmat_ao%mat_nz  = nz
-!         fixme symmetries hardcoded! assuming C1
           dmat_ao%irep = 0
           dmat_ao%ih_sym = 1
           dmat_ao%tr_sym = 1
           call dmat_ao%alloc()
           call dmat_transform_mo2ao(cmo, tmpmat_mo, dmat_ao)
+          !call GENDEN(dmat_ao%elements, cmo%coeff, 1, 0)
+!         scale inactive density matrix by occupation
+        write(*,*) 'tmpmat_mo% irep 0,ihsym,trsym: ', tmpmat_mo%irep,tmpmat_mo%ih_sym,tmpmat_mo%tr_sym
+        write(*,*) 'dmat_ao% irep 0,ihsym,trsym: ', dmat_ao%irep,dmat_ao%ih_sym,dmat_ao%tr_sym
           call dmat_ao%scale_elements(2.0d0)
+          call dmat_ao%display()
+          call insert_half_phases(dmat_ao, nz)
         end if
     
         call tmpmat_mo%erase()
@@ -123,10 +123,11 @@ contains
         call rsp_info%vectors(ivec_rsp)%scatter_to_matrix_q(tmpmat_mo%elements, nmo, nz)
 
 !       dmat inherits symmetry of the response vector:
-        !call tmpmat_mo%assign_ih(rsp_info%vectors(ivec_rsp)%get_ih_sym())
-        !call tmpmat_mo%assign_tr(rsp_info%vectors(ivec_rsp)%get_tr_sym())
-        !call tmpmat_mo%assign_irep(rsp_info%vectors(ivec_rsp)%get_irep())
+        call tmpmat_mo%assign_ih(rsp_info%vectors(ivec_rsp)%get_ih_sym())
+        call tmpmat_mo%assign_tr(rsp_info%vectors(ivec_rsp)%get_tr_sym())
+        call tmpmat_mo%assign_irep(rsp_info%vectors(ivec_rsp)%get_irep())
  
+        write(*,*) 'ivec, tmpmat_mo% in rsp irep 1,ihsym,trsym: ', ivec_rsp, tmpmat_mo%irep,tmpmat_mo%ih_sym,tmpmat_mo%tr_sym
         if (present(dmat_mo)) dmat_mo = tmpmat_mo
 
         if (present(dmat_ao)) then
@@ -137,6 +138,10 @@ contains
           call construct_perturbed_dmat(dmat_ao%elements,&
                                         tmpmat_mo%elements,&
                                         ivec_rsp, rsp_info, cmo%coeff)
+          dmat_ao%irep = tmpmat_mo%irep
+          dmat_ao%ih_sym = tmpmat_mo%ih_sym
+          dmat_ao%tr_sym = tmpmat_mo%tr_sym
+         write(*,*) 'ivec, dmat_ao% in rsp irep 2,ihsym,trsym: ', ivec_rsp, dmat_ao%irep,dmat_ao%ih_sym,dmat_ao%tr_sym
           !call symmetrize_mat(dmat_ao%elements)
           do iz = 1, nz
             iq = rsp_info%vectors(ivec_rsp)%get_ipqtoq(iz)
@@ -148,6 +153,7 @@ contains
             end if
           end do
           call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
+        write(*,*) 'ivec, dmat_ao% in rsp irep 2,ihsym,trsym: ', ivec_rsp, dmat_ao%irep,dmat_ao%ih_sym,dmat_ao%tr_sym
           call dmat_ao%scale_elements(2.0d0)
         end if
 
@@ -463,6 +469,7 @@ contains
     n_po = 0
     total_energy = 0.0d0
     call checkpoint_read(group//'mobasis/nz',idata=nz)
+    call checkpoint_read (group//'mobasis/n_fsym',idata=nfsym)
     call checkpoint_read(group//'mobasis/n_basis',idata=n_basis)
     call checkpoint_read(group//'mobasis/n_mo',idata=n_mo)
     call checkpoint_read(group//'mobasis/n_po',idata=n_po)
@@ -485,6 +492,7 @@ contains
     cmo%n_mo = n_mo
     cmo%n_po = n_po
     cmo%nz   = nz
+    cmo%n_fsym=nfsym
     cmo%total_energy = total_energy
 
     call cmo%alloc_all()
@@ -901,42 +909,90 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine dmat_transform_mo2ao(cmo, dmat_mo, dmat_ao)
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
     type(cmo_t), intent(in):: cmo
     type(dmat_t), intent(inout):: dmat_ao
     type(dmat_t), intent(in):: dmat_mo
-    integer:: iprint
-    integer:: nao, nmo, nz, nrao, ncao, nrmo, ncmo, irep
-    integer:: i2basx(2, 2), i2orbx(2, 2), icmoq(2), ipqtoq(2, 0:7)
+    !integer:: nao, nmo, nz, iz, irep, iprint, isymop(1)
+    integer:: nao, nmo, iz, irep, iprint, isymop(1)
+    integer:: ipari, irepd, iq, ipq, ioff  
     integer:: i,j
+    !integer:: i2basx(2,2), i2orbx(2,2), icmoq(2), pq_to_uq(4, 0:7)
 !
 !   dmat_ao(mu,nu)=cmo(mu,p)*dmat_mo(p,q)*cmo^{-1}(q,nu)
-!   gosia fixme: no symmetry
+!   
+!   comments from old VISUAL:
+!     warning: when reading from KRMCSCF many assumptions below are either incorrect
+!              or become a hack (occupation 2, only inactive and secondary)
+!              it's ok if you plot a single orbital but not ok for many things
+!              need to add careful checks
+!     gosia: KRMSCF calculations not tested
+!
 ! ------------------------------------------------------------------------------
 
-    ! gosia fixme - this causes "catastrophic error: **Internal compiler error: internal abort** Please report this error along with the circumstances in which it occurred in a Software Problem Report.  Note: File and line given may not be explicit cause of this error."
-    !if (   .not.dmat_ao%associated_elements  &
-    !  .and..not.dmat_mo%associated_elements  &
-    !  .and..not.cmo%associated_cmo_coeff) return
-
     iprint = 0
-
     nao  = sum(cmo%n_ao)
     nmo  = sum(cmo%n_mo)
-    nz   = cmo%nz
+    !nz   = cmo%nz
 
-    i = 1
-    j = 1
-      nrao = cmo%n_ao(i)
-      ncao = cmo%n_ao(j)
-      nrmo = cmo%n_mo(i)
-      ncmo = cmo%n_mo(j)
-      irep = 0
-      call qtrans90('MOAO','S',0.D0,nrao,ncao,nrmo,ncmo,&
-                    dmat_ao%elements,nao,nao,nz,(/1,2,3,4/),& 
-                    dmat_mo%elements,nmo,nmo,nz,(/1,2,3,4/),& 
-                    cmo%coeff,nrao,nrmo,nz,(/1,2,3,4/), &
-                    cmo%coeff,ncao,ncmo,nz,(/1,2,3,4/), &
+    !i2basx = 0
+    !if (cmo%n_fsym > 1) then
+    !   i2basx(2, 1) = cmo%n_ao(1)
+    !   i2basx(1, 2) = cmo%n_ao(1)*cmo%n_ao(1) &
+    !                + cmo%n_ao(1)*cmo%n_ao(2)
+    !   i2basx(2, 2) = i2basx(2, 1) + i2basx(1, 2)
+    !end if
+
+    !i2orbx = 0
+    !if (cmo%n_fsym > 1) then
+    !   i2orbx(2, 1) = cmo%n_mo(1)
+    !   i2orbx(1, 2) = cmo%n_mo(1)*cmo%n_mo(1) &
+    !                + cmo%n_mo(1)*cmo%n_mo(2)
+    !   i2orbx(2, 2) = i2orbx(2, 1) + i2orbx(1, 2)
+    !end if
+
+    !icmoq = 0
+    !if (cmo%n_fsym > 1) then
+    !   icmoq(2) = cmo%n_ao(1)*cmo%n_mo(1)
+    !end if
+
+    do i = 1,cmo%n_fsym
+      call qtrans90('MOAO','S',0.0d0,&
+                    cmo%n_ao(i),cmo%n_ao(i),cmo%n_mo(i),cmo%n_mo(i),&
+                    dmat_ao%elements(1+i2basx(i,i)),nao,nao,nz,ipqtoq(1,0),&
+                    dmat_mo%elements(1+i2orbx(i,i)),nmo,nmo,nz,ipqtoq(1,0),&
+                    cmo%coeff(1+icmoq(i)),cmo%n_ao(i),cmo%n_mo(i),nz,ipqtoq(1,0),&
+                    cmo%coeff(1+icmoq(i)),cmo%n_ao(i),cmo%n_mo(i),nz,ipqtoq(1,0),&
                     iprint)
+
+      enddo
+
+  end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine insert_half_phases(dmat,nz)
+    type(dmat_t), intent(inout):: dmat
+    integer,intent(in)::nz
+    integer:: iz,iq,i,ioff
+    integer:: pq_to_uq(4, 0:7)
+! ------------------------------------------------------------------------------
+
+    pq_to_uq = 0
+    do i = 1, 4
+       pq_to_uq(i, 0) = i
+    end do
+
+    if (nz < 4) then
+      do iz = 1, nz
+        iq = pq_to_uq(iz, dmat%ih_sym - 1)
+        ioff=dmat%mat_dim*dmat%mat_dim*(iz-1)+1
+        call my_q2bphase('D', iq, 1, dmat%elements(ioff))
+      end do
+    end if
+
 
   end subroutine
 
@@ -1014,21 +1070,21 @@ contains
                       nfbas(i1,0), nfbas(i2,0), &
                       ns, ni, &
 !                     ------------------------------------------------------
-                      dmat(i2basx(i1,i2)+1, 1),   &
-                      ntbas(0), ntbas(0), nz,     &
-                      ipqtoq(1, irep),                  &
+                      dmat(i2basx(i1,i2)+1, 1),&
+                      ntbas(0), ntbas(0), nz,  &
+                      ipqtoq(1, irep), &
 !                     ------------------------------------------------------
-                      bmat(is, ii, 1),                    &
+                      bmat(is, ii, 1), &
                       norbt, norbt, nz, &
-                      ipqtoq(1, irep),                  &
+                      ipqtoq(1, irep),&
 !                     ------------------------------------------------------
-                      cmo(js),                                  &
+                      cmo(js),&
                       nfbas(i1,0), norb(i1), nz,&
-                      ipqtoq(1, 0),                     &
+                      ipqtoq(1, 0),&
 !                     ------------------------------------------------------
-                      cmo(ji),                                  &
+                      cmo(ji),&
                       nfbas(i2,0), norb(i2), nz,&
-                      ipqtoq(1, 0),                     &
+                      ipqtoq(1, 0),&
 !                     ------------------------------------------------------
                       iprint)
       end if
@@ -1263,7 +1319,7 @@ contains
 
     ! todo: most of cmo data is first read from checkpoint,
     ! but it lacks information on n_ip and occupation, which are set here;
-    ! this is to catch any inconsistency: 
+    ! activate this check to catch any inconsistency: 
     !call check_cmo_consistency(cmo)
     cmo%data_is_verified = .true.
 

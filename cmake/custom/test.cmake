@@ -217,6 +217,7 @@ dirac_test(visual_3d_rspE_ll_dft "short;visual" "")
 dirac_test(visual_3d_gamma5_dc_dft "medium;visual" "")
 dirac_test(visual_3d_spinden_dc_dft "medium;visual" "")
 #
+dirac_test(visual_symmetry "short;visual" "")
 dirac_test(visual_tutorial_radial_distributions "short;visual" "")
 #
 # related tests:

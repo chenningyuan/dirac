@@ -1,0 +1,24 @@
+**DIRAC
+**HAMILTONIAN
+.DFT
+ B3LYP
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED SHELL
+10
+.EVCCNV
+1.0D-8
+**VISUAL
+!.3D_INTEGRATE
+.OUTPRI
+.GRIDS    
+1
+id=1 input=import file_inp=grid.h5
+.GRIDFUNCTIONS    
+1
+name=edip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=1 file_out=plot_edip_rspvec1.h5
+*END OF
