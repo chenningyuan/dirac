@@ -580,7 +580,8 @@ C
          END DO
   110    CONTINUE
 #if GASCIP_DEBUG > 1
-         write(lupri,'(A,I0.8)') 'after GASOK and SYMOK checks, NDET = ',NDET
+         write(lupri,'(A,I0.8)')
+     &   'after GASOK and SYMOK checks, NDET = ',NDET
          call flshfo(lupri)
 #endif
          NMK2(MK2,1) = NASTR
@@ -1973,7 +1974,8 @@ C        ... only one electron terms
       write (lupri,'(/A)')
      &   '  GASCIP_MAKEH: Test output of IDET(1:2,1:NDET):)'
       DO I = 1, NDET
-         WRITE (LUPRI,'(/I5,5X,B0.20/10X,B0.20)') I, IDET(1,I), IDET(2,I)
+         WRITE (LUPRI,'(/I5,5X,B0.20/10X,B0.20)')
+     &      I, IDET(1,I), IDET(2,I)
       END DO
 #endif
 C

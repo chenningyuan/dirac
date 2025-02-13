@@ -937,8 +937,8 @@ C       The fix of the problem by Andreas Nyvang in 2022 is only implemented in 
 C       compiled with MPI. It is not worth the time to rewrite the old subroutines for non-MPI compilation.
 C       /4-Jun-2024, hjaaj. See git log d5d4e3ff7547f4d8e831f3699fb8ce6c95d39a57 for more info about why
 C       the parallel version is much better.
-        call quit(
-     &     'KRCI: LUCIAREL only works reliably if DIRAC compiled with MPI.'//
+        call quit('KRCI: LUCIAREL'//
+     &     ' only works reliably if DIRAC compiled with MPI.'//
      &     ' You can run sequential with MPI code, if desired.')
 #endif
         if (nz == 4) then
