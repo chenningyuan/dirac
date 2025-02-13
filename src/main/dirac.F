@@ -120,6 +120,7 @@ C  /* Deck dirctl */
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcbdhf.h"
 
       logical run_pamset, tobe
       integer ierr
@@ -166,6 +167,17 @@ C***********************************************************************
         write(lupri, '(//A/)') 'PCMSolver initialized.'
       end if
 #endif
+
+      if (dirac_cfg_dft_calculation .and. OPTIMI) then
+        if (nopen > 0) then
+          call quit('error in molecular gradient:' //
+     &         ' not implemented for open-shell DFT')
+        end if
+        if (nbsym > 1) then
+          call quit('error in molecular gradient:' //
+     &    ' not implemented for DFT with symmetry')
+        end if
+      end if
 C
 C
 C***********************************************************************
@@ -1807,7 +1819,7 @@ C
       if (dirac_cfg_exacc) then
          if (dirac_cfg_scf_calculation.or.
      &       dirac_cfg_dft_calculation.or.
-     &      dirac_cfg_mcsrdft_calculation) then
+     &       dirac_cfg_mcsrdft_calculation) then
             RUN_PAMSET = .TRUE.
          else
             RUN_PAMSET = .FALSE.

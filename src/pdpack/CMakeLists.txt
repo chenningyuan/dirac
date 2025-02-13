@@ -46,7 +46,7 @@ endif()
 
 add_library(
     pdpack
-    OBJECT
+    STATIC
     ${FIXED_PDPACK_FORTRAN_SOURCES}
     ${FIXED_PDPACK_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_PDPACK_FORTRAN_SOURCES}

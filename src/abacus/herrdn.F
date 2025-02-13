@@ -1961,14 +1961,13 @@ C
       IF (GAUNUC .AND. NQ.GT.0) THEN
         IF(QEXP.EQ.D0) THEN
            CALL NUCSIZ(NQ,GEXP,XMASS)
-        WRITE(LUPRI,'(A,F8.3,A,1P,D20.10,A,F6.1,A)')
-     &       '  Nuclear Gaussian exponent for atom of charge',
-     &       Q,' :',GEXP,'   (using mass ',xmass/10,')'
-c.. I have no idea why xmass needs to be divided by 10 to print correctly.  kap
+        WRITE(LUPRI,'(A,F8.3,A,1PD20.10,A,0PF6.1,A)')
+     &       '  Nuclear Gaussian exponent for atom of charge ',
+     &       Q,' : ',GEXP,'   (using mass ',xmass,')'
         ELSE
            GEXP = QEXP
         WRITE(LUPRI,'(A,F8.3,A,1P,D20.10,A)')
-     &       '  Nuclear Gaussian exponent for atom of charge',
+     &       '  Nuclear Gaussian exponent for atom of charge ',
      &       Q,' :',GEXP,'  (specified through input)'
         ENDIF
 C
@@ -4109,8 +4108,9 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
       IF (LINEAR) THEN
-        IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) 
-     &    ATOMIC = .TRUE.
+        IF((NATOMS .EQ. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) THEN
+          IF ( .NOT. NONATM ) ATOMIC = .TRUE.
+        ENDIF   
       ENDIF
       IF (NUCDEP .GT. MXCENT) GOTO 5010
 C     

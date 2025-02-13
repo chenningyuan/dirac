@@ -1249,7 +1249,7 @@ C
 C     Written by Miro ILIAS/Strasbourg, March 2006
 C
 C*****************************************************************************
-      use x2c_fio
+!     use x2c_fio
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
@@ -2095,7 +2095,7 @@ C*****************************************************************************
       use dirx2c
       use x2c_pct_ao, only:
      &    pctrafo_all_op_driver
-      use x2c_fio
+!     use x2c_fio
       use x2c_utils, only:
      &    write_fock_matrices_saao_basis_x2c,
      &    read_fock_matrices_saao_basis_x2c
@@ -4506,8 +4506,7 @@ C
 C    Last modifications: March 2006/MI,Strasbourg
 C
 C*****************************************************************************
-      use x2c_fio, only:
-     &    x2c_read
+!     use x2c_fio, only: x2c_read
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -4794,7 +4793,8 @@ C         n_eff values.
 C
 C     Table of s,p,d,f,g  orbital occupations of the elements
 C     (from which the electron-configuration can be deduced)
-      DIMENSION NOCC(127*5)
+      DIMENSION NOCC(138*5)
+c     DIMENSION NOCC(127*5)
       SAVE NOCC
       DATA NOCC
 C     Periode 1
@@ -4875,15 +4875,21 @@ C    <-- Actinides; (6d block and 7p block)
 C     Periode 8 (8s block)
      &           15,36,40,28,0,  16,36,40,28,0,
      &           16,37,40,28,0,
-C    --> superlanthanides
+C    --> superlanthanides (122-138)
      &           16,37,41,28,0,  16,37,41,29,0,
      &           16,37,41,30,0,  16,37,41,30,1,
-     &           16,37,41,30,2,  16,37,41,30,3/
+     &           16,37,41,30,2,  16,38,40,30,3,
+     &           16,38,40,30,4,  16,38,40,30,5,
+     &           16,38,40,30,6,  16,38,40,30,7,
+     &           16,38,40,30,8,  16,38,40,31,8,
+     &           16,38,40,32,8,  16,38,40,32,9,
+     &           16,38,40,32,10, 16,38,41,31,11,
+     &           16,38,41,31,12/
       CALL QENTER('BNCOR1')
 c
-      IF (NINT(Z) .GT. 127) THEN
+      IF (NINT(Z) .GT. 138) THEN
          WRITE(LUPRI,'(2(A/))') ' FATAL : The bare nucleus '//
-     &   'correction is only implemented for elemtents 1-127',
+     &   'correction is only implemented for elemtents 1-138',
      &   '         You can disable BNCORR with the .NOBNCR keyword '//
      &   'in *SCF'
          CALL QUIT('BNCORR : Unsupported element!')
@@ -6426,7 +6432,7 @@ C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
       RETURN
- 1000 FORMAT (/' Parity   MJ  Functions(total) Functions(LC)'//
+ 1000 FORMAT (/' Parity   MJ  Functions(total) Functions(LC)'
      &         ' Functions(SC)')
  1010 FORMAT (T5,I2,T9,I3,'/2',T20,I5,T33,I5,T46,I5)
       END
@@ -7049,7 +7055,7 @@ C
 C     Construct mj matrix in AO basis
       allocate(TMPA(NTBAS(0)*NTBAS(0)))
       CALL DZERO(TMPA,NTBAS(0)*NTBAS(0))      
-      CALL AMJMAT(TMPA,IPRHAM,WORK,LWORK) !sunaga
+      CALL AMJMAT(TMPA,IPRHAM,WORK,LWORK) 
 C
 C     Output    
 C  
@@ -7192,7 +7198,7 @@ C Small AO-MO transformation (diagonal in kappa because of VMAT => VU)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC         
          IF (NS.GT.0) THEN
            CALL TSBBL2(IFRP,2,KPADD,TMPA,WORK(KFSS),VMAT,VMAT,
-     &                 WORK(KFREE),LFREE,IPRHAM) !sunaga
+     &                 WORK(KFREE),LFREE,IPRHAM) 
 CCCCCCCCCCCCCCCCCCCCCCC         
 C Small diagonalization
 CCCCCCCCCCCCCCCCCCCCCCC         

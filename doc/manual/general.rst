@@ -143,12 +143,3 @@ Default::
    CODATA22
 
 
-keyword(NOSET)
-
-.. warning:: documentation missing
-
-
-keyword(SKIP2E)
-
-.. warning:: documentation missing
-

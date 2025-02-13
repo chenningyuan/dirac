@@ -207,3 +207,4 @@ dirac_test(nqcc "short;nqcc" "")
 dirac_test(dipole "short" "")
 # disabled some tests waiting for code verification/efficiency improvement
 #dirac_test(eomcc_expval "cc" "")
+dirac_test(p_eomcc "cc" "")
