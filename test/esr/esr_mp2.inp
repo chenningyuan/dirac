@@ -32,15 +32,17 @@ CN molecule (S=1/2)
 .ESR
 *ESR
 .G10PPM
+.KR-CONJUGATION
 .PRINT
   5
 .MAX CI
  50
 .MULTIP
  2
-.MY CI
- 0 1 1
- 0
- 4
- 17
+.ESR CI   # spin-polarization with only singles
+ 1 1      # one RAS1-GAS space and one RAS3-GAS space
+ 1        # singles out of
+ 4        # 4 doubly occupied orbitals
+ 1        # singles into
+ 17       # 17 virtual orbitals
 **END OF DIRAC INPUT

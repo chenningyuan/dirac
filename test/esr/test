@@ -9,12 +9,17 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
+f.add(string = 'Final CI energies',
+      abs_tolerance = 1.0e-8)
 f.add(from_string = 'g values (x, y, z, iso)',
       num_lines = 3,
       abs_tolerance = 1.0e-4)
 f.add(from_string = 'g shifts in ppm (x, y, z, iso)',
       num_lines = 3,
       abs_tolerance = 10.0)
+f.add(from_string = 'ESR hyperfine coupling constants',
+      num_lines = 22,
+      rel_tolerance = 1.0e-4)
 
 test.run(['esr.inp','esr_mp2.inp','esr_mvo.inp'], ['CN.mol'], f, args='--mw=80 --aw=120')
 
