@@ -4052,8 +4052,8 @@ C* for Newton-Raphsons method
         TEMP = XOPT*XTANG
         WRITE(LUPRI,'(A,F18.5,A,F18.5,A)') 
      &    '* Local minimum   :',TEMP,' Angstroms = ',XOPT,' Bohrs'
-        WRITE(ILOGG,'(A,F18.5,A)') 
-     &    '* Local minimum   :',TEMP,' Angstroms'
+        WRITE(ILOGG,'(A,F18.5,A,F18.5,A)') 
+     &    '* Local minimum   :',TEMP,' Angstroms = ',XOPT,' Bohrs'
         WRITE(LUPRI,'(A,1P,E18.10,A)') 
      &    '* Expected energy :',YOPT,' Hartrees'
         WRITE(ILOGG,'(A,1P,E18.10,A)') 

@@ -35,9 +35,9 @@
   integer :: i, j, n, iprp, ipot, ilogg, lnblnk, ier, ierrpot, ierrprp, iang
   integer :: npoints, ipoint, itmp, nprint, dermeth, norder, ndim, iskip, keymeth
 
-  integer, parameter :: nder=4
+  integer, parameter :: nder=4,niter=10
 
-  real*8            :: u, v2, v3, v4, p0, p1, p2, um, omega, step
+  real*8            :: u, v2, v3, v4, p0, p1, p2, um, omega, step, xopt
   real*8            :: fac, a0, a1, a2, a3, v, w, har, anh, tot, dif, dif2
   real*8            :: err1, err2, err3, edifb, edifh, edifb3
   real*8            :: chisq, yp, dev, xmin
@@ -60,6 +60,7 @@
   !-----------------------------------------------------------------------------!
   !                      Initialization of the code                             !
   !-----------------------------------------------------------------------------!
+  call set_codata_values(CODSET)
   errwng = 0.0d0  ! errwng(2*nder,2)
   ierrpot = 0; ierrprp = 0
 
@@ -188,11 +189,6 @@
   elseif(keymeth==2)then
     write(lupri,*) 'Give order of polynomial:'
     read(LUSTDIN,*) norder
-    write(lupri,*) 'Select point for the calculation of derivatives'
-    read(LUSTDIN,*)  xmin
-    if(iang==1)then
-      xmin=xmin/xtang
-    endif
     do while (npoints.le.norder) 
       write(lupri,*) 'Too few points for a polynomial fit of order',norder
       write(lupri,*) '  Try again.'
@@ -222,7 +218,18 @@
       write(ilogg,'(3x,a,e9.4)') '* chi square per point:  ',chisq/npoints
       write(ilogg,'(3x,a,i3/)') '* Number of singularities(SVD): ',iskip
     endif
+  ! Find minimum if requested
+    write(lupri,*) 'Do you want to find the minimum of the potential energy curve ?'
+    read(lustdin,*) reply
+    if(reply.eq.'y') then
+       CALL MODEMIN(XOPT,npoints,xcoor,ecoor,cvec,norder,niter,ilogg)
+    endif   
   ! calculate energy derivatives
+    write(lupri,*) 'Select point for the calculation of derivatives'
+    read(LUSTDIN,*)  xmin
+    if(iang==1)then
+      xmin=xmin/xtang
+    endif
     v2 = polnder(norder,cvec,xmin,2)
     v3 = polnder(norder,cvec,xmin,3)
     v4 = polnder(norder,cvec,xmin,4)
