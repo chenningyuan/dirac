@@ -744,7 +744,7 @@ C
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbopt.h"
-      CHARACTER*24 DAYTID
+      CHARACTER DAYTID*24, SECTID*12, CPUTID*12, WALLTID*12
       LOGICAL TRASAM
       DIMENSION CMO(*),WORK(*), IBEIG(*),
      &          NSTR(2,0:2,4),KVEC(2,4),KQ(2,4),KIBE(2,4),
@@ -934,27 +934,16 @@ C
 C     Print timing information
 C
       CALL GETTIM(CPU2,WALL2)
-C
-      WALL    = WALL2 - WALL1
-      IWMINS  = INT(WALL)/60
-      IWHOURS = IWMINS/60
-      IWMINS  = IWMINS - 60*IWHOURS
-      IWSECS  = NINT(WALL) - 3600*IWHOURS - 60*IWMINS
-C
-      CPU     = CPU2 - CPU1
-      ICMINS  = INT(CPU)/60
-      ICHOURS = ICMINS/60
-      ICMINS  = ICMINS - 60*ICHOURS
-      ICSECS  = NINT(CPU) - 3600*ICHOURS - 60*ICMINS
-C
+
+      CPUTID  = SECTID(CPU2-CPU1)
+      WALLTID = SECTID(WALL2-WALL1)
       CALL GTINFO(DAYTID)
-      WRITE(LUPRI,'(/2(A,I5.2,A,I2.2,A,I2.2),A/A,A24)')
-     &     ' (RTRACTL1) Total CPU (wall) time used :',
-     &      ICHOURS,':',ICMINS,':',ICSECS,
-     & ' (',IWHOURS,':',IWMINS,':',IWSECS,')',
-     &     '            Transformation ended ',DAYTID
+      WRITE(LUPRI,9300) CPUTID,WALLTID,DAYTID
 C
-      CALL FLSHFO(LUPRI)
+ 9300 FORMAT(/'>>> Total CPU (wall) time in RTRACTL1: ',A,'(',A,')'/
+     &        '    Integral transformation ended    : ',A/)
+C
+      FLUSH(LUPRI)
       CALL QEXIT('RTRACTL1')
 C
       RETURN

@@ -1,5 +1,6 @@
 #define GASCIP_DEBUG -1
 ! note: a lot of bit string info lines if GASCIP_DEBUG > 10
+
 !dirac_copyright_start
 !      Copyright (c) by the authors of DIRAC.
 !
@@ -2140,7 +2141,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_makepmat */
       SUBROUTINE GASCIP_MAKE_P1MAT(CIVEC,N_CIVEC,NDET,IDET,P1MAT_CI,
      &                             N_P1MAT_CI,IHRM_P1,P1MAT_MO,ACCURACY,
-     &                             WORK,LWORK, IPRINT)
+     &                             WORK,LWORK, IPRINT_in)
 C***********************************************************************
 C
 C     Construct the property matrix between CI states from
@@ -2191,6 +2192,7 @@ C***********************************************************************
      &   N_P1MAT_CI, N_CIVEC
          CALL QUIT('GASCIP_MAKE_P1MAT error; N_P1MAT_CI > N_CIVEC')
       END IF
+      IPRINT = MAX( GASCIP_DEBUG , IPRINT_in)
 C
 C     Memory initialization
 C     =====================
@@ -2233,15 +2235,16 @@ C
 
       PAR_GASCIP = PARCAL .AND. NDET .GE. 10000
       IF (PAR_GASCIP) THEN
-         WRITE(LUPRI,'(/A)') 'GASCIP run in MPI parallel  mode.'
+         IF (IPRINT .GT. 1) WRITE(LUPRI,'(/A)')
+     &      'GASCIP P1MAT runs in MPI parallel  mode.'
          CALL GASCIP_WAKE_NODES()
          IPRINT_slaves = IPRINT - 1
          CALL GASCIP_PAR_CISIG_SETUP(
      &            P1MAT_MO,WORK(KPMUUUU),
      &            .FALSE.,NDET,IDET,ACCURACY,IPRINT_slaves)
       ELSE IF (PARCAL) THEN
-         WRITE(LUPRI,'(/A,I0,A)')
-     &      'GASCIP in sequential mode because only ',
+         IF (IPRINT .GT. 1) WRITE(LUPRI,'(/A,I0,A)')
+     &      'GASCIP P1MAT in sequential mode because only ',
      &      NDET,' determinants (< 10,000)'
       END IF
 
