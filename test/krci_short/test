@@ -17,6 +17,8 @@ f.add(from_string   = ' REORDERED DESCENDING OCCUPATION',
       abs_tolerance = 2.0e-4)
 
 test.run(['krci_gascip.inp'], ['h2o.xyz'], f)
-test.run(['krci_luciarel.inp'], ['h2o.xyz'], f)
+
+if os.environ.get("ONLY_GASCIP") is None:
+  test.run(['krci_luciarel.inp'], ['h2o.xyz'], f)
 
 sys.exit(test.return_code)
