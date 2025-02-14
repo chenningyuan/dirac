@@ -16,7 +16,7 @@ as function of the associated normal coordinate :math:`q` about the equilibrium 
 
 .. math::
 
-   E(q) = E^{[0]} + E^{[1]}q + \frac{1}{2}E^{[2]}q^2 + \frac{1}{6}E^{[3]}q^3 + \ldots;\quad
+   E(q) = E^{[0]} + E^{[1]}q + \frac{1}{2!}E^{[2]}q^2 + \frac{1}{3!}E^{[3]}q^3 +  \frac{1}{4!}E^{[4]}q^4 \ldots;\quad
           E^{[n]} = \left.\frac{\partial^n E}{\partial q^n}\right|_{q=0}
 
 We note that :math:`q=0`  implies :math:`E^{[1]}=0` and that the second derivative :math:`E^{[2]}` corresponds to the force constant :math:`k`. We furthermore expand some property :math:`P\equiv P(q)` in the same manner. 
@@ -26,9 +26,12 @@ selected normal mode
 
 .. math::
 
-   P_{\nu}=\left<\nu\left|P(q)\right|\nu\right>_q = P^{[0]} 
-   + \frac{1}{2}P^{[2]}\left(\frac{\hbar}{\mu\omega_e}\right)\left(\nu+\frac{1}{2}\right)
-      -\frac{1}{2}P^{[1]}E^{[3]}\left(\frac{\hbar}{\mu\omega_e}\right)^2\frac{\left(\nu+\frac{1}{2}\right)}{\hbar\omega_e}+\ldots
+   \begin{array}{lcl}P_{\nu}&=&\left<\nu\left|P(q)\right|\nu\right>_q\\
+   &=&P^{[0]}\\
+   &+&\frac{1}{2}P^{[2]}\left(\frac{\hbar}{\mu\omega_e}\right)\left(\nu+\frac{1}{2}\right)\\
+   &-&\frac{1}{2}P^{[1]}E^{[3]}\left(\frac{\hbar}{\mu\omega_e}\right)^2\frac{\left(\nu+\frac{1}{2}\right)}{\hbar\omega_e}\\
+   &-&\frac{1}{16}P^{[2]}E^{[4]}\left(\frac{\hbar}{\mu\omega_e}\right)^3\frac{\left(\nu^2+\nu+\frac{1}{2}\right)}{\hbar\omega_e}\\
+   &+&\ldots\end{array}
 
 ..      -\frac{1}{16}P^{[2]}E^{[4]}\left(\frac{\hbar}{\mu\omega_e}\right)^3\frac{n^2+n+\frac{1}{2}}{\hbar\omega_e}
 
@@ -47,7 +50,7 @@ Usage
 -----
 
 VIBCAL will read a formatted file of distances, energies and property values. The distances may be in Angstroms, but all other quantities have to be in atomic units.
-VIBCAL will next6, through a dialogue, with the user generate the necessary derivatives for the calculation of vibrational shifts of the property.
+VIBCAL will next, through a dialogue, with the user generate the necessary derivatives for the calculation of vibrational shifts of the property.
 
 Example: Parity violation shift associated with the C-F stretch of CHFClBr
 --------------------------------------------------------------------------

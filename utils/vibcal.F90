@@ -268,7 +268,7 @@
   write(ilogg,'(a)') '  ****  SOME INFORMATION    ****'
   write(ilogg,'(a)') '  ******************************'
 
-  write(ilogg,*) 'Reduced mass in Daltons: ',u
+  write(ilogg,*) 'Reduced mass in Daltons : ', u
   write(ilogg,*) '2nd potential derivative: ', v2
   write(ilogg,*) '3rd potential derivative: ', v3
   write(ilogg,*) '4th potential derivative: ', v4
@@ -278,11 +278,11 @@
   write(ilogg,*) '2nd property derivative: ', p2
 
   !-----------------------------------------------------------------------------!
-  !                          Calculate PV shift                                 !
+  !                          Calculate P_nu                                     !
   !-----------------------------------------------------------------------------!
-  !--------------------------------------------!
-  ! calculate harmonic and anharmonic PV shift !
-  !--------------------------------------------!
+  !-------------------------------------------------!
+  ! calculate harmonic and anharmonic contributions !
+  !-------------------------------------------------!
   um = u*xfamu
   omega = sqrt(v2/um)
   fac=d1/um/omega
@@ -294,9 +294,9 @@
   if(nprint == 1)then
     write(ilogg,*)
     write(ilogg,'(a)') '  ******************************'
-    write(ilogg,'(a)') '  ***  CONTRIBUTIONS TO PV   ***'
+    write(ilogg,'(a)') '  ***  CONTRIBUTIONS TO P_nu ***'
     write(ilogg,'(a)') '  ******************************'
-    write(ilogg,'(a,a)') '    n  Term 1 (P0)     Term 2 (P2)     Term 3 (P1 V3) ', &
+    write(ilogg,'(a,a)') '   nu  Term 1 (P0)     Term 2 (P2)     Term 3 (P1 V3) ', &
                          ' Term 4 (P2 V4)  Harmonic cont.  Anharm. cont.   Total value'
   endif
   do n = 0,4
