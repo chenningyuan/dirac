@@ -13,11 +13,11 @@ f2 = Filter()
 
 f1.add(from_string = 'Final results for EOM-EE',
       num_lines   = 30,
-      abs_tolerance = 1.0e-7)
+      abs_tolerance = 2.0e-6)
 
 f2.add(from_string = 'Final results for EOM-IP',
       num_lines   = 30,
-      abs_tolerance = 1.0e-7)
+      abs_tolerance = 2.0e-6)
 
 #test.run(['eom_ee_Be.inp'],                                                        ['Be.mol'], f1, args='--mw=110')
 

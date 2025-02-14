@@ -245,8 +245,8 @@ C             OCCNO(JOCC) = WORK(KEIG + JACT - 1)
         END DO
       END IF
 C
-      IF ( IPRINT .GE. 1 .or. NATOLCR ) THEN
-         IF( NATOLCR )THEN
+      IF ( IPRINT .GE. 1 .OR. NATOLCR) THEN
+         IF( IDENSLR_STATE .GT. 0 )THEN
             WRITE(LUPRI,'(//A/A/A)')
      &' ***************************************************',
      &' *************** CI natural orbitals ***************',

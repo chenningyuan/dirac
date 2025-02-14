@@ -164,13 +164,13 @@ C
 CSK   IF (.FALSE.) THEN
 C     TODO Feb 2004 hjaaj: KRMCCNO not working correctly yet ...
 C
-C          July 2008 sk+hjaaj : fix for FOCKON only
+C          July 2008 sk+hjaaj : fix for FOCKONLY only
 C                               still TODO: implement RTRACI + 
 C                                           fix TRTOCO/TRTONO branch
 C
-         IF (NATONL) THEN
+         IF (NATONLY) THEN
             CNOLBL = 'ONLYNO'
-         ELSE IF (FOCKON) THEN
+         ELSE IF (FOCKONLY) THEN
             CNOLBL = 'ONLYFD'
          ELSE
             CNOLBL = 'FD+NO'
@@ -182,7 +182,7 @@ C
             RTRACI = .TRUE.
          END IF
 C
-         WRITE (LUPRI,'(/2A)') ' - calling KRCCNO with keyword ',CNOLBL
+         WRITE (LUPRI,'(/2A)') ' - calling KRMCCNO with keyword ',CNOLBL
          CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPROPT,EIG,
      &                WORK,KFREE,LFREE)
 C
