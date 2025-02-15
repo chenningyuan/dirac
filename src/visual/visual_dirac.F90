@@ -157,9 +157,6 @@ contains
 
       case ('lao-connection-1')
 
-!       gosia fixme:
-!       now, i'm reusing old code here
-
 !       read response data from 'RESPONSE.h5' file
         if (.not.present(grid_function)) stop
 
@@ -171,7 +168,7 @@ contains
           call dmat_ao%alloc()
 
 !
-!         fixme list:
+!         fixme:
 !         * reading again rspvec_file, only to get the label and set ivec_con;
 !           this is to ensure that the same vector component is read from "TBMO" file,
 !           but it should be changed once TBMO is refactored (as now is PAMXVC)
@@ -638,7 +635,7 @@ contains
     integer:: ierr
     integer:: inconsis
 
-!   gosia fixme, after excorr_dirac.F
+!   testing, from excorr_dirac.F
     if (sum(mo%n_ao) < ao_basis%nao) then
        ierr = INCONSIS
        return
@@ -920,8 +917,6 @@ contains
 !              it's ok if you plot a single orbital but not ok for many things
 !              need to add careful checks
 !     gosia: KRMSCF calculations not tested
-!
-! ------------------------------------------------------------------------------
 
     iprint = 0
     nao  = sum(cmo%n_ao)
@@ -946,7 +941,6 @@ contains
     integer,intent(in)::mat_dim,irep,nz_inp
     real(8), intent(inout)::dmat(mat_dim, mat_dim, *)
     integer::iz,iq
-! ------------------------------------------------------------------------------
 
     if (nz_inp < 4) then
       do iz = 1, nz_inp
@@ -956,7 +950,6 @@ contains
     end if
 
   end subroutine
-
 
 ! ------------------------------------------------------------------------------
   subroutine construct_perturbed_dmat(dmat,bmat,  &
@@ -1050,10 +1043,6 @@ contains
 
   end subroutine
 
-
-
-
-
 ! ------------------------------------------------------------------------------
   subroutine construct_perturbed_dmat_lao_e(dmat,bmat,  &
                                       cmo)
@@ -1128,6 +1117,7 @@ contains
      end do
 
   end subroutine
+! ------------------------------------------------------------------------------
   subroutine construct_perturbed_dmat_lao_p(dmat,bmat,  &
                                       cmo)
 #include "implicit.h"
@@ -1151,7 +1141,6 @@ contains
     integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
     character(2) ::typ
     logical :: debug_print
-!
 
     iprint = 0
     irep = 0
@@ -1202,8 +1191,6 @@ contains
 
   end subroutine
 
-
-!
 ! ------------------------------------------------------------------------------
   subroutine pertdenmat_sym(mat_dim,mat_nz,mat, f)
 
@@ -1314,6 +1301,7 @@ contains
 
   end subroutine
 
+! ------------------------------------------------------------------------------
   subroutine get_xyzcomp_from_rspvec(grid_function, ivec)
     type(grid_function_t), intent(inout):: grid_function
     integer,intent(out),optional::ivec
@@ -1354,12 +1342,5 @@ contains
     end if
  
   end subroutine
-
-
-! ------------------------------------------------------------------------------
-  subroutine verify_input_keywords()
-
-  end subroutine verify_input_keywords
-
 
 end module

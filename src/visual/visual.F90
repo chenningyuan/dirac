@@ -14,61 +14,27 @@ module visual
   use visual_dirac
   use visual_in_point
   use visual_dirac
-  use visual_grids !OK
-  use visual_utils !OK
+  use visual_grids
+  use visual_utils
   use visual_grid_functions
   use visual_datatypes
   use visual_io
+  use visual_txt_storage
   use visual_mpi
   use dirac_dmat_factory
 
 ! DIRAC modules
   use checkpoint
   use basis_set_datatypes
+  use dirac_ao_eval
+  use interface_ao
 
 #ifdef VAR_MPI
   use interface_to_mpi
   use integer_kind_mpilib
 #endif
 
-
-!   ---- legacy ----    
-  use memory_allocator
-  use dircmo
-  use dirac_ao_eval
-  use interface_ao
-  use matrix_defop_old
-  use matrix_genop_old, only: copy_matrix_sym
-  use dirac_interface
-  use xc_london_c1
-  use visual_integrate
-  use electrostatic_potential
-  use num_grid_cfg
-
-  use labeled_storage
-  use visual_txt_storage
-!   ---- end ----    
-
   implicit none
-
-!   ---- legacy ----    
-#include "priunit.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "maxorb.h"
-#include "dcbham.h"
-#include "dcbdhf.h"
-#include "dgroup.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "dcbxlr.h"
-#include "codata.h"
-#include "orgcom.h"
-
-!   ---- end ----    
 
   public run_visual
 
@@ -550,7 +516,6 @@ contains
 
   end subroutine
 
-
 ! ------------------------------------------------------------------------------
   subroutine work_on_grid(ndim, nr_points, &
                           mol,&
@@ -640,7 +605,6 @@ contains
       end if
     
     end do
-
 
   end subroutine
 
