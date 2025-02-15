@@ -51,5 +51,5 @@ void xcint_setup_functionals()
   SETUP(setup_revtpssc);
   SETUP(setup_revtpssx);
 #endif
-  SETUP(setup_brx);
+  // SETUP(setup_brx);
 }

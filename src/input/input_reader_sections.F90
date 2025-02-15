@@ -1061,10 +1061,20 @@
 
       if (kw_matches(word, '.ITLEVEL')) then
          call kw_read(word, exa_input%iterative_level)
+#ifdef VAR_NVFORTRAN
+         if (exa_input%iterative_level.ge.4) then
+            call quit('Tensors with more than 7 dimensions not supported by NVFORTRAN')
+         end if
+#endif
       end if
 
       if (kw_matches(word, '.ITSCHEME')) then
          call kw_read(word, exa_input%iterative_scheme)
+#ifdef VAR_NVFORTRAN
+         if (exa_input%iterative_scheme.ge.40) then
+            call quit('Tensors with more than 7 dimensions not supported by NVFORTRAN')
+         end if
+#endif
       end if
 
       if (kw_matches(word, '.PTLEVEL')) then
@@ -1129,6 +1139,7 @@
          exa_input%iterative_scheme = 35
       end if
 
+#ifndef VAR_NVFORTRAN
       if (kw_matches(word, '.CCiQ      ')) then
          exa_input%iterative_level  = 4
          exa_input%iterative_scheme = 40
@@ -1188,6 +1199,21 @@
          exa_input%iterative_level  = 5
          exa_input%iterative_scheme = 55
       end if
+#else 
+      if (kw_matches(word, '.CCiQ      ').or.&
+          kw_matches(word, '.CCiQ1a    ').or.&
+          kw_matches(word, '.CCiQ1b    ').or.&
+          kw_matches(word, '.CCiQ2     ').or.&
+          kw_matches(word, '.CCiQ3     ').or.&
+          kw_matches(word, '.CC4       ').or.&
+          kw_matches(word, '.CCiP      ').or.&
+          kw_matches(word, '.CCiP1a    ').or.&
+          kw_matches(word, '.CCiP1b    ').or.&
+          kw_matches(word, '.CCiP2     ').or.&
+          kw_matches(word, '.CCiP3     ').or.&
+          kw_matches(word, '.CC5       ')) & 
+      call quit('Tensors with more than 7 dimensions not supported by NVFORTRAN')
+#endif
 
       if (kw_matches(word, '.TCONVERG')) then
          call kw_read(word, exa_input%t_econv)
@@ -1482,6 +1508,36 @@
          relcc_do_eomcc  = .true.
       end if
 
+      if (kw_matches(word, '.pEOM  ')) then
+         relcc_do_eomcc  = .true.
+         relcc_do_eom_peom  = .true.
+      end if
+        
+      if (kw_matches(word, '.pEOM2  ')) then
+         relcc_do_eomcc  = .true.
+         relcc_do_eom_pt2   = .true.
+         relcc_do_eom_peom  = .true.
+      end if 
+
+      if (kw_matches(word, '.EOM2   ')) then
+         relcc_do_eomcc  = .true.
+         relcc_do_eom_pt2   = .true.
+         relcc_do_eom_pt2_ccamp = .false.
+      end if 
+
+      if (kw_matches(word, '.EOM2CC ')) then
+         relcc_do_eomcc  = .true.
+         relcc_do_eom_pt2   = .false.
+         relcc_do_eom_pt2_ccamp = .true.
+      end if 
+
+      if (kw_matches(word, '.pEOM2CC')) then
+         relcc_do_eomcc  = .true.
+         relcc_do_eom_pt2   = .false.
+         relcc_do_eom_pt2_ccamp = .true.
+         relcc_do_eom_peom = .true.
+      end if 
+
       if (kw_matches(word, '.EOMPROP')) then
          relcc_do_eomprop  = .true.
       end if
@@ -1631,7 +1687,6 @@
 !     --------------------------------------------------------------------------
        integer                          :: nr_roots(2) ! number of roots in each symmetry 
 !     --------------------------------------------------------------------------
-
       call reset_available_kw_list()
 
       if (kw_matches(word, '.EE    ')) then
@@ -1656,7 +1711,7 @@
 
       if (    (relcc_do_eomip .and. relcc_do_eomea) &
           .or.(relcc_do_eomip .and. relcc_do_eomee) &
-          .or.(relcc_do_eomea .and. relcc_do_eomee)) &
+          .or.(relcc_do_eomea .and. relcc_do_eomee)) & 
           call quit('Only one EOM kind of calculation at a time (IP/EE/EA) allowed !')
 
 

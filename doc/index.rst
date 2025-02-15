@@ -44,12 +44,6 @@ Setting up DIRAC
   :doc:`String replacement <pam/replace>`
 
 
-Updates and patches
-===================
-
- :doc:`ChangeLog <patches/CHANGELOG>` |
- :doc:`Known problems <patches/KNOWN-PROBLEMS>`
-
 .. _FirstSteps:
 
 First steps in DIRAC territory
@@ -196,7 +190,7 @@ Tutorials and walkthrus
 * **Frozen density embedding (FDE):**
   :doc:`NMR shieldings in Frozen Density Embedding (FDE) scheme with London atomic orbitals (LAOs) <tutorials/fde_nmr/tutorial>`
 
-* **Davidson corrections for relCI (LUCITA and KRCI):**
+* **Davidson corrections for relCI (LUCITA and KRCI with LUCIAREL):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
 * **Quantum electrodynamics (QED):**
@@ -272,7 +266,6 @@ Development
   :doc:`Transfering uncommitted code <development/transfering_uncommitted_code>`
 
 * **Notes:**
-  :doc:`DFCOEF <development/dfcoef>` |
   :doc:`Screening <development/screening>` |
   :doc:`64bit integers <development/int8>` |
   :doc:`Numerical constants <development/num_constants>` |

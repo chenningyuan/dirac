@@ -10,7 +10,6 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_GP_FORTRAN_SOURCES
-   etime_cray.F
    finesort_scheme6.F
    global_file.F
    gphjj.F
@@ -82,7 +81,6 @@ set(FREE_GP_FORTRAN_SOURCES
     quaternion_algebra.F90
     selftests.F90
     string_manipulations.f90
-    type_laplace.F90
     unit_test_generator.f90
     unit_testing.F90
     vector_functions.F90
@@ -128,7 +126,7 @@ endif()
 if(ENABLE_HDF5)
   add_library(
     gp
-    OBJECT
+    STATIC
     ${FIXED_GP_FORTRAN_SOURCES}
     ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_GP_FORTRAN_SOURCES}
@@ -139,7 +137,7 @@ if(ENABLE_HDF5)
 else()
   add_library(
     gp
-    OBJECT
+    STATIC
     ${FIXED_GP_FORTRAN_SOURCES}
     ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_GP_FORTRAN_SOURCES}

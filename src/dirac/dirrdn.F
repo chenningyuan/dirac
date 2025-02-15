@@ -430,11 +430,11 @@ C
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
-      DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
+      DATA TABLE  /'.DIRECT','.CVALUE','xxxxxxx','.DOJACO',
      &             '.PRINT ','.PRJTHR','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
      &             '.ACMOUT','.ACMOIN','.IMPMOS','.CODATA',
-     &             '.SKIP2E','.LOWJAC','.RKBIMP','.XXXXXX',
+     &             'xxxxxxx','.LOWJAC','.RKBIMP','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP and USER_STOL
@@ -444,7 +444,6 @@ C
       USER_STOL  = .FALSE.
       TWOCOMP    = .FALSE.
       TWOCOMPBSS = .FALSE.
-      SKIP2E     = .FALSE.
       LOWJACO    = .FALSE.
       LOGMEMGET  = .FALSE.
       DOQJACO    = .FALSE.
@@ -531,8 +530,7 @@ C&&&& CVALUE: Set a different value of speed of light (in a.u.)
             CSCALE = CVAL
             GO TO 100
   103    CONTINUE
-C&&&& NOSET: Skip the PAMSET module
-            NOSET = .TRUE.
+C&&&& 
             GO TO 100
   104    CONTINUE
 C&&& DOJACO: Do Jacobi diagonalization if real group
@@ -609,8 +607,7 @@ C&&&& CODATA: Choose between CODATA sets
             END IF
             GO TO 100
   117    CONTINUE
-C&&&& SKIP2E
-            SKIP2E = .TRUE.
+C&&&& 
             GO TO 100
   118    CONTINUE
 C&&&& LOWJAC
@@ -793,8 +790,6 @@ C
       ENDIF
       WRITE(LUPRI,'(1X,A,I3)')
      &     '* General print level   : ',IPRGEN
-      IF(NOSET) WRITE(LUPRI,'(1X,A)')
-     &     '* Skipping the PAMSET module. Crossing my fingers ...'
 C
 C     Process input for various program sections
 C     ==========================================
@@ -3402,6 +3397,10 @@ C
          if(DOKRMC .or. DOGASCIP .or. DOKRCI)
      &   call quit(" X2Cmmf does not work with KRMC/KRCI/GASCIP")
       end if
+
+      if (spinfr .and. domp2no) then
+         call quit('.MP2 NO does not work for spin-free calculations')
+      end if
 C
 C     Process input for various program sections
 C     ==========================================
@@ -3456,7 +3455,7 @@ C     '*MP2 NO' - MP2 Natural Orbitals
    10 CONTINUE
         CALL MP2NOINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
-C     '*KRCICALC' - Kramers Restricted CI CALCulation
+C     '*KRCICALC' - Kramers Restricted CI CALCulation (deprecated, use *KRCI )
    11 CONTINUE
         CALL KRCI_INP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
@@ -5155,7 +5154,6 @@ C
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
-      NOSET    = .FALSE.
       OPTWLK   = .FALSE.
       OPTNEW   = .FALSE.
       NMWALK   = .FALSE.
@@ -5317,9 +5315,9 @@ C
 !                   49        50        51        52
      &            '.NOAMFI','.QDOTS ','.IOTC  ','.X2C4  ',
 !                   53        54        55        56
-     &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C',
+     &            '.NOSFMU','.DFTAUT','xxxxxxx','.MO4C2C',
 !                   57        58        59        60
-     &            '.PCM   ','.HFXATT','.XB    ','.XC    ',
+     &            '.PCM   ','.HFXATT','xxxxxxx','xxxxxxx',
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
@@ -5353,7 +5351,6 @@ C
       QED     = .FALSE.
       DOEFFQED = .FALSE.
       DOASHIFT = .FALSE.
-      MOLMF   = .FALSE.
       X2CMMF  = .FALSE.
       ONESYS  = .FALSE.
       FREEPJ  = .FALSE.
@@ -5953,9 +5950,6 @@ C    (see MRCON1 of the MOLTRA module)
           go to 100
 
   155     CONTINUE
-C&&& Activate : molecular mean field approximation for correlated calculations
-C               using LL integrals only that is ^4 DC(G)**.
-          MOLMF = .TRUE.
           GOTO 100
   156     CONTINUE
 CMI&& Activate 4c-2c MO transformation
@@ -5974,13 +5968,11 @@ CMI&& Activate 4c-2c MO transformation
   158     CONTINUE
           READ(LUCMD,*) HFXATT
           GOTO 100
-! .xB
+!
   159     CONTINUE
-          call quit('.xB not implemented in this version')
           GOTO 100
-! .xC
+!
   160     CONTINUE
-          call quit('.xC not implemented in this version')
           GOTO 100
 
 ! .ECP
@@ -8534,7 +8526,7 @@ C
       DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
      &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
      &            '.THDIAG','.THGRAD','.CHECK ','.SELECT',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.THXVEC','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -8563,6 +8555,7 @@ C
       THFULL = 1.0D-13
       THDIAG = 1.0D-05
       THGRAD = 1.0D-07
+      THXVEC = 1.0D-15
       SELMOS = 'allocc'
 C
 C     Process input from CBILOC
@@ -8658,6 +8651,8 @@ C   SELMOS: Select MOs for localization
                READ(LUCMD,'(A72)') SELMOS
                GO TO 100
  13            CONTINUE
+C   THXVEC: Set threshold for removal of small rotations
+               READ(LUCMD,*) THXVEC
  14            CONTINUE
                GO TO 100
  15            CONTINUE
@@ -8816,6 +8811,9 @@ C
         WRITE(LUPRI,'(1X,A)') '* User defined MOs for localization:'
         WRITE(LUPRI,'(1X,A)') '    --> ',SELMOS
       ENDIF
+      WRITE(6,'(1X,A,1P,E8.2)') 
+     &    '* Threshold for removal of small rotations: ',
+     &    THXVEC          
 C     -----------------------------------------------------------------
 C     Fragments of spinors used in the projection analysis
 C

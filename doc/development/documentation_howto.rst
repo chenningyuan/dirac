@@ -8,8 +8,8 @@ How this documentation works and how you can contribute
 
 This documentation is generated using `sphinx <http://sphinx.pocoo.org/>`_
 which translates RST (reStructured Text) markup to html and latex.  Sphinx and
-RST are extremely widely used in the python community.  The nice thing about
-RST markup that it looks nice by itself in the terminal.  RST and Sphinx are
+RST are extremely widely used in the Python community. The nice thing about
+RST markup that it looks nice by itself in the terminal. RST and Sphinx are
 very simple and intuitive and for first steps consult the `reStructuredText
 Primer <http://sphinx.pocoo.org/rest.html>`_ and the `Sphinx Markup Constructs
 <http://sphinx.pocoo.org/markup/index.html>`_.  Typically RST markups is
@@ -20,10 +20,10 @@ wrong.
 Sphinx installation
 -------------------
 
-We recommend to install the required packages using
+We recommend to install all the required packages using
 either `virtualenv <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`__
 or `Conda <https://docs.conda.io/>`__
-but not using standard packages.
+but not by using standard installation packages.
 Possibly the only packages that you may need to install system-wide are
 python-pip and python-virtualenv).
 
@@ -46,18 +46,22 @@ Once you have set it up, you need to activate it::
 Once activated, you can install Python packages into the virtual
 environment::
 
+  $ python -m pip install sphinx sphinx_rtd_theme sphinxcontrib-bibtex
+
+If this sphinx installation does not work, please use its lower version::
+
   $ python -m pip install "sphinx<7.0.0" sphinx_rtd_theme sphinxcontrib-bibtex
 
-Again, on some systems you need ``python3 -m pip ...`` instead.
+This restriction on the sphinx version is a workaround for https://github.com/readthedocs/readthedocs.org/issues/10279.
 
-The restriction on the sphinx version is a workaround for https://github.com/readthedocs/readthedocs.org/issues/10279.
+Again, on some systems you need to type ``python3 -m pip ...`` instead.
 
 Next time you log on, you do not need to install it again, you just activate (source) it
 like above, you do not need to install the dependencies again.
 
 The advantage of using virtualenv is that it is cross-platform,
 you get the latest packages, you get an isolated and disposable
-environment, and you do not require sudo permissions.
+environment, and also you do not require sudo permissions.
 
 
 Generation of html pages
@@ -71,9 +75,10 @@ the sphinx-packages first (see above), then::
   $ mkdir build
   $ cd build
   $ cmake ..
-  $ make -k html > build_html.log 2> build_html.log
+  $ make -k html > build_html.log 2>&1
 
-Now point your browser to build/html/index.html. We recommend the developer to check the *build_html.log* file for possible errors
+Now point your browser to build/html/index.html. 
+We recommend to check the *build_html.log* file for possible errors and warnings
 in generating the documentation.
 
 How to add new sections and text
@@ -257,109 +262,102 @@ Continuous integration and deployments
 --------------------------------------
 
 The current trend is to test your code on each push to the versioning system. We use this to ensure the stability
-of the codebase and get valuable early feedback on our changes. There are some free CI services available which suits our needs.
+of the codebase and get valuable early feedback on our changes. 
 
-Currently supported free CI services:
+There are some free CI services available which suits our needs (search internet).
 
-* `MagnumCI <https://magnum-ci.com>`_ 
-* `Semaphore <https://magnum-ci.com>`_ 
-* `Shippable <https://app.shippable.com>`_
-* `Wercker <http://wercker.com/>`_
-* `CircleCI <https://circleci.com/>`_
-* `Codeship <https://codeship.com/>`_
+	Most of the CI services also offer ability to deploy built code. We use this feature to deploy the documentation after successful builds.
+	To deploy the code we use simple python script which wraps ``rsync`` command and adds some additional metadata to each deployed HTML. After
+	build, most of the services leaves the build environment untouched and so we can just deploy the built HTML files. Some services do not, and
+	we need to bootstrap the environment with system and python dependencies. To include build logs we need to rebuild documentation and capture
+	the standard and error outputs.
 
-Most of the CI services also offer ability to deploy built code. We use this feature to deploy the documentation after successful builds.
-To deploy the code we use simple python script which wraps ``rsync`` command and adds some additional metadata to each deployed HTML. After
-build, most of the services leaves the build environment untouched and so we can just deploy the built HTML files. Some services do not, and
-we need to bootstrap the environment with system and python dependencies. To include build logs we need to rebuild documentation and capture
-the standard and error outputs.
+	Example documentation build and deploy:
 
-Example documentation build and deploy:
+	.. code-block:: bash
 
-.. code-block:: bash
+	    BUILD_DIR=build_ci_name
+	    cd $BUILD_DIR
+	    SPHINX_LOG="sphinx-log.txt"
+	    DOXYGEN_LOG="doxygen-log.txt"
+	    SLIDES_LOG="slides-log.txt"
+	    make html > $SPHINX_LOG 2> $SPHINX_LOG
+	    make slides > $SLIDES_LOG 2> $SLIDES_LOG
+	    make doxygen > $DOXYGEN_LOG 2> $DOXYGEN_LOG
+	    cd ..
+	    python maintenance/deploy_doc.py --root=/path/to/documentation/root --user=user123 --host=my.hostname.com --port=22 --post_script=/path/to/post_deploy.py ci_name $BUILD_DIR
 
-    BUILD_DIR=build_ci_name
-    cd $BUILD_DIR
-    SPHINX_LOG="sphinx-log.txt"
-    DOXYGEN_LOG="doxygen-log.txt"
-    SLIDES_LOG="slides-log.txt"
-    make html > $SPHINX_LOG 2> $SPHINX_LOG
-    make slides > $SLIDES_LOG 2> $SLIDES_LOG
-    make doxygen > $DOXYGEN_LOG 2> $DOXYGEN_LOG
-    cd ..
-    python maintenance/deploy_doc.py --root=/path/to/documentation/root --user=user123 --host=my.hostname.com --port=22 --post_script=/path/to/post_deploy.py ci_name $BUILD_DIR
+	When deploying logs it is expected that logs are named according to this mapping:
 
-When deploying logs it is expected that logs are named according to this mapping:
+	.. code-block:: python
 
-.. code-block:: python
+	    mapping = {
+		'sphinx': 'sphinx-log.txt',
+		'slides': 'slides-log.txt',
+		'doxygen': 'doxygen-log.txt',
+	    }
 
-    mapping = {
-        'sphinx': 'sphinx-log.txt',
-        'slides': 'slides-log.txt',
-        'doxygen': 'doxygen-log.txt',
-    }
+	Deploy script is located at ``maintenance/deploy_doc.py`` and code is documented so feel free to study it when implementing new deployer.
+	For example this is implementation of :py:class:`Semaphore` deployer:
 
-Deploy script is located at ``maintenance/deploy_doc.py`` and code is documented so feel free to study it when implementing new deployer.
-For example this is implementation of :py:class:`Semaphore` deployer:
+	.. code-block:: python
 
-.. code-block:: python
+	    class Semaphore(Deployment):
+		name = 'semaphoreci'
 
-    class Semaphore(Deployment):
-        name = 'semaphoreci'
+		def get_root_path(self):
+		    return os.environ['SEMAPHORE_PROJECT_DIR']
 
-        def get_root_path(self):
-            return os.environ['SEMAPHORE_PROJECT_DIR']
+		def get_branch(self):
+		    return os.environ['BRANCH_NAME']
 
-        def get_branch(self):
-            return os.environ['BRANCH_NAME']
+		def get_revision(self):
+		    return os.environ['REVISION']
 
-        def get_revision(self):
-            return os.environ['REVISION']
+	As you can see we use environment variables to get information about the build. Each CI service provides its own set of environment variables so please refer to the respective CI documentation for more info. When implementing a new deployer you have to inherit from :py:class:`Deployment` and implement some methods to provide CI specific data about build:
 
-As you can see we use environment variables to get information about the build. Each CI service provides its own set of environment variables so please refer to the respective CI documentation for more info. When implementing a new deployer you have to inherit from :py:class:`Deployment` and implement some methods to provide CI specific data about build:
+	.. code-block:: python
 
-.. code-block:: python
+	    def get_root_path(self):
+		"""
+		Returns path to the root directory - git repository root.
+		"""
+		raise NotImplementedError
 
-    def get_root_path(self):
-        """
-        Returns path to the root directory - git repository root.
-        """
-        raise NotImplementedError
+	    def get_revision(self):
+		"""
+		Returns the current git revision.
+		"""
+		raise NotImplementedError
 
-    def get_revision(self):
-        """
-        Returns the current git revision.
-        """
-        raise NotImplementedError
+	    def get_branch(self):
+		"""
+		Returns the current git branch.
+		"""
+		raise NotImplementedError
 
-    def get_branch(self):
-        """
-        Returns the current git branch.
-        """
-        raise NotImplementedError
+	After implementing the custom deployer class, you have to add it to CI mapping in order to be able to use it. You can do so in the :py:class:`main` function of the deployment script:
 
-After implementing the custom deployer class, you have to add it to CI mapping in order to be able to use it. You can do so in the :py:class:`main` function of the deployment script:
+	.. code-block:: python
 
-.. code-block:: python
+	    ci_mapping = {
+		'semaphoreci': Semaphore,
+		'codeship': Codeship,
+		'magnumci': Magnum,
+	    }
 
-    ci_mapping = {
-        'semaphoreci': Semaphore,
-        'codeship': Codeship,
-        'magnumci': Magnum,
-    }
+	To deliver the built HTML to the remote server we use ``rsync`` over SSH protocol. You can configure the script behaviour using keyword command line arguments:
 
-To deliver the built HTML to the remote server we use ``rsync`` over SSH protocol. You can configure the script behaviour using keyword command line arguments:
+	--root         Remote root path, documentation will be synced to this path.
+	--user         Remote user.
+	--host         Remote hostname.
+	--port         Remote SSH port.
+	--post_script  Path to optional Python script on remote host.
 
---root         Remote root path, documentation will be synced to this path.
---user         Remote user.
---host         Remote hostname.
---port         Remote SSH port.
---post_script  Path to optional Python script on remote host.
+	After keyword arguments you have to provide two positional arguments.
 
-After keyword arguments you have to provide two positional arguments.
-
-- **ci** - CI name, as named in ``ci_mapping``.
-- **build_dir** - The name of the build directory, for example ``build``, same as positional argument passed to the ``setup`` script.
+	- **ci** - CI name, as named in ``ci_mapping``.
+	- **build_dir** - The name of the build directory, for example ``build``, same as positional argument passed to the ``setup`` script.
 
 Every operation on the remote server will be executed under the given user. If the ``post_script`` option is passed it will be executed after the rsync operation finishes. Example
-post deploy script can be found in ``maintenance/post_deploy.py``. It used to generate nice overview of last documentation builds on the `main documentation site <http://dirac.umb.sk/doc/doc-deployments/>`_.
+post deploy script can be found in ``maintenance/post_deploy.py``. 

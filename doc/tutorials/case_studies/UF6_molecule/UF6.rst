@@ -36,7 +36,7 @@ Autooccupation
 --------------
 
 It is possible to obtain proper orbital occupation thanks to the implemented atomic potential start and avoid 
-the lenghty atomic start procedure given above.
+the lengthy atomic start procedure given above.
 
 The autooccupation gives the lowest SCF energy, see the output file
 :download:`x2c_a4p.scf_autoocc_UF6.v2z.D2h.out <../../../../../test/tutorial_UF6/result/x2c_a4p.scf_autoocc_UF6.v2z.D2h.out>`,

@@ -628,8 +628,9 @@ C
           END IF
           IF(AOC) THEN
             DO IOPEN = 1,NOPEN
-              CALL HEADER('PREDHF: Total FV matrix in SA-AO basis',-1)
-              WRITE(LUPRI,'(A,I3)') ' Matrix number',IOPEN
+              CALL HEADER('PREDHF: FV matrices in SA-AO basis',-1)
+              WRITE(LUPRI,'(A,I0,A,I0)')
+     &        ' Open shell number ',IOPEN,' of ',NOPEN
               CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
      &                    NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
             END DO

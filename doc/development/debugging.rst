@@ -74,7 +74,7 @@ modifications of DIRAC source files and subsequent compilation, so it is
 easier to have linked executable rather than copying it.
 
 Make sure that the 'DIRAC.INP', 'MOLECULE.INP', *gdb\_demo* and other
-necessary files (for example, the 'DFCOEF' if you are restarting SCF iterations) are
+necessary files (for example, the 'CHECKPOINT.h5' if you are restarting SCF iterations) are
 in the working directory as well.
 
 Demonstration of GNU/gdb debugging commands

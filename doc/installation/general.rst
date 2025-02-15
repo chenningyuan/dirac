@@ -9,7 +9,7 @@ Getting the Code
 ----------------
 
 **We recommend users who do not plan to make any code changes
-to download from** https://zenodo.org/doi/10.5281/zenodo.7670748 (DIRAC23)
+to download from** https://zenodo.org/doi/10.5281/zenodo.14833106 (DIRAC25).
 
 In this case the release tarballs are self-contained, and in addition we get useful download metrics which we can use
 in future funding applications.
@@ -19,7 +19,7 @@ If you clone the code directly from GitLab, please clone with ``--recursive``, e
 
     $ git clone --recursive --branch master https://gitlab.com/dirac/dirac.git
 
-By replacing ``master`` with a version number, for instance ``v23.0``, one can select a specific version.
+By replacing ``master`` with a version number, for instance ``v24.0``, one can select a specific version.
 In order to get the latest revision only::
 
     $ git clone --depth 1 --recursive git@gitlab.com:dirac/dirac.git
@@ -156,5 +156,5 @@ If it is a cluster, but you prefer to install it yourself (it's easy):
 What to do if hdf5 is not installed on your machine
 ---------------------------------------------------
 
-You can download the latest version of hdf5 from: `https://www.hdfgroup.org/downloads/hdf5/`
+You can download the latest version of hdf5 from `the hdfgroup website <https://www.hdfgroup.org/download-hdf5>`_
 

@@ -188,7 +188,7 @@ subroutine talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
 
                 eom_lrs(n,i,j) = eom_lr
                 write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
-                write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
+                write(*,"(F16.8,A,F16.8)"), real(eom_lrs(n,i,j)), ' \ ', aimag(eom_lrs(n,i,j))
 
                 call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,2)
             end do
@@ -219,7 +219,7 @@ subroutine talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
             do i=1, N_prop_A
                 do j=1, N_prop_B
                     write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
-                    write(*,"(F16.8,A2,F16.8)"), real(eom_lrs(n,i,j)), '\', aimag(eom_lrs(n,i,j))
+                    write(*,"(F16.8,A,F16.8)"), real(eom_lrs(n,i,j)), ' \ ', aimag(eom_lrs(n,i,j))
                 end do
             end do
         end do
@@ -554,7 +554,7 @@ subroutine do_eom_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                     write(*,"(A4,I1,A2,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), &
                          ";X", Prop_C(k),">> = "
 
-                    write(*,"(F16.8,A2,F16.8)"), real(eom_qrs(i,j,k,m,n)), '\', aimag(eom_qrs(i,j,k,m,n))
+                    write(*,"(F16.8,A,F16.8)"), real(eom_qrs(i,j,k,m,n)), ' \ ', aimag(eom_qrs(i,j,k,m,n))
                 end do
               end do 
             end do
@@ -800,7 +800,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                     write(*,"(A4,I1,A2,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), &
                          ";X", Prop_C(k),">> = "
 
-                    write(*,"(F16.8,A2,F16.8)"), real(eom_qrs(i,j,k,m,n)), '\', aimag(eom_qrs(i,j,k,m,n))
+                    write(*,"(F16.8,A,F16.8)"), real(eom_qrs(i,j,k,m,n)), ' \ ', aimag(eom_qrs(i,j,k,m,n))
                 end do
               end do 
             end do
