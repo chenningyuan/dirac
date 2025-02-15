@@ -1292,6 +1292,7 @@ contains
       call quit(errmsg)
     end if
 
+    mat = 0.0d0
     do is = 1, length
 
       i = self%orbital_rotation_indices(1, is)

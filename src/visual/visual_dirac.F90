@@ -93,13 +93,10 @@ contains
           dmat_ao%tr_sym = 1
           call dmat_ao%alloc()
           call dmat_transform_mo2ao(cmo, tmpmat_mo, dmat_ao)
-          !call GENDEN(dmat_ao%elements, cmo%coeff, 1, 0)
 !         scale inactive density matrix by occupation
-        write(*,*) 'tmpmat_mo% irep 0,ihsym,trsym: ', tmpmat_mo%irep,tmpmat_mo%ih_sym,tmpmat_mo%tr_sym
-        write(*,*) 'dmat_ao% irep 0,ihsym,trsym: ', dmat_ao%irep,dmat_ao%ih_sym,dmat_ao%tr_sym
+          call insert_half_phases(nao,nz,dmat_ao%irep,dmat_ao%elements)
           call dmat_ao%scale_elements(2.0d0)
           call dmat_ao%display()
-          call insert_half_phases(dmat_ao, nz)
         end if
     
         call tmpmat_mo%erase()
@@ -122,12 +119,11 @@ contains
         call tmpmat_mo%alloc()
         call rsp_info%vectors(ivec_rsp)%scatter_to_matrix_q(tmpmat_mo%elements, nmo, nz)
 
-!       dmat inherits symmetry of the response vector:
+!       tmpmat inherits symmetry of the response vector:
         call tmpmat_mo%assign_ih(rsp_info%vectors(ivec_rsp)%get_ih_sym())
         call tmpmat_mo%assign_tr(rsp_info%vectors(ivec_rsp)%get_tr_sym())
         call tmpmat_mo%assign_irep(rsp_info%vectors(ivec_rsp)%get_irep())
  
-        write(*,*) 'ivec, tmpmat_mo% in rsp irep 1,ihsym,trsym: ', ivec_rsp, tmpmat_mo%irep,tmpmat_mo%ih_sym,tmpmat_mo%tr_sym
         if (present(dmat_mo)) dmat_mo = tmpmat_mo
 
         if (present(dmat_ao)) then
@@ -138,11 +134,11 @@ contains
           call construct_perturbed_dmat(dmat_ao%elements,&
                                         tmpmat_mo%elements,&
                                         ivec_rsp, rsp_info, cmo%coeff)
+!         update symmetry info
           dmat_ao%irep = tmpmat_mo%irep
           dmat_ao%ih_sym = tmpmat_mo%ih_sym
           dmat_ao%tr_sym = tmpmat_mo%tr_sym
-         write(*,*) 'ivec, dmat_ao% in rsp irep 2,ihsym,trsym: ', ivec_rsp, dmat_ao%irep,dmat_ao%ih_sym,dmat_ao%tr_sym
-          !call symmetrize_mat(dmat_ao%elements)
+          factor = 0.0d0
           do iz = 1, nz
             iq = rsp_info%vectors(ivec_rsp)%get_ipqtoq(iz)
             im = rsp_info%vectors(ivec_rsp)%get_ihqmat(iq)
@@ -153,7 +149,7 @@ contains
             end if
           end do
           call pertdenmat_sym(nao, nz, dmat_ao%elements, factor)
-        write(*,*) 'ivec, dmat_ao% in rsp irep 2,ihsym,trsym: ', ivec_rsp, dmat_ao%irep,dmat_ao%ih_sym,dmat_ao%tr_sym
+          call insert_half_phases(nao, nz, dmat_ao%irep, dmat_ao%elements)
           call dmat_ao%scale_elements(2.0d0)
         end if
 
@@ -915,11 +911,7 @@ contains
     type(cmo_t), intent(in):: cmo
     type(dmat_t), intent(inout):: dmat_ao
     type(dmat_t), intent(in):: dmat_mo
-    !integer:: nao, nmo, nz, iz, irep, iprint, isymop(1)
-    integer:: nao, nmo, iz, irep, iprint, isymop(1)
-    integer:: ipari, irepd, iq, ipq, ioff  
-    integer:: i,j
-    !integer:: i2basx(2,2), i2orbx(2,2), icmoq(2), pq_to_uq(4, 0:7)
+    integer:: nao, nmo, iprint, i
 !
 !   dmat_ao(mu,nu)=cmo(mu,p)*dmat_mo(p,q)*cmo^{-1}(q,nu)
 !   
@@ -935,29 +927,6 @@ contains
     iprint = 0
     nao  = sum(cmo%n_ao)
     nmo  = sum(cmo%n_mo)
-    !nz   = cmo%nz
-
-    !i2basx = 0
-    !if (cmo%n_fsym > 1) then
-    !   i2basx(2, 1) = cmo%n_ao(1)
-    !   i2basx(1, 2) = cmo%n_ao(1)*cmo%n_ao(1) &
-    !                + cmo%n_ao(1)*cmo%n_ao(2)
-    !   i2basx(2, 2) = i2basx(2, 1) + i2basx(1, 2)
-    !end if
-
-    !i2orbx = 0
-    !if (cmo%n_fsym > 1) then
-    !   i2orbx(2, 1) = cmo%n_mo(1)
-    !   i2orbx(1, 2) = cmo%n_mo(1)*cmo%n_mo(1) &
-    !                + cmo%n_mo(1)*cmo%n_mo(2)
-    !   i2orbx(2, 2) = i2orbx(2, 1) + i2orbx(1, 2)
-    !end if
-
-    !icmoq = 0
-    !if (cmo%n_fsym > 1) then
-    !   icmoq(2) = cmo%n_ao(1)*cmo%n_mo(1)
-    !end if
-
     do i = 1,cmo%n_fsym
       call qtrans90('MOAO','S',0.0d0,&
                     cmo%n_ao(i),cmo%n_ao(i),cmo%n_mo(i),cmo%n_mo(i),&
@@ -973,26 +942,19 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine insert_half_phases(dmat,nz)
-    type(dmat_t), intent(inout):: dmat
-    integer,intent(in)::nz
-    integer:: iz,iq,i,ioff
-    integer:: pq_to_uq(4, 0:7)
+  subroutine insert_half_phases(mat_dim,nz_inp,irep,dmat)
+#include "dgroup.h"
+    integer,intent(in)::mat_dim,irep,nz_inp
+    real(8), intent(inout)::dmat(mat_dim, mat_dim, *)
+    integer::iz,iq
 ! ------------------------------------------------------------------------------
 
-    pq_to_uq = 0
-    do i = 1, 4
-       pq_to_uq(i, 0) = i
-    end do
-
-    if (nz < 4) then
-      do iz = 1, nz
-        iq = pq_to_uq(iz, dmat%ih_sym - 1)
-        ioff=dmat%mat_dim*dmat%mat_dim*(iz-1)+1
-        call my_q2bphase('D', iq, 1, dmat%elements(ioff))
+    if (nz_inp < 4) then
+      do iz = 1, nz_inp
+        iq = ipqtoq(iz, irep)
+        call q2bphase('D', iq, 1, dmat(1,1,iz))
       end do
     end if
-
 
   end subroutine
 
@@ -1016,16 +978,18 @@ contains
 
     integer, intent(in)  :: ivec
     type(response_info_t), intent(in) :: rsp_info
-    real(kind=8), intent(out) :: dmat(ntbas(0)*ntbas(0), nz)
+    real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
     real(kind=8), intent(in) :: bmat(norbt, norbt, nz)
     real(kind=8), intent(in) :: cmo(*)
 
+    real(kind=8), allocatable :: dtmp(:,:)
+    real(kind=8)::fac
     integer :: irep,iopsy,itim
     integer :: iprint
     integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
     character(2) ::typ
     logical :: debug_print
-!
+! based on dmoli3
 
     iprint = 0  ! needed for qtrans
 
@@ -1035,11 +999,6 @@ contains
 
     call rsp_info%vectors(ivec)%get_symmetry_info(irep,&
             iopsy,itim,typ)
-
-    write(*,*) 'in construct_perturbed_dmat: typ  = ', typ
-    write(*,*) 'in construct_perturbed_dmat: itim = ', itim
-    write(*,*) 'in construct_perturbed_dmat: irep = ', irep
-    write(*,*) 'in construct_perturbed_dmat: iopsy = ', iopsy
 
     do i1 = 1, nfsym
       i2 = mod(i1+iopsy,2) + 1
@@ -1088,8 +1047,7 @@ contains
 !                     ------------------------------------------------------
                       iprint)
       end if
-
-     end do
+    end do
 
   end subroutine
 
@@ -1268,6 +1226,7 @@ contains
         end do
       end do
     end do
+
 
   end subroutine
 

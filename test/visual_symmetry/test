@@ -2,6 +2,7 @@
 
 import os
 import sys
+import shutil
 from pathlib import Path
 
 #
@@ -33,14 +34,14 @@ grid_3d_h5=grid_3d_h5.symlink_to(Path(Path(__file__).parents[1].resolve(), 'test
 for m in ['ne_c1.mol', 'ne_c2.mol', 'ne_c2v.mol', 'ne_cs.mol', 'ne_d2.mol']:
     test.run(['rspE.inp'], [m], args='--outcmo --get="RESPONSE.h5"')
     test.run(['visR1.inp'], [m], f, args='--incmo --put="grid.h5"')
-    #test.run(['visE1.inp'], [m], args='--incmo --put="grid.h5 RESPONSE.h5" --get="plot*h5"')
-    #test.run(['rspB.inp'], [m], args='--outcmo --get="RESPONSE.h5"')
-    #test.run(['visB1.inp'], [m], args='--incmo --put="grid.h5 RESPONSE.h5" --get="plot*h5"')
+    test.run(['visE1.inp'], [m], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
+    test.run(['rspB.inp'], [m], args='--outcmo --get="RESPONSE.h5"')
+    test.run(['visB1.inp'], [m], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
     
 for m in ['ne_auto.mol', 'ne_c2h.mol', 'ne_ci.mol', 'ne_d2h.mol']:
     test.run(['rspE.inp'], [m], args='--outcmo --get="RESPONSE.h5"')
     test.run(['visR2.inp'], [m], f, args='--incmo --put="grid.h5"')
-#    test.run(['visE2.inp'], [m], args='--incmo --put="grid.h5 RESPONSE.h5" --get="plot*h5"')
-#    test.run(['rspB.inp'], [m], args='--outcmo --get="RESPONSE.h5"')
-#    test.run(['visE2.inp'], [m], args='--incmo --put="grid.h5 RESPONSE.h5" --get="plot*h5"')
+    test.run(['visE2.inp'], [m], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
+    test.run(['rspB.inp'], [m], args='--outcmo --get="RESPONSE.h5"')
+    test.run(['visB2.inp'], [m], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
 

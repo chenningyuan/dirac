@@ -1,0 +1,24 @@
+**DIRAC
+**HAMILTONIAN
+.DFT
+ B3LYP
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED SHELL
+10
+.EVCCNV
+1.0D-8
+**VISUAL
+!.3D_INTEGRATE
+.OUTPRI
+.GRIDS    
+1
+id=1 input=import file_inp=grid.h5
+.GRIDFUNCTIONS    
+1
+name=ed id_grid=1 purpose=visualization export=yes file_out=plot_ed1.h5
+*END OF
