@@ -96,7 +96,6 @@ contains
 !         scale inactive density matrix by occupation
           call insert_half_phases(nao,nz,dmat_ao%irep,dmat_ao%elements)
           call dmat_ao%scale_elements(2.0d0)
-          call dmat_ao%display()
         end if
     
         call tmpmat_mo%erase()

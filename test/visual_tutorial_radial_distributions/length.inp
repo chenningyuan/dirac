@@ -12,21 +12,21 @@
 **VISUAL
 .OUTPRI
 .GRIDS 
-2
+1
 id=1 input=radial
-id=2 input=dft
+#id=2 input=dft
 .RADIAL
 0.0,  0.0,   0.0
 10.0
 500
 .GRIDFUNCTIONS
-6
+4
 name=edip id_grid=1 dscale=-2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=3 purpose=integration
 name=edip id_grid=1 dscale=-2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=9 purpose=integration
-name=edip id_grid=2 dscale=-2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=3 purpose=integration
-name=edip id_grid=2 dscale=-2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=9 purpose=integration
 name=edip id_grid=1 dscale=-2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=3 purpose=visualization export=yes file_out=length_radial_rspvec3.h5
 name=edip id_grid=1 dscale=-2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=9 purpose=visualization export=yes file_out=length_radial_rspvec9.h5
+#name=edip id_grid=2 dscale=-2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=3 purpose=integration
+#name=edip id_grid=2 dscale=-2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=9 purpose=integration
 **MOLECULE
 *BASIS
 .DEFAULT

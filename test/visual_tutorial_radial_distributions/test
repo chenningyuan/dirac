@@ -13,12 +13,20 @@ from runtest_dirac import Filter, TestRun
 from runtest_rs import CompareHDF5
 test = TestRun(__file__, sys.argv)
 
+f = Filter()
+f.add(from_string = 'Final grid_function values integrated:',
+      num_lines = 2,
+      rel_tolerance = 1.0e-6)
+
+
 #
 # run tests
 #
 
-test.run(['Exc.inp'], ['Mg.xyz'], args='--outcmo --get="numerical_grid PAMXVC RESPONSE.h5"')
-test.run(['dens.inp'], ['Mg.xyz'], args='--incmo --put="numerical_grid RESPONSE.h5 PAMXVC" --get="dens*.h5"')
+test.run(['Exc.inp'], ['Mg.xyz'], args='--outcmo --get="RESPONSE.h5"')
+test.run(['dens.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="dens*.h5"')
+test.run(['length.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="length*.h5"')
+test.run(['velocity.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="velocity*.h5"')
 
 #
 # compare generated data with reference
@@ -26,25 +34,34 @@ test.run(['dens.inp'], ['Mg.xyz'], args='--incmo --put="numerical_grid RESPONSE.
 
 rs = CompareHDF5(test.work_dir)
 
-testset = ['bedcos', 'bedsin']
+testset = ['dens_radial.h5']
 for t in testset:
 
-    rs.verify(ftest=t+'_rspvec5.h5',\
-              fref='result/'+t+'_rspvec5.h5',\
-              typ='single',\
-              gf_label='/result/grid/ndim')
-
-    rs.verify(ftest=t+'_rspvec5.h5',\
-              fref='result/'+t+'_rspvec5.h5',\
-              typ='single',\
-              gf_label='/result/grid/nr_points_total')
-
-#   now with low rel_tolerance; data seems to be numerically unstable
-    rs.verify(ftest=t+'_rspvec5.h5',\
-              fref='result/'+t+'_rspvec5.h5',\
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
               typ='array',\
-              rel_tolerance=1.0e-4,\
-              gf_label='/result/grid_function/'+t+'/visualization/values/',
+              gf_label='/result/grid_function/ed/visualization/values/',
               gf_test_key='t0_icomp_1')
+
+
+testset = ['length_radial_rspvec3.h5', 'length_radial_rspvec9.h5']
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='array',\
+              gf_label='/result/grid_function/edip/visualization/values/',
+              gf_test_key='t1_icomp_1')
+
+
+
+testset = ['velocity_radial_rspvec6.h5', 'velocity_radial_rspvec12.h5']
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/'+t,\
+              typ='array',\
+              gf_label='/result/grid_function/j/visualization/values/',
+              gf_test_key='t1_icomp_1')
 
 

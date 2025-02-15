@@ -14,16 +14,16 @@ dyall.ae3z
 **VISUAL
 .OUTPRI
 .GRIDS 
-2
+1
 id=1 input=radial
-id=2 input=dft
+#id=2 input=dft
 .RADIAL
 0.0,  0.0,   0.0
 10.0
 500
 .GRIDFUNCTIONS
-3
+2
 name=ed id_grid=1 dscale=12.0 purpose=integration
 name=ed id_grid=1 dscale=12.0 purpose=visualization export=yes file_out=dens_radial.h5
-name=ed id_grid=2 dscale=12.0 purpose=integration
+#name=ed id_grid=2 dscale=12.0 purpose=integration
 *END OF
