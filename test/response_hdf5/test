@@ -12,6 +12,18 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
+f1 = Filter()
+f2 = Filter()
+
+f1.add(from_string = '@            isotropic shielding',
+      num_lines = 5,
+      rel_tolerance = 1.0e-6)
+
+f2 = Filter()
+f2.add(from_string = '@   Elements of the electric dipole polarizability tensor',
+      num_lines = 8,
+      rel_tolerance = 1.0e-6)
+
 
 #
 # run tests
@@ -25,6 +37,23 @@ test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
 test.run(['ll_rspE_makeh5.inp'], ['h2o.mol'], args='--incmo --get="RESPONSE.h5=RESPONSE_ll.h5"')
 test.run(['ll_rspE_useh5.inp'], ['h2o.mol'], args='--incmo  --put="RESPONSE_ll.h5=RESPONSE.h5"')
 
+# uncomment to test with symmetries (it tests the property values, not h5; it is commented out to keep it short):
+#for m in ['ne_c1.mol', 'ne_c2.mol', 'ne_c2v.mol', 'ne_cs.mol', 'ne_d2.mol']:
+#    test.run(['dc.inp'], [m], args='--outcmo')
+#    test.run(['dc_rspB_makeh5.inp'], [m], f1, args='--incmo --get="RESPONSE.h5"')
+#    test.run(['dc_rspB_useh5.inp'], [m], f1, args='--incmo --put="RESPONSE.h5"')
+#    test.run(['ll.inp'], [m], args='--outcmo')
+#    test.run(['ll_rspE_makeh5.inp'], [m], f2, args='--incmo --get="RESPONSE.h5"')
+#    test.run(['ll_rspE_useh5.inp'], [m], f2, args='--incmo --put="RESPONSE.h5"')
+#    
+#for m in ['ne_auto.mol', 'ne_c2h.mol', 'ne_ci.mol', 'ne_d2h.mol']:
+#    test.run(['dc.inp'], [m], args='--outcmo')
+#    test.run(['dc2_rspB_makeh5.inp'], [m], f1, args='--incmo --get="RESPONSE.h5"')
+#    test.run(['dc2_rspB_useh5.inp'], [m], f1, args='--incmo --put="RESPONSE.h5"')
+#    test.run(['ll.inp'], [m], args='--outcmo')
+#    test.run(['ll2_rspE_makeh5.inp'], [m], f2, args='--incmo --get="RESPONSE.h5"')
+#    test.run(['ll2_rspE_useh5.inp'], [m], f2, args='--incmo --put="RESPONSE.h5"')
+ 
 
 #
 # compare generated data with reference

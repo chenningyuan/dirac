@@ -1,0 +1,24 @@
+                         ! Electric dipole polarizability !
+                         +--------------------------------+
+
+
+ 1 a.u =   0.14818471 angstrom**3
+
+
+@   Elements of the electric dipole polarizability tensor
+
+@   xx            1.83299048 a.u.   (converged)      
+@   yy            1.83299048 a.u.   (converged)      
+@   zz            1.83299048 a.u.   (converged)      
+ 
+@   average       1.83299048 a.u.
+@   anisotropy    0.000      a.u.
+
+@   xx            0.27162117 angstrom**3
+@   yy            0.27162117 angstrom**3
+@   zz            0.27162117 angstrom**3
+ 
+@   average       0.27162117 angstrom**3
+@   anisotropy    0.000      angstrom**3
+ 
+----------------------------------------------
