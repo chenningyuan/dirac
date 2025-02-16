@@ -39,7 +39,7 @@ endif()
 
 add_library(
     openrsp
-    OBJECT
+    STATIC
     ${FIXED_OPENRSP_FORTRAN_SOURCES}
     ${FREE_OPENRSP_FORTRAN_SOURCES}
 )

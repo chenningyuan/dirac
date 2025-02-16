@@ -594,11 +594,7 @@
          GO TO 200
 
     7 CONTINUE
-#ifdef MOD_ESR
          CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
-#else
-         CALL QUIT('*ESR    not included in this version')
-#endif
          GO TO 200
     8 CONTINUE
          CALL XQRINP(WORD,.FALSE.)
@@ -643,9 +639,7 @@
       CALL GRDINP(WORD,.TRUE.)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.)
-#ifdef MOD_ESR
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
-#endif
 
 !===========================================================================
 ! Define special operators for the list of properties programmed in DIRAC
@@ -1615,7 +1609,7 @@
 !        Operator types: SIGMA, SIGMADOT
 !
     5    PCOMB = '+00+'
-         IF (LEVYLE) PCOMB = '+000'
+         IF (LEVYLE.OR.(ZORA.AND..NOT.ZORA4)) PCOMB = '+000'
          GO TO 100
 !
   100    CONTINUE
@@ -2756,7 +2750,7 @@
       N1OPER = N1OPER + 1
       IND1OP = N1OPER
       IF(N1OPER.GT.MAX1OP) THEN
-        WRITE(LUPRI,'(A6,A)') OP1KEY,' out of bounds in OP1IND'
+        WRITE(LUPRI,'(/2A)')  OP1KEY,' out of bounds in OP1IND'
         WRITE(LUPRI,'(A,I5)') 'Current value of MAX1OP: ',MAX1OP
         CALL QUIT('OP1IND: Out of bounds !')
       ELSE

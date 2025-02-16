@@ -22,7 +22,7 @@
 !
 module x2c_pct_mo_coefficients
 
-  use x2c_fio
+ !use x2c_fio
   use x2c_utils, only:                 &
       print_x2cmat
   use x2c_cb_interface, only:          &

@@ -83,7 +83,7 @@ module dirx2c
   use x2c_h1inf2c_mo2ao
   use x2c_2e_soc_interface
   use x2c_pct_ao
-  use x2c_fio
+ !use x2c_fio
   use x2c_utils
   use x2c_h1mat_base
   use x2c_pct_mo_coefficients

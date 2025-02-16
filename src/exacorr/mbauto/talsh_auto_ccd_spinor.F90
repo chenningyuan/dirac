@@ -3,17 +3,7 @@
 !      Codegen, a toolset to process tensor contraction DSLs (SIAL etc)
 !      Andre Gomes (CNRS UMR8523, Lille) and Dmitry Lyakh (OCLF, Oak Ridge)
 !   
-subroutine talsh_CCD_codegen_call(nocc,nvir,\
-    S23,\
-    H13,\
-    H3,\
-    H2,\
-    H14,\
-    H1,\
-    H9,\
-    H10,\
-    Z26,\
-    Z27)
+subroutine talsh_CCD_codegen_call(nocc,nvir,S23,H13,H3,H2,H14,H1,H9,H10,Z26,Z27)
 
     use talsh
     use tensor_algebra

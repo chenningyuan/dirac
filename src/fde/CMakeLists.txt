@@ -10,8 +10,7 @@ endif()
 set(FIXED_FDE_FORTRAN_SOURCES
   emb_quit.F
   get_vemb_mat.F
-  # emb_dirac_integration.F90 needs GTDOAV routine :
-  ${PROJECT_SOURCE_DIR}/src/dirac/dftaux.F
+  emb_gtdoav.F
 )
 
 set(FREE_FDE_FORTRAN_SOURCES
@@ -52,7 +51,7 @@ endif()
 
 add_library(
    fde
-   OBJECT
+   STATIC
    ${FIXED_FDE_FORTRAN_SOURCES}
    ${FREE_FDE_FORTRAN_SOURCES}
    ${FREE_FDE_FORTRAN_SOURCES_noruntimecheck}
