@@ -4638,7 +4638,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.MAYER ','.POLNRM','.ATOMS ','.XXXXXX'/
+     &            '.MAYER ','.POLNRM','.ATOMS ','.C1READ'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4667,6 +4667,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       POLREF = .FALSE.
       MAYER  = .FALSE.
       POLNRM = .FALSE.
+      C1READ = .FALSE.
 C
 C     Process *PROJEC input
 C     =========================
@@ -4789,6 +4790,8 @@ C&&& ATOMS : Do projection analysis using atomic fragments
                   NREFS=IREFS-1
                   GO TO 100
  12            CONTINUE
+C&&& C1READ : Read fragment C1 coefficents 
+               C1READ = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -4856,6 +4859,10 @@ C
      &   '* Fragments are calculated in their individual bases !',
      &   '    The indexing of fragment spinor sets is assumed ',
      &   '    to follow list of symmetry independent nuclei.'
+      IF(C1READ) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &   '* Fragment C1-coefficients are read'    
+      ENDIF   
         DO J = 1,NREFS
           WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
      &           ' --> ',NAMDEP(J)

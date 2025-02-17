@@ -1371,7 +1371,7 @@ C
       CALL SELFRAG(WORK(KCSEL),NVECS(1,0),WORK(KESEL),WORK(KBSEL),
      &             NREFS,NSTR(1,0,1),REFFIL,OWNBAS,NPROJNUC,IOPT,
      &             KVEC(1,1),WORK(KCMO),WORK(KEIG),WORK(KIBE),
-     &             IOFF,KDUM,WORK,KFREE,LFREE)
+     &             IOFF,KDUM,C1READ,WORK,KFREE,LFREE)
 C
 C     Get molecular coefficients and eigenvalues
 C     Note that integer arrays IOFF is used to get correct
@@ -1380,7 +1380,7 @@ C
       CALL SELFRAG(WORK(KCSEL),NVECS(1,0),WORK(KESEL),WORK(KBSEL),
      &             1,NSTR(1,0,0),'CHECKPOINT.h5',.FALSE.,1,IOPT,
      &             KVEC(1,0),WORK(KCMO),WORK(KEIG),WORK(KIBE),
-     &             IOFF,KRMC_FLG,WORK,KFREE,LFREE)
+     &             IOFF,KRMC_FLG,.FALSE.,WORK,KFREE,LFREE)
 C
 C     Throw away the full coefficients and eigenvalues
 C     ================================================
@@ -3057,7 +3057,7 @@ C
       CALL SELFRAG(WORK(KCSEL),NVECS,DUM,DUM,
      &             1,NSTR(1,0),'CHECKPOINT.h5',.FALSE.,1,IOPT,
      &             KVEC,WORK(KCMO),DUM,DUM,
-     &             IOFF,KRMC_FLG,WORK,KFREE,LFREE)
+     &             IOFF,KRMC_FLG,.FALSE.,WORK,KFREE,LFREE)
       CALL MEMREL('MAYERPOL.cfs',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
 C     Get overlap matrix packed on fermion ircops
@@ -4500,7 +4500,7 @@ C
       CALL SELFRAG(WORK(KCBUF),NSTR(1,0,0),WORK(KEBUF),WORK(KIBUF),
      &             1,NSTR(1,0,0),'CHECKPOINT.h5',.FALSE.,1,IOPT,
      &             KVEC(1,0),WORK(KCMO),WORK(KEIG),WORK(KIBE),
-     &             IOFF,KRMC_FLG,WORK,KFREE,LFREE)
+     &             IOFF,KRMC_FLG,.FALSE.,WORK,KFREE,LFREE)
       IF(IPRPRJ.GE.2) THEN
         KCOFF = KCBUF
         DO IFRP = 1,NFSYM
