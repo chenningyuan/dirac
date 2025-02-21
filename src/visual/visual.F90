@@ -151,7 +151,7 @@ contains
 !
 
       if (mpi_is_master()) then
-        call get_grid_info(ig, rs_input%grids(ig), mol)
+        call get_grid_info(ig, rs_input%grids(ig), mol, dmat_0)
       end if
 #ifdef VAR_MPI
       if (is_parallel()) call synchronize_grid_data(rs_input%grids(ig))

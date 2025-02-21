@@ -18,11 +18,15 @@ module visual_grids
 contains
 
 ! ------------------------------------------------------------------------------
-  subroutine get_grid_info(grid_id, grid, mol)
+  subroutine get_grid_info(grid_id, grid, mol, dmat)
+use dirac_dmat_factory
+use num_grid_gen
     integer, intent(in):: grid_id
     type(mol_t), intent(in):: mol
     type(grid_t), intent(inout):: grid
+    type(dmat_t), intent(in):: dmat
     character(len = 150):: errmsg
+    logical:: tobe
 !   get additional information about the grid,
 !   (which was not set up via user input in 
 !   input/input_reader_sections.F90)
@@ -31,10 +35,20 @@ contains
 
     if (grid%input  ==  1 .or. grid%input  ==  -1) then
 !
-!     read grid information from file
+!     try reading grid information from file
 !
+      if (grid%input  ==  -1) then
+!       try reading grid information from "numerical_grid",
+!       if not exists, then first regenerate it
+        inquire(file='numerical_grid',exist=tobe)
+        if (.not. tobe) then
+          write(*, *) 'VISUAL: numerical_grid will be regenerated'
+          call generate_num_grid(dmat%elements)
+        end if
+      end if
       call get_grid_info_from_file(grid)
       if (grid%id == 0) grid%id = grid_id
+
 !
 !     in other cases - set up what is needed to generate grid points
 !

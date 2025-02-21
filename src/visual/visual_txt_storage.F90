@@ -107,7 +107,6 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine get_grid_info_from_txt_storage(grid)
-use interface_grid
     type(txt_file_info_t):: grid_file
     type(grid_t), intent(inout):: grid
     integer:: ival, ierror, nr_points
@@ -119,7 +118,7 @@ use interface_grid
 
     call open_txt_file(grid_file)
     rewind(grid_file%unit)
-
+    
     nr_points = 0
     do
       read(grid_file%unit, '(i20)',iostat=ierror) ival
@@ -135,7 +134,7 @@ use interface_grid
     end do
     grid%nr_points_total = nr_points
     if (grid%nr_points_total > 0) grid%nr_points_total_known = .true.
-
+    
     call close_txt_file(grid_file)
 
   end subroutine
