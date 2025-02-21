@@ -2,6 +2,8 @@
 **INTEGRALS
 *READIN
 .UNCONT
+**GRID
+.ULTRAFINE
 **WAVE FUNCTION
 .SCF
 *SCF
@@ -10,19 +12,21 @@
 **VISUAL
 .OUTPRI
 .GRIDS 
-1
+2
 id=1 input=radial
-#id=2 input=dft
+id=2 input=dft
 .RADIAL
 0.0,  0.0,   0.0
 10.0
 500
 .GRIDFUNCTIONS
-4
-name=j id_grid=1 dscale=-0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=6 purpose=integration
-name=j id_grid=1 dscale=-0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=12 purpose=integration
-name=j id_grid=1 dscale=-0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=6 purpose=visualization export=yes file_out=velocity_radial_rspvec6.h5
-name=j id_grid=1 dscale=-0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=12 purpose=visualization export=yes file_out=velocity_radial_rspvec12.h5
+6
+name=j id_grid=1 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=6 purpose=integration
+name=j id_grid=1 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=12 purpose=integration
+name=j id_grid=1 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=6 purpose=visualization export=yes file_out=velocity_radial_rspvec6.h5
+name=j id_grid=1 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=12 purpose=visualization export=yes file_out=velocity_radial_rspvec12.h5
+name=j id_grid=2 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=6 purpose=integration
+name=j id_grid=2 dscale=0.358852917641 rspvec_file=RESPONSE.h5 rspvec_id=12 purpose=integration
 **MOLECULE
 *BASIS
 .DEFAULT

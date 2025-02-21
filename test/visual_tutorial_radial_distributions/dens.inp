@@ -3,6 +3,8 @@
 *BASIS
 .DEFAULT
 dyall.ae3z
+**GRID
+.ULTRAFINE
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -12,18 +14,18 @@ dyall.ae3z
 .CLOSED_SHELL
 6 6
 **VISUAL
-.OUTPRI
+#.OUTPRI
 .GRIDS 
-1
+2
 id=1 input=radial
-#id=2 input=dft
+id=2 input=dft
 .RADIAL
 0.0,  0.0,   0.0
 10.0
 500
 .GRIDFUNCTIONS
-2
+3
 name=ed id_grid=1 dscale=12.0 purpose=integration
+name=ed id_grid=2 dscale=12.0 purpose=integration
 name=ed id_grid=1 dscale=12.0 purpose=visualization export=yes file_out=dens_radial.h5
-#name=ed id_grid=2 dscale=12.0 purpose=integration
 *END OF
