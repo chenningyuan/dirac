@@ -70,12 +70,6 @@ contains
     integer:: ioff
     real(8):: rx, ry, rz
 
-
-     !px = grid%points(1, ipoint)
-     !py = grid%points(2, ipoint)
-     !pz = grid%points(3, ipoint)
-     !todo: call grid%points%get_cartesian_coords()
-
     select case (grid_function%name)
 
       case ('gamma5')
@@ -161,9 +155,8 @@ contains
 !       sign(lambda2), where lambda2=the second eigenvalue of the Hessian
 !       of the electron density
 !
-!       gosia fixme:
+!       TODO: needs testing:
 !       electron density Hessian is implemented for hermitian density matrices (such as dmat)
-!       todo: add a warning
         t0 = 0.0d0
         t1 = 0.0d0
         t2_33 = 0.0d0
@@ -208,9 +201,8 @@ contains
 
       case ('ed_laplacian')
 !
-!       gosia fixme:
+!       TODO: needs testing:
 !       density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
-!       todo: add a warning
         t0 = 0.0d0
         t1 = 0.0d0
         t2_33 = 0.0d0
@@ -455,7 +447,7 @@ contains
         end if
 
         if (grid_function%name == 'rotj') then
-!         gosia fixme todo: i think the signs should be reversed here (to test):
+!         gosia todo: i think the signs should be reversed here (to test):
           grid_function_values(1:1,ipoint:ipoint) = -t2_33(2,3) + t2_33(3,2)
           grid_function_values(2:2,ipoint:ipoint) = -t2_33(3,1) + t2_33(1,3)
           grid_function_values(3:3,ipoint:ipoint) = -t2_33(1,2) + t2_33(2,1)
@@ -473,8 +465,6 @@ contains
           grid_function_values(9:9,ipoint:ipoint) = t2_33(3, 3)  ! zz: d(jz)/dz
         end if
 
-! gosia todo fixme - there was a comment that it is "better not to run it with .J,
-! see debug tests in visual_lao_current", check what was this about
 
       case ('jdiaBz')
 !       nonrel diamagnetic current density (hardcoded for B along z)
@@ -817,11 +807,6 @@ contains
   character(1):: xyzcomp
     real(8):: rx, ry, rz
 
-
-     !px = grid%points(1, ipoint)
-     !py = grid%points(2, ipoint)
-     !pz = grid%points(3, ipoint)
-     !todo: call grid%points%get_cartesian_coords()
     select case (grid_function%name)
 
       case ('j')
