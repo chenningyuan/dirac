@@ -2,6 +2,7 @@
 
 import os
 import sys
+from pathlib import Path
 from subprocess import Popen, PIPE
 
 #
@@ -37,22 +38,44 @@ test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
 test.run(['ll_rspE_makeh5.inp'], ['h2o.mol'], args='--incmo --get="RESPONSE.h5=RESPONSE_ll.h5"')
 test.run(['ll_rspE_useh5.inp'], ['h2o.mol'], args='--incmo  --put="RESPONSE_ll.h5=RESPONSE.h5"')
 
-# uncomment to test with symmetries (it tests the property values, not h5; it is commented out to keep it short):
-#for m in ['ne_c1.mol', 'ne_c2.mol', 'ne_c2v.mol', 'ne_cs.mol', 'ne_d2.mol']:
-#    test.run(['dc.inp'], [m], args='--outcmo')
-#    test.run(['dc_rspB_makeh5.inp'], [m], f1, args='--incmo --get="RESPONSE.h5"')
-#    test.run(['dc_rspB_useh5.inp'], [m], f1, args='--incmo --put="RESPONSE.h5"')
-#    test.run(['ll.inp'], [m], args='--outcmo')
-#    test.run(['ll_rspE_makeh5.inp'], [m], f2, args='--incmo --get="RESPONSE.h5"')
-#    test.run(['ll_rspE_useh5.inp'], [m], f2, args='--incmo --put="RESPONSE.h5"')
-#    
-#for m in ['ne_auto.mol', 'ne_c2h.mol', 'ne_ci.mol', 'ne_d2h.mol']:
-#    test.run(['dc.inp'], [m], args='--outcmo')
-#    test.run(['dc2_rspB_makeh5.inp'], [m], f1, args='--incmo --get="RESPONSE.h5"')
-#    test.run(['dc2_rspB_useh5.inp'], [m], f1, args='--incmo --put="RESPONSE.h5"')
-#    test.run(['ll.inp'], [m], args='--outcmo')
-#    test.run(['ll2_rspE_makeh5.inp'], [m], f2, args='--incmo --get="RESPONSE.h5"')
-#    test.run(['ll2_rspE_useh5.inp'], [m], f2, args='--incmo --put="RESPONSE.h5"')
+# test with symmetries;
+# (comment it out to keep the test short)
+#
+# alternatively, one can test the outputs (using f1, f2 filters),
+# this also demonstrates that "rspB" does not have the same values of "asym" for all symmetries,
+# (can be compared with legacy outputs in result/legacy)
+# but the "makeh5" and "useh5" utility works
+for m in ['ne_c1.mol', 'ne_c2.mol', 'ne_c2v.mol', 'ne_cs.mol', 'ne_d2.mol']:
+    suffix=m.split('.')[0]
+
+    test.run(['dc.inp'], [m], args='--outcmo')
+    test.run(['dc_rspB_makeh5.inp'], [m], args='--incmo --get="RESPONSE.h5"')
+    test.run(['dc_rspB_useh5.inp'], [m], args='--incmo --put="RESPONSE.h5"')
+    newr="RESPONSE_dc_"+suffix+".h5"
+    os.rename("RESPONSE.h5", newr)
+
+    test.run(['ll.inp'], [m], args='--outcmo')
+    test.run(['ll_rspE_makeh5.inp'], [m], args='--incmo --get="RESPONSE.h5"')
+    test.run(['ll_rspE_useh5.inp'], [m], args='--incmo --put="RESPONSE.h5"')
+    newr="RESPONSE_ll_"+suffix+".h5"
+    os.rename("RESPONSE.h5", newr)
+
+    
+for m in ['ne_auto.mol', 'ne_c2h.mol', 'ne_ci.mol', 'ne_d2h.mol']:
+    suffix=m.split('.')[0]
+
+    test.run(['dc.inp'], [m], args='--outcmo')
+    test.run(['dc2_rspB_makeh5.inp'], [m], args='--incmo --get="RESPONSE.h5"')
+    test.run(['dc2_rspB_useh5.inp'], [m], args='--incmo --put="RESPONSE.h5"')
+    newr="RESPONSE_dc_"+suffix+".h5"
+    os.rename("RESPONSE.h5", newr)
+
+    test.run(['ll.inp'], [m], args='--outcmo')
+    test.run(['ll2_rspE_makeh5.inp'], [m], args='--incmo --get="RESPONSE.h5"')
+    test.run(['ll2_rspE_useh5.inp'], [m], args='--incmo --put="RESPONSE.h5"')
+    newr="RESPONSE_ll_"+suffix+".h5"
+    os.rename("RESPONSE.h5", newr)
+
  
 
 #
@@ -139,16 +162,18 @@ if h5py_available:
                 sys.stdout.write('Error! Different array data on hdf5')
 
 
-    testset = ['RESPONSE_dc']
-
+    testset = ['RESPONSE_dc', \
+              'RESPONSE_dc_ne_c1', 'RESPONSE_dc_ne_c2', 'RESPONSE_dc_ne_c2v', 'RESPONSE_dc_ne_cs', 'RESPONSE_dc_ne_d2',\
+              'RESPONSE_dc_ne_auto', 'RESPONSE_dc_ne_c2h', 'RESPONSE_dc_ne_ci', 'RESPONSE_dc_ne_d2h']
     for t in testset:
         compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rsp')
         for i in range(1,7):
             compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rspvec', rspvec='vec_'+str(i))
             compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rspvec_arrays', rspvec='vec_'+str(i))
 
-    testset = ['RESPONSE_ll']
-
+    testset = ['RESPONSE_ll', \
+              'RESPONSE_ll_ne_c1', 'RESPONSE_ll_ne_c2', 'RESPONSE_ll_ne_c2v', 'RESPONSE_ll_ne_cs', 'RESPONSE_ll_ne_d2',\
+              'RESPONSE_ll_ne_auto', 'RESPONSE_ll_ne_c2h', 'RESPONSE_ll_ne_ci', 'RESPONSE_ll_ne_d2h']
     for t in testset:
         compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rsp')
         for i in range(1,4):

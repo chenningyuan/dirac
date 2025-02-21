@@ -219,7 +219,7 @@ dirac_test(visual_3d_spinden_dc_dft "medium;visual" "")
 #dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao_micd_specific "short;visual;lao" "")
 #
 # Related tests:
-dirac_test(response_hdf5 "short;response" "")
+dirac_test(response_hdf5 "medium;response" "")
 ########################
 #run in serial mode:
 dirac_test(visual_3d_esp_dc_dft "short;visual" "")
