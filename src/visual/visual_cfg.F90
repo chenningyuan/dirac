@@ -505,8 +505,9 @@ contains
   subroutine verify_grid_and_grid_function_input_cfg()
     integer::ig,igf
 
-    do ig = 1, rs_input%nr_grids
-      do igf = 1, rs_input%nr_grid_functions
+    do igf = 1, rs_input%nr_grid_functions
+
+      do ig = 1, rs_input%nr_grids
         if (rs_input%grid_functions(igf)%id_assigned_grid == rs_input%grids(ig)%id) then 
           if (rs_input%grid_functions(igf)%purpose == 1) then
             if (rs_input%grids(ig)%typ == 2) then
@@ -524,6 +525,12 @@ contains
           end if
         end if
       end do
+
+      if (rs_input%grid_functions(igf)%purpose == 1) then
+        ! always print integrated values to DIRAC output
+        if (.not. rs_input%outpri) rs_input%outpri = .true.
+      end if
+
     end do
   end subroutine
 

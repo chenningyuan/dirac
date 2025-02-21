@@ -39,7 +39,7 @@ contains
 
     write(*, '(a)') '**************************************'
     if (grid_function%purpose == 1) then 
-      write(*, '(a)') 'Final grid_function values integrated:'
+      write(*, '(a,i4)') 'Final grid_function values integrated on grid id #', grid%id
       write(*, float_fmt) (grid_function%integrated_values(i),i=1,gf_ndim)
     else if (grid_function%purpose == 0) then
       write(*, '(a)') 'Final grid_function values in grid points:'

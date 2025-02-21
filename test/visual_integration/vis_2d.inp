@@ -13,7 +13,6 @@
 .EVCCNV
 1.0D-8
 **VISUAL
-.OUTPRI
 .GRIDS 
 1
 id=1 input=2d_int

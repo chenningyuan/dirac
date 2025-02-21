@@ -1,10 +1,12 @@
   ** interface to 32-bit integer MPI enabled **
 
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory
-    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
-
-Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
-
+DIRAC master    (ac0587) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
+DIRAC nodes 1 to 7 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
+DIRAC master    (ac0587) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
+DIRAC nodes 1 to 7 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
+ 
+Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
+ 
  *******************************************************************************
  *                                                                             *
  *                                O U T P U T                                  *
@@ -188,21 +190,21 @@ Version information
 -------------------
 
 Branch        | gosia/visual
-Commit hash   | 70170f7b6
+Commit hash   | 942bc0df8
 Commit author | gosia olejniczak
-Commit date   | Wed Dec 18 16:06:52 2024 +0100
+Commit date   | Fri Feb 21 14:32:28 2025 +0100
 
 
 Configuration and build information
 -----------------------------------
 
 Who compiled             | plggosiao
-Compiled on server       | ac0484
+Compiled on server       | ac0587
 Operating system         | Linux-4.18.0-477.27.1.el8_8.x86_64
 CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2024-12-18 11:20:10.471195+00:00
+Configuration time       | 2025-02-21 13:38:24.471198+00:00
 Fortran compiler         | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiifort
 Fortran compiler version | 2021.4
 Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFORT  -qopenmp -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp
@@ -231,13 +233,14 @@ Exatensor configuration  | unknown
 
  LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+ MPI selftest passed with MPI_INTEGER of the size 4 bytes
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Dec 18 17:39:09 2024
-     Host name              : ac0424                                  
+     Date and time (Linux)  : Fri Feb 21 15:21:27 2025
+     Host name              : ac0587                                  
 
  * Opening checkpoint file 
     - Existing hdf5 checkpoint file: check contents
@@ -267,6 +270,8 @@ id=1 input=dft
 .GRIDFUNCTIONS                                                                                      
 1                                                                                                   
 name=ed id_grid=1 purpose=integration                                                               
+#integration with export:                                                                           
+#name=ed id_grid=1 purpose=integration export=yes file_out=dens_3d_dftgrid.h5                       
 *END OF                                                                                             
 
 
@@ -302,6 +307,7 @@ FINISH
          Reviews of Modern Physics, Vol. 93, 025010 (2021)                
  * The speed of light :        137.0359992
  * Running in four-component mode
+ * Parallel run with 7 slaves.
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -637,8 +643,8 @@ H     -0.7685505223   0.4760599900   0.0000000000
    1: Pre-projection in scalar basis
    2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
  VISUAL: Grid information will be read from numerical_grid file
-   WARNING: These input options will be ignored (if present): ndim, npoints, spa
- cing, margin, file_inp.
+ WARNING: These options will be ignored (if present): ndim, npoints, spacing, ma
+ rgin, file_inp.
  integration on DFT grid on "numerical_grid" file
   ===== Kohn-Sham calculation set-up =====
  * DFT thresholds:
@@ -741,17 +747,15 @@ H     -0.7685505223   0.4760599900   0.0000000000
 No. of positive energy orbitals (NESH):    40
 No. of negative energy orbitals (NPSH):    40
 Total no. of orbitals           (NORB):    80
- >>> CPU  time used in PAMSET is   0.03 seconds
- >>> WALL time used in PAMSET is  14.51 seconds
 
   *** Visualization module ***
  WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb
  WARNING: no xc_functional on CHECKPOINT. Assuming non-DFT job
 **************************************
-Final grid_function values integrated:
+Final grid_function values integrated on grid id #   1
    9.99999977E+000
 **************************************
- Elapsed walltime in run_visual:  -0.628326000000000     
+ Elapsed walltime in run_visual:  -0.213346000000000     
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -763,11 +767,11 @@ Final grid_function values integrated:
 
 
  
-     Date and time (Linux)  : Wed Dec 18 17:39:27 2024
-     Host name              : ac0424                                  
+     Date and time (Linux)  : Fri Feb 21 15:21:28 2025
+     Host name              : ac0587                                  
 
->>>> Node 0, utime: 0, stime: 0, minflt: 11762, majflt: 1, nvcsw: 1962, nivcsw: 30, maxrss: 257644
->>>> Total WALL time used in DIRAC: 18s
+>>>> Node 0, utime: 0, stime: 0, minflt: 12629, majflt: 63, nvcsw: 1940, nivcsw: 256, maxrss: 263096
+>>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary for Master
   

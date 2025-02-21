@@ -11,7 +11,6 @@
 .CLOSED_SHELL
 10
 **VISUAL
-.OUTPRI
 .GRIDS 
 1
 id=1 input=dft
