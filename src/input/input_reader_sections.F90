@@ -219,10 +219,6 @@
 
       ! general setup
 
-      if (kw_matches(word, '.OUTPRI')) then
-         rs_input%outpri=.true.
-      end if
-
       if (kw_matches(word, '.PRINTL')) then
          call kw_read(word, rs_input%print_level)
       end if

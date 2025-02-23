@@ -12,7 +12,7 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'Final grid_function values integrated on grid id #',
+f.add(from_string = 'Final grid_function values (grid_function%id=',
       num_lines = 2,
       rel_tolerance = 1.0e-6)
 
@@ -25,6 +25,4 @@ test.run(['vis_2d.inp'], ['h2o.mol'], f, args='--incmo')
 test.run(['vis_3d_dftgrid.inp'], ['h2o.mol'], f, args='--incmo --put="numerical_grid"')
 test.run(['vis_3d_radial.inp'], ['h2o.mol'], f, args='--incmo')
 
-#test.run(['dc_atom.inp'], ['mg.xyz'], args='--outcmo')
-#test.run(['vis_3d_radial.inp'], ['mg.xyz'], f, args='--incmo')
 

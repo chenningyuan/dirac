@@ -528,7 +528,7 @@ contains
 
       if (rs_input%grid_functions(igf)%purpose == 1) then
         ! always print integrated values to DIRAC output
-        if (.not. rs_input%outpri) rs_input%outpri = .true.
+        rs_input%grid_functions(igf)%outpri = .true.
       end if
 
     end do
@@ -602,6 +602,12 @@ contains
                       'argument to "purpose" must be one of '//&
                       '"visualization"/"integration".'
           stop
+        end if
+      case ('outpri')
+        if (lowercase(val) == 'no') then
+          grid_function%outpri = .false.
+        else if (lowercase(val) == 'yes') then
+          grid_function%outpri = .true.
         end if
       case ('export')
         if (lowercase(val) == 'no') then
@@ -772,7 +778,6 @@ contains
     use interface_to_mpi
     use integer_kind_mpilib
 
-    call interface_mpi_bcast_l0(rs_input%outpri,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%print_level,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%print_unit,1,irank_master,global_communicator)
     call interface_mpi_bcast(rs_input%cvalue,1,irank_master,global_communicator)
@@ -795,7 +800,6 @@ contains
     write(*, *) 'Data on node ', get_my_rank(), 'print_level =       ', rs_input%print_level
     write(*, *) 'Data on node ', get_my_rank(), 'nr_grids            ', rs_input%nr_grids
     write(*, *) 'Data on node ', get_my_rank(), 'nr_grid_functions   ', rs_input%nr_grid_functions
-    write(*, *) 'Data on node ', get_my_rank(), 'outpri              ', rs_input%outpri
     !write(*, *) 'Data on node ', get_my_rank(), 'allocated_grids:    ', rs_input%allocated_grids()
   end subroutine logprint
 

@@ -849,6 +849,7 @@ contains
     call interface_mpi_bcast(grid_function%id,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%status,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%input,1,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid_function%outpri,1,irank_master,global_communicator)
     call interface_mpi_bcast_l0(grid_function%export,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%nuc,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%wf_order,1,irank_master,global_communicator)

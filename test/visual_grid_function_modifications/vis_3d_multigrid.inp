@@ -1,0 +1,22 @@
+**DIRAC
+**HAMILTONIAN
+.DFT
+ B3LYP
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+10
+**VISUAL
+.GRIDS 
+2
+id=1 input=dft
+id=2 input=create typ=1 ndim=3 npoints=[3,3,3] margin=4.0
+.GRIDFUNCTIONS
+2
+name=ed id_grid=1 purpose=integration export=yes file_out=ed_on3Ddftgrid_multi.h5
+name=ed id_grid=2 purpose=visualization outpri=yes export=yes file_out=ed_on3Dgrid_generated_multi.h5
+*END OF

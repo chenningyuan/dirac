@@ -14,7 +14,6 @@ dyall.ae3z
 .CLOSED_SHELL
 6 6
 **VISUAL
-#.OUTPRI
 .GRIDS 
 2
 id=1 input=radial

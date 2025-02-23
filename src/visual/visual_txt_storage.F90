@@ -37,19 +37,28 @@ contains
     g_ndim  = grid%ndim
     gf_ndim = grid_function%get_ndim()
 
-    write(*, '(a)') '**************************************'
+    write(*, *) ''
+    write(*, '(a)') '*** VISUAL output ***'
+    write(*, *) ''
+
     if (grid_function%purpose == 1) then 
-      write(*, '(a,i4)') 'Final grid_function values integrated on grid id #', grid%id
+      write(*, '(a,i3,a,i3,a)') &
+        'Final grid_function values (grid_function%id=', grid_function%id,&
+        ') integrated on grid (grid#id=', grid%id,'): '
       write(*, float_fmt) (grid_function%integrated_values(i),i=1,gf_ndim)
+
     else if (grid_function%purpose == 0) then
-      write(*, '(a)') 'Final grid_function values in grid points:'
-!add radial!
+      write(*, '(a,i3,a,i3,a)') &
+        'Final grid_function values (grid_function%id=', grid_function%id,&
+        ') in grid points (grid#id=', grid%id,'): '
       if (grid%allocated_radial_coord()) then
-        write(*, '(a)') 'radial_step,grid_function values'
-      else if (grid%allocated_weights()) then
-        write(*, '(a)') 'x,y,z,w,grid_function values'
+        write(*, '(a)') 'radial_step, grid_function values'
       else
-        write(*, '(a)') 'x,y,z,grid_function values'
+        if (grid%allocated_weights()) then
+          write(*, '(a)') 'x  y  z  w  grid_function values'
+        else
+          write(*, '(a)') 'x  y  z  grid_function values'
+        end if
       end if
       if (grid%allocated_radial_coord()) then
         do j = 1, npoints_radial
@@ -71,7 +80,7 @@ contains
         end if
       end if
     end if
-    write(*, '(a)') '**************************************'
+    write(*, *) ''
 
    end subroutine
 

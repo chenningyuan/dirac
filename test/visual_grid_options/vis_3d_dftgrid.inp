@@ -11,7 +11,6 @@
 .CLOSED_SHELL
 10
 **VISUAL
-.OUTPRI !also print the result to DIRAC output
 .GRIDS 
 1
 id=1 input=dft export=yes file_out=dftgrid_3d.h5

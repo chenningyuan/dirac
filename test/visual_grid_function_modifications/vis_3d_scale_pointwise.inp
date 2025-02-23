@@ -13,13 +13,12 @@
 .EVCCNV
 1.0D-8
 **VISUAL
-.OUTPRI
 .GRIDS
 1
 id=1 input=create typ=1 ndim=3 npoints=[3,3,3] margin=4.0
 .GRIDFUNCTIONS
 3
-name=ed id_grid=1 purpose=visualization dscale=2.0
-name=ed id_grid=1 purpose=visualization uscale=4.0
-name=ed id_grid=1 purpose=visualization carpow=[2.0,0.0,0.0]
+name=ed id_grid=1 outpri=yes purpose=visualization dscale=2.0
+name=ed id_grid=1 outpri=yes purpose=visualization uscale=4.0
+name=ed id_grid=1 outpri=yes purpose=visualization carpow=[2.0,0.0,0.0]
 *END OF

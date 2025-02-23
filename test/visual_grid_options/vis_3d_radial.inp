@@ -8,7 +8,6 @@
 .CLOSED_SHELL
 10
 **VISUAL
-.OUTPRI
 .GRIDS 
 1
 id=1 input=radial export=yes file_out=grid_3d_fromRADIAL.h5
@@ -18,5 +17,5 @@ id=1 input=radial export=yes file_out=grid_3d_fromRADIAL.h5
 500
 .GRIDFUNCTIONS
 1
-name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on3Dradial.h5
+name=ed id_grid=1 purpose=visualization outpri=yes export=yes file_out=ed_on3Dradial.h5
 *END OF

@@ -15,16 +15,15 @@
 .EVCCNV
 1.0D-8
 **VISUAL
-.OUTPRI
 .GRIDS 
 1
 id=1 input=import file_inp=grid.h5
 .GRIDFUNCTIONS
 6
-name=ed id_grid=1 purpose=visualization export=yes file_out=ed.h5
-name=ed_gradient id_grid=1 purpose=visualization export=yes file_out=ed_gradient.h5
-name=ed_hessian id_grid=1 purpose=visualization export=yes file_out=ed_hessian.h5
-name=ed_laplacian id_grid=1 purpose=visualization export=yes file_out=ed_laplacian.h5
-name=ed_sign_lambda2 id_grid=1 purpose=visualization export=yes file_out=ed_sign_lambda2.h5
-name=rdg id_grid=1 purpose=visualization export=yes file_out=rdg.h5
+name=ed id_grid=1 purpose=visualization outpri=yes export=yes file_out=ed.h5
+name=ed_gradient id_grid=1 purpose=visualization outpri=yes export=yes file_out=ed_gradient.h5
+name=ed_hessian id_grid=1 purpose=visualization outpri=yes export=yes file_out=ed_hessian.h5
+name=ed_laplacian id_grid=1 purpose=visualization outpri=yes export=yes file_out=ed_laplacian.h5
+name=ed_sign_lambda2 id_grid=1 purpose=visualization outpri=yes export=yes file_out=ed_sign_lambda2.h5
+name=rdg id_grid=1 purpose=visualization outpri=yes export=yes file_out=rdg.h5
 *END OF

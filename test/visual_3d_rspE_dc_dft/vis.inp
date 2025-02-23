@@ -15,14 +15,12 @@
 .EVCCNV
 1.0D-8
 **VISUAL
-!.3D_INTEGRATE
 .PRINTL
 1
-.OUTPRI
 .GRIDS    
 1
 id=1 input=import file_inp=grid.h5
 .GRIDFUNCTIONS    
 1
-name=edip id_grid=1 purpose=visualization export=yes rspvec_file=RESPONSE.h5 rspvec_id=5 file_out=edip_Ez_rspvec5.h5
+name=edip id_grid=1 purpose=visualization outpri=yes export=yes rspvec_file=RESPONSE.h5 rspvec_id=5 file_out=edip_Ez_rspvec5.h5
 *END OF

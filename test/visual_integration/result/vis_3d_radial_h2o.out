@@ -1,8 +1,8 @@
   ** interface to 32-bit integer MPI enabled **
 
-DIRAC master    (ac0587) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
+DIRAC master    (ac0478) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
 DIRAC nodes 1 to 7 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
-DIRAC master    (ac0587) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
+DIRAC master    (ac0478) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
 DIRAC nodes 1 to 7 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
  
 Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
@@ -190,21 +190,21 @@ Version information
 -------------------
 
 Branch        | gosia/visual
-Commit hash   | 942bc0df8
+Commit hash   | 9afb89606
 Commit author | gosia olejniczak
-Commit date   | Fri Feb 21 14:32:28 2025 +0100
+Commit date   | Sun Feb 23 10:03:29 2025 +0100
 
 
 Configuration and build information
 -----------------------------------
 
 Who compiled             | plggosiao
-Compiled on server       | ac0587
+Compiled on server       | ac0478
 Operating system         | Linux-4.18.0-477.27.1.el8_8.x86_64
 CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2025-02-21 13:38:24.471198+00:00
+Configuration time       | 2025-02-23 09:40:33.135195+00:00
 Fortran compiler         | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiifort
 Fortran compiler version | 2021.4
 Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFORT  -qopenmp -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp
@@ -239,8 +239,8 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri Feb 21 15:22:11 2025
-     Host name              : ac0587                                  
+     Date and time (Linux)  : Sun Feb 23 10:57:43 2025
+     Host name              : ac0478                                  
 
  * Opening checkpoint file 
     - Existing hdf5 checkpoint file: check contents
@@ -265,7 +265,6 @@ Contents of the input file
 .EVCCNV                                                                                             
 1.0D-8                                                                                              
 **VISUAL                                                                                            
-.OUTPRI                                                                                             
 .GRIDS                                                                                              
 1                                                                                                   
 id=1 input=radial                                                                                   
@@ -764,11 +763,13 @@ Total no. of orbitals           (NORB):    80
     ** Radial distribution **
          Lebedev angular grid L =  41
          Angular points:          590
-**************************************
-Final grid_function values integrated on grid id #   1
+ 
+*** VISUAL output ***
+ 
+Final grid_function values (grid_function%id=  1) integrated on grid (grid#id=  1): 
    9.99999745E+000
-**************************************
- Elapsed walltime in run_visual:  -0.224030000000000     
+ 
+ Elapsed walltime in run_visual:  -0.222925000000000     
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -780,10 +781,10 @@ Final grid_function values integrated on grid id #   1
 
 
  
-     Date and time (Linux)  : Fri Feb 21 15:22:12 2025
-     Host name              : ac0587                                  
+     Date and time (Linux)  : Sun Feb 23 10:57:44 2025
+     Host name              : ac0478                                  
 
->>>> Node 0, utime: 0, stime: 0, minflt: 13647, majflt: 43, nvcsw: 1892, nivcsw: 273, maxrss: 275188
+>>>> Node 0, utime: 0, stime: 0, minflt: 17463, majflt: 141, nvcsw: 2027, nivcsw: 252, maxrss: 292248
 >>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary for Master

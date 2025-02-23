@@ -12,7 +12,6 @@
 **GRID
 .ULTRAFINE
 **VISUAL
-#.OUTPRI
 .GRIDS 
 2
 id=1 input=radial

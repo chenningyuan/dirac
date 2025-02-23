@@ -62,7 +62,6 @@ module visual_datatypes
     private
     integer, public:: print_level = 0
     integer, public:: print_unit  = 6
-    logical, public:: outpri = .false.              ! if true, print to DIRAC output
     logical, public:: set_occupation = .false.      ! if true, modify orbital occupations
     logical, public:: force_small_ao = .false.      ! if true, force evaluation of small component basis functions
     logical, public:: set_cvalue     = .false.      ! if true, modify cvalue
@@ -150,6 +149,7 @@ module visual_datatypes
     integer, public:: id = 0
     character(len=:), public, allocatable:: name
     integer, public:: status = -1                           ! -1 = never used, 0 = initialized, but not assigned, 1 = assigned (ready to work on)
+    logical, public:: outpri = .false.                      ! if true, print to DIRAC output
     integer, public:: input = 0                             ! 0 = calculate, 1 = import
     logical, public:: export = .false.                      ! export to file
     integer, public:: nuc = 0                               ! id of a nucleus (for grid functions specific to atomic centers)
@@ -550,7 +550,6 @@ contains
     end if
     write(*, *) 'print_level =         ', self%print_level
     write(*, *) 'print_unit  =         ', self%print_unit
-    write(*, *) 'outpri =              ', self%outpri
     write(*, *) 'set_occupation =      ', self%set_occupation
     write(*, *) 'force_small_ao =      ', self%force_small_ao
     write(*, *) 'cvalue =              ', self%cvalue
@@ -657,6 +656,7 @@ contains
     write(*, *) '  id = ', self%id, my_rank_local
     if (allocated(self%name)) write(*, *) 'name = ', self%name, my_rank_local
     write(*, *) '  status = ', self%status, my_rank_local
+    write(*, *) '  outpri = ', self%outpri, my_rank_local
     write(*, *) '  input = ', self%input, my_rank_local
     write(*, *) '  export = ', self%export, my_rank_local
     write(*, *) '  wf_order = ', self%wf_order, my_rank_local

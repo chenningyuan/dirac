@@ -473,7 +473,7 @@ contains
              end if
           end if
 
-          if (rs_input%outpri) then
+          if (rs_input%grid_functions(igf)%outpri) then
             if (mpi_is_master()) then
               call write_plot_data_to_DIRAC_output(rs_input%grids(ig), &
                                           rs_input%grid_functions(igf))
