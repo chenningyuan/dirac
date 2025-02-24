@@ -1660,10 +1660,10 @@ C
       call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/n_mo',
      & idata=n_mo)
       call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/n_po',
-     & idata=n_pos)
+     & idata=n_neg)
       call lab_read (fragfile,'/result/wavefunctions/scf/energy',toterg)
-      n_neg(1) = n_mo(1)-n_pos(1)
-      n_neg(2) = n_mo(2)-n_pos(2)
+      n_pos(1) = n_mo(1)-n_neg(1)
+      n_pos(2) = n_mo(2)-n_neg(2)
       IF(C1_read) THEN
          n_neg(1)   = n_neg(1)   + n_neg(2)
          n_pos(1)   = n_pos(1)   + n_pos(2)
@@ -1812,7 +1812,7 @@ C       Select boson irrep information
       CALL QUIT('SELOWN: ERROR reading TEXT')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selow2 */
+C/* Deck selowc */
       SUBROUTINE SELOWC(NZ,CMO,KBAS,KORB,KPSH,KESH,
      &                     CBUF,MBAS,MORB,
      &                     JVEC,JBAS,NPVEC,NEVEC)
