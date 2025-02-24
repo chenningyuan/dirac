@@ -44,7 +44,7 @@ type :: PipekMezey_variales
   integer :: nrefs, iprprj
   integer :: maxref
   real*8  :: prothr
-  logical :: ownbas
+  logical :: ownbas,c1read
   character*50 :: title
   real*8  :: timstr
 end type PipekMezey_variales
@@ -149,6 +149,7 @@ contains
   read(iunit,*) chdum,var%iprprj
   read(iunit,*) chdum,var%prothr
   read(iunit,*) chdum,var%ownbas
+  read(iunit,*) chdum,var%c1read  
   read(iunit,*) chdum,var%maxref
   read(iunit,*) chdum,twocomp
   read(iunit,*) chdum,x2c
@@ -1250,7 +1251,6 @@ contains
       ICFS = 6
       IF(VAR%IPRPRJ.GE.5) ICFS = 7
       ALLOCATE( CMO(VAR%N2BBASXQ), STAT=IER ); CALL ERRALL(IER,'ORBLP1','CMO')
-
       IOFF(1) = 0
       VAR%IPRPRJ = 4
       DO I = 1,NREFS
@@ -1258,10 +1258,10 @@ contains
           reffile%type = 2
           reffile%name = REFFIL(I)
           reffile%status = -1
-          CALL SELOWN(2,CMO,DDUMARR,IDUMARR,               &
+          CALL SELOWN(2,CMO,DDUMARR,IDUMARR,                 &
                I,1,VAR%LUCOEF,reffile,RCOEF,DDUMARR,IDUMARR, &
-               NVECS(1,1),IOFF,kvec_offset,                 &
-               NSTR(1,0,I),KVEC(IFRP,I)%P)
+               NVECS(1,1),IOFF,kvec_offset,                  &
+               NSTR(1,0,I),VAR%C1READ,KVEC(IFRP,I)%P)
           IF(PM%IPRLOC.GE.5)THEN
             WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1

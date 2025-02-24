@@ -8410,7 +8410,7 @@ C
       DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
      &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
      &            '.THDIAG','.THGRAD','.CHECK ','.SELECT',
-     &            '.THXVEC','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.THXVEC','.C1READ','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -8429,6 +8429,7 @@ C     ===================
 C
       PRJLOC = .FALSE.
       OWNBAS = .FALSE.
+      C1READ = .FALSE.
       ITRLOC = 100
       IPRLOC = 1
       HESLOC = 'FULL'
@@ -8538,6 +8539,8 @@ C   SELMOS: Select MOs for localization
 C   THXVEC: Set threshold for removal of small rotations
                READ(LUCMD,*) THXVEC
  14            CONTINUE
+C&&& C1READ : Read fragment C1 coefficents 
+               C1READ = .TRUE.
                GO TO 100
  15            CONTINUE
                GO TO 100
@@ -8707,6 +8710,10 @@ C
      &   '* Fragments are calculated in their individual bases !',
      &   '    The indexing of fragment spinor sets is assumed ',
      &   '    to follow list of symmetry independent nuclei.'
+        IF(C1READ) THEN
+          WRITE(LUPRI,'(1X,A)')
+     &     '* Fragment C1-coefficients are read'    
+        ENDIF   
         DO J = 1,NREFS
          WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
      &         ' --> ',NAMDEP(J)
