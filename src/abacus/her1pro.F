@@ -328,7 +328,7 @@ C
 !                  77         78         79         80
      &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ', 
 !                  81         82         83         84
-     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'NEFNUC ', 
+     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'NEFNUC ',
 !                  85         86         87         88
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
 !                  89         90         91         92
@@ -3262,7 +3262,7 @@ C
  200           CONTINUE
             END IF
  100     CONTINUE
- 50   CONTINUE 
+ 50   CONTINUE
       RETURN
       END
 
