@@ -57,10 +57,6 @@
 #include "infpar.h"
 #endif
 
-/* C-wide constants */
-const int  ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;
-const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
-
 /* =================================================================== */
 /* dftinput:
 
@@ -600,35 +596,32 @@ void
 dalton_quit(const char* format, ...)
 {
     char line[128];
-    int len;
+    integer len;
     va_list a;
  
     va_start(a, format);
     vsnprintf(line, sizeof(line), format, a);
     va_end(a);
     len = strlen(line);
-#ifdef PRG_DIRAC
     quit_(line, len);
-#endif
 }
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */
-#ifdef INT_STAR8
-extern void fortwrt_(const char *line, const long *linelen);
-#else
-extern void fortwrt_(const char *line, const int *linelen);
-#endif /* ifdef INT_STAR8 */
+extern void fortwrt_(const char *line, const int* linelen, int ln);
 int
 fort_print(const char* format, ...)
 {
     char line[128];
-#if defined(INT_STAR8)
-    long len; 
-#else 
     int len;
-#endif
+    int l;
     va_list a;
 
+    va_start(a, format);
+    vsnprintf(line, sizeof(line), format, a);
+    va_end(a);
+    len = l = strlen(line);
+    fortwrt_(line, &len, l);
+    return len;
 }
 
 /* ################################################################### */

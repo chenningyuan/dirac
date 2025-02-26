@@ -57,6 +57,7 @@ implicit none
 !            False - the functional value criterion or criterion of the number                !
 !                    of negative eigenvalues equals zero will be used                         !
 !   thgrad - threshold; see lggrad for the explanation                                        !
+!   thxvec - threshold for removing relativitely small elements of the solution vector        !
 !   lgdiag - if heskey = DIAG it have the the same purpose as lgfull;                         !
 !            for threshold is used thdiag variable                                            !
 !          - if heskey = COMB it is used to switch from the first to the second               !
@@ -77,7 +78,7 @@ type :: minimization_flags
   character*4 :: heskey
   logical     :: lgfull, lgdiag, lggrad, lgchck
   integer     :: iprint, maxitr, l, ndim
-  real*8      :: thfull, thdiag, thgrad
+  real*8      :: thfull, thdiag, thgrad, thxvec
 end type minimization_flags
 
 type( minimization_flags ), private :: mnf
@@ -120,6 +121,7 @@ contains
   read(iunit,*) chdum,mnf%thfull
   read(iunit,*) chdum,mnf%thdiag
   read(iunit,*) chdum,mnf%thgrad
+  read(iunit,*) chdum,mnf%thxvec
   read(iunit,*) chdum,mnf%lgfull
   read(iunit,*) chdum,mnf%lgdiag
   read(iunit,*) chdum,mnf%lggrad
@@ -207,6 +209,7 @@ contains
     write(mnf%l,*) 'thdiag= ',mnf%thdiag
     write(mnf%l,*) 'thfull= ',mnf%thfull
     write(mnf%l,*) 'thgrad= ',mnf%thgrad
+    write(mnf%l,*) 'thxvec= ',mnf%thxvec
     write(mnf%l,*) 'lgdiag= ',mnf%lgdiag
     write(mnf%l,*) 'lgfull= ',mnf%lgfull
     write(mnf%l,*) 'lggrad= ',mnf%lggrad
@@ -567,6 +570,23 @@ contains
       xvec(iorig(j)) = xvect(j)
     endif
   enddo
+
+  ! Find largest element
+  xmax=maxval(abs(xvec))
+  if(mnf%iprint.ge.1)then
+    write(mnf%l,'(a,d12.4)') ' Largest kappa: ',xmax
+  endif
+  xmax=xmax*mnf%thxvec
+  ixvec=0
+  do i = 1,ndim
+    if(abs(xvec(i)).lt.xmax) then
+      xvec(i) = d0
+      ixvec = ixvec + 1
+    endif
+  enddo
+  if(mnf%iprint.ge.1)then
+    write(mnf%l,'(a,2(I8,A))') ' Removed (',ixvec,'/',ndim,') rotations'
+  endif
 
   ! Norm of the X
   dnrmk = dnrm2(ndim,xvec,1)

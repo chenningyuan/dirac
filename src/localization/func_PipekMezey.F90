@@ -44,7 +44,7 @@ type :: PipekMezey_variales
   integer :: nrefs, iprprj
   integer :: maxref
   real*8  :: prothr
-  logical :: ownbas
+  logical :: ownbas,c1read
   character*50 :: title
   real*8  :: timstr
 end type PipekMezey_variales
@@ -53,7 +53,7 @@ type( PipekMezey_flags     ), private :: PM
 type( PipekMezey_variales  ), private :: VAR
 
 ! Some global parameters
-real*8, parameter, private :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0
+real*8, parameter, private :: d0 = 0.0d0, d1 = 1.0d0, d2 = 2.0d0, d4 = 4.0d0, dp5=0.5d0
 
 ! functional value of our functional (stored for output)
 integer, save :: keyform
@@ -149,6 +149,7 @@ contains
   read(iunit,*) chdum,var%iprprj
   read(iunit,*) chdum,var%prothr
   read(iunit,*) chdum,var%ownbas
+  read(iunit,*) chdum,var%c1read  
   read(iunit,*) chdum,var%maxref
   read(iunit,*) chdum,twocomp
   read(iunit,*) chdum,x2c
@@ -794,8 +795,6 @@ contains
       do l=1,nloc
         do k=l+1,nloc
           kl = kl + 1
-!          buf1 = d2*p3(k,l,m)
-!          buf2 = d2*p4(k,l,m)
           buf  = d4*p4(k,l,m)
           pkml =    pd(k,m) - pd(l,m)
           p2kml= d2*pd(k,m) - pd(l,m)
@@ -1164,9 +1163,6 @@ contains
       use labeled_storage
       IMPLICIT NONE
 
-      ! Global variables
-      ! REAL*8,  INTENT(  OUT) :: PMAT(NLOC,NLOC,4,NUCDEP)
-
       ! External variables
       INTEGER, INTENT(IN ) :: NBL, NBS, NLOC, NUCDEP, MAXREF
       REAL*8,  INTENT(OUT) :: DINVM
@@ -1198,11 +1194,11 @@ contains
 
   !------------------------------------------------------------------------------!
       IFRP   = 1
-      LUPRI= VAR%LUPRI
-      NPSH = VAR%NPSH(IFRP)
-      NESH = VAR%NESH(IFRP)
-      NORB = VAR%NORB(IFRP)
-      NREFS= VAR%NREFS
+      LUPRI  = VAR%LUPRI
+      NPSH   = VAR%NPSH(IFRP)
+      NESH   = VAR%NESH(IFRP)
+      NORB   = VAR%NORB(IFRP)
+      NREFS  = VAR%NREFS
       IPQTOQ(:,:) = VAR%IPQTOQ(:,:)
       VECREF(:,:) = VAR_VECREF(:,:)
       REFFIL(:)   = VAR_REFFIL(:)
@@ -1217,9 +1213,9 @@ contains
         STOP
       ENDIF
       DO I=1,2
-      DO J=1,NREFS
-        NULLIFY(KVEC(I,J)%P)
-      ENDDO
+        DO J=1,NREFS
+          NULLIFY(KVEC(I,J)%P)
+        ENDDO
       ENDDO
 
       NB     = NBL + NBS
@@ -1250,7 +1246,6 @@ contains
       ICFS = 6
       IF(VAR%IPRPRJ.GE.5) ICFS = 7
       ALLOCATE( CMO(VAR%N2BBASXQ), STAT=IER ); CALL ERRALL(IER,'ORBLP1','CMO')
-
       IOFF(1) = 0
       VAR%IPRPRJ = 4
       DO I = 1,NREFS
@@ -1258,10 +1253,10 @@ contains
           reffile%type = 2
           reffile%name = REFFIL(I)
           reffile%status = -1
-          CALL SELOWN(2,CMO,DDUMARR,IDUMARR,               &
+          CALL SELOWN(2,CMO,DDUMARR,IDUMARR,                 &
                I,1,VAR%LUCOEF,reffile,RCOEF,DDUMARR,IDUMARR, &
-               NVECS(1,1),IOFF,kvec_offset,                 &
-               NSTR(1,0,I),KVEC(IFRP,I)%P)
+               NVECS(1,1),IOFF,kvec_offset,                  &
+               NSTR(1,0,I),VAR%C1READ,KVEC(IFRP,I)%P)
           IF(PM%IPRLOC.GE.5)THEN
             WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1
@@ -1313,9 +1308,9 @@ contains
 ! Construction of W = Ac
 
       IF(PM%IPRLOC.GE.5)THEN
-        WRITE(LUPRI,'(/A)') '* Matrice BV'
+        WRITE(LUPRI,'(/A)') '* Matrix BV'
         CALL PRQMAT(BV,NREF,NLOC,NREF,NLOC,4,IPQTOQ(1,0),LUPRI)
-        WRITE(LUPRI,'(/A)') '* Matrice AMAT'
+        WRITE(LUPRI,'(/A)') '* Matrix AMAT'
         CALL PRQMAT(AMAT,NREF,NREF,NREF,NLOC,4,IPQTOQ(1,0),LUPRI)
       ENDIF
       CALL QGEMM(NREF,NLOC,NREF,D1,              &
@@ -1324,7 +1319,7 @@ contains
            D0,IPQTOQ(1,0),WMAT,NREF,NLOC,4)
 
       IF(PM%IPRLOC.GE.5)THEN
-        WRITE(LUPRI,'(/A)') '* Matrice W'
+        WRITE(LUPRI,'(/A)') '* Matrix W'
         CALL PRQMAT(WMAT,NREF,NLOC,NREF,NLOC,4,IPQTOQ(1,0),LUPRI)
       ENDIF
 
@@ -1348,17 +1343,8 @@ contains
         ENDDO
       ENDDO
 
-! Multiply pmat with 1/2 just to avoid confusion in the code below
-      DO IZ=1,4
-        DO I=1,NLOC
-          DO J=1,NLOC
-            DO K=1,NUCDEP
-              PMAT(I,J,IZ,K) = PMAT(I,J,IZ,K) / D2
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDDO
-
+! Scale pmat with 1/2 just to avoid confusion in the code below
+      CALL DSCAL(nloc*nloc*4*nucdep,dp5,pmat,1)
 !      WRITE(6,*) 'TEST..QMAT'
 !      open(137,file='QMAT',status='new',form='formatted',access='sequential',iostat=ier)
 !      write(137) nucdep,nloc
@@ -1381,7 +1367,7 @@ contains
 
       IF(PM%IPRLOC.GE.5)THEN
         DO I = 1,NUCDEP
-          WRITE(LUPRI,'(/A,I3)') '* ORBLP1: Matrice P  Atom ', I
+          WRITE(LUPRI,'(/A,I3)') '* ORBLP1: Matrix  P  Atom ', I
           WRITE(LUPRI,'(A)') '  ============================'
           CALL PRQMAT(PMAT(1,1,1,I),NLOC,NLOC,NLOC,NLOC,4,IPQTOQ(1,0),LUPRI)
         ENDDO
@@ -1539,11 +1525,6 @@ contains
   !==============================================================================!
   implicit none
 
-  ! Global variables
-  ! real*8,  intent(in ) :: smat(*), scoef(:,:,:)
-  ! real*8,  intent(out) :: pmat(nloc,nloc,4,nucdep)
-  ! integer, intent(in ) :: nfnuc(*)
-
   ! External variables
   integer, intent(in ) :: nbl, nbs, nloc, nucdep
   real*8,  intent(out) :: dinvm
@@ -1605,7 +1586,7 @@ contains
     ioffl = ioffl + nfnuc(i)
   enddo
 
-  ! P_A matrices symetrisation
+  ! P_A matrices symmetrisation
   do i = 1,nucdep
     call fulmat('S',nloc,nloc,pmat(1,1,1,i))
     do iz = 2,4

@@ -56,7 +56,7 @@ C***********************************************************************
       use labeled_storage
       use checkpoint
       use dircmo
-      use x2c_fio
+!     use x2c_fio
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"

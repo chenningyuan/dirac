@@ -33,7 +33,7 @@ endif()
 
 add_library(
     matrix_operations
-    OBJECT
+    STATIC
     ${FIXED_MATRIX_OPERATIONS_FORTRAN_SOURCES}
     ${FREE_MATRIX_OPERATIONS_FORTRAN_SOURCES}
 )

@@ -2032,7 +2032,9 @@ C     ... make a translation of center of cavity to (0,0,0)
          CCAVX = D0
          CCAVY = D0
          CCAVZ = D0
-         IF (NFIELD .GT. 0) THEN
+         ! LV: 2025, deactivated the block below, NFIELD is never set in DIRAC
+         !IF (NFIELD .GT. 0) THEN
+         IF (.FALSE.) THEN
             TOTCHR = D0
 C
 C     If we have a finite field, we must ensure that there is a zero

@@ -100,6 +100,7 @@ subroutine exatensor_CCSDTQ_codegen(nocc_id,nvir_id,nocc_root,nvir_root, &
     type(tens_rcrsv_t) :: Z92_2    !       VVVV
     type(tens_rcrsv_t) :: Z142_1    !       VVOOOV
 
+#ifndef VAR_NVFORTRAN
 
 ! always define one_tensor to use in additions via calls to contraction
     ierr=exatns_tensor_create(one_tensor,"autokern_one_tensor",EXA_DATA_KIND_C8)
@@ -11142,6 +11143,11 @@ subroutine exatensor_CCSDTQ_codegen(nocc_id,nvir_id,nocc_root,nvir_root, &
 
 
     ierr=exatns_tensor_destroy(one_tensor)
+
+#else
+    stop 'functionality unsupported with NVFORTRAN'
+#endif
+    
 end subroutine exatensor_CCSDTQ_codegen
 
 #endif

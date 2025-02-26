@@ -206,10 +206,9 @@ C***********************************************************************
 C*****  E S R   P R O P E R T I E S      *******************************
 C***********************************************************************
 C
-#ifdef MOD_ESR
       IF (DOESR) THEN
          KFRSAV = KFREE
-         CALL ESR_INIT(WF,IPRESR,N_CIESR,WORK,KFREE,LFREE)
+         CALL ESR_INIT(WF,IPRESR,WORK,KFREE,LFREE)
 C
          LENESR = 2*MULTIPESR*MULTIPESR*MAX(4,NESRP)
 C        max(4,nesrp): make sure sufficient space for ESRPHASE
@@ -218,7 +217,6 @@ C        max(4,nesrp): make sure sufficient space for ESRPHASE
          CALL MEMREL('after PRPESR',WORK,KWORK,KFRSAV,KFREE,LFREE)
 C        ... remove this MEMREL if WORK(KESR) to be used in PRPOUT below
       END IF
-#endif
 C
 C***********************************************************************
 C*****  P P   E X C I T A T I O N   E N E R G I E S  *******************

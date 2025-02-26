@@ -60,3 +60,6 @@
       COMMON/CCREST/FS_SKIP_SECT(6), FS_REDO_SECT(6),                                     &
      &              restart_unconverged, restart_redo_sort,                               &
      &              restart_redo_ccsd, restart_ignore_check
+!-----For approximations to EOM (P-EOM, EOM-MBPT2, P-EOM-MBPT2
+      LOGICAL DOEOMH0DD, DOEOMPT2, DOEOMPT2CC
+      COMMON/EOMAPP/DOEOMH0DD,DOEOMPT2,DOEOMPT2CC

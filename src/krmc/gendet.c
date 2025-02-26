@@ -163,7 +163,11 @@ cgendet1( unsigned long long int anStr[], integer n, integer m,
 	   (*j)++;
        }
        else {
+#ifdef INT_STAR8
+	 printf ("*** ERROR in CGENDET1 *** Too many strings: %li! Allocate more memory in calling routine!\n", *j );
+#else
 	 printf ("*** ERROR in CGENDET1 *** Too many strings: %i! Allocate more memory in calling routine!\n", *j );
+#endif
 	 quit( "*** ERROR in CGENDET1 ***", 25 );
        }
      }

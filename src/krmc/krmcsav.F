@@ -53,14 +53,16 @@ C
       CALL QENTER('KRMCSAV')
       KFRSAV = KFREE
 C
-C     Write file KRMCSCF:
+C     Write to file KRMCSCF in each macro iteration after SODLABEL (start of data label):
 C
 C     (1) MJVEC .or. IBEIG: orbital mj-vector or boson irreps orbital-vector
 C     (2) OLDORB  : old MO orbitals
+C         OLDCREF : old CI vector
 C     (3) RESTART : info needed for restart
 C     (4) LREDUCED: info needed for backsteps
 C     (5) CREF    : new CI vector
 C     (6) NEWORB  : new MO orbitals
+C         EOFLABEL
 C
       if(.not.spinfr_krmc)then
         IF( OPT_CHCKJZ .AND. LINEAR )THEN
@@ -162,13 +164,13 @@ C
 CSK   IF (.FALSE.) THEN
 C     TODO Feb 2004 hjaaj: KRMCCNO not working correctly yet ...
 C
-C          July 2008 sk+hjaaj : fix for FOCKON only
+C          July 2008 sk+hjaaj : fix for FOCKONLY only
 C                               still TODO: implement RTRACI + 
 C                                           fix TRTOCO/TRTONO branch
 C
-         IF (NATONL) THEN
+         IF (NATONLY) THEN
             CNOLBL = 'ONLYNO'
-         ELSE IF (FOCKON) THEN
+         ELSE IF (FOCKONLY) THEN
             CNOLBL = 'ONLYFD'
          ELSE
             CNOLBL = 'FD+NO'
@@ -180,7 +182,7 @@ C
             RTRACI = .TRUE.
          END IF
 C
-         WRITE (LUPRI,'(/2A)') ' - calling KRCCNO with keyword ',CNOLBL
+         WRITE (LUPRI,'(/2A)') ' - calling KRMCCNO with keyword ',CNOLBL
          CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPROPT,EIG,
      &                WORK,KFREE,LFREE)
 C
