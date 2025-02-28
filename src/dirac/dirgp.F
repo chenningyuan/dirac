@@ -3327,8 +3327,9 @@ C
           CALL PRQMAT(CMO2,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
       ENDIF
+C     If we are in C1-symmetry, we can write coefficients etc. now       
       IF(NZ.EQ.4) THEN
-         IF(NFSYM.EQ.1) THEN
+         IF(NFSYM.EQ.1) THEN 
            CALL ICOPY (NORBT,0,0,IBEIG2,1) 
            CALL WRICMO(LUCOEF,CMO2,EIG2,IBEIG2,TOTERG)
         ELSE
@@ -3337,10 +3338,11 @@ C
       ELSE
 C
 C     Allocate arrays
-      allocate(CMO1(N2BBASX*4))
-      allocate(EIG1(NORBT))
-      allocate(IBEIG1(NORBT))
-      allocate(IBUF(NTBAS(0)*2))
+C
+        allocate(CMO1(N2BBASX*4))
+        allocate(EIG1(NORBT))
+        allocate(IBEIG1(NORBT))
+        allocate(IBUF(NTBAS(0)*2))
 C       Find correct ordering of nuclei
         CALL NUCORD(IBUF)
 C
@@ -3351,8 +3353,8 @@ C
         IF(IPRINT.GE.3) THEN
           WRITE(LUPRI,'(A)') 
      &      '* ACMOIN : row-ordered coefficients'
-            CALL PRQMAT(CMO1,NTBAS(0),NORBT,
-     &                  NTBAS(0),NORBT,4,IQDEF,LUPRI)
+          CALL PRQMAT(CMO1,NTBAS(0),NORBT,
+     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
         ENDIF
 C
 C       Transform to symmetry-adapted (SO) basis (unsorted) -> CMO2
@@ -3362,8 +3364,8 @@ C
         IF(IPRINT.GE.3) THEN
           WRITE(LUPRI,'(A)') 
      &      '* ACMOIN : raw SO coefficients'
-            CALL PRQMAT(CMO2,NTBAS(0),NORBT,
-     &                  NTBAS(0),NORBT,4,IQDEF,LUPRI)
+          CALL PRQMAT(CMO2,NTBAS(0),NORBT,
+     &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
         ENDIF
 C
 C       Analyze distribution of symmetry on quaternion units
@@ -3452,13 +3454,15 @@ C     A quaternion number is given by
 C       q = a + bi + cj +dk
 C     where (i,j,k) are the quaternion units. In general the quaternion
 C     units i,j and k come in positions 2, 3, and 4, respectively.
-C     There are two exceptions for complex group, having one totally symmetric
+C     There are two exceptions for complex groups, having one totally symmetric
 C     rotation (see routine DBLGRP):
 C      - for a totally symmetric x-rotation the mapping is (x,y,z) --> (i,k,j)
 C      - for a totally symmetric y-rotation the mapping is (x,y,z) --> (j,i,k)
 C     contrary to the standard mapping
 C      (x,y,z) --> (k,j,i)
 C
+C     Note that NBDYM = MAXREP + 1
+C      
 C     Written by T. Saue Mar 4 2008
 C
 C***********************************************************************
@@ -3476,17 +3480,19 @@ C
 #include "symmet.h"
 #include "dcbham.h"
       DIMENSION CMO(NB,NO,4),IBUF(NO,2)
-      DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)
+      DIMENSION TMP(2),NBF(2)
+      integer, allocatable    :: IB(:,:)
+      real(8), allocatable    :: WB(:,:,:)
 #include "dcbibt.h"
 C
-C.....III is the totally symmetric irrep for the large components
-      III(1) = 0
-C.....III is the symmety of XYZ for the small components
-      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
 C     Initialize
+C
+      ibdim=NBSYM*MC*4
+      allocate(IB(ibdim,4))
+      allocate(WB(4,NBSYM,MC))
       II = 0
       DO IC = 1,MC
-        DO IREP = 0,7
+        DO IREP = 0,MAXREP
           DO IQ = 1,4
             II = II + 1
             IB(II,2) = IQ
@@ -3497,19 +3503,19 @@ C     Initialize
       ENDDO
       NBF(1) = 0
       NBF(2) = 0
-      DO JORB = 1,NO
-        CALL DZERO(WB,64)
+      DO JORB = 1,NO ! Loop over MOs
+        CALL DZERO(WB,ibdim)
 C
 C       Accumulate gerade and ungerade norms
 C
         TMP(1)=D0
         TMP(2)=D0
-        DO IC = 1,MC
-          DO IREP = 0,MAXREP
+        DO IC = 1,MC               ! Loop over large and small components
+          DO IREP = 0,MAXREP       ! Loop over irreps
             ISYM = IREP + 1
-            IFRP = JBTOF(IREP,IC)
-            IBB  = ICOS (ISYM,IC)
-            NBB  = NBBAS(IREP,IC)
+            IFRP = JBTOF(IREP,IC)  ! Find associated fermion ircop
+            IBB  = ICOS (ISYM,IC)  ! offsets
+            NBB  = NBBAS(IREP,IC)  ! #basis functions
             IF(NBB.GT.0) THEN
 C....Carefully note that the assignment of the quaternion units (i,j,k) with
 C....respect to axes (x,y,z) may change; 
@@ -3519,7 +3525,7 @@ C....assigment used for the C1 coefficients.
               DO IQQ = 1,4
                 IQ=IQMAP(IQQ)
                 WB(IQQ,ISYM,IC) = DDOT(NBB,CMO(IBB+1,JORB,IQ),1,
-     &                   CMO(IBB+1,JORB,IQ),1)
+     &                                     CMO(IBB+1,JORB,IQ),1)
                 TMP(IFRP) = TMP(IFRP) + WB(IQQ,ISYM,IC)
               ENDDO
 C
@@ -3544,7 +3550,7 @@ C
      &           REP(IREP),' has ',MZ,' non-zero components'
                 ELSE 
                   WRITE(LUPRI,'(3X,A,A3,A,I3,A)')
-     &          'Large component basis functions of symmetry ',
+     &          'Small component basis functions of symmetry ',
      &           REP(IREP),' has ',MZ,' non-zero components'
                 ENDIF
                 CALL QUIT('QSYMANA. Compression will fail !')
@@ -3575,13 +3581,13 @@ C
 C
 C       Check if a quaternion phase transformation (IQ) is necessary
 C
-        CALL INDEXX(64,WB,IB)
+        CALL INDEXX(ibdim,WB,IB)
 C
 C       For now only consider largest contribution;
 C       a consistency check can be included later
 C       by scanning through more contributions
 C
-        II   = IB(64,1)
+        II   = IB(ibdim,1)
         IREP = IB(II,3)
         IC   = IB(II,4)
 C.......IQ is the position where the contribution from (IREP,IC) was found
@@ -3592,7 +3598,9 @@ C.......(note that for complex/quaternion groups there are two/four possibilitie
 C.......IBUF(JORB,2) indicates the quaternion phase transformation necessary to bring the
 C.......contribution to the desired position
         IBUF(JORB,2) = IQMULT(IQ,KQ,1)
-      ENDDO ! End loop over coefficients
+      ENDDO                     ! End loop over coefficients
+      deallocate(ib)
+      deallocate(wb)
 C
       RETURN
       END
@@ -3628,13 +3636,13 @@ C
       NBF(1) = 0
       NBF(2) = 0
       DO JU = 1,NORBT
-        IFRP = IBUF(JU,1)
-        JQ   = IBUF(JU,2)
-        NBS = NFBAS(IFRP,0)
-        NOS = NORB(IFRP)
-        NBF(IFRP) = NBF(IFRP)+1
-        JS = IORB(IFRP) + NBF(IFRP)
-        EIGS(JS) = EIGU(JU)
+        IFRP       = IBUF(JU,1)
+        JQ         = IBUF(JU,2)
+        NBS        = NFBAS(IFRP,0)
+        NOS        = NORB(IFRP)
+        NBF(IFRP)  = NBF(IFRP)+1
+        JS         = IORB(IFRP) + NBF(IFRP)
+        EIGS(JS)   = EIGU(JU)
         IBEIGS(JS) = IBEIGU(JU)
         IOFF = ICMOQ(IFRP)+1
         CALL MKQCMO1(CBU,NTBAS(0),NORBT,JU,IFRP,JQ,
