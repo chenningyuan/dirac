@@ -133,43 +133,4 @@ What can learn from this ? Neidig, Clark and Martin :cite:`Neidig_CoorChemRev201
 the concept of *near-degeneracy driven covalency*, where bonding interaction arises from near-degeneracy, even in the absence of overlap. In the above example we clearly see this mechanism at work: bringing the :math:`O1s` and :math:`C1s` orbitals into resonance causes strong orbital mixing.
 *However*, it would be absurd to call this bonding. The two atomic core orbitals can be disentangled by localization and we also note that their interaction is extremely weak.
 
-QED-effects on molecular properties
------------------------------------
-
-As a second example we will use the atomic shift operator to provide an estimate on QED effects on
-atomic properties. We shall use plumbane :math:`PbH_4` as our toy molecule.
-
-First we need an estimate of QED-effects on the atom and therefore run a GRASP calculation 
-using the input
-
-.. literalinclude:: PbQED.ginp
-
-From the output we extract the following information::
-
-   ORBITAL  V.P. INTEGRAL    S.E. Flambaum   Total
-   
-     1S    -1.8464162D+00    8.1221155D+00   6.275699E00
-     2S    -2.6815009D-01    1.2549909D+00   9.868408E−01
-     2P-   -3.2180190D-02    1.7973416D-01   1.475540E−01
-     2P    -1.8664568D-03    2.0271463D-01   2.008482E−01
-     3S    -6.1459602D-02    2.9244620D-01   2.309866E−01
-     3P-   -8.2611417D-03    3.8450656D-02   3.018951E−02
-     3P    -5.0526653D-04    4.3839003D-02   4.333374E−02
-     4S    -1.5604120D-02    7.4811895D-02   5.920778E−02
-     3D-   -7.5017064D-06   -1.1977737D-03  −1.205275E−03
-     3D    -1.4544609D-06    7.8807517D-03   7.879297E−03
-     4P-   -2.0742359D-03    9.4211937D-03   7.346958E−03
-     4P    -1.2756741D-04    1.0569246D-02   1.044168E−02
-     5S    -3.1433537D-03    1.5156024D-02   1.201267E−02
-     4D-   -2.0711814D-06   -9.3972075D-05  −9.604326E−05
-     4D    -4.0004592D-07    1.8413906D-03   1.840991E−03
-     5P-   -3.7559795D-04    1.7022380D-03   1.326640E−03
-     5P    -2.2197734D-05    1.8210527D-03   1.798855E−03
-     4F-   -6.9186631D-10   -3.5875200D-04  −3.587527E−04
-     4F    -1.8748766D-10    2.8402916D-04   2.840290E−04
-     5D-   -2.4901405D-07   -8.8467308D-06  −9.095745E−06
-     5D    -4.6301885D-08    2.0818817D-04   2.081419E−04
-     6S    -3.5592555D-04    1.7220539D-03   1.366128E−03
-     6P-   -2.6181266D-05    1.1878363D-04   9.260236E−05
-     6P    -1.3212900D-06    1.0828944D-04   1.069681E−04
 		      
