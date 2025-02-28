@@ -8,7 +8,17 @@
 
 New features:
 
-- New ESR/EPR features
+- Effective QED potentials:
+  - Contributors: Ayaki Sunaga and Trond Saue
+  - Vacuum polarization: Uehling
+  - Electron self-energy: Flambaum-Ginges and Pyykkö-Zhao
+  - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157 (2022) 164101 <https://doi.org/10.1063/5.0116140>`_
+    
+- Atomic shift operator (.ASHIFT):
+  - Contributor: Trond SAue
+  - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157 (2022) 164101 <https://doi.org/10.1063/5.0116140>`_
+
+- New ESR/EPR features:
   - Contributor: H. J. Aa. Jensen
   - .ESR CI flexible option for defining CI for ESR/EPR calculations
   - .G10PPM for \*ESR : request g-shifts to 10 ppm accuracy instead of default of +/-1 ppt = 1000 ppm accuracy
