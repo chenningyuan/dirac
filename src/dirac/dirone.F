@@ -7347,7 +7347,7 @@ C
       CALL SELFRAG(WORK(KQ),NVECS,WORK(KE),WORK(KI),
      &             NFRAG,NSTR,PRJFIL,PROOWN,NPRJNUC,IOPT,KVEC,
      &             WORK(KCMO),WORK(KEIG),WORK(KIBE),IOFF,
-     &             KRMC_FLG,WORK,KFREE,LFREE)
+     &             KRMC_FLG,.FALSE.,WORK,KFREE,LFREE)
 C
 C     Collect fragment info
 C      
