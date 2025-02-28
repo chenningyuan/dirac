@@ -19,17 +19,15 @@ where :math:`f` is a scalar factor, :math:`\hat{\Omega}` is a scalar operator, a
 
 .. math::
 
-  & \boldsymbol{I}, \, \boldsymbol{\beta}, \, \boldsymbol{\gamma}_5, \, \boldsymbol{\beta}\boldsymbol{\gamma}_5,
+  & \boldsymbol{I}, \, \boldsymbol{\beta}, \, \boldsymbol{\gamma}^5, \, \boldsymbol{\beta}\boldsymbol{\gamma}^5,
 
   & i\boldsymbol{\alpha}_x, \, i\boldsymbol{\alpha}_y, \, i\boldsymbol{\alpha}_z, \, i\boldsymbol{\beta}\boldsymbol{\alpha}_x, \, i\boldsymbol{\beta}\boldsymbol{\alpha}_y, \, i\boldsymbol{\beta}\boldsymbol{\alpha}_z,
 
   & i\boldsymbol{\Sigma}_x, \, i\boldsymbol{\Sigma}_y, \, i\boldsymbol{\Sigma}_z, \, i\boldsymbol{\beta}\boldsymbol{\Sigma}_x, \, i\boldsymbol{\beta}\boldsymbol{\Sigma}_y, \, i\boldsymbol{\beta}\boldsymbol{\Sigma}_z.
 
-One thing to notice is that :math:`\boldsymbol{I}`, :math:`\boldsymbol{\beta}`, :math:`\boldsymbol{\gamma}_5`, and :math:`\boldsymbol{\beta}\boldsymbol{\gamma}_5` are time-reversal symmetric operators, and they are implemented with such symmetry in DIRAC. On the other hand, :math:`\boldsymbol{\alpha}_k`, :math:`\boldsymbol{\Sigma}_k`, :math:`\boldsymbol{\beta\alpha}_k`, and :math:`\boldsymbol{\beta\Sigma}_k` (with :math:`k=x,y`, and :math:`z`) are time-reversal antisymmetric operators. This information is saved by the program, but these matrices (i.e., :math:`\boldsymbol{\alpha}_k`, :math:`\boldsymbol{\Sigma}_k`, :math:`\boldsymbol{\beta\alpha}_k`, and :math:`\boldsymbol{\beta\Sigma}_k`) are multiplied by the imaginary unit :math:`i=\sqrt{-1}` in order to make them time-reversal symmetric and hence fit into the quaternion symmetry scheme of DIRAC (see :cite:`Saue1999` and :cite:`Salek2005` for more information).
+One thing to notice is that :math:`\boldsymbol{I}`, :math:`\boldsymbol{\beta}`, :math:`\boldsymbol{\gamma}^5`, and :math:`\boldsymbol{\beta}\boldsymbol{\gamma}^5` are time-reversal symmetric operators, and they are implemented with such symmetry in DIRAC. On the other hand, :math:`\boldsymbol{\alpha}_k`, :math:`\boldsymbol{\Sigma}_k`, :math:`\boldsymbol{\beta\alpha}_k`, and :math:`\boldsymbol{\beta\Sigma}_k` (with :math:`k=x,y`, and :math:`z`) are time-reversal antisymmetric operators. This information is saved by the program, but these matrices (i.e., :math:`\boldsymbol{\alpha}_k`, :math:`\boldsymbol{\Sigma}_k`, :math:`\boldsymbol{\beta\alpha}_k`, and :math:`\boldsymbol{\beta\Sigma}_k`) are multiplied by the imaginary unit :math:`i=\sqrt{-1}` in order to make them time-reversal symmetric and hence fit into the quaternion symmetry scheme of DIRAC (see :cite:`Saue1999` and :cite:`Salek2005` for more information).
 
-Another important aspect to note is that the :math:`4 \times 4` matrices :math:`\boldsymbol{M}` used in DIRAC correspond to reordered Dirac 4-spinors, as described in Section `Quaternion algebra and time-reversal symmetry`_.
-
-Further details about the implemented operators are provided in Section `Quaternion algebra and time-reversal symmetry`_, where the connection between the Dirac matrices and the quaternion algebra is given.
+Another important aspect to note is that DIRAC does not use the :math:`4 \times 4` :math:`\boldsymbol{M}` matrices in the standard representation. These matrices are reordered following a criterion described in Section `Quaternion algebra and time-reversal symmetry`_. Further details about the implemented operators are provided in that Section, where the connection between the Dirac matrices and the quaternion algebra is given.
 
 
 Operator specification
@@ -66,8 +64,8 @@ There are 22 basic operator types implemented in DIRAC. They are listed in the f
 ===========  =========================================================================================================================================  ======  ===================
 DIAGONAL     :math:`f \boldsymbol{I} \hat{\Omega}`                                                                                                      1       Symmetric
 BETA         :math:`f \boldsymbol{\beta} \hat{\Omega}`                                                                                                  1       Symmetric
-GAMMA5       :math:`f \boldsymbol{\gamma}_5 \hat{\Omega}`                                                                                               1       Symmetric
-BETAGAMM     :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}_5 \hat{\Omega}`                                                                            1       Symmetric
+GAMMA5       :math:`f \boldsymbol{\gamma}^5 \hat{\Omega}`                                                                                               1       Symmetric
+BETAGAMM     :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`                                                                            1       Symmetric
 XALPHA       :math:`f i\boldsymbol{\alpha}_x \hat{\Omega}`                                                                                              1       Antisymmetric
 YALPHA       :math:`f i\boldsymbol{\alpha}_y \hat{\Omega}`                                                                                              1       Antisymmetric
 ZALPHA       :math:`f i\boldsymbol{\alpha}_z \hat{\Omega}`                                                                                              1       Antisymmetric
@@ -85,10 +83,10 @@ SIGMADOT     :math:`f_1 i\boldsymbol{\Sigma}_x \hat{\Omega}_x + f_2 i\boldsymbol
 XBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_x \hat{\Omega}`                                                                           1       Antisymmetric
 YBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_y \hat{\Omega}`                                                                           1       Antisymmetric
 ZBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_z \hat{\Omega}`                                                                           1       Antisymmetric
-iBETAGAM     :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}_5 \hat{\Omega}`                                                                            1       Antisymmetric
+iBETAGAM     :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`                                                                            1       Antisymmetric
 ===========  =========================================================================================================================================  ======  ===================
 
-`Note for advanced users:` iBETAGAM corresponds to the time-reversal symmetric operator :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}_5 \hat{\Omega}`, but has been assigned a time-reversal antisymmetry. This operator can be used, for example, for calculations of the molecular enhancement factors of the electron electric dipole moment (eEDM). For further details, see Section `Quaternion algebra and time-reversal symmetry`_.
+`Note for advanced users:` iBETAGAM corresponds to the time-reversal symmetric operator :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`, but has been assigned a time-reversal antisymmetry. This operator can be used, for example, for calculations of the molecular enhancement factors of the electron electric dipole moment (eEDM). For further details, see Section `Quaternion algebra and time-reversal symmetry`_.
 
 
 .. _One-electron scalar operator labels:
@@ -364,15 +362,44 @@ In the following example we calculate the cartesian multipole moment expectation
 Quaternion algebra and time-reversal symmetry
 ---------------------------------------------
 
-All of the :math:`4 \times 4` matrices :math:`\boldsymbol{M}` described in Section `Syntax for the specification of one-electron operators`_ can be written as the Kronecker product of two :math:`2 \times 2` matrices :math:`\boldsymbol{A}` and :math:`\boldsymbol{B}`, such that :math:`\boldsymbol{M} = \boldsymbol{A} \otimes \boldsymbol{B}`.
-
-In particular, :math:`\boldsymbol{A}` is one of the real matrices :math:`I_{2 \times 2}`, :math:`\sigma_x`, :math:`i \sigma_y`, or :math:`\sigma_z`, whereas :math:`\boldsymbol{B}` is :math:`I_{2 \times 2}`, :math:`i \sigma_x`, :math:`i \sigma_y`, or :math:`i \sigma_z`. Here, :math:`\sigma_x`, :math:`\sigma_y`, and :math:`\sigma_z` are the Pauli matrices, and :math:`i` is the imaginary unit. The individual matrix elements of :math:`\boldsymbol{M}` are given as
+The sixteen :math:`4 \times 4` matrices listed in Section `Syntax for specifying one-electron operators`_, i.e., :math:`\boldsymbol{I}`, :math:`\boldsymbol{\beta}`, :math:`\boldsymbol{\gamma}^5`, :math:`\boldsymbol{\beta}\boldsymbol{\gamma}^5`, :math:`i\boldsymbol{\alpha}_x`, :math:`i\boldsymbol{\alpha}_y`, :math:`i\boldsymbol{\alpha}_z`, :math:`i\boldsymbol{\beta}\boldsymbol{\alpha}_x`, :math:`i\boldsymbol{\beta}\boldsymbol{\alpha}_y`, :math:`i\boldsymbol{\beta}\boldsymbol{\alpha}_z`, :math:`i\boldsymbol{\Sigma}_x`, :math:`i\boldsymbol{\Sigma}_y`, :math:`i\boldsymbol{\Sigma}_z`, :math:`i\boldsymbol{\beta}\boldsymbol{\Sigma}_x`, :math:`i\boldsymbol{\beta}\boldsymbol{\Sigma}_y`, and :math:`i\boldsymbol{\beta}\boldsymbol{\Sigma}_z`, are usually expressed in Molecular Physics using the standard representation where, for example,
 
 .. math::
 
-    M_{pq} = A_{ij} \, B_{kl} \, ,
+   \tilde{\boldsymbol{\beta}} =
+   \begin{pmatrix}
+     1 & 0 & 0  &  0 \\
+     0 & 1 & 0  &  0 \\
+     0 & 0 & -1 &  0 \\
+     0 & 0 & 0  & -1
+   \end{pmatrix}, \;
+   \tilde{\boldsymbol{\gamma}}^{5} =
+   \begin{pmatrix}
+     0 & 0 & 1 & 0 \\
+     0 & 0 & 0 & 1 \\
+     1 & 0 & 0 & 0 \\
+     0 & 1 & 0 & 0
+   \end{pmatrix}, \;
+   i\tilde{\boldsymbol{\alpha}}_z =
+   \begin{pmatrix}
+     0  & 0  & i  &  0 \\
+     0  & 0  & 0  & -i \\
+     i  & 0  & 0  &  0 \\
+     0  & -i & 0  &  0
+   \end{pmatrix}.
+
+Here we will use the notation :math:`\tilde{\boldsymbol{U}}` to refer to any of these sixteen matrices when they are expressed in the standard representation.
+
+It can be seen that all these matrices can be written as the Kronecker product of two :math:`2 \times 2` matrices :math:`\boldsymbol{A}` and :math:`\boldsymbol{B}`, such that :math:`\tilde{\boldsymbol{U}} = \boldsymbol{A} \otimes \boldsymbol{B}`. In particular, :math:`\boldsymbol{A}` is one of the real matrices :math:`\boldsymbol{I}`, :math:`\boldsymbol{\sigma}_x`, :math:`i \boldsymbol{\sigma}_y`, or :math:`\boldsymbol{\sigma}_z`, whereas :math:`\boldsymbol{B}` is :math:`\boldsymbol{I}`, :math:`i \boldsymbol{\sigma}_x`, :math:`i \boldsymbol{\sigma}_y`, or :math:`i \boldsymbol{\sigma}_z`. Here, :math:`\boldsymbol{\sigma}_x`, :math:`\boldsymbol{\sigma}_y`, and :math:`\boldsymbol{\sigma}_z` are the Pauli matrices, and :math:`i` is the imaginary unit.
+
+The individual matrix elements of :math:`\tilde{\boldsymbol{U}}` are given as
+
+.. math::
+
+    \tilde{U}_{pq} = A_{ij} \, B_{kl} \, ,
 
 where :math:`p=2(i-1)+k` and :math:`q=2(j-1)+l`.
+
 
 In the DIRAC code, the structure of the Dirac equation with respect to time-reversal symmetry is displayed by using reordered Dirac 4-spinors, where the components are grouped on spin labels (:math:`\alpha`, :math:`\beta`) rather than large (upper) and small (lower) components (:math:`L`, :math:`S`),
 
@@ -386,76 +413,142 @@ In the DIRAC code, the structure of the Dirac equation with respect to time-reve
    \psi^{L\alpha} \\ \psi^{S\alpha} \\ \psi^{L\beta} \\ \psi^{S\beta}
    \end{pmatrix}.
 
-The same reordering applies to all the matrices :math:`\boldsymbol{M}`, which are then transformed accordingly. In the original ordering, these matrices are given as
+The same reordering applies to all the matrices :math:`\tilde{\boldsymbol{U}}`, which are then transformed accordingly. In the original ordering (i.e., in the standard representation), these matrices are given as
 
 .. math::
 
-    \boldsymbol{M} = \boldsymbol{A} \otimes \boldsymbol{B} =
+    \tilde{\boldsymbol{U}} =
     \begin{pmatrix}
-    M_{L\alpha,L\alpha} & M_{L\alpha,L\beta} & M_{L\alpha,S\alpha} & M_{L\alpha,S\beta} \\
-    M_{L\beta,L\alpha}  & M_{L\beta,L\beta}  & M_{L\beta,S\alpha}  & M_{L\beta,S\beta}  \\
-    M_{S\alpha,L\alpha} & M_{S\alpha,L\beta} & M_{S\alpha,S\alpha} & M_{S\alpha,S\beta} \\
-    M_{S\beta,L\alpha}  & M_{S\beta,L\beta}  & M_{S\beta,S\alpha}  & M_{S\beta,S\beta}
-    \end{pmatrix}.
+    \tilde{U}_{L\alpha,L\alpha} & \tilde{U}_{L\alpha,L\beta} & \tilde{U}_{L\alpha,S\alpha} & \tilde{U}_{L\alpha,S\beta} \\
+    \tilde{U}_{L\beta,L\alpha}  & \tilde{U}_{L\beta,L\beta}  & \tilde{U}_{L\beta,S\alpha}  & \tilde{U}_{L\beta,S\beta}  \\
+    \tilde{U}_{S\alpha,L\alpha} & \tilde{U}_{S\alpha,L\beta} & \tilde{U}_{S\alpha,S\alpha} & \tilde{U}_{S\alpha,S\beta} \\
+    \tilde{U}_{S\beta,L\alpha}  & \tilde{U}_{S\beta,L\beta}  & \tilde{U}_{S\beta,S\alpha}  & \tilde{U}_{S\beta,S\beta}
+    \end{pmatrix}
+    = \boldsymbol{A} \otimes \boldsymbol{B}.
 
-However, after reordering one clearly has the transformed matrices
+However, after reordering one clearly has the transformed matrices, which satisfy
 
 .. math::
 
-    \boldsymbol{M}^\prime = \boldsymbol{B} \otimes \boldsymbol{A} =
+    \boldsymbol{M} =
     \begin{pmatrix}
     M_{L\alpha,L\alpha} & M_{L\alpha,S\alpha} & M_{L\alpha,L\beta} & M_{L\alpha,S\beta} \\
     M_{S\alpha,L\alpha} & M_{S\alpha,S\alpha} & M_{S\alpha,L\beta} & M_{S\alpha,S\beta} \\
     M_{L\beta,L\alpha}  & M_{L\beta,S\alpha}  & M_{L\beta,L\beta}  & M_{L\beta,S\beta}  \\
     M_{S\beta,L\alpha}  & M_{S\beta,S\alpha}  & M_{S\beta,L\beta}  & M_{S\beta,S\beta}
-    \end{pmatrix}.
+    \end{pmatrix}
+    = \boldsymbol{B} \otimes \boldsymbol{A}.
 
-In other words, :math:`M^\prime_{PQ} = B_{kl} \, A_{ij}`, with :math:`P=2(k-1)+i` and :math:`Q=2(l-1)+j`. This reordering guarantees that all the matrices :math:`\boldsymbol{M}^\prime` are time-reversal symmetric.
+In other words, :math:`M_{PQ} = B_{kl} \, A_{ij}`, with :math:`P=2(k-1)+i` and :math:`Q=2(l-1)+j`. This reordering guarantees that all the matrices :math:`\boldsymbol{M}` are time-reversal symmetric.
 
-Additionally, following the arguments given in Ref. :cite:`Saue1999`, it is possible to make the following mapping involving the quaternion units: :math:`I_{2 \times 2} \rightarrow 1`, :math:`i \sigma_z \rightarrow \check{\imath}`, :math:`i \sigma_y \rightarrow \check{\jmath}`, and :math:`i \sigma_x \rightarrow \check{k}`. Thus, the matrices :math:`\boldsymbol{M}^\prime` can be represented as :math:`2 \times 2` matrices, which are linear combinations of the quaternion units.
 
-The relationship between :math:`\boldsymbol{M}` and the quaternion form of the :math:`2 \times 2` mapped matrices (arising from :math:`\boldsymbol{M}^\prime`) is given in the following Table:
+Additionally, following the arguments given in Ref. :cite:`Saue1999`, it is possible to make the following mapping involving the quaternion units:
 
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`\boldsymbol{M}` | :math:`\boldsymbol{A} \otimes \boldsymbol{B}`       | Quaternion form of :math:`\boldsymbol{M}^\prime`    |
-+========================+=====================================================+=====================================================+
-| :math:`I_{4 \times 4}` | :math:`I_{2 \times 2} \otimes I_{2 \times 2}`       | :math:`I_{2 \times 2}`                              |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\Sigma_z`      | :math:`I_{2 \times 2} \otimes i \sigma_z`           | :math:`\check{\imath}\, I_{2 \times 2}`             |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\Sigma_y`      | :math:`I_{2 \times 2} \otimes i \sigma_y`           | :math:`\check{\jmath}\, I_{2 \times 2}`             |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\Sigma_x`      | :math:`I_{2 \times 2} \otimes i \sigma_x`           | :math:`\check{k}\, I_{2 \times 2}`                  |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`\beta`          | :math:`\sigma_z \otimes I_{2 \times 2}`             | :math:`\sigma_z`                                    |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\beta\Sigma_z` | :math:`\sigma_z \otimes i \sigma_z`                 | :math:`\check{\imath}\, \sigma_z`                   |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\beta\Sigma_y` | :math:`\sigma_z \otimes i \sigma_y`                 | :math:`\check{\jmath}\, \sigma_z`                   |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\beta\Sigma_x` | :math:`\sigma_z \otimes i \sigma_x`                 | :math:`\check{k}\, \sigma_z`                        |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`\beta\gamma^5`  | :math:`(i\sigma_y) \otimes I_{2 \times 2}`          | :math:`(i\sigma_y)`                                 |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\beta\alpha_z` | :math:`(i\sigma_y) \otimes i \sigma_z`              | :math:`\check{\imath}\, (i\sigma_y)`                |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\beta\alpha_y` | :math:`(i\sigma_y) \otimes i \sigma_y`              | :math:`\check{\jmath}\, (i\sigma_y)`                |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\beta\alpha_x` | :math:`(i\sigma_y) \otimes i \sigma_x`              | :math:`\check{k}\, (i\sigma_y)`                     |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`\gamma^5`       | :math:`\sigma_x \otimes I_{2 \times 2}`             | :math:`\sigma_x`                                    |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\alpha_z`      | :math:`\sigma_x \otimes i \sigma_z`                 | :math:`\check{\imath}\, \sigma_x`                   |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\alpha_y`      | :math:`\sigma_x \otimes i \sigma_y`                 | :math:`\check{\jmath}\, \sigma_x`                   |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
-| :math:`i\alpha_x`      | :math:`\sigma_x \otimes i \sigma_x`                 | :math:`\check{k}\, \sigma_x`                        |
-+------------------------+-----------------------------------------------------+-----------------------------------------------------+
+.. math::
 
-It is important to note that although the time-reversal antisymmetric (T-odd) operators :math:`\boldsymbol{\alpha}`, :math:`\boldsymbol{\Sigma}`, :math:`\boldsymbol{\beta\alpha}`, and :math:`\boldsymbol{\beta\Sigma}` become time-reversal symmetric (T-even) once they are reordered and written in quaternion form as described above, DIRAC saves the information that these operators are T-odd in the original ordering.
+    &\boldsymbol{I}          &\rightarrow & \qquad  1
+
+    &i \boldsymbol{\sigma}_z &\rightarrow & \qquad  \check{\imath}
+
+    &i \boldsymbol{\sigma}_y &\rightarrow & \qquad  \check{\jmath}
+
+    &i \boldsymbol{\sigma}_x &\rightarrow & \qquad  \check{k},
+
+or, in a general way, :math:`\boldsymbol{B} \rightarrow b`, where :math:`b` is a quaternion unit arising from the relationships given above.
+   
+Thus, any linear combination of the 16 reordered matrices :math:`\boldsymbol{M}` can be mapped to a :math:`2 \times 2` matrix :math:`\boldsymbol{m}`, which is a linear combinations of the quaternion units.
+
+
+To make the proposed discussion clearer, in the following we will discuss two examples. In first place, we will transform :math:`\tilde{\boldsymbol{\beta}}`. We start by writting it as the following Kronecker product of two :math:`2 \times 2` matrices: :math:`\tilde{\boldsymbol{\beta}}=\boldsymbol{\sigma}_z \otimes \boldsymbol{I}`. In the reordered representation, this matrix will be expressed as :math:`\boldsymbol{\beta}=\boldsymbol{I} \otimes \boldsymbol{\sigma}_z`. Finally, the :math:`\boldsymbol{B}` matrix (in this case, :math:`\boldsymbol{I}`) is transformed to a quaternion unit (in the current example, :math:`1`). In this way, the :math:`4 \times 4` reordered matrix :math:`\boldsymbol{\beta}` can be written in quaternion form as the :math:`2 \times 2` matrix :math:`\boldsymbol{\sigma}_z`. In other words:
+
+.. math::
+
+   \tilde{\boldsymbol{\beta}} =
+   \begin{pmatrix}
+     1 & 0 & 0  &  0 \\
+     0 & 1 & 0  &  0 \\
+     0 & 0 & -1 &  0 \\
+     0 & 0 & 0  & -1
+   \end{pmatrix}
+   \quad\rightarrow\quad
+   \boldsymbol{\beta} =
+   \begin{pmatrix}
+     1 & 0  & 0 &  0 \\
+     0 & -1 & 0 &  0 \\
+     0 & 0  & 1 &  0 \\
+     0 & 0  & 0 & -1
+   \end{pmatrix}
+   \quad\rightarrow\quad
+   \boldsymbol{\beta}^\text{quat} =
+   \boldsymbol{\sigma}_z.
+
+
+As a second example, we take :math:`i\tilde{\boldsymbol{\alpha}}_z`. This :math:`4 \times 4` matrix, in its original ordering (according to the standard representation), can be written as the Kronecker product :math:`i\tilde{\boldsymbol{\alpha}}_z=\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_z`. This means that in the reordered representation it will be written as :math:`i\boldsymbol{\alpha}_z = i \boldsymbol{\sigma}_z \otimes \boldsymbol{\sigma}_x`. In this case, the matrix :math:`\boldsymbol{B}` is :math:`i \boldsymbol{\sigma}_z`, so that the quaternion unit :math:`b` will be :math:`\check{\imath}`. Therefore, the quaternion form of this reordered matrix will be :math:`i\boldsymbol{\alpha}_z^\text{quat} = \check{\imath} \boldsymbol{\sigma}_x`. Equivalently:
+
+.. math::
+
+   i\tilde{\boldsymbol{\alpha}}_z =
+   \begin{pmatrix}
+     0 & 0  & i  &  0  \\
+     0 & 0  & 0  &  -i \\
+     i & 0  & 0  &  0  \\
+     0 & -i & 0  &  0
+   \end{pmatrix}
+   \quad\rightarrow\quad
+   i\boldsymbol{\alpha}_z =
+   \begin{pmatrix}
+     0 & i  & 0  &  0  \\
+     i & 0  & 0  &  0  \\
+     0 & 0  & 0  &  -i \\
+     0 & 0  & -i &  0
+   \end{pmatrix}
+   \quad\rightarrow\quad
+   i\boldsymbol{\alpha}_z^\text{quat} =
+   \check{\imath} \boldsymbol{\sigma}_x.
+
+
+The relationship between :math:`\tilde{\boldsymbol{U}}` (i.e., the sixteen :math:`4 \times 4` matrices in original ordering, which corresponds to the standard representation) and the quaternion form of their reordered equivalent :math:`2 \times 2` matrices :math:`\boldsymbol{m}` is given in the following Table (they follow the transformation rule :math:`\tilde{\boldsymbol{U}} = \boldsymbol{A} \otimes \boldsymbol{B}` :math:`\rightarrow` :math:`\boldsymbol{M} = \boldsymbol{B} \otimes \boldsymbol{A}` :math:`\rightarrow` :math:`\boldsymbol{m} = b \boldsymbol{A}`):
+
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`\tilde{\boldsymbol{U}}`                   | :math:`\boldsymbol{A} \otimes \boldsymbol{B}`                    | :math:`\boldsymbol{m}`                            |
++==================================================+==================================================================+===================================================+
+| :math:`\boldsymbol{I}`                           | :math:`\boldsymbol{I} \otimes \boldsymbol{I}`                    | :math:`\boldsymbol{I}`                            |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\Sigma}_z`                   | :math:`\boldsymbol{I} \otimes i \boldsymbol{\sigma}_z`           | :math:`\check{\imath}\, \boldsymbol{I}`           |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\Sigma}_y`                   | :math:`\boldsymbol{I} \otimes i \boldsymbol{\sigma}_y`           | :math:`\check{\jmath}\, \boldsymbol{I}`           |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\Sigma}_x`                   | :math:`\boldsymbol{I} \otimes i \boldsymbol{\sigma}_x`           | :math:`\check{k}\, \boldsymbol{I}`                |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`\boldsymbol{\beta}`                       | :math:`\boldsymbol{\sigma}_z \otimes \boldsymbol{I}`             | :math:`\boldsymbol{\sigma}_z`                     |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\beta}\boldsymbol{\Sigma}_z` | :math:`\boldsymbol{\sigma}_z \otimes i \boldsymbol{\sigma}_z`    | :math:`\check{\imath}\, \boldsymbol{\sigma}_z`    |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\beta}\boldsymbol{\Sigma}_y` | :math:`\boldsymbol{\sigma}_z \otimes i \boldsymbol{\sigma}_y`    | :math:`\check{\jmath}\, \boldsymbol{\sigma}_z`    |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\beta}\boldsymbol{\Sigma}_x` | :math:`\boldsymbol{\sigma}_z \otimes i \boldsymbol{\sigma}_x`    | :math:`\check{k}\, \boldsymbol{\sigma}_z`         |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`\boldsymbol{\beta}\boldsymbol{\gamma}^5`  | :math:`(i\boldsymbol{\sigma}_y) \otimes \boldsymbol{I}`          | :math:`(i\boldsymbol{\sigma}_y)`                  |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\beta}\boldsymbol{\alpha}_z` | :math:`(i\boldsymbol{\sigma}_y) \otimes i \boldsymbol{\sigma}_z` | :math:`\check{\imath}\, (i\boldsymbol{\sigma}_y)` |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\beta}\boldsymbol{\alpha}_y` | :math:`(i\boldsymbol{\sigma}_y) \otimes i \boldsymbol{\sigma}_y` | :math:`\check{\jmath}\, (i\boldsymbol{\sigma}_y)` |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\beta}\boldsymbol{\alpha}_x` | :math:`(i\boldsymbol{\sigma}_y) \otimes i \boldsymbol{\sigma}_x` | :math:`\check{k}\, (i\boldsymbol{\sigma}_y)`      |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`\boldsymbol{\gamma}^5`                    | :math:`\boldsymbol{\sigma}_x \otimes \boldsymbol{I}`             | :math:`\boldsymbol{\sigma}_x`                     |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\alpha}_z`                   | :math:`\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_z`    | :math:`\check{\imath}\, \boldsymbol{\sigma}_x`    |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\alpha}_y`                   | :math:`\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_y`    | :math:`\check{\jmath}\, \boldsymbol{\sigma}_x`    |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\boldsymbol{\alpha}_x`                   | :math:`\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_x`    | :math:`\check{k}\, \boldsymbol{\sigma}_x`         |
++--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+
+It is important to note that although the time-reversal antisymmetric operators :math:`\boldsymbol{\alpha}_k`, :math:`\boldsymbol{\Sigma}_k`, :math:`\boldsymbol{\beta\alpha}_k`, and :math:`\boldsymbol{\beta\Sigma}_k` (with :math:`k=x,y`, and :math:`z`) become time-reversal symmetric once they are multiplied by the imaginary unit :math:`i` and written in quaternion form as described above, DIRAC saves the information that these operators were originally T-reversal antisymmetric (before adding the imaginary phase).
 
 For further details on the quaternion symmetry scheme used in DIRAC, see Ref. :cite:`Saue1999`.
 
-Note: For complete consistency, the names of the operators could have been :math:`i\boldsymbol{\alpha}`, :math:`i\boldsymbol{\Sigma}`, :math:`i\boldsymbol{\beta\alpha}`, and :math:`i\boldsymbol{\beta\Sigma}` (see `Operator type keywords`_) should have been ``XiALPHA``, ``YiALPHA``, ``ZiALPHA``, ``XiAVECTOR``, ``YiAVECTOR``, ``ZiAVECTOR``, ``iALPHADOT``, ``XiBETAALP``, ``YiBETAALP``, ``ZiBETAALP``, ``XiSIGMA``, ``YiSIGMA``, ``ZiSIGMA``, ``XiBETASIG``, ``YiBETASIG``, ``ZiBETASIG``, and ``iSIGMADOT``. However, due to historical reasons, this convention is not used in DIRAC.
+`Note:` For complete consistency, the names of the operators related to :math:`i\boldsymbol{\alpha}_k`, :math:`i\boldsymbol{\Sigma}_k`, :math:`i\boldsymbol{\beta\alpha}_k`, and :math:`i\boldsymbol{\beta\Sigma}_k` (:math:`k=x,y,z`) could have been ``XiALPHA``, ``YiALPHA``, ``ZiALPHA``, ``XiAVECTOR``, ``YiAVECTOR``, ``ZiAVECTOR``, ``iALPHADOT``, ``XiBETAALP``, ``YiBETAALP``, ``ZiBETAALP``, ``XiSIGMA``, ``YiSIGMA``, ``ZiSIGMA``, ``XiBETASIG``, ``YiBETASIG``, ``ZiBETASIG``, and ``iSIGMADOT`` (see `Operator type keywords`_). However, due to historical reasons, this convention is not used in DIRAC.
 
-Note for advanced users: The operator iBETAGAM is implemented in the code just as :math:`\beta\gamma^5`, but its time-reversal symmetry without imaginary phase is designated as odd.
+`Note for advanced users:` The operator iBETAGAM is implemented in the code just as :math:`\beta\boldsymbol{\gamma}^5`, but its time-reversal symmetry without imaginary phase is set as odd.
