@@ -1,8 +1,0 @@
-This test shows the way to add effective QED potentials to your variationally.
-
-- ueh_fg.inp ... Uehling (VP) and Flambaum-Ginges (SE) potentials      
-- ueh_pz.inp ... Uehling (VP) and Pyykko-Zhao (SE) potentials
-- ueh_fg_light.inp ... Effective QED potentials are deactivated Z < 19,
-                       but this input shows how to add Uehling and Flambaum-Ginges
-		       potentials to light atoms.
-
