@@ -14,8 +14,12 @@ f.add(string = '* Electronic eigenvalue',
       rel_tolerance = 1.0e-7)
 
 # run calculation for carbon in linear symmetry
-test.run(['C.inp'], ['C.xyz'])
-shutil.move('C.h5','AFCXXX')
+test.run(['C.inp'], ['C.xyz'],args='--outcmo --noh5')
+if os.path.isfile('CHECKPOINT.h5'):
+    ext = '.h5'
+elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
+    ext = '.noh5.tar.gz'
+shutil.move('CHECKPOINT'+ext, 'AFCXXX')
 
 # run calculation for carbon monoxide
 test.run(['C1s_shift.inp'], ['CO.xyz'], f, '--put="AFCXXX" --noh5')

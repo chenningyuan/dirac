@@ -74,9 +74,7 @@ C     =====
 
       call alloc(kzan, nucdep)
       call alloc(kc,   nucdep*3)
-      write(*,*)'sunaga1'
       CALL SET_GRID_INFO(NAT,NUM,kzan,kc)
-      write(*,*)'sunaga2'
 C
 C     DFTWRK
 C     ======
@@ -1571,7 +1569,6 @@ C
       DO ICENT = 1, NUCIND
         MULCNT = ISTBNU(ICENT)
         ZCNT   = CHARGE(ICENT)
-        write(*,*)'MAXOPR,MULCNT,ICENT',MAXOPR,ISTBNU(ICENT),ICENT
         IF(NAMN(ICENT)(1:2).EQ.'Gh') CYCLE
         IF(NOORBT(ICENT)) CYCLE
         DO ISYMOP = 0, MAXOPR
