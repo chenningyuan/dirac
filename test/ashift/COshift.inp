@@ -5,7 +5,7 @@
 .ASHIFT
 AFCXXX
 1
--9.6
+-9.32
 1
 AFOXXX
 0
@@ -23,6 +23,4 @@ AFOXXX
 *BASIS
 .DEFAULT
 dyall.2zp
-*SYMMETRY
-.NOSYM
 **END OF
