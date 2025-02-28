@@ -1275,7 +1275,7 @@ C
       end do
 C
       IF( IPRMP2NO .ge. 5 ) THEN 
-         CALL HEADER('final MP2 natural orbitals:',-1)
+         CALL HEADER('Final MP2 natural orbitals:',-1)
          DO I = 1,NFSYM
             CALL HEADER('Coefficients for irrep '//CHAR(I+48),-1)
             WRITE(LUPRI,*) ' printing offset ICMOQ(I)+1',ICMOQ(I)+1

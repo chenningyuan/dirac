@@ -16,14 +16,14 @@
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck esr_init */
-      SUBROUTINE ESR_INIT(WF,IPRINT,N_CIESR,WORK,KFREE,LFREE)
+      SUBROUTINE ESR_INIT(WF,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Initialize ESR calculation: find out what to do
 C
 C     Input : WF - wave function type
 C
-C     Output: N_CIESR - dimension of CI space
+C     Output: in common blocks
 C
 C     Author: Hans Joergen Aa. Jensen
 C
@@ -44,6 +44,9 @@ C
 C
       IPROPT = IPRINT
       IF (WF(1:3) .NE. 'DHF' .AND. WF .NE. 'DFT') THEN
+         ! note March 2022:: WF is not properly implemented in property module,
+         ! except for RELCCSD. Otherwise it is always DHF
+         ! if not set explicitly in input, no matter if DFT or KRMC ...
          CALL QUIT('ESR only implemented for DHF and DFT so far')
       END IF
 C
@@ -52,7 +55,6 @@ C        ... special input for using old code for a single open shell
          IF (NOPEN .NE. 1) THEN
             CALL QUIT('"DHF1" is only for NOPEN .eq. 1')
          END IF
-         N_CIESR = 2
          GO TO 9999
       END IF
 C
@@ -109,11 +111,6 @@ C     Write information to LUKRMC
 C
       CALL RSET_KRMC(WORK)
 C
-C     Transfer NZCONF to N_CIESR - dimension of ESR matrix
-C
-      N_CIESR = NZCONF
-      IF (N_CIESR .EQ. 0) CALL QUIT('N_CIESR = 0 !')
-C
  9999 CALL QEXIT('ESR_INIT')
       RETURN
       END
@@ -157,12 +154,9 @@ C
 C
       CALL QENTER('ESR_RESOLVE')
 
-      IF (NZCONF .EQ. 2) THEN
+      IF (NZCONF .EQ. 2 .AND. N_CIROOTS .lt. 0) THEN
       ! avoid GASCIP -- this enables DFT calculations for doublet
-         IF (N_CIROOTS .gt. 2) THEN
-            N_CIROOTS = 2
-         END IF
-
+         N_CIROOTS = 2
          CALL ESR_RESOLVE_2(IPRINT,
      &           WORK,K_EIGVAL,K_EIGVEC,KFREE,LFREE)
          GO TO 9000
@@ -208,9 +202,10 @@ C       theory, also if the orbitals are generated with a DFT functional.
       HFXMU_save  = HFXMU
       HFXFAC  = 1.0D0
       HFXMU   = 0.0D0
-      IF (MAX_CI_IT .GT. 0) THEN
+      IF (MAX_CI_IT .GE. 0) THEN
 C
 C        MAX_CI_IT Davidson CI iterations.
+C        ( MAX_CI_IT < 0 means do FULL CI )
 C
          L_EIGVAL = N_CIROOTS
          L_EIGVEC = N_CIROOTS*NZCONF*NZ_in_CI ! final CI eigen vectors
@@ -233,11 +228,13 @@ C
             N_ROOTS = N_CIROOTS
          END IF
 
-         CALL GASCIP_RCISTD(N_ROOTS, THR_CIESR, MAX_CI_IT,
+         IPR_GASCIP = max(IPRESR,2)   ! print always timing of each micro iteration
+         MAX_CI_IT_local  = MAX_CI_IT ! GASCIP_RCISTD modifies MAX_CI_IT
+         CALL GASCIP_RCISTD(N_ROOTS, THR_CIESR, MAX_CI_IT_local,
      &                     WORK(K_EIGVAL),WORK(K_EIGVXX),NZCONF,
      &                     WORK(KZCONF), CMO,
      &                     THR_CVEC_ESR, 0, ICONV_TOT,
-     &                     THRPCI_ESR,IPRESR,WORK(KFREE), LFREE)
+     &                     THRPCI_ESR,IPR_GASCIP,WORK(KFREE), LFREE)
 
 C        CALL GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
 C     &                     ECI,CVECS,NDET,IDET,CMO,
@@ -296,7 +293,7 @@ C
                J1_EIGVEC = J1_EIGVEC + N_CIROOTS*NZCONF
                J2_EIGVEC = J2_EIGVEC + N_CIROOTS*NZCONF
                DO I = 1,NDET_MK2
-                  WORK(J2_EIGVEC + I) = WORK(J1_EIGVEC + I)
+                  WORK(J2_EIGVEC + I) = -WORK(J1_EIGVEC + I) ! time-reversal operator includes complex conjugation
                END DO
                END IF
             END IF

@@ -2572,15 +2572,8 @@ C        with MAXCIT iterations
       END IF
 C     Always two-particle (full) Hamiltonian 
       IHAM12 = 2
-C     calculate property operator symmetry in double group subgroup
-C     notation
 #if defined (VAR_MPI)
-      IF( ISYNC_NODES .eq. 1 )
-     &  call interface_mpi_BCAST_L0(DOSYMOPPRP,1,MASTER,
-     &                 global_communicator)
-#endif
 C     reorder property operator matrix (already done by the MASTER...)
-#if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
      &  call interface_mpi_BCAST_L0(DOPROPREOD,1,MASTER,
      &                 global_communicator)

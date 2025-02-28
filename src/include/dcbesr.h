@@ -12,9 +12,9 @@
 !  N_CIESR        : number of CI roots to converge ( .ge. MULTIPESR)
 !  MULTIPESR      : "multiplicity", number of CI roots to use
 !                   in quasi-degenerate first order perturbation theory
+!  STATE_ESR      : first CI root belonging to multiplet, default 1
 !
 !  ESR CI space definition:
-!
 !
 !    NG1 = NGAS_CIESR(1)         - number of "RAS1-GAS" spaces
 !    LVL_CIESR(1:NG1,1)          - max number of holes in each "RAS1-GAS" space
@@ -29,6 +29,8 @@
 !    LVL_CIESR(1:NG3,3)          - max number of electrons in each "RAS3-GAS" space
 !    NGSH_CIESR(1:NFSYM,1:NG3,3) - number of orbitals in each "RAS3-GAS" space
 !
+!    MAXMK2_ESR                  - .gt. 0, if specified, only degterminants with
+!                                  -MAXMK2_ESR .le. MK2 .le. MAXMK2_ESR are included in CI.
 !
 !  USE_KRAMERS_CONJ : use Kramers conjugation to generate the partner CI vector
 !                     (solve 1 root for doublet instead of solving for 2 roots)
@@ -41,14 +43,14 @@
 
       REAL*8  THR_CIESR, THR_CVEC_ESR, THRPCI_ESR
       INTEGER IPRESR,NESRP,LESRP(maxesr),IPSIGMA(npsigma)
-      INTEGER N_CIESR, MULTIPESR, MAX_CIESR_IT
+      INTEGER N_CIESR, MULTIPESR, MAX_CIESR_IT, STATE_ESR
       INTEGER NGAS_CIESR(3), LVL_CIESR(maxgas_esr,3)
-      INTEGER NGSH_CIESR(2,maxgas_esr,3)
+      INTEGER NGSH_CIESR(2,maxgas_esr,3), MAXMK2_ESR
       LOGICAL USE_KRAMERS_CONJ
 
       COMMON /DCBESR/ THR_CIESR,THR_CVEC_ESR,THRPCI_ESR,                &
      &        IPRESR,   NESRP, LESRP, IPSIGMA,                          &
-     &        N_CIESR, MULTIPESR, MAX_CIESR_IT,                         &
-     &        NGAS_CIESR, LVL_CIESR, NGSH_CIESR,                        &
+     &        N_CIESR, MULTIPESR, MAX_CIESR_IT, STATE_ESR,              &
+     &        NGAS_CIESR, LVL_CIESR, NGSH_CIESR, MAXMK2_ESR,            &
      &        USE_KRAMERS_CONJ
 ! --- end of dcbesr.h ---
