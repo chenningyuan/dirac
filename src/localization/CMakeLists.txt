@@ -29,7 +29,7 @@ endif()
 
 add_library(
     localization
-    OBJECT
+    STATIC
     ${FIXED_LOCALIZATION_FORTRAN_SOURCES}
     ${FREE_LOCALIZATION_FORTRAN_SOURCES}
 )

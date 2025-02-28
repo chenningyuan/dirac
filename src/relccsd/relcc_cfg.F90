@@ -1,4 +1,5 @@
 !dirac_copyright_start
+
 !      Copyright (c) by the authors of DIRAC.
 !
 !      This program is free software; you can redistribute it and/or
@@ -105,6 +106,9 @@ module relcc_cfg
   logical, public :: relcc_do_eomip = .false.
   logical, public :: relcc_do_eomea = .false.
   logical, public :: relcc_do_eomee = .false.
+  logical, public :: relcc_do_eom_peom = .false.       ! do partitioned EOM, where the DD block is diagonal
+  logical, public :: relcc_do_eom_pt2  = .false.       ! do EOM based on MBPT2 expressions
+  logical, public :: relcc_do_eom_pt2_ccamp = .false.  ! use CCSD/CCD T2 amplitudes if true (dependent upon number of iterations), otherwise MP2 T2 amplitudes
   integer, public, dimension(1:32) :: relcc_eom_nroots = 0 
   integer, public, dimension(1:32) :: relcc_eom_nroots_prop  = 0 
   integer, public, dimension(1:32) :: relcc_eom_nroots_left  = 0 
@@ -207,6 +211,9 @@ contains
   call interface_mpi_bcast_l0(relcc_do_eomee        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_eomea        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_eomip        ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_eom_peom     ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_eom_pt2      ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_eom_pt2_ccamp,1,0,global_communicator)
   call interface_mpi_bcast(relcc_eom_nroots,size(relcc_eom_nroots),0,global_communicator)
   call interface_mpi_bcast(relcc_eom_nroots_prop,size(relcc_eom_nroots_prop),0,global_communicator)
   call interface_mpi_bcast(relcc_eom_nroots_left,size(relcc_eom_nroots_prop),0,global_communicator)

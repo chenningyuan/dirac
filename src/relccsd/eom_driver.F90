@@ -103,6 +103,7 @@
                 else
                    reset_roots_in_symmetry = .false.
                 end if
+
              case ('EE')
                 if (relcc_eom_nroots(state_sym).gt.nvo(state_sym)) then
                     relcc_eom_nroots(state_sym) = nvo(state_sym)
@@ -1282,9 +1283,10 @@
 
 
    subroutine eom_ee(icalc,mxcorr,eps)
+   use relcc_cfg
    use davidson
    use memory_allocator
-   use allocator_parameters, only : klongint
+   use allocator_parameters, only : klongint, kreal 
    use eom_density
    use symmetry_offset 
 
@@ -1298,6 +1300,7 @@
  integer(kind=klongint), intent(inout) :: mxcorr
  real*8                                :: eps(*)
 !--------------------------------------------------
+
 ! what is ndt here should be the dimension of t1+t2 for the irrep in question
    type(intermediates) :: B
    real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
@@ -1315,6 +1318,10 @@
   integer                :: nbuf3
   integer                :: state
   integer*8              :: nv5irp,nv6irp,nvirp
+
+! Loic 1307
+   real(kind=kreal), allocatable, target :: a_FVO(:),a_FOO(:),a_FVV(:)
+! Loic 1307
 
     call allocator_get_words_inuse(start_mem_use)
     call legacy_lwork_get(work_memsize)
@@ -1385,8 +1392,42 @@
     call verify_input()
     call initialize_buffers(buf1, buf2, buf3)
     call ccdump
-    call getampt(B%t1,B%t2)
-    call IM_container(eomtype,B)
+
+!Loic 1307, aspg
+! in case of EOM-MBPT2 or P-EOM-MBPT(2), rebuild the MP2 amplitudes from the VVOO integrals and Fock Matrix
+!   if (DOEOMPT2.and..not.DOEOMPT2CC) then   ! CALL come from ccdriv line 2534 in SUBROUTINE CCENER
+    if (relcc_do_eom_pt2.and..not.relcc_do_eom_pt2_ccamp) then 
+       
+       write (iw,*) " "     
+       write (iw,*) " INFO: requested (P-)EOM-MBPT(2) calculation"
+       write (iw,*) "       regenerating MP2 amplitudes from Fock matrix and VVOO integrals"
+       write (iw,*) "       and storing them as part of in the EOM intermediates"
+       write (iw,*) " "     
+
+       call alloc( a_FVO,  NFVO*RCW, id="fvo" )
+       call alloc( a_FOO , NFOO*RCW, id="foo")
+       call alloc( a_FVV , NFVV*RCW, id="fvv")
+       CALL FMTOFILE (.FALSE.,a_FVO,a_FOO,a_FVV)
+       CALL XCOPY (NDIMT1,a_FVO,1,B%t1,1)      ! CALL XCOPY (NDIMT1,a_FVO,1,a_T1,1)
+       CALL GETVVOO (B%t2)      ! CALL GETVVOO (a_T2)
+       CALL DENOM (EPS,B%t1,B%t2,B%t1,B%t2)      ! CALL DENOM (EPS,a_T1,a_T2,a_T1,a_T2)
+       CALL ZCORE (B%t1,B%t2)      ! CALL ZCORE (a_T1,a_T2)
+       call IM_container_MBPT2(eomtype,B)
+       call dealloc(a_FOO)
+       call dealloc(a_FVO)
+       call dealloc(a_FVV)
+!!Loic 2807 fin
+    else if (relcc_do_eom_pt2_ccamp) then
+       write (iw,*) " "     
+       write (iw,*) " INFO: requested (P-)EOM-MBPT(2) calculation with CCSD T amplitudes"
+       write (iw,*) " "     
+       call getampt(B%t1,B%t2) 
+       call IM_container_MBPT2(eomtype,B)
+    else
+       call getampt(B%t1,B%t2)
+       call IM_container(eomtype,B)
+    endif
+!Loic 1307 fin 
     call free_buffers(buf1,buf2,buf3)
 
     do state_sym = 1, nrep ! 16 

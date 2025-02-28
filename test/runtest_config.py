@@ -34,7 +34,10 @@ def configure(options, input_files, extra_args):
     inp_no_suffix = path.splitext(inp)[0]
     mol_no_suffix = path.splitext(mol)[0]
 
-    output_prefix = '{0}_{1}'.format(inp_no_suffix, mol_no_suffix)
+    if inp_no_suffix != mol_no_suffix:
+        output_prefix = '{0}_{1}'.format(inp_no_suffix, mol_no_suffix)
+    else:
+        output_prefix = '{0}'.format(inp_no_suffix)
 
     relative_reference_path = 'result'
 

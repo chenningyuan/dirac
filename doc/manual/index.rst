@@ -61,6 +61,7 @@ Keyword reference
    - :doc:`*NMR <properties/nmr>` --- NMR directives
    - :doc:`*STEX <properties/stex>` --- Static exchange (STEX) directives
    - :doc:`*NQCC <properties/nqcc>` --- NQCC directives
+   - :doc:`*ESR <properties/esr>` --- ESR/EPR directives
 
 
 * :doc:`**VISUAL <visual>` --- Visualization module

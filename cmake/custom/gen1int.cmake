@@ -16,6 +16,7 @@ include_directories(${PROJECT_BINARY_DIR}/external/gen1int-build)
         )   
 
 set(ExternalProjectCMakeArgs
+    -DCMAKE_WARN_DEPRECATED=FALSE
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
     -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}

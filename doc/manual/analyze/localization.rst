@@ -68,6 +68,10 @@ used with projection analysis option (.PRJLOC) [Default: False]::
 
   .OWNBAS
 
+keyword(C1READ)
+
+Read C1 coefficients for fragments.
+
 keyword(VECREF)
 
 First give number of fragments to project onto. Then for each fragment give

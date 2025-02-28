@@ -31,7 +31,7 @@ and the corresponding wave function input file **fci.inp** is::
   *SCF
   .CLOSED SHELL
    10
-  *KRCICALC
+  *KRCI
   .CI PROGRAM
   LUCIAREL
   .CIROOTS
@@ -94,7 +94,7 @@ The  **fcidump.inp** reads as::
   *SCF
   .CLOSED SHELL
    10
-  *KRCICALC
+  *KRCI
   .CI PROGRAM
   GASCIP
   .FCIDUMP

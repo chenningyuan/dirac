@@ -61,6 +61,8 @@
 .BProp
 1
 5
+.NTA
+2
 *CCDIAG
 .CONVERG
 1.0d-7

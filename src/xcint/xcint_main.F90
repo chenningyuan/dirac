@@ -7,7 +7,7 @@ module xcint_main
    use interface_functional_read
    use xc_derv
    use xc_ac
-   use extra
+   use xcint_extra
    use file_units
    use interface_grid
    use dirac_ao_eval

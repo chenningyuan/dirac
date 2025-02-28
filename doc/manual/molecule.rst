@@ -41,6 +41,13 @@ keyword(NOSYM)
 Switches off all use of symmetry (this is currently the only option).
 
 
+keyword(LINEAR)
+
+Forces to use the linear symmetry even for the one-atom case.
+When you want to remove the inversion symmetry
+(e.g., an atom under an external electric field), a ghost center must be included.
+
+
 star(BASIS)
 
 Basis set

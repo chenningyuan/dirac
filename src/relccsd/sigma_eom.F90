@@ -15,6 +15,7 @@ module sigma_eom
     public lambda_EE
     public sigma_EA
     public IM_container
+    public IM_container_MBPT2
     public create_sigma_vector_left
     public create_sigma_vector_right
     public create_diagonal
@@ -25,6 +26,8 @@ module sigma_eom
     public free_eom_ndet
     public get_matrix_size
     public set_eom_ndet
+    public set_eom_peom_mode
+    public get_eom_peom_mode
 
     private
     public intermediates
@@ -46,12 +49,25 @@ module sigma_eom
     character(11) :: eom_intm_file_name 
     integer :: eom_intm_file = 58
 
+    integer, save :: mode_eom_peom = 1
    contains
 
+   subroutine set_eom_peom_mode(val)
+      integer, intent(in) :: val
+      if ((val.eq.1).or.(val.eq.2)) then
+         mode_eom_peom = val
+      else
+         stop ('unsupported mode')
+      end if
+   end subroutine
+
+   subroutine get_eom_peom_mode(val)
+      integer, intent(out) :: val    !!! Je modifie le in d'Andre par un out
+      val = mode_eom_peom
+   end subroutine
 
    subroutine create_eom_ndet(max_excitation_level)
        integer, intent(in) :: max_excitation_level
-
        if (.not.associated(eom_ndet)) allocate(eom_ndet(max_excitation_level))
        eom_ndet = 0
    end subroutine
@@ -348,6 +364,194 @@ module sigma_eom
 
    end function
 
+   subroutine IM_container_MBPT2(eomtype,A_MBPT2)
+
+#include "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "ccpar.inc"
+#include "files.inc"
+#include "inpt.inc"
+#include "results.inc"
+
+!-----------------------------------------------------------------------------   
+!  In this routine we calculate all the intermediates required for a specific
+!  problem (IP/EA/EE) for EOMCC_MBPT2 : see Gwaltney. 
+!-----------------------------------------------------------------------------
+
+!-------------------------------Variables--------------------------------------
+
+!Calling Variables
+!----------------- 
+character(8), intent (in) :: eomtype  
+type(intermediates), intent(inout) :: A_MBPT2
+
+!Local Variables
+!----------------
+real(8), allocatable :: foo(:),fvo(:),fvv(:) 
+integer :: ierr
+
+!-----------------------------------------------------------------------------
+
+  if (imstat(14).eq.3) then
+      write (iw,*) " "
+      write (iw,*) " reading in checkpointed intermediates for MBPT2-based EOM-",eomtype
+      A_MBPT2%eomtype = eomtype
+      call eom_intermediates_file_set_info(eom_intm_file_basename,eom_intm_file)
+      call eom_intermediates_read_from_file(A_MBPT2,iprnt)
+  else
+     nbuf3 = size(local_buf3)
+
+     allocate (foo(nfoo*rcw))
+     allocate (fvo(nfvo*rcw))
+     allocate (fvv(nfvv*rcw))
+
+     A_MBPT2%eomtype = eomtype
+
+     write (iw,*) " "
+     write (iw,*) " constructing intermediates for EOM-",eomtype
+
+     call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
+
+     call f_bar_mi_MBPT2(foo,fvo,A_MBPT2%t1,A_MBPT2%t2,A_MBPT2%Fbar_mi)
+
+     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TAKE CARE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     !!!! Here it's A_MBPT2%Fbar_mi but it's : A_MBPT2%Fbar_mi_MBPT2  because 
+     !!!! it's not Fbar_mi but those obtain from Gwaltney Fbar_mi_MBPT2 see the call funciton 
+
+     if (iprnt.ge.2) then 
+        write (iw,*) "    done with Fbar_mi_MBPT2",dot_product(A_MBPT2%Fbar_mi,A_MBPT2%Fbar_mi)
+     else
+        write (iw,*) "    done with Fbar_mi_MBPT2"
+     end if
+
+     call f_bar_me_MBPT2(fvo,A_MBPT2%t1,A_MBPT2%Fbar_me)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with Fbar_me_MBPT2",dot_product(A_MBPT2%Fbar_me,A_MBPT2%Fbar_me)       
+     else
+         write (iw,*) "    done with Fbar_me_MBPT2"
+     end if
+
+     call f_bar_ae_MBPT2(fvv,fvo,A_MBPT2%t1,A_MBPT2%t2,A_MBPT2%Fbar_ae)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with Fbar_ae_MBPT2",dot_product(A_MBPT2%Fbar_ae,A_MBPT2%Fbar_ae)
+     else
+         write (iw,*) "    done with Fbar_ae_MBPT2"
+     end if
+
+     call w_ijmn_MBPT2(A_MBPT2%t1,A_MBPT2%t2,A_MBPT2%W_ijmn)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with W_ijmn_MBPT2",dot_product(A_MBPT2%W_ijmn,A_MBPT2%W_ijmn)
+     else
+         write (iw,*) "    done with W_ijmn_MBPT2"
+     end if
+!!!!!! LOIC 0707 Pas creee dans intermediates.F90
+!!!!!! LOIC 1307 cree mais identique à eom_ee
+     call wbar_mbej_MBPT2(A_MBPT2%t2,A_MBPT2%Wbar_mbej)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with Wbar_mbej_MBPT2",dot_product(A_MBPT2%Wbar_mbej,A_MBPT2%Wbar_mbej)
+     else
+         write (iw,*) "    done with Wbar_mbej_MBPT2"
+     end if
+
+     call w_mbej_MBPT2(A_MBPT2%t1,A_MBPT2%t2,A_MBPT2%W_mbej)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with W_mbej_MBPT2_MBPT2",dot_product(A_MBPT2%W_mbej,A_MBPT2%W_mbej)
+     else
+         write (iw,*) "    done with W_mbej_MBPT_MBPT2"
+     end if
+
+!!!!!! LOIC 0707 Pas creee dans intermediates.F90
+!!!!!! LOIC 1307 cree mais identique à eom_ee
+     call w_ejmb_MBPT2(A_MBPT2%t1,A_MBPT2%t2,A_MBPT2%W_ejmb)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with W_ejmb_MBPT2",dot_product(A_MBPT2%W_ejmb,A_MBPT2%W_ejmb)
+     else
+         write (iw,*) "    done with W_ejmb_MBPT2"
+     end if
+
+     call w_iemn_MBPT2(A_MBPT2%t1,A_MBPT2%t2,fvo,A_MBPT2%W_iemn)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with W_iemn_MBPT2",dot_product(A_MBPT2%W_iemn,A_MBPT2%W_iemn)
+     else
+         write (iw,*) "    done with W_iemn_MBPT2"
+     end if
+
+   if (eomtype /= "IP") then
+     call w_efam_MBPT2(A_MBPT2%t1,A_MBPT2%t2,fvo,A_MBPT2%W_efam)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with W_efam_MBPT2",dot_product(A_MBPT2%W_efam,A_MBPT2%W_efam)
+     else
+         write (iw,*) "    done with W_efam_MBPT2"
+     end if
+         if (myproc.gt.0) then 
+             A_MBPT2%W_efam(1:nv5*rcw) = 0.0d0
+         endif
+
+         call w_efam_diagram2_MBPT2 (A_MBPT2%t1,A_MBPT2%t2,local_buf2,local_buf3,nbuf3,A_MBPT2%W_efam)
+         if (iprnt.ge.2) then 
+             write (iw,*) "    done with W_efam diagram #2 MBPT2 LH 2509",dot_product(A_MBPT2%W_efam,A_MBPT2%W_efam)
+         else 
+             write (iw,*) "    done with W_efam diagram #2 MBPT2 LH 2509 "
+         end if
+
+
+    
+!   synchronize all the w_efam contributions from different nodes to the master 
+
+#if defined (VAR_MPI)
+      if (nmproc .gt. 1) then
+
+        call xcopy (nv5,a0,0,local_buf3,1)
+        ierr = 0
+
+        call interface_mpi_allreduce_r1_work_f77(A_MBPT2%W_efam,local_buf3(1), &
+            rcw*ivovvt(nrep+1), &
+            op_mpi_sum,global_communicator)
+
+        if(ierr.gt.0) then
+           call quit('mpi_reduce error in collecting w_efam_MBPT2 !')
+        endif
+        call xcopy(ivovvt(nrep+1),local_buf3,1,A_MBPT2%W_efam,1)
+
+      endif
+#endif
+!      CALL XTIME(5,2,'-- "efam_MBPT2" Intermediate                     ')
+     endif
+
+     call w_mnie_MBPT2(A_MBPT2%t1,A_MBPT2%W_mnie)
+     if (iprnt.ge.2) then
+         write (iw,*) "    done with W_mnie_MBPT2",dot_product(A_MBPT2%W_mnie,A_MBPT2%W_mnie)
+     else
+         write (iw,*) "    done with W_mnie_MBPT2"
+     end if
+
+
+     if (eomtype /= "IP") then
+
+         call w_amef_MBPT2(A_MBPT2%t1,A_MBPT2%W_amef)
+         if (iprnt.ge.2) then
+             write (iw,*) "    done with W_amef_MBPT2",dot_product(A_MBPT2%W_amef,A_MBPT2%W_amef)
+         else
+             write (iw,*) "    done with W_amef_MBPT2"
+         end if
+
+     endif 
+
+     write (iw,*) " checkpointed intermediates for MBPT2-based EOM-",eomtype
+     call eom_intermediates_file_set_info(eom_intm_file_basename,eom_intm_file)
+     call eom_intermediates_write_to_file(A_MBPT2,iprnt)
+     IMSTAT(14) = 3
+     call ccdump
+
+     deallocate(foo)
+     deallocate(fvo)
+     deallocate(fvv)
+   end if
+
+   end subroutine
+ 
+ 
    subroutine IM_container(eomtype,A)
 
 #include "symm.inc"
@@ -728,7 +932,9 @@ integer :: ierr
       write (iw,*) " done writing EOMCC intermediates to file" 
 
    end subroutine
-
+ 
+ 
+   
    subroutine sigma_ee_1h1p(r1,r2,B,sigma1,sigma2,state_sym)
    use symmetry_offset
    use modified_sorting
@@ -759,6 +965,10 @@ integer :: ierr
   type(Offset) :: f,g
   integer  ::row(nrep), column(nrep)
 !--------------------------------------------------
+! LOIC 0307 add
+  real(8),allocatable    :: foo(:),fvo(:),fvv(:)
+  real(8) :: ho(nfoo*rcw)
+! Loic 0307
 
   N1 = size(sigma1,1)
   N2 = size(sigma2,1)
@@ -923,6 +1133,7 @@ integer :: ierr
 ! class : [HBar_DD*R](ab,ij) 
 ! ==========================
 
+    if (.NOT.DOEOMH0DD) THEN
 ! S(ab,ij) = S(ab,ij) + P(ab) f_bar_ae(b,e) * r2(ae,ij)
 ! ------------------------------------------------------
 
@@ -1067,19 +1278,68 @@ integer :: ierr
 
      endif
 #endif
-      if (iprnt.ge.2) &
-   write(*,*)'diagram 13c', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+            if (iprnt.ge.2) &
+         write(*,*)'diagram 13c', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+      
+             call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
+           deallocate(sigma2_local)
+      
+             if (iprnt.ge.2) &
+          write(*,*)'diagram 13d', ddot(N2,sigma2,1,sigma2,1),myproc
+      
+            call dealloc_array(f,g)
+      
+            if (iprnt.ge.2) &
+          write(iw,*)'diagram 13 ', dot_product(sigma2,sigma2)
 
-       call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
-     deallocate(sigma2_local)
+!!!!!!!!!!!!!!!!!!!!! La fin de la routine est le partitioned EOMCCSD    !!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!           Voir Gwaltney                            !!!!!!!!!!!!!!!!!!!!!!!!!!
+    else
+     
+        allocate (foo(nfoo*rcw))
+        allocate (fvo(nfvo*rcw))
+        allocate (fvv(nfvv*rcw))
+      
+      ! LOIC 0307 add
+        call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
+      ! fin add
 
-       if (iprnt.ge.2) &
-    write(*,*)'diagram 13d', ddot(N2,sigma2,1,sigma2,1),myproc
-
-      call dealloc_array(f,g)
-
-      if (iprnt.ge.2) &
-    write(iw,*)'diagram 13 ', dot_product(sigma2,sigma2)
+      ! S(ab,ij) = S(ab,ij) + P(ab) f_bar_ae(b,e) * r2(ae,ij)
+      ! ------------------------------------------------------
+      
+       !  call contraction_424 ((/"p1","p3","o1","o2"/),(/"p2","p3"/), &
+       ! & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)
+      
+      ! LOIC 0307 commente !! lignes et fait la contaction avec fvv seule
+      !!    call contraction_244 ((/"p2","p3"/),(/"p1","p3","o1","o2"/), &
+      !!   & (/"p2","p1","o1","o2"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2,irrep_right=state_sym,irrep_left=1)
+          call contraction_244 ((/"p2","p3"/),(/"p1","p3","o1","o2"/), &
+         & (/"p2","p1","o1","o2"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=fvv,RightTensor=r2,irrep_right=state_sym,irrep_left=1)
+      ! Loic 0307 fin modification
+      
+             if (iprnt.ge.2) &
+          write(iw,*)'diagram 11 H0DD ', dot_product(sigma2,sigma2)
+           
+      !!S(ab,ij) = S(ab,ij) - P(ij) f_bar_mi(m,j)*r2(ab,im) 
+      !!----------------------------------------------------
+      ! LOIC 0307 commente !! lignes et fait la contaction avec foo seule
+      !!    call contraction_424 ((/"p1","p2","o1","o3"/),(/"o3","o2"/), &
+      !!   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)
+      
+      !    ho(1:nfoo*rcw) = foo(1:nfoo*rcw)
+          call contraction_424 ((/"p1","p2","o1","o3"/),(/"o3","o2"/), &
+         & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=foo,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)
+      ! Loic 03007 fin modification
+      
+             if (iprnt.ge.2) &
+          write(iw,*)'diagram 12 H0DD',dot_product(sigma2,sigma2)
+!Loic 2807 add
+   deallocate(foo)
+   deallocate(fvo)
+   deallocate(fVV)
+!Loic 2807 end
+    endif   
+      
 
   end subroutine
 
@@ -1113,6 +1373,13 @@ integer :: ierr
   integer  ::row(nrep), column(nrep)
   real*8, allocatable :: some_buf2(:), some_buf3(:)
   real*8 :: norm_s, norm_s_prev
+!--------------------------------------------------
+
+!--------------------------------------------------
+! LOIC 230119 
+  real(8),allocatable    :: foo(:),fvo(:),fvv(:)
+  real(8) :: ho(nfoo*rcw)
+! Loic 230119
 !--------------------------------------------------
 
   real(8), pointer, contiguous :: sigma_test(:)  ! test-sigma-vectors
@@ -1198,6 +1465,9 @@ integer :: ierr
       norm_s_prev = norm_s
   end if
 
+!Loic le 230119
+! Je modifie cette partie pour pouvoir inclure H0DD
+ if (.NOT.DOEOMH0DD) THEN
 !----------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
 !-----------------------------------------------------
@@ -1306,6 +1576,43 @@ end if
       norm_s_prev = norm_s
   end if
 
+!Loic 230119 : Ici nous passons a partitioned
+    else
+
+     write(iw,*)'H0DD EOM CC IP '
+
+        allocate (foo(nfoo*rcw))
+        allocate (fvo(nfvo*rcw))
+        allocate (fvv(nfvv*rcw))
+
+      ! LOIC 230119 add
+        call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
+      ! Loic fin 230119 add
+!----------------------------------------------------
+! S(a*b,ij) = S(a*b,ij) - P(ij) f_oo_mi(m,j)*r2(a*b,im) 
+!-----------------------------------------------------
+
+    call contraction_424 ((/"c1","p2","o1","o3"/),(/"o3","o2"/), &
+(/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=foo,LeftTensor=r2)
+
+       if (iprnt.ge.2)  write(iw,*)'diagram 5 - H0DD EOMCC IP',dot_product(sigma2,sigma2)
+
+!------------------------------------------------------
+! S(a*b,ij) = S(a*b,ij) + f_vv_ae(b,e) * r2(a*e,ij)
+!------------------------------------------------------
+
+    call contraction_424 ((/"c1","p3","o1","o2"/),(/"p2","p3"/), &
+(/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=fvv,LeftTensor=r2)
+
+       if (iprnt.ge.2) write(iw,*)'diagram 8 - H0DD EOMCC IP ',dot_product(sigma2,sigma2)
+!Loic 2301019 add
+   deallocate(foo)
+   deallocate(fvo)
+   deallocate(fVV)
+!Loic 230119 end
+
+   endif
+
  end subroutine
 
 !==============================================================================================================================================================================================================
@@ -1343,6 +1650,11 @@ end if
   integer :: mrp,nrp 
   type(Offset) :: g
   integer  ::row(nrep), column(nrep)
+!--------------------------------------------------
+! LOIC 181018 add
+  real(8),allocatable    :: foo(:),fvo(:),fvv(:)
+  real(8) :: ho(nfoo*rcw)
+! Loic 181018
 !--------------------------------------------------
   N1 = size(sigma1,1)
   N2 = size(sigma2,1)
@@ -1391,29 +1703,36 @@ end if
    if (iprnt.ge.2) &
     write(iw,*)'diagram 4 ', ddot(N2,sigma2,1,sigma2,1)
 
+!Loic le 181018
+! Je modifie cette partie pour pouvoir inclure H0DD
+! c.a.d. le partioned emo-ea
+! J utilise l article de Dutta 
+! dx.doi.org/10.1021/ct4009409 | J. Chem. Theory Comput. 2014, 10, 1923−1933
+    if (.NOT.DOEOMH0DD) THEN
+
 ! S(ab,i*j) = S(ab,i*j) + P(ab) f_bar_ae(b,e) * r2(ae,i*j)
 !-------------------------------------------------------
 
-    call contraction_424 ((/"p1","p3","c1","o2"/),(/"p2","p3"/), &
-   & (/"p1","p2","c1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2)
+      call contraction_424 ((/"p1","p3","c1","o2"/),(/"p2","p3"/), &
+     & (/"p1","p2","c1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2)
 
-   if (iprnt.ge.2) &
-    write(iw,*)'diagram 5 ', ddot(N2,sigma2,1,sigma2,1)
+     if (iprnt.ge.2) &
+      write(iw,*)'diagram 5 ', ddot(N2,sigma2,1,sigma2,1)
 
 ! S(ab,i*j) = S(ab,i*j) - P(ij) f_bar_mi(m,j)*r2(ab,i*m) 
 !-----------------------------------------------------
 
-    call contraction_424 ((/"p1","p2","c1","o3"/),(/"o3","o2"/), &
-   & (/"p1","p2","c1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
+      call contraction_424 ((/"p1","p2","c1","o3"/),(/"o3","o2"/), &
+     & (/"p1","p2","c1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
 
-       if (iprnt.ge.2) &
-    write(iw,*)'diagram 6 ', ddot(N2,sigma2,1,sigma2,1)
+         if (iprnt.ge.2) &
+      write(iw,*)'diagram 6 ', ddot(N2,sigma2,1,sigma2,1)
 
 ! S(ab,i*j) = S(ab,i*j) + P(ab) w_mbej(mb,ej)*r2(ae,i*m)
 !----------------------------------------------------------
 
-      call contraction_444((/"p1","p3","c1","o3"/),(/"o3","p2","p3","o2"/), &
-     &    (/"p1","p2","c1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej)
+        call contraction_444((/"p1","p3","c1","o3"/),(/"o3","p2","p3","o2"/), &
+       &    (/"p1","p2","c1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej)
 
 !     call contraction_444((/"o3","p2","p3","o2"/),(/"p1","p3","c1","o3"/), &
 !    &    (/"p1","p2","c1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2,LeftTensor=B%W_mbej)
@@ -1421,77 +1740,77 @@ end if
 !     call contraction_444((/"p2","o3","o2","p3"/),(/"p1","p3","c1","o3"/), &
 !    &    (/"p1","p2","c1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2,LeftTensor=B%W_ejmb)
 
-   if (iprnt.ge.2) &
-    write(iw,*)'diagram 8 ', ddot(N2,sigma2,1,sigma2,1)
+     if (iprnt.ge.2) &
+      write(iw,*)'diagram 8 ', ddot(N2,sigma2,1,sigma2,1)
 
 !int_1b(n,i*) = int_1b(n,i*) + V(nm,fe)*r2(fe,i*m)
 !S(ab,i*j) = S(ab,i*j) - int_1b(n,i*)*t(ba,jn)
 !------------------------------------------------
 
-    call alloc_array(f,nrep)
+     call alloc_array(f,nrep)
 
-    call auto_symmetry_offset(f,no,ncont,.false.,.false.)
-    allocate(int_1b(f%oneNonDirac(1)*rcw))
-    int_1b = 0.0d0
+     call auto_symmetry_offset(f,no,ncont,.false.,.false.)
+      allocate(int_1b(f%oneNonDirac(1)*rcw))
+      int_1b = 0.0d0
 
-    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","c1","o3"/),(/"o4","c1"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2)
+      call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","c1","o3"/),(/"o4","c1"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2)
 
-    call contraction_424 ((/"p2","p1","o2","o4"/),(/"o4","c1"/), &
-    & (/"p2","p1","c1","o2"/),sigma2,-1.0d0,-1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2)
+      call contraction_424 ((/"p2","p1","o2","o4"/),(/"o4","c1"/), &
+      & (/"p2","p1","c1","o2"/),sigma2,-1.0d0,-1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2)
 
-    deallocate(int_1b)
+      deallocate(int_1b)
 
-       if (iprnt.ge.2) &
-    write(iw,*)'diagram 9 ', ddot(N2,sigma2,1,sigma2,1)
+         if (iprnt.ge.2) &
+       write(iw,*)'diagram 9 ', ddot(N2,sigma2,1,sigma2,1)
 
 ! S(ab,i*j) = S(ab,i*j) + w_vvvv(ab,ef)*r2(ef,i*j)
 !------------------------------------------------
 
-      allocate(sigma2_local(N2))
-      sigma2_local = 0.0d0
+        allocate(sigma2_local(N2))
+        sigma2_local = 0.0d0
 
-      off1 = 1
-      off2 = 1
-      do irp = 1, nrep
-         istart = 0
-         done =.false.
-         if ((nvvt(irp).eq.0).or.(f%oneDirac(irp).eq.0)) cycle
-         mint = nbuf3/nvvt(irp)
- 10      kstart = istart
-         if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
-         ntot = idist(2,1,irp)
-         nint = min0(mint,ntot-kstart)
-         allocate(w_vvvv(nvvt(irp)*nint*rcw))
-         call getdz (irp,istart,nint,done,w_vvvv,mint)
-         m = nvvt(irp)
-         n = f%oneDirac(irp)
-         k = nint
-         call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),m, &
-     &               a1,sigma2_local(off2),m)
+        off1 = 1
+        off2 = 1
+        do irp = 1, nrep
+           istart = 0
+           done =.false.
+           if ((nvvt(irp).eq.0).or.(f%oneDirac(irp).eq.0)) cycle
+           mint = nbuf3/nvvt(irp)
+ 10        kstart = istart
+           if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
+           ntot = idist(2,1,irp)
+           nint = min0(mint,ntot-kstart)
+           allocate(w_vvvv(nvvt(irp)*nint*rcw))
+           call getdz (irp,istart,nint,done,w_vvvv,mint)
+           m = nvvt(irp)
+           n = f%oneDirac(irp)
+           k = nint
+           call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),m, &
+       &               a1,sigma2_local(off2),m)
 !    &               a1,sigma2(off2),m)
 
-         deallocate(w_vvvv)
+           deallocate(w_vvvv)
 
-         if (.not.done) then
-            istart = istart + nint
-            goto 10
-         endif
-         off1 = off1 + n * m * rcw
-         off2 = off2 + m * n * rcw
-      enddo
+           if (.not.done) then
+              istart = istart + nint
+              goto 10
+           endif
+           off1 = off1 + n * m * rcw
+           off2 = off2 + m * n * rcw
+        enddo
 
-      call dealloc_array(f)
-      allocate (local_buffer(N2))
+        call dealloc_array(f)
+        allocate (local_buffer(N2))
 #if defined (VAR_MPI)
-      if (nmproc .gt. 1) then
-        call xcopy (ndimr2,a0,0,local_buffer,1)
-        ierr = 0
+        if (nmproc .gt. 1) then
+          call xcopy (ndimr2,a0,0,local_buffer,1)
+          ierr = 0
 
-      if (iprnt.ge.2) &
-   write(*,*)'diagram 7a ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+        if (iprnt.ge.2) &
+     write(*,*)'diagram 7a ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
 !  write(*,*)'diagram 7a ', ddot(N2,sigma2,1,sigma2,1),myproc
 
-        call interface_mpi_allreduce(sigma2_local, &
+          call interface_mpi_allreduce(sigma2_local, &
 !       call interface_mpi_allreduce(sigma2, &
              local_buffer, N2, &
              op_mpi_sum,global_communicator)
@@ -1499,23 +1818,80 @@ end if
    write(*,*)'diagram 7b ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
 !  write(*,*)'diagram 7b ', ddot(N2,sigma2,1,sigma2,1),myproc
 
-        if(ierr.gt.0) then
-           call quit('mpi_reduce error in collecting sigma2 !')
-        endif
-        call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
+          if(ierr.gt.0) then
+             call quit('mpi_reduce error in collecting sigma2 !')
+          endif
+          call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
 !       call xcopy(ndimr2,local_buffer,1,sigma2,1)
-      endif
+        endif
 #endif
-      deallocate (local_buffer)
+        deallocate (local_buffer)
 
-      if (iprnt.ge.2) &
-   write(*,*)'diagram 7c ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+        if (iprnt.ge.2) &
+     write(*,*)'diagram 7c ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
 
-       call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
-     deallocate(sigma2_local)
+         call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
+       deallocate(sigma2_local)
 
-       if (iprnt.ge.2) &
-    write(*,*)'diagram 7d ', ddot(N2,sigma2,1,sigma2,1),myproc
+         if (iprnt.ge.2) &
+      write(*,*)'diagram 7d ', ddot(N2,sigma2,1,sigma2,1),myproc
+!Loic 181018 : Ici nous passons a partitioined
+    else
+
+        allocate (foo(nfoo*rcw))
+        allocate (fvo(nfvo*rcw))
+        allocate (fvv(nfvv*rcw))
+
+      ! LOIC 181018 add
+        call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
+      ! Loic fin 181018 add
+
+
+! S(ab,i*j) = S(ab,i*j) + P(ab) f_ae(b,e) * r2(ae,i*j)
+!-------------------------------------------------------
+
+!      call contraction_424 ((/"p1","p3","c1","o2"/),(/"p2","p3"/), &
+!     &  (/"p1","p2","c1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2)
+
+      call contraction_424 ((/"p1","p3","c1","o2"/),(/"p2","p3"/), &
+     & (/"p1","p2","c1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=fvv,LeftTensor=r2)
+
+     if (iprnt.ge.2) &
+      write(iw,*)'diagram 5 H0DD EOMCCSD - EA ', ddot(N2,sigma2,1,sigma2,1)
+
+! Ce diagramme n'existe pas avec H_DD complet !!!! C'est une permutation P(ab)
+! S(ab,i*j) = S(ab,i*j) - P(ij) f_bd(b,d)*r2(ad,i*m) 
+!-----------------------------------------------------
+
+!      call contraction_424 ((/"p1","p2","c1","o3"/),(/"o3","o2"/), &
+!     &
+!     (/"p1","p2","c1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
+!      call contraction_424 ((/"p1","o3","c1","o2"/),(/"p2","o3"/), &
+!     &(/"p1","p2","c1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=fvo,LeftTensor=r2)
+
+!     if (iprnt.ge.2) &
+!      write(iw,*)'diagram 6 H0DD ', ddot(N2,sigma2,1,sigma2,1)
+
+! S(ab,i*j) = S(ab,i*j) - P(ij) f_bar_mi(m,j)*r2(ab,i*m) 
+!-----------------------------------------------------
+
+!      call contraction_424 ((/"p1","p2","c1","o3"/),(/"o3","o2"/), &
+!     & (/"p1","p2","c1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
+      call contraction_424 ((/"p1","p2","c1","o3"/),(/"o3","o2"/), &
+     &(/"p1","p2","c1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=foo,LeftTensor=r2)
+
+
+         if (iprnt.ge.2) &
+      write(iw,*)'diagram 6 H0DD EOMCCSD - EA', ddot(N2,sigma2,1,sigma2,1)
+!Loic 181018 add
+   deallocate(foo)
+   deallocate(fvo)
+   deallocate(fVV)
+!Loic 181018 end
+
+
+   endif
+
 
  end subroutine
 

@@ -1034,8 +1034,10 @@ C
       END
 C  /* Deck second */
       REAL*8 FUNCTION SECOND ()
-      real*4 etime,tarray(2)
-      SECOND = etime(tarray)
+      ! compatibility function for old CDC/Cray SECOND() function
+      real(8) :: timcpu, timwall
+      call gettim(timcpu,timwall)
+      SECOND = timcpu
       RETURN
       END
 C  /* Deck sotmat */

@@ -430,11 +430,11 @@ C
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
-      DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
+      DATA TABLE  /'.DIRECT','.CVALUE','xxxxxxx','.DOJACO',
      &             '.PRINT ','.PRJTHR','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
      &             '.ACMOUT','.ACMOIN','.IMPMOS','.CODATA',
-     &             '.SKIP2E','.LOWJAC','.RKBIMP','.XXXXXX',
+     &             'xxxxxxx','.LOWJAC','.RKBIMP','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP and USER_STOL
@@ -444,7 +444,6 @@ C
       USER_STOL  = .FALSE.
       TWOCOMP    = .FALSE.
       TWOCOMPBSS = .FALSE.
-      SKIP2E     = .FALSE.
       LOWJACO    = .FALSE.
       LOGMEMGET  = .FALSE.
       DOQJACO    = .FALSE.
@@ -531,8 +530,7 @@ C&&&& CVALUE: Set a different value of speed of light (in a.u.)
             CSCALE = CVAL
             GO TO 100
   103    CONTINUE
-C&&&& NOSET: Skip the PAMSET module
-            NOSET = .TRUE.
+C&&&& 
             GO TO 100
   104    CONTINUE
 C&&& DOJACO: Do Jacobi diagonalization if real group
@@ -609,8 +607,7 @@ C&&&& CODATA: Choose between CODATA sets
             END IF
             GO TO 100
   117    CONTINUE
-C&&&& SKIP2E
-            SKIP2E = .TRUE.
+C&&&& 
             GO TO 100
   118    CONTINUE
 C&&&& LOWJAC
@@ -793,8 +790,6 @@ C
       ENDIF
       WRITE(LUPRI,'(1X,A,I3)')
      &     '* General print level   : ',IPRGEN
-      IF(NOSET) WRITE(LUPRI,'(1X,A)')
-     &     '* Skipping the PAMSET module. Crossing my fingers ...'
 C
 C     Process input for various program sections
 C     ==========================================
@@ -3402,6 +3397,10 @@ C
          if(DOKRMC .or. DOGASCIP .or. DOKRCI)
      &   call quit(" X2Cmmf does not work with KRMC/KRCI/GASCIP")
       end if
+
+      if (spinfr .and. domp2no) then
+         call quit('.MP2 NO does not work for spin-free calculations')
+      end if
 C
 C     Process input for various program sections
 C     ==========================================
@@ -3456,7 +3455,7 @@ C     '*MP2 NO' - MP2 Natural Orbitals
    10 CONTINUE
         CALL MP2NOINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
-C     '*KRCICALC' - Kramers Restricted CI CALCulation
+C     '*KRCICALC' - Kramers Restricted CI CALCulation (deprecated, use *KRCI )
    11 CONTINUE
         CALL KRCI_INP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
@@ -4639,7 +4638,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.MAYER ','.POLNRM','.ATOMS ','.XXXXXX'/
+     &            '.MAYER ','.POLNRM','.ATOMS ','.C1READ'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4668,6 +4667,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       POLREF = .FALSE.
       MAYER  = .FALSE.
       POLNRM = .FALSE.
+      C1READ = .FALSE.
 C
 C     Process *PROJEC input
 C     =========================
@@ -4790,6 +4790,8 @@ C&&& ATOMS : Do projection analysis using atomic fragments
                   NREFS=IREFS-1
                   GO TO 100
  12            CONTINUE
+C&&& C1READ : Read fragment C1 coefficents 
+               C1READ = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -4857,6 +4859,10 @@ C
      &   '* Fragments are calculated in their individual bases !',
      &   '    The indexing of fragment spinor sets is assumed ',
      &   '    to follow list of symmetry independent nuclei.'
+      IF(C1READ) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &   '* Fragment C1-coefficients are read'    
+      ENDIF   
         DO J = 1,NREFS
           WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
      &           ' --> ',NAMDEP(J)
@@ -5155,7 +5161,6 @@ C
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
-      NOSET    = .FALSE.
       OPTWLK   = .FALSE.
       OPTNEW   = .FALSE.
       NMWALK   = .FALSE.
@@ -8405,7 +8410,7 @@ C
       DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
      &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
      &            '.THDIAG','.THGRAD','.CHECK ','.SELECT',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.THXVEC','.C1READ','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -8424,6 +8429,7 @@ C     ===================
 C
       PRJLOC = .FALSE.
       OWNBAS = .FALSE.
+      C1READ = .FALSE.
       ITRLOC = 100
       IPRLOC = 1
       HESLOC = 'FULL'
@@ -8434,6 +8440,7 @@ C
       THFULL = 1.0D-13
       THDIAG = 1.0D-05
       THGRAD = 1.0D-07
+      THXVEC = 1.0D-15
       SELMOS = 'allocc'
 C
 C     Process input from CBILOC
@@ -8529,7 +8536,11 @@ C   SELMOS: Select MOs for localization
                READ(LUCMD,'(A72)') SELMOS
                GO TO 100
  13            CONTINUE
+C   THXVEC: Set threshold for removal of small rotations
+               READ(LUCMD,*) THXVEC
  14            CONTINUE
+C&&& C1READ : Read fragment C1 coefficents 
+               C1READ = .TRUE.
                GO TO 100
  15            CONTINUE
                GO TO 100
@@ -8687,6 +8698,9 @@ C
         WRITE(LUPRI,'(1X,A)') '* User defined MOs for localization:'
         WRITE(LUPRI,'(1X,A)') '    --> ',SELMOS
       ENDIF
+      WRITE(6,'(1X,A,1P,E8.2)') 
+     &    '* Threshold for removal of small rotations: ',
+     &    THXVEC          
 C     -----------------------------------------------------------------
 C     Fragments of spinors used in the projection analysis
 C
@@ -8696,6 +8710,10 @@ C
      &   '* Fragments are calculated in their individual bases !',
      &   '    The indexing of fragment spinor sets is assumed ',
      &   '    to follow list of symmetry independent nuclei.'
+        IF(C1READ) THEN
+          WRITE(LUPRI,'(1X,A)')
+     &     '* Fragment C1-coefficients are read'    
+        ENDIF   
         DO J = 1,NREFS
          WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
      &         ' --> ',NAMDEP(J)
