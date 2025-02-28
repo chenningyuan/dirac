@@ -11202,8 +11202,7 @@ C     /* Deck ashift */
       SUBROUTINE ASHIFT(FOCK,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Build contribution from all-electron pseudopotential representing
-C     QED effects.
+C     Build atomic shift operator
 C
 C     Written by Trond Saue
 C

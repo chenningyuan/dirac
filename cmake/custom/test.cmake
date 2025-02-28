@@ -145,6 +145,7 @@ dirac_test(response_lao_magnetiz_dft "short;response;magnetizabilities;lao;dft" 
 dirac_test(dft_pp86 "short;dft" "")
 dirac_test(bss_energy "short" "")
 dirac_test(acmoin "short" "")
+dirac_test(ashift "short" "")
 dirac_test(dft_cam "short;dft" "")
 dirac_test(visual_frac_occupation "short;visual" "")
 dirac_test(eomee_fc_cvs "short;cc;eomcc" "")
