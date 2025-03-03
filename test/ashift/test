@@ -14,28 +14,10 @@ f.add(string = '* Electronic eigenvalue',
       rel_tolerance = 1.0e-7)
 
 # run calculation for carbon in linear symmetry
-test.run(['C.inp'], ['C.xyz'],args='--outcmo --noh5')
-# prints all files in current directory
-dir_list = os.listdir()
-print("Files and directories in current directory :")
-print(dir_list)
-if os.path.isfile('CHECKPOINT.h5'):
-    ext = '.h5'
-elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
-    ext = '.noh5.tar.gz'
-shutil.move('CHECKPOINT'+ext, 'C'+ext)
-# prints all files in current directory
-dir_list = os.listdir()
-print("Files and directories in current directory2 :")
-print(dir_list)
-
+test.run(['C.inp'], ['C.xyz'])
 # run calculation for carbon monoxide
-test.run(['C1s_shift.inp'], ['CO.xyz'], f, '--put="C.h5" --noh5')
-
+test.run(['C1s_shift.inp'], ['CO.xyz'], f, '--put="C.h5=AFCXXX" --noh5')
 # cleanup
-dir_list = os.listdir()
-print("Files and directories in current directory3 :")
-print(dir_list)
 os.unlink('C'+ext)
 
 sys.exit(test.return_code)
