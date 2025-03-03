@@ -118,11 +118,11 @@ One-electron scalar operator labels
 |             |                                  +----------------+----------------------------------------------------------------------------------------+
 |             |                                  | ZDIPLEN        | :math:`\hat{\Omega}_3 = z`                                                             |
 +-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------+
-| DIPVEL      | Dipole velocity                  | XDIPVEL        | :math:`\hat{\Omega}_1 = -\frac{\partial}{\partial x}`                                  |
+| DIPVEL      | Dipole velocity                  | XDIPVEL        | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x}`                                   |
 |             |                                  +----------------+----------------------------------------------------------------------------------------+
-|             |                                  | YDIPVEL        | :math:`\hat{\Omega}_2 = -\frac{\partial}{\partial y}`                                  |
+|             |                                  | YDIPVEL        | :math:`\hat{\Omega}_2 = \frac{\partial}{\partial y}`                                   |
 |             |                                  +----------------+----------------------------------------------------------------------------------------+
-|             |                                  | ZDIPVEL        | :math:`\hat{\Omega}_3 = -\frac{\partial}{\partial z}`                                  |
+|             |                                  | ZDIPVEL        | :math:`\hat{\Omega}_3 = \frac{\partial}{\partial z}`                                   |
 +-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------+
 | QUADRUP     | Quadrupole moment                | XXQUADRU       | :math:`\hat{\Omega}_1 = \frac{1}{4} (x^2-r^2)`                                         |
 |             |                                  +----------------+----------------------------------------------------------------------------------------+
@@ -226,7 +226,7 @@ The kinetic part of the electronic Dirac Hamiltonian is given (in a.u.) by
 
   \hat{H}^K & = c\vec{\boldsymbol{\alpha}}\cdot\hat{\vec{p}} = c\left(\boldsymbol{\alpha}_x\hat{p}_x+\boldsymbol{\alpha}_y\hat{p}_y+\boldsymbol{\alpha}_z\hat{p}_z\right)
 
-            & = c \left[ i\boldsymbol{\alpha}_x\left(-\frac{\partial}{\partial x}\right) + i\boldsymbol{\alpha}_y\left(-\frac{\partial}{\partial y}\right) + i\boldsymbol{\alpha}_z\left(-\frac{\partial}{\partial z}\right) \right].
+            & = -c \left[ i\boldsymbol{\alpha}_x \frac{\partial}{\partial x} + i\boldsymbol{\alpha}_y \frac{\partial}{\partial y} + i\boldsymbol{\alpha}_z \frac{\partial}{\partial z} \right].
 
 This operator may be specified by::
 
@@ -237,7 +237,7 @@ This operator may be specified by::
    YDIPVEL
    ZDIPVEL
    COMFACTOR
-   137.03599926085
+   -137.03599926085
 
 where 137.03599926085 is the CODATA22 value for :math:`c`.
 
@@ -251,7 +251,7 @@ The speed of light :math:`c` is an important parameter in relativistic theory, b
    ZDIPVEL
    CMULT
    COMFACTOR
-   1
+   -1
 
 
 Magnetic interactions
