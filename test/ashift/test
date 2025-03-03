@@ -15,6 +15,10 @@ f.add(string = '* Electronic eigenvalue',
 
 # run calculation for carbon in linear symmetry
 test.run(['C.inp'], ['C.xyz'],args='--outcmo --noh5')
+dir_list = os.listdir()
+print("Files and directories in current directory :")
+# prints all files
+print(dir_list)
 if os.path.isfile('CHECKPOINT.h5'):
     ext = '.h5'
 elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
