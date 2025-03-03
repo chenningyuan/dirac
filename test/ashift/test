@@ -15,6 +15,11 @@ f.add(string = '* Electronic eigenvalue',
 
 # run calculation for carbon in linear symmetry
 test.run(['C.inp'], ['C.xyz'])
+#testing if HDF5 or fallback is used; needed for cleanup
+if os.path.isfile('C.h5'):
+    ext = '.h5'
+elif os.path.isfile('C.noh5.tar.gz'):
+    ext = '.noh5.tar.gz'
 # run calculation for carbon monoxide
 test.run(['C1s_shift.inp'], ['CO.xyz'], f, '--put="C.h5=AFCXXX" --noh5')
 # cleanup
