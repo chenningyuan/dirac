@@ -21,7 +21,7 @@ if os.path.isfile('C.h5'):
 elif os.path.isfile('C.noh5.tar.gz'):
     ext = '.noh5.tar.gz'
 # run calculation for carbon monoxide
-test.run(['C1s_shift.inp'], ['CO.xyz'], f, '--put="C.h5=AFCXXX" --noh5')
+test.run(['C1s_shift.inp'], ['CO.xyz'], f, '--put="C.h5" --noh5')
 # cleanup
 os.unlink('C'+ext)
 
