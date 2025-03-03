@@ -1569,9 +1569,9 @@ C
             CALL NSNLIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC)
 C
-C        Electric field from the individual nuclei (type 29)
-C        or from all nuclei (type 58)
-C        ---------------------------------------------------
+C        Electric field from the individual nuclei (type 29) - only point nuclei
+C        or from all nuclei (type 58) - point/finite nuclei
+C        -----------------------------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 29 .OR. INTTYP .EQ. 58) THEN
             CALL EF1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
@@ -1581,7 +1581,7 @@ C        Electric field from the individual nuclei (type 80) - point/finite nucl
 C        -------------------------------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 80) THEN
-            CALL EF1INTNUC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
+            CALL EF1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC,INTTYP)
 C
 C        Electric field gradient from the individual nuclei
@@ -1765,21 +1765,21 @@ C
 !    &                  CORPX,CORPY,CORPZ,TEMP)
 C
 C        Potential energy integrals
-C        --------------------------------------------------
+C        --------------------------
 C
          ELSE IF (INTTYP .EQ. 54) THEN
             CALL RM1H2(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC)
 C
 C        diamagnetic contrib
-C        --------------------------------------------------
+C        -------------------
 C
          ELSE IF (INTTYP .EQ. 55) THEN
             CALL RNSLOIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC,DIFABX,DIFABY,DIFABZ)
 C
 C        Traceless electric field third derivatives
-C        ----------------------------------------------------------
+C        ------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 56) THEN
             ONCN =   (CORAX .EQ. CORBX)
@@ -1790,7 +1790,7 @@ C
      &                  CORCX,CORCY,CORCZ)
 C
 C        Non-traceless electric field third derivatives
-C        ----------------------------------------------------------
+C        ----------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 57) THEN
             ONCN =   (CORAX .EQ. CORBX)
@@ -4342,7 +4342,7 @@ C
                   ET = ODC(LVALA,LVALB,IT,0,0,1)
                   EEE = ET*EU*EV
                   IF (INTTYP .EQ. 58) THEN
-C                 ... total field from all nuclei
+C                 ... total field from all nuclei (point/finite nuclei)
                      AH0T = AHGTF(IADRAU + IT + 1)
                      AH0U = AHGTF(IADRAU + IT + ISTEPU)
                      AH0V = AHGTF(IADRAU + IT + ISTEPV)
@@ -4350,64 +4350,7 @@ C                 ... total field from all nuclei
                      SHLINT(INT,2) = SHLINT(INT,2) - EEE*AH0U
                      SHLINT(INT,3) = SHLINT(INT,3) - EEE*AH0V
                   ELSE
-C                 ... (INTTYP 29): field from individual nuclei
-                    IOFF = 0
-                    DO 500 IATOM = 1, NATOMC
-                     IX = 3*(IATOM - 1) + 1
-                     IY = 3*(IATOM - 1) + 2
-                     IZ = 3*(IATOM - 1) + 3
-                     AH0T = AHGTF(IOFF + IADRAU + IT + 1)
-                     AH0U = AHGTF(IOFF + IADRAU + IT + ISTEPU)
-                     AH0V = AHGTF(IOFF + IADRAU + IT + ISTEPV)
-                     SHLINT(INT,IX) = SHLINT(INT,IX) - EEE*AH0T
-                     SHLINT(INT,IY) = SHLINT(INT,IY) - EEE*AH0U
-                     SHLINT(INT,IZ) = SHLINT(INT,IZ) - EEE*AH0V
-                     IOFF = IOFF + NAHGTF
- 500                CONTINUE
-                  END IF
- 400           CONTINUE
-               IADRAU = IADRAU + ISTEPU
- 300        CONTINUE
-            IADRAV = IADRAV + ISTEPV
- 200     CONTINUE
-         INT = INT + 1
- 100  CONTINUE
-      RETURN
-      END
-C  /* Deck ef1intnuc */
-      SUBROUTINE EF1INTNUC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
-     &                     SHLINT,NOPTYP,NATOMC,INTTYP)
-C
-#include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
-     &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include "onecom.h"
-#include "lmns.h"
-      INT = 1
-      DO 100 ICOMPA = 1, KCKTA
-         LVALA = LVALUA(ICOMPA)
-         MVALA = MVALUA(ICOMPA)
-         NVALA = NVALUA(ICOMPA)
-      DO 100 ICOMPB = 1, KCKTB
-         LVALB = LVALUB(ICOMPB)
-         MVALB = MVALUB(ICOMPB)
-         NVALB = NVALUB(ICOMPB)
-C
-         MAXT = LVALA + LVALB
-         MAXU = MVALA + MVALB
-         MAXV = NVALA + NVALB
-         IADRAV = 1
-         DO 200 IV = 0, MAXV
-            EV = ODC(NVALA,NVALB,IV,0,0,3)
-            IADRAU = IADRAV
-            DO 300 IU = 0, MAXU
-               EU = ODC(MVALA,MVALB,IU,0,0,2)
-               DO 400 IT = 0, MAXT
-                  ET = ODC(LVALA,LVALB,IT,0,0,1)
-                  EEE = ET*EU*EV
-                  IF (INTTYP .EQ. 80) THEN
+C                 ... (INTTYP 29): field from individual nuclei (only point nuclei)
 C                 ... (INTTYP 80): field from individual nuclei (point/finite nuclei)
                     IOFF = 0
                     DO 500 IATOM = 1, NATOMC
