@@ -1569,18 +1569,13 @@ C
             CALL NSNLIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC)
 C
-C        Electric field from the individual nuclei (type 29) - only point nuclei
-C        or from all nuclei (type 58) - point/finite nuclei
-C        -----------------------------------------------------------------------
+C        Electric field from: individual nuclei (type 29) - only point nuclei
+C                             all nuclei (type 58) - point/finite nuclei
+C                             individual nuclei (type 80) - point/finite nuclei
+C        ----------------------------------------------------------------------
 C
-         ELSE IF (INTTYP .EQ. 29 .OR. INTTYP .EQ. 58) THEN
-            CALL EF1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
-     &                  SHLINT,NOPTYP,NATOMC,INTTYP)
-C
-C        Electric field from the individual nuclei (type 80) - point/finite nuclei
-C        -------------------------------------------------------------------------
-C
-         ELSE IF (INTTYP .EQ. 80) THEN
+         ELSE IF (INTTYP .EQ. 29 .OR. INTTYP .EQ. 58 
+     &            .OR. INTTYP .EQ. 80) THEN
             CALL EF1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC,INTTYP)
 C

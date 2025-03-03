@@ -962,8 +962,8 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Electric field at the individual nuclei
-C     ---------------------------------------
+C     Electric field at the individual point-like nuclei
+C     --------------------------------------------------
 C
  31   CONTINUE
          INTTYP = 29
@@ -3275,7 +3275,7 @@ C
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT),INTADR(*)
       LOGICAL DOATOM(NUCIND)
-      CHARACTER LABINT(9*MXCENT)*8, NAME*2
+      CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
@@ -3302,7 +3302,7 @@ C
  200           CONTINUE
             END IF
  100     CONTINUE
- 50   CONTINUE 
+ 50   CONTINUE
       RETURN
       END
 
