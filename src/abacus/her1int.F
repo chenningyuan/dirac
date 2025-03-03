@@ -1574,7 +1574,7 @@ C                             all nuclei (type 58) - point/finite nuclei
 C                             individual nuclei (type 80) - point/finite nuclei
 C        ----------------------------------------------------------------------
 C
-         ELSE IF (INTTYP .EQ. 29 .OR. INTTYP .EQ. 58 
+         ELSE IF (INTTYP .EQ. 29 .OR. INTTYP .EQ. 58
      &            .OR. INTTYP .EQ. 80) THEN
             CALL EF1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC,INTTYP)
