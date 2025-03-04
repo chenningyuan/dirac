@@ -161,11 +161,11 @@ One-electron scalar operator labels
 |             |                                  | ZZTHETA        | :math:`\hat{\Omega}_6 = - \frac{3}{2} (z^2-\frac{1}{3}r^2)`                            |
 +-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------+
 | SEFGMG      | Magnetic term of Flambaum-Ginges | XSEFGMG        |                                                                                        |
-|             | self-energy potential            |                +----------------+-----------------------------------------------------------------------+
+|             | self-energy potential            +----------------+----------------------------------------------------------------------------------------+
 |             |                                  | YSEFGMG        |                                                                                        |
-|             |                                  |                +----------------+-----------------------------------------------------------------------+
+|             |                                  +----------------+----------------------------------------------------------------------------------------+
 |             |                                  | ZSEFGMG        |                                                                                        |
-+-------------+----------------------------------+----------------+----------------+-----------------------------------------------------------------------+
++-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------+
 
 where :math:`\boldsymbol{R}_{CM}` and :math:`\boldsymbol{R}_K` are the position vectors of the nuclear center of mass and the nucleus :math:`K` with respect to the origin of coordinates, respectively. In addition, the operators :math:`x`, :math:`y`, and :math:`z` are the Cartesian components of the electron position vector operator with respect to the origin of coordinates.
 
@@ -215,8 +215,8 @@ SQHDO       Half-derivative overlap integrals not to be antisymmetrized
 SQHDOR      Half-derivative overlap integrals not to be anti-symmetrized
 SQOVLAP     Second order derivatives overlap integrals
 UEHLING     Uehling potential
-SEFGLF      Low-frequency term of Flambaum-Ginges self-energy potential 
-SEFGHF      High-frequency term of Flambaum-Ginges self-energy potential 
+SEFGLF      Low-frequency term of Flambaum-Ginges self-energy potential
+SEFGHF      High-frequency term of Flambaum-Ginges self-energy potential
 SEPZ        Pyykko-Zhao self-energy model potential
 =========== ====================================================================================================================
 
