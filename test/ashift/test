@@ -14,7 +14,7 @@ f.add(string = '* Electronic eigenvalue',
       rel_tolerance = 1.0e-7)
 
 # run calculation for carbon in linear symmetry
-test.run(['C.inp'], ['C.xyz'],'--outcmo')
+test.run(['C.inp'], ['C.xyz'],args='--outcmo')
 #testing if HDF5 or fallback is used; needed for cleanup
 if os.path.isfile('CHECKPOINT.h5'):
     ext = '.h5'
