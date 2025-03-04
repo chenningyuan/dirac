@@ -302,7 +302,7 @@ C  /* Deck op1gen */
 C*****************************************************************************
 C
 C     Driver for the generation of one-electron integrals
-C    to be placed on the file CHECKPOINT
+C     to be placed on the file CHECKPOINT
 C
 C     On input:  WORD     ...
 C                COMB     ... integral characteritics
@@ -361,7 +361,6 @@ C
          TRIANG = .TRUE.
          MTFORM = 'TRIANG'
       END IF
-
 C
 C     Generate integrals in abacus
 C
@@ -580,7 +579,6 @@ C
       ENDIF
 C
       CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
-
 C
 C     Memory deallocation
 C
@@ -902,7 +900,7 @@ C
       CALL TRI2SQ(FOCK,FTRI,FIRST,0,1)
       deallocate(ftri)
 c
-c    now add SO integrals
+c     now add SO integrals
 c     SOPP integrals
 c     ==============
 c
@@ -1027,7 +1025,6 @@ C       IBREP - boson irrep of scalar operator
 C
 C       MATRIX OPERATOR:
 C       ----------------
-C
 C       IM4  - pointer to matrix operator
 C       IFAC - sign of coefficient in linear combination
 C       IFAS - sign of matrix operator
@@ -1104,7 +1101,7 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
         ENDIF
 C =============================================================
 C               Get integrals from the CHECKPOINT file
-C     =============================================================
+C =============================================================
         IF(ONFILE) THEN
           CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &          OP1INT,NDIM,IPRINT)
@@ -1501,7 +1498,7 @@ C
 
       DO IZ = 1,NZ
         IF(FIRST(IZ)) THEN
-C ... zero out unused quaternionic blocks of property matrixes...
+C ... zero out unused quaternionic blocks of property matrices...
           CALL DZERO(PMAT(1,IZ),N2BBASX)
         ELSE
           IQ = IPQTOQ(IZ,IREP)
@@ -1530,7 +1527,7 @@ C        NB! Not the symmetrical orthonormalization, which
 C            often has been called the "Lowdin orthonormalization"
 C
 C     METHOD:
-C        In this subroutine V+ is computed.  As the basis set is
+C        In this subroutine V+ is computed. As the basis set is
 C        real it reduces to the transpose:
 C
 C           V+ = TRN(V) = t(s**(-0.5))
@@ -2565,7 +2562,6 @@ C.........do canonical orthonormalization
           write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
      &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
         ENDIF
-
 !
 !     -------------------------------------------------------------------
 !     Case 3: Transformation matrix with modified Dirac equation embedded
