@@ -121,6 +121,7 @@ dirac_test(basis_automatic_augmentation "medium;basis" "")
 dirac_test(ecp_nio6 "medium;ecp" "")
 dirac_test(ffpt_dipmom_polariz_relcc "medium;cc" "")
 # Labeled as short
+dirac_test(e_edm_finite_field_fscc "short;fscc" "")
 dirac_test(fscc_finite-field "short;fscc" "")
 dirac_test(reladc_dip "short;reladc" "")
 dirac_test(x2c-SCF_to_4c-SCF "short;x2c;4c;scf" "")
