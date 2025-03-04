@@ -3064,7 +3064,7 @@ C
 C     Get overlap matrix packed on fermion ircops
 C
       CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
-      CALL GTOVLT(WORK(KSMAT),SSMTRC)
+      CALL GTOVLT(WORK(KSMAT),SSMTRC,IPRPRJ)
 C
 C     Loop over fragments
 C
