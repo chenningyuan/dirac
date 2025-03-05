@@ -1,6 +1,5 @@
 :orphan:
 
-
 .. _one_electron_operators:
 
 One-electron operators
