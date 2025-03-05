@@ -127,7 +127,7 @@ in the code for a technical reason.
 In this example, the molecular orbitals are relaxed due to the QED effects.
 The contributions of effQED potentials are included in the total energy.
 
-Example 2: Expectation values of Uehling and PZ potentials (Peturbative treatment)
+Example 2: Peturbative treatment: expectation values of Uehling and PZ potentials
 -------------------------------------------------------------
 .. literalinclude:: ueh_pz_exp.inp
 
