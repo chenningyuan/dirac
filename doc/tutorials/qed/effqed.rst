@@ -116,7 +116,7 @@ The DIRAC implementation was obtained by grafting code from the numerical atomic
 onto the DFT of grid. See :ref:`*EFFQED` for tuning options.
 The present input gives precise control, but is admittedly somewhat cumbersome.   
    
-Example 1: DCG Hamiltonian with Uehling and FG potentials
+Example 1: Variational treatment: DCG Hamiltonian with Uehling and FG potentials 
 -------------------------------------------------------------
 .. literalinclude:: ueh_fg.inp
 
@@ -124,10 +124,16 @@ Here the reader can find that the matrix part of the magnetic term is "ALPHADOT 
 although :math:`\gamma` appears in the above expression of the magnetic term. This input is correct
 because the :math:`\beta` part in :math:`\gamma=\beta\alpha` is already included
 in the code for a technical reason.
+The contributions of effQED potentials are included in the total energy.
 
-Example 2: DCG Hamiltonian with Uehling and PZ potentials
+Example 2: Peturbative treatment: expectation values of Uehling and PZ potentials
 -------------------------------------------------------------
-.. literalinclude:: ueh_pz.inp
+.. literalinclude:: ueh_pz_exp.inp
+
+In this example, the expectation values of effQED potentials are obtained using the molecular
+orbitals calculated based on the DCG Hamiltonian. That is, effQED potentials are treated as the
+first-order perturbation theory.
+The contributions of effQED potentials are printed out in the property section.
 
 
 Note on the application to core-properties
