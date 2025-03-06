@@ -8296,7 +8296,6 @@ C
      &               'parity-violating perturbed Hamiltonian, and',
      &               'H^HF is the hyperfine perturbed Hamiltonian.'
 C
-ciaa                CALL PRSYMB(LUPRI,'=',88,0)
 C
 C              If the coupling is between nuclei with equal atomic number
 C
@@ -8326,8 +8325,6 @@ C
                 WRITE (LUPRI,'(/,3X,A,4X,E18.10,/)')
      &               'iso', (RESP(1,1,IATOM,JATOM)
      &            +RESP(2,2,IATOM,JATOM)+RESP(3,3,IATOM,JATOM))/3
-C
-ciaa                CALL PRSYMB(LUPRI,'=',88,0)
 C
                END IF
 C
@@ -9284,7 +9281,7 @@ C        PLANAR=T : planar molecule
 C        LINMOL=T : linear molecule (EIGVAL(1) = 0.0)
 C
 C
-C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
+Ciaa  To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
       IF (IPRINT .GE. 8) THEN
        CALL HEADER
      &    ('Nuclear angular velocity (a.u.)',0)
@@ -11898,7 +11895,7 @@ C
 C     Transform each nuclear spin-rotation constant to principal axis system,
 C     and multiply by inverse moment of inertia and various constants
 C
-C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
+Ciaa  To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
       IF (IPRINT .GE. 8) THEN
        CALL HEADER
      &    ('Nuclear angular velocity (a.u.)',0)
@@ -12942,7 +12939,7 @@ C
      & ' implementation of PVCSR, the linear molecule should'//
      & ' be placed along the z axis. ***'
       ELSE
-C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
+Ciaa  To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
       IF (IPRINT .GE. 8) THEN
        CALL HEADER
      &    ('Nuclear angular velocity (a.u.)',0)
