@@ -7973,7 +7973,7 @@ C
       INTEGER IBUF(3*NUCDEP,2),IXYZ,JXYZ,IATOM,JATOM,L,NATOM,
      &        IATINF(3,NUCDEP),IDEG,IDEP,IFREQ,INUC,ISO,IZ,NISO,
      &        IA,IB,JA,JB,K,KA,KB,NA,NB,NSCOOR,NCHES,NSPEC,
-     &        IABLRF_EE,IABLRF_EP
+     &        IABLRF_EE,IABLRF_EP,MASSNUM(NUCDEP)
       DOUBLE PRECISION FACTOR,FACTORI,FACTORJ,DISOTP,ABND,GVALUE,
      &                 ABCNV(NBFREQ,NLRBPT),RATINF(3,5,NUCDEP),
      &                 ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
@@ -8152,8 +8152,9 @@ C     Set up g-values for all nuclei
 C     ==============================
 C
       DO IATOM = 1,NUCDEP
-        GVAL(IATOM)  = DISOTP(IZATOM(IATOM),ISOTOP(IATOM),'GVAL')
-        AMASS(IATOM) = DISOTP(IZATOM(IATOM),ISOTOP(IATOM),'MASS')
+        GVAL(IATOM)    = DISOTP(IZATOM(IATOM),ISOTOP(IATOM),'GVAL')
+        MASSNUM(IATOM) = DISOTP(IZATOM(IATOM),ISOTOP(IATOM),'A')
+!        AMASS(IATOM) = DISOTP(IZATOM(IATOM),ISOTOP(IATOM),'MASS')
       END DO
 C
 C
@@ -8234,32 +8235,32 @@ C
 C              If the coupling is between nuclei with different atomic and mass numbers
 C
                IF(IZATOM(IATOM).NE.IZATOM(JATOM)
-     &            .AND.AMASS(IATOM).NE.AMASS(JATOM)) THEN
+     &            .OR.MASSNUM(IATOM).NE.MASSNUM(JATOM)) THEN
 C
                 WRITE(LUPRI,'(/,2X,A46,A8,A4,A9,A4,A4,/)')
      &                'Contribution to J^PV from the linear response ',
      &                '<< H^PV(',NAMDEP(IATOM),') ; H^HF(',
      &                NAMDEP(JATOM),') >>'
 C
-                WRITE (LUPRI,'(2X,A12,A4,A2,F12.6)')
-     &               'lambda of ', NAMDEP(IATOM), ': ', D1
+                WRITE (LUPRI,'(2X,A12,A4,A4,F12.6)')
+     &               'lambda( ', NAMDEP(IATOM), ') = ', D1
                 IF(GVAL(JATOM) .NE. D0) THEN
-                  WRITE (LUPRI,'(2X,A12,A4,A2,F12.6,/)')
-     &               'g-factor of ',NAMDEP(JATOM),': ',GVAL(JATOM)
+                  WRITE (LUPRI,'(2X,A12,A4,A4,F12.6,/)')
+     &               'g-factor( ',NAMDEP(JATOM),') = ',GVAL(JATOM)
                 ELSE
-                  WRITE (LUPRI,'(2X,A12,A4,A2,F12.6,/)')
-     &               'g-factor of ',NAMDEP(JATOM),': ',D1
-                  WRITE (LUPRI,'(2X,A,F8.3,/,11X,A,A,/)')
+                  WRITE (LUPRI,'(2X,A12,A4,A4,F12.6,/)')
+     &               'g-factor( ',NAMDEP(JATOM),') = ',D1
+                  WRITE (LUPRI,'(2X,2A,I4,/,11X,A,A,/)')
      &  'WARNING: Nuclear g-factor NOT available for isotope of mass ',
-     &  AMASS(JATOM),'This nuclear g-factor is artificially set equal',
-     &  ' to 1'
+     &  'number ',MASSNUM(JATOM),'This nuclear g-factor is ',
+     &  'artificially set equal to 1'
                 ENDIF
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
      &               'x', (RESP1(1,I,IATOM,JATOM),I = 1,3),
      &               'y', (RESP1(2,I,IATOM,JATOM),I = 1,3),
      &               'z', (RESP1(3,I,IATOM,JATOM),I = 1,3)
-                WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
+                WRITE (LUPRI,'(/,3X,A,4X,E18.10,/)')
      &               'iso', (RESP1(1,1,IATOM,JATOM)
      &            +RESP1(2,2,IATOM,JATOM)+RESP1(3,3,IATOM,JATOM))/3
 C
@@ -8268,18 +8269,18 @@ C
      &                '<< H^PV(',NAMDEP(JATOM),') ; H^HF(',
      &                NAMDEP(IATOM),') >>'
 C
-                WRITE (LUPRI,'(2X,A12,A4,A2,F12.6)')
-     &               'lambda of ', NAMDEP(JATOM), ': ', D1
+                WRITE (LUPRI,'(2X,A12,A4,A4,F12.6)')
+     &               'lambda( ', NAMDEP(JATOM), ') = ', D1
                 IF(GVAL(IATOM) .NE. D0) THEN
-                  WRITE (LUPRI,'(2X,A12,A4,A2,F12.6,/)')
-     &               'g-factor of ',NAMDEP(IATOM),': ',GVAL(IATOM)
+                  WRITE (LUPRI,'(2X,A12,A4,A4,F12.6,/)')
+     &               'g-factor( ',NAMDEP(IATOM),') = ',GVAL(IATOM)
                 ELSE
-                  WRITE (LUPRI,'(2X,A12,A4,A2,F12.6,/)')
-     &               'g-factor of ',NAMDEP(IATOM),': ',D1
-                  WRITE (LUPRI,'(2X,A,F8.3,/,11X,A,A,/)')
+                  WRITE (LUPRI,'(2X,A12,A4,A4,F12.6,/)')
+     &               'g-factor( ',NAMDEP(IATOM),') = ',D1
+                  WRITE (LUPRI,'(2X,2A,I4,/,11X,A,A,/)')
      &  'WARNING: Nuclear g-factor NOT available for isotope of mass ',
-     &  AMASS(IATOM),'This nuclear g-factor is artificially set equal',
-     &  ' to 1'
+     &  'number ',MASSNUM(JATOM),'This nuclear g-factor is ',
+     &  'artificially set equal to 1'
                 ENDIF
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
@@ -8290,25 +8291,43 @@ C
      &               'iso', (RESP2(1,1,IATOM,JATOM)
      &            +RESP2(2,2,IATOM,JATOM)+RESP2(3,3,IATOM,JATOM))/3
 C
-                WRITE (LUPRI,'(2/,2X,A43,A43,/,8X,A44)')
-     &               'Note: H^PV is the nuclear-spin-independent ',
+                WRITE (LUPRI,'(/,2X,A43,A43,/,10X,A44,/)')
+     &               'Note: H^PV is the nuclear-spin-dependent ',
      &               'parity-violating perturbed Hamiltonian, and',
      &               'H^HF is the hyperfine perturbed Hamiltonian.'
+C
+ciaa                CALL PRSYMB(LUPRI,'=',88,0)
 C
 C              If the coupling is between nuclei with equal atomic number
 C
                ELSE
 C
-                WRITE(LUPRI,'(2X,A5,A4,A2,A4,A1,/)')
+                WRITE(LUPRI,'(/,2X,A5,A4,A2,A4,A1,/)')
      &                'J^PV(',NAMDEP(IATOM),', ',NAMDEP(JATOM),')'
+C
+                WRITE (LUPRI,'(2X,A12,A4,A4,F12.6)')
+     &               'lambda( ', NAMDEP(JATOM), ') = ', D1
+                IF(GVAL(IATOM) .NE. D0) THEN
+                  WRITE (LUPRI,'(2X,A12,A4,A4,F12.6,/)')
+     &               'g-factor( ',NAMDEP(IATOM),') = ',GVAL(IATOM)
+                ELSE
+                  WRITE (LUPRI,'(2X,A12,A4,A4,F12.6,/)')
+     &               'g-factor( ',NAMDEP(IATOM),') = ',D1
+                  WRITE (LUPRI,'(2X,2A,I4,/,11X,A,A,/)')
+     &  'WARNING: Nuclear g-factor NOT available for isotope of mass ',
+     &  'number ',MASSNUM(JATOM),'This nuclear g-factor is ',
+     &  'artificially set equal to 1'
+                ENDIF
 C
                 WRITE (LUPRI,'(3X,A,6X,3E18.10)')
      &               'x', (RESP(1,I,IATOM,JATOM),I = 1,3),
      &               'y', (RESP(2,I,IATOM,JATOM),I = 1,3),
      &               'z', (RESP(3,I,IATOM,JATOM),I = 1,3)
-                WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
+                WRITE (LUPRI,'(/,3X,A,4X,E18.10,/)')
      &               'iso', (RESP(1,1,IATOM,JATOM)
      &            +RESP(2,2,IATOM,JATOM)+RESP(3,3,IATOM,JATOM))/3
+C
+ciaa                CALL PRSYMB(LUPRI,'=',88,0)
 C
                END IF
 C
@@ -8317,12 +8336,13 @@ C
 C             Print (e-e) and (p-p) contributions to PVC-J-coupling
 C
               IF (IPRPRP .GE. 1) THEN
+                CALL PRSYMB(LUPRI,'-',88,0)
                 CALL HEADER('J^PV(e-e)',-1)
 C
                IF(IZATOM(IATOM).NE.IZATOM(JATOM)
-     &            .AND.AMASS(IATOM).NE.AMASS(JATOM)) THEN
+     &            .OR.MASSNUM(IATOM).NE.MASSNUM(JATOM)) THEN
 C
-                WRITE(LUPRI,'(/,2X,A42,A17,A4,A9,A4,A4,/)')
+                WRITE(LUPRI,'(2X,A42,A17,A4,A9,A4,A4,/)')
      &                'Contribution to J^PV(e-e) from the linear ',
      &                'response << H^PV(',NAMDEP(IATOM),') ; H^HF(',
      &                NAMDEP(JATOM),') >>'
@@ -8362,7 +8382,8 @@ C
 C
                CALL HEADER('J^PV(e-p)',-1)
 C
-               IF(IZATOM(IATOM).NE.IZATOM(JATOM)) THEN
+               IF(IZATOM(IATOM).NE.IZATOM(JATOM)
+     &            .OR.MASSNUM(IATOM).NE.MASSNUM(JATOM)) THEN
 C
                 WRITE(LUPRI,'(2X,A42,A17,A4,A9,A4,A4,/)')
      &                'Contribution to J^PV(e-p) from the linear ',
@@ -8386,9 +8407,12 @@ C
      &               'x', (RESPEP2(1,I,IATOM,JATOM),I = 1,3),
      &               'y', (RESPEP2(2,I,IATOM,JATOM),I = 1,3),
      &               'z', (RESPEP2(3,I,IATOM,JATOM),I = 1,3)
-                WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
+                WRITE (LUPRI,'(/,3X,A,4X,E18.10,/)')
      &               'iso', (RESPEP2(1,1,IATOM,JATOM)
      &            +RESPEP2(2,2,IATOM,JATOM)+RESPEP2(3,3,IATOM,JATOM))/3
+C
+                CALL PRSYMB(LUPRI,'=',88,1)
+                CALL PRSYMB(LUPRI,'=',88,1)
 C
                ELSE
 C
@@ -8396,9 +8420,12 @@ C
      &               'x', (RESPEP(1,I,IATOM,JATOM),I = 1,3),
      &               'y', (RESPEP(2,I,IATOM,JATOM),I = 1,3),
      &               'z', (RESPEP(3,I,IATOM,JATOM),I = 1,3)
-                WRITE (LUPRI,'(/,3X,A,4X,E18.10)')
+                WRITE (LUPRI,'(/,3X,A,4X,E18.10,/)')
      &               'iso', (RESPEP(1,1,IATOM,JATOM)
      &            +RESPEP(2,2,IATOM,JATOM)+RESPEP(3,3,IATOM,JATOM))/3
+C
+                CALL PRSYMB(LUPRI,'=',88,1)
+                CALL PRSYMB(LUPRI,'=',88,1)
 C
                END IF
 C
@@ -8408,7 +8435,7 @@ C
         ENDIF
       ENDDO
 C
-      CALL PRSYMB(LUPRI,'-',46,0)
+!      CALL PRSYMB(LUPRI,'-',46,0)
 C
       CALL QEXIT('PRP_PVC_SPINSPIN')
 C
