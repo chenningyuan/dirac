@@ -1595,7 +1595,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selown */
       SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,fragfile,
      &                  CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR,
-     &                  WORK)
+     &                  C1_read,WORK)
 C***********************************************************************
 C
 C     Select coeffiecients for symmetry independent nucleus INUC
@@ -1607,9 +1607,9 @@ C       0100 - read eigenvalues
 C       1000 - read boson irrep identification
 C
 C     The array IDIM contains the following information:
-C       IDIM(1,IFRP) = NPSH(IFRP)    : number of positronic solutions
-C       IDIM(2,IFRP) = NESH(IFRP)    : number of electronic solutions
-C       IDIM(3,IFRP) = NFBAS(IFRP,0) : number of AO-basis functions
+C       n_neg(IFRP)   = NPSH(IFRP)    : number of positronic solutions
+C       n_pos(IFRP)   = NESH(IFRP)    : number of electronic solutions
+C       n_basis(IFRP) = NFBAS(IFRP,0) : number of AO-basis functions
 C
 C     modified for MCSCF coefficients, occupation numbers and mj-values 
 C     by S. Knecht - April 2010
@@ -1630,23 +1630,21 @@ C
 #include "nuclei.h"
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(2),NVECS(2),
      &          CSEL(*),ESEL(*),IBSEL(*),IOFF(2),WORK(*)
+      type(file_info_t)    :: fragfile
+      logical              :: C1_read 
 C     Local variables
       LOGICAL LBIT,FNDLAB
       CHARACTER TEXT*74,FMT*6,MXFORM*6
-      DIMENSION IDIM(3,2),JDIM(2,0:3)
       REAL*8 CMCSCF_MAGIC
       integer, allocatable :: jbas(:)
-      integer              :: nzbuf, nsym, n_mo(2), n_po(2), n_basis(2)
-      type(file_info_t)    :: fragfile
-      logical              :: C1_read ! can possibly better be an argument to this routine
+      integer              :: nzbuf, nsym, n_mo(2), n_basis(2)
+      integer              :: n_pos(2), n_neg(2)
 !
 !     LV: this following ugly hack for MCSCF should be reprogrammed
 !     flag for MCSCF coefficients on file CMOFIL
 !     CMCSCF_MAGIC = 137.0D0
 C
-
       KFRSAV = KFREE
-
 C
 C     Read dimension information
 C     ==========================
@@ -1662,21 +1660,16 @@ C
       call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/n_mo',
      & idata=n_mo)
       call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/n_po',
-     & idata=n_po)
+     & idata=n_neg)
       call lab_read (fragfile,'/result/wavefunctions/scf/energy',toterg)
-      if (nsym == 1) then
-         idim(1,1) = n_po(1)
-         idim(2,1) = n_mo(1)-n_po(1)
-         idim(3,1) = n_basis(1)
-      elseif (nfsym==1) then
-         idim(1,1) = sum(n_po)
-         idim(2,1) = sum(n_mo)-sum(n_po)
-         idim(3,1) = sum(n_basis)
-      else
-         idim(1,:) = n_po(:)
-         idim(2,:) = n_mo(:)
-         idim(3,:) = n_basis(:)
-      end if
+      n_pos(1) = n_mo(1)-n_neg(1)
+      n_pos(2) = n_mo(2)-n_neg(2)
+      IF(C1_read) THEN
+         n_neg(1)   = n_neg(1)   + n_neg(2)
+         n_pos(1)   = n_pos(1)   + n_pos(2)
+         n_mo(1)    = n_mo(1)    + n_mo(2)
+         n_basis(1) = n_basis(1) + n_basis(2)                           
+      ENDIF
       text = 'Fragment MO coefficient file used: '//fragfile%name
 !
 !     set local IOPT_TMP
@@ -1698,11 +1691,11 @@ C
         WRITE(LUPRI, '(2A, I8)') '- number of symmetry independent',  
      &   ' nuclei in this fragment : ', NNUC      
         WRITE(LUPRI,'(A,2I8)')
-     &   '- Positrons : ',(IDIM(1,I),I=1,NFSYM)
+     &   '- Positrons : ',(n_neg(I),I=1,NFSYM)
         WRITE(LUPRI,'(A,2I8)')
-     &   '- Electrons : ',(IDIM(2,I),I=1,NFSYM)
+     &   '- Electrons : ',(n_pos(I),I=1,NFSYM)
         WRITE(LUPRI,'(A,2I8)')
-     &   '- SO-basis  : ',(IDIM(3,I),I=1,NFSYM)
+     &   '- SO-basis  : ',(n_basis(I),I=1,NFSYM)
       ENDIF
 C
 C     Calculate dimensions
@@ -1711,20 +1704,14 @@ C
       NCDIM = 0
       NEDIM = 0
       DO IFRP = 1,NFSYM
-        JDIM(IFRP,1) = IDIM(1,IFRP)
-        JDIM(IFRP,2) = IDIM(2,IFRP)
-        JDIM(IFRP,0) = IDIM(1,IFRP) + IDIM(2,IFRP)
-        JDIM(IFRP,3) = IDIM(3,IFRP)                 
-        NEDIM = NEDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))
-        NCDIM = NCDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))*IDIM(3,IFRP)
+        NEDIM = NEDIM + n_mo(IFRP)
+        NCDIM = NCDIM + n_mo(IFRP)*n_basis(IFRP)
       ENDDO
       NCDIM = NCDIM*NZ
 C
 C     Read coefficients in C1 form if available, otherwise with symmetry
 C     ==================================================================
 C    
-      call lab_query (fragfile,
-     & '/result/wavefunctions/scf/mobasis/orbitals_C1',exist=C1_read)
       IF(LBIT(IOPT_TMP,2)) THEN
          if (C1_read) then
            call lab_read (fragfile,
@@ -1774,11 +1761,11 @@ C
       IEOFF = 1
       DO IFRP = 1,NFSYM
       IF(NSTR(IFRP,0).GT.0) THEN
-        NCMO = IDIM(1,IFRP)+IDIM(2,IFRP)
+        NCMO = n_mo(IFRP)
 C       Generate pointer array for bases
-        allocate (jbas(idim(3,ifrp)))
+        allocate (jbas(n_basis(IFRP)))
         CALL SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
-        IF(NSBAS.NE.IDIM(3,IFRP)) THEN
+        IF(NSBAS.NE.n_basis(IFRP)) THEN
           WRITE(LUPRI,'(A,I3/A,A4,A,I3)')
      &      'SELOWN: Error in selection of coefficients in ircop ',
      &      IFRP,
@@ -1786,29 +1773,29 @@ C       Generate pointer array for bases
           WRITE(LUPRI,'(A,I8)')
      &      'Number of basis functions for this center is:',NSBAS,
      &      'Number of basis functions in coefficient file:',
-     &       IDIM(3,IFRP)
+     &       n_basis(IFRP)
            CALL QUIT('SELOWN: Error in cf.selection !')
         ENDIF
 C       Select coefficients
         IF(LBIT(IOPT_TMP,2)) THEN
           ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
-          CALL SELOWC(NZ,CMO(ICMO),IDIM(3,IFRP),NCMO,
-     &              IDIM(1,IFRP),IDIM(2,IFRP),
+          CALL SELOWC(NZ,CMO(ICMO),n_basis(IFRP),NCMO,
+     &              n_neg(IFRP),n_pos(IFRP),
      &              CSEL(ICSEL),NFBAS(IFRP,0),NVECS(IFRP),
      &              WORK(KVEC(IFRP)),JBAS,
      &              NSTR(IFRP,2),NSTR(IFRP,1))
-          ICMO = ICMO + NCMO*IDIM(3,IFRP)*NZ
+          ICMO = ICMO + NCMO*n_basis(IFRP)*NZ
         ENDIF
         IESEL = IEOFF + IOFF(IFRP)
 C       Select eigenvalues
         IF(LBIT(IOPT_TMP,3)) THEN
-          CALL SELOWE(EIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
+          CALL SELOWE(EIG(IEIG),n_neg(IFRP),n_pos(IFRP),
      &                ESEL(IESEL),WORK(KVEC(IFRP)),
      &                NSTR(IFRP,2),NSTR(IFRP,1))
         ENDIF
 C       Select boson irrep information
         IF(LBIT(IOPT_TMP,4)) THEN
-          CALL SELOWB(IBEIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
+          CALL SELOWB(IBEIG(IEIG),n_neg(IFRP),n_pos(IFRP),
      &                IBSEL(IESEL),WORK(KVEC(IFRP)),
      &                NSTR(IFRP,2),NSTR(IFRP,1))
         ENDIF
@@ -1825,7 +1812,7 @@ C       Select boson irrep information
       CALL QUIT('SELOWN: ERROR reading TEXT')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selow2 */
+C/* Deck selowc */
       SUBROUTINE SELOWC(NZ,CMO,KBAS,KORB,KPSH,KESH,
      &                     CBUF,MBAS,MORB,
      &                     JVEC,JBAS,NPVEC,NEVEC)

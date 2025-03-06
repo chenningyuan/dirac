@@ -4638,7 +4638,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.MAYER ','.POLNRM','.ATOMS ','.XXXXXX'/
+     &            '.MAYER ','.POLNRM','.ATOMS ','.C1READ'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4667,6 +4667,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       POLREF = .FALSE.
       MAYER  = .FALSE.
       POLNRM = .FALSE.
+      C1READ = .FALSE.
 C
 C     Process *PROJEC input
 C     =========================
@@ -4789,6 +4790,8 @@ C&&& ATOMS : Do projection analysis using atomic fragments
                   NREFS=IREFS-1
                   GO TO 100
  12            CONTINUE
+C&&& C1READ : Read fragment C1 coefficents 
+               C1READ = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -4856,6 +4859,10 @@ C
      &   '* Fragments are calculated in their individual bases !',
      &   '    The indexing of fragment spinor sets is assumed ',
      &   '    to follow list of symmetry independent nuclei.'
+      IF(C1READ) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &   '* Fragment C1-coefficients are read'    
+      ENDIF   
         DO J = 1,NREFS
           WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
      &           ' --> ',NAMDEP(J)
@@ -5252,7 +5259,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 76,NDIR = 12)
+      PARAMETER (NTABLE = 76,NDIR = 16)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -5261,6 +5268,8 @@ C
 C
 #include "dcbgen.h"
 #include "dcbham.h"
+#include "dcb_effqed.h"
+#include "dcb_ashift.h"            
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -5283,7 +5292,8 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*X-AMFI','*PEQM  ','*PCMSOL'/
+     &             '*PCM   ','*X-AMFI','*PEQM  ','*PCMSOL',
+     &             '*EFFQED','*XXXXXX','*XXXXXX','*XXXXXX'/ 
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -5322,7 +5332,7 @@ C
 !                   69        70        71        72
      &            '.GAUGEO','.GO ANG','.DIPORG', '.PHASEO',
 !                   73        74        75        76
-     &            '.KOUT  ','.XXXXXX','.XXXXXX', '.XXXXXX'/
+     &            '.KOUT  ','.EFFQED','.ASHIFT', '.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -5346,6 +5356,8 @@ C
       IPRHAM  = 0
       DOLVC   = .TRUE.
       QED     = .FALSE.
+      DOEFFQED = .FALSE.
+      DOASHIFT = .FALSE.
       X2CMMF  = .FALSE.
       ONESYS  = .FALSE.
       FREEPJ  = .FALSE.
@@ -5853,9 +5865,10 @@ C&&& IOTC4: do IOTC in 4c-mode
   144     CONTINUE
 C&&& NONREL: do 2-component non-relativistic calculation
              TWOCOMP = .TRUE.
-             NONREL = .TRUE.
-             SPINFR = .TRUE.
+             NONREL  = .TRUE.
+             SPINFR  = .TRUE.
              DOLVC   = .FALSE.
+             MC      = 1
              GO TO 100
   145     CONTINUE
              BSS = .TRUE.
@@ -6072,12 +6085,63 @@ C..TODO: check for inconsistencies and add stops
 !&&&& .KOUT : save Kappa_MO matrices into formatted files for analysis
             WRITE_K_MATRIX = .TRUE.
           GO TO 100
-  174     CONTINUE
-          GO TO 100
-  175     CONTINUE
-          GO TO 100
-  176     CONTINUE
-          GO TO 100
+ 174      CONTINUE
+!&&&& EFFQED: include effective QED potential
+          DOEFFQED=.TRUE.
+          ICHANG = ICHANG + 1
+          NREFS=NUCDEP
+          IF(NREFS.GT.MAXREF) THEN
+             WRITE(LUPRI,'(A,I5)')
+     &       '* Number of atomic types specified  :',NREFS,
+     &       '* Current maximum no. of fragments  :',MAXREF
+             CALL QUIT('*EFFQED input: Too many fragments !')
+          ENDIF
+          DO ITYP = 1,NONTYP
+            READ(LUCMD,'(A6)')  REFFIL(ITYP)
+            READ(LUCMD,*) EFFQED_NKAP(ITYP)
+            IF(EFFQED_NKAP(ITYP).GT.MAXKAP) THEN
+               WRITE(LUPRI,'(A,I5)')
+     &        '* Atom type nr.                     :',ITYP,
+     &        '* Number of kappa values specified  :',EFFQED_NKAP(ITYP),
+     &        '* Current maximum no. of kappavals  :',MAXKAP
+              CALL QUIT('*EFFQED input: Too many kappa values !')
+            ENDIF
+            DO IKAP = 1,EFFQED_NKAP(ITYP)
+              READ(LUCMD,*) EFFQED_IPAR(IKAP,ITYP),
+     &             EFFQED_PAR(1,IKAP,ITYP),EFFQED_PAR(2,IKAP,ITYP)
+              READ(LUCMD,'(A72)') VECREF(IKAP,ITYP)
+            ENDDO
+          ENDDO  
+          GOTO 100
+ 175      CONTINUE
+!&&&& ASHIFT: include atomic projectors
+          DOASHIFT=.TRUE.
+          ICHANG = ICHANG + 1
+          NREFS=NUCDEP
+          IF(NREFS.GT.MAXREF) THEN
+             WRITE(LUPRI,'(A,I5)')
+     &       '* Number of atomic types specified  :',NREFS,
+     &       '* Current maximum no. of fragments  :',MAXREF
+             CALL QUIT('*ASHIFT input: Too many fragments !')
+          ENDIF
+          DO ITYP = 1,NONTYP
+            READ(LUCMD,'(A6)')  AREFFIL(ITYP)
+            READ(LUCMD,*) ASHIFT_NVAL(ITYP)
+            IF(ASHIFT_NVAL(ITYP).GT.MAXAVAL) THEN
+               WRITE(LUPRI,'(A,I5)')
+     &        '* Atom type nr.                     :',ITYP,
+     &        '* Number of shift values specified  :',ASHIFT_NVAL(ITYP),
+     &        '* Current maximum no. of shiftvals  :',MAXAVAL
+              CALL QUIT('*ASHIFT input: Too many shift values !')
+            ENDIF
+            DO IVAL = 1,ASHIFT_NVAL(ITYP)
+              READ(LUCMD,*) ASHIFT_PAR(IVAL,ITYP)
+              READ(LUCMD,'(A72)') AVECREF(IVAL,ITYP)
+            ENDDO
+          ENDDO  
+          GOTO 100
+ 176      CONTINUE
+          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
@@ -6476,7 +6540,69 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
 
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
-
+#ifdef MOD_UNRELEASED
+      IF(DOEFFQED) THEN
+        WRITE(LUPRI,'(3X,A)') 'Effective QED potential added.'
+        WRITE(LUPRI,'(6X,A)') 'Parameters:'
+        ININD=0
+        DO ITYP = 1,NONTYP
+           WRITE(LUPRI,'(6X,A,I5)')
+     &       '* Atomic type nr. :',ITYP
+           WRITE(LUPRI,'(9X,A,10(2X,A4))')
+     &       '- Symmetry-independent centers: ',
+     &       (NAMN(ININD+I),I=1,NONT(ITYP))
+           ININD = ININD + NONT(ITYP)
+           WRITE(LUPRI,'(9X,A,A6)')
+     &       '- C1-coefficients read from file: ',REFFIL(ITYP)
+           DO IKAP=1,EFFQED_NKAP(ITYP)
+             WRITE(LUPRI,'(8X,A,I5,2(A,E16.10))')
+     &       ' - Kappa: ',EFFQED_IPAR(IKAP,ITYP),
+     &       ' - Coef.: ',EFFQED_PAR(1,IKAP,ITYP),
+     &       ' - Exp. : ',EFFQED_PAR(2,IKAP,ITYP)
+             WRITE(LUPRI,'(12X,A,A72)')
+     &       ' Orbitals: ',VECREF(IKAP,ITYP)
+           ENDDO
+        ENDDO
+      ENDIF
+#endif      
+      IF(DOASHIFT) THEN
+        WRITE(LUPRI,'(3X,A)') 'Atomic shift projectors added.'
+        WRITE(LUPRI,'(6X,A)') 'Parameters:'
+        ININD=0
+        DO ITYP = 1,NONTYP
+           WRITE(LUPRI,'(6X,A,I5)')
+     &       '* Atomic type nr. :',ITYP
+           WRITE(LUPRI,'(9X,A,10(2X,A4))')
+     &       '- Symmetry-independent centers: ',
+     &       (NAMN(ININD+I),I=1,NONT(ITYP))
+           ININD = ININD + NONT(ITYP)
+           WRITE(LUPRI,'(9X,A,A6)')
+     &       '- C1-coefficients read from file: ',AREFFIL(ITYP)
+           DO IVAL=1,ASHIFT_NVAL(ITYP)
+             WRITE(LUPRI,'(8X,A,E16.10)')
+     &       ' - Shift parameter: ',ASHIFT_PAR(IVAL,ITYP)
+             WRITE(LUPRI,'(12X,A,A72)')
+     &       ' Orbitals: ',AVECREF(IVAL,ITYP)
+           ENDDO
+        ENDDO
+      ENDIF
+#ifdef MOD_UNRELEASED
+      IF (VACPOL) THEN
+        WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
+        IF(MIXVAC) THEN
+          WRITE(LUPRI,'(6X,A)')
+     &      '- alternative definition of vacuum polariation.'
+        ENDIF
+        IF(POSVAC) THEN
+          WRITE(LUPRI,'(6X,A)')
+     &      '- using positronic vacuum.'
+        ENDIF
+        IF(.NOT.VACREF) THEN
+          WRITE(LUPRI,'(6X,A)')
+     &      '- no reference vacuum generated.'
+        ENDIF
+      ENDIF
+#endif
 #ifdef MOD_CAP
 CMI ...  CAP processing
       IF (CAP) THEN
@@ -6997,7 +7123,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -7083,6 +7209,10 @@ CMI  ... reading input routine for AMFI+RELSCF
       ! this is a cheat so that *PCMSOL section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
+        go to 200
+!       *EFFQED
+   13 continue
+        call read_input_effqed(word, "*EFFQED ")
         go to 200
 C
     1 CONTINUE
@@ -8403,7 +8533,7 @@ C
       DATA TABLE /'.PRINT ','.PRJLOC','.HESLOC','.MAXITR',
      &            '.VECPRJ','.VECREF','.OWNBAS','.THFULL',
      &            '.THDIAG','.THGRAD','.CHECK ','.SELECT',
-     &            '.THXVEC','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.THXVEC','.C1READ','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -8422,6 +8552,7 @@ C     ===================
 C
       PRJLOC = .FALSE.
       OWNBAS = .FALSE.
+      C1READ = .FALSE.
       ITRLOC = 100
       IPRLOC = 1
       HESLOC = 'FULL'
@@ -8531,6 +8662,8 @@ C   SELMOS: Select MOs for localization
 C   THXVEC: Set threshold for removal of small rotations
                READ(LUCMD,*) THXVEC
  14            CONTINUE
+C&&& C1READ : Read fragment C1 coefficents 
+               C1READ = .TRUE.
                GO TO 100
  15            CONTINUE
                GO TO 100
@@ -8700,6 +8833,10 @@ C
      &   '* Fragments are calculated in their individual bases !',
      &   '    The indexing of fragment spinor sets is assumed ',
      &   '    to follow list of symmetry independent nuclei.'
+        IF(C1READ) THEN
+          WRITE(LUPRI,'(1X,A)')
+     &     '* Fragment C1-coefficients are read'    
+        ENDIF   
         DO J = 1,NREFS
          WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Fragment spinor set ',J,
      &         ' --> ',NAMDEP(J)

@@ -21,7 +21,17 @@ Bugfix:
 
 New features:
 
-- New ESR/EPR features
+- Effective QED potentials:
+  - Contributors: Ayaki Sunaga and Trond Saue
+  - Vacuum polarization: Uehling
+  - Electron self-energy: Flambaum-Ginges and Pyykkö-Zhao
+  - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157 (2022) 164101 <https://doi.org/10.1063/5.0116140>`_
+    
+- Atomic shift operator (.ASHIFT):
+  - Contributor: Trond SAue
+  - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157 (2022) 164101 <https://doi.org/10.1063/5.0116140>`_
+
+- New ESR/EPR features:
   - Contributor: H. J. Aa. Jensen
   - .ESR CI flexible option for defining CI for ESR/EPR calculations
   - .G10PPM for \*ESR : request g-shifts to 10 ppm accuracy instead of default of +/-1 ppt = 1000 ppm accuracy
@@ -40,21 +50,20 @@ New features:
    - Contributors: Carlos M. R. Rocha, Lucas Visscher
    - Reference (DIRAC calculator): https://qc2.readthedocs.io
    - Reference (ASE): https://wiki.fysik.dtu.dk/ase/
-
 - Approximations to EOM-CCSD (Partitioned EOM (P-EOM-CCSD); second-order perturbation theory-based EOM (EOM-MBPT(2) and P-EOM-MBPT(2)) are available in the RELCCSD module for excitation and ionization energies.
    - Contributors: L. Halbert, A. Gomes
    - Reference: `L. Halbert and A. S. P. Gomes, The performance of approximate equation of motion coupled cluster for valence and core states of heavy element systems, Mol. Phys. (2023) e2246592 <https://doi.org/10.1080/00268976.2023.2246592>`__
 
 Infrastructure changes and fixes:
 
-- Better cmake structure for compiling dirac. Now utility programs are small and not the same size as dirac.x.
+- Better cmake structure for compiling DIRAC. Now utility programs are small and not the same size as dirac.x.
    - Contributor: H. J. Aa. Jensen
 - Changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025.
    - Contributor: H. J. Aa. Jensen.
 - Made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers).
    - Contributor: H. J. Aa. Jensen.
 - Include support in ExaCorr for NVHPC, and added hints for compilation with OneAPI and NVHPC, and a way to control via environment variable CUDA_SM_ARCH which NVIDIA GPU architeture to compile for.  Please note that calculations beyond iterative triples (e.g. CCSDTQ) are not supported with NVHPC.
-   - Contributor: A. Gomes
+   - Contributor: A. Gomes.
 - Quit if LUCIAREL is requested for sequential dirac.x (LUCIAREL only works if compiled with MPI).
    - Contributor: H. J. Aa. Jensen.
 
@@ -66,29 +75,34 @@ Basis set library:
 - Basis set library has been extended with ECP basis sets cc-pVnZ-PP and cc-pwCVnZ-PP, for n = D,T,Q,5, and the augmented versions aug-cc-pVnZ-PP and aug-cc-pwCVnZ-PP
    - Contributor: Kirk Peterson
 - Transferred fixes of Dalton basis sets from Dalton (Contributor: H. J. Aa. Jensen):
-   - Corrected some references in correlation consistent basis sets (as e.g. aug-cc-pVTZ)
-   - Fixed Scandium in aug-cc-pVTZ-J (two lines missing, would have given error if used)
-- Added special basis sets for spin-spin coupling and hyperfine coupling from Frank Jensen group (Aarhus University)
-   - pcJ, ccJ and pcH sets
-   - Copied from Dalton basis set directory
+   - Corrected some references in correlation consistent basis sets (as e.g. aug-cc-pVTZ).
+   - Fixed Scandium in aug-cc-pVTZ-J (two lines missing, would have given error if used).
+- Added special basis sets for spin-spin coupling and hyperfine coupling from Frank Jensen group (Aarhus University):
+   - pcJ, ccJ and pcH sets.
+   - Copied from Dalton basis set directory.
    - Contributor: H. J. Aa. Jensen.
 
 Bugfix:
 
 - Fix of symmetry problem for KRMCSCF with LUCIAREL and odd number of electrons.
    - Contributor: H. J. Aa. Jensen.
+- Changes and corrections in the definition of one-electron operators :math:`\beta\gamma^5` and :math:`i \beta \boldsymbol{\alpha}`.
+   - One-electron operator type ``ZiBETAAL`` was not defined properly in previous versions of the code. From now on, it is replaced by ``ZBETAALP`` and represents the operator :math:`i \beta \alpha_z`.
+   - In previous versions of the code, the one-electron operator types ``XiBETAAL`` and ``YiBETAAL`` represented :math:`i \beta \alpha_x` and :math:`i \beta \alpha_y`, respectively. From now on, they are replaced by the operator types ``XBETAALP`` and ``YBETAALP``, respectively.
+   - New one-electron operator type ``BETAGAMMA5`` available, representing the time-symmetric operator :math:`\beta\gamma^5`. Please note that the operator type ``iBETAGAMMA5`` was already implemented in DIRAC and it also points to :math:`\beta\gamma^5`, but with the assignements of time-reversal antisymmetry.
+   - For more details, please check the manual: `One-electron operators <https://www.diracprogram.org/doc/release-25/manual/one_electron_operators.html#one-electron-operators>`__.
+   - Contributor: I. A. Aucar.
 - Set the correct sign of CC linear and quadratic response functions in the case of more than one time-antisymmetric perturbation operator
-   - Contributor: A. Gomes
+   - Contributor: A. Gomes.
 
 New default:
 
 - The CODATA2022 set of physical constants is now used as default (taken from http://physics.nist.gov/constants on June 4, 2024).
    - Contributor: I. A. Aucar.
 - Tenpi-generated code is now the default choice for automatically generated T equation codes. 
-   - Contributor: A. Gomes
+   - Contributor: A. Gomes.
 - Default CI gradient convergence threshold for \*KRCI is now 3.d-3 for energy calculations and 1.d-4 for property calculations. The 3.d-3 value is sufficient for total energies, accurate to ca. 0.01 mHartree, and saves a lot of unnecessary CPU time, but it will only give 2-3 digits in properties, which have linear accuracy in the CI wavefunction.
-   - Contributor: H. J. Aa. Jensen
-
+   - Contributor: H. J. Aa. Jensen.
 
 -----------------------------------------------------------------------------------------------------
 
@@ -144,7 +158,6 @@ Bugfixes:
 
 - Fixed orbital analysis with .VECPRI for X2C, issue #79 (H. J. Aa. Jensen)
 - Fixed Fock-space coupled cluster calculations with finite fields.
-
 
 -----------------------------------------------------------------------------------------------------
 

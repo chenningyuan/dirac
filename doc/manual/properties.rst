@@ -517,15 +517,15 @@ Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INT
 
 keyword(RHONUC)
 
-Calculate electronic density at the nuclear positions, also known as the contact density :cite:`Knecht2011` and :cite:`Almoukhalalati:2016b`.
+Calculate electronic density at the nuclear positions, also known as the contact density (see :cite:`Knecht2011` and :cite:`Almoukhalalati:2016b`).
 
-It is formally an expectation value
+It is formally the expectation value
 
 .. math::
 
-   \rho_e^K = -e\langle\delta^3(\mathbf{r}-\mathbf{R}_K)\rangle,
+   \rho_e^K = -e\langle\delta^3(\mathbf{r}-\mathbf{R}_K)\rangle.
 
-an important observation in view of picture change effects, see  :cite:`Knecht2011` .
+An important observation: In view of picture change effects, see :cite:`Knecht2011`.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
