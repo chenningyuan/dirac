@@ -112,7 +112,7 @@ The DIRAC implementation was obtained by grafting code from the numerical atomic
 onto the DFT of grid. See :ref:`*EFFQED` for tuning options.
 The present input gives precise control, but is admittedly somewhat cumbersome.
 
-Example 1: DCG Hamiltonian with Uehling and FG potentials (Variational treatment)
+Example 1: DCG Hamiltonian with Uehling and FG potentials (variational treatment)
 ---------------------------------------------------------------------------------
 .. literalinclude:: ueh_fg.inp
 
@@ -124,8 +124,8 @@ because the :math:`\boldsymbol{\beta}` part in :math:`\boldsymbol{\gamma}=\bolds
 In this example, the molecular orbitals are relaxed due to the QED effects.
 The contributions of effective QED potentials are included here in the total energy.
 
-Example 2: Peturbative treatment: expectation values of Uehling and PZ potentials
----------------------------------------------------------------------------------
+Example 2: Expectation values of Uehling and PZ potentials (perturbative treatment)
+-----------------------------------------------------------------------------------
 .. literalinclude:: ueh_pz_exp.inp
 
 In this example, the expectation values of the effective QED potentials are obtained using the molecular
