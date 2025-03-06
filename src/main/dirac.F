@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! FILE    : main/dirac.F
@@ -46,30 +41,30 @@ C***********************************************************************
 #include "dgroup.h"
 
 #ifdef HAVE_OPENMP
-      INTEGER omp_get_num_procs, omp_get_num_threads
-      INTEGER omp_get_thread_limit, omp_get_thread_num
-      CHARACTER*10 my_OMP_NUM_THREADS
+      INTEGER omp_get_num_procs
+      INTEGER omp_get_max_threads, omp_get_num_threads
+      INTEGER omp_get_thread_num
 #endif
 
 C     Set up basic information for parallel execution, to be stored in the
 C     common block infpar
 
 #ifdef HAVE_OPENMP
-      MAX_OMP_THREADS = omp_get_num_procs()
-      write(lupri,'(//A,2I5)')
-     &' * openMP activated, number of processes and number of threads'//
-     &' in non-parallel region:',
-     &   MAX_OMP_THREADS, omp_get_num_threads()
+      MAX_OMP_THREADS = omp_get_max_threads()
+      IF (MAX_OMP_THREADS .gt. 1) write(lupri,'(//A,3I8)')
+     &' * openMP activated, '//
+     &' max # processes, max # threads, current # threads: ',
+     & omp_get_num_procs(), MAX_OMP_THREADS, omp_get_num_threads()
+      ! else openMP deactivated probably because user has exported OMP_NUM_THREADS=1
 !$OMP PARALLEL
-      MAX_OMP_THREADS = omp_get_thread_limit()
-      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
-     &'max number of threads and current number of threads:',
-     &   MAX_OMP_THREADS, omp_get_num_threads()
-     & , omp_get_thread_num()
+!      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+!     &' max # threads - current # threads - current thread: ',
+!     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
 !$OMP END PARALLEL
 #else
       MAX_OMP_THREADS = 0
 #endif
+
       PARCAL = (IPARCAL .NE. 0)
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
@@ -110,6 +105,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL()
 
+      use checkpoint
       use interface_ao_specific
       use interface_mo_specific
       use xmlout
@@ -124,11 +120,17 @@ C  /* Deck dirctl */
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcbdhf.h"
 
+      logical run_pamset, tobe
+      integer ierr
 C
       CALL QENTER('DIRCTL')
       call xml_open_file('dirac.xml')
       call xml_begin('run','type="dirac-run"')
+      write (lupri,'(/A,I2)') " * Opening checkpoint file "
+      call checkpoint_open
+      call init_propfile
 C
 C***********************************************************************
 C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
@@ -136,15 +138,19 @@ C***********************************************************************
 C
       CALL PAMINP()
       IF ( INPTES ) RETURN
+!     write input coordinates to checkpoint file (and also to xyz file)
+      call write_xyz_fromcommon('/input/molecule')
 C
 C***********************************************************************
 C*****  S E T U P  -  M O D U L E  *************************************
 C***********************************************************************
-      CALL PAMSET()
-!     write info to files
-!     this is used in dft and visualization
-      call interface_ao_write()
-      call interface_mo_write()
+      IF (RUN_PAMSET()) THEN
+         CALL PAMSET()
+!        write info to files
+!        this is used in dft and visualization
+         call interface_ao_write()
+         call interface_mo_write()
+      END IF
 
 #ifdef HAS_PCMSOLVER
       if (dirac_cfg_pcm) then
@@ -161,6 +167,17 @@ C***********************************************************************
         write(lupri, '(//A/)') 'PCMSolver initialized.'
       end if
 #endif
+
+      if (dirac_cfg_dft_calculation .and. OPTIMI) then
+        if (nopen > 0) then
+          call quit('error in molecular gradient:' //
+     &         ' not implemented for open-shell DFT')
+        end if
+        if (nbsym > 1) then
+          call quit('error in molecular gradient:' //
+     &    ' not implemented for DFT with symmetry')
+        end if
+      end if
 C
 C
 C***********************************************************************
@@ -184,6 +201,8 @@ C
 !     clean up Gen1Int interface
       call gen1int_host_finalize()
 #endif
+      write (lupri,'(/A,I2)') " * Closing HDF5 checkpoint file "
+      call checkpoint_close
       call xml_end('run')
       call xml_close_file
 
@@ -375,6 +394,12 @@ C***** M P 2   N A T U R A L   O R B I T A L S *************************
 C***********************************************************************
 C
         IF(DOMP2NO) CALL MP2NOGEN()
+C
+C***********************************************************************
+C***** L A P L A C E  ---  T E S T             *************************
+C***********************************************************************
+C
+        IF(DOLAPLCE) CALL PAMLAPLCE()
 C
 C***********************************************************************
 C***** K R - M C S C F *************************************************
@@ -578,6 +603,7 @@ C     Transfer open shell average-of-configuration to GAS space notation
 C     (for e.g. ESR GASCIP) /July 2002 hjaaj
 C     HOW it is transferred is determined by the CISELECT keyword. /hjaaj
 C
+      MAXMK2_temp = 99999
       IF ( CISELECT .EQ. 'NO CI' ) THEN
          NGAS_DC  = 0
          OPT_THR_CVEC = D0
@@ -586,7 +612,7 @@ C        ... include exactly those determinants which was included
 C            in the 'average-of-configuration' SCF
          NGAS_DC  = NOPEN
          OPT_THR_CVEC = 1.0D-4
-         CALL IZERO(NGSHT,MXGAS)
+         NGSHT(1:MXGAS) = 0
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
                NGSH(I,J) = NACSH(I,J)
@@ -602,15 +628,16 @@ C
             NGASSP(1,J) = NINT(XELEC)
             NGASSP(2,J) = NINT(XELEC)
          END DO
-      ELSE IF (CISELECT .EQ. 'FULLCI') THEN
-C        ... do a full CI in the active space
+      ELSE IF (CISELECT .EQ. 'CASCI') THEN
+C        ... do a full CI in the active space (open shell orbitals);
+C            equivalent to RESOLVE but setting information for GASCIP program
          NGAS_DC  = 1
          OPT_THR_CVEC = 1.0D-4
 
 C        ... set CI program in charge
 !        OPT_CIPROGRAM = 'GASCIP'
 
-         CALL IZERO(NGSHT,MXGAS)
+         NGSHT(1:MXGAS) = 0
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
                NGSH(I,J) = NASH(I)
@@ -629,11 +656,13 @@ C        ... set which CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
 C
          OPT_THR_CVEC = THR_CVEC_ESR
-         THRPCI   = THRPCI_ESR
+         THRPCI = THRPCI_ESR
+         MAXMK2_temp = MAXMK2_ESR ! MAXMK2_ESR may be specified in *ESR input
 C
 C        Set up orbital shells for GASCIP
 C
          NRAS1_ELEC = 0
+         IERR = 0
          DO J = 1,NFSYM
 
             DO I = NGAS_CIESR(1),1,-1
@@ -645,13 +674,24 @@ C
                NSSH(J) = NSSH(J) - NGSH_CIESR(J,I,3)
             END DO
 
+            IF (NISH(J) .LT. 0) IERR = 1
+
          END DO ! J = 1, NFSYM
+
+         IF (IERR .GT. 0) THEN
+            WRITE(LUPRI,'(//A,2I5)')
+     &         'FATAL ERROR, the specified GAS spaces'
+     &       //' lead to a negative number of inactive orbitals:',
+     &         NISH(1:NFSYM)
+            CALL QUIT('FATAL ERROR, the specified GAS spaces lead to a'
+     &         //' negative number of inactive orbitals.')
+         END IF
 
          NAELEC = NAELEC + NRAS1_ELEC
 
 C        Set min and max accumulated no. of electrons in each gas space
 
-         CALL IZERO(NGSHT,MXGAS)
+         NGSHT(1:MXGAS) = 0
 
          NGAS_DC = 0
          NAELEC_ACCUM = 0
@@ -665,6 +705,9 @@ C        Set min and max accumulated no. of electrons in each gas space
             END DO
 
             NGASSP(1,NGAS_DC) = MAX(0, NAELEC_ACCUM-LVL_CIESR(I,1)) ! subtract max number of holes in this RAS1-GAS space
+            ! minimum number of electrons cannot be less than for a previous GAS space
+            IF (NGAS_DC .GT. 1) NGASSP(1,NGAS_DC) =
+     &         MAX(NGASSP(1,NGAS_DC),NGASSP(1,NGAS_DC-1))
             NGASSP(2,NGAS_DC) = NAELEC_ACCUM
          END DO
 
@@ -676,6 +719,8 @@ C        Set min and max accumulated no. of electrons in each gas space
 
          IF (NGAS_CIESR(3) > 0) THEN
             NGASSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(1,3))
+            IF (NGAS_DC .GT. 1) NGASSP(1,NGAS_DC) =
+     &         MAX(NGASSP(1,NGAS_DC),NGASSP(1,NGAS_DC-1))
          ELSE ! no RAS3-GAS orbitals, i.e. last GAS space
             NGASSP(1,NGAS_DC) = NAELEC
          END IF
@@ -690,6 +735,8 @@ C        Set min and max accumulated no. of electrons in each gas space
 
             IF (I < NGAS_CIESR(3)) THEN
                NGASSP(1,NGAS_DC) = MAX(0, NAELEC-LVL_CIESR(I+1,3)) ! subtract max number of electrons in next RAS3-GAS space
+               IF (NGAS_DC .GT. 1) NGASSP(1,NGAS_DC) =
+     &            MAX(NGASSP(1,NGAS_DC),NGASSP(1,NGAS_DC-1))
             ELSE ! last RAS1-GAS space
                NGASSP(1,NGAS_DC) = NAELEC
             END IF
@@ -720,7 +767,13 @@ C     transfer open shell average-of-configuration to GAS space notation /July 2
 C
 C
       NASHT  = NASH(1) + NASH(2)
+      ! MAXMK2 two cases:
+      ! NAELEC .le. NASHT: MAXMK2 = NAELEC (all electrons A-elecrons)
+      !                           = 2*NAELEC - NAELEC
+      ! NAELEC .gt. NASHT: MAXMK2 = NASHT (A-electrons) - (NAELEC-NAST) (B-electrons)
+      !                           = 2*NASHT - NAELEC
       IOPT_MAXMK2 = 2*MIN(NAELEC,NASHT) - NAELEC
+      IOPT_MAXMK2 = MIN(IOPT_MAXMK2, MAXMK2_temp) ! MAXMK2 may be set in input for some CISELECT choices
       IOPT_MINMK2 = -IOPT_MAXMK2
       IOPT_MK2REF = 0
       IOPT_MK2DEL = IOPT_MAXMK2
@@ -868,7 +921,7 @@ C
       IOPT_MK2DEL = NKRMC_MK2DEL
       IOPT_MINMK2 = NKRMC_MINMK2
       IOPT_MAXMK2 = NKRMC_MAXMK2
-      CALL IZERO(NGSHT,MXGAS)
+      NGSHT(1:MXGAS) = 0
       DO I = 1,NFSYM
          NISH(I) = NKRMCISH(I)
          NASH(I) = NKRMCASH(I)
@@ -920,7 +973,7 @@ C
       OPT_CNVINT(1)  = DKRMC_CNVINT(1)
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
-      OPT_THRECI     = MAX(DKRCI_THRECI, OPT_THRGRD**2)
+      OPT_THRECI     = OPT_THRGRD**2
       THRPCI         = DKRMC_THRPCI
       E_LVCORR_MC    = 0.0d0
       OPT_THR_CVEC   = 1.0D-4
@@ -951,7 +1004,7 @@ C
 C
 C     Set "constant" CI internal variables
 C
-      NMAX_SYM    = IKRMC_SYMMETRY
+      NMAX_SYM    = 2*NBSYM ! max double group irreps
       NCIROOT     =    1
       ISHMEM_TYPE =  - 1
       CSHMEMO     = .FALSE.
@@ -997,7 +1050,7 @@ C
       IOPT_MINMK2 = NKRCI_MINMK2
       IOPT_MAXMK2 = NKRCI_MAXMK2
 
-      CALL IZERO(NGSHT,MXGAS)
+      NGSHT(1:MXGAS) = 0
       DO I = 1,NFSYM
          NISH(I) = NKRCIISH(I)
          NASH(I) = NKRCIASH(I)
@@ -1043,8 +1096,8 @@ C
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
       THRPCI         = DKRCI_THRPCI
       E_LVCORR_MC    = 0.0d0
-      OPT_THR_CVEC   = 1.0d-04
-      OPT_THRGRD     = 1.D99
+      OPT_THR_CVEC   = 1.0d-02
+      OPT_THRGRD     = DKRCI_THRGCI
       OPT_THRECI     = DKRCI_THRECI
 C
 C     Set common block DCLOPT
@@ -1088,10 +1141,9 @@ C
       IKRMCCNO    =  - 3
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
-      NATONL      = .FALSE.
-      FOCKON      = .FALSE.
+      NATONLY     = .FALSE.
+      FOCKONLY    = .FALSE.
       COMPROT     = .FALSE.
-      GENFOCK     = GENFOCK_KRCI
       NATOLCR     = NATOLCR_KRCI
       TRA_NATO    = TRANATO_KRCI
       CRDFO_MAT   = CRDFO_MAT_KRCI
@@ -1126,9 +1178,7 @@ C***********************************************************************
 
 #ifdef MOD_INTEREST
       use module_interest_interface,                                    &
-     &    only: initialize_interest_herd,                               &
-     &          process_two_electron_integrals_4comp_slaves,            &
-     &          process_two_electron_integrals_2comp_slaves 
+     &    only: initialize_interest_herd
 #endif
 !     use fde_evaluators_dirac, only : fde_launch_slave_process
       use fde_mod, only : fde_launch_slave_process
@@ -1158,7 +1208,9 @@ C***********************************************************************
       integer :: IMPARID, INUMNOD, IMYTID, ITASK, IPARCAL, mytid_print
       real*8  :: CPU1, WALL1, TIMSTR, TIMEND
 #ifdef HAVE_OPENMP
-      INTEGER :: omp_get_num_procs, omp_get_num_threads
+      INTEGER omp_get_num_procs, omp_get_thread_limit
+      INTEGER omp_get_max_threads, omp_get_num_threads
+      INTEGER omp_get_thread_num
 #endif
 
       integer :: sleep_time=15
@@ -1171,24 +1223,22 @@ C***********************************************************************
       
       if (mytid .eq. mytid_print) print *, 'DIRNOD slave MYTID ',IMYTID
 
+! Following lines can be uncommented for debug purposes but will mess up the output (and will make tests fail)
 #ifdef HAVE_OPENMP
-      MAX_OMP_THREADS = omp_get_num_procs()
-      if (mytid .eq. mytid_print) then
+!     MAX_OMP_THREADS = omp_get_max_threads()
+!     write(lupri,'(//A,3I5)')
+!    &' * openMP activated, '//
+!    &' thread limit - # processes - # threads: ',
+!    & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
 !$OMP PARALLEL
-!        write(lupri,'(//A,2I5)')
-!    &' * node 10 openMP, number of processes and number of threads:',
-!    &   MAX_OMP_THREADS, omp_get_num_threads()
-!        write(lupri,'(//A,I10)')
-!    &' * node 10 openMP, number of mkl threads:',
-!    &    mkl_get_max_threads()
-!        print *,'node 10 openMP, call omp_set_num_threads(1)'
+!      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+!     &' max # threads - current # threads - current thread: ',
+!     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
 !$OMP END PARALLEL
-      end if
-      call omp_set_num_threads(1)
-      MAX_OMP_THREADS = 0
 #else
       MAX_OMP_THREADS = 0
 #endif
+
 C
 C     Transfer variables to common blocks
 C
@@ -1335,8 +1385,6 @@ C
 C        start the InteRest two-electron MPI calculation (4-comp version)
 C
 #ifdef MOD_INTEREST
-         call process_two_electron_integrals_4comp_slaves 
-#else
          call quit('ERROR: InteRest lib not available')
 #endif
       ELSE IF (ITASK .EQ. 10) THEN
@@ -1344,8 +1392,6 @@ C
 C        start the InteRest two-electron MPI calculation (2-comp version)
 C
 #ifdef MOD_INTEREST
-         call process_two_electron_integrals_2comp_slaves 
-#else
          call quit('ERROR: InteRest lib not available')
 #endif
 #endif /* VAR_MPI2 */
@@ -1437,6 +1483,11 @@ C
 #else
          call exa_cc()
 #endif
+      ELSE IF (ITASK .EQ. 21) THEN
+C
+C        start BEDLEB MPI calculation
+C
+         call bedleb_launch_slave_procs()
 
       ELSE
 C
@@ -1556,7 +1607,6 @@ C
 C        start FDE MPI calculation
 C
          call fde_launch_slave_process()
-
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -1636,11 +1686,7 @@ C
         CALL DIST_ENV(0)
       ELSE
 #endif /* VAR_MPI */
-#if defined (SYS_T3D) || defined (SYS_T90)
-        CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
-#else
         CALL GETENV ('BASDIR',BASDIR)
-#endif
         LEN_BASDIR = LEN_TRIM(BASDIR)
 !
 !       If string is empty add current directory
@@ -1699,7 +1745,7 @@ C since there are some variables with the same name we will call a routine for t
       IOPT_MK2DEL = NKRCC_MK2DEL
       IOPT_MINMK2 = NKRCC_MINMK2
       IOPT_MAXMK2 = NKRCC_MAXMK2
-      CALL IZERO(NGSHT,MXGAS)
+      NGSHT(1:MXGAS) = 0
       DO I = 1,NFSYM
          NISH(I) = NKRCCISH(I)
          NASH(I) = NKRCCASH(I)
@@ -1769,11 +1815,10 @@ C parallel stuff
       IKRMCCNO    =  - 3
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
-      NATONL      = .FALSE.
-      FOCKON      = .FALSE.
+      NATONLY     = .FALSE.
+      FOCKONLY    = .FALSE.
       COMPROT     = .FALSE.
 C at the moment no fock type orbitlas
-      GENFOCK     = .FALSE. !GENFOCK_KRCI
       NATOLCR     = .FALSE. !NATOLCR_KRCI
       TRA_NATO    = .FALSE. !TRANATO_KRCI
       CRDFO_MAT   = .FALSE. !CRDFO_MAT_KRCI
@@ -1792,3 +1837,24 @@ C
       CALL QEXIT('TKRCCORB')
       END
 #endif /* MOD_KRCC */
+      LOGICAL FUNCTION RUN_PAMSET()
+!     Checks whether the time-consuming set up is really needed.
+!     Avoids the complicated X2C procedure if we just want to start a CC calculation with EXACC
+!     using already available MO coefficients
+#ifdef MOD_EXACORR
+      use dirac_cfg
+      if (dirac_cfg_exacc) then
+         if (dirac_cfg_scf_calculation.or.
+     &       dirac_cfg_dft_calculation.or.
+     &       dirac_cfg_mcsrdft_calculation) then
+            RUN_PAMSET = .TRUE.
+         else
+            RUN_PAMSET = .FALSE.
+         end if
+      else
+         RUN_PAMSET = .TRUE.
+      end if
+#else
+      RUN_PAMSET = .TRUE.
+#endif
+      END

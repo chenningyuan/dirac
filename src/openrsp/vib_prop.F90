@@ -7,6 +7,7 @@ module vib_prop
    use prop_contribs
    use openrsp_cfg
    use dirac_interface
+   use codata
 
    ! ajt LSDALTON has replaced the (global) quit with lsquit
    !     with unit (lupri) as extra argument, which doesn't
@@ -27,17 +28,10 @@ module vib_prop
 
    private
 
-   !physical constants for conversion to non-atomic units
-   real(8), parameter :: cm1 = 1/219474.631371d0, & !1 centimeter-to-minus-one in au
-                         cvl = 137.03599907d0,    & !c-the-velocity-of-light in au
-                         nm  = 10/0.52917706d0,   & !1 nanometer in au
-                         pi  = 3.14159265358979323846D0 !acos(-1d0)
-
    !field component lables for printing
    character(2) :: fc(3) = (/'Fx','Fy','Fz'/)
 
 contains
-
 
    subroutine print_tensor(dims, tensor, title, freqs, colwidth, unit)
    !ajt This is used for printing response function tensors
@@ -275,10 +269,10 @@ contains
                                   ,'-------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i5,a/))') &
-               'w',0,' = ', w,' au =', nint(w/cm1),' cm-1 ~ ', &
-                                  nint((2*pi*cvl/w)/nm),' nm', &
-               'w',1,' = ',-w,' au =',-nint(w/cm1),' cm-1 ~ ', &
-                                 -nint((2*pi*cvl/w)/nm),' nm'
+               'w',0,' = ', w,' au =', nint(w/cminv),' cm-1 ~ ',  &
+                                  nint((2*pi*cvel/w)/nm),' nm', &
+               'w',1,' = ',-w,' au =',-nint(w/cminv),' cm-1 ~ ',  &
+                                 -nint((2*pi*cvel/w)/nm),' nm'
       write (o,'(a,13x,a2,18x,a2,18x,a2/)') ' w0 w1',fc
       write (o,'(3(1x,a,3f20.13/))') (fc(i),pol(i,:),i=1,3)
       write (o,'(a,g16.9)')  '@alpha    isotropic: ', &
@@ -319,12 +313,12 @@ contains
                                      ,'------------------------'
          write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
          write (o,'(3(8x,a,i1,a,f6.3,a,i7,a,i5,a/))') &
-                  'w',0,' = ',   a,' au =', nint(     a/cm1),' cm-1 ~ ', &
-                                      nint((2*pi*cvl/a     )/nm),' nm',  &
-                  'w',1,' = ',   b,' au =', nint(     b/cm1),' cm-1 ~ ', &
-                                      nint((2*pi*cvl/b     )/nm),' nm',  &
-                  'w',2,' = ',-a-b,' au =', nint((-a-b)/cm1),' cm-1 ~ ', &
-                                      nint((2*pi*cvl/(-a-b))/nm),' nm'
+                  'w',0,' = ',   a,' au =', nint(     a/cminv),' cm-1 ~ ', &
+                                      nint((2*pi*cvel/a     )/nm),' nm', &
+                  'w',1,' = ',   b,' au =', nint(     b/cminv),' cm-1 ~ ', &
+                                      nint((2*pi*cvel/b     )/nm),' nm', &
+                  'w',2,' = ',-a-b,' au =', nint((-a-b)/cminv),' cm-1 ~ ', &
+                                      nint((2*pi*cvel/(-a-b))/nm),' nm'
          write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1 w2',fc
          write (o,'(3(/3(1x,2a2,3f20.12/)))') &
                  ((fc(k),fc(l),hyp(k,l,:,ij),l=1,3),k=1,3)
@@ -339,8 +333,8 @@ contains
                                    '-------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(4(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
-              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
-                             nint((2*pi*cvl/w(i))/nm),' nm',i=1,4)
+              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cminv),' cm-1 ~ ', &
+                             nint((2*pi*cvel/w(i))/nm),' nm',i=1,4)
       write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1w2 w3',fc
       write (o,'(3(3(/3(1x,3a2,3f20.10/))))') &
               (((fc(i),fc(j),fc(k),shyp(i,j,k,:),k=1,3),j=1,3),i=1,3)
@@ -410,16 +404,10 @@ contains
          if (all(polq(:,:,1+nq*(ij-1):nq*ij)==0).and. &
              all(polq(:,:,1+nq*(ik-1):nq*ik)==0).and. &
              all(polq(:,:,1+nq*(jk-1):nq*jk)==0)) cycle
-#ifdef VAR_PGF90
-!radovan pgf complains here
-!PGF90-S-0152-All dimension specifiers must be ':'
-         call quit('fix vib_prop.f90 for pgf')
-#else
          call print_vib_beta(dax,(/w(i),w(j),w(k)/),nq,wq(1:nq), &
                  -(/dipq(:,1+nq*(i-1):nq*i),dipq(:,1+nq*(j-1):nq*j),dipq(:,1+nq*(k-1):nq*k)/), &
                  -(/polq(:,:,1+nq*(ij-1):nq*ij),polq(:,:,1+nq*(ik-1):nq*ik), &
                    polq(:,:,1+nq*(jk-1):nq*jk)/),o)
-#endif
          exit !only one
       end do
       if ((any(dipq(:,1:nq*4) /= 0) .and. &
@@ -438,17 +426,17 @@ contains
       write (o,'(//21x,a/21x,a/)') 'Vibrational polarizability (au)', &
                                    '-------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
-      write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')             &
-               'w',0,' = ', w,' au =', nint(w/cm1),' cm-1 ~ ', &
-                                  nint((2*pi*cvl/w)/nm),' nm', &
-               'w',1,' = ',-w,' au =',-nint(w/cm1),' cm-1 ~ ', &
-                                 -nint((2*pi*cvl/w)/nm),' nm'
+      write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')              &
+               'w',0,' = ', w,' au =', nint(w/cminv),' cm-1 ~ ',  &
+                                  nint((2*pi*cvel/w)/nm),' nm', &
+               'w',1,' = ',-w,' au =',-nint(w/cminv),' cm-1 ~ ',  &
+                                 -nint((2*pi*cvel/w)/nm),' nm'
       write (o,'(4x,a,3f8.4/)') 'Normalized dipole axis: ',dax
       pol = 0
       do q=1,nq
          R(:,:) = reshape((/((dipg(j,q)*dipg(i,q),i=1,3),j=1,3)/),(/3,3/))
          pol = pol + R(:,:)/(wq(q)**2-w**2)
-         t(1:3,q) = (/1d0*q,wq(q)/cm1,wq(q)/)
+         t(1:3,q) = (/1d0*q,wq(q)/cminv,wq(q)/)
          t(4:5,q) = (/1d0/(wq(q)**2-w**2),1d0/)*1/3d0*sum((/(R(i,i),i=1,3)/))
       end do
       write (o,'(a,13x,a2,18x,a2,18x,a2/)') ' w0 w1',fc
@@ -475,8 +463,8 @@ contains
                                    '------------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(3(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
-              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
-                             nint((2*pi*cvl/w(i))/nm),' nm',i=1,3)
+              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cminv),' cm-1 ~ ', &
+                             nint((2*pi*cvel/w(i))/nm),' nm',i=1,3)
       write (o,'(4x,a,3f8.4/)') 'Normalized dipole axis: ',dax
       hyp = 0
       do q=1,nq
@@ -498,7 +486,7 @@ contains
             t(4+k,q) = sum((/(((R(i,i,j,k)-R(i,j,i,k))*dax(j),i=1,3),j=1,3)/))/5
             t(8+k,q) = sum((/(((R(i,i,j,k)-R(j,i,i,k))*dax(j),i=1,3),j=1,3)/))/5
          end do
-         t(:,q) = (/1d0*q,wq(q)/cm1,wq(q),t(1,q),t(5,q),t(9,q),t(2:4,q),t(6:8,q),t(10:12,q)/)
+         t(:,q) = (/1d0*q,wq(q)/cminv,wq(q),t(1,q),t(5,q),t(9,q),t(2:4,q),t(6:8,q),t(10:12,q)/)
       end do
       write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1 w2',Fc
       write (o,'(3(/3(1x,2a2,3f20.12/)))') ((Fc(i),Fc(j),hyp(i,j,:),j=1,3),i=1,3)
@@ -536,8 +524,8 @@ contains
                                    '-------------------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(4(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
-              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
-                             nint((2*pi*cvl/w(i))/nm),' nm',i=1,4)
+              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cminv),' cm-1 ~ ', &
+                             nint((2*pi*cvel/w(i))/nm),' nm',i=1,4)
       write (o,'(4x,a,3f8.4/)') 'Normalized dipole axis: ',dax
       shyp = 0
       do q=1,nq
@@ -561,7 +549,7 @@ contains
          t( 1: 9,q) = (/(sum((/((R(i,i,j,j,k)+R(i,j,i,j,k)+R(i,j,j,i,k),i=1,3),j=1,3)/)),k=1,9)/)/15
          t(10:18,q) = (/(sum((/((R(i,i,j,j,k)-R(i,j,j,i,k),i=1,3),j=1,3)/)),k=1,9)/)/10
          t(19:27,q) = (/(sum((/((R(i,i,j,j,k)+R(i,j,j,i,k)-2*R(i,j,i,j,k),i=1,3),j=1,3)/)),k=1,9)/)/10
-         t(:,q) = (/1d0*q,wq(q)/cm1,wq(q),t(1:2,q),t(10:11,q), &
+         t(:,q) = (/1d0*q,wq(q)/cminv,wq(q),t(1:2,q),t(10:11,q), &
                     t(19:20,q),t(3:9,q),t(12:18,q),t(21:27,q)/)
       end do
       write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1w2 w3',Fc
@@ -1089,7 +1077,7 @@ contains
    end subroutine
 
    subroutine pnc_gradient(mol, S, D, F, nr_atoms)
-
+#include "codata.h"
       type(prop_molcfg), intent(in)  :: mol
       type(matrix),      intent(in)  :: S
       type(matrix),      intent(in)  :: D
@@ -1105,14 +1093,11 @@ contains
       integer                        :: icharge, imass, nproton, nneutron
       real(8), external              :: disotp
       real(8)                        :: qw
-
-      real(8), parameter             :: sthetaw2 = 0.2319d0
       real(8)                        :: dfac
-      real(8), parameter             :: hartree2hz = 6.579683920721d15
 
 #include "mxcent.h"
 #include "nuclei.h"
-      dfac = 2.22255d-14/(2.0d0*sqrt(2.0d0))
+      dfac = gfermi/(2.0d0*sqrt(2.0d0))
 
       allocate(epnc(nc))
       allocate(epnc_gradient(nr_atoms*3, nc))
@@ -1137,12 +1122,12 @@ contains
       imass    = nint(disotp(icharge, 1, 'MASS'))
       nproton  = icharge
       nneutron = imass - icharge
-      qw = (1.0d0 - 4.0d0*sthetaw2)*nproton - 1.0d0*nneutron
+      qw = (1.0d0 - 4.0d0*s2thetaw)*nproton - 1.0d0*nneutron
 
       print *, 'center', openrsp_cfg_pnc_center
       print *, 'E_pnc (bare integrals in a.u.)', real(epnc)
       print *, 'E_pnc (in hartree)', real(epnc)*qw*dfac
-      print *, 'E_pnc (in Hz)', real(epnc)*qw*dfac*hartree2hz
+      print *, 'E_pnc (in Hz)', real(epnc)*qw*dfac*xthz
 
       call header('E_pnc gradient (bare integrals in a.u.)', -1)
       do iatom = 1, nr_atoms
@@ -1167,7 +1152,7 @@ contains
                                    real(epnc_gradient(iz, 1))
       end do
 
-      epnc_gradient = epnc_gradient*hartree2hz
+      epnc_gradient = epnc_gradient*xthz
       call header('E_pnc gradient (in Hz)', -1)
       do iatom = 1, nr_atoms
          ix = 3*(iatom - 1) + 1
@@ -1480,11 +1465,6 @@ contains
          else if (freq(nj)==freq(nk) .or. (freq(ni)==0 .and. freq(nj)==-freq(nk))) then
             ! j-k symmetry, 20 eqns
             do k=1,3
-#ifdef VAR_PGF90
-!radovan pgf complains here
-!PGF90-S-0152-All dimension specifiers must be ':'
-         call quit('fix vib_prop.f90 for pgf')
-#else
                call pert_dens(mol, S, (/'EL','EL','EL'/), (/3,k,1/),        &
                               (/D,Df(:,ni),Df(:k,nj),Df(k,nk),              &
                                 Dff(:,:k,nij),Dff(:,k,nik),Dff(:k,k,njk)/), &
@@ -1492,7 +1472,6 @@ contains
                                 Fff(:,:k,nij),Fff(:,k,nik),Fff(:k,k,njk)/), &
                               Dfff(:,:k,k), Ffff(:,:k,k),                   &
                               freq=(/freq(ni),freq(nj),freq(nk)/), comp=(/1,1,k/))
-#endif
                do j=1,k-1
                   do i=1,3
                      if (freq(nj)==freq(nk)) Dfff(i,k,j) = Dfff(i,j,k)

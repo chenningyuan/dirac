@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ***********************************************************************
@@ -716,6 +711,7 @@ C?            END IF
      &                       ISPGP,ISM,ITP,KMIN,KMAX,
      &                       I1,XI1S,LI1,NK,IEND,IFRST,KFRST,I12,K12,
      &                       SCLFAC)
+      use luci_wrkspc
 *
 * Obtain two-operator mappings
 * a+/a IORB a+/a JORB !KSTR> = +/-!ISTR>
@@ -755,7 +751,6 @@ C?            END IF
 #include "mxpdim.inc"
 *./BIGGY
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 *./ORBINP/
 #include "orbinp.inc"
 #include "strinp.inc"
@@ -976,6 +971,7 @@ C     CALL MEMCHK
      &                      ISPGP,ISM,ITP,KMIN,KMAX,
      &                      I1,XI1S,LI1,NK,IEND,IFRST,KFRST,I12,K12,
      &                      SCLFAC)
+      use luci_wrkspc
 *
 *
 * Obtain mappings
@@ -1009,7 +1005,6 @@ C     CALL MEMCHK
 #include "mxpdim.inc"
 *./BIGGY
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 *./ORBINP/
 #include "orbinp.inc"
 #include "strinp.inc"
@@ -1111,6 +1106,7 @@ C?    END IF
       SUBROUTINE ADAST_GAS(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
      &                    I1,XI1S,NKSTR,IEND,IFRST,KFRST,KACT,SCLFAC,
      &                    IAC)
+      use luci_wrkspc
 *
 *
 * Obtain creation or annihilation mapping
@@ -1148,7 +1144,6 @@ C?    END IF
 *./BIGGY
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "strinp.inc"
 #include "stinf.inc"
@@ -1527,6 +1522,7 @@ C    &      = ISTADD(JEL,IOFADD-1+IISTR)
 ***********************************************************************
       SUBROUTINE ADSTN_GAS(IOBSM,IOBTP,ISPGP,ISPGPSM,ISPGPTP,
      &                    I1,XI1S,NKSTR,IEND,IFRST,KFRST,KACT,SCLFAC)
+      use luci_wrkspc
 *
 *
 * Obtain mappings
@@ -1556,7 +1552,6 @@ C    &      = ISTADD(JEL,IOFADD-1+IISTR)
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "strinp.inc"
 #include "stinf.inc"
@@ -2142,6 +2137,7 @@ C?          write(6,*) ' corresponding number ', JSTRIN
 ***********************************************************************
       SUBROUTINE GETSTR2_TOTSM_SPGP(IGRP,NIGRP,ISPGRPSM,NEL,NSTR,ISTR,
      &                              NORBT,IDOREO,IZ,IREO)
+      use luci_wrkspc
 *
 * Obtain all super-strings of given total symmetry and given
 * occupation in each GAS space
@@ -2181,7 +2177,6 @@ C?          write(6,*) ' corresponding number ', JSTRIN
       IMPLICIT REAL*8 (A-H,O-Z)
 *. Input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "strbas.inc"
@@ -2336,6 +2331,7 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 ***********************************************************************
       SUBROUTINE GETSTR_TOTSM_SPGP(ISTRTP,ISPGRP,ISPGRPSM,NEL,NSTR,ISTR,
      &                             NORBT,IDOREO,IZ,IREO)
+      use luci_wrkspc
 *
 * Obtain all super-strings of given total symmetry and given
 * occupation in each GAS space
@@ -2370,7 +2366,6 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       IMPLICIT REAL*8 (A-H,O-Z)
 *. Input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "strbas.inc"
@@ -2539,6 +2534,7 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *              Optimized version, october 1995
 *
 *. In this subroutine the ordering of strings belonging to a given type
+      use luci_wrkspc
 *  is defined !!
 * Currently we are using the order
 * Loop over GAS 1 strings
@@ -2550,7 +2546,6 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strbas.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -2818,6 +2813,7 @@ C?        write(6,*) ' before call to add_str_group '
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MEMSTR_GAS
+      use luci_wrkspc
 *
 *
 * Construct pointers for saving information about strings and
@@ -2844,7 +2840,6 @@ C?        write(6,*) ' before call to add_str_group '
 #include "orbinp.inc"
 #include "strbas.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "stinf.inc"
@@ -3324,6 +3319,7 @@ C
       SUBROUTINE REO_STR_SPGRP3(ISPGP,NIGRP,ISPGPSM,NSTR,NACTE,IACTE,
      &                          NACT,IACTGP,NAST_S,NPST_S,IBREO,IREO,
      &                          SIGNPA)
+      use luci_wrkspc
 *
 * Reorder strings of supergroup with given symmetry
 * so passive groups are placed before active groups
@@ -3378,7 +3374,6 @@ C
 *. General Input
 #include "mxpdim.inc"
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "strinp.inc"
 #include "stinf.inc"
@@ -3997,6 +3992,7 @@ C
 ***********************************************************************
       SUBROUTINE STRFDT(INTSPC,JSMOST,IOCOC,NSBDET,IDET,IASTR2,IBSTR2,
      &            ICOMBI)
+      use luci_wrkspc
 *
 * A CI expansion from internal subspace INTSPC and symmetry defined
 * by JSMOST is considered. In this CI expansion, a set of NSBDET
@@ -4021,7 +4017,6 @@ C
 #include "csm.inc"
 *.
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 *. Output
       DIMENSION IASTR2(*),IBSTR2(*)
 *
@@ -4043,6 +4038,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE STRINF_GAS(STIN,IPRNT)
+      use luci_wrkspc
 *
 * Obtain string information for GAS expansion
 *
@@ -4080,7 +4076,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 #include "irat.inc"
 *
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 *
       DIMENSION STIN(*)
 *. A bit of scratch
@@ -4936,6 +4931,7 @@ C?      CALL IWRTMA(IREOSPGP,1,NSPGP,1,NSPGP)
 ***********************************************************************
       SUBROUTINE TS_SYM_PNT2(IGRP,NIGRP,MAXVAL,MINVAL,ISYM,
      &           IPNT,LPNT)
+      use luci_wrkspc
 *
 * Construct pointers to start of symmetry distributions
 * for supergroup of strings with given symmetry
@@ -4960,7 +4956,6 @@ C?      CALL IWRTMA(IREOSPGP,1,NSPGP,1,NSPGP)
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "strinp.inc"
 #include "stinf.inc"

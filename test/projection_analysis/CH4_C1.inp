@@ -3,6 +3,8 @@
 Projection analysis for CH4
 .WAVE FUNCTION
 .ANALYZE
+**GENERAL
+.ACMOIN
 **WAVE FUNCTIONS
 .SCF
 *SCF
@@ -13,21 +15,22 @@ Projection analysis for CH4
 .PROJEC
 *PROJEC
 .OWNBAS
+.C1READ
 .VECREF
 5
-AFCXXX
+C.h5
 1
 1..5
-AFH1XX
+H.h5
 1
 1
-AFH2XX
+H.h5
 1
 1
-AFH3XX
+H.h5
 1
 1
-AFH4XX
+H.h5
 1
 1
 **MOLECULE

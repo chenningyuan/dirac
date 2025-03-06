@@ -652,10 +652,11 @@ contains
          character*8, intent(in) :: fmt
          character*4, intent(in) :: brac
          character*( ncol*(colw+1) + 4 ) :: line
+         character :: space = ' '
          integer :: i, j, l
+         line(1:1) = brac(1:1)
+         line(2:2) = brac(1:1)
          do i = 1, nrow
-            line(1:1) = merge(brac(1:1),' ',i==1)
-            line(2:2) = brac(1:1)
             l = 3
             do j = 1, ncol
                write (line( l : l+colw-1 ), fmt) elms(i,j)

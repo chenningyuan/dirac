@@ -3,15 +3,13 @@
 
 star(KRCI)
 
-or the (deprecated) \*KRCICALC.
-
 **2- and 4-component relativistic GASCI module**
 ================================================
 Written by Timo Fleig, 
 based on LUCIA by Jeppe Olsen, parallelization by Stefan Knecht and Hans Joergen Aagaard Jensen.
 
 The KRCI module is a string-based Hamiltonian-direct configuration
-interaction (CI) program :cite:`Fleig2003`, :cite:`Fleig2006` , based on the LUCIA code :cite:`Olsen1990`.
+interaction (CI) program LUCIAREL :cite:`Fleig2003`, :cite:`Fleig2006` , based on the LUCIA code :cite:`Olsen1990`.
 It is capable of doing efficient CI computations at arbitrary excitation level, e.g. FCI, SDCI, RASCI,
 and MRCI using general active spaces. The code is interfaced to
 molecular integrals obtained in the relativistic 2c- and 4-component
@@ -21,7 +19,7 @@ full parallel version :cite:`Knecht2010a` .
 A central feature of the program is the Generalized Active Space (GAS)
 concept, in which the underlying total orbital space is subdivided into
 a basically arbitrary number (save for an upper limit) of subspaces with
-arbitrary occupation constraints. This is the most general approach to
+arbitrary occupation constraints. This is a very general approach to
 orbital space subdivisions. The program uses DIRAC Kramers pairs from
 either a closed- or an open-shell calculation in a relativistic two- and
 four-component formalism (see :ref:`**HAMILTONIAN`).
@@ -38,13 +36,16 @@ are printed.
 The program can also be used for the computation of various one-electron
 properties at the GASCI level :cite:`Knecht2009` .
 
+Alternatively, the CI program GASCIP can also be used in the KRCI module for convergence of CI energies.
+Many of the other properties are not implemented for GASCIP.
+
 **Mandatory keywords**
 ======================
 
 keyword(CI PROGRAM)
 
 specifies the CI module behind KRCI.
-Two choices: LUCIAREL and GASCIP
+Two choices: LUCIAREL and GASCIP. *default:* GASCIP
 
 ::
 
@@ -53,16 +54,25 @@ Two choices: LUCIAREL and GASCIP
 
 keyword(CIROOTS)
 
-number of states (roots) in symmetry X to optimize on. This keyword may be
-repeated several times for multi-root multi-symmetry calculations
-step-by-step. *default:* none.
+specifies the number of states (roots) *Y* in irrep *X* to converge. This keyword may be
+repeated several times for multi-root multi-symmetry calculations.
+*default:* one root in symmetry 1.
 
-Example for 5 roots in (boson/fermion) irrep 1:
+Example for calculating *Y* = 5 roots in irrep *X* = 1 and *Y* = 2 roots in irrep *X* = 3::
 
 ::
 
     .CIROOTS
     1 5
+    .CIROOTS
+    3 2
+
+The KRCI module exploits the character tables for the Abelian double groups handled by DIRAC as detailed here,
+:ref:`Symm_handling_corr_level`.
+
+If the calculation is run in **non-linear symmetry**
+irrep *X* will be fermion irrep no. *X* for odd number of electrons
+and boson irrep no. *X* for even number of electrons.
 
 If you run the calculation in **linear symmetry** you have to specify the **2 x OMEGA** value
 of the state to optimize on, and the .CI PROGRAM must be LUCIAREL. The doubling (*2 x*) stems from the fact
@@ -146,19 +156,30 @@ keyword(ANALYZ)
 analyze the final CI wave function printing the coefficients for each determinant above a given threshold
 :math:`10^{-2}`. *default*: do not analyze the final CI wave function.
 
+keyword(THRGCI)
+
+set CI convergence threshold based on the norm of the CI gradient (aka CI residual).
+*Default* is 2.0e-3 for energy calculations, giving ca. 0.01 mHartree accuracty, but only 2-3 digits in properties.
+*Default* is 1.0e-4 if properties have been requested, giving ca. 4 digits in properties and ca. 8 decimal places in energies.
+
+
+::
+
+    .THRGCI
+     1.0e-3
 
 keyword(MAX CI)
 
-maximum number of CI iterations. *default*:
+maximum number of CI iterations. *default*: 
 
 ::
 
     .MAX CI
-     5
+     40
 
 keyword(MXCIVE)
 
-maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`KRCI_.CIROOTS`) to optimize on.
+maximum size of Davidson subspace in LUCIAREL (not used in GASCIP). *default*: 3 times the number of eigenstates (see :ref:`KRCI_.CIROOTS`) to optimize on.
 example:
 
 ::
@@ -373,6 +394,25 @@ Similarly, the magnetic hyperfine-structure constants in BeH can be defined as f
   'NEF 006'
   'NEF 004'
 
+The nuclear Magnetic-Quadrupole-Moment (MQM) constants in BeH can be defined by defination as
+
+::
+
+ .OPERATOR
+  'Z1-MQM'    (Z1-MQM, for the first atom as specified in the .mol file)
+  ZAVECTOR
+  YZEFG011
+  XZEFG011
+  COMFACTOR
+  -0.333333333D0
+ .OPERATOR
+  'Z2-MQM'    (Z2-MQM, for the second atom as specfied in the .mol file)
+  ZAVECTOR
+  YZEFG021
+  XZEFG021
+  COMFACTOR
+  -0.333333333D0
+
 One can define many more :ref:`one_electron_operators` as per their requirements.
 
 keyword(DIPMOM)
@@ -420,3 +460,9 @@ compute nucleon-electron scalar-pseudoscalar interaction constant as an
 expectation value over the corresponding effective four-fermion operator
 in the limit for an infinitely heavy nucleon (Sov. Phys. JETP 62 (1985) 872).
 Reference: :cite:`Fleig2015`
+
+keyword(NMQM)
+
+compute nuclear Magnetic-Quadrupole-Moment (MQM) Interaction constatn as an
+expectation value over the corresponding effective four-component operator
+(Sov. Phys. JETP 60 (1984) 873), Reference: :cite:`Fleig2016` 

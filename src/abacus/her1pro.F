@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C  /* Deck pr1int */
@@ -24,6 +19,7 @@ C  /* Deck pr1int */
      &                  TRIANG,PROPRI,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
 #include "maxmom.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -279,11 +275,11 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
-      PARAMETER (NTABLE = 96)
+      PARAMETER (NTABLE = 97)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
-     &          EFDIR*1
+     &          EFDIR*1,TMPSTR*1
       DIMENSION INTREP(*), INTADR(*)
 C
 #include "shells.h"
@@ -338,7 +334,9 @@ C
 !                  89         90         91         92
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ', 
 !                  93         94         95         96
-     &            'S2MBRA ', 'S2MKET ', 'S2MMIX ', 'xxxxxxx'/
+     &            'S2MBRA ', 'S2MKET ', 'S2MMIX ', 'xxxxxxx',
+!                  97
+     &            'CXIKR  '/
 C
 #include "ibtfun.h"
 C
@@ -376,8 +374,8 @@ C
      &              81, 82, 83, 84,
      &              85, 86, 87, 88,
      &              89, 90, 91, 92,
-     &              93, 94, 95, 96
-     &            ), I
+     &              93, 94, 95, 96,
+     &              97), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -689,9 +687,9 @@ C
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dS/dBX  '
-         LABINT(2) = 'dS/dBY  '
-         LABINT(3) = 'dS/dBZ  '
+         LABINT(1) = 'dS_dBX  '
+         LABINT(2) = 'dS_dBY  '
+         LABINT(3) = 'dS_dBZ  '
          INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
@@ -708,12 +706,12 @@ C
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dS/dB2XX'
-         LABINT(2) = 'dS/dB2XY'
-         LABINT(3) = 'dS/dB2XZ'
-         LABINT(4) = 'dS/dB2YY'
-         LABINT(5) = 'dS/dB2YZ'
-         LABINT(6) = 'dS/dB2ZZ'
+         LABINT(1) = 'dS_dB2XX'
+         LABINT(2) = 'dS_dB2XY'
+         LABINT(3) = 'dS_dB2XZ'
+         LABINT(4) = 'dS_dB2YY'
+         LABINT(5) = 'dS_dB2YZ'
+         LABINT(6) = 'dS_dB2ZZ'
          INTREP(1) = 0
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
@@ -743,12 +741,13 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     Electronic angular momentum around the origin
-C     ---------------------------------------------
+C     Electronic angular momentum around the molecular center of mass
+C     ---------------------------------------------------------------
 C
  20   CONTINUE
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
-     &      ' Calculation of angular momentum around the gauge origin'
+     &     ' Calculation of angular momentum around the molecular'//
+     &     ' center of mass'
          INTTYP = 18
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -792,9 +791,9 @@ C
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dh/dBX  '
-         LABINT(2) = 'dh/dBY  '
-         LABINT(3) = 'dh/dBZ  '
+         LABINT(1) = 'dh_dBX  '
+         LABINT(2) = 'dh_dBY  '
+         LABINT(3) = 'dh_dBZ  '
          INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
@@ -907,12 +906,12 @@ C
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'XXdh/dB2'
-         LABINT(2) = 'XYdh/dB2'
-         LABINT(3) = 'XZdh/dB2'
-         LABINT(4) = 'YYdh/dB2'
-         LABINT(5) = 'YZdh/dB2'
-         LABINT(6) = 'ZZdh/dB2'
+         LABINT(1) = 'XXdh_dB2'
+         LABINT(2) = 'XYdh_dB2'
+         LABINT(3) = 'XZdh_dB2'
+         LABINT(4) = 'YYdh_dB2'
+         LABINT(5) = 'YZdh_dB2'
+         LABINT(6) = 'ZZdh_dB2'
          INTREP(1) = 0
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
@@ -964,7 +963,7 @@ C
       GOTO 200
 C
 C     Electric field at the individual nuclei
-C     --------------------------------------
+C     ---------------------------------------
 C
  31   CONTINUE
          INTTYP = 29
@@ -1009,9 +1008,9 @@ C
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'd<S|/dBX'
-         LABINT(2) = 'd<S|/dBY'
-         LABINT(3) = 'd<S|/dBZ'
+         LABINT(1) = 'd<S|_dBX'
+         LABINT(2) = 'd<S|_dBY'
+         LABINT(3) = 'd<S|_dBZ'
          INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
@@ -1029,9 +1028,9 @@ C
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'd|S>/dBX'
-         LABINT(2) = 'd|S>/dBY'
-         LABINT(3) = 'd|S>/dBZ'
+         LABINT(1) = 'd|S>_dBX'
+         LABINT(2) = 'd|S>_dBY'
+         LABINT(3) = 'd|S>_dBZ'
          INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
@@ -1052,23 +1051,24 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Potential energy at the nuclei
-C     -----------------------------
+C     Potential energy from interaction of electrons with individual nuclei
+C     ---------------------------------------------------------------------
 C
  37   CONTINUE
          INTTYP = 35
          IF (MAXREP .GT. 0) THEN
             WRITE (LUPRI,'(/A/)')
-     &           ' Program cannot calculate potential energy '//
-     &           'with symmetry'
+     &       ' Program cannot calculate potential energy with symmetry'
             CALL QUIT('Cannot calculate potential energy with symmetry')
          ELSE
             IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &           ' Calculation of the potential energy at the nuclei'
+     &       ' Calculation of the potential energy of the interaction'/
+     &      /' of electrons with individual nuclei'
             CALL SETATM(DOATOM,NATOM,INTTYP)
             CALL NPETYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
             ANTI = .FALSE.
          END IF
+      GOTO 200
 C
 C     Half B-differentiated overlap matrix
 C     ------------------------------------
@@ -1380,8 +1380,8 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
-C     Diamagnetic contribution integrals to rotational g factors
-C     ----------------------------------------------------------
+C     Diamagnetic (exp. value) contribution to (NR limit of) shieldings
+C     -----------------------------------------------------------------
 C
  51   CONTINUE
          INTTYP = 48
@@ -1398,14 +1398,14 @@ C     ---------------------------------------------------------
  52   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of first electric derivative of overlap '/
-     $     /'matrix. Type A'
+     &     /'matrix. Type A'
          INTTYP = 49
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dS/dEXa '
-         LABINT(2) = 'dS/dEYa '
-         LABINT(3) = 'dS/dEZa '
+         LABINT(1) = 'dS_dEXa '
+         LABINT(2) = 'dS_dEYa '
+         LABINT(3) = 'dS_dEZa '
 C
          INTREP(1) = ISYMAX(1,1)
          INTREP(2) = ISYMAX(2,1)
@@ -1418,14 +1418,14 @@ C     ---------------------------------------------------------
  53   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of first electric derivative of overlap '/
-     $     / 'matrix. Type B'
+     &     / 'matrix. Type B'
          INTTYP = 50
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dS/dEXb '
-         LABINT(2) = 'dS/dEYb '
-         LABINT(3) = 'dS/dEZb '
+         LABINT(1) = 'dS_dEXb '
+         LABINT(2) = 'dS_dEYb '
+         LABINT(3) = 'dS_dEZb '
 C
          INTREP(1) = ISYMAX(1,1)
          INTREP(2) = ISYMAX(2,1)
@@ -1438,15 +1438,15 @@ C     ___________________________________________________________
 C
  54   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     $     'Calculation of electric derivative of 1-electron
-     $     Hamiltonian integrals'
+     &     'Calculation of electric derivative of 1-electron
+     &     Hamiltonian integrals'
          INTTYP = 51
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dh1/dEX '
-         LABINT(2) = 'dh1/dEY '
-         LABINT(3) = 'dh1/dEZ '
+         LABINT(1) = 'dh1_dEX '
+         LABINT(2) = 'dh1_dEY '
+         LABINT(3) = 'dh1_dEZ '
 C
          INTREP(1) = ISYMAX(1,1)
          INTREP(2) = ISYMAX(2,1)
@@ -1463,7 +1463,7 @@ C
  55   CONTINUE
          INTTYP = 62
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     $     'Parity Violation - chirality integrals'
+     &     'Parity Violation - chirality integrals'
          CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL PVCTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
@@ -2159,12 +2159,12 @@ C
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = '<<S/B2XX'
-         LABINT(2) = '<<S/B2XY'
-         LABINT(3) = '<<S/B2XZ'
-         LABINT(4) = '<<S/B2YY'
-         LABINT(5) = '<<S/B2YZ'
-         LABINT(6) = '<<S/B2ZZ'
+         LABINT(1) = '<<S_B2XX'
+         LABINT(2) = '<<S_B2XY'
+         LABINT(3) = '<<S_B2XZ'
+         LABINT(4) = '<<S_B2YY'
+         LABINT(5) = '<<S_B2YZ'
+         LABINT(6) = '<<S_B2ZZ'
          INTREP(1) = 0
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
@@ -2183,12 +2183,12 @@ C
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = '>>S/B2XX'
-         LABINT(2) = '>>S/B2XY'
-         LABINT(3) = '>>S/B2XZ'
-         LABINT(4) = '>>S/B2YY'
-         LABINT(5) = '>>S/B2YZ'
-         LABINT(6) = '>>S/B2ZZ'
+         LABINT(1) = '>>S_B2XX'
+         LABINT(2) = '>>S_B2XY'
+         LABINT(3) = '>>S_B2XZ'
+         LABINT(4) = '>>S_B2YY'
+         LABINT(5) = '>>S_B2YZ'
+         LABINT(6) = '>>S_B2ZZ'
          INTREP(1) = 0
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
@@ -2207,15 +2207,15 @@ C
          NOPTYP = 9
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = '<>S/B2XX'
-         LABINT(2) = '<>S/B2XY'
-         LABINT(3) = '<>S/B2XZ'
-         LABINT(4) = '<>S/B2YX'
-         LABINT(5) = '<>S/B2YY'
-         LABINT(6) = '<>S/B2YZ'
-         LABINT(7) = '<>S/B2ZX'
-         LABINT(8) = '<>S/B2ZY'
-         LABINT(9) = '<>S/B2ZZ'
+         LABINT(1) = '<>S_B2XX'
+         LABINT(2) = '<>S_B2XY'
+         LABINT(3) = '<>S_B2XZ'
+         LABINT(4) = '<>S_B2YX'
+         LABINT(5) = '<>S_B2YY'
+         LABINT(6) = '<>S_B2YZ'
+         LABINT(7) = '<>S_B2ZX'
+         LABINT(8) = '<>S_B2ZY'
+         LABINT(9) = '<>S_B2ZZ'
          INTREP(1) = 0
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
@@ -2230,7 +2230,23 @@ C
       GOTO 200
 
  96   continue
-      go to 200
+C
+C     EXPIKR integrals CXIKR
+C     -------------------------
+C     NOTE: Computes all eight terms in the expansion of exp(ikr)
+C           i.e. real and imaginary components are contained in separate
+C           terms. Integrals 1-4 are the real and 5-8 the imaginary.
+C           The k-vector needs to be specified. 
+C
+  97  CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of expikr integrals'
+         INTTYP = 106
+         CALL CEXPINT_INFO(NOPTYP,INTREP,LABINT)
+         CALL NTYPTS(NOPTYP)
+         ANTI   = .FALSE.
+         SQUARE = .FALSE.       !.TRUE. CHECK THIS
+         GO TO 200
 
   200 CONTINUE
 C
@@ -2361,7 +2377,7 @@ C
       END IF
 C
 C     *******************************************************
-C     ***** Transform from Cartesian to Spherical EFG's *****
+C     ***** Transform from Cartesian to Spherical EFGs  *****
 C     *******************************************************
 C
       IF (INTTYP .EQ. 31) THEN
@@ -2437,35 +2453,6 @@ C
                END IF
                CALL WRTPRO(SOINT(1,I),NELMNT,LABINT(I),RTNLBL,IPRINT)
   600       CONTINUE
-C
-C        ixx = ksoint - 1 + (intadr(7) - 1)*nnbasx
-C        ixy = ksoint - 1 + (intadr(8) - 1)*nnbasx
-C        ixz = ksoint - 1 + (intadr(9) - 1)*nnbasx
-C        iyx = ksoint - 1 + (intadr(11) - 1)*nnbasx
-C        iyy = ksoint - 1 + (intadr(12) - 1)*nnbasx
-C        iyz = ksoint - 1 + (intadr(13) - 1)*nnbasx
-C        izx = ksoint - 1 + (intadr(16) - 1)*nnbasx
-C        izy = ksoint - 1 + (intadr(17) - 1)*nnbasx
-C        izz = ksoint - 1 + (intadr(18) - 1)*nnbasx
-C        facc = 0.5d0
-C        do 900 i = 1, 14
-C        do 900 j = 1, i
-C           ii = ioden(i)
-C           jj = ioden(j)
-C           iii = max(ii,jj)
-C           jjj = min(ii,jj)
-C           ij = iii*(iii - 1)/2 + jjj
-C           write (6,'(2i3,9f8.4)')
-C    &           i,j,facc*(work1(ixx+ij)-work1(iyy+ij)-work1(izz+ij))
-C    &               work1(ixy+ij),
-C    &               work1(ixz+ij),
-C    &               work1(iyx+ij),
-C    &               facc*(work1(iyy+ij)-work1(ixx+ij)-work1(izz+ij))
-C    &               work1(iyz+ij),
-C    &               work1(izx+ij),
-C    &               work1(izy+ij),
-C    &               facc*(work1(izz+ij)-work1(ixx+ij)-work1(iyy+ij))
-C 900    continue
          END IF
       END IF
 C
@@ -3091,7 +3078,7 @@ C  /* Deck npetyp */
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), NPETBL(NUCIND,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
-      CHARACTER LABINT(9*MXCENT)*8, NAME*2
+      CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
@@ -3104,12 +3091,11 @@ C
       ITYP = 0
       DO 100 IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
-            NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
             DO 200 IREP = 0, MAXREP
                IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
                   ITYP = ITYP + 1
                   NPETBL(IATOM,IREP) = ITYP
-                  LABINT(ITYP) = 'POT.E '//NAME
+                  LABINT(ITYP) = 'POT.E '//NAMDEP(NUCPRE(IATOM)+1)(1:2)
                   INTREP(ITYP) = IREP
                END IF
  200        CONTINUE
@@ -3238,7 +3224,7 @@ C
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT),INTADR(*)
       LOGICAL DOATOM(NUCIND)
-      CHARACTER LABINT(9*MXCENT)*8, NAME*2
+      CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
@@ -3994,7 +3980,7 @@ C
       RETURN
       END
 C  /* Deck binom */
-      FUNCTION BINOM(I,J)
+      REAL*8 FUNCTION BINOM(I,J)
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.D0)
@@ -4010,6 +3996,8 @@ C  /* Deck binom */
       END
 C  /* Deck wrtpro */
       SUBROUTINE WRTPRO(AINT,LENGTH,LABEL,RTNLBL,IPRINT)
+
+      use checkpoint
 C
 C     290689 Henrik Koch
 C     241189 tuh
@@ -4023,41 +4011,25 @@ C
 #include "iratdef.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
+      PARAMETER ( LUPROP = 19 )
 #else
 #include "gnrinf.h"
 #endif
-      PARAMETER ( LUPROP = 19 )
 C
       CHARACTER*8 LABEL,RTNLBL(2)
-      LOGICAL FIRST
       DIMENSION AINT(LENGTH)
-C
-C     Open file
-C
-      IF (NEWPRP) THEN
-         NEWPRP = .FALSE.
-         OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-         REWIND LUPROP
-      ELSE
-         REWIND (LUPROP)
-         CALL FNDLAB('EOFLABEL',LUPROP)
-         BACKSPACE LUPROP
-      END IF
-C
-C     Write label
-C
-      CALL NEWLB2(LABEL,RTNLBL,LUPROP,LUPRI)
 C
 C     Write integrals
 C
-      LEN = MAX(4,LENGTH)
-      CALL WRITSQ(LUPROP,IRAT*LEN,AINT)
-C
-C     We add an extra label to signify EOF
-C
-      CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
-C      
+      ! Write to checkpoint file, rtnlbl(1) is date, not needed.
+      ! Keep the standard integrals also on the checkpoint
+      if (label == 'OVERLAP ' .or.
+     &    label == 'MOLFIELD' .or.
+     &    label == 'KINENERG' .or.
+     &    label == 'BETAMAT ') then
+          call prop_to_checkpoint(label//rtnlbl(2),aint,length)
+      end if
+      call prop_to_propfile (label//rtnlbl(2),aint,length)
       RETURN
       END
 C  /* Deck dsotst */
@@ -4254,3 +4226,89 @@ C  /* Deck effdentyp */
 
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CEXPINT_INFO(NINTS,INTREP,LABINT)
+C***********************************************************************
+#include "implicit.h"
+#include "pgroup.h"
+#include "dgroup.h"
+      DIMENSION INTREP(8)
+      CHARACTER*8 LABINT(8)
+      NFC = NBSYM/NFSYM
+C.....Real part of exponential
+      NINTS = 0
+      DO IS = 1,NFC
+         NINTS = NINTS + 1
+         IREP  = JFSYM(IS,1) - 1
+         INTREP(NINTS) = IREP
+         LABINT(NINTS) = 'CEXPR'//REP(IREP)
+      ENDDO
+C.....Imaginary part of exponential
+      DO IS = 1,NFC
+         NINTS = NINTS + 1
+         IREP   = JFSYM(IS,2) - 1
+         INTREP(NINTS) = IREP
+         LABINT(NINTS) = 'CEXPI'//REP(IREP)
+      ENDDO
+      NINTS = 2*NFC
+C
+      RETURN
+      END
+C --- end of her1pro.F ---
+
+      subroutine prop_to_checkpoint(label,prop,nelmnt)
+
+      use checkpoint
+
+#include "implicit.h"
+#include "dcbbas.h"
+
+      character(16), intent(in) :: label
+      real(8), intent(in) :: prop(nelmnt)
+      if (label == 'write_size_only!') then
+         call checkpoint_write (
+     &   '/result/operators/ao_matrices/aobasis_dim',idata=ntbas(0))
+      else
+         call checkpoint_write (
+     &   '/result/operators/ao_matrices/'//label(1:8)//label(13:16),
+     &    rdata=prop)
+      end if
+      end
+
+      subroutine init_propfile
+      use labeled_storage
+      logical             :: tobe
+      character(len=80)   :: top_groups(1)
+      inquire (file='OPERATORS.h5',exist=tobe)
+      if (.not.tobe) then
+         top_groups(1) = '/result'
+         dirac_datafiles(1)%name = 'OPERATORS.h5'
+         dirac_datafiles(1)%type = 2
+         dirac_datafiles(1)%status = -1
+         call lab_init (dirac_datafiles(1),top_groups)
+      else
+         dirac_datafiles(1)%name = 'OPERATORS.h5'
+         dirac_datafiles(1)%type = 2
+         dirac_datafiles(1)%status = 0
+      end if
+      end subroutine
+
+      subroutine prop_to_propfile(label,prop,nelmnt)
+
+      use labeled_storage
+
+#include "implicit.h"
+#include "dcbbas.h"
+
+      character(16), intent(in) :: label
+      real(8), intent(in) :: prop(nelmnt)
+
+      if (label == 'write_size_only!') then
+         call lab_write (dirac_datafiles(1),
+     &   '/result/operators/ao_matrices/aobasis_dim',idata=ntbas(0))
+      else
+         call lab_write (dirac_datafiles(1),
+     &   '/result/operators/ao_matrices/'//label(1:8)//label(13:16),
+     &    rdata=prop)
+      end if
+      end

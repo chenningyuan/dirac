@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -101,17 +96,6 @@ C
      &        ' not implemented for this open-shell DHF')
          END IF
 
-         if (dirac_cfg_dft_calculation) then
-            if (nopen > 0) then
-               call quit('error in molecular gradient:' // 
-     &        ' not implemented for open-shell DFT')
-            end if
-            if (maxrep > 0) then
-               call quit('error in molecular gradient:' // 
-     &        ' not implemented for DFT with symmetry')
-            end if
-         end if
-
          if (bss .or. x2c) then
             call quit('error in molecular gradient:' // 
      &      ' not implemented for X2C')
@@ -193,6 +177,7 @@ C*****************************************************************************
       use quaternion_algebra
       use xcint_main
       use dirac_cfg
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -287,9 +272,7 @@ c        ... Calculate and add correction.
 
          allocate(cmo(n2bbasxq))
          cmo = 0.0d0
-         call opnfil(lucoef, 'DFCOEF', 'OLD', 'xc molecular gradient')
          call reacmo(lucoef, 'DFCOEF',cmo, dummy, dummy, dummy, 3)
-         close(lucoef, status='keep')
        
          allocate(dmat(n2bbasxq))
          dmat = 0.0d0
@@ -351,9 +334,8 @@ C
 C
       IF (NASHT.GT.0) THEN
 C
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
-         CLOSE(LUCOEF,STATUS='KEEP')
+         ! Needs an array as argument, old trick of passing a pointer does not work
+         CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
 C
 C
 C        Transform QV to MO basis
@@ -404,9 +386,7 @@ C
          DO 20 I = 1,NFSYM
 C
             KCMO = KFVAO
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
-            CLOSE(LUCOEF,STATUS='KEEP')
+            CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
 C
             IF (NISH(I).EQ.0) GOTO 20
             CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
@@ -443,9 +423,7 @@ C     FOCK = CCtFCCt = DFDt = CF(MO)Ct
 C
       CALL DZERO(WORK(KFCAO),N2BBASXQ)
       KCMO = KFVAO
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
       IF ( IPRINT .GE. 10 ) THEN
          DO I=1,NFSYM
            IF (NORB(I) .NE. 0) THEN
@@ -557,9 +535,7 @@ C
       KDCAO = KDAO
       KDVAO = KDAO + N2BBASXQ
       KCMO  = KDVAO + N2BBASXQ
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
 C
 C     Get density matrix
 C
@@ -684,9 +660,7 @@ C
 C
 C     Contruct density matrix
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
       DO IMAT = 1,NFMAT
          IBIT = IBTSHL(1,IMAT-1)
          CALL GENDEN(WORK(KDCAO),WORK(KCMO),IBIT,IPRINT)
@@ -2011,16 +1985,16 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "consts.h"
 C
-      PARAMETER( D0 = 0.0 D00)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
       CHARACTER*3 STR
@@ -2090,16 +2064,17 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "consts.h"
 C
-      PARAMETER( D0 = 0.0D00, DP1 = 0.1D00)
+      PARAMETER(DP1 = 0.1D00)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOSS
       CHARACTER*3 STR
@@ -2593,6 +2568,7 @@ C     Get total density matrix in SO basis (used for SCDENS & LCDENS)
 C
 C     31-July-2001 HJAaJ
 C
+      use dircmo
 #include "implicit.h"
       DIMENSION DSO(*), WORK(LWORK)
 C
@@ -2605,9 +2581,8 @@ C
 C
       CALL QENTER('GETDSO')
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETDSO')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
-      CLOSE(LUCOEF,STATUS='KEEP')
+C     Needs an array as argument, old trick of passing a pointer does not work
+      CALL REACMO_new(cmo=WORK(KCMO:KCMO+N2BBASXQ-1))
 C
 C     Get total density matrix
 C

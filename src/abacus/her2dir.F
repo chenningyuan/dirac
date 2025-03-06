@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -35,16 +30,9 @@ C     and sets directives for integral calculation.
 C
 C     tuh
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IMPLICIT REAL (F,S), LOGICAL(D)
-      REAL ONE, TWO, ZERO
-      PARAMETER (ONE = 1.00 E00, TWO = 2.00 E00, ZERO = 0.0 E00)
-#endif
-#if !defined (SYS_CRAY) && !defined (SYS_T3D)
-      IMPLICIT DOUBLE PRECISION (F,S), LOGICAL(D)
-      DOUBLE PRECISION ONE, TWO, ZERO
+      IMPLICIT REAL*8(F,S), LOGICAL(D)
+      REAL*8  ONE, TWO, ZERO
       PARAMETER (ONE = 1.00 D00, TWO = 2.00 D00, ZERO = 0.0 D00)
-#endif
 #include "priunit.h"
       LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, 
      &        LONDON, DOGAB
@@ -1478,12 +1466,7 @@ C
       END
 C  /* Deck dire00 */
       SUBROUTINE DIRE00
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IMPLICIT REAL (F,S), LOGICAL (D)
-#endif
-#if !defined (SYS_CRAY) && !defined (SYS_T3D)
-      IMPLICIT DOUBLE PRECISION (F,S), LOGICAL (D)
-#endif
+      IMPLICIT REAL*8(F,S), LOGICAL (D)
 #include "expcom.h"
       COMMON /DEODIR/ DEXA00, DEXB00, DEXC00, DEXD00,
      *                DEYA00, DEYB00, DEYC00, DEYD00,

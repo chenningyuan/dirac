@@ -1,3 +1,7 @@
+from runtest import version_info
+
+assert version_info.major == 2
+
 def configure(options, input_files, extra_args):
     """
     This function is used by runtest to configure runtest
@@ -18,7 +22,7 @@ def configure(options, input_files, extra_args):
         exe = 'dirac.x'
 
     command = []
-    command.append('python {0}'.format(launcher_full_path))
+    command.append('python3 {0}'.format(launcher_full_path))
     command.append('--dirac={0}'.format(path.join(options.binary_dir, exe)))
     command.append('--noarch --nobackup')
     command.append('--inp={0} --mol={1}'.format(inp, mol))
@@ -30,7 +34,10 @@ def configure(options, input_files, extra_args):
     inp_no_suffix = path.splitext(inp)[0]
     mol_no_suffix = path.splitext(mol)[0]
 
-    output_prefix = '{0}_{1}'.format(inp_no_suffix, mol_no_suffix)
+    if inp_no_suffix != mol_no_suffix:
+        output_prefix = '{0}_{1}'.format(inp_no_suffix, mol_no_suffix)
+    else:
+        output_prefix = '{0}'.format(inp_no_suffix)
 
     relative_reference_path = 'result'
 

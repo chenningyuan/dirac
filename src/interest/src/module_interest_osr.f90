@@ -10,26 +10,19 @@
 !
 ! Contains:     
 !
-! Licensing:    dirac_copyright_start
-!                     Copyright (c) 2016 by the authors of DIRAC.
-!                     All Rights Reserved.
-!                     
-!                     This source code is part of the DIRAC program package.
-!                     It is provided under a written license and may be used,
-!                     copied, transmitted, or stored only in accordance to the
-!                     conditions of that written license.
-!                     
-!                     In particular, no part of the source code or compiled modules may
-!                     be distributed outside the research group of the license holder.
-!                     This means also that persons (e.g. post-docs) leaving the research
-!                     group of the license holder may not take any part of Dirac,
-!                     including modified files, with him/her, unless that person has
-!                     obtained his/her own license.
-!                     
-!                     For information on how to get a license, as well as the
-!                     author list and the complete list of contributors to the
-!                     DIRAC program, see: http://dirac.chem.vu.nl
-!               dirac_copyright_end
+! Licensing:    Copyright (c) by the authors of DIRAC.
+!
+!               This program is free software; you can redistribute it and/or
+!               modify it under the terms of the GNU Lesser General Public
+!               License version 2.1 as published by the Free Software Foundation.
+!
+!               This program is distributed in the hope that it will be useful,
+!               but WITHOUT ANY WARRANTY; without even the implied warranty of
+!               MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!               Lesser General Public License for more details.
+!
+!               If a copy of the GNU LGPL v2.1 was not distributed with this
+!               code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !
 ! Author:       Michal Repisky (michal.repisky@uit.no)
 !
@@ -40,17 +33,15 @@ module module_interest_osr
   implicit none
 
   public  interest_osr_initialize
-  public  interest_osr_class_overlap
-  public  interest_osr_class_dipole
   public  interest_osr_class_nuclear
 
   integer, public, parameter :: lmx1 = 8 
-  integer, public, parameter :: lmx2 = 15                  !2*lmx1-1 
-  integer, public, parameter :: lmx4 = 29                  !4*lmx1-3 
-  integer, public, parameter :: ncc1 = 120                 !(lmx1*(lmx1+1)*(lmx1+2))/6 
-  integer, public, parameter :: ncc2 = 680                 !(lmx2*(lmx2+1)*(lmx2+2))/6 
-  integer, public, parameter :: nccx = 2205                !max( ncc(lmx1-2)*ncc(lmx-2)*5, ncc(lmx1)*ncc(lmx1) )
-  real(8), public, parameter :: pi   = 3.141592653589793d0 !4.0d0*datan(1.0d0)
+  integer, public, parameter :: lmx2 = 15
+  integer, public, parameter :: lmx4 = 29
+  integer, public, parameter :: ncc1 = 120
+  integer, public, parameter :: ncc2 = 680
+  integer, public, parameter :: nccx = 2205
+  real(8), public, parameter :: pi   = 3.14159265358979323846d0
   integer, public, parameter :: ncc(lmx1) = (/1,3,6,10,15,21,28,36/)
   integer, public, parameter :: nsc(lmx1) = (/1,3,5, 7, 9,11,13,15/)
 
@@ -61,7 +52,7 @@ module module_interest_osr
   private
 
   integer, parameter :: lmxx = lmx4+6
-  real(8), parameter :: tf   = 92.0d0        !!dfloat(2*(4*(lmx1-1)+8)+36)
+  real(8), parameter :: tf   = 92.0d0
 
   integer, save :: mo(6,ncc2)                !fixme: dynamic allocation
   !$OMP threadprivate(mo)
@@ -88,155 +79,6 @@ module module_interest_osr
   !$OMP                c31,c32,c33,c34,c35,c36,c37,c38,c39,c40  ) 
 contains
 
-! ---------------------------------------------------------------------------------------
-! CLASS_OVERLAP
-!
-!note: na vstupe musi byt pre RKB bazu: (la-1), (lab+2)
-!note: li1 (on output) - dlzka intermediates
-!note: na vystupe, 1-elektronove integraly: [la...lab|0]
-! ---------------------------------------------------------------------------------------
-  subroutine interest_osr_class_overlap(li1,fint,cosr,la,lab,pexp,rxpa,rypa,rzpa)
-    !> input
-    integer, intent(in) :: la,lab
-    real(8), intent(in) :: cosr
-    real(8), intent(in) :: pexp,rxpa,rypa,rzpa
-    !> output
-    integer, intent(out) :: li1
-    real(8), intent(out) :: fint(*)
-    !> local
-    integer :: n,l,ll,lm,ln,lx,ly
-    real(8) :: sint(3,lmx2)
-    real(8) :: o2p,pexp2
-    real(8) :: sxone,syone,szone
-    real(8) :: sxtwo,sytwo,sztwo
-
-    sxtwo = 0.0d0
-    sytwo = 0.0d0
-    sztwo = 0.0d0
-    sint(1,1) = dsqrt(pi/pexp)
-    sint(2,1) = sint(1,1)
-    sint(3,1) = sint(2,1)
-    pexp2 = 2.0d0*pexp
-    do n=2,lab,1
-      o2p   = dfloat(n-2)/pexp2
-      sxone = sxtwo
-      syone = sytwo
-      szone = sztwo
-      sxtwo = sint(1,n-1)
-      sytwo = sint(2,n-1)
-      sztwo = sint(3,n-1)
-      sint(1,n) = rxpa*sxtwo + o2p*sxone
-      sint(2,n) = rypa*sytwo + o2p*syone
-      sint(3,n) = rzpa*sztwo + o2p*szone
-    enddo
-
-    li1=0
-    n=max(1,la)
-    do l=n,lab,1
-      do lx=1,l
-        ll=l-lx+1
-        do ly=1,lx,1
-          lm =lx-ly+1
-          ln =ly
-          li1=li1+1
-          fint(li1)=cosr*sint(1,ll)*sint(2,lm)*sint(3,ln)
-        enddo
-      enddo
-    enddo
-  end subroutine 
-
-! ---------------------------------------------------------------------------------------
-! CLASS_DIPOLE
-!
-!note: na vstupe musi byt pre RKB bazu: (la-1), (lab+2)
-!note: li1 (on output) - dlzka intermediates
-!note: na vystupe, 1-elektronove integraly: [la...lab|x/y/z|0]
-! ---------------------------------------------------------------------------------------
-  subroutine interest_osr_class_dipole(li1,fintx,finty,fintz,cosr,la,lab,pexp,&
-                                       rxpa,rypa,rzpa,rxpc,rypc,rzpc)
-    !> input
-    integer, intent(in) :: la,lab
-    real(8), intent(in) :: cosr,pexp
-    real(8), intent(in) :: rxpa,rypa,rzpa
-    real(8), intent(in) :: rxpc,rypc,rzpc
-    !> output
-    integer, intent(out) :: li1
-    real(8), intent(out) :: fintx(*)
-    real(8), intent(out) :: finty(*)
-    real(8), intent(out) :: fintz(*)
-    !> local
-    integer :: n,l,ll,lm,ln,lx,ly
-    real(8) :: sint(3,lmx2)
-    real(8) :: dipi(3,lmx2)
-    real(8) :: o2psi,o2pdi,pexp2
-    real(8) :: sxone,syone,szone
-    real(8) :: sxtwo,sytwo,sztwo
-
-
-    o2pdi = 0.0d0
-    sxtwo = 0.0d0
-    sytwo = 0.0d0
-    sztwo = 0.0d0
-    sint(1,1) =      dsqrt(pi/pexp)
-    sint(2,1) =      sint(1,1)
-    sint(3,1) =      sint(2,1)
-    dipi(1,1) = rxpc*sint(1,1)
-    dipi(2,1) = rypc*sint(2,1)
-    dipi(3,1) = rzpc*sint(3,1)
-    pexp2 = 2.0d0*pexp
-    do n=2,lab,1
-      o2psi = o2pdi
-      o2pdi = dfloat(n-1)/pexp2
-      sxone = sxtwo
-      syone = sytwo
-      szone = sztwo
-      sxtwo = sint(1,n-1)
-      sytwo = sint(2,n-1)
-      sztwo = sint(3,n-1)
-      sint(1,n) = rxpa*sxtwo     + o2psi*sxone
-      sint(2,n) = rypa*sytwo     + o2psi*syone
-      sint(3,n) = rzpa*sztwo     + o2psi*szone
-      dipi(1,n) = rxpc*sint(1,n) + o2pdi*sxtwo
-      dipi(2,n) = rypc*sint(2,n) + o2pdi*sytwo
-      dipi(3,n) = rzpc*sint(3,n) + o2pdi*sztwo
-    enddo
-  
-    li1=0
-    n=max(1,la)
-    do l=n,lab,1
-      do lx=1,l
-        ll=l-lx+1
-        do ly=1,lx,1
-          lm =lx-ly+1
-          ln =ly
-          li1=li1+1
-          fintx(li1)=cosr*dipi(1,ll)*sint(2,lm)*sint(3,ln)
-          finty(li1)=cosr*sint(1,ll)*dipi(2,lm)*sint(3,ln)
-          fintz(li1)=cosr*sint(1,ll)*sint(2,lm)*dipi(3,ln)
-        enddo
-      enddo
-    enddo
-  end subroutine 
-
-! ---------------------------------------------------------------------------------------
-! CLASS_NUCLEAR
-!
-!note: na vstupe musi byt pre RKB bazu: (la-1), (lc-1), (lab+2), (lcd+2)
-!note: na vstupe musi byt pre 2-centrove integraly, lcd=1 
-!note: lf1 (on input ) - dlzka finalneho batchu (prvy  electron),t.j.  ncc(la)*ncc(lb)(*5)
-!note: lf2 (on input ) - dlzka finalneho batchu (druhy electron),t.j.  ncc(lc)*ncc(ld)(*5)
-!note: li1 (on output) - dlzka intermediates    (prvy  electron)
-!note: li2 (on output) - dlzka intermediates    (druhy electron)
-!
-!note: na vystupe, 1-elektronove integraly: [la...lab|0]
-!note: na vystupe, 2-elektronove integraly: [lc...lcd,0|la....lab,0], left-side first 
-!
-! ---------------------------------------------------------------------------------------
-!        |  NAI-PN    NAI-GCDM       ERI
-! fnbra  |   1.0      sigma/p      q/(p+q)
-! fdbra  |   1/2p      1/2p         1/2p
-! fnket  |   rdum      rdum        p/(p+q)
-! fdket  |   rdum      rdum         1/2q
 ! ---------------------------------------------------------------------------------------
   subroutine interest_osr_class_nuclear(li1,li2,fint,cosr,t,                                 &
                                         la,lab,lf1,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
@@ -1487,9 +1329,6 @@ contains
 
 ! ---------------------------------------------------------------------------------------
 ! KET ROUTINE
-!
-! todo: do buducna doprogramuj zmenu dolnej hranice v cykle po n
-! todo: do buducna odstran redundancie v clenoch
 ! ---------------------------------------------------------------------------------------
   subroutine nuclear_ket(li1,li2,fint,lf2,mmax,nmin,nmax,lc,lcd,  &
                          fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq)
@@ -2682,8 +2521,6 @@ contains
   end subroutine
 
 ! ---------------------------------------------------------------------------------------
-! downward recursion: x < 12.0
-! ---------------------------------------------------------------------------------------
   subroutine nuclear_boysxina(nval,xval,xdif,fnx,fnxtab)  
     !> local -> fixme
     integer :: nval, k, nmax
@@ -2736,8 +2573,6 @@ contains
   end subroutine
 
 ! ---------------------------------------------------------------------------------------
-! asymptotic region (54)
-! ---------------------------------------------------------------------------------------
   subroutine nuclear_boysxinc(nval,xval,fnx) 
     !> local -> fixme
     integer :: nval, n
@@ -2755,8 +2590,6 @@ contains
   end subroutine
 
 ! ---------------------------------------------------------------------------------------
-! accumulate bra results 
-! ---------------------------------------------------------------------------------------
   subroutine nuclear_getbra(iini,iend,a,b,li1,li2)
     !> local -> fixme
     integer :: i,iini,iend,li1,li2
@@ -2770,8 +2603,6 @@ contains
     li2=1
   end subroutine
 
-! ---------------------------------------------------------------------------------------
-! accumulate ket results 
 ! ---------------------------------------------------------------------------------------
   subroutine nuclear_getket(jini,jend,iini,iend,a,b,ldb)
     !> local -> fixme
@@ -2796,8 +2627,6 @@ contains
     endif
   end subroutine
 
-! ---------------------------------------------------------------------------------------
-! module initialization 
 ! ---------------------------------------------------------------------------------------
   subroutine interest_osr_initialize
     !> local -> fixme
@@ -2891,23 +2720,6 @@ contains
     deallocate( lin )
     deallocate( min )
     deallocate( nin )
-
-!   m2 = 0
-!   do i=1,lmx1
-!     m1 = m2 + 1      
-!     m2 = m2 + i*(i+1)/2 
-!     write(6,*)
-!     write(6,'(a,i2)') 'Ang. momentum: ',i
-!     write(6,*)
-!     write(6,'(21(7x,i2))') (ii,ii=m1,m2) 
-!     write(6,'(21(7x,i2))') (mo(1,ii),ii=m1,m2) 
-!     write(6,'(21(7x,i2))') (mo(3,ii),ii=m1,m2) 
-!     write(6,'(21(7x,i2))') (mo(5,ii),ii=m1,m2) 
-!     write(6,*)
-!     write(6,'(21(7x,i2))') (mo(2,ii),ii=m1,m2) 
-!     write(6,'(21(7x,i2))') (mo(4,ii),ii=m1,m2) 
-!     write(6,'(21(7x,i2))') (mo(6,ii),ii=m1,m2) 
-!   enddo
 
     istop = lmxx
     denom = 1.0d0 

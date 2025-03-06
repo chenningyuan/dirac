@@ -13,6 +13,7 @@
 !     IPSOPP     - Pointer to the ECP spin-orbit matrix, SOPP DCBXPR
 !     IPANGMOM   - Pointer to the z-component of angular momentum in DCBXPR
 !     IPSPNMOM   - Pointer to the z-component of spin in DCBXPR
+!     IPSPNORB   - Pointer to the dot between spin and angular moment in DCBXPR
 !
 !     MC         - number of components (1=only large, 2=large+small)
 !     N1OPER     - Number of additional operators (finite field calculations)
@@ -24,14 +25,15 @@
 !     NOSMLV     - No small nuclear attraction integrals
 !     URKBAL     - Unrestricted kinetic balance
 !     MDIRAC     - modified Dirac Hamiltonian
-!     LEVYLE     - Levy-Leblond Hamiltonian
+!     LEVYLE     - 4-component non-relativistic Levy-Leblond Hamiltonian
+!     NONRAL     - 2-component non-relativistic Pauli Hamiltonian
+!     ECPCALC    - RECP calculation
 !     SUB_BL     - Diagonalize Hamiltonian blockwise (neglect couplings)
 !     SSMTRC     - Scaling factor for SS overlap matrix
 !     SSMTRC_SAVE- Scaling factor for SS overlap matrix, temporary variable
 !
 !     SPINFR     - Neglect spin-orbit coupling
 !     SPINFR2    - Neglect 2-electron spin-orbit coupling
-!     MOLMF      - Use molecular mean field approximation (^4 DC(G)**)       in correlated calcs.
 !     X2CMMF     - Use molecular mean field approximation (^2 DC(G) (U_mol)) in correlated calcs.
 !     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 !     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
@@ -43,7 +45,6 @@
 !                  ONECAP type 3 model. One-center (SS|SS) and (LL|SS).
 !                  Correction made to two-electron Fock-matrix.
 !     ONECOFF    - internal flag for turning off ONECAP
-!     VACPOL     - semi-classical QED: vacuum polarization included
 !
 !     BSS        - flag for generating matrix elements of
 !                  Barysz-Sadlej-Snijders transformed two-component Hamiltonians
@@ -105,6 +106,7 @@
 !     TRS_MIX - if .true.,allow mixing T+ Hamiltonian with chosen T- perturbative operator 
 !
 !     WRITE_Jz_MATRIX - flag for writing out the Jz matrices from the LINSYM routine into text files
+!     WRITE_K_MATRIX - flag for writing out the K matrices from the ATMSYM routine into text files 
 !
 !
 
@@ -112,9 +114,9 @@
       PARAMETER (MAX1OPER = 10)
 
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
-     &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
-     &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
-     &        INI2C, I2COFK, IPSOPP, IPVEMB0, ISORDER_AMFI_x2c,         &
+     &        IPSPNMOM, IPSPNORB, N1OPER, IPR1OP(MAX1OPER), LSOLMX,     &
+     &        IPRSOL, ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH,      &
+     &        I2CHAM, INI2C, I2COFK, IPSOPP, IPVEMB0, ISORDER_AMFI_x2c, &
      &        I1_DCLHAM,I2_DCLHAM                                     
 !
 !     IMPORTANT !!!
@@ -124,8 +126,8 @@
 !     start and the end !!!
 !
       COMMON /DCIHAM/ I1_HAM, IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,     &
-     &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
-     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,                &
+     &                IPKINERG, IPANGMOM, IPSPNMOM, IPSPNORB, N1OPER,   &
+     &                IPR1OP, LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,        &
      &                IMFCH, I2CHAM, INI2C, I2COFK, IPVEMB0, IPSOPP,    &
      &                ISORDER_AMFI_x2c, I2_HAM
 
@@ -137,23 +139,24 @@
      &        ZORA4, ZORASC, PROJEC, PROOWN,         SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
-     &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
-     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ecpcalc,MDIRAC, TRS_MIX,  &
-     &        WRITE_Jz_MATRIX, NONREL, FAKE2C
-
+     &        RDSUSLLMOD, CAP, CMPEIG,                                  &
+     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,        &
+     &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ECPCALC,MDIRAC, TRS_MIX,  &
+     &        WRITE_Jz_MATRIX, WRITE_K_MATRIX, NONREL, FAKE2C,          &
+     &        DOEFFQED, DOASHIFT
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
      &                SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,             &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
-     &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
-     &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
+     &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA,         &
+     &                RDSUSLLMOD,CAP,CMPEIG,                            &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
-     &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
-     &                ecpcalc,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &
-     &                FAKE2C, I2_DCLHAM
+     &                NOSFMU,       TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
+     &                ECPCALC,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &
+     &                WRITE_K_MATRIX,FAKE2C,I2_DCLHAM,                  &
+     &    	      DOEFFQED, DOASHIFT
 
 !    Do NOT add any variables after the end tag !!!
 !

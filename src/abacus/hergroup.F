@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C FILE : hergroup.F
@@ -407,11 +402,11 @@ C
         DO 130 I = 0,MAXREP
           WRITE(LUPRI,'(4X,A3,1X,A1,8(1X,I3,1X))')
      &      REP(I),'|',(IXVAL(JSOP(J),I),J=0,MAXREP)
-c           
+c
 c     For ECP module
 c     ==============
             itypag(i) = REP(I)
-c    
+c
   130   CONTINUE
 C
 C       Direct product table
@@ -501,8 +496,8 @@ C       (x,y,z) --> (k,j,i)
 C     and this is the default, including complex groups with
 C     a totally symmetric z-rotation
 C
-C     Variables IXQ, IYQ and IZQ gives the mapping from coordinates
-C     to quaternion units 1,2, and 3, whereas IQ1, IQ2 and IQ3 gives
+C     Variables IXQ, IYQ, and IZQ gives the mapping from coordinates
+C     to quaternion units 1, 2, and 3, whereas IQ1, IQ2, and IQ3 gives
 C     the reverse mapping.
 C
       IQ1 = 3
@@ -544,7 +539,7 @@ C         Non-zero coefficients of X1: (jCz + kCx) = k(Cx + iCz) (k shifted over
           IZQ = 4
         ENDIF
       ENDIF
-C     
+C
 C     Set up an array that points back to the default assignment of quaternion units
 C
       IQMAP(1)   = 1
@@ -556,7 +551,7 @@ C
 C     Set up direct product table for fermion ircops
 C     ==============================================
 C
-C     Consider a Kramers basis of spinors {p,P} where p and P referred to 
+C     Consider a Kramers basis of spinors {p,P} where p and P referred to
 C     the unbarred and barred spinors of a Kramers pair, respectively.
 C     Limiting attention to the binary groups, that is, D2h and subgroups,
 C     there are at most two fermion ircops, depending on whether inversion is
@@ -565,7 +560,7 @@ C     and ungerade representations, respectively.
 C
 C     Assuming the spinor structure to be given below the boson irrep of the real and imaginary
 C     parts of spinor products pq and pQ are given below.
-C     For complex groups having a single totally symmetric rotation, 
+C     For complex groups having a single totally symmetric rotation,
 C     the rotation will have the symmetry of Im(p_1,q_1)......
 C
 C     Gerade product:
@@ -593,16 +588,16 @@ C
 C
 C     Determine distribution of boson irreps in spinors
 C     =================================================
-C     All 4-component operators span boson irreps. 
-C     JBTOF shows for given operator symmetry IBREP 
-C     connects spinors of fermion ircops IFSYM and JFSYM, 
-C     that is, JFSYM = JBTOF(IBREP,IFSYM) 
+C     All 4-component operators span boson irreps.
+C     JBTOF shows for given operator symmetry IBREP
+C     connects spinors of fermion ircops IFSYM and JFSYM,
+C     that is, JFSYM = JBTOF(IBREP,IFSYM)
 C
-C     A 2- (or 4-) spinor spans fermion irreps. 
+C     A 2- (or 4-) spinor spans fermion irreps.
 C     However, the real and imaginary parts of the alpha- and beta-
 C     components are scalar functions and span boson irreps.
-C     
-C     The array JSPINR(IM,IC,IFSYM) gives the boson irrep 
+C
+C     The array JSPINR(IM,IC,IFSYM) gives the boson irrep
 C     of the real and imaginary parts of the alpha/beta-components
 C     of the large (IC=1) and small (IC=2) components of
 C     2-spinors of fermion ircop IFSYM.
@@ -622,7 +617,7 @@ C       Re[Sb]: JSPINR(3,2,1) = y
 C       Im[Sb]: JSPINR(4,2,1) = x
 C
 C     The choice of Re[La] being totally symmetric corresponds to a choice of phase.
-C     
+C
 C     For complex groups with a totally symmetric rotation other than z, the spinor
 C     structure is modified such that the totally symmetric rotation enters Im[La]
 C     Note that this corresponds to choosing a different axis than z for spin quantization
@@ -636,11 +631,11 @@ C       Re[Lb]: JSPINR(3,1,1) = Rz j
 C       Im[Lb]: JSPINR(4,1,1) = Ry k
 C     Totally symmetric y-rotation:
 C       Re[La]: JSPINR(1,1,1) = G0 (totally symmetric)
-C       Im[La]: JSPINR(2,1,1) = Ry i  
+C       Im[La]: JSPINR(2,1,1) = Ry i
 C       Re[Lb]: JSPINR(3,1,1) = Rx j
 C       Im[Lb]: JSPINR(4,1,1) = Rz k
 C
-C     
+C
       DO IM = 1,4
         JBTOF(IFDIRP(IM,1),1) = 1
         JSPINR(IM,1,1) = IFDIRP(IM,1)
@@ -662,10 +657,13 @@ C
 C     Determine boson symmetries connected by a given
 C     fermion irrep
 C
+      CALL ICOPY(16,-1,0,IBTOSF(0,1),1)
       IF(NFSYM.EQ.1) THEN
         DO ISYM = 1,NBSYM
           JFSYM(ISYM,1) = ISYM
           JFSYM(ISYM,2) = ISYM
+          IBTOSF(ISYM-1,1) = ISYM
+          IBTOSF(ISYM-1,2) = ISYM
         ENDDO
       ELSEIF(NFSYM.EQ.2) THEN
         ISYMA = 0
@@ -674,9 +672,11 @@ C
           IF(JBTOF(ISYM-1,1).EQ.1) THEN
             ISYMA = ISYMA + 1
             JFSYM(ISYMA,1) = ISYM
+            IBTOSF(ISYM-1,1) = ISYMA
           ELSE
             ISYMB = ISYMB + 1
             JFSYM(ISYMB,2) = ISYM
+            IBTOSF(ISYM-1,2) = ISYMB
           ENDIF
         ENDDO
       ENDIF
@@ -926,12 +926,12 @@ C     ********************************************
 C     *****   Define 4-component matrices   ******
 C     ********************************************
 C
-C     Time symmetric matrices: 
+C     Time symmetric matrices:
 C        I_4, gamma_5, beta, beta x gamma_5
 C     Time anti-symmetric matrices:
 C        Sigma, alpha, beta x Sigma, beta x alpha
 C
-C     NOTE: An imaginary phase is inserted if necessary 
+C     NOTE: An imaginary phase is inserted if necessary
 C           to make all matrices time symmetric to accomodate
 C           the quaternion symmetry scheme of DIRAC.
 C           JM4TIM reports the time reversal symmetry without imaginary phase
@@ -952,18 +952,19 @@ C     |  -B*   A* |
 C
 C     with the quaternion form given by
 C
-C     A + Bj 
+C     A + Bj
 C
 C     The end result is:
-C     
-C                1                  | i                | j                  | k                 |
+C
 C     -------------------------------------------------------------------------------------------
-C     I_2     |  I_4                | i(Sigma_z)       | i(Sigma_y)         | i(Sigma_x)        |
-C     sigma_z |  beta               | i(beta x Sigma_z)| i(beta x Sigma_y)  | i(beta x Sigma_x) |
-C     sigma_y |  -i(beta x alpha_z) | beta x gamma_5   | -i(beta x alpha_y) | -i(betax alpha_x) |
-C     sigma_x |  gamma_5            | i(alpha_z)       | i(alpha_y)         | i(alpha_x)        |
+C     |            | 1              | i                 | j                 | k                 |
 C     -------------------------------------------------------------------------------------------
-C     
+C     | I_2        | I_4            | i(Sigma_z)        | i(Sigma_y)        | i(Sigma_x)        |
+C     | sigma_z    | beta           | i(beta x Sigma_z) | i(beta x Sigma_y) | i(beta x Sigma_x) |
+C     | i(sigma_y) | beta x gamma_5 | i(beta x alpha_z) | i(beta x alpha_y) | i(beta x alpha_x) |
+C     | sigma_x    | gamma_5        | i(alpha_z)        | i(alpha_y)        | i(alpha_x)        |
+C     -------------------------------------------------------------------------------------------
+C
 C     The spatial symmetry of these basis matrices is given in terms of the totally symmetric irrep Gamma_0,
 C     the rotations R_q, the coordinates q and the function xyz:
 C
@@ -977,308 +978,319 @@ C     y      : i(alpha_y), i(beta x alpha_y)
 C     x      : i(alpha_x), i(beta x alpha_x)
 C
 C     This information is contained in JM4REP.
-C     
-C     Commutation: 
-C     beta commutes with Sigma_i and anticommutes with gamma_5
-C     Sigma_i commutes with gamma_5, alpha_i = gamma_5 x Sigma_i
+C
+C     Commutation and anticommutation relations:
+C     beta commutes with Sigma_i and Sigma_i commutes with gamma_5
+C     beta anticommutes with gamma_5
+C     alpha_i = gamma_5 x Sigma_i
 C
 C     For each basis matrix we define
 C       JM4REP: spatial symmetry
-C       JM4POS: position in quaternion matrix (1 -> real, 2 -> i, 3 -> j, 4 -> k)
+C       JM4POS: position in quaternion matrix (1 -> 1, 2 -> i, 3 -> j, 4 -> k)
 C       M4COMB: character string (LL,SL,LS,SS) giving the overall phase for each block
 C
-C     0. I_4 -->  I_2
-C     ================
+C     0. I_4 --> (1)x(I_2)
+C     ====================
 C
-      JM4REP(0) =  0
-      JM4POS(0) =  1
-      JM4TIM(0) =  1
-      M4COMB(0) =  '+00+'
+      JM4REP(0)  = 0
+      JM4POS(0)  = 1
+      JM4TIM(0)  = 1
+C     M4COMB(0)  = '+00+'
 C
-C     1. i(alpha_z) --> (sigma_x)i
+C     1. i(alpha_z) --> (i)x(sigma_x)
+C     ===============================
+C
+      JM4REP(1)  = ISYMAX(3,1)
+      JM4POS(1)  = IZQ
+      JM4TIM(1)  = -1
+C     M4COMB(1)  = '0++0'
+C
+C     2. i(alpha_y) --> (j)x(sigma_x)
+C     ===============================
+C
+      JM4REP(2)  = ISYMAX(2,1)
+      JM4POS(2)  = IYQ
+      JM4TIM(2)  = -1
+C     M4COMB(2)  = '0++0'
+C
+C     3. i(alpha_x) --> (k)x(sigma_x)
+C     ===============================
+C
+      JM4REP(3)  = ISYMAX(1,1)
+      JM4POS(3)  = IXQ
+      JM4TIM(3)  = -1
+C     M4COMB(3)  = '0++0'
+C
+C     4. gamma_5 --> (1)x(sigma_x)
 C     ============================
 C
-      JM4REP(1) =  ISYMAX(3,1)
-      JM4POS(1) =  IZQ
-      JM4TIM(1) = -1
-      M4COMB(1) =  '0++0'
+      JM4REP(4)  = IXYZ
+      JM4POS(4)  = 1
+      JM4TIM(4)  = 1
+C     M4COMB(4)  = '0++0'
 C
-C     2. i(alpha_y) --> (sigma_x)j
-C     ============================
+C     5. i(Sigma_z) --> (i)x(I_2)
+C     ===========================
 C
-      JM4REP(2) =  ISYMAX(2,1)
-      JM4POS(2) =  IYQ
-      JM4TIM(2) = -1
-      M4COMB(2) =  '0++0'
+      JM4REP(5)  = ISYMAX(3,2)
+      JM4POS(5)  = IZQ
+      JM4TIM(5)  = -1
+C     M4COMB(5)  = '+00+'
 C
-C     3. i(alpha_x) --> (sigma_x)k
-C     ============================
+C     6. i(Sigma_y) --> (j)x(I_2)
+C     ===========================
 C
-      JM4REP(3) =  ISYMAX(1,1)
-      JM4POS(3) =  IXQ
-      JM4TIM(3) = -1
-      M4COMB(3) =  '0++0'
+      JM4REP(6)  = ISYMAX(2,2)
+      JM4POS(6)  = IYQ
+      JM4TIM(6)  = -1
+C     M4COMB(6)  = '+00+'
 C
-C     4. gamma_5  --> (sigma_x)
+C     7. i(Sigma_x) --> (k)x(I_2)
+C     ===========================
+C
+      JM4REP(7)  = ISYMAX(1,2)
+      JM4POS(7)  = IXQ
+      JM4TIM(7)  = -1
+C     M4COMB(7)  = '+00+'
+C
+C     8. beta --> (1)x(sigma_z)
 C     =========================
 C
-      JM4REP(4) =  IXYZ
-      JM4POS(4) =  1
-      JM4TIM(4) =  1
-      M4COMB(4) =  '0++0'
+      JM4REP(8)  = 0
+      JM4POS(8)  = 1
+      JM4TIM(8)  = 1
+C     M4COMB(8)  = '+00-'
 C
-C     5. i(Sigma_z) --> (I_2)i
-C     ========================
+C     9. beta x gamma_5 --> (1)x(i.sigma_y)
+C     =====================================
 C
-      JM4REP(5) =  ISYMAX(3,2)
-      JM4POS(5) =  IZQ
-      JM4TIM(5) = -1
-      M4COMB(5) =  '+00+'
+      JM4REP(9)  = IXYZ
+      JM4POS(9)  = 1
+      JM4TIM(9)  = 1
+C     M4COMB(9)  = '0-+0'
 C
-C     6. i(Sigma_y) --> (I_2)j
-C     ========================
+C     10. i(beta x Sigma_z) --> (i)x(sigma_z)
+C     =======================================
 C
-      JM4REP(6) =  ISYMAX(2,2)
-      JM4POS(6) =  IYQ
-      JM4TIM(6) = -1
-      M4COMB(6) =  '+00+'
-C
-C     7. i(Sigma_x) --> (I_2)k
-C     ========================
-C
-      JM4REP(7) =  ISYMAX(1,2)
-      JM4POS(7) =  IXQ
-      JM4TIM(7) = -1
-      M4COMB(7) =  '+00+'
-C
-C     8. beta --> (sigma_z)
-C     =====================
-C
-      JM4REP(8) =  0
-      JM4POS(8) =  1
-      JM4TIM(8) =  1
-      M4COMB(8) =  '+00-'
-C
-C
-C     9. beta x gamma_5 --> (sigma_y)i
-C     ================================
-C
-      JM4REP(9) =  IXYZ
-      JM4POS(9) =  IYQ
-      JM4TIM(9) =  1
-      M4COMB(9) =  '0-+0'
-C
-C     10. i(beta x Sigma_z) --> (sigma_z)i
-C     ====================================
-C     
       JM4REP(10) = ISYMAX(3,2)
       JM4POS(10) = IZQ
       JM4TIM(10) = -1
-      M4COMB(10) = '+00-'
+C     M4COMB(10) = '+00-'
 C
-C     11. i(beta x Sigma_y) --> (sigma_z)j
-C     ====================================     
+C     11. i(beta x Sigma_y) --> (j)x(sigma_z)
+C     =======================================
 C
       JM4REP(11) = ISYMAX(2,2)
       JM4POS(11) = IYQ
       JM4TIM(11) = -1
-      M4COMB(11) = '+00-'
+C     M4COMB(11) = '+00-'
 C
-C     12. i(beta x Sigma_x) --> (sigma_z)k
-C     =====================================     
+C     12. i(beta x Sigma_x) --> (k)x(sigma_z)
+C     =======================================
 C
       JM4REP(12) = ISYMAX(1,2)
       JM4POS(12) = IXQ
       JM4TIM(12) = -1
-      M4COMB(12) = '+00-'
+C     M4COMB(12) = '+00-'
 C
-C     13. i(beta x alpha_z) --> -(sigma_y)
-C     ====================================
+C     13. i(beta x alpha_z) --> (i)x(i.sigma_y)
+C     =========================================
 C
       JM4REP(13) = ISYMAX(3,1)
-      JM4POS(13) = 1
+      JM4POS(13) = IZQ
       JM4TIM(13) = -1
-      M4COMB(13) = '0-+0'
+C     M4COMB(13) = '0-+0'
 C
-C     14. i(beta x alpha_y) --> -(sigma_y)j
-C     ======================================
+C     14. i(beta x alpha_y) --> (j)x(i.sigma_y)
+C     =========================================
 C
       JM4REP(14) = ISYMAX(2,1)
       JM4POS(14) = IYQ
       JM4TIM(14) = -1
-      M4COMB(14) = '0-+0'
+C     M4COMB(14) = '0-+0'
 C
-C     15. i(beta x alpha_x) --> -(sigma_y)k
-C     ======================================
+C     15. i(beta x alpha_x) --> (k)x(i.sigma_y)
+C     =========================================
 C
       JM4REP(15) = ISYMAX(1,1)
       JM4POS(15) = IXQ
       JM4TIM(15) = -1
-      M4COMB(15) = '0-+0'
+C     M4COMB(15) = '0-+0'
 C
-C     16. (beta - I_4)/2 
+C     16. (beta - I_4)/2
 C     ==================
 C
       JM4REP(16) = 0
       JM4POS(16) = 1
       JM4TIM(16) = 1
-      M4COMB(16) = '000-'
+C     M4COMB(16) = '000-'
+C
+C     Operators 1 to 16 are all time-reversal symmetric operators.
+C     Only operator 17 is a time-reversal anti-symmetric operator.
+C     Operator 17 is equal to operator 9, but taken as T antisymmetric.
+C
+C     17. beta x gamma_5 (T anti-symmetric)
+C     =====================================
+C
+      JM4REP(17) = IXYZ
+      JM4POS(17) = 1
+      JM4TIM(17) = -1
+C     M4COMB(17) = '0-+0'
 C
 C
 C     ***************************************
 C     ***** Definition of full operator *****
 C     ***************************************
 C
-C     1. P             * scalar operator
-C     ==================================
+C     MCMP : number of components
+C     JM4  : pointer to matrix operator for a given component
+C     JCOM : coefficient of component
 C
-      MCMP(1)   = 1
-      JM4 (1,1) = 0
-      JCOM(1,1) = 1
+C     1. P                 * diagonal times scalar operator
+C     =====================================================
 C
-C     2. i[alpha_x]P    * x-component of alpha times scalar operator
-C     =============================================================
+      MCMP(1)    =  1
+      JM4 (1,1)  =  0
+      JCOM(1,1)  =  1
 C
-      MCMP(2)   =  1
-      JM4 (1,2) =  3
-      JCOM(1,2) =  1
+C     2. i[alpha_x]P       * x-component of alpha times scalar operator
+C     =================================================================
 C
-C     3. i[alpha_y]P    * y-component of alpha times scalar operator
-C     =============================================================
+      MCMP(2)    =  1
+      JM4 (1,2)  =  3
+      JCOM(1,2)  =  1
 C
-      MCMP(3)   =  1
-      JM4 (1,3) =  2
-      JCOM(1,3) =  1
+C     3. i[alpha_y]P       * y-component of alpha times scalar operator
+C     =================================================================
 C
-C     4. i[alpha_z]P    * z-component of alpha times scalar operator
-C     =============================================================
+      MCMP(3)    =  1
+      JM4 (1,3)  =  2
+      JCOM(1,3)  =  1
 C
-      MCMP(4)   =  1
-      JM4 (1,4) =  1
-      JCOM(1,4) =  1
+C     4. i[alpha_z]P       * z-component of alpha times scalar operator
+C     =================================================================
 C
-C     5. i[Alpha x P]_x * vector product of alpha and vector operator,
-C                         x-component
-C     ================================================================
+      MCMP(4)    =  1
+      JM4 (1,4)  =  1
+      JCOM(1,4)  =  1
 C
-      MCMP(5)   =  2
-      JM4 (1,5) =  2
-      JM4 (2,5) =  1
-      JCOM(1,5) =  1
-      JCOM(2,5) = -1
+C     5. i[alpha x P]_x    * x-component of the vector product of alpha and vector operator
+C     =====================================================================================
 C
-C     6. i[Alpha x P]_y * vector product of alpha and vector operator,
-C                         y-component
-C     ================================================================
+      MCMP(5)    =  2
+      JM4 (1,5)  =  2
+      JM4 (2,5)  =  1
+      JCOM(1,5)  =  1
+      JCOM(2,5)  = -1
 C
-      MCMP(6)   =  2
-      JM4 (1,6) =  1
-      JM4 (2,6) =  3
-      JCOM(1,6) =  1
-      JCOM(2,6) = -1
+C     6. i[alpha x P]_y    * y-component of the vector product of alpha and vector operator
+C     =====================================================================================
 C
-C     7. i[Alpha x P]_z * vector product of alpha and vector operator,
-C                         z-component
-C     ================================================================
+      MCMP(6)    =  2
+      JM4 (1,6)  =  1
+      JM4 (2,6)  =  3
+      JCOM(1,6)  =  1
+      JCOM(2,6)  = -1
 C
-      MCMP(7)   =  2
-      JM4 (1,7) =  3
-      JM4 (2,7) =  2
-      JCOM(1,7) =  1
-      JCOM(2,7) = -1
+C     7. i[alpha x P]_z    * z-component of the vector product of alpha and vector operator
+C     =====================================================================================
 C
-C     8. iA.P           * dot-product of alpha and vector operator
-C     ===========================================================
+      MCMP(7)    =  2
+      JM4 (1,7)  =  3
+      JM4 (2,7)  =  2
+      JCOM(1,7)  =  1
+      JCOM(2,7)  = -1
 C
-      MCMP(8)   =  3
-      JM4 (1,8) =  3
-      JM4 (2,8) =  2
-      JM4 (3,8) =  1
-      JCOM(1,8) =  1
-      JCOM(2,8) =  1
-      JCOM(3,8) =  1
+C     8. i[alpha.P]        * dot-product of alpha and vector operator
+C     ===============================================================
 C
-C     9. gamma5 P       * gamma5 times scalar operator
-C     ===========================================================
+      MCMP(8)    =  3
+      JM4 (1,8)  =  3
+      JM4 (2,8)  =  2
+      JM4 (3,8)  =  1
+      JCOM(1,8)  =  1
+      JCOM(2,8)  =  1
+      JCOM(3,8)  =  1
 C
-      MCMP(9)   =  1
-      JM4 (1,9) =  4
-      JCOM(1,9) =  1
+C     9. [gamma5]P         * gamma5 times scalar operator
+C     ===================================================
 C
-C     10. i[Sigma_x]P   * x-component of sigma times scalar operator
-C     ==============================================================
+      MCMP(9)    =  1
+      JM4 (1,9)  =  4
+      JCOM(1,9)  =  1
 C
-      MCMP(10)  =  1
-      JM4 (1,10)=  7
-      JCOM(1,10)=  1
+C     10. i[Sigma_x]P      * x-component of Sigma times scalar operator
+C     =================================================================
 C
-C     11. i[Sigma_y]P   * y-component of sigma times scalar operator
-C     ==============================================================
+      MCMP(10)   =  1
+      JM4 (1,10) =  7
+      JCOM(1,10) =  1
 C
-      MCMP(11)  =  1
-      JM4 (1,11)=  6
-      JCOM(1,11)=  1
+C     11. i[Sigma_y]P      * y-component of Sigma times scalar operator
+C     =================================================================
 C
-C     12. i[Sigma_z]P   * z-component of sigma times scalar operator
-C     ==============================================================
+      MCMP(11)   =  1
+      JM4 (1,11) =  6
+      JCOM(1,11) =  1
 C
-      MCMP(12)  =  1
-      JM4 (1,12)=  5
-      JCOM(1,12)=  1
+C     12. i[Sigma_z]P      * z-component of Sigma times scalar operator
+C     =================================================================
 C
-C     13. i[betaSig_x]P * x-component of beta sigma times scalar operator
-C     ==================================================================
+      MCMP(12)   =  1
+      JM4 (1,12) =  5
+      JCOM(1,12) =  1
 C
-      MCMP(13)  =  1
-      JM4 (1,13)=  12
-      JCOM(1,13)=  1
+C     13. i[beta Sigma_x]P * x-component of beta Sigma times scalar operator
+C     ======================================================================
 C
-C     14. i[betaSig_y]P * y-component of beta sigma times scalar operator
-C     ==================================================================
+      MCMP(13)   =  1
+      JM4 (1,13) =  12
+      JCOM(1,13) =  1
 C
-      MCMP(14)  =  1
-      JM4 (1,14)=  11
-      JCOM(1,14)=  1
+C     14. i[beta Sigma_y]P * y-component of beta Sigma times scalar operator
+C     ======================================================================
 C
-C     15. i[betaSig_z]P * z-component of beta sigma times scalar operator
-C     ==================================================================
+      MCMP(14)   =  1
+      JM4 (1,14) =  11
+      JCOM(1,14) =  1
 C
-      MCMP(15)  =  1
-      JM4 (1,15)=  10
-      JCOM(1,15)=  1
+C     15. i[beta Sigma_z]P * z-component of beta Sigma times scalar operator
+C     ======================================================================
 C
-C     16. i[betaalp_x]P * x-component of beta alpha times scalar operator
-C     ==================================================================
+      MCMP(15)   =  1
+      JM4 (1,15) =  10
+      JCOM(1,15) =  1
 C
-      MCMP(16)  =  1
-      JM4 (1,16)=  15
-      JCOM(1,16)=  1
+C     16. i[beta alpha_x]P * x-component of beta alpha times scalar operator
+C     ======================================================================
 C
-C     17. i[betaalp_y]P * y-component of beta alpha times scalar operator
-C     ==================================================================
+      MCMP(16)   =  1
+      JM4 (1,16) =  15
+      JCOM(1,16) =  1
 C
-      MCMP(17)  =  1
-      JM4 (1,17)=  14
-      JCOM(1,17)=  1
+C     17. i[beta alpha_y]P * y-component of beta alpha times scalar operator
+C     ======================================================================
 C
-C     18. i[betaalp_z]P * z-component of beta alpha times scalar operator
-C     ===================================================================
+      MCMP(17)   =  1
+      JM4 (1,17) =  14
+      JCOM(1,17) =  1
 C
-      MCMP(18)  =  1
-      JM4 (1,18)=  13
-      JCOM(1,18)=  1
+C     18. i[beta alpha_z]P * z-component of beta alpha times scalar operator
+C     ======================================================================
 C
+      MCMP(18)   =  1
+      JM4 (1,18) =  13
+      JCOM(1,18) =  1
 C
-C     19. beta         * scalar operator
-C     ==================================
+C     19. [beta]P          * beta times scalar operator
+C     =================================================
 C
-      MCMP(19)  = 1
-      JM4 (1,19)= 8
-      JCOM(1,19)= 1
-C       
-C         
-C     20. iS.P   * dot-product of sigma matrix and vector operator
-C     ============================================================
+      MCMP(19)   =  1
+      JM4 (1,19) =  8
+      JCOM(1,19) =  1
+C
+C     20. i[Sigma.P]       * dot-product of Sigma and vector operator
+C     ===============================================================
 C
       MCMP(20)   =  3
       JM4 (1,20) =  7
@@ -1287,18 +1299,21 @@ C
       JCOM(1,20) =  1
       JCOM(2,20) =  1
       JCOM(3,20) =  1
-
 C
-C     21.    i*BETA*GAMMA5 * scalar operator
-C     ===========================================
-C     occupies (as imaginary elements) off-diagonal block (0+-0)
-C     carries symmetry of gamma5 (xyz)
+C     21. [beta gamma5]P   * beta gamma5 times scalar operator
+C     ========================================================
 C
-      MCMP(21)    =  1
-CTROND      JM4 (1,21)  =  9
-      JM4 (1,21)  =  4
-      JCOM(1,21)  =  1
-
+      MCMP(21)   =  1
+      JM4 (1,21) =  9
+      JCOM(1,21) =  1
+C
+C     22. i[beta gamma5]P  * i beta gamma5 times scalar operator
+C     ==========================================================
+C
+      MCMP(22)   =  1
+      JM4 (1,22) =  17
+      JCOM(1,22) =  1
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

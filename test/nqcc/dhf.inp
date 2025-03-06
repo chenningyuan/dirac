@@ -1,0 +1,23 @@
+**DIRAC
+.TITLE
+ Testing basis calculation of NQCC in cartesian axis system.
+.WAVE FUNCTION
+.PROPERTIES
+**HAMILTONIAN
+.LVCORR
+**WAVE FUNCTION
+.SCF
+*SCF
+.ERGCNV
+5.0E-08
+**INTEGRALS
+.NUCMOD
+ 2
+*READIN
+.UNCONTRACT
+**PROPERTIES
+.EFG
+.NQCC
+*NQCC
+.cartesian
+*END OF

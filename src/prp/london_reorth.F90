@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -96,7 +91,6 @@ contains
     real(8), intent(inout) :: work(lwork)
 
     real(8), allocatable   :: fao(:), fmo(:), tb_dmat(:)
-    integer, allocatable   :: npos_array(:)
     integer :: size_tb_dmat, size_fao, size_fmo
 !-----------------------------------------------------------------------
 
@@ -192,8 +186,6 @@ contains
     call alloc(buf, n2orbxq)
     buf = 0.0d0
 
-    call opnfil(lu1int, 'AOPROPER', 'OLD', 'get_ftb')
-
     open(lufckl, file='FCKLON', form='unformatted',   &
          access='direct',recl=8*n2orbxq,                 &
          status='unknown')
@@ -225,10 +217,12 @@ contains
       kfree = 1
       call di_select_wrk(work, lwork)
 
-!     get T^B_icomp matrix to tb (from AOPROPER file)
+!     get T^B_icomp matrix to tb (from CHECKPOINT)
       call prpmat(indxpr,        &
                   iopsy(icomp),  &
                   tb,            &
+                  .true.,        &
+                  work,           &
                   cmo,           &
                   ibeig,         &
                   icmoq,         &
@@ -347,7 +341,6 @@ contains
 
     close(tbmo_unit,   status='keep')
     close(lufckl, status='keep')
-    close(lu1int,   status='keep')
 
     call dealloc(tb)
     call dealloc(buf)
@@ -403,9 +396,9 @@ contains
 !
 ! miro: getting ill value of npos ! Debugger shows npos = 140735783936152
 !
+    allocate(npos_array(max(1,npos)))
     if (npos > 0) then
-    call alloc(npos_array, npos)
-    npos_array(1:npos) = 0
+      npos_array(1:npos) = 0
     end if
 
     lwork = len_f77_work
@@ -436,9 +429,7 @@ contains
       end do
     end if
 
-    if (allocated(npos_array)) then
-      call dealloc(npos_array)
-    end if
+    deallocate(npos_array)
 
 !       construct kohn-sham contribution
 !       ================================
@@ -784,8 +775,6 @@ contains
 
     end if
 
-    call opnfil(lu1int, 'AOPROPER', 'OLD', 'get_tb_dmat')
-
     call alloc(tb, n2orbxq)
     tb = 0.0d0
 
@@ -807,6 +796,8 @@ contains
       call prpmat(indxpr,           &
                   iopsy(icomp),     &
                   tb,               &
+                  .true.,           &
+                  work,             &
                   cmo,              &
                   ibeig,            &
                   icmoq,            &
@@ -873,7 +864,6 @@ contains
        close(tbdmat_file_unit, status='keep')
     end if
 
-    close(lu1int)
     call dealloc(tb)
 
   end subroutine

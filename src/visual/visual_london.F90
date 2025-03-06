@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful, 
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module visual_london
@@ -36,9 +31,9 @@ module visual_london
 #include "dgroup.h"
 #include "dcbbas.h"
 
-  integer :: nr_xyz_comp
-  integer :: which_icomp
-  logical :: sum_ep_rn
+  integer:: nr_xyz_comp
+  integer:: which_icomp
+  logical:: sum_ep_rn
 
 contains
 
@@ -53,8 +48,8 @@ contains
     logical                 :: debug_me, dummy
 
 !   gosia, note for me:
-!   if natural connection - T^B matrix was built from 'd|S>/dB' integrals
-!   if symmetric connection - T^B matrix was built from 'dS/dB' integrals
+!   if natural connection-T^B matrix was built from 'd|S>/dB' integrals
+!   if symmetric connection-T^B matrix was built from 'dS/dB' integrals
 !   ----------------------------------------------------------------------------
 
 !   read T^B matrix in MO basis to D_con_mo
@@ -166,13 +161,13 @@ contains
 
   subroutine partition_connection_matrix(T, T_ai, T_ji, sum_ep_rn)
 !    ---------------------------------------------------------------------------
-     real(8), intent(inout) :: T(norbt, norbt, nz)
-     real(8), intent(inout) :: T_ai(norbt, norbt, nz)
-     real(8), intent(inout) :: T_ji(norbt, norbt, nz)
+     real(8), intent(inout):: T(norbt, norbt, nz)
+     real(8), intent(inout):: T_ai(norbt, norbt, nz)
+     real(8), intent(inout):: T_ji(norbt, norbt, nz)
      logical, intent(in)    :: sum_ep_rn
 
-     integer :: ip(2), ap(2), ie(2), ae(2)
-     integer :: ifrp, iz, i, j
+     integer:: ip(2), ap(2), ie(2), ae(2)
+     integer:: ifrp, iz, i, j
 !    ---------------------------------------------------------------------------
 
      call dcopy(norbt*norbt*nz, T, 1, T_ji, 1)
@@ -184,17 +179,17 @@ contains
         ie(ifrp) = ip(ifrp) + npsh(ifrp)
         ae(ifrp) = ie(ifrp) + nish(ifrp)
 
-        write(*, *) 'ifrp, ip = ', ifrp, ip(ifrp)
-        write(*, *) 'ifrp, ap = ', ifrp, ap(ifrp)
-        write(*, *) 'ifrp, ie = ', ifrp, ie(ifrp)
-        write(*, *) 'ifrp, ae = ', ifrp, ae(ifrp)
-        write(*, *) 'ifrp, nish = ', ifrp, nish(ifrp)
-        write(*, *) 'ifrp, npsh = ', ifrp, npsh(ifrp)
-        write(*, *) 'ifrp, norb = ', ifrp, norb(ifrp)
+        !write(*, *) 'ifrp, ip = ', ifrp, ip(ifrp)
+        !write(*, *) 'ifrp, ap = ', ifrp, ap(ifrp)
+        !write(*, *) 'ifrp, ie = ', ifrp, ie(ifrp)
+        !write(*, *) 'ifrp, ae = ', ifrp, ae(ifrp)
+        !write(*, *) 'ifrp, nish = ', ifrp, nish(ifrp)
+        !write(*, *) 'ifrp, npsh = ', ifrp, npsh(ifrp)
+        !write(*, *) 'ifrp, norb = ', ifrp, norb(ifrp)
      end do
 
 ! todo:
-!    if .not. sum_ep_rn - reorthonormalization only over electronic shells
+!    if .not. sum_ep_rn-reorthonormalization only over electronic shells
 !    (so i can zero-out blocks corresponding to positronic shells)
 
 !    'ai' blocks (zero-out 'ij' blocks)
@@ -274,7 +269,7 @@ contains
 !      here build density matrix modified by first-order overlap
 !      (c^+_\mu j)*(S^B)_ij*(c_\nu i) where (S^B)_ij = (T^B)_ij + (T^B+)_ij
 
-       D_con = D_con_mo - dag(D_con_mo)
+       D_con = D_con_mo-dag(D_con_mo)
 !      check that it gives the same regardless of connection used
 !      due to: T^B + (T^B)^+ = -S^B
 !      call print_mat(D_con, label = '-S^B')
@@ -300,11 +295,11 @@ contains
        if (nfsym == 2) then
           D_con = C*(D_con_mo*dag(Cig)) &
                 + C*(D_con_mo*dag(Ciu))
-          D_con = D_con - dag(D_con)
+          D_con = D_con-dag(D_con)
        else
 
           D_con = C*(D_con_mo*dag(Cig))
-          D_con = D_con - dag(D_con)
+          D_con = D_con-dag(D_con)
 
        end if
 

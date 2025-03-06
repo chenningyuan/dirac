@@ -1,21 +1,18 @@
-!      Copyright (c) 2014 by the authors of DIRAC.
-!      All Rights Reserved.
+!dirac_copyright_start
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
+!dirac_copyright_end
 
 ! FILE : krmc/krci_ctl.F
 !
@@ -44,7 +41,7 @@ C
 C     Major revision by S. Knecht: Aug 2008
 C
 C                    All CI-related keywords have been moved to this new
-C                    input section *KRCICALC.
+C                    input section *KRCI
 C                    Purpose: disentanglement of MCSCF/CI optimization
 C                    input and start-up --> "modularize"
 C
@@ -52,6 +49,7 @@ C                    Added CI keyword EEDM   Timo Fleig     30.04.2012
 C                    Added CI keyword MHYP   Malaya Nayak   28.08.2013
 C                    Added CI keyword ENSPS  Malaya Nayak   27.02.2014
 C                    Added CI keyword TERSE  Timo Fleig     29.03.2016
+C                    Added CI keyword NMQM   Malaya Nayak   28.09.2018
 C
 C***********************************************************************
       use symmetry_setup_krci
@@ -95,10 +93,10 @@ C
      &            '.THRPCI','.MXVCBL','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
-     &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
+     &            '.USE PB','xxxxxxx','.TRA NO','.LOWSRT','.SEL ST',
      &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX',
-     &            '.EEDM  ','.MHYP  ','.ENSPS ','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.TERSE '/
+     &            '.EEDM  ','.MHYP  ','.ENSPS ','.NMQM  ','.THRGCI',
+     &            '.XXXXXX','.TERSE '/ !MKN
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: symmetry_str1
@@ -115,6 +113,7 @@ C
       integer, allocatable            :: multb_tmp(:,:)
       character(len=400)              :: input_line
       integer                         :: ios, islash
+      integer                         :: maxsym_nkrci
 C
 #include "ibtfun.h"
 #include "memint.h"
@@ -142,7 +141,6 @@ C
       NATOLCR_KRCI      = .FALSE.
       CHCKPT_KRCI       = .FALSE.
       CUSE_PBLFL_KRCI   = .FALSE.
-      GENFOCK_KRCI      = .FALSE.
       TRANATO_KRCI      = .FALSE.
       LOWSORT_KRCI      = .FALSE.
       STATE_SELECT_KRCI = .FALSE.
@@ -186,7 +184,13 @@ CTF   DKRCI_THRECI = 1.0d-8
 CTF   DKRCI_THRECI = 0.3d-10   ! Seems to converge P,T-odd properties
 C                                sufficiently well. More testing
 C                                required.
-      DKRCI_THRECI = 0.8d-12
+C      DKRCI_THRECI = 0.8d-12 
+      !September 25 2019: Changed to more moderate value - A. Nyvang
+!     DKRCI_THRECI = 1.0d-10 ! CI energy change convergence threshold;
+      ! set so low that the DKRCI_THRGCI takes precedence
+!     DKRCI_THRGCI = 1.0d-4 ! CI gradient convergence threshold
+      DKRCI_THRECI = -1.0d0
+      DKRCI_THRGCI = -1.0D0
 C
 C     Initialize /DCOKRCI/
 C     ===================
@@ -213,7 +217,7 @@ C
 C     Initialize /DCICKRCI/
 C     ===================
 C
-      MAXCIT_KRCI   =    4
+      MAXCIT_KRCI   =   40
       MXCIV_KRCI    =    0
       IANACI_KRCI   =    0
       KTRLVL_KRCI   =    3
@@ -225,7 +229,6 @@ C
 C     ... in "krciprop.h"
       NPROP_KRCI    =    0
       DOPROP_KRCI   = .FALSE.
-      DOSYMOPPRP    = .FALSE.
       DOJZEXP       = .FALSE.
       DOOSCILLST    = .FALSE.
       DODIPMOM_KRCI = .FALSE.
@@ -235,6 +238,7 @@ C     ... in "krciprop.h"
       DOEEDM_KRCI   = .FALSE.
       DOMHYP_KRCI   = .FALSE.
       DOENSPS_KRCI  = .FALSE.
+      DONMQM_KRCI   = .FALSE. !MKN
 C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
 C
@@ -253,7 +257,7 @@ C     some scratch
       krci_cfg_max_vec_block = -1
 
 C
-C     Process input for *KRCICALC
+C     Process input for *KRCI
 C     ===========================
 C
       NEWDEF = (WORD .EQ. '*KRCICA' .OR. WORD .EQ. '*KRCI  ')
@@ -261,7 +265,7 @@ C
       IF (NEWDEF) THEN
 C
 !       initialize symmetry information irreps required for input
-!       processing. note, we assume the # double group irreps here to be 128. 
+!       processing. Note, we assume the # double group irreps here to be at most 128.
 !  FIXME: make it general in Dirac for higher linear symmetry double groups. 
 !         "global Dirac post-HF symmetry module".
 C
@@ -270,6 +274,20 @@ C
           if(nfsym .eq. 1) double_group = 10
           call symmetry_setup_init(double_group,max_nkrci_max_sym)
           allocate(nkrci_ciroots_symstr(4*max_nkrci_max_sym))
+          maxsym_nkrci = max_nkrci_max_sym
+        else !.not.linear; find number of irreps in NREP and names of irreps in REPNA
+          allocate(multb_tmp(64,64))
+          IF (SPINFR.or.levyle) THEN
+              CALL GMULTSF(NREP,REPNA,MULTB_TMP)
+          ELSE
+              CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
+          ENDIF
+          deallocate(multb_tmp)
+          maxsym_nkrci = NREP
+          ! for the double point subgroups in DIRAC, number of fermion irreps = number of boson irreps = NREP
+          ! "standard" order from GMULTA: fermion fermion ... boson   boson
+          ! The symmetry specifications from the user must be in the interval 1:NREP, and they are interpreted
+          ! as fermion irrep numbers for odd number of electrons and as boson irrep numbers for even number of electrons.
         end if
 
         WORD1 = WORD
@@ -296,9 +314,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in *KRCICALC'
+     *            '" not recognized in *KRCI'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in *KRCICALC')
+               CALL QUIT('Illegal keyword in *KRCI')
     1          CONTINUE
 C&&& .MAX CI ITER...: maximum number of initial CI iterations.
                   READ(LUCMD,*) MAXCIT_KRCI
@@ -307,7 +325,7 @@ C&&& .MAX CI ITER...: maximum number of initial CI iterations.
 C&&& .OPERATOR: define one-electron operator to use in
 C               CI property calculation
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRKRCI)
+     &                        IPRKRCI)
                   CALL OP1IND('KRCIPR',LUCIINDTRP,LPROP_KRCI,
      &                        NPROP_KRCI,INDXPR,MXPROP_KRCI)
                   DOPROP_KRCI = .TRUE.
@@ -326,17 +344,17 @@ C&&& .CIROOTS: Symmetry and number of CI roots to be optimized in this
 C              symmetry
                   if(.not.linear) then
                     READ(LUCMD,*) IKRCI_SYMMETRY,NCIROOT_KRCI
-                    IF(IKRCI_SYMMETRY .LE. MAX_NKRCI_MAX_SYM .AND.
+                    IF(IKRCI_SYMMETRY .LE. maxsym_nkrci .AND.
      &                 IKRCI_SYMMETRY .GT. 0) THEN
                       NKRCI_CIROOTS(IKRCI_SYMMETRY) = NCIROOT_KRCI
                       NKRCI_MAX_SYM = MAX(NKRCI_MAX_SYM, IKRCI_SYMMETRY)
                     ELSE
-                      WRITE(LUPRI,'(//A/I10,A,I3)')
-     &                '*** ERROR in KRCI_INP .CIROOTS *** ' //
-     &                'Requested symmetry outside hardwired limits:',
-     &                IKRCI_SYMMETRY, ' outside 1 to',MAX_NKRCI_MAX_SYM
-                      CALL QUIT('*** ERROR in KRCI_INP .CIROOTS *** ' //
-     &                'Requested symmetry outside hardwired limits.')
+                      WRITE(LUPRI,'(//A,I0,A,I0)')
+     &                '*** ERROR for *KRCI .CIROOTS *** ' //
+     &                'Requested symmetry "',IKRCI_SYMMETRY,
+     &                '" is outside the limits of 1 to ',maxsym_nkrci
+                      CALL QUIT('*** ERROR for *KRCI .CIROOTS *** ' //
+     &                'Requested symmetry is outside limits.')
                     END IF
                   else
 !                   read mij value and # roots in linear symmetry input format
@@ -368,16 +386,16 @@ C              symmetry
      & '  *** input error: Dinfh contains the inversion operation'//
      & ' as group element.',
      & '  please specify either g or u in addition to the mj value. ***'
-                        call quit('  *** input error: Dinfh contains
-     & the inversion operation as group element. ***')
+                        call quit('  *** input error: Dinfh contains '//
+     & 'the inversion operation as group element. ***')
                       end if
                     else
                       gerade_mcci_wf   = .true.
                       length_of_string = length_of_string + 1
                       if(ascii_lchar .eq. iachar('g')
      &                   .or. ascii_lchar .eq. iachar('u'))then
-                        call quit(' *** input error: Cinfv does not
-     & have inversion as group element. ***')
+                        call quit(' *** input error: Cinfv does not '//
+     & 'have inversion as group element. ***')
                       end if
                     end if
 
@@ -411,11 +429,12 @@ C&&& .MXCIVE: Number of CI vectors allowed for subspace
 C&&& .KTRLVL: default integral transformation level.
                  READ(LUCMD,*) KTRLVL_KRCI
                IF (KTRLVL_KRCI .LE. -2 .OR. KTRLVL_KRCI .GT. 5) THEN
-                  WRITE(LUPRI,'(//2A,I10)')
-     &                '*** ERROR in KRCI_INP *** ',
-     &                'Illegal transformation level: ',KTRLVL_KRCI
+                  WRITE(LUPRI,'(//2A,I10/A)')
+     &             '*** ERROR in KRCI_INP *** ',
+     &             'Illegal .KTRLVL transformation level: ',KTRLVL_KRCI,
+     &             ' Allowed values: -1 to 5'
                   CALL QUIT('*** ERROR in KRCI_INP *** ' //
-     &                 'Illegal transformation level')
+     &                 'Illegal .KTRLVL transformation level')
                END IF
                GO TO 100
     8          CONTINUE
@@ -494,27 +513,20 @@ C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode
 #else
                IF( ISHMEM_TYPE .gt. 6 ) THEN
                   WRITE(LUPRI,'(//A)')
-     &               ' *** ERROR in KRCI_INP *** '
-                  WRITE(LUPRI,'(//A)')
+     &               ' *** ERROR for *KRCI .SHMEMO *** '//
      &               ' unknown shared memory run-level! '
                   WRITE(LUPRI,'(A)')
-     &               ' LEVEL 0: no shared memory in use'
-                  WRITE(LUPRI,'(A)')
-     &               ' LEVEL 1: sharing node-wise (ij|kl)'
-                  WRITE(LUPRI,'(A)')
-     &               ' LEVEL 2: sharing node-wise |C> '
-                  WRITE(LUPRI,'(A)')
-     &               ' LEVEL 3: sharing node-wise (ij|kl) + |C>'
-                  WRITE(LUPRI,'(A)')
-     &               ' LEVEL 4: sharing global (ij|kl) + node-wise |C>'
-                  WRITE(LUPRI,'(A)')
-     &               ' LEVEL 5: sharing global |C> + node-wise (ij|kl)'
-                  WRITE(LUPRI,'(A)')
+     &               ' LEVEL 0: no shared memory in use',
+     &               ' LEVEL 1: sharing node-wise (ij|kl)',
+     &               ' LEVEL 2: sharing node-wise |C> ',
+     &               ' LEVEL 3: sharing node-wise (ij|kl) + |C>',
+     &               ' LEVEL 4: sharing global (ij|kl) + node-wise |C>',
+     &               ' LEVEL 5: sharing global |C> + node-wise (ij|kl)',
      &               ' LEVEL 6: sharing global (ij|kl) + |C> '
                   WRITE(LUPRI,'(//A,I3)')
-     &               ' you asked for LEVEL ',ISHMEM_TYPE
-                  CALL QUIT('*** ERROR in KRCI_INP *** ' //
-     &                  ' unknown shared memory run-level')
+     &               ' You asked for LEVEL ',ISHMEM_TYPE
+                  CALL QUIT('*** ERROR for *KRCI *** ' //
+     &                  ' unknown .SHMEMO shared memory run-level')
                END IF
 #endif
                GO TO 100
@@ -524,7 +536,7 @@ C             reordered integrals
                   CINT_REORD_KRCI = .TRUE.
 C             ... this requires the use of MPI-2 I/O handling
 #if !defined (VAR_MPI2)
-                  WRITE(LUPRI,*) '  *** ERROR for *KRCICALC *** '//
+                  WRITE(LUPRI,*) '  *** ERROR for *KRCI *** '//
      &                           ' Keyword .IJKLRO only valid in'//
      &                           ' parallel calculations'
                   WRITE(LUPRI,'(/A)') '  User input will be ignored.'
@@ -576,12 +588,12 @@ C&&& MAX MK2: maximum value of 2 * MK
    25          CONTINUE
 C&&& GASSH: GAS setup
                   IF (NKRCIGAS .GT. 0) THEN
-                     CALL QUIT('*** ERROR in *KRCICALC *** ' //
+                     CALL QUIT('*** ERROR in *KRCI *** ' //
      &                 'You cannot specify both .GASSH and .CASSCF')
                   END IF
                   READ(LUCMD,*) NKRCIGAS
                   IF (NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXGAS) THEN
-                     CALL QUIT('*** ERROR in *KRCICALC *** ' //
+                     CALL QUIT('*** ERROR in *KRCI *** ' //
      &                         'illegal value of NKRCIGAS')
                   END IF
                   DO I = 1, NKRCIGAS
@@ -591,9 +603,9 @@ C&&& GASSH: GAS setup
    26          CONTINUE
 C&&& GASSPC: GAS space constraints
                   IF (NKRCIGAS .EQ. 0) THEN
-                     WRITE(LUPRI,'(A)') ' *** ERROR in *KRCICALC ***'
+                     WRITE(LUPRI,'(A)') ' *** ERROR in *KRCI ***'
      &                  //' .GASSH must be specified before .GASSP!'
-                     CALL QUIT('*** ERROR in *KRCICALC ***')
+                     CALL QUIT('*** ERROR in *KRCI ***')
                   END IF
                   DO I = 1, NKRCIGAS
                      READ(LUCMD,*) (NKRCIGSP(J,I),J=1,2)
@@ -621,7 +633,7 @@ C&&&  INACTIVE ORBITALS
    31          CONTINUE
 C&&&  CASSCF -- this defines a CAS space
                IF (NKRCIGAS .GT. 0) THEN
-                  CALL QUIT('*** ERROR in *KRCICALC *** ' //
+                  CALL QUIT('*** ERROR in *KRCI *** ' //
      &                 'You cannot specify both .GASSH and .CASSCF')
                END IF
                   READ(LUCMD,*) NKRCIAELEC
@@ -657,9 +669,7 @@ C              distribution
                CUSE_PBLFL_KRCI = .TRUE.
                GO TO 100
    37          CONTINUE
-C&&& .GENFOC:  transform positronic/inactive/virtual spinors to
-C              Fock-type spinors
-               GENFOCK_KRCI = .TRUE.
+C&&& .xxxxxx:
                GO TO 100
    38          CONTINUE
 C&&& .TRA NO:  transform to natural CI spinors
@@ -715,17 +725,17 @@ C              subsequent MCSCF...
                      write(lupri,'(/a,/a)')
      & '  *** input error: Dinfh contains the inversion operation'//
      & ' as group element.',
-     & '  please specify either g or u in addition to the mj value. ***'
-                        call quit('  *** input error: Dinfh contains
-     & the inversion operation as group element. ***')
+     & '  Please specify either g or u in addition to the mj value. ***'
+                        call quit('  *** input error: Dinfh contains '//
+     & 'he inversion operation as group element, specify g or u. ***')
                     end if
                   else
                     gerade_mcci_wf   = .true.
                     length_of_string = length_of_string + 1
                     if(ascii_lchar .eq. iachar('g')
      &                 .or. ascii_lchar .eq. iachar('u'))then
-                      call quit(' *** input error: Cinfv does not
-     & have inversion as group element. ***')
+                      call quit(' *** input error: Cinfv does not '//
+     & 'have inversion as group element. No g or u ! ***')
                     end if
                   end if
 
@@ -745,15 +755,15 @@ C              subsequent MCSCF...
                   if(i == 2) NOMEGASEL_KRCI = tmp_mij_val
                   end do
                end if
-               IF (IKRCI_SYMSEL .LE. MAX_NKRCI_MAX_SYM .AND.
-     &            IKRCI_SYMSEL .GT. 0) THEN
+               IF (IKRCI_SYMSEL .LE. maxsym_nkrci .AND.
+     &             IKRCI_SYMSEL .GT. 0) THEN
                   NKRCI_SELOM(IKRCI_SYMSEL) = NOMEGASEL_KRCI
                ELSE
-                  WRITE(LUPRI,'(//A/I10,A,I3)')
-     &            '*** ERROR in KRCI_INP .SEL ST  *** ' //
-     &            'Requested symmetry outside hardwired limits:',
-     &            IKRCI_SYMSEL, ' outside of',MAX_NKRCI_MAX_SYM
-                  CALL QUIT('*** ERROR in KRCI_INP .SEL ST  *** ' //
+                  WRITE(LUPRI,'(//A,I0,A,I0)')
+     &            '*** ERROR in .SEL STate input for *KRCI  *** ' //
+     &            'Requested symmetry "',IKRCI_SYMSEL,
+     &            '" is outside the limits of 1 to ',maxsym_nkrci
+                  CALL QUIT('*** ERROR in .SEL ST for *KRCI  *** ' //
      &            'Requested symmetry outside hardwired limits.')
                END IF
                GO TO 100
@@ -772,7 +782,7 @@ C              and excited states.
 C&&& .GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA)
 !              and Diracs opens-shell AOC Hartree-Fock format
                IF(NKRCIGAS .GT. 0)THEN
-                  CALL QUIT('*** ERROR in *KRCICALC *** ' //
+                  CALL QUIT('*** ERROR in *KRCI *** ' //
      &            'You cannot specify both GAS SH and '//
      &            '(.GASSH/GASSPC or .CASSCF)')
                END IF
@@ -780,7 +790,7 @@ C&&& .GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 !              step 1: read the # of GA spaces
                READ(LUCMD,*) NKRCIGAS
                IF(NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXGAS) THEN
-                 CALL QUIT('*** ERROR in *KRCICALC *** ' //
+                 CALL QUIT('*** ERROR in *KRCI *** ' //
      &                     'illegal value of NKRCIGAS')
                END IF
 
@@ -796,7 +806,7 @@ C&&& .GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
                  if(islash <= 1)then
 
                    write(lupri,'(/a,i2,a,i2/a/2a)')
-     &             'ERROR for *KRCICALC .GAS SHELL shell no.',
+     &             'ERROR for *KRCI .GAS SHELL shell no.',
      &             i,'/',NKRCIGAS,
      &             '- the defining input line does not contain a "/":',
      &             '- the bad line : ',input_line
@@ -805,7 +815,7 @@ C&&& .GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
      &             '- Or the specification of the number of GAS-'//
      &             'shells might be wrong! Check the input.'
                    call quit('Input error for .GAS SHELL under'//
-     &                       ' *KRCICALC')
+     &                       ' *KRCI')
                  end if
 
 !                step 2: min max occupation
@@ -814,12 +824,12 @@ C&&& .GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
                  if(ios /= 0)then
                    write(lupri,'(/a,i2,a,i2/a/2a)')
-     &             'ERROR for *KRCICALC .GAS SHELL shell no.',
+     &             'ERROR for *KRCI .GAS SHELL shell no.',
      &             i,'/',NKRCIGAS,
      &             '- the input line does not contain correct'//
      &             ' min max electrons','- the bad line : ',input_line
                    call quit('Input error for .GAS SHELL under '//
-     &                       '*KRCICALC')
+     &                       '*KRCI')
                  end if
 !                step 3: GAS shell orbital occupation
                  read(input_line(islash+1:),*,iostat=ios)
@@ -827,12 +837,12 @@ C&&& .GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
                  if(ios /= 0)then
                    write(lupri,'(/a,i2,a,i2/a,i2,a/2a)')
-     &             'ERROR for *KRCICALC .GAS SHELL shell no.',
+     &             'ERROR for *KRCI .GAS SHELL shell no.',
      &             i,'/',NKRCIGAS,
      &             '- the input line does not contain',nfsym,
      &             ' occupations','- the bad line : ',input_line
                    call quit('Input error for .GAS SHELL under '//
-     &                       '*KRCICALC')
+     &                       '*KRCI')
                  end if
                END DO
 !              step 4: set # of active electrons ==> max occupation in last GAS space
@@ -856,7 +866,7 @@ C&&&  EEDM  :  calculate electron EDM effective electric field
    47          CONTINUE
 C&&&  MHYP  : calculate magnetic hyperfine structure constants
 C           : alpha X electric field matrix elements
-               doprop_krci   = .true.
+               doprop_krci = .true.
                domhyp_krci = .true.
                READ(LUCMD,*) (VKRCI_NUCSPIN(IATOM),IATOM=1,NUCIND,1)
                READ(LUCMD,*) (VKRCI_NUCMAGMOM(IATOM),IATOM=1,NUCIND,1)
@@ -865,13 +875,20 @@ CMKN The mHYP is newly implemented following eEDM
    48          CONTINUE
 C&&&  ENSPS : calculate electron-Nucleus scalar-pseudoscalar P,T-odd
 C           : interection constant i x gamma^0 gamma^5 \rho_N(r_e)
-               doprop_krci   = .true.
+               doprop_krci  = .true.
                doensps_krci = .true.
                GO TO 100
 CMKN The eNSPS is newly implemented following eEDM
    49          CONTINUE
+C&&&  NMQM : calculate nuclear Magnetic Quadruple Moment interaction constant
+C          : (\alpha X r)_z.(r_z) (i.e. \alpha X Electric Field Gradient)
+               doprop_krci = .true.
+               donmqm_krci = .true.
                GO TO 100
+CMKN The nMQM is newly implemented following mHYP
    50          CONTINUE
+C&&& .THRGCI:  CI gradient convergence threshold
+               read(lucmd,*) DKRCI_THRGCI
                GO TO 100
    51          CONTINUE
                GO TO 100
@@ -883,14 +900,15 @@ C&&& TERSE  : Old LUCIAREL output for iterations and final info
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in *KRCICALC.'
+     &            '" not recognized for *KRCI.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in *KRCICALC')
+               CALL QUIT('Illegal prompt for *KRCI')
             END IF
       END IF
   300 CONTINUE
 C
-      IF (.NOT. NEWDEF) GOTO 400
+! hjaaj Feb. 2025: we want to print the KR-CI info, also if default values are used.
+!     IF (.NOT. NEWDEF) GOTO 400 
 C
 !     Warnings for options not implemented (yet)
 !     ------------------------------------------
@@ -900,17 +918,33 @@ C
      & ' is not implemented for KR-CI/KR-MCSCF/KR-CC.',
      & ' *** WARNING *** - Please use the LVCORR approximation.'
       end if
+
+      WRITE(LUPRI,'(2A)')
+     &     ' * CI program used       : ',KRCI_CIPROGRAM
+      if (KRCI_CIPROGRAM .NE. 'LUCIAREL' .AND.
+     &    KRCI_CIPROGRAM .NE. 'GASCIP') then
+         CALL QUIT('FATAL ERROR, this CI Program is unknown to DIRAC')
+      end if
 C
 C     Consistency checks
 C     ------------------
 
       ! symmetry: LUCIAREL does not work with C1/Ci symmetry
-      if(KRCI_CIPROGRAM == 'LUCIAREL')then
-        if(nfsym == 1 .and. nz == 4)then
-          call quit('LUCIAREL does not work with C1/Ci symmetry.'//
-     &              ' Either you use GASCIP or wait for a patch to'//
-     &              ' Dirac14. For further information contact '//
-     &              ' dirac-users@googlegroups.com .')
+      if (KRCI_CIPROGRAM == 'LUCIAREL') then
+#if !defined (VAR_MPI)
+C Note: the sequential code runs, but it may give wrong results. Therefore the quit.
+C       The fix of the problem by Andreas Nyvang in 2022 is only implemented in the subroutines used when
+C       compiled with MPI. It is not worth the time to rewrite the old subroutines for non-MPI compilation.
+C       /4-Jun-2024, hjaaj. See git log d5d4e3ff7547f4d8e831f3699fb8ce6c95d39a57 for more info about why
+C       the parallel version is much better.
+        call quit('KRCI: LUCIAREL'//
+     &     ' only works reliably if DIRAC compiled with MPI.'//
+     &     ' You can run sequential with MPI code, if desired.')
+#endif
+        if (nz == 4) then
+          call quit(
+     &      'KRCI: LUCIAREL does not work with C1/Ci symmetry. You '//
+     &      'may try to use GASCIP instead if it can handle your case')
         end if 
       end if
 
@@ -961,9 +995,9 @@ C
       END DO
       IF (NTEST .GT. MAXASH) THEN
         WRITE(LUPRI,'(A,I5/10X,A,I4)')
-     &       ' *** ERROR in *KRCICALC *** Too many active orbitals: ',
+     &       ' *** ERROR in *KRCI *** Too many active orbitals: ',
      &       NTEST, ' -- max is ',MAXASH
-        CALL QUIT('*** ERROR in *KRCICALC : Too many active orbitals.')
+        CALL QUIT('*** ERROR in *KRCI : Too many active orbitals.')
       END IF
 C
 C     Use boson symmetry for CI expansion for the spin-free and
@@ -972,21 +1006,55 @@ C
       IF (IKWSET(22).LE.1 .AND. (SPINFR.or.levyle)) THEN
          KRCI_UCIBOS = .TRUE.
       END IF
-c     krci_ucibos = .false.
-C
-C     Default: one CI root in symmetry 1
-C
-      IF (NKRCI_MAX_SYM .EQ. -1) THEN
-         NKRCI_MAX_SYM    = 1
-         NKRCI_CIROOTS(1) = 1
-      END IF
+
+      if(linear)then
+
+        IF (NKRCI_MAX_SYM .EQ. -1) THEN ! no .CIROOT input
+           call quit('*KRCI error, .CIROOT or .SEL ST input'//
+     &     ' required for linear symmetry.')
+        end if
+
+      else ! not linear
+
+C       Default: one CI root in symmetry 1
+        IF (NKRCI_MAX_SYM .EQ. -1) THEN ! no .CIROOT input
+           NKRCI_CIROOTS(1) = 1
+           IF(MOD(NKRCIAELEC, 2) .NE. 0)THEN ! fermion symmetry
+             IRRP = 1
+           ELSE ! boson symmetry
+             IRRP = NREP+1
+           END IF
+           WRITE(LUPRI,'(/2A)')
+     &     ' * Using default: converge one CI root of lowest symmetry ',
+     &     REPNA(IRRP)
+        END IF
+
+        !> Here we use "standard" order from GMULTA: fermion fermion ... boson   boson
+
+        !> If LUCIAREL is used, then the symmetry numbers are translated in RSETCI to LUCIAREL order,
+        !> which is the opposite       :   boson   boson ... fermion fermion
+
+        IF (MOD(NKRCIAELEC, 2) .EQ. 0) THEN
+           ! boson symmetry, move the user input to the boson part of NKRCI_CIROOTS()
+           ! according to "standard" order
+           DO I = 1, NREP
+              NKRCI_CIROOTS(NREP+I) = NKRCI_CIROOTS(I)
+              NKRCI_CIROOTS(I)  = 0
+           END DO
+        END IF
+
+        ! Always set NKRCI_MAX_SYM to max, then we are sure all requested symmetries
+        ! are found, also for LUCIAREL
+        NKRCI_MAX_SYM = 2*NREP
+
+      end if !> not for linear symmetry
 C
 C     Print section
 C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)')
-     &   ' *KRCICALC: General set-up for KR-CI calculation:'
+     &   ' *KRCI: General set-up for KR-CI calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
       WRITE(LUPRI,'(A,2I4)')
@@ -1021,12 +1089,22 @@ C
          IF (N_GAS_ERR .GT. 0) THEN
             WRITE(LUPRI,'(//A)')
      &         'INPUT ERROR: The GAS specifications are not consistent'
-            CALL QUIT('*** ERROR in *KRCICALC *** ' //
+            CALL QUIT('*** ERROR in *KRCI *** ' //
      &        'Inconsistency in GAS specification')
          END IF
       END IF
       WRITE(LUPRI,'(2A)')
      &     ' * CI program used       : ',KRCI_CIPROGRAM
+      write(lupri,'(A,4L4)') ' * atomic, linear, spinfr, levyle:',
+     &                      atomic, linear, spinfr, levyle
+      if (.not. linear) then
+         WRITE(LUPRI,'(A)')
+     &' * Used symmetry nomenclature for '//
+     &'      Fermion and Boson  irreps of complex (sub)groups  '
+         write(lupri,'(A,4(1x,A))') ' * Fermion irreps',repna(1:nrep)
+         write(lupri,'(A,4(1x,A))') ' * Boson   irreps',
+     &      repna(nrep+1:2*nrep)
+      end if
 C
 C     Symmetry of the wave function:
 C     ------------------------------
@@ -1097,50 +1175,19 @@ C     ... next symmetry
      &        ' for MJ-value (doubled): ',
      &          adjustr(xrepeig(ikrci_symmetry)),ferm_lab
          else
-           allocate(multb_tmp(64,64))
-           IF (SPINFR.or.levyle) THEN
-              CALL GMULTSF(NREP,REPNA,MULTB_TMP)
-           ELSE
-              CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
-           ENDIF
-           deallocate(multb_tmp)
-           IF(MOD(NKRCIAELEC, 2) .EQ. 0)THEN
-             IRRP = NREP + IKRCI_SYMMETRY
-             WRITE(LUPRI,'(A,I3,2A)')
-     &       '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
-     &       ' in symmetry (boson):',REPNA(IRRP)
-C            store on common block in krciprop.h
-             XREPEIG(IKRCI_SYMMETRY) = REPNA(IRRP)
-             IF (NKRCI_MAX_SYM .GT. NREP) THEN
-                WRITE(LUPRI,'(/A//A,2I5)')
-     &          ' INPUT ERROR, requested symmetry (boson) in .CIROOTS'//
-     &          ' is non-existent!',
-     &          ' Symmetry, max value of symmetry = ',
-     &            NKRCI_MAX_SYM, NREP
-                CALL QUIT('INPUT ERROR for *KRCICALC .CIROOTS')
-             END IF
-C
-           ELSE
-              WRITE(LUPRI,'(A,I3,2A)')
-     &        '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
-     &        ' in symmetry (fermion):',REPNA(IKRCI_SYMMETRY)
-C               store on common block in krciprop.h
-                XREPEIG(IKRCI_SYMMETRY) = REPNA(IKRCI_SYMMETRY)
-C
-C           FIXME: check proper abort criterion
-           END IF
+
+           WRITE(LUPRI,'(A,I0,2A)')
+     &     '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
+     &     ' in symmetry:',REPNA(IKRCI_SYMMETRY)
+C          store on common block in krciprop.h for properties
+           XREPEIG(IKRCI_SYMMETRY) = REPNA(IKRCI_SYMMETRY)
+
          end if
          WRITE(LUPRI,'(A,I4,A,I3)')
      &     '    -- Allowed interval of 2 * MK :',
      &     NKRCI_MINMK2,' to ',NKRCI_MAXMK2
       END IF
  202  CONTINUE
-C
-      IF(KRCI_CIPROGRAM .eq. 'LUCIAREL') THEN
-         WRITE(LUPRI,'(A/A)')
-     &' * Using symmetry nomenclature for LUCIAREL. ',
-     &'      Boson and Fermion irreps of complex (sub)groups  '
-      END IF
 C
       WRITE(LUPRI,'(/A)')
      +    ' * Contributions from 2-electron integrals to Fock matrix:'
@@ -1158,8 +1205,60 @@ C
      &   ' Control parameters for KR-CI optimization'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
-      WRITE(LUPRI,'(A,1P,D10.2)')
-     &     ' * Energy convergence threshold: ', DKRCI_THRECI
+!     Convergence thresholds.
+!     A CI root is converged in LUCIAREL if one of the criteria is fulfilled.
+!     GASCIP ignores the DKRCI_THRECI
+!     Usually the two thresholds will be fulfilled in the same micro-iteration +/- 1
+!     if DKRCI_THRECI = DKRCI_GHRGCI**2
+      IF (DKRCI_THRGCI .LT. 0.0D0 .AND. DKRCI_THRECI .LT. 0.0D0) THEN
+      ! no user input, use default values
+         IF ( DOPROP_KRCI ) THEN
+            DKRCI_THRGCI = 1.D-4
+            DKRCI_THRECI = 1.D-9 ! thrgci takes precedence
+            WRITE(LUPRI,'(A,1P,D10.2,A)')
+     &    ' * Gradient convergence threshold:',DKRCI_THRGCI,
+     &    ' (default for property calculation)',
+     &    ' * Energy convergence threshold:  ',DKRCI_THRECI,
+     &    ' (default for property calculation)'
+            WRITE(LUPRI,'(A)')
+     & '   (These thresholds will give approx. 4 digits in properties,'
+     & //' and 8 decimal places in energies.)'
+         ELSE
+            DKRCI_THRGCI = 3.D-3 ! enough for 0.1 mH accuracy
+            DKRCI_THRECI = 1.D-5
+            WRITE(LUPRI,'(A,1P,D10.2,A)')
+     &    ' * Gradient convergence threshold:',DKRCI_THRGCI,
+     &    ' (default for energy calculation)',
+     &    ' * Energy convergence threshold:  ',DKRCI_THRECI,
+     &    ' (default for energy calculation)'
+            WRITE(LUPRI,'(A)')
+     & '   (These thresholds will give approx. 5 digits in energies,'
+     & //' 0.01 mH, but only 2-3 digits for properties.)'
+         END IF
+      ELSE IF (DKRCI_THRECI .LT. 0.0D0) THEN
+      ! user only specified .THRGCI
+            DKRCI_THRECI = 0.1D0*DKRCI_THRGCI**2 ! user specified value takes precedence
+            WRITE(LUPRI,'(A,1P,D10.2,A)')
+     &    ' * Gradient convergence threshold:',DKRCI_THRGCI,
+     &    ' (input)',
+     &    ' * Energy convergence threshold:  ',DKRCI_THRECI,
+     &    ' (generated from gradient threshold)'
+      ELSE IF (DKRCI_THRGCI .LT. 0.0D0) THEN
+      ! user only specified .THRECI
+            DKRCI_THRGCI = 0.1D0*SQRT(DKRCI_THRECI) ! user specified value takes precedence
+            WRITE(LUPRI,'(A,1P,D10.2,A)')
+     &    ' * Energy convergence threshold:  ',DKRCI_THRECI,
+     &    ' (input)',
+     &    ' * Gradient convergence threshold:',DKRCI_THRGCI,
+     &    ' (generated from energy threshold)'
+      ELSE
+      ! user specified both .THRGCI and .THRECI
+         WRITE(LUPRI,'(A,1P,D10.2,A)')
+     & ' * Gradient convergence threshold:',DKRCI_THRGCI,' (input)',
+     & ' * Energy convergence threshold:  ',DKRCI_THRECI,' (input)'
+      END IF
+      IF (KRCI_CIPROGRAM .EQ. 'GASCIP') WRITE(LUPRI,'(A)')
+     &   ' - NB! GASCIP ignores the energy convergence threshold.'
       IF (MAXCIT_KRCI .GE. 0) THEN
          WRITE(LUPRI,'(A,I3)')
      &     ' * Maximum number of CI iterations for each symmetry: ',
@@ -1173,7 +1272,7 @@ C
      &     ' * Restarting CI from C vector on LUCIAREL file '
       END IF
 C
-      IF (IANACI.EQ.1) THEN
+      IF (IANACI_KRCI.EQ.1) THEN
          WRITE(LUPRI,'(A)')
      &     ' * Analyzing CI vectors in terms of coefficients '
       END IF
@@ -1245,15 +1344,15 @@ C     ... only natural orbitals occupation numbers
       IF( DOPROP_KRCI ) THEN
 C       ... obtain operator symmetry in LUCIARELs double group
 C       subgroup notation
-        DOSYMOPPRP = .TRUE.
         WRITE(LUPRI,'(A/)')
      &     ' * Property calculation for the following'//
      &     ' one-electron operators: '
         if(dooscillst.or.dodipmom_krci)call def_oscill(0)
         if(dojzexp)                    call def_omegaquant(0)
-        if(doeedm_krci)                call def_eedm(work,lwork,NTEST)
-        if(domhyp_krci)                call def_mhyp(work,lwork,NTEST)
-        if(doensps_krci)               call def_ensps(work,lwork,NTEST)
+        if(doeedm_krci)                call def_eedm(iprkrci,work,lwork)
+        if(domhyp_krci)                call def_mhyp(iprkrci,work,lwork)
+        if(doensps_krci)              call def_ensps(iprkrci,work,lwork)
+        if(donmqm_krci)                call def_nmqm(iprkrci,work,lwork) !MKN
         DO I = 1, NPROP_KRCI
 C         ... initialize operator symmetry array
           ISYMOPPRP_KRCI(I) = 0
@@ -1283,6 +1382,10 @@ C
         write(lupri,'(/a)') ' * Calculation of electron-Nucleus'//
      &                     ' Scalar-Pseudoscalar matrix elements'
       end if
+      if(donmqm_krci)then
+        write(lupri,'(/a)') ' * Calculation of the Nuclear MQM'//
+     &                     ' P,T-odd interaction matrix elements' !MKN
+      end if
       IF(DOJZEXP) THEN
         WRITE(LUPRI,'(/A)') ' * Determine Omega quantum number for'//
      &                      ' electronic eigenstates'
@@ -1290,10 +1393,6 @@ C
       IF( CHCKPT_KRCI ) THEN
         WRITE(LUPRI,'(/A)') ' * Write check point file in parallel'//
      &                      ' CI calculation'
-      END IF
-      IF( GENFOCK_KRCI ) THEN
-        WRITE(LUPRI,'(/A)') ' * Transform positronic/inactive/virtual'//
-     &                      ' spinors to Fock-type spinors'
       END IF
       IF( (.NOT. CINT_REORD_KRCI) .and. LOWSORT_KRCI ) THEN
         WRITE(LUPRI,'(/A)') ' *** Warning *** low-memory sorting'//
@@ -1309,10 +1408,10 @@ C
         write(lupri,'(/a)') ' * Select CI state(s) for subsequent'//
      &                      ' MCSCF optimizations based on the'//
      &                      ' respective Omega value(s).'
-        do 303 ikrci_symmetry = 1, max_nkrci_max_sym
+        do 303 ikrci_symmetry = 1, maxsym_nkrci
           if(nkrci_selom(ikrci_symmetry) .gt. 0)then
             if(nkrci_ciroots(ikrci_symmetry) .le. 0)then
-              call quit(' *** error in KRCI_INP: ' //
+              call quit(' *** error for *KRCI: ' //
      &                  ' CI root selection for inactive symmetry. ***')
             end if
             if(nkrci_ciroots(ikrci_symmetry) .lt.
@@ -1357,13 +1456,14 @@ C     Last revision :
 C
 C***********************************************************************
       use memory_allocator
+      use symmetry_setup_krci, only: orbsymVEC
 
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
       PARAMETER(D0=0.0D0)
 C
-      CHARACTER WFTYP*(*), KRCLCTYP*8
+      CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
 C
 #include "maxorb.h"
@@ -1379,8 +1479,9 @@ C
 #include "frame.h"
 !frame.h needed for CORRLV for LVCORR
 C
-      LOGICAL EX, FILEOPEN
-      INTEGER RENAME
+      LOGICAL   EX, FILEOPEN
+      INTEGER   RENAME
+      CHARACTER c4*4 ! used for swapping indices in XREPEIG
 C
       real(8), allocatable :: WORK(:)
 
@@ -1399,13 +1500,18 @@ C
 C
 C        that should not happen...
 C
-         WRITE(LUPRI,'(/A)')
-     $   '*** ERROR in KRCI_CALC *** wrong wave function type '
+         WRITE(LUPRI,'(/2A)')
+     &   '*** ERROR in KRCI_CALC *** wrong wave function type ',WFTYP
          CALL QUIT(
      &   '*** ERROR in KRCI_CALC: wave function type not allowed ***')
 C
       ELSE IF ( WFTYP .EQ. 'KR-CI ') THEN
         MCTYPE = JGAS
+      ELSE
+         WRITE(LUPRI,'(/2A)')
+     &   '*** ERROR in KRCI_CALC *** wrong wave function type ',WFTYP
+         CALL QUIT(
+     &   '*** ERROR in KRCI_CALC: wave function type not allowed ***')
       END IF
 C
 C     Say Hi!
@@ -1457,13 +1563,16 @@ C
       CALL MEMGET('REAL',   KCMO  ,NCMOTQ  ,WORK,KFREE,LFREE)
       KFREE_100_LOOP = KFREE
 
-      DO 100 IOPT_SYMMETRY = 1, NKRCI_MAX_SYM
+      DO 100 JOPT_SYMMETRY = 1, NKRCI_MAX_SYM
+        ! JOPT_SYMMETRY as do loop variable, because IOPT_SYMMETRY may be modified in RSETCI, called by RSETWOP
+        IOPT_SYMMETRY = JOPT_SYMMETRY
         NCIROOT = NKRCI_CIROOTS(IOPT_SYMMETRY)
         IF (NCIROOT .LE. 0) GO TO 100
-        WRITE (LUPRI,'(//80A1/A,I5/A,I8/80A1/)')
+        WRITE (LUPRI,'(//80A1/2A/A,I0/2A/80A1/)')
      &  ('&',I=1,80),
-     &  '&&& KRCI calculation for symmetry no.',IOPT_SYMMETRY,
-     &  '&&& Number of CI roots for this symmetry',NCIROOT,
+     &  '&&& KRCI calculation for symmetry ',XREPEIG(IOPT_SYMMETRY),
+     &  '&&& Number of CI roots for this symmetry: ',NCIROOT,
+     &  '&&& CI program used: ',OPT_CIPROGRAM,
      &  ('&',I=1,80)
 
 C
@@ -1483,6 +1592,7 @@ C
      &        'INFO: Only ',NZCONF,' determinants in this symmetry',
      %        'INFO: Number of CI roots therefore reduced to ',NZCONF
            NCIROOT = NZCONF
+           NKRCI_CIROOTS(IOPT_SYMMETRY) = NCIROOT
         END IF
 C
 C       ***************************************************
@@ -1509,7 +1619,7 @@ C
         CALL MEMREL('KRCI_CALC_1',WORK,KWORK,KFREE_100_LOOP,
      &              KFREE,LFREE)
   100 CONTINUE
-C     ^-- end loop IOPT_SYMMETRY over CI state symmetries
+C     ^-- end loop JOPT_SYMMETRY over CI state symmetries
 C
 C     ***************************************************
 C     *** KR-CI property calculation ********************
@@ -1525,6 +1635,25 @@ C                             (ungerade number of electrons)
             NCIROOT_CHECK = NKRCI_CIROOTS(ISYM_CHECK)
             IF( NCIROOT_CHECK .ne. 0 ) IOPT_SYMMETRY = ISYM_CHECK
          END DO
+         ! KRCI_PROP expects NKRCI_CIROOTS to be in LUCIAREL order
+         ! and not in "standard" order. NKRCI_CIROOTS() array
+         ! is only used inside LUCIAREL for property calculations.
+         if (.not. linear) then
+            nrep = nkrci_max_sym / 2
+            if (2*nrep .ne. nkrci_max_sym) then
+               call quit('Inconsistency for KR-CI property calculation')
+            end if
+            ! swap from fermion - boson order
+            !      to   boson   - fermion order
+            do i = 1, nrep
+               j = nkrci_ciroots(i)
+               nkrci_ciroots(i) = nkrci_ciroots(i+nrep)
+               nkrci_ciroots(i+nrep) = j
+               c4 = xrepeig(i)
+               xrepeig(i) = xrepeig(i+nrep)
+               xrepeig(i+nrep) = c4
+            end do
+         end if
 C        set run flag
          RUNXPROP = .TRUE.
          CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
@@ -1562,6 +1691,9 @@ C
 C     ***************************************************
 C     *** Memory deallocation ***************************
 C     ***************************************************
+      IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+            if(allocated(orbsymVEC)) deallocate(orbsymVEC)
+      END IF
 C
       CALL MEMREL('KRCI_CALC',WORK,KWORK,KWORK,KFREE,LFREE)
       call dealloc(WORK)
@@ -1636,7 +1768,7 @@ C     *** Get CI vectors ********************************
 C     ***************************************************
 C
 C
-#ifdef UNDEF
+#ifdef KRCI_DEBUG
       write(LUPRI,*) '(1) iopt_intflg=',iopt_intflg
       write(LUPRI,*) '(1) iopt_intbuf=',iopt_intflg
       write(LUPRI,*) '(1) iopt_intdef=',iopt_intflg
@@ -1908,7 +2040,7 @@ C     remove potential "garbage" from imaginary part...
 
       CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
 
-      call quit('DMRG interface not available in this Dirac version')
+      call write_fcidump_file(WORK(KMUUUU),WORK(KFCACM),ECORE)
 C
       CALL MEMREL('fcidump_driver',WORK,1,KFRSAV,KFREE,LFREE)
 C

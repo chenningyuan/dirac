@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/relccsd
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -22,7 +23,6 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    ccgetv.F
    ccintm.F
    ccints.F
-   ccmain.F
    ccpam.F
    ccrpa.F
    ccxblas.F
@@ -30,14 +30,15 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    ccdriv.F
    cceqn_driver_lambda.F
    ccgrad.F
-   ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
-   ${PROJECT_SOURCE_DIR}/src/main/dirac.F
+  # ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
+  # ${PROJECT_SOURCE_DIR}/src/main/dirac.F
 # needs fix missing object pamgeo
-   ${PROJECT_SOURCE_DIR}/src/dirac/dirgeo.F
+  # ${PROJECT_SOURCE_DIR}/src/dirac/dirgeo.F
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
-   relcc_cfg.F90
+   #relcc_cfg.F90   # already defined in dirac library because needed there
+   spinor_indexing.F90
    auto_offset.F90
    ccsort.F90
    ccsort_exp.F90
@@ -52,9 +53,8 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
    projectors.F90
    eom_driver.F90 
    # needs dependency
-   ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
+   #${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
 )
-
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_RELCCSD_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
@@ -72,7 +72,7 @@ endif()
 # - the ccunix.c file is not included
 add_library(
     relccsd
-    OBJECT
+    STATIC
     ${FREE_RELCCSD_FORTRAN_SOURCES}
     ${FIXED_RELCCSD_FORTRAN_SOURCES}
 )
@@ -80,5 +80,6 @@ add_library(
 # add intermodule dependencies
 add_dependencies(relccsd gp)
 add_dependencies(relccsd dirac)
-add_dependencies(relccsd main)
+add_dependencies(relccsd dirac_main)
 add_dependencies(relccsd interface_mpi)
+#add_dependencies(relccsd mfsolver)

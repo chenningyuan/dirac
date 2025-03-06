@@ -13,8 +13,6 @@
 !                    electronic ground and excited states.
 !     DOJZEXP:     calculate <j_z> expectation value 
 !                  (omega quantum number) for electronic states
-!     DOSYMOPPRP:  call LUCIAREL to calculate property operator 
-!                  symmetry
 !     NPROP_KRCI:  total number of one-electron operators
 !     LPROP_KRCI:  pointer list to general common block list 
 !                  of one-electron operators
@@ -62,13 +60,14 @@
      &                 IXSYMLIST(MXPROPKRCI_SYM),IXSYMACT,NXSYMPAIRS,
      &                 IHTYPE_X
 !	
-	LOGICAL DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP, DOJZEXP,
+	LOGICAL DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOJZEXP,
      &        DOPROPREOD, DOSIGPROP, RUNXPROP, dodipmom_krci, 
-     &        doeedm_krci, domhyp_krci, dogenp_krci, doensps_krci
-	COMMON/LUCILPRP/ DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP,
+     &        doeedm_krci, domhyp_krci, dogenp_krci, doensps_krci,
+     &        donmqm_krci                                             !MKN
+	COMMON/LUCILPRP/ DOPROP_KRCI, TWOEPROP, DOOSCILLST,
      &                 DOJZEXP, DOPROPREOD, DOSIGPROP, RUNXPROP,
      &                 dodipmom_krci, doeedm_krci, domhyp_krci, 
-     &                 dogenp_krci, doensps_krci
+     &                 dogenp_krci, doensps_krci, donmqm_krci         !MKN
       CHARACTER XSYMFLAB*3, XREPEIG*4
 	COMMON/LUCICPRP/XSYMFLAB(MXPROPKRCI_SYM),XREPEIG(MXPROPKRCI_SYM)
 !

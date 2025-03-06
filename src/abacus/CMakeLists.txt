@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/abacus
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -8,41 +9,6 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_ABACUS_FORTRAN_SOURCES
-cbidip.h  
-cbione.h 
- cotabs.h 
- crsdir.h 
- dirprt.h 
- doxyz.h  
- expcom.h 
- gdvec.h 
-  infinp.h 
- infvar.h 
- moldip.h 
- nodint.h
-  oneadr.h 
- prkoor.h 
- spnout.h 
- suscpt.h 
- trkoor.h
-cbinuc.h 
- cbitrp.h 
- crossd.h 
- derzer.h  
-disbuf.h  
-efield.h  
-facang.h 
- gnrinf.h 
- infopt.h 
- inirep.h  
-mxsymm.h  
-numder.h 
- past.h   
- sotabs.h  
-subdir.h
-  taysol.h  
-twoao.h
-# ----------
     abadip.F
     abalnr.F
     abamolden.F
@@ -76,7 +42,6 @@ twoao.h
     her2out.F
     her2sym.F
     herbas.F
-    hercen.F
     herdirect.F
     herdrv.F
     hergam.F
@@ -90,15 +55,16 @@ twoao.h
     hersym.F
     hertst.F
     vibnor.F
-    herpar.F # Miro: I left the file here
+    herpar.F 
 )
 
 set(FREE_ABACUS_FORTRAN_SOURCES
    carsph.F90
    hermodules.F90
    filemodule.F90
+   gab_settings.F90
+   aobasis_collector.F90
 )
-
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_ABACUS_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
@@ -128,7 +94,7 @@ endif()
 
 add_library(
     abacus
-    OBJECT
+    STATIC
     ${FIXED_ABACUS_FORTRAN_SOURCES}
     ${FREE_ABACUS_FORTRAN_SOURCES}
 )
@@ -136,7 +102,7 @@ add_library(
 #
 # deal with intermodule dependencies 
 # 
-add_dependencies(abacus main)
+add_dependencies(abacus dirac_main)
 add_dependencies(abacus gp)
 add_dependencies(abacus ecp)
 add_dependencies(abacus xcint)  

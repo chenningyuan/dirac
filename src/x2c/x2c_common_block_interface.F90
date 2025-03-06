@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 !
 !
@@ -30,8 +25,8 @@ module x2c_cb_interface
 !          hide as much as you can for public - it will save us lots of trouble in future
 
   use x2cmod_cfg
-#ifdef MOD_AOOSOC
-  use atomic_oo_order_so_correction_cfg
+#ifdef MOD_XAMFI
+  use xamfi_global_parameters
 #endif
 
   implicit none
@@ -56,6 +51,7 @@ contains
 
       use quaternion_algebra
       use memory_allocator
+      use dirac_cfg, only: dirac_cfg_dft_calculation
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -87,7 +83,13 @@ contains
 
        if(init_x2c_cb_blocks)then
 
-!        set AO-labels for large and small components - before x2c_main initialized only for the large component
+         !> set integral flags for two-electron evaluations within the X2C module
+         !> four-component evaluations use the default integral settings stored in intgen_save
+         !>  two-component evaluations use the default integral settings stored in intgen (set to (LL|LL) only in HAMINP for X2C)
+         x2c_intgen_4c = intgen_save
+         x2c_intgen_2c = intgen
+
+         !> set AO-labels for large and small components - before x2c_main initialized only for the large component
          call getlab(-1)
 
          call legacy_lwork_get(len_wrk_f77_x2c)
@@ -101,22 +103,23 @@ contains
          mfsym                 = min(nfsym,2)
          x2c_1e_system         = onesys
 
-!        set value for amfi module (if at all)
+         !> set value for amfi module (if at all)
          if(noamfi)        x2c_add_amfi = -1
          if(x2c_1e_system) x2c_add_amfi = -1 
 
-!        common block variables for Diracs 2e-SOC or the old AMFI
+         !> common block variables for Diracs 2e-SOC or the old AMFI
          if(x2c_add_amfi > 0)then
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
            if(aoomod)then ! Dirac oo-order 2e-SOC
              x2c_amfi_order           = aoo_soc_order
              x2c_add_amfi             = 2
+             if(aooeamf) x2c_add_amfi = 3
            else ! AMFI corrections by B. Schimmelpfennig
 #endif
              x2c_tot_charge_for_mfsum = imfch
              x2c_amfi_order           = isorder_amfi_x2c
              x2c_max_quant_num        = mxqn
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
            end if
 #endif
          end if
@@ -214,6 +217,7 @@ contains
 
 !        initialize logicals
          x2c_linsym       = linear
+         x2c_atomic       = atomic
          x2c_do_spherical = dosphe
          x2c_prep_bnccorr = bncron.and..not.onesys
          x2c_mdirac       = mdirac
@@ -236,13 +240,19 @@ contains
          else if(x2c_free_part_mtx_defh1)then
 !          free-particle matrix
            x2c_is_defining_h1mat  = 3
-!        else if(dohuckel)then
-!          (extended) Huckel start guess
-!          x2c_is_defining_h1mat  = 1
          else
 !          default: bare-nucleus one-electron Dirac-Hamiltonian
            x2c_is_defining_h1mat  = 0
+#ifdef MOD_XAMFI
+           ! extension: bare-nucleus one-electron Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
+           if(aoomod.and.aoo2ediag) x2c_is_defining_h1mat  = 1
+           ! extension: bare-nucleus one-electron Dirac-Hamiltonian + first-order molecular 2e-mean-field contributions
+           if(aoomod.and.aooeamf)   x2c_is_defining_h1mat  = 4
+#endif
          end if
+
+         !> DFT run
+         x2c_isDFT = dirac_cfg_dft_calculation;
 ! 
        else 
 

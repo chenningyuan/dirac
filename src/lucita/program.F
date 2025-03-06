@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -29,6 +24,7 @@
 *
       SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT,IPROCLIST,
      &                 IGROUPLIST)
+      use luci_wrkspc
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
@@ -41,7 +37,6 @@
       EXTERNAL MV7
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "clunit.inc"
 #include "csm.inc"
@@ -995,6 +990,7 @@ C
 ***********************************************************************
 *
       SUBROUTINE PAMLU(IUNIN,IUNUT)
+      use luci_wrkspc
 *
 * L U C I A
 *
@@ -1038,7 +1034,6 @@ C
 #include "cgas.inc"
 #include "luctinp.h"
 *.Memory
-#include "wrkspc.inc"
 C     character line and machinename
       CHARACTER*72 CARD
       CHARACTER*255 MACHINENAME
@@ -1047,10 +1042,8 @@ C     character line and machinename
       INTEGER   K_OFFSET,  K_END
       integer global_scratch_disk
 
-      real(8), allocatable :: WRK(:)
-C
       call legacy_lwork_get(LWRK)
-      call alloc(WRK,LWRK,id='WRK in PAMLU')
+      call allocate_wrkspc
 C
       MIN_ONE    = - 1
       NAMELENGTH =   0
@@ -1070,16 +1063,7 @@ C
 
 C     Static memory, initialization and allocation
 
-C     Compute offset from WRK in parameter list
-C     to WORK in common in wrkspc.inc. WORK is used internally in LUCITA.
-C     This offset is added to all Ksomething addresses in WORK(Ksomething)
-C     so that WRK(1:LWRK) are the memory addresses really used.
-
-C     However, the offset K_OFFSET may be too big for i*4.
-C     We test for that and quit if this is the case.
-
-      CALL COMPOFF(WRK,WORK,K8_OFFSET)
-C     *k_offset = (long) (wrk-work+1);
+      k8_offset = 1
       K_OFFSET  = K8_OFFSET
       K_END     = K_OFFSET  + LWRK ! maybe i*4 evaluation
       K8_END    = K8_OFFSET + LWRK ! i*8 evaluation
@@ -1554,7 +1538,6 @@ C     I_RESTRT_CC.EQ.1
         CALL PR_MATML_STAT
       END IF
 *
-      call dealloc(WRK)
       CALL QEXIT('PAMLU ')
 *
 *     eliminate scratch units:
@@ -1572,6 +1555,7 @@ C
       WRITE (LUOUT,*) ' I am home from the loops '
 *
       CALL FLSHFO(LUOUT)
+      call delete_wrkspc
 *
       END
 ***********************************************************************
@@ -2420,7 +2404,7 @@ C         write(6,*) ' Sirius Flag activated '
 *          Current choices : MP, EN, H0READ
 *      3 : zero order energy : E0=EX ( use exact energy of reference state )
 *                              E0=AV ( Use expectation value of H0 )
-*                              E0=RE ; Readin zero order energy in
+*                              E0=RE ; Reading zero order energy in
             ISETKW(47) = 1
             IPERT = 1
 *. Number of correction vectors
@@ -2615,7 +2599,7 @@ CTF
                WRITE(LUOUT,*)
      &          ' Else I do not know about the number of orbital spaces'
                WRITE(LUOUT,*) ' So I will stop '
-               Call Abend2( 'READIN: put GASSH before GASSPC' )
+               Call Abend2( 'LREADIN: put GASSH before GASSPC' )
             END IF
             IDOGAS = 1
             ISETKW(51) = 1
@@ -2648,7 +2632,7 @@ CTF
            WRITE(LUOUT,*)
            WRITE(LUOUT,*)'                                  Lucita  '
            WRITE(LUOUT,*)
-           Call Abend2( 'READIN: Specify CMBSPC before SEQUEN' )
+           Call Abend2( 'LREADIN: Specify CMBSPC before SEQUEN' )
          END IF
 *. Number of combination spaces
          READ(LUCMOL,*) NCMBSPC
@@ -2904,7 +2888,7 @@ C?       WRITE(6,'(A,A)') ' Machine = ', MACHINE
             WRITE(LUOUT,*)
      &         ' Else I do not know about the number of orbital spaces'
             WRITE(LUOUT,*) ' So I will stop '
-            Call Abend2( 'READIN: put GASSH before H0SPC ' )
+            Call Abend2( 'LREADIN: put GASSH before H0SPC ' )
          END IF
          READ(LUCMOL,*) NPTSPC
          IF(NPTSPC.GT.MXPPTSPC) THEN
@@ -2912,7 +2896,7 @@ C?       WRITE(6,'(A,A)') ' Machine = ', MACHINE
             WRITE(LUOUT,*) ' To many perturbation spaces '
             WRITE(LUOUT,*)
      &           ' raise MXPPTSPC from ', MXPPTSPC ,' to ',NPTSPC
-            Call Abend2( 'NPTSPC>MXPPTSPC in READIN ' )
+            Call Abend2( 'NPTSPC>MXPPTSPC in LREADIN ' )
          END IF
 *
          IH0SPC = 1
@@ -2941,7 +2925,7 @@ C          END DO
             WRITE(LUOUT,*)
      &           ' Else I do not know about the number of spaces'
             WRITE(LUOUT,*) ' So I will stop '
-            Call Abend2( 'READIN: put H0SPC before H0FRM ' )
+            Call Abend2( 'LREADIN: put H0SPC before H0FRM ' )
          END IF
 *. Type of perturbation in this subspace
 *
@@ -3293,11 +3277,11 @@ C        READ(LUCMOL,*) NEXCSTATE
          CALL DECODE_LINE(CARD1,MXPLNC,NITEM,ITEM,MX_ITEM)
          N_AVE_OP = NITEM
          IF(N_AVE_OP.GT. MXNRESP) THEN
-            WRITE(LUOUT,*) ' READIN : Error for keyword RESPON'
+            WRITE(LUOUT,*) ' LREADIN : Error for keyword RESPON'
             WRITE(LUOUT,*) ' Specified number of A ops = ', N_AVE_OP
             WRITE(LUOUT,*) ' Larger than MAX = ', MXNRESP
             WRITE(LUOUT,*) ' PLEASE reduce NAVE_OP and RETURN '
-            Call Abend2( ' READIN, KEYWORD RESPON : NAVE_OP .gt. 20 ' )
+            Call Abend2( ' LREADIN, KEYWORD RESPON : NAVE_OP .gt. 20 ' )
          END IF
          DO JITEM = 1, NITEM
             AVE_OP(JITEM) = ITEM(JITEM)
@@ -3305,11 +3289,11 @@ C        READ(LUCMOL,*) NEXCSTATE
 *. Number of respons calculations to be performed
          READ(LUCMOL,*) NRESP
          IF(NRESP.GT. MXNRESP) THEN
-            WRITE(LUOUT,*) ' READIN : Error for keyword RESPON'
+            WRITE(LUOUT,*) ' LREADIN : Error for keyword RESPON'
             WRITE(LUOUT,*) ' Specified number of calcs = ', NRESP
             WRITE(LUOUT,*) ' Larger than MAX = ', MXNRESP
             WRITE(LUOUT,*) ' PLEASE reduce NRESP and RETURN '
-            Call Abend2( ' READIN, KEYWORD RESPON : NRESP .gt. 20 ' )
+            Call Abend2( ' LREADIN, KEYWORD RESPON : NRESP .gt. 20 ' )
          END IF
          DO IRESP = 1, NRESP
 *. Operator1, Operator 2, Maxord for op1, Maxord for op2, freq
@@ -3400,7 +3384,7 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
          CALL UPPCAS(CARD1,MXPLNC)
          CALL DECODE_LINE(CARD1,MXPLNC,NITEM,ITEM,MX_ITEM)
          IF(NITEM.LT. 2) THEN
-            WRITE(LUOUT,*) ' READIN : Error for keyword TRACI'
+            WRITE(LUOUT,*) ' LREADIN : Error for keyword TRACI'
             WRITE(LUOUT,*) ' Number of items read ', NITEM
             WRITE(LUOUT,*)
      &      ' Form of line should be : complete/restrict, fock/natural'
@@ -3531,7 +3515,7 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
 *. KEYWORD was not identified
 *
       WRITE(LUOUT,*)
-     &     '  ****  Error, unidentified KEYWORD in READIN   **** '
+     &     '  ****  Error, unidentified KEYWORD in LREADIN   **** '
       WRITE(LUOUT,*)
       WRITE(LUOUT,*) ' Last line read  '
       WRITE(LUOUT,*) ' ================'
@@ -3557,7 +3541,7 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
         WRITE(LUOUT,'(A)')
      &  ' Run will be aborted due to input errors '
         WRITE(LUOUT,'(A,I9)')
-     &  ' Number of input errors detected in READIN ', NERROR
+     &  ' Number of input errors detected in LREADIN ', NERROR
 *
         WRITE(LUOUT,*) 
      &  ' The following keywords were correctly identified'
@@ -3924,7 +3908,7 @@ C       END IF
       ELSE IF(PSSIGN.NE.0.0D0.AND.PLSIGN.NE.0.0D0) THEN
         IDC = 4
       END IF
-C?    WRITE(6,* ) ' TEST readin IDC = ', IDC
+C?    WRITE(6,* ) ' TEST reading IDC = ', IDC
 *
 * 29 : print flag for string information
 *
@@ -4049,7 +4033,7 @@ C?    WRITE(6,* ) ' TEST readin IDC = ', IDC
         Call Abend1( 11 )
       END IF
 *
-* 37 : Avoid any readin of integrals ( useful for obtaining
+* 37 : Avoid any reading of integrals ( useful for obtaining
 *      size of CI expansion etc.
 *
       IF(ISETKW(37).EQ.0 ) THEN
@@ -5269,7 +5253,7 @@ COLD    WRITE(6,*)
 COLD &  '        Epstein-Nesbet partitioning '
 COLD    ELSE IF  (MPORENP.EQ.0) THEN
 COLD    WRITE(6,*)
-COLD &  '        One-body Hamiltonian readin '
+COLD &  '        One-body Hamiltonian read in '
 COLD    END IF
         IF(IE0AVEX.EQ.1) THEN
           WRITE(LUOUT,*)
@@ -5666,6 +5650,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LUCITA_NODE */
       SUBROUTINE LUCITA_NODE()
+      use luci_wrkspc
 *
 *     LUCITA routine (DIRAC interface) for the slaves
 *
@@ -5695,7 +5680,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "cgas.inc"
 #include "luctinp.h"
 *.Memory
-#include "wrkspc.inc"
 C     DIMENSION IMOKW(NTABLE)
       CHARACTER*10 INTFCE, WORD3*7
       CHARACTER MYWAFFCD*8, MYCALCTP*8, WORD*7, MYSZCALD*3

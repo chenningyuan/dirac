@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ***********************************************************************
@@ -31,7 +26,7 @@
      &           istart_nroot,
      &           IPRT,NPRDET,IPNTR,NP1,NP2,NQ,
      &           SCR1,ISCR1,SCR2,T_CC,T_BUFF,
-     &           EIGSHF,ICISTR,LBLK,IDIAG,THRES_E,
+     &           EIGSHF,ICISTR,LBLK,IDIAG,thres_G,thres_E,
      &           NBATCH,LBATCHB,LBATCHE,
      &           IBLOCK,INIDEG,E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,
      &           NCLS,
@@ -40,9 +35,11 @@
      &           ITERSEOUT
 #if defined (VAR_MPI2)
      &           ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,LUCLIST,
+     &           LU6LIST,LU7LIST,
      &           RCCTOS,IT_TTPL,IT_TTOL
 #endif
      &     )
+      use luci_wrkspc
 *
 * Master routine for CI diagonalization
 *
@@ -52,7 +49,6 @@
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
       DIMENSION VEC1(*), VEC2(*)
       DIMENSION INIDET(100)
       DIMENSION IPNTR(*), ISCR1(*)
@@ -65,6 +61,7 @@
       INTEGER   ISTAT(MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
+      DIMENSION LU6LIST(*), LU7LIST(*)
       DIMENSION IT_TTPL(*)
       INTEGER   RCCTOS(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
@@ -89,6 +86,13 @@
 #endif
 *
       NTEST=0
+!      !> (re-)set convergence threshold
+       if(thres_G < 1.0d-07) then
+          write(luwrt,'(/A,1P,E10.2,A)')
+     &    'INFO: CI gradient convergence threshold too tight,'//
+     &    ' changed from',thres_G,' to 1.0e-7'
+          thres_G = 1.0d-07
+       end if
 *
 *               ====================================
 ** 1 :               INITIAL VARIATIONAL SUBSPACE
@@ -152,6 +156,11 @@ C              FNDMND(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,SCR,ISCAT,SUBVAL
 C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
 * Real part
             CALL REWINE(LUDIA,LBLK)
+
+
+!            ISCR1(1) = 80
+!            SCR1(1) = 1.0D0
+!            NDEG = 1
 c           ISCR1(1) = 16
             IAM_REAL = 1
             CALL WRSVCD_REL(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
@@ -244,8 +253,12 @@ C     new stuff for real/complex hermitian matrix diagonalizer
         call memmar(KAPROJ,(MAXVEC*(MAXVEC+1)/2),'ADDL  ',
      &              2,'KAPROJ')
       else
-        call memmar(KAPROJ,MAPROJI-MAPROJ,'ADDL  ',2,'KAPROJ')
-        call memmar(KAPROJI,MAVEC-MAPROJI,'ADDL  ',2,'KAPROI')
+        call memmar(KAPROJ,(MAXVEC*(MAXVEC+1)/2),'ADDL  ',
+     &              2,'KAPROJ')
+        call memmar(KAPROJI,(MAXVEC*(MAXVEC+1)/2),'ADDL  ',
+     &              2,'KAPROI')
+C        call memmar(KAPROJ,MAPROJI-MAPROJ,'ADDL  ',2,'KAPROJ')
+C        call memmar(KAPROJI,MAVEC-MAPROJI,'ADDL  ',2,'KAPROI')
 C
 C       new stuff for complex hermitian matrix diagonalizer
         call memmar(KCWORK,LCWORK,'ADDL  ',2,'KCWORK')
@@ -261,6 +274,7 @@ C       ... initialize
       CALL DZERO(WORK(KEIGVL),LEIGVL)
 
       call memmar(KAVEC,MWORK-MAVEC,'ADDL  ',2,'KAVECS')
+      call memmar(KAVECO,MWORK-MAVEC,'ADDL  ',2,'KAVECO')
       call memmar(KWORK,MLFRSC-MWORK,'ADDL  ',2,'KWORKS')
       
 #if defined (VAR_MPI2)
@@ -291,10 +305,12 @@ C       REAL DAVIDSON solver
      &                  WORK(KRNRM),WORK(KEIG),
      &                  EROOTS,MXCIIT,NROOTS,
      &                  MAXVEC,istart_nroot,WORK(KAPROJ),WORK(KAVEC),
+     &                  WORK(KAVECO),
      &                  WORK(KWORK),IPRT,NPRDIM,
-     &                  IPNTR,LBLK,EIGSHF,THRES_E,
+     &                  IPNTR,LBLK,EIGSHF,thres_G,thres_E,
      &                  IBLOCKL,NPARBLOCK,NUM_BLOCKS,
      &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
+     &                  LU6LIST,LU7LIST,
      &                  LUCLIST,NBATCH,
      &                  WORK(KLVLBT),WORK(KLVLEBT),WORK(KLVI1BT),
      &                  WORK(KLVIBT),RCCTOS,
@@ -311,7 +327,7 @@ C       REAL DAVIDSON solver
      &                  MAXVEC,istart_nroot,WORK(KAPROJ),WORK(KAVEC),
      &                  WORK(KWORK),IPRT,NPRDIM,
      &                  H0DUM,IPNTR,NP1,NP2,NQ,H0SCRDUM,
-     &                  LBLK,EIGSHF,THRES_E,
+     &                  LBLK,EIGSHF,thres_G,thres_E,
      &                  WORK(KAMATC),WORK(KRWORK),WORK(KEIGVL),
      &                  eci_start,ITERSEOUT)
 *
@@ -326,10 +342,10 @@ C
      &                  WORK(KEIG),SCR2(1),MXCIIT,NDIM,
      &                  NROOTS,MAXVEC,istart_nroot,
      &                  T_CC,T_BUFF,WORK(KAPROJI),WORK(KAPROJ),
-     &                  WORK(KAVEC),
+     &                  WORK(KAVEC),WORK(KAVECO),
      &                  WORK(KWORK),IPRT,NPRDIM,IPNTR,
      &                  LBLK,EIGSHF,IHAM12,
-     &                  THRES_E,IBLOCKL,NPARBLOCK,NUM_BLOCKS,
+     &                  thres_G,thres_E,IBLOCKL,NPARBLOCK,NUM_BLOCKS,
      &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                  LUCLIST,NBATCH,
      &                  WORK(KLVLBT),WORK(KLVLEBT),WORK(KLVI1BT),
@@ -348,7 +364,7 @@ C
      &              T_CC,T_BUFF,
      &              WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),WORK(KWORK),
      &              IPRT,NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
-     &              IHAM12,THRES_E,WORK(KAMATC),
+     &              IHAM12,thres_G,thres_E,WORK(KAMATC),
      &              WORK(KCWORK),WORK(KRWORK),WORK(KEIGVL),
      &              eci_start,WORK(KIWORK))
 *
@@ -1310,12 +1326,14 @@ C          real part
       END DO
 C
 C     debug print section 
+      NTEST = 00
       IF( NTEST .ge. 10 )THEN
         WRITE(LUPRI,'(/A/)') ' *** EIGEN_NEW ***: final eigenvalues'
         CALL WRTMATMN(EIGVAL,1,NDIM,1,NDIM,LUPRI)
         WRITE(LUPRI,'(/A/)') ' *** EIGEN_NEW ***: final eigenvectors'
         CALL WRTMATMN(EIGVEC,NDIM,NDIM,NDIM,NDIM,LUPRI)
       END IF
+      NTEST = 00
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1434,13 +1452,15 @@ C          real and imag part
         END DO
       END DO
 C
-C     debug print section 
+C     debug print section
+      NTEST = 00 
       IF( NTEST .ge. 10 )THEN
         WRITE(LUPRI,'(/A/)') ' *** CEIGEN_NEW ***: final eigenvalues'
         CALL WRTMATMN(EIGVAL,1,N2DIM,1,N2DIM,LUPRI)
         WRITE(LUPRI,'(/A/)') ' *** CEIGEN_NEW ***: final eigenvectors'
         CALL WRTMATMN(EIGVEC,N2DIM,N2DIM,N2DIM,N2DIM,LUPRI)
       END IF
+      NTEST = 0
 C
       END
 ***********************************************************************
@@ -1634,8 +1654,8 @@ CTF     end do
      &                  T_CC,T_BUFF,
      &                  APROJI,APROJR,AVEC,WORK,IPRT,
      &                  NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
-     &                  IHAM12,
-     &                  CONVLIM,AMATC,CWORK,RWORK,EVL,eciold,IWORK)
+     &                  IHAM12,thres_G,thres_E,
+     &                  AMATC,CWORK,RWORK,EVL,eciold,IWORK)
 *
 * Multi root Davidson routine for complex Hermitian
 * matrices, requires two blocks in core
@@ -1666,8 +1686,9 @@ CTF     end do
 *          PEIGVL  : EIGENVALUES  OF MATRIX IN PRIMAR SPACE
 *          IPNTR   : IPNTR(I) IS ORIGINAL ADRESS OF SUBSPACE ELEMENT I
 *          NP1,NP2,NQ : Dimension of the three subspaces
-*
-*           LBLK : Defines block structure of matrices
+*          LBLK    : Defines block structure of matrices
+*          thres_G : CI gradient convergence threshold
+*          thres_E : CI energy convergence threshold - NOT USED IN THIS VERSION
 * On input LU1 is supposed to hold initial guesses to eigenvectors
 *
 *
@@ -1742,7 +1763,12 @@ C
        IRC = 2
 *
 !      !> (re-)set convergence threshold
-       if(abs(convlim) < 1.0d-07) convlim = 1.0d-07
+       if(abs(thres_G) < 1.0d-07) then
+          write(luwrt,'(/A,1P,E10.2,A)')
+     &    'INFO: CI gradient convergence threshold too tight,'//
+     &    ' changed from',thres_G,' to 1.0e-7'
+          thres_G = 1.0d-07
+       end if
 
        CONVER = .FALSE.
 *
@@ -1919,7 +1945,7 @@ C               MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
          CALL FLSHFO(6)
 *
 * Set logical for convergence results
-         IF(RNORM.LT. CONVLIM ) THEN
+         IF(RNORM.LT. thres_G ) THEN
             RTCNV(IROOT) = .TRUE.
          ELSE
             RTCNV(IROOT) = .FALSE.
@@ -2029,7 +2055,7 @@ C               SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
 
        WRITE(LUWRT,'(/A,1P,D8.2,A/,(I15,D20.5))')
      &   '                        Norm of CI residuals'//
-     &   ' (thr = ',convlim,')',
+     &   ' (thr = ',thres_G,')',
      &   (i,RNRM(i,ITER),i=1,NROOT)
 CTF
       ITER = ITER + 1
@@ -2360,14 +2386,14 @@ C
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
       END
 ***********************************************************************
-
+#ifdef INCLUDE_NOT_USED
       SUBROUTINE MICDV6_REL(
      &                  T_CC,T_BUFF,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,
      &                  MAXIT,
      &                  LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRTXX,NPRDIM,
      &                  H0,IPNTR,NP1,NP2,NQ,H0SCR,
-     &                  LBLK,EIGSHF,E_CONV,IROOTHOMING)
+     &                  LBLK,EIGSHF,thres_E,IROOTHOMING)
 *
 * Iterative eigen solver, requires two blocks in core
 *
@@ -2467,7 +2493,7 @@ C?   &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
        END IF
        KAPROJ = 1
        KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST = 1.0D-8
+       thres_G = 1.0D-8
        CONVER = .FALSE.
 *
 * ===================
@@ -2601,9 +2627,9 @@ C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
 *
          CALL FLSHFO(6)
 *
-         IF(RNORM.LT. TEST .OR.
+         IF(RNORM.LT. thres_G .OR.
      &      (ITER.GT.2.AND.
-     &      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.E_CONV)) THEN
+     &      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.thres_E)) THEN
             RTCNV(IROOT) = .TRUE.
          ELSE
             RTCNV(IROOT) = .FALSE.
@@ -3269,6 +3295,8 @@ C      END IF
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
  9400 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL: ',A,'(',A,')')
       END
+* #endif for #ifdef INCLUDE_NOT_USED
+#endif
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
@@ -3281,7 +3309,8 @@ C      END IF
      &                  LU3,LU4,LU5,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRT,
      &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &                  E_CONV,AMATC,RWORK,EVL,eciold,ITERSEOUT)
+     &                  thres_G,thres_E,
+     &                  AMATC,RWORK,EVL,eciold,ITERSEOUT)
 *
 * Davidson algorithm , requires two blocks in core
 * Multi root version
@@ -3344,6 +3373,7 @@ C      END IF
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12,FILELAB*8
 *
        call qenter('MICDV4')
+
 *
       write(LUWRT,*)
       write(LUWRT,*) ' ----------------------------------------------'
@@ -3373,7 +3403,6 @@ C      END IF
 
        KAPROJ = 1
        KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST   = 1.0D-5
        CONVER = .FALSE.
 *
 * ===================
@@ -3391,8 +3420,17 @@ C      END IF
 !        call wrtvcd(vec1,lu3,1,-1)
 
          CALL REWINE(LU3,-1)
+         call CPU_TIME(sigmatime1)
 
          call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
+
+         call CPU_TIME(sigmatime2)
+
+         sigmatimediff = sigmatime2 - sigmatime1
+
+         WALLTID = SECTID(sigmatimediff)
+         write(LUWRT,*) 'Sigmavector time',WALLTID
+         write(LUWRT,*) 
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
 !        WRITE(LUWRT,*) '  sigma vec ...',ivec
 !        CALL WRTVCD(VEC1,LU4,1,LBLK)
@@ -3453,6 +3491,7 @@ C      END IF
 *
 * 1.1 : R = H*X - EIGAPR*X
 *
+        call GETTIM(CPUPART1_1,WALLPART1_1)
        IADD = 0
        CONVER = .TRUE.
        DO 100 IROOT = 1, NROOT
@@ -3492,9 +3531,9 @@ C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
      &     ' Iter RNORM EIGAPR ',ITER-1,RNORM,EIGAPR+EIGSHF
          end if
 *
-         IF(RNORM.LT. TEST .OR. 
+         IF(RNORM.LT. thres_G .OR.
      &      (ITER.GT.2.AND.
-     &      ABS(EIG(IROOT,ITER-2)-EIG(IROOT,ITER-1)).LT.E_CONV)) THEN
+     &      ABS(EIG(IROOT,ITER-2)-EIG(IROOT,ITER-1)).LT.thres_E)) THEN
             RTCNV(IROOT) = .TRUE.
          ELSE
             RTCNV(IROOT) = .FALSE.
@@ -3620,6 +3659,9 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
 *
          END IF
   100 CONTINUE
+        call GETTIM(CPUPART1_2,WALLPART1_2)
+        CPUPART1 = CPUPART1_2 - CPUPART1_1
+        WALLPART1 = WALLPART1_2 - WALLPART1_1
 
       IF (IPRT .GE. 10) THEN
           WRITE(LUWRT,'(/A,F20.8)')
@@ -3644,15 +3686,18 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
        if (ITERSEOUT.ne.1) then
        WRITE(LUWRT,'(/A,1P,D8.2,A/,(I11,D20.5))')
      &   '                    Norm of CI residuals'//
-     &   ' (thr = ',test,')',
+     &   ' (thr = ',thres_G,')',
      &   (i,RNRM(ITER-1,i),i=1,NROOT)
        end if
+
 
       IF( CONVER ) GOTO  901
       IF( ITER.GT. MAXIT) THEN
          ITER = MAXIT
          GOTO 1001
       END IF
+
+
 *
 **  2 : Optimal combination of new and old directions
 *
@@ -3663,7 +3708,19 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
         CALL REWINE(LU3,LBLK)
         CALL COPVCD(LU1,LU3,VEC1,0,LBLK)
 CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
+
+        call CPU_TIME(sigmatime1)
+
         call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
+        call CPU_TIME(sigmatime2)
+
+
+        sigmatimediff = sigmatime2 - sigmatime1
+        WALLTID = SECTID(sigmatimediff)
+        write(LUWRT,*) 'Sigmavector time',WALLTID
+        call GETTIM(CPUPART2_1,WALLPART2_1) 
+         !I don't include sigmavector calculation in timing...easier that way
+
         CALL REWINE(LU4,LBLK)
         CALL COPVCD(LU4,LU2,VEC1,0,LBLK)
 *. Augment projected matrix
@@ -3684,6 +3741,11 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
       CALL EIGEN_NEW(WORK(KAPROJ),NVEC,EIG(1,ITER),AVEC,AMATC,
      &               RWORK,EVL)
 
+      !Timings for part 2!!!!!
+      call GETTIM(CPUPART2_2,WALLPART2_2)
+
+      CPUPART2 = CPUPART2_2 - CPUPART2_1
+      WALLPART2 = WALLPART2_2 - WALLPART2_1
 !     DO 160 IROOT = 1, NROOT
 !       EIG(IROOT,ITER) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
 !160  CONTINUE
@@ -3710,7 +3772,12 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
 *
 *. Reset      
 *
+         CPUPART3 = 0.0D0
+         WALLPART3 = 0.0D0
       IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
+
+
+         call GETTIM(CPUPART3_1,WALLPART3_1)
         CALL REWINE( LU5,LBLK)
         DO 320 IROOT = 1, NROOT
           CALL MVCSMD(LU1,AVEC((IROOT-1)*NVEC+1),
@@ -3755,11 +3822,34 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
         DO 420 IROOT = 1, NROOT
           APROJ(IROOT*(IROOT+1)/2 ) = EIG(IROOT,ITER)
   420   CONTINUE
+         call GETTIM(CPUPART3_2,WALLPART3_2)
+         CPUPART3 = CPUPART3_2 - CPUPART3_1
+         WALLPART3 = WALLPART3_2 - WALLPART3_1
 *
       END IF
 *
 *  Timing of this iteration
       CALL GETTIM(CPUITR2,WALLITR2)
+
+!      WALLTID = SECTID(sigmatime_final)
+!      write(LUWRT,*) 'Sigma vector calculation time',WALLTID
+
+      CPUTID = SECTID(CPUPART1)
+      WALLTID = SECTID(WALLPART1)
+      WRITE(LUWRT,'(/A,5A)')
+     &        '                    CPU (Wall) time for Part 1',
+     &       '  ',CPUTID,'(',WALLTID,')'
+      CPUTID = SECTID(CPUPART2)
+      WALLTID = SECTID(WALLPART2)
+      WRITE(LUWRT,'(/A,5A)')
+     &        '                    CPU (Wall) time for Part 2',
+     &       '  ',CPUTID,'(',WALLTID,')'
+      CPUTID = SECTID(CPUPART3)
+      WALLTID = SECTID(WALLPART3)
+      WRITE(LUWRT,'(/A,5A)')
+     &        '                    CPU (Wall) time for Part 3',
+     &       '  ',CPUTID,'(',WALLTID,')'
+
       CPUTID = SECTID(CPUITR2-CPUITR1)
       WALLTID = SECTID(WALLITR2-WALLITR1)
       if (ITERSEOUT.eq.1) then
@@ -3793,9 +3883,8 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
       IF ( IPRT .GT. 0 ) THEN
         CALL REWINE(LU1,LBLK)
         DO IROOT = 1, NROOT
-          WRITE(LUWRT,*)
-          WRITE(LUWRT,'(A,I3)')
-     &  ' Information about convergence for root... ' ,IROOT
+          WRITE(LUWRT,'(/A,I4)')
+     &  ' Information about convergence for root...' ,IROOT
           WRITE(LUWRT,*)
      &    '============================================'
           WRITE(LUWRT,*)
@@ -3884,8 +3973,12 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
      &    '                    root ',iroot,' did not converge!'
         end if
       end do
-      IF ( IPRT .GT. 0 ) THEN
+!     IF ( IPRT .GT. 0 ) THEN
         CALL REWINE(LU1,LBLK)
+        WRITE(LUWRT,'(/A,1P,D8.2/A,D8.2)')
+     &     ' Gradient convergence threshold ',thres_G,
+     &     ' Energy   convergence threshold ',thres_E
+
         DO 1600 IROOT = 1, NROOT
           WRITE(LUWRT,*)
           WRITE(LUWRT,'(A,I3)')
@@ -3913,7 +4006,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
  1600   CONTINUE
 
         CALL REWINE(LU1,LBLK)
-      endif
+!     endif
 *
 *
       IF(IPRT .EQ. 1 ) THEN

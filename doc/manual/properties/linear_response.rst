@@ -244,7 +244,7 @@ vector. In this case make sure that
     **DIRAC
     #.WAVE FUNCTION
 
-is commented out. Make then also sure that you use the DFCOEF file which
+is commented out. Make then also sure that you use the CHECKPOINT file which
 has been obtained in the *same* calculation as the response vector file.
 Otherwise you may observe more response solver iterations than
 necessary.
@@ -255,6 +255,27 @@ Normalize trial vectors. Using normalized trial vectors will reduce
 efficiency of screening. CLARIFY!
 
 *Default:* Use un-normalized vectors.
+
+Analysis
+========
+
+keyword(ANALYZ)
+
+The linear response function is obtained by contracting the property gradient :math:`\boldsymbol{E}_{A}^{[1]}` associated with property :math:`A` with the solution vector
+:math:`\boldsymbol{X}_{B}` associated with property :math:`B`:
+
+.. math::
+
+   \langle\langle\hat{A};\hat{B}\rangle\rangle_{\omega_{b}}=\boldsymbol{E}_{A}^{[1]\dagger}\boldsymbol{X}_{B}
+
+The indices of the two vectors run over orbital rotation indices, that is, one occupied and one virtual index. This analysis shows the most important contributions from orbital pairs to
+the dot product as well as the most important occupied and virtual orbitals. More information about these orbitals can then be gleaned from Mulliken population analysis.
+
+keyword(ANATHR)
+
+This keyword adjusts the number of terms shown in the above analysis. The threshold is in terms of percentage value to the total value of the linear response function.
+
+*Default:* :math:`2.0`.
 
 Advanced/debug flags
 ====================

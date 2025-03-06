@@ -62,9 +62,9 @@ The molecular input file ``CH4.xyz`` (:download:`download <../../../../test/tuto
 
 Suppose that we have run a DFT(PBE) calculation using::
 
-   pam --inp=PBE  --mol=CH4.xyz --outcmo
+   pam --inp=PBE  --mol=CH4.xyz 
 
-where we keep the coefficients and the menu file ``PBE.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/PBE.inp>`) is
+and the menu file ``PBE.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/PBE.inp>`) is
 
 .. literalinclude:: ../../../../test/tutorial_projection_analysis/PBE.inp
 
@@ -79,8 +79,8 @@ This allows a very precise identification
 of the individual atomic orbitals (including :math:`m_j` quantum number). 
 We accordingly run calculations where we save MO files, each as the unique file::
 
-   pam --inp=H  --mol=H --get "DFACMO=AFHXXX"
-   pam --inp=C  --mol=C --get "DFACMO=AFCXXX"
+   pam --inp=H  --mol=H 
+   pam --inp=C  --mol=C 
 
 with corresponding input files ``H.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/H.inp>`),
 ``H.mol`` (:download:`download <../../../../test/tutorial_projection_analysis/H.mol>`), 
@@ -96,15 +96,16 @@ We are now ready for the projection analysis itself. We prepare the input file `
 
 .. literalinclude:: ../../../../test/tutorial_projection_analysis/prj.inp
 
-In the ``*PROJEC`` section we specify the two atomic types identified by the name of 
+In the :ref:`*PROJECTION` section we specify the two atomic types identified by the name of 
 their coefficient files as well as an orbital string (see :ref:`orbital_strings`) listing 
 what orbitals to include for each atom. DIRAC will assume that each atom has been calculated 
 in its proper basis.
 
 We now run the projection analysis using::
 
-   pam --inp=prj --mol=CH4.xyz --incmo --copy="AF*"
+   pam --inp=prj --mol=CH4.xyz --put "C.h5 H.h5 PBE_CH4.h5=CHECKPOINT.h5" --noh5
 
+Note that we set the pam flag ``--noh5`` to avoid generating a new HDF5 checkpoint file, since nothing new is added to the existing one.   
 
 
 Interpreting the output
@@ -250,11 +251,11 @@ Using the menu file ``HF.inp``
 
 we run 4-component Hartree-Fock::
 
-   pam --mw=120 --inp=HF --mol=UO2 --get "DFCOEF=cf.UO2"
+   pam --mw=150 --inp=HF --mol=UO2 
 
-saving the coefficients. Next we generate atomic reference orbitals. For oxygen this is quite straightforward::
+Coefficients are saved on the h5 checkpoint file. Next we generate atomic reference orbitals. For oxygen this is quite straightforward::
 
-   pam --inp=O --mol=O --get "DFCOEF=cf.O"
+   pam --inp=O --mol=O 
 
 using molecule input ``O.mol``
 
@@ -269,23 +270,14 @@ Using the molecular input ``U.mol``
 
 .. literalinclude:: U.mol
 
-we first calculate the :math:`U^{3+}` cation with configuration :math:`[Rn]5f^3` ::
+and the inp file ``U.inp``
 
-   pam --inp=UIII --mol=U --outcmo
+.. literalinclude:: U_KPSELE.inp
 
-which converges easily using the menu file ``UIII.inp``
-
-.. literalinclude:: UIII.inp
-
-Note that we ask for a Mulliken population analysis of all positive-energy orbitals. This is in order to find the *6d* and *7s* orbitals.
-Once identified, we bring them into correct position using reordering and keep them there using static overlap selection as shown in 
-the menu file ``U.inp``
-
-.. literalinclude:: U.inp
-
+Note that :ref:`SCF_.KPSELE` is needed for getting the convergence in this case.
 Convergence is now straightforward ::
 
-   pam --incmo --inp=U --mol=U --get "DFCOEF=cf.U"
+   pam --inp=U --mol=U 
 
 and the correct configuration is confirmed by Mulliken population analysis. 
 
@@ -298,14 +290,14 @@ We are now ready to do the projection analysis. We prepare the input file ``prj.
 
 and prepare the coefficient files::
 
-   $ ln -s cf.O AFO1XX
-   $ ln -s cf.O AFO2XX
-   $ ln -s cf.U AFUXXX
-   $ cp cf.UO2 DFCOEF
+   $ ln -s U_U.h5 U.h5
+   $ ln -s O_O.h5 O1.h5
+   $ ln -s O_O.h5 O2.h5
+   $ ln -s HF_UO2.h5 CHECKPOINT.h5
 
 We run the projection analysis::
 
-   pam --incmo --inp=prj --mol=UO2 --copy="AF*" --mw=120
+   pam --incmo --inp=prj --mol=UO2 --copy="U.h5 O1.h5 O2.h5"
 
 Interpreting the output
 -----------------------

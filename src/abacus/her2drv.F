@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -261,9 +256,9 @@ C
       JTOP  = 4*(NHTYP - 1) + MAXDER
       JTOP3 = (JTOP + 1)**3
       NRTOP = (JTOP + 1)*(JTOP + 2)*(JTOP + 3)/6
-      CALL MEMGET('INTE',KINDHR,JTOP3  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDSQ,NRTOP  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIODHR,8*NRTOP,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDHER',KINDHR,JTOP3  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDHSQ',KINDSQ,NRTOP  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IODDHR',KIODHR,8*NRTOP,WORK,KFREE,LFREE)
       MWHRND = KFREE - 1
       LWTOT  = LWTOT + KFREE - 1
       CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
@@ -1359,7 +1354,6 @@ C
 !radovan: these memgets are easily called 25 million times
 !         if somebody modifies the code
 !         please allocate buffers further upstream
-!miro: I have replaced some of them with MEMGET2 to track response-magnetizability bug ifort-parallel
       CALL MEMGET2('REAL','KPSO',KPSO,NPMAT,WORK,KFREE,LFREE) ! 1
       CALL MEMGET2('REAL','KPSA',KPSA,NPMATA,WORK,KFREE,LFREE)
       CALL MEMGET2('INTE','KNPCOA',KNPCOA,2*NSETA*(NODCAB + 1),
@@ -1446,7 +1440,6 @@ C
      &            DINTSKP,IREPDM,INDX,INDXAB,GENCNT)
       LWTOT  = LWTOT - KFREE + 1
  999  CONTINUE
-      ! miro: an error occurs here for mpi=2,ifort optimized !
       CALL MEMREL('TWOODS',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('TWOODS')
       RETURN
@@ -1562,10 +1555,10 @@ C
 C
 C     Allocate work space
 C
-      CALL MEMGET('INTE',KCORBA,NORBA,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KCORBB,NORBB,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KCORBC,NORBC,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KCORBD,NORBD,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ICORBA',KCORBA,NORBA,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ICORBB',KCORBB,NORBB,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ICORBC',KCORBC,NORBC,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ICORBD',KCORBD,NORBD,WORK,KFREE,LFREE)
 C
       IF (MAXDER .EQ. 0) THEN
          NCFTYP = 1
@@ -2096,16 +2089,6 @@ c    &                                       DMRAO(ISYBLD,ISYBLC,I))
                         END IF
 C Largest exchange contribution to gradient/Hessian expectation value
                         IF (IE .NE. 0) THEN
-C                          DNS21       = DMRAO(ISYBLC,ISYBLA,I)
-C    &                                  *DMRAO(ISYBLB,ISYBLD,I)
-c                          DNS21       = MAX(DMRAO(ISYBLC,ISYBLA,I),
-c    &                                       DMRAO(ISYBLA,ISYBLC,I))
-c    &                                  *MAX(DMRAO(ISYBLB,ISYBLD,I),
-c    &                                       DMRAO(ISYBLD,ISYBLB,I))
-c                          DNS22       = MAX(DMRAO(ISYBLD,ISYBLA,I),
-c    &                                       DMRAO(ISYBLA,ISYBLD,I))
-c    &                                  *MAX(DMRAO(ISYBLC,ISYBLB,I),
-c    &                                       DMRAO(ISYBLB,ISYBLC,I))
                            DNSBUF(2,I) = DMRAO(ISYBLC,ISYBLA,I)
      &                                  *DMRAO(ISYBLD,ISYBLB,I)
      &                                 + DMRAO(ISYBLD,ISYBLA,I)
@@ -2186,12 +2169,12 @@ C              Integral contributes
 C              ====================
 C
                IF (IPRINT .GE. 5) THEN
-                  WRITE (LUPRI, '(/,1X,A,3I5)')
+                  WRITE (LUPRI, '(/A,3I5)')
      &               ' Symmetry operations:',ISYMR, ISYMS, ISYMT
-                  WRITE (LUPRI, '(/,1X,A,I5)') ' ISYMTS ', ISYMTS
-                  WRITE (LUPRI, '(1X,A,4I5)')
+                  WRITE (LUPRI, '(/A,I5)') ' ISYMTS ', ISYMTS
+                  WRITE (LUPRI, '(A,4I5)')
      &               ' ICENTA-D ',ICENTA, ICENTB, ICENTC, ICENTD
-                  WRITE (LUPRI, '(1X,A,4I5)')
+                  WRITE (LUPRI, '(A,4I5)')
      &               ' NCENTA-D ',NCENTA, NCENTB, NCENTC, NCENTD
                END IF
 C
@@ -2245,7 +2228,8 @@ C              ***** AO integrals *****
 C              ************************
 C
                LAOINT = NCCINT*NINTYP
-               CALL MEMGET('REAL',KAOINT,LAOINT,WORK,KFREE,LFREE)
+               CALL MEMGET2('REAL','AOINT',KAOINT,LAOINT,
+     &                      WORK,KFREE,LFREE)
                MWAOIN = MAX(MWAOIN,LAOINT)
                LWTOT  = LWTOT + KFREE - 1
                MWTOT  = MAX(MWTOT,LWTOT)
@@ -3155,7 +3139,7 @@ C
 C     Allocate work space for Hermite integrals
 C
       LHRINT = NUABCD*NTUV
-      CALL MEMGET('REAL',KHRINT,LHRINT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HERINT',KHRINT,LHRINT,WORK,KFREE,LFREE)
       MWHRIN = MAX(MWHRIN,LHRINT)
       LWTOT  = LWTOT + KFREE - 1
       MWTOT  = MAX(MWTOT,LWTOT)
@@ -3487,9 +3471,9 @@ C
       END IF
       LHCINT = NCCPP*NTUV34*KHKT12*NHCINT
 C
-      CALL MEMGET('INTE',KODD12,2*KCKT12,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KODD34,2*KCKT34,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KHCINT,LHCINT  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IODD12',KODD12,2*KCKT12,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IODD34',KODD34,2*KCKT34,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HCINT' ,KHCINT,LHCINT  ,WORK,KFREE,LFREE)
       MWHCIN = MAX(MWHCIN,LHCINT)
       LWTOT  = LWTOT + KFREE - 1
       MWTOT  = MAX(MWTOT,LWTOT)

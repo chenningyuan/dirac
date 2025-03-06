@@ -1,5 +1,6 @@
 module davidson
 
+use mfsolver_cfg
 
 implicit none
 
@@ -32,63 +33,8 @@ type davidson_results
     real(kind=8), pointer :: eVectorsL(:,:) 
 end type
 
-
-! module parameters
-
+type(mfsolver_config_t), save :: config
 integer, parameter :: max_label_length = 30
-integer, parameter :: nr_max_irreps = 32
-real(kind=8), parameter :: davidson_eigenvalues_shift_threshold = 1.0e-3
-
-! module variables, should be set with a call to davidson_setup
-
-real(kind=8), save :: safe_minimum = 1.0d-36
-
-real(kind=8), save :: davidson_convergence_threshold 
-real(kind=8), save :: davidson_eigenvalues_shift(2)
-
-integer, save      :: davidson_max_subspace_size 
-integer, save      :: davidson_max_iterations
-integer, save      :: davidson_output_file_unit 
-integer, save      :: davidson_subspaces_file_unit 
-integer, save      :: davidson_sigmas_file_unit 
-integer, save      :: davidson_results_file_unit 
-integer, save      :: davidson_trial_vector_refresh_rate
-integer, save      :: davidson_maximum_trial_vector_refresh_rate = 10
-
-logical, save      :: davidson_apply_eigenvalues_shift
-logical, save      :: davidson_solve_rhs 
-logical, save      :: davidson_solve_lhs 
-logical, save      :: davidson_solve_values
-logical, save      :: davidson_verbose 
-logical, save      :: davidson_symmetric 
-logical, save      :: davidson_complex_mode_with_reals 
-logical, save      :: davidson_save_subspaces 
-logical, save      :: davidson_save_sigmas 
-logical, save      :: davidson_save_results
-logical, save      :: davidson_overlap_sorting
-logical, save      :: davidson_debug = .false.
-logical, save      :: davidson_use_preconditioner = .true.
-logical, save      :: davidson_refresh_trial_vectors = .false.
-
-! 
-! variables for controlling i/o
-!
-character(len=16), save :: left_sigma_file_name     = 'LSIGMAV.sym'
-character(len=16), save :: left_vectors_file_name   = 'LEVECTO.sym'
-character(len=16), save :: left_subspace_file_name  = 'LSUBSPA.sym'
-
-character(len=16), save :: right_sigma_file_name    = 'RSIGMAV.sym'
-character(len=16), save :: right_vectors_file_name  = 'REVECTO.sym'
-character(len=16), save :: right_subspace_file_name = 'RSUBSPA.sym'
-
-integer, save :: right_sigma_file_unit    = 140
-integer, save :: right_vectors_file_unit  = 141
-integer, save :: right_subspace_file_unit = 142
-
-integer, save :: left_sigma_file_unit     = 240
-integer, save :: left_vectors_file_unit   = 241
-integer, save :: left_subspace_file_unit  = 242
-
 
 contains 
 
@@ -108,11 +54,11 @@ contains
       real(kind=8), intent(in) :: r(:,:)
       integer, intent(in) :: state_sym
 
-      if (davidson_solve_rhs.and..not.davidson_solve_lhs) then 
+      if (config%solve_rhs.and..not.config%solve_lhs) then 
 !     do right vectors, this is the default
           create_sigma_vector => create_sigma_vector_right(A, r, old_sigma_vector, state_sym)
 
-      else if (davidson_solve_lhs.and..not.davidson_solve_rhs) then
+      else if (config%solve_lhs.and..not.config%solve_rhs) then
 !     do left vectors vectors
           create_sigma_vector => create_sigma_vector_left(A, r, old_sigma_vector, state_sym)
 
@@ -147,7 +93,7 @@ contains
         results%eVectorsL => NULL()
 
 
-        if (davidson_symmetric) then
+        if (config%symmetric) then
             if (values) then 
                 allocate(results%eValues(1,nroots))
                 results%eValues   = 0.0d0
@@ -207,7 +153,8 @@ contains
                               save_results,      &
                               save_sigmas,       &
                               save_subspaces,    &
-                              energy_shift)
+                              energy_shift,      &
+                              print_config)
 
         real(kind=8), intent(in), optional :: convergence_threshold
         real(kind=8), intent(in), optional :: energy_shift(2)
@@ -229,212 +176,30 @@ contains
         logical, optional :: save_results
         logical, optional :: complex_mode
         logical, optional :: use_preconditioner
+        logical, optional :: print_config
 
-        call set_safe_minimum() 
-
-        if (present(convergence_threshold)) then
-            davidson_convergence_threshold = convergence_threshold
-        else
-            davidson_convergence_threshold = 1.0d-8 
-        end if
-
-        if (present(energy_shift)) then
-            davidson_eigenvalues_shift = energy_shift
-            davidson_apply_eigenvalues_shift = .true.
-
-            if (abs(davidson_eigenvalues_shift(1)).lt.davidson_eigenvalues_shift_threshold) &
-               davidson_eigenvalues_shift(1) = 0.0d0 
- 
-            if (abs(davidson_eigenvalues_shift(2)).lt.davidson_eigenvalues_shift_threshold) &
-               davidson_eigenvalues_shift(2) = 0.0d0 
-
-            if ((abs(davidson_eigenvalues_shift(1)).lt.davidson_eigenvalues_shift_threshold).and. &
-                (abs(davidson_eigenvalues_shift(2)).lt.davidson_eigenvalues_shift_threshold)) then
-               davidson_apply_eigenvalues_shift = .false.
-            end if
-        else
-            davidson_eigenvalues_shift = (/0.0d0, 0.0d0/) 
-            davidson_apply_eigenvalues_shift = .false.
-        end if
-
-        if (present(max_subspace_size)) then
-            davidson_max_subspace_size = max_subspace_size  
-        else
-            davidson_max_subspace_size = 1024
-        end if
-
-        if (present(max_iterations)) then
-            davidson_max_iterations = max_iterations
-        else
-            davidson_max_iterations = 50
-        end if
-
-        if (present(solve_values)) then
-            davidson_solve_values = solve_values
-        else
-            davidson_solve_values = .true. 
-        end if
-
-        if (present(solve_left)) then
-            davidson_solve_lhs = solve_left 
-        else
-            davidson_solve_lhs = .false. 
-        end if
-
-        if (present(solve_right)) then
-            davidson_solve_rhs = solve_right
-        else
-            davidson_solve_rhs = .true. 
-        end if
-
-        if (present(overlap_sorting)) then
-            davidson_overlap_sorting = overlap_sorting
-        else
-            davidson_overlap_sorting = .false.
-        end if
-
-        if (present(use_preconditioner)) then
-            davidson_use_preconditioner = use_preconditioner
-        else
-            davidson_use_preconditioner = .true.
-        end if
-
-        if (present(verbose)) then
-            davidson_verbose = verbose
-            davidson_debug   = verbose
-        else
-            davidson_verbose = .false.
-        end if
-
-        if (present(symmetric)) then
-            davidson_symmetric = symmetric
-        else
-            davidson_symmetric = .false. 
-        end if
-
-        if (present(complex_mode)) then
-            davidson_complex_mode_with_reals = complex_mode 
-        else
-            davidson_complex_mode_with_reals = .false. 
-        end if
-
-        if (present(refresh_trial_rate)) then
-            if (refresh_trial_rate.le.0) then
-                davidson_refresh_trial_vectors = .false.
-            else 
-                davidson_refresh_trial_vectors = .true.
-                if (refresh_trial_rate.le.davidson_maximum_trial_vector_refresh_rate) then
-                    davidson_trial_vector_refresh_rate = davidson_maximum_trial_vector_refresh_rate 
-                else
-                    davidson_trial_vector_refresh_rate = refresh_trial_rate
-                end if
-            end if
-        else
-            davidson_refresh_trial_vectors = .false.
-        end if
-
-        if (present(unit_output)) then
-            davidson_output_file_unit = unit_output
-        end if
-
-        if (present(save_subspaces)) then
-           davidson_save_subspaces = save_subspaces
-        else
-           davidson_save_subspaces = .false. 
-        end if
-
-        if (present(save_sigmas)) then
-           davidson_save_sigmas = save_sigmas
-        else
-           davidson_save_sigmas = .false. 
-        end if
-
-        if (present(save_results)) then
-           davidson_save_results = save_results
-        else
-           davidson_save_results = .false. 
-        end if
-
-        if (present(unit_subspaces)) then
-            davidson_subspaces_file_unit = unit_subspaces
-        else
-            davidson_subspaces_file_unit = 137 
-        end if
-
-        if (present(unit_sigmas)) then
-            davidson_sigmas_file_unit = unit_sigmas
-        else
-            davidson_sigmas_file_unit = 138
-        end if
-
-        if (present(unit_results)) then
-            davidson_results_file_unit = unit_results
-        else
-            davidson_results_file_unit = 138
-        end if
-
-        call davidson_show_configurations()
+        call mfsolver_setup(config, &
+                             convergence_threshold=convergence_threshold, &
+                             max_subspace_size=max_subspace_size, &
+                             max_iterations=max_iterations,    &
+                             unit_output=unit_output,       &
+                             unit_sigmas=unit_sigmas,       &
+                             unit_subspaces=unit_subspaces,    &
+                             unit_results=unit_results,      &
+                             solve_values=solve_values,      &
+                             solve_right=solve_right,       &
+                             solve_left=solve_left,        &
+                             symmetric=symmetric,         &
+                             complex_mode=complex_mode,      &
+                             use_preconditioner=use_preconditioner,&
+                             refresh_trial_rate=refresh_trial_rate,&
+                             verbose=verbose,           &
+                             overlap_sorting=overlap_sorting,   &
+                             save_results=save_results,      &
+                             save_sigmas=save_sigmas,       &
+                             save_subspaces=save_subspaces,    &
+                             energy_shift=energy_shift)
     end subroutine
-
-
-    subroutine davidson_show_configurations
-
-        write(davidson_output_file_unit, *) ""
-        write(davidson_output_file_unit, *) "Configuration variables for matrix-free diagonalizer"
-        write(davidson_output_file_unit, *) ""
-        write(davidson_output_file_unit, *) "  output written to unit        : ", davidson_output_file_unit
-        write(davidson_output_file_unit, *) "  verbose output                : ", davidson_verbose
-
-        write(davidson_output_file_unit, *) ""
-        write(davidson_output_file_unit, *) " convergence control"
-        write(davidson_output_file_unit, *) ""
-        write(davidson_output_file_unit, *) "  convergence threshold         : ", davidson_convergence_threshold
-        write(davidson_output_file_unit, *) "  maximum subspace size         : ", davidson_max_subspace_size
-        write(davidson_output_file_unit, *) "  maximum number of iterations  : ", davidson_max_iterations
-        write(davidson_output_file_unit, *) "  refresh trial vectors         : ", davidson_refresh_trial_vectors 
-        if (davidson_refresh_trial_vectors) then
-            write(davidson_output_file_unit, '(A,I4,A)') &
-                         "     set to refresh vectors every ",davidson_trial_vector_refresh_rate," interations"
-        end if
-
-        write(davidson_output_file_unit, *) ""
-        write(davidson_output_file_unit, *) " restart/data storage"
-        write(davidson_output_file_unit, *) ""
-        write(davidson_output_file_unit, *) "  save subspaces                :", davidson_save_subspaces
-        if (davidson_save_subspaces) &
-        write(davidson_output_file_unit, *) "  subspaces written to unit     : ", davidson_subspaces_file_unit
-        write(davidson_output_file_unit, *) "  save sigma vectors            : ", davidson_save_sigmas
-        if (davidson_save_sigmas) &
-        write(davidson_output_file_unit, *) "  sigma vectors written to unit : ", davidson_sigmas_file_unit
-        write(davidson_output_file_unit, *) "  save results                  :", davidson_save_results
-        if (davidson_save_results) &
-        write(davidson_output_file_unit, *) "  results written to unit       : ", davidson_results_file_unit
-
-        write(davidson_output_file_unit, *) ""
-        write(davidson_output_file_unit, *) " diagonalization characteristics"
-        write(davidson_output_file_unit, *) ""
-        write(davidson_output_file_unit, *) "  solve for right eigenvectors  : ", davidson_solve_rhs
-        write(davidson_output_file_unit, *) "  solve for left eigenvectors   : ", davidson_solve_lhs
-        write(davidson_output_file_unit, *) "  symmetric eigenproblem        : ", davidson_symmetric
-        write(davidson_output_file_unit, *) "  complex mode (real variables) : ", davidson_complex_mode_with_reals
-        write(davidson_output_file_unit, *) "  root following via overlap    : ", davidson_overlap_sorting
-        write(davidson_output_file_unit, *) "  energy shift in eigval sorting: ",davidson_apply_eigenvalues_shift
-!       if (davidson_apply_eigenvalues_shift) then
-           write(davidson_output_file_unit, *) "     shift value, real  part    : ",davidson_eigenvalues_shift(1)
-           write(davidson_output_file_unit, *) "     shift value, imag. part    : ",davidson_eigenvalues_shift(2)
-!       end if
-
-        write(davidson_output_file_unit, *) ""
-
-    end subroutine
-
-
-    subroutine set_safe_minimum()
-        double precision dlamch
-        safe_minimum = dlamch('S')
-        if (davidson_debug) print *, "debug, safe minimum (LAPACK) is ",safe_minimum
-    end subroutine 
-
 
     subroutine davidson_cleanup(results)
         type(davidson_results), intent(inout) :: results
@@ -552,7 +317,7 @@ contains
         allocate(q(m,n))
         q = b
         stop ('orthogonalization via QR decomposition not fully debugged yet')
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
 !           stop ('orthogonalization via QR decomposition not implemented yet for complex variables')
             m_complex = m / 2
             k = min(m_complex,n)
@@ -565,10 +330,10 @@ contains
             deallocate(work)
 
             allocate(work(lwork))
-            if (davidson_debug) &
+            if (config%debug) &
                 call davidson_print_vectors(b, label="b before dgeqrf               ")
             call dgeqrf(m, n, b, m, tau, work, lwork, info)
-            if (davidson_debug) &
+            if (config%debug) &
                 call davidson_print_vectors(b, label="b after  dgeqrf               ")
             deallocate(work)
  
@@ -578,10 +343,10 @@ contains
             lwork = 2*work(1)
             deallocate(work)
             allocate(work(lwork))
-            if (davidson_debug) &
+            if (config%debug) &
                 call davidson_print_vectors(b, label="b before dorgqr               ")
             call dorgqr(m, n, k, b, m, tau, work, lwork, info)
-            if (davidson_debug) &
+            if (config%debug) &
                 call davidson_print_vectors(b, label="b after  dorgqr               ")
             deallocate(work)
             deallocate(tau)
@@ -600,10 +365,10 @@ contains
  
             allocate(work(2*lwork))
             work = 0.0d0
-            if (davidson_debug) &
+            if (config%debug) &
                 call davidson_print_vectors(b, label="b before dgeqrf               ")
             call dgeqrf(m, n, b, m, tau, work, lwork, info)
-            if (davidson_debug) then 
+            if (config%debug) then 
                 call davidson_print_vectors(b, label="b after  dgeqrf               ")
                 print *,"debug in dgeqrf, info #2:",info
             end if
@@ -619,16 +384,16 @@ contains
  
             allocate(work(2*lwork))
             work = 0.0d0
-            if (davidson_debug) &
+            if (config%debug) &
             call davidson_print_vectors(b, label="b before dorgqr               ")
             call dorgqr(m, n, k, b, m, tau, work, lwork, info)
-            if (davidson_debug) then 
+            if (config%debug) then 
                 call davidson_print_vectors(b, label="b after  dorgqr               ")
                 print *,"debug in dgeqrf, info #4:",info
             end if
             deallocate(work)
             deallocate(tau)
-            if (davidson_debug) then
+            if (config%debug) then
                 do i = 1, n
                     norm = ddot(m, b(:,i), 1, b(:,i), 1)
                     print *, 'norm of new orthogonal vector ',i,':', norm
@@ -644,67 +409,35 @@ contains
  
 
     subroutine gram_schmidt_projection_R(projection, u, v)
+
+!LV     NB: we assume that all vectors are already normalized
+!LV     because normalizing here is order N^2 in the number of trial vectors
+
         real(kind=8), intent(inout) :: projection(:)
         real(kind=8), intent(in) :: u(:)
         real(kind=8), intent(in) :: v(:)
         real(kind=8) :: numerator, denominator, factor
-        real(kind=8) :: norm_denominator
         integer :: N, N_complex
         double precision ddot, dznrm2
-        real(kind=8) :: numerator_complex(2), denominator_complex(2), factor_complex(2)
+        real(kind=8) :: factor_complex(2)
 
         N = size(u,1)
 
         projection = 0.0d0 
 
-!       if (davidson_debug) then
-!           call davidson_print_vectors(u, label="U in GS projection            ")
-!           call davidson_print_vectors(v, label="V in GS projection            ")
-!       end if
-
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             N_complex = N / 2
-
-            if (davidson_debug) print *,'denominator complex before xdotc',denominator_complex
-            if (davidson_debug) print *,'  numerator complex before xdotc',numerator_complex
-
-            call xdotc(denominator_complex,N_complex, u, 1, u, 1) 
-            call xdotc(numerator_complex,N_complex, u, 1, v, 1) 
-
-            if (davidson_debug) print *,'denominator complex  after xdotc',denominator_complex
-            if (davidson_debug) print *,'  numerator complex  after xdotc',numerator_complex
-
-            norm_denominator = dznrm2(N_complex, u, 1)
-
-            if (davidson_debug) print *,'  norm denominator',norm_denominator
-            if (norm_denominator .gt. safe_minimum) then
-                call dladiv(numerator_complex(1),numerator_complex(2), &
-                            denominator_complex(1),denominator_complex(2), &
-                            factor_complex(1), factor_complex(2))
-                if (davidson_debug) print *,'  factor_complex from zladiv',factor_complex
-            else
-                factor_complex(1) = 0.0d0
-                factor_complex(2) = 0.0d0
-            end if
+            call xdotc(factor_complex,N_complex, u, 1, v, 1)
             projection = u
             call zscal(N_complex, factor_complex, projection, 1)
-            if (davidson_debug) print *, "GS projection, factor: ",factor_complex
+            if (config%debug) print *, "GS projection, factor: ",factor_complex
 
         else
-            denominator = ddot(N, u, 1, u, 1) 
-            numerator   = ddot(N, v, 1, u, 1) 
-            if (denominator .gt. safe_minimum) then
-                factor = numerator/denominator
-            else
-                factor = 0.0d0
-            end if
+            factor   = ddot(N, v, 1, u, 1)
             projection = u
             call dscal(N, factor, projection, 1)
-            if (davidson_debug) print *, "GS projection, factor: ",factor
+            if (config%debug) print *, "GS projection, factor: ",factor
         end if
-
-!       if (davidson_debug) &
-!           call davidson_print_vectors(projection, label="GS projection                 ")
 
     end subroutine 
 
@@ -715,7 +448,7 @@ contains
 
         real(kind=8), allocatable   :: projection(:)
         integer :: vectors_L, vectors_N
-        integer :: i, j, k
+        integer :: i, j, k, igs
         logical :: verbose_local
         real(kind=8) :: norm, vr, vi, pr, pi
 
@@ -733,90 +466,32 @@ contains
         do j = start_from, vectors_L
             norm = vector_norm(vectors(:,j))
             if (verbose_local) then
-                if (davidson_debug) print *, "debug, Gram-Schmidt orthogonalization"
+                if (config%debug) print *, "debug, Gram-Schmidt orthogonalization"
                 print *, "  renormalizing vector v(",j,") : (norm = ",norm,")"
-                if (davidson_complex_mode_with_reals) then
-                    do k = 1, vectors_N, 2
-                        vr = vectors(k,j)
-                        vi = vectors(k+1,j)
-                        if (vi < 0.0d0) then
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
-                        else
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," +",vi," i"
-                        end if
-                    end do
-                else
-                    do k = 1, vectors_N
-                        vr = vectors(k,j)
-                        print "(4x,1e14.6)", vr
-                    end do
-                end if
                 print *, ""
             end if 
-            if (norm .ge. safe_minimum ) then
+            if (norm .ge. config%safe_minimum ) then
                 vectors(:,j) = vectors(:,j) / norm
             else
                 stop ('division by zero in orthogonalization') 
             end if
-            if (verbose_local) then
-                print *, "renormalized  vector v(",j,") : "
-                if (davidson_complex_mode_with_reals) then
-                    do k = 1, vectors_N, 2
-                        vr = vectors(k,j)
-                        vi = vectors(k+1,j)
-                        if (vi < 0.0d0) then
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
-                        else
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," +",vi," i"
-                        end if
-                    end do
-                else
-                    do k = 1, vectors_N
-                        vr = vectors(k,j)
-                        print "(4x,1e14.6)", vr
-                    end do
-                end if
-                print *, ""
-            end if
-            do i = 1, j-1
-                call gram_schmidt_projection_R(projection, vectors(:,i),vectors(:,j))
-                if (verbose_local) then
-                    print *," projection of v(",i,") onto v(",j,"):"
-                    if (davidson_complex_mode_with_reals) then
-                        do k = 1, vectors_N, 2
-                            vr = vectors(k,j)
-                            vi = vectors(k+1,j)
-    
-                            pr = projection(k)
-                            pi = projection(k+1)
-
-                            if (vi < 0.0d0) then
-                                print "(4x,1e14.6,a,1e13.6,a,4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i", pr, " -",abs(pi)," i"
-                            else
-                                print "(4x,1e14.6,a,1e13.6,a,4x,1e14.6,a,1e13.6,a)", vr," +", vi," i", pr," +", pi," i"
-                            end if
-                        end do
-                    else
-                        do k = 1, vectors_N
-                            vr = vectors(k,j)
-                            pr = projection(k)
-                            print "(4x,1e14.6)", vr
-                        end do
-                    end if
-                    print *, ""
-                end if
-                vectors(:,j) = vectors(:,j) - projection(:)
+            do igs = 1, 2 ! Gram-Schmidt needs to be done twice for numerical stability
+               do i = 1, j-1
+                   call gram_schmidt_projection_R(projection, vectors(:,i),vectors(:,j))
+                   vectors(:,j) = vectors(:,j) - projection(:)
+               end do
+               norm = vector_norm(vectors(:,j))
+               if (norm .ge. config%safe_minimum ) then
+                   vectors(:,j) = vectors(:,j) / norm
+               else
+                   stop ('division by zero in orthogonalization')
+               end if
             end do
-            norm = vector_norm(vectors(:,j))
-            if (norm .ge. safe_minimum ) then
-                vectors(:,j) = vectors(:,j) / norm
-            else
-                stop ('division by zero in orthogonalization')
-            end if
-            if (verbose_local) then
-                call davidson_print_vectors(vectors, label="all vectors                   ")
-            end if
         end do
+
+        if (verbose_local) then
+            call davidson_print_vectors(vectors, label="all vectors                   ")
+        end if
 
         deallocate(projection)
     end subroutine 
@@ -843,7 +518,7 @@ contains
             print *, ""
             print "(a)", label_local(1:max_label_length)
             print *, ""
-            if (davidson_debug) print *, 'debug: size 1 ',N, '  size 2 ',L
+            if (config%debug) print *, 'debug: size 1 ',N, '  size 2 ',L
             print *, ""
         end if
         if (present(complex_dimension)) then
@@ -859,7 +534,7 @@ contains
            L_step = 1
         end if
 
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             N_complex = N / N_step
             L_complex = L / L_step
 
@@ -924,9 +599,9 @@ contains
         if (present(nroots)) nroots_local = nroots
 
         label = "Eigenvalues"
-        if (davidson_debug) print *, "debug, evalues inside print_values_vectors_R"
-        if (davidson_debug) print *, eValues(1,:)
-        if (davidson_debug) print *, eValues(2,:)
+        if (config%debug) print *, "debug, evalues inside print_values_vectors_R"
+        if (config%debug) print *, eValues(1,:)
+        if (config%debug) print *, eValues(2,:)
 
         do i = 1, nroots_local 
             vr = eValues(1,i)
@@ -935,13 +610,13 @@ contains
             if (abs(vr).lt.print_values_threshold) vr = 0.0d0
 
             if (vi .lt. 0.0d0) then
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)')  &
+                write (config%output_file_unit,'(4x,a,i6,a,1e20.12,a,1e20.12,a)')  &
                       "Eigenvalue ",i," : ", vr," -",abs(vi)," i"
             else if (vi .gt. 0.0d0) then
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)')  &
+                write (config%output_file_unit,'(4x,a,i6,a,1e20.12,a,1e20.12,a)')  &
                       "Eigenvalue ",i," : ", vr," +",abs(vi)," i"
             else
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6)')  &
+                write (config%output_file_unit,'(4x,a,i6,a,1e20.12)')  &
                       "Eigenvalue ",i," : ", vr
             end if
         end do
@@ -963,7 +638,7 @@ contains
         double precision dnrm2, dznrm2
 
         vector_N = size(v,1)
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             vector_N_complex = vector_N / 2
             vector_norm = dznrm2(vector_N_complex, v, 1)
         else
@@ -1005,11 +680,12 @@ contains
         allocate(r(vectors_N,nroots))
         r = 0.0d0
         call form_r(r, nroots, e_small_M, c_small_M, sigma_vector, b)
+        if (config%debug) call davidson_print_vectors(r, label="r_k                           ")
 
         unconverged_roots = 0
         do k = 1, nroots
             norm_r = vector_norm(r(:,k))
-            if (norm_r .lt. davidson_convergence_threshold) then 
+            if (norm_r .lt. config%convergence_threshold) then 
                write(output_file_unit, "(4x,a,i6,a,1e14.6,4x,a)") "Root ",k,"  ||q_k,M|| ", norm_r, " <<< converged ! "
                vectors_to_update(k) = .false.
             else
@@ -1018,7 +694,7 @@ contains
                unconverged_roots = unconverged_roots + 1
             end if
         end do
-        write (davidson_output_file_unit,*) " "
+        write (config%output_file_unit,*) " "
 
         if (any(vectors_to_update)) then
             if (correct_all_local) then
@@ -1028,6 +704,7 @@ contains
             allocate(correction_to_vectors(vectors_N,unconverged_roots))
             correction_to_vectors = 0.0d0
             call form_delta(correction_to_vectors, vectors_to_update, r, preconditioner)
+            if (config%debug) call davidson_print_vectors(correction_to_vectors, label="corrections to vectors        ")
         else
             correction_to_vectors => NULL()
         end if
@@ -1052,10 +729,10 @@ contains
 
         allocate(form_preconditioner(vectors_N,nroots))
         form_preconditioner = 0.0d0
-        if (davidson_debug) print *, 'debug, vectors_N in form_preconditioner :',vectors_N
+        if (config%debug) print *, 'debug, vectors_N in form_preconditioner :',vectors_N
 
-        if (.not.davidson_use_preconditioner) then
-            if (davidson_complex_mode_with_reals) then
+        if (.not.config%use_preconditioner) then
+            if (config%complex_mode_with_reals) then
                 offset = 2
             else
                 offset = 1
@@ -1066,12 +743,12 @@ contains
                 end do
             end do
         else
-            if (davidson_complex_mode_with_reals) then
+            if (config%complex_mode_with_reals) then
                 do k = 1, nroots
                    r = 0
                     do j = 1, vectors_N, 2
                         r = r + 1
-!                       if (davidson_debug) print *, 'debug, H_II(re,im) : ',j,M_diag(j),M_diag(j+1)
+!                       if (config%debug) print *, 'debug, H_II(re,im) : ',j,M_diag(j),M_diag(j+1)
 !                        form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(r)
 ! the diagonal appears not to have the complex part, so for debugging purposes i will set it to zero here
 ! and only construct the real part
@@ -1090,12 +767,12 @@ contains
                         x2py2 = form_preconditioner(j,k)*form_preconditioner(j,k)  &
                               + form_preconditioner(j+1,k)*form_preconditioner(j+1,k)
 
-                        if (dabs(x2py2) .gt. safe_minimum) then
+                        if (dabs(x2py2) .gt. config%safe_minimum) then
                             form_preconditioner(j,k)   =  form_preconditioner(j,k) / x2py2 
                             form_preconditioner(j+1,k) = -form_preconditioner(j+1,k) / x2py2
                         else
 !                           stop ('detected division by zero')
-                            write (davidson_output_file_unit,*) 'Warning : numerator is small', &
+                            write (config%output_file_unit,*) 'Warning : numerator is small', &
                                                              (1.0d0 / form_preconditioner(j,k)),& 
 &                                    ' element of preconditioner set to 1'
                             form_preconditioner(j,k) = 1.0d0
@@ -1107,13 +784,13 @@ contains
                 do k = 1, nroots
                     form_preconditioner(:,k) = eigenvalues(1,k) - M_diag(:)
                     do l = 1, vectors_N
-                        if (dabs(form_preconditioner(l,k)) .gt. safe_minimum) then
+                        if (dabs(form_preconditioner(l,k)) .gt. config%safe_minimum) then
                             form_preconditioner(l,k) = 1.0d0 / form_preconditioner(l,k)
                         else
 !                           stop ('detected division by zero')
                             x2py2=1.0d0 / form_preconditioner(l,k)
-                            write (davidson_output_file_unit,*) &
-                          'warning : numerator is smaller than', safe_minimum, &
+                            write (config%output_file_unit,*) &
+                          'warning : numerator is smaller than', config%safe_minimum, &
      &                               '(',x2py2,'). element of preconditioner set to 1.'
                             form_preconditioner(l,k) = 1.0d0 
                         end if
@@ -1121,7 +798,7 @@ contains
                 end do
             end if
         end if ! use preconditioner
-        if (davidson_debug) call davidson_print_vectors(form_preconditioner, label="preconditioner                ")
+        if (config%debug) call davidson_print_vectors(form_preconditioner, label="preconditioner                ")
     end function
 
     subroutine form_delta(delta, vectors_to_update, r, preconditioner)
@@ -1137,12 +814,12 @@ contains
 
         nroots    = size(vectors_to_update,1)
 
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             vectors_N = size(delta,1) 
             vectors_N_complex = vectors_N / 2
             scaling_factor(2) = 0.0d0 
  
-!!          if (davidson_debug) write (davidson_output_file_unit,*) 'debug, vectors to update',vectors_to_update
+!!          if (config%debug) write (config%output_file_unit,*) 'debug, vectors to update',vectors_to_update
             i = 1
             do k = 1, nroots
                if (vectors_to_update(k)) then
@@ -1169,8 +846,8 @@ contains
         end if
 
 ! aspg: the call below just fails.. don't quite get why
-!       if (davidson_debug) call davidson_print_vectors(delta,          label="deltas                        ")
-!       if (davidson_debug) call davidson_print_vectors(preconditioner, label="preconditioner                ")
+!       if (config%debug) call davidson_print_vectors(delta,          label="deltas                        ")
+!       if (config%debug) call davidson_print_vectors(preconditioner, label="preconditioner                ")
 
     end subroutine 
 
@@ -1195,7 +872,7 @@ contains
         residue_a = 0.0d0
         residue_b = 0.0d0
 
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             vectors_N = vectors_N / 2
             call zgemm('N', 'N', vectors_N, vectors_L, vectors_L,                   &
                        (1.0d0, 0.0d0), sigma_vector, vectors_N, c_small_M, vectors_L, &
@@ -1212,7 +889,7 @@ contains
                        (0.0d0), residue_b, vectors_N)
         end if
 
-!       if (davidson_debug) then
+!       if (config%debug) then
 !           call davidson_print_vectors(residue_a,  label="debug: in form_r, residue a   ", complex_dimension=1)
 !           call davidson_print_vectors(residue_b,  label="debug: in form_r, residue b   ", complex_dimension=1)
 !           call davidson_print_vectors(e_small_M,  label="debug: in form_r, e_small M   ", complex_dimension=1)
@@ -1220,16 +897,17 @@ contains
 ! todo: generalize this to the multiplication of the complex e_small with  complex residue_b
 
         do k = 1, nroots
-            if (davidson_complex_mode_with_reals) then
+            if (config%complex_mode_with_reals) then
                 call zscal(vectors_N,e_small_M(:,k),residue_b(:,k),1)
             else
                 call dscal(vectors_N,e_small_M(1,k),residue_b(:,k),1)
             end if
             r(:,k) = residue_a(:,k) - residue_b(:,k)
         end do
-!       if (davidson_debug) then
-!           call davidson_print_vectors(r,  label="debug: in form_r, r           ", complex_dimension=1)
-!       end if
+        if (config%debug) then
+            call davidson_print_vectors(residue_a,  label="debug: in form_r, residue_a   ", complex_dimension=1)
+            call davidson_print_vectors(residue_b,  label="debug: in form_r, residue_b   ", complex_dimension=1)
+        end if
 
         deallocate(residue_a)
         deallocate(residue_b)
@@ -1253,7 +931,7 @@ contains
         vectors_N = size(b,1)
         vectors_L = size(b,2)
 
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             vectors_L_complex = 2*vectors_L
             vectors_N_complex = vectors_N / 2
 
@@ -1263,7 +941,7 @@ contains
             call zgemm('C', 'N', vectors_L, vectors_L, vectors_N_complex, (1.d0, 0.0d0), b, vectors_N_complex, &
                        sigma_vector, vectors_N_complex, (0.d0, 0.0d0), create_reduced_problem, vectors_L)
 
-            if (davidson_debug) &
+            if (config%debug) &
             call davidson_print_vectors(create_reduced_problem,  label="debug: reduced problem cmplx 1", complex_dimension=1)
         else
             allocate(create_reduced_problem(vectors_L,vectors_L))
@@ -1304,13 +982,13 @@ contains
 
                     vr = v(kr,j)
                     vi = v(ki,j)
-                    write (davidson_output_file_unit,'(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
+                    write (config%output_file_unit,'(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
                                  'i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi 
 
                     vt(j,kr) =  vr
                     vt(j,ki) = -vi
 
-                     write (davidson_output_file_unit,'(a,1i4,a,1i4,a,1e14.6,a,1e14.6,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
+                     write (config%output_file_unit,'(a,1i4,a,1i4,a,1e14.6,a,1e14.6,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
                            ' v(',i,',',j,')=(',vr,',',vi,') ->  vt(',j,',',i,')=(',vt(j,kr),',',vt(j,ki),')'
                 else if (complex_dimension_v.eq.2) then
 
@@ -1319,22 +997,22 @@ contains
 
                     vr = v(i, kr)
                     vi = v(i, ki)
-                     write (davidson_output_file_unit,'(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
+                     write (config%output_file_unit,'(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
                            'i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi
 
                     vt(kr, i) =  vr
                     vt(ki, i) = -vi
 
-                     write (davidson_output_file_unit,'(a,1i4,a,1i4,a,1e14.6,a,1e14.6,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
+                     write (config%output_file_unit,'(a,1i4,a,1i4,a,1e14.6,a,1e14.6,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
                            ' v(',i,',',j,')=(',vr,',',vi,') ->  vt(',j,',',i,')=(',vt(kr,i),',',vt(ki,i),')'
 
                 end if
             end do
         end do
 
-        if (davidson_debug) call davidson_print_vectors(v,  label="debug:  original vector v     ", complex_dimension=1)
+        if (config%debug) call davidson_print_vectors(v,  label="debug:  original vector v     ", complex_dimension=1)
 !       print *, v
-        if (davidson_debug) call davidson_print_vectors(vt, label="debug:  conj. transpose of v  ", complex_dimension=2)
+        if (config%debug) call davidson_print_vectors(vt, label="debug:  conj. transpose of v  ", complex_dimension=2)
 !       print *, vt
 
     end subroutine
@@ -1360,7 +1038,7 @@ contains
         if (associated(eVectorsR)) deallocate(eVectorsR)
         if (associated(eValues))   deallocate(eValues)
 
-        if (davidson_debug) call davidson_print_vectors(M, label="debug:  small matrix M #2     ")
+        if (config%debug) call davidson_print_vectors(M, label="debug:  small matrix M #2     ")
 
         if (left) then
             do_left = 'V'
@@ -1381,7 +1059,7 @@ contains
         allocate(work(4*vectors_L))
 !       print *, "debug, lwork in diagonalization before query:",lwork,4*vectors_L
 
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             allocate(rwork(2*vectors_N))
             call zgeev (do_left, do_right, vectors_L, M, vectors_L,      &
                         eValues, eVectorsL, vectors_L, eVectorsR, &
@@ -1397,7 +1075,7 @@ contains
 !       print *, "debug, lwork in diagonalization after query:",lwork,work(1:4)
         deallocate(work)
         allocate(work(2*lwork))
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             allocate(rwork(2*vectors_N))
             call zgeev (do_left, do_right, vectors_L, M, vectors_L,      &
                         eValues, eVectorsL, vectors_L, eVectorsR, &
@@ -1407,6 +1085,7 @@ contains
             call dgeev (do_left, do_right, vectors_L, M, vectors_L,      &
                         eValues(1,:), eValues(2,:), eVectorsL, vectors_L, eVectorsR, &
                         vectors_L, WORK, LWORK, INFO)
+            call check_for_complex_values_vectors(left, vectors_N, vectors_L, eValues, eVectorsL, eVectorsR)
         end if
 !       print *, 'in small_solve_eigenvalue: info',info
         if (info .gt. 0) then
@@ -1418,8 +1097,78 @@ contains
         end if
         deallocate(work)
 
+        call renormalize_evectors(left, vectors_L, eVectorsR, eVectorsL)
+
     end subroutine
+
+! for the moment this routine only checks whether we found a complex conjugate pair
+! of eigenvalues and prints a warning. still to thing about how to handle the complex
+! eigenvectors if we are in real algebra.
+    subroutine check_for_complex_values_vectors(left,nrows,nvectors,eV,vL,vR)
+        logical, intent(in) :: left
+        integer, intent(in) :: nrows, nvectors
+        real(kind=8), intent(inout) :: vR(:,:), vL(:,:), eV(:,:)
+        integer :: i, j
+        real(kind=8) :: norm, tolerance = 1.0d-10
+        real(kind=8), allocatable :: complex_eigenvectors(:,:)
+        integer, allocatable :: complex_eigenvalue_pairs(:)
+
+        allocate(complex_eigenvalue_pairs(nvectors))
+        complex_eigenvalue_pairs = 0
+
+!       allocate(complex_eigenvectors(nrows,2))
+!       complex_eigenvectors = 0.0d0
+
+! expected results from dgeev: 
+! If the j-th eigenvalue is real, then v(j) = VR(:,j), the j-th column of VR.
+! If the j-th and (j+1)-st eigenvalues form a complex conjugate pair, then 
+!   v(j)   = VR(:,j) + i*VR(:,j+1) 
+!   v(j+1) = VR(:,j) - i*VR(:,j+1).
+
+        do i = 1, nvectors - 1
+           j = i + 1
+           if ((dabs(eV(2,i)).gt.tolerance).and.(complex_eigenvalue_pairs(j).ne.0)) then
+              complex_eigenvalue_pairs(i) = j
+              complex_eigenvalue_pairs(j) = i
+              write (config%output_file_unit,'(a,1i4,a,1i4,a,2e14.6,a,2e14.6,a)') &
+              "Warning! Eigenvalues",i," and ",j," form c.c. pair: (", &
+              eV(1,i),eV(2,i),"), (",eV(1,j),eV(2,j),")"
+              write (config%output_file_unit,'(a)') &
+              'Rerun the same calculation with a larger number of ', &
+              'roots to verify whether lowest roots were found'
+           end if
+        end do
+
+        deallocate(complex_eigenvalue_pairs)
+    end subroutine 
  
+    subroutine renormalize_evectors(left, nvectors, vR, vL)
+        logical, intent(in) :: left
+        integer, intent(in) :: nvectors
+        real(kind=8), intent(inout) :: vR(:,:), vL(:,:) 
+        integer :: vectors_L, i
+        real(kind=8) :: norm, tolerance = 1.0d-10
+
+        do i = 1, nvectors
+           if (left) then
+              norm = vector_norm(vL(:,i))
+              if (dabs(norm - 1.0d0).gt.tolerance) then
+                 write (config%output_file_unit,'(a,1i4,a,1e14.6,a)') &
+                 "Warning! LHS subspace eigenvector",i," not normalized(",norm,"), normalizing it."
+                 if (norm.gt.config%safe_minimum) norm = 1.0d0/norm 
+                 vL(:,i) = norm*vL(:,i)
+              end if
+           else
+              norm = vector_norm(vR(:,i))
+              if (dabs(norm - 1.0d0).gt.tolerance) then
+                 write (config%output_file_unit,'(a,1i4,a,1e14.6,a)') &
+                 "Warning! RHS subspace eigenvector",i," not normalized(",norm,"), normalizing it."
+                 if (norm.gt.config%safe_minimum) norm = 1.0d0/norm
+                 vR(:,i) = norm*vR(:,i)
+              end if
+           end if
+        end do
+    end subroutine
 
     subroutine get_values_vectors_davidson(nroots, A, results, b_guess, state_sym, projector)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
@@ -1457,9 +1206,9 @@ contains
 ! davidson_create_results() will allocate storage for results from davidson diagonalization when called a first time. 
 ! 
         call davidson_create_results(results,vectors_N,nroots,&
-                                     davidson_solve_values,   &
-                                     davidson_solve_lhs,      &
-                                     davidson_solve_rhs)
+                                     config%solve_values,   &
+                                     config%solve_lhs,      &
+                                     config%solve_rhs)
 
 ! todo: replace lines below with a call to a function which also performs the allocation, like
 !        M_diag => create_diagonal(A)
@@ -1467,81 +1216,83 @@ contains
         M_diag = A%H_II 
 
         min_subspace_size = nroots 
-        max_subspace_size = max(nroots, davidson_max_subspace_size)
+        max_subspace_size = max(nroots, config%max_subspace_size)
         max_subspace_size = min(vectors_N, max_subspace_size)
 
         if (associated(projector)) then
-            write(davidson_output_file_unit,*) ""
-            write(davidson_output_file_unit,"(4x,a)") "Projector (for CVS/REW/... calculations) is active"
-            write(davidson_output_file_unit,*) ""
+            write(config%output_file_unit,*) ""
+            write(config%output_file_unit,"(4x,a)") "Projector (for CVS/REW/... calculations) is active"
+            write(config%output_file_unit,*) ""
         end if
 
-        write(davidson_output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
+        write(config%output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
         if ( nroots .gt. vectors_N ) then 
-           write(davidson_output_file_unit, "(4x,a)") "Number of roots requested larger than matrix order !"
+           write(config%output_file_unit, "(4x,a)") "Number of roots requested larger than matrix order !"
            return 
         else if ( nroots .eq. vectors_N ) then
-           write(davidson_output_file_unit, "(4x,a)") "Number of roots requested equal to matrix order !"
+           write(config%output_file_unit, "(4x,a)") "Number of roots requested equal to matrix order !"
         endif
 
         b => b_guess
 
-        if (davidson_verbose) then
-            write(davidson_output_file_unit,"(4x,a,i4,a,i8)") &
+        if (config%verbose) then
+            write(config%output_file_unit,"(4x,a,i4,a,i8)") &
                   "Start by mapping M onto a subspace of size ",min_subspace_size, &
                   ", will extend it up to ",max_subspace_size
             call davidson_print_vectors(b, label="Initial subspace vectors      ")
         end if
 
-       if (davidson_overlap_sorting) &
-           call setup_overlap_sorting(c_small_r_old, c_small_l_old, nroots, davidson_solve_rhs, davidson_solve_lhs)
+       if (config%overlap_sorting) &
+           call setup_overlap_sorting(c_small_r_old, c_small_l_old, nroots, config%solve_rhs, config%solve_lhs)
 
 
-        write(davidson_output_file_unit,*) ""
-        do niter = 1, davidson_max_iterations
-            write(davidson_output_file_unit,*) "Iteration ", niter
-            write(davidson_output_file_unit,*) ""
+        write(config%output_file_unit,*) ""
+        do niter = 1, config%max_iterations
+            write(config%output_file_unit,*) "Iteration ", niter
+            write(config%output_file_unit,*) ""
 
             if (associated(M_small)) deallocate(M_small)
 
             if (associated(projector)) call apply_projector(projector,b)
-            if (davidson_debug) call davidson_print_vectors(b, label="debug:  b     vector          ")
+            if (config%debug) call davidson_print_vectors(b, label="debug:  b     vector          ")
 
             sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
             if (associated(projector)) call apply_projector(projector,sigma_vector)
 
-            if (davidson_debug) call davidson_print_vectors(sigma_vector, label="debug:  sigma vector          ")
+            if (config%debug) call davidson_print_vectors(sigma_vector, label="debug:  sigma vector          ")
 
-            if (davidson_solve_rhs) M_small => create_reduced_problem(b, sigma_vector)
-            if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
+            if (config%solve_rhs) M_small => create_reduced_problem(b, sigma_vector)
+            if (config%solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
-            if (davidson_debug) call davidson_print_vectors(M_small, label="debug:  small matrix M        ")
-            if (davidson_debug) call dump_to_file(2222, "M_small__.bin", M_small)
+            if (config%debug) call davidson_print_vectors(M_small, label="debug:  small matrix M        ")
+            if (config%debug) call dump_to_file(2222, "M_small__.bin", M_small)
 
-            if (davidson_debug) print *,"niter, follow overlap",niter,(davidson_overlap_sorting.and.(niter.gt.1))
+            if (config%debug) print *,"niter, follow overlap",niter,(config%overlap_sorting.and.(niter.gt.1))
 
-            call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
+            call calculate_eigenvalues_and_eigenvectors(config%output_file_unit,    &
                                                         M_small,                      &
                                                         e_small,                      &
                                                         c_small_r, c_small_l,         &
                                                         c_small_r_old, c_small_l_old, &
-                                                        davidson_eigenvalues_shift,   &
-                                                        follow_overlap=(davidson_overlap_sorting.and.(niter.gt.1)),  &
-                                                        apply_evalues_shift=davidson_apply_eigenvalues_shift, &
-                                                        left=davidson_solve_lhs,      &
-                                                        right=davidson_solve_rhs,     &
+                                                        config%eigenvalues_shift,   &
+                                                        follow_overlap=(config%overlap_sorting.and.(niter.gt.1)),  &
+                                                        apply_evalues_shift=config%apply_eigenvalues_shift, &
+                                                        left=config%solve_lhs,      &
+                                                        right=config%solve_rhs,     &
                                                         nroots=nroots,                &
-                                                        verbose=davidson_verbose)
+                                                        verbose=.true.) ! verbose=davidson_verbose)
 
-            if (davidson_solve_rhs.and.davidson_overlap_sorting) then
-                if (davidson_complex_mode_with_reals) then
+            if (niter == config%max_iterations) exit ! should not extend space anymore because this was the final iteration
+
+            if (config%solve_rhs.and.config%overlap_sorting) then
+                if (config%complex_mode_with_reals) then
                     c_small_r_old = c_small_r(1:2*nroots,1:nroots)
                 else
                     c_small_r_old = c_small_r(1:nroots,1:nroots)
                 end if
             end if
-            if (davidson_solve_lhs.and.davidson_overlap_sorting) then
-                if (davidson_complex_mode_with_reals) then
+            if (config%solve_lhs.and.config%overlap_sorting) then
+                if (config%complex_mode_with_reals) then
                     c_small_l_old = c_small_l(1:2*nroots,1:nroots)
                 else
                     c_small_l_old = c_small_l(1:nroots,1:nroots)
@@ -1553,57 +1304,59 @@ contains
 
             preconditioner =>  form_preconditioner(M_diag, e_small)
 
-           if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
+           if (config%solve_rhs) delta => correction_to_vectors(config%output_file_unit, nroots,  &
                                            e_small, c_small_r, sigma_vector, & 
                                            b, preconditioner)
 
-           if (davidson_solve_lhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
+           if (config%solve_lhs) delta => correction_to_vectors(config%output_file_unit, nroots,  &
                                            e_small, c_small_l, sigma_vector, & 
                                            b, preconditioner)
 
             if (.not.associated(delta)) then
-                write(davidson_output_file_unit,*) "All roots converged."
+                write(config%output_file_unit,*) "All roots converged."
                  if (associated(preconditioner)) deallocate(preconditioner)
                 exit
             end if
 
 ! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
 ! new trial vectors
-            if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
-                write(davidson_output_file_unit,*) "Resetting trial vectors at iteration",niter
+            if (config%refresh_trial_vectors) then
+              if (mod(niter,config%trial_vector_refresh_rate).eq.0) then
+                write(config%output_file_unit,*) "Resetting trial vectors at iteration",niter
                 call form_eigenvalues_full_problem(results%eValues, nroots, e_small)
-                if (davidson_solve_lhs) then
-                   write(davidson_output_file_unit,*) "    forming left  eigenvectors for original problem"
-                   call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,davidson_solve_rhs,davidson_solve_lhs)
-                   if (davidson_debug) &
+                if (config%solve_lhs) then
+                   write(config%output_file_unit,*) "    forming left  eigenvectors for original problem"
+                   call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,config%solve_rhs,config%solve_lhs)
+                   if (config%debug) &
                        call davidson_print_vectors(results%eVectorsL, label="intm  eigenvalues full problem")
                    deallocate(b)
                    allocate(b(vectors_N,nroots))
-                   write(davidson_output_file_unit,*) "    copying left  eigenvectors to trial vectors"
-                   write(davidson_output_file_unit,*) " "
+                   write(config%output_file_unit,*) "    copying left  eigenvectors to trial vectors"
+                   write(config%output_file_unit,*) " "
                    b = results%eVectorsL
                 end if
-                if (davidson_solve_rhs) then
-                   write(davidson_output_file_unit,*) " "
-                   write(davidson_output_file_unit,*) "    forming right eigenvectors for original problem"
-                   call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,davidson_solve_rhs,davidson_solve_lhs)
-                   if (davidson_debug) &
+                if (config%solve_rhs) then
+                   write(config%output_file_unit,*) " "
+                   write(config%output_file_unit,*) "    forming right eigenvectors for original problem"
+                   call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,config%solve_rhs,config%solve_lhs)
+                   if (config%debug) &
                        call davidson_print_vectors(results%eVectorsR, label="intm  eigenvalues full problem")
                    deallocate(b)
                    allocate(b(vectors_N,nroots))
-                   write(davidson_output_file_unit,*) "    copying right eigenvectors to trial vectors"
-                   write(davidson_output_file_unit,*) " "
+                   write(config%output_file_unit,*) "    copying right eigenvectors to trial vectors"
+                   write(config%output_file_unit,*) " "
                    b = results%eVectorsR
                 end if
                 deallocate(sigma_vector)
+              end if
             else
 
-               b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
+               b => updated_subspace_vectors_R(b, delta, verbose=config%debug)
 
 ! in the case of a parallel run, at each davidson step synchronize the new trial vectors 
                call davidson_synchronize_trial_vectors(b,size(delta,2))
 
-               if (davidson_verbose) then
+               if (config%verbose) then
                    call davidson_print_vectors(delta, label="delta                         ")
                    call davidson_print_vectors(b, label="Updated subspace vectors      ")
                end if
@@ -1614,25 +1367,25 @@ contains
             if (L .eq. max_subspace_size) then
                if (associated(preconditioner)) deallocate(preconditioner)
                if (associated(delta)) deallocate(delta)
-               write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
+               write(config%output_file_unit, *) "Reached maximum subspace size, stopping."
                exit
             end if
         end do ! davidson iterations
 
-        if (davidson_solve_rhs.and.davidson_overlap_sorting) deallocate(c_small_r_old)
-        if (davidson_solve_lhs.and.davidson_overlap_sorting) deallocate(c_small_l_old)
+        if (config%solve_rhs.and.config%overlap_sorting) deallocate(c_small_r_old)
+        if (config%solve_lhs.and.config%overlap_sorting) deallocate(c_small_l_old)
 
-        write(davidson_output_file_unit, *) "Final size of reduced subspace : ",L
+        write(config%output_file_unit, *) "Final size of reduced subspace : ",L
 
         call form_eigenvalues_full_problem(results%eValues, nroots, e_small) 
 
-        if (davidson_solve_lhs) then 
-            call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,davidson_solve_rhs,davidson_solve_lhs)
-            if (davidson_debug) call davidson_print_vectors(results%eVectorsL, label="final eigenvalues full problem")
+        if (config%solve_lhs) then 
+            call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,config%solve_rhs,config%solve_lhs)
+            if (config%debug) call davidson_print_vectors(results%eVectorsL, label="final eigenvalues full problem")
         end if
-        if (davidson_solve_rhs) then 
-            call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,davidson_solve_rhs,davidson_solve_lhs)
-            if (davidson_debug) call davidson_print_vectors(results%eVectorsR, label="final eigenvalues full problem")
+        if (config%solve_rhs) then 
+            call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,config%solve_rhs,config%solve_lhs)
+            if (config%debug) call davidson_print_vectors(results%eVectorsR, label="final eigenvalues full problem")
         end if
 
         if (associated(b)) deallocate(b)
@@ -1654,7 +1407,7 @@ contains
 
         integer :: i, factor 
 
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             factor = 2 
         else
             factor = 1 
@@ -1729,7 +1482,7 @@ contains
         end if
 
         M_nroots = size(M,1) 
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             M_nroots = M_nroots / 2
         end if
 
@@ -1740,19 +1493,19 @@ contains
         end if
 
         call solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
-        if (davidson_debug) then
+        if (config%debug) then
             call davidson_print_vectors(eValues, label="debug, eValues after solving  ")
-            if (davidson_verbose) then 
-                call print_values_vectors_R(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
+            if (config%verbose) then 
+                call print_values_vectors_R(config%output_file_unit,eValues, eVectorsR, eVectorsL, &
                                             left_local, right_local, nroots=nroots_to_print)
             else
-                call print_values_vectors_R(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
+                call print_values_vectors_R(config%output_file_unit,eValues, eVectorsR, eVectorsL, &
                                             .false., .false., nroots=nroots_to_print)
             end if
         end if
 
         if (follow_overlap_local) then
-            if (davidson_debug) print *, "debug, following overlap !"
+            if (config%debug) print *, "debug, following overlap !"
             
             if(right_local) then
                 call sort_by_overlap_of_subspace(eValues, eVectorsR, nroots)
@@ -1760,16 +1513,17 @@ contains
                 call sort_by_overlap_of_subspace(eValues, eVectorsL, nroots)
             end if
         else
-            if (davidson_debug) print *, "not following overlap !"
+            if (config%debug) print *, "not following overlap !"
             call sort_values_vectors(sorting_order_local, eValues, eVectorsR, eVectorsL, &
-                                     right_local, left_local, apply_evalues_shift, eValuesShift)
+                                     right_local, left_local, apply_evalues_shift, eValuesShift, &
+                                     debug=config%debug)
         end if
 
-        if (davidson_verbose) then 
-            call print_values_vectors_R(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
+        if (config%verbose) then 
+            call print_values_vectors_R(config%output_file_unit,eValues, eVectorsR, eVectorsL, &
                                         left_local, right_local, nroots=nroots_to_print)
         else
-            call print_values_vectors_R(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
+            call print_values_vectors_R(config%output_file_unit,eValues, eVectorsR, eVectorsL, &
                                         .false., .false., nroots=nroots_to_print)
         end if
 
@@ -1801,7 +1555,7 @@ contains
         vectors_N = size(b,1)
         vectors_L = size(b,2)
 
-        if (davidson_debug) then
+        if (config%debug) then
             print *,'debug sizes 1,2 of b',size(b,1),size(b,2)
             print *,'debug sizes 1,2 of eVectorsFull',size(eVectorsFull,1),size(eVectorsFull,2)
             print *,'debug sizes 1,2 of eVectorsSmall',size(eVectorsSmall,1),size(eVectorsSmall,2)
@@ -1811,7 +1565,7 @@ contains
             allocate(bc(vectors_L,vectors_N))
             bc = 0.0d0
 !           call davidson_print_vectors(eVectorsSmall, label="L eigenvectors small problem  ")
-            if (davidson_complex_mode_with_reals) then
+            if (config%complex_mode_with_reals) then
                 vectors_N = vectors_N / 2
 ! aspg: verify here whether transpose or conjugate transpose
                 print *, 'warning, calling zgemm with T instead of C in form_eigenvector_full_problem'
@@ -1833,7 +1587,7 @@ contains
             allocate(bc(vectors_N,vectors_L))
             bc = 0.0d0
 !           call davidson_print_vectors(eVectorsSmall, label="R eigenvectors small problem  ")
-            if (davidson_complex_mode_with_reals) then
+            if (config%complex_mode_with_reals) then
                 vectors_N = vectors_N / 2
                 call zgemm('N', 'N', vectors_N, vectors_L, vectors_L, (1.0d0, 0.0d0), b, &
                            vectors_N, eVectorsSmall, vectors_L, (1.0d0, 0.0d0), bc, vectors_N)
@@ -1873,7 +1627,7 @@ contains
         deallocate(old_sigma_vector)
 
         new_L = vectors_L - vectors_L_old
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             vectors_N = vectors_N / 2
             call zgemm('N', 'N', vectors_N, new_L, vectors_N, (1.0d0, 0.0d0), M, vectors_N, &
        &               b(:, vectors_L_old:vectors_L), vectors_N, (0.0d0, 0.0d0),            &
@@ -1897,7 +1651,7 @@ contains
 
         allocate(create_sigma_vector_full_matrix(vectors_N,vectors_L))
 
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             vectors_N = vectors_N / 2
             call zgemm('N', 'N', vectors_N, vectors_L, vectors_N, (1.0d0, 0.0d0), M, vectors_N, &
                        b, vectors_N, (0.0d0, 0.0d0), create_sigma_vector, vectors_N)
@@ -1907,38 +1661,55 @@ contains
         end if
     end function
 
-    subroutine sort_values_vectors(order, e_small, c_small_r, c_small_l, right, left, apply_shift, energy_shift) 
+    subroutine sort_values_vectors(order, e_small, c_small_r, c_small_l, right, left, apply_shift, energy_shift, debug) 
         integer, intent(in) :: order ! 1: ascending, -1: descending
         logical, intent(in) :: right ! if true, sort also the right eigenvectors
         logical, intent(in) :: left  ! if true, sort also the left eigenvectors
         logical, intent(in) :: apply_shift ! if true, sort values of |e_small - energy_shift| instead of e_small
+        logical, intent(in), optional :: debug
         real(kind=8), intent(inout) :: e_small(:,:)
         real(kind=8), intent(inout) :: c_small_r(:,:)
         real(kind=8), intent(inout) :: c_small_l(:,:)
         real(kind=8), intent(in) :: energy_shift(2)
 
-        real(kind=8), allocatable :: temp_vector(:,:)
+        real(kind=8), allocatable :: temp_vector(:,:), e_ascending(:,:)
         real(kind=8) :: temp
-        integer, allocatable :: indices_sorted_array(:)
-        integer :: vectors_N, vectors_L, i_sorted, i
+        integer, allocatable :: indices_sorted_array(:), i_ascending(:)
+        integer :: vectors_N, vectors_L, i_sorted, i, j
+        logical :: debug_local
 
         vectors_L = size(e_small,2)
         allocate(indices_sorted_array(vectors_L))
+
+        if (present(debug)) debug_local = debug
+
+        if (abs(order).ne.1) then
+           print *,"In sort_values_vectors: variable order given a value of ",order
+           print *,"  allowed values:   1 for sort to ascending order"
+           print *,"                   -1 for sort to descending order"
+           stop "Unknown ordering requested in sort_values_vectors"
+        end if
+
+!       all the sort routines sort in ascending order, which is almost always what we want. 
+!       when we want descending order, we will proceed with sorting in ascending order, and then
+!       just inverse the final arrays, for the energies and indices
+
         do i = 1, vectors_L 
             indices_sorted_array(i) = i 
         end do
 
-        if (davidson_debug) print *, "debug sort_values_vectors, L ",vectors_L
+        if (debug_local) print *, "debug sort_values_vectors, L ",vectors_L
 
-        if (davidson_debug) call davidson_print_vectors(e_small, label="debug, e_small before sort    ")
+        if (debug_local) call davidson_print_vectors(e_small, label="debug, e_small before sort    ")
 
-        if (davidson_complex_mode_with_reals) then
+        if (config%complex_mode_with_reals) then
             vectors_N = 2*vectors_L
             if (apply_shift) then
                call quicksort_vector_complex_as_real_shifted(energy_shift, e_small, indices_sorted_array, 1, vectors_L)
             else
                call quicksort_vector_complex_as_real(e_small, indices_sorted_array, 1, vectors_L)
             end if
+
         else
             vectors_N = vectors_L
             if (apply_shift) then
@@ -1956,31 +1727,64 @@ contains
                 e_small(2,i_sorted) = temp
             end do
         end if
-        if (davidson_debug) call davidson_print_vectors(e_small, label="debug, e_small  after sort    ")
-        if (davidson_debug) print *, "indices, sorted",indices_sorted_array
+        if (debug_local) call davidson_print_vectors(e_small, label="debug, e_small  after sort    ")
+        if (debug_local) print *, "indices, sorted",indices_sorted_array
+
+        if (order.eq.-1) then
+
+           if (debug_local) then
+              print *, "ascending order"
+              print *, " indices ",indices_sorted_array
+              print *, " evalues ",e_small
+           end if
+
+           allocate(i_ascending(vectors_L))
+           allocate(e_ascending(2,vectors_L))
+
+           i_ascending = indices_sorted_array
+           e_ascending = e_small
+
+           indices_sorted_array = i_ascending(vectors_L:1:-1)
+
+           do i = 1, vectors_L
+              j = vectors_L - i + 1 
+              e_small(1,j) = e_ascending(1,i)
+              e_small(2,j) = e_ascending(2,i)
+           end do
+
+           deallocate(i_ascending)
+           deallocate(e_ascending)
+
+           if (debug_local) then
+              print *, "descending order"
+              print *, " indices ",indices_sorted_array
+              print *, " evalues ",e_small
+          end if
+
+        end if
 
         allocate(temp_vector(vectors_N,vectors_L))
         temp_vector = 0.0d0
 
         if (right) then
-            if (davidson_debug) call davidson_print_vectors(c_small_r,   label="debug, c_small_r before sort  ")
+            if (debug_local) call davidson_print_vectors(c_small_r,   label="debug, c_small_r before sort  ")
             do i = 1, vectors_L
              i_sorted = indices_sorted_array(i)
              temp_vector(:,i) = c_small_r(:,i_sorted)
             end do
-            if (davidson_debug) call davidson_print_vectors(temp_vector, label="debug, temp_vector            ")
+            if (debug_local) call davidson_print_vectors(temp_vector, label="debug, temp_vector            ")
             c_small_r = temp_vector
-            if (davidson_debug) call davidson_print_vectors(c_small_r, label="debug, c_small_r  after sort  ")
+            if (debug_local) call davidson_print_vectors(c_small_r, label="debug, c_small_r  after sort  ")
         end if
 
         if (left) then
-            if (davidson_debug) call davidson_print_vectors(c_small_l, label="debug, c_small_l before sort  ")
+            if (debug_local) call davidson_print_vectors(c_small_l, label="debug, c_small_l before sort  ")
             do i = 1, vectors_L
              i_sorted = indices_sorted_array(i)
              temp_vector(:,i) = c_small_l(:,i_sorted)
             end do
             c_small_l = temp_vector
-            if (davidson_debug) call davidson_print_vectors(c_small_l, label="debug, c_small_l  after sort  ")
+            if (debug_local) call davidson_print_vectors(c_small_l, label="debug, c_small_l  after sort  ")
         end if
         deallocate(temp_vector)
         deallocate(indices_sorted_array)
@@ -2184,35 +1988,35 @@ contains
 
         inquire (iolength = reclen_real) dummy
 
-        left_sigma_file_name     = 'LSIGMAV.sym'//trim(str(symmetry))//"."//trim(str(node))
-        left_vectors_file_name   = 'LEVECTO.sym'//trim(str(symmetry))//"."//trim(str(node))
-        left_subspace_file_name  = 'LSUBSPA.sym'//trim(str(symmetry))//"."//trim(str(node))
+        config%left_sigma_file_name     = 'LSIGMAV.sym'//trim(str(symmetry))//"."//trim(str(node))
+        config%left_vectors_file_name   = 'LEVECTO.sym'//trim(str(symmetry))//"."//trim(str(node))
+        config%left_subspace_file_name  = 'LSUBSPA.sym'//trim(str(symmetry))//"."//trim(str(node))
 
-        right_sigma_file_name    = 'RSIGMAV.sym'//trim(str(symmetry))//"."//trim(str(node))
-        right_vectors_file_name  = 'REVECTO.sym'//trim(str(symmetry))//"."//trim(str(node))
-        right_subspace_file_name = 'RSUBSPA.sym'//trim(str(symmetry))//"."//trim(str(node))
+        config%right_sigma_file_name    = 'RSIGMAV.sym'//trim(str(symmetry))//"."//trim(str(node))
+        config%right_vectors_file_name  = 'REVECTO.sym'//trim(str(symmetry))//"."//trim(str(node))
+        config%right_subspace_file_name = 'RSUBSPA.sym'//trim(str(symmetry))//"."//trim(str(node))
 
         if (right) then
             reclen_vector = factor*N*L*reclen_real
-            open(unit=right_sigma_file_unit,file=right_sigma_file_name,&
+            open(unit=config%right_sigma_file_unit,file=config%right_sigma_file_name,&
                  form="unformatted", access="direct", recl=reclen_vector)
-            open(unit=right_subspace_file_unit, file=right_subspace_file_name, &
+            open(unit=config%right_subspace_file_unit, file=config%right_subspace_file_name, &
                  form="unformatted", access="direct", recl=reclen_vector)
 
             reclen_vector = factor*N*nroot*reclen_real + 2 
-            open(unit=right_vectors_file_unit, file=right_vectors_file_name, &
+            open(unit=config%right_vectors_file_unit, file=config%right_vectors_file_name, &
                  form="unformatted", access="direct", recl=reclen_vector)
         end if
 
         if (left) then
             reclen_vector = factor*N*L*reclen_real
-            open(unit=left_sigma_file_unit, file=left_sigma_file_name, &
+            open(unit=config%left_sigma_file_unit, file=config%left_sigma_file_name, &
                  form='unformatted', access='direct', recl=reclen_vector)
-            open(unit=left_subspace_file_unit, file=left_subspace_file_name, &
+            open(unit=config%left_subspace_file_unit, file=config%left_subspace_file_name, &
                  form='unformatted', access='direct', recl=reclen_vector)
 
             reclen_vector = factor*N*nroot*reclen_real + 2 
-            open(unit=left_vectors_file_unit, file=left_vectors_file_name, &
+            open(unit=config%left_vectors_file_unit, file=config%left_vectors_file_name, &
                  form='unformatted', access='direct', recl=reclen_vector)
         end if
 
@@ -2222,15 +2026,15 @@ contains
         logical, intent(in) :: left, right
 
         if (right) then
-            close(unit=right_sigma_file_unit)
-            close(unit=right_vectors_file_unit)
-            close(unit=right_subspace_file_unit)
+            close(unit=config%right_sigma_file_unit)
+            close(unit=config%right_vectors_file_unit)
+            close(unit=config%right_subspace_file_unit)
         end if
 
         if (left) then
-            close(unit=left_sigma_file_unit)
-            close(unit=left_vectors_file_unit)
-            close(unit=left_subspace_file_unit)
+            close(unit=config%left_sigma_file_unit)
+            close(unit=config%left_vectors_file_unit)
+            close(unit=config%left_subspace_file_unit)
         end if
 
     end subroutine
@@ -2377,11 +2181,11 @@ contains
         vectors_N = size(b,1)
         vectors_L = size(b,2)
 
-        if (davidson_complex_mode_with_reals) vectors_N = vectors_N / 2
+        if (config%complex_mode_with_reals) vectors_N = vectors_N / 2
 
         do i = 1, vectors_N
            if (projector(i).eqv..false.) then
-              if (davidson_complex_mode_with_reals) then
+              if (config%complex_mode_with_reals) then
                  j = 2*(i-1) + 1
                  k = j + 1
                  b(j,:) = 0.0d0
@@ -2397,8 +2201,8 @@ contains
        logical, intent(inout)      :: apply_shift
        real(kind=8), intent(inout) :: shift(2)
 
-       shift = davidson_eigenvalues_shift
-       apply_shift = davidson_apply_eigenvalues_shift 
+       shift = config%eigenvalues_shift
+       apply_shift = config%apply_eigenvalues_shift 
 
     end subroutine
 

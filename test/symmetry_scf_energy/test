@@ -10,6 +10,9 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
+f.add(from_string = 'SYMGRP:Point group information',
+      to_string='References for the basis sets',
+      rel_tolerance   = 1.0e-8)
 f.add(from_string = 'TOTAL ENERGY',
       num_lines   = 11,
       rel_tolerance   = 1.0e-9)
@@ -18,5 +21,7 @@ mol_files = ['ne_auto.mol', 'ne_c1.mol', 'ne_c2.mol', 'ne_c2h.mol', 'ne_c2v.mol'
 inp_files = ['dc.inp', 'dc_sof.inp', 'dc_urkbal.inp', 'nr.inp', 'x2c.inp', 'x2c4.inp']
 
 test.run(inp_files, mol_files, f)
+
+test.run(['CO2.inp'], ['CO2.mol'])
 
 sys.exit(test.return_code)

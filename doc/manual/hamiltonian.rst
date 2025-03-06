@@ -90,6 +90,43 @@ The keyword ensures the diagonalization of the bare nuclei Hamiltonian
 matrix without proceeding to the iterative SCF method.
 
 
+keyword(PHASEORIGIN)
+
+Origin appearing in the London atomic orbital phase-factors. Default::
+
+  .PHASEORIGIN
+   0.0 0.0 0.0
+
+.. warning::
+
+  This is the text from the DALTON manual. We wonder if it is used for
+  other integrals, in the code in her1int.F it is the final "else" option.
+
+
+keyword(GAUGEORIGIN)
+
+Set the gauge origin (in bohr) for an external magnetic field, e.g. for NMR shielding calculations.
+To set the gauge origin in angstrom use :ref:`HAMILTONIAN_.GO ANG`.
+By default gauge origin is set to the coordinate origin::
+
+  .GAUGEORIGIN
+   0.0 0.0 0.0
+
+keyword(GO ANG)
+
+Same as :ref:`HAMILTONIAN_.GAUGEORIGIN` but
+reads gauge origin coordinates in angstrom instead of bohr.
+
+keyword(DIPORG)
+
+Origin for all moment integrals, including the dipole (dipole is independent of
+origin only for neutral systems). By default it is set to the coordinate
+origin::
+
+  .DIPORG
+   0.0 0.0 0.0
+
+
 **4-component Hamiltonians**
 ============================
 
@@ -217,8 +254,31 @@ keyword(SPINF2)
 .. warning:: documentation missing
 
 
-**Advanced: Other projection operators**
-========================================
+**Other projection operators**
+==============================
+
+keyword(ASHIFT)
+
+Define atomic shift operator
+
+.. math::
+
+   V = \sum_{A}\sum_{I\in A}\sum_{i\in I}|\varphi^A_i\rangle \varepsilon^A_I \langle \varphi^A_i|
+
+where :math:`A` is a sum over atomic types. For each atomic types a group :math:`I` of orbitals may be
+specified with an associated shift parameter :math:`\varepsilon^A_I`.    
+Example::
+
+   .ASHIFT
+   AFCXXX
+   1
+   -9.328
+   1,2
+   AFOXXX
+   0
+
+Following the keyword there is a loop over the atomic types of the molecule under consideration, in this case carbon monoxide. For each atomic type one must specify the name of the coefficient file for the atom and the number of groups :math:`I`. For each group one then specifies the shift parameter :math:`\varepsilon^A_I` and then :ref:`orbital_strings` for each group.
+In the example above we specify one group for carbon. It involves a shift parameter -9.328 and the first and second atomic orbitals, that is, :math:`C1s` and :math:`C2s`. For oxygen there a no groups.   
 
 keyword(FREEPJ)
 
@@ -253,6 +313,11 @@ The spinfree X2C is equivalent to and numerically yields the same numbers as X2C
 An overview of the (local) X2C approach is given in the corresponding tutorial 
 section :ref:`X2Clocal`.
 
+**NOTE**: From DIRAC2023 onwards, we highly recommend to use the **(e)amf** module 
+described in  :ref:`\*XAMFI` in replacement of the :ref:`\*AMFI` module as highlighted 
+by the numerical examples provided in :cite:`Knecht2022`.
+
+
 keyword(X2Cmmf)
 
 This keyword activates the 2-component molecular-mean-field (X2C) Hamiltonian approach :cite:`Sikkema2009` 
@@ -260,7 +325,7 @@ within the module X2Cmod, Ref. :cite:`Knecht2014`.
 
 DIRAC starts with a 4c-SCF run and performs a transformation to 2-component
 mode (based on the converged Fock operator) prior to a post-HF correlation
-step. after the SCF. One can combine this option with :ref:`HAMILTONIAN_.GAUNT` which
+step. One can combine this option with :ref:`HAMILTONIAN_.GAUNT` which
 activates the inclusion of spin-other-orbit contributions in the Hamiltonian.
 The X2Cmmf-Hamiltonian can at present only be used for post-HF calculation
 within the RELCCSD module. Patches for other correlation modules in DIRAC will 
@@ -329,10 +394,12 @@ because it redefines the metric used in the calculation.
 keyword(NONREL)
 
 Standard nonrelativistic calculation based on the Schrodinger equation.  Should
-give identical energy results as with the :ref:`HAMILTONIAN_.LEVY-LEBLOND` keyword.
+give identical energy results as with the :ref:`HAMILTONIAN_.LEVY-LEBLOND` keyword,
+if same nucleus model is chosen.
+Point nucleus model is default for NONREL.
 
 DIRAC runs in the 2-component spin-free mode, which in fact represents the
-traditional one-component mode.
+traditional one-component mode (Pauli Hamiltonian).
 
 
 **Effective core potentials**
@@ -340,12 +407,14 @@ traditional one-component mode.
 
 keyword(ECP)
 
-Perform an effective core potential calculation. The ECP parameters should be set
+Perform a relativistic effective core potential calculation. The ECP parameters should be set
 in the MOL file. Both spin-orbit and spin-free calculations are available by
 specifying spin-orbit (SO) parameters in the MOL file. With SO parameters,
 the 2-component spin-orbit calculation is conducted, whereas the spin-free
 (1-component) calculation is performed by omitting the SO part in the ECP parameter.
+Point nucleus model is default for ECP.
 (See :ref:`ecp_input`)
+
 
 
 **External fields/Environment**
@@ -656,41 +725,7 @@ keyword(BLOCKD)
 .. warning:: documentation missing
 
 
-keyword(VACPOL)
-
-.. warning:: documentation missing
-
-
-keyword(MIXVAC)
-
-.. warning:: documentation missing
-
-
-keyword(NOVREF)
-
-.. warning:: documentation missing
-
-
-keyword(POSVAC)
-
-.. warning:: documentation missing
-
-
 keyword(QDOTS)
 
 .. warning:: documentation missing
 
-
-keyword(MMF)
-
-.. warning:: documentation missing
-
-
-keyword(xB)
-
-.. warning:: documentation missing
-
-
-keyword(xC)
-
-.. warning:: documentation missing

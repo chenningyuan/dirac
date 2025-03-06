@@ -17,7 +17,7 @@ H3+
 .MAXITR
 100
 ######################################################################
-*KRCICALC
+*KRCI
 .CI PROGRAM
 LUCIAREL
 .INACTIVE

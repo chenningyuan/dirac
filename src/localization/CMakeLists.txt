@@ -14,7 +14,6 @@ set(FREE_LOCALIZATION_FORTRAN_SOURCES
    func_PipekMezey.F90
    localization_interface.F90
    second_order_minimization.f90
-   select_coeff_own_bas.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -30,7 +29,7 @@ endif()
 
 add_library(
     localization
-    OBJECT
+    STATIC
     ${FIXED_LOCALIZATION_FORTRAN_SOURCES}
     ${FREE_LOCALIZATION_FORTRAN_SOURCES}
 )

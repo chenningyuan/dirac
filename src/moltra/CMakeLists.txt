@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/moltra
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -18,16 +19,14 @@ set(FIXED_MOLTRA_FORTRAN_SOURCES
    trapam.F
    traprp.F
    # traone.F depends on spfao
-   ${PROJECT_SOURCE_DIR}/src/dirac/dirspf.F
+#  ${PROJECT_SOURCE_DIR}/src/dirac/dirspf.F
 )
 
 set(FREE_MOLTRA_FORTRAN_SOURCES
     dcbtra_h.F90
     tradr3.F90
     tradr5.F90
-    moltra_mocoefficients.F90
 )
-
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_MOLTRA_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
@@ -43,14 +42,17 @@ endif()
 
 add_library(
     moltra
-    OBJECT
+    STATIC
     ${FREE_MOLTRA_FORTRAN_SOURCES}
     ${FIXED_MOLTRA_FORTRAN_SOURCES}
 )
 
 # deal with intermodule dependencies
 # moltra depends on:
-add_dependencies(moltra main)
+add_dependencies(moltra dirac_main)
 add_dependencies(moltra dirac)
 add_dependencies(moltra dirrci)
+if(ENABLE_EXATENSOR)
+add_dependencies(moltra exacorr)
+endif()
 add_dependencies(moltra interface_mpi)

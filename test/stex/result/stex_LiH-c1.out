@@ -1,5 +1,4 @@
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -  0.477 GB)
- of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB - 16.000 GB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -83,80 +82,101 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
  *    Trond Saue               Universite Toulouse III           France        *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
  *    Sebastien Dubillard      University of Strasbourg          France        *
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Elke Fasshauer           University of Copenhagen          Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
- *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
- *    Erik D. Hedegaard        Lund University                   Sweden        *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
  *    Trygve Helgaker          University of Oslo                Norway        *
- *    Benjamin Helmich-Paris   Vrije Universiteit Amsterdam      Netherlands   *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
- *    Stefan Knecht            ETH Zuerich                       Switzerland   *
- *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
- *    Patrick Norman           Linkoeping University             Sweden        *
- *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
  *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
- *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
  *    Toke Winther             University of Southern Denmark    Denmark       *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
  *                                                                             *
- *    For the complete list of contributors to the DIRAC code see our          *
- *    website http://www.diracprogram.org                                      *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
  *                                                                             *
  *    This is an experimental code. The authors accept no responsibility       *
  *    for the performance of the code or for the correctness of the results.   *
  *                                                                             *
- *    The code (in whole or part) is not to be reproduced for further          *
- *    distribution without the written permission of the authors or            *
- *    their representatives.                                                   *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
  *                                                                             *
  *    If results obtained with this code are published, an                     *
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC17 (2017),                                                  *
- *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
- *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
- *    O. Fossgaard, A. S. P. Gomes, E. D. Hedegård, T. Helgaker,               *
- *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
- *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
- *    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *
- *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
- *    P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen, *
- *    J. van Stralen, S. Villaume, O. Visser,T. Winther, and S. Yamamoto       *
- *    (see http://www.diracprogram.org).                                       *
+ *    Release DIRAC24 (2024), written by                                       *
+ *    L. Visscher, H. J. Aa. Jensen, R. Bast, A. S. P. Gomes, and T. Saue,     *
+ *    with contributions from I. A. Aucar, V. Bakken, J. Brandejs, C. Chibueze,*
+ *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
+ *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, L. Halbert,         *
+ *    E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn, M. Ilias,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj, M. K. Nayak,         *
+ *    P. Norman, A. Nyvang, M. Olejniczak, J. Olsen, J. M. H. Olsen,           *
+ *    A. Papadopoulos, Y. C. Park, J. K. Pedersen, M. Pernpointner,            *
+ *    J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud, P. Salek,         *
+ *    B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,          *
+ *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
+ *    S. Villaume, O. Visser, T. Winther, S. Yamamoto and X. Yuan              *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
  *                                                                             *
  *******************************************************************************
 
@@ -164,51 +184,61 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | lvnew
-Commit hash   | eb50d1a
-Commit author | Benjamin Helmich-Paris
-Commit date   | Mon Nov 6 11:34:14 2017 +0100
+Branch        | codata2022
+Commit hash   | 5f060088d
+Commit author | Agustin
+Commit date   | Tue Jun 4 14:17:40 2024 +0200
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | saue
-Compiled on server       | dirac
-Operating system         | Linux-4.4.0-34-generic
-CMake version            | 3.5.1
+Who compiled             | agustin
+Compiled on server       | aucaria
+Operating system         | Linux-6.5.0-35-generic
+CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2017-11-07 08:22:01.874649
-Python version           | 2.7.1
+Configuration time       | 2024-06-04 11:36:26.216407
 Fortran compiler         | /usr/bin/gfortran
-Fortran compiler version | 5.4.0
-Fortran compiler flags   |   -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
+Fortran compiler version | 11.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
 C compiler               | /usr/bin/gcc
-C compiler version       | 5.4.0
-C compiler flags         |   -g -g
+C compiler version       | 11.4.0
+C compiler flags         |  -g -fopenmp -fno-lto
 C++ compiler             | /usr/bin/g++
-C++ compiler version     | 5.4.0
-C++ compiler flags       |   -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+C++ compiler version     | 11.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | False
 MPI launcher             | unknown
-Math libraries           | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-base/atlas/liblapack.so;/usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-base/libcblas.so;/usr/lib/atlas-base/libatlas.so
+Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86_64-linux-gnu/libopenblas.so
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
 
 
+ LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri Nov 10 17:51:41 2017
-     Host name              : dirac                                   
+     Date and time (Linux)  : Tue Jun  4 15:09:54 2024
+     Host name              : aucaria                                 
+
+ * Opening checkpoint file 
+    - Existing hdf5 checkpoint file: check contents
+    - Checkpoint file is valid, will be used for restart
 
 
 Contents of the input file
@@ -221,6 +251,8 @@ Contents of the input file
 *READIN                                                                                             
 .CONTRA                                                                                             
 **GENERAL                                                                                           
+.CODATA                                                                                             
+ CODATA18                                                                                           
 .CVALUE                                                                                             
  2.0                                                                                                
 **HAMILTONIAN                                                                                       
@@ -267,10 +299,10 @@ FINISH
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
-   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
-                Peter J. Mohr and Barry N. Taylor                         
-   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
- * The speed of light :        137.0359998
+   CODATA Recommended Values of the Fundamental Physical Constants: 2018  
+     Eite Tiesinga, Peter J. Mohr, David B. Newell and Barry N. Taylor    
+         Reviews of Modern Physics, Vol. 93, 025010 (2021)                
+ * The speed of light :        137.0359992
    * The speed of light scaled by  1.46D-02 to :  2.00000000000
  * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
@@ -293,7 +325,7 @@ FINISH
     *************************************************************************
 
  Default print level:        1
- Nuclear model: Gaussian charge distribution.
+ Using default nuclear model: Gaussian charge distribution.
 
  Two-electron integrals not calculated.
 
@@ -323,8 +355,8 @@ FINISH
   Coordinates are entered in Angstroms and converted to atomic units.
           - Conversion factor : 1 bohr = 0.52917721 A
 
-  Nuclear Gaussian exponent for atom of charge   3.000 :    8.9266848806D+08
-  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
+  Nuclear Gaussian exponent for atom of charge   3.000 :    8.9266835952D+08   (using mass    7.0)
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248236111D+09   (using mass    1.0)
 
 
                           SYMGRP:Point group information
@@ -373,20 +405,9 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  QM-QM nuclear repulsion energy :      0.994881008272
+  Nuclear repulsion energy                       :      0.994881013166 Hartree
 
-
-
-                                 Isotopic Masses
-                                 ---------------
-
-                           Li          7.016005
-                           H           1.007825
-
-                       Total mass:     8.023830 amu
-                       Natural abundance:  92.486 %
-
- Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.378751
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    3.015435977065 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
@@ -439,7 +460,7 @@ Point group: C1
 
    4   H        x      0.0000000000
    5            y      0.0000000000
-   6            z      3.0154359919
+   6            z      3.0154359771
 
 
 
@@ -472,7 +493,14 @@ H      0.0000000000   0.0000000000   1.5957000000
 
 
 
-   Nuclear repulsion energy :    0.994881008272 Hartree
+   Nuclear repulsion energy                          :    0.994881013166 Hartree
+
+                       * Total mass:     8.023830 amu
+                       * Natural abundance:  92.486 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.378750766602218
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.200426274297935
 
 
                                 GETLAB: AO-labels
@@ -556,6 +584,11 @@ H      0.0000000000   0.0000000000   1.5957000000
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
  * Print level:    0
  * Dirac-Coulomb Hamiltonian
  * SS integrals neglected:
@@ -567,9 +600,6 @@ H      0.0000000000   0.0000000000   1.5957000000
    - LS-integrals:     1
    - SS-integrals:     0
    - GT-integrals:     0
- * Basis set:
-   - contracted large component basis set
-   - uncontracted small component basis set
 
 
  Information about the restricted kinetic balance scheme:
@@ -592,15 +622,14 @@ H      0.0000000000   0.0000000000   1.5957000000
 ===========================================================================
  * Number of fermion irreps: 1
  * Closed shell SCF calculation with     4 electrons in    2 orbitals.
+ * Charge of molecule : 0
  * Sum of atomic potentials used for start guess
  * General print level   :   0
 
  ***** INITIAL TRIAL SCF FUNCTION *****
- * Trial vectors read from file DFCOEF
+ * Trial vectors read from CHECKPOINT
  * Scaling of active-active block correction to open shell Fock operator    0.500000
    to improve convergence (default value).
-   The final open-shell orbital energies are recalculated with 1.0 scaling,
-   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
 
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
@@ -644,9 +673,6 @@ H      0.0000000000   0.0000000000   1.5957000000
  Hole orbital   Fermion symmetry
            2           1
  End of STEX input section
-===========================================================================
-   Magnetic properties:
-===========================================================================
 
 
  ********************************************************************************
@@ -668,7 +694,7 @@ H      0.0000000000   0.0000000000   1.5957000000
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z      3.01543599      7.66454474
+                    z      3.01543598      7.66454470
 
                         1 Debye =   2.54177000 a.u. 
 
@@ -684,7 +710,6 @@ H      0.0000000000   0.0000000000   1.5957000000
                                 ------------------
 
  * Applied strict kinetic balance !
- * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.
 
 
       **********************************************************************
@@ -701,160 +726,17 @@ Total no. of orbitals           (NORB):    64
    ****************************************************************************
 
 
-*** INFO *** No trial vectors found.
- Using bare nucleus approximation for initial trial vectors.
-             Improved by a sum of atomic screening potentials.
+########## START ITERATION NO.   1 ##########   Tue Jun  4 15:09:54 2024
 
 
-########## START ITERATION NO.   1 ##########   Fri Nov 10 17:51:41 2017
-
-E_HOMO...E_LUMO, symmetry 1:    34  -0.47685   35  -0.21385
-
-=> Calculating sum of orbital energies
-It.    1    -6.018369526331      0.00D+00  0.00D+00  0.00D+00               0.21600000s   Scr. nuclei    Fri Nov 10
-
-########## START ITERATION NO.   2 ##########   Fri Nov 10 17:51:41 2017
-
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -10.2543388502138910
+* Heading : Data read from the checkpoint file                                       
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    1.06%   0.02000001s
-SOfock:SL  1.00D-12    0.00%   73.56%    0.00%    0.45%   0.14399999s
-E_HOMO...E_LUMO, symmetry 1:    34  -0.28176   35  -0.02637
->>> Total wall time: 0.22900000s, and total CPU time : 0.22800000s
-
-########## END ITERATION NO.   2 ##########   Fri Nov 10 17:51:41 2017
-
-It.    2    -10.21334952373      4.19D+00  7.11D-01  5.43D-01               0.22800000s   LL SL          Fri Nov 10
-
-########## START ITERATION NO.   3 ##########   Fri Nov 10 17:51:41 2017
-
-    3 *** Differential density matrix. DCOVLP     = 0.9877
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    1.06%   0.02000004s
-SOfock:SL  1.00D-12    0.00%   73.86%    0.00%    0.45%   0.12799996s
-E_HOMO...E_LUMO, symmetry 1:    34  -0.33350   35  -0.02142
->>> Total wall time: 0.16700000s, and total CPU time : 0.16400000s
-
-########## END ITERATION NO.   3 ##########   Fri Nov 10 17:51:41 2017
-
-It.    3    -10.25306649188      3.97D-02 -1.33D-01  1.10D-01   DIIS   2    0.16400000s   LL SL          Fri Nov 10
-
-########## START ITERATION NO.   4 ##########   Fri Nov 10 17:51:41 2017
-
-    4 *** Differential density matrix. DCOVLP     = 0.9947
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    1.06%   0.01999998s
-SOfock:SL  1.00D-12    0.00%   74.17%    0.00%    0.45%   0.12400001s
-E_HOMO...E_LUMO, symmetry 1:    34  -0.35206   35  -0.01985
->>> Total wall time: 0.16500000s, and total CPU time : 0.16400000s
-
-########## END ITERATION NO.   4 ##########   Fri Nov 10 17:51:41 2017
-
-It.    4    -10.25414855327      1.08D-03 -2.76D-02  1.32D-02   DIIS   3    0.16400000s   LL SL          Fri Nov 10
-
-########## START ITERATION NO.   5 ##########   Fri Nov 10 17:51:41 2017
-
-    5 *** Differential density matrix. DCOVLP     = 1.0017
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    1.04%   0.02000004s
-SOfock:SL  1.00D-12    0.00%   74.24%    0.00%    0.45%   0.12399995s
-E_HOMO...E_LUMO, symmetry 1:    34  -0.35324   35  -0.01976
->>> Total wall time: 0.16300000s, and total CPU time : 0.16000000s
-
-########## END ITERATION NO.   5 ##########   Fri Nov 10 17:51:42 2017
-
-It.    5    -10.25431873507      1.70D-04 -8.40D-03  3.39D-03   DIIS   4    0.16000000s   LL SL          Fri Nov 10
-
-########## START ITERATION NO.   6 ##########   Fri Nov 10 17:51:42 2017
-
-    6 *** Differential density matrix. DCOVLP     = 1.0011
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.52%   0.01600003s
-SOfock:SL  1.00D-12    0.00%   74.41%    0.00%    0.09%   0.12399995s
-E_HOMO...E_LUMO, symmetry 1:    34  -0.35380   35  -0.01963
->>> Total wall time: 0.16100000s, and total CPU time : 0.16000000s
-
-########## END ITERATION NO.   6 ##########   Fri Nov 10 17:51:42 2017
-
-It.    6    -10.25433614762      1.74D-05 -1.04D-03  1.16D-03   DIIS   5    0.16000000s   LL SL          Fri Nov 10
-
-########## START ITERATION NO.   7 ##########   Fri Nov 10 17:51:42 2017
-
-    7 *** Differential density matrix. DCOVLP     = 1.0007
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.00%   0.01599991s
-SOfock:SL  1.00D-12    0.00%   74.58%    0.00%    0.06%   0.12800002s
-E_HOMO...E_LUMO, symmetry 1:    34  -0.35381   35  -0.01959
->>> Total wall time: 0.16500000s, and total CPU time : 0.16400000s
-
-########## END ITERATION NO.   7 ##########   Fri Nov 10 17:51:42 2017
-
-It.    7    -10.25433876167      2.61D-06 -5.17D-04  2.00D-04   DIIS   6    0.16400000s   LL SL          Fri Nov 10
-
-########## START ITERATION NO.   8 ##########   Fri Nov 10 17:51:42 2017
-
-    8 *** Differential density matrix. DCOVLP     = 1.0002
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.00%   0.01600003s
-SOfock:SL  1.00D-12    0.00%   74.98%    0.00%    0.12%   0.12400007s
-E_HOMO...E_LUMO, symmetry 1:    34  -0.35381   35  -0.01959
->>> Total wall time: 0.17400000s, and total CPU time : 0.17200000s
-
-########## END ITERATION NO.   8 ##########   Fri Nov 10 17:51:42 2017
-
-It.    8    -10.25433884020      7.85D-08  6.08D-05  4.52D-05   DIIS   7    0.17200000s   LL SL          Fri Nov 10
-
-########## START ITERATION NO.   9 ##########   Fri Nov 10 17:51:42 2017
-
-    9 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.51%   0.02800000s
-SOfock:SL  1.00D-12    0.00%   75.60%    0.00%    0.13%   0.15199995s
-E_HOMO...E_LUMO, symmetry 1:    34  -0.35381   35  -0.01959
->>> Total wall time: 0.20200000s, and total CPU time : 0.20000000s
-
-########## END ITERATION NO.   9 ##########   Fri Nov 10 17:51:42 2017
-
-It.    9    -10.25433884402      3.83D-09  1.04D-05  1.31D-05   DIIS   8    0.20000000s   LL SL          Fri Nov 10
-
-########## START ITERATION NO.  10 ##########   Fri Nov 10 17:51:42 2017
-
-   10 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.00%   0.01600003s
-SOfock:SL  1.00D-12    0.00%   76.34%    0.00%    0.05%   0.12000000s
-E_HOMO...E_LUMO, symmetry 1:    34  -0.35381   35  -0.01959
->>> Total wall time: 0.16000000s, and total CPU time : 0.16000000s
-
-########## END ITERATION NO.  10 ##########   Fri Nov 10 17:51:42 2017
-
-It.   10    -10.25433884436      3.32D-10 -1.74D-06  2.61D-06   DIIS   9    0.16000000s   LL SL          Fri Nov 10
-
-########## START ITERATION NO.  11 ##########   Fri Nov 10 17:51:42 2017
-
-   11 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.48%    0.00%    0.23%   0.01999998s
-SOfock:SL  1.00D-12    0.00%   77.04%    0.00%    0.17%   0.11999989s
-E_HOMO...E_LUMO, symmetry 1:    34  -0.35381   35  -0.01959
->>> Total wall time: 0.16300000s, and total CPU time : 0.15600000s
-
-########## END ITERATION NO.  11 ##########   Fri Nov 10 17:51:43 2017
-
-It.   11    -10.25433884437      1.13D-11 -4.62D-07  3.29D-07   DIIS   9    0.15600000s   LL SL          Fri Nov 10
-
-########## START ITERATION NO.  12 ##########   Fri Nov 10 17:51:43 2017
-
-   12 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.57%    0.00%    0.01%   0.01600003s
-SOfock:SL  1.00D-12    0.00%   78.64%    0.00%    0.07%   0.12000012s
->>> Total wall time: 0.14800000s, and total CPU time : 0.15200000s
-
-########## END ITERATION NO.  12 ##########   Fri Nov 10 17:51:43 2017
-
-It.   12    -10.25433884437     -4.57D-13 -9.22D-08  5.98D-08   DIIS   9    0.15200000s   LL SL          Fri Nov 10
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.00%   0.00679000s
+SOfock:SL  1.00D-12    0.00%   73.55%    0.00%    0.02%   0.04969200s
+It.    1    -10.25433884590      1.03D+01  0.00D+00  5.48D-08               0.08736500s   LL SL          Tue Jun  4
 
 
                                    SCF - CYCLE
@@ -870,36 +752,26 @@ It.   12    -10.25433884437     -4.57D-13 -9.22D-08  5.98D-08   DIIS   9    0.15
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -6.018369526331      0.00D+00  0.00D+00  0.00D+00               0.21600000s   Scr. nuclei    Fri Nov 10
-It.    2    -10.21334952373      4.19D+00  7.11D-01  5.43D-01               0.22800000s   LL SL          Fri Nov 10
-It.    3    -10.25306649188      3.97D-02 -1.33D-01  1.10D-01   DIIS   2    0.16400000s   LL SL          Fri Nov 10
-It.    4    -10.25414855327      1.08D-03 -2.76D-02  1.32D-02   DIIS   3    0.16400000s   LL SL          Fri Nov 10
-It.    5    -10.25431873507      1.70D-04 -8.40D-03  3.39D-03   DIIS   4    0.16000000s   LL SL          Fri Nov 10
-It.    6    -10.25433614762      1.74D-05 -1.04D-03  1.16D-03   DIIS   5    0.16000000s   LL SL          Fri Nov 10
-It.    7    -10.25433876167      2.61D-06 -5.17D-04  2.00D-04   DIIS   6    0.16400000s   LL SL          Fri Nov 10
-It.    8    -10.25433884020      7.85D-08  6.08D-05  4.52D-05   DIIS   7    0.17200000s   LL SL          Fri Nov 10
-It.    9    -10.25433884402      3.83D-09  1.04D-05  1.31D-05   DIIS   8    0.20000000s   LL SL          Fri Nov 10
-It.   10    -10.25433884436      3.32D-10 -1.74D-06  2.61D-06   DIIS   9    0.16000000s   LL SL          Fri Nov 10
-It.   11    -10.25433884437      1.13D-11 -4.62D-07  3.29D-07   DIIS   9    0.15600000s   LL SL          Fri Nov 10
-It.   12    -10.25433884437     -4.57D-13 -9.22D-08  5.98D-08   DIIS   9    0.15200000s   LL SL          Fri Nov 10
+It.    1    -10.25433884590      1.03D+01  0.00D+00  5.48D-08               0.08736500s   LL SL          Tue Jun  4
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after   12 iterations.
+* Convergence after    1 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.21700000s
-      LL SL        :    0.17245455s
+      LL SL        :    0.08700000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -11.249219853500605
+   Charge of molecule : 0
+
+   Electronic energy                        :    -11.249219859925031
 
    Other contributions to the total energy
-   Nuclear repulsion energy                 :      0.994881008272232
+   Nuclear repulsion energy                 :      0.994881013166009
    SS Coulombic correction                  :      0.000000000862230
 
    Sum of all contributions to the energy
-   Total energy                             :    -10.254338844366144
+   Total energy                             :    -10.254338845896791
 
 
                                    Eigenvalues
@@ -908,18 +780,18 @@ It.   12    -10.25433884437     -4.57D-13 -9.22D-08  5.98D-08   DIIS   9    0.15
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--3.512955936528341  ( 2)   -0.353807325004177  ( 2)
+-3.512955940295996  ( 2)   -0.353807320877149  ( 2)
   * Virtual eigenvalues, f = 0.0000
--0.019586991159525  ( 2)    0.012034589926277  ( 2)    0.012272421940535  ( 2)    0.013466454412481  ( 2)    0.021183737387993  ( 2)
- 0.048958065393806  ( 2)    0.050721976345675  ( 2)    0.067125737687273  ( 2)    0.122940984344306  ( 2)    0.143949874634790  ( 2)
- 0.159000317008525  ( 2)    0.170667127545142  ( 2)    0.187226477502595  ( 2)    0.188734162549247  ( 2)    0.189117513324440  ( 2)
- 0.190577756613761  ( 2)    0.214230435287111  ( 2)    0.345161129753224  ( 2)    0.440433218529628  ( 2)    0.476934595280556  ( 2)
- 0.480154896263920  ( 2)    0.494007558149063  ( 2)    0.499514181105235  ( 2)    0.507101557345402  ( 2)    0.511308252518544  ( 2)
- 0.523680255465210  ( 2)    0.820968340894395  ( 2)    1.500036911926058  ( 2)    1.586416773429795  ( 2)    1.603677008483446  ( 2)
+-0.019586992710341  ( 2)    0.012034589831795  ( 2)    0.012272421865446  ( 2)    0.013466453989993  ( 2)    0.021183737692689  ( 2)
+ 0.048958065006175  ( 2)    0.050721975992666  ( 2)    0.067125737316915  ( 2)    0.122940986103839  ( 2)    0.143949874049422  ( 2)
+ 0.159000315960243  ( 2)    0.170667126693291  ( 2)    0.187226476859446  ( 2)    0.188734162880675  ( 2)    0.189117512592812  ( 2)
+ 0.190577756937712  ( 2)    0.214230435348269  ( 2)    0.345161131452051  ( 2)    0.440433218224394  ( 2)    0.476934599789574  ( 2)
+ 0.480154900178679  ( 2)    0.494007557162320  ( 2)    0.499514181233232  ( 2)    0.507101555846899  ( 2)    0.511308252519795  ( 2)
+ 0.523680255923256  ( 2)    0.820968347820022  ( 2)    1.500036924598515  ( 2)    1.586416784855197  ( 2)    1.603677020123092  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :    -0.01958699 au (symmetry E1 )
-  - E(HOMO) :    -0.35380733 au (symmetry E1 )
+  - E(HOMO) :    -0.35380732 au (symmetry E1 )
   ------------------------------------------
     gap     :     0.33422033 au
 
@@ -933,26 +805,32 @@ It.   12    -10.25433884437     -4.57D-13 -9.22D-08  5.98D-08   DIIS   9    0.15
 
    This is output from the Dirac property module:
 
-   HF & DFT first order properties
+   * HF & DFT first order properties
       Trond Saue
 
-   First-order ESR properties
+   * First-order ESR properties
       Hans Joergen Aa. Jensen et al.
 
-   MP2 first order properties:
+   * MP2 first order properties:
       J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
 
-   KR-RPA second-order properties
+   * KR-RPA second-order properties
       Hans Joergen Aa. Jensen and Trond Saue
 
-   KR-QR third order properties
+   * KR-QR third order properties
       Patrick Norman and Hans Joergen Aa. Jensen
 
-   Molecular gradient
+   * Oscillator strengths beyond the electric dipole approximation
+      N.H. List, T.R.L Melin, M. van Horn, T. Saue, J. Chem. Phys. 152 (2020) 184110
+
+   * Molecular gradient
       Joern Thyssen
 
-   Additional contributions from:
+   * Additional contributions from:
       Thomas Enevoldsen, Miroslav Ilias (London orbitals)
+
+   * First-order exp. val. contribution from:
+      Chima Chibueze (KU DHF and KU CCSD)
 
 
 
@@ -962,159 +840,159 @@ It.   12    -10.25433884437     -4.57D-13 -9.22D-08  5.98D-08   DIIS   9    0.15
              *******************************************************
 
  Start of STEX
- DFCOEF.ION found, using it as reference state
+ ION.h5 found, used as reference state
  for STEX calculation
- Virtual cutoff   3.6749325968136941       Hartree
+ Virtual cutoff   3.6749322220552636       Hartree
  STEX Nr virtuals:          30
  STEX holes in orbitals (total orbital index)
           34
  STEX: Nr of variational parameters is          120
  Calculating property gradient by cofactors
- Nuclear dipole moment:   0.0000000000000000        0.0000000000000000        3.0154359918981410     
+ Nuclear dipole moment:   0.0000000000000000        0.0000000000000000        3.0154359770653412     
  STEX needs           4  Fock matrices that will be computed in batches of at most           4
  Calculating STEX 2e integrals
  Integral batch, i, j, herm.            1           1           1          -1
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.41%   0.01999998s
-SOfock:SL  1.00D-12    0.00%   73.61%    0.00%    0.30%   0.18799996s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.08%   0.00850400s
+SOfock:SL  1.00D-12    0.00%   73.61%    0.00%    0.13%   0.08077399s
  Integrals done
  Calculating reference Fock matrix
  SCRFCK:   9.9999999999999998E-013
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.00%   0.01999998s
-SOfock:SL  1.00D-12    0.00%   73.51%    0.00%    0.01%   0.12400007s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.00%   0.00705701s
+SOfock:SL  1.00D-12    0.00%   73.51%    0.00%    0.00%   0.05024102s
  SCRFCK:   9.9999999999999998E-013
 
  --------------- STEX Final Output --------------
 
- STEX reference state energy (au)        :  -10.230067153452506     
- Ground state energy (au)                :  -10.254338844366144     
- Ground/reference state overlap (abs val):  0.90325049394871559     
- DSCF Ionization potential (eV)          :   94.350486040415717     
+ STEX reference state energy (au)        :  -10.230067155784786     
+ Ground state energy (au)                :  -10.254338845896791     
+ Ground/reference state overlap (abs val):  0.90325048927044072     
+ DSCF Ionization potential (eV)          :   94.350485879041756     
 
 Excitation energies and oscillator strengths
  State    Energy (Ev)  <f_l>/3   <f_v>/3     f_lx      f_ly      f_lz      f_vx      f_vy      f_vz
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
-    1     83.77317796     0.160120E-03     0.246185E-03     0.239837E-03     0.240524E-03     0.269672E-20     0.368749E-03     0.369806E-03     0.483133E-20
-    2     83.77317796     0.160120E-03     0.246185E-03     0.240524E-03     0.239837E-03     0.253099E-19     0.369806E-03     0.368749E-03     0.544397E-20
-    3     83.78213280     0.201714E-17     0.921877E-18     0.798533E-21     0.341000E-20     0.604721E-17     0.137305E-20     0.562392E-20     0.275863E-17
-    4     84.21386820     0.873145E-01     0.476962E-01     0.143440E-22     0.976249E-25     0.261944E+00     0.275456E-22     0.818196E-27     0.143089E+00
-    5     88.20103236     0.803667E-22     0.991914E-23     0.544119E-22     0.186060E-21     0.628147E-24     0.960173E-25     0.233713E-22     0.629010E-23
-    6     88.20511925     0.427560E-03     0.321336E-04     0.320141E-20     0.576305E-22     0.128268E-02     0.193825E-20     0.120591E-21     0.964007E-04
-    7     88.22732939     0.193325E-01     0.957955E-02     0.518585E-01     0.613909E-02     0.813767E-21     0.256966E-01     0.304201E-02     0.427735E-22
-    8     88.22732939     0.193325E-01     0.957955E-02     0.613909E-02     0.518585E-01     0.463177E-23     0.304201E-02     0.256966E-01     0.191284E-23
-    9     88.80315028     0.326105E-22     0.967484E-25     0.571357E-22     0.406839E-22     0.118047E-25     0.202629E-24     0.876155E-25     0.587124E-30
-   10     88.80315028     0.324832E-22     0.646527E-25     0.371736E-22     0.602707E-22     0.521190E-26     0.748549E-25     0.119101E-24     0.241153E-29
-   11     88.89736807     0.214512E-01     0.128360E-01     0.235740E-02     0.619962E-01     0.271959E-26     0.141062E-02     0.370973E-01     0.711399E-25
-   12     88.89736807     0.214512E-01     0.128360E-01     0.619962E-01     0.235740E-02     0.345390E-22     0.370973E-01     0.141062E-02     0.313734E-23
-   13     91.26263670     0.242959E-16     0.324537E-18     0.111059E-16     0.580190E-16     0.376302E-17     0.353061E-19     0.184879E-18     0.753424E-18
-   14     91.26265802     0.173193E-03     0.551080E-06     0.266194E-03     0.253386E-03     0.449232E-20     0.846997E-06     0.806244E-06     0.305939E-23
-   15     91.26265802     0.173193E-03     0.551080E-06     0.253386E-03     0.266194E-03     0.122595E-19     0.806244E-06     0.846997E-06     0.693173E-21
-   16     91.39362202     0.105241E-01     0.516404E-02     0.103424E-23     0.959381E-23     0.315722E-01     0.377419E-23     0.313053E-24     0.154921E-01
-   17     91.93374381     0.404836E-03     0.995457E-05     0.587278E-03     0.627230E-03     0.534201E-19     0.144407E-04     0.154230E-04     0.248617E-20
-   18     91.93374381     0.404836E-03     0.995457E-05     0.627230E-03     0.587278E-03     0.547036E-19     0.154230E-04     0.144407E-04     0.439939E-20
-   19     91.93408748     0.212808E-16     0.901185E-18     0.836155E-18     0.292105E-17     0.600853E-16     0.205079E-19     0.723934E-19     0.261065E-17
-   20     91.97154695     0.281573E-01     0.991635E-03     0.151225E-20     0.156159E-21     0.844720E-01     0.740841E-22     0.234556E-23     0.297491E-02
-   21     92.18316283     0.831382E-02     0.804911E-03     0.129735E-01     0.119680E-01     0.884562E-20     0.125604E-02     0.115869E-02     0.309040E-20
-   22     92.18316283     0.831382E-02     0.804911E-03     0.119680E-01     0.129735E-01     0.136905E-19     0.115869E-02     0.125604E-02     0.257601E-20
-   23     92.18456125     0.676369E-18     0.105489E-17     0.130644E-18     0.636749E-18     0.126171E-17     0.118148E-19     0.586621E-19     0.309420E-17
-   24     92.19822952     0.128245E-02     0.270244E-02     0.955431E-20     0.683947E-23     0.384736E-02     0.179236E-20     0.203886E-22     0.810732E-02
-   25     92.38901094     0.693095E-21     0.858752E-26     0.347717E-21     0.173155E-20     0.149671E-25     0.216044E-25     0.415786E-26     0.302665E-30
-   26     92.38901094     0.697627E-21     0.168510E-25     0.174719E-20     0.345684E-21     0.320924E-26     0.281350E-25     0.222259E-25     0.192180E-27
-   27     92.39446378     0.815037E-04     0.737149E-04     0.126752E-03     0.117759E-03     0.286603E-20     0.114639E-03     0.106506E-03     0.239563E-21
-   28     92.39446378     0.815037E-04     0.737149E-04     0.117759E-03     0.126752E-03     0.107918E-19     0.106506E-03     0.114639E-03     0.726722E-21
-   29     92.39782677     0.662126E-20     0.477810E-18     0.267398E-21     0.635474E-21     0.189609E-19     0.115154E-20     0.334726E-20     0.142893E-17
-   30     92.42544668     0.153193E-02     0.334719E-02     0.323212E-02     0.136365E-02     0.317582E-20     0.706204E-02     0.297952E-02     0.235321E-20
-   31     92.42544668     0.153193E-02     0.334719E-02     0.136365E-02     0.323212E-02     0.612713E-20     0.297952E-02     0.706204E-02     0.192238E-20
-   32     92.46025403     0.123476E-02     0.590759E-02     0.275833E-21     0.241542E-21     0.370427E-02     0.151940E-20     0.186425E-22     0.177228E-01
-   33     93.11095892     0.369023E-01     0.424524E-05     0.544015E-01     0.563054E-01     0.377456E-19     0.625835E-05     0.647737E-05     0.683810E-20
-   34     93.11095892     0.369023E-01     0.424524E-05     0.563054E-01     0.544015E-01     0.278258E-18     0.647737E-05     0.625835E-05     0.129361E-20
-   35     93.11155170     0.115603E-15     0.503324E-18     0.795255E-17     0.381213E-16     0.300734E-15     0.925514E-21     0.446862E-20     0.150458E-17
-   36     93.17404618     0.842367E+00     0.610314E-02     0.802351E-19     0.232119E-20     0.252710E+01     0.467925E-22     0.714204E-24     0.183094E-01
-   37     93.36413789     0.907581E-17     0.532753E-19     0.162354E-19     0.405383E-19     0.271707E-16     0.341124E-22     0.848811E-22     0.159707E-18
-   38     93.37145296     0.262959E+00     0.721656E-03     0.365996E+00     0.422879E+00     0.189497E-19     0.100443E-02     0.116054E-02     0.449595E-21
-   39     93.37145296     0.262959E+00     0.721656E-03     0.422879E+00     0.365996E+00     0.490441E-19     0.116054E-02     0.100443E-02     0.311965E-21
-   40     93.38302809     0.221760E+00     0.179393E-02     0.875255E-19     0.260461E-20     0.665279E+00     0.195526E-21     0.449287E-23     0.538179E-02
-   41     93.42271260     0.193714E-21     0.478879E-26     0.499947E-21     0.811931E-22     0.141729E-26     0.144556E-26     0.129207E-25     0.112625E-30
-   42     93.42271260     0.204148E-21     0.785192E-26     0.704419E-22     0.541987E-21     0.144834E-25     0.235483E-25     0.749649E-29     0.233161E-33
-   43     93.44826382     0.702612E+00     0.271637E-02     0.349374E+00     0.175846E+01     0.126351E-19     0.135072E-02     0.679841E-02     0.770794E-25
-   44     93.44826382     0.702612E+00     0.271637E-02     0.175846E+01     0.349374E+00     0.574196E-20     0.679841E-02     0.135072E-02     0.195156E-22
-   45     93.53688847     0.121183E-17     0.907984E-20     0.208162E-22     0.771650E-19     0.355831E-17     0.666629E-25     0.314685E-21     0.269248E-19
-   46     93.53712301     0.429488E-02     0.167820E-04     0.541431E-02     0.747032E-02     0.146386E-18     0.211561E-04     0.291898E-04     0.606334E-20
-   47     93.53712301     0.429488E-02     0.167820E-04     0.747032E-02     0.541431E-02     0.283688E-20     0.291898E-04     0.211561E-04     0.458209E-22
-   48     93.57354150     0.362008E-01     0.106129E-02     0.365388E-19     0.383369E-19     0.108602E+00     0.199699E-21     0.206642E-21     0.318387E-02
-   49     94.03304698     0.170356E-16     0.265186E-18     0.833393E-20     0.143159E-19     0.510840E-16     0.722605E-22     0.141207E-21     0.795345E-18
-   50     94.03364037     0.660443E-03     0.130744E-04     0.543939E-19     0.100919E-21     0.198133E-02     0.503206E-21     0.486245E-24     0.392231E-04
-   51     94.03818869     0.900240E-02     0.883179E-04     0.103278E-01     0.166794E-01     0.140379E-19     0.101320E-03     0.163633E-03     0.133411E-21
-   52     94.03818869     0.900240E-02     0.883179E-04     0.166794E-01     0.103278E-01     0.380905E-20     0.163633E-03     0.101320E-03     0.261961E-21
-   53     94.08590893     0.490836E-23     0.175981E-24     0.102303E-22     0.449269E-23     0.205235E-26     0.207780E-24     0.319521E-24     0.641944E-27
-   54     94.08590893     0.413875E-23     0.191313E-24     0.123655E-23     0.111634E-22     0.163086E-25     0.442502E-24     0.131323E-24     0.115160E-27
-   55     94.09080671     0.114225E-01     0.138627E-03     0.135334E-03     0.341320E-01     0.219686E-22     0.164247E-05     0.414239E-03     0.108254E-25
-   56     94.09080671     0.114225E-01     0.138627E-03     0.341320E-01     0.135334E-03     0.853317E-26     0.414239E-03     0.164247E-05     0.430034E-22
-   57     94.25073853     0.252303E-02     0.148979E-04     0.699970E-03     0.686912E-02     0.231972E-23     0.413316E-05     0.405605E-04     0.640096E-23
-   58     94.25073853     0.252303E-02     0.148979E-04     0.686912E-02     0.699970E-03     0.608158E-22     0.405605E-04     0.413316E-05     0.717840E-22
-   59     94.25288042     0.145816E-22     0.460833E-23     0.433375E-22     0.376771E-24     0.304462E-25     0.135398E-22     0.274074E-24     0.110785E-25
-   60     94.25288042     0.121328E-22     0.390277E-23     0.265091E-23     0.337453E-22     0.231327E-26     0.792927E-24     0.109151E-22     0.280270E-27
-   61     94.33318259     0.455094E-16     0.138938E-16     0.133157E-16     0.265317E-16     0.966808E-16     0.954079E-17     0.188596E-16     0.132810E-16
-   62     94.33336402     0.204814E-04     0.147433E-04     0.308830E-04     0.305612E-04     0.187816E-18     0.222308E-04     0.219992E-04     0.464024E-22
-   63     94.33336402     0.204814E-04     0.147433E-04     0.305612E-04     0.308830E-04     0.522713E-19     0.219992E-04     0.222308E-04     0.573001E-20
-   64     94.33877104     0.339942E-23     0.726317E-24     0.657640E-27     0.251366E-24     0.994623E-23     0.785828E-29     0.135548E-24     0.204340E-23
-   65     94.33877104     0.151981E-21     0.255509E-22     0.113776E-24     0.962849E-27     0.455827E-21     0.105660E-24     0.303072E-27     0.765466E-22
-   66     94.34203335     0.651897E-22     0.609522E-22     0.194036E-21     0.130668E-23     0.226861E-24     0.181686E-21     0.113589E-23     0.347016E-25
-   67     94.34203335     0.518139E-22     0.311288E-22     0.142421E-22     0.141198E-21     0.183741E-26     0.107868E-22     0.825995E-22     0.534653E-30
-   68     94.44235602     0.899886E-02     0.575969E-03     0.305329E-21     0.563050E-21     0.269966E-01     0.145198E-21     0.420170E-22     0.172791E-02
-   69     95.61076280     0.166922E-18     0.264023E-19     0.217763E-19     0.478005E-20     0.474210E-18     0.323214E-21     0.665426E-22     0.788171E-19
-   70     95.61122214     0.571761E-03     0.871767E-05     0.940113E-03     0.775171E-03     0.872317E-19     0.143339E-04     0.118191E-04     0.116090E-19
-   71     95.61122214     0.571761E-03     0.871767E-05     0.775171E-03     0.940113E-03     0.115397E-20     0.118191E-04     0.143339E-04     0.245194E-21
-   72     96.26887943     0.966120E-04     0.374335E-02     0.391549E-20     0.284841E-20     0.289836E-03     0.452396E-22     0.359214E-22     0.112301E-01
-   73     96.87469523     0.182974E-16     0.255557E-16     0.393283E-17     0.205374E-16     0.304221E-16     0.317955E-19     0.166153E-18     0.764691E-16
-   74     96.87619080     0.283897E-02     0.234224E-04     0.431296E-02     0.420396E-02     0.193554E-19     0.355832E-04     0.346839E-04     0.329042E-19
-   75     96.87619080     0.283897E-02     0.234224E-04     0.420396E-02     0.431296E-02     0.148654E-18     0.346839E-04     0.355832E-04     0.846982E-19
-   76     97.09206014     0.848999E-02     0.333299E-01     0.108113E-19     0.133898E-20     0.254700E-01     0.155646E-22     0.498691E-23     0.999897E-01
-   77     99.67544172     0.473765E-19     0.436653E-20     0.193200E-20     0.847926E-20     0.131718E-18     0.557526E-22     0.220589E-21     0.128232E-19
-   78     99.68049652     0.364017E-03     0.381534E-03     0.943379E-20     0.189306E-19     0.109205E-02     0.130767E-21     0.342599E-21     0.114460E-02
-   79     99.69054360     0.449944E-01     0.844859E-03     0.697217E-01     0.652614E-01     0.279697E-21     0.130917E-02     0.122541E-02     0.403444E-22
-   80     99.69054360     0.449944E-01     0.844859E-03     0.652614E-01     0.697217E-01     0.945861E-21     0.122541E-02     0.130917E-02     0.363335E-21
-   81     99.88516288     0.248326E-22     0.116965E-24     0.292658E-22     0.452315E-22     0.481487E-27     0.125452E-24     0.225441E-24     0.280192E-30
-   82     99.88516288     0.242692E-22     0.138742E-24     0.471670E-22     0.255207E-22     0.119843E-24     0.328227E-24     0.869397E-25     0.105781E-26
-   83     99.90814053     0.683885E-01     0.124440E-02     0.130418E-01     0.192124E+00     0.562232E-21     0.237308E-03     0.349589E-02     0.149629E-21
-   84     99.90814053     0.683885E-01     0.124440E-02     0.192124E+00     0.130418E-01     0.353600E-21     0.349589E-02     0.237308E-03     0.221190E-21
-   85    100.44613738     0.165859E-21     0.165135E-23     0.385924E-21     0.482812E-22     0.633714E-22     0.391036E-23     0.503819E-24     0.539869E-24
-   86    100.44613738     0.364220E-22     0.314994E-24     0.854619E-22     0.236134E-22     0.190666E-24     0.593370E-24     0.350373E-24     0.123871E-26
-   87    100.45103605     0.319661E-02     0.257143E-03     0.825613E-02     0.133371E-02     0.856386E-20     0.664142E-03     0.107287E-03     0.232495E-21
-   88    100.45103605     0.319661E-02     0.257143E-03     0.133371E-02     0.825613E-02     0.231427E-19     0.107287E-03     0.664142E-03     0.224334E-21
-   89    100.49554891     0.138760E-15     0.155944E-17     0.175785E-19     0.990977E-19     0.416163E-15     0.431923E-20     0.963957E-20     0.466437E-17
-   90    100.49791167     0.186912E-02     0.333356E-03     0.266677E-02     0.294058E-02     0.901484E-19     0.475617E-03     0.524449E-03     0.237705E-20
-   91    100.49791167     0.186912E-02     0.333356E-03     0.294058E-02     0.266677E-02     0.106926E-19     0.524449E-03     0.475617E-03     0.204862E-21
-   92    100.52501995     0.252592E+00     0.223698E-02     0.922448E-21     0.102102E-24     0.757775E+00     0.887112E-24     0.734709E-23     0.671094E-02
-   93    100.87529311     0.851002E-22     0.624710E-24     0.129512E-24     0.611890E-24     0.254559E-21     0.477809E-25     0.320855E-24     0.150550E-23
-   94    100.87529311     0.312596E-23     0.209196E-23     0.564094E-24     0.152814E-24     0.866096E-23     0.221453E-24     0.805396E-25     0.597389E-23
-   95    100.87953061     0.133112E-22     0.309794E-23     0.895562E-23     0.819361E-24     0.301586E-22     0.767723E-23     0.101182E-23     0.604761E-24
-   96    100.87953061     0.556507E-23     0.255683E-23     0.290374E-23     0.130022E-22     0.789263E-24     0.100611E-23     0.664872E-23     0.156773E-25
-   97    100.90629939     0.403046E-17     0.121299E-18     0.143491E-20     0.699583E-20     0.120829E-16     0.572605E-21     0.267433E-20     0.360651E-18
-   98    100.91479859     0.646914E-03     0.348958E-03     0.965882E-03     0.974861E-03     0.145158E-18     0.521016E-03     0.525859E-03     0.303272E-20
-   99    100.91479859     0.646914E-03     0.348958E-03     0.974861E-03     0.965882E-03     0.119676E-18     0.525859E-03     0.521016E-03     0.151991E-21
-  100    100.95599852     0.230256E+00     0.447898E-02     0.379831E-21     0.116374E-20     0.690767E+00     0.221201E-21     0.240727E-21     0.134369E-01
-  101    100.99465775     0.461251E-23     0.176591E-25     0.422190E-23     0.957605E-23     0.395862E-25     0.162786E-26     0.500732E-25     0.127624E-26
-  102    100.99465775     0.103210E-22     0.134244E-24     0.105110E-22     0.356839E-23     0.168837E-22     0.538370E-25     0.572250E-26     0.343172E-24
-  103    101.01640954     0.142106E-02     0.102995E-02     0.275340E-04     0.423564E-02     0.199508E-20     0.199560E-04     0.306989E-02     0.405917E-24
-  104    101.01640954     0.142106E-02     0.102995E-02     0.423564E-02     0.275340E-04     0.578699E-19     0.306989E-02     0.199560E-04     0.570575E-21
-  105    107.34644482     0.177178E-16     0.540741E-19     0.989291E-17     0.265056E-16     0.167549E-16     0.435509E-19     0.116265E-18     0.240621E-20
-  106    107.34647393     0.332353E-04     0.146944E-06     0.464370E-04     0.532688E-04     0.600761E-20     0.205313E-06     0.235518E-06     0.224824E-23
-  107    107.34647393     0.332353E-04     0.146944E-06     0.532688E-04     0.464370E-04     0.218672E-19     0.235518E-06     0.205313E-06     0.171929E-21
-  108    107.43215634     0.407036E-01     0.438543E-05     0.326445E-22     0.233881E-23     0.122111E+00     0.398886E-25     0.291315E-26     0.131563E-04
-  109    124.11643359     0.416511E-18     0.843528E-20     0.438058E-21     0.168500E-22     0.124908E-17     0.826352E-21     0.366732E-23     0.244758E-19
-  110    124.11697901     0.269067E-03     0.449905E-03     0.787595E-03     0.196055E-04     0.110683E-19     0.131693E-02     0.327823E-04     0.196817E-21
-  111    124.11697901     0.269067E-03     0.449905E-03     0.196055E-04     0.787595E-03     0.322278E-25     0.327823E-04     0.131693E-02     0.978020E-23
-  112    124.13388133     0.514700E-01     0.883144E-03     0.854938E-22     0.498036E-24     0.154410E+00     0.102633E-21     0.107861E-23     0.264943E-02
-  113    126.74731364     0.110147E-18     0.270405E-20     0.199253E-22     0.263179E-22     0.330395E-18     0.316589E-21     0.312270E-21     0.748330E-20
-  114    126.74866919     0.526684E-04     0.554766E-03     0.155682E-03     0.232331E-05     0.181192E-21     0.163983E-02     0.244719E-04     0.171127E-22
-  115    126.74866919     0.526684E-04     0.554766E-03     0.232331E-05     0.155682E-03     0.217531E-21     0.244719E-04     0.163983E-02     0.665923E-25
-  116    126.76320688     0.337270E-01     0.661963E-03     0.338537E-24     0.617014E-25     0.101181E+00     0.548042E-23     0.372252E-23     0.198589E-02
-  117    127.57454429     0.205380E-23     0.259255E-24     0.199891E-23     0.413857E-23     0.239145E-25     0.442438E-24     0.335327E-24     0.271420E-30
-  118    127.57454429     0.210815E-23     0.261690E-24     0.433032E-23     0.199413E-23     0.995195E-30     0.356160E-24     0.428909E-24     0.607968E-30
-  119    127.57663311     0.361580E-04     0.990670E-03     0.800083E-05     0.100473E-03     0.678914E-24     0.219210E-03     0.275280E-02     0.531057E-28
-  120    127.57663311     0.361580E-04     0.990670E-03     0.100473E-03     0.800083E-05     0.139255E-22     0.275280E-02     0.219210E-03     0.125645E-24
+    1     83.77317780     0.160120E-03     0.246185E-03     0.480124E-03     0.237221E-06     0.221736E-19     0.738190E-03     0.364726E-06     0.331862E-20
+    2     83.77317780     0.160120E-03     0.246185E-03     0.237221E-06     0.480124E-03     0.259100E-18     0.364726E-06     0.738190E-03     0.130245E-18
+    3     83.78213263     0.116070E-19     0.477035E-20     0.210645E-20     0.253545E-20     0.301791E-19     0.326987E-20     0.398296E-20     0.705823E-20
+    4     84.21386803     0.873145E-01     0.476962E-01     0.212317E-22     0.571909E-21     0.261944E+00     0.206714E-22     0.658567E-21     0.143089E+00
+    5     88.20103227     0.873365E-22     0.896473E-24     0.685491E-23     0.106620E-24     0.255048E-21     0.863653E-24     0.890976E-24     0.934789E-24
+    6     88.20511915     0.427560E-03     0.321336E-04     0.361926E-22     0.727023E-24     0.128268E-02     0.211060E-22     0.146017E-22     0.964007E-04
+    7     88.22732929     0.193325E-01     0.957955E-02     0.744455E-03     0.572531E-01     0.153828E-22     0.368888E-03     0.283698E-01     0.150428E-24
+    8     88.22732929     0.193325E-01     0.957955E-02     0.572531E-01     0.744455E-03     0.244890E-23     0.283698E-01     0.368888E-03     0.173903E-23
+    9     88.80315018     0.895680E-23     0.406037E-25     0.160515E-22     0.108048E-22     0.140308E-25     0.532484E-25     0.685600E-25     0.260414E-29
+   10     88.80315018     0.105315E-22     0.345907E-25     0.105418E-22     0.210498E-22     0.274066E-26     0.476494E-25     0.561226E-25     0.176299E-30
+   11     88.89736797     0.214512E-01     0.128360E-01     0.198281E-01     0.445255E-01     0.770962E-23     0.118648E-01     0.266432E-01     0.553455E-24
+   12     88.89736797     0.214512E-01     0.128360E-01     0.445255E-01     0.198281E-01     0.181372E-24     0.266432E-01     0.118648E-01     0.297531E-26
+   13     91.26263656     0.629205E-16     0.199984E-18     0.833279E-16     0.105428E-15     0.552428E-20     0.264902E-18     0.334877E-18     0.172259E-21
+   14     91.26265788     0.173193E-03     0.551080E-06     0.517156E-03     0.242345E-05     0.947814E-19     0.164553E-05     0.771112E-08     0.725549E-20
+   15     91.26265788     0.173193E-03     0.551080E-06     0.242345E-05     0.517156E-03     0.195795E-18     0.771112E-08     0.164553E-05     0.433118E-19
+   16     91.39362188     0.105241E-01     0.516404E-02     0.290342E-21     0.339227E-21     0.315722E-01     0.225984E-25     0.386392E-23     0.154921E-01
+   17     91.93374371     0.404836E-03     0.995457E-05     0.104743E-02     0.167082E-03     0.658629E-18     0.257553E-04     0.410840E-05     0.304190E-19
+   18     91.93374371     0.404836E-03     0.995457E-05     0.167082E-03     0.104743E-02     0.539878E-17     0.410840E-05     0.257553E-04     0.253285E-18
+   19     91.93408737     0.165869E-18     0.399499E-20     0.324451E-18     0.161968E-18     0.111869E-19     0.778078E-20     0.408762E-20     0.116582E-21
+   20     91.97154684     0.281573E-01     0.991635E-03     0.119861E-22     0.377580E-19     0.844720E-01     0.885236E-24     0.118440E-20     0.297491E-02
+   21     92.18316271     0.831382E-02     0.804911E-03     0.214700E-01     0.347142E-02     0.849843E-20     0.207865E-02     0.336089E-03     0.467453E-19
+   22     92.18316271     0.831382E-02     0.804911E-03     0.347142E-02     0.214700E-01     0.143800E-18     0.336089E-03     0.207865E-02     0.395164E-18
+   23     92.18456113     0.554936E-19     0.522083E-20     0.893865E-19     0.586178E-19     0.184766E-19     0.777347E-20     0.667042E-20     0.121859E-20
+   24     92.19822941     0.128245E-02     0.270244E-02     0.353170E-20     0.131574E-17     0.384736E-02     0.181463E-21     0.136527E-18     0.810732E-02
+   25     92.38901082     0.427872E-21     0.122851E-25     0.128066E-20     0.294766E-23     0.120712E-25     0.503980E-27     0.363392E-25     0.121500E-28
+   26     92.38901082     0.427777E-21     0.125489E-25     0.328353E-23     0.128005E-20     0.437024E-29     0.298411E-25     0.776309E-26     0.424808E-28
+   27     92.39446367     0.815038E-04     0.737149E-04     0.560080E-06     0.243951E-03     0.525951E-22     0.506557E-06     0.220638E-03     0.108497E-18
+   28     92.39446367     0.815038E-04     0.737149E-04     0.243951E-03     0.560080E-06     0.433375E-20     0.220638E-03     0.506557E-06     0.908179E-21
+   29     92.39782666     0.774828E-20     0.351691E-21     0.387904E-22     0.110474E-20     0.221013E-19     0.534622E-21     0.353625E-21     0.166826E-21
+   30     92.42544657     0.153193E-02     0.334719E-02     0.524333E-03     0.407144E-02     0.520356E-20     0.114564E-02     0.889592E-02     0.301140E-18
+   31     92.42544657     0.153193E-02     0.334719E-02     0.407144E-02     0.524333E-03     0.776435E-20     0.889592E-02     0.114564E-02     0.282821E-19
+   32     92.46025392     0.123476E-02     0.590759E-02     0.759347E-21     0.119876E-19     0.370427E-02     0.278947E-21     0.134615E-18     0.177228E-01
+   33     93.11095880     0.369023E-01     0.424524E-05     0.101091E+00     0.961585E-02     0.464394E-17     0.116295E-04     0.110621E-05     0.721421E-20
+   34     93.11095880     0.369023E-01     0.424524E-05     0.961585E-02     0.101091E+00     0.188381E-16     0.110621E-05     0.116295E-04     0.104962E-18
+   35     93.11155158     0.157521E-16     0.232582E-20     0.218756E-16     0.252200E-16     0.160612E-18     0.253338E-20     0.291548E-20     0.152861E-20
+   36     93.17404606     0.842367E+00     0.610314E-02     0.559812E-20     0.201806E-17     0.252710E+01     0.128555E-22     0.104526E-20     0.183094E-01
+   37     93.36413777     0.121065E-19     0.364649E-22     0.228932E-19     0.126204E-19     0.805870E-21     0.440418E-22     0.412193E-22     0.241336E-22
+   38     93.37145284     0.262959E+00     0.721656E-03     0.236586E-01     0.765217E+00     0.112228E-16     0.649280E-04     0.210004E-02     0.743897E-19
+   39     93.37145284     0.262959E+00     0.721656E-03     0.765217E+00     0.236586E-01     0.231126E-19     0.210004E-02     0.649280E-04     0.437449E-21
+   40     93.38302797     0.221760E+00     0.179393E-02     0.273087E-18     0.141309E-16     0.665279E+00     0.716202E-21     0.413137E-19     0.538179E-02
+   41     93.42271249     0.177016E-21     0.780914E-26     0.689720E-23     0.523834E-21     0.317539E-24     0.212877E-25     0.195939E-27     0.194383E-26
+   42     93.42271249     0.179730E-21     0.771592E-26     0.529872E-21     0.882812E-23     0.490125E-24     0.411302E-27     0.180013E-25     0.473516E-26
+   43     93.44826371     0.702612E+00     0.271637E-02     0.159265E+01     0.515190E+00     0.520413E-20     0.615734E-02     0.199178E-02     0.366005E-21
+   44     93.44826371     0.702612E+00     0.271637E-02     0.515190E+00     0.159265E+01     0.926924E-19     0.199178E-02     0.615734E-02     0.676090E-21
+   45     93.53688833     0.337500E-19     0.160114E-21     0.455077E-19     0.556641E-19     0.782920E-22     0.177183E-21     0.217990E-21     0.851706E-22
+   46     93.53712288     0.429488E-02     0.167820E-04     0.128843E-01     0.286765E-06     0.386795E-18     0.503448E-04     0.112052E-08     0.141906E-19
+   47     93.53712288     0.429488E-02     0.167820E-04     0.286765E-06     0.128843E-01     0.303598E-20     0.112052E-08     0.503448E-04     0.786960E-21
+   48     93.57354137     0.362008E-01     0.106129E-02     0.838249E-19     0.691227E-23     0.108602E+00     0.460874E-21     0.182110E-26     0.318387E-02
+   49     94.03304686     0.181610E-18     0.323341E-20     0.180792E-19     0.186728E-19     0.508077E-18     0.156492E-21     0.187893E-21     0.935583E-20
+   50     94.03364025     0.660443E-03     0.130744E-04     0.446187E-20     0.163686E-17     0.198133E-02     0.615362E-22     0.130416E-19     0.392231E-04
+   51     94.03818857     0.900240E-02     0.883179E-04     0.455676E-02     0.224504E-01     0.118804E-18     0.447041E-04     0.220250E-03     0.627101E-20
+   52     94.03818857     0.900240E-02     0.883179E-04     0.224504E-01     0.455676E-02     0.706789E-19     0.220250E-03     0.447041E-04     0.211607E-20
+   53     94.08590881     0.352039E-22     0.346770E-25     0.102500E-21     0.310876E-23     0.317375E-26     0.102653E-24     0.137420E-26     0.420273E-29
+   54     94.08590881     0.281594E-22     0.182629E-25     0.141991E-23     0.830479E-22     0.104150E-25     0.832520E-29     0.547654E-25     0.150203E-28
+   55     94.09080660     0.114225E-01     0.138627E-03     0.342513E-01     0.160583E-04     0.383120E-23     0.415687E-03     0.194889E-06     0.660077E-22
+   56     94.09080660     0.114225E-01     0.138627E-03     0.160583E-04     0.342513E-01     0.383512E-21     0.194889E-06     0.415687E-03     0.154984E-21
+   57     94.25073842     0.252303E-02     0.148979E-04     0.686945E-02     0.699638E-03     0.893428E-22     0.405625E-04     0.413120E-05     0.617046E-22
+   58     94.25073842     0.252303E-02     0.148979E-04     0.699638E-03     0.686945E-02     0.164678E-23     0.413120E-05     0.405625E-04     0.476826E-25
+   59     94.25288031     0.435757E-23     0.617520E-25     0.425351E-23     0.876133E-23     0.578752E-25     0.159889E-24     0.250149E-25     0.351645E-27
+   60     94.25288031     0.432857E-23     0.667465E-25     0.916449E-23     0.381920E-23     0.200810E-26     0.293485E-25     0.170890E-24     0.136777E-29
+   61     94.33318246     0.631739E-17     0.447958E-17     0.956150E-17     0.936241E-17     0.282598E-19     0.678899E-17     0.664744E-17     0.230416E-20
+   62     94.33336389     0.204814E-04     0.147433E-04     0.470730E-05     0.567369E-04     0.627213E-17     0.338850E-05     0.408415E-04     0.108696E-17
+   63     94.33336389     0.204814E-04     0.147433E-04     0.567369E-04     0.470730E-05     0.222921E-17     0.408415E-04     0.338850E-05     0.187091E-18
+   64     94.33877093     0.291815E-21     0.385801E-22     0.572678E-26     0.160767E-25     0.875424E-21     0.850261E-27     0.747382E-26     0.115732E-21
+   65     94.33877093     0.239313E-22     0.337540E-23     0.688208E-26     0.617397E-26     0.717808E-22     0.206335E-26     0.268469E-26     0.101214E-22
+   66     94.34203324     0.260290E-23     0.104774E-23     0.750918E-23     0.294267E-24     0.526199E-26     0.313654E-23     0.572426E-26     0.948932E-27
+   67     94.34203324     0.525785E-24     0.748765E-24     0.529443E-24     0.103557E-23     0.123468E-25     0.102059E-25     0.223603E-23     0.557931E-28
+   68     94.44235590     0.899886E-02     0.575969E-03     0.116478E-22     0.212497E-19     0.269966E-01     0.436974E-21     0.223104E-19     0.172791E-02
+   69     95.61076267     0.151910E-19     0.233381E-21     0.271873E-19     0.183855E-19     0.134324E-24     0.410116E-21     0.288618E-21     0.140941E-23
+   70     95.61122201     0.571761E-03     0.871767E-05     0.161767E-02     0.976150E-04     0.173532E-18     0.246647E-04     0.148834E-05     0.229964E-19
+   71     95.61122201     0.571761E-03     0.871767E-05     0.976150E-04     0.161767E-02     0.581249E-20     0.148834E-05     0.246647E-04     0.972075E-21
+   72     96.26887928     0.966123E-04     0.374335E-02     0.820865E-20     0.164045E-21     0.289837E-03     0.103793E-21     0.239070E-23     0.112301E-01
+   73     96.87469513     0.840804E-17     0.124460E-18     0.106946E-16     0.144404E-16     0.890667E-19     0.868068E-19     0.117389E-18     0.169183E-18
+   74     96.87619071     0.283897E-02     0.234224E-04     0.822522E-02     0.291700E-03     0.108102E-21     0.678605E-04     0.240661E-05     0.715682E-19
+   75     96.87619071     0.283897E-02     0.234224E-04     0.291700E-03     0.822522E-02     0.268472E-17     0.240661E-05     0.678605E-04     0.633298E-17
+   76     97.09206003     0.848999E-02     0.333299E-01     0.111564E-19     0.566582E-18     0.254700E-01     0.230882E-21     0.347400E-20     0.999897E-01
+   77     99.67544160     0.125788E-19     0.241625E-20     0.744648E-22     0.915150E-21     0.367469E-19     0.732515E-23     0.115597E-22     0.722987E-20
+   78     99.68049640     0.364017E-03     0.381534E-03     0.542831E-18     0.649009E-18     0.109205E-02     0.104501E-19     0.124944E-19     0.114460E-02
+   79     99.69054348     0.449944E-01     0.844859E-03     0.907215E-01     0.442616E-01     0.122539E-19     0.170348E-02     0.831100E-03     0.343555E-19
+   80     99.69054348     0.449944E-01     0.844859E-03     0.442616E-01     0.907215E-01     0.487849E-21     0.831100E-03     0.170348E-02     0.118520E-20
+   81     99.88516277     0.139475E-22     0.144246E-24     0.276103E-22     0.142321E-22     0.158973E-27     0.326958E-24     0.105686E-24     0.928214E-28
+   82     99.88516277     0.143772E-22     0.138487E-24     0.120391E-22     0.310814E-22     0.110932E-25     0.131872E-24     0.280785E-24     0.280319E-26
+   83     99.90814042     0.683885E-01     0.124440E-02     0.145674E+00     0.594918E-01     0.250821E-21     0.265068E-02     0.108252E-02     0.205945E-22
+   84     99.90814042     0.683885E-01     0.124440E-02     0.594918E-01     0.145674E+00     0.988918E-25     0.108252E-02     0.265068E-02     0.320822E-23
+   85    100.44613728     0.463842E-23     0.203978E-25     0.825540E-23     0.505353E-23     0.606309E-24     0.352776E-25     0.205365E-26     0.238621E-25
+   86    100.44613728     0.468698E-23     0.134738E-25     0.500175E-23     0.905619E-23     0.300603E-26     0.209251E-27     0.401204E-25     0.918190E-28
+   87    100.45103594     0.319661E-02     0.257143E-03     0.862408E-02     0.965764E-03     0.135985E-19     0.693741E-03     0.776883E-04     0.127906E-21
+   88    100.45103594     0.319661E-02     0.257143E-03     0.965764E-03     0.862408E-02     0.898741E-19     0.776883E-04     0.693741E-03     0.148562E-20
+   89    100.49554878     0.460882E-19     0.574960E-20     0.311078E-19     0.107008E-18     0.149016E-21     0.369783E-20     0.128880E-19     0.663029E-21
+   90    100.49791154     0.186912E-02     0.333356E-03     0.556881E-02     0.385382E-04     0.545066E-17     0.993193E-03     0.687326E-05     0.330848E-19
+   91    100.49791154     0.186912E-02     0.333356E-03     0.385382E-04     0.556881E-02     0.717271E-16     0.687326E-05     0.993193E-03     0.843962E-18
+   92    100.52501982     0.252592E+00     0.223698E-02     0.306312E-19     0.440374E-18     0.757775E+00     0.903474E-20     0.894254E-19     0.671094E-02
+   93    100.87529301     0.217110E-21     0.892237E-23     0.665938E-28     0.177999E-27     0.651331E-21     0.870373E-26     0.357982E-27     0.267580E-22
+   94    100.87529301     0.153430E-22     0.149057E-23     0.729463E-29     0.101485E-26     0.460281E-22     0.206519E-26     0.104100E-26     0.446860E-23
+   95    100.87953051     0.747528E-24     0.114936E-24     0.187201E-23     0.340181E-24     0.303867E-25     0.323703E-24     0.749741E-26     0.136074E-25
+   96    100.87953051     0.156795E-24     0.259006E-25     0.426951E-24     0.433460E-25     0.885933E-28     0.327820E-27     0.772468E-25     0.127141E-27
+   97    100.90629926     0.498400E-19     0.851532E-21     0.224306E-20     0.262017E-20     0.144657E-18     0.990106E-21     0.105096E-20     0.513532E-21
+   98    100.91479846     0.646914E-03     0.348958E-03     0.465078E-05     0.193609E-02     0.493865E-18     0.250872E-05     0.104437E-02     0.207500E-19
+   99    100.91479846     0.646914E-03     0.348958E-03     0.193609E-02     0.465078E-05     0.198163E-18     0.104437E-02     0.250872E-05     0.216283E-19
+  100    100.95599840     0.230256E+00     0.447898E-02     0.351619E-21     0.138661E-20     0.690767E+00     0.173949E-20     0.140228E-21     0.134369E-01
+  101    100.99465764     0.156366E-23     0.424223E-25     0.444588E-23     0.182462E-24     0.626330E-25     0.241100E-25     0.102599E-24     0.557734E-27
+  102    100.99465764     0.628537E-23     0.149652E-24     0.133616E-24     0.435330E-23     0.143692E-22     0.112300E-24     0.234524E-25     0.313203E-24
+  103    101.01640942     0.142106E-02     0.102995E-02     0.238932E-02     0.187386E-02     0.144016E-19     0.173172E-02     0.135812E-02     0.539159E-22
+  104    101.01640942     0.142106E-02     0.102995E-02     0.187386E-02     0.238932E-02     0.831233E-20     0.135812E-02     0.173172E-02     0.138003E-21
+  105    107.34644468     0.606970E-17     0.267957E-19     0.118303E-16     0.637241E-17     0.644542E-20     0.522516E-19     0.280656E-19     0.698136E-22
+  106    107.34647379     0.332353E-04     0.146944E-06     0.971620E-04     0.254382E-05     0.164460E-19     0.429584E-06     0.112471E-07     0.918674E-22
+  107    107.34647379     0.332353E-04     0.146944E-06     0.254382E-05     0.971620E-04     0.175424E-17     0.112471E-07     0.429584E-06     0.260526E-21
+  108    107.43215620     0.407036E-01     0.438542E-05     0.457672E-22     0.273250E-20     0.122111E+00     0.405647E-23     0.420590E-24     0.131563E-04
+  109    124.11643341     0.998813E-19     0.197859E-20     0.310038E-21     0.281505E-21     0.299052E-18     0.478874E-21     0.504973E-21     0.495191E-20
+  110    124.11697882     0.269067E-03     0.449905E-03     0.515493E-03     0.291707E-03     0.177433E-20     0.861953E-03     0.487762E-03     0.226536E-22
+  111    124.11697882     0.269067E-03     0.449905E-03     0.291707E-03     0.515493E-03     0.352167E-19     0.487762E-03     0.861953E-03     0.826749E-21
+  112    124.13388115     0.514700E-01     0.883144E-03     0.608861E-22     0.172043E-21     0.154410E+00     0.622209E-22     0.285312E-21     0.264943E-02
+  113    126.74731345     0.850499E-21     0.981923E-22     0.402588E-24     0.267533E-22     0.252434E-20     0.524599E-22     0.169636E-21     0.724810E-22
+  114    126.74866900     0.526684E-04     0.554766E-03     0.144309E-03     0.136967E-04     0.205482E-23     0.152003E-02     0.144270E-03     0.656791E-23
+  115    126.74866900     0.526684E-04     0.554766E-03     0.136967E-04     0.144309E-03     0.345467E-20     0.144270E-03     0.152003E-02     0.994204E-22
+  116    126.76320670     0.337270E-01     0.661963E-03     0.140879E-23     0.164575E-22     0.101181E+00     0.102142E-22     0.508659E-22     0.198589E-02
+  117    127.57454411     0.131322E-23     0.201974E-25     0.385943E-23     0.670632E-25     0.131580E-25     0.561562E-25     0.442892E-26     0.695780E-29
+  118    127.57454411     0.108650E-23     0.159562E-24     0.567891E-25     0.320167E-23     0.105281E-26     0.454477E-25     0.433229E-24     0.932909E-29
+  119    127.57663293     0.361580E-04     0.990670E-03     0.152157E-04     0.932584E-04     0.550785E-27     0.416884E-03     0.255513E-02     0.152184E-26
+  120    127.57663293     0.361580E-04     0.990670E-03     0.932584E-04     0.152157E-04     0.122355E-23     0.255513E-02     0.416884E-03     0.550442E-27
  ----------------------------------------------------------------------------
    Sum of oscillator strengths (length, velocity gauge):   4.267634  0.191162
 
@@ -1242,17 +1120,21 @@ Excitation energies and oscillator strengths
   120  1 ->  30 (1.00)
  STEX End
 
+ * Closing HDF5 checkpoint file 
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
+
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
 
  
-     Date and time (Linux)  : Fri Nov 10 17:51:43 2017
-     Host name              : dirac                                   
+     Date and time (Linux)  : Tue Jun  4 15:09:54 2024
+     Host name              : aucaria                                 
 
->>>> Node 0, utime: 2, stime: 0, minflt: 7330, majflt: 0, nvcsw: 14, nivcsw: 9, maxrss: 94504
->>>> Total WALL time used in DIRAC: 2s
+>>>> Node 0, utime: 0, stime: 0, minflt: 8629, majflt: 0, nvcsw: 4, nivcsw: 23, maxrss: 44828
+>>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master
   
@@ -1276,7 +1158,7 @@ Excitation energies and oscillator strengths
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : QTRANS90-buffer-space                     
   
- MEMGET high-water mark:     0.00 MB
+ MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/saue/Dirac/build/test/stex
+DIRAC pam run in /home/agustin/dirac/build/test/stex

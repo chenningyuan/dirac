@@ -57,6 +57,7 @@ implicit none
 !            False - the functional value criterion or criterion of the number                !
 !                    of negative eigenvalues equals zero will be used                         !
 !   thgrad - threshold; see lggrad for the explanation                                        !
+!   thxvec - threshold for removing relativitely small elements of the solution vector        !
 !   lgdiag - if heskey = DIAG it have the the same purpose as lgfull;                         !
 !            for threshold is used thdiag variable                                            !
 !          - if heskey = COMB it is used to switch from the first to the second               !
@@ -77,7 +78,7 @@ type :: minimization_flags
   character*4 :: heskey
   logical     :: lgfull, lgdiag, lggrad, lgchck
   integer     :: iprint, maxitr, l, ndim
-  real*8      :: thfull, thdiag, thgrad
+  real*8      :: thfull, thdiag, thgrad, thxvec
 end type minimization_flags
 
 type( minimization_flags ), private :: mnf
@@ -120,6 +121,7 @@ contains
   read(iunit,*) chdum,mnf%thfull
   read(iunit,*) chdum,mnf%thdiag
   read(iunit,*) chdum,mnf%thgrad
+  read(iunit,*) chdum,mnf%thxvec
   read(iunit,*) chdum,mnf%lgfull
   read(iunit,*) chdum,mnf%lgdiag
   read(iunit,*) chdum,mnf%lggrad
@@ -164,7 +166,7 @@ contains
   integer :: itr, ist, ier, nep, nem, nez, nref
 
   real*8  :: funcg, funcq, funco, dnrmk, dnrmg, diffg, diffq, diffa
-  real*8  :: totdiag, totnond, shift, tradius, tpred
+  real*8  :: totdiag, totnond, shift, tradius, tpred, hmin
 
   real*8,  allocatable, dimension(:) :: grad, etmp, xvec
 
@@ -203,15 +205,16 @@ contains
   restore = .false.
 
   if(mnf%iprint.ge.4)then
-    write(mnf%l,*) 'full  =',full
-    write(mnf%l,*) 'thdiag=',mnf%thdiag
-    write(mnf%l,*) 'thfull=',mnf%thfull
-    write(mnf%l,*) 'thgrad=',mnf%thgrad
-    write(mnf%l,*) 'lgdiag=',mnf%lgdiag
-    write(mnf%l,*) 'lgfull=',mnf%lgfull
-    write(mnf%l,*) 'lggrad=',mnf%lggrad
-    write(mnf%l,*) 'lgchck=',mnf%lgchck
-    write(mnf%l,*) 'heskey=',mnf%heskey
+    write(mnf%l,*) 'full  = ',full
+    write(mnf%l,*) 'thdiag= ',mnf%thdiag
+    write(mnf%l,*) 'thfull= ',mnf%thfull
+    write(mnf%l,*) 'thgrad= ',mnf%thgrad
+    write(mnf%l,*) 'thxvec= ',mnf%thxvec
+    write(mnf%l,*) 'lgdiag= ',mnf%lgdiag
+    write(mnf%l,*) 'lgfull= ',mnf%lgfull
+    write(mnf%l,*) 'lggrad= ',mnf%lggrad
+    write(mnf%l,*) 'lgchck= ',mnf%lgchck
+    write(mnf%l,*) 'heskey= ',mnf%heskey
   endif
 
   ! Memory allocation
@@ -219,6 +222,7 @@ contains
   allocate( etmp(mnf%ndim), stat=ier ); call errall(ier,'minimization_drv','etmp')
   allocate( xvec(mnf%ndim), stat=ier ); call errall(ier,'minimization_drv','xvec')
   grad = d0; etmp = d0; xvec = d0
+
 
   ! nullify pointers for later allocation of pointers
   nullify(iorig); nullify(gradt); nullify(eval); nullify(xvect); nullify(hmat)
@@ -231,15 +235,15 @@ contains
   funcg = get_func()
   funco = funcg
 
-  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
+  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 8x,a, 6x,a)') &
     '*T','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
-  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
-    '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
+  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 7x,a, 6x,a, 6x,a,6x,a)') &
+    '*C','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)',' e: +,-,0  ','H','DIFFG','DIFFQ','HMIN'
 
   ! zero step
   call get_hessian(hmat,full,totdiag,totnond)
   call get_gradient(grad,dnrmg)
-  call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+  call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
 
   shift = d0
   dnrmk = d0
@@ -248,8 +252,8 @@ contains
   diffa = d0
   itr   = 0
   ist   = 0
-  write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
-    '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+  write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i6,3x,a,3d11.2)') &
+    '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq,hmin
 
   do
     ist = ist + 1
@@ -261,7 +265,6 @@ contains
       call get_date(daytid)
       write(mnf%l,'(/6x,a,a24)')'--- ',daytid
     endif
-
     ! get new kappa
     shift = d0
     if(rejected) call get_mu(eval,gradt,tradius,nref,shift,nstep,tpred)
@@ -293,7 +296,7 @@ contains
       !---------------------------------------------!
       call get_hessian(hmat,full,totdiag,totnond)
       call get_gradient(grad,dnrmg)
-      call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+      call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
 
       itr = itr + 1
 
@@ -304,10 +307,10 @@ contains
       if(full) hessian = 'FULL'
       funco = funcg
 
-      write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 5x,a, 6x,a, 6x,a)') &
-        '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ'
-      write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
-        '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+      write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 2x,a, 3x,a, 7x,a, 6x,a, 6x,a, 6x,a)') &
+        '  ','ITR','DIFFA','|GRAD|','|KAPPA|','H(nonD/D)','e: +,-,0','H','DIFFG','DIFFQ','HMIN'
+      write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i6,3x,a,3d11.2)') &
+        '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq,hmin
 
       !----------------------------!
       ! check convergence criteria !
@@ -335,18 +338,16 @@ contains
           if(full)then
             call get_hessian(hmat,full,totdiag,totnond)
             call get_gradient(grad,dnrmg)
-            call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+            call hdiag(hmat,grad,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
             hessian = 'FULL'
-            write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i4,3x,a,2d11.2)') &
-              '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq
+            write(mnf%l,'(a,2x,i4,3d11.2,f10.5,1x,3i6,3x,a,3d11.2)') &
+              '*C',itr,diffa,dnrmg,dnrmk,totnond/totdiag,nep,nem,nez,hessian,diffg,diffq,hmin
             if(mnf%lgchck) exit
           endif
         endif
       endif
-
       if(itr == mnf%maxitr)exit
     endif
-
     if(ist > 2*mnf%maxitr)exit
 
   enddo
@@ -388,10 +389,18 @@ contains
   deallocate( etmp )
   deallocate( xvec )
 
-  if(associated(iorig)) deallocate( iorig )
-  if(associated(xvect)) deallocate( xvect )
-  if(associated(gradt)) deallocate( gradt )
-  if(associated(eval )) deallocate( eval  )
+  if(associated(iorig)) then 
+    deallocate( iorig ); nullify(iorig)
+  endif
+  if(associated(xvect)) then
+    deallocate( xvect ); nullify(xvect)
+  endif
+  if(associated(gradt)) then
+    deallocate( gradt ); nullify(gradt)
+  endif
+  if(associated(eval )) then
+    deallocate( eval  ); nullify(eval)
+  endif
 
   end subroutine minimization_drv
 
@@ -505,11 +514,11 @@ contains
 
   integer, intent(in ), pointer :: iorig(:)
   real*8,  intent(in ), pointer :: gradt(:), eval(:)
-  real*8,  intent(out), pointer :: xvect(:)
+  real*8,  intent(inout), pointer :: xvect(:)
 
   ! Internal variables
-  integer :: i, j, ndim, nred, ier
-  real*8  :: dnrm2, dtmp
+  integer :: i, j, ndim, nred, ier, ixvec
+  real*8  :: dnrm2, dtmp, xmax
 
   !------------------------------------------------------------------------------!
   ! Get some dimensions
@@ -517,8 +526,11 @@ contains
   nred  = size(eval,1)
 
   ! allocate arrays
-  if(associated(xvect)) deallocate( xvect )
+  if(associated(xvect)) then
+    deallocate( xvect ); nullify(xvect)
+  endif
   allocate( xvect(nred), stat=ier ); call errall(ier,'get_X','xvect(pointer)')
+  call flush(6)
 
   ! calculate tilde{X}
   if(nstep)then
@@ -542,7 +554,7 @@ contains
   endif
 
   ! print \tilde{X}
-  if(mnf%iprint.ge.1)then
+  if(mnf%iprint.ge.3)then
     write(mnf%l,'(/a)') ' U^T*X vector: '
     write(mnf%l,'(8d12.4)') (xvect(i),i=1,nred)
   endif
@@ -559,12 +571,31 @@ contains
     endif
   enddo
 
+  ! Find largest element
+  xmax=maxval(abs(xvec))
+  if(mnf%iprint.ge.1)then
+    write(mnf%l,'(a,d12.4)') ' Largest kappa: ',xmax
+  endif
+  xmax=xmax*mnf%thxvec
+  ixvec=0
+  do i = 1,ndim
+    if(abs(xvec(i)).lt.xmax) then
+      xvec(i) = d0
+      ixvec = ixvec + 1
+    endif
+  enddo
+  if(mnf%iprint.ge.1)then
+    write(mnf%l,'(a,2(I8,A))') ' Removed (',ixvec,'/',ndim,') rotations'
+  endif
+
   ! Norm of the X
   dnrmk = dnrm2(ndim,xvec,1)
-  if(mnf%iprint.ge.1)then
+  if(mnf%iprint.ge.3)then
     write(mnf%l,'(/a)') ' X vector: '
     write(mnf%l,'(8d12.4)') (xvec(i),i=1,ndim)
-    write(mnf%l,'(/a,e12.2)') ' Norm of the kappa: ',dnrmk
+  endif
+  if(mnf%iprint.ge.1)then
+    write(mnf%l,'(/a,d12.4)') ' Norm of kappa: ',dnrmk
   endif
 
   end subroutine get_X
@@ -572,7 +603,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
-  subroutine hdiag(hmat,gradient,etmp,gradt,eval,iorig,nep,nem,nez,Iminmin,full)
+  subroutine hdiag(hmat,gradient,etmp,gradt,eval,iorig,nep,nem,nez,hmin,Iminmin,full)
   !******************************************************************************!
   !                                                                              !
   !               Diagonalize real representation of the hessian                 !
@@ -586,10 +617,11 @@ contains
   integer, intent(out) :: nep, nem, nez
   real*8,  intent(in ), dimension(:) :: gradient
   real*8,  intent(out), dimension(:) :: etmp
+  real*8,  intent(out) :: hmin
 
-  integer, intent(  out), pointer :: iorig(:)
+  integer, intent(inout), pointer :: iorig(:)
   real*8,  intent(inout), pointer :: hmat(:,:)
-  real*8,  intent(  out), pointer :: gradt(:), eval(:)
+  real*8,  intent(inout), pointer :: gradt(:), eval(:)
 
   ! Internal variables
   integer :: i, j, k, ndim, nred, ier, lwork, ilaenv, nb, icur
@@ -620,7 +652,9 @@ contains
 
   else
   
-    if(associated(iorig)) deallocate( iorig )
+    if(associated(iorig)) then
+      deallocate( iorig );nullify(iorig)
+    endif
     allocate( iorig(ndim), stat=ier ); call errall(ier,'hdiag','iorig(pointer)')
 
     ! get eigenvalues (etmp)
@@ -654,8 +688,8 @@ contains
     if(dabs(etmp(i)) > thresh) nred = nred + 1
   enddo
   if(associated(eval))then
-    deallocate( gradt )
-    deallocate( eval  )
+    deallocate( gradt );nullify(gradt)
+    deallocate( eval  );nullify(eval)
   endif
   allocate( gradt(nred), stat=ier ); call errall(ier,'hdiag','gradt(pointer)')
   allocate( eval (nred), stat=ier ); call errall(ier,'hdiag','eval(pointer)')
@@ -689,10 +723,14 @@ contains
   enddo
 
   ! count number of positive, negative and zero eigenvalues
+  hmin=d0
   nep=0; nem=0; nez=0
   do i=1,ndim
     if(dabs(etmp(i)) > thresh)then
-      if(etmp(i) < d0)nem = nem + 1
+      if(etmp(i) < d0) then
+        nem = nem + 1
+        hmin=min(hmin,etmp(i))
+      endif
       if(etmp(i) > d0)nep = nep + 1
     else
       nez = nez + 1
@@ -701,8 +739,8 @@ contains
   if(nem == 0)Iminmin = .true.  ! we have reached the minimum of the function
   if(nem /= 0)Iminmin = .false.
 
-  if(mnf%iprint.ge.1)then
-    write(mnf%l,'(/a,3i4)')' Eigenvalues of the hessian;  +,-,0  =  ',nep,nem,nez
+  if(mnf%iprint.ge.3)then
+    write(mnf%l,'(/a,3i8)')' Eigenvalues of the hessian;  +,-,0  =  ',nep,nem,nez
     write(mnf%l,'(8d12.4)') (etmp(i),i=1,ndim)
   endif
 
@@ -851,7 +889,7 @@ contains
   ! Internal variables
   logical       :: flat
   logical, save :: was_flat = .false.
-  character*6   :: cond
+  character*9   :: cond
   integer       :: i, nred
   integer, save :: nrun  = 0, ncount(4) = 0
 
@@ -867,29 +905,29 @@ contains
   R       = diffg / diffq
 
   !------------------------------------------------------------------------------!
-  !                            Trus-radius update                                !
+  !                            Trust-radius update                                !
   !------------------------------------------------------------------------------!
   if( dabs(diffg)<thresh .or. dabs(diffq)<thresh )then
-    cond = '0     '
+    cond = '0        '
     if(rejected)then
-      if(diffq > d0)then
-        cond = '0r q>0'
+      if(diffq > d0)then 
+        cond = '0r q>0.00'
         tradius  = tradius / 10.0d0
       else
-        cond = '0r    '
+        cond = '0r       '
         rejected = .false.
       endif
     endif
   else
     if(rejected)then
       if(diffq > d0)then
-        cond = 'r  q>0'
+        cond = 'r  q>0.00'
         tradius  = tradius / 10.0d0
       else
-        cond = 'r     '
-        if(R < d0 ) cond = 'r  R<0'
-        if(R < d1q) cond = 'r  R<1'
-        if(R > d3q) cond = 'r  R>3'
+        cond = 'r        '
+        if(R < d0 ) cond = 'r  R<0.00'
+        if(R < d1q) cond = 'r  R<0.25'
+        if(R > d3q) cond = 'r  R>0.75'
         rejected = .false.
         if(R < d0 ) rejected = .true.
         if(R < d1q) tradius  = d1q* tradius
@@ -899,34 +937,34 @@ contains
       if(dnrmk > tradius)then
         if(full)then
           if(diffq < d0)then
-            cond = 'Tq    '
-            if(R < d0 ) cond = 'Tq R<0'
-            if(R < d1q) cond = 'Tq R<1'
-            if(R > d5q) cond = 'Tq R>5'
+            cond = 'Tq       '
+            if(R < d0 ) cond = 'Tq R<0.00'
+            if(R < d1q) cond = 'Tq R<0.25'
+            if(R > d5q) cond = 'Tq R>1.25'
             tradius = dnrmk
             if(R < d0 ) rejected = .true.
             if(R < d1q) tradius  = d1q*tradius
             if(R > d5q) tradius  = d2*tradius
           else 
             cond = 'TQ    '
-            if(R > d0 ) cond = 'TQ R>0'
-            if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>7'
-            if((R > d3q).and.(R < d5q))   cond = 'TQ R<5'
+            if(R > d0 ) cond = 'TQ R>0.00'
+            if((R < d1q).or.(R > d1+d3q)) cond = 'TQ R>1.75'
+            if((R > d3q).and.(R < d5q))   cond = 'TQ R<1.25'
             tradius = dnrmk
             if(R > d0 ) rejected = .true.
             if((R < d1q).or.(R > d1+d3q)) tradius = d1q*tradius
             if((R > d3q).and.(R < d5q))   tradius = d2*tradius
           endif
         else
-          cond = 'T  dia'
+          cond = 'T  dia   '
           rejected = .true.
         endif
       else
         if(diffq < d0)then
           cond = 'tq     '
-          if(R < d0 ) cond = 'tq R<0'
-          if(R < d1q) cond = 'tq R<1'
-          if(R > d5q) cond = 'tq R>5'
+          if(R < d0 ) cond = 'tq R<0.00'
+          if(R < d1q) cond = 'tq R<0.25'
+          if(R > d5q) cond = 'tq R>1.25'
           tradius = tradold
           if(trdef) tradius = dnrmk
           if(R < d0 ) rejected = .true.
@@ -934,9 +972,9 @@ contains
           if(R > d5q) tradius  = max(d2*dnrmk,tradold)
         else 
           cond = 'tQ    '
-          if(R > d0 ) cond = 'tQ R>0'
-          if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>7'
-          if((R > d3q).and.(R < d5q))   cond = 'tQ R<5'
+          if(R > d0 ) cond = 'tQ R>0.00'
+          if((R < d1q).or.(R > d1+d3q)) cond = 'tQ R>1.75'
+          if((R > d3q).and.(R < d5q))   cond = 'tQ R<1.25'
           tradius = tradold
           if(trdef) tradius = dnrmk
           if(R > d0 ) rejected = .true.
@@ -1098,11 +1136,12 @@ contains
     rejected  = .true.
     if(cond(3:3) == ' ') cond(3:3) = 's'
     if(cond(3:3) == '.') cond(3:3) = 'd'
+    if( cond(1:3) == '0rs' ) rejected  = .false.
   endif
 
   if(tradius /= tradold) trdef = .false.
 
-  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 5x,a, 6x,a)') &
+  write(mnf%l,'(/a,2x,a4, 4x,a, 6x,a, 5x,a, 4x,a, 3x,a, 4x,a, 8x,a, 6x,a)') &
     '  ','ITR','T_old','T_new ','|KAPPA|','  R   ','REJ','CON','DIFFG','DIFFQ'
   write(mnf%l,'(a,2x,i4,3d11.2,f11.5,3x,l1,3x,a,4d11.2)') &
     '*T',itr+1,tradold,tradius,dnrmk,R,rejected,cond,diffg,diffq

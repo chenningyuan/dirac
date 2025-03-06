@@ -43,6 +43,7 @@ contains
 #include "dgroup.h"
 #include "dcbham.h"
 #include "nuclei.h"
+#include "orgcom.h"
 
       call interface_ao_clear()
 
@@ -161,6 +162,11 @@ contains
          end do
       end do
       deallocate(nr_primitives)
+
+      !gosia: also write to interface_file_unit?
+      !do i = 1, 3
+      !     global_gauge_origin(i) = gagorg(i)
+      !end do
 
       if (nr_boson_ireps > 1) then
          write(interface_file_unit, '(a)') '*** symmetry'

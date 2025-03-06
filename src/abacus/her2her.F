@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -47,10 +42,10 @@ C
       CALL QENTER('HR2DRV')
 #include "memint.h"
       LRJ000 = (JMAX + 1)*NUABCD
-      CALL MEMGET('REAL',KRJ000,LRJ000,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPQX  ,NUABCD,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPQY  ,NUABCD,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPQZ  ,NUABCD,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RJ000',KRJ000,LRJ000,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PQX  ',KPQX  ,NUABCD,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PQY  ',KPQY  ,NUABCD,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PQZ  ',KPQZ  ,NUABCD,WORK,KFREE,LFREE)
       MWRJ00 = MAX(MWRJ00,LRJ000)
       LWTOT  = LWTOT + KFREE - 1
       MWTOT  = MAX(MWTOT,LWTOT)
@@ -135,10 +130,10 @@ C
 C-----------------------------------------------------------------------
       CALL QENTER('R000')
 #include "memint.h"
-      CALL MEMGET('REAL',KWVALU,NUABCD,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KALPHA,NUABCD,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KALPHJ,NUABCD,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDAD,NUABCD,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','WVALU' ,KWVALU,NUABCD,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SCLFAC',KALPHA,NUABCD,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TALPHA',KALPHJ,NUABCD,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDADR',KINDAD,NUABCD,WORK,KFREE,LFREE)
       LWTOT  = LWTOT + KFREE - 1
       MWTOT  = MAX(MWTOT,LWTOT)
       CALL R0001(RJ000,COOR12,COOR34,EXP12,EXP34,FAC12,FAC34,PQX,PQY,
@@ -357,10 +352,14 @@ C           ========================
 C
 C           Allocations
 C
-            CALL MEMGET('INTE',KINDAD,3*NODS         ,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KWVALS,3*NODS         ,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KFJW  ,NODS*(JMAX + 1),WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KREXPW,NODS           ,WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','INDADS',KINDAD,3*NODS         ,
+     &                   WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','WVALS' ,KWVALS,3*NODS         ,
+     &                   WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','FJWS'  ,KFJW  ,NODS*(JMAX + 1),
+     &                   WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','REXPW' ,KREXPW,NODS           ,
+     &                   WORK,KFREE,LFREE)
             LWTOT  = LWTOT + KFREE - 1
             MWTOT  = MAX(MWTOT,LWTOT)
             CALL GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NUABCD,WORK(KFJW),
@@ -597,7 +596,7 @@ C        Allocate work space
 C        ===================
 C
          LHRWRK = NTUV*NUABCD
-         CALL MEMGET('REAL',KHRWRK,LHRWRK,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','HERBUF',KHRWRK,LHRWRK,WORK,KFREE,LFREE)
          MWHRSQ = MAX(MWHRSQ,LHRWRK)
          LWTOT  = LWTOT + KFREE - 1
          MWTOT  = MAX(MWTOT,LWTOT)

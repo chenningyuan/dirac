@@ -1,4 +1,14 @@
 
+
+.. raw:: html
+
+  <a class="btn btn-info"
+     href="http://diracprogram.org"
+     data-mode="1"
+     style="margin-bottom: 50px"
+     target="_blank">Project website: http://diracprogram.org</a>
+
+
 Setting up DIRAC
 ================
 
@@ -34,12 +44,6 @@ Setting up DIRAC
   :doc:`String replacement <pam/replace>`
 
 
-Updates and patches
-===================
-
- :doc:`ChangeLog <patches/CHANGELOG>` |
- :doc:`Known problems <patches/KNOWN-PROBLEMS>`
-
 .. _FirstSteps:
 
 First steps in DIRAC territory
@@ -57,6 +61,9 @@ First steps in DIRAC territory
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
   :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>`
+
+* **Data storage:**
+  :doc:`Extracting data from the checkpoint file <manual/data>`
 
 * **Troubleshooting:**
   :doc:`Known problems <getting_help/known_problems>` |
@@ -90,10 +97,11 @@ Tutorials and walkthrus
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **2-component Hamiltonians:**
+  :doc:`xamfX2C: 2e picture change corrections for the X2C Hamiltonian <tutorials/two_component_hamiltonians/xamfX2C>` |
   :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
   :doc:`Molecular mean-field X2C <tutorials/two_component_hamiltonians/molecular_mean_field>` |
   :doc:`Selecting a 2-component Hamiltonian other than X2C <tutorials/two_component_hamiltonians/hamiltonians>` |
-  :doc:`Case study <tutorials/two_component_hamiltonians/example>` 
+  :doc:`Case study <tutorials/two_component_hamiltonians/example>`
 
 * **Relativistic effective core potentials:**
   :doc:`Getting started <tutorials/ecp/first>`
@@ -107,8 +115,9 @@ Tutorials and walkthrus
   :doc:`CAM functional <tutorials/dft/cam>` |
   :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
   
-* **Frozen orbitals:**
-  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` 
+* **Orbital manipulations:**
+  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` |
+  :doc:`Atomic shift operator <tutorials/atomic_shift/tutorial>`   
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
@@ -117,39 +126,43 @@ Tutorials and walkthrus
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
   :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>` |
-  :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` 
+  :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` |
+  :doc:`Calculation of nuclear spin-rotation constants <tutorials/spinrot/tutorial>` |
+  :doc:`Calculation of molecular rotational g-tensors <tutorials/rotg/tutorial>` |
+  :doc:`Calculation of parity-violation contribution to nuclear spin-rotation constants <tutorials/pvcsr/tutorial>`
 
 * **X-ray spectroscopy:**
   :doc:`Core ionization in the CO and N2 molecules <tutorials/x_ray/CO_N2_IP1s/tutorial>` |
-  :doc:`Core electron excitations and ionization in water at the HF and DFT levels <tutorials/x_ray/water_Kedge/tutorial>`
+  :doc:`Core electron excitations and ionization in water at the HF and DFT levels <tutorials/x_ray/water_Kedge/tutorial>` |
+  :doc:`X-ray absorption spectroscopy beyond the electric-dipole approximation <tutorials/x_ray/BED_Ba/tutorial>`
 
 * **Spectroscopy:**
+  :doc:`Excitation energies at the SCF-level <tutorials/properties/scfexc/tutorial>` |
   :doc:`Electronic excitations using the POLPRP module <tutorials/polprp/general>` |
   :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
 
 * **Analysis:**
-  :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
+  :doc:`Projection analysis <tutorials/analysis/projection_analysis>` |
+  :doc:`Localization of orbitals <tutorials/localization/tutorial>`     
 
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
   :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>` |
   :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>` |
-  :doc:`Radial distributions <tutorials/visual/radial_distributions/tutorial>`     
+  :doc:`Radial distributions <tutorials/visual/radial_distributions/tutorial>`
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
-  :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
-  :doc:`Np atom <tutorials/open_shell_scf/np>`
+  :doc:`Converging atoms <tutorials/open_shell_scf/converging_atoms>`
 
 * **Coupled-Cluster:**
   :doc:`The high spin oxygen molecule <tutorials/highspin_cc/O2>` |
   :doc:`Coupled Cluster memory count <tutorials/cc_memory_count/count_cc_memory>` |
-  :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>` 
+  :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>`
 
 * **Case studies:**
-  :doc:`W atom <tutorials/case_studies/W>` |
-  :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
+  :doc:`Ir(16+) cation <tutorials/case_studies/Ir/Ir_16plus>` |
   :doc:`CmF molecule <tutorials/case_studies/CmF/CmF>` |
   :doc:`MnO6 system <tutorials/case_studies/MnO6>` |
   :doc:`UF6 molecule <tutorials/case_studies/UF6_molecule/UF6>` |
@@ -176,15 +189,21 @@ Tutorials and walkthrus
 
 * **Frozen density embedding (FDE):**
   :doc:`NMR shieldings in Frozen Density Embedding (FDE) scheme with London atomic orbitals (LAOs) <tutorials/fde_nmr/tutorial>`
- 
-* **Davidson corrections for relCI (LUCITA and KRCI):**
+
+* **Davidson corrections for relCI (LUCITA and KRCI with LUCIAREL):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
+
+* **Quantum electrodynamics (QED):**
+  :doc:`effective QED potentials <tutorials/qed/effqed>`
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
   :doc:`VIBCAL <tutorials/utils/vibcal>` |
   :doc:`CFREAD <tutorials/utils/cfread>` |
   :doc:`LABREAD <tutorials/utils/labread>`
+
+* **Python interface with OpenFermion:**
+  :doc:`Openfermion-Dirac <tutorials/openfermion/openfermion-dirac>`
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
@@ -201,51 +220,59 @@ Exercises
 .. toctree::
    :maxdepth: 1
 
-   exercises/index.rst
+   exercises/Corrientes2012/index.rst
+   exercises/TCCM2021/index.rst
 
 
-Developers
-==========
+Development
+===========
+
+* **Public and private repositories:**
+  :doc:`Working with multiple remotes <development/multiple-remotes>` |
+  :doc:`Contributing changes <development/contributing-changes>`
 
 * **Code review:**
-  :doc:`Code review workflow <programmers/code_review>`
+  :doc:`Code review workflow <development/code_review>`
 
 * **Releasing:**
-  :doc:`Release preparation <programmers/release_preparation>` |
-  :doc:`Beta testing <programmers/beta_testing>` |
-  :doc:`Where to commit after the release is out <programmers/commit_policy>`
+  :doc:`Release preparation <development/release_preparation>` |
+  :doc:`Patch preparation <development/patch_preparation>` |
+  :doc:`Beta testing <development/beta_testing>` |
+  :doc:`Where to commit after the release is out <development/commit_policy>`
 
 * **Programming:**
-  :doc:`Rules <programmers/rules>` |
-  :doc:`How to add new tests <programmers/testing>` |
-  :doc:`How to add/move/remove sources <programmers/adding_moving_removing_sources>` |
+  :doc:`Rules <development/rules>` |
+  :doc:`How to add new tests <development/testing>` |
+  :doc:`How to add/move/remove sources <development/adding_moving_removing_sources>` |
   `runtest_dirac.py <http://runtest.readthedocs.org/en/latest/doc/adding_tests/dirac.html>`_ |
-  :doc:`Input parsing <programmers/input_reading>` |
-  :doc:`Git submodules <programmers/external_projects>` |
-  :doc:`Nightly tests <programmers/cdash>` |
-  :doc:`Dirac on Windows <programmers/windows>` |
-  :doc:`Profiling <programmers/profiling>` |
-  :doc:`Debugging <programmers/debugging>` |
-  :doc:`History <programmers/museum>` |
-  :doc:`Further development <programmers/further_development>` |
-  :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
-  :doc:`FAQ <programmers/faq>`
+  :doc:`Input parsing <development/input_reading>` |
+  :doc:`Git submodules <development/external_projects>` |
+  :doc:`Nightly tests <development/cdash>` |
+  :doc:`Dirac on Windows <development/windows>` |
+  :doc:`Profiling <development/profiling>` |
+  :doc:`Debugging <development/debugging>` |
+  :doc:`History <development/museum>` |
+  :doc:`Further development <development/further_development>` |
+  :doc:`Good Fortran 90 practices <development/good_fortran_90_practices>` |
+  :doc:`FAQ <development/faq>`
+
+* **Data schema and the CHECKPOINT file:**
+  :doc:`How data is organized on the checkpoint file <development/checkpoint>`
 
 * **Basis sets:**
-  :doc:`Testing basis sets in DIRAC <programmers/test_basis_sets>` 
+  :doc:`Testing basis sets in DIRAC <development/test_basis_sets>`
 
 * **Moving code between machines:**
-  :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`
+  :doc:`Transfering uncommitted code <development/transfering_uncommitted_code>`
 
 * **Notes:**
-  :doc:`DFCOEF <programmers/dfcoef>` |
-  :doc:`Screening <programmers/screening>` |
-  :doc:`64bit integers <programmers/int8>` |
-  :doc:`Numerical constants <programmers/num_constants>` |
-  :doc:`XML <programmers/xml>` |
-  :doc:`Static linking <programmers/static_linking>` |
-  :doc:`Problems with lapack's DSYEVR <programmers/diag>` |
-  :doc:`How this documentation works <programmers/documentation_howto>`
+  :doc:`Screening <development/screening>` |
+  :doc:`64bit integers <development/int8>` |
+  :doc:`Numerical constants <development/num_constants>` |
+  :doc:`XML <development/xml>` |
+  :doc:`Static linking <development/static_linking>` |
+  :doc:`Problems with lapack's DSYEVR <development/diag>` |
+  :doc:`How this documentation works <development/documentation_howto>`
 
 
 Bibliography

@@ -73,7 +73,20 @@ the computational resources used (compilers, amount of memory/scratch
 disk space, whether or not disks are shared to local to compute nodes
 etc).
 
-*Scheme 6 (Default):*
+*Scheme 4 (Default):*
+
+::
+
+    .SCHEME
+     4
+
+Scheme 4 is designed to reduce the communication between different
+processors at the expense of increasing I/O operations. This increase in
+I/O operations stems from the integrals being replicated for all MPI
+processes, so that doubling the number of MPI processes doubles the
+total disk usage but not the usage per MPI process.
+
+*Scheme 6:*
 
 ::
 
@@ -96,19 +109,6 @@ integrals are transformed can reach nearly 1Tb of disk use) but with the
 advantage that the full size of the problem is exactly divided between
 processes - so the larger the number of MPI processes, the less disk
 space is used per process.
-
- *Scheme 4:*
-
-::
-
-    .SCHEME
-     4
-
-Scheme 4 is designed to reduce the communication between different
-processors at the expense of increasing I/O operations. This increase in
-I/O operations stems from the integrals being replicated for all MPI
-processes, so that doubling the number of MPI processes doubles the
-total disk usage but not the usage per MPI process.
 
 keyword(HTSORT)
 
@@ -187,6 +187,16 @@ For each fermion irrep, give an :ref:`orbital_strings`
 of active orbitals.
 
 *Default:* All occupied orbitals that are not active.
+
+keyword(CORE2)
+
+Specify the frozen core spinors for open (average of configuration) shell,
+
+In the first line give the number of electrons in the open shell.
+For each fermion irrep, give an :ref:`orbital_strings`
+of active orbitals. ATTENTION: A continous set of orbitals is assumed.
+
+*Default:* No frozen open shell. 
 
 keyword(POSITRONS)
 
@@ -278,6 +288,7 @@ keyword(MOFILE)
 Name of file with MO coefficients to be used for integral transformation.
 Valid options: "DFCOEF", "KRMCSCF", "KRMCOLD", and "UNKNOWN".
 The "UNKNOWN" option means use the first one found of "KRMCSCF", "KRMCOLD", "DFCOEF" in this order.
+(Note: the option "DFCOEF" means the MO coefficients are read from the CHECKPOINT file)
 
 *Default:*
 

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C***********************************************************************
@@ -120,7 +115,6 @@ C
 !     Get the MO coefficients
 !
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPTPA')
       IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),TOTERG,11)
@@ -128,7 +122,6 @@ C
         KIBRP = KFREE
         CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3)
       ENDIF
-      CLOSE(LUCMO,STATUS='KEEP')
 !
 !     Determine which symmetry classes that give contributions
       CALL EXCLISTSETUP(prponly,nexcsym)
@@ -279,12 +272,6 @@ C
       KFREE = 1
       LFREE = LWRK
 C
-C     Open the property file
-C     ======================
-C
-      OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &            FILE='AOPROPER')
-C     
       CALL DZERO(RESULT,3*NBSYM*MAXFQR*NBSYM*MAXFQR*MAXLQR)
 C
       NFC  = NBSYM/NFSYM
@@ -319,11 +306,6 @@ C
      &        VECCEE,VECAEP,VECBEP,VECCEP,CMO,
      &        IBEIG,WORK(KFREE),LFREE)
       END DO
-C
-C     Close the property file
-C     =======================
-C
-      CLOSE(LU1INT,STATUS='KEEP')
 C
       CALL QEXIT('EXCPRPCALC')
       RETURN
@@ -867,8 +849,8 @@ C
 C     Written by Erik Tellgren
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"

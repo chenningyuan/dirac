@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C FILE    : diropen.F
@@ -67,6 +62,8 @@ C
 #include "memint.h"
 C
       CALL QENTER('MKMOFK')
+
+!     iprscf_ = iprscf; iprscf = 50
 C
 C     The various blocks of the Fock matrix in MO-basis is defined in (3.40)
 C     They are constructed in AO-basis using density matrices as projection
@@ -138,6 +135,19 @@ C
         END IF
       END IF
       END DO
+
+
+      do i = 1, nfsym
+               IF ( IPRSCF .GE. 10 ) THEN
+                  CALL HEADER(
+     &           'MKMOFK: Total Fock matrix (no corr) in MO-basis',-1)
+                  WRITE(LUPRI,'(A,I1,A,I1)')
+     &           '* Fermion ircop no.',I,'/',NFSYM
+                 CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
+     &           NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+               END IF
+      end do
+
 C
 C     If not .trivec. then we don't have coefficients to form a density
 C     matrix, so return.
@@ -172,12 +182,7 @@ C        IFLAG = 4 + 8 = 12
 C          4 - 000100: Secondary electron density matrix
 C          8 - 001000: Secondary positron density matrix
 C
-         IF(VACPOL) THEN
-C..........negative energy solutions are occupied
-           IFLAG = 4
-         ELSE
            IFLAG = 12
-         ENDIF
          CALL GENDEN(DTEMP1,CMO,IFLAG,IPRSCF)
 C        This is the inactive projector P^Z of (3.42)
 C
@@ -188,14 +193,7 @@ C
          CALL DSCAL(N2BBASXQ,GAMMA,DTEMP1(1,1),1) ! (a_U-1)*P^Z
 C        Next we add the contribution from the inactive projector
 C        alpha_U f_U P^I to the secondary projector
-         IF(VACPOL) THEN
-C..........negative energy solutions are occupied
-           IFLAG = 9
-           CALL GENDEN(DTEMP1(1,2),CMO,IFLAG,IPRSCF)
-           CALL DAXPY(N2BBASXQ,BETA,DTEMP1(1,2),1,DTEMP1(1,1),1)
-         ELSE
            CALL DAXPY(N2BBASXQ,BETA,DMAT(1,1),1,DTEMP1(1,1),1)
-         ENDIF
 C        Finally we add the contribution from the active projector
 C        of this open shell to complete the first term of (3.42)
 C        From (3.42) it should be noted that this projector is used
@@ -400,9 +398,9 @@ C
      &            FMO(1+I2TMOT(I)),N2TMO(I),1,
      &            IPQTOQ(1,0),NZ)
 
-               IF ( IPRSCF .GE. 7 ) THEN
+               IF ( IPRSCF .GE. 10 ) THEN
                   CALL HEADER(
-     &            'MKMOFK: Total Fock matrix (output) in MO-basis',-1)
+     &         'MKMOFK: corrected Fock matrix (output) in MO-basis',-1)
                    WRITE(LUPRI,'(A,I1,A,I1)')
      &             '* Fermion ircop no.',I,'/',NFSYM
                   CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
@@ -414,8 +412,19 @@ C
  10   CONTINUE
 C
  30   CONTINUE
+      do i = 1, nfsym
+               IF ( IPRSCF .GE. 7 ) THEN
+                  CALL HEADER(
+     &           'MKMOFK: Total Fock matrix (corrected) in MO-basis',-1)
+                  WRITE(LUPRI,'(A,I1,A,I1)')
+     &           '* Fermion ircop no.',I,'/',NFSYM
+                 CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
+     &           NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+               END IF
+      end do
       CALL QEXIT('MKMOFK')
       CALL FLSHFO(LUPRI)
+!     iprscf = iprscf_
       RETURN
       END
 ! -- end of diropen.F --

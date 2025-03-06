@@ -685,7 +685,7 @@ C       TAU     the quaternion diagonal of TAU
 C     ------------------------------------------------------------------
 C
       INTEGER  ::  I, IM1, J, JM1, K, L
-      REAL*8   ::  TR, TI, TJ, TK, FR, FI, FJ, FK, GR, GI, GJ, GK
+      REAL*8   ::  TR, TI, TJ, TK, FR, FI, FJ, FK, GR, GI, GJ, GK, FRR
       REAL*8   ::  H, HH, D_I, FHH, FR_INV, ASCALE, ASCALE_INV
       REAL*8,  PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 
@@ -863,7 +863,7 @@ C
 C     U*(j) is stored in (FR,FI,FJ,FK)
 C     Q*(j) is stored in (GR,GI,GJ,GK)
 C
-            FR       =  A(J,I,1)
+            FRR      =  A(J,I,1)
             FI       = -A(J,I,2)
             FJ       = -A(J,I,3)
             FK       = -A(J,I,4)
@@ -877,16 +877,16 @@ C            = A(k,j) - TAU(k).F - A*(k,i).G
 C
             DO K = 1,IM1
               A(K,J,1) = A(K,J,1)
-     +            -FR*TAU(1,K)+FI*TAU(2,K)+FJ*TAU(3,K)+FK*TAU(4,K)
+     +            -FRR*TAU(1,K)+FI*TAU(2,K)+FJ*TAU(3,K)+FK*TAU(4,K)
      +            -GR*A(K,I,1)+GI*A(K,I,2)+GJ*A(K,I,3)+GK*A(K,I,4)
               A(K,J,2) = A(K,J,2)
-     +            -FR*TAU(2,K)-FI*TAU(1,K)+FJ*TAU(4,K)-FK*TAU(3,K)
+     +            -FRR*TAU(2,K)-FI*TAU(1,K)+FJ*TAU(4,K)-FK*TAU(3,K)
      +            -GR*A(K,I,2)-GI*A(K,I,1)+GJ*A(K,I,4)-GK*A(K,I,3)
               A(K,J,3) = A(K,J,3)
-     +            -FR*TAU(3,K)-FI*TAU(4,K)-FJ*TAU(1,K)+FK*TAU(2,K)
+     +            -FRR*TAU(3,K)-FI*TAU(4,K)-FJ*TAU(1,K)+FK*TAU(2,K)
      +            -GR*A(K,I,3)-GI*A(K,I,4)-GJ*A(K,I,1)+GK*A(K,I,2)
               A(K,J,4) = A(K,J,4)
-     +            -FR*TAU(4,K)+FI*TAU(3,K)-FJ*TAU(2,K)-FK*TAU(1,K)
+     +            -FRR*TAU(4,K)+FI*TAU(3,K)-FJ*TAU(2,K)-FK*TAU(1,K)
      +            -GR*A(K,I,4)+GI*A(K,I,3)-GJ*A(K,I,2)-GK*A(K,I,1)
             END DO ! K
          END DO ! J
@@ -1085,7 +1085,7 @@ C       TAU     the complex diagonal of TAU
 C     ------------------------------------------------------------------
 C
       INTEGER  ::  I, IM1, J, JM1, K, L
-      REAL*8   ::  TR, TI, TJ, TK, FR, FI, FJ, FK, GR, GI, GJ, GK
+      REAL*8   ::  TR, TI, TJ, TK, FR, FI, FJ, FK, GR, GI, GJ, GK, FRR
       REAL*8   ::  H, HH, D_I, FHH, FR_INV, ASCALE, ASCALE_INV
       REAL*8,  PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 
@@ -1232,7 +1232,7 @@ C
 C     U*(j) is stored in (FR,FI,FJ,FK)
 C     Q*(j) is stored in (GR,GI,GJ,GK)
 C
-            FR       =  A(J,I,1)
+            FRR      =  A(J,I,1)
             FI       = -A(J,I,2)
             GR       =  TAU(1,J)
             GI       = -TAU(2,J)
@@ -1242,10 +1242,10 @@ C            = A(k,j) - TAU(k).F - A*(k,i).G
 C
             DO K = 1,IM1
               A(K,J,1) = A(K,J,1)
-     +            -FR*TAU(1,K)+FI*TAU(2,K)
+     +            -FRR*TAU(1,K)+FI*TAU(2,K)
      +            -GR*A(K,I,1)+GI*A(K,I,2)
               A(K,J,2) = A(K,J,2)
-     +            -FR*TAU(2,K)-FI*TAU(1,K)
+     +            -FRR*TAU(2,K)-FI*TAU(1,K)
      +            -GR*A(K,I,2)-GI*A(K,I,1)
             END DO ! K
          END DO ! J
@@ -1511,12 +1511,11 @@ C
   220    D(L) = D(L) + F
   240 CONTINUE
 C     .......... ORDER EIGENVALUES AND EIGENVECTORS ..........
-      DO 300 II = 2, N
-         I = II - 1
+      DO 300 I = 1, N-1
          K = I
          P = D(I)
 C
-         DO 260 J = II, N
+         DO 260 J = I+1, N
             IF (D(J) .GE. P) GO TO 260
             K = J
             P = D(J)

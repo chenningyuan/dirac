@@ -9,30 +9,27 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'r_x           r_y           r_z            scalar',
-      num_lines   = 7,
+f.add(from_string  = 'Requested density at point(s)',
+      num_lines   = 10,
       rel_tolerance   = 1.0e-5)
 
-test.run(['dc_symmetric.inp'], ['h2o.mol'], args='--get="DFCOEF PAMXVC TBMO"')
+test.run(['dc_symmetric.inp'], ['h2o.mol'], args='--outcmo --get="PAMXVC TBMO"')
 
 inp_files = []
 inp_files.append('vis_jbz_dc_symmetric.inp')
 inp_files.append('vis_jbz_dc_none_from_symmetric.inp')
-inp_files.append('vis_divjbz_dc_nolao.inp')
-inp_files.append('vis_divjbz_dc_nolao.inp')
 
-test.run(inp_files, ['h2o.mol'], f, args='--copy="DFCOEF PAMXVC TBMO"')
+test.run(inp_files, ['h2o.mol'], f, args='--incmo --copy="PAMXVC TBMO"')
 
-test.run(['dc_natural.inp'], ['h2o.mol'], args='--get="DFCOEF PAMXVC TBMO"')
+test.run(['dc_natural.inp'], ['h2o.mol'], args='--outcmo --get="PAMXVC TBMO"')
 
 inp_files = []
 inp_files.append('vis_jbz_dc_natural.inp')
 inp_files.append('vis_jbz_dc_none_from_natural.inp')
 
-test.run(inp_files, ['h2o.mol'], f, args='--copy="DFCOEF PAMXVC TBMO"')
+test.run(inp_files, ['h2o.mol'], f, args='--incmo --copy="PAMXVC TBMO"')
 
 # cleanup
-os.unlink('DFCOEF')
 os.unlink('PAMXVC')
 os.unlink('TBMO')
 

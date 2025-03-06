@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ***********************************************************************
@@ -25,8 +20,9 @@
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GASCI_REL(F1,F2,ISM,ISPC,IPRNT,EREF,
+      SUBROUTINE GASCI_LUCIAREL(F1,F2,ISM,ISPC,IPRNT,EREF,
      &                     ECORE_KRMC,CIRUN,IPROCLIST,IGROUPLIST)
+      use luci_wrkspc
 *
 !     external modules
       use memory_allocator
@@ -54,7 +50,6 @@
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "clunit.inc"
 #include "cstate.inc"
 #include "crun.inc"
@@ -211,8 +206,9 @@ C
       istart_nroot =  1 * nroot
       IF(IRESTR.EQ.0) THEN
         INICI             = 0
+C        istart_nroot =  ndet
         istart_nroot =  min(6 * nroot,MXCIV_CI-nroot,ndet)
-!old SK istart_nroot =  nroot
+C        istart_nroot =  nroot
       ELSE
         INICI             = -1
       END IF
@@ -392,6 +388,8 @@ C       dummy file array allocation for 'remaining' CPUs
           IALL_LU3 = 1
           IALL_LU4 = 1
           IALL_LU5 = 1
+          IALL_LU6 = 1
+          IALL_LU7 = 1
           IALL_LUC = NUM_BLOCKS2
         END IF
 C
@@ -403,6 +401,10 @@ C
 C
         CALL CALC_OFF_MPI_FILE('ILU2  ',IGROUPLIST,WORK(KBLOCKLIST),
      &                         WORK(KNODELIST),MXCIV_CI+istart_nroot)
+        CALL CALC_OFF_MPI_FILE('ILU6  ',IGROUPLIST,WORK(KBLOCKLIST),
+     &                             WORK(KNODELIST),1)
+        CALL CALC_OFF_MPI_FILE('ILU7  ',IGROUPLIST,WORK(KBLOCKLIST),
+     &                             WORK(KNODELIST),1)
 C
 C       initialize general offset for ILUC
         MY_LUC_OFF = 0
@@ -410,16 +412,22 @@ C
 C       length for allocation of file arrays
         IALL_LU1 = ( MXCIV_CI + istart_nroot ) * MY_ACT_BLK2
         IALL_LU2 = ( MXCIV_CI + istart_nroot ) * MY_ACT_BLK2
+        IALL_LU6 = ( MXCIV_CI + istart_nroot ) * MY_ACT_BLK2
+        IALL_LU7 = ( MXCIV_CI + istart_nroot ) * MY_ACT_BLK2
         IALL_LUC = NUM_BLOCKS2
 C
 C       allocate file arrays
         CALL MEMMAR(KILU1LIST,IALL_LU1,'ADDS  ',1,'LU1LST')
         CALL MEMMAR(KILU2LIST,IALL_LU2,'ADDS  ',1,'LU2LST')
         CALL MEMMAR(KILUCLIST,IALL_LUC,'ADDS  ',1,'LUCLST')
+        CALL MEMMAR(KILU6LIST,IALL_LU6,'ADDS  ',1,'LU6LST')
+        CALL MEMMAR(KILU7LIST,IALL_LU7,'ADDS  ',1,'LU7LST')
 C       initialize ...
         CALL IZERO(WORK(KILU1LIST),IALL_LU1)
         CALL IZERO(WORK(KILU2LIST),IALL_LU2)
         CALL IZERO(WORK(KILUCLIST),IALL_LUC)
+        CALL IZERO(WORK(KILU6LIST),IALL_LU6)
+        CALL IZERO(WORK(KILU7LIST),IALL_LU7)
 C
         IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'SIGMAD' .or. 
      &      CIRUN .eq. 'DIAG  ' .or. CIRUN .eq. 'KR-CI ' ) THEN 
@@ -430,22 +438,30 @@ C
           IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'KR-CI ' ) THEN
 C
             CALL CALC_OFF_MPI_FILE('ILU3  ',IGROUPLIST,WORK(KBLOCKLIST),
-     &                             WORK(KNODELIST),NROOT)
+     &                     WORK(KNODELIST),MXCIV_CI + istart_nroot)
+C     &                             WORK(KNODELIST),NROOT)
 C
             CALL CALC_OFF_MPI_FILE('ILU4  ',IGROUPLIST,WORK(KBLOCKLIST),
-     &                             WORK(KNODELIST),1)
+C     &                             WORK(KNODELIST),1)
+     &                        WORK(KNODELIST),MXCIV_CI + istart_nroot)
 C
             CALL CALC_OFF_MPI_FILE('ILU5  ',IGROUPLIST,WORK(KBLOCKLIST),
-     &                             WORK(KNODELIST),1)
+     &                        WORK(KNODELIST),MXCIV_CI + istart_nroot)
+C     &                             WORK(KNODELIST),1)
+
 C
 C           some more file arays ... 
-            IALL_LU3 = ( NROOT ) * MY_ACT_BLK2
-            IALL_LU4 = ( 1 )     * MY_ACT_BLK2
-            IALL_LU5 = ( 1 )     * MY_ACT_BLK2
+            IALL_LU3 = ( MXCIV_CI + istart_nroot ) * MY_ACT_BLK2
+C            IALL_LU3 = ( NROOT ) * MY_ACT_BLK2
+            IALL_LU4 = ( MXCIV_CI + istart_nroot ) * MY_ACT_BLK2
+            IALL_LU5 = ( MXCIV_CI + istart_nroot ) * MY_ACT_BLK2
+C            IALL_LU4 = ( 1 )     * MY_ACT_BLK2
+C            IALL_LU5 = ( 1 )     * MY_ACT_BLK2
 C           allocate ...
             CALL MEMMAR(KILU3LIST,IALL_LU3,'ADDS  ',1,'LU3LST')
             CALL MEMMAR(KILU4LIST,IALL_LU4,'ADDS  ',1,'LU4LST')
             CALL MEMMAR(KILU5LIST,IALL_LU5,'ADDS  ',1,'LU5LST')
+
 C           initialize ...
             CALL IZERO(WORK(KILU3LIST),IALL_LU3)
             CALL IZERO(WORK(KILU4LIST),IALL_LU4)
@@ -712,7 +728,7 @@ C
      &                      NPRDET,pert_dummy,MXP1,MXP2,MXQ,
      &                      scratch_dav1,iscratch_dav1,scratch_dav2,
      &                      WORK(KT_CC),T_BUFF,ECORE,ICISTR,LBLK,
-     &                      IDIAG,THRES_E,NBATCH,WORK(KPCLBT),
+     &                      IDIAG,thres_G,thres_E,NBATCH,WORK(KPCLBT),
      &                      WORK(KPCLEBT),WORK(KPCIBT),INIDEG,
      &                      E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,NOCCLS,
      &                      IRC,IDCOMH,IHAM12,
@@ -722,6 +738,7 @@ C
      &                      ,WORK(KILU1LIST),WORK(KILU2LIST),
      &                      WORK(KILU3LIST),WORK(KILU4LIST),
      &                      WORK(KILU5LIST),WORK(KILUCLIST),
+     &                      WORK(KILU6LIST),WORK(KILU7LIST),
      &                      WORK(KRCCTOS),IT_TTPL,IT_TTOL
 #endif
      &                      )

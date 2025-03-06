@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -30,6 +25,10 @@ C
 C***********************************************************************
       use dirac_cfg
       use fde_evaluators_dirac, only: fde_calculate_interaction_energy
+#ifdef MOD_XAMFI
+      use xamfi_global_parameters, only: aoomod, aooeamf,
+     &                                     xamfi_energy_contributions
+#endif
 
 #ifdef HAS_PCMSOLVER
       use pcm_scf, only: get_pcm_energy, pcm_scf_finalize
@@ -133,16 +132,38 @@ C
         ENDIF
         ENDDO
         CALL HEADER('TOTAL ENERGY',-1)
+
+        CALL RMOLCHR(ICHRG)
+        ICHRG = ICHRG - NELECT_DHF - NAELEC_DHF
+        WRITE(LUPRI,'(3X,A,I0/)')
+     +      'Charge of molecule : ',ICHRG
+        IF (ICHRG .LT. -2 .OR. ICHRG .GT. 3) THEN
+           WRITE(LUPRI,'(A,I0,A/)')
+     +     'WARNING: did you really intend a molcular charge of
+     +     ',ICHRG,' ?'
+        END IF
+
         ERGMAX = MAX(ABS(ELERGY),ABS(DHFERG))*10
         FMT = MXFORM(ERGMAX,20)
 C       Start by writing the computed electronic energy
         if (dirac_cfg_fde) then
-           WRITE(LUPRI,'(A)') ''
-           WRITE(LUPRI,'(2X,A)') 'FDE active subsystem contributions'
-           WRITE(LUPRI,'(A)') ''
+           WRITE(LUPRI,'(/2X,A/)') 'FDE active subsystem contributions'
         endif
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Electronic energy                        :   ',ELERGY
+#ifdef MOD_XAMFI
+        IF(aoomod.and.abs(xamfi_energy_contributions) > 0.0d0)then
+          if(aooeamf)then
+            WRITE(LUPRI,'(3X,A,'//FMT//')')
+     +        '... with eamf contributions to 2e-energy :   ',
+     +        xamfi_energy_contributions
+          else
+             WRITE(LUPRI,'(3X,A,'//FMT//')')
+     +        '... with amf contributions to 2e-energy  :   ',
+     +        xamfi_energy_contributions
+          end if
+        END IF
+#endif
 C       The total energy consists of the electronic energy plus 
 C       additional terms
         WRITE(LUPRI,'(/3X,A)') 'Other contributions to the total energy'
@@ -413,8 +434,11 @@ C           IP is gerade(1)/ungerade(2) !
                 JS    = IBBAS(IBREP,IC) - IBAS(IFRP) + J
                 DVEC = ABS(CMO(JS,I,1)) + ABS(CMO(JS,I,2))
      &               + ABS(CMO(JS,I,3)) + ABS(CMO(JS,I,4))
-                IF(DVEC.GT.DM10) WRITE(LUPRI,100)
-     &            JU,PLABEL(IPLAB(IBAS(IFRP)+JS,2),2),
+!                IF(DVEC.GT.DM10) WRITE(LUPRI,100)
+!     &            JU,PLABEL(IPLAB(IBAS(IFRP)+JS,2),2),
+!     &               (CMO(JS,I,IZ),IZ = 1,4)
+                WRITE(LUPRI,100)
+     &            JS,PLABEL(IPLAB(IBAS(IFRP)+JS,2),2),
      &               (CMO(JS,I,IZ),IZ = 1,4)
               ENDDO
             ENDDO
@@ -700,7 +724,8 @@ C
 C     KNFBAS = NFBAS(IFRP,0)
 C     KNORB  = NORB(IFRP)
 C
-      DIMENSION CMO(KNFBAS,KNORB,NZ),CBUF(KNFBAS,LCB,NZ),JVEC(*)
+      DIMENSION CMO(KNFBAS,KNORB,NZ),CBUF(KNFBAS,LCB,NZ),
+     &          JVEC(NPVEC+NEVEC)
 C
       NVEC = NPVEC + NEVEC
       DO IZ = 1,NZ
@@ -946,18 +971,19 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION EIG(*),IBEIG(*),WORK(LWORK)
+#include "dcborb.h"
+C
+      DIMENSION EIG(NORBT),IBEIG(NORBT),WORK(LWORK)
       LOGICAL PRPOS
 C
-#include "dcborb.h"
 C
       CALL QENTER('PREIGN')
 #include "memint.h"
 C
 C     Memory allocation
-      CALL MEMGET('INTE',KFIRST,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNMULT,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIGBF,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IFIRST',KFIRST,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','NMULT' ,KNMULT,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIGBUF',KEIGBF,NORBT,WORK,KFREE,LFREE)
       CALL PREIGN1(EIG,WORK(KEIGBF),IBEIG,
      &   WORK(KFIRST),WORK(KNMULT),PRPOS)
 C
@@ -976,6 +1002,7 @@ C
 C     Prints eigenvalues - new version.
 C
 C     Written by J. Thyssen - 26 Aug 1999
+C     Modified by A. Sunaga - 20 Sep 2018 for Atomic output
 C
 C***********************************************************************
 #include "implicit.h"
@@ -987,34 +1014,41 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
-C
-      DIMENSION EIG(*),IBEIG(*),EIGBUF(*),
-     &          IFIRST(*),NMULT(*)
-      CHARACTER FMTE*6,FMTP*6,MXFORM*6, TLINE*(5*NCOL+5)
-      CHARACTER*4 NAME_SUB (-MAX_SUB_BL:MAX_SUB_BL)
-      DIMENSION IOFF(2),ISS(0:7)
+#include "dcbibt.h"            
+C     
+      DIMENSION EIG(NORBT),IBEIG(NORBT),EIGBUF(NORBT),
+     &          IFIRST(NORBT),NMULT(NORBT)
+      CHARACTER FMTE*6,FMTP*6,MXFORM*6, TLINE*(5*NCOL+5),
+     &          TLINE2*(6*NCOL+5),TLINE3*(6*NCOL+5)
+      CHARACTER*5 NAME_SUB2(-MAX_SUB_BL:MAX_SUB_BL),
+     &            NAME_SUB3(-MAX_SUB_BL:MAX_SUB_BL)! for MJ of ATOMIC
+      CHARACTER SPDCAR*1 ! type declaration for external function
       DIMENSION ISHEL_SUB(3+MXOPEN,MAX_SUB_BL,2)
       LOGICAL   PRPOS
-C
+C     
 C
 C     Closed shell eigenvalues
-C
 C
       CALL HEADER('Eigenvalues',-1)
 C.....Common format for all electron eigenvalues
       EIGMAX = D0
+C
       DO IFSYM = 1,NFSYM
-        DO I = 1,NESH(IFSYM)
-          EIGMAX = MAX(EIGMAX,ABS(EIG(IORB(IFSYM)+NPSH(IFSYM)+I)))
-        ENDDO
+        IF(NESH(IFSYM).GT.0)THEN 
+          DO I = 1,NESH(IFSYM)
+            EIGMAX = MAX(EIGMAX,ABS(EIG(IORB(IFSYM)+NPSH(IFSYM)+I)))
+          ENDDO
+        ENDIF
       END DO
       FMTE = MXFORM(EIGMAX,18)
 C.....Common format for all positron eigenvalues
       EIGMAX = D0
       DO IFSYM = 1,NFSYM
-        DO I = 1,NPSH(IFSYM)
-          EIGMAX = MAX(EIGMAX,ABS(EIG(IORB(IFSYM)+I)))
-        ENDDO
+        IF(NPSH(IFSYM).GT.0)THEN 
+          DO I = 1,NPSH(IFSYM)
+            EIGMAX = MAX(EIGMAX,ABS(EIG(IORB(IFSYM)+I)))
+          ENDDO
+        ENDIF
       END DO
       FMTP = MXFORM(EIGMAX,18)
 C
@@ -1026,29 +1060,27 @@ C
 C       Print eigenvalues
 C
         DO IFSYM = 1,NFSYM
-          IOFF(IFSYM) = IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+1
-        END DO
-        DO IFSYM = 1,NFSYM
           WRITE(LUPRI,'(/2A)') '* Fermion symmetry ',FREP(IFSYM)
 C
 C         Closed shell eigenvalues
 C
+          IOFF = IORB(IFSYM)+NPSH(IFSYM)
           IF (NISH(IFSYM) .GT. 0) THEN
             WRITE(LUPRI,'(2X,A,F6.4)') '* Closed shell, f = ',DF(0)
-            CALL PREIGN2(EIG(IORB(IFSYM)+NPSH(IFSYM)+1),
-     &                   IFIRST,NMULT,NISH(IFSYM),FMTE)
+            CALL PREIGN2(EIG(IOFF+1),IFIRST,NMULT,NISH(IFSYM),FMTE)
           END IF
 C
 C         Open shell eigenvalues
 C
+          IOFF = IOFF+NISH(IFSYM)
           DO IOPEN = 1,NOPEN
             IF (NACSH(IFSYM,IOPEN) .GT. 0) THEN
               WRITE(LUPRI,'(2X,A,I1,A,F6.4)')
      &           '* Open shell #',IOPEN,', f = ',DF(IOPEN)
-              CALL PREIGN2(EIG(IOFF(IFSYM)),
-     &                     IFIRST,NMULT,NACSH(IFSYM,IOPEN),FMTE)
+              CALL PREIGN2(EIG(IOFF+1),IFIRST,NMULT,
+     &                     NACSH(IFSYM,IOPEN),FMTE)
+              IOFF = IOFF + NACSH(IFSYM,IOPEN)
             END IF
-            IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
           END DO
 C
 C         Virtual eigenvalues
@@ -1056,8 +1088,7 @@ C
           IF (NSSH(IFSYM) .GT. 0)  THEN
             WRITE(LUPRI,'(2X,A,F6.4)')
      &            '* Virtual eigenvalues, f = ',D0
-            CALL PREIGN2(EIG(IORB(IFSYM)+NPSH(IFSYM)+NOCC(IFSYM)+1),
-     &                   IFIRST,NMULT,NSSH(IFSYM),FMTE)
+            CALL PREIGN2(EIG(IOFF+1),IFIRST,NMULT,NSSH(IFSYM),FMTE)
           END IF
 C
 C         Positronic eigenvalues
@@ -1073,30 +1104,37 @@ C
         END DO
       ELSE
 C
-C     Supersymmetry: linear symmetry and/or spinfree case
+C     Supersymmetry: linear/atomic symmetry and/or spinfree case
 C     ===================================================
 C
         DO IFSYM = 1, NFSYM
+          IF(N_SUB_BL(IFSYM).GT.0)THEN 
           DO ISUB = 1, N_SUB_BL(IFSYM)
 C
-C         Write identification of the blocks. At the moment we have only
-C         the spinfree or the linear symmetry case.
+C         Write identification of the blocks. 
 C
             ID = ID_SUB_BL(ISUB,IFSYM)
-            IF (SPINFR) THEN
+            IF (SPINFR) THEN     ! Spinfree case
               WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ID)
-                   NAME_SUB(ID) = REP(ID)
-            ELSE
+              NAME_SUB2(ID) = '  '//REP(ID)
+            ELSEIF(ATOMIC) THEN  ! Atomic supersymmetry
+              CALL ATOMIC_ID(ID,KP,J,MJ,LL)
+              WRITE(LUPRI,'(/A,I4,4A,I2,2A,I3,A)')
+     &            '* Block',ISUB,' in ',FREP(IFSYM),
+     &            ':  ',SPDCAR(LL),J,'/2',';',MJ,'/2'
+              WRITE (NAME_SUB2(ID),'(A,I2,"/2")') SPDCAR(LL),J
+              WRITE (NAME_SUB3(ID),'(I3,"/2")')MJ
+            ELSE                 ! Linear supersymmetry       
               WRITE(LUPRI,'(/A,I4,3A,I2,A)')
      &            '* Block',ISUB,' in ',FREP(IFSYM),
      &            ':  Omega = ',ABS(ID),'/2'
-              WRITE (NAME_SUB(ID),'(I2,"/2")') ABS(ID)
+              WRITE (NAME_SUB2(ID),'(I3,"/2")') ABS(ID)
             ENDIF
 C
             NTOT = 0
-C...........Closed shell eigenvalues: pick eigenvalues of symmetry ISYM
-            CALL PCKEIG(EIG,IORB(IFSYM)+NPSH(IFSYM)+1,
-     &                IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM),
+C...........Closed shell eigenvalues: pick eigenvalues of symmetry ID
+            IOFF = IORB(IFSYM)+NPSH(IFSYM)
+            CALL PCKEIG(EIG,IOFF+1,IOFF+NISH(IFSYM),
      &                IBEIG,ID,NEIG,EIGBUF)
             ISHEL_SUB(1,ISUB,IFSYM) = NEIG
 C
@@ -1105,11 +1143,10 @@ C
               WRITE(LUPRI,'(2X,A,F6.4)') '* Closed shell, f = ',DF(0)
               CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
             END IF
-C...........Open shell eigenvalues: pick eigenvalues of symmetry ISYM
-            IOFF(IFSYM) = IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)
+C...........Open shell eigenvalues: pick eigenvalues of symmetry ID
+            IOFF = IOFF+NISH(IFSYM)            
             DO IOPEN = 1,NOPEN
-              CALL PCKEIG(EIG,IOFF(IFSYM)+1,
-     &                    IOFF(IFSYM)+NACSH(IFSYM,IOPEN),
+              CALL PCKEIG(EIG,IOFF+1,IOFF+NACSH(IFSYM,IOPEN),
      &                    IBEIG,ID,NEIG,EIGBUF)
               ISHEL_SUB(1+IOPEN,ISUB,IFSYM) = NEIG
 C
@@ -1119,10 +1156,10 @@ C
      &              '* Open shell #',IOPEN,', f = ',DF(IOPEN)
                 CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
               END IF
-              IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
+              IOFF = IOFF + NACSH(IFSYM,IOPEN)
             END DO
-C...........Virtual eigenvalues: pick eigenvalues of symmetry ISYM
-            CALL PCKEIG(EIG,IORB(IFSYM)+NPSH(IFSYM)+NOCC(IFSYM)+1,
+C...........Virtual eigenvalues: pick eigenvalues of symmetry ID
+            CALL PCKEIG(EIG,IOFF+1,
      &                  IORB(IFSYM)+NORB(IFSYM),IBEIG,ID,NEIG,EIGBUF)
             ISHEL_SUB(1+MXOPEN+1,ISUB,IFSYM) = NEIG
 C          
@@ -1132,7 +1169,7 @@ C
      &            '* Virtual eigenvalues, f = ',D0
               CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
             END IF  
-C...........Positronic eigenvalues: pick eigenvalues of symmetry ISYM
+C...........Positronic eigenvalues: pick eigenvalues of symmetry ID
             ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM) = 0
             IF (PRPOS .AND. NPSH(IFSYM) .GT.0) THEN
               CALL PCKEIG(EIG,IORB(IFSYM)+1,IORB(IFSYM)+NPSH(IFSYM),
@@ -1151,8 +1188,9 @@ C...........No eigenvalues
               WRITE(LUPRI,'(2X,A)') '* No eigenvalues.'
             ENDIF
           END DO
+          ENDIF
         END DO
-C
+C     
 C       Print occupation string for each fermion symmetry
 C
         IF (NBSYM.GT.1) THEN
@@ -1160,43 +1198,112 @@ C
             WRITE(LUPRI,'(/2A)')
      &          '* Occupation in fermion symmetry ',FREP(IFSYM)
 C...........Closed shell
+            JST = IORB(IFSYM) + NPSH(IFSYM)
             IF (NISH(IFSYM) .GT. 0) THEN
               WRITE(LUPRI,'(2X,A)') '* Inactive orbitals'
-              JST = IORB(IFSYM) + NPSH(IFSYM)
-              WRITE(LUPRI,'(4X,18A4)')
-     &              (NAME_SUB(IBEIG(I)),I=JST+1,JST+NISH(IFSYM))
+              TMP = NISH(IFSYM)
+              DO I = JST,JST+NISH(IFSYM)-1,18
+                IF(TMP.GT.18)THEN
+                  JMAX = 18
+                ELSE
+                  JMAX = TMP
+                ENDIF   
+                IF(ATOMIC)THEN
+                  WRITE(LUPRI,'(4X,18(A5,1X))')
+     &                      (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
+                  WRITE(LUPRI,'(2X,A,18(A5,1X))')
+     &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
+                ELSE
+                  WRITE(LUPRI,'(4X,18(A5))')
+     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
+                ENDIF
+                TMP = TMP - 18
+              ENDDO
             END IF
 C...........Open shells
+            JST = JST + NISH(IFSYM)
             IF (NASH(IFSYM) .GT. 0) THEN
               WRITE(LUPRI,'(2X,A)') '* Active orbitals'
-              JST = IORB(IFSYM) + NPSH(IFSYM) + NISH(IFSYM)
-              WRITE(LUPRI,'(4X,18A4)')
-     &              (NAME_SUB(IBEIG(I)),I=JST+1,JST+NASH(IFSYM))
+              TMP = NASH(IFSYM)
+              DO I = JST,JST+NASH(IFSYM)-1,18
+                IF(TMP.GT.18)THEN
+                  JMAX = 18
+                ELSE
+                  JMAX = TMP
+                ENDIF                   
+                IF(ATOMIC)THEN
+                  WRITE(LUPRI,'(4X,18(A5,1X))')
+     &                      (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
+                  WRITE(LUPRI,'(2X,A,18(A5,1X))')
+     &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
+                ELSE  
+                  WRITE(LUPRI,'(4X,18(A5))')
+     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
+                ENDIF
+                TMP = TMP - 18                    
+              ENDDO
             END IF
 C...........Virtual shells
+            JST = JST + NASH(IFSYM)
             IF (NSSH(IFSYM) .GT. 0) THEN
               WRITE(LUPRI,'(2X,A)') '* Virtual orbitals'
-              JST = IORB(IFSYM) + NPSH(IFSYM)
-     &              + NISH(IFSYM) + NASH(IFSYM)
-              WRITE(LUPRI,'(4X,18A4)')
-     &              (NAME_SUB(IBEIG(I)),I=JST+1,JST+NSSH(IFSYM))
+              TMP = NSSH(IFSYM)
+              DO I = JST,JST+NSSH(IFSYM)-1,18
+                IF(TMP.GT.18)THEN
+                  JMAX = 18
+                ELSE
+                  JMAX = TMP
+                ENDIF                
+                IF(ATOMIC)THEN
+                  WRITE(LUPRI,'(4X,18(A5,1X))')
+     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
+                  WRITE(LUPRI,'(2X,A,18(A5,1X))')
+     &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
+                ELSE 
+                  WRITE(LUPRI,'(4X,18(A5))')
+     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
+                ENDIF
+                TMP = TMP - 18                   
+              ENDDO              
             END IF
 C...........Negative energy shells
             IF (PRPOS .AND. NPSH(IFSYM) .GT. 0) THEN
               WRITE(LUPRI,'(2X,A)') '* Negative energy orbitals'
               JST = IORB(IFSYM)
-              WRITE(LUPRI,'(4X,18A4)')
-     &              (NAME_SUB(IBEIG(I)),I=JST+1,JST+NPSH(IFSYM))
-            END IF
-          END DO
-        END IF
+              TMP = NPSH(IFSYM)          
+              DO I = JST,JST+NPSH(IFSYM)-1,18
+                IF(TMP.GT.18)THEN
+                  JMAX = 18
+                ELSE
+                  JMAX = TMP
+                ENDIF 
+                IF(ATOMIC)THEN
+                  WRITE(LUPRI,'(4X,18(A5,1X))')
+     &                      (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
+                  WRITE(LUPRI,'(2X,A,18(A5,1X))')
+     &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
+                ELSE
+                  WRITE(LUPRI,'(4X,18(A5))')
+     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
+                ENDIF
+                TMP = TMP - 18                
+              ENDDO              
+            END IF !(PRPOS .AND. NPSH(IFSYM) .GT. 0)
+          END DO ! IFSY
+        END IF !  IF (NBSYM.GT.1) THEN
 C
 C     Print out occupation of subblocks
 C
         WRITE(LUPRI,'(/A)') '* Occupation of subblocks' 
         DO IFSYM=1,NFSYM
           TLINE = ' '
-          WRITE(TLINE,'(A3,A2)') FREP(IFSYM),': '
+          IF(NORB(IFSYM).GT.0)THEN
+          IF(ATOMIC)THEN
+             WRITE(TLINE2,'(A3,A2)') FREP(IFSYM),': '
+             WRITE(TLINE3,'(A)') ' Mj: '
+          ELSE   
+             WRITE(TLINE ,'(A3,A2)') FREP(IFSYM),': '
+          ENDIF   
           ILOW = 0
           ITOP = N_SUB_BL(IFSYM)
  10       CONTINUE
@@ -1207,47 +1314,88 @@ C
             ID = ID_SUB_BL(ISUB,IFSYM)
             IF (SPINFR) THEN
               WRITE(TLINE(IT:),'(1X,A)') REP(ID)
+            ELSEIF(ATOMIC) THEN
+              WRITE(TLINE2(IT:),'(1X,A5)') NAME_SUB2(ID)
+              WRITE(TLINE3(IT:),'(1X,A5)') NAME_SUB3(ID)
+              IT = IT + 1
             ELSE
-              WRITE(TLINE(IT:),'(I2,A)') ABS(ID),'/2 '
+              WRITE(TLINE(IT:),'(A5)') NAME_SUB2(ID)
             ENDIF  
             IT = IT + 5
           ENDDO
-          WRITE (LUPRI,'(23X,A)') TLINE
-          WRITE(LUPRI,'(A,F6.4,A,16I5)') 
-     &     '  closed shells (f=',DF(0),'):',
-     &     (ISHEL_SUB(1,ISUB,IFSYM),ISUB=ILOW,ITOP)
-          DO IOPEN=1,NOPEN
-            WRITE(LUPRI,'(A,I1,A,F6.4,A,16I5)')
-     &      '  open shell #',IOPEN,' (f=',DF(IOPEN),'):',
-     &      (ISHEL_SUB(1+IOPEN,ISUB,IFSYM),ISUB=ILOW,ITOP)
-          ENDDO
-          WRITE(LUPRI,'(A,F6.4,A,16I5)')
-     &     ' virtual shells (f=',D0,'):',
-     &     (ISHEL_SUB(1+MXOPEN+1,ISUB,IFSYM),ISUB=ILOW,ITOP)
-          IF (PRPOS.AND.(.NOT.LEVYLE)) THEN
-            WRITE(LUPRI,'(A,F6.4,A,16I5)')
-     &      ' neg.erg shells (f=',D1,'):',
-     &     (ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM),ISUB=ILOW,ITOP)
+          IF(ATOMIC)THEN
+            WRITE (LUPRI,'(23X,A)') TLINE2
+            WRITE (LUPRI,'(23X,A)') TLINE3
+          ELSE  
+            WRITE (LUPRI,'(23X,A)') TLINE
           ENDIF
+          IF(ATOMIC)THEN
+            WRITE(LUPRI,'(A,F6.4,A,16I6)') 
+     &       '  closed shells (f=',DF(0),'):',
+     &       (ISHEL_SUB(1,ISUB,IFSYM),ISUB=ILOW,ITOP)
+            DO IOPEN=1,NOPEN
+              WRITE(LUPRI,'(A,I1,A,F6.4,A,16I6)')
+     &        '  open shell #',IOPEN,' (f=',DF(IOPEN),'):',
+     &        (ISHEL_SUB(1+IOPEN,ISUB,IFSYM),ISUB=ILOW,ITOP)
+            ENDDO
+            WRITE(LUPRI,'(A,F6.4,A,16I6)')
+     &       ' virtual shells (f=',D0,'):',
+     &       (ISHEL_SUB(1+MXOPEN+1,ISUB,IFSYM),ISUB=ILOW,ITOP)
+            IF (PRPOS.AND.(.NOT.LEVYLE)) THEN
+              WRITE(LUPRI,'(A,F6.4,A,16I6)')
+     &        ' neg.erg shells (f=',D1,'):',
+     &       (ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM),ISUB=ILOW,ITOP)
+            ENDIF
 C
-          WRITE(LUPRI,'(A,16I5)')
-     &      'tot.num. of pos.erg shells:',
-     &    (NORB_SUB(ISUB,IFSYM,1),ISUB=ILOW,ITOP)
-          IF (PRPOS.AND.(.NOT.LEVYLE)) THEN
-          WRITE(LUPRI,'(A,16I5)')
-     &      'tot.num. of neg.erg shells:',
-     &    (NORB_SUB(ISUB,IFSYM,2),ISUB=ILOW,ITOP)
-          ENDIF
-          ILOW = ITOP
-          ITOP = N_SUB_BL(IFSYM)-ITOP
-          IF(ITOP.GT.0) GOTO 10
-        ENDDO
+            WRITE(LUPRI,'(A,16I6)')
+     &        'tot.num. of pos.erg shells:',
+     &      (NORB_SUB(ISUB,IFSYM,1),ISUB=ILOW,ITOP)
+            IF (PRPOS.AND.(.NOT.LEVYLE)) THEN
+            WRITE(LUPRI,'(A,16I6)')
+     &        'tot.num. of neg.erg shells:',
+     &      (NORB_SUB(ISUB,IFSYM,2),ISUB=ILOW,ITOP)
+            ENDIF
+            ILOW = ITOP
+            ITOP = N_SUB_BL(IFSYM)-ITOP
+            IF(ITOP.GT.0) GOTO 10
+          ELSE
+            WRITE(LUPRI,'(A,F6.4,A,16I5)') 
+     &       '  closed shells (f=',DF(0),'):',
+     &       (ISHEL_SUB(1,ISUB,IFSYM),ISUB=ILOW,ITOP)
+            DO IOPEN=1,NOPEN
+              WRITE(LUPRI,'(A,I1,A,F6.4,A,16I5)')
+     &        '  open shell #',IOPEN,' (f=',DF(IOPEN),'):',
+     &        (ISHEL_SUB(1+IOPEN,ISUB,IFSYM),ISUB=ILOW,ITOP)
+            ENDDO
+            WRITE(LUPRI,'(A,F6.4,A,16I5)')
+     &       ' virtual shells (f=',D0,'):',
+     &       (ISHEL_SUB(1+MXOPEN+1,ISUB,IFSYM),ISUB=ILOW,ITOP)
+            IF (PRPOS.AND.(.NOT.LEVYLE)) THEN
+              WRITE(LUPRI,'(A,F6.4,A,16I5)')
+     &        ' neg.erg shells (f=',D1,'):',
+     &       (ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM),ISUB=ILOW,ITOP)
+            ENDIF
+C
+            WRITE(LUPRI,'(A,16I5)')
+     &        'tot.num. of pos.erg shells:',
+     &      (NORB_SUB(ISUB,IFSYM,1),ISUB=ILOW,ITOP)
+            IF (PRPOS.AND.(.NOT.LEVYLE)) THEN
+            WRITE(LUPRI,'(A,16I5)')
+     &        'tot.num. of neg.erg shells:',
+     &      (NORB_SUB(ISUB,IFSYM,2),ISUB=ILOW,ITOP)
+            ENDIF
+            ILOW = ITOP
+            ITOP = N_SUB_BL(IFSYM)-ITOP
+            IF(ITOP.GT.0) GOTO 10
+          ENDIF !ATOMIC
+          ENDIF !NORB(IFSYM).GT.0
+        ENDDO !IFSYM
         WRITE(LUPRI,'(/)')
 
-C ... do the consistency check with the NORB_SUB(MJABS,IFSYM,IC) variable
         IC =1
         IF (PRPOS) IC=0
-        DO IFSYM=1, NFSYM 
+        DO IFSYM=1, NFSYM
+          IF(NORB(IFSYM).GT.0)THEN 
           DO ISUB=1,N_SUB_BL(IFSYM)
 C.........closed shells
             ISUM = ISHEL_SUB(1,ISUB,IFSYM)
@@ -1262,13 +1410,14 @@ C.........add positronic shells
 C.........note: IC=0 when print of positr. shells desired
             IF (ISUM.NE.NORB_SUB(ISUB,IFSYM,IC)) THEN
               WRITE(LUPRI,'(2X,A,A,A,I3)') 
-     &          'WARNING! Inconsistency for ifsym=',
+     &          'WARNING! PREIGN: Inconsistency for ifsym=',
      &        FREP(IFSYM),' and  mj_id=',ID_SUB_BL(ISUB,IFSYM)
               WRITE(LUPRI,'(A,I4,A,I4)')
-     &          'ISUM=',ISUM,'<> NORB_SUB(ISUB,IFSYM,0)=',
-     &          NORB_SUB(ISUB,IFSYM,0)
-            ENDIF
+     &          'ISUM=',ISUM,'<> NORB_SUB(ISUB,IFSYM,IC)=',
+     &          NORB_SUB(ISUB,IFSYM,IC)
+           ENDIF
           ENDDO
+          ENDIF !NORB(IFSYM).GT.0        
         ENDDO
       ENDIF
 
@@ -1444,9 +1593,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selown */
-      SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,CMOFIL,
+      SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,fragfile,
      &                  CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR,
-     &                  WORK,KFREE,LFREE)
+     &                  C1_read,WORK)
 C***********************************************************************
 C
 C     Select coeffiecients for symmetry independent nucleus INUC
@@ -1458,16 +1607,20 @@ C       0100 - read eigenvalues
 C       1000 - read boson irrep identification
 C
 C     The array IDIM contains the following information:
-C       IDIM(1,IFRP) = NPSH(IFRP)    : number of positronic solutions
-C       IDIM(2,IFRP) = NESH(IFRP)    : number of electronic solutions
-C       IDIM(3,IFRP) = NFBAS(IFRP,0) : number of AO-basis functions
+C       n_neg(IFRP)   = NPSH(IFRP)    : number of positronic solutions
+C       n_pos(IFRP)   = NESH(IFRP)    : number of electronic solutions
+C       n_basis(IFRP) = NFBAS(IFRP,0) : number of AO-basis functions
 C
 C     modified for MCSCF coefficients, occupation numbers and mj-values 
 C     by S. Knecht - April 2010
+C     L. Visscher (2022) - reading from hdf5 file
+C     MCSCF still to be done
 C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
+       use dircmo
+       use labeled_storage
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1477,29 +1630,54 @@ C
 #include "nuclei.h"
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(2),NVECS(2),
      &          CSEL(*),ESEL(*),IBSEL(*),IOFF(2),WORK(*)
+      type(file_info_t)    :: fragfile
+      logical              :: C1_read 
 C     Local variables
-      LOGICAL LBIT
-      CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
-      DIMENSION IDIM(3,2)
+      LOGICAL LBIT,FNDLAB
+      CHARACTER TEXT*74,FMT*6,MXFORM*6
       REAL*8 CMCSCF_MAGIC
+      integer, allocatable :: jbas(:)
+      integer              :: nzbuf, nsym, n_mo(2), n_basis(2)
+      integer              :: n_pos(2), n_neg(2)
 !
+!     LV: this following ugly hack for MCSCF should be reprogrammed
 !     flag for MCSCF coefficients on file CMOFIL
-      CMCSCF_MAGIC = 137.0D0
+!     CMCSCF_MAGIC = 137.0D0
 C
       KFRSAV = KFREE
-      REWIND IUNIT
 C
-C     Read title line
-C     ===============
+C     Read dimension information
+C     ==========================
 C
-      READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
-     &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+      call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/nz',
+     & idata=nzbuf)
+      call lab_read (fragfile,
+     & '/result/wavefunctions/scf/mobasis/n_fsym',
+     & idata=nsym)
+      call lab_read (fragfile,
+     & '/result/wavefunctions/scf/mobasis/n_basis',
+     & idata=n_basis)
+      call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/n_mo',
+     & idata=n_mo)
+      call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/n_po',
+     & idata=n_neg)
+      call lab_read (fragfile,'/result/wavefunctions/scf/energy',toterg)
+      n_pos(1) = n_mo(1)-n_neg(1)
+      n_pos(2) = n_mo(2)-n_neg(2)
+      IF(C1_read) THEN
+         n_neg(1)   = n_neg(1)   + n_neg(2)
+         n_pos(1)   = n_pos(1)   + n_pos(2)
+         n_mo(1)    = n_mo(1)    + n_mo(2)
+         n_basis(1) = n_basis(1) + n_basis(2)                           
+      ENDIF
+      text = 'Fragment MO coefficient file used: '//fragfile%name
 !
 !     set local IOPT_TMP
       IOPT_TMP = IOPT
 !
 !     found MCSCF coefficients on file CMOFIL?
-      IF( TOTERG .eq. CMCSCF_MAGIC ) IOPT_TMP = 14
+!     IF( TOTERG .eq. CMCSCF_MAGIC ) IOPT_TMP = 14
+!
 C
 C     File info
 C     =========
@@ -1507,17 +1685,17 @@ C
       IF(LBIT(IOPT_TMP,1)) THEN
         FMT = MXFORM(TOTERG,20)
         WRITE(LUPRI,'(/A,A6,3X,A,'//FMT//')')
-     &   'SELOWN: Coefficients read from file ',CMOFIL,
+     &   'SELOWN: Coefficients read from file ',fragfile%name,
      &   '- Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
         WRITE(LUPRI, '(2A, I8)') '- number of symmetry independent',  
      &   ' nuclei in this fragment : ', NNUC      
         WRITE(LUPRI,'(A,2I8)')
-     &   '- Positrons : ',(IDIM(1,I),I=1,NFSYM)
+     &   '- Positrons : ',(n_neg(I),I=1,NFSYM)
         WRITE(LUPRI,'(A,2I8)')
-     &   '- Electrons : ',(IDIM(2,I),I=1,NFSYM)
+     &   '- Electrons : ',(n_pos(I),I=1,NFSYM)
         WRITE(LUPRI,'(A,2I8)')
-     &   '- SO-basis  : ',(IDIM(3,I),I=1,NFSYM)
+     &   '- SO-basis  : ',(n_basis(I),I=1,NFSYM)
       ENDIF
 C
 C     Calculate dimensions
@@ -1526,36 +1704,52 @@ C
       NCDIM = 0
       NEDIM = 0
       DO IFRP = 1,NFSYM
-        NEDIM = NEDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))
-        NCDIM = NCDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))*IDIM(3,IFRP)
+        NEDIM = NEDIM + n_mo(IFRP)
+        NCDIM = NCDIM + n_mo(IFRP)*n_basis(IFRP)
       ENDDO
       NCDIM = NCDIM*NZ
 C
-C     Read coefficients
-C     =================
+C     Read coefficients in C1 form if available, otherwise with symmetry
+C     ==================================================================
 C    
       IF(LBIT(IOPT_TMP,2)) THEN
-        CALL READT(IUNIT,NCDIM,CMO)
-      ELSE
-        READ(IUNIT)
+         if (C1_read) then
+           call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/orbitals_C1',
+     &      rdata=cmo(1:ncdim))
+         else
+           call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/orbitals',
+     &      rdata=cmo(1:ncdim))
+         endif
       ENDIF
 C
 C     Read eigenvalues
 C     ================
 C
-      IF(LBIT(IOPT_TMP,3)) THEN
-        CALL READT(IUNIT,NEDIM,EIG)
-      ELSE
-        READ(IUNIT)
+      IF(LBIT(IOPT_TMP,3)) THEN 
+         if (C1_read) then
+           call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/eigenvalues_C1',
+     &      rdata=eig(1:nedim))
+         else
+           call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/eigenvalues',
+     &      rdata=eig(1:nedim))
+         endif
       ENDIF
 C
 C     Read boson irrep info
 C     =====================
 C
       IF(LBIT(IOPT_TMP,4)) THEN
-        CALL READI(IUNIT,NEDIM,IBEIG)
-      ELSE
-        READ(IUNIT)
+         if (C1_read) then
+           ibeig(1:nedim) = 0
+         else
+          call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/symmetry',
+     &     idata=ibeig(1:nedim))
+         endif
       ENDIF
 C
 C     Select and adjust format to molecular basis
@@ -1567,11 +1761,11 @@ C
       IEOFF = 1
       DO IFRP = 1,NFSYM
       IF(NSTR(IFRP,0).GT.0) THEN
-        NCMO = IDIM(1,IFRP)+IDIM(2,IFRP)
+        NCMO = n_mo(IFRP)
 C       Generate pointer array for bases
-        CALL MEMGET('INTE',KBAS,IDIM(3,IFRP),WORK,KFREE,LFREE)
-        CALL SELOWI(INUC,NNUC,IFRP,WORK(KBAS),NSBAS)
-        IF(NSBAS.NE.IDIM(3,IFRP)) THEN
+        allocate (jbas(n_basis(IFRP)))
+        CALL SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
+        IF(NSBAS.NE.n_basis(IFRP)) THEN
           WRITE(LUPRI,'(A,I3/A,A4,A,I3)')
      &      'SELOWN: Error in selection of coefficients in ircop ',
      &      IFRP,
@@ -1579,36 +1773,36 @@ C       Generate pointer array for bases
           WRITE(LUPRI,'(A,I8)')
      &      'Number of basis functions for this center is:',NSBAS,
      &      'Number of basis functions in coefficient file:',
-     &       IDIM(3,IFRP)
+     &       n_basis(IFRP)
            CALL QUIT('SELOWN: Error in cf.selection !')
         ENDIF
 C       Select coefficients
         IF(LBIT(IOPT_TMP,2)) THEN
           ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
-          CALL SELOWC(NZ,CMO(ICMO),IDIM(3,IFRP),NCMO,
-     &              IDIM(1,IFRP),IDIM(2,IFRP),
+          CALL SELOWC(NZ,CMO(ICMO),n_basis(IFRP),NCMO,
+     &              n_neg(IFRP),n_pos(IFRP),
      &              CSEL(ICSEL),NFBAS(IFRP,0),NVECS(IFRP),
-     &              WORK(KVEC(IFRP)),WORK(KBAS),
+     &              WORK(KVEC(IFRP)),JBAS,
      &              NSTR(IFRP,2),NSTR(IFRP,1))
-          ICMO = ICMO + NCMO*IDIM(3,IFRP)*NZ
+          ICMO = ICMO + NCMO*n_basis(IFRP)*NZ
         ENDIF
         IESEL = IEOFF + IOFF(IFRP)
 C       Select eigenvalues
         IF(LBIT(IOPT_TMP,3)) THEN
-          CALL SELOWE(EIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
+          CALL SELOWE(EIG(IEIG),n_neg(IFRP),n_pos(IFRP),
      &                ESEL(IESEL),WORK(KVEC(IFRP)),
      &                NSTR(IFRP,2),NSTR(IFRP,1))
         ENDIF
 C       Select boson irrep information
         IF(LBIT(IOPT_TMP,4)) THEN
-          CALL SELOWB(IBEIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
+          CALL SELOWB(IBEIG(IEIG),n_neg(IFRP),n_pos(IFRP),
      &                IBSEL(IESEL),WORK(KVEC(IFRP)),
      &                NSTR(IFRP,2),NSTR(IFRP,1))
         ENDIF
         IEIG = IEIG + NCMO
-        CALL MEMREL('SELOWN.loop',WORK,KBAS,KBAS,KFREE,LFREE)
         ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
         IEOFF = IEOFF + NVECS(IFRP)
+        deallocate(jbas)
       ENDIF
       ENDDO
       RETURN
@@ -1618,7 +1812,7 @@ C       Select boson irrep information
       CALL QUIT('SELOWN: ERROR reading TEXT')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selow2 */
+C/* Deck selowc */
       SUBROUTINE SELOWC(NZ,CMO,KBAS,KORB,KPSH,KESH,
      &                     CBUF,MBAS,MORB,
      &                     JVEC,JBAS,NPVEC,NEVEC)

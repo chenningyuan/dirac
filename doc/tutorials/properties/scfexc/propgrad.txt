@@ -1,0 +1,11 @@
+                                Output from GPGET
+                                -----------------
+
+* Gradient (e-e) of property EpolL01X00Y00Z01
+
+*** A imag part ***; NROW,NCOL,LRQ,LCQ:   1   1   1   1
+
+
+               Column   1
+       1      -0.00682451
+    ==== End of matrix output ====

@@ -8,7 +8,6 @@
 #define CMAKE_GENERATOR          "@_cmake_generator@"
 #define CMAKE_BUILD_TYPE         "@_cmake_build_type@"
 #define CONFIGURATION_TIME       "@_configuration_time@"
-#define PYTHON_VERSION           "@_python_version@"
 
 #define FORTRAN_COMPILER_ID      "@_Fortran_compiler_id@"
 #define FORTRAN_COMPILER         "@_Fortran_compiler@"
@@ -34,6 +33,11 @@
 #define ENABLE_BUILTIN_BLAS      "@_enable_builtin_blas@"
 #define ENABLE_BUILTIN_LAPACK    "@_enable_builtin_lapack@"
 #define EXPLICIT_LIBS            "@_explicit_libs@"
+
+#define ENABLE_EXATENSOR         "@_enable_exatensor@"
+#define EXATENSOR_REPO           "@_exatensor_git_repo_location@"
+#define EXATENSOR_CONFIG         "@_exatensor_configuration@"
+#define EXATENSOR_HASH           "@_exatensor_git_hash@"
 
 #define DEFINITIONS              "@_list_of_definitions@"
 

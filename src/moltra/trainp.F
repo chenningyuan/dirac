@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -414,12 +409,14 @@ C
 C     Called from PAMINP/dirrdn.F
 C
 C*****************************************************************************
+! connection between the scheme of moltra and relccsd       
+      use  relcc_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0)
-      PARAMETER (NDIR = 3, NTABLE = 27)
+      PARAMETER (NDIR = 3, NTABLE = 29)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -440,11 +437,11 @@ C
       DATA TABDIR /'*END OF','*PRPTRA','*HSCC  '/
 C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','xANTIS ','.4INDEX',
-     &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
+     &            '.EXACOR','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
      &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.HTSORT',
-     &            '.ASCII ','.MOFILE'/
+     &            '.ASCII ','.MOFILE','.CORE2 ','.CHOLES'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -473,12 +470,11 @@ Clv,   reason is that scheme 6 produces a list of integrals that is distributed 
 clv,   authors of the above-mentioned modules nor anyone else have taken the time to adjust the
 clv,   integral processing routines accordingly (if anyone is inclined to do so: this is not rocket
 clv    science, just have a look on how RELCCSD does this in ccints.F).
-      if (DOLUCT.OR.DOCIM) then
-         ISTRAT = 4
-      else
-         ISTRAT = 6
-      endif
-
+c
+cayaki_03_06_2022
+c     default changed from scheme 6 to scheme 4, because scheme 4 is faster
+c     for the current architecture
+      ISTRAT = 4
 c
 c     activate/deactivate fine sorting of 1HT data for scheme6
 c
@@ -492,8 +488,10 @@ c
       ITRA_INTFL2 = -8
       ITRA_INTFL4 = -8
       IPAR4BS = -1
+      NCORE2 = -1
       DO I = 1,NFSYM
         WRITE(TRA_CORSTR(I),'(A)') 'not specified'
+        WRITE(TRA_CORSTR2(I),'(A)') 'not specified'
         WRITE(TRA_INDSTR(I),'(A)') 'energy -10.0 20.0 1.0'
         DO J = 1,2
           WRITE(TRA2_INDSTR(J,I),'(A)') 'energy -10.0 20.0 1.0'
@@ -503,9 +501,8 @@ c
         ENDDO
       ENDDO
       TRA_ANTIS  = .FALSE.
-C     TRA_MSOUT  = .FALSE.
-      TRA_MSOUT  = .TRUE.
-C     aug 2001 hjaaj TODO : disabled this option because only true implemented
+      TRA_EXACORR = .FALSE.
+      TH_CHOLESKY = -1.0D0
       TRA_ASCII = .FALSE.
       NO2IND = .FALSE.
       NO4IND = .FALSE.
@@ -565,8 +562,8 @@ C         if reading input from a terminal
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-     &                      16,17,18,19,20,21,22,23,24,25,26,27), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
+     &                      17,18,19,20,21,22,23,24,25,26,27,28,29), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -667,9 +664,9 @@ C
                   ENDDO
                GO TO 100
     6          CONTINUE
-C&&&& "MSOUT " - Write 4-index transformed integrals to file
-C     aug 2001 hjaaj TODO : disabled this option because only true implemented
-                  TRA_MSOUT = .TRUE.
+C&&&& Use exacorr transformation routine
+                  TRA_EXACORR = .TRUE.
+                  ISTRAT = 4 ! This corresponds to non-distributed integrals
                GO TO 100
     7          CONTINUE
 C&&&& POSITRONS - allow positronic solutions
@@ -689,6 +686,8 @@ C&&&& SCHEME - choose method in 4-index transformation
                    CALL QUIT(
      &             'TRAINP: Error in reading **MOLTRA .SCHEME')
                   ENDIF
+! connection between ISTRAT and interface of relccsd                
+                  WRITE(relcc_integral_interface,'(A,I1)')'DIRAC',ISTRAT
                GO TO 100
    10          CONTINUE
 C&&&& THROUT - Treshold for output of integrals to MDCINT
@@ -841,6 +840,20 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
 !      note: list directed read will ignore initial blanks, so MOFILE_TRAINP
 !            will always begin with the first non-blank character in input line.
                   READ(LUCMD,*) MOFILE_TRAINP
+               GO TO 100
+   28          CONTINUE
+C&&&& "CORE2 " - Range of open shell CORE orbitals in 2-index transformation module
+                  WRITE (LUPRI,'(A)') '* use open-shell core:'
+                  READ(LUCMD,*) NCORE2
+                  WRITE (LUPRI,'(I4,A)') NCORE2,' el. in'
+                  DO I=1,NFSYM
+                     READ(LUCMD,'(A)') TRA_CORSTR2(I)
+                     WRITE (LUPRI,'(A)') TRA_CORSTR2(I)
+                  ENDDO
+               GO TO 100
+   29          CONTINUE
+C&&&& ."CHOLES" - CHOLESKY threshold
+                  READ(LUCMD,*) TH_CHOLESKY
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1095,8 +1108,6 @@ C
      +     '* Gaunt Integrals not transformed.'
       IF (TRA_ANTIS) WRITE(LUPRI,'(1X,A)')
      +     '* Calculating Anti-symmetrized integrals.'
-      IF (TRA_MSOUT) WRITE(LUPRI,'(1X,A)')
-     +     '* 4-index transformed integrals written to file.'
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
       CALL IZERO (NTVEC,4)
       DO I = 1,NFSYM

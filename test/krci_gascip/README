@@ -1,0 +1,11 @@
+!  New krci energy tests added June 2022
+!   h2o.xyz    : water with C2v symmetry, checks luciarel real Davidson solver
+!   h2o-cs.xyz : water with Cs symemtry, checks luciarel complex Davidson solver
+!
+!  The short test calculates the ground state energy of the Be atom
+!  with a 3 GAS MR-CI in D2h symmetry: 
+!   GAS 1   1s + 2s 
+!   GAS 2   2p shell
+!   GAS 3   virtuals
+!
+!  The medium test calculates the ground state energy of the F atom.

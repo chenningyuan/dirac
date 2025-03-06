@@ -1,26 +1,22 @@
 #define DEBUG_IPRPAR -1
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
+C File: herpar.F
 C
 #ifdef UNDEF
 /* Comdeck notes */
@@ -37,20 +33,8 @@ C
       but that requires a little more coding.
       SORT renamed to PARSRT (it is likely that library routines exist
       called SORT).
-950531-kr: Reorganized the code so that the node programs are
-started only once for a given calculation
 950428-kr+hjaaj;
  Merged with Odense version. Implemented DOINT in PARLOP.
-941219-hjaaj
-(1)  Note: in old HERFCK 'IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD' was
- transferred to TWOINT, do we want to do that in CALINT for ITYPE=3 ???
-(2)  removed JSYMDM,JFCTYP,ITRIPL from /PARINT/ in aba.cdk
-941114-hjaaj
-PARDRV,SDINIT,RVINIT,CALINT:  removed TRIPLE in parameter list
-SDINIT,RVINIT: removed ITRIPL message tag; moved IFCTYP and IREPDM
- message tags after NDMAT message tag
-CALINT: call TWOINT directly instead of CALL HERFCK
-PARDRV,...: s/IFCTYP/IFCTYP(*)/ and s/IREPDM/IREPDM(*)/
 #endif
 C  /* Deck pardrv */
       SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
@@ -100,12 +84,14 @@ C           RETUR  - Program will exit after spec. shells
 C           TKTIME - Take time in TWOINT
 C           TIMING - Take time for each integralbatch IJ
 C           DOREPS -
-C           DOSYM  -
 C           DOCOOR -
+C           DOSYM  -
 C           NMLINE - Number of lines in MOLECULE.INP
 C           MLINE  - MOLECULE.INP as internal file
 C           NDMAT  - Number of density-matrices
 C           DMAT   - Density-matrices.
+C           HFXFAC - HF exchange factor
+C
 C
 C
       use interface_to_mpi
@@ -465,8 +451,6 @@ C----------------------------
 C     Set common-block PARINT
 C----------------------------
 C
-      JCODE  = 0
-C     ... not used any more (was used for PVM)
       JATOM  = IATOM
       JLUDAS = LUDASP
       JLUINT = LUINTA
@@ -507,8 +491,14 @@ C     ... not used any more (was used for PVM)
       JLEVYL = 0
       IF (LEVYLE) JLEVYL = 1
 
+      JNONREL = 0
+      IF (NONREL) JNONREL = 1
+
       JTWOCOMP = 0
       IF (TWOCOMP) JTWOCOMP = 1
+
+      JECPCALC = 0
+      IF (ECPCALC) JECPCALC = 1
 
       J2TYP  = I2TYP
       JCEDIF = ICEDIF
@@ -1396,9 +1386,11 @@ C
       SOLVNT = JSOLVN .EQ. 1
       I2TYP  = J2TYP
       RELCAL = JRELCL .EQ. 1
-      LEVYLE = JLEVYL .EQ. 1
       TWOCOMP = JTWOCOMP .EQ. 1
-      ICEDIF = JCEDIF
+      LEVYLE  = JLEVYL .EQ. 1
+      NONREL  = JNONREL .EQ. 1
+      ECPCALC = JECPCALC .EQ. 1
+      ICEDIF  = JCEDIF
 C
       DO 200 I = 0, MAXREP
          DOREPS(I)  = JDOREP(I+1) .EQ. 1

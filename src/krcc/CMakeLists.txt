@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/krcc
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -52,10 +53,9 @@ if(ENABLE_RUNTIMECHECK)
     set_source_files_properties(${FIXED_KRCC_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
 endif()
 
-
 add_library(
     krcc
-    OBJECT
+    STATIC
     ${FREE_KRCC_FORTRAN_SOURCES}
     ${FIXED_KRCC_FORTRAN_SOURCES}
 )

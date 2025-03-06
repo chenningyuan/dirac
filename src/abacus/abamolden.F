@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 #ifndef PRG_DIRAC
@@ -51,8 +46,6 @@ C
       END
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
-
-      use codata
 #include "implicit.h"
 #include "maxorb.h"
 #include "molde.h"
@@ -67,7 +60,6 @@ C
 #include "cbirea.h"
 #include "nuclei.h"
 #include "primit.h"
-
 
       CHARACTER CHRSEG*10, GTOTMP*1, SPDCAR*1
       LOGICAL SEG, NRMPRI
@@ -142,8 +134,8 @@ c
 
       SUBROUTINE MOATOMS(WORD)
 C 
-      use codata         
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -162,7 +154,6 @@ C
 #include "chrsgn.h"
 #include "chrnos.h"
 #include "ibtfun.h"
-
 
       CHARACTER*2 ASYMB(103)
 
@@ -198,7 +189,7 @@ C
                 END IF
              END DO
              IF (MULT(MULCNT) .EQ. 1) THEN
-                ICHARGE = NINT(CHARGE(icent))
+                ICHARGE = IZATOM(icent)
                 IF (WORD .EQ. 'ATOM') THEN
 C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                    IATOM = IATOM + 1
@@ -223,7 +214,7 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                       CRX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
                       CRY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
                       CRZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-                      ICHARGE = NINT(CHARGE(icent))
+                      ICHARGE = IZATOM(icent)
                       IF (WORD .EQ. 'ATOM') THEN
                          IATOM = IATOM + 1
                          WRITE (LUMOLDEN,'(A,1X,I5,1X,I5,3(1X,F20.10))')
@@ -356,14 +347,15 @@ C              note OCCUP(NOCCT) only over occupied orbitals
 #endif /* ifndef PRG_DIRAC */
 
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
-      use codata
-#include "implicit.h" 
+#include "implicit.h"
+#include "codata.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "molde.h"
 #include "inftap.h"
 
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD)
+C
       SXFAMU = SQRT(XFAMU)
       WRITE(LUMOLDEN,'(A)') '[FREQ]'
 
@@ -384,7 +376,6 @@ C              note OCCUP(NOCCT) only over occupied orbitals
 #ifndef PRG_DIRAC
 
       SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
-      use codata
 #include "implicit.h" 
 #include "mxcent.h"
 #include "maxorb.h"
@@ -410,7 +401,6 @@ C              note OCCUP(NOCCT) only over occupied orbitals
       END
 
       SUBROUTINE MOGECON(WRITENOW,EMCSCF)
-      use codata
 #include "implicit.h" 
 #include "mxcent.h"
 #include "maxorb.h"

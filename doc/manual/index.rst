@@ -18,6 +18,8 @@ Keyword reference
 
 * :doc:`**HAMILTONIAN <hamiltonian>` --- Specify the Hamiltonian
    - :doc:`*DFT <dft>` --- DFT directives
+   - :doc:`*EFFQED <effqed>` --- effective QED potential directives
+   - :doc:`*XAMFI <xamfi>` --- X-AMFI directives
    - :doc:`*AMFI <amfi>` --- AMFI directives
    - :doc:`*X2C <x2c>` --- X2C directives
    - :doc:`*FDE <fde>` --- Frozen Density Embedding directives
@@ -40,6 +42,8 @@ Keyword reference
    - :doc:`POLPRP <wave_function/polprp>` --- Polarization Propagator module (ADC) for excitations
    - :doc:`*MVOCAL <wave_function/mvocal>` --- Modified virtual orbitals
    - :doc:`*MP2 NO <wave_function/mp2no>` --- MP2 natural orbitals module
+   - :doc:`*LAPLCE <wave_function/laplce>` --- Laplace transformation of orbital-energy denominators
+   - :doc:`**EXACC <wave_function/exacorr>` --- Parallel implementation of coupled cluster methods based on ExaTensor library.
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
    - :doc:`*MULPOP <analyze/mulpop>` --- Mulliken population analysis
@@ -57,6 +61,8 @@ Keyword reference
    - :doc:`*MOLGRD <properties/molgrd>` --- Molecular gradient
    - :doc:`*NMR <properties/nmr>` --- NMR directives
    - :doc:`*STEX <properties/stex>` --- Static exchange (STEX) directives
+   - :doc:`*NQCC <properties/nqcc>` --- NQCC directives
+   - :doc:`*ESR <properties/esr>` --- ESR/EPR directives
 
 
 * :doc:`**VISUAL <visual>` --- Visualization module
@@ -70,6 +76,7 @@ Keyword reference
 Notes:
 ------
 
+  :doc:`Data handling <data>` |
   :doc:`One-electron operators <one_electron_operators>` |
   :doc:`Orbital strings <orbital_strings>` |
   :doc:`Symmetry-handling at the correlated level <groupchain>`

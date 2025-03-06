@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! this file by ulfek march 2008
@@ -57,11 +52,12 @@ end interface
 
   real(kind=8), allocatable :: memory(:)
 
-  integer :: iparcal, status, length, ios, idummy, ierr
+  integer :: iparcal, ios, ierr
   integer :: WORK_memsize
   integer(kind=8) :: maxsize = -1
-  integer(kind=8) :: iscr_mem
+  integer(kind=8) :: idummy8, iscr_mem
   integer :: high_water_mark
+  real(kind=8)    :: hwm_mb
 
 ! initialize common variables (parallel and sequential run)
   mytid   = 0
@@ -106,6 +102,16 @@ end interface
         call quit('Invalid entry in environment variable DIRWRK')
      end if
      maxsize = get_environment_integer('DIRMAX',maxsize)
+     if (maxsize .gt. 0 .and. maxsize .le. WORK_memsize) then
+     !  make sure maxsize is not smaller than WORK_memsize
+     ! (maxsize .eq. 0 means infinite)
+     ! - It became a problem that same DIRMAX is used for master and workers:
+     !   if you e.g. had 2 TB work for master and 16 GB work for 127 nodes then a DIRMAX of
+     !   2.1 TB would mean that total allocated memory could be more than the 4 TB physical RAM
+        print *, 'INFO: specified DIRMAX ',maxsize,' is less than DIRWRK ',WORK_memsize
+        maxsize = WORK_memsize + 1000000
+        print *, 'INFO: DIRMAX has been increased to ',maxsize
+      end if
 
   else
 !    iscr_mem     = get_environment_integer('DIRNOD',INSTALL_WRKMEM) 
@@ -124,6 +130,13 @@ end interface
        endif
      endif
      maxsize = get_environment_integer('DIRMAX',maxsize)
+     if (maxsize .gt. 0 .and. maxsize .le. WORK_memsize) then
+     !  make sure maxsize is not smaller than WORK_memsize
+     ! (maxsize .eq. 0 means infinite)
+        print *, 'INFO: specified DIRMAX ',maxsize,' is less than DIRNOD ',WORK_memsize
+        maxsize = WORK_memsize + 1000000
+        print *, 'INFO: DIRMAX has been increased to ',maxsize
+      end if
   endif
 
   call allocator_init()
@@ -187,7 +200,7 @@ end interface
   endif
 #ifdef VAR_MPI
   if ( iparcal .eq. 1 ) then
-    call sync_nodes(idummy,1)
+    call sync_nodes(idummy8,1)
   endif
 #endif
   if (mytid == 0) then
@@ -204,11 +217,17 @@ end interface
   if (iparex .gt. 0) call mpixfinalize()
 #endif
 
- call allocator_report(mytid,0)
+  call allocator_report(mytid,0)
   if (mytid == 0) then
-      write (lupri, '(A,F8.2,A)') ' MEMGET high-water mark: ',(high_water_mark()*8)*2.0D0**(-20),' MB'
+      hwm_mb = (high_water_mark()*8)*2.0D0**(-20)
+      if (hwm_mb .gt. 1900) then
+         write (lupri, '(A,F8.2,A)') ' MEMGET high-water mark:',hwm_mb*2.0D0**(-10),' GB'
+      else
+         write (lupri, '(A,F8.2,A)') ' MEMGET high-water mark:',hwm_mb,' MB'
+      end if
       write (lupri, '(/a)' ) '*****************************************************'
   endif
+  flush(lupri)
 
    call allocator_cleanup()
 

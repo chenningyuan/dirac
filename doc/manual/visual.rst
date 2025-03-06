@@ -114,6 +114,22 @@ Scalar and vector densities are written to files ``plot.3d.scalar`` and ``plot.3
    
 Scalar densities are also written to a Gaussian cube file ``plot.3d.cube``.
 
+keyword(3D_IMP)
+
+Calculate various densities in 3D on an imported grid and write to text file format (imported grid does not have to be regular).
+Example::
+
+  .3D_IMP
+   numerical_grid    ! a grid file on which various densities will be calculated; the file should have 3 columns with x, y, z coordinates of grid points 
+   grid_units        ! grid units (choose from: 'angstrom' or 'au')
+
+Another usage is calculating various densities in 3D on an imported grid (does not have to be regular)
+Example::
+
+  .3D_IMP
+   grid_file        ! a file with x,y,z-coordinates of grid points
+
+
 keyword(3DFAST)
 
 Fast evaluation of the molecular electrostatic potential.
@@ -130,15 +146,6 @@ Default (coordinates in bohr)::
 
   .3D_ADD
    4.0
-
-
-keyword(3D_IMP)
-
-Calculate various densities in 3D on an imported grid (does not have to be regular)
-Example::
-
-  .3D_IMP
-   grid_file        ! a file with x,y,z-coordinates of grid points
 
 
 keyword(3D_INT)
@@ -159,6 +166,16 @@ Scale densities by Cartesian product :math:`x^iy^jz^k`. The keyword is followed 
 is equivalent to the specification::
 
    .EDIPX
+
+keyword(RADPOW)
+
+Scale densities by a radial power :math:`r^{n}`. The keyword is followed by three integers specifying the exponent :math:`n`. Example::
+
+  .DENSITY
+  .RADPOW
+  1
+
+allows to the calculation of radial expectation values :math:`<r>` with respect to the origin.  
 
 keyword(SCALE)
 
@@ -191,6 +208,41 @@ Another example (perturbed density, first response vector)::
 
   .DENSITY
    PAMXVC 1
+
+   
+keyword(DENGRA)
+
+Compute number density gradient :math:`\grad n(\mathbf{r})` in addition to the number density :math:`n(\mathbf{r})`.
+Example (unperturbed density gradient)::
+
+  .DENGRA
+   DFCOEF
+
+keyword(DENHES)
+
+Compute number density Hessian :math:`H(n(\mathbf{r}))` in addition to the number density :math:`n(\mathbf{r})` and to the number density gradient :math:`\grad n(\mathbf{r})`.
+Example (unperturbed density Hessian)::
+
+  .DENHES
+   DFCOEF
+
+
+keyword(RDG)
+
+Compute the reduced density gradient :math:`\frac{1}{2(3\pi^2)^{1/3}}\frac{|\grad n(\mathbf{r})|}{n(\mathbf{r})^{4/3}}`.
+Example::
+
+  .RDG   
+   DFCOEF
+
+
+keyword(SIGNL2)
+
+Compute the signed electron density :math:`sign(\lambda_2) * n(\mathbf{r})`, where :math:`\lambda_2` is the second eigenvalue of the number density Hessian :math:`H(n(\mathbf{r}))`.
+Example::
+
+  .SIGNL2
+   DFCOEF
 
 
 keyword(ELF)
@@ -281,6 +333,44 @@ Compute the z-component :math:`m^{[1]}_{z}(\mathbf{r})=-\frac{1}{2}(\mathbf{r}\t
   .BDIPZ
    PAMXVC 1
 
+keyword(BEDCOS)
+
+Compute the Hermitian part of the full effective light-matter interaction
+
+.. math::
+   \hat{T}_{H}\left(\omega\right)=\frac{e}{\omega}\left(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)\cos\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)
+
+where appears the wave vector :math:`\mathbf{k}` and the polarization vector
+:math:`\boldsymbol{\epsilon}`. In accordance with the quaternion symmetry scheme of DIRAC an imaginary :math:`i` will be inserted in the Hermitian part to make it time-symmetric. It should be noted that this is an *ungerade* operator.
+
+keyword(BEDSIN)
+
+Compute the anti-Hermitian part of the full effective light-matter interaction
+
+.. math::
+
+    \hat{T}_{A}\left(\omega\right)=\frac{e}{\omega}\left(ic\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)\sin\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)
+
+where appears the wave vector :math:`\mathbf{k}` and the polarization vector
+:math:`\boldsymbol{\epsilon}`. It should be noted that this is a *gerade* operator.
+
+keyword(BEDFIX)
+
+Specify the wave vector :math:`\mathbf{k}` and the polarization vector :math:`\boldsymbol{\epsilon}` when using the full light-matter interaction.
+The orientation of the wave and polarization vector is given by specification of the angles :math:`\theta`, :math:`\phi` and :math:`\chi`, see the :ref:`EXCITATION_ENERGIES_.BED` keyword for more details. In addition the user has to specify the angular frequency $\omega$ which fixes the length of the wave vector :math:`\mathbf{k}` since we have
+
+.. math::
+
+   k=\frac{\omega}{c}={2\pi}{\lambda}
+
+For instance, to specify that the wave vector is along the :math:`z` -axis, the polarization vector along the :math:`x` - axis for an excitation energy at :math:`\omega=49.138` a.u. we set
+
+::
+
+    .BEDFIX
+    0.0 0.0 0.0 49.138
+   
+
 keyword(EDIPX)
 
 Compute the x-component :math:`Q^{[1]}_{x}(\mathbf{r})=xn(\mathbf{r})` of the electric dipole.
@@ -360,14 +450,6 @@ Example::
 
   .READJB
    file_name        ! a file with x,y,z-coordinates of grid points and jB vector field
-
-
-keyword(GAUGE)
-
-Specify gauge origin. Example::
-
-  .GAUGE
-   0.0 0.0 0.0
 
 
 keyword(SMALLAO)

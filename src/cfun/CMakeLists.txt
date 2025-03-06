@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/cfun
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -16,9 +17,6 @@ set(FREE_CFUN_FORTRAN_SOURCES
 )
 
 set(CFUN_C_SOURCES
-   functionals.h 
-   general.h
-# ---------------------
    emb-functional.c
    fun-becke.c
    fun-cam.c
@@ -64,7 +62,7 @@ endif()
 
 add_library(
     cfun
-    OBJECT
+    STATIC
     ${FIXED_CFUN_FORTRAN_SOURCES}
     ${FREE_CFUN_FORTRAN_SOURCES}
     ${CFUN_C_SOURCES}

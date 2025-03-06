@@ -4,8 +4,6 @@
   Rn atom
 .WAVE F
 .ANALYZE
-**GENERAL
-.PCMOUT
 **INTEGRALS
 *READIN
 .UNCONTRACTED
@@ -29,4 +27,6 @@
 .VECPOP
 all
 all
+.PR TOL
+1.D-4
 *END OF

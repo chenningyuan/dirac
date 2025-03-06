@@ -7,7 +7,7 @@ module xcint_main
    use interface_functional_read
    use xc_derv
    use xc_ac
-   use extra
+   use xcint_extra
    use file_units
    use interface_grid
    use dirac_ao_eval
@@ -27,6 +27,7 @@ module xcint_main
 
    public integrate_xc
    public get_xc_energy
+   public set_xc_energy_delta
    public get_xc_mat_energy
    public get_nr_electrons_integrated
    public get_susc2el_integrated
@@ -40,7 +41,6 @@ module xcint_main
       real(8), allocatable :: gs(:, :, :)
       real(8), allocatable :: tn(:)
       real(8), allocatable :: ts(:, :)
-!gosia, temporarily for sdft+lao
       real(8), allocatable :: s_lao(:, :)
       real(8), allocatable :: gs_lao(:, :, :)
    end type
@@ -63,7 +63,9 @@ module xcint_main
    real(8) :: tau_integral
    real(8) :: nr_electrons_integrated
    real(8) :: xc_energy
+   real(8) :: xc_energy_delta = 0.0d0
    real(8) :: xc_mat_energy
+   real(8) :: xc_mat_energy_delta = 0.0d0
 
    real(8) :: susc2el_xc_integrated(3, 3)
    real(8) :: susc2el_xc_integrated_sdft(3, 3)
@@ -278,6 +280,7 @@ contains
          nz      = xc_nz
          nr_dmat = xc_nr_dmat
          nr_fmat = xc_nr_fmat
+!        print *,'debug in xcint: mat_dim,nz,nr_dmat,nr_fmat ',mat_dim,nz,nr_dmat,nr_fmat
       end if
 
 !     set defaults
@@ -519,7 +522,7 @@ contains
       if (do_london_susc2el_der1 .or. do_london_susc2el_der2) then
         max_ao_m_order = 2
       end if
-     
+
       call dirac_ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
                         .true.)
@@ -530,7 +533,10 @@ contains
             save_ddot1 = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
          end if
 
+!        print *,'nr_mo_gerade_positive_active #1',nr_mo_gerade_positive_active
+!        print *,'nr_mo_ungerade_positive_active #1',nr_mo_ungerade_positive_active
 !        get average density from open shells
+!        if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #1'
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
 #ifdef PRG_DIRAC
@@ -609,11 +615,9 @@ contains
       fmat = 0.0d0
 #endif
 
-#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
          call overlap_diagnostic_init(parallel_xc, xc_mpi_is_master())
       end if
-#endif
 
       if (london_direct_export .or. london_reorth_export) then
          call london_export_open_files(london_direct_export, london_reorth_export)
@@ -630,7 +634,6 @@ contains
 #endif
       end if
 
-#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
 #ifdef VAR_MPI
          if (parallel_xc) then
@@ -641,7 +644,6 @@ contains
             call o_matrix_to_disc()
          end if
       end if
-#endif /* MOD_UNRELEASED */
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -675,14 +677,16 @@ contains
          call scale_density_matrices(0.5d0)
 #endif
 
+!        print *,'nr_mo_gerade_positive_active #2',nr_mo_gerade_positive_active
+!        print *,'nr_mo_ungerade_positive_active #2',nr_mo_ungerade_positive_active
 !        get average density from open shells
+!        if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #2'
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
-
+ 
 !        symmetrize matrices
          if (use_blas3_scheme .or. (use_gga                         &
                                    .and. .not. do_london_rhs_direct_der1 &
                                    .and. .not. do_london_rhs_direct_der2 &
-                                   .and. .not. do_london_rhs_ro          &
                                    .and. .not. do_london_susc2el_der1    &
                                    .and. .not. do_london_susc2el_der2    &
                                    .and. .not. do_london_ks         &
@@ -690,14 +694,19 @@ contains
             if (nr_dmat > 0) then
                call gga_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym, dmat_ih_sym)
             else
-               call gga_sym(mat_dim, nz, 1, fmat, (/1/), (/1/))
+             call gga_sym(mat_dim, nz, 1, fmat, (/1/), (/1/))
             end if
          end if
 
-         if (do_london_rhs_direct_der1 .or. do_london_rhs_direct_der2 .or. do_london_rhs_ro) then
-            call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
+         if (do_london_rhs_direct_der2 .and. use_gga) then
+            ! symmetrize the imaginary part of fmat
+            call gga_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
+         if (do_london_rhs_direct_der1) then
+            ! antisymmetrize the real part of fmat
+            call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
+         end if
 
          call insert_half_phases()
 
@@ -705,6 +714,7 @@ contains
          if (do_potential) then
             save_ddot2    = ddot(mat_dim*mat_dim, dmat_0(1,1,1), 1, fmat, 1)
             xc_mat_energy = save_ddot2 - save_ddot1
+            !print *, 'xc_mat_energy is ',xc_mat_energy, save_ddot2,save_ddot1
          end if
 
          call report()
@@ -822,7 +832,7 @@ contains
       real(8) :: f
 !     --------------------------------------------------------------------------
 
-      call dscal(mat_dim*mat_dim, f, dmat_0(1,1,1), 1)
+      call dscal(mat_dim*mat_dim*nz, f, dmat_0(1,1,1), 1)
       if (nr_dmat > 0) then
         call dscal(mat_dim*mat_dim*nz*nr_dmat, f, dmat, 1)
       end if
@@ -852,10 +862,15 @@ contains
                end do
             end do
          end if
+         if (do_london_rhs_direct_der2) then
+           do iz = 1, nz
+             iq = pq_to_uq(iz, 0)
+             call my_q2bphase('D', iq, 1, dmat_0(1,1,iz))
+           end do
+         end if
       end if
 
    end subroutine
-
 
 
 
@@ -889,9 +904,6 @@ contains
     integer              :: derv_length, im, i
     real(8), allocatable :: derv(:, :)
     real(8), allocatable :: derv_nadd(:, :)
-
-    logical :: print_data_at_point
-
     real(8) :: n_b(3)
     real(8) :: gnn_b(3)
     real(8) :: gn_b(3, 3)
@@ -1013,7 +1025,6 @@ contains
                      ao,                               &
                      buffer                            &
                     )
-
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
                                     use_gga_qr,               &
@@ -1042,11 +1053,9 @@ contains
                                     xc_energy                 &
                                    )
 
-#ifdef MOD_UNRELEASED
          if (do_overlap_diagnostic) then
             call integrate_o_matrix(block_length, rw(ipoint), ao)
          end if
-#endif
 
          deallocate(ao)
          deallocate(buffer)
@@ -1061,8 +1070,6 @@ contains
       allocate(buffer(1, nr_ao_slices*nr_ao_cartesian))
       buffer = 0.0d0
 
-   print_data_at_point = .true.
-
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
@@ -1074,6 +1081,7 @@ contains
 !      (/1,2,3,4/), 6)
 !   end do
 !  end if
+
    do ipoint = 1, nr_points_on_this_proc
    
 !     print *, "check points",ipoint,xc_mpi_get_rank(),ipoint,rx(ipoint),ry(ipoint),rz(ipoint)
@@ -1127,7 +1135,6 @@ contains
          w(1) = rw(ipoint)
 
          if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
             call get_kin_tau(tau,     &
                          0,       &
                          mat_dim, &
@@ -1135,9 +1142,6 @@ contains
                          buffer,  &
                          ao)
             tau_integral = tau_integral + w(1)*tau
-#else
-            call quit('tau_mgga not available in this version')
-#endif
          end if
 
 !       number of electrons
@@ -1209,11 +1213,7 @@ contains
             u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
           end if
          if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
             u%tn(1) = derv(1, d0000010)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
          end if
 
         end if !exchange-correlation potential
@@ -1665,11 +1665,8 @@ contains
                                 ao(1, ao_off_g1_m0(3, 0) + 1))
              end if
 
-!gosia:
-!sdft+lao now separately, later will be moved to u%s and u%gs,
-!now i left it separately for debugging
-
 !radovan: this code does not seem to be covered by any test, is this true?
+!gosia: tested in 'london_properties_symmetry'
 
              us_lao_above_threshold = .false.
              if (maxval((/dabs(u%s_lao(1, im)), &
@@ -1692,6 +1689,8 @@ contains
              end if
 
              if (ugs_lao_above_threshold) then
+!               F_pq(im) +=   u%s_lao(j, im)   \chi_p* \Sigma_j \chi_q
+!                        + 2 u%gs_lao(:, j, im) \chi_p* \Sigma_j \nabla_i \chi_q
                 call nabla_omega_imag(fmat,                &
                                       im,                  &
                                       fmat_pg_sym(im) - 1, &
@@ -1702,13 +1701,13 @@ contains
                                       ao)
              else
                 if (us_lao_above_threshold) then
-!                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
+!                  F_pq(im) += u%s_lao(j, im) \chi_p* \Sigma_j \chi_q
                    call omega_imag(fmat,                &
-                                   im,                  &
-                                   fmat_pg_sym(im) - 1, &
+                                   im,                  &  ! in order: Bx, By, Bz
+                                   fmat_pg_sym(im) - 1, &  ! irep of property gradient
                                    mat_dim,             &
                                    nz,                  &
-                                   u%s_lao(1, im),    &
+                                   u%s_lao(1, im),      &
                                    ao)
                 end if
              end if
@@ -1863,7 +1862,7 @@ contains
       if (do_potential) then
          write(file_unit, '(3x, a, f26.16)')                        &
                'DFT exchange-correlation energy:               = ', &
-               xc_energy
+               get_xc_energy()
       end if
 
       write(file_unit, '(3x, a, f26.16)')                        &
@@ -1919,12 +1918,18 @@ contains
 
    function get_xc_energy()
       real(8) :: get_xc_energy
-      get_xc_energy = xc_energy
+      get_xc_energy = xc_energy + xc_energy_delta
    end function
+
+   subroutine set_xc_energy_delta(dXC,dXCpot)
+      real(8), intent(in), optional :: dXC,dXCpot
+      if(present(dXC   )) xc_energy_delta     = dXC
+      if(present(dXCpot)) xc_mat_energy_delta = dXCpot
+   end subroutine set_xc_energy_delta
 
    function get_xc_mat_energy()
       real(8) :: get_xc_mat_energy
-      get_xc_mat_energy = xc_mat_energy
+      get_xc_mat_energy = xc_mat_energy + xc_mat_energy_delta
    end function
 
    function get_susc2el_integrated() result(r)
@@ -2516,16 +2521,12 @@ contains
       if (calculate_qr) then
 
          if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
             call get_kin_tau(t_b,     &
                          isym(im) - 1,             &
                          mat_dim, &
                          dmaterturbed(1 + im_off), &
                          buffer,  &
                          ao)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
          end if
 
          if (is_gga_qr) then
@@ -2570,15 +2571,11 @@ contains
         end if
 
         if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
            u%tn(im) = u%tn(im) + derv(1, d0000020)*t_b
            u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
            u%tn(im) = u%tn(im) + derv(1, d0010010)*z_b
            u%n(im)  = u%n(im)  + derv(1, d1000010)*t_b
            u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*t_b*derv(1, d0010010)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
         end if
 
       end if !end of qr contribution
@@ -2614,16 +2611,12 @@ contains
                    ao)
         end if
         if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
            call get_kin_tau_imag(ts_b,     &
                              isym(im) - 1,             &
                              mat_dim, &
                              dmaterturbed(1 + im_off), &
                              buffer,  &
                              ao)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
         end if
 
         do k = k_start, 3
@@ -2641,15 +2634,11 @@ contains
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
            if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
               u%ts(k, im) = u%ts(k, im) + derv(1, d0000002)*ts_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0001001)*y_b(k)
               u%s(k, im) = u%s(k, im) + derv(1, d0100001)*ts_b(k)
               u%gs(1:3, k, im) = u%gs(1:3, k, im) + gn_0_pointwise(1:3)*ts_b(k)*derv(1, d0001001)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
            end if
         end do
 
@@ -2696,6 +2685,7 @@ contains
     real(8)                :: y_b(3)
 
     integer                :: k_start, k, im, im_off, j, ioff, i
+    integer                :: irep(nr_fmat)
     type(omega_prefactor) :: u
 
     real(8) :: temp(pertden_nr_columns)
@@ -2705,6 +2695,7 @@ contains
 !   s_b_lao(Sigma_{x,y,z}, B_{x,y,z})
     s_b_lao = 0.0d0
     gs_b_lao = 0.0d0
+    irep = 0 ! irep of unperturbed dmat_0 (totally symmetric)
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
@@ -2721,9 +2712,9 @@ contains
 
       call get_gs_lao(s_b_lao,    &
                      gs_b_lao,    &
-                     fmat_pg_sym - 1, &
+                     irep,        &
                      mat_dim,     &
-                     dmat_full,   &
+                     dmat_full,   & ! this is the unperturbed dmat_0
                      ao,          &
                      px, py, pz, buffer)
     else
@@ -2736,13 +2727,14 @@ contains
       !                          (/px, py, pz/))
 
       call get_s_lao(s_b_lao,      &
-                     fmat_pg_sym-1,  &
+                     irep,         &
                      mat_dim,      &
-                     dmat_full,    &
+                     dmat_full,    & ! this is the unperturbed dmat_0
                      ao,           & 
                      px, py, pz,   &
                      buffer)
     end if
+
 
      do im = 1, nr_fmat         ! B_{x,y,z}
         do k = k_start, 3       ! Sigma_{x,y,z}

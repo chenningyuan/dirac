@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
       PROGRAM MX2FIT
@@ -132,8 +127,7 @@
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(ANGM = 1.0D-10,XTCM = 2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI)
@@ -141,6 +135,11 @@
       DIMENSION A(*),B(*),C(*),D(*),IBUF(*)
       DIMENSION X(MP),Y(MP)
       CHARACTER POTFIL*6,REPLY*1
+      DOUBLE PRECISION XTM,AMUKG
+!
+      call set_codata_values(CODSET)
+      XTM   = XTANG*ANGM
+      AMUKG = UMASS
 !
       IUNIT = 1
       ILOGG = 2
@@ -297,8 +296,7 @@
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(ANGM = 1.0D-10,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI)
@@ -306,6 +304,11 @@
       DIMENSION A(*),B(*),C(*),D(*),IBUF(*)
       DIMENSION X(MP),Y(MP),YB(MP),XB(MP)
       CHARACTER POTFIL*6,REPLY*1
+      DOUBLE PRECISION XTM,AMUKG
+!
+      call set_codata_values(CODSET)
+      XTM   = XTANG*ANGM
+      AMUKG = UMASS
 !
       IUNIT = 1
       ILOGG = 2
@@ -447,8 +450,7 @@
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(ANGM = 1.0D-10,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI,CNV = PI/360.0D0)
@@ -456,6 +458,11 @@
       DIMENSION A(*),B(*),C(*),D(*),IBUF(*)
       DIMENSION X(MP),Y(MP)
       CHARACTER POTFIL*6,REPLY*1
+      DOUBLE PRECISION XTM,AMUKG
+!
+      call set_codata_values(CODSET)
+      XTM   = XTANG*ANGM
+      AMUKG = UMASS
 !
       IUNIT = 1
       ILOGG = 2

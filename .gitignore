@@ -2,7 +2,15 @@ build*/
 test/*/*.out*
 test/*/*.stdout
 test/*/*.stderr
+test/*/*.tgz*
 *.pyc
 src/tags
 venv/
 src/relccsd/parallelization_notes
+.vscode
+test/*/X2CMAT*
+test/*/*DFCOEF*
+test/*/aoo*
+test/aonev*
+src/*/*.swp
+

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -99,7 +94,7 @@ C     FILES :
 C
 C      8 (MRCONEE)  : 1-ELECTRON INTEGRALS
 C      9 (MDCINT)   : 2-ELECTRON COULOMB INTEGRALS
-C     10 (MDBINT)   : 2-ELECTRON BREIT INTEGRALS 
+C     10 (MDBINT)   : 2-ELECTRON BREIT INTEGRALS
 C     11 (MRCTRIV)  : TRIAL VECTORS
 C     12 (MRCFINV)  : FINAL VECTORS
 C     13 (MRCEXCS)  : COUPLING COEFFICIENTS (TEMPORARY FILE)
@@ -122,11 +117,6 @@ CMKN
       call alloc(CI,MCORE,id='CI work space in CIDIRR')
 C
       MAXCORE = MCORE
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IERR = 0
-      CALL ASNUNIT(5,'-Yon',IERR)
-      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
-#endif
 CMKN
 C Modified by Malaya .K. Nayak on 4th Feb. 2011
 C This part will calculate normal RASCI energy
@@ -137,39 +127,29 @@ CMKN
       IF (DONE) RETURN
       CALL DRIVER  (CI)
       CALL USEROUT (CI)
-CMKN
-C      call dealloc(CI)
-CMKN
 C Modified by Malaya .K. Nayak on 4th Feb. 2011
 C This part will calculate the RASCI property
-CMKN
       REWIND (5)
       READ (5,CIFOPR,END=700,ERR=700)
   700 CONTINUE
       IF (PROPER) THEN
-      WRITE (6,'(//80A1)') ('#',I=1,80)
-      WRITE (6,'(A30,//A30)')'Entering RASCI Property Module',
+        WRITE (6,'(//80A1)') ('#',I=1,80)
+        WRITE (6,'(A30,//A30)')'Entering RASCI Property Module',
      &                       'Implemented by Malaya K. Nayak'
-      DO IEOPER = 1,NEOPER
-      NAMEA = NAMEE(IEOPER)
-      CALL SETUP   (CI,DONE)
-      RESTART = .TRUE.
-      IF (DONE) RETURN
-      MAXITER = 1
-      CALL DRIVER  (CI)
-      END DO
-      WRITE(6,'(//10x,A41)')'-- Normal end of RASCI Property Module --'
-      ELSE
-      WRITE (6,'(//70A1)') ('*',I=1,70)
-      WRITE (6,'(A36,//A36)')'RASCI Property Module Implemented by',
-     &                       'Dr. Malaya K. Nayak is not activated'
-      WRITE (6,'(//70A1)') ('*',I=1,70)
+        DO IEOPER = 1,NEOPER
+          NAMEA = NAMEE(IEOPER)
+          CALL SETUP   (CI,DONE)
+          RESTART = .TRUE.
+          IF (DONE) RETURN
+          MAXITER = 1
+          CALL DRIVER  (CI)
+        END DO
+        WRITE(6,'(//10x,A41)')
+     &    '-- Normal end of RASCI Property Module --'
       END IF
-CMKN
       call dealloc(CI)
-CMKN
 C
-C     Clean up : Throw away Scratch Files 
+C     Clean up : Throw away Scratch Files
 C
       CLOSE (MRCEXCS,STATUS='DELETE')
       CLOSE (MRCVECS,STATUS='DELETE')
@@ -191,6 +171,8 @@ C
 #include "general.inc"
 #include "mempoint.inc"
 C
+      DIMENSION MINE(16),MAXE(16),IGAS(16),NGASO(256)
+      NAMELIST/GOSCIP/NELACT,NGAS,MINE,MAXE,NGASO,REFDET,IREFE,IPRNT,FCI
       REAL*8 CI(*)
       CHARACTER*8 TIMEX,DATEX*10
       LOGICAL DONE
@@ -200,9 +182,25 @@ C
       WRITE (6,1000) DATEX,TIMEX
       CALL CPUUSED(CPUSET)
 C
+C     ! In case we run GOSCIP: we're done after that calculation
+      NGAS  = 1
+      MINE  = 0
+      MAXE  = 0
+      IGAS  = 0
+      NGASO = 0
+      NELACT = 0
+      REWIND (5)
+      READ (5,GOSCIP,END=1,ERR=1)
+ 1    IF (NELACT.NE.0) THEN
+        CALL PAMGOS(CI,MAXCORE,NELACT,NGAS,IGAS,MINE,MAXE,NGASO)
+        DONE = .TRUE.
+        RETURN
+      ELSE
+        DONE = .FALSE.
+      ENDIF
+C
       CALL SYMMIN
-      CALL USERIN (CI,DONE)
-      IF (DONE) RETURN
+      CALL USERIN
       CALL ORBSIN
       CALL SORTMEM
       CALL SHUFFLE (CI(ITR),CI(ITI),CI(IIK),
@@ -216,9 +214,9 @@ C
      &               ISTART,SELECT,(NSEL(I),I=1,NROOTS)
       WRITE (6,1011) MAXITER,CONVERE,CONVERR,CPUMAX,RESTART
       IF (GETDET) THEN
-	 WRITE (6,1012) GETDET,COMIN,MAKENAT
-      ELSE 
-	 WRITE (6,1013) GETDET,MAKENAT
+         WRITE (6,1012) GETDET,COMIN,MAKENAT
+      ELSE
+         WRITE (6,1013) GETDET,MAKENAT
       ENDIF
       WRITE (6,1020) NELEC,NORB,NORBR
       IF (NORBR(1).EQ.0) MAXH1=0
@@ -264,10 +262,10 @@ C     Version 1.2.0 : Calculates Density Matrix
 C                     Code adapted to Hewlett Packard Workstations
 C     Version 1.2.1 : Special code for integrals with 3 or more external labels
 C     Version 1.2.2 : Dynamic Memory Allocation checking.
-C     Version 1.3   : Selecting leading determinants.  
+C     Version 1.3   : Selecting leading determinants.
 C     Version 1.3.1 : Generates MFDVECA file with natural spinors
-C     Version 1.3.2 : BugFix. Now generates totaly symmetric natural spinors 
-C     Version 1.3.3 : Option to delete virtual spinors 
+C     Version 1.3.2 : BugFix. Now generates totaly symmetric natural spinors
+C     Version 1.3.3 : Option to delete virtual spinors
 C     Version 1.4   : Reduction of memory required : write out CI vectors
 C                     Deleted CNVE statements
 C     Version 1.5   : Ported to IBM RS6000
@@ -374,10 +372,7 @@ C
      &               CI(IPJR+LCOREX),CI(IVW1),
      &               CI(IPDG))
       ENDIF
-CMKN
-C      WRITE (6,1000)
       IF (.NOT.PROPER) WRITE (6,1000)
-CMKN
 C
       DO 200 ITER = 1, MAXITER
          CALL CPUUSED(CPITER)
@@ -448,7 +443,7 @@ C     GENERATE : - ADRESSES OF ALL INTERACTING DETERMINANTS
 C                  JLIND: TAIL PART OF ADRESSES OF BRA DETERMINANTS
 C                  JRIND: TAIL PART OF ADRESSES OF KET DETERMINANTS
 C                         PLUS SIGN OF INTERACTION MULTIPLIED BY HEAD PART
-C     DIRECTION : WALK FROM BOTTOM TO TOP OF GRAPH    
+C     DIRECTION : WALK FROM BOTTOM TO TOP OF GRAPH
 C     ======================================================================
 C
 #include "param.inc"
@@ -587,7 +582,7 @@ C     -----------------------------
 C     SPLIT THE LEFT AND RIGHT PATH
 C     -----------------------------
       I = ITAIL - 1
-      IJARR = (.NOT.IJARR)   
+      IJARR = (.NOT.IJARR)
       JDET = 0
       JMIN = IORBR(I)
       JMIN = MAX0(NELEC+I-NORB,0)
@@ -631,7 +626,7 @@ C     -------------------
 C     MAKE ALL LOOPBODIES
 C     -------------------
       DO 3300 I = ITAIL - 2, IHEAD, - 1
-      IJARR = (.NOT.IJARR)      
+      IJARR = (.NOT.IJARR)
       JDET = 0
       JMIN = IORBR(I)
       JMIN = MAX0(NELEC+I-NORB,0)
@@ -657,7 +652,7 @@ C     -------------------------------------------
      &                  IVDET(ILR,I+1,J+1)+JVDET(ILR,I+1,J+1)
                JDET = JDET + 1
                JLIND(JDET) = ILIND(K) + IVWU(ILR,I,J+1)
-               JRIND(JDET) = -1 * ISIGN(1,IRIND(K)) * 
+               JRIND(JDET) = -1 * ISIGN(1,IRIND(K)) *
      &                       (IABS(IRIND(K)) + IVWU(IRR,I,J+2))
  3060       CONTINUE
          ENDIF
@@ -675,7 +670,7 @@ C     -------------------------------------------
      &                  IVDET(ILR,I+1,J+1)+JVDET(ILR,I+1,J+1)
                JDET = JDET + 1
                ILIND(JDET) = JLIND(K) + IVWU(ILR,I,J+1)
-               IRIND(JDET) = -1 * ISIGN(1,JRIND(K)) * 
+               IRIND(JDET) = -1 * ISIGN(1,JRIND(K)) *
      &                       (IABS(JRIND(K)) + IVWU(IRR,I,J+2))
  3061       CONTINUE
          ENDIF
@@ -788,12 +783,12 @@ C
       RETURN
       END
 C
-      SUBROUTINE CIMEM 
+      SUBROUTINE CIMEM
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
 C     ========================
-C     GENERATE MEMORY POINTERS 
+C     GENERATE MEMORY POINTERS
 C     ========================
 C
 #include "param.inc"
@@ -810,7 +805,7 @@ C
       ITNR = IIJR + NORB**2 / INTOWP(1) + MOD(NORB**2,INTOWP(1))
       ITNR = ITNR + MOD(MDET*(NREP/2),INTOWP(1))
       IF (REALAR) THEN
-         ITNI = ITNR 
+         ITNI = ITNR
          IIJE = ITNI + NORBC
          IGMR = IIJE + NORBC
          IGMI = IGMR
@@ -837,7 +832,7 @@ C
          IPSR = IPVI + NDET*MAXB
          IPSI = IPSR + NDET*MAXC
       ENDIF
-C   
+C
       IPIL = IPSI + NDET*MAXC
       NDIM = NDET / INTOWP(1) + MOD(NDET,INTOWP(1))
       IPIR = IPIL + NDIM
@@ -855,7 +850,7 @@ C
       NORBD = (LREST - MOD(LREST,4)) / 4
       NELEM = NORB * NORB
       LNORBC = (NORBD - MOD(NORBD,NELEM)) / NELEM
-      LNORBC = LNORBC * INTOWP(1) 
+      LNORBC = LNORBC * INTOWP(1)
       IF (LNORBC.LT.NORB) THEN
          WRITE(6,*) 'LNORBC/NORB :',LNORBC,NORB
          CALL Q2JOB (6,'MEMORY PROBLEMS',' ',0)
@@ -901,7 +896,7 @@ C
       IVWS = 2*MXREP * (NORB + 1) * (NELEC + 1)
       IVWW = IVWS / INTOWP(1) + MOD(IVWS,INTOWP(1))
       IVWI = IVWW * INTOWP(1)
-      IVW1 = 1               
+      IVW1 = 1
       IIJR = IVW1 + 3*IVWW
 C
       RETURN
@@ -1021,16 +1016,16 @@ C
 C
       IF (ENDRUN) THEN
          DO IROOT = 1, NROOTS
-	  IF (DCORR(IROOT)) THEN
+          IF (DCORR(IROOT)) THEN
             ECORR = EIGEN2(IROOT)-EIGEN1(IROOT)
-	    DAVCOR = (1.D0-REFVEC(IROOT))*ECORR
+            DAVCOR = (1.D0-REFVEC(IROOT))*ECORR
             WRITE (6,1020) IROOT,EIGEN2(IROOT),ECORR,DAVCOR,
      &                     EIGEN2(IROOT)+DAVCOR,RESIDU(IROOT)
-	  ELSE
-	    WRITE (6,1021) IROOT,EIGEN2(IROOT),EIGEN2(IROOT)-
+          ELSE
+            WRITE (6,1021) IROOT,EIGEN2(IROOT),EIGEN2(IROOT)-
      &                     EIGEN1(IROOT),(1.D0-REFVEC(IROOT)),
      &                     RESIDU(IROOT)
-	  ENDIF
+          ENDIF
          ENDDO
          WRITE (6,1030) CPUTOT
          RETURN
@@ -1092,7 +1087,7 @@ C     -----------------------------------------
 C     LOOP OVER SINGLE PARTICLE REPRESENTATIONS
 C     -----------------------------------------
       DO 1200 I = 1, NORB
-         DO 1100 J = 1, I   
+         DO 1100 J = 1, I
             DENSR(I,J) = 0.D0
             IF (.NOT.REALAR) DENSI(I,J) = 0.D0
             IF (IRPAMO(J).NE.IRPAMO(I)) GOTO 1100
@@ -1106,8 +1101,8 @@ C     --------------------------------
 C     START "WHILE LOOP" OVER VERTICES
 C     --------------------------------
    30      IVERT = IVERT + 1
-           JD1 = JVECL(1,IVERT) + 1 
-           JD2 = JVECL(1,IVERT+1) 
+           JD1 = JVECL(1,IVERT) + 1
+           JD2 = JVECL(1,IVERT+1)
            NDH = IABS(JVECL(2,IVERT))
            IF (NDH.EQ.0) GOTO 1100
 C$DIR FORCE_PARALLEL
@@ -1120,7 +1115,7 @@ C$DIR FORCE_PARALLEL
                     IL = ILD + IDH
                     IR = IRD + IDH
                     DENSR(I,J) = DENSR(I,J) +
-     &              VECTR(IL,IVEC) * IS * VECTR(IR,IVEC) 
+     &              VECTR(IL,IVEC) * IS * VECTR(IR,IVEC)
   398            CONTINUE
               ELSE
                  DO 400 IDH = 1, NDH
@@ -1174,13 +1169,6 @@ C
       DIMENSION IDIND(*),JDET(*),JELEC(*),JSYM(*)
       DIMENSION IVWU(2*MXREP,0:NORB,0:NELEC)
 C
-C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IAND (I, J) = AND (I, J)
-      IOR (I, J) = OR (I, J)
-      NOT(I) = COMPL (I)
-      ISHFT (I, J) = SHIFT (I, J)
-#endif
 C
       DO 10 ID = 1, ND
       JELEC(ID) = NORBR(1)
@@ -1268,20 +1256,21 @@ C
 #include "files.inc"
 #include "symm.inc"
 #include "mempoint.inc"
-CMKN
-      DIMENSION DGER(NDET),DGEI(NDET),DI(MDET)
-CMKN
       DIMENSION DGEL(*),DR(*),TINTR(*),TINTI(*),GMATR(*),GMATI(*)
       DIMENSION IVWA(*),IJREC(NORB,NORB)
       DIMENSION IJEX(*),ILIND(*),IRIND(*),JLIND(*),JRIND(*),JVECL(2,*)
       LOGICAL ENDFIL
+      real*8, allocatable :: DGER(:),DGEI(:),DI(:)
 C
       REWIND (MRCTWOE)
       CALL ZZERO(NDET,DGEL)
-CMKN
-      CALL ZZERO(NDET,DGER)
-      CALL ZZERO(NDET,DGEI)
-CMKN
+      IF (PROPER) THEN
+        allocate(DGER(NDET))
+        allocate(DGEI(NDET))
+        allocate(DI(NDET))
+        CALL ZZERO(NDET,DGER)
+        CALL ZZERO(NDET,DGEI)
+      ENDIF
 C     -------------------------------------------
 C     THE COULOMB TYPE OF CONTRIBUTIONS : (II|JJ)
 C     -------------------------------------------
@@ -1291,9 +1280,9 @@ C     -------------------------------------------
         J = MOD(IJ-1,NORB) + 1
         IF (I.NE.J) GOTO 3000
           CALL ZZERO (MDET,DR(1))
-CMKN
-      IF (.NOT.REALAR) CALL ZZERO (MDET,DI(1))
-CMKN
+          IF(PROPER) THEN
+            IF (.NOT.REALAR) CALL ZZERO (NDET,DI)
+          ENDIF
           IF (IJREC(I,J).GT.0) THEN
              IVERT = IJREC(I,J) - 1
              ICOREX = 0
@@ -1321,13 +1310,11 @@ C         --------------------------------
                   IL = ILD + IDH
                   DGEL(IL) = DGEL(IL) + GMATR(IJ)
                   DR(IL) = 1.D0
-CMKN
-      IF (PROPER) THEN
-      DGER(IL) = DGER(IL) + GMATR(IJ)
-      IF (.NOT.REALAR) DGEI(IL) = DGEI(IL) + GMATI(IJ)
-      DI(IL) = 1.D0
-      END IF
-CMKN
+                  IF (PROPER) THEN
+                    DGER(IL) = DGER(IL) + GMATR(IJ)
+                    IF (.NOT.REALAR) DGEI(IL) = DGEI(IL) + GMATI(IJ)
+                    DI(IL) = 1.D0
+                  END IF
   300             CONTINUE
   400          CONTINUE
 C           --------------
@@ -1357,19 +1344,18 @@ C
                JD2 = JVECL(1,IVERT+1) + ICOREX
                NDH = IABS(JVECL(2,IVERT))
                IF (NDH.EQ.0) GOTO 2000
-                DO 1400 ID = JD1, JD2
-                   ILD = JLIND(ID) - 1
-                   DO 1300 IDH = 1, NDH
-                      IL = ILD + IDH
-                      DGEL(IL) = DGEL(IL) + TINTR(IX) * DR(IL)
-CMKN
-      IF (PROPER) THEN
-      DGER(IL) = DGER(IL) + TINTR(IX)*DR(IL)
-      IF (.NOT.REALAR) DGEI(IL) = DGEI(IL) + TINTI(IX)*DI(IL)
-      END IF
-CMKN
- 1300                 CONTINUE
- 1400              CONTINUE
+               DO 1400 ID = JD1, JD2
+                 ILD = JLIND(ID) - 1
+                 DO 1300 IDH = 1, NDH
+                   IL = ILD + IDH
+                   DGEL(IL) = DGEL(IL) + TINTR(IX) * DR(IL)
+                   IF (PROPER) THEN
+                     DGER(IL) = DGER(IL) + TINTR(IX)*DR(IL)
+                     IF (.NOT.REALAR)
+     &               DGEI(IL) = DGEI(IL) + TINTI(IX)*DI(IL)
+                   END IF
+ 1300            CONTINUE
+ 1400          CONTINUE
 C               --------------
 C               DO NEXT VERTEX
 C               --------------
@@ -1419,18 +1405,16 @@ C             --------------------------------
              NDH = IABS(JVECL(2,IVERT))
              IF (NDH.EQ.0) GOTO 5000
              DO 2400 ID = JD1, JD2
-                IRD = IABS(JRIND(ID)) - 1
-                DO 2300 IDH = 1, NDH
-                   IR = IRD + IDH
-                   DGEL(IR) = DGEL(IR) + TINTR(IX)
-CMKN
-      IF (PROPER) THEN
-      DGER(IR) = DGER(IR) + TINTR(IX)
-      IF (.NOT.REALAR) DGEI(IR) = DGEI(IR) + TINTI(IX)
-      END IF
-CMKN
- 2300              CONTINUE
- 2400           CONTINUE
+               IRD = IABS(JRIND(ID)) - 1
+               DO 2300 IDH = 1, NDH
+                 IR = IRD + IDH
+                 DGEL(IR) = DGEL(IR) + TINTR(IX)
+                 IF (PROPER) THEN
+                   DGER(IR) = DGER(IR) + TINTR(IX)
+                   IF (.NOT.REALAR) DGEI(IR) = DGEI(IR) + TINTI(IX)
+                 END IF
+ 2300          CONTINUE
+ 2400        CONTINUE
 C            --------------
 C            DO NEXT VERTEX
 C            --------------
@@ -1445,22 +1429,21 @@ C     GET NEXT INTEGRAL BLOCK
 C     -----------------------
       GOTO 5000
  5001 CONTINUE
-CMKN
       IF (PROPER) THEN
-      WRITE(*,25)NAMEA
-      DO IROOT = 1,NROOTS
-      WRITE(*,50)IROOT,INDMIN(IROOT),DGER(INDMIN(IROOT)),
-     &                               DGEI(INDMIN(IROOT))
-      END DO
+        WRITE(*,25)NAMEA
+        DO IROOT = 1,NROOTS
+          WRITE(*,50)IROOT,INDMIN(IROOT),DGER(INDMIN(IROOT)),
+     &                                   DGEI(INDMIN(IROOT))
+        END DO
+        deallocate(DGER)
+        deallocate(DGEI)
+        deallocate(DI)
       END IF
-CMKN
       RETURN
-CMKN
    25 FORMAT (/' UN-CORRELATED PROPERTY: ',A8,14X,'REAL',14X,
      &          'IMAGINARY')
    50 FORMAT (/' Root',I4,' is determinant',I4,' Exp. Value:',
      &           F16.12,4X,F16.12)
-CMKN
       END
 C
       BLOCK DATA DIRDAT
@@ -1562,10 +1545,10 @@ C$DIR FORCE_PARALLEL
                  ENDDO
               ENDIF
               IF (IRPAMO(I).EQ.IRPAMO(J)) THEN
-                 DO IDH = 1 , NDH 
+                 DO IDH = 1 , NDH
                     IL = ILD + IDH
                     SIGMAR(IL,IVEC) = SIGMAR(IL,IVEC) +
-     &              DR(IL,IVEC) * GMATR(IJ) 
+     &              DR(IL,IVEC) * GMATR(IJ)
                     IF (.NOT.REALAR) THEN
                        SIGMAR(IL,IVEC) = SIGMAR(IL,IVEC) -
      &                 DI(IL,IVEC) * GMATI(IJ)
@@ -1611,7 +1594,7 @@ C        -------------------------------------------------------------
             JVECL(2,NTVERT) = IVWU(IVSYM,INTERN,NELEC-2)
             IF (K.EQ.I) JVECL(2,NTVERT) = 0
             JVECL(2,NTVERT+1) = 0
-            JRIND(NCOREX) = ISIGN(1,L-I) * (IVWU(IREP,K-1,NELEC) 
+            JRIND(NCOREX) = ISIGN(1,L-I) * (IVWU(IREP,K-1,NELEC)
      &                      + IVWU(IV1SYM,I-1,NELEC-1)+1)
             IF (I.LT.L) THEN
                JLIND(NCOREX) = IVWU(KREP,L-1,NELEC) +
@@ -1665,7 +1648,7 @@ C$DIR FORCE_PARALLEL
                     IL = ILD + IDH
                     IR = IRD + IDH
                     SIGMAR(IL,IVEC) = SIGMAR(IL,IVEC) +
-     &              DR(IR,IVEC) * IS * TINTR(IX) 
+     &              DR(IR,IVEC) * IS * TINTR(IX)
                  ENDDO
                  IF (.NOT.REALAR) THEN
                     DO IDH = 1, NDH
@@ -1749,27 +1732,24 @@ C      END OF WRITING CI-MATRIX FOR DIFFERENT OPERATORS
 C      *************************************************************
 CMKN
       IF (PROPER) THEN
-      WRITE(*,25)NAMEA
-      DO IVEC=1,NVEC-MVEC
-      PRPR=0.0D0
-      PRPI=0.0D0
-      DO I=1,NDET
-      IF (REALAR) THEN
-      PRPR=PRPR+SIGMAR(I,IVEC)*VECTR(I,IVEC)
-      ELSE
-      PRPR=PRPR+SIGMAR(I,IVEC)*VECTR(I,IVEC)
-     &         +SIGMAI(I,IVEC)*VECTI(I,IVEC)
-      PRPI=PRPI+SIGMAR(I,IVEC)*VECTI(I,IVEC)
-     &         -SIGMAI(I,IVEC)*VECTR(I,IVEC)
-      END IF
+        WRITE(*,25)NAMEA
+        DO IVEC=1,NVEC-MVEC
+          PRPR=0.0D0
+          PRPI=0.0D0
+        DO I=1,NDET
+        IF (REALAR) THEN
+          PRPR=PRPR+SIGMAR(I,IVEC)*VECTR(I,IVEC)
+        ELSE
+          PRPR=PRPR+SIGMAR(I,IVEC)*VECTR(I,IVEC)
+     &             +SIGMAI(I,IVEC)*VECTI(I,IVEC)
+          PRPI=PRPI+SIGMAR(I,IVEC)*VECTI(I,IVEC)
+     &             -SIGMAI(I,IVEC)*VECTR(I,IVEC)
+        END IF
       END DO
-      WRITE(*,50)IVEC,IVEC,PRPR,PRPI
-C      WRITE(*,51)IVEC,IVEC,PRPR,PRPI
+      WRITE(*,50) IVEC,IVEC,PRPR,PRPI
       END DO
       END IF
-CMKN
 C     **************************************************************
-CMKN
 C
       DO IVEC = 1, NVEC - MVEC
       CALL PUTSIG (MVEC+IVEC,SIGMAR(1,IVEC),SIGMAI(1,IVEC))
@@ -1810,7 +1790,7 @@ C
          RETURN
       ELSEIF (IGENEX.EQ.2) THEN
 C     ------------------------------------------
-C     One cannot use the symmetry 
+C     One cannot use the symmetry
 C
 C     USE SYMMETRY : <I|E(i,j)|J> = <J|E(j,i)|I>
 C
@@ -1847,7 +1827,7 @@ C
       Return
 C
       ENTRY GetSig (ivec,Sigr,SigI)
-      irec = ivec * 2 
+      irec = ivec * 2
       IF (REALAR) THEN
          Read (MRCVECS,REC=IREC) (SIGR(I),I=1,NDET)
       ELSE
@@ -1904,7 +1884,6 @@ C
          LVEC = IVEC + MVEC
 C
          CMTR(LVEC,JVEC) = DDOT (NDET,SIGMAR(1,IVEC),1,VECTR(1,KVEC),1)
-C64B     CMTR(LVEC,JVEC) = SDOT (NDET,SIGMAR(1,IVEC),1,VECTR(1,KVEC),1)
   101    CONTINUE
   201    CONTINUE
       ELSE
@@ -1917,10 +1896,6 @@ C
      &                   + DDOT (NDET,SIGMAI(1,IVEC),1,VECTI(1,KVEC),1)
          CMTI(LVEC,JVEC) = DDOT (NDET,SIGMAR(1,IVEC),1,VECTI(1,KVEC),1)
      &                   - DDOT (NDET,SIGMAI(1,IVEC),1,VECTR(1,KVEC),1)
-C64B     CMTR(LVEC,JVEC) = SDOT (NDET,SIGMAR(1,IVEC),1,VECTR(1,KVEC),1)
-C64B &                   + SDOT (NDET,SIGMAI(1,IVEC),1,VECTI(1,KVEC),1)
-C64B     CMTI(LVEC,JVEC) = SDOT (NDET,SIGMAR(1,IVEC),1,VECTI(1,KVEC),1)
-C64B &                   - SDOT (NDET,SIGMAI(1,IVEC),1,VECTR(1,KVEC),1)
   100    CONTINUE
   200    CONTINUE
       ENDIF
@@ -2052,9 +2027,9 @@ C
 #include "symm.inc"
 C
       DIMENSION GMATR(*),GMATI(*),TINTR(*),TINTI(*),IJEX(*)
-CMKN
-      DIMENSION PROP(2,300,300),AIJ(2*300*300),APHASE(2)
-CMKN
+      real(8), allocatable :: PROP(:,:,:)
+      real(8), allocatable :: AIJ(:)
+      DIMENSION APHASE(2)
       LOGICAL ENDFIL
 C
       OPEN (MRCONEE,FILE=FNAM(1),FORM='UNFORMATTED')
@@ -2079,14 +2054,15 @@ C     Reorder one-electron integrals (some orbitals may be deleted)
 C     -------------------------------------------------------------
       jid = 0
       do ii = 1, morb
-	 do jj = 1, morb
-	    jid = jid + 1
-	    i = indmo(ii)
-	    j = indmo(jj)
-	    If (i.NE.0.AND.j.NE.0) Then
-	       ji = norb*(i-1)+j
-	       gmatr(ji) = tintr(jid)
-	       IF (.NOT.REALAR) gmati(ji) = tinti(jid)
+         do jj = 1, morb
+            jid = jid + 1
+            i = indmo(ii)
+            j = indmo(jj)
+            If (i.NE.0.AND.j.NE.0) Then
+               ji = norb*(i-1)+j
+               gmatr(ji) = tintr(jid)
+!LV 28-9-2020: did not modify next line after MRCONEE change, code appeared to have already used Fortran ordering
+               IF (.NOT.REALAR) gmati(ji) = tinti(jid)
             EndIf
          enddo
       enddo
@@ -2119,35 +2095,39 @@ C     READ PROPERTY INTEGRALS FROM FILE 'MDPROP'
 C     Proposed & Written by (Malaya K. Nayak)
 C     ******************************************
       IF (PROPER) THEN
-      IF (REALAR) THEN
-      IRW = 1
-      ELSE
-      IRW = 2
-      END IF
-      CALL PROP_INT(PROP,AIJ,MORB,IRW,APHASE)
+        allocate(PROP(2,MORB,MORB))
+        allocate(AIJ(2*MORB*MORB))
+        IF (REALAR) THEN
+          IRW = 1
+        ELSE
+          IRW = 2
+        END IF
+        CALL PROP_INT(PROP,AIJ,MORB,IRW,APHASE)
 C     *****************************************************
 C     Reorder Property Integrals as per 'CI' Subroutine and
 C     Replace the 1-electron integral by Property Integral
 C     **********************************************
-      IA = 0
-      DO II=1,MORB
-      DO JJ=1,MORB
-      IA = IA+1
-      I = INDMO(II)
-      J = INDMO(JJ)
-      IF (I.NE.0 .AND. J.NE.0) THEN
-      IJ = (I-1)*NORB+J
-      GMATR(IJ) = 0.0D0
-      GMATI(IJ) = 0.0D0
-      IF (REALAR) THEN
-      GMATR(IJ) = GMATR(IJ) + AIJ(IA)
-      ELSE
-      GMATR(IJ) = GMATR(IJ) + AIJ(IRW*IA-1)
-      GMATI(IJ) = GMATI(IJ) + AIJ(IRW*IA)
-      END IF
-      END IF
-      END DO
-      END DO
+        IA = 0
+        DO II=1,MORB
+          DO JJ=1,MORB
+            IA = IA+1
+             I = INDMO(II)
+             J = INDMO(JJ)
+             IF (I.NE.0 .AND. J.NE.0) THEN
+               IJ = (I-1)*NORB+J
+               GMATR(IJ) = 0.0D0
+               GMATI(IJ) = 0.0D0
+               IF (REALAR) THEN
+                 GMATR(IJ) = GMATR(IJ) + AIJ(IA)
+               ELSE
+                 GMATR(IJ) = GMATR(IJ) + AIJ(IRW*IA-1)
+                 GMATI(IJ) = GMATI(IJ) + AIJ(IRW*IA)
+              END IF
+            END IF
+          END DO
+        END DO
+        deallocate(PROP)
+        deallocate(AIJ)
       END IF
 C     *****************************************************
 C     END OF READING & RE-ORDERING PROPERTY INTIGRALS
@@ -2169,7 +2149,7 @@ C
 #include "param.inc"
 #include "files.inc"
 #include "symm.inc"
-#include "mempoint.inc" 
+#include "mempoint.inc"
 C
       DIMENSION JVECL(2,*),JLIND(*),JRIND(*),ILIND(*),IRIND(*)
       DIMENSION IJREC(NORB,NORB),IVWA(*)
@@ -2181,7 +2161,6 @@ C
       ICOREX = 1
       LNCORE = LNORBC*NORB*NORB
       LEXREC = 512
-C64B  LENREC = LEXREC * 8
       LENREC = LEXREC * 4
       IF (IGENEX.EQ.2) OPEN (MRCEXCS,FILE=FNAM(6),ACCESS='DIRECT',
      &                       RECL=LENREC)
@@ -2298,22 +2277,22 @@ CLV   the RETURN statement of the next line.
       Open (22,File=FilNSc,Form='Formatted')
       MaxSinRep = 0
       Do I = 1, 16
-	 NSinRep(I) = 0
-	 Ndeg(I) = 0
+         NSinRep(I) = 0
+         Ndeg(I) = 0
       EndDo
       Do I = 1,16
         DO m=1,16
           IF (RepN(I)(1:4).EQ.RepN(m)(1:4)) Ndeg(I)=Ndeg(I)+1
-	ENDDO
+        ENDDO
       ENDDO
       Do I = 1, Norb
-	 NSinRep(IrpMO(I)) = NSinRep(IrpMO(I)) + 1
+         NSinRep(IrpMO(I)) = NSinRep(IrpMO(I)) + 1
       EndDo
       Do I = 1, 16
-	 If (MaxSinRep.LT.NSinRep(I)) MaxSinRep = NSinRep(I)
+         If (MaxSinRep.LT.NSinRep(I)) MaxSinRep = NSinRep(I)
       EndDo
 C
-      Ioff1 = 1			     
+      Ioff1 = 1
       Ioff5 = Ioff1 + MaxSinRep
       Ioff2 = Ioff5 + MaxSinRep
       Ioff3 = Ioff2 + MaxSinRep
@@ -2324,15 +2303,15 @@ C
          ISize = Ioff4 + MaxSinRep
       ENDIF
       IF (ISize.GT.2*NORBD) THEN
-         WRITE(6,10000) 
+         WRITE(6,10000)
          Close (22,Status='Delete')
          RETURN
       ENDIF
-      Ioff6 = Ioff5 + MaxSinRep   	
+      Ioff6 = Ioff5 + MaxSinRep
       Ioff7 = Ioff6 + MaxSinRep
       ISize = Ioff7 + 4*MaxSinRep**2
       IF (ISize.GT.2*NORBD) THEN
-         WRITE(6,10000) 
+         WRITE(6,10000)
          Close (22,Status='Delete')
          RETURN
       ENDIF
@@ -2345,39 +2324,39 @@ C
       Do 100 Irp = 1, NSymrp
          NS = NSinRep(Irp)
 C        Skip degenerate representations.
-	 If (Irp.GT.1) Then
-	    If (RepN(Irp)(1:4).EQ.RepN(Irp-1)(1:4)) Goto 100
-	 EndIf
+         If (Irp.GT.1) Then
+            If (RepN(Irp)(1:4).EQ.RepN(Irp-1)(1:4)) Goto 100
+         EndIf
 C        Skip representations without active spinors
-	 If (NSinRep(Irp).eq.0) GoTo 100
-C        Average with degenerate representations 
-	 Do nd=0,Ndeg(Irp)-1
-	    k = 0
+         If (NSinRep(Irp).eq.0) GoTo 100
+C        Average with degenerate representations
+         Do nd=0,Ndeg(Irp)-1
+            k = 0
             iorb = 0
             Do i =1, Norb
                If (Irpmo(i).EQ.Irp+nd) Then
-	         Work3(Ioff5+iorb) = Eps(i)
-	         iorb = iorb + 1
-	         jorb = 0 
-	         Do j = 1, Norb
-	           If (IrpMO(j).EQ.Irp+nd) Then
-		     If (nd.EQ.0) Then
-		       Work1(k+1) = 0.0D0
-		       IF (.NOT.REALAR) Work2(k+1) = 0.0D0
+                 Work3(Ioff5+iorb) = Eps(i)
+                 iorb = iorb + 1
+                 jorb = 0
+                 Do j = 1, Norb
+                   If (IrpMO(j).EQ.Irp+nd) Then
+                     If (nd.EQ.0) Then
+                       Work1(k+1) = 0.0D0
+                       IF (.NOT.REALAR) Work2(k+1) = 0.0D0
                      Endif
-	             jorb = jorb + 1
+                     jorb = jorb + 1
 C----------------------------------------------------
 C Use - (Density matrix) to get eigenvalues in right
 C order from the diagonalisation routine
 C----------------------------------------------------
-	             Work1(k+1) = Work1(k+1) - Densr(j,i)*
+                     Work1(k+1) = Work1(k+1) - Densr(j,i)*
      &                            (1.0D0/Ndeg(Irp))
                      IF (.NOT.REALAR) Work2(k+1) = Work2(k+1) -
      &                                Densi(j,i)*(1.0D0/Ndeg(Irp))
-	             k = k + 1
+                     k = k + 1
                    EndIf
-	         EndDo
-	       EndIf
+                 EndDo
+               EndIf
             EndDo
          Enddo
          IFAIL=0
@@ -2393,11 +2372,9 @@ Clv         Better : rewrite as call to CH
             IFAIL = 1
 C           TOL = 1.0D-14
 C           CALL F01BCF(NS,TOL,Work1,NS,Work2,NS, Work3(Ioff1),
-C64B        CALL F01BCE(NS,TOL,Work1,NS,Work2,NS, Work3(Ioff1),
 C    &                  Work3(Ioff2),Work3(Ioff3),Work3(Ioff4))
 C           EPSI = X02AJF()
 C           CALL F02AYF(NS,EPSI,Work3(Ioff1),Work3(Ioff2),
-C64B        CALL F02AYE(NS,EPSI,Work3(Ioff1),Work3(Ioff2),
 C    &                  Work1,NS,Work2,NS,IFail)
          ENDIF
          IF (IFAIL.NE.0) CALL QUIT('**ERROR-CANNOT DIAGONALISE CMTR**')
@@ -2408,7 +2385,7 @@ C    &                  Work1,NS,Work2,NS,IFail)
          Write (6,1020) (Work3(Ioff1+IEigen-1),IEigen=1,NS)
          Call NSRepl (Irp,NS,Work3(Ioff1),Work1,Work2,RepN(Irp),
      &                Work3(Ioff5),Work3(Ioff6),Work3(Ioff7))
-  100 Continue 
+  100 Continue
       Close (21)
       Write (6,1030) Iroot, FilNNS
       Close (22,Status='Delete')
@@ -2436,7 +2413,7 @@ C
 C
       RETURN
       END
-C        
+C
       SUBROUTINE NSRepl (Irp,NS,OccNr,VecR,VecI,
      &                   RepName,EigenV,IRecSP,WORK)
 C
@@ -2455,7 +2432,7 @@ C
       Character Card*132,Format*20,RepName*14
 C
       Do IS = 1, NS
-	 IRecSp(IS) = 0
+         IRecSp(IS) = 0
       EndDo
 C     First Pass : Find the Active Spinors.
       Rewind (21)
@@ -2474,14 +2451,14 @@ C     First Pass : Find the Active Spinors.
       Irec = Irec + 1
       If (Card(6:10).EQ.'*****'.AND.Card(12:25).EQ.RepName) Then
          Read (Card(31:38),'(2I4)') NST,Nbas
-	 IFound = 0
+         IFound = 0
 C
 C        Allocate pointers to store two sets of NS vectors of Nbas length
 C
          Ioff1 = 1
          Ioff2 = Ioff1 + Nbas * NS
-	 Ioff3 = Ioff2 + Nbas * NS
-	 Ioff4 = Ioff3 + Nbas * NS
+         Ioff3 = Ioff2 + Nbas * NS
+         Ioff4 = Ioff3 + Nbas * NS
       EndIf
       If (Card(2:3).EQ.'MO'.AND.IFound.GE.0) Then
          Read (Card,'(10X,F20.10)') EV
@@ -2491,18 +2468,18 @@ C        sure that this one is not appointed to a previously found spinor.
          Do IS = 1, NS
             If (EV.EQ.EigenV(IS).AND.IrecSp(IS).EQ.0) Then
                IrecSp(IS) = Irec
-	       IFound = Ifound + 1
-	       GoTo 20
-	     EndIf
+               IFound = Ifound + 1
+               GoTo 20
+             EndIf
           EndDo
    20     If (Ifound.EQ.NS) GoTo 30
        EndIf
        GoTo 10
 C
    30 If (Ifound.NE.NS) Then
-	 Print*, 'Cannot make natural spinors for repr. ',Repname
-	 Print*, 'Make sure that original MFDVECA file is present'
-	 Return
+         Print*, 'Cannot make natural spinors for repr. ',Repname
+         Print*, 'Make sure that original MFDVECA file is present'
+         Return
       Endif
 C
 C     Read in Canonical Spinors
@@ -2512,8 +2489,8 @@ C
          Do IR = 1, IrecSp(IS)
             Read (21,'(A)') Card
          EndDo
-	 Ioff1a = Ioff1 + (IS-1) * Nbas
-	 Ioff2a = Ioff2 + (IS-1) * Nbas
+         Ioff1a = Ioff1 + (IS-1) * Nbas
+         Ioff2a = Ioff2 + (IS-1) * Nbas
          Read (21,Format) (Work(i+ioff1a-1),Work(i+ioff2a-1),i=1,nbas)
       EndDo
 C
@@ -2522,22 +2499,22 @@ C
       Call ZZero (Nbas*Ns,Work(Ioff3))
       Call ZZero (Nbas*Ns,Work(Ioff4))
       Do IS = 1, NS
-	 Ioff1a = Ioff1 + (IS-1) * Nbas
-	 Ioff2a = Ioff2 + (IS-1) * Nbas
-	 Do JS = 1, NS
-	    Ioff3a = Ioff3 + (JS-1) * Nbas
-	    Ioff4a = Ioff4 + (JS-1) * Nbas
-	    Do I = 1, Nbas
-	       Work(Ioff3a+i-1) = Work(Ioff3a+i-1)
+         Ioff1a = Ioff1 + (IS-1) * Nbas
+         Ioff2a = Ioff2 + (IS-1) * Nbas
+         Do JS = 1, NS
+            Ioff3a = Ioff3 + (JS-1) * Nbas
+            Ioff4a = Ioff4 + (JS-1) * Nbas
+            Do I = 1, Nbas
+               Work(Ioff3a+i-1) = Work(Ioff3a+i-1)
      &                          + Work(Ioff1a+i-1) * VecR(IS,JS)
                IF (.NOT.REALAR) THEN
-               Work(Ioff3a+i-1) = Work(Ioff3a+i-1) 
+               Work(Ioff3a+i-1) = Work(Ioff3a+i-1)
      &                          - Work(Ioff2a+i-1) * VecI(IS,JS)
-	       Work(Ioff4a+i-1) = Work(Ioff4a+i-1)
+               Work(Ioff4a+i-1) = Work(Ioff4a+i-1)
      &                          + Work(Ioff1a+i-1) * VecI(IS,JS)
      &                          + Work(Ioff2a+i-1) * VecR(IS,JS)
                ENDIF
-	     EndDo
+             EndDo
           EndDo
       EndDo
 C
@@ -2550,20 +2527,20 @@ C
             Read (21,'(A)') Card
             Write (22,'(A)') Card
          EndDo
-	 Read (21,'(A)') Card
-	 Read (Card,'(4X,I2)') MO
-	 Write(Card,1000) MO,IS,OccNr(IS),0.0
-	 Write (22,'(A)') Card
-	 Ioff3a = Ioff3 + (IS-1) * Nbas
-	 Ioff4a = Ioff4 + (IS-1) * Nbas
+         Read (21,'(A)') Card
+         Read (Card,'(4X,I2)') MO
+         Write(Card,1000) MO,IS,OccNr(IS),0.0d0
+         Write (22,'(A)') Card
+         Ioff3a = Ioff3 + (IS-1) * Nbas
+         Ioff4a = Ioff4 + (IS-1) * Nbas
          Write (22,Format) (Work(i+ioff3a-1),Work(i+ioff4a-1),i=1,nbas)
 C
 C        Skip just as many records on unit 21
 C
          Read (21,Format) (Work(ioff1+i-1),i=1,2*nbas)
          Call CopyFF (21,22)
-	 Rewind (21)
-	 Rewind (22)
+         Rewind (21)
+         Rewind (22)
          Call CopyFF (22,21)
       EndDo
       Return
@@ -2716,56 +2693,38 @@ C
       DO 1000 IVEC = 1, NVEC - MVEC
 C
       RR = DDOT (NDET,VECTR(1,IVEC),1,VECTR(1,IVEC),1)
-C64B  RR = SDOT (NDET,VECTR(1,IVEC),1,VECTR(1,IVEC),1)
       IF (.NOT.REALAR) RR = RR +
      &     DDOT (NDET,VECTI(1,IVEC),1,VECTI(1,IVEC),1)
-C64B &     SDOT (NDET,VECTI(1,IVEC),1,VECTI(1,IVEC),1)
       RR = 1.D0 / DSQRT (RR)
-C64B  RR = 1.D0 / SQRT (RR)
       CALL DSCAL (NDET,RR,VECTR(1,IVEC),1)
-C64B  CALL SSCAL (NDET,RR,VECTR(1,IVEC),1)
-      IF (.NOT.REALAR) 
+      IF (.NOT.REALAR)
      &   CALL DSCAL (NDET,RR,VECTI(1,IVEC),1)
-C64B &   CALL SSCAL (NDET,RR,VECTI(1,IVEC),1)
 C
       DO 200 IONR = 1, 2
       DO 100 JVEC = 1, MVEC + IVEC - 1
       CALL GETVEC (JVEC,VECTR(1,KVEC),VECTI(1,KVEC))
       RR = DDOT (NDET,VECTR(1,KVEC),1,VECTR(1,IVEC),1)
-C64B  RR = SDOT (NDET,VECTR(1,KVEC),1,VECTR(1,IVEC),1)
       IF (.NOT.REALAR) THEN
          RI = DDOT (NDET,VECTR(1,KVEC),1,VECTI(1,IVEC),1)
          RI = RI - DDOT (NDET,VECTI(1,KVEC),1,VECTR(1,IVEC),1)
          RR = RR + DDOT (NDET,VECTI(1,KVEC),1,VECTI(1,IVEC),1)
 C
-C64B     RI = SDOT (NDET,VECTR(1,KVEC),1,VECTI(1,IVEC),1)
-C64B     RI = RI - SDOT (NDET,VECTI(1,KVEC),1,VECTR(1,IVEC),1)
-C64B     RR = RR + SDOT (NDET,VECTI(1,KVEC),1,VECTI(1,IVEC),1)
       ENDIF
       CALL DAXPY (NDET,-RR,VECTR(1,KVEC),1,VECTR(1,IVEC),1)
-C64B  CALL SAXPY (NDET,-RR,VECTR(1,KVEC),1,VECTR(1,IVEC),1)
       IF (.NOT.REALAR) THEN
          CALL DAXPY (NDET,-RI,VECTR(1,KVEC),1,VECTI(1,IVEC),1)
          CALL DAXPY (NDET,-RR,VECTI(1,KVEC),1,VECTI(1,IVEC),1)
          CALL DAXPY (NDET, RI,VECTI(1,KVEC),1,VECTR(1,IVEC),1)
 C
-C64B     CALL SAXPY (NDET,-RI,VECTR(1,KVEC),1,VECTI(1,IVEC),1)
-C64B     CALL SAXPY (NDET,-RR,VECTI(1,KVEC),1,VECTI(1,IVEC),1)
-C64B     CALL SAXPY (NDET, RI,VECTI(1,KVEC),1,VECTR(1,IVEC),1)
       ENDIF
   100 CONTINUE
       RR = DDOT (NDET,VECTR(1,IVEC),1,VECTR(1,IVEC),1)
-C64B  RR = SDOT (NDET,VECTR(1,IVEC),1,VECTR(1,IVEC),1)
       IF (.NOT.REALAR) RR = RR +
      &     DDOT (NDET,VECTI(1,IVEC),1,VECTI(1,IVEC),1)
-C64B &     SDOT (NDET,VECTI(1,IVEC),1,VECTI(1,IVEC),1)
       RR = 1.D0 / DSQRT (RR)
-C64B  RR = 1.D0 / SQRT (RR)
       CALL DSCAL (NDET,RR,VECTR(1,IVEC),1)
-C64B  CALL SSCAL (NDET,RR,VECTR(1,IVEC),1)
-      IF (.NOT.REALAR) 
+      IF (.NOT.REALAR)
      &   CALL DSCAL (NDET,RR,VECTI(1,IVEC),1)
-C64B &   CALL SSCAL (NDET,RR,VECTI(1,IVEC),1)
   200 CONTINUE
       IF (RR.GT.1.D6) THEN
          WRITE (*,*) ' NORM OF NEW VECTOR < 1.D-12 '
@@ -2800,7 +2759,6 @@ C
 C
       DO 100 I = 1, NDET
       DE = DGEL(I) - E
-C64B  IF (ABS(DE).LT.1.E-8) DE = SIGN(1.E-8,DE)
       IF (ABS(DE).LT.1.D-8) DE = SIGN(1.D-8,DE)
       VECTR(I,IVEC) = VECTR(I,IVEC) / DE
       IF (.NOT.REALAR)
@@ -2829,7 +2787,7 @@ C
       Return
 C
       ENTRY PutSig (ivec,Sigr,SigI)
-      irec = ivec * 2 
+      irec = ivec * 2
       IF (REALAR) THEN
          Write (MRCVECS,REC=IREC) (SIGR(I),I=1,NDET)
       ELSE
@@ -2866,10 +2824,7 @@ C
       IF (NPDET.NE.NDET.OR.NPROOT.LT.NROOTS) GOTO 10000
       DO 20 IROOT = 1, NROOTS
       EIGEN2(IROOT) = EIGEN1(IROOT)
-CMKN
-C      WRITE (6,1000) IROOT,EIGEN1(IROOT)
       IF (.NOT.PROPER) WRITE (6,1000) IROOT,EIGEN1(IROOT)
-CMKN
       IVEC = IROOT
       CALL ZZERO (NDET,VECTR(1,IVEC))
       IF (.NOT.REALAR) CALL ZZERO (NDET,VECTI(1,IVEC))
@@ -2932,16 +2887,12 @@ C     Start with EC part.
       IVEC = IROOT
       ER = - EIGEN(NSEL(IROOT)) * EVECR(N,NSEL(IROOT))
       CALL DAXPY (NDET,ER,VECTR(1,KVEC),1,VECTR(1,IVEC),1)
-C64B  CALL SAXPY (NDET,ER,VECTR(1,KVEC),1,VECTR(1,IVEC),1)
       IF (.NOT.REALAR) THEN
          EI = - EIGEN(NSEL(IROOT)) * EVECI(N,NSEL(IROOT))
          CALL DAXPY (NDET,EI,VECTR(1,KVEC),1,VECTI(1,IVEC),1)
-C64B     CALL SAXPY (NDET,EI,VECTR(1,KVEC),1,VECTI(1,IVEC),1)
          CALL DAXPY (NDET,ER,VECTI(1,KVEC),1,VECTI(1,IVEC),1)
-C64B     CALL SAXPY (NDET,ER,VECTI(1,KVEC),1,VECTI(1,IVEC),1)
          EI = - EI
          CALL DAXPY (NDET,EI,VECTI(1,KVEC),1,VECTR(1,IVEC),1)
-C64B     CALL SAXPY (NDET,EI,VECTI(1,KVEC),1,VECTR(1,IVEC),1)
       ENDIF
    10 CONTINUE
    20 CONTINUE
@@ -2952,16 +2903,12 @@ C     Calculate HC part.
       IVEC = IROOT
       ER = EVECR(N,NSEL(IROOT))
       CALL DAXPY (NDET,ER,VECTR(1,KVEC),1,VECTR(1,IVEC),1)
-C64B  CALL SAXPY (NDET,ER,VECTR(1,KVEC),1,VECTR(1,IVEC),1)
       IF (.NOT.REALAR) THEN
          EI = EVECI(N,NSEL(IROOT))
          CALL DAXPY (NDET,ER,VECTI(1,KVEC),1,VECTI(1,IVEC),1)
-C64B     CALL SAXPY (NDET,ER,VECTI(1,KVEC),1,VECTI(1,IVEC),1)
          CALL DAXPY (NDET,EI,VECTR(1,KVEC),1,VECTI(1,IVEC),1)
-C64B     CALL SAXPY (NDET,EI,VECTR(1,KVEC),1,VECTI(1,IVEC),1)
          EI = - EI
          CALL DAXPY (NDET,EI,VECTI(1,KVEC),1,VECTR(1,IVEC),1)
-C64B     CALL SAXPY (NDET,EI,VECTI(1,KVEC),1,VECTR(1,IVEC),1)
       ENDIF
    30 CONTINUE
    40 CONTINUE
@@ -2971,10 +2918,8 @@ C
       DO 50 IROOT = 1, NROOTS
       IVEC = IROOT
       RES = DDOT (NDET,VECTR(1,IVEC),1,VECTR(1,IVEC),1)
-C64B  RES = SDOT (NDET,VECTR(1,IVEC),1,VECTR(1,IVEC),1)
       IF (.NOT.REALAR) RES = RES +
      &      DDOT (NDET,VECTI(1,IVEC),1,VECTI(1,IVEC),1)
-C64B &      SDOT (NDET,VECTI(1,IVEC),1,VECTI(1,IVEC),1)
       RESIDU(IROOT) = RES
    50 CONTINUE
 C
@@ -2983,10 +2928,8 @@ C
       DO 60 IROOT = 1, NROOTS
       IVEC = IROOT
       RES = DDOT (NREFDET,VECTR(1,IVEC),1,VECTR(1,IVEC),1)
-C64B  RES = SDOT (NREFDET,VECTR(1,IVEC),1,VECTR(1,IVEC),1)
       IF (.NOT.REALAR) RES = RES +
      &      DDOT (NREFDET,VECTI(1,IVEC),1,VECTI(1,IVEC),1)
-C64B &      SDOT (NREFDET,VECTI(1,IVEC),1,VECTI(1,IVEC),1)
       REFRDU(IROOT) = RES
    60 CONTINUE
 C
@@ -3030,7 +2973,7 @@ C
 C
 C     Modified to read in only real integrals when applicable.
 C     Note that this is not done efficiently as the zero imaginary
-C     parts are still processed. This will have to wait until a more 
+C     parts are still processed. This will have to wait until a more
 C     general integral face is developed.
 C     LV : 28-6-2002
 C
@@ -3059,7 +3002,7 @@ C
       CHECK_INTS = .FALSE.
 CMI   CHECK_INTS = .TRUE.
       TRESINT = 1.D-12
-      NINT = 0
+      N_INT = 0
       KLS = 0
       KLF = M2
       MM = M1 * M2
@@ -3076,14 +3019,14 @@ CMI   CHECK_INTS = .TRUE.
         enddo
       ENDIF
 
-      IF (2*NKR.NE.NORB) 
+      IF (2*NKR.NE.NORB)
      &   CALL QUIT('MRCONEE AND MDCINT ARE INCOMPATIBLE')
       IF (BREIT) THEN
       OPEN(MDBINT,FILE=FNAM(3),FORM='UNFORMATTED')
       Read (mdbint,err=10001,end=10001) datexb,timexb,nkrb
       IF (NKR.NE.NKRB) CALL QUIT('MDCINT AND MDBINT ARE INCOMPATIBLE')
       ENDIF
-      IF (REALAR) CALL DCOPY(M1,0.0,0,RKLI,1)
+      IF (REALAR) CALL DCOPY(M1,0.0d0,0,RKLI,1)
       OPEN (MRCTWOE,FILE=FNAM(8),FORM='UNFORMATTED')
    10 REWIND (MDCINT)
       READ (MDCINT)
@@ -3152,7 +3095,7 @@ C--> Original integral
          IF (I.NE.0.AND.J.NE.0.AND.K.NE.0.AND.L.NE.0) THEN
          TWOR = RKLR(INZ)
          TWOI = RKLI(INZ)
-  
+
           IF (CHECK_INTS) THEN
            write(6,'(a,4i4,a,f12.6)') 'i,j,k,l=',i,j,k,l,
      &     ' 2-el. integral:',TWOR
@@ -3426,7 +3369,7 @@ C
             RKLI(NKL) = TII(IJKL)
           ENDIF
   100     CONTINUE
-      NINT = NINT + NKL
+      N_INT = N_INT + NKL
       IF (REALAR) THEN
          WRITE (MRCTWOE) KL,NKL,(INDK(IX),IX=1,NKL),(RKLR(IX),IX=1,NKL)
       ELSE
@@ -3438,12 +3381,12 @@ C
       KLF = MIN0 (M1, KLF+M2)
       IF (KLS.NE.M1) GOTO 10
       IF (.NOT.BREIT) THEN
-         WRITE (6,1000) MINT,DATEX,TIMEX,NINT
+         WRITE (6,1000) MINT,DATEX,TIMEX,N_INT
       ELSE
-         WRITE(6,1001) MINT,DATEX,TIMEX,MINTB,DATEXB,TIMEXB,NINT
+         WRITE(6,1001) MINT,DATEX,TIMEX,MINTB,DATEXB,TIMEXB,N_INT
       ENDIF
-      IF (NINT.GT.0) THEN
-         WRITE (MRCTWOE) -NINT,0
+      IF (N_INT.GT.0) THEN
+         WRITE (MRCTWOE) -N_INT,0
       ELSE
          WRITE (MRCTWOE) -1,0
       ENDIF
@@ -3485,7 +3428,6 @@ C
 C
       PARAMETER (NDREC=1023)
       PARAMETER (LREC=20*(NDREC+1))
-C64B  PARAMETER (LREC=24*(NDREC+1))
 C
       DIMENSION IDIND(*),JDET(*),JELEC(*)
       DIMENSION VECTR(NDET,*),VECTI(NDET,*),DGEL(NDET)
@@ -3501,7 +3443,6 @@ C
       IOS = 0
       OPEN (MRCTRIV,FILE=VECFIL,ACCESS='DIRECT',STATUS='OLD'
      &      ,RECL=4,ERR=300,IOSTAT=IOS)
-C64B &      ,RECL=8,ERR=300,IOSTAT=IOS)
       IF (IOS.NE.0) GOTO 300
       READ (MRCTRIV,REC=1,ERR=300,IOSTAT=IOS) LENREC
       IF (IOS.NE.0) GOTO 300
@@ -3528,7 +3469,7 @@ C
       WRITE(MRCFINV,REC=2) NCOEF,(IDIND(J),J=1,NCOEF)
 C
       DO 200 IROOT = 1, NROOTS
-	 IVEC = IROOT
+         IVEC = IROOT
          CALL ZZERO (NDET,VECTR(1,IVEC))
          IF (.NOT.REALAR) CALL ZZERO (NDET,VECTI(1,IVEC))
          ISEL = NSEL(IROOT)
@@ -3564,7 +3505,6 @@ C     ---------------------------------------------------------------
          DO 320 IROOT = 1, NROOTS
             IVEC = IROOT
             INDMIN(IROOT) = IDMIN(NDET,DGEL,1)
-C64B        INDMIN(IROOT) = ISMIN(NDET,DGEL,1)
             EIGEN1(IROOT) = DGEL(INDMIN(IROOT)) + ECORE
             EIGEN2(IROOT) = EIGEN1(IROOT)
             CALL ZZERO (NDET,VECTR(1,IVEC))
@@ -3575,7 +3515,7 @@ C64B        INDMIN(IROOT) = ISMIN(NDET,DGEL,1)
   320    CONTINUE
 C
          DO 340 IROOT = 1, NROOTS
-	    IVEC = IROOT
+            IVEC = IROOT
             DGEL(INDMIN(IROOT)) = VECTR(INDMIN(IROOT),IVEC)
             VECTR(INDMIN(IROOT),IVEC) = 1.D0
             CALL PUTVEC (IVEC,VECTR(1,IVEC),VECTI(1,IVEC))
@@ -3633,25 +3573,21 @@ C
      &                  (TINTI(IX),IX=1,NKL)
       ENDIF
       IF (KL.LT.0) ENDFIL=.TRUE.
-CMKN
 C     ******************************************************
 C     THIS PART IS DONE TO MAKE ALL 2-ELECTRON INTEGRAL ZERO
 C     Proposed & Implimented by (Malaya K. Nayak)
 C     ******************************************************
       IF (PROPER) THEN
-      DO IX=1,NKL
-      TINTR(IX)=0.0D0
-      TINTI(IX)=0.0D0
-      END DO
+        CALL ZZERO(NKL,TINTR)
+        CALL ZZERO(NKL,TINTI)
       END IF
 C     ******************************************************
 C     END OF MAKING ALL 2-ELECTRON INTEGRAL ZERO
 C     ******************************************************
-CMKN
       RETURN
       END
 C
-      SUBROUTINE USERIN (CI,DONE)
+      SUBROUTINE USERIN
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -3660,34 +3596,16 @@ C
 #include "general.inc"
 #include "symm.inc"
 C
-      LOGICAL TOBE,DONE
+      LOGICAL TOBE
       CHARACTER*4 IREPNA,VECFIL*11
-CTROND: check this !
       DIMENSION NRAS1(16),NRAS2(16)
-      DIMENSION MINE(16),MAXE(16),IGAS(16),NGASO(256)
 C
-      NAMELIST /GOSCIP/ NELACT,NGAS
       NAMELIST /RASORB/ NELEC,NRAS1,NRAS2,MINH1,MAXH1,MAXE3
       NAMELIST /DIRECT/ MAXITER,CPUMAX,CONVERR,CONVERE,RESTART
       NAMELIST /CIROOT/ NROOTS,NSEL,SELECT,IREPNA,ISTART
       NAMELIST /OPTIM/ IGENEX
       NAMELIST /LEADDET/ GETDET,COMIN
       NAMELIST /NATURAL/ MAKENAT
-C
-      NGAS  = 0
-      NELEC = 0
-      REWIND (5)
-      READ (5,GOSCIP,END=10,ERR=10)
-!     SK - during the merge of the COSCI-TDM this variable renaming
-!     on the NAMELIST slipped my attention.
-      NELEC = MAX(NELEC,NELACT)
- 10   IF (NELEC.NE.0) THEN
-        CALL PAMGOS(CI,MAXCORE,NELEC,NGAS,IGAS,MINE,MAXE,NGASO)
-        DONE = .TRUE.
-        RETURN         
-      ELSE
-        DONE = .FALSE.
-      ENDIF
 C
       NELEC = 0
       DO I = 1, NSYMRP
@@ -3740,7 +3658,6 @@ C     --------------------------------------
          IF (VECFIL(8:8).EQ.'''') VECFIL(8:8) = '1'
          IF (VECFIL(8:8).EQ.'"') VECFIL(8:8) = '2'
          OPEN (MRCTRIV,FILE=VECFIL,ACCESS='DIRECT',RECL=4,ERR=220)
-C64B     OPEN (MRCTRIV,FILE=VECFIL,ACCESS='DIRECT',RECL=8,ERR=220)
          IOS = 0
          READ (MRCTRIV,REC=1,ERR=220,IOSTAT=IOS) LENREC
          IF (IOS.NE.0) GOTO 220
@@ -3820,7 +3737,7 @@ C        ------------------------------------
 C        -------------------------
 C        Calculate natural Spinors
 C        -------------------------
-         IF (MAKENAT) CALL NATORB(IROOT,CI(ITNR), 
+         IF (MAKENAT) CALL NATORB(IROOT,CI(ITNR),
      &                            CI(ITNI),CI(IGMR),
      &                            CI(IGMI),CI(IPJV))
    40 CONTINUE
@@ -3835,8 +3752,8 @@ C
       DO 20 IROOT = 1, NROOTS
       ISEL = NSEL(IROOT)
       DO 10 I = 1, NVEC
-      OV(I) = EVECR(I,ISEL)*EVECR(I,ISEL) 
-      IF (.NOT.REALAR) 
+      OV(I) = EVECR(I,ISEL)*EVECR(I,ISEL)
+      IF (.NOT.REALAR)
      &   OV(I) = OV(I) + EVECI(I,ISEL)*EVECI(I,ISEL)
    10 CONTINUE
       WRITE (6,1010) IROOT,(OV(I),I=1,NROOTS)
@@ -3884,7 +3801,7 @@ C     DO THE WALK FROM TOP TO BOTTOM
 C     ===============================
       ICOL = MAXH1
       IF (NORBR(1).EQ.0) ICOL = NORBR(2) - NELEC + MAXE3
-      DO 50 I = 0, ICOL 
+      DO 50 I = 0, ICOL
       IVWU(IRA1,I,0) = 1
    50 CONTINUE
 C
@@ -3912,7 +3829,7 @@ C
       IORB = IORB + 1
       JMAX = MIN0 ( NELEC, IORB)
       JMIN = MAX0 ( NELEC - MAXE3 + I - NORBR(2), NORBR(1) - MAXH1)
-      IORBR(IORB) = JMIN 
+      IORBR(IORB) = JMIN
       DO 190  J = JMIN, JMAX
       IF (J.EQ.0) THEN
          IF (NORBR(1).GT.0) IVWU(IRA1,IORB,J) = 1
@@ -3930,7 +3847,7 @@ C
       DO 300 I = 1, NORBR(3)
       IORB = IORB + 1
       JMIN = MAX0 ( NELEC + I - NORBR(3), NELEC - MAXE3)
-      IORBR(IORB) = JMIN 
+      IORBR(IORB) = JMIN
       JMAX = NELEC
       DO 290  J = JMIN, JMAX
       IF (J.EQ.0) THEN
@@ -3943,9 +3860,9 @@ C
   280 CONTINUE
   290 CONTINUE
   300 CONTINUE
-      
+
 C     ======================================================
-C     DEFINE MAXIMUM NUMBER OF SYMMETRY ADAPTED DETERMINANTS 
+C     DEFINE MAXIMUM NUMBER OF SYMMETRY ADAPTED DETERMINANTS
 C     ======================================================
  3001 NREFDET = IVWU(IREP,NORBR(1)+NORBR(2),NELEC)
       NDET = IVWU(IREP,IORB,NELEC)
@@ -3972,7 +3889,6 @@ C
 C
       PARAMETER (NDREC=1023)
       PARAMETER (LENREC=20*(NDREC+1))
-C64B  PARAMETER (LENREC=24*(NDREC+1))
 C
       OPEN (MRCFINV,FILE=FNAM(5),ACCESS='DIRECT',RECL=LENREC)
       IREC = 3
@@ -3995,15 +3911,11 @@ C
       IVEC = IROOT
       ER = EVECR(N,NSEL(IROOT))
       CALL DAXPY (NDET,ER,VECTR(1,KVEC),1,VECTR(1,IVEC),1)
-C64B  CALL SAXPY (NDET,ER,VECTR(1,KVEC),1,VECTR(1,IVEC),1)
       IF (.NOT.REALAR) THEN
          EI = EVECI(N,NSEL(IROOT))
          CALL DAXPY (NDET,EI,VECTR(1,KVEC),1,VECTI(1,IVEC),1)
          CALL DAXPY (NDET,ER,VECTI(1,KVEC),1,VECTI(1,IVEC),1)
          CALL DAXPY (NDET,-EI,VECTI(1,KVEC),1,VECTR(1,IVEC),1)
-C64B     CALL SAXPY (NDET,EI,VECTR(1,KVEC),1,VECTI(1,IVEC),1)
-C64B     CALL SAXPY (NDET,ER,VECTI(1,KVEC),1,VECTI(1,IVEC),1)
-C64B     CALL SAXPY (NDET,-EI,VECTI(1,KVEC),1,VECTR(1,IVEC),1)
       ENDIF
    10 CONTINUE
    20 CONTINUE
@@ -4046,7 +3958,6 @@ C
 C     Calculate norm reference part op the vector
 C
       RES = 0.0D0
-C64B  RES = 0.0E0
       IF (ISTART.EQ.1) THEN
         DO 12 IREF = 1, NCOEF
           RES = RES + VECTR(IRIND(IREF),IVEC) * VECTR(IRIND(IREF),IVEC)

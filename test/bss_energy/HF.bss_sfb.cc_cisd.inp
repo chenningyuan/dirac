@@ -3,6 +3,8 @@
   LiH
 .WAVE F ! Activate integral and wave functions modules
 **GENERAL
+.CODATA
+ CODATA18
 **INTEGRALS
 .PRINT
 1

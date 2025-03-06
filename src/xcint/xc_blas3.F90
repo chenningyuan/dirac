@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module xc_blas3
@@ -27,7 +22,7 @@ module xc_blas3
 !fixme dft_cfg should not be used here, move xc derv business to separate module
    use dft_cfg
    use xc_ac
-   use extra
+   use xcint_extra
 
    implicit none
 
@@ -117,6 +112,7 @@ contains
       real(8), allocatable   :: s(:, :)
       real(8), allocatable   :: v(:, :, :)
       real(8), allocatable   :: gnn(:, :, :)
+      logical :: density_is_not_tiny 
 !     --------------------------------------------------------------------------
 
       allocate(ao_compress_index(mat_dim))
@@ -128,6 +124,8 @@ contains
       allocate(s(block_length, maxval((/nr_dmat, 1/))))
       allocate(v(block_length, 3, maxval((/nr_dmat, 1/))))
       allocate(gnn(block_length, 0:1, 0:nr_dmat))
+
+      density_is_not_tiny = .false.
 
 !     zero out density and gradient
       do k = 1, block_length
@@ -273,6 +271,21 @@ contains
          end if
       end do
 
+      do k = 1, block_length
+         if ((n(k,0).ge.dft_cfg_tinydens)) density_is_not_tiny = .true.
+      end do
+
+      if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
+         do k = 1, block_length
+            if ((n_saop_resp(k).ge.dft_cfg_tinydens)) density_is_not_tiny = .true.
+            if ((n_saop_outer(k).ge.dft_cfg_tinydens)) density_is_not_tiny = .true.
+         end do
+      end if
+
+! if the density isn't below the small density cutoff we proceed to all
+! evaluations below, otherwise we skip this block's contribution to the matrices
+
+   if (density_is_not_tiny) then 
       if (is_gga) then
          do k = 1, block_length
             gnn(k, 0, 0) = n_g(k, 1, 0)*n_g(k, 1, 0) &
@@ -524,6 +537,7 @@ contains
             end if
          end do
       end if
+  end if
 
       deallocate(ao_compress_index)
       deallocate(ao_compressed)

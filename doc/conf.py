@@ -25,8 +25,9 @@ sys.path.append(os.path.abspath('sphinxext'))
 # miro: this is safe list of extensions for (almost) all versions of sphinx
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
-              'sphinx.ext.doctest',]
-
+              'sphinx.ext.doctest',
+              'sphinxcontrib.bibtex']
+bibtex_bibfiles = ['references.bib']
 # be safe about adding new extensions
 try:
     import sphinxcontrib.bibtex
@@ -124,7 +125,7 @@ pygments_style = 'sphinx'
 try:
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
-    html_theme_path = ['_themes', sphinx_rtd_theme.get_html_theme_path()]
+    html_theme_path = ['_themes']
     html_static_path = ['_static']
     html_context = {
         # custom theme css file, put your styles here

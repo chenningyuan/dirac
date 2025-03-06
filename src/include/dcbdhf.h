@@ -19,7 +19,7 @@
       PARAMETER (MFRAG = 6)
 
       INTEGER MAX_BOS_BL
-      PARAMETER (MAX_BOS_BL = 16)
+      PARAMETER (MAX_BOS_BL = 300)
 !     MAX_BOS_BL must be equal to MAX_SUB_BL in dcborb.h /hjaaj oct 2004
 
       CHARACTER*12 DHF_INTTYP

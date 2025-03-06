@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -467,6 +462,8 @@ C     Extended to Z=86 feb. 1996, S. Kirpekar
 C     Extended to Z=109 1997/06/20 Joern Thyssen
 C     Corrected Z=55-109 for correct units 1999/04/23 W.A. de Jong
 C     Extended to Z=118 1997/05/28 Trond Saue
+C     Extended to Z=138 2023/01/25  Kirk Peterson
+C       using data from Z.Zhou et al., Atomic Data Nuc. Data Tables 114, 262 (2017)
 C     Corrected elements 108 and 109, data from 
 C       Handbook of Chemistry and Physics, 83rd Edition, by Thierfelder and R. Bast
 C     Updated magnetic and quadrupole moments,  2003/03/06 Joost van Stralen
@@ -512,13 +509,18 @@ C https://www.ncsu.edu/chemistry/msf/pdf/IsotopicMass_NaturalAbundance.pdf
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1993, 565, 1-65 
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
 C
-      USE CODATA, ONLY : XFAMU
+C 14 Sep 2020 - Agustin Aucar added data for 223Ra and 225Ra.
+C     Masses and nuclear spins from
+C       Haynes, Handbook of Chemistry and Physics, 97th Edition, 2017
+C     Magnetic moments from
+C       NJ Stone, TABLE OF NUCLEAR MAGNETIC DIPOLE AND ELECTRIC QUADRUPOLE MOMENTS,
+C       IAEA  International Nuclear Data Committee, INDC(NDS)-0658, February 2014
 C
 #include "implicit.h"
-#include "priunit.h"
+#include "codata.h"
 #include "pi.h"
-      PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 118)
-      PARAMETER (DMP = 1.6726231D-27, ECHARGE = 2.60217733D-19)
+#include "priunit.h"
+      PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 138)
       PARAMETER (THRESH = 1.0D-10)
 C
       CHARACTER*(*) TYPE
@@ -1368,8 +1370,8 @@ C
 C     Ra:
 C
      &226.025403D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
-     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
-     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &223.018500D0,  0.000000D0,   1.500000D0, 0.271000D0,   0.000000D0,
+     &225.023610D0,  0.000000D0,   0.500000D0,-0.733800D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
@@ -1653,8 +1655,187 @@ C     -- no data --
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0/
 C
+      DATA (((DATNUC(I,J,K),I=1,5),J=1,MAXISO),K=119,138) /
 C
+C     Uue(119):
+C     -- no data --
+     &314.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
 C
+C     Ubn(120):
+C     -- no data --
+     &318.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Ubu(121):
+C     -- no data --
+     &330.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Ubb(122):
+C     -- no data --
+     &334.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Ubt(123):
+C     -- no data --
+     &337.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Ubq(124):
+C     -- no data --
+     &340.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Ubp(125):
+C     -- no data --
+     &344.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Ubh(126):
+C     -- no data --
+     &347.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Ubs(127):
+C     -- no data --
+     &350.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Ubo(128):
+C     -- no data --
+     &354.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C    Ube (129):
+C     -- no data --
+     &357.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Utn(130):
+C     -- no data --
+     &361.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Utu(131):
+C     -- no data --
+     &364.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Utb(132):
+C     -- no data --
+     &367.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Utt(133):
+C     -- no data --
+     &371.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Utq(134):
+C     -- no data --
+     &374.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Utp(135):
+C     -- no data --
+     &378.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Uth(136):
+C     -- no data --
+     &381.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Uts(137):
+C     -- no data --
+     &385.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C
+C     Uto(138):
+C     -- no data --
+     &388.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0/
 C
 C
       IF (ISOTOP .GT. MAXISO) THEN
@@ -1701,7 +1882,7 @@ C        or an auxiliary basis set /Mar 2004 hjaaj
          SPIN = DATNUC(3,ISOTOP,IATOM)
          IF (SPIN .GT. THRESH) THEN
             DISOTP = ABS(ECHARGE*DATNUC(4,ISOTOP,IATOM)
-     &                   /(D4*PI*SPIN*DMP))
+     &                   /(D4*PI*SPIN*UMASS*PMASS))
          ELSE
             DISOTP = D0
          END IF
@@ -1770,8 +1951,8 @@ C  /* Deck fcpri */
 C
 C     tuh 131288
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -1784,6 +1965,7 @@ C
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
+C
       CARTRA = .TRUE.
 C
 C     Atomic polar tensors (au)
@@ -1954,21 +2136,17 @@ C
 C     Determine center of mass in orgcom.h(CMXYZ) from information in common blocks
 C     K.Ruud, June-94
 C
-C     radovan: AMASS is not used !?
-C     hjaaj:   AMASS is passed on to VIBMAS
-C
-      USE CODATA, ONLY : XFAMU
 C
 #include "implicit.h"
+#include "codata.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-      DIMENSION GEOM(3*NATOMS), AMASS(NATOMS), NATTYP(NATOMS),
-     &          NUMIS(NATOMS)
+      REAL*8    GEOM(3*NATOMS), AMASS(NATOMS)
+      INTEGER   NATTYP(NATOMS), NUMIS(NATOMS)
 #include "nuclei.h"
 #include "orgcom.h"
 #include "symmet.h"
-
 C
       ICHTOT = 0
       JATOM  = 0
@@ -1977,7 +2155,7 @@ C
          DO 20 ISYMOP = 0, MAXOPR
             IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                ICHARG = IZATOM(IATOM)
-               IF (ICHARG .NE. 0) THEN
+               IF (ICHARG .GT. 0) THEN
                   ICHTOT = ICHTOT + ICHARG
                   DO 30 KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
@@ -1992,7 +2170,9 @@ C
  20      CONTINUE
  10   CONTINUE
 C
-      CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT)
+      CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT-1)
+
+
       TELCMAS = ICHTOT/XFAMU
       TNUCMAS = TOTMAS - TELCMAS
 C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
@@ -2002,6 +2182,7 @@ C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,
      &                  GEOM,ORIGIN,IPRINT)
 #include "implicit.h"
+#include "codata.h"
 C
 C     Sets up masses and calculates total mass for an isotopic
 C     molecule
@@ -2016,7 +2197,7 @@ C
 #include "cbisol.h"
 #include "nuclei.h"
 C
-      IF (IPRINT .GE. 0) CALL HEADER('Isotopic Masses',-1)
+      IF (IPRINT .GT. 0) CALL HEADER('Isotopic Masses',-1)
       TOTMAS = D0
       ABUND  = D100
       CALL DZERO(ORIGIN,3)
@@ -2028,13 +2209,13 @@ C
             RMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'MASS')
             AMASS(IATOM) = RMASS
             TOTMAS       = TOTMAS + RMASS
-            PMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'ABUNDANCE')
-            ABUND        = ABUND*DP01*PMASS
+            QMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'ABUNDANCE')
+            ABUND        = ABUND*DP01*QMASS
             ORIGIN(1) = ORIGIN(1) + RMASS*GEOM(1,IATOM)
             ORIGIN(2) = ORIGIN(2) + RMASS*GEOM(2,IATOM)
             ORIGIN(3) = ORIGIN(3) + RMASS*GEOM(3,IATOM)
          END IF
-         IF (IPRINT .GE. 0)
+         IF (IPRINT .GT. 0)
      &      WRITE (LUPRI,'(27X,A6,2X,F12.6)')  NAMDEP(IATOM), RMASS
  100  CONTINUE
       IF(TOTMAS.NE.D0) THEN
@@ -2043,16 +2224,73 @@ C
         ORIGIN(3) = ORIGIN(3)/TOTMAS
       ENDIF
       IF (IPRINT .GE. 0) THEN
-        WRITE (LUPRI,'(/23X,A,F12.6,A)') 'Total mass: ',TOTMAS,' amu'
-        WRITE (LUPRI,'( 23X,A,F8.3,A)')  'Natural abundance:',ABUND,' %'
-        WRITE (LUPRI,'(/A,3F12.6)')
-     &     ' Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3)
+        WRITE(LUPRI,'(/23X,A,F12.6,A)')'* Total mass: ',TOTMAS,' amu'
+        WRITE(LUPRI,'( 23X,A,F8.3,A)') '* Natural abundance:',ABUND,' %'
+        WRITE (LUPRI,'(//,(A,4X,3F20.15)))')
+     &    '* Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3),
+     &    '* Center-of-mass coordinates (A)   :',(ORIGIN(K)*XTANG,K=1,3)
       END IF
-! hjaaj Feb. 2016: commented next two lines because au-to-angstrom conversion factor was missing
-!     IF (IPRINT .GE. 2) WRITE(LUPRI,'(//A,3F12.6)')
-!    &     ' Center-of-mass coordinates (A):',(ORIGIN(K),K=1,3)
       RETURN
       END
+
+C  /* Deck chargebc */
+      SUBROUTINE CHARGEBC
+C     Determine nuclei charge barycenter in orgcom.h(NCHBC) from information in common blocks
+C     J. J. Aucar, 2024
+
+      use memory_allocator
+      IMPLICIT NONE
+
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "symmet.h"
+
+C     Variables Declaration
+      INTEGER :: IATOM, ISYMOP
+      REAL*8  :: CHTOT
+
+C     Initialize array
+      NCHBC(1:3) = 0.0d0
+
+C     Initialize total charge to Zero
+      CHTOT = 0
+
+C     Nuclei charge barycenter calculation
+      DO IATOM = 1, NUCIND
+         DO ISYMOP = 0, MAXOPR
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               !If charge of IATOM is greater than 0 (i.e. if not point charge)
+               IF (IZATOM(IATOM) .GT. 0) THEN
+                  ! use effective nuclear charge in CHARGE(:) (less than real charge for ECPs)
+                  ! instead of real nuclear charge in IZATOM(:)
+                  CHTOT = CHTOT + CHARGE(IATOM)
+                  NCHBC(1) = NCHBC(1) + CHARGE(IATOM)*
+     &                    PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  NCHBC(2) = NCHBC(2) + CHARGE(IATOM)*
+     &                    PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  NCHBC(3) = NCHBC(3) + CHARGE(IATOM)*
+     &                    PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+               END IF
+            END IF
+         END DO
+      END DO
+
+      IF (CHTOT.NE.0.0D0) THEN
+         NCHBC = NCHBC / CHTOT
+      ELSE
+         WRITE (LUPRI,'(//A/2A//)') ' ERROR in CHARGEBC ',
+     &          '     - Total nuclei charge equals zero.'
+         CALL QUIT('Total nuclei charge equals zero.')
+      END IF
+
+      RETURN
+      END
+
       SUBROUTINE TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,IPRINT)
 C
 C     Sets up transformation matrices between Cartesian (ITYPE=1)
@@ -2162,7 +2400,7 @@ C
 C***********************************************************************
 #include "implicit.h"
       PARAMETER (D0=0.0D0)
-      PARAMETER (ISO=1, MAXCHR=118)
+      PARAMETER (ISO=1, MAXCHR=138)
 C
       INFO = -1
       IF(IZ.GT.MAXCHR) THEN

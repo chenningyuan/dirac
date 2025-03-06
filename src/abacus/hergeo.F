@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -204,8 +199,8 @@ C Modified for more selective printing of bonded atoms,
 C     Jan-1995 Hanne Heiberg
 C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -218,6 +213,7 @@ C
 C
 #include "nuclei.h"
 #include "symmet.h"
+#include "dgroup.h"
 C
       PARAMETER (LUPUNCH = 4)
       DIMENSION COORD(3,*),
@@ -247,7 +243,7 @@ C
                CYA = PT(IBTAND(ISYMAX(2,1),IA))*COORD(2,ICENTA)
                CZA = PT(IBTAND(ISYMAX(3,1),IA))*COORD(3,ICENTA)
 C
-               ICHARG(IATOMA) = NINT(CHARGE(ICENTA))
+               ICHARG(IATOMA) = IZATOM(ICENTA)
 C
                IATOMB = 0
                DO 200 ICENTB = 1, NUCIND
@@ -301,28 +297,26 @@ C
          CALL PRIDIS(NAMDPX,DIST,NUCDEP)
       END IF
 C
+      BONDED(1:NUCDEP,1:NUCDEP) = .FALSE.
       DO 10, J= 1,NUCDEP
+         IF (ICHARG(J) .EQ. 0) GO TO 10 ! point charge
          RADJ = RADIUS(ICHARG(J))
          DO 20, I= 1, J-1
+            IF (ICHARG(I) .EQ. 0) GO TO 20 ! point charge
             RADI = RADIUS(ICHARG(I))
             IF (RADI .LT. D0 .OR. RADJ .LT. D0) THEN
-               WRITE(LUPRI,*) 'RADII FOR ATOMS WITH EITHER/OR ATOMIC'
+               WRITE(LUPRI,'(A,I0,A,I0,A)')
+     &              'RADII FOR ATOMS WITH EITHER/OR ATOMIC'
      &              //' NUMBER ', ICHARG(I), ' OR ', ICHARG(J),
-     &              ' ARE UNAVAILABLE '
-               BONDED(I,J) = .FALSE.
-               BONDED(J,I) = .FALSE.
+     &              ' ARE UNAVAILABLE'
             ELSE IF (DIST2(I,J) .LT. (1.2D0 * (RADI + RADJ))) THEN
                NBONDS = NBONDS + 1
                IPAIRS(1,NBONDS) = I
                IPAIRS(2,NBONDS) = J
                BONDED(I,J) = .TRUE.
                BONDED(J,I) = .TRUE.
-            ELSE
-               BONDED(I,J) = .FALSE.
-               BONDED(J,I) = .FALSE.
             END IF
  20      CONTINUE
-         BONDED(J,J) = .FALSE.
  10   CONTINUE
 C
       IF (PRINT .AND. .NOT. DIF) THEN

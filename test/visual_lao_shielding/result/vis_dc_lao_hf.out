@@ -564,7 +564,7 @@ H       1   0.143E-04   0.105E+02   0.131E+00      88   26720
  >>>> Time used in DFTGRD:   0.06 seconds
 
 
-      scalar              x-component         y-component         z-component
+     integrated values in columns: scalar, x-component, y-component, z-component
 
     0.5712224207E+03    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
 

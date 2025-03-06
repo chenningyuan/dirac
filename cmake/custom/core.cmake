@@ -3,10 +3,13 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/cfun
     )
 
+find_package(HDF5 COMPONENTS C HL)
+
 include(autocmake_CMakeDependentOption)
 
 # FIXME re-introduce
 # set_source_files_properties(${PROJECT_BINARY_DIR}/config_info.F90 PROPERTIES GENERATED 1)
+
 
 #Miro: remove problematic linking library
 list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "pthread")
@@ -17,7 +20,7 @@ include(FindCompilerVersion)
 # Miro Ilias restored CMake printout, associated with build_info.h generation
 include(build_info)
 
-set(_lisd_of_executables)
+set(_list_of_executables)
 macro(compile_standalone _executable _source _list_of_executables)
     add_executable(
         ${_executable}
@@ -34,25 +37,39 @@ macro(compile_standalone _executable _source _list_of_executables)
     )
 endmacro()
 
+# collect all object files in one static library for all executables
+    add_library(diracobj STATIC ${EXTERNAL_OBJECTS} )
+    SET_TARGET_PROPERTIES(diracobj PROPERTIES LINKER_LANGUAGE Fortran)
+
 compile_standalone(dirac.x src/main/main.F90 "${_list_of_executables}")
 
 #synchronize basis set directories of trunk/basis* into the installation directory
 add_custom_command(TARGET dirac.x PRE_LINK COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis ${PROJECT_BINARY_DIR}/basis COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_ecp ${PROJECT_BINARY_DIR}/basis_ecp  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_dalton ${PROJECT_BINARY_DIR}/basis_dalton COMMAND ${CMAKE_COMMAND} -E echo "INFO:basis set directories, basis*, synchronized into current installation directory")
 
+# If exatensor is enabled we also make a stand-alone binary for convenience.
+if (ENABLE_EXATENSOR)
+   compile_standalone(exacorr.x src/exacorr/exacorr_main.F90   "${_list_of_executables}")
+endif()
+
 option(ENABLE_UTILITIES "Enable utilities" ON)
 if(ENABLE_UTILITIES)
     compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90   "${_list_of_executables}")
-    compile_standalone(dirac_openfermion_mointegral_export.x utils/dirac_openfermion_mointegral_export.F90   "${_list_of_executables}")
     compile_standalone(rspread.x                 utils/rspread.F90                   "${_list_of_executables}")
     compile_standalone(labread.x                 utils/labread.F90                   "${_list_of_executables}")
     compile_standalone(twofit.x                  utils/twofit.F90                    "${_list_of_executables}")
     compile_standalone(cfread.x                  utils/cfread.F90                    "${_list_of_executables}")
+    compile_standalone(cf_addlabels.x            utils/cf_addlabels.F90              "${_list_of_executables}")
+    compile_standalone(pcmo_addlabels.x          utils/pcmo_addlabels.F90            "${_list_of_executables}")    
     compile_standalone(vibcal.x                  utils/vibcal.F90                    "${_list_of_executables}")
     compile_standalone(polfit.x                  utils/polfit.F90                    "${_list_of_executables}")
     compile_standalone(mx2fit.x                  utils/mx2fit.F90                    "${_list_of_executables}")
     compile_standalone(diag.x                    utils/diag.F90                      "${_list_of_executables}")
     compile_standalone(test_allocator.x          utils/test_allocator.F90            "${_list_of_executables}")
 #   compile_standalone(test_davidson.x           utils/test_davidson.F90             "${_list_of_executables}")
+    if(HDF5_FOUND)
+    	compile_standalone(h5towfx.x             utils/h5towfx.cpp                   "${_list_of_executables}")
+    	set_property(TARGET h5towfx.x PROPERTY LINKER_LANGUAGE CXX)
+    endif()
 endif()
 
 if(ENABLE_GEN1INT)
@@ -60,7 +77,6 @@ if(ENABLE_GEN1INT)
 endif()
 
 if(ENABLE_PELIB)
-    add_dependencies(gen1int_interface gen1int)
     add_dependencies(pelib gen1int_interface)
     add_dependencies(dirac pelib)
 endif()
@@ -70,8 +86,6 @@ if(ENABLE_RELCCSD_STANDALONE)
         set_source_files_properties(src/relccsd/ccmain.F PROPERTIES COMPILE_FLAGS "-qfixed")
     endif()
     compile_standalone(relccsd.x                 src/relccsd/ccmain.F                "${_list_of_executables}")
-# miro: take care of object lib
-    target_link_libraries(relccsd.x objlib.relccsd.x)
 endif()
 
 option(ENABLE_HSCC "Enable compilation of the standalone hsmrcc.x" OFF)
@@ -96,12 +110,36 @@ foreach(
         SET_TARGET_PROPERTIES(${_executable} PROPERTIES LINK_FLAGS "-Wl,-E")
     endif()
 
-#miro: libraries are OBJECT type
-    add_library(objlib.${_executable} ${EXTERNAL_OBJECTS})
-    SET_TARGET_PROPERTIES(objlib.${_executable}  PROPERTIES LINKER_LANGUAGE Fortran)
-    target_link_libraries( ${_executable} objlib.${_executable} ${EXTERNAL_LIBS} )
+    target_link_libraries( ${_executable} diracobj ${EXTERNAL_LIBS} laplace laplace-minimax qcorr )
+    # laplace and qcorr libraries must be after diracobj and laplace-minimax must be after laplace
+    # (because search in libraries is not recursive, the order matters). /hjaaj Feb 2025
 
-    if(ENABLE_STATIC_LINKING)
+    if(HDF5_FOUND)
+        target_link_libraries(${_executable} HDF5::HDF5)
+    endif()
+
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES NVHPC)
+    # added -libstdc++ linking flag for each ${_executable} due to pgCC and xcfun
+        target_link_libraries(${_executable} -lstdc++)
+    elseif(ENABLE_EXATENSOR)
+        # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
+	target_link_libraries(${_executable} -lstdc++)
+    endif()
+
+    if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
+    # add -lC linking flag for each ${_executable} to satisfy missing objects - sqrtf,logf,cosf,powf 
+        target_link_libraries(${_executable} -lC)
+    endif()
+
+endforeach()
+
+
+if(ENABLE_STATIC_LINKING)
+    foreach(
+        _executable
+        ${_list_of_executables}
+        )
         if(ENABLE_OLD_LINKER)
            set(_no_dyn_export "")
         else()
@@ -129,20 +167,8 @@ foreach(
             # miro:  needs extra lib , plus remove -lpthread from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS !
             target_link_libraries(${_executable} -lquadmath)
         endif()
-      
-    endif()
-
-    if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
-    # added -libstdc++ linking flag for each ${_executable} due to pgCC and xcfun
-        target_link_libraries(${_executable} -lstdc++)
-    endif()
-
-    if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-    # add -lC linking flag for each ${_executable} to satisfy missing objects - sqrtf,logf,cosf,powf 
-        target_link_libraries(${_executable} -lC)
-    endif()
-
-endforeach()
+    endforeach()
+endif()
 
 #printout of all linked libraries to dirac.x executable
 get_target_property(OUT dirac.x  LINK_LIBRARIES)

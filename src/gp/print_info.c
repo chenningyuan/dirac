@@ -37,7 +37,6 @@ void print_info(void)
     printf("CMake generator          | %s\n", CMAKE_GENERATOR);
     printf("CMake build type         | %s\n", CMAKE_BUILD_TYPE);
     printf("Configuration time       | %s\n", CONFIGURATION_TIME);
-    printf("Python version           | %s\n", PYTHON_VERSION);
     printf("Fortran compiler         | %s\n", FORTRAN_COMPILER);
     printf("Fortran compiler version | %s\n", FORTRAN_COMPILER_VERSION);
     printf("Fortran compiler flags   | %s\n", FORTRAN_COMPILER_FLAGS);
@@ -56,6 +55,14 @@ void print_info(void)
     printf("Builtin LAPACK library   | %s\n", ENABLE_BUILTIN_LAPACK);
     printf("Explicit libraries       | %s\n", EXPLICIT_LIBS);
     printf("Compile definitions      | %s\n", DEFINITIONS);
+#if defined ENABLE_EXATENSOR
+    printf("\n");
+    printf("EXACORR dependencies\n");
+    printf("--------------------\n");
+    printf("Exatensor source repo    | %s\n", EXATENSOR_REPO);
+    printf("Exatensor git hash       | %s\n", EXATENSOR_HASH); 
+    printf("Exatensor configuration  | %s\n", EXATENSOR_CONFIG);
+#endif
     printf("\n");
     printf("\n");
 

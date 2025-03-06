@@ -143,8 +143,13 @@ C
 !    &              buf3,nbuf3,nbuf2,CZ)
 
 
-
+#if defined (VAR_MPI)
+      if (myproc .eq. 0) then
        CALL TITLER('Solving Left Eigenvector Equation','*',123)
+      endif
+#else
+       CALL TITLER('Solving Left Eigenvector Equation','*',123)
+#endif
 
 !-------Initialization Step for the Left Eigenvectors-----------
 
@@ -226,7 +231,7 @@ C
 
        rms = sqrt((rms)/(ndimt1+ndimt2)*rcw)
 
-      if (iprnt.ge.1) then
+      if (iprnt.ge.2) then
        write(iw,*)'maximum value RESL1',maxval(abs(resl1))
        write(iw,*)'maximum value RESL2',maxval(abs(resl2))
       endif
