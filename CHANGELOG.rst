@@ -9,37 +9,39 @@
 New features:
 
 - Effective QED potentials:
-  - Contributors: Ayaki Sunaga and Trond Saue
-  - Vacuum polarization: Uehling
-  - Electron self-energy: Flambaum-Ginges and Pyykkö-Zhao
-  - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157 (2022) 164101 <https://doi.org/10.1063/5.0116140>`_
-    
-- Atomic shift operator (.ASHIFT):
-  - Contributor: Trond SAue
-  - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157 (2022) 164101 <https://doi.org/10.1063/5.0116140>`_
+   - Contributors: A. Sunaga and T. Saue.
+   - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157, 164101 (2022) <https://doi.org/10.1063/5.0116140>`_.
+   - Vacuum polarization: Uehling.
+   - Electron self-energy: Flambaum-Ginges and Pyykkö-Zhao.
+   - Tutorial: `<http://www.diracprogram.org/doc/release-25/tutorials/qed/effqed.html>`__.
+
+- Atomic shift operator:
+   - Contributor: T. Saue.
+   - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157, 164101 (2022) <https://doi.org/10.1063/5.0116140>`_.
+   - Manual: `ASHIFT <http://www.diracprogram.org/doc/release-25/manual/hamiltonian.html#ashift>`__.
 
 - New ESR/EPR features:
-  - Contributor: H. J. Aa. Jensen
-  - .ESR CI flexible option for defining CI for ESR/EPR calculations
-  - .G10PPM for \*ESR : request g-shifts to 10 ppm accuracy instead of default of +/-1 ppt = 1000 ppm accuracy
-  - Added .STATE option for \*ESR, defining first CI state belonging to ESR multiplet
-  (for example if a "singlet" state is below the "triplet" multiplet).
-  - .MAXMK2 for \*ESR
-  - .KR CONJ to generate the second state for doublets by Kramers conjugation
+   - Contributor: H. J. Aa. Jensen.
+   - .ESR CI flexible option for defining CI for ESR/EPR calculations.
+   - .G10PPM for \*ESR : request g-shifts to 10 ppm accuracy instead of default of +/-1 ppt = 1000 ppm accuracy.
+   - Added .STATE option for \*ESR, defining first CI state belonging to ESR multiplet (for example if a "singlet" state is below the "triplet" multiplet).
+   - .MAXMK2 for \*ESR.
+   - .KR CONJ to generate the second state for doublets by Kramers conjugation.
 
 - KRCI module:
-  - Contributor: H. J. Aa. Jensen.
-  - '.CIROOTS' input has been made easier, description in manual has been updated.
-  - The KRCI module now again works with both LUCIAREL and GASCIP (a fix from 2021 fixed symmetry specification for LUCIAREL but made it not work for GASCIP).
-  - GASCIP code optimized, much faster now.
+   - Contributor: H. J. Aa. Jensen.
+   - '.CIROOTS' input has been made easier, description in manual has been updated.
+   - The KRCI module now again works with both LUCIAREL and GASCIP (a fix from 2021 fixed symmetry specification for LUCIAREL but made it not work for GASCIP).
+   - GASCIP code optimized, much faster now.
 
 - DIRAC calculator for the Atomistic Simulation Environment (ASE) is available.
-   - Contributors: Carlos M. R. Rocha, Lucas Visscher
+   - Contributors: Carlos M. R. Rocha and Lucas Visscher
    - Reference (DIRAC calculator): https://qc2.readthedocs.io
    - Reference (ASE): https://wiki.fysik.dtu.dk/ase/
+
 - Approximations to EOM-CCSD (Partitioned EOM (P-EOM-CCSD); second-order perturbation theory-based EOM (EOM-MBPT(2) and P-EOM-MBPT(2)) are available in the RELCCSD module for excitation and ionization energies.
-   - Contributors: L. Halbert, A. Gomes
-   - Reference: `L. Halbert and A. S. P. Gomes, The performance of approximate equation of motion coupled cluster for valence and core states of heavy element systems, Mol. Phys. (2023) e2246592 <https://doi.org/10.1080/00268976.2023.2246592>`__
+   - Contributors: L. Halbert and A. Gomes
+   - Reference: `L. Halbert and A. S. P. Gomes, The performance of approximate equation of motion coupled cluster for valence and core states of heavy element systems, Mol. Phys. e2246592 (2023) <https://doi.org/10.1080/00268976.2023.2246592>`__
 
 Infrastructure changes and fixes:
 
@@ -85,24 +87,28 @@ Basis set library:
    - Fixed 150+ instances of small rounding errors.
    - Contributor: Lukas F. Pasteka
 
-Bugfix:
+Bugfixes:
 
 - Fix of symmetry problem for KRMCSCF with LUCIAREL and odd number of electrons.
    - Contributor: H. J. Aa. Jensen.
-- Changes and corrections in the definition of one-electron operators :math:`\beta\gamma^5` and :math:`i \beta \boldsymbol{\alpha}`.
-   - One-electron operator type ``ZiBETAAL`` was not defined properly in previous versions of the code. From now on, it is replaced by ``ZBETAALP`` and represents the operator :math:`i \beta \alpha_z`.
-   - In previous versions of the code, the one-electron operator types ``XiBETAAL`` and ``YiBETAAL`` represented :math:`i \beta \alpha_x` and :math:`i \beta \alpha_y`, respectively. From now on, they are replaced by the operator types ``XBETAALP`` and ``YBETAALP``, respectively.
-   - New one-electron operator type ``BETAGAMMA5`` available, representing the time-symmetric operator :math:`\beta\gamma^5`. Please note that the operator type ``iBETAGAMMA5`` was already implemented in DIRAC and it also points to :math:`\beta\gamma^5`, but with the assignements of time-reversal antisymmetry.
+- Changes and corrections in the definition of one-electron operators :math:`\boldsymbol{\beta\gamma}^5` and :math:`i \boldsymbol{\beta\alpha}`.
+   - One-electron operator type ``ZiBETAAL`` was not defined properly in previous code versions. From now on, it is replaced by ``ZBETAALP`` and represents the operator :math:`i \boldsymbol{\beta} \boldsymbol{\alpha}_z`.
+   - In previous code versions, the one-electron operator types ``XiBETAAL`` and ``YiBETAAL`` represented :math:`i \boldsymbol{\beta} \boldsymbol{\alpha}_x` and :math:`i \boldsymbol{\beta} \boldsymbol{\alpha}_y`, respectively. From now on, they are replaced by the operator types ``XBETAALP`` and ``YBETAALP``, respectively.
+   - New one-electron operator type ``BETAGAMMA5`` available, representing the time-symmetric operator :math:`\boldsymbol{\beta\gamma}^5`. Please note that the operator type ``iBETAGAMMA5`` was already implemented in DIRAC and it also points to :math:`\boldsymbol{\beta\gamma}^5`, but with the assignments of time-reversal antisymmetry.
    - For more details, please check the manual: `One-electron operators <https://www.diracprogram.org/doc/release-25/manual/one_electron_operators.html#one-electron-operators>`__.
    - Contributor: I. A. Aucar.
 - Set the correct sign of CC linear and quadratic response functions in the case of more than one time-antisymmetric perturbation operator
    - Contributor: A. Gomes.
 
-New default:
+New defaults:
 
-- The CODATA2022 set of physical constants is now used as default (taken from http://physics.nist.gov/constants on June 4, 2024).
+- The CODATA2022 set of physical constants is now used as default (taken from http://physics.nist.gov/constants on March 6, 2025).
    - Contributor: I. A. Aucar.
-- Tenpi-generated code is now the default choice for automatically generated T equation codes. 
+- The inverse fine-structure constant is now extracted directly from CODATA, rather than being calculated from other fundamental constants.
+   - Contributor: I. A. Aucar.
+- Planck's constant is taken from CODATA (the reduced Planck constant is now calculated internally).
+   - Contributor: I. A. Aucar.
+- Tenpi-generated code is now the default choice for automatically generated T equation codes.
    - Contributor: A. Gomes.
 - Default CI gradient convergence threshold for \*KRCI is now 3.d-3 for energy calculations and 1.d-4 for property calculations. The 3.d-3 value is sufficient for total energies, accurate to ca. 0.01 mHartree, and saves a lot of unnecessary CPU time, but it will only give 2-3 digits in properties, which have linear accuracy in the CI wavefunction.
    - Contributor: H. J. Aa. Jensen.
@@ -120,11 +126,11 @@ New functionality with ExaCorr:
    - Reference: Xiang Yuan, Loic Halbert, Johann Valentin Pototschnig, Anastasios Papadopoulos, Sonia Coriani, Lucas Visscher, and Andre Severo Pereira Gomes, Formulation and Implementation of Frequency-Dependent Linear Response Properties with Relativistic Coupled Cluster Theory for GPU-Accelerated Computer Architectures, J. Chem. Theory Comput. 20, 677 (2024) https://doi.org/10.1021/acs.jctc.3c00812
    - Manual: CCCILR https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#cccilr
    - Tutorial: not yet available; please have a look at examples in the testset.
-   - Calculation of quadratic response properties CCSD wavefunctions. 
+   - Calculation of quadratic response properties CCSD wavefunctions.
    - Contributors: Xiang Yuan,  Loic Halbert, Lucas Visscher and Andre Gomes.
    - Reference: Xiang Yuan, Loic Halbert, Lucas Visscher, and Andre Severo Pereira Gomes, Frequency-Dependent Quadratic Response Properties and Two-Photon Absorption from Relativistic Equation-of-Motion Coupled Cluster Theory, J. Chem. Theory Comput. 19, 9248 (2023) https://doi.org/10.1021/acs.jctc.3c01011
    - Manual: CCCIQR https://diracprogram.org/doc/release-24/manual/wave_function/exacorr.html#ccciqr
-   - Tutorial: not yet available; please have a look at examples in the testset.      
+   - Tutorial: not yet available; please have a look at examples in the testset.
    - Calculation of energies with equation of motion coupled cluster for excitation (EOM-EE-CCSD), ionization  (EOM-IP-CCSD), and electron affinity (EOM-EA-CCSD) models.
    - Contributors: Xiang Yuan,  Loic Halbert, Lucas Visscher and Andre Gomes.
    - Reference: Xiang Yuan, PhD thesis (2024), https://doi.org/10.5463/thesis.505
@@ -137,13 +143,13 @@ New functionality with ExaCorr:
 
 Revised features:
 
-- Restart from density matrices of CC for first-order properties. 
+- Restart from density matrices of CC for first-order properties.
    - Contributors: Trond Saue, Andre Gomes
    - Manual: RDCCDM https://diracprogram.org/doc/release-24/manual/properties.html#rdccdm
 - Update of DIRAC schema which defines the information stored on CHECKPOINT.h5.
    - Essential symmetry information added.
    - MO coefficients for C<sub>1</sub> symmetry optionally stored for restarts without use of symmetry.
-   - Occupation of spinors in SCF added. 
+   - Occupation of spinors in SCF added.
    - Non-default property integrals stored on separate file to reduce the size of the checkpoint file.
    - Original input is preserved in the CHECKPOINT file.
    - Contributors: Lucas Visscher, Trond Saue
@@ -172,7 +178,7 @@ New features:
    - Reference: `Ignacio Agustín Aucar and Anastasia Borschevsky, Relativistic study of parity-violating nuclear spin-rotation tensors. J. Chem. Phys. 155, 134307 (2021) <https://doi.org/10.1063/5.0065487>`__
    - Manual: `PVCSR <http://www.diracprogram.org/doc/release-23/manual/properties.html#pvcsr>`__
    - Tutorial: `<http://www.diracprogram.org/doc/release-23/tutorials/pvcsr/tutorial.html>`__
-   
+
 - Calculation of oscillator strenghts beyond the electric dipole approximation in the generalized velocity representation
    - Contributors: Martin van Horn, Trond Saue, and Nanna Holmgaard List.
    - Reference: `M. van Horn, T. Saue, N. H. List. Probing Chirality across the Electromagnetic Spectrum with the Full Semi-Classical Light-Matter Interaction. J. Chem. Phys. 156, 054113 (2022) <https://doi.org/10.1063/5.0077502>`__
@@ -278,7 +284,7 @@ Revised features:
   - added ENABLE_EXATENSOR to the options you can change with 'ccmake --' (H. J. Aa. Jensen).
   - enable talsh only with unsupported mpi libraries (Andre Gomes)
   - improved exatensor MPI identification (Johann Pototschnig)
-    
+
 Error corrections:
 
 - Fixed pam script so it can find dirac.x and basis set directories in an installed version (i.e. after make install or e.g. "cmake --install build --prefix <installation root dir>"). H.J.Aa.Jensen.
@@ -312,7 +318,7 @@ Revised features:
 
 - Gauge origin (.GAUGEO and .GO ANG) now can only be set under \*\*HAMILTONIAN.
 - Phase and dipole origins (.PHASEO and .DIPORG, respectively) now can only be set under \*\*HAMILTONIAN.
-- EOM-CC excitation energies collected for all symmetries and summarized at the end  
+- EOM-CC excitation energies collected for all symmetries and summarized at the end.
 
 New defaults:
 
@@ -411,7 +417,7 @@ New features:
    M. Pernpointner. The relativistic polarization propagator for the calculation of electronic excitations in heavy systems.
    J. Chem. Phys. 140, 084108 (2014); http://dx.doi.org/10.1063/1.4865964
 
-   M. Pernpointner, L. Visscher and A. B. Trofimov. 
+   M. Pernpointner, L. Visscher and A. B. Trofimov.
    Four-component Polarization Propagator Calculations of Electron Excitations: Spectroscopic Implications of Spin-Orbit Coupling   Effects. J. Chem. Theory Comput. (2017) submitted.
 
 - Polarizable embedding using PElib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", additional options under \*PEQM.
