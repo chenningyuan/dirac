@@ -711,7 +711,7 @@ C
 C
       call print_codata_reference(CODSET)
 
-      WRITE(LUPRI,'(1X,A,F18.7)')
+      WRITE(LUPRI,'(1X,A,F20.9)')
      +   '* The speed of light : ',CVEL
       IF(CVAL.NE.CVEL) THEN
         FMT = MXFORM(CVAL,14)
