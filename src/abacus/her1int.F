@@ -6763,8 +6763,6 @@ C Does only work for Tensor/Chiral effect!
 C
       DIFODC = .FALSE.
 C
-C
-C
 C Exponent and coordinates of Spherical Nuclear distribution
       NUCPN1 = 0
       DO 50 IATOM = 1, NUCIND

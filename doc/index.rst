@@ -44,6 +44,12 @@ Setting up DIRAC
   :doc:`String replacement <pam/replace>`
 
 
+Updates
+=======
+
+ :doc:`ChangeLog <patches/CHANGELOG>`
+
+
 .. _FirstSteps:
 
 First steps in DIRAC territory
@@ -114,9 +120,10 @@ Tutorials and walkthrus
   :doc:`BSSE <tutorials/dft/bsse>` |
   :doc:`CAM functional <tutorials/dft/cam>` |
   :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
-
-* **Frozen orbitals:**
-  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>`
+  
+* **Orbital manipulations:**
+  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` |
+  :doc:`Atomic shift operator <tutorials/atomic_shift/tutorial>`   
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
@@ -191,6 +198,9 @@ Tutorials and walkthrus
 
 * **Davidson corrections for relCI (LUCITA and KRCI with LUCIAREL):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
+
+* **Quantum electrodynamics (QED):**
+  :doc:`effective QED potentials <tutorials/qed/effqed>`
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |

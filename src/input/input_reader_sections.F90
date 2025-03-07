@@ -180,6 +180,14 @@
          num_grid_cfg_angint = 64
       end if
 
+      if (kw_matches(word, '.GRASP ')) then
+         num_grid_cfg_grasp = .true.
+      end if
+
+      if (kw_matches(word, '.SCREEN')) then
+         call kw_read(word, num_grid_cfg_screen)
+      end if
+
       if (kw_matches(word, '.INTCHK')) then
          call kw_read(word, num_grid_cfg_integration_check_level)
       end if
@@ -3212,4 +3220,66 @@
      end if
 
      call check_whether_kw_found(word, kw_section)
+   end subroutine
+
+   ! This routine is called from in HAMINP routine in dirac/dirrdn.F
+   subroutine read_input_effqed(word,kw_section)
+
+      use input_reader
+      use num_grid_cfg
+
+      implicit none   
+!     ---------------------------------------------------------------------------
+      character(kw_length), intent(inout) :: word
+      character(kw_length), intent(in) :: kw_section
+!     ---------------------------------------------------------------------------
+      CHARACTER PROMPT*1 
+      INTEGER :: I, MXXTRP_INP
+#include "priunit.h"      
+
+      MXXTRP_INP = 50
+      
+      DO WHILE (.TRUE.)
+      READ (LUCMD, *) WORD
+      select case (word(1:1))
+        case ('!', '#')
+          ! comment       
+        case ('*')
+          RETURN
+        case default   
+
+         if (kw_matches(word, '.GRASP ')) then
+            num_grid_cfg_grasp = .true.
+            write(*,*)"num_grid_cfg_grasp",num_grid_cfg_grasp
+         end if
+
+         if (kw_matches(word, '.ANGQED')) then
+            read(LUCMD, *) num_grid_cfg_angqed
+         end if
+
+         if (kw_matches(word, '.MINIMUM')) then
+            read(LUCMD, *) num_grid_cfg_minz
+         end if
+
+         if (kw_matches(word, '.SCREEN')) then
+            read(LUCMD, *) num_grid_cfg_screen
+         end if
+
+         if (kw_matches(word, '.UEHCUT')) then
+            num_grid_cfg_uehcut = .true.
+         end if
+
+         if (kw_matches(word, '.ALLATOM')) then
+            num_grid_cfg_allatom = .true.
+         end if
+
+         if (kw_matches(word, '.PRINTPOT')) then
+            num_grid_cfg_printpot = .true.
+         end if
+
+         call check_whether_kw_found(word, kw_section)
+
+      end select
+      ENDDO
+   
    end subroutine
