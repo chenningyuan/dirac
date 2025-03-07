@@ -44,6 +44,12 @@ Setting up DIRAC
   :doc:`String replacement <pam/replace>`
 
 
+Updates
+=======
+
+ :doc:`ChangeLog <patches/CHANGELOG>`
+
+
 .. _FirstSteps:
 
 First steps in DIRAC territory
