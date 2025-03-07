@@ -2989,6 +2989,17 @@ CMI/Febr.2006 Beta matrix is not initialized in OP1INI for the two-component mod
         CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &              OP1INT,FIRST,IPRHAM)
       ENDIF
+C
+C     Energy shift
+C     ============
+C
+      IF (.NOT.TWOCOMP) THEN
+        IOP = IPESHIFT
+        IF(IOP.NE.-1) THEN 
+          CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
+     &          OP1INT,FIRST,IPRHAM)
+        ENDIF
+      ENDIF
 
 C
 C     Finite field perturbations:

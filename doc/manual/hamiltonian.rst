@@ -214,6 +214,15 @@ include)::
   .INTFLG
    1 1 0
 
+keyword(ESHIFT)
+
+Specify an energy shift in units of :math:`mc^2`.
+By default the zero of the energy is aligned with the non-relativistic energy scale.
+To shift back to the relativistic scale, one can specify::
+
+  .ESHIFT
+  1.0D0
+
 
 **Turning off spin dependence**
 ===============================
