@@ -3757,7 +3757,8 @@ C
       IVOFF = 1
       NLINDEP=0
       CALL HEADER('Generating Lowdin canonical matrix:',-1)
-      DO IFRP = 1,NFSYM
+      DO 10 IFRP = 1,NFSYM
+        IF(NFBAS(IFRP,0).EQ.0) GOTO 10
         JSOFF = ISOFF
         JVOFF = IVOFF
 C
@@ -3872,7 +3873,7 @@ C
         END IF
         ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
-      ENDDO
+ 10   CONTINUE
       IF(NLINDEP.GT.0) THEN
         WRITE(LUPRI,'(A,I0,A)') '*** WARNING *** : ',NLINDEP,
      &    ' functions deleted due to numerical linear dependence.'
@@ -6390,9 +6391,11 @@ C
       ENDIF
 
 C
-      IF(IPRINT.GE.3) THEN
+      IF(IPRINT.GE.2) THEN
         CALL HEADER('LOWGEN: Eigenvalues in Lowdin diagonalization:',-1)
-        CALL OUTPUT(EIG,1,NS,1,1,NS,1,-1,LUPRI)
+        DO I = 1,NS
+          WRITE(6,*) I,EIG(I)
+        ENDDO
       ENDIF
 C
       IF(IPRINT.GE.6) THEN
