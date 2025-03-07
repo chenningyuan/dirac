@@ -61,13 +61,29 @@ Basis set library:
    - Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke, Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z. J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
 - Basis set library has been extended with ECP basis sets cc-pVnZ-PP and cc-pwCVnZ-PP, for n = D,T,Q,5, and the augmented versions aug-cc-pVnZ-PP and aug-cc-pwCVnZ-PP
    - Contributor: Kirk Peterson
-- Transferred fixes of Dalton basis sets from Dalton (Contributor: H. J. Aa. Jensen):
+- Transferred fixes of Dalton basis sets from Dalton:
    - Corrected some references in correlation consistent basis sets (as e.g. aug-cc-pVTZ).
    - Fixed Scandium in aug-cc-pVTZ-J (two lines missing, would have given error if used).
+   - Contributor: H. J. Aa. Jensen.
 - Added special basis sets for spin-spin coupling and hyperfine coupling from Frank Jensen group (Aarhus University):
    - pcJ, ccJ and pcH sets.
    - Copied from Dalton basis set directory.
    - Contributor: H. J. Aa. Jensen.
+- Corrections to Dyall basis sets:
+   - Fixed incorrect definitions for the number of exponents for Zr/Nb/Ru in dyall.acv4z.
+   - Fixed missing exponents:
+      - 1x f for Lu in cv2z/ae2z
+      - 1x d for K in acv4z
+      - 3x f, 2x g, 1x h for Rb/Sr in acv4z
+      - 1x g for Ra in acv4z/aae4z
+      - 1x f for Rf--Cn in aae4z
+   - Fixed incorrect exponent values:
+      - 1x s, 1x p, 1x d for Zr in av3z/acv3z/aae3z
+      - 2x g, 1x h for Pb--Rn in acv4z/aae4z
+      - 1x g for Tl--Rn in ae4z
+      - 1x g for Lr in v4z
+   - Fixed 150+ instances of small rounding errors.
+   - Contributor: Lukas F. Pasteka
 
 Bugfix:
 
