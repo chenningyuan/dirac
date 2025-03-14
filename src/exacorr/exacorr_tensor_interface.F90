@@ -29,7 +29,7 @@ module exacorr_tensor_interface
          ! we follow TAPP_datatype enumeration
          integer(kind(TAPP_datatype)) :: datatype
 
-         integer, public:: which_executor = 2 !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
+         integer, public:: which_executor = 1 !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
          
          ! contains
          !   procedure :: copy_tensor_t
@@ -289,7 +289,7 @@ module exacorr_tensor_interface
           in_out_exec = 100 * in_tens%which_executor + out_executor 
           SELECT CASE( in_out_exec) ! e.g. 201 means convert from exec 2 to 1 
             CASE(101, 202) 
-              ierr = copy_tensor_t(in_tens, out_tens)
+              ierr = copy_tensor_t(out_tens, in_tens)
             CASE(102) 
               ierr = get_extents(in_tens, out_dims)
               ierr = construct_tensor_t(out_tens, out_tens%datatype, out_dims, executor=out_tens%which_executor)
@@ -466,7 +466,7 @@ module exacorr_tensor_interface
 
           if ( is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Attempting to access data of an empty tensor in direct_data_pointer.")') 
-            stop 98
+            call quit(" error 98")
           endif
 
           SELECT CASE(tensor%which_executor)
@@ -742,10 +742,10 @@ module exacorr_tensor_interface
         end function initialize_tensor_t
 
         ! copies a tensor (copy constructor, deep copy)
-        function copy_tensor_t(src_tens, dest_tens)
+        function copy_tensor_t(dest_tens, src_tens)
           implicit none
-          type(tensor_t), intent(inout)    :: src_tens
           type(tensor_t), intent(inout)    :: dest_tens
+          type(tensor_t), intent(inout)    :: src_tens
 
           integer(INTD), allocatable, target :: lin_dim(:)
           complex(8), pointer, contiguous  :: lin_src_tens_c(:)

@@ -5,14 +5,14 @@
 subroutine tapp_tenpi_ccd(nocc,nvir,F1,F2,T1,V4,V1, &
         V3,V5,V2,Z0,Z2)
     
-    use talsh
-    use tensor_algebra
     use, intrinsic:: ISO_C_BINDING
-    use tapp_top
+    use exacorr_tensor_interface
 
     ! use TAPP_create_tensor_info
     
     implicit none
+
+    integer, parameter :: executor= 1
     
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
                              MINUS_ONE=(-1.D0,0.D0),ONE=(1.0D0,0.D0), MINUS_ONE_HALF=(-0.5D0,0.D0), &
@@ -22,216 +22,216 @@ subroutine tapp_tenpi_ccd(nocc,nvir,F1,F2,T1,V4,V1, &
     
     integer, intent(in) :: nocc
     integer, intent(in) :: nvir
-    type(talsh_tens_t), intent(inout) :: F1    !       OO
-    type(talsh_tens_t), intent(inout) :: F2    !       VV
-    type(talsh_tens_t), intent(inout) :: T1    !       VVOO
-    type(talsh_tens_t), intent(inout) :: V4    !       OOOO
-    type(talsh_tens_t), intent(inout) :: V1    !       OOVV
-    type(talsh_tens_t), intent(inout) :: V3    !       VOOV
-    type(talsh_tens_t), intent(inout) :: V5    !       VVOO
-    type(talsh_tens_t), intent(inout) :: V2    !       VVVV
-    type(talsh_tens_t), intent(inout) :: Z0    !       UnitTensor
-    type(talsh_tens_t), intent(inout) :: Z2    !       VVOO
-    type(talsh_tens_t) :: D1    !       VVOO
-    type(talsh_tens_t) :: G1    !       VVOO
-    type(talsh_tens_t) :: I1    !       VVOO
-    type(talsh_tens_t) :: J1    !       VV
-    type(talsh_tens_t) :: M1    !       VVOO
-    type(talsh_tens_t) :: X1    !       OVVO
-    type(talsh_tens_t) :: Y1    !       VVOO
-    type(talsh_tens_t) :: A2    !       OO
-    type(talsh_tens_t) :: E2    !       OOOO
-    type(talsh_tens_t) :: G2    !       VVOO
+    type(tensor_t), intent(inout) :: F1    !       OO
+    type(tensor_t), intent(inout) :: F2    !       VV
+    type(tensor_t), intent(inout) :: T1    !       VVOO
+    type(tensor_t), intent(inout) :: V4    !       OOOO
+    type(tensor_t), intent(inout) :: V1    !       OOVV
+    type(tensor_t), intent(inout) :: V3    !       VOOV
+    type(tensor_t), intent(inout) :: V5    !       VVOO
+    type(tensor_t), intent(inout) :: V2    !       VVVV
+    type(tensor_t), intent(inout) :: Z0    !       UnitTensor
+    type(tensor_t), intent(inout) :: Z2    !       VVOO
+    type(tensor_t) :: D1    !       VVOO
+    type(tensor_t) :: G1    !       VVOO
+    type(tensor_t) :: I1    !       VVOO
+    type(tensor_t) :: J1    !       VV
+    type(tensor_t) :: M1    !       VVOO
+    type(tensor_t) :: X1    !       OVVO
+    type(tensor_t) :: Y1    !       VVOO
+    type(tensor_t) :: A2    !       OO
+    type(tensor_t) :: E2    !       OOOO
+    type(tensor_t) :: G2    !       VVOO
     
     integer :: ierr
     
-    write(*,*) "    Running code from tenpi with TAPP."
+    write(*,'("    Running code from tenpi with executor ",i11,".")') executor
 
 
     !Diagram      0; Contraction 1; Tree Level  0; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  0/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("Z0()+=V1(m1,n1,e1,f1)*T1(e1,f1,m1,n1)", &
+    ierr=t_einsum("Z0()+=V1(m1,n1,e1,f1)*T1(e1,f1,m1,n1)", &
     Z0,V1,T1,scale=(2.5d-1,0.0d0))
     
-    ierr=talsh_tensor_construct(D1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(D1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO, executor=executor)
     
     !Diagram      0; Contraction 2; Tree Level  2; Scaling  4/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("D1(f1,e1,m1,n1)+=F1(l1,m1)*T1(f1,e1,n1,l1)", &
+    ierr=t_einsum("D1(f1,e1,m1,n1)+=F1(l1,m1)*T1(f1,e1,n1,l1)", &
     D1,F1,T1,scale=(1.0d0,0.0d0))
 
     
-    !ierr=talsh_tensor_destruct(F1)
+    !ierr=destroy_tensor_t(F1)
     
     !Diagram      0; Contraction 3; Tree Level  0; Scaling  2/ 6/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("Z2(e1,f1,m1,n1)+=V2(e1,f1,d1,e2)*T1(d1,e2,m1,n1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=V2(e1,f1,d1,e2)*T1(d1,e2,m1,n1)", &
     Z2,V2,T1,scale=(5.0d-1,0.0d0))
     
-    !ierr=talsh_tensor_destruct(V2)
+    !ierr=destroy_tensor_t(V2)
     
-    ierr=talsh_tensor_construct(G1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(G1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO, executor=executor)
     
     !Diagram      0; Contraction 4; Tree Level  2; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("G1(e1,f1,m1,n1)+=V3(e1,l1,m1,d1)*T1(f1,d1,n1,l1)", &
+    ierr=t_einsum("G1(e1,f1,m1,n1)+=V3(e1,l1,m1,d1)*T1(f1,d1,n1,l1)", &
     G1,V3,T1,scale=(1.0d0,0.0d0))
     
-    !ierr=talsh_tensor_destruct(V3)
+    !ierr=destroy_tensor_t(V3)
     
-    ierr=talsh_tensor_construct(I1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(I1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO, executor=executor)
     
     !Diagram      0; Contraction 5; Tree Level  2; Scaling  2/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("I1(e1,f1,n1,m1)+=F2(e1,d1)*T1(f1,d1,n1,m1)", &
+    ierr=t_einsum("I1(e1,f1,n1,m1)+=F2(e1,d1)*T1(f1,d1,n1,m1)", &
     I1,F2,T1,scale=(1.0d0,0.0d0))
     
-    !ierr=talsh_tensor_destruct(F2)
+    !ierr=destroy_tensor_t(F2)
     
-    ierr=talsh_tensor_construct(J1, C8, (/nvir,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(J1, C8, (/nvir,nvir/), init_val=ZERO, executor=executor)
     
     !Diagram      0; Contraction 6; Tree Level  3; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  0/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("J1(f1,d1)+=V1(l1,m2,d1,e2)*T1(e2,f1,l1,m2)", &
+    ierr=t_einsum("J1(f1,d1)+=V1(l1,m2,d1,e2)*T1(e2,f1,l1,m2)", &
     J1,V1,T1,scale=(1.0d0,0.0d0))
     
-    ierr=talsh_tensor_construct(M1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(M1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO, executor=executor)
     
     !Diagram      0; Contraction 7; Tree Level  2; Scaling  2/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("M1(e1,f1,m1,n1)+=T1(e1,d1,m1,n1)*J1(f1,d1)", &
+    ierr=t_einsum("M1(e1,f1,m1,n1)+=T1(e1,d1,m1,n1)*J1(f1,d1)", &
     M1,T1,J1,scale=(1.0d0,0.0d0))
     
-    ierr=talsh_tensor_destruct(J1)
+    ierr=destroy_tensor_t(J1)
     
-    ierr=talsh_tensor_construct(X1, C8, (/nocc,nvir,nvir,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(X1, C8, (/nocc,nvir,nvir,nocc/), init_val=ZERO, executor=executor)
     
     !Diagram      0; Contraction 8; Tree Level  3; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("X1(l1,f1,d1,n1)+=V1(l1,m2,d1,e2)*T1(e2,f1,m2,n1)", &
+    ierr=t_einsum("X1(l1,f1,d1,n1)+=V1(l1,m2,d1,e2)*T1(e2,f1,m2,n1)", &
     X1,V1,T1,scale=(1.0d0,0.0d0))
     
-    ierr=talsh_tensor_construct(Y1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Y1, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO, executor=executor)
     
     !Diagram      0; Contraction 9; Tree Level  2; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("Y1(e1,f1,m1,n1)+=T1(e1,d1,m1,l1)*X1(l1,f1,d1,n1)", &
+    ierr=t_einsum("Y1(e1,f1,m1,n1)+=T1(e1,d1,m1,l1)*X1(l1,f1,d1,n1)", &
     Y1,T1,X1,scale=(1.0d0,0.0d0))
     
-    ierr=talsh_tensor_destruct(X1)
+    ierr=destroy_tensor_t(X1)
     
-    ierr=talsh_tensor_construct(A2, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(A2, C8, (/nocc,nocc/), init_val=ZERO, executor=executor)
     
     !Diagram      0; Contraction 10; Tree Level  3; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
     !                              l,n        l,m,d,e        d,e,m,n
-    ! ierr=tapp_einsum_talsh_tensors("A2(l1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m2,n1)", &
+    ! ierr=t_einsum("A2(l1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m2,n1)", &
     ! A2,V1,T1,scale=(1.0d0,0.0d0))
 
-    ierr=tapp_einsum_talsh_tensors("A2(l1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m2,n1)", &
+    ierr=t_einsum("A2(l1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m2,n1)", &
     A2,V1,T1,scale=(1.0d0,0.0d0))
 
-    ierr=talsh_tensor_construct(E2, C8, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(E2, C8, (/nocc,nocc,nocc,nocc/), init_val=ZERO, executor=executor)
     
     !Diagram      0; Contraction 11; Tree Level  2; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  4/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("E2(l1,m2,m1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m1,n1)", &
+    ierr=t_einsum("E2(l1,m2,m1,n1)+=V1(l1,m2,d1,e2)*T1(d1,e2,m1,n1)", &
     E2,V1,T1,scale=(1.0d0,0.0d0))
     
-    !ierr=talsh_tensor_destruct(V1)
+    !ierr=destroy_tensor_t(V1)
     
     !Diagram      0; Contraction 12; Tree Level  2; Scaling  4/ 0/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  4/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("E2(l1,m2,m1,n1)+=V4(l1,m2,m1,n1)", &
+    ierr=t_einsum("E2(l1,m2,m1,n1)+=V4(l1,m2,m1,n1)", &
     E2,V4,scale=(2.0d0,0.0d0))
     
-    !ierr=talsh_tensor_destruct(V4)
+    !ierr=destroy_tensor_t(V4)
     
-    ierr=talsh_tensor_construct(G2, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(G2, C8, (/nvir,nvir,nocc,nocc/), init_val=ZERO, executor=executor)
     
     !Diagram      0; Contraction 13; Tree Level  2; Scaling  4/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("G2(e1,f1,m1,n1)+=T1(e1,f1,m1,l1)*A2(l1,n1)", &
+    ierr=t_einsum("G2(e1,f1,m1,n1)+=T1(e1,f1,m1,l1)*A2(l1,n1)", &
     G2,T1,A2,scale=(1.0d0,0.0d0))
     
-    ierr=talsh_tensor_destruct(A2)
+    ierr=destroy_tensor_t(A2)
     
     !Diagram      0; Contraction 14; Tree Level  1; Scaling  6/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=tapp_einsum_talsh_tensors("Z2(e1,f1,m1,n1)+=T1(e1,f1,l1,m2)*E2(l1,m2,m1,n1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=T1(e1,f1,l1,m2)*E2(l1,m2,m1,n1)", &
     Z2,T1,E2,scale=(2.5d-1,0.0d0))
     
-    ierr=talsh_tensor_destruct(E2)
+    ierr=destroy_tensor_t(E2)
     
-    !ierr=talsh_tensor_destruct(T1)
+    !ierr=destroy_tensor_t(T1)
     
     !Diagram      0; Contraction 15; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=Y1(e1,f1,m1,n1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=Y1(e1,f1,m1,n1)", &
     Z2,Y1,scale=(5.0d-1,0.0d0))
     
     !Diagram      0; Contraction 16; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=Y1(f1,e1,m1,n1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=Y1(f1,e1,m1,n1)", &
     Z2,Y1,scale=(-5.0d-1,0.0d0))
     
     !Diagram      0; Contraction 17; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=Y1(e1,f1,n1,m1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=Y1(e1,f1,n1,m1)", &
     Z2,Y1,scale=(-5.0d-1,0.0d0))
     
     !Diagram      0; Contraction 18; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=Y1(f1,e1,n1,m1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=Y1(f1,e1,n1,m1)", &
     Z2,Y1,scale=(5.0d-1,0.0d0))
     
-    ierr=talsh_tensor_destruct(Y1)
+    ierr=destroy_tensor_t(Y1)
     
     !Diagram      0; Contraction 19; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=G1(e1,f1,m1,n1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=G1(e1,f1,m1,n1)", &
     Z2,G1,scale=(1.0d0,0.0d0))
     
     !Diagram      0; Contraction 20; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=G1(f1,e1,m1,n1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=G1(f1,e1,m1,n1)", &
     Z2,G1,scale=(-1.0d0,0.0d0))
     
     !Diagram      0; Contraction 21; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=G1(e1,f1,n1,m1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=G1(e1,f1,n1,m1)", &
     Z2,G1,scale=(-1.0d0,0.0d0))
     
     !Diagram      0; Contraction 22; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=G1(f1,e1,n1,m1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=G1(f1,e1,n1,m1)", &
     Z2,G1,scale=(1.0d0,0.0d0))
     
-    ierr=talsh_tensor_destruct(G1)
+    ierr=destroy_tensor_t(G1)
     
     !Diagram      0; Contraction 23; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=M1(e1,f1,m1,n1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=M1(e1,f1,m1,n1)", &
     Z2,M1,scale=(5.0d-1,0.0d0))
     
     !Diagram      0; Contraction 24; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=M1(f1,e1,m1,n1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=M1(f1,e1,m1,n1)", &
     Z2,M1,scale=(-5.0d-1,0.0d0))
     
-    ierr=talsh_tensor_destruct(M1)
+    ierr=destroy_tensor_t(M1)
     
     !Diagram      0; Contraction 25; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=I1(e1,f1,n1,m1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=I1(e1,f1,n1,m1)", &
     Z2,I1,scale=(1.0d0,0.0d0))
     
     !Diagram      0; Contraction 26; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=I1(f1,e1,n1,m1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=I1(f1,e1,n1,m1)", &
     Z2,I1,scale=(-1.0d0,0.0d0))
     
-    ierr=talsh_tensor_destruct(I1)
+    ierr=destroy_tensor_t(I1)
     
     !Diagram      0; Contraction 27; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=G2(e1,f1,m1,n1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=G2(e1,f1,m1,n1)", &
     Z2,G2,scale=(5.0d-1,0.0d0))
     
     !Diagram      0; Contraction 28; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=G2(e1,f1,n1,m1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=G2(e1,f1,n1,m1)", &
     Z2,G2,scale=(-5.0d-1,0.0d0))
     
-    ierr=talsh_tensor_destruct(G2)
+    ierr=destroy_tensor_t(G2)
     
     !Diagram      0; Contraction 29; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=D1(f1,e1,m1,n1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=D1(f1,e1,m1,n1)", &
     Z2,D1,scale=(-1.0d0,0.0d0))
     
     !Diagram      0; Contraction 30; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=D1(f1,e1,n1,m1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=D1(f1,e1,n1,m1)", &
     Z2,D1,scale=(1.0d0,0.0d0))
     
-    ierr=talsh_tensor_destruct(D1)
+    ierr=destroy_tensor_t(D1)
     
     !Diagram      0; Contraction 31; Tree Level  1; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
-    ierr=talsh_tensor_add("Z2(e1,f1,m1,n1)+=V5(e1,f1,m1,n1)", &
+    ierr=t_einsum("Z2(e1,f1,m1,n1)+=V5(e1,f1,m1,n1)", &
     Z2,V5,scale=(1.0d0,0.0d0))
     
-    !ierr=talsh_tensor_destruct(V5)
+    !ierr=destroy_tensor_t(V5)
     
     
 end subroutine tapp_tenpi_ccd

@@ -3,6 +3,7 @@
 
         use exatensor
         use talsh
+        use exacorr_tensor_interface, only: tensor_t
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -207,6 +208,15 @@
          type(talsh_tens_t) :: foo, fov, fvv
         end type talsh_intg_tens_t
 
+        type, public :: intg_tensor_t
+         type(tensor_t) :: oooo
+         type(tensor_t) :: ooov
+         type(tensor_t) :: oovv, vovo
+         type(tensor_t) :: vovv
+         type(tensor_t) :: vvvv
+         type(tensor_t) :: foo, fov, fvv
+        end type intg_tensor_t
+
 !       Common blocks between t and lambda
         type, public :: talsh_comm_tens_t
          type(talsh_tens_t) :: foo, fov, fvv ! include finite field perturbations, otherwise identical to f in talsh_intg_tens
@@ -215,6 +225,14 @@
          type(talsh_tens_t) :: a_int, h_int
          type(talsh_tens_t) :: t1, t2, t3, t4, t5, tau
         end type talsh_comm_tens_t
+
+        type, public :: comm_tensor_t
+         type(tensor_t) :: foo, fov, fvv ! include finite field perturbations, otherwise identical to f in talsh_intg_tens
+         type(tensor_t) :: goo, gvv
+         type(tensor_t) :: hoo, hov, hvv
+         type(tensor_t) :: a_int, h_int
+         type(tensor_t) :: t1, t2, t3, t4, t5, tau
+        end type comm_tensor_t
 
         type, public :: talsh_lambda_tens_t
          type(talsh_tens_t) :: fbar_oo, fbar_ov, fbar_vv
