@@ -5268,7 +5268,6 @@ C
 C
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "dcb_effqed.h"
 #include "dcb_ashift.h"            
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -5332,7 +5331,7 @@ C
 !                   69        70        71        72
      &            '.GAUGEO','.GO ANG','.DIPORG', '.PHASEO',
 !                   73        74        75        76
-     &            '.KOUT  ','.EFFQED','.ASHIFT', '.XXXXXX'/
+     &            '.KOUT  ','.XXXXXX','.ASHIFT', '.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -5356,7 +5355,6 @@ C
       IPRHAM  = 0
       DOLVC   = .TRUE.
       QED     = .FALSE.
-      DOEFFQED = .FALSE.
       DOASHIFT = .FALSE.
       X2CMMF  = .FALSE.
       ONESYS  = .FALSE.
@@ -6086,32 +6084,6 @@ C..TODO: check for inconsistencies and add stops
             WRITE_K_MATRIX = .TRUE.
           GO TO 100
  174      CONTINUE
-!&&&& EFFQED: include effective QED potential
-          DOEFFQED=.TRUE.
-          ICHANG = ICHANG + 1
-          NREFS=NUCDEP
-          IF(NREFS.GT.MAXREF) THEN
-             WRITE(LUPRI,'(A,I5)')
-     &       '* Number of atomic types specified  :',NREFS,
-     &       '* Current maximum no. of fragments  :',MAXREF
-             CALL QUIT('*EFFQED input: Too many fragments !')
-          ENDIF
-          DO ITYP = 1,NONTYP
-            READ(LUCMD,'(A6)')  REFFIL(ITYP)
-            READ(LUCMD,*) EFFQED_NKAP(ITYP)
-            IF(EFFQED_NKAP(ITYP).GT.MAXKAP) THEN
-               WRITE(LUPRI,'(A,I5)')
-     &        '* Atom type nr.                     :',ITYP,
-     &        '* Number of kappa values specified  :',EFFQED_NKAP(ITYP),
-     &        '* Current maximum no. of kappavals  :',MAXKAP
-              CALL QUIT('*EFFQED input: Too many kappa values !')
-            ENDIF
-            DO IKAP = 1,EFFQED_NKAP(ITYP)
-              READ(LUCMD,*) EFFQED_IPAR(IKAP,ITYP),
-     &             EFFQED_PAR(1,IKAP,ITYP),EFFQED_PAR(2,IKAP,ITYP)
-              READ(LUCMD,'(A72)') VECREF(IKAP,ITYP)
-            ENDDO
-          ENDDO  
           GOTO 100
  175      CONTINUE
 !&&&& ASHIFT: include atomic projectors
@@ -6540,31 +6512,6 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
 
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
-#ifdef MOD_UNRELEASED
-      IF(DOEFFQED) THEN
-        WRITE(LUPRI,'(3X,A)') 'Effective QED potential added.'
-        WRITE(LUPRI,'(6X,A)') 'Parameters:'
-        ININD=0
-        DO ITYP = 1,NONTYP
-           WRITE(LUPRI,'(6X,A,I5)')
-     &       '* Atomic type nr. :',ITYP
-           WRITE(LUPRI,'(9X,A,10(2X,A4))')
-     &       '- Symmetry-independent centers: ',
-     &       (NAMN(ININD+I),I=1,NONT(ITYP))
-           ININD = ININD + NONT(ITYP)
-           WRITE(LUPRI,'(9X,A,A6)')
-     &       '- C1-coefficients read from file: ',REFFIL(ITYP)
-           DO IKAP=1,EFFQED_NKAP(ITYP)
-             WRITE(LUPRI,'(8X,A,I5,2(A,E16.10))')
-     &       ' - Kappa: ',EFFQED_IPAR(IKAP,ITYP),
-     &       ' - Coef.: ',EFFQED_PAR(1,IKAP,ITYP),
-     &       ' - Exp. : ',EFFQED_PAR(2,IKAP,ITYP)
-             WRITE(LUPRI,'(12X,A,A72)')
-     &       ' Orbitals: ',VECREF(IKAP,ITYP)
-           ENDDO
-        ENDDO
-      ENDIF
-#endif      
       IF(DOASHIFT) THEN
         WRITE(LUPRI,'(3X,A)') 'Atomic shift projectors added.'
         WRITE(LUPRI,'(6X,A)') 'Parameters:'

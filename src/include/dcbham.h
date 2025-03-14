@@ -143,7 +143,7 @@
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,        &
      &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ECPCALC,MDIRAC, TRS_MIX,  &
      &        WRITE_Jz_MATRIX, WRITE_K_MATRIX, NONREL, FAKE2C,          &
-     &        DOEFFQED, DOASHIFT
+     &        DOASHIFT
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
@@ -155,8 +155,7 @@
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
      &                NOSFMU,       TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
      &                ECPCALC,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &
-     &                WRITE_K_MATRIX,FAKE2C,I2_DCLHAM,                  &
-     &    	      DOEFFQED, DOASHIFT
+     &                WRITE_K_MATRIX,FAKE2C,DOASHIFT,I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!
 !

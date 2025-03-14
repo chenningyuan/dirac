@@ -3038,11 +3038,6 @@ C     ---------------------------
 C
       IF(DOASHIFT) CALL ASHIFT(FOCK,IPRHAM,WORK,KFREE,LFREE)      
 C
-C     Add effective QED potentials
-C     ----------------------------      
-C
-      IF(DOEFFQED) CALL EFFQED(FOCK,WORK,KFREE,LFREE)
-C
 C     Add Fock matrices when requested
 C
       IF(TOBE) THEN
@@ -4426,9 +4421,7 @@ C
         ENDDO
         IF (TWOCOMP) THEN
          SSMTRC = D0
-         write(*,*)"MCayaki in GMOTRA", MC           
          MC = 1
-         write(*,*)"MCayaki2 in GMOTRA", MC
         ENDIF
         IF (IPRHAM.GE.5) THEN
           write(lupri,*) 'GMOTRA: branch URKBAL'

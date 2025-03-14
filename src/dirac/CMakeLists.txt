@@ -15,7 +15,6 @@ set(FIXED_DIRAC_FORTRAN_SOURCES
    dirbss.F
    dircnv.F
    dirden.F
-   dir_effQED.F
    dirgeo.F
    dirgp.F
    dirgrd.F
