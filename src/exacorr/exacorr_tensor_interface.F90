@@ -29,7 +29,7 @@ module exacorr_tensor_interface
          ! we follow TAPP_datatype enumeration
          integer(kind(TAPP_datatype)) :: datatype
 
-         integer, public:: which_executor = 1 !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
+         integer, public:: which_executor = DEFAULT_EXECUTOR_TENSOR_T !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
          
          ! contains
          !   procedure :: copy_tensor_t
@@ -286,7 +286,7 @@ module exacorr_tensor_interface
 
           out_tens%datatype = in_tens%datatype
           
-          in_out_exec = 100 * in_tens%which_executor + out_executor 
+          in_out_exec = 100 * in_tens%which_executor + out_tens%which_executor 
           SELECT CASE( in_out_exec) ! e.g. 201 means convert from exec 2 to 1 
             CASE(101, 202) 
               ierr = copy_tensor_t(out_tens, in_tens)
@@ -338,7 +338,7 @@ module exacorr_tensor_interface
 
             CASE default 
               write(*,'("  Error. Conversion from executor ",i11," to ",i11," not yet implemented.")') &
-                in_tens%which_executor, out_executor
+                in_tens%which_executor, out_tens%which_executor
               stop 55
           END SELECT
 

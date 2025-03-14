@@ -33,6 +33,14 @@ if(ENABLE_EXATENSOR)
    else()
      message(STATUS "WARNING: TAPP_ROOT not specified. Will attempt to compile without TAPP standard tensor interface.") 
    endif()
+   
+   # set default executor (1=tapp, 2=talsh, 3=exatensor) of tensor operations for tensor_t in exacorr_tensor_interface
+   if (DEFINED ENV{TENSOR_T_EXECUTOR})
+     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} $ENV{TAPP_ROOT}/lib/libtapp.so)
+     add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=$ENV{TENSOR_T_EXECUTOR})
+   else()
+     add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=1)
+   endif()
 
    # check build type
    if (DEFINED ENV{BUILD_TYPE})
