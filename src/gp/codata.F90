@@ -51,7 +51,7 @@ module codata
   real(8), parameter :: emass1986    = 9.1093897d-31
   real(8), parameter :: ccm1986      = 2.99792458d8
   real(8), parameter :: autk1986     = 3.157733d5
-  real(8), parameter :: cvel1986     = 1.370359895d2
+  real(8), parameter :: cvel1986     = 137.0359895d0
   real(8), parameter :: gfac1986     = 2.002319304386d0
 !  real(8), parameter :: fermicc1986  = Values not reported
 !  real(8), parameter :: s2thetaw1986 = Values not reported
@@ -74,7 +74,7 @@ module codata
   real(8), parameter :: emass1998    = 9.10938188d-31
   real(8), parameter :: ccm1998      = 2.997924580d8
   real(8), parameter :: autk1998     = 3.1577465d5
-  real(8), parameter :: cvel1998     = 1.370359997d2
+  real(8), parameter :: cvel1998     = 137.0359997d0
   real(8), parameter :: gfac1998     = 2.0023193043737d0
   real(8), parameter :: fermicc1998  = 1.16639d-5
   real(8), parameter :: s2thetaw1998 = 0.23124d0    ! on-shell scheme value: 0.2224d0
@@ -91,7 +91,7 @@ module codata
   real(8), parameter :: emass2002    = 9.1093826d-31
   real(8), parameter :: ccm2002      = 2.99792458d8
   real(8), parameter :: autk2002     = 3.1577465d5
-  real(8), parameter :: cvel2002     = 1.3703599911d2
+  real(8), parameter :: cvel2002     = 137.03599911d0
   real(8), parameter :: gfac2002     = 2.0023193043718d0
   real(8), parameter :: fermicc2002  = 1.16639d-5
   real(8), parameter :: s2thetaw2002 = 0.23124d0    ! on-shell scheme value: 0.22215d0
@@ -108,7 +108,7 @@ module codata
   real(8), parameter :: emass2006    = 9.10938215d-31
   real(8), parameter :: ccm2006      = 2.99792458d8
   real(8), parameter :: autk2006     = 3.1577465d5
-  real(8), parameter :: cvel2006     = 1.37035999679d2
+  real(8), parameter :: cvel2006     = 137.035999679d0
   real(8), parameter :: gfac2006     = 2.0023193043622d0
   real(8), parameter :: fermicc2006  = 1.16637d-5
   real(8), parameter :: s2thetaw2006 = 0.23122d0    ! on-shell scheme value: 0.22255d0
@@ -125,7 +125,7 @@ module codata
   real(8), parameter :: emass2010    = 9.10938291d-31
   real(8), parameter :: ccm2010      = 2.99792458d8
   real(8), parameter :: autk2010     = 3.1577504d5
-  real(8), parameter :: cvel2010     = 1.37035999074d2
+  real(8), parameter :: cvel2010     = 137.035999074d0
   real(8), parameter :: gfac2010     = 2.00231930436153d0
   real(8), parameter :: fermicc2010  = 1.166364d-5
   real(8), parameter :: s2thetaw2010 = 0.23116d0    ! on-shell scheme value: 0.2223d0
@@ -142,7 +142,7 @@ module codata
   real(8), parameter :: emass2014    = 9.10938356d-31
   real(8), parameter :: ccm2014      = 2.99792458d8
   real(8), parameter :: autk2014     = 3.1577513d5
-  real(8), parameter :: cvel2014     = 1.37035999139d2
+  real(8), parameter :: cvel2014     = 137.035999139d0
   real(8), parameter :: gfac2014     = 2.00231930436182d0
   real(8), parameter :: fermicc2014  = 1.1663787d-5
   real(8), parameter :: s2thetaw2014 = 0.23126d0    ! on-shell scheme value: 0.2223d0
@@ -159,7 +159,7 @@ module codata
   real(8), parameter :: emass2018    = 9.1093837015d-31
   real(8), parameter :: ccm2018      = 2.99792458d8
   real(8), parameter :: autk2018     = 3.1577502480407d5
-  real(8), parameter :: cvel2018     = 1.37035999084d2
+  real(8), parameter :: cvel2018     = 137.035999084d0
   real(8), parameter :: gfac2018     = 2.00231930436256d0
   real(8), parameter :: fermicc2018  = 1.1663787d-5
   real(8), parameter :: s2thetaw2018 = 0.23122d0    ! on-shell scheme value: 0.22290d0
@@ -176,7 +176,7 @@ module codata
   real(8), parameter :: emass2022    = 9.1093837139d-31
   real(8), parameter :: ccm2022      = 2.99792458d8
   real(8), parameter :: autk2022     = 3.1577502480398d5
-  real(8), parameter :: cvel2022     = 1.37035999177d2
+  real(8), parameter :: cvel2022     = 137.035999177d0
   real(8), parameter :: gfac2022     = 2.00231930436092d0
   real(8), parameter :: fermicc2022  = 1.1663787d-5
   real(8), parameter :: s2thetaw2022 = 0.23121d0    ! on-shell scheme value: 0.22305d0
