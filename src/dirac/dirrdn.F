@@ -711,7 +711,7 @@ C
 C
       call print_codata_reference(CODSET)
 
-      WRITE(LUPRI,'(1X,A,F18.7)')
+      WRITE(LUPRI,'(1X,A,F20.9)')
      +   '* The speed of light : ',CVEL
       IF(CVAL.NE.CVEL) THEN
         FMT = MXFORM(CVAL,14)
@@ -5332,7 +5332,7 @@ C
 !                   69        70        71        72
      &            '.GAUGEO','.GO ANG','.DIPORG', '.PHASEO',
 !                   73        74        75        76
-     &            '.KOUT  ','.EFFQED','.ASHIFT', '.XXXXXX'/
+     &            '.KOUT  ','.EFFQED','.ASHIFT', '.ESHIFT'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -5397,6 +5397,7 @@ C
       IPSPNORB = -1
       IPVEMB0  = -1
       SSMTRC  = D1
+      ESHIFT  = D0
       BSS     = .FALSE.
       x2c     = .false.
 !     default for X2C module: add spin-same orbit MFSSO2 terms
@@ -6141,6 +6142,9 @@ C..TODO: check for inconsistencies and add stops
           ENDDO  
           GOTO 100
  176      CONTINUE
+!&&&& ESHIFT: energy shift in units of mc^2
+          READ (LUCMD, *,IOSTAT=IOS) ESHIFT
+          ICHANG = ICHANG + 1          
           GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -6480,7 +6484,7 @@ C         .... two-step method of Barysz
         ELSE
           WRITE(LUPRI,'(A)') ' * Running in four-component mode'
         ENDIF
-
+        
 C       ... take care of AMFI contribution
         IF (BSS.AND.NOAMFI) THEN
          WRITE(LUPRI,'(1X,A)')  '  - no AMFI contribution to the '
@@ -6531,6 +6535,10 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
 
+      IF(ESHIFT.NE.D0) THEN
+         WRITE(LUPRI,*)
+     &      ' * Energy shifted by (in a.u.):', ESHIFT*CVAL*CVAL
+      ENDIF
       if (x2c.and.ecpcalc) then
          call quit('Incompatible options: .X2C* and .ECP')
       end if
@@ -7276,7 +7284,6 @@ C
       type(fde_import) :: itmp
 
       CALL QENTER('OP1INI')
-CMI ... common for both nonrelativistic and Dirac Hamiltonians
 C
 C    Overlap integrals
 C    =================
@@ -7361,31 +7368,45 @@ C
 C     Beta matrix integrals
 C     =====================
 C
-      PNAME            = 'Beta matrix    '
-      IPTYP            = 1
-      NPCOMP           = 1
-      PFAC(1)          = DM2*CVAL*CVAL
-      PLABEL(1)        = 'BETAMAT '
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+        PNAME            = 'Beta matrix    '
+        IPTYP            = 1
+        NPCOMP           = 1
+        PFAC(1)          = DM2*CVAL*CVAL
+        PLABEL(1)        = 'BETAMAT '
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
-      IPBETAMT         = INDXPR
+        IPBETAMT         = INDXPR
 C
 C     Kinetic energy integrals
 C     ========================
 C
-      PNAME            = 'Kinetic energy  '
-      IPTYP            = 8
-      NPCOMP           = 3
-      PFAC(1)          = -CVAL
-      PFAC(2)          = -CVAL
-      PFAC(3)          = -CVAL
-      PLABEL(1)        = 'XDIPVEL '
-      PLABEL(2)        = 'YDIPVEL '
-      PLABEL(3)        = 'ZDIPVEL '
-      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+        PNAME            = 'Kinetic energy  '
+        IPTYP            = 8
+        NPCOMP           = 3
+        PFAC(1)          = -CVAL
+        PFAC(2)          = -CVAL
+        PFAC(3)          = -CVAL
+        PLABEL(1)        = 'XDIPVEL '
+        PLABEL(2)        = 'YDIPVEL '
+        PLABEL(3)        = 'ZDIPVEL '
+        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
-      IPKINERG         = INDXPR
-
+        IPKINERG         = INDXPR
+C
+C     Energy shift
+C     ============
+        IF(ESHIFT.NE.D0) THEN
+          PNAME            = 'Overlap matrix  '
+          IPTYP            = 1
+          NPCOMP           = 1
+          PFAC(1)          = ESHIFT*CVAL*CVAL
+          PLABEL(1)        = 'OVERLAP '
+          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,IPRHAM)
+          IPESHIFT        = INDXPR
+        ELSE
+          IPESHIFT        = -1
+        ENDIF
       ENDIF
 CMI   ... this is common
       IF (LINEAR) THEN

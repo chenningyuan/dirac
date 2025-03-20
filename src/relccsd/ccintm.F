@@ -1087,7 +1087,6 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      PRINT *, 'LOIC IN NORMAL GATTAU3'
       CALL XCOPY (NDIMT2,T2,1,TAU,1)
 C
       ABIJOFF = 0

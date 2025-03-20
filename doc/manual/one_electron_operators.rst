@@ -397,7 +397,7 @@ The sixteen :math:`4 \times 4` matrices listed in Section `Syntax for specifying
      0  & -i & 0  &  0
    \end{pmatrix}.
 
-Here we will use the notation :math:`\tilde{\boldsymbol{U}}` to refer to any of these sixteen matrices when they are expressed in the standard representation.
+Here and in what follows, we use the notation :math:`\tilde{\boldsymbol{U}}` to refer to any of these sixteen matrices when they are expressed in the standard representation.
 
 It can be seen that all these matrices can be written as the Kronecker product of two :math:`2 \times 2` matrices :math:`\boldsymbol{A}` and :math:`\boldsymbol{B}`, such that :math:`\tilde{\boldsymbol{U}} = \boldsymbol{A} \otimes \boldsymbol{B}`. In particular, :math:`\boldsymbol{A}` is one of the real matrices :math:`\boldsymbol{I}`, :math:`\boldsymbol{\sigma}_x`, :math:`i \boldsymbol{\sigma}_y`, or :math:`\boldsymbol{\sigma}_z`, whereas :math:`\boldsymbol{B}` is :math:`\boldsymbol{I}`, :math:`i \boldsymbol{\sigma}_x`, :math:`i \boldsymbol{\sigma}_y`, or :math:`i \boldsymbol{\sigma}_z`. Here, :math:`\boldsymbol{\sigma}_x`, :math:`\boldsymbol{\sigma}_y`, and :math:`\boldsymbol{\sigma}_z` are the Pauli matrices, and :math:`i` is the imaginary unit.
 
@@ -435,20 +435,41 @@ The same reordering applies to all the matrices :math:`\tilde{\boldsymbol{U}}`, 
     \end{pmatrix}
     = \boldsymbol{A} \otimes \boldsymbol{B}.
 
-However, after reordering one clearly has the transformed matrices, which satisfy
+However, after reordering one clearly has the transformed matrices
 
 .. math::
 
-    \boldsymbol{M} =
+    \boldsymbol{U} =
     \begin{pmatrix}
-    M_{L\alpha,L\alpha} & M_{L\alpha,S\alpha} & M_{L\alpha,L\beta} & M_{L\alpha,S\beta} \\
-    M_{S\alpha,L\alpha} & M_{S\alpha,S\alpha} & M_{S\alpha,L\beta} & M_{S\alpha,S\beta} \\
-    M_{L\beta,L\alpha}  & M_{L\beta,S\alpha}  & M_{L\beta,L\beta}  & M_{L\beta,S\beta}  \\
-    M_{S\beta,L\alpha}  & M_{S\beta,S\alpha}  & M_{S\beta,L\beta}  & M_{S\beta,S\beta}
-    \end{pmatrix}
-    = \boldsymbol{B} \otimes \boldsymbol{A}.
+    \tilde{U}_{L\alpha,L\alpha} & \tilde{U}_{L\alpha,S\alpha} & \tilde{U}_{L\alpha,L\beta} & \tilde{U}_{L\alpha,S\beta} \\
+    \tilde{U}_{S\alpha,L\alpha} & \tilde{U}_{S\alpha,S\alpha} & \tilde{U}_{S\alpha,L\beta} & \tilde{U}_{S\alpha,S\beta} \\
+    \tilde{U}_{L\beta,L\alpha}  & \tilde{U}_{L\beta,S\alpha}  & \tilde{U}_{L\beta,L\beta}  & \tilde{U}_{L\beta,S\beta}  \\
+    \tilde{U}_{S\beta,L\alpha}  & \tilde{U}_{S\beta,S\alpha}  & \tilde{U}_{S\beta,L\beta}  & \tilde{U}_{S\beta,S\beta}
+    \end{pmatrix},
 
-In other words, :math:`M_{PQ} = B_{kl} \, A_{ij}`, with :math:`P=2(k-1)+i` and :math:`Q=2(l-1)+j`. This reordering guarantees that all the matrices :math:`\boldsymbol{M}` are time-reversal symmetric.
+which satisfy
+
+.. math::
+
+    \boldsymbol{U} = \boldsymbol{P} \, \tilde{\boldsymbol{U}} \, \boldsymbol{P}^{-1} =
+    \boldsymbol{P} \, ( \boldsymbol{A} \otimes \boldsymbol{B} ) \, \boldsymbol{P}^{-1} =
+    \boldsymbol{B} \otimes \boldsymbol{A},
+
+where the :math:`4 \times 4` Kronecker permutation matrix :math:`\boldsymbol{P}` is a special permutation matrix that swaps the order of the Kronecker product of two :math:`2 \times 2` matrices, and is given by
+
+.. math::
+
+   \boldsymbol{P} =
+   \begin{pmatrix}
+   1 & 0 & 0 & 0 \\
+   0 & 0 & 1 & 0 \\
+   0 & 1 & 0 & 0 \\
+   0 & 0 & 0 & 1
+   \end{pmatrix}.
+
+[Note that applying :math:`\boldsymbol{P}` on the left permutes the rows, while applying :math:`\boldsymbol{P}^{-1}` on the right permutes the columns, ensuring the correct transformation from :math:`\boldsymbol{A} \otimes \boldsymbol{B}` to :math:`\boldsymbol{B} \otimes \boldsymbol{A}`.]
+
+In other words, :math:`U_{PQ} = B_{kl} \, A_{ij}`, with :math:`P=2(k-1)+i` and :math:`Q=2(l-1)+j`. This reordering guarantees that all the matrices :math:`\boldsymbol{U}` are time-reversal symmetric.
 
 
 Additionally, following the arguments given in Ref. :cite:`Saue1999`, it is possible to make the following mapping involving the quaternion units:
@@ -461,14 +482,14 @@ Additionally, following the arguments given in Ref. :cite:`Saue1999`, it is poss
 
     &i \boldsymbol{\sigma}_y &\rightarrow & \qquad  \check{\jmath}
 
-    &i \boldsymbol{\sigma}_x &\rightarrow & \qquad  \check{k},
+    &i \boldsymbol{\sigma}_x &\rightarrow & \qquad  \check{k}
 
-or, in a general way, :math:`\boldsymbol{B} \rightarrow b`, where :math:`b` is a quaternion unit arising from the relationships given above.
-   
-Thus, any linear combination of the 16 reordered matrices :math:`\boldsymbol{M}` can be mapped to a :math:`2 \times 2` matrix :math:`\boldsymbol{m}`, which is a linear combinations of the quaternion units.
+or, in a general way, the :math:`2 \times 2` matrices :math:`\boldsymbol{B}` can be mapped as :math:`\boldsymbol{B} \rightarrow b`, where :math:`b` is a quaternion unit (i.e., :math:`1`, :math:`\check{\imath}`, :math:`\check{\jmath}`, or :math:`\check{k}`) arising from the relationships given above.
+
+Thus, any linear combination of the 16 reordered matrices :math:`\boldsymbol{U}` can be mapped to a linear combination of :math:`2 \times 2` matrices :math:`\boldsymbol{u}`, each of which contains a quaternion unit.
 
 
-To make the proposed discussion clearer, in the following we will discuss two examples. In first place, we will transform :math:`\tilde{\boldsymbol{\beta}}`. We start by writting it as the following Kronecker product of two :math:`2 \times 2` matrices: :math:`\tilde{\boldsymbol{\beta}}=\boldsymbol{\sigma}_z \otimes \boldsymbol{I}`. In the reordered representation, this matrix will be expressed as :math:`\boldsymbol{\beta}=\boldsymbol{I} \otimes \boldsymbol{\sigma}_z`. Finally, the :math:`\boldsymbol{B}` matrix (in this case, :math:`\boldsymbol{I}`) is transformed to a quaternion unit (in the current example, :math:`1`). In this way, the :math:`4 \times 4` reordered matrix :math:`\boldsymbol{\beta}` can be written in quaternion form as the :math:`2 \times 2` matrix :math:`\boldsymbol{\sigma}_z`. In other words:
+To make this discussion clearer, in the following we discuss two examples. In first place, we transform the :math:`4 \times 4` matrix :math:`\tilde{\boldsymbol{\beta}}`. We start by writting this matrix as the following Kronecker product of two :math:`2 \times 2` matrices: :math:`\tilde{\boldsymbol{\beta}}=\boldsymbol{\sigma}_z \otimes \boldsymbol{I}`. In the reordered representation, this matrix will be expressed as :math:`\boldsymbol{\beta}=\boldsymbol{I} \otimes \boldsymbol{\sigma}_z`. Finally, the corresponding :math:`\boldsymbol{B}` matrix (in this case, :math:`\boldsymbol{I}`) is transformed to a quaternion unit (in the current example, :math:`1`). In this way, the :math:`4 \times 4` reordered matrix :math:`\boldsymbol{\beta}` can be written in quaternion form as the :math:`2 \times 2` matrix :math:`\boldsymbol{\sigma}_z`. In other words:
 
 .. math::
 
@@ -479,20 +500,21 @@ To make the proposed discussion clearer, in the following we will discuss two ex
      0 & 0 & -1 &  0 \\
      0 & 0 & 0  & -1
    \end{pmatrix}
-   \quad\rightarrow\quad
+   \;\rightarrow\;
    \boldsymbol{\beta} =
+   \boldsymbol{P}\,\tilde{\boldsymbol{\beta}}\,\boldsymbol{P}^{-1} =
    \begin{pmatrix}
      1 & 0  & 0 &  0 \\
      0 & -1 & 0 &  0 \\
      0 & 0  & 1 &  0 \\
      0 & 0  & 0 & -1
    \end{pmatrix}
-   \quad\rightarrow\quad
+   \;\rightarrow\;
    \boldsymbol{\beta}^\text{quat} =
    \boldsymbol{\sigma}_z.
 
 
-As a second example, we take :math:`i\tilde{\boldsymbol{\alpha}}_z`. This :math:`4 \times 4` matrix, in its original ordering (according to the standard representation), can be written as the Kronecker product :math:`i\tilde{\boldsymbol{\alpha}}_z=\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_z`. This means that in the reordered representation it will be written as :math:`i\boldsymbol{\alpha}_z = i \boldsymbol{\sigma}_z \otimes \boldsymbol{\sigma}_x`. In this case, the matrix :math:`\boldsymbol{B}` is :math:`i \boldsymbol{\sigma}_z`, so that the quaternion unit :math:`b` will be :math:`\check{\imath}`. Therefore, the quaternion form of this reordered matrix will be :math:`i\boldsymbol{\alpha}_z^\text{quat} = \check{\imath} \boldsymbol{\sigma}_x`. Equivalently:
+As a second example, we take :math:`i\tilde{\boldsymbol{\alpha}}_z`. This :math:`4 \times 4` matrix, in its original ordering (according to the standard representation), can be written as the Kronecker product :math:`i\tilde{\boldsymbol{\alpha}}_z=\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_z`. This means that in the reordered representation it will be given as :math:`i\boldsymbol{\alpha}_z = i \boldsymbol{\sigma}_z \otimes \boldsymbol{\sigma}_x`. In this particular case, the corresponding matrix :math:`\boldsymbol{B}` is :math:`i \boldsymbol{\sigma}_z`, so that the quaternion unit :math:`b` is :math:`\check{\imath}`. Therefore, the quaternion form of this reordered matrix will be :math:`i\boldsymbol{\alpha}_z^\text{quat} = \check{\imath} \boldsymbol{\sigma}_x`. Equivalently:
 
 .. math::
 
@@ -503,56 +525,59 @@ As a second example, we take :math:`i\tilde{\boldsymbol{\alpha}}_z`. This :math:
      i & 0  & 0  &  0  \\
      0 & -i & 0  &  0
    \end{pmatrix}
-   \quad\rightarrow\quad
+   \;\rightarrow\;
    i\boldsymbol{\alpha}_z =
+   \boldsymbol{P}\,i\tilde{\boldsymbol{\alpha}}_z\,\boldsymbol{P}^{-1} =
    \begin{pmatrix}
      0 & i  & 0  &  0  \\
      i & 0  & 0  &  0  \\
      0 & 0  & 0  &  -i \\
      0 & 0  & -i &  0
    \end{pmatrix}
-   \quad\rightarrow\quad
+   \;\rightarrow\;
    i\boldsymbol{\alpha}_z^\text{quat} =
    \check{\imath} \boldsymbol{\sigma}_x.
 
 
-The relationship between :math:`\tilde{\boldsymbol{U}}` (i.e., the sixteen :math:`4 \times 4` matrices in original ordering, which corresponds to the standard representation) and the quaternion form of their reordered equivalent :math:`2 \times 2` matrices :math:`\boldsymbol{m}` is given in the following Table (they follow the transformation rule :math:`\tilde{\boldsymbol{U}} = \boldsymbol{A} \otimes \boldsymbol{B}` :math:`\rightarrow` :math:`\boldsymbol{M} = \boldsymbol{B} \otimes \boldsymbol{A}` :math:`\rightarrow` :math:`\boldsymbol{m} = b \boldsymbol{A}`):
+The relationships between matrices :math:`\tilde{\boldsymbol{U}}` (i.e., the sixteen :math:`4 \times 4` matrices in original ordering, which corresponds to the standard representation) and the quaternion form of their reordered equivalent :math:`2 \times 2` matrices :math:`\boldsymbol{u}` is given in the following Table. They follow the transformation rule :math:`\tilde{\boldsymbol{U}} = \boldsymbol{A} \otimes \boldsymbol{B}` :math:`\rightarrow` :math:`\boldsymbol{U} = \boldsymbol{P} \, \tilde{\boldsymbol{U}} \, \boldsymbol{P}^{-1} = \boldsymbol{P} \, (\boldsymbol{A} \otimes \boldsymbol{B}) \, \boldsymbol{P}^{-1} = \boldsymbol{B} \otimes \boldsymbol{A}` :math:`\rightarrow` :math:`\boldsymbol{u} = b \boldsymbol{A}`.
 
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`\tilde{\boldsymbol{U}}`                   | :math:`\boldsymbol{A} \otimes \boldsymbol{B}`                    | :math:`\boldsymbol{m}`                            |
-+==================================================+==================================================================+===================================================+
-| :math:`\boldsymbol{I}`                           | :math:`\boldsymbol{I} \otimes \boldsymbol{I}`                    | :math:`\boldsymbol{I}`                            |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\Sigma}_z`                   | :math:`\boldsymbol{I} \otimes i \boldsymbol{\sigma}_z`           | :math:`\check{\imath}\, \boldsymbol{I}`           |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\Sigma}_y`                   | :math:`\boldsymbol{I} \otimes i \boldsymbol{\sigma}_y`           | :math:`\check{\jmath}\, \boldsymbol{I}`           |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\Sigma}_x`                   | :math:`\boldsymbol{I} \otimes i \boldsymbol{\sigma}_x`           | :math:`\check{k}\, \boldsymbol{I}`                |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`\boldsymbol{\beta}`                       | :math:`\boldsymbol{\sigma}_z \otimes \boldsymbol{I}`             | :math:`\boldsymbol{\sigma}_z`                     |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\beta}\boldsymbol{\Sigma}_z` | :math:`\boldsymbol{\sigma}_z \otimes i \boldsymbol{\sigma}_z`    | :math:`\check{\imath}\, \boldsymbol{\sigma}_z`    |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\beta}\boldsymbol{\Sigma}_y` | :math:`\boldsymbol{\sigma}_z \otimes i \boldsymbol{\sigma}_y`    | :math:`\check{\jmath}\, \boldsymbol{\sigma}_z`    |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\beta}\boldsymbol{\Sigma}_x` | :math:`\boldsymbol{\sigma}_z \otimes i \boldsymbol{\sigma}_x`    | :math:`\check{k}\, \boldsymbol{\sigma}_z`         |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`\boldsymbol{\beta}\boldsymbol{\gamma}^5`  | :math:`(i\boldsymbol{\sigma}_y) \otimes \boldsymbol{I}`          | :math:`(i\boldsymbol{\sigma}_y)`                  |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\beta}\boldsymbol{\alpha}_z` | :math:`(i\boldsymbol{\sigma}_y) \otimes i \boldsymbol{\sigma}_z` | :math:`\check{\imath}\, (i\boldsymbol{\sigma}_y)` |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\beta}\boldsymbol{\alpha}_y` | :math:`(i\boldsymbol{\sigma}_y) \otimes i \boldsymbol{\sigma}_y` | :math:`\check{\jmath}\, (i\boldsymbol{\sigma}_y)` |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\beta}\boldsymbol{\alpha}_x` | :math:`(i\boldsymbol{\sigma}_y) \otimes i \boldsymbol{\sigma}_x` | :math:`\check{k}\, (i\boldsymbol{\sigma}_y)`      |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`\boldsymbol{\gamma}^5`                    | :math:`\boldsymbol{\sigma}_x \otimes \boldsymbol{I}`             | :math:`\boldsymbol{\sigma}_x`                     |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\alpha}_z`                   | :math:`\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_z`    | :math:`\check{\imath}\, \boldsymbol{\sigma}_x`    |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\alpha}_y`                   | :math:`\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_y`    | :math:`\check{\jmath}\, \boldsymbol{\sigma}_x`    |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
-| :math:`i\boldsymbol{\alpha}_x`                   | :math:`\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_x`    | :math:`\check{k}\, \boldsymbol{\sigma}_x`         |
-+--------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`\tilde{\boldsymbol{U}}`                                   | :math:`\boldsymbol{A} \otimes \boldsymbol{B}`                    | :math:`\boldsymbol{u}`                            |
++==================================================================+==================================================================+===================================================+
+| :math:`\tilde{\boldsymbol{I}}`                                   | :math:`\boldsymbol{I} \otimes \boldsymbol{I}`                    | :math:`\boldsymbol{I}`                            |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\Sigma}}_z`                           | :math:`\boldsymbol{I} \otimes i \boldsymbol{\sigma}_z`           | :math:`\check{\imath}\, \boldsymbol{I}`           |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\Sigma}}_y`                           | :math:`\boldsymbol{I} \otimes i \boldsymbol{\sigma}_y`           | :math:`\check{\jmath}\, \boldsymbol{I}`           |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\Sigma}}_x`                           | :math:`\boldsymbol{I} \otimes i \boldsymbol{\sigma}_x`           | :math:`\check{k}\, \boldsymbol{I}`                |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`\tilde{\boldsymbol{\beta}}`                               | :math:`\boldsymbol{\sigma}_z \otimes \boldsymbol{I}`             | :math:`\boldsymbol{\sigma}_z`                     |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\beta}}\tilde{\boldsymbol{\Sigma}}_z` | :math:`\boldsymbol{\sigma}_z \otimes i \boldsymbol{\sigma}_z`    | :math:`\check{\imath}\, \boldsymbol{\sigma}_z`    |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\beta}}\tilde{\boldsymbol{\Sigma}}_y` | :math:`\boldsymbol{\sigma}_z \otimes i \boldsymbol{\sigma}_y`    | :math:`\check{\jmath}\, \boldsymbol{\sigma}_z`    |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\beta}}\tilde{\boldsymbol{\Sigma}}_x` | :math:`\boldsymbol{\sigma}_z \otimes i \boldsymbol{\sigma}_x`    | :math:`\check{k}\, \boldsymbol{\sigma}_z`         |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`\tilde{\boldsymbol{\beta}}\tilde{\boldsymbol{\gamma}}^5`  | :math:`(i\boldsymbol{\sigma}_y) \otimes \boldsymbol{I}`          | :math:`(i\boldsymbol{\sigma}_y)`                  |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\beta}}\tilde{\boldsymbol{\alpha}}_z` | :math:`(i\boldsymbol{\sigma}_y) \otimes i \boldsymbol{\sigma}_z` | :math:`\check{\imath}\, (i\boldsymbol{\sigma}_y)` |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\beta}}\tilde{\boldsymbol{\alpha}}_y` | :math:`(i\boldsymbol{\sigma}_y) \otimes i \boldsymbol{\sigma}_y` | :math:`\check{\jmath}\, (i\boldsymbol{\sigma}_y)` |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\beta}}\tilde{\boldsymbol{\alpha}}_x` | :math:`(i\boldsymbol{\sigma}_y) \otimes i \boldsymbol{\sigma}_x` | :math:`\check{k}\, (i\boldsymbol{\sigma}_y)`      |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`\tilde{\boldsymbol{\gamma}}^5`                            | :math:`\boldsymbol{\sigma}_x \otimes \boldsymbol{I}`             | :math:`\boldsymbol{\sigma}_x`                     |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\alpha}}_z`                           | :math:`\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_z`    | :math:`\check{\imath}\, \boldsymbol{\sigma}_x`    |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\alpha}}_y`                           | :math:`\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_y`    | :math:`\check{\jmath}\, \boldsymbol{\sigma}_x`    |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+| :math:`i\tilde{\boldsymbol{\alpha}}_x`                           | :math:`\boldsymbol{\sigma}_x \otimes i \boldsymbol{\sigma}_x`    | :math:`\check{k}\, \boldsymbol{\sigma}_x`         |
++------------------------------------------------------------------+------------------------------------------------------------------+---------------------------------------------------+
+
 
 It is important to note that although the time-reversal antisymmetric operators :math:`\boldsymbol{\alpha}_k`, :math:`\boldsymbol{\Sigma}_k`, :math:`\boldsymbol{\beta\alpha}_k`, and :math:`\boldsymbol{\beta\Sigma}_k` (with :math:`k=x,y`, and :math:`z`) become time-reversal symmetric once they are multiplied by the imaginary unit :math:`i` and written in quaternion form as described above, DIRAC saves the information that these operators were originally T-reversal antisymmetric (before adding the imaginary phase).
 

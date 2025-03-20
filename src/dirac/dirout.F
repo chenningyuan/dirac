@@ -642,10 +642,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
+#include "dcbham.h"
+      PARAMETER(D2=2.0D0)
       DIMENSION EIG(NVAL)
 C
       NGAP = 0
-      GAP = -2*CVAL*CVAL
+      GAP = (ESHIFT-D2)*CVAL*CVAL
       DO 10 I = NVAL,1,-1
         IF(EIG(I).LE.GAP) GOTO 20
         NGAP = NGAP + 1

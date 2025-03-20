@@ -965,10 +965,8 @@ integer :: ierr
   type(Offset) :: f,g
   integer  ::row(nrep), column(nrep)
 !--------------------------------------------------
-! LOIC 0307 add
   real(8),allocatable    :: foo(:),fvo(:),fvv(:)
   real(8) :: ho(nfoo*rcw)
-! Loic 0307
 
   N1 = size(sigma1,1)
   N2 = size(sigma2,1)
@@ -1300,9 +1298,7 @@ integer :: ierr
         allocate (fvo(nfvo*rcw))
         allocate (fvv(nfvv*rcw))
       
-      ! LOIC 0307 add
         call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
-      ! fin add
 
       ! S(ab,ij) = S(ab,ij) + P(ab) f_bar_ae(b,e) * r2(ae,ij)
       ! ------------------------------------------------------
@@ -1376,10 +1372,8 @@ integer :: ierr
 !--------------------------------------------------
 
 !--------------------------------------------------
-! LOIC 230119 
   real(8),allocatable    :: foo(:),fvo(:),fvv(:)
   real(8) :: ho(nfoo*rcw)
-! Loic 230119
 !--------------------------------------------------
 
   real(8), pointer, contiguous :: sigma_test(:)  ! test-sigma-vectors
@@ -1585,9 +1579,7 @@ end if
         allocate (fvo(nfvo*rcw))
         allocate (fvv(nfvv*rcw))
 
-      ! LOIC 230119 add
         call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
-      ! Loic fin 230119 add
 !----------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) - P(ij) f_oo_mi(m,j)*r2(a*b,im) 
 !-----------------------------------------------------
@@ -1651,10 +1643,8 @@ end if
   type(Offset) :: g
   integer  ::row(nrep), column(nrep)
 !--------------------------------------------------
-! LOIC 181018 add
   real(8),allocatable    :: foo(:),fvo(:),fvv(:)
   real(8) :: ho(nfoo*rcw)
-! Loic 181018
 !--------------------------------------------------
   N1 = size(sigma1,1)
   N2 = size(sigma2,1)
@@ -1835,16 +1825,13 @@ end if
 
          if (iprnt.ge.2) &
       write(*,*)'diagram 7d ', ddot(N2,sigma2,1,sigma2,1),myproc
-!Loic 181018 : Ici nous passons a partitioined
     else
 
         allocate (foo(nfoo*rcw))
         allocate (fvo(nfvo*rcw))
         allocate (fvv(nfvv*rcw))
 
-      ! LOIC 181018 add
         call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
-      ! Loic fin 181018 add
 
 
 ! S(ab,i*j) = S(ab,i*j) + P(ab) f_ae(b,e) * r2(ae,i*j)

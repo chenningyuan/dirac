@@ -18,6 +18,8 @@
  5/0,6
 #########
 *KRCI
+.THRGCI
+ 1.0E-4
 .CI PROGRAM
 GASCIP
 .INACTIVE
