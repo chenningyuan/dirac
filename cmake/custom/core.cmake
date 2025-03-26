@@ -41,6 +41,7 @@ compile_standalone(dirac.x src/main/main.F90 "${_list_of_executables}")
 add_custom_command(TARGET dirac.x PRE_LINK COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis ${PROJECT_BINARY_DIR}/basis COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_ecp ${PROJECT_BINARY_DIR}/basis_ecp  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_dalton ${PROJECT_BINARY_DIR}/basis_dalton COMMAND ${CMAKE_COMMAND} -E echo "INFO:basis set directories, basis*, synchronized into current installation directory")
 
 find_package(HDF5 COMPONENTS C HL)
+# find_package(HDF5)
 
 # If exatensor is enabled we also make a stand-alone binary for convenience.
 if (ENABLE_EXATENSOR)

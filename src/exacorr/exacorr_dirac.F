@@ -181,6 +181,7 @@ C***********************************************************************
       ! and let them know whether we use talsh or exatensor
       call interface_mpi_comm_rank(global_communicator,mytid)
       call interface_mpi_comm_size(global_communicator,numproc)
+      print*," mytid: ", mytid
       if (mytid == 0 .and. numproc < 4 .and. .not. exa_input%talsh) then
          print*," The EXATENSOR library needs ar least 4 mpi processes"
          print*," -> switched to serial mode using only TALSH"

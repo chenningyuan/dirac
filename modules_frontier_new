@@ -4,7 +4,7 @@ module purge
 source /opt/cray/pe/cpe/23.09/restore_lmod_system_defaults.sh
 module load DefApps/default
 module load Core/24.00
-module load libfabric/1.15.2.0
+# module load libfabric/1.15.2.0
 module load cmake/3.23.2
 
 #module load PrgEnv-gnu/8.4.0
@@ -21,6 +21,7 @@ module load cray-libsci/23.09.1.1
 module load craype-hugepages1G
 module load cray-python
 module load xpmem
+#module load cray-hdf5-parallel/1.12.2.7
 #module load cray-hdf5-parallel/1.12.2.7
 module load cray-hdf5/1.12.2.7
 module load openblas/0.3.17-omp
@@ -61,16 +62,21 @@ export GPU_SM_ARCH=90
 #export USE_HIP=NO
 export PATH_ROCM=${ROCM_PATH}
 
-export TAPP_ROOT=/lustre/orion/chp109/world-shared/Tensor_Product
-
+export TAPP_ROOT=/lustre/orion/chp109/world-shared/Tensor_Product-ctf
+export LD_LIBRARY_PATH=/lustre/orion/chp109/world-shared/ctf/lib_shared:${LD_LIBRARY_PATH}
+export PYTHONPATH=/lustre/orion/chp109/world-shared/ctf/lib_python:${PYTHONPATH}
+export TENSOR_T_EXECUTOR=1
 #missing linking - seems to be included
 #-I${MPICH_DIR}/include
 #-L${MPICH_DIR}/lib -lmpi ${CRAY_XPMEM_POST_LINK_OPTS} -lxpmem ${PE_MPICH_GTL_DIR_amd_gfx90a} ${PE_MPICH_GTL_LIBS_amd_gfx90a}
 
 
 # ./setup --mpi --fc=ftn --cc=cc --cxx=CC --type=release --cmake-options=" -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.09.1.1/GNU/10.3/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -L/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/lib -lmpi -L/opt/cray/xpmem/2.6.2-2.5_2.22__gd067c3f.shasta/lib64 -lxpmem -L/opt/cray/pe/mpich/8.1.27/gtl/lib -lmpi_gtl_hsa ' " build-cpu_
+# ./setup --mpi --fc=mpifort --cc=mpicc --cxx=mpicxx --type=release --cmake-options=" -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.09.1.1/GNU/10.3/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -L/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/lib -lmpi -L/opt/cray/xpmem/2.6.2-2.5_2.22__gd067c3f.shasta/lib64 -lxpmem -L/opt/cray/pe/mpich/8.1.27/gtl/lib -lmpi_gtl_hsa -lmpi_gnu_91 ' " build-cpu__
+# ./setup --mpi --fc=ftn --cc=cc --cxx=CC --type=release --cmake-options=" -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.09.1.1/GNU/10.3/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -L/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/lib -lmpi -L/opt/cray/xpmem/2.6.2-2.5_2.22__gd067c3f.shasta/lib64 -lxpmem -L/opt/cray/pe/mpich/8.1.27/gtl/lib -lmpi_gtl_hsa -lmpi_gnu_91 ' " build-cpu_
 
 
 export LD_LIBRARY_PATH=/lustre/orion/chp109/world-shared/tblis/lib:${LD_LIBRARY_PATH}
-export LD_LIBRARY_PATH=/lustre/orion/chp109/world-shared/Tensor_Product/lib:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=/lustre/orion/chp109/world-shared/Tensor_Product-ctf/lib:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/lib:${LD_LIBRARY_PATH}
 # /lustre/orion/chp109/world-shared/Tensor_Product/obj

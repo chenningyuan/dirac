@@ -27,8 +27,9 @@ if(MPI_FOUND)
       message(STATUS ".....MPI_Fortran_COMPILER=${MPI_Fortran_COMPILER}")
     endif()
 
-    add_definitions(-DVAR_MPI)
-    add_definitions(-DVAR_MPI2)
+    #add_definitions(-DVAR_MPI)
+    add_definitions(-DEXA_TALSH_ONLY)
+    #add_definitions(-DVAR_MPI2)
 
     # test whether MPI module is compatible with compiler
 
@@ -55,7 +56,7 @@ if(MPI_FOUND)
     if(NOT MPI_ITYPE_MATCHES)
         if(ENABLE_64BIT_INTEGERS)
             message(STATUS "No 64-bit integer MPI interface found, will use 32-bit integer MPI interface")
-            add_definitions(-DVAR_MPI_32BIT_INT)
+            # add_definitions(-DVAR_MPI_32BIT_INT)
             set(USE_32BIT_MPI_INTERFACE TRUE)
         else()
             message(STATUS "Cannot determine whether MPI is built for 32bit integers, check it yourself ")
@@ -70,7 +71,7 @@ if(MPI_FOUND)
 
     if(ENABLE_64BIT_INTEGERS AND FORCE_32BIT_MPI_INTERFACE)
         message(STATUS "32-bit integer MPI interface activated by the user for 64-bit DIRAC !")
-        add_definitions(-DVAR_MPI_32BIT_INT)
+        # add_definitions(-DVAR_MPI_32BIT_INT)
         set(USE_32BIT_MPI_INTERFACE TRUE)
     endif()
 
