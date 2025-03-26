@@ -39,7 +39,7 @@ contains
 
       call checkpoint_query ('/result/wavefunctions/scf/mobasis/eigenvalues',mo_eigenvalues_available)
       if (mo_eigenvalues_available) then
-         allocate(mo_eigenvalues(norbt*2))
+         allocate(mo_eigenvalues(norbt))
          call checkpoint_read  ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=mo_eigenvalues)
       end if
 
