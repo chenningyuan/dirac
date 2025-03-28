@@ -379,6 +379,8 @@
 !&&&& ROTG - Molecular rotational g-tensor according to Aucar et al
             ROTG  = .TRUE.
             DOXLR = .TRUE.
+            IF (GAUNT) & 
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   127    CONTINUE
 !&&&& MSTDIA - diamagnetic contribution to the magnetizabilities
@@ -425,6 +427,8 @@
             DOEXP = .TRUE.
             DOXLR = .TRUE.
             SPINRO = .TRUE.
+            IF (GAUNT) & 
+             CALL QUIT('NSR including Gaunt not implemented yet')
             GO TO 100
   135    CONTINUE
 !&&&& BXLAO
@@ -481,6 +485,8 @@
             DOXLR      = .TRUE.
             PVC_SPINRO = .TRUE.
             IF(NBSYM .GT. 1) CALL QUIT('.PVCSR only for C1 symmetry')
+            IF (GAUNT) & 
+             CALL QUIT('PV-NSR including Gaunt not implemented yet')
             GOTO 100
   143    CONTINUE
 !&&&& .HDF5IO

@@ -119,7 +119,6 @@ Results are also reported with respect to a principal axis system for each cente
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
-
 keyword(NQCC)
 
 Evaluate nuclear quadrupole coupling constants (NQCC) (expectation values).
@@ -355,7 +354,6 @@ for a sample cell of length 1~dm, and at a temperature of
 
 where :math:`M` is the molecular mass in g :math:`\mbox{mol}^{-1}` and :math:`\mathcal{N}` is the number density. 
 
-
 keyword(VERDET)
 
 Evaluate Verdet constants :cite:`Ekstrom2005` for a dynamic electric field corresponding to Ruby
@@ -396,40 +394,40 @@ keyword(PVC)
 
 Calculate matrix elements over the nuclear spin-independent
 parity-violating operator, e.g. calculate energy differences between
-enantiomers, see :cite:`Laerdahl1999` and :cite:`Bast2011` .
+enantiomers, see :cite:`Laerdahl1999` and :cite:`Bast2011`.
 
-The parity violating energy is calculated as an expectation value
+The parity-violating energy is calculated as the expectation value
 
 .. math::
 
    E_\text{PV} = \sum_A \langle H_\text{PV}^A \rangle;\quad H_\text{PV}^A= \frac{G_\text{F}}{2 \sqrt{2}} Q_\text{w}^A \sum_i \gamma_5 (i) \rho^A (\mathbf{r}_i)
 
-where appears appears the normalized nuclear charge densities :math:`\rho^A` and the the Fermi coupling constant :math:`G_F=2.222 55\times 10^{-14}E_ha_0^3`.  The weak nuclear charge
+where :math:`\rho^A` is the nuclear charge density of nucleus :math:`A` normalized to unity, and :math:`G_F` is the Fermi coupling constant. The weak nuclear charge
 
 .. math::
 
-   Q_\text{w}^A = Z^AC_V^\text{p}+N^AC_V^\text{n}=Z^A (1 - 4 \sin^2 \theta_\text{W}) - N^A,
+   Q_\text{w}^A = Z^AC_V^\text{p}+N^AC_V^\text{n}=Z^A (1 - 4 \sin^2 \theta_\text{W}) - N^A
 
-given in terms of the number of protons and neutrons --- :math:`Z^A` and :math:`N^A` --  in nucleus :math:`A` and the Weinberg angle :math:`\theta_\text{W}` which describes the rotation of :math:`B^0` and :math:`W^0` bosons by spontaneous symmetry breaking to form photons and :math:`Z^0` bosons (DIRAC uses :math:`\sin^2 \theta_\text{W} = 0.2319`). 
+is given in terms of both the number of protons and neutrons ---:math:`Z^A` and :math:`N^A`--- in the nucleus :math:`A` and the Weinberg angle :math:`\theta_\text{W}`, which describes the rotation of :math:`B^0` and :math:`W^0` bosons by spontaneous symmetry breaking to form photons and :math:`Z^0` bosons.
+
+Using :ref:`GENERAL_.CODATA`, :math:`G_F` can be chosen according to the data reported in different CODATA sets. In the particular case in which ``.PDG94`` is used under :ref:`GENERAL_.CODATA`, :math:`G_F=2.22255\times 10^{-14}E_ha_0^3`. In addition, DIRAC uses :math:`\sin^2 \theta_\text{W} = 0.2319` when ``.PDG94`` is employed under :ref:`GENERAL_.CODATA`. In other cases, the value reported in the latest available CODATA set is used.
 
 keyword(PVCSHI)
 
-Calculate parity-violating contribution to the NMR shielding tensor, see :cite:`Bast:2006`.
-Elements of the parity-violating contribution to the shielding tensor for center :math:`K` are
-given by
+Calculate parity-violating contribution to the NMR shielding tensor, see :cite:`Barra1988` and :cite:`Bast:2006`.
+Elements of the parity-violating contribution to the shielding tensor for center :math:`K` are given by
 
 .. math::
 
    \sigma^{PV}_{K;\mu\nu}=\frac{\partial^2}{\partial m_{K;\mu}\partial B_{0;\nu}}\langle\langle \hat{h}^\text{PV2}_K;\hat{h}^Z\rangle\rangle_0
 
-where appears the nuclear spin-dependent parity-violating operator
+where the nuclear spin-dependent parity-violating operator is given as
 
 .. math::
 
    \hat{h}^\text{PV2}_K = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}\,c}\sum_{i}\frac{1}{\hslash \gamma_K}c\boldsymbol{\alpha}\cdot\mathbf{m}_K\rho_K(\mathbf{r}_i)
 
-where appears the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2022, but it can change if you use other CODATA set),
-the gyromagnetic ratio :math:`\gamma_K`, the nuclear magnetic dipole moment :math:`\mathbf{m}_K=\gamma_K\mathbf{I}_K` and the normalized nuclear charge density :math:`\rho_K`.
+where :math:`G_F` is the Fermi coupling constant, :math:`\theta_\text{W}` is the Weinberg angle, :math:`\rho^A` is the nuclear charge density of nucleus :math:`A` normalized to unity, :math:`\gamma_K` is the gyromagnetic ratio, and :math:`\mathbf{m}_K=\gamma_K\mathbf{I}_K` is the nuclear magnetic dipole moment.
 
 The relativistic Zeeman operator
 
@@ -442,7 +440,38 @@ is expressed in terms of the operator :math:`\hat{\mathbf{m}}_e^{[1]}` associate
 
 Results are given in ppm.
 
+Using :ref:`GENERAL_.CODATA`, :math:`G_F` can be chosen according to the data reported in different CODATA sets. In the particular case in which ``.PDG94`` is used under :ref:`GENERAL_.CODATA`, :math:`G_F=2.22255\times 10^{-14}E_ha_0^3`. In addition, DIRAC uses :math:`\sin^2 \theta_\text{W} = 0.2319` when ``.PDG94`` is employed under :ref:`GENERAL_.CODATA`. In other cases, the value reported in the latest available CODATA set is used.
+
 Using :ref:`PROPERTIES_.PRINT` 1, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response are given separately.
+
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
+
+keyword(PVCSPN)
+
+Calculate parity-violating contribution to the NMR spin-spin coupling tensor, see :cite:`Barra1988` and :cite:`Weijo2007`.
+Elements of the parity-violating contribution to the indirect spin-spin coupling tensor for centers :math:`K` and :math:`L` are given by
+
+.. math::
+
+   J^{PV}_{KL;\mu\nu}=\frac{\hslash^2}{h} \gamma_K \gamma_L \frac{\partial^2}{\partial m_{K;\mu}\partial m_{L;\nu}} \left(\langle\langle \hat{h}^\text{PV2}_K; \hat{h}_{L}^{hfs} \rangle\rangle_0 + \langle\langle \hat{h}^\text{PV2}_L; \hat{h}_{K}^{hfs} \rangle\rangle_0 \right)
+
+where the nuclear spin-dependent parity-violating operator is given as
+
+.. math::
+
+   \hat{h}^\text{PV2}_K = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}\,c}\sum_{i}\frac{1}{\hslash \gamma_K}c\boldsymbol{\alpha}\cdot\mathbf{m}_K\rho_K(\mathbf{r}_i)
+
+where :math:`G_F` is the Fermi coupling constant, :math:`\theta_\text{W}` is the Weinberg angle, :math:`\rho^A` is the nuclear charge density of nucleus :math:`A` normalized to unity, :math:`\gamma_K` is the gyromagnetic ratio, and :math:`\mathbf{m}_K=\gamma_K\mathbf{I}_K` is the nuclear magnetic dipole moment.
+
+The relativistic hyperfine operator
+
+.. math::
+
+   \hat{h}^{hfs}_{L}=-\sum_i\mathbf{m}_L\cdot\hat{\mathbf{B}}^{el}_{L}(i);\quad \hat{\mathbf{B}}^{el}_{L}(i)=-\frac{1}{4\pi\varepsilon_0 c^2}\frac{\mathbf{r}_{iL}\times ec\boldsymbol{\boldsymbol{\alpha}}}{r_{iL}^3},
+
+is expressed in terms of the nuclear magnetic dipole :math:`\mathbf{m}_L` and the operator :math:`\hat{\mathbf{B}}^{el}_{L}` giving the magnetic field due to the electrons at the nuclear position.
+
+Using :ref:`GENERAL_.CODATA`, :math:`G_F` can be chosen according to the data reported in different CODATA sets. In the particular case in which ``.PDG94`` is used under :ref:`GENERAL_.CODATA`, :math:`G_F=2.22255\times 10^{-14}E_ha_0^3`. In addition, DIRAC uses :math:`\sin^2 \theta_\text{W} = 0.2319` when ``.PDG94`` is employed under :ref:`GENERAL_.CODATA`. In other cases, the value reported in the latest available CODATA set is used.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
@@ -456,26 +485,28 @@ for center :math:`K` are given by
 
    M^{PV}_{K;\mu\nu} = - \frac{\hslash^2}{h} \frac{\partial^2}{\partial I_{K;\mu}\partial L_{\nu}}\langle\langle\hat{h}^{PV2}_{K};\hat{h}^{BO}\rangle\rangle_0
 
-where appears the nuclear spin-dependent parity-violating operator
+where the nuclear spin-dependent parity-violating operator is given as
 
 .. math::
 
    \hat{h}^{PV2}_{K} = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}\,c}\sum_{i}\frac{1}{\hslash}c\boldsymbol{\alpha}\cdot\mathbf{I}_K\rho_K(\mathbf{r}_i)
 
-expressed in terms of the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2022, but it can change if you use other CODATA set),
-the nuclear spin :math:`\mathbf{I}_K` and the normalized nuclear charge density :math:`\rho_K` (in units of the inverse of cube distances),
-and the first order correction to the Born-Oppenheimer (BO) approximation
+where :math:`G_F` is the Fermi coupling constant, :math:`\theta_\text{W}` is the Weinberg angle, :math:`\rho^A` is the nuclear charge density of nucleus :math:`A` normalized to unity, and :math:`I_K` is the nuclear spin of nucleus :math:`K`.
+
+The first order correction to the Born-Oppenheimer (BO) approximation
 
 .. math::
 
    \hat{h}^{BO}=-\boldsymbol{\boldsymbol{\omega}}\cdot\hat{\mathbf{J}}_e;
    \quad\boldsymbol{\boldsymbol{\omega}}=\mathbf{L}\cdot\mathbf{I}^{-1},
 
-expressed in terms of the angular velocity :math:`\boldsymbol{\boldsymbol{\omega}}` associated with the total angular momentum of the
+is expressed in terms of the angular velocity :math:`\boldsymbol{\boldsymbol{\omega}}` associated with the total angular momentum of the
 electrons :math:`\hat{\mathbf{J}}_e=\hat{\mathbf{L}}_e+\hat{\mathbf{S}}_e`.
 Note that the origin of the orbital angular momentum is the molecular center of mass.
 
 Results are given in Hz.
+
+Using :ref:`GENERAL_.CODATA`, :math:`G_F` can be chosen according to the data reported in different CODATA sets. In the particular case in which ``.PDG94`` is used under :ref:`GENERAL_.CODATA`, :math:`G_F=2.22255\times 10^{-14}E_ha_0^3`. In addition, DIRAC uses :math:`\sin^2 \theta_\text{W} = 0.2319` when ``.PDG94`` is employed under :ref:`GENERAL_.CODATA`. In other cases, the value reported in the latest available CODATA set is used.
 
 Using :ref:`PROPERTIES_.PRINT` 1, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response are given separately,
 together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
@@ -517,10 +548,7 @@ ignore any change in the electronic density :math:`\rho_e`, we may express this 
 
 where the effective density :math:`\bar\rho_e` is introduced in the last step. It is often approximated by the contact density, see :ref:`PROPERTIES_.RHONUC` , but this is discouraged since it may introduce errors on the order of 10%.
 
-
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
-
-
 
 keyword(SPIN-ROTATION)
 
