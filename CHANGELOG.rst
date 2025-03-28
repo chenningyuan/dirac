@@ -95,7 +95,7 @@ Bugfixes:
    - One-electron operator type ``ZiBETAAL`` was not defined properly in previous code versions. From now on, it is replaced by ``ZBETAALP`` and represents the operator :math:`i \boldsymbol{\beta} \boldsymbol{\alpha}_z`.
    - In previous code versions, the one-electron operator types ``XiBETAAL`` and ``YiBETAAL`` represented :math:`i \boldsymbol{\beta} \boldsymbol{\alpha}_x` and :math:`i \boldsymbol{\beta} \boldsymbol{\alpha}_y`, respectively. From now on, they are replaced by the operator types ``XBETAALP`` and ``YBETAALP``, respectively.
    - New one-electron operator type ``BETAGAMMA5`` available, representing the time-symmetric operator :math:`\boldsymbol{\beta\gamma}^5`. Please note that the operator type ``iBETAGAMMA5`` was already implemented in DIRAC and it also points to :math:`\boldsymbol{\beta\gamma}^5`, but with the assignments of time-reversal antisymmetry.
-   - For more details, please check the manual: `One-electron operators <https://www.diracprogram.org/doc/release-25/manual/one_electron_operators.html#one-electron-operators>`__.
+   - For more details, please check the manual: :ref:`one_electron_operators`.
    - Contributor: I. A. Aucar.
 - Set the correct sign of CC linear and quadratic response functions in the case of more than one time-antisymmetric perturbation operator
    - Contributor: A. Gomes.

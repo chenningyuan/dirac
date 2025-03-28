@@ -8,6 +8,7 @@
 !     IPRHAM     - Print level
 !     IPOVERLAP  - Pointer to the overlap in DCBXPR
 !     IPBETAMT   - Pointer to the beta matrix in DCBXPR
+!     IPESHIFT   - Energy shift
 !     IPMOLFLD   - Pointer to the nuclear attraction in DCBXPR
 !     IPKINERG   - Pointer to the kinetic energy in DCBXPR
 !     IPSOPP     - Pointer to the ECP spin-orbit matrix, SOPP DCBXPR
@@ -117,7 +118,7 @@
      &        IPSPNMOM, IPSPNORB, N1OPER, IPR1OP(MAX1OPER), LSOLMX,     &
      &        IPRSOL, ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH,      &
      &        I2CHAM, INI2C, I2COFK, IPSOPP, IPVEMB0, ISORDER_AMFI_x2c, &
-     &        I1_DCLHAM,I2_DCLHAM                                     
+     &        IPESHIFT,I1_DCLHAM,I2_DCLHAM                                     
 !
 !     IMPORTANT !!!
 !     =============
@@ -129,7 +130,7 @@
      &                IPKINERG, IPANGMOM, IPSPNMOM, IPSPNORB, N1OPER,   &
      &                IPR1OP, LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,        &
      &                IMFCH, I2CHAM, INI2C, I2COFK, IPVEMB0, IPSOPP,    &
-     &                ISORDER_AMFI_x2c, I2_HAM
+     &                ISORDER_AMFI_x2c, IPESHIFT, I2_HAM
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
@@ -165,9 +166,9 @@
 ! DCRHAM and go to DFTCOM in dftcom.h, for now it stays here
 !
       REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, E_PE, EPSTAT, RSOLAV, HFXFAC,  &
-     &       HFXATT, HFXMU, ONECNV
+     &       HFXATT, HFXMU, ONECNV, ESHIFT
       COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, E_PE, EPSTAT, RSOLAV, & 
-     &                HFXFAC, HFXMU, HFXATT, ONECNV
+     &                HFXFAC, HFXMU, HFXATT, ONECNV, ESHIFT
 
 !     REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, ONECNV
 !     COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, ONECNV

@@ -428,28 +428,28 @@ module codata
    write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 93, 025010 (2021)                "
 
    elseif(CODAT.eq.'CODATA22') then
-   write(LUPRI,*)   "  CODATA Internationally Recommended 2022 Values of the Fundamental Physical Constants  "
-   write(LUPRI,*)   "           Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor            "
-   write(LUPRI,*)   "           https://physics.nist.gov/constants (Accessed March 6, 2025)                  "
+   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2022  "
+   write(LUPRI,*)   "    Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    "
+   write(LUPRI,*)   "       https://physics.nist.gov/constants (Accessed March 6, 2025)       "
 
 !  Default CODATA values
    elseif(CODAT.eq.'NOCODATA') then
-   write(LUPRI,*)   "  CODATA Internationally Recommended 2022 Values of the Fundamental Physical Constants  "
-   write(LUPRI,*)   "           Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor            "
-   write(LUPRI,*)   "           https://physics.nist.gov/constants (Accessed March 6, 2025)                  "
+   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2022  "
+   write(LUPRI,*)   "    Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    "
+   write(LUPRI,*)   "       https://physics.nist.gov/constants (Accessed March 6, 2025)       "
 
 !  If the user asks for non existing data sets, we set default values and print a WARNING
    else
    write(LUPRI,*)   " *** WARNING: CODATA set ", CODAT, " does not exist. Default is used. ***"
-   write(LUPRI,*)   "  CODATA Internationally Recommended 2022 Values of the Fundamental Physical Constants  "
-   write(LUPRI,*)   "           Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor            "
-   write(LUPRI,*)   "           https://physics.nist.gov/constants (Accessed March 6, 2025)                  "
+   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2022  "
+   write(LUPRI,*)   "    Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    "
+   write(LUPRI,*)   "       https://physics.nist.gov/constants (Accessed March 6, 2025)       "
    end if
 !  Constants other than s2thetaw and fermicc will be taken from the default CODATA set
    if(CODAT.eq.'PDG94') then
-   write(LUPRI,*)   "  CODATA Internationally Recommended 2022 Values of the Fundamental Physical Constants  "
-   write(LUPRI,*)   "           Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor            "
-   write(LUPRI,*)   "           https://physics.nist.gov/constants (Accessed March 6, 2025)                  "
+   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2022  "
+   write(LUPRI,*)   "    Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    "
+   write(LUPRI,*)   "       https://physics.nist.gov/constants (Accessed March 6, 2025)       "
    end if
 
   end subroutine print_codata_reference
