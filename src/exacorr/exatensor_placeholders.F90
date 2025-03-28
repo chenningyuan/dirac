@@ -63,7 +63,7 @@ private
   !Copy a tensor:
        interface exatns_tensor_scale
         module procedure exatns_tensor_scale
-       end interface exatns_tensor_sacle
+       end interface exatns_tensor_scale
   !Contract tensors:
        interface exatns_tensor_contract
         module procedure exatns_tensor_contract_eu
@@ -92,6 +92,36 @@ contains
         ierr=EXA_NOT_AVAILABLE
         return
       end function exatns_tensor_contract_eu
+
+      function exatns_tensor_scale(pattern,tensor0,prefactor,restrictions,sync) result(ierr)
+      !Operation: Tensor contraction: tensor0 += tensor0 * prefactor
+        implicit none
+        integer(INTD):: ierr
+        type(tens_rcrsv_t), intent(inout):: tensor0       !inout: tensor
+        character(*), intent(in):: pattern                !in: symbolic tensor contraction pattern
+        complex(8), intent(in), optional:: prefactor      !in: scalar prefactor
+        character(*), intent(in), optional:: restrictions !in: symbolic specification of operational index restrictions
+        logical, intent(in), optional:: sync              !in: if FALSE, the operation will run asynchronously, requiring a separate exatns_sync() call later (defaults to TRUE)
+
+        ierr=EXA_NOT_AVAILABLE
+        return
+      end function exatns_tensor_scale
+
+      function exatns_tensor_copy_eu(pattern,tensor0,tensor1,prefactor,restrictions,sync) result(ierr)
+      !Operation: Tensor contraction: tensor0 = tensor1 * prefactor
+        implicit none
+        integer(INTD):: ierr
+        type(tens_rcrsv_t), intent(inout):: tensor0       !inout: tensor
+        type(tens_rcrsv_t), intent(inout):: tensor1       !in: tensor
+        character(*), intent(in):: pattern                !in: symbolic tensor contraction pattern
+        complex(8), intent(in), optional:: prefactor      !in: scalar prefactor
+        character(*), intent(in), optional:: restrictions !in: symbolic specification of operational index restrictions
+        logical, intent(in), optional:: sync              !in: if FALSE, the operation will run asynchronously, requiring a separate exatns_sync() call later (defaults to TRUE)
+
+        ierr=EXA_NOT_AVAILABLE
+        return
+      end function exatns_tensor_copy_eu
+
 
       function exatns_tensor_init_scalar(tensor,scalar,sync) result(ierr)
         !Initializes all tensor elements to a given scalar value. If <scalar> is
