@@ -31,8 +31,7 @@ Thanks to the Hellmann-Feynman theorem, this reduces to the calculation of the e
 .. math::
    \mu_I = -\left.\frac{\partial E(\mathbf{F})}{\partial F_I}\right|_{\mathbf{F}=0} = \langle 0|\hat{\mu}_I | 0\rangle
 
-Calculation of dipole moments with PCM is quite straightforward. We just need to add the PCM section to
-a dipole moment calculation input file::
+Calculation of dipole moments with PCM is quite straightforward. We just need to add the :ref:`HAMILTONIAN_.PCM` keyword to a dipole moment calculation input file::
 
    **DIRAC
    .WAVE FUNCTION

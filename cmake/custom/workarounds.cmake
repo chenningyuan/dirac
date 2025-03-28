@@ -25,11 +25,11 @@ foreach(_lang C CXX)
     endif()
 endforeach()
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-    # remove -rdynamic flag offensive for PGI Fortran in static linking
+if(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
+    # remove -rdynamic flag offensive for NVHPC Fortran in static linking
     if (CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS)
         list(REMOVE_ITEM CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS "-rdynamic")
-        message(STATUS "pgf90 flag -rdynamic fremoved from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS")
+        message(STATUS "pgf90 flag -rdynamic removed from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS")
     endif()
 endif()
 
@@ -51,7 +51,7 @@ endif()
 
 # remove set MKL_FLAG, if none Intel compiler
 # NOTE: this MKL_FLAG maybe cleared already in the downloaded autocmake module
-if ( NOT (MKL_FLAG AND (CMAKE_Fortran_COMPILER_ID MATCHES Intel) ) )
+if ( MKL_FLAG AND NOT (CMAKE_Fortran_COMPILER_ID MATCHES Intel) )
     set(MKL_FLAG "")
     message(STATUS "-mkl=... flag removed due to lacking Intel Fortran compiler. THEREFORE CHECK IF YOU HAVE SET MATH LIBRARIES !")
 elseif ( MKL_FLAG AND (CMAKE_Fortran_COMPILER_ID MATCHES Intel ) )

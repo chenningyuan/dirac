@@ -16,10 +16,19 @@ $> pip install --user -e .
 
 Also, if you would like to run the DIRAC-ASE tests
 ```
-$> pip install (--user) -e ".[testing]"
+$> pip install --user -e ".[testing]"
 $> pytest -v tests
 ```
 
+or 
+
+```
+$> pip install --user -e ".[testing]"
+$> pytest -v tests
+```
+
+Make sure that the script pam (generated in the build directory) is in your $PATH environment variable.
+
 # RUN:
 
-Examples are provided in the tests directories.
+A simple demonstration that computes the MP2 energy of three molecules from the ASE molecules database is provided in the tests directory.

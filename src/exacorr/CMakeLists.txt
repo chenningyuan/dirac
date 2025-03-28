@@ -43,7 +43,6 @@ if(ENABLE_EXATENSOR)
    exatensor_tenpi_ccsd.F90
    exatensor_tenpi_ccsdt.F90
    exatensor_tenpi_ccsdtq.F90
-   exacorr_main.F90
    exacorr_datatypes.F90
    exacorr_global.F90
    exacorr_cfg.F90
@@ -102,14 +101,15 @@ if(ENABLE_EXATENSOR)
 
   add_library(
     exacorr
-    OBJECT
+    STATIC
     ${FIXED_EXACORR_FORTRAN_SOURCES}
     ${FREE_EXACORR_FORTRAN_SOURCES}
   )
 
 # deal with dependencies
-  add_dependencies(exacorr  main)
+  add_dependencies(exacorr  dirac_main)
   add_dependencies(exacorr  exatensor)
   add_dependencies(exacorr  interest)
+  add_dependencies(exacorr  laplace) # uses module type_laplace
 #  add_dependencies(exacorr  mfsolver)
 endif()

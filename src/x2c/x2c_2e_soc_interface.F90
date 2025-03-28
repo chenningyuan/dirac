@@ -23,7 +23,7 @@
 !
 module x2c_2e_soc_interface
 
-  use x2c_fio
+  !use x2c_fio
   use x2c_utils, only:                 &
       print_x2cmat
   use picture_change_operations

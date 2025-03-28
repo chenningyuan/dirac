@@ -250,7 +250,7 @@ CTEMP     ISM2(3,5) = 1
                MK2MIN  =  0
                MK2MINP = -2
             else
-              write(6,*) 'Problem in evenodd'
+              write(6,*) 'Problem in evenodd: ',IEVOD
               call quit(
      &       '*** error in dettyp (ipair==1): evenodd problem.***')
             end if
@@ -264,7 +264,7 @@ CTEMP     ISM2(3,5) = 1
              MK2MINP = -2
              MK2MAXP =  0
           else
-             write(6,*) 'Problem in evenodd'
+             write(6,*) 'Problem in evenodd: ',IEVOD
              call quit(
      &       '*** error in dettyp (ipair==0): evenodd problem.***')
           end if
@@ -1640,12 +1640,11 @@ C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
       end if
 !
       if(cirun.eq.'NDET  ')then
-        write(luwrt,'(/a)')
-     &'  Number of determinants per double group irrep '
-        write(luwrt,'(a)')
+        write(luwrt,'(/a/a)')
+     &'  Number of determinants per double group irrep ',
      &'  ============================================= '
         do ici = 1, ncmbspc
-          write(luwrt,'(1p,5i20)') (nint(xispsm(ii,ici)),ii=1,nsmci)
+          write(luwrt,'(5i20)') (nint(xispsm(ii,ici)),ii=1,nsmci)
         end do
       end if
 
@@ -2797,7 +2796,7 @@ C*causes error?!?        IF( IBLOCKD(IBLOCK) .ne. MYPROC ) IBATCH(1,IBLOCK) = 0
         WRITE(LUWRT,*) '  LENGTH,LBLOCK ',LENGTH, LBLOCK
         WRITE(LUWRT,*) ' Alter GAS space of raise Buffer from ', MXLNG
         CALL RMEMCHK
-        CALL QUIT( ' In PART_CIV3_PAR. ')
+        CALL QUIT( ' Not enough scratch memory in PART_CIV3_PAR. ')
       ELSE
 *. This batch is finished, goto next batch
         GOTO 2000

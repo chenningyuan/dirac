@@ -708,7 +708,7 @@ C&&& MAGCOR - print magnetic coordinates
             END IF
          END IF
          IF (KINENE) WRITE (LUPRI,'(10X,A)')
-     &      '- electronic kinetic energy'
+     &       '- NR electronic kinetic energy'
          IF (MASSVL) WRITE (LUPRI,'(10X,A)')
      &       '- mass velocity integrals'
          IF (DARWIN) WRITE (LUPRI,'(10X,A)')

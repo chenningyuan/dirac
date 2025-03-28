@@ -12,6 +12,8 @@ properties. Available properties include:
 
 -  Quadratic response properties (e.g. hyperpolarizabilities).
 
+-  Quasi-degenerate CI perturbation theory for ESR parameters (g-tensor and hyperfine coupling tensors).
+
 For convenience some common properties can be specified directly in this
 section, which means that the user in principle does not need to know
 how they are calculated. Note, however, that response functions are by
@@ -88,6 +90,8 @@ keyword(DIPOLE)
 Evaluate the electronic electric dipole moment
 
 Expectation values: :math:`\langle\hat{\mu}_\alpha\rangle=-e\langle r_\alpha\rangle`
+
+*Note:* for charged molecules the total electric dipole moment will depend on the gauge origin. It is possible to set the nuclei charge barycenter as the gauge origin so that the computed (total) dipole magnitude is representative for the electronic system as the nuclei electric dipole moment is constrained to vanish. Check for USEBC under :ref:`*NMR`.
 
 keyword(QUADRUPOLE)
 
@@ -327,6 +331,12 @@ an expectation value of the non-relativistic operator.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
+keyword(ESR)
+
+Evaluate ESR parameters -- g-tensors and hyperfine coupling tensors -- using first-order quasi-degenerate perturbation theory
+based on configuration interaction.
+No default, it is required to specify the actual calculation under :ref:`*ESR`.
+
 Mixed electric and magnetic properties
 ======================================
 
@@ -418,7 +428,7 @@ where appears the nuclear spin-dependent parity-violating operator
 
    \hat{h}^\text{PV2}_K = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}\,c}\sum_{i}\frac{1}{\hslash \gamma_K}c\boldsymbol{\alpha}\cdot\mathbf{m}_K\rho_K(\mathbf{r}_i)
 
-where appears the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2018, but it can change if you use other CODATA set),
+where appears the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2022, but it can change if you use other CODATA set),
 the gyromagnetic ratio :math:`\gamma_K`, the nuclear magnetic dipole moment :math:`\mathbf{m}_K=\gamma_K\mathbf{I}_K` and the normalized nuclear charge density :math:`\rho_K`.
 
 The relativistic Zeeman operator
@@ -452,7 +462,7 @@ where appears the nuclear spin-dependent parity-violating operator
 
    \hat{h}^{PV2}_{K} = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}\,c}\sum_{i}\frac{1}{\hslash}c\boldsymbol{\alpha}\cdot\mathbf{I}_K\rho_K(\mathbf{r}_i)
 
-expressed in terms of the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2018, but it can change if you use other CODATA set),
+expressed in terms of the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2022, but it can change if you use other CODATA set),
 the nuclear spin :math:`\mathbf{I}_K` and the normalized nuclear charge density :math:`\rho_K` (in units of the inverse of cube distances),
 and the first order correction to the Born-Oppenheimer (BO) approximation
 
@@ -476,15 +486,15 @@ Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INT
 
 keyword(RHONUC)
 
-Calculate electronic density at the nuclear positions, also known as the contact density :cite:`Knecht2011` and :cite:`Almoukhalalati:2016b`.
+Calculate electronic density at the nuclear positions, also known as the contact density (see :cite:`Knecht2011` and :cite:`Almoukhalalati:2016b`).
 
-It is formally an expectation value
+It is formally the expectation value
 
 .. math::
 
-   \rho_e^K = -e\langle\delta^3(\mathbf{r}-\mathbf{R}_K)\rangle,
+   \rho_e^K = -e\langle\delta^3(\mathbf{r}-\mathbf{R}_K)\rangle.
 
-an important observation in view of picture change effects, see  :cite:`Knecht2011` .
+An important observation: In view of picture change effects, see :cite:`Knecht2011`.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 

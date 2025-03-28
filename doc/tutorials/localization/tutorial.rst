@@ -33,7 +33,7 @@ menu file using the NUCLEUS keyword. We run the SCF calculation using::
 In preparation for localization we used the keyword :ref:`GENERAL_.ACMOUT` to dump :math:`C_1` - coefficients to the checkpoint file. You can
 check this using::
 
-  h5dump -n CO2_CO2.h5 | grep C1
+  h5dump -n CO2.h5 | grep C1
    dataset    /result/wavefunctions/scf/mobasis/eigenvalues_C1
    dataset    /result/wavefunctions/scf/mobasis/orbitals_C1
 
@@ -44,7 +44,7 @@ Now we are ready to localize the canonical MOs. We use the menu file *loc.inp*
 Note that we now have turned off symmetry (NOSYM) and ask to read the :math:`C_1` coeffcients from the checkpoint file using
 the :ref:`GENERAL_.ACMOIN` keyword. We run localization using::
 
-  pam --inp=loc --mol=CO2.xyz --put "CO2_CO2.h5=DFACMO.h5"
+  pam --inp=loc --mol=CO2.xyz --put "CO2.h5=DFACMO.h5"
 
 Using grep we find::
 
@@ -238,7 +238,7 @@ Using the input file *exp0.inp*
 
 we run::
 
-  pam --inp=expC --mol=CO2.xyz --put "CO2_CO2.h5=DFACMO.h5 DFFCKT"
+  pam --inp=expC --mol=CO2.xyz --put "CO2.h5=DFACMO.h5 DFFCKT"
 
 Note that we use the keyword :ref:`GENERAL_.ACMOIN` since want to use the :math:`C_1` coefficients from the original DFT calculation with symmetry. At the end of the generated output file we then find back the orbital energies that are found in the Mulliken population
 analysis above::

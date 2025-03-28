@@ -90,8 +90,8 @@ C        ... default quadratic conv. factor for SCF
 C            (not set in KRMCINP because we don't know if SCF there)
          IF (IKRMCCNO .EQ. -3) THEN
 C           ... no user input, default for SCF: transform to canonical orbitals
-            NATONL = .FALSE.
-            FOCKON = .TRUE.
+            NATONLY  = .FALSE.
+            FOCKONLY = .TRUE.
             IKRMCCNO = -1
 C           ... code for no RTRACI (no RTRACI for SCF)
          END IF
@@ -166,6 +166,10 @@ C
       CALL SETDCBIDX()
       CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
+
+      IF (NZCONF .EQ. 0) THEN
+         CALL QUIT('FATAL INPUT ERROR: zero configurations in KRMCSCF')
+      END IF
 C
 #if defined (VAR_MPI2)
 C
@@ -538,7 +542,7 @@ C
      $        '*** ERROR in PSIOP1 *** File with coefficients not found'
                CALL QUIT('*** ERROR in PSIOP1   ***')
             ELSE
-               JRDMO = 1
+               JRDMO = 0
                CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
 
                if(spinfr_krmc)then
@@ -612,8 +616,8 @@ C
      &           ' Total orbital grad.(It. ',I3,') : ',F25.15,/,
      &           ' Total gradient     (It. ',I3,') : ',F25.15,/)
 C
-         IF (IPROPT .GE. 1) THEN
-              IDENSLR_STATE = 1
+         IF (IPROPT .GE. 1 .OR. NATOLCR) THEN
+              IDENSLR_STATE = -1 ! signal RGETNO that MCSCF and not KRCI
               NATOLCR       = .TRUE.
               IPRNO = 3*IPROPT
               CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT  ,
@@ -627,6 +631,8 @@ C             erase old occupation numbers
 
               CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
      &                    .FALSE.,MOISNO,.FALSE.,IPRNO,WORK,KFREE,LFREE)
+!             CALL RGETNO(CREF,OCCNO,UNO,CMO,
+!    &                    NATORB,MOISNO,save_1pdens,IPRNO,WORK,KFREE,LFREE)
               CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,
      &                    KFREE,LFREE)
               IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
@@ -1083,15 +1089,11 @@ C
          CALL WRTKRMC(LUKRM3,'H2AC    ',H2AC,NASHT*NASHT*NNASHX*NZ*3)
       END IF
 C
-C     CMO & CREF
-C     ----------
-C     (we have to read & write CREF again as CREF is placed after NEWORB
-C      and is therefore deleted when rewriting CMO
+C     CMO
+C     ---
 C
-      IF (COMPROT) THEN
-         IF (NZCONF .GT. 0) CALL REAKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
+      IF (COMPROT) THEN ! CMO updated for frozen CI coefficients
          CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
-         IF (NZCONF .GT. 0) CALL WRTKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
       END IF
 C
 C
@@ -2364,7 +2366,7 @@ C***********************************************************************
 C
 C Used from common blocks:
 C  dcbgen: LUKRMC
-C  dgroup: NZ
+C  dgroup: NZ,NBSYM,NFSYM, linear
 C  dcbopt: NZCONF,NZCONFQ,KZCONF,IOPT_SYMMETRY,LZCONF
 C  dcborb: NAELEC,NASHT
 C
@@ -2383,7 +2385,6 @@ C
       CALL QENTER('RSETCI')
       CALL GETTIM(CPU1,WLL1)
 
-
       if(linear.or.spinfr_krmc)then
 
 !       may be oversized if not all orbitals are active
@@ -2391,35 +2392,35 @@ C
         orb_sym_vec = 0
 
 !       get orbital symmetry values - either from a previous MCSCF or HF run
-        IF ( LUKRM5 .GT. 0 ) THEN
+        IF ( LUKRM5 .GT. 0 ) THEN ! KRMCOLD opened => previous MCSCF
           REWIND(LUKRM5)
           IF ( FNDLAB('MJVEC   ',LUKRM5) )THEN
             CALL IREAKRMC(LUKRM5,'MJVEC   ',orb_sym_vec,NORBT)
-            if(IPROPT .ge. 2)then
-              WRITE(LUPRI,'(/A)')
-     &   ' (RSETCI) *** orbital mj-vector read from KRMCOLD ***'
-            end if
-         ELSE IF(FNDLAB('IBEIG   ',LUKRM5))THEN
-            CALL IREAKRMC(LUKRM5,'IBEIG   ',orb_sym_vec,NORBT)
-            if(IPROPT .ge. 2)then
-              WRITE(LUPRI,'(/A)')
-     &        ' (RSETCI) *** orbital boson irreps read'//
-     &        ' from KRMCOLD ***'
-            end if
+            WRITE(LUPRI,'(A)')
+     &        ' RSETCI: orbital mj-vector read from KRMCOLD ***'
+            GO TO 100
           END IF
-        ELSE
-C         read orbital symmetry values from CHECKPOINT
+
+          REWIND(LUKRM5)
+          IF(FNDLAB('IBEIG   ',LUKRM5))THEN
+            CALL IREAKRMC(LUKRM5,'IBEIG   ',orb_sym_vec,NORBT)
+            WRITE(LUPRI,'(/A)')
+     &        ' RSETCI: orbital boson irreps read'//
+     &        ' from KRMCOLD ***'
+            GO TO 100
+          END IF
+        END IF ! LUKRM5 .gt. 0
+
+C       read HF orbital symmetry values from CHECKPOINT
+          WRITE(LUPRI,'(/A)') ' RSETCI: '//
+     &    'Orbital symmetry values not found on KRMCOLD,'//
+     &    ' reading them instead from CHECKPOINT file ***'
           CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,TOTERG,8)
           if (atomic) call atomic_to_linear (orb_sym_vec,norbt)
-          if(IPROPT .ge. 2)then
-            WRITE(LUPRI,'(/A)')
-     &      ' (RSETCI) *** orbital symmetry information read'//
-     &      ' from CHECKPOINT ***'
-          end if
-        END IF
+
 C
 C       clean LUKRMC and save orbital symmetry information on file KRMCSCF
-        REWIND(LUKRMC)
+  100   REWIND(LUKRMC)
         FND = FNDLAB('SODLABEL',LUKRMC)
         BACKSPACE LUKRMC
         CALL NEWLAB('SODLABEL',LUKRMC,LUPRI)
@@ -2445,7 +2446,7 @@ C
          WRITE(LUPRI,'(//2A,I3,2A,I3,A)')
      &        ' *** ERROR in RSETCI *** ',
      &        'Number of electrons (',NAELEC,') is larger than ',
-     &        'the number of spinors (',2 * NASHT,')!'
+     &        'the number of active spinors (',2 * NASHT,')!'
          CALL QUIT('*** ERROR in RSETCI *** NAELEC > 2 * NASHT')
       END IF
 C
@@ -2462,7 +2463,7 @@ C        hjaaj July 2002: also include NASHT .eq. 1
 C                         (giving 1-2 determinants)
 C         for debug
          if(fcidump .and. USE_CIPROGRAM .NE. 'GASCIP' ) THEN
-           call quit('fcidump option only for GASCIP available')
+           call quit('fcidump option only available for GASCIP')
          end if
 
          if(fcidump)then
@@ -2473,32 +2474,42 @@ C         for debug
          end if
 C
          IF ( USE_CIPROGRAM .EQ. 'GASCIP' ) THEN
-C
+
 C           Generate determinants
-C
+
             KFRSAV = KFREE
+
 C           HJAaJ : re size of MAXSTR ....
 C               .... size KISTR ca. sqrt size KIDET ??? No, not when GAS
             MAXSTR = 10 000 000
-            MAXDET = MIN(100 000 000, (LFREE-MAXSTR-10 000)/2 )
-                         !max 100,000,000 determinants in this version
-            CALL MEMGET2('INT8','IDET',KIDET ,2*MAXDET,WORK,KFREE,LFREE)
-            CALL MEMGET2('INT8','ISTR',KISTR,   MAXSTR,WORK,KFREE,LFREE)
+            MAXDET = MIN(500 000 000, (LFREE-MAXSTR-20 000)/2 )
+                    !max 500,000,000 determinants in this version
+            CALL MEMGET2('INT8','IDETx',KIDET,2*MAXDET,WORK,KFREE,LFREE)
+            CALL MEMGET2('INT8','ISTRx',KISTR,  MAXSTR,WORK,KFREE,LFREE)
 
             CALL GASCIP_GENDET(NZCONF,WORK(KIDET),WORK(KISTR),
-     &                        MAXDET,MAXSTR,OPT_UCIBOS,
-     &                        IOPT_SYMMETRY,IPROPT)
+     &                         MAXDET,MAXSTR,OPT_UCIBOS,
+     &                         IOPT_SYMMETRY,IPROPT)
+            IF (NZCONF .GT. MAXDET) THEN
+               WRITE(LUPRI,'(/A,I15,A,I15/A)')
+     &   'FATAL ERROR, more determinants than predifined maximum:',
+     &      NZCONF,' > ',MAXDET,
+     &   'Increase MAXDET in krmcopt.F or reduce GAS specifications.'
+               CALL QUIT('Too many determinants; '//
+     &         ' increase MAXDET or reduce GAS specifications.')
+            END IF
+C
+C           Note: Determinant information will be saved by GASCIP_GENDET in WORK(KFRSAV:).
+C                 We release work memeory and reallocate with MEMGET2 because
+C                 after GASCIP_GENDET normally NZCONF < MAXDET.
+C                 KZCONF is saved in dcbopt.h and is used in other GASCIP routines
+C                 to retrieve determinant information.
+C                 (LZCONF = 2 * NZCONF because "INTEGER*8 IDET(2,NZCONF)")
+C
             CALL MEMREL('RSETCI.GASCIP',WORK,1,KFRSAV,KFREE,LFREE)
-C
-C           Note: the above memory release should make sure that KZCONF .eq. KIDET,
-C           where determinant information is already saved inside GASCIP_GENDET,
-C           KZCONF is saved in dcbopt.h and is used in other GASCIP routines
-C           to obtain determinant information.
-C           (LZCONF = 2 * NCONF because "INTEGER*8 IDET(NZCONF,2)")
-C
             LZCONF = 2 * NZCONF
             CALL MEMGET2('INT8','ZCONF',KZCONF,LZCONF,WORK,KFREE,LFREE)
-            IF (KZCONF .NE. KIDET) CALL QUIT(
+            IF (KZCONF .NE. KIDET) CALL QUIT('RSETCI after GENDET: '//
      &         'KZCONF .ne. KIDET -- indicates programming error!')
 C
 #ifdef MOD_DEBUG
@@ -2515,6 +2526,25 @@ C
            END IF
 #endif
          ELSE IF ( USE_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+
+            IF (.NOT. LINEAR) THEN
+            ! LUCIAREL has first boson symmetries, then fermion symmetries (GASCIP etc. have fermion symmetries first)
+            ! *KRMCSCF .SYMMETRY input counts internally in fermion or boson symmetries
+            ! *KRCI .CIROOTS can be both ways, the code below should take care of all possibilities
+               ! nrep calculated here must have same value as defined in GMULTA
+               if (nbsym .eq. nfsym) then ! C1 or Ci
+                  nrep = nfsym
+               else
+                  nrep = 2*nfsym ! a, b or ag, bg, au, bu for boson symmetries
+               end if
+               IF ( MOD(NAELEC,2) .NE. 0) THEN ! fermions
+                  IF (IOPT_SYMMETRY .LE. nrep)
+     &               IOPT_SYMMETRY = IOPT_SYMMETRY + nrep
+               ELSE ! bosons
+                  IF (IOPT_SYMMETRY .GT. nrep)
+     &               IOPT_SYMMETRY = IOPT_SYMMETRY - nrep
+               END IF
+            END IF
 C
 C           Call driver routine for getting NZCONF
             CALL LUCI_NDET(NZCONF,IOPT_SYMMETRY,WORK(KFREE),LFREE)
@@ -2551,13 +2581,23 @@ C
       CPUTID  = SECTID(CPU2-CPU1)
       WALLTID = SECTID(WLL2-WLL1)
 C
-      WRITE(LUPRI,'(/A,I12,A,I12,A//5A)')
+      IF (MZ .EQ. 1) THEN
+         WRITE(LUPRI,'(/A,I0,A//5A)')
      &      ' (RSETCI) Number of determinants: ',NZCONF,
-     &      ' (dimension ',NZCONFQ,')',
+     &      ' (real coefficients)',
      &      ' CPU (Wall) time for generation of determinants: ',
      &      CPUTID,'(',WALLTID,')'
+      ELSE
+         WRITE(LUPRI,'(/A,I0,A//5A)')
+     &      ' (RSETCI) Number of determinants: ',NZCONF,
+     &      ' (complex coefficients)',
+     &      ' CPU (Wall) time for generation of determinants: ',
+     &      CPUTID,'(',WALLTID,')'
+      END IF
       IF (NASHT .GT. 0 .AND. NZCONF .LE. 0) THEN
-         WRITE(LUPRI,'(/A)') ' INFO: no determinants in this symmetry!'
+         WRITE(LUPRI,'(/A,I0)')
+     &    ' FATAL ERROR: no determinants in symmetry ',IOPT_SYMMETRY
+         CALL QUIT('ERROR: No determinants in specified symmetry')
       END IF
 C
 C
@@ -2808,41 +2848,6 @@ C
  9002 FORMAT(/2X,'rENRACT: Total active energy      : ',F25.15)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck renrac1 */
-      FUNCTION RENRAC1(FQ,NORBT,INASH,IOFF)
-C***********************************************************************
-C
-C     Calculate \sum_{u} FQ_{u,u}
-C
-C     Input:
-C        FQ      - the Q Fock matrix for a given symmetry
-C
-C     Returns:
-C        RENRAC1 - \sum_{u} FQ_{u,u}
-C
-C     Written by J. Thyssen - Oct 29 1998
-C     Last revision :
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
-C
-      DIMENSION FQ(NORBT,INASH)
-C
-      CALL QENTER('RENRAC1')
-C
-      E = D0
-      DO I = 1,INASH
-         E = E + FQ(I+IOFF,I)
-      END DO
-      RENRAC1 = E
-C
-      CALL QEXIT('RENRAC1')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rreadmo */
       SUBROUTINE RREADMO(CMO,JRDMO,IOPT,LUNIT)
 C***********************************************************************
@@ -2851,20 +2856,22 @@ C     Retrieve MO coefficients from file
 C
 C     Input:
 C
+C        JRDMO < 0 : NOSTOP true
 C        IOPT = 1: read from label NEWORB
 C        IOPT = 2: read from label OLDORB
 C        IOPT = 3: read from label NEWNATOB
 C        IOPT = 4: read from label MCCINATO
 C
 C     Output:
+C        JRDMO   - >0 if NOSTOP and CMO not found on file LUNIT
 C        CMO     - MO coefficients
 C
 C     Written by J. Thyssen - Nov 3 1998
 C     Last revision :
 C
-C                S. Knecht  - Jul 7 2008
+C         S. Knecht  - Jul 7 2008
 C
-C                read from label NEWNATOB (MP2, later also MCSCF...)
+C         read from label NEWNATOB (MP2, later also MCSCF...)
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2876,8 +2883,9 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 C
-      DIMENSION CMO(*)
-      LOGICAL NOSTOP
+      REAL*8    CMO(*)
+      INTEGER   JRDMO, IOPT, LUNIT
+      LOGICAL   NOSTOP
       CHARACTER LABEL*8
 C
       CALL QENTER('RREADMO')
@@ -2888,17 +2896,10 @@ C
          NOSTOP = .FALSE.
       END IF
       IF (IOPT .LT. 1 .OR. IOPT .GT. 4) THEN
-          WRITE(LUPRI,'(/A,I10)')
-     &       ' rREADMO: ERROR: Unknown option ',IOPT
-          CALL QUIT('rREADMO: ERROR: Unknown option.')
       END IF
-      GOTO (100,100), IOPT
-  100 CONTINUE
 C
 C     Read orbitals from label 'xxxxXXXX'
 C
-      REWIND(LUNIT)
-      IERR = -1
       IF ( IOPT .EQ. 1 ) THEN
          LABEL = 'NEWORB  '
       ELSE IF( IOPT .EQ. 2 )THEN
@@ -2907,8 +2908,14 @@ C
          LABEL = 'NEWNATOB'
       ELSE IF( IOPT .EQ. 4 )THEN
          LABEL = 'MCCINATO'
+      ELSE
+         WRITE(LUPRI,'(/A,I10)')
+     &       ' rREADMO  ERROR: Unknown option ',IOPT
+         CALL QUIT('rREADMO  ERROR: Unknown option.')
       END IF
 C
+      REWIND(LUNIT)
+      IERR = -1
       CALL MOLLAB(LABEL,LUNIT,IERR)
       IF (IERR .GE. 0) THEN
          CALL READT(LUNIT,NCMOTQ,CMO)
@@ -2926,7 +2933,7 @@ C
             CALL QUIT('rREADMO: ERROR: error reading file "KRMCSCF"')
          END IF
       END IF
-      IF ( JRDMO .GT. 0 ) THEN
+      IF ( NOSTOP .AND. JRDMO .GT. 0 ) THEN
          GO TO 1010
       ELSE
          GO TO 1000
@@ -2935,8 +2942,6 @@ C
 C     End:
 C
  1000 CONTINUE
-      IPROPT_SAVE = IPROPT
-csk   IPROPT      = 10
       IF (IPROPT .GE. 10) THEN
          CALL HEADER('Output from rREADMO:',-1)
          DO I = 1,NFSYM
@@ -2947,7 +2952,6 @@ csk   IPROPT      = 10
      &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
       END IF
-      IPROPT = IPROPT_SAVE
  1010 CONTINUE
       CALL QEXIT('RREADMO')
       RETURN
@@ -3073,12 +3077,10 @@ C
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,4,LUKRM5)
             IF (JRDMO .EQ. 0) THEN
-               IF (IPRINT .GE. 0) THEN
-                  WRITE(LUPRI,'(/2A)')
-     &                 ' (ROPTST)  Start orbitals read from' //
-     &                 ' label MCCINATO on file ',
-     &                   KRM5_NAME(1:LKRM5_NAME)
-               END IF
+               WRITE(LUPRI,'(/2A)')
+     &            ' (ROPTST)  Start orbitals are MCSCF natural'//
+     &            ' orbitals read from label MCCINATO on file ',
+     &            KRM5_NAME(1:LKRM5_NAME)
 C
                IF ( MOPT_MXMACRO .EQ. -1 ) THEN
                  WRITE(LUPRI,'(/A)')
@@ -3098,17 +3100,14 @@ C
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,3,LUKRM5)
             IF (JRDMO .EQ. 0) THEN
-               IF (IPRINT .GE. 0) THEN
-                  WRITE(LUPRI,'(/2A)')
-     &                 ' (ROPTST)  Start orbitals read from' //
-     &                 ' label NEWNATOB on file ',
-     &                   KRM5_NAME(1:LKRM5_NAME)
-               END IF
+               WRITE(LUPRI,'(/2A)')
+     &              ' (ROPTST)  Start orbitals are MP2 natural orbitals'
+     &           // ' read from label NEWNATOB on file ',
+     &              KRM5_NAME(1:LKRM5_NAME)
 C
                IF( MOPT_MXMACRO .EQ. - 1 ) THEN
-                 WRITE(LUPRI,'(/A)')
-     &                ' (ROPTST)  Starting CI calculation' //
-     &                ' from MC orbitals! '
+                 WRITE(LUPRI,'(/A)') ' (ROPTST) ' //
+     &           'Starting CI calculation from MP2 natural orbitals!'
                  RCI_MCORB = .TRUE.
                ENDIF
                GO TO 1000
@@ -3123,35 +3122,9 @@ C
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,1,LUKRM5)
             IF (JRDMO .EQ. 0) THEN
-               IF (IPRINT .GE. 0) THEN
-                  WRITE(LUPRI,'(/2A)')
+                WRITE(LUPRI,'(/2A)')
      &                 ' (ROPTST)  Start orbitals read from' //
      &                 ' label NEWORB on file ',KRM5_NAME(1:LKRM5_NAME)
-               END IF
-               IF ( GENFOCK )THEN
-                  REWIND(LUKRM5)
-                  IF ( FNDLAB('CREF    ',LUKRM5) ) THEN
-                     IF (MOPT_MXMACRO .ge. 0 ) THEN
-                        CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
-                     END IF
-                  END IF
-C                 ... generate LUCIAREL block/structure information
-                  CALL LUCI_RSTRMC(WORK(KFREE),LFREE)
-                  CNOLBL  = 'ONLYFD'
-                  RTRACI  = .FALSE.
-C                 ... if CI Nat. Orb. module shall be used later
-                  NATOLCR_SAVE = NATOLCR
-                  NATOLCR = .FALSE.
-                  CALL MEMGET2('REAL','EIG',KEIG,NORBT,WORK,KFREE,LFREE)
-                  CALL DZERO(WORK(KEIG),NORBT)
-C                 ... transformation to Fock-type orbitals
-                  CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPRINT,WORK(KEIG),
-     &                         WORK,KFREE,LFREE)
-                  NATOLCR = NATOLCR_SAVE
-C
-                  CALL MEMREL('after FOCK-type',WORK,1,KFRSAV,
-     &                         KFREE,LFREE)
-               END IF
 C
                IF( MOPT_MXMACRO .EQ. - 1 ) THEN
                  WRITE(LUPRI,'(/A)')
@@ -3171,11 +3144,9 @@ C
             JRDMO = -1
             CALL RREADMO(CMO,JRDMO,2,LUKRM5)
             IF (JRDMO .EQ. 0) THEN
-               IF (IPRINT .GE. 0) THEN
-                  WRITE(LUPRI,'(/2A)')
-     &                 ' (ROPTST)  Start orbitals read from' //
-     &                 ' label OLDORB on file ',KRM5_NAME(1:LKRM5_NAME)
-               END IF
+               WRITE(LUPRI,'(/2A)')
+     &             ' (ROPTST)  Start orbitals read from' //
+     &             ' label OLDORB on file ',KRM5_NAME(1:LKRM5_NAME)
                GO TO 1000
             END IF
          END IF
@@ -3187,11 +3158,9 @@ C
       IF (LBIT(IROST,5)) THEN
          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,DUMMY,DUMMY,2)
          readmj_df = .true.
-         IF (IPRINT .GE. 0) THEN
-            WRITE(LUPRI,'(/A)')
-     &            ' (ROPTST)  Start orbitals read from' //
-     &            ' CHECKPOINT file'
-         END IF
+         WRITE(LUPRI,'(/A)')
+     &        ' (ROPTST)  Start orbitals read from' //
+     &        ' CHECKPOINT file'
          GO TO 1000
       END IF
 C
@@ -3200,16 +3169,14 @@ C           TODO FIXME: to be implemented
 C
       IF (LBIT(IROST,6)) THEN
          CALL RH1DIAG(CMO,WORK(KFREE),LFREE)
-         IF (IPRINT .GE. 0) THEN
-            WRITE(LUPRI,'(/A)')
+         WRITE(LUPRI,'(/A)')
      &      ' (ROPTST)  Start orbitals from' //
      &      ' diagonalization of H_1'
-            IF (BNCRON) WRITE(LUPRI,'(A/)')
+         IF (BNCRON) WRITE(LUPRI,'(A/)')
      &      "           Improved by an estimate "//
      &      "of the electronic screening (Slater's rules)."
-         END IF
-         CALL QUIT('*** ERROR in ROPTST: H_1 start guess is
-     &             not operational. ***')
+         CALL QUIT('*** ERROR in ROPTST: H_1 start guess is '//
+     &             'not operational. ***')
          GOTO 1000
       END IF
 C
@@ -3227,7 +3194,8 @@ C     Make sure start guess orbitals are orthonormal !!!
 C
       IF (IPROPT .GE. 10) THEN
          DO I = 1, NFSYM
-            WRITE(LUPRI,'(A,I2)') ' (ROPTST)  Coefficients, irrep ',I
+            WRITE(LUPRI,'(A,I2)')
+     &      ' (ROPTST)  MO coefficients before Gram-Schmidt, irrep ',I
             CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
@@ -3238,7 +3206,7 @@ C
       IF (IPROPT .GE. 10) THEN
          DO I = 1, NFSYM
             WRITE(LUPRI,'(A,I3)')
-     &         ' Coefficients (after Gram-Schmidt), irrep',I
+     &         ' MO coefficients (after Gram-Schmidt), irrep',I
             CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
@@ -3295,7 +3263,7 @@ C         write back on file - if not present
             CLOSE(LUNI,STATUS='KEEP')
           END IF
 
-          CALL MEMREL('KRMCSAV.1',WORK,1,KFRSAV,KFREE,LFREE)
+          CALL MEMREL('ROPTST.MJVEC',WORK,1,KFRSAV,KFREE,LFREE)
           WRITE(LUPRI,'(/A)')
      &    '  Vector containing mj-values saved as MJVEC on KRMCSCF'
         END IF
@@ -3359,13 +3327,6 @@ C     *****************************
 C     *** (2) Conf. start guess ***
 C     *****************************
 C
-      IF( GENFOCK ) THEN
-        IF (LBIT(IWRT,2)) CALL WRTKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
-CSK     GOTO 2100
-      END IF
-C
-C
-C
 C     bit 1 of IRCIST:  read CREF from KRMCSCF
 C     bit 2 of IRCIST:  read CREFOLD from KRMCSCF
 C     bit 3 of IRCIST:  do MAXCIT CI iterations (MAXCIT<0 ==> full CI)
@@ -3386,12 +3347,10 @@ C
                IF ( FNDLAB('CREF    ',LUKRM5) ) THEN
                   IF (MOPT_MXMACRO.GT.0) THEN
                      CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
-                     IF (IPRINT .GE. 0) THEN
-                        WRITE(LUPRI,'(/2A)')
-     &                       ' (ROPTST)  CI start vector read from' //
-     &                       ' label CREF on file',
-     &                         KRM5_NAME(1:LKRM5_NAME)
-                     END IF
+                     WRITE(LUPRI,'(/2A)')
+     &                  ' (ROPTST)  CI start vector read from' //
+     &                  ' label CREF on file',
+     &                  KRM5_NAME(1:LKRM5_NAME)
                   END IF
                   IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
 C
@@ -3406,9 +3365,8 @@ C
      &                      ' LUCIAREL CI module'
                       CALL LUCI_RSTRMC(WORK(KFREE),LFREE)
                     ELSE IF (MOPT_MXMACRO.EQ.0) THEN
-                      WRITE(LUPRI,*)
-     &                '  Starting CI calculation from MC orbitals or '
-                      WRITE(LUPRI,*)
+                      WRITE(LUPRI,'(/A/A)')
+     &                '  Starting CI calculation from MC orbitals or ',
      &                '  Restarting CI calculation from vector. '
                       IOPT_INTFLG = IOPT_INTDEF
                       JTRLVL = 0
@@ -3424,12 +3382,10 @@ C
      &                        ' LUCIAREL CI module'
                         CALL LUCI_RSTRMC(WORK(KFREE),LFREE)
                         CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
-                        IF (IPRINT .GE. 0) THEN
-                           WRITE(LUPRI,'(/2A)')
-     &                         ' (ROPTST)  CI start vector read from' //
-     &                         ' label CREF on file ',
-     &                           KRM5_NAME(1:LKRM5_NAME)
-                        END IF
+                        WRITE(LUPRI,'(/2A)')
+     &                      ' (ROPTST)  CI start vector read from' //
+     &                      ' label CREF on file ',
+     &                        KRM5_NAME(1:LKRM5_NAME)
                       END IF
                       CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
                       CALL RTRACTL(CMO,IBEIG,SZTRA,WORK(KFREE),LFREE)
@@ -3450,12 +3406,10 @@ C
                IF ( FNDLAB('CREF    ',LUKRM5) ) THEN
                   REWIND(LUKRM5)
                   CALL REAKRMC(LUKRM5,'CREFOLD ',CREF,NZCONFQ)
-                  IF (IPRINT .GE. 0) THEN
-                     WRITE(LUPRI,'(/2A)')
-     $                    ' (ROPTST)  CI start vector read from' //
-     $                    ' label CREFOLD on file ',
-     &                      KRM5_NAME(1:LKRM5_NAME)
-                  END IF
+                  WRITE(LUPRI,'(/2A)')
+     $                 ' (ROPTST)  CI start vector read from' //
+     $                 ' label CREFOLD on file ',
+     &                   KRM5_NAME(1:LKRM5_NAME)
                   GO TO 2000
                END IF
             END IF
@@ -3595,7 +3549,7 @@ C
 #include "dcbopt.h"
 #include "krmcluci_inf.h"
 C
-      DIMENSION CMO(*), CREF(*), WORK(*)
+      DIMENSION CMO(*), CREF(NZCONFQ,*), WORK(*)
       LOGICAL   MOISNO, EX
 C
       CALL QENTER('RCIST')
@@ -3615,7 +3569,7 @@ C
 C     MAXCIT < 0:
 C
 C     Diagonalize the full CI matrix now.
-C     This is of course only possible for sufficiently small CI's.
+C     This is of course only possible for sufficiently small CI dimension.
 C
 !     fcidump: generate FCIDUMP file and return
       if(fcidump)then
@@ -3638,7 +3592,7 @@ C           MAXCIT Davidson CI iterations.
 C
             CALL MEMGET2('REAL','ECI',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
-            THRGCI = 0.1D0 * SQRT(OPT_THRECI)   ! GASCIP uses gradient threshold, not energy threshold
+            THRGCI = opt_thrgrd
             CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
      &                         OPT_THR_CVEC,IOPT_STATE,ICONV_TOT,
@@ -3724,13 +3678,13 @@ C
      &'  *************************************************************'
 C
 C
-        DO ICNON = 1, NCIROOT
+        DO ICIROOT = 1, NCIROOT
 C
 C         erase old occupation numbers
           CALL DZERO(WORK(KOCCNO),NORBT)
           CALL DZERO(WORK(KUNO),N2ASHXQ)
 C
-          IDENSLR_STATE = ICNON
+          IDENSLR_STATE = ICIROOT
 C
 C         NOTE: IF MOPT_MXMACRO < 0: CREF is not allocated!
 C               requires appropriate treatment in LUCI_DENS ...
@@ -3739,7 +3693,7 @@ C         SK - Feb 2009: introduced TRA_NATO for transformation to
 C                        natural CI/MCSCF orbitals. They can be useful
 C                        for further analysis, e.g., visualization.
 C
-          CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
+          CALL RGETNO(CREF(1,ICIROOT),WORK(KOCCNO),WORK(KUNO),CMO,
      &                TRA_NATO,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
 C
         END DO

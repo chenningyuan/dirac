@@ -1,4 +1,6 @@
 :orphan:
+
+NOTE: *DFCOEF* file was replaced by *CHECKPOINT.h5* in DIRAC22, and the information below is only relevant for older versions of DIRAC.
  
 
 DFCOEF

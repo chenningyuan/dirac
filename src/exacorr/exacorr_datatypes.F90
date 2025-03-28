@@ -71,7 +71,7 @@
             logical                 :: do_2rdm_gs=.false.
 
             logical                 :: auto_kernels = .false.   ! if true, use automatically generated kernels for t/l equations
-            integer                 :: auto_scheme  = 1         ! 1: autogen;  2: tenpi; 3: tapp reference implementation
+            integer                 :: auto_scheme  = 2         ! 1: autogen;  2: tenpi; 3: tapp reference implementation
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh

@@ -1,6 +1,6 @@
 **DIRAC
 .TITLE
- Testing KR-CI for Be in Pierloot basis
+ Testing KR-CI for Be in Pierloot basis, 4c
 .WAVE FUNCTION
 **HAMILTONIAN
 .DOSSSS
@@ -10,7 +10,7 @@
 *SCF
 .CLOSED SHELL
  4 0
-*KRCICALC
+*KRCI
 .CI PROGRAM
 LUCIAREL
 .INACTIVE

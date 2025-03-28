@@ -17,7 +17,6 @@ public talsh_davidson_get_eigenvalue_shift
 public talsh_davidson_setup
 public talsh_davidson_destroy
 public talsh_davidson_driver
-public davidson_print_vectors_complex
 public talsh_solve_values_vectors
 public talsh_sort_values_vectors
 public talsh_davidson_workspace_create
@@ -37,9 +36,11 @@ interface print_values_vectors
      module procedure print_values_vectors_C
 end interface
 
+#ifdef NOT_USED
 interface davidson_print_vectors_complex
     module procedure davidson_print_vectors_complex_1d
 end interface
+#endif
 
 public talsh_davidson_results_tens_t
 public talsh_davidson_workspace_tens_t
@@ -856,6 +857,7 @@ contains
     end subroutine
 
 
+#ifdef NOT_USED
     subroutine davidson_print_vectors_complex_1d(vectors, N, L, label, nvectors)
         complex(kind=8), intent(in) :: vectors(:)
         integer, intent(in) :: N, L
@@ -898,6 +900,7 @@ contains
         end do
         
     end subroutine
+#endif
 
 
 
@@ -2629,8 +2632,11 @@ contains
                exit
             end if
 
-            if (config%refresh_trial_vectors.and.(mod(niter,config%trial_vector_refresh_rate).eq.0)) then
-                print *,'debug : refreshing trial vectors not implemented in this version'
+            if (config%refresh_trial_vectors) then
+!              if (mod(niter,config%trial_vector_refresh_rate).eq.0) then
+!                  print *,'debug : refreshing trial vectors not implemented in this version'
+!              end if
+               print *,'debug : refreshing trial vectors not implemented in this version'
             else
                call update_trial_vectors(delta,workspace_t,flavor,Index_small_v,isv)
             end if

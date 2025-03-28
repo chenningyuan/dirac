@@ -469,6 +469,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
           NSYMOP=0
           ADDSYM=.TRUE.
+          NONATM=.FALSE. ! Forcing linear symmetry not using atomic supersymmetry
           KASYM(:,:)=' '
           KCHARG=0
 #ifdef HAS_PELIB 
@@ -533,8 +534,13 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
      &                 section(3)=='.NOSYM') THEN
                        ADDSYM=.FALSE.
 #ifdef HAS_PELIB
-              pelib_sym_xyz = .false.
+                       pelib_sym_xyz = .false.
 #endif
+
+!            Use linear symmetry even when single atom
+              ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
+     &                 section(3)=='.LINEAR') THEN
+                       NONATM=.TRUE.
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
      &                 section(3)=='.DEFAULT') THEN
@@ -1271,7 +1277,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,              &
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &
      &            DOOWN, blk)
-      IF (LINEAR.and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
+      IF (LINEAR.and. (NUCDEP .Eq. 1) .and. (.NOT. NONATM) ) ATOMIC = .TRUE.
 !
 !     *************************************************
 !     ***** Print orbital and geometry input data *****
