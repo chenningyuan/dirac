@@ -3,7 +3,9 @@ module exacorr_tensor_interface
 ! This module defines the unified tensor interface
 ! Written by Jan Brandejs, Andre S.P. Gomes and Lucas Visscher, June 2024
 
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         use exatensor
+#endif
         use talsh
         use tapp
         use tapp_top
@@ -24,7 +26,9 @@ module exacorr_tensor_interface
          !library_tensor_instance_pointer
          type(tapp_tensor_t) :: tens_tapp     ! executor 1       !Do not access in your code directly outside this file (and tapp_top)!
          type(talsh_tens_t) :: tens_talsh     ! executor 2       !Do not access in your code directly outside this file. Will be deprecated soon.
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          type(tens_rcrsv_t) :: tens_exatensor ! executor 3       !Do not access in your code directly outside this file. Will be deprecated soon.
+#endif
 
          ! we follow TAPP_datatype enumeration
          integer(kind(TAPP_datatype)) :: datatype
@@ -47,7 +51,9 @@ module exacorr_tensor_interface
          !defines the symmetry sructure of a index
          !like AO/MOspace. E.g. MOspace(virtual), MOspace(occupied)
          ! h_space_t in exatensor
+#if defined(EXATENSOR)         
          class(h_space_t), pointer :: struct_exatensor
+#endif
          type(c_ptr) :: struct_talsh
          type(c_ptr) :: struct_tapp
 
@@ -102,8 +108,10 @@ module exacorr_tensor_interface
                 character(len=(len_trim(expression)+6))               :: contraction_str,addition_str
                 complex(8), parameter :: ONE_c=(1.D0,0.D0)
 
+#if defined(EXATENSOR)
                 ! exatensor
                 type(tens_rcrsv_t)                   :: one_tensor
+#endif                
 
 
                 ! here the einsum_str has to be parsed to get indices and throw errors if any
@@ -155,6 +163,7 @@ module exacorr_tensor_interface
 
                         ! IF (alpha%im .ne. 0.D0 .and. beta%im .ne. 0.D0) THEN
 
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
                 CASE(3) ! exatensor
                         if (present(a) .and. present(b) .and. present(c)) then
                           ! the case D=C has to be supported 
@@ -177,6 +186,7 @@ module exacorr_tensor_interface
                         ! else
                         !   ierr=exatns_tensor_init(d%tens_exatensor, alpha)
                         endif
+#endif
                               
                 END SELECT
         
