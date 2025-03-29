@@ -5482,7 +5482,7 @@ C  always do control print out
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)')
      &' NMR diamagnetic shielding contributions '//
-     &' (Aucar et al, JCP 110 (1999) 6208)'
+     &' (Aucar et al., JCP 110 (1999) 6208)'
        IF (LONDON) THEN
         WRITE(LUPRI,'(2X,A)')
      &'- for London atomic orbitals (invariant gauge origin)'
@@ -7631,10 +7631,10 @@ C
      &  'NMR SHIELDING TENSOR','*',116)
 C
       WRITE(LUPRI,'(10X,A)')
-     & 'According to A. L. Barra et al, '//
+     & 'According to A. L. Barra et al., '//
      & 'Europhys. Lett. 5 (1988) p.217'
       WRITE(LUPRI,'(19X,A)')
-     & 'and R. Bast et al, JCP 125 (2006) p.064504'
+     & 'and R. Bast et al., JCP 125 (2006) p.064504'
       CALL PRSYMB(LUPRI,'-',81,0)
       WRITE(LUPRI,*) ''
 C
@@ -8002,6 +8002,11 @@ C
 C
       CALL TITLER('PARITY-VIOLATION CONTRIBUTION TO '//
      &  'SPIN-SPIN COUPLING','*',116)
+C
+      WRITE(LUPRI,'(10X,A)')
+     & 'According to A. L. Barra et al., '//
+     & 'Europhys. Lett. 5 (1988) p.217'
+      CALL PRSYMB(LUPRI,'-',81,0)
       WRITE(LUPRI,*) ''
 C
 C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
@@ -8888,7 +8893,7 @@ C
 C     Print reference
 C
       WRITE(LUPRI,'(4X,A)')
-     & 'Reference: I. A. Aucar et al, JCP 141, 194103 (2014)'
+     & 'Reference: I. A. Aucar et al., JCP 141, 194103 (2014)'
 C
 C     A operators
 C     ===========
@@ -8982,7 +8987,7 @@ C
 C
       CALL TITLER('MOLECULAR ROTATIONAL G-TENSOR','*',116)
       WRITE(LUPRI,'(13X,A)')
-     & 'According to I. A. Aucar et al, JCP 141 (2014) p.194103'
+     & 'According to I. A. Aucar et al., JCP 141 (2014) p.194103'
       CALL PRSYMB(LUPRI,'-',81,0)
 C
 C--------------------------------------------------------------------
@@ -11255,7 +11260,7 @@ C
 C
       CALL TITLER('NUCLEAR SPIN-ROTATION TENSOR','*',116)
       WRITE(LUPRI,'(13X,A)')
-     & 'According to I. A. Aucar et al, JCP 136 (2012) p.204119'
+     & 'According to I. A. Aucar et al., JCP 136 (2012) p.204119'
       CALL PRSYMB(LUPRI,'-',81,0)
       WRITE(LUPRI,*) ''
 C
@@ -12595,7 +12600,7 @@ C
      &  'NUCLEAR SPIN-ROTATION TENSOR','*',116)
 C
       WRITE(LUPRI,'(13X,A)')
-     & 'According to I. A. Aucar et al, JCP 155 (2021) p.134307'
+     & 'According to I. A. Aucar et al., JCP 155 (2021) p.134307'
       CALL PRSYMB(LUPRI,'-',81,0)
       WRITE(LUPRI,*) ''
 C
