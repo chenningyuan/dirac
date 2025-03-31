@@ -466,6 +466,40 @@ module exacorr_tensor_interface
         end function destroy_tensor_t
 
 
+        function reshape_tensor_t(tensor, reshape_dims)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+
+          integer(INTD)       :: ierr, reshape_tensor_t
+          integer(c_int)       :: tapp_err
+          integer(INTD), allocatable :: reshape_dims(:)
+
+          if ( is_empty_tensor_t(tensor) ) then
+            destroy_tensor_t = 0
+            return
+          endif
+
+          SELECT CASE(tensor%which_executor)
+          CASE(1)
+            write(*,'("  Error. reshape_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          CASE(2)
+             ierr=talsh_tensor_reshape(tensor%tens_talsh,reshape_dims)
+          CASE default
+            write(*,'("  Error. reshape_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          END SELECT
+
+          if ( .not. is_empty_tensor_t(tensor) ) then
+            write(*,'("  Error. Failed sanity check in reshape_tensor_t.")')
+            stop 98
+          endif
+
+          reshape_tensor_t = ierr
+        end function reshape_tensor_t
+
         ! get direct access to the tensor's elements
         function direct_data_pointer(tensor, ptr)
           implicit none

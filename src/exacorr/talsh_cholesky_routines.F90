@@ -38,7 +38,7 @@ contains
         implicit none
 
         real(8), intent(in)                  :: t_cholesky ! cholesky threshold
-        type(talsh_tens_t), intent(inout)    :: CD
+        type(tensor_t), intent(inout)    :: CD
         integer, intent(in)                  :: print_level
 
         integer, parameter :: CD_blocksize = 100
@@ -46,16 +46,16 @@ contains
         integer            :: nao, lshell, kshell, lsize, ksize
         integer            :: l, k, l0, k0
         real(8)            :: D_max, D_el
-        type(talsh_tens_t) :: Diag, Res, Temp
-        type(talsh_tens_t) :: Dlk
-        type(talsh_tens_t) :: CD_row, CD_column
-        type(talsh_tens_t),allocatable :: CD_blocks(:)
+        type(tensor_t) :: Diag, Res, Temp
+        type(tensor_t) :: Dlk
+        type(tensor_t) :: CD_row, CD_column
+        type(tensor_t),allocatable :: CD_blocks(:)
         integer(C_INT)     :: dims2(1:2)
         integer(C_INT)     :: dims3(1:3), off3(1:3)
         integer(C_INT)     :: dims4(1:4), off4(1:4)
         integer(C_INT)     :: rank
         integer(C_INT)     :: i, m, mblock, iblock
-        type(talsh_tens_t) :: one_tensor
+        type(tensor_t) :: one_tensor
         integer(C_INT)     :: one_dims(1)
         real(8), pointer     :: CDR(:,:,:),DiagR(:,:)
         complex(8),pointer   :: CDC(:,:,:)
@@ -81,21 +81,21 @@ contains
         one_dims(1) = 1
 
         ! allocate the stupid one tensor that is needed for multiplying with a scalar in TALSH
-        ierr=talsh_tensor_construct(one_tensor,R8,one_dims(1:0),init_val=ONE)
+        ierr=construct_tensor_t(one_tensor,R8,one_dims(1:0),init_val=ONE)
 
         ! tensor to hold the diagonal of the integral matrix and also a pointer for direct use thereof in Fortran
-        ierr=talsh_tensor_construct(Diag,R8,dims2,init_val=ZERO)
-        ierr=talsh_tensor_get_body_access(Diag,body_p,R8,0,DEV_HOST)
+        ierr=construct_tensor_t(Diag,R8,dims2,init_val=ZERO)
+        ierr=direct_data_pointer(Diag,body_p)
         call c_f_pointer(body_p,DiagR,dims2)
 
         ! the following allocates an array to hold Cholesky blocks, but no tensor memory is allocated yet
         allocate(CD_blocks(max(1,nao*nao/CD_blocksize)))
 
         ! tensors to hold one column or one row of a block of the Cholesky tensor
-        ierr=talsh_tensor_construct(Res,R8,dims2,init_val=ZERO)
-        ierr=talsh_tensor_construct(Temp,R8,dims2,init_val=ZERO)
-        ierr=talsh_tensor_construct(CD_row,R8,(/ CD_blocksize /),init_val=ZERO)
-        ierr=talsh_tensor_construct(CD_column,R8,(/ nao, nao /),init_val=ZERO)
+        ierr=construct_tensor_t(Res,R8,dims2,init_val=ZERO)
+        ierr=construct_tensor_t(Temp,R8,dims2,init_val=ZERO)
+        ierr=construct_tensor_t(CD_row,R8,(/ CD_blocksize /),init_val=ZERO)
+        ierr=construct_tensor_t(CD_column,R8,(/ nao, nao /),init_val=ZERO)
 
         ! a mask array to mask out columns that are already considered
         allocate (Mask(nao,nao))
@@ -123,7 +123,7 @@ contains
           dims4(4)=ksize
 
           ! allocate the tensor that will hold all generated integrals for this shell pair
-          ierr=talsh_tensor_construct(Dlk,R8,dims4,init_val=ZERO)
+          ierr=construct_tensor_t(Dlk,R8,dims4,init_val=ZERO)
 
           !get the integral block for the current shell pair
           call get_integral_block(Dlk, lshell, kshell)
@@ -142,62 +142,62 @@ contains
             off3(2)=k-1
             off3(3)=0
             !sum up previous CD vectors for the current index pair
-            ierr=talsh_tensor_init(Res, ZERO)
+            ierr=initialize_tensor_t(Res, ZERO)
             mblock = m / CD_blocksize
             do iblock = 1, mblock
                !for the filled blocks we can use full contractions, but we need to extract the current row first
-               ierr=talsh_tensor_reshape(CD_row,(/ 1,1,CD_blocksize /))
+               ierr=reshape_tensor_t(CD_row,(/ 1,1,CD_blocksize /))
                ierr=talsh_tensor_slice(CD_row,CD_blocks(iblock),off3,0,DEV_HOST)
-               ierr=talsh_tensor_reshape(CD_row,(/ CD_blocksize /))
-               ierr=talsh_tensor_contract("L(p,q)+=I(p,q,u)*R(u)",Res,CD_blocks(iblock),CD_row)
+               ierr=reshape_tensor_t(CD_row,(/ CD_blocksize /))
+               ierr=t_einsum("L(p,q)+=I(p,q,u)*R(u)",Res,CD_blocks(iblock),CD_row)
             enddo
             do i = 1, mod(m,CD_blocksize)
                !for the last incomplete block we slice out and multiply each column separately
-               ierr=talsh_tensor_reshape(CD_column,(/ nao, nao, 1 /))
+               ierr=reshape_tensor_t(CD_column,(/ nao, nao, 1 /))
                ierr=talsh_tensor_slice(CD_column,CD_blocks(mblock+1),(/0,0,i-1/),0,DEV_HOST)
-               ierr=talsh_tensor_reshape(CD_column,(/ nao, nao /))
+               ierr=reshape_tensor_t(CD_column,(/ nao, nao /))
                ! the row is now a single number that we extract via the Fortran pointer array
-               ierr=talsh_tensor_contract("L(p,q)+=I(p,q)",Res,CD_column,one_tensor,scale=ONE*CDR(l,k,i))
+               ierr=t_einsum("L(p,q)+=I(p,q)",Res,CD_column,one_tensor,scale=ONE*CDR(l,k,i))
             end do
 
             !get Dlk for the current l and k
-            ierr=talsh_tensor_init(Temp, ZERO)
+            ierr=initialize_tensor_t(Temp, ZERO)
             dims4(3)=1
             dims4(4)=1
-            ierr=talsh_tensor_reshape(Temp,dims4)
+            ierr=reshape_tensor_t(Temp,dims4)
             off4=0
             off4(3)=l-l0-1
             off4(4)=k-k0-1
             ierr=talsh_tensor_slice(Temp,Dlk,off4,0,DEV_HOST)
-            ierr=talsh_tensor_reshape(Temp,dims2)
+            ierr=reshape_tensor_t(Temp,dims2)
 
             !sum and denominate
-            ierr=talsh_tensor_contract("T(p,q)+=V(p,q)",Temp,Res,one_tensor,scale=MINUS_ONE)
-            ierr=talsh_tensor_init(Res, ZERO)
-            ierr=talsh_tensor_add("W(p,q)=V(p,q)",Res,Temp,scale=ONE/sqrt(D_el))
+            ierr=t_einsum("T(p,q)+=V(p,q)",Temp,Res,one_tensor,scale=MINUS_ONE)
+            ierr=initialize_tensor_t(Res, ZERO)
+            ierr=t_einsum("W(p,q)=V(p,q)",Res,Temp,scale=ONE/sqrt(D_el))
             if (print_level.gt.15) call print_tensor(Res, ACC, "CD entry")
 
             !insert the newly obtained Cholesky vector at the end of the last cholesky block
             dims3(1:2)=nao
             dims3(3)=1
-            ierr=talsh_tensor_reshape(Res,dims3)
+            ierr=reshape_tensor_t(Res,dims3)
             off3(1:2)=0
             off3(3)=mod(m,CD_blocksize)
             if (off3(3) == 0) then
                ! first vector of a new block, allocate this new block
                dims3(1:2)=nao
                dims3(3)=CD_blocksize
-               ierr=talsh_tensor_construct(CD_blocks(mblock+1),R8,dims3,init_val=ZERO)
+               ierr=construct_tensor_t(CD_blocks(mblock+1),R8,dims3,init_val=ZERO)
                ! the fortran array pointer should refer to this final, incomplete, block
-               ierr=talsh_tensor_get_body_access(CD_blocks(mblock+1),body_p,R8,0,DEV_HOST)
+               ierr=direct_data_pointer(CD_blocks(mblock+1),body_p)
                call c_f_pointer(body_p,CDR,dims3)
             end if
             ierr=talsh_tensor_insert(CD_blocks(mblock+1),Res,off3)
 
             !update diagonal
-            ierr=talsh_tensor_reshape(Res,dims2)
+            ierr=reshape_tensor_t(Res,dims2)
             call talsh_square_el(Res)
-            ierr=talsh_tensor_contract("W(p,q)+=V(p,q)",Diag,Res,one_tensor,scale=MINUS_ONE)
+            ierr=t_einsum("W(p,q)+=V(p,q)",Diag,Res,one_tensor,scale=MINUS_ONE)
             if (print_level.gt.15) call print_tensor(Diag, ACC, "Diag")
 
             !update mask
@@ -216,7 +216,7 @@ contains
           !find next shell combination that contains the largest element
           call find_shells(DiagR, Mask, lshell, kshell, D_max)
 
-          ierr=talsh_tensor_destruct(Dlk)
+          ierr=destroy_tensor_t(Dlk)
 
         end do
 
@@ -225,8 +225,8 @@ contains
         ! allocate the complex output tensor
         dims3(1:2) = nao
         dims3(3)   = m
-        ierr=talsh_tensor_construct(CD,C8,dims3)
-        ierr=talsh_tensor_get_body_access(CD,body_p,C8,0,DEV_HOST)
+        ierr=construct_tensor_t(CD,C8,dims3)
+        ierr=direct_data_pointer(CD,body_p,C8,0,DEV_HOST)
         call c_f_pointer(body_p,CDC,dims3)
 
         ! copy the fully filled blocks into the complex output tensor and then delete them
@@ -234,27 +234,27 @@ contains
         dims3(3)   = CD_blocksize
         i = 0
         do iblock = 1, mblock
-           ierr=talsh_tensor_get_body_access(CD_blocks(iblock),body_p,R8,0,DEV_HOST)
+           ierr=direct_data_pointer(CD_blocks(iblock),body_p)
            call c_f_pointer(body_p,CDR,dims3)
            CDC(:,:,i+1:i+CD_blocksize) = dcmplx(CDR,0.D0)
            i = i + CD_blocksize
-           ierr=talsh_tensor_destruct(CD_blocks(iblock))
+           ierr=destroy_tensor_t(CD_blocks(iblock))
         end do
         ! copy the final, partially filled, block and free also this memory
         if (m > i) then
-           ierr=talsh_tensor_get_body_access(CD_blocks(mblock+1),body_p,R8,0,DEV_HOST)
+           ierr=direct_data_pointer(CD_blocks(mblock+1),body_p)
            call c_f_pointer(body_p,CDR,dims3)
            CDC(:,:,i+1:m) = dcmplx(CDR(:,:,1:m-i),0.D0)
-           ierr=talsh_tensor_destruct(CD_blocks(mblock+1))
+           ierr=destroy_tensor_t(CD_blocks(mblock+1))
         end if
 
         !clean up
-        ierr=talsh_tensor_destruct(CD_row)
-        ierr=talsh_tensor_destruct(CD_column)
-        ierr=talsh_tensor_destruct(Diag)
-        ierr=talsh_tensor_destruct(Res)
-        ierr=talsh_tensor_destruct(Temp)
-        ierr=talsh_tensor_destruct(one_tensor)
+        ierr=destroy_tensor_t(CD_row)
+        ierr=destroy_tensor_t(CD_column)
+        ierr=destroy_tensor_t(Diag)
+        ierr=destroy_tensor_t(Res)
+        ierr=destroy_tensor_t(Temp)
+        ierr=destroy_tensor_t(one_tensor)
 
         if (print_level.gt.2) write(*,*)  "========= leaving decompose_cholesky_talsh ========= "
 
@@ -374,7 +374,7 @@ subroutine get_integral_block(Dshell, lsh, ksh)
   implicit none 
 
   integer, intent(in)            :: lsh, ksh
-  type(talsh_tens_t), intent(inout) :: Dshell
+  type(tensor_t), intent(inout) :: Dshell
 
   real(8), pointer     :: DlkR(:,:,:,:)
   complex(8), pointer  :: DlkC(:,:,:,:)
@@ -444,7 +444,7 @@ subroutine get_integral_block(Dshell, lsh, ksh)
   if (ierr.ne.0) stop 'error: wrong dimension in get_shell_talsh'
   ierr=talsh_tensor_data_kind(Dshell,nData,DataKind)
   if (ierr.ne.0) stop 'error in getting DataKind'
-  ierr=talsh_tensor_get_body_access(Dshell,body_p,DataKind(1),0,DEV_HOST)
+  ierr=direct_data_pointer(Dshell,body_p,DataKind(1),0,DEV_HOST)
   select case (DataKind(1))
   case (R8)
      call c_f_pointer(body_p,DlkR,dims4)
@@ -583,7 +583,7 @@ subroutine talsh_square_el(h_tensor)
 
   implicit none
   
-  type(talsh_tens_t), intent(inout)    :: h_tensor
+  type(tensor_t), intent(inout)    :: h_tensor
 
   integer  ::  dims2(1:2)
   integer  ::  dims3(1:3)
@@ -602,7 +602,7 @@ subroutine talsh_square_el(h_tensor)
     ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
     if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
 
-    ierr=talsh_tensor_get_body_access(h_tensor,body_p,R8,0,DEV_HOST)
+    ierr=direct_data_pointer(h_tensor,body_p)
     call c_f_pointer(body_p,tens2,dims2)
     
     do i = 1, dims2(1)
@@ -615,7 +615,7 @@ subroutine talsh_square_el(h_tensor)
     ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
     if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
 
-    ierr=talsh_tensor_get_body_access(h_tensor,body_p,R8,0,DEV_HOST)
+    ierr=direct_data_pointer(h_tensor,body_p)
     call c_f_pointer(body_p,tens3,dims3)
 
     do i = 1, dims3(1)
@@ -630,7 +630,7 @@ subroutine talsh_square_el(h_tensor)
     ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
     if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
 
-    ierr=talsh_tensor_get_body_access(h_tensor,body_p,R8,0,DEV_HOST)
+    ierr=direct_data_pointer(h_tensor,body_p)
     call c_f_pointer(body_p,tens4,dims4)
 
     do i = 1, dims4(1)
