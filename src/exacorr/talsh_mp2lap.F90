@@ -1,14 +1,15 @@
-module talsh_mp2lap
+module eti_mp2lap
 !This module contains the routines needed to calculate the frozen mp2 natural orbitals 
 !using Cholesky decompostion and Laplace transformation
 
         use tensor_algebra
         use talsh
+        use exacorr_tensor_interface
         use exacorr_datatypes
         use exacorr_utils
         use exacorr_global
-        use talsh_cholesky_integrals
-        use talsh_common_routines
+        use eti_cholesky_integrals
+        use eti_common_routines
         use type_laplace, only : laplace_info, deallocate_laplace
         use, intrinsic:: ISO_C_BINDING
 
@@ -20,13 +21,13 @@ module talsh_mp2lap
 
         private
 
-        public talsh_mp2lap_driver
+        public eti_mp2lap_driver
         public mp2lap_get_DM
 
        contains
 
 !-------------------------------------------------------------------------------------------------------------------------------------
-       subroutine talsh_mp2lap_driver (exa_input)
+       subroutine eti_mp2lap_driver (exa_input)
 !       This module is used to construct the MP2 density matrix by talsh 
 !       Written by Johann Pototschnig
 
@@ -226,7 +227,7 @@ module talsh_mp2lap
         ierr = talsh_shutdown()
 
         call print_date('Leaving MP2_LAP Module')
-      end subroutine talsh_mp2lap_driver
+      end subroutine eti_mp2lap_driver
 
       !-------------------------------------------------------------------------------------------------------------------------------------
       subroutine mp2lap_get_DM (exa_input)
@@ -291,7 +292,7 @@ module talsh_mp2lap
            ierr = get_extents(uov_tensor,uov_dims)
            ierr = get_extents(uvo_tensor,uvo_dims)
         else
-           stop 'error in talsh_mp2lap_driver: tensor rank wrong'
+           stop 'error in eti_mp2lap_driver: tensor rank wrong'
         endif
         nchol=uov_dims(3)
 
@@ -448,4 +449,4 @@ module talsh_mp2lap
       end subroutine mp2lap_get_DM
 
 
-end module talsh_mp2lap
+end module eti_mp2lap

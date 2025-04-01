@@ -4,11 +4,11 @@ module eti_triples
 !standard routine by L. Visscher, A. Papadopolus
 
         use tensor_algebra
-        use talsh
+        use exacorr_tensor_interface 
         use exacorr_datatypes
         use exacorr_utils
         use intermediates
-        use talsh_common_routines
+        use eti_common_routines
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -66,7 +66,8 @@ module eti_triples
          ierr=construct_tensor_t(one_tripl,C8,one_dims(1:0),init_val=ONE)
 
 !        Get nocc and nvir from tensor information
-         ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
+         ierr = get_nmodes(t2_tensor,tens_rank)
+         ierr = get_extents(t2_tensor,t2_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'error: t2 tensor corrupted'
 
          if (t2_dims(1).eq.t2_dims(2)) then
@@ -225,37 +226,37 @@ module eti_triples
 
 !        Determine source dimensions and get direct access to the tensor bodies
 
-         tens_rank = talsh_tensor_rank(t1_tensor)
+         ierr = get_nmodes(t1_tensor,tens_rank)
          if (tens_rank .ne. 2) stop 'Error: t1 tensor corrupted in form_y2_intermediate'
-         ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
+         ierr = get_extents(t1_tensor,t1_dims)
          ierr=direct_data_pointer(t1_tensor,body_p)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,t1_tens,t1_dims)
 
-         tens_rank = talsh_tensor_rank(t2_tensor)
+         ierr = get_nmodes(t2_tensor,tens_rank)
          if (tens_rank .ne. 4) stop 'Error: t2 tensor corrupted in form_y2_intermediate'
-         ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
+         ierr = get_extents(t2_tensor,t2_dims)
          ierr=direct_data_pointer(t2_tensor,body_p)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,t2_tens,t2_dims)
 
-         tens_rank = talsh_tensor_rank(y_tensor)
+         ierr = get_nmodes(y_tensor,tens_rank)
          if (tens_rank .ne. 3) stop 'Error: y tensor corrupted in form_y2_intermediate'
-         ierr = talsh_tensor_dimensions(y_tensor,tens_rank,y_dims)
+         ierr = get_extents(y_tensor,y_dims)
          ierr=direct_data_pointer(y_tensor,body_p)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,y_tens,y_dims)
 
-         tens_rank = talsh_tensor_rank(fov_tensor)
+         ierr = get_nmodes(fov_tensor,tens_rank)
          if (tens_rank .ne. 2) stop 'Error: fo tensor corrupted in form_y2_intermediate'
-         ierr = talsh_tensor_dimensions(fov_tensor,tens_rank,fov_dims)
+         ierr = get_extents(fov_tensor,fov_dims)
          ierr=direct_data_pointer(fov_tensor,body_p)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,fov_tens,fov_dims)
 
-         tens_rank = talsh_tensor_rank(oovv_tensor)
+         ierr = get_nmodes(oovv_tensor,tens_rank)
          if (tens_rank .ne. 4) stop 'Error: oovv tensor corrupted in form_y2_intermediate'
-         ierr = talsh_tensor_dimensions(oovv_tensor,tens_rank,oovv_dims)
+         ierr = get_extents(oovv_tensor,oovv_dims)
          ierr=direct_data_pointer(oovv_tensor,body_p)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,oovv_tens,oovv_dims)
@@ -301,21 +302,21 @@ module eti_triples
 
 !        Determine source dimensions and get direct access to the tensor bodies
 
-         tens_rank = talsh_tensor_rank(t1_tensor)
+         ierr = get_nmodes(t1_tensor,tens_rank)
          if (tens_rank .ne. 2) stop 'Error: t1 tensor corrupted in form_y_intermediate'
-         ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
+         ierr = get_extents(t1_tensor,t1_dims)
          ierr=direct_data_pointer(t1_tensor,body_p)
          call c_f_pointer(body_p,t1_tens,t1_dims)
 
-         tens_rank = talsh_tensor_rank(t2_tensor)
+         ierr = get_nmodes(t2_tensor,tens_rank)
          if (tens_rank .ne. 4) stop 'Error: t2 tensor corrupted in form_y_intermediate'
-         ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
+         ierr = get_extents(t2_tensor,t2_dims)
          ierr=direct_data_pointer(t2_tensor,body_p)
          call c_f_pointer(body_p,t2_tens,t2_dims)
 
-         tens_rank = talsh_tensor_rank(y_tensor)
+         ierr = get_nmodes(y_tensor,tens_rank)
          if (tens_rank .ne. 3) stop 'Error: y tensor corrupted in form_y_intermediate'
-         ierr = talsh_tensor_dimensions(y_tensor,tens_rank,y_dims)
+         ierr = get_extents(y_tensor,y_dims)
          ierr=direct_data_pointer(y_tensor,body_p)
          call c_f_pointer(body_p,y_tens,y_dims)
 
@@ -366,20 +367,19 @@ module eti_triples
          integer(INTD)        :: tens_dims(4), subtens_dims(3)
 
 !        Determine source dimensions and get direct access to the tensor body to enable copying
-         tens_rank = talsh_tensor_rank(tensor)
+         ierr = get_nmodes(tensor,tens_rank)
          if (tens_rank .ne. 4) stop 'Error: Only extraction from 4-dimensional tensors possible'
-         ierr = talsh_tensor_dimensions(tensor,tens_rank,tens_dims)
+         ierr = get_extents(tensor,tens_dims)
          ierr=direct_data_pointer(tensor,body_p)
          call c_f_pointer(body_p,tens,tens_dims)
 
 !        Determine target  dimensions and get direct access to the tensor body to enable copying
-         subtens_rank = talsh_tensor_rank(subtensor)
+         ierr = get_nmodes(subtensor,subtens_rank)
+         ierr = get_extents(subtensor,subtens_dims)
          if (subtens_rank .eq. 3) then
-            ierr = talsh_tensor_dimensions(subtensor,subtens_rank,subtens_dims)
             ierr=direct_data_pointer(subtensor,body_p)
             call c_f_pointer(body_p,subtens3,subtens_dims)
          elseif (subtens_rank .eq. 2) then
-            ierr = talsh_tensor_dimensions(subtensor,subtens_rank,subtens_dims)
             ierr=direct_data_pointer(subtensor,body_p)
             call c_f_pointer(body_p,subtens2,subtens_dims(1:2))
          else
@@ -424,7 +424,8 @@ module eti_triples
         integer               :: nocc, nvir, i
 
 !       Get nocc and nvir from tensor information
-        ierr = talsh_tensor_dimensions(comm_t%t2,tens_rank,t2_dims)
+        ierr = get_nmodes(comm_t%t2,subtens_rank)
+        ierr = get_extents(comm_t%t2,t2_dims)
         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'error: t2 tensor corrupted'
 
         if (t2_dims(1).eq.t2_dims(2)) then
