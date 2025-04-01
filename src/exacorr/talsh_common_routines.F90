@@ -383,6 +383,8 @@ t1_tens(i,a) = t1_tens(i,a) / denominator
 end do
 end do
 end if
+ierr = broadcast_tensor_t_body_data(t1_tensor)
+ierr = deallocate_temporary_full_data_tensor_t(t1_tensor)
 
 end if
 
@@ -420,6 +422,8 @@ end do
 end do
 end do
 end if
+ierr = broadcast_tensor_t_body_data(t2_tensor)
+ierr = deallocate_temporary_full_data_tensor_t(t2_tensor)
 
 end if
 
@@ -468,6 +472,8 @@ end do
 end do
 
 end if
+ierr = broadcast_tensor_t_body_data(full_t3_tensor)
+ierr = deallocate_temporary_full_data_tensor_t(full_t3_tensor)
 
 end if
 
@@ -524,6 +530,8 @@ end do
 end do
 
 end if
+ierr = broadcast_tensor_t_body_data(full_t4_tensor)
+ierr = deallocate_temporary_full_data_tensor_t(full_t4_tensor)
 
 end if
 
@@ -590,6 +598,8 @@ end do
 end do
 
 end if
+ierr = broadcast_tensor_t_body_data(full_t5_tensor)
+ierr = deallocate_temporary_full_data_tensor_t(full_t5_tensor)
 
 end if ! full_t5_tensor
 
@@ -610,6 +620,8 @@ t3_tens(a,b,c) = t3_tens(a,b,c) / denominator
 end do
 end do
 end do
+ierr = broadcast_tensor_t_body_data(t3_tensor)
+ierr = deallocate_temporary_full_data_tensor_t(t3_tensor)
 
 end if
 if (allocated(t1_dims)) deallocate(t1_dims)
@@ -1335,8 +1347,6 @@ end subroutine scale_with_denominators_
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims(1) = 1
          ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO, executor=executor)
-         ierr=direct_data_pointer(result_tensor,body_p)
-         call c_f_pointer(body_p,result_tens,result_dims)
 
          ierr = get_nmodes(a_tensor,a_rank)
          ierr = get_extents(a_tensor,a_dims)
@@ -1367,6 +1377,8 @@ end subroutine scale_with_denominators_
             call quit ('wrong dimension in tensor_norm2')
          end select
 
+         ierr=direct_data_pointer(result_tensor,body_p)
+         call c_f_pointer(body_p,result_tens,result_dims)
          a_norm2 = real(result_tens(1),8)
          ierr=destroy_tensor_t(result_tensor)
 

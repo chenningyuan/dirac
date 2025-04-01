@@ -548,6 +548,8 @@ module talsh_cc
          deallocate (mo_occ)
          deallocate (mo_vir)
 
+         call print_date('Stopping workers and calling MPI finalize.')
+         ierr = finalize_tensor_t()
 !        Free global data used to interact with DIRAC/Interest
          call delete_global_data
 
@@ -3173,6 +3175,8 @@ module talsh_cc
                end if
             end if
             ierr=t_einsum("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
+            ierr=direct_data_pointer(scalar_tensor,body_p)
+            call c_f_pointer(body_p,scalar_tens,scalar_dims)
             b_diis(itens,i) = scalar_tens(1)
             b_diis(i,itens) = dconjg(scalar_tens(1))
             ! print *,'b_diis(',i,',',itens,'):',b_diis(i,itens)
@@ -3245,6 +3249,8 @@ module talsh_cc
                    &                                        scalar_tensor,t5_err_tensor(itens),t5_err_tensor(i))
                  end if
                  ierr=t_einsum("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
+                 ierr=direct_data_pointer(scalar_tensor,body_p)
+                 call c_f_pointer(body_p,scalar_tens,scalar_dims)
                  b_diis(itens,i) = scalar_tens(1)
                  b_diis(i,itens) = dconjg(scalar_tens(1))
               end do
@@ -3322,8 +3328,8 @@ module talsh_cc
          ierr=initialize_tensor_t(t2_inp_tensor)
          ierr=t_einsum("T2O(a,b,i,j)+=T2(a,b,i,j)",t2_inp_tensor,t2_tensor)
 
+         ierr=deallocate_temporary_full_data_tensor_t(scalar_tensor)
          ierr=destroy_tensor_t(scalar_tensor)
-
        end subroutine diis_
 
 
@@ -3432,8 +3438,6 @@ module talsh_cc
 
          result_dims = 1
          ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=direct_data_pointer(result_tensor,body_p)
-         call c_f_pointer(body_p,result_tens,result_dims)
 
          if (.not.CCD) then
             oo_dims = (/nocc, nocc/)
@@ -3988,6 +3992,8 @@ module talsh_cc
           if (.not.CCD) then
             ierr=initialize_tensor_t(result_tensor)
             ierr=t_einsum("E()+=T(a,i)*F(i,a)",result_tensor,comm_t%t1,comm_t%fov) ! o(1)v(1)
+            ierr=direct_data_pointer(result_tensor,body_p)
+            call c_f_pointer(body_p,result_tens,result_dims)
             ccsd_energy=result_tens(1)
           else
             ccsd_energy = 0.D0
@@ -3998,6 +4004,8 @@ module talsh_cc
 
           ierr=initialize_tensor_t(result_tensor)
           ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
+          ierr=direct_data_pointer(result_tensor,body_p)
+          call c_f_pointer(body_p,result_tens,result_dims)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
           endif
 !!aspg, checking energy calculation/printout

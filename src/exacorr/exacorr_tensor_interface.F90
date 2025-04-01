@@ -73,6 +73,11 @@ module exacorr_tensor_interface
         public copy_tensor_t
         public get_scalar_tensor_t
         public get_real_scalar_tensor_t
+        public deallocate_temporary_full_data_tensor_t
+        public broadcast_tensor_t_body_data
+        public gather_tensor_t_body_data
+        public scale_with_denominators_tensor_t
+        public finalize_tensor_t
         ! public tensor_t_equal
 
         contains
@@ -266,9 +271,9 @@ module exacorr_tensor_interface
           complex(c_double_complex), allocatable, target :: arr_c(:)
           real(c_double), allocatable, target :: arr_r(:)
           integer(INTD), allocatable, target :: lin_dim(:)
-          complex(8), pointer, contiguous  :: lin_tens_c(:)
-          real(8), pointer, contiguous  :: lin_tens_r(:)
-          type(C_PTR) :: talshsptr
+          complex(8), pointer, contiguous  :: lin_tens_c(:), lin_tens_c2(:)
+          real(8), pointer, contiguous  :: lin_tens_r(:), lin_tens_r2(:)
+          type(C_PTR) :: talshsptr, tappptr
           complex(8), parameter :: ZERO_c=(0.D0,0.D0)
            
           if (present(out_executor)) then
@@ -290,7 +295,7 @@ module exacorr_tensor_interface
           SELECT CASE( in_out_exec) ! e.g. 201 means convert from exec 2 to 1 
             CASE(101, 202) 
               ierr = copy_tensor_t(out_tens, in_tens)
-            CASE(102) 
+            CASE(102) ! tapp to talsh 
               ierr = get_extents(in_tens, out_dims)
               ierr = construct_tensor_t(out_tens, out_tens%datatype, out_dims, executor=out_tens%which_executor)
 
@@ -298,17 +303,21 @@ module exacorr_tensor_interface
               allocate(lin_dim(1))
               lin_dim(1) = numel
 
+              ierr=direct_data_pointer(in_tens,tappptr)
               ierr=direct_data_pointer(out_tens,talshsptr)
 
               if (out_tens%datatype == 1 ) then
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
-                call dcopy(numel, in_tens%tens_tapp%data_real, 1, lin_tens_r, 1)
+                call c_f_pointer(tappptr,lin_tens_r2,lin_dim)
+                call dcopy(numel, lin_tens_r2, 1, lin_tens_r, 1)
               elseif (out_tens%datatype == 3 ) then
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
-                call zcopy(numel, in_tens%tens_tapp%data_complex, 1, lin_tens_c, 1)
+                call c_f_pointer(tappptr,lin_tens_c2,lin_dim)
+                call zcopy(numel, lin_tens_c2, 1, lin_tens_c, 1)
               endif
+              ierr = deallocate_temporary_full_data_tensor_t(in_tens)
 
-            CASE(201) 
+            CASE(201) ! talsh to tapp 
               ierr = get_extents(in_tens, out_dims)
               ierr = construct_tensor_t(out_tens, out_tens%datatype, out_dims, executor=out_tens%which_executor)
               
@@ -322,19 +331,11 @@ module exacorr_tensor_interface
               allocate(lin_dim(1))
               lin_dim(1) = numel
   
+              write(*,'("  Error. Will broadcast numel: ",i11,".")') numel
               ierr=direct_data_pointer(in_tens,talshsptr)
 
-              if (out_tens%datatype == 1 ) then
-                call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
-                allocate(arr_r(numel)) 
-                call dcopy(numel, lin_tens_r, 1, arr_r, 1)
-                out_tens%tens_tapp%data_real = arr_r
-              elseif (out_tens%datatype == 3 ) then
-                call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
-                allocate(arr_c(numel)) 
-                call zcopy(numel, lin_tens_c, 1, arr_c, 1)
-                out_tens%tens_tapp%data_complex = arr_c
-              endif
+              ! send out directly without making a local full copy
+              ierr = broadcast_tensor_t_body_data(out_tens, talshsptr)
 
             CASE default 
               write(*,'("  Error. Conversion from executor ",i11," to ",i11," not yet implemented.")') &
@@ -675,6 +676,8 @@ module exacorr_tensor_interface
             ret = lin_tens_c(at_index_)
           endif
           if (allocated(lin_dim)) deallocate(lin_dim)
+
+          ierr = deallocate_temporary_full_data_tensor_t(tensor)
           get_scalar_tensor_t = ret
         end function get_scalar_tensor_t
 
@@ -700,44 +703,27 @@ module exacorr_tensor_interface
           implicit none
           type(tensor_t), intent(inout)    :: tensor
           complex(c_double_complex), intent(in), optional    :: init_val
+
           complex(c_double_complex)     :: init_val_
-
-          integer(INTD), allocatable, target :: lin_dim(:)
-          complex(8), pointer, contiguous  :: lin_tens_c(:)
-          real(8), pointer, contiguous  :: lin_tens_r(:)
-          integer(INTD), allocatable :: extents(:)
-          integer(8) :: numel
-
+          integer(c_int)       :: tapp_err
           integer(INTD)       :: ierr, initialize_tensor_t
-          type(C_PTR) :: ptr
-          integer(c_int)       :: tapp_err, nmodes
           
           init_val_ = 0.0
           if (present(init_val)) init_val_ = init_val
 
-          ierr = get_numel(tensor, numel)
 
-          allocate(lin_dim(1))
-          lin_dim(1) = numel
-          ierr = direct_data_pointer(tensor, ptr)
           SELECT CASE(tensor%which_executor)
           CASE(1)
-              if (tensor%datatype == 1 ) then
-                call c_f_pointer(ptr,lin_tens_r,lin_dim)
-                lin_tens_r = init_val_%re
-              elseif (tensor%datatype == 3 ) then
-                call c_f_pointer(ptr,lin_tens_c,lin_dim)
-                lin_tens_c = init_val_
-              endif
+            tapp_err = initialize_tapp_tensor_t(tensor%tens_tapp, init_val_)
+            ierr = tapp_err
           CASE(2)
-            ierr=talsh_tensor_init(tensor%tens_talsh,init_val_)
+            ierr = talsh_tensor_init(tensor%tens_talsh, init_val_)
           CASE default 
             write(*,'("  Error. initialize_tensor_t for executor ",i11," not yet implemented.")') &
               tensor%which_executor
             stop 55
           END SELECT
 
-          if (allocated(lin_dim)) deallocate(lin_dim)
           initialize_tensor_t = ierr
         end function initialize_tensor_t
 
@@ -755,6 +741,7 @@ module exacorr_tensor_interface
           integer(INTD), allocatable :: out_dims(:)
           integer(8) :: numel
           type(C_PTR) :: src_ptr, dest_ptr
+          integer(c_int)       :: tapp_err
           integer(INTD)       :: ierr, copy_tensor_t
 
           if ( is_empty_tensor_t(src_tens) ) then
@@ -774,23 +761,135 @@ module exacorr_tensor_interface
           ierr = construct_tensor_t(dest_tens, src_tens%datatype, out_dims, executor=src_tens%which_executor)
 
           ! copy data
-          ierr = direct_data_pointer(src_tens, src_ptr)
-          ierr = direct_data_pointer(dest_tens, dest_ptr)
+          SELECT CASE(src_tens%which_executor)
+          CASE(1)
+            tapp_err = copy_tapp_tensor_t(dest_tens%tens_tapp, src_tens%tens_tapp)
+            ierr = tapp_err
+          CASE(2)
+            ierr = direct_data_pointer(src_tens, src_ptr)
+            ierr = direct_data_pointer(dest_tens, dest_ptr)
+            
+            if (src_tens%datatype == 1 ) then
+              call c_f_pointer(src_ptr,lin_src_tens_r,lin_dim)
+              call c_f_pointer(dest_ptr,lin_dest_tens_r,lin_dim)
+              call dcopy(numel, lin_src_tens_r, 1, lin_dest_tens_r, 1)
+            elseif (src_tens%datatype == 3 ) then
+              call c_f_pointer(src_ptr,lin_src_tens_c,lin_dim)
+              call c_f_pointer(dest_ptr,lin_dest_tens_c,lin_dim)
+              call zcopy(numel, lin_src_tens_c, 1, lin_dest_tens_c, 1)
+            endif
 
-          if (src_tens%datatype == 1 ) then
-            call c_f_pointer(src_ptr,lin_src_tens_r,lin_dim)
-            call c_f_pointer(dest_ptr,lin_dest_tens_r,lin_dim)
-            call dcopy(numel, lin_src_tens_r, 1, lin_dest_tens_r, 1)
-          elseif (src_tens%datatype == 3 ) then
-            call c_f_pointer(src_ptr,lin_src_tens_c,lin_dim)
-            call c_f_pointer(dest_ptr,lin_dest_tens_c,lin_dim)
-            call zcopy(numel, lin_src_tens_c, 1, lin_dest_tens_c, 1)
-          endif
+          CASE default 
+            write(*,'("  Error. copy_tensor_t for executor ",i11," not yet implemented.")') &
+              src_tens%which_executor
+            stop 55
+          END SELECT
 
           if (allocated(out_dims)) deallocate(out_dims)
           if (allocated(lin_dim)) deallocate(lin_dim)
           copy_tensor_t = ierr
         end function copy_tensor_t
+
+ ! deallocates data stored in tensor_t temporarily after direct_data_pointer is called in case full tensor direct data access is needed
+ function deallocate_temporary_full_data_tensor_t(tensor)
+   implicit none
+   type(tensor_t), intent(inout)    :: tensor
+
+   integer(c_int)       :: tapp_err 
+   integer(INTD) :: deallocate_temporary_full_data_tensor_t
+   
+   tapp_err = 0
+
+          SELECT CASE(tensor%which_executor)
+          CASE(1)
+             tapp_err=deallocate_temporary_full_data_tapp_tensor_t(tensor%tens_tapp)
+          CASE(2)
+             ! do nothing
+          END SELECT
+    
+   deallocate_temporary_full_data_tensor_t = tapp_err
+ end function deallocate_temporary_full_data_tensor_t
+
+
+ function broadcast_tensor_t_body_data(tensor, custom_ptr)
+    implicit none
+    type(tensor_t), target, intent(inout)    :: tensor
+    type(C_PTR), intent(inout), optional :: custom_ptr
+    integer(c_int)       :: tapp_err
+    integer(INTD) :: broadcast_tensor_t_body_data
+
+    SELECT CASE(tensor%which_executor)
+    CASE(1)
+       if(present(custom_ptr)) then
+         tapp_err=broadcast_tapp_tensor_t_body_data(tensor%tens_tapp, custom_ptr)
+       else
+         tapp_err=broadcast_tapp_tensor_t_body_data(tensor%tens_tapp)
+       endif
+    CASE(2)
+       ! do nothing
+    END SELECT
+
+    broadcast_tensor_t_body_data = tapp_err
+ end function broadcast_tensor_t_body_data
+
+
+ function gather_tensor_t_body_data(tensor)
+    implicit none
+    type(tensor_t), target, intent(inout)    :: tensor
+    integer(c_int)       :: tapp_err
+    integer(INTD) :: gather_tensor_t_body_data
+
+    SELECT CASE(tensor%which_executor)
+    CASE(1)
+       print *,'Warning: creating FULL tensor array locally '
+       ! print *,'Warning: creating FULL tensor array locally -likely just to get a data pointer. Not memory-scalable'
+       ! print *,'The local data can be changed but to update the distributed data call TAPP_broadcast_tensor_body_data.'
+       ! print *,' After using the FULL data, remember to remove them with deallocate_temporary_full_data_tensor_t.'
+
+       tapp_err=gather_tapp_tensor_t_body_data(tensor%tens_tapp)
+    CASE(2)
+       ! do nothing
+    END SELECT
+
+    gather_tensor_t_body_data = tapp_err
+ end function gather_tensor_t_body_data
+
+ function scale_with_denominators_tensor_t(tensor, eps_occ, eps_vir, eps_ijk)
+    implicit none
+    type(tensor_t), target, intent(inout)    :: tensor
+    real(8), intent(in)                          :: eps_occ(:),eps_vir(:)
+    real(8), intent(in), optional                :: eps_ijk
+    integer(c_int)       :: tapp_err
+    real(8)                :: eps_ijk_
+    integer(INTD) :: scale_with_denominators_tensor_t
+    
+    eps_ijk_ = 0.0 
+    if(present(eps_ijk)) eps_ijk_ = eps_ijk
+    
+
+    SELECT CASE(tensor%which_executor)
+    CASE(1)
+        tapp_err=scale_with_denominators_tapp_tensor_t(tensor%tens_tapp, eps_occ, eps_vir, eps_ijk_)
+    CASE(2)
+       ! do nothing
+    END SELECT
+
+    scale_with_denominators_tensor_t = tapp_err
+ end function scale_with_denominators_tensor_t
+
+        ! stop eventual workers and finalize mpi if needed
+        function finalize_tensor_t()
+          implicit none
+
+          integer(INTD)       :: finalize_tensor_t
+          integer(c_int)       :: tapp_err
+
+          tapp_err = finalize_tapp_tensor_t()
+
+          finalize_tensor_t = tapp_err
+        end function finalize_tensor_t
+
+
         ! this will be a part of the standard interface, implemented inside the c code of the c-api, but also here for practical reasons in case of problems with the compilation of the c part
         ! FUNCTION standard_parse_einsum(einsum_str, d_indices, a_indices, a_conj, b_indices, b_conj, c_indices, c_conj) result (ierr)
         !         integer :: ierr
