@@ -147,14 +147,14 @@ contains
             do iblock = 1, mblock
                !for the filled blocks we can use full contractions, but we need to extract the current row first
                ierr=reshape_tensor_t(CD_row,(/ 1,1,CD_blocksize /))
-               ierr=talsh_tensor_slice(CD_row,CD_blocks(iblock),off3,0,DEV_HOST)
+               ierr=slice_tensor_t(CD_row,CD_blocks(iblock),off3)
                ierr=reshape_tensor_t(CD_row,(/ CD_blocksize /))
                ierr=t_einsum("L(p,q)+=I(p,q,u)*R(u)",Res,CD_blocks(iblock),CD_row)
             enddo
             do i = 1, mod(m,CD_blocksize)
                !for the last incomplete block we slice out and multiply each column separately
                ierr=reshape_tensor_t(CD_column,(/ nao, nao, 1 /))
-               ierr=talsh_tensor_slice(CD_column,CD_blocks(mblock+1),(/0,0,i-1/),0,DEV_HOST)
+               ierr=slice_tensor_t(CD_column,CD_blocks(mblock+1),(/0,0,i-1/))
                ierr=reshape_tensor_t(CD_column,(/ nao, nao /))
                ! the row is now a single number that we extract via the Fortran pointer array
                ierr=t_einsum("L(p,q)+=I(p,q)",Res,CD_column,one_tensor,scale=ONE*CDR(l,k,i))
@@ -168,7 +168,7 @@ contains
             off4=0
             off4(3)=l-l0-1
             off4(4)=k-k0-1
-            ierr=talsh_tensor_slice(Temp,Dlk,off4,0,DEV_HOST)
+            ierr=slice_tensor_t(Temp,Dlk,off4)
             ierr=reshape_tensor_t(Temp,dims2)
 
             !sum and denominate
@@ -226,7 +226,7 @@ contains
         dims3(1:2) = nao
         dims3(3)   = m
         ierr=construct_tensor_t(CD,C8,dims3)
-        ierr=direct_data_pointer(CD,body_p,C8,0,DEV_HOST)
+        ierr=direct_data_pointer(CD,body_p)
         call c_f_pointer(body_p,CDC,dims3)
 
         ! copy the fully filled blocks into the complex output tensor and then delete them

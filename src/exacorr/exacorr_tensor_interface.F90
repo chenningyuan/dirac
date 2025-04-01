@@ -785,6 +785,30 @@ module exacorr_tensor_interface
           initialize_tensor_t = ierr
         end function initialize_tensor_t
 
+        function slice_tensor_t(tensor_original, tensor_slice, offsets)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor_original
+          type(tensor_t), intent(inout)    :: tensor_slice
+          integer(C_INT), intent(in):: offsets(1:*)
+          integer(INTD)       :: ierr, slice_tensor_t
+
+          SELECT CASE(tensor%which_executor)
+          CASE(1)
+            write(*,'("  Error. slice_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          CASE(2)
+            ierr=talsh_tensor_slice(tensor_original%tens_talsh,tensor_slice%tens_talsh,offsets,0,DEV_HOST)
+          CASE default
+            write(*,'("  Error. slice_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          END SELECT
+          slice_tensor_t = ierr
+        end function initialize_tensor_t
+
+
+
         ! copies a tensor (copy constructor, deep copy)
         function copy_tensor_t(dest_tens, src_tens)
           implicit none

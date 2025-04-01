@@ -1,4 +1,4 @@
-module talsh_cc
+module eti_cc
 !This module contains the routines needed to calculate ae coupled cluster wave function
 
         use tensor_algebra
@@ -7,7 +7,7 @@ module talsh_cc
         use exacorr_utils
         use intermediates
         use intermediates_eom_ccsd
-        use talsh_common_routines
+        use eti_common_routines
         use mfsolver_dirac_input
         use exacorr_tensor_interface
         use, intrinsic:: ISO_C_BINDING
@@ -27,7 +27,7 @@ module talsh_cc
 
         private
 
-        public talsh_cc_driver
+        public eti_cc_driver
 
 !        interface scale_with_denominators
 !           module procedure scale_with_denominators
@@ -39,7 +39,7 @@ module talsh_cc
 
        contains
 !-------------------------------------------------------------------------------------------
-        subroutine talsh_cc_driver (exa_input)
+        subroutine eti_cc_driver (exa_input)
 
 !This subroutine drives the ccsd energy calculation
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
@@ -48,12 +48,12 @@ module talsh_cc
          use os_utils
          use labeled_storage
          use exacorr_global
-         use talsh_gradient
-         use talsh_eom,      only       : talsh_eom_results_tens_t, talsh_eom_eigval_driver
-         use talsh_ccrsp,    only       : talsh_CCRSP_driver
-         use talsh_eom_TPA,  only       : talsh_eom_TPA_driver
-         use talsh_cholesky_integrals
-         use talsh_triples
+         use eti_gradient
+         use eti_eom,      only       : eti_eom_results_tens_t, eti_eom_eigval_driver
+         use eti_ccrsp,    only       : eti_CCRSP_driver
+         use eti_eom_TPA,  only       : eti_eom_TPA_driver
+         use eti_cholesky_integrals
+         use eti_triples
 
          type(exacc_input), intent(in) :: exa_input
          type(file_info_t)      :: exacc_file
@@ -67,7 +67,7 @@ module talsh_cc
          integer(C_INT):: host_arg_max
 
 !        Common tensors
-         type(talsh_comm_tens_t) :: comm_t
+         type(eti_comm_tens_t) :: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(eti_intg_tens_t) :: int_t
 !        Lambda tensors
@@ -76,7 +76,7 @@ module talsh_cc
 !        1- and 2-body cc intermediates 
          type(eti_intermediates_tens_t) :: interm_t
 !        eom results
-         type(talsh_eom_results_tens_t) :: eom_results_t, eom_results_t_left
+         type(eti_eom_results_tens_t) :: eom_results_t, eom_results_t_left
 !        intermediate tensors (same notation as in relccsd)
          integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
          integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
@@ -433,11 +433,11 @@ module talsh_cc
                 call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                     t_target_precision,ncycles,exa_input%print_level,l1_tensor)
             end if 
-            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor,int_t=int_t)
+            call eti_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor,int_t=int_t)
           else
             call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                         t_target_precision,ncycles,exa_input%print_level)
-            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,int_t=int_t)
+            call eti_dm_driver(exa_input,comm_t%t2,l2_tensor,int_t=int_t)
           end if
           call print_date('-End- Lambda Equations')
          end if
@@ -502,26 +502,26 @@ module talsh_cc
 ! we just need different results instances
            if (eom_qr) then
               rr = 2
-              call talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+              call eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
            else if (eom_lr) then
               rr = 1
-              call talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+              call eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 ! TODO: if we want properties etc, now we call other drivers
            else if (eom_tpa) then
                print *, "eom-two?" 
-               call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
+               call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.true.,solve_left=.false.)
 
-               call talsh_eom_eigval_driver(eom_results_t_left,exa_input%eom_input(1),interm_t,int_t,&
+               call eti_eom_eigval_driver(eom_results_t_left,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.false.,solve_left=.true.)
-                  call talsh_eom_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, eom_results_t_left)
+                  call eti_eom_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, eom_results_t_left)
                   
             else 
-               call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
+               call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                             solve_right=.true.,solve_left=.false.)
 
                rr = 2
-               ! call talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor, &
+               ! call eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor, &
                !          rr,eom_results_t,eom_results_t_left)
            end if
          end if
@@ -555,7 +555,7 @@ module talsh_cc
          write(*,*) ""
          call print_date('Leaving cc_driver routine')
 
-        end subroutine talsh_cc_driver
+        end subroutine eti_cc_driver
 
         subroutine solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
                                 ccsd_energy,CCD,iterative_level,iterative_scheme,ncycles,print_level)
@@ -566,7 +566,7 @@ module talsh_cc
          type(C_PTR):: body_p
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_comm_tens_t), intent(inout) :: comm_t
+         type(eti_comm_tens_t), intent(inout) :: comm_t
          type(eti_intg_tens_t), intent(inout) :: int_t
 !        intermediate tensors (same notation as in relccsd)
          !type(tensor_t) :: hoo_int_tensor, hvv_int_tensor
@@ -841,7 +841,7 @@ module talsh_cc
          type(C_PTR):: body_p
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_comm_tens_t), intent(inout) :: comm_t
+         type(eti_comm_tens_t), intent(inout) :: comm_t
          type(eti_intg_tens_t), intent(inout) :: int_t
 !        intermediate tensors (same notation as in relccsd)
          type(tensor_t) :: Wabef_tensor,Wmnij_tensor     !L
@@ -1177,9 +1177,9 @@ module talsh_cc
 
          integer, intent(in) :: nocc, nvir, print_level
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_comm_tens_t), intent(inout) :: comm_t
+         type(eti_comm_tens_t), intent(inout) :: comm_t
          type(eti_intg_tens_t), intent(inout) :: int_t
-         type(talsh_lambda_tens_t)              :: lambda_t
+         type(eti_lambda_tens_t)              :: lambda_t
 !        solution tensors
          type(tensor_t), intent(inout)           :: l2_tensor
          type(tensor_t), intent(inout), optional :: l1_tensor
@@ -1555,10 +1555,10 @@ module talsh_cc
 
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_comm_tens_t), intent(inout) :: comm_t
-         type(talsh_comm_tens_t) :: comm_t_CC2
+         type(eti_comm_tens_t), intent(inout) :: comm_t
+         type(eti_comm_tens_t) :: comm_t_CC2
          type(eti_intg_tens_t), intent(inout) :: int_t
-         type(talsh_lambda_tens_t)              :: lambda_t,lambda_t_CC2
+         type(eti_lambda_tens_t)              :: lambda_t,lambda_t_CC2
 !        solution tensors
          type(tensor_t), intent(inout)           :: l2_tensor
          type(tensor_t), intent(inout), optional :: l1_tensor
@@ -2087,7 +2087,7 @@ module talsh_cc
 
 
 !        common tensors: the foo and fvv parts get modfied here (diagonal is shifted to the left)
-         type(talsh_comm_tens_t), intent(inout) :: comm_t
+         type(eti_comm_tens_t), intent(inout) :: comm_t
          type(tensor_t)                   :: oooo
 
          integer                         :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
@@ -2260,7 +2260,7 @@ module talsh_cc
 !        integral tensors (for technical reasons defined as inout, but not to be changed here).
          type(eti_intg_tens_t), intent(inout) :: int_t
 !        target tensors to be augmented with the finite field
-         type(talsh_comm_tens_t), intent(inout) :: comm_t
+         type(eti_comm_tens_t), intent(inout) :: comm_t
 
          integer                         :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
          type(tensor_t)              :: h_tensor
@@ -2328,7 +2328,7 @@ module talsh_cc
 !        Written by Lucas Visscher, summer 2017
 
          use exacorr_global
-         use talsh_ao_to_mo
+         use eti_ao_to_mo
 
          integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
@@ -3338,7 +3338,7 @@ module talsh_cc
          type(C_PTR):: body_p
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_comm_tens_t), intent(inout) :: comm_t_
+         type(eti_comm_tens_t), intent(inout) :: comm_t_
          type(eti_comm_tensor_t) :: comm_t
          type(eti_intg_tens_t), intent(inout) :: int_t_
          type(eti_intg_tensor_t) :: int_t
@@ -3523,46 +3523,46 @@ module talsh_cc
           if ((iterative_level.eq.2).and.(iterative_scheme.eq.21)) then
             if (auto_scheme.eq.1) then
             ! mb-codegen
-            ! call talsh_CCSD_codegen(nocc,nvir,          &
-            !                        int_t%oovv,         &   ! H24 OOVV 
-            !                        comm_t%t1,          &   ! S43 VO
-            !                        comm_t%fov,         &   ! H15 OV
-            !                        comm_t%t2,          &   ! S44 VVOO
-            !                        hvo_aux_tensor,     &   ! H2  VO
-            !                        comm_t%fvv,         &   ! H1  VV
-            !                        int_t%vovv,         &   ! H17 VOVV
-            !                        voov_aux_tensor,    &   ! H18 VOOV
-            !                        int_t%ooov,         &   ! H25 OOOV
-            !                        comm_t%foo,         &   ! H16 OO
-            !                        vvoo_aux_tensor,    &   ! H5  VVOO
-            !                        int_t%vvvv,         &   ! H3  VVVV
-            !                        vooo_aux_tensor,    &   ! H19 VOOO
-            !                        vvov_aux_tensor,    &   ! H4  VVOV
-            !                        int_t%oooo,         &   ! H26 OOOO
-            !                        result_tensor,      &   ! Z48 UnitTensor
-            !                        s1_tensor,          &   ! Z49 VO
-            !                        s2_tensor)              ! Z50 VVOO
+              call  eti_CCSD_codegen(nocc,nvir,          &
+                                     int_t%oovv,         &   ! H24 OOVV 
+                                     comm_t%t1,          &   ! S43 VO
+                                     comm_t%fov,         &   ! H15 OV
+                                     comm_t%t2,          &   ! S44 VVOO
+                                     hvo_aux_tensor,     &   ! H2  VO
+                                     comm_t%fvv,         &   ! H1  VV
+                                     int_t%vovv,         &   ! H17 VOVV
+                                     voov_aux_tensor,    &   ! H18 VOOV
+                                     int_t%ooov,         &   ! H25 OOOV
+                                     comm_t%foo,         &   ! H16 OO
+                                     vvoo_aux_tensor,    &   ! H5  VVOO
+                                     int_t%vvvv,         &   ! H3  VVVV
+                                     vooo_aux_tensor,    &   ! H19 VOOO
+                                     vvov_aux_tensor,    &   ! H4  VVOV
+                                     int_t%oooo,         &   ! H26 OOOO
+                                     result_tensor,      &   ! Z48 UnitTensor
+                                     s1_tensor,          &   ! Z49 VO
+                                     s2_tensor)              ! Z50 VVOO
             else if (auto_scheme.eq.2) then  
             ! tenpi
-               ! call talsh_tenpi_ccsd(nocc,nvir,   &
-               !                      comm_t%foo,         &    !       OO
-               !                      comm_t%fov,         &    !       OV
-               !                      hvo_aux_tensor,     &    !       f_VO
-               !                      comm_t%fvv,         &    !       VV
-               !                      comm_t%t1,          &    !       t1_VO
-               !                      comm_t%t2,          &    !       t2_VVOO
-               !                      int_t%oooo,         &    !       OOOO
-               !                      int_t%ooov,         &    !       OOOV
-               !                      int_t%oovv,         &    !       OOVV
-               !                      vooo_aux_tensor,    &    !       VOOO
-               !                      voov_aux_tensor,    &    !       VOOV
-               !                      int_t%vovv,         &    !       VOVV
-               !                      vvoo_aux_tensor,    &    !       v_VVOO
-               !                      vvov_aux_tensor,    &    !       VVOV
-               !                      int_t%vvvv,         &    !       VVVV
-               !                      result_tensor,      &    !       UnitTensor
-               !                      s1_tensor,          &    !       r_VO
-               !                      s2_tensor)               !       r_VVOO
+                 call   eti_tenpi_ccsd(nocc,nvir,   &
+                                      comm_t%foo,         &    !       OO
+                                      comm_t%fov,         &    !       OV
+                                      hvo_aux_tensor,     &    !       f_VO
+                                      comm_t%fvv,         &    !       VV
+                                      comm_t%t1,          &    !       t1_VO
+                                      comm_t%t2,          &    !       t2_VVOO
+                                      int_t%oooo,         &    !       OOOO
+                                      int_t%ooov,         &    !       OOOV
+                                      int_t%oovv,         &    !       OOVV
+                                      vooo_aux_tensor,    &    !       VOOO
+                                      voov_aux_tensor,    &    !       VOOV
+                                      int_t%vovv,         &    !       VOVV
+                                      vvoo_aux_tensor,    &    !       v_VVOO
+                                      vvov_aux_tensor,    &    !       VVOV
+                                      int_t%vvvv,         &    !       VVVV
+                                      result_tensor,      &    !       UnitTensor
+                                      s1_tensor,          &    !       r_VO
+                                      s2_tensor)               !       r_VVOO
             else if (auto_scheme.eq.3) then  
             ! tenpi
                call tapp_tenpi_ccsd(nocc,nvir,   &
@@ -3601,17 +3601,17 @@ module talsh_cc
                                           s2_tensor)          ! Z27   VVOO
             else if (auto_scheme.eq.2) then  
             ! tenpi
-               ! call talsh_tenpi_ccd(nocc,nvir,            &
-               !                         comm_t%foo,         &    !       OO
-               !                         comm_t%fvv,         &    !       VV
-               !                         comm_t%t2,          &    !       VVOO
-               !                         int_t%oooo,         &    !       OOOO
-               !                         int_t%oovv,         &    !       OOVV
-               !                         voov_aux_tensor,    &    !       VOOV
-               !                         vvoo_aux_tensor,    &    !       v_VVOO
-               !                         int_t%vvvv,         &    !       VVVV
-               !                         result_tensor,      &    !       UnitTensor
-               !                         s2_tensor)               !       r_VVOO
+                 call   eti_tenpi_ccd(nocc,nvir,            &
+                                         comm_t%foo,         &    !       OO
+                                         comm_t%fvv,         &    !       VV
+                                         comm_t%t2,          &    !       VVOO
+                                         int_t%oooo,         &    !       OOOO
+                                         int_t%oovv,         &    !       OOVV
+                                         voov_aux_tensor,    &    !       VOOV
+                                         vvoo_aux_tensor,    &    !       v_VVOO
+                                         int_t%vvvv,         &    !       VVVV
+                                         result_tensor,      &    !       UnitTensor
+                                         s2_tensor)               !       r_VVOO
             else if (auto_scheme.eq.3) then  
             ! tenpi
                call tapp_tenpi_ccd(nocc,nvir,            &
@@ -3652,27 +3652,27 @@ module talsh_cc
                                              s3_tensor)         !  VVVOOO
             else if (auto_scheme.eq.2) then 
             ! tenpi
-               ! call talsh_tenpi_ccsdt(nocc,nvir,   &
-               !                            comm_t%foo,         &    ! F2     OO
-               !                            comm_t%fov,         &    ! F1     OV
-               !                            hvo_aux_tensor,     &    ! F4      VO
-               !                            comm_t%fvv,         &    ! F3      VV
-               !                            comm_t%t1,          &    ! T1      VO
-               !                            comm_t%t2,          &    ! T2      VVOO
-               !                            comm_t%t3,          &    ! T3      VVVOOO
-               !                            int_t%oooo,         &    ! V7      OOOO
-               !                            int_t%ooov,         &    ! V3      OOOV
-               !                            int_t%oovv,         &    ! V1      OOVV
-               !                            vooo_aux_tensor,    &    ! V8      VOOO
-               !                            voov_aux_tensor,    &    ! V4      VOOV
-               !                            int_t%vovv,         &    ! V2      VOVV
-               !                            vvoo_aux_tensor,    &    ! V9      v_VVOO
-               !                            vvov_aux_tensor,    &    ! V6      VVOV
-               !                            int_t%vvvv,         &    ! V5      VVVV
-               !                            result_tensor,      &    !       UnitTensor
-               !                            s1_tensor,          &    !       r_VO
-               !                            s2_tensor,          &    !       r_VVOO
-               !                            s3_tensor)               !       r_VVVOOO
+                 call   eti_tenpi_ccsdt(nocc,nvir,   &
+                                            comm_t%foo,         &    ! F2     OO
+                                            comm_t%fov,         &    ! F1     OV
+                                            hvo_aux_tensor,     &    ! F4      VO
+                                            comm_t%fvv,         &    ! F3      VV
+                                            comm_t%t1,          &    ! T1      VO
+                                            comm_t%t2,          &    ! T2      VVOO
+                                            comm_t%t3,          &    ! T3      VVVOOO
+                                            int_t%oooo,         &    ! V7      OOOO
+                                            int_t%ooov,         &    ! V3      OOOV
+                                            int_t%oovv,         &    ! V1      OOVV
+                                            vooo_aux_tensor,    &    ! V8      VOOO
+                                            voov_aux_tensor,    &    ! V4      VOOV
+                                            int_t%vovv,         &    ! V2      VOVV
+                                            vvoo_aux_tensor,    &    ! V9      v_VVOO
+                                            vvov_aux_tensor,    &    ! V6      VVOV
+                                            int_t%vvvv,         &    ! V5      VVVV
+                                            result_tensor,      &    !       UnitTensor
+                                            s1_tensor,          &    !       r_VO
+                                            s2_tensor,          &    !       r_VVOO
+                                            s3_tensor)               !       r_VVVOOO
             else if (auto_scheme.eq.3) then 
             ! tenpi
                call tapp_tenpi_ccsdt(nocc,nvir,   &
@@ -3754,108 +3754,108 @@ module talsh_cc
           else if ((iterative_level.eq.3).and.(iterative_scheme.eq.33)) then
             if (auto_scheme.eq.1) then
             ! mb-codegen
-            !  call talsh_CCSDT_2_codegen_call(nocc,nvir,          &
-            !                                int_t%oovv,     &  !  OOVV
-            !                                comm_t%t1,      &  !  VO
-            !                                comm_t%fov,     &  !  OV
-            !                                comm_t%t2,      &  !  VVOO
-            !                                hvo_aux_tensor,  &  !  VO
-            !                                comm_t%fvv,      &  !  VV
-            !                                int_t%vovv,     &  !  VOVV
-            !                                voov_aux_tensor,&  !  VOOV
-            !                                int_t%ooov,     &  !  OOOV
-            !                                comm_t%foo,     &  !  OO
-            !                                comm_t%t3,      &  !  VVVOOO
-            !                                vvoo_aux_tensor, &  !  VVOO
-            !                                int_t%vvvv,      &  !  VVVV
-            !                                vooo_aux_tensor,&  !  VOOO
-            !                                vvov_aux_tensor, &  !  VVOV
-            !                                int_t%oooo,     &  !  OOOO
-            !                                result_tensor,  &  !  UnitTensor
-            !                                s1_tensor,      &  !  VO
-            !                                s2_tensor,      &  !  VVOO
-            !                                s3_tensor)         !  VVVOOO
+               call   eti_CCSDT_2_codegen_call(nocc,nvir,          &
+                                             int_t%oovv,     &  !  OOVV
+                                             comm_t%t1,      &  !  VO
+                                             comm_t%fov,     &  !  OV
+                                             comm_t%t2,      &  !  VVOO
+                                             hvo_aux_tensor,  &  !  VO
+                                             comm_t%fvv,      &  !  VV
+                                             int_t%vovv,     &  !  VOVV
+                                             voov_aux_tensor,&  !  VOOV
+                                             int_t%ooov,     &  !  OOOV
+                                             comm_t%foo,     &  !  OO
+                                             comm_t%t3,      &  !  VVVOOO
+                                             vvoo_aux_tensor, &  !  VVOO
+                                             int_t%vvvv,      &  !  VVVV
+                                             vooo_aux_tensor,&  !  VOOO
+                                             vvov_aux_tensor, &  !  VVOV
+                                             int_t%oooo,     &  !  OOOO
+                                             result_tensor,  &  !  UnitTensor
+                                             s1_tensor,      &  !  VO
+                                             s2_tensor,      &  !  VVOO
+                                             s3_tensor)         !  VVVOOO
             else if (auto_scheme.eq.2) then
             ! tenpi
             end if
           else if ((iterative_level.eq.3).and.(iterative_scheme.eq.34)) then
             if (auto_scheme.eq.1) then
             ! mb-codegen
-            !  call talsh_CCSDT_3_codegen_call(nocc,nvir,          &
-            !                                int_t%oovv,     &  !  OOVV
-            !                                comm_t%t1,      &  !  VO
-            !                                comm_t%fov,     &  !  OV
-            !                                comm_t%t2,      &  !  VVOO
-            !                                hvo_aux_tensor,  &  !  VO
-            !                                comm_t%fvv,      &  !  VV
-            !                                int_t%vovv,     &  !  VOVV
-            !                                voov_aux_tensor,&  !  VOOV
-            !                                int_t%ooov,     &  !  OOOV
-            !                                comm_t%foo,     &  !  OO
-            !                                comm_t%t3,      &  !  VVVOOO
-            !                                vvoo_aux_tensor, &  !  VVOO
-            !                                int_t%vvvv,      &  !  VVVV
-            !                                vooo_aux_tensor,&  !  VOOO
-            !                                vvov_aux_tensor, &  !  VVOV
-            !                                int_t%oooo,     &  !  OOOO
-            !                                result_tensor,  &  !  UnitTensor
-            !                                s1_tensor,      &  !  VO
-            !                                s2_tensor,      &  !  VVOO
-            !                                s3_tensor)         !  VVVOOO
+               call   eti_CCSDT_3_codegen_call(nocc,nvir,          &
+                                             int_t%oovv,     &  !  OOVV
+                                             comm_t%t1,      &  !  VO
+                                             comm_t%fov,     &  !  OV
+                                             comm_t%t2,      &  !  VVOO
+                                             hvo_aux_tensor,  &  !  VO
+                                             comm_t%fvv,      &  !  VV
+                                             int_t%vovv,     &  !  VOVV
+                                             voov_aux_tensor,&  !  VOOV
+                                             int_t%ooov,     &  !  OOOV
+                                             comm_t%foo,     &  !  OO
+                                             comm_t%t3,      &  !  VVVOOO
+                                             vvoo_aux_tensor, &  !  VVOO
+                                             int_t%vvvv,      &  !  VVVV
+                                             vooo_aux_tensor,&  !  VOOO
+                                             vvov_aux_tensor, &  !  VVOV
+                                             int_t%oooo,     &  !  OOOO
+                                             result_tensor,  &  !  UnitTensor
+                                             s1_tensor,      &  !  VO
+                                             s2_tensor,      &  !  VVOO
+                                             s3_tensor)         !  VVVOOO
             else if (auto_scheme.eq.2) then
             ! tenpi
             end if
           else if ((iterative_level.eq.4).and.(iterative_scheme.eq.40)) then 
             if (auto_scheme.eq.1) then
             ! mb-codegen
-            !  call talsh_CCSDTQ_codegen_call(nocc,nvir,     &
-            !                                int_t%oovv,     &  !  OOVV
-            !                                comm_t%t1,      &  !  VO
-            !                                comm_t%fov,     &  !  OV
-            !                                comm_t%t2,      &  !  VVOO
-            !                                hvo_aux_tensor, &  !  VO
-            !                                comm_t%fvv,     &  !  VV
-            !                                int_t%vovv,     &  !  VOVV
-            !                                voov_aux_tensor,&  !  VOOV
-            !                                int_t%ooov,     &  !  OOOV
-            !                                comm_t%foo,     &  !  OO
-            !                                comm_t%t3,      &  !  VVVOOO
-            !                                vvoo_aux_tensor,&  !  VVOO
-            !                                int_t%vvvv,     &  !  VVVV
-            !                                vooo_aux_tensor,&  !  VOOO
-            !                                vvov_aux_tensor,&  !  VVOV
-            !                                int_t%oooo,     &  !  OOOO
-            !                                comm_t%t4,      &  !  VVVVOOOO
-            !                                result_tensor,  &  !  UnitTensor
-            !                                s1_tensor,      &  !  VO
-            !                                s2_tensor,      &  !  VVOO
-            !                                s3_tensor,      &  !  VVVOOO
-            !                                s4_tensor)         !  VVVVOOOO
+               call   eti_CCSDTQ_codegen_call(nocc,nvir,     &
+                                             int_t%oovv,     &  !  OOVV
+                                             comm_t%t1,      &  !  VO
+                                             comm_t%fov,     &  !  OV
+                                             comm_t%t2,      &  !  VVOO
+                                             hvo_aux_tensor, &  !  VO
+                                             comm_t%fvv,     &  !  VV
+                                             int_t%vovv,     &  !  VOVV
+                                             voov_aux_tensor,&  !  VOOV
+                                             int_t%ooov,     &  !  OOOV
+                                             comm_t%foo,     &  !  OO
+                                             comm_t%t3,      &  !  VVVOOO
+                                             vvoo_aux_tensor,&  !  VVOO
+                                             int_t%vvvv,     &  !  VVVV
+                                             vooo_aux_tensor,&  !  VOOO
+                                             vvov_aux_tensor,&  !  VVOV
+                                             int_t%oooo,     &  !  OOOO
+                                             comm_t%t4,      &  !  VVVVOOOO
+                                             result_tensor,  &  !  UnitTensor
+                                             s1_tensor,      &  !  VO
+                                             s2_tensor,      &  !  VVOO
+                                             s3_tensor,      &  !  VVVOOO
+                                             s4_tensor)         !  VVVVOOOO
             else if (auto_scheme.eq.2) then
             ! tenpi
-               ! call talsh_tenpi_ccsdtq(nocc,nvir,   &
-               !                            comm_t%foo,         &    ! F2     OO
-               !                            comm_t%fov,         &    ! F1     OV
-               !                            hvo_aux_tensor,     &    ! F4      VO
-               !                            comm_t%fvv,         &    ! F3      VV
-               !                            comm_t%t1,          &    ! T1      VO
-               !                            comm_t%t2,          &    ! T2      VVOO
-               !                            comm_t%t3,          &    ! T3      VVVOOO
-               !                            comm_t%t4,          &    ! T4      VVVOOO
-               !                            int_t%oooo,         &    ! V7      OOOO
-               !                            int_t%ooov,         &    ! V3      OOOV
-               !                            int_t%oovv,         &    ! V1      OOVV
-               !                            vooo_aux_tensor,    &    ! V5      VOOO
-               !                            voov_aux_tensor,    &    ! V2      VOOV
-               !                            int_t%vovv,         &    ! V4      VOVV
-               !                            vvoo_aux_tensor,    &    ! V9      v_VVOO
-               !                            vvov_aux_tensor,    &    ! V8      VVOV
-               !                            int_t%vvvv,         &    ! V6      VVVV
-               !                            result_tensor,      &    !       UnitTensor
-               !                            s1_tensor,          &    !       r_VO
-               !                            s2_tensor,          &    !       r_VVOO
-               !                            s3_tensor,          &    !       r_VVVOOO
-               !                            s4_tensor)               !       r_VVVVOOOO
+                 call   eti_tenpi_ccsdtq(nocc,nvir,   &
+                                            comm_t%foo,         &    ! F2     OO
+                                            comm_t%fov,         &    ! F1     OV
+                                            hvo_aux_tensor,     &    ! F4      VO
+                                            comm_t%fvv,         &    ! F3      VV
+                                            comm_t%t1,          &    ! T1      VO
+                                            comm_t%t2,          &    ! T2      VVOO
+                                            comm_t%t3,          &    ! T3      VVVOOO
+                                            comm_t%t4,          &    ! T4      VVVOOO
+                                            int_t%oooo,         &    ! V7      OOOO
+                                            int_t%ooov,         &    ! V3      OOOV
+                                            int_t%oovv,         &    ! V1      OOVV
+                                            vooo_aux_tensor,    &    ! V5      VOOO
+                                            voov_aux_tensor,    &    ! V2      VOOV
+                                            int_t%vovv,         &    ! V4      VOVV
+                                            vvoo_aux_tensor,    &    ! V9      v_VVOO
+                                            vvov_aux_tensor,    &    ! V8      VVOV
+                                            int_t%vvvv,         &    ! V6      VVVV
+                                            result_tensor,      &    !       UnitTensor
+                                            s1_tensor,          &    !       r_VO
+                                            s2_tensor,          &    !       r_VVOO
+                                            s3_tensor,          &    !       r_VVVOOO
+                                            s4_tensor)               !       r_VVVVOOOO
             else if (auto_scheme.eq.3) then
             ! tenpi
                call tapp_tenpi_ccsdtq(nocc,nvir,   &
@@ -3885,31 +3885,31 @@ module talsh_cc
           else if ((iterative_level.eq.5).and.(iterative_scheme.eq.50)) then
             if (auto_scheme.eq.1) then
             ! mb-codegen
-            !  call talsh_CCSDTQP_codegen_call(nocc,nvir,    &
-            !                                int_t%oovv,     &  !  OOVV
-            !                                comm_t%t1,      &  !  VO
-            !                                comm_t%fov,     &  !  OV
-            !                                comm_t%t2,      &  !  VVOO
-            !                                hvo_aux_tensor, &  !  VO
-            !                                comm_t%fvv,     &  !  VV
-            !                                int_t%vovv,     &  !  VOVV
-            !                                voov_aux_tensor,&  !  VOOV
-            !                                int_t%ooov,     &  !  OOOV
-            !                                comm_t%foo,     &  !  OO
-            !                                comm_t%t3,      &  !  VVVOOO
-            !                                vvoo_aux_tensor,&  !  VVOO
-            !                                int_t%vvvv,     &  !  VVVV
-            !                                vooo_aux_tensor,&  !  VOOO
-            !                                vvov_aux_tensor,&  !  VVOV
-            !                                int_t%oooo,     &  !  OOOO
-            !                                comm_t%t4,      &  !  VVVVOOOO
-            !                                comm_t%t5,      &  !  VVVVVOOOOO
-            !                                result_tensor,  &  !  UnitTensor
-            !                                s1_tensor,      &  !  VO
-            !                                s2_tensor,      &  !  VVOO
-            !                                s3_tensor,      &  !  VVVOOO
-            !                                s4_tensor,      &  !  VVVVOOOO
-            !                                s5_tensor)         !  VVVVVOOOOO 
+               call   eti_CCSDTQP_codegen_call(nocc,nvir,    &
+                                             int_t%oovv,     &  !  OOVV
+                                             comm_t%t1,      &  !  VO
+                                             comm_t%fov,     &  !  OV
+                                             comm_t%t2,      &  !  VVOO
+                                             hvo_aux_tensor, &  !  VO
+                                             comm_t%fvv,     &  !  VV
+                                             int_t%vovv,     &  !  VOVV
+                                             voov_aux_tensor,&  !  VOOV
+                                             int_t%ooov,     &  !  OOOV
+                                             comm_t%foo,     &  !  OO
+                                             comm_t%t3,      &  !  VVVOOO
+                                             vvoo_aux_tensor,&  !  VVOO
+                                             int_t%vvvv,     &  !  VVVV
+                                             vooo_aux_tensor,&  !  VOOO
+                                             vvov_aux_tensor,&  !  VVOV
+                                             int_t%oooo,     &  !  OOOO
+                                             comm_t%t4,      &  !  VVVVOOOO
+                                             comm_t%t5,      &  !  VVVVVOOOOO
+                                             result_tensor,  &  !  UnitTensor
+                                             s1_tensor,      &  !  VO
+                                             s2_tensor,      &  !  VVOO
+                                             s3_tensor,      &  !  VVVOOO
+                                             s4_tensor,      &  !  VVVVOOOO
+                                             s5_tensor)         !  VVVVVOOOOO 
             else if (auto_scheme.eq.2) then
             ! tenpi
                call quit ('Error: CCSDTQP not yet implemented in tenpi.')
@@ -4032,4 +4032,4 @@ module talsh_cc
 ! aspg
 
 
-end module talsh_cc
+end module eti_cc

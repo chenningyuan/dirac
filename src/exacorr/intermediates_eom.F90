@@ -6,7 +6,7 @@ module intermediates_eom_ccsd
      use tensor_algebra
      use exacorr_datatypes
      use exacorr_utils, only: get_free_fileunit
-     use talsh_common_routines
+     use eti_common_routines
 
      implicit none
      private
@@ -17,23 +17,23 @@ module intermediates_eom_ccsd
     real(8), parameter     :: ONE_QUARTER=0.25D0
 
      interface get_tau
-        module procedure get_tau_talsh_no_comm_t
+        module procedure get_tau_eti_no_comm_t
      end interface get_tau
 
      interface get_fbar_oo
-        module procedure get_fbar_oo_talsh_no_dt
+        module procedure get_fbar_oo_eti_no_dt
      end interface get_fbar_oo
 
      interface get_fbar_ov
-        module procedure get_fbar_ov_talsh_scratch
+        module procedure get_fbar_ov_eti_scratch
      end interface get_fbar_ov
 
      interface get_fbar_vv
-        module procedure get_fbar_vv_talsh_scratch
+        module procedure get_fbar_vv_eti_scratch
      end interface get_fbar_vv
 
      interface get_w_oooo
-        module procedure get_w_oooo_talsh_scratch
+        module procedure get_w_oooo_eti_scratch
      end interface get_w_oooo
 
      interface get_w_ooov
@@ -41,23 +41,23 @@ module intermediates_eom_ccsd
      end interface get_w_ooov
 
      interface get_w_ovoo
-        module procedure get_w_ovoo_talsh_scratch
+        module procedure get_w_ovoo_eti_scratch
      end interface get_w_ovoo
 
      interface get_w_vovo
-        module procedure get_w_vovo_talsh_scratch
+        module procedure get_w_vovo_eti_scratch
      end interface get_w_vovo
 
      interface get_w_vvvo
-        module procedure get_w_vvvo_talsh_no_dt
+        module procedure get_w_vvvo_eti_no_dt
      end interface get_w_vvvo
 
      interface get_w_vovv
-        module procedure get_w_vovv_talsh_no_logical
+        module procedure get_w_vovv_eti_no_logical
      end interface get_w_vovv
 
      interface get_w_vvvv
-        module procedure get_w_vvvv_talsh_no_dt
+        module procedure get_w_vvvv_eti_no_dt
      end interface get_w_vvvv
 
      interface form_ccsd_intermediates
@@ -84,7 +84,7 @@ module intermediates_eom_ccsd
 
      contains
 
-       subroutine get_tau_talsh_no_comm_t(tau_tensor,t2_tensor,t1_tensor)
+       subroutine get_tau_eti_no_comm_t(tau_tensor,t2_tensor,t1_tensor)
         type(tensor_t), intent(inout) :: tau_tensor,t2_tensor
         type(tensor_t), intent(inout), optional :: t1_tensor
 !       CCD switch
@@ -102,9 +102,9 @@ module intermediates_eom_ccsd
             ierr=t_einsum("T(a,b,i,j)+=T(a,j)*T(b,i)",tau_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)  ! o(2)v(2)
         end if
 
-       end subroutine get_tau_talsh_no_comm_t
+       end subroutine get_tau_eti_no_comm_t
 
-       subroutine get_hov_talsh_no_comm_t(hov_tensor,oovv_tensor,fov_tensor,t1_tensor)
+       subroutine get_hov_eti_no_comm_t(hov_tensor,oovv_tensor,fov_tensor,t1_tensor)
         type(tensor_t),intent(inout) :: hov_tensor
         type(tensor_t), intent(inout) :: oovv_tensor, fov_tensor
         type(tensor_t), intent(inout), optional :: t1_tensor
@@ -118,11 +118,11 @@ module intermediates_eom_ccsd
         if (.not.CCD) ierr=t_einsum("H(k,c)+=V(k,l,c,d)*T(d,l)",hov_tensor,oovv_tensor,t1_tensor) ! o(2)v(2)
         ierr=t_einsum("H(k,c)+=F(k,c)",hov_tensor,fov_tensor)
 
-       end subroutine get_hov_talsh_no_comm_t
+       end subroutine get_hov_eti_no_comm_t
 
 ! this has no analog in intermediates.F90 and not only not uses comm_t but also codes a different 
 ! intermediate Fbar_oo (which follows Shee et al. JCP 148, 174113, 2018 but has been revised/corrected if needed)
-       subroutine get_fbar_oo_talsh_no_dt(fbar_oo,int_t,foo_tensor,fov_tensor,t2_tensor,t1_tensor)
+       subroutine get_fbar_oo_eti_no_dt(fbar_oo,int_t,foo_tensor,fov_tensor,t2_tensor,t1_tensor)
 !       input variables
         type(tensor_t),    intent(inout) :: fbar_oo
         type(eti_intg_tens_t), intent(inout) :: int_t
@@ -165,10 +165,10 @@ module intermediates_eom_ccsd
         ierr=t_einsum("F(i,m)+=V(i,n,e,f)*T(e,f,m,n)",fbar_oo,int_t%oovv,tau_tensor,ONE_HALF)
         ierr=destroy_tensor_t(tau_tensor)
 
-       end subroutine get_fbar_oo_talsh_no_dt
+       end subroutine get_fbar_oo_eti_no_dt
 
 ! This is not the same as get_fbar_ov_talsh in intermediates.F90, as the second contraction (oovv*t1) is only present here.
-       subroutine get_fbar_ov_talsh_scratch(fbar_ov,fov_tensor,CCD,oovv_tensor,t1_tensor)
+       subroutine get_fbar_ov_eti_scratch(fbar_ov,fov_tensor,CCD,oovv_tensor,t1_tensor)
 !       input variables
         type(tensor_t), intent(inout) :: fbar_ov
         type(tensor_t), intent(inout) :: fov_tensor
@@ -181,10 +181,10 @@ module intermediates_eom_ccsd
         ierr=t_einsum("F(m,e)+=U(m,e)",fbar_ov,fov_tensor)
         if (.not.CCD) ierr=t_einsum("F(m,e)+=V(m,n,e,f)*T(f,n)",fbar_ov,oovv_tensor,t1_tensor)
 
-       end subroutine get_fbar_ov_talsh_scratch
+       end subroutine get_fbar_ov_eti_scratch
 ! this is not the same as get_fbar_vv_talsh in intermediates.F90 since it explicitly constructs Fbar_vv from
 ! fock matrix, integral and t tensors, in line with Shee et al JCP 2018 mentioned above (with potential corrections)
-       subroutine get_fbar_vv_talsh_scratch(fbar_vv,int_t,fvv_tensor,fov_tensor,t2_tensor,t1_tensor)
+       subroutine get_fbar_vv_eti_scratch(fbar_vv,int_t,fvv_tensor,fov_tensor,t2_tensor,t1_tensor)
 !       input variables
         type(tensor_t),    intent(inout) :: fbar_vv
         type(eti_intg_tens_t), intent(inout) :: int_t
@@ -231,12 +231,12 @@ module intermediates_eom_ccsd
         ierr=t_einsum("F(e,a)+=V(m,n,a,f)*T(f,e,m,n)",fbar_vv,int_t%oovv,tau_tensor,scale=ONE_HALF)
         ierr=destroy_tensor_t(tau_tensor)
 
-       end subroutine get_fbar_vv_talsh_scratch
+       end subroutine get_fbar_vv_eti_scratch
 
 ! this is not the same as get_w_oooo_talsh in intermediates.F90 since it does not 
 ! use comm_t (so acually recalculates tau internally), and also the first contractions
 ! sort of look like those coming from get_a_talsh but the sign isn't the same. 
-       subroutine get_w_oooo_talsh_scratch(w_oooo,int_t,t2_tensor,t1_tensor)
+       subroutine get_w_oooo_eti_scratch(w_oooo,int_t,t2_tensor,t1_tensor)
 !       input variables
         type(tensor_t),    intent(inout) :: w_oooo
         type(eti_intg_tens_t), intent(inout) :: int_t
@@ -273,7 +273,7 @@ module intermediates_eom_ccsd
 
         ierr=destroy_tensor_t(tau_tensor)
 
-       end subroutine get_w_oooo_talsh_scratch
+       end subroutine get_w_oooo_eti_scratch
 
 ! this is almost the same as get_w_ooov_talsh: equations are the same
 ! but making t1_tensor as optional, the CCD is no longer necessary
@@ -299,7 +299,7 @@ module intermediates_eom_ccsd
 ! as argument, and actually explicitly creates and initializes one_tensor to one (which we probably don't need
 ! as one can do a copy). one does not use lambda_t either (rather storing results in w_ovoo, and explicitly
 ! using fbar_ov etc) but equations are the same.
-       subroutine get_w_ovoo_talsh_scratch(w_ovoo,int_t,fbar_ov,w_oooo,wbar_vovo,t2_tensor,t1_tensor)
+       subroutine get_w_ovoo_eti_scratch(w_ovoo,int_t,fbar_ov,w_oooo,wbar_vovo,t2_tensor,t1_tensor)
         type(tensor_t),    intent(inout) :: w_ovoo
         type(eti_intg_tens_t), intent(inout) :: int_t
         type(tensor_t),    intent(inout) :: fbar_ov, w_oooo, wbar_vovo, t2_tensor
@@ -343,11 +343,11 @@ module intermediates_eom_ccsd
         ierr=t_einsum("W(i,e,m,n)+=V(e,i,f,g)*T(g,f,m,n)",w_ovoo,int_t%vovv,tau_tensor,scale=ONE_HALF)
         ierr=destroy_tensor_t(tau_tensor)
 
-       end subroutine get_w_ovoo_talsh_scratch
+       end subroutine get_w_ovoo_eti_scratch
 
 
 ! this is similar to get_w_vovo_talsh but without using comm_t, or passing on the logical CCD
-       subroutine get_w_vovo_talsh_scratch(w_vovo,int_t,t2_tensor,t1_tensor)
+       subroutine get_w_vovo_eti_scratch(w_vovo,int_t,t2_tensor,t1_tensor)
 !       input variables
         type(tensor_t),    intent(inout) :: w_vovo
         type(eti_intg_tens_t), intent(inout) :: int_t
@@ -379,12 +379,12 @@ module intermediates_eom_ccsd
         ierr=t_einsum("W(b,m,e,j)+=V(m,n,e,f)*T(f,b,j,n)",w_vovo,int_t%oovv,tau2_tensor)
         ierr=destroy_tensor_t(tau2_tensor)
 
-       end subroutine get_w_vovo_talsh_scratch
+       end subroutine get_w_vovo_eti_scratch
 
 ! this is quite similar to get_w_vvvo_talsh but without using comm_t or lambda_t explicitly, and that tau is
 ! recalculated internally. 
 ! as mentioned before  we can perhaps get rid of one tensor by just using add or copy
-       subroutine get_w_vvvo_talsh_no_dt(w_vvvo,int_t,w_vvvv,wbar_vovo,fbar_ov,t2_tensor,t1_tensor)
+       subroutine get_w_vvvo_eti_no_dt(w_vvvo,int_t,w_vvvv,wbar_vovo,fbar_ov,t2_tensor,t1_tensor)
 !       input variables
         type(tensor_t),    intent(inout) :: w_vvvo
         type(eti_intg_tens_t), intent(inout) :: int_t
@@ -429,11 +429,11 @@ module intermediates_eom_ccsd
          ierr=t_einsum("W(e,f,a,m)+=R(e,f,a,g)*T(g,m)",w_vvvo,w_vvvv,t1_tensor)
         end if
 
-       end subroutine get_w_vvvo_talsh_no_dt
+       end subroutine get_w_vvvo_eti_no_dt
 
 ! this is nearly the same as get_w_vovv_talsh in intermediates.F90, apart
 ! from removing the logical CCD from the argument list by making t1 optional
-       subroutine get_w_vovv_talsh_no_logical(w_vovv,int_t,t1_tensor)
+       subroutine get_w_vovv_eti_no_logical(w_vovv,int_t,t1_tensor)
 !       input variables
         type(tensor_t),    intent(inout) :: w_vovv
         type(eti_intg_tens_t), intent(inout) :: int_t
@@ -448,11 +448,11 @@ module intermediates_eom_ccsd
         if (.not.CCD) ierr=t_einsum("W(a,m,e,f)+=V(m,n,e,f)*T(a,n)",w_vovv,int_t%oovv,t1_tensor)
         ierr=t_einsum("W(a,m,e,f)+=V(a,m,e,f)",w_vovv,int_t%vovv)
 
-       end subroutine get_w_vovv_talsh_no_logical
+       end subroutine get_w_vovv_eti_no_logical
 
 ! this is nearly the same as get_w_vvvv_talsh in intermediates.F90 with respect to the actual 
 ! contractions, but not using comm_t (so tau is recalculated) and removing the CCD logical from the argument list
-       subroutine get_w_vvvv_talsh_no_dt(w_vvvv,int_t,t2_tensor,t1_tensor)
+       subroutine get_w_vvvv_eti_no_dt(w_vvvv,int_t,t2_tensor,t1_tensor)
 
 !       input variables
         type(tensor_t),    intent(inout) :: w_vvvv
@@ -490,7 +490,7 @@ module intermediates_eom_ccsd
 
         ierr=destroy_tensor_t(tau_tensor)
 
-       end subroutine get_w_vvvv_talsh_no_dt
+       end subroutine get_w_vvvv_eti_no_dt
 
        subroutine form_ccsd_intermediates_talsh(interm_t, CCD, nocc, nvir, comm_t, int_t, l2_tensor)
 ! input variables

@@ -1,16 +1,16 @@
-module talsh_ccrsp_common
+module eti_ccrsp_common
 !This module contains the routines needed to calculate CC-CI(EOM-CC) response property
 
 
     use tensor_algebra
-    use talsh
+    use exacorr_tensor_interface
     use exacorr_datatypes
     use exacorr_utils
-    use talsh_common_routines
+    use eti_common_routines
     use exacorr_global
-    use talsh_eom_rspeq_solver
-    use talsh_eom_QR
-    use talsh_eom_LR
+    use eti_eom_rspeq_solver
+    use eti_eom_QR
+    use eti_eom_LR
 
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -20,7 +20,7 @@ module talsh_ccrsp_common
                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
 
-    type(talsh_tens_t) :: one_tensor
+    type(tensor_t) :: one_tensor
 
     private
 
@@ -42,19 +42,19 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
             use intermediates_eom_ccsd
 
                 type(exacc_input), intent(in) :: exa_input
-                type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+                type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
                 integer, intent(in)                   :: i_prop 
-                type(talsh_rsp_interm_tens_t), intent(inout):: interm_t_prop1
-                type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-                type(talsh_tens_t), intent(inout)           :: l2_tensor
-                type(talsh_tens_t), intent(inout)           :: l1_tensor
+                type(eti_rsp_interm_tens_t), intent(inout):: interm_t_prop1
+                type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+                type(tensor_t), intent(inout)           :: l2_tensor
+                type(tensor_t), intent(inout)           :: l1_tensor
                 ! CHARACTER, optional           :: WF
 
                 integer(INTD), dimension(4)   :: vvoo_dims, ovoo_dims, vvvo_dims, oovv_dims
                 integer(INTD), dimension(2)   :: ov_dims, oo_dims, vv_dims, vo_dims
 
-                type(talsh_orb_prop_integ_tens_t)   :: orb_int_tensor1
-                type(talsh_tens_t)                  :: LR_Aux_ov,LR_Aux_vv,LR_Aux_oo,LR_Aux_vo
+                type(eti_orb_prop_integ_tens_t)   :: orb_int_tensor1
+                type(tensor_t)                  :: LR_Aux_ov,LR_Aux_vv,LR_Aux_oo,LR_Aux_vo
                 integer                   :: nmo1          ! the length of the mo basis
                 ! integer,allocatable       :: mo1_list(:)   ! and their indices
                 integer                   :: nmo2          ! the length of the mo basis
@@ -145,7 +145,7 @@ end subroutine form_ccresp_intermediates
 
 subroutine get_prop_integral(exa_input,orb_int_tensor,i_prop,exchange)
         type(exacc_input), intent(in)      :: exa_input
-        type(talsh_orb_prop_integ_tens_t), intent(inout)  :: orb_int_tensor
+        type(eti_orb_prop_integ_tens_t), intent(inout)  :: orb_int_tensor
         integer                            :: i_prop
         integer                            :: min_occ
         integer                            :: nocc, nvir
@@ -171,7 +171,7 @@ end subroutine
 !------------------------------------------------------------------------------------------------------------------
 subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,min_occ,i_prop,exchange)
     ! Read proporty integrals from  MDPROP file 
-    type(talsh_tens_t), intent(inout)        :: orb_int_tensor
+    type(tensor_t), intent(inout)        :: orb_int_tensor
     
     integer                :: nmo1          ! the length of the mo basis
     integer                :: mo1_list(:)   ! and their indices
@@ -197,8 +197,8 @@ subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,m
     mo_dims(2) = nmo2
 
 
-    ierr=talsh_tensor_construct(orb_int_tensor,C8,mo_dims,init_val=ZERO)
-    ierr=talsh_tensor_get_body_access(orb_int_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    ierr=construct_tensor_t(orb_int_tensor,C8,mo_dims,init_val=ZERO)
+    ierr=direct_data_pointer(orb_int_tensor,body_p)
     call c_f_pointer(body_p,orbital_integral_tens,mo_dims)
 
 
@@ -224,26 +224,26 @@ end subroutine get_prop_integral_driver
 subroutine construct_aux_tensor(LR_Aux_ov,LR_Aux_vv,LR_Aux_oo,LR_Aux_vo, ov_dims, vo_dims, oo_dims, vv_dims)
 
         integer(INTD), dimension(2)   :: ov_dims, oo_dims, vv_dims, vo_dims
-        type(talsh_tens_t), intent(inout)            :: LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo
+        type(tensor_t), intent(inout)            :: LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo
         integer(C_INT) :: ierr
 
-        ierr=talsh_tensor_construct(LR_Aux_ov,C8,ov_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(LR_Aux_vo,C8,vo_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(LR_Aux_vv,C8,vv_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(LR_Aux_oo,C8,oo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(LR_Aux_ov,C8,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(LR_Aux_vo,C8,vo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(LR_Aux_vv,C8,vv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(LR_Aux_oo,C8,oo_dims,init_val=ZERO)
 
 end subroutine
 
 !--------------------------------------------------------------------------------------------------------------------
 
 subroutine destroy_aux_tensor(LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo)
-    type(talsh_tens_t), intent(inout)      :: LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo
+    type(tensor_t), intent(inout)      :: LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo
     integer(C_INT) :: ierr
 
-    ierr=talsh_tensor_destruct(LR_Aux_oo)
-    ierr=talsh_tensor_destruct(LR_Aux_vv)
-    ierr=talsh_tensor_destruct(LR_Aux_ov)
-    ierr=talsh_tensor_destruct(LR_Aux_vo)
+    ierr=destroy_tensor_t(LR_Aux_oo)
+    ierr=destroy_tensor_t(LR_Aux_vv)
+    ierr=destroy_tensor_t(LR_Aux_ov)
+    ierr=destroy_tensor_t(LR_Aux_vo)
 
 end subroutine 
 
@@ -251,29 +251,29 @@ end subroutine
 
 subroutine destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,i,Bvec_tensors,&
                                 Tprop_bar_tensors,Tprop_bar_tensors_min_w)
-    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
+    type(eti_comm_tens_t), intent(inout), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
     integer        :: i
-    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Bvec_tensors(:)
-    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR                        
+    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Bvec_tensors(:)
+    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR                        
     
     integer(C_INT) :: ierr
     
-    ierr=talsh_tensor_destruct(Tprop_tensors(i)%t1)
-    ierr=talsh_tensor_destruct(Tprop_tensors(i)%t2)
-    ierr=talsh_tensor_destruct(Tprop_tensors_min_w(i)%t1)
-    ierr=talsh_tensor_destruct(Tprop_tensors_min_w(i)%t2)
+    ierr=destroy_tensor_t(Tprop_tensors(i)%t1)
+    ierr=destroy_tensor_t(Tprop_tensors(i)%t2)
+    ierr=destroy_tensor_t(Tprop_tensors_min_w(i)%t1)
+    ierr=destroy_tensor_t(Tprop_tensors_min_w(i)%t2)
 
     if (present(Bvec_tensors)) then
-        ierr=talsh_tensor_destruct(Bvec_tensors(i)%t1)
-        ierr=talsh_tensor_destruct(Bvec_tensors(i)%t2)
+        ierr=destroy_tensor_t(Bvec_tensors(i)%t1)
+        ierr=destroy_tensor_t(Bvec_tensors(i)%t2)
     end if
     if (present(Tprop_bar_tensors)) then 
-        ierr=talsh_tensor_destruct(Tprop_bar_tensors(i)%t1)
-        ierr=talsh_tensor_destruct(Tprop_bar_tensors(i)%t2)
+        ierr=destroy_tensor_t(Tprop_bar_tensors(i)%t1)
+        ierr=destroy_tensor_t(Tprop_bar_tensors(i)%t2)
     end if
     if (present(Tprop_bar_tensors_min_w)) then
-        ierr=talsh_tensor_destruct(Tprop_bar_tensors_min_w(i)%t1)
-        ierr=talsh_tensor_destruct(Tprop_bar_tensors_min_w(i)%t2)
+        ierr=destroy_tensor_t(Tprop_bar_tensors_min_w(i)%t1)
+        ierr=destroy_tensor_t(Tprop_bar_tensors_min_w(i)%t2)
     end if
 
 
@@ -283,23 +283,23 @@ end subroutine
 !---------------------------------------------------------------------------------------------------------------
 
 subroutine destroy_Interm_t_tensors(interm_t_prop1, CC_CC)
-    type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop1
+    type(eti_rsp_interm_tens_t), intent(inout) :: interm_t_prop1
     logical          :: CC_CC
     integer          :: ierr
 
-    ierr=talsh_tensor_destruct(interm_t_prop1%epsilon_prop_vo)
-    ierr=talsh_tensor_destruct(interm_t_prop1%epsilon_prop_vvoo)
-    ierr=talsh_tensor_destruct(interm_t_prop1%eta_prop_oovv)
-    ierr=talsh_tensor_destruct(interm_t_prop1%eta_prop_ov)
+    ierr=destroy_tensor_t(interm_t_prop1%epsilon_prop_vo)
+    ierr=destroy_tensor_t(interm_t_prop1%epsilon_prop_vvoo)
+    ierr=destroy_tensor_t(interm_t_prop1%eta_prop_oovv)
+    ierr=destroy_tensor_t(interm_t_prop1%eta_prop_ov)
 
     if(.not.CC_CC) then
-        ierr=talsh_tensor_destruct(interm_t_prop1%eta_prop_ov_eom)
+        ierr=destroy_tensor_t(interm_t_prop1%eta_prop_ov_eom)
     end if
 
-    ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_oo)
-    ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_ov)    
-    ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_vv)
-    ierr=talsh_tensor_destruct(interm_t_prop1%O_vo)
+    ierr=destroy_tensor_t(interm_t_prop1%prop_bar_oo)
+    ierr=destroy_tensor_t(interm_t_prop1%prop_bar_ov)    
+    ierr=destroy_tensor_t(interm_t_prop1%prop_bar_vv)
+    ierr=destroy_tensor_t(interm_t_prop1%O_vo)
 
 end subroutine
 

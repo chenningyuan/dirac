@@ -3,7 +3,7 @@ module talsh_common_routines
 !This module contains subroutines both needed in solving t equations as well as Lambda equations.
 !get_orbital_energies,diis,scale_with_denominators, laplace multiplications
 
-    use talsh
+    use exacorr_tensor_interface
     use tensor_algebra
     use, intrinsic:: ISO_C_BINDING
     use exacorr_tensor_interface
@@ -54,10 +54,10 @@ module talsh_common_routines
       subroutine scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor,t2_tensor,t3_tensor, &
                                           full_t3_tensor,full_t4_tensor,full_t5_tensor,eps_ijk)
 
-       type(talsh_tens_t), optional, intent(inout)  :: t1_tensor, t2_tensor, t3_tensor
-       type(talsh_tens_t), optional, intent(inout)  :: full_t3_tensor
-       type(talsh_tens_t), optional, intent(inout)  :: full_t4_tensor
-       type(talsh_tens_t), optional, intent(inout)  :: full_t5_tensor
+       type(tensor_t), optional, intent(inout)  :: t1_tensor, t2_tensor, t3_tensor
+       type(tensor_t), optional, intent(inout)  :: full_t3_tensor
+       type(tensor_t), optional, intent(inout)  :: full_t4_tensor
+       type(tensor_t), optional, intent(inout)  :: full_t5_tensor
        real(8), intent(in)                          :: eps_occ(:),eps_vir(:)
        real(8), intent(in), optional                :: eps_ijk
 
@@ -83,7 +83,7 @@ module talsh_common_routines
 
           ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
           if (ierr.ne.0 .or. tens_rank.ne.2) stop 'program error: t1 tensor corrupted'
-          ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(t1_tensor,body_p)
           call c_f_pointer(body_p,t1_tens,t1_dims(1:2)) ! to use <t1_tens> as a regular Fortran 2d array
 
           !if (t1_dims(2) .eq. nocc*2) then
@@ -111,7 +111,7 @@ module talsh_common_routines
 
           ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
           if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: t2 tensor corrupted'
-          ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(t2_tensor,body_p)
           call c_f_pointer(body_p,t2_tens,t2_dims(1:4)) ! to use <t2_tens> as a regular Fortran 4d array
 
           !if (t2_dims(3) .eq. nocc*2) then
@@ -147,7 +147,7 @@ module talsh_common_routines
 
           ierr = talsh_tensor_dimensions(full_t3_tensor,tens_rank,full_t3_dims)
           if (ierr.ne.0 .or. tens_rank.ne.6) stop 'program error: full t3 tensor corrupted' 
-          ierr=talsh_tensor_get_body_access(full_t3_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(full_t3_tensor,body_p)
           call c_f_pointer(body_p,full_t3_tens,full_t3_dims(1:6)) 
 
           if (full_t3_dims(4) .eq. nocc) then
@@ -195,7 +195,7 @@ module talsh_common_routines
 
           ierr = talsh_tensor_dimensions(full_t4_tensor,tens_rank,full_t4_dims)
           if (ierr.ne.0 .or. tens_rank.ne.8) stop 'program error: full t4 tensor corrupted'
-          ierr=talsh_tensor_get_body_access(full_t4_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(full_t4_tensor,body_p)
           call c_f_pointer(body_p,full_t4_tens,full_t4_dims(1:8))
 
           if (full_t4_dims(5) .eq. nocc) then
@@ -250,7 +250,7 @@ module talsh_common_routines
 
           ierr = talsh_tensor_dimensions(full_t5_tensor,tens_rank,full_t5_dims)
           if (ierr.ne.0 .or. tens_rank.ne.10) stop 'program error: full t5 tensor corrupted'
-          ierr=talsh_tensor_get_body_access(full_t5_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(full_t5_tensor,body_p)
           call c_f_pointer(body_p,full_t5_tens,full_t5_dims(1:10))
 
           if (full_t5_dims(6) .eq. nocc) then
@@ -320,7 +320,7 @@ module talsh_common_routines
 
           ierr = talsh_tensor_dimensions(t3_tensor,tens_rank,t3_dims)
           if (ierr.ne.0 .or. tens_rank.ne.3) stop 'program error: t3 tensor corrupted'
-          ierr=talsh_tensor_get_body_access(t3_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(t3_tensor,body_p)
           call c_f_pointer(body_p,t3_tens,t3_dims(1:3)) ! to use <t3_tens> as a regular Fortran 3d array
 
           do c = 1, t3_dims(3)
@@ -653,7 +653,7 @@ end subroutine scale_with_denominators_
 
         implicit none
 
-        type(talsh_tens_t), intent(inout)    :: h_tensor
+        type(tensor_t), intent(inout)    :: h_tensor
         real(8), intent(in)                  :: acc
         character(LEN=*), intent(in)         :: t_name
 
@@ -684,7 +684,7 @@ end subroutine scale_with_denominators_
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
           print *, "print 0D tensor: ", t_name, " (shape:", dims1,")"
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           select case (DataKind(1))
           case (C8)
             call c_f_pointer(body_p,tens1,dims1)
@@ -711,7 +711,7 @@ end subroutine scale_with_denominators_
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
           print *, "print 1D tensor: ", t_name, " (shape:", dims1,")"
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           select case (DataKind(1))
           case (C8)
             call c_f_pointer(body_p,tens1,dims1)
@@ -738,7 +738,7 @@ end subroutine scale_with_denominators_
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
           print *, "print 2D tensor: ", t_name, " (shape:", dims2,")"
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           select case (DataKind(1))
           case (C8)
             call c_f_pointer(body_p,tens2,dims2)
@@ -768,7 +768,7 @@ end subroutine scale_with_denominators_
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
           print *, "print 3D tensor: ", t_name, " (shape:", dims3,")"
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           select case (DataKind(1))
           case (C8)
             call c_f_pointer(body_p,tens3,dims3)
@@ -800,7 +800,7 @@ end subroutine scale_with_denominators_
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
           print *, "print 4D tensor: ", t_name, " (shape:", dims4, ")"
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           select case (DataKind(1))
           case (C8)
             call c_f_pointer(body_p,tens4,dims4)
@@ -845,7 +845,7 @@ end subroutine scale_with_denominators_
 
 ! input variables
          integer,intent(in)                  :: nvir
-         type(talsh_tens_t), intent(inout)   :: dm_vv
+         type(tensor_t), intent(inout)   :: dm_vv
          character(len=*),intent(in)         :: file_out
          integer, intent(in), optional       :: mode ! 1:binary, 2:ascii
 
@@ -860,7 +860,7 @@ end subroutine scale_with_denominators_
          allocate (dm_mo_fort(nvir,nvir))
          dm_mo_fort = ZERO
          
-         ierr=talsh_tensor_get_body_access(dm_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(dm_vv,body_p2)
          call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
          dm_mo_fort(1:nvir,1:nvir) = dm_block
           
@@ -895,7 +895,7 @@ end subroutine scale_with_denominators_
 
         implicit none
 
-        type(talsh_tens_t), intent(inout)    :: h_tensor
+        type(tensor_t), intent(inout)    :: h_tensor
         integer(INTD), intent(in)            :: dims(:)
         complex(8)                           :: val
 
@@ -923,7 +923,7 @@ end subroutine scale_with_denominators_
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in get_element: wrong rank'
 
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           i=dims(1)
           val=tens1(i)
@@ -932,7 +932,7 @@ end subroutine scale_with_denominators_
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens2,dims2)
           i=dims(1)
           j=dims(2)
@@ -942,7 +942,7 @@ end subroutine scale_with_denominators_
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens3,dims3)
           i=dims(1)
           j=dims(2)
@@ -953,7 +953,7 @@ end subroutine scale_with_denominators_
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
           i=dims(1)
           j=dims(2)
@@ -971,7 +971,7 @@ end subroutine scale_with_denominators_
      subroutine Pair_correlation_energies( t2_amp, int_oovv, nocc, nvir )
 
         implicit none
-        type(talsh_tens_t)  :: t2_amp, int_oovv
+        type(tensor_t)  :: t2_amp, int_oovv
         integer(INTD)       :: ierr
         integer             :: nocc
         integer             :: nvir
@@ -989,12 +989,12 @@ end subroutine scale_with_denominators_
 
         ! Getting the tensor encoding the amplitudes T2(vir_a, vir_b, occ_i, occ_j)
         ierr = talsh_tensor_dimensions(t2_amp,rranka,dimsa)
-        ierr = talsh_tensor_get_body_access(t2_amp,bodya_p,C8,int(0,C_INT),DEV_HOST)
+        ierr = direct_data_pointer(t2_amp,bodya_p)
         call c_f_pointer(bodya_p,tens_t2,dimsa)
 
         ! Getting the tensor encoding the elements < occ_i, occ_j || vir_a, vir_b >
         ierr = talsh_tensor_dimensions(int_oovv,rrankb,dimsb)
-        ierr = talsh_tensor_get_body_access(int_oovv,bodyb_p,C8,int(0,C_INT),DEV_HOST)
+        ierr = direct_data_pointer(int_oovv,bodyb_p)
         call c_f_pointer(bodyb_p,tens_int_oovv,dimsb)
         tens_E_pair_corr = (0.d0,0.d0)
         do i=1,nocc
@@ -1032,7 +1032,7 @@ end subroutine scale_with_denominators_
 
         implicit none
 
-        type(talsh_tens_t), intent(inout)    :: h_tensor
+        type(tensor_t), intent(inout)    :: h_tensor
         complex(8), intent(in)               :: val
 
         integer(INTD)  ::  dims1(1)
@@ -1070,56 +1070,56 @@ end subroutine scale_with_denominators_
         if (rank.eq.0) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
 
         else if (rank.eq.1) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
         
         else if (rank.eq.2) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens2,dims2)
           tens2=val
 
         else if (rank.eq.3) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens3,dims3)
           tens3=val
 
         else if (rank.eq.4) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
           tens4=val
 
         else if (rank.eq.5) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims5)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens5,dims5)
           tens5=val
 
         else if (rank.eq.6) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims6)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens6,dims6)
           tens6=val
 
         else if (rank.eq.7) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims7)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens7,dims7)
           tens7=val
 
@@ -1127,21 +1127,21 @@ end subroutine scale_with_denominators_
         else if (rank.eq.8) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens8,dims8)
           tens8=val
 
         else if (rank.eq.9) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims9)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens9,dims9)
           tens9=val
 
         else if (rank.eq.10) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims10)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens10,dims10)
           tens10=val
 #endif 
@@ -1158,7 +1158,7 @@ end subroutine scale_with_denominators_
 
         implicit none
 
-        type(talsh_tens_t), intent(inout)    :: h_tensor
+        type(tensor_t), intent(inout)    :: h_tensor
         real(8), intent(in)               :: val
 
         integer(INTD)  ::  dims1(1)
@@ -1196,56 +1196,56 @@ end subroutine scale_with_denominators_
         if (rank.eq.0) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
 
         else if (rank.eq.1) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
         
         else if (rank.eq.2) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens2,dims2)
           tens2=val
 
         else if (rank.eq.3) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens3,dims3)
           tens3=val
 
         else if (rank.eq.4) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
           tens4=val
 
         else if (rank.eq.5) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims5)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens5,dims5)
           tens5=val
 
         else if (rank.eq.6) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims6)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens6,dims6)
           tens6=val
 
         else if (rank.eq.7) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims7)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens7,dims7)
           tens7=val
 
@@ -1253,21 +1253,21 @@ end subroutine scale_with_denominators_
         else if (rank.eq.8) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens8,dims8)
           tens8=val
 
         else if (rank.eq.9) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims9)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens9,dims9)
           tens9=val
 
         else if (rank.eq.10) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims10)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens10,dims10)
           tens10=val
 
@@ -1282,13 +1282,13 @@ end subroutine scale_with_denominators_
 
          !compute norm2(complete contraction of a tensor with itself) for debugging purposed
 
-         type(talsh_tens_t), intent(inout):: a_tensor
+         type(tensor_t), intent(inout):: a_tensor
 
          integer(INTD) :: a_dims(1:10)
          integer(INTD) :: ierr, a_rank
 
 !        scalars (need to be defined as tensor types)
-         type(talsh_tens_t)  :: result_tensor
+         type(tensor_t)  :: result_tensor
          integer(C_INT)      :: result_dims(1)
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
@@ -1297,39 +1297,39 @@ end subroutine scale_with_denominators_
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims(1) = 1
          ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,result_dims)
 
          ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims)
          select case (a_rank)
          case (0)
-            ierr=talsh_tensor_contract("R()+=A+()*A()",result_tensor,a_tensor,a_tensor)
+            ierr=t_einsum("R()+=A+()*A()",result_tensor,a_tensor,a_tensor)
          case (1)
-            ierr=talsh_tensor_contract("R()+=A+(p)*A(p)",result_tensor,a_tensor,a_tensor)
+            ierr=t_einsum("R()+=A+(p)*A(p)",result_tensor,a_tensor,a_tensor)
          case (2)
-            ierr=talsh_tensor_contract("R()+=A+(p,q)*A(p,q)",result_tensor,a_tensor,a_tensor)
+            ierr=t_einsum("R()+=A+(p,q)*A(p,q)",result_tensor,a_tensor,a_tensor)
          case (3)
-            ierr=talsh_tensor_contract("R()+=A+(p,q,r)*A(p,q,r)",result_tensor,a_tensor,a_tensor)
+            ierr=t_einsum("R()+=A+(p,q,r)*A(p,q,r)",result_tensor,a_tensor,a_tensor)
          case (4)
-            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s)*A(p,q,r,s)",result_tensor,a_tensor,a_tensor)
+            ierr=t_einsum("R()+=A+(p,q,r,s)*A(p,q,r,s)",result_tensor,a_tensor,a_tensor)
          case (5)
-            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t)*A(p,q,r,s,t)",result_tensor,a_tensor,a_tensor)
+            ierr=t_einsum("R()+=A+(p,q,r,s,t)*A(p,q,r,s,t)",result_tensor,a_tensor,a_tensor)
          case (6)
-            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u)*A(p,q,r,s,t,u)",result_tensor,a_tensor,a_tensor)
+            ierr=t_einsum("R()+=A+(p,q,r,s,t,u)*A(p,q,r,s,t,u)",result_tensor,a_tensor,a_tensor)
          case (7)
-            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u,v)*A(p,q,r,s,t,u,v)",result_tensor,a_tensor,a_tensor)
+            ierr=t_einsum("R()+=A+(p,q,r,s,t,u,v)*A(p,q,r,s,t,u,v)",result_tensor,a_tensor,a_tensor)
          case (8)
-            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u,v,x)*A(p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
+            ierr=t_einsum("R()+=A+(p,q,r,s,t,u,v,x)*A(p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
          case (9)
-            ierr=talsh_tensor_contract("R()+=A+(a,p,q,r,s,t,u,v,x)*A(a,p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
+            ierr=t_einsum("R()+=A+(a,p,q,r,s,t,u,v,x)*A(a,p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
          case (10)
-            ierr=talsh_tensor_contract("R()+=A+(a,b,p,q,r,s,t,u,v,x)*A(a,b,p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
+            ierr=t_einsum("R()+=A+(a,b,p,q,r,s,t,u,v,x)*A(a,b,p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
          case default
             call quit ('wrong dimension in tensor_norm2')
          end select
 
          a_norm2 = real(result_tens(1),8)
-         ierr=talsh_tensor_destruct(result_tensor)
+         ierr=destroy_tensor_t(result_tensor)
 
      end function tensor_norm2
 
@@ -1391,7 +1391,7 @@ end subroutine scale_with_denominators_
 
      subroutine laplace_mult (tensor,factor,orb1,orb2,orb3,orb4,orb5,orb6)
       
-      type(talsh_tens_t), intent(inout) :: tensor
+      type(tensor_t), intent(inout) :: tensor
       real(8), intent(in)               :: factor
       real(8), intent(in)               :: orb1(:),orb2(:)
       real(8), intent(in), optional     :: orb3(:),orb4(:),orb5(:),orb6(:)
@@ -1412,7 +1412,7 @@ end subroutine scale_with_denominators_
          if (size(orb1).ne.dims2(1)) stop 'error in laplace_mult: vector 1 wrong size'
          if (size(orb2).ne.dims2(2)) stop 'error in laplace_mult: vector 2 wrong size'
 
-         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(tensor,body_p)
          call c_f_pointer(body_p,tens2,dims2)
 
          do r = 1, dims2(2)
@@ -1427,7 +1427,7 @@ end subroutine scale_with_denominators_
          if (size(orb2).ne.dims3(2)) stop 'error in laplace_mult: vector 2 wrong size'
          if (size(orb3).ne.dims3(3)) stop 'error in laplace_mult: vector 3 wrong size'
 
-         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(tensor,body_p)
          call c_f_pointer(body_p,tens3,dims3)
 
          do r = 1, dims3(3)
@@ -1445,7 +1445,7 @@ end subroutine scale_with_denominators_
          if (size(orb3).ne.dims4(3)) stop 'error in laplace_mult: vector 3 wrong size'
          if (size(orb4).ne.dims4(4)) stop 'error in laplace_mult: vector 4 wrong size'
 
-         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(tensor,body_p)
          call c_f_pointer(body_p,tens4,dims4)
 
          do s = 1, dims4(4)
@@ -1467,7 +1467,7 @@ end subroutine scale_with_denominators_
          if (size(orb5).ne.dims6(5)) stop 'error in laplace_mult: vector 5 wrong size'
          if (size(orb6).ne.dims6(6)) stop 'error in laplace_mult: vector 6 wrong size'
 
-         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(tensor,body_p)
          call c_f_pointer(body_p,tens6,dims6)
 
          do u = 1, dims6(6)
@@ -1494,7 +1494,7 @@ end subroutine scale_with_denominators_
 
     subroutine laplace_testing(test_org, eps_occ, eps_vir)
 
-      type(talsh_tens_t)  , intent(inout)  :: test_org
+      type(tensor_t)  , intent(inout)  :: test_org
       real(8), intent(in)                  :: eps_occ(:),eps_vir(:)
 
       integer(INTD)       :: ierr, rank
@@ -1521,7 +1521,7 @@ end subroutine scale_with_denominators_
            stop 'error: asymmetric tensor in laplace_testing'
          end if
 
-         ierr=talsh_tensor_get_body_access(test_org,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(test_org,body_p)
          call c_f_pointer(body_p,tens4,dims4)
 
 
@@ -1558,7 +1558,7 @@ end subroutine scale_with_denominators_
            stop 'error: asymmetric tensor in laplace_testing'
          end if
 
-         ierr=talsh_tensor_get_body_access(test_org,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(test_org,body_p)
          call c_f_pointer(body_p,tens6,dims6)
 
          test_sum=0.0D0
@@ -1592,7 +1592,7 @@ end subroutine scale_with_denominators_
     subroutine print_tensor_elements(tensor, relccsd_order)
        implicit none
 
-       type(talsh_tens_t), intent(inout)    :: tensor
+       type(tensor_t), intent(inout)    :: tensor
        logical, intent(in), optional :: relccsd_order
 
        integer(INTD)  ::  rank
@@ -1615,7 +1615,7 @@ end subroutine scale_with_denominators_
 
        if (rank.eq.1) then
          ierr = talsh_tensor_dimensions(tensor,rank,dims1)
-         ierr=talsh_tensor_get_body_access(tensor,body,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(tensor,body)
          call c_f_pointer(body,tens1,dims1)
 
          b = 0
@@ -1627,7 +1627,7 @@ end subroutine scale_with_denominators_
 
        else if (rank.eq.2) then
          ierr = talsh_tensor_dimensions(tensor,rank,dims2)
-         ierr=talsh_tensor_get_body_access(tensor,body,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(tensor,body)
          call c_f_pointer(body,tens2,dims2)
 
          if (present(relccsd_order)) then

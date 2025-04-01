@@ -1,15 +1,16 @@
-module talsh_mp2no
+module eti_mp2no
 !This module contains the routines needed to calculate the frozen mp2 natural orbitals 
 
         use tensor_algebra
-        use talsh
+        use exacorr_tensor_interface
         use exacorr_datatypes
         !use exacorr_utils
-        use talsh_common_routines
+        use eti_common_routines
         use exacorr_mo
         use exacorr_global
         use mp2no_matrixtransforms
         use mp2no_fileinterfaces
+        use talsh
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -20,15 +21,15 @@ module talsh_mp2no
                                  MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
         real(8), parameter    :: ONE_QUARTER=0.25D0
 
-        type(talsh_tens_t) :: one_tensor
+        type(tensor_t) :: one_tensor
 
         private
 
-        public talsh_mp2no_driver, get_new_orbital, get_transform_Fock
+        public eti_mp2no_driver, get_new_orbital, get_transform_Fock
 
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
-       subroutine talsh_mp2no_driver (exa_input,n_cano)
+       subroutine eti_mp2no_driver (exa_input,n_cano)
 !       This module is used to construct the MP2 density matrix by talsh.
 !       The complex density matrix are saved on the file 'DM_complex'.  
 !       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
@@ -36,7 +37,7 @@ module talsh_mp2no
 !       The new reduced canonical orbitals are written into 'MP2NOs_AO' by Module3.
 !       Written by Xiang Yuan, modified by Johann Pototschnig
 
-        use talsh_mp2lap
+        use eti_mp2lap
 
         type(exacc_input), intent(in) :: exa_input
         integer, intent(inout)        :: N_cano                  ! number of new canonical orbital
@@ -63,7 +64,7 @@ module talsh_mp2no
         else
             call print_date('File NOs_MO does not exist. Start constructing MP2 density matrix')
             if (exa_input%mp2no<9) then
-                  call talsh_generate_MP2_VNO_MObasis(exa_input)
+                  call eti_generate_MP2_VNO_MObasis(exa_input)
             else
                   call mp2lap_get_DM(exa_input)
             endif   
@@ -74,11 +75,11 @@ module talsh_mp2no
         call write_nos(nocc,NOs_AO,New_orbital_energy,'scf','mbpt')
 
         call print_date('Leaving MP2_NO Module')
-      end subroutine talsh_mp2no_driver
+      end subroutine eti_mp2no_driver
 
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine talsh_generate_MP2_VNO_MObasis (exa_input)
+      subroutine eti_generate_MP2_VNO_MObasis (exa_input)
 !       This subroutine obtains the complex mp2 density matrix in MO basis
 !       The non-diagonal complex DM is written into file DM_complex.
 !       Written by Xiang Yuan
@@ -92,17 +93,17 @@ module talsh_mp2no
          real(8), allocatable                   :: eps_occ(:),eps_vir(:)   ! HF orbital energies
 
 !        Intermediate tensors (same notation as in relccsd)
-         type(talsh_tens_t)          :: MP2_vv_density
-         type(talsh_tens_t)          :: result_tensor
+         type(tensor_t)          :: MP2_vv_density
+         type(tensor_t)          :: result_tensor
          integer(INTD), dimension(4) :: vvoo_dims
          integer(INTD), dimension(2) :: vv_dims
          integer(C_INT)              :: one_dims(1)
 
 !        Common tensors
-         type(talsh_comm_tens_t) :: comm_t
+         type(eti_comm_tens_t) :: comm_t
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_intg_tens_t)       :: int_t
+         type(eti_intg_tens_t)       :: int_t
 
 !        Point connected with tensors 
          integer(C_INT)              :: ierr
@@ -149,8 +150,8 @@ module talsh_mp2no
          vv_dims(1) = nvir
          vv_dims(2) = nvir
 
-         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=talsh_tensor_construct(MP2_vv_density,C8,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(MP2_vv_density,C8,vv_dims,init_val=ZERO)
 
 !        Get HF orbital energies from the DIRAC restart file
          allocate (eps_occ(nocc))
@@ -168,18 +169,18 @@ module talsh_mp2no
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
 
-         ierr=talsh_tensor_construct(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=construct_tensor_t(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+         ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,one_dims)
 !        Initialize t2 amplitudes with the MP2 values
-         ierr=talsh_tensor_init(comm_t%t2)
-         ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
+         ierr=initialize_tensor_t(comm_t%t2)
+         ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
 !        Calculate and print the MP2 energy
 !        Note: here we don't consider the t1 amplitude that is different with excorr_mp2no case. 
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
+         ierr=initialize_tensor_t(result_tensor)
+         ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
          mp2_energy=result_tens(1)*ONE_QUARTER
          write(*,*) ""
          write(*,*) "    MP2 energy = ", mp2_energy
@@ -192,15 +193,15 @@ module talsh_mp2no
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=int_t%oovv)
 
 !        Calculate and print the MP2 density matrix of virtual-virtual block Dvv 
-         ierr=talsh_tensor_init(MP2_vv_density)
-         ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_vv_density,&
+         ierr=initialize_tensor_t(MP2_vv_density)
+         ierr=t_einsum("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_vv_density,&
                                         int_t%oovv,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
 
 !        Make some noise so that we know we are proceeding 
          call print_date('finished MP2_DM_VV calculation and save it to file DM_complex')
-         call write_talsh_matrix(nvir,MP2_vv_density,'DM_complex')
+         call write_eti_matrix(nvir,MP2_vv_density,'DM_complex')
 
-        end subroutine talsh_generate_MP2_VNO_MObasis
+        end subroutine eti_generate_MP2_VNO_MObasis
 
 !------------------------------------------------------------------------------------------------------------------------------------
     subroutine get_MP2_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level)
@@ -208,14 +209,14 @@ module talsh_mp2no
 !    Routine to get oovv integral in the form of antisymmetric tensors.
 !    In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
 !    full integral list.
-!    copy from talsh_cc.F90 routine: get_CC_integrals
+!    copy from eti_cc.F90 routine: get_CC_integrals
          
-      use talsh_ao_to_mo
+      use eti_ao_to_mo
          
       integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
       integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 !     target integral tensors to be filled and given back to the caller
-      type(talsh_intg_tens_t),intent(inout)  :: int_t
+      type(eti_intg_tens_t),intent(inout)  :: int_t
       integer, intent(in)                  :: print_level 
       integer(INTD)                        :: oovv_dims(1:4)
       integer(INTD)                        :: ierr
@@ -224,7 +225,7 @@ module talsh_mp2no
       integer                              :: nao
          
 !     auxilliary integral tensors (only needed inside this routine)
-      type(talsh_tens_t) :: aoint_tensor, ovvo_tensor
+      type(tensor_t) :: aoint_tensor, ovvo_tensor
       integer(INTD)      :: aoint_dims(1:4), ovvo_dims(1:4)
          
 !     arrays needed to communicate with the MO integral generator
@@ -232,7 +233,7 @@ module talsh_mp2no
       integer, allocatable :: mo_list(:)
          
 !     scalars (need to be defined as tensor types)
-      type(talsh_tens_t) :: minusone_tensor
+      type(tensor_t) :: minusone_tensor
       integer(INTD)      :: minusone_dims(1)
          
       call print_date('entering integral transformation, scheme = 2')
@@ -242,14 +243,14 @@ module talsh_mp2no
          
 !     Get tensor with AO integrals
       aoint_dims = nao
-      ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
+      ierr=construct_tensor_t(aoint_tensor,C8,aoint_dims,init_val=ZERO)
       if (ierr /= 0) then
             print*, "Could not construct ao integral tensor, increasing TALSH_BUFF may help"
             call quit ('error constructing aoint_tensor')
       end if
       call print_date('allocated AO integral tensor')
 !     Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
-      ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+      ierr=direct_data_pointer(aoint_tensor,body_p)
       call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
       call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
       call print_date('finished ao integral calculation')
@@ -258,7 +259,7 @@ module talsh_mp2no
 !     Note that the dimensions for the tensor are given in physicists notation <12||34>
       oovv_dims(1:2) = nocc
       oovv_dims(3:4) = nvir
-      ierr=talsh_tensor_construct(int_t%oovv,C8,oovv_dims,init_val=ZERO)
+      ierr=construct_tensor_t(int_t%oovv,C8,oovv_dims,init_val=ZERO)
 !     whereas the dimensions for the mo lists in the index transform are in mullikens notation (13||24)
       allocate (mo_list(2*nocc+2*nvir))
       nmo(1) = nocc
@@ -408,5 +409,5 @@ module talsh_mp2no
             call print_rMP2FVNO(New_orbital_energy,N_OCCUPATION_reduced)
       end subroutine
 
-end module talsh_mp2no
+end module eti_mp2no
 

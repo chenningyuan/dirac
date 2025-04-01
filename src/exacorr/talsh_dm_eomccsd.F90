@@ -1,12 +1,12 @@
-module talsh_dm_eomccsd
+module eti_dm_eomccsd
 
 ! This module contains routines to calculate density matrices for EOMCC-SD
 ! Loic
 
   use talsh
   use tensor_algebra
-  use talsh_ao_to_mo, only    : tensor_norm2
-  use exacorr_datatypes, only : talsh_dm_tens_t, exacc_input
+  use eti_ao_to_mo, only    : tensor_norm2
+  use exacorr_datatypes, only : eti_dm_tens_t, exacc_input
   use exacorr_utils, only     : print_date
 
   implicit none
@@ -17,23 +17,23 @@ module talsh_dm_eomccsd
                              
   private
 
-  public talsh_dm_driver
+  public eti_dm_driver
 
   contains
 
-    subroutine talsh_dm_eom_driver(exa_input,t2_tensor,r2_tensor,l2_tensor,t1_tensor,r1_tensor,l1_tensor)
+    subroutine eti_dm_eom_driver(exa_input,t2_tensor,r2_tensor,l2_tensor,t1_tensor,r1_tensor,l1_tensor)
 
 !     Routine for obtaining the density matrices in the MO basis
 
 !     input variables
       type(exacc_input), intent(in   ) :: exa_input
-      type(talsh_tens_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
-      type(talsh_tens_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
-      type(talsh_tens_t),intent(inout), optional :: r1_tensor, r2_tensor ! solution tensors  ! Loic_
+      type(tensor_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
+      type(tensor_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
+      type(tensor_t),intent(inout), optional :: r1_tensor, r2_tensor ! solution tensors  ! Loic_
 
 
 !     density matrices type, output
-      type(talsh_dm_tens_t) :: gamma
+      type(eti_dm_tens_t) :: gamma
 !     tensor dimensions
       integer, dimension(2) :: oo_dims,ov_dims,vo_dims,vv_dims
       integer, dimension(4) :: oooo_dims,vvvv_dims,oovv_dims,vvoo_dims !Loic_
@@ -52,21 +52,21 @@ module talsh_dm_eomccsd
 !************************************
  
       oo_dims = exa_input%nocc
-      ierr=talsh_tensor_construct(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(gamma%symm_oo,C8,oo_dims,init_val=ZERO)
+      ierr=construct_tensor_t(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
+      ierr=construct_tensor_t(gamma%symm_oo,C8,oo_dims,init_val=ZERO)
       if (.not.CCD) then
         ov_dims(1) = exa_input%nocc
         ov_dims(2) = exa_input%nvir
-        ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(gamma%symm_ov,C8,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(gamma%symm_ov,C8,ov_dims,init_val=ZERO)
         vo_dims(1) = exa_input%nvir
         vo_dims(2) = exa_input%nocc
-        ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(gamma%symm_vo,C8,vo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(gamma%symm_vo,C8,vo_dims,init_val=ZERO)
       end if
       vv_dims = exa_input%nvir
-      ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(gamma%symm_vv,C8,vv_dims,init_val=ZERO)
+      ierr=construct_tensor_t(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
+      ierr=construct_tensor_t(gamma%symm_vv,C8,vv_dims,init_val=ZERO)
 
 !************************************
 !   construct gamma second tensors  *
@@ -91,16 +91,16 @@ module talsh_dm_eomccsd
       call store_dm_mo(exa_input,gamma)
 
 !     cleanup
-      ierr=talsh_tensor_destruct(gamma%prime_oo)
+      ierr=destroy_tensor_t(gamma%prime_oo)
       if (.not.CCD) then
-        ierr=talsh_tensor_destruct(gamma%prime_ov)
-        ierr=talsh_tensor_destruct(gamma%symm_ov)
-        ierr=talsh_tensor_destruct(gamma%prime_vo)
-        ierr=talsh_tensor_destruct(gamma%symm_vo)
+        ierr=destroy_tensor_t(gamma%prime_ov)
+        ierr=destroy_tensor_t(gamma%symm_ov)
+        ierr=destroy_tensor_t(gamma%prime_vo)
+        ierr=destroy_tensor_t(gamma%symm_vo)
       end if
-      ierr=talsh_tensor_destruct(gamma%prime_vv)
-      ierr=talsh_tensor_destruct(gamma%symm_oo)
-      ierr=talsh_tensor_destruct(gamma%symm_vv)
+      ierr=destroy_tensor_t(gamma%prime_vv)
+      ierr=destroy_tensor_t(gamma%symm_oo)
+      ierr=destroy_tensor_t(gamma%symm_vv)
 
       if (ierr.ne.TALSH_SUCCESS) then
         print*," ccdriver: error in evaluation of density matrices, code=",ierr
@@ -108,32 +108,32 @@ module talsh_dm_eomccsd
       end if
 
 
-    end subroutine talsh_dm_driver
+    end subroutine eti_dm_driver
 
     subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,t1_tensor,l1_tensor,r1_tensor,r2_tensor)
 
 !     input variables
-      type(talsh_dm_tens_t), intent(inout) :: gamma
-      type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
-      type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
+      type(eti_dm_tens_t), intent(inout) :: gamma
+      type(tensor_t),  intent(inout) :: t2_tensor, l2_tensor
+      type(tensor_t),  intent(inout), optional :: t1_tensor, l1_tensor
 
-      type(talsh_tens_t),  intent(inout), optional :: r1_tensor, r2_tensor !Loic_
+      type(tensor_t),  intent(inout), optional :: r1_tensor, r2_tensor !Loic_
 
       integer,             intent(in   ) :: nocc, nvir
 !     auxiliary tensors
-      type(talsh_tens_t) :: one_tensor
-      type(talsh_tens_t) :: tau2_tensor
-      type(talsh_tens_t) :: oo_aux_tensor, vv_aux_tensor
+      type(tensor_t) :: one_tensor
+      type(tensor_t) :: tau2_tensor
+      type(tensor_t) :: oo_aux_tensor, vv_aux_tensor
 
       ! Loic_tensor 
-      type(talsh_tens_t) :: TauUp_tensor,TauDown_tensor, TauNo_tensor
-      type(talsh_tens_t) :: MATone_oo_tensor, MATone_vv_tensor    
-      type(talsh_tens_t) :: MATtwo_oo_tensor, MATtwo_vv_tensor
+      type(tensor_t) :: TauUp_tensor,TauDown_tensor, TauNo_tensor
+      type(tensor_t) :: MATone_oo_tensor, MATone_vv_tensor    
+      type(tensor_t) :: MATtwo_oo_tensor, MATtwo_vv_tensor
 
-      type(talsh_tens_t) :: ov_aux_tensor, vo_aux_tensor ! Loic !!!! Eviter la redondance
-      type(talsh_tens_t) :: vvvv_aux_tensor, oooo_aux_tensor, oovv_aux_tensor
-      type(talsh_tens_t) :: vvoo_aux_vvoo_tensor, vvvo_aux_tensor, ooov_aux_tensor
-      type(talsh_tens_t) :: vooo_aux_tensor, ovvv_aux_tensor, vovo_aux_tensor
+      type(tensor_t) :: ov_aux_tensor, vo_aux_tensor ! Loic !!!! Eviter la redondance
+      type(tensor_t) :: vvvv_aux_tensor, oooo_aux_tensor, oovv_aux_tensor
+      type(tensor_t) :: vvoo_aux_vvoo_tensor, vvvo_aux_tensor, ooov_aux_tensor
+      type(tensor_t) :: vooo_aux_tensor, ovvv_aux_tensor, vovo_aux_tensor
 
 !     tensor dimensions
       integer :: one_dims(1)=1
@@ -155,15 +155,15 @@ module talsh_dm_eomccsd
 !     construct auxiliary tensor *
 !*********************************
  
-      ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+      ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
       if (.not.CCD) then
         vvoo_dims(1:2) = nvir
         vvoo_dims(3:4) = nocc
-        ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
         vv_dims = nvir
-        ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
         oo_dims = nocc
-        ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
       end if
 
 
@@ -174,44 +174,44 @@ module talsh_dm_eomccsd
         ! Loic_Taille
 
         vv_dims = nvir
-        ierr=talsh_tensor_construct(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
         oo_dims = nocc
-        ierr=talsh_tensor_construct(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
 
 
         vvoo_dims(1:2) = nvir
         vvoo_dims(3:4) = nocc
-        ierr=talsh_tensor_construct(tauUP_tensor,C8,vvoo_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(tauDown_tensor,C8,vvoo_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(tauNo_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tauUP_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tauDown_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tauNo_tensor,C8,vvoo_dims,init_val=ZERO)
 
         !  Loic_Tenseurs_Intermediaires
 
 
        !  MATone_oo
-       ierr=talsh_tensor_contract("MATone(i,j)+=R(e,j)*L(j,e)",MATone_oo_tensor,r1_tensor,l1_tensor)
-       ierr=talsh_tensor_contract("MATone(i,j)+=R(e,f,j,m)*L(i,m,e,f)",MATone_oo_tensor,r2_tensor,l2_tensor,scale=ONE_HALF)
-       ierr=talsh_tensor_contract("MATtwo(i,j)+=T(e,j)*L(j,e)",MATtwo_oo_tensor,t1_tensor,l1_tensor)
-       ierr=talsh_tensor_contract("MATtwo(i,j)+=T(e,f,j,m)*L(i,m,e,f)",MATtwo_oo_tensor,t2_tensor,l2_tensor,scale=ONE_HALF)
-       ierr=talsh_tensor_contract("MATone(a,b)+=R(a,m)*L(m,b)",MATone_vv_tensor,r1_tensor,l1_tensor)
-       ierr=talsh_tensor_contract("MATone(a,b)+=R(e,a,m,n)*L(m,n,e,b)",MATone_vv_tensor,r2_tensor,l2_tensor,scale=ONE_HALF)
-       ierr=talsh_tensor_contract("MATtwo(a,b)+=T(a,m)*L(m,b)",MATtwo_vv_tensor,t1_tensor,l1_tensor)
-       ierr=talsh_tensor_contract("MATtwo(a,b)+=T(e,a,m,n)*L(m,n,e,b)",MATtwo_vv_tensor,t2_tensor,l2_tensor,scale=ONE_HALF)
+       ierr=t_einsum("MATone(i,j)+=R(e,j)*L(j,e)",MATone_oo_tensor,r1_tensor,l1_tensor)
+       ierr=t_einsum("MATone(i,j)+=R(e,f,j,m)*L(i,m,e,f)",MATone_oo_tensor,r2_tensor,l2_tensor,scale=ONE_HALF)
+       ierr=t_einsum("MATtwo(i,j)+=T(e,j)*L(j,e)",MATtwo_oo_tensor,t1_tensor,l1_tensor)
+       ierr=t_einsum("MATtwo(i,j)+=T(e,f,j,m)*L(i,m,e,f)",MATtwo_oo_tensor,t2_tensor,l2_tensor,scale=ONE_HALF)
+       ierr=t_einsum("MATone(a,b)+=R(a,m)*L(m,b)",MATone_vv_tensor,r1_tensor,l1_tensor)
+       ierr=t_einsum("MATone(a,b)+=R(e,a,m,n)*L(m,n,e,b)",MATone_vv_tensor,r2_tensor,l2_tensor,scale=ONE_HALF)
+       ierr=t_einsum("MATtwo(a,b)+=T(a,m)*L(m,b)",MATtwo_vv_tensor,t1_tensor,l1_tensor)
+       ierr=t_einsum("MATtwo(a,b)+=T(e,a,m,n)*L(m,n,e,b)",MATtwo_vv_tensor,t2_tensor,l2_tensor,scale=ONE_HALF)
 
        !  Tau
 
-       ierr=talsh_tensor_add("TauNo(a,b,i,j)+=T(a,b,i,j)",TauNo_tensor,t2_tensor)
-       ierr=talsh_tensor_contract("TauNo(a,b,i,j)+=T(a,i)*T(b,j)",TauNo_tensor,t1_tensor,t1_tensor)
+       ierr=t_einsum("TauNo(a,b,i,j)+=T(a,b,i,j)",TauNo_tensor,t2_tensor)
+       ierr=t_einsum("TauNo(a,b,i,j)+=T(a,i)*T(b,j)",TauNo_tensor,t1_tensor,t1_tensor)
 
-       ierr=talsh_tensor_add("TauUp(a,b,i,j)+=T(a,b,i,j)",TauUp_tensor,t2_tensor)
-       ierr=talsh_tensor_contract("TauUp(a,b,i,j)+=T(a,i)*T(b,j)",TauUp_tensor,t1_tensor,t1_tensor)
-       ierr=talsh_tensor_contract("TauUp(a,b,i,j)+=T(b,i)*T(a,j)",TauUp_tensor,t1_tensor,t1_tensor)
+       ierr=t_einsum("TauUp(a,b,i,j)+=T(a,b,i,j)",TauUp_tensor,t2_tensor)
+       ierr=t_einsum("TauUp(a,b,i,j)+=T(a,i)*T(b,j)",TauUp_tensor,t1_tensor,t1_tensor)
+       ierr=t_einsum("TauUp(a,b,i,j)+=T(b,i)*T(a,j)",TauUp_tensor,t1_tensor,t1_tensor)
 
-       ierr=talsh_tensor_add("TauDown(a,b,i,j)+=T(a,b,i,j)",TauDown_tensor,t2_tensor)
-       ierr=talsh_tensor_contract("TauDown(a,b,i,j)+=T(a,i)*T(b,j)",TauDown_tensor,t1_tensor,t1_tensor)
-       ierr=talsh_tensor_contract("TauDown(a,b,i,j)+=T(a,j)*T(b,i)",TauDown_tensor,t1_tensor,t1_tensor)
+       ierr=t_einsum("TauDown(a,b,i,j)+=T(a,b,i,j)",TauDown_tensor,t2_tensor)
+       ierr=t_einsum("TauDown(a,b,i,j)+=T(a,i)*T(b,j)",TauDown_tensor,t1_tensor,t1_tensor)
+       ierr=t_einsum("TauDown(a,b,i,j)+=T(a,j)*T(b,i)",TauDown_tensor,t1_tensor,t1_tensor)
 
 !********************
 !     calculate DMs *
@@ -219,10 +219,10 @@ module talsh_dm_eomccsd
 
 
 ! rho ij
-       ierr=talsh_tensor_add("G(i,j)+=X(i,j)",gamma%prime_oo,MATone_oo_tensor,scale=MINUS_ONE)
-       ierr=talsh_tensor_contract("X(i,e)+=L(i,m,e,f)*R(f,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-       ierr=talsh_tensor_contract("G(i,j)+=X(i,e)*T(e,j)",gamma%prime_oo,ov_aux_tensor,t1_tensor,scale=MINUS_ONE)
-       ierr=talsh_tensor_add("G(i,j)+=X(i,j)",gamma%prime_oo,MATtwo_oo_tensor,scale=MINUS_ONE)
+       ierr=t_einsum("G(i,j)+=X(i,j)",gamma%prime_oo,MATone_oo_tensor,scale=MINUS_ONE)
+       ierr=t_einsum("X(i,e)+=L(i,m,e,f)*R(f,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+       ierr=t_einsum("G(i,j)+=X(i,e)*T(e,j)",gamma%prime_oo,ov_aux_tensor,t1_tensor,scale=MINUS_ONE)
+       ierr=t_einsum("G(i,j)+=X(i,j)",gamma%prime_oo,MATtwo_oo_tensor,scale=MINUS_ONE)
 
 !
 !   TAKE CARE no \kronecker_{ij}
@@ -230,39 +230,39 @@ module talsh_dm_eomccsd
 
 
 ! rho ab
-       ierr=talsh_tensor_add("G(a,b)+=X(a,b)",gamma%prime_vv,MATone_vv_tensor)
-       ierr=talsh_tensor_contract("X(n,b)+=L(m,n,e,b)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-       ierr=talsh_tensor_contract("G(a,b)+=X(n,b)*T(a,n)",gamma%prime_vv,ov_aux_tensor,t1_tensor)
-       ierr=talsh_tensor_add("G(a,b)+=X(a,b)",gamma%prime_vv,MATtwo_vv_tensor)
+       ierr=t_einsum("G(a,b)+=X(a,b)",gamma%prime_vv,MATone_vv_tensor)
+       ierr=t_einsum("X(n,b)+=L(m,n,e,b)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+       ierr=t_einsum("G(a,b)+=X(n,b)*T(a,n)",gamma%prime_vv,ov_aux_tensor,t1_tensor)
+       ierr=t_einsum("G(a,b)+=X(a,b)",gamma%prime_vv,MATtwo_vv_tensor)
 
 ! rho ai
-       ierr=talsh_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,t2_tensor)
-       ierr=talsh_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,MATtwo_oo_tensor,t1_tensor,scale=MINUS_ONE)
-       ierr=talsh_tensor_contract("X(a,f)+=L(m,n,e,f)*T(e,a,m,n)",vv_aux_tensor,l2_tensor,t1_tensor)
-       ierr=talsh_tensor_contract("G(a,i)+=X(a,f)*T(f,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_HALF_ONE)
-       ierr=talsh_tensor_contract("G(a,i)+=X(n,i)*T(a,n)",gamma%prime_vo,MATone_oo_tensor,t1_tensor,scale=MINUS_ONE)
-       ierr=talsh_tensor_contract("G(a,i)+=X(a,f)*T(f,i)",gamma%prime_vo,MATone_vv_tensor,t1_tensor,scale=MINUS_ONE)
-       ierr=talsh_tensor_contract("X(n,f)+=L(m,n,e,f)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-       ierr=talsh_tensor_contract("G(a,i)+=X(n,f)*TauNo(f,a,i,n)",gamma%prime_vo,vv_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-       ierr=talsh_tensor_add("G(a,i)+=T(a,i)",gamma%prime_vo,t1_tensor)
-       ierr=talsh_tensor_contract("G(a,i)+=L(m,e)*R(a,e,i,m)",gamma%prime_vo,l1_tensor,r2_tensor)
-       ierr=talsh_tensor_contract("X(a,f)+=L(m,n,e,f)*T(e,a,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
-       ierr=talsh_tensor_contract("G(a,i)+=X(a,f)*R(f,i)",gamma%prime_vo,vv_aux_tensor,r1_tensor,scale=MINUS_HALF_ONE)
-       ierr=talsh_tensor_contract("X(n,i)+=L(m,n,e,f)*T(e,f,m,i)",oo_aux_tensor,l2_tensor,t2_tensor)
-       ierr=talsh_tensor_contract("G(a,i)+=X(n,i)*R(a,n)",gamma%prime_vo,oo_aux_tensor,r1_tensor,scale=MINUS_HALF_ONE)
+       ierr=t_einsum("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,t2_tensor)
+       ierr=t_einsum("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,MATtwo_oo_tensor,t1_tensor,scale=MINUS_ONE)
+       ierr=t_einsum("X(a,f)+=L(m,n,e,f)*T(e,a,m,n)",vv_aux_tensor,l2_tensor,t1_tensor)
+       ierr=t_einsum("G(a,i)+=X(a,f)*T(f,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_HALF_ONE)
+       ierr=t_einsum("G(a,i)+=X(n,i)*T(a,n)",gamma%prime_vo,MATone_oo_tensor,t1_tensor,scale=MINUS_ONE)
+       ierr=t_einsum("G(a,i)+=X(a,f)*T(f,i)",gamma%prime_vo,MATone_vv_tensor,t1_tensor,scale=MINUS_ONE)
+       ierr=t_einsum("X(n,f)+=L(m,n,e,f)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+       ierr=t_einsum("G(a,i)+=X(n,f)*TauNo(f,a,i,n)",gamma%prime_vo,vv_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+       ierr=t_einsum("G(a,i)+=T(a,i)",gamma%prime_vo,t1_tensor)
+       ierr=t_einsum("G(a,i)+=L(m,e)*R(a,e,i,m)",gamma%prime_vo,l1_tensor,r2_tensor)
+       ierr=t_einsum("X(a,f)+=L(m,n,e,f)*T(e,a,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
+       ierr=t_einsum("G(a,i)+=X(a,f)*R(f,i)",gamma%prime_vo,vv_aux_tensor,r1_tensor,scale=MINUS_HALF_ONE)
+       ierr=t_einsum("X(n,i)+=L(m,n,e,f)*T(e,f,m,i)",oo_aux_tensor,l2_tensor,t2_tensor)
+       ierr=t_einsum("G(a,i)+=X(n,i)*R(a,n)",gamma%prime_vo,oo_aux_tensor,r1_tensor,scale=MINUS_HALF_ONE)
 ! rho_ia
 
-       ierr=talsh_tensor_add("G(i,a)+=L(i,a)",gamma%prime_ov,l1_tensor)
-       ierr=talsh_tensor_contract("G(i,a)+=L(i,m,a,e)*R(e,m)",gamma%prime_ov,l2_tensor,r1_tensor)
+       ierr=t_einsum("G(i,a)+=L(i,a)",gamma%prime_ov,l1_tensor)
+       ierr=t_einsum("G(i,a)+=L(i,m,a,e)*R(e,m)",gamma%prime_ov,l2_tensor,r1_tensor)
 
 
 !  Symmetrization
 
 
-       ierr=talsh_tensor_add("G(a,i)+=X(a,i)",gamma%symm_ov,gamma%prime_vo,scale=ONE_HALF)
-       ierr=talsh_tensor_add("G(a,i)+=X+(i,a)*K()",gamma%symm_ov,gamma%prime_vo,one_tensor,scale=ONE_HALF)
-       ierr=talsh_tensor_add("G(i,a)+=X(i,a)",gamma%symm_vo,gamma%prime_ov,scale=ONE_HALF)
-       ierr=talsh_tensor_add("G(i,a)+=X+(a,i)*K()",gamma%symm_vo,gamma%prime_ov,one_tensor,scale=ONE_HALF)
+       ierr=t_einsum("G(a,i)+=X(a,i)",gamma%symm_ov,gamma%prime_vo,scale=ONE_HALF)
+       ierr=t_einsum("G(a,i)+=X+(i,a)*K()",gamma%symm_ov,gamma%prime_vo,one_tensor,scale=ONE_HALF)
+       ierr=t_einsum("G(i,a)+=X(i,a)",gamma%symm_vo,gamma%prime_ov,scale=ONE_HALF)
+       ierr=t_einsum("G(i,a)+=X+(a,i)*K()",gamma%symm_vo,gamma%prime_ov,one_tensor,scale=ONE_HALF)
 
 
 !     debug
@@ -283,11 +283,11 @@ module talsh_dm_eomccsd
 !     cleanup *
 !**************
 
-      ierr=talsh_tensor_destruct(one_tensor)
+      ierr=destroy_tensor_t(one_tensor)
       if (.not.CCD) then
-        ierr=talsh_tensor_destruct(tau2_tensor)
-        ierr=talsh_tensor_destruct(vv_aux_tensor)
-        ierr=talsh_tensor_destruct(oo_aux_tensor)
+        ierr=destroy_tensor_t(tau2_tensor)
+        ierr=destroy_tensor_t(vv_aux_tensor)
+        ierr=destroy_tensor_t(oo_aux_tensor)
       end if
 
     end subroutine calc_dm_mo
@@ -298,7 +298,7 @@ module talsh_dm_eomccsd
 
 !     input variables
       type(exacc_input),   intent(in   )  :: exa_input
-      type(talsh_dm_tens_t), intent(inout)  :: gamma
+      type(eti_dm_tens_t), intent(inout)  :: gamma
 !     matrix dimensions
       integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
 !     body pointers
@@ -340,23 +340,23 @@ module talsh_dm_eomccsd
 !     -----------
 
 !     oo
-      ierr=talsh_tensor_get_body_access(gamma%symm_oo,body_p2,C8,0,DEV_HOST)
+      ierr=direct_data_pointer(gamma%symm_oo,body_p2)
       call c_f_pointer(body_p2,dm_block,(/nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
       dm_mo_fort(1:nocc,1:nocc) = dm_block
 
 !     vo + ov
       if (.not.CCD) then
-        ierr=talsh_tensor_get_body_access(gamma%symm_vo,body_p2,C8,0,DEV_HOST)
+        ierr=direct_data_pointer(gamma%symm_vo,body_p2)
         call c_f_pointer(body_p2,dm_block,(/nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
         dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = dm_block
 
-        ierr=talsh_tensor_get_body_access(gamma%symm_ov,body_p2,C8,0,DEV_HOST)
+        ierr=direct_data_pointer(gamma%symm_ov,body_p2)
         call c_f_pointer(body_p2,dm_block,(/nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
         dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = dm_block
       end if
 
 !     vv
-      ierr=talsh_tensor_get_body_access(gamma%symm_vv,body_p2,C8,0,DEV_HOST)
+      ierr=direct_data_pointer(gamma%symm_vv,body_p2)
       call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
       dm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
 
@@ -389,4 +389,4 @@ module talsh_dm_eomccsd
 
     end subroutine store_dm_mo
 
-end module talsh_gradient
+end module eti_gradient
