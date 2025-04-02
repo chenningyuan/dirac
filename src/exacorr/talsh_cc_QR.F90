@@ -485,7 +485,7 @@ end subroutine construct_TlXAy
 !LH     \Eta_1= -one_half \td femn \lambdad mife \Ys na 
     ierr=initialize_tensor_t(LR_Aux_oo)
     ierr=t_einsum('H(i,n)+=T(f,e,m,n)*L(m,i,f,e)',LR_Aux_oo,t2_tensor,l2_tensor)
-    ierr=talsh_Tensor_contract('E(i,a)+=H(i,n)*Y(n,a)',& 
+    ierr=t_einsum('E(i,a)+=H(i,n)*Y(n,a)',& 
           eta_prop_ov_tensor,LR_Aux_oo,Interm_t_tensor%prop_bar_ov,scale=MINUS_ONE_HALF)
     if(debug_local) print *,'LH_talsh eta_prop_ov_tensor ierr_o28 ', ierr
 
