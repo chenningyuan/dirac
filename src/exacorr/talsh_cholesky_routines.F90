@@ -1,4 +1,4 @@
-module talsh_CD_routines
+module eti_CD_routines
 
 !routines to perform cholesky decomposition
 
@@ -8,7 +8,8 @@ module talsh_CD_routines
 
 use tensor_algebra
 use talsh
-use talsh_common_routines
+use exacorr_tensor_interface
+use eti_common_routines
 use exacorr_utils
 !use, intrinsic:: ISO_C_BINDING
 
@@ -19,13 +20,13 @@ complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 private
 
 !talsh routines:
-public decompose_cholesky_talsh
+public decompose_cholesky_eti
 
 contains
 
-    subroutine decompose_cholesky_talsh (CD, t_cholesky, print_level)
+    subroutine decompose_cholesky_eti (CD, t_cholesky, print_level)
 
-!       Cholesky decomposition based on treating the shells separately using talsh tensor operations
+!       Cholesky decomposition based on treating the shells separately using tensor operations
 !       possible additions: 
 !                          SVD (How to combine with tensor library)
 !                          Additional screening in the computation of integrals
@@ -68,7 +69,7 @@ contains
         !Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
         call interest_initialize(.false.)
 
-        if (print_level.gt.2) write(*,*) "========= entered decompose_cholesky_talsh ========= "
+        if (print_level.gt.2) write(*,*) "========= entered decompose_cholesky_eti ========= "
 
         !Start by setting the maximum dimensions of tensors and initializing the offsets
         nao = get_nao()
@@ -130,7 +131,7 @@ contains
           if (print_level.gt.15) call print_tensor(Dlk, ACC, "Dlk")
 
           !find the initially largest diagonal element for this shell pair
-          call talsh_find_el(DiagR, Mask, lshell, kshell, l, k, D_el)
+          call eti_find_el(DiagR, Mask, lshell, kshell, l, k, D_el)
           if (print_level.gt.6) write(*,*) '--- largest value found: ', l, k, D_el
           call get_shell_offset(l,l0)
           call get_shell_offset(k,k0)
@@ -196,7 +197,7 @@ contains
 
             !update diagonal
             ierr=reshape_tensor_t(Res,dims2)
-            call talsh_square_el(Res)
+            call eti_square_el(Res)
             ierr=t_einsum("W(p,q)+=V(p,q)",Diag,Res,one_tensor,scale=MINUS_ONE)
             if (print_level.gt.15) call print_tensor(Diag, ACC, "Diag")
 
@@ -208,7 +209,7 @@ contains
             if (m>nao*nao) write(*,*) 'Cholesky decomposition did not work'
 
             !find next element in this shell
-            call talsh_find_el(DiagR, Mask, lshell, kshell, l, k, D_el)
+            call eti_find_el(DiagR, Mask, lshell, kshell, l, k, D_el)
             if (print_level.gt.6) write(*,*)  '--- largest value found: ', l, k, D_el
 
           end do
@@ -256,9 +257,9 @@ contains
         ierr=destroy_tensor_t(Temp)
         ierr=destroy_tensor_t(one_tensor)
 
-        if (print_level.gt.2) write(*,*)  "========= leaving decompose_cholesky_talsh ========= "
+        if (print_level.gt.2) write(*,*)  "========= leaving decompose_cholesky_eti ========= "
 
-    end subroutine decompose_cholesky_talsh
+    end subroutine decompose_cholesky_eti
 
 subroutine get_diag(DiagR)
 
@@ -367,6 +368,7 @@ subroutine get_integral_block(Dshell, lsh, ksh)
 
   use tensor_algebra
   use talsh
+  use exacorr_tensor_interface
   use exacorr_datatypes
   use exacorr_global
   use exacorr_eri
@@ -438,9 +440,9 @@ subroutine get_integral_block(Dshell, lsh, ksh)
   nk   =  nfunctions(lk,basis_angular)
 
   ! get acces to the tensor
-  rank=talsh_tensor_rank(Dshell)
+  ierr = get_nmodes(Dshell,rank)
   if (rank.ne.4) stop 'error: wrong rank in get_shell_talsh'
-  ierr = talsh_tensor_dimensions(Dshell,rank,dims4)
+  ierr = get_extents(Dshell,dims4)
   if (ierr.ne.0) stop 'error: wrong dimension in get_shell_talsh'
   ierr=talsh_tensor_data_kind(Dshell,nData,DataKind)
   if (ierr.ne.0) stop 'error in getting DataKind'
@@ -502,7 +504,7 @@ subroutine get_integral_block(Dshell, lsh, ksh)
 
 end subroutine get_integral_block
 
-subroutine talsh_find_el(DiagR, Mask, lsh, ksh, l, k, D_el)
+subroutine eti_find_el(DiagR, Mask, lsh, ksh, l, k, D_el)
 
 ! routine to locate largest element in a shell pair
 
@@ -572,15 +574,10 @@ subroutine talsh_find_el(DiagR, Mask, lsh, ksh, l, k, D_el)
   
   deallocate(Dmask)
 
-end subroutine talsh_find_el
+end subroutine eti_find_el
 
-subroutine talsh_square_el(h_tensor)
-
+subroutine eti_square_el(h_tensor)
 ! squaring talsh tensor
-
-  use tensor_algebra
-  use talsh
-
   implicit none
   
   type(tensor_t), intent(inout)    :: h_tensor
@@ -596,13 +593,15 @@ subroutine talsh_square_el(h_tensor)
   real(8), pointer :: tens3(:, :, :)
   real(8), pointer :: tens4(:, :, :, :)
 
-  rank=talsh_tensor_rank(h_tensor)
+  ierr = get_nmodes(h_tensor,,rank)
         
   if (rank.eq.2) then
-    ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
-    if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
-
-    ierr=direct_data_pointer(h_tensor,body_p)
+    ierr = get_extents(h_tensor,dims2)
+! this makes no sense ?
+!   ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
+!   if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
+    ierr = get_extents(h_tensor,dims2)
+    ierr = direct_data_pointer(h_tensor,body_p)
     call c_f_pointer(body_p,tens2,dims2)
     
     do i = 1, dims2(1)
@@ -612,10 +611,11 @@ subroutine talsh_square_el(h_tensor)
     end do
 
   else if (rank.eq.3) then
-    ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
-    if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
-
-    ierr=direct_data_pointer(h_tensor,body_p)
+! this makes no sense ?
+!   ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
+!   if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
+    ierr = get_extents(h_tensor,dims2)
+    ierr = direct_data_pointer(h_tensor,body_p)
     call c_f_pointer(body_p,tens3,dims3)
 
     do i = 1, dims3(1)
@@ -627,10 +627,11 @@ subroutine talsh_square_el(h_tensor)
     end do
 
   else if (rank.eq.4) then
-    ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
-    if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
-
-    ierr=direct_data_pointer(h_tensor,body_p)
+! this makes no sense ?
+!   ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
+!   if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
+    ierr = get_extents(h_tensor,dims4)
+    ierr = direct_data_pointer(h_tensor,body_p)
     call c_f_pointer(body_p,tens4,dims4)
 
     do i = 1, dims4(1)
@@ -647,6 +648,6 @@ subroutine talsh_square_el(h_tensor)
     stop 'error in print_tensor: only ranks 2,3 and 4 implemented'
   end if
 
-end subroutine talsh_square_el
+end subroutine eti_square_el
 
-end module talsh_CD_routines
+end module eti_CD_routines
