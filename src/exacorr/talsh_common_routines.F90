@@ -20,20 +20,15 @@ module eti_common_routines
         module procedure scale_with_denominators
     end interface scale_with_denominators
 
-    interface scale_with_denominators_
-        module procedure scale_with_denominators_
-    end interface scale_with_denominators_
-
     public talsh_get_number_gpus
     public get_orbital_energies
     public scale_with_denominators
-    public scale_with_denominators_
     public print_tensor
-    public write_talsh_matrix
+    public write_2dtensor_as_matrix
     public get_element
     public Pair_correlation_energies
-    public talsh_init_R8
-    public talsh_init_C8
+    public eti_init_R8
+    public eti_init_C8
     public tensor_norm2
     public tensor_norm2_
     public laplace_mult
@@ -397,11 +392,13 @@ module eti_common_routines
 
         ierr = get_nmodes(h_tensor,rank)
         if (rank.eq.0) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor, dims1)
 
           print *, "print 0D tensor: ", t_name, " (shape:", dims1,")"
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           select case (DataKind(1))
           case (C8)
             call c_f_pointer(body_p,tens1,dims1)
@@ -424,11 +421,13 @@ module eti_common_routines
           end do
           print *, " end print 0D tensor ", t_name
         else if (rank.eq.1) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor, dims1)
 
           print *, "print 1D tensor: ", t_name, " (shape:", dims1,")"
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           select case (DataKind(1))
           case (C8)
             call c_f_pointer(body_p,tens1,dims1)
@@ -451,11 +450,13 @@ module eti_common_routines
           end do
           print *, " end print 1D tensor ", t_name
         else if (rank.eq.2) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
+!        if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor, dims2)
 
           print *, "print 2D tensor: ", t_name, " (shape:", dims2,")"
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           select case (DataKind(1))
           case (C8)
             call c_f_pointer(body_p,tens2,dims2)
@@ -481,11 +482,13 @@ module eti_common_routines
           print *, " end print 2D tensor ", t_name
 
         else if (rank.eq.3) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor, dims3)
 
           print *, "print 3D tensor: ", t_name, " (shape:", dims3,")"
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           select case (DataKind(1))
           case (C8)
             call c_f_pointer(body_p,tens3,dims3)
@@ -513,11 +516,13 @@ module eti_common_routines
           print *, " end print 3D tensor: ", t_name
 
         else if (rank.eq.4) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor, dims4)
 
           print *, "print 4D tensor: ", t_name, " (shape:", dims4, ")"
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           select case (DataKind(1))
           case (C8)
             call c_f_pointer(body_p,tens4,dims4)
@@ -553,10 +558,11 @@ module eti_common_routines
       end subroutine print_tensor
 
       !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine write_talsh_matrix(nvir,dm_vv,file_out,mode)
+      subroutine write_2dtensor_as_matrix(nvir,dm_vv,file_out,mode)
 ! Routine for writing complex density matrix into the file'DM_complex'. 
 ! Written by Xiang Yuan
 ! Modified by Johann Pototschnig and shifted to talsh_common_routines
+! andre: todo, ! generalize as a reshape to a 2d array to write to file ? 
 
        use exacorr_utils
 
@@ -604,7 +610,7 @@ module eti_common_routines
 
          close(mp2dm,status='KEEP')
 
-        end subroutine write_talsh_matrix
+        end subroutine write_2dtensor_as_matrix
       
       function get_element(h_tensor, dims) result(val)
 
@@ -632,34 +638,40 @@ module eti_common_routines
 
         DataKind(1)=C8
 
-        rank=talsh_tensor_rank(h_tensor)
+        ierr = get_nmodes(h_tensor,rank)
         ldims=size(dims)
         if (rank.ne.ldims) stop 'error in get_element: wrong number of indices'
 
         if (rank.eq.1) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in get_element: wrong rank'
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in get_element: wrong rank'
+          ierr = get_extents(h_tensor,dims1)
 
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           i=dims(1)
           val=tens1(i)
 
         else if (rank.eq.2) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims2)
 
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens2,dims2)
           i=dims(1)
           j=dims(2)
           val=tens2(i,j)
 
         else if (rank.eq.3) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims3)
 
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens3,dims3)
           i=dims(1)
           j=dims(2)
@@ -667,10 +679,12 @@ module eti_common_routines
           val=tens3(i,j,k)
 
         else if (rank.eq.4) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims4)
 
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
           i=dims(1)
           j=dims(2)
@@ -705,12 +719,14 @@ module eti_common_routines
         allocate(tens_E_pair_corr(nocc,nocc))
 
         ! Getting the tensor encoding the amplitudes T2(vir_a, vir_b, occ_i, occ_j)
-        ierr = talsh_tensor_dimensions(t2_amp,rranka,dimsa)
+        ierr = get_nmodes(t2_amp,rranka)
+        ierr = get_extents(t2_amp,dimsa)
         ierr = direct_data_pointer(t2_amp,bodya_p)
         call c_f_pointer(bodya_p,tens_t2,dimsa)
 
         ! Getting the tensor encoding the elements < occ_i, occ_j || vir_a, vir_b >
-        ierr = talsh_tensor_dimensions(int_oovv,rrankb,dimsb)
+        ierr = get_nmodes(int_oovv,rrankb)
+        ierr = get_extents(int_oovv,dimsb)
         ierr = direct_data_pointer(int_oovv,bodyb_p)
         call c_f_pointer(bodyb_p,tens_int_oovv,dimsb)
         tens_E_pair_corr = (0.d0,0.d0)
@@ -743,7 +759,7 @@ module eti_common_routines
 
       end subroutine Pair_correlation_energies
 
-      subroutine talsh_init_C8(h_tensor, val)
+      subroutine eti_init_C8(h_tensor, val)
 
         !routine for initializing a tensor
 
@@ -783,87 +799,102 @@ module eti_common_routines
         if (ierr.ne.0) stop 'error in getting DataKind'
         if (DataKind(1).ne.C8) stop 'wrong DataKind'
 
-        rank=talsh_tensor_rank(h_tensor)
+        ierr = get_nmodes(h_tensor,rank)
         if (rank.eq.0) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr = get_extents(h_tensor,dims1)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
 
         else if (rank.eq.1) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr = get_extents(h_tensor,dims1)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
         
         else if (rank.eq.2) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr = get_extents(h_tensor,dims2)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens2,dims2)
           tens2=val
 
         else if (rank.eq.3) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+! does this make sense ?
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr = get_extents(h_tensor,dims3)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens3,dims3)
           tens3=val
 
         else if (rank.eq.4) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims4)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
           tens4=val
 
         else if (rank.eq.5) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims5)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims5)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr = get_extents(h_tensor,dims5)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens5,dims5)
           tens5=val
 
         else if (rank.eq.6) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims6)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims6)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims6)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens6,dims6)
           tens6=val
 
         else if (rank.eq.7) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims7)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims7)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims7)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens7,dims7)
           tens7=val
 
 #ifndef VAR_NVFORTRAN
         else if (rank.eq.8) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims8)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens8,dims8)
           tens8=val
 
         else if (rank.eq.9) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims9)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims9)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims9)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens9,dims9)
           tens9=val
 
         else if (rank.eq.10) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims10)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims10)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims10)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens10,dims10)
           tens10=val
 #endif 
         else
-          stop 'error in talsh_init: only ranks 0 to 10 implemented (0 to 7 for NVFORTRAN)'
+          stop 'error in eti_init: only ranks 0 to 10 implemented (0 to 7 for NVFORTRAN)'
         end if
 
       end subroutine talsh_init_C8
@@ -909,82 +940,93 @@ module eti_common_routines
         if (ierr.ne.0) stop 'error in getting DataKind'
         if (DataKind(1).ne.R8) stop 'wrong DataKind'
 
-        rank=talsh_tensor_rank(h_tensor)
+        ierr = get_nmodes(h_tensor,rank)
         if (rank.eq.0) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr = get_extents(h_tensor,dims1)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
 
         else if (rank.eq.1) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr = get_extents(h_tensor,dims1)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
         
         else if (rank.eq.2) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr = get_extents(h_tensor,dims2)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens2,dims2)
           tens2=val
 
         else if (rank.eq.3) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr = get_extents(h_tensor,dims3)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens3,dims3)
           tens3=val
 
         else if (rank.eq.4) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims4)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
           tens4=val
 
         else if (rank.eq.5) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims5)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims5)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr = get_extents(h_tensor,dims5)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens5,dims5)
           tens5=val
 
         else if (rank.eq.6) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims6)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims6)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims6)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens6,dims6)
           tens6=val
 
         else if (rank.eq.7) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims7)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims7)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims7)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens7,dims7)
           tens7=val
 
 #ifndef VAR_NVFORTRAN
         else if (rank.eq.8) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims8)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens8,dims8)
           tens8=val
 
         else if (rank.eq.9) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims9)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims9)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims9)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens9,dims9)
           tens9=val
 
         else if (rank.eq.10) then
-          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims10)
-          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr=direct_data_pointer(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+!         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims10)
+!         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr = get_extents(h_tensor,dims10)
+          ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens10,dims10)
           tens10=val
 
