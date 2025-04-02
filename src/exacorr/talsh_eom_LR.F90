@@ -1,9 +1,9 @@
-module talsh_eom_LR
+module eti_eom_LR
     use tensor_algebra
-    use talsh
+    use exacorr_tensor_interface
     use exacorr_datatypes
     use exacorr_utils
-    use talsh_common_routines
+    use eti_common_routines
     use exacorr_global
     use eti_eom_rspeq_solver
     ! use talsh_cc_ci
