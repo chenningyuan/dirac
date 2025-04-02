@@ -805,7 +805,7 @@ module exacorr_tensor_interface
             stop 55
           END SELECT
           slice_tensor_t = ierr
-        end function initialize_tensor_t
+        end function slice_tensor_t
 
 
 
