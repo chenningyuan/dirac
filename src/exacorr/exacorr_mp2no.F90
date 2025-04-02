@@ -13,8 +13,8 @@ module exacorr_mp2no
         use exacorr_global
         use exacorr_ao_to_mo
         use exacorr_tensor_methods
-        use talsh_common_routines, only: write_talsh_matrix
-        use talsh_mp2no, only: get_new_orbital, get_transform_Fock
+        use eti_common_routines, only: write_2dtensor_as_matrix
+        use eti_mp2no, only: get_new_orbital, get_transform_Fock
         use mp2no_matrixtransforms
         use mp2no_fileinterfaces
         use interface_to_mpi
@@ -283,7 +283,7 @@ module exacorr_mp2no
             ierr=talsh_tensor_construct(tensor_slice,EXA_DATA_KIND_C8,h_dims,init_val=ZERO)
             ierr=exatns_tensor_get_slice(MP2_density_tensor%prime_vv,tensor_slice)
 
-            call write_talsh_matrix(nvir,tensor_slice,'DM_complex')
+            call  write_2dtensor_as_matrix(nvir,tensor_slice,'DM_complex')
             call print_date('Save DM in MO (spinor) basis to file : DM_complex')
 
             ierr=exatns_tensor_destroy(int_t%oooo)

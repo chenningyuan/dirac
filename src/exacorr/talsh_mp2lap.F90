@@ -416,7 +416,7 @@ module eti_mp2lap
 
         end do
 
-        call write_talsh_matrix(nvir,mp2_dens,'DM_complex')
+        call write_2dtensor_as_matrix(nvir,mp2_dens,'DM_complex')
 
         !clean up
         if (nocc<nchol) then
