@@ -643,7 +643,6 @@ module eti_common_routines
         if (rank.ne.ldims) stop 'error in get_element: wrong number of indices'
 
         if (rank.eq.1) then
-! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in get_element: wrong rank'
           ierr = get_extents(h_tensor,dims1)
@@ -897,10 +896,10 @@ module eti_common_routines
           stop 'error in eti_init: only ranks 0 to 10 implemented (0 to 7 for NVFORTRAN)'
         end if
 
-      end subroutine talsh_init_C8
+      end subroutine eti_init_C8
 
 
-      subroutine talsh_init_R8(h_tensor, val)
+      subroutine eti_init_R8(h_tensor, val)
 
         !routine for initializing a tensor
 
@@ -1032,10 +1031,10 @@ module eti_common_routines
 
 #endif
         else
-          stop 'error in talsh_init: only ranks 0 to 10 implemented (0 to 7 for NVFORTRAN)'
+          stop 'error in eti_init: only ranks 0 to 10 implemented (0 to 7 for NVFORTRAN)'
         end if
 
-      end subroutine talsh_init_R8
+      end subroutine eti_init_R8
 
       function tensor_norm2(a_tensor) result(a_norm2)
 
