@@ -1324,6 +1324,7 @@ C
             FACTOR = D1
             DO 300 IATOMC = 1, NATOMC
                if (addnai 
+     &             .or. (inttyp == 80)
      &             .or. (inttyp == 101)) then
                  factor = facint(iatomc)
                  if (dabs(factor) < 1.0d-40) then
