@@ -970,7 +970,7 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        'Calculation of electric field strength at the nuclei'
          CALL SETATM(DOATOM,NATOM,-INTTYP)
-         CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
+         CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR,INTTYP)
          ANTI = .FALSE.
       GOTO 200
 C
@@ -982,7 +982,7 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        'Calculation of electric field strength at the nuclei'
          CALL SETATM(DOATOM,NATOM,-INTTYP)
-         CALL EFNTYPNUC(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
+         CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR,INTTYP)
          ANTI = .FALSE.
       GOTO 200
 C
@@ -3226,7 +3226,7 @@ C
 
       end subroutine
 
-      SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
+      SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR,INTTYP)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3254,48 +3254,13 @@ C
                      IFIRST=ISCOOR/100
                      ISECND=MOD(ISCOOR,100)/10
                      ITHIRD = MOD(MOD(ISCOOR,100),10)
-                     LABINT(ITYP) = 'NEF '//CHRNOS(IFIRST)
+                     IF (INTTYP .EQ. 80) THEN
+                        LABINT(ITYP) = 'EFNU'//CHRNOS(IFIRST)
      &                       //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
-                     INTREP(ITYP) = IREP
-                     INTADR(ISCOOR) = ITYP
-                  END IF
- 200           CONTINUE
-            END IF
- 100     CONTINUE
- 50   CONTINUE
-      RETURN
-      END
-
-      SUBROUTINE EFNTYPNUC(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
-#include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
-#include "maxmom.h"
-#include "mxcent.h"
-#include "maxorb.h"
-      DIMENSION INTREP(9*MXCENT),INTADR(*)
-      LOGICAL DOATOM(NUCIND)
-      CHARACTER LABINT(9*MXCENT)*8
-#include "nuclei.h"
-#include "symmet.h"
-#include "chrnos.h"
-#include "ibtfun.h"
-      NOPTYP = 3*NATOM
-      CALL NTYPTS(NOPTYP)
-C
-      ITYP = 0
-      DO 50 IREP = 0, MAXREP
-         DO 100 IATOM = 1, NUCIND
-            IF (DOATOM(IATOM)) THEN
-               DO 200 ICOOR = 1, 3
-                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
-                  IF (ISCOOR .GT. 0) THEN
-                     ITYP = ITYP + 1
-                     IFIRST=ISCOOR/100
-                     ISECND=MOD(ISCOOR,100)/10
-                     ITHIRD = MOD(MOD(ISCOOR,100),10)
-                     LABINT(ITYP) = 'EFNU'//CHRNOS(IFIRST)
+                     ELSE ! INTTYP .EQ. 29
+                        LABINT(ITYP) = 'NEF '//CHRNOS(IFIRST)
      &                       //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
+                     END IF
                      INTREP(ITYP) = IREP
                      INTADR(ISCOOR) = ITYP
                   END IF
