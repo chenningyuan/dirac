@@ -6,6 +6,7 @@ module dirac_conmat_lao_utils
   implicit none
 
   public conmat_info_t
+  public conmat_vector_t
 
   private
 
@@ -31,6 +32,7 @@ module dirac_conmat_lao_utils
     procedure, pass, public :: fill_values
     procedure, pass, public :: get_label
     procedure, pass, public :: get_copy_of_values
+    procedure, pass, public :: get_symmetry_info
     procedure, pass   :: read_values => read_conmatvec_values_from_checkpoint
     procedure, pass, public :: write_to_checkpoint => write_conmatvec_to_checkpoint
     procedure, pass, public :: display => display_conmatvec_data
@@ -571,6 +573,18 @@ contains
 
     deallocate(tmp_rdata)
 
+  end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine get_symmetry_info(self, irep,iopsy,trsym)
+    class(conmat_vector_t), intent(in) :: self
+    integer, intent(out) :: irep,iopsy,trsym
+    !character(2), intent(out) :: typ
+
+    irep = self%irep
+    iopsy = self%iopsy
+    trsym = self%trsym
+    !typ = self%typ
   end subroutine
 
 

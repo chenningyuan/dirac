@@ -319,6 +319,8 @@ contains
     end select
 
     call self%reshape_from_q()
+    deallocate(self%elements_q)
+    !call self%display()
 
   end subroutine
 
@@ -346,8 +348,9 @@ contains
     class(dmat_t), intent(inout):: self
     integer :: ndim, nz
 
-    if (.not. self%allocated_elements() .and.&
+    if (.not. self%allocated_elements().or.&
         .not. self%allocated_elements_q()) return
+
 
     ndim = self%mat_dim
     nz   = self%mat_nz
@@ -361,8 +364,8 @@ contains
     class(dmat_t), intent(inout):: self
     integer :: ndim, nz
 
-    if (.not. self%allocated_elements() .and.&
-        .not. self%allocated_elements_q()) return
+    if (.not. self%allocated_elements_q().or.&
+        .not. self%allocated_elements()) return
 
     ndim = self%mat_dim
     nz   = self%mat_nz

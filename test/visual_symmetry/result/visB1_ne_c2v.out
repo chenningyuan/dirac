@@ -1,4 +1,4 @@
-Final grid_function values in grid points:
+Final grid_function values (grid_function%id=  1) in grid points (grid#id=  1):
 x,y,z,grid_function values
    6.76588605E-003   4.24902337E-001   7.15868641E-001   1.45109455E-001  -2.31063460E-003   1.08210224E-013
    2.60518074E-001   3.57375773E-001   4.62083841E-001   2.30540023E-001  -1.68057958E-001   1.32896494E-014

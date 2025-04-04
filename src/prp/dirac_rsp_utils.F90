@@ -276,7 +276,7 @@ contains
     character(len=16) :: lab1, lab2, lbuf
     character(len=2) :: typ1, typ2, vector_type
     character(len=1) :: pbuf
-    real(8) :: freq1, freq2, ergrsp, rnorm, ih_factor
+    real(8) :: freq1, freq2, ergrsp, rnorm
     integer :: jsymop1, jsymop2, jtimop1, jtimop2, ivector
     integer :: nbas, norbs, nbdim, lenrec, intflg
     integer :: i, idum, length, ih, ioff
@@ -349,10 +349,8 @@ contains
     select case (typ1(2:2))
       case ('+')
         ih        =  1
-        ih_factor =  1.0d0
       case ('-')
         ih        = -1
-        ih_factor = -1.0d0
       case default
         write (errmsg,*) 'reading PAMXVC: unexpected typ1(2:2)'
         call quit(errmsg)
@@ -1274,11 +1272,8 @@ contains
     class(response_vector_t), intent(in) :: self
     integer, intent(in) :: mat_ndim, mat_nz
     real(8), intent(out) :: mat(mat_ndim, mat_ndim, mat_nz)
-
-    real(8)              :: ih_factor
     character(100) :: errmsg
-    integer :: length, rsp_nz,   ndim, nz, irep, ih
-    integer :: i, s, is, iz, iq, im
+    integer :: length, rsp_nz, i, s, is, iz, iq, im
     real(8) :: f
 !
 !   based on scatter_vector (from old visual) and dmoli* subroutines (prp);
@@ -1320,7 +1315,5 @@ contains
     mat = -1.0d0*mat
 
   end subroutine
-
-
 
 end module
