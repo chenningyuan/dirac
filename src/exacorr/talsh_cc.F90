@@ -239,21 +239,21 @@ module talsh_cc
             ierr=talsh_tensor_construct(comm_t%hov,C8,ov_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
 !           initialize t3 amplitudes to zero (will later update them to starting values based on mp2 amplitudes)
-            if (iterative_level.ge.3) then 
-               vvvooo_dims(1:3) = nvir
-               vvvooo_dims(4:6) = nocc
-               ierr=talsh_tensor_construct(comm_t%t3,C8,vvvooo_dims,init_val=ZERO)
-            end if
-            if (iterative_level.ge.4) then 
-               vvvvoooo_dims(1:4) = nvir
-               vvvvoooo_dims(5:8) = nocc
-               ierr=talsh_tensor_construct(comm_t%t4,C8,vvvvoooo_dims,init_val=ZERO)
-            end if
-            if (iterative_level.ge.5) then
-               vvvvvooooo_dims(1:5) = nvir
-               vvvvvooooo_dims(6:10) = nocc
-               ierr=talsh_tensor_construct(comm_t%t5,C8,vvvvvooooo_dims,init_val=ZERO)
-            end if
+!            if (iterative_level.ge.3) then 
+!               vvvooo_dims(1:3) = nvir
+!               vvvooo_dims(4:6) = nocc
+!               ierr=talsh_tensor_construct(comm_t%t3,C8,vvvooo_dims,init_val=ZERO)
+!            end if
+!            if (iterative_level.ge.4) then 
+!               vvvvoooo_dims(1:4) = nvir
+!               vvvvoooo_dims(5:8) = nocc
+!               ierr=talsh_tensor_construct(comm_t%t4,C8,vvvvoooo_dims,init_val=ZERO)
+!            end if
+!            if (iterative_level.ge.5) then
+!               vvvvvooooo_dims(1:5) = nvir
+!               vvvvvooooo_dims(6:10) = nocc
+!               ierr=talsh_tensor_construct(comm_t%t5,C8,vvvvvooooo_dims,init_val=ZERO)
+ !           end if
          end if
          oooo_dims = nocc
          vovo_dims = nvir
@@ -290,14 +290,11 @@ module talsh_cc
 
          if (.not.CCD) then
             if (iterative_level.eq.5) then 
-               call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
-                              full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4, &
-                              full_t5_tensor=comm_t%t5)
+               call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2) !modified ctf
             else if (iterative_level.eq.4) then 
-               call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
-                              full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4)
+               call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2) !modified ctf
             else if (iterative_level.eq.3) then
-               call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2,full_t3_tensor=comm_t%t3)
+               call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2) !modified ctf
             else ! CCSD and variants
                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
             end if
@@ -338,12 +335,11 @@ module talsh_cc
 
          if (.not.CCD) then
             if (iterative_level.eq.5) then
-               call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3, &
-                          t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1) ! modified ctf
             else if (iterative_level.eq.4) then
-               call diis (t4_tensor=comm_t%t4,t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1) ! modified ctf
             else if (iterative_level.eq.3) then
-               call diis (t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1) ! modified ctf
             else
                call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
             end if
@@ -396,12 +392,11 @@ module talsh_cc
          !Destruct diis tensors
          if (.not.CCD) then
             if (iterative_level.eq.5) then
-               call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
-                          t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2) ! modified ctf
             else if (iterative_level.eq.4) then
-               call diis (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2) ! modified ctf
             else if (iterative_level.eq.3) then
-               call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2) ! modified ctf
             else
                call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
             end if
@@ -529,9 +524,9 @@ module talsh_cc
          if (.not.CCD) then
            ierr=talsh_tensor_destruct(comm_t%t1)
            ierr=talsh_tensor_destruct(l1_tensor)
-           if (iterative_level.ge.3) ierr=talsh_tensor_destruct(comm_t%t3)
-           if (iterative_level.ge.4) ierr=talsh_tensor_destruct(comm_t%t4)
-           if (iterative_level.ge.5) ierr=talsh_tensor_destruct(comm_t%t5)
+!           if (iterative_level.ge.3) ierr=talsh_tensor_destruct(comm_t%t3)
+!           if (iterative_level.ge.4) ierr=talsh_tensor_destruct(comm_t%t4)
+!           if (iterative_level.ge.5) ierr=talsh_tensor_destruct(comm_t%t5)
          end if
          ierr=talsh_tensor_destruct(l2_tensor)
 ! aspg
@@ -3405,9 +3400,16 @@ module talsh_cc
          if (.not.CCD) then
             ierr=talsh_to_tensor_t(comm_t_%fov, comm_t%fov, destroy=0)
             ierr=talsh_to_tensor_t(comm_t_%t1, comm_t%t1, destroy=0)
-            if (iterative_level.ge.3) ierr=talsh_to_tensor_t(comm_t_%t3, comm_t%t3, destroy=0)
-            if (iterative_level.ge.4) ierr=talsh_to_tensor_t(comm_t_%t4, comm_t%t4, destroy=0)
-            if (iterative_level.ge.5) ierr=talsh_to_tensor_t(comm_t_%t5, comm_t%t5, destroy=0)
+            if (iterative_level.ge.3) ierr=construct_tensor_t(comm_t%t3, C8, &
+                (/nvir,nvir,nvir,nocc,nocc,nocc/), init_val=ZERO)
+            if (iterative_level.ge.4) ierr=construct_tensor_t(comm_t%t4, C8, &
+                (/nvir,nvir,nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
+            if (iterative_level.ge.5) ierr=construct_tensor_t(comm_t%t5, C8, &
+                (/nvir,nvir,nvir,nvir,nvir,nocc,nocc,nocc,nocc,nocc/), init_val=ZERO)
+
+            ! if (iterative_level.ge.3) ierr=talsh_to_tensor_t(comm_t_%t3, comm_t%t3, destroy=0)
+            ! if (iterative_level.ge.4) ierr=talsh_to_tensor_t(comm_t_%t4, comm_t%t4, destroy=0)
+            ! if (iterative_level.ge.5) ierr=talsh_to_tensor_t(comm_t_%t5, comm_t%t5, destroy=0)
          end if
 
          ierr=talsh_to_tensor_t(int_t_%foo, int_t%foo, destroy=0)

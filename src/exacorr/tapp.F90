@@ -169,11 +169,12 @@ module tapp
 
     ! TAPP_scale_with_denominators
     interface
-    function TAPP_scale_with_denominators(info_, n_occ_, n_vir_, eps_occ_, eps_vir_, eps_ijk_) BIND(C, name='TAPP_scale_with_denominators') 
+    function TAPP_scale_with_denominators(info_, n_occ_, n_vir_, eps_occ_, eps_vir_, &
+        eps_ijk_) BIND(C, name='TAPP_scale_with_denominators') 
       use, intrinsic :: ISO_C_BINDING, only: c_int, C_PTR
       implicit none 
       
-      type(C_PTR) :: info_
+      type(C_PTR), value :: info_
       integer(c_int), intent(in), value :: n_occ_ 
       integer(c_int), intent(in), value :: n_vir_ 
       type(C_PTR), value :: eps_occ_, eps_vir_

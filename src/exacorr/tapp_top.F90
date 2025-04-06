@@ -860,31 +860,46 @@ module tapp_top
  function scale_with_denominators_tapp_tensor_t(tensor, eps_occ, eps_vir, eps_ijk)
     implicit none
     type(tapp_tensor_t), target, intent(inout)    :: tensor
-    real(8), intent(in), target                   :: eps_occ(:),eps_vir(:)
+    real(8), intent(in), target                   :: eps_occ(:), eps_vir(:)
     real(8), intent(in), optional                 :: eps_ijk
     integer(c_int)       :: tapp_err
-    complex(8), target                            :: eps_occ_(:),eps_vir_(:)
-    real(8), target                               :: eps_ijk_r
-    complex(8), target                            :: eps_ijk_
-    integer(c_int) :: n_occ, n_vir
+    complex(c_double_complex), allocatable, target               :: eps_occ_(:), eps_vir_(:)
+    real(c_double), target                               :: eps_ijk_r
+    complex(c_double_complex), target                            :: eps_ijk_
+    integer(c_int) :: i, n_occ, n_vir
     integer(c_int) :: scale_with_denominators_tapp_tensor_t
     
     eps_ijk_r = 0.0 
     if(present(eps_ijk)) eps_ijk_r = eps_ijk
+    eps_ijk_ = eps_ijk_r
+
+   if (is_empty_tapp_tensor_t(tensor)) then
+     ! write(*,'("  Error. non-constructed tensor in scale_with_denominators_tapp_tensor_t.")') 
+     call quit(" Error. non-constructed tensor in scale_with_denominators_tapp_tensor_t.")
+     stop 31
+   endif
     
     n_occ = size(eps_occ) 
     n_vir = size(eps_vir) 
     tapp_err =  -1
-    if (tensor %datatype == 1) then
+    if (tensor%datatype == 1) then
       tapp_err =TAPP_scale_with_denominators(tensor%tensor_info, n_occ, n_vir, &
                   c_loc(eps_occ(1)), c_loc(eps_vir(1)),  c_loc(eps_ijk_r))
-    elseif (te nsor%datatype == 3) then
-      eps_occ_  = complex(eps_occ, 0.0_8)
-      eps_vir_  = complex(eps_vir, 0.0_8)
+    elseif (tensor%datatype == 3) then
+      allocate(eps_occ_(n_occ))
+      allocate(eps_vir_(n_vir))
+      do i = 1, n_occ
+        eps_occ_(i) = eps_occ(i)
+      end do
+      do i = 1, n_vir
+        eps_vir_(i) = eps_vir(i)
+      end do
       tapp_err =TAPP_scale_with_denominators(tensor%tensor_info, n_occ, n_vir, &
                   c_loc(eps_occ_(1)), c_loc(eps_vir_(1)),  c_loc(eps_ijk_))
     endif 
 
+    if (allocated(eps_occ_)) deallocate(eps_occ_)
+    if (allocated(eps_vir_)) deallocate(eps_vir_)
     scale_with_denominators_tapp_tensor_t = tapp_err
  end function scale_with_denominators_tapp_tensor_t
 

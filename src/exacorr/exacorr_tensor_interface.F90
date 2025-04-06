@@ -331,7 +331,6 @@ module exacorr_tensor_interface
               allocate(lin_dim(1))
               lin_dim(1) = numel
   
-              write(*,'("  Error. Will broadcast numel: ",i11,".")') numel
               ierr=direct_data_pointer(in_tens,talshsptr)
 
               ! send out directly without making a local full copy

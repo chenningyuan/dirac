@@ -78,6 +78,7 @@ module talsh_common_routines
 
        integer, optional, intent(in) :: nocc
 
+
        if (present(t1_tensor)) then
 
           ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
@@ -340,7 +341,7 @@ type(tensor_t), optional, intent(inout)  :: full_t5_tensor
 real(8), intent(in)                          :: eps_occ(:),eps_vir(:)
 real(8), intent(in), optional                :: eps_ijk
 
-real(8)  :: denominator
+real(8)  :: denominator, eps_ijk_
 complex(8), pointer, contiguous:: t1_tens(:,:), t2_tens(:,:,:,:), t3_tens(:,:,:)
 complex(8), pointer, contiguous:: full_t3_tens(:,:,:,:,:,:)
 complex(8), pointer, contiguous:: full_t4_tens(:,:,:,:,:,:,:,:)
@@ -356,6 +357,30 @@ integer(INTD) :: ierr, tens_rank
 integer       :: a, b, c, d, e, i, j, k, l, m
 
 integer, optional, intent(in) :: nocc
+
+      eps_ijk_ = 0.0
+      if (present(eps_ijk)) eps_ijk_ = eps_ijk
+      ierr = 1370
+      if (present(t1_tensor) .and. t1_tensor%which_executor == 1) then
+        ierr = scale_with_denominators_tensor_t(t1_tensor, eps_occ, eps_vir, eps_ijk_) 
+      end if
+      if (present(t2_tensor) .and. t2_tensor%which_executor == 1) then
+        ierr = scale_with_denominators_tensor_t(t2_tensor, eps_occ, eps_vir, eps_ijk_) 
+      end if
+      if (present(full_t3_tensor) .and. full_t3_tensor%which_executor == 1) then
+        ierr = scale_with_denominators_tensor_t(full_t3_tensor, eps_occ, eps_vir, eps_ijk_) 
+      end if
+      if (present(full_t4_tensor) .and. full_t4_tensor%which_executor == 1) then
+        ierr = scale_with_denominators_tensor_t(full_t4_tensor, eps_occ, eps_vir, eps_ijk_) 
+      end if
+       if (present(full_t5_tensor) .and. full_t5_tensor%which_executor == 1) then
+         ierr = scale_with_denominators_tensor_t(full_t5_tensor, eps_occ, eps_vir, eps_ijk_) 
+       end if
+       if (present(t3_tensor) .and. t3_tensor%which_executor == 1) then
+        ierr = scale_with_denominators_tensor_t(t3_tensor, eps_occ, eps_vir, eps_ijk_) 
+      end if
+      if (ierr .ne. 1370) return
+      ierr = 0
 
 if (present(t1_tensor)) then
 
