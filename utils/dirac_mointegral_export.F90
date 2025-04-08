@@ -31,7 +31,7 @@ module dirac_mointegral_export
   logical, parameter     :: generate_full_list = .true.
   logical, parameter     :: generate_lower_triangular = .false.
   logical, parameter     :: sorting_wrt_energy = .false. ! sort wrt spinor's energy.
-  logical, parameter     :: sorting_wrt_occupied = .false. ! sort wrt spinor's lowest occupied
+  logical, parameter     :: sorting_wrt_occupied = .true. ! sort wrt spinor's lowest occupied
   integer, parameter     :: filenumber_55 = 55
   integer, parameter     :: filenumber_56 = 56
   character(10)          :: target
