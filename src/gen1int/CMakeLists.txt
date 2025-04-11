@@ -19,7 +19,6 @@ set(ExternalProjectCMakeArgs
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 # needed for cmake version >= 4
     )
 
 add_external(gen1int)
