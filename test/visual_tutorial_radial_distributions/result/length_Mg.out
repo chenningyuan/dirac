@@ -190,7 +190,7 @@ Version information
 -------------------
 
 Branch        | gosia/visual
-Commit hash   | 9afb89606
+Commit hash   | 010580971
 Commit author | gosia olejniczak
 Commit date   | Sun Feb 23 10:03:29 2025 +0100
 
@@ -204,7 +204,7 @@ Operating system         | Linux-4.18.0-477.27.1.el8_8.x86_64
 CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2025-02-23 09:40:33.135195+00:00
+Configuration time       | 2025-02-23 10:08:49.544482+00:00
 Fortran compiler         | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiifort
 Fortran compiler version | 2021.4
 Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFORT  -qopenmp -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp
@@ -239,7 +239,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Sun Feb 23 10:45:45 2025
+     Date and time (Linux)  : Sun Feb 23 11:52:57 2025
      Host name              : ac0478                                  
 
  * Opening checkpoint file 
@@ -866,8 +866,6 @@ Mg     0.0000000000   0.0000000000   0.0000000000
 No. of electronic orbitals (NESH):    49      57     106
 No. of positronic orbitals (NPSH):    49      57     106
 Total no. of orbitals      (NORB):    98     114     212
- >>> CPU  time used in PAMSET is   0.08 seconds
- >>> WALL time used in PAMSET is   0.10 seconds
 
   *** Visualization module ***
  WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb
@@ -882,7 +880,7 @@ Total no. of orbitals      (NORB):    98     114     212
 *** VISUAL output ***
  
 Final grid_function values (grid_function%id=  1) integrated on grid (grid#id=  1): 
-   9.85029370E-001   2.13875819E-020   5.21984054E-020
+  -9.85029370E-001   8.52326903E-021  -1.66759611E-020
  
   Opening existing HDF5 file for rsp data import: 
   RSP Checkpoint file closed
@@ -890,7 +888,7 @@ Final grid_function values (grid_function%id=  1) integrated on grid (grid#id=  
 *** VISUAL output ***
  
 Final grid_function values (grid_function%id=  2) integrated on grid (grid#id=  1): 
-   1.46875869E-010   3.30296985E-031   9.19438955E-031
+  -1.46875869E-010   1.98139673E-030  -3.33494029E-030
  
   Opening existing HDF5 file for rsp data import: 
   RSP Checkpoint file closed
@@ -932,7 +930,7 @@ Mg      1   0.123E-07   0.289E+02   0.101E+00     191   11564
 *** VISUAL output ***
  
 Final grid_function values (grid_function%id=  5) integrated on grid (grid#id=  2): 
-   9.99999992E-001   6.35736886E-001   6.35736886E-001
+  -9.99999992E-001  -6.35736886E-001  -6.35736886E-001
  
   Opening existing HDF5 file for rsp data import: 
   RSP Checkpoint file closed
@@ -940,9 +938,9 @@ Final grid_function values (grid_function%id=  5) integrated on grid (grid#id=  
 *** VISUAL output ***
  
 Final grid_function values (grid_function%id=  6) integrated on grid (grid#id=  2): 
-   1.46884431E-010   9.32521287E-011   9.32521293E-011
+  -1.46884431E-010  -9.32521289E-011  -9.32521295E-011
  
- Elapsed walltime in run_visual:   -6.30764100000000     
+ Elapsed walltime in run_visual:   -6.40172500000000     
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -954,10 +952,10 @@ Final grid_function values (grid_function%id=  6) integrated on grid (grid#id=  
 
 
  
-     Date and time (Linux)  : Sun Feb 23 10:45:52 2025
+     Date and time (Linux)  : Sun Feb 23 11:53:04 2025
      Host name              : ac0478                                  
 
->>>> Node 0, utime: 6, stime: 0, minflt: 25437, majflt: 143, nvcsw: 3807, nivcsw: 330, maxrss: 377480
+>>>> Node 0, utime: 6, stime: 0, minflt: 25180, majflt: 140, nvcsw: 3778, nivcsw: 349, maxrss: 374544
 >>>> Total WALL time used in DIRAC: 7s
   
   Dynamical Memory Usage Summary for Master
