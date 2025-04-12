@@ -3149,7 +3149,7 @@ C        Check for inconsistencies:
 C
 chj      1.0D-10 can give problems with 1.0D-10 screening in GASCIP
 C        THRDHS = 1.0D-10
-         THRDHS = MAX(1.0D-08,THRSCR*100.0D0)
+         THRDHS = MAX(1.0D-07,THRSCR*100.0D0)
          DHSR = 0.0D0
          DHSI = 0.0D0
          DO I = 1, N_CRED
