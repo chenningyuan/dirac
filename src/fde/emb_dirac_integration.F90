@@ -851,9 +851,9 @@ contains
 !        print *,'nr_mo_gerade_positive_active #1',nr_mo_gerade_positive_active
 !        print *,'nr_mo_ungerade_positive_active #1',nr_mo_ungerade_positive_active
 !        get average density from open shells
-!        if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #1' 
+!        if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call emb_gtdoav #1' 
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) &
-            call gtdoav(mat_dim, nz, 1, dmat_0, 1)
+            call emb_gtdoav(mat_dim, nz, 1, dmat_0)
 
          if (.not. do_electrostatic_pot) then
 #ifdef PRG_DIRAC
@@ -945,8 +945,8 @@ contains
 !        print *,'nr_mo_gerade_positive_active #2',nr_mo_gerade_positive_active
 !        print *,'nr_mo_ungerade_positive_active #2',nr_mo_ungerade_positive_active
 !        get average density from open shells
-!        if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #2'
-         if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
+!        if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call emb_gtdoav #2'
+         if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call emb_gtdoav(mat_dim, nz, 1, dmat_0)
 
 !        symmetrize matrices
          if (fde_use_blas3_scheme .or. (use_gga                         &

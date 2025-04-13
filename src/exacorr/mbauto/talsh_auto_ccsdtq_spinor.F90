@@ -95,6 +95,7 @@ subroutine talsh_CCSDTQ_codegen_call(nocc,nvir, &
     type(talsh_tens_t) :: Z92_2    !       VVVV
     type(talsh_tens_t) :: Z142_1    !       VVOOOV
 
+#ifndef VAR_NVFORTRAN
 
     ierr=talsh_tensor_construct(Z75_1, C8, (/nocc,nvir/), init_val=ZERO)
 !   original expression: Z75_1(l1b|d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|l2b)*0.5
@@ -8754,5 +8755,9 @@ subroutine talsh_CCSDTQ_codegen_call(nocc,nvir, &
 !   original expression: Z61(e1be2be3be4b|m1bm2bm3bm4b)+=S46(e2be3be4b,d1b|m2bm3bm4b,l1b)*H18(e1b,l1b|m1b,d1b)
     ierr=talsh_tensor_contract("Z61(e1,e2,e3,e4,m1,m2,m3,m4)+=S46(e2,e3,e4,d1,m2,m3,m4,l1)*H18(e1,l1,m1,d1)", &
         Z61,S46,H18,scale=(1.0d0,0.0d0))
+
+#else
+    stop 'Tensors with more than 7 dimensions not supported by NVFORTRAN'
+#endif
 
 end subroutine talsh_CCSDTQ_codegen_call 

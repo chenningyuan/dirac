@@ -2,7 +2,7 @@ module xc_ac
 
    use dft_cfg
    use interface_functional_read
-   use extra
+   use xcint_extra
    use xc_derv
    use xc_max_block_length
    use interface_ao

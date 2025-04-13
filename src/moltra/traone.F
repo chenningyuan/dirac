@@ -140,7 +140,7 @@ C
       Allocate(DMATfull(N2BBASXQ))! Miro: full density matrix
 C
       CALL GTCFC1(FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,
-     &      NSTR,NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
+     &      NSTR,NDMOQC,ICMOQC,NSPC,NSPC2,IPRINT,WORK,KFREE,LFREE)
 C
 C     Print section
 C
@@ -170,7 +170,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GTCFC1 */
       SUBROUTINE GTCFC1(
      &   FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
-     &          NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
+     &          NDMOQC,ICMOQC,NSPC,NSPC2,IPRINT,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
@@ -212,7 +212,7 @@ C
       DIMENSION FMO(*),FAO(*),DMAT(*),DMATfull(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),NSPC2(2,0:3)
-      DIMENSION Q1(*),Q2(*),QCO(*),QCO2(*),CMO(*)
+      DIMENSION Q1(*),Q2(*),QCO(*),CMO(*)
 
       Integer, Allocatable :: POS(:)
       real(8)              :: f_occ

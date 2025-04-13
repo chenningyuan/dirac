@@ -41,7 +41,7 @@ endif()
 
 add_library(
     visual 
-    OBJECT
+    STATIC
     ${FIXED_VISUAL_FORTRAN_SOURCES}
     ${FREE_VISUAL_FORTRAN_SOURCES}
 )

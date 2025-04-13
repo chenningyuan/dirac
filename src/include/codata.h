@@ -1,7 +1,7 @@
 ! ** COMMON block for CODATA
 !     CODSET - Codata set of values.
 !              Available as: CODATAXX, where XX possible values are
-!                            86, 98, 02, 06, 10, 14, 18
+!                            86, 98, 02, 06, 10, 14, 18, 22
 !     Fundamental and derived constants declared as real*8 values
 !
 !#include <codata.h>

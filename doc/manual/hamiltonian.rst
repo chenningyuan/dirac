@@ -214,6 +214,15 @@ include)::
   .INTFLG
    1 1 0
 
+keyword(ESHIFT)
+
+Specify an energy shift in units of :math:`mc^2`.
+By default the zero of the energy is aligned with the non-relativistic energy scale.
+To shift back to the relativistic scale, one can specify::
+
+  .ESHIFT
+  1.0D0
+
 
 **Turning off spin dependence**
 ===============================
@@ -254,8 +263,31 @@ keyword(SPINF2)
 .. warning:: documentation missing
 
 
-**Advanced: Other projection operators**
-========================================
+**Other projection operators**
+==============================
+
+keyword(ASHIFT)
+
+Define atomic shift operator
+
+.. math::
+
+   V = \sum_{A}\sum_{I\in A}\sum_{i\in I}|\varphi^A_i\rangle \varepsilon^A_I \langle \varphi^A_i|
+
+where :math:`A` is a sum over atomic types. For each atomic types a group :math:`I` of orbitals may be
+specified with an associated shift parameter :math:`\varepsilon^A_I`.    
+Example::
+
+   .ASHIFT
+   AFCXXX
+   1
+   -9.328
+   1,2
+   AFOXXX
+   0
+
+Following the keyword there is a loop over the atomic types of the molecule under consideration, in this case carbon monoxide. For each atomic type one must specify the name of the coefficient file for the atom and the number of groups :math:`I`. For each group one then specifies the shift parameter :math:`\varepsilon^A_I` and then :ref:`orbital_strings` for each group.
+In the example above we specify one group for carbon. It involves a shift parameter -9.328 and the first and second atomic orbitals, that is, :math:`C1s` and :math:`C2s`. For oxygen there a no groups.   
 
 keyword(FREEPJ)
 
@@ -391,6 +423,7 @@ the 2-component spin-orbit calculation is conducted, whereas the spin-free
 (1-component) calculation is performed by omitting the SO part in the ECP parameter.
 Point nucleus model is default for ECP.
 (See :ref:`ecp_input`)
+
 
 
 **External fields/Environment**
@@ -705,17 +738,3 @@ keyword(QDOTS)
 
 .. warning:: documentation missing
 
-
-keyword(MMF)
-
-.. warning:: documentation missing
-
-
-keyword(xB)
-
-.. warning:: documentation missing
-
-
-keyword(xC)
-
-.. warning:: documentation missing

@@ -16,13 +16,7 @@ if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
 
-if (CMAKE_Fortran_COMPILER_ID MATCHES XL OR CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
-# xlf compiler does not support isnan used
-# nvfortran compiler does not suppore real*16
-    option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
-else()
-    option(ENABLE_STIELTJES "Enable stieltjes library" ON)
-endif()
+option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
 if(ENABLE_STIELTJES)
     add_definitions(-DHAS_STIELTJES)
 endif()
@@ -68,7 +62,7 @@ endif()
 # variable.
 #
 # The resulting ${EXTERNAL_LIBS} variable contains localized source libraries of all functionality modules
-# of DIRAC (main,dirac,relccsd,prp,reladc, interest ...)
+# of DIRAC (dirac_main,dirac,relccsd,prp,reladc, interest ...)
 #
 # Due to entanglements between libraries (like dirac depends localization and vise versa) it is necessary
 # to keep source files (modules) as localized as possible and with minimal interdependencie on other modules.
@@ -121,6 +115,17 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:moltra> ${EXTERNAL_OBJECTS})
 #    frozen density embedding as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/fde)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:fde> ${EXTERNAL_OBJECTS})
+
+# XAMFI as separate library; before x2c because x2c depends on XAMFI
+if(ENABLE_XAMFI)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/x-amfi)
+    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:x-amfi> ${EXTERNAL_OBJECTS})
+    dirac_test(atomic_x2c_2esoc_models_energy "medium;xamfi" "")
+    dirac_test(atomic_x2c_spinfree_energy "medium;xamfi" "")
+    dirac_test(x_amfi "short;xamfi" "")
+    message(STATUS "NOTE: tests for the (e)amfX2C 2e-scalar and spin-orbit picture-change correction module require h5py in your python env!")
+endif()
+message(STATUS "(e)amfX2C 2e-scalar and spin-orbit picture-change correction module: ${ENABLE_XAMFI}")
 
 # Making x2c as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/x2c)
@@ -197,7 +202,7 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krmc> ${EXTERNAL_OBJECTS})
 if(ENABLE_ESR)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp/esr)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:esr> ${EXTERNAL_OBJECTS})
-    dirac_test(esr "medium;gascip;ci" "")
+    dirac_test(esr "short;gascip;ci" "")
 endif()
 message(STATUS "ESR property module: ${ENABLE_ESR}")
 
@@ -315,17 +320,6 @@ message(STATUS "LAO properties without connection matrices: ${ENABLE_LAO_REARRAN
 #  mcscf_sf as separate library
 message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
 
-# XAMFI as separate library
-if(ENABLE_XAMFI)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/x-amfi)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:x-amfi> ${EXTERNAL_OBJECTS})
-    dirac_test(atomic_x2c_2esoc_models_energy "medium;xamfi" "")
-    dirac_test(atomic_x2c_spinfree_energy "medium;xamfi" "")
-    dirac_test(x_amfi "short;xamfi" "")
-    message(STATUS "NOTE: tests for the (e)amfX2C 2e-scalar and spin-orbit picture-change correction module require h5py in your python env!")
-endif()
-message(STATUS "(e)amfX2C 2e-scalar and spin-orbit picture-change correction module: ${ENABLE_XAMFI}")
-
 #  srdft module as separate library
 if(ENABLE_SRDFT)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/srdft)
@@ -353,7 +347,7 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:input> ${EXTERNAL_OBJECTS})
 
 # main directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
-set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:main> ${EXTERNAL_OBJECTS})
+set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:dirac_main> ${EXTERNAL_OBJECTS})
 
 # make these variables visible to the cmake one level up
 set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)

@@ -62,7 +62,7 @@ endif()
 
 add_library(
     cfun
-    OBJECT
+    STATIC
     ${FIXED_CFUN_FORTRAN_SOURCES}
     ${FREE_CFUN_FORTRAN_SOURCES}
     ${CFUN_C_SOURCES}

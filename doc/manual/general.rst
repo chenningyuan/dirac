@@ -116,10 +116,10 @@ By default set to::
 
 keyword(CVALUE)
 
-Speed of light in a.u. Default (from CODATA18)::
+Speed of light in a.u. Default (from CODATA22)::
 
   .CVALUE
-   137.035999167
+   137.035999177
 
 
 keyword(LOGMEM)
@@ -132,7 +132,7 @@ keyword(CODATA)
 
 Select the fundamental physical constants used througout the code.
 The values are taken from different CODATA sets. Current available data sets are
-CODATA86, CODATA98, CODATA02, CODATA06, CODATA10, CODATA14 and CODATA18.
+CODATA86, CODATA98, CODATA02, CODATA06, CODATA10, CODATA14, CODATA18, and CODATA22.
 For the weak mixing angle and the Fermi coupling constant, there are also values
 reported in 1994 by the Particle Data Group (PDG) that were not included in any of those
 CODATA sets, and can be used with the keyword PDG94. When PDG94 is used, all other
@@ -140,15 +140,6 @@ constants are taken from the Default CODATA set.
 Default::
 
   .CODATA
-   CODATA18
+   CODATA22
 
-
-keyword(NOSET)
-
-.. warning:: documentation missing
-
-
-keyword(SKIP2E)
-
-.. warning:: documentation missing
 
