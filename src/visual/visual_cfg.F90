@@ -475,17 +475,17 @@ contains
       end if
     end if
 
-#ifdef VAR_MPI
-    !fixme
-    if (is_parallel().and.(grid_function%name == 'esp'&
-                       .or.grid_function%name == 'espe'&
-                       .or.grid_function%name == 'espn'&
-                       .or.grid_function%name == 'esprho'&
-                       .or.grid_function%name == 'esperho'&
-                       .or.grid_function%name == 'espnrho')) then
-      errmsg=errmsg//'ESP functions can only be calculated in serial mode'
-    end if
-#endif
+!#ifdef VAR_MPI
+!    !fixme
+!    if (is_parallel().and.(grid_function%name == 'esp'&
+!                       .or.grid_function%name == 'espe'&
+!                       .or.grid_function%name == 'espn'&
+!                       .or.grid_function%name == 'esprho'&
+!                       .or.grid_function%name == 'esperho'&
+!                       .or.grid_function%name == 'espnrho')) then
+!      errmsg=errmsg//'ESP functions can only be calculated in serial mode'
+!    end if
+!#endif
 
     ! additional setup/check
 

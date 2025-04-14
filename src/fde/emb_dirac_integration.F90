@@ -1606,8 +1606,8 @@ contains
                          size(dmat, 1), &
                          dmat,          &
                          (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
-                         nuc_part,      &
-                         ele_part)
+                         include_nuc_part=nuc_part,      &
+                         include_el_part=ele_part)
 
 ! aspg, 14/10/2015
 !       note that the electrostatic, hartree and nuclear potentials in dirac have

@@ -593,6 +593,9 @@ contains
                      dmat%mat_dim,  &
                      dmat%elements,   &
                      (/px, py, pz/), &
+                     mol%nucdep,&
+                     mol%nuc_charge_dep,&
+                     mol%geometry_dep,&
                      include_nuc_part=.false., &
                      include_el_part=.true.)
 !       gosia: figure out why this should be scaled
@@ -608,6 +611,9 @@ contains
                      dmat%mat_dim,  &
                      dmat%elements,   &
                      (/px, py, pz/), &
+                     mol%nucdep,&
+                     mol%nuc_charge_dep,&
+                     mol%geometry_dep,&
                      include_nuc_part=.true., &
                      include_el_part=.false.)
         grid_function_values(1:1,ipoint:ipoint) = temp1(1)
@@ -622,6 +628,9 @@ contains
                      dmat%mat_dim,  &
                      dmat%elements,   &
                      (/px, py, pz/), &
+                     mol%nucdep,&
+                     mol%nuc_charge_dep,&
+                     mol%geometry_dep,&
                      include_nuc_part=.false., &
                      include_el_part=.true.)
 !       gosia: figure out why this should be scaled
@@ -634,6 +643,9 @@ contains
                      dmat%mat_dim,  &
                      dmat%elements,   &
                      (/px, py, pz/), &
+                     mol%nucdep,&
+                     mol%nuc_charge_dep,&
+                     mol%geometry_dep,&
                      include_nuc_part=.true., &
                      include_el_part=.false.)
         grid_function_values(1:1,ipoint:ipoint) = &
@@ -650,6 +662,9 @@ contains
                      dmat%mat_dim,  &
                      dmat%elements,   &
                      (/px, py, pz/), &
+                     mol%nucdep,&
+                     mol%nuc_charge_dep,&
+                     mol%geometry_dep,&
                      include_nuc_part=.false., &
                      include_el_part=.true.)
 
@@ -673,6 +688,9 @@ contains
                      dmat%mat_dim,  &
                      dmat%elements,   &
                      (/px, py, pz/), &
+                     mol%nucdep,&
+                     mol%nuc_charge_dep,&
+                     mol%geometry_dep,&
                      include_nuc_part=.true., &
                      include_el_part=.false.)
 
@@ -695,6 +713,9 @@ contains
                      dmat%mat_dim,  &
                      dmat%elements,   &
                      (/px, py, pz/), &
+                     mol%nucdep,&
+                     mol%nuc_charge_dep,&
+                     mol%geometry_dep,&
                      include_nuc_part=.false., &
                      include_el_part=.true.)
         grid_function_values(1:1,ipoint:ipoint) = 0.5d0*temp1(1)
@@ -706,6 +727,9 @@ contains
                      dmat%mat_dim,  &
                      dmat%elements,   &
                      (/px, py, pz/), &
+                     mol%nucdep,&
+                     mol%nuc_charge_dep,&
+                     mol%geometry_dep,&
                      include_nuc_part=.true., &
                      include_el_part=.false.)
 

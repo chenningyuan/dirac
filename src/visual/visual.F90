@@ -9,6 +9,7 @@ module visual
 ! current limitations:
 ! * calculations are done on one molecular system,
 ! * data is read from DIRAC's CHECKPOINT.h5 (molecular information+wave function) and from RESPONSE.h5 (response parameters)
+! * but AOs are generated in the "old" way (using `xcint/` modules) 
 
   use visual_cfg
   use visual_dirac

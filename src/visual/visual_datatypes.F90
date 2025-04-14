@@ -17,6 +17,10 @@ module visual_datatypes
     real(8), allocatable, public :: geometry(:,:)
     real(8), allocatable, public :: nuc_charge(:)
     character*4, allocatable, public :: symbols(:)
+!   temp (fix for esp)
+    integer, public :: nucdep = 0
+    real(8), allocatable, public :: geometry_dep(:,:)
+    real(8), allocatable, public :: nuc_charge_dep(:)
   contains
     private
     procedure, pass, public:: in_use => mol_in_use
@@ -522,10 +526,15 @@ contains
     write(*, *)
     write(*, *) ' MOL:'
     write(*, *) 'n_atoms =    ', self%n_atoms
+    write(*, *) 'nucdep  =    ', self%nucdep
     do i = 1, self%n_atoms
       write(*, *) 'position of    ', i, (self%geometry(j,i), j = 1, 3)
       write(*, *) 'nuc_charge of  ', i, self%nuc_charge(i)
       !write(*, *) 'symbol of      ', i, self%symbols(i)
+    end do
+    do i = 1, self%nucdep
+      write(*, *) '(symmetry-dep) position of    ', i, (self%geometry_dep(j,i), j = 1, 3)
+      write(*, *) '(symmetry-dep) nuc_charge of  ', i, self%nuc_charge_dep(i)
     end do
     write(*, *)
    end subroutine

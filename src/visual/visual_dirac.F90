@@ -316,12 +316,15 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine visual_initialize_data_from_dirac(mol, mo, ao_basis)
+#include "mxcent.h"
+#include "nuclei.h"
     type(mol_t), intent(out):: mol
     type(cmo_t), intent(out):: mo
     type(basis_set_info_t), intent(out) :: ao_basis
     character*(:),allocatable:: group, section
     character(len=80) :: wf_data
     logical:: dirac_mol, dirac_mo, dirac_ao, tobe
+    integer:: i,j,k
 !
 !   read data from DIRAC's CHECKPOINT file(s) into DTs
 !
@@ -391,6 +394,22 @@ contains
 !
 !   read data from DIRAC's common blocks
 !
+
+!   data from nuclei.h, passed to mol:
+!   this is a fix for esp* functions in parallel
+    mol%nucdep=nucdep
+    allocate(mol%geometry_dep(3, mol%nucdep))
+    mol%geometry_dep=0.0
+    allocate(mol%nuc_charge_dep(mol%nucdep))
+    mol%nuc_charge_dep=0.0
+    call getacord(mol%geometry_dep)
+    i = 0
+    do j=1,mol%n_atoms
+       do k = 1,nucdeg(j)
+          i = i + 1
+          mol%nuc_charge_dep(i) = charge(j)
+       enddo
+    enddo
 
   end subroutine visual_initialize_data_from_dirac
 
@@ -679,11 +698,14 @@ contains
     call interface_mpi_bcast(len_xc_functional,1,irank_master,global_communicator)
 
     call interface_mpi_bcast(mol%n_atoms,1,irank_master,global_communicator)
+    call interface_mpi_bcast(mol%nucdep,1,irank_master,global_communicator)
 
     if (.not.mpi_is_master()) then
       allocate(mol%symbols(mol%n_atoms))
       allocate(mol%geometry(3, mol%n_atoms))
       allocate(mol%nuc_charge(mol%n_atoms))
+      allocate(mol%geometry_dep(3, mol%nucdep))
+      allocate(mol%nuc_charge_dep(mol%nucdep))
       if (len_hamiltonian > 0) allocate(character(len_hamiltonian):: rs_wf%hamiltonian)
       if (len_xc_functional > 0) allocate(character(len_xc_functional):: rs_wf%xc_functional)
     end if
@@ -694,6 +716,8 @@ contains
     call interface_mpi_bcast(mol%symbols,mol%n_atoms,irank_master,global_communicator)
     call interface_mpi_bcast(mol%geometry,3*mol%n_atoms,irank_master,global_communicator)
     call interface_mpi_bcast(mol%nuc_charge,mol%n_atoms,irank_master,global_communicator)
+    call interface_mpi_bcast(mol%geometry_dep,3*mol%nucdep,irank_master,global_communicator)
+    call interface_mpi_bcast(mol%nuc_charge_dep,mol%nucdep,irank_master,global_communicator)
 
     call interface_mpi_bcast(cmo%n_ao,2,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%n_mo,2,irank_master,global_communicator)

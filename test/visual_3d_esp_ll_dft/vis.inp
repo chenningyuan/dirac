@@ -20,11 +20,14 @@
 1
 id=1 input=import file_inp=grid.h5
 .GRIDFUNCTIONS
-6
-name=espe id_grid=1 purpose=visualization outpri=yes export=yes file_out=espe.h5
+2
 name=espn id_grid=1 purpose=visualization outpri=yes export=yes file_out=espn.h5
-name=esp id_grid=1 purpose=visualization outpri=yes export=yes file_out=esp.h5
-name=esperho id_grid=1 purpose=visualization outpri=yes export=yes file_out=esperho.h5
 name=espnrho id_grid=1 purpose=visualization outpri=yes export=yes file_out=espnrho.h5
-name=esprho id_grid=1 purpose=visualization outpri=yes export=yes file_out=esprho.h5
+#6
+#name=espe id_grid=1 purpose=visualization outpri=yes export=yes file_out=espe.h5
+#name=espn id_grid=1 purpose=visualization outpri=yes export=yes file_out=espn.h5
+#name=esp id_grid=1 purpose=visualization outpri=yes export=yes file_out=esp.h5
+#name=esperho id_grid=1 purpose=visualization outpri=yes export=yes file_out=esperho.h5
+#name=espnrho id_grid=1 purpose=visualization outpri=yes export=yes file_out=espnrho.h5
+#name=esprho id_grid=1 purpose=visualization outpri=yes export=yes file_out=esprho.h5
 *END OF

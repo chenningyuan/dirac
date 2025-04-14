@@ -295,6 +295,7 @@
       end if
 
       if (kw_matches(word, '.SMALLA')) then
+         ! kept from the old code; there and here - unused
          rs_input%force_small_ao=.true.
       end if
 

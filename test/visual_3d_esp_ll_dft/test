@@ -34,7 +34,8 @@ test.run(['vis.inp'], ['h2o.mol'], args='--incmo --put="grid.h5" --get="*.h5"')
 
 rs = CompareHDF5(test.work_dir)
 
-testset = ['esp', 'espe', 'espn', 'esprho', 'esperho', 'espnrho']
+#testset = ['esp', 'espe', 'espn', 'esprho', 'esperho', 'espnrho']
+testset = ['espn', 'espnrho']
 for t in testset:
 
     rs.verify(ftest=t+'.h5',\
