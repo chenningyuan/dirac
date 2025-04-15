@@ -1821,9 +1821,11 @@ contains
             allocate(result_t%values_rhs(N_state,1))
         end if 
 
-        print *, "number of states: ", N_state
-        print *, "problem dimension:",N
-        ! print *, "N_state of e_small: ", size(e_small)
+        print *, ""
+        print *, "Number of eigenvectors          : ",N_state
+        print *, "Subspace dimension (L)          : ",N
+        print *, "Eigenvector dimension (# Det.)  : ",workspace_t%N
+        print *, ""
 
         do istate=1, N_state
             if (left) then
@@ -1851,6 +1853,7 @@ contains
                     workspace_t%trial2(iroot),one_tensor,scale=factor) 
             end if 
           end do
+          print *, " Done with state ",istate
         end do 
 
         !  call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
@@ -1976,7 +1979,8 @@ contains
 ! as was the case with relccsd, if we give a negative number for the number of roots, the code will assume we want
 ! as many roots as the there are columns in Hbar (=size of the excitation manifold)..
 
-        remainder = mod(config%max_subspace_size,workspace_t%nroots)
+        workspace_t%Lmax = config%max_subspace_size
+        remainder = mod(workspace_t%Lmax,workspace_t%nroots)
         if (nroots.lt.0) then
            print *, 'INFO: number of roots reset to the dimension of Hbar'
            workspace_t%nroots = excitation_manifold_size 
