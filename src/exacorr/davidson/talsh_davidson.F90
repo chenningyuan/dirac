@@ -1910,7 +1910,9 @@ contains
         integer :: ierr, i
         integer :: n_continuum_occ, n_continuum_virt
         integer :: excitation_manifold_size
+        integer :: remainder
 
+        workspace_t%nroots = nroots
 ! start out by dealing with excitation level
         allocate(workspace_t%N(excitation_level))
 
@@ -1974,18 +1976,20 @@ contains
 ! as was the case with relccsd, if we give a negative number for the number of roots, the code will assume we want
 ! as many roots as the there are columns in Hbar (=size of the excitation manifold)..
 
+        remainder = mod(config%max_subspace_size,workspace_t%nroots)
         if (nroots.lt.0) then
            print *, 'INFO: number of roots reset to the dimension of Hbar'
            workspace_t%nroots = excitation_manifold_size 
            workspace_t%Lmax   = excitation_manifold_size
-        else
-           if (nroots.gt.excitation_manifold_size) then
-              print *, 'INFO: number of roots > dimension of Hbar, resetting it'
-           end if
+        else if (nroots.gt.excitation_manifold_size) then
+           print *, 'INFO: number of roots > dimension of Hbar, resetting it'
            workspace_t%nroots = min(nroots,excitation_manifold_size)
            print *, "excitation_manifold_size:", excitation_manifold_size
            print *, "max_subspace_size:", config%max_subspace_size
            workspace_t%Lmax   = min(config%max_subspace_size,excitation_manifold_size)
+        else if (remainder.ne.0) then
+           print *, 'INFO: input max. subspace size  not a multiple of number of roots, adjusting it'
+           workspace_t%Lmax   = config%max_subspace_size + workspace_t%nroots - remainder 
         end if
         workspace_t%L      = workspace_t%nroots
         workspace_t%Lprev  = workspace_t%nroots
@@ -2037,9 +2041,9 @@ contains
 
 ! debug statements
 !       if (workspace_create_debug) then
-           write(config%output_file_unit, "(4x,a)")  'in talsh_davidson_workspace_create'
-
-           write(config%output_file_unit, "(4x,a,i6,2x,a,2x,i6)") &
+           write(config%output_file_unit, "(4x,a)")  ''
+           write(config%output_file_unit, "(4x,a)")  'in davidson_workspace_create'
+           write(config%output_file_unit, "(4x,a,i18,2x,a,2x,i6)") &
      &  'created tensor for trial vectors, dimensions :',workspace_t%Nmax,"x",workspace_t%Lmax
 
 
@@ -2056,10 +2060,10 @@ contains
            write(config%output_file_unit, "(4x,a)") 'info on workspace_t%Hdiag2' 
            call talsh_tensor_print_info(workspace_t%Hdiag2)
 
-           write(config%output_file_unit, "(4x,a,i6,2x,a,2x,i6)") &
+           write(config%output_file_unit, "(4x,a,i18,2x,a,2x,i6)") &
      &  'created tensor for sigma vectors, dimensions :',workspace_t%Nmax,"x",workspace_t%Lmax
 
-           write(config%output_file_unit, "(4x,a,i6,2x,a,2x,i6)") &
+           write(config%output_file_unit, "(4x,a,i18,2x,a,2x,i6)") &
      &  'created tensor for correction vectors, dimensions :',workspace_t%Nmax,"x",workspace_t%nroots
       end if
 
@@ -2483,6 +2487,7 @@ contains
         complex(kind=8), pointer, contiguous :: c_small_r_old(:,:)  => NULL()
         complex(kind=8), pointer, contiguous :: c_small_l_old(:,:)  => NULL()
         logical, pointer :: delta(:) => NULL()
+        logical, pointer :: converged(:)
 
         complex(kind=8) :: frequency_local
         logical :: solve_linear = .false.
@@ -2491,7 +2496,7 @@ contains
         integer :: isv
 
         integer :: niter
-        integer :: i, j, k
+        integer :: i, j, k, l
         integer :: nroots, ierr
         logical :: left_eigen_vec
 
@@ -2500,6 +2505,8 @@ contains
         ! else
             nroots = workspace_t%nroots
         ! end if
+        allocate (converged(nroots))
+        converged = .false.
 
 ! aspg need to think of a consistency check for whether the property gradient has been set
 !      to replace this
@@ -2587,48 +2594,48 @@ contains
 ! aspg, added from (q)rsp
             call form_preconditioner(workspace_t, e_small)
 
+! aspg: preparing to create new correction vectors (if any)
+!
+! first we get deallocate any vectors from the prior iteration
             if (associated(delta)) deallocate(delta)
-            ! if (config%solve_rhs) then
-                if (config%solve_linear_system) then
-!                     delta => correction_to_vectors(config%output_file_unit, &
-!    &                                        e_small, x_small, workspace_t, C_small)
-                    delta => correction_to_vectors(config%output_file_unit, &
-   &                                        e_small, x_small, workspace_t, Index_small_v,prop_grad1,prop_grad2)
-                else
-                    if (config%solve_rhs) then
-                        delta => correction_to_vectors(config%output_file_unit, &
-   &                                               e_small, c_small_r, workspace_t,Index_small_v)
-                    else 
-                        delta => correction_to_vectors(config%output_file_unit, &
-                        &                          e_small, c_small_l, workspace_t,Index_small_v)
-                    end if
+
+! now we call correction_to_vectors() to calculate the vectors and check
+! whether or not the correction is within the thresholds
+            if (config%solve_linear_system) then
+               delta => correction_to_vectors(config%output_file_unit, &
+   &                                          e_small, x_small, workspace_t, &
+                                              Index_small_v,prop_grad1,prop_grad2)
+            else
+               if (config%solve_rhs) then
+                  delta => correction_to_vectors(config%output_file_unit, &
+   &                                             e_small, c_small_r, workspace_t,Index_small_v)
+               else 
+                  delta => correction_to_vectors(config%output_file_unit, &
+   &                                             e_small, c_small_l, workspace_t,Index_small_v)
                end if
-            ! end if
+            end if
+
+! if there are no new vectors (=delta is not associated)  this means we've converged
+! and we exit the iterative loop
             if (.not.associated(delta)) then
-
-                if (config%solve_linear_system) then 
-                    write(config%output_file_unit,*) "Root converged."
-                    call get_tensor_linear_systems(tprop_tensor,x_small,workspace_t)
-                else 
-                    write(config%output_file_unit,*) "All roots converged"
-                    write(config%output_file_unit,*) "I want to Save eigenvectors."
-
-                    if (config%solve_rhs) then 
-                        left_eigen_vec = .FALSE.
-                        call get_tensor_eigenvector(results_t,c_small_r,e_small,workspace_t,left_eigen_vec)
-                    else 
-                        left_eigen_vec = .True.
-                        call get_tensor_eigenvector(results_t,c_small_l,e_small,workspace_t,left_eigen_vec)
-                    end if
-                end if
-
+                write(config%output_file_unit,*) "All solutions converged, stopping."
+                converged = .true.
                 exit
             end if
 
+! otherwise...
 ! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
 ! new trial vectors
             if (workspace_t%L .ge. workspace_t%Lmax) then
-               write(config%output_file_unit, *) "Reached maximum subspace size, stopping."
+               write(config%output_file_unit,*) "Reached maximum subspace size, stopping."
+               converged = .true. 
+               do l = 1, nroots
+                  if (delta(l)) then
+                     converged(l) = .false. 
+                     write(config%output_file_unit,*) "WARNING ! solution ",l," is not converged."
+                  end if
+               end do 
+               if (associated(delta)) deallocate(delta)
                exit
             end if
 
@@ -2646,17 +2653,17 @@ contains
         if (config%solve_rhs.and.config%overlap_sorting) deallocate(c_small_r_old)
         if (config%solve_lhs.and.config%overlap_sorting) deallocate(c_small_l_old)
 
-
         write(config%output_file_unit, *) "Final size of reduced subspace : ",workspace_t%L
-        write(config%output_file_unit, *), "*****************EOM-CC Eigenvalules******************"
 
-        if (config%solve_linear_system) then 
-            write(config%output_file_unit, *) "No Eigenvales since Solving linear systems"
-        else 
+        if (config%solve_linear_system) then
+            write(config%output_file_unit, *) "**************** Solution of linear equations *****************"
+            write(config%output_file_unit, *) "        Only solution vectors are printed (if requested)" 
+        else
+            write(config%output_file_unit, *) "************** Solution of eigenvalue equations ***************"
             call print_values_vectors(config%output_file_unit,e_small, c_small_r, c_small_l, &
                 .false.,.false., nroots)
-        end if 
-        write(config%output_file_unit, *), "******************************************************"
+        end if
+        write(config%output_file_unit, *) "***************************************************************"
 
         
 !!      call form_eigenvalues_full_problem(results%eValues, nroots, e_small) 
@@ -2668,12 +2675,27 @@ contains
 !!          call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,config%solve_rhs,config%solve_lhs)
 !!      end if
 
+        write(config%output_file_unit,*) "Generating solution vectors"
+
+        if (config%solve_linear_system) then
+            call get_tensor_linear_systems(tprop_tensor,x_small,workspace_t)
+        else
+            if (config%solve_rhs) then
+                left_eigen_vec = .FALSE.
+                call get_tensor_eigenvector(results_t,c_small_r,e_small,workspace_t,left_eigen_vec)
+            else
+                left_eigen_vec = .True.
+                call get_tensor_eigenvector(results_t,c_small_l,e_small,workspace_t,left_eigen_vec)
+            end if
+        end if
+
 !!      if (associated(b)) deallocate(b)
 !!      deallocate(M_small)
 !!      if (associated(sigma_vector)) deallocate(sigma_vector)
-!!      deallocate(e_small)
-!!      if (associated(c_small_r)) deallocate(c_small_r)
-!!      if (associated(c_small_l)) deallocate(c_small_l)
+        deallocate(e_small)
+        if (associated(c_small_r)) deallocate(c_small_r)
+        if (associated(c_small_l)) deallocate(c_small_l)
+        if (associated(converged)) deallocate(converged)
         DEALLOCATE(Index_small_v)
 
     end subroutine
