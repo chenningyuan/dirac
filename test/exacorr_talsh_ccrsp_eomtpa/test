@@ -38,5 +38,5 @@ f4.add(from_string = '*************CC-CI(EOM-CC) Two-photon absorption******',
 test.run(['eom_ccpvdz_eomtpa_0.0_nr.inp'], ['he.xyz'], f1)
 test.run(['eom_ccpvdz_eomtpa_0.0_x2c.inp'], ['he.xyz'], f2)
 test.run(['eom_ccpvdz_eomtpa_0.0_nr_-2-2.inp'], ['h2o.xyz'], f3)
-test.run(['eom_ccpvdz_eomtpa_0.0_x2c_-2-2.inp'], ['h2o.xyz'], f4)
+test.run(['eom_ccpvdz_eomtpa_0.0_x2c_-2-2.inp', 'eom_ccpvdz_eomtpa_0.0_x2c_-2-2_partial_1.inp', 'eom_ccpvdz_eomtpa_0.0_x2c_-2-2_partial_2.inp'], ['h2o.xyz'], f4)
 sys.exit(test.return_code)
