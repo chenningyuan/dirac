@@ -119,7 +119,7 @@ keyword(CVALUE)
 Speed of light in a.u. Default (from CODATA22)::
 
   .CVALUE
-   137.0359992608
+   137.035999177
 
 
 keyword(LOGMEM)
@@ -142,13 +142,4 @@ Default::
   .CODATA
    CODATA22
 
-
-keyword(NOSET)
-
-.. warning:: documentation missing
-
-
-keyword(SKIP2E)
-
-.. warning:: documentation missing
 

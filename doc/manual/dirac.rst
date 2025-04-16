@@ -96,11 +96,6 @@ and the one-electron integrals specified under :ref:`**INTEGRALS`.  The integral
 are written to disk.
 
 
-keyword(MINIMI)
-
-.. warning:: documentation missing
-
-
 keyword(XMLOUT)
 
 Create the output xml-file containing selected data (in development).

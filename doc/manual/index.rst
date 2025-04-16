@@ -18,6 +18,7 @@ Keyword reference
 
 * :doc:`**HAMILTONIAN <hamiltonian>` --- Specify the Hamiltonian
    - :doc:`*DFT <dft>` --- DFT directives
+   - :doc:`*EFFQED <effqed>` --- effective QED potential directives
    - :doc:`*XAMFI <xamfi>` --- X-AMFI directives
    - :doc:`*AMFI <amfi>` --- AMFI directives
    - :doc:`*X2C <x2c>` --- X2C directives
@@ -61,6 +62,7 @@ Keyword reference
    - :doc:`*NMR <properties/nmr>` --- NMR directives
    - :doc:`*STEX <properties/stex>` --- Static exchange (STEX) directives
    - :doc:`*NQCC <properties/nqcc>` --- NQCC directives
+   - :doc:`*ESR <properties/esr>` --- ESR/EPR directives
 
 
 * :doc:`**VISUAL <visual>` --- Visualization module

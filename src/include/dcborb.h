@@ -26,7 +26,7 @@
      &        NAVIR(2), NAVIRT, NIVIR(2), NIVIRT,                       &
      &        NELEC(2), NAELEC, NELECT,                                 &
      &        NGAS_DC, NGSH(2, MXGAS),NGSHT(MXGAS), NGASSP(2, MXGAS),   &  ! NGAS_DC to avoid conflict with NGAS in LUCI* modules  /SK-Aug 2008
-     &        NPAS_DC, NPASSP(MXGAS, MXPAS),                            &
+     &        NPAS_DC, NPASSP(MXGAS, MXPAS),                            &  ! preparation for product active spaces, not used yet /HJAaJ-Sep-2017
      &        I_DCBORB_SET, I2_DCBORB
 !
 !     IMPORTANT !!!
@@ -34,26 +34,27 @@
 !     this COMMON block; must remain at start/end 
 !
       COMMON /DCBORB/  I1_DCBORB,                                       &
-     &        NORB   , N2ORB   , NORBT, N2ORBT, N2ORBX,                 &
-     &                 NBORB           ,NFORB        , NTORB     ,      &
-     &                 N2ORBTQ,  N2ORBXQ,                               &
-     &        NISH   , N2ISH   , NISHT, N2ISHT, N2ISHX,                 &
-     &        NASH   , N2ASH   , NASHT, N2ASHT, N2ASHX,                 &
-     &                 N2ASHTQ,  N2ASHXQ, NNASHX,                       &
-     &        NOCC   , N2OCC   , NOCCT, N2OCCT, N2OCCX,                 &
-     &        NSSH   , N2SSH   , NSSHT, N2SSHT, N2SSHX,                 &
-     &        NESH   , N2ESH   , NESHT, N2ESHT, N2ESHX,                 &
-     &        NPSH   , N2PSH   , NPSHT, N2PSHT, N2PSHX,                 &
+     &        NORB   , N2ORB   , NORBT, N2ORBT  , N2ORBX ,              &
+     &                                  N2ORBTQ , N2ORBXQ,              &
+     &        IORB   ,                  I2ORBT  , I2ORBX ,              &
+     &        NBORB  , NFORB   , NTORB,                                 &
+     &        NISH   , N2ISH   , NISHT, N2ISHT  , N2ISHX ,              &
+     &        NASH   , N2ASH   , NASHT, N2ASHT  , N2ASHX , NNASHX,      &
+     &                                  N2ASHTQ , N2ASHXQ,              &
+     &        IASH   ,                  I2ASHT  , I2ASHX ,              &
+     &        NOCC   , N2OCC   , NOCCT, N2OCCT  , N2OCCX ,              &
+     &        IOCC   ,                  I2OCCT  , I2OCCX ,              &
+     &        NSSH   , N2SSH   , NSSHT, N2SSHT  , N2SSHX ,              &
+     &        NESH   , N2ESH   , NESHT, N2ESHT  , N2ESHX ,              &
+     &        NPSH   , N2PSH   , NPSHT, N2PSHT  , N2PSHX ,              &
      &        NFRO   ,           NFROT,                                 &
-     &        IORB   , I2ORBT   , I2ORBX      ,                         &
-     &        IASH   , I2ASHT   , I2ASHX      ,                         &
-     &        IOCC   , I2OCCT   , I2OCCX      ,                         &
-     &        NCMO   , NCMOQ   , NCMOT, NCMOTQ, ICMO   , ICMOQ   ,      &
-     &        NAOCC   , NAOCCT, NIOCC   , NIOCCT,                       &
-     &        NAVIR   , NAVIRT, NIVIR   , NIVIRT,                       &
-     &        NELEC   , NAELEC, NELECT,                                 &
-     &        NGAS_DC, NGSH          ,NGSHT       , NGASSP          ,   &
-     &        NPAS_DC, NPASSP              ,                            &
+     &        NCMO   , NCMOQ   , NCMOT  , NCMOTQ,                       &
+     &        ICMO   , ICMOQ   ,                                        &
+     &        NAOCC  , NAOCCT  , NIOCC  , NIOCCT,                       &
+     &        NAVIR  , NAVIRT  , NIVIR  , NIVIRT,                       &
+     &        NELEC  , NAELEC  , NELECT ,                               &
+     &        NGAS_DC, NGASSP  , NGSH   , NGSHT ,                       &
+     &        NPAS_DC, NPASSP  ,                                        &
      &        I_DCBORB_SET, I2_DCBORB         ! Do NOT place any variables after the end tag "I2_DCBORB" !!!
 
 !     Information on orbital subblocks. Used at the moment only for linear symmetry

@@ -1,23 +1,23 @@
 ! FILE: dgroup.h
 !
-!     NZ    - number of fermion matrices (1,2,4)
-!     NZC1  - number of fermion matrices in C1 symmetry (1 or 4)
+!     NZ                 - number of fermion matrices (1,2,4)
+!     NZC1               - number of fermion matrices in C1 symmetry (1 or 4)
 !     NZ_in_CI = min(2,NZ), if 2 then complex CI vectors, if 1 then real CI vectors
-!     NFSYM - number of fermion irreps
-!     NBSYM - number of boson irreps
+!     NFSYM              - number of fermion irreps
+!     NBSYM              - number of boson irreps
 !     JSPINR(IM,IC,IFRP) - boson irrep for a given spinor position
-!     JBTOF(IBRP,IC) - points to fermion irrep for given boson 
-!                      irrep/component
-!     JFSYM(NZ,IFRP) - points to boson symmetries associated with 
-!                      given fermion ircop
+!     JBTOF(IBRP,IC)     - points to fermion irrep for given boson
+!                          irrep/component
+!     JFSYM(NZ,IFRP)     - points to boson symmetries associated with
+!                          given fermion ircop
 !     IQDEF(4)
-!     JQBAS(IBRP,IC) - points to quaternionic position
-!     IPQTOQ(4,IBRP) - pointer from packed quaternion to quaternion unit
-!     IQTOPQ(4,IBRP) - pointer from quaternion to packed quaternion unit
-!     IHQMAT(4,IH, ) - matrix symmetry(symmetric/antisymmetric)
-!     IRQMAT(4,IBRP) - irrep of matrix
-!     IBTOSF(0:7,2)  - pointer from list of boson irreps to list of symmetries
-!                      sorted on fermion irreps
+!     JQBAS(IBRP,IC)     - points to quaternionic position
+!     IPQTOQ(4,IBRP)     - pointer from packed quaternion to quaternion unit
+!     IQTOPQ(4,IBRP)     - pointer from quaternion to packed quaternion unit
+!     IHQMAT(4,IH)       - matrix symmetry(symmetric/antisymmetric)
+!     IRQMAT(4,IBRP)     - irrep of matrix
+!     IBTOSF(0:7,2)      - pointer from list of boson irreps to list of symmetries
+!                          sorted on fermion irreps
 !
       CHARACTER*3 FREP(2)
       COMMON /DNAME/ FREP
@@ -40,23 +40,23 @@
       LOGICAL LINEAR, ATOMIC, NONATM
       COMMON /DGRPL/ LINEAR, ATOMIC, NONATM
 
-! =========================================================
-! ... number of operator types in DIRAC is now in NOPTYP
-! These are: 
-! 1. P, 2. i[alpha_x]P,3. i[alpha_y]P,...19. beta, 20. iS.P,21 iBETAGAMA5
-! 22 (iS.P)d
-! =========================================================
+! ==================================================================
+! Number of operator types in DIRAC is now in NOPTYP
+! These are:
+! 1. P, 2. i[alpha_x]P, 3. i[alpha_y]P,... 19. [beta]P,
+! 20. i[Sigma.P], 21. [betagamma5]P, 22. i[betagamma5]P
+! ==================================================================
       INTEGER NOPTYP,NMATTYP
-      PARAMETER (NOPTYP = 22, NMATTYP=16)
+      PARAMETER (NOPTYP = 22, NMATTYP = 17)
 
 ! *** 4-component operators : Matrix part ***
 !
 !     M = I_4,iA_z,iA_y,iA_x
 !
-!     JM4REP(0:16) - bosonirrep of matrix operator
-!     JM4TIM(0:16) - tmie reversal symmetry of matrix operator
-!     JM4POS(0:16) - quaternionic position of matrix operator 
-!                   (1,2(i),3(j),4(k))
+!     JM4REP(0:17) - bosonirrep of matrix operator
+!     JM4TIM(0:17) - time reversal symmetry of matrix operator
+!     JM4POS(0:17) - quaternionic position of matrix operator
+!                    (1,2(i),3(j),4(k))
 !
 !     OPERATORS (NOPTYP types):
 !
@@ -66,7 +66,5 @@
 !
       INTEGER MCMP(NOPTYP), JM4(3,NOPTYP), JCOM(3,NOPTYP),              &
      &        JM4REP(0:NMATTYP),JM4POS(0:NMATTYP),JM4TIM(0:NMATTYP)
-      CHARACTER*4 M4COMB
       COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS, JM4TIM
-      COMMON /ONECMB/ M4COMB(0:NMATTYP)
 ! -- end of dgroup.h --

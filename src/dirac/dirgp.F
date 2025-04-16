@@ -2492,7 +2492,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SelFrag */
       SUBROUTINE SELFRAG(CSEL,NVECS,ESEL,IBSEL,NFRAG,NSTR,FRAGFIL,
      &                   OWNBAS,NUCFRAG,IOPT,KVEC,CMO,EIG,IBEIG,
-     &                   IOFF,KRMC_FLG,WORK,KFREE,LFREE)
+     &                   IOFF,KRMC_FLG,C1READ,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Routine for extracting coefficients, eigenvalues and boson irrep
@@ -2540,7 +2540,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
-      LOGICAL TOBE,OWNBAS,LBIT
+      LOGICAL TOBE,OWNBAS,LBIT,C1READ
       CHARACTER*(*) FRAGFIL(NFRAG)
       DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
      &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
@@ -2587,7 +2587,7 @@ C.......Fragment orbitals in own basis
           CALL SELOWN(IOPT,CMO,EIG,IBEIG,
      &                INUC,NUCFRAG(IFRAG),LUCOEF,fragfile,
      &                CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC(1,IFRAG),
-     &                NSTR(1,0,IFRAG),WORK)
+     &                NSTR(1,0,IFRAG),C1READ,WORK)
 C.......Fragment orbitals in molecular basis
         ELSE
 !

@@ -206,10 +206,9 @@ C***********************************************************************
 C*****  E S R   P R O P E R T I E S      *******************************
 C***********************************************************************
 C
-#ifdef MOD_ESR
       IF (DOESR) THEN
          KFRSAV = KFREE
-         CALL ESR_INIT(WF,IPRESR,N_CIESR,WORK,KFREE,LFREE)
+         CALL ESR_INIT(WF,IPRESR,WORK,KFREE,LFREE)
 C
          LENESR = 2*MULTIPESR*MULTIPESR*MAX(4,NESRP)
 C        max(4,nesrp): make sure sufficient space for ESRPHASE
@@ -218,7 +217,6 @@ C        max(4,nesrp): make sure sufficient space for ESRPHASE
          CALL MEMREL('after PRPESR',WORK,KWORK,KFRSAV,KFREE,LFREE)
 C        ... remove this MEMREL if WORK(KESR) to be used in PRPOUT below
       END IF
-#endif
 C
 C***********************************************************************
 C*****  P P   E X C I T A T I O N   E N E R G I E S  *******************
@@ -4499,7 +4497,7 @@ C
 C
 C     define operator type, factor, name and label
 C
-      NPCOMP = 1
+      NPCOMP   = 1
       PFAC(1)  = 4.0D0*CVAL
 C
 C     4*ic gamma^0 gamma^5 p^2/2m
@@ -4509,7 +4507,7 @@ CTF   Since we are working with the p^2 form of the EDM operator, there
 CTF   is no explicit reference to Atom1 or Atom2 (etc.). We evaluate
 CTF   over EDM integrals in the molecular spinor basis.
 C
-      IOP(1)   = 21
+      IOP(1)    = 22
       PLABEL(1) = 'KINENERG'
       CALL XPRIND(PNAME(1),IOP(1),NPCOMP,PFAC(1),PLABEL(1),
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -4728,7 +4726,7 @@ C***********************************************************************
 #include "chrxyz.h"
 #include "ibtfun.h"
 C
-      IPTYP     = 21
+      IPTYP     = 22
       NPCOMP    = 1
       IF(GAUNUC) THEN
         PFAC(1) = D1

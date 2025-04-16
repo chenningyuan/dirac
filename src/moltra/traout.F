@@ -704,16 +704,20 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDSCRF */
       SUBROUTINE MDSCRF
 C
-C     Delete MDSCR file
+C     Delete or keep MDSCR file(s) 4IND1* ( and 4IND2* if inversion symmetry)
+C     (MDSCR files are used for krmcscf etc when RTRACTL is called for
+C     the integral transformation)
 C     Written by Luuk Visscher, May 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
+#include "infpar.h"
 #include "dcbtra.h"
 #include "dgroup.h"
 C
       DO IREPIJ = 1, NFSYM
-         IF (.NOT. NOMDCINT) THEN
+         IF (.NOT. NOMDCINT .OR.                         ! delete if using MDCINT
+     &      (.NOT.MDCSCAT .AND. MYTID.NE.MPARID) ) THEN  ! delete on slaves if not MDCSCAT
 C           delete the files
             CLOSE (LUMLF3+IREPIJ,STATUS='DELETE')
          ELSE

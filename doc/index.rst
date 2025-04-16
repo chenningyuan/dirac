@@ -44,11 +44,11 @@ Setting up DIRAC
   :doc:`String replacement <pam/replace>`
 
 
-Updates and patches
-===================
+Updates
+=======
 
- :doc:`ChangeLog <patches/CHANGELOG>` |
- :doc:`Known problems <patches/KNOWN-PROBLEMS>`
+ :doc:`ChangeLog <patches/CHANGELOG>`
+
 
 .. _FirstSteps:
 
@@ -120,9 +120,10 @@ Tutorials and walkthrus
   :doc:`BSSE <tutorials/dft/bsse>` |
   :doc:`CAM functional <tutorials/dft/cam>` |
   :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
-
-* **Frozen orbitals:**
-  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>`
+  
+* **Orbital manipulations:**
+  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` |
+  :doc:`Atomic shift operator <tutorials/atomic_shift/tutorial>`   
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
@@ -195,8 +196,11 @@ Tutorials and walkthrus
 * **Frozen density embedding (FDE):**
   :doc:`NMR shieldings in Frozen Density Embedding (FDE) scheme with London atomic orbitals (LAOs) <tutorials/fde_nmr/tutorial>`
 
-* **Davidson corrections for relCI (LUCITA and KRCI):**
+* **Davidson corrections for relCI (LUCITA and KRCI with LUCIAREL):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
+
+* **Quantum electrodynamics (QED):**
+  :doc:`effective QED potentials <tutorials/qed/effqed>`
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
@@ -268,7 +272,6 @@ Development
   :doc:`Transfering uncommitted code <development/transfering_uncommitted_code>`
 
 * **Notes:**
-  :doc:`DFCOEF <development/dfcoef>` |
   :doc:`Screening <development/screening>` |
   :doc:`64bit integers <development/int8>` |
   :doc:`Numerical constants <development/num_constants>` |
