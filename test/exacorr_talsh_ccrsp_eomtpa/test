@@ -35,8 +35,17 @@ f4.add(from_string = '*************CC-CI(EOM-CC) Two-photon absorption******',
       num_lines   = 3,
       rel_tolerance   = 1.0e-7)
 
+f5 = Filter()
+
+f5.add(from_string = '*************CC-CI(EOM-CC) Two-photon absorption******',
+      num_lines   = 3,
+      rel_tolerance   = 1.0e-5)
+
 test.run(['eom_ccpvdz_eomtpa_0.0_nr.inp'], ['he.xyz'], f1)
 test.run(['eom_ccpvdz_eomtpa_0.0_x2c.inp'], ['he.xyz'], f2)
 test.run(['eom_ccpvdz_eomtpa_0.0_nr_-2-2.inp'], ['h2o.xyz'], f3)
-test.run(['eom_ccpvdz_eomtpa_0.0_x2c_-2-2.inp', 'eom_ccpvdz_eomtpa_0.0_x2c_-2-2_partial_1.inp', 'eom_ccpvdz_eomtpa_0.0_x2c_-2-2_partial_2.inp'], ['h2o.xyz'], f4)
+# runs converging eigenvectors and response vectors, and response vectors but not eigenvectors (partial_1)
+test.run(['eom_ccpvdz_eomtpa_0.0_x2c_-2-2.inp', 'eom_ccpvdz_eomtpa_0.0_x2c_-2-2_partial_1.inp'], ['h2o.xyz'], f4)
+# be less strict on this run since we are not convering eigenvectors and response vectors
+test.run(['eom_ccpvdz_eomtpa_0.0_x2c_-2-2_partial_2.inp'], ['h2o.xyz'], f5)
 sys.exit(test.return_code)
