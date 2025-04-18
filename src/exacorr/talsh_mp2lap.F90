@@ -36,9 +36,6 @@ module eti_mp2lap
         type(exacc_input), intent(in) :: exa_input
 
         !variables to initlize library
-        integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-        integer(C_INT):: host_arg_max
-
         integer(C_INT)      :: ierr, rank
 
         !variables to extract MP2 energy
@@ -65,16 +62,10 @@ module eti_mp2lap
         !avoiding nvir
         type(tensor_t)                     :: T1,T2,R1,R2
 
-        integer :: num_gpus = 0, igpu
 
         call print_date("Entering MP2_LAP Module")
 
-        call talsh_get_number_gpus(num_gpus)
-
-        !Initialize TALSH
-        buf_size=exa_input%talsh_buff*buf_size
-        ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
-        call print_date('Initialized talsh library')
+        call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
 
         call interest_initialize(.true.)
         call print_date('Initialized interest library')
@@ -95,8 +86,8 @@ module eti_mp2lap
         ierr = get_nmodes(uov_tensor,rank)
         ierr = get_nmodes(uvo_tensor,rank)
         if (rank.eq.3) then
-           ierr = get_extents(uov_tensor,uov_dims)
-           ierr = get_extents(uvo_tensor,uvo_dims)
+           ierr = get_extents_static(uov_tensor,uov_dims)
+           ierr = get_extents_static(uvo_tensor,uvo_dims)
         else
            stop 'error in talsh_mp2lap_driver: tensor rank wrong'
         endif
@@ -222,9 +213,7 @@ module eti_mp2lap
         deallocate(eps_vir)
         deallocate(zero_chol)
 
-        !shutdown TALSH
-        ierr=talsh_stats()
-        ierr = talsh_shutdown()
+        call eti_executor_shutdown(exa_input%executor)
 
         call print_date('Leaving MP2_LAP Module')
       end subroutine eti_mp2lap_driver
@@ -239,9 +228,6 @@ module eti_mp2lap
         type(exacc_input), intent(in) :: exa_input
 
         !variables to initlize library
-        integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-        integer(C_INT):: host_arg_max
-
         integer(C_INT)      :: ierr, rank
 
         !cholesky vector
@@ -261,17 +247,9 @@ module eti_mp2lap
         !avoiding nvir
         type(tensor_t)                     :: T1,R1,R2,S1,one_mp2lap
 
-        integer :: num_gpus = 0, igpu
-
         call print_date("Entering MP2_LAP Module")
         
-        call talsh_get_number_gpus(num_gpus)
-
-        !Initialize TALSH
-        buf_size=exa_input%talsh_buff*buf_size
-        ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
-        call print_date('Initialized talsh library')
-        write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
+        call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
 
         call interest_initialize(.true.)
         call print_date('Initialized interest library')
@@ -289,8 +267,8 @@ module eti_mp2lap
         ierr = get_nmodes(uov_tensor,rank)
         ierr = get_nmodes(uvo_tensor,rank)
         if (rank.eq.3) then
-           ierr = get_extents(uov_tensor,uov_dims)
-           ierr = get_extents(uvo_tensor,uvo_dims)
+           ierr = get_extents_static(uov_tensor,uov_dims)
+           ierr = get_extents_static(uvo_tensor,uvo_dims)
         else
            stop 'error in eti_mp2lap_driver: tensor rank wrong'
         endif
@@ -442,9 +420,8 @@ module eti_mp2lap
         deallocate(eps_vir)
         deallocate(zero_chol)
 
-        !shutdown TALSH
-        ierr=talsh_stats()
-        ierr = talsh_shutdown()
+        call eti_executor_shutdown(exa_input%executor)
+
         call print_date('Leaving MP2_LAP Module')
       end subroutine mp2lap_get_DM
 

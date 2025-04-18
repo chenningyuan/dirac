@@ -2,8 +2,8 @@ module eti_eom_TPA
 !This module contains the routines needed to calculate CC-CI(EOM-CC) response property
 
 
+    use exacorr_tensor_interface
     use tensor_algebra
-    use talsh
     use exacorr_datatypes
     use exacorr_utils
     use eti_common_routines
@@ -427,15 +427,15 @@ subroutine get_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y
     ierr=construct_tensor_t(aux_4,C8,one_dims(1:0),init_val=ZERO)
 
     ierr = get_nmodes(l1_tensor,ov_rank)
-    ierr = get_extents(l1_tensor,ov_dims)
+    ierr = get_extents_static(l1_tensor,ov_dims)
     ierr = construct_tensor_t(Aux_ov,C8,ov_dims,init_val=ZERO)
 
     ierr = get_nmodes(l2_tensor,oovv_rank)
-    ierr = get_extents(l2_tensor,oovv_dims)
+    ierr = get_extents_static(l2_tensor,oovv_dims)
     ierr = construct_tensor_t(Aux_oovv,C8,oovv_dims,init_val=ZERO)
 
     ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-    ierr=direct_data_pointer(result_tensor,body_pg)
+    ierr=direct_data_pointer(result_tensor,body_p)
     call c_f_pointer(body_p,result_tens,one_dims)
 
 
@@ -664,9 +664,9 @@ subroutine get_tran_right(exa_input, interm_t,&
 
             
     ierr = get_nmodes(interm_t%t1, vo_rank)
-    ierr = get_extents(interm_t%t1, vo_dims)
+    ierr = get_extents_static(interm_t%t1, vo_dims)
     ierr = get_nmodes(interm_t%t2, vvoo_rank)
-    ierr = get_extents(interm_t%t2, vvoo_dims)
+    ierr = get_extents_static(interm_t%t2, vvoo_dims)
 
     ov_dims(1) = vo_dims(2)
     ov_dims(2) = vo_dims(1)
@@ -681,7 +681,7 @@ subroutine get_tran_right(exa_input, interm_t,&
     ierr = construct_tensor_t(eta_oovv_prim,C8,oovv_dims,init_val=ZERO)
             
     ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-    ierr=direct_data_pointer(result_tensor,body_pg)
+    ierr=direct_data_pointer(result_tensor,body_p)
     call c_f_pointer(body_p,result_tens,one_dims)
 
 
@@ -1115,7 +1115,7 @@ subroutine check_biorthognal(eom_results_t,eom_results_t_left,f_state, biorth_si
 
     one_dims(1) = 1
     ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-    ierr=direct_data_pointer(result_tensor,body_pg)
+    ierr=direct_data_pointer(result_tensor,body_p)
     call c_f_pointer(body_p,result_tens,one_dims)
 
      N = size(eom_results_t_left%value_vectors_t%lhs1)

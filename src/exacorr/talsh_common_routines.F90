@@ -3,7 +3,6 @@ module eti_common_routines
 !This module contains subroutines both needed in solving t equations as well as Lambda equations.
 !get_orbital_energies,diis,scale_with_denominators, laplace multiplications
 
-    use talsh
     use exacorr_tensor_interface
     use tensor_algebra
     use, intrinsic:: ISO_C_BINDING
@@ -20,7 +19,6 @@ module eti_common_routines
         module procedure scale_with_denominators
     end interface scale_with_denominators
 
-    public talsh_get_number_gpus
     public get_orbital_energies
     public scale_with_denominators
     public print_tensor
@@ -36,16 +34,6 @@ module eti_common_routines
     public print_tensor_elements
 
     contains
-
-      subroutine talsh_get_number_gpus(num_gpus)
-        integer, intent(inout) :: num_gpus
-        integer :: ierr
-
-        write(*,'(1x,"Checking Nvidia GPU availability ... ")',ADVANCE='NO')
-        ierr=talsh_device_count(DEV_NVIDIA_GPU,num_gpus)
-        write(*,'("Status ",i11,": Number of GPUs = ",i3)') ierr,num_gpus
-
-      end subroutine
 
       subroutine scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor,t2_tensor,t3_tensor, &
                                           full_t3_tensor,full_t4_tensor,full_t5_tensor,eps_ijk)
@@ -78,7 +66,7 @@ module eti_common_routines
        if (present(t1_tensor)) then
 
           ierr = get_nmodes(t1_tensor,tens_rank)
-          ierr = get_extents(t1_tensor,t1_dims)
+          ierr = get_extents_static(t1_tensor,t1_dims)
           if (ierr.ne.0 .or. tens_rank.ne.2) stop 'program error: t1 tensor corrupted'
           ierr=direct_data_pointer(t1_tensor,body_p)
           call c_f_pointer(body_p,t1_tens,t1_dims(1:2)) ! to use <t1_tens> as a regular Fortran 2d array
@@ -107,7 +95,7 @@ module eti_common_routines
        if (present(t2_tensor)) then
 
           ierr = get_nmodes(t2_tensor,tens_rank)
-          ierr = get_extents(t2_tensor,t2_dims)
+          ierr = get_extents_static(t2_tensor,t2_dims)
           if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: t2 tensor corrupted'
           ierr=direct_data_pointer(t2_tensor,body_p)
           call c_f_pointer(body_p,t2_tens,t2_dims(1:4)) ! to use <t2_tens> as a regular Fortran 4d array
@@ -144,7 +132,7 @@ module eti_common_routines
        if (present(full_t3_tensor)) then
 
           ierr = get_nmodes(full_t3_tensor,tens_rank)
-          ierr = get_extents(full_t3_tensor,full_t3_dims)
+          ierr = get_extents_static(full_t3_tensor,full_t3_dims)
           if (ierr.ne.0 .or. tens_rank.ne.6) stop 'program error: full t3 tensor corrupted' 
           ierr=direct_data_pointer(full_t3_tensor,body_p)
           call c_f_pointer(body_p,full_t3_tens,full_t3_dims(1:6)) 
@@ -193,7 +181,7 @@ module eti_common_routines
        if (present(full_t4_tensor)) then
 
           ierr = get_nmodes(full_t4_tensor,tens_rank)
-          ierr = get_extents(full_t4_tensor,full_t4_dims)
+          ierr = get_extents_static(full_t4_tensor,full_t4_dims)
           if (ierr.ne.0 .or. tens_rank.ne.8) stop 'program error: full t4 tensor corrupted'
           ierr=direct_data_pointer(full_t4_tensor,body_p)
           call c_f_pointer(body_p,full_t4_tens,full_t4_dims(1:8))
@@ -249,7 +237,7 @@ module eti_common_routines
        if (present(full_t5_tensor)) then
 
           ierr = get_nmodes(full_t5_tensor,tens_rank)
-          ierr = get_extents(full_t5_tensor,full_t5_dims)
+          ierr = get_extents_static(full_t5_tensor,full_t5_dims)
           if (ierr.ne.0 .or. tens_rank.ne.10) stop 'program error: full t5 tensor corrupted'
           ierr=direct_data_pointer(full_t5_tensor,body_p)
           call c_f_pointer(body_p,full_t5_tens,full_t5_dims(1:10))
@@ -320,7 +308,7 @@ module eti_common_routines
        if (present(t3_tensor)) then
 
           ierr = get_nmodes(t3_tensor,tens_rank)
-          ierr = get_extents(t3_tensor,t3_dims)
+          ierr = get_extents_static(t3_tensor,t3_dims)
           if (ierr.ne.0 .or. tens_rank.ne.3) stop 'program error: t3 tensor corrupted'
           ierr=direct_data_pointer(t3_tensor,body_p)
           call c_f_pointer(body_p,t3_tens,t3_dims(1:3)) ! to use <t3_tens> as a regular Fortran 3d array
@@ -361,7 +349,7 @@ module eti_common_routines
 
       subroutine print_tensor(h_tensor, acc, t_name)
 
-        !routine for printing talsh tensors
+        !routine for printing tensors
 
         implicit none
 
@@ -387,7 +375,7 @@ module eti_common_routines
         real(8), pointer    :: tensR4(:, :, :, :)
         integer             :: DataKind(1),nData
 
-        ierr=talsh_tensor_data_kind(h_tensor,nData,DataKind)
+        ierr=get_data_kind_tensor_t(h_tensor, DataKind(1))
         if (ierr.ne.0) stop 'error in getting DataKind'
 
         ierr = get_nmodes(h_tensor,rank)
@@ -395,7 +383,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor, dims1)
+          ierr = get_extents_static(h_tensor, dims1)
 
           print *, "print 0D tensor: ", t_name, " (shape:", dims1,")"
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
@@ -424,7 +412,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor, dims1)
+          ierr = get_extents_static(h_tensor, dims1)
 
           print *, "print 1D tensor: ", t_name, " (shape:", dims1,")"
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
@@ -453,7 +441,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
 !        if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor, dims2)
+          ierr = get_extents_static(h_tensor, dims2)
 
           print *, "print 2D tensor: ", t_name, " (shape:", dims2,")"
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
@@ -485,7 +473,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor, dims3)
+          ierr = get_extents_static(h_tensor, dims3)
 
           print *, "print 3D tensor: ", t_name, " (shape:", dims3,")"
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
@@ -519,7 +507,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor, dims4)
+          ierr = get_extents_static(h_tensor, dims4)
 
           print *, "print 4D tensor: ", t_name, " (shape:", dims4, ")"
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
@@ -645,7 +633,7 @@ module eti_common_routines
         if (rank.eq.1) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in get_element: wrong rank'
-          ierr = get_extents(h_tensor,dims1)
+          ierr = get_extents_static(h_tensor,dims1)
 
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
@@ -656,7 +644,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims2)
+          ierr = get_extents_static(h_tensor,dims2)
 
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens2,dims2)
@@ -668,7 +656,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims3)
+          ierr = get_extents_static(h_tensor,dims3)
 
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens3,dims3)
@@ -681,7 +669,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims4)
+          ierr = get_extents_static(h_tensor,dims4)
 
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
@@ -719,13 +707,13 @@ module eti_common_routines
 
         ! Getting the tensor encoding the amplitudes T2(vir_a, vir_b, occ_i, occ_j)
         ierr = get_nmodes(t2_amp,rranka)
-        ierr = get_extents(t2_amp,dimsa)
+        ierr = get_extents_static(t2_amp,dimsa)
         ierr = direct_data_pointer(t2_amp,bodya_p)
         call c_f_pointer(bodya_p,tens_t2,dimsa)
 
         ! Getting the tensor encoding the elements < occ_i, occ_j || vir_a, vir_b >
         ierr = get_nmodes(int_oovv,rrankb)
-        ierr = get_extents(int_oovv,dimsb)
+        ierr = get_extents_static(int_oovv,dimsb)
         ierr = direct_data_pointer(int_oovv,bodyb_p)
         call c_f_pointer(bodyb_p,tens_int_oovv,dimsb)
         tens_E_pair_corr = (0.d0,0.d0)
@@ -794,7 +782,7 @@ module eti_common_routines
 #endif
         integer             :: DataKind(1),nData
 
-        ierr=talsh_tensor_data_kind(h_tensor,nData,DataKind)
+        ierr=get_data_kind_tensor_t(h_tensor, DataKind(1))
         if (ierr.ne.0) stop 'error in getting DataKind'
         if (DataKind(1).ne.C8) stop 'wrong DataKind'
 
@@ -803,7 +791,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr = get_extents(h_tensor,dims1)
+          ierr = get_extents_static(h_tensor,dims1)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
@@ -812,7 +800,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr = get_extents(h_tensor,dims1)
+          ierr = get_extents_static(h_tensor,dims1)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
@@ -821,7 +809,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr = get_extents(h_tensor,dims2)
+          ierr = get_extents_static(h_tensor,dims2)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens2,dims2)
           tens2=val
@@ -830,7 +818,7 @@ module eti_common_routines
 ! does this make sense ?
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr = get_extents(h_tensor,dims3)
+          ierr = get_extents_static(h_tensor,dims3)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens3,dims3)
           tens3=val
@@ -838,7 +826,7 @@ module eti_common_routines
         else if (rank.eq.4) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims4)
+          ierr = get_extents_static(h_tensor,dims4)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
           tens4=val
@@ -846,7 +834,7 @@ module eti_common_routines
         else if (rank.eq.5) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims5)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr = get_extents(h_tensor,dims5)
+          ierr = get_extents_static(h_tensor,dims5)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens5,dims5)
           tens5=val
@@ -854,7 +842,7 @@ module eti_common_routines
         else if (rank.eq.6) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims6)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims6)
+          ierr = get_extents_static(h_tensor,dims6)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens6,dims6)
           tens6=val
@@ -862,7 +850,7 @@ module eti_common_routines
         else if (rank.eq.7) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims7)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims7)
+          ierr = get_extents_static(h_tensor,dims7)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens7,dims7)
           tens7=val
@@ -871,7 +859,7 @@ module eti_common_routines
         else if (rank.eq.8) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims8)
+          ierr = get_extents_static(h_tensor,dims8)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens8,dims8)
           tens8=val
@@ -879,7 +867,7 @@ module eti_common_routines
         else if (rank.eq.9) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims9)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims9)
+          ierr = get_extents_static(h_tensor,dims9)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens9,dims9)
           tens9=val
@@ -887,7 +875,7 @@ module eti_common_routines
         else if (rank.eq.10) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims10)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims10)
+          ierr = get_extents_static(h_tensor,dims10)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens10,dims10)
           tens10=val
@@ -935,7 +923,7 @@ module eti_common_routines
 #endif
         integer             :: DataKind(1),nData
 
-        ierr=talsh_tensor_data_kind(h_tensor,nData,DataKind)
+        ierr=get_data_kind_tensor_t(h_tensor, DataKind(1))
         if (ierr.ne.0) stop 'error in getting DataKind'
         if (DataKind(1).ne.R8) stop 'wrong DataKind'
 
@@ -943,7 +931,7 @@ module eti_common_routines
         if (rank.eq.0) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr = get_extents(h_tensor,dims1)
+          ierr = get_extents_static(h_tensor,dims1)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
@@ -951,7 +939,7 @@ module eti_common_routines
         else if (rank.eq.1) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr = get_extents(h_tensor,dims1)
+          ierr = get_extents_static(h_tensor,dims1)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens1,dims1)
           tens1=val
@@ -959,7 +947,7 @@ module eti_common_routines
         else if (rank.eq.2) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr = get_extents(h_tensor,dims2)
+          ierr = get_extents_static(h_tensor,dims2)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens2,dims2)
           tens2=val
@@ -967,7 +955,7 @@ module eti_common_routines
         else if (rank.eq.3) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr = get_extents(h_tensor,dims3)
+          ierr = get_extents_static(h_tensor,dims3)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens3,dims3)
           tens3=val
@@ -975,7 +963,7 @@ module eti_common_routines
         else if (rank.eq.4) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims4)
+          ierr = get_extents_static(h_tensor,dims4)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
           tens4=val
@@ -983,7 +971,7 @@ module eti_common_routines
         else if (rank.eq.5) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims5)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
-          ierr = get_extents(h_tensor,dims5)
+          ierr = get_extents_static(h_tensor,dims5)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens5,dims5)
           tens5=val
@@ -991,7 +979,7 @@ module eti_common_routines
         else if (rank.eq.6) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims6)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims6)
+          ierr = get_extents_static(h_tensor,dims6)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens6,dims6)
           tens6=val
@@ -999,7 +987,7 @@ module eti_common_routines
         else if (rank.eq.7) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims7)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims7)
+          ierr = get_extents_static(h_tensor,dims7)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens7,dims7)
           tens7=val
@@ -1008,7 +996,7 @@ module eti_common_routines
         else if (rank.eq.8) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims8)
+          ierr = get_extents_static(h_tensor,dims8)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens8,dims8)
           tens8=val
@@ -1016,7 +1004,7 @@ module eti_common_routines
         else if (rank.eq.9) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims9)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims9)
+          ierr = get_extents_static(h_tensor,dims9)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens9,dims9)
           tens9=val
@@ -1024,7 +1012,7 @@ module eti_common_routines
         else if (rank.eq.10) then
 !         ierr = talsh_tensor_dimensions(h_tensor,rrank,dims10)
 !         if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
-          ierr = get_extents(h_tensor,dims10)
+          ierr = get_extents_static(h_tensor,dims10)
           ierr=direct_data_pointer(h_tensor,body_p) ! ,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens10,dims10)
           tens10=val
@@ -1054,11 +1042,12 @@ module eti_common_routines
 
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims(1) = 1
-         ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,result_dims)
 
-         ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims)
+         ierr = get_nmodes(a_tensor,a_rank)
+         ierr = get_extents_static(a_tensor,a_dims)
          select case (a_rank)
          case (0)
             ierr=t_einsum("R()+=A+()*A()",result_tensor,a_tensor,a_tensor)
@@ -1163,9 +1152,9 @@ module eti_common_routines
       complex(8), pointer :: tens4(:, :, :, :)
       complex(8), pointer :: tens6(:, :, :, :, :, :)
 
-      ierr = get_nmodes(tensor,tens_rank)
+      ierr = get_nmodes(tensor,rank)
       if (rank.eq.2) then
-         ierr = get_extents(tensor,dims2)
+         ierr = get_extents_static(tensor,dims2)
          if (size(orb1).ne.dims2(1)) stop 'error in laplace_mult: vector 1 wrong size'
          if (size(orb2).ne.dims2(2)) stop 'error in laplace_mult: vector 2 wrong size'
 
@@ -1179,7 +1168,7 @@ module eti_common_routines
          end do
 
       else if (rank.eq.3) then
-         ierr = get_extents(tensor,dims3)
+         ierr = get_extents_static(tensor,dims3)
          if (size(orb1).ne.dims3(1)) stop 'error in laplace_mult: vector 1 wrong size'
          if (size(orb2).ne.dims3(2)) stop 'error in laplace_mult: vector 2 wrong size'
          if (size(orb3).ne.dims3(3)) stop 'error in laplace_mult: vector 3 wrong size'
@@ -1196,7 +1185,7 @@ module eti_common_routines
          end do
 
       else if (rank.eq.4) then
-         ierr = get_extents(tensor,dims4)
+         ierr = get_extents_static(tensor,dims4)
          if (size(orb1).ne.dims4(1)) stop 'error in laplace_mult: vector 1 wrong size'
          if (size(orb2).ne.dims4(2)) stop 'error in laplace_mult: vector 2 wrong size'
          if (size(orb3).ne.dims4(3)) stop 'error in laplace_mult: vector 3 wrong size'
@@ -1216,7 +1205,7 @@ module eti_common_routines
          end do
 
       else if (rank.eq.6) then
-         ierr = get_extents(tensor,dims6)
+         ierr = get_extents_static(tensor,dims6)
          if (size(orb1).ne.dims6(1)) stop 'error in laplace_mult: vector 1 wrong size'
          if (size(orb2).ne.dims6(2)) stop 'error in laplace_mult: vector 2 wrong size'
          if (size(orb3).ne.dims6(3)) stop 'error in laplace_mult: vector 3 wrong size'
@@ -1264,7 +1253,7 @@ module eti_common_routines
 
       ierr = get_nmodes(test_org,rank)
       if (rank.eq.4) then
-         ierr = get_extents(test_org,dims4)
+         ierr = get_extents_static(test_org,dims4)
          if (ierr.ne.0 .or. rank.ne.4) stop 'error: tensor corrupted'
 
          if (dims4(1).eq.dims4(2)) then
@@ -1301,7 +1290,7 @@ module eti_common_routines
          write(*,*) 'test error = ',test_diff
 
       else if (rank.eq.6) then
-         ierr = get_extents(test_org,dims6)
+         ierr = get_extents_static(test_org,dims6)
          if (ierr.ne.0 .or. rank.ne.6) stop 'error: tensor corrupted'
 
          if (dims6(1).eq.dims6(2) .and. dims6(1).eq.dims6(3)) then
@@ -1371,7 +1360,7 @@ module eti_common_routines
        ierr = get_nmodes(tensor,rank)
 
        if (rank.eq.1) then
-         ierr = get_extents(tensor,dims1)
+         ierr = get_extents_static(tensor,dims1)
          ierr=direct_data_pointer(tensor,body)
          call c_f_pointer(body,tens1,dims1)
 
@@ -1383,7 +1372,7 @@ module eti_common_routines
          end do
 
        else if (rank.eq.2) then
-         ierr = get_extents(tensor,dims2)
+         ierr = get_extents_static(tensor,dims2)
          ierr=direct_data_pointer(tensor,body)
          call c_f_pointer(body,tens2,dims2)
 
@@ -1463,4 +1452,4 @@ module eti_common_routines
 
 
 
-end module talsh_common_routines
+end module eti_common_routines

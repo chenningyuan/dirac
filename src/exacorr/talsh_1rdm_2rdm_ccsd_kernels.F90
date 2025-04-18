@@ -18,7 +18,7 @@ module eti_1rdm_2rdm_ccsd_kernels
   use exacorr_datatypes
   use exacorr_utils
   use intermediates
-  use talsh_common_routines
+  use eti_common_routines
 
   use exacorr_global
 
@@ -549,7 +549,7 @@ module eti_1rdm_2rdm_ccsd_kernels
 !      type(talsh_comm_tens) :: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron
 !        integrals)
-      type(talsh_intg_tens_t),intent(inout) :: int_t
+      type(eti_intg_tens_t),intent(inout) :: int_t
 
 
       type(eti_dm_tens_t), intent(inout) :: gamma
@@ -595,7 +595,7 @@ module eti_1rdm_2rdm_ccsd_kernels
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims = 1
          ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,result_dims)
 
          ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)

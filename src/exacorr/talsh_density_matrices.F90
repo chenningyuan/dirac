@@ -6,7 +6,7 @@ module eti_gradient
 ! Written by Stan Papadopoulos, February 2019
 ! Refactored by Andre Gomes and Loic Halbert summer 2022.
 
-  use talsh
+  use exacorr_tensor_interface
   use tensor_algebra
   use eti_common_routines, only : tensor_norm2, print_tensor_elements
   use exacorr_datatypes, only : eti_dm_tens_t, exacc_input
@@ -231,7 +231,7 @@ module eti_gradient
          call print_date("Destroyed 2RDM storage")
       end if
 
-      if (ierr.ne.TALSH_SUCCESS) then
+      if (ierr.ne.ETI_SUCCESS) then
         print*," ccdriver: error in evaluation of density matrices, code=",ierr
         return
       end if
@@ -316,7 +316,7 @@ module eti_gradient
           call print_date("Created 2RDM storage")
        end if
 
-       if (ierr.ne.TALSH_SUCCESS) then
+       if (ierr.ne.ETI_SUCCESS) then
          print*," ccdriver: error in evaluation of density matrices, code=",ierr
          return
        end if

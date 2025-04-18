@@ -108,7 +108,6 @@ module eti_mp2no
 !        Point connected with tensors 
          integer(C_INT)              :: ierr
          complex(8), pointer         :: result_tens(:)
-         integer                     :: initialize_talsh
          real(8)                     :: mp2_energy,scf_energy
 
          type(C_PTR):: body_p
@@ -132,14 +131,8 @@ module eti_mp2no
 !        Make some noise so that we know we are here
          call print_date('Entered mp2_driver routine')
 
-         call talsh_get_number_gpus(num_gpus)
-
+         call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
 !        Initialize libraries
-         initialize_talsh=1
-         buf_size=exa_input%talsh_buff*buf_size
-         ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
-         call print_date('Initialized talsh library')
-         write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
 
          call print_date('Initializing interest library')
          call interest_initialize(.true.)
@@ -199,7 +192,9 @@ module eti_mp2no
 
 !        Make some noise so that we know we are proceeding 
          call print_date('finished MP2_DM_VV calculation and save it to file DM_complex')
-         call write_eti_matrix(nvir,MP2_vv_density,'DM_complex')
+         call write_2dtensor_as_matrix(nvir,MP2_vv_density,'DM_complex')
+
+         call eti_executor_shutdown(exa_input%executor)
 
         end subroutine eti_generate_MP2_VNO_MObasis
 

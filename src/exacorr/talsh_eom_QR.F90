@@ -289,7 +289,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             call c_f_pointer(body_p,result_tens,one_dims)
 
             ierr = get_nmodes(tprop_bar_tensor1%t1,  ov_rank)
-            ierr = get_extents(tprop_bar_tensor1%t1, ov_dims)
+            ierr = get_extents_static(tprop_bar_tensor1%t1, ov_dims)
 
             ierr=construct_tensor_t(Aux_ov,C8,ov_dims,init_val=ZERO)
             vo_dims(1) = ov_dims(2)

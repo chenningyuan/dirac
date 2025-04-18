@@ -147,16 +147,16 @@ contains
             mblock = m / CD_blocksize
             do iblock = 1, mblock
                !for the filled blocks we can use full contractions, but we need to extract the current row first
-               ierr=reshape_tensor_t(CD_row,(/ 1,1,CD_blocksize /))
+               ierr=reshape_static_tensor_t(CD_row,(/ 1,1,CD_blocksize /))
                ierr=slice_tensor_t(CD_row,CD_blocks(iblock),off3)
-               ierr=reshape_tensor_t(CD_row,(/ CD_blocksize /))
+               ierr=reshape_static_tensor_t(CD_row,(/ CD_blocksize /))
                ierr=t_einsum("L(p,q)+=I(p,q,u)*R(u)",Res,CD_blocks(iblock),CD_row)
             enddo
             do i = 1, mod(m,CD_blocksize)
                !for the last incomplete block we slice out and multiply each column separately
-               ierr=reshape_tensor_t(CD_column,(/ nao, nao, 1 /))
+               ierr=reshape_static_tensor_t(CD_column,(/ nao, nao, 1 /))
                ierr=slice_tensor_t(CD_column,CD_blocks(mblock+1),(/0,0,i-1/))
-               ierr=reshape_tensor_t(CD_column,(/ nao, nao /))
+               ierr=reshape_static_tensor_t(CD_column,(/ nao, nao /))
                ! the row is now a single number that we extract via the Fortran pointer array
                ierr=t_einsum("L(p,q)+=I(p,q)",Res,CD_column,one_tensor,scale=ONE*CDR(l,k,i))
             end do
@@ -165,12 +165,12 @@ contains
             ierr=initialize_tensor_t(Temp, ZERO)
             dims4(3)=1
             dims4(4)=1
-            ierr=reshape_tensor_t(Temp,dims4)
+            ierr=reshape_static_tensor_t(Temp,dims4)
             off4=0
             off4(3)=l-l0-1
             off4(4)=k-k0-1
             ierr=slice_tensor_t(Temp,Dlk,off4)
-            ierr=reshape_tensor_t(Temp,dims2)
+            ierr=reshape_static_tensor_t(Temp,dims2)
 
             !sum and denominate
             ierr=t_einsum("T(p,q)+=V(p,q)",Temp,Res,one_tensor,scale=MINUS_ONE)
@@ -181,7 +181,7 @@ contains
             !insert the newly obtained Cholesky vector at the end of the last cholesky block
             dims3(1:2)=nao
             dims3(3)=1
-            ierr=reshape_tensor_t(Res,dims3)
+            ierr=reshape_static_tensor_t(Res,dims3)
             off3(1:2)=0
             off3(3)=mod(m,CD_blocksize)
             if (off3(3) == 0) then
@@ -193,10 +193,10 @@ contains
                ierr=direct_data_pointer(CD_blocks(mblock+1),body_p)
                call c_f_pointer(body_p,CDR,dims3)
             end if
-            ierr=talsh_tensor_insert(CD_blocks(mblock+1),Res,off3)
+            ierr=insert_static_tensor_t(CD_blocks(mblock+1),Res,off3)
 
             !update diagonal
-            ierr=reshape_tensor_t(Res,dims2)
+            ierr=reshape_static_tensor_t(Res,dims2)
             call eti_square_el(Res)
             ierr=t_einsum("W(p,q)+=V(p,q)",Diag,Res,one_tensor,scale=MINUS_ONE)
             if (print_level.gt.15) call print_tensor(Diag, ACC, "Diag")
@@ -441,12 +441,12 @@ subroutine get_integral_block(Dshell, lsh, ksh)
 
   ! get acces to the tensor
   ierr = get_nmodes(Dshell,rank)
-  if (rank.ne.4) stop 'error: wrong rank in get_shell_talsh'
-  ierr = get_extents(Dshell,dims4)
-  if (ierr.ne.0) stop 'error: wrong dimension in get_shell_talsh'
-  ierr=talsh_tensor_data_kind(Dshell,nData,DataKind)
+  if (rank.ne.4) stop 'error: wrong rank in get_shell_'
+  ierr = get_extents_static(Dshell,dims4)
+  if (ierr.ne.0) stop 'error: wrong dimension in get_shell_h'
+  ierr=get_data_kind_tensor_t(Dshell,DataKind(1))
   if (ierr.ne.0) stop 'error in getting DataKind'
-  ierr=direct_data_pointer(Dshell,body_p,DataKind(1),0,DEV_HOST)
+  ierr=direct_data_pointer(Dshell,body_p) ! ,DataKind(1),0,DEV_HOST)
   select case (DataKind(1))
   case (R8)
      call c_f_pointer(body_p,DlkR,dims4)
@@ -582,9 +582,7 @@ subroutine eti_square_el(h_tensor)
   
   type(tensor_t), intent(inout)    :: h_tensor
 
-  integer  ::  dims2(1:2)
-  integer  ::  dims3(1:3)
-  integer  ::  dims4(1:4)
+  integer, allocatable  ::  dims(:)
   integer  ::  ierr
   integer  ::  rank, rrank
   integer  ::  i, j, k, l
@@ -593,19 +591,19 @@ subroutine eti_square_el(h_tensor)
   real(8), pointer :: tens3(:, :, :)
   real(8), pointer :: tens4(:, :, :, :)
 
-  ierr = get_nmodes(h_tensor,,rank)
+  ierr = get_nmodes(h_tensor,rank)
+  allocate(dims(rank))
+  ierr = get_extents(h_tensor,dims)
+  ierr = direct_data_pointer(h_tensor,body_p)
         
   if (rank.eq.2) then
-    ierr = get_extents(h_tensor,dims2)
 ! this makes no sense ?
 !   ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
 !   if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
-    ierr = get_extents(h_tensor,dims2)
-    ierr = direct_data_pointer(h_tensor,body_p)
-    call c_f_pointer(body_p,tens2,dims2)
+    call c_f_pointer(body_p,tens2,dims)
     
-    do i = 1, dims2(1)
-      do j = 1, dims2(2)
+    do i = 1, dims(1)
+      do j = 1, dims(2)
         tens2(i,j)=tens2(i,j)*tens2(i,j)
       end do
     end do
@@ -614,13 +612,11 @@ subroutine eti_square_el(h_tensor)
 ! this makes no sense ?
 !   ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
 !   if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
-    ierr = get_extents(h_tensor,dims2)
-    ierr = direct_data_pointer(h_tensor,body_p)
-    call c_f_pointer(body_p,tens3,dims3)
+    call c_f_pointer(body_p,tens3,dims)
 
-    do i = 1, dims3(1)
-      do j = 1, dims3(2)
-        do k = 1, dims3(3)
+    do i = 1, dims(1)
+      do j = 1, dims(2)
+        do k = 1, dims(3)
           tens3(i, j, k)=tens3(i, j, k)*tens3(i, j, k)
         end do
       end do
@@ -630,14 +626,12 @@ subroutine eti_square_el(h_tensor)
 ! this makes no sense ?
 !   ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
 !   if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in square_el: wrong rank'
-    ierr = get_extents(h_tensor,dims4)
-    ierr = direct_data_pointer(h_tensor,body_p)
-    call c_f_pointer(body_p,tens4,dims4)
+    call c_f_pointer(body_p,tens4,dims)
 
-    do i = 1, dims4(1)
-      do j = 1, dims4(2)
-        do k = 1, dims4(3)
-          do l = 1, dims4(4)
+    do i = 1, dims(1)
+      do j = 1, dims(2)
+        do k = 1, dims(3)
+          do l = 1, dims(4)
             tens4(i, j, k, l)=tens4(i, j, k, l)*tens4(i, j, k, l)
           end do
         end do
@@ -647,6 +641,7 @@ subroutine eti_square_el(h_tensor)
   else
     stop 'error in print_tensor: only ranks 2,3 and 4 implemented'
   end if
+  deallocate(dims)
 
 end subroutine eti_square_el
 

@@ -102,7 +102,7 @@ module eti_dm_eomccsd
       ierr=destroy_tensor_t(gamma%symm_oo)
       ierr=destroy_tensor_t(gamma%symm_vv)
 
-      if (ierr.ne.TALSH_SUCCESS) then
+      if (ierr.ne.ETI_SUCCESS) then
         print*," ccdriver: error in evaluation of density matrices, code=",ierr
         return
       end if

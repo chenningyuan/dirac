@@ -7,6 +7,7 @@ module intermediates_eom_ccsd
      use exacorr_datatypes
      use exacorr_utils, only: get_free_fileunit
      use eti_common_routines
+     use intermediates, only: get_wbar_vovo, get_goo_lambda, get_gvv_lambda
 
      implicit none
      private
@@ -154,7 +155,10 @@ module intermediates_eom_ccsd
           ierr=t_einsum("F(i,m)+=V(i,n,m,e)*T(e,n)",fbar_oo,int_t%ooov,t1_tensor)
         end if
 
-        ierr=talsh_tensor_dimensions(t2_tensor,tens_rank,vvoo_dims)
+!       ierr=talsh_tensor_dimensions(t2_tensor,tens_rank,vvoo_dims)
+        ierr = get_nmodes(t2_tensor,tens_rank)
+        ierr = get_extents_static(t2_tensor,vvoo_dims)
+
         ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then
           call get_tau(tau_tensor,t2_tensor,t1_tensor)
@@ -162,7 +166,7 @@ module intermediates_eom_ccsd
           call get_tau(tau_tensor,t2_tensor)
         end if
 
-        ierr=t_einsum("F(i,m)+=V(i,n,e,f)*T(e,f,m,n)",fbar_oo,int_t%oovv,tau_tensor,ONE_HALF)
+        ierr=t_einsum("F(i,m)+=V(i,n,e,f)*T(e,f,m,n)",fbar_oo,int_t%oovv,tau_tensor,scale=ONE_HALF)
         ierr=destroy_tensor_t(tau_tensor)
 
        end subroutine get_fbar_oo_eti_no_dt
@@ -219,7 +223,7 @@ module intermediates_eom_ccsd
         end if
 
         ierr = get_nmodes(t2_tensor,tens_rank)
-        ierr = get_extents(t2_tensor,vvoo_dims)
+        ierr = get_extents_static(t2_tensor,vvoo_dims)
 
         ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then
@@ -260,7 +264,7 @@ module intermediates_eom_ccsd
         end if
 
         ierr = get_nmodes(t2_tensor,tens_rank)
-        ierr = get_extents(t2_tensor,vvoo_dims)
+        ierr = get_extents_static(t2_tensor,vvoo_dims)
 
         ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then
@@ -269,7 +273,7 @@ module intermediates_eom_ccsd
           call get_tau(tau_tensor,t2_tensor)
         end if
 
-        ierr=t_einsum("W(i,j,m,n)+=V(i,j,e,f)*T(e,f,m,n)",w_oooo,int_t%oovv,tau_tensor,ONE_HALF)
+        ierr=t_einsum("W(i,j,m,n)+=V(i,j,e,f)*T(e,f,m,n)",w_oooo,int_t%oovv,tau_tensor,scale=ONE_HALF)
 
         ierr=destroy_tensor_t(tau_tensor)
 
@@ -332,7 +336,7 @@ module intermediates_eom_ccsd
         end if
 
         ierr = get_nmodes(t2_tensor,tens_rank)
-        ierr = get_extents(t2_tensor,vvoo_dims)
+        ierr = get_extents_static(t2_tensor,vvoo_dims)
 
         ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then
@@ -371,7 +375,7 @@ module intermediates_eom_ccsd
         end if
  
         ierr = get_nmodes(t2_tensor,tens_rank)
-        ierr = get_extents(t2_tensor,vvoo_dims)
+        ierr = get_extents_static(t2_tensor,vvoo_dims)
 
         ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
         ierr=t_einsum("T(f,b,j,n)+=R(f,b,j,n)",tau2_tensor,t2_tensor)
@@ -411,7 +415,7 @@ module intermediates_eom_ccsd
         ierr=t_einsum("W(e,f,a,m)+=F(n,a)*T(e,f,m,n)",w_vvvo,fbar_ov,t2_tensor)
 
         ierr = get_nmodes(t2_tensor,tens_rank)
-        ierr = get_extents(t2_tensor,vvoo_dims)
+        ierr = get_extents_static(t2_tensor,vvoo_dims)
 
         ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then
@@ -476,7 +480,7 @@ module intermediates_eom_ccsd
         end if
 
         ierr = get_nmodes(t2_tensor,tens_rank)
-        ierr = get_extents(t2_tensor,vvoo_dims)
+        ierr = get_extents_static(t2_tensor,vvoo_dims)
 
         ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then

@@ -63,8 +63,6 @@ module eti_cc
          integer(C_INT)       :: ierr
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
-         integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-         integer(C_INT):: host_arg_max
 
 !        Common tensors
          type(eti_comm_tens_t) :: comm_t
@@ -106,7 +104,6 @@ module eti_cc
          integer :: fock_mode  ! choice of Fock build options
          integer :: rr         ! rank of cc-ci response
 
-         integer :: num_gpus = 0, igpu, num_gpus_env = -1
          
 ! this should be needed in the case of exatensor, but not for talsh i guess..
 !        call mfsolver_dirac_input_sync_cw()
@@ -114,22 +111,8 @@ module eti_cc
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
-         call talsh_get_number_gpus(num_gpus)
-         num_gpus_env = get_environment_integer('TALSH_GPUS',-1)
-         if (num_gpus_env.eq.-1) then
-            print *,' Environment variable TALSH_GPUS undefined'
-            num_gpus = max(num_gpus,num_gpus_env)
-         else
-            print *,' Environment variable TALSH_GPUS defined, set to:',num_gpus_env
-            num_gpus = min(num_gpus,num_gpus_env)
-         end if
-         print *,' GPUs in use by Exacorr:',num_gpus
+         call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
 
-!        Initialize libraries
-         buf_size=exa_input%talsh_buff*buf_size
-         ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
-         call print_date('Initialized talsh library')
-         write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
 
@@ -540,9 +523,10 @@ module eti_cc
          ierr=destroy_tensor_t(comm_t%fvv)
 ! aspg
          ierr=destroy_tensor_t(comm_t%t2)
-!        Get statistics
-         ierr=talsh_stats()
-         ierr = talsh_shutdown()
+
+!        shutdown tensor libraries
+         call eti_executor_shutdown(exa_input%executor)
+
          deallocate (eps_occ)
          deallocate (eps_vir)
          deallocate (mo_occ)
@@ -890,7 +874,7 @@ module eti_cc
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims = 1
          ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=direct_data_pointer(result_tensor,body_p,C8,0,DEV_HOST)
+         ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,result_dims)
 
          
@@ -2024,9 +2008,9 @@ module eti_cc
               h_tens(i,i) = ONE
             enddo
 
-            ierr=t_einsum("F(i,j)+=V(i,k,j,l)*I(k,l)",int_t%foo,int_t%oooo,id_mat_occ, ONE)
-            ierr=t_einsum("F(i,a)+=V(k,i,l,a)*I(k,l)",int_t%fov,int_t%ooov,id_mat_occ, ONE)
-            ierr=t_einsum("F(a,b)+=V(a,k,b,l)*I(k,l)",int_t%fvv,int_t%vovo,id_mat_occ, ONE)
+            ierr=t_einsum("F(i,j)+=V(i,k,j,l)*I(k,l)",int_t%foo,int_t%oooo,id_mat_occ, scale=ONE)
+            ierr=t_einsum("F(i,a)+=V(k,i,l,a)*I(k,l)",int_t%fov,int_t%ooov,id_mat_occ, scale=ONE)
+            ierr=t_einsum("F(a,b)+=V(a,k,b,l)*I(k,l)",int_t%fvv,int_t%vovo,id_mat_occ, scale=ONE)
 
             call print_date('two electron integrals added to Fock Matrix')
 
@@ -2227,7 +2211,7 @@ module eti_cc
             ierr=initialize_tensor_t(result_tensor)
             ierr=t_einsum("R()=F(i,j)*I(i,j)",result_tensor,foo,id_mat_occ)
             ierr=construct_tensor_t(h_tensor,C8,foo_dims,init_val=ZERO)
-            ierr=t_einsum("H(i,j)+=G(i,k,j,l)*I(k,l)",h_tensor,oooo,id_mat_occ, MINUS_ONE_HALF)
+            ierr=t_einsum("H(i,j)+=G(i,k,j,l)*I(k,l)",h_tensor,oooo,id_mat_occ, scale=MINUS_ONE_HALF)
             ierr=t_einsum("R()+=H(i,j)*I(i,j)",result_tensor,h_tensor,id_mat_occ)
             ierr=destroy_tensor_t(h_tensor)
 
@@ -2509,6 +2493,7 @@ module eti_cc
 
        end subroutine get_CC_integrals
 
+#if 0
        subroutine diis (t5_tensor,t4_tensor,t3_tensor,t2_tensor,t1_tensor,t_convergence,mode)
          logical,parameter  :: crop=.true. ! if switching off, also increase dimension of maxdim (used to be 5)
          integer, parameter :: maxdim = 3 ! maximum number of tensors that are stored
@@ -2917,8 +2902,9 @@ module eti_cc
          ierr=destroy_tensor_t(scalar_tensor)
 
        end subroutine diis
+#endif
 
-       subroutine diis_ (t5_tensor,t4_tensor,t3_tensor,t2_tensor,t1_tensor,t_convergence,mode)
+       subroutine diis (t5_tensor,t4_tensor,t3_tensor,t2_tensor,t1_tensor,t_convergence,mode)
          logical,parameter  :: crop=.true. ! if switching off, also increase dimension of maxdim (used to be 5)
          integer, parameter :: maxdim = 3 ! maximum number of tensors that are stored
          integer, parameter :: mindim = 2 ! minimum number of tensors to allow extrapolation
@@ -3339,9 +3325,9 @@ module eti_cc
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(eti_comm_tens_t), intent(inout) :: comm_t_
-         type(eti_comm_tensor_t) :: comm_t
+         type(eti_comm_tens_t) :: comm_t
          type(eti_intg_tens_t), intent(inout) :: int_t_
-         type(eti_intg_tensor_t) :: int_t
+         type(eti_intg_tens_t) :: int_t
 !        intermediate tensors (same notation as in relccsd)
 !        temporarily using tensors with permutations required by the automatically generated code
 !        the next update to the code generator is expected to handle index permutations/conjugation 
@@ -3389,9 +3375,9 @@ module eti_cc
          integer (INTD)       :: ierr
 
          print *,''
-         print *,'TAL-SH implementation with automatically generated residual equations'
+         print *,' implementation with automatically generated residual equations'
          print *,''
-
+#if 0
          ierr=talsh_to_tensor_t(comm_t_%foo, comm_t%foo, destroy=0)
          ierr=talsh_to_tensor_t(comm_t_%fvv, comm_t%fvv, destroy=0)
          ierr=talsh_to_tensor_t(comm_t_%t2, comm_t%t2, destroy=0)
@@ -3414,19 +3400,20 @@ module eti_cc
          ierr=talsh_to_tensor_t(int_t_%vovv, int_t%vovv, destroy=0)
          ierr=talsh_to_tensor_t(int_t_%vvvv, int_t%vvvv, destroy=0)
          ! remove the following after porting
+#endif
          if (.not.CCD) then
             if (iterative_level.eq.5) then
-               call diis_ (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3, &
+               call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3, &
                           t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
             else if (iterative_level.eq.4) then
-               call diis_ (t4_tensor=comm_t%t4,t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+               call diis (t4_tensor=comm_t%t4,t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
             else if (iterative_level.eq.3) then
-               call diis_ (t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+               call diis (t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
             else
-               call diis_ (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
             end if
          else
-            call diis_ (t2_tensor=comm_t%t2,mode=1)
+            call diis (t2_tensor=comm_t%t2,mode=1)
          end if
          
 
@@ -3950,37 +3937,37 @@ module eti_cc
 
           if (.not.CCD) then
             if (iterative_level.ge.5) then
-               call scale_with_denominators_ (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,&
+               call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,&
                               t2_tensor=comm_t%t2,full_t3_tensor=comm_t%t3,           &
                               full_t4_tensor=comm_t%t4,full_t5_tensor=comm_t%t5)
             else if (iterative_level.ge.4) then
-               call scale_with_denominators_ (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,&
+               call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,&
                               t2_tensor=comm_t%t2,full_t3_tensor=comm_t%t3,full_t4_tensor=comm_t%t4)
             else if (iterative_level.ge.3) then
-               call scale_with_denominators_ (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,&
+               call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,&
                               t2_tensor=comm_t%t2,full_t3_tensor=comm_t%t3)
             else
-               call scale_with_denominators_ (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
+               call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
             end if
           else
-            call scale_with_denominators_ (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
+            call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
           end if
 
           if (.not.CCD) then
             if (iterative_level.ge.5) then 
-               call diis_ (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
+               call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
                          t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,t_convergence=t_convergence)
             else if (iterative_level.ge.4) then
-               call diis_ (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
+               call diis (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
                        & t1_tensor=comm_t%t1,t_convergence=t_convergence)
             else if (iterative_level.ge.3) then
-               call diis_ (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
+               call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
                        & t1_tensor=comm_t%t1,t_convergence=t_convergence)
             else 
-               call diis_ (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,t_convergence=t_convergence)
+               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,t_convergence=t_convergence)
             end if
           else
-            call diis_ (t2_tensor=comm_t%t2,t_convergence=t_convergence)
+            call diis (t2_tensor=comm_t%t2,t_convergence=t_convergence)
           end if
 
 !!aspg, checking energy calculation/printout

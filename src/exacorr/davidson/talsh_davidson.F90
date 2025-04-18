@@ -2,9 +2,8 @@ module eti_davidson
 
 use exacorr_tensor_interface
 use tensor_algebra
-use talsh_common_routines
+use eti_common_routines
 use exacorr_datatypes
-use talsh_common_routines, only : tensor_norm2
 use mfsolver_cfg
 
 implicit none
@@ -389,10 +388,10 @@ contains
 
         j = 1
         ierr = get_nmodes(trial1(1),t1_rank)
-        ierr = get_extents(trial1(1),t1_dims)
+        ierr = get_extents_static(trial1(1),t1_dims)
 
         ierr = get_nmodes(trial2(1),t2_rank)
-        ierr = get_extents(trial2(1),t2_dims)
+        ierr = get_extents_static(trial2(1),t2_dims)
 
         do i = L+1, Lnew
             vi = valid_index(j)
@@ -503,11 +502,12 @@ contains
 
        ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
+       ierr = get_nmodes(v1,rank)
     !    rank=talsh_tensor_rank(v1)
-       
+    ! aspg: verify this and generalize to other ranks !       
        if (rank == 1) then
         contrac_coeff = ONE_HALF
-       else
+       else ! generalize for other ranks !
         contrac_coeff = ONE_QUARTER_C
        end if 
 
@@ -677,7 +677,7 @@ contains
 
 
         ierr = get_nmodes(trial2,t2_rank)
-        ierr = get_extents(trial2,t2_dims)
+        ierr = get_extents_static(trial2,t2_dims)
 
         if (debug_double_check) then
             call print_tensor(trial2,1.0d-12, "trial2 in double check before")
@@ -1812,10 +1812,10 @@ contains
 ! aspg TODO
 ! replace these by fetching the information from the workspace
         ierr = get_nmodes(workspace_t%trial1(1),ov_rank)
-        ierr = get_extents(workspace_t%trial1(1),ov_dims)
+        ierr = get_extents_static(workspace_t%trial1(1),ov_dims)
 
         ierr = get_nmodes(workspace_t%trial2(1),oovv_rank)
-        ierr = get_extents(workspace_t%trial2(1),oovv_dims)
+        ierr = get_extents_static(workspace_t%trial2(1),oovv_dims)
 
         if (left) then 
             allocate(result_t%lhs1(N_state))
@@ -2052,15 +2052,15 @@ contains
         if (workspace_create_debug) then
            do i = 1, workspace_t%Lmax
               write(config%output_file_unit, "(4x,a,i4)") 'info on workspace_t%trial1, element',i
-              call talsh_tensor_print_info(workspace_t%trial1(i))
+              call eti_tensor_print_info(workspace_t%trial1(i))
               write(config%output_file_unit, "(4x,a,i4)") 'info on workspace_t%trial2, element',i
-              call talsh_tensor_print_info(workspace_t%trial2(i))
+              call eti_tensor_print_info(workspace_t%trial2(i))
            end do
 
            write(config%output_file_unit, "(4x,a)") 'info on workspace_t%Hdiag1' 
-           call talsh_tensor_print_info(workspace_t%Hdiag1)
+           call eti_tensor_print_info(workspace_t%Hdiag1)
            write(config%output_file_unit, "(4x,a)") 'info on workspace_t%Hdiag2' 
-           call talsh_tensor_print_info(workspace_t%Hdiag2)
+           call eti_tensor_print_info(workspace_t%Hdiag2)
 
            write(config%output_file_unit, "(4x,a,i6,2x,a,2x,i6)") &
      &  'created tensor for sigma vectors, dimensions :',workspace_t%Nmax,"x",workspace_t%Lmax
@@ -2074,7 +2074,7 @@ contains
 
 
    subroutine create_sigma(workspace_t,int_t,interm_t,right,left,Index_small_v)
-      use talsh_sigma_eomccsd
+      use eti_sigma_eomccsd
       type(eti_davidson_workspace_tens_t), intent(inout) :: workspace_t
       type(eti_intg_tens_t), intent(inout) :: int_t
       type(eti_intermediates_tens_t),  intent(inout) :: interm_t
@@ -2431,7 +2431,7 @@ contains
         close(unit=fileno)
     end subroutine
 
-   subroutine talsh_solve_linear_system_davidson(results_t,int_t,interm_t, &
+   subroutine eti_solve_linear_system_davidson(results_t,int_t,interm_t, &
  &            workspace_t, projector_t, frequency, prop_grad1, prop_grad2)
       type(eti_davidson_results_tens_t) :: results_t
       type(eti_intermediates_tens_t),  intent(inout) :: interm_t
@@ -2470,9 +2470,9 @@ contains
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
 
-!       type(talsh_lambda_tens_t), intent(in)   :: A
+!       type(eti_lambda_tens_t), intent(in)   :: A
 !       type(eti_davidson_workspace_tens_t),  intent(inout) :: workspace
-!       type(talsh_projectors), intent(inout) :: projector
+!       type(eti_projectors), intent(inout) :: projector
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
@@ -3436,7 +3436,7 @@ contains
        ierr = get_nmodes(a_tensor,a_rank)
 
        if (a_rank.eq.1) then 
-         ierr = get_extents(a_tensor,a_dims1)
+         ierr = get_extents_static(a_tensor,a_dims1)
          if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
 
          ierr=direct_data_pointer(a_tensor,a_body)
@@ -3447,7 +3447,7 @@ contains
          end do
 
        else if (a_rank.eq.2) then
-         ierr = get_extents(a_tensor,a_dims2)
+         ierr = get_extents_static(a_tensor,a_dims2)
          if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
 
          ierr=direct_data_pointer(a_tensor,a_body)
@@ -3460,7 +3460,7 @@ contains
          end do
 
        else if (a_rank.eq.3) then 
-         ierr = get_extents(a_tensor,a_dims3)
+         ierr = get_extents_static(a_tensor,a_dims3)
          if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
 
          ierr=direct_data_pointer(a_tensor,a_body)
@@ -3475,7 +3475,7 @@ contains
          end do
 
        else if (a_rank.eq.4) then 
-         ierr = get_extents(a_tensor,a_dims4)
+         ierr = get_extents_static(a_tensor,a_dims4)
          if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
 
          ierr=direct_data_pointer(a_tensor,a_body)
@@ -3492,7 +3492,7 @@ contains
          end do
 
       else if (a_rank.eq.5) then
-         ierr = get_extents(a_tensor,a_dims5)
+         ierr = get_extents_static(a_tensor,a_dims5)
          if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
 
          ierr=direct_data_pointer(a_tensor,a_body)
@@ -3511,7 +3511,7 @@ contains
          end do ! i
 
       else if (a_rank.eq.6) then
-         ierr = get_extents(a_tensor,a_dims6)
+         ierr = get_extents_static(a_tensor,a_dims6)
          if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
 
          ierr=direct_data_pointer(a_tensor,a_body)
@@ -3532,7 +3532,7 @@ contains
          end do ! i
 
       else if (a_rank.eq.7) then
-         ierr = get_extents(a_tensor,a_dims7)
+         ierr = get_extents_static(a_tensor,a_dims7)
          if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
 
          ierr=direct_data_pointer(a_tensor,a_body)
@@ -3556,7 +3556,7 @@ contains
 
 #ifndef VAR_NVFORTRAN
       else if (a_rank.eq.8) then
-         ierr = get_extents(a_tensor,a_dims8)
+         ierr = get_extents_static(a_tensor,a_dims8)
          if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
 
          ierr=direct_data_pointer(a_tensor,a_body)
@@ -3580,7 +3580,7 @@ contains
          end do ! j
          end do ! i
       else if (a_rank.eq.9) then
-         ierr = get_extents(a_tensor,a_dims9)
+         ierr = get_extents_static(a_tensor,a_dims9)
          if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
 
          ierr=direct_data_pointer(a_tensor,a_body)
@@ -3607,7 +3607,7 @@ contains
          end do ! i
 
       else if (a_rank.eq.10) then
-         ierr = get_extents(a_tensor,a_dims10)
+         ierr = get_extents_static(a_tensor,a_dims10)
          if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
 
          ierr=direct_data_pointer(a_tensor,a_body)
@@ -3655,10 +3655,7 @@ contains
        type(tensor_t), intent(inout)    :: a_tensor,b_tensor
     
        integer(INTD)  ::  a_rank, b_rank
-       integer(INTD)  ::  a_dims1(1),b_dims1(1)
-       integer(INTD)  ::  a_dims2(1:2),b_dims2(1:2)
-       integer(INTD)  ::  a_dims3(1:3),b_dims3(1:3)
-       integer(INTD)  ::  a_dims4(1:4),b_dims4(1:4)
+       integer(INTD), allocatable  ::  a_dims(:),b_dims(:)
        integer(INTD)  ::  ierr
 
        type(C_PTR)         :: a_body,b_body
@@ -3688,135 +3685,96 @@ contains
     
        ierr = get_nmodes(a_tensor, a_rank)
        ierr = get_nmodes(b_tensor, b_rank)
+       allocate(a_dims(a_rank))
+       allocate(b_dims(b_rank))
+       if (a_rank.ne.b_rank) then
+          call quit('incompatible ranks for tensors in in multiply_tensor_elements')
+       end if
+
+       ierr = get_extents(a_tensor,a_dims)
+       if (ierr.ne.0) call quit('error in getting tensor extents in multiply_tensor_elements')
+       ierr = get_extents(b_tensor,b_dims)
+       if (ierr.ne.0) call quit('error in getting tensor extents in multiply_tensor_elements')
     
-       if ((a_rank.eq.1).and.(b_rank.eq.1)) then
-         ierr = get_extents(a_tensor,a_dims1)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-         ierr = get_extents(b_tensor,b_dims1)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-    
+       ! only checking a_rank in what follos since we've established a and b have same rank 
+       if (a_rank.eq.1) then
          ierr=direct_data_pointer(a_tensor,a_body)
-         call c_f_pointer(a_body,a_tens1,a_dims1)
+         call c_f_pointer(a_body,a_tens1,a_dims)
          ierr=direct_data_pointer(b_tensor,b_body)
-         call c_f_pointer(b_body,b_tens1,b_dims1)
+         call c_f_pointer(b_body,b_tens1,b_dims)
     
          a_tens1 = a_tens1 * b_tens1
     
-       else if ((a_rank.eq.2).and.(b_rank.eq.2)) then
-         ierr = get_extents(a_tensor,a_dims2)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-         ierr = get_extents(b_tensor,b_dims2)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-    
+       else if (a_rank.eq.2) then
          ierr=direct_data_pointer(a_tensor,a_body)
-         call c_f_pointer(a_body,a_tens2,a_dims2)
+         call c_f_pointer(a_body,a_tens2,a_dims)
          ierr=direct_data_pointer(b_tensor,b_body)
-         call c_f_pointer(b_body,b_tens2,b_dims2)
+         call c_f_pointer(b_body,b_tens2,b_dims)
     
          a_tens2 = a_tens2 * b_tens2
     
-       else if ((a_rank.eq.3).and.(b_rank.eq.3)) then
-         ierr = get_extents(a_tensor,a_dims3)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-         ierr = get_extents(b_tensor,b_dims3)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-    
+       else if (a_rank.eq.3) then
          ierr=direct_data_pointer(a_tensor,a_body)
-         call c_f_pointer(a_body,a_tens3,a_dims3)
+         call c_f_pointer(a_body,a_tens3,a_dims)
          ierr=direct_data_pointer(b_tensor,b_body)
-         call c_f_pointer(b_body,b_tens3,b_dims3)
+         call c_f_pointer(b_body,b_tens3,b_dims)
     
          a_tens3 = a_tens3 * b_tens3
     
-       else if ((a_rank.eq.4).and.(b_rank.eq.4)) then
-         ierr = get_extents(a_tensor,a_dims4)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-         ierr = get_extents(b_tensor,b_dims4)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-       
+       else if (a_rank.eq.4) then
          ierr=direct_data_pointer(a_tensor,a_body)
-         call c_f_pointer(a_body,a_tens4,a_dims4)
+         call c_f_pointer(a_body,a_tens4,a_dims)
          ierr=direct_data_pointer(b_tensor,b_body)
-         call c_f_pointer(b_body,b_tens4,b_dims4)
+         call c_f_pointer(b_body,b_tens4,b_dims)
     
          a_tens4 =  a_tens4 * b_tens4
 
-       else if ((a_rank.eq.5).and.(b_rank.eq.5)) then
-         ierr = get_extents(a_tensor,a_dims5)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-         ierr = get_extents(b_tensor,b_dims5)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-
+       else if (a_rank.eq.5) then
          ierr=direct_data_pointer(a_tensor,a_body)
-         call c_f_pointer(a_body,a_tens5,a_dims5)
+         call c_f_pointer(a_body,a_tens5,a_dims)
          ierr=direct_data_pointer(b_tensor,b_body)
-         call c_f_pointer(b_body,b_tens5,b_dims5)
+         call c_f_pointer(b_body,b_tens5,b_dims)
 
          a_tens5 =  a_tens5 * b_tens5
 
-       else if ((a_rank.eq.6).and.(b_rank.eq.6)) then
-         ierr = get_extents(a_tensor,a_dims6)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-         ierr = get_extents(b_tensor,b_dims6)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-
+       else if (a_rank.eq.6) then
          ierr=direct_data_pointer(a_tensor,a_body)
-         call c_f_pointer(a_body,a_tens6,a_dims6)
+         call c_f_pointer(a_body,a_tens6,a_dims)
          ierr=direct_data_pointer(b_tensor,b_body)
-         call c_f_pointer(b_body,b_tens6,b_dims6)
+         call c_f_pointer(b_body,b_tens6,b_dims)
 
          a_tens6 =  a_tens6 * b_tens6
 
        else if ((a_rank.eq.7).and.(b_rank.eq.7)) then
-         ierr = get_extents(a_tensor,a_dims7)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-         ierr = get_extents(b_tensor,b_dims7)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-
          ierr=direct_data_pointer(a_tensor,a_body)
-         call c_f_pointer(a_body,a_tens7,a_dims7)
+         call c_f_pointer(a_body,a_tens7,a_dims)
          ierr=direct_data_pointer(b_tensor,b_body)
-         call c_f_pointer(b_body,b_tens7,b_dims7)
+         call c_f_pointer(b_body,b_tens7,b_dims)
 
          a_tens7 =  a_tens7 * b_tens7
 
 #ifndef VAR_NVFORTRAN
-       else if ((a_rank.eq.8).and.(b_rank.eq.9)) then
-         ierr = get_extents(a_tensor,a_dims8)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-         ierr = get_extents(b_tensor,b_dims8)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-
+       else if (a_rank.eq.8) then
          ierr=direct_data_pointer(a_tensor,a_body)
-         call c_f_pointer(a_body,a_tens8,a_dims8)
+         call c_f_pointer(a_body,a_tens8,a_dims)
          ierr=direct_data_pointer(b_tensor,b_body)
-         call c_f_pointer(b_body,b_tens8,b_dims8)
+         call c_f_pointer(b_body,b_tens8,b_dims)
 
          a_tens8 =  a_tens8 * b_tens8
 
-       else if ((a_rank.eq.9).and.(b_rank.eq.9)) then
-         ierr = get_extents(a_tensor,a_dims9)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-         ierr = get_extents(b_tensor,b_dims9)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-
+       else if (a_rank.eq.9) then
          ierr=direct_data_pointer(a_tensor,a_body)
-         call c_f_pointer(a_body,a_tens9,a_dims9)
+         call c_f_pointer(a_body,a_tens9,a_dims)
          ierr=direct_data_pointer(b_tensor,b_body)
-         call c_f_pointer(b_body,b_tens9,b_dims9)
+         call c_f_pointer(b_body,b_tens9,b_dims)
 
          a_tens9 =  a_tens9 * b_tens9
 
-       else if ((a_rank.eq.10).and.(b_rank.eq.10)) then
-         ierr = get_extents(a_tensor,a_dims10)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-         ierr = get_extents(b_tensor,b_dims10)
-         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
-
+       else if (a_rank.eq.10) then
          ierr=direct_data_pointer(a_tensor,a_body)
-         call c_f_pointer(a_body,a_tens10,a_dims10)
+         call c_f_pointer(a_body,a_tens10,a_dims)
          ierr=direct_data_pointer(b_tensor,b_body)
-         call c_f_pointer(b_body,b_tens10,b_dims10)
+         call c_f_pointer(b_body,b_tens10,b_dims)
 
          a_tens10 =  a_tens10 * b_tens10
 
@@ -3824,6 +3782,8 @@ contains
        else
           stop 'error in multiply_tensor_elements: only ranks 0 to 10 implemented (0 to 7 for NVFORTRAN)'
        end if
+       deallocate(a_dims)
+       deallocate(b_dims)
     
     end subroutine 
 
@@ -3833,10 +3793,7 @@ contains
        type(tensor_t), intent(inout)    :: tensor
     
        integer(INTD)  ::  rank
-       integer(INTD)  ::  dims1(1)
-       integer(INTD)  ::  dims2(1:2)
-       integer(INTD)  ::  dims3(1:3)
-       integer(INTD)  ::  dims4(1:4)
+       integer(INTD), allocatable  ::  dims(:)
        integer(INTD)  ::  ierr
        integer  ::  i, j, k, l, b
        type(C_PTR)         :: body
@@ -3856,14 +3813,15 @@ contains
        complex(8) :: value_to_print
     
        ierr = get_nmodes(tensor,rank)
+       allocate(dims(rank))
+       ierr = get_extents(tensor,dims)
        ierr = direct_data_pointer(tensor,body)
     
        if (rank.eq.1) then
-         ierr = get_extents(tensor,dims1)
-         call c_f_pointer(body,tens1,dims1)
+         call c_f_pointer(body,tens1,dims)
     
          b = 0
-         do i = 1, dims1(1)
+         do i = 1, dims(1)
             b = b + 1
             value_to_print = tens1(i)
             if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
@@ -3877,12 +3835,11 @@ contains
          end do
     
        else if (rank.eq.2) then
-         ierr = get_extents(tensor,dims2)
-         call c_f_pointer(body,tens2,dims2)
+         call c_f_pointer(body,tens2,dims)
     
          b = 0
-         do j = 1, dims2(2)
-           do i = 1, dims2(1)
+         do j = 1, dims(2)
+           do i = 1, dims(1)
             b = b + 1
             value_to_print = tens2(i,j)
             if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
@@ -3898,12 +3855,11 @@ contains
          end do
     
        else if (rank.eq.3) then
-         ierr = get_extents(tensor,dims3)
-         call c_f_pointer(body,tens3,dims3)
+         call c_f_pointer(body,tens3,dims)
 
-         do k = 1, dims3(3)
-            do j = 1, dims3(2)
-              do i = 1, dims3(1)
+         do k = 1, dims(3)
+            do j = 1, dims(2)
+              do i = 1, dims(1)
                  b = b + 1
                  value_to_print = tens3(i,j,k)
                  if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
@@ -3920,14 +3876,13 @@ contains
          end do
     
        else if (rank.eq.4) then
-         ierr = get_extents(tensor,dims4)
-         call c_f_pointer(body,tens4,dims4)
+         call c_f_pointer(body,tens4,dims)
 
          b = 0
-         do l = 1, dims4(4)
-            do k = 1, dims4(3)
-              do j = 1, dims4(2)
-                do i = 1, dims4(1)
+         do l = 1, dims(4)
+            do k = 1, dims(3)
+              do j = 1, dims(2)
+                do i = 1, dims(1)
                    b = b + 1
                    value_to_print = tens4(i,j,k,l)
                    if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
@@ -3947,6 +3902,7 @@ contains
        else
           call quit('unsupported tensor rank in print_tensor_elements')
        end if
+       deallocate(dims)
     
     end subroutine 
 

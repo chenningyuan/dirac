@@ -2,10 +2,10 @@ module intermediates_eom_rsp
 
 !Module to make intermediates needed in CC-CI(EOM-CC) response equations
 
+     use exacorr_tensor_interface
      use tensor_algebra
-     use talsh
      use exacorr_datatypes
-     use talsh_common_routines
+     use eti_common_routines
 
      implicit none
      private
@@ -274,7 +274,7 @@ module intermediates_eom_rsp
 !LH     \Eta_1= -one_half \td femn \lambdad mife \Ys na 
          ierr=initialize_tensor_t(LR_Aux_oo)
          ierr=t_einsum('H(i,n)+=T(f,e,m,n)*L(m,i,f,e)',LR_Aux_oo,t2_tensor,l2_tensor)
-         ierr=talsh_Tensor_contract('E(i,a)+=H(i,n)*Y(n,a)',& 
+         ierr=t_einsum('E(i,a)+=H(i,n)*Y(n,a)',& 
                                  eta_prop_ov_tensor,LR_Aux_oo,orb_int_tensor%prop_ov,scale=MINUS_ONE_HALF)
          if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o28 ', ierr
 

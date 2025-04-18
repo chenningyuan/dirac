@@ -1,7 +1,7 @@
 module eti_cis_property
 !   This module contains the routines needed to compute CI-single wave-function and CIS excitation energy
+    use exacorr_tensor_interface
     use tensor_algebra
-    use talsh
     use exacorr_datatypes
     use exacorr_utils
     use eti_common_routines
@@ -296,7 +296,7 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_lis
     mo_dims(2) = nmo2
 
 
-    ierr=construc_tensor_t(orb_int_tensor,C8,mo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(orb_int_tensor,C8,mo_dims,init_val=ZERO)
     ierr=direct_data_pointer(orb_int_tensor,body_p)
     call c_f_pointer(body_p,orbital_integral_tens,mo_dims)
 
@@ -335,7 +335,7 @@ subroutine get_propeg(onetdmeg_tem, orb_inte_exe_grd_tensor, Tra_Den_exe_grd_ten
 
     one_dims(1) = 1
 
-    ierr=construc_tensor_t(TDM_exe_grd_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(TDM_exe_grd_tensor,C8,one_dims(1:0),init_val=ZERO)
     ierr=direct_data_pointer(TDM_exe_grd_tensor,body_p)
     call c_f_pointer(body_p,TDM_exe_grd_tens,one_dims)
 
@@ -370,8 +370,8 @@ subroutine get_propee(onetdmee_tem, orb_inte_exe_exe_vv_tensor, orb_inte_exe_exe
     one_dims(1) = 1
 
 
-    ierr=construc_tensor_t(TDM_exe_exe_vv_tensor,C8,one_dims(1:0),init_val=ZERO) 
-    ierr=construc_tensor_t(TDM_exe_exe_oo_tensor,C8,one_dims(1:0),init_val=ZERO) 
+    ierr=construct_tensor_t(TDM_exe_exe_vv_tensor,C8,one_dims(1:0),init_val=ZERO) 
+    ierr=construct_tensor_t(TDM_exe_exe_oo_tensor,C8,one_dims(1:0),init_val=ZERO) 
 
 
     ierr=direct_data_pointer(TDM_exe_exe_vv_tensor,body_p)

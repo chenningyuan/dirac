@@ -64,9 +64,9 @@ module eti_cholesky_integrals
 !        Get cholesky-vectors and copy them in to a talsh tensor
          call print_date('-Start- Cholesky Decomposition')
          if (print_level.gt.1) write(*,*) "using complete tensor - LV refactored"
-         call eti_decompose_cholesky (chol_tensor, t_cholesky, print_level)
+         call decompose_cholesky_eti (chol_tensor, t_cholesky, print_level)
          ierr = get_nmodes(chol_tensor, rank)
-         ierr = get_extents(chol_tensor, chol_dims)
+         ierr = get_extents_static(chol_tensor, chol_dims)
          call print_date('-End- Cholesky Decomposition')
 
 !       transform occupied
@@ -240,9 +240,9 @@ module eti_cholesky_integrals
 !        Get cholesky-vectors and copy them in to a talsh tensor
          call print_date('-Start- Cholesky Decomposition')
          if (print_level.gt.1) write(*,*) "using complete tensor"
-         call eti_decompose_cholesky (chol_tensor, t_cholesky, print_level)
+         call decompose_cholesky_eti (chol_tensor, t_cholesky, print_level)
          ierr = get_nmodes(chol_tensor, rank)
-         ierr = get_extents(chol_tensor, chol_dims)
+         ierr = get_extents_static(chol_tensor, chol_dims)
          call print_date('-End- Cholesky Decomposition')
 
 !       transform occupied

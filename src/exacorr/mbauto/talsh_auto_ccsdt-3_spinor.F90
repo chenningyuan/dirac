@@ -104,7 +104,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z52()+=S44(d1,d2,l1,l2)*H24(l1,l2,d1,d2)",Z52,S44,H24,&
          scale=(0.25d0,0.0d0))
 !   original expression: Z53(e1b|m1b)+=H2(e1b|m1b)
-    ierr=t_einsumg("Z53(e1,m1)+=H2(e1,m1)",Z53,H2,&
+    ierr=t_einsum("Z53(e1,m1)+=H2(e1,m1)",Z53,H2,&
          scale=(1.0d0,0.0d0))
 !   original expression: Z53(e1b|m1b)+=H1(e1b|d1b)*S43(d1b|m1b)
     ierr=t_einsum("Z53(e1,m1)+=H1(e1,d1)*S43(d1,m1)",Z53,H1,S43,&
@@ -226,7 +226,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=construct_tensor_t(Z65_1, C8, (/nocc,nvir/), init_val=ZERO)
     ierr=destroy_tensor_t(Z65_1)
 !   original expression: Z54(e1be2b|m1bm2b)+=H5(e1be2b|m1bm2b)
-    ierr=t_einsumg("Z54(e1,e2,m1,m2)+=H5(e1,e2,m1,m2)",Z54,H5,&
+    ierr=t_einsum("Z54(e1,e2,m1,m2)+=H5(e1,e2,m1,m2)",Z54,H5,&
          scale=(1.0d0,0.0d0))
 !   original expression: Z54(e1be2b|m1bm2b)+=H3(e1be2b|d1bd2b)*S44(d1bd2b|m1bm2b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=H3(e1,e2,d1,d2)*S44(d1,d2,m1,m2)",Z54,H3,S44,&

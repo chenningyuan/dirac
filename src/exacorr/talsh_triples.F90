@@ -67,7 +67,7 @@ module eti_triples
 
 !        Get nocc and nvir from tensor information
          ierr = get_nmodes(t2_tensor,tens_rank)
-         ierr = get_extents(t2_tensor,t2_dims)
+         ierr = get_extents_static(t2_tensor,t2_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'error: t2 tensor corrupted'
 
          if (t2_dims(1).eq.t2_dims(2)) then
@@ -228,35 +228,35 @@ module eti_triples
 
          ierr = get_nmodes(t1_tensor,tens_rank)
          if (tens_rank .ne. 2) stop 'Error: t1 tensor corrupted in form_y2_intermediate'
-         ierr = get_extents(t1_tensor,t1_dims)
+         ierr = get_extents_static(t1_tensor,t1_dims)
          ierr=direct_data_pointer(t1_tensor,body_p)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,t1_tens,t1_dims)
 
          ierr = get_nmodes(t2_tensor,tens_rank)
          if (tens_rank .ne. 4) stop 'Error: t2 tensor corrupted in form_y2_intermediate'
-         ierr = get_extents(t2_tensor,t2_dims)
+         ierr = get_extents_static(t2_tensor,t2_dims)
          ierr=direct_data_pointer(t2_tensor,body_p)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,t2_tens,t2_dims)
 
          ierr = get_nmodes(y_tensor,tens_rank)
          if (tens_rank .ne. 3) stop 'Error: y tensor corrupted in form_y2_intermediate'
-         ierr = get_extents(y_tensor,y_dims)
+         ierr = get_extents_static(y_tensor,y_dims)
          ierr=direct_data_pointer(y_tensor,body_p)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,y_tens,y_dims)
 
          ierr = get_nmodes(fov_tensor,tens_rank)
          if (tens_rank .ne. 2) stop 'Error: fo tensor corrupted in form_y2_intermediate'
-         ierr = get_extents(fov_tensor,fov_dims)
+         ierr = get_extents_static(fov_tensor,fov_dims)
          ierr=direct_data_pointer(fov_tensor,body_p)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,fov_tens,fov_dims)
 
          ierr = get_nmodes(oovv_tensor,tens_rank)
          if (tens_rank .ne. 4) stop 'Error: oovv tensor corrupted in form_y2_intermediate'
-         ierr = get_extents(oovv_tensor,oovv_dims)
+         ierr = get_extents_static(oovv_tensor,oovv_dims)
          ierr=direct_data_pointer(oovv_tensor,body_p)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,oovv_tens,oovv_dims)
@@ -304,19 +304,19 @@ module eti_triples
 
          ierr = get_nmodes(t1_tensor,tens_rank)
          if (tens_rank .ne. 2) stop 'Error: t1 tensor corrupted in form_y_intermediate'
-         ierr = get_extents(t1_tensor,t1_dims)
+         ierr = get_extents_static(t1_tensor,t1_dims)
          ierr=direct_data_pointer(t1_tensor,body_p)
          call c_f_pointer(body_p,t1_tens,t1_dims)
 
          ierr = get_nmodes(t2_tensor,tens_rank)
          if (tens_rank .ne. 4) stop 'Error: t2 tensor corrupted in form_y_intermediate'
-         ierr = get_extents(t2_tensor,t2_dims)
+         ierr = get_extents_static(t2_tensor,t2_dims)
          ierr=direct_data_pointer(t2_tensor,body_p)
          call c_f_pointer(body_p,t2_tens,t2_dims)
 
          ierr = get_nmodes(y_tensor,tens_rank)
          if (tens_rank .ne. 3) stop 'Error: y tensor corrupted in form_y_intermediate'
-         ierr = get_extents(y_tensor,y_dims)
+         ierr = get_extents_static(y_tensor,y_dims)
          ierr=direct_data_pointer(y_tensor,body_p)
          call c_f_pointer(body_p,y_tens,y_dims)
 
@@ -369,13 +369,13 @@ module eti_triples
 !        Determine source dimensions and get direct access to the tensor body to enable copying
          ierr = get_nmodes(tensor,tens_rank)
          if (tens_rank .ne. 4) stop 'Error: Only extraction from 4-dimensional tensors possible'
-         ierr = get_extents(tensor,tens_dims)
+         ierr = get_extents_static(tensor,tens_dims)
          ierr=direct_data_pointer(tensor,body_p)
          call c_f_pointer(body_p,tens,tens_dims)
 
 !        Determine target  dimensions and get direct access to the tensor body to enable copying
          ierr = get_nmodes(subtensor,subtens_rank)
-         ierr = get_extents(subtensor,subtens_dims)
+         ierr = get_extents_static(subtensor,subtens_dims)
          if (subtens_rank .eq. 3) then
             ierr=direct_data_pointer(subtensor,body_p)
             call c_f_pointer(body_p,subtens3,subtens_dims)
@@ -424,8 +424,8 @@ module eti_triples
         integer               :: nocc, nvir, i
 
 !       Get nocc and nvir from tensor information
-        ierr = get_nmodes(comm_t%t2,subtens_rank)
-        ierr = get_extents(comm_t%t2,t2_dims)
+        ierr = get_nmodes(comm_t%t2,tens_rank)
+        ierr = get_extents_static(comm_t%t2,t2_dims)
         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'error: t2 tensor corrupted'
 
         if (t2_dims(1).eq.t2_dims(2)) then

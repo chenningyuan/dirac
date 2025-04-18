@@ -2,8 +2,8 @@
        module exacorr_datatypes
 
         use exatensor
-        use exacorr_tensor_interface
-        use exacorr_tensor_interface, only: tensor_t
+!       use exacorr_tensor_interface
+        use exacorr_tensor_interface, only: tensor_t, ETI_DEFAULT_EXECUTOR 
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -75,6 +75,7 @@
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
+            integer                 :: executor = ETI_DEFAULT_EXECUTOR ! executor for tensor contractions (tapp, talsh, exatensor, ...)
             integer                 :: moint_scheme = 4
             integer                 :: mp2no = 0                ! > 0 mp2 natural orbital, < 0 mp2lap
             integer                 :: ncycles = 30

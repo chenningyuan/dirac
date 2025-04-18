@@ -1,7 +1,7 @@
 module eti_cis
 !   This module contains the routines needed to compute CI-single wave-function and CIS excitation energy
-    use tensor_algebra
     use exacorr_tensor_interface
+    use tensor_algebra
     use exacorr_datatypes
     use exacorr_utils
     use eti_common_routines
@@ -165,7 +165,7 @@ module eti_cis
 
 !        Constrcut two body integral tensor and Create CIS Hamiltonian tensor 
          ierr=t_einsum("HCIS(b,i,j,a)+=TB(b,i,a,j)*M()",result_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
-         ierr=eti_tensor_add("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,body_one_tensor)
+         ierr=t_einsum("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,body_one_tensor)
 
 
         do j=1,nocc,1

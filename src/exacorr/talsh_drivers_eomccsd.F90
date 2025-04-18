@@ -262,8 +262,8 @@ module eti_eom
        complex(8), pointer, contiguous:: proj1_tens(:,:), proj2_tens(:,:,:,:)
        type(C_PTR):: proj1_body_p, proj2_body_p
             
-      ierr=eti_tensor_construct(projector_t%p1,C8,workspace_t%tens1_dims(1:workspace_t%tens1_rank),init_val=ONE)
-      ierr=eti_tensor_construct(projector_t%p2,C8,workspace_t%tens2_dims(1:workspace_t%tens2_rank),init_val=ONE)
+      ierr=construct_tensor_t(projector_t%p1,C8,workspace_t%tens1_dims(1:workspace_t%tens1_rank),init_val=ONE)
+      ierr=construct_tensor_t(projector_t%p2,C8,workspace_t%tens2_dims(1:workspace_t%tens2_rank),init_val=ONE)
 
       projector_t%p1_rank = workspace_t%tens1_rank
       projector_t%p2_rank = workspace_t%tens2_rank

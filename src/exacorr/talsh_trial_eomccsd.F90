@@ -283,13 +283,13 @@ module eti_trial_eomccsd
       diagonal = ZERO
 
       ierr = get_nmodes(Fmi_tensor,Fmi_rank)
-      ierr = get_extents(Fmi_tensor,Fmi_dims)
+      ierr = get_extents_static(Fmi_tensor,Fmi_dims)
 
       ierr = direct_data_pointer(Fmi_tensor,Fmi_body_p)
       call c_f_pointer(Fmi_body_p,fmi_p_tens,Fmi_dims(1:2))
 
       ierr = get_nmodes(Fae_tensor,Fae_rank)
-      ierr = get_extents(Fae_tensor,Fae_dims)
+      ierr = get_extents_static(Fae_tensor,Fae_dims)
 
       ierr = direct_data_pointer(Fae_tensor,Fae_body_p)
       call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
@@ -580,13 +580,13 @@ module eti_trial_eomccsd
       X = 1
 
       ierr = get_nmodes(Fmi_tensor,Fmi_rank)
-      ierr = get_extents(Fmi_tensor,Fmi_dims)
+      ierr = get_extents_static(Fmi_tensor,Fmi_dims)
 
       ierr = direct_data_pointer(Fmi_tensor,Fmi_body_p)
       call c_f_pointer(Fmi_body_p,fmi_p_tens,Fmi_dims(1:2))
 
       ierr = get_nmodes(Fae_tensor,Fae_rank)
-      ierr = get_extents(Fae_tensor,Fae_dims)
+      ierr = get_extents_static(Fae_tensor,Fae_dims)
 
       ierr = direct_data_pointer(Fae_tensor,Fae_body_p)
       call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
@@ -640,13 +640,13 @@ module eti_trial_eomccsd
       nocc  = workspace%tens1_dims(2)
 
       ierr = get_nmodes(Fmi_tensor,Fmi_rank)
-      ierr = get_extents(Fmi_tensor,Fmi_dims)
+      ierr = get_extents_static(Fmi_tensor,Fmi_dims)
 
       ierr = direct_data_pointer(Fmi_tensor,Fmi_body_p)
       call c_f_pointer(Fmi_body_p,fmi_p_tens,Fmi_dims(1:2))
 
       ierr = get_nmodes(Fae_tensor,Fae_rank)
-      ierr = get_extents(Fae_tensor,Fae_dims)
+      ierr = get_extents_static(Fae_tensor,Fae_dims)
 
       ierr = direct_data_pointer(Fae_tensor,Fae_body_p)
       call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
@@ -715,7 +715,7 @@ module eti_trial_eomccsd
       nocc  = workspace%tens1_dims(2)
 
       ierr = get_nmodes(Prop_gradient_tensor,Prop_gradient_rank)
-      ierr = get_extents(Prop_gradient_tensor,Prop_gradient_dims)
+      ierr = get_extents_static(Prop_gradient_tensor,Prop_gradient_dims)
 
       ierr = direct_data_pointer(Prop_gradient_tensor,Prop_gradient_body_p)
       call c_f_pointer(Prop_gradient_body_p,Prop_gradient_tens,Prop_gradient_dims(1:2))

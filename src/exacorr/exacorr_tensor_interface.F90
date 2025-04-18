@@ -19,6 +19,12 @@ module exacorr_tensor_interface
         ! aspg: to check whether definitions such as integer(4) :: T_INTL=8 do not clash with imported modules
         ! jan: this is defined in exatensor_placeholders
         
+        integer, parameter, public :: ETI_SUCCESS = 0
+#if (defined(DEFAULT_EXECUTOR_TENSOR_T)) 
+        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_TENSOR_T
+#else
+        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = 2
+#endif
 !DERIVED TYPES:
 
   !Unified tensor type
@@ -71,6 +77,8 @@ module exacorr_tensor_interface
         public destroy_tensor_t
         public direct_data_pointer
         public get_extents
+        public get_extents_static
+        public get_data_kind_tensor_t
         public get_nmodes
         public get_numel
         public is_scalar_tensor_t
@@ -79,7 +87,12 @@ module exacorr_tensor_interface
         public copy_tensor_t
         public get_scalar_tensor_t
         public get_real_scalar_tensor_t
+        public insert_tensor_t
+        public insert_static_tensor_t
         ! public tensor_t_equal
+
+        public eti_executor_initialize
+        public eti_executor_shutdown
 
         contains
 
@@ -469,13 +482,13 @@ module exacorr_tensor_interface
         function reshape_tensor_t(tensor, reshape_dims)
           implicit none
           type(tensor_t), intent(inout)    :: tensor
+          integer(INTD), allocatable, intent(inout) :: reshape_dims(:)
 
           integer(INTD)       :: ierr, reshape_tensor_t
           integer(c_int)       :: tapp_err
-          integer(INTD), allocatable :: reshape_dims(:)
 
           if ( is_empty_tensor_t(tensor) ) then
-            destroy_tensor_t = 0
+            reshape_tensor_t = 0
             return
           endif
 
@@ -499,6 +512,103 @@ module exacorr_tensor_interface
 
           reshape_tensor_t = ierr
         end function reshape_tensor_t
+
+        ! this routine is essentially the same as reshape_tensor_t but without the allocatable attribute for reshape_dims 
+        function reshape_static_tensor_t(tensor, reshape_dims)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          integer(INTD), intent(in) :: reshape_dims(:)
+
+          integer(INTD)       :: ierr, reshape_static_tensor_t
+          integer(c_int)       :: tapp_err
+
+          if ( is_empty_tensor_t(tensor) ) then
+            reshape_static_tensor_t = 0
+            return
+          endif
+
+          SELECT CASE(tensor%which_executor)
+          CASE(1)
+            write(*,'("  Error. reshape_static_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          CASE(2)
+             ierr=talsh_tensor_reshape(tensor%tens_talsh,reshape_dims)
+          CASE default
+            write(*,'("  Error. reshape_static_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          END SELECT
+
+          if ( .not. is_empty_tensor_t(tensor) ) then
+            write(*,'("  Error. Failed sanity check in reshape_static_tensor_t.")')
+            stop 98
+          endif
+
+          reshape_static_tensor_t = ierr
+        end function reshape_static_tensor_t
+
+        ! insert elements of one tensor into another tensor at block of elements into a tensor
+        function insert_tensor_t(target_tensor, source_tensor, offsets_in_target)
+          implicit none
+          type(tensor_t), intent(inout)    :: target_tensor, source_tensor
+          integer(INTD), allocatable, intent(in) :: offsets_in_target(:)
+
+          integer(INTD)       :: ierr, insert_tensor_t
+          integer(c_int)       :: tapp_err
+
+          if ( is_empty_tensor_t(source_tensor) ) then
+            insert_tensor_t = 0
+            return
+          endif
+
+          SELECT CASE(source_tensor%which_executor)
+          CASE(1)
+            write(*,'("  Error. insert_tensor_t for executor ",i11," not yet implemented.")') &
+              source_tensor%which_executor
+            stop 55
+          CASE(2)
+             ierr=talsh_tensor_insert(target_tensor%tens_talsh,source_tensor%tens_talsh,offsets_in_target)
+          CASE default
+            write(*,'("  Error. insert_tensor_t for executor ",i11," not yet implemented.")') &
+              source_tensor%which_executor
+            stop 55
+          END SELECT
+
+          insert_tensor_t = ierr
+        end function insert_tensor_t
+
+        ! difference from insert_tensor_t is in the fortran arrays for the offsets_in_tarnge does
+        ! not have the allocatable attribute
+        function insert_static_tensor_t(target_tensor, source_tensor, offsets_in_target)
+          implicit none
+          type(tensor_t), intent(inout)    :: target_tensor, source_tensor 
+          integer(INTD), intent(in) :: offsets_in_target(:)
+
+          integer(INTD)       :: ierr, insert_static_tensor_t
+          integer(c_int)       :: tapp_err
+
+          if ( is_empty_tensor_t(source_tensor) ) then
+            insert_static_tensor_t = 0
+            return
+          endif
+
+          SELECT CASE(source_tensor%which_executor)
+          CASE(1)
+            write(*,'("  Error. insert_static_tensor_t for executor ",i11," not yet implemented.")') &
+              source_tensor%which_executor
+            stop 55
+          CASE(2)
+             ierr=talsh_tensor_insert(target_tensor%tens_talsh,source_tensor%tens_talsh,offsets_in_target)
+          CASE default
+            write(*,'("  Error. insert_static_tensor_t for executor ",i11," not yet implemented.")') &
+              source_tensor%which_executor
+            stop 55
+          END SELECT
+
+          insert_static_tensor_t = ierr
+        end function insert_static_tensor_t
+
 
         ! get direct access to the tensor's elements
         function direct_data_pointer(tensor, ptr)
@@ -575,7 +685,7 @@ module exacorr_tensor_interface
           integer(c_int64_t), allocatable :: extents_(:)
           integer(c_int)          :: nmodes
 
-          integer(INTD)       :: ierr, get_extents 
+          integer(INTD)       :: ierr, get_extents
 
           if ( is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Attempting to access an empty tensor in get_extents.")') 
@@ -615,6 +725,85 @@ module exacorr_tensor_interface
 
           get_extents = ierr
         end function get_extents
+
+                ! get extents (dimensions) of a tensor. In case of scalar, it returns empty array
+        function get_extents_static(tensor, extents)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          integer(INTD),  intent(inout) :: extents(:)
+          integer(c_int64_t), allocatable :: extents_(:)
+          integer(c_int)          :: nmodes
+
+          integer(INTD)       :: ierr, get_extents_static
+
+          if ( is_empty_tensor_t(tensor) ) then
+            write(*,'("  Error. Attempting to access an empty tensor in get_extents_static.")')
+            stop 98
+          endif
+
+          ierr =  get_nmodes(tensor, nmodes)
+          if (.not. size(extents) == nmodes) then
+            write(*,'("  Error. An array of wrong size passed to get_extents_static.")')
+            stop 58
+          endif
+
+          select case(tensor%which_executor)
+          case(1)
+                allocate(extents_(nmodes))
+                ierr = get_extents_tapp_tensor_t(tensor%tens_tapp, extents_)
+
+                if (size(extents_) .ne. 0) then
+                  extents = int(extents_, kind=INTD)
+                endif
+                deallocate(extents_)
+          case(2)
+             ierr = talsh_tensor_dimensions(tensor%tens_talsh,nmodes,extents)
+          case default
+            write(*,'("  Error. get_extents_static for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          end select
+
+          if ( .not. size(extents) == 0 .and. is_scalar_tensor_t(tensor)) then
+            write(*,'("  Error. Failed sanity check in get_extents_static.")')
+            stop 98
+          endif
+
+          get_extents_static = ierr
+        end function get_extents_static
+
+        ! returns the 
+        function get_data_kind_tensor_t(tensor, data_kind)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          integer(INTD),  intent(inout)    :: data_kind
+
+          integer(INTD)    :: ierr, get_data_kind_tensor_t 
+
+          if ( is_empty_tensor_t(tensor) ) then
+            write(*,'("  Error. Attempting to inquire data kind of an empty tensor in get_data_kind_tensor_t.")')
+            call quit(" error 98")
+          endif
+
+          SELECT CASE(tensor%which_executor)
+          CASE(1)
+            write(*,'("  Error. get_data_kind_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          CASE(2)
+              if (tensor%datatype == 1 ) then
+                data_kind = R8
+              elseif (tensor%datatype == 3 ) then
+                data_kind = C8
+              endif
+          CASE default
+            write(*,'("  Error. get_data_kind_tensor_t for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          END SELECT
+
+          get_data_kind_tensor_t = ierr
+        end function get_data_kind_tensor_t
 
         ! get the total number of elements (scalars) which the tensor occupies in memory
         function get_numel(tensor, numel)
@@ -792,16 +981,16 @@ module exacorr_tensor_interface
           integer(C_INT), intent(in):: offsets(1:*)
           integer(INTD)       :: ierr, slice_tensor_t
 
-          SELECT CASE(tensor%which_executor)
+          SELECT CASE(tensor_original%which_executor)
           CASE(1)
             write(*,'("  Error. slice_tensor_t for executor ",i11," not yet implemented.")') &
-              tensor%which_executor
+              tensor_original%which_executor
             stop 55
           CASE(2)
             ierr=talsh_tensor_slice(tensor_original%tens_talsh,tensor_slice%tens_talsh,offsets,0,DEV_HOST)
           CASE default
             write(*,'("  Error. slice_tensor_t for executor ",i11," not yet implemented.")') &
-              tensor%which_executor
+              tensor_original%which_executor
             stop 55
           END SELECT
           slice_tensor_t = ierr
@@ -905,5 +1094,78 @@ module exacorr_tensor_interface
                 !end type compute_2e_ao_tensor_t
 
         !tensor method reset
+
+
+        !  
+        subroutine eti_executor_initialize(buffer,executor)
+          integer, intent(in) :: buffer, executor
+
+          SELECT CASE(executor)
+             CASE(1)
+                print *, "TAPP executor does not require initialization. Continuing."
+             CASE(2)
+                call eti_talsh_initialize(buffer)
+             CASE default
+                print *, "Generic Executor does not require initialization. Continuing."
+          END SELECT
+
+        end subroutine eti_executor_initialize
+
+        subroutine eti_executor_shutdown(executor)
+          integer, intent(in) :: executor
+
+          SELECT CASE(executor)
+             CASE(1)
+                print *, "TAPP executor does not require shutdown. Continuing."
+             CASE(2)
+                call eti_talsh_shutdown()
+             CASE default
+                     print *, "Executor does not require shutdown. Continuing."
+          END SELECT
+        end subroutine eti_executor_shutdown
+
+        ! initialization and shutdown of talsh
+        subroutine eti_talsh_initialize(buffer)
+           use os_utils 
+           use exacorr_utils
+           integer, intent(in) :: buffer   ! buffer size for talsh in MB
+
+           integer(INTD)       :: ierr
+           integer(C_SIZE_T)   :: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
+           integer(C_INT)      :: host_arg_max
+           integer :: num_gpus = 0, igpu, num_gpus_env
+
+           call print_date('Initializing TAL-SH library')
+
+           ! getting number of available devices...
+           write(*,'(1x,"Checking Nvidia GPU availability ... ")',ADVANCE='NO')
+           ierr=talsh_device_count(DEV_NVIDIA_GPU,num_gpus)
+           write(*,'("Status ",i11,": Number of GPUs found = ",i3)') ierr,num_gpus
+
+           num_gpus_env = get_environment_integer('TALSH_GPUS',-1)
+           if (num_gpus_env.eq.-1) then
+              print *,' Environment variable TALSH_GPUS undefined'
+              num_gpus = max(num_gpus,num_gpus_env)
+           else
+              print *,' Environment variable TALSH_GPUS defined, set to:',num_gpus_env
+              num_gpus = min(num_gpus,num_gpus_env)
+           end if
+           print *,' GPUs in use by ExaCorr:',num_gpus
+
+           ! now go on and initialize the devices we wish to use
+
+           buf_size=buffer*buf_size
+           ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
+           write(*,'(" TAL-SH Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
+
+           call print_date('Initialized TAL-SH library')
+        end subroutine eti_talsh_initialize
+
+        subroutine eti_talsh_shutdown
+           integer :: ierr
+           !        Get statistics
+           ierr=talsh_stats()
+           ierr=talsh_shutdown()
+        end subroutine eti_talsh_shutdown
 
 end module exacorr_tensor_interface
