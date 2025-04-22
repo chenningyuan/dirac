@@ -864,7 +864,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 
                     if ((omega(1).ne.ZERO).or.(omega(2).ne.ZERO)) then
                         if (CC_CC) then
-                            call get_cccc_qr(exa_input, interm_t,&
+                            call get_cccc_qr(exa_input, int_t, interm_t,&
                                     Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C,& 
                                     Tprop_tensors, Tprop_bar_tensors,& 
                                     Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
@@ -879,7 +879,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                     else
                         call print_date('Note: Calculating static quadratic response.')
                         if (CC_CC) then
-                            call get_cccc_qr(exa_input, interm_t,&
+                            call get_cccc_qr(exa_input, int_t, interm_t,&
                                     Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C,& 
                                     Tprop_tensors, Tprop_bar_tensors,& 
                                     Tprop_tensors, Tprop_bar_tensors,&

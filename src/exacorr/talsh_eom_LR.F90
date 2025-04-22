@@ -21,6 +21,7 @@ module talsh_eom_LR
 
     public get_eom_lr
     public get_asym_lr
+    public get_tF
 
     contains
 
@@ -622,13 +623,14 @@ end subroutine
 !-------------------------------------------------------------------------------------------------------------------
 !! LH start Ft^x
 
-subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
+subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is_qrcc)
 
     type(talsh_tens_t) :: B1, B2
     type(talsh_tens_t), intent(inout) :: tX1, tX2
     type(talsh_tens_t), intent(inout) :: l1_tensor,l2_tensor
     type(talsh_intermediates_tens_t),  intent(inout) :: interm_t 
     type(talsh_intg_tens_t), intent(inout) :: int_t
+    logical, optional, intent(in) :: is_qrcc
     !Tensor dimensions
     integer, intent(in) :: nocc, nvir
     integer(INTD), dimension(2) :: oo_dims, vv_dims, ov_dims, vo_dims
@@ -640,7 +642,7 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
 
     integer(INTD)                   :: ierr
     logical :: debug_local = .false.
-    
+    logical :: add_U1 
 
 
     type(talsh_tens_t) :: Aux_oo, Aux_vv, Aux_vo, Aux_ov
@@ -713,12 +715,22 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
 
     ierr=talsh_tensor_construct(Aux_one,C8,one_dims(1:0),init_val=ZERO)
 
+!   The U1 diagram should be included if we are using this routine to
+!   build (Ft^x) in linear response. In the case we are using it to 
+!   build (t^y F^x) in CC quadratic response, we omit it.
+    add_U1 = .true.
+    if (present(is_qrcc)) then
+       if (is_qrcc) add_U1 = .false.
+    end if
 
+    if (add_U1) then
 ! l=0  ; t=1  ; h=-2
-    ! U1 = + (\ts ck ) \ts ai \W kica       -> V oovv
-    ierr=talsh_tensor_contract("B(k,c)+=T(a,i)*W(k,i,c,a)",B1,tX1,int_t%oovv)
-    if (debug_local) print*, "ierr U1", ierr
-
+       ! U1 = + (\ts ck ) \ts ai \W kica       -> V oovv
+       ierr=talsh_tensor_contract("B(k,c)+=T(a,i)*W(k,i,c,a)",B1,tX1,int_t%oovv)
+       if (debug_local) print*, "ierr U1", ierr
+    else
+       if (debug_local) print*, "not adding U1 to tF"
+    end if
 
 ! l=-1 ; t=1 ; h=-1
     ! c7 = - (\ts ck) \ts ai \lambdas ic \F ka
