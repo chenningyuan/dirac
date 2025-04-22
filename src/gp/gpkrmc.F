@@ -41,10 +41,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION AMAT(NDIM1,NDIM1,NDIM2,NZ,3)
+      REAL*8    AMAT(NDIM1,NDIM1,NDIM2,NZ,3)
+      INTEGER   IP(4)
       CHARACTER M(4)*2
-      DIMENSION IP(4)
       DATA M /'AR', 'AI', 'BR', 'BI' /
+      REAL*8, PARAMETER :: THR_PRINT = 1.D-8
+      REAL*8    A_TEST
 C
       IF (NDIM1 * (NDIM1+1) / 2 .NE. NDIM2) THEN
          WRITE(LUPRI,9000) NDIM1, NDIM2
@@ -57,12 +59,13 @@ C
 C
 C     Print matrix.
 C
- 9001 FORMAT(/3X,'Indices',5X,'Matrix',4X,'Elements',
+ 9001 FORMAT(/'   (Only elements abs value >',1P,D8.1,' are printed.)',
+     &      //3X,'Indices',5X,'Matrix',4X,'Elements',
      &       /1X, 65('-'))
  9010 FORMAT(1P,1X,4I3,4X,A2,6X,3(D14.7,1X))
  9011 FORMAT(1P,17X,A2,6X,3(D14.7,1X))
 C
-      WRITE(LUNIT,9001)
+      WRITE(LUNIT,9001) THR_PRINT
 C
       IJ = 0
       DO I = 1,NDIM1
@@ -70,13 +73,19 @@ C
             IJ = IJ + 1
             DO K = 1,NDIM1
                DO L = 1,NDIM1
-                  WRITE(LUNIT,9010)
+                  A_TEST = ABS(AMAT(K,L,IJ,1,1))
+     &                   + ABS(AMAT(K,L,IJ,1,2))
+     &                   + ABS(AMAT(K,L,IJ,1,3))
+                  IF (A_TEST .gt. THR_PRINT) WRITE(LUNIT,9010)
      &                 K,L,I,J,
      &                 M(IP(1)),
      &                 (AMAT(K,L,IJ,1,ICL),ICL = 1,3)
                   DO IZ = 2, NZ
-                     WRITE(LUNIT,9011) M(IP(IZ)),
-     &                    (AMAT(K,L,IJ,IZ,ICL),ICL = 1,3)
+                     A_TEST = ABS(AMAT(K,L,IJ,IZ,1))
+     &                      + ABS(AMAT(K,L,IJ,IZ,2))
+     &                      + ABS(AMAT(K,L,IJ,IZ,3))
+                     IF (A_TEST .gt. THR_PRINT) WRITE(LUNIT,9011)
+     &                  M(IP(IZ)),(AMAT(K,L,IJ,IZ,ICL),ICL = 1,3)
                   END DO
                END DO
             END DO

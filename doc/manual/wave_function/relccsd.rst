@@ -80,6 +80,45 @@ options available).
 
     No EOM-CC calculation.
 
+keyword(pEOM)
+
+Activate the partitioned EOM approximation to CCSD (P-EOM-CCSD), in which the doubles-doubles 
+block of the similarity transformed Hamiltonian is approximated by diagonal elements given by orbital
+energy differences. This keyword also activates the :ref:`RELCC_.EOMCC` keyword, and as such it is available for the same
+types of calculations supported by the latter.
+
+*Default:*
+
+::
+
+    No P-EOM-CCSD calculation.
+
+keyword(EOM2)
+
+Activate the second order perturbation theory based EOM approximation (EOM-MBPT2), in which all of
+the matrix elements of the the similarity transformed Hamiltonian are approximated. This keyword also activates 
+the :ref:`RELCC_.EOMCC` keyword, and as such it is available for the same types of calculations supported by the latter.
+
+
+*Default:*
+
+::
+
+    No EOM-MBPT2 calculation.
+
+keyword(pEOM2)
+
+Activate the partitioned second order perturbation theory based EOM approximation (P-EOM-MBPT2), which combines
+both approximations mentioned above. This keyword also activates the :ref:`RELCC_.EOMCC` keyword, and as such it is available for the same
+types of calculations supported by the latter.
+
+*Default:*
+
+::
+
+    No P-EOM-MBPT2 calculation.
+
+
 keyword(EOMPROP)
 
 .. warning:: Development version only. 

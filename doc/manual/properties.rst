@@ -12,6 +12,8 @@ properties. Available properties include:
 
 -  Quadratic response properties (e.g. hyperpolarizabilities).
 
+-  Quasi-degenerate CI perturbation theory for ESR parameters (g-tensor and hyperfine coupling tensors).
+
 For convenience some common properties can be specified directly in this
 section, which means that the user in principle does not need to know
 how they are calculated. Note, however, that response functions are by
@@ -329,6 +331,12 @@ an expectation value of the non-relativistic operator.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
+keyword(ESR)
+
+Evaluate ESR parameters -- g-tensors and hyperfine coupling tensors -- using first-order quasi-degenerate perturbation theory
+based on configuration interaction.
+No default, it is required to specify the actual calculation under :ref:`*ESR`.
+
 Mixed electric and magnetic properties
 ======================================
 
@@ -478,15 +486,15 @@ Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INT
 
 keyword(RHONUC)
 
-Calculate electronic density at the nuclear positions, also known as the contact density :cite:`Knecht2011` and :cite:`Almoukhalalati:2016b`.
+Calculate electronic density at the nuclear positions, also known as the contact density (see :cite:`Knecht2011` and :cite:`Almoukhalalati:2016b`).
 
-It is formally an expectation value
+It is formally the expectation value
 
 .. math::
 
-   \rho_e^K = -e\langle\delta^3(\mathbf{r}-\mathbf{R}_K)\rangle,
+   \rho_e^K = -e\langle\delta^3(\mathbf{r}-\mathbf{R}_K)\rangle.
 
-an important observation in view of picture change effects, see  :cite:`Knecht2011` .
+An important observation: In view of picture change effects, see :cite:`Knecht2011`.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 

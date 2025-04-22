@@ -26,7 +26,6 @@ module x_fock
   use num_grid_gen
   use interface_ao_specific
   use interface_mo_specific
-  use x2c_fio, only: x2c_read
 
   implicit none
 

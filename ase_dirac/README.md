@@ -27,6 +27,8 @@ $> pip install --user -e ".[testing]"
 $> pytest -v tests
 ```
 
+Make sure that the script pam (generated in the build directory) is in your $PATH environment variable.
+
 # RUN:
 
 A simple demonstration that computes the MP2 energy of three molecules from the ASE molecules database is provided in the tests directory.
