@@ -933,7 +933,11 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                 do k=1, N_prop_C
                     write(*,"(A4,I1,A2,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), &
                          ";X", Prop_C(k),">> = "
-
+! aspg, todo: move printout formatting to something like this, or actually move that entirely
+! to another routine once we get the information on response vectors and functions more
+! structured                         
+!                     write(*,"(A4,I3,A2,I3,A2,I3,A5,2F16.8,A,2F16.8)"), "<<", Prop_A(i), ";", Prop_B(j), &
+!                         ";", Prop_C(k),">> (",omega1,",",omega2,") = "
                     write(*,"(F16.8,A,F16.8)"), real(cc_qrs(i,j,k,m,n)), ' \ ', aimag(cc_qrs(i,j,k,m,n))
                 end do
               end do 

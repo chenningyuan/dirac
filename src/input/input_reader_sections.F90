@@ -1322,7 +1322,7 @@
 
 
       if (kw_matches(word, '.CCTPA ')) then
-         exa_input%eom_tpa =.true.
+         exa_input%qr_tpa =.true.
          call kw_read(word, exa_input%wf_type)
          call kw_read(word, exa_input%TPA_state)
          ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)

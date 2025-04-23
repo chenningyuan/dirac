@@ -141,7 +141,7 @@
             integer                 :: current_eom_input = -1
         !     logical                 :: eom_lr = .false.
             logical                 :: eom_qr = .false.
-            logical                 :: eom_tpa = .false.
+            logical                 :: qr_tpa = .false.
 ! handle one or more *EOMCC blocks 
             type(eom_config_t), allocatable :: eom_input(:)
 
