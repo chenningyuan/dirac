@@ -30,7 +30,7 @@ module talsh_QR_TPA
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine talsh_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, eom_results_t_left)
+subroutine talsh_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t)
 !This subroutine drives the coupled-cluster two-photon absorption calculation 
 !Written by Xiang Yuan June 2023, Lille, France
 
@@ -41,7 +41,7 @@ subroutine talsh_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
     ! integer                                     :: rr ! rank of response 
-    type(talsh_eom_results_tens_t) :: eom_results_t, eom_results_t_left
+    type(talsh_eom_results_tens_t) :: eom_results_t
     
 !   Wave-function tensor needed to construct the response function
     logical          :: CC_CC
@@ -55,7 +55,7 @@ subroutine talsh_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_
         call print_date('Activate CC-CI(EOM-CC) TPA')
     end if 
 
-    call get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, eom_results_t_left,CC_CC)
+    call get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC_CC)
 
 
 end subroutine talsh_QR_TPA_driver
@@ -64,14 +64,14 @@ end subroutine talsh_QR_TPA_driver
 
 !------------------------------------------------------------------------------------------------------------------
 
-subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, eom_results_t_left,CC_CC)
+subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
-    type(talsh_eom_results_tens_t),intent(inout):: eom_results_t, eom_results_t_left
+    type(talsh_eom_results_tens_t),intent(inout):: eom_results_t
     logical                                     :: CC_CC
     integer                    :: f_state  ! target TPA excited state
     
@@ -243,7 +243,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
                         call print_date('Solved All 1st response equations')
 
 
-                        call check_biorthognal(eom_results_t,eom_results_t_left,f_state,biorth_sign_f)
+                        call check_biorthognal(eom_results_t,f_state,biorth_sign_f)
 
 
                         qr_tran_left_AB = ZERO
@@ -278,14 +278,14 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, e
                                 Interm_t_tensors_A(n),Interm_t_tensors_B(m),& 
                                 Tprop_tensors(2),Tprop_tensors(1),&
                                 l1_tensor, l2_tensor, &
-                                eom_results_t_left, qr_tran_right_AB, f_state)
+                                eom_results_t, qr_tran_right_AB, f_state)
 
 
                             call get_eom_tran_right(exa_input, interm_t,&
                                 Interm_t_tensors_C(k),Interm_t_tensors_D(l),& 
                                 Tprop_tensors(4), Tprop_tensors(3),&
                                 l1_tensor, l2_tensor, &
-                                eom_results_t_left, qr_tran_right_CD, f_state)
+                                eom_results_t, qr_tran_right_CD, f_state)
                         end if
 ! aspg: workaround to deal with sign change due to biorthogonality issues 
                         qr_tran_left_AB = qr_tran_left_AB*biorth_sign_f
@@ -1156,9 +1156,8 @@ end subroutine
 
 !------------------------------------------------------------------------------------------------------------------------------
 
-subroutine check_biorthognal(eom_results_t,eom_results_t_left,f_state, biorth_sign_i)
+subroutine check_biorthognal(eom_results_t,f_state, biorth_sign_i)
     type(talsh_eom_results_tens_t), intent(inout)        :: eom_results_t
-    type(talsh_eom_results_tens_t), intent(inout)        :: eom_results_t_left
     integer, intent(in)                    :: f_state  ! target (final) excited state in TPA
     ! aspg, 16/02/2024
     ! the TPA/EOM code needs more work  to ensure  the biorthonormality of L and R eigenvectors.
@@ -1186,7 +1185,7 @@ subroutine check_biorthognal(eom_results_t,eom_results_t_left,f_state, biorth_si
     ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,result_tens,one_dims)
 
-     N = size(eom_results_t_left%value_vectors_t%lhs1)
+     N = size(eom_results_t%value_vectors_t%lhs1)
     print *, "Verifying biorthogonality of CC eigenvectors in TPA calculation"
     print *, "  tolerance on deviation from strict biorthogonality (Re and Im):",threshold_small
     print *, "  Number of states:", N 
@@ -1198,11 +1197,11 @@ subroutine check_biorthognal(eom_results_t,eom_results_t_left,f_state, biorth_si
            ierr=talsh_tensor_init(result_tensor, ZERO)
 
            ierr=talsh_tensor_contract("Bio()+=LState(i,a)*RState(a,i)",& 
-               result_tensor,eom_results_t_left%value_vectors_t%lhs1(i),&
+               result_tensor,eom_results_t%value_vectors_t%lhs1(i),&
                eom_results_t%value_vectors_t%rhs1(j),scale=ONE)
 
            ierr=talsh_tensor_contract("Bio()+=LState(i,j,a,b)*RState(a,b,i,j)",& 
-               result_tensor,eom_results_t_left%value_vectors_t%lhs2(i),&
+               result_tensor,eom_results_t%value_vectors_t%lhs2(i),&
                eom_results_t%value_vectors_t%rhs2(j),scale=ONE_QUARTER_C)
 
            LRnorm = result_tens(1) 
