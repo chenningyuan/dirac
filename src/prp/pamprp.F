@@ -1459,7 +1459,8 @@ C***********************************************************************
       use london_helper
 #endif
 #ifdef HAS_PELIB
-        use pe_variables, only: peqm, pe_gspol, pe_lf
+        use pelib_dirac_interface, only: use_pelib, pelib_ifc_gspol,
+     &                                   pelib_ifc_do_lf
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -1597,11 +1598,11 @@ C
      &  CALL PRP_PVC_SPINRO(ABLRF,ABCNV)
 C
 #ifdef HAS_PELIB
-      if (peqm) then
+      if (use_pelib()) then
          write(lupri,'(/A)')
      &      'Polarizable environment included using PElib'//
      &      ' (https://gitlab.com/pe-software/pelib-public).'
-         if (pe_gspol) then
+         if (pelib_ifc_gspol()) then
             write(lupri,'(/A)')
      &      'Response properties calculated with dynamical'//
      &      ' polarizable embedding disabled (.GSPOL)'
@@ -1610,7 +1611,7 @@ C
      &      'Response properties calculated with full inclusion of'//
      &      ' polarizable environment.'
          endif
-         if (pe_lf) write(lupri,'(/A)')
+         if (pelib_ifc_do_lf()) write(lupri,'(/A)')
      &   'Effective external field (EEF) correction applied.'
       endif
 #endif
