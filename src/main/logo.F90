@@ -134,6 +134,7 @@ print *, '*    Stanislav Komorovsky     Slovak Academy of Sciences        Slovak
 print *, '*    Ossama Kullie            University of Kassel              Germany       *'
 print *, '*    Jon K. Laerdahl          University of Oslo                Norway        *'
 print *, '*    Christoffer V. Larsen    University of Southern Denmark    Denmark       *'
+print *, '*    Ernst D. Larsson         University of Southern Denmark    Denmark       *'
 print *, '*    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *'
 print *, '*    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *'
 print *, '*    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *'
