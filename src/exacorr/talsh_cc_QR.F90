@@ -768,7 +768,7 @@ end subroutine form_cccc_qr_MXY
        
      ! c7b,c8b : same by inversion \tX et tY
      call Gtt_c7c8(Gtt_tensor%t1,tXs,tYs,l1_tensor,int_t,nocc,nvir)
-     call Gtt_c7c8(Gtt_tensor%t1,tXs,tYs,l1_tensor,int_t,nocc,nvir)
+     call Gtt_c7c8(Gtt_tensor%t1,tYs,tXs,l1_tensor,int_t,nocc,nvir)
 
      ! f3b, f3d =inv(f4c,f3e) / f3c, f4e =inv( f4b, f4d) 
      ! f3b + f3d + f4c + f3e
