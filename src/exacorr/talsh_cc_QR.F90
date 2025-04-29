@@ -483,11 +483,11 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
 
 ! accumulate intermediate into results with correct scaling due to permutations
 
-        ierr=talsh_tensor_add("Mab(m,e)+=tYFX(m,e)*K()",MAB_1_tensor,tYFX_tensor%t1,scale=ONE_HALF)
+        ierr=talsh_tensor_add("Mab(m,e)+=tYFX(m,e)",MAB_1_tensor,tYFX_tensor%t1,scale=ONE_HALF)
 !        print *,'norm MAB_1_tensor',tensor_norm2(MAB_1_tensor)
 !        print *,'norm tYFX_tensor%t1',tensor_norm2(tYFX_tensor%t1)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,e) 1 =",ierr
-        ierr=talsh_tensor_add("Mab(m,n,e,f)+=tYFX(m,n,e,f)*K()",MAB_2_tensor,tYFX_tensor%t2,scale=ONE_HALF)
+        ierr=talsh_tensor_add("Mab(m,n,e,f)+=tYFX(m,n,e,f)",MAB_2_tensor,tYFX_tensor%t2,scale=ONE_HALF)
 !        print *,'norm MAB_2_tensor',tensor_norm2(MAB_2_tensor)
 !        print *,'norm tYFX_tensor%t2',tensor_norm2(tYFX_tensor%t2)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,n,e,f) 1 =",ierr
@@ -1318,7 +1318,7 @@ end subroutine form_cccc_qr_MXY
           ierr=talsh_tensor_init(oo_aux_tensor)
           ierr=talsh_tensor_contract("F(m,i)+=tX(a,b,i,j)*L(j,m,b,a)",oo_aux_tensor,tAd,l2_tensor)
           if(ierr.ne.0) write(*,*) "ierr k9b-a  =",ierr
-           ierr=talsh_tensor_contract("G(m,e)+=F(i,e)*W(m,i)",G1_tensor,ov_aux_tensor,vv_aux_tensor,scale=minus_one_half)
+           ierr=talsh_tensor_contract("G(m,e)+=F(i,e)*W(m,i)",G1_tensor,ov_aux_tensor,oo_aux_tensor,scale=minus_one_half)
           if(ierr.ne.0) write(*,*) "ierr k9b-b  =",ierr
 
 
