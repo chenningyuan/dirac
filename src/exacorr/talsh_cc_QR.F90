@@ -790,7 +790,10 @@ end subroutine form_cccc_qr_MXY
      if(ierr.ne.0) write(*,*) "ierr n2b+n2d _c  =",ierr
             ! contraction with tXs ai
      ierr=talsh_tensor_init(vvvo_aux_tensor)
-     ierr=talsh_tensor_contract("Z(a,c,e,n)+=W(i,c,n,e)*tX(a,i)",vvvo_aux_tensor,ovov_aux_tensor,tXs)
+! Modification because W icne != W icen
+! Last     ierr=talsh_tensor_contract("Z(a,c,e,n)+=W(i,c,n,e)*tX(a,i)",vvvo_aux_tensor,ovov_aux_tensor,tXs)
+     ierr=talsh_tensor_contract("Z(a,c,e,n)+=W(i,c,n,e)*tX(a,i)",vvvo_aux_tensor,ovov_aux_tensor,tXs,&
+                                scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr n2b _d  =",ierr   
      ierr=talsh_tensor_contract("G(m,e)+=Z(a,c,e,n)*L(n,m,a,c)",Gtt_tensor%t1,vvvo_aux_tensor,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr n2d+n2d _e  =",ierr   
@@ -800,7 +803,10 @@ end subroutine form_cccc_qr_MXY
      ierr=talsh_tensor_init(vovv_aux_tensor)
      ierr=talsh_tensor_add("W(v1,o1,v2,v3)+=V(v1,o1,v2,v3)",vovv_aux_tensor,int_t%vovv)
      if(ierr.ne.0) write(*,*) "ierr f4b + f4d W_a  =",ierr
-     ierr=talsh_tensor_contract("W(v1,o1,v2,v3)+=V(o2,o1,v2,v3)*t(v1,o2)",vovv_aux_tensor,int_t%oovv,t1_tensor)
+! Problem with sign contraction : error in intermediate \W kfae
+! Last    ierr=talsh_tensor_contract("W(v1,o1,v2,v3)+=V(o2,o1,v2,v3)*t(v1,o2)",vovv_aux_tensor,int_t%oovv,t1_tensor)
+     ierr=talsh_tensor_contract("W(v1,o1,v2,v3)+=V(o2,o1,v2,v3)*t(v1,o2)",vovv_aux_tensor,&
+                                                                int_t%oovv,t1_tensor,scale=minus_one)
      if(ierr.ne.0) write(*,*) "ierr f4b + f4d W_b  =",ierr
 
      ! f4b +f4b
@@ -825,6 +831,15 @@ end subroutine form_cccc_qr_MXY
      call Gtt_c9c10g7k7l28l29(Gtt_tensor%t1,int_t,tYs,tXd,l2_tensor,nocc,nvir)
      ! c11b, k5b, l21, c12b, k10b, l21 bis
      call Gtt_c9c10g7k7l28l29(Gtt_tensor%t1,int_t,tXs,tYd,l2_tensor,nocc,nvir)
+
+     ! (k9b,g9b) and call with inversion of arguments [(tX,tY) ->(tY,tX)] for (g10b, k10b)
+
+     !G9b k9b
+     call Gtt_g9bk9b(G1_tensor,int_t,tYs,tXd,l2_tensor,nocc,nvir)
+     !g10b k10b
+     call Gtt_g9bk9b(G1_tensor,int_t,tXs,tYd,l2_tensor,nocc,nvir)
+
+
 
      !!!!!!!!!!!!!!
      !!!! \Gd mnef
@@ -1065,7 +1080,6 @@ end subroutine form_cccc_qr_MXY
 
      end 
 
-
      subroutine Gtt_c9c10g7k7l28l29(G1_tensor,int_t,tBs,tAd,l2_tensor,nocc,nvir)
 
      real(8)                        :: print_level=2         
@@ -1139,7 +1153,9 @@ end subroutine form_cccc_qr_MXY
      ierr=talsh_tensor_init(ovvo_aux_tensor)
      ierr=talsh_tensor_contract("W(m,a,c,i)+=tX(a,b,i,j)*L(j,m,b,c)",ovvo_aux_tensor,tAd,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr l29-a  =",ierr
-     ierr=talsh_tensor_contract("G(m,e)+=W(m,a,c,i)*Z(c,i,a,e)",G1_tensor,ovvo_aux_tensor,vovv_aux_tensor,scale=MINUS_ONE)
+!    Proble of sign in l29 
+! Last ierr=talsh_tensor_contract("G(m,e)+=W(m,a,c,i)*Z(c,i,a,e)",G1_tensor,ovvo_aux_tensor,vovv_aux_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(m,e)+=W(m,a,c,i)*Z(c,i,a,e)",G1_tensor,ovvo_aux_tensor,vovv_aux_tensor)
      if(ierr.ne.0) write(*,*) "ierr l29-b  =",ierr
 
      ! c10b ,k7b,l28
@@ -1162,7 +1178,10 @@ end subroutine form_cccc_qr_MXY
      ierr=talsh_tensor_init(ovvo_aux_tensor)
      ierr=talsh_tensor_contract("W(k,a,e,i)+=tX(a,b,i,j)*L(j,k,b,e)",ovvo_aux_tensor,tAd,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr l28-a  =",ierr 
-     ierr=talsh_tensor_contract("G(m,e)+=W(k,a,e,i)*Z(i,m,k,a)",G1_tensor,ovvo_aux_tensor,ooov_aux_tensor,scale=MINUS_ONE)
+!    Problem of sign in l28
+! Last ierr=talsh_tensor_contract("G(m,e)+=W(k,a,e,i)*Z(i,m,k,a)",G1_tensor,ovvo_aux_tensor,ooov_aux_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(m,e)+=W(k,a,e,i)*Z(i,m,k,a)",G1_tensor,ovvo_aux_tensor,ooov_aux_tensor)
+
      if(ierr.ne.0) write(*,*) "ierr l28-b  =",ierr 
 
      ierr=talsh_tensor_destruct(vv_aux_tensor)
@@ -1258,5 +1277,57 @@ end subroutine form_cccc_qr_MXY
 
 
      end subroutine Gtt_k2k3g2g3
+
+     subroutine Gtt_g9bk9b(G1_tensor,int_t,tBs,tAd,l2_tensor,nocc,nvir)
+
+          real(8)                        :: print_level=2
+          integer(INTD) :: ierr
+
+          type(talsh_intg_tens_t), intent(inout) :: int_t
+
+          type(talsh_tens_t),  intent(inout) :: l2_tensor
+
+          integer,             intent(in   ) :: nocc, nvir
+
+          !     tensor dimensions
+          integer, dimension(2) :: oo_dims, vv_dims
+          type(talsh_tens_t) :: oo_aux_tensor,vv_aux_tensor, ov_aux_tensor   
+
+          type(talsh_tens_t), intent(inout)    :: G1_tensor
+
+          type(talsh_tens_t), intent(inout) :: tAd,tBs
+
+          vv_dims = nvir
+          oo_dims = nocc
+          ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(ov_aux_tensor,C8,(/nocc,nvir/),init_val=ZERO)
+
+                  ! inversion : g10b and k10b
+
+          ierr=talsh_tensor_init(ov_aux_tensor)
+          ierr=talsh_tensor_contract("F(m,a)+=tY(c,k)*V(m,k,a,c)",ov_aux_tensor,tBs,int_t%oovv)
+          if(ierr.ne.0) write(*,*) "ierr g9b k9b intermediate  =",ierr
+
+          ierr=talsh_tensor_init(vv_aux_tensor)
+          ierr=talsh_tensor_contract("F(a,e)+=tX(a,b,i,j)*L(i,j,e,b)",vv_aux_tensor,tAd,l2_tensor)
+          if(ierr.ne.0) write(*,*) "ierr g9b-a  =",ierr
+           ierr=talsh_tensor_contract("G(m,e)+=F(m,a)*W(a,e)",G1_tensor,ov_aux_tensor,vv_aux_tensor,scale=minus_one_half)
+          if(ierr.ne.0) write(*,*) "ierr g9b-b  =",ierr
+
+          ierr=talsh_tensor_init(oo_aux_tensor)
+          ierr=talsh_tensor_contract("F(m,i)+=tX(a,b,i,j)*L(j,m,b,a)",oo_aux_tensor,tAd,l2_tensor)
+          if(ierr.ne.0) write(*,*) "ierr k9b-a  =",ierr
+           ierr=talsh_tensor_contract("G(m,e)+=F(i,e)*W(m,i)",G1_tensor,ov_aux_tensor,vv_aux_tensor,scale=minus_one_half)
+          if(ierr.ne.0) write(*,*) "ierr k9b-b  =",ierr
+
+
+          ierr=talsh_tensor_destruct(vv_aux_tensor)
+          ierr=talsh_tensor_destruct(oo_aux_tensor)
+          ierr=talsh_tensor_destruct(ov_aux_tensor)
+
+     end subroutine Gtt_g9bk9b
+
+
 
 end module
