@@ -240,6 +240,7 @@
 
         type, public :: talsh_orb_prop_integ_tens_t
          type(talsh_tens_t) :: prop_oo, prop_ov, prop_vv, prop_vo
+         character*8 :: property_label
         end type talsh_orb_prop_integ_tens_t
 
         
@@ -280,6 +281,7 @@
               type(talsh_tens_t) :: epsilon_prop_vo, epsilon_prop_vvoo
               type(talsh_tens_t) :: eta_prop_ov, eta_prop_oovv, eta_prop_ov_eom
               type(talsh_tens_t) :: O_vo
+              character*8        :: property_label
        end type talsh_rsp_interm_tens_t
 
 ! this is a generic type for projectors, could be used e.g in eom for cvs, or in the ground state to project out orbitals in solving the cc equations

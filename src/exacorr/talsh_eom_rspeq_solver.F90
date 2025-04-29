@@ -28,17 +28,20 @@ module talsh_eom_rspeq_solver
 
 !----------------------------------------------------------------------------------------------------------------
 
-      subroutine print_lr_setup(rspeq_side,operator_label,operator_index,freq)
+      subroutine print_lr_setup(rspeq_side,operator_label,operator,operator_index,freq)
          complex(kind=8), intent(in) :: freq
          integer, intent(in) :: operator_index
          character(1), intent(in) :: rspeq_side 
          character(1), intent(in) :: operator_label
+         type(talsh_rsp_interm_tens_t), intent(inout) :: operator
+
 
          print *, ""
          print *, "Solving "//rspeq_side//"HS linear response equation"
 !        when forming e.g 2-photon transition moments, do not print information on indivudial operators 
          if (operator_index.gt.0) then
-             print *, "   Operator "//operator_label//" : ",operator_index
+             print *, "   Operator "//operator_label//" (",operator_index, &
+             &      ") : ",operator%property_label
          endif
          print *, "   Frequency  : ",freq
          print *, ""
