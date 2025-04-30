@@ -11,8 +11,8 @@ LiH Dirac-Coulomb triplet and singlet excitation with PE
 .UNCONTRACT
 **HAMILTONIAN
 .X2C
-.PEQM
-*PEQM
+.PELIB
+*PELIB
 .POTENT
 peqm.pot
 **WAVE FUNCTION
