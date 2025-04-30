@@ -400,7 +400,7 @@ C***********************************************************************
       use london_helper
 #endif
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: use_pelib ! EDL:: NOT USED???
 #endif
       use dirac_cfg
 #include "implicit.h"

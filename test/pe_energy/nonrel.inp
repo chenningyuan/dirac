@@ -7,8 +7,8 @@ PELib tested with NONREL wave function and point nucleus
 1 
 **HAMILTONIAN
 .NONREL
-.PEQM
-*PEQM
+.PELIB
+*PELIB
 .POTENT
 peqm.pot
 **WAVE FUNCTION

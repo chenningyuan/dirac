@@ -2268,7 +2268,7 @@ C
       use pcm_scf
 #endif      
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: use_pelib
 #endif 
 
 #include "implicit.h"
@@ -2319,7 +2319,7 @@ C
 C     Execute Dirac, and retrieve energy.
 C
 #ifdef HAS_PELIB
-      if (peqm) then 
+      if (use_pelib()) then 
          call quit('PELib geometry optimization '//
      &   'not implemented in DIRAC')
       endif 
