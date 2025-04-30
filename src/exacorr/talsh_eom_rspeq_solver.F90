@@ -23,6 +23,7 @@ module talsh_eom_rspeq_solver
       public get_left_bvec
       public solve_cc_lr_left, get_left_bvec_ccci, get_left_bvec_cccc 
       public print_lr_setup
+      public solve_1st_order_rspeq_left_right_driver
 
       contains
 
@@ -47,6 +48,56 @@ module talsh_eom_rspeq_solver
          print *, ""
       end subroutine
 
+
+! driver to solve both right and left linear response equations, storing the results in Tprop_tensor and Tprop_bar_tensor
+      subroutine solve_1st_order_rspeq_left_right_driver(Tprop_tensor, Tprop_bar_tensor, exa_input, &
+                    int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+                    Bvec_tensor, omega_rhs, omega_lhs, CC_CC, prop_label, prop_index)
+
+         type(talsh_comm_tens_t),intent(inout)       :: Tprop_tensor  !right_vector, output
+         type(talsh_comm_tens_t),intent(inout)       :: Tprop_bar_tensor !left_vector, output
+
+         type(exacc_input), intent(in) :: exa_input
+         type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+         type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+         type(talsh_rsp_interm_tens_t),intent(inout) :: Interm_t_tensor
+         type(talsh_comm_tens_t),intent(inout)       :: Bvec_tensor
+         complex(kind=8),intent(in)                  :: omega_rhs
+         complex(kind=8),intent(in), optional        :: omega_lhs
+         type(talsh_tens_t), intent(inout)           :: l2_tensor
+         type(talsh_tens_t), intent(inout)           :: l1_tensor
+         logical, intent(in) :: CC_CC
+         character*1, intent(in) :: prop_label
+         integer, intent(in) :: prop_index
+         complex(kind=8) :: omega_lhs_local
+
+!        if omega_lhs is not provided, we assume it to be -\omega_rhs; this will be ok for linear response
+!        without broadening
+         if (present(omega_lhs)) then 
+            omega_lhs_local = omega_lhs
+         else   
+            omega_lhs_local = -omega_rhs
+         end if
+
+         call print_lr_setup("R",prop_label,Interm_t_tensor,prop_index,omega_rhs)
+         call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensor, omega_rhs, Tprop_tensor)
+
+! will use Tprop_tensor and other intermediates to calculate bvec, which is appears as RHS in the in the LHS response equations [tbar(omega_lhs)*A(omega_lhs) = -bvec]
+         if (CC_CC) then
+            call get_left_bvec_cccc(exa_input,int_t,interm_t,Interm_t_tensor, &
+                    l1_tensor,l2_tensor, Tprop_tensor, Bvec_tensor)
+         else
+            call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, Bvec_tensor)
+         end if
+
+         call print_lr_setup("L",prop_label,Interm_t_tensor,prop_index,omega_lhs_local)
+         if (CC_CC) then
+            call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega_lhs_local, Bvec_tensor, Tprop_bar_tensor)
+         else
+            call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega_lhs_local, Bvec_tensor, Tprop_bar_tensor)
+         end if
+
+      end subroutine solve_1st_order_rspeq_left_right_driver
 
       subroutine solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop, &
                                     omega, tprop_tensor)

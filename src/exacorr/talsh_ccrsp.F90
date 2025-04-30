@@ -494,7 +494,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                 end if 
                 
                 eom_lrs(n,i,j) = eom_lr
-                write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
+                write(*,"(A)"), "<< "//Interm_t_tensors_A(i)%property_label//" ; "//Interm_t_tensors_B(j)%property_label//" >> = "
                 write(*,"(F16.8,A,F16.8)"), real(eom_lrs(n,i,j)), ' \ ', aimag(eom_lrs(n,i,j))
             end do ! loop over A operators for a given B
 
@@ -896,6 +896,10 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                 end if 
 
                     cc_qrs(i,j,k,m,n) = cc_qr
+                    write(*,"(A)"), "<< "//Interm_t_tensors_A(i)%property_label// &
+                                    " ; "//Interm_t_tensors_B(j)%property_label// &
+                                    " , "//Interm_t_tensors_C(k)%property_label//" >> = "
+                    write(*,"(F16.8,A,F16.8)"), real(cc_qrs(i,j,k,m,n)), ' \ ', aimag(cc_qrs(i,j,k,m,n))
 
                     call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,3,Bvec_tensors,&
                     Tprop_bar_tensors,Tprop_bar_tensors_min_w)
@@ -966,6 +970,311 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 
 end subroutine do_cc_qr
 
+!----------------------------------------------------------------------------------------------------------------------------------
+
+#if 0
+subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
+                    Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C, CC_CC)
+
+    type(exacc_input), intent(in) :: exa_input
+    type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+    type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+    type(talsh_tens_t), intent(inout)              :: l2_tensor
+    type(talsh_tens_t), intent(inout)              :: l1_tensor
+    type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_A(:) ! store exp values for (list of) A operators
+    type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_B(:) ! store exp values for (list of) B operators
+    type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_C(:) ! store exp values for (list of) C operators
+    logical, intent(in)                            :: CC_CC
+
+!   Wave-function tensor needed to construct the response function
+
+    complex(kind=8)               :: omega1, omega2, omega3
+    complex(kind=8),allocatable   :: omega(:), omega_min(:)
+    complex(kind=8),allocatable   :: cc_qrs(:,:,:,:,:)
+    type(talsh_comm_tens_t), allocatable :: Tprop_tensors_A(:,:,:), Tprop_tensors_min_w_A(:,:,:) !LR
+    type(talsh_comm_tens_t), allocatable :: Tprop_tensors_B(:,:,:), Tprop_tensors_min_w_B(:,:,:) !LR
+    type(talsh_comm_tens_t), allocatable :: Tprop_tensors_C(:,:,:), Tprop_tensors_min_w_C(:,:,:) !LR
+    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:,:,:), Tprop_bar_tensors_min_w(:,:,:) !QR
+    type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:)
+
+    
+    integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
+    integer                       :: N_oper_lr, N_oper_qr
+    integer                       :: N_omega1, N_omega2
+    integer                       :: i, j, k, n, m
+    integer, allocatable          :: Prop_A(:), Prop_B(:), Prop_C(:)
+    integer                       :: opA, opB, opC
+
+    type(C_PTR) :: body_p
+    complex(8), pointer    ::prop_tens(:,:,:,:)
+    integer            :: tens_rank
+    integer :: ierr
+    logical          :: exchange
+    
+
+    N_prop = 3
+
+    call print_date('Do quadratic response')
+
+    N_oper_qr = 3
+
+    Prop_A = exa_input%Prop_A
+    Prop_B = exa_input%Prop_B
+    Prop_C = exa_input%Prop_C
+
+    N_oper_qr = 3
+    N_prop_A = size(Prop_A)
+    N_prop_B = size(Prop_B)
+    N_prop_C = size(Prop_C)
+
+    N_omega1 = exa_input%N_omega_qr1
+    N_omega2 = exa_input%N_omega_qr2
+
+
+    allocate(omega(N_oper_qr))
+    allocate(omega_min(N_oper_qr))
+
+    omega = ZERO 
+    omega_min = ZERO 
+
+!
+!    opA = 1
+!    opB = 2
+!    opB = 3
+!
+!    allocate(Bvec_tensors(N_oper_qr))
+!
+!    allocate(Tprop_tensors_A(N_prop_A,N_omega2,N_omega1))
+!    allocate(Tprop_tensors_min_w_A(N_prop_A,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_A(N_prop_A,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_min_w_A(N_prop_A,N_omega2,N_omega1))
+!
+!    allocate(Tprop_tensors_B(N_prop_B,N_omega2,N_omega1))
+!    allocate(Tprop_tensors_min_w_B(N_prop_B,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_B(N_prop_B,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_min_w_B(N_prop_B,N_omega2,N_omega1))
+!
+!    allocate(Tprop_tensors_C(N_prop_C,N_omega2,N_omega1))
+!    allocate(Tprop_tensors_min_w_C(N_prop_C,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_C(N_prop_C,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_min_w_C(N_prop_C,N_omega2,N_omega1))
+!
+!    allocate(cc_qrs(N_prop_A,N_prop_B,N_prop_C,N_omega2,N_omega1))
+!
+! 
+
+    do n=1, N_omega1
+        omega1 = dcmplx(exa_input%w_qr1_re(n), exa_input%w_qr1_im(n))
+        do m=1, N_omega2
+            omega2 = dcmplx(exa_input%w_qr2_re(m), exa_input%w_qr2_im(m)) 
+            omega3 = -(omega1+omega2)
+
+            omega(1) = omega3   !omega(1): frequency for A operator
+            omega(2) = omega1   !omega(2): frequency for B operator
+            omega(3) = omega2   !omega(3): frequency for C operator
+            print *, "Read frequency1:", omega(1)
+            print *, "Read frequency2:", omega(2)
+            print *, "Read frequency3:", omega(3)
+      
+      
+            omega_min(1) = dcmplx(-real(omega(1)),aimag(omega(1)))
+            omega_min(2) = dcmplx(-real(omega(2)),aimag(omega(2)))
+            omega_min(3) = dcmplx(-real(omega(3)),aimag(omega(3)))
+            print *, "Read frequency min_1:", omega_min(1)
+            print *, "Read frequency min_2:", omega_min(2)
+            print *, "Read frequency min_3:", omega_min(3)
+
+
+! This loop is to determine which three properties to calculate
+        do i=1, N_prop_A
+          call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_A(i,n,m), Tprop_bar_tensors_A(,i,n,m), &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    Bvec_tensors(opA), omega(opA), omega_lhs=omega(opA), CC_CC, "A", i)
+!          if ((omega(opB).ne.ZERO).or.(omega(opC).ne.ZERO)) then
+!             call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_min_w_A(opA,i,n,m), Tprop_bar_tensors_min_w_A(i,n,m), &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    Bvec_tensors(opA), omega_min(opA), omega_lhs=omega_min(opA), CC_CC, "A", i)
+!          end if
+!       end do
+!
+!       do j=1, N_prop_B
+!          call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_B(j,n,m), Tprop_bar_tensors_B(j,n,m), &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    Bvec_tensors(opB), omega(opB), omega_lhs=omega(opB), CC_CC, "B", j)
+!         if ((omega(opB).ne.ZERO).or.(omega(opC).ne.ZERO)) then
+!            call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_min_w_B(j,n,m), Tprop_bar_tensors_min_w_B(j,n,m), &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    Bvec_tensors_min_w(opB), omega_min(opB), omega_lhs=omega_min(opB), CC_CC, "B", j)
+!       end do
+!
+!       do k=1, N_prop_C
+!          call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_C(k,n,m), Tprop_bar_tensors_C(k,n,m), &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    Bvec_tensors(opC), omega(opC), omega_lhs=omega(opC), CC_CC, "C", k)
+!         if ((omega(opB).ne.ZERO).or.(omega(opC).ne.ZERO)) then
+!            call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_min_w_C(k,n,m), Tprop_bar_tensors_min_w_C(k,n,m), &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    Bvec_tensors(opC), omega_min(opC), omega_lhs=omega_min(opC), CC_CC, "C", k)
+!       end do
+!
+!       call print_date('Solved All 1st response equations') 
+!
+!       do i=1, N_prop_A
+!          do j=1, N_prop_B
+!             do k=1, N_prop_C
+!
+!                    if ((omega(1).ne.ZERO).or.(omega(2).ne.ZERO)) then
+!                        if (CC_CC) then
+!                            call get_cccc_qr_allstored(exa_input, int_t, interm_t,&
+!                                    Interm_t_tensors_A,&
+!                                    Interm_t_tensors_B,&
+!                                    Interm_t_tensors_C,& 
+!                                    Tprop_tensors_A(i,m,n), &
+!                                    Tprop_bar_tensors_A(i,m,n), & 
+!                                    Tprop_tensors_B(j,m,n), &
+!                                    Tprop_bar_tensors_B(j,m,n), & 
+!                                    Tprop_tensors_C(k,m,n), &
+!                                    Tprop_bar_tensors_C(k,m,n), & 
+!                                    tprop_min_w_A=Tprop_tensors_min_w_A(i,m,n), &
+!                                    tprop_bar_min_w_A=Tprop_bar_tensors_min_w_A(i,m,n), & 
+!                                    Ttprop_min_w_B=prop_tensors_min_w_B(j,m,n), &
+!                                    tprop_bar_min_w_B=Tprop_bar_tensors_min_w_B(j,m,n), & 
+!                                    tprop_min_w_C=Tprop_tensors_min_w_C(k,m,n), &
+!                                    tprop_bar_min_w_C=Tprop_bar_tensors_min_w_C(k,m,n), & 
+!                                    i, j, k, l1_tensor, l2_tensor, &
+!                                    cc_qr(i,j,k,m,n))
+!                        else
+!                            call get_eom_qr_allstored(exa_input, int_t, interm_t,&
+!                                    Interm_t_tensors_A,&
+!                                    Interm_t_tensors_B,&
+!                                    Interm_t_tensors_C,& 
+!                                    Tprop_tensors_A(i,m,n), &
+!                                    Tprop_bar_tensors_A(i,m,n), & 
+!                                    Tprop_tensors_B(j,m,n), &
+!                                    Tprop_bar_tensors_B(j,m,n), & 
+!                                    Tprop_tensors_C(k,m,n), &
+!                                    Tprop_bar_tensors_C(k,m,n), & 
+!                                    tprop_min_w_A=Tprop_tensors_min_w_A(i,m,n), &
+!                                    tprop_bar_min_w_A=Tprop_bar_tensors_min_w_A(i,m,n), & 
+!                                    Ttprop_min_w_B=prop_tensors_min_w_B(j,m,n), &
+!                                    tprop_bar_min_w_B=Tprop_bar_tensors_min_w_B(j,m,n), & 
+!                                    tprop_min_w_C=Tprop_tensors_min_w_C(k,m,n), &
+!                                    tprop_bar_min_w_C=Tprop_bar_tensors_min_w_C(k,m,n), & 
+!                                    Tprop_bar_tensors_min_w_C(k,m,n), & 
+!                                    i, j, k, l1_tensor, l2_tensor, &
+!                                    cc_qr(i,j,k,m,n))
+!                        end if
+!                    else
+!                        call print_date('Note: Calculating static quadratic response.')
+!                        if (CC_CC) then
+!                            call get_cccc_qr_allstored(exa_input, int_t, interm_t,&
+!                                    Interm_t_tensors_A,&
+!                                    Interm_t_tensors_B,&
+!                                    Interm_t_tensors_C,& 
+!                                    Tprop_tensors_A(i,m,n), &
+!                                    Tprop_bar_tensors_A(i,m,n), & 
+!                                    Tprop_tensors_B(j,m,n), &
+!                                    Tprop_bar_tensors_B(j,m,n), & 
+!                                    Tprop_tensors_C(k,m,n), &
+!                                    Tprop_bar_tensors_C(k,m,n), & 
+!                                    i, j, k, l1_tensor, l2_tensor, &
+!                                    cc_qr(i,j,k,m,n))
+!                        else
+!                            call get_eom_qr_allstored(exa_input, int_t, interm_t,&
+!                                    Interm_t_tensors_A,&
+!                                    Interm_t_tensors_B,&
+!                                    Interm_t_tensors_C,& 
+!                                    Tprop_tensors_A(i,m,n), &
+!                                    Tprop_bar_tensors_A(i,m,n), & 
+!                                    Tprop_tensors_B(j,m,n), &
+!                                    Tprop_bar_tensors_B(j,m,n), & 
+!                                    Tprop_tensors_C(k,m,n), &
+!                                    Tprop_bar_tensors_C(k,m,n), & 
+!                                    Tprop_bar_tensors_min_w_C(k,m,n), & 
+!                                    i, j, k, l1_tensor, l2_tensor, &
+!                        end if
+!                end if
+
+!             end do
+!          end do
+!       end do
+!
+!       clean up all intermediates etc
+!
+
+
+
+!m,n,i/j/k
+
+        call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,3,Bvec_tensors,&
+                    Tprop_bar_tensors,Tprop_bar_tensors_min_w)
+
+                end do
+                call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,2,Bvec_tensors,&
+                                            Tprop_bar_tensors,Tprop_bar_tensors_min_w)
+
+            end do
+            call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,1,Bvec_tensors,&
+                                        Tprop_bar_tensors,Tprop_bar_tensors_min_w)
+
+        end do
+    
+      end do
+    end do 
+
+    
+        do i=1, N_prop_A
+            call destroy_Interm_t_tensors(Interm_t_tensors_A(i),.false.)
+        end do
+
+        do i=1, N_prop_B
+            call destroy_Interm_t_tensors(Interm_t_tensors_B(i),.false.)
+        end do
+        
+        do i=1, N_prop_C
+            call destroy_Interm_t_tensors(Interm_t_tensors_C(i),.false.)
+        end do
+
+
+        write(*,"(A54)"), "*************CC-CI(EOM-CC) quadratic response************"
+        do n=1, N_omega1
+          do m=1, N_omega2
+            do i=1, N_prop_A
+              do j=1, N_prop_B
+                do k=1, N_prop_C
+                    write(*,"(A4,I1,A2,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), &
+                         ";X", Prop_C(k),">> = "
+! aspg, todo: move printout formatting to something like this, or actually move that entirely
+! to another routine once we get the information on response vectors and functions more
+! structured                         
+!                     write(*,"(A4,I3,A2,I3,A2,I3,A5,2F16.8,A,2F16.8)"), "<<", Prop_A(i), ";", Prop_B(j), &
+!                         ";", Prop_C(k),">> (",omega1,",",omega2,") = "
+                    write(*,"(F16.8,A,F16.8)"), real(cc_qrs(i,j,k,m,n)), ' \ ', aimag(cc_qrs(i,j,k,m,n))
+                end do
+              end do 
+            end do
+          end do 
+        end do
+        write(*,"(A54)"), "**********************************************************"  
+
+        DEALLOCATE(omega)
+        DEALLOCATE(omega_min)
+        DEALLOCATE(Tprop_tensors)
+        DEALLOCATE(Tprop_tensors_min_w)
+        DEALLOCATE(Tprop_bar_tensors)
+        DEALLOCATE(Tprop_bar_tensors_min_w)
+        DEALLOCATE(Interm_t_tensors_A)
+        DEALLOCATE(Interm_t_tensors_B)
+        DEALLOCATE(Interm_t_tensors_C)
+        DEALLOCATE(Bvec_tensors)
+        DEALLOCATE(cc_qrs)
+
+
+    call print_date('Leave CC response') 
+
+
+end subroutine do_cc_qr_allstored
+#endif
 !------------------------------------------------------------------------------------------------------------------
 
 
