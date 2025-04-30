@@ -127,7 +127,12 @@ contains
       call lab_write(data_file, trim(group)//'/ndim',idata = grid%ndim)
       do i = 1, grid%ndim
         write(ich, '(i1)') i
-        call lab_write(data_file, trim(group)//'/nr_points_dim_'//trim(ich), idata = grid%nr_points(i))
+        if (grid%nr_points_known(i)) &
+         call lab_write(data_file, trim(group)//'/nr_points_dim_'//trim(ich), idata = grid%nr_points(i))
+        if (grid%spacing_known(i)) &
+         call lab_write(data_file, trim(group)//'/spacing_dim_'//trim(ich), rdata = grid%spacing(i))
+        if (grid%origin_known) &
+         call lab_write(data_file, trim(group)//'/origin_dim_'//trim(ich), rdata = grid%origin(i))
       end do
     end if
 
