@@ -83,7 +83,7 @@ C
      &   ITYPE.EQ.6  .OR.  ITYPE.EQ.-6  .OR.
      &   ITYPE.EQ.7  .OR.
      &   ITYPE.EQ.8 ) THEN
-        WRITE(LUPRI,'(A,I3)')
+        WRITE(LUPRI,'(A,I0)')
      &    'GABDRV does not support  integral type ',ITYPE
         CALL QUIT('GABDRV: Wrong integral type !')
       ENDIF
@@ -108,7 +108,7 @@ C
         DOINT(1,2) = .TRUE.
         DOINT(2,2) = .TRUE.
       ELSE
-        WRITE(LUPRI,'(A,I5)') 'GABDRV:Unknown IGTYP ',IGTYP
+        WRITE(LUPRI,'(A,I0)') 'GABDRV:Unknown IGTYP ',IGTYP
         CALL QUIT('GABDRV:Unknown IGTYP !')
       ENDIF
 C
@@ -117,9 +117,10 @@ C     *******************************
 C     ***** Calculate integrals *****
 C     *******************************
 C
-      IMAT = 1
-      IF (MAXDER.GE.1) IMAT = 3
-      CALL DZERO(GABM,NBASIS*NBASIS*IMAT)
+      NGMAT = 1
+      IF (MAXDER.GE.1) NGMAT = 3
+C     ... MAXDER is set in TWORUN
+      CALL DZERO(GABM,NBASIS*NBASIS*NGMAT)
       JTOP  = 4*(NHTYP - 1) + MAXDER
       JTOP3 = (JTOP + 1)**3
       NRTOP = (JTOP + 1)*(JTOP + 2)*(JTOP + 3)/6
@@ -235,8 +236,6 @@ C
           MAXCD  = MAXAB
           TCONAB = SHAEQB .AND. MAXAB .EQ. 0
           TCONCD = TCONAB
-C         DIAGAB = SHAEQB .AND. .NOT.BIGVEC
-C         aug 2000: BIGVEC removed because obsolete/th+hjaaj
           DIAGAB = SHAEQB
           DIAGCD = DIAGAB
           SPHRAB = SPHRA .OR. SPHRB
@@ -311,10 +310,8 @@ C
           CALL MEMGET('INTE',KNPCOD,LNPCOD,WORK,KFREE,LFREE)
           CALL IZERO(WORK(KNPCOC),LNPCOC)
           CALL IZERO(WORK(KNPCOD),LNPCOD)
-          CALL MEMGET('INTE',KJSTRC,NSETC               ,
-     &                              WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KJSTRD,NSETD               ,
-     &                              WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KJSTRC,NSETC,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KJSTRD,NSETD,WORK,KFREE,LFREE)
 C
           CALL MEMGET('REAL',KCORCD,9*NUCC*NUCD*NODCCD,
      &                              WORK,KFREE,LFREE)
@@ -361,10 +358,27 @@ C               Electron 2:
      &          WORK(KCONTD),WORK(KNPCOC),WORK(KNPCOD),WORK(KNCSCD),
      &          WORK(KJSTRC),WORK(KJSTRD),WORK(KINDCD),WORK(KPNTCD),
      &          WORK(KREDCD))
-         CALL MEMREL('GABDRV-1',WORK,KWORK,KBUF,KFREE,LFREE)
+            CALL MEMREL('GABDRV-1',WORK,KWORK,KBUF,KFREE,LFREE)
   200    CONTINUE
   100 CONTINUE
 C
+C     Print section
+C
+      IF(IPRINT.GE.5) THEN
+        IF(IJOB.EQ.0) THEN
+          CALL HEADER('Full GAB-matrix in AO basis',-1)
+        ELSE
+          CALL HEADER('Full GAB-matrix in SO basis',-1)
+        ENDIF
+        CALL OUTPUT(GABM,1,NBASIS,1,NBASIS,NBASIS,NBASIS,
+     &              -4,LUPRI)
+        DO IMAT = 2,NGMAT
+          WRITE(LUPRI,'(A,I2)')
+     &    ' Full derivative GAB-matrix in direction',IMAT-1
+          CALL OUTPUT(GABM(1,1,IMAT),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
+     &              -4,LUPRI)
+         END DO
+      ENDIF
       CALL MEMREL('GABDRV-end',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('GABDRV')
       RETURN
@@ -719,8 +733,9 @@ c need one-center integrals to be calculated by
 c two-center code because no one-center derivative code
 c is programmed (normally one-center is skipped because
 c the total contribution is zero).  /jan.98-hjaaj,jth
-         CAEQCB = ICENTA .EQ. ICENTB .AND. IATOM  .NE. NCENTA
-     &            .AND. MAXDER .EQ. 0
+         CAEQCB = ICENTA .EQ. ICENTB
+     &      .AND. IATOM  .NE. NCENTA
+     &      .AND. MAXDER .EQ. 0
 
          CALL ODCOEF(COEFAB,COORAB(1,1,1,NSYMR),EXPAB(1,1,NSYMR),
      &             WORK(KFREE),LFREE,
@@ -1024,14 +1039,15 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
+#include "nuclei.h"
       DIMENSION GABM(NBASIS,NBASIS),
      &          SO(*),IPNTNO(4,*),
      &          IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2),NINDCD(NORBC*NORBD,2)
-#include "nuclei.h"
 #include "twocom.h"
 #include "symmet.h"
 C
+
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine GABGAT',-1)
       IF (IPRINT .GT. 10) THEN
          WRITE (LUPRI,'(2X,A,4I5)') 'NHKT? ', NHKTA, NHKTB, NHKTC, NHKTD
@@ -1092,7 +1108,7 @@ C/* Deck Gaogat */
      &                  IPRINT,NINDAB,NINDCD,SUSCEP,MAXDER)
 C*****************************************************************************
 C
-C  Gather AO-Cauchy-Schwartz-integrals
+C  Gather AO-Cauchy-Schwarz-integrals
 C
 C  Written by T.Saue Oct 10 1996
 C
@@ -1185,7 +1201,7 @@ C           for sqrt( T(C S(D)) | T(C S(D)) ) ).
                     C = ICORBC(IORBC) + ICOMPC
                     D = ICORBD(IORBD) + ICOMPD
                     IF(A.EQ.C.AND.B.EQ.D) THEN
-                      AOBUF     = AOINT (IOFF+IORBCD)
+                      AOBUF     = AOINT(IOFF+IORBCD)
                       IF (NINTYP .EQ. 6 .AND. MAXDER .EQ. 2) THEN
                          AOBUF2    = AOINT2(IOFF+IORBCD)
                       ELSE
@@ -1442,8 +1458,6 @@ C
 C
 C     Initialization
 C
-      COMP(1) = 'L'
-      COMP(2) = 'S'
       NDRSO   = MAXSHL*MAXSHL*NDMAT
       CALL DZERO(DRSO,NDRSO)
 C
@@ -1463,6 +1477,8 @@ C     Print section
 C     =============
 C
       IF(IPRINT.GE.5) THEN
+        COMP(1) = 'L'
+        COMP(2) = 'S'
         CALL HEADER('Output from MKDRSO',-1)
         DO K = 1,NDMAT
           WRITE(LUPRI,'(A,I5)') '* Reduced density matrix no.',K
@@ -1708,8 +1724,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Gabge1 */
-      SUBROUTINE GABGE1(IJOB,GABM,ITYPE,IGTYP,
+C/* Deck GABGEN_1 */
+      SUBROUTINE GABGEN_1(IJOB,GABM,ITYPE,IGTYP,
      &                  MAXDIF,JATOM,NOCONT,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
@@ -1777,7 +1793,7 @@ C/* Deck Gabgen */
 C***********************************************************************
 C
 C     This routine will generate the reduced matrix of
-C     Cauchy-Schwartz integrals and write it to property file (HDF5)
+C     Cauchy-Schwarz integrals and write it to property file (HDF5)
 C
 C     Written by T.Saue Mar 19 1997
 C
@@ -1806,7 +1822,7 @@ C     Construct the identifier for this data, should include
 C     - AO or SO type integrals
 C     - regular or derivative type integrals
 C     - active classes (LL, SL, LS and SS,depending on IGTYP)
-C  
+C
       IF(ITYPE.EQ.0) THEN
          NGAB = 1
          GABLAB(1) = 'GABXXXXX'
@@ -1816,7 +1832,7 @@ C
             GABLAB(I) = 'GABXXX'//CHAR(MAXDIF+48)//CHRXYZ(-I)
          END DO
       ELSE
-         WRITE(LUPRI,'(A,I2)') 'GABGEN: Invalid ITYPE = ',ITYPE
+         WRITE(LUPRI,'(A,I0)') 'GABGEN: Invalid ITYPE = ',ITYPE
          CALL QUIT('GABGEN: Invalid ITYPE')
       ENDIF
       DO I = 1,NGAB
@@ -1825,7 +1841,7 @@ C
          ELSEIF(IJOB.EQ.1) THEN
             GABLAB(I)(4:5) = 'SO'
          ELSE
-            WRITE(LUPRI,'(A,I2)') 'GABGEN: Invalid IJOB = ',IJOB
+            WRITE(LUPRI,'(A,I0)') 'GABGEN: Invalid IJOB = ',IJOB
             CALL QUIT('GABGEN: Invalid IJOB')
          ENDIF
       END DO
@@ -1858,7 +1874,7 @@ C
       IF (NRGAB .NE. NGAB) CALL QUIT('GABGEN ERROR: NGAB .ne. NRGAB')
       NBUF = NRGAB*NBASIS*NBASIS
       CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
-      CALL GABGE1(IJOB,WORK(KBUF),ITYPE,IGTYP,
+      CALL GABGEN_1(IJOB,WORK(KBUF),ITYPE,IGTYP,
      &            MAXDIF,JATOM,NOCONT,WORK(KFREE),LFREE,IPRINT)
 C
 C
@@ -1869,7 +1885,7 @@ C
          CALL MEMGET('REAL',KGAB,NGAB*N2GAB,WORK,KFREE,LFREE)
          DO 123 IGAB = 1,NGAB
             IOFF1 = (IGAB-1)*NBASIS*NBASIS
-            IOFF2 = (IGAB-1)*NSYMBL*NSYMBL
+            IOFF2 = (IGAB-1)*N2GAB
             CALL MKDRAO(WORK(KBUF+IOFF1),WORK(KGAB+IOFF2),1,
      &                  WORK(KFREE),LFREE,IPRINT)
             DO I = 0,N2GAB-1
@@ -1889,7 +1905,7 @@ C
          IF (NGAB .GT. 1) CALL QUIT('GABGEN: only NGAB .eq. 1 for SO')
          N2GAB = MAXSHL*MAXSHL
          CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
-         CALL MKDRSO(WORK(KGAB),WORK(KBUF),1,WORK(KFREE),LFREE,IPRINT)
+         CALL MKDRSO(WORK(KBUF),WORK(KGAB),1,WORK(KFREE),LFREE,IPRINT)
          DO I = 0,N2GAB-1
             WORK(KGAB+I) = SQRT(ABS(WORK(KGAB+I)))
          ENDDO
@@ -1920,7 +1936,7 @@ C
             CALL NEWLB2('EOFLABEL',RTNLBL,104,LUPRI)
             close(104,status="keep")
          else
-!          the subroutine expects a character*16 label, hence the padding            
+!          the subroutine expects a character*16 label, hence the padding
            call prop_to_propfile (gablab(i)//'        ',
      &           WORK(KGAB+IOFF:KGAB+IOFF+N2GAB-1),N2GAB)
          end if
@@ -1935,10 +1951,10 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck Getgab */
+C/* Deck Getgab */
       SUBROUTINE GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,IPRINT,
      &     GABM,WORK,LWORK)
-      use labeled_storage      
+      use labeled_storage
 C***********************************************************************
 C
 C     Fetch compressed matrix of Cauchy-Scwartz-integrals from file
@@ -1964,7 +1980,6 @@ C***********************************************************************
       real(8), allocatable :: gab1d(:)
 #include "memint.h"
       group = '/result/operators/ao_matrices/'
-      allocate(gab1d(nsymbl*nsymbl)) ! need a 1d reading array
 C
 C     Construct label
 C     ---------------
@@ -2025,9 +2040,12 @@ C
                 close(104,status="delete")
               END IF
          else
+           n2symbl = nsymbl*nsymbl
+           allocate(gab1d(n2symbl)) ! need a 1d reading array
            call lab_read(dirac_datafiles(1),group//gablab(igab),
      &                   rdata=gab1d)
            gabm(:,:,igab) = reshape(gab1d,(/nsymbl,nsymbl/))
+           deallocate(gab1d)
          end if
          IF(IPRINT.GE.5) THEN
 C           reduced GAB-matrix is printed for IPRINT .ge. 4 in GABGEN
@@ -2041,3 +2059,4 @@ C           we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
 C
       RETURN
       END
+C -- end of her2gab.F --

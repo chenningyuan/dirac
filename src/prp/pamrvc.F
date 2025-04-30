@@ -3991,8 +3991,9 @@ C***********************************************************************
 #endif
 
 #ifdef HAS_PELIB
-        use polarizable_embedding, only: pe_master
-        use pe_variables, only: peqm, pe_gspol
+        use pelib, only: pelib_master
+        use pelib_dirac_interface, only: use_pelib, pelib_ifc_gspol,
+     &                                   pelib_ifc_response
 #endif
         use orbital_rotation_indices
 
@@ -4169,7 +4170,7 @@ C
         endif 
 #endif      
 #ifdef HAS_PELIB
-        if (peqm .and. .not. pe_gspol) then
+        if (use_pelib() .and. .not. pelib_ifc_gspol()) then
            if (IPRXRS .gt. 3) then
               write(lupri,'(/A)') ' Polarizable embedding'//
      &        ' contributions included in linear response.'

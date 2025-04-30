@@ -1,15 +1,17 @@
 :orphan:
 
-star(PEQM)
+star(PELIB)
 
 Polarizable embedding model
 
-This input section controls calculations using the polarizable embedding (PE) model.
+This input section controls calculations using the polarizable embedding (PE) or
+polarizable density embedding (PDE) models.
 For examples of calculations with different response methods and Hamiltonians, 
 see the tutorial :ref:`pe_response`).
 
 In DIRAC it is possible to include the effects from a structured environment on a core
-molecular system using the polarizable embedding (PE) model. The current implementation 
+molecular system using the PE or PDE models. Note that the PDE model is currently only
+implemented with the X2C Hamiltonian. The current implementation 
 is a layered QM/MM-type embedding model capable of using advanced potentials
 that include an electrostatic component as well as an induction (polarization) component.
 The effects of the environment are included through effective operators that contain an 
@@ -44,15 +46,29 @@ The format of the POTENTIAL.INP file is demonstrated below.
 Keywords
 ========
 
+keyword(PDE)
+
+This option enables the polarizable density embedding (PDE) model.
+It requires a valid HDF5 file containing the embedding potential parameters, e.g.::
+
+   .PDE
+   h2o.h5
+
+There is no default name for this file. The PDE file needs to be placed into the work directory with 
+the "--put=h2o.h5" option when running DIRAC. Note that PDE currently only works with the X2C Hamiltonian.
+This file only contains the frozen density. Polarizabilites and other multipole moments are kept in the
+POTENTIAL file (see .POTENT keyword).
+
 keyword(POTENTIAL)
 
 This option can be used to specify a non-default name of the POTENTIAL.INP in-
 put file that contains the embedding potential parameters, e.g.::
 
    .POTENT
-   peqm.pot
+   h2o.pot
 
-The default name is POTENTIAL.INP.
+The potential file needs to be placed into the work directory with the "--put=h2o.pot" option when running DIRAC.
+Alternatively, this file can be added by using the command "--pot=h2o.pot" which renames it to POTENTIAL.INP.
 
 keyword(DIRECT)
 

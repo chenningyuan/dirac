@@ -2317,7 +2317,8 @@ C
 C     Solvent flag (22.01.91/HJAAJ+KM) (SOLVENT)
 C
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm, pe_lf
+      use pelib_dirac_interface, only: use_pelib, pelib_ifc_localfield,
+     &                                 pelib_ifc_do_lf
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -2416,7 +2417,7 @@ C     *************************************************************
 C
 #ifdef HAS_PELIB
       IF (INTTYP .EQ. 2) THEN
-         IF (PEQM .AND. PE_LF) THEN
+         IF (use_pelib() .AND. pelib_ifc_do_lf()) THEN
             CALL PELIB_IFC_LOCALFIELD(SOINT, NBAST, NELMNT, NOPTYP)
          END IF
       END IF
