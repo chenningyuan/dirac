@@ -509,7 +509,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                             Interm_t_tensors_A(i)%property_label, &
                             Interm_t_tensors_B(j)%property_label, &
                             omega(B), &
-                            l1_tensor,l2_tensor,eom_lr)
+                            l1_tensor,l2_tensor,CC_CC,eom_lr)
                 else
                     call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                             Interm_t_tensors_A(i),  & 
@@ -518,7 +518,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                             Interm_t_tensors_A(i)%property_label, &
                             Interm_t_tensors_B(j)%property_label, &
                             omega(B), &
-                            l1_tensor,l2_tensor,eom_lr)
+                            l1_tensor,l2_tensor,CC_CC,eom_lr)
                 end if 
                 
                 eom_lrs(n,i,j) = eom_lr
@@ -951,7 +951,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                          Interm_t_tensors_A(i)%property_label, &
                                          Interm_t_tensors_A(i)%property_label, &
                                          omega(A), &
-                                         l1_tensor,l2_tensor,value_lr)
+                                         l1_tensor,l2_tensor,CC_CC,value_lr)
 
                         call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_A(i), &
@@ -960,7 +960,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                          Interm_t_tensors_A(i)%property_label, &
                                          Interm_t_tensors_B(j)%property_label, &
                                          omega(B), &
-                                         l1_tensor,l2_tensor,value_lr)
+                                         l1_tensor,l2_tensor,CC_CC,value_lr)
 
                         call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_A(i), &
@@ -969,7 +969,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                          Interm_t_tensors_A(i)%property_label, &
                                          Interm_t_tensors_C(k)%property_label, &
                                          omega(C), &
-                                         l1_tensor,l2_tensor,value_lr)
+                                         l1_tensor,l2_tensor,CC_CC,value_lr)
                         call print_date('Done calculating asymmetric linear response functions')
 
                         call print_date('Now calculating the quadratic response function')

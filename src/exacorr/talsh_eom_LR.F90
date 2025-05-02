@@ -216,7 +216,7 @@ subroutine get_asym_lr(N_Time_anti,interm_t, int_t, Interm_t_tensor_A, &
                        Tprop_tensors_B, Tprop_tensors_min_w_B, &
                        Tprop_bar_tensors_B, Tprop_bar_tensors_min_w_B, &
                        OpA_label, OpB_label, freqB, &
-                       l1_tensor,l2_tensor,value_lr)
+                       l1_tensor,l2_tensor,CC_CC,value_lr)
 !   This subroutine drives the CC-CI and CC-CC linear response property calculation
 !   in the asymmetric formulation
 !   Written by Andre Gomes
@@ -238,6 +238,7 @@ subroutine get_asym_lr(N_Time_anti,interm_t, int_t, Interm_t_tensor_A, &
     ! LHS response vectors
     type(talsh_comm_tens_t), intent(inout) :: Tprop_bar_tensors_B 
     type(talsh_comm_tens_t), intent(inout) :: Tprop_bar_tensors_min_w_B 
+    logical, intent(in) :: CC_CC
 
     character(8), intent(inout), optional  :: OpA_label
     character(8), intent(inout), optional  :: OpB_label
@@ -264,10 +265,13 @@ subroutine get_asym_lr(N_Time_anti,interm_t, int_t, Interm_t_tensor_A, &
     if (debug_local) print *, 'ierr 1.c',ierr, result_tens(1)
 
     ! build \eta^A t^B(+omega)
-    
-    ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
-            Interm_t_tensor_A%eta_prop_ov,Tprop_tensors_B%t1)
-    
+    if (CC_CC) then
+        ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
+                Interm_t_tensor_A%eta_prop_ov,Tprop_tensors_B%t1)
+    else
+        ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
+                Interm_t_tensor_A%eta_prop_ov_eom,Tprop_tensors_B%t1)
+    end if
     if (debug_local) then
     print *, 'ierr 2.a',ierr,result_tens(1)
     print *, '        eta1 norm',tensor_norm2(Interm_t_tensor_A%eta_prop_ov)
