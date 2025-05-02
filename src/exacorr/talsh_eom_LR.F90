@@ -213,8 +213,9 @@ end subroutine get_eom_lr
 
 !------------------------------------------------------------------------------------------------------------------
 subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, & 
-                       Tprop_tensors, Tprop_tensors_min_w, &
-                       Tprop_bar_tensors, Tprop_bar_tensors_min_w, &
+                       Tprop_tensors_B, Tprop_tensors_min_w_B, &
+                       Tprop_bar_tensors_B, Tprop_bar_tensors_min_w_B, &
+                       OpA_label, OpB_label, &
                        l1_tensor,l2_tensor,value_lr)
 !   This subroutine drives the CC-CI and CC-CC linear response property calculation
 !   in the asymmetric formulation
@@ -231,11 +232,14 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
     ! \eta and \xi (or epsilon) terms for operators A
     type(talsh_rsp_interm_tens_t), intent(inout) :: Interm_t_tensor_A
     ! RHS response vectors 
-    type(talsh_comm_tens_t), allocatable, intent(inout) :: Tprop_tensors(:)
-    type(talsh_comm_tens_t), allocatable, intent(inout) :: Tprop_tensors_min_w(:)
+    type(talsh_comm_tens_t), intent(inout) :: Tprop_tensors_B
+    type(talsh_comm_tens_t), intent(inout) :: Tprop_tensors_min_w_B
     ! LHS response vectors
-    type(talsh_comm_tens_t), allocatable, intent(inout) :: Tprop_bar_tensors(:) 
-    type(talsh_comm_tens_t), allocatable, intent(inout) :: Tprop_bar_tensors_min_w(:) 
+    type(talsh_comm_tens_t), intent(inout) :: Tprop_bar_tensors_B 
+    type(talsh_comm_tens_t), intent(inout) :: Tprop_bar_tensors_min_w_B 
+
+    character(8), intent(inout), optional     :: OpA_label
+    character(8), intent(inout), optional     :: OpB_label
 
     integer(C_INT)              :: ierr, one_dims(1)
     complex(8), pointer         :: result_tens(:)
@@ -260,42 +264,42 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
     ! build \eta^A t^B(+omega)
     
     ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
-            Interm_t_tensor_A%eta_prop_ov,Tprop_tensors(2)%t1)
+            Interm_t_tensor_A%eta_prop_ov,Tprop_tensors_B%t1)
     
     if (debug_local) then
     print *, 'ierr 2.a',ierr,result_tens(1)
     print *, '        eta1 norm',tensor_norm2(Interm_t_tensor_A%eta_prop_ov)
-    print *, '        tp1  norm',tensor_norm2(Tprop_tensors(2)%t1)
+    print *, '        tp1  norm',tensor_norm2(Tprop_tensors_B%t1)
     end if
 
     ierr=talsh_tensor_contract("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
-            Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors(2)%t2, &
+            Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors_B%t2, &
             scale=ONE_QUARTER_C)
    
     if (debug_local) then
     print *, 'ierr 2.b',ierr,result_tens(1)
     print *, '        eta2 norm',tensor_norm2(Interm_t_tensor_A%eta_prop_oovv)
-    print *, '        tp2  norm',tensor_norm2(Tprop_tensors(2)%t2)
+    print *, '        tp2  norm',tensor_norm2(Tprop_tensors_B%t2)
     end if
 
     ! build \bar(t)^B(+omega)\epsilon^A 
     
     ierr=talsh_tensor_contract("E()+=barTB(i,a)*XiA(a,i)", result_tensor, &
-            Tprop_bar_tensors(2)%t1,Interm_t_tensor_A%epsilon_prop_vo)
+            Tprop_bar_tensors_B%t1,Interm_t_tensor_A%epsilon_prop_vo)
     
     if (debug_local) then
     print *, 'ierr 3.a',ierr,result_tens(1)
-    print *, '        tbp2 norm',tensor_norm2(Tprop_bar_tensors(2)%t1)
+    print *, '        tbp2 norm',tensor_norm2(Tprop_bar_tensors_B%t1)
     print *, '        xi1  norm',tensor_norm2(Interm_t_tensor_A%epsilon_prop_vo)
     end if
 
     ierr=talsh_tensor_contract("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
-            Tprop_bar_tensors(2)%t2,Interm_t_tensor_A%epsilon_prop_vvoo, &
+            Tprop_bar_tensors_B%t2,Interm_t_tensor_A%epsilon_prop_vvoo, &
             scale=ONE_QUARTER_C)
     
     if (debug_local) then
     print *, 'ierr 3.b',ierr,result_tens(1)
-    print *, '        tbp2 norm',tensor_norm2(Tprop_bar_tensors(2)%t2)
+    print *, '        tbp2 norm',tensor_norm2(Tprop_bar_tensors_B%t2)
     print *, '        xi2  norm',tensor_norm2(Interm_t_tensor_A%epsilon_prop_vvoo)
     end if
 
@@ -312,12 +316,12 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
     ! build \eta^A t^B(-omega)
 
     ierr=talsh_tensor_contract("E()+=EtaA(i,a)*TB(a,i)", result_tensor, &
-            Interm_t_tensor_A%eta_prop_ov,Tprop_tensors_min_w(2)%t1)
+            Interm_t_tensor_A%eta_prop_ov,Tprop_tensors_min_w_B%t1)
     
     if (debug_local) print *, 'ierr 5.a',ierr,result_tens(1)
 
     ierr=talsh_tensor_contract("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
-            Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors_min_w(2)%t2, &
+            Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors_min_w_B%t2, &
             scale=ONE_QUARTER_C)
     
     if (debug_local) print *, 'ierr 5.b',ierr,result_tens(1)
@@ -325,12 +329,12 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
     ! build \bar(t)^B(-omega)\epsilon^A 
 
     ierr=talsh_tensor_contract("E()+=barTB(i,a)*XiA(a,i)", result_tensor, &
-            Tprop_bar_tensors_min_w(2)%t1,Interm_t_tensor_A%epsilon_prop_vo)
+            Tprop_bar_tensors_min_w_B%t1,Interm_t_tensor_A%epsilon_prop_vo)
     
     if (debug_local) print *, 'ierr 6.a',ierr,result_tens(1)
 
     ierr=talsh_tensor_contract("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
-            Tprop_bar_tensors_min_w(2)%t2,Interm_t_tensor_A%epsilon_prop_vvoo, &
+            Tprop_bar_tensors_min_w_B%t2,Interm_t_tensor_A%epsilon_prop_vvoo, &
             scale=ONE_QUARTER_C)
     
     if (debug_local) print *, 'ierr 6.b',ierr,result_tens(1)
@@ -416,7 +420,12 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
 
 ! cleanup
             ierr=talsh_tensor_destruct(result_tensor)
-            print *, 'ierr 7.a',ierr
+            if (ierr.ne.0) print *, 'ierr 7.a',ierr
+
+            if (present(OpA_label).and.present(OpB_label)) then
+                write(*,"(A,2F16.8)"), "@ << "//OpA_label// &
+                                       " ; "//OpB_label//" >> = ",value_lr
+            end if
 
 
 end subroutine get_asym_lr

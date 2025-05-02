@@ -482,14 +482,18 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                     ! Tprop_*_tensors_min_w not used/initialized
                     call get_asym_lr(exa_input,interm_t, int_t, &
                             Interm_t_tensors_A(i),  & 
-                            Tprop_tensors, Tprop_tensors, &
-                            Tprop_bar_tensors, Tprop_bar_tensors, &
-                            l1_tensor,l2_tensor,eom_lr)
+                            Tprop_tensors(2), Tprop_tensors(2), &
+                            Tprop_bar_tensors(2), Tprop_bar_tensors(2), &
+                            Interm_t_tensors_A(i)%property_label, &
+                            Interm_t_tensors_B(j)%property_label, &
+                          l1_tensor,l2_tensor,eom_lr)
                 else
                     call get_asym_lr(exa_input,interm_t, int_t, &
                             Interm_t_tensors_A(i),  & 
-                            Tprop_tensors, Tprop_tensors_min_w, &
-                            Tprop_bar_tensors, Tprop_bar_tensors_min_w, &
+                            Tprop_tensors(2), Tprop_tensors_min_w(2), &
+                            Tprop_bar_tensors(2), Tprop_bar_tensors_min_w(2), &
+                            Interm_t_tensors_A(i)%property_label, &
+                            Interm_t_tensors_B(j)%property_label, &
                             l1_tensor,l2_tensor,eom_lr)
                 end if 
                 
@@ -674,6 +678,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 
     type(C_PTR) :: body_p
     complex(8), pointer    ::prop_tens(:,:,:,:)
+    complex(8) :: value_lr
     integer            :: tens_rank
     integer :: ierr
     logical          :: exchange
@@ -864,7 +869,8 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 
                     call print_date('Solved All 1st response equations') 
 
-                    if ((omega(1).ne.ZERO).or.(omega(2).ne.ZERO)) then
+                    if ((omega(1).ne.ZERO).or.(omega(2).ne.ZERO)) then                    
+                        call print_date('Now calculating the quadratic response function')
                         if (CC_CC) then
                             call get_cccc_qr(exa_input, int_t, interm_t,&
                                     Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C,& 
@@ -879,6 +885,101 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                     i, j, k, l1_tensor, l2_tensor, cc_qr)
                         end if
                     else
+
+                        call print_date('Now calculating asymmetric linear response functions')
+! <<A;A>>
+                        call get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_A(i), &
+                                         Tprop_tensors(1), Tprop_tensors(1), &
+                                         Tprop_bar_tensors(1), Tprop_bar_tensors(1), &
+                                         Interm_t_tensors_A(i)%property_label, &
+                                         Interm_t_tensors_A(i)%property_label, &
+                                         l1_tensor,l2_tensor,value_lr)
+!                        write(*,"(A)"), "<< "//Interm_t_tensors_A(i)%property_label// &
+!                                        " ; "//Interm_t_tensors_A(i)%property_label//" >> = "
+!                        write(*,"(F16.8,A,F16.8)"), real(value_lr), ' \ ', aimag(value_lr)
+! <<A;B>>
+                        call get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_A(i), &
+                                         Tprop_tensors(2), Tprop_tensors(2), &
+                                         Tprop_bar_tensors(2), Tprop_bar_tensors(2), &
+                                         Interm_t_tensors_A(i)%property_label, &
+                                         Interm_t_tensors_B(j)%property_label, &
+                                         l1_tensor,l2_tensor,value_lr)
+!                        write(*,"(A)"), "<< "//Interm_t_tensors_A(i)%property_label// &
+!                                        " ; "//Interm_t_tensors_B(j)%property_label//" >> = "
+!                        write(*,"(F16.8,A,F16.8)"), real(value_lr), ' \ ', aimag(value_lr)
+! <<A;C>>
+                        call get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_A(i), &
+                                         Tprop_tensors(3), Tprop_tensors(3), &
+                                         Tprop_bar_tensors(3), Tprop_bar_tensors(3), &
+                                         Interm_t_tensors_A(i)%property_label, &
+                                         Interm_t_tensors_C(k)%property_label, &
+                                         l1_tensor,l2_tensor,value_lr)
+!                        write(*,"(A)"), "<< "//Interm_t_tensors_A(i)%property_label// &
+!                                        " ; "//Interm_t_tensors_C(k)%property_label//" >> = "
+!                        write(*,"(F16.8,A,F16.8)"), real(value_lr), ' \ ', aimag(value_lr)
+! <<B;A>>
+                        call get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_B(j), &
+                                         Tprop_tensors(1), Tprop_tensors(1), &
+                                         Tprop_bar_tensors(1), Tprop_bar_tensors(1), &
+                                         Interm_t_tensors_B(j)%property_label, &
+                                         Interm_t_tensors_A(i)%property_label, &
+                                         l1_tensor,l2_tensor,value_lr)
+!                        write(*,"(A)"), "<< "//Interm_t_tensors_B(j)%property_label// &
+!                                        " ; "//Interm_t_tensors_A(i)%property_label//" >> = "
+!                        write(*,"(F16.8,A,F16.8)"), real(value_lr), ' \ ', aimag(value_lr)
+! <<B;B>>
+                        call get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_B(j), &
+                                         Tprop_tensors(2), Tprop_tensors(2), &
+                                         Tprop_bar_tensors(2), Tprop_bar_tensors(2), &
+                                         Interm_t_tensors_B(j)%property_label, &
+                                         Interm_t_tensors_B(j)%property_label, &
+                                         l1_tensor,l2_tensor,value_lr)
+!                        write(*,"(A)"), "<< "//Interm_t_tensors_B(j)%property_label// &
+!                                        " ; "//Interm_t_tensors_B(j)%property_label//" >> = "
+!                        write(*,"(F16.8,A,F16.8)"), real(value_lr), ' \ ', aimag(value_lr)
+! <<B;C>>
+                        call get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_B(j), &
+                                         Tprop_tensors(3), Tprop_tensors(3), &
+                                         Tprop_bar_tensors(3), Tprop_bar_tensors(3), &
+                                         Interm_t_tensors_B(j)%property_label, &
+                                         Interm_t_tensors_C(k)%property_label, &
+                                         l1_tensor,l2_tensor,value_lr)
+!                        write(*,"(A)"), "<< "//Interm_t_tensors_B(j)%property_label// &
+!                                        " ; "//Interm_t_tensors_C(k)%property_label//" >> = "
+!                        write(*,"(F16.8,A,F16.8)"), real(value_lr), ' \ ', aimag(value_lr)
+! <<C;A>>
+                        call get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_C(k), &
+                                         Tprop_tensors(1), Tprop_tensors(1), &
+                                         Tprop_bar_tensors(1), Tprop_bar_tensors(1), &
+                                         Interm_t_tensors_C(k)%property_label, &
+                                         Interm_t_tensors_A(i)%property_label, &
+                                         l1_tensor,l2_tensor,value_lr)
+!                        write(*,"(A)"), "<< "//Interm_t_tensors_C(k)%property_label// &
+!                                        " ; "//Interm_t_tensors_A(i)%property_label//" >> = "
+!                        write(*,"(F16.8,A,F16.8)"), real(value_lr), ' \ ', aimag(value_lr)
+! <<C;B>>
+                        call get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_C(k), &
+                                         Tprop_tensors(2), Tprop_tensors(2), &
+                                         Tprop_bar_tensors(2), Tprop_bar_tensors(2), &
+                                         Interm_t_tensors_C(k)%property_label, &
+                                         Interm_t_tensors_B(j)%property_label, &
+                                         l1_tensor,l2_tensor,value_lr)
+!                        write(*,"(A)"), "<< "//Interm_t_tensors_C(k)%property_label// &
+!                                        " ; "//Interm_t_tensors_B(j)%property_label//" >> = "
+!                        write(*,"(F16.8,A,F16.8)"), real(value_lr), ' \ ', aimag(value_lr)
+! <<C;C>>
+                        call get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensors_C(k), &
+                                         Tprop_tensors(3), Tprop_tensors(3), &
+                                         Tprop_bar_tensors(3), Tprop_bar_tensors(3), &
+                                         Interm_t_tensors_C(k)%property_label, &
+                                         Interm_t_tensors_C(k)%property_label, &
+                                         l1_tensor,l2_tensor,value_lr)
+!                        write(*,"(A)"), "<< "//Interm_t_tensors_C(k)%property_label// &
+!                                        " ; "//Interm_t_tensors_C(k)%property_label//" >> = "
+!                        write(*,"(F16.8,A,F16.8)"), real(value_lr), ' \ ', aimag(value_lr)
+                        call print_date('Done calculating all linear response functions')
+
+                        call print_date('Now calculating the quadratic response function')
                         call print_date('Note: Calculating static quadratic response.')
                         if (CC_CC) then
                             call get_cccc_qr(exa_input, int_t, interm_t,&
