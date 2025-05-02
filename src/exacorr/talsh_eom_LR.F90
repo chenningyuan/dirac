@@ -212,10 +212,10 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
 end subroutine get_eom_lr
 
 !------------------------------------------------------------------------------------------------------------------
-subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, & 
+subroutine get_asym_lr(N_Time_anti,interm_t, int_t, Interm_t_tensor_A, & 
                        Tprop_tensors_B, Tprop_tensors_min_w_B, &
                        Tprop_bar_tensors_B, Tprop_bar_tensors_min_w_B, &
-                       OpA_label, OpB_label, &
+                       OpA_label, OpB_label, freqB, &
                        l1_tensor,l2_tensor,value_lr)
 !   This subroutine drives the CC-CI and CC-CC linear response property calculation
 !   in the asymmetric formulation
@@ -223,7 +223,8 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
 
     use talsh_sigma_eomccsd
 
-    type(exacc_input), intent(in) :: exa_input
+!    type(exacc_input), intent(in) :: exa_input
+    integer, intent(in) :: N_Time_anti
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !  t1, t2 tensor
     type(talsh_intg_tens_t),intent(inout)       :: int_t 
     type(talsh_tens_t), intent(inout)           :: l2_tensor
@@ -238,8 +239,9 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
     type(talsh_comm_tens_t), intent(inout) :: Tprop_bar_tensors_B 
     type(talsh_comm_tens_t), intent(inout) :: Tprop_bar_tensors_min_w_B 
 
-    character(8), intent(inout), optional     :: OpA_label
-    character(8), intent(inout), optional     :: OpB_label
+    character(8), intent(inout), optional  :: OpA_label
+    character(8), intent(inout), optional  :: OpB_label
+    complex(8), intent(inout)              :: freqB             
 
     integer(C_INT)              :: ierr, one_dims(1)
     complex(8), pointer         :: result_tens(:)
@@ -248,7 +250,7 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
 
     complex(kind=8)             :: linrsp, linrsp_con, phase_factor
 
-    logical :: debug_local = .true.
+    logical :: debug_local = .false.
     
     ! create and zero out result_tensor to accumulate +\omega contribution
     one_dims(1) = 1
@@ -401,30 +403,37 @@ subroutine get_asym_lr(exa_input,interm_t, int_t, Interm_t_tensor_A, &
 ! and so on for the possible combinations in the case of quadratic response functions.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-            print *, "Number of time-antisymmetric operators in response function",exa_input%N_Time_anti
-            if (exa_input%N_Time_anti.ge.1) &
-            print *, "Adding phase to response function components (due to how DIRAC scales time-antisymmetric operators)"
+!            print *, "Number of time-antisymmetric operators in response function",exa_input%N_Time_anti
+!            if (exa_input%N_Time_anti.ge.1) &
+            if (N_Time_anti.ge.1) then
+                print *, "    # of time-antisymmetric operators in response function:",N_Time_anti
+                print *, "    Adding phase to response function components"
+                print *, "    due to how DIRAC scales time-antisymmetric operators"
+            end if
 
-            phase_factor = IMAGINARY**(exa_input%N_Time_anti)
+!            phase_factor = IMAGINARY**(exa_input%N_Time_anti)
+            phase_factor = IMAGINARY**(N_Time_anti)
 
             linrsp = linrsp*phase_factor
             linrsp_con = linrsp_con*phase_factor
 
-            print *, "linear response: +w", linrsp
-            print *, "linear response: -w", linrsp_con
+            if (debug_local) then 
+                print *, "linear response: +w", linrsp
+                print *, "linear response: -w", linrsp_con
+            end if
 
             linrsp_con=conjg(linrsp_con)
             value_lr=(linrsp+linrsp_con)*0.5
 
-            print *, "LR after symmetrization ",value_lr
+            if (debug_local) print *, "LR after symmetrization ",value_lr
 
 ! cleanup
             ierr=talsh_tensor_destruct(result_tensor)
             if (ierr.ne.0) print *, 'ierr 7.a',ierr
 
             if (present(OpA_label).and.present(OpB_label)) then
-                write(*,"(A,2F16.8)"), "@ << "//OpA_label// &
-                                       " ; "//OpB_label//" >> = ",value_lr
+                write(*,"(A,2F8.4,A,2F16.8)"), "@   << "//OpA_label// &
+                                       " ; "//OpB_label//" >>(",freqB,") = ",value_lr
             end if
 
 

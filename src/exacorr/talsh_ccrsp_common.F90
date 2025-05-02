@@ -24,6 +24,7 @@ module talsh_ccrsp_common
     public form_ccresp_intermediates
     public destroy_Interm_t_tensors
     public destroy_Tprop_tensors
+    public destroy_Tprop_tensor
     public destroy_aux_tensor
     public construct_aux_tensor
     public get_prop_integral
@@ -250,6 +251,18 @@ subroutine destroy_aux_tensor(LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo)
     ierr=talsh_tensor_destruct(LR_Aux_vo)
 
 end subroutine 
+
+!------------------------------------------------------------------------------------------------------------------
+
+subroutine destroy_Tprop_tensor(Tprop_tensor)
+    type(talsh_comm_tens_t), intent(inout) :: Tprop_tensor
+    
+    integer(C_INT) :: ierr
+    
+    ierr=talsh_tensor_destruct(Tprop_tensor%t1)
+    ierr=talsh_tensor_destruct(Tprop_tensor%t2)
+
+end subroutine
 
 !------------------------------------------------------------------------------------------------------------------
 
