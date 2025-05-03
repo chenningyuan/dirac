@@ -793,9 +793,12 @@ end subroutine form_cccc_qr_MXY
 ! Modification because W icne != W icen
 ! Last     ierr=talsh_tensor_contract("Z(a,c,e,n)+=W(i,c,n,e)*tX(a,i)",vvvo_aux_tensor,ovov_aux_tensor,tXs)
      ierr=talsh_tensor_contract("Z(a,c,e,n)+=W(i,c,n,e)*tX(a,i)",vvvo_aux_tensor,ovov_aux_tensor,tXs,&
-                                scale=MINUS_ONE)
+                                                scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr n2b _d  =",ierr   
+
+
      ierr=talsh_tensor_contract("G(m,e)+=Z(a,c,e,n)*L(n,m,a,c)",Gtt_tensor%t1,vvvo_aux_tensor,l2_tensor)
+
      if(ierr.ne.0) write(*,*) "ierr n2d+n2d _e  =",ierr   
      
      ! f4b + f4d + f3c + f4e
@@ -805,8 +808,8 @@ end subroutine form_cccc_qr_MXY
      if(ierr.ne.0) write(*,*) "ierr f4b + f4d W_a  =",ierr
 ! Problem with sign contraction : error in intermediate \W kfae
 ! Last    ierr=talsh_tensor_contract("W(v1,o1,v2,v3)+=V(o2,o1,v2,v3)*t(v1,o2)",vovv_aux_tensor,int_t%oovv,t1_tensor)
-     ierr=talsh_tensor_contract("W(v1,o1,v2,v3)+=V(o2,o1,v2,v3)*t(v1,o2)",vovv_aux_tensor,&
-                                                                int_t%oovv,t1_tensor,scale=minus_one)
+     ierr=talsh_tensor_contract("W(v1,o1,v2,v3)+=V(o2,o1,v2,v3)*t(v1,o2)",vovv_aux_tensor,int_t%oovv,t1_tensor,&
+                                                                                scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr f4b + f4d W_b  =",ierr
 
      ! f4b +f4b
@@ -815,16 +818,19 @@ end subroutine form_cccc_qr_MXY
      call f4bf4d(vovv_aux_tensor,Gtt_tensor%t1,l2_tensor,tYs,tXs,nocc,nvir)
 
 
-     ! now use the intermediates for i2b+i2c
-     ierr=talsh_tensor_init(voov_aux_tensor)
-     ierr=talsh_tensor_contract("W(f,m,i,c)+=W(f,m,a,c)*tX(a,i)",voov_aux_tensor,vovv_aux_tensor,tXs)
-     if(ierr.ne.0) write(*,*) "ierr i2b+i2c _c  =",ierr
-          ! contraction with tYs ck
-     ierr=talsh_tensor_init(vooo_aux_tensor)
-     ierr=talsh_tensor_contract("W(f,m,i,k)+=W(f,m,i,c)*tY(c,k)",vooo_aux_tensor,voov_aux_tensor,tYs)
-     if(ierr.ne.0) write(*,*) "ierr i2b+i2c _d  =",ierr
-     ierr=talsh_tensor_contract("G(m,e)+=W(f,m,i,k)*L(i,k,f,e)",Gtt_tensor%t1,vooo_aux_tensor,l2_tensor,scale=MINUS_ONE)
-     if(ierr.ne.0) write(*,*) "ierr i2b+i2c _e  =",ierr
+      ! now use the intermediates for i2b+i2c
+      ierr=talsh_tensor_init(voov_aux_tensor)
+      ierr=talsh_tensor_contract("W(f,m,i,c)+=W(f,m,a,c)*tX(a,i)",voov_aux_tensor,vovv_aux_tensor,tXs)
+      if(ierr.ne.0) write(*,*) "ierr i2b+i2c _c  =",ierr
+           ! contraction with tYs ck
+      ierr=talsh_tensor_init(vooo_aux_tensor)
+      ierr=talsh_tensor_contract("W(f,m,i,k)+=W(f,m,i,c)*tY(c,k)",vooo_aux_tensor,voov_aux_tensor,tYs)
+      if(ierr.ne.0) write(*,*) "ierr i2b+i2c _d  =",ierr
+
+
+      ierr=talsh_tensor_contract("G(m,e)+=W(f,m,i,k)*L(i,k,f,e)",Gtt_tensor%t1,vooo_aux_tensor,l2_tensor,scale=MINUS_ONE)
+
+      if(ierr.ne.0) write(*,*) "ierr i2b+i2c _e  =",ierr
 
      ! c9b, g7b, l29, c10b, k7b, l28  - inversion : c11b, k5b, l21, c12b, k10b , l21 bis
      ! c9b, g7b, l29, c10b, k7b, l28
@@ -859,7 +865,9 @@ end subroutine form_cccc_qr_MXY
      ierr=talsh_tensor_init(oooo_aux_tensor)
      ierr=talsh_tensor_contract("W(m,n,k,i)+=W(m,n,k,a)*tX(a,i)",oooo_aux_tensor,ooov_aux_tensor,tXs)
      if(ierr.ne.0) write(*,*) "ierr i2d-b  =",ierr
+
      ierr=talsh_tensor_contract("G(m,n,e,f)+=W(m,n,k,i)*L(k,i,e,f)",Gtt_tensor%t2,oooo_aux_tensor,l2_tensor)
+
 
 
      ! n2d
@@ -869,7 +877,9 @@ end subroutine form_cccc_qr_MXY
      ierr=talsh_tensor_init(oooo_aux_tensor)
      ierr=talsh_tensor_contract("W(m,n,k,i)+=W(a,c,i,k)*L(m,n,c,a)",oooo_aux_tensor,vvoo_aux_tensor,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr i2d-b  =",ierr
+
      ierr=talsh_tensor_contract("G(m,n,e,f)+=W(m,n,k,i)*V(k,i,e,f)",Gtt_tensor%t2,oooo_aux_tensor,int_t%oovv)
+
      if(ierr.ne.0) write(*,*) "ierr i2d-c  =",ierr
 
      ! l28bis=inv(f4e)
@@ -1003,7 +1013,7 @@ end subroutine form_cccc_qr_MXY
      type(talsh_tens_t),  intent(inout) :: l2_tensor
      type(talsh_tens_t),  intent(inout) :: tAs,tBs
 
-     type(talsh_tens_t)                 ::  vovv_inter  !Fortran boude : intent
+     type(talsh_tens_t),  intent(inout) ::  vovv_inter  !Fortran boude : intent
 
      integer,             intent(in   ) :: nocc, nvir
 
@@ -1318,7 +1328,7 @@ end subroutine form_cccc_qr_MXY
           ierr=talsh_tensor_init(oo_aux_tensor)
           ierr=talsh_tensor_contract("F(m,i)+=tX(a,b,i,j)*L(j,m,b,a)",oo_aux_tensor,tAd,l2_tensor)
           if(ierr.ne.0) write(*,*) "ierr k9b-a  =",ierr
-           ierr=talsh_tensor_contract("G(m,e)+=F(i,e)*W(m,i)",G1_tensor,ov_aux_tensor,vv_aux_tensor,scale=minus_one_half)
+           ierr=talsh_tensor_contract("G(m,e)+=F(i,e)*W(m,i)",G1_tensor,ov_aux_tensor,oo_aux_tensor,scale=minus_one_half)
           if(ierr.ne.0) write(*,*) "ierr k9b-b  =",ierr
 
 
