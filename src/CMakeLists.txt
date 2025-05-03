@@ -335,6 +335,9 @@ if(ENABLE_PELIB)
     dirac_test(pe_response "medium;polarizabilities;pelib" "")
     dirac_test(pe_exc "medium;pelib" "")
     dirac_test(pe_cpp "short;pelib" "")
+    if(ENABLE_PDE)
+    	dirac_test(pde_exc "short;pelib" "")
+    endif()
 endif()
 
 #  dirac sources as separate library

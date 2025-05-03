@@ -10,9 +10,9 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_PELIB_FORTRAN_SOURCES
-    pe_dirac_interfaces.F
 )
 set(FREE_PELIB_FORTRAN_SOURCES
+    pelib_dirac_interface.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -34,7 +34,12 @@ add_library(
 
 # deal with intedependencies
 # needs memory allocator etc..
-add_dependencies(gen1int_interface gen1int)
-add_dependencies(pelib gen1int_interface)
+# EDL:: First two dependencies already set.
+# Can probably be safetly removed from this file.
+#add_dependencies(gen1int_interface gen1int)
+#add_dependencies(pelib gen1int_interface)
 add_dependencies(pelib_interface pelib)
 add_dependencies(pelib_interface interface_mpi)
+
+set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/modules} CACHE PATH "Set the Fortran module build directory")
+

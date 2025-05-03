@@ -13,7 +13,7 @@ f = Filter()
 #       num_lines   = 8,
 #       rel_tolerance   = 1.0e-9)
 
-f.add(from_string = '*****************EOM-CC Eigenvalules******************',
+f.add(from_string = '************** Solution of eigenvalue equations ***************',
       num_lines   = 5,
       rel_tolerance   = 1.0e-6)
 

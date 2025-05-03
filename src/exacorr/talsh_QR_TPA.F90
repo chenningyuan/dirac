@@ -404,9 +404,9 @@ subroutine solve_left_right_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensor,
        call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, Bvec_tensor)
     end if
 
-    call print_lr_setup("R"," ",-1,omega1)
+    call print_lr_setup("R"," ",Interm_t_tensor,-1,omega1)
     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensor, omega1, Tprop_tensor)
-    call print_lr_setup("L"," ",-1,omega2)
+    call print_lr_setup("L"," ",Interm_t_tensor,-1,omega2)
 
     if (CC_CC) then
         call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega2, Bvec_tensor, Tprop_bar_tensor)

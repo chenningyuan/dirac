@@ -1,7 +1,6 @@
 option(ENABLE_PELIB "Enable polarizabile embedding library" ON)
 
 if(ENABLE_PELIB)
-    include_directories(${PROJECT_BINARY_DIR}/external/pelib-build)
 
     add_definitions(-DHAS_PELIB)
     set(PE_HOST_PROGRAM "DIRAC")
@@ -11,7 +10,7 @@ if(ENABLE_PELIB)
         message(FATAL_ERROR "-- PElib requires Gen1Int, use -DENABLE_GEN1INT=ON to enable Gen1Int or -DENABLE_PELIB=OFF to disable PElib")
     endif()
 
-    set(PE_INCLUDE_DIR)
+    set(PE_INCLUDE_DIRS)
 
     # here we control whether PElib will use mpi.mod or mpif.h
     # MPI_COMPILER_MATCHES is defined in cmake/custom/mpi.cmake
@@ -23,28 +22,43 @@ if(ENABLE_PELIB)
       set(_enable_mpif "1")
     endif()
 
+    if(ENABLE_64BIT_INTEGERS)
+      set(INTEGER_PRECISION "INT64")
+    else()
+      set(INTEGER_PRECISION "INT32")
+    endif()
+
+    if(ENABLE_PDE)
+        find_package(HDF5 REQUIRED COMPONENTS Fortran)
+        set(PE_INCLUDE_DIRS ${PE_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
+        add_definitions(${HDF5_Fortran_DEFINITIONS})
+    endif()
+
     set(ExternalProjectCMakeArgs
         -DCMAKE_WARN_DEPRECATED=FALSE
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+        -DCMAKE_INSTALL_INCLUDEDIR=${PROJECT_BINARY_DIR}/modules
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-        -DPARENT_INCLUDE_DIR=${PE_INCLUDE_DIR}
-        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+	      -DPARENT_INCLUDE_DIRS=${PE_INCLUDE_DIRS}
+	      -DPARENT_MODULE_DIRS=${PROJECT_BINARY_DIR}/modules
         -DINTEGRAL_LIBRARY=${PE_INTEGRAL_LIBRARY}
-	-DENABLE_MPI=${ENABLE_MPI}
-        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-        -DENABLE_MPIF=${_enable_mpif}
+	      -DENABLE_MPI=${ENABLE_MPI}
+        -DINTEGER_PRECISION=${INTEGER_PRECISION}
+        -DUSE_MPIF=${_enable_mpif}
+        -DENABLE_PDE=${ENABLE_PDE}
         -DHOST_PROGRAM=${PE_HOST_PROGRAM}
     )
 
     unset(_enable_mpif)
 
     add_external(pelib)
-
-
     set(EXTERNAL_LIBS
-        ${PROJECT_BINARY_DIR}/external/lib/libpelib.a
+        ${PROJECT_BINARY_DIR}/external/lib/libPElib.a
         ${EXTERNAL_LIBS})
+      if(ENABLE_PDE)
+        set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${HDF5_Fortran_LIBRARIES})
+    endif()
 endif()
 
 message(STATUS "PElib module: ${ENABLE_PELIB}")
