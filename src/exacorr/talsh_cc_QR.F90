@@ -513,7 +513,7 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
 
         ! recall we reuse Ft to obtain BtY, with special case (remove U1 vua is_qrcc=.true.) AND at the same time
         ! replace l1, l2 by perburtbed l1, l2. which were calculated before (tbar_x)
-        call get_tF(tbarXBtY_tensor%t1,tbarXBtY_tensor%t2, tx%t1,tx%t2, tbar_x%t1,tbar_x%t2, &
+        call get_tF(tbarXBtY_tensor%t1,tbarXBtY_tensor%t2, ty%t1,ty%t2, tbar_x%t1,tbar_x%t2, &
                     interm_t,int_t,interm_t%nocc, interm_t%nvir, is_qrcc=.true.)
 
 ! accumulate intermediate into results with correct scaling due to permutations
