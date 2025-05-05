@@ -16,7 +16,6 @@ module talsh_cc_QR
                                 ONE_SIXTH=(0.16666666666666666666D0,0.D0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
 
-    type(talsh_tens_t) :: one_tensor
 
     private
 
@@ -65,11 +64,10 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
 
         ! type(talsh_comm_tens_t)     :: bvec_tensor
         type(talsh_tens_t)          :: result_tensor
-        integer(C_INT)              :: one_dims(1)
         complex(8), pointer         :: result_tens(:)
         type(C_PTR):: body_p
 
-        ierr=talsh_tensor_construct(one_tensor,C8,(/ 1 /),init_val=ONE)
+        
 
         call print_date('Evaluate CC-CC QR')
 
@@ -99,7 +97,6 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
                         l2_tensor,          &
                         quarsp_con)
 
-        ierr=talsh_tensor_destruct(one_tensor)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ASPG+LV: Note concerning the addition of a phase to the response functions below
 !
@@ -173,6 +170,9 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
         cccc_qr=(quarsp+quarsp_con)*0.5
 
         print *, "CC-QR after symmetrization ",cccc_qr
+
+        ierr=talsh_tensor_destruct(result_tensor)
+
 end subroutine get_cccc_qr
 
 !------------------------------------------------------------------------------------------------------------------
@@ -434,6 +434,7 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
         ierr=talsh_tensor_destruct(result_tensor)
 
 
+
 end subroutine get_cccc_quarspf
 
 subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_operator, Y_operator, &
@@ -456,6 +457,7 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
         integer, dimension(2) :: ov_dims
         integer, dimension(4) :: oovv_dims
         integer(INTD) :: ierr
+
 
 ! local variables
 
@@ -558,6 +560,9 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
       
         ierr=talsh_tensor_destruct(tbarXAY_tensor%t1)
         ierr=talsh_tensor_destruct(tbarXAY_tensor%t2)
+
+
+
 
 end subroutine form_cccc_qr_MXY
 
@@ -778,7 +783,8 @@ end subroutine form_cccc_qr_MXY
      ierr=talsh_tensor_init(ooov_aux_tensor) 
      ierr=talsh_tensor_add("W(m,i,o,c)+=V(m,i,o,c)",ooov_aux_tensor,int_t%ooov)
      if(ierr.ne.0) write(*,*) "ierr f3b + f3d W_a  =",ierr         
-     ierr=talsh_tensor_contract("W(m,i,o,c)+=T(g,o)*V(m,i,g,c)",ooov_aux_tensor,t1_tensor,int_t%oovv)
+     ierrtalsh_tensor_contract("W(m,i,o,c)+=T(g,o)*V(m,i,g,c)",ooov_aux_tensor,t1_tensor,int_t%oovv,&
+                                                                        scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr f3b + f3d W_b  =",ierr
 
      ! f3b + f3d
@@ -788,15 +794,18 @@ end subroutine form_cccc_qr_MXY
 
 
      ! now use intermediate V+V*t for n2b+n2c
+     ierr=talsh_tensor_init(ooov_aux_tensor)
+     ierr=talsh_tensor_add("W(i,k,n,e)+=V(i,k,n,e)",ooov_aux_tensor,int_t%ooov)
+     ierr=talsh_tensor_contract("W(i,k,n,e)+=V(i,k,g,e)*T(g,n)",ooov_aux_tensor,int_t%oovv,t1_tensor)
      ierr=talsh_tensor_init(ovov_aux_tensor)
      ierr=talsh_tensor_contract("W(i,c,n,e)+=W(i,k,n,e)*tY(c,k)",ovov_aux_tensor,ooov_aux_tensor,tYs)
      if(ierr.ne.0) write(*,*) "ierr n2b+n2d _c  =",ierr
             ! contraction with tXs ai
      ierr=talsh_tensor_init(vvov_aux_tensor)
-! Last now use the goog aux_tensor, that is W_vvov
+     ! Last now use the goog aux_tensor, that is W_vvov
      ierr=talsh_tensor_contract("Z(a,c,n,e)+=W(i,c,n,e)*tX(a,i)",vvov_aux_tensor,ovov_aux_tensor,tXs)   
      if(ierr.ne.0) write(*,*) "ierr n2b _d  =",ierr   
-     ierr=talsh_tensor_contract("G(m,e)+=Z(a,c,n,e)*L(n,m,a,c)",Gtt_tensor%t1,vvov_aux_tensor,l2_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(m,e)+=Z(a,c,n,e)*L(n,m,a,c)",Gtt_tensor%t1,vvov_aux_tensor,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr n2d+n2d _e  =",ierr   
      
      ! f4b + f4d + f3c + f4e
@@ -817,6 +826,10 @@ end subroutine form_cccc_qr_MXY
 
 
       ! now use the intermediates for i2b+i2c
+     ierr=talsh_tensor_init(vovv_aux_tensor)
+     ierr=talsh_tensor_add("W(f,m,a,c)+=V(f,m,a,c)",vovv_aux_tensor,int_t%vovv,scale=MINUS_ONE)
+     if(ierr.ne.0) write(*,*) "ierr f4b + f4d W_a  =",ierr
+     ierr=talsh_tensor_contract("W(f,m,a,c)+=V(m,o,c,a)*t(f,o)",vovv_aux_tensor,int_t%oovv,t1_tensor)
       ierr=talsh_tensor_init(voov_aux_tensor)
       ierr=talsh_tensor_contract("W(f,m,i,c)+=W(f,m,a,c)*tX(a,i)",voov_aux_tensor,vovv_aux_tensor,tXs)
       if(ierr.ne.0) write(*,*) "ierr i2b+i2c _c  =",ierr
@@ -824,9 +837,7 @@ end subroutine form_cccc_qr_MXY
       ierr=talsh_tensor_init(vooo_aux_tensor)
       ierr=talsh_tensor_contract("W(f,m,i,k)+=W(f,m,i,c)*tY(c,k)",vooo_aux_tensor,voov_aux_tensor,tYs)
       if(ierr.ne.0) write(*,*) "ierr i2b+i2c _d  =",ierr
-
-
-      ierr=talsh_tensor_contract("G(m,e)+=W(f,m,i,k)*L(i,k,f,e)",Gtt_tensor%t1,vooo_aux_tensor,l2_tensor,scale=MINUS_ONE)
+      ierr=talsh_tensor_contract("G(m,e)+=W(f,m,i,k)*L(i,k,f,e)",Gtt_tensor%t1,vooo_aux_tensor,l2_tensor)
 
       if(ierr.ne.0) write(*,*) "ierr i2b+i2c _e  =",ierr
 
