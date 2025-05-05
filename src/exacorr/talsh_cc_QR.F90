@@ -987,18 +987,14 @@ end subroutine form_cccc_qr_MXY
      end subroutine get_Gtt
 
      subroutine l28bis(G2_tensor,l2_tensor,int_t,tAs,tBs,nocc,nvir)
+     type(talsh_tens_t),  intent(inout) :: G2_tensor
+     type(talsh_tens_t),  intent(inout) :: l2_tensor
+     type(talsh_intg_tens_t), intent(inout) :: int_t
+     type(talsh_tens_t),  intent(inout) :: tAs,tBs
+     integer,             intent(in   ) :: nocc, nvir
 
      real(8)                        :: print_level=2
      integer(INTD) :: ierr
-
-     type(talsh_intg_tens_t), intent(inout) :: int_t
-
-     type(talsh_tens_t),  intent(inout) :: G2_tensor
-     type(talsh_tens_t),  intent(inout) :: l2_tensor
-     type(talsh_tens_t),  intent(inout) :: tAs,tBs
-
-     integer,             intent(in   ) :: nocc, nvir
-
      integer, dimension(4) :: oovo_dims,ovvo_dims
 
      type(talsh_tens_t) :: oovo_aux_tensor ,ovvo_aux_tensor
@@ -1033,20 +1029,14 @@ end subroutine form_cccc_qr_MXY
      end subroutine
 
      subroutine l22bisl23bis(G2_tensor,l2_tensor,int_t,tAs,tBs,nocc,nvir)
+     type(talsh_tens_t),  intent(inout) :: G2_tensor
+     type(talsh_tens_t),  intent(inout) :: l2_tensor
+     type(talsh_intg_tens_t), intent(inout) :: int_t
+     type(talsh_tens_t),  intent(inout) :: tAs,tBs
+     integer,             intent(in   ) :: nocc, nvir
 
      real(8)                        :: print_level=2
      integer(INTD) :: ierr
-
-     type(talsh_intg_tens_t), intent(inout) :: int_t
-
-     type(talsh_tens_t),  intent(inout) :: G2_tensor
-
-     type(talsh_tens_t),  intent(inout) :: l2_tensor
-     type(talsh_tens_t),  intent(inout) :: tAs,tBs
-
-
-     integer,             intent(in   ) :: nocc, nvir
-
      !     tensor dimensions
      integer, dimension(2) :: ov_dims,vv_dims,oo_dims
 
@@ -1092,19 +1082,14 @@ end subroutine form_cccc_qr_MXY
 
 
      subroutine f4bf4d(vovv_inter,G1_tensor,l2_tensor,tAs,tBs,nocc,nvir)
+     type(talsh_tens_t), intent(inout)  ::  vovv_inter  !Fortran boude : intent
+     type(talsh_tens_t),  intent(inout) :: G1_tensor
+     type(talsh_tens_t),  intent(inout) :: l2_tensor
+     type(talsh_tens_t),  intent(inout) :: tAs,tBs
+     integer,             intent(in   ) :: nocc, nvir
 
      real(8)                        :: print_level=2
      integer(INTD) :: ierr
-
-     type(talsh_tens_t),  intent(inout) :: G1_tensor
-
-     type(talsh_tens_t),  intent(inout) :: l2_tensor
-     type(talsh_tens_t),  intent(inout) :: tAs,tBs
-
-     type(talsh_tens_t)                 ::  vovv_inter  !Fortran boude : intent
-
-     integer,             intent(in   ) :: nocc, nvir
-
      !     tensor dimensions
      integer, dimension(4) :: voov_dims, vvov_dims
 
@@ -1136,20 +1121,14 @@ end subroutine form_cccc_qr_MXY
      end 
 
      subroutine f3bf3d(ooov_inter,G1_tensor,l2_tensor,tAs,tBs,nocc,nvir)
+     type(talsh_tens_t), intent(inout) :: ooov_inter
+     type(talsh_tens_t), intent(inout) :: G1_tensor
+     type(talsh_tens_t), intent(inout) :: l2_tensor
+     type(talsh_tens_t), intent(inout) :: tAs,tBs
+     integer,            intent(in   ) :: nocc, nvir
 
      real(8)                        :: print_level=2
      integer(INTD) :: ierr
-
-     type(talsh_tens_t),  intent(inout) :: G1_tensor
-
-     type(talsh_tens_t),  intent(inout) :: l2_tensor
-     type(talsh_tens_t),  intent(inout) :: tAs,tBs
-
-     type(talsh_tens_t)                ::  ooov_inter !Fortran boude : intent
-
-
-     integer,             intent(in   ) :: nocc, nvir
-
      !     tensor dimensions
      integer, dimension(4) :: oooo_dims, vooo_dims
 
@@ -1179,16 +1158,14 @@ end subroutine form_cccc_qr_MXY
      end 
 
      subroutine Gtt_c9c10g7k7l28l29(G1_tensor,int_t,tBs,tAd,l2_tensor,nocc,nvir)
+     type(talsh_tens_t), intent(inout)    :: G1_tensor
+     type(talsh_intg_tens_t), intent(inout) :: int_t
+     type(talsh_tens_t), intent(inout) :: tAd,tBs
+     type(talsh_tens_t),  intent(inout) :: l2_tensor
+     integer,             intent(in   ) :: nocc, nvir
 
      real(8)                        :: print_level=2         
      integer(INTD) :: ierr
-
-     type(talsh_intg_tens_t), intent(inout) :: int_t
-
-     type(talsh_tens_t),  intent(inout) :: l2_tensor
-
-     integer,             intent(in   ) :: nocc, nvir
-
      !     tensor dimensions
      integer, dimension(2) :: oo_dims, vv_dims
      type(talsh_tens_t) :: oo_aux_tensor,vv_aux_tensor
@@ -1198,13 +1175,10 @@ end subroutine form_cccc_qr_MXY
      integer, dimension(4) :: ooov_dims, ovvv_dims
      integer, dimension(4) :: oovo_dims
 
-     type(talsh_tens_t), intent(inout)    :: G1_tensor
-
      type(talsh_tens_t) :: vvvv_aux_tensor, oooo_aux_tensor !, oovv_aux_tensor
      type(talsh_tens_t) :: vovv_aux_tensor,ovvo_aux_tensor
      type(talsh_tens_t) :: ooov_aux_tensor ,ovvv_aux_tensor
      type(talsh_tens_t) :: oovo_aux_tensor
-     type(talsh_tens_t), intent(inout) :: tAd,tBs
    
 
      vv_dims = nvir
@@ -1298,12 +1272,13 @@ end subroutine form_cccc_qr_MXY
      subroutine Gtt_c7c8(G1_tensor,tAs,tBs,l1_tensor,int_t,nocc,nvir)
 
      type(talsh_tens_t), intent(inout)    :: G1_tensor
-     type(talsh_intg_tens_t), intent(inout) :: int_t
      type(talsh_tens_t), intent(inout)    :: tAs,tBs  
-     type(talsh_tens_t)                   :: ooov_aux_tensor,oo_aux_tensor 
      type(talsh_tens_t),  intent(inout) :: l1_tensor 
-     integer(INTD) :: ierr
+     type(talsh_intg_tens_t), intent(inout) :: int_t
      integer,             intent(in   ) :: nocc, nvir
+
+     integer(INTD) :: ierr
+     type(talsh_tens_t)                   :: ooov_aux_tensor,oo_aux_tensor 
 
      ierr=talsh_tensor_construct(ooov_aux_tensor,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
      ierr=talsh_tensor_construct(oo_aux_tensor,C8,(/nocc,nocc/),init_val=ZERO)
@@ -1326,7 +1301,7 @@ end subroutine form_cccc_qr_MXY
 
      type(talsh_tens_t), intent(inout)    :: aux_ov_tensor
      type(talsh_intg_tens_t), intent(inout) :: int_t
-     type(talsh_tens_t)                   :: tAs  
+     type(talsh_tens_t), intent(inout)      :: tAs  
      integer(INTD) :: ierr
 
      ierr=talsh_tensor_contract("G(m,c)+=V(m,i,c,a)*tAs(a,i)",aux_ov_tensor,int_t%oovv,tAs)
@@ -1336,19 +1311,19 @@ end subroutine form_cccc_qr_MXY
 
      subroutine Gtt_k2k3g2g3(Gtt_me_tensor,int_t,G1_tensor,tBs,tBd,l1_tensor,l2_tensor,nocc,nvir)
 
-     type(talsh_tens_t), intent(inout)    :: G1_tensor
-     type(talsh_tens_t), intent(inout)    :: l1_tensor,l2_tensor
+     type(talsh_tens_t), intent(inout)    :: Gtt_me_tensor
      type(talsh_intg_tens_t), intent(inout) :: int_t
+     type(talsh_tens_t), intent(inout)    :: G1_tensor
      type(talsh_tens_t), intent(inout)    :: tBs, tBd
-     integer(INTD)                        :: ierr
+     type(talsh_tens_t), intent(inout)    :: l1_tensor,l2_tensor
      integer,             intent(in   )   :: nocc, nvir         
 
      integer :: print_level = 2      
 
+     integer(INTD)                        :: ierr
      integer, dimension(2) :: oo_dims, vv_dims
      type(talsh_tens_t) :: oo_aux_tensor,vv_aux_tensor
 
-     type(talsh_tens_t), intent(inout) :: Gtt_me_tensor
 
 
      oo_dims = nocc
@@ -1377,23 +1352,19 @@ end subroutine form_cccc_qr_MXY
      end subroutine Gtt_k2k3g2g3
 
      subroutine Gtt_g9bk9b(G1_tensor,int_t,tBs,tAd,l2_tensor,nocc,nvir)
+          type(talsh_tens_t), intent(inout)    :: G1_tensor
+          type(talsh_intg_tens_t), intent(inout) :: int_t
+          type(talsh_tens_t), intent(inout) :: tAd,tBs
+          type(talsh_tens_t),  intent(inout) :: l2_tensor
+          integer,             intent(in   ) :: nocc, nvir
 
           real(8)                        :: print_level=2
           integer(INTD) :: ierr
-
-          type(talsh_intg_tens_t), intent(inout) :: int_t
-
-          type(talsh_tens_t),  intent(inout) :: l2_tensor
-
-          integer,             intent(in   ) :: nocc, nvir
-
           !     tensor dimensions
           integer, dimension(2) :: oo_dims, vv_dims
           type(talsh_tens_t) :: oo_aux_tensor,vv_aux_tensor, ov_aux_tensor   
 
-          type(talsh_tens_t), intent(inout)    :: G1_tensor
 
-          type(talsh_tens_t), intent(inout) :: tAd,tBs
 
           vv_dims = nvir
           oo_dims = nocc
