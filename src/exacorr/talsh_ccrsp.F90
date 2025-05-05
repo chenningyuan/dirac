@@ -369,6 +369,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
             if (CC_CC) then
 !
 !               solve for +w
+                call print_lr_setup("R","B",Interm_t_tensors_B(j),j,omega(B))
                 call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                         Interm_t_tensors_B(j), &
                                         omega(B), &
@@ -378,6 +379,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                                         l1_tensor,l2_tensor, &
                                         Tprop_tensor_B, &
                                         Bvec_tensor_B)
+                call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega(B))
                 call solve_cc_lr_left(exa_input, interm_t, int_t, &
                                       Interm_t_tensors_B(j), &
                                       omega(B), Bvec_tensor_B, &
@@ -385,6 +387,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
 !                    
 !               solve for -w
                 if (omega(B).ne.ZERO) then 
+                    call print_lr_setup("R","B",Interm_t_tensors_B(j),j,omega_min(B))
                     call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                             Interm_t_tensors_B(j), &
                                             omega_min(B), &
@@ -394,6 +397,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                                             l1_tensor,l2_tensor, &
                                             Tprop_tensor_B_min_w, &
                                             Bvec_tensor_B_min_w)
+                    call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega_min(B))
                     call solve_cc_lr_left(exa_input, interm_t, int_t, &
                                           Interm_t_tensors_B(j), &
                                           omega_min(B), &
@@ -402,6 +406,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                 end if 
 
             else ! using EOM approximation to LHS equation, consistent with QR
+                call print_lr_setup("R","B",Interm_t_tensors_B(j),j,omega(B))
                 call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                         Interm_t_tensors_B(j), &
                                         omega(B), &
@@ -410,6 +415,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                                    Interm_t_tensors_B(j), &
                                    l1_tensor,l2_tensor, &
                                    Bvec_tensor_B)
+                call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega(B))
                 call solve_eom_lr_left(exa_input, interm_t, int_t, &
                                        Interm_t_tensors_B(j), &
                                        omega(B), &
@@ -417,6 +423,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                                        Tprop_bar_tensor_B)
 !               solve for -w
                 if (omega(B).ne.ZERO) then 
+                    call print_lr_setup("R","B",Interm_t_tensors_B(j),j,omega_min(B))
                     call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                             Interm_t_tensors_B(j), &
                                             omega_min(B), &
@@ -425,6 +432,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                                        Interm_t_tensors_B(j), &
                                        l1_tensor,l2_tensor, &
                                        Bvec_tensor_B_min_w)
+                    call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega_min(B))
                     call solve_eom_lr_left(exa_input, interm_t, int_t, &
                                            Interm_t_tensors_B(j), &
                                            omega_min(B), &
