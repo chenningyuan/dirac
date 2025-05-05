@@ -476,7 +476,7 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
         integer(C_INT)           :: one_dims(1)
         type(C_PTR)              :: body_p
         complex(8), pointer      :: r_tens(:)
-        complex                  :: quarsp
+        complex                  :: quarsp,quarsp1,quarsp2
         type(talsh_tens_t)       :: MAB_S_tensor
         type(talsh_tens_t)       :: MAB_D_tensor
 
@@ -508,6 +508,9 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
             ierr=talsh_tensor_construct(MAB_D_tensor,C8,oovv_dims,init_val=ZERO)
 
             quarsp = 0
+            quarsp1= 0
+            quarsp2= 0
+
         end if
 
         ! add (1/2) * (tyFx)^m_e  to (MAB_tensor)^m_e
@@ -565,10 +568,11 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
             ierr=talsh_tensor_add("Mab(m,e)+=Gtytx(m,e)",MAB_S_tensor,GtXtY_tensor%t1,scale=ONE_SIXTH)
             ierr=talsh_tensor_add("Mab(m,n,e,f)+=Gtytx(m,n,e,f)",MAB_D_tensor,GtXtY_tensor%t2,scale=ONE_SIXTH)
             ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,MAB_S_tensor,tz%t1)
+            quarsp1 = r_tens(1)
             ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
-!
-            quarsp = r_tens(1)
-            print *,'DEBUG GtXtYtZ contribution to QR',quarsp
+            quarsp = r_tens(1) 
+            quarsp2 = quarsp - quarsp1
+            print *,'DEBUG GtXtYtZ contribution to QR',quarsp,quarsp1,quarsp2
         end if
 
         ! add (1/2) *(lx Bty)^m_e to (MAB_tensor)^m_e
