@@ -20,7 +20,7 @@ module exacorr_tensor_interface
         ! jan: this is defined in exatensor_placeholders
         
         integer, parameter, public :: ETI_SUCCESS = 0
-#if (defined(DEFAULT_EXECUTOR_TENSOR_T)) 
+#if (defined(DEFAULT_EXECUTOR_TENSOR_T) && !defined(ETI_DEFAULT_EXECUTOR)) 
         integer, parameter, public :: ETI_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_TENSOR_T
 #else
         integer, parameter, public :: ETI_DEFAULT_EXECUTOR = 2
@@ -39,7 +39,7 @@ module exacorr_tensor_interface
          ! we follow TAPP_datatype enumeration
          integer(kind(TAPP_datatype)) :: datatype
 
-         integer, public:: which_executor = DEFAULT_EXECUTOR_TENSOR_T !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
+         integer, public:: which_executor = ETI_DEFAULT_EXECUTOR !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
          
          ! contains
          !   procedure :: copy_tensor_t
@@ -688,8 +688,7 @@ module exacorr_tensor_interface
           integer(INTD)       :: ierr, get_extents
 
           if ( is_empty_tensor_t(tensor) ) then
-            write(*,'("  Error. Attempting to access an empty tensor in get_extents.")') 
-            stop 98
+            call quit("  Error. Attempting to access an empty tensor in get_extents.")
           endif
 
           ierr =  get_nmodes(tensor, nmodes)
@@ -697,8 +696,7 @@ module exacorr_tensor_interface
             allocate(extents(nmodes))
           endif
           if (.not. size(extents) == nmodes) then 
-            write(*,'("  Error. An array of wrong size passed to get_extents.")') 
-            stop 58
+            call quit("  Error. An array of wrong size passed to get_extents.")
           endif
 
           select case(tensor%which_executor)
@@ -719,8 +717,8 @@ module exacorr_tensor_interface
           end select
           
           if ( .not. size(extents) == 0 .and. is_scalar_tensor_t(tensor)) then
-            write(*,'("  Error. Failed sanity check in get_extents.")') 
-            stop 98
+            call quit("  Error. Failed sanity check in get_extents.")
+            ! stop 98
           endif
 
           get_extents = ierr

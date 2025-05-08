@@ -9,12 +9,12 @@ module exacorr_utils
   public print_date
   public get_free_fileunit
   public print_exacorr_logo
+  public print_exainput
   public print_iteration
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
   public write_tensor
 #endif
   public quicksort
-  public print_exainput
   public print_exaoutput
   public shift_orbital_energy
   public print_orbital_energy
@@ -178,15 +178,15 @@ module exacorr_utils
           write(*,*) "- - Field strengths :                  ",exa_input%ff(i,1:exa_input%nff(2))
         end do
       end if
-      write(*,*) "" 
+      write(*,*) ""
       write(*,'(A,I5)') " - Number of atomic orbitals :      ", nao
       write(*,'(A,I5)') " - Number of occupied spinors :     ", exa_input%nocc
       write(*,'(A,I5)') " - Number of virtual spinors :      ", exa_input%nvir
       write(*,*) ""
-      if (exa_input%talsh) then 
+      if (exa_input%talsh) then
         write(*,'(A)') " Using the single-node TALSH library "
         write(*,'(A,I5,A)') " - TALSH buffer size:               ",exa_input%talsh_buff," GB"
-      else 
+      else
         write(*,'(A)') " Using the multi-node ExaTensor library (MPI) "
         write(*,'(A,I5)') " - ExaTensor block size :           ", exa_input%exa_blocksize
         write(*,'(A)') "!! ATTENTION !! Properties require TALSH, density matrix must be smaller than: "
@@ -196,7 +196,7 @@ module exacorr_utils
       write(*,'(A,I5)') " - Print Level :                    ", exa_input%print_level
       write(*,*) ""
       write(*,'(A)') " - Estimating memory requirements"
-      write(*,'(A,I9,A)') " -- nao  ( scheme 1-3  ) : ",3*16*((nao*nao)/1000)**2/1000," GB" 
+      write(*,'(A,I9,A)') " -- nao  ( scheme 1-3  ) : ",3*16*((nao*nao)/1000)**2/1000," GB"
       write(*,'(A,I9,A)') " -- nvir ( scheme 4/42 ) : ",3*16*((exa_input%nvir*exa_input%nvir)/1000)**2/1000," GB"
       write(*,'(A)') "-----------------------------------------------"
       write(*,*) ""

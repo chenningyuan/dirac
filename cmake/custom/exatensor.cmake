@@ -28,6 +28,7 @@ if(ENABLE_EXATENSOR)
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
    set (EXATENSOR_GIT_REPO_LOCATION "https://github.com/RelMBdev/ExaTENSOR.git" CACHE STRING "ExaTENSOR Git repository location")
    set (EXATENSOR_GIT_HASH bc0d8ef36703e0526fe96fe0a0c4c2e69ad02cd9 CACHE STRING "ExaTENSOR Git repository hash in use")
+# set (EXATENSOR_GIT_HASH 1a4ae3e4db8ae6843e27899e72cbc2de046498cc CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check if standard tensor interface TAPP present 
@@ -42,7 +43,7 @@ if(ENABLE_EXATENSOR)
      set(EXTERNAL_LIBS ${EXTERNAL_LIBS} $ENV{TAPP_ROOT}/lib/libtapp.so)
      add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=$ENV{TENSOR_T_EXECUTOR})
    else()
-     add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=1)
+     add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=2)
    endif()
 
    # check build type

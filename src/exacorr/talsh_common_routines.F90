@@ -28,7 +28,6 @@ module eti_common_routines
     public eti_init_R8
     public eti_init_C8
     public tensor_norm2
-    public tensor_norm2_
     public laplace_mult
     public laplace_testing
     public print_tensor_elements
@@ -1030,62 +1029,6 @@ module eti_common_routines
 
          type(tensor_t), intent(inout):: a_tensor
 
-         integer(INTD) :: a_dims(1:10)
-         integer(INTD) :: ierr, a_rank
-
-!        scalars (need to be defined as tensor types)
-         type(tensor_t)  :: result_tensor
-         integer(C_INT)      :: result_dims(1)
-         complex(8), pointer :: result_tens(:)
-         type(C_PTR):: body_p
-         real(8) :: a_norm2
-
-!        Initialize scalars that are to be used as tensors in contractions
-         result_dims(1) = 1
-         ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=direct_data_pointer(result_tensor,body_p)
-         call c_f_pointer(body_p,result_tens,result_dims)
-
-         ierr = get_nmodes(a_tensor,a_rank)
-         ierr = get_extents_static(a_tensor,a_dims)
-         select case (a_rank)
-         case (0)
-            ierr=t_einsum("R()+=A+()*A()",result_tensor,a_tensor,a_tensor)
-         case (1)
-            ierr=t_einsum("R()+=A+(p)*A(p)",result_tensor,a_tensor,a_tensor)
-         case (2)
-            ierr=t_einsum("R()+=A+(p,q)*A(p,q)",result_tensor,a_tensor,a_tensor)
-         case (3)
-            ierr=t_einsum("R()+=A+(p,q,r)*A(p,q,r)",result_tensor,a_tensor,a_tensor)
-         case (4)
-            ierr=t_einsum("R()+=A+(p,q,r,s)*A(p,q,r,s)",result_tensor,a_tensor,a_tensor)
-         case (5)
-            ierr=t_einsum("R()+=A+(p,q,r,s,t)*A(p,q,r,s,t)",result_tensor,a_tensor,a_tensor)
-         case (6)
-            ierr=t_einsum("R()+=A+(p,q,r,s,t,u)*A(p,q,r,s,t,u)",result_tensor,a_tensor,a_tensor)
-         case (7)
-            ierr=t_einsum("R()+=A+(p,q,r,s,t,u,v)*A(p,q,r,s,t,u,v)",result_tensor,a_tensor,a_tensor)
-         case (8)
-            ierr=t_einsum("R()+=A+(p,q,r,s,t,u,v,x)*A(p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
-         case (9)
-            ierr=t_einsum("R()+=A+(a,p,q,r,s,t,u,v,x)*A(a,p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
-         case (10)
-            ierr=t_einsum("R()+=A+(a,b,p,q,r,s,t,u,v,x)*A(a,b,p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
-         case default
-            call quit ('wrong dimension in tensor_norm2')
-         end select
-
-         a_norm2 = real(result_tens(1),8)
-         ierr=destroy_tensor_t(result_tensor)
-
-     end function tensor_norm2
-
-      function tensor_norm2_(a_tensor) result(a_norm2)
-
-         !compute norm2(complete contraction of a tensor with itself) for debugging purposed
-
-         type(tensor_t), intent(inout):: a_tensor
-
          integer(INTD), allocatable :: a_dims(:)
          integer(INTD) :: ierr, a_rank
 
@@ -1099,8 +1042,6 @@ module eti_common_routines
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims(1) = 1
          ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO, executor=executor)
-         ierr=direct_data_pointer(result_tensor,body_p)
-         call c_f_pointer(body_p,result_tens,result_dims)
 
          ierr = get_nmodes(a_tensor,a_rank)
          ierr = get_extents(a_tensor,a_dims)
@@ -1131,10 +1072,13 @@ module eti_common_routines
             call quit ('wrong dimension in tensor_norm2')
          end select
 
+         ierr=direct_data_pointer(result_tensor,body_p)
+         call c_f_pointer(body_p,result_tens,result_dims)
          a_norm2 = real(result_tens(1),8)
          ierr=destroy_tensor_t(result_tensor)
 
-     end function tensor_norm2_
+     end function tensor_norm2
+
 
      subroutine laplace_mult (tensor,factor,orb1,orb2,orb3,orb4,orb5,orb6)
       
