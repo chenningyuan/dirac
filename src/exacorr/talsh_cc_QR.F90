@@ -272,23 +272,13 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 !                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
         !
         ! contract M^{XY}*t^Z (=Tprop_tensors(3)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MXYtZ()+=MXY(m,e)*tZ(e,m)",result_tensor,MAB_1_tensor,Tprop_tensors(3)%t1)
-!        print *,'norm MAB_1_tensor',tensor_norm2(MAB_1_tensor)
-!        print *,'norm Tprop_tensors(3)%t1',tensor_norm2(Tprop_tensors(3)%t1)
+        ierr=talsh_tensor_contract("MXYtZ()+=MXY(m,e)*tZ(e,m)",result_tensor,&
+                                   MAB_1_tensor,Tprop_tensors(3)%t1)
         if(ierr.ne.0) write(*,*) "ierr MXYtZ 1 =",ierr
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after XYtZ, t1',quarsp
-!
-        ierr=talsh_tensor_contract("MXYtZ()+=MXY(m,n,e,f)*tZ(e,f,m,n)",result_tensor,MAB_2_tensor,Tprop_tensors(3)%t2,scale=ONE_QUARTER_C)
-!        print *,'norm MAB_2_tensor',tensor_norm2(MAB_2_tensor)
-!        print *,'norm Tprop_tensors(3)%t2',tensor_norm2(Tprop_tensors(3)%t2)
+        ierr=talsh_tensor_contract("MXYtZ()+=MXY(m,n,e,f)*tZ(e,f,m,n)",result_tensor,&
+                                   MAB_2_tensor,Tprop_tensors(3)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MXYtZ 2 =",ierr
 
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after XYtZ, t2',quarsp
-!
         ! initialize MAB to accumulate M^{YX} 
         ierr = talsh_tensor_init(MAB_1_tensor, ZERO)
         ierr = talsh_tensor_init(MAB_2_tensor, ZERO)
@@ -305,19 +295,13 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 !                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MYXtZ()+=MYX(m,e)*tZ(e,m)",result_tensor,MAB_1_tensor,Tprop_tensors(3)%t1)
+        ierr=talsh_tensor_contract("MYXtZ()+=MYX(m,e)*tZ(e,m)",result_tensor,&
+                                   MAB_1_tensor,Tprop_tensors(3)%t1)
         if(ierr.ne.0) write(*,*) "ierr MYXtZ 1 =",ierr
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after YXtZ, t1',quarsp
-!
-        ierr=talsh_tensor_contract("MYXtZ()+=MYX(m,n,e,f)*tZ(e,f,m,n)",result_tensor,MAB_2_tensor,Tprop_tensors(3)%t2,scale=ONE_QUARTER_C)
+        ierr=talsh_tensor_contract("MYXtZ()+=MYX(m,n,e,f)*tZ(e,f,m,n)",result_tensor,&
+                                   MAB_2_tensor,Tprop_tensors(3)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MYXtZ 2 =",ierr
 
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after YXtZ, t2',quarsp
-!
         ! {YZ,ZY}X combinations
 
         ! initialize MAB to accumulate M^{YZ} 
@@ -336,19 +320,13 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 !                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
         !
         ! contract M^{YZ}*t^X (=Tprop_tensors(1)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MYZtX()+=MYZ(m,e)*tX(e,m)",result_tensor,MAB_1_tensor,Tprop_tensors(1)%t1)
+        ierr=talsh_tensor_contract("MYZtX()+=MYZ(m,e)*tX(e,m)",result_tensor,&
+                                   MAB_1_tensor,Tprop_tensors(1)%t1)
         if(ierr.ne.0) write(*,*) "ierr MYZtX 1 =",ierr
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after YZtX, t1',quarsp
-!
-        ierr=talsh_tensor_contract("MYZtX()+=MYZ(m,n,e,f)*tX(e,f,m,n)",result_tensor,MAB_2_tensor,Tprop_tensors(1)%t2,scale=ONE_QUARTER_C)
+        ierr=talsh_tensor_contract("MYZtX()+=MYZ(m,n,e,f)*tX(e,f,m,n)",result_tensor,&
+                                   MAB_2_tensor,Tprop_tensors(1)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MYZtX 2 =",ierr
 
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after YZtX, t2',quarsp
-!
         ! initialize MAB to accumulate M^{ZY} 
         ierr = talsh_tensor_init(MAB_1_tensor, ZERO)
         ierr = talsh_tensor_init(MAB_2_tensor, ZERO)
@@ -365,17 +343,11 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 !                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MZYtX()+=MZY(m,e)*tX(e,m)",result_tensor,MAB_1_tensor,Tprop_tensors(1)%t1)
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after ZYtX, t1',quarsp
-!
+        ierr=talsh_tensor_contract("MZYtX()+=MZY(m,e)*tX(e,m)",result_tensor,&
+                                   MAB_1_tensor,Tprop_tensors(1)%t1)
         if(ierr.ne.0) write(*,*) "ierr MZYtX 1 =",ierr
-        ierr=talsh_tensor_contract("MZYtX()+=MZY(m,n,e,f)*tX(e,f,m,n)",result_tensor,MAB_2_tensor,Tprop_tensors(1)%t2,scale=ONE_QUARTER_C)
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after ZYtX, t2',quarsp
-!
+        ierr=talsh_tensor_contract("MZYtX()+=MZY(m,n,e,f)*tX(e,f,m,n)",result_tensor,&
+                                   MAB_2_tensor,Tprop_tensors(1)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MZYtX 2 =",ierr
 
         ! {ZX,XZ}Y combinations
@@ -396,17 +368,11 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 !                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
         !
         ! contract M^{YZ}*t^X (=Tprop_tensors(1)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MZXtY()+=MZX(m,e)*tY(e,m)",result_tensor,MAB_1_tensor,Tprop_tensors(2)%t1)
+        ierr=talsh_tensor_contract("MZXtY()+=MZX(m,e)*tY(e,m)",result_tensor,&
+                                   MAB_1_tensor,Tprop_tensors(2)%t1)
         if(ierr.ne.0) write(*,*) "ierr MZXtY 1 =",ierr
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after ZXtY, t1',quarsp
-!
-        ierr=talsh_tensor_contract("MZXtY()+=MZX(m,n,e,f)*tY(e,f,m,n)",result_tensor,MAB_2_tensor,Tprop_tensors(2)%t2,scale=ONE_QUARTER_C)
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after ZXtY, t2',quarsp
-!
+        ierr=talsh_tensor_contract("MZXtY()+=MZX(m,n,e,f)*tY(e,f,m,n)",result_tensor,&
+                                   MAB_2_tensor,Tprop_tensors(2)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MZXtY 2 =",ierr
 
         ! initialize MAB to accumulate M^{XZ} 
@@ -425,19 +391,12 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 !                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",result_tensor,MAB_1_tensor,Tprop_tensors(2)%t1)
+        ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",result_tensor,&
+                                   MAB_1_tensor,Tprop_tensors(2)%t1)
         if(ierr.ne.0) write(*,*) "ierr MXZtY 1 =",ierr
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after XZtY, t1',quarsp
-!
-        ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",result_tensor,MAB_2_tensor,Tprop_tensors(2)%t2,scale=ONE_QUARTER_C)
+        ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",result_tensor,&
+                                   MAB_2_tensor,Tprop_tensors(2)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MXZtY 2 =",ierr
-!
-!        quarsp = result_tens(1) - quarsp
-!        print *,'DEBUG quarsp after XZtY, t1',quarsp
-!
-
         ! pass on the result of the above contractions to quarsp
         quarsp = result_tens(1)
         print *,'DEBUG final ',quarsp
@@ -537,30 +496,33 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
 ! debug, to calculate the individial contributions to the response function for each combination XYZ
         if (present(tz)) then
             ierr=talsh_tensor_init(r_tensor)
-            ierr=talsh_tensor_add("Mab(m,e)+=tYFX(m,e)",MAB_S_tensor,tYFX_tensor%t1,scale=ONE_HALF)
-            ierr=talsh_tensor_add("Mab(m,n,e,f)+=tYFX(m,n,e,f)",MAB_D_tensor,tYFX_tensor%t2,scale=ONE_HALF)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,MAB_S_tensor,tz%t1)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
-!
-            quarsp = r_tens(1)
-            print *,'DEBUG tYFXtz contribution to QR',quarsp
+            ierr=talsh_tensor_add("Mab(m,e)+=tYFX(m,e)",MAB_S_tensor,&
+                                  tYFX_tensor%t1,scale=ONE_HALF)
+            ierr=talsh_tensor_add("Mab(m,n,e,f)+=tYFX(m,n,e,f)",MAB_D_tensor, &
+                                  tYFX_tensor%t2,scale=ONE_HALF)
+            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,&
+                                      MAB_S_tensor,tz%t1)
+            quarsp1 = r_tens(1)
+            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor, &
+                                      MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
+            quarsp = r_tens(1) 
+            quarsp2 = quarsp - quarsp1
+            write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+                  'DEBUG tYFXtz     contribution to QR: ',quarsp,'1:',quarsp1,'2:',quarsp2
         end if
 
 
         ! add (1/6) * (Gtxty)^m_e to (MAB_tensor)^m_e
         ! add (1/6) * (Gtxty)^{mn}_{ef} to (MAB_tensor)^{mn}_{ef}
 
-        call get_Gtt(GtXtY_tensor,int_t,interm_t%t1,tx%t1,tx%t2,ty%t1,ty%t2,l1_tensor,l2_tensor,interm_t%nocc, interm_t%nvir)
+        call get_Gtt(GtXtY_tensor,int_t,interm_t%t1,tx%t1,tx%t2,ty%t1,ty%t2, &
+                     l1_tensor,l2_tensor,interm_t%nocc, interm_t%nvir)
 
 ! accumulate intermediate into results with correct scaling due to permutations
 
         ierr=talsh_tensor_add("Mab(m,e)+=Gtytx(m,e)",MAB_1_tensor,GtXtY_tensor%t1,scale=ONE_SIXTH)
-!        print *,'norm MAB_1_tensor',tensor_norm2(MAB_1_tensor)
-!        print *,'norm Gtytx_tensor%t1',tensor_norm2(GtXtY_tensor%t1)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,e) 2 =",ierr
         ierr=talsh_tensor_add("Mab(m,n,e,f)+=Gtytx(m,n,e,f)",MAB_2_tensor,GtXtY_tensor%t2,scale=ONE_SIXTH)
-!        print *,'norm MAB_2_tensor',tensor_norm2(MAB_2_tensor)
-!        print *,'norm Gtytx_tensor%t2',tensor_norm2(GtXtY_tensor%t2)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,n,e,f) 2 =",ierr
 
 ! debug, to calculate the individial contributions to the response function for each combination XYZ
@@ -568,14 +530,18 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
             ierr=talsh_tensor_init(r_tensor)
             ierr=talsh_tensor_init(MAB_S_tensor)
             ierr=talsh_tensor_init(MAB_D_tensor)
-            ierr=talsh_tensor_add("Mab(m,e)+=Gtytx(m,e)",MAB_S_tensor,GtXtY_tensor%t1,scale=ONE_SIXTH)
-            ierr=talsh_tensor_add("Mab(m,n,e,f)+=Gtytx(m,n,e,f)",MAB_D_tensor,GtXtY_tensor%t2,scale=ONE_SIXTH)
+            ierr=talsh_tensor_add("Mab(m,e)+=Gtytx(m,e)",MAB_S_tensor, &
+                                  GtXtY_tensor%t1,scale=ONE_SIXTH)
+            ierr=talsh_tensor_add("Mab(m,n,e,f)+=Gtytx(m,n,e,f)",MAB_D_tensor,&
+                                  GtXtY_tensor%t2,scale=ONE_SIXTH)
             ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,MAB_S_tensor,tz%t1)
             quarsp1 = r_tens(1)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
+            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,&
+                                       MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
             quarsp = r_tens(1) 
             quarsp2 = quarsp - quarsp1
-            print *,'DEBUG GtXtYtZ contribution to QR',quarsp,quarsp1,quarsp2
+            write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+                  'DEBUG GtXtYtZ    contribution to QR: ',quarsp,'1:',quarsp1,'2:',quarsp2
         end if
 
         ! add (1/2) *(lx Bty)^m_e to (MAB_tensor)^m_e
@@ -588,46 +554,45 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
 
 ! accumulate intermediate into results with correct scaling due to permutations
 
-        ierr=talsh_tensor_add("Mab(m,e)+=tbarxBty(m,e)",MAB_1_tensor,tbarXBtY_tensor%t1,scale=ONE_HALF)
-!        print *,'norm MAB_1_tensor',tensor_norm2(MAB_1_tensor)
-!        print *,'norm tbarxBty_tensor%t1',tensor_norm2(tbarxBty_tensor%t1)
+        ierr=talsh_tensor_add("Mab(m,e)+=tbarxBty(m,e)",MAB_1_tensor, &
+                              tbarXBtY_tensor%t1,scale=ONE_HALF)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,e) 3 =",ierr
-        ierr=talsh_tensor_add("Mab(m,n,e,f)+=tbarxBty(m,n,e,f)",MAB_2_tensor,tbarXBtY_tensor%t2,scale=ONE_HALF)
-!        print *,'norm MAB_2_tensor',tensor_norm2(MAB_2_tensor)
-!        print *,'norm tbarxBty_tensor%t2',tensor_norm2(tbarxBty_tensor%t2)
+        ierr=talsh_tensor_add("Mab(m,n,e,f)+=tbarxBty(m,n,e,f)",MAB_2_tensor,&
+                              tbarXBtY_tensor%t2,scale=ONE_HALF)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,n,e,f) 3 =",ierr
-
 
 ! debug, to calculate the individial contributions to the response function for each combination XYZ
         if (present(tz)) then
             ierr=talsh_tensor_init(r_tensor)
             ierr=talsh_tensor_init(MAB_S_tensor)
             ierr=talsh_tensor_init(MAB_D_tensor)
-            ierr=talsh_tensor_add("Mab(m,e)+=tbarxBty(m,e)",MAB_S_tensor,tbarXBtY_tensor%t1,scale=ONE_HALF)
-            ierr=talsh_tensor_add("Mab(m,n,e,f)+=tbarxBty(m,n,e,f)",MAB_D_tensor,tbarXBtY_tensor%t2,scale=ONE_HALF)
+            ierr=talsh_tensor_add("Mab(m,e)+=tbarxBty(m,e)",MAB_S_tensor,&
+                                  tbarXBtY_tensor%t1,scale=ONE_HALF)
+            ierr=talsh_tensor_add("Mab(m,n,e,f)+=tbarxBty(m,n,e,f)",MAB_D_tensor,&
+                                  tbarXBtY_tensor%t2,scale=ONE_HALF)
             ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,MAB_S_tensor,tz%t1)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
-!
-            quarsp = r_tens(1)
-            print *,'DEBUG tbarXBtYtZ contribution to QR',quarsp
+            quarsp1 = r_tens(1)
+            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,&
+                                  MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
+            quarsp = r_tens(1) 
+            quarsp2 = quarsp - quarsp1
+            write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+                  'DEBUG tbarXBtYtZ contribution to QR: ',quarsp,'1:',quarsp1,'2:',quarsp2
         end if
 
 
         ! add        (lt Ay)^m_e  to (MAB_tensor)^m_e
         ! add        (lt Ay)^m_e  to (MAB_tensor)^{mn}_{ef}
 
-        call get_lXAY(tbarXAY_tensor,Y_operator%prop_bar_oo,Y_operator%prop_bar_vv,Y_operator%prop_bar_ov,&
-                & interm_t%t1,interm_t%t2, tbar_x%t1,tbar_x%t2,interm_t%nocc, interm_t%nvir)
+        call get_lXAY(tbarXAY_tensor,Y_operator%prop_bar_oo,Y_operator%prop_bar_vv,&
+                      Y_operator%prop_bar_ov, interm_t%t1,interm_t%t2, &
+                      tbar_x%t1,tbar_x%t2,interm_t%nocc, interm_t%nvir)
 
 ! accumulate intermediate into results with correct scaling due to permutations
 
         ierr=talsh_tensor_add("Mab(m,e)+=tbarxAY(m,e)",MAB_1_tensor,tbarXAY_tensor%t1)
-!        print *,'norm MAB_1_tensor',tensor_norm2(MAB_1_tensor)
-!        print *,'norm tbarXAY_tensor%t1',tensor_norm2(tbarXAY_tensor%t1)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,e) 4 =",ierr
         ierr=talsh_tensor_add("Mab(m,n,e,f)+=tbarxAY(m,n,e,f)",MAB_2_tensor,tbarXAY_tensor%t2)
-!        print *,'norm MAB_2_tensor',tensor_norm2(MAB_2_tensor)
-!        print *,'norm tbarXAY_tensor%t2',tensor_norm2(tbarXAY_tensor%t2)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,n,e,f) 4 =",ierr
 
 ! debug, to calculate the individial contributions to the response function for each combination XYZ
@@ -635,19 +600,24 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
             ierr=talsh_tensor_init(r_tensor)
             ierr=talsh_tensor_init(MAB_S_tensor)
             ierr=talsh_tensor_init(MAB_D_tensor)
-            ierr=talsh_tensor_add("Mab(m,e)+=tbarxAY(m,e)",MAB_S_tensor,tbarXAY_tensor%t1)
-            ierr=talsh_tensor_add("Mab(m,n,e,f)+=tbarxAY(m,n,e,f)",MAB_D_tensor,tbarXAY_tensor%t2)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,MAB_S_tensor,tz%t1)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
-!
-            quarsp = r_tens(1)
-            print *,'DEBUG tbarXAYtZ contribution to QR',quarsp
+            ierr=talsh_tensor_add("Mab(m,e)+=tbarxAY(m,e)",MAB_S_tensor, &
+                                  tbarXAY_tensor%t1)
+            ierr=talsh_tensor_add("Mab(m,n,e,f)+=tbarxAY(m,n,e,f)",MAB_D_tensor, &
+                                  tbarXAY_tensor%t2)
+            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor, &
+                                  MAB_S_tensor,tz%t1)
+            quarsp1 = r_tens(1)
+            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor, &
+                                  MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
+            quarsp = r_tens(1) 
+            quarsp2 = quarsp - quarsp1
+            write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8,/)') &
+                  'DEBUG tbarXAYtZ  contribution to QR: ',quarsp,'1:',quarsp1,'2:',quarsp2
 
             ierr=talsh_tensor_destruct(r_tensor)
             ierr=talsh_tensor_destruct(MAB_S_tensor)
             ierr=talsh_tensor_destruct(MAB_D_tensor)
         end if
-
 
 ! cleanup of local variables
 

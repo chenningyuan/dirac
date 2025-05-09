@@ -41,9 +41,9 @@ module talsh_eom_rspeq_solver
          print *, "Solving "//rspeq_side//"HS linear response equation"
 !        when forming e.g 2-photon transition moments, do not print information on indivudial operators 
          if (operator_index.gt.0) then
-             print *, "   Operator "//operator_label//" (",operator_index, &
+                print *, "   Operator "//operator_label//" (",operator_index, &
              &      ") : ",operator%property_label
-         endif
+         end if
          print *, "   Frequency  : ",freq
          print *, ""
       end subroutine
@@ -92,9 +92,11 @@ module talsh_eom_rspeq_solver
 
          call print_lr_setup("L",prop_label,Interm_t_tensor,prop_index,omega_lhs_local)
          if (CC_CC) then
-            call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega_lhs_local, Bvec_tensor, Tprop_bar_tensor)
+!            call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega_lhs_local, Bvec_tensor, Tprop_bar_tensor)
+            call solve_cc_lr_left(exa_input, interm_t, int_t,  omega_lhs_local, Bvec_tensor, Tprop_bar_tensor)
          else
-            call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega_lhs_local, Bvec_tensor, Tprop_bar_tensor)
+!            call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega_lhs_local, Bvec_tensor, Tprop_bar_tensor)
+            call solve_eom_lr_left(exa_input, interm_t, int_t, omega_lhs_local, Bvec_tensor, Tprop_bar_tensor)
          end if
 
       end subroutine solve_1st_order_rspeq_left_right_driver
@@ -170,7 +172,8 @@ module talsh_eom_rspeq_solver
 
 !----------------------------------------------------------------------------------------------------------------
       
-      subroutine solve_eom_lr_left(exa_input, interm_t, int_t, interm_t_prop, omega, bvec_tensor, tprop_bar_tensor)
+!      subroutine solve_eom_lr_left(exa_input, interm_t, int_t, interm_t_prop, omega, bvec_tensor, tprop_bar_tensor)
+      subroutine solve_eom_lr_left(exa_input, interm_t, int_t, omega, bvec_tensor, tprop_bar_tensor)
             use talsh_sigma_eomccsd
             use mfsolver_dirac_input
 
@@ -178,7 +181,7 @@ module talsh_eom_rspeq_solver
             type(exacc_input), intent(in) :: exa_input
             type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
             type(talsh_intg_tens_t), intent(inout) :: int_t
-            type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop
+!            type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop
             complex(kind=8),INTENT(IN)              :: omega
       
 
@@ -240,7 +243,8 @@ module talsh_eom_rspeq_solver
 
 !---------------------------------------------------------------------------------------------------------------------
       
-      subroutine solve_cc_lr_left(exa_input, interm_t, int_t, interm_t_prop, omega, bvec_tensor, tprop_bar_tensor)
+!      subroutine solve_cc_lr_left(exa_input, interm_t, int_t, interm_t_prop, omega, bvec_tensor, tprop_bar_tensor)
+      subroutine solve_cc_lr_left(exa_input, interm_t, int_t,  omega, bvec_tensor, tprop_bar_tensor)
             use talsh_sigma_eomccsd
             use mfsolver_dirac_input
 
@@ -255,7 +259,7 @@ module talsh_eom_rspeq_solver
                   type(exacc_input), intent(in) :: exa_input
                   type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
                   type(talsh_intg_tens_t), intent(inout) :: int_t
-                  type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop
+!                  type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop
                   complex(kind=8),INTENT(IN)              :: omega
       
 

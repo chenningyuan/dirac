@@ -11,6 +11,8 @@ module talsh_QR_TPA
     use talsh_eom_rspeq_solver
     use talsh_ccrsp_common
     use talsh_eom
+    use talsh_eom_LR, only: get_tF
+    use talsh_cc_QR, only: get_lXAY, get_Gtt, get_tYFX
 
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -87,6 +89,9 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
     type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
     type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:)
     type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_C(:), Interm_t_tensors_D(:)
+
+    type(talsh_comm_tens_t)       :: FR_f_tensor
+    type(talsh_comm_tens_t)       :: barM_f_tensor
 
     integer                       :: N_prop_A, N_prop_B, N_prop_C, N_prop_D
     integer                       :: N_oper_tpa
@@ -207,19 +212,36 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
     if (CC_CC) then
 !         solve for auxiliary excited state multipliers targeting omega_fin (w_f)
             call print_date('Solving auxiliary excited state multipliers for w_f')
-!            call get_barM_f(exa_input,                &
-!                            int_t,                     &
-!                            interm_t,                  &
-!                            eom_results_t,             &
-!                            f_state,                   &
-!                            Interm_t_tensors_A(n),     &
-!                            l1_tensor,l2_tensor,       &
-!                            Bvec_tensors(A),           &
-!                            omega(B),                  &
-!                            Tprop_tensors(A),          &
-!                            omega_min(B),              &
-!                                            Tprop_bar_tensors_min_w(A))
+            !FR_f_tensor will be used as RHS for linear system to get barM_f
+            ierr=talsh_tensor_construct(FR_f_tensor%t1,C8,&
+                       (/exa_input%nocc,exa_input%nvir/), &
+                       init_val=ZERO)
+            ierr=talsh_tensor_construct(FR_f_tensor%t2,C8,&
+                       (/exa_input%nocc,exa_input%nocc,exa_input%nvir,exa_input%nvir/), &
+                       init_val=ZERO)
+            call get_tF(FR_f_tensor%t1, &
+                        FR_f_tensor%t2, &
+                        eom_results_t%value_vectors_t%rhs1(f_state), &
+                        eom_results_t%value_vectors_t%rhs2(f_state), &
+                        l1_tensor, &
+                        l2_tensor, &
+                        interm_t,  &
+                        int_t,     &
+                        exa_input%nocc, &
+                        exa_input%nvir)
+            print *, 'DEBUG, norm FR_f',tensor_norm2(FR_f_tensor%t1),tensor_norm2(FR_f_tensor%t2)
+
+            call print_lr_setup("L"," ",Interm_t_tensors_A(1),-1,omega_fin)
+!            call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, &
+!                                  omega_fin, FR_f_tensor, barM_f_tensor)
+            call solve_cc_lr_left(exa_input, interm_t, int_t, &
+                                  omega_fin, FR_f_tensor, barM_f_tensor)
+
             call print_date('Done with auxiliary excited state multipliers for w_f')
+            print *, 'DEBUG, norm barM_f',tensor_norm2(barM_f_tensor%t1),tensor_norm2(barM_f_tensor%t2)
+
+            ierr=talsh_tensor_destruct(FR_f_tensor%t1)
+            ierr=talsh_tensor_destruct(FR_f_tensor%t2)
         end if
 
 ! now go to loop over frequencies 
@@ -240,20 +262,47 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
         print *, "  -w' (= -w_B) : ", omega_min(B)  ! -w' - i\gamma
         print *, ' '
 
+! note that in the solution of linear systems below we solve for perturbed
+! amplitudes and multipliers (for pertubation P) in the order:
+! (1) t^P(w'), tbar^P(-w') (for either QR-CC and QR-EOMCC)
+! (2) t^P(-w'), tbar^P(w') (for QR-CC only)
+! instead of
+! (1') t^P(w'), tbar^P(w') 
+! (2') t^P(-w'), tbar^P(-w') 
+! due to the fact that for QR-EOMCC 2-photon transition moments are built using either 
+! perturbed amplitudes or petruberd multipliers, whereas for QR-CC left transition moments
+! both amplitudes and multipliers for each frequency and perturbation are needed. 
+
         do n=1, N_prop_A
+            ! solve for tA(w'), bartA(-w')
             call solve_left_right_rsp_driver(exa_input,                &
                                             int_t,                     &
                                             interm_t,                  &
                                             Interm_t_tensors_A(n),     &
                                             l1_tensor,l2_tensor,       &
                                             Bvec_tensors(A),           &
-                                            omega(B),                  &
-                                            Tprop_tensors(A),          &
-                                            omega_min(B),              &
-                                            Tprop_bar_tensors_min_w(A),&
+                                            omega(B),                  & 
+                                            Tprop_tensors(A),          &  ! tA(+w' - i\gamma)
+                                            omega_min(B),              &  
+                                            Tprop_bar_tensors_min_w(A),&  ! bartA(-w' - i\gamma)
                                             CC_CC)
-    
+            if (CC_CC) then
+                ! solve for tA(w), bartA(-w) 
+                call solve_left_right_rsp_driver(exa_input,            &
+                                            int_t,                     &
+                                            interm_t,                  &
+                                            Interm_t_tensors_A(n),     &
+                                            l1_tensor,l2_tensor,       &
+                                            Bvec_tensors(A),           &
+                                            omega(A),                  & 
+                                            Tprop_tensors_min_w(A),    &  ! tA(+w  + i\gamma)
+                                            omega_min(A),              &  
+                                            Tprop_bar_tensors(A),      &  ! bartA(-w  + i\gamma)
+                                            CC_CC)
+           end if
+            
             do m=1, N_prop_B
+                ! solve for tB(w), bartB(-w)
                 call solve_left_right_rsp_driver(exa_input,                &
                                                 int_t,                     &
                                                 interm_t,                  &
@@ -262,10 +311,24 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                 l2_tensor,                 &
                                                 Bvec_tensors(B),           &
                                                 omega(A),                  &
-                                                Tprop_tensors(B),          &
+                                                Tprop_tensors(B),          &  ! tB(+w  + i\gamma)
                                                 omega_min(A),              &
-                                                Tprop_bar_tensors_min_w(B),&
+                                                Tprop_bar_tensors_min_w(B),&  ! bartB(-w  + i\gamma)
                                                 CC_CC)
+                if (CC_CC) then
+                    ! solve for tB(w'), bartB(-w')
+                    call solve_left_right_rsp_driver(exa_input,        &
+                                            int_t,                     &
+                                            interm_t,                  &
+                                            Interm_t_tensors_B(m),     &
+                                            l1_tensor,l2_tensor,       &
+                                            Bvec_tensors(B),           &
+                                            omega(B),                  & 
+                                            Tprop_tensors_min_w(B),    &  ! tB(+w' - i\gamma)
+                                            omega_min(B),              &  
+                                            Tprop_bar_tensors(B),      &  ! bartB(-w' - i\gamma)
+                                            CC_CC)
+                end if
 
                 do k=1, N_prop_C
                     call solve_left_right_rsp_driver(exa_input,&
@@ -276,10 +339,24 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                      l2_tensor, &
                                                      Bvec_tensors(C),&
                                                      omega(B), &
-                                                     Tprop_tensors(C), &
+                                                     Tprop_tensors(C), &   ! tC(+w' - i\gamma)
                                                      omega_min(B), &
-                                                     Tprop_bar_tensors_min_w(C),&
+                                                     Tprop_bar_tensors_min_w(C),& ! bartC(-w' - i\gamma)
                                                      CC_CC)
+                    if (CC_CC) then
+                        ! solve for tB(w'), bartB(-w')
+                        call solve_left_right_rsp_driver(exa_input,    &
+                                            int_t,                     &
+                                            interm_t,                  &
+                                            Interm_t_tensors_C(k),     &
+                                            l1_tensor,l2_tensor,       &
+                                            Bvec_tensors(C),           &
+                                            omega(A),                  & 
+                                            Tprop_tensors_min_w(C),    &  ! tC(+w + i\gamma)
+                                            omega_min(A),              &  
+                                            Tprop_bar_tensors(C),      &  ! bartC(-w + i\gamma)
+                                            CC_CC)
+                    end if
                 
                     do l=1, N_prop_D
                         call solve_left_right_rsp_driver(exa_input, &
@@ -290,10 +367,25 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                          l2_tensor, &
                                                          Bvec_tensors(D), &
                                                          omega(A), &
-                                                         Tprop_tensors(D), &
+                                                         Tprop_tensors(D), &  ! tD(+w  + i\gamma)
                                                          omega_min(A), &
-                                                         Tprop_bar_tensors_min_w(D), &
+                                                         Tprop_bar_tensors_min_w(D), & ! bartD(-w  + i\gamma)
                                                          CC_CC)
+
+                        if (CC_CC) then
+                            ! solve for tB(w'), bartB(-w')
+                            call solve_left_right_rsp_driver(exa_input,&
+                                            int_t,                     &
+                                            interm_t,                  &
+                                            Interm_t_tensors_D(l),     &
+                                            l1_tensor,l2_tensor,       &
+                                            Bvec_tensors(D),           &
+                                            omega(B),                  & 
+                                            Tprop_tensors_min_w(D),    &  ! tD(+w' - i\gamma)
+                                            omega_min(B),              &  
+                                            Tprop_bar_tensors(D),      &  ! bartD(-w' - i\gamma)
+                                            CC_CC)
+                        end if
 
                         call print_date('Solved All 1st response equations')
 
@@ -306,7 +398,6 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                         qr_tran_right_CD = ZERO
 
                         if (CC_CC) then
-#if 0
                             call get_cc_tran_left(exa_input, &
                                                    int_t,     &
                                                    interm_t,  &
@@ -318,6 +409,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                    Tprop_tensors_min_w(A), & ! tY (w + i\gamma)
                                                    Tprop_bar_tensors_min_w(B), & ! tX (-w' - i\gamma)
                                                    Tprop_bar_tensors_min_w(A), & ! tY (w + i\gamma)
+                                                   barM_f_tensor, &
                  eom_results_t%value_vectors_t%rhs1(f_state), &
                  eom_results_t%value_vectors_t%rhs2(f_state), &
                                                    qr_tran_left_AB)
@@ -333,6 +425,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                    Tprop_tensors_min_w(C), & ! tY (w + i\gamma)
                                                    Tprop_bar_tensors_min_w(D), & ! tX (-w' - i\gamma)
                                                    Tprop_bar_tensors_min_w(C), & ! tY (w + i\gamma)
+                                                   barM_f_tensor, &
                  eom_results_t%value_vectors_t%rhs1(f_state), &
                  eom_results_t%value_vectors_t%rhs2(f_state), &
                                                    qr_tran_left_CD)
@@ -362,7 +455,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                  eom_results_t%value_vectors_t%lhs1(f_state), &
                  eom_results_t%value_vectors_t%lhs2(f_state), &
                                                    qr_tran_right_CD)
-#endif
+
                         else
                             call get_eom_tran_left(exa_input, &
                                                   interm_t,   &
@@ -532,27 +625,23 @@ subroutine solve_left_right_rsp_driver(exa_input,int_t,interm_t,Interm_t_tensor,
     type(talsh_comm_tens_t),intent(inout)       :: Tprop_bar_tensor !left_vector
     logical, intent(in) :: CC_CC
 
-    if (CC_CC) then
-        call get_left_bvec_cccc(exa_input,int_t,interm_t,Interm_t_tensor, &
-                    l1_tensor,l2_tensor, Tprop_tensor, Bvec_tensor)
-    else
-       call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, Bvec_tensor)
-    end if
-
     call print_lr_setup("R"," ",Interm_t_tensor,-1,omega1)
     call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensor, omega1, Tprop_tensor)
     call print_lr_setup("L"," ",Interm_t_tensor,-1,omega2)
-
     if (CC_CC) then
-        call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega2, Bvec_tensor, Tprop_bar_tensor)
+!        call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega2, Bvec_tensor, Tprop_bar_tensor)
+        call get_left_bvec_cccc(exa_input,int_t,interm_t,Interm_t_tensor, &
+                    l1_tensor,l2_tensor, Tprop_tensor, Bvec_tensor)
+        call solve_cc_lr_left(exa_input, interm_t, int_t, omega2, Bvec_tensor, Tprop_bar_tensor)
     else
-       call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega2, Bvec_tensor, Tprop_bar_tensor)
+!       call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensor, omega2, Bvec_tensor, Tprop_bar_tensor)
+       call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, Bvec_tensor)
+       call solve_eom_lr_left(exa_input, interm_t, int_t, omega2, Bvec_tensor, Tprop_bar_tensor)
     end if
 
 
 end subroutine solve_left_right_rsp_driver
 
-#if 0
 !------------------------------------------------------------------------------------------------------------------------------------------
 
 subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
@@ -560,7 +649,7 @@ subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
                              l1_tensor,l2_tensor, &
                              tX, tY, &
                              Ls_f, Ld_f, &
-                             qr_tran_right_XY, f_state)
+                             qr_tran_right_XY) !, f_state)
 
     type(exacc_input), intent(in) :: exa_input
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
@@ -569,68 +658,81 @@ subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
     type(talsh_rsp_interm_tens_t),intent(inout) :: Y_operator
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
-    type(talsh_comm_tens_t),intent(inout)       :: tX     ! X perturbed amplitude
-    type(talsh_comm_tens_t),intent(inout)       :: tY  !right_vector
-    type(talsh_eom_results_tens_t),intent(inout):: eom_results_t
-!    type(talsh_tens_t),intent(inout)            :: Ls_f ! singles manifold, left eigenvector
-!    type(talsh_tens_t),intent(inout)            :: Ld_f ! doubles manifold, left eigenvector
+    type(talsh_tens_t), intent(inout)           :: Ls_f ! eigenvalue L1 final state
+    type(talsh_tens_t), intent(inout)           :: Ld_f ! eigenvalue L2 final state
+    type(talsh_comm_tens_t),intent(inout)       :: tX  ! X perturbed amplitude
+    type(talsh_comm_tens_t),intent(inout)       :: tY  ! Y perturbed amplitude
+!    type(talsh_eom_results_tens_t),intent(inout):: eom_results_t
     complex(kind=8),intent(inout)               :: qr_tran_right_XY ! 2-photon transition amplitude ^{CC}F_{XY}^{f0}
 
-    type(talsh_tens_t)         :: aux_1, aux_2, aux_3, aux_4
-    type(talsh_tens_t)         :: Aux_ov, Aux_oovv
+    type(talsh_comm_tens_t)                     :: LfMN_tensor
 
     integer(C_INT)     :: one_dims(1)
     integer(INTD), dimension(2)   :: ov_dims
     integer(INTD), dimension(4)   :: oovv_dims
     integer(INTD)  ::  ov_rank, oovv_rank
 
-    complex(8) :: tran1, tran2, tran
-
     integer(C_INT)          :: ierr
-    type(talsh_tens_t)      :: result_tensor
-    complex(8), pointer     :: result_tens(:)
+    type(talsh_tens_t)      :: r_tensor
+    complex(8), pointer     :: r_tens(:)
     type(C_PTR)             :: body_p
+
+    complex(8) :: tran1, tran2, tran
+    logical :: debug_local = .true.
 
 !
 ! calculate RHS 2-photon transition moment from QR for X, Y perturbation
 !
-! see eq 3 in Faber and Coriani, JCTC 2018, doi: 10.1021/acs.jctc.8b01020 
+! see eqs 5.51-5.57 of Christiansen, Hattig and Jorgensen, IJCQ 1998, doi: 10.1002/(SICI)1097-461X(1998)68:1<1::AID-QUA1>3.0.CO;2-Z
+! or for a more straightfoward version, eq 3 in Faber and Coriani, JCTC 2018, doi: 10.1021/acs.jctc.8b01020 
 !
 ! ^{CC}F_{XY}^{f0} = -L_f [  A^X * t^Y(\omega + i\gamma) 
 !                          + A^Y * t^X(-\omega^{'} - i\gamma}) 
 !                          + B * t^Y(\omega + i\gamma) * t^X(-\omega^{'} - i\gamma})]
 !
 !
-! 1) form -L_f * B * t^Y(\omega + i\gamma) * t^X(-\omega^{'} - i\gamma})
+    qr_tran_right_XY = 0
+
+    ierr=talsh_tensor_construct(r_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=talsh_tensor_get_body_access(r_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    call c_f_pointer(body_p,r_tens,one_dims)
+
+    ierr=talsh_tensor_construct(LfMN_tensor%t1,C8,&
+                       (/interm_t%nocc,interm_t%nvir/), &
+                       init_val=ZERO)
+    ierr=talsh_tensor_construct(LfMN_tensor%t2,C8,&
+                       (/interm_t%nocc,interm_t%nocc,interm_t%nvir,interm_t%nvir/), &
+                       init_val=ZERO)
+! 1) form L_f * B * t^Y(\omega + i\gamma) * t^X(-\omega^{'} - i\gamma})
 !
 ! recall we reuse Ft to obtain BtY, with special case (remove U1 vua is_qrcc=.true.) 
 ! AND at the same time replace l1, l2 by the LHS eigenvector (Ls_f, Ld_f) determined 
 ! previously
-    qr_tran_right_XY = 0
-
-    ierr=talsh_tensor_construct(LfMN_tensor%t1)
-    ierr=talsh_tensor_construct(LfMN_tensor%t2)
 
     call get_tF(LfMN_tensor%t1,LfMN_tensor%t2, tY%t1,tY%t2, Ls_f,Ld_f, &
                 interm_t,int_t,interm_t%nocc, interm_t%nvir, is_qrcc=.true.)
 
-! contract (-L_f *B * tY)^m_e with tX^e_m for singles contribution and
-! and      (-L_f *B * tY)^m_e with tX^{ef}_{mn} for doubles contribution to 
+! contract (L_f *B * tY)^m_e with tX^e_m for singles contribution and
+! and      (L_f *B * tY)^m_e with tX^{ef}_{mn} for doubles contribution to 
 ! 2-photon transition moment 
     ierr=talsh_tensor_init(r_tensor)
     ierr=talsh_tensor_contract("Tf0XY()+=LfBtY(m,e)*tX(e,m)",r_tensor,&
-                               LfMN_tensor%t1,tX%t1,scale=MINUS_ONE)
-    tran1=r_tens(1)
+                               LfMN_tensor%t1,tX%t1)
+    if (debug_local) tran1=r_tens(1)
     ierr=talsh_tensor_contract("Tf0XY()+=LfBtY(m,n,e,f)*tX(e,f,m,n)",r_tensor,&
-                               LfMN_tensor%t2,tX%t2,scale=MINUS_ONE_QUARTER_C)
-    tran=r_tens(1)
-    tran2=tran-tran
-    print *,'DEBUG -LfBtXtY contribution to 2P transition moment',tran,tran1,tran2
+                               LfMN_tensor%t2,tX%t2,scale=ONE_QUARTER_C)
+    if (debug_local) then
+        tran=r_tens(1)
+        tran2=tran-tran1
+        write(*,'(/,2x,A)') 'DEBUG in get_cc_tran_right'
+        write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+              'DEBUG (1) LfBtXtY    contrib. to 2P-Tr.Mom.:',tran,'1:',tran1,'2:',tran2
+    end if
 
-    qr_tran_right_XY = qr_tran_right_XY + tran
-
+!   add -LfBtXtY to transition moment
+    qr_tran_right_XY = qr_tran_right_XY - r_tens(1)
 !
-! 2) form  -L_f * A^Y * t^X
+! 2) form  L_f * A^Y * t^X
 !
 ! add        (L_f AX)^m_e  to (MAB_tensor)^m_e
 ! add        (L_f AX)^m_e  to (MAB_tensor)^{mn}_{ef}
@@ -645,15 +747,20 @@ subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
     ierr=talsh_tensor_init(r_tensor)
     ierr=talsh_tensor_contract("Tf0XY()+=LfAY(m,e)*tX(e,m)",r_tensor,&
                                LfMN_tensor%t1,tX%t1)
-    tran1=r_tens(1)
+    if (debug_local) tran1=r_tens(1)
     ierr=talsh_tensor_contract("Tf0XY()+=LfAY(m,n,e,f)*tX(e,f,m,n)",r_tensor,&
                                LfMN_tensor%t2,tX%t2,scale=ONE_QUARTER_C)
-    tran=r_tens(1)
-    tran2=tran-tran
-    print *,'DEBUG -LfAYtX contribution to 2P transition moment',tran,tran1,tran2
+    if (debug_local) then
+        tran=r_tens(1)
+        tran2=tran-tran1
+         write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+               'DEBUG (2) LfAYtX     contrib. to 2P-Tr.Mom.:',tran,'1:',tran1,'2:',tran2
+    endif
 
+!   add -LfAYtX to transition moment
+    qr_tran_right_XY = qr_tran_right_XY - r_tens(1)
 !
-! 2) form  -L_f * A^X * t^Y
+! 3) form  L_f * A^X * t^Y
 !
 ! add        (L_f AX)^m_e  to (MAB_tensor)^m_e
 ! add        (L_f AX)^m_e  to (MAB_tensor)^{mn}_{ef}
@@ -668,23 +775,23 @@ subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
     ierr=talsh_tensor_init(r_tensor)
     ierr=talsh_tensor_contract("Tf0XY()+=LfAX(m,e)*tY(e,m)",r_tensor,&
                                LfMN_tensor%t1,tY%t1)
-    tran1=r_tens(1)
+    if (debug_local) tran1=r_tens(1)
     ierr=talsh_tensor_contract("Tf0XY()+=LfAX(m,n,e,f)*tY(e,f,m,n)",r_tensor,&
                                LfMN_tensor%t2,tY%t2,scale=ONE_QUARTER_C)
-    tran=r_tens(1)
-    tran2=tran-tran
-    print *,'DEBUG -LfAYtX contribution to 2P transition moment',tran,tran1,tran2
+    if (debug_local) then
+        tran=r_tens(1)
+        tran2=tran-tran
+        write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+              'DEBUG (3) LfAXtY     contrib. to 2P-Tr.Mom.:',tran,'1:',tran1,'2:',tran2
+        write(*,'(2x,A,/)') 'DEBUG exiting get_cc_tran_right'
+    endif
 
+!   add -LAXtY to transition moment
+    qr_tran_right_XY = qr_tran_right_XY - r_tens(1)
 !
-
-!
-    ierr=talsh_tensor_destruct(LfMAB_tensor%t1)
-    ierr=talsh_tensor_destruct(LfMAB_tensor%t2)
-
+    ierr=talsh_tensor_destruct(LfMN_tensor%t1)
+    ierr=talsh_tensor_destruct(LfMN_tensor%t2)
     ierr=talsh_tensor_destruct(r_tensor)
-    ierr=talsh_tensor_destruct(MAB_S_tensor)
-    ierr=talsh_tensor_destruct(MAB_D_tensor)
-
 
 end subroutine get_cc_tran_right
 
@@ -694,7 +801,8 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
                              X_operator, Y_operator, &
                              l1_tensor,l2_tensor, &
                              tX, tY,  &
-                             tbarX, tbarY, &
+                             tbar_X, tbar_Y, &
+                             barM_f, &
                              Rs_f, Rd_f, &
                              qr_tran_left_XY)
 
@@ -708,30 +816,32 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
     type(talsh_tens_t), intent(inout)              :: l1_tensor
     type(talsh_comm_tens_t),intent(inout)          :: tX  ! X perturbed amplitudes
     type(talsh_comm_tens_t),intent(inout)          :: tY  ! Y perturbed amplitudes
-    type(talsh_comm_tens_t),intent(inout)          :: tbarX  ! X perturbed multipliers
-    type(talsh_comm_tens_t),intent(inout)          :: tbarY  ! Y perturbed amplitude
-    type(talsh_eom_results_tens_t),intent(inout):: eom_results_t
-!    type(talsh_tens_t),intent(inout)               :: Rs_f ! singles manifold, left eigenvector
-!    type(talsh_tens_t),intent(inout)               :: Rd_f ! doubles manifold, left eigenvector
+    type(talsh_comm_tens_t),intent(inout)          :: tbar_X ! X perturbed multipliers
+    type(talsh_comm_tens_t),intent(inout)          :: tbar_Y ! Y perturbed amplitude
+    type(talsh_comm_tens_t),intent(inout)          :: barM_f ! excited state multipliers
+    type(talsh_tens_t), intent(inout)              :: Rs_f ! eigenvalue L1 final state
+    type(talsh_tens_t), intent(inout)              :: Rd_f ! eigenvalue L2 final state
+!   type(talsh_eom_results_tens_t),intent(inout):: eom_results_t
     complex(kind=8),intent(inout)                  :: qr_tran_left_XY ! 2-photon transition amplitude ^{CC}F_{XY}^{0f}
 
-    type(talsh_tens_t)         :: aux_1, aux_2, aux_3, aux_4
-    type(talsh_tens_t)         :: Aux_ov, Aux_oovv
+    type(talsh_comm_tens_t)                        :: MNRf_tensor
 
     integer(C_INT)     :: one_dims(1)
     integer(INTD), dimension(2)   :: ov_dims
     integer(INTD), dimension(4)   :: oovv_dims
     integer(INTD)  ::  ov_rank, oovv_rank
 
-    complex(8) :: tran1, tran2, tran
-
     integer(C_INT)          :: ierr
-    type(talsh_tens_t)      :: result_tensor
-    complex(8), pointer     :: result_tens(:)
+    type(talsh_tens_t)      :: r_tensor
+    complex(8), pointer     :: r_tens(:)
     type(C_PTR)             :: body_p
 
+    complex(8) :: tran1, tran2, tran, tmom_b_XY
+    logical :: debug_local = .true.
+
 !
-! see eq 11 in Faber and Coriani, JCTC 2018, doi: 10.1021/acs.jctc.8b01020 
+! see eqs 5.51-5.57 of Christiansen, Hattig and Jorgensen, IJCQ 1998, doi: 10.1002/(SICI)1097-461X(1998)68:1<1::AID-QUA1>3.0.CO;2-Z
+! or for a more straightfoward version, eq 11 in Faber and Coriani, JCTC 2018, doi: 10.1021/acs.jctc.8b01020 
 !
 ! ^{CC}F_{XY}^{0f} = 
 !                  - {
@@ -747,42 +857,239 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
 !                     + A^Y * t^X(\omega^{'} - i\gamma}) 
 !                     + B * t^Y(-\omega + i\gamma) * t^X(\omega^{'} - i\gamma})]   (2)
 !
-! needs excited state multipliers as well (eq 13)
+! remarks for term (2):
+! - it needs excited state multipliers as well (eq 13), obtained from solving
 !
 ! \bar{M}_f(\omega_f)(A + \omega_f I) = -FR_f
 !
-! with \omega_f the frequency for the transition to state f
+! with \omega_f the frequency for the transition to state f. The \bar{M}_f(\omega_f) tensor should
+! be obtained outside of this routine, and pass as an argument
 !
-! note that term (2) can be formed by calling get_cc_tran_right(), provided we use 
+! - it can be formed by calling get_cc_tran_right(), provided we use 
 ! (a) t^X(\omega^{'} - i\gamma) instead of t^X(-\omega^{'} - i\gamma})
 ! (b) t^Y(-\omega + i\gamma) instead of t^Y(\omega + i\gamma)
 !
+    qr_tran_left_XY = 0
 
-! form (1.a.1): -\bar{t}^X(\omega^{'} - i\gamma}) * A^Y * R_f  
-! and  (1.a.2): -\bar{t}^X(\omega^{'} - i\gamma}) * B * t^Y(-\omega + i\gamma) * R_f 
+    ierr=talsh_tensor_construct(r_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=talsh_tensor_get_body_access(r_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    call c_f_pointer(body_p,r_tens,one_dims)
 
+    ierr=talsh_tensor_construct(MNRf_tensor%t1,C8,&
+                       (/interm_t%nocc,interm_t%nvir/), &
+                       init_val=ZERO)
+    ierr=talsh_tensor_construct(MNRf_tensor%t2,C8,&
+                       (/interm_t%nocc,interm_t%nocc,interm_t%nvir,interm_t%nvir/), &
+                       init_val=ZERO)
 
-! form (1.b.1): -\bar{t}^Y(-\omega + i\gamma) * A^X * R_f
-! and  (1.b.2): -\bar{t}^Y(-\omega + i\gamma) * B * t^X(\omega^{'} - i\gamma}) * R_f
+! term (1) contributions
+!
+! 1. form (1.a.1): \bar{t}^X(\omega^{'} - i\gamma}) * A^Y * R_f  
+!
+    ierr=talsh_tensor_init(MNRf_tensor%t1)
+    ierr=talsh_tensor_init(MNRf_tensor%t2)
+    call get_lXAY(MNRf_tensor, Y_operator%prop_bar_oo, Y_operator%prop_bar_vv, &
+                   Y_operator%prop_bar_ov, interm_t%t1, interm_t%t2, &
+                   tbar_X%t1, tbar_X%t2, interm_t%nocc, interm_t%nvir)
 
+! contract (tbarX * AY)^m_e with Rf^e_m for singles contribution and
+! and      (tbarX * AY)^m_e with Rf^{ef}_{mn} for doubles contribution to 2PTM 
+    ierr=talsh_tensor_init(r_tensor)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarXAY(m,e)*Rf(e,m)",r_tensor,&
+                               MNRf_tensor%t1,Rs_f)
+    if (debug_local) tran1=r_tens(1)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarXAY(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+    if (debug_local) then
+        tran=r_tens(1)
+        tran2=tran-tran1
+        write(*,'(/,2x,A)') 'DEBUG in get_cc_tran_left'
+        write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+              'DEBUG (1) tbarXAYRf  contrib. to 2P-Tr.Mom.:',tran,'1:',tran1,'2:',tran2
+    endif
 
-! form (1.c.1): -F^X * t^Y(-\omega + i\gamma) * R_f
-! and  (1.c.2): -F^Y * t^X(\omega^{'} - i\gamma}) * R_f
+!   add -tbarXAYRf to transition moment
+    qr_tran_left_XY = qr_tran_left_XY - r_tens(1)
+!
+! 2. form (1.a.2): \bar{t}^X(\omega^{'} - i\gamma}) * B * t^Y(-\omega + i\gamma) * R_f 
+!
+    ierr=talsh_tensor_init(MNRf_tensor%t1)
+    ierr=talsh_tensor_init(MNRf_tensor%t2)
+! recall we reuse Ft to obtain BtY, with special case (remove U1 vua is_qrcc=.true.) AND 
+! at the same time  replace l1, l2 by perburtbed l1, l2. which were calculated before (tbar_x)
+    call get_tF(MNRf_tensor%t1,MNRf_tensor%t2, tY%t1,tY%t2, tbar_X%t1, tbar_X%t2, &
+                interm_t,int_t,interm_t%nocc, interm_t%nvir, is_qrcc=.true.)
 
+! contract (tbarX *B * tY)^m_e with Rf^e_m for singles contribution and
+! and      (tbarX *B * tY)^m_e with Rf^{ef}_{mn} for doubles contribution to 2PTM 
+    ierr=talsh_tensor_init(r_tensor)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarXBtY(m,e)*Rf(e,m)",r_tensor,&
+                               MNRf_tensor%t1,Rs_f)
+    if (debug_local) tran1=r_tens(1)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarXBtY(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+    if (debug_local) then
+        tran=r_tens(1)
+        tran2=tran-tran1
+        write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+              'DEBUG (2) tbarXBtYRf contrib. to 2P-Tr.Mom.:',tran,'1:',tran1,'2:',tran2
+    end if
 
-! form (1.d): -G * t^X(\omega^{'} - i\gamma}) * t^Y(-\omega + i\gamma) * R_f
+!   add -tbarXBtYRf to transition moment
+    qr_tran_left_XY = qr_tran_left_XY - r_tens(1)
+!
+! 3. form (1.b.1): \bar{t}^Y(-\omega + i\gamma) * A^X * R_f
+!
+    ierr=talsh_tensor_init(MNRf_tensor%t1)
+    ierr=talsh_tensor_init(MNRf_tensor%t2)
+    call get_lXAY(MNRf_tensor, X_operator%prop_bar_oo, X_operator%prop_bar_vv, &
+                   X_operator%prop_bar_ov, interm_t%t1, interm_t%t2, &
+                   tbar_Y%t1, tbar_Y%t2, interm_t%nocc, interm_t%nvir)
+! contract (-tbarY * AX)^m_e with Rf^e_m for singles contribution and
+! and      (-tbarY * AX)^m_e with Rf^{ef}_{mn} for doubles contribution to 2PTM 
+    ierr=talsh_tensor_init(r_tensor)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarYAX(m,e)*Rf(e,m)",r_tensor,&
+                               MNRf_tensor%t1,Rs_f)
+    if (debug_local) tran1=r_tens(1)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarYAX(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+    if (debug_local) then
+        tran=r_tens(1)
+        tran2=tran-tran1
+        write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+              'DEBUG (3) tbarYAXRf  contrib. to 2P-Tr.Mom.:',tran,'1:',tran1,'2:',tran2
+    endif
 
+!   add -tbarYAXRf to transition moment
+    qr_tran_left_XY = qr_tran_left_XY - r_tens(1)
+!
+! 4. form (1.b.2): \bar{t}^Y(-\omega + i\gamma) * B * t^X(\omega^{'} - i\gamma}) * R_f
+!
+    ierr=talsh_tensor_init(MNRf_tensor%t1)
+    ierr=talsh_tensor_init(MNRf_tensor%t2)
+! recall we reuse Ft to obtain BtX, with special case (remove U1 vua is_qrcc=.true.) 
+    call get_tF(MNRf_tensor%t1,MNRf_tensor%t2, tX%t1,tX%t2, tbar_Y%t1, tbar_Y%t2, &
+                interm_t,int_t,interm_t%nocc, interm_t%nvir, is_qrcc=.true.)
+!
+! contract (-tbarY *B * tX)^m_e with Rf^e_m for singles contribution and
+! and      (-tbarY *B * tX)^m_e with Rf^{ef}_{mn} for doubles contribution to 2PTM 
+    ierr=talsh_tensor_init(r_tensor)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarYBtX(m,e)*Rf(e,m)",r_tensor,&
+                               MNRf_tensor%t1,Rs_f)
+    if (debug_local) tran1=r_tens(1)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarYBtX(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+    if (debug_local) then
+        tran=r_tens(1)
+        tran2=tran-tran1
+        write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+              'DEBUG (4) tbarYBtXRf contrib. to 2P-Tr.Mom.:',tran,'1:',tran1,'2:',tran2
+    end if
 
+!    add -tbarYBtXRf to transition moment
+     qr_tran_left_XY = qr_tran_left_XY - r_tens(1)
+!
+! 5. form (1.c.1): F^X * t^Y(-\omega + i\gamma) * R_f
+!
+    ierr=talsh_tensor_init(MNRf_tensor%t1)
+    ierr=talsh_tensor_init(MNRf_tensor%t2)
+    call get_tYFX(MNRf_tensor,X_operator%prop_bar_ov,tY%t1,tY%t2,&
+                  l1_tensor,l2_tensor,interm_t%nocc,interm_t%nvir)
+! contract (FX tY)^m_e with Rf^e_m for singles contribution and
+! and      (FX tY)^m_e with Rf^{ef}_{mn} for doubles contribution to 2PTM 
+    ierr=talsh_tensor_init(r_tensor)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarYBtX(m,e)*Rf(e,m)",r_tensor,&
+                               MNRf_tensor%t1,Rs_f)
+    if (debug_local) tran1=r_tens(1)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarYBtX(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+    if (debug_local) then
+        tran=r_tens(1)
+        tran2=tran-tran1
+        write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+              'DEBUG (5) FXtYRf     contrib. to 2P-Tr.Mom.:',tran,'1:',tran1,'2:',tran2
+    end if
+
+!   add -FXtYRf to transition moment
+    qr_tran_left_XY = qr_tran_left_XY - r_tens(1)
+!
+! 6. form (1.c.2): F^Y * t^X(\omega^{'} - i\gamma}) * R_f
+!
+    ierr=talsh_tensor_init(MNRf_tensor%t1)
+    ierr=talsh_tensor_init(MNRf_tensor%t2)
+    call get_tYFX(MNRf_tensor,Y_operator%prop_bar_ov,tX%t1,tX%t2,&
+                  l1_tensor,l2_tensor,interm_t%nocc,interm_t%nvir)
+! contract (FX tY)^m_e with Rf^e_m for singles contribution and
+! and      (FX tY)^m_e with Rf^{ef}_{mn} for doubles contribution to 2PTM 
+    ierr=talsh_tensor_init(r_tensor)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarYBtX(m,e)*Rf(e,m)",r_tensor,&
+                               MNRf_tensor%t1,Rs_f)
+    if (debug_local) tran1=r_tens(1)
+    ierr=talsh_tensor_contract("T0fXY()+=tbarYBtX(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+    if (debug_local) then
+        tran=r_tens(1)
+        tran2=tran-tran1
+        write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+              'DEBUG (6) FYtXRf     contrib. to 2P-Tr.Mom.:',tran,'1:',tran1,'2:',tran2
+    end if
+
+!   add -FYtXRf to transition moment
+    qr_tran_left_XY = qr_tran_left_XY - r_tens(1)
+!
+! 7. form (1.d): G * t^X(\omega^{'} - i\gamma}) * t^Y(-\omega + i\gamma) * R_f
+!
+    ierr=talsh_tensor_init(MNRf_tensor%t1)
+    ierr=talsh_tensor_init(MNRf_tensor%t2)
+
+    call get_Gtt(MNRf_tensor,int_t,interm_t%t1,tX%t1,tX%t2,tY%t1,tY%t2,&
+                l1_tensor,l2_tensor,interm_t%nocc, interm_t%nvir)
+! contract (G * tX * tY)^m_e with Rf^e_m for singles contribution and
+! and      (G * tX * tY)^m_e with Rf^{ef}_{mn} for doubles contribution to 2PTM 
+    ierr=talsh_tensor_init(r_tensor)
+    ierr=talsh_tensor_contract("T0fXY()+=GtXtY(m,e)*Rf(e,m)",r_tensor,&
+                               MNRf_tensor%t1,Rs_f)
+    if (debug_local) tran1=r_tens(1)
+    ierr=talsh_tensor_contract("T0fXY()+=GtXtY(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+    if (debug_local) then
+        tran=r_tens(1)
+        tran2=tran-tran1
+        write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
+              'DEBUG (7) GtXtYRf    contrib. to 2P-Tr.Mom.:',tran,'1:',tran1,'2:',tran2
+    end if
+
+!   add -GtXtYRf to transition moment
+    qr_tran_left_XY = qr_tran_left_XY - r_tens(1)
+!
 ! form term (2)
-    call get_cc_tran_right(exa_input, int_t,interm_t, X_operator, Y_operator, &
-                             l1_tensor,l2_tensor, tX, tY, Ms_f, Md_f, tmom_b_XY)
+!
+    tmom_b_XY = 0
+ 
+    if (debug_local) then
+        write(*,'(2x,A)') &
+        'DEBUG (8-10) calculating M(w_f)[AXtY + AYtX + BtXtY] contrib. to 2P-Tr.Mom.'
+    endif
 
-    qr_tran_left_XY = qr_tran_left_XY + tmom_b_XY
+    call get_cc_tran_right(exa_input, int_t,interm_t, X_operator, Y_operator, &
+                             l1_tensor,l2_tensor, tX, tY, barM_f%t1,barM_f%t2, tmom_b_XY)
+
+    if (debug_local) then
+        write(*,'(2x,A,2E16.8)') &
+        'DEBUG (8-10) total -M(w_f)[AXtY + AYtX + BtXtY] contrib. to 2P-Tr.Mom.',tmom_b_XY
+        write(*,'(2x,A)') 'DEBUG exiting get_cc_tran_left'
+    endif
+
+!   add -M(w_f)[AXtY + AYtX + BtXtY] to transition moment
+    qr_tran_left_XY = qr_tran_left_XY - tmom_b_XY
+!
+    ierr=talsh_tensor_destruct(MNRf_tensor%t1)
+    ierr=talsh_tensor_destruct(MNRf_tensor%t2)
+    ierr=talsh_tensor_destruct(r_tensor)    
 
 end subroutine get_cc_tran_left
 
 !------------------------------------------------------------------------------------------------------------------------------------------
-#endif
 
 subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y,& 
                     Tprop_bar_tensor_X, Tprop_bar_tensor_min_Y,l1_tensor, l2_tensor, &
