@@ -21,6 +21,9 @@ module talsh_cc_QR
     private
 
     public get_cccc_qr
+    public get_lXAY
+    public get_Gtt
+    public get_tYFX
 
     contains
 
@@ -937,9 +940,9 @@ end subroutine form_cccc_qr_MXY
      ! (k9b,g9b) and call with inversion of arguments [(tX,tY) ->(tY,tX)] for (g10b, k10b)
 
      !G9b k9b
-     call Gtt_g9bk9b(G1_tensor,int_t,tYs,tXd,l2_tensor,nocc,nvir)
+     call Gtt_g9bk9b(Gtt_tensor%t1,int_t,tYs,tXd,l2_tensor,nocc,nvir)
      !g10b k10b
-     call Gtt_g9bk9b(G1_tensor,int_t,tXs,tYd,l2_tensor,nocc,nvir)
+     call Gtt_g9bk9b(Gtt_tensor%t1,int_t,tXs,tYd,l2_tensor,nocc,nvir)
 
 
 
@@ -1362,18 +1365,13 @@ end subroutine form_cccc_qr_MXY
           type(talsh_tens_t),  intent(inout) :: l2_tensor
           integer,             intent(in   ) :: nocc, nvir
 
-          real(8)                        :: print_level=2
           integer(INTD) :: ierr
           !     tensor dimensions
-          integer, dimension(2) :: oo_dims, vv_dims
           type(talsh_tens_t) :: oo_aux_tensor,vv_aux_tensor, ov_aux_tensor   
 
 
-
-          vv_dims = nvir
-          oo_dims = nocc
-          ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-          ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vv_aux_tensor,C8,(/nvir,nvir/),init_val=ZERO)
+          ierr=talsh_tensor_construct(oo_aux_tensor,C8,(/nocc,nocc/),init_val=ZERO)
           ierr=talsh_tensor_construct(ov_aux_tensor,C8,(/nocc,nvir/),init_val=ZERO)
 
                   ! inversion : g10b and k10b
