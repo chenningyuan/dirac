@@ -289,8 +289,7 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_ccrsp_lr_static "ccrsp;talsh;short" "")
     dirac_test(exacorr_talsh_ccrsp_lr_cc-ci "ccrsp;talsh;short" "")
     dirac_test(exacorr_talsh_ccrsp_qr_cc-ci "ccrsp;talsh;short" "")
-# wip
-#   dirac_test(exacorr_talsh_ccrsp_qr_cc-cc "ccrsp;talsh;short" "")
+    dirac_test(exacorr_talsh_ccrsp_qr_cc-cc "ccrsp;talsh;short" "")
     dirac_test(exacorr_talsh_finite_field "cc;talsh;short" "")
     dirac_test(exacorr_talsh_ccsdt_tenpi "cc;exacorr;talsh;tenpi;ccsdt;short" "")
 

@@ -14,7 +14,7 @@ f1.add(from_string = '*************CC-CC quadratic response*********',
       num_lines   = 3,
       rel_tolerance   = 1.0e-7)
 
-test.run(['cc_ccpvdz_qr_0.1,0.15.inp'], ['h2o.xyz'], f1)
+test.run(['cc_ccpvdz_qr_static.inp','cc_ccpvdz_qr_0.1,0.15.inp'], ['h2o.xyz'], f1)
 test.run(['cc_ccpvdz_qr_yxlz_ll_0.065600.inp'], ['ar.xyz'], f1)
 test.run(['cc_ccpvdz_qr_yxlz_x2c_0.065600.inp'], ['ar.xyz'], f1)
 sys.exit(test.return_code)

@@ -1041,7 +1041,11 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
         end do
 
 
-        write(*,"(A54)"), "*************CC-CI(EOM-CC) quadratic response************"
+        if (CC_CC) then
+            write(*,"(A54)"), "*****************CC-CC quadratic response****************"
+        else
+            write(*,"(A54)"), "*************CC-CI(EOM-CC) quadratic response************"
+        end if
         do n=1, N_omega1
           do m=1, N_omega2
             do i=1, N_prop_A
