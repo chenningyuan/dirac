@@ -111,11 +111,11 @@ One-electron scalar operator labels
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
 |             |                                  | ZANGMOM        | :math:`\hat{\Omega}_3 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_z`               |
 +-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| DIPLEN      | Dipole length                    | XDIPLEN        | :math:`\hat{\Omega}_1 = x`                                                                         |
+| DIPLEN      | Dipole length                    | XDIPLEN        | :math:`\hat{\Omega}_1 = x_D`                                                                       |
 |             | with respect to dipole origin    +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YDIPLEN        | :math:`\hat{\Omega}_2 = y`                                                                         |
+|             |                                  | YDIPLEN        | :math:`\hat{\Omega}_2 = y_D`                                                                       |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | ZDIPLEN        | :math:`\hat{\Omega}_3 = z`                                                                         |
+|             |                                  | ZDIPLEN        | :math:`\hat{\Omega}_3 = z_D`                                                                       |
 +-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
 | DIPVEL      | Dipole velocity                  | XDIPVEL        | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x}`                                               |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
@@ -123,41 +123,41 @@ One-electron scalar operator labels
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
 |             |                                  | ZDIPVEL        | :math:`\hat{\Omega}_3 = \frac{\partial}{\partial z}`                                               |
 +-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| QUADRUP     | Quadrupole moment                | XXQUADRU       | :math:`\hat{\Omega}_1 = \frac{1}{4} (x^2-r^2)`                                                     |
+| QUADRUP     | Quadrupole moment                | XXQUADRU       | :math:`\hat{\Omega}_1 = \frac{1}{4} (x_D^2-r_D^2)`                                                 |
 |             | with respect to dipole origin    +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XYQUADRU       | :math:`\hat{\Omega}_2 = \frac{1}{4} xy`                                                            |
+|             |                                  | XYQUADRU       | :math:`\hat{\Omega}_2 = \frac{1}{4} x_Dy_D`                                                        |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XZQUADRU       | :math:`\hat{\Omega}_3 = \frac{1}{4} xz`                                                            |
+|             |                                  | XZQUADRU       | :math:`\hat{\Omega}_3 = \frac{1}{4} x_Dz_D`                                                        |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YYQUADRU       | :math:`\hat{\Omega}_4 = \frac{1}{4} (y^2-r^2)`                                                     |
+|             |                                  | YYQUADRU       | :math:`\hat{\Omega}_4 = \frac{1}{4} (y_D^2-r_D^2)`                                                 |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YZQUADRU       | :math:`\hat{\Omega}_5 = \frac{1}{4} yz`                                                            |
+|             |                                  | YZQUADRU       | :math:`\hat{\Omega}_5 = \frac{1}{4} y_Dz_D`                                                        |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | ZZQUADRU       | :math:`\hat{\Omega}_6 = \frac{1}{4} (z^2-r^2)`                                                     |
+|             |                                  | ZZQUADRU       | :math:`\hat{\Omega}_6 = \frac{1}{4} (z_D^2-r_D^2)`                                                 |
 +-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| SECMOM      | Second moment                    | XXSECMOM       | :math:`\hat{\Omega}_1 = - x^2`                                                                     |
+| SECMOM      | Second moment                    | XXSECMOM       | :math:`\hat{\Omega}_1 = - x_D^2`                                                                   |
 |             | with respect to dipole origin    +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XYSECMOM       | :math:`\hat{\Omega}_2 = - xy`                                                                      |
+|             |                                  | XYSECMOM       | :math:`\hat{\Omega}_2 = - x_Dy_D`                                                                  |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XZSECMOM       | :math:`\hat{\Omega}_3 = - xz`                                                                      |
+|             |                                  | XZSECMOM       | :math:`\hat{\Omega}_3 = - x_Dz_D`                                                                  |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YYSECMOM       | :math:`\hat{\Omega}_4 = - y^2`                                                                     |
+|             |                                  | YYSECMOM       | :math:`\hat{\Omega}_4 = - y_D^2`                                                                   |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YZSECMOM       | :math:`\hat{\Omega}_5 = - yz`                                                                      |
+|             |                                  | YZSECMOM       | :math:`\hat{\Omega}_5 = - y_Dz_D`                                                                  |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | ZZSECMOM       | :math:`\hat{\Omega}_6 = - z^2`                                                                     |
+|             |                                  | ZZSECMOM       | :math:`\hat{\Omega}_6 = - z_D^2`                                                                   |
 +-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| THETA       | Traceless quadrupole             | XXTHETA        | :math:`\hat{\Omega}_1 = - \frac{3}{2} (x^2-\frac{1}{3}r^2)`                                        |
+| THETA       | Traceless quadrupole             | XXTHETA        | :math:`\hat{\Omega}_1 = - \frac{3}{2} (x_D^2-\frac{1}{3}r_D^2)`                                    |
 |             | with respect to dipole origin    +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XYTHETA        | :math:`\hat{\Omega}_2 = - \frac{3}{2} xy`                                                          |
+|             |                                  | XYTHETA        | :math:`\hat{\Omega}_2 = - \frac{3}{2} x_Dy_D`                                                      |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XZTHETA        | :math:`\hat{\Omega}_3 = - \frac{3}{2} xz`                                                          |
+|             |                                  | XZTHETA        | :math:`\hat{\Omega}_3 = - \frac{3}{2} x_Dz_D`                                                      |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YYTHETA        | :math:`\hat{\Omega}_4 = - \frac{3}{2} (y^2-\frac{1}{3}r^2)`                                        |
+|             |                                  | YYTHETA        | :math:`\hat{\Omega}_4 = - \frac{3}{2} (y_D^2-\frac{1}{3}r_D^2)`                                    |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YZTHETA        | :math:`\hat{\Omega}_5 = - \frac{3}{2} yz`                                                          |
+|             |                                  | YZTHETA        | :math:`\hat{\Omega}_5 = - \frac{3}{2} y_Dz_D`                                                      |
 |             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | ZZTHETA        | :math:`\hat{\Omega}_6 = - \frac{3}{2} (z^2-\frac{1}{3}r^2)`                                        |
+|             |                                  | ZZTHETA        | :math:`\hat{\Omega}_6 = - \frac{3}{2} (z_D^2-\frac{1}{3}r_D^2)`                                    |
 +-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
 | NEFIELD     | Electronic electric field at     | NEF abc        | :math:`\hat{\Omega}_{abc} = (\boldsymbol{r}-\boldsymbol{R}_K)/|\boldsymbol{r}-\boldsymbol{R}_K|^3` |
 |             | the individual nuclei            |                |                                                                                                    |
@@ -172,17 +172,39 @@ One-electron scalar operator labels
 |             |                                  | ZSEFGMG        |                                                                                                    |
 +-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
 
-In this Table, :math:`\boldsymbol{R}_{CM}` and :math:`\boldsymbol{R}_K` are the position vectors of the nuclear center of mass and the nucleus :math:`K` with respect to the origin of coordinates, respectively.
+In the Table above, :math:`\boldsymbol{r} = x \, \boldsymbol{\hat{\imath}} + y \, \boldsymbol{\hat{\jmath}} + z \, \boldsymbol{\hat{k}}`, :math:`\boldsymbol{R}_{CM}`, and :math:`\boldsymbol{R}_K` stand for the electron position operator, the position vector of the nuclear center of mass and the position of nucleus :math:`K`, respectively. All of them, relative to the origin of coordinates.
 
-Operators ``DIPLEN``, ``QUADRUP``, ``SECMOM``, and ``THETA`` are defined in terms of the Cartesian components of the electron position vector operator, i.e., :math:`x`, :math:`y`, and :math:`z`, with respect to the dipole origin :math:`\boldsymbol{R}_D`, which can be modified using :ref:`HAMILTONIAN_.DIPORG`.
+In particular, operators ``DIPLEN``, ``QUADRUP``, ``SECMOM``, and ``THETA`` are defined in terms of the Cartesian components of the electron position vector operator with respect to the dipole origin, :math:`\boldsymbol{r}_D = \boldsymbol{r} - \boldsymbol{R}_D = x_D \, \boldsymbol{\hat{\imath}} + y_D \, \boldsymbol{\hat{\jmath}} + z_D \, \boldsymbol{\hat{k}}`. The dipole origin :math:`\boldsymbol{R}_D` can be set using :ref:`HAMILTONIAN_.DIPORG`.
 
-Note that in the one-electron Fermi-contact integrals :math:`g_e` is the electronic g-factor (i.e., :math:`g_e = 2` unless QED effects are taken into account), 'NAM' are the three first letters in the name of atom :math:`K` as given in the .mol file, and 'ab' stands for the number of the symmetry-adapted nucleus.
 
-The electrostatic potential produced by nucleus :math:`K` is defined as :math:`\Phi_K (\boldsymbol{r}) = \int d\boldsymbol{r}' \rho_K(\boldsymbol{r}') / |\boldsymbol{r}-\boldsymbol{r}'|`. When the charge density distribution :math:`\rho_K(\boldsymbol{r}')` of nucleus :math:`K` at the arbitrary position :math:`\boldsymbol{r}'` is described by using a point-like nuclear model (PN), then :math:`\Phi^\text{PN}_K (\boldsymbol{r}) = Z_K |\boldsymbol{r}-\boldsymbol{R}_K|^{-1}`. The nuclear charge distribution model :math:`\rho_K(\boldsymbol{r}')` can be set by using :ref:`INTEGRALS_.NUCMOD`.
+The electrostatic potential produced by nucleus :math:`K` is (in a.u.)
 
-The electric field produced by nucleus :math:`K` at the position :math:`\boldsymbol{r}` is :math:`\boldsymbol{E}_K(\boldsymbol{r}) = - \boldsymbol{\nabla} \Phi_K(\boldsymbol{r})`. The operator label ``NEFNUC`` points to the integral calculations of :math:`\boldsymbol{\nabla} \Phi_K (\boldsymbol{r})/Z_K`. Also here, the nuclear charge density distribution :math:`\rho_K(\boldsymbol{r}')` can be set by the user employing :ref:`INTEGRALS_.NUCMOD`. When a point-like model is used (i.e., :math:`\rho^\text{PN}_K(\boldsymbol{r}')=Z_K \delta(\boldsymbol{r}'-\boldsymbol{R}_K)`), then :math:`\boldsymbol{\nabla} \Phi^\text{PN}_K (\boldsymbol{r})/Z_K = -(\boldsymbol{r}-\boldsymbol{R}_K)/|\boldsymbol{r}-\boldsymbol{R}_K|^3`. In other words, when ``NEFNUC`` is used with a point-like nuclear model, the integrals are identical (except for the sign) to those of ``NEFIELD``.
+.. math::
 
-In the case of operators ``NEFIELD`` and ``NEFNUC``, 'abc' stands for the number of the symmetry-adapted nuclear coordinate. In C1 symmetry, it goes from 001 (corresponding to the :math:`x` coordinate of the first element in the \*.mol file) to :math:`3\times K`.
+   \Phi_K (\boldsymbol{r}) = \int \frac{\rho_K(\boldsymbol{r}')}{|\boldsymbol{r}-\boldsymbol{r}'|} d\boldsymbol{r}',
+
+and when the charge density distribution :math:`\rho_K(\boldsymbol{r}')` of nucleus :math:`K` at the arbitrary position :math:`\boldsymbol{r}'` is described by a point-like nuclear model (PN), it is given by
+
+.. math::
+
+   \Phi^\text{PN}_K (\boldsymbol{r}) = \frac{Z_K}{|\boldsymbol{r}-\boldsymbol{R}_K|}.
+
+Operators ``MOLFIELD`` and ``NEFNUC`` depend on :math:`\Phi_K (\boldsymbol{r})`, and for them two different nuclear charge distribution models :math:`\rho_K(\boldsymbol{r}')` can be set using :ref:`INTEGRALS_.NUCMOD`.
+
+Besides, the electric field produced by nucleus :math:`K` at the position :math:`\boldsymbol{r}` is :math:`\boldsymbol{E}_K(\boldsymbol{r}) = - \boldsymbol{\nabla} \Phi_K(\boldsymbol{r})`. The operator label ``NEFNUC`` points to the integral calculations of :math:`\boldsymbol{\nabla} \Phi_K (\boldsymbol{r})/Z_K`. Also here, the nuclear charge density distribution :math:`\rho_K(\boldsymbol{r}')` can be set by the user employing :ref:`INTEGRALS_.NUCMOD`.
+
+When a point-like model is used (i.e., when :math:`\rho_K(\boldsymbol{r}') = \rho^\text{PN}_K(\boldsymbol{r}') = Z_K \delta(\boldsymbol{r}'-\boldsymbol{R}_K)`), then
+
+.. math::
+
+   \texttt{NEFNUC} \; \longrightarrow \; -\frac{\boldsymbol{E}^\text{PN}_K (\boldsymbol{r})}{Z_K} = \frac{\boldsymbol{\nabla} \Phi^\text{PN}_K (\boldsymbol{r})}{Z_K} = -\frac{\boldsymbol{r}-\boldsymbol{R}_K}{|\boldsymbol{r}-\boldsymbol{R}_K|^3}.
+
+In other words, when ``NEFNUC`` is used with a point-like nuclear model, the integrals are identical (except for the sign) to those of ``NEFIELD``.
+
+In the case of operators ``NEFIELD`` and ``NEFNUC``, 'abc' stands for the number of the symmetry-adapted nuclear coordinate. In C1 symmetry, 'abc' goes from '001' (corresponding to the :math:`x` coordinate of the first element in the \*.mol file) to :math:`3\times K`.
+
+
+Note that in the one-electron Fermi-contact integrals ``FERMI C`` (as well as in the spin-dipole interals, ``SPIN-DI``), :math:`g_e` is the electron g-factor. The default value for :math:`g_e` in DIRAC is the QED value taken from the most recent CODATA set (in CODATA2022, :math:`g_e = 2.00231930436092`). However, within the Dirac formalism, i.e. without including QED effects, :math:`g_e` would be exactly equal to 2. Besides, in the operator ``FC NAMab``, 'NAM' stands for the three first letters in the name given to nucleus :math:`K` in the \*.mol file, and 'ab' is the number of the symmetry-adapted nucleus.
 
 
 Other one-electron operator labels are:
@@ -219,6 +241,9 @@ S1MAG       Second order contribution from overlap matrix to magnetic properties
 S1MAGL      Bra-differentiation of overlap matrix with respect to magnetic field
 S1MAGR      Ket-differentiation of overlap matrix with respect to magnetic field
 SDFC        Spin-dipole + Fermi contact
+SEFGHF      High-frequency term of Flambaum-Ginges self-energy potential
+SEFGLF      Low-frequency term of Flambaum-Ginges self-energy potential
+SEPZ        Pyykko-Zhao self-energy model potential
 SOLVENT     Electronic solvent integrals
 SPHMOM      Spherical moments (real combinations), symmetric, (:math:`2l + 1`) components (:math:`m = 0, -1, +1, ..., -l, +l`)
 SPIN-DI     Spin-dipole integrals
@@ -227,9 +252,6 @@ SQHDO       Half-derivative overlap integrals not to be antisymmetrized
 SQHDOR      Half-derivative overlap integrals not to be anti-symmetrized
 SQOVLAP     Second order derivatives overlap integrals
 UEHLING     Uehling potential
-SEFGLF      Low-frequency term of Flambaum-Ginges self-energy potential
-SEFGHF      High-frequency term of Flambaum-Ginges self-energy potential
-SEPZ        Pyykko-Zhao self-energy model potential
 =========== ====================================================================================================================
 
 
@@ -263,7 +285,7 @@ This operator may be specified by::
 
 where 137.03599926085 is the CODATA22 value for :math:`c`.
 
-The speed of light :math:`c` is an important parameter in relativistic theory, but its explicit value in atomic units is not necessarily remembered. A simpler way to specify the kinetic energy operator is therefore::
+The speed of light :math:`c` is an important parameter in relativistic theory, but its explicit value in a.u. is not necessarily remembered. A simpler way to specify the kinetic energy operator is therefore::
 
   .OPERATOR
    'Kin energy'
