@@ -9,7 +9,9 @@ module exacorr_utils
   public print_date
   public get_free_fileunit
   public print_exacorr_logo
+#if 0
   public print_exainput
+#endif
   public print_iteration
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
   public write_tensor
@@ -137,6 +139,7 @@ module exacorr_utils
 
     end subroutine print_exacorr_logo
 
+# if 0
     subroutine print_exainput(exa_input,nao)
 
       use exacorr_datatypes,   only : exacc_input
@@ -202,6 +205,7 @@ module exacorr_utils
       write(*,*) ""
 
     end subroutine print_exainput
+# endif
 
     subroutine print_exaoutput(talsh, iterative_scheme, perturbative_scheme,scf_energy, mp2_energy, cc_energy, t1diag, pert_energy)
 

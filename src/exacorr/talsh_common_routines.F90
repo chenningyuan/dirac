@@ -11,8 +11,6 @@ module eti_common_routines
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
-    integer, parameter :: executor= 1
-
     private
 
     interface scale_with_denominators
@@ -1041,7 +1039,7 @@ module eti_common_routines
 
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims(1) = 1
-         ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO, executor=executor)
+         ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
 
          ierr = get_nmodes(a_tensor,a_rank)
          ierr = get_extents(a_tensor,a_dims)

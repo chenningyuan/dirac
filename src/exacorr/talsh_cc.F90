@@ -172,7 +172,9 @@ module eti_cc
          call lab_write(exacc_file,'nocc',idata=nocc)
          call lab_write(exacc_file,'mo_occ',idata=mo_occ)
 
+#if 0
          call print_exainput(exa_input,get_nao())
+#endif
 
          call print_date("Getting orbital energies")
 !        Get orbital energies from the DIRAC restart file

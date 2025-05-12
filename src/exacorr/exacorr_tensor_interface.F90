@@ -93,6 +93,7 @@ module exacorr_tensor_interface
 
         public eti_executor_initialize
         public eti_executor_shutdown
+        public eti_tensor_print_info
 
         contains
 
@@ -393,7 +394,7 @@ module exacorr_tensor_interface
           integer(INTD) :: extents_scalar(1)
 
           if ( .not. is_empty_tensor_t(tensor) ) then
-            write(*,'("  Error. Tensor already constructed in construct_tensor_t.")') 
+            call quit("  Error. Tensor already constructed in construct_tensor_t.") 
             stop 98
           endif
 
@@ -1165,5 +1166,11 @@ module exacorr_tensor_interface
            ierr=talsh_stats()
            ierr=talsh_shutdown()
         end subroutine eti_talsh_shutdown
+
+        subroutine eti_tensor_print_info(tens)
+          implicit none
+          type(tensor_t), intent(inout)    :: tens
+           !        print info
+        end subroutine eti_tensor_print_info
 
 end module exacorr_tensor_interface
