@@ -268,16 +268,21 @@ end subroutine
 
 subroutine destroy_Tprop_tensors(Tprop_tensors_wB,    Tprop_tensors_min_wB, &
                                 i, &
-                                Bvec_tensors,&
+                                Bvec_tensors, Bvec_tensors_min_w, &
                                 Tprop_bar_tensors_wB, Tprop_bar_tensors_min_wB, &
                                 Tprop_tensors_wC,     Tprop_tensors_min_wC, &
                                 Tprop_bar_tensors_wC, Tprop_bar_tensors_min_wC   )
-    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_tensors_wB(:), Tprop_tensors_min_wB(:) !LR
+    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_tensors_wB(:)     !LR
+    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_tensors_min_wB(:) !LR
     integer        :: i
     type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Bvec_tensors(:)
-    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_wB(:), Tprop_bar_tensors_min_wB(:) !QR                        
-    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_tensors_wC(:), Tprop_tensors_min_wC(:) !QR                        
-    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_wC(:), Tprop_bar_tensors_min_wC(:) !QR                        
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Bvec_tensors_min_w(:)
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_wB(:)
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_min_wB(:)
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_tensors_wC(:)  !QR
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_tensors_min_wC(:) !QR
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_wC(:) !QR
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_min_wC(:) !QR
     
     integer(C_INT) :: ierr
     
@@ -298,6 +303,11 @@ subroutine destroy_Tprop_tensors(Tprop_tensors_wB,    Tprop_tensors_min_wB, &
     if (present(Bvec_tensors)) then
         ierr=talsh_tensor_destruct(Bvec_tensors(i)%t1)
         ierr=talsh_tensor_destruct(Bvec_tensors(i)%t2)
+    end if
+
+    if (present(Bvec_tensors_min_w)) then
+        ierr=talsh_tensor_destruct(Bvec_tensors_min_w(i)%t1)
+        ierr=talsh_tensor_destruct(Bvec_tensors_min_w(i)%t2)
     end if
 
     if (present(Tprop_tensors_wC)) then

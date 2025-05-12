@@ -1047,7 +1047,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                     Tprop_tensors, Tprop_bar_tensors,&
                                     i, j, k, l1_tensor, l2_tensor, cc_qr)
                         end if
-                end if 
+                    end if 
 
                     cc_qrs(i,j,k,m,n) = cc_qr
                     write(*,"(A)"), "<< "//Interm_t_tensors_A(i)%property_label// &
@@ -1055,17 +1055,60 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                     " , "//Interm_t_tensors_C(k)%property_label//" >> = "
                     write(*,"(F16.8,A,F16.8)"), real(cc_qrs(i,j,k,m,n)), ' \ ', aimag(cc_qrs(i,j,k,m,n))
 
-                    call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,3,Bvec_tensors,&
-                    Tprop_bar_tensors,Tprop_bar_tensors_min_w)
+                    if (CC_CC.and.do_dynamic) then
+                        call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        C,&
+                                        Bvec_tensors,&
+                                        Bvec_tensors_min_w=Bvec_tensors_min_w,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+                    else
+                        call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        C,&
+                                        Bvec_tensors,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+                    end if
 
                 end do
-                call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,2,Bvec_tensors,&
-                                            Tprop_bar_tensors,Tprop_bar_tensors_min_w)
+
+                if (CC_CC.and.do_dynamic) then
+                    call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        B,&
+                                        Bvec_tensors,&
+                                        Bvec_tensors_min_w=Bvec_tensors_min_w,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+                else
+                    call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        B,&
+                                        Bvec_tensors,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+                end if
 
             end do
-            call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,1,Bvec_tensors,&
-                                        Tprop_bar_tensors,Tprop_bar_tensors_min_w)
 
+            if (CC_CC.and.do_dynamic) then
+                call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        A,&
+                                        Bvec_tensors,&
+                                        Bvec_tensors_min_w=Bvec_tensors_min_w,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+            else
+                call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        A,&
+                                        Bvec_tensors,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+            end if
         end do
     
       end do
