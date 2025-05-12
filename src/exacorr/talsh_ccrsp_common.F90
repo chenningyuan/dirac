@@ -266,31 +266,56 @@ end subroutine
 
 !------------------------------------------------------------------------------------------------------------------
 
-subroutine destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,i,Bvec_tensors,&
-                                Tprop_bar_tensors,Tprop_bar_tensors_min_w)
-    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
+subroutine destroy_Tprop_tensors(Tprop_tensors_wB,    Tprop_tensors_min_wB, &
+                                i, &
+                                Bvec_tensors,&
+                                Tprop_bar_tensors_wB, Tprop_bar_tensors_min_wB, &
+                                Tprop_tensors_wC,     Tprop_tensors_min_wC, &
+                                Tprop_bar_tensors_wC, Tprop_bar_tensors_min_wC   )
+    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_tensors_wB(:), Tprop_tensors_min_wB(:) !LR
     integer        :: i
     type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Bvec_tensors(:)
-    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR                        
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_wB(:), Tprop_bar_tensors_min_wB(:) !QR                        
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_tensors_wC(:), Tprop_tensors_min_wC(:) !QR                        
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_wC(:), Tprop_bar_tensors_min_wC(:) !QR                        
     
     integer(C_INT) :: ierr
     
-    ierr=talsh_tensor_destruct(Tprop_tensors(i)%t1)
-    ierr=talsh_tensor_destruct(Tprop_tensors(i)%t2)
-    ierr=talsh_tensor_destruct(Tprop_tensors_min_w(i)%t1)
-    ierr=talsh_tensor_destruct(Tprop_tensors_min_w(i)%t2)
+    ierr=talsh_tensor_destruct(Tprop_tensors_wB(i)%t1)
+    ierr=talsh_tensor_destruct(Tprop_tensors_wB(i)%t2)
+    if (present(Tprop_bar_tensors_wB)) then 
+        ierr=talsh_tensor_destruct(Tprop_bar_tensors_wB(i)%t1)
+        ierr=talsh_tensor_destruct(Tprop_bar_tensors_wB(i)%t2)
+    end if
+
+    ierr=talsh_tensor_destruct(Tprop_tensors_min_wB(i)%t1)
+    ierr=talsh_tensor_destruct(Tprop_tensors_min_wB(i)%t2)
+    if (present(Tprop_bar_tensors_min_wB)) then
+        ierr=talsh_tensor_destruct(Tprop_bar_tensors_min_wB(i)%t1)
+        ierr=talsh_tensor_destruct(Tprop_bar_tensors_min_wB(i)%t2)
+    end if
 
     if (present(Bvec_tensors)) then
         ierr=talsh_tensor_destruct(Bvec_tensors(i)%t1)
         ierr=talsh_tensor_destruct(Bvec_tensors(i)%t2)
     end if
-    if (present(Tprop_bar_tensors)) then 
-        ierr=talsh_tensor_destruct(Tprop_bar_tensors(i)%t1)
-        ierr=talsh_tensor_destruct(Tprop_bar_tensors(i)%t2)
+
+    if (present(Tprop_tensors_wC)) then
+        ierr=talsh_tensor_destruct(Tprop_tensors_wC(i)%t1)
+        ierr=talsh_tensor_destruct(Tprop_tensors_wC(i)%t2)
     end if
-    if (present(Tprop_bar_tensors_min_w)) then
-        ierr=talsh_tensor_destruct(Tprop_bar_tensors_min_w(i)%t1)
-        ierr=talsh_tensor_destruct(Tprop_bar_tensors_min_w(i)%t2)
+    if (present(Tprop_bar_tensors_wC)) then 
+        ierr=talsh_tensor_destruct(Tprop_bar_tensors_wC(i)%t1)
+        ierr=talsh_tensor_destruct(Tprop_bar_tensors_wC(i)%t2)
+    end if
+
+    if (present(Tprop_tensors_min_wC)) then
+        ierr=talsh_tensor_destruct(Tprop_tensors_min_wC(i)%t1)
+        ierr=talsh_tensor_destruct(Tprop_tensors_min_wC(i)%t2)
+    end if
+    if (present(Tprop_bar_tensors_min_wC)) then
+        ierr=talsh_tensor_destruct(Tprop_bar_tensors_min_wC(i)%t1)
+        ierr=talsh_tensor_destruct(Tprop_bar_tensors_min_wC(i)%t2)
     end if
 
 
