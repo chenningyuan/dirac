@@ -267,9 +267,12 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Tprop_tensors(1),      & ! tX
                          Tprop_bar_tensors(1),  & ! tbarX
                          Tprop_tensors(2),      & ! tY
+#if defined(DEBUG_QRCC_CONTRIBUTIONS)
                          l1_tensor, l2_tensor,  &
                          tz=Tprop_tensors(3))
-!                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#else
+                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#endif
         !
         ! contract M^{XY}*t^Z (=Tprop_tensors(3)) and accumulate into scalar
         ierr=talsh_tensor_contract("MXYtZ()+=MXY(m,e)*tZ(e,m)",result_tensor,&
@@ -290,9 +293,12 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Tprop_tensors(2),      & ! ty
                          Tprop_bar_tensors(2),  & ! tbarY
                          Tprop_tensors(1),      & ! tX
+#if defined(DEBUG_QRCC_CONTRIBUTIONS)
                          l1_tensor, l2_tensor,  &
                          tz=Tprop_tensors(3))
-!                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#else
+                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#endif
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
         ierr=talsh_tensor_contract("MYXtZ()+=MYX(m,e)*tZ(e,m)",result_tensor,&
@@ -315,9 +321,12 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Tprop_tensors(2),      & ! tY
                          Tprop_bar_tensors(2),  & ! tbarY
                          Tprop_tensors(3),      & ! tZ
+#if defined(DEBUG_QRCC_CONTRIBUTIONS)
                          l1_tensor, l2_tensor,  &
                          tz=Tprop_tensors(1))
-!                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#else
+                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#endif
         !
         ! contract M^{YZ}*t^X (=Tprop_tensors(1)) and accumulate into scalar
         ierr=talsh_tensor_contract("MYZtX()+=MYZ(m,e)*tX(e,m)",result_tensor,&
@@ -338,9 +347,12 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Tprop_tensors(3),      & ! tZ
                          Tprop_bar_tensors(3),  & ! tbarZ
                          Tprop_tensors(2),      & ! tY
+#if defined(DEBUG_QRCC_CONTRIBUTIONS)
                          l1_tensor, l2_tensor,  &
                          tz=Tprop_tensors(1))
-!                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#else
+                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#endif
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
         ierr=talsh_tensor_contract("MZYtX()+=MZY(m,e)*tX(e,m)",result_tensor,&
@@ -363,9 +375,12 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Tprop_tensors(3),      & ! tZ
                          Tprop_bar_tensors(3),  & ! tbarZ
                          Tprop_tensors(1),      & ! tX
+#if defined(DEBUG_QRCC_CONTRIBUTIONS)
                          l1_tensor, l2_tensor,  &
                          tz=Tprop_tensors(2))
-!                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#else
+                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#endif
         !
         ! contract M^{YZ}*t^X (=Tprop_tensors(1)) and accumulate into scalar
         ierr=talsh_tensor_contract("MZXtY()+=MZX(m,e)*tY(e,m)",result_tensor,&
@@ -386,9 +401,12 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Tprop_tensors(1),      & ! tX
                          Tprop_bar_tensors(1),  & ! tbarX
                          Tprop_tensors(3),      & ! tZ
+#if defined(DEBUG_QRCC_CONTRIBUTIONS)
                          l1_tensor, l2_tensor,  &
                          tz=Tprop_tensors(2))
-!                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#else
+                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+#endif
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
         ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",result_tensor,&
