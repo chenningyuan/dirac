@@ -444,6 +444,11 @@ module eti_cc
          ierr=destroy_tensor_t(comm_t%h_int)
          ierr=destroy_tensor_t(result_tensor)
          ierr=destroy_tensor_t(one_tensor)
+         
+         ! Jan fixed for ETI
+         ierr=destroy_tensor_t(int_t%foo)
+         ierr=destroy_tensor_t(int_t%fvv)
+         ierr=destroy_tensor_t(int_t%fov)
 
 !**************************
 !        EOM calculations *

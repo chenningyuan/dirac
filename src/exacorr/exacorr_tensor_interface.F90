@@ -21,7 +21,7 @@ module exacorr_tensor_interface
         
         integer, parameter, public :: ETI_SUCCESS = 0
 #if (defined(DEFAULT_EXECUTOR_TENSOR_T) && !defined(ETI_DEFAULT_EXECUTOR)) 
-        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_TENSOR_T
+        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = 2 !DEFAULT_EXECUTOR_TENSOR_T
 #else
         integer, parameter, public :: ETI_DEFAULT_EXECUTOR = 2
 #endif
@@ -394,8 +394,12 @@ module exacorr_tensor_interface
           integer(INTD) :: extents_scalar(1)
 
           if ( .not. is_empty_tensor_t(tensor) ) then
-            call quit("  Error. Tensor already constructed in construct_tensor_t.") 
-            stop 98
+            if (tensor%which_executor .eq. 2) then
+              ierr = destroy_tensor_t(tensor)
+              ! print warning
+            else
+              call quit("  Error. Tensor already constructed in construct_tensor_t.") 
+            endif
           endif
 
           if (present(executor)) tensor%which_executor = executor
