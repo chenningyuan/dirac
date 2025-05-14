@@ -1,13 +1,11 @@
 module visual_in_point
 
-  use memory_allocator
   use electrostatic_potential
   use interface_ao
   use interface_mo
   use visual_cfg
   use dirac_ao_eval
   use density_eval
-  use matrix_defop_old
   use xc_london_c1
 
   use visual_datatypes
@@ -19,21 +17,6 @@ module visual_in_point
   public get_quantity_in_point_refactored
 
   private
-
-#include "priunit.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "maxorb.h"
-#include "dcbham.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
-#include "dgroup.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "ccom.h"
 
   interface get_quantity_in_point_refactored
     module procedure get_quantity_in_point_single
@@ -96,6 +79,8 @@ contains
 
       case ('ed_gradient')
 !       electron density gradient
+!       WARNING:
+!       electron density gradient is implemented for hermitian density matrices (such as dmat0)
         t0 = 0.0d0
         t1 = 0.0d0
         call get_gn(t0,        &
@@ -110,9 +95,9 @@ contains
         grid_function_values(3:3,ipoint:ipoint) = t1(3)
 
       case ('ed_hessian')
-!       gosia fixme:
-!       electron density Hessian is implemented for hermitian density matrices (such as dmat)
-!       todo: add a warning
+!       electron density Hessian
+!       WARNING:
+!       electron density Hessian is implemented for hermitian density matrices (such as dmat0)
         t0 = 0.0d0
         t1 = 0.0d0
         t2_33 = 0.0d0
@@ -154,9 +139,6 @@ contains
       case ('ed_sign_lambda2')
 !       sign(lambda2), where lambda2=the second eigenvalue of the Hessian
 !       of the electron density
-!
-!       TODO: needs testing:
-!       electron density Hessian is implemented for hermitian density matrices (such as dmat)
         t0 = 0.0d0
         t1 = 0.0d0
         t2_33 = 0.0d0
@@ -200,9 +182,7 @@ contains
 
 
       case ('ed_laplacian')
-!
-!       TODO: needs testing:
-!       density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!       electron density laplacian
         t0 = 0.0d0
         t1 = 0.0d0
         t2_33 = 0.0d0
@@ -252,7 +232,6 @@ contains
         grid_function_values(1:1,ipoint:ipoint) = 1.0d0/(1.0d0+elf_chi*elf_chi)
 
       case ('kin')
-!       kin: 
         t0 = 0.0d0
         call get_kin(t0,        &
                      rs_input%cvalue, &
@@ -266,7 +245,6 @@ contains
 
 
       case ('kinls')
-!       kin: 
         t0 = 0.0d0
         call get_kin_ls(t0,        &
                         rs_input%cvalue, &
@@ -280,7 +258,6 @@ contains
 
 
       case ('kinsl')
-!       kin: 
         t0 = 0.0d0
         call get_kin_sl(t0,       &
                         rs_input%cvalue,&
@@ -294,7 +271,6 @@ contains
 
 
       case ('kintau')
-!       kin: 
         t0 = 0.0d0
         call get_kin_tau(t0,        &
                          dmat%irep, &
@@ -307,7 +283,6 @@ contains
 
 
       case ('kinlap')
-!       kin: 
         t0 = 0.0d0
         call get_kin_lap(t0,        &
                          dmat%irep, &
@@ -320,7 +295,6 @@ contains
 
 
       case ('kinnr')
-!       kin: 
         t0 = 0.0d0
         call get_kin_tau(t0,            &
                          dmat%irep,     &
@@ -598,7 +572,7 @@ contains
                      mol%geometry_dep,&
                      include_nuc_part=.false., &
                      include_el_part=.true.)
-!       gosia: figure out why this should be scaled
+
         grid_function_values(1:1,ipoint:ipoint) = 0.5d0*temp1(1)
 
       case ('espn')
@@ -616,6 +590,7 @@ contains
                      mol%geometry_dep,&
                      include_nuc_part=.true., &
                      include_el_part=.false.)
+
         grid_function_values(1:1,ipoint:ipoint) = temp1(1)
 
       case ('esp')
@@ -633,7 +608,7 @@ contains
                      mol%geometry_dep,&
                      include_nuc_part=.false., &
                      include_el_part=.true.)
-!       gosia: figure out why this should be scaled
+
         grid_function_values(1:1,ipoint:ipoint) = 0.5d0*temp1(1)
 
         temp1 = 0.0d0
@@ -648,6 +623,7 @@ contains
                      mol%geometry_dep,&
                      include_nuc_part=.true., &
                      include_el_part=.false.)
+
         grid_function_values(1:1,ipoint:ipoint) = &
         grid_function_values(1:1,ipoint:ipoint)+temp1(1)
 
@@ -675,7 +651,7 @@ contains
                    dmat%elements, &
                    buffer,    &
                    ao)
-!       gosia: figure out why this should be scaled
+
         grid_function_values(1:1,ipoint:ipoint) = 0.5d0*temp1(1)*t0
 
       case ('espnrho')
@@ -701,6 +677,7 @@ contains
                    dmat%elements, &
                    buffer,    &
                    ao)
+
         grid_function_values(1:1,ipoint:ipoint) = temp1(1)*t0
 
       case ('esprho')
@@ -718,6 +695,7 @@ contains
                      mol%geometry_dep,&
                      include_nuc_part=.false., &
                      include_el_part=.true.)
+
         grid_function_values(1:1,ipoint:ipoint) = 0.5d0*temp1(1)
 
         temp1 = 0.0d0
@@ -742,9 +720,8 @@ contains
                    dmat%elements, &
                    buffer,    &
                    ao)
+
         grid_function_values(1:1,ipoint:ipoint) = grid_function_values(1:1,ipoint:ipoint)*t0
-
-
  
       case ('bedcos')
 !       full light-matter interaction: cosine part
@@ -798,7 +775,6 @@ contains
     end if
 
   end subroutine
-
 
 
 ! ------------------------------------------------------------------------------

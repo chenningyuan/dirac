@@ -28,7 +28,6 @@ contains
 
 !   returns lowest i/o unit number not in use
 !   adapted from http://fortranwiki.org/fortran/show/newunit
-!   gosia, May 2022
 
     do n = nmin, nmax
       inquire(unit = n, opened = is_used)

@@ -145,6 +145,14 @@ contains
       call self%reshape_to_q()
     end if
 
+!
+!               ns       pi          ps
+!   --------------------------------------------
+!     ns:    |        |si, si-   |          |
+!     pi:    |si,si-  |ii,pi     |si,si+,pi |
+!     ps:    |        |si,si+,pi |          |
+!
+
     ns(1)   = ioffs(1)
     pi(1)   = ioffs(2) 
     ps(1)   = ioffs(3) 
@@ -156,11 +164,10 @@ contains
       n_mo(1) = nmos(2)
     end if
 
-!   todo: consistency check
-
     select case (sector)
       case ('ii ')
       ! get inactive-inactive block
+      ! and zero-out the rest
 
         do iz = 1, self%mat_nz
           do isym = 1, nfsym
@@ -320,7 +327,6 @@ contains
 
     call self%reshape_from_q()
     deallocate(self%elements_q)
-    !call self%display()
 
   end subroutine
 
