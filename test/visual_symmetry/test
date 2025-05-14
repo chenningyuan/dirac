@@ -17,7 +17,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Final grid_function values (grid_function%id=  1) in grid points (grid#id=  1):',
       num_lines = 29,
-      abs_tolerance = 1.0e-4)
+      abs_tolerance = 1.0e-5)
 
 #
 # prepare grid files
@@ -31,21 +31,21 @@ grid_3d_h5=grid_3d_h5.symlink_to(Path(Path(__file__).parents[1].resolve(), 'test
 # run tests
 #
 
-for m in ['ne_c1.mol', 'ne_c2.mol', 'ne_c2v.mol', 'ne_cs.mol', 'ne_d2.mol']:
-    test.run(['rspE.inp'], [m], args='--outcmo --get="RESPONSE.h5"')
-    test.run(['visR1.inp'], [m], f, args='--incmo --put="grid.h5"')
-    test.run(['visE1.inp'], [m], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
-    test.run(['rspB.inp'], [m], args='--outcmo --get="RESPONSE.h5"')
-    test.run(['visB1.inp'], [m], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
+for m in ['c1', 'c2', 'c2v', 'cs', 'd2']:
+    test.run(['rspE.inp'], ['ne_'+m+'.mol'], args='--outcmo --get="RESPONSE.h5"')
+    test.run(['visR1.inp'], ['ne_'+m+'.mol'], f, args='--incmo --put="grid.h5"')
+    test.run(['visE_'+m+'.inp'], ['ne_'+m+'.mol'], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
+    test.run(['rspB.inp'], ['ne_'+m+'.mol'], args='--outcmo --get="RESPONSE.h5"')
+    test.run(['visB_'+m+'.inp'], ['ne_'+m+'.mol'], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
 #    test.run(['rspB1_lao.inp'], [m], args='--incmo --outcmo --get="RESPONSE.h5 TBMO.h5"')
 #    test.run(['visB1_lao.inp'], [m],  args='--incmo --put="grid.h5 RESPONSE.h5 TBMO.h5"')
     
-for m in ['ne_auto.mol', 'ne_c2h.mol', 'ne_ci.mol', 'ne_d2h.mol']:
-    test.run(['rspE.inp'], [m], args='--outcmo --get="RESPONSE.h5"')
-    test.run(['visR2.inp'], [m], f, args='--incmo --put="grid.h5"')
-    test.run(['visE2.inp'], [m], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
-    test.run(['rspB.inp'], [m], args='--outcmo --get="RESPONSE.h5"')
-    test.run(['visB2.inp'], [m], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
+for m in ['auto', 'c2h', 'ci', 'd2h']:
+    test.run(['rspE.inp'], ['ne_'+m+'.mol'], args='--outcmo --get="RESPONSE.h5"')
+    test.run(['visR2.inp'], ['ne_'+m+'.mol'], f, args='--incmo --put="grid.h5"')
+    test.run(['visE_'+m+'.inp'], ['ne_'+m+'.mol'], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
+    test.run(['rspB.inp'], ['ne_'+m+'.mol'], args='--outcmo --get="RESPONSE.h5"')
+    test.run(['visB_'+m+'.inp'], ['ne_'+m+'.mol'], f, args='--incmo --put="grid.h5 RESPONSE.h5"')
 #    test.run(['rspB2_lao.inp'], [m], args='--incmo --outcmo --get="RESPONSE.h5 TBMO.h5"')
 #    test.run(['visB2_lao.inp'], [m],  args='--incmo --put="grid.h5 RESPONSE.h5 TBMO.h5"')
 
