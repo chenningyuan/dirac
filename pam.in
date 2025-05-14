@@ -55,6 +55,7 @@ import platform
 import glob
 import shlex
 import tarfile
+import re
 
 version = sys.version_info
 
@@ -401,7 +402,8 @@ class pam_enviroment:
         try:
             if self.verbose:
                 print("  Copying %s to %s" % (src, dest))
-            shutil.copy(src, dest)
+            # shutil.copy(src, dest)
+            os.system("cp -p "+src+" "+dest)
         except:
             print("Copying of files - shutil.copy(src, dest) - failed, error exit ", file=sys.stderr)
             print(' src full path:', src, file=sys.stderr)
@@ -433,10 +435,12 @@ class pam_enviroment:
                 if src.endswith('.gz') and not dst.endswith('.gz'):
                     # -ifile.gz=file
                     # guzip file after copyin
-                    shutil.copy2(src, dst+'.gz')
+                    # shutil.copy2(src, dst+'.gz')
+                    os.system("cp -p "+src+" "+dst+".gz")
                     os.system('gunzip %s.gz' % dst)
                 else:
-                    shutil.copy2(src, dst)
+                    # shutil.copy2(src, dst)
+                    os.system("cp -p "+src+" "+dst)
             else:
                 of = open(dst, 'w')
                 for l in open(src, 'r').readlines():
@@ -964,7 +968,7 @@ Options are also read from ~/.diracrc"""
 
         # DIRAC_MPI_COMMAND is overriden with the "--mpi" flag !
         if os.environ.get('DIRAC_MPI_COMMAND') and not options.dest_mpi:
-            self.parallel_run = True
+            self.parallel_run = False
             self.dirac_mpi_command = os.environ.get('DIRAC_MPI_COMMAND') + ' '
 
         if options.dest_ownmpirun:
@@ -986,7 +990,7 @@ Options are also read from ~/.diracrc"""
 
         # if "--mpi " flag present, override 'DIRAC_MPI_COMMAND' envirovariable 
         if options.dest_mpi:
-            self.parallel_run = True
+            self.parallel_run = False
             self.nr_proc = int(options.dest_mpi)
             if self.own_mpirun:
                 print('Error, pam: you can not combine --mpirun and --mpi flags, use the former flag only ! ')
@@ -1006,9 +1010,9 @@ Options are also read from ~/.diracrc"""
             self.summit = True
 
         # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
-        if "@ENABLE_MPI@" == "True" or "@ENABLE_MPI@" == "ON":
+        if "True" == "True" or "@ENABLE_MPI@" == "True" or "@ENABLE_MPI@" == "ON":
             # always a parallel run if ENABLE_MPI=ON
-            self.parallel_run = True
+            self.parallel_run = False
             if self.dirac_mpi_command is None:
                if self.own_mpirun:
                   self.dirac_mpi_command = str(self.own_mpirun) + ' '
@@ -1556,7 +1560,7 @@ Options are also read from ~/.diracrc"""
             print_error_message(dirac_executable+' not found!')
             sys.exit(13)
 
-        if self.parallel_run:
+        if True==False and self.parallel_run:
             if self.mpirun is None:
                 # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
                 #          then self.mpirun is None and we have to stop here otherwise pam calls
@@ -1591,7 +1595,7 @@ Options are also read from ~/.diracrc"""
                 else:
                     self.dirac_cmd =  dirac_executable
 
-        else:
+        elif True==False:
             # serial run (also in debugger)
             if self.debug:
                 # first check if debugger is set
@@ -1617,6 +1621,38 @@ Options are also read from ~/.diracrc"""
             else:
                 # no debug, plain run
                 self.dirac_cmd = dirac_executable
+
+        # jan's ctf code
+        if (bool(re.search(r"\s--ctf", self.dirac_mpi_command)) == True):
+          
+          self.dirac_mpi_command = re.sub(r"\s-N1\s*", " ", self.dirac_mpi_command)
+          self.dirac_mpi_command = re.sub(r"\s-n1\s*", " ", self.dirac_mpi_command)
+          # self.dirac_mpi_command = re.sub(r"\s--ctf\s*", " -N", self.dirac_mpi_command)
+          conf_filename = os.path.join(self.input_directory,"srun_conf") # move to self.scratch_dir self.dirac_mpi_command
+
+          nn_ctf = -1
+          np_ctf = -1
+          # match = re.search(r" -n\s*(-?\d+)", self.dirac_mpi_command)
+          match = re.search(r"\s--ctf\s+(-?\d+)\s+(-?\d+)", self.dirac_mpi_command)
+          if match: # srun -n 3 -N 1 --multi-prog conf
+            try:
+              nn_ctf = int(match.group(1))
+              np_ctf = int(match.group(2))
+            except ValueError:
+              print_error_message("\n Error in pam: ctf defined but -n parameter with the number of mpi processes could not be parsed. \n")
+              sys.exit(42)
+          else:
+            print_error_message("\n Error in pam: ctf defined but -n parameter wit hthe number of mpi processes was not specified. \n")
+            sys.exit(42)
+          
+          addstr = " -N 1 -n 1 -c 14 " + dirac_executable 
+          if nn_ctf > 1:
+            addstr += " : -N " + str(nn_ctf-1) + " -n " + str(4*(nn_ctf-1)) + " -c 14 /lustre/orion/chp109/world-shared/Tensor_Product-ctf/out/worker.x"
+          self.dirac_mpi_command = re.sub(rf"\s--ctf\s{match.group(1)}\s{match.group(2)}\s*", addstr, self.dirac_mpi_command)
+          self.dirac_cmd =  self.dirac_mpi_command
+#         self.dirac_cmd += ' : -N 1 -n 1 /lustre/orion/chp109/world-shared/ctftest/sep.x -n 1000 : -N 1 -n 1 /lustre/orion/chp109/world-shared/ctftest/sep.x -n 1000'
+        print('printing self.dirac_cmd')
+        print(self.dirac_cmd)
 
     def handle_machinefile(self):
         """
@@ -2058,13 +2094,13 @@ Options are also read from ~/.diracrc"""
             print('  all pam args   :', self.pam_args)
             if self.dirac_exe not in self.pam_args:
                 print('  executable     :', self.dirac_exe)
-            disk= disk_space_find(self.scratch_dir)
-            if disk.available:
-                scratch_disk_usage="(avail space=%10.3f[GB])"%(disk.available)
-                scratch_disk_usage=scratch_disk_usage.replace(" ","")
-                print('  scratch dir    :', self.scratch_dir,scratch_disk_usage)
-            else:
-                print_error_message('scratch dir:'+self.scratch_dir+' not found/not accessible !')
+            # disk= disk_space_find(self.scratch_dir)
+            # if disk.available:
+            #     scratch_disk_usage="(avail space=%10.3f[GB])"%(disk.available)
+            #     scratch_disk_usage=scratch_disk_usage.replace(" ","")
+            #     print('  scratch dir    :', self.scratch_dir,scratch_disk_usage)
+            # else:
+            #     print_error_message('scratch dir:'+self.scratch_dir+' not found/not accessible !')
             print('  output file    :', self.output_file)
             print('  DIRAC run      :', dirac_run)
             # print out more stuff regarding the parallel setting
@@ -2261,10 +2297,10 @@ class disk_space:
         if not os.path.isdir(path): return
         if not is_windows():
             # Unix/Linux stuff
-            self.disk_info = os.statvfs(path)
-            self.capacity = ( self.disk_info.f_frsize * self.disk_info.f_blocks ) / gb_factor
-            self.available = ( self.disk_info.f_frsize * self.disk_info.f_bavail ) /  gb_factor
-            self.used = ( self.disk_info.f_frsize * (self.disk_info.f_blocks - self.disk_info.f_bavail)) / gb_factor
+            # self.disk_info = os.statvfs(path)
+            self.capacity = 1000 # ( self.disk_info.f_frsize * self.disk_info.f_blocks ) / gb_factor
+            self.available = 300 #( self.disk_info.f_frsize * self.disk_info.f_bavail ) /  gb_factor
+            self.used = 700 # ( self.disk_info.f_frsize * (self.disk_info.f_blocks - self.disk_info.f_bavail)) / gb_factor
         else:
             # Windows stuff
             import ctypes
@@ -2287,16 +2323,16 @@ class disk_space_find:
         if entering variable path is not proper, returns None
         """
         # initialize
-        self.capacity=disk_space(path).capacity
-        self.available=disk_space(path).available
-        self.used=disk_space(path).used
+        self.capacity=1000 #disk_space(path).capacity
+        self.available=300 #disk_space(path).available
+        self.used=700 #disk_space(path).used
         # cycle for finding existing path
         this_path=path
-        while disk_space(this_path).used is None:
-            this_path=os.path.dirname(this_path)
-            self.capacity=disk_space(this_path).capacity
-            self.available=disk_space(this_path).available
-            self.used=disk_space(this_path).used
+        #while disk_space(this_path).used is None:
+        #    this_path=os.path.dirname(this_path)
+        #    self.capacity=1000 #disk_space(this_path).capacity
+        #    self.available=300 #disk_space(this_path).available
+        #    self.used=700 #disk_space(this_path).used
 
 class extract_path_file:
     """
@@ -2332,7 +2368,8 @@ def backup_file(some_file,upto):
     number "upto"
     """
     def do_copy_print(backup_file_name,backup_file_name_p1):
-        shutil.copy2(backup_file_name,backup_file_name_p1)
+        # shutil.copy2(backup_file_name,backup_file_name_p1)
+        os.system("cp -p "+backup_file_name+" "+backup_file_name_p1)
         #         "file.n"  -->  "file.n+1"
         result=extract_path_file()
         result.get_path_file(backup_file_name)
