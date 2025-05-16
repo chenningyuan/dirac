@@ -106,7 +106,8 @@ module talsh_gradient
     
     end subroutine
 
-    subroutine talsh_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, int_t, tX1_tensor, lX1_tensor, tX2_tensor, lX2_tensor)
+    subroutine talsh_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, &
+                              int_t, tX1_tensor, lX1_tensor, tX2_tensor, lX2_tensor)
       use exacorr_datatypes
 
 !     Routine for obtaining the density matrices in the MO basis
