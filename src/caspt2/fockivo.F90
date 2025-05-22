@@ -136,9 +136,11 @@ SUBROUTINE fockivo ! TO MAKE FOCK MATRIX for IVO
 
     Read (unit_dfpcmo, *) eval
     if (rank == 0) then
-        Do i = 1, total_mo
-            print *, "eval(i)", eval(i)
-        End do
+        if (debug) then
+            Do i = 1, total_mo
+                print *, "eval(i)", eval(i)
+            End do
+        end if
         print *, 'end reading eigenvalue'
     end if
     if (dirac_version >= 21 .or. integrated_caspt2) then
@@ -147,10 +149,12 @@ SUBROUTINE fockivo ! TO MAKE FOCK MATRIX for IVO
 
     Read (unit_dfpcmo, *) syminfo
     if (rank == 0) then
-        Do i = 1, total_mo
-            print *, "syminfo(i)", syminfo(i)
-        End do
-        print *, 'end reading symmetry information2'
+        if (debug) then
+            Do i = 1, total_mo
+                print *, "syminfo(i)", syminfo(i)
+            End do
+        end if
+        print *, 'end reading symmetry information'
     end if
 
     if (.not. is_eof(unit=unit_dfpcmo, file='DFPCMO', is_formatted=.true.)) then

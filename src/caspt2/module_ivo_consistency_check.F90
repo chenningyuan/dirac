@@ -7,7 +7,7 @@ module module_ivo_consistency_check
 contains
     subroutine ivo_consistency_check
         use module_global_variables, only: irpamo, dirac_version, integrated_caspt2, ninact, nact, nsec, nsymrpa, & 
-                                           occ_mo_num, vcut_mo_num, rank
+                                           occ_mo_num, vcut_mo_num, rank, debug
         use module_file_manager
         use module_error
         implicit none
@@ -77,7 +77,7 @@ contains
         ! Read MO supersymmetry
         allocate (supersym(total_mo))
         read (unit_dfpcmo, *, iostat=iostat) supersym
-        if (rank == 0) print *, "supersym", supersym
+        if (debug .and. rank == 0) print *, "supersym", supersym
 
         if (.not. is_eof(unit=unit_dfpcmo, file=filename, is_formatted=.true.)) then
             allocate (kappa(total_mo))
@@ -107,7 +107,7 @@ contains
                 start_isym = nsymrpa/2 + 1
                 end_isym = nsymrpa
             end if
-            if (rank == 0) then
+            if (debug .and. rank == 0) then
                 ! Print the virtual MOs supersymmetry
                 print *, "Virtual supersym", supersym(start_idx_dfpcmo:end_idx_dfpcmo)
                 ! Check the consistency of the input and DFPCMO data
@@ -127,7 +127,8 @@ contains
                     nv_dfpcmo = count(abs(supersym(start_idx_dfpcmo:end_idx_dfpcmo)) == isym_for_supersym)  ! Number of virtual MOs corresponding to isym in the DFPCMO file
                 end if
                 nv_input = count(irpamo(start_idx_input:end_idx_input) == isym)  ! Number of virtual MOs corresponding to isym in the input file
-                if (rank == 0) print *, "isym", isym, "isym_f_s", isym_for_supersym, "nv_dfpcmo", nv_dfpcmo, "nv_input", nv_input
+                if (debug .and. rank == 0) print *, "isym", isym, "isym_f_s", isym_for_supersym, &
+                                                    "nv_dfpcmo", nv_dfpcmo, "nv_input", nv_input
                 if (nv_input /= nv_dfpcmo) then
                     if (rank == 0) then
                         print *, "isym =", isym, "supersym =", supersym(start_idx_dfpcmo:end_idx_dfpcmo)
