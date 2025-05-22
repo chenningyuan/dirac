@@ -24,9 +24,8 @@ subroutine r4divo_co   ! DO IVO CALC ONLY FOR SMALL BASIS SETS
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 
     if (rank == 0) then
-        call print_head_ivo
         print *, ''
-        print *, 'Enter RELATIVISTIC IVO PROGRAM'
+        print *, 'ENTER RELATIVISTIC IVO PROGRAM'
         print *, ''
     end if
 

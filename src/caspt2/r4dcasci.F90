@@ -24,9 +24,8 @@ subroutine r4dcasci   ! DO CASCI CALC IN THIS PROGRAM!
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 
     if (rank == 0) then
-        call print_head_casci
         print *, ''
-        print *, ' ENTER RELATIVISTIC CASCI PROGRAM'
+        print *, 'ENTER RELATIVISTIC CASCI PROGRAM'
         print *, ''
     end if
     tmem = 0.0d+00
@@ -128,6 +127,6 @@ subroutine r4dcasci   ! DO CASCI CALC IN THIS PROGRAM!
     end if
     if (rank == 0) call write_allocated_memory_size
     call get_current_time_and_print_diff(init_time, end_time) ! Print the total time
-    if (rank == 0) print *, 'End r4dcasci part'
+    if (rank == 0) print *, 'END OF RELATIVISTIC CASCI PROGRAM'
 
 END subroutine r4dcasci

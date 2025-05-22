@@ -28,9 +28,8 @@ subroutine r4dcaspt2_tra   ! DO CASPT2 CALC WITH MO TRANSFORMATION
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 
     if (rank == 0) then
-        call print_head_caspt2
         print *, ''
-        print *, ' START RELATIVISIC CASPT2 PROGRAM'
+        print *, 'ENTER RELATIVISTIC CASPT2 PROGRAM'
         print *, ''
     end if
     tmem = 0.0d+00

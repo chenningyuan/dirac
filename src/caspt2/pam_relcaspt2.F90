@@ -12,11 +12,7 @@ subroutine RELCASPT2_MASTER
    rank = 0; nprocs = 1
 #endif
 
-   ! call print_head
-   print '(2(a,1x,i0))', 'initialization of mpi, rank : ', rank, ' nprocs : ', nprocs
-   print *, ''
-   print *, ' START RELATIVISIC CASPT2 PROGRAM'
-   print *, ''
+   call print_title("CASPT2")
 
    call CASPT2_MAIN
 end subroutine RELCASPT2_MASTER
@@ -39,9 +35,11 @@ subroutine RELCASPT2_NODE
 end subroutine RELCASPT2_NODE
 
 subroutine CASPT2_MAIN
+   use module_global_variables, only: tmem
    use module_index_utils, only: set_global_index
    use module_time
 
+   tmem = 0.0d+00
    call sync_input_variables
    call set_global_index
 
@@ -76,11 +74,7 @@ subroutine RELIVO_MASTER
    rank = 0; nprocs = 1
 #endif
 
-   ! call print_head
-   print '(2(a,1x,i0))', 'initialization of mpi, rank : ', rank, ' nprocs : ', nprocs
-   print *, ''
-   print *, ' START RELATIVISIC IVO PROGRAM'
-   print *, ''
+   call print_title("IVO")
 
    call IVO_MAIN
 end subroutine RELIVO_MASTER
@@ -109,6 +103,7 @@ subroutine IVO_MAIN
    implicit none
    integer :: ninact_orig, nact_orig, nsec_orig, nelec_orig
 
+   tmem = 0.0d+00
    call sync_input_variables
    ! define inact,act,sec,elec values for IVO calculation since input values are for CASPT2
    ninact_orig = ninact; nact_orig = nact; nsec_orig = nsec; nelec_orig = nelec
@@ -189,3 +184,20 @@ subroutine sync_input_variables
    call bcast_wrapper(vcut_mo_num, 0)
 #endif
 end subroutine sync_input_variables
+
+subroutine print_title(program_name)
+   use module_global_variables, only: rank
+   implicit none
+   character(len=*), intent(in) :: program_name
+   character(:), allocatable :: title
+   integer, parameter :: title_length = 118
+
+   title = "RELATIVISTIC " // program_name // " PROGRAM"
+   if (rank == 0) then
+      call TITLER(title, "*", title_length)
+      print '(A)', "Written by: Kohei Noda, Minori Abe, Sumika Iwamuro & Yasuto Masuda"
+      print '(A)', "Reference: Y. Masuda, K. Noda, S. Iwamuro, M. Hada, N. Nakatani, M. Abe. &
+                   J. Chem. Theory Comput. 2025, 21, 3, 1249–1258"
+      print '(A)', ""
+   end if
+end subroutine print_title

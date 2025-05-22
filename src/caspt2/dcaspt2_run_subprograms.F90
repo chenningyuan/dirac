@@ -14,8 +14,6 @@ subroutine dcaspt2_run_subprograms(ivo_mode)
     integer :: unit_input, i
     character(:), allocatable :: filename
 
-    call print_head
-
     ! Read MRCONEE file (orbital energies, symmetries and multiplication tables)
     if (rank == 0) then
         print *, ' '
