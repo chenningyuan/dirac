@@ -94,6 +94,10 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FIXED_CASPT2_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+    set_source_files_properties(${FREE_CASPT2_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-fp-model=precise")
+    set_source_files_properties(${FIXED_CASPT2_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-fp-model=precise")
+endif()
 
 add_library(
     caspt2
