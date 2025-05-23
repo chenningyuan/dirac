@@ -381,7 +381,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                                         Bvec_tensor_B)
                 call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega(B))
                 call solve_cc_lr_left(exa_input, interm_t, int_t, &
-                                      Interm_t_tensors_B(j), &
+!                                      Interm_t_tensors_B(j), &
                                       omega(B), Bvec_tensor_B, &
                                       Tprop_bar_tensor_B)
 !                    
@@ -399,7 +399,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                                             Bvec_tensor_B_min_w)
                     call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega_min(B))
                     call solve_cc_lr_left(exa_input, interm_t, int_t, &
-                                          Interm_t_tensors_B(j), &
+!                                          Interm_t_tensors_B(j), &
                                           omega_min(B), &
                                           Bvec_tensor_B_min_w, &
                                           Tprop_bar_tensor_B_min_w)
@@ -417,7 +417,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                                    Bvec_tensor_B)
                 call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega(B))
                 call solve_eom_lr_left(exa_input, interm_t, int_t, &
-                                       Interm_t_tensors_B(j), &
+!                                       Interm_t_tensors_B(j), &
                                        omega(B), &
                                        Bvec_tensor_B, &
                                        Tprop_bar_tensor_B)
@@ -434,7 +434,7 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                                        Bvec_tensor_B_min_w)
                     call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega_min(B))
                     call solve_eom_lr_left(exa_input, interm_t, int_t, &
-                                           Interm_t_tensors_B(j), &
+!                                           Interm_t_tensors_B(j), &
                                            omega_min(B), &
                                            Bvec_tensor_B_min_w, &
                                            Tprop_bar_tensor_B_min_w)
@@ -715,6 +715,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     integer :: ierr
     logical          :: exchange
     integer :: A, B, C
+    logical :: do_dynamic
 
     N_prop = 3
 
@@ -746,6 +747,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     omega_min = ZERO 
 
     allocate(Bvec_tensors(N_oper_qr))
+    if (CC_CC) allocate(Bvec_tensors_min_w(N_oper_qr))
     allocate(Tprop_tensors(N_oper_qr))
     allocate(Tprop_tensors_min_w(N_oper_qr))
     allocate(Tprop_bar_tensors(N_oper_qr))
@@ -774,7 +776,10 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
             print *, "Perturbation frequency -w_B :", omega_min(B)
             print *, "Perturbation frequency -w_C :", omega_min(C)
 
-
+            do_dynamic = .true.
+            if ((omega(A).eq.ZERO).and.(omega(B).eq.ZERO).and.(omega(C).eq.ZERO)) then
+                do_dynamic = .false.
+            end if
 ! This loop is to determine which three properties to calculate
         do i=1, N_prop_A
 
@@ -782,7 +787,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
             call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                     Interm_t_tensors_A(i), omega(A), &
                                     Tprop_tensors(A))
-            if ((omega(B).ne.ZERO).or.(omega(C).ne.ZERO)) then 
+            if (do_dynamic) then 
                 call print_lr_setup("R","A",Interm_t_tensors_A(i),i,omega_min(A))
                 call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                         Interm_t_tensors_A(i), omega_min(A), &
@@ -794,6 +799,12 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                         Interm_t_tensors_A(i), &
                                         l1_tensor,l2_tensor, Tprop_tensors(A), &
                                         Bvec_tensors(A))
+                if (do_dynamic) then
+                    call get_left_bvec_cccc(exa_input,int_t,interm_t, &
+                                        Interm_t_tensors_A(i), &
+                                        l1_tensor,l2_tensor, Tprop_tensors_min_w(A), &
+                                        Bvec_tensors_min_w(A))
+                end if
             else
                 call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_A(i), &
                                    l1_tensor,l2_tensor, Bvec_tensors(A))
@@ -801,23 +812,21 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 
             call print_lr_setup("L","A",Interm_t_tensors_A(i),i,omega(A))
             if (CC_CC) then
-                call solve_cc_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_A(i), &
+                call solve_cc_lr_left(exa_input, interm_t, int_t, & 
                                        omega(A), Bvec_tensors(A), Tprop_bar_tensors(A))
             else
-                call solve_eom_lr_left(exa_input, interm_t, int_t, Interm_t_tensors_A(i), &
+                call solve_eom_lr_left(exa_input, interm_t, int_t, & 
                                        omega(A), Bvec_tensors(A), Tprop_bar_tensors(A))
             end if 
 
-            if ((omega(B).ne.ZERO).or.(omega(C).ne.ZERO)) then 
+            if (do_dynamic) then 
                 call print_lr_setup("L","A",Interm_t_tensors_A(i),i,omega_min(A))
                 if (CC_CC) then
                     call solve_cc_lr_left(exa_input, interm_t, int_t, &
-                                          Interm_t_tensors_A(i), &
-                                          omega_min(A), Bvec_tensors(A), &
+                                          omega_min(A), Bvec_tensors_min_w(A), &
                                           Tprop_bar_tensors_min_w(A))
                 else
                      call solve_eom_lr_left(exa_input, interm_t, int_t, &
-                                            Interm_t_tensors_A(i), &
                                             omega_min(A), Bvec_tensors(A), &
                                             Tprop_bar_tensors_min_w(A))
                 end if 
@@ -829,7 +838,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                 call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                         Interm_t_tensors_B(j), &
                                         omega(B), Tprop_tensors(B))
-                if ((omega(B).ne.ZERO).or.(omega(C).ne.ZERO)) then 
+                if (do_dynamic) then 
                     call print_lr_setup("R","B",Interm_t_tensors_B(j),j,omega_min(B))
                     call solve_eom_lr_right(exa_input, interm_t, int_t, &
                            Interm_t_tensors_B(j), omega_min(B), Tprop_tensors_min_w(B))
@@ -837,9 +846,17 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 
                 if (CC_CC) then
                      call get_left_bvec_cccc(exa_input,int_t,interm_t, &
-                                             Interm_t_tensors_B(j), &
-                                             l1_tensor,l2_tensor, &
-                                             Tprop_tensors(B), Bvec_tensors(B))
+                                             Interm_t_tensors_B(j),    &
+                                             l1_tensor,l2_tensor,      &
+                                             Tprop_tensors(B),         &
+                                             Bvec_tensors(B))
+                    if (do_dynamic) then
+                        call get_left_bvec_cccc(exa_input,int_t,interm_t, &
+                                             Interm_t_tensors_B(j),       &
+                                             l1_tensor,l2_tensor,         &
+                                             Tprop_tensors_min_w(B),      &
+                                             Bvec_tensors_min_w(B))
+                    end if
                 else
                      call get_left_bvec(exa_input,int_t,interm_t, &
                                         Interm_t_tensors_B(j), &
@@ -849,24 +866,24 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                 call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega(B))
                 if (CC_CC) then
                     call solve_cc_lr_left(exa_input, interm_t, int_t, &
-                                           Interm_t_tensors_B(j), omega(B), &
+                                           omega(B), &
                                            Bvec_tensors(B), Tprop_bar_tensors(B))
                 else
                     call solve_eom_lr_left(exa_input, interm_t, int_t, &
-                                           Interm_t_tensors_B(j), omega(B), &
+                                           omega(B), &
                                            Bvec_tensors(B), Tprop_bar_tensors(B))
                 end if
 
-                if ((omega(B).ne.ZERO).or.(omega(C).ne.ZERO)) then 
+                if (do_dynamic) then 
                     call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega_min(B))
                     if (CC_CC) then
                         call solve_cc_lr_left(exa_input, interm_t, int_t, &
-                                              Interm_t_tensors_B(j), omega_min(B),&
-                                              Bvec_tensors(B), &
+                                              omega_min(B),&
+                                              Bvec_tensors_min_w(B), &
                                               Tprop_bar_tensors_min_w(B))
                     else
                         call solve_eom_lr_left(exa_input, interm_t, int_t, &
-                                              Interm_t_tensors_B(j), omega_min(B),&
+                                              omega_min(B),&
                                               Bvec_tensors(B), &
                                               Tprop_bar_tensors_min_w(B))
                     end if
@@ -878,7 +895,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                     call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                             Interm_t_tensors_C(k), omega(C), &
                                             Tprop_tensors(C))
-                    if ((omega(B).ne.ZERO).or.(omega(C).ne.ZERO)) then 
+                    if (do_dynamic) then 
                         call print_lr_setup("R","C",Interm_t_tensors_C(k),k,omega_min(C))
                         call solve_eom_lr_right(exa_input, interm_t, int_t, &
                                                 Interm_t_tensors_C(k), &
@@ -892,6 +909,13 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                                 l1_tensor,l2_tensor, &
                                                 Tprop_tensors(C), &
                                                 Bvec_tensors(C))
+                        if (do_dynamic) then
+                            call get_left_bvec_cccc(exa_input,int_t,interm_t, &
+                                                Interm_t_tensors_C(k), &
+                                                l1_tensor,l2_tensor, &
+                                                Tprop_tensors_min_w(C), &
+                                                Bvec_tensors_min_w(C))
+                        end if 
                     else
                         call get_left_bvec(exa_input,int_t,interm_t, &
                                            Interm_t_tensors_C(k), &
@@ -902,26 +926,26 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                     call print_lr_setup("L","C",Interm_t_tensors_C(k),k,omega(C))
                     if (CC_CC) then
                         call solve_cc_lr_left(exa_input, interm_t, int_t, &
-                                               Interm_t_tensors_C(k), omega(C), &
+                                               omega(C), &
                                                Bvec_tensors(C), &
                                                Tprop_bar_tensors(C))
                     else
                         call solve_eom_lr_left(exa_input, interm_t, int_t, &
-                                               Interm_t_tensors_C(k), omega(C), &
+                                               omega(C), &
                                                Bvec_tensors(C), &
                                                Tprop_bar_tensors(C))
                     end if 
                         
-                    if ((omega(B).ne.ZERO).or.(omega(C).ne.ZERO)) then 
+                    if (do_dynamic) then 
                         call print_lr_setup("L","C",Interm_t_tensors_C(k),k,omega_min(C))
                         if (CC_CC) then
                             call solve_cc_lr_left(exa_input, interm_t, int_t, &
-                                                  Interm_t_tensors_C(k), omega_min(C),&
-                                                  Bvec_tensors(C), &
+                                                  omega_min(C),&
+                                                  Bvec_tensors_min_w(C), &
                                                   Tprop_bar_tensors_min_w(C))
                         else
                             call solve_eom_lr_left(exa_input, interm_t, int_t, &
-                                                   Interm_t_tensors_C(k), omega_min(C),&
+                                                   omega_min(C),&
                                                    Bvec_tensors(C), &
                                                    Tprop_bar_tensors_min_w(C))
                         end if
@@ -929,30 +953,37 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 
                     call print_date('Solved All 1st response equations') 
 
-                    if ((omega(A).ne.ZERO).or.(omega(B).ne.ZERO)) then                    
-                        call print_date('Now calculating the quadratic response function')
-                        if (CC_CC) then
-                            call get_cccc_qr(exa_input, int_t, interm_t,&
-                                             Interm_t_tensors_A, &
-                                             Interm_t_tensors_B, & 
-                                             Interm_t_tensors_C, & 
-                                             Tprop_tensors, Tprop_bar_tensors, & 
-                                             Tprop_tensors_min_w, Tprop_bar_tensors_min_w, &
-                                             i, j, k, l1_tensor, l2_tensor, cc_qr)
-                        else
-                            call get_eom_qr(exa_input, interm_t,&
-                                            Interm_t_tensors_A, &
-                                            Interm_t_tensors_B, &
-                                            Interm_t_tensors_C, & 
-                                            Tprop_tensors, Tprop_bar_tensors, & 
-                                            Tprop_tensors_min_w, Tprop_bar_tensors_min_w, &
-                                            i, j, k, l1_tensor, l2_tensor, cc_qr)
-                        end if
-                    else
+                    call print_date('Now calculating asymmetric linear response functions')
 
-                        call print_date('Now calculating asymmetric linear response functions')
+                    if (do_dynamic) then                    
+                        call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
+                                         Interm_t_tensors_A(i), &
+                                         Tprop_tensors(A), Tprop_tensors_min_w(A), &
+                                         Tprop_bar_tensors(A), Tprop_bar_tensors_min_w(A), &
+                                         Interm_t_tensors_A(i)%property_label, &
+                                         Interm_t_tensors_A(i)%property_label, &
+                                         omega(A), &
+                                         l1_tensor,l2_tensor,CC_CC,value_lr)
 
                         call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
+                                         Interm_t_tensors_A(i), &
+                                         Tprop_tensors(B), Tprop_tensors_min_w(B), &
+                                         Tprop_bar_tensors(B), Tprop_bar_tensors_min_w(B), &
+                                         Interm_t_tensors_A(i)%property_label, &
+                                         Interm_t_tensors_B(j)%property_label, &
+                                         omega(B), &
+                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+
+                        call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
+                                         Interm_t_tensors_A(i), &
+                                         Tprop_tensors(C), Tprop_tensors_min_w(C), &
+                                         Tprop_bar_tensors(C), Tprop_bar_tensors_min_w(C), &
+                                         Interm_t_tensors_A(i)%property_label, &
+                                         Interm_t_tensors_C(k)%property_label, &
+                                         omega(C), &
+                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+                    else
+                       call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_A(i), &
                                          Tprop_tensors(A), Tprop_tensors(A), &
                                          Tprop_bar_tensors(A), Tprop_bar_tensors(A), &
@@ -978,9 +1009,30 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                          Interm_t_tensors_C(k)%property_label, &
                                          omega(C), &
                                          l1_tensor,l2_tensor,CC_CC,value_lr)
-                        call print_date('Done calculating asymmetric linear response functions')
+                    end if
+                    call print_date('Done calculating asymmetric linear response functions')
 
-                        call print_date('Now calculating the quadratic response function')
+                    call print_date('Now calculating the quadratic response function')
+                    if (do_dynamic) then                    
+                        
+                        if (CC_CC) then
+                            call get_cccc_qr(exa_input, int_t, interm_t,&
+                                             Interm_t_tensors_A, &
+                                             Interm_t_tensors_B, & 
+                                             Interm_t_tensors_C, & 
+                                             Tprop_tensors, Tprop_bar_tensors, & 
+                                             Tprop_tensors_min_w, Tprop_bar_tensors_min_w, &
+                                             i, j, k, l1_tensor, l2_tensor, cc_qr)
+                        else
+                            call get_eom_qr(exa_input, interm_t,&
+                                            Interm_t_tensors_A, &
+                                            Interm_t_tensors_B, &
+                                            Interm_t_tensors_C, & 
+                                            Tprop_tensors, Tprop_bar_tensors, & 
+                                            Tprop_tensors_min_w, Tprop_bar_tensors_min_w, &
+                                            i, j, k, l1_tensor, l2_tensor, cc_qr)
+                        end if
+                    else
                         call print_date('Note: Calculating static quadratic response.')
                         if (CC_CC) then
                             call get_cccc_qr(exa_input, int_t, interm_t,&
@@ -995,7 +1047,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                     Tprop_tensors, Tprop_bar_tensors,&
                                     i, j, k, l1_tensor, l2_tensor, cc_qr)
                         end if
-                end if 
+                    end if 
 
                     cc_qrs(i,j,k,m,n) = cc_qr
                     write(*,"(A)"), "<< "//Interm_t_tensors_A(i)%property_label// &
@@ -1003,17 +1055,60 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                     " , "//Interm_t_tensors_C(k)%property_label//" >> = "
                     write(*,"(F16.8,A,F16.8)"), real(cc_qrs(i,j,k,m,n)), ' \ ', aimag(cc_qrs(i,j,k,m,n))
 
-                    call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,3,Bvec_tensors,&
-                    Tprop_bar_tensors,Tprop_bar_tensors_min_w)
+                    if (CC_CC.and.do_dynamic) then
+                        call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        C,&
+                                        Bvec_tensors,&
+                                        Bvec_tensors_min_w=Bvec_tensors_min_w,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+                    else
+                        call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        C,&
+                                        Bvec_tensors,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+                    end if
 
                 end do
-                call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,2,Bvec_tensors,&
-                                            Tprop_bar_tensors,Tprop_bar_tensors_min_w)
+
+                if (CC_CC.and.do_dynamic) then
+                    call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        B,&
+                                        Bvec_tensors,&
+                                        Bvec_tensors_min_w=Bvec_tensors_min_w,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+                else
+                    call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        B,&
+                                        Bvec_tensors,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+                end if
 
             end do
-            call destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,1,Bvec_tensors,&
-                                        Tprop_bar_tensors,Tprop_bar_tensors_min_w)
 
+            if (CC_CC.and.do_dynamic) then
+                call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        A,&
+                                        Bvec_tensors,&
+                                        Bvec_tensors_min_w=Bvec_tensors_min_w,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+            else
+                call destroy_Tprop_tensors(Tprop_tensors,&
+                                        Tprop_tensors_min_w,&
+                                        A,&
+                                        Bvec_tensors,&
+                                        Tprop_bar_tensors_wB=Tprop_bar_tensors,&
+                                        Tprop_bar_tensors_min_wB=Tprop_bar_tensors_min_w)
+            end if
         end do
     
       end do
@@ -1033,7 +1128,11 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
         end do
 
 
-        write(*,"(A54)"), "*************CC-CI(EOM-CC) quadratic response************"
+        if (CC_CC) then
+            write(*,"(A54)"), "*****************CC-CC quadratic response****************"
+        else
+            write(*,"(A54)"), "*************CC-CI(EOM-CC) quadratic response************"
+        end if
         do n=1, N_omega1
           do m=1, N_omega2
             do i=1, N_prop_A
@@ -1064,6 +1163,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
         DEALLOCATE(Interm_t_tensors_B)
         DEALLOCATE(Interm_t_tensors_C)
         DEALLOCATE(Bvec_tensors)
+        if (CC_CC) DEALLOCATE(Bvec_tensors_min_w)
         DEALLOCATE(cc_qrs)
 
 
