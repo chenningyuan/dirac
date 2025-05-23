@@ -510,7 +510,7 @@ module talsh_eom_rspeq_solver
                   type(exacc_input), intent(in) :: exa_input
                   type(talsh_intg_tens_t), intent(inout) :: int_t
                   type(talsh_intermediates_tens_t),intent(inout) :: interm_t
-                  type(talsh_rsp_interm_tens_t) :: interm_t_prop
+                  type(talsh_rsp_interm_tens_t),intent(inout) :: interm_t_prop
                   type(talsh_tens_t), intent(inout)  :: l2_tensor
                   type(talsh_tens_t), intent(inout)  :: l1_tensor
                   type(talsh_comm_tens_t), intent(inout) :: Tprop_tensor    !for CC-CI, we need right-vectors
@@ -537,6 +537,8 @@ module talsh_eom_rspeq_solver
             
                   ierr=talsh_tensor_construct(bvec_tensor%t1,C8,ov_dims,init_val=ZERO)
                   ierr=talsh_tensor_construct(bvec_tensor%t2,C8,oovv_dims,init_val=ZERO)
+                  print *, 'DEBUG, get_left_bvec_cccc : norm bvec #1',&
+                            tensor_norm2(bvec_tensor%t1),tensor_norm2(bvec_tensor%t2)
                   call get_tF(B%t1,B%t2,Tprop_tensor%t1,Tprop_tensor%t2,l1_tensor,l2_tensor,&
                         interm_t,int_t,exa_input%nocc,exa_input%nvir)
             
@@ -545,6 +547,8 @@ module talsh_eom_rspeq_solver
 
                   ierr=talsh_tensor_add('B(i,a)+=Ft(i,a)',bvec_tensor%t1,B%t1,scale=ONE)             
                   ierr=talsh_tensor_add('B(i,j,a,b)+=Ft(i,j,a,b)',bvec_tensor%t2,B%t2,scale=ONE) 
+                  print *, 'DEBUG, get_left_bvec_cccc : norm bvec #2',&
+                            tensor_norm2(bvec_tensor%t1),tensor_norm2(bvec_tensor%t2)
             
       end subroutine get_left_bvec_cccc
 
