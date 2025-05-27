@@ -1,4 +1,4 @@
-subroutine dcaspt2_run_subprograms
+subroutine dcaspt2_run_subprograms(ivo_mode)
     use dcaspt2_restart_file, only: read_and_validate_restart_file
     use module_file_manager, only: open_formatted_file
     use module_global_variables
@@ -10,6 +10,7 @@ subroutine dcaspt2_run_subprograms
     use read_input_module, only: read_input
     implicit none
 #include "dcbpsi.h"
+    logical, intent(in) :: ivo_mode
     integer :: unit_input, i
     character(:), allocatable :: filename
 
@@ -30,9 +31,12 @@ subroutine dcaspt2_run_subprograms
         return ! skip subprograms if docountndet is true
     end if
 
-    if (doivo) then
+    if (ivo_mode) then
+        if (.not. doivo) return
         call r4divo_co
         call dcaspt2_deallocate
+        ! skip the following subprogram if ivo_mode is true
+        ! if docasci or docaspt2 is true, this subroutine will be called again with ivo_mode = .false.
         return
     end if
 
