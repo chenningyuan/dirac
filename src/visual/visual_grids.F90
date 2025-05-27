@@ -327,45 +327,38 @@ use num_grid_cfg
 
 
 ! ------------------------------------------------------------------------------
-  subroutine grid_3d_npoints_from_spacing(grid)
+  subroutine grid_3d_npoints_from_spacing(grid,i)
     type(grid_t), intent(inout):: grid
-    integer:: i
+    integer,intent(in):: i
 
     if (.not.grid%extents_known) return
-    do i = 1, grid%ndim
-      if (grid%nr_points_known(i) .or. &
-          grid%spacing(i) == 0    .or. &
-          .not.grid%spacing_known(i) .or. &
-          grid%nr_points(i) <= 0) return
+    if (.not.grid%spacing_known(i)) return
 
-      grid%nr_points(i) = int((grid%extents(1,i) - grid%extents(0,i))/grid%spacing(i)) + 1
-      grid%nr_points_known(i) = .true.
-    end do
-  end subroutine grid_3d_npoints_from_spacing
+    grid%nr_points(i) = int((grid%extents(1,i) - grid%extents(0,i))/grid%spacing(i)) + 1
+    grid%nr_points_known(i) = .true.
+
+  end subroutine
 
 
 ! ------------------------------------------------------------------------------
-  subroutine grid_3d_spacing_from_npoints(grid)
+  subroutine grid_3d_spacing_from_npoints(grid,i)
     type(grid_t), intent(inout):: grid
-    integer:: i
+    integer,intent(in):: i
     character(len = 150):: errmsg
 
-    do i = 1, grid%ndim
-      if (grid%spacing_known(i)) return
-      grid%spacing(i) = 0.0d0
-      if (grid%nr_points_known(i)) then
-        if (grid%nr_points(i) > 1) then
-          grid%spacing(i) = (grid%extents(1,i) - grid%extents(0, i))/(grid%nr_points(i) - 1)
-        else
-          grid%spacing(i) = grid%extents(1,i) - grid%extents(0,i)
-        end if
-        grid%spacing_known(i) = .true.
+    grid%spacing(i) = 0.0d0
+    if (grid%nr_points_known(i)) then
+      if (grid%nr_points(i) > 1) then
+        grid%spacing(i) = (grid%extents(1,i) - grid%extents(0, i))/(grid%nr_points(i) - 1)
       else
-        write (errmsg, *) 'ERROR in grid_3d_spacing_from_npoints'
-        call visual_quit(errmsg)
+        grid%spacing(i) = grid%extents(1,i) - grid%extents(0,i)
       end if
-    end do
-  end subroutine grid_3d_spacing_from_npoints
+      grid%spacing_known(i) = .true.
+    else
+      write (errmsg, *) 'ERROR in grid_3d_spacing_from_npoints'
+      call visual_quit(errmsg)
+    end if
+  end subroutine
 
 ! ------------------------------------------------------------------------------
   subroutine grid_line_spacing_from_npoints(grid)
@@ -440,9 +433,9 @@ use num_grid_cfg
 
     call grid_origin_extents_from_mol(mol, grid)
 
-    do i = 1, 3
-      if (.not. grid%spacing_known(i)) call grid_3d_spacing_from_npoints(grid)
-      if (.not. grid%nr_points_known(i)) call grid_3d_npoints_from_spacing(grid)
+    do i = 1, grid%ndim
+      if (.not. grid%spacing_known(i)) call grid_3d_spacing_from_npoints(grid,i)
+      if (.not. grid%nr_points_known(i)) call grid_3d_npoints_from_spacing(grid,i)
     end do
 
     if (.not. grid%nr_points_total_known) call grid_get_nr_points_total(grid)
