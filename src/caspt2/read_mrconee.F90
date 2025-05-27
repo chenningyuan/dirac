@@ -575,7 +575,7 @@ contains
         call check_iostat(iostat=iostat, file=trim(filename), end_of_file_reached=is_end_of_file)
 
 ! Reverse the sign of ronei if DIRAC version is larger or equal to 21.
-        if (dirac_version >= 21) then
+        if (dirac_version >= 21 .or. integrated_caspt2) then
             ronei(:, :, :) = -ronei(:, :, :)
         end if
 
