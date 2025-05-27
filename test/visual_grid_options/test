@@ -34,7 +34,7 @@ test.run(['vis_3d_old.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dgrid_gener
 
 test.run(['vis_3d_radial.inp'], ['h2o.mol'], args='--incmo --get="ed_on3Dradial.h5 grid_3d_fromRADIAL.h5"')
 test.run(['vis_3d_dftgrid.inp'], ['h2o.mol'], args='--incmo --put="numerical_grid" --get="ed_on3Ddftgrid.h5 dftgrid_3d.h5"')
-test.run(['vis_3d_multigrid.inp'], ['h2o.mol'], args='--incmo --put="numerical_grid" --get="ed_on3Ddftgrid_multi.h5 ed_on3Dgrid_generated_multi.h5"')
+test.run(['vis_3d_multigrid.inp'], ['h2o.mol'], args='--incmo --put="numerical_grid" --get="ed_on3Ddftgrid_multi.h5 ed_on3Dgrid_generated_multi.h5 ed_on3Dgrid_generated_spacing_multi.h5"')
 test.run(['vis_3d_multigrid_2gf.inp'], ['h2o.mol'], args='--incmo --put="numerical_grid" \
         --get="ed_on3Ddftgrid_multi_2gf.h5 ed_on3Dgrid_generated_multi_2gf.h5 rdg_on3Dgrid_generated_multi_2gf.h5 grid_3d_generated_multi_2gf.h5 dftgrid_3d_multi_2gf.h5"')
 
@@ -77,6 +77,15 @@ for t in testset:
 
     rs.verify(ftest=t,\
               fref='result/ed_on3Dgrid_generated.h5',\
+              typ='array',\
+              gf_label='/result/grid_function/ed/visualization/values/',
+              gf_test_key='t0_icomp_1')
+
+testset = ["ed_on3Dgrid_generated_spacing_multi.h5"]
+for t in testset:
+
+    rs.verify(ftest=t,\
+              fref='result/ed_on3Dgrid_generated_spacing.h5',\
               typ='array',\
               gf_label='/result/grid_function/ed/visualization/values/',
               gf_test_key='t0_icomp_1')
