@@ -2,18 +2,18 @@ subroutine dcaspt2_run_subprograms
     use dcaspt2_restart_file, only: read_and_validate_restart_file
     use module_file_manager, only: open_formatted_file
     use module_global_variables
+#ifdef HAVE_MPI
+    use module_mpi, only: bcast_wrapper
+#endif
     use module_realonly, only: check_realonly
     use module_validation, only: validate_ndet
     use read_input_module, only: read_input
     implicit none
+#include "dcbpsi.h"
     integer :: unit_input, i
     character(:), allocatable :: filename
 
     call print_head
-
-    call open_formatted_file(unit=unit_input, file='active.inp', status="old", optional_action="read")
-    rewind (unit_input)
-    call read_input(unit_input)
 
     ! Read MRCONEE file (orbital energies, symmetries and multiplication tables)
     if (rank == 0) then
@@ -37,9 +37,18 @@ subroutine dcaspt2_run_subprograms
     end if
 
     do i = 1, size(caspt2_ciroots, 1)
-        totsym = caspt2_ciroots(i, 1)
-        selectroot = caspt2_ciroots(i, 2)
-        nroot = max_selectroot_list(totsym)
+        if (rank == 0) then
+            totsym = caspt2_ciroots(i, 1)
+            selectroot = caspt2_ciroots(i, 2)
+            nroot = max_selectroot_list(totsym)
+        end if
+#ifdef HAVE_MPI
+        call bcast_wrapper(totsym, 0)
+        call bcast_wrapper(selectroot, 0)
+        call bcast_wrapper(nroot, 0)
+        call bcast_wrapper(docasci, 0)
+        call bcast_wrapper(docaspt2, 0)
+#endif
         e2_subspace = 0
         sumc2 = 0
         sumc2_subspace = 0

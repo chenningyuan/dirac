@@ -12,6 +12,7 @@ module read_input_module
     implicit none
     private
     public read_input, check_substring, ras_read, lowercase, uppercase
+#include "dcbpsi.h"
     logical is_end, set_caspt2_ciroots
     integer, parameter :: input_intmax = 10**9, max_str_length = 500
     type(essential_inputs_container) :: container
@@ -68,10 +69,9 @@ contains
             do_reqired_file_check = .true.
         end if
 
-        call print_input_file(unit_num)
-        rewind (unit_num)
         call init_essential_variables
 
+        backspace (unit_num) ! Backspace to the beginning of the file
         do while (.not. is_end) ! Read the input file until the "end" is found
             read (unit_num, "(a)", iostat=iostat) string
             if (iostat < 0) then
@@ -90,7 +90,7 @@ contains
         call set_global_index
         call set_mdcint_scheme
         call check_ciroots_set
-        if (do_reqired_file_check) call check_reqired_files_exist
+        ! if (do_reqired_file_check) call check_reqired_files_exist
         ! Check the RAS configuration
         if (ras1_size /= 0 .or. ras2_size /= 0 .or. ras3_size /= 0) call check_ras_is_valid
 
@@ -630,11 +630,6 @@ contains
             end select
             deallocate (trim_input)
         end do
-
-        if (doivo .and. (docasci .or. docaspt2)) then
-            if (rank == 0) print *, "ERROR: ivo and casci or casci2 cannot be specified at the same time."
-            call stop_with_errorcode(1)
-        end if
 
     end subroutine read_subprograms
 

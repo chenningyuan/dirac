@@ -1,6 +1,6 @@
 module module_mpi
     ! This module provides developers with a simple interface to MPI.
-    ! Currently, only reduce and allreduce are implemented.
+    ! Currently, only bcast, reduce and allreduce are implemented.
     ! Author: Kohei Noda
 
     use, intrinsic :: iso_fortran_env, only: int32, int64
@@ -9,7 +9,12 @@ module module_mpi
 #ifdef HAVE_MPI
     include 'mpif.h'
     private
-    public reduce_wrapper, allreduce_wrapper
+    public bcast_wrapper, reduce_wrapper, allreduce_wrapper
+
+    interface bcast_wrapper
+        module procedure bcast_i, bcast_i_1, bcast_l, bcast_r
+    end interface bcast_wrapper
+
     interface reduce_wrapper
         module procedure reduce_i32, reduce_i64, reduce_i_1, reduce_r_2, reduce_c_2
     end interface reduce_wrapper
@@ -41,6 +46,76 @@ module module_mpi
                                       op_mpi_land, op_mpi_band, op_mpi_lor, op_mpi_bor, &
                                       op_mpi_lxor, op_mpi_bxor, op_mpi_maxloc, op_mpi_minloc/)
 contains
+
+    subroutine bcast_i(val, root_rank)
+        ! Broadcast for an integer value
+        implicit none
+        integer, intent(inout) :: val
+        integer, intent(in) :: root_rank
+        integer :: datatype
+
+        if (sizeof(val) == 4) then
+            datatype = MPI_INTEGER4 ! 4 byte integer
+        else
+            datatype = MPI_INTEGER8 ! 8 byte integer
+        end if
+
+        call MPI_Bcast(val, 1, datatype, root_rank, MPI_COMM_WORLD, ierr)
+        call check_ierr(ierr)
+
+    end subroutine bcast_i
+
+    subroutine bcast_i_1(mat, root_rank)
+        ! Broadcast for 1 dimensional integer array
+        implicit none
+        integer, intent(inout) :: mat(:)
+        integer, intent(in) :: root_rank
+        integer :: ii, ie
+        integer :: i, cnt
+        integer :: datatype
+
+        ! Set the first and last index of the array for each dimension.
+        ii = lbound(mat, 1); ie = ubound(mat, 1)
+        if (sizeof(mat(ii)) == 4) then
+            datatype = MPI_INTEGER4 ! 4 byte integer
+        else
+            datatype = MPI_INTEGER8 ! 8 byte integer
+        end if
+
+        ! Because of the limitation of the size of the array, the array is divided into several parts and reduce is performed.
+        if (max_i4 < size(mat, 1)) then ! 1st index is larger than the limit(max_i4)
+            do i = ii, ie, max_i4
+                cnt = min(max_i4, ie - i + 1)
+                call MPI_Bcast(mat(i), cnt, datatype, root_rank, MPI_COMM_WORLD, ierr)
+                call check_ierr(ierr)
+            end do
+        else ! no limit
+            call MPI_Bcast(mat, size(mat), datatype, root_rank, MPI_COMM_WORLD, ierr)
+            call check_ierr(ierr)
+        end if
+    end subroutine bcast_i_1
+
+    subroutine bcast_l(val, root_rank)
+        ! Broadcast for a logical value
+        implicit none
+        logical, intent(inout) :: val
+        integer, intent(in) :: root_rank
+
+        call MPI_Bcast(val, 1, MPI_LOGICAL, root_rank, MPI_COMM_WORLD, ierr)
+        call check_ierr(ierr)
+
+    end subroutine bcast_l
+
+    subroutine bcast_r(val, root_rank)
+        ! Broadcast for a real(8) value
+        implicit none
+        real(8), intent(inout) :: val
+        integer, intent(in) :: root_rank
+
+        call MPI_Bcast(val, 1, MPI_REAL8, root_rank, MPI_COMM_WORLD, ierr)
+        call check_ierr(ierr)
+
+    end subroutine bcast_r
 
     subroutine reduce_i32(mat, root_rank, optional_op)
         ! Reduce for an integer value

@@ -2,7 +2,7 @@
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 
-SUBROUTINE traci(fa)  ! Transform CI matrix for new spinor basis
+SUBROUTINE casci_traci(fa)  ! Transform CI matrix for new spinor basis
 
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
@@ -68,12 +68,12 @@ SUBROUTINE traci(fa)  ! Transform CI matrix for new spinor basis
 
     Deallocate (ds)
 
-End subroutine traci
+End subroutine casci_traci
 
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 
-SUBROUTINE tracic(fac)  ! Transform CI matrix for new spinor basis
+SUBROUTINE casci_tracic(fac)  ! Transform CI matrix for new spinor basis
 
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
@@ -153,4 +153,4 @@ SUBROUTINE tracic(fac)  ! Transform CI matrix for new spinor basis
     Deallocate (ci)
     Deallocate (ds)
 
-End subroutine tracic
+End subroutine casci_tracic

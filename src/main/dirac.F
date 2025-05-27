@@ -545,6 +545,13 @@ C
      &  ' KR-CC module not included in this version')
 #endif
         END IF
+C
+C***********************************************************************
+C******* R E L A T I V I S T I C  C A S P T 2 **************************
+C***********************************************************************
+C
+        IF(DOCASCI .or. DOCASPT2) CALL RELCASPT2_MASTER
+      
       ENDIF ! IF(DOPSI) .. second part, after 4-index transformation
 C
       CALL QEXIT('PAMPSI')
@@ -1503,6 +1510,11 @@ C
 C        start BEDLEB MPI calculation
 C
          call bedleb_launch_slave_procs()
+      ELSE IF (ITASK .EQ. 22) THEN
+C
+C        start CASPT2 MPI calculation
+C
+         call RELCASPT2_NODE()
 
       ELSE
 C

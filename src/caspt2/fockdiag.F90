@@ -63,11 +63,11 @@ SUBROUTINE fockdiag
     End do
 
     if (realonly%is_realonly()) then
-        Call traci(fa(global_act_start:global_act_end, global_act_start:global_act_end))
+        Call casci_traci(fa(global_act_start:global_act_end, global_act_start:global_act_end))
         fock_real(1:nmo, 1:nmo) = fa(1:nmo, 1:nmo)
         Call memminus(KIND(fa), SIZE(fa), 1); deallocate (fa)
     else
-        Call tracic(fac(global_act_start:global_act_end, global_act_start:global_act_end))
+        Call casci_tracic(fac(global_act_start:global_act_end, global_act_start:global_act_end))
         fock_cmplx(1:nmo, 1:nmo) = fac(1:nmo, 1:nmo)
         Call memminus(KIND(fac), SIZE(fac), 2); deallocate (fac)
     end if

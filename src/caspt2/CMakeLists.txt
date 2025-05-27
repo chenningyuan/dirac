@@ -40,7 +40,7 @@ set(FREE_CASPT2_FORTRAN_SOURCES
     create_newmdcint.F90
     cutoff.F90
     dcaspt2_deallocate.F90
-    dcaspt2_main.F90
+    # dcaspt2_main.F90
     dcaspt2_run_subprograms.F90
     density_matrix.F90
     diag.F90
@@ -48,6 +48,7 @@ set(FREE_CASPT2_FORTRAN_SOURCES
     get_filename.F90
     mem.F90
     one_e_exct.F90
+    pam_relcaspt2.F90
     print_head.F90
     read_cidata.F90
     read_mrconee.F90

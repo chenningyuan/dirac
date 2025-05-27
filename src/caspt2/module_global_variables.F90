@@ -42,7 +42,7 @@ MODULE module_global_variables
     logical         :: inversion = .false., no_inversion = .false., is_scheme_set = .false.
     logical         :: debug = .false. ! debugprint option
     integer, parameter :: default_scheme_dirac22_or_earlier = 6, default_scheme_dirac23_or_later = 4
-    logical         :: doivo = .false., docasci = .false., docaspt2 = .false., docountndet = .false.
+    logical         :: docountndet = .false.
     integer, parameter :: totsym_max = 1024, ciroots_max = totsym_max*1024 ! ciroot_max = totsym_max * ciroot_max_per_symmetry
     integer, allocatable :: max_selectroot_list(:)
 
@@ -188,5 +188,5 @@ MODULE module_global_variables
     logical :: casci_done(totsym_max) = .false.
 
     ! Interface for DIRAC
-    logical, parameter :: integrated_caspt2 = .false. ! is CASPT2 integrated with DIRAC?
+    logical, parameter :: integrated_caspt2 = .true. ! is CASPT2 integrated with DIRAC?
 end MODULE module_global_variables
