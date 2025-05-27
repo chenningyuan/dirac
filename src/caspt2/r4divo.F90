@@ -50,7 +50,6 @@ subroutine r4divo_co   ! DO IVO CALC ONLY FOR SMALL BASIS SETS
             print int_input_form, "nocc       =", occ_mo_num(1)
             print int_input_form, "nvcut      =", vcut_mo_num(1)
         end if
-        print int_input_form, 'diracver   =', dirac_version
         print int_input_form, 'scheme     =', mdcint_scheme
         print *, 'debugprint =', debug
         if (enable_restart) print *, "restart    =", enable_restart

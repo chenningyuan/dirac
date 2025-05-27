@@ -44,7 +44,6 @@ subroutine r4dcasci   ! DO CASCI CALC IN THIS PROGRAM!
         print int_input_form, 'totsym        =', totsym
         write (real_str, '(E20.10)') eshift
         print '(1x,a,1x,a)', 'eshift        =', trim(adjustl(real_str))
-        print int_input_form, 'diracver      =', dirac_version
         print int_input_form, 'scheme        =', mdcint_scheme
         if (ras1_size /= 0) print *, "RAS1 =", ras1_list
         if (ras2_size /= 0) print *, "RAS2 =", ras2_list

@@ -24,7 +24,6 @@ contains
         call container%add_essential_input(".nact")
         call container%add_essential_input(".nsec")
         call container%add_essential_input(".nelec")
-        call container%add_essential_input(".diracver")
         call container%add_essential_input(".subprograms")
     end subroutine init_essential_variables
 
@@ -107,6 +106,7 @@ contains
         character(*), intent(inout) :: string
         character(len=max_str_length) :: input
         logical :: is_comment
+        integer :: dummy_dirac_version
         call lowercase(string)
         select case (trim(adjustl(string)))
 
@@ -144,8 +144,7 @@ contains
             end do
 
         case (".diracver")
-            call read_an_integer(unit_num, ".diracver", 0, input_intmax, dirac_version)
-            call container%update_essential_input(".diracver", .true.)
+            call read_an_integer(unit_num, ".diracver", 0, input_intmax, dummy_dirac_version)
 
         case (".nhomo")
             call read_an_integer(unit_num, ".nhomo", 0, input_intmax, nhomo)
