@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'CASCI Total Energy', rel_tolerance = 1.0e-9)
+f.add(from_string = 'Total energy is ', rel_tolerance = 1.0e-9)
+
+test.run(['methane.inp'], ['methane.mol'], f)
+test.run(['N2.inp'], ['N2.mol'], f)
+test.run(['H2O.inp'], ['H2O.xyz'], f)
+
+sys.exit(test.return_code)
