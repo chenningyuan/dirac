@@ -71,7 +71,7 @@ contains
         call init_essential_variables
 
         backspace (unit_num) ! Backspace to the beginning of the file
-        do while (.not. is_end) ! Read the input file until the "end" is found
+        do while (.not. is_end) ! Read the input file until the "end" or line starts with "*"
             read (unit_num, "(a)", iostat=iostat) string
             if (iostat < 0) then
                 if (rank == 0) print *, "ERROR: YOU NEED TO ADD 'end' AT THE END OF YOUR INPUT FILE."
@@ -105,10 +105,19 @@ contains
         integer, intent(in) :: unit_num
         character(*), intent(inout) :: string
         character(len=max_str_length) :: input
+        character(:), allocatable :: trimmed_string
         logical :: is_comment
         integer :: dummy_dirac_version
+
         call lowercase(string)
-        select case (trim(adjustl(string)))
+        allocate (trimmed_string, source=trim(adjustl(string)))
+        if (trimmed_string(1:1) == "*") then
+            ! If the first character is "*", it means that is the end of the *CASPT2 input section
+            is_end = .true.
+            backspace (unit_num)
+            return
+        end if
+        select case (trimmed_string)
 
         case (".ninact")
             call read_an_integer(unit_num, ".ninact", 0, input_intmax, ninact)
@@ -609,8 +618,8 @@ contains
             call is_comment_line(input, is_comment)
             if (is_comment) cycle
             allocate (trim_input, source=trim(adjustl(input)))
-            if (index(trim_input, ".") == 1) then
-                ! If the input starts with a dot, it is the end of the subprograms.
+            if (index(trim_input, ".") == 1 .or. index(trim_input, "*") == 1) then
+                ! If the input starts with a dot or *, it is the end of the subprograms.
                 ! Need to reset the file pointer to the beginning of the line.
                 backspace (unit_num)
                 exit
