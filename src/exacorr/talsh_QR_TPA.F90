@@ -11,7 +11,7 @@ module talsh_QR_TPA
     use talsh_eom_rspeq_solver
     use talsh_ccrsp_common
     use talsh_eom
-    use talsh_eom_LR, only: get_tF
+    use talsh_eom_LR !, only: get_tF, get_asym_lr
     use talsh_cc_QR, only: get_lXAY, get_Gtt, get_tYFX
 
     implicit none
@@ -554,6 +554,9 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
     logical                       :: exchange
     integer                       :: A, B, C, D
     complex(kind=8)               :: biorth_sign_f
+!
+    complex(8)                    :: value_lr
+    logical                       :: debug_local = .true.
 
 ! aspg: this is now only one state, generalize to many states, once we deal the issues with biorthogonality for degenerate states
     f_state = exa_input%TPA_state
@@ -899,6 +902,46 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
 
                         call print_date('Solved All 1st response equations')
 
+
+                        if (debug_local) then                    
+                            call print_date('Now calculating asymmetric linear response functions')
+                            call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
+                                         Interm_t_tensors_A(n), &
+                                         Tprop_tensors(A), Tprop_tensors_min_w(A), &
+                                         Tprop_bar_tensors(A), Tprop_bar_tensors_min_w(A), &
+                                         Interm_t_tensors_A(n)%property_label, &
+                                         Interm_t_tensors_A(n)%property_label, &
+                                         omega(B), &
+                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+
+                            call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
+                                         Interm_t_tensors_B(m), &
+                                         Tprop_tensors(B), Tprop_tensors_min_w(B), &
+                                         Tprop_bar_tensors(B), Tprop_bar_tensors_min_w(B), &
+                                         Interm_t_tensors_B(m)%property_label, &
+                                         Interm_t_tensors_B(m)%property_label, &
+                                         omega(B), &
+                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+
+                            call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
+                                         Interm_t_tensors_C(k), &
+                                         Tprop_tensors(C), Tprop_tensors_min_w(C), &
+                                         Tprop_bar_tensors(C), Tprop_bar_tensors_min_w(C), &
+                                         Interm_t_tensors_C(k)%property_label, &
+                                         Interm_t_tensors_C(k)%property_label, &
+                                         omega(A), &
+                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+
+                            call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
+                                         Interm_t_tensors_D(l), &
+                                         Tprop_tensors(D), Tprop_tensors_min_w(D), &
+                                         Tprop_bar_tensors(D), Tprop_bar_tensors_min_w(D), &
+                                         Interm_t_tensors_D(l)%property_label, &
+                                         Interm_t_tensors_D(l)%property_label, &
+                                         omega(A), &
+                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+
+                        end if
 
                         call check_biorthognal(eom_results_t,f_state,biorth_sign_f)
 
