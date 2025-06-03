@@ -300,7 +300,7 @@ module exacorr_tensor_interface
           endif
           if ( is_empty_tensor_t(in_tens) ) then
             write(*,'("  Error. Input tensor empty tensor in convert.")') 
-            stop 98
+            stop 981
           endif
 
           destroy_ = 1
@@ -477,7 +477,7 @@ module exacorr_tensor_interface
 
           if ( .not. is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Failed sanity check in destroy_tensor_t.")') 
-            stop 98
+            stop 982
           endif
 
           destroy_tensor_t = ierr
@@ -512,7 +512,7 @@ module exacorr_tensor_interface
 
           if ( .not. is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Failed sanity check in reshape_tensor_t.")')
-            stop 98
+            stop 983
           endif
 
           reshape_tensor_t = ierr
@@ -547,7 +547,7 @@ module exacorr_tensor_interface
 
           if ( .not. is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Failed sanity check in reshape_static_tensor_t.")')
-            stop 98
+            stop 984
           endif
 
           reshape_static_tensor_t = ierr
@@ -625,7 +625,7 @@ module exacorr_tensor_interface
 
           if ( is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Attempting to access data of an empty tensor in direct_data_pointer.")') 
-            call quit(" error 98")
+            call quit(" error 985")
           endif
 
           SELECT CASE(tensor%which_executor)
@@ -646,7 +646,7 @@ module exacorr_tensor_interface
 
           if ( .not. c_associated(ptr) ) then
             write(*,'("  Error. Null pointer exception in direct_data_pointer.")') 
-            stop 99
+            stop 994
           endif
           direct_data_pointer = ierr
         end function direct_data_pointer
@@ -664,7 +664,7 @@ module exacorr_tensor_interface
             get_nmodes = 0
             return
             ! write(*,'("  error. attempting to access data of an empty tensor in get_nmodes.")') 
-            ! stop 98
+            ! stop 986
           endif
 
           SELECT CASE(tensor%which_executor)
@@ -724,7 +724,7 @@ module exacorr_tensor_interface
           
           if ( .not. size(extents) == 0 .and. is_scalar_tensor_t(tensor)) then
             call quit("  Error. Failed sanity check in get_extents.")
-            ! stop 98
+            ! stop 987
           endif
 
           get_extents = ierr
@@ -743,7 +743,7 @@ module exacorr_tensor_interface
           if ( is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Attempting to access an empty tensor in get_extents_static.")')
             call quit("  Error. Attempting to access an empty tensor in get_extents_static..")
-            stop 98
+            stop 988
           endif
 
           ierr =  get_nmodes(tensor, nmodes)
@@ -772,7 +772,7 @@ module exacorr_tensor_interface
 
           if ( .not. size(extents) == 0 .and. is_scalar_tensor_t(tensor)) then
             write(*,'("  Error. Failed sanity check in get_extents_static.")')
-            stop 98
+            stop 93
           endif
 
           get_extents_static = ierr
@@ -789,7 +789,7 @@ module exacorr_tensor_interface
           if ( is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Attempting to access an empty tensor in get_extents_static.")')
             call quit("  Error. Attempting to access an empty tensor in get_extents_static..")
-            stop 98
+            stop 989
           endif
 
           ierr =  get_nmodes(tensor, nmodes)
@@ -818,7 +818,7 @@ module exacorr_tensor_interface
 
           if ( .not. size(extents) == 0 .and. is_scalar_tensor_t(tensor)) then
             write(*,'("  Error. Failed sanity check in get_extents_static.")')
-            stop 98
+            stop 990
           endif
 
           get_extents_static_old = ierr
@@ -834,7 +834,7 @@ module exacorr_tensor_interface
 
           if ( is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Attempting to inquire data kind of an empty tensor in get_data_kind_tensor_t.")')
-            call quit(" error 98")
+            call quit(" error 991")
           endif
 
           SELECT CASE(tensor%which_executor)
@@ -945,7 +945,7 @@ module exacorr_tensor_interface
 
           if ( is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Tensor empty tensor in get_scalar_tensor_t.")') 
-            stop 98
+            stop 992
           endif
           ierr = get_numel(tensor, numel)
           allocate(lin_dim(1))
@@ -1069,7 +1069,7 @@ module exacorr_tensor_interface
 
           if ( is_empty_tensor_t(src_tens) ) then
             write(*,'("  Error. Source tensor empty tensor in copy_tensor_t.")') 
-            stop 98
+            stop 993
           endif
 
           ierr = get_extents(src_tens, out_dims)
