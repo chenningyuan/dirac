@@ -697,9 +697,10 @@ module exacorr_tensor_interface
           endif
 
           ierr =  get_nmodes(tensor, nmodes)
-          if (.not. allocated(extents)) then
-            allocate(extents(nmodes))
-          endif
+
+          if (allocated(extents)) deallocate(extents)
+
+          allocate(extents(nmodes))
           if (.not. size(extents) == nmodes) then 
             call quit("  Error. An array of wrong size passed to get_extents.")
           endif
@@ -741,12 +742,14 @@ module exacorr_tensor_interface
 
           if ( is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Attempting to access an empty tensor in get_extents_static.")')
+            call quit("  Error. Attempting to access an empty tensor in get_extents_static..")
             stop 98
           endif
 
           ierr =  get_nmodes(tensor, nmodes)
-          if (.not. size(extents) == nmodes) then
+          if ( size(extents) < nmodes) then
             write(*,'("  Error. An array of wrong size passed to get_extents_static.")')
+            call quit("  Error. An array of wrong size passed to get_extents_static..")
             stop 58
           endif
 
@@ -774,6 +777,52 @@ module exacorr_tensor_interface
 
           get_extents_static = ierr
         end function get_extents_static
+        function get_extents_static_old(tensor, extents)
+          implicit none
+          type(tensor_t), intent(inout)    :: tensor
+          integer(INTD),  intent(inout) :: extents(:)
+          integer(c_int64_t), allocatable :: extents_(:)
+          integer(c_int)          :: nmodes
+
+          integer(INTD)       :: ierr, get_extents_static_old
+
+          if ( is_empty_tensor_t(tensor) ) then
+            write(*,'("  Error. Attempting to access an empty tensor in get_extents_static.")')
+            call quit("  Error. Attempting to access an empty tensor in get_extents_static..")
+            stop 98
+          endif
+
+          ierr =  get_nmodes(tensor, nmodes)
+          if (.not. size(extents) == nmodes) then
+            write(*,'("  Error. An array of wrong size passed to get_extents_static.")')
+            call quit("  Error. An array of wrong size passed to get_extents_static..")
+            stop 58
+          endif
+
+          select case(tensor%which_executor)
+          case(1)
+                allocate(extents_(nmodes))
+                ierr = get_extents_tapp_tensor_t(tensor%tens_tapp, extents_)
+
+                if (size(extents_) .ne. 0) then
+                  extents = int(extents_, kind=INTD)
+                endif
+                deallocate(extents_)
+          case(2)
+             ierr = talsh_tensor_dimensions(tensor%tens_talsh,nmodes,extents)
+          case default
+            write(*,'("  Error. get_extents_static for executor ",i11," not yet implemented.")') &
+              tensor%which_executor
+            stop 55
+          end select
+
+          if ( .not. size(extents) == 0 .and. is_scalar_tensor_t(tensor)) then
+            write(*,'("  Error. Failed sanity check in get_extents_static.")')
+            stop 98
+          endif
+
+          get_extents_static_old = ierr
+        end function get_extents_static_old
 
         ! returns the 
         function get_data_kind_tensor_t(tensor, data_kind)
@@ -799,6 +848,7 @@ module exacorr_tensor_interface
               elseif (tensor%datatype == 3 ) then
                 data_kind = C8
               endif
+              ierr = 0
           CASE default
             write(*,'("  Error. get_data_kind_tensor_t for executor ",i11," not yet implemented.")') &
               tensor%which_executor
