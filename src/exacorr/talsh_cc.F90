@@ -1070,8 +1070,8 @@ module eti_cc
           ! Call F intermediates - used in \Ss ai
           call get_hoo(comm_t,int_t%oovv)
           call get_hvv(comm_t,int_t%oovv)
-          call get_hov(comm_t,int_t%oovv) 
           if (.not.CCD) then
+            call get_hov(comm_t,int_t%oovv) 
             ierr=initialize_tensor_t(hov_aux_tensor)
             ierr=t_einsum("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
             ierr=t_einsum("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_TWO)       ! subtract fock matrix twice
@@ -1247,7 +1247,7 @@ module eti_cc
          call get_h(comm_t,int_t,CCD)
          call get_hoo(comm_t,int_t%oovv)
          call get_goo(comm_t,int_t%ooov,CCD)
-         call get_hov(comm_t,int_t%oovv)
+         if (.not.CCD) call get_hov(comm_t,int_t%oovv)
          call get_a(comm_t,int_t,CCD)
          call print_date("Finished calculating common blocks")
 
@@ -1257,7 +1257,7 @@ module eti_cc
 
          call get_w_vvvv(lambda_t%w_vvvv,comm_t,int_t,CCD)
          call get_wbar_vovo(lambda_t%wbar_vovo,comm_t%t2,int_t)
-         call get_fbar_ov(lambda_t%fbar_ov,comm_t%hov)
+         if (.not.CCD) call get_fbar_ov(lambda_t%fbar_ov,comm_t%hov)
          call get_w_vvvo(lambda_t,comm_t,int_t,CCD,one_tensor)
          call get_w_vovv(lambda_t%w_vovv,comm_t%t1,int_t,CCD)
          call get_w_vovo(lambda_t%w_vovo,comm_t,int_t%oovv,nocc,nvir,CCD)
@@ -1643,7 +1643,7 @@ module eti_cc
          call get_h(comm_t,int_t,CCD)
          call get_hoo(comm_t,int_t%oovv)
          call get_goo(comm_t,int_t%ooov,CCD)
-         call get_hov(comm_t,int_t%oovv)
+         if (.not.CCD) call get_hov(comm_t,int_t%oovv)
          call get_a(comm_t,int_t,CCD)
          call print_date("Finished calculating common blocks")
 
@@ -2267,10 +2267,10 @@ module eti_cc
 !        copy the matrices
          ierr=initialize_tensor_t(comm_t%foo)
          ierr=initialize_tensor_t(comm_t%fvv)
-         ierr=initialize_tensor_t(comm_t%fov)
+         if (.not.exa_input%ccd) ierr=initialize_tensor_t(comm_t%fov)
          ierr=t_einsum("F(i,j)+=D(i,j)",comm_t%foo,int_t%foo)
          ierr=t_einsum("F(a,b)+=D(a,b)",comm_t%fvv,int_t%fvv)
-         ierr=t_einsum("F(i,a)+=D(i,a)",comm_t%fov,int_t%fov)
+         if (.not.exa_input%ccd) ierr=t_einsum("F(i,a)+=D(i,a)",comm_t%fov,int_t%fov)
 
 !        if there is a finte field add it 
          if (exa_input%nff(1)>0 .and. iff>-1) then
@@ -2297,9 +2297,9 @@ module eti_cc
             call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
             call add_finitefield(h_tens,exa_input,iff,mo_vir,nvir,mo_vir,nvir,min_occ)
 
-            ierr=direct_data_pointer(comm_t%fov,body_p)
-            call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
-            call add_finitefield(h_tens,exa_input,iff,mo_occ,nocc,mo_vir,nvir,min_occ)
+            if (.not.exa_input%ccd) ierr=direct_data_pointer(comm_t%fov,body_p)
+            if (.not.exa_input%ccd) call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
+            if (.not.exa_input%ccd) call add_finitefield(h_tens,exa_input,iff,mo_occ,nocc,mo_vir,nvir,min_occ)
 
             do i=1,exa_input%nff(1)
                write(*,*) ""
