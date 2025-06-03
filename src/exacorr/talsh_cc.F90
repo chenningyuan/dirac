@@ -212,19 +212,19 @@ module eti_cc
 !        create tensors needed in CC
          oo_dims = nocc
          vv_dims = nvir
-         ov_dims(1) = nocc
-         ov_dims(2) = nvir
-         vo_dims(1) = nvir
-         vo_dims(2) = nocc
          ierr=construct_tensor_t(comm_t%foo,C8,oo_dims,init_val=ZERO)
          ierr=construct_tensor_t(comm_t%fvv,C8,vv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%fov,C8,ov_dims,init_val=ZERO) ! should not be needed in case of ccd, but currently it's called somewhere
          ierr=construct_tensor_t(comm_t%goo,C8,oo_dims,init_val=ZERO)
          ierr=construct_tensor_t(comm_t%hoo,C8,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%hov,C8,ov_dims,init_val=ZERO) ! should not be needed in case of ccd, but currently it's called somewhere
          ierr=construct_tensor_t(comm_t%gvv,C8,vv_dims,init_val=ZERO)
          ierr=construct_tensor_t(comm_t%hvv,C8,vv_dims,init_val=ZERO)
          if (.not.CCD) then
+            ov_dims(1) = nocc
+            ov_dims(2) = nvir
+            vo_dims(1) = nvir
+            vo_dims(2) = nocc
+            ierr=construct_tensor_t(comm_t%fov,C8,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(comm_t%hov,C8,ov_dims,init_val=ZERO)
             ierr=construct_tensor_t(comm_t%t1,C8,vo_dims,init_val=ZERO)
 !           initialize t3 amplitudes to zero (will later update them to starting values based on mp2 amplitudes)
             if (iterative_level.ge.3) then 
