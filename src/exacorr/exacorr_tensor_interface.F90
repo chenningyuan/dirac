@@ -545,7 +545,7 @@ module exacorr_tensor_interface
             stop 55
           END SELECT
 
-          if ( .not. is_empty_tensor_t(tensor) ) then
+          if (is_empty_tensor_t(tensor) ) then
             write(*,'("  Error. Failed sanity check in reshape_static_tensor_t.")')
             stop 984
           endif
