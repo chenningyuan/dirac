@@ -591,6 +591,7 @@ module talsh_cc
          integer, intent(in)  :: iterative_scheme
          integer, intent(in)  :: print_level
          integer (INTD)       :: ierr
+         complex(8) :: ccsd_energy_c8
 
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims = 1
@@ -790,6 +791,7 @@ module talsh_cc
             ierr=talsh_tensor_init(result_tensor)
             ierr=talsh_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,comm_t%t1,comm_t%fov) ! o(1)v(1)
             ccsd_energy=result_tens(1)
+            ccsd_energy_c8=result_tens(1) 
           else
             ccsd_energy = 0.D0
           end if
@@ -800,6 +802,8 @@ module talsh_cc
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
+          ccsd_energy_c8=ccsd_energy_c8 + result_tens(1) * ONE_QUARTER
+          print *, 'cc energy c8',ccsd_energy_c8
 
           call print_iteration(iccsd,t_convergence,ccsd_energy,print_level)
           if (t_convergence .lt. t_target_precision) exit
@@ -880,6 +884,7 @@ module talsh_cc
          real(8), intent(out) :: ccsd_energy
          logical, intent(in) :: CCD
          integer :: ierr
+         complex(8) :: ccsd_energy_c8
 
          if (print_level.gt.8) debug_local = .true.
 
@@ -1121,6 +1126,7 @@ module talsh_cc
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,comm_t%t1,comm_t%fov) ! o(1)v(1)
           ccsd_energy=result_tens(1)
+          ccsd_energy_c8 = result_tens(1)
 
 !         Update tau
           call get_tau(comm_t,CCD)
@@ -1130,6 +1136,8 @@ module talsh_cc
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
+          ccsd_energy_c8=ccsd_energy_c8 + result_tens(1) * ONE_QUARTER
+          print *, 'cc energy c8',ccsd_energy_c8
 
 !         call print_iteration(iccsd,t_target_precision,t_convergence,ccsd_energy)
           call print_iteration(iccsd,t_convergence,ccsd_energy)
