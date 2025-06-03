@@ -466,9 +466,16 @@ ADF code (see the developer's website http://www.scm.com for further information
 or via the PyADF scripting framework (see :cite:`Jacob2011` or visit the developer's website http://pyadf.org 
 for further information).
 
-keyword(PEQM)
+keyword(PELIB)
 
-Activates the polarizable embedding model. Options can be specified under the :ref:`\*PEQM` menu.
+Activates polarizable embedding using PElib, website https://gitlab.com/pe-software/pelib.
+Which model and other options must be specified under the :ref:`\*PELIB` menu.
+
+Three embedding models are defined (all of which can be included in a single calculation)
+    - polarizable density embedding (PDE)
+    - polarizable embedding (PE)
+    - continuum solvation (FixSol)
+
 
 keyword(CAP)
 

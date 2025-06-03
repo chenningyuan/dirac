@@ -1040,6 +1040,12 @@ C
 C
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSPNSPN,2*NSCOOR)
+C
+C     Here we set up the operators needed for the linear reponse
+C
+C     Define left-hand operators: (-c) i.alpha x r/r^3
+C     ================================================
+C
 C     XAVECTOR
       IOP(1) = 5
 C     YAVECTOR
@@ -1055,9 +1061,6 @@ C
       DO 100 IREPO = 0, MAXREP
 C
 C       Atoms
-C
-C
-C       First define left-hand operators
 C
         DO 200 IATOM1 = 1, NUCIND
         IF(DOATOM(IATOM1)) THEN
@@ -1104,7 +1107,8 @@ C
               CALL OP1IND('XSPNA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
               IPSPNSPN(1,ISCOR1) = INDOP1
 C
-C             Right hand operators
+C             Define right-hand operators: (-c) i.alpha x r/r^3
+C             =================================================
 C
               DO 400 IATOM2 = 1, MXATM2
               IF (DOATOM(IATOM2)) THEN
@@ -1125,7 +1129,9 @@ C
   200   CONTINUE
   100 CONTINUE
 C
-C     Define right hand operators
+C
+C     Define right-hand operators: (-c) i.alpha x r/r^3
+C     =================================================
 C
       DO I = 1,NSCOOR
         IF(IPSPNSPN(2,I).GT.0) THEN
@@ -1460,7 +1466,8 @@ C***********************************************************************
       use london_helper
 #endif
 #ifdef HAS_PELIB
-        use pe_variables, only: peqm, pe_gspol, pe_lf
+        use pelib_dirac_interface, only: use_pelib, pelib_ifc_gspol,
+     &                                   pelib_ifc_do_lf
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -1598,11 +1605,11 @@ C
      &  CALL PRP_PVC_SPINRO(ABLRF,ABCNV)
 C
 #ifdef HAS_PELIB
-      if (peqm) then
+      if (use_pelib()) then
          write(lupri,'(/A)')
      &      'Polarizable environment included using PElib'//
      &      ' (https://gitlab.com/pe-software/pelib-public).'
-         if (pe_gspol) then
+         if (pelib_ifc_gspol()) then
             write(lupri,'(/A)')
      &      'Response properties calculated with dynamical'//
      &      ' polarizable embedding disabled (.GSPOL)'
@@ -1611,7 +1618,7 @@ C
      &      'Response properties calculated with full inclusion of'//
      &      ' polarizable environment.'
          endif
-         if (pe_lf) write(lupri,'(/A)')
+         if (pelib_ifc_do_lf()) write(lupri,'(/A)')
      &   'Effective external field (EEF) correction applied.'
       endif
 #endif
@@ -3996,10 +4003,10 @@ C
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSHIELD,3+MXCOOR)
 C
-C     Here we set up the operators needed for the linear reponse part
+C     Here we set up the operators needed for the linear reponse
 C
-C     Define left-hand operators: -c alpha x r/r^3
-C     ============================================
+C     Define left-hand operators: (-c) i.alpha x r/r^3
+C     ================================================
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -4120,8 +4127,8 @@ C                ... make sure the PRPEXP is always called !!! /hjaaj nov2002
 
 C
 C
-C     Define right-hand operators: (c/2) alpha x r
-C     ============================================
+C     Define right-hand operators: -(c/2) i.alpha x r
+C     ===============================================
 C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
       IF (LONDON) THEN
@@ -5029,8 +5036,8 @@ C     (-29: accept .SELECT specification)
 C
 C     Here we set up the operators needed for the linear reponse calculation
 C
-C     Define left-hand operators: nuclear-spin-dependent PV
-C     =====================================================
+C     Define left-hand operators: nuclear-spin-dependent PV: c i.alpha rho(r)
+C     =======================================================================
 C
 C     XALPHA
       IOP(1) = 2
@@ -5084,8 +5091,8 @@ C
       ENDDO
 C
 C
-C     Define right-hand operators: (c/2) alpha x r
-C     ============================================
+C     Define right-hand operators: -(c/2) i.alpha x r
+C     ===============================================
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -8746,8 +8753,8 @@ C
 C
 C     Here we set up the operators needed for the linear reponse part
 C
-C     Define left-hand operators: L and S
-C     ===================================
+C     Define left-hand operators: i.L and i.S
+C     =======================================
 C
 C     Orbital angular momentum
 C
@@ -8814,8 +8821,8 @@ C
      &                       INDXPR,MAXLLR)
 C
 C
-C     Define right-hand operators: (c/2) alpha x r
-C     ============================================
+C     Define right-hand operators: -(c/2) i.alpha x r
+C     ===============================================
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -10957,8 +10964,8 @@ C
 C
 C     Here we set up the operators needed for the linear reponse part
 C
-C     Define left-hand operators: -c alpha x r/r^3
-C     ============================================
+C     Define left-hand operators: (-c) i.alpha x r/r^3
+C     ================================================
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -11027,8 +11034,8 @@ C
       ENDDO
 C
 C
-C     Define right-hand operators: L and S
-C     ====================================
+C     Define right-hand operators: i.L and i.S
+C     ========================================
 C
       LINDET=.FALSE.    ! to detect if linear symmetry is used
 C
@@ -12332,8 +12339,8 @@ C
 C
 C     Here we set up the operators needed for the linear reponse part
 C
-C     Define left-hand operators: nuclear-spin-dependent PV
-C     =====================================================
+C     Define left-hand operators: nuclear-spin-dependent PV: c i.alpha rho(r)
+C     =======================================================================
 C
 C     XALPHA
       IOP(1) = 2
@@ -12386,8 +12393,8 @@ C           Cartesian directions
       ENDDO
 C
 C
-C     Define right-hand operators: L and S
-C     ====================================
+C     Define right-hand operators: i.L and i.S
+C     ========================================
 C
       LINDET=.FALSE.    ! to detect if linear symmetry is used
 C
