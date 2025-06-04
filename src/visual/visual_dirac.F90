@@ -115,12 +115,12 @@ contains
 !       scatter response vector to matrix:
         tmpmat_mo%mat_dim = nmo
         tmpmat_mo%mat_nz = nz
-        call tmpmat_mo%alloc()
+        call tmpmat_mo%alloc_q()
 !       tmpmat inherits symmetry of the response vector:
         call tmpmat_mo%assign_ih(rsp_info%vectors(ivec_rsp)%get_ih_sym())
         call tmpmat_mo%assign_tr(rsp_info%vectors(ivec_rsp)%get_tr_sym())
         call tmpmat_mo%assign_irep(rsp_info%vectors(ivec_rsp)%get_irep())
-        call rsp_info%vectors(ivec_rsp)%scatter_to_matrix_q(tmpmat_mo%elements, nmo, nz)
+        call rsp_info%vectors(ivec_rsp)%scatter_to_matrix_q(tmpmat_mo%elements_q, nmo, nz)
         write(*,*)'INFO ABOUT RSPVEC'
         call rsp_info%vectors(ivec_rsp)%display()
  
@@ -132,8 +132,8 @@ contains
           call dmat_ao%alloc()
 !         construct non-symmetrized AO dmat:
           call construct_perturbed_dmat(dmat_ao%elements,&
-                                        tmpmat_mo%elements,&
-                                        ivec_rsp, rsp_info, cmo%coeff)
+                                        tmpmat_mo%elements_q,&
+                                        ivec_rsp, rsp_info, cmo)
 !         !update symmetry info
           dmat_ao%irep = tmpmat_mo%irep
           dmat_ao%ih_sym = tmpmat_mo%ih_sym
@@ -191,10 +191,10 @@ contains
               
               call construct_perturbed_dmat_lao_e(dmat_ao%elements,&
                             tmpmat_mo%elements,&
-                            conmat_info%vectors(ivec), cmo%coeff)
+                            conmat_info%vectors(ivec), cmo)
               call construct_perturbed_dmat_lao_p(dmat_ao%elements,&
                             tmpmat_mo%elements,&
-                            conmat_info%vectors(ivec), cmo%coeff)
+                            conmat_info%vectors(ivec), cmo)
               
               factor(1) = -1.0d0
               factor(2:4) = 1.0d0
@@ -957,23 +957,15 @@ contains
                                       ivec, &
                                       rsp_info,&
                                       cmo)
-#include "implicit.h"
-#include "priunit.h"
 #include "dcbbas.h"
-#include "maxaqn.h"
-#include "onecom.h"
-#include "ccom.h"
 #include "dgroup.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbham.h"
 
     integer, intent(in)  :: ivec
     type(response_info_t), intent(in) :: rsp_info
     real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
     real(kind=8), intent(in) :: bmat(norbt, norbt, nz)
-    real(kind=8), intent(in) :: cmo(*)
+    type(cmo_t), intent(in) :: cmo
 
     real(kind=8), allocatable :: dtmp(:,:)
     real(kind=8)::fac
@@ -1023,22 +1015,14 @@ contains
   subroutine construct_perturbed_dmat_lao_e(dmat,bmat,  &
                                       conmat_vec,&
                                       cmo)
-#include "implicit.h"
-#include "priunit.h"
 #include "dcbbas.h"
-#include "maxaqn.h"
-#include "onecom.h"
-#include "ccom.h"
 #include "dgroup.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbham.h"
 
     type(conmat_vector_t), intent(in) :: conmat_vec
     real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
     real(kind=8), intent(inout) :: bmat(norbt, norbt, nz)
-    real(kind=8), intent(in) :: cmo(*)
+    type(cmo_t), intent(in) :: cmo
 
     integer :: irep,iopsy,itim
     integer :: iprint
@@ -1048,7 +1032,6 @@ contains
 !
 
     iprint = 0
-    !typ = 'P-'
     typ = 'E-'
     call conmat_vec%get_symmetry_info(irep,iopsy,itim)
 
@@ -1078,22 +1061,14 @@ contains
   subroutine construct_perturbed_dmat_lao_p(dmat,bmat,  &
                                       conmat_vec,&
                                       cmo)
-#include "implicit.h"
-#include "priunit.h"
 #include "dcbbas.h"
-#include "maxaqn.h"
-#include "onecom.h"
-#include "ccom.h"
 #include "dgroup.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbham.h"
 
     type(conmat_vector_t), intent(in) :: conmat_vec
     real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
     real(kind=8), intent(inout) :: bmat(norbt, norbt, nz)
-    real(kind=8), intent(in) :: cmo(*)
+    type(cmo_t), intent(in) :: cmo
 
     integer :: irep,iopsy,itim
     integer :: iprint
@@ -1105,8 +1080,6 @@ contains
     typ = 'P-'
     call conmat_vec%get_symmetry_info(irep,iopsy,itim)
 
-    !do i1 = 1, 1
-    !  i2 = 1
     do i1 = 1, nfsym
       i2=mod(i1+iopsy,2)+1
 
@@ -1150,9 +1123,7 @@ contains
       end do
     end do
 
-
   end subroutine
-
 
 
 ! ------------------------------------------------------------------------------
@@ -1238,107 +1209,6 @@ contains
 
   end subroutine
 
-! ------------------------------------------------------------------------------
-  subroutine construct_perturbed_dmat2(dmat_ao,dmat_mo, &
-                                      ivec, &
-                                      rsp_info,&
-                                      cmo)
-    integer, intent(in)  :: ivec
-    type(dmat_t), intent(inout) :: dmat_mo
-    type(dmat_t), intent(out) :: dmat_ao
-    type(response_info_t), intent(in) :: rsp_info
-    type(cmo_t), intent(in) :: cmo
-    integer:: irep,ifckop,itim
-    character(2) ::typ
-    !type(cmo_t), pointer :: cmo_ig,cmo_iu,cmo_sg,cmo_su
-    integer:: nao,nmo,nz,ncoeff
-    real(8), allocatable :: cmo_ig(:),cmo_iu(:),cmo_sg(:),cmo_su(:)
-
-    call rsp_info%vectors(ivec)%get_symmetry_info(irep,&
-            ifckop,itim,typ)
-
-    !call dmat_ao%alloc_q()
-    !if (.not. cmo%allocated_coeff_q()) then 
-    !  allocate(cmo%coeff_q(cmo%n_ao,cmo%n_mo,cmo%nz))
-    !  cmo%coeff_q = 0.0d0
-    !end if
-    !call cmo%reshape_to_q()
-
-
-    !nr_g_mo_ns = npsh(1)
-    !nr_g_mo_pi = nish(1)
-    !nr_g_mo_ps = nesh(1) - nr_g_mo_pi
-    !nr_g_mo    = nr_g_mo_ns + nr_g_mo_pi + nr_g_mo_ps
-    !nr_u_mo_ns = npsh(2)
-    !nr_u_mo_pi = nish(2)
-    !nr_u_mo_ps = nesh(2) - nr_u_mo_pi
-    !nr_u_mo    = nr_u_mo_ns + nr_u_mo_pi + nr_u_mo_ps
-    !nr_g_ao    = nfbas(1, 0)
-    !nr_u_ao    = nfbas(2, 0)
-
-    
-    !nao=sum(cmo%n_ao)
-    !nmo=sum(cmo%n_mo)
-    !nz=cmo%nz
-    !ncoeff = nmo*nao*nz
-
-    !allocate(cmo_ig(ncoeff))
-    !allocate(cmo_sg(ncoeff))
-    !cmo_ig = 0.0d0
-    !cmo_sg = 0.0d0
-    !cmo_ig(cmo%ioffs(2):) = cmo%coeff(cmo%ioffs(2):)
-    !cmo_sg(cmo%ioffs(3):) = cmo%coeff(cmo%ioffs(3):)
-
-    !if (cmo%n_fsym == 2) then
-    !  allocate(cmo_iu(ncoeff))
-    !  allocate(cmo_su(ncoeff))
-    !  cmo_iu = 0.0d0
-    !  cmo_su = 0.0d0
-    !  cmo_iu(cmo%ioffs(5):) = cmo%coeff(cmo%ioffs(5):)
-    !  cmo_su(cmo%ioffs(6):) = cmo%coeff(cmo%ioffs(6):)
-    !end if
-
-    if (cmo%n_fsym == 2) then
-      if (ifckop == 2) then
-        !ungerade perturbation
-        write(*,*) 'TESTungerade'
-        !dmat_ao%elements(:)=cmo%ioffs(2)*(dmat_mo%elements(:)*cmo%ioffs(6)) &
-        !                   +cmo%ioffs(5)*(dmat_mo%elements(:)*cmo%ioffs(3))
-      else
-        write(*,*) 'TESTgerade'
-        !gerade perturbation
-        !dmat_ao%elements(:)=cmo%ioffs(2)*(dmat_mo%elements(:)*cmo%ioffs(3)) &
-        !                   +cmo%ioffs(5)*(dmat_mo%elements(:)*cmo%ioffs(6))
-      end if
-    else
-      write(*,*) 'TESTelse'
-      !write(*,*) 'before:'
-      !call dmat_mo%display()
-      call dmat_mo%get_dmat_q_mo_sector('si ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
-      !dmat_ao%elements=cmo%coeff*(dmat_mo%elements*cmo%coeff)
-      dmat_ao%elements(1:)=cmo%coeff(cmo%ioffs(2):)*&
-                         (dmat_mo%elements(1:)*cmo%coeff(cmo%ioffs(3):))
-      !call dmat_ao%display()
-      !dmat_ao%elements=cmo_ig*(dmat_mo%elements*cmo_sg)
-      !dmat_ao%elements(:)=cmo%ioffs(2)*(dmat_mo%elements(:)*cmo%ioffs(3))
-        !                   -cmo%get_cmo_q_mo_sector('s ',cmo%ioffs(3))&
-        !      *(dmat_mo%elements(1)*cmo%get_cmo_q_mo_sector('i ',cmo%ioffs(2)))
-    end if
-
-!         update symmetry info
-          !dmat_ao%irep = dmat_mo%irep
-          !dmat_ao%ih_sym = dmat_mo%ih_sym
-          !dmat_ao%tr_sym = dmat_mo%tr_sym
-
-    !deallocate(cmo_ig)
-    !deallocate(cmo_sg)
-    !if (cmo%n_fsym == 2) then
-    !  deallocate(cmo_iu)
-    !  deallocate(cmo_su)
-    !end if
-
-  end subroutine
-
 
 ! ------------------------------------------------------------------------------
   subroutine get_xyzcomp_from_rspvec(grid_function, ivec)
@@ -1384,57 +1254,45 @@ contains
   end subroutine
 
 
-
-
+! ------------------------------------------------------------------------------
   subroutine qtrans_mo2ao(dmat,bmat,cmo,&
                 i1,i2,ns,is,js,ni,ii,ji,irep,fadd)
-#include "implicit.h"
-#include "priunit.h"
-#include "dcbbas.h"
-#include "maxaqn.h"
-#include "onecom.h"
-#include "ccom.h"
 #include "dgroup.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbham.h"
+#include "dcbbas.h"
     real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
     real(kind=8), intent(in) :: bmat(norbt, norbt, nz)
-    real(kind=8), intent(in) :: cmo(*)
+    type(cmo_t), intent(in) :: cmo
     integer, intent(in)::i1,i2,ns,is,js,ni,ii,ji,irep
     real(8),intent(in)::fadd
     integer::iprint=0
+    integer :: nao, nmo!, nz
 
-        if (ni > 0 .and. ns > 0) then
-        
-          call qtrans90('MOAO', &
-                        'S',    &
-                        fadd,  &
-                        nfbas(i1,0), nfbas(i2,0), &
-                        ns, ni, &
-!                       ------------------------------------------------------
-                        dmat(i2basx(i1,i2)+1, 1),&
-                        ntbas(0), ntbas(0), nz,  &
-                        ipqtoq(1, irep), &
-!                       ------------------------------------------------------
-                        bmat(is, ii, 1), &
-                        norbt, norbt, nz, &
-                        ipqtoq(1, irep),&
-!                       ------------------------------------------------------
-                        cmo(js),&
-                        nfbas(i1,0), norb(i1), nz,&
-                        ipqtoq(1, 0),&
-!                       ------------------------------------------------------
-                        cmo(ji),&
-                        nfbas(i2,0), norb(i2), nz,&
-                        ipqtoq(1, 0),&
-!                       ------------------------------------------------------
-                        iprint)
-        end if
+    nao = sum(cmo%n_ao)
+    nmo = sum(cmo%n_mo)
+    !nz  = cmo%nz
+
+    if (ni > 0 .and. ns > 0) then
+
+      call qtrans90('MOAO', 'S', fadd,  &
+                    cmo%n_ao(i1), cmo%n_ao(i2), ns, ni, &
+!                   ------------------------------------------------------
+                    dmat(i2basx(i1,i2)+1, 1),&
+                    nao, nao, nz, ipqtoq(1, irep), &
+!                   ------------------------------------------------------
+                    bmat(is, ii, 1), &
+                    nmo, nmo, nz, ipqtoq(1, irep),&
+!                   ------------------------------------------------------
+                    cmo%coeff(js),&
+                    cmo%n_ao(i1), cmo%n_mo(i1), nz, ipqtoq(1, 0),&
+!                   ------------------------------------------------------
+                    cmo%coeff(ji),&
+                    cmo%n_ao(i2), cmo%n_mo(i2), nz, ipqtoq(1, 0),&
+!                   ------------------------------------------------------
+                    iprint)
+
+    end if
 
   end subroutine
-
-
 
 end module
