@@ -5995,6 +5995,9 @@ CMI&& Activate 4c-2c MO transformation
           x2c_2c_mmf_mos        = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
+          do4c2c = .true.
+!       default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
+          usedf  = .true.
           X2CMMF                = .TRUE.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
@@ -6216,11 +6219,11 @@ C
       ENDIF
 
 !     x2c module: check for the keyword indicating the 4c-DF operator as defining h1
-      if(find_keyword('.X2Cmmf'))then
-        do4c2c = .true.
+!      if(find_keyword('.X2Cmmf'))then
+!        do4c2c = .true.
 !       default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
-        usedf  = .true.
-      end if
+!        usedf  = .true.
+!      end if
       if(find_keyword('**HAMIL')) call move_to_next_star(word, lucmd)
 
 CMI   ... take care of 2c-4c/4c-2c transitions !
