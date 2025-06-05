@@ -13,7 +13,7 @@ f.add(from_string = 'CASCI Total Energy', rel_tolerance = 1.0e-9)
 f.add(from_string = 'Total energy is ', rel_tolerance = 1.0e-9)
 
 test.run(['methane.inp'], ['methane.mol'], f)
-test.run(['N2.inp'], ['N2.mol'], f)
+test.run(['N2.ivo.inp'], ['N2.ivo.mol'], f)
 test.run(['H2O.inp'], ['H2O.xyz'], f)
 
 sys.exit(test.return_code)
