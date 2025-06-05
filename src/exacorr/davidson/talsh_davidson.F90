@@ -243,51 +243,21 @@ contains
         integer(INTD) :: rank, rank1, rank2
         logical :: debug = .false.
 
-        ierr = get_nmodes(workspace_t%trial1(1),rank)
         rank1=workspace_t%tens1_dims(1)
         rank2=workspace_t%tens1_dims(2)
+
         if (rank1.gt.rank2) then 
             rank = rank2
         else
             rank = rank1
         end if 
-        ! rank = workspace_t%tens1_dims(1)
-        ! if (rank.gt.2) call quit('rank not implemented in update_trial_vectors')
-
-        if (debug) then
-           write (6,*) ''
-           write (6,*) 'debug >>> in update_trial_vectors '
-           write (6,*) 'debug >>> nroots',workspace_t%nroots
-           write (6,*) 'debug >>> Lprev ',workspace_t%Lprev
-           write (6,*) 'debug >>> L     ',workspace_t%L
-           write (6,*) ''
- 
-           do i = 1, workspace_t%L
-              write (6,*) 'debug >>> in update_trial_vectors, before adding corrections, trial vector ',i
-              call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
-              call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
-              write (6,*) ''
-           end do
-        end if
 
         workspace_t%Lprev = workspace_t%L
-
-        if (debug) then
-           write (6,*) 'debug >>> in update_trial_vectors, before processing correction vectors'
-           write (6,*) 'debug >>> Lprev ',workspace_t%Lprev
-           write (6,*) 'debug >>> L     ',workspace_t%L
-           write (6,*) ''
-        end if
 
         do i = 1, size(delta,1)
            if (delta(i)) then
               workspace_t%L = workspace_t%L + 1
               j = workspace_t%L
-              if (debug) then
-                 write (6,*) 'debug >>> in update_trial_vectors, processing correction vector ',i
-                 write (6,*) 'debug >>> j             ',j
-                 write (6,*) ''
-              end if
 
               ierr=initialize_tensor_t(workspace_t%trial1(j), ZERO)
               ierr=initialize_tensor_t(workspace_t%trial2(j), ZERO)
@@ -297,8 +267,8 @@ contains
               
               if (debug) then
                  write (6,*) 'debug >>> correction vector ',i,' added to trial vector ',j
-                 call print_tensor(workspace_t%trial1(j),1.0d-18, "new b1")
-                 call print_tensor(workspace_t%trial2(j),1.0d-18, "new b2")
+                 call print_tensor(workspace_t%trial1(j),1.0d-8, "new b1")
+                 call print_tensor(workspace_t%trial2(j),1.0d-8, "new b2")
                  write (6,*) ''
               end if
            end if 
@@ -313,8 +283,8 @@ contains
            write (6,*) 'debug >>> in update_trial_vectors, trial vectors before GS orthonormalization'
            do i = 1, workspace_t%L
               write (6,*) 'debug >>> trial vector ',i
-              call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
-              call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
+              call print_tensor(workspace_t%trial1(i),1.0d-8, "b1")
+              call print_tensor(workspace_t%trial2(i),1.0d-8, "b2")
               write (6,*) ''
            end do
         end if
@@ -326,8 +296,8 @@ contains
            write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization '
            do i = 1, workspace_t%L
               write (6,*) 'debug >>> trial vector ',i
-              call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
-              call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
+              call print_tensor(workspace_t%trial1(i),1.0d-8, "b1")
+              call print_tensor(workspace_t%trial2(i),1.0d-8, "b2")
               if (rank.eq.1) then
                 print *, "norm of new trial", sqrt(tensor_norm2(workspace_t%trial1(i)) + tensor_norm2(workspace_t%trial2(i))/2)
               else
@@ -478,7 +448,7 @@ contains
        complex(8), intent(inout) :: factor
        type(tensor_t), intent(inout) :: u1, u2
        type(tensor_t), intent(inout) :: v1, v2
-       integer :: rank
+       integer, intent(in) :: rank
 
 
        type(tensor_t) :: result_tensor_num, result_tensor_den
@@ -502,8 +472,6 @@ contains
 
        ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
-       ierr = get_nmodes(v1,rank)
-    !    rank=talsh_tensor_rank(v1)
     ! aspg: verify this and generalize to other ranks !       
        if (rank == 1) then
         contrac_coeff = ONE_HALF
@@ -511,20 +479,9 @@ contains
         contrac_coeff = ONE_QUARTER_C
        end if 
 
-    !    if (rank.eq.1) then
-    !       ierr=t_einsum("num()+=u+(a)*v(a)",result_tensor_num,u1,v1)
-    !       ierr=t_einsum("den()+=u+(a)*u(a)",result_tensor_den,u1,u1)
-
-    !       ierr=t_einsum("num()+=u+(a,b,c)*v(a,b,c)",result_tensor_num,u2,v2,scale=ONE_HALF)
-    !       ierr=t_einsum("den()+=u+(a,b,c)*u(a,b,c)",result_tensor_den,u2,u2,scale=ONE_HALF)
-
-    !    else if (rank.eq.2) then
-    !    end if
-
        if (debug_GS_proj) then
-           call print_tensor(u1, 1.0d-18, "u1 tensor")
-           call print_tensor(v1, 1.0d-18, "v1 tensor")
-           print *, "rank in projection:", rank
+           call print_tensor(u1, 1.0d-8, "u1 tensor")
+           call print_tensor(v1, 1.0d-8, "v1 tensor")
        end if 
        ierr=t_einsum("num()+=u+(a,b)*v(a,b)",result_tensor_num,u1,v1)
        ierr=t_einsum("den()+=u+(a,b)*u(a,b)",result_tensor_den,u1,u1)
@@ -601,14 +558,11 @@ contains
                 ierr=t_einsum("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)    
             end do
 
-
-
             if (rank.eq.1) then
                 norm_r = sqrt(tensor_norm2(trial1(j))+tensor_norm2(trial2(j))/2)  
             else 
                 norm_r = sqrt(tensor_norm2(trial1(j))+tensor_norm2(trial2(j))/4)
             end if
-
 
             if (norm_r.lt.config%antisymme_threshold) then 
                 ierr=destroy_tensor_t(trial1(j))
@@ -619,8 +573,6 @@ contains
             else
                 call renormalize_vectors(trial1(j),trial2(j),rank)
             end if 
-
-            ! call renormalize_vectors(trial1(j),trial2(j),rank)
 
         end do
         L = L+1
@@ -1352,7 +1304,7 @@ contains
         integer :: nroots
         real(kind=8) :: x2py2, proj_r, proj_i, eigenvalue_r, eigenvalue_i 
         logical :: preconditioner_debug = .false.
-        real(kind=8) :: small_number = 1.0d-99
+        real(kind=8) :: small_number = 1.0d-8 !LV changed to 1.0d-8
 
 ! careful with dimension 1 of eigenvalues, 
         nroots    = workspace_t%nroots
@@ -1445,18 +1397,14 @@ contains
                        end if
 ! aspg: added this check to filter out real or imaginary parts that are too small/noisy and would explode as denominators 
 !       worst case this will set the preconditioner of this element to one (due to the initialization, see above)
-                       if (dabs(proj_r).le.small_number) proj_r = 0.0d0
-                       if (dabs(proj_i).le.small_number) proj_i = 0.0d0
-
                        x2py2 = proj_r*proj_r + proj_i*proj_i
                        if (preconditioner_debug) then
                           write (6,*) 'debug x2py2',x2py2
                        end if
-                       if (dabs(x2py2).gt.config%safe_minimum) then
-                          proj_r =  proj_r / x2py2
-                          proj_i = -proj_i / x2py2
-                          preco_2d_p(ja,jb) = dcmplx(proj_r,proj_i)
-                       end if
+                       if (x2py2.le.small_number) x2py2 = small_number
+                       proj_r =  proj_r / x2py2
+                       proj_i = -proj_i / x2py2
+                       preco_2d_p(ja,jb) = dcmplx(proj_r,proj_i)
                     end do
                  end do
 
