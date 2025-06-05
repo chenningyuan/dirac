@@ -1,5 +1,5 @@
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -  0.477 GB)
- of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB - 16.000 GB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
+ of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -80,83 +80,103 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Trond Saue               Universite Toulouse III           France        *
  *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
- *    Radovan Bast             UiT The Arctic University of      Norway        *
- *    Trond Saue               Universite Toulouse III           France        *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
  *    Sebastien Dubillard      University of Strasbourg          France        *
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Elke Fasshauer           University of Aarhus              Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
- *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
- *    Erik D. Hedegaard        Lund University                   Sweden        *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
  *    Trygve Helgaker          University of Oslo                Norway        *
- *    Benjamin Helmich-Paris   Vrije Universiteit Amsterdam      Netherlands   *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
- *    Stefan Knecht            ETH Zuerich                       Switzerland   *
- *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
- *    Patrick Norman           Linkoeping University             Sweden        *
- *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
  *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
- *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
- *    Avijit Shee              University of Michigan            USA           *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
  *    Toke Winther             University of Southern Denmark    Denmark       *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
  *                                                                             *
  *    For more information about the DIRAC code see http://diracprogram.org    *
  *                                                                             *
  *    This is an experimental code. The authors accept no responsibility       *
  *    for the performance of the code or for the correctness of the results.   *
  *                                                                             *
- *    The code (in whole or part) is not to be reproduced for further          *
- *    distribution without the written permission of the authors or            *
- *    their representatives.                                                   *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
  *                                                                             *
  *    If results obtained with this code are published, an                     *
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC17 (2017),                                                  *
- *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
- *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
- *    O. Fossgaard, A. S. P. Gomes, E. D. Hedegrd, T. Helgaker,               *
- *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
- *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
- *    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *
- *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
- *    P. Salek, B. Schimmelpfennig, A. Shee, J. Sikkema, A. J. Thorvaldsen,    *
- *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser,T. Winther,           *
- *    and S. Yamamoto (see http://diracprogram.org).                           *
+ *    Release DIRAC24 (2024), written by                                       *
+ *    R. Bast, A. S. P. Gomes, T. Saue, L. Visscher, and H. J. Aa. Jensen,     *
+ *    with contributions from I. A. Aucar, V. Bakken, J. Brandejs, C. Chibueze,*
+ *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
+ *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, L. Halbert,         *
+ *    E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn, M. Ilias,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj, M. K. Nayak,         *
+ *    P. Norman, A. Nyvang, M. Olejniczak, J. Olsen, J. M. H. Olsen,           *
+ *    A. Papadopoulos, Y. C. Park, J. K. Pedersen, M. Pernpointner,            *
+ *    J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud, P. Salek,         *
+ *    B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,          *
+ *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
+ *    S. Villaume, O. Visser, T. Winther, S. Yamamoto and X. Yuan              *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *
  *                                                                             *
  *******************************************************************************
 
@@ -164,51 +184,60 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | master
-Commit hash   | 86e3daa
-Commit author | Lucas
-Commit date   | Wed Apr 11 05:52:51 2018 +0000
+Branch        | pelib_update
+Commit hash   | e6a1856c5
+Commit author | ErnDLar
+Commit date   | Thu Feb 22 14:07:23 2024 +0100
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | erikh
-Compiled on server       | erik.teokem.lu.se
-Operating system         | Linux-4.12.8-200.fc25.x86_64
-CMake version            | 3.9.1
+Who compiled             | edl
+Compiled on server       | adm-130996
+Operating system         | Linux-5.15.0-91-generic
+CMake version            | 3.21.3
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2018-04-12 15:54:03.970187
-Python version           | 2.7.1
-Fortran compiler         | /usr/bin/gfortran
-Fortran compiler version | 6.4.1
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
-C compiler               | /usr/bin/gcc
-C compiler version       | 6.4.1
-C compiler flags         |  -g -g
-C++ compiler             | /usr/bin/g++
-C++ compiler version     | 6.4.1
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+Configuration time       | 2024-02-20 12:09:34.163358
+Fortran compiler         | /usr/bin/gfortran-9
+Fortran compiler version | 9.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fopenmp
+C compiler               | /usr/bin/gcc-9
+C compiler version       | 9.4.0
+C compiler flags         |  -g -fopenmp
+C++ compiler             | /usr/bin/g++-9
+C++ compiler version     | 9.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | False
 MPI launcher             | unknown
-Math libraries           | unknown
+Math libraries           | -Wl,--start-group;/usr/lib/x86_64-linux-gnu/libmkl_lapack95_lp64.a;/usr/lib/x86_64-linux-gnu/libmkl_gf_lp64.so;-fopenmp;-Wl,--end-group;-Wl,--start-group;/usr/lib/x86_64-linux-gnu/libmkl_gf_lp64.so;/usr/lib/x86_64-linux-gnu/libmkl_gnu_thread.so;/usr/lib/x86_64-linux-gnu/libmkl_core.so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr/lib/x86_64-linux-gnu/libm.so;-fopenmp;-Wl,--end-group
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | USE_BUILTIN_BLAS;USE_BUILTIN_LAPACK;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
 
 
+ LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Apr 19 16:19:13 2018
-     Host name              : erik.teokem.lu.se                       
+     Date and time (Linux)  : Thu Feb 22 14:24:52 2024
+     Host name              : adm-130996                              
+
+ * Opening checkpoint file 
+    - New checkpoint file created
 
 
 Contents of the input file
@@ -220,8 +249,8 @@ Polarizable embedding with Dirac-Coulomb Hamiltonian
 .WAVE FUNCTION                                                                                      
 **HAMILTONIAN                                                                                       
 .DOSSSS                                                                                             
-.PEQM                                                                                               
-*PEQM                                                                                               
+.PELIB                                                                                              
+*PELIB                                                                                              
 .POTENT                                                                                             
 peqm.pot                                                                                            
 **WAVE FUNCTION                                                                                     
@@ -266,10 +295,10 @@ H     -2.5080429881  -1.3820009935   0.1402819994
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
-   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
-                Peter J. Mohr and Barry N. Taylor                         
-   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
- * The speed of light :        137.0359998
+   CODATA Recommended Values of the Fundamental Physical Constants: 2018  
+             Peter J. Mohr, David B. Newell and Barry N. Taylor           
+         Reviews of Modern Physics, Vol. 93, 025010 (2021)                
+ * The speed of light :        137.0359992
  * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
@@ -344,8 +373,9 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  QM-QM nuclear repulsion energy :     31.229410204442
+  Nuclear repulsion energy                       :     31.229410358059 Hartree
 
+  Nuclear contribution to electric dipole moment :  -48.973342660537   -7.203959096226    0.550263679729 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
@@ -394,21 +424,21 @@ Point group: C1
   Total number of coordinates: 12
 
 
-   1   C        x     -3.0015786160
-   2            y     -1.4563174381
-   3            z      0.0550080378
+   1   C        x     -3.0015786012
+   2            y     -1.4563174310
+   3            z      0.0550080376
 
-   4   O        x     -3.1314330364
-   5            y      0.8240509815
-   6            z     -0.0184248296
+   4   O        x     -3.1314330210
+   5            y      0.8240509775
+   6            z     -0.0184248295
 
-   7   H        x     -1.1728925344
-   8            y     -2.4468589606
-   9            z      0.1025195319
+   7   H        x     -1.1728925287
+   8            y     -2.4468589486
+   9            z      0.1025195314
 
-  10   H        x     -4.7395143796
-  11            y     -2.6116033945
-  12            z      0.2650945604
+  10   H        x     -4.7395143563
+  11            y     -2.6116033817
+  12            z      0.2650945591
 
 
 
@@ -457,7 +487,14 @@ H     -2.5080429881  -1.3820009935   0.1402819994
 
 
 
-   Nuclear repulsion energy :   31.229410204442 Hartree
+   Nuclear repulsion energy                          :   31.229410358059 Hartree
+
+                       * Total mass:    30.010565 amu
+                       * Natural abundance:  98.633 %
+
+
+* Center-of-mass coordinates (a.u.):      -3.067740300227275  -0.312997393721768   0.024520815901748
+* Center-of-mass coordinates (A)   :      -1.623378255849001  -0.165631087829594   0.012975856967953
 
 
                                 GETLAB: AO-labels
@@ -533,6 +570,11 @@ H     -2.5080429881  -1.3820009935   0.1402819994
    ***************************************************************************
 
  PE library will be used.
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
  * Print level:    0
  * Dirac-Coulomb Hamiltonian
  * Default integral flags passed to all modules
@@ -540,9 +582,6 @@ H     -2.5080429881  -1.3820009935   0.1402819994
    - LS-integrals:     1
    - SS-integrals:     1
    - GT-integrals:     0
- * Basis set:
-   - uncontracted large component basis set
-   - uncontracted small component basis set
 
 
  Information about the restricted kinetic balance scheme:
@@ -552,7 +591,6 @@ H     -2.5080429881  -1.3820009935   0.1402819994
  * Environment is modeled using polarizable embedding scheme (PE library)
 
   Reading potential input file for polarizable embedding calculation
- PElib: reading potential input file for polarizable embedding calculation
 
     .------------------------------------------------.
     | Information from polarizable embedding library |
@@ -566,6 +604,7 @@ H     -2.5080429881  -1.3820009935   0.1402819994
 
       Iterative solver for induced moments will be used
       with convergence threshold: 1.0E-08
+
       Total charge of classical region:   -0.0000
  
 
@@ -584,15 +623,14 @@ H     -2.5080429881  -1.3820009935   0.1402819994
 ===========================================================================
  * Number of fermion irreps: 1
  * Closed shell SCF calculation with    16 electrons in    8 orbitals.
+ * Charge of molecule : 0
  * Sum of atomic potentials used for start guess
  * General print level   :   1
 
  ***** INITIAL TRIAL SCF FUNCTION *****
- * Trial vectors read from file DFCOEF
+ * Trial vectors read from CHECKPOINT
  * Scaling of active-active block correction to open shell Fock operator    0.500000
    to improve convergence (default value).
-   The final open-shell orbital energies are recalculated with 1.0 scaling,
-   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
 
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
@@ -635,9 +673,9 @@ H     -2.5080429881  -1.3820009935   0.1402819994
 
                                au             Debye
 
-                    x    -48.97334290   -124.47897379
-                    y     -7.20395913    -18.31080720
-                    z      0.55026368      1.39864372
+                    x    -48.97334266   -124.47897317
+                    y     -7.20395910    -18.31080711
+                    z      0.55026368      1.39864371
 
                         1 Debye =   2.54177000 a.u. 
 
@@ -653,7 +691,6 @@ H     -2.5080429881  -1.3820009935   0.1402819994
                                 ------------------
 
  * Applied strict kinetic balance !
- * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.
 
 
       **********************************************************************
@@ -671,13 +708,14 @@ Total no. of orbitals           (NORB):    24
 
 
 *** INFO *** No trial vectors found.
- Using bare nucleus approximation for initial trial vectors.
-             Improved by a sum of atomic screening potentials.
+ Using sum of fitted atomic potentials as start potential.
+
+ Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Thu Apr 19 16:19:13 2018
+########## START ITERATION NO.   1 ##########   Thu Feb 22 14:24:52 2024
 
-E_HOMO...E_LUMO, symmetry 1:    20  -0.66666   21  -0.55984
+E_HOMO...E_LUMO, symmetry 1:                                 20  -0.51674   21  -0.39999
 
 => Calculating sum of orbital energies
 
@@ -685,21 +723,22 @@ E_HOMO...E_LUMO, symmetry 1:    20  -0.66666   21  -0.55984
                                 Output from ONEERG
                                 ------------------
 
-Electronic energy         :   -70.913819954024731
-Nuclear potential energy  :    31.229410204442399
-Total energy              :   -39.684409749582329
-   * Quaternion diagonalization(CPU): 0.00033100s
+Electronic energy         :   -69.419554111105001
+Nuclear potential energy  :    31.229410358058519
+Total energy              :   -38.190143753046485
    * Two-electron Fock matrix  (CPU): 0.00000000s
-It.    1    -39.68440974958      0.00D+00  0.00D+00  0.00D+00               0.11953000s   Scr. nuclei    Thu Apr 19
+It.    1    -38.19014375305      0.00D+00  0.00D+00  0.00D+00               0.01844700s   Atom. scrpot   Thu Feb 22
 
-########## START ITERATION NO.   2 ##########   Thu Apr 19 16:19:13 2018
+########## START ITERATION NO.   2 ##########   Thu Feb 22 14:24:52 2024
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.22%    0.00%    0.05%   0.01126501s
-SOfock:SL  1.00D-12    0.00%    5.18%    0.00%    0.02%   0.06317998s
-SOfock:SS  1.00D-12    0.00%   25.69%    0.00%    0.01%   0.27671897s
+SOfock:LL  1.00D-12    0.00%    2.22%    0.00%    0.05%   0.01315299s
+SOfock:SL  1.00D-12    0.00%    5.19%    0.00%    0.02%   0.06735100s
+SOfock:SS  1.00D-12    0.00%   25.67%    0.00%    0.01%   0.29136401s
+ >>> CPU  time used in SO Fock is   0.40 seconds
+ >>> WALL time used in SO Fock is   0.40 seconds
 * Calling PE library
 
     .--------------------------------------------------.
@@ -710,27 +749,28 @@ SOfock:SS  1.00D-12    0.00%   25.69%    0.00%    0.01%   0.27671897s
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.203225649517
-            Nuclear                    0.196616244641
+            Electronic                -0.203604970700
+            Nuclear                    0.196616246095
             Multipole                  0.000000000000
-            Total                     -0.006609404876
+            Total                     -0.006988724605
 
        Polarization contributions:
-            Electronic                -0.021844167602
-            Nuclear                    0.021209285400
-            Multipole                 -0.004327673979
-            Total                     -0.004962556180
+            Electronic                -0.024699898806
+            Nuclear                    0.023999218733
+            Multipole                 -0.004376370820
+            Total                     -0.005077050894
 
-       Total PE energy:            -0.011571961056
+       Total PE energy:               -0.012065775499
+            (excl. multipole-multipole interaction energy)
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -143.40516142619168
-Nuclear potential energy           :     31.22941020444240
-Embedding energy                   :     -0.01157196105578
-Total energy                       :   -112.18732318280505
+Total electronic energy            :   -143.46756889584339
+Nuclear potential energy           :     31.22941035805852
+Embedding energy                   :     -0.01206577549893
+Total energy                       :   -112.25022431328381
 
 
                                Output from DIISD1:
@@ -739,23 +779,25 @@ Total energy                       :   -112.18732318280505
 * DIIS iteration no.:         1
 * B matrix dimension:         2
 * B matrix condition: 0.000D+00
-E_HOMO...E_LUMO, symmetry 1:    20  -0.34640   21   0.36522
-   * Two-electron Fock matrix  (CPU): 0.37735401s
-   * PE Fock matrix            (CPU): 0.04360795s
-   * Quaternion diagonalization(CPU): 0.00015801s
->>> Total wall time: 0.48000000s, and total CPU time : 0.47644000s
+E_HOMO...E_LUMO, symmetry 1:                                 20  -0.35638   21   0.35158
+   * Two-electron Fock matrix  (CPU): 0.40037299s
+   * PE Fock matrix            (CPU): 0.03571802s
+   * Quaternion diagonalization(CPU):  0.00019400s  (WALL):  0.00000000s
+>>> Total wall time:  0.48200000s, and total CPU time :  0.48101300s
 
-########## END ITERATION NO.   2 ##########   Thu Apr 19 16:19:14 2018
+########## END ITERATION NO.   2 ##########   Thu Feb 22 14:24:53 2024
 
-It.    2    -112.1873231828      7.25D+01  3.40D+00  8.84D-01               0.47644000s   LL SL SS       Thu Apr 19
+It.    2    -112.2502243133      7.41D+01  3.42D+00  7.55D-01               0.48200000s   LL SL SS       Thu Feb 22
 
-########## START ITERATION NO.   3 ##########   Thu Apr 19 16:19:14 2018
+########## START ITERATION NO.   3 ##########   Thu Feb 22 14:24:53 2024
 
-    3 *** Differential density matrix. DCOVLP     = 0.9235
+    3 *** Differential density matrix. DCOVLP     = 0.9368
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.25%    0.00%    0.05%   0.01194304s
-SOfock:SL  1.00D-12    0.00%    5.61%    0.00%    0.05%   0.06308401s
-SOfock:SS  1.00D-12    0.00%   32.59%    0.00%    0.00%   0.26708305s
+SOfock:LL  1.00D-12    0.00%    2.25%    0.00%    0.05%   0.01365799s
+SOfock:SL  1.00D-12    0.00%    5.67%    0.00%    0.05%   0.06901401s
+SOfock:SS  1.00D-12    0.00%   33.27%    0.00%    0.00%   0.27803898s
+ >>> CPU  time used in SO Fock is   0.36 seconds
+ >>> WALL time used in SO Fock is   0.36 seconds
 * Calling PE library
 
     .--------------------------------------------------.
@@ -766,27 +808,28 @@ SOfock:SS  1.00D-12    0.00%   32.59%    0.00%    0.00%   0.26708305s
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.216581148286
-            Nuclear                    0.196616244641
+            Electronic                -0.215627569396
+            Nuclear                    0.196616246095
             Multipole                  0.000000000000
-            Total                     -0.019964903645
+            Total                     -0.019011323302
 
        Polarization contributions:
-            Electronic                -0.071215811328
-            Nuclear                    0.066860192588
-            Multipole                 -0.005623869550
-            Total                     -0.009979488289
+            Electronic                -0.068204411093
+            Nuclear                    0.064193341401
+            Multipole                 -0.005537064718
+            Total                     -0.009548134410
 
-       Total PE energy:            -0.029944391934
+       Total PE energy:               -0.028559457711
+            (excl. multipole-multipole interaction energy)
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -143.57686828006783
-Nuclear potential energy           :     31.22941020444240
-Embedding energy                   :     -0.02994439193393
-Total energy                       :   -112.37740246755936
+Total electronic energy            :   -143.58990424894293
+Nuclear potential energy           :     31.22941035805852
+Embedding energy                   :     -0.02855945771141
+Total energy                       :   -112.38905334859581
 
 
                                Output from DIISD1:
@@ -794,30 +837,32 @@ Total energy                       :   -112.37740246755936
 
 * DIIS iteration no.:         2
 * B matrix dimension:         3
-* B matrix condition: 4.064D-01
+* B matrix condition: 3.034D-01
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.823D-02
-         2      3.001D-01
-         3      6.999D-01
-E_HOMO...E_LUMO, symmetry 1:    20  -0.33010   21   0.30149
-   * Two-electron Fock matrix  (CPU): 0.34310305s
-   * PE Fock matrix            (CPU): 0.01774502s
-   * Quaternion diagonalization(CPU): 0.00015593s
->>> Total wall time: 0.42100000s, and total CPU time : 0.41814800s
+     lambda     2.838D-02
+         2      3.057D-01
+         3      6.943D-01
+E_HOMO...E_LUMO, symmetry 1:                                 20  -0.33452   21   0.29841
+   * Two-electron Fock matrix  (CPU): 0.36218202s
+   * PE Fock matrix            (CPU): 0.01385403s
+   * Quaternion diagonalization(CPU):  0.00020400s  (WALL):  0.00000000s
+>>> Total wall time:  0.42100000s, and total CPU time :  0.42130700s
 
-########## END ITERATION NO.   3 ##########   Thu Apr 19 16:19:14 2018
+########## END ITERATION NO.   3 ##########   Thu Feb 22 14:24:53 2024
 
-It.    3    -112.3774024676      1.90D-01 -6.98D-01  4.18D-01   DIIS   2    0.41814800s   LL SL SS       Thu Apr 19
+It.    3    -112.3890533486      1.39D-01 -5.97D-01  3.65D-01   DIIS   2    0.42100000s   LL SL SS       Thu Feb 22
 
-########## START ITERATION NO.   4 ##########   Thu Apr 19 16:19:14 2018
+########## START ITERATION NO.   4 ##########   Thu Feb 22 14:24:53 2024
 
-    4 *** Differential density matrix. DCOVLP     = 0.9988
+    4 *** Differential density matrix. DCOVLP     = 0.9996
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.25%    0.00%    0.05%   0.01235807s
-SOfock:SL  1.00D-12    0.00%    5.87%    0.00%    0.08%   0.06377494s
-SOfock:SS  1.00D-12    0.00%   40.72%    0.00%    0.00%   0.24841189s
+SOfock:LL  1.00D-12    0.00%    2.25%    0.00%    0.05%   0.01389498s
+SOfock:SL  1.00D-12    0.00%    5.93%    0.00%    0.09%   0.06792796s
+SOfock:SS  1.00D-12    0.00%   41.72%    0.00%    0.00%   0.25992703s
+ >>> CPU  time used in SO Fock is   0.34 seconds
+ >>> WALL time used in SO Fock is   0.34 seconds
 * Calling PE library
 
     .--------------------------------------------------.
@@ -828,27 +873,28 @@ SOfock:SS  1.00D-12    0.00%   40.72%    0.00%    0.00%   0.24841189s
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.208504858923
-            Nuclear                    0.196616244641
+            Electronic                -0.208620483087
+            Nuclear                    0.196616246095
             Multipole                  0.000000000000
-            Total                     -0.011888614282
+            Total                     -0.012004236992
 
        Polarization contributions:
-            Electronic                -0.045688728471
-            Nuclear                    0.043841725657
-            Multipole                 -0.004885136422
-            Total                     -0.006732139236
+            Electronic                -0.046085415579
+            Nuclear                    0.044207814407
+            Multipole                 -0.004896234193
+            Total                     -0.006773835365
 
-       Total PE energy:            -0.018620753518
+       Total PE energy:               -0.018778072358
+            (excl. multipole-multipole interaction energy)
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -143.63588951493128
-Nuclear potential energy           :     31.22941020444240
-Embedding energy                   :     -0.01862075351802
-Total energy                       :   -112.42510006400691
+Total electronic energy            :   -143.63586353853705
+Nuclear potential energy           :     31.22941035805852
+Embedding energy                   :     -0.01877807235754
+Total energy                       :   -112.42523125283607
 
 
                                Output from DIISD1:
@@ -856,31 +902,33 @@ Total energy                       :   -112.42510006400691
 
 * DIIS iteration no.:         3
 * B matrix dimension:         4
-* B matrix condition: 7.556D-03
+* B matrix condition: 5.446D-03
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     2.129D-04
-         2     -3.704D-02
-         3      5.355D-04
-         4      1.037D+00
-E_HOMO...E_LUMO, symmetry 1:    20  -0.36536   21   0.27606
-   * Two-electron Fock matrix  (CPU): 0.32552099s
-   * PE Fock matrix            (CPU): 0.01746905s
-   * Quaternion diagonalization(CPU): 0.00022793s
->>> Total wall time: 0.40200000s, and total CPU time : 0.39949900s
+     lambda     1.581D-04
+         2     -4.167D-02
+         3     -1.127D-02
+         4      1.053D+00
+E_HOMO...E_LUMO, symmetry 1:                                 20  -0.36483   21   0.27590
+   * Two-electron Fock matrix  (CPU): 0.34313601s
+   * PE Fock matrix            (CPU): 0.01382005s
+   * Quaternion diagonalization(CPU):  0.00020600s  (WALL):  0.00000000s
+>>> Total wall time:  0.40200000s, and total CPU time :  0.40168700s
 
-########## END ITERATION NO.   4 ##########   Thu Apr 19 16:19:15 2018
+########## END ITERATION NO.   4 ##########   Thu Feb 22 14:24:54 2024
 
-It.    4    -112.4251000640      4.77D-02 -2.63D-01  3.50D-02   DIIS   3    0.39949900s   LL SL SS       Thu Apr 19
+It.    4    -112.4252312528      3.62D-02 -2.28D-01  2.98D-02   DIIS   3    0.40200000s   LL SL SS       Thu Feb 22
 
-########## START ITERATION NO.   5 ##########   Thu Apr 19 16:19:15 2018
+########## START ITERATION NO.   5 ##########   Thu Feb 22 14:24:54 2024
 
     5 *** Differential density matrix. DCOVLP     = 0.9987
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.25%    0.00%    0.05%   0.01303208s
-SOfock:SL  1.00D-12    0.00%    6.83%    0.00%    0.33%   0.06860697s
-SOfock:SS  1.00D-12    0.00%   53.13%    0.06%    0.08%   0.22724700s
+SOfock:LL  1.00D-12    0.00%    2.25%    0.00%    0.05%   0.01324403s
+SOfock:SL  1.00D-12    0.00%    6.83%    0.00%    0.39%   0.06759000s
+SOfock:SS  1.00D-12    0.00%   53.68%    0.08%    0.10%   0.23688710s
+ >>> CPU  time used in SO Fock is   0.32 seconds
+ >>> WALL time used in SO Fock is   0.32 seconds
 * Calling PE library
 
     .--------------------------------------------------.
@@ -891,27 +939,28 @@ SOfock:SS  1.00D-12    0.00%   53.13%    0.06%    0.08%   0.22724700s
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.209072356095
-            Nuclear                    0.196616244641
+            Electronic                -0.209077971155
+            Nuclear                    0.196616246095
             Multipole                  0.000000000000
-            Total                     -0.012456111453
+            Total                     -0.012461725060
 
        Polarization contributions:
-            Electronic                -0.047467008710
-            Nuclear                    0.045469985570
-            Multipole                 -0.004938802918
-            Total                     -0.006935826057
+            Electronic                -0.047480721886
+            Nuclear                    0.045482221622
+            Multipole                 -0.004939399819
+            Total                     -0.006937900083
 
-       Total PE energy:            -0.019391937511
+       Total PE energy:               -0.019399625143
+            (excl. multipole-multipole interaction energy)
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -143.63555179791987
-Nuclear potential energy           :     31.22941020444240
-Embedding energy                   :     -0.01939193751057
-Total energy                       :   -112.42553353098806
+Total electronic energy            :   -143.63555168440166
+Nuclear potential energy           :     31.22941035805852
+Embedding energy                   :     -0.01939962514324
+Total energy                       :   -112.42554095148638
 
 
                                Output from DIISD1:
@@ -919,32 +968,34 @@ Total energy                       :   -112.42553353098806
 
 * DIIS iteration no.:         4
 * B matrix dimension:         5
-* B matrix condition: 1.564D-05
+* B matrix condition: 1.190D-05
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     7.270D-06
-         2      8.088D-03
-         3     -1.485D-02
-         4     -2.594D-01
-         5      1.266D+00
-E_HOMO...E_LUMO, symmetry 1:    20  -0.36363   21   0.27719
-   * Two-electron Fock matrix  (CPU): 0.31007504s
-   * PE Fock matrix            (CPU): 0.01722002s
-   * Quaternion diagonalization(CPU): 0.00019908s
->>> Total wall time: 0.38600000s, and total CPU time : 0.38343300s
+     lambda     3.448D-06
+         2      7.991D-03
+         3     -1.055D-02
+         4     -2.448D-01
+         5      1.247D+00
+E_HOMO...E_LUMO, symmetry 1:                                 20  -0.36343   21   0.27715
+   * Two-electron Fock matrix  (CPU): 0.31909394s
+   * PE Fock matrix            (CPU): 0.01366687s
+   * Quaternion diagonalization(CPU):  0.00019700s  (WALL):  0.00000000s
+>>> Total wall time:  0.37800000s, and total CPU time :  0.37731100s
 
-########## END ITERATION NO.   5 ##########   Thu Apr 19 16:19:15 2018
+########## END ITERATION NO.   5 ##########   Thu Feb 22 14:24:54 2024
 
-It.    5    -112.4255335310      4.33D-04 -1.89D-02  5.88D-03   DIIS   4    0.38343300s   LL SL SS       Thu Apr 19
+It.    5    -112.4255409515      3.10D-04 -1.51D-02  4.40D-03   DIIS   4    0.37800000s   LL SL SS       Thu Feb 22
 
-########## START ITERATION NO.   6 ##########   Thu Apr 19 16:19:15 2018
+########## START ITERATION NO.   6 ##########   Thu Feb 22 14:24:54 2024
 
-    6 *** Differential density matrix. DCOVLP     = 1.0001
+    6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.32%    0.00%    0.05%   0.01200008s
-SOfock:SL  1.00D-12    0.00%    8.15%    0.00%    0.69%   0.06235707s
-SOfock:SS  1.00D-12    0.00%   68.79%    0.19%    0.25%   0.19580495s
+SOfock:LL  1.00D-12    0.00%    2.32%    0.00%    0.05%   0.01393998s
+SOfock:SL  1.00D-12    0.00%    8.21%    0.00%    0.67%   0.06712699s
+SOfock:SS  1.00D-12    0.00%   70.94%    0.11%    0.11%   0.19947410s
+ >>> CPU  time used in SO Fock is   0.28 seconds
+ >>> WALL time used in SO Fock is   0.28 seconds
 * Calling PE library
 
     .--------------------------------------------------.
@@ -955,27 +1006,28 @@ SOfock:SS  1.00D-12    0.00%   68.79%    0.19%    0.25%   0.19580495s
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.209087096770
-            Nuclear                    0.196616244641
+            Electronic                -0.209090543597
+            Nuclear                    0.196616246095
             Multipole                  0.000000000000
-            Total                     -0.012470852128
+            Total                     -0.012474297503
 
        Polarization contributions:
-            Electronic                -0.047461139893
-            Nuclear                    0.045461268812
-            Multipole                 -0.004940077774
-            Total                     -0.006939948855
+            Electronic                -0.047470915456
+            Nuclear                    0.045470171603
+            Multipole                 -0.004940409145
+            Total                     -0.006941152999
 
-       Total PE energy:            -0.019410800983
+       Total PE energy:               -0.019415450501
+            (excl. multipole-multipole interaction energy)
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -143.63554605416556
-Nuclear potential energy           :     31.22941020444240
-Embedding energy                   :     -0.01941080098297
-Total energy                       :   -112.42554665070612
+Total electronic energy            :   -143.63554272989745
+Nuclear potential energy           :     31.22941035805852
+Embedding energy                   :     -0.01941545050108
+Total energy                       :   -112.42554782234004
 
 
                                Output from DIISD1:
@@ -983,33 +1035,35 @@ Total energy                       :   -112.42554665070612
 
 * DIIS iteration no.:         5
 * B matrix dimension:         6
-* B matrix condition: 1.970D-07
+* B matrix condition: 1.111D-07
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     7.789D-07
-         2     -3.321D-03
-         3      4.915D-03
-         4      1.143D-01
-         5     -7.019D-01
-         6      1.586D+00
-E_HOMO...E_LUMO, symmetry 1:    20  -0.36341   21   0.27710
-   * Two-electron Fock matrix  (CPU): 0.27131009s
-   * PE Fock matrix            (CPU): 0.01967001s
-   * Quaternion diagonalization(CPU): 0.00015593s
->>> Total wall time: 0.35100000s, and total CPU time : 0.34827800s
+     lambda     4.041D-07
+         2     -2.835D-03
+         3      2.733D-03
+         4      9.200D-02
+         5     -5.459D-01
+         6      1.454D+00
+E_HOMO...E_LUMO, symmetry 1:                                 20  -0.36338   21   0.27710
+   * Two-electron Fock matrix  (CPU): 0.28189898s
+   * PE Fock matrix            (CPU): 0.01366997s
+   * Quaternion diagonalization(CPU):  0.00019500s  (WALL):  0.00000000s
+>>> Total wall time:  0.34000000s, and total CPU time :  0.34000100s
 
-########## END ITERATION NO.   6 ##########   Thu Apr 19 16:19:15 2018
+########## END ITERATION NO.   6 ##########   Thu Feb 22 14:24:54 2024
 
-It.    6    -112.4255466507      1.31D-05  9.71D-04  1.61D-03   DIIS   5    0.34827800s   LL SL SS       Thu Apr 19
+It.    6    -112.4255478223      6.87D-06  8.81D-04  1.01D-03   DIIS   5    0.34000000s   LL SL SS       Thu Feb 22
 
-########## START ITERATION NO.   7 ##########   Thu Apr 19 16:19:15 2018
+########## START ITERATION NO.   7 ##########   Thu Feb 22 14:24:54 2024
 
     7 *** Differential density matrix. DCOVLP     = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.56%    0.00%    0.07%   0.01201606s
-SOfock:SL  1.00D-12    0.00%    8.32%    0.00%    0.90%   0.06438494s
-SOfock:SS  1.00D-12    0.00%   73.00%    0.39%    0.28%   0.18895102s
+SOfock:LL  1.00D-12    0.00%    2.69%    0.00%    0.07%   0.01409817s
+SOfock:SL  1.00D-12    0.00%    9.02%    0.00%    1.03%   0.06702304s
+SOfock:SS  1.00D-12    0.00%   77.32%    0.53%    0.36%   0.18522906s
+ >>> CPU  time used in SO Fock is   0.27 seconds
+ >>> WALL time used in SO Fock is   0.27 seconds
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1020,27 +1074,28 @@ SOfock:SS  1.00D-12    0.00%   73.00%    0.39%    0.28%   0.18895102s
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.209092134313
-            Nuclear                    0.196616244641
+            Electronic                -0.209092705174
+            Nuclear                    0.196616246095
             Multipole                  0.000000000000
-            Total                     -0.012475889671
+            Total                     -0.012476459079
 
        Polarization contributions:
-            Electronic                -0.047475924087
-            Nuclear                    0.045474790332
-            Multipole                 -0.004940551422
-            Total                     -0.006941685177
+            Electronic                -0.047478174607
+            Nuclear                    0.045476886660
+            Multipole                 -0.004940606326
+            Total                     -0.006941894272
 
-       Total PE energy:            -0.019417574848
+       Total PE energy:               -0.019418353352
+            (excl. multipole-multipole interaction energy)
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -143.63554110358803
-Nuclear potential energy           :     31.22941020444240
-Embedding energy                   :     -0.01941757484844
-Total energy                       :   -112.42554847399406
+Total electronic energy            :   -143.63554051388061
+Nuclear potential energy           :     31.22941035805852
+Embedding energy                   :     -0.01941835335160
+Total energy                       :   -112.42554850917368
 
 
                                Output from DIISD1:
@@ -1048,34 +1103,36 @@ Total energy                       :   -112.42554847399406
 
 * DIIS iteration no.:         6
 * B matrix dimension:         7
-* B matrix condition: 1.812D-08
+* B matrix condition: 9.361D-09
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     1.044D-08
-         2      2.251D-04
-         3     -3.051D-04
-         4     -7.506D-03
-         5      6.599D-02
-         6     -4.288D-01
-         7      1.370D+00
-E_HOMO...E_LUMO, symmetry 1:    20  -0.36329   21   0.27710
-   * Two-electron Fock matrix  (CPU): 0.26636696s
-   * PE Fock matrix            (CPU): 0.01753306s
-   * Quaternion diagonalization(CPU): 0.00016093s
->>> Total wall time: 0.34100000s, and total CPU time : 0.33908700s
+     lambda     1.133D-08
+         2      3.259D-04
+         3     -3.702D-04
+         4     -1.003D-02
+         5      6.803D-02
+         6     -5.378D-01
+         7      1.480D+00
+E_HOMO...E_LUMO, symmetry 1:                                 20  -0.36329   21   0.27710
+   * Two-electron Fock matrix  (CPU): 0.26773381s
+   * PE Fock matrix            (CPU): 0.01360512s
+   * Quaternion diagonalization(CPU):  0.00020900s  (WALL):  0.00000000s
+>>> Total wall time:  0.32500000s, and total CPU time :  0.32565800s
 
-########## END ITERATION NO.   7 ##########   Thu Apr 19 16:19:16 2018
+########## END ITERATION NO.   7 ##########   Thu Feb 22 14:24:55 2024
 
-It.    7    -112.4255484740      1.82D-06  3.62D-04  3.55D-04   DIIS   6    0.33908700s   LL SL SS       Thu Apr 19
+It.    7    -112.4255485092      6.87D-07  1.88D-04  3.02D-04   DIIS   6    0.32500000s   LL SL SS       Thu Feb 22
 
-########## START ITERATION NO.   8 ##########   Thu Apr 19 16:19:16 2018
+########## START ITERATION NO.   8 ##########   Thu Feb 22 14:24:55 2024
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.83%    0.00%    0.14%   0.01185703s
-SOfock:SL  1.00D-12    0.00%    9.51%    0.00%    1.37%   0.06276488s
-SOfock:SS  1.00D-12    0.00%   81.36%    0.59%    0.35%   0.17668700s
+SOfock:LL  1.00D-12    0.00%    2.89%    0.00%    0.08%   0.01393795s
+SOfock:SL  1.00D-12    0.00%    9.84%    0.00%    1.37%   0.06713200s
+SOfock:SS  1.00D-12    0.00%   83.00%    0.65%    0.38%   0.17173886s
+ >>> CPU  time used in SO Fock is   0.25 seconds
+ >>> WALL time used in SO Fock is   0.25 seconds
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1086,27 +1143,28 @@ SOfock:SS  1.00D-12    0.00%   81.36%    0.59%    0.35%   0.17668700s
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.209094406343
-            Nuclear                    0.196616244641
+            Electronic                -0.209094325974
+            Nuclear                    0.196616246095
             Multipole                  0.000000000000
-            Total                     -0.012478161702
+            Total                     -0.012478079879
 
        Polarization contributions:
-            Electronic                -0.047483685790
-            Nuclear                    0.045481951032
-            Multipole                 -0.004940770571
-            Total                     -0.006942505329
+            Electronic                -0.047483511048
+            Nuclear                    0.045481796672
+            Multipole                 -0.004940762586
+            Total                     -0.006942476962
 
-       Total PE energy:            -0.019420667031
+       Total PE energy:               -0.019420556841
+            (excl. multipole-multipole interaction energy)
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -143.63553812455621
-Nuclear potential energy           :     31.22941020444240
-Embedding energy                   :     -0.01942066703081
-Total energy                       :   -112.42554858714463
+Total electronic energy            :   -143.63553838968241
+Nuclear potential energy           :     31.22941035805852
+Embedding energy                   :     -0.01942055684090
+Total energy                       :   -112.42554858846481
 
 
                                Output from DIISD1:
@@ -1114,35 +1172,37 @@ Total energy                       :   -112.42554858714463
 
 * DIIS iteration no.:         7
 * B matrix dimension:         8
-* B matrix condition: 1.862D-10
+* B matrix condition: 1.845D-10
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     9.210D-10
-         2     -1.034D-04
-         3      1.190D-04
-         4      3.516D-03
-         5     -3.121D-02
-         6      2.131D-01
-         7     -7.338D-01
-         8      1.548D+00
-E_HOMO...E_LUMO, symmetry 1:    20  -0.36327   21   0.27710
-   * Two-electron Fock matrix  (CPU): 0.25249791s
-   * PE Fock matrix            (CPU): 0.01741290s
-   * Quaternion diagonalization(CPU): 0.00015616s
->>> Total wall time: 0.33100000s, and total CPU time : 0.32836800s
+     lambda     5.231D-10
+         2     -1.192D-04
+         3      9.271D-05
+         4      3.723D-03
+         5     -2.544D-02
+         6      2.480D-01
+         7     -7.926D-01
+         8      1.566D+00
+E_HOMO...E_LUMO, symmetry 1:                                 20  -0.36328   21   0.27710
+   * Two-electron Fock matrix  (CPU): 0.25419497s
+   * PE Fock matrix            (CPU): 0.01362705s
+   * Quaternion diagonalization(CPU):  0.00019400s  (WALL):  0.00000000s
+>>> Total wall time:  0.31200000s, and total CPU time :  0.31218000s
 
-########## END ITERATION NO.   8 ##########   Thu Apr 19 16:19:16 2018
+########## END ITERATION NO.   8 ##########   Thu Feb 22 14:24:55 2024
 
-It.    8    -112.4255485871      1.13D-07  9.95D-05  4.78D-05   DIIS   7    0.32836800s   LL SL SS       Thu Apr 19
+It.    8    -112.4255485885      7.93D-08  7.77D-05  4.90D-05   DIIS   7    0.31200000s   LL SL SS       Thu Feb 22
 
-########## START ITERATION NO.   9 ##########   Thu Apr 19 16:19:16 2018
+########## START ITERATION NO.   9 ##########   Thu Feb 22 14:24:55 2024
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    3.90%    0.00%    0.15%   0.01213789s
-SOfock:SL  1.00D-12    0.00%   13.39%    0.00%    2.84%   0.06483912s
-SOfock:SS  1.00D-12    1.12%   91.84%    0.46%    0.35%   0.17035294s
+SOfock:LL  1.00D-12    0.00%    3.90%    0.00%    0.20%   0.01383710s
+SOfock:SL  1.00D-12    0.00%   13.83%    0.00%    2.64%   0.06722999s
+SOfock:SS  1.00D-12    0.17%   92.70%    0.37%    0.32%   0.14956808s
+ >>> CPU  time used in SO Fock is   0.23 seconds
+ >>> WALL time used in SO Fock is   0.23 seconds
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1153,27 +1213,28 @@ SOfock:SS  1.00D-12    1.12%   91.84%    0.46%    0.35%   0.17035294s
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.209094413594
-            Nuclear                    0.196616244641
+            Electronic                -0.209094413014
+            Nuclear                    0.196616246095
             Multipole                  0.000000000000
-            Total                     -0.012478168953
+            Total                     -0.012478166919
 
        Polarization contributions:
-            Electronic                -0.047483652853
-            Nuclear                    0.045481910394
-            Multipole                 -0.004940775407
-            Total                     -0.006942517866
+            Electronic                -0.047483655030
+            Nuclear                    0.045481912487
+            Multipole                 -0.004940775368
+            Total                     -0.006942517911
 
-       Total PE energy:            -0.019420686819
+       Total PE energy:               -0.019420684831
+            (excl. multipole-multipole interaction energy)
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -143.63553810758557
-Nuclear potential energy           :     31.22941020444240
-Embedding energy                   :     -0.01942068681858
-Total energy                       :   -112.42554858996175
+Total electronic energy            :   -143.63553826416475
+Nuclear potential energy           :     31.22941035805852
+Embedding energy                   :     -0.01942068483071
+Total energy                       :   -112.42554859093693
 
 
                                Output from DIISD1:
@@ -1181,36 +1242,38 @@ Total energy                       :   -112.42554858996175
 
 * DIIS iteration no.:         8
 * B matrix dimension:         9
-* B matrix condition: 5.890D-12
+* B matrix condition: 3.884D-12
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     2.191D-10
-         2      7.129D-05
-         3     -6.200D-05
-         4     -2.481D-03
-         5      2.204D-02
-         6     -1.544D-01
-         7      5.504D-01
-         8     -1.411D+00
-         9      1.996D+00
-E_HOMO...E_LUMO, symmetry 1:    20  -0.36328   21   0.27710
-   * Two-electron Fock matrix  (CPU): 0.24917102s
-   * PE Fock matrix            (CPU): 0.02123189s
-   * Quaternion diagonalization(CPU): 0.00016809s
->>> Total wall time: 0.33300000s, and total CPU time : 0.33042800s
+     lambda     1.409D-10
+         2      6.756D-05
+         3     -3.331D-05
+         4     -2.148D-03
+         5      1.448D-02
+         6     -1.503D-01
+         7      5.003D-01
+         8     -1.115D+00
+         9      1.753D+00
+E_HOMO...E_LUMO, symmetry 1:                                 20  -0.36328   21   0.27710
+   * Two-electron Fock matrix  (CPU): 0.23201180s
+   * PE Fock matrix            (CPU): 0.01361704s
+   * Quaternion diagonalization(CPU):  0.00019700s  (WALL):  0.00000000s
+>>> Total wall time:  0.29000000s, and total CPU time :  0.29020400s
 
-########## END ITERATION NO.   9 ##########   Thu Apr 19 16:19:16 2018
+########## END ITERATION NO.   9 ##########   Thu Feb 22 14:24:55 2024
 
-It.    9    -112.4255485900      2.82D-09  1.68D-05  2.07D-05   DIIS   8    0.33042800s   LL SL SS       Thu Apr 19
+It.    9    -112.4255485909      2.47D-09 -1.28D-05  1.52D-05   DIIS   8    0.29000000s   LL SL SS       Thu Feb 22
 
-########## START ITERATION NO.  10 ##########   Thu Apr 19 16:19:16 2018
+########## START ITERATION NO.  10 ##########   Thu Feb 22 14:24:55 2024
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.31%    0.00%    0.34%   0.01281905s
-SOfock:SL  1.00D-12    0.00%   15.85%    0.00%    4.03%   0.06767678s
-SOfock:SS  1.00D-12    2.04%   91.88%    0.78%    0.61%   0.16255093s
+SOfock:LL  1.00D-12    0.00%    4.44%    0.03%    0.43%   0.01442003s
+SOfock:SL  1.00D-12    0.00%   16.87%    0.00%    5.39%   0.06662297s
+SOfock:SS  1.00D-12    2.60%   92.71%    0.77%    0.66%   0.14139390s
+ >>> CPU  time used in SO Fock is   0.22 seconds
+ >>> WALL time used in SO Fock is   0.22 seconds
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1221,27 +1284,28 @@ SOfock:SS  1.00D-12    2.04%   91.88%    0.78%    0.61%   0.16255093s
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.209094426862
-            Nuclear                    0.196616244641
+            Electronic                -0.209094427624
+            Nuclear                    0.196616246095
             Multipole                  0.000000000000
-            Total                     -0.012478182221
+            Total                     -0.012478181530
 
        Polarization contributions:
-            Electronic                -0.047483683672
-            Nuclear                    0.045481935224
-            Multipole                 -0.004940777600
-            Total                     -0.006942526048
+            Electronic                -0.047483682318
+            Nuclear                    0.045481934482
+            Multipole                 -0.004940777336
+            Total                     -0.006942525172
 
-       Total PE energy:            -0.019420708269
+       Total PE energy:               -0.019420706702
+            (excl. multipole-multipole interaction energy)
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -143.63553808704057
-Nuclear potential energy           :     31.22941020444240
-Embedding energy                   :     -0.01942070826883
-Total energy                       :   -112.42554859086701
+Total electronic energy            :   -143.63553824259520
+Nuclear potential energy           :     31.22941035805852
+Embedding energy                   :     -0.01942070670203
+Total energy                       :   -112.42554859123872
 
 
                                Output from DIISD1:
@@ -1249,37 +1313,39 @@ Total energy                       :   -112.42554859086701
 
 * DIIS iteration no.:         9
 * B matrix dimension:        10
-* B matrix condition: 9.132D-13
+* B matrix condition: 6.783D-13
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.740D-11
-         2     -1.557D-05
-         3      2.033D-06
-         4      5.800D-04
-         5     -5.339D-03
-         6      4.167D-02
-         7     -1.634D-01
-         8      5.367D-01
-         9     -1.342D+00
-        10      1.932D+00
-E_HOMO...E_LUMO, symmetry 1:    20  -0.36328   21   0.27710
-   * Two-electron Fock matrix  (CPU): 0.24425292s
-   * PE Fock matrix            (CPU): 0.01746106s
-   * Quaternion diagonalization(CPU): 0.00015593s
->>> Total wall time: 0.32300000s, and total CPU time : 0.31988100s
+     lambda     2.183D-11
+         2     -1.400D-05
+         3     -2.903D-06
+         4      4.713D-04
+         5     -2.973D-03
+         6      3.824D-02
+         7     -1.434D-01
+         8      3.920D-01
+         9     -1.370D+00
+        10      2.085D+00
+E_HOMO...E_LUMO, symmetry 1:                                 20  -0.36328   21   0.27710
+   * Two-electron Fock matrix  (CPU): 0.22382092s
+   * PE Fock matrix            (CPU): 0.01375103s
+   * Quaternion diagonalization(CPU):  0.00019200s  (WALL):  0.00000000s
+>>> Total wall time:  0.28200000s, and total CPU time :  0.28226900s
 
-########## END ITERATION NO.  10 ##########   Thu Apr 19 16:19:17 2018
+########## END ITERATION NO.  10 ##########   Thu Feb 22 14:24:55 2024
 
-It.   10    -112.4255485909      9.05D-10 -1.52D-05  9.66D-06   DIIS   9    0.31988100s   LL SL SS       Thu Apr 19
+It.   10    -112.4255485912      3.02D-10  9.10D-06  7.90D-06   DIIS   9    0.28200000s   LL SL SS       Thu Feb 22
 
-########## START ITERATION NO.  11 ##########   Thu Apr 19 16:19:17 2018
+########## START ITERATION NO.  11 ##########   Thu Feb 22 14:24:55 2024
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.44%    0.03%    0.66%   0.01217198s
-SOfock:SL  1.00D-12    0.00%   18.39%    0.00%    6.30%   0.06471992s
-SOfock:SS  1.00D-12    5.87%   89.41%    1.30%    1.04%   0.14160109s
+SOfock:LL  1.00D-12    0.00%    4.54%    0.03%    0.81%   0.01369905s
+SOfock:SL  1.00D-12    0.00%   18.91%    0.00%    6.58%   0.06635594s
+SOfock:SS  1.00D-12    7.74%   88.02%    1.39%    1.14%   0.13443494s
+ >>> CPU  time used in SO Fock is   0.21 seconds
+ >>> WALL time used in SO Fock is   0.21 seconds
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1290,27 +1356,28 @@ SOfock:SS  1.00D-12    5.87%   89.41%    1.30%    1.04%   0.14160109s
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.209094394279
-            Nuclear                    0.196616244641
+            Electronic                -0.209094398664
+            Nuclear                    0.196616246095
             Multipole                  0.000000000000
-            Total                     -0.012478149638
+            Total                     -0.012478152569
 
        Polarization contributions:
-            Electronic                -0.047483596082
-            Nuclear                    0.045481855774
-            Multipole                 -0.004940774552
-            Total                     -0.006942514860
+            Electronic                -0.047483605621
+            Nuclear                    0.045481864686
+            Multipole                 -0.004940774776
+            Total                     -0.006942515710
 
-       Total PE energy:            -0.019420664498
+       Total PE energy:               -0.019420668280
+            (excl. multipole-multipole interaction energy)
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -143.63553813107856
-Nuclear potential energy           :     31.22941020444240
-Embedding energy                   :     -0.01942066449809
-Total energy                       :   -112.42554859113424
+Total electronic energy            :   -143.63553828141903
+Nuclear potential energy           :     31.22941035805852
+Embedding energy                   :     -0.01942066827978
+Total energy                       :   -112.42554859164028
 
 
                                Output from DIISD1:
@@ -1318,37 +1385,39 @@ Total energy                       :   -112.42554859113424
 
 * DIIS iteration no.:        10
 * B matrix dimension:        10
-* B matrix condition: 1.374D-13
+* B matrix condition: 6.953D-14
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     3.458D-12
-         3      1.291D-05
-         4     -5.412D-05
-         5      9.254D-04
-         6     -1.309D-02
-         7      6.701D-02
-         8     -3.211D-01
-         9      1.145D+00
-        10     -2.231D+00
-        11      2.352D+00
-E_HOMO...E_LUMO, symmetry 1:    20  -0.36328   21   0.27710
-   * Two-electron Fock matrix  (CPU): 0.21950793s
-   * PE Fock matrix            (CPU): 0.01742291s
-   * Quaternion diagonalization(CPU): 0.00015593s
->>> Total wall time: 0.29500000s, and total CPU time : 0.29303300s
+     lambda     2.699D-12
+         3      1.036D-05
+         4     -3.589D-05
+         5      9.438D-05
+         6     -1.195D-02
+         7      6.081D-02
+         8     -2.240D-01
+         9      1.223D+00
+        10     -2.349D+00
+        11      2.301D+00
+E_HOMO...E_LUMO, symmetry 1:                                 20  -0.36328   21   0.27710
+   * Two-electron Fock matrix  (CPU): 0.21588492s
+   * PE Fock matrix            (CPU): 0.01377583s
+   * Quaternion diagonalization(CPU):  0.00019000s  (WALL):  0.00000000s
+>>> Total wall time:  0.27500000s, and total CPU time :  0.27460000s
 
-########## END ITERATION NO.  11 ##########   Thu Apr 19 16:19:17 2018
+########## END ITERATION NO.  11 ##########   Thu Feb 22 14:24:56 2024
 
-It.   11    -112.4255485911      2.67D-10  1.09D-05  4.01D-06   DIIS   9    0.29303300s   LL SL SS       Thu Apr 19
+It.   11    -112.4255485916      4.02D-10  8.92D-06  3.10D-06   DIIS   9    0.27500000s   LL SL SS       Thu Feb 22
 
-########## START ITERATION NO.  12 ##########   Thu Apr 19 16:19:17 2018
+########## START ITERATION NO.  12 ##########   Thu Feb 22 14:24:56 2024
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.61%    0.03%    1.00%   0.01195002s
-SOfock:SL  1.00D-12    0.00%   21.64%    0.05%    9.02%   0.06561184s
-SOfock:SS  1.00D-12   14.55%   82.44%    2.13%    1.95%   0.13457108s
+SOfock:LL  1.00D-12    0.00%    4.68%    0.07%    1.10%   0.01388216s
+SOfock:SL  1.00D-12    0.00%   22.58%    0.01%   10.41%   0.06582713s
+SOfock:SS  1.00D-12   16.04%   81.41%    2.26%    2.48%   0.12160301s
+ >>> CPU  time used in SO Fock is   0.20 seconds
+ >>> WALL time used in SO Fock is   0.20 seconds
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1359,35 +1428,36 @@ SOfock:SS  1.00D-12   14.55%   82.44%    2.13%    1.95%   0.13457108s
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.209094402390
-            Nuclear                    0.196616244641
+            Electronic                -0.209094403527
+            Nuclear                    0.196616246095
             Multipole                  0.000000000000
-            Total                     -0.012478157749
+            Total                     -0.012478157432
 
        Polarization contributions:
-            Electronic                -0.047483622144
-            Nuclear                    0.045481880204
-            Multipole                 -0.004940775121
-            Total                     -0.006942517062
+            Electronic                -0.047483621154
+            Nuclear                    0.045481879265
+            Multipole                 -0.004940775102
+            Total                     -0.006942516991
 
-       Total PE energy:            -0.019420674810
+       Total PE energy:               -0.019420674423
+            (excl. multipole-multipole interaction energy)
 
 
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -143.63553812079203
-Nuclear potential energy           :     31.22941020444240
-Embedding energy                   :     -0.01942067481021
-Total energy                       :   -112.42554859115985
-   * Two-electron Fock matrix  (CPU): 0.21312237s
-   * PE Fock matrix            (CPU): 0.01694441s
-   * Quaternion diagonalization(CPU): 0.00015593s
->>> Total wall time: 0.28800000s, and total CPU time : 0.28532300s
+Total electronic energy            :   -143.63553827506709
+Nuclear potential energy           :     31.22941035805852
+Embedding energy                   :     -0.01942067442309
+Total energy                       :   -112.42554859143166
+   * Two-electron Fock matrix  (CPU): 0.20272803s
+   * PE Fock matrix            (CPU): 0.01363611s
+   * Quaternion diagonalization(CPU):  0.00019000s  (WALL):  0.00000000s
+>>> Total wall time:  0.26000000s, and total CPU time :  0.25997000s
 
-########## END ITERATION NO.  12 ##########   Thu Apr 19 16:19:17 2018
+########## END ITERATION NO.  12 ##########   Thu Feb 22 14:24:56 2024
 
-It.   12    -112.4255485912      2.56D-11  5.09D-06  7.91D-07   DIIS   9    0.28532300s   LL SL SS       Thu Apr 19
+It.   12    -112.4255485914     -2.09D-10  3.82D-06  7.95D-07   DIIS   9    0.26000000s   LL SL SS       Thu Feb 22
 
 
                                    SCF - CYCLE
@@ -1403,36 +1473,38 @@ It.   12    -112.4255485912      2.56D-11  5.09D-06  7.91D-07   DIIS   9    0.28
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -39.68440974958      0.00D+00  0.00D+00  0.00D+00               0.11953000s   Scr. nuclei    Thu Apr 19
-It.    2    -112.1873231828      7.25D+01  3.40D+00  8.84D-01               0.47644000s   LL SL SS       Thu Apr 19
-It.    3    -112.3774024676      1.90D-01 -6.98D-01  4.18D-01   DIIS   2    0.41814800s   LL SL SS       Thu Apr 19
-It.    4    -112.4251000640      4.77D-02 -2.63D-01  3.50D-02   DIIS   3    0.39949900s   LL SL SS       Thu Apr 19
-It.    5    -112.4255335310      4.33D-04 -1.89D-02  5.88D-03   DIIS   4    0.38343300s   LL SL SS       Thu Apr 19
-It.    6    -112.4255466507      1.31D-05  9.71D-04  1.61D-03   DIIS   5    0.34827800s   LL SL SS       Thu Apr 19
-It.    7    -112.4255484740      1.82D-06  3.62D-04  3.55D-04   DIIS   6    0.33908700s   LL SL SS       Thu Apr 19
-It.    8    -112.4255485871      1.13D-07  9.95D-05  4.78D-05   DIIS   7    0.32836800s   LL SL SS       Thu Apr 19
-It.    9    -112.4255485900      2.82D-09  1.68D-05  2.07D-05   DIIS   8    0.33042800s   LL SL SS       Thu Apr 19
-It.   10    -112.4255485909      9.05D-10 -1.52D-05  9.66D-06   DIIS   9    0.31988100s   LL SL SS       Thu Apr 19
-It.   11    -112.4255485911      2.67D-10  1.09D-05  4.01D-06   DIIS   9    0.29303300s   LL SL SS       Thu Apr 19
-It.   12    -112.4255485912      2.56D-11  5.09D-06  7.91D-07   DIIS   9    0.28532300s   LL SL SS       Thu Apr 19
+It.    1    -38.19014375305      0.00D+00  0.00D+00  0.00D+00               0.01844700s   Atom. scrpot   Thu Feb 22
+It.    2    -112.2502243133      7.41D+01  3.42D+00  7.55D-01               0.48200000s   LL SL SS       Thu Feb 22
+It.    3    -112.3890533486      1.39D-01 -5.97D-01  3.65D-01   DIIS   2    0.42100000s   LL SL SS       Thu Feb 22
+It.    4    -112.4252312528      3.62D-02 -2.28D-01  2.98D-02   DIIS   3    0.40200000s   LL SL SS       Thu Feb 22
+It.    5    -112.4255409515      3.10D-04 -1.51D-02  4.40D-03   DIIS   4    0.37800000s   LL SL SS       Thu Feb 22
+It.    6    -112.4255478223      6.87D-06  8.81D-04  1.01D-03   DIIS   5    0.34000000s   LL SL SS       Thu Feb 22
+It.    7    -112.4255485092      6.87D-07  1.88D-04  3.02D-04   DIIS   6    0.32500000s   LL SL SS       Thu Feb 22
+It.    8    -112.4255485885      7.93D-08  7.77D-05  4.90D-05   DIIS   7    0.31200000s   LL SL SS       Thu Feb 22
+It.    9    -112.4255485909      2.47D-09 -1.28D-05  1.52D-05   DIIS   8    0.29000000s   LL SL SS       Thu Feb 22
+It.   10    -112.4255485912      3.02D-10  9.10D-06  7.90D-06   DIIS   9    0.28200000s   LL SL SS       Thu Feb 22
+It.   11    -112.4255485916      4.02D-10  8.92D-06  3.10D-06   DIIS   9    0.27500000s   LL SL SS       Thu Feb 22
+It.   12    -112.4255485914     -2.09D-10  3.82D-06  7.95D-07   DIIS   9    0.26000000s   LL SL SS       Thu Feb 22
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   12 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.12500000s
-      LL SL SS     :    0.35918182s
+      No 2-ints    :    0.01800000s
+      LL SL SS     :    0.34245455s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -143.63553812079203
+   Charge of molecule : 0
+
+   Electronic energy                        :    -143.63553827506709
 
    Other contributions to the total energy
-   Nuclear repulsion energy                 :      31.22941020444240
-   Embedding energy                         :      -0.01942067481021
+   Nuclear repulsion energy                 :      31.22941035805852
+   Embedding energy                         :      -0.01942067442309
 
    Sum of all contributions to the energy
-   Total energy                             :    -112.42554859115985
+   Total energy                             :    -112.42554859143166
 
 
                                    Eigenvalues
@@ -1441,17 +1513,21 @@ It.   12    -112.4255485912      2.56D-11  5.09D-06  7.91D-07   DIIS   9    0.28
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--20.32456478471079  ( 2)   -11.13719854537364  ( 2)    -1.35419579987949  ( 2)    -0.80659412991759  ( 2)    -0.64265365193193  ( 2)
- -0.55854629848810  ( 2)    -0.45638335834615  ( 2)    -0.36327695505173  ( 2)
+-20.32456483494432  ( 2)   -11.13719852543114  ( 2)    -1.35419583203659  ( 2)    -0.80659413508189  ( 2)    -0.64265365223892  ( 2)
+ -0.55854632954726  ( 2)    -0.45638338088284  ( 2)    -0.36327695317177  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.27709713397905  ( 2)     0.62340527809792  ( 2)     0.74378561683919  ( 2)     0.91434100800975  ( 2)
+  0.27709714545758  ( 2)     0.62340528256416  ( 2)     0.74378564015999  ( 2)     0.91434102022221  ( 2)
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.27709713 au (symmetry E1 )
-  - E(HOMO) :    -0.36327696 au (symmetry E1 )
+    E(LUMO) :     0.27709715 au (symmetry E1 )
+  - E(HOMO) :    -0.36327695 au (symmetry E1 )
   ------------------------------------------
-    gap     :     0.64037409 au
+    gap     :     0.64037410 au
 
+
+ * Closing HDF5 checkpoint file 
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -1459,10 +1535,10 @@ It.   12    -112.4255485912      2.56D-11  5.09D-06  7.91D-07   DIIS   9    0.28
 
 
  
-     Date and time (Linux)  : Thu Apr 19 16:19:17 2018
-     Host name              : erik.teokem.lu.se                       
+     Date and time (Linux)  : Thu Feb 22 14:24:56 2024
+     Host name              : adm-130996                              
 
->>>> Node 0, utime: 4, stime: 0, minflt: 17169, majflt: 0, nvcsw: 12, nivcsw: 5, maxrss: 20876
+>>>> Node 0, utime: 3, stime: 0, minflt: 4196, majflt: 0, nvcsw: 130, nivcsw: 505, maxrss: 36728
 >>>> Total WALL time used in DIRAC: 4s
   
   Dynamical Memory Usage Summary for Master
@@ -1487,7 +1563,7 @@ It.   12    -112.4255485912      2.56D-11  5.09D-06  7.91D-07   DIIS   9    0.28
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             
   
- MEMGET high-water mark:     0.00 MB
+ MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/erikh/Programs/tests/pe-dirac/energy_tests_for_dirac
+DIRAC pam run in /home/edl/Source/dirac/pelib/test/pe_energy

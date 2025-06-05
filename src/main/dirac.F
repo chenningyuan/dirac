@@ -1184,6 +1184,9 @@ C***********************************************************************
       !use visual_dirac, only : visual_initialize_nodes
       use visual
 
+#ifdef HAS_PELIB
+      use pelib_dirac_interface, only : pelib_ifc_slave
+#endif
       implicit none
 
 #if defined (VAR_SLEEPING_SLAVES)
@@ -1407,7 +1410,7 @@ C
 C        start the PELIB slave.
 C
 #ifdef HAS_PELIB
-         CALL PELIB_IFC_SLAVE()
+         call pelib_ifc_slave()
 #else
          call quit('ERROR: PElib not available')
 #endif
