@@ -181,7 +181,8 @@ C=============================================================
       ENDIF
 
       DO4C2C = DO4C2C_SAVE
-
+CTROND
+      WRITE(6,*) 'TEST..',DO4C2C     
       IF (DO4C2C) THEN ! 4c --> 2c switch
          CALL GO4C2C()
       END IF 

@@ -2856,8 +2856,6 @@ CMI =====================================================================
        bss = .false.
        if(x2c)then
          x2c        = .false.
-!        keep the x2cmod_x2c value in order to identify to which module
-!        to switch in dirscf.F --> subroutine PSISCF
        end if
        WRITE(LUPRI,'(A)')
      &  ' * after the four-component SCF step switch to'//
@@ -5402,13 +5400,13 @@ C
       SSMTRC  = D1
       ESHIFT  = D0
       BSS     = .FALSE.
-      x2c     = .false.
+      x2c     = .FALSE.
 !     default for X2C module: add spin-same orbit MFSSO2 terms
       isorder_amfi_x2c = 2
       IBSS    = -1
       IMFCH   = 0
 CMI ... default for BSS - do always the preliminary free particle basis transformation
-      NOPRTR  = .FALSE.
+      NOPRTR  = .TRUE.
 C      ... for the infinite order solve the R-equation 2
       YREQ1   = .FALSE.
 C      ... default - do not perform the numerical block diagonalization !
@@ -5723,6 +5721,7 @@ C&&& INTFLG: Specify what two-integrals should be included in this run
 C&&&&&  BSS:  prepare two-component Barysz-Sadlej-Snijders
 C       transformed relativistic Hamiltonian
              BSS        = .TRUE.
+             NOPRTR     = .FALSE.
              TWOCOMPBSS = .TRUE.
              TWOCOMP    = .TRUE.
              DOLVC   = .FALSE.
@@ -5824,7 +5823,6 @@ C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
 !                   ^     ^^^ ^
              NOPRTR     = .true.
              x2c        = .true.
-             x2cmod_x2c = .true.
              DOLVC      = .FALSE.
 C            Check that we have not defined operators yet,
 C            as they need to be picture-changed transformed after the 2c-transformation
@@ -5993,7 +5991,6 @@ CMI&& Activate 4c-2c MO transformation
 !         X2Cmmf: molecular mean-field approach within the X2C framework
           noprtr                = .true.
           x2c                   = .true.
-          x2cmod_x2c            = .true.
           x2cmod_mmf            = .true.
           x2c_2c_mmf_mos        = .true.
           x2c_4c_fock_mtx_defh1 = .true.
