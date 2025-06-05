@@ -32,6 +32,7 @@ add_library(
           ${FREE_PELIB_FORTRAN_SOURCES}
 )
 
+
 # deal with intedependencies
 # needs memory allocator etc..
 # EDL:: First two dependencies already set.
@@ -40,6 +41,12 @@ add_library(
 #add_dependencies(pelib gen1int_interface)
 add_dependencies(pelib_interface pelib)
 add_dependencies(pelib_interface interface_mpi)
+
+# these four targets contain "use pelib_dirac_interface" /hjaaj June 2025
+add_dependencies(dirac_main pelib_interface)
+add_dependencies(dirac      pelib_interface)
+add_dependencies(prp        pelib_interface)
+add_dependencies(abacus     pelib_interface)
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/modules} CACHE PATH "Set the Fortran module build directory")
 
