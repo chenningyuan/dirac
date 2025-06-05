@@ -327,6 +327,18 @@ if(ENABLE_SRDFT)
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 
+#  dirac sources as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:dirac> ${EXTERNAL_OBJECTS})
+
+#  input reader directory as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/input)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:input> ${EXTERNAL_OBJECTS})
+
+# main directory as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
+set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:dirac_main> ${EXTERNAL_OBJECTS})
+
 # pelib interface routines added as module
 if(ENABLE_PELIB)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
@@ -340,18 +352,6 @@ if(ENABLE_PELIB)
     	dirac_test(pde_exc "short;pelib" "")
     endif()
 endif()
-
-#  dirac sources as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:dirac> ${EXTERNAL_OBJECTS})
-
-#  input reader directory as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/input)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:input> ${EXTERNAL_OBJECTS})
-
-# main directory as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
-set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:dirac_main> ${EXTERNAL_OBJECTS})
 
 # make these variables visible to the cmake one level up
 set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)
