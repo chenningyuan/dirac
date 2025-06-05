@@ -1055,7 +1055,6 @@ contains
 !
 
     iprint = 0
-    !typ = 'P-'
     typ = 'E-'
     call conmat_vec%get_symmetry_info(irep,iopsy,itim)
 
@@ -1104,8 +1103,6 @@ contains
     typ = 'P-'
     call conmat_vec%get_symmetry_info(irep,iopsy,itim)
 
-    !do i1 = 1, 1
-    !  i2 = 1
     do i1 = 1, nfsym
       i2=mod(i1+iopsy,2)+1
 
