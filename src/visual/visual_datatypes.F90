@@ -62,46 +62,6 @@ module visual_datatypes
     procedure, pass, public:: get_cmo_q_mo_sector
   end type cmo_t
 
-  type:: rs_input_t
-    private
-    integer, public:: print_level = 0
-    integer, public:: print_unit  = 6
-    logical, public:: set_occupation = .false.      ! if true, modify orbital occupations
-    logical, public:: force_small_ao = .false.      ! if true, force evaluation of small component basis functions
-    logical, public:: set_cvalue     = .false.      ! if true, modify cvalue
-    real(8), public:: cvalue = 0.0d0                ! cvalue in VISUAL
-    real(8), public:: gauge_origin(1:3) = 0.0d0     ! gauge origin in VISUAL
-    real(8), allocatable, public:: occupation(:,:)  ! occupation vector
-    integer, public:: nr_grids = 0
-    integer, public:: nr_grid_functions = 0
-    type(grid_t), allocatable, public:: grids(:)
-    type(grid_function_t), allocatable, public:: grid_functions(:)
-  contains
-    private
-    procedure, public:: display => display_rs_setup
-    procedure, pass, public:: allocated_grids
-    procedure, pass, public:: allocated_grid_functions
-    procedure, pass, public:: allocated_occupation => allocated_occupation_from_input
-    procedure, pass, public:: erase   => erase_rs_input
-  end type rs_input_t
-
-  type:: rs_label_t
-    private
-    character(len=:), allocatable, public:: name
-  contains
-    procedure, pass, public:: in_use => rs_label_in_use
-  end type rs_label_t
-
-  type:: rs_wf_t
-    ! store information on wavefunction
-    ! (read from 'wavefunctions' sections on CHECKPOINT.h5)
-    private
-    character(len=:), public, allocatable:: hamiltonian
-    character(len=:), public, allocatable:: xc_functional
-  contains
-    procedure, public:: display => display_rs_wf
-  end type rs_wf_t
-
   type:: grid_t
     ! todo
     ! - add information about units; now:
@@ -194,6 +154,46 @@ module visual_datatypes
     procedure, pass, public:: erase   => erase_grid_function
     procedure, pass, public:: display => display_grid_function
   end type grid_function_t
+
+  type:: rs_input_t
+    private
+    integer, public:: print_level = 0
+    integer, public:: print_unit  = 6
+    logical, public:: set_occupation = .false.      ! if true, modify orbital occupations
+    logical, public:: force_small_ao = .false.      ! if true, force evaluation of small component basis functions
+    logical, public:: set_cvalue     = .false.      ! if true, modify cvalue
+    real(8), public:: cvalue = 0.0d0                ! cvalue in VISUAL
+    real(8), public:: gauge_origin(1:3) = 0.0d0     ! gauge origin in VISUAL
+    real(8), allocatable, public:: occupation(:,:)  ! occupation vector
+    integer, public:: nr_grids = 0
+    integer, public:: nr_grid_functions = 0
+    type(grid_t), allocatable, public:: grids(:)
+    type(grid_function_t), allocatable, public:: grid_functions(:)
+  contains
+    private
+    procedure, public:: display => display_rs_setup
+    procedure, pass, public:: allocated_grids
+    procedure, pass, public:: allocated_grid_functions
+    procedure, pass, public:: allocated_occupation => allocated_occupation_from_input
+    procedure, pass, public:: erase   => erase_rs_input
+  end type rs_input_t
+
+  type:: rs_label_t
+    private
+    character(len=:), allocatable, public:: name
+  contains
+    procedure, pass, public:: in_use => rs_label_in_use
+  end type rs_label_t
+
+  type:: rs_wf_t
+    ! store information on wavefunction
+    ! (read from 'wavefunctions' sections on CHECKPOINT.h5)
+    private
+    character(len=:), public, allocatable:: hamiltonian
+    character(len=:), public, allocatable:: xc_functional
+  contains
+    procedure, public:: display => display_rs_wf
+  end type rs_wf_t
 
 contains
 
