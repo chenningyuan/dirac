@@ -8,12 +8,15 @@
 **WAVE FUNCTION
 .SCF
 **VISUAL
-.ESPE
- DFCOEF
+.GRIDS 
+1
+id=1 input=list
+.GRIDFUNCTIONS
+1
+name=espe id_grid=1 purpose=visualization outpri=yes
 .LIST
  3
  0.5000       0.0000       0.0000
  0.0000       1.0000       0.0000
  0.0000       0.0000       1.5000
-.OUTPRI
 *END OF
