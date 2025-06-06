@@ -44,17 +44,17 @@ Intel/MKL
 ---------
 
 If you compile with Intel compilers and have the MKL library available, you
-should use the --mkl flag which will automatically link to the MKL libraries
+should use the --qmkl flag which will automatically link to the MKL libraries
 (in this case you do not have to set MATH_ROOT).
 You have to specify whether you want to use the sequential or parallel
 (threaded) MKL version. For a parallel DIRAC runs you should probably link to
 the sequential MKL::
 
-  $ ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --mkl=sequential
+  $ ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --qmkl=sequential
 
 For a sequential compilation you may want to link to the parallel MKL::
 
-  $ ./setup --fc=ifort --cc=icc --cxx=icpc --mkl=parallel
+  $ ./setup --fc=ifort --cc=icc --cxx=icpc --qmkl=parallel
 
 The more general solution is to link to the parallel MKL and control the number
 of threads using MKL environment variables.

@@ -120,7 +120,7 @@ are the compiler wrappers you want to use::
 
 Configure for sequential compilation using ifort/icc/icpc and link against parallel mkl::
 
-  $ ./setup --fc=ifort --cc=icc --cxx=icpc --mkl=parallel
+  $ ./setup --fc=ifort --cc=icc --cxx=icpc --qmkl=parallel
 
 Configure for sequential compilation using gfortran/gcc/g++::
 
