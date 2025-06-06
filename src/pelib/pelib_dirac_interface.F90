@@ -13,449 +13,970 @@
 !      If a copy of the GNU LGPL v2.1 was not distributed with this
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
-#ifdef HAS_PELIB
-      logical function use_pelib()
-          use pe_variables, only: peqm
-          implicit none
-          if (peqm) then
-             use_pelib = .true.
-          else
-             use_pelib = .false.
-          end if
-      end function use_pelib
+#if defined(HAS_PELIB)
+module pelib_dirac_interface
+    use pelib_precision, only : rp, ip, lp
 
-      logical function pelib_ifc_gspol()
-          use pe_variables, only: pe_gspol
-          implicit none
-          if (pe_gspol) then
-              pelib_ifc_gspol = .true.
-          else
-             pelib_ifc_gspol = .false.
-          end if
-      end function pelib_ifc_gspol
+    implicit none
 
-      logical function pelib_ifc_dolf()
-        use pe_variables, only: pe_lf
+    private
+     
+    public :: use_pelib, pelib_ifc_gspol
+    public :: pelib_ifc_activate, pelib_ifc_deactivate
+    public :: pelib_ifc_init, pelib_ifc_finalize
+    public :: pelib_ifc_input_reader
+    public :: pelib_ifc_localfield, pelib_ifc_do_lf
+    public :: pelib_ifc_fock
+    public :: pelib_ifc_energy
+    public :: pelib_ifc_response
+#if defined(VAR_MPI)
+    public :: pelib_ifc_slave
+#endif
+
+    contains
+
+    logical function use_pelib()
+        use pelib, only: pelib_enabled
         implicit none
-        if (pe_lf) then
-            pelib_ifc_dolf = .true.
+        if (pelib_enabled) then
+            use_pelib = .true.
         else
-            pelib_ifc_dolf = .false.
+            use_pelib = .false.
         end if
-      end function pelib_ifc_dolf
+    end function use_pelib
 
-      subroutine pelib_ifc_input_reader(word)
-        use pe_variables, only: peqm
-        use polarizable_embedding, only: pe_input_reader
+    subroutine pelib_ifc_activate()
+        use pelib, only: pelib_enabled
+        call qenter('pelib_ifc_activate')
+        if (use_pelib()) call quit('PElib already active')
+        pelib_enabled = .true.
+        call qexit('pelib_ifc_activate')
+    end subroutine pelib_ifc_activate
+
+    subroutine pelib_ifc_deactivate()
+        use pelib, only: pelib_enabled
+        call qenter('pelib_ifc_deactivate')
+        if (.not. use_pelib()) call quit('PElib already deactivated')
+        pelib_enabled = .false.
+        call qexit('pelib_ifc_deactivate')
+    end subroutine pelib_ifc_deactivate
+
+    logical function pelib_ifc_gspol()
+        use pelib_options, only: pelib_gspol
         implicit none
-#include "priunit.h"
-        character(len=7), intent(inout) :: word
-        call qenter('pelib_ifc_input_reader')
-        peqm = .true.
-        call pe_input_reader(word, lucmd)
-        call qexit('pelib_ifc_input_reader')
-      end subroutine pelib_ifc_input_reader
+        if (pelib_gspol) then
+            pelib_ifc_gspol = .true.
+        else
+            pelib_ifc_gspol = .false.
+        end if
+    end function pelib_ifc_gspol
 
-      subroutine pelib_ifc_init()
-        use polarizable_embedding, only: pe_init
+    logical function pelib_ifc_do_lf()
+        use pelib_options, only: pelib_lf
+        implicit none
+        if (pelib_lf) then
+            pelib_ifc_do_lf = .true.
+        else
+            pelib_ifc_do_lf = .false.
+        end if
+    end function pelib_ifc_do_lf
+
+    subroutine pelib_ifc_input_reader(word, use_pde)
+        !use pelib_precision
+        use pelib_options
+        use pelib_constants
+        use pelib_utils, only: chcase
+        use pelib_cavity_generators, only: ntsatm
+#include "priunit.h"
+        character(len=*), intent(inout) :: word
+        character(len=80) :: option
+        character(len=2) :: auoraa
+        integer :: i, j
+        real(rp), dimension(2) :: temp
+        logical, intent(inout) :: use_pde
+
+        call qenter('pelib_ifc_input_reader')
+  
+        potfile = 'POTENTIAL.INP'
+        h5pdefile = 'standard.h5'
+        pelib_skipmul = .true.
+  
+        do
+            read(lucmd, '(a80)') option
+            call chcase(option)
+  
+            ! Read potential (optionally from potfile)
+            if (trim(option(2:7)) == 'POTENT') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                  & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, '(a240)') potfile
+                end if
+            ! direct solver for induced moments
+            else if (trim(option(2:7)) == 'DIRECT') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, '(a80)') option
+                    call chcase(option)
+                    if (trim(option(1:7)) == 'NOCHOL') then
+                        chol = .false.
+                    end if
+                end if
+                pelib_iter = .false.
+            ! iterative solver for induced moments (default)
+            else if (trim(option(2:7)) == 'ITERAT') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                  & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) thriter
+                end if
+                pelib_iter = .true.
+            else if (trim(option(2:7)) == 'DIIS T') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) thrdiis
+                end if
+                thriter = thrdiis
+            ! use reduced threshold in iterative induced moments solver
+            else if (trim(option(2:7)) == 'REDTHR') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) redlvl
+                end if
+                pelib_redthr = .true.
+            ! handling sites near quantum-classical border
+            else if (trim(option(2:7)) == 'BORDER') then
+               read(lucmd, '(a80)') option
+               backspace(lucmd)
+               if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                 & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                   read(lucmd, '(a)', advance='no') border_type
+                   backspace(lucmd)
+                   call chcase(border_type)
+                   if ((trim(border_type) /= 'REMOVE') .and.&
+                     & (trim(border_type) /= 'REDIST') .and.&
+                     & (trim(border_type) /= 'CHGRED')) then
+                       call quit('unknown handling of border sites')
+                   else if (trim(border_type) == 'REMOVE') then
+                       read(lucmd, *) border_type, Rmin, auoraa
+                   else if (trim(border_type) == 'REDIST') then
+                       read(lucmd, *) border_type, redist_order, Rmin, auoraa, nredist
+                       if ((nredist > 3) .or. (nredist < 1)) then
+                           call quit('parameters can only be distributed to&
+                                & minimum one site and maximum three sites')
+                       end if
+                   else if (trim(border_type) == 'CHGRED') then
+                       read(lucmd, *) border_type, Rmin, auoraa
+                   else
+                       call quit('unrecognized input in .BORDER option')
+                   end if
+                   call chcase(auoraa)
+                   if (trim(auoraa) == 'AA') Rmin = Rmin * aa2bohr
+               end if
+               pelib_border = .true.
+          ! damp electric field from induced multipoles
+          else if (trim(option(2:7)) == 'DAMP I') then
+              read(lucmd, '(a80)') option
+              backspace(lucmd)
+              if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                  read(lucmd, *) ind_damp
+              end if
+              pelib_ind_damp = .true.
+            ! damp electric field from permanent multipoles
+            else if (trim(option(2:7)) == 'DAMP M') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                  & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) mul_damp
+                end if
+                pelib_mul_damp = .true.
+            ! damp electric field from core region
+            else if (trim(option(2:7)) == 'DAMP C') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                  & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) core_damp
+                    ! attempt to optionally read a custom specification of the polarizabilities
+                    read(lucmd, '(a80)') option
+                    backspace(lucmd)
+                    if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                       & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                        read(lucmd, *) j
+                        allocate(core_alphas(6,j))
+                        core_alphas = 0.0_rp
+                        do i = 1, j
+                            read(lucmd, *) core_alphas(1,i)
+                            core_alphas(4,i) = core_alphas(1,i)
+                            core_alphas(6,i) = core_alphas(1,i)
+                        enddo
+                    end if
+                end if
+                pelib_core_damp = .true.
+            ! damp electric fields using AMOEABA-style Thole damping
+            else if (trim(option(2:7)) == 'DAMP A') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                  & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) amoeba_damp
+                end if
+                pelib_amoeba_damp = .true.
+            ! the old deprecated DAMP option
+            else if (trim(option(2:7)) == 'DAMP') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                  & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) ind_damp
+                end if
+                pelib_ind_damp = .true.
+                write(luout, *) 'WARNING: the .DAMP option is deprecated, please use .DAMP INDUCED'
+               ! write(luerr, *) 'WARNING: the .DAMP option is deprecated, please use .DAMP INDUCED'
+            ! neglect dynamic response from environment
+            else if (trim(option(2:7)) == 'GSPOL') then
+                pelib_gspol = .true.
+            ! neglect many-body interactions
+            else if (trim(option(2:7)) == 'NOMB') then
+                pelib_nomb = .true.
+            ! Use existing files for restart
+            else if (trim(option(2:7)) == 'RESTAR') then
+                pelib_restart = .true.
+            ! calculate intermolecular two-electron integrals
+            else if (trim(option(2:7)) == 'TWOINT') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                  & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, '(a240)') h5pdefile
+                end if
+                pelib_twoints = .true.
+            ! activate calculation of london contributions for PDE
+            else if (trim(option(2:7)) == 'TWOLAO') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                  & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, '(a240)') h5pdefile
+                end if
+                pelib_lao_twoints = .true.
+            ! save density matrix
+            else if (trim(option(2:7)) == 'SAVE D') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                  & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, '(a240)') h5pdefile
+                end if
+                pelib_savden = .true.
+            ! disable exchange repulsion
+            else if (trim(option(2:7)) == 'NO REP') then
+                pelib_repuls = .false.
+            ! electrostatics and exchange repulsion from fragment densities
+            else if (trim(option(2:7)) == 'PDE') then
+#if !defined(VAR_PDE)
+                call quit('Fatal error: .PDE not included in this build of Dirac')
+#endif
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                  & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, '(a240)') h5pdefile
+                end if
+                pelib_fd = .true.
+                use_pde = .true. 
+            ! skip electrostatics from fragment densities
+            else if (trim(option(2:7)) == 'NO FD') then
+                pelib_fdes = .false.
+            ! activate legacy PE field evaluation code (OLDFIELD)
+            else if (trim(option(2:7)) == 'OLDFIE') then
+                pelib_old_field = .true.
+            ! activate Fast Multipole Method for evaluation of multipolar fields
+            else if (trim(option(2:7)) == 'FMM') then
+                pelib_fmm = .true.
+            else if (trim(option(2:7)) == 'THETA') then
+                read(lucmd, *) fmm_theta
+            else if (trim(option(2:7)) == 'NCRIT') then
+                read(lucmd, *) fmm_ncrit
+            else if (trim(option(2:7)) == 'EXPANS') then
+                read(lucmd, *) fmm_expansion_order
+            ! options for (approximate) qmmm interaction 
+            else if (trim(option(2:7)) == 'INT_TH') then ! INT_THETA
+                read(lucmd, *) qmmm_interaction_theta
+            else if (trim(option(2:7)) == 'INT_SC') then ! INT_SCHEME
+                read(lucmd, *) qmmm_interaction_scheme
+            else if (trim(option(2:7)) == 'INT_RC') then ! INT_RCUT
+                read(lucmd, *) qmmm_interaction_rcut
+            else if (trim(option(2:7)) == 'INT_RF') then ! INT_RFIT
+                read(lucmd, *) qmmm_interaction_rfit
+            else if (trim(option(2:7)) == 'INT_OR') then ! INT_ORDER
+                read(lucmd, *) qmmm_interaction_order
+            else if (trim(option(2:7)) == 'ESPF_S') then ! ESPF_SOLVER
+                read(lucmd, *) ESPF_solver
+            else if (trim(option(2:7)) == 'ESPF_G') then ! ESPF_GRID_TYPE
+                read(lucmd, *) ESPF_grid_type
+            else if (trim(option(2:7)) == 'SVDTOL') then ! SVDTOL
+                read(lucmd, *) svdtol
+            else if (trim(option(2:7)) == 'NF_INC') then ! NF_INCORE
+                incore_nearfield = .true.
+            else if (trim(option(2:7)) == 'NONF_I') then ! NONF_INCORE
+                incore_nearfield = .false.
+            ! request calculation of effective dipole integrals
+            else if (trim(option(2:7)) == 'EEF') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) ncrds
+                    allocate(crds(3,ncrds))
+                    do i = 1, ncrds
+                        read(lucmd, *) (crds(j,i), j = 1, 3)
+                    end do
+                end if
+                pelib_lf = .true.
+            ! provide LJ parameters for the QM region
+            else if (trim(option(2:7)) == 'LJ') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) qmLJsites
+                    allocate(qmLJs(2,qmLJsites))
+                    do i = 1, qmLJsites
+                        read(lucmd, *) (temp(j), j = 1, 2)
+                        qmLJs(1,i) = temp(1) * 2.0_rp
+                        qmLJs(2,i) = temp(2)
+                    end do
+                    lvdw = .true.
+                 end if
+            ! skip QM calculations, i.e. go directly into PE library
+            else if (trim(option(2:7)) == 'SKIPQM') then
+                pelib_skipqm = .true.
+            ! Write cube files
+            else if (trim(option(2:7)) == 'CUBE') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                  & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    do
+                        read(lucmd, '(a80)') option
+                        call chcase(option)
+                        if (trim(option(1:7)) == 'COARSE') then
+                            xgrid = 3
+                            ygrid = 3
+                            zgrid = 3
+                        else if (trim(option(1:7)) == 'MEDIUM') then
+                            xgrid = 6
+                            ygrid = 6
+                            zgrid = 6
+                        else if (trim(option(1:7)) == 'FINE') then
+                            xgrid = 12
+                            ygrid = 12
+                            zgrid = 12
+                        else if (trim(option(1:7)) == 'GRID') then
+                            read(lucmd, *) xsize, xgrid, ysize, ygrid, zsize, zgrid
+                        else if (trim(option(1:7)) == 'FIELD') then
+                            cube_field = .true.
+                        else if (option(1:1) == '.' .or. option(1:1) == '*') then
+                            backspace(lucmd)
+                            exit
+                        else if (option(1:1) == '!' .or. option(1:1) == '#') then
+                            cycle
+                        else
+                            call quit('unknown input under .CUBE option')
+                        end if
+                    end do
+                end if
+                pelib_cube = .true.
+            ! evaluate molecular electrostatic potential
+            else if (trim(option(2:7)) == 'MEP') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    do
+                        read(lucmd, '(a80)') option
+                        call chcase(option)
+                        if (trim(option(1:7)) == 'COARSE') then
+                            xgrid = 3
+                            ygrid = 3
+                            zgrid = 3
+                        else if (trim(option(1:7)) == 'MEDIUM') then
+                            xgrid = 6
+                            ygrid = 6
+                            zgrid = 6
+                        else if (trim(option(1:7)) == 'FINE') then
+                            xgrid = 12
+                            ygrid = 12
+                            zgrid = 12
+                        else if (trim(option(1:7)) == 'GRID') then
+                            read(lucmd, *) xsize, xgrid, ysize, ygrid, zsize, zgrid
+                        else if (trim(option(1:7)) == 'FIELD') then
+                            mep_field = .true.
+                        else if (trim(option(1:7)) == 'EXTFLD') then
+                            read(lucmd, *) (extfld(i), i = 1, 3)
+                            mep_extfld = .true.
+                        else if (trim(option(1:7)) == 'LOCFLD') then
+                            read(lucmd, *) lf_component
+                            mep_lf = .true.
+                        else if (trim(option(1:7)) == 'SKIPQM') then
+                            mep_qmcube = .false.
+                        else if (trim(option(1:7)) == 'SKIPMUL') then
+                            mep_mulcube = .false.
+                        else if (trim(option(1:7)) == 'INPUT') then
+                            mep_input = .true.
+                            read(lucmd, '(a240)') h5gridfile
+                        else if (option(1:1) == '.' .or. option(1:1) == '*') then
+                            backspace(lucmd)
+                            exit
+                        else if (option(1:1) == '!' .or. option(1:1) == '#') then
+                            cycle
+                        else
+                            call quit('unknown option present in .MEP section.')
+                        end if
+                    end do
+                end if
+                pelib_mep = .true.
+            ! continuum solvation calculation
+            else if (trim(option(2:7)) == 'SOLVAT' .or. trim(option(2:7)) == 'FIXSOL') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) solvent
+                else
+                    solvent = 'H2O'
+                end if
+                pelib_sol = .true.
+                pelib_diis = .true.
+                pelib_fixsol = .true.
+                pelib_polar = .true.
+                chol = .false.
+            ! equilibrium solvation (non-equilibrium is default)
+            else if (trim(option(2:7)) == 'EQSOL') then
+                pelib_noneq = .false.
+            ! set the static dielectric constant
+            else if (trim(option(2:7)) == 'EPS') then
+                read(lucmd, *) eps
+            ! set the optical dielectric constant
+            else if (trim(option(2:7)) == 'EPSINF') then
+                read(lucmd, *) epsinf
+            ! Turn off interaction between induced dipoles and surface charges
+            else if (trim(option(2:7)) == 'NOMUQ') then
+                pelib_nomuq = .true.
+            else if (trim(option(2:7)) == 'NOVMU') then
+                pelib_novmu = .true.
+            ! specify surface file
+            else if (trim(option(2:7)) == 'SURFAC') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, '(a240)') surfile
+                end if
+                pelib_read_surf = .true.
+            ! FixSol solvation using FIXPVA2 tesselation (optional: number of tessera per atom)
+            else if (trim(option(2:7)) == 'NTESS') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) ntsatm
+                    if ((ntsatm .ne. 60) .and. (ntsatm .ne. 240) .and. (ntsatm .ne. 960)) then
+                       call quit('number of tessera per atom must be equal to 60, 240 or 960')
+                    end if
+                end if
+            ! apply external electric field
+            else if (trim(option(2:7)) == 'FIELD') then
+                pelib_field = .true.
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) (efields(i), i = 1, 3)
+                end if
+            ! verbose output
+            else if (trim(option(2:7)) == 'VERBOS') then
+                pelib_verbose = .true.
+            ! debug output
+            else if (trim(option(2:7)) == 'DEBUG') then
+                pelib_debug = .true.
+                pelib_verbose = .true.
+            ! isotropic polarizabilities
+            else if (trim(option(2:7)) == 'ISOPOL') then
+                pelib_isopol = .true.
+            ! zero out the polarizabilities
+            else if (trim(option(2:7)) == 'ZEROPO') then
+                pelib_zeropol = .true.
+            ! zero out higher-order multipoles
+            else if (trim(option(2:7)) == 'ZEROMU') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    read(lucmd, *) zeromul_order
+                    if (zeromul_order < 0) then
+                        call quit('ZEROMUL order cannot be negative')
+                    end if
+                end if
+                pelib_zeromul = .true.
+            ! skip calculation of multipole-multipole interaction energy
+            else if (trim(option(2:7)) == 'SKIPMU') then
+                pelib_skipmul = .true.
+            else if (trim(option(2:7)) == 'NOSKIP') then
+                pelib_skipmul = .false.
+            else if (trim(option(2:7)) == 'GAUGE') then
+                read(lucmd, '(a80)') option
+                backspace(lucmd)
+                if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+                   & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                    allocate(gauge_input(3))
+                    gauge_input = 0.0_rp
+                    do i = 1,3
+                        read(lucmd, *) gauge_input(i)
+                    enddo
+                end if
+                pelib_gauge = .true.
+            else if (option(1:1) == '*') then
+                word = option
+                exit
+            else if (option(1:1) == '!' .or. option(1:1) == '#') then
+                cycle
+            else
+                write(luout, *) 'unknown option:', option
+                call quit('unknown option in *PELIB section')
+            end if
+        end do
+  
+        ! check options
+        if (pelib_diis .and. .not. pelib_iter) then ! Assume that you want to use a direct solver for FixSol
+            pelib_diis = .false.
+        end if
+  
+        if (pelib_sol .and. pelib_iter .and. .not. pelib_fixsol) then
+            call quit('.SOLV without .FIXSOL requires .DIRECT')
+        end if
+  
+        if (pelib_mep .and. pelib_cube) then
+            call quit('.MEP and .CUBE are not compatible.')
+        end if
+  
+        call qexit('pelib_ifc_input_reader')
+  end subroutine pelib_ifc_input_reader
+
+    subroutine pelib_ifc_init()
+        use pelib, only: pelib_init
         implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
         call qenter('pelib_ifc_init')
-        call pe_init(lupri, cord(1:3,1:natoms), charge(1:natoms))
+        call pelib_init(lupri, cord(1:3,1:natoms), charge(1:natoms))
         call qexit('pelib_ifc_init')
-      end subroutine pelib_ifc_init
+    end subroutine pelib_ifc_init
 
-      subroutine pelib_ifc_finalize()
-        use polarizable_embedding, only: pe_finalize
+    subroutine pelib_ifc_finalize()
+        use pelib, only: pelib_finalize
         implicit none
         call qenter('pelib_ifc_finalize')
-        call pe_finalize()
+        call pelib_finalize()
         call qexit('pelib_ifc_finalize')
-      end subroutine pelib_ifc_finalize
+    end subroutine pelib_ifc_finalize
 
-      subroutine pelib_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
-        use polarizable_embedding, only: pe_master
+    subroutine pelib_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
+        use pelib, only: pelib_master
         implicit none
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-        real*8, dimension(n2bbasx), intent(in) :: dmat
-        real*8, dimension(n2bbasx), intent(inout) :: fmat
-        real*8, intent(out) :: tot_nrg, el_nrg
-        integer :: i, j, k, l
-        real*8, dimension(1) :: nrg
-        real*8, dimension(:), allocatable :: dspmat
-        real*8, dimension(:), allocatable :: fspmat
-        real*8, external :: ddot
-
+        ! Input/output.
+        real(rp), intent(in   ) :: dmat(n2bbasx)
+        real(rp), intent(inout) :: fmat(n2bbasx)
+        real(rp), intent(out  ) :: tot_nrg, el_nrg
+        ! Local variables.
+        real(rp)              :: nrg(1)
+        real(rp), allocatable :: dspmat(:)
+        real(rp), allocatable :: fspmat(:)
+        integer(ip)           :: i, j, k, l
+        ! External.
+        real(rp), external :: ddot
+        
         call qenter('pelib_ifc_fock')
 
         allocate(dspmat(nnbbasx))
         allocate(fspmat(nnbbasx))
+        dspmat = 0.0_rp
+        fspmat = 0.0_rp
 
-        dspmat = 0.0d0
-        fspmat = 0.0d0
+        call build_density_matrix(dspmat, dmat, nnbbasx, n2bbasx, ntbas, levyle)
 
-        k = 1
-        ! LL block
-        do i = 1, ntbas(1)
-            do j = 1, i
-                if (i == j) then
-                    dspmat(k) = 2.0d0 * dmat((i-1)*ntbas(0)+j)
-                else
-                    dspmat(k) = 4.0d0 * dmat((i-1)*ntbas(0)+j)
-                end if
-                k = k + 1
-            end do
-        end do
-        ! SS block
-        do i = ntbas(1) + 1, ntbas(0)
-        ! no need for SS if Levy-Leblond
-           if (levyle) exit
-           do j = 1, i
-              if (j > ntbas(1)) then
-                 if (i == j) then
-                     dspmat(k) = 2.0d0 * dmat((i-1)*ntbas(0)+j)
-                 else
-                     dspmat(k) = 4.0d0 * dmat((i-1)*ntbas(0)+j)
-                 end if
-              end if
-              k = k + 1
-           end do
-        end do
 #if defined(VAR_MPI)
         call pelib_ifc_start_slaves(1)
 #endif
-        call pe_master(runtype='full_fock',
-     &                 triang = .true.,
-     &                 ndim = ntbas(0),
-     &                 nmats=1,
-     &                 denmats=dspmat,
-     &                 fckmats=fspmat,
-     &                 expvals=nrg)
+        ! fspmat is calculated in pelib_master.
+        
+        call pelib_master(runtype = 'full_fock', &
+                          triang  = .true.,      &
+                          ndim    = ntbas(0),    &
+                          nmats   = 1,           & 
+                          denmats = dspmat,      &
+                          fckmats = fspmat,      &
+                          expvals = nrg)
         tot_nrg = nrg(1)
-        el_nrg = ddot(nnbbasx, dspmat, 1, fspmat, 1)
+        el_nrg  = ddot(nnbbasx, dspmat, 1, fspmat, 1)
 
-        ! LL block
-        k = 1
-        do i = 1, ntbas(1)
-           do j = 1, i
-              if (i == j) then
-                 fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
-     &                                  + fspmat(k)
-              else
-                 fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
-     &                                  + fspmat(k)
-                 fmat((j-1)*ntbas(0)+i) = fmat((j-1)*ntbas(0)+i)
-     &                                  + fspmat(k)
-              end if
-              k = k + 1
-           end do
-        end do
-        ! SS block
-        do i = ntbas(1) + 1, ntbas(0)
-           if (levyle) exit
-           do j = 1, i
-              if (j > ntbas(1)) then
-                  if (i == j) then
-                     fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
-     &                                        + fspmat(k)
-                 else
-                     fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
-     &                                        + fspmat(k)
-                     fmat((j-1)*ntbas(0)+i) = fmat((j-1)*ntbas(0)+i)
-     &                                        + fspmat(k)
-                 end if
-            end if
-            k = k + 1
-           end do
-        end do
+        call add_to_fock_matrix(fmat, fspmat, nnbbasx, n2bbasx, ntbas, levyle)
 
-        deallocate(dspmat,fspmat)
+        deallocate(dspmat)
+        deallocate(fspmat)
 
         call qexit('pelib_ifc_fock')
 
-      end subroutine pelib_ifc_fock
+    end subroutine pelib_ifc_fock
 
-      subroutine pelib_ifc_energy(dmat)
-        use polarizable_embedding, only: pe_master
+    subroutine pelib_ifc_energy(dmat)
+        use pelib, only: pelib_master
         implicit none
 #include "dcbbas.h"
 #include "dcbham.h"
-        real*8, dimension(n2bbasx), intent(in) :: dmat
-        integer :: i, j, k, l
-        real*8, dimension(1) :: nrg
-        real*8, dimension(:), allocatable :: dspmat
+        ! Input/output.
+        real(rp), dimension(n2bbasx), intent(in) :: dmat(n2bbasx)
+        ! Local variables.
+        real(rp), dimension(1) :: nrg
+        real(rp), allocatable  :: dspmat(:)
+        integer(ip)            :: i, j, k, l
+      
         call qenter('pelib_ifc_energy')
-        allocate(dspmat(nnbbasx))
-        dspmat = 0.0d0
 
-        k = 1
-        ! LL block
-        do i = 1, ntbas(1)
-            do j = 1, i
-                if (i == j) then
-                    dspmat(k) = 2.0d0 * dmat((i-1)*ntbas(0)+j)
-                else
-                    dspmat(k) = 4.0d0 * dmat((i-1)*ntbas(0)+j)
-                end if
-                k = k + 1
-            end do
-        end do
-        ! SS block
-        do i = ntbas(1) + 1, ntbas(0)
-           if (levyle) exit
-           do j = 1, i
-              if (j > ntbas(1)) then
-                 if (i == j) then
-                     dspmat(k) = 2.0d0 * dmat((i-1)*ntbas(0)+j)
-                 else
-                     dspmat(k) = 4.0d0 * dmat((i-1)*ntbas(0)+j)
-                 end if
-              end if
-              k = k + 1
-           end do
-        end do
+        allocate(dspmat(nnbbasx))
+        dspmat = 0.0_rp
+
+        call build_density_matrix(dspmat, dmat, nnbbasx, n2bbasx, ntbas, levyle)
+
 #if defined(VAR_MPI)
         call pelib_ifc_start_slaves(2)
 #endif
-        call pe_master(runtype='print_energy',
-     &                 triang = .true.,
-     &                 ndim = ntbas(0),
-     &                 nmats=1,
-     &                 denmats=dspmat)
+        call pelib_master(runtype = 'print_energy', &
+                          triang  =  .true.,        &
+                          ndim    =  ntbas(0),      &
+                          nmats   = 1,              &
+                          denmats = dspmat) 
 
-        call qexit('pelib_ifc_energy')
+        deallocate(dspmat)
 
-      end subroutine pelib_ifc_energy
+        call qexit('pelib_ifc_energy')  
+  
+    end subroutine pelib_ifc_energy
 
-      subroutine pelib_ifc_response(fao, dens1, ndmat, dmat_ih_sym)
-        use polarizable_embedding, only: pe_master
-!!     Written by: Erik Donovan Hedegrd (edh)
-!!     Purpose   : Calculate dynamical pe response part and add it to the
-!!                 one index transformed fock matrix
+    subroutine pelib_ifc_response(fao, dens1, ndmat, dmat_ih_sym)
+        use pelib, only: pelib_master
+        use pelib_options, only: pelib_gspol
+!       Written by : Erik Donovan Hedegrd (edh)
+!       Modified by: Ernst Dennis Larsson (edl)
+!       Purpose    : Calculate dynamical pelib response part and add it to the
+!                    one index transformed fock matrix
         implicit none
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-        ! input: (ndmat = number of b-vectors; dmat_ih_sym = symmetry
-        ! wrt. hermicity; dens1 = one-index-transformed density matrix)
-        ! Note: dens1 set to dim. n2bbasxq, but is passed
-        ! from routine GMOLITX1 with N2ORBXQ (for reasons of memory re-use) -
-        integer, intent(in)                       :: ndmat
-        integer, intent(in)                       :: dmat_ih_sym(ndmat)
-        real*8, dimension(n2bbasxq,*),  intent(in) :: dens1
-        ! output (fao = total one-index transformed fock matrix)
-        real*8, dimension(n2bbasxq,*), intent(inout) :: fao
-        ! local
-        integer                           :: i, j, k, l
-        real*8, dimension(:), allocatable :: dlmat_triangle
-        real*8, dimension(:), allocatable :: flmat_triangle
+#include "dcbham.h"
+        ! Input/output.
+        ! Note: dens1 set to dim. n2bbasxq, but is passed from routine GMOLITX1 with N2ORBXQ (for reasons of memory re-use) -
+        integer(ip), intent(in   ) :: ndmat              ! number of b-vectors
+        integer(ip), intent(in   ) :: dmat_ih_sym(ndmat) ! symmetry wrt. hermicity
+        real(rp)   , intent(in   ) :: dens1(n2bbasxq, *) ! one-index-transformed density matrix
+        real(rp)   , intent(inout) :: fao(n2bbasxq, *)   ! total one-index transformed fock matrix
+        ! Local variables.
+        real(rp), allocatable  :: dlmat_triangle(:)
+        real(rp), allocatable  :: flmat_triangle(:)
+        integer(ip)            :: triangle_index
+        integer(ip)            :: matrix_id
+        integer(ip), parameter :: skip_id = -1
 
         call qenter('pelib_ifc_response')
 
         write(lupri,*)'*** Calculate dynamical PE response'
         allocate(dlmat_triangle(nnbbasx*ndmat))
         allocate(flmat_triangle(nnbbasx*ndmat))
-        dlmat_triangle = 0.0d0
-        flmat_triangle = 0.0d0
-        k = 1
-! edh: We only construct dlmat_triangle for the symmetric real part of dens1
-! ihrmop(l)=1 of dens1 (i.e. transformed density matrix)
-        ! LL block
-        do l = 1, ndmat
-           if (dmat_ih_sym(l) == -1) cycle
-           do i = 1, ntbas(1)
-              do j = 1, i
-                 if (i == j) then
-                    dlmat_triangle(k) =
-     &              2.0d0*dens1(((i-1)*ntbas(0) + j), l)
-                 else
-                    dlmat_triangle(k) =
-     &              4.0d0*dens1(((i-1)*ntbas(0) + j), l)
-                 end if
-                 k = k + 1
-              end do
-           end do
-         ! SS block
-           do i = ntbas(1) + 1, ntbas(0)
-              do j = 1, i
-                 if (j > ntbas(1)) then
-                    if (i == j) then
-                       dlmat_triangle(k) =
-     &                 2.0d0*dens1(((i-1)*ntbas(0) + j), l)
-                    else
-                       dlmat_triangle(k) =
-     &                 4.0d0*dens1(((i-1)*ntbas(0) + j), l)
-                    end if
-                 end if
-                 k = k + 1
-              end do
-           end do
+        dlmat_triangle = 0.0_rp
+        flmat_triangle = 0.0_rp
+      
+        ! edh: We only construct dlmat_triangle for the symmetric real part of dens1
+        ! ihrmop(l)=1 of dens1 (i.e. transformed density matrix)
+        triangle_index = 1
+        do matrix_id = 1, ndmat
+            if (dmat_ih_sym(matrix_id) /= skip_id) then
+                call build_density_matrix(dlmat_triangle,      & 
+                                          dens1(:, matrix_id), &
+                                          nnbbasx,             &
+                                          n2bbasxq,            &
+                                          ntbas,               &
+                                          levyle,              &
+                                          triangle_index)
+            end if
         end do
 #if defined(VAR_MPI)
-        call pelib_ifc_start_slaves(3)
+        if (.not. pelib_gspol) then
+            ! handle early return of pelib_master in case of pelib_gspol
+            ! so the mpi calls don't get stuck
+            call pelib_ifc_start_slaves(3)
+        end if
 #endif
-        call pe_master(runtype='dynamic_response',
-     &                 triang = .true.,
-     &                 ndim = ntbas(0),
-     &                 nmats=ndmat,
-     &                 denmats=dlmat_triangle,
-     &                 fckmats=flmat_triangle)
+        call pelib_master(runtype = 'dynamic_response', &
+                          triang  =  .true.,            &
+                          ndim    =  ntbas(0),          &
+                          nmats   = ndmat,              &
+                          denmats = dlmat_triangle,     &
+                          fckmats = flmat_triangle)
         ! F = F + M
-        ! LL block
-        k = 1
-        do l = 1, ndmat
-           if (dmat_ih_sym(l) == -1) cycle
-           do i = 1, ntbas(1)
-              do j = 1, i
-                 if (i == j) then
-                    fao(((i-1)*ntbas(0) + j), l) =
-     &              fao(((i-1)*ntbas(0) + j), l)
-     &              + flmat_triangle(k)
-                 else
-                    fao(((i-1)*ntbas(0) + j), l) =
-     &              fao(((i-1)*ntbas(0) + j), l)
-     &              + flmat_triangle(k)
-                    fao(((j-1)*ntbas(0) + i), l) =
-     &              fao(((j-1)*ntbas(0) + i), l)
-     &              + flmat_triangle(k)
-                 end if
-                 k = k + 1
-              end do
-           end do
-          ! SS block
-           do i = ntbas(1) + 1, ntbas(0)
-              do j = 1, i
-                 if (j > ntbas(1)) then
-                     if (i == j) then
-                        fao(((i-1)*ntbas(0) + j), l) =
-     &                  fao(((i-1)*ntbas(0) + j), l)
-     &                  + flmat_triangle(k)
-                     else
-                        fao(((i-1)*ntbas(0) + j), l) =
-     &                  fao(((i-1)*ntbas(0) + j), l)
-     &                  + flmat_triangle(k)
-                        fao(((j-1)*ntbas(0) + i), l) =
-     &                  fao(((j-1)*ntbas(0) + i), l)
-     &                  + flmat_triangle(k)
-                     end if
-                 end if
-                 k = k + 1
-            end do
-         end do
+        triangle_index = 1
+        do matrix_id = 1, ndmat
+            if (dmat_ih_sym(matrix_id) /= skip_id) then
+                call add_to_fock_matrix(fao(:, matrix_id), &
+                                        flmat_triangle,    &
+                                        nnbbasx,           &
+                                        n2bbasxq,          &
+                                        ntbas,             &
+                                        levyle,            &
+                                        triangle_index)
+            end if
         end do
-        deallocate(dlmat_triangle, flmat_triangle)
+
+        deallocate(dlmat_triangle)
+        deallocate(flmat_triangle)
 
         call qexit('pelib_ifc_response')
 
-      end subroutine pelib_ifc_response
-      subroutine pelib_ifc_london(fckmats)
+    end subroutine pelib_ifc_response
+
+    subroutine build_density_matrix(dspmat, dmat, nnbbasx, n2bbasx, ntbas, levyle, kstart)
+        implicit none
+        ! Input/output.
+        integer(ip), optional, intent(inout) :: kstart
+        logical(lp),           intent(in   ) :: levyle
+        integer(ip),           intent(in   ) :: ntbas(0:2)
+        integer(ip),           intent(in   ) :: n2bbasx
+        integer(ip),           intent(in   ) :: nnbbasx
+        real(rp)   ,           intent(in   ) :: dmat(n2bbasx)
+        real(rp)   ,           intent(inout) :: dspmat(:)
+        ! Local variables.
+        integer(ip) :: i, j, k
+        integer(ip) :: id
+        integer(ip) :: total_orbitals
+        integer(ip) :: large_orbitals
+        integer(ip) :: small_orbitals
+
+        if (present(kstart)) then
+            k = kstart
+        else
+            k = 1
+        end if
+    
+        total_orbitals = ntbas(0)
+        large_orbitals = ntbas(1)
+        LLblock: do i = 1, large_orbitals
+            do j = 1, i
+                id = (i - 1) * total_orbitals + j
+                if (i == j) then
+                    dspmat(k) = 2.0_rp * dmat(id)
+                else
+                    dspmat(k) = 4.0_rp * dmat(id)
+                end if
+                k = k + 1
+            end do
+        end do LLblock
+
+        SSBlock: if (.not. levyle) then
+            small_orbitals = large_orbitals + 1
+            do i = small_orbitals, total_orbitals
+                k = k + large_orbitals
+                do j = small_orbitals, i                    
+                    id = (i - 1) * total_orbitals + j
+                    if (i == j) then
+                        dspmat(k) = 2.0_rp * dmat(id)
+                    else
+                        dspmat(k) = 4.0_rp * dmat(id)
+                    end if
+                    k = k + 1
+                end do
+            end do
+        end if SSBlock
+
+        if (present(kstart)) kstart = kstart + nnbbasx
+
+    end subroutine build_density_matrix
+
+    subroutine add_to_fock_matrix(fmat, fspmat, nnbbasx, n2bbasx, ntbas, levyle, kstart)
+        implicit none
+        ! Input/output.
+        integer(ip), optional, intent(inout) :: kstart
+        logical(lp),           intent(in   ) :: levyle
+        integer(ip),           intent(in   ) :: ntbas(0:2)
+        integer(ip),           intent(in   ) :: n2bbasx
+        integer(ip),           intent(in   ) :: nnbbasx
+        real(rp)   ,           intent(in   ) :: fspmat(:)
+        real(rp)   ,           intent(inout) :: fmat(n2bbasx)
+        ! Local variables.
+        integer(ip) :: i, j, k
+        integer(ip) :: i_id
+        integer(ip) :: j_id
+        integer(ip) :: total_orbitals
+        integer(ip) :: large_orbitals
+        integer(ip) :: small_orbitals
+
+        if (present(kstart)) then
+            k = kstart
+        else
+            k = 1
+        end if
+
+        total_orbitals = ntbas(0)
+        large_orbitals = ntbas(1)
+        LLblock: do i = 1, large_orbitals
+            do j = 1, i
+                i_id = (j - 1) * total_orbitals + i
+                j_id = (i - 1) * total_orbitals + j
+                if (i == j) then
+                    fmat(j_id) = fmat(j_id) + fspmat(k)
+                else
+                    fmat(j_id) = fmat(j_id) + fspmat(k)
+                    fmat(i_id) = fmat(i_id) + fspmat(k)
+                end if
+                k = k + 1
+            end do
+        end do LLblock
+
+        SSBlock: if (.not. levyle) then
+            small_orbitals = large_orbitals + 1
+            do i = small_orbitals, total_orbitals
+                k = k + large_orbitals
+                do j = small_orbitals, i
+                    i_id = (j - 1) * total_orbitals + i
+                    j_id = (i - 1) * total_orbitals + j
+                    if (i == j) then
+                        fmat(j_id) = fmat(j_id) + fspmat(k)
+                    else
+                        fmat(j_id) = fmat(j_id) + fspmat(k)
+                        fmat(i_id) = fmat(i_id) + fspmat(k)
+                    end if
+                    k = k + 1
+                end do
+            end do
+        end if SSBlock
+
+        if (present(kstart)) kstart = kstart + nnbbasx
+
+    end subroutine add_to_fock_matrix
+
+   subroutine pelib_ifc_london(fckmats)
 ! edh modify for DIRAC
-          use polarizable_embedding, only: pe_master
-          implicit none
+      use pelib, only: pelib_master
+      implicit none
 #include "inforb.h"
-          real*8, dimension(3*n2basx), intent(out) :: fckmats
-          integer :: i, j, k, l, m
-          real*8, dimension(:), allocatable :: fckmats_packed
-          call qenter('pelib_ifc_london')
-          !if (.not. use_pelib()) call quit('PElib not active')
-          allocate(fckmats_packed(3*nnbasx))
+      real*8, dimension(3*n2basx), intent(out) :: fckmats
+      integer :: i, j, k, l, m
+      real*8, dimension(:), allocatable :: fckmats_packed
+      call qenter('pelib_ifc_london')
+      !if (.not. use_pelib()) call quit('PElib not active')
+      allocate(fckmats_packed(3*nnbasx))
 #if defined(VAR_MPI)
-          call pelib_ifc_start_slaves(4)
+      call pelib_ifc_start_slaves(4)
 #endif
-          call pe_master('magnetic_gradient',
-     &                   triang=.true.,
-     &                   ndim=nbast,
-     &                   fckmats=fckmats_packed)
-          do i = 1, 3
-             j = (i - 1) * nnbasx + 1
-             k = i * nnbasx
-             l = (i - 1) * n2basx + 1
-             m = i * n2basx
-             call daptge(nbas, fckmats_packed(j:k), fckmats(l:m))
-         end do
-         deallocate(fckmats_packed)
-         call qexit('pelib_ifc_london')
-      end subroutine pelib_ifc_london
+      call pelib_master('magnetic_gradient', &
+                        triang  = .true.,    &
+                        ndim    = nbast,     &
+                        fckmats = fckmats_packed)
+      do i = 1, 3
+         j = (i - 1) * nnbasx + 1
+         k = i * nnbasx
+         l = (i - 1) * n2basx + 1
+         m = i * n2basx
+         call daptge(nbas, fckmats_packed(j:k), fckmats(l:m))
+      end do
+      deallocate(fckmats_packed)
+      call qexit('pelib_ifc_london')
+   end subroutine pelib_ifc_london
 
-      subroutine pelib_ifc_localfield(soint, nbast, nelmnt, noptyp)
-          use polarizable_embedding, only: pe_master
-          use pe_variables, only: peqm
-          implicit none
+   subroutine pelib_ifc_localfield(soint, nbast, nelmnt, noptyp)
+      use pelib, only: pelib_master
+      implicit none
 #include "priunit.h"
-          integer :: nbast, nelmnt, noptyp
-          real*8, dimension(nelmnt,noptyp), intent(inout) :: soint
-          real*8, dimension(:), allocatable :: intmats
-          integer :: i
-          call qenter('pelib_ifc_localfield')
-          if (.not. peqm) call quit('PElib not active')
-          write(lupri,'(/A/A)')
-     &       'Effective external field (EEF) correction'//
-     &       ' is applied to dipole integrals.',
-     &       'Note: This correction alters *all* properties (incl.'//
-     &       'static properties) that depend on dipole integrals.'
-          if (noptyp /= 3) then
-             call quit('ERROR: inconsistent dimension')
-          end if
-          allocate(intmats(noptyp*nelmnt))
+      integer :: nbast, nelmnt, noptyp
+      real*8, dimension(nelmnt,noptyp), intent(inout) :: soint
+      real*8, dimension(:), allocatable :: intmats
+      integer :: i
+      call qenter('pelib_ifc_localfield')
+      if (.not. use_pelib()) call quit('PElib not active')
+      write(lupri,'(/A/A)') 'Effective external field (EEF) correction'//            &
+                            ' is applied to dipole integrals.',                      & 
+                            'Note: This correction alters *all* properties (incl.'// &
+                            'static properties) that depend on dipole integrals.'         
+      if (noptyp /= 3) then
+         call quit('ERROR: inconsistent dimension')
+      end if
+      allocate(intmats(noptyp*nelmnt))
 #if defined(VAR_MPI)
-          call pelib_ifc_start_slaves(8)
+      call pelib_ifc_start_slaves(8)
 #endif
-          call pe_master(runtype='effdipole',
-     &                   triang=.true.,
-     &                   ndim=nbast,
-     &                   fckmats=intmats)
-          do i = 1, 3
-            soint(:,i) = soint(:,i) + intmats((i-1)*nelmnt+1:i*nelmnt)
-          end do
-          call qexit('pelib_ifc_localfield')
-      end subroutine pelib_ifc_localfield
+      call pelib_master(runtype = 'effdipole', &
+                        triang  = .true.,      &
+                        ndim    = nbast,       &
+                        fckmats = intmats)
+      do i = 1, 3
+         soint(:,i) = soint(:,i) + intmats((i-1)*nelmnt+1:i*nelmnt)
+      end do
+      call qexit('pelib_ifc_localfield')
+   end subroutine pelib_ifc_localfield
 
 #if defined(VAR_MPI)
-      subroutine pelib_ifc_slave()
-          use interface_to_mpi
-          use polarizable_embedding, only: pe_slave
-          implicit none
+   subroutine pelib_ifc_slave()
+      use interface_to_mpi
+      use pelib, only: pelib_slave
+      implicit none
 #include "infpar.h"
-          integer :: runtype
-          call qenter('pelib_ifc_slave')
-          CALL interface_MPI_BCAST(runtype,1,MPARID,
-     &                             global_communicator)
-          if (runtype == 1) then
-              call pe_slave('full_fock')
-          else if (runtype == 2) then
-              call pe_slave('print_energy')
-          else if (runtype == 3) then
-              call pe_slave('dynamic_response')
-          else if (runtype == 4) then
-              call pe_slave('magnetic_gradient')
-          else if (runtype == 5) then
-              call pe_slave('molecular_gradient')
-          else if (runtype == 8) then
-              call pe_slave('effdipole')
-          end if
-          call qexit('pelib_ifc_slave')
-      end subroutine pelib_ifc_slave
+      integer :: runtype
+      call qenter('pelib_ifc_slave')
+      CALL interface_MPI_BCAST(runtype, 1, MPARID, global_communicator)
+      if (runtype == 1) then
+          call pelib_slave('full_fock')
+      else if (runtype == 2) then
+          call pelib_slave('print_energy')
+      else if (runtype == 3) then
+          call pelib_slave('dynamic_response')
+      else if (runtype == 4) then
+          call pelib_slave('magnetic_gradient')
+      else if (runtype == 5) then
+          call pelib_slave('molecular_gradient')
+      else if (runtype == 8) then
+          call pelib_slave('effdipole')
+      end if
+      call qexit('pelib_ifc_slave')
+   end subroutine pelib_ifc_slave
 #endif
 
 #if defined(VAR_MPI)
-      subroutine pelib_ifc_start_slaves(runtyp)
-          use interface_to_mpi
-          implicit none
-          integer :: runtyp
+   subroutine pelib_ifc_start_slaves(runtyp)
+      use interface_to_mpi
+      implicit none
+      integer :: runtyp
 #include "infpar.h"
 #include "dirac_partask.h"
-          call qenter('pelib_ifc_start_slaves')
-              !if (.not. use_pelib()) call quit('PElib not active')
-          call dirac_parctl(PELIB_PAR)
-          CALL interface_MPI_BCAST(RUNTYP,1,MPARID,
-     &                            global_communicator)
-          call dirac_parctl(RELEASE_NODES)
-          call qexit('pelib_ifc_start_slaves')
-      end subroutine pelib_ifc_start_slaves
+      call qenter('pelib_ifc_start_slaves')
+      call dirac_parctl(PELIB_PAR)
+      CALL interface_MPI_BCAST(RUNTYP, 1, MPARID, global_communicator)
+      call dirac_parctl(RELEASE_NODES)
+      call qexit('pelib_ifc_start_slaves')
+   end subroutine pelib_ifc_start_slaves
 #endif
 
 !
@@ -2726,4 +3247,8 @@
 !      call qexit('Tk_lao_integrals')
 !
 !      end subroutine Tk_lao_integrals
+
+end module pelib_dirac_interface
+
 #endif
+
