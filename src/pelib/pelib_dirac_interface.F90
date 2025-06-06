@@ -284,6 +284,9 @@ module pelib_dirac_interface
                 pelib_repuls = .false.
             ! electrostatics and exchange repulsion from fragment densities
             else if (trim(option(2:7)) == 'PDE') then
+#if !defined(VAR_PDE)
+                call quit('Fatal error: .PDE not included in this build of Dirac')
+#endif
                 read(lucmd, '(a80)') option
                 backspace(lucmd)
                 if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&

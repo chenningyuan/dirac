@@ -327,19 +327,6 @@ if(ENABLE_SRDFT)
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 
-# pelib interface routines added as module
-if(ENABLE_PELIB)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
-    set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
-    dirac_test(pe_energy "medium;scf;pelib" "")
-    dirac_test(pe_response "medium;polarizabilities;pelib" "")
-    dirac_test(pe_exc "medium;pelib" "")
-    dirac_test(pe_cpp "short;pelib" "")
-    if(ENABLE_PDE)
-    	dirac_test(pde_exc "short;pelib" "")
-    endif()
-endif()
-
 #  dirac sources as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:dirac> ${EXTERNAL_OBJECTS})
@@ -351,6 +338,20 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:input> ${EXTERNAL_OBJECTS})
 # main directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
 set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:dirac_main> ${EXTERNAL_OBJECTS})
+
+# pelib interface routines added as module
+if(ENABLE_PELIB)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
+    set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
+    dirac_test(pe_energy "medium;scf;pelib" "")
+    dirac_test(pe_response "medium;polarizabilities;pelib" "")
+    dirac_test(pe_exc "medium;pelib" "")
+    dirac_test(pe_cpp "short;pelib" "")
+    dirac_test(pe_solvat "short;pelib" "")
+    if(ENABLE_PDE)
+    	dirac_test(pde_exc "short;pelib" "")
+    endif()
+endif()
 
 # make these variables visible to the cmake one level up
 set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)
