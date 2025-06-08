@@ -69,7 +69,9 @@
 #include "dirac_partask.h"
 #endif
     ! in case of initializing the interface multiple times
-    if (Gen1IntAPIInited()) mpi_sync = .false.
+    ! 4-May-2025 hjaaj: when running x2c it may be initialized both in 2c and 4c mode, we
+    !            therefore have to sync workers every time
+!hj if (Gen1IntAPIInited()) mpi_sync = .false.
     ! initializes API of Gen1Int
     call Gen1IntAPICreate(num_comp, num_atom_type, KATOM, num_sym_atom, &
                           ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &

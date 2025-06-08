@@ -746,7 +746,8 @@ C
      &     DOOWN,blk)
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
-      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
+      if (mytid .eq. 0) ! workers obtain gen1int info from gen1int's own mpi calls
+     &call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
      &                       NBLCK, KANG, JCO, KBLOCK,
      &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
 #endif

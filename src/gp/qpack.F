@@ -169,9 +169,19 @@ CMI   CHARACTER*8   QNAMES(MXQLVL)
 CMI   COMMON /QSTACC/ QNAMES
 #include "qnames.h"
 C
+#ifdef VAR_MPI
+#include "mpif.h"
+      integer(kind=4) :: ierr_i4, rank_i4
+      IF (LEVELQ .GT. 0) THEN
+         call mpi_comm_rank(mpi_comm_world, rank_i4, ierr_i4)
+         WRITE (LUPRI,'(//A,I0)')
+     &      ' QDUMP calls QTRACE for dump of internal trace stack'//
+     &      ' for MPI node ',rank_i4
+#else
       IF (LEVELQ .GT. 0) THEN
          WRITE (LUPRI,'(//A)')
      &      ' QDUMP calls QTRACE for dump of internal trace stack'
+#endif
          CALL QTRACE(LUPRI)
       END IF
       RETURN

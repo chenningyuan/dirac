@@ -1,3 +1,4 @@
+#define DEBUG_MPI -1
 !dirac_copyright_start
 !      Copyright (c) by the authors of DIRAC.
 !
@@ -1223,9 +1224,16 @@ C***********************************************************************
 
       mytid_print = -1
 ! activate next line for debug print from one of the nodes
-!     mytid_print = min(10,INUMNOD)
+#ifdef DEBUG_MPI > -1
+      mytid_print = min(10,INUMNOD)
+#endif
+#ifdef DEBUG_MPI > 0
+      ! print from DEBUG_MPI nodes
+      mytid_print = min(mytid, DEBUG_MPI )
+#endif
       
-      if (mytid .eq. mytid_print) print *, 'DIRNOD slave MYTID ',IMYTID
+      if (mytid .eq. mytid_print)
+     &   write(0, *) 'DIRNOD slave MYTID ',IMYTID
 
 ! Following lines can be uncommented for debug purposes but will mess up the output (and will make tests fail)
 #ifdef HAVE_OPENMP
@@ -1264,11 +1272,9 @@ C
 #if defined (SLOWDOWN_SLAVES)
 !mi+sk: introduce slowdown statement for debug purposes :
 ! node 'sleeps' short time and in between the user can attach debugger to the process
-      if(mytid > 0)then
-         if (mytid .eq. mytid_print) write(lupri,'(2x,a,i2,a)')
+      if (mytid .eq. mytid_print) write(0,'(2x,a,i2,a)')
      &   'slaves first sleep for ',sleep_time,' seconds. '
-         call sleep(sleep_time)
-      endif
+      call sleep(sleep_time)
 #endif
 
 C     Initialize infpar.h control variables
@@ -1308,7 +1314,7 @@ C
      &                           global_communicator)
 #endif
       if (mytid .eq. mytid_print) 
-     &   print*,'info: node',mytid,' has received itask',itask
+     &   write(0,*) 'info: node',mytid,' has received itask',itask
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
@@ -1514,7 +1520,7 @@ C     We want the slave program to go until there is nothing
 C     more to calculate, K.Ruud, May-95
 C
       if (mytid .eq. mytid_print)
-     &   call TIMER('node 10 task',TIMSTR,TIMEND)
+     &   call TIMER('node task',TIMSTR,TIMEND)
       GOTO 100
 C
  999  CALL QEXIT('DIRNOD')
@@ -1660,6 +1666,9 @@ C
 C
 
       IF (NUMNOD .EQ. 0) RETURN   ! MPI version of DIRAC, but no slaves (i.e. sequential)
+#if DEBUG_MPI > 0
+      write(0,*) 'dirac_parctl called with itask ',itask
+#endif
 
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST
