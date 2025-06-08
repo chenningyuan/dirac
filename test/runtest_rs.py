@@ -12,6 +12,7 @@ import shlex
 import shutil
 import string
 from optparse import OptionParser
+import runtest_v1 as runtest
 
 try:
     import h5py
@@ -20,29 +21,8 @@ except:
     h5py_available = False
 
 if not h5py_available:
-    raise SubprocessError('ERROR: h5py not available.')
+    raise runtest.SubprocessError('ERROR: h5py not available.')
 
-
-class FilterKeywordError(Exception):
-    pass
-
-
-class TestFailedError(Exception):
-    pass
-
-
-class BadFilterError(Exception):
-    pass
-
-
-class AcceptedError(Exception):
-    pass
-
-
-class SubprocessError(Exception):
-    pass
-
-# ------------------------------------------------------------------------------
 
 class CompareHDF5:
 
@@ -65,12 +45,12 @@ class CompareHDF5:
         unrecoginzed_kw = [kw for kw in kwargs.keys() if kw not in recognized_kw]
 
         if unrecoginzed_kw != []:
-            raise FilterKeywordError('ERROR: keyword(s) (%s) not recognized\n       available keywords: (%s)\n' % ((', ').join(unrecoginzed_kw),(', ').join(recognized_kw)))
+            raise runtest.FilterKeywordError('ERROR: keyword(s) (%s) not recognized\n       available keywords: (%s)\n' % ((', ').join(unrecoginzed_kw),(', ').join(recognized_kw)))
 
         incompatible_pairs = [('rel_tolerance', 'abs_tolerance')]
         incompatible_kw = [(kw1, kw2) for (kw1, kw2) in incompatible_pairs if kw1 in kwargs.keys() and kw2 in kwargs.keys()]
         if incompatible_kw != []:
-            raise FilterKeywordError('ERROR: incompatible keyword pairs: %s\n' % incompatible_kw)
+            raise runtest.FilterKeywordError('ERROR: incompatible keyword pairs: %s\n' % incompatible_kw)
 
         # now continue with keywords
         self.typ = kwargs.get('typ', '')
@@ -101,7 +81,7 @@ class CompareHDF5:
         except:
             message = "Label {} not found in {}\n".format(self.gf_label, fname)
             sys.stdout.write(message)
-            raise TestFailedError(message)
+            raise runtest.TestFailedError(message)
         return data
  
     def test_hdf5_array(self, fname):
@@ -111,7 +91,7 @@ class CompareHDF5:
         except:
             message = "Label {} not found in {}\n".format(self.gf_label, fname)
             sys.stdout.write(message)
-            raise TestFailedError(message)
+            raise runtest.TestFailedError(message)
         return data[self.gf_test_key][()]
 
     def close_values(self, this_value, ref_value, rtol=None, atol=None):
@@ -146,7 +126,7 @@ class CompareHDF5:
             if False in res:
                 message = "ERROR: test {} failed: Different single data on hdf5 file: {}\n".format(self.test_name, self.ftest)
                 sys.stdout.write(message)
-                raise TestFailedError(message)
+                raise runtest.TestFailedError(message)
 
         elif self.typ == 'array':
             test = self.test_hdf5_array(self.ftest)
@@ -155,13 +135,11 @@ class CompareHDF5:
             if False in res:
                 message = "ERROR: test {} failed: Different array data on hdf5 file: {}\n".format(self.test_name, self.ftest)
                 sys.stdout.write(message)
-                raise TestFailedError(message)
+                raise runtest.TestFailedError(message)
 
         else:
             message = "ERROR: unknown keyword"
-            raise BadFilterError(message)
-
-# ------------------------------------------------------------------------------
+            raise runtest.BadFilterError(message)
 
 #class CompareTXT:
 #
@@ -174,7 +152,7 @@ class CompareHDF5:
 #            h5py_available = False
 #        
 #        if not h5py_available:
-#            raise SubprocessError('ERROR: h5py not available.')
+#            raise runtest.SubprocessError('ERROR: h5py not available.')
 #
 #    def compare_txt(fname, fname_ref):
 #        p = subprocess.Popen(["diff", fname, fname_ref], stdin=subprocess.PIPE)
