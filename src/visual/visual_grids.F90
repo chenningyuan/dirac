@@ -499,10 +499,10 @@ use num_grid_cfg
 
 ! ---- copied from old VISUAL:
 
-  subroutine legendre_polynomial(p, n, x)
-    integer,intent(in)::n
+  subroutine legendre_polynomial(p, n, nmax, x)
+    integer,intent(in)::n,nmax
     real(8),intent(in)::x
-    real(8),intent(out)::p(*)
+    real(8),intent(out)::p(0:nmax)
     integer::i
     p(0) = 1
     p(1) = x
@@ -512,10 +512,10 @@ use num_grid_cfg
     enddo
   end subroutine
 
-  subroutine legendre_polynomial_derivatives(p, dp, n, x)
-    integer,intent(in)::n
+  subroutine legendre_polynomial_derivatives(p, dp, n, nmax, x)
+    integer,intent(in)::n, nmax
     real(8),intent(in)::x
-    real(8),intent(out)::p(*),dp(*)
+    real(8),intent(out)::p(0:nmax),dp(nmax)
     integer::i
     do i = 1, n
       dp(i) = (i*x*p(i) - i*p(i-1))/(x*x - 1.0d0)
@@ -533,15 +533,15 @@ use num_grid_cfg
     integer::i
 
     x_old = -1.0d0+threshold
-    call legendre_polynomial(p, n, x_old)
-    call legendre_polynomial_derivatives(p, dp, n, x_old)
+    call legendre_polynomial(p, n, nmax, x_old)
+    call legendre_polynomial_derivatives(p, dp, n, nmax, x_old)
     do i = 2, n-1
       step  = 1.0d-4
       do while(dabs(step) .gt. threshold)
         y_old = dp(n-1)
         x_new = x_old+step
-        call legendre_polynomial(p, n, x_new)
-        call legendre_polynomial_derivatives(p, dp, n, x_new)
+        call legendre_polynomial(p, n, nmax, x_new)
+        call legendre_polynomial_derivatives(p, dp, n, nmax, x_new)
         y_new = dp(n-1)
         if((y_old/y_new) .lt. 0.0d0) then
           step = -step/10.0d0
@@ -569,13 +569,13 @@ use num_grid_cfg
     real(8)::x_old,y_old,x_new,y_new,step
     integer::i
     x_old = -1.0d0
-    call legendre_polynomial(p, n, x_old)
+    call legendre_polynomial(p, n, nmax, x_old)
     do i = 1, n
       step  = 1.0d-4
       do while(dabs(step) .gt. threshold)
         y_old = p(n)
         x_new = x_old+step
-        call legendre_polynomial(p, n, x_new)
+        call legendre_polynomial(p, n, nmax, x_new)
         y_new = p(n)
         if((y_old/y_new) .lt. 0.0d0) then
           step = -step/10.0d0
@@ -583,7 +583,7 @@ use num_grid_cfg
         x_old = x_new
       enddo
       x(i) = x_new
-      call legendre_polynomial_derivatives(p, dp, n, x(i))
+      call legendre_polynomial_derivatives(p, dp, n, nmax, x(i))
       w(i) = (1.0d0-x(i)*x(i))*dp(n)*dp(n)
       w(i) = 2.0d0/w(i)
     enddo
