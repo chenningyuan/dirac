@@ -13,8 +13,6 @@ module visual_txt_storage
     integer:: unit = -1
     character(len=:), allocatable:: name
     character(len=:), allocatable:: format
-    character(len=:), allocatable:: domain
-    character(len=:), allocatable:: data_type
     character(len=:), allocatable:: float_format
     logical:: exists = .false.
     logical:: is_opened = .false.
@@ -169,10 +167,10 @@ use interface_grid
     READ(grid_file%unit, *) NR_POINTS
 
     IF(NR_POINTS .LE. 0) GOTO 2
-    call num_grid_read(grid%points(1,ioff:ioff+nr_points), &
-                       grid%points(2,ioff:ioff+nr_points), &
-                       grid%points(3,ioff:ioff+nr_points), &
-                       grid%weights(ioff:ioff+nr_points), &
+    call num_grid_read(grid%points(1,ioff:ioff+nr_points-1), &
+                       grid%points(2,ioff:ioff+nr_points-1), &
+                       grid%points(3,ioff:ioff+nr_points-1), &
+                       grid%weights(ioff:ioff+nr_points-1), &
                        grid_file%unit, nr_points)
     ioff = nr_points + ioff
     GOTO 1
