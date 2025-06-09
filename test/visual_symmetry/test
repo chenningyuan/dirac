@@ -5,6 +5,16 @@ import sys
 import shutil
 from pathlib import Path
 
+try:
+    import h5py
+    h5py_available = True
+except:
+    h5py_available = False
+
+if not h5py_available:
+    sys.stderr.write('ERROR: VISUAL tests require h5py\n')
+    sys.exit(-1)
+
 #
 # prepare environment, define functions
 #

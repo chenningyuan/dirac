@@ -7,6 +7,16 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest import version_info, get_filter, cli, run
 from runtest_config import configure
 
+try:
+    import h5py
+    h5py_available = True
+except:
+    h5py_available = False
+
+if not h5py_available:
+    sys.stderr.write('ERROR: VISUAL tests require h5py\n')
+    sys.exit(-1)
+
 assert version_info.major == 2
 
 options = cli()
