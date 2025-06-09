@@ -160,7 +160,20 @@ contains
 
       g_ndim  = rs_input%grids(ig)%ndim
       npoints = rs_input%grids(ig)%nr_points_total
+      if (rs_input%grids(ig)%typ == 2) &
+        npoints_radial=rs_input%grids(ig)%radial_nr_steps
 
+!
+!     get grid points
+!
+!     todo:
+!     * test whether reshaping to 1-dimensional arrays is better for optimization:
+!     grid_points = reshape(rs_input%grids(ig)%points(g_ndim, npoints))
+!
+!     fixme:
+!     * the grid can be read from file or generated;
+!       now, grid generation is done sequentially (on master), it could be done in parallel
+!
       if (.not. rs_input%grids(ig)%allocated_points()) then
         allocate(rs_input%grids(ig)%points(g_ndim, npoints))
         rs_input%grids(ig)%points = 0.0d0
@@ -179,19 +192,9 @@ contains
         end if
       end if
 
-!
-!     get grid points
-!
-!     todo:
-!     * test whether reshaping to 1-dimensional arrays is better for optimization:
-!     grid_points = reshape(rs_input%grids(ig)%points(g_ndim, npoints))
-!
-!     fixme:
-!     * the grid can be read from file or generated;
-!       now, grid generation is done sequentially (on master), it could be done in parallel
-!
       if (mpi_is_master()) then
         call get_grid_points(rs_input%grids(ig))
+
         if (rs_input%print_level > 1) then
           write(*,*) 'GRID POINTS (AND WEIGHTS): '
           do j = 1, npoints
@@ -208,11 +211,9 @@ contains
             end do
           end if
         end if
-      end if
 
-      if (rs_input%grids(ig)%export) then
-!       export this grid to a separate file 
-        if (mpi_is_master()) then
+        if (rs_input%grids(ig)%export) then
+!         export this grid to a separate file 
           call store_grid(rs_input%grids(ig))
           if (rs_input%print_level > 2) then
             write(*, *) 'Grid ', rs_input%grids(ig)%id, ' exported to file ', &
