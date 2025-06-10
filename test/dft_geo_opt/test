@@ -16,6 +16,7 @@ f.add(string      = 'Energy at final geometry is',
       rel_tolerance   = 1.0e-9)
 
 test.run(['lda_numgra.inp', 'lda_numgra_x2c.inp'], ['h2.mol'], f)
+test.run(['geop_numgra.inp'], ['h2.xyz'], f)
 test.run(['lda.inp'], ['h2o.mol'], f)
 
 sys.exit(test.return_code)
