@@ -27,6 +27,10 @@ macro(compile_standalone _executable _source _list_of_executables)
         ${_source}
     )
 
+    if(ENABLE_EXATENSOR)
+        target_link_libraries(${_executable} tapp)
+    endif()
+
     # each executable is of Fortran language ...
     set_property(TARGET ${_executable} PROPERTY LINKER_LANGUAGE Fortran)
 

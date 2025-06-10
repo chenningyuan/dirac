@@ -30,16 +30,25 @@ if(ENABLE_EXATENSOR)
    set (EXATENSOR_GIT_HASH a1efa9efdcae13caacdc4776af839c3cd1957e85 CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
-   # check if standard tensor interface TAPP present 
-   if (DEFINED ENV{TAPP_ROOT})
-     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} $ENV{TAPP_ROOT}/lib/libtapp.so)
-   else()
-     message(STATUS "WARNING: TAPP_ROOT not specified. Will attempt to compile without TAPP standard tensor interface.") 
-   endif()
-   
+
+
+   include(FetchContent)
+
+   option(ENABLE_TBLIS_WITHIN_TAPP "Build and link TBLIS and TBLIS bindings" ON)
+   set(ENABLE_TBLIS ${ENABLE_TBLIS_WITHIN_TAPP} CACHE BOOL "" FORCE)
+
+   FetchContent_Declare(
+     tapp
+     GIT_REPOSITORY https://github.com/TAPPorg/reference-implementation.git
+     GIT_TAG        50d4079
+   )
+
+   FetchContent_MakeAvailable(tapp)
+
+
+
    # set default executor (1=tapp, 2=talsh, 3=exatensor) of tensor operations for tensor_t in exacorr_tensor_interface
    if (DEFINED ENV{TENSOR_T_EXECUTOR})
-     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} $ENV{TAPP_ROOT}/lib/libtapp.so)
      add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=$ENV{TENSOR_T_EXECUTOR})
    else()
      add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=2)
