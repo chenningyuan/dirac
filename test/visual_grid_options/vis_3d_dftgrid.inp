@@ -2,6 +2,8 @@
 **HAMILTONIAN
 .DFT
  B3LYP
+**GRID
+.DEBUG       !for the test we use a coarse grid
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -10,6 +12,8 @@
 *SCF
 .CLOSED_SHELL
 10
+.EVCCNV
+1.0D-8
 **VISUAL
 .GRIDS 
 1

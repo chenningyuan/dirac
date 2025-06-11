@@ -2,6 +2,8 @@
 **HAMILTONIAN
 .DFT
  B3LYP
+**GRID
+.DEBUG       !for the test we use a coarse grid
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -10,6 +12,8 @@
 *SCF
 .CLOSED_SHELL
 10
+.EVCCNV
+1.0D-8
 **VISUAL
 .GRIDS 
 2
@@ -17,7 +21,7 @@ id=1 input=dft export=yes file_out=dftgrid_3d_multi_2gf.h5
 id=2 input=create typ=1 ndim=3 npoints=[3,3,3] margin=4.0 export=yes file_out=grid_3d_generated_multi_2gf.h5
 .GRIDFUNCTIONS
 3
-name=ed id_grid=1 purpose=integration outpri=yes export=yes file_out=ed_on3Ddftgrid_multi_2gf.h5
+name=ed id_grid=1 purpose=integration export=yes file_out=ed_on3Ddftgrid_multi_2gf.h5
 name=ed id_grid=2 purpose=visualization export=yes file_out=ed_on3Dgrid_generated_multi_2gf.h5
 name=rdg id_grid=2 purpose=visualization export=yes file_out=rdg_on3Dgrid_generated_multi_2gf.h5
 *END OF

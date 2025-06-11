@@ -2,6 +2,8 @@
 **HAMILTONIAN
 .DFT
  B3LYP
+**GRID
+.DEBUG       !for the test we use a coarse grid
 **INTEGRALS
 *READIN
 .UNCONTRACT
@@ -47,5 +49,5 @@ id=1 input=list export=yes file_out=grid_3d_fromLIST.h5
 2.850571507053395459E-01,    6.763762717106354128E-01,    9.969190081455814312E-01
 .GRIDFUNCTIONS
 1
-name=ed id_grid=1 purpose=visualization outpri=yes export=yes file_out=ed_on3DgridLIST.h5
+name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on3DgridLIST.h5
 *END OF
