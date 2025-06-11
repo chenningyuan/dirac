@@ -3,6 +3,12 @@
 
 -----------------------------------------------------------------------------------------------------
 
+25.1
+-------
+
+- Bugfixes
+   - numerical molecular gradient for open-shell DFT was not working (H. J. Aa. Jensen)
+
 25.0
 --------
 
