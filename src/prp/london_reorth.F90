@@ -72,6 +72,7 @@ module london_reorth_hb
   integer            ::     nr_xyz_comp
 
   integer, parameter :: file_unit = 137
+  integer, parameter :: tbmo_unit = 71
   integer, parameter :: tbdmat_file_unit = 81
   logical            :: debug_me
 
@@ -99,7 +100,6 @@ contains
     real(8), allocatable   :: fao(:), fmo(:), tb_dmat(:)
     integer :: size_tb_dmat, size_fao, size_fmo
 
-!   gosia - slowly transfering to the use of new datatypes
     type(conmat_info_t) :: conmat_info
 !-----------------------------------------------------------------------
 
@@ -201,6 +201,10 @@ contains
     open(lufckl, file='FCKLON', form='unformatted',   &
          access='direct',recl=8*n2orbxq,                 &
          status='unknown')
+ 
+    open(tbmo_unit, file='TBMO', form='unformatted',   &
+         access='sequential', action='write',          &
+         status='unknown')
 
     do icomp = 1, nr_xyz_comp
       indxpr       = ipcon(icomp)
@@ -257,7 +261,19 @@ contains
 !!!TEST
 !      call test_new_routines(tb)
 
-
+! write to old TBMO file (used if h5 unavailable)
+! -----------------------------------------------
+! *) how many components:
+      write(tbmo_unit) nr_xyz_comp
+! *) which icomp:
+      write(tbmo_unit) icomp
+! *) irep of T^B_icomp:
+      write(tbmo_unit) (isym(icomp) - 1)
+! *) whether reorthonormalization is done on ep or e-only shells (dcbnmr.h)
+      write(tbmo_unit) epreorth 
+! *) T^B_icomp matrix in MO basis:
+      write(tbmo_unit) tb
+ 
       debug_me = .false.
       if (debug_me) then
          write(lupri, *) 'T^B in MO basis,icomp = ', icomp
@@ -335,6 +351,7 @@ contains
     end do
 
 
+    close(tbmo_unit,   status='keep')
     close(lufckl, status='keep')
 
     call dealloc(tb)
@@ -798,7 +815,9 @@ contains
 
     call alloc(tb, n2orbxq)
     tb = 0.0d0
-    call conmat_info%write_to_checkpoint('TBMO.h5')
+    if (XLR_RSPEXP) then
+      call conmat_info%write_to_checkpoint('TBMO.h5')
+    end if
 
     do icomp = 1, nr_xyz_comp
       indxpr       = ipcon(icomp)
@@ -916,7 +935,9 @@ contains
       call conmat_info%vectors(icomp)%alloc_values(norbt*norbt, nz)
       call conmat_info%vectors(icomp)%fill_values(tb, n2orbxq)
 ! TODO: fulmat2 is called before writing data to old 'TBMO' file; test this
-      call conmat_info%vectors(icomp)%write_to_checkpoint('TBMO.h5',icomp)
+      if (XLR_RSPEXP) then
+        call conmat_info%vectors(icomp)%write_to_checkpoint('TBMO.h5',icomp)
+      end if
 
     end do
 
