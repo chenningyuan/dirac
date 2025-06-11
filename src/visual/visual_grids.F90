@@ -137,7 +137,7 @@ use num_grid_cfg
 
     ! Loop over radial points
     if (grid%radial_nr_steps > 1) then
-      radial_spacing = grid%radial_length/grid%radial_nr_steps
+      radial_spacing = grid%radial_length/(grid%radial_nr_steps-1)
     else
       radial_spacing = grid%radial_length
     end if
