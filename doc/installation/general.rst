@@ -118,9 +118,9 @@ are the compiler wrappers you want to use::
 
   $ ./setup --mpi
 
-Configure for sequential compilation using ifort/icc/icpc and link against parallel mkl::
+Configure for sequential compilation using ifx/icx/icpx and link against parallel mkl::
 
-  $ ./setup --fc=ifort --cc=icc --cxx=icpc --qmkl=parallel
+  $ ./setup --fc=ifx --cc=icx --cxx=icpx --qmkl=parallel
 
 Configure for sequential compilation using gfortran/gcc/g++::
 

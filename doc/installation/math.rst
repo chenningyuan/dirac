@@ -54,7 +54,7 @@ the sequential MKL::
 
 For a sequential compilation you may want to link to the parallel MKL::
 
-  $ ./setup --fc=ifort --cc=icc --cxx=icpc --qmkl=parallel
+  $ ./setup --fc=ifx --cc=icx --cxx=icpx --qmkl=parallel
 
 The more general solution is to link to the parallel MKL and control the number
 of threads using MKL environment variables.
