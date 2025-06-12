@@ -20,5 +20,5 @@
 id=1 input=import file_inp=grid.h5
 .GRIDFUNCTIONS
 1
-name=gamma5 id_grid=1 purpose=visualization outpri=yes export=yes file_out=gamma5.h5
+name=gamma5 id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=gamma5.h5
 *END OF

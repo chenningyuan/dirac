@@ -18,5 +18,5 @@
 id=1 input=import file_inp=grid.h5
 .GRIDFUNCTIONS    
 1
-name=ed id_grid=1 outpri=yes purpose=visualization export=yes file_out=plot_ed1.h5
+name=ed id_grid=1 outpri=yes purpose=visualization export=hdf5 file_out=plot_ed1.h5
 *END OF

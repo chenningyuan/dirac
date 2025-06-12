@@ -21,7 +21,7 @@
 id=1 input=import file_inp=grid.h5
 .GRIDFUNCTIONS
 3
-name=kinlap id_grid=1 purpose=visualization outpri=yes export=yes file_out=kinlap.h5
-name=kintau id_grid=1 purpose=visualization outpri=yes export=yes file_out=kintau.h5
-name=kinnr id_grid=1 purpose=visualization outpri=yes export=yes file_out=kinnr.h5
+name=kinlap id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=kinlap.h5
+name=kintau id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=kintau.h5
+name=kinnr id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=kinnr.h5
 *END OF

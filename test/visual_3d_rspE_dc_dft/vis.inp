@@ -22,5 +22,5 @@
 id=1 input=import file_inp=grid.h5
 .GRIDFUNCTIONS    
 1
-name=edip id_grid=1 purpose=visualization outpri=yes export=yes rspvec_file=RESPONSE.h5 rspvec_id=5 file_out=edip_Ez_rspvec5.h5
+name=edip id_grid=1 purpose=visualization outpri=yes export=hdf5 rspvec_file=RESPONSE.h5 rspvec_id=5 file_out=edip_Ez_rspvec5.h5
 *END OF

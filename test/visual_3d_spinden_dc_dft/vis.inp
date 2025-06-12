@@ -20,7 +20,7 @@
 id=1 input=import file_inp=grid.h5
 .GRIDFUNCTIONS
 3
-name=s id_grid=1 purpose=visualization outpri=yes export=yes file_out=s.h5
-name=divs id_grid=1 purpose=visualization outpri=yes export=yes file_out=divs.h5
-name=rots id_grid=1 purpose=visualization outpri=yes export=yes file_out=rots.h5
+name=s id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=s.h5
+name=divs id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=divs.h5
+name=rots id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=rots.h5
 *END OF
