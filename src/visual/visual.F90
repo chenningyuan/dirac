@@ -212,7 +212,7 @@ contains
           end if
         end if
 
-        if (rs_input%grids(ig)%export) then
+        if (allocated(rs_input%grids(ig)%export)) then
 !         export this grid to a separate file 
           call store_grid(rs_input%grids(ig))
           if (rs_input%print_level > 2) then
@@ -469,9 +469,9 @@ contains
 !         save and print data
 !
 
-          if (rs_input%grid_functions(igf)%export) then
+          if (allocated(rs_input%grid_functions(igf)%export)) then
              if (mpi_is_master()) then
-               call store_data(rs_input%grids(ig), rs_input%grid_functions(igf))
+               call store_data(rs_input%grids(ig), rs_input%grid_functions(igf), mol)
              end if
           end if
 

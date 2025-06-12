@@ -17,10 +17,10 @@
 **VISUAL
 .GRIDS
 1
-id=1 input=3d export=yes file_out=grid_3d_generated_old.h5
+id=1 input=3d export=hdf5 file_out=grid_3d_generated_old.h5
 .3D       
 3,3,3
 .GRIDFUNCTIONS
 1
-name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on3Dgrid_generated_old.h5
+name=ed id_grid=1 purpose=visualization export=hdf5 file_out=ed_on3Dgrid_generated_old.h5
 *END OF

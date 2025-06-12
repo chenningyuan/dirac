@@ -16,9 +16,13 @@
 1.0D-8
 **VISUAL
 .GRIDS
-1
-id=1 input=create typ=1 ndim=3 npoints=[3,3,3] margin=4.0 export=yes file_out=grid_3d_generated.h5
+2
+id=1 input=create typ=1 ndim=3 npoints=[3,3,3] margin=4.0 export=hdf5 file_out=grid_3d_generated.h5
+id=2 input=create typ=1 ndim=3 npoints=[10,10,10] margin=4.0
 .GRIDFUNCTIONS
-1
-name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on3Dgrid_generated.h5
+4
+name=ed id_grid=1 purpose=visualization export=hdf5 file_out=ed_on3Dgrid_generated.h5
+name=ed id_grid=1 purpose=visualization export=txt file_out=ed_on3Dgrid_generated.txt
+name=ed id_grid=1 purpose=visualization export=csv file_out=ed_on3Dgrid_generated.csv
+name=ed id_grid=2 purpose=visualization export=cube file_out=ed_on3Dgrid_generated.cube
 *END OF

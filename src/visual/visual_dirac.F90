@@ -764,9 +764,15 @@ contains
 !   variables to handle bcast of strings 
 !   that may differ by lengths (in case of many grids)
     integer:: len_gfn_inp(rs_input%nr_grids), &
-              len_gfn_out(rs_input%nr_grids)
+              len_gfn_out(rs_input%nr_grids), &
+              len_g_export(rs_input%nr_grids)
 
     if (mpi_is_master()) then
+      if (allocated(grid%export)) then
+        len_g_export(grid%id) = len_trim(grid%export)
+      else
+        len_g_export(grid%id) = 0
+      end if
       if (allocated(grid%file_inp)) then
         len_gfn_inp(grid%id) = len_trim(grid%file_inp)
       else
@@ -778,6 +784,8 @@ contains
         len_gfn_out(grid%id) = 0
       end if
     end if
+    call interface_mpi_bcast(len_g_export,rs_input%nr_grids,&
+             irank_master,global_communicator)
     call interface_mpi_bcast(len_gfn_inp,rs_input%nr_grids,&
              irank_master,global_communicator)
     call interface_mpi_bcast(len_gfn_out,rs_input%nr_grids,&
@@ -796,7 +804,6 @@ contains
     call interface_mpi_bcast(grid%radial_lebedev_l,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%status,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%input,1,irank_master,global_communicator)
-    call interface_mpi_bcast_l0(grid%export,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%typ,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%margin,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid%integration_order_2d,1,irank_master,global_communicator)
@@ -807,12 +814,16 @@ contains
     call interface_mpi_bcast_l0(grid%spacing_known,3,irank_master,global_communicator)
 
     if (.not.mpi_is_master()) then
+      if (len_g_export(grid%id) > 0.and..not.allocated(grid%export)) &
+        allocate(character(len_g_export(grid%id)):: grid%export)
       if (len_gfn_inp(grid%id) > 0.and..not.allocated(grid%file_inp)) &
         allocate(character(len_gfn_inp(grid%id)):: grid%file_inp)
       if (len_gfn_out(grid%id) > 0.and..not.allocated(grid%file_out)) &
         allocate(character(len_gfn_out(grid%id)):: grid%file_out)
     end if
 
+    call interface_mpi_bcast(grid%export,len_g_export(grid%id),&
+           irank_master,global_communicator)
     call interface_mpi_bcast(grid%file_inp,len_gfn_inp(grid%id),&
            irank_master,global_communicator)
     call interface_mpi_bcast(grid%file_out,len_gfn_out(grid%id),&
@@ -829,13 +840,19 @@ contains
               len_gffn_inp(rs_input%nr_grid_functions), &
               len_gffn_out(rs_input%nr_grid_functions), &
               len_gf_name(rs_input%nr_grid_functions), &
-              len_gf_typ(rs_input%nr_grid_functions)
+              len_gf_typ(rs_input%nr_grid_functions), &
+              len_gf_export(rs_input%nr_grid_functions)
 
     if (mpi_is_master()) then
       if (allocated(grid_function%rspvec_file)) then
         len_gffn_rsp(grid_function%id) = len_trim(grid_function%rspvec_file)
       else
         len_gffn_rsp(grid_function%id) = 0
+      end if
+      if (allocated(grid_function%export)) then
+        len_gf_export(grid_function%id) = len_trim(grid_function%export)
+      else
+        len_gf_export(grid_function%id) = 0
       end if
       if (allocated(grid_function%file_inp)) then
         len_gffn_inp(grid_function%id) = len_trim(grid_function%file_inp)
@@ -868,12 +885,13 @@ contains
             irank_master,global_communicator)
     call interface_mpi_bcast(len_gf_typ,rs_input%nr_grid_functions,&
             irank_master,global_communicator)
+    call interface_mpi_bcast(len_gf_export,rs_input%nr_grid_functions,&
+            irank_master,global_communicator)
 
     call interface_mpi_bcast(grid_function%id,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%status,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%input,1,irank_master,global_communicator)
     call interface_mpi_bcast_l0(grid_function%outpri,1,irank_master,global_communicator)
-    call interface_mpi_bcast_l0(grid_function%export,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%nuc,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%wf_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%rspvec_id,1,irank_master,global_communicator)
@@ -898,6 +916,8 @@ contains
     if (.not.mpi_is_master()) then
       if (len_gffn_rsp(grid_function%id) > 0.and..not.allocated(grid_function%rspvec_file)) &
         allocate(character(len_gffn_rsp(grid_function%id)):: grid_function%rspvec_file)
+      if (len_gf_export(grid_function%id) > 0.and..not.allocated(grid_function%export)) &
+        allocate(character(len_gffn_inp(grid_function%id)):: grid_function%export)
       if (len_gffn_inp(grid_function%id) > 0.and..not.allocated(grid_function%file_inp)) &
         allocate(character(len_gffn_inp(grid_function%id)):: grid_function%file_inp)
       if (len_gffn_out(grid_function%id) > 0.and..not.allocated(grid_function%file_out)) &
@@ -909,6 +929,8 @@ contains
     end if
 
     call interface_mpi_bcast(grid_function%rspvec_file,len_gffn_rsp(grid_function%id),&
+                             irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%export,len_gf_export(grid_function%id),&
                              irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%file_inp,len_gffn_inp(grid_function%id),&
                              irank_master,global_communicator)

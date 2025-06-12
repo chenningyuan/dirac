@@ -82,10 +82,10 @@ module visual_datatypes
     integer, public:: radial_lebedev_l = 0             ! Lebedev grid L (now, set up to = num_grid_cfg_angint)
     integer, public:: status = -1                      ! -1 = never used, 0 = ready to work on
     integer, public:: input = 0                        ! 0=create, 1=import from hdf5 file, -1=import from 'numerical_grid', 2='list', 3='line', 4='2d', -4='2d_int', 5='3d'
-    logical, public:: export = .false.                 ! also export to a separate file
     integer, public:: typ = 0                          ! 0 = unknown, 1 = rectilinear uniform, 2 = radial
     real(8), public:: margin = 4.0d0                   ! margin [a.u.] to be added around molecule when creating the grid
     integer, public:: integration_order_2d = 0         ! order of integration in 2d
+    character(len=:), public,allocatable:: export      ! also export to a separate file; specify file format: 'hdf5', 'csv', 'txt'
     character(len=:), public, allocatable:: file_inp   ! name of a file for grid import
     character(len=:), public, allocatable:: file_out   ! name of a file for grid export
     real(8), public, allocatable:: radial_coord(:)
@@ -115,7 +115,6 @@ module visual_datatypes
     integer, public:: status = -1                           ! -1 = never used, 0 = initialized, but not assigned, 1 = assigned (ready to work on)
     logical, public:: outpri = .false.                      ! if true, print to DIRAC output
     integer, public:: input = 0                             ! 0 = calculate, 1 = import
-    logical, public:: export = .false.                      ! export to file
     integer, public:: nuc = 0                               ! id of a nucleus (for grid functions specific to atomic centers)
     integer, public:: wf_order = 0                          ! 0 = depends on unperturbed wave function only, >0 requires perturbed wave functions (1 = linear response, 2 = quadratic response, etc.)
     integer, public:: rspvec_id = 0                         ! now: record ID on PAMXVC file
@@ -138,6 +137,7 @@ module visual_datatypes
     logical, public:: bedfix_known= .false.
     character(len=:), public, allocatable:: rspvec_file     ! name of a file with response parameters
     character(len=:), public, allocatable:: gf_type         ! must be one of: "unperturbed", "response", "composite"
+    character(len=:), public, allocatable:: export          ! export to file; specify file format: 'hdf5', 'csv', 'txt', 'cube'
     character(len=:), public, allocatable:: file_inp        ! name of a file for grid function import
     character(len=:), public, allocatable:: file_out        ! name of a file for grid function export
     real(8), public, allocatable:: integrated_values(:)
@@ -632,12 +632,15 @@ contains
     write(*, *) '  radial_lebedev_l  = ', self%radial_lebedev_l, my_rank_local
     write(*, *) '  status = ', self%status, my_rank_local
     write(*, *) '  input = ', self%input, my_rank_local
-    write(*, *) '  export = ', self%export, my_rank_local
     write(*, *) '  typ = ', self%typ, my_rank_local
     write(*, *) '  margin = ', self%margin, my_rank_local
     write(*, *) '  integration_order_2d = ', self%integration_order_2d, my_rank_local
-    write(*, *) '  file_inp = ', self%file_inp, my_rank_local
-    write(*, *) '  file_out = ', self%file_out, my_rank_local
+    if (allocated(self%export)) &
+      write(*, *) '  export = ', self%export, my_rank_local
+    if (allocated(self%file_inp)) &
+      write(*, *) '  file_inp = ', self%file_inp, my_rank_local
+    if (allocated(self%file_out)) &
+      write(*, *) '  file_out = ', self%file_out, my_rank_local
     write(*, *) '  origin_known = ', self%origin_known, my_rank_local
     write(*, *) '  extents_known = ', self%extents_known, my_rank_local
     write(*, *) '  nr_points_total_known = ', self%nr_points_total_known, my_rank_local
@@ -667,7 +670,6 @@ contains
     write(*, *) '  status = ', self%status, my_rank_local
     write(*, *) '  outpri = ', self%outpri, my_rank_local
     write(*, *) '  input = ', self%input, my_rank_local
-    write(*, *) '  export = ', self%export, my_rank_local
     write(*, *) '  wf_order = ', self%wf_order, my_rank_local
     write(*, *) '  rspvec_id = ', self%rspvec_id, my_rank_local
     write(*, *) '  nuc = ', self%nuc, my_rank_local
@@ -689,13 +691,15 @@ contains
     write(*, *) '  id_assigned_grid =', self%id_assigned_grid, my_rank_local
     write(*, *) '  purpose = ', self%purpose, my_rank_local
     if (allocated(self%rspvec_file)) &
-    write(*, *) '  rspvec_file = ', self%rspvec_file, my_rank_local
+      write(*, *) '  rspvec_file = ', self%rspvec_file, my_rank_local
     if (allocated(self%gf_type)) &
-    write(*, *) '  gf_type = ', self%gf_type, my_rank_local
+      write(*, *) '  gf_type = ', self%gf_type, my_rank_local
+    if (allocated(self%export)) &
+      write(*, *) '  export = ', self%export, my_rank_local
     if (allocated(self%file_inp)) &
-    write(*, *) '  file_inp = ', self%file_inp, my_rank_local
+      write(*, *) '  file_inp = ', self%file_inp, my_rank_local
     if (allocated(self%file_out)) &
-    write(*, *) '  file_out = ', self%file_out, my_rank_local
+      write(*, *) '  file_out = ', self%file_out, my_rank_local
     write(*, *)
   end subroutine
 

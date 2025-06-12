@@ -116,11 +116,7 @@ contains
 !       units: a.u.
         call str2flt(val, grid%margin, stat)
       case ('export')
-        if (lowercase(val) == 'no') then
-          grid%export = .false.
-        else if (lowercase(val) == 'yes') then
-          grid%export = .true.
-        end if
+        grid%export = val
       case ('file_inp')
         grid%file_inp = val
       case ('file_out')
@@ -418,7 +414,7 @@ contains
 
     ! additional setup/check
 
-    if (grid%export) then
+    if (allocated(grid%export)) then
       if (.not. allocated(grid%file_out)) then
         errmsg=errmsg//'Grid export requested, but file for export not specified.'
         stop
@@ -470,7 +466,7 @@ contains
       end if
     end if
 
-    if (grid_function%export) then
+    if (allocated(grid_function%export)) then
       if (.not. allocated(grid_function%file_out)) then
         errmsg=errmsg//'Grid function export requested, but file for export not specified.\n'
       end if
@@ -611,11 +607,7 @@ contains
           grid_function%outpri = .true.
         end if
       case ('export')
-        if (lowercase(val) == 'no') then
-          grid_function%export = .false.
-        else if (lowercase(val) == 'yes') then
-          grid_function%export = .true.
-        end if
+        grid_function%export = val
       case ('file_inp')
         grid_function%file_inp = val
       case ('file_out')

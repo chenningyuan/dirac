@@ -17,7 +17,7 @@
 **VISUAL
 .GRIDS 
 1
-id=1 input=list export=yes file_out=grid_3d_fromLIST.h5
+id=1 input=list export=hdf5 file_out=grid_3d_fromLIST.h5
 .LIST
 27
 6.765886054628134083E-03,    4.249023369972415587E-01,    7.158686405346250670E-01
@@ -49,5 +49,5 @@ id=1 input=list export=yes file_out=grid_3d_fromLIST.h5
 2.850571507053395459E-01,    6.763762717106354128E-01,    9.969190081455814312E-01
 .GRIDFUNCTIONS
 1
-name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on3DgridLIST.h5
+name=ed id_grid=1 purpose=visualization export=hdf5 file_out=ed_on3DgridLIST.h5
 *END OF

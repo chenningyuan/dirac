@@ -17,12 +17,13 @@
 **VISUAL
 .GRIDS 
 1
-id=1 input=radial export=yes file_out=grid_3d_fromRADIAL.h5
+id=1 input=radial export=hdf5 file_out=grid_3d_fromRADIAL.h5
 .RADIAL
 0.0,  -0.1190150732,   0.0  ! coordinates of grid origin
 10.0                        ! maximum distance from the origin (radial length)
 500                         ! number of steps along the length
 .GRIDFUNCTIONS
-1
-name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on3Dradial.h5
+2
+name=ed id_grid=1 purpose=visualization export=hdf5 file_out=ed_on3Dradial.h5
+name=ed id_grid=1 purpose=visualization export=csv file_out=ed_on3Dradial.csv
 *END OF

@@ -20,5 +20,5 @@
 id=1 input=import file_inp=grid_3d.h5
 .GRIDFUNCTIONS    
 1
-name=ed id_grid=1 purpose=visualization export=yes file_out=ed_on3Dgrid.h5
+name=ed id_grid=1 purpose=visualization export=hdf5 file_out=ed_on3Dgrid.h5
 *END OF

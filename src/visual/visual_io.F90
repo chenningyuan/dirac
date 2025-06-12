@@ -26,31 +26,32 @@ contains
     type(file_info_t):: data_file
     ! todo:
     ! - add support for other formats, now - hdf5 format only
-    ! - check what file%status == -1 means ('never used' = 'file not exists'?)
-    !   now - hardcoded (after labeled_storage)
 
-    data_file%name = grid%file_out
-    data_file%status = -1
-    if (data_file%status == -1) then
-      write(*,*) " Opening new HDF5 file for grid export: ", data_file%name
-      data_file%type = 2
-      data_file%status = 0
-    end if
-
-    select case (data_file%type)
-      case (2)
+    if (grid%export == 'hdf5') then
+      ! this is copied from labeled_storage (hardcoded type and status);
+      ! todo: check what file%status == -1 means ('never used' = 'file not exists'?)
+      data_file%name = grid%file_out
+      data_file%status = -1
+      if (data_file%status == -1) then
+        write(*,*) " Opening new HDF5 file for grid export: ", data_file%name
+        data_file%type = 2
+        data_file%status = 0
         call write_grid_to_checkpoint(data_file, grid)
-      case default
-        call visual_quit('programming error in store_grid; unsupported file type')
-    end select
+      end if
+    else if (grid%export == 'txt' .or. grid%export == 'csv') then
+      call write_grid_to_txt_storage(grid)
+    else
+      call visual_quit('Unsupported format for grid export.')
+    end if
 
   end subroutine
 
 
 ! -----------------------------------------------------------------------------
-  subroutine store_data(grid, grid_function)
+  subroutine store_data(grid, grid_function, mol)
     type(grid_t), intent(in):: grid
     type(grid_function_t), intent(in):: grid_function
+    type(mol_t), intent(in):: mol
     type(file_info_t):: data_file
     integer::i
     character(len=:), allocatable:: fmt
@@ -59,21 +60,27 @@ contains
     ! - check what file%status == -1 means ('never used' = 'file not exists'?)
     !   now - hardcoded (after labeled_storage)
 
-    data_file%name = grid_function%file_out
-    data_file%status = -1
-    if (data_file%status == -1) then
-      write(*,*) " Opening new HDF5 file for grid function export: ", data_file%name
-      data_file%type = 2
-      data_file%status = 0
-    end if
-
-    select case (data_file%type)
-      case (2)
+    if (grid_function%export == 'hdf5') then
+      ! this is copied from labeled_storage (hardcoded type and status);
+      ! todo: check what file%status == -1 means ('never used' = 'file not exists'?)
+      data_file%name = grid_function%file_out
+      data_file%status = -1
+      if (data_file%status == -1) then
+        write(*,*) " Opening new HDF5 file for grid function export: ", data_file%name
+        data_file%type = 2
+        data_file%status = 0
         call write_grid_to_checkpoint(data_file, grid)
         call write_grid_function_to_checkpoint(data_file, grid_function)
-      case default
-        call visual_quit('programming error in store_data; unsupported file type')
-    end select
+      end if
+    else if (grid_function%export == 'txt' .or. grid_function%export == 'csv') then
+      write(*,*) " Opening new text file for grid function export: ", data_file%name
+      call write_grid_function_to_txt_storage(grid, grid_function)
+    else if (grid_function%export == 'cube') then
+      write(*,*) " Opening new cube file for grid function export: ", data_file%name
+      call write_grid_function_to_cube(grid, grid_function, mol)
+    else
+      call visual_quit('Unsupported format for grid function export.')
+    end if
 
 !   test
     !fmt = '(*(es18.8e3, :))'
