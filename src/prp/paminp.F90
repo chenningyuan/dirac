@@ -46,7 +46,7 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 11, NTABLE = 44)
+      PARAMETER (NDIR = 11, NTABLE = 45)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -94,7 +94,9 @@
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
 !                    41        42        43        44
-     &             '.RDCCDM','.PVCSR ','.HDF5IO','xXXXXXX' /
+     &             '.RDCCDM','.PVCSR ','.HDF5IO','.PVCEFG',             &
+!                    45
+     &             'xXXXXXX' /
 !
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -127,6 +129,7 @@
       PVC_SHIELD   = .FALSE.
       PVC_SPINSPIN = .FALSE.
       PVC_SPINRO   = .FALSE.
+      PVC_EFG      = .FALSE.
       SPNSPN       = .FALSE.
       EFG          = .FALSE.
       EFN          = .FALSE.
@@ -487,6 +490,12 @@
             HDF5IO = .TRUE.
             GOTO 100
   144    CONTINUE
+!&&&& PV contribution to EFG
+            DOXLR      = .TRUE.
+            PVC_EFG = .TRUE.
+            IF(NBSYM .GT. 1) CALL QUIT('.PVCEFG only for C1 symmetry')
+            GOTO 100
+  145    CONTINUE
 !&&&& xXXXXXX
             GOTO 100
 !
