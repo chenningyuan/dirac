@@ -491,8 +491,7 @@ use num_grid_cfg
       case (2)
         call generate_grid_radial(grid)
       case default
-        write (errmsg, *) 'ERROR: generation of grids other than ',&
-                          '3d-rectilinear or radial is not implemented'
+        write (errmsg, *) 'ERROR (generate_grid_points): unsupported grid type.'
         call visual_quit(errmsg)
     end select
   end subroutine
