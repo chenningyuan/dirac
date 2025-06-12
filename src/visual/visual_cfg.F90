@@ -78,8 +78,9 @@ contains
           end do
           deallocate(chvalues)
         else
-          write(*, *) 'three values are expected. stop.'
-          stop
+          call str2flt(val, s, stat)
+          grid%spacing(1:3) = s
+          grid%spacing_known(1:3) = .true.
         end if
       case ('input')
         if (lowercase(val) == 'create') then
