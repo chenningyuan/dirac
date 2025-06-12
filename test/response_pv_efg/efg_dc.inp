@@ -1,0 +1,26 @@
+**DIRAC                                                                                             
+.TITLE                                                                                              
+ PVC to EFG
+.WAVE FUNCTION
+.PROPERTIES
+**INTEGRALS
+.SELECT
+ 2
+ 1
+ 3
+**GENERAL
+.CODATA
+ CODATA18
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF
+.ERGCNV
+5.0E-9
+**PROPERTIES                                                                                        
+.PVC
+.PVCEFG
+.ABUNDANCIES
+ 0.0001
+.PRINT
+  1
+*END OF

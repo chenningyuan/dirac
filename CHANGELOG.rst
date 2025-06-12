@@ -6,8 +6,17 @@
 25.1
 -------
 
+New features:
+
+- Calculation of Parity-Violating EFG Tensors. Activated with ".PVCEFG"
+   - Contributor: Juan J. Aucar.
+   - Reference: `Juan J. Aucar and Alejandro F. Maldonado, Parity Violation Effects on the Electric Field Gradient, Phys. Chem. Chem. Phys. 27, 7594 (2025) <https://doi.org/10.1039/D4CP04840G>`__
+   - Manual: PVCEFG `<https://diracprogram.org/doc/release-25/manual/properties.html#pvcefg>`__
+
 - Bugfixes
    - numerical molecular gradient for open-shell DFT was not working (H. J. Aa. Jensen)
+
+-----------------------------------------------------------------------------------------------------
 
 25.0
 --------
