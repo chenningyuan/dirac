@@ -211,6 +211,7 @@ contains
 !
         grid%typ = 1
         call str2int(trim(user_input_lines(3)), np, stat)
+        grid%nr_points(1) = np     ! arbitrary assignment
         grid%nr_points_total = np
         allocate(chvalues(grid%ndim))
         ! line extents: arbitrary assignment to grid%extents(0:1,i)
@@ -226,6 +227,7 @@ contains
           call str2flt(trim(chvalues(i)), grid%extents(1,i), stat)
         end do
         deallocate(chvalues)
+        grid%nr_points_known(1) = .true.
         grid%nr_points_total_known = .true.
         grid%extents_known=.true.
         grid%origin_known=.true.
