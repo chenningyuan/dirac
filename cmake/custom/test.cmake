@@ -120,6 +120,7 @@ dirac_test(ffpt_dipmom_polariz_relcc "medium;cc" "")
 # Labeled as short
 dirac_test(response_pv_nsr "short;pvc;response" "")
 dirac_test(response_pv_nmr "short;pvc;response" "")
+dirac_test(response_pv_efg "short;pvc;response" "")
 dirac_test(spinrot "short;response" "")
 dirac_test(e_edm_finite_field_fscc "short;fscc" "")
 dirac_test(fscc_finite-field "short;fscc" "")
