@@ -175,6 +175,9 @@ contains
         case (".minholeras1")
             call read_an_integer(unit_num, ".minholeras1", 0, input_intmax, min_hole_ras1)
 
+        case (".minelecras3")
+            call read_an_integer(unit_num, ".minelecras3", 0, input_intmax, min_elec_ras3)
+
         case (".nocc")
             if (inversion) call err_ivo_input
             call read_an_integer(unit_num, ".nocc", 0, input_intmax, occ_mo_num(1))
@@ -697,7 +700,7 @@ contains
 
         allocate (max_selectroot_list(max_totsym))
         max_selectroot_list = tmp_max_selectroots(1:max_totsym) ! Copy the tmp_max_selectroots to max_selectroot_list
- 
+
     contains
         subroutine read_ciroots_line
             implicit none
@@ -725,7 +728,7 @@ contains
                     print '(2(a,i0),2a)', "ERROR: .caspt2_ciroots max number of roots is ", root_max, &
                              " but selected ", idx_filled - 1, " roots. input:", input
                 end if
-                call stop_with_errorcode(1)                
+                call stop_with_errorcode(1)
             end if
             if (idx_filled < 2) then
                 if (rank == 0) then
@@ -1013,7 +1016,7 @@ contains
     subroutine check_ras_is_valid
         use module_global_variables
         implicit none
-        integer :: idx
+        integer :: idx, max_elec_in_ras
         logical :: electron_filled(ninact + nact + nsec)
 
         ! min_hole_ras1 can't be larger than ras1_size
@@ -1029,6 +1032,45 @@ contains
             end if
         end if
 
+        ! min_elec_ras3 can't be larger than ras3_size
+        if (min_elec_ras3 > ras3_size) then
+            ! ERROR: The number of minimum electron of ras3 is larger than the number of ras3, It is unavailable.
+            if (rank == 0) then
+                print *, "ERROR: The number of minelecras3 is larger than the number of ras3."
+                print *, "The number of ras3:", ras3_size
+                print *, "The number of minelecras3:", min_elec_ras3
+                print *, "The number of minelecras3 you specified is impossible."
+                print *, "Exit the program."
+                call stop_with_errorcode(1)
+            end if
+        end if
+
+        ! min_elec_ras3 can't be larger than nelec
+        if (min_elec_ras3 > nelec) then
+            ! ERROR: The number of minimum electron of ras3 is larger than the number of active electron, It is unavailable.
+            if (rank == 0) then
+                print *, "ERROR: The number of minelecras3 is larger than the number of active electron."
+                print *, "The number of active electron:", nelec
+                print *, "The number of minelecras3:", min_elec_ras3
+                print *, "The number of minelecras3 you specified is impossible."
+                print *, "Exit the program."
+                call stop_with_errorcode(1)
+            end if
+        end if
+
+        ! min_elec_ras3 can't be larger than ras3_max_elec
+        if (min_elec_ras3 > ras3_max_elec) then
+            ! ERROR: The number of minelecras3 is larger than the number of ras3_max_elec, It is unavailable.
+            if (rank == 0) then
+                print *, "ERROR: The number of minelecras3 is larger than ras3_max_elec."
+                print *, "The number of ras3_max_elec:", ras3_max_elec
+                print *, "The number of minelecras3:", min_elec_ras3
+                print *, "The number of minelecras3 you specified is impossible."
+                print *, "Exit the program."
+                call stop_with_errorcode(1)
+            end if
+        end if
+
         ! ras3_max_elec can't be larager than ras3_size
         if (ras3_max_elec > ras3_size) then
             ! ERROR: The number of max electron of ras3 is larger than the number of ras3, It is unavailable.
@@ -1037,6 +1079,22 @@ contains
                 print *, "The number of ras3:", ras3_size
                 print *, "The max number of allowed electron in ras3:", ras3_max_elec
                 print *, "The max number of allowed electron in ras3 you specified is impossible."
+                print *, "Exit the program."
+                call stop_with_errorcode(1)
+            end if
+        end if
+
+
+        max_elec_in_ras = (ras1_size - min_hole_ras1) + ras2_size + ras3_max_elec
+        if (max_elec_in_ras < nelec) then
+            if (rank == 0) then
+                print *, "ERROR: The number of electrons you specified is larger than the number of electrons allowed in RAS."
+                print *, "The number of electrons:", nelec
+                print *, "The max number of allowed electron in ras1:", ras1_size - min_hole_ras1
+                print *, "The max number of allowed electron in ras2:", ras2_size
+                print *, "The max number of allowed electron in ras3:", ras3_max_elec
+                print *, "RAS allowed electrons:", max_elec_in_ras
+                print *, "The number of electrons you specified is impossible."
                 print *, "Exit the program."
                 call stop_with_errorcode(1)
             end if
