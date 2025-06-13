@@ -59,8 +59,8 @@ contains
           end do
           deallocate(chvalues)
         else
-          call str2int(temp, grid%nr_points(1), stat)
-          grid%nr_points_known(1) = .true.
+          write(*,*) 'Input error in grid specification (npoints=[Nx,Ny,Nz]).'
+          stop
         end if
       case ('spacing')
         temp = val
@@ -103,10 +103,8 @@ contains
           grid%input = -5
         else if (lowercase(val) == 'radial') then
           grid%input = 6
-        else if (lowercase(val) == 'radial_int') then
-          grid%input = -6
         else
-          write(*, *) 'wrong argument to grid%input'
+          write(*, *) 'Input error. Wrong argument to grid%input'
           stop
         end if
       case ('typ')

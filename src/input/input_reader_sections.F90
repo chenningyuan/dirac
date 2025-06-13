@@ -231,10 +231,6 @@
          call kw_read(word, rs_input%print_level)
       end if
 
-      if (kw_matches(word, '.PRINTU')) then
-         call kw_read(word, rs_input%print_unit)
-      end if
-
       ! modify physics
 
       if (kw_matches(word, '.CVALUE')) then
@@ -444,29 +440,6 @@
            end do
          end if
       end if
-
-      !if (kw_matches(word, '.RADINT')) then
-      !   if (.not. rs_input%allocated_grids()) then
-      !     write(*,*) 'Error: ".RADINT" requires prior specification of ".GRIDS". Stop.'
-      !     stop
-      !   else
-      !     do i = 1, rs_input%nr_grids
-      !       if (rs_input%grids(i)%input ==-6) then
-      !         nr_lines = 3
-      !         allocate(word_array(nr_lines))
-      !         do j = 1, nr_lines
-      !            read(get_file_unit(), '(a)') line
-      !            if (line(1:1) == '!' .or. line(1:1) == '#') cycle
-      !            word_array(j) = line
-      !         end do
-      !         call grid_user_input_cfg(rs_input%grids(i), 'radial_int', word_array)
-      !         deallocate(word_array)
-      !         call verify_grid_input_cfg(rs_input%grids(i))
-      !       end if
-      !     end do
-      !   end if
-      !end if
-
 
       ! grid function specification
 
