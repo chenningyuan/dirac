@@ -6,19 +6,33 @@ include(GNUInstallDirs)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} CACHE PATH "Set the library build directory")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} CACHE PATH "Set the archive build directory")
-set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Set the Fortran module build directory")
+
+# Radovan: I had to comment this out - this did not really work together with library included as git subtree
+#          we need to look at this later again, now just trying to make this compile and link
+# set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Set the Fortran module build directory")
+
+# see https://cmake.org/cmake/help/latest/policy/CMP0077.html
+cmake_policy(SET CMP0077 NEW)
 
 option(ENABLE_PDE "Enable PDE" OFF)
 option(ENABLE_MPI "Enable MPI" OFF)
 option(USE_MPIF "Use mpif.h instead of mpi.mod" OFF)
 option(ENABLE_COVERAGE "Enable code coverage (requires GCC)" OFF)
 
-set(PElib_SOURCES
-    ${PROJECT_SOURCE_DIR}/src/pelib_mpi.F90
+add_library(PElib)
+
+target_sources(
+  PElib
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/pelib.F90
     ${PROJECT_SOURCE_DIR}/src/pelib_precision.F90
-    ${PROJECT_SOURCE_DIR}/src/pelib_constants.F90
     ${PROJECT_SOURCE_DIR}/src/pelib_options.F90
+    ${PROJECT_SOURCE_DIR}/src/pelib_constants.F90
+    ${PROJECT_SOURCE_DIR}/src/interfaces/pelib_integral_interfaces.F90
+    ${PROJECT_SOURCE_DIR}/src/interfaces/pelib_blas_interfaces.F90
     ${PROJECT_SOURCE_DIR}/src/pelib_utils.F90
+    ${PROJECT_SOURCE_DIR}/src/pelib_mpi.F90
+    ${PROJECT_SOURCE_DIR}/src/pelib_options.F90
     ${PROJECT_SOURCE_DIR}/src/pelib_pde.F90
     ${PROJECT_SOURCE_DIR}/src/pelib_operators.F90
     ${PROJECT_SOURCE_DIR}/src/pelib_multipole_tools.F90
@@ -27,20 +41,14 @@ set(PElib_SOURCES
     ${PROJECT_SOURCE_DIR}/src/pelib_cavity_generators.F90
     ${PROJECT_SOURCE_DIR}/src/pelib_potential_derivatives.F90
     ${PROJECT_SOURCE_DIR}/src/pelib_induced_moments.F90
-    ${PROJECT_SOURCE_DIR}/src/interfaces/pelib_blas_interfaces.F90
     ${PROJECT_SOURCE_DIR}/src/interfaces/pelib_lapack_interfaces.F90
-    ${PROJECT_SOURCE_DIR}/src/interfaces/pelib_integral_interfaces.F90
     ${PROJECT_SOURCE_DIR}/src/fmm/fmm.F90
     ${PROJECT_SOURCE_DIR}/src/fmm/tensors.F90
     ${PROJECT_SOURCE_DIR}/src/fmm/tensors_recursive.F90
     ${PROJECT_SOURCE_DIR}/src/fmm/tensors_damped_erf.F90
     ${PROJECT_SOURCE_DIR}/src/fmm/tensors_damped_thole.F90
     ${PROJECT_SOURCE_DIR}/src/fmm/tensors_damped_amoeba.F90
-    ${PROJECT_SOURCE_DIR}/src/pelib_options.F90
-    ${PROJECT_SOURCE_DIR}/src/pelib.F90
-    )
-
-add_library(PElib ${PElib_SOURCES})
+  )
 
 set(REAL_PRECISION "REAL64" CACHE STRING "Choose precision of reals.")
 set_property(CACHE REAL_PRECISION PROPERTY STRINGS "REAL32" "REAL64" "REAL128")
@@ -190,7 +198,7 @@ endif()
 
 if(DEFINED HOST_PROGRAM)
     if("${INTEGRAL_LIBRARY}" STREQUAL "GEN1INT")
-        target_compile_definitions(PElib PRIVATE GEN1INT_INTEGRALS)
+        target_compile_definitions(PElib PUBLIC GEN1INT_INTEGRALS)
         message(STATUS "Using Gen1Int integral library.")
     else()
         message(FATAL_ERROR "No integral library enabled. Options: GEN1INT")
