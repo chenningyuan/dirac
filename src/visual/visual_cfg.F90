@@ -32,24 +32,25 @@ contains
     character(len=len_trim(val))::temp
     integer::stat, np
     real(8)::s
-    integer::nr_words, i
+    integer::nr_words, ndim, i
     character(len=10),allocatable::chvalues(:)
     character*(:),allocatable:: errmsg
+
+    ndim = grid%get_ndim()
 
     select case (key)
       case ('id')
         call str2int(val, grid%id, stat)
-      case ('ndim')
-        if (val /= '3') then
-        !fixme
-        stop
-        end if
       case ('npoints')
         temp = val
         call trim_ch(temp, val,  '[')
         call trim_ch(temp, temp, ']')
         if (index(val, ',') > 0) then
           nr_words = word_count(temp, ',')
+          if (nr_words .ne. ndim) then
+            write(*,*) 'Input error in grid specification (expects: npoints=[Nx,Ny,Nz]).'
+            stop
+          end if
           allocate(chvalues(nr_words))
           call split_string(temp, nr_words, chvalues, separator=',')
           do i = 1, nr_words
@@ -59,7 +60,7 @@ contains
           end do
           deallocate(chvalues)
         else
-          write(*,*) 'Input error in grid specification (npoints=[Nx,Ny,Nz]).'
+          write(*,*) 'Input error in grid specification (expects: npoints=[Nx,Ny,Nz]).'
           stop
         end if
       case ('spacing')
@@ -68,6 +69,10 @@ contains
         call trim_ch(temp, temp, ']')
         if (index(val, ',') > 0) then
           nr_words = word_count(temp, ',')
+          if (nr_words .ne. ndim) then
+            write(*,*) 'Input error in grid specification (expects: spacing=[Sx,Sy,Sz] or spacing=S).'
+            stop
+          end if
           allocate(chvalues(nr_words))
           call split_string(temp, nr_words, chvalues, separator=',')
           do i = 1, nr_words
@@ -79,8 +84,8 @@ contains
           deallocate(chvalues)
         else
           call str2flt(val, s, stat)
-          grid%spacing(1:3) = s
-          grid%spacing_known(1:3) = .true.
+          grid%spacing(1:ndim) = s
+          grid%spacing_known(1:ndim) = .true.
         end if
       case ('input')
         if (lowercase(val) == 'create') then
@@ -169,9 +174,11 @@ contains
     character(*), dimension(:), intent(in):: user_input_lines
     integer::stat, np
     real(8)::s, v(3), w(3)
-    integer::nr_words, i,j
+    integer::nr_words, ndim, i,j
     character(len=len_trim(user_input_lines(1))),allocatable::chvalues(:)
     character*(:),allocatable:: errmsg
+
+    ndim = grid%get_ndim()
 
     select case (domain)
       case ('list')
@@ -183,12 +190,12 @@ contains
 !       ...
 !
         grid%nr_points_total = size(user_input_lines)
-        allocate(grid%points(grid%ndim, grid%nr_points_total))
+        allocate(grid%points(ndim, grid%nr_points_total))
         grid%points = 0.0d0
         do i = 1, grid%nr_points_total
-          allocate(chvalues(grid%ndim))
-          call split_string(user_input_lines(i),grid%ndim,chvalues,separator=',')
-          do j = 1, grid%ndim
+          allocate(chvalues(ndim))
+          call split_string(user_input_lines(i),ndim,chvalues,separator=',')
+          do j = 1, ndim
             call str2flt(trim(chvalues(j)), s, stat)
 !           in this case, we fill grid%points array directly here;
             grid%points(j,i) = s
@@ -211,17 +218,17 @@ contains
         call str2int(trim(user_input_lines(3)), np, stat)
         grid%nr_points(1) = np     ! arbitrary assignment
         grid%nr_points_total = np
-        allocate(chvalues(grid%ndim))
+        allocate(chvalues(ndim))
         ! line extents: arbitrary assignment to grid%extents(0:1,i)
         ! line start
-        call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
-        do i = 1, grid%ndim
+        call split_string(user_input_lines(1),ndim,chvalues,separator=',')
+        do i = 1, ndim
           call str2flt(trim(chvalues(i)), grid%extents(0,i), stat)
           grid%origin(i) = grid%extents(0,i)
         end do
         ! line end
-        call split_string(user_input_lines(2),grid%ndim,chvalues,separator=',')
-        do i = 1, grid%ndim
+        call split_string(user_input_lines(2),ndim,chvalues,separator=',')
+        do i = 1, ndim
           call str2flt(trim(chvalues(i)), grid%extents(1,i), stat)
         end do
         deallocate(chvalues)
@@ -250,22 +257,22 @@ contains
         ! this is a 2d plane in a 3d world:
         grid%nr_points(3) = 1
         grid%nr_points_known(3) = .true.
-        allocate(chvalues(grid%ndim))
+        allocate(chvalues(ndim))
         ! line extents: arbitrary assignment to grid%extents(0:1,i)
         ! line start
-        call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
-        do i = 1, grid%ndim
+        call split_string(user_input_lines(1),ndim,chvalues,separator=',')
+        do i = 1, ndim
           call str2flt(trim(chvalues(i)), grid%extents(0,i), stat)
           grid%origin(i) = grid%extents(0,i)
         end do
         ! line end
-        call split_string(user_input_lines(2),grid%ndim,chvalues,separator=',')
-        do i = 1, grid%ndim
+        call split_string(user_input_lines(2),ndim,chvalues,separator=',')
+        do i = 1, ndim
           call str2flt(trim(chvalues(i)), grid%extents(1,i), stat)
         end do
         ! line extents: arbitrary assignment to grid%extents(2,i)
-        call split_string(user_input_lines(4),grid%ndim,chvalues,separator=',')
-        do i = 1, grid%ndim
+        call split_string(user_input_lines(4),ndim,chvalues,separator=',')
+        do i = 1, ndim
           call str2flt(trim(chvalues(i)), grid%extents(2,i), stat)
         end do
         deallocate(chvalues)
@@ -299,22 +306,22 @@ contains
         grid%nr_points_known(3) = .true.
         call str2int(trim(user_input_lines(6)), np, stat)
         grid%integration_order_2d = np
-        allocate(chvalues(grid%ndim))
+        allocate(chvalues(ndim))
         ! line extents: arbitrary assignment to grid%extents(0:1,i)
         ! line start
-        call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
-        do i = 1, grid%ndim
+        call split_string(user_input_lines(1),ndim,chvalues,separator=',')
+        do i = 1, ndim
           call str2flt(trim(chvalues(i)), grid%extents(0,i), stat)
           grid%origin(i) = grid%extents(0,i)
         end do
         ! line end
-        call split_string(user_input_lines(2),grid%ndim,chvalues,separator=',')
-        do i = 1, grid%ndim
+        call split_string(user_input_lines(2),ndim,chvalues,separator=',')
+        do i = 1, ndim
           call str2flt(trim(chvalues(i)), grid%extents(1,i), stat)
         end do
         ! line extents: arbitrary assignment to grid%extents(2,i)
-        call split_string(user_input_lines(4),grid%ndim,chvalues,separator=',')
-        do i = 1, grid%ndim
+        call split_string(user_input_lines(4),ndim,chvalues,separator=',')
+        do i = 1, ndim
           call str2flt(trim(chvalues(i)), grid%extents(2,i), stat)
         end do
         deallocate(chvalues)
@@ -333,10 +340,10 @@ contains
 !       Nx, Ny, Nz  <--- number of points in x/y/z directions
 !
         grid%typ = 1
-        allocate(chvalues(grid%ndim))
-        call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
+        allocate(chvalues(ndim))
+        call split_string(user_input_lines(1),ndim,chvalues,separator=',')
         grid%nr_points_total = 1
-        do i = 1, grid%ndim
+        do i = 1, ndim
           call str2int(trim(chvalues(i)), np, stat)
           grid%nr_points(i) = np
           grid%nr_points_known(i) = .true.
@@ -355,9 +362,9 @@ contains
 !       10             <--- number of steps
 !
         grid%typ = 2
-        allocate(chvalues(grid%ndim))
-        call split_string(user_input_lines(1),grid%ndim,chvalues,separator=',')
-        do i = 1, grid%ndim
+        allocate(chvalues(ndim))
+        call split_string(user_input_lines(1),ndim,chvalues,separator=',')
+        do i = 1, ndim
           call str2flt(trim(chvalues(i)), grid%origin(i), stat)
         end do
         call str2flt(trim(user_input_lines(2)), grid%radial_length, stat)
@@ -375,32 +382,32 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine verify_grid_input_cfg(grid)
     type(grid_t),intent(inout)::grid
-    integer::i
+    integer::ndim, i
     character*(:),allocatable:: errmsg
 
     ! catch errors
 
+    ndim = grid%get_ndim()
+
     if (grid%input == 1) then
       write(*, *) 'VISUAL: Grid information will be read from grid file'
       write(*, *) 'WARNING: These options will be ignored (if present):'//&
-                  'ndim, npoints, spacing, margin.'
+                  ' npoints, spacing, margin.'
 
     else if (grid%input == -1) then
       write(*, *) 'VISUAL: Grid information will be read from numerical_grid file'
       write(*, *) 'WARNING: These options will be ignored (if present):'//&
-                  ' ndim, npoints, spacing, margin, file_inp.'
+                  ' npoints, spacing, margin, file_inp.'
+!     in this case, we are hardcoding to 'numerical_grid'
       grid%file_inp = 'numerical_grid'
 
     else if (grid%input == 0) then
       write(*, *) 'VISUAL: 3d grid will be created according to .GRID options'
-      if (grid%ndim == 0) then
-        errmsg='Input error: grid "ndim" information is missing.\n'
-      end if
-      do i = 1, 3
+      do i = 1, ndim
         if (grid%nr_points(i) ==0 .and. grid%spacing(i) ==0) then
-          errmsg=errmsg//'Grid "npoints" or "spacing" information is missing.\n'
+          errmsg=errmsg//'Insufficient information for grid generation: specify "npoints" or "spacing".\n'
         else if (grid%nr_points(i) /=0 .and. grid%spacing(i) /=0) then
-          errmsg=errmsg//'Grid mutually exclusive options: "npoints" and "spacing".\n'
+          errmsg=errmsg//'Grid specification: mutually exclusive options: "npoints" and "spacing".\n'
         end if
       end do
 
@@ -415,7 +422,12 @@ contains
     if (allocated(grid%export)) then
       if (.not. allocated(grid%file_out)) then
         errmsg=errmsg//'Grid export requested, but file for export not specified.'
-        stop
+      end if
+    end if
+
+    if (allocated(grid%import)) then
+      if (.not. allocated(grid%file_inp)) then
+        errmsg=errmsg//'Grid import requested, but file for import not specified.'
       end if
     end if
 

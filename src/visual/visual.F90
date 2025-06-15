@@ -158,7 +158,7 @@ contains
       if (is_parallel()) call synchronize_grid_data(rs_input%grids(ig))
 #endif
 
-      g_ndim  = rs_input%grids(ig)%ndim
+      g_ndim  = rs_input%grids(ig)%get_ndim()
       npoints = rs_input%grids(ig)%nr_points_total
       if (rs_input%grids(ig)%typ == 2) &
         npoints_radial=rs_input%grids(ig)%radial_nr_steps

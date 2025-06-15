@@ -69,8 +69,8 @@ module visual_datatypes
     !   in input (margin and spacing) is originally in Angstroms;
     !   then, everything in VISUAL is converted to a.u. (in grid_input_cfg) and stored in a.u.
     private
+    integer, public:: ndim = 3 ! grid dimensionality; all grids are embedded in 3D space
     integer, public:: id = 0
-    integer, public:: ndim = 3                         ! grid dimensionality; all grids are embedded in 3D space
     integer, public:: nr_points_total = 0
     integer, public:: nr_points(1:3) = 0
     real(8), public:: origin(1:3) = 0.0d0              ! grid origin [a.u.]
@@ -85,6 +85,7 @@ module visual_datatypes
     integer, public:: typ = 0                          ! 0 = unknown, 1 = rectilinear uniform, 2 = radial
     real(8), public:: margin = 4.0d0                   ! margin [a.u.] to be added around molecule when creating the grid
     integer, public:: integration_order_2d = 0         ! order of integration in 2d
+    character(len=:), public,allocatable:: import      ! import from file; specify file format: 'hdf5', 'csv', 'txt'
     character(len=:), public,allocatable:: export      ! also export to a separate file; specify file format: 'hdf5', 'csv', 'txt'
     character(len=:), public, allocatable:: file_inp   ! name of a file for grid import
     character(len=:), public, allocatable:: file_out   ! name of a file for grid export
@@ -102,6 +103,8 @@ module visual_datatypes
     procedure, pass, public:: allocated_radial_coord
     procedure, pass, public:: allocated_weights
     procedure, pass, public:: requires_weights
+    !procedure, pass, public:: get_grid_size
+    procedure, pass, public:: get_ndim => get_grid_ndim
     procedure, pass, public:: erase   => erase_grid
     procedure, pass, public:: display => display_grid
     procedure, pass, public:: display_points => display_grid_points
@@ -148,7 +151,7 @@ module visual_datatypes
     procedure, pass, public:: assigned_to_grid
     procedure, pass, public:: allocated_integrated_values
     procedure, pass, public:: allocated_values
-    procedure, pass, public:: get_ndim
+    procedure, pass, public:: get_ndim => get_grid_function_ndim
     procedure, pass, public:: get_npoints
     procedure, pass, public:: should_depend_on_LAOs
     procedure, pass, public:: erase   => erase_grid_function
@@ -276,6 +279,13 @@ contains
   end function
 
 ! ------------------------------------------------------------------------------
+  pure function get_grid_ndim(self)
+    class(grid_t), intent(in):: self
+    integer:: get_grid_ndim
+    get_grid_ndim = self%ndim
+  end function
+
+! ------------------------------------------------------------------------------
   pure function allocated_values(self)
     class(grid_function_t), intent(in):: self
     logical:: allocated_values
@@ -311,10 +321,10 @@ contains
   end function
 
 ! ------------------------------------------------------------------------------
-  pure function get_ndim(self)
+  pure function get_grid_function_ndim(self)
     class(grid_function_t), intent(in):: self
-    integer:: get_ndim
-    get_ndim = 3**(self%tensor_order)
+    integer:: get_grid_function_ndim
+    get_grid_function_ndim = 3**(self%tensor_order)
   end function
 
 ! ------------------------------------------------------------------------------
@@ -381,7 +391,7 @@ contains
     integer, intent(in):: id
     real(8), pointer:: get_coord(:)
 
-    if (id > self%ndim) stop
+    if (id > self%get_ndim()) stop
     if (.not. self%allocated_points()) return
 
     nullify(get_coord)
@@ -394,7 +404,7 @@ contains
     integer, intent(in):: id
     character(len = 7):: get_coord_label
 
-    if (id > self%ndim) stop
+    if (id > self%get_ndim()) stop
     if (.not. self%allocated_points()) return
 
     if (id < 10)  then
@@ -620,7 +630,7 @@ contains
     write(*, *)
     write(*, *) ' VISUAL: grid data on proc' 
     write(*, *) '  id = ', self%id, my_rank_local
-    write(*, *) '  ndim = ', self%ndim, my_rank_local 
+    write(*, *) '  ndim = ', self%get_ndim(), my_rank_local 
     write(*, *) '  nr_points = ', (self%nr_points(i), i=1,3), my_rank_local
     write(*, *) '  nr_points_total = ', self%nr_points_total, my_rank_local
     write(*, *) '  origin [a.u.] = ', (self%origin(i), i=1,3), my_rank_local
@@ -635,6 +645,8 @@ contains
     write(*, *) '  typ = ', self%typ, my_rank_local
     write(*, *) '  margin = ', self%margin, my_rank_local
     write(*, *) '  integration_order_2d = ', self%integration_order_2d, my_rank_local
+    if (allocated(self%import)) &
+      write(*, *) '  import = ', self%import, my_rank_local
     if (allocated(self%export)) &
       write(*, *) '  export = ', self%export, my_rank_local
     if (allocated(self%file_inp)) &
@@ -721,7 +733,7 @@ contains
     write(*, *)
     write(*, *) ' GRID points (grid id, proc):', self%id, my_rank_local
     call print_rs_2d(self%points, &
-                     self%ndim, self%nr_points_total, my_rank_local)
+                     self%get_ndim(), self%nr_points_total, my_rank_local)
   end subroutine
 
 ! ------------------------------------------------------------------------------

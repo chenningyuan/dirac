@@ -37,7 +37,7 @@ contains
 
     npoints = grid%nr_points_total
     npoints_radial = grid%radial_nr_steps
-    g_ndim  = grid%ndim
+    g_ndim  = grid%get_ndim()
     data_file%name = grid%file_out
     data_file%float_format = float_fmt
 
@@ -122,7 +122,7 @@ contains
 
     npoints = grid%nr_points_total
     npoints_radial = grid%radial_nr_steps
-    g_ndim  = grid%ndim
+    g_ndim  = grid%get_ndim()
     gf_ndim = grid_function%get_ndim()
     data_file%name = grid_function%file_out
     data_file%float_format = float_fmt
@@ -258,7 +258,7 @@ contains
 
     npoints = grid%nr_points_total
     npoints_radial = grid%radial_nr_steps
-    g_ndim  = grid%ndim
+    g_ndim  = grid%get_ndim()
     gf_ndim = grid_function%get_ndim()
 
     write(*, *) ''
