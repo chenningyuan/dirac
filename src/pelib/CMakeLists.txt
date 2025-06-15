@@ -8,6 +8,7 @@ else()
 endif()
 
 if(ENABLE_64BIT_INTEGERS)
+  message(FATAL_ERROR "-- PElib currently does not support 64-bit integers. You can disable it with ./setup --pelib=OFF")
   set(INTEGER_PRECISION "INT64")
 else()
   set(INTEGER_PRECISION "INT32")
