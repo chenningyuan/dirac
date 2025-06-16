@@ -3,7 +3,7 @@
 
 star(CASPT2)
 
-Relativistic IVO/CASCI/CASPT2 and IVO/RASCI/RASPT2 module, Ref. :cite:`Masuda2025`,`Ref. :cite:`Abe2006`,Ref. :cite:`Anderson1990`,
+Relativistic IVO/CASCI/CASPT2 and IVO/RASCI/RASPT2 module, Ref. :cite:`Masuda2025`,Ref. :cite:`Abe2006`,Ref. :cite:`Anderson1990`,Ref. :cite:`Huzinaga1970`
 
 | Initial implementation: Minori Abe
 | Parallelisation, DIRAC integration, and RASCI/RASPT2 extension: Kohei Noda
