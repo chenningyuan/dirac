@@ -124,6 +124,8 @@ module visual_datatypes
     integer, public:: lao = 0                               ! 0 = no LAOs, 1 = LAOs (all LAO-contributions)
     integer, public:: lao_skip(1:3) = 0                     ! 0/1 = do not/do skip LAO contributions; ('response', 'direct', 'reorthonormalization')
     character(len=1), public:: lao_comp = ' '               ! temp: 'X', 'Y', 'Z'
+    logical, public:: nics = .false.                        ! NICS-like shift for magnetic property densities
+    real(8), public:: nics_origin(1:3) = 0.0d0              ! NICS-like shift for magnetic property densities
     integer, public:: tensor_order = 0                      ! 0 = a scalar field, 1 = a vector field, 2 = a tensor field of rank 2, etc.
     integer, public:: max_ao_g_order = 0 !legacy
     integer, public:: max_ao_m_order = 0 !legacy
@@ -688,6 +690,8 @@ contains
     write(*, *) '  lao = ', self%lao, my_rank_local
     write(*, *) '  lao_skip = ', self%lao_skip, my_rank_local
     write(*, *) '  lao_comp = ', self%lao_comp, my_rank_local
+    write(*, *) '  nics = ', self%nics, my_rank_local
+    write(*, *) '  nics_origin = ', self%nics_origin, my_rank_local
     write(*, *) '  tensor_order = ', self%tensor_order, my_rank_local
     write(*, *) '  max_ao_g_order = ', self%max_ao_g_order, my_rank_local
     write(*, *) '  max_ao_m_order = ', self%max_ao_m_order, my_rank_local

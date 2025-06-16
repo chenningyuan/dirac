@@ -599,6 +599,28 @@ contains
           write(*,*) 'Input error. "lao_skip" expects an array of integer values.'
           stop
         end if
+      case ('nics')
+        temp = val
+        call trim_ch(temp, val,  '[')
+        call trim_ch(temp, temp, ']')
+        if (index(val, ',') > 0) then
+          nr_words = word_count(temp, ',')
+          if (nr_words .ne. 3) then
+            write(*,*) 'Input error in grid function specification (expects: nics=[x,y,z]).'
+            stop
+          end if
+          allocate(chvalues(nr_words))
+          call split_string(temp, nr_words, chvalues, separator=',')
+          do i = 1, nr_words
+            call str2flt(trim(chvalues(i)), s, stat)
+            grid_function%nics_origin(i) = s
+          end do
+          grid_function%nics = .true.
+          deallocate(chvalues)
+        else
+          write(*,*) 'Input error in grid function specification (expects: nics=[x,y,z]).'
+          stop
+        end if
       case ('purpose')
         if (lowercase(val) == 'visualization') then
           grid_function%purpose = 0

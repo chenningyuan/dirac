@@ -897,6 +897,8 @@ contains
     call interface_mpi_bcast(grid_function%rspvec_id,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%lao,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%lao_skip,3,irank_master,global_communicator)
+    call interface_mpi_bcast_l0(grid_function%nics,1,irank_master,global_communicator)
+    call interface_mpi_bcast(grid_function%nics_origin,3,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%tensor_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_g_order,1,irank_master,global_communicator)
     call interface_mpi_bcast(grid_function%max_ao_m_order,1,irank_master,global_communicator)

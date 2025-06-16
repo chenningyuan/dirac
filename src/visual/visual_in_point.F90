@@ -518,16 +518,15 @@ contains
 !       we either calculate the NMR shielding of a given nucleus
 !       or a "NICS" value in a given point
 !       (for a true NICS value multiply by "-1")
-        !if (visual_cfg_nics) then
-           !FIXME
-           !rx = px-visual_cfg_nics_origin(1)
-           !ry = py-visual_cfg_nics_origin(2)
-           !rz = pz-visual_cfg_nics_origin(3)
-        !else
+        if (grid_function%nics) then
+           rx = px-grid_function%nics_origin(1)
+           ry = py-grid_function%nics_origin(2)
+           rz = pz-grid_function%nics_origin(3)
+        else
            rx = px-mol%geometry(1, grid_function%nuc)
            ry = py-mol%geometry(2, grid_function%nuc)
            rz = pz-mol%geometry(3, grid_function%nuc)
-        !end if
+        end if
 
         f = -1.0d0/((rx*rx+ry*ry+rz*rz)**1.5d0)
 
@@ -1033,16 +1032,15 @@ contains
 !       we either calculate the NMR shielding of a given nucleus
 !       or a "NICS" value in a given point
 !       (for a true NICS value multiply by "-1")
-        !if (visual_cfg_nics) then
-           !FIXME
-           !rx = px-visual_cfg_nics_origin(1)
-           !ry = py-visual_cfg_nics_origin(2)
-           !rz = pz-visual_cfg_nics_origin(3)
-        !else
+        if (grid_function%nics) then
+           rx = px-grid_function%nics_origin(1)
+           ry = py-grid_function%nics_origin(2)
+           rz = pz-grid_function%nics_origin(3)
+        else
            rx = px-mol%geometry(1, grid_function%nuc)
            ry = py-mol%geometry(2, grid_function%nuc)
            rz = pz-mol%geometry(3, grid_function%nuc)
-        !end if
+        end if
 
         f = -1.0d0/((rx*rx+ry*ry+rz*rz)**1.5d0)
 
