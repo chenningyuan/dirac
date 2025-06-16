@@ -225,6 +225,9 @@ dirac_test(visual_3d_spinden_dc_dft "medium;visual" "")
 #dirac_test(visual_tutorial_radial_distributions "short;visual" "")
 #dirac_test(visual_3d_bed_dc_dft "short;visual" "")
 #dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao_micd_specific "short;visual;lao" "")
+# tutorials:
+dirac_test(visual_tutorial_overview "short;visual" "")
+#dirac_test(visual_tutorial_radial_distributions "short;visual" "")
 # Related tests:
 ########################
 #gosia: these tests run now in serial mode (WIP):

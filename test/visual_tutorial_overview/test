@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from pathlib import Path
+
+#
+# prepare environment, define functions
+#
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from runtest_rs import CompareHDF5
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final grid_function values (grid_function%id=',
+      num_lines = 2,
+      rel_tolerance = 1.0e-6)
+#
+# run tests
+#
+
+test.run(['dc.inp'], ['h2o.xyz'], args='--outcmo')
+test.run(['vis.inp'], ['h2o.xyz'], f, args='--incmo')
+
