@@ -196,8 +196,17 @@ subroutine print_title(program_name)
    if (rank == 0) then
       call TITLER(title, "*", title_length)
       print '(A)', "Written by: Kohei Noda, Minori Abe, Sumika Iwamuro & Yasuto Masuda"
-      print '(A)', "Reference: Y. Masuda, K. Noda, S. Iwamuro, M. Hada, N. Nakatani, M. Abe. &
+      print '(A)', "References:"
+      print '(A)', "Y. Masuda, K. Noda, S. Iwamuro, M. Hada, N. Nakatani, M. Abe. &
                    J. Chem. Theory Comput. 2025, 21, 3, 1249–1258"
+      print '(A)', "M. Abe, T. Nakajima, K. Hirao. J. Chem. Phys. 2006, 125, 234110"
+      if (program_name == "IVO") then
+         print '(A)', "S. Huzinaga, and C. Arnau, Virtual Orbitals in Hartree-Fock Theory. &
+                     Phys. Rev. A. 1970, 1, 1285-1288"
+      else
+         print '(A)', "K. Andersson, P. A. Malmqvist, B. O. Roos, A. J. Sadlej, K. Wolinski. &
+                     J. Phys. Chem. 1990, 94, 14, 5483–5488"
+      end if
       print '(A)', ""
    end if
 end subroutine print_title
