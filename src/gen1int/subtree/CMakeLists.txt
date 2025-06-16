@@ -17,7 +17,8 @@ SET(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-SET(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/modules)
+# Radovan: I had to comment this out - this does not make sense in a git subtree scenario
+# SET(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/modules)
 
 # Header files
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include)
