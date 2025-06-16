@@ -76,12 +76,6 @@ if(ENABLE_GEN1INT)
     add_dependencies(dirac gen1int)
 endif()
 
-if(ENABLE_PELIB)
-    add_dependencies(pelib gen1int_interface)
-    add_dependencies(dirac pelib)
-    add_dependencies(dirac pelib_interface)
-endif()
-
 if(ENABLE_RELCCSD_STANDALONE)
     if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         set_source_files_properties(src/relccsd/ccmain.F PROPERTIES COMPILE_FLAGS "-qfixed")

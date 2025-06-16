@@ -70,7 +70,6 @@ modules:
     - 'custom/exatensor.cmake'
     - 'custom/pcm.cmake'
     - 'custom/gen1int.cmake'
-    - 'custom/pelib.cmake'
 - subdirectories:
   - source: '%(url_root)modules/src.cmake'
 - custom:
