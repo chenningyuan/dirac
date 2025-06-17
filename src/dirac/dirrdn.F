@@ -5806,7 +5806,6 @@ C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
 !             obtained by Miro's old BSS/X2C module
             IOTC       = .TRUE.
             BSS        = .TRUE.
-            NOPRTR     = .TRUE.
             IBSS       = 2999
             TWOCOMPBSS = .TRUE.
             TWOCOMP    = .TRUE.
@@ -5821,7 +5820,6 @@ C           as they need to be modified within BSS transformations
   137     CONTINUE
 C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
 !                   ^     ^^^ ^
-             NOPRTR     = .true.
              x2c        = .true.
              DOLVC      = .FALSE.
 C            Check that we have not defined operators yet,
@@ -5856,7 +5854,6 @@ C&&& IOTC4: do IOTC in 4c-mode
 !radovan: note that .X2C4 points to here
 !         so be careful when changing "143"
              BSS = .TRUE.
-             NOPRTR = .TRUE.
              IBSS = 2999
              DOLVC      = .FALSE.
              GO TO 100
@@ -5924,7 +5921,6 @@ CMI  with other flags...
   151     continue
              IOTC = .TRUE.
              BSS = .TRUE.
-             NOPRTR = .TRUE.
              IBSS = 2999
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
@@ -5989,7 +5985,7 @@ CMI&& Activate 4c-2c MO transformation
 
   162     CONTINUE
 !         X2Cmmf: molecular mean-field approach within the X2C framework
-          noprtr                = .true.
+          X2CMMF                = .TRUE.
           x2c                   = .true.
           x2cmod_mmf            = .true.
           x2c_2c_mmf_mos        = .true.
@@ -5998,7 +5994,6 @@ CMI&& Activate 4c-2c MO transformation
           do4c2c = .true.
 !       default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
           usedf  = .true.
-          X2CMMF                = .TRUE.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
@@ -6217,15 +6212,6 @@ C
         WRITE(LUPRI,'(A)') '.DO2C4C and .DO4C2C not accepted !'
         CALL QUIT('Conflicting options : .DO2C4C and .DO4C2C !')
       ENDIF
-
-!     x2c module: check for the keyword indicating the 4c-DF operator as defining h1
-!      if(find_keyword('.X2Cmmf'))then
-!        do4c2c = .true.
-!       default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
-!        usedf  = .true.
-!      end if
-      if(find_keyword('**HAMIL')) call move_to_next_star(word, lucmd)
-
 CMI   ... take care of 2c-4c/4c-2c transitions !
       IF (DO2C4C.OR.DO4C2C) THEN
          TWOCOMP    = TWOCOMP_SAVE
