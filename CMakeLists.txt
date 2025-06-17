@@ -105,6 +105,8 @@ include(${PROJECT_SOURCE_DIR}/cmake/custom/exatensor.cmake)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 
+add_subdirectory(${PROJECT_SOURCE_DIR}/utils)
+
 include(${PROJECT_SOURCE_DIR}/cmake/custom/benchmarks.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/external_libs.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/tutorials.cmake)

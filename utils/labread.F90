@@ -22,8 +22,7 @@
 ! Alliant version 30. Dec. 1987
 ! Linux/IBM, +updates, Joern Thyssen, Nov. 1999
 !
-!#include "implicit.h"
-#include "../include/implicit.h"
+#include "implicit.h"
 !TROND      DOUBLE PRECISION TIME, SECOND
       CHARACTER*8 B(4), STARS
       PARAMETER (STARS = '********')
