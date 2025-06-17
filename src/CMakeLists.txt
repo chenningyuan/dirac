@@ -13,6 +13,18 @@
 
 
 
+option(ENABLE_GEN1INT "Enable Gen1Int library" ON)
+if(ENABLE_GEN1INT)
+  # fixme: later this needs to become a target_compile_definitions
+  add_definitions(-DBUILD_GEN1INT)
+
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/gen1int)
+
+  set(EXTERNAL_LIBS gen1int_interface ${EXTERNAL_LIBS})
+endif()
+
+
+
 option(ENABLE_PELIB "Enable polarizabile embedding library" ON)
 if(ENABLE_PELIB)
   # fixme: later this needs to become a target_compile_definitions
