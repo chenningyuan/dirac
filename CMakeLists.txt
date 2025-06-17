@@ -102,7 +102,9 @@ include(${PROJECT_SOURCE_DIR}/cmake/custom/workarounds.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/external.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/pcm.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/exatensor.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/downloaded/autocmake_src.cmake)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/src)
+
 include(${PROJECT_SOURCE_DIR}/cmake/custom/benchmarks.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/external_libs.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/tutorials.cmake)
