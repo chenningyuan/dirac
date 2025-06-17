@@ -72,10 +72,6 @@ if(ENABLE_UTILITIES)
     endif()
 endif()
 
-if(ENABLE_GEN1INT)
-    add_dependencies(dirac gen1int)
-endif()
-
 if(ENABLE_RELCCSD_STANDALONE)
     if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         set_source_files_properties(src/relccsd/ccmain.F PROPERTIES COMPILE_FLAGS "-qfixed")
