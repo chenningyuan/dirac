@@ -188,12 +188,12 @@ contains
               
               call tmpmat_mo%get_dmat_q_mo_sector('pi ', cmo%ioffs, cmo%n_mo, cmo%n_fsym)
               
-              call construct_perturbed_dmat_lao_e(dmat_ao%elements,&
+              call construct_perturbed_dmat_lao(dmat_ao%elements,&
                             tmpmat_mo%elements,&
-                            conmat_info%vectors(ivec), cmo)
-              call construct_perturbed_dmat_lao_p(dmat_ao%elements,&
+                            conmat_info%vectors(ivec), cmo, typ='E-')
+              call construct_perturbed_dmat_lao(dmat_ao%elements,&
                             tmpmat_mo%elements,&
-                            conmat_info%vectors(ivec), cmo)
+                            conmat_info%vectors(ivec), cmo, typ='P-')
               
               factor(1) = -1.0d0
               factor(2:4) = 1.0d0
@@ -1000,57 +1000,51 @@ contains
   end subroutine
 
 ! ------------------------------------------------------------------------------
-  subroutine construct_perturbed_dmat(dmat,bmat,  &
-                                      ivec, &
-                                      rsp_info,&
-                                      cmo)
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcborb.h"
-
+  subroutine construct_perturbed_dmat(dmat, bmat, ivec, rsp_info, cmo)
+!   this is based on dmoli3
     integer, intent(in)  :: ivec
     type(response_info_t), intent(in) :: rsp_info
-    real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
-    real(kind=8), intent(in) :: bmat(norbt, norbt, nz)
     type(cmo_t), intent(in) :: cmo
+    real(kind=8), intent(inout) :: dmat(*)
+    real(kind=8), intent(in) :: bmat(*)
 
-    real(kind=8), allocatable :: dtmp(:,:)
-    real(kind=8)::fac
+    real(kind=8)::fadd
     integer :: irep,iopsy,itim
-    integer :: iprint
     integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
-    real(8)::fadd
+    integer :: nao, iorb(2), icmoq(2)
     character(2) ::typ
-    logical :: debug_print
-! based on dmoli3
 
-    iprint = 0  ! needed for qtrans
-
-!   construct half dmat = Ci*bmat*dag(Ca)
-
-    dmat(1:ntbas(0)*ntbas(0), 1:nz) = 0.0d0
+    nao=sum(cmo%n_ao)
+    dmat(1:nao*nao*cmo%nz) = 0.0d0
 
     call rsp_info%vectors(ivec)%get_symmetry_info(irep,&
             iopsy,itim,typ)
 
-    do i1 = 1, nfsym
+    iorb = 0
+    icmoq = 0
+    if (cmo%n_fsym > 1) then
+      iorb(2) = cmo%n_mo(1)
+      icmoq(2) = cmo%n_mo(1)*cmo%n_ao(1)
+    end if
+
+    do i1 = 1, cmo%n_fsym
       i2=mod(i1+iopsy,2)+1
       ! i1=1 (for gerade orbitals), i1=2 (for ungerade orbitals) 
       ! iopsy=1 (gerade perturbation), iopsy=2 (ungerade perturbation)
       ! gerade perturbation: i1=i2 combinations
       ! ungerade perturbation: (i1,i2)=(1,2), (i1,i2)=(2,1) combinations
       if (typ(1:1) == 'E') then
-        ns=nesh(i1)
-        is=iorb(i1) + npsh(i1) + 1
-        js=icmoq(i1) + npsh(i1)*nfbas(i1, 0) + 1
+        ns=cmo%n_mo(i1)-cmo%n_po(i1)
+        is=iorb(i1) + cmo%n_po(i1) + 1
+        js=icmoq(i1) + cmo%n_po(i1)*cmo%n_ao(i1) + 1
       else if (typ(1:1) == 'P') then
-        ns=npsh(i1)
+        ns=cmo%n_po(i1)
         is=iorb(i1) + 1
         js=icmoq(i1) + 1
       end if
-      ni=nish(i2)
-      ii=iorb(i2) + npsh(i2) + 1
-      ji=icmoq(i2) + npsh(i2)*nfbas(i2,0)+1
+      ni=cmo%n_ip(i2)
+      ii=iorb(i2) + cmo%n_po(i2) + 1
+      ji=icmoq(i2) + cmo%n_po(i2)*cmo%n_ao(i2)+1
       fadd=0.0d0
       call qtrans_mo2ao(dmat,bmat,cmo,&
             i1,i2,ns,is,js,ni,ii,ji,irep,fadd)
@@ -1059,87 +1053,46 @@ contains
   end subroutine
 
 ! ------------------------------------------------------------------------------
-  subroutine construct_perturbed_dmat_lao_e(dmat,bmat,  &
-                                      conmat_vec,&
-                                      cmo)
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcborb.h"
-
+  subroutine construct_perturbed_dmat_lao(dmat,bmat,conmat_vec,cmo,typ)
     type(conmat_vector_t), intent(in) :: conmat_vec
-    real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
-    real(kind=8), intent(inout) :: bmat(norbt, norbt, nz)
+    real(kind=8), intent(inout) :: dmat(*)
+    real(kind=8), intent(inout) :: bmat(*)
     type(cmo_t), intent(in) :: cmo
-
+    character(2), intent(in) ::typ
     integer :: irep,iopsy,itim
-    integer :: iprint
     integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
-    character(2) ::typ
-    logical :: debug_print
-!
+    integer :: nao, iorb(2), icmoq(2)
 
-    iprint = 0
-    typ = 'E-'
     call conmat_vec%get_symmetry_info(irep,iopsy,itim)
 
-    !do i1 = 1, 1
-    !  i2 = 1
-    do i1 = 1, nfsym
+    iorb = 0
+    icmoq = 0
+    if (cmo%n_fsym > 1) then
+      iorb(2) = cmo%n_mo(1)
+      icmoq(2) = cmo%n_mo(1)*cmo%n_ao(1)
+    end if
+
+    do i1 = 1, cmo%n_fsym
       i2=mod(i1+iopsy,2)+1
 
 !     second index: inactive index:
-      ni = nish(i2)
-      ii = iorb(i2) + npsh(i2) + 1
-      ji = icmoq(i2) + npsh(i2)*nfbas(i2,0)+1
+      ni = cmo%n_ip(i2)
+      ii = iorb(i2) + cmo%n_po(i2) + 1
+      ji = icmoq(i2) + cmo%n_po(i2)*cmo%n_ao(i2)+1
 
 !     first index: secondary index:
+      select case (typ)
+        case ('E-')
 !        .. secondary index is electronic:
-         ns = nesh(i1)
-         is = iorb(i1) + npsh(i1) + 1
-         js = icmoq(i1) + npsh(i1)*nfbas(i1, 0) + 1
-
-      call qtrans_mo2ao(dmat,bmat,cmo,&
-                i1,i2,ns,is,js,ni,ii,ji,irep,1.0d0)
-
-     end do
-
-  end subroutine
-! ------------------------------------------------------------------------------
-  subroutine construct_perturbed_dmat_lao_p(dmat,bmat,  &
-                                      conmat_vec,&
-                                      cmo)
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcborb.h"
-
-    type(conmat_vector_t), intent(in) :: conmat_vec
-    real(kind=8), intent(inout) :: dmat(ntbas(0)*ntbas(0), nz)
-    real(kind=8), intent(inout) :: bmat(norbt, norbt, nz)
-    type(cmo_t), intent(in) :: cmo
-
-    integer :: irep,iopsy,itim
-    integer :: iprint
-    integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
-    character(2) ::typ
-    logical :: debug_print
-
-    iprint = 0
-    typ = 'P-'
-    call conmat_vec%get_symmetry_info(irep,iopsy,itim)
-
-    do i1 = 1, nfsym
-      i2=mod(i1+iopsy,2)+1
-
-!     second index: inactive index:
-      ni = nish(i2)
-      ii = iorb(i2) + npsh(i2) + 1
-      ji = icmoq(i2) + npsh(i2)*nfbas(i2,0)+1
-
-!     first index:
+         ns = cmo%n_mo(i1)-cmo%n_po(i1)
+         is = iorb(i1) + cmo%n_po(i1) + 1
+         js = icmoq(i1) + cmo%n_po(i1)*cmo%n_ao(i1) + 1
+        case ('P-')
 !        .. secondary index is positronic:
-         ns = npsh(i1)
+         ns = cmo%n_po(i1)
          is = iorb(i1) + 1
          js = icmoq(i1) + 1
+      end select
 
       call qtrans_mo2ao(dmat,bmat,cmo,&
                 i1,i2,ns,is,js,ni,ii,ji,irep,1.0d0)
