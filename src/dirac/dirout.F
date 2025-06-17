@@ -450,7 +450,7 @@ C.....Rescale C^b_R
       CALL DSCAL(NTOT,DM1,CMO(1,1,3),1)
 C
       RETURN
- 100  FORMAT(3X,I5,2X,A12,2X,4F14.10)
+ 100  FORMAT(3X,I5,2X,A12,2X,4ES18.10)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck cfsort */
