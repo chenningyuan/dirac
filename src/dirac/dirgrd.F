@@ -102,7 +102,6 @@ C
             WRITE(LUPRI,'(/A)') 'Error in molecular gradient:' // 
      &      ' not implemented for X2C and BSS'
             WRITE(LUPRI,'(/A)') 'You may try ".NUMGRAD"'
-            WRITE(LUPRI,'(/A)') 'You may try ".NUMGRAD"'
             call quit('Error in molecular gradient:' // 
      &      ' not implemented for X2C and BSS')
          end if
