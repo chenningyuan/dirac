@@ -9,6 +9,7 @@ Relativistic IVO/CASCI/CASPT2 and IVO/RASCI/RASPT2 module, Ref. :cite:`Masuda202
 | Parallelisation, DIRAC integration, and RASCI/RASPT2 extension: Kohei Noda
 | :ref:`**MOLTRA` interface and IVO functionality: Sumika Iwamuro
 | Code optimisation: Kohei Noda and Yasuto Masuda
+| RAS3 minimum electron option: Taichi Inoue
 |
 | The program is based on the CASPT2D formalism reported in :cite:`Anderson1990`.
 
@@ -233,6 +234,16 @@ keyword(MINHOLERAS1)
     .MINHOLERAS1
     0
 
+keyword(MINELECRAS3)
+    
+| Specify the minimum number of electrons in RAS3.
+| This keyword is used only in RASCI/RASPT2 calculations.
+
+*Default:*
+::
+
+    .MINELECRAS3
+    0
 
 keyword(SCHEME)
 
