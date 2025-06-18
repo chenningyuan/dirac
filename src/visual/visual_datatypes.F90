@@ -106,6 +106,7 @@ module visual_datatypes
     !procedure, pass, public:: get_grid_size
     procedure, pass, public:: get_ndim => get_grid_ndim
     procedure, pass, public:: erase   => erase_grid
+    procedure, pass, public:: printout => printout_grid_info
     procedure, pass, public:: display => display_grid
     procedure, pass, public:: display_points => display_grid_points
     procedure, pass, public:: display_weights => display_grid_weights
@@ -562,7 +563,6 @@ contains
     with_rank_info = .false.
     if (present(my_rank)) with_rank_info = .true.
 
-
     write(*, *)
     if (with_rank_info) then
       write(*, *) ' VISUAL: rs_input on node ', my_rank
@@ -611,6 +611,90 @@ contains
       write(*, *) 'hamiltonian =   ', trim(self%hamiltonian)
     if (allocated(self%xc_functional)) &
       write(*, *) 'xc_functional = ', self%xc_functional
+    write(*, *)
+   end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine printout_grid_info(self)
+    class(grid_t), intent(in):: self
+    integer::i, j
+
+    if (self%id == 0) return
+
+    select case (self%input)
+
+      case (1)
+        write(*, *) '  Grid is read from file: ', self%file_inp
+
+      case (-1)
+        write(*, *) '  Grid points are read from the "numerical_grid" file '
+        write(*, *) '  from DFT calculations.'
+
+      case (2)
+        write(*, *) '  Cooridnates of grid points '
+        write(*, *) '  are provided in the user input (.LIST)'
+        write(*, '(a,i8)') '  * Total number of points:       ', self%nr_points_total
+
+      case (3)
+        write(*, *) '  Grid points are generated as equidistant points, '
+        write(*, *) '  on line defined in the user input (.LINE): '
+        write(*, *) '   * The line is defined by two points: '
+        write(*, '(a,3f13.4)') '    start: ', self%extents(0,1:3)
+        write(*, '(a,3f13.4)') '    end:   ', self%extents(1,1:3)
+        write(*, '(a,i8)') '   * The number of points: ', self%nr_points_total
+
+      case (4, -4)
+        write(*, *) '  Grid points are generated to span a 2D plane, '
+        write(*, *) '  defined in the user input (.2D or .2D_INT): '
+        write(*, *) '   * The plane is spanned by three points: '
+        write(*, '(a,3f13.4)') '     "origin": ', self%extents(0,1:3)
+        write(*, '(a,3f13.4)') '     "right" : ', self%extents(1,1:3)
+        write(*, '(a,3f13.4)') '     "top"   : ', self%extents(2,1:3)
+        write(*, '(a,i8)') '   * The number of points to "right": ', self%nr_points(1)
+        write(*, '(a,i8)') '   * The number of points to "top"  : ', self%nr_points(2)
+        write(*, '(a,i8)') '   * Total number of points:       ', self%nr_points_total
+
+      case (0, 5, -5)
+        write(*, *) '  Grid points are generated to span a 3D rectilinear cube, '
+        if (self%input == 0) then
+          write(*, *) '  defined in the user input (.3D or .3D_INT): '
+        else
+          write(*, *) '  defined in the grid specification line: '
+        end if
+        write(*, *) '   Cube parameters: '
+        write(*, *)           '   * "x" direction: '
+        write(*,'(a,i8)')     '      nr points: ', self%nr_points(1)
+        write(*,'(a,3f13.4)') '      spacing: ', self%spacing(1)
+        write(*,'(a,f13.4,a,f13.4,a)') '      extend from: ', self%extents(0,1), ' to ', self%extents(1,1), ' on x axis'
+        write(*, *)           '   * "y" direction: '
+        write(*,'(a,i8)')     '      nr points: ', self%nr_points(2)
+        write(*,'(a,3f13.4)') '      spacing: ', self%spacing(2)
+        write(*,'(a,f13.4,a,f13.4,a)') '      extend from: ', self%extents(0,2), ' to ', self%extents(1,2), ' on y axis'
+        write(*, *)           '   * "z" direction: '
+        write(*,'(a,i8)')     '      nr points: ', self%nr_points(3)
+        write(*,'(a,3f13.4)') '      spacing: ', self%spacing(3)
+        write(*,'(a,f13.4,a,f13.4,a)') '      extend from: ', self%extents(0,3), ' to ', self%extents(1,3), ' on z axis'
+
+        write(*, '(a,i8)') '   Total number of points:       ', self%nr_points_total
+
+      case (6)
+        write(*, *) '  Grid points are generated to span radial grid, '
+        write(*, *) '  defined in the user input (.RADIAL): '
+        write(*, '(a,3f13.4)') '   * Grid origin:                  ', self%origin(1:3)
+        write(*, '(a,i8)')     '   * Lebedev angular grid L:       ', self%radial_lebedev_l 
+        write(*, '(a,i8)')     '   * The number of angular points: ', self%radial_nr_points_angular
+        write(*, '(a,i8)')     '   * Total number of points:       ', self%nr_points_total
+
+    end select
+
+    !if (self%purpose == 1) then
+    !  if (self%typ == 1) then
+    !    write(*, *) 'Integration on rectilinear grid: '
+    !  else if (self%typ == 2) then
+    !    write(*, *) 'Integration on radial grid: '
+    !  end if
+    !end if
     write(*, *)
    end subroutine
 
