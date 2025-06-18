@@ -194,6 +194,9 @@ contains
       if (mpi_is_master()) then
         call get_grid_points(rs_input%grids(ig))
 
+        write(*, *) 'VISUAL: setting up grid (grid ID=', ig, ')'
+        call rs_input%grids(ig)%printout
+
         if (rs_input%print_level > 1) then
           write(*,*) 'GRID POINTS (AND WEIGHTS): '
           do j = 1, npoints
