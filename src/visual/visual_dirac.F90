@@ -355,7 +355,7 @@ contains
         call checkpoint_read(group//trim(section)//'/hamiltonian',sdata=wf_data)
         if (len_trim(wf_data) > 0) rs_wf%hamiltonian = trim(wf_data)
       else
-        print*, "WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb"
+        print*, "WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb."
       end if
 
       call checkpoint_query(group//trim(section)//'/xc_functional', tobe)
@@ -363,8 +363,8 @@ contains
         wf_data=''
         call checkpoint_read(group//trim(section)//'/xc_functional',sdata=wf_data)
         if (len_trim(wf_data) > 0) rs_wf%xc_functional = trim(wf_data)
-      else
-        print*, "WARNING: no xc_functional on CHECKPOINT. Assuming non-DFT job"
+      !fixme else
+      !fixme   print*, "WARNING: no xc_functional on CHECKPOINT. Assuming non-DFT job"
       end if
       if ( rs_input%print_level > 2 ) then
         write(*, *) 'WF data read from DIRAC CHECKPOINT'

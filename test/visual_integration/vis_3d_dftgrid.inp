@@ -10,6 +10,8 @@
 *SCF
 .CLOSED_SHELL
 10
+.EVCCNV
+1.0D-8
 **VISUAL
 .GRIDS 
 1
@@ -17,6 +19,4 @@ id=1 input=dft
 .GRIDFUNCTIONS
 1
 name=ed id_grid=1 purpose=integration
-#integration with export:
-#name=ed id_grid=1 purpose=integration export=hdf5 file_out=dens_3d_dftgrid.h5
 *END OF
