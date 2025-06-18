@@ -453,7 +453,9 @@ contains
 
             if (rs_input%print_level > 1) then
               write(*, *) 'Grid_function values on master, after gather: '
-              write(*, *) 'values: ', i,j, (rs_input%grid_functions(igf)%values(i,j),i=1,gf_ndim)
+              do j = 1, rs_input%grids(ig)%nr_points_total
+                write(*, *) 'values: ', i,j, (rs_input%grid_functions(igf)%values(i,j),i=1,gf_ndim)
+              end do
               if (rs_input%grid_functions(igf)%purpose == 1) then
                 write(*, *) 'integrated values: ', i, (rs_input%grid_functions(igf)%integrated_values(i),i=1,gf_ndim)
               end if
