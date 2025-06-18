@@ -1,6 +1,4 @@
 **DIRAC
-.TITLE
- calculate selected grid function on a 3D regular grid and export it to an external h5 file
 **HAMILTONIAN
 .DFT
  B3LYP

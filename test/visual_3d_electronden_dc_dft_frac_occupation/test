@@ -10,12 +10,8 @@ try:
 except:
     h5py_available = False
 
-if not h5py_available:
-    sys.stderr.write('ERROR: VISUAL tests require h5py\n')
-    sys.exit(-1)
-
 #
-# prepare environment, define functions
+# prepare environment
 #
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -23,46 +19,51 @@ from runtest_dirac import Filter, TestRun
 from runtest_rs import CompareHDF5
 test = TestRun(__file__, sys.argv)
 
-#
-# prepare grid files
-#
-grid_3d_h5=Path(test.work_dir, 'grid.h5')
-grid_3d_h5.unlink(missing_ok=True)
-grid_3d_h5=grid_3d_h5.symlink_to(Path(Path(__file__).parents[1].resolve(), 'testdata', 'grid_visual_3D.h5'))
-
+f = Filter()
+f.add(from_string = 'Final grid_function values (grid_function%id=',
+      num_lines = 28,
+      rel_tolerance = 1.0e-6)
+ 
 #
 # run tests
 #
 
 test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
 
-test.run(['vis_total_orbstring.inp'], ['h2o.mol'], args='--incmo --put="grid.h5" --get="*.h5"')
-test.run(['vis_1s.inp'], ['h2o.mol'], args='--incmo --put="grid.h5" --get="*.h5"')
-test.run(['vis_2s.inp'], ['h2o.mol'], args='--incmo --put="grid.h5" --get="*.h5"')
+if h5py_available:
+    test.run(['vis_total_orbstring.inp'], ['h2o.mol'], f, args='--incmo --put="grid.h5" --get="*.h5"')
+    test.run(['vis_1s.inp'], ['h2o.mol'], f, args='--incmo --put="grid.h5" --get="*.h5"')
+    test.run(['vis_2s.inp'], ['h2o.mol'], f, args='--incmo --put="grid.h5" --get="*.h5"')
+else:
+    test.run(['vis_total_orbstring.inp'], ['h2o.mol'], f, args='--incmo')
+    test.run(['vis_1s.inp'], ['h2o.mol'], f, args='--incmo')
+    test.run(['vis_2s.inp'], ['h2o.mol'], f, args='--incmo')
+
 
 #
 # compare generated data with reference
 #
 
-rs = CompareHDF5(test.work_dir)
-
-testset = ['ed_total_orbstring', 'ed_1s', 'ed_2s']
-for t in testset:
-
-    rs.verify(ftest=t+'.h5',\
-              fref='result/'+t+'.h5',\
-              typ='single',\
-              gf_label='/result/grid/ndim')
-
-    rs.verify(ftest=t+'.h5',\
-              fref='result/'+t+'.h5',\
-              typ='single',\
-              gf_label='/result/grid/nr_points_total')
-
-    rs.verify(ftest=t+'.h5',\
-              fref='result/'+t+'.h5',\
-              typ='array',\
-              gf_label='/result/grid_function/ed/visualization/values/',
-              gf_test_key='t0_icomp_1')
+if h5py_available:
+    rs = CompareHDF5(test.work_dir)
+    
+    testset = ['ed_total_orbstring', 'ed_1s', 'ed_2s']
+    for t in testset:
+    
+        rs.verify(ftest=t+'.h5',\
+                  fref='result/'+t+'.h5',\
+                  typ='single',\
+                  gf_label='/result/grid/ndim')
+    
+        rs.verify(ftest=t+'.h5',\
+                  fref='result/'+t+'.h5',\
+                  typ='single',\
+                  gf_label='/result/grid/nr_points_total')
+    
+        rs.verify(ftest=t+'.h5',\
+                  fref='result/'+t+'.h5',\
+                  typ='array',\
+                  gf_label='/result/grid_function/ed/visualization/values/',
+                  gf_test_key='t0_icomp_1')
 
 
