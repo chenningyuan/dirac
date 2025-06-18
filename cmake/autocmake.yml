@@ -69,8 +69,6 @@ modules:
     - 'custom/external.cmake'
     - 'custom/exatensor.cmake'
     - 'custom/pcm.cmake'
-- subdirectories:
-  - source: '%(url_root)modules/src.cmake'
 - custom:
   - source:
     - 'custom/benchmarks.cmake'
