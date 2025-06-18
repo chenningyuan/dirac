@@ -63,7 +63,6 @@ modules:
     - 'custom/static.cmake'
     - 'custom/definitions.cmake'
     - 'custom/matlab.cmake'
-    - 'custom/qdiag.cmake'
     - 'custom/work_array.cmake'
     - 'custom/workarounds.cmake'
     - 'custom/external.cmake'
