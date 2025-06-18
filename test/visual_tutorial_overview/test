@@ -22,5 +22,5 @@ f.add(from_string = 'Final grid_function values (grid_function%id=',
 #
 
 test.run(['dc.inp'], ['h2o.xyz'], args='--outcmo')
-test.run(['vis.inp'], ['h2o.xyz'], f, args='--incmo')
+test.run(['vis.inp'], ['h2o.xyz'], f, args='--incmo --get="ed.cube"')
 

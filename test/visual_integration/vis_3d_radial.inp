@@ -23,6 +23,4 @@ id=1 input=radial
 .GRIDFUNCTIONS
 1
 name=ed id_grid=1 purpose=integration
-#integration with export:
-#name=ed id_grid=1 purpose=visualization export=hdf5 file_out=dens_radial_vis.h5
 *END OF

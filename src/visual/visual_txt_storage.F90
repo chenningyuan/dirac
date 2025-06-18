@@ -37,7 +37,7 @@ contains
 
     npoints = grid%nr_points_total
     npoints_radial = grid%radial_nr_steps
-    g_ndim  = grid%ndim
+    g_ndim  = grid%get_ndim()
     data_file%name = grid%file_out
     data_file%float_format = float_fmt
 
@@ -122,7 +122,7 @@ contains
 
     npoints = grid%nr_points_total
     npoints_radial = grid%radial_nr_steps
-    g_ndim  = grid%ndim
+    g_ndim  = grid%get_ndim()
     gf_ndim = grid_function%get_ndim()
     data_file%name = grid_function%file_out
     data_file%float_format = float_fmt
@@ -212,7 +212,7 @@ contains
     type(mol_t), intent(in):: mol
     type(txt_file_info_t):: data_file
     integer:: g_ndim, gf_ndim, npoints, npoints_radial
-    integer:: funit, i, j, ix, iy, iz
+    integer:: funit, i, j, ix, iy, iz, ioff
 
 !   copied and adapted from old VISUAL
 
@@ -239,9 +239,11 @@ contains
     end do
 
 !   Data block: Write values in z-fastest order
+    ioff = 0
     do ix = 1, grid%nr_points(1)
       do iy =1, grid%nr_points(2)
-        write(funit, '(6ES18.8E3)') (grid_function%values(i,1), i=1,grid%nr_points(3))
+        write(funit, '(6ES13.5E3)') (grid_function%values(1,i), i=ioff+1,ioff+grid%nr_points(3))
+        ioff = ioff+grid%nr_points(3)
       end do
     end do
 
@@ -258,7 +260,7 @@ contains
 
     npoints = grid%nr_points_total
     npoints_radial = grid%radial_nr_steps
-    g_ndim  = grid%ndim
+    g_ndim  = grid%get_ndim()
     gf_ndim = grid_function%get_ndim()
 
     write(*, *) ''

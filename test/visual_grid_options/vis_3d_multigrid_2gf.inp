@@ -18,7 +18,7 @@
 .GRIDS 
 2
 id=1 input=dft export=hdf5 file_out=dftgrid_3d_multi_2gf.h5
-id=2 input=create typ=1 ndim=3 npoints=[3,3,3] margin=4.0 export=hdf5 file_out=grid_3d_generated_multi_2gf.h5
+id=2 input=create typ=1 npoints=[3,3,3] margin=4.0 export=hdf5 file_out=grid_3d_generated_multi_2gf.h5
 .GRIDFUNCTIONS
 3
 name=ed id_grid=1 purpose=integration export=hdf5 file_out=ed_on3Ddftgrid_multi_2gf.h5

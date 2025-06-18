@@ -2,40 +2,41 @@
  
 starstar(VISUAL)
 
-This section allows to calculate various molecular densities from the 1-electron density matrices and atomic orbitals. These densities (here called *grid functions*) are calculated on numerical grids and can be integrated or exported as scalar, vector, or tensor fields (e.g., for visualization or further processing). This section requires the specification of grids and grid functions (through the :ref:`VISUAL_.GRIDS` and :ref:`VISUAL_.GRIDFUNCTIONS`, as described below). The VISUAL module is not activated by default.
+
+This section allows for calculating various molecular densities from the 1-electron density matrices and atomic orbitals. These densities (here called *grid functions*) are computed on numerical grids and can be integrated or exported as scalar, vector, or tensor fields (e.g., for visualization or further processing). This section requires the specification of grids (:ref:`VISUAL_.GRIDS`) and grid functions (:ref:`VISUAL_.GRIDFUNCTIONS`). The VISUAL module is not activated by default.
 
 GRIDS
 =====
 
 keyword(GRIDS)
 
-Grid(s) specification block. Next line should contain the number of grids to be used. Then, the following lines should provide information about each grid (as a `key=value` list). 
+Grid(s) specification block. Next line should contain the number of grids to be used. Then, the following lines should provide information about each grid (as a `key=value` list).
 
 For example, to import the grid from the `grid.h5` file, use::
 
   .GRIDS
   1
   id=1 input=import file_inp=grid.h5
-
+  
 Available `key=value` options
 -----------------------------
 
 * `id=int`
 
     The ID of a grid. Required, used as a reference for :ref:`VISUAL_.GRIDFUNCTIONS` specification.
-    
+
 * `npoints=[Nx,Ny,nz]`
 
-   For grid generation, specify the number of grid points in `x`, `y`, and `z` directions. 
+   Specify the number of grid points in `x`, `y`, and `z` directions. Either `npoints` or `spacing` is required for grid generation.
 
 * `spacing=[Sx,Sy,Sz]` or `spacing=S`
 
-    For grid generation, specify the grid resolution, i.e., the distance between two consecutive grid points. Use `spacing=[Sx,Sy,Sz]` to specify the distance between grid points in `x`, `y`, and `z` directions, or `spacing=S` to specify the same distance between grid points for all directions.
+    Specify the grid resolution, i.e., the distance between two consecutive grid points. Use `spacing=[Sx,Sy,Sz]` to specify the distance between grid points in `x`, `y`, and `z` directions, or `spacing=S` to specify the same distance between grid points for all directions. Either `npoints` or `spacing` is required for grid generation.
 
 * `input=option`
 
     Specify grid input. Available options:
-        
+
         * `input=create` : create grid; the default is a 3D rectilinear grid; requires the specification of `npoints` or `spacing`
         * `input=import` : import grid from an external file
         * `input=dft` : use the DFT numerical grid; requires `numerical_grid` file
@@ -47,21 +48,14 @@ Available `key=value` options
         * `input=3d_int` : create grid points on a 3D surface for integration; should be provided in the input (see :ref:`VISUAL.3D_INT` keyword)
         * `input=radial` : create radial grid; should be provided in the input (see :ref:`VISUAL.RADIAL` keyword)
 
-* `typ=option`
-
-    Specify grid type.  Available options:
-    
-        * `typ=1` : rectilinear uniform grid
-        * `typ=2` : radial grid
-
 * `margin=f`
 
-    Add space around the 3D rectilinear grid. Applies only to generated 3D rectilinear grids. Default is `f=0.0` (value in a.u.), which creates grid point spanning the space between the minimum and maximum coordinates of all atoms, i.e., :math:`x_{grid}=[min(x_{a}),max(x_{a})]_{a\in atoms}`, :math:`y_{grid}=[min(y_{a}),max(y_{a})]_{a\in atoms}`, :math:`z_{grid}=[min(z_{a}),max(z_{a})]_{a\in atoms}`. For typical applications, choose some :math:`f>0` (e.g., `margin=4.0` is typically OK for the electron density visualization).
+    Add space around the 3D rectilinear grid. Applies only to generated 3D rectilinear grids. Default is `f=0.0` (value in a.u.), which creates grid point spanning the space between the minimum and maximum coordinates of all atoms, i.e., :math:`x_{grid}=[min(x_{a}),max(x_{a})]_{a\in atoms}`, :math:`y_{grid}=[min(y_{a}),max(y_{a})]_{a\in atoms}`, :math:`z_{grid}=[min(z_{a}),max(z_{a})]_{a\in atoms}`. Therefore, for typical applications, choose some :math:`f>0` (e.g., `margin=4.0` is typically OK for the electron density visualization).
 
 * `export=option`
 
     If the grid should be exported to a file, this allows to define the file format for export. Supported formats:
-    
+
         * `export=hdf5` : export to hdf5 file
         * `export=txt` : export to text file, no header, space as a separator (for backward compatibility with old VISUAL code)
         * `export=csv` : export to text file (csv): header line, coma as a separator
@@ -73,7 +67,7 @@ Available `key=value` options
 * `file_out=string`
 
     The name of a file, to which the grid should be exported
-    
+
 Notes:
 
 * *current limitations:* make sure there is one space between each `key=value` entry in the grid specification line.
@@ -81,7 +75,6 @@ Notes:
 
 Additional keywords
 -------------------
-
 The selected grid inputs (see `input=option`) require additional specification. This should be provided as a separate keyword block **following** the `.GRID` keyword. Most of these keywords are the same as used in the old VISUAL code.
 
 keyword(LIST)
@@ -93,7 +86,17 @@ Calculate various densities in few points. Scalar and vector densities are writt
    1.0 0.0 0.0
    0.0 1.0 0.0
    0.0 0.0 1.0
+   
+In the `DIRAC` input file, this should be provided as::
 
+  .GRIDS
+  id=1 input=list
+  .LIST
+   3
+   1.0 0.0 0.0
+   0.0 1.0 0.0
+   0.0 0.0 1.0
+  
 keyword(LINE)
 
 Calculate various densities along a line.
@@ -158,6 +161,7 @@ Example (coordinates in bohr)::
    40 40 40          ! 40 x 40 x 40 points
 
 Note: this is the same as using `npoints=[40,40,40]` in the grid specification line.
+
 
 Grid functions
 ==============

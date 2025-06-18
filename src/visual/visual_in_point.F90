@@ -518,16 +518,15 @@ contains
 !       we either calculate the NMR shielding of a given nucleus
 !       or a "NICS" value in a given point
 !       (for a true NICS value multiply by "-1")
-        !if (visual_cfg_nics) then
-           !FIXME
-           !rx = px-visual_cfg_nics_origin(1)
-           !ry = py-visual_cfg_nics_origin(2)
-           !rz = pz-visual_cfg_nics_origin(3)
-        !else
+        if (grid_function%nics) then
+           rx = px-grid_function%nics_origin(1)
+           ry = py-grid_function%nics_origin(2)
+           rz = pz-grid_function%nics_origin(3)
+        else
            rx = px-mol%geometry(1, grid_function%nuc)
            ry = py-mol%geometry(2, grid_function%nuc)
            rz = pz-mol%geometry(3, grid_function%nuc)
-        !end if
+        end if
 
         f = -1.0d0/((rx*rx+ry*ry+rz*rz)**1.5d0)
 
@@ -1033,16 +1032,15 @@ contains
 !       we either calculate the NMR shielding of a given nucleus
 !       or a "NICS" value in a given point
 !       (for a true NICS value multiply by "-1")
-        !if (visual_cfg_nics) then
-           !FIXME
-           !rx = px-visual_cfg_nics_origin(1)
-           !ry = py-visual_cfg_nics_origin(2)
-           !rz = pz-visual_cfg_nics_origin(3)
-        !else
+        if (grid_function%nics) then
+           rx = px-grid_function%nics_origin(1)
+           ry = py-grid_function%nics_origin(2)
+           rz = pz-grid_function%nics_origin(3)
+        else
            rx = px-mol%geometry(1, grid_function%nuc)
            ry = py-mol%geometry(2, grid_function%nuc)
            rz = pz-mol%geometry(3, grid_function%nuc)
-        !end if
+        end if
 
         f = -1.0d0/((rx*rx+ry*ry+rz*rz)**1.5d0)
 
@@ -1104,56 +1102,10 @@ contains
 
     if (grid_function%down_scale .ne. 1.0d0 .and. &
         grid_function%down_scale .ne. 0.0d0) then
-        f = f / grid_function%down_scale
+      f = f / grid_function%down_scale
     end if
 
     grid_function_values(:, ipoint:ipoint) = f*grid_function_values(:, ipoint:ipoint)
-
-  end subroutine
-
-! ------------------------------------------------------------------------------
-  subroutine modify_grid_function(grid_function,&
-                                  grid_function_values,&
-                                  ndim, nr_points,&
-                                  grid_points)
-
-    type(grid_function_t), intent(inout):: grid_function
-    real(8), intent(inout):: grid_function_values(:,:)
-    integer, intent(in):: ndim,nr_points
-    real(8), intent(in):: grid_points(ndim,nr_points)
-    integer:: ipoint
-    real(8):: f, px, py, pz
-
-    f = 1.0d0
-
-!   Multiply with Cartesian powers
-    do ipoint = 1, nr_points
-      px = grid_points(1,ipoint)
-      py = grid_points(2,ipoint)
-      pz = grid_points(3,ipoint)
-
-      if (grid_function%cartesian_power(1) .ne. 0) then
-        f = f * (px**grid_function%cartesian_power(1))
-      end if
-      if (grid_function%cartesian_power(2) .ne. 0) then
-        f = f * (py**grid_function%cartesian_power(2))
-      end if
-      if (grid_function%cartesian_power(3) .ne. 0) then
-        f = f * (pz**grid_function%cartesian_power(3))
-      end if
-
-      grid_function_values(:, ipoint:ipoint) = f*grid_function_values(:, ipoint:ipoint)
-    end do
-
-!   Scale result 
-    if (grid_function%up_scale .ne. 1.0d0) then
-      f = grid_function%up_scale 
-      grid_function_values(:, 1:nr_points) = f*grid_function_values(:, 1:nr_points)
-    end if
-    if (grid_function%down_scale .ne. 1.0d0) then
-      f = 1.0d0 / grid_function%down_scale
-      grid_function_values(:, 1:nr_points) = f*grid_function_values(:, 1:nr_points)
-    end if
 
   end subroutine
 

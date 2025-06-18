@@ -112,7 +112,9 @@ contains
     type(rs_label_t):: label
     character*(:), allocatable:: group
     character(len=1):: ich
-    integer:: i
+    integer:: ndim, i
+
+    ndim  = grid%get_ndim()
 
     call assign_label_grid(grid, label, top_section='result', level=1)
     group = label%name
@@ -124,8 +126,8 @@ contains
     else
       call lab_write(data_file, trim(group)//'/nr_points_total',&
                      idata = grid%nr_points_total)
-      call lab_write(data_file, trim(group)//'/ndim',idata = grid%ndim)
-      do i = 1, grid%ndim
+      call lab_write(data_file, trim(group)//'/ndim',idata = ndim)
+      do i = 1, ndim
         write(ich, '(i1)') i
         if (grid%nr_points_known(i)) &
          call lab_write(data_file, trim(group)//'/nr_points_dim_'//trim(ich), idata = grid%nr_points(i))
@@ -144,7 +146,7 @@ contains
         call lab_write(data_file, trim(group), rdata = grid%radial_coord(:))
       end if
     else
-      do i = 1, grid%ndim
+      do i = 1, ndim
         write(ich, '(i1)') i
         call lab_write(data_file, trim(group)//'/coor_'//trim(ich), rdata = grid%points(i, :))
       end do
@@ -191,16 +193,20 @@ contains
     type(file_info_t), intent(inout):: data_file
     type(grid_t), intent(inout):: grid
     type(rs_label_t)::label
-    integer:: i
+    integer:: ndim, i
     character*(:), allocatable  :: group
     character(len=1):: ich
     logical::data_available
 
     call assign_label_grid(grid, label, top_section='result', level=1)
     group = label%name
-    call lab_read(data_file, trim(group)//'/ndim',idata = grid%ndim)
+    call lab_read(data_file, trim(group)//'/ndim',idata = ndim)
+    if (ndim .ne. 3) then
+      write(*, *) 'Incompatible ndim. Grid cannot be read.'
+      stop
+    end if
     call lab_read(data_file, trim(group)//'/nr_points_total',idata = grid%nr_points_total)
-    do i = 1, grid%ndim
+    do i = 1, ndim
       write(ich, '(i1)') i
       call lab_query(data_file, trim(group)//'/nr_points_dim_'//trim(ich), &
                      exist=data_available)
@@ -227,7 +233,7 @@ contains
 !   ----------------------------------------------------------------------------
     call assign_label_grid(grid, label, top_section='result', level=2)
     group = label%name
-    do i = 1, grid%ndim
+    do i = 1, grid%get_ndim()
       write(ich, '(i1)') i
       write(*,*) 'will read ', trim(group)//'/coor_'//trim(ich), ' from ', data_file%name
       call lab_read(data_file, trim(group)//'/coor_'//trim(ich), rdata = grid%points(i,:))

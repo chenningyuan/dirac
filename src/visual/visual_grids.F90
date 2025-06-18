@@ -165,7 +165,7 @@ use num_grid_cfg
   subroutine generate_grid_rectilinear(grid)
 ! rectilinear equidistant
     type(grid_t), intent(inout):: grid
-    integer:: i,j,k, ipoint, N(grid%ndim)
+    integer:: i,j,k, ipoint, N(grid%get_ndim())
     integer:: ix,iy 
     real(8):: v(3), vx(3), vy(3), vz(3), p(3), p_off(3)
     real(8):: vx_norm, vy_norm, vz_norm, s, f
@@ -366,7 +366,7 @@ use num_grid_cfg
     integer:: i
     character(len = 150):: errmsg
 
-    do i = 1, grid%ndim
+    do i = 1, grid%get_ndim()
       if (grid%spacing_known(i)) return
       grid%spacing(i) = 0.0d0
       if (grid%nr_points_total_known) then
@@ -433,7 +433,7 @@ use num_grid_cfg
 
     call grid_origin_extents_from_mol(mol, grid)
 
-    do i = 1, grid%ndim
+    do i = 1, grid%get_ndim()
       if (.not. grid%spacing_known(i)) call grid_3d_spacing_from_npoints(grid,i)
       if (.not. grid%nr_points_known(i)) call grid_3d_npoints_from_spacing(grid,i)
     end do

@@ -4,11 +4,11 @@ module visual
 ! various densities on real-space grids,
 ! Written by Radovan Bast.
 ! Refactored by Gosia Olejniczak.
-! Full description of features: LINK
 !
 ! current limitations:
 ! * calculations are done on one molecular system,
-! * data is read from DIRAC's CHECKPOINT.h5 (molecular information+wave function) and from RESPONSE.h5 (response parameters)
+! * data is read from DIRAC's CHECKPOINT.h5 (molecular information+wave function),
+!   RESPONSE.h5 (linear response parameters) and TBMO.h5 (linear response with LAOs),
 ! * but AOs are generated in the "old" way (using `xcint/` modules) 
 
   use visual_cfg
@@ -38,7 +38,6 @@ module visual
   implicit none
 
   public run_visual
-
 
   private
 
@@ -158,7 +157,7 @@ contains
       if (is_parallel()) call synchronize_grid_data(rs_input%grids(ig))
 #endif
 
-      g_ndim  = rs_input%grids(ig)%ndim
+      g_ndim  = rs_input%grids(ig)%get_ndim()
       npoints = rs_input%grids(ig)%nr_points_total
       if (rs_input%grids(ig)%typ == 2) &
         npoints_radial=rs_input%grids(ig)%radial_nr_steps
@@ -591,7 +590,7 @@ contains
             grid_function_values(:,ipoint)*grid_weights(ipoint)
         if (grid_function%purpose==1) then
           if (grid%radial_nr_steps > 1) then
-            radial_spacing = grid%radial_length/grid%radial_nr_steps
+            radial_spacing = grid%radial_length/(grid%radial_nr_steps-1)
           else
             radial_spacing = grid%radial_length
           end if  
