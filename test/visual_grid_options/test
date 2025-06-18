@@ -11,7 +11,7 @@ except:
     h5py_available = False
 
 if not h5py_available:
-    sys.stderr.write('ERROR: VISUAL tests require h5py\n')
+    sys.stderr.write('ERROR: this test requires h5py\n')
     sys.exit(-1)
 
 #

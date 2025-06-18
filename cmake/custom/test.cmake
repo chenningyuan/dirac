@@ -216,19 +216,16 @@ dirac_test(visual_3d_kinden_ll_dft "short;visual" "")
 dirac_test(visual_3d_rspB_ll_dft_rkb_lao "medium;visual;lao" "")
 dirac_test(visual_3d_rspB_ll_dft_rkb_nolao "short;visual" "")
 dirac_test(visual_3d_rspE_ll_dft "short;visual" "")
-dirac_test(visual_symmetry "short;visual" "")
+dirac_test(visual_symmetry "medium;visual" "")
 dirac_test(response_hdf5 "medium;response" "")
-# gosia: these tests give different value than the old code
 dirac_test(visual_3d_gamma5_dc_dft "medium;visual" "")
 dirac_test(visual_3d_spinden_dc_dft "medium;visual" "")
-# gosia: WIP
 dirac_test(visual_tutorial_overview "short;visual" "")
+#dirac_test(visual_tutorial_radial_distributions "short;visual" "")
+# gosia: WIP
 #dirac_test(visual_tutorial_radial_distributions "short;visual" "")
 #dirac_test(visual_3d_bed_dc_dft "short;visual" "")
 #dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao_micd_specific "short;visual;lao" "")
-# tutorials:
-dirac_test(visual_tutorial_overview "short;visual" "")
-#dirac_test(visual_tutorial_radial_distributions "short;visual" "")
 # Related tests:
 ########################
 #gosia: these tests run now in serial mode (WIP):

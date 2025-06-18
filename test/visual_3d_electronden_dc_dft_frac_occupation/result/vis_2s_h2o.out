@@ -1,8 +1,12 @@
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
- of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+  ** interface to 32-bit integer MPI enabled **
 
-Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
-
+DIRAC master    (ac0029) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
+DIRAC nodes 1 to 7 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
+DIRAC master    (ac0029) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
+DIRAC nodes 1 to 7 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
+ 
+Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
+ 
  *******************************************************************************
  *                                                                             *
  *                                O U T P U T                                  *
@@ -84,79 +88,104 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
  *    Sebastien Dubillard      University of Strasbourg          France        *
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Elke Fasshauer           University of Aarhus              Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
- *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
- *    Erik D. Hedegaard        Lund University                   Sweden        *
+ *    Konstantin J. Gaul       Helmholtz Institute Mainz         Germany       *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
  *    Trygve Helgaker          University of Oslo                Norway        *
  *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
- *    Stefan Knecht            ETH Zuerich                       Switzerland   *
- *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Ernst D. Larsson         University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
- *    Patrick Norman           Linkoeping University             Sweden        *
- *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
  *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
- *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
+ *    Carlos M. R. Rocha       Netherlands eScience Center       Netherlands   *
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
- *    Avijit Shee              University of Michigan            USA           *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
  *    Toke Winther             University of Southern Denmark    Denmark       *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
  *                                                                             *
  *    For more information about the DIRAC code see http://diracprogram.org    *
  *                                                                             *
  *    This is an experimental code. The authors accept no responsibility       *
  *    for the performance of the code or for the correctness of the results.   *
  *                                                                             *
- *    The code (in whole or part) is not to be reproduced for further          *
- *    distribution without the written permission of the authors or            *
- *    their representatives.                                                   *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
  *                                                                             *
  *    If results obtained with this code are published, an                     *
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC18 (2018),                                                  *
- *    written by T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,          *
- *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
- *    O. Fossgaard, A. S. P. Gomes, E. D. Hedegaard, T. Helgaker,              *
- *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
- *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
- *    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *
- *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
- *    P. Salek, B. Schimmelpfennig, A. Shee, J. Sikkema, A. J. Thorvaldsen,    *
- *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser,T. Winther,           *
- *    and S. Yamamoto (see http://diracprogram.org).                           *
+ *    Release DIRAC25 (2025), written by                                       *
+ *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
+ *    with contributions from I. A. Aucar, V. Bakken, J. Brandejs, C. Chibueze,*
+ *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
+ *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, K. J. Gaul,         *
+ *    L. Halbert, E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn,    *
+ *    M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie,             *
+ *    J. K. Laerdahl, C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj,      *
+ *    M. K. Nayak, P. Norman, A. Nyvang, M. Olejniczak, J. Olsen,              *
+ *    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,             *
+ *    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky,           *
+ *    C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig, B. Senjean,       *
+ *    A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen, J. Thyssen,           *
+ *    J. N. P. van Stralen, M. L. Vidal, S. Villaume, O. Visser, T. Winther,   *
+ *    S. Yamamoto and X. Yuan                                                  *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
  *                                                                             *
  *******************************************************************************
 
@@ -164,52 +193,62 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | saue_vdens
-Commit hash   | f8bc53325
-Commit author | Trond Saue
-Commit date   | Wed May 15 11:16:45 2019 +0200
+Branch        | gosia/visual-merge
+Commit hash   | 298b7bff0
+Commit author | gosia olejniczak
+Commit date   | Wed Jun 18 11:00:49 2025 +0200
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | saue
-Compiled on server       | dirac
-Operating system         | Linux-4.15.0-47-generic
-CMake version            | 3.10.2
+Who compiled             | plggosiao
+Compiled on server       | ac0029
+Operating system         | Linux-4.18.0-553.40.1.el8_10.x86_64
+CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2019-05-16 18:20:33.942923
-Python version           | 2.7.1
-Fortran compiler         | /usr/bin/gfortran
-Fortran compiler version | 7.4.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
-C compiler               | /usr/bin/gcc
-C compiler version       | 7.4.0
-C compiler flags         |  -g -g
-C++ compiler             | /usr/bin/g++
-C++ compiler version     | 7.4.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+Configuration time       | 2025-06-18 11:30:43.339594+00:00
+Fortran compiler         | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiifort
+Fortran compiler version | 2021.4.0
+Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp
+C compiler               | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiicc
+C compiler version       | 2021.4.0
+C compiler flags         |  -g  -qopenmp -g  -qopenmp
+C++ compiler             | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiicpc
+C++ compiler version     | 2021.4.0
+C++ compiler flags       |  -Wno-unknown-pragmas  -qopenmp -Wno-unknown-pragmas  -qopenmp
 Static linking           | False
 64-bit integers          | False
-MPI parallelization      | False
-MPI launcher             | unknown
-Math libraries           | /usr/lib/x86_64-linux-gnu/libatlas.so;/usr/lib/x86_64-linux-gnu/atlas/liblapack.so;/usr/lib/x86_64-linux-gnu/libf77blas.so;/usr/lib/x86_64-linux-gnu/libcblas.so;/usr/lib/x86_64-linux-gnu/libatlas.so
+MPI parallelization      | True
+MPI launcher             | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiexec
+Math libraries           | unknown
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
 
 
  LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+ MPI selftest passed with MPI_INTEGER of the size 4 bytes
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu May 23 14:31:53 2019
-     Host name              : dirac                                   
+     Date and time (Linux)  : Wed Jun 18 15:53:28 2025
+     Host name              : ac0029                                  
+
+ * Opening checkpoint file 
+    - Existing hdf5 checkpoint file: check contents
+    - Checkpoint file is valid, will be used for restart
 
 
 Contents of the input file
@@ -217,26 +256,28 @@ Contents of the input file
 
 **DIRAC                                                                                             
 **HAMILTONIAN                                                                                       
-.LVCORR                                                                                             
-.INTFLG                                                                                             
- 1 0 0                                                                                              
+.DFT                                                                                                
+ B3LYP                                                                                              
 **INTEGRALS                                                                                         
 *READIN                                                                                             
 .UNCONTRACT                                                                                         
 **WAVE FUNCTION                                                                                     
 .SCF                                                                                                
+*SCF                                                                                                
+.CLOSED_SHELL                                                                                       
+10                                                                                                  
+.EVCCNV                                                                                             
+1.0D-8                                                                                              
 **VISUAL                                                                                            
-.LIST                                                                                               
- 5                                                                                                  
- 0.0 0.1 0.0                                                                                        
- 0.0 0.2 0.0                                                                                        
- 0.0 0.5 0.0                                                                                        
- 0.0 1.0 0.0                                                                                        
- 0.0 2.0 0.0                                                                                        
-.S                                                                                                  
- PAMXVC 1                                                                                           
-.S                                                                                                  
- PAMXVC 2                                                                                           
+.OCCUPATION   ! this will affect all gridfunctions                                                  
+ 1                                                                                                  
+ 1 6 1.0                                                                                            
+.GRIDS                                                                                              
+1                                                                                                   
+id=1 input=import file_inp=grid.h5                                                                  
+.GRIDFUNCTIONS                                                                                      
+1                                                                                                   
+name=ed id_grid=1 purpose=visualization outpri=yes export=hdf5 file_out=ed_2s.h5                    
 *END OF                                                                                             
 
 
@@ -244,14 +285,15 @@ Contents of the molecule file
 -----------------------------
 
 INTGRL                                                                                              
-.                                                                                                   
-.                                                                                                   
-C   2    0         A                                                                                
-       6.     1                                                                                     
-C       .0000000000         .0000000000         .0000000000                                         
+..                                                                                                  
+..                                                                                                  
+C   2    0                                                                                          
+        8.    1                                                                                     
+O        0.00000  -0.2249058930   0.00000                                                           
 LARGE BASIS cc-pVDZ                                                                                 
-       8.     1                                                                                     
-O       .0000000000         .0000000000        1.1280000000                                         
+        1.    2                                                                                     
+H        1.45235   0.8996230000   0.00000                                                           
+H       -1.45235   0.8996230000   0.00000                                                           
 LARGE BASIS cc-pVDZ                                                                                 
 FINISH                                                                                              
 
@@ -266,11 +308,12 @@ FINISH
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
-   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
-                Peter J. Mohr and Barry N. Taylor                         
-   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
- * The speed of light :        137.0359998
+   CODATA Recommended Values of the Fundamental Physical Constants: 2022  
+     Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
+        https://physics.nist.gov/constants (Accessed March 6, 2025)       
+ * The speed of light :        137.035999177
  * Running in four-component mode
+ * Parallel run with 7 slaves.
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -291,7 +334,7 @@ FINISH
     *************************************************************************
 
  Default print level:        1
- Nuclear model: Gaussian charge distribution.
+ Using default nuclear model: Gaussian charge distribution.
 
  Two-electron integrals not calculated.
 
@@ -317,14 +360,10 @@ FINISH
   Title Cards
   -----------
 
-  .                                                                       
-  .                                                                       
-
-  Coordinates are entered in Angstroms and converted to atomic units.
-          - Conversion factor : 1 bohr = 0.52917721 A
-
-  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077492457D+08
-  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631427636D+08
+  ..                                                                      
+  ..                                                                      
+  Nuclear Gaussian exponent for atom of charge    8.000 :     5.8631428133D+08   (using mass   16.0)
+  Nuclear Gaussian exponent for atom of charge    1.000 :     2.1248236082D+09   (using mass    1.0)
 
 
                           SYMGRP:Point group information
@@ -373,39 +412,28 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  QM-QM nuclear repulsion energy :     22.518179076596
+  Nuclear repulsion energy                       :      9.055004525638 Hartree
 
-
-
-                                 Isotopic Masses
-                                 ---------------
-
-                           C          12.000000
-                           O          15.994915
-
-                       Total mass:    27.994915 amu
-                       Natural abundance:  98.663 %
-
- Center-of-mass coordinates (a.u.):    0.000000    0.000000    1.217898
+  Nuclear contribution to electric dipole moment :    0.000000000000   -0.000001144000    0.000000000000 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
   --------------------
 
   Number of atom types :    2
-  Total number of atoms:    2
+  Total number of atoms:    3
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  C           1       6      27      27      L  - [9s4p1d|9s4p1d]                                                
-                             68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
   O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                                
                              68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
+  H           2       1       7       7      L  - [4s1p|4s1p]                                                    
+                             19      19      S  - [1s4p1d|1s4p1d]                                                
   ----------------------------------------------------------------------
-                             54      54      L  - large components
-                            136     136      S  - small components
+                             41      41      L  - large components
+                            106     106      S  - small components
   ----------------------------------------------------------------------
-  total:      2      14     190     190
+  total:      3      10     147     147
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
@@ -430,35 +458,41 @@ Point group: C1
   Cartesian Coordinates (bohr)
   ----------------------------
 
-  Total number of coordinates:  6
+  Total number of coordinates:  9
 
 
-   1   C        x      0.0000000000
-   2            y      0.0000000000
+   1   O        x      0.0000000000
+   2            y     -0.2249058930
    3            z      0.0000000000
 
-   4   O        x      0.0000000000
-   5            y      0.0000000000
-   6            z      2.1316110791
+   4   H        x      1.4523500000
+   5            y      0.8996230000
+   6            z      0.0000000000
+
+   7   H        x     -1.4523500000
+   8            y      0.8996230000
+   9            z      0.0000000000
 
 
 
   Cartesian coordinates in XYZ format (Angstrom)
   ----------------------------------------------
 
-    2
-
-C      0.0000000000   0.0000000000   0.0000000000
-O      0.0000000000   0.0000000000   1.1280000000
+    3
+ 
+O      0.0000000000  -0.1190150731   0.0000000000
+H      0.7685505217   0.4760599897   0.0000000000
+H     -0.7685505217   0.4760599897   0.0000000000
 
 
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            C           O   
+            O           H           H   
 
-   C       0.000000
-   O       1.128000    0.000000
+   O       0.000000
+   H       0.972000    0.000000
+   H       0.972000    1.537101    0.000000
 
 
 
@@ -468,52 +502,57 @@ O      0.0000000000   0.0000000000   1.1280000000
 
                   atom 1     atom 2                           distance
                   ------     ------                           --------
-  bond distance:    O          C                              1.128000
+  bond distance:    H          O                              0.972000
+  bond distance:    H          O                              0.972000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H          O          H                    104.500
 
 
 
-   Nuclear repulsion energy :   22.518179076596 Hartree
+   Nuclear repulsion energy                          :    9.055004525638 Hartree
+
+                       * Total mass:    18.010565 amu
+                       * Natural abundance:  99.730 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000  -0.099054390663707   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000  -0.052417326143556   0.000000000000000
 
 
                                 GETLAB: AO-labels
                                 -----------------
 
-   * Large components:   20
-     1  L C   1 s        2  L C   1 px       3  L C   1 py       4  L C   1 pz       5  L C   1 dxx      6  L C   1 dxy 
-     7  L C   1 dxz      8  L C   1 dyy      9  L C   1 dyz     10  L C   1 dzz     11  L O   1 s       12  L O   1 px  
-    13  L O   1 py      14  L O   1 pz      15  L O   1 dxx     16  L O   1 dxy     17  L O   1 dxz     18  L O   1 dyy 
-    19  L O   1 dyz     20  L O   1 dzz 
+   * Large components:   18
+     1  L O   1 s        2  L O   1 px       3  L O   1 py       4  L O   1 pz       5  L O   1 dxx      6  L O   1 dxy 
+     7  L O   1 dxz      8  L O   1 dyy      9  L O   1 dyz     10  L O   1 dzz     11  L H   1 s       12  L H   1 px  
+    13  L H   1 py      14  L H   1 pz      15  L H   1 s       16  L H   1 px      17  L H   1 py      18  L H   1 pz  
    * Small components:   40
-    21  S C   1 s       22  S C   1 px      23  S C   1 py      24  S C   1 pz      25  S C   1 dxx     26  S C   1 dxy 
-    27  S C   1 dxz     28  S C   1 dyy     29  S C   1 dyz     30  S C   1 dzz     31  S C   1 fxxx    32  S C   1 fxxy
-    33  S C   1 fxxz    34  S C   1 fxyy    35  S C   1 fxyz    36  S C   1 fxzz    37  S C   1 fyyy    38  S C   1 fyyz
-    39  S C   1 fyzz    40  S C   1 fzzz    41  S O   1 s       42  S O   1 px      43  S O   1 py      44  S O   1 pz  
-    45  S O   1 dxx     46  S O   1 dxy     47  S O   1 dxz     48  S O   1 dyy     49  S O   1 dyz     50  S O   1 dzz 
-    51  S O   1 fxxx    52  S O   1 fxxy    53  S O   1 fxxz    54  S O   1 fxyy    55  S O   1 fxyz    56  S O   1 fxzz
-    57  S O   1 fyyy    58  S O   1 fyyz    59  S O   1 fyzz    60  S O   1 fzzz
+    19  S O   1 s       20  S O   1 px      21  S O   1 py      22  S O   1 pz      23  S O   1 dxx     24  S O   1 dxy 
+    25  S O   1 dxz     26  S O   1 dyy     27  S O   1 dyz     28  S O   1 dzz     29  S O   1 fxxx    30  S O   1 fxxy
+    31  S O   1 fxxz    32  S O   1 fxyy    33  S O   1 fxyz    34  S O   1 fxzz    35  S O   1 fyyy    36  S O   1 fyyz
+    37  S O   1 fyzz    38  S O   1 fzzz    39  S H   1 s       40  S H   1 px      41  S H   1 py      42  S H   1 pz  
+    43  S H   1 dxx     44  S H   1 dxy     45  S H   1 dxz     46  S H   1 dyy     47  S H   1 dyz     48  S H   1 dzz 
+    49  S H   1 s       50  S H   1 px      51  S H   1 py      52  S H   1 pz      53  S H   1 dxx     54  S H   1 dxy 
+    55  S H   1 dxz     56  S H   1 dyy     57  S H   1 dyz     58  S H   1 dzz 
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:          190
-  Number of large orbitals in each symmetry:     54
-  Number of small orbitals in each symmetry:    136
+  Number of orbitals in each symmetry:          147
+  Number of large orbitals in each symmetry:     41
+  Number of small orbitals in each symmetry:    106
 
 * Large component functions
 
   Symmetry  A  ( 1)
 
-        9 functions:    C  s   
-        4 functions:    C  px  
-        4 functions:    C  py  
-        4 functions:    C  pz  
-        1 functions:    C  dxx 
-        1 functions:    C  dxy 
-        1 functions:    C  dxz 
-        1 functions:    C  dyy 
-        1 functions:    C  dyz 
-        1 functions:    C  dzz 
         9 functions:    O  s   
         4 functions:    O  px  
         4 functions:    O  py  
@@ -524,31 +563,19 @@ O      0.0000000000   0.0000000000   1.1280000000
         1 functions:    O  dyy 
         1 functions:    O  dyz 
         1 functions:    O  dzz 
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
 
 * Small component functions
 
   Symmetry  A  ( 1)
 
-        4 functions:    C  s   
-       10 functions:    C  px  
-       10 functions:    C  py  
-       10 functions:    C  pz  
-        4 functions:    C  dxx 
-        4 functions:    C  dxy 
-        4 functions:    C  dxz 
-        4 functions:    C  dyy 
-        4 functions:    C  dyz 
-        4 functions:    C  dzz 
-        1 functions:    C  fxxx
-        1 functions:    C  fxxy
-        1 functions:    C  fxxz
-        1 functions:    C  fxyy
-        1 functions:    C  fxyz
-        1 functions:    C  fxzz
-        1 functions:    C  fyyy
-        1 functions:    C  fyyz
-        1 functions:    C  fyzz
-        1 functions:    C  fzzz
         4 functions:    O  s   
        10 functions:    O  px  
        10 functions:    O  py  
@@ -569,32 +596,77 @@ O      0.0000000000   0.0000000000   1.1280000000
         1 functions:    O  fyyz
         1 functions:    O  fyzz
         1 functions:    O  fzzz
+        1 functions:    H  s   
+        4 functions:    H  px  
+        4 functions:    H  py  
+        4 functions:    H  pz  
+        1 functions:    H  dxx 
+        1 functions:    H  dxy 
+        1 functions:    H  dxz 
+        1 functions:    H  dyy 
+        1 functions:    H  dyz 
+        1 functions:    H  dzz 
+        1 functions:    H  s   
+        4 functions:    H  px  
+        4 functions:    H  py  
+        4 functions:    H  pz  
+        1 functions:    H  dxx 
+        1 functions:    H  dxy 
+        1 functions:    H  dxz 
+        1 functions:    H  dyy 
+        1 functions:    H  dyz 
+        1 functions:    H  dzz 
 
 
    ***************************************************************************
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
  * Print level:    0
  * Dirac-Coulomb Hamiltonian
+ * Kohn-Sham calculation using the xc functional: B3LYP
+   Weighted mixed functional:
+                 HF exchange:    0.20000
+                         VWN:    0.19000
+                         LYP:    0.81000
+                       Becke:    0.72000
+                      Slater:    0.80000
  * SS integrals neglected:
    Interatomic Coulombic SS-contributions modelled by
    classical repulsion of small component atomic charges
    using tabulated charges.
  * Default integral flags passed to all modules
    - LL-integrals:     1
-   - LS-integrals:     0
+   - LS-integrals:     1
    - SS-integrals:     0
    - GT-integrals:     0
- * Basis set:
-   - uncontracted large component basis set
-   - uncontracted small component basis set
 
 
  Information about the restricted kinetic balance scheme:
  * Default RKB projection:
    1: Pre-projection in scalar basis
    2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+ reading .OCCUPATION, nr lines:           1
+ occupy symmetry      =            1
+        start orbital =            6
+        end orbital   =            6
+        occupation    =    1.00000000000000     
+ VISUAL: Grid information will be read from grid file
+ WARNING: These options will be ignored (if present): npoints, spacing, margin.
+  ===== Kohn-Sham calculation set-up =====
+ * DFT thresholds:
+   - small density threshold =  0.10000E-13
+ * Spin density contribution in response calculations:
+   - use the norm of the spin magnetization vector as a definition of the spin density (noncollinear definition)
+  ===== Numerical integration grid =====
+   - radial quadrature according to R. Lindh, P.-Aa. Malmqvist, and L. Gagliardi
+     precision of radial quadrature set to:  0.10000E-12
+   - angular quadrature using the Lebedev scheme, exact up to order L = 41
 
 
     **************************************************************************
@@ -602,34 +674,28 @@ O      0.0000000000   0.0000000000   1.1280000000
     **************************************************************************
 
  Wave function types requested (in input order):
-     HF        
+     DFT       
 
  Wave function jobs in execution order (expanded):
- * Hartree-Fock calculation
-
- * Initial Automatic occupation based on:
-   Total charge of atoms =  14
-   Charge of molecule    =   0
-   i.e. no. of electrons =  14
+ * Density functional calculation (Kohn-Sham method)
 ===========================================================================
- *SCF: Set-up for Hartree-Fock calculation:
+ *SCF: Set-up for Kohn-Sham calculation:
 ===========================================================================
  * Number of fermion irreps: 1
- * Closed shell SCF calculation with    14 electrons in    7 orbitals.
+ * Closed shell SCF calculation with    10 electrons in    5 orbitals.
+ * Charge of molecule : 0
  * Sum of atomic potentials used for start guess
  * General print level   :   0
 
  ***** INITIAL TRIAL SCF FUNCTION *****
- * Trial vectors read from file DFCOEF
+ * Trial vectors read from CHECKPOINT
  * Scaling of active-active block correction to open shell Fock operator    0.500000
    to improve convergence (default value).
-   The final open-shell orbital energies are recalculated with 1.0 scaling,
-   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
 
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
-   Desired convergence:1.000D-07
-   Allowed convergence:1.000D-06
+   Desired convergence:1.000D-08
+   Allowed convergence:1.000D-08
 
  ***** CONVERGENCE CONTROL *****
  * Fock matrix constructed using differential density matrix
@@ -643,6 +709,7 @@ O      0.0000000000   0.0000000000   1.1280000000
  * No quadratic convergent Hartree-Fock
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
+   SL-integrals from iteration    1
     ---> this is default setting from Hamiltonian input
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
@@ -666,60 +733,83 @@ O      0.0000000000   0.0000000000   1.1280000000
                                au             Debye
 
                     x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z     17.05288863     43.34452074
+                    y     -0.00000114     -0.00000291
+                    z      0.00000000      0.00000000
 
                         1 Debye =   2.54177000 a.u. 
-
-Total time used in ONEGEN (CPU)  0.01183500s and (WALL)  0.01200000s
 
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.12E-01
-   S   A     * Deleted:         14(Proj:         14, Lindep:          0) Smin: 0.32E-02
+   L   A     * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.15E-01
+   S   A     * Deleted:          9(Proj:          9, Lindep:          0) Smin: 0.74E-02
 
 
                                 Output from MODHAM
                                 ------------------
 
  * Applied strict kinetic balance !
- * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.
 
 
       **********************************************************************
       ************************* Orbital dimensions *************************
       **********************************************************************
 
-No. of positive energy orbitals (NESH):    52
-No. of negative energy orbitals (NPSH):    52
-Total no. of orbitals           (NORB):   104
+No. of positive energy orbitals (NESH):    40
+No. of negative energy orbitals (NPSH):    40
+Total no. of orbitals           (NORB):    80
+  
 
-  *** Visualisation module ***
- --------------------------------------------------------------------------------------
- --------------------------------------------------------------------------------------
-  Visualisation : DFCOEF file read
+  *** Visualization module ***
+  
+ WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb.
+ Orbital occupations will be modified according to .OCCUPATION
+ will read result/grid/points/coor_1 from grid.h5
+ will read result/grid/points/coor_2 from grid.h5
+ will read result/grid/points/coor_3 from grid.h5
+ VISUAL: setting up grid (grid ID=           1 )
+   Grid is read from file: grid.h5
+ 
+  Opening new HDF5 file for grid function export: ed_2s.h5
+ 
+*** VISUAL output ***
+ 
+Final grid_function values (grid_function%id=  1) in grid points (grid#id=  1): 
+x  y  z  grid_function values
+   6.76588605E-003   4.24902337E-001   7.15868641E-001   6.40090066E-002
+   2.60518074E-001   3.57375773E-001   4.62083841E-001   1.17650583E-001
+   8.64906143E-001   8.18115662E-001   4.80333594E-001   3.14596191E-003
+   4.69478627E-001   2.59496335E-001   9.54375316E-001   1.82211062E-002
+   5.87989393E-001   1.75654794E-001   2.39331230E-001   8.59351276E-002
+   4.85692857E-001   2.02483375E-001   6.91409530E-001   4.35356684E-002
+   7.22429734E-001   7.95048332E-001   7.58606717E-001   4.37325690E-003
+   6.12533700E-001   8.30515788E-001   1.70355039E-001   2.33786450E-002
+   1.28240046E-001   9.24721728E-001   5.35929531E-001   2.71863280E-002
+   3.10193139E-001   5.35633410E-001   7.98299580E-001   3.27079010E-002
+   5.00775429E-001   7.90312874E-001   7.14011423E-001   1.41272384E-002
+   4.50152916E-001   1.29131995E-001   2.21419736E-001   1.27425427E-001
+   6.15302574E-001   1.11344372E-001   7.89866450E-001   2.16670189E-002
+   9.57295734E-001   3.64829931E-001   9.09649606E-001   2.02708705E-003
+   9.60008142E-001   4.73087238E-001   2.36656120E-001   1.06109615E-002
+   1.60214658E-001   6.46043259E-001   6.20521411E-001   5.25701081E-002
+   5.75713335E-001   3.49934787E-001   5.97888260E-001   4.20119339E-002
+   1.00938434E-001   8.69771417E-001   9.94327750E-001   6.96867286E-003
+   5.71050787E-001   3.28187135E-001   4.34289561E-001   6.33141962E-002
+   6.18776930E-001   6.88940035E-001   3.90733652E-001   2.90074028E-002
+   3.63904839E-001   5.72311358E-001   7.89775964E-001   2.85867437E-002
+   6.63039526E-001   9.05748473E-001   4.82639867E-001   8.23934197E-003
+   7.20261855E-001   1.59108989E-001   7.03395211E-001   2.03915813E-002
+   2.14322338E-001   5.25989253E-001   7.88909762E-001   3.88872251E-002
+   8.19376187E-001   7.25696339E-001   6.05258743E-001   5.59659324E-003
+   1.05427324E-001   1.64186075E-002   5.43015084E-001   9.47886752E-002
+   2.85057151E-001   6.76376272E-001   9.96919008E-001   1.14086724E-002
+ 
+ Elapsed walltime in run_visual:  -2.974399999999999E-002
 
-
-                         +-------------------------------+
-                         ! Requested density at point(s) !
-                         +-------------------------------+
-
-
-     r_x           r_y           r_z            scalar                     x-component               y-component               z-component
-
-  0.000000E+00  0.100000E+00  0.000000E+00   0.0000000000000000E+000  -1.4742954150742349E-010   9.4018296492474375E-004   1.4631761265818013E-003
-  0.000000E+00  0.200000E+00  0.000000E+00   0.0000000000000000E+000  -4.1840412139642278E-011   7.6561582908125177E-004  -8.7600710059311223E-005
-  0.000000E+00  0.500000E+00  0.000000E+00   0.0000000000000000E+000  -5.3671027086655550E-012  -3.5550318514690184E-004  -7.8591417989514969E-005
-  0.000000E+00  0.100000E+01  0.000000E+00   0.0000000000000000E+000  -1.0513213258528566E-011  -4.6963110718584844E-004  -3.1556600890028877E-005
-  0.000000E+00  0.200000E+01  0.000000E+00   0.0000000000000000E+000  -3.5775230333123453E-013  -8.6785561850942673E-005  -9.3024331447064560E-006
-
-----------------------------------------------------------------------------------------------------
-
-
- >>>> time used in plot:   0.00 seconds
- >>>> time used in integration:   0.00 seconds
+ * Closing HDF5 checkpoint file 
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -727,35 +817,35 @@ Total no. of orbitals           (NORB):   104
 
 
  
-     Date and time (Linux)  : Thu May 23 14:31:54 2019
-     Host name              : dirac                                   
+     Date and time (Linux)  : Wed Jun 18 15:53:28 2025
+     Host name              : ac0029                                  
 
->>>> Node 0, utime: 0, stime: 0, minflt: 3966, majflt: 0, nvcsw: 0, nivcsw: 47, maxrss: 25572
->>>> Total WALL time used in DIRAC: 1s
+>>>> Node 0, utime: 0, stime: 0, minflt: 12312, majflt: 136, nvcsw: 2098, nivcsw: 284, maxrss: 258964
+>>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :        85.04
+  Mean allocation size (Mb) :       122.19
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
-        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
-        0.72 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.72 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
-        0.14 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+      488.28 Mb at subroutine pamset_+0x321                              for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_+0x6d60                             for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_+0x7d                               for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__+0xd4f                               for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine paminp_+0xcc                               for PAMINP WORK array                         
+        0.36 Mb at subroutine qtrans90_+0x1fe                            for QTRANS90-buffer-space                     
+        0.16 Mb at subroutine butobs_no_work_+0x86                       for buf in butobs                             
+        0.08 Mb at subroutine gtovlx_+0x86                               for unnamed variable                          
+        0.02 Mb at subroutine xpldef_+0x1b7                              for INTADR in XPLDEF                          
+        0.02 Mb at subroutine xpldef_+0x19d                              for INTREP in XPLDEF                          
   
-  Peak memory usage:       488.56 MB
+  Peak memory usage:       488.45 MB
   Peak memory usage:        0.477 GB
-       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+       reached at subroutine : butobs_no_work_+0x86                      
               for variable   : buf in butobs                             
   
- MEMGET high-water mark:     0.00 MB
+ MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/saue/Dirac/build/test/visual_div_rot
+DIRAC pam run in /net/pr2/projects/plgrid/plggqcembed/devel/dirac/build-gosia-visual-merge-public-intel202140/test/visual_3d_electronden_dc_dft_frac_occupation

@@ -1240,7 +1240,9 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine visual_input_show_setup()
 
+    write(*, *) ' '
     write(*, '(/,2x, a)') '*** Visualization module ***' 
+    write(*, *) ' '
     if ( rs_input%print_level > 2 ) then
       write(*, *) "DEBUG: rs_input:"
 #ifdef VAR_MPI
