@@ -11,3 +11,9 @@ target_include_directories(
   PRIVATE
     ${PROJECT_SOURCE_DIR}/src/include
   )
+
+set_target_properties(
+  labread.x
+  PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+  )
