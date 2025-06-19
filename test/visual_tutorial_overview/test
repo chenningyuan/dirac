@@ -23,4 +23,8 @@ f.add(from_string = 'Final grid_function values (grid_function%id=',
 
 test.run(['dc.inp'], ['h2o.xyz'], args='--outcmo')
 test.run(['vis.inp'], ['h2o.xyz'], f, args='--incmo --get="ed.cube"')
+Path('CHECKPOINT.h5').unlink()
 
+#test.run(['dc_631.inp'], ['c6h6.xyz'], args='--outcmo')
+#test.run(['vis_elf.inp'], ['c6h6.xyz'], args='--incmo --get="elf.cube"')
+#Path('CHECKPOINT.h5').unlink()

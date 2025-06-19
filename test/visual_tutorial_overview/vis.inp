@@ -24,7 +24,8 @@ cc-pVDZ
 id=1 input=create typ=1 npoints=[64,64,32] margin=4.0
 id=2 input=dft
 .GRIDFUNCTIONS
-2
+3
 name=ed id_grid=1 purpose=visualization export=cube file_out=ed.cube
 name=ed id_grid=2 purpose=integration
+name=elf id_grid=1 purpose=visualization export=cube file_out=elf.cube
 *END OF
