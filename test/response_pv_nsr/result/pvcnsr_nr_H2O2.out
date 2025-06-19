@@ -1,4 +1,4 @@
-DIRAC serial starts by allocating 100000000 words (    762.94 MB -      0.745 GB) of memory    out of the allowed maximum of 128000000 words (    976.56 MB -      0.954 GB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -187,31 +187,31 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | iaa-short-tests
-Commit hash   | 1854fb6b6
-Commit author | Hans Jørgen Aagaard Jensen
-Commit date   | Sat Mar 8 15:57:58 2025 +0000
+Branch        | PV-prop
+Commit hash   | 0bfc800c4
+Commit author | Agustin
+Commit date   | Thu Mar 6 21:11:52 2025 +0100
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | agustin
-Compiled on server       | aucaria
-Operating system         | Linux-6.8.0-52-generic
+Who compiled             | agustinaucar
+Compiled on server       | desktop-rug
+Operating system         | Linux-6.5.0-35-generic
 CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2025-03-07 11:06:51.511383+00:00
+Configuration time       | 2025-03-20 18:21:17.501505+00:00
 Fortran compiler         | /usr/bin/gfortran
 Fortran compiler version | 11.4.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
 C compiler               | /usr/bin/gcc
 C compiler version       | 11.4.0
-C compiler flags         |  -g -fopenmp -fno-lto
+C compiler flags         |  -g -fopenmp -fno-lto -g -fopenmp -fno-lto
 C++ compiler             | /usr/bin/g++
 C++ compiler version     | 11.4.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | False
@@ -220,13 +220,13 @@ Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;EXA_TALSH_ONLY;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+Compile definitions      | HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT
 
 EXACORR dependencies
 --------------------
-Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
-Exatensor git hash       | bc0d8ef36703e0526fe96fe0a0c4c2e69ad02cd9
-Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/usr/bin/gfortran CMAKE_C_COMPILER=/usr/bin/gcc CMAKE_CXX_COMPILER=/usr/bin/g++ TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/usr/lib/x86_64-linux-gnu     
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
 
 
  LAPACK integer*4/8 selftest passed
@@ -236,8 +236,8 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri Mar 14 16:24:14 2025
-     Host name              : aucaria                                 
+     Date and time (Linux)  : Thu Mar 20 19:22:08 2025
+     Host name              : desktop-rug                             
 
  * Opening checkpoint file 
     - New checkpoint file created
@@ -822,180 +822,180 @@ Total no. of orbitals           (NORB):    36
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.   1 ##########   Thu Mar 20 19:22:08 2025
 
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.55353   10  -0.38968
 
 => Calculating sum of orbital energies
-It.    1    -53.38249112590      0.00D+00  0.00D+00  0.00D+00               0.00605000s   Atom. scrpot   Fri Mar 14
+It.    1    -53.38249112590      0.00D+00  0.00D+00  0.00D+00               0.00406100s   Atom. scrpot   Thu Mar 20
 
-########## START ITERATION NO.   2 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.   2 ##########   Thu Mar 20 19:22:08 2025
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   38.51%    0.00%   46.11%   0.00782100s
+SOfock:LL  1.00D-12    0.00%   38.51%    0.00%   46.11%   0.00596700s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.31390   10   0.25163
->>> Total wall time:  0.02900000s, and total CPU time :  0.02931200s
+>>> Total wall time:  0.02200000s, and total CPU time :  0.02185000s
 
-########## END ITERATION NO.   2 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.   2 ##########   Thu Mar 20 19:22:08 2025
 
-It.    2    -149.7880738704      9.64D+01  2.95D+00  1.68D+00               0.02900000s   LL             Fri Mar 14
+It.    2    -149.7880738704      9.64D+01  2.95D+00  1.68D+00               0.02200000s   LL             Thu Mar 20
 
-########## START ITERATION NO.   3 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.   3 ##########   Thu Mar 20 19:22:08 2025
 
     3 *** Differential density matrix. DCOVLP     = 0.9993
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   39.22%    0.00%   45.58%   0.00832400s
+SOfock:LL  1.00D-12    0.00%   39.22%    0.00%   45.58%   0.00634800s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.48508   10   0.20532
->>> Total wall time:  0.01200000s, and total CPU time :  0.01214699s
+>>> Total wall time:  0.00900000s, and total CPU time :  0.00860301s
 
-########## END ITERATION NO.   3 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.   3 ##########   Thu Mar 20 19:22:08 2025
 
-It.    3    -149.9193231296      1.31D-01 -4.66D-01  4.04D-01   DIIS   2    0.01200000s   LL             Fri Mar 14
+It.    3    -149.9193231296      1.31D-01 -4.66D-01  4.04D-01   DIIS   2    0.00900000s   LL             Thu Mar 20
 
-########## START ITERATION NO.   4 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.   4 ##########   Thu Mar 20 19:22:08 2025
 
     4 *** Differential density matrix. DCOVLP     = 0.9810
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   39.96%    0.00%   45.03%   0.00828201s
+SOfock:LL  1.00D-12    0.00%   39.96%    0.00%   45.03%   0.00642000s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.46024   10   0.22812
->>> Total wall time:  0.01200000s, and total CPU time :  0.01200899s
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00849701s
 
-########## END ITERATION NO.   4 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.   4 ##########   Thu Mar 20 19:22:08 2025
 
-It.    4    -149.9401639996      2.08D-02  1.51D-01  8.39D-02   DIIS   3    0.01200000s   LL             Fri Mar 14
+It.    4    -149.9401639996      2.08D-02  1.51D-01  8.39D-02   DIIS   3    0.00800000s   LL             Thu Mar 20
 
-########## START ITERATION NO.   5 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.   5 ##########   Thu Mar 20 19:22:08 2025
 
     5 *** Differential density matrix. DCOVLP     = 1.0002
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   41.32%    0.00%   44.01%   0.00829300s
+SOfock:LL  1.00D-12    0.00%   41.32%    0.00%   44.01%   0.00636600s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.46278   10   0.22661
->>> Total wall time:  0.01200000s, and total CPU time :  0.01197401s
+>>> Total wall time:  0.00900000s, and total CPU time :  0.00839700s
 
-########## END ITERATION NO.   5 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.   5 ##########   Thu Mar 20 19:22:08 2025
 
-It.    5    -149.9412957003      1.13D-03 -2.81D-02  1.08D-02   DIIS   4    0.01200000s   LL             Fri Mar 14
+It.    5    -149.9412957003      1.13D-03 -2.81D-02  1.08D-02   DIIS   4    0.00900000s   LL             Thu Mar 20
 
-########## START ITERATION NO.   6 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.   6 ##########   Thu Mar 20 19:22:08 2025
 
     6 *** Differential density matrix. DCOVLP     = 0.9987
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   42.20%    0.00%   43.35%   0.00828500s
+SOfock:LL  1.00D-12    0.00%   42.20%    0.00%   43.35%   0.00642300s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.46274   10   0.22635
->>> Total wall time:  0.01200000s, and total CPU time :  0.01196299s
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00844200s
 
-########## END ITERATION NO.   6 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.   6 ##########   Thu Mar 20 19:22:08 2025
 
-It.    6    -149.9413741561      7.85D-05 -2.46D-03  2.91D-03   DIIS   5    0.01200000s   LL             Fri Mar 14
+It.    6    -149.9413741561      7.85D-05 -2.46D-03  2.91D-03   DIIS   5    0.00800000s   LL             Thu Mar 20
 
-########## START ITERATION NO.   7 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.   7 ##########   Thu Mar 20 19:22:08 2025
 
     7 *** Differential density matrix. DCOVLP     = 0.9997
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   43.67%    0.00%   42.24%   0.00825500s
+SOfock:LL  1.00D-12    0.00%   43.67%    0.00%   42.24%   0.00641301s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.46267   10   0.22627
->>> Total wall time:  0.01200000s, and total CPU time :  0.01198700s
+>>> Total wall time:  0.00900000s, and total CPU time :  0.00844499s
 
-########## END ITERATION NO.   7 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.   7 ##########   Thu Mar 20 19:22:08 2025
 
-It.    7    -149.9413828617      8.71D-06 -1.01D-03  7.39D-04   DIIS   6    0.01200000s   LL             Fri Mar 14
+It.    7    -149.9413828617      8.71D-06 -1.01D-03  7.39D-04   DIIS   6    0.00900000s   LL             Thu Mar 20
 
-########## START ITERATION NO.   8 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.   8 ##########   Thu Mar 20 19:22:08 2025
 
     8 *** Differential density matrix. DCOVLP     = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   45.47%    0.00%   40.89%   0.00829600s
+SOfock:LL  1.00D-12    0.00%   45.47%    0.00%   40.89%   0.00639001s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.46265   10   0.22627
->>> Total wall time:  0.01200000s, and total CPU time :  0.01203500s
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00850201s
 
-########## END ITERATION NO.   8 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.   8 ##########   Thu Mar 20 19:22:08 2025
 
-It.    8    -149.9413834587      5.97D-07 -2.83D-04  1.45D-04   DIIS   7    0.01200000s   LL             Fri Mar 14
+It.    8    -149.9413834587      5.97D-07 -2.83D-04  1.45D-04   DIIS   7    0.00800000s   LL             Thu Mar 20
 
-########## START ITERATION NO.   9 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.   9 ##########   Thu Mar 20 19:22:08 2025
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.94%    0.00%   38.29%   0.00827801s
+SOfock:LL  1.00D-12    0.00%   48.94%    0.00%   38.29%   0.00638199s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.46264   10   0.22627
->>> Total wall time:  0.01200000s, and total CPU time :  0.01200600s
+>>> Total wall time:  0.00900000s, and total CPU time :  0.00843401s
 
-########## END ITERATION NO.   9 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.   9 ##########   Thu Mar 20 19:22:08 2025
 
-It.    9    -149.9413834813      2.26D-08 -4.19D-05  4.98D-05   DIIS   8    0.01200000s   LL             Fri Mar 14
+It.    9    -149.9413834813      2.26D-08 -4.19D-05  4.98D-05   DIIS   8    0.00900000s   LL             Thu Mar 20
 
-########## START ITERATION NO.  10 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.  10 ##########   Thu Mar 20 19:22:08 2025
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   50.82%    0.00%   36.89%   0.00825900s
+SOfock:LL  1.00D-12    0.00%   50.82%    0.00%   36.89%   0.00639600s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.46264   10   0.22627
->>> Total wall time:  0.01200000s, and total CPU time :  0.01200199s
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00844701s
 
-########## END ITERATION NO.  10 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.  10 ##########   Thu Mar 20 19:22:08 2025
 
-It.   10    -149.9413834841      2.83D-09 -2.08D-05  9.60D-06   DIIS   9    0.01200000s   LL             Fri Mar 14
+It.   10    -149.9413834841      2.83D-09 -2.08D-05  9.60D-06   DIIS   9    0.00800000s   LL             Thu Mar 20
 
-########## START ITERATION NO.  11 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.  11 ##########   Thu Mar 20 19:22:08 2025
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   55.68%    0.00%   33.24%   0.00818700s
+SOfock:LL  1.00D-12    0.00%   55.68%    0.00%   33.24%   0.00634500s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.46264   10   0.22627
->>> Total wall time:  0.01200000s, and total CPU time :  0.01200700s
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00840999s
 
-########## END ITERATION NO.  11 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.  11 ##########   Thu Mar 20 19:22:08 2025
 
-It.   11    -149.9413834842      6.94D-11 -3.32D-06  1.27D-06   DIIS   9    0.01200000s   LL             Fri Mar 14
+It.   11    -149.9413834842      6.93D-11 -3.32D-06  1.27D-06   DIIS   9    0.00800000s   LL             Thu Mar 20
 
-########## START ITERATION NO.  12 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.  12 ##########   Thu Mar 20 19:22:08 2025
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   61.61%    0.00%   28.80%   0.00827700s
+SOfock:LL  1.00D-12    0.00%   61.61%    0.00%   28.80%   0.00636400s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.46264   10   0.22627
->>> Total wall time:  0.01200000s, and total CPU time :  0.01202001s
+>>> Total wall time:  0.00900000s, and total CPU time :  0.00845100s
 
-########## END ITERATION NO.  12 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.  12 ##########   Thu Mar 20 19:22:08 2025
 
-It.   12    -149.9413834842      5.80D-12 -2.94D-07  2.61D-07   DIIS   9    0.01200000s   LL             Fri Mar 14
+It.   12    -149.9413834842      5.94D-12 -2.94D-07  2.61D-07   DIIS   9    0.00900000s   LL             Thu Mar 20
 
-########## START ITERATION NO.  13 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.  13 ##########   Thu Mar 20 19:22:08 2025
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   65.62%    0.00%   25.78%   0.00818001s
+SOfock:LL  1.00D-12    0.00%   65.62%    0.00%   25.78%   0.00644800s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.46264   10   0.22627
->>> Total wall time:  0.01200000s, and total CPU time :  0.01189300s
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00849201s
 
-########## END ITERATION NO.  13 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.  13 ##########   Thu Mar 20 19:22:08 2025
 
-It.   13    -149.9413834842     -3.98D-13  4.81D-08  7.35D-08   DIIS   9    0.01200000s   LL             Fri Mar 14
+It.   13    -149.9413834842     -9.95D-13  4.81D-08  7.35D-08   DIIS   9    0.00800000s   LL             Thu Mar 20
 
-########## START ITERATION NO.  14 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.  14 ##########   Thu Mar 20 19:22:08 2025
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   69.47%    0.01%   22.90%   0.00820097s
+SOfock:LL  1.00D-12    0.00%   69.47%    0.01%   22.90%   0.00630200s
 E_HOMO...E_LUMO, symmetry 1:                                  9  -0.46264   10   0.22627
->>> Total wall time:  0.01100000s, and total CPU time :  0.01190001s
+>>> Total wall time:  0.00900000s, and total CPU time :  0.00835201s
 
-########## END ITERATION NO.  14 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.  14 ##########   Thu Mar 20 19:22:08 2025
 
-It.   14    -149.9413834842      4.72D-12  1.40D-08  1.43D-08   DIIS   5    0.01100000s   LL             Fri Mar 14
+It.   14    -149.9413834842      5.12D-12  1.40D-08  1.43D-08   DIIS   5    0.00900000s   LL             Thu Mar 20
 
-########## START ITERATION NO.  15 ##########   Fri Mar 14 16:24:14 2025
+########## START ITERATION NO.  15 ##########   Thu Mar 20 19:22:08 2025
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   76.32%    0.02%   17.76%   0.00803700s
->>> Total wall time:  0.01100000s, and total CPU time :  0.01093099s
+SOfock:LL  1.00D-12    0.00%   76.32%    0.02%   17.76%   0.00628300s
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00782000s
 
-########## END ITERATION NO.  15 ##########   Fri Mar 14 16:24:14 2025
+########## END ITERATION NO.  15 ##########   Thu Mar 20 19:22:08 2025
 
-It.   15    -149.9413834842      5.88D-12 -2.37D-09  3.55D-09   DIIS   5    0.01100000s   LL             Fri Mar 14
+It.   15    -149.9413834842      6.22D-12 -2.37D-09  3.55D-09   DIIS   5    0.00800000s   LL             Thu Mar 20
 
 
                                    SCF - CYCLE
@@ -1011,26 +1011,26 @@ It.   15    -149.9413834842      5.88D-12 -2.37D-09  3.55D-09   DIIS   5    0.01
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -53.38249112590      0.00D+00  0.00D+00  0.00D+00               0.00605000s   Atom. scrpot   Fri Mar 14
-It.    2    -149.7880738704      9.64D+01  2.95D+00  1.68D+00               0.02900000s   LL             Fri Mar 14
-It.    3    -149.9193231296      1.31D-01 -4.66D-01  4.04D-01   DIIS   2    0.01200000s   LL             Fri Mar 14
-It.    4    -149.9401639996      2.08D-02  1.51D-01  8.39D-02   DIIS   3    0.01200000s   LL             Fri Mar 14
-It.    5    -149.9412957003      1.13D-03 -2.81D-02  1.08D-02   DIIS   4    0.01200000s   LL             Fri Mar 14
-It.    6    -149.9413741561      7.85D-05 -2.46D-03  2.91D-03   DIIS   5    0.01200000s   LL             Fri Mar 14
-It.    7    -149.9413828617      8.71D-06 -1.01D-03  7.39D-04   DIIS   6    0.01200000s   LL             Fri Mar 14
-It.    8    -149.9413834587      5.97D-07 -2.83D-04  1.45D-04   DIIS   7    0.01200000s   LL             Fri Mar 14
-It.    9    -149.9413834813      2.26D-08 -4.19D-05  4.98D-05   DIIS   8    0.01200000s   LL             Fri Mar 14
-It.   10    -149.9413834841      2.83D-09 -2.08D-05  9.60D-06   DIIS   9    0.01200000s   LL             Fri Mar 14
-It.   11    -149.9413834842      6.94D-11 -3.32D-06  1.27D-06   DIIS   9    0.01200000s   LL             Fri Mar 14
-It.   12    -149.9413834842      5.80D-12 -2.94D-07  2.61D-07   DIIS   9    0.01200000s   LL             Fri Mar 14
-It.   13    -149.9413834842     -3.98D-13  4.81D-08  7.35D-08   DIIS   9    0.01200000s   LL             Fri Mar 14
-It.   14    -149.9413834842      4.72D-12  1.40D-08  1.43D-08   DIIS   5    0.01100000s   LL             Fri Mar 14
-It.   15    -149.9413834842      5.88D-12 -2.37D-09  3.55D-09   DIIS   5    0.01100000s   LL             Fri Mar 14
+It.    1    -53.38249112590      0.00D+00  0.00D+00  0.00D+00               0.00406100s   Atom. scrpot   Thu Mar 20
+It.    2    -149.7880738704      9.64D+01  2.95D+00  1.68D+00               0.02200000s   LL             Thu Mar 20
+It.    3    -149.9193231296      1.31D-01 -4.66D-01  4.04D-01   DIIS   2    0.00900000s   LL             Thu Mar 20
+It.    4    -149.9401639996      2.08D-02  1.51D-01  8.39D-02   DIIS   3    0.00800000s   LL             Thu Mar 20
+It.    5    -149.9412957003      1.13D-03 -2.81D-02  1.08D-02   DIIS   4    0.00900000s   LL             Thu Mar 20
+It.    6    -149.9413741561      7.85D-05 -2.46D-03  2.91D-03   DIIS   5    0.00800000s   LL             Thu Mar 20
+It.    7    -149.9413828617      8.71D-06 -1.01D-03  7.39D-04   DIIS   6    0.00900000s   LL             Thu Mar 20
+It.    8    -149.9413834587      5.97D-07 -2.83D-04  1.45D-04   DIIS   7    0.00800000s   LL             Thu Mar 20
+It.    9    -149.9413834813      2.26D-08 -4.19D-05  4.98D-05   DIIS   8    0.00900000s   LL             Thu Mar 20
+It.   10    -149.9413834841      2.83D-09 -2.08D-05  9.60D-06   DIIS   9    0.00800000s   LL             Thu Mar 20
+It.   11    -149.9413834842      6.93D-11 -3.32D-06  1.27D-06   DIIS   9    0.00800000s   LL             Thu Mar 20
+It.   12    -149.9413834842      5.94D-12 -2.94D-07  2.61D-07   DIIS   9    0.00900000s   LL             Thu Mar 20
+It.   13    -149.9413834842     -9.95D-13  4.81D-08  7.35D-08   DIIS   9    0.00800000s   LL             Thu Mar 20
+It.   14    -149.9413834842      5.12D-12  1.40D-08  1.43D-08   DIIS   5    0.00900000s   LL             Thu Mar 20
+It.   15    -149.9413834842      6.22D-12 -2.37D-09  3.55D-09   DIIS   5    0.00800000s   LL             Thu Mar 20
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   15 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00600000s
-      LL           :    0.01307143s
+      No 2-ints    :    0.00400000s
+      LL           :    0.00942857s
 
 
                                    TOTAL ENERGY
@@ -1038,13 +1038,13 @@ It.   15    -149.9413834842      5.88D-12 -2.37D-09  3.55D-09   DIIS   5    0.01
 
    Charge of molecule : 0
 
-   Electronic energy                        :    -186.09266772167913
+   Electronic energy                        :    -186.09266772167965
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      36.15128423750657
 
    Sum of all contributions to the energy
-   Total energy                             :    -149.94138348417258
+   Total energy                             :    -149.94138348417309
 
 
                                    Eigenvalues
@@ -1053,15 +1053,15 @@ It.   15    -149.9413834842      5.88D-12 -2.37D-09  3.55D-09   DIIS   5    0.01
 
 * Boson symmetry A  
   * Closed shell, f = 1.0000
- -20.5276720618135  ( 2)    -20.5274395559431  ( 2)     -1.4569726408914  ( 2)     -1.2107773422294  ( 2)     -0.7216319031834  ( 2)
+ -20.5276720618135  ( 2)    -20.5274395559430  ( 2)     -1.4569726408914  ( 2)     -1.2107773422294  ( 2)     -0.7216319031834  ( 2)
   -0.6335350422347  ( 2)     -0.5633895643680  ( 2)     -0.5339266521736  ( 2)     -0.4626413420493  ( 2)
   * Virtual eigenvalues, f = 0.0000
-   0.2262709636885  ( 2)      0.2287908922005  ( 2)      0.3524084317362  ( 2)      1.0428380087912  ( 2)      1.0994419707727  ( 2)
-   1.6230607393857  ( 2)      1.6882571994408  ( 2)      1.7809729723284  ( 2)      1.8046517420866  ( 2)      1.9234053060183  ( 2)
-   1.9467458285898  ( 2)      2.5289811339150  ( 2)      2.9566268481006  ( 2)      8.4105362456053  ( 2)      8.4278519315397  ( 2)
-  11.2772102338230  ( 2)     11.3025038337054  ( 2)     11.3239836933192  ( 2)     11.3542540559744  ( 2)     11.4139892343628  ( 2)
-  11.4574007853602  ( 2)     17.6100252007508  ( 2)     17.7593406601617  ( 2)     74.0077589020698  ( 2)     74.1544958804809  ( 2)
- 482.5840970645687  ( 2)    482.7106105602460  ( 2)
+   0.2262709636885  ( 2)      0.2287908922006  ( 2)      0.3524084317362  ( 2)      1.0428380087912  ( 2)      1.0994419707727  ( 2)
+   1.6230607393857  ( 2)      1.6882571994409  ( 2)      1.7809729723284  ( 2)      1.8046517420867  ( 2)      1.9234053060183  ( 2)
+   1.9467458285899  ( 2)      2.5289811339150  ( 2)      2.9566268481005  ( 2)      8.4105362456053  ( 2)      8.4278519315397  ( 2)
+  11.2772102338230  ( 2)     11.3025038337055  ( 2)     11.3239836933192  ( 2)     11.3542540559744  ( 2)     11.4139892343628  ( 2)
+  11.4574007853602  ( 2)     17.6100252007511  ( 2)     17.7593406601618  ( 2)     74.0077589020697  ( 2)     74.1544958804807  ( 2)
+ 482.5840970645694  ( 2)    482.7106105602462  ( 2)
 
 * Occupation of subblocks
                        E1 :  A                                                                              
@@ -1128,7 +1128,7 @@ tot.num. of pos.erg shells:   36
     - Active orbitals    : No electrons
     - Secondary orbitals :     10..    36                                          
 
-* REACMO: Coefficients read from CHECKPOINT  - Total energy: -149.941383484166693
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -149.941383484166863
 * Heading : Data read from the checkpoint file                                       
 
 
@@ -1140,112 +1140,112 @@ X Orb. ang. mom. - Symmetry: A    T-
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :DIRAC: No title specified !!!                     Fri Mar 14 16:24:14 2025
+* Heading :DIRAC: No title specified !!!                     Thu Mar 20 19:22:08 2025
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Fri Mar 14 16:24:14 2025
+* Heading :DIRAC: No title specified !!!                     Thu Mar 20 19:22:08 2025
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  7.58D-10
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.32D+03
 * Screening threshold in LR solver scaled with norm of property vector:  1.3227D+01
   and changed to:  1.0021D-08
 
-########## START MICROITERATION NO.   1 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   1 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-08    0.00%   43.90%    0.00%   42.08%   0.00769600s
+SOfock:LL  1.00D-08    0.00%   43.90%    0.00%   42.08%   0.00591901s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  3.45E+00  3.45E+00
 
-########## START MICROITERATION NO.   2 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   2 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-08    0.00%   46.44%    0.00%   40.17%   0.00847101s
+SOfock:LL  1.00D-08    0.00%   46.44%    0.00%   40.17%   0.00614300s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  5.79E-01  5.79E-01
 
-########## START MICROITERATION NO.   3 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   3 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-08    0.00%   50.05%    0.00%   37.46%   0.00805801s
+SOfock:LL  1.00D-08    0.00%   50.05%    0.00%   37.46%   0.00638101s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  1.53E-01  1.53E-01
 
-########## START MICROITERATION NO.   4 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   4 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-08    0.00%   53.11%    0.00%   35.17%   0.00800601s
+SOfock:LL  1.00D-08    0.00%   53.11%    0.00%   35.17%   0.00609000s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  7.18E-02  7.18E-02
 
-########## START MICROITERATION NO.   5 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   5 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-08    0.00%   54.72%    0.00%   33.96%   0.00844800s
+SOfock:LL  1.00D-08    0.00%   54.72%    0.00%   33.96%   0.00612400s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  4.08E-02  4.08E-02
 
-########## START MICROITERATION NO.   6 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   6 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-08    0.00%   55.96%    0.00%   33.03%   0.00850499s
+SOfock:LL  1.00D-08    0.00%   55.96%    0.00%   33.03%   0.00650799s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  7.63E-03  7.63E-03
 
-########## START MICROITERATION NO.   7 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   7 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-08    0.00%   61.23%    0.00%   29.07%   0.00796500s
+SOfock:LL  1.00D-08    0.00%   61.23%    0.00%   29.07%   0.00606301s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  9.80E-04  9.80E-04
 
-########## START MICROITERATION NO.   8 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   8 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-08    0.00%   68.85%    0.00%   23.36%   0.00792700s
+SOfock:LL  1.00D-08    0.00%   68.85%    0.00%   23.36%   0.00606000s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  1.74E-04  1.74E-04
 
-########## START MICROITERATION NO.   9 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   9 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-08    0.00%   74.77%    0.00%   18.92%   0.00839102s
+SOfock:LL  1.00D-08    0.00%   74.77%    0.00%   18.92%   0.00605500s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  4.52E-05  4.52E-05
 
-########## START MICROITERATION NO.  10 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.  10 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-08    0.00%   79.04%    0.00%   15.72%   0.00834399s
+SOfock:LL  1.00D-08    0.00%   79.04%    0.00%   15.72%   0.00642100s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
@@ -1261,43 +1261,43 @@ SOfock:LL  1.00D-08    0.00%   79.04%    0.00%   15.72%   0.00834399s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.01350600s  (LL       )     [  1]
+* It.  1   0.00997001s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   3.45D+00 |   3.45D+00
 ==============================================
-* It.  2   0.01422700s  (LL       )     [  1]
+* It.  2   0.01009500s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   5.79D-01 |   5.79D-01
 ==============================================
-* It.  3   0.01381201s  (LL       )     [  1]
+* It.  3   0.01035400s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.53D-01 |   1.53D-01
 ==============================================
-* It.  4   0.01374701s  (LL       )     [  1]
+* It.  4   0.01003401s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   7.18D-02 |   7.18D-02
 ==============================================
-* It.  5   0.01421100s  (LL       )     [  1]
+* It.  5   0.01007000s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.08D-02 |   4.08D-02
 ==============================================
-* It.  6   0.01429200s  (LL       )     [  1]
+* It.  6   0.01049699s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   7.63D-03 |   7.63D-03
 ==============================================
-* It.  7   0.01380500s  (LL       )     [  1]
+* It.  7   0.00999501s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   9.80D-04 |   9.80D-04
 ==============================================
-* It.  8   0.01368502s  (LL       )     [  1]
+* It.  8   0.01005799s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.74D-04 |   1.74D-04
 ==============================================
-* It.  9   0.01419300s  (LL       )     [  1]
+* It.  9   0.01003802s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.52D-05 |   4.52D-05
 ==============================================
-* It. 10   0.01415598s  (LL       )     [  1]
+* It. 10   0.01043499s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.02D-05 |   1.02D-05
 ==============================================
@@ -1313,100 +1313,100 @@ Y Orb. ang. mom. - Symmetry: A    T-
 * Screening threshold in LR solver scaled with norm of property vector:  1.3144D+00
   and changed to:  9.9577D-10
 
-########## START MICROITERATION NO.   1 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   1 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.96D-10    0.00%   43.89%    0.00%   42.08%   0.00831100s
+SOfock:LL  9.96D-10    0.00%   43.89%    0.00%   42.08%   0.00633800s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  7.06E-01  7.06E-01
 
-########## START MICROITERATION NO.   2 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   2 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.96D-10    0.00%   44.74%    0.00%   41.44%   0.00852901s
+SOfock:LL  9.96D-10    0.00%   44.74%    0.00%   41.44%   0.00624898s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  1.59E-01  1.59E-01
 
-########## START MICROITERATION NO.   3 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   3 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.96D-10    0.00%   47.64%    0.00%   39.27%   0.00849900s
+SOfock:LL  9.96D-10    0.00%   47.64%    0.00%   39.27%   0.00656301s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  2.13E-02  2.13E-02
 
-########## START MICROITERATION NO.   4 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   4 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.96D-10    0.00%   51.10%    0.00%   36.68%   0.00848001s
+SOfock:LL  9.96D-10    0.00%   51.10%    0.00%   36.68%   0.00624400s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  1.25E-02  1.25E-02
 
-########## START MICROITERATION NO.   5 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   5 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.96D-10    0.00%   53.72%    0.00%   34.71%   0.00803697s
+SOfock:LL  9.96D-10    0.00%   53.72%    0.00%   34.71%   0.00623500s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  2.27E-03  2.27E-03
 
-########## START MICROITERATION NO.   6 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   6 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.96D-10    0.00%   57.67%    0.00%   31.74%   0.00818801s
+SOfock:LL  9.96D-10    0.00%   57.67%    0.00%   31.74%   0.00607601s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  7.86E-04  7.86E-04
 
-########## START MICROITERATION NO.   7 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   7 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.96D-10    0.00%   60.41%    0.00%   29.69%   0.00845200s
+SOfock:LL  9.96D-10    0.00%   60.41%    0.00%   29.69%   0.00592297s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  1.05E-04  1.05E-04
 
-########## START MICROITERATION NO.   8 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   8 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.96D-10    0.00%   66.82%    0.00%   24.88%   0.00841796s
+SOfock:LL  9.96D-10    0.00%   66.82%    0.00%   24.88%   0.00608101s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  1.97E-05  1.97E-05
 
-########## START MICROITERATION NO.   9 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   9 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.96D-10    0.00%   72.43%    0.00%   20.67%   0.00837600s
+SOfock:LL  9.96D-10    0.00%   72.43%    0.00%   20.67%   0.00643000s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  4.89E-06  4.89E-06
 
-########## START MICROITERATION NO.  10 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.  10 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.96D-10    0.00%   77.68%    0.00%   16.74%   0.00789499s
+SOfock:LL  9.96D-10    0.00%   77.68%    0.00%   16.74%   0.00600800s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
@@ -1422,43 +1422,43 @@ SOfock:LL  9.96D-10    0.00%   77.68%    0.00%   16.74%   0.00789499s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.01401103s  (LL       )     [  1]
+* It.  1   0.01032099s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   7.06D-01 |   7.06D-01
 ==============================================
-* It.  2   0.01428801s  (LL       )     [  1]
+* It.  2   0.01021600s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.59D-01 |   1.59D-01
 ==============================================
-* It.  3   0.01430899s  (LL       )     [  1]
+* It.  3   0.01059398s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.13D-02 |   2.13D-02
 ==============================================
-* It.  4   0.01422399s  (LL       )     [  1]
+* It.  4   0.01025301s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.25D-02 |   1.25D-02
 ==============================================
-* It.  5   0.01384199s  (LL       )     [  1]
+* It.  5   0.01022500s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.27D-03 |   2.27D-03
 ==============================================
-* It.  6   0.01394695s  (LL       )     [  1]
+* It.  6   0.01000002s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   7.86D-04 |   7.86D-04
 ==============================================
-* It.  7   0.01413804s  (LL       )     [  1]
+* It.  7   0.00991401s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.05D-04 |   1.05D-04
 ==============================================
-* It.  8   0.01418799s  (LL       )     [  1]
+* It.  8   0.01007101s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.97D-05 |   1.97D-05
 ==============================================
-* It.  9   0.01410097s  (LL       )     [  1]
+* It.  9   0.01042700s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.89D-06 |   4.89D-06
 ==============================================
-* It. 10   0.01363999s  (LL       )     [  1]
+* It. 10   0.00993800s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   6.29D-07 |   6.29D-07
 ==============================================
@@ -1474,100 +1474,100 @@ Z Orb. ang. mom. - Symmetry: A    T-
 * Screening threshold in LR solver scaled with norm of property vector:  1.2943D+01
   and changed to:  9.8055D-09
 
-########## START MICROITERATION NO.   1 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   1 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.81D-09    0.00%   44.17%    0.00%   41.87%   0.00807595s
+SOfock:LL  9.81D-09    0.00%   44.17%    0.00%   41.87%   0.00617701s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  2.75E+00  2.75E+00
 
-########## START MICROITERATION NO.   2 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   2 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.81D-09    0.00%   46.56%    0.00%   40.08%   0.00797904s
+SOfock:LL  9.81D-09    0.00%   46.56%    0.00%   40.08%   0.00625598s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  7.92E-01  7.92E-01
 
-########## START MICROITERATION NO.   3 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   3 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.81D-09    0.00%   48.90%    0.00%   38.33%   0.00846398s
+SOfock:LL  9.81D-09    0.00%   48.90%    0.00%   38.33%   0.00614300s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  1.09E-01  1.09E-01
 
-########## START MICROITERATION NO.   4 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   4 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.81D-09    0.00%   53.88%    0.00%   34.59%   0.00847298s
+SOfock:LL  9.81D-09    0.00%   53.88%    0.00%   34.59%   0.00610399s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  4.97E-02  4.97E-02
 
-########## START MICROITERATION NO.   5 ##########   Fri Mar 14 16:24:14 2025
+########## START MICROITERATION NO.   5 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.81D-09    0.00%   55.91%    0.00%   33.07%   0.00843304s
+SOfock:LL  9.81D-09    0.00%   55.91%    0.00%   33.07%   0.00628200s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  2.36E-02  2.36E-02
 
-########## START MICROITERATION NO.   6 ##########   Fri Mar 14 16:24:15 2025
+########## START MICROITERATION NO.   6 ##########   Thu Mar 20 19:22:08 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.81D-09    0.00%   57.18%    0.00%   32.12%   0.00800198s
+SOfock:LL  9.81D-09    0.00%   57.18%    0.00%   32.12%   0.00669500s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  4.26E-03  4.26E-03
 
-########## START MICROITERATION NO.   7 ##########   Fri Mar 14 16:24:15 2025
+########## START MICROITERATION NO.   7 ##########   Thu Mar 20 19:22:09 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.81D-09    0.00%   63.58%    0.00%   27.32%   0.00812000s
+SOfock:LL  9.81D-09    0.00%   63.58%    0.00%   27.32%   0.00609100s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  4.78E-04  4.78E-04
 
-########## START MICROITERATION NO.   8 ##########   Fri Mar 14 16:24:15 2025
+########## START MICROITERATION NO.   8 ##########   Thu Mar 20 19:22:09 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.81D-09    0.00%   70.16%    0.00%   22.38%   0.00838196s
+SOfock:LL  9.81D-09    0.00%   70.16%    0.00%   22.38%   0.00607398s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  9.60E-05  9.60E-05
 
-########## START MICROITERATION NO.   9 ##########   Fri Mar 14 16:24:15 2025
+########## START MICROITERATION NO.   9 ##########   Thu Mar 20 19:22:09 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.81D-09    0.00%   75.65%    0.00%   18.26%   0.00835699s
+SOfock:LL  9.81D-09    0.00%   75.65%    0.00%   18.26%   0.00605500s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-06  1.37E-05  1.37E-05
 
-########## START MICROITERATION NO.  10 ##########   Fri Mar 14 16:24:15 2025
+########## START MICROITERATION NO.  10 ##########   Thu Mar 20 19:22:09 2025
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  9.81D-09    0.00%   83.83%    0.00%   12.14%   0.00828898s
+SOfock:LL  9.81D-09    0.00%   83.83%    0.00%   12.14%   0.00586101s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
@@ -1583,43 +1583,43 @@ SOfock:LL  9.81D-09    0.00%   83.83%    0.00%   12.14%   0.00828898s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.01385701s  (LL       )     [  1]
+* It.  1   0.01014799s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.75D+00 |   2.75D+00
 ==============================================
-* It.  2   0.01375401s  (LL       )     [  1]
+* It.  2   0.01023102s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   7.92D-01 |   7.92D-01
 ==============================================
-* It.  3   0.01421696s  (LL       )     [  1]
+* It.  3   0.01013699s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.09D-01 |   1.09D-01
 ==============================================
-* It.  4   0.01420802s  (LL       )     [  1]
+* It.  4   0.01006600s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.97D-02 |   4.97D-02
 ==============================================
-* It.  5   0.01412302s  (LL       )     [  1]
+* It.  5   0.01026499s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.36D-02 |   2.36D-02
 ==============================================
-* It.  6   0.01379502s  (LL       )     [  1]
+* It.  6   0.01078501s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.26D-03 |   4.26D-03
 ==============================================
-* It.  7   0.01382405s  (LL       )     [  1]
+* It.  7   0.01006401s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   4.78D-04 |   4.78D-04
 ==============================================
-* It.  8   0.01412797s  (LL       )     [  1]
+* It.  8   0.01002902s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   9.60D-05 |   9.60D-05
 ==============================================
-* It.  9   0.01422000s  (LL       )     [  1]
+* It.  9   0.01003402s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.37D-05 |   1.37D-05
 ==============================================
-* It. 10   0.01407504s  (LL       )     [  1]
+* It. 10   0.00984299s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.75D-06 |   1.75D-06
 ==============================================
@@ -1630,7 +1630,7 @@ SOfock:LL  9.81D-09    0.00%   83.83%    0.00%   12.14%   0.00828898s
 X Spin ang.mom.  - Symmetry: A    T-
 
 WARNING: Skipping B property X Spin ang.mom. 
-         Norm of gradient  : 3.9D-14
+         Norm of gradient  : 4.0D-14
          is below threshold: 1.0D-09
 
 
@@ -1639,7 +1639,7 @@ WARNING: Skipping B property X Spin ang.mom.
 Y Spin ang.mom.  - Symmetry: A    T-
 
 WARNING: Skipping B property Y Spin ang.mom. 
-         Norm of gradient  : 3.9D-14
+         Norm of gradient  : 4.0D-14
          is below threshold: 1.0D-09
 
 
@@ -1648,7 +1648,7 @@ WARNING: Skipping B property Y Spin ang.mom.
 Z Spin ang.mom.  - Symmetry: A    T-
 
 WARNING: Skipping B property Z Spin ang.mom. 
-         Norm of gradient  : 3.9D-14
+         Norm of gradient  : 4.0D-14
          is below threshold: 1.0D-09
 
 
@@ -1783,7 +1783,7 @@ WARNING: Skipping B property Z Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    67.63582781698 a.u.                       7.68E-07   (converged)
+  0.00000000 a.u.    67.63582781697 a.u.                       7.68E-07   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 2)>> - linear response function (real):
@@ -1803,7 +1803,7 @@ WARNING: Skipping B property Z Spin ang.mom.
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -2.329167239318 a.u.                       1.35E-07   (converged)
+  0.00000000 a.u.   -2.329167239317 a.u.                       1.35E-07   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 4)>> - linear response function (real):
@@ -1856,11 +1856,11 @@ WARNING: Skipping B property Z Spin ang.mom.
  Principal moments of inertia (a.u.) and principal axes
  ------------------------------------------------------
 
-   IA  11214.00845714            0.03505004      0.99938556      0.00000000
-   IB 128281.30184361            0.00000000      0.00000000      1.00000000
-   IC 136295.69400847            0.99938556     -0.03505004      0.00000000
+   IA    11214.00845714            0.03505004      0.00000000      0.99938556
+   IB   128281.30184361            0.99938556      0.00000000     -0.03505004
+   IC   136295.69400847            0.00000000      1.00000000      0.00000000
 
-  Components of PVC to nuclear spin-rotation tensor in the principal axis system
+  PVC to nuclear spin-rotation tensor elements are given in the principal axis system.
 
 
   Parity-violation contribution to nuclear spin-rotation constant (in Hz) for O3
@@ -1873,9 +1873,9 @@ WARNING: Skipping B property Z Spin ang.mom.
                    Total PVC to nuclear spin-rotation constant
                    -------------------------------------------
 
-   A       -0.13740537E-05  0.10242213E-05  0.78492867E-06
-   B       -0.20951548E-04  0.99192852E-06 -0.27066724E-04
-   C       -0.41319781E-04  0.30231169E-04 -0.10660717E-05
+   A       -0.13740537E-05 -0.20951548E-04 -0.41319781E-04
+   B        0.10242213E-05  0.99192852E-06  0.30231169E-04
+   C        0.78492867E-06 -0.27066724E-04 -0.10660717E-05
 
    iso     -0.48273228E-06
 
@@ -1889,35 +1889,35 @@ WARNING: Skipping B property Z Spin ang.mom.
 
 
  
-     Date and time (Linux)  : Fri Mar 14 16:24:15 2025
-     Host name              : aucaria                                 
+     Date and time (Linux)  : Thu Mar 20 19:22:09 2025
+     Host name              : desktop-rug                             
 
->>>> Node 0, utime: 0, stime: 0, minflt: 28125, majflt: 0, nvcsw: 0, nivcsw: 3, maxrss: 128660
+>>>> Node 0, utime: 0, stime: 0, minflt: 4964, majflt: 44, nvcsw: 53, nivcsw: 2, maxrss: 34812
 >>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :        86.42
+  Mean allocation size (Mb) :        55.32
   
   Largest          10  allocations
   
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
         0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
         0.13 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
         0.07 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
         0.04 Mb at subroutine __allocator_track_if_MOD_allocator_registe for QTRANS90-buffer-space                     
   
-  Peak memory usage:       763.07 MB
-  Peak memory usage:        0.745 GB
+  Peak memory usage:       488.41 MB
+  Peak memory usage:        0.477 GB
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/agustin/dirac/build/test/response_pv_nsr
+DIRAC pam run in /home/agustinaucar/dirac/test/response_pv_nsr
