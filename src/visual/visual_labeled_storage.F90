@@ -25,7 +25,7 @@ contains
     integer, intent(in) :: level
     character*(:),allocatable :: group_label
     character*(:),allocatable :: l0, l1, l2, l3, l4
-    character(len = 200):: errmsg
+    character*(:),allocatable :: errmsg
     character(len=1)::temp
 !   ----------------------------------------------------------------------------
     if (top_section /= 'input' .and. top_section /= 'result') return
@@ -76,7 +76,7 @@ contains
     integer, intent(in) :: level
     character*(:),allocatable :: group_label
     character*(:),allocatable :: l0, l1, l2
-    character(len = 200):: errmsg
+    character*(:),allocatable :: errmsg
 !   ----------------------------------------------------------------------------
     if (top_section /= 'input' .and. top_section /= 'result') return
 
