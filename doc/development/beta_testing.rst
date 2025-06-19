@@ -10,11 +10,11 @@ Verify that the release installs correctly
 
 Check out the release branch::
 
-  $ git checkout release-22  # adapt name of branch
+  $ git checkout release-25  # adapt name of branch
 
 Try to configure and build the code::
 
-  $ ./setup [--fc=ifort --cc=icc --cxx=icpc]
+  $ ./setup [--fc=ifx --cc=icx --cxx=icpx]
 
 Please report problems. Pay attention whether math libraries are correctly
 detected.

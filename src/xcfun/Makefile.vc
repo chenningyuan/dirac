@@ -12,7 +12,7 @@ CXX=cl
 CXXFLAGS=$(CFLAGS)
 
 # Fortran compiler and flags (used for fortran/example.F90)
-FC=ifort
+FC=ifx
 FFLAGS=-unix -nologo -O3
 
 include Makefile.common_win

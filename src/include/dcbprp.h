@@ -27,17 +27,18 @@
      &        ESRGTENS, ESR_HFCC, EFT, EFTNTL, EFN, RHONUC,             &
      &        DOTPA,DOVER,DOEXCPRP,DOVDW,REGRAD,                        &
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
-     &        PVC_SHIELD, PVC_SPINSPIN, PVC_SPINRO, DOSTEX, OPTROT,     &
-     &        BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2,SEPTEP,FULMAT,EXPPED, &
-     &        DONMQM,SPINRO, NQCCcart, HDF5IO
+     &        PVC_SHIELD, PVC_SPINSPIN, PVC_SPINRO, PVC_EFG, DOSTEX,    &
+     &        OPTROT, BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2,SEPTEP,       &
+     &        FULMAT,EXPPED, DONMQM,SPINRO, NQCCcart, HDF5IO
       COMMON /CBLPRP/ DOXLR, DOXPP, DOEXP, DOXQR, DIPOLE, EPOLAR,DOVDW, &
      &                MSUSCP, SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, &
      &                PVC, DOESR, ESRGTENS, ESR_HFCC, EFT, EFTNTL,      &
      &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP,REGRAD,       &
      &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
-     &                PVC_SHIELD,PVC_SPINSPIN,PVC_SPINRO,DOSTEX,OPTROT, &
-     &                BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2,SEPTEP,FULMAT,&
-     &                EXPPED, DONMQM,SPINRO, NQCCcart, HDF5IO
+     &                PVC_SHIELD,PVC_SPINSPIN,PVC_SPINRO, PVC_EFG,      &
+     &                DOSTEX,OPTROT, BXLAO, BYLAO, BZLAO, EFFDEN,       &
+     &                EFFDE2,SEPTEP,FULMAT, EXPPED, DONMQM,SPINRO,      &
+     &                NQCCcart, HDF5IO
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &
@@ -46,14 +47,15 @@
      &        IPCON21(3),IPCON22(3),IPCON23(6),                         &
      &        IPLONDON(4,3),IPCON(3),IPRNST(MXCOOR*3),                  &
      &        IP_PVC_SHIELD(MXCOOR+3),IP_PVC_SPINSPIN(2,MXCOOR),        &
-     &        IP_PVC_SPINRO(MXCOOR+6),IP_BLAO(2,3),IPSPINRO(MXCOOR+6)
+     &        IP_PVC_SPINRO(MXCOOR+6),IP_PVC_EFG(2,MXCOOR),               &
+     &        IP_BLAO(2,3),IPSPINRO(MXCOOR+6)
       COMMON /CBIPRP/ IPRPRP, IPEPOLAR, IPSPNSPN, IPDSO, NDSOIN,        &
      &                IPSHIELD, IPNSTDIA, NNSTIN, IPESR, NPRP_WF,       &
      &                IPROTG,IPMSUSC,IMAGOUT, EXCPRPTYP,                &
      &                IPCON21,IPCON22,IPCON23,                          &
      &                IPLONDON,IPCON,IPRNST,                            &
      &                IP_PVC_SHIELD,IP_PVC_SPINSPIN,IP_PVC_SPINRO,      &
-     &                IP_BLAO,IPSPINRO
+     &                IP_PVC_EFG,IP_BLAO,IPSPINRO
 
       REAL*8 ABUND
       COMMON /CBRPRP/ ABUND

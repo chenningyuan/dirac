@@ -45,11 +45,11 @@
 #   docopt:
 #     - "--blas=<BLAS> Detect and link BLAS library (auto or off) [default: auto]."
 #     - "--lapack=<LAPACK> Detect and link LAPACK library (auto or off) [default: auto]."
-#     - "--mkl=<MKL> Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off]."
+#     - "--qmkl=<MKL> Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off]."
 #   define:
 #     - "'-DENABLE_BLAS={0}'.format(arguments['--blas'])"
 #     - "'-DENABLE_LAPACK={0}'.format(arguments['--lapack'])"
-#     - "'-DMKL_FLAG={0}'.format(arguments['--mkl'])"
+#     - "'-DMKL_FLAG={0}'.format(arguments['--qmkl'])"
 #     - "'-DMATH_LIB_SEARCH_ORDER=\"MKL;ESSL;OPENBLAS;ATLAS;ACML;SYSTEM_NATIVE\"'"
 #     - "'-DBLAS_LANG=Fortran'"
 #     - "'-DLAPACK_LANG=Fortran'"
@@ -428,9 +428,9 @@ foreach(_service BLAS LAPACK)
 endforeach()
 
 if(NOT MKL_FLAG STREQUAL "off")
-    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -mkl=${MKL_FLAG})
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mkl=${MKL_FLAG}")
-    message(STATUS "User set explicit MKL flag which is passed to the compiler and linker: -mkl=${MKL_FLAG}")
+    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -qmkl=${MKL_FLAG})
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -qmkl=${MKL_FLAG}")
+    message(STATUS "User set explicit MKL flag which is passed to the compiler and linker: -qmkl=${MKL_FLAG}")
     message(STATUS "This disables math detection and builtin math libraries")
     message(STATUS "Setting -DHAVE_MKL_BLAS and -DHAVE_MKL_LAPACK")
     add_definitions(-DHAVE_MKL_BLAS)

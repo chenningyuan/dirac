@@ -117,11 +117,14 @@ C  /* Deck dirctl */
 
       implicit none
 
+! dcbgrd.h : DONGRD
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
+#include "mxcent.h"
+#include "dcbgrd.h"
 
       logical run_pamset, tobe
       integer ierr
@@ -170,14 +173,18 @@ C***********************************************************************
 #endif
 
       if (dirac_cfg_dft_calculation .and. OPTIMI) then
+      if (.not. DONGRD) then ! numerical molecular gradient is OK
         if (nopen > 0) then
-          call quit('error in molecular gradient:' //
-     &         ' not implemented for open-shell DFT')
+          call quit('error in geometry optimization: ' //
+     &      'analytical gradient not implemented for open-shell DFT.'//
+     &      ' Try .NUMGRA')
         end if
         if (nbsym > 1) then
-          call quit('error in molecular gradient:' //
-     &    ' not implemented for DFT with symmetry')
+          call quit('error in geometry optimization: ' //
+     &      'analytical gradient not implemented for DFT with symmetry.'
+     &      // ' Try .NUMGRA')
         end if
+      end if
       end if
 C
 C
