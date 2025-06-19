@@ -146,6 +146,19 @@ else()
 )
 endif()
 
+
+
+option(ENABLE_LAPACK_QDIAG "Enable LAPACK diagonalization of real matrices" OFF)
+if(ENABLE_LAPACK_QDIAG)
+  target_compile_definitions(
+    gp
+    PUBLIC  # because this is also used by src/localization/func_PipekMezey.F90
+      LAPACK_QDIAG
+    )
+endif()
+
+
+
 # add intermodule dependencies
 add_dependencies(gp interface_mpi)
 add_dependencies(gp pdpack)
