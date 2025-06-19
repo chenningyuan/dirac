@@ -203,7 +203,7 @@ Bugfixes:
 
 New features:
 
-- Calculation of parity-Violating nuclear spin-rotation tensors. Activated with ".PVCSR"
+- Calculation of parity-violating nuclear spin-rotation tensors. Activated with ".PVCSR"
    - Contributor: I. Agustín Aucar.
    - Reference: `Ignacio Agustín Aucar and Anastasia Borschevsky, Relativistic study of parity-violating nuclear spin-rotation tensors. J. Chem. Phys. 155, 134307 (2021) <https://doi.org/10.1063/5.0065487>`__
    - Manual: `PVCSR <http://www.diracprogram.org/doc/release-23/manual/properties.html#pvcsr>`__
