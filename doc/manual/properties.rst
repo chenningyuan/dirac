@@ -515,6 +515,29 @@ For more details, the user is welcome to see the Tutorial Section.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
+keyword(PVCEFG)
+
+Calculate parity-violating contribution to the electric field gradient tensor, see :cite:`Aucar2025_PVEFG`.
+Elements of the parity-violating contribution to the EFG tensor for center :math:`K` are given by
+
+.. math::
+
+   q^{PV}_{ij} (\mathbf{R}_K) =  \langle\langle \hat q_{ij} (\mathbf{R}_K);     \hat{H}^{PV}_K \rangle\rangle_0
+
+where the contribution from the K nucleus to the nuclear spin-independent parity-violating operator
+
+.. math::
+
+   \hat{H}^{PV}_K =\frac{G_F}{2\sqrt{2}}\sum_{i,K}Q_{w,K}\gamma_i^5\rho_K(\mathbf{r}_i)
+
+is expressed in terms of the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2022, but it can change if you use other CODATA set),
+the weak nuclear charge :math:`Q_{w,K}` and the normalized nuclear charge density :math:`\rho_K` (in units of the inverse of cube distances).
+Results are given in a.u.
+
+Using :ref:`PROPERTIES_.PRINT` 1, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response are given separately.
+
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
+
 keyword(RHONUC)
 
 Calculate electronic density at the nuclear positions, also known as the contact density (see :cite:`Knecht2011` and :cite:`Almoukhalalati:2016b`).

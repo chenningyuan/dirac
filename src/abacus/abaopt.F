@@ -2229,7 +2229,7 @@ C
             RED = .TRUE.
          END IF
          WRITE(LUPRI,
-     &   '(A1,I4,A1,F20.6,1P,2D10.3,I5,0P,F12.6,A1,F11.6,I4,A1)')
+     &   '(A1,I4,A1,F18.6,2X,1P,2D10.3,I5,0P,F12.6,A1,F11.6,I4,A1)')
      &        '@',I,BRKMRK,GEINFO(I,1),TMPNRG,GEINFO(I,2),
      &        NINT(ABS(GEINFO(I,3))),GEINFO(I,4),NWSMRK,GEINFO(I,5),
      &        NINT(GEINFO(I,6)),REDMRK
@@ -2268,7 +2268,7 @@ C
       use pcm_scf
 #endif      
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: use_pelib
 #endif 
 
 #include "implicit.h"
@@ -2319,7 +2319,7 @@ C
 C     Execute Dirac, and retrieve energy.
 C
 #ifdef HAS_PELIB
-      if (peqm) then 
+      if (use_pelib()) then 
          call quit('PELib geometry optimization '//
      &   'not implemented in DIRAC')
       endif 

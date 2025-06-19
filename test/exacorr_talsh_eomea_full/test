@@ -12,7 +12,7 @@ f = Filter()
 # f.add(from_string = 'Electronic energy',
 #       num_lines   = 8,
 
-f.add(from_string = ' *****************EOM-CC Eigenvalules******************',
+f.add(from_string = '************** Solution of eigenvalue equations ***************',
       num_lines   = 65,
       rel_tolerance   = 1.0e-7)
 
