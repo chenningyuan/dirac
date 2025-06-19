@@ -175,7 +175,8 @@ contains
     integer::stat, np
     real(8)::s, v(3), w(3)
     integer::nr_words, ndim, i,j
-    character(len=len_trim(user_input_lines(1))),allocatable::chvalues(:)
+    character(200),allocatable::chvalues(:)
+    !character(len=len_trim(user_input_lines(1))),allocatable::chvalues(:)
     character*(:),allocatable:: errmsg
 
     ndim = grid%get_ndim()
@@ -331,7 +332,7 @@ contains
         grid%extents_known=.true.
         grid%origin_known=.true.
 !       grid ready to work on
-        grid%status = 0
+        !grid%status = 0
 
       case ('3d')
 !

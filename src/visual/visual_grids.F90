@@ -190,8 +190,16 @@ use num_grid_cfg
       end do
     else if (grid%input == 4) then
 !     2d
-      vx(1:3) = (grid%extents(1,1:3) - grid%extents(0,1:3))/(grid%nr_points(1)-1)
-      vy(1:3) = (grid%extents(2,1:3) - grid%extents(0,1:3))/(grid%nr_points(2)-1)
+      if (grid%nr_points(1)>1) then
+        vx(1:3) = (grid%extents(1,1:3) - grid%extents(0,1:3))/(grid%nr_points(1)-1)
+      else
+        vx(1:3) = (grid%extents(1,1:3) - grid%extents(0,1:3))
+      end if
+      if (grid%nr_points(2)>1) then
+        vy(1:3) = (grid%extents(2,1:3) - grid%extents(0,1:3))/(grid%nr_points(2)-1)
+      else
+        vy(1:3) = (grid%extents(2,1:3) - grid%extents(0,1:3))
+      end if
       vz(1) = vx(2)*vy(3) - vx(3)*vy(2)
       vz(2) = vx(3)*vy(1) - vx(1)*vy(3)
       vz(3) = vx(1)*vy(2) - vx(2)*vy(1)
@@ -208,7 +216,7 @@ use num_grid_cfg
     else if (grid%input == -4) then
     ! check that angle between 1-2 and 1-3 is 90 degs
       s = vx(1)*vy(1) + vx(2)*vy(2) + vx(3)*vy(3)
-      if (s > tiny(0.0d0)) then
+      if (s > 1.0e-10) then !tiny(0.0) causes errors
         call visual_quit('2d integration: lines connecting points 1-2 and 1-3'//&
                          ' do not enclose 90 degrees')
       end if
