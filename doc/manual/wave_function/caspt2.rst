@@ -18,7 +18,7 @@ Relativistic IVO/CASCI/CASPT2 and IVO/RASCI/RASPT2 module, Ref. :cite:`Masuda202
 
 keyword(NINACT)
 
-Specify the nubmer of inactive spinors.
+Specify the number of inactive spinors.
 
 keyword(NACT)
 
