@@ -1,5 +1,5 @@
 :orphan:
- 
+
 
 star(CASPT2)
 
@@ -93,21 +93,21 @@ keyword(CASPT2_CIROOTS)
 keyword(NOCCG)
 
 | Specify the number of occupied gerade Kramers‐pair orbitals (count pairs, not individual spinors).
-| This keyword must be specified for molecules that possess an inversion center. 
+| This keyword must be specified for molecules that possess an inversion center.
 | Conversely, it should not be used for molecules without inversion symmetry.
 
 
 keyword(NOCCU)
 
 | Specify the number of occupied ungerade Kramers‐pair orbitals (count pairs, not individual spinors).
-| This keyword must be specified for molecules that possess an inversion center. 
+| This keyword must be specified for molecules that possess an inversion center.
 | Conversely, it should not be used for molecules without inversion symmetry.
 
 
 keyword(NOCC)
 
 | Specify the number of occupied Kramers‐pair orbitals (count pairs, not individual spinors).
-| This keyword must be specified for molecules that lack an inversion center; 
+| This keyword must be specified for molecules that lack an inversion center;
 | it should not be used for molecules with inversion symmetry.
 
 **required keyword for RASCI/RASPT2**
@@ -124,7 +124,7 @@ keyword(RAS2)
     7,8,11..14
 
 | By using this keyword, you can select spinors that are not contiguous in energy for inclusion in the CAS of a CASCI/CASPT2 or RASCI/RASPT2 calculation.
-| For example, to include the spinors ranked 7th, 8th, 11th, 12th, 13th, and 14th lowest in energy, 
+| For example, to include the spinors ranked 7th, 8th, 11th, 12th, 13th, and 14th lowest in energy,
 | set the keyword as follows:
 
 ::
@@ -138,7 +138,7 @@ keyword(RAS2)
     .SECONDARY
     6
 
-| In this case, spinors 1–6 are inactive; 
+| In this case, spinors 1–6 are inactive;
 | spinors 7, 8, 11, 12, 13, and 14 are active;
 | and spinors 9, 10, 15-18 are secondary.
 
@@ -160,7 +160,7 @@ keyword(RAS1)
 keyword(RAS3)
 
 | Specify the RAS3 spinor indices on row 1 and the maximum number of electrons allowed in RAS3 on row 2.
-| For example, to assign spinors 15, 16, 17, and 18 (counted in ascending energy) to RAS3 and to allow up to two electrons, 
+| For example, to assign spinors 15, 16, 17, and 18 (counted in ascending energy) to RAS3 and to allow up to two electrons,
 | set the keyword as follows:
 
 ::
@@ -174,7 +174,7 @@ keyword(RAS3)
 
 keyword(NHOMO)
 
-| Specify the number of HOMO-like spinors. 
+| Specify the number of HOMO-like spinors.
 | By default (NHOMO = 0), this value is determined automatically by counting all occupied spinors whose orbital energies lie within 0.1 a.u. of the HOMO energy.
 | If desired, you can override the default by specifying NHOMO explicitly in the input file (e.g., 2, 4, or 6).
 
@@ -237,7 +237,7 @@ Specify the energy shift for the CASPT2 calculation.
     0.0
 
 keyword(MINHOLERAS1)
-    
+
 | Specify the minimum number of holes allowed in RAS1.
 | This keyword is used only in RASCI/RASPT2 calculations.
 | Note: Setting this parameter may be helpful for excited-state calculations (including core excitations) performed with RASCI/RASPT2.
@@ -249,7 +249,7 @@ keyword(MINHOLERAS1)
     0
 
 keyword(MINELECRAS3)
-    
+
 | Specify the minimum number of electrons in RAS3.
 | This keyword is used only in RASCI/RASPT2 calculations.
 
