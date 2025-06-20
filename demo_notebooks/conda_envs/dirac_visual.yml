@@ -1,4 +1,4 @@
-name: visual_overview
+name: visual
 channels:
   - conda-forge
 dependencies:
