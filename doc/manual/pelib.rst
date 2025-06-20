@@ -10,8 +10,8 @@ See :cite:`Steinmann2019` for a tutorial review of how to use the PE model.
 
 Citations for DIRAC implementations:
 
--  PE implementation in DIRAC  :cite:`Hedegaard2018`
--  PDE implementation in DIRAC :cite:`Larsson2025`
+-  PE implementation in DIRAC  :cite:`Hedegaard2017`.
+-  PDE implementation in DIRAC :cite:`Larsson2025`.
 
 For examples of calculations with different response methods and Hamiltonians, 
 see the tutorial :ref:`pe_response`).
@@ -293,30 +293,5 @@ sites 2, 3, 4 and 5.
 The potential density embedding potential
 =========================================
 
-A minimal example input for deriving a PDE potential with PyFraME:
 
-``
-#!/usr/bin/env python
-
-import pyframe
-
-system = pyframe.MolecularSystem('example.pdb')
-core = system.get_fragments_by_number(1)
-environment = system.get_remaining_fragments()
-
-system.set_core_region(fragments=core, basis='aug-pcseg-2')
-system.add_region(name="environment", fragments=environment,
-                    use_multipoles=False,
-                    use_polarizabilities=True,
-                    use_fragment_densities=True,
-                    use_exchange_repulsion=True,
-                    basis='loprop-6-31+G*',
-                    method='DFT',
-                    xcfun='PBE0')
-
-project = pyframe.Project(mpi_procs_per_job=24, jobs_per_node=1, memory_per_job=24000)
-project.create_embedding_potential(system)
-project.write_potential(system)
-project.write_core(system)
-``
-
+A minimal example input for deriving a PDE potential with PyFraME can be found :download:`here <PDE-example>`.

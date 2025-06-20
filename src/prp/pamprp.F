@@ -1423,6 +1423,12 @@ C
          CALL DEF_PVC_SPINRO(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
+C     PV contribution to EFG
+C
+      IF(PVC_EFG) THEN
+        CALL DEF_PVC_EFG(PNAME,PLABEL,PFAC,IPRPRP)
+      ENDIF
+C
 ! gosia:
 ! calculate << B_i; B_i >>_0 with LAO
 ! only for one component of magnetic field, i = x, y or z
@@ -1602,6 +1608,11 @@ C     PV contribution to nuclear spin-rotation constant
 C
       IF(PVC_SPINRO)
      &  CALL PRP_PVC_SPINRO(ABLRF,ABCNV)
+C
+C     PV contribution to EFG
+C
+      IF(PVC_EFG)
+     &  CALL PRP_PVC_EFG(ABLRF,ABCNV)
 C
 #ifdef HAS_PELIB
       if (use_pelib()) then
@@ -4947,8 +4958,8 @@ CMKN  ZAVECTOR
 CMKN  Factor and Sign included, see Eq. (19) of reference on TaN P,T-odd properties.
       DO 100 IATOM = 1, NUCIND
          IF (.NOT. DOATOM(IATOM)) GOTO 100
-                ICOOR1 = 2
-                ICOOR2 = 3
+            ICOOR1 = 2
+            ICOOR2 = 3
             ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
             IOFF = 0
             DO 300 IREPC = 0, MAXREP
@@ -5367,6 +5378,194 @@ C
       ENDDO
 C
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_PVC_EFG */
+      SUBROUTINE DEF_PVC_EFG(PNAME,PLABEL,PFAC,IPRINT)
+C***********************************************************************
+C
+C     Define operators for PV contributions to EFG
+C
+C     Written by Juan J. Aucar - March 2025
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use memory_allocator
+C
+      implicit none
+C
+      integer I,J
+C
+#include "priunit.h"
+#include "mxcent.h"   ! parameters of maximum number of nuclei
+#include "maxaqn.h"   ! highest angular quantum number
+#include "maxorb.h"   ! maximum number of orbitals/basis functions
+#include "nuclei.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "chrxyz.h"
+#include "dcbprp.h"   ! common block for expectation values
+#include "dcbxlr.h"   ! common block for linear reponse
+#include "dcbgen.h"
+#include "consts.h"
+#include "codata.h"
+#include "pi.h"
+#include "chrnos.h"
+#include "ibtfun.h"
+#include "dcbexp.h"
+C
+      INTEGER IPRINT,IATOM,IXYZ,NATOM,
+     &        IC1,IC2,ICOOR,IFIRST,INDOP1,
+     &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IS1,
+     &        IS2,ISCOOR,ISECND,NSCOORA,NSCOORB, INDEXA,
+     &        INDEXB, ISYXPR,ITRXPR,NPCOMP,
+     &        ITYP, ICOOR1, ICOOR2, ISYMIJ, IOFF, IREPC
+C
+      DOUBLE PRECISION PFAC(NUCIND)
+C
+      logical, allocatable :: DOATOM(:)
+C
+      CHARACTER PNAME*16, PLABEL(2)*8
+      DIMENSION IOP(1)
+C
+      CALL QENTER('DEF_PVC_EFG')
+C
+      NSCOORA = NUCIND
+      NSCOORB = 9*NUCIND
+C
+      CALL IZERO(IP_PVC_EFG,MXCOOR)
+      allocate(DOATOM(NUCIND))
+C
+C     (accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-29)
+
+C     Open print section for PVC to EFG
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 'Parity-violation contribution to '//
+     &'electric field gradient:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+
+
+C
+C     Define left-hand operators: nuclear-spin-independent PV
+C     =======================================================
+C
+      ITYP = 0
+      NPCOMP  = 1
+      PFAC = 1
+C
+      IF(.NOT.GAUNUC) THEN ! Point nucleus
+          PFAC = PFAC *D3/(D4*GFAC*PI)
+      ENDIF
+C
+      DO IATOM = 1,NUCIND
+        IF(DOATOM(IATOM)) THEN
+          DO IREP = 0,MAXREP
+            IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+C
+              IF(GAUNUC) THEN ! Gaussian nuclear model
+                PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+              ELSE ! Point nucleus
+                PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+              ENDIF
+              PNAME = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                       //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                       //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+C             Set A operators
+              IPTYP = 9
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                    INDXPR,ISYXPR,ITRXPR,IPRINT)
+              CALL OP1IND(PNAME(1:6),INDEXA,LLRAPU,NLRAPT,
+     &                    INDXPR,MAXLLR)
+              ISCOOR = IPTCNT((IATOM),IREP,2)
+              IF(ISCOOR.GT.0) THEN
+                IP_PVC_EFG(1,ISCOOR) = INDEXA
+              ENDIF
+C              CALL WRIXPR(INDEXA,INDXPR)
+            ENDIF
+          ENDDO
+        ENDIF
+      ENDDO
+C
+C     Define right-hand operators: EFG components
+C     ===========================================
+C
+        PFAC = 1
+        ITYP = 0
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC   = D1
+        DO 100 IATOM = 1, NUCIND
+        IF (.NOT. DOATOM(IATOM)) GOTO 100
+        DO 200 ICOOR1 = 1, 3
+        DO 200 ICOOR2 = ICOOR1, 3
+          ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+          IOFF = 0
+          DO 300 IREPC = 0, MAXREP
+            IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+              IOFF = IOFF + 1
+              ITYP = ITYP + 1
+              PNAME = 'EFG: '//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)
+     &                       //CHRNOS(IATOM/10)
+     &                       //CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+              PLABEL(1) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
+     &        CHRNOS(IATOM/10)//
+     &        CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+
+!             Set B operators (copio lo de set A operators)
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
+              CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG',
+     &        INDEXB, LLRBPU,NLRBPT,INDXPR,MAXLLR)
+              ISCOOR = IPTCNT((IATOM),IREPC,2)
+              IF(ISCOOR.GT.0) THEN
+                IP_PVC_EFG(2,ITYP) = INDEXB
+              ENDIF
+C              CALL WRIXPR(INDEXB,INDXPR)
+            END IF
+ 300      CONTINUE
+ 200    CONTINUE
+ 100  CONTINUE
+C
+C     Print section for A and B operators
+C     ===================================
+C
+C     A operators
+C     -----------
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(1X,A)')
+     & '** A operators for PV electric field gradient **'
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO I = 1,NSCOORA
+        INDOP1 = IP_PVC_EFG(1,I)
+        IF(INDOP1.GT.0) THEN
+          INDXPR = LLRAPU(INDOP1)
+          CALL WRIXPR(INDOP1,INDXPR)
+        ENDIF
+      ENDDO
+C
+C     B operators
+C     -----------
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(1X,A)')
+     &'** B operators for PV electric field gradient **'
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO I = 1,NSCOORB
+        INDOP1 = IP_PVC_EFG(2,I)
+        IF(INDOP1.GT.0) THEN
+          INDXPR = LLRBPU(INDOP1)
+          CALL WRIXPR(INDOP1,INDXPR)
+        ENDIF
+      ENDDO
+C
+C
+      deallocate(DOATOM)
+C
+      CALL QEXIT('DEF_PVC_EFG')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -8034,6 +8233,348 @@ C
       ENDDO
       CALL PRSYMB(LUPRI,'-',46,0)
 C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* deck PRP_PVC_EFG */
+      SUBROUTINE PRP_PVC_EFG(ABLRF,ABCNV)
+C=======================================================================
+C     PV contributions to EFG
+C-----------------------------------------------------------------------
+C     Juan J. Aucar                                    March 2025
+C     doi Ref.: https://doi.org/10.1039/D4CP04840G
+C=======================================================================
+      use memory_allocator
+C
+      implicit none
+C
+      integer I,J
+C
+#include "priunit.h"
+#include "consts.h"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "codata.h"
+#include "pi.h"
+#include "symmet.h"
+#include "ibtfun.h"
+C
+      logical, allocatable :: DOATOM(:)
+      integer, allocatable :: ISOT(:)
+      double precision, allocatable :: PVEFGMAT(:,:,:), FACTORS(:)
+C
+      LOGICAL TEST
+      INTEGER IBUF(6*NUCIND,2),IXYZ,JXYZ,IATOM,JATOM,L,NATOM,
+     &        IATINF(3,NUCIND),IDEG,IDEP,IFREQ,INUC,ISO,IZ,NISO,
+     &        IA,IB,JA,JB,K,KA,KB,NA,NB,NSCOOR,NCHES,NSPEC,
+     &        IABLRF_EE,IABLRF_EP,MASSNUM(NUCIND),ISOFLAG,
+     &        NSCOORA, NSCOORB, ITENSOR, NPROTON,NNEUTRON,ICHARGE,
+     &        IMASS
+      DOUBLE PRECISION FACTOR,DISOTP,ABND,SELEC_ABND,GVALUE,
+     &                 ABCNV(NBFREQ,NLRBPT),RATINF(3,5,NUCIND),
+     &                 ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &                 RESPEE(3,3,NUCIND),RESPEP(3,3,NUCIND),
+     &                 RESP(3,3,NUCIND),QW, QW_SELECTED(NUCIND),
+     &                 IMASS_SELECTED(NUCIND)
+C
+      NSCOOR = 3*NUCIND
+      NSCOORA = NUCIND
+      NSCOORB = 6*NUCIND
+      NCHES  = NSCOOR*NSCOOR
+      allocate(DOATOM(NUCIND))
+      allocate(PVEFGMAT(NUCIND,6*NUCIND,2))
+      allocate(FACTORS(NUCIND))
+C
+      CALL QENTER('PRP_PVC_EFG')
+C
+      FACTOR = 1
+      FACTORS = 1
+      CALL DZERO(PVEFGMAT,NUCIND*6*NUCIND*2)
+C
+      CALL TITLER('PARITY-VIOLATION CONTRIBUTION TO '//
+     &  'EFG','*',116)
+!      WRITE(LUPRI,*) ''
+      WRITE(LUPRI,'(6X,A,/,6X,A,/,6X,A)')
+     & 'According to J. J. Aucar and A. F. Maldonado,',
+     & 'Parity Violation Effects on the Electric Field Gradient,',
+     & 'Phys. Chem. Chem. Phys., 27, 7594 (2025)'
+      CALL PRSYMB(LUPRI,'-',56,6)
+      WRITE(LUPRI,*) ''
+
+C
+C     (-29: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-29)
+C
+C     ***************************************
+C     ***** Extract nuclear information *****
+C     ***************************************
+C
+      ISOFLAG = 0
+      WRITE(LUPRI,'(A)') '@ Nuclear species:'
+      CALL PRSYMB(LUPRI,'=',63,0)
+      WRITE(LUPRI,'(A,9X,A,11X,A)')
+     &  '@ name  charge  isotope   mass','abundance','Qw'
+      CALL PRSYMB(LUPRI,'-',63,0)
+      NSPEC = 0
+      IDEP  = 0
+      DO INUC = 1,NUCIND
+        IDEG = NUCDEG(INUC)
+        IF(DOATOM(INUC)) THEN
+          TEST = .FALSE.
+          IZ   = IZATOM(INUC)
+          NISO = 0
+!         Abundance of the selected isotope
+          SELEC_ABND = DISOTP(IZ,ISOTOP(INUC),'ABUNDANCE')
+          IF (SELEC_ABND.LT.ABUND) ISOFLAG = ISOFLAG + 1
+          DO ISO = 1,5
+            ABND   = DISOTP(IZ,ISO,'ABUNDANCE')
+            IMASS = DISOTP(IZ,ISO,'A')
+            NPROTON  = IZ
+            NNEUTRON = IMASS - IZ
+            QW = (D1 - D4*S2THETAW) * NPROTON -
+     &      D1 * NNEUTRON
+
+            IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
+              TEST = .TRUE.
+              NISO = NISO + 1
+              RATINF(1,NISO,NSPEC+1) = DISOTP(IZ,ISO,'A')
+              RATINF(2,NISO,NSPEC+1) = ABND
+              RATINF(3,NISO,NSPEC+1) = QW
+            ENDIF
+          ENDDO
+
+!         Store values for selected isotopes
+          IMASS = DISOTP(IZ,ISOTOP(INUC),'A')
+          NNEUTRON = IMASS - IZ
+          QW_SELECTED(INUC) = (D1 - D4*S2THETAW) * NPROTON -
+     &      D1 * NNEUTRON
+          IMASS_SELECTED(INUC) = IMASS
+
+!         Print section for isotopes above abundance threshold
+          IF(NISO.GT.0) THEN
+            IATINF(1,NSPEC+1) = IDEP + 1
+            IATINF(2,NSPEC+1) = IZ
+            IATINF(3,NSPEC+1) = NISO
+            WRITE(LUPRI,
+     &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F12.4)')
+     &      '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
+            DO J = 2,NISO
+              WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F12.4)')
+     &        '@',J,(RATINF(K,J,NSPEC+1),K=1,3)
+            ENDDO
+            DO K = 2,IDEG
+              IATINF(1,NSPEC+K) = IDEP + K
+              IATINF(2,NSPEC+K) = IZ
+              IATINF(3,NSPEC+K) = NISO
+              DO L = 1,NISO
+                RATINF(1,L,NSPEC+K) = RATINF(1,L,NSPEC+1)
+                RATINF(2,L,NSPEC+K) = RATINF(2,L,NSPEC+1)
+                RATINF(3,L,NSPEC+K) = RATINF(3,L,NSPEC+1)
+              ENDDO
+            ENDDO
+            NSPEC = NSPEC + IDEG
+          ENDIF
+        ENDIF
+        IDEP = IDEP + IDEG
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',61,0)
+C
+      IF (ISOFLAG.GT.0) THEN
+      write(lupri,'(/,A)')
+     &  'Some selected isotopes are below the abundances threshold.'
+      write(lupri,'(A)')
+     &  'Dimish the abundances keyword under PROPERTIES to get proper'
+     &  //' nuclear information.'
+      END IF
+C
+      IF(NSPEC.EQ.0) THEN
+        WRITE(LUPRI,'(A)') '* No suitable isotopes. Returning'
+        CALL QEXIT('PRP_PVC_EFG')
+        RETURN
+      ENDIF
+
+
+!     Print section for selected isotopes
+      WRITE(LUPRI,'(/,A)') '@ Selected nuclear species:'
+      CALL PRSYMB(LUPRI,'=',63,0)
+      WRITE(LUPRI,'(A,9X,A,11X,A)')
+     &  '@ name  charge  isotope   mass','abundance','Qw'
+      CALL PRSYMB(LUPRI,'-',63,0)
+
+      DO INUC = 1, NUCIND
+        IF(DOATOM(INUC)) THEN
+        IZ   = IZATOM(INUC)
+        ABND   = DISOTP(IZ,ISOTOP(INUC),'ABUNDANCE')
+        write(lupri,'(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F12.4)')
+     &    '@',NAMN(INUC),IZ,ISOTOP(INUC),IMASS_SELECTED(INUC),
+     &    ABND,QW_SELECTED(INUC)
+
+!       FACTOR: Qw * Gf [au] / (2 * raiz(2))
+        FACTORS(INUC) = (QW_SELECTED(INUC)*GFERMI)/(2*SQRT(D2))
+        END IF
+      END DO
+      CALL PRSYMB(LUPRI,'-',61,0)
+      WRITE(LUPRI,'(3/)')
+
+C
+C     **********************************************************************
+C     ******************* Extract PV contributions to EFG ******************
+C     **********************************************************************
+C
+      NA = 0
+      NB = 0
+
+C     The NSCOORA PV operators as A operators in <<A;B>> :
+      DO I = 1,NSCOORA
+        IF(IP_PVC_EFG(1,I).GT.0) THEN
+          NA = NA + 1
+          IBUF(NA,1) = I
+        ENDIF
+      END DO
+C     The NSCOORB EFG operators as B operators in <<A;B>> :
+      DO I = 1,NSCOORB
+        IF(IP_PVC_EFG(2,I).GT.0) THEN
+          NB = NB + 1
+          IBUF(NB,2) = I
+        ENDIF
+      END DO
+C
+      IF (NA.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_PVC_EFG: NA=',NA
+        CALL QUIT('PRP_PVC_EFG: Wrong value of NA!')
+      ENDIF
+      IF (NB.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_PVC_EFG: NB=',NB
+        CALL QUIT('PRP_PVC_EFG: Wrong value of NB!')
+      ENDIF
+C
+C     LINEAR RESPONSE PART OF PVC EFG
+C     Fill matrices of parity-violation contribution to EFG
+C
+      IF (XLR_SKIPEE) THEN
+        IABLRF_EE = -999999999
+        IF (XLR_SKIPEP) THEN
+          IABLRF_EP = -999999999
+        ELSE
+          IABLRF_EP = 2
+        END IF
+      ELSE
+        IABLRF_EE = 2
+        IF (XLR_SKIPEP) THEN
+          IABLRF_EP = -999999999
+        ELSE
+          IABLRF_EP = 3
+        END IF
+      END IF
+C
+C
+      DO IFREQ = 1,NBFREQ
+        IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
+          CALL PRSYMB(LUPRI,'-',72,2)
+          WRITE(LUPRI,'(A,F15.8,A)')
+     &         '*** Frequency    :',BFREQ(IFREQ),' a.u.'
+        ENDIF
+C
+        DO IA = 1,NA
+          JA = IBUF(IA,1)
+          KA = IP_PVC_EFG(1,JA)
+          DO IB = 1,NB
+            JB = IBUF(IB,2)
+            KB = IP_PVC_EFG(2,JB)
+C           First extract the e-e contribution
+            IF (.NOT. XLR_SKIPEE)
+     &      PVEFGMAT(JA,JB,1) = ABLRF(IFREQ,KA,KB,IABLRF_EE)
+C           then extract the e-p contribution
+            IF (.NOT. XLR_SKIPEP)
+     &      PVEFGMAT(JA,JB,2) = ABLRF(IFREQ,KA,KB,IABLRF_EP)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+C     Analyze results
+C
+C     Here we exploit that we are in C1 symmetry,
+C     so that all nuclei are symmetry-independent!
+C
+C     Initialize response matrices
+      CALL DZERO(RESPEE,3*3*NUCIND)
+      CALL DZERO(RESPEP,3*3*NUCIND)
+      CALL DZERO(RESP,3*3*NUCIND)
+C
+C     Print some notes
+      IF(.NOT.GAUNUC) THEN ! Point nucleus
+        write(lupri,'(A,/,A)')
+     &  'The PVC to EFG tensor strongly depends on the nuclear model.',
+     &  'Gaussian model is suggested over point-like model.'
+      ENDIF
+
+
+C     Extract response
+C     ================
+C     First index in PVEFGMAT is related to the PV spin-independent operators
+C     Second index in PVEFGMAT is related to the EFG operators
+      ITENSOR = 1
+      DO IATOM = 1,NUCIND
+        IF(DOATOM(IATOM)) THEN
+          DO 50 IXYZ = 1,3
+          DO 50 JXYZ = IXYZ,3
+C           Get the ee and pp parts of the PVC to EFG
+            RESPEE(IXYZ,JXYZ,IATOM) = FACTORS(IATOM)*
+     &      PVEFGMAT(IATOM,ITENSOR,1)
+            RESPEE(JXYZ,IXYZ,IATOM) = RESPEE(IXYZ,JXYZ,IATOM)
+            RESPEP(IXYZ,JXYZ,IATOM) = FACTORS(IATOM)*
+     &      PVEFGMAT(IATOM,ITENSOR,2)
+            RESPEP(JXYZ,IXYZ,IATOM) = RESPEP(IXYZ,JXYZ,IATOM)
+            ITENSOR = ITENSOR+1
+ 50       CONTINUE
+!         Total PV contribution to EFG
+          RESP = RESPEE + RESPEP
+        ENDIF
+      ENDDO
+
+      WRITE(lupri,'(/)')
+      IF (IPRPRP .LT. 1) CALL HEADER
+     & ('Total PV contributions to EFG tensor (a.u.):',1)
+
+C     Print the response tensor.
+      DO IATOM = 1,NUCIND
+        IF(DOATOM(IATOM)) THEN
+          IF (IPRPRP .GE. 1) CALL PRSYMB(LUPRI,'=',91,0)
+          WRITE (LUPRI ,'(2X,A9,A4)')'Nucleus: ',NAMDEP(IATOM)
+          IF (IPRPRP .GE. 1) CALL HEADER
+     &    ('Total PV contributions to EFG tensor (a.u.):',1)
+          WRITE (LUPRI,'(19X,3(A,13X))') 'x', 'y', 'z'
+          WRITE(LUPRI,'(3(3X,A,6X,3E14.6,/))')
+     &    'x', (RESP(1,I,IATOM), I = 1,3),
+     &    'y', (RESP(2,I,IATOM), I = 1,3),
+     &    'z', (RESP(3,I,IATOM), I = 1,3)
+C
+C       Print out of e-e and e-p response contributions
+          IF (IPRPRP .GE. 1) THEN
+            CALL HEADER('e-p and e-e '//
+     &            'response contributions (a.u.):',1)
+            WRITE (LUPRI,'(12X,3(A,13X),4X,3(A,13X))')
+     &             'x', 'y', 'z', 'x','y','z'
+            WRITE (LUPRI,'(3(2X,A,3E14.6,4X,3E14.6,/))'),
+     &  'x', (RESPEP(1,I,IATOM), I = 1,3),(RESPEE(1,I,IATOM), I = 1,3),
+     &  'y', (RESPEP(2,I,IATOM), I = 1,3),(RESPEE(2,I,IATOM), I = 1,3),
+     &  'z', (RESPEP(3,I,IATOM), I = 1,3),(RESPEE(3,I,IATOM), I = 1,3)
+          END IF
+C
+        END IF
+      END DO
+      IF (IPRPRP .GE. 1) CALL PRSYMB(LUPRI,'=',91,0)
+C
+      CALL QEXIT('PRP_PVC_EFG')
+C
+      deallocate(FACTORS)
+      deallocate(PVEFGMAT)
+      deallocate(DOATOM)
 C
       RETURN
       END

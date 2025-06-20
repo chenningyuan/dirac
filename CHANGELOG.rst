@@ -3,6 +3,21 @@
 
 -----------------------------------------------------------------------------------------------------
 
+25.1
+-------
+
+New features:
+
+- Calculation of Parity-Violating EFG Tensors. Activated with ".PVCEFG"
+   - Contributor: Juan J. Aucar.
+   - Reference: `Juan J. Aucar and Alejandro F. Maldonado, Parity Violation Effects on the Electric Field Gradient, Phys. Chem. Chem. Phys. 27, 7594 (2025) <https://doi.org/10.1039/D4CP04840G>`__
+   - Manual: PVCEFG `<https://diracprogram.org/doc/release-25/manual/properties.html#pvcefg>`__
+
+- Bugfixes
+   - numerical molecular gradient for open-shell DFT was not working (H. J. Aa. Jensen)
+
+-----------------------------------------------------------------------------------------------------
+
 25.0
 --------
 
@@ -48,7 +63,7 @@ Infrastructure changes and fixes:
 - Better cmake structure for compiling DIRAC. Now utility programs are small and not the same size as dirac.x.
    - Contributor: H. J. Aa. Jensen
 - Changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025.
-   - Contributor: H. J. Aa. Jensen.
+   - Contributor: H. J. Aa. Jensen and J. J. Aucar.
 - Made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers).
    - Contributor: H. J. Aa. Jensen.
 - Include support in ExaCorr for NVHPC, and added hints for compilation with OneAPI and NVHPC, and a way to control via environment variable CUDA_SM_ARCH which NVIDIA GPU architeture to compile for.  Please note that calculations beyond iterative triples (e.g. CCSDTQ) are not supported with NVHPC.
