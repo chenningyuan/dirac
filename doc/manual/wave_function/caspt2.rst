@@ -13,6 +13,15 @@ Relativistic IVO/CASCI/CASPT2 and IVO/RASCI/RASPT2 module, Ref. :cite:`Masuda202
 |
 | The program is based on the CASPT2D formalism reported in :cite:`Anderson1990`.
 
+**GUI program to support creating CASPT2 input**
+================================================
+
+| You can use the CASPT2 input support GUI program `dcaspt2_input_generator <https://github.com/RQC-HU/dcaspt2_input_generator>`
+| if your DIRAC output was generated using an input that includes the :ref:`ANALYZE_.PRIVEC` keyword in the :ref:`**ANALYZE` module.
+| This program creates the necessary DIRAC input fragment for the :ref:`*CASPT2` section.
+| If you are not familiar with writing CASPT2 input files, we recommend using this tool.
+| For detailed instructions, see https://github.com/RQC-HU/dcaspt2_input_generator/wiki .
+
 **required keywords**
 =====================
 
