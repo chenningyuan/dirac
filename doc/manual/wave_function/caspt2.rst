@@ -13,6 +13,11 @@ Relativistic IVO/CASCI/CASPT2 and IVO/RASCI/RASPT2 module, Ref. :cite:`Masuda202
 |
 | The program is based on the CASPT2D formalism reported in :cite:`Anderson1990`.
 
+.. note::
+
+    Currently, IVO is not supported when the AO coefficients in DFPCMO are complex or quaternion numbers, such as for certain C₂ or C₁ symmetry molecules.
+
+
 **GUI program to support creating CASPT2 input**
 ================================================
 
