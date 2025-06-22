@@ -18,6 +18,8 @@ Relativistic IVO/CASCI/CASPT2 and IVO/RASCI/RASPT2 module, Ref. :cite:`Masuda202
     Currently, IVO is not supported when the AO coefficients in DFPCMO are complex or quaternion numbers, such as for certain C₂ or C₁ symmetry molecules.
 
 
+In the input file of IVO, CASCI, and CASPT2 programs, orbitals must be numbered in ascending order of orbital energy, and if multiple orbitals share the same energy, they are numbered by increasing symmetry index. Since DIRAC’s SCF output often lists orbitals grouped by symmetry rather than energy, it is convenient to use the following input generator to prepare your CASCI/CASPT2 input.
+
 **GUI program to support creating CASPT2 input**
 ================================================
 
