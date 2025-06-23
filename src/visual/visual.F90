@@ -194,11 +194,11 @@ contains
       if (mpi_is_master()) then
         call get_grid_points(rs_input%grids(ig))
 
-        write(*, *) 'VISUAL: setting up grid (grid ID=', ig, ')'
+        write(*, *) 'Setting up grid #', ig
         call rs_input%grids(ig)%printout
 
         if (rs_input%print_level > 1) then
-          write(*,*) 'GRID POINTS (AND WEIGHTS): '
+          write(*,*) 'grid points (and weights): '
           do j = 1, npoints
             if (rs_input%grids(ig)%allocated_weights()) then
               write(*, *) (rs_input%grids(ig)%points(i,j),i=1,g_ndim), rs_input%grids(ig)%weights(j)
@@ -207,7 +207,7 @@ contains
             end if
           end do
           if (rs_input%grids(ig)%allocated_radial_coord()) then
-            write(*,*) 'GRID RADIAL POINTS: '
+            write(*,*) 'grid radial points: '
             do j = 1, npoints_radial
               write(*, *) rs_input%grids(ig)%radial_coord(j)
             end do
@@ -217,10 +217,6 @@ contains
         if (allocated(rs_input%grids(ig)%export)) then
 !         export this grid to a separate file 
           call store_grid(rs_input%grids(ig))
-          if (rs_input%print_level > 2) then
-            write(*, *) 'Grid ', rs_input%grids(ig)%id, ' exported to file ', &
-                         rs_input%grids(ig)%file_out
-          end if
         end if
       end if
 
@@ -241,6 +237,11 @@ contains
           ! it would be cleaner to use "associate", 
           ! but some compilers have troubles with nested associate
           ! https://stackoverflow.com/questions/66562058/associate-chains-in-fortran
+
+          if (mpi_is_master()) then
+            write(*, *) 'Setting up grid function #', igf
+            call rs_input%grid_functions(igf)%printout
+          end if
 
           if (rs_input%print_level > 0) then
             if (mpi_is_master()) then 
@@ -420,7 +421,7 @@ contains
 
           if (mpi_is_master()) then
 
-!           post-process non-3D grids
+!           post-process radial grids
 
             if (rs_input%grids(ig)%typ == 2) then
 !             radial grids

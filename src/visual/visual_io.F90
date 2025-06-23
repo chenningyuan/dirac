@@ -33,7 +33,7 @@ contains
       data_file%name = grid%file_out
       data_file%status = -1
       if (data_file%status == -1) then
-        write(*,*) " Opening new HDF5 file for grid export: ", data_file%name
+        !write(*,*) " Opening new HDF5 file for grid export: ", data_file%name
         data_file%type = 2
         data_file%status = 0
         call write_grid_to_checkpoint(data_file, grid)
@@ -66,17 +66,17 @@ contains
       data_file%name = grid_function%file_out
       data_file%status = -1
       if (data_file%status == -1) then
-        write(*,*) " Opening new HDF5 file for grid function export: ", data_file%name
+        !write(*,*) " Opening new HDF5 file for grid function export: ", data_file%name
         data_file%type = 2
         data_file%status = 0
         call write_grid_to_checkpoint(data_file, grid)
         call write_grid_function_to_checkpoint(data_file, grid_function)
       end if
     else if (grid_function%export == 'txt' .or. grid_function%export == 'csv') then
-      write(*,*) " Opening new text file for grid function export: ", data_file%name
+      !write(*,*) " Opening new text file for grid function export: ", data_file%name
       call write_grid_function_to_txt_storage(grid, grid_function)
     else if (grid_function%export == 'cube') then
-      write(*,*) " Opening new cube file for grid function export: ", data_file%name
+      !write(*,*) " Opening new cube file for grid function export: ", data_file%name
       call write_grid_function_to_cube(grid, grid_function, mol)
     else
       call visual_quit('Unsupported format for grid function export.')

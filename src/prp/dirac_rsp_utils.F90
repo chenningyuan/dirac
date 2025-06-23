@@ -900,31 +900,31 @@ contains
     logical :: exists
     character(100) :: errmsg
 
-    inquire(file=trim(f_name), exist=exists)
+    rsp_file%name = trim(f_name)
+
+    inquire(file=rsp_file%name, exist=exists)
     if (.not. exists) then
 
       if (present(valid)) then
         if (valid) then
-          write(errmsg, *) 'file ',trim(f_name),' does not exist. Stopping now!'
+          write(errmsg, *) 'file ',rsp_file%name,' does not exist. Stopping now!'
           call quit(errmsg)
         end if
       end if
 
-      write(*,*) " Opening new HDF5 file for rsp data export: ", rsp_file%name
+      !write(*,*) " Opening new HDF5 file for rsp data export: ", rsp_file%name
       top_groups(1) = '/result'
-      rsp_file%name = trim(f_name)
       rsp_file%type = 2
       rsp_file%status = -1
       call lab_init(rsp_file, top_groups)
     else
-      if (present(valid)) then
-        if (valid) then
-          write(*,*) " Opening existing HDF5 file for rsp data import: ", rsp_file%name
-        else
-          write(*,*) " Opening existing HDF5 file for rsp data export: ", rsp_file%name
-        end if
-      end if
-      rsp_file%name = trim(f_name)
+      !if (present(valid)) then
+      !  if (valid) then
+      !    write(*,*) " Opening existing HDF5 file for rsp data import: ", rsp_file%name
+      !  else
+      !    write(*,*) " Opening existing HDF5 file for rsp data export: ", rsp_file%name
+      !  end if
+      !end if
       rsp_file%type = 2
       rsp_file%status = 0
     end if
@@ -1262,8 +1262,7 @@ contains
   subroutine rsp_checkpoint_close(rsp_file)
     type(file_info_t), intent(inout) :: rsp_file
     rsp_file%status = 0
-    print*, " RSP Checkpoint file closed"
-
+    !print*, " RSP Checkpoint file closed"
   end subroutine
 
 
