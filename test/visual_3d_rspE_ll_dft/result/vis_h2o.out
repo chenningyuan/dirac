@@ -1,8 +1,8 @@
   ** interface to 32-bit integer MPI enabled **
 
-DIRAC master    (ac0029) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
+DIRAC master    (ac0784) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
 DIRAC nodes 1 to 7 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
-DIRAC master    (ac0029) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
+DIRAC master    (ac0784) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
 DIRAC nodes 1 to 7 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
  
 Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
@@ -194,21 +194,21 @@ Version information
 -------------------
 
 Branch        | gosia/visual-merge
-Commit hash   | 298b7bff0
+Commit hash   | 2223cf52d
 Commit author | gosia olejniczak
-Commit date   | Wed Jun 18 11:00:49 2025 +0200
+Commit date   | Mon Jun 23 15:46:47 2025 +0200
 
 
 Configuration and build information
 -----------------------------------
 
 Who compiled             | plggosiao
-Compiled on server       | ac0029
+Compiled on server       | ac0784
 Operating system         | Linux-4.18.0-553.40.1.el8_10.x86_64
 CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2025-06-18 11:30:43.339594+00:00
+Configuration time       | 2025-06-23 16:45:24.700954+00:00
 Fortran compiler         | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiifort
 Fortran compiler version | 2021.4.0
 Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp
@@ -243,8 +243,8 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Jun 18 16:37:41 2025
-     Host name              : ac0029                                  
+     Date and time (Linux)  : Mon Jun 23 19:55:35 2025
+     Host name              : ac0784                                  
 
  * Opening checkpoint file 
     - Existing hdf5 checkpoint file: check contents
@@ -255,8 +255,6 @@ Contents of the input file
 --------------------------
 
 **DIRAC                                                                                             
-.TITLE                                                                                              
- calculate selected grid function on a 3D regular grid and export it to an external h5 file         
 **HAMILTONIAN                                                                                       
 .LEVY-LEBLOND                                                                                       
 .DFT                                                                                                
@@ -272,11 +270,38 @@ Contents of the input file
 .EVCCNV                                                                                             
 1.0D-8                                                                                              
 **VISUAL                                                                                            
-.PRINTL                                                                                             
-1                                                                                                   
 .GRIDS                                                                                              
 1                                                                                                   
-id=1 input=import file_inp=grid.h5                                                                  
+id=1 input=list                                                                                     
+.LIST                                                                                               
+27                                                                                                  
+6.765886054628134083E-03,    4.249023369972415587E-01,    7.158686405346250670E-01                  
+2.605180735153814764E-01,    3.573757725161696985E-01,    4.620838407313220264E-01                  
+8.649061431743078066E-01,    8.181156624541212619E-01,    4.803335943238586925E-01                  
+4.694786265396605485E-01,    2.594963345269379884E-01,    9.543753159410611753E-01                  
+5.879893925442739588E-01,    1.756547941106401112E-01,    2.393312303593522206E-01                  
+4.856928574636751872E-01,    2.024833753421941829E-01,    6.914095301702174456E-01                  
+7.224297339303998866E-01,    7.950483317178290710E-01,    7.586067167528377508E-01                  
+6.125336999456330034E-01,    8.305157877792075372E-01,    1.703550392956183490E-01                  
+1.282400462443969991E-01,    9.247217276310717438E-01,    5.359295313261627225E-01                  
+3.101931386152065873E-01,    5.356334096451877969E-01,    7.982995797541118099E-01                  
+5.007754289796906289E-01,    7.903128741749414488E-01,    7.140114227118996570E-01                  
+4.501529164748425682E-01,    1.291319947246892808E-01,    2.214197362506735711E-01                  
+6.153025740212826333E-01,    1.113443715997061156E-01,    7.898664504467701741E-01                  
+9.572957339600959292E-01,    3.648299311099039155E-01,    9.096496058655477723E-01                  
+9.600081416864393313E-01,    4.730872381237983815E-01,    2.366561200805183951E-01                  
+1.602146575197400669E-01,    6.460432586383446640E-01,    6.205214109185670512E-01                  
+5.757133353580148327E-01,    3.499347868928565086E-01,    5.978882603841293442E-01                  
+1.009384336132489457E-01,    8.697714167294019472E-01,    9.943277502582957839E-01                  
+5.710507872500759641E-01,    3.281871348284650658E-01,    4.342895613340026495E-01                  
+6.187769295877191267E-01,    6.889400346973467704E-01,    3.907336520767205057E-01                  
+3.639048393749777510E-01,    5.723113578016330028E-01,    7.897759639767854001E-01                  
+6.630395264329709271E-01,    9.057484731288967250E-01,    4.826398666297893048E-01                  
+7.202618549000757708E-01,    1.591089887883025966E-01,    7.033952111964111298E-01                  
+2.143223379390322147E-01,    5.259892534636245731E-01,    7.889097622149712219E-01                  
+8.193761872610207941E-01,    7.256963386007907468E-01,    6.052587427329986225E-01                  
+1.054273242666020627E-01,    1.641860747959211775E-02,    5.430150841403321715E-01                  
+2.850571507053395459E-01,    6.763762717106354128E-01,    9.969190081455814312E-01                  
 .GRIDFUNCTIONS                                                                                      
 1                                                                                                   
 name=edip id_grid=1 purpose=visualization outpri=yes export=hdf5 rspvec_file=RESPONSE.h5 rspvec_id=3
@@ -301,7 +326,7 @@ FINISH
 
 
     *************************************************************************
-    ***********  calculate selected grid function on a 3D regular ***********
+    ********************* DIRAC: No title specified !!! *********************
     *************************************************************************
 
 
@@ -650,8 +675,12 @@ H     -0.7685505217   0.4760599897   0.0000000000
  * Default RKB projection:
    1: Pre-projection in scalar basis
    2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
- VISUAL: Grid information will be read from grid file
- WARNING: These options will be ignored (if present): npoints, spacing, margin.
+ VISUAL: Grid will be created according to information in the separate input lin
+ es:
+  .LINE/.LIST/.2D/.2D_INT/.3D/.3D_INT/.RADIAL
+ VISUAL: Grid will be created according to information in the separate input lin
+ es:
+  .LINE/.LIST/.2D/.2D_INT/.3D/.3D_INT/.RADIAL
   ===== Kohn-Sham calculation set-up =====
  * DFT thresholds:
    - small density threshold =  0.10000E-13
@@ -757,88 +786,25 @@ Total no. of orbitals           (NORB):    40
 
   *** Visualization module ***
   
- will read result/grid/points/coor_1 from grid.h5
- will read result/grid/points/coor_2 from grid.h5
- will read result/grid/points/coor_3 from grid.h5
- VISUAL: setting up grid (grid ID=           1 )
-   Grid is read from file: grid.h5
+ Setting up grid #           1
+  Coordinates of grid points are provided in the user input (.LIST)
+    * Total number of points:       27
  
- Working on grid function            1 , grid            1
+ Setting up grid function #           1
+  Grid function is a tensor field of order        1
+  Grid function will be calculated in vertices of grid       1
+  Grid function depends on the perturbed electron density:
+    * perturbation order:   1
+    * File with response vectors data: 
+    RESPONSE.h5
+    * ID of a response vector:   3
+  Grid function will be exported; export format: 
+  hdf5
+  Grid function will be exported to file: 
+  edip_Ez_rspvec3.h5
  
-  VISUAL: grid data on proc
-   id =            1           0
-   ndim =            3           0
-   nr_points =            0           0           0           0
-   nr_points_total =           27           0
-   origin [a.u.] =   0.000000000000000E+000  0.000000000000000E+000
-  0.000000000000000E+000           0
-   spacing [a.u.] =   0.000000000000000E+000  0.000000000000000E+000
-  0.000000000000000E+000           0
-   extents [a.u.] =   0.000000000000000E+000  0.000000000000000E+000
-  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
-  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
-  0.000000000000000E+000           0
-   radial_length [a.u.] =   0.000000000000000E+000           0
-   radial_nr_steps  =            0           0
-   radial_nr_points_angular  =            0           0
-   radial_lebedev_l  =            0           0
-   status =            0           0
-   input =            1           0
-   typ =            0           0
-   margin =    4.00000000000000                0
-   integration_order_2d =            0           0
-   file_inp = grid.h5           0
-   origin_known =  F           0
-   extents_known =  F           0
-   nr_points_total_known =  T           0
-   nr_points_known(1:3) =  F F F           0
-   spacing_known(1:3) =  F F F           0
- 
- 
-  VISUAL: grid function on proc
-   id =            1           0
- name = edip           0
-   status =            0           0
-   outpri =  T           0
-   input =            0           0
-   wf_order =            1           0
-   rspvec_id =            3           0
-   nuc =            0           0
-   lao =            0           0
-   lao_skip =            0           0           0           0
-   lao_comp =             0
-   nics =  F           0
-   nics_origin =   0.000000000000000E+000  0.000000000000000E+000
-  0.000000000000000E+000           0
-   tensor_order =            1           0
-   max_ao_g_order =            0           0
-   max_ao_m_order =            0           0
-   modify =            0           0
-   radial_power =            0           0
-   cartesian_power =            0           0           0           0
-   up_scale =    1.00000000000000                0
-   down_scale =    1.00000000000000                0
-   bed_wave_vector =   0.000000000000000E+000  0.000000000000000E+000
-  0.000000000000000E+000           0
-   bed_pol_vector =   0.000000000000000E+000  0.000000000000000E+000
-  0.000000000000000E+000           0
-   bed_freq =   0.000000000000000E+000           0
-   bedfix_known =  F           0
-   id_assigned_grid =           1           0
-   purpose =            0           0
-   rspvec_file = RESPONSE.h5           0
-   gf_type = response           0
-   export = hdf5           0
-   file_out = edip_Ez_rspvec3.h5           0
- 
-  Opening existing HDF5 file for rsp data import: 
-  RSP Checkpoint file closed
-  Opening new HDF5 file for grid function export: edip_Ez_rspvec3.h5
- 
-*** VISUAL output ***
- 
-Final grid_function values (grid_function%id=  1) in grid points (grid#id=  1): 
-x  y  z  grid_function values
+  Final grid function values (id=  1) in grid points (id=  1): 
+    x  y  z  grid_function values
    6.76588605E-003   4.24902337E-001   7.15868641E-001   5.17837209E-004   3.25205359E-002   5.47900772E-002
    2.60518074E-001   3.57375773E-001   4.62083841E-001   5.30760526E-002   7.28091339E-002   9.41415921E-002
    8.64906143E-001   8.18115662E-001   4.80333594E-001  -4.85115992E-002  -4.58871745E-002  -2.69413635E-002
@@ -867,7 +833,7 @@ x  y  z  grid_function values
    1.05427324E-001   1.64186075E-002   5.43015084E-001   4.45876158E-002   6.94380292E-003   2.29653442E-001
    2.85057151E-001   6.76376272E-001   9.96919008E-001  -1.61333984E-002  -3.82809127E-002  -5.64226912E-002
  
- Elapsed walltime in run_visual:  -3.452400000000000E-002
+ Elapsed walltime in run_visual:  -4.159600000000002E-002
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -879,10 +845,10 @@ x  y  z  grid_function values
 
 
  
-     Date and time (Linux)  : Wed Jun 18 16:37:42 2025
-     Host name              : ac0029                                  
+     Date and time (Linux)  : Mon Jun 23 19:55:36 2025
+     Host name              : ac0784                                  
 
->>>> Node 0, utime: 0, stime: 0, minflt: 12782, majflt: 85, nvcsw: 2115, nivcsw: 309, maxrss: 260812
+>>>> Node 0, utime: 0, stime: 0, minflt: 12696, majflt: 52, nvcsw: 2001, nivcsw: 275, maxrss: 258668
 >>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary for Master

@@ -1024,7 +1024,7 @@ contains
     icmoq = 0
     if (cmo%n_fsym > 1) then
       iorb(2) = cmo%n_mo(1)
-      icmoq(2) = cmo%n_mo(1)*cmo%n_ao(1)
+      icmoq(2) = cmo%n_mo(1)*cmo%n_ao(1)*cmo%nz
     end if
 
     do i1 = 1, cmo%n_fsym
