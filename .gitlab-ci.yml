@@ -30,19 +30,12 @@ ubuntu_gnu_parallel32-check:
   before_script:
     - apt-get -qq update
     - apt-get -qq -y install git
-    - apt-get -qq -y install gfortran-14
-    - apt-get -qq -y install gcc-14
-    - apt-get -qq -y install g++-14
+    - apt-get -qq -y install cmake
+    - apt-get -qq -y install gfortran gcc g++
     - apt-get -qq -y install libomp-dev
     - apt-get -qq -y install mpich libmpich-dev libhdf5-mpich-dev
-    - apt-get -qq -y install python3 pip
-    - apt-get -qq -y install python-is-python3
-    - apt-get -qq -y install libhdf5-dev
-    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 800 --slave /usr/bin/g++ g++ /usr/bin/g++-14
-    - update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-14 800
-    - apt -qq -y install python3-scipy
-    - apt -qq -y install python3-h5py
-    - apt-get -qq -y install cmake
+    - apt-get -qq -y install python3 python3-pip python3-scipy python3-h5py
+    - apt-get -qq -y install libblas-dev liblapack-dev libhdf5-dev
   script:
 #   do the parallel buildup here
 #    ...determine number of processors
