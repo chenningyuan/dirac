@@ -14,25 +14,25 @@ Bugfix:
    - New content for the manual: `PVCSPN <http://www.diracprogram.org/doc/master/manual/properties.html#pvcspn>`__.
    - Contributor: I. Agustín Aucar.
 
------------------------------------------------------------------------------------------------------
-
 25.1
--------
+----
 
 New features:
 
-- Calculation of Parity-Violating EFG Tensors. Activated with ".PVCEFG"
+- Calculation of parity-violating EFG tensors. Activated with ".PVCEFG"
    - Contributor: Juan J. Aucar.
    - Reference: `Juan J. Aucar and Alejandro F. Maldonado, Parity Violation Effects on the Electric Field Gradient, Phys. Chem. Chem. Phys. 27, 7594 (2025) <https://doi.org/10.1039/D4CP04840G>`__
    - Manual: PVCEFG `<https://diracprogram.org/doc/release-25/manual/properties.html#pvcefg>`__
 
-- Bugfixes
-   - numerical molecular gradient for open-shell DFT was not working (H. J. Aa. Jensen)
+Bugfixes:
+
+- Numerical molecular gradient for open-shell DFT was not working.
+   - Contributor: H. J. Aa. Jensen. (H. J. Aa. Jensen).
 
 -----------------------------------------------------------------------------------------------------
 
 25.0
---------
+----
 
 New features:
 
@@ -439,8 +439,6 @@ Framework changes:
 17.0 (2017-12-12)
 -----------------
 
-- DIRAC17 release.
-
 New features:
 
 - Kramers restricted Polarization Propagator in the ADC framework for electronic excitations, activated with ".POLPRP".
@@ -489,8 +487,6 @@ Performance improvements:
 
 16.0 (2016-12-12)
 -----------------
-
-- DIRAC16 release.
 
 New features:
 
@@ -584,6 +580,7 @@ Bug fixes:
 - Fixed minor issues to allow compilation using IBM XL Fortran compiler (thanks to Bob Walkup, IBM).
 - Update PCMSolver module to its [1.0.3 version](https://github.com/PCMSolver/pcmsolver/releases).
 
+-----------------------------------------------------------------------------------------------------
 
 14.0 (2014-12-12)
 -----------------
