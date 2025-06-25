@@ -129,3 +129,4 @@ if h5py_available:
                           gf_test_key='t1_icomp_'+str(i))
     
 
+sys.exit(test.return_code)

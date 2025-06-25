@@ -25,4 +25,4 @@ test.run(['vis_2d.inp'], ['h2o.mol'], f, args='--incmo')
 test.run(['vis_3d_dftgrid.inp'], ['h2o.mol'], f, args='--incmo --put="numerical_grid"')
 test.run(['vis_3d_radial.inp'], ['h2o.mol'], f, args='--incmo')
 
-
+sys.exit(test.return_code)

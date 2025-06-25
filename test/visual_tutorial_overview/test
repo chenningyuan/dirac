@@ -28,3 +28,5 @@ Path('CHECKPOINT.h5').unlink()
 #test.run(['dc_631.inp'], ['c6h6.xyz'], args='--outcmo')
 #test.run(['vis_elf.inp'], ['c6h6.xyz'], args='--incmo --get="elf.cube"')
 #Path('CHECKPOINT.h5').unlink()
+
+sys.exit(test.return_code)

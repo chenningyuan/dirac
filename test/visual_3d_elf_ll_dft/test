@@ -62,3 +62,4 @@ if h5py_available:
                   gf_label='/result/grid_function/'+t+'/visualization/values/',
                   gf_test_key='t0_icomp_1')
 
+sys.exit(test.return_code)

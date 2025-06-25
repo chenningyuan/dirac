@@ -75,3 +75,4 @@ for t in testset:
               gf_test_key='t1_icomp_1')
 
 
+sys.exit(test.return_code)

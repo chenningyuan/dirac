@@ -44,3 +44,4 @@ for m in ['auto', 'c2h', 'ci', 'd2h']:
 #    test.run(['visB2_lao.inp'], [m],  args='--incmo --put="RESPONSE.h5 TBMO.h5"')
     os.unlink("RESPONSE.h5")
 
+sys.exit(test.return_code)

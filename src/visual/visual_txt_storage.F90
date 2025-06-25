@@ -130,7 +130,7 @@ contains
     call open_txt_file(data_file, 'w')
     funit = data_file%unit
 
-    if (grid%export == 'txt') then
+    if (grid_function%export == 'txt') then
 
       ! this is for backward compatibility:
       ! data is written in columns, separator=space, no header
@@ -155,7 +155,7 @@ contains
         end if
       end if
 
-    else if (grid%export == 'csv') then
+    else if (grid_function%export == 'csv') then
 
       ! data is written in columns, separator=',', with header 
 
@@ -330,24 +330,11 @@ contains
         call visual_quit(errmsg)
       end if
     else if (mode == 'w') then
-      ! open new file to write; destroy file if present
-      if (exists) then
-        if (is_opened) then
-          call close_txt_file(plot_file, 'delete')
-        else
-          open(unit   = plot_file%unit, &
-               file   = plot_file%name, &
-               status = 'unknown',      &
-               access = 'sequential',   &
-               form   = 'formatted')
-          call close_txt_file(plot_file, 'delete')
-        end if
-      end if
-
+      ! open new file to write
       plot_file%unit = newunit()
       open(unit   = plot_file%unit, &
            file   = plot_file%name, &
-           status = 'unknown',      &
+           status = 'new',      &
            access = 'sequential',   &
            form   = 'formatted')
       plot_file%is_opened = .true.
