@@ -5071,11 +5071,11 @@ C
           DO IREP = 0,MAXREP
             IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
 C
-              IF(GAUNUC) THEN !gaussian model
+              IF(GAUNUC) THEN ! Gaussian nuclear model
                 PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-              ELSE !point nucleus
+              ELSE ! Point nucleus
                 PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
@@ -5267,6 +5267,9 @@ C
       PFAC(1) = CVAL
       PFAC(2) = CVAL
       PFAC(3) = CVAL
+C
+C     this prefactor (CVAL) guarantees the NRL employes in the literature
+C     in the printout section we will divide by CVEL
 C
       IF(.NOT.GAUNUC) THEN ! Point nucleus
         DO IXYZ = 1,3
@@ -7969,8 +7972,7 @@ C     to NMR shielding constants
 C
 C     This routine is modelled after SPRRES subroutine
 C
-C     Agustin Aucar - Nov 2022
-C     Last revision: Agustin Aucar - March 2024
+C     Agustin Aucar - November 2022
 C
 C***********************************************************************
       implicit none
@@ -11403,7 +11405,7 @@ C***********************************************************************
 C
 C     Define operators for nuclear spin-rotation constants
 C
-C     Written by Agustin Aucar and Trond Saue - Sep 2013
+C     Agustin Aucar and Trond Saue - September 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
@@ -11744,7 +11746,7 @@ C***********************************************************************
 C
 C     Output routine for nuclear spin-rotation constants
 C
-C     Written by Agustin Aucar and Trond Saue - Sep 2013
+C     Agustin Aucar and Trond Saue - September 2013
 C
 C***********************************************************************
       use memory_allocator
@@ -12364,7 +12366,7 @@ C     DMAT  - expectation value term of NSR
 C     PMATL - contribution from orbital angular moment to linear response term
 C     PMATS - contribution from spin angular moment to linear response term
 C
-C     Agustin Aucar and Trond Saue -  June 2014
+C     Agustin Aucar and Trond Saue - June  2014
 C     Last revision: Agustin Aucar - March 2024
 C
 C***********************************************************************
@@ -12829,7 +12831,7 @@ C
 C     Define operators for parity-violation contribution
 C     to nuclear spin-rotation constants
 C
-C     Written by Agustin Aucar - Nov 2022
+C     Agustin Aucar - November 2022
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
@@ -13090,7 +13092,7 @@ C
 C     Output routine for Parity-violation contribution
 C     to nuclear spin-rotation constants
 C
-C     Written by Agustin Aucar - Nov 2022
+C     Agustin Aucar - November 2022
 C
 C***********************************************************************
       use memory_allocator
