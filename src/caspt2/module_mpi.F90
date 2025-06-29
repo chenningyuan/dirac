@@ -12,7 +12,7 @@ module module_mpi
     public bcast_wrapper, reduce_wrapper, allreduce_wrapper
 
     interface bcast_wrapper
-        module procedure bcast_i, bcast_i_1, bcast_l, bcast_r
+        module procedure bcast_i, bcast_i_1, bcast_i_2, bcast_l, bcast_r
     end interface bcast_wrapper
 
     interface reduce_wrapper
@@ -94,6 +94,47 @@ contains
             call check_ierr(ierr)
         end if
     end subroutine bcast_i_1
+
+    subroutine bcast_i_2(mat, root_rank)
+        ! Broadcast for 2 dimensional integer array
+        implicit none
+        integer, intent(inout) :: mat(:, :)
+        integer, intent(in) :: root_rank
+        integer :: ii, ie, ji, je
+        integer :: i, j, cnt, step
+        integer :: datatype
+
+        ! Set the first and last index of the array for each dimension.
+        ii = lbound(mat, 1); ie = ubound(mat, 1)
+        ji = lbound(mat, 2); je = ubound(mat, 2)
+        if (sizeof(mat(ii, ji)) == 4) then
+            datatype = MPI_INTEGER4 ! 4 byte integer
+        else
+            datatype = MPI_INTEGER8 ! 8 byte integer
+        end if
+
+        ! Because of the limitation of the size of the array, the array is divided into several parts and reduce is performed.
+        if (max_i4 < size(mat, 1)) then ! 1st index is larger than the limit(max_i4)
+            do j = ji, je
+                do i = ii, ie, max_i4
+                    cnt = min(max_i4, ie - i + 1)
+                    call MPI_Bcast(mat(i, j), cnt, datatype, root_rank, MPI_COMM_WORLD, ierr)
+                    call check_ierr(ierr)
+                end do
+            end do
+        else if (max_i4 < size(mat, 1)*size(mat, 2)) then ! 1st index * 2nd index is larger than the limit(max_i4)
+            step = max_i4/size(mat, 1)
+            do j = ji, je, step
+                cnt = min(step, je - j + 1)*size(mat, 1)
+                call MPI_Bcast(mat(:, j), cnt, datatype, root_rank, MPI_COMM_WORLD, ierr)
+                call check_ierr(ierr)
+            end do
+        else ! no limit
+            call MPI_Bcast(mat, size(mat), datatype, root_rank, MPI_COMM_WORLD, ierr)
+            call check_ierr(ierr)
+        end if
+
+    end subroutine bcast_i_2
 
     subroutine bcast_l(val, root_rank)
         ! Broadcast for a logical value

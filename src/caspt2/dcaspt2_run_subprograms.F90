@@ -12,6 +12,7 @@ subroutine dcaspt2_run_subprograms(ivo_mode)
 #include "dcbpsi.h"
     logical, intent(in) :: ivo_mode
     integer :: unit_input, i
+    integer :: ciroots_size_1, ciroots_size_2, max_selectroot_list_size
     character(:), allocatable :: filename
 
     ! Read MRCONEE file (orbital energies, symmetries and multiplication tables)
@@ -38,19 +39,30 @@ subroutine dcaspt2_run_subprograms(ivo_mode)
         return
     end if
 
-    do i = 1, size(caspt2_ciroots, 1)
-        if (rank == 0) then
-            totsym = caspt2_ciroots(i, 1)
-            selectroot = caspt2_ciroots(i, 2)
-            nroot = max_selectroot_list(totsym)
-        end if
 #ifdef HAVE_MPI
-        call bcast_wrapper(totsym, 0)
-        call bcast_wrapper(selectroot, 0)
-        call bcast_wrapper(nroot, 0)
-        call bcast_wrapper(docasci, 0)
-        call bcast_wrapper(docaspt2, 0)
+    if (rank == 0) then
+        ciroots_size_1 = size(caspt2_ciroots, 1)
+        ciroots_size_2 = size(caspt2_ciroots, 2)
+        max_selectroot_list_size = size(max_selectroot_list)
+    end if
+    call bcast_wrapper(docasci, 0)
+    call bcast_wrapper(docaspt2, 0)
+    call bcast_wrapper(ciroots_size_1, 0)
+    call bcast_wrapper(ciroots_size_2, 0)
+    call bcast_wrapper(max_selectroot_list_size, 0)
+    if (.not. allocated(caspt2_ciroots)) then
+        allocate(caspt2_ciroots(ciroots_size_1, ciroots_size_2))
+    end if
+    if (.not. allocated(max_selectroot_list)) then
+        allocate(max_selectroot_list(max_selectroot_list_size))
+    end if
+    call bcast_wrapper(caspt2_ciroots, 0)
+    call bcast_wrapper(max_selectroot_list, 0)
 #endif
+    do i = 1, size(caspt2_ciroots, 1)
+        totsym = caspt2_ciroots(i, 1)
+        selectroot = caspt2_ciroots(i, 2)
+        nroot = max_selectroot_list(totsym)
         e2_subspace = 0
         sumc2 = 0
         sumc2_subspace = 0
