@@ -164,6 +164,7 @@ subroutine sync_input_variables
    ! RAS specific
    call bcast_wrapper(ras1_max_hole, 0)
    call bcast_wrapper(min_hole_ras1, 0)
+   call bcast_wrapper(min_elec_ras3, 0)
    call bcast_wrapper(ras3_max_elec, 0)
    call bcast_wrapper(ras1_size, 0)
    call bcast_wrapper(ras2_size, 0)
