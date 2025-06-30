@@ -177,7 +177,7 @@ module exacorr_tensor_interface
 
                         ! IF (alpha%im .ne. 0.D0 .and. beta%im .ne. 0.D0) THEN
 
-#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
+#if defined(EXATENSOR)
                 CASE(3) ! exatensor
                         if (present(a) .and. present(b) .and. present(c)) then
                           ! the case D=C has to be supported 
