@@ -240,7 +240,7 @@ C
       CALL DZERO(EIG,NORBT)
 
       SELECT CASE ( MOFILE_TRAINP )
-         CASE ( "DFCOEF" )
+         CASE ( "CHECKPOINT", "DFCOEF" ) ! DFCOEF kept so copies of old input files will work
             TOBEK  = .FALSE.
             TOBEKK = .FALSE.
          CASE ( "KRMCSCF" )

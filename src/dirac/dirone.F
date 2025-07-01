@@ -650,7 +650,12 @@ C
            IOFA(1) = 1
          ENDIF
       ENDIF
+C
+Ciaa  The next line must be removed if the magnetic part of the Ginges-Flambaum self-energy effective Hamiltonian
+C     is used with i.beta.alpha dot SEFGMG, instead of the current ALPHADOT version (currently we use: i.alpha dot SEFGMG).
+C     If next line is removed, then ALPHADOT must be replaced by BEALDOT in the inputs.
       IF(MAT.EQ.'AN')ALPHA(1) = DM1
+C
 C      
       nr_points_on_this_proc=MXNP*m
 C

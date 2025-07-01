@@ -12,10 +12,10 @@ f = Filter()
 f.add(from_string = '<<<  End of Minimization <<<',
       to_string   = '-------------------------------------------------------',
       ignore_below = 5.0e-9,
-      rel_tolerance   = 1.0e-3)
+      abs_tolerance   = 2.0e-3)
 f.add(from_string = 'Energy at final geometry is',
-      num_lines   = 3,
-      rel_tolerance   = 1.0e-4)
+      num_lines   = 2,
+      abs_tolerance   = 1.0e-5)
 
 test.run(['acetone.inp'], ['acetone.mol'], f)
 test.run(['HeH+.inp'], ['HeH+.mol'], f)

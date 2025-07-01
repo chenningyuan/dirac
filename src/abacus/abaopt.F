@@ -2229,7 +2229,7 @@ C
             RED = .TRUE.
          END IF
          WRITE(LUPRI,
-     &   '(A1,I4,A1,F20.6,1P,2D10.3,I5,0P,F12.6,A1,F11.6,I4,A1)')
+     &   '(A1,I4,A1,F18.6,2X,1P,2D10.3,I5,0P,F12.6,A1,F11.6,I4,A1)')
      &        '@',I,BRKMRK,GEINFO(I,1),TMPNRG,GEINFO(I,2),
      &        NINT(ABS(GEINFO(I,3))),GEINFO(I,4),NWSMRK,GEINFO(I,5),
      &        NINT(GEINFO(I,6)),REDMRK

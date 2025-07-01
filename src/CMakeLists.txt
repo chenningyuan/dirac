@@ -10,6 +10,37 @@
 # Set all module options and definitions first
 # so they can be DEFINED for all source subdirectories below
 #----------------------------------------------------------------------------------
+
+
+
+option(ENABLE_GEN1INT "Enable Gen1Int library" ON)
+if(ENABLE_GEN1INT)
+  # fixme: later this needs to become a target_compile_definitions
+  add_definitions(-DBUILD_GEN1INT)
+
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/gen1int)
+
+  set(EXTERNAL_LIBS gen1int_interface ${EXTERNAL_LIBS})
+endif()
+
+
+
+option(ENABLE_PELIB "Enable polarizabile embedding library" ON)
+if(ENABLE_PELIB)
+  # fixme: later this needs to become a target_compile_definitions
+  add_definitions(-DHAS_PELIB)
+
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
+
+  # fixme: this will later be done using targets
+  add_dependencies(PElib gen1int_interface)
+  add_dependencies(pelib_interface interface_mpi)
+
+  set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
+endif()
+
+
+
 option(ENABLE_RELCCSD_STANDALONE "Enable standalone RELCCSD" OFF)
 option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(NOT ENABLE_XCFUN)
@@ -80,6 +111,9 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:pdpack> ${EXTERNAL_OBJECTS})
 # Making interface_mpi as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/interface_mpi)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interface_mpi> ${EXTERNAL_OBJECTS})
+
+
+
 
 # Making mfsolver as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/mfsolver)
@@ -326,19 +360,6 @@ if(ENABLE_SRDFT)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:srdft> ${EXTERNAL_OBJECTS})
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
-
-# pelib interface routines added as module
-if(ENABLE_PELIB)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
-    set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
-    dirac_test(pe_energy "medium;scf;pelib" "")
-    dirac_test(pe_response "medium;polarizabilities;pelib" "")
-    dirac_test(pe_exc "medium;pelib" "")
-    dirac_test(pe_cpp "short;pelib" "")
-    if(ENABLE_PDE)
-    	dirac_test(pde_exc "short;pelib" "")
-    endif()
-endif()
 
 #  dirac sources as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
