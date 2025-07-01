@@ -48,7 +48,7 @@ module talsh_cc
          use talsh_gradient
          use talsh_eom,      only       : talsh_eom_results_tens_t, talsh_eom_eigval_driver
          use talsh_ccrsp,    only       : talsh_CCRSP_driver
-         use talsh_eom_TPA,  only       : talsh_eom_TPA_driver
+         use talsh_QR_TPA,  only        : talsh_QR_TPA_driver
          use talsh_cholesky_integrals
          use talsh_triples
 
@@ -73,7 +73,7 @@ module talsh_cc
 !        1- and 2-body cc intermediates 
          type(talsh_intermediates_tens_t) :: interm_t
 !        eom results
-         type(talsh_eom_results_tens_t) :: eom_results_t, eom_results_t_left
+         type(talsh_eom_results_tens_t) :: eom_results_t
 !        intermediate tensors (same notation as in relccsd)
          integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
          integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
@@ -90,7 +90,7 @@ module talsh_cc
          real(8) :: t_target_precision
          real(8) :: t1diag
          integer :: ncycles
-         logical :: CCD, lambda, eom, eom_lr, eom_qr, eom_tpa
+         logical :: CCD, lambda, eom, eom_lr, eom_qr, qr_tpa
          logical :: debug_eom = .false.
          logical :: CC2 
          logical :: CCSDT, CCSDTQ, CCSDTQP
@@ -170,7 +170,7 @@ module talsh_cc
          eom = exa_input%eom
          eom_lr = exa_input%eom_lr
          eom_qr = exa_input%eom_qr
-         eom_tpa = exa_input%eom_tpa
+         qr_tpa = exa_input%qr_tpa
          ncycles = exa_input%ncycles
          do1rdm_gs = exa_input%do_1rdm_gs
          do2rdm_gs = exa_input%do_2rdm_gs
@@ -457,7 +457,7 @@ module talsh_cc
 !        EOM calculations *
 !**************************
 
-         if (eom.or.eom_lr.or.eom_qr.or.eom_tpa) then
+         if (eom.or.eom_lr.or.eom_qr.or.qr_tpa) then
 
 !aspg, this new handling of fock matrices has to be verified, we don't want any addition to finite field ere for example
 !        Get fixed one-body tensors, needs to follow the two body tensors
@@ -503,14 +503,13 @@ module talsh_cc
               rr = 1
               call talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 ! TODO: if we want properties etc, now we call other drivers
-           else if (eom_tpa) then
-               print *, "eom-two?" 
+           else if (qr_tpa) then
                call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.true.,solve_left=.false.)
 
-               call talsh_eom_eigval_driver(eom_results_t_left,exa_input%eom_input(1),interm_t,int_t,&
+               call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.false.,solve_left=.true.)
-                  call talsh_eom_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, eom_results_t_left)
+               call talsh_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t)
                   
             else 
                call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&

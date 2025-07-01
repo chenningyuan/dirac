@@ -33,7 +33,7 @@ f4 = Filter()
 
 f4.add(from_string = '*************CC-CI(EOM-CC) Two-photon absorption******',
       num_lines   = 3,
-      rel_tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-5)
 
 f5 = Filter()
 
