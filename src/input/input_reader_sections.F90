@@ -1241,6 +1241,11 @@
          exa_input%do_1rdm_gs = .false.
       end if
 
+      if (kw_matches(word, '.LR1RDM')) then
+         exa_input%lambda = .true.
+         exa_input%do_1rdm_lr = .true.
+      end if
+
       if (kw_matches(word, '.GS2RDM')) then
          exa_input%do_2rdm_gs = .true.
       end if
@@ -1295,6 +1300,16 @@
          call kw_read(word, exa_input%wf_type)
       end if
 
+      ! use symmetric cc response formulation, for cc-cc or cc-ci
+      if (kw_matches(word, '.CCRSYM')) then
+         exa_input%ccrsp_symmetric = .true.
+      end if
+
+      ! use asymmetric cc response formulation, for cc-cc or cc-ci
+      if (kw_matches(word, '.CCRASYM')) then
+         exa_input%ccrsp_symmetric = .false.
+      end if
+
       if (kw_matches(word, '.LRFRE ')) then
          call kw_read(word, exa_input%N_omega_lr)
          allocate(exa_input%w_lr_re(exa_input%N_omega_lr))
@@ -1312,7 +1327,7 @@
 
 
       if (kw_matches(word, '.CCTPA ')) then
-         exa_input%eom_tpa =.true.
+         exa_input%qr_tpa =.true.
          call kw_read(word, exa_input%wf_type)
          call kw_read(word, exa_input%TPA_state)
          ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)

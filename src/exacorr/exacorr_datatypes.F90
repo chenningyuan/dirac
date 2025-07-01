@@ -70,6 +70,7 @@
             logical                 :: eom_lr = .false.
             
             logical                 :: do_1rdm_gs=.false.
+            logical                 :: do_1rdm_lr=.false.
             logical                 :: do_2rdm_gs=.false.
 
             logical                 :: auto_kernels = .false.   ! if true, use automatically generated kernels for t/l equations
@@ -99,6 +100,8 @@
             integer                 :: tripl_block(1:2) = -1    ! for running triples
             integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
             integer                 :: n_laplace = 10           ! number of laplace points to use
+
+! aspg, response-related 
             integer                 :: N_eom_trial = 1          ! number of trial vectors in CC linear response
             integer                 :: wf_type = 2              ! wave-function type
             integer                 :: N_Prop_A, N_Prop_B    ! number of property
@@ -107,10 +110,9 @@
             integer                 :: N_omega_qr1 = 1               ! number of frequency1 in ccqr
             integer                 :: N_omega_qr2 = 1               ! number of frequency2 in ccqr
             integer                 :: N_Time_anti = 0          ! Number of time-antisymmetric operators
+
+            logical                 :: ccrsp_symmetric = .true. ! Use symmetric formulation in CC response 
            
-            
-            integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
-            integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
             integer, allocatable    :: Prop_A(:), Prop_B(:), Prop_C(:), Prop_D(:) ! index of Property
             INTEGER                 ::  TPA_state             ! index of final excited state in eom-tpa
             real(REALD), allocatable :: w_lr_re(:)            ! real frequency in CC linear response
@@ -121,13 +123,17 @@
             real(REALD), allocatable :: w_qr2_re(:)            ! 2nd real frequency in CC quadratic response
             real(REALD), allocatable :: w_qr2_im(:)            ! 2nd imaginary frequency in CC quadratic response
            
+! aspg, other variables
+
+            integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
+            integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
 
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
             real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
             real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
             
-           
+! aspg, eom-related options           
 
             real(REALD), allocatable:: rew_energies(:,:) ! restricted excitation window, in terms of energy thresholds (a.u.)
 
@@ -136,7 +142,7 @@
             integer                 :: current_eom_input = -1
         !     logical                 :: eom_lr = .false.
             logical                 :: eom_qr = .false.
-            logical                 :: eom_tpa = .false.
+            logical                 :: qr_tpa = .false.
 ! handle one or more *EOMCC blocks 
             type(eom_config_t), allocatable :: eom_input(:)
 
@@ -235,6 +241,7 @@
 
         type, public :: talsh_orb_prop_integ_tens_t
          type(talsh_tens_t) :: prop_oo, prop_ov, prop_vv, prop_vo
+         character*8 :: property_label
         end type talsh_orb_prop_integ_tens_t
 
         
@@ -275,6 +282,7 @@
               type(talsh_tens_t) :: epsilon_prop_vo, epsilon_prop_vvoo
               type(talsh_tens_t) :: eta_prop_ov, eta_prop_oovv, eta_prop_ov_eom
               type(talsh_tens_t) :: O_vo
+              character*8        :: property_label
        end type talsh_rsp_interm_tens_t
 
 ! this is a generic type for projectors, could be used e.g in eom for cvs, or in the ground state to project out orbitals in solving the cc equations

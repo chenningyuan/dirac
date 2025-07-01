@@ -39,10 +39,13 @@ contains
   call interface_mpi_bcast_l0(exa_input%tripl_lap,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_triples,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_1rdm_gs,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%do_1rdm_lr,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_2rdm_gs,1,exa_MPI_RANK,global_communicator)
+
   call interface_mpi_bcast_l0(exa_input%do_cis,1,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast_l0(exa_input%auto_kernels,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%ccrsp_symmetric,1,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%exa_blocksize,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%talsh_buff,1,exa_MPI_RANK,global_communicator)
@@ -76,6 +79,41 @@ contains
   call interface_mpi_bcast(exa_input%t_mp2no,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%level_shift,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%t_cholesky,1,exa_MPI_RANK,global_communicator)
+
+! aspg, the information on response could perhaps be regrouped into one datatype
+  call interface_mpi_bcast(exa_input%N_eom_trial,1,exa_MPI_RANK,global_communicator) 
+  call interface_mpi_bcast(exa_input%wf_type,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%N_Prop_A,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%N_Prop_B,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%N_Prop_C,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%N_Prop_D,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%N_omega_lr,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%N_omega_qr1,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%N_omega_qr2,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%N_Time_anti,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%TPA_state,1,exa_MPI_RANK,global_communicator)
+
+  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_A(exa_input%N_Prop_A))
+  call interface_mpi_bcast(exa_input%Prop_A,1,exa_MPI_RANK,global_communicator)
+  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_B(exa_input%N_Prop_B))
+  call interface_mpi_bcast(exa_input%Prop_B,1,exa_MPI_RANK,global_communicator)
+  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_C(exa_input%N_Prop_C))
+  call interface_mpi_bcast(exa_input%Prop_C,1,exa_MPI_RANK,global_communicator)
+  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_D(exa_input%N_Prop_D))
+  call interface_mpi_bcast(exa_input%Prop_D,1,exa_MPI_RANK,global_communicator)
+
+  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_lr_re(N_omega_lr))
+  call interface_mpi_bcast(exa_input%exa_input%w_lr_re,1,exa_MPI_RANK,global_communicator)
+  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_lr_im(N_omega_lr))
+  call interface_mpi_bcast(exa_input%exa_input%w_lr_im,1,exa_MPI_RANK,global_communicator)
+  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr1_re(N_omega_qr))
+  call interface_mpi_bcast(exa_input%exa_input%w_qr1_re,1,exa_MPI_RANK,global_communicator)
+  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr1_im(N_omega_qr1))
+  call interface_mpi_bcast(exa_input%exa_input%w_qr1_im,1,exa_MPI_RANK,global_communicator)
+  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr2_re(N_omega_qr2))
+  call interface_mpi_bcast(exa_input%exa_input%w_qr2_re,1,exa_MPI_RANK,global_communicator)
+  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr2_im(N_omega_qr2))
+  call interface_mpi_bcast(exa_input%exa_input%w_qr2_im,1,exa_MPI_RANK,global_communicator)
 
   if (allocated(exa_input%eom_input)) then
      do i = 1, size(exa_input%eom_input,1)
