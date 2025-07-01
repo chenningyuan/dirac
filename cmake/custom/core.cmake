@@ -55,7 +55,6 @@ option(ENABLE_UTILITIES "Enable utilities" ON)
 if(ENABLE_UTILITIES)
     compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90   "${_list_of_executables}")
     compile_standalone(rspread.x                 utils/rspread.F90                   "${_list_of_executables}")
-    compile_standalone(labread.x                 utils/labread.F90                   "${_list_of_executables}")
     compile_standalone(twofit.x                  utils/twofit.F90                    "${_list_of_executables}")
     compile_standalone(cfread.x                  utils/cfread.F90                    "${_list_of_executables}")
     compile_standalone(cf_addlabels.x            utils/cf_addlabels.F90              "${_list_of_executables}")
@@ -73,32 +72,11 @@ if(ENABLE_UTILITIES)
     endif()
 endif()
 
-if(ENABLE_GEN1INT)
-    add_dependencies(dirac gen1int)
-endif()
-
-if(ENABLE_PELIB)
-    add_dependencies(pelib gen1int_interface)
-    add_dependencies(dirac pelib)
-    add_dependencies(dirac pelib_interface)
-endif()
-
 if(ENABLE_RELCCSD_STANDALONE)
     if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         set_source_files_properties(src/relccsd/ccmain.F PROPERTIES COMPILE_FLAGS "-qfixed")
     endif()
     compile_standalone(relccsd.x                 src/relccsd/ccmain.F                "${_list_of_executables}")
-endif()
-
-option(ENABLE_HSCC "Enable compilation of the standalone hsmrcc.x" OFF)
-if(ENABLE_HSCC) # note: this functionality depends on the pam flag
-    compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${_list_of_executables}")
-    set_property(TARGET hsmrcc.x PROPERTY LINKER_LANGUAGE C)
-endif()
-
-option(ENABLE_HSFS "Enable compilation of the standalone hsfscc.x" OFF)
-if(ENABLE_HSFS) # note: this functionality depends on the pam flag
-    compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${_list_of_executables}")
 endif()
 
 foreach(
