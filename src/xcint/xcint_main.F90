@@ -7,7 +7,7 @@ module xcint_main
    use interface_functional_read
    use xc_derv
    use xc_ac
-   use extra
+   use xcint_extra
    use file_units
    use interface_grid
    use dirac_ao_eval
@@ -1025,7 +1025,6 @@ contains
                      ao,                               &
                      buffer                            &
                     )
-
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
                                     use_gga_qr,               &

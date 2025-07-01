@@ -80,36 +80,30 @@ C        NOPEN = 1 and DF(1) = 0.5 if NASHT .gt. 0 !!!!
 C
          IF (NOPEN .EQ. 1) THEN
             IF (NASHT .GT. 1 .OR. ABS(DF(1)-0.5D0) .GT. 1.0D-14) THEN
-              WRITE(LUPRI,'(/A/A/A)')
-     &        '*** ERROR in RMOLGRD ***',
-     &        'Molecular gradient not implemented for open-shell DHF',
+              WRITE(LUPRI,'(/A/A/A/A)')
+     &        '*** ERROR in RMOLGRD *** Analytical ',
+     &        'molecular gradient not implemented for open-shell HF',
      &        'with more than one single occupied open-shell orbital.'
+              WRITE(LUPRI,'(/A)') 'You may try ".NUMGRAD"'
               CALL QUIT('*** ERROR in RMOLGRD: Molecular gradient' // 
      &        ' not implemented for this open-shell DHF')
             END IF
          ELSE IF (NOPEN .GT. 1) THEN
             WRITE(LUPRI,'(/A/A/A)')
-     &        '*** ERROR in RMOLGRD ***',
-     &        'Molecular gradient not implemented for open-shell DHF',
+     &        '*** ERROR in RMOLGRD *** Analytical ',
+     &        'molecular gradient not implemented for open-shell HF',
      &        'with more than one open shell.'
+            WRITE(LUPRI,'(/A)') 'You may try ".NUMGRAD"'
             CALL QUIT('*** ERROR in RMOLGRD: Molecular gradient' // 
      &        ' not implemented for this open-shell DHF')
          END IF
 
-         if (dirac_cfg_dft_calculation) then
-            if (nopen > 0) then
-               call quit('error in molecular gradient:' // 
-     &        ' not implemented for open-shell DFT')
-            end if
-            if (maxrep > 0) then
-               call quit('error in molecular gradient:' // 
-     &        ' not implemented for DFT with symmetry')
-            end if
-         end if
-
          if (bss .or. x2c) then
-            call quit('error in molecular gradient:' // 
-     &      ' not implemented for X2C')
+            WRITE(LUPRI,'(/A)') 'Error in molecular gradient:' // 
+     &      ' not implemented for X2C and BSS'
+            WRITE(LUPRI,'(/A)') 'You may try ".NUMGRAD"'
+            call quit('Error in molecular gradient:' // 
+     &      ' not implemented for X2C and BSS')
          end if
 
          CALL SETDHF(IPRGRD)
@@ -120,13 +114,27 @@ C
 C
       ELSE
 C
-         WRITE(LUPRI,'(/A/A)')
-     &        '*** ERROR in RMOLGRD ***',
-     &        'Molecular gradient only implemented for DHF'
-         CALL QUIT('*** ERROR in RMOLGRD: ' // 
-     &             'Molecular gradient only implemented for DHF')
+         WRITE(LUPRI,'(/A/A)') '*** ERROR in RMOLGRD ***',
+     &      'Analytical Molecular gradient only implemented for '//
+     &      ' HF and DFT. You may try ".NUMGRAD".'
+         CALL QUIT('*** ERROR in RMOLGRD: Analytical ' // 
+     &      'molecular gradient only implemented for HF and DFT')
 C
       END IF
+C
+C for dft it is even more restriced, analytical molecular gradient is
+C only implemented for closed-shell DFT without symmetry.
+C
+      if (dirac_cfg_dft_calculation) then
+         if (nopen > 0) then
+            call quit('Error for analytical molecular gradient:' //
+     &      ' not implemented for open-shell DFT. You may use .NUMGRAD')
+         end if
+         if (maxrep > 0) then
+            call quit('Error for analytical molecular gradient: not' //
+     &      ' implemented for DFT with symmetry. You may use .NUMGRAD')
+         end if
+      end if
 C
 C
       CALL TITLER('Analytical calculation of molecular gradient',

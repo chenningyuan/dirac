@@ -96,14 +96,14 @@ We are now ready for the projection analysis itself. We prepare the input file `
 
 .. literalinclude:: ../../../../test/tutorial_projection_analysis/prj.inp
 
-In the ``*PROJEC`` section we specify the two atomic types identified by the name of 
+In the :ref:`*PROJECTION` section we specify the two atomic types identified by the name of 
 their coefficient files as well as an orbital string (see :ref:`orbital_strings`) listing 
 what orbitals to include for each atom. DIRAC will assume that each atom has been calculated 
 in its proper basis.
 
 We now run the projection analysis using::
 
-   pam --inp=prj --mol=CH4.xyz --put "C_C.h5=C.h5 H_H.h5=H.h5 PBE_CH4.h5=CHECKPOINT.h5" --noh5
+   pam --inp=prj --mol=CH4.xyz --put "C.h5 H.h5 PBE_CH4.h5=CHECKPOINT.h5" --noh5
 
 Note that we set the pam flag ``--noh5`` to avoid generating a new HDF5 checkpoint file, since nothing new is added to the existing one.   
 

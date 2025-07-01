@@ -7,10 +7,10 @@ add_executable(example_fortran
 	xcfun_autogen.F90
 	)
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+if(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
 #   miro: necessary for PGI
     target_link_libraries(example_fortran stdc++)
-    message(STATUS "added libstdc++ to linker flags of xcfun due to PGI ")
+    message(STATUS "added libstdc++ to linker flags of xcfun due to NVHPC ")
 endif()
 
 set_target_properties(example_fortran 

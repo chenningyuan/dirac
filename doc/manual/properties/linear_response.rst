@@ -244,7 +244,7 @@ vector. In this case make sure that
     **DIRAC
     #.WAVE FUNCTION
 
-is commented out. Make then also sure that you use the DFCOEF file which
+is commented out. Make then also sure that you use the CHECKPOINT file which
 has been obtained in the *same* calculation as the response vector file.
 Otherwise you may observe more response solver iterations than
 necessary.

@@ -119,7 +119,7 @@ contains
 !       C1 double group
         case(8)
 
-        call quit('C1 symmetry is currently buggy. contact stefan (knecht@ifk.sdu.dk) to ask for help if needed.')
+        call quit('C1 symmetry is currently (2011) buggy. Contact Stefan Knecht to ask for help if needed.')
 
 !       adjoints and inverse elements
 !       -----------------------------

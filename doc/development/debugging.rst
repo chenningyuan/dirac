@@ -26,9 +26,9 @@ might "disappear" when the optimization is completely turned off, because not al
 compilers have bug-free optimization procedure.
 
 Ensure that proper debugger, installed on your machine,  is called with the "pam" script.
-For example, for the GNU compilers set this is the gdb-debugger.
-Also commercial compilers are providing their own debuggers: Intel suite brings 
-the idbg, the PGI suite has the pgdbg debugger etc.
+For example, for the GNU compilers set this is the debugger "gdb".
+Some commercial compilers are providing their own debuggers: Intel OneAPI includes 
+the gdb-oneapi.
 
 Debugging with the "pam" script
 -------------------------------
@@ -74,7 +74,7 @@ modifications of DIRAC source files and subsequent compilation, so it is
 easier to have linked executable rather than copying it.
 
 Make sure that the 'DIRAC.INP', 'MOLECULE.INP', *gdb\_demo* and other
-necessary files (for example, the 'DFCOEF' if you are restarting SCF iterations) are
+necessary files (for example, the 'CHECKPOINT.h5' if you are restarting SCF iterations) are
 in the working directory as well.
 
 Demonstration of GNU/gdb debugging commands

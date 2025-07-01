@@ -1423,7 +1423,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine DEROUT >>>>>>>>',/)
+ 1000 FORMAT (//'  ---------- Subroutine DEROUT ----------',/)
  1110 FORMAT (2X,'TWOCEN,...:  ',2L5)
  1120 FORMAT (2X,'ICENT1/2/3/4:',4I7)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
@@ -1728,7 +1728,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDOUT >>>>>>>>',/)
+ 1000 FORMAT (//'  ---------- Subroutine LNDOUT ----------',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck lndgc1 */
@@ -1799,7 +1799,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDGC1 >>>>>>>>',/)
+ 1000 FORMAT (//'  ---------- Subroutine LNDGC1 ----------',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck lndgc2 */
@@ -1912,7 +1912,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDGC2 >>>>>>>>',/)
+ 1000 FORMAT (//'  ---------- Subroutine LNDGC2 ----------',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck pblock */

@@ -115,8 +115,8 @@ C***********************************************************************
       use pcm_linear_response, only: compute_mep_asc, pcm_oper_ao_driver
 #endif
 #ifdef HAS_PELIB
-      use polarizable_embedding, only: pe_master
-      use pe_variables, only: peqm
+      use pelib, only: pelib_master
+      use pelib_dirac_interface, only: use_pelib, pelib_ifc_fock
 #endif
 
 #include "implicit.h"
@@ -324,7 +324,7 @@ CJTH check this
 ! edh: As the solvent methods before us (see above) we need
 ! to construct the (static) PE contributions from environment
 ! before starting a response calculation
-      IF (PEQM) THEN
+      IF (use_pelib()) THEN
         call genden(fao, cmo, 1, iprint)
         call pelib_ifc_fock(fao, fmo, tot_nrg, el_nrg)
       ENDIF

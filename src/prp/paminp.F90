@@ -25,7 +25,7 @@
 !
 !
 !    Called from:  PAMINP - first reading of the input
-!                  MINPRP - called when optimize is on 
+!                  MINPRP - called when optimize is on
 !                  (properties at final geometry)
 !
 !       Written by Trond Saue and Hans Joergen Aa.Jensen
@@ -46,7 +46,7 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 11, NTABLE = 44)
+      PARAMETER (NDIR = 11, NTABLE = 45)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -94,7 +94,9 @@
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
 !                    41        42        43        44
-     &             '.RDCCDM','.PVCSR ','.HDF5IO','xXXXXXX' /
+     &             '.RDCCDM','.PVCSR ','.HDF5IO','.PVCEFG',             &
+!                    45
+     &             'xXXXXXX' /
 !
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -127,6 +129,7 @@
       PVC_SHIELD   = .FALSE.
       PVC_SPINSPIN = .FALSE.
       PVC_SPINRO   = .FALSE.
+      PVC_EFG      = .FALSE.
       SPNSPN       = .FALSE.
       EFG          = .FALSE.
       EFN          = .FALSE.
@@ -156,7 +159,7 @@
       EFFDE2       = .FALSE.
 
 !MI Activate picture change transformations
-!   of four-component property matrices 
+!   of four-component property matrices
 !   for the two-component (BSS) infinite order.
 ! TODO with TS/HJJ: BSS spin-free picture change transformation
 !     set compulsory default values for X2C module.
@@ -244,7 +247,7 @@
 !&&&& MAGNET - magnetic susceptibilities
             DOXLR  = .TRUE.
             MSUSCP = .TRUE.
-            IF (GAUNT) & 
+            IF (GAUNT) &
              CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   105    CONTINUE
@@ -259,7 +262,7 @@
 !&&&& SPIN-S: NMR indirect spin-spin coupling constants:
             DOXLR  = .TRUE.
             SPNSPN = .TRUE.
-            IF (GAUNT) & 
+            IF (GAUNT) &
              CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   107    CONTINUE
@@ -300,7 +303,7 @@
 !&&&& NSTDIA - nonrel. diamagnetic contribution to nuclear shielding tensor
             NSTDIA   = .TRUE.
             DOEXP = .TRUE.
-            IF (GAUNT) & 
+            IF (GAUNT) &
              CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   115    CONTINUE
@@ -329,7 +332,7 @@
             DOXLR      = .TRUE.
             PVC_SHIELD = .TRUE.
             IF(NBSYM .GT. 1) CALL QUIT('.PVCSHI only for C1 symmetry')
-            IF (GAUNT) & 
+            IF (GAUNT) &
              CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GOTO 100
   120    CONTINUE
@@ -379,55 +382,59 @@
 !&&&& ROTG - Molecular rotational g-tensor according to Aucar et al
             ROTG  = .TRUE.
             DOXLR = .TRUE.
+            IF (GAUNT) & 
+             CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
-  127    CONTINUE 
+  127    CONTINUE
 !&&&& MSTDIA - diamagnetic contribution to the magnetizabilities
             MSUSCDIA = .TRUE.
             DOEXP    = .TRUE.
             IF (GAUNT) &
              CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
-  128    CONTINUE 
+  128    CONTINUE
 !&&&& PV contribution to spin-spin coupling
             DOXLR        = .TRUE.
             PVC_SPINSPIN = .TRUE.
             IF(NBSYM .GT. 1) CALL QUIT('.PVCSPN only for C1 symmetry')
-            IF (GAUNT) & 
+            IF (GAUNT) &
              CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
-  129    CONTINUE 
-!&&&& NOPCT - even if DOPCT is .true. (because of default settings) 
+  129    CONTINUE
+!&&&& NOPCT - even if DOPCT is .true. (because of default settings)
 !             do NOT activate picture change transformation...
             NOPCT = .TRUE.
             GO TO 100
-  130    CONTINUE 
+  130    CONTINUE
 !&&&& .EXCDIP - Calculates excited state expectation values of dipole op.
             CALL EXCPRPINP(1,DOEXCPRP,EXCPRPTYP)
             CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP)
             GO TO 100
-  131    CONTINUE 
+  131    CONTINUE
 !&&&& .MAGOUT - specify the hard-output for the magnetizability
             READ(LUCMD,*) IMAGOUT
             GO TO 100
-  132    CONTINUE 
+  132    CONTINUE
 !&&&& OPTROT - do optical rotation
             DOXLR = .TRUE.
             OPTROT = .TRUE.
             GO TO 100
-  133    CONTINUE 
+  133    CONTINUE
 !&&&& .C6 - evaluate C6 dispersion coefficients
             DOXLR  = .TRUE.
             EPOLAR = .TRUE.
             DOVDW  = .TRUE.
             GO TO 100
-  134    CONTINUE 
+  134    CONTINUE
 !&&&& SPIN-R - Nuclear spin-rotation tensor according to Aucar et al
             DOEXP = .TRUE.
             DOXLR = .TRUE.
             SPINRO = .TRUE.
+            IF (GAUNT) & 
+             CALL QUIT('NSR including Gaunt not implemented yet')
             GO TO 100
-  135    CONTINUE 
-!&&&& BXLAO 
+  135    CONTINUE
+!&&&& BXLAO
             bxlao  = .true.
             doxlr  = .true.
             london = .true.
@@ -435,7 +442,7 @@
              CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   136    CONTINUE
-!&&&& BYLAO 
+!&&&& BYLAO
             bylao  = .true.
             doxlr  = .true.
             london = .true.
@@ -443,7 +450,7 @@
              CALL QUIT('Mag. Prop. including Gaunt not implemented yet')
             GO TO 100
   137    CONTINUE
-!&&&& BZLAO 
+!&&&& BZLAO
             bzlao  = .true.
             doxlr  = .true.
             london = .true.
@@ -453,12 +460,12 @@
   138    CONTINUE
 !&&&& EFFDEN; calculate effective electronic densities at the nuclei
             DOEXP  = .TRUE.
-            EFFDEN = .TRUE. 
+            EFFDEN = .TRUE.
             GO TO 100
   139    CONTINUE
 !&&&& EFFDE2; calculate effective electronic densities at the nuclei:old code
             DOEXP  = .TRUE.
-            EFFDE2 = .TRUE. 
+            EFFDE2 = .TRUE.
             GO TO 100
   140    CONTINUE
 #ifdef MOD_LAO_REARRANGED
@@ -481,12 +488,20 @@
             DOXLR      = .TRUE.
             PVC_SPINRO = .TRUE.
             IF(NBSYM .GT. 1) CALL QUIT('.PVCSR only for C1 symmetry')
+            IF (GAUNT) & 
+             CALL QUIT('PV-NSR including Gaunt not implemented yet')
             GOTO 100
   143    CONTINUE
 !&&&& .HDF5IO
-            HDF5IO = .TRUE. 
+            HDF5IO = .TRUE.
             GOTO 100
   144    CONTINUE
+!&&&& PV contribution to EFG
+            DOXLR      = .TRUE.
+            PVC_EFG = .TRUE.
+            IF(NBSYM .GT. 1) CALL QUIT('.PVCEFG only for C1 symmetry')
+            GOTO 100
+  145    CONTINUE
 !&&&& xXXXXXX
             GOTO 100
 !
@@ -588,11 +603,7 @@
          GO TO 200
 
     7 CONTINUE
-#ifdef MOD_ESR
          CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
-#else
-         CALL QUIT('*ESR    not included in this version')
-#endif
          GO TO 200
     8 CONTINUE
          CALL XQRINP(WORD,.FALSE.)
@@ -602,7 +613,7 @@
          CALL STEX_INPUT(WORD,.FALSE.,WORK,LWORK)
          GO TO 200
 
-!     *OPENRSP    
+!     *OPENRSP
    10 continue
 #ifdef MOD_OPENRSP
          dirac_cfg_openrsp = .true.
@@ -637,9 +648,7 @@
       CALL GRDINP(WORD,.TRUE.)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.)
-#ifdef MOD_ESR
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
-#endif
 
 !===========================================================================
 ! Define special operators for the list of properties programmed in DIRAC
@@ -670,7 +679,7 @@
        end if
       end if
 
-!gosia: probably here is a good place to add Miro's warning, 
+!gosia: probably here is a good place to add Miro's warning,
 ! but i need to think of correct flags (for DC and SPINFREE Hamiltonians)
 ! so commented out for now
 !      if (shield .and. .not. urkbal) then
@@ -868,38 +877,38 @@
           INDXPR = LEXPP(I)
           CALL WRIXPR(I,INDXPR)
         ENDDO
-      ENDIF  
-      IF(DIPOLE) THEN    
+      ENDIF
+      IF(DIPOLE) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Dipole moment'
       ENDIF
-      IF(QUADRU) THEN    
+      IF(QUADRU) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Quadrupole moment'
       ENDIF
-      IF(PVC) THEN    
+      IF(PVC) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Parity violation - chirality'
       ENDIF
-      IF(EFN) THEN    
+      IF(EFN) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Electric field at nuclei'
       ENDIF
-      IF(EFG) THEN    
+      IF(EFG) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Electric field gradient at nuclei'
       ENDIF
-      IF(EFT) THEN    
+      IF(EFT) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')                                           &
      &     '- traceless electric field third derivattives'
       ENDIF
-      IF(EFTNTL) THEN    
+      IF(EFTNTL) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')                                           &
      &     '- non-traceless electric field third derivattives'
       ENDIF
-      IF(NQCC) THEN    
+      IF(NQCC) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Nuclear Quadrupole Coupling Constant'
       ENDIF
@@ -927,68 +936,73 @@
 !  XPRINP recognizes the following different kinds of operators:
 !
 !    1. DIAGONAL
-!       P             * scalar operator
+!       P               * diagonal times scalar operator
 !
 !    2. XALPHA
-!       [alpha_x]P    * x-component of alpha times scalar operator
+!       i[alpha_x]P     * x-component of alpha times scalar operator
 !
 !    3. YALPHA
-!       [alpha_y]P    * y-component of alpha times scalar operator
+!       i[alpha_y]P     * y-component of alpha times scalar operator
 !
 !    4. ZALPHA
-!       [alpha_z]P    * z-component of alpha times scalar operator
+!       i[alpha_z]P     * z-component of alpha times scalar operator
 !
 !    5. XAVECTOR
-!       [alpha x P]_x * vector product of alpha and vector operator,
-!                       x-component    
+!       i[alpha x P]_x  * vector product of alpha and vector operator,
+!                         x-component
 !    6. YAVECTOR
-!       [alpha x P]_y * vector product of alpha and vector operator,
-!                       y-component    
+!       i[alpha x P]_y  * vector product of alpha and vector operator,
+!                         y-component
 !    7. ZAVECTOR
-!       [alpha x P]_z * vector product of alpha and vector operator,
-!                       z-component    
+!       i[alpha x P]_z  * vector product of alpha and vector operator,
+!                         z-component
 !    8. ALPHADOT
-!       A.P           * dot-product of alpha and vector operator
+!       i[A.P]          * dot-product of alpha and vector operator
 !
-!    9. GAMMA5        
-!       gamma5 P      * The gamma5 matrix times a scalar operator
-!                       gamma5 = | 0 I | 
-!                                | I 0 |
+!    9. GAMMA5
+!       gamma5 P        * gamma5 times scalar operator
+!
 !   10. XSIGMA
-!       [sigma_x]p    * x-component of sigma times scalar operator
+!       i[sigma_x]P     * x-component of Sigma times scalar operator
 !
 !   11. YSIGMA
-!       [sigma_y]p    * y-component of sigma times scalar operator
+!       i[sigma_y]P     * y-component of Sigma times scalar operator
 !
-!   12. ZSIGMA 
-!       [sigma_z]p    * z-component of sigma times scalar operator
+!   12. ZSIGMA
+!       i[sigma_z]P     * z-component of Sigma times scalar operator
 !
 !   13. XBETASIG
-!       [betasig_x]p  * x-component of beta sigma times scalar operator
+!       i[betasig_x]P   * x-component of beta Sigma times scalar operator
 !
 !   14. YBETASIG
-!       [betasig_y]p  * Y-component of beta sigma times scalar operator
+!       i[betasig_y]P   * y-component of beta Sigma times scalar operator
 !
 !   15. ZBETASIG
-!       [betasig_z]p  * z-component of beta sigma times scalar operator
+!       i[betasig_z]P   * z-component of beta Sigma times scalar operator
 !
-!   16. XiBETAAL
-!       i[betaalp_x]p * x-component of beta alpha times scalar operator
-! 
-!   17. YiBETAAL
-!       i[betaalp_y]p * y-component of beta alpha times scalar operator
+!   16. XBETAAL
+!       i[betaalp_x]P   * x-component of beta alpha times scalar operator
 !
-!   18. ZiBETAAL
-!       i[betaalp_z]p * z-component of beta alpha times scalar operator
+!   17. YBETAAL
+!       i[betaalp_y]P   * y-component of beta alpha times scalar operator
 !
-!   19. BETA   
-!       [beta]P * beta times scalar operator
+!   18. ZBETAAL
+!       i[betaalp_z]P   * z-component of beta alpha times scalar operator
 !
-!   20. SIGMADOT 
-!       iS.P * dot-product of sigma matrix and vector operator
+!   19. BETA
+!       [beta]P         * beta times scalar operator
 !
-!   21. iBETAGAM
-!       i[beta*gamma5] P           * i beta*gamma5 times scalar operator
+!   20. SIGMADOT
+!       i[Sigma.P]      * dot-product of Sigma and vector operator
+!
+!   21. BETAGAMMA5
+!       [betagamma5]P   * beta gamma5 times scalar operator
+!
+!   22. BEALDOT
+!       i[beta alpha.P] * dot-product of beta alpha and vector operator
+!
+!   23. iBETAGAMMA5
+!       i[betagamma5]P  * i.beta gamma5 times scalar operator
 !
 !
 !  Operator types 5, 6 and 7 form the components of a vector product
@@ -1007,9 +1021,7 @@
 !
 !  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
 !  Last revision: May 14 1996 - tsaue
-!                 Sept. 2012   M Ilias 
-!
-!
+!                 Sept. 2012   M Ilias
 !
 !***********************************************************************
 #include "implicit.h"
@@ -1017,7 +1029,7 @@
 #include "dcbgen.h"
       CHARACTER*7 WORD
 !
-      PARAMETER (NTABKW = 28)
+      PARAMETER (NTABKW = 32)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3)
@@ -1032,25 +1044,25 @@
      &           'ZALPHA  ', 'XAVECTOR', 'YAVECTOR', 'ZAVECTOR',        &
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',        &
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',        &
-     &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',        &
-     &           'SIGMADOT', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX'/
+     &           'XBETAALP', 'YBETAALP', 'ZBETAALP', 'BETA    ',        &
+     &           'SIGMADOT', 'BETAGAMM', 'BEALDOT ', 'iBETAGAM',        &
+     &           'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'/
 !
       CALL QENTER('XPRINP')
 !
 !     Initialization
 !     ==============
 !
-      INDXPR = -1
-      ISYXPR = -1
-      ITRXPR = -1
-      PFAC(1) = D1
-      PFAC(2) = D1
-      PFAC(3) = D1
-      CLABEL  = .FALSE.
+      INDXPR    = -1
+      ISYXPR    = -1
+      ITRXPR    = -1
+      PFAC(1)   = D1
+      PFAC(2)   = D1
+      PFAC(3)   = D1
+      CLABEL    = .FALSE.
       !mi - position of the Fock operator in the TABKW list, or "border" index
-      I_FOCKMAT=5
-!
-      IKW = 0
+      I_FOCKMAT = 5
+      IKW       = 0
 !
 !     *****************
 !     *** Read line ***
@@ -1090,7 +1102,7 @@
 !
       ITKN = 2
 !
-!     XPRTKN returns initial adress(ITKN) and length (LTKN) of next token
+!     XPRTKN returns initial address (ITKN) and length (LTKN) of next token
 !     on line. If ITKN -1, then no more tokens on LINE.
 !
   200 CALL XPRTKN(LINE,ITKN,LTKN)
@@ -1139,28 +1151,28 @@
 !          =================================================
 !
            IF ( I .GT. I_FOCKMAT ) THEN
-!             (the first fOUR entries in TABKW are not operator types)
-!MI      ---- assignement of the IPTYP is needed in other routines -----
-              IPTYP = I - I_FOCKMAT
-              NLABEL= 0
-              NFAC  = 0
-              IKW = 2
+!             (the first FOUR entries in TABKW are not operator types)
+!MI      ---- assignment of the IPTYP is needed in other routines -----
+              IPTYP  = I - I_FOCKMAT
+              NLABEL = 0
+              NFAC   = 0
+              IKW    = 2
            END IF
 !
 !          If keyword Fock defines matrix read, then initialize
 !          ====================================================
-!          (the matrix is assumed totally symmetric 
-!           under point group and time reversal symmetry)
+!          (the matrix is assumed totally symmetric
+!           under point group and time-reversal symmetry)
 !
            IF (I .EQ. I_FOCKMAT) THEN
-              IPTYP = 0
-              NLABEL= 0
-              NFAC  = 0
-              IKW = 2
+              IPTYP  = 0
+              NLABEL = 0
+              NFAC   = 0
+              IKW    = 2
               ISYXPR = 1
               ITRXPR = 1
            END IF
- 
+!
            GO TO (4, &   ! CLASS
      &            5, &   ! FACTORS
      &            6, &   ! COMFACTOR
@@ -1181,21 +1193,24 @@
      &            1, &   ! XBETASIG
      &            1, &   ! YBETASIG
      &            1, &   ! ZBETASIG
-     &            1, &   ! XiBETAAL
-     &            1, &   ! YiBETAAL
-     &            1, &   ! ZiBETAAL
+     &            1, &   ! XBETAALP
+     &            1, &   ! YBETAALP
+     &            1, &   ! ZBETAALP
      &            1, &   ! BETA
      &            3, &   ! SIGMADOT
-     &            1), I ! iBETAGAM
+     &            1, &   ! BETAGAMM
+     &            3, &   ! BEALDOT
+     &            1), I  ! iBETAGAM
          END IF
          END DO
+!
          INPERR = INPERR + 1
          WRITE (LUPRI,'(/A/A)')                                         &
      &     ' XPRINP: INPUT ERROR following '//WORD,                     &
      &     ' Keyword "'//KEYWD(1:LKW)//'" not recognized.'
          GO TO 300
-!&&&&    One component: DIAGONAL, [XYZ]ALPHA, GAMMA5, [XYZ]SIGMA,
-!&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT, iBETAGAMMA5
+!&&&&    One component: FOCKMAT, DIAGONAL, GAMMA5, BETA, BETAGAMM, iBETAGAM
+!&&&&                   [XYZ]ALPHA, [XYZ]SIGMA, [XYZ]BETASIG, [XYZ]BETAALP
     1    CONTINUE
            NPCOMP = 1
          GO TO 300
@@ -1205,7 +1220,7 @@
 !          note that the minus in the second component
 !          is introduced later
          GO TO 300
-!&&&&    Three components: ALPHADOT, SIGMADOT
+!&&&&    Three components: ALPHADOT, SIGMADOT, BEALDOT
     3    CONTINUE
            NPCOMP = 3
          GO TO 300
@@ -1228,10 +1243,9 @@
            PFAC(2) = PFAC(2)*CVAL
            PFAC(3) = PFAC(3)*CVAL
          GO TO 300
-!&&&     
+!&&&
     8    CONTINUE
          GO TO 300
-         !GO TO 100
 !
 !     Read property labels for each component
 !     =======================================
@@ -1251,7 +1265,7 @@
 !miro - missing field, HJJ has an idea...
 !
 !     FACTORS, read factor for each component
-!     ==================================================
+!     =======================================
 !
       ELSE IF (IKW .EQ. 4) THEN ! * Separate factor for each component
          NFAC = NFAC + 1
@@ -1264,7 +1278,8 @@
          IF (NFAC .GE. NPCOMP) IKW = 1
 !
 !     COMFACTOR, read a common factor for all components
-!     =======================================
+!     ==================================================
+!
       ELSE IF (IKW .EQ. 5) THEN ! * Common factor for all components
          JTKN = ITKN - 1 + LTKN
          I    = 16 - LTKN + 1
@@ -1275,7 +1290,6 @@
          PFAC(2) = COMFAC*PFAC(2)
          PFAC(3) = COMFAC*PFAC(3)
          IKW = 1
-
 !
 !     Unknown IKW
 !     ===========
@@ -1343,15 +1357,17 @@
  9999 CALL QEXIT ('XPRINP')
       RETURN
       END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  /* Deck xprtkn */
       SUBROUTINE XPRTKN(LINE,ITKN,LTKN)
+!***********************************************************************
 !
 !  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
 !
 !  Find initial address (ITKN) and length (ITKN) of next token
 !  If no more tokens return ITKN = -1
 !
+!***********************************************************************
       PARAMETER (MAXLL = 80)
       CHARACTER*(MAXLL) LINE
       CHARACTER DELIM*2, DELIM2*1
@@ -1399,14 +1415,14 @@
 !  /* Deck xprind */
       SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,                 &
      &           INDXPR,ISYXPR,ITRXPR,IPRINT)
-!*********************************************************************** 
+!***********************************************************************
 !
 !  Given a 4-component operator this routine returns an index
 !  INDXPR to the list of operators in COMMON block XCBPRP and
 !  returns its symmetry under time reversal(ITRXPR) and its
 !  spatial symmetry(ISYXPR).
 !
-!  This routine is called from many places 
+!  This routine is called from many places
 !
 !  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
 !  Revised May 14 1996 - tsaue
@@ -1476,7 +1492,7 @@
 !
  1000 CONTINUE
       IF(IPTYP.EQ.0) THEN
-!       ... i.e. FOCKMAT 
+!       ... i.e. FOCKMAT
         IPRPSYM(INDXPR) = ISYXPR
         IPRPTIM(INDXPR) = ITRXPR
       ELSE
@@ -1552,7 +1568,7 @@
 !MI/HJAaJ
 ! ... NEWS for LAO-ccRDSUSLL in Levy-Leblond - cancel the SL(2,1) block
 !      to get compatibility with DALTON, plus doubled factor
-!  nonrelativistic adaptation has to be set up explicitly 
+!  nonrelativistic adaptation has to be set up explicitly
       ELSE IF (PNAME(7:13).EQ.'RDSUSLL'.AND.RDSUSLLMOD) THEN
 ! ... fix the LS block for the LevyLe option
          PCOMB = '00+0'
@@ -1568,14 +1584,35 @@
          IF (IPTYP.EQ.0) THEN
 !          ... for FOCKMAT
            PCOMB = 'xxxx'
-           GOTO 200           
-         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.21) THEN
+           GOTO 200
+         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.23) THEN
            WRITE(LUPRI,*)  'IPTYP out of the range, IPTYP=',IPTYP
            CALL QUIT('XPRADD: Illegal IPTYP (not 1-22)!')
          ENDIF
-         GO TO (1,2,2,2,2,2,2,2,2,                                      &
-     &          5,5,5,3,3,3,4,4,4,3,5,4),IPTYP
 !
+         GO TO (1, &       ! DIAGONAL
+                2, &       ! XALPHA
+                2, &       ! YALPHA
+                2, &       ! ZALPHA
+                2, &       ! XAVECTOR
+                2, &       ! YAVECTOR
+                2, &       ! ZAVECTOR
+                2, &       ! ALPHADOT
+                2, &       ! GAMMA5
+                5, &       ! XSIGMA
+                5, &       ! YSIGMA
+                5, &       ! ZSIGMA
+                3, &       ! XBETASIG
+                3, &       ! YBETASIG
+                3, &       ! ZBETASIG
+                4, &       ! XBETAALP
+                4, &       ! YBETAALP
+                4, &       ! ZBETAALP
+                3, &       ! BETA
+                5, &       ! SIGMADOT
+                4, &       ! BETAGAMM
+                4, &       ! BEALDOT
+                4), IPTYP  ! iBETAGAM
 !
 !        Operator types: DIAGONAL
 !
@@ -1595,21 +1632,21 @@
     2    PCOMB = '0++0'
          GO TO 100
 !
-!        Operator types: BETA, BETA SIGMA
+!        Operator types: BETA, BETASIGMA
 !
     3    PCOMB = '+00-'
          IF (LEVYLE) PCOMB = '+000'
          GO TO 100
 !
-!        Operator types: i BETA ALPHA, i BETA GAMMA5
+!        Operator types: BETAALPHA, BETAGAMMA5, iBETAGAMMA5, BEALDOT
 !
-    4    PCOMB = '0+-0'
+    4    PCOMB = '0-+0'
          GO TO 100
 !
 !        Operator types: SIGMA, SIGMADOT
 !
     5    PCOMB = '+00+'
-         IF (LEVYLE) PCOMB = '+000'
+         IF (LEVYLE.OR.(ZORA.AND..NOT.ZORA4)) PCOMB = '+000'
          GO TO 100
 !
   100    CONTINUE
@@ -1633,18 +1670,24 @@
          WRITE(LUPRI,'(1X,A,A4)')                                       &
      &   'for this operator assigned PCOMB:',PCOMB
       END IF
-!     ...  assign proper factor for EDM  ... accordingto E.D.Commins
+!
+!     Assign proper factor for eEDM (stratagem II), according to
+!     Lindroth et al, J. Phys. B 22, 559-576 (1989)
       IF (PLABEL(1).EQ.'EDM') THEN
         PFAC(1)=+4.0D0 * CVAL * PFAC(1)
-        WRITE(LUPRI,'(2X,A,D12.6)')                                     &
-     &  '4c EDM2 operator: strength multiplied by +4*CVAL,'             &
-     & //' PFAC(1)=', PFAC(1)
+        WRITE(LUPRI,'(5(/,2X,A))')                                      &
+     & 'The scalar operator "EDM" was requested.','To calculate the '// &
+     & 'eEDM enhancement factor W_d according to stratagem 2',          &
+     & '(Lindroth et al., JPB 22, 559, 1989), this scalar operator ' // &
+     & 'must be used','together with the "iBETAGAM" type operator.',    &
+     & 'The scalar operator EDM is defined as KINENER (-\nabla^2/2) '// &
+     & 'multiplied by 4*CVAL.'
       ENDIF
 
 ! miro 7 June 2012 exception: for PLABEL(1:5)="e_EDM" assign PCOMB(1:1)='0'
       IF (PNAME(1:5).EQ.'e_EDM') THEN
          !todo: hard assign 000+ structure
-         IF (PCOMB.NE.'+00+') THEN 
+         IF (PCOMB.NE.'+00+') THEN
            PCOMB = '+00+' ! assig as for SIGMA type of operator
            WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB
          ENDIF
@@ -1662,7 +1705,6 @@
      &     ' multiplied by 2, giving ', PFAC(I)
          ENDDO
       ENDIF
-
 !
 !     Define property
 !
@@ -1690,7 +1732,7 @@
   300   CONTINUE
         NPRPLBL = NPRPLBL + 1
         INDX    = NPRPLBL
-  400   CONTINUE      
+  400   CONTINUE
         FACPRP(1,INDXPR)  = PFAC(1)
         IPRPLBL(1,INDXPR) = INDX
         PRPLBL(INDX) = PLABEL(1)
@@ -1723,7 +1765,7 @@
 !     9-Mar-1995 hjaaj
 !     Complete revision : May 14 1996 - tsaue
 !
-!     Return value is pointer to list of property labels in 
+!     Return value is pointer to list of property labels in
 !     COMMON block PRPLBL. The routine will furthermore update
 !     list of integrals to calculate found in COMMON block
 !     PRPCLB
@@ -1763,6 +1805,21 @@
         IORDER  = 0
       ELSEIF(PLABEL(1:7).EQ.'FDEVEMB') THEN
         CLASLB = 'FDEVEMB'
+        IORDER   = 0
+      ELSEIF(PLABEL(1:7).EQ.'UEHLING') THEN
+        CLASLB = 'UEHLING'
+        IORDER   = 0
+      ELSEIF(PLABEL(2:7).EQ.'SEFGMG') THEN
+        CLASLB = 'SEFGMG '
+        IORDER   = 0
+      ELSEIF(PLABEL(1:6).EQ.'SEFGHF') THEN
+        CLASLB = 'SEFGHF'
+        IORDER   = 0
+      ELSEIF(PLABEL(1:6).EQ.'SEFGLF') THEN
+        CLASLB = 'SEFGLF'
+        IORDER   = 0
+      ELSEIF(PLABEL(1:4).EQ.'SEPZ') THEN
+        CLASLB = 'SEPZ'
         IORDER   = 0
       ELSEIF(PLABEL(1:7).EQ.'BETAMAT') THEN
         CLASLB = 'BETAMAT'
@@ -1854,9 +1911,9 @@
 !
       ELSE IF(LABINT(3:8).EQ.'SPNORB') THEN
         CLASLB = 'SPNORB '
-!          
+!
 !     SOPP integrals for ECP
-!          
+!
       ELSE IF(LABINT(3:6) .EQ.'SOPP') THEN
         CLASLB = 'SOPPINT'
 !
@@ -1879,7 +1936,7 @@
 !
       ELSE IF(LABINT(2:2).EQ.'M') THEN
         IF(LABINT(1:1).EQ.'C') THEN
-          CLASLB = 'CARMOM '    
+          CLASLB = 'CARMOM '
           READ(LABINT(3:4),'(I2)') NX
           READ(LABINT(5:6),'(I2)') NY
           READ(LABINT(7:8),'(I2)') NZ
@@ -1898,7 +1955,7 @@
 !
       ELSE IF(LABINT(1:3).EQ.'PSO') THEN
         CLASLB = 'PSO    '
-!     
+!
 !     Spin-dipole integrals
 !
       ELSE IF(LABINT(1:2).EQ.'SD') THEN
@@ -1908,7 +1965,7 @@
         IF(LABINT(3:3).EQ.'C') THEN
           CLASLB = 'SDFC   '
         ELSE
-!     
+!
 !     Spin-dipole integrals
 !
           CLASLB = 'SPIN-DI'
@@ -1934,7 +1991,7 @@
           CLASLB = 'S2MAG  '
         ELSE
 !
-!       Second order contribution from overlap matrix to 
+!       Second order contribution from overlap matrix to
 !       magnetic properties
 !
           CLASLB = 'S1MAG  '
@@ -1962,7 +2019,7 @@
 !
 !     Electronic kinetic energy
 !
-      ELSE IF(LABINT(1:7).EQ.'KINENER') THEN   
+      ELSE IF(LABINT(1:7).EQ.'KINENER') THEN
         CLASLB = 'KINENER'
 !
 !     Diamagnetic susceptibility
@@ -1981,7 +2038,7 @@
           CLASLB = 'DSUSLAN'
         ELSE
 !
-!       Angular London orbital contribution to diamagnetic 
+!       Angular London orbital contribution to diamagnetic
 !       susceptibility
 !
           CLASLB = 'DSUSLH'
@@ -2027,13 +2084,13 @@
       ELSE IF(LABINT(3:5).EQ.'FGS') THEN
         CLASLB = 'ELFGRDS'
 !
-!     Bra-differentiation of overlap matrix with respect to magnetic 
+!     Bra-differentiation of overlap matrix with respect to magnetic
 !     field
 !
       ELSEIF(LABINT(1:7).EQ.'d<S|_dB') THEN
         CLASLB = 'S1MAGL'
 !
-!     Ket-differentiation of overlap matrix with respect to 
+!     Ket-differentiation of overlap matrix with respect to
 !     magnetic field
 !
       ELSE IF(LABINT(1:7).EQ.'d|S>_dB') THEN
@@ -2136,13 +2193,13 @@
       ELSE IF(LABINT(1:6).EQ.'CAP_OV') THEN
         CLASLB = 'CAP_OVL '
       ELSE IF(LABINT(2:7).EQ.'CAPD1R') THEN
-        CLASLB = 'CAPD1R' 
+        CLASLB = 'CAPD1R'
       ELSE IF(LABINT(2:7).EQ.'CAPD1I') THEN
-        CLASLB = 'CAPD1I' 
+        CLASLB = 'CAPD1I'
       ELSE IF(LABINT(2:7).EQ.'CAPDVE') THEN
-        CLASLB = 'CAPDVE' 
+        CLASLB = 'CAPDVE'
       ELSE IF(LABINT(1:6).EQ.'CAPD_V') THEN
-        CLASLB = 'CAPD_VD' 
+        CLASLB = 'CAPD_VD'
 !MI  EDM2 operator, see Refs. [Nataraj2007]_, [Mukherjee2009]_
       ELSE IF(LABINT(1:3).EQ.'EDM') THEN
         CLASLB = 'KINENER'
@@ -2154,7 +2211,7 @@
         CLASLB = 'CXIKR'
 !
 !     Unknown LABINT
-!   
+!
       ELSE
        CLASLB = 'Unknown'
       ENDIF
@@ -2237,6 +2294,60 @@
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
         ENDDO
+      ELSEIF(CLASLB.EQ.'UEHLING') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'UEHLING '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEFGMG ') THEN
+        NOPTYP    = 3
+        LABINT(1) = 'XSEFGMG '
+        LABINT(2) = 'YSEFGMG '
+        LABINT(3) = 'ZSEFGMG '
+        INTREP(1) = ISYMAX(1,1)
+        INTREP(2) = ISYMAX(2,1)
+        INTREP(3) = ISYMAX(3,1)
+        SQUARE    = .FALSE.
+        ANTI      = .TRUE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEFGHF') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'SEFGHF  '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEFGLF') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'SEFGLF  '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEPZ') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'SEPZ    '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
       ELSEIF(CLASLB.EQ.'BETAMAT') THEN
         NOPTYP    = 1
         LABINT(1) = 'BETAMAT '
@@ -2256,13 +2367,11 @@
         ANTI      = .FALSE.
         IORDER    = 0
         CALL SETATM(DOATOM,NATOM,-99)
-        CALL EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM) 
+        CALL EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
       ELSE
         CALL LSET(NUCIND,.TRUE.,DOATOM)
         IF (PLABEL.EQ.'EDM') THEN
           PLABEL='KINENERG'
-          WRITE(LUPRI,*)                                                &
-     &     'EDM: PLABEL SET to KINENERG, factor +4*c*field_strength'
         ENDIF
        ! ... call abacus routine...
         CALL PR1DIR(CLASLB,INTTYP,NOPTYP,INTREP,                        &
@@ -2285,7 +2394,7 @@
       ENDIF
 !
 !     Loop over components of operator class
-!     ======================================   
+!     ======================================
 !
       LABERR = .TRUE.
       DO ICMP = 1, NOPTYP
@@ -2293,6 +2402,7 @@
         IF(NPRPLBL.GT.MAXPRPLBL) THEN
           CALL QUIT('XPLDEF:Redimension MAXPRPLBL !')
         ENDIF
+        !sunaga
         IF(PLABEL.EQ.LABINT(ICMP)) THEN
         !mi: the only place to reset LABERR, more printout needed for "else" branch
           LABERR = .FALSE.
@@ -2307,7 +2417,7 @@
         PRPLBL (NPRPLBL) = LABINT(ICMP)
         PDOINT (NPRPLBL) = PCOMB
         IPRLREP(NPRPLBL) = INTREP(ICMP)
-!       .....  
+!       .....
         IF(SQUARE) THEN
 !       Non - symmetric operator
           IPRLTYP(NPRPLBL) = 0
@@ -2335,7 +2445,7 @@
       call dealloc(INTADR)
       deallocate(DOATOM)
       deallocate(LABINT)
-      CALL QEXIT('XPLDEF')      
+      CALL QEXIT('XPLDEF')
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2350,12 +2460,11 @@
 !     consider symmetric operators purely real and antisymmetric operators
 !     purely imaginary. Non-symmetric operators are handled by a special routine
 !     which terminates in error if the exception has not been added.
-!   
+!
 !     Written by T.Saue, January 1995
 !     Last revision: tsaue - May 14 1996
 !
 !    MI,HJAaJ(TEC),2003 - added changes for LAO-based  integrals
-!    MKN, MI, 2017 - added exception for the EDM operator
 !
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -2379,16 +2488,6 @@
 !
 !     Investigate property label no. INDXPR
 !
-!CTF
-!      do IL = 1,22,1
-!        print*,'JM4(1,',IL,') = ',JM4(1,IL)
-!      end do
-!CTF
-!CTF
-!      do IL = 0,7,1
-!        print*,'JM4TIM(',IL,') = ',JM4TIM(IL)
-!      end do
-!CTF
       ITYP     = IPRPTYP(INDXPR)
       NLBL     = MCMP(ITYP)
       DIFSYM   = .FALSE.
@@ -2406,40 +2505,24 @@
 !     Total point group symmetry of the operator, first component..
       ICREP(1) = IBTXOR(IAREP,IBREP)
 !
-!     Time reversal symmetry
+!     Time-reversal symmetry
 !     ======================
 !
 !     Matrix operator :
       IATIM = JM4TIM(IAIND)
-!TF
-      IF (ITYP.EQ.21) THEN
-        IATIM=-1 !
-         WRITE(LUPRI,'(2X,A)')                                          &
-     &    'i*BETA*GAMMA5 operator, setting IATIM=-1'
-!    &    'FYI: i*BETA*GAMMA5 operator' 
-!TF
-      ENDIF
-!     Scalar operator :
-!     Here we use the following indirect argument:
-!     The operator should be Hermitian, so if the scalar operator is
-!     symmetric about the diagonal, then it is real and time symmetric.
-!     If the scalar operator is anti-symmetric, then it is imaginary
-!     and time anti-symmetric
-!     However, if the operator has no symmetry about the diagonal 
-!     we can not use this argument and has to add exceptions
 !
-!MKN/MI Exception for i*BETA*GAMMA5 operator: Malaya K. Nayak (09-07-15)
-      IF (ITYP.EQ.21) THEN
-         IATIM = -1
-         WRITE(LUPRI,'(2X,A)')                                          &
-     &   'exception: i*BETA*GAMMA5 operator, setting IATIM = -1'
-      END IF
-!MKN/MI Because the operator i*BETA*GAMMA5 is a T-odd by its definion
-
+!     Scalar operator :
+!      Here we use the following indirect argument:
+!      The operator should be Hermitian, so if the scalar operator is
+!      symmetric about the diagonal, then it is real and time symmetric.
+!      If the scalar operator is anti-symmetric, then it is imaginary
+!      and time anti-symmetric.
+!      However, if the operator does not have symmetry about the diagonal,
+!      we cannot use this argument and must add exceptions.
+!
       IBTIM = IPRLTYP(IBIND)
       IF(IBTIM.EQ.0) IBTIM = ISCALAROP_TSYM(PRPLBL(IBIND))
-!     Total time reversal symmetry of the 4-comp.operator
-!TF   print*,'IATIM,IBTIM = ',IATIM,IBTIM
+!     Total time-reversal symmetry of the 4-component operator
       ICTIM(1) = IATIM*IBTIM
       IF (IPRINT.GE.4) THEN
         CALL HEADER('Output from PRPSYM',-1)
@@ -2499,11 +2582,10 @@
 
 !MI   ... assign point group symmetry - only one !
       IPRPSYM(INDXPR) = ICREP(1)+1
-!MI   ... assign time rev.symmetry
-!TF   if (INDXPR.eq.7) print*,' ICTIM(1) = ',ICTIM(1)
+!MI   ... assign time-reversal symmetry
       IPRPTIM(INDXPR) = ICTIM(1)
 
-!MI ... control printout is always worth 
+!MI ... control printout is always worth
       IF (IPRINT.GE.15) THEN
         WRITE(LUPRI,'(2X,A,I3,A,I2,A,I2)')                              &
      &  'Operator index, INDXPR =',INDXPR,                              &
@@ -2514,7 +2596,7 @@
      & 'symmetry of scalar operator under matrix transpose(-1,0,1),'//  &
      & ' IPRLTYP() =',IPRLTYP(INDXPR)
         WRITE(LUPRI,'(2X,A,I1)')                                        &
-     &   'Number of operator components, NLBL (1-3) =',NLBL   
+     &   'Number of operator components, NLBL (1-3) =',NLBL
         WRITE(LUPRI,'(2X,3(A,I2))')                                     &
      &  'IAIND=',IAIND,' IATIM=',IATIM,' IBTIM=',IBTIM
         WRITE(LUPRI,'(20X,A,14X,A)')                                    &
@@ -2571,6 +2653,7 @@
 !
       ISYM = IPRPSYM(INDXPR)
       ITIM = IPRPTIM(INDXPR)
+!      write(*,*)"PRPNAM,REP,TTYP",PRPNAM(INDXPR),REP(ISYM-1),TTYP(ITIM)!sunaga
       IF(IND.EQ.0) THEN
         WRITE(LUPRI,'(6X,A16,5X,A3,5X,A2)')                             &
      &    PRPNAM(INDXPR),REP(ISYM-1),TTYP(ITIM)
@@ -2592,42 +2675,42 @@
      &      'Factor     : ',FACPRP(1,INDXPR)
       GOTO 30
       ENDIF
-      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,                                &
-     &       13,14,15,16,17,18,19,20,21), ITYP
+      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,                             &
+     &       14,15,16,17,18,19,20,21,22,23), ITYP
         WRITE(LUPRI,'(6X,A,I5)')                                        &
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
     1 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'DIAGONAL : scalar operator'
+     &   'DIAGONAL : diagonal times scalar operator'
       GOTO 200
     2 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'XALPHA   : [alpha_x]P'
+     &   'XALPHA   : i[alpha_x]P'
       GOTO 200
     3 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'YALPHA   : [alpha_y]P'
+     &   'YALPHA   : i[alpha_y]P'
       GOTO 200
     4 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'ZALPHA   : [alpha_z]P'
+     &   'ZALPHA   : i[alpha_z]P'
       GOTO 200
     5 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'XAVECTOR : [alpha x P]_x'
+     &   'XAVECTOR : i[alpha x P]_x'
       GOTO 200
     6 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'YAVECTOR : [alpha x P]_y'
+     &   'YAVECTOR : i[alpha x P]_y'
       GOTO 200
     7 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'ZAVECTOR : [alpha x P]_z'
+     &   'ZAVECTOR : i[alpha x P]_z'
       GOTO 200
     8 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'ALPHADOT : [alpha.P]'
+     &   'ALPHADOT : i[alpha.P]'
       GOTO 200
     9 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
@@ -2635,51 +2718,59 @@
       GOTO 200
    10 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'XSIGMA   : [Sigma_x]P'
+     &   'XSIGMA   : i[Sigma_x]P'
       GOTO 200
    11 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'YSIGMA   : [Sigma_y]P'
+     &   'YSIGMA   : i[Sigma_y]P'
       GOTO 200
    12 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'ZSIGMA   : [Sigma_z]P'
+     &   'ZSIGMA   : i[Sigma_z]P'
       GOTO 200
    13 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'XBETASIG : [beta Sigma_x]P'
+     &   'XBETASIG : i[beta Sigma_x]P'
       GOTO 200
    14 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'YBETASIG : [beta Sigma_y]P'
+     &   'YBETASIG : i[beta Sigma_y]P'
       GOTO 200
    15 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'ZBETASIG : [beta Sigma_z]P'
+     &   'ZBETASIG : i[beta Sigma_z]P'
       GOTO 200
    16 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'XiBETAAL : i[beta alpha_x]P'
+     &   'XBETAALP : i[beta alpha_x]P'
       GOTO 200
    17 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'YiBETAAL : i[beta alpha_y]P'
+     &   'YBETAALP : i[beta alpha_y]P'
       GOTO 200
    18 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'ZiBETAAL : i[beta alpha_z]P'
+     &   'ZBETAALP : i[beta alpha_z]P'
       GOTO 200
    19 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'BETA     : scalar operator'
+     &   'BETA     : [beta]P'
       GOTO 200
    20 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'SIGMADOT : [sigma.P]'
+     &   'SIGMADOT : i[Sigma.P]'
       GOTO 200
    21 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'BETAGAMMA5 : i[beta gamma5]P'
+     &   'BETAGAMM : [beta gamma5]P'
+      GOTO 200
+   22 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
+     &   'BEALDOT  : i[beta alpha.P]'
+      GOTO 200
+   23 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
+     &   'iBETAGAM : i[beta gamma5]P'
       GOTO 200
 !
   200 CONTINUE
@@ -2719,11 +2810,11 @@
       SUBROUTINE OP1IND(OP1KEY,IND1OP,IPR1OP,N1OPER,INDXPR,MAX1OP)
 !***********************************************************************
 !
-!     INDXPR points to an operator in XCBPRP. 
-!     Search through pointer array IPR1OP for elements pointing 
+!     INDXPR points to an operator in XCBPRP.
+!     Search through pointer array IPR1OP for elements pointing
 !     to this operator. If not found, extend the list by one element.
 !     The program is stopped if the array goes out of the bound MAX1OP.
-!     On output IND1OP will be the index of the operator in the 
+!     On output IND1OP will be the index of the operator in the
 !     pointer array IPR1OP, N1OPER the current number of operators
 !     in the list.
 !
@@ -2750,7 +2841,7 @@
       N1OPER = N1OPER + 1
       IND1OP = N1OPER
       IF(N1OPER.GT.MAX1OP) THEN
-        WRITE(LUPRI,'(A6,A)') OP1KEY,' out of bounds in OP1IND'
+        WRITE(LUPRI,'(/2A)')  OP1KEY,' out of bounds in OP1IND'
         WRITE(LUPRI,'(A,I5)') 'Current value of MAX1OP: ',MAX1OP
         CALL QUIT('OP1IND: Out of bounds !')
       ELSE
@@ -2768,11 +2859,11 @@
 !     Sort a list of operators in symmetries
 !
 !        IPOP1U - input list of operators
-!        IPOP1S - output list of operators sorted on symmetries        
+!        IPOP1S - output list of operators sorted on symmetries
 !        NOP1T  - total number of operators
 !        NOP1   - number of operators in ISYM
-!        JOP1   - offset to operators in ISYM        
-!      
+!        JOP1   - offset to operators in ISYM
+!
 !     Written by T.Saue June 28 1996
 !     Last revision - June 26 1996 - tsaue
 !
@@ -2788,8 +2879,8 @@
       NBUF = NOP1T*8
       CALL MEMGET('INTE',KIBUF,NBUF,WORK,KFREE,LFREE)
       CALL OP1SR1(IPOP1U,IPOP1S,NOP1T,NOP1,JOP1,WORK(KIBUF))
-      CALL QEXIT (OP1KEY)      
-!   
+      CALL QEXIT (OP1KEY)
+!
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2819,7 +2910,7 @@
         NOP1(ISYM) = NOP1(ISYM) + 1
         IBUF(NOP1(ISYM),ISYM) = J
       ENDDO
-!   
+!
 !     Pack results in IPOP1U
 !
       NFC  = NBSYM/NFSYM
@@ -2832,7 +2923,7 @@
           IF(NBUF.GT.0) THEN
             DO J = 1,NBUF
               IPOP1S(IOFF+J) = IBUF(J,ISYM)
-            ENDDO            
+            ENDDO
             IOFF = IOFF + NBUF
           ENDIF
         ENDDO
@@ -2873,7 +2964,7 @@
       IGRD_INTFLG = INTGEN
       IF (LEVYLE) IGRD_INTFLG = IBTAND ( 1, IGRD_INTFLG )
       DOTRCK    = .FALSE.
-      SCRGRD    = -1.0D0      
+      SCRGRD    = -1.0D0
 !
       RETURN
       END
@@ -2959,7 +3050,7 @@
                GO TO 100
     2          CONTINUE
 !&&&& INTFLG: Which two-electron gradient to calculate
-                  IF (GAUNT) THEN 
+                  IF (GAUNT) THEN
                      READ(LUCMD,*) ILL,ISL,ISS,IGT
                   ELSE
                      READ(LUCMD,*) ILL,ISL,ISS
@@ -3126,4 +3217,3 @@
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-

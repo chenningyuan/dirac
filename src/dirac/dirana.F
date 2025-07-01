@@ -1268,6 +1268,21 @@ C  /* Deck anasob */
      &                  KRMC_FLG,WORK,KFREE,LFREE)
 C***********************************************************************
 C
+C
+C     Prepare for projection analysis in current symmetry
+C      
+C     NVECS(IFRP,1) - number of fragments orbitals in ircop IFRP
+C     NVECS(IFRP,2) - number of MOs in ircop IFRP
+C     NVECS(IFRP,0) - total number of orbitals in ircop IFRP
+C      
+C     NSTR(IFRP,0,0) - number of MOs in ircop IFRP
+C     NSTR(IFRP,1,0) - number of positive-energy MOs in ircop IFRP
+C     NSTR(IFRP,1,0) - number of negative-energy MOs in ircop IFRP
+C     NSTR(IFRP,0,IFRAG) - number of orbitals of fragment IFRAG in ircop IFRP
+C     NSTR(IFRP,1,IFRAG) - number of positive-energy orbitals of fragment IFRAG in ircop IFRP
+C     NSTR(IFRP,1,IFRAG) - number of negative-energy orbitals of fragment IFRAG in ircop IFRP
+C
+C
 C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
@@ -1284,7 +1299,6 @@ C
 #include "dcbham.h"
 #include "dummy.h"
 C
-      LOGICAL TOBE,FNDLAB
       DIMENSION WORK(*)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
      &          NVECS(2,0:2),IOFF(2),IDIM(3,2)
@@ -1292,14 +1306,6 @@ C
       type(file_info_t)    :: fragfile
       integer              :: n_mo(2),n_po(2)
       KFRSAV=KFREE
-C
-C
-C     If requested, do Mayer polarization of reference orbitals
-C     =========================================================
-C
-CTROND      IF(MAYER) THEN
-CTROND        CALL MAYER_POLARIZE(WORK,KFREE,LFREE)
-CTROND      ENDIF
 C
 C     Find total numbers of reference orbitals;
 C     first scan coefficient files for NPSH/NESH;
@@ -1362,7 +1368,6 @@ C
       CALL MEMGET('INTE',KIBE,NORBT   ,WORK,KFREE,LFREE)
       CALL IZERO(WORK(KIBE),NORBT)
 C
-C
 C     Select reference orbitals and eigenvalues
 C
       DO IFRP = 1,NFSYM
@@ -1371,7 +1376,7 @@ C
       CALL SELFRAG(WORK(KCSEL),NVECS(1,0),WORK(KESEL),WORK(KBSEL),
      &             NREFS,NSTR(1,0,1),REFFIL,OWNBAS,NPROJNUC,IOPT,
      &             KVEC(1,1),WORK(KCMO),WORK(KEIG),WORK(KIBE),
-     &             IOFF,KDUM,WORK,KFREE,LFREE)
+     &             IOFF,KDUM,C1READ,WORK,KFREE,LFREE)
 C
 C     Get molecular coefficients and eigenvalues
 C     Note that integer arrays IOFF is used to get correct
@@ -1380,7 +1385,7 @@ C
       CALL SELFRAG(WORK(KCSEL),NVECS(1,0),WORK(KESEL),WORK(KBSEL),
      &             1,NSTR(1,0,0),'CHECKPOINT.h5',.FALSE.,1,IOPT,
      &             KVEC(1,0),WORK(KCMO),WORK(KEIG),WORK(KIBE),
-     &             IOFF,KRMC_FLG,WORK,KFREE,LFREE)
+     &             IOFF,KRMC_FLG,.FALSE.,WORK,KFREE,LFREE)
 C
 C     Throw away the full coefficients and eigenvalues
 C     ================================================
@@ -1400,10 +1405,6 @@ C
         CALL OUTPUT(WORK(KESEL),1,NDIM,1,1,NDIM,1,-1,LUPRI)
       ENDIF
       RETURN
- 10   CONTINUE
-      CALL QUIT('PRJSOB: END OF FILE reading TEXT')
- 20   CONTINUE
-      CALL QUIT('PRJSOB: ERROR reading TEXT')
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2034,6 +2035,21 @@ C
 C
       IF(IPRCMP.LE.0) RETURN
       CALL TITLER('Vector print','*',130)
+
+C     If VECPRI is UNDEFINED, then set it to blank or 1 or 1..NOCC(I) based on the NOCC(I) value.
+      DO I = 1, NFSYM
+        IF (VECPRI(I)(1:9).eq.'UNDEFINED') THEN
+          NOCCI = NOCC(I)
+          IF (NOCCI .eq. 0) THEN
+            VECPRI(I) = '   '
+          ELSE IF( NOCCI .eq. 1 )THEN
+            VECPRI(I) = '1  '
+          ELSE
+            WRITE(VECPRI(I),'(A3,I4)') '1..',NOCCI
+          END IF
+        END IF
+      END DO
+
 C
 C     Check if MCSCF coefficients are on file
 C
@@ -3042,13 +3058,13 @@ C
       CALL SELFRAG(WORK(KCSEL),NVECS,DUM,DUM,
      &             1,NSTR(1,0),'CHECKPOINT.h5',.FALSE.,1,IOPT,
      &             KVEC,WORK(KCMO),DUM,DUM,
-     &             IOFF,KRMC_FLG,WORK,KFREE,LFREE)
+     &             IOFF,KRMC_FLG,.FALSE.,WORK,KFREE,LFREE)
       CALL MEMREL('MAYERPOL.cfs',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
 C     Get overlap matrix packed on fermion ircops
 C
       CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
-      CALL GTOVLT(WORK(KSMAT),SSMTRC)
+      CALL GTOVLT(WORK(KSMAT),SSMTRC,IPRPRJ)
 C
 C     Loop over fragments
 C
@@ -4260,7 +4276,7 @@ c     see how many nonzero eigenvalues we have
          endif
       enddo
 c     P = vec*vec` for vectors n-nvec+1 .. n
-      CALL qgemm(n,n,nvec,1.0D0,
+      CALL QGEMM(n,n,nvec,1.0D0,
      &     'N','N',IPQTOQ(1,0),vec(1,n-nvec+1,1),n,n,mz,
      &     'H','N',IPQTOQ(1,0),vec(1,n-nvec+1,1),n,n,mz,
      &          0.0D0,IPQTOQ(1,0),P,n,n,mz)
@@ -4273,7 +4289,19 @@ C  /* Deck prjaob */
      &              KRMC_FLG,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Carry out projection analysis in AO-basis (C1 atomic fragments)
+C     Prepare for projection analysis using C1 atomic fragments
+C      
+C     NVECS(IFRP,1) - number of fragments orbitals in ircop IFRP
+C     NVECS(IFRP,2) - number of MOs in ircop IFRP
+C     NVECS(IFRP,0) - total number of orbitals in ircop IFRP
+C      
+C     NSTR(IFRP,0,0) - number of MOs in ircop IFRP
+C     NSTR(IFRP,1,0) - number of positive-energy MOs in ircop IFRP
+C     NSTR(IFRP,1,0) - number of negative-energy MOs in ircop IFRP
+C     NSTR(IFRP,0,IFRAG) - number of orbitals of fragment IFRAG in ircop IFRP
+C     NSTR(IFRP,1,IFRAG) - number of positive-energy orbitals of fragment IFRAG in ircop IFRP
+C     NSTR(IFRP,1,IFRAG) - number of negative-energy orbitals of fragment IFRAG in ircop IFRP
+C     
 C     Written by T.Saue May 14 2012
 C
 C***********************************************************************
@@ -4313,8 +4341,8 @@ C     IREFS runs over symmetry dependent centers, exluding centers without basis
         IF(.NOT.NOORBT(ININD)) THEN ! Skip centers with no orbitals
 C.........Find the total number of basis functions for this atom type
           CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
-          fragfile%type = 2
-          fragfile%name = trim(REFFIL(IREFS))
+          fragfile%type   = 2
+          fragfile%name   = trim(REFFIL(IREFS))
           fragfile%status = -1
           call lab_read (fragfile,
      &    '/result/wavefunctions/scf/mobasis/n_basis',
@@ -4326,9 +4354,9 @@ C.........Find the total number of basis functions for this atom type
      &    '/result/wavefunctions/scf/mobasis/n_po',
      &    idata=n_po)
           fragfile%status = 0
-          nao(irefs) = sum(n_basis)
-          nstr(1,2,irefs) = sum(n_po)
-          nstr(1,1,irefs) = sum(n_mo)-sum(n_po)
+          nao(irefs)      = sum(n_basis)        ! nfbas
+          nstr(1,2,irefs) = sum(n_po)           ! npsh
+          nstr(1,1,irefs) = sum(n_mo)-sum(n_po) ! nesh
           IF(NAO(IREFS).NE.MBAS) THEN
              WRITE(LUPRI,'(A,A,I3,/,A,A6,A,I6)') 
      &       'Atomic projection analysis: ',
@@ -4344,8 +4372,8 @@ C.........Count the number of orbitals to read:
 C         NCATOM(1,0,IREFS) is the total number of orbitals per atom of this type
 C         The number is multiplied with total number of atoms of this type and
 C         added to NVECS(1,1)
-          NSTR(1,0,IREFS)=0
-          NDIM=NSTR(1,2,IREFS)+NSTR(1,1,IREFS)+1
+          NSTR(1,0,IREFS) = 0
+          NDIM            = NSTR(1,2,IREFS)+NSTR(1,1,IREFS)+1
           CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
           CALL NUMLS1(VECREF(1,IREFS),IDUM,IDUM,
      &         -NSTR(1,2,IREFS),NSTR(1,1,IREFS),
@@ -4402,8 +4430,8 @@ C     ==========================
           CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
 C.........Read C1 coefficients and orbitalenergies
-          fragfile%type = 2
-          fragfile%name = trim(REFFIL(IREFS))
+          fragfile%type   = 2
+          fragfile%name   = trim(REFFIL(IREFS))
           fragfile%status = -1
           call lab_read (fragfile,
      &     '/result/wavefunctions/scf/mobasis/orbitals_C1',
@@ -4442,7 +4470,7 @@ C.......Extract coefficients and orbital energies (JVEC updated inside)
             CALL OUTPUT(WORK(KEOFF),1,NVDIM,1,1,NVDIM,1,-1,LUPRI)
           ENDIF
 C.........Duplicate information for other atoms of this type
-          NDEP=0
+          NDEP = 0
           DO J = 0,NONT(ITYP)-1
             NDEP = NDEP + NUCDEG(ININD+J)
           ENDDO
@@ -4485,7 +4513,7 @@ C
       CALL SELFRAG(WORK(KCBUF),NSTR(1,0,0),WORK(KEBUF),WORK(KIBUF),
      &             1,NSTR(1,0,0),'CHECKPOINT.h5',.FALSE.,1,IOPT,
      &             KVEC(1,0),WORK(KCMO),WORK(KEIG),WORK(KIBE),
-     &             IOFF,KRMC_FLG,WORK,KFREE,LFREE)
+     &             IOFF,KRMC_FLG,.FALSE.,WORK,KFREE,LFREE)
       IF(IPRPRJ.GE.2) THEN
         KCOFF = KCBUF
         DO IFRP = 1,NFSYM
@@ -4508,9 +4536,9 @@ C.....Then transform coefficients to AO-basis
         NVDIM = NVECS(1,2)
         CALL PRQMAT(WORK(KCOFF),NTBAS(0),NVDIM,NTBAS(0),
      &                NVECS(1,0),NZC1,IQDEF,LUPRI)
-          WRITE(6,*) 'Selected molecular eigenvalues:'
-          KEOFF = KESEL+NVECS(1,1)
-          CALL OUTPUT(WORK(KEOFF),1,NVDIM,1,1,NVDIM,1,-1,LUPRI)
+        WRITE(6,*) 'Selected molecular eigenvalues:'
+        KEOFF = KESEL+NVECS(1,1)
+        CALL OUTPUT(WORK(KEOFF),1,NVDIM,1,1,NVDIM,1,-1,LUPRI)
       ENDIF
       IF(IPRPRJ.GE.2) THEN
         WRITE(6,*) 'All selected coefficients'
@@ -4523,10 +4551,6 @@ C.....Then transform coefficients to AO-basis
       NBDIM = NVECS(1,0)*NVECS(1,2)*NZC1
       CALL MEMGET('REAL',KBVEC,NBDIM,WORK,KFREE,LFREE)
       RETURN
- 10   CONTINUE
-      CALL QUIT('PRJAOB: END OF FILE reading TEXT')
- 20   CONTINUE
-      CALL QUIT('PRJAOB: ERROR reading TEXT')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selatom */
