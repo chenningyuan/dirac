@@ -54,15 +54,16 @@ module talsh_common_routines
        real(8)  :: denominator
        complex(8), pointer, contiguous:: t1_tens(:,:), t2_tens(:,:,:,:), t3_tens(:,:,:)
        complex(8), pointer, contiguous:: full_t3_tens(:,:,:,:,:,:)
+#ifndef VAR_NVFORTRAN 
        complex(8), pointer, contiguous:: full_t4_tens(:,:,:,:,:,:,:,:)
        complex(8), pointer, contiguous:: full_t5_tens(:,:,:,:,:,:,:,:,:,:)
+#endif
        type(C_PTR):: body_p
 
        integer(INTD) :: t1_dims(1:2), t2_dims(1:4), t3_dims(1:3)
        integer(INTD) :: full_t3_dims(1:6)
        integer(INTD) :: full_t4_dims(1:8)
        integer(INTD) :: full_t5_dims(1:10)
-
        integer(INTD) :: ierr, tens_rank
        integer       :: a, b, c, d, e, i, j, k, l, m
 
@@ -179,6 +180,7 @@ module talsh_common_routines
 
        end if
 
+#ifndef VAR_NVFORTRAN
        if (present(full_t4_tensor)) then
 
           ierr = talsh_tensor_dimensions(full_t4_tensor,tens_rank,full_t4_dims)
@@ -298,7 +300,11 @@ module talsh_common_routines
           end if
 
        end if ! full_t5_tensor
-
+#else
+       if (present(full_t4_tensor) .or. present(full_t5_tensor)) then
+          stop "T4/T5 unsupported due to NVFORTRAN restrictions on array dimensions"
+       end if
+#endif
 
        if (present(t3_tensor)) then
 
@@ -556,16 +562,20 @@ module talsh_common_routines
          ierr=talsh_tensor_get_body_access(dm_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
          dm_mo_fort(1:nvir,1:nvir) = dm_block
-         
+          
          call get_free_fileunit(mp2dm)
-         if (present(mode) .and. mode==2) then
-           open (mp2dm,file=file_out,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
-           ! write dimension of the matrix 
-           write(mp2dm,*) nvir
-           ! write matrix element
-           do ierr=1,nvir
-             write(mp2dm,*) dm_mo_fort(ierr,1:nvir)
-           end do
+         if (present(mode)) then
+           if (mode==2) then
+              open (mp2dm,file=file_out,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
+              ! write dimension of the matrix 
+              write(mp2dm,*) nvir
+              ! write matrix element
+              do ierr=1,nvir
+                write(mp2dm,*) dm_mo_fort(ierr,1:nvir)
+              end do
+            else
+               call quit('error in choice of mode for writing mp2nos')
+            end if
          else 
            open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
            ! write dimension of the matrix 
@@ -744,9 +754,11 @@ module talsh_common_routines
         complex(8), pointer :: tens5(:, :, :, :, :)
         complex(8), pointer :: tens6(:, :, :, :, :, :)
         complex(8), pointer :: tens7(:, :, :, :, :, :, :)
+#ifndef VAR_NVFORTRAN
         complex(8), pointer :: tens8(:, :, :, :, :, :, :, :)
         complex(8), pointer :: tens9(:, :, :, :, :, :, :, :, :)
         complex(8), pointer :: tens10(:, :, :, :, :,:, :, :, :, :)
+#endif
         integer             :: DataKind(1),nData
 
         ierr=talsh_tensor_data_kind(h_tensor,nData,DataKind)
@@ -810,6 +822,7 @@ module talsh_common_routines
           call c_f_pointer(body_p,tens7,dims7)
           tens7=val
 
+#ifndef VAR_NVFORTRAN
         else if (rank.eq.8) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
@@ -830,9 +843,9 @@ module talsh_common_routines
           ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens10,dims10)
           tens10=val
-
+#endif 
         else
-          stop 'error in talsh_init: only ranks 0 to 10 implemented'
+          stop 'error in talsh_init: only ranks 0 to 10 implemented (0 to 7 for NVFORTRAN)'
         end if
 
       end subroutine talsh_init_C8
@@ -867,9 +880,11 @@ module talsh_common_routines
         real(8), pointer :: tens5(:, :, :, :, :)
         real(8), pointer :: tens6(:, :, :, :, :, :)
         real(8), pointer :: tens7(:, :, :, :, :, :, :)
+#ifndef VAR_NVFORTRAN
         real(8), pointer :: tens8(:, :, :, :, :, :, :, :)
         real(8), pointer :: tens9(:, :, :, :, :, :, :, :, :)
         real(8), pointer :: tens10(:, :, :, :, :,:, :, :, :, :)
+#endif
         integer             :: DataKind(1),nData
 
         ierr=talsh_tensor_data_kind(h_tensor,nData,DataKind)
@@ -933,6 +948,7 @@ module talsh_common_routines
           call c_f_pointer(body_p,tens7,dims7)
           tens7=val
 
+#ifndef VAR_NVFORTRAN
         else if (rank.eq.8) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims8)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
@@ -954,8 +970,9 @@ module talsh_common_routines
           call c_f_pointer(body_p,tens10,dims10)
           tens10=val
 
+#endif
         else
-          stop 'error in talsh_init: only ranks 0 to 10 implemented'
+          stop 'error in talsh_init: only ranks 0 to 10 implemented (0 to 7 for NVFORTRAN)'
         end if
 
       end subroutine talsh_init_R8

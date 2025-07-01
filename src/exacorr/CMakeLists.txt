@@ -8,16 +8,20 @@ if(ENABLE_EXATENSOR)
   )
 
   set(FREE_EXACORR_FORTRAN_SOURCES
-   talsh_auto_ccd_spinor.F90
-   talsh_auto_ccsd_spinor.F90
-   talsh_auto_ccsdt_spinor.F90
-   talsh_auto_ccsdtq_spinor.F90
-   talsh_auto_ccsdtqp_spinor.F90
-   exatensor_auto_ccd_spinor.F90
-   exatensor_auto_ccsd_spinor.F90
-   exatensor_auto_ccsdt_spinor.F90
-   exatensor_auto_ccsdtq_spinor.F90
-   exatensor_auto_ccsdtqp_spinor.F90
+   mbauto/talsh_auto_ccd_spinor.F90
+   mbauto/talsh_auto_ccsd_spinor.F90
+   mbauto/talsh_auto_ccsdt_spinor.F90
+   mbauto/talsh_auto_ccsdt-1a_spinor.F90
+   mbauto/talsh_auto_ccsdt-1b_spinor.F90
+   mbauto/talsh_auto_ccsdt-2_spinor.F90
+   mbauto/talsh_auto_ccsdt-3_spinor.F90
+   mbauto/talsh_auto_ccsdtq_spinor.F90
+   mbauto/talsh_auto_ccsdtqp_spinor.F90
+   mbauto/exatensor_auto_ccd_spinor.F90
+   mbauto/exatensor_auto_ccsd_spinor.F90
+   mbauto/exatensor_auto_ccsdt_spinor.F90
+   mbauto/exatensor_auto_ccsdtq_spinor.F90
+   mbauto/exatensor_auto_ccsdtqp_spinor.F90
    talsh_tenpi_ccd.F90
    talsh_tenpi_ccsd.F90
    talsh_tenpi_ccsdt.F90
@@ -26,7 +30,6 @@ if(ENABLE_EXATENSOR)
    exatensor_tenpi_ccsd.F90
    exatensor_tenpi_ccsdt.F90
    exatensor_tenpi_ccsdtq.F90
-   exacorr_main.F90
    exacorr_datatypes.F90
    exacorr_global.F90
    exacorr_cfg.F90
@@ -86,14 +89,15 @@ if(ENABLE_EXATENSOR)
 
   add_library(
     exacorr
-    OBJECT
+    STATIC
     ${FIXED_EXACORR_FORTRAN_SOURCES}
     ${FREE_EXACORR_FORTRAN_SOURCES}
   )
 
 # deal with dependencies
-  add_dependencies(exacorr  main)
+  add_dependencies(exacorr  dirac_main)
   add_dependencies(exacorr  exatensor)
   add_dependencies(exacorr  interest)
+  add_dependencies(exacorr  laplace) # uses module type_laplace
 #  add_dependencies(exacorr  mfsolver)
 endif()

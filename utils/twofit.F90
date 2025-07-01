@@ -258,6 +258,7 @@
     '                       ',OMEFF*XTCM,' cm-1'
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
 !     Zero-point vibrational averages
+      NDIM = NORDER+1
       DO IPRP = 1,NPRP
         WRITE(LUPRI,'(/A,I3/)') '** PROPERTY NO. ',IPRP
         WRITE(ILOGG,'(/A,I3/)') '** PROPERTY NO. ',IPRP

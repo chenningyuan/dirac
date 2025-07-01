@@ -52,7 +52,7 @@ C*****************************************************************************
 C
 
       PARAMETER (NTABLE = 16)
-      LOGICAL :: SET, NEWDEF, RESET, LBIT, USECM
+      LOGICAL :: SET, NEWDEF, RESET, LBIT, USECM, USEBC
       LOGICAL :: INTNMR_SET
       LOGICAL :: oneexi, twoexi, fckexi
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
@@ -63,7 +63,7 @@ C
       DATA TABLE /'xXXXXXX','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.FULMAT',
      &            '.REGRAD','.LONDON','.USECM ','.MLLSUS',
-     &            'xXXXXXX','.SEPTEP','.EXPPED','xXXXXXX'  /
+     &            '.USEBC ','.SEPTEP','.EXPPED','xXXXXXX'  /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -96,6 +96,7 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       NOTWOL = .FALSE.
       NOONEI = .FALSE.
       USECM  = .FALSE.
+      USEBC  = .FALSE.
       RDSUSLLMOD = .FALSE.
       SEPTEP = .FALSE.
       FULMAT = .FALSE.
@@ -200,7 +201,9 @@ C&&&& .MLLSUS: Activate the nonrelativistic modification of the relativistic RDS
                RDSUSLLMOD = .TRUE.
                GO TO 100
    13          continue
-               go to 100
+!              Set nuclei charge barycenter as the gauge origin
+               USEBC = .TRUE.
+               GO TO 100
    14          CONTINUE ! .SEPTEP
 !              gosia: SEParate T matrix to electronic and positronic blocks
 !              it does not affect shieldings, it is only for analysis.
@@ -236,6 +239,10 @@ C ... header: print out only if relevant (controlled by RESET)
         CALL PRSYMB(LUPRI,'=',75,0)
       ENDIF
 
+      IF (USEBC .AND. USECM) THEN
+         CALL QUIT('.USECM and .USEBC cannot be set at the same time.')
+      END IF
+
       IF (USECM.AND.GAGORG_SET) THEN
        WRITE(LUPRI,'(/A/A)') 'WARNING:'//
      &    ' You have asked for center of mass to be the gauge origin!',
@@ -243,13 +250,21 @@ C ... header: print out only if relevant (controlled by RESET)
        GAGORG_SET = .FALSE.
       ENDIF
 
-      IF (GAGORG_SET .AND. .NOT.USECM) THEN
+      IF (USEBC.AND.GAGORG_SET) THEN
+       WRITE(LUPRI,'(/A/A/A)') 'WARNING:'//
+     &    ' You have asked for nuclei-charge-barycenter',
+     &    ' to be the gauge origin.',
+     &    'WARNING: ...your defined gauge origin is therefore ignored.'
+       GAGORG_SET = .FALSE.
+      ENDIF
+
+      IF (GAGORG_SET .AND. .NOT.USECM .AND. .NOT. USEBC) THEN
          if (maxrep > 0) then
             IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(/A/)')
      &     '   WARNING: User defined gauge '//
      &     'may give wrong results when using symmetry !'   
          end if
-CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
+C        Copy GAGORG into the DIPORG
          DIPORG(:) = GAGORG(:)
       ELSE
        IF (LONDON.OR.USECM) THEN
@@ -268,6 +283,18 @@ C ... call the routine in abacus/hergp.F
      &  ' * Center of mass used for the gauge & dipole '//
      &  'origins (a.u.) :',GAGORG(1:3)
        END IF
+
+
+C      Set the nuclei charge barycenter as the gauge origin
+       IF (.NOT.LONDON.AND.USEBC) THEN
+          CALL CHARGEBC
+          CALL DCOPY(3,NCHBC,1,GAGORG,1)
+          CALL DCOPY(3,GAGORG,1,DIPORG,1)
+          WRITE(LUPRI,'(A)') '* Nuclei charge barycenter used for'
+          WRITE(LUPRI,'(A,3F20.15)')
+     &    '  the gauge & dipole origins (a.u.):    ', GAGORG(1:3)
+       END IF
+
       END IF
 
       IF (LONDON) THEN

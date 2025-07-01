@@ -106,7 +106,7 @@ contributions :math:`E` corresponding to e-e rotations, and contributions :math:
 Each component is further split into contributions :math:`X+` that are time symmetric and contributions :math:`X-`
 that are time antisymmetric. The transition moments are obtained by contracting solution vectors with property gradients
 (see :cite:`Bast2009` for details). A time-(anti)symmetric operator gives a non-zero contribution only by contraction with
-the time-(anti)symmetric part of the solution vector. The reduced interaction operator in the lenght and velocity representations
+the time-(anti)symmetric part of the solution vector. The reduced interaction operator in the length and velocity representations
 is time-symmetric and time-antisymmetric, respectively. With this in mind we set up the following input (length.inp) for
 generating the radial distribution of the transition moment in the length representation
 

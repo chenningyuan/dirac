@@ -27,7 +27,7 @@ X2C Hamiltonian. CCSDTQP energies, small test.
 6..8
 #.VIRTUAL
 #6..10
-.CC-iP
+.CCiP
 .AUTOKERNEL
 .PRINT
 2

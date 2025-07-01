@@ -26,7 +26,7 @@ system is sufficient to show how the setup works.
 
 The current implementation employs the external library
 `PElib <https://gitlab.com/pe-software/pelib-public>`_ for the PE-related tasks.
-The module is activated by the `.PEQM` keyword under the `**HAMILTONIAN` section.
+The module is activated by the :ref:`HAMILTONIAN_.PELIB` keyword under the :ref:`**HAMILTONIAN` section.
 A few additional (but also very simple) examples can be found in the test
 directories.
 
@@ -54,7 +54,7 @@ for a vacuum calculation. The .inp file (``pe-hf.inp``) is given below::
    H2O with PE
    .WAVE FUNCTION
    **HAMILTONIAN
-   .PEQM            ! activate polarizable embedding
+   .PELIB            ! activate polarizable embedding
    **INTEGRALS
    *TWOINT
    .SCREEN
@@ -68,10 +68,10 @@ for a vacuum calculation. The .inp file (``pe-hf.inp``) is given below::
    10
    *END OF
 
-PElib is activated by the `.PEQM` keyword under `**HAMILTONIAN`.
-Specification of `.PEQM` will thus make the program calculate the PE-specific term of
+PElib is activated by the `.PELIB` keyword under `**HAMILTONIAN`.
+Specification of `.PELIB` will thus make the program calculate the PE-specific term of
 the Fock (or Kohn-Sham) matrix and add them to the vacuum part (see Eqs. (19)-(22)
-in :cite:`Hedegaard2017`). Additional PE-related keywords are given under the `*PEQM`
+in :cite:`Hedegaard2017`). Additional PE-related keywords are given under the :ref:`*PELIB`
 section. This potential has to be generated but for now we can use the pre-generated
 potential (``3_h2o.pot``) given below
 
@@ -103,7 +103,7 @@ the total energy::
    Total energy                             :    -76.108136383446379
 
 A PE-DFT calculation can be run in exactly the same manner, but by additionally specifying DFT
-under the `**HAMILTONIAN` section (see e.g. the follow-up :ref:`tutorial <pe_response>`).
+under the :ref:`**HAMILTONIAN` section (see e.g. the follow-up :ref:`tutorial <pe_response>`).
 
 Things to note
 --------------

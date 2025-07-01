@@ -1,0 +1,7 @@
+! This test calculates the parity-violation contribution to EFG tensor
+! in H2O2 molecule using Dirac-Coulomb (dc) Hamiltonian
+!
+! Please note that the basis-set is far from being appropriate, just for demonstration.
+! Note also that this property is very sensitive to numerical noise and demands good SCF,
+! response convergence and highly depends on the nuclear model, the basis set quality
+! and the kinetic balance prescription.

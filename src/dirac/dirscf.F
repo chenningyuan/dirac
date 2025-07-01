@@ -241,6 +241,9 @@ C*****************************************************************************
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
+#ifdef HAS_PELIB
+      use pelib_dirac_interface, only: use_pelib, pelib_ifc_fock
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -542,7 +545,7 @@ C       ... read 1-electron Fock matrix into FOCK ...
 
 ! =======================================================================
 
-      IF (.NOT. BARNUC) THEN
+      IF (.NOT. BARNUC) THEN      
 C     MI     ... get 1-electron Fock matrix into CMO ...
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 C
@@ -570,6 +573,19 @@ C          ======================
              call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,fock,1)
              deallocate(aoo2esssoc)
            end if
+
+C
+C        Polarizable embedding contribution
+C        ==================================
+C
+#ifdef HAS_PELIB
+         IF (use_pelib()) THEN
+            IF (IPRSCF >= 1) WRITE(LUPRI,'(A)') '* Calling PE library'
+            PE_TIME = SECOND()
+            CALL PELIB_IFC_FOCK(DMAT, FOCK, PE_TOT_NRG, PE_EL_NRG)
+            PE_TIME = SECOND() - PE_TIME
+         END IF
+#endif
 
            CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         END IF
@@ -628,8 +644,9 @@ C
           END IF
           IF(AOC) THEN
             DO IOPEN = 1,NOPEN
-              CALL HEADER('PREDHF: Total FV matrix in SA-AO basis',-1)
-              WRITE(LUPRI,'(A,I3)') ' Matrix number',IOPEN
+              CALL HEADER('PREDHF: FV matrices in SA-AO basis',-1)
+              WRITE(LUPRI,'(A,I0,A,I0)')
+     &        ' Open shell number ',IOPEN,' of ',NOPEN
               CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
      &                    NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
             END DO
@@ -722,6 +739,7 @@ C
           endif
         ENDIF
         CPUTID = SECTID(CTIDTOT)
+
         CALL GTINFO(DAYTID)
         WRITE(LUCYCL,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID
@@ -1238,7 +1256,7 @@ C*****************************************************************************
       use pcm_scf
 #endif
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: use_pelib, pelib_ifc_fock
 #endif
 
 #include "implicit.h"
@@ -1460,7 +1478,7 @@ C        Polarizable embedding contribution
 C        ==================================
 C
 #ifdef HAS_PELIB
-         IF (PEQM) THEN
+         IF (use_pelib()) THEN
             IF (IPRSCF >= 1) WRITE(LUPRI,'(A)') '* Calling PE library'
             PE_TIME = SECOND()
             CALL PELIB_IFC_FOCK(DMAT, FOCK, PE_TOT_NRG, PE_EL_NRG)
@@ -1599,7 +1617,7 @@ C
          endif 
 #endif
 #ifdef HAS_PELIB
-          IF (PEQM) THEN
+          IF (use_pelib()) THEN
             CPUTID = SECTID(PE_TIME)
             WRITE(LUPRI,'(3X,A,A12)')
      &      '* PE Fock matrix            (CPU):',CPUTID
@@ -1725,7 +1743,8 @@ C*****************************************************************************
       use pcm_scf
 #endif
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: use_pelib, pelib_ifc_fock,
+     &                                 pelib_ifc_energy
 #endif
 
 #include "implicit.h"
@@ -1888,7 +1907,7 @@ C
       endif 
 #endif
 #ifdef HAS_PELIB
-      IF (PEQM) THEN
+      IF (use_pelib()) THEN
         ! The PE Fock matrix is added to F2 before entering ERGCAL
         ! and the electronic PE energy is therefore added to E2PART.
         ! Therefore we subtract its contribution from the total PE energy.
@@ -1935,7 +1954,7 @@ C
       
 #ifdef HAS_PELIB
       ! edh: Correct also elergy for printing...
-      if (peqm) then 
+      if (use_pelib()) then 
         elergy = elergy - 0.5d0 * pe_el_nrg
       end if
 #endif
@@ -1992,7 +2011,7 @@ CMI      ... print out matrixes ...
 #endif
         ! later this will be replaced by a get energy routine
 #ifdef HAS_PELIB
-        IF (PEQM) WRITE(LUPRI,'(A,'//FMT//')')
+        IF (use_pelib()) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Embedding energy                   :  ',PE_TOT_NRG
 #endif
          WRITE(LUPRI,'(A,'//FMT//')')
@@ -5445,13 +5464,9 @@ C.....  Rotate orbitals into place
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ATOMIC_START(DMAT,IPRINT,WORK,KFREE,LFREE)
       use dircmo
-      use labeled_storage
 C***********************************************************************
 C
 C     Routine for atomic start
-C     NNEG - number of positronic solutions
-C     NPOS - number of electronic solutions
-C     NBAS - number of AO-basis functions
 C
 C***********************************************************************
       use quaternion_algebra
@@ -5471,15 +5486,53 @@ C.....Local variables
       LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       INTEGER NNEG,NPOS,NBAS,IDIM(3),idims(12)
-      real(8), allocatable :: atom_cmo(:)
-      type(file_info_t)    :: atomfile
-      integer              :: n_mo(2),n_po(2), n_basis(2)
 C
       KFRSAV=KFREE
 C.....Say hello
       IF(IPRINT.GE.1) THEN
         CALL HEADER('Atomic start',-1)
       ENDIF
+      CALL ATOMIC_DENS(DMAT,MAXATOM,MXOPEN,ATOMFIL,VECATOM,
+     &     NVECATOM,OCCATOM,IPRINT,WORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ATOMIC_DENS(DMAT,MATOM,MSHEL,ATOMFIL,VECATOM,
+     &     NVECATOM,SHELLFAC,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Routine for atomic start
+C     NNEG - number of positronic solutions
+C     NPOS - number of electronic solutions
+C     NBAS - number of AO-basis functions
+C
+C***********************************************************************
+      use quaternion_algebra
+      use labeled_storage
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "mxcent.h"
+C
+#include "dcbdhf.h"
+#include "nuclei.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      CHARACTER*6  ATOMFIL(MATOM)
+      CHARACTER*72 VECATOM(MSHEL,MATOM)
+      INTEGER      NVECATOM(MATOM)
+      REAL*8       SHELLFAC(MSHEL,MATOM)
+      DIMENSION DMAT(NTBAS(0),NTBAS(0),NZ),WORK(*)
+C.....Local variables
+      LOGICAL TOBE
+      CHARACTER TEXT*74
+      INTEGER NNEG,NPOS,NBAS,IDIM(3),idims(12)
+      real(8), allocatable :: atom_cmo(:)
+      type(file_info_t)    :: atomfile
+      integer              :: n_mo(2),n_po(2), n_basis(2)
+C     
+      KFRSAV=KFREE
 C.....Initialize buffer density matrix
       NDMAT=NTBAS(0)*NTBAS(0)*NZ
       NDBUF=NTBAS(0)*NTBAS(0)*NZC1
@@ -5490,6 +5543,7 @@ C.....Loop over atomic types
       CALL MEMGET2('INTE','INFO',KINF,NTBAS(0),WORK,KFREE,LFREE)
       ICENT = 1
       DO IATOM = 1,NONTYP
+      IF(NVECATOM(IATOM).GT.0) THEN         
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
         IF (MBAS == 0) CYCLE
@@ -5501,10 +5555,10 @@ C.......Read atomic coefficients in C1 format
      &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
         IF(.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,A6,A)') 
-     &     'ATOMIC_START: Atomic coefficient file ',ATOMFIL(IATOM),
+     &     'ATOMIC_DENS: Atomic coefficient file ',ATOMFIL(IATOM),
      &     ' not found !'
            CALL QUIT
-     &     ('ATOMIC_START: Atomic coefficient file not found !')
+     &     ('ATOMIC_DENS: Atomic coefficient file not found !')
         ENDIF
         call lab_read(atomfile,'/result/wavefunctions/scf/mobasis/n_mo',
      &                idata=n_mo)
@@ -5522,12 +5576,12 @@ C.......Read atomic coefficients in C1 format
         text = 'Coefficients read from file: '//atomfile%name
         IF(NBAS.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
-     &     'ATOMIC_START: ',
+     &     'ATOMIC_DENS: ',
      &     'Wrong number of basis function for atomic type ',IATOM,
      &     'Correct number          : ', MBAS,
      &     'Number read from ',ATOMFIL(IATOM),' : '  ,NBAS
            CALL QUIT
-     &     ('ATOMIC_START: Wrong number of basis functions !')
+     &     ('ATOMIC_DENS: Wrong number of basis functions !')
         ENDIF
         IF(IPRINT.GE.1) THEN
           WRITE(LUPRI,*) NAMN(ICENT),ATOMFIL(IATOM)
@@ -5574,7 +5628,7 @@ C.........extract selected vectors from CMO and place in CBUF
      &                NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
 C.........Generate contribution to atomic density matrix from this shell
-          CALL DENST1(WORK(KADE),NBAS,NBAS,NZC1,OCCATOM(ISHELL,IATOM),
+          CALL DENST1(WORK(KADE),NBAS,NBAS,NZC1,SHELLFAC(ISHELL,IATOM),
      &                FAC,WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
           IF(IPRINT.GE.4) THEN
             WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
@@ -5582,7 +5636,7 @@ C.........Generate contribution to atomic density matrix from this shell
      &                 NZC1,IPQTOQ(1,0),LUPRI)
           ENDIF
           FAC = D1
-          CALL MEMREL('ATOMIC_START.shell',WORK,1,KCBUF,KFREE,LFREE)
+          CALL MEMREL('ATOMIC_DENS.shell',WORK,1,KCBUF,KFREE,LFREE)
         ENDDO
 C.......Now we have the atomic density matrix. 
 C       Put all contributions from this atomic type into the 
@@ -5601,8 +5655,9 @@ C.......Release memory
         CALL MEMREL('ATOMIC_START',WORK,1,KADE,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
         write(lupri,*) 'added block for center ',icent,
-     &  NONT(IATOM),iatom,NUCDEG(ICENT)
-        ICENT = ICENT+NONT(IATOM)
+     &       NONT(IATOM),iatom,NUCDEG(ICENT)
+      ENDIF  
+      ICENT = ICENT+NONT(IATOM)
       ENDDO
 C
       IF(NBSYM.EQ.1) THEN
@@ -5610,7 +5665,7 @@ C
       ELSE
 C.......transform atomic start to actual symmetry
         IF(IPRINT.GE.5) THEN 
-          WRITE(LUPRI,'(A)') '* C1 Density matrix from atomic guess'
+          WRITE(LUPRI,'(A)') '* ATOM_DENS: C1 density matrix:'
           CALL PRQMAT(WORK(KDBUF),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NZC1,IQDEF,LUPRI)
         ENDIF
@@ -5633,7 +5688,7 @@ C.......transform atomic start to actual symmetry
         ENDDO
       ENDIF
       IF(IPRINT.GE.4) THEN
-        WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
+        WRITE(LUPRI,'(A)') '* Atomic density matrix:'
         DO IFRP = 1,NFSYM
           WRITE(LUPRI,'(/A,A3)')
      &      '* Fermion ircop ',FREP(IFRP)
@@ -5642,7 +5697,7 @@ C.......transform atomic start to actual symmetry
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
         ENDDO
       ENDIF
-      CALL MEMREL('ATOMIC_START',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('ATOMIC_DENS',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

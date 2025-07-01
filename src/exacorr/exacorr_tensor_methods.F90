@@ -916,9 +916,11 @@ module exacorr_tensor_methods
         complex(8),pointer     :: tens5(:,:,:,:,:)
         complex(8),pointer     :: tens6(:,:,:,:,:,:)
         complex(8),pointer     :: tens7(:,:,:,:,:,:,:)
+#ifndef VAR_NVFORTRAN
         complex(8),pointer     :: tens8(:,:,:,:,:,:,:,:)
         complex(8),pointer     :: tens9(:,:,:,:,:,:,:,:,:)
         complex(8),pointer     :: tens10(:,:,:,:,:,:,:,:,:,:)
+#endif
 
         ierr=0
 
@@ -1028,6 +1030,7 @@ module exacorr_tensor_methods
           else 
             call quit('Error: wrong mode in set zero')
           end if
+#ifndef VAR_NVFORTRAN
         case (8)
           call c_f_pointer(tens_body,tens8,tens_dims(1:rank))
           if(mode.eq.3) then
@@ -1049,6 +1052,7 @@ module exacorr_tensor_methods
           else 
             call quit('Error: wrong mode in set zero')
           end if
+#endif
         case default
           call quit('setting zero: rank not implemented')
         end select
@@ -1722,8 +1726,10 @@ module exacorr_tensor_methods
         complex(8),pointer :: t1_tens(:,:)
         complex(8),pointer :: t2_tens(:,:,:,:)
         complex(8),pointer :: t3_tens(:,:,:,:,:,:)
+#ifndef VAR_NVFORTRAN
         complex(8),pointer :: t4_tens(:,:,:,:,:,:,:,:)
         complex(8),pointer :: t5_tens(:,:,:,:,:,:,:,:,:,:)
+#endif
 
         ierr=0 !set error code to success
         if(data_kind /= EXA_DATA_KIND_C8) then
@@ -1813,7 +1819,7 @@ module exacorr_tensor_methods
               end do
             end do
           end if
-
+#ifndef VAR_NVFORTRAN
         case (8)
           call c_f_pointer(tens_body,t4_tens,tens_dims(1:rank)) !map C pointer to 2-dimensional array
           if (.not.lambda) then
@@ -1825,9 +1831,9 @@ module exacorr_tensor_methods
                       do c = 1, tens_dims(3)
                         do b = 1, tens_dims(2)
                           do a = 1, tens_dims(1)
-                            denominator = eps_occ(k+tens_bases(8)-1) + eps_occ(j+tens_bases(7)-1) &
-                                        + eps_occ(k+tens_bases(6)-1) + eps_occ(j+tens_bases(5)-1) &
-                                        - eps_occ(i+tens_bases(4)-1) - eps_vir(c+tens_bases(3)-1) &
+                            denominator = eps_occ(l+tens_bases(8)-1) + eps_occ(k+tens_bases(7)-1) &
+                                        + eps_occ(j+tens_bases(6)-1) + eps_occ(i+tens_bases(5)-1) &
+                                        - eps_vir(d+tens_bases(4)-1) - eps_vir(c+tens_bases(3)-1) &
                                         - eps_vir(b+tens_bases(2)-1) - eps_vir(a+tens_bases(1)-1)
                             t4_tens(a,b,c,d,i,j,k,l) = t4_tens(a,b,c,d,i,j,k,l) / denominator
                           end do
@@ -1847,10 +1853,10 @@ module exacorr_tensor_methods
                       do c = 1, tens_dims(7)
                         do b = 1, tens_dims(6)
                           do a = 1, tens_dims(5)
-                            denominator = eps_occ(k+tens_bases(4)-1) + eps_occ(j+tens_bases(3)-1) &
-                                        + eps_occ(i+tens_bases(2)-1) + eps_vir(c+tens_bases(1)-1) &
-                                        - eps_vir(c+tens_bases(8)-1) - eps_vir(c+tens_bases(7)-1) &
-                                        - eps_vir(b+tens_bases(5)-1) - eps_vir(a+tens_bases(5)-1)
+                            denominator = eps_occ(l+tens_bases(4)-1) + eps_occ(k+tens_bases(3)-1) &
+                                        + eps_occ(j+tens_bases(2)-1) + eps_occ(i+tens_bases(1)-1) &
+                                        - eps_vir(d+tens_bases(8)-1) - eps_vir(c+tens_bases(7)-1) &
+                                        - eps_vir(b+tens_bases(6)-1) - eps_vir(a+tens_bases(5)-1)
                             t4_tens(i,j,k,l,a,b,c,d) = t4_tens(i,j,k,l,a,b,c,d) / denominator
                           end do
                         end do
@@ -1875,10 +1881,10 @@ module exacorr_tensor_methods
                           do c = 1, tens_dims(3)
                             do b = 1, tens_dims(2)
                               do a = 1, tens_dims(1)
-                                denominator = eps_occ(k+tens_bases(10)-1) + eps_occ(j+tens_bases(9)-1) &
+                                denominator = eps_occ(m+tens_bases(10)-1) + eps_occ(l+tens_bases(9)-1) &
                                             + eps_occ(k+tens_bases(8)-1) + eps_occ(j+tens_bases(7)-1) &
-                                            + eps_occ(i+tens_bases(6)-1) - eps_vir(c+tens_bases(5)-1) &
-                                            - eps_occ(i+tens_bases(4)-1) - eps_vir(c+tens_bases(3)-1) &
+                                            + eps_occ(i+tens_bases(6)-1) - eps_vir(e+tens_bases(5)-1) &
+                                            - eps_vir(d+tens_bases(4)-1) - eps_vir(c+tens_bases(3)-1) &
                                             - eps_vir(b+tens_bases(2)-1) - eps_vir(a+tens_bases(1)-1)
                                 t5_tens(a,b,c,d,e,i,j,k,l,m) = t5_tens(a,b,c,d,e,i,j,k,l,m) / denominator
                               end do
@@ -1902,11 +1908,10 @@ module exacorr_tensor_methods
                           do c = 1, tens_dims(8)
                             do b = 1, tens_dims(7)
                               do a = 1, tens_dims(6)
-                                denominator = eps_occ(k+tens_bases(5)-1) &
-                                            + eps_occ(k+tens_bases(4)-1) + eps_occ(j+tens_bases(3)-1) &
-                                            + eps_occ(i+tens_bases(2)-1) + eps_vir(c+tens_bases(1)-1) &
-                                            - eps_vir(c+tens_bases(10)-1) &
-                                            - eps_vir(c+tens_bases(9)-1) - eps_vir(c+tens_bases(8)-1) &
+                                denominator = eps_occ(m+tens_bases(5)-1) + eps_occ(l+tens_bases(4)-1) &
+                                            + eps_occ(k+tens_bases(3)-1) + eps_occ(j+tens_bases(2)-1) &
+                                            + eps_occ(i+tens_bases(1)-1) - eps_vir(e+tens_bases(10)-1) &
+                                            - eps_vir(d+tens_bases(9)-1) - eps_vir(c+tens_bases(8)-1) &
                                             - eps_vir(b+tens_bases(7)-1) - eps_vir(a+tens_bases(6)-1)
                                 t5_tens(i,j,k,l,m,a,b,c,d,e) = t5_tens(i,j,k,l,m,a,b,c,d,e) / denominator
                               end do
@@ -1920,6 +1925,7 @@ module exacorr_tensor_methods
               end do
             end do
           end if
+#endif
 
          case default
             call quit ('Error: wrong dimension of tensor in denominate')

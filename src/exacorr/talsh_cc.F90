@@ -272,7 +272,7 @@ module talsh_cc
          call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
          ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
          call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
-                        exa_input%level_shift,-1,fock_mode,exa_input%nff(1))
+                        exa_input%level_shift,-1,fock_mode,exa_input%nff(1),CCD)
 
 !        Initialize t1 amplitudes to fov
          if (.not.CCD) then 
@@ -325,12 +325,12 @@ module talsh_cc
          call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,iff)
          ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
          call define_H0 (scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
-                         exa_input%level_shift,exa_input%print_level,fock_mode,exa_input%nff(1))
+                         exa_input%level_shift,exa_input%print_level,fock_mode,exa_input%nff(1),CCD)
 
 !        Start CCSD iterations
          call print_date('-Start- CC Iterations')
 
-         write(*,*) "The wavefunction chosen is CC(",iterative_level,",",iterative_scheme,")"
+         call print_iterative_wavefunction_choice(iterative_scheme)
 
          if (.not.CCD) then
             if (iterative_level.eq.5) then
@@ -436,8 +436,6 @@ module talsh_cc
             call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,int_t=int_t)
           end if
           call print_date('-End- Lambda Equations')
-         else
-            write(*,*) 'Lambda equations with CC2 wavefunctions not supported in this release' 
          end if
 
 !        Destruct tensors no longer needed for ground-state
@@ -473,7 +471,7 @@ module talsh_cc
          call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
          ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
          call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
-                        exa_input%level_shift,-1,fock_mode,exa_input%nff(1),keep_diagonal=.true.)
+                        exa_input%level_shift,-1,fock_mode,exa_input%nff(1),CCD,keep_diagonal=.true.)
 
 ! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
             ! if (exa_input%eom_input(1)%do_expval) then
@@ -512,11 +510,9 @@ module talsh_cc
 
                call talsh_eom_eigval_driver(eom_results_t_left,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.false.,solve_left=.true.)
-                  print *, "eom-tpa?" 
                   call talsh_eom_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, eom_results_t_left)
                   
             else 
-               print *, "eom?"
                call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                             solve_right=.true.,solve_left=.false.)
 
@@ -2066,7 +2062,7 @@ module talsh_cc
 
         end subroutine init_fock_talsh
 
-        subroutine define_H0 (scf_energy,eps_occ,eps_vir,comm_t,oooo,level_shift,print_level,mode,nff,keep_diagonal)
+        subroutine define_H0 (scf_energy,eps_occ,eps_vir,comm_t,oooo,level_shift,print_level,mode,nff,CCD,keep_diagonal)
 
 !        Written by Lucas Visscher, spring 2021
 !        Shifts diagonal part of the T1-equations to the LHS, defines these epsilons ("orbital energies") as H0 
@@ -2083,6 +2079,7 @@ module talsh_cc
          integer, intent(in)                  :: print_level
          integer, intent(in)                  :: nff
          real(8), intent(inout)               :: scf_energy            ! recomputed single determinant UHF energy
+         logical, intent(in)                  :: CCD
 
 
 !        common tensors: the foo and fvv parts get modfied here (diagonal is shifted to the left)
@@ -2165,7 +2162,8 @@ module talsh_cc
            else
               write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", tensor_norm2(comm_t%foo)
            end if
-           write(*,*) "    Norm of Fock matrix (OV, all        ) = ", tensor_norm2(comm_t%fov)
+           ! for CCD comm_t%fov is not constructed
+           if (.not.CCD) write(*,*) "    Norm of Fock matrix (OV, all        ) = ", tensor_norm2(comm_t%fov)
            if (keep_diagonal_local) then
               write(*,*) "    Norm of Fock matrix (VV, all        ) = ", tensor_norm2(comm_t%fvv)
            else
@@ -2574,24 +2572,21 @@ module talsh_cc
 
                 if (CCSDitT) then 
                    ierr = talsh_tensor_dimensions(t3_tensor,tens_rank,t3_dims)
-                   print *,'t3_tensor: tens_rank',tens_rank,'ierr',ierr
                    if (ierr.ne.0 .or. tens_rank.ne.6) stop 'input t3-tensor corrupted in diis'
                 end if
 
                 if (CCSDitTQ) then 
                    ierr = talsh_tensor_dimensions(t4_tensor,tens_rank,t4_dims)
-                   print *,'t4_tensor: tens_rank',tens_rank,'ierr',ierr
                    if (ierr.ne.0 .or. tens_rank.ne.8) stop 'input t4-tensor corrupted in diis'
                 end if
 
                 if (CCSDitTQP) then 
                    ierr = talsh_tensor_dimensions(t5_tensor,tens_rank,t5_dims)
-                   print *,'t5_tensor: tens_rank',tens_rank,'ierr',ierr
                    if (ierr.ne.0 .or. tens_rank.ne.10) stop 'input t5-tensor corrupted in diis'
                 end if
             end if
             ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
-            if (ierr.ne.0 .or. tens_rank.ne.4) stop 'input t2-tensor corrupted in diis'
+            if (ierr.ne.0 .or. tens_rank.ne.4) stop 'input t2-tensor corrupted in diis '
 !           initialize DIIS matrix
             b_diis      = ZERO
 !           create storage for input, result and error tensors (in memory for the time being)
@@ -2980,7 +2975,7 @@ module talsh_cc
          integer (INTD)       :: ierr
 
          print *,''
-         print *,'CCD/SD/SDT/SDTQ/SDTQP implementation with automatically generated residual equations'
+         print *,'TAL-SH implementation with automatically generated residual equations'
          print *,''
 
          result_dims = 1
@@ -3038,8 +3033,8 @@ module talsh_cc
 
          do iccsd = 1, ncycles
 
-!         if (print_level.gt.2) then
-          if (.true.) then
+          if (print_level.gt.2) then
+!         if (.true.) then
             if (.not.CCD) then 
                write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
                if (iterative_level.ge.3) write(*,*) "t3    = ",tensor_norm2(comm_t%t3)
@@ -3193,6 +3188,114 @@ module talsh_cc
                                           s2_tensor,          &    !       r_VVOO
                                           s3_tensor)               !       r_VVVOOO
             end if
+          else if ((iterative_level.eq.3).and.(iterative_scheme.eq.31)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+             call talsh_CCSDT_1a_codegen_call(nocc,nvir,          &
+                                           int_t%oovv,     &  !  OOVV
+                                           comm_t%t1,      &  !  VO
+                                           comm_t%fov,     &  !  OV
+                                           comm_t%t2,      &  !  VVOO
+                                           hvo_aux_tensor,  &  !  VO
+                                           comm_t%fvv,      &  !  VV
+                                           int_t%vovv,     &  !  VOVV
+                                           voov_aux_tensor,&  !  VOOV
+                                           int_t%ooov,     &  !  OOOV
+                                           comm_t%foo,     &  !  OO
+                                           comm_t%t3,      &  !  VVVOOO
+                                           vvoo_aux_tensor, &  !  VVOO
+                                           int_t%vvvv,      &  !  VVVV
+                                           vooo_aux_tensor,&  !  VOOO
+                                           vvov_aux_tensor, &  !  VVOV
+                                           int_t%oooo,     &  !  OOOO
+                                           result_tensor,  &  !  UnitTensor
+                                           s1_tensor,      &  !  VO
+                                           s2_tensor,      &  !  VVOO
+                                           s3_tensor)         !  VVVOOO
+            else if (auto_scheme.eq.2) then
+            ! tenpi
+            end if
+          else if ((iterative_level.eq.3).and.(iterative_scheme.eq.32)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+             call talsh_CCSDT_1b_codegen_call(nocc,nvir,          &
+                                           int_t%oovv,     &  !  OOVV
+                                           comm_t%t1,      &  !  VO
+                                           comm_t%fov,     &  !  OV
+                                           comm_t%t2,      &  !  VVOO
+                                           hvo_aux_tensor,  &  !  VO
+                                           comm_t%fvv,      &  !  VV
+                                           int_t%vovv,     &  !  VOVV
+                                           voov_aux_tensor,&  !  VOOV
+                                           int_t%ooov,     &  !  OOOV
+                                           comm_t%foo,     &  !  OO
+                                           comm_t%t3,      &  !  VVVOOO
+                                           vvoo_aux_tensor, &  !  VVOO
+                                           int_t%vvvv,      &  !  VVVV
+                                           vooo_aux_tensor,&  !  VOOO
+                                           vvov_aux_tensor, &  !  VVOV
+                                           int_t%oooo,     &  !  OOOO
+                                           result_tensor,  &  !  UnitTensor
+                                           s1_tensor,      &  !  VO
+                                           s2_tensor,      &  !  VVOO
+                                           s3_tensor)         !  VVVOOO
+            else if (auto_scheme.eq.2) then
+            ! tenpi
+            end if
+          else if ((iterative_level.eq.3).and.(iterative_scheme.eq.33)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+             call talsh_CCSDT_2_codegen_call(nocc,nvir,          &
+                                           int_t%oovv,     &  !  OOVV
+                                           comm_t%t1,      &  !  VO
+                                           comm_t%fov,     &  !  OV
+                                           comm_t%t2,      &  !  VVOO
+                                           hvo_aux_tensor,  &  !  VO
+                                           comm_t%fvv,      &  !  VV
+                                           int_t%vovv,     &  !  VOVV
+                                           voov_aux_tensor,&  !  VOOV
+                                           int_t%ooov,     &  !  OOOV
+                                           comm_t%foo,     &  !  OO
+                                           comm_t%t3,      &  !  VVVOOO
+                                           vvoo_aux_tensor, &  !  VVOO
+                                           int_t%vvvv,      &  !  VVVV
+                                           vooo_aux_tensor,&  !  VOOO
+                                           vvov_aux_tensor, &  !  VVOV
+                                           int_t%oooo,     &  !  OOOO
+                                           result_tensor,  &  !  UnitTensor
+                                           s1_tensor,      &  !  VO
+                                           s2_tensor,      &  !  VVOO
+                                           s3_tensor)         !  VVVOOO
+            else if (auto_scheme.eq.2) then
+            ! tenpi
+            end if
+          else if ((iterative_level.eq.3).and.(iterative_scheme.eq.34)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+             call talsh_CCSDT_3_codegen_call(nocc,nvir,          &
+                                           int_t%oovv,     &  !  OOVV
+                                           comm_t%t1,      &  !  VO
+                                           comm_t%fov,     &  !  OV
+                                           comm_t%t2,      &  !  VVOO
+                                           hvo_aux_tensor,  &  !  VO
+                                           comm_t%fvv,      &  !  VV
+                                           int_t%vovv,     &  !  VOVV
+                                           voov_aux_tensor,&  !  VOOV
+                                           int_t%ooov,     &  !  OOOV
+                                           comm_t%foo,     &  !  OO
+                                           comm_t%t3,      &  !  VVVOOO
+                                           vvoo_aux_tensor, &  !  VVOO
+                                           int_t%vvvv,      &  !  VVVV
+                                           vooo_aux_tensor,&  !  VOOO
+                                           vvov_aux_tensor, &  !  VVOV
+                                           int_t%oooo,     &  !  OOOO
+                                           result_tensor,  &  !  UnitTensor
+                                           s1_tensor,      &  !  VO
+                                           s2_tensor,      &  !  VVOO
+                                           s3_tensor)         !  VVVOOO
+            else if (auto_scheme.eq.2) then
+            ! tenpi
+            end if
           else if ((iterative_level.eq.4).and.(iterative_scheme.eq.40)) then 
             if (auto_scheme.eq.1) then
             ! mb-codegen
@@ -3277,10 +3380,12 @@ module talsh_cc
             ! tenpi
                call quit ('Error: CCSDTQP not yet implemented in tenpi.')
             end if
+          else 
+             write(*,*) "Implementation not available for this method"
           end if
 
-!         if (print_level.gt.2) then
-          if (.true.) then
+          if (print_level.gt.2) then
+!         if (.true.) then
             if (.not.CCD) then
                write(*,*) "s1    = ",tensor_norm2(s1_tensor)
                if (iterative_level.ge.3)  write(*,*) "s3    = ",tensor_norm2(s3_tensor)
@@ -3345,9 +3450,9 @@ module talsh_cc
             call diis (t2_tensor=comm_t%t2,t_convergence=t_convergence)
           end if
 
-! coming from Z26/Z48/Z52
-          ccsd_energy = result_tens(1)
-          print *,'debug auto:',ccsd_energy
+!! coming from Z26/Z48/Z52
+!          ccsd_energy = result_tens(1)
+!          print *,'debug auto:',ccsd_energy
 
 !!aspg, checking energy calculation/printout
           if (.true.) then

@@ -80,7 +80,10 @@ C
      &"J. Chem. Phys. 149 (2018) 174113.",
      &/"  - Core spectra (CVS-EOM) :",T30,
      &"L. Halbert, M. L. Vidal, A. Shee, S. Coriani, and A.S.P. Gomes,",
-     &" arXiv:2011.08549")
+     &" J. Chem. Theory Comput. 27 (2021) 3583",
+     &/"  - Approx. EOM energies   :",T30,
+     &"L. Halbert and A.S.P. Gomes,",
+     &" Mol. Phys. (2023) e2246592")
 C
       RETURN
 C---------------Record of modifications made in the code-------------
@@ -306,6 +309,17 @@ C     Switch on evaluation of property output if necessary
              PRP_WF(IPRP_WF) = 'CCSD'
           END IF
       END IF
+
+! the following section is to activate eom-cc functionality for energies
+
+! enable eom-cc module
+      DOEOMCCSD=relcc_do_eomcc
+
+! approximate eom models: P-EOM, EOM-MBPT(2) (using MP2 or CCSD T2 amplitudes) or P-EOM-MBPT(2) 
+      DOEOMH0DD=relcc_do_eom_peom
+      DOEOMPT2=relcc_do_eom_pt2
+      DOEOMPT2CC=relcc_do_eom_pt2_ccamp
+
 ! the following section is to activate excited state property evaluation module
 
       if (relcc_do_eomprop) then
@@ -626,7 +640,7 @@ C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
       INTEGER MAXSP
-      PARAMETER (MAXSP=1000)
+      PARAMETER (MAXSP=1102)
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,CA
@@ -845,9 +859,7 @@ C
 
 !! Activate EOMCC calculation 
 
-      DOEOMCCSD=.FALSE.
-      IF (relcc_do_eomcc) THEN
-         DOEOMCCSD=.TRUE.
+      IF (DOEOMCCSD) THEN
          MXCORR1 = 0
          CALL eom_ee(ICALC,MXCORR1,eps)
          MXCORR = MAX(MXCORR,MXCORR1)
@@ -935,7 +947,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 
-      IF (relcc_do_eomcc) CALL eom_ee(ICALC,MXCORR,eps)
+      IF (DOEOMCCSD) CALL eom_ee(ICALC,MXCORR,eps)
       CALL GETTIM(CPU2,WALL2)
       CPUEOM = CPUEOM + CPU2 - CPU1
       CPU1 = CPU2
@@ -2363,7 +2375,8 @@ C
 #include "eqns.inc"
 #include "results.inc"
 #include "complex.inc"
-#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
+! ccpar.inc not needed, because there is no parallelization in this subroutine
+! include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2394,6 +2407,7 @@ c
       integer                :: maxit_save
       logical                :: is_ccsd_converged = .false.
       integer                :: dum,irp,nbuf1,nbuf2,nbuf3,nvovv
+
 C
 C---------------Executable code--------------------------------------
 C
@@ -2418,7 +2432,19 @@ C
 C This is all we need to calculate the MP2 energy
 C
       IF (DOMP2) MXCORR = MXCOR
-C
+
+      IF (DOEOMPT2) THEN
+         WRITE (IW,'(A)') " "
+         WRITE (IW,'(A)') " INFO: (P-)EOM-MBPT(2) requested"
+C        MAXIT=0 
+C        WRITE (IW,'(AI2)') " INFO:    Reset MAXIT to ",MAXIT
+         IF (DOCCSDT) then
+            DOCCSDT=.FALSE.
+            WRITE (IW,'(A)') ' INFO:    Disabled CCSD(T) calculation'
+         END IF
+         WRITE (IW,'(A)') " "
+      END IF
+
       IF (DOCCSD) THEN
          MAXDIM = MXDIMCC
          NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
@@ -4058,7 +4084,11 @@ C
       RSBASF='MCCRES'
 C
 #if defined (VAR_MPI)
-      IF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
+      IF (MYPROC .EQ. 0) THEN    !  MPI ID has one digit
+         ! do not write extension for master node
+         WRITE (RSFILN,'(A6)') RSBASF
+         LRSFIL=6
+      ELSEIF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
          WRITE (RSFILN,'(A6,A1,I1)') RSBASF,'.',MYPROC
          LRSFIL=8
       ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
@@ -4167,7 +4197,7 @@ C
 C        ... if we don't want to restart we trash any existing files and start over
 C
             write (IW,*)
-            write (IW,*) 'INFO: Restart file(s) will be overwriten!'
+            write (IW,*) 'INFO: Restart file(s) will be overwritten!'
             write (IW,*)
             OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &            STATUS='REPLACE',RECL=IRECL)

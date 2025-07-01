@@ -20,10 +20,10 @@ The  **radial integration** employs an exponential grid
 
 .. math::
 
-   r_k=e^{kh};\quad w_k = r_k;\quad S=\sym_{k=-\infty}^{\infty}=w_kf\left(r_k\right)
+   r_k=e^{kh};\quad w_k = r_k;\quad S=\sum_{k=-\infty}^{\infty}=w_kf\left(r_k\right)
 
 and is specified in terms of step size :math:`h`, the inner point :math:`r_1` 
-and the outermost point :math:`r_k_H`, chosen to provide the required relative 
+and the outermost point :math:`r_{k_H}`, chosen to provide the required relative 
 precision :math:`R` (equal to the discretization error :math:`R_D`. 
 
 keyword(RADINT)
@@ -189,4 +189,9 @@ be printed.
 
     .INTCHK
      2
+
+     
+
+    
+
 

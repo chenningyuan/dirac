@@ -3536,6 +3536,8 @@ C     scratch
       INTEGER IONE, INT_IOFF1, INT_IOFF2, INT_IOFF1_C, INT_IOFF2_C
       LOGICAL CHECK_TSPLIT
 C
+      NTEST = 00000 ! no debug output
+C
       IONE = 1
       INT_IOFF1 = 0
       INT_IOFF2 = 0
@@ -3732,7 +3734,7 @@ C               keep track of correct offset
       KDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'FNDSC2')
 *
-      L0BLOCK = MXSOOB_AS
+      L0BLOCK = MXSOOB
       LSCR1 = MAX(L0BLOCK,L2BLOCK)
 *. Offsets for alpha and beta supergroups
 *
@@ -3917,6 +3919,8 @@ C     release local memory
 *. T-coefficients
       DIMENSION ITSPOBEX_TP(4*NGAS,*)
       LOGICAL CHECK_TSPLIT
+*
+      NTEST = 00000 ! no debug print
 *
       ONEM = -1.0D0
       IZERO = 0

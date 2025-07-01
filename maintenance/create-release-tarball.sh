@@ -15,8 +15,8 @@
 set -euf -o pipefail
 
 # adapt the following two lines
-VERSION="22.0"
-BRANCH="release-22"
+VERSION="25.0"
+BRANCH="release-25"
 
 THIS_FOLDER=${PWD}
 TEMP_FOLDER=$(mktemp -d)

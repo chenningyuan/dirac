@@ -8,8 +8,8 @@ LiH Dirac-Coulomb triplet and singlet excitation with PE and GSPOL
 .SCREEN
 1.0D-20
 **HAMILTONIAN
-.PEQM
-*PEQM
+.PELIB
+*PELIB
 .GSPOL
 .POTENT
 peqm.pot

@@ -708,7 +708,7 @@ C&&& MAGCOR - print magnetic coordinates
             END IF
          END IF
          IF (KINENE) WRITE (LUPRI,'(10X,A)')
-     &      '- electronic kinetic energy'
+     &       '- NR electronic kinetic energy'
          IF (MASSVL) WRITE (LUPRI,'(10X,A)')
      &       '- mass velocity integrals'
          IF (DARWIN) WRITE (LUPRI,'(10X,A)')
@@ -789,7 +789,7 @@ C&&& MAGCOR - print magnetic coordinates
          IF (NSTTST) WRITE (LUPRI,'(10X,A)')
      &     '- Test of nuclear shielding tensor integrals'
          IF (EFGCAR) WRITE (LUPRI,'(10X,A)')
-     &            '- Cartesien electric field gradient integrals'
+     &            '- Cartesian electric field gradient integrals'
          IF (EFGSPH) WRITE (LUPRI,'(10X,A)')
      &            '- Spherical electric field gradient integrals'
          IF (S1MAGL) WRITE (LUPRI,'(10X,A)')
@@ -811,7 +811,7 @@ C&&& MAGCOR - print magnetic coordinates
          IF (SQHDOR) WRITE (LUPRI,'(10X,A)')
      &        '- Ket differentiated half-derivative overlap matrix'
          IF (NUCPOT) WRITE (LUPRI,'(10X,A)')
-     &    '- Potenial energy of interaction of electrons with a nucleus'
+     &   '- Potential energy of interaction of electrons with a nucleus'
          IF (NPOTST) WRITE (LUPRI,'(10X,A)')
      &            '- Test of nuclear potential energy'
          IF (MGMO2T) WRITE (LUPRI,'(10X,A)')

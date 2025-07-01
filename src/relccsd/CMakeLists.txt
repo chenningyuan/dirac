@@ -23,7 +23,6 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    ccgetv.F
    ccintm.F
    ccints.F
-   ccmain.F
    ccpam.F
    ccrpa.F
    ccxblas.F
@@ -38,7 +37,7 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
-   relcc_cfg.F90
+   #relcc_cfg.F90   # already defined in dirac library because needed there
    spinor_indexing.F90
    auto_offset.F90
    ccsort.F90
@@ -73,7 +72,7 @@ endif()
 # - the ccunix.c file is not included
 add_library(
     relccsd
-    OBJECT
+    STATIC
     ${FREE_RELCCSD_FORTRAN_SOURCES}
     ${FIXED_RELCCSD_FORTRAN_SOURCES}
 )
@@ -81,6 +80,6 @@ add_library(
 # add intermodule dependencies
 add_dependencies(relccsd gp)
 add_dependencies(relccsd dirac)
-add_dependencies(relccsd main)
+add_dependencies(relccsd dirac_main)
 add_dependencies(relccsd interface_mpi)
 #add_dependencies(relccsd mfsolver)

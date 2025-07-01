@@ -44,7 +44,7 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
                 type(exacc_input), intent(in) :: exa_input
                 type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
                 integer, intent(in)                   :: i_prop 
-                type(talsh_rsp_interm_tens_t) :: interm_t_prop1
+                type(talsh_rsp_interm_tens_t), intent(inout):: interm_t_prop1
                 type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
                 type(talsh_tens_t), intent(inout)           :: l2_tensor
                 type(talsh_tens_t), intent(inout)           :: l1_tensor
@@ -145,7 +145,7 @@ end subroutine form_ccresp_intermediates
 
 subroutine get_prop_integral(exa_input,orb_int_tensor,i_prop,exchange)
         type(exacc_input), intent(in)      :: exa_input
-        type(talsh_orb_prop_integ_tens_t)  :: orb_int_tensor
+        type(talsh_orb_prop_integ_tens_t), intent(inout)  :: orb_int_tensor
         integer                            :: i_prop
         integer                            :: min_occ
         integer                            :: nocc, nvir
@@ -171,7 +171,7 @@ end subroutine
 !------------------------------------------------------------------------------------------------------------------
 subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,min_occ,i_prop,exchange)
     ! Read proporty integrals from  MDPROP file 
-    type(talsh_tens_t)        :: orb_int_tensor
+    type(talsh_tens_t), intent(inout)        :: orb_int_tensor
     
     integer                :: nmo1          ! the length of the mo basis
     integer                :: mo1_list(:)   ! and their indices
@@ -224,7 +224,7 @@ end subroutine get_prop_integral_driver
 subroutine construct_aux_tensor(LR_Aux_ov,LR_Aux_vv,LR_Aux_oo,LR_Aux_vo, ov_dims, vo_dims, oo_dims, vv_dims)
 
         integer(INTD), dimension(2)   :: ov_dims, oo_dims, vv_dims, vo_dims
-        type(talsh_tens_t)            :: LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo
+        type(talsh_tens_t), intent(inout)            :: LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo
         integer(C_INT) :: ierr
 
         ierr=talsh_tensor_construct(LR_Aux_ov,C8,ov_dims,init_val=ZERO)
@@ -237,7 +237,7 @@ end subroutine
 !--------------------------------------------------------------------------------------------------------------------
 
 subroutine destroy_aux_tensor(LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo)
-    type(talsh_tens_t)            :: LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo
+    type(talsh_tens_t), intent(inout)      :: LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo
     integer(C_INT) :: ierr
 
     ierr=talsh_tensor_destruct(LR_Aux_oo)
@@ -251,10 +251,10 @@ end subroutine
 
 subroutine destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,i,Bvec_tensors,&
                                 Tprop_bar_tensors,Tprop_bar_tensors_min_w)
-    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
+    type(talsh_comm_tens_t), intent(inout), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
     integer        :: i
-    type(talsh_comm_tens_t), allocatable, OPTIONAL :: Bvec_tensors(:)
-    type(talsh_comm_tens_t), allocatable, OPTIONAL :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR                        
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Bvec_tensors(:)
+    type(talsh_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR                        
     
     integer(C_INT) :: ierr
     
@@ -283,13 +283,12 @@ end subroutine
 !---------------------------------------------------------------------------------------------------------------
 
 subroutine destroy_Interm_t_tensors(interm_t_prop1, CC_CC)
-    type(talsh_rsp_interm_tens_t) :: interm_t_prop1
+    type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop1
     logical          :: CC_CC
     integer          :: ierr
 
     ierr=talsh_tensor_destruct(interm_t_prop1%epsilon_prop_vo)
     ierr=talsh_tensor_destruct(interm_t_prop1%epsilon_prop_vvoo)
-
     ierr=talsh_tensor_destruct(interm_t_prop1%eta_prop_oovv)
     ierr=talsh_tensor_destruct(interm_t_prop1%eta_prop_ov)
 
