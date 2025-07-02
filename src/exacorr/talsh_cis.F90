@@ -25,7 +25,7 @@ module talsh_cis
     contains
 !---------------------------------------------------------------------------------------------------------------
 
-    subroutine talsh_cis_driver (exa_input,CIS_vv_effden)
+    subroutine talsh_cis_driver (exa_input,CIS_vv_effden,initialize_tensor_library,initialize_interest)
     ! This routine drives CIS calculation including construction of CIS Hamiltonian and diagnolization
     ! Written by Xiang Yuan, June 2020
         use exacorr_global
@@ -35,6 +35,8 @@ module talsh_cis
 
         type(exacc_input), intent(in) :: exa_input
         type(talsh_tens_t), optional   :: CIS_vv_effden
+        logical, optional :: initialize_tensor_library
+        logical, optional :: initialize_interest
 
          integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
@@ -69,15 +71,31 @@ module talsh_cis
          real(8) :: tem
          integer :: ncycles
          integer :: tar_state
+         logical :: initialize_tensor_library_local
+         logical :: initialize_interest_local
 
+         initialize_tensor_library_local = .true.
+         initialize_interest_local  = .true.
+
+         if (present(initialize_tensor_library)) initialize_tensor_library_local = initialize_tensor_library 
+         if (present(initialize_interest)) initialize_interest_local = initialize_interest
+         
+         if (initialize_tensor_library_local) then 
 !        Initialize libraries
-         buf_size=exa_input%talsh_buff*buf_size
-         ierr=talsh_init(buf_size,host_arg_max)
-         call print_date('Initialized talsh library')
-         write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
-         call interest_initialize(.true.)
-         call print_date('Initialized interest library')
+            buf_size=exa_input%talsh_buff*buf_size
+            ierr=talsh_init(buf_size,host_arg_max)
+            call print_date('Initialized talsh library in CIS driver')
+            write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
+         else
+            call print_date('NOTE: Tensor libraries NOT initialized in CIS driver')
+         end if
 
+         call interest_initialize(initialize_interest_local)
+         if (initialize_interest_local) then 
+            call print_date('Initialized Interest library in CIS driver')
+         else
+            call print_date('NOTE: Interest library NOT initialized in CIS driver')
+         end if
         
 !        DO NOT CHANGE THESE VARIABLES
          nocc = exa_input%nocc

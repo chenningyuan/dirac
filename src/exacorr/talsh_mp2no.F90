@@ -424,7 +424,7 @@ module talsh_mp2no
             integer(INTD)               :: ierr
 
             call print_date('Start computing CIS effective density matrix')
-            call talsh_cis_driver(exa_input,CIS_vv_effden)
+            call talsh_cis_driver(exa_input,CIS_vv_effden,initialize_tensor_library=.false.,initialize_interest=.false.)
             ierr=talsh_tensor_add('D(a,b)+=DC(a,b)',MP2_vv_density,CIS_vv_effden,scale=ONE)
             call print_date('Add CIS effective density matrix into MP2 desnity matrix')
 
