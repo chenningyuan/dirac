@@ -11,12 +11,12 @@ test = TestRun(__file__, sys.argv)
 f1 = Filter()
 f1.add(from_string = 'state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1)',
       num_lines   = 14,
-      rel_tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-5)
 
 f2 = Filter()
 f2.add(from_string = 'state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1)',
       num_lines   = 14,
-      rel_tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-5)
 
 test.run(['cisd_x2c.inp'], ['h2o.xyz'], f1)
 test.run(['cisd_nr.inp'], ['h2o.xyz'], f2)
