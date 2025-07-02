@@ -66,21 +66,16 @@ subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,ini_state,Tra_De
     call reshape_cis(eVectors,CIS_eigen_tensor_left,cis_eig_dims,ini_state)
     call reshape_cis(eVectors,CIS_eigen_tensor_right,cis_eig_dims,tar_state)
 
-    ! print *, "error befre tdmab"
     ierr=talsh_tensor_contract("TDM(a,b)+=CISL(a,i)*CISR(b,i)",Tra_Den_exe_exe_tensor%prime_vv,&
                                 CIS_eigen_tensor_left,CIS_eigen_tensor_right,scale=ONE)
-    ! print *, "error befre tdmij"
     ierr=talsh_tensor_contract("TDM(i,j)+=CISL(a,i)*CISR(a,j)",Tra_Den_exe_exe_tensor%prime_oo,&
                                 CIS_eigen_tensor_left,CIS_eigen_tensor_right,scale=ONE)
-    ! print *, "error befre dig"
     ierr=talsh_tensor_contract("Dia()+=CISL(a,i)*CISR(a,i)",Diagonal_tensor,CIS_eigen_tensor_left,&
                                 CIS_eigen_tensor_right,scale=ONE)
 
-    ! print *, "error befre get_body_access_dia"
     ierr=talsh_tensor_get_body_access(Diagonal_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,diagonal_tens,one_dims) ! to use as a regular Fortran array
 
-    ! print *, "error befre get_body_access_oo"
     ierr=talsh_tensor_get_body_access(Tra_Den_exe_exe_tensor%prime_oo,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,h_tens,oo_dims) ! to use as a regular Fortran array
 
@@ -145,14 +140,6 @@ subroutine get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_te
     ierr=talsh_tensor_contract("TDM(a,j)+=CISR(a,i)*CISR(i,j)",Tra_Den_exe_grd_tensor%prime_vo,&
                                 CIS_eigen_tensor,Iden_tensor,scale=ONE)
 
-!    ierr=talsh_tensor_get_body_access(Tra_Den_exe_exe_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-!    call c_f_pointer(body_p,h_tens,vv_dims) ! to use as a regular Fortran array
-
-!    do i=1, nvir 
-!        do j =1, nvir
-!            print *, h_tens(i,j)
-!        end do
-!    end do
     ierr=talsh_tensor_destruct(CIS_eigen_tensor)
 
 
