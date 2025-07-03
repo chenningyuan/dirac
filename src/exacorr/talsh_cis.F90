@@ -501,10 +501,8 @@ end subroutine
         complex(kind=8), pointer :: eVectorsR(:,:)
         complex(kind=8), pointer :: eValues(:)
         
-
-        type(talsh_tens_t), pointer :: CIS_eigen_tensors_left(:), CIS_eigen_tensors_right(:)
+        type(talsh_tens_t), pointer :: CIS_eigen_tensors_right(:) ! the CIS matrix is Hermitian so no need for left eigenvectors 
         integer            :: N_states, i_state
-        integer            :: i,j
         integer            :: nvir, nocc
         integer            :: ierr
         integer(INTD), dimension(2) :: vv_dims 
@@ -518,11 +516,10 @@ end subroutine
         vv_dims = nvir
 
 
-        ierr=talsh_tensor_construct(CIS_vv_effden,C8,vv_dims,init_val=ZERO)
-        ! N_states = size(eVectorsR,2)
-        N_states = 20
-        allocate(CIS_eigen_tensors_left(N_states))
+        N_states = exa_input%neo_cis_nstates
         allocate(CIS_eigen_tensors_right(N_states))
+
+        ierr=talsh_tensor_construct(CIS_vv_effden,C8,vv_dims,init_val=ZERO)
 
         do i_state=1, N_states
             ierr=talsh_tensor_construct(CIS_eigen_tensors_right(i_state),C8,cis_eig_dims,init_val=ZERO)
@@ -538,6 +535,7 @@ end subroutine
         do i_state=1, N_states
             ierr=talsh_tensor_destruct(CIS_eigen_tensors_right(i_state))
         end do
+        deallocate(CIS_eigen_tensors_right)
 
     end subroutine 
 

@@ -1108,6 +1108,10 @@
          call kw_read(word, exa_input%t_mp2no)
       end if
 
+      if (kw_matches(word, '.NEO_NSTATES')) then
+         call kw_read(word, exa_input%neo_cis_nstates)
+      end if
+
       if (kw_matches(word, '.MP2NEO         ')) then
          exa_input%mp2no = 2
          call kw_read(word, exa_input%t_mp2no)

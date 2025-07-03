@@ -124,6 +124,10 @@
             real(REALD), allocatable :: w_qr2_re(:)            ! 2nd real frequency in CC quadratic response
             real(REALD), allocatable :: w_qr2_im(:)            ! 2nd imaginary frequency in CC quadratic response
            
+! NEO-related inputs
+            integer, allocatable    :: neo_cis_states(:)       ! the CIS states  used to construct NEO orbitals
+                                                               ! in the form of an array to allow granularity on which states to use
+            integer                 :: neo_cis_nstates = 1     ! the number of CIS states used to construce the NEO orbitals
 ! tdcis-related input
             integer                 :: cis_d_pmin = 1
             integer                 :: cis_d_pmax = 5
