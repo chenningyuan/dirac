@@ -53,7 +53,7 @@ cd $CTEST_TEMP_DIR/compile
 
 if [ "$COMPILER" == 'Intel' ]; then
     source /opt/intel/bin/compilervars.sh intel64
-    SETUP_FLAGS="--fc=ifort --cc=icc --cxx=icpc --mkl=parallel"
+    SETUP_FLAGS="--fc=ifort --cc=icc --cxx=icpc --qmkl=parallel"
 else
     export DIRAC_MPI_COMMAND="mpirun -np 4"
     export MATH_ROOT=/opt/intel/mkl

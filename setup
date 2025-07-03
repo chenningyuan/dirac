@@ -19,7 +19,7 @@ Options:
   --python=<PYTHON_INTERPRETER>          The Python interpreter (development version) to use. [default: ''].
   --blas=<BLAS>                          Detect and link BLAS library (auto or off) [default: auto].
   --lapack=<LAPACK>                      Detect and link LAPACK library (auto or off) [default: auto].
-  --mkl=<MKL>                            Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off].
+  --qmkl=<MKL>                            Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off].
   --mpi                                  Enable MPI parallelization [default: False].
   --coverage                             Enable code coverage [default: False].
   --static                               Enable static linking [default: False].
@@ -29,6 +29,7 @@ Options:
   --explicit-libs=<LIBS>                 Explicit linker specification for extra libraries passed directly to the linker [default: off].
   --exatensor=<ENABLE_EXATENSOR>         Toggle use of ExaTensor <ON/OFF> [default: ON].
   --pcmsolver=<ENABLE_PCMSOLVER>         Toggle use of PCMSolver <ON/OFF> [default: OFF].
+  --pelib=<ENABLE_PELIB>                 Toggle use of PElib <ON/OFF> [default: ON].
   --pcmsolver-dir=<PCMSOLVER_ROOT>       The PCMSolver module location. [default: ''].
   --stieltjes=<ENABLE_STIELTJES>         Toggle use of Stieltjes <ON/OFF> [default: OFF].
   --type=<TYPE>                          Set the CMake build type (debug, release, relwithdebinfo, minsizerel) [default: release].
@@ -67,7 +68,7 @@ def gen_cmake_command(options, arguments):
     command.append('-DPYTHON_INTERPRETER="{0}"'.format(arguments['--python']))
     command.append('-DENABLE_BLAS={0}'.format(arguments['--blas']))
     command.append('-DENABLE_LAPACK={0}'.format(arguments['--lapack']))
-    command.append('-DMKL_FLAG={0}'.format(arguments['--mkl']))
+    command.append('-DMKL_FLAG={0}'.format(arguments['--qmkl']))
     command.append('-DMATH_LIB_SEARCH_ORDER="MKL;ESSL;OPENBLAS;ATLAS;ACML;SYSTEM_NATIVE"')
     command.append('-DBLAS_LANG=Fortran')
     command.append('-DLAPACK_LANG=Fortran')
@@ -81,6 +82,7 @@ def gen_cmake_command(options, arguments):
     command.append('-DEXPLICIT_LIBS="{0}"'.format(arguments['--explicit-libs'].strip()))
     command.append('-DENABLE_EXATENSOR={0}'.format(arguments['--exatensor']))
     command.append('-DENABLE_PCMSOLVER={0}'.format(arguments['--pcmsolver']))
+    command.append('-DENABLE_PELIB={0}'.format(arguments['--pelib']))
     command.append('-DPCMSOLVER_ROOT={0}'.format(arguments['--pcmsolver-dir']))
     command.append('-DENABLE_STIELTJES={0}'.format(arguments['--stieltjes']))    
     command.append('-DCMAKE_BUILD_TYPE={0}'.format(arguments['--type']))

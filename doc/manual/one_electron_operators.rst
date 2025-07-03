@@ -56,34 +56,35 @@ The keyword ``CMULT`` assures multiplication of the individual factors (or commo
 Operator type keywords
 ^^^^^^^^^^^^^^^^^^^^^^
 
-There are 22 basic operator types implemented in DIRAC. They are listed in the following Table, containing their keywords, operator forms, associated number of factors (NF), and time-reversal symmetry (TRS) without imaginary phase:
+There are 23 basic operator types implemented in DIRAC. They are listed in the following Table, containing their keywords, operator forms, associated number of factors (NF), and time-reversal symmetry (TRS) without imaginary phase:
 
-===========  =========================================================================================================================================  ======  ===================
-**Keyword**  **Operator form**                                                                                                                          **NF**  **TRS (without i)**
-===========  =========================================================================================================================================  ======  ===================
-DIAGONAL     :math:`f \boldsymbol{I} \hat{\Omega}`                                                                                                      1       Symmetric
-BETA         :math:`f \boldsymbol{\beta} \hat{\Omega}`                                                                                                  1       Symmetric
-GAMMA5       :math:`f \boldsymbol{\gamma}^5 \hat{\Omega}`                                                                                               1       Symmetric
-BETAGAMM     :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`                                                                            1       Symmetric
-XALPHA       :math:`f i\boldsymbol{\alpha}_x \hat{\Omega}`                                                                                              1       Antisymmetric
-YALPHA       :math:`f i\boldsymbol{\alpha}_y \hat{\Omega}`                                                                                              1       Antisymmetric
-ZALPHA       :math:`f i\boldsymbol{\alpha}_z \hat{\Omega}`                                                                                              1       Antisymmetric
-XAVECTOR     :math:`f_1 i\boldsymbol{\alpha}_y \hat{\Omega}_z - f_2 i\boldsymbol{\alpha}_z \hat{\Omega}_y`                                              2       Antisymmetric
-YAVECTOR     :math:`f_1 i\boldsymbol{\alpha}_z \hat{\Omega}_x - f_2 i\boldsymbol{\alpha}_x \hat{\Omega}_z`                                              2       Antisymmetric
-ZAVECTOR     :math:`f_1 i\boldsymbol{\alpha}_x \hat{\Omega}_y - f_2 i\boldsymbol{\alpha}_y \hat{\Omega}_x`                                              2       Antisymmetric
-ALPHADOT     :math:`f_1 i\boldsymbol{\alpha}_x \hat{\Omega}_x + f_2 i\boldsymbol{\alpha}_y \hat{\Omega}_y + f_3 i\boldsymbol{\alpha}_z \hat{\Omega}_z`  3       Antisymmetric
-XBETAALP     :math:`f i\boldsymbol{\beta} \boldsymbol{\alpha}_x \hat{\Omega}`                                                                           1       Antisymmetric
-YBETAALP     :math:`f i\boldsymbol{\beta} \boldsymbol{\alpha}_y \hat{\Omega}`                                                                           1       Antisymmetric
-ZBETAALP     :math:`f i\boldsymbol{\beta} \boldsymbol{\alpha}_z \hat{\Omega}`                                                                           1       Antisymmetric
-XSIGMA       :math:`f i\boldsymbol{\Sigma}_x \hat{\Omega}`                                                                                              1       Antisymmetric
-YSIGMA       :math:`f i\boldsymbol{\Sigma}_y \hat{\Omega}`                                                                                              1       Antisymmetric
-ZSIGMA       :math:`f i\boldsymbol{\Sigma}_z \hat{\Omega}`                                                                                              1       Antisymmetric
-SIGMADOT     :math:`f_1 i\boldsymbol{\Sigma}_x \hat{\Omega}_x + f_2 i\boldsymbol{\Sigma}_y \hat{\Omega}_y + f_3 i\boldsymbol{\Sigma}_z \hat{\Omega}_z`  1       Antisymmetric
-XBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_x \hat{\Omega}`                                                                           1       Antisymmetric
-YBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_y \hat{\Omega}`                                                                           1       Antisymmetric
-ZBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_z \hat{\Omega}`                                                                           1       Antisymmetric
-iBETAGAM     :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`                                                                            1       Antisymmetric
-===========  =========================================================================================================================================  ======  ===================
+===========  ===============================================================================================================================================================================================  ======  ===================
+**Keyword**  **Operator form**                                                                                                                                                                                **NF**  **TRS (without i)**
+===========  ===============================================================================================================================================================================================  ======  ===================
+DIAGONAL     :math:`f \boldsymbol{I} \hat{\Omega}`                                                                                                                                                            1       Symmetric
+BETA         :math:`f \boldsymbol{\beta} \hat{\Omega}`                                                                                                                                                        1       Symmetric
+GAMMA5       :math:`f \boldsymbol{\gamma}^5 \hat{\Omega}`                                                                                                                                                     1       Symmetric
+BETAGAMM     :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`                                                                                                                                  1       Symmetric
+XALPHA       :math:`f i\boldsymbol{\alpha}_x \hat{\Omega}`                                                                                                                                                    1       Antisymmetric
+YALPHA       :math:`f i\boldsymbol{\alpha}_y \hat{\Omega}`                                                                                                                                                    1       Antisymmetric
+ZALPHA       :math:`f i\boldsymbol{\alpha}_z \hat{\Omega}`                                                                                                                                                    1       Antisymmetric
+XAVECTOR     :math:`f_1 i\boldsymbol{\alpha}_y \hat{\Omega}_z - f_2 i\boldsymbol{\alpha}_z \hat{\Omega}_y`                                                                                                    2       Antisymmetric
+YAVECTOR     :math:`f_1 i\boldsymbol{\alpha}_z \hat{\Omega}_x - f_2 i\boldsymbol{\alpha}_x \hat{\Omega}_z`                                                                                                    2       Antisymmetric
+ZAVECTOR     :math:`f_1 i\boldsymbol{\alpha}_x \hat{\Omega}_y - f_2 i\boldsymbol{\alpha}_y \hat{\Omega}_x`                                                                                                    2       Antisymmetric
+ALPHADOT     :math:`f_1 i\boldsymbol{\alpha}_x \hat{\Omega}_x + f_2 i\boldsymbol{\alpha}_y \hat{\Omega}_y + f_3 i\boldsymbol{\alpha}_z \hat{\Omega}_z`                                                        3       Antisymmetric
+XBETAALP     :math:`f i\boldsymbol{\beta} \boldsymbol{\alpha}_x \hat{\Omega}`                                                                                                                                 1       Antisymmetric
+YBETAALP     :math:`f i\boldsymbol{\beta} \boldsymbol{\alpha}_y \hat{\Omega}`                                                                                                                                 1       Antisymmetric
+ZBETAALP     :math:`f i\boldsymbol{\beta} \boldsymbol{\alpha}_z \hat{\Omega}`                                                                                                                                 1       Antisymmetric
+XSIGMA       :math:`f i\boldsymbol{\Sigma}_x \hat{\Omega}`                                                                                                                                                    1       Antisymmetric
+YSIGMA       :math:`f i\boldsymbol{\Sigma}_y \hat{\Omega}`                                                                                                                                                    1       Antisymmetric
+ZSIGMA       :math:`f i\boldsymbol{\Sigma}_z \hat{\Omega}`                                                                                                                                                    1       Antisymmetric
+SIGMADOT     :math:`f_1 i\boldsymbol{\Sigma}_x \hat{\Omega}_x + f_2 i\boldsymbol{\Sigma}_y \hat{\Omega}_y + f_3 i\boldsymbol{\Sigma}_z \hat{\Omega}_z`                                                        1       Antisymmetric
+XBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_x \hat{\Omega}`                                                                                                                                 1       Antisymmetric
+YBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_y \hat{\Omega}`                                                                                                                                 1       Antisymmetric
+ZBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_z \hat{\Omega}`                                                                                                                                 1       Antisymmetric
+BEALDOT      :math:`f_1 i\boldsymbol{\beta}\boldsymbol{\alpha}_x \hat{\Omega}_x + f_2 i\boldsymbol{\beta}\boldsymbol{\alpha}_y \hat{\Omega}_y + f_3 i\boldsymbol{\beta}\boldsymbol{\alpha}_z \hat{\Omega}_z`  3       Antisymmetric
+iBETAGAM     :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`                                                                                                                                  1       Antisymmetric
+===========  ===============================================================================================================================================================================================  ======  ===================
 
 `Note for advanced users:` iBETAGAM corresponds to the time-reversal symmetric operator :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`, but has been assigned a time-reversal antisymmetry. This operator can be used, for example, for calculations of the molecular enhancement factors of the electron electric dipole moment (eEDM). For further details, see Section `Quaternion algebra and time-reversal symmetry`_.
 
@@ -93,91 +94,91 @@ iBETAGAM     :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`    
 One-electron scalar operator labels
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| **Operator**| **Integral description**         | **Components** | **Operators**                                                                                      |
-| **label**   |                                  |                |                                                                                                    |
-+=============+==================================+================+====================================================================================================+
-| KINENER     | NR kinetic energy                | KINENER        | :math:`\hat{\Omega} = -\frac{1}{2}\hat{\nabla}^2`                                                  |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| MOLFIELD    | Nuclear electrostatic potential  | MOLFIELD       | :math:`\hat{\Omega} = \sum_K \Phi_K (\boldsymbol{r})`                                              |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| OVERLAP     | Overlap                          | OVERLAP        | :math:`\hat{\Omega} = 1`                                                                           |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| FERMI C     | One-electron Fermi contact       | FC NAMab       | :math:`\hat{\Omega}_K = \frac{4 \pi g_{e}}{3} \delta(\boldsymbol{r}-\boldsymbol{R}_K)`             |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| ANGMOM      | Orbital angular momentum         | XANGMOM        | :math:`\hat{\Omega}_1 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_x`               |
-|             | around CM                        +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YANGMOM        | :math:`\hat{\Omega}_2 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_y`               |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | ZANGMOM        | :math:`\hat{\Omega}_3 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_z`               |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| DIPLEN      | Dipole length                    | XDIPLEN        | :math:`\hat{\Omega}_1 = x_D`                                                                       |
-|             | with respect to dipole origin    +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YDIPLEN        | :math:`\hat{\Omega}_2 = y_D`                                                                       |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | ZDIPLEN        | :math:`\hat{\Omega}_3 = z_D`                                                                       |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| DIPVEL      | Dipole velocity                  | XDIPVEL        | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x}`                                               |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YDIPVEL        | :math:`\hat{\Omega}_2 = \frac{\partial}{\partial y}`                                               |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | ZDIPVEL        | :math:`\hat{\Omega}_3 = \frac{\partial}{\partial z}`                                               |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| QUADRUP     | Quadrupole moment                | XXQUADRU       | :math:`\hat{\Omega}_1 = \frac{1}{4} (x_D^2-r_D^2)`                                                 |
-|             | with respect to dipole origin    +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XYQUADRU       | :math:`\hat{\Omega}_2 = \frac{1}{4} x_Dy_D`                                                        |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XZQUADRU       | :math:`\hat{\Omega}_3 = \frac{1}{4} x_Dz_D`                                                        |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YYQUADRU       | :math:`\hat{\Omega}_4 = \frac{1}{4} (y_D^2-r_D^2)`                                                 |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YZQUADRU       | :math:`\hat{\Omega}_5 = \frac{1}{4} y_Dz_D`                                                        |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | ZZQUADRU       | :math:`\hat{\Omega}_6 = \frac{1}{4} (z_D^2-r_D^2)`                                                 |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| SECMOM      | Second moment                    | XXSECMOM       | :math:`\hat{\Omega}_1 = - x_D^2`                                                                   |
-|             | with respect to dipole origin    +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XYSECMOM       | :math:`\hat{\Omega}_2 = - x_Dy_D`                                                                  |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XZSECMOM       | :math:`\hat{\Omega}_3 = - x_Dz_D`                                                                  |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YYSECMOM       | :math:`\hat{\Omega}_4 = - y_D^2`                                                                   |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YZSECMOM       | :math:`\hat{\Omega}_5 = - y_Dz_D`                                                                  |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | ZZSECMOM       | :math:`\hat{\Omega}_6 = - z_D^2`                                                                   |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| THETA       | Traceless quadrupole             | XXTHETA        | :math:`\hat{\Omega}_1 = - \frac{3}{2} (x_D^2-\frac{1}{3}r_D^2)`                                    |
-|             | with respect to dipole origin    +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XYTHETA        | :math:`\hat{\Omega}_2 = - \frac{3}{2} x_Dy_D`                                                      |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | XZTHETA        | :math:`\hat{\Omega}_3 = - \frac{3}{2} x_Dz_D`                                                      |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YYTHETA        | :math:`\hat{\Omega}_4 = - \frac{3}{2} (y_D^2-\frac{1}{3}r_D^2)`                                    |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YZTHETA        | :math:`\hat{\Omega}_5 = - \frac{3}{2} y_Dz_D`                                                      |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | ZZTHETA        | :math:`\hat{\Omega}_6 = - \frac{3}{2} (z_D^2-\frac{1}{3}r_D^2)`                                    |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| NEFIELD     | Electronic electric field at     | NEF abc        | :math:`\hat{\Omega}_{abc} = (\boldsymbol{r}-\boldsymbol{R}_K)/|\boldsymbol{r}-\boldsymbol{R}_K|^3` |
-|             | the individual nuclei            |                |                                                                                                    |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| NEFNUC      | Electric field produced by the   | EFNUabc        | :math:`\hat{\Omega}_{abc} = -\boldsymbol{E}_K(\boldsymbol{r})/Z_K`                                 |
-|             | individual nuclei                |                | :math:`= \boldsymbol{\nabla} \Phi_K (\boldsymbol{r}) / Z_K`                                        |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
-| SEFGMG      | Magnetic term of Flambaum-Ginges | XSEFGMG        |                                                                                                    |
-|             | self-energy potential            +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | YSEFGMG        |                                                                                                    |
-|             |                                  +----------------+----------------------------------------------------------------------------------------------------+
-|             |                                  | ZSEFGMG        |                                                                                                    |
-+-------------+----------------------------------+----------------+----------------------------------------------------------------------------------------------------+
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| **Operator**| **Integral description**         | **Symmetry**| **Components** | **Operators**                                                                          |
+| **label**   |                                  |             |                |                                                                                        |
++=============+==================================+=============+================+========================================================================================+
+| KINENER     | NR kinetic energy                |     S       | KINENER        | :math:`\hat{\Omega}_1 = -\frac{1}{2}\hat{\nabla}^2`                                    |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| MOLFIELD    | Nuclear attraction               |     S       | MOLFIELD       | :math:`\hat{\Omega}_1 = \sum_K \Phi_K (\boldsymbol{r})`                                |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| OVERLAP     | Overlap                          |     S       | OVERLAP        | :math:`\hat{\Omega}_1 = 1`                                                             |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| FERMI C     | One-electron Fermi contact       |     S       | FC NAMab       | :math:`\hat{\Omega}_1 = \frac{4 \pi g_{e}}{3} \delta(\boldsymbol{r}-\boldsymbol{R}_K)` |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| ANGMOM      | Orbital angular momentum         |     A       | XANGMOM        | :math:`\hat{\Omega}_1 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_x`   |
+|             | around CM                        |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | YANGMOM        | :math:`\hat{\Omega}_2 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_y`   |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | ZANGMOM        | :math:`\hat{\Omega}_3 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_z`   |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| DIPLEN      | Dipole length                    |     S       | XDIPLEN        | :math:`\hat{\Omega}_1 = x`                                                             |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | YDIPLEN        | :math:`\hat{\Omega}_2 = y`                                                             |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | ZDIPLEN        | :math:`\hat{\Omega}_3 = z`                                                             |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| DIPVEL      | Dipole velocity                  |     A       | XDIPVEL        | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x}`                                   |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | YDIPVEL        | :math:`\hat{\Omega}_2 = \frac{\partial}{\partial y}`                                   |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | ZDIPVEL        | :math:`\hat{\Omega}_3 = \frac{\partial}{\partial z}`                                   |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| QUADRUP     | Quadrupole moment                |     S       | XXQUADRU       | :math:`\hat{\Omega}_1 = \frac{1}{4} (x^2-r^2)`                                         |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | XYQUADRU       | :math:`\hat{\Omega}_2 = \frac{1}{4} xy`                                                |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | XZQUADRU       | :math:`\hat{\Omega}_3 = \frac{1}{4} xz`                                                |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | YYQUADRU       | :math:`\hat{\Omega}_4 = \frac{1}{4} (y^2-r^2)`                                         |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | YZQUADRU       | :math:`\hat{\Omega}_5 = \frac{1}{4} yz`                                                |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | ZZQUADRU       | :math:`\hat{\Omega}_6 = \frac{1}{4} (z^2-r^2)`                                         |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| SECMOM      | Second moment                    |     S       | XXSECMOM       | :math:`\hat{\Omega}_1 = - x^2`                                                         |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | XYSECMOM       | :math:`\hat{\Omega}_2 = - xy`                                                          |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | XZSECMOM       | :math:`\hat{\Omega}_3 = - xz`                                                          |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | YYSECMOM       | :math:`\hat{\Omega}_4 = - y^2`                                                         |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | YZSECMOM       | :math:`\hat{\Omega}_5 = - yz`                                                          |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | ZZSECMOM       | :math:`\hat{\Omega}_6 = - z^2`                                                         |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| THETA       | Traceless quadrupole             |     S       | XXTHETA        | :math:`\hat{\Omega}_1 = - \frac{3}{2} (x^2-\frac{1}{3}r^2)`                            |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | XYTHETA        | :math:`\hat{\Omega}_2 = - \frac{3}{2} xy`                                              |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | XZTHETA        | :math:`\hat{\Omega}_3 = - \frac{3}{2} xz`                                              |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | YYTHETA        | :math:`\hat{\Omega}_4 = - \frac{3}{2} (y^2-\frac{1}{3}r^2)`                            |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | YZTHETA        | :math:`\hat{\Omega}_5 = - \frac{3}{2} yz`                                              |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | ZZTHETA        | :math:`\hat{\Omega}_6 = - \frac{3}{2} (z^2-\frac{1}{3}r^2)`                            |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| NEFIELD     | Electronic electric field at     |     S       | NEF abc        | :math:`\hat{\Omega}_{abc}`                                                             |
+|             | the individual nuclei            |             |                | :math:`= (\boldsymbol{r}-\boldsymbol{R}_K)/|\boldsymbol{r}-\boldsymbol{R}_K|^3`        |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| NEFNUC      | Electric field produced by the   |     S       | EFNUabc        | :math:`\hat{\Omega}_{abc} = -\boldsymbol{E}_K(\boldsymbol{r})/Z_K`                     |
+|             | individual nuclei                |             |                | :math:`= \boldsymbol{\nabla} \Phi_K (\boldsymbol{r}) / Z_K`                            |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| SEFGMG      | Magnetic term of Flambaum-Ginges |     A       | XSEFGMG        |                                                                                        |
+|             | self-energy potential            |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | YSEFGMG        |                                                                                        |
+|             |                                  |             +----------------+----------------------------------------------------------------------------------------+
+|             |                                  |             | ZSEFGMG        |                                                                                        |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
 
 In the Table above, :math:`\boldsymbol{r} = x \, \boldsymbol{\hat{\imath}} + y \, \boldsymbol{\hat{\jmath}} + z \, \boldsymbol{\hat{k}}`, :math:`\boldsymbol{R}_{CM}`, and :math:`\boldsymbol{R}_K` stand for the electron position operator, the position vector of the nuclear center of mass and the position of nucleus :math:`K`, respectively. All of them, relative to the origin of coordinates.
 
 In particular, operators ``DIPLEN``, ``QUADRUP``, ``SECMOM``, and ``THETA`` are defined in terms of the Cartesian components of the electron position vector operator with respect to the dipole origin, :math:`\boldsymbol{r}_D = \boldsymbol{r} - \boldsymbol{R}_D = x_D \, \boldsymbol{\hat{\imath}} + y_D \, \boldsymbol{\hat{\jmath}} + z_D \, \boldsymbol{\hat{k}}`. The dipole origin :math:`\boldsymbol{R}_D` can be set using :ref:`HAMILTONIAN_.DIPORG`.
 
 
-The electrostatic potential produced by nucleus :math:`K` is (in a.u.)
+The electrostatic potential produced by a static nucleus :math:`K` (in a.u.) is
 
 .. math::
 
@@ -191,7 +192,7 @@ and when the charge density distribution :math:`\rho_K(\boldsymbol{r}')` of nucl
 
 Operators ``MOLFIELD`` and ``NEFNUC`` depend on :math:`\Phi_K (\boldsymbol{r})`, and for them two different nuclear charge distribution models :math:`\rho_K(\boldsymbol{r}')` can be set using :ref:`INTEGRALS_.NUCMOD`.
 
-Besides, the electric field produced by nucleus :math:`K` at the position :math:`\boldsymbol{r}` is :math:`\boldsymbol{E}_K(\boldsymbol{r}) = - \boldsymbol{\nabla} \Phi_K(\boldsymbol{r})`. The operator label ``NEFNUC`` points to the integral calculations of :math:`\boldsymbol{\nabla} \Phi_K (\boldsymbol{r})/Z_K`. Also here, the nuclear charge density distribution :math:`\rho_K(\boldsymbol{r}')` can be set by the user employing :ref:`INTEGRALS_.NUCMOD`.
+Besides, the electrostatic field produced by nucleus :math:`K` at the position :math:`\boldsymbol{r}` is :math:`\boldsymbol{E}_K(\boldsymbol{r}) = - \boldsymbol{\nabla} \Phi_K(\boldsymbol{r})`. The operator label ``NEFNUC`` points to the integral calculations of :math:`\boldsymbol{\nabla} \Phi_K (\boldsymbol{r})/Z_K`. Also here, the nuclear charge density distribution :math:`\rho_K(\boldsymbol{r}')` can be set by the user employing :ref:`INTEGRALS_.NUCMOD`.
 
 When a point-like model is used (i.e., when :math:`\rho_K(\boldsymbol{r}') = \rho^\text{PN}_K(\boldsymbol{r}') = Z_K \delta(\boldsymbol{r}'-\boldsymbol{R}_K)`), then
 
@@ -199,12 +200,15 @@ When a point-like model is used (i.e., when :math:`\rho_K(\boldsymbol{r}') = \rh
 
    \texttt{NEFNUC} \; \longrightarrow \; -\frac{\boldsymbol{E}^\text{PN}_K (\boldsymbol{r})}{Z_K} = \frac{\boldsymbol{\nabla} \Phi^\text{PN}_K (\boldsymbol{r})}{Z_K} = -\frac{\boldsymbol{r}-\boldsymbol{R}_K}{|\boldsymbol{r}-\boldsymbol{R}_K|^3}.
 
-In other words, when ``NEFNUC`` is used with a point-like nuclear model, the integrals are identical (except for the sign) to those of ``NEFIELD``.
+In other words, when ``NEFNUC`` is used with a point-like nuclear model, the integrals are identical (except for the opposite sign) to those of ``NEFIELD``.
 
 In the case of operators ``NEFIELD`` and ``NEFNUC``, 'abc' stands for the number of the symmetry-adapted nuclear coordinate. In C1 symmetry, 'abc' goes from '001' (corresponding to the :math:`x` coordinate of the first element in the \*.mol file) to :math:`3\times K`.
 
 
 Note that in the one-electron Fermi-contact integrals ``FERMI C`` (as well as in the spin-dipole interals, ``SPIN-DI``), :math:`g_e` is the electron g-factor. The default value for :math:`g_e` in DIRAC is the QED value taken from the most recent CODATA set (in CODATA2022, :math:`g_e = 2.00231930436092`). However, within the Dirac formalism, i.e. without including QED effects, :math:`g_e` would be exactly equal to 2. Besides, in the operator ``FC NAMab``, 'NAM' stands for the three first letters in the name given to nucleus :math:`K` in the \*.mol file, and 'ab' is the number of the symmetry-adapted nucleus.
+
+
+The matrix representations of the operators shown in the previous Table are either symmetric (S) or antisymmetric (A). This information is provided in the third column of the Table.
 
 
 Other one-electron operator labels are:
@@ -618,6 +622,6 @@ It is important to note that although the time-reversal antisymmetric operators 
 
 For further details on the quaternion symmetry scheme used in DIRAC, see Ref. :cite:`Saue1999`.
 
-`Note:` For complete consistency, the names of the operators related to :math:`i\boldsymbol{\alpha}_k`, :math:`i\boldsymbol{\Sigma}_k`, :math:`i\boldsymbol{\beta\alpha}_k`, and :math:`i\boldsymbol{\beta\Sigma}_k` (:math:`k=x,y,z`) could have been ``XiALPHA``, ``YiALPHA``, ``ZiALPHA``, ``XiAVECTOR``, ``YiAVECTOR``, ``ZiAVECTOR``, ``iALPHADOT``, ``XiBETAALP``, ``YiBETAALP``, ``ZiBETAALP``, ``XiSIGMA``, ``YiSIGMA``, ``ZiSIGMA``, ``XiBETASIG``, ``YiBETASIG``, ``ZiBETASIG``, and ``iSIGMADOT`` (see `Operator type keywords`_). However, due to historical reasons, this convention is not used in DIRAC.
+`Note:` For complete consistency, the names of the operators related to :math:`i\boldsymbol{\alpha}_k`, :math:`i\boldsymbol{\Sigma}_k`, :math:`i\boldsymbol{\beta\alpha}_k`, and :math:`i\boldsymbol{\beta\Sigma}_k` (:math:`k=x,y,z`) could have been ``XiALPHA``, ``YiALPHA``, ``ZiALPHA``, ``XiAVECTOR``, ``YiAVECTOR``, ``ZiAVECTOR``, ``iALPHADOT``, ``XiBETAALP``, ``YiBETAALP``, ``ZiBETAALP``, ``XiSIGMA``, ``YiSIGMA``, ``ZiSIGMA``, ``XiBETASIG``, ``YiBETASIG``, ``ZiBETASIG``, ``iSIGMADOT``, and ``iBEALDOT`` (see `Operator type keywords`_). However, due to historical reasons, this convention is not used in DIRAC.
 
 `Note for advanced users:` The operator iBETAGAM is implemented in the code just as :math:`\beta\boldsymbol{\gamma}^5`, but its time-reversal symmetry without imaginary phase is set as odd.
