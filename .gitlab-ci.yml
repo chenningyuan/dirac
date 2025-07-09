@@ -34,7 +34,7 @@ ubuntu_gnu_parallel32-check:
     - apt-get -qq -y install gfortran gcc g++
     - apt-get -qq -y install libomp-dev
     - apt-get -qq -y install mpich libmpich-dev libhdf5-mpich-dev
-    - apt-get -qq -y install python3 python3-pip python3-scipy python3-h5py
+    - apt-get -qq -y install python3 python3-pip python3-scipy python3-h5py python-is-python3
     - apt-get -qq -y install libblas-dev liblapack-dev libhdf5-dev
   script:
 #   do the parallel buildup here
