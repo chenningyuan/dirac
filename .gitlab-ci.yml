@@ -47,7 +47,7 @@ ubuntu_gnu_parallel32-check:
     - echo "Number of processors/jobs for the build step is N_PROC=$N_PROC"
     - let "TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)" || TEST_N_PROC=1 # if only 1CPU on worker
     - echo "Number of processors/jobs for parallel test step is TEST_N_PROC=$TEST_N_PROC"
-    - ./setup --mpi --check build_parallel32
+    - ./setup --mpi --check --cmake-options="-DENABLE_UNIT_TESTS=ON" build_parallel32
     #setting up ExaCorr environment
     - export UCX_VFS_ENABLE=n # Deactivate UCX Virtual File System as /dev is not fully accesible within Docker
     - cd build_parallel32
@@ -94,7 +94,7 @@ ubuntu_intel_mkl_int64-check:
     - echo "The shell is $SHELL"
     - let "N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)"
     - echo "Number of processors/jobs for the serial build step is $N_PROC"
-    - ./setup --pcmsolver=OFF --pelib=OFF --int64 --fc=ifx --cc=icx --cxx=icpx --qmkl=parallel build_serial_intel_int64
+    - ./setup --pcmsolver=OFF --pelib=OFF --cmake-options="-DENABLE_UNIT_TESTS=ON" --int64 --fc=ifx --cc=icx --cxx=icpx --qmkl=parallel build_serial_intel_int64
     - cd build_serial_intel_int64
     - echo  "=== Check the executable(s) generation ==="
     - make -j $N_PROC
