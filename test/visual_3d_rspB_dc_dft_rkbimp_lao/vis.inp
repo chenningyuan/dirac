@@ -14,11 +14,10 @@
 .EVCCNV
 1.0D-8
 **VISUAL
-.PRINTL
-1
 .GRIDS    
-1
+2
 id=1 input=list
+id=2 input=dft
 .LIST
 27
 6.765886054628134083E-03,    4.249023369972415587E-01,    7.158686405346250670E-01
@@ -49,7 +48,7 @@ id=1 input=list
 1.054273242666020627E-01,    1.641860747959211775E-02,    5.430150841403321715E-01
 2.850571507053395459E-01,    6.763762717106354128E-01,    9.969190081455814312E-01
 .GRIDFUNCTIONS    
-8
+10
 name=j id_grid=1 purpose=visualization outpri=yes export=hdf5 rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=j_Bz_lao_rspvec6_symcon.h5
 name=j id_grid=1 purpose=visualization outpri=yes export=hdf5 rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 lao_skip=[1,1,0] file_out=j_Bz_lao_rspvec6_symcon_nodirect_nokappa.h5
 name=j id_grid=1 purpose=visualization outpri=yes export=hdf5 rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 lao_skip=[0,1,1] file_out=j_Bz_lao_rspvec6_symcon_nodirect_noreorth.h5
@@ -58,4 +57,6 @@ name=rotj id_grid=1 purpose=visualization outpri=yes export=hdf5 rspvec_file=RES
 name=gradj id_grid=1 purpose=visualization outpri=yes export=hdf5 rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=gradj_Bz_lao_rspvec6_symcon.h5
 name=divj id_grid=1 purpose=visualization outpri=yes export=hdf5 rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 file_out=divj_Bz_lao_rspvec6_symcon.h5
 name=ndip id_grid=1 purpose=visualization outpri=yes export=hdf5 rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 nuc=1 file_out=ndip_Bz_lao_rspvec6_symcon.h5
+name=ndip id_grid=2 purpose=integration rspvec_file=RESPONSE.h5 rspvec_id=5 lao=1 nuc=1 uscale=-53.25135
+name=ndip id_grid=2 purpose=integration rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 nuc=1 uscale=-53.25135
 *END OF

@@ -1,0 +1,33 @@
+**DIRAC
+**MOLECULE
+*BASIS
+.DEFAULT
+cc-pVDZ
+*SYMMETRY
+.NOSYM
+**HAMILTONIAN
+.URKBAL
+.DFT
+ B3LYP
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+42
+.EVCCNV
+1.0D-8
+**VISUAL
+.GRIDS 
+2
+id=1 input=create typ=1 npoints=[64,64,32] margin=4.0
+id=2 input=dft
+.GRIDFUNCTIONS
+4
+name=j id_grid=1 purpose=visualization rspvec_file=RESPONSE.h5 rspvec_id=5 lao=1 export=cube file_out=j_Bz_lao_rspvec5.cube
+name=j id_grid=1 purpose=visualization rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 export=cube file_out=j_Bz_lao_rspvec6.cube
+name=ndip id_grid=2 purpose=integration rspvec_file=RESPONSE.h5 rspvec_id=5 lao=1 nuc=1 uscale=-53.25135
+name=ndip id_grid=2 purpose=integration rspvec_file=RESPONSE.h5 rspvec_id=6 lao=1 nuc=1 uscale=-53.25135
+*END OF

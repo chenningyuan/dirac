@@ -14,8 +14,6 @@
 .EVCCNV
 1.0D-8
 **VISUAL
-.PRINTL
-3
 .GRIDS    
 1
 id=1 input=list

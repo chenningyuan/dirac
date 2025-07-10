@@ -4,6 +4,12 @@ import os
 import sys
 from pathlib import Path
 
+try:
+    import h5py
+    h5py_available = True
+except:
+    h5py_available = False
+
 #
 # prepare environment, define functions
 #
@@ -21,12 +27,15 @@ f.add(from_string = 'Final grid function values (id=',
 # run tests
 #
 
-test.run(['dc.inp'], ['h2o.xyz'], args='--outcmo')
-test.run(['vis.inp'], ['h2o.xyz'], f, args='--incmo --get="ed.cube"')
-Path('CHECKPOINT.h5').unlink()
+test.run(['dc.inp'], ['c6h6.xyz'], args='--outcmo')
 
-#test.run(['dc_631.inp'], ['c6h6.xyz'], args='--outcmo')
-#test.run(['vis_elf.inp'], ['c6h6.xyz'], args='--incmo --get="elf.cube"')
+# unperturbed densities
+test.run(['vis.inp'], ['c6h6.xyz'], f, args='--incmo --get="ed.cube"')
+
+# perturbed densities
+test.run(['rspB.inp'], ['c6h6.xyz'], args='--incmo --outcmo --get="*.h5"')
+test.run(['vis_rspB.inp'], ['c6h6.xyz'], f, args='--incmo --put="TBMO.h5 RESPONSE.h5" --get="*.cube"')
+
 #Path('CHECKPOINT.h5').unlink()
 
 sys.exit(test.return_code)

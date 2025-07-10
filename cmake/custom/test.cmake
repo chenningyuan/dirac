@@ -221,7 +221,7 @@ dirac_test(visual_symmetry "medium;visual" "")
 dirac_test(response_hdf5 "medium;response" "")
 dirac_test(visual_3d_gamma5_dc_dft "medium;visual" "")
 dirac_test(visual_3d_spinden_dc_dft "medium;visual" "")
-dirac_test(visual_tutorial_overview "short;visual" "")
+dirac_test(visual_tutorial_overview "long;visual" "")
 #dirac_test(visual_tutorial_radial_distributions "short;visual" "")
 # gosia: WIP
 #dirac_test(visual_tutorial_radial_distributions "short;visual" "")
