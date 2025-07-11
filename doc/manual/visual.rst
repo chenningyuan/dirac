@@ -70,7 +70,9 @@ Available `key=value` options
 
 Notes:
 
-* *current limitations:* make sure there is one space between each `key=value` entry in the grid specification line.
+* *current limitations:*
+    * make sure there is one space between each `key=value` entry in the grid specification line.
+    * the maximum line length in the input file is 200 characters
 * for the specific examples, see the corresponding test in `DIRAC` test suite: `test/visual_grid_options`
 
 Additional keywords
@@ -192,7 +194,9 @@ Available `key=value` options
 
 Notes:
 
-* *current limitations:* make sure there is one space between each `key=value` entry in the grid function specification line.
+* *current limitations:* 
+    * make sure there is one space between each `key=value` entry in the grid function specification line.
+    * the maximum line length in the input file is 200 characters
 
 General `key=value` options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
