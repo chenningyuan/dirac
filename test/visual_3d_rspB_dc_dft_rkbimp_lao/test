@@ -20,9 +20,17 @@ from runtest_rs import CompareHDF5
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'Final grid function values (id=',
-      num_lines = 28,
-      rel_tolerance = 1.0e-6)
+for x in range(1,9):
+    f.add(from_string = 'Final grid function values (id=  '+str(x),
+          num_lines = 28,
+          rel_tolerance = 1.0e-6)
+
+f.add(from_string = 'Final grid function values (id=  9)',
+      num_lines = 3,
+      abs_tolerance = 1.0e-6)
+f.add(from_string = 'Final grid function values (id= 10)',
+      num_lines = 3,
+      abs_tolerance = 1.0e-6)
  
 #
 # run tests
