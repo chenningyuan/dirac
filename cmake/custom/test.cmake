@@ -69,6 +69,7 @@ dirac_test(symmetry_scf_energy "long;scf" "")
 dirac_test(fde_open-shell "long;fde" "")
 dirac_test(fde_response_shield "long;fde;shielding;lao" "")
 dirac_test(xyz_input "long;input;xyz" "")
+dirac_test(visual_tutorial_overview "long;visual" "")
 ############################################################
 # Labeled as medium
 dirac_test(response_pv_nmr "medium;pvc;response" "")
@@ -116,6 +117,8 @@ dirac_test(open-shells "medium" "")
 dirac_test(basis_automatic_augmentation "medium;basis" "")
 dirac_test(ecp_nio6 "medium;ecp" "")
 dirac_test(ffpt_dipmom_polariz_relcc "medium;cc" "")
+dirac_test(visual_symmetry "medium;visual" "")
+dirac_test(response_hdf5 "medium;response" "")
 ############################################################
 # Labeled as short
 dirac_test(response_pv_nsr "short;pvc;response" "")
@@ -217,19 +220,12 @@ dirac_test(visual_3d_kinden_ll_dft "short;visual" "")
 dirac_test(visual_3d_rspB_ll_dft_rkb_lao "medium;visual;lao" "")
 dirac_test(visual_3d_rspB_ll_dft_rkb_nolao "short;visual" "")
 dirac_test(visual_3d_rspE_ll_dft "short;visual" "")
-dirac_test(visual_symmetry "medium;visual" "")
-dirac_test(response_hdf5 "medium;response" "")
 dirac_test(visual_3d_gamma5_dc_dft "short;visual" "")
 dirac_test(visual_3d_spinden_dc_dft "short;visual" "")
 dirac_test(visual_tutorial_interactive "short;visual" "")
-dirac_test(visual_tutorial_overview "long;visual" "")
-#dirac_test(visual_tutorial_radial_distributions "short;visual" "")
-# gosia: WIP
 #dirac_test(visual_tutorial_radial_distributions "short;visual" "")
 #dirac_test(visual_3d_bed_dc_dft "short;visual" "")
 #dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao_micd_specific "short;visual;lao" "")
-# Related tests:
-########################
 #gosia: these tests run now in serial mode (WIP):
 #dirac_test(visual_3d_esp_dc_dft "short;visual" "")
 #dirac_test(visual_3d_esp_ll_dft "short;visual" "")
