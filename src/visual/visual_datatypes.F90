@@ -739,9 +739,9 @@ contains
       write(*, '(2x,a)') 'London atomic orbitals (LAOs) are used in the formulation of grid function'
       if (self%lao_skip(1) == 1) &
         write(*, '(4x,a)') '* LAOs: response contribution to the grid function is neglected'
-      if (self%lao_skip(1) == 1) &
+      if (self%lao_skip(2) == 1) &
         write(*, '(4x,a)') '* LAOs: "direct" contribution to the grid function is neglected'
-      if (self%lao_skip(1) == 1) &
+      if (self%lao_skip(3) == 1) &
         write(*, '(4x,a)') '* LAOs: reorthonormalization contribution to the grid function is neglected'
     end if
 

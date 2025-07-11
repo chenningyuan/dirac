@@ -30,11 +30,11 @@ f.add(from_string = 'Final grid function values (id=',
 test.run(['dc.inp'], ['c6h6.xyz'], args='--outcmo')
 
 # unperturbed densities
-test.run(['vis.inp'], ['c6h6.xyz'], f, args='--incmo --get="ed.cube"')
+test.run(['vis.inp'], ['c6h6.xyz'], f, args='--incmo --get="*.cube"')
 
 # perturbed densities
 test.run(['rspB.inp'], ['c6h6.xyz'], args='--incmo --outcmo --get="*.h5"')
-test.run(['vis_rspB.inp'], ['c6h6.xyz'], f, args='--incmo --put="TBMO.h5 RESPONSE.h5" --get="*.cube"')
+test.run(['vis_rspB.inp'], ['c6h6.xyz'], f, args='--incmo --put="TBMO.h5 RESPONSE.h5" --get="*.csv"')
 
 #Path('CHECKPOINT.h5').unlink()
 
