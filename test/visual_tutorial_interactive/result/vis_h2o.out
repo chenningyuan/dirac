@@ -1,8 +1,8 @@
   ** interface to 32-bit integer MPI enabled **
 
-DIRAC master    (ac0496) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
+DIRAC master    (ac0048) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
 DIRAC nodes 1 to 7 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
-DIRAC master    (ac0496) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
+DIRAC master    (ac0048) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
 DIRAC nodes 1 to 7 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
  
 Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
@@ -194,21 +194,21 @@ Version information
 -------------------
 
 Branch        | gosia/visual-merge
-Commit hash   | 93499e5f7
+Commit hash   | 6aeacf602
 Commit author | gosia olejniczak
-Commit date   | Wed Jun 18 06:25:47 2025 +0200
+Commit date   | Fri Jul 11 11:48:11 2025 +0200
 
 
 Configuration and build information
 -----------------------------------
 
 Who compiled             | plggosiao
-Compiled on server       | ac0496
+Compiled on server       | ac0048
 Operating system         | Linux-4.18.0-553.40.1.el8_10.x86_64
 CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2025-06-18 06:19:20.234613+00:00
+Configuration time       | 2025-07-11 09:49:18.247021+00:00
 Fortran compiler         | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiifort
 Fortran compiler version | 2021.4.0
 Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp
@@ -243,8 +243,8 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Jun 18 08:32:01 2025
-     Host name              : ac0496                                  
+     Date and time (Linux)  : Fri Jul 11 12:00:02 2025
+     Host name              : ac0048                                  
 
  * Opening checkpoint file 
     - Existing hdf5 checkpoint file: check contents
@@ -280,9 +280,10 @@ cc-pVDZ
 id=1 input=create typ=1 npoints=[64,64,32] margin=4.0                                               
 id=2 input=dft                                                                                      
 .GRIDFUNCTIONS                                                                                      
-2                                                                                                   
+3                                                                                                   
 name=ed id_grid=1 purpose=visualization export=cube file_out=ed.cube                                
 name=ed id_grid=2 purpose=integration                                                               
+name=elf id_grid=1 purpose=visualization export=cube file_out=elf.cube                              
 *END OF                                                                                             
 
 
@@ -746,10 +747,46 @@ H     -0.7685505217   0.4760599897   0.0000000000
 No. of positive energy orbitals (NESH):    40
 No. of negative energy orbitals (NPSH):    40
 Total no. of orbitals           (NORB):    80
+  
 
   *** Visualization module ***
+  
  WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb.
-  Opening new cube file for grid function export: 
+ Setting up grid #           1
+  Grid points are generated to span a 3D rectilinear cube, defined in the user input (.3D or .3D_INT): 
+    * Cube parameters: 
+      * "x" direction: 
+        nr points:       64
+        spacing:        0.1731
+        extend from:       -5.4523 to        5.4523 on x axis
+      * "y" direction: 
+        nr points:       64
+        spacing:        0.1448
+        extend from:       -4.2249 to        4.8996 on y axis
+      * "z" direction: 
+        nr points:       32
+        spacing:        0.2581
+        extend from:       -4.0000 to        4.0000 on z axis
+    * Total number of points:         131072
+ 
+ Setting up grid function #           1
+  Grid function is a tensor field of order        0
+  Grid function will be calculated in vertices of grid       1
+  Grid function depends on the unperturbed electron density
+  Grid function will be exported; export format: 
+  cube
+  Grid function will be exported to file: 
+  ed.cube
+ 
+ Setting up grid function #           3
+  Grid function is a tensor field of order        0
+  Grid function will be calculated in vertices of grid       1
+  Grid function depends on the unperturbed electron density
+  Grid function will be exported; export format: 
+  cube
+  Grid function will be exported to file: 
+  elf.cube
+ 
  VISUAL: numerical_grid will be regenerated
 
 
@@ -780,15 +817,20 @@ H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
    Number of grid points in quadrature:     87176 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.16 seconds
+ >>>> Time used in DFTGRD:   0.17 seconds
 
+ Setting up grid #           2
+  Grid points are read from the "numerical_grid" file from DFT calculations.
  
-*** VISUAL output ***
+ Setting up grid function #           2
+  Grid function is a tensor field of order        0
+  Grid function will be integrated on grid        2
+  Grid function depends on the unperturbed electron density
  
-Final grid_function values (grid_function%id=  2) integrated on grid (grid#id=  2): 
+  Final grid function values (id=  2) integrated on grid (id=  2): 
    9.99999977E+000
  
- Elapsed walltime in run_visual:  -0.533350000000000     
+ Elapsed walltime in run_visual:  -0.793182000000000     
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -800,11 +842,11 @@ Final grid_function values (grid_function%id=  2) integrated on grid (grid#id=  
 
 
  
-     Date and time (Linux)  : Wed Jun 18 08:32:01 2025
-     Host name              : ac0496                                  
+     Date and time (Linux)  : Fri Jul 11 12:00:04 2025
+     Host name              : ac0048                                  
 
->>>> Node 0, utime: 2, stime: 0, minflt: 16107, majflt: 48, nvcsw: 1929, nivcsw: 326, maxrss: 1920240
->>>> Total WALL time used in DIRAC: 0s
+>>>> Node 0, utime: 0, stime: 0, minflt: 14715, majflt: 62, nvcsw: 1989, nivcsw: 366, maxrss: 269704
+>>>> Total WALL time used in DIRAC: 2s
   
   Dynamical Memory Usage Summary for Master
   
@@ -831,4 +873,4 @@ Final grid_function values (grid_function%id=  2) integrated on grid (grid#id=  
  MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /net/pr2/projects/plgrid/plggqcembed/devel/dirac/build-gosia-visual-merge-public-intel202140/test/visual_tutorial_overview
+DIRAC pam run in /net/pr2/projects/plgrid/plggqcembed/devel/dirac/build-gosia-visual-merge-public-intel202140/test/visual_tutorial_interactive
