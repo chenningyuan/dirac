@@ -1,4 +1,4 @@
-name: visual
+name: dirac_visual
 channels:
   - conda-forge
 dependencies:
