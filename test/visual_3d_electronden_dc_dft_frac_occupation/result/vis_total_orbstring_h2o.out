@@ -243,7 +243,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri Jul 11 11:00:27 2025
+     Date and time (Linux)  : Fri Jul 11 11:07:36 2025
      Host name              : ac0048                                  
 
  * Opening checkpoint file 
@@ -841,7 +841,7 @@ Total no. of orbitals           (NORB):    80
    1.05427324E-001   1.64186075E-002   5.43015084E-001   9.76515066E-001
    2.85057151E-001   6.76376272E-001   9.96919008E-001   1.61354923E-001
  
- Elapsed walltime in run_visual:  -2.655900000000000E-002
+ Elapsed walltime in run_visual:  -1.923500000000000E-002
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -853,11 +853,11 @@ Total no. of orbitals           (NORB):    80
 
 
  
-     Date and time (Linux)  : Fri Jul 11 11:00:28 2025
+     Date and time (Linux)  : Fri Jul 11 11:07:36 2025
      Host name              : ac0048                                  
 
->>>> Node 0, utime: 0, stime: 0, minflt: 11938, majflt: 0, nvcsw: 1865, nivcsw: 256, maxrss: 259676
->>>> Total WALL time used in DIRAC: 1s
+>>>> Node 0, utime: 0, stime: 0, minflt: 12195, majflt: 61, nvcsw: 1940, nivcsw: 274, maxrss: 260704
+>>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master
   

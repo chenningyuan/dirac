@@ -4,6 +4,12 @@ import os
 import sys
 from pathlib import Path
 
+try:
+    import h5py
+    h5py_available = True
+except:
+    h5py_available = False
+
 #
 # prepare environment
 #
@@ -16,65 +22,67 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Final grid function values (id=',
       num_lines = 28,
-      abs_tolerance = 1.0e-5)
+      abs_tolerance = 1.0e-6)
  
 #
 # run tests
 #
 
 test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
-test.run(['vis.inp'], ['h2o.mol'], f, args='--incmo')
-
+if h5py_available:
+    test.run(['vis.inp'], ['h2o.mol'], f, args='--incmo --get="*.h5"')
+else:
+    test.run(['vis.inp'], ['h2o.mol'], f, args='--incmo')
 
 #
 # compare generated data with reference
 #
 
-#if h5py_available:
-#    rs = CompareHDF5(test.work_dir)
-#    
-#    testset = ['divs']
-#    for t in testset:
-#    
-#        rs.verify(ftest=t+'.h5',\
-#                  fref='result/'+t+'.h5',\
-#                  typ='single',\
-#                  gf_label='/result/grid/ndim')
-#    
-#        rs.verify(ftest=t+'.h5',\
-#                  fref='result/'+t+'.h5',\
-#                  typ='single',\
-#                  gf_label='/result/grid/nr_points_total')
-#    
-#    #   now with low rel_tolerance; data seems to be numerically unstable
-#        rs.verify(ftest=t+'.h5',\
-#                  fref='result/'+t+'.h5',\
-#                  typ='array',\
-#                  rel_tolerance=1.0e-4,\
-#                  gf_label='/result/grid_function/'+t+'/visualization/values/',
-#                  gf_test_key='t0_icomp_1')
-#    
-#    
-#    testset = ['s', 'rots']
-#    for t in testset:
-#    
-#        rs.verify(ftest=t+'.h5',\
-#                  fref='result/'+t+'.h5',\
-#                  typ='single',\
-#                  gf_label='/result/grid/ndim')
-#    
-#        rs.verify(ftest=t+'.h5',\
-#                  fref='result/'+t+'.h5',\
-#                  typ='single',\
-#                  gf_label='/result/grid/nr_points_total')
-#    
-#        for i in range(1,4):
-#            rs.verify(ftest=t+'.h5',\
-#                      fref='result/'+t+'.h5',\
-#                      typ='array',\
-#                      rel_tolerance=1.0e-4,\
-#                      gf_label='/result/grid_function/'+t+'/visualization/values/',
-#                      gf_test_key='t1_icomp_'+str(i))
-#
+if h5py_available:
+    rs = CompareHDF5(test.work_dir)
+    
+    testset = ['divs']
+    for t in testset:
+    
+        rs.verify(ftest=t+'.h5',\
+                  fref='result/'+t+'.h5',\
+                  typ='single',\
+                  gf_label='/result/grid/ndim')
+    
+        rs.verify(ftest=t+'.h5',\
+                  fref='result/'+t+'.h5',\
+                  typ='single',\
+                  gf_label='/result/grid/nr_points_total')
+    
+    #   now with low rel_tolerance; data seems to be numerically unstable
+        rs.verify(ftest=t+'.h5',\
+                  fref='result/'+t+'.h5',\
+                  typ='array',\
+                  rel_tolerance=1.0e-4,\
+                  gf_label='/result/grid_function/'+t+'/visualization/values/',
+                  gf_test_key='t0_icomp_1')
+    
+    
+    testset = ['s', 'rots']
+    for t in testset:
+    
+        rs.verify(ftest=t+'.h5',\
+                  fref='result/'+t+'.h5',\
+                  typ='single',\
+                  gf_label='/result/grid/ndim')
+    
+        rs.verify(ftest=t+'.h5',\
+                  fref='result/'+t+'.h5',\
+                  typ='single',\
+                  gf_label='/result/grid/nr_points_total')
+    
+        for i in range(1,4):
+            rs.verify(ftest=t+'.h5',\
+                      fref='result/'+t+'.h5',\
+                      typ='array',\
+                      rel_tolerance=1.0e-4,\
+                      gf_label='/result/grid_function/'+t+'/visualization/values/',
+                      gf_test_key='t1_icomp_'+str(i))
+
 
 sys.exit(test.return_code)
