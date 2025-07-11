@@ -329,6 +329,10 @@ C     Final print section
 C
       CALL XPPOUT(ATMPPF,OSCBED,OSCECD,OMEGA,RCNV,ISSYM,WORK,KFREE
      &                                                      ,LFREE)
+!     if requested, additionally export response information to file:
+      if (XPP_RSPEXP) then
+        call export_rsp_info_to_helper(iprint)
+      end if
       CALL MEMREL('PRPXP1',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('PRPXP1')
@@ -2678,9 +2682,6 @@ C
           ENDDO          
         ENDDO
       ENDDO    
-      if (XPP_RSPEXP) then
-        call export_rsp_info_to_helper(iprint)
-      end if
       deallocate(symlab)
       deallocate(excerg)
       deallocate(indx)

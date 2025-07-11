@@ -467,25 +467,25 @@ contains
     logical :: exists
     character(100) :: errmsg
 
-    inquire(file=trim(f_name), exist=exists)
+    conmat_file%name = trim(f_name)
+
+    inquire(file=conmat_file%name, exist=exists)
     if (.not. exists) then
 
       if (present(valid)) then
         if (valid) then
-          write(errmsg, *) 'file ',trim(f_name),' does not exist. Stopping now!'
+          write(errmsg, *) 'file ',conmat_file%name,' does not exist. Stopping now!'
           call quit(errmsg)
         end if
       end if
 
-      write(*,*) " Opening new HDF5 file for conmat data export: ", conmat_file%name
+      !write(*,*) " Opening new HDF5 file for conmat data export: ", conmat_file%name
       top_groups(1) = '/result'
-      conmat_file%name = trim(f_name)
       conmat_file%type = 2
       conmat_file%status = -1
       call lab_init(conmat_file, top_groups)
     else
-      write(*,*) " Opening existing HDF5 file for conmat data export: ", conmat_file%name
-      conmat_file%name = trim(f_name)
+      !write(*,*) " Opening existing HDF5 file for conmat data export: ", conmat_file%name
       conmat_file%type = 2
       conmat_file%status = 0
     end if
@@ -592,7 +592,7 @@ contains
   subroutine conmat_checkpoint_close(conmat_file)
     type(file_info_t), intent(inout) :: conmat_file
     conmat_file%status = 0
-    print*, " conmat Checkpoint file closed"
+    !print*, " conmat Checkpoint file closed"
   end subroutine
 
 end module

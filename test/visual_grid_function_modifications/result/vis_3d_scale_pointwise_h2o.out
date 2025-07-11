@@ -1,8 +1,8 @@
   ** interface to 32-bit integer MPI enabled **
 
-DIRAC master    (ac0420) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
+DIRAC master    (ac0784) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
 DIRAC nodes 1 to 7 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
-DIRAC master    (ac0420) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
+DIRAC master    (ac0784) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
 DIRAC nodes 1 to 7 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
  
 Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
@@ -194,21 +194,21 @@ Version information
 -------------------
 
 Branch        | gosia/visual-merge
-Commit hash   | 827d2c6f6
+Commit hash   | 2223cf52d
 Commit author | gosia olejniczak
-Commit date   | Wed Jun 11 11:25:16 2025 +0200
+Commit date   | Mon Jun 23 15:46:47 2025 +0200
 
 
 Configuration and build information
 -----------------------------------
 
 Who compiled             | plggosiao
-Compiled on server       | ac0420
+Compiled on server       | ac0784
 Operating system         | Linux-4.18.0-553.40.1.el8_10.x86_64
 CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2025-06-11 09:26:21.494852+00:00
+Configuration time       | 2025-06-23 16:45:24.700954+00:00
 Fortran compiler         | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiifort
 Fortran compiler version | 2021.4.0
 Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp
@@ -243,8 +243,8 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Jun 11 13:50:12 2025
-     Host name              : ac0420                                  
+     Date and time (Linux)  : Mon Jun 23 19:15:38 2025
+     Host name              : ac0784                                  
 
  * Opening checkpoint file 
     - Existing hdf5 checkpoint file: check contents
@@ -273,7 +273,7 @@ Contents of the input file
 **VISUAL                                                                                            
 .GRIDS                                                                                              
 1                                                                                                   
-id=1 input=create typ=1 ndim=3 npoints=[3,3,3] margin=4.0                                           
+id=1 input=create typ=1 npoints=[3,3,3] margin=4.0                                                  
 .GRIDFUNCTIONS                                                                                      
 4                                                                                                   
 name=ed id_grid=1 outpri=yes purpose=visualization dscale=2.0                                       
@@ -759,15 +759,40 @@ H     -0.7685505223   0.4760599900   0.0000000000
 No. of positive energy orbitals (NESH):    40
 No. of negative energy orbitals (NPSH):    40
 Total no. of orbitals           (NORB):    80
+  
 
   *** Visualization module ***
- WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb
- WARNING: no xc_functional on CHECKPOINT. Assuming non-DFT job
+  
+ WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb.
+ Setting up grid #           1
+  Grid points are generated to span a 3D rectilinear cube, defined in the user input (.3D or .3D_INT): 
+    * Cube parameters: 
+      * "x" direction: 
+        nr points:        3
+        spacing:        5.4524
+        extend from:       -5.4524 to        5.4524 on x axis
+      * "y" direction: 
+        nr points:        3
+        spacing:        4.5623
+        extend from:       -4.2249 to        4.8996 on y axis
+      * "z" direction: 
+        nr points:        3
+        spacing:        4.0000
+        extend from:       -4.0000 to        4.0000 on z axis
+    * Total number of points:             27
  
-*** VISUAL output ***
+ Setting up grid function #           1
+  Grid function is a tensor field of order        0
+  Grid function will be calculated in vertices of grid       1
+  Grid function values will be modified (pointwise): 
+    * upscaled by:        1.0000
+    * downscaled by:        2.0000
+    * multiplied with cartesian powers:   0  0  0
+    * multiplied with radial power:   0
+  Grid function depends on the unperturbed electron density
  
-Final grid_function values (grid_function%id=  1) in grid points (grid#id=  1): 
-x  y  z  grid_function values
+  Final grid function values (id=  1) in grid points (id=  1): 
+    x  y  z  grid_function values
   -5.45235000E+000  -4.56226445E+000  -4.00000000E+000   1.10244510E-010
   -5.45235000E+000  -4.56226445E+000   0.00000000E+000   5.49410462E-009
   -5.45235000E+000  -4.56226445E+000   4.00000000E+000   1.10244510E-010
@@ -796,11 +821,18 @@ x  y  z  grid_function values
    5.45235000E+000   4.56226445E+000   0.00000000E+000   3.00702139E-007
    5.45235000E+000   4.56226445E+000   4.00000000E+000   6.05203833E-009
  
+ Setting up grid function #           2
+  Grid function is a tensor field of order        0
+  Grid function will be calculated in vertices of grid       1
+  Grid function values will be modified (pointwise): 
+    * upscaled by:        4.0000
+    * downscaled by:        1.0000
+    * multiplied with cartesian powers:   0  0  0
+    * multiplied with radial power:   0
+  Grid function depends on the unperturbed electron density
  
-*** VISUAL output ***
- 
-Final grid_function values (grid_function%id=  2) in grid points (grid#id=  1): 
-x  y  z  grid_function values
+  Final grid function values (id=  2) in grid points (id=  1): 
+    x  y  z  grid_function values
   -5.45235000E+000  -4.56226445E+000  -4.00000000E+000   8.81956082E-010
   -5.45235000E+000  -4.56226445E+000   0.00000000E+000   4.39528370E-008
   -5.45235000E+000  -4.56226445E+000   4.00000000E+000   8.81956082E-010
@@ -829,11 +861,18 @@ x  y  z  grid_function values
    5.45235000E+000   4.56226445E+000   0.00000000E+000   2.40561711E-006
    5.45235000E+000   4.56226445E+000   4.00000000E+000   4.84163067E-008
  
+ Setting up grid function #           3
+  Grid function is a tensor field of order        0
+  Grid function will be calculated in vertices of grid       1
+  Grid function values will be modified (pointwise): 
+    * upscaled by:        1.0000
+    * downscaled by:        1.0000
+    * multiplied with cartesian powers:   2  0  0
+    * multiplied with radial power:   0
+  Grid function depends on the unperturbed electron density
  
-*** VISUAL output ***
- 
-Final grid_function values (grid_function%id=  3) in grid points (grid#id=  1): 
-x  y  z  grid_function values
+  Final grid function values (id=  3) in grid points (id=  1): 
+    x  y  z  grid_function values
   -5.45235000E+000  -4.56226445E+000  -4.00000000E+000   6.55472418E-009
   -5.45235000E+000  -4.56226445E+000   0.00000000E+000   3.26658809E-007
   -5.45235000E+000  -4.56226445E+000   4.00000000E+000   6.55472418E-009
@@ -862,11 +901,18 @@ x  y  z  grid_function values
    5.45235000E+000   4.56226445E+000   0.00000000E+000   1.78786189E-005
    5.45235000E+000   4.56226445E+000   4.00000000E+000   3.59831450E-007
  
+ Setting up grid function #           4
+  Grid function is a tensor field of order        0
+  Grid function will be calculated in vertices of grid       1
+  Grid function values will be modified (pointwise): 
+    * upscaled by:        1.0000
+    * downscaled by:        1.0000
+    * multiplied with cartesian powers:   0  0  0
+    * multiplied with radial power:   1
+  Grid function depends on the unperturbed electron density
  
-*** VISUAL output ***
- 
-Final grid_function values (grid_function%id=  4) in grid points (grid#id=  1): 
-x  y  z  grid_function values
+  Final grid function values (id=  4) in grid points (id=  1): 
+    x  y  z  grid_function values
   -5.45235000E+000  -4.56226445E+000  -4.00000000E+000   1.79860636E-009
   -5.45235000E+000  -4.56226445E+000   0.00000000E+000   7.81186544E-008
   -5.45235000E+000  -4.56226445E+000   4.00000000E+000   1.79860636E-009
@@ -895,7 +941,7 @@ x  y  z  grid_function values
    5.45235000E+000   4.56226445E+000   0.00000000E+000   4.27557321E-006
    5.45235000E+000   4.56226445E+000   4.00000000E+000   9.87372034E-008
  
- Elapsed walltime in run_visual:  -3.419499999999998E-002
+ Elapsed walltime in run_visual:  -3.156100000000001E-002
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -907,10 +953,10 @@ x  y  z  grid_function values
 
 
  
-     Date and time (Linux)  : Wed Jun 11 13:50:12 2025
-     Host name              : ac0420                                  
+     Date and time (Linux)  : Mon Jun 23 19:15:38 2025
+     Host name              : ac0784                                  
 
->>>> Node 0, utime: 0, stime: 0, minflt: 12386, majflt: 129, nvcsw: 2099, nivcsw: 368, maxrss: 257188
+>>>> Node 0, utime: 0, stime: 0, minflt: 12401, majflt: 69, nvcsw: 1936, nivcsw: 377, maxrss: 259360
 >>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master

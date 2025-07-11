@@ -225,7 +225,7 @@ General `key=value` options
 
 * `outpri=option`
 
-    Specify whether the grid function values should also be printed out to `DIRAC` output. Available options: `outpri=yes`, `outpri=no` (the default).
+    Specify whether the grid function values should also be printed out to `DIRAC` output. Available options: `outpri=no` (default if `purpose=visualization`), `outpri=yes` (default if `purpose=integration`).
 
 * `export=option`
 

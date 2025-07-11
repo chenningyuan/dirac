@@ -158,6 +158,7 @@ module visual_datatypes
     procedure, pass, public:: get_npoints
     procedure, pass, public:: should_depend_on_LAOs
     procedure, pass, public:: erase   => erase_grid_function
+    procedure, pass, public:: printout => printout_grid_function_info
     procedure, pass, public:: display => display_grid_function
   end type grid_function_t
 
@@ -625,68 +626,71 @@ contains
     select case (self%input)
 
       case (1)
-        write(*, *) '  Grid is read from file: ', self%file_inp
+        write(*, '(2x,a)') 'Grid is read from file: ', self%file_inp
 
       case (-1)
-        write(*, *) '  Grid points are read from the "numerical_grid" file '
-        write(*, *) '  from DFT calculations.'
+        write(*, '(2x,a)') 'Grid points are read from the "numerical_grid" file '//&
+                           'from DFT calculations.'
 
       case (2)
-        write(*, *) '  Cooridnates of grid points '
-        write(*, *) '  are provided in the user input (.LIST)'
-        write(*, '(a,i8)') '  * Total number of points:       ', self%nr_points_total
+        write(*, '(2x,a)') 'Coordinates of grid points '//&
+                           'are provided in the user input (.LIST)'
+        write(*, '(4x,a,i8)') '* Total number of points: ', self%nr_points_total
 
       case (3)
-        write(*, *) '  Grid points are generated as equidistant points, '
-        write(*, *) '  on line defined in the user input (.LINE): '
-        write(*, *) '   * The line is defined by two points: '
-        write(*, '(a,3f13.4)') '    start: ', self%extents(0,1:3)
-        write(*, '(a,3f13.4)') '    end:   ', self%extents(1,1:3)
-        write(*, '(a,i8)') '   * The number of points: ', self%nr_points_total
+        write(*, '(2x,a)') 'Grid points are generated as equidistant points, '//&
+                           'on line defined in the user input (.LINE): '
+        write(*, '(4x,a,i8)') '* The line is defined by two points: '
+        write(*, '(6x,a,3f13.4)') 'start: ', self%extents(0,1:3)
+        write(*, '(6x,a,3f13.4)') 'end:   ', self%extents(1,1:3)
+        write(*, '(4x,a,i8)') '* Total number of points: ', self%nr_points_total
 
       case (4, -4)
-        write(*, *) '  Grid points are generated to span a 2D plane, '
-        write(*, *) '  defined in the user input (.2D or .2D_INT): '
-        write(*, *) '   * The plane is spanned by three points: '
-        write(*, '(a,3f13.4)') '     "origin": ', self%extents(0,1:3)
-        write(*, '(a,3f13.4)') '     "right" : ', self%extents(1,1:3)
-        write(*, '(a,3f13.4)') '     "top"   : ', self%extents(2,1:3)
-        write(*, '(a,i8)') '   * The number of points to "right": ', self%nr_points(1)
-        write(*, '(a,i8)') '   * The number of points to "top"  : ', self%nr_points(2)
-        write(*, '(a,i8)') '   * Total number of points:       ', self%nr_points_total
+        write(*, '(2x,a)') 'Grid points are generated to span a 2D plane, '//&
+                           'defined in the user input (.2D or .2D_INT): '
+        write(*, '(4x,a)') '* The plane is spanned by three points: '
+        write(*, '(6x,a,3f13.4)') '"origin": ', self%extents(0,1:3)
+        write(*, '(6x,a,3f13.4)') '"right" : ', self%extents(1,1:3)
+        write(*, '(6x,a,3f13.4)') '"top"   : ', self%extents(2,1:3)
+        write(*, '(4x,a,i8)') '* The number of points to "right": ', self%nr_points(1)
+        write(*, '(4x,a,i8)') '* The number of points to "top"  : ', self%nr_points(2)
+        write(*, '(4x,a,i8)') '* Total number of points:       ', self%nr_points_total
 
       case (0, 5, -5)
-        write(*, *) '  Grid points are generated to span a 3D rectilinear cube, '
         if (self%input == 0) then
-          write(*, *) '  defined in the user input (.3D or .3D_INT): '
+          write(*, '(2x,a)') 'Grid points are generated to span a 3D rectilinear cube, '//&
+                             'defined in the user input (.3D or .3D_INT): '
         else
-          write(*, *) '  defined in the grid specification line: '
+          write(*, '(2x,a)') 'Grid points are generated to span a 3D rectilinear cube, '//&
+                             'defined in the grid specification line: '
         end if
-        write(*, *) '   Cube parameters: '
-        write(*, *)           '   * "x" direction: '
-        write(*,'(a,i8)')     '      nr points: ', self%nr_points(1)
-        write(*,'(a,3f13.4)') '      spacing: ', self%spacing(1)
-        write(*,'(a,f13.4,a,f13.4,a)') '      extend from: ', self%extents(0,1), ' to ', self%extents(1,1), ' on x axis'
-        write(*, *)           '   * "y" direction: '
-        write(*,'(a,i8)')     '      nr points: ', self%nr_points(2)
-        write(*,'(a,3f13.4)') '      spacing: ', self%spacing(2)
-        write(*,'(a,f13.4,a,f13.4,a)') '      extend from: ', self%extents(0,2), ' to ', self%extents(1,2), ' on y axis'
-        write(*, *)           '   * "z" direction: '
-        write(*,'(a,i8)')     '      nr points: ', self%nr_points(3)
-        write(*,'(a,3f13.4)') '      spacing: ', self%spacing(3)
-        write(*,'(a,f13.4,a,f13.4,a)') '      extend from: ', self%extents(0,3), ' to ', self%extents(1,3), ' on z axis'
-
-        write(*, '(a,i8)') '   Total number of points:       ', self%nr_points_total
+        write(*, '(4x,a)') '* Cube parameters: '
+        write(*, '(6x,a)') '* "x" direction: '
+        write(*,'(8x,a,i8)') 'nr points: ', self%nr_points(1)
+        write(*,'(8x,a,3f13.4)') 'spacing: ', self%spacing(1)
+        write(*,'(8x,a,f13.4,a,f13.4,a)') 'extend from: ', self%extents(0,1), ' to ', self%extents(1,1), ' on x axis'
+        write(*, '(6x,a)') '* "y" direction: '
+        write(*,'(8x,a,i8)') 'nr points: ', self%nr_points(2)
+        write(*,'(8x,a,3f13.4)') 'spacing: ', self%spacing(2)
+        write(*,'(8x,a,f13.4,a,f13.4,a)') 'extend from: ', self%extents(0,2), ' to ', self%extents(1,2), ' on y axis'
+        write(*, '(6x,a)') '* "z" direction: '
+        write(*,'(8x,a,i8)') 'nr points: ', self%nr_points(3)
+        write(*,'(8x,a,3f13.4)') 'spacing: ', self%spacing(3)
+        write(*,'(8x,a,f13.4,a,f13.4,a)') 'extend from: ', self%extents(0,3), ' to ', self%extents(1,3), ' on z axis'
+        write(*, '(4x,a,i8)') '* Total number of points:       ', self%nr_points_total
 
       case (6)
-        write(*, *) '  Grid points are generated to span radial grid, '
-        write(*, *) '  defined in the user input (.RADIAL): '
-        write(*, '(a,3f13.4)') '   * Grid origin:                  ', self%origin(1:3)
-        write(*, '(a,i8)')     '   * Lebedev angular grid L:       ', self%radial_lebedev_l 
-        write(*, '(a,i8)')     '   * The number of angular points: ', self%radial_nr_points_angular
-        write(*, '(a,i8)')     '   * Total number of points:       ', self%nr_points_total
+        write(*, '(2x,a)') 'Grid points are generated to span radial grid, '//&
+                           'defined in the user input (.RADIAL): '
+        write(*, '(4x,a,3f13.4)') '* Grid origin:                  ', self%origin(1:3)
+        write(*, '(4x,a,i8)') '* Lebedev angular grid L:       ', self%radial_lebedev_l 
+        write(*, '(4x,a,i8)') '* The number of angular points: ', self%radial_nr_points_angular
+        write(*, '(4x,a,i8)') '* Total number of points:       ', self%nr_points_total
 
     end select
+
+      if (allocated(self%export)) write(*, '(2x,a)') 'Grid will be exported; export format: ', self%export
+      if (allocated(self%file_out)) write(*, '(2x,a)') 'Grid will be exported to file: ', self%file_out
 
     !if (self%purpose == 1) then
     !  if (self%typ == 1) then
@@ -695,6 +699,54 @@ contains
     !    write(*, *) 'Integration on radial grid: '
     !  end if
     !end if
+    write(*, *)
+   end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine printout_grid_function_info(self)
+    class(grid_function_t), intent(in):: self
+    integer::i, j
+
+    if (self%id == 0) return
+
+    write(*, '(2x,a,i8)') 'Grid function is a tensor field of order ', self%tensor_order
+
+    if (self%purpose == 1) then
+      write(*, '(2x,a,i8)') 'Grid function will be integrated on grid ', self%id_assigned_grid
+    else if (self%purpose == 0) then
+      write(*, '(2x,a,i8)') 'Grid function will be calculated in vertices of grid', self%id_assigned_grid
+    end if
+
+    if (self%modify == 1) then
+      write(*, '(2x,a)') 'Grid function values will be modified (pointwise): '
+      write(*, '(4x,a,f13.4)') '* upscaled by: ', self%up_scale
+      write(*, '(4x,a,f13.4)') '* downscaled by: ', self%down_scale
+      write(*, '(4x,a,3i3)') '* multiplied with cartesian powers: ', self%cartesian_power(1:3)
+      write(*, '(4x,a,i3)') '* multiplied with radial power: ', self%radial_power
+    end if
+
+    if (self%wf_order > 0) then
+      write(*, '(2x,a)') 'Grid function depends on the perturbed electron density:'
+      write(*, '(4x,a,i3)') '* perturbation order: ', self%wf_order
+      write(*, '(4x,a)') '* File with response vectors data: ', self%rspvec_file
+      write(*, '(4x,a,i3)') '* ID of a response vector: ', self%rspvec_id
+    else
+      write(*, '(2x,a)') 'Grid function depends on the unperturbed electron density'
+    end if
+
+    if (self%lao == 1) then
+      write(*, '(2x,a)') 'London atomic orbitals (LAOs) are used in the formulation of grid function'
+      if (self%lao_skip(1) == 1) &
+        write(*, '(4x,a)') '* LAOs: response contribution to the grid function is neglected'
+      if (self%lao_skip(2) == 1) &
+        write(*, '(4x,a)') '* LAOs: "direct" contribution to the grid function is neglected'
+      if (self%lao_skip(3) == 1) &
+        write(*, '(4x,a)') '* LAOs: reorthonormalization contribution to the grid function is neglected'
+    end if
+
+      if (allocated(self%export)) write(*, '(2x,a)') 'Grid function will be exported; export format: ', self%export
+      if (allocated(self%file_out)) write(*, '(2x,a)') 'Grid function will be exported to file: ', self%file_out
     write(*, *)
    end subroutine
 

@@ -19,7 +19,7 @@ from runtest_rs import CompareHDF5
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'Final grid_function values (grid_function%id=',
+f.add(from_string = 'Final grid function values (id=',
       num_lines = 28,
       rel_tolerance = 1.0e-6)
  
@@ -63,3 +63,4 @@ if h5py_available:
                       gf_label='/result/grid_function/'+t+'/visualization/values/',
                       gf_test_key='t1_icomp_'+str(i))
 
+sys.exit(test.return_code)

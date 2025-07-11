@@ -130,7 +130,7 @@ contains
     call open_txt_file(data_file, 'w')
     funit = data_file%unit
 
-    if (grid%export == 'txt') then
+    if (grid_function%export == 'txt') then
 
       ! this is for backward compatibility:
       ! data is written in columns, separator=space, no header
@@ -155,7 +155,7 @@ contains
         end if
       end if
 
-    else if (grid%export == 'csv') then
+    else if (grid_function%export == 'csv') then
 
       ! data is written in columns, separator=',', with header 
 
@@ -263,27 +263,21 @@ contains
     g_ndim  = grid%get_ndim()
     gf_ndim = grid_function%get_ndim()
 
-    write(*, *) ''
-    write(*, '(a)') '*** VISUAL output ***'
-    write(*, *) ''
-
     if (grid_function%purpose == 1) then 
-      write(*, '(a,i3,a,i3,a)') &
-        'Final grid_function values (grid_function%id=', grid_function%id,&
-        ') integrated on grid (grid#id=', grid%id,'): '
+      write(*, '(2x,a,i3,a,i3,a)') &
+        'Final grid function values (id=', grid_function%id,') integrated on grid (id=', grid%id,'): '
       write(*, float_fmt) (grid_function%integrated_values(i),i=1,gf_ndim)
 
     else if (grid_function%purpose == 0) then
-      write(*, '(a,i3,a,i3,a)') &
-        'Final grid_function values (grid_function%id=', grid_function%id,&
-        ') in grid points (grid#id=', grid%id,'): '
+      write(*, '(2x,a,i3,a,i3,a)') &
+        'Final grid function values (id=', grid_function%id,') in grid points (id=', grid%id,'): '
       if (grid%allocated_radial_coord()) then
-        write(*, '(a)') 'radial_step, grid_function values'
+        write(*, '(4x,a)') 'radial step, grid function values'
       else
         if (grid%allocated_weights()) then
-          write(*, '(a)') 'x  y  z  w  grid_function values'
+          write(*, '(4x,a)') 'x  y  z  w  grid_function values'
         else
-          write(*, '(a)') 'x  y  z  grid_function values'
+          write(*, '(4x,a)') 'x  y  z  grid_function values'
         end if
       end if
       if (grid%allocated_radial_coord()) then
@@ -336,24 +330,11 @@ contains
         call visual_quit(errmsg)
       end if
     else if (mode == 'w') then
-      ! open new file to write; destroy file if present
-      if (exists) then
-        if (is_opened) then
-          call close_txt_file(plot_file, 'delete')
-        else
-          open(unit   = plot_file%unit, &
-               file   = plot_file%name, &
-               status = 'unknown',      &
-               access = 'sequential',   &
-               form   = 'formatted')
-          call close_txt_file(plot_file, 'delete')
-        end if
-      end if
-
+      ! open new file to write
       plot_file%unit = newunit()
       open(unit   = plot_file%unit, &
            file   = plot_file%name, &
-           status = 'unknown',      &
+           status = 'new',      &
            access = 'sequential',   &
            form   = 'formatted')
       plot_file%is_opened = .true.

@@ -256,3 +256,4 @@ for t in testset:
               gf_label='/result/grid/points/',\
               gf_test_key='weights')
 
+sys.exit(test.return_code)
