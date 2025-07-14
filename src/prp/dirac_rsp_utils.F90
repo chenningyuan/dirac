@@ -279,7 +279,7 @@ contains
     real(8) :: freq1, freq2, ergrsp, rnorm
     integer :: jsymop1, jsymop2, jtimop1, jtimop2, ivector
     integer :: nbas, norbs, nbdim, lenrec, intflg
-    integer :: i, idum, length, ih, ioff
+    integer :: i, iz, idum, length, ih, ioff
     logical :: rspvec_update
     logical :: debug_print
 !
@@ -384,10 +384,32 @@ contains
 !     allocate and read response vector
       call rsp_info%vectors(ivec)%alloc_values(length, gp_info%nz)
       read(f_unit) rsp_info%vectors(ivec)%values
+      if (debug_print) then
+        write(*, *) 'rspvec read from PAMXVC: ', ivec,lab1,typ1,freq1,&
+                    rnorm,ih,jsymop1-1,jtimop1,gp_info%jbtof(jsymop1-1, 1),&
+                    gp_info%ipqtoq(1:gp_info%nz,jsymop1-1),&
+                    gp_info%ihqmat(1:gp_info%nz,ih),   &
+                    gp_info%spinfr
+        do iz = 1, gp_info%nz
+          do i = 1, length
+            write(*, *) 'rspvec values: ', &
+            iz, i, rsp_info%vectors(ivec)%values(i,iz)
+          end do
+        end do
+      end if
       
 !     allocate and read orbital rotation array
       call rsp_info%vectors(ivec)%alloc_orbital_rotation_indices(2, length)
       read(f_unit) rsp_info%vectors(ivec)%orbital_rotation_indices
+      if (debug_print) then
+      write(*, *) 'rspvec read from PAMXVC: ', ivec,lab1,typ1,freq1
+        do iz = 1, 2
+          do i = 1, length
+            write(*, *) 'rspvec indices: ', &
+            iz, i, rsp_info%vectors(ivec)%orbital_rotation_indices(iz,i)
+          end do
+        end do
+      end if
 
     end if
 
@@ -424,11 +446,10 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine flatten_real_2d_to_1d(arr_2d, arr_1d)
     real(8), intent(in) :: arr_2d(:,:)
-    real(8), pointer, intent(out) :: arr_1d(:)
-    integer :: n
+    real(8), allocatable, intent(out) :: arr_1d(:)
+    integer :: i, j, ioff, n, n1, n2
 
     n = size(arr_2d)
-    nullify(arr_1d)
     allocate(arr_1d(n))
     arr_1d(1:n) = 0.0d0
     arr_1d(1:n) = reshape(arr_2d, (/n/)) 
@@ -438,11 +459,10 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine flatten_int_2d_to_1d(arr_2d, arr_1d)
     integer, intent(in) :: arr_2d(:,:)
-    integer, pointer, intent(out) :: arr_1d(:)
+    integer, allocatable, intent(out) :: arr_1d(:)
     integer :: n
 
     n = size(arr_2d)
-    nullify(arr_1d)
     allocate(arr_1d(n))
     arr_1d(1:n) = 0
     arr_1d(1:n) = reshape(arr_2d, (/n/)) 
@@ -641,44 +661,67 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine read_gp_data_from_common_blocks(self)
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbbas.h"
-#include "maxaqn.h"
-#include "onecom.h"
-#include "ccom.h"
-#include "dgroup.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
 #include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
 #include "dcbham.h"
+#include "dcbdhf.h"
+
+!#include "priunit.h"
+!#include "maxaqn.h"
+!#include "onecom.h"
+!#include "ccom.h"
+!#include "dcbgen.h"
     type(gp_info_t), intent(out) :: self
+    character(100) :: errmsg
 
     call self%erase()
 
-    self%nmo         = norbt
-    self%nao         = ntbas(0)
-    self%n2bbasxq    = n2bbasxq
-    self%n2orbxq     = n2orbxq
-    self%nz          = nz
-    self%nocc        = nocc
-    self%norb        = norb
-    self%npsh        = npsh
-    self%nish        = nish
-    self%nesh        = nesh
-    self%nfsym       = nfsym
-    self%nbsym       = nbsym
-    self%nfbas       = nfbas
-    self%i2basx      = i2basx
+!   dcborb.h:
+    if (norbt.le.0) then
+      write(errmsg, *) 'common blocks data not set? Stop.'
+      call quit(errmsg)
+    end if
+    self%nmo= norbt
+    self%n2orbxq  = n2orbxq
+    self%nocc     = nocc
+    self%norb     = norb
+    self%npsh     = npsh
+    self%nish     = nish
+    self%nesh     = nesh
     self%i2orbx      = i2orbx
     self%iorb        = iorb
-    self%jbtof       = jbtof
-    self%ihrmop      = ihrmop
     self%icmoq       = icmoq
-    self%ihqmat      = ihqmat
     self%ncmotq      = ncmotq
-    self%ipqtoq      = ipqtoq
+
+!   dcbbas.h:
+    if (ntbas(0).le.0) then
+      write(errmsg, *) 'common blocks data not set? Stop.'
+      call quit(errmsg)
+    end if
+    self%nao= ntbas(0)
+    self%n2bbasxq = n2bbasxq
+    self%nfbas       = nfbas
+    self%i2basx      = i2basx
+
+!   dgroup.h:
+    if (nfsym.le.0) then 
+      write(errmsg, *) 'common blocks data not set? Stop.'
+      call quit(errmsg)
+    end if
+    self%nz     = nz
+    self%nfsym  = nfsym
+    self%nbsym  = nbsym
+    self%jbtof  = jbtof
+    self%ipqtoq = ipqtoq
+    self%ihqmat = ihqmat
+
+!   dcbham.h:
     self%spinfr      = spinfr
+
+!   dcbdhf.h:
     self%intflg      = intflg
+    self%ihrmop      = ihrmop
 
     self%data_is_read = .true.
 
@@ -688,32 +731,27 @@ contains
 ! ----------------------------------------------------------------------------
   subroutine read_rsp_data_from_common_blocks(self)
 #include "implicit.h"
-#include "dcbxrs.h" !nfreq, ndamp, static
-#include "dcbxlr.h" !nlrbpt, xlr_skipep, xlr_skipee
+#include "dcbxrs.h"
+#include "dcbxlr.h"
     type(response_info_t), intent(out) :: self
     integer :: n_ee, n_ep
 
+!   dcbxrs.h:
     self%nfreq           = nfreq
     self%ndamp           = ndamp
+
+    self%static = 0
+    if (static) self%static = 1
+
+!   dcbxlr.h:
     self%nr_B_operators  = nlrbpt
 
-    if (static) then
-      self%static = 1
-    else
-      self%static = 0
-    end if
+    self%xlr_skipep = 0
+    if (xlr_skipep) self%xlr_skipep = 1
 
-    if (xlr_skipep) then
-      self%xlr_skipep = 1
-    else
-      self%xlr_skipep = 0
-    end if
+    self%xlr_skipee = 0
+    if (xlr_skipee) self%xlr_skipee = 1
 
-    if (xlr_skipee) then
-      self%xlr_skipee = 1
-    else
-      self%xlr_skipee = 0
-    end if
   end subroutine
 
 
@@ -897,9 +935,10 @@ contains
     type(file_info_t), intent(inout) :: rsp_file
     logical, optional, intent(in) :: valid
     character(len=80) :: top_groups(1)
-    logical :: exists
+    logical :: exists, debug_print
     character(100) :: errmsg
 
+    debug_print = .false.
     rsp_file%name = trim(f_name)
 
     inquire(file=rsp_file%name, exist=exists)
@@ -907,12 +946,15 @@ contains
 
       if (present(valid)) then
         if (valid) then
-          write(errmsg, *) 'file ',rsp_file%name,' does not exist. Stopping now!'
+          write(errmsg, *) 'file ',rsp_file%name,&
+                           ' does not exist. Stopping now!'
           call quit(errmsg)
         end if
       end if
 
-      !write(*,*) " Opening new HDF5 file for rsp data export: ", rsp_file%name
+      if (debug_print) &
+        write(*,*) " Opening new HDF5 file for rsp data export: ", &
+                   rsp_file%name
       top_groups(1) = '/result'
       rsp_file%type = 2
       rsp_file%status = -1
@@ -972,8 +1014,8 @@ contains
     type(file_info_t), intent(inout) :: rsp_file
     character(len=80):: group
     character(len=4):: ich
-    real(8), pointer:: tmp_rdata(:)
-    integer, pointer:: tmp_idata(:)
+    real(8), allocatable:: tmp_rdata(:)
+    integer, allocatable:: tmp_idata(:)
     integer:: ivec, nr_vec
 
     if (.not. rsp_info%allocated_vectors()) return

@@ -2542,8 +2542,8 @@ C***********************************************************************
       END
 !     ------------------------------------------------------------------
 !
-!     The following subroutines enable additional export of 
-!     response data to hdf5 format.
+!     The following subroutines enable additional export/import of 
+!     response data to/from hdf5 format.
 !     All data stored in PAMXVC is transfered to RESPONSE.h5, so,
 !     in principle, RESPONSE.h5 could replace PAMXVC.
 !
@@ -2553,21 +2553,37 @@ C***********************************************************************
 !     ------------------------------------------------------------------
       subroutine export_rsp_info_to_helper(print_level)
         use dirac_rsp_utils
+#if defined (VAR_MPI)
+        use interface_to_mpi
+#endif
         implicit none
         integer, intent(in) :: print_level
         type(response_info_t) :: rsp_info
         character(len=:),allocatable :: f_name
+        integer:: mytid
 
-        f_name = 'PAMXVC'
-        call rsp_info%read_from_DIRAC(trim(f_name), print_level)
+#if defined (VAR_MPI)
+        call interface_mpi_comm_rank (global_communicator,mytid)
+        if (mytid == 0) then
+#endif
 
-        f_name = 'RESPONSE.h5'
-        call rsp_info%write_to_checkpoint(trim(f_name))
+          f_name = 'PAMXVC'
+          call rsp_info%read_from_DIRAC(trim(f_name), print_level)
+
+          f_name = 'RESPONSE.h5'
+          call rsp_info%write_to_checkpoint(trim(f_name))
+
+#if defined (VAR_MPI)
+        end if
+#endif
 
       end subroutine
 
       subroutine import_rsp_info_from_helper(rspvec,ndim,id)
         use dirac_rsp_utils
+#if defined (VAR_MPI)
+        use interface_to_mpi
+#endif
         implicit none
         integer, intent(in)  :: id
         integer, intent(in)  :: ndim
@@ -2575,10 +2591,19 @@ C***********************************************************************
         type(response_info_t) :: rsp_info
         character(len=:),allocatable :: f_name
         real(8) :: n
+        integer:: mytid
 
-        f_name = 'RESPONSE.h5'
-        call rsp_info%read_from_checkpoint(trim(f_name))
-        call rsp_info%vectors(id)%get_copy_of_values(rspvec,ndim)
+#if defined (VAR_MPI)
+        call interface_mpi_comm_rank (global_communicator,mytid)
+        if (mytid == 0) then
+#endif
+          f_name = 'RESPONSE.h5'
+          call rsp_info%read_from_checkpoint(trim(f_name))
+          call rsp_info%vectors(id)%get_copy_of_values(rspvec,ndim)
+
+#if defined (VAR_MPI)
+        end if
+#endif
 
       end subroutine
 

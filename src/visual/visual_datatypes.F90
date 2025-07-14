@@ -36,30 +36,24 @@ module visual_datatypes
     integer, public:: n_po(2) = 0                   ! number of positronic MOs in each fermion symmetry
     integer, public:: n_fsym  = 1                   ! Number of fermion symmetries (no inversion 1, inversion 2); default=1
     integer, public:: nz   = 4                      ! number of quaternion units; default=4
-    real(8), public:: total_energy                  ! total SCF energy, as read from DIRAC CHECKPOINT
-    real(8), allocatable, public:: energy(:)        ! orbital energies, as read from DIRAC CHECKPOINT
-    real(8), allocatable, public:: coeff(:)         ! MO coefficients
-    real(8), allocatable, public:: coeff_q(:,:,:)   ! MO coefficients in quaternion representation, i.e., coeff(sum(n_ao),sum(n_mo),nz)
-    integer, allocatable, public:: symmetry(:)      ! additional symmetry label; used in spinfree
-    integer, allocatable, public:: index(:)         ! index of the spinor for this fermion symmetry
-    real(8), allocatable, public:: occupation(:)    ! occupation vector
-    integer, public :: ioffs(6)                     ! MO offsets
+    real(8), allocatable, public:: coeffs(:)        ! MO coefficients
+    real(8), allocatable, public:: eigenvalues(:)   ! orbital energies
+    real(8), allocatable, public:: occupations(:)   ! occupation vector: 1.0 fully occupied, 0.0 empty
+    integer, allocatable, public:: symmetry(:)      ! symmetry labels
+    integer, allocatable, public:: shell_id(:)      ! shell -1: closed, 0: virtual, 1: open shell
+    integer, public :: ioffs(6) = 0                 ! MO offsets
     logical, public :: data_is_read  = .false.
     logical, public :: data_is_verified  = .false.
   contains
     private
-    procedure, pass, public:: allocated_energy
-    procedure, pass, public:: allocated_coeff
-    procedure, pass, public:: allocated_coeff_q
+    procedure, pass, public:: allocated_coeffs
+    procedure, pass, public:: allocated_eigenvalues
+    procedure, pass, public:: allocated_occupations
     procedure, pass, public:: allocated_symmetry
-    procedure, pass, public:: allocated_index
-    procedure, pass, public:: allocated_occupation
+    procedure, pass, public:: allocated_shell_id
     procedure, pass, public:: alloc_all => allocate_cmo_all
     procedure, pass, public:: erase   => erase_cmo
     procedure, pass, public:: display => display_cmo
-    procedure, pass, public:: reshape_to_q => reshape_cmo_to_q
-    procedure, pass, public:: reshape_from_q => reshape_cmo_from_q
-    procedure, pass, public:: get_cmo_q_mo_sector
   end type cmo_t
 
   type:: grid_t
@@ -205,24 +199,17 @@ module visual_datatypes
 contains
 
 ! ------------------------------------------------------------------------------
-  pure function allocated_energy(self)
+  pure function allocated_eigenvalues(self)
     class(cmo_t), intent(in):: self
-    logical:: allocated_energy
-    allocated_energy = allocated(self%energy)
+    logical:: allocated_eigenvalues
+    allocated_eigenvalues = allocated(self%eigenvalues)
   end function
 
 ! ------------------------------------------------------------------------------
-  pure function allocated_coeff(self)
+  pure function allocated_coeffs(self)
     class(cmo_t), intent(in):: self
-    logical:: allocated_coeff
-    allocated_coeff = allocated(self%coeff)
-  end function
-
-! ------------------------------------------------------------------------------
-  pure function allocated_coeff_q(self)
-    class(cmo_t), intent(in):: self
-    logical:: allocated_coeff_q
-    allocated_coeff_q = allocated(self%coeff_q)
+    logical:: allocated_coeffs
+    allocated_coeffs = allocated(self%coeffs)
   end function
 
 ! ------------------------------------------------------------------------------
@@ -233,17 +220,17 @@ contains
   end function
 
 ! ------------------------------------------------------------------------------
-  pure function allocated_index(self)
+  pure function allocated_shell_id(self)
     class(cmo_t), intent(in):: self
-    logical:: allocated_index
-    allocated_index = allocated(self%index)
+    logical:: allocated_shell_id
+    allocated_shell_id = allocated(self%shell_id)
   end function
 
 ! ------------------------------------------------------------------------------
-  pure function allocated_occupation(self)
+  pure function allocated_occupations(self)
     class(cmo_t), intent(in):: self
-    logical:: allocated_occupation
-    allocated_occupation = allocated(self%occupation)
+    logical:: allocated_occupations
+    allocated_occupations = allocated(self%occupations)
   end function
 
 ! ------------------------------------------------------------------------------
@@ -419,116 +406,57 @@ contains
   end function
 
 ! ------------------------------------------------------------------------------
-  subroutine reshape_cmo_to_q(self)
-    class(cmo_t), intent(inout):: self
-    integer :: nao,npo,nmo,nz
-
-    if (.not. self%allocated_coeff() .and.&
-        .not. self%allocated_coeff_q()) return
-
-    nao = sum(self%n_ao)
-    nmo = sum(self%n_mo)
-    nz  = self%nz
-
-    self%coeff_q  = reshape(self%coeff,(/nao,nmo,nz/))
-
-  end subroutine
-
-
-! ------------------------------------------------------------------------------
-  subroutine reshape_cmo_from_q(self)
-    class(cmo_t), intent(inout):: self
-    integer :: nao,nmo,nz,ncoeff
-
-    if (.not. self%allocated_coeff() .and.&
-        .not. self%allocated_coeff_q()) return
-
-    nao = sum(self%n_ao)
-    nmo = sum(self%n_mo)
-    nz  = self%nz
-    ncoeff = nmo*nao*nz
-
-    self%coeff = reshape(self%coeff_q, (/ncoeff/))
-
-  end subroutine
-
-
-
-! ------------------------------------------------------------------------------
   subroutine allocate_cmo_all(self)
     class(cmo_t), intent(inout):: self
-    integer :: n, m
-    integer :: nao,nmo,nz,ncoeff
+    integer :: nmo,ncoeff
 
-    if (self%allocated_energy()   .or.&
-        self%allocated_symmetry() .or.&
-        self%allocated_index()    .or.&
-        self%allocated_coeff()    .or.&
-        self%allocated_coeff_q()    .or.&
-        self%allocated_occupation()) return
+    if (self%allocated_coeffs() .or.&
+        self%allocated_eigenvalues() .or.&
+        self%allocated_occupations() .or.&
+        self%allocated_shell_id() .or.&
+        self%allocated_symmetry()) return
 
-    nao = sum(self%n_ao)
     nmo = sum(self%n_mo)
-    nz  = self%nz
-    ncoeff = nmo*nao*nz
+    ncoeff = self%nz*sum(self%n_ao*self%n_mo)
 
-    allocate(self%energy(nmo))
-    self%energy(1:nmo) = 0.0d0
+    allocate(self%coeffs(ncoeff))
+    self%coeffs(1:ncoeff) = 0.0d0
 
-    allocate(self%coeff(ncoeff))
-    self%coeff(1:ncoeff) = 0.0d0
+    allocate(self%eigenvalues(nmo))
+    self%eigenvalues(1:nmo) = 0.0d0
 
-    allocate(self%coeff_q(nao,nmo,nz))
-    self%coeff_q(1:nao,1:nmo,1:nz) = 0.0d0
+    allocate(self%occupations(nmo))
+    self%occupations(1:nmo) = 0.0d0
+
+    allocate(self%shell_id(nmo))
+    self%shell_id(1:nmo) = 0
 
     allocate(self%symmetry(nmo))
     self%symmetry(1:nmo) = 0
-
-    allocate(self%index(nmo))
-    self%index(1:nmo) = 0
-
-    allocate(self%occupation(nmo))
-    self%occupation(1:nmo) = 0.0d0
   end subroutine
 
 
 ! ------------------------------------------------------------------------------
   subroutine display_cmo(self)
     class(cmo_t), intent(in):: self
-    integer:: nao,nmo,nz,ncoeff
-    integer:: i,j,k
+    integer:: i,nmo,ncoeff
 
-    nao = sum(self%n_ao)
     nmo = sum(self%n_mo)
-    nz  = self%nz
-    ncoeff = nmo*nao*nz
+    ncoeff = self%nz*sum(self%n_ao*self%n_mo)
+
     write(*, *)
-    write(*, *) ' CMO:'
+    write(*, *) 'CMO in VISUAL:'
     write(*, *) 'n_ao =         ', self%n_ao
     write(*, *) 'n_mo =         ', self%n_mo
     write(*, *) 'n_ip =         ', self%n_ip
     write(*, *) 'n_po =         ', self%n_po
     write(*, *) 'n_fsym =       ', self%n_fsym
     write(*, *) 'nz   =         ', self%nz
-    write(*, *) 'total_energy = ', self%total_energy
-    if (self%allocated_energy())   write(*,*) 'energy   = ', (self%energy(i), i=1,nmo)
+    if (self%allocated_coeffs()) write(*,'(a,es16.8e2)') 'coeffs = ', (self%coeffs(i), i=1,ncoeff)
+    if (self%allocated_eigenvalues()) write(*,'(a,es16.8e2)') 'eigenvalues = ', (self%eigenvalues(i), i=1,nmo)
+    if (self%allocated_occupations()) write(*,*) 'occupations = ', (self%occupations(i), i=1,nmo)
     if (self%allocated_symmetry()) write(*,*) 'symmetry = ', (self%symmetry(i), i=1,nmo)
-    if (self%allocated_index())    write(*,*) 'index    = ', (self%index(i), i=1,nmo)
-    if (self%allocated_occupation())   write(*,*) 'occupation = ', (self%occupation(i), i=1,nmo)
-    if (self%allocated_coeff()) then
-      do i = 1, ncoeff
-        write(*, '(a,i6,es16.8e2)') 'coeff(i) = ', i, self%coeff(i)
-      end do
-    end if
-    if (self%allocated_coeff_q()) then
-      do k = 1, nz
-        do j = 1, nmo
-          do i = 1, nao
-            write(*, '(a,3i6,es16.8e2)') 'coeff_q(i,j,k) = ', i, j, k, self%coeff_q(i,j,k)
-          end do
-        end do
-      end do
-    end if
+    if (self%allocated_shell_id()) write(*,*) 'shell_id = ', (self%shell_id(i), i=1,nmo)
     write(*, *)
   end subroutine
 
@@ -915,86 +843,4 @@ contains
     end do
   end subroutine
 
-! ------------------------------------------------------------------------------
-  subroutine get_cmo_q_mo_sector(self, sector, ioffs)
-    class(cmo_t), intent(inout):: self
-    character(2), intent(in):: sector
-    integer, intent(in):: ioffs(6)
-    integer:: ns(2), pi(2), ps(2)
-    integer:: i,isym,iz
-!
-!   return cmo with all elements zeroed-out
-!   except the ones defined by sector
-!
-
-    if (.not. self%allocated_coeff_q()) return
-
-    ns(1)   = ioffs(1)
-    pi(1)   = ioffs(2) 
-    ps(1)   = ioffs(3) 
-    if (self%n_fsym == 2) then
-      ns(2)   = ioffs(4)
-      pi(2)   = ioffs(5) 
-      ps(2)   = ioffs(6) 
-    end if
-
-!   todo: consistency check
-
-    select case (sector)
-      case ('i ')
-      ! inactive MOs
-
-        do iz = 1, self%nz
-          do isym = 1, self%n_fsym
-            do i = ns(isym), pi(isym) - 1
-              self%coeff_q(1:self%n_ao(isym), i, iz) = 0.0d0
-            end do
-            do i = ps(isym), self%n_mo(isym)
-              self%coeff_q(1:self%n_ao(isym), i, iz) = 0.0d0
-            end do
-          end do
-        end do
-
-      case ('s ')
-      ! secondary MOs (both: positive and negative energy)
-
-        do iz = 1, self%nz
-          do isym = 1, self%n_fsym
-            do i = pi(isym), ps(isym) - 1
-              self%coeff_q(1:self%n_ao(isym), i, iz) = 0.0d0
-            end do
-          end do
-        end do
-
-      case ('s+')
-      ! secondary positive energy
-
-        do iz = 1, self%nz
-          do isym = 1, self%n_fsym
-            do i = ns(isym), pi(isym) - 1
-              self%coeff_q(1:self%n_ao(isym), i, iz) = 0.0d0
-            end do
-          end do
-        end do
-
-      case ('s-')
-      ! secondary negative energy
-
-        do iz = 1, self%nz
-          do isym = 1, self%n_fsym
-            do i = pi(isym), self%n_mo(isym)
-              self%coeff_q(1:self%n_ao(isym), i, iz) = 0.0d0
-            end do
-          end do
-        end do
-
-
-      case default
-        stop
-    end select
-
-    call self%reshape_from_q()
-
-
-  end subroutine
 end module
