@@ -128,6 +128,7 @@ install(
     FILES
     ${PROJECT_SOURCE_DIR}/utils/dirac_data.py
     ${PROJECT_SOURCE_DIR}/utils/process_schema.py
+    ${PROJECT_SOURCE_DIR}/utils/merge_amf.py
     DESTINATION share/dirac
     PERMISSIONS
     OWNER_READ OWNER_WRITE OWNER_EXECUTE
