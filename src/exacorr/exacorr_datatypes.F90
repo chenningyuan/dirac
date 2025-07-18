@@ -81,12 +81,13 @@
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
             integer                 :: moint_scheme = 4
+            integer                 :: mp2pno_prop = -1
             integer                 :: mp2no = 0                ! > 0 mp2 natural orbital, < 0 mp2lap
                                                                 !  -1: MP2LAP
                                                                 !   1: MP2N0
                                                                 !   2: MP2NEO
-                                                                !   3: MP2NO++
-                                                                !  10: MP2_LAP_NEO
+                                                                !   3: MP2PNO++
+                                                                !  10: MP2_LAP_NO
 
             integer                 :: ncycles = 30
             integer                 :: print_level = 0
