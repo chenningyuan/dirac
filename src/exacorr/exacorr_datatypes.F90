@@ -81,12 +81,12 @@
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
             integer                 :: moint_scheme = 4
-            integer                 :: mp2pno_prop = -1
+            integer                 :: mp2fno_prop = -1
             integer                 :: mp2no = 0                ! > 0 mp2 natural orbital, < 0 mp2lap
                                                                 !  -1: MP2LAP
                                                                 !   1: MP2N0
                                                                 !   2: MP2NEO
-                                                                !   3: MP2PNO++
+                                                                !   3: MP2FNO++
                                                                 !  10: MP2_LAP_NO
 
             integer                 :: ncycles = 30
@@ -297,6 +297,7 @@
         ! intermediates used in eom prop and cc response
         type, public :: talsh_rsp_interm_tens_t
               type(talsh_tens_t) :: prop_bar_vv, prop_bar_oo, prop_bar_ov
+              type(talsh_tens_t) :: prop_bar_oovv
               type(talsh_tens_t) :: Q_vvvo, Q_ovoo
               type(talsh_tens_t) :: eta_ov, eta_oovv
               type(talsh_tens_t) :: epsilon_prop_vo, epsilon_prop_vvoo
