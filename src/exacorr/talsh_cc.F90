@@ -25,6 +25,7 @@ module talsh_cc
         private
 
         public talsh_cc_driver
+        public init_fock_talsh
 
 !        interface scale_with_denominators
 !           module procedure scale_with_denominators
@@ -70,7 +71,7 @@ module talsh_cc
 !        Lambda tensors
          type(talsh_tens_t) :: l1_tensor, l2_tensor
          type(talsh_tens_t) :: l3_tensor, l4_tensor
-!        1- and 2-body cc intermediates 
+!        1- and 2-body cc intermediates
          type(talsh_intermediates_tens_t) :: interm_t
 !        eom results
          type(talsh_eom_results_tens_t) :: eom_results_t
@@ -92,7 +93,7 @@ module talsh_cc
          integer :: ncycles
          logical :: CCD, lambda, eom, eom_lr, eom_qr, qr_tpa
          logical :: debug_eom = .false.
-         logical :: CC2 
+         logical :: CC2
          logical :: CCSDT, CCSDTQ, CCSDTQP
          logical :: do_perturbative
          integer :: iterative_level, iterative_scheme
@@ -104,7 +105,7 @@ module talsh_cc
          integer :: rr         ! rank of cc-ci response
 
          integer :: num_gpus = 0, igpu, num_gpus_env = -1
-         
+
 ! this should be needed in the case of exatensor, but not for talsh i guess..
 !        call mfsolver_dirac_input_sync_cw()
 
@@ -148,7 +149,7 @@ module talsh_cc
 
          do_perturbative = exa_input%do_perturbative
          CCD = exa_input%ccd
-         CC2 = exa_input%cc2    
+         CC2 = exa_input%cc2
 
          iterative_level     = exa_input%iterative_level
          iterative_scheme    = exa_input%iterative_scheme
@@ -235,12 +236,12 @@ module talsh_cc
             ierr=talsh_tensor_construct(comm_t%hov,C8,ov_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
 !           initialize t3 amplitudes to zero (will later update them to starting values based on mp2 amplitudes)
-            if (iterative_level.ge.3) then 
+            if (iterative_level.ge.3) then
                vvvooo_dims(1:3) = nvir
                vvvooo_dims(4:6) = nocc
                ierr=talsh_tensor_construct(comm_t%t3,C8,vvvooo_dims,init_val=ZERO)
             end if
-            if (iterative_level.ge.4) then 
+            if (iterative_level.ge.4) then
                vvvvoooo_dims(1:4) = nvir
                vvvvoooo_dims(5:8) = nocc
                ierr=talsh_tensor_construct(comm_t%t4,C8,vvvvoooo_dims,init_val=ZERO)
@@ -275,7 +276,7 @@ module talsh_cc
                         exa_input%level_shift,-1,fock_mode,exa_input%nff(1),CCD)
 
 !        Initialize t1 amplitudes to fov
-         if (.not.CCD) then 
+         if (.not.CCD) then
             ierr=talsh_tensor_init(comm_t%t1)
             ierr=talsh_tensor_contract("T(a,i)+=V+(i,a)",comm_t%t1,comm_t%fov,one_tensor)
          end if
@@ -285,11 +286,11 @@ module talsh_cc
          ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
 
          if (.not.CCD) then
-            if (iterative_level.eq.5) then 
+            if (iterative_level.eq.5) then
                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
                               full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4, &
                               full_t5_tensor=comm_t%t5)
-            else if (iterative_level.eq.4) then 
+            else if (iterative_level.eq.4) then
                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
                               full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4)
             else if (iterative_level.eq.3) then
@@ -374,7 +375,7 @@ module talsh_cc
            if (perturbative_scheme.eq.30) then
               !Calculate (T) energy correction
               call print_date('-Start- Triples')
-              if (exa_input%tripl_lap) then 
+              if (exa_input%tripl_lap) then
                 call t3_energy_laplace (pert_energy,comm_t,int_t,eps_occ,eps_vir,exa_input)
               else
                 call t3_energy (pert_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov, &
@@ -425,10 +426,10 @@ module talsh_cc
             if (.not.CC2) then
                 call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                     t_target_precision,ncycles,exa_input%print_level,l1_tensor)
-             else  
+             else
                 call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                     t_target_precision,ncycles,exa_input%print_level,l1_tensor)
-            end if 
+            end if
             call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor,int_t=int_t)
           else
             call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
@@ -483,7 +484,7 @@ module talsh_cc
 ! with the ground-state intermediates done, and t amplitudes store
 
 !           if (debug_eom) then
-            ! if (.true.) then 
+            ! if (.true.) then
             !    print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
             !    print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
             !    print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
@@ -510,8 +511,8 @@ module talsh_cc
                call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.false.,solve_left=.true.)
                call talsh_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t)
-                  
-            else 
+
+            else
                call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                             solve_right=.true.,solve_left=.false.)
 
@@ -842,12 +843,12 @@ module talsh_cc
          type(talsh_tens_t) :: Wabef_tensor,Wmnij_tensor     !L
          type(talsh_tens_t) :: Wabej_tensor,Wmbij_tensor     !L
 
-! Add tensor usefull to avoid tauCC2_tensor 
+! Add tensor usefull to avoid tauCC2_tensor
          type(talsh_tens_t) :: Hovvv_tensor,Hvovv_tensor     !L
          type(talsh_tens_t) :: Hvvov_tensor,Hvvvo_tensor     !L
          type(talsh_tens_t) :: Hooov_tensor,Hoovo_tensor
          type(talsh_tens_t) :: Hvooo_tensor,Hovoo_tensor
-         
+
          type(talsh_tens_t) :: cint_ovoo_tensor
          type(talsh_tens_t) :: cint_vvvo_tensor
 !        auxilliary tensors for t1 equation
@@ -864,7 +865,7 @@ module talsh_cc
          integer, dimension(4) :: vvvv_dims, oooo_dims    !L
          integer, dimension(4) :: vvvo_dims    !L
 
-! new dims for Hxxxx 
+! new dims for Hxxxx
          integer, dimension(4) :: vovv_dims, ovvv_dims, vvov_dims !, vvov_dims
          integer, dimension(4) :: ooov_dims, oovo_dims, vooo_dims !, vvov_dims !, vvov_dims
 
@@ -888,7 +889,7 @@ module talsh_cc
          ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,result_tens,result_dims)
 
-         
+
          oo_dims = nocc
          ov_dims(1) = nocc
          ov_dims(2) = nvir
@@ -969,22 +970,22 @@ module talsh_cc
           if (debug_local) print*, "norm s2 tensor after diagram 15 ",tensor_norm2(s2_tensor)
 
           ierr=talsh_tensor_init(Wabej_tensor,ZERO)
-          ierr=talsh_tensor_init(Wmbij_tensor,ZERO)           
+          ierr=talsh_tensor_init(Wmbij_tensor,ZERO)
 
 
           ierr=talsh_tensor_add("W(a,b,e,j)+=C(a,b,e,j)",Wabej_tensor,cint_vvvo_tensor,scale=ONE)
           ierr=talsh_tensor_contract("W(a,b,e,j)+=T(a,m)*V(b,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,scale=ONE_HALF)
           ierr=talsh_tensor_contract("W(a,b,e,j)+=T(b,m)*V(a,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,scale=MINUS_ONE_HALF)
-       
-          ierr=talsh_tensor_contract("S(a,b,i,j)=T(e,i)*W(a,b,e,j)",s2_tensor,comm_t%t1,Wabej_tensor,scale=ONE) 
+
+          ierr=talsh_tensor_contract("S(a,b,i,j)=T(e,i)*W(a,b,e,j)",s2_tensor,comm_t%t1,Wabej_tensor,scale=ONE)
           ierr=talsh_tensor_contract("S(a,b,i,j)=T(e,j)*W(a,b,e,i)",s2_tensor,comm_t%t1,Wabej_tensor,scale=MINUS_ONE)
- 
-         
+
+
           ierr=talsh_tensor_add("W(m,b,i,j)+=C(m,b,i,j)",Wmbij_tensor,cint_ovoo_tensor,scale=ONE)
           ierr=talsh_tensor_contract("W(m,b,i,j)+=T(e,i)*V(b,m,e,j)",Wmbij_tensor,comm_t%t1,int_t%vovo,scale=MINUS_ONE_HALF)
           ierr=talsh_tensor_contract("W(m,b,i,j)+=T(e,j)*V(b,m,e,i)",Wmbij_tensor,comm_t%t1,int_t%vovo,scale=ONE_HALF)
-       
-          ierr=talsh_tensor_contract("S(a,b,i,j)=T(a,m)*W(m,b,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=MINUS_ONE) 
+
+          ierr=talsh_tensor_contract("S(a,b,i,j)=T(a,m)*W(m,b,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("S(a,b,i,j)=T(b,m)*W(m,a,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=ONE)
 
 !         additional CC2 W intermediates
@@ -994,14 +995,14 @@ module talsh_cc
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_tensor,int_t%oooo,one_tensor)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_tensor,int_t%ooov,comm_t%t1)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_tensor,int_t%ooov,comm_t%t1,scale=MINUS_ONE)
-          
+
           ierr=talsh_tensor_init(Hoovo_tensor)
-          ierr=talsh_tensor_contract("Hoovo(m,n,e,j)+=V(m,n,e,f)*T(f,j)",& 
+          ierr=talsh_tensor_contract("Hoovo(m,n,e,j)+=V(m,n,e,f)*T(f,j)",&
                &       Hoovo_tensor,int_t%oovv,comm_t%t1)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=Hoovo(m,n,e,j)*T(e,i)",&
                &       Wmnij_tensor,Hoovo_tensor,comm_t%t1,scale=ONE_QUARTER)
           ierr=talsh_tensor_init(Hooov_tensor)
-          ierr=talsh_tensor_contract("Hooov(m,n,j,f)+=V(m,n,e,f)*T(e,j)",& 
+          ierr=talsh_tensor_contract("Hooov(m,n,j,f)+=V(m,n,e,f)*T(e,j)",&
                &       Hooov_tensor,int_t%oovv,comm_t%t1)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=Hooov(m,n,j,f)*T(f,i)",&
                &       Wmnij_tensor,Hooov_tensor,comm_t%t1,scale=MINUS_ONE_QUARTER)
@@ -1014,13 +1015,13 @@ module talsh_cc
 
           ierr=talsh_tensor_init(Hvovv_tensor)
           ierr=talsh_tensor_init(Hovvv_tensor)
-          ierr=talsh_tensor_contract("Hvovv(a,n,e,f)+=V(m,n,e,f)*T(a,m)",& 
+          ierr=talsh_tensor_contract("Hvovv(a,n,e,f)+=V(m,n,e,f)*T(a,m)",&
                & Hvovv_tensor,int_t%oovv,comm_t%t1,scale=ONE)        !Operation cost : v^3*o^2
-          ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=Hvovv(a,n,e,f)*T(b,n)",& 
+          ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=Hvovv(a,n,e,f)*T(b,n)",&
                & Wabef_tensor,Hvovv_tensor,comm_t%t1,scale=ONE_QUARTER)  !Operation cost : v^4*o
-          ierr=talsh_tensor_contract("Hovvv(m,a,e,f)+=V(m,n,e,f)*T(a,n)",& 
+          ierr=talsh_tensor_contract("Hovvv(m,a,e,f)+=V(m,n,e,f)*T(a,n)",&
                & Hovvv_tensor,int_t%oovv,comm_t%t1,scale=ONE)        ! Operation cost :v^3*o^2
-          ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=Hovvv(m,a,e,f)*T(b,m)",& 
+          ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=Hovvv(m,a,e,f)*T(b,m)",&
                & Wabef_tensor,Hovvv_tensor,comm_t%t1,scale=MINUS_ONE_QUARTER)  ! Operation cost : v^4*o
           if (debug_local) print*, "norm Wabefi_CC2 new",tensor_norm2(Wabef_tensor)
 
@@ -1039,22 +1040,22 @@ module talsh_cc
                & s2_tensor,Hovoo_tensor,comm_t%t1,scale=MINUS_ONE_HALF)
           if (debug_local) print*, "norm s2 tensor after diagram 21 new ",tensor_norm2(s2_tensor)
 
-!         Diagram 22 : s2_{ij}^{ab} += \frac{1}{2}\sum_{ef} tauCC2^{ij}_{ef} W_{ef}^{ab}  
+!         Diagram 22 : s2_{ij}^{ab} += \frac{1}{2}\sum_{ef} tauCC2^{ij}_{ef} W_{ef}^{ab}
 
           ierr=talsh_tensor_init(Hvvov_tensor)
           ierr=talsh_tensor_init(Hvvvo_tensor)
-          ierr=talsh_tensor_contract("Hvvov(a,b,i,f)+=Wabef(a,b,e,f)*T(e,i)",& 
+          ierr=talsh_tensor_contract("Hvvov(a,b,i,f)+=Wabef(a,b,e,f)*T(e,i)",&
                & Hvvov_tensor,Wabef_tensor,comm_t%t1,scale=ONE)    ! Operationcost : v^4*o
-          ierr=talsh_tensor_contract("S(a,b,i,j)+= Hvvov(a,b,i,f)*T(f,j)",& 
+          ierr=talsh_tensor_contract("S(a,b,i,j)+= Hvvov(a,b,i,f)*T(f,j)",&
                & s2_tensor,Hvvov_tensor,comm_t%t1,scale=ONE_HALF)    !  Operation cost : v^3*o^2
-          ierr=talsh_tensor_contract("Hvvvo(a,b,e,i)+=Wabef(a,b,e,f)*T(f,i)",& 
+          ierr=talsh_tensor_contract("Hvvvo(a,b,e,i)+=Wabef(a,b,e,f)*T(f,i)",&
                & Hvvvo_tensor,Wabef_tensor,comm_t%t1,scale=ONE)                  !Operation cost : v^4*o
-          ierr=talsh_tensor_contract("S(a,b,i,j)+= Hvvvo(a,b,e,i)*T(e,j)",& 
+          ierr=talsh_tensor_contract("S(a,b,i,j)+= Hvvvo(a,b,e,i)*T(e,j)",&
                & s2_tensor,Hvvvo_tensor,comm_t%t1,scale=MINUS_ONE_HALF)     ! Operation cost : v^3*o^2
           if (debug_local) print*, "norm s2 tensor after diagram 22 new ",tensor_norm2(s2_tensor)
 
 
-!         Diagram 23 : s2_{ij}^{ab} +=  P\_(ab)\sum_{e} f_e^b t_{ij}^{ae} ! Use of the Fock matrix 
+!         Diagram 23 : s2_{ij}^{ab} +=  P\_(ab)\sum_{e} f_e^b t_{ij}^{ae} ! Use of the Fock matrix
           ierr=talsh_tensor_contract("S(a,b,i,j)+=F(b,e)*T(a,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=F(a,e)*T(b,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2,scale=MINUS_ONE)
           if (debug_local) print*, "norm s2 tensor after diagram 23 ",tensor_norm2(s2_tensor)
@@ -1071,7 +1072,7 @@ module talsh_cc
           ! Call F intermediates - used in \Ss ai
           call get_hoo(comm_t,int_t%oovv)
           call get_hvv(comm_t,int_t%oovv)
-          call get_hov(comm_t,int_t%oovv) 
+          call get_hov(comm_t,int_t%oovv)
           if (.not.CCD) then
             ierr=talsh_tensor_init(hov_aux_tensor)
             ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
@@ -1082,10 +1083,10 @@ module talsh_cc
 !         calculate s1 tensor
           ierr=talsh_tensor_init(s1_tensor)
 
-!           Diagramme b1  :   \Ss ai= \f ai         
+!           Diagramme b1  :   \Ss ai= \f ai
           ierr=talsh_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,comm_t%fov,one_tensor)
           if (debug_local) print*, "s1 - first step with \F ia ",tensor_norm2(s1_tensor)
-!           
+!
           ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,int_t%vovv,comm_t%tau,scale=ONE_HALF) !validated o(2)v(3)
           ierr=talsh_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,comm_t%hvv,comm_t%t1)                     !validated o(1)v(2)
           ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,comm_t%hoo,comm_t%t1)                     !validated o(2)v(1)
@@ -1097,7 +1098,7 @@ module talsh_cc
           ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)     !validated o(2)v(2)
 
           if (debug_local) print*, "Norm s1 before Energy",tensor_norm2(s1_tensor)
-      
+
           if (ierr.ne.TALSH_SUCCESS) then
              print*," ccdriver: error in evaluation of amplitude equations, code=",ierr
              return
@@ -1108,7 +1109,7 @@ module talsh_cc
           ierr=talsh_tensor_add("T1(a,i)+=S1(a,i)",comm_t%t1,s1_tensor)
           ierr=talsh_tensor_init(comm_t%t2)
           ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",comm_t%t2,s2_tensor)
-          
+
           call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
 
           if (.not.CCD) then
@@ -1153,7 +1154,7 @@ module talsh_cc
          ierr=talsh_tensor_destruct(Hvooo_tensor)
 
          ierr=talsh_tensor_destruct(Wabef_tensor)
-         ierr=talsh_tensor_destruct(Wmnij_tensor) 
+         ierr=talsh_tensor_destruct(Wmnij_tensor)
 
          ierr=talsh_tensor_destruct(Wabej_tensor)
          ierr=talsh_tensor_destruct(Wmbij_tensor)
@@ -1621,12 +1622,12 @@ module talsh_cc
 
 !***
 ! List of NEW INTERMEDIATES for the CC2 Method
-!***  
+!***
          ierr=talsh_tensor_construct(lambda_t_CC2%fbar_oo,C8,oo_dims,init_val=ZERO)   !cUSefull and different
          ierr=talsh_tensor_construct(lambda_t_CC2%fbar_ov,C8,ov_dims,init_val=ZERO)  ! Usefull but same as lambda1 and no difference with CCSD
          ierr=talsh_tensor_construct(lambda_t_CC2%fbar_vv,C8,vv_dims,init_val=ZERO)   ! Usefull and different
          ierr=talsh_tensor_construct(lambda_t_CC2%w_oooo,C8,oooo_dims,init_val=ZERO)   ! Usefull and different
-!!!!!!  Inportant here :  The heart of w_vovo intermediate : h_int is the same as in 
+!!!!!!  Inportant here :  The heart of w_vovo intermediate : h_int is the same as in
 !!!!!!          CCSD and for \Lambda_1 either :
          ierr=talsh_tensor_construct(lambda_t_CC2%w_vovo,C8,vovo_dims,init_val=ZERO) ! Usefull in CC2 - Same part as h_int
          ierr=talsh_tensor_construct(lambda_t_CC2%w_vvvv,C8,vvvv_dims,init_val=ZERO)   ! Usefull and different
@@ -1691,10 +1692,10 @@ module talsh_cc
          call get_fbar_vv_CC2(lambda_t_CC2%fbar_vv,comm_t_CC2,int_t) ! for CCSD : fbar_vv = gvv  (L! : change ?)
          call get_fbar_oo_CC2(lambda_t_CC2%fbar_oo,comm_t_CC2,int_t)
          call get_fbar_ov_CC2(lambda_t_CC2%fbar_ov,comm_t_CC2,int_t)
-  
+
          call get_w_vovo_CC2(lambda_t_CC2%w_vovo,comm_t_CC2,int_t%oovv,nocc,nvir)
-         call get_w_oooo_CC2(lambda_t_CC2%w_oooo,comm_t_CC2,int_t) 
-         call get_w_vvvv_CC2(lambda_t_CC2%w_vvvv,comm_t_CC2,int_t) 
+         call get_w_oooo_CC2(lambda_t_CC2%w_oooo,comm_t_CC2,int_t)
+         call get_w_vvvv_CC2(lambda_t_CC2%w_vvvv,comm_t_CC2,int_t)
 
 !************************************
 !        construct solution tensors *
@@ -1804,27 +1805,27 @@ module talsh_cc
           ierr=talsh_tensor_add("S(i,j,a,b)+=V(i,j,a,b)",s2_tensor,int_t%oovv)
 
 !----------------------------------------------------------
-!         term 2: S(ij,ab) += P(a,b) L(ij,ae) * Fbar(e,b) |      Fbar_vv - CC2 
+!         term 2: S(ij,ab) += P(a,b) L(ij,ae) * Fbar(e,b) |      Fbar_vv - CC2
 !----------------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,a,e)*F(e,b)",s2_tensor,l2_tensor,lambda_t_CC2%fbar_vv)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,b)*F(e,a)",s2_tensor,l2_tensor,lambda_t_CC2%fbar_vv)
 
 !----------------------------------------------------------
-!         term 3: S(ij,ab) -= P(i,j) L(im,ab) * Fbar(j,m) |      Fbar_oo - CC2 
+!         term 3: S(ij,ab) -= P(i,j) L(im,ab) * Fbar(j,m) |      Fbar_oo - CC2
 !----------------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,b,a)*F(j,m)",s2_tensor,l2_tensor,lambda_t_CC2%fbar_oo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,b)*F(i,m)",s2_tensor,l2_tensor,lambda_t_CC2%fbar_oo)
 
 !------------------------------------------------------
-!         term 4: S(ij,ab) += 1/2 L(mn,ab) * W(ij,mn) |          W_oooo - CC2 
+!         term 4: S(ij,ab) += 1/2 L(mn,ab) * W(ij,mn) |          W_oooo - CC2
 !------------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,n,a,b)*W(i,j,m,n)",s2_tensor,l2_tensor,lambda_t_CC2%w_oooo,scale=ONE_HALF)
 
 !----------------------------------------------------------------
-!         term 5: S(ij,ab) += P(i,j) P(a,b) L(im,ae) * W(je,bm) |       W vovo - CC2 
+!         term 5: S(ij,ab) += P(i,j) P(a,b) L(im,ae) * W(je,bm) |       W vovo - CC2
 !----------------------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,e,a)*W(e,j,b,m)",s2_tensor,l2_tensor,lambda_t_CC2%w_vovo)
@@ -1842,7 +1843,7 @@ module talsh_cc
           end if
 
 !----------------------------------------------------------
-!         term 9+10: S(ij,ab) += P(i,j) L(i,e) * W(ej,ab) |          
+!         term 9+10: S(ij,ab) += P(i,j) L(i,e) * W(ej,ab) |
 !----------------------------------------------------------
 
           if (.not.CCD) then
@@ -1862,7 +1863,7 @@ module talsh_cc
           end if
 
 !-----------------------------------------------------
-!         term 12: S(ij,ab) += 1/2 L(ij,ef) W(ef,ab) |      W vvvv - CC2 
+!         term 12: S(ij,ab) += 1/2 L(ij,ef) W(ef,ab) |      W vvvv - CC2
 !-----------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,l2_tensor,lambda_t_CC2%w_vvvv,scale=ONE_HALF)
@@ -1928,7 +1929,7 @@ module talsh_cc
          ierr=talsh_tensor_destruct(lambda_t%goo)
          ierr=talsh_tensor_destruct(lambda_t%gvv)
 
-        end subroutine solve_CC2_lambda_equations 
+        end subroutine solve_CC2_lambda_equations
 
         subroutine init_fock_talsh (mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,print_level)
 !        Written by Lucas Visscher, summer 2017
@@ -1946,7 +1947,7 @@ module talsh_cc
          real(8), intent(in)                  :: eps_occ(:),eps_vir(:) ! orbital energies (as read from start file)
          real(8), intent(out)                 :: scf_energy            ! computed (or read) single determinant UHF energy
          integer, intent(in)                  :: print_level
-         
+
 !        target tensors (2e integrals are input, UHF matrix sections to be filled here).
          type(talsh_intg_tens_t), intent(inout) :: int_t
 
@@ -2064,7 +2065,7 @@ module talsh_cc
         subroutine define_H0 (scf_energy,eps_occ,eps_vir,comm_t,oooo,level_shift,print_level,mode,nff,CCD,keep_diagonal)
 
 !        Written by Lucas Visscher, spring 2021
-!        Shifts diagonal part of the T1-equations to the LHS, defines these epsilons ("orbital energies") as H0 
+!        Shifts diagonal part of the T1-equations to the LHS, defines these epsilons ("orbital energies") as H0
 !        and make foo and fvv consistent with this choice
 !        recomputes scf_energy if mode > 1
 
@@ -2149,12 +2150,12 @@ module talsh_cc
            h_tens(i,i) = eps_vir(i)
          end do
 
-         if (.not.keep_diagonal_local) then 
+         if (.not.keep_diagonal_local) then
             ! create foo and fvv with H0 subtracted
             ierr=talsh_tensor_add("F(i,j)+=D(i,j)",comm_t%foo,diag_mat_occ,scale=MINUS_ONE)
             ierr=talsh_tensor_add("F(a,b)+=D(a,b)",comm_t%fvv,diag_mat_vir,scale=MINUS_ONE)
          end if
-         if (print_level >0) then 
+         if (print_level >0) then
            write(*,*)
            if (keep_diagonal_local) then
               write(*,*) "    Norm of Fock matrix (OO, all        ) = ", tensor_norm2(comm_t%foo)
@@ -2168,7 +2169,7 @@ module talsh_cc
            else
               write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", tensor_norm2(comm_t%fvv)
            end if
-           write(*,*) 
+           write(*,*)
          end if
 
          ierr=talsh_tensor_destruct(diag_mat_occ)
@@ -2229,7 +2230,7 @@ module talsh_cc
             scf_energy=real(result_tens(1),8) ! Casting into real(8)
             scf_energy=scf_energy+e_core
             if (print_level>-1) then
-               write(*,*) "" 
+               write(*,*) ""
                write (*,'(A,F23.15)') "   Recomputed energy (single determinant, calculated) = ", scf_energy
                write(*,*) ""
             end if
@@ -2273,7 +2274,7 @@ module talsh_cc
          ierr=talsh_tensor_add("F(a,b)+=D(a,b)",comm_t%fvv,int_t%fvv)
          ierr=talsh_tensor_add("F(i,a)+=D(i,a)",comm_t%fov,int_t%fov)
 
-!        if there is a finte field add it 
+!        if there is a finte field add it
          if (exa_input%nff(1)>0 .and. iff>-1) then
             nocc = exa_input%nocc
             nvir = exa_input%nvir
@@ -2569,17 +2570,17 @@ module talsh_cc
                 ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
                 if (ierr.ne.0 .or. tens_rank.ne.2) stop 'input t1-tensor corrupted in diis'
 
-                if (CCSDitT) then 
+                if (CCSDitT) then
                    ierr = talsh_tensor_dimensions(t3_tensor,tens_rank,t3_dims)
                    if (ierr.ne.0 .or. tens_rank.ne.6) stop 'input t3-tensor corrupted in diis'
                 end if
 
-                if (CCSDitTQ) then 
+                if (CCSDitTQ) then
                    ierr = talsh_tensor_dimensions(t4_tensor,tens_rank,t4_dims)
                    if (ierr.ne.0 .or. tens_rank.ne.8) stop 'input t4-tensor corrupted in diis'
                 end if
 
-                if (CCSDitTQP) then 
+                if (CCSDitTQP) then
                    ierr = talsh_tensor_dimensions(t5_tensor,tens_rank,t5_dims)
                    if (ierr.ne.0 .or. tens_rank.ne.10) stop 'input t5-tensor corrupted in diis'
                 end if
@@ -2791,7 +2792,7 @@ module talsh_cc
                  if (CCSDitT) ierr=talsh_tensor_init(t3_tensor)
                  if (CCSDitTQ) ierr=talsh_tensor_init(t4_tensor)
                  if (CCSDitTQP) ierr=talsh_tensor_init(t5_tensor)
-              end if 
+              end if
               ierr=talsh_tensor_init(t2_tensor)
               do i = 1, ntens
                  if (.not.CCD) then
@@ -2808,11 +2809,11 @@ module talsh_cc
               if (.not.CCD) then
                  ierr=talsh_tensor_copy("T1E(a,i)=T1(a,i)",t1_err_tensor(itens),t1_tensor)
                  if (CCSDitT) ierr=talsh_tensor_copy("T3E(a,b,c,i,j,k)=T3(a,b,c,i,j,k)",&
-                                                           t3_err_tensor(itens),t3_tensor) 
+                                                           t3_err_tensor(itens),t3_tensor)
                  if (CCSDitTQ) ierr=talsh_tensor_copy("T4E(a,b,c,d,i,j,k,l)=T4(a,b,c,d,i,j,k,l)",&
-                                                           t4_err_tensor(itens),t4_tensor) 
+                                                           t4_err_tensor(itens),t4_tensor)
                  if (CCSDitTQP) ierr=talsh_tensor_copy("T5E(a,b,c,d,e,i,j,k,l,m)=T5(a,b,c,d,e,i,j,k,l,m)",&
-                                                           t5_err_tensor(itens),t5_tensor) 
+                                                           t5_err_tensor(itens),t5_tensor)
               end if
               ierr=talsh_tensor_copy("T2E(a,b,i,j)=T2(a,b,i,j)",t2_err_tensor(itens),t2_tensor)
               ! correct the latest row of the b_diis array for the fact that we use an optimized error vector
@@ -2883,7 +2884,7 @@ module talsh_cc
                  end if
                  ierr=talsh_tensor_add("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_res_tensor(i),scale=coeff(i))
               end do
-           end if ! end of crop if 
+           end if ! end of crop if
          end if
 
 !        the extrapolated amplitudes are the new input tensors
@@ -2929,11 +2930,11 @@ module talsh_cc
          type(talsh_intg_tens_t), intent(inout) :: int_t
 !        intermediate tensors (same notation as in relccsd)
 !        temporarily using tensors with permutations required by the automatically generated code
-!        the next update to the code generator is expected to handle index permutations/conjugation 
+!        the next update to the code generator is expected to handle index permutations/conjugation
          type(talsh_tens_t) :: vvoo_aux_tensor
-         type(talsh_tens_t) :: voov_aux_tensor 
-         type(talsh_tens_t) :: vooo_aux_tensor 
-         type(talsh_tens_t) :: vvov_aux_tensor 
+         type(talsh_tens_t) :: voov_aux_tensor
+         type(talsh_tens_t) :: vooo_aux_tensor
+         type(talsh_tens_t) :: vvov_aux_tensor
          type(talsh_tens_t) :: hvo_aux_tensor
 !        solution tensors
          type(talsh_tens_t) :: s1_tensor
@@ -3020,12 +3021,12 @@ module talsh_cc
             ierr=talsh_tensor_construct(s3_tensor,C8,vvvooo_dims,init_val=ZERO)
          end if
 
-         if (iterative_level.ge.4) then 
+         if (iterative_level.ge.4) then
             vvvvoooo_dims = (/nvir, nvir, nvir, nvir, nocc, nocc, nocc, nocc/)
             ierr=talsh_tensor_construct(s4_tensor,C8,vvvvoooo_dims,init_val=ZERO)
          end if
 
-         if (iterative_level.ge.5) then 
+         if (iterative_level.ge.5) then
             vvvvvooooo_dims = (/nvir,nvir, nvir, nvir, nvir, nocc,nocc, nocc, nocc, nocc/)
             ierr=talsh_tensor_construct(s5_tensor,C8,vvvvvooooo_dims,init_val=ZERO)
          end if
@@ -3034,7 +3035,7 @@ module talsh_cc
 
           if (print_level.gt.2) then
 !         if (.true.) then
-            if (.not.CCD) then 
+            if (.not.CCD) then
                write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
                if (iterative_level.ge.3) write(*,*) "t3    = ",tensor_norm2(comm_t%t3)
                if (iterative_level.ge.4) write(*,*) "t4    = ",tensor_norm2(comm_t%t4)
@@ -3071,7 +3072,7 @@ module talsh_cc
             if (auto_scheme.eq.1) then
             ! mb-codegen
             call talsh_CCSD_codegen(nocc,nvir,          &
-                                   int_t%oovv,         &   ! H24 OOVV 
+                                   int_t%oovv,         &   ! H24 OOVV
                                    comm_t%t1,          &   ! S43 VO
                                    comm_t%fov,         &   ! H15 OV
                                    comm_t%t2,          &   ! S44 VVOO
@@ -3089,7 +3090,7 @@ module talsh_cc
                                    result_tensor,      &   ! Z48 UnitTensor
                                    s1_tensor,          &   ! Z49 VO
                                    s2_tensor)              ! Z50 VVOO
-            else if (auto_scheme.eq.2) then  
+            else if (auto_scheme.eq.2) then
             ! tenpi
                call talsh_tenpi_ccsd(nocc,nvir,   &
                                     comm_t%foo,         &    !       OO
@@ -3112,20 +3113,20 @@ module talsh_cc
                                     s2_tensor)               !       r_VVOO
             end if
           else if ((iterative_level.eq.2).and.(iterative_scheme.eq.20)) then
-            if (auto_scheme.eq.1) then       
+            if (auto_scheme.eq.1) then
             ! mb-codegen
             call talsh_CCD_codegen_call(nocc,nvir,      &
-                                        comm_t%t2,      &   ! S23 
+                                        comm_t%t2,      &   ! S23
                                         int_t%oovv,     &   ! H13   OOVV
                                         vvoo_aux_tensor,&   ! H3    VVOO
                                         int_t%vvvv,     &   ! H2    VVVV
-                                        int_t%oooo,     &   ! H14   OOOO 
+                                        int_t%oooo,     &   ! H14   OOOO
                                         comm_t%fvv,     &   ! H1    VV
                                         comm_t%foo,     &   ! H9    OO
                                         voov_aux_tensor,&   ! H10   VOOV
                                         result_tensor,  &   ! Z26   unit tensor
                                         s2_tensor)          ! Z27   VVOO
-            else if (auto_scheme.eq.2) then  
+            else if (auto_scheme.eq.2) then
             ! tenpi
                call talsh_tenpi_ccd(nocc,nvir,            &
                                        comm_t%foo,         &    !       OO
@@ -3163,7 +3164,7 @@ module talsh_cc
                                            s1_tensor,      &  !  VO
                                            s2_tensor,      &  !  VVOO
                                            s3_tensor)         !  VVVOOO
-            else if (auto_scheme.eq.2) then 
+            else if (auto_scheme.eq.2) then
             ! tenpi
                call talsh_tenpi_ccsdt(nocc,nvir,   &
                                           comm_t%foo,         &    ! F2     OO
@@ -3295,7 +3296,7 @@ module talsh_cc
             else if (auto_scheme.eq.2) then
             ! tenpi
             end if
-          else if ((iterative_level.eq.4).and.(iterative_scheme.eq.40)) then 
+          else if ((iterative_level.eq.4).and.(iterative_scheme.eq.40)) then
             if (auto_scheme.eq.1) then
             ! mb-codegen
              call talsh_CCSDTQ_codegen_call(nocc,nvir,     &
@@ -3374,12 +3375,12 @@ module talsh_cc
                                            s2_tensor,      &  !  VVOO
                                            s3_tensor,      &  !  VVVOOO
                                            s4_tensor,      &  !  VVVVOOOO
-                                           s5_tensor)         !  VVVVVOOOOO 
+                                           s5_tensor)         !  VVVVVOOOOO
             else if (auto_scheme.eq.2) then
             ! tenpi
                call quit ('Error: CCSDTQP not yet implemented in tenpi.')
             end if
-          else 
+          else
              write(*,*) "Implementation not available for this method"
           end if
 
@@ -3433,7 +3434,7 @@ module talsh_cc
           end if
 
           if (.not.CCD) then
-            if (iterative_level.ge.5) then 
+            if (iterative_level.ge.5) then
                call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
                           t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,t_convergence=t_convergence)
             else if (iterative_level.ge.4) then
@@ -3442,7 +3443,7 @@ module talsh_cc
             else if (iterative_level.ge.3) then
                call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
                         & t1_tensor=comm_t%t1,t_convergence=t_convergence)
-            else 
+            else
                call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,t_convergence=t_convergence)
             end if
           else
