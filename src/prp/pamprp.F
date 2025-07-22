@@ -190,7 +190,7 @@ C
       IF (DOEXP) THEN
          CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
 C     allow choice to use hdf5 file(s) to be used for expectation values
-C     that is supported by the exacorr module. not yet the default as there 
+C     that is supported by the exacorr module. not yet the default as there
 C     are some issues to resolve for construction density matrices,
 C     notably in property calculations using mp2 frozen natural orbitals
          if (doexacc.and.hdf5io) then
@@ -5060,8 +5060,8 @@ C
       NPCOMP  = 1    ! one component
       PFAC(1) = CVAL ! factor
 C
-C     this prefactor (CVAL) guarantees the NRL employes in the literature
-C     in the printout section we will divide by CVEL
+C     This prefactor (CVAL) guarantees the NRL employed in the literature (CVAL>>137).
+C     In the printout section we will divide by CVEL.
 C
 C     Point nucleus
       IF(.NOT.GAUNUC) PFAC(1) = PFAC(1)*D3/(D4*GFAC*PI)
@@ -5268,8 +5268,8 @@ C
       PFAC(2) = CVAL
       PFAC(3) = CVAL
 C
-C     this prefactor (CVAL) guarantees the NRL employes in the literature
-C     in the printout section we will divide by CVEL
+C     This prefactor (CVAL) guarantees the NRL employed in the literature (CVAL>>137).
+C     In the printout section we will divide by CVEL.
 C
       IF(.NOT.GAUNUC) THEN ! Point nucleus
         DO IXYZ = 1,3
@@ -10745,7 +10745,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Define electric multipole moment in the generalized velocity representation.
 C     Multipole moments of this type are given by
-C     
+C
 C     Q^[n+1]_(j1...jn;p) = -e/omega*r_j1...r_(jn-1)(r_jn*(ca_p) + n*(ca_jn)r_p)
 C
 C     where r_i represent the ith component of a Cartesian coordinate and ca_i
@@ -10753,33 +10753,33 @@ C     the ith alpha matrix multiplied with the speed of light.
 C     For a given combination of (j1...j_(n-1)), we can generate nine unique
 C     multipole moments
 C
-C     1: (n+1)x*ca_x               2: (n+1)y*ca_y            3: (n+1)z*ca_z 
-C     4: (z*(ca_y) + n*(ca_z)y)    5: (y*(ca_z) + n*(ca_y)z) 6: (x*(ca_z) + n*(ca_x)z) 
+C     1: (n+1)x*ca_x               2: (n+1)y*ca_y            3: (n+1)z*ca_z
+C     4: (z*(ca_y) + n*(ca_z)y)    5: (y*(ca_z) + n*(ca_y)z) 6: (x*(ca_z) + n*(ca_x)z)
 C     7: (z*(ca_x) + n*(ca_z)x)    8: (y*(ca_x) + n*(ca_y)x) 9: (x*(ca_y) + n*(ca_x)y)
 C
 C     Note that for a given set of (j1...j_(n-1)), the multipole moments are stored in the
 C     order above. To each of these terms, we associate the following label
 C
 C     1: xx    2: yy    3: zz
-C     4: zy    5: yz    6: xz 
+C     4: zy    5: yz    6: xz
 C     7: zx    8: yx    9: xy
 C
-C     For example, a multipole moment of the form 
+C     For example, a multipole moment of the form
 C
 C     Q^[5]_(xyyz;x) = -e/omega*xy^2(z*(ca_x) + n*(ca_z)x)
 C
-C     gets the following name 
+C     gets the following name
 C
 C     VpolzxX01Y02Z00
 C
 C     This operator is symmetric with respect to the indices (j1...j_(n-1)),
 C     thus the possible combinations are stored in lower triangular form.
 C     Therefore, at order L, we have 9*(L-1)L/2 unique multipoles.
-C     
+C
 C     However, L=1 is an exception to this rule.
 C     At this order, the multipole operator reduces to the set (ca_x,ca_y,ca_z),
 C
-C     Note that this routine does not check if IPVPOL goes out of 
+C     Note that this routine does not check if IPVPOL goes out of
 C     bounds. This has to be done outside the routine.
 C
 C     Written by Martin van Horn July 16 2021
@@ -10790,7 +10790,7 @@ C***********************************************************************
 #include "dcbgen.h"
       DIMENSION IPVPOL(*), PFAC(2)
       REAL CARPOW(3,3)
-      CHARACTER PNAME*16, PLABEL(2)*8,COMPLAB(3)*2  
+      CHARACTER PNAME*16, PLABEL(2)*8,COMPLAB(3)*2
 C
       II = 0
       PFAC  = CVAL
@@ -10802,32 +10802,32 @@ C
             IPTYP = 2
             DO IP = 1, 3
                   PNAME(6:7) = COMPLAB(IP)
-                  II = II + 1 
+                  II = II + 1
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC(1),PLABEL(1),
      &            IPVPOL(II),ISYXPR,ITRXPR,IPRINT)
                   IPTYP = IPTYP + 1
             ENDDO
-      ELSE 
+      ELSE
             IPTYP = 2
             COMPLAB = ['xx','yy','zz']
-            CARPOW = 0.0D0    
+            CARPOW = 0.0D0
             DO I = 1,3
                   CARPOW(I,I) = 1
             ENDDO
-            DO IA = 0,L-2   
+            DO IA = 0,L-2
                   IX = L - 2 - IA
                   DO IB = 0,IA     !Loops over lower triangle
                         IY = IA - IB
                         IZ = IB
                         IPTYP = 2
                         DO IP = 1,3  !define multipole moments xx yy and zz
-                              PNAME(5:6) = COMPLAB(IP)                                           
+                              PNAME(5:6) = COMPLAB(IP)
                               PNAME( 8:9) = CHRNOS(IX/10)
      &                                     //CHRNOS(MOD(IX,10))
                               PNAME(11:12) = CHRNOS(IY/10)
      &                                     //CHRNOS(MOD(IY,10))
                               PNAME(14:15) = CHRNOS(IZ/10)
-     &                                     //CHRNOS(MOD(IZ,10))     
+     &                                     //CHRNOS(MOD(IZ,10))
                               NPCOMP = 1
                               PFAC(1) = L*CVAL
                               NX = IX + CARPOW(1,IP)
@@ -10839,13 +10839,13 @@ C
      &                        //CHRNOS(MOD(NZ,10))
                               II = II + 1
                               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC(1)
-     &                       ,PLABEL(1),IPVPOL(II),ISYXPR,ITRXPR,IPRINT)          
+     &                       ,PLABEL(1),IPVPOL(II),ISYXPR,ITRXPR,IPRINT)
                               IPTYP = IPTYP + 1
                         ENDDO
                         COMPLAB = ['zy','xz','yx']
                         DO IP = 1,3    !define multipole moments zy yz xz zx yx xy
                               NPCOMP = 2
-                              PFAC(1) = CVAL 
+                              PFAC(1) = CVAL
                               PFAC(2) = -(L-1)*CVAL
                               PNAME(5:6) = COMPLAB(IP)
                               PNAME( 8:9) = CHRNOS(IX/10)
@@ -10853,14 +10853,14 @@ C
                               PNAME(11:12) = CHRNOS(IY/10)
      &                                     //CHRNOS(MOD(IY,10))
                               PNAME(14:15) = CHRNOS(IZ/10)
-     &                                     //CHRNOS(MOD(IZ,10))    
+     &                                     //CHRNOS(MOD(IZ,10))
                               NX = IX + CARPOW(IP,2)
                               NY = IY + CARPOW(IP,3)
                               NZ = IZ + CARPOW(IP,1)
                               PLABEL(1)(3:8) = CHRNOS(NX/10)
      &                               //CHRNOS(MOD(NX,10))//CHRNOS(NY/10)
      &                               //CHRNOS(MOD(NY,10))//CHRNOS(NZ/10)
-     &                               //CHRNOS(MOD(NZ,10))                                     
+     &                               //CHRNOS(MOD(NZ,10))
                               NX = IX + CARPOW(3,IP)
                               NY = IY + CARPOW(1,IP)
                               NZ = IZ + CARPOW(2,IP)
@@ -10870,8 +10870,8 @@ C
      &                        //CHRNOS(MOD(NZ,10))
                               II = II + 1
                               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL
-     &                           ,IPVPOL(II),ISYXPR,ITRXPR,IPRINT)    
-                              PFAC(1) = (L-1)*CVAL 
+     &                           ,IPVPOL(II),ISYXPR,ITRXPR,IPRINT)
+                              PFAC(1) = (L-1)*CVAL
                               PFAC(2) = -CVAL
                               PNAME(5:6) = COMPLAB(IP)(2:2)
      &                                   //COMPLAB(IP)(1:1)
@@ -10883,7 +10883,7 @@ C
                   ENDDO
             ENDDO
       ENDIF
-      END 
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DEF_MPOLE(L,IPMPOL,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
