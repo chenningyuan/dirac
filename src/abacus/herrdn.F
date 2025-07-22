@@ -993,7 +993,7 @@ C
         IF(.NOT.ZMTTST) THEN
           IF (DIRAC) THEN
             DOHUCKEL = .FALSE.
-            READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)',IOSTAT=IOS)
+            READ (MLINE(NMLINE),'(BN,1X,F9.4,I5,F20.5)',IOSTAT=IOS)
      &            Q,NONT(I),QEXP
             IF (IOS.NE.0) THEN
               WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1010,7 +1010,7 @@ C
             NSETS = 1
             IF (DOHUCKEL) NSETS = 2
             BSET  = 'Basis'
-            READ (MLINE(NMLINE),'(BN,1X,F9.0,25I5)',IOSTAT=IOS)
+            READ (MLINE(NMLINE),'(BN,1X,F9.4,25I5)',IOSTAT=IOS)
      &                           Q,NONT(I),
      &                           IQM(I,1), (JCO(J,I,1), J=1, IQM(I,1))
             IF (IOS.NE.0) THEN
