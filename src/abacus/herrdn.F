@@ -993,7 +993,7 @@ C
         IF(.NOT.ZMTTST) THEN
           IF (DIRAC) THEN
             DOHUCKEL = .FALSE.
-            READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)',IOSTAT=IOS)
+            READ (MLINE(NMLINE),'(BN,1X,F9.4,I5,F20.5)',IOSTAT=IOS)
      &            Q,NONT(I),QEXP
             IF (IOS.NE.0) THEN
               WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1010,7 +1010,7 @@ C
             NSETS = 1
             IF (DOHUCKEL) NSETS = 2
             BSET  = 'Basis'
-            READ (MLINE(NMLINE),'(BN,1X,F9.0,25I5)',IOSTAT=IOS)
+            READ (MLINE(NMLINE),'(BN,1X,F9.4,25I5)',IOSTAT=IOS)
      &                           Q,NONT(I),
      &                           IQM(I,1), (JCO(J,I,1), J=1, IQM(I,1))
             IF (IOS.NE.0) THEN
@@ -1959,7 +1959,7 @@ C
 C
       NQ = NINT(Q)
 
-      IF (GAUNUC .AND. NQ.GT.0) THEN
+      IF (GAUNUC .AND. NQ.NE.D0) THEN
         IF(QEXP.EQ.D0) THEN
            CALL NUCSIZ(NQ,GEXP,XMASS)
         WRITE(LUPRI,'(A,F8.3,A,1PD20.10,A,0PF6.1,A)')
@@ -1978,6 +1978,11 @@ C
      &       '  -- WARNING!!! Nuclear Gaussian exponent is small!'
       ELSE
          GEXP = D0
+         IF(NQ.EQ.D0) THEN
+         WRITE(LUPRI,'(A,F8.3,A,1P,D20.10)')
+     &       '  Nuclear Gaussian exponent for atom of charge ',
+     &       Q,' :',GEXP
+         ENDIF
       END IF
       ECPNUC = NUCIND
       NUCSTR = NUCIND + 1
