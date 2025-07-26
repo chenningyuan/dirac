@@ -1172,10 +1172,10 @@ C     DIFODC true if we have JMAXD .gt. 0 (take derivatives)
      &    .OR. (INTTYP.EQ.201) .OR. (INTTYP.EQ.207)
 
 C     ADD Nuclear Attraction Integrals, true if we need V_ne operator.
-      ADDNAI = (INTTYP.EQ. 5) .OR. (INTTYP.EQ.19) .OR. (INTTYP.EQ.20)
-     &     .OR. (INTTYP.EQ.24) .OR. (INTTYP.EQ.25) .OR. (INTTYP.EQ.51)
-     &     .OR. (INTTYP.EQ.54) .OR. (INTTYP.EQ.58)
-     &     .OR. (INTTYP.EQ.203) .OR. (INTTYP.EQ.208)
+      ADDNAI = (INTTYP.EQ.  5) .OR. (INTTYP.EQ. 19) .OR. (INTTYP.EQ.20)
+     &    .OR. (INTTYP.EQ. 24) .OR. (INTTYP.EQ. 25) .OR. (INTTYP.EQ.51)
+     &    .OR. (INTTYP.EQ. 54) .OR. (INTTYP.EQ. 58)
+     &    .OR. (INTTYP.EQ.203) .OR. (INTTYP.EQ.208)
 C
       DO 100 IPRIMA = 1,NUCA
          JPRIMA = JSTA + IPRIMA
@@ -1222,9 +1222,9 @@ C     3) Gauge origin
 C     4) Molecular center of mass
 C     5) Operator center ("molecular" origin)
 C
-         IF ((INTTYP .EQ. 17)  .OR. (INTTYP .EQ. 20) .OR.
-     &       (INTTYP .EQ. 22)  .OR. (INTTYP .EQ. 26) .OR.
-     &       (INTTYP .EQ. 202) .OR. (INTTYP .EQ.205)) THEN
+         IF ((INTTYP .EQ.  17) .OR. (INTTYP .EQ.  20) .OR.
+     &       (INTTYP .EQ.  22) .OR. (INTTYP .EQ.  26) .OR.
+     &       (INTTYP .EQ. 202) .OR. (INTTYP .EQ. 205)) THEN
             TEMP(1) = CORBX ! MI:shift the gauge to the right orbital
             TEMP(2) = CORBY
             TEMP(3) = CORBZ
@@ -1349,12 +1349,11 @@ C                 58: NUCFIEL
                   EXPFAC = EXPFAC/(EXPFAC + EXPP)
                   EXPPGN = EXPP*EXPFAC
                   FACTOR = FACTOR*(EXPFAC**D1P5)
-                  CALL HERNAI(AHGTF,JMAX,EXPPGN,DIFCPX,DIFCPY,
-     *                 DIFCPZ,FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,
-     *                 IPRINT)
+                  CALL HERNAI(AHGTF,JMAX,EXPPGN,DIFCPX,DIFCPY,DIFCPZ,
+     &                 FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
                ELSE
-                  CALL HERNAI(AHGTF,JMAX,EXPP,DIFCPX,DIFCPY,DIFCPZ
-     &                 ,FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
+                  CALL HERNAI(AHGTF,JMAX,EXPP,DIFCPX,DIFCPY,DIFCPZ,
+     &                 FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
                END IF
 
                IF (ADDNAI) THEN
