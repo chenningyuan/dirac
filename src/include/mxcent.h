@@ -8,5 +8,5 @@
 !     MAX_NONT= the maximum number of centers that can be defined within an atomic type (MI+PB)
 !
       INTEGER MXATOM, MXCENT, MXCOOR, MXBSETS, MAX_NONT
-      PARAMETER (MXATOM=20, MXCENT = 300, MXCOOR = 3*MXCENT, MXBSETS=5)
+      PARAMETER (MXATOM=25, MXCENT = 300, MXCOOR = 3*MXCENT, MXBSETS=5)
       PARAMETER (MAX_NONT=150)
