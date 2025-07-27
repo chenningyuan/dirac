@@ -100,7 +100,7 @@ One-electron scalar operator labels
 +=============+==================================+=============+================+========================================================================================+
 | KINENER     | NR kinetic energy                |     S       | KINENER        | :math:`\hat{\Omega}_1 = -\frac{1}{2}\hat{\nabla}^2`                                    |
 +-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
-| MOLFIELD    | Nuclear attraction               |     S       | MOLFIELD       | :math:`\hat{\Omega}_1 = \sum_K Z_K |\boldsymbol{r}-\boldsymbol{R}_K|^{-1}`             |
+| MOLFIELD    | Nuclear attraction               |     S       | MOLFIELD       | :math:`\hat{\Omega}_1 = \sum_K \Phi_K (\boldsymbol{r})`                                |
 +-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
 | OVERLAP     | Overlap                          |     S       | OVERLAP        | :math:`\hat{\Omega}_1 = 1`                                                             |
 +-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
@@ -160,6 +160,12 @@ One-electron scalar operator labels
 |             |                                  |             +----------------+----------------------------------------------------------------------------------------+
 |             |                                  |             | ZZTHETA        | :math:`\hat{\Omega}_6 = - \frac{3}{2} (z^2-\frac{1}{3}r^2)`                            |
 +-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| NEFIELD     | Electronic electric field at     |     S       | NEF abc        | :math:`\hat{\Omega}_{abc}`                                                             |
+|             | the individual nuclei            |             |                | :math:`= (\boldsymbol{r}-\boldsymbol{R}_K)/|\boldsymbol{r}-\boldsymbol{R}_K|^3`        |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
+| NEFNUC      | Electric field produced by the   |     S       | EFNUabc        | :math:`\hat{\Omega}_{abc} = -\boldsymbol{E}_K(\boldsymbol{r})/Z_K`                     |
+|             | individual nuclei                |             |                | :math:`= \boldsymbol{\nabla} \Phi_K (\boldsymbol{r}) / Z_K`                            |
++-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
 | SEFGMG      | Magnetic term of Flambaum-Ginges |     A       | XSEFGMG        |                                                                                        |
 |             | self-energy potential            |             +----------------+----------------------------------------------------------------------------------------+
 |             |                                  |             | YSEFGMG        |                                                                                        |
@@ -167,9 +173,39 @@ One-electron scalar operator labels
 |             |                                  |             | ZSEFGMG        |                                                                                        |
 +-------------+----------------------------------+-------------+----------------+----------------------------------------------------------------------------------------+
 
-where :math:`\boldsymbol{R}_{CM}` and :math:`\boldsymbol{R}_K` are the position vectors of the nuclear center of mass and the nucleus :math:`K` with respect to the origin of coordinates, respectively. In addition, the operators :math:`x`, :math:`y`, and :math:`z` are the Cartesian components of the electron position vector operator with respect to the origin of coordinates.
+In the Table above, :math:`\boldsymbol{r} = x \, \boldsymbol{\hat{\imath}} + y \, \boldsymbol{\hat{\jmath}} + z \, \boldsymbol{\hat{k}}`, :math:`\boldsymbol{R}_{CM}`, and :math:`\boldsymbol{R}_K` stand for the electron position operator, the position vector of the nuclear center of mass and the position of nucleus :math:`K`, respectively. All of them, relative to the origin of coordinates.
 
-Note that in the one-electron Fermi-contact integrals :math:`g_e` is the electronic g-factor (i.e., :math:`g_e = 2` unless QED effects are taken into account), 'NAM' are the three first letters in the name of atom :math:`K` as given in the .mol file, and 'ab' stands for the number of the symmetry-adapted nucleus.
+In particular, operators ``DIPLEN``, ``QUADRUP``, ``SECMOM``, and ``THETA`` are defined in terms of the Cartesian components of the electron position vector operator with respect to the dipole origin, :math:`\boldsymbol{r}_D = \boldsymbol{r} - \boldsymbol{R}_D = x_D \, \boldsymbol{\hat{\imath}} + y_D \, \boldsymbol{\hat{\jmath}} + z_D \, \boldsymbol{\hat{k}}`. The dipole origin :math:`\boldsymbol{R}_D` can be set using :ref:`HAMILTONIAN_.DIPORG`.
+
+
+The electrostatic potential produced by a static nucleus :math:`K` (in a.u.) is
+
+.. math::
+
+   \Phi_K (\boldsymbol{r}) = \int \frac{\rho_K(\boldsymbol{r}')}{|\boldsymbol{r}-\boldsymbol{r}'|} d\boldsymbol{r}',
+
+and when the charge density distribution :math:`\rho_K(\boldsymbol{r}')` of nucleus :math:`K` at the arbitrary position :math:`\boldsymbol{r}'` is described by a point-like nuclear model (PN), it is given by
+
+.. math::
+
+   \Phi^\text{PN}_K (\boldsymbol{r}) = \frac{Z_K}{|\boldsymbol{r}-\boldsymbol{R}_K|}.
+
+Operators ``MOLFIELD`` and ``NEFNUC`` depend on :math:`\Phi_K (\boldsymbol{r})`, and for them two different nuclear charge distribution models :math:`\rho_K(\boldsymbol{r}')` can be set using :ref:`INTEGRALS_.NUCMOD`.
+
+Besides, the electrostatic field produced by nucleus :math:`K` at the position :math:`\boldsymbol{r}` is :math:`\boldsymbol{E}_K(\boldsymbol{r}) = - \boldsymbol{\nabla} \Phi_K(\boldsymbol{r})`. The operator label ``NEFNUC`` points to the integral calculations of :math:`\boldsymbol{\nabla} \Phi_K (\boldsymbol{r})/Z_K`. Also here, the nuclear charge density distribution :math:`\rho_K(\boldsymbol{r}')` can be set by the user employing :ref:`INTEGRALS_.NUCMOD`.
+
+When a point-like model is used (i.e., when :math:`\rho_K(\boldsymbol{r}') = \rho^\text{PN}_K(\boldsymbol{r}') = Z_K \delta(\boldsymbol{r}'-\boldsymbol{R}_K)`), then
+
+.. math::
+
+   \texttt{NEFNUC} \; \longrightarrow \; -\frac{\boldsymbol{E}^\text{PN}_K (\boldsymbol{r})}{Z_K} = \frac{\boldsymbol{\nabla} \Phi^\text{PN}_K (\boldsymbol{r})}{Z_K} = -\frac{\boldsymbol{r}-\boldsymbol{R}_K}{|\boldsymbol{r}-\boldsymbol{R}_K|^3}.
+
+In other words, when ``NEFNUC`` is used with a point-like nuclear model, the integrals are identical (except for the opposite sign) to those of ``NEFIELD``.
+
+In the case of operators ``NEFIELD`` and ``NEFNUC``, 'abc' stands for the number of the symmetry-adapted nuclear coordinate. In C1 symmetry, 'abc' goes from '001' (corresponding to the :math:`x` coordinate of the first element in the \*.mol file) to :math:`3\times K`.
+
+
+Note that in the one-electron Fermi-contact integrals ``FERMI C`` (as well as in the spin-dipole interals, ``SPIN-DI``), :math:`g_e` is the electron g-factor. The default value for :math:`g_e` in DIRAC is the QED value taken from the most recent CODATA set (in CODATA2022, :math:`g_e = 2.00231930436092`). However, within the Dirac formalism, i.e. without including QED effects, :math:`g_e` would be exactly equal to 2. Besides, in the operator ``FC NAMab``, 'NAM' stands for the three first letters in the name given to nucleus :math:`K` in the \*.mol file, and 'ab' is the number of the symmetry-adapted nucleus.
 
 
 The matrix representations of the operators shown in the previous Table are either symmetric (S) or antisymmetric (A). This information is provided in the third column of the Table.
@@ -199,7 +235,6 @@ HDOBR       Ket-differentiation of HDO-integrals with respect to magnetic field
 LONMOM      London orbital contribution to angular momentum
 MAGMOM      One-electron contributions to magnetic moment
 MASSVEL     Mass velocity
-NEFIELD     Electric field at the individual nuclei
 NSTCGO      Nuclear shielding with common gauge origin
 NUCPOT      Potential energy of the interaction of electrons with individual nuclei, divided by the nuclear charge
 NUCSHI      Nuclear shielding tensor
@@ -210,6 +245,9 @@ S1MAG       Second order contribution from overlap matrix to magnetic properties
 S1MAGL      Bra-differentiation of overlap matrix with respect to magnetic field
 S1MAGR      Ket-differentiation of overlap matrix with respect to magnetic field
 SDFC        Spin-dipole + Fermi contact
+SEFGHF      High-frequency term of Flambaum-Ginges self-energy potential
+SEFGLF      Low-frequency term of Flambaum-Ginges self-energy potential
+SEPZ        Pyykko-Zhao self-energy model potential
 SOLVENT     Electronic solvent integrals
 SPHMOM      Spherical moments (real combinations), symmetric, (:math:`2l + 1`) components (:math:`m = 0, -1, +1, ..., -l, +l`)
 SPIN-DI     Spin-dipole integrals
@@ -218,9 +256,6 @@ SQHDO       Half-derivative overlap integrals not to be antisymmetrized
 SQHDOR      Half-derivative overlap integrals not to be anti-symmetrized
 SQOVLAP     Second order derivatives overlap integrals
 UEHLING     Uehling potential
-SEFGLF      Low-frequency term of Flambaum-Ginges self-energy potential
-SEFGHF      High-frequency term of Flambaum-Ginges self-energy potential
-SEPZ        Pyykko-Zhao self-energy model potential
 =========== ====================================================================================================================
 
 
@@ -254,7 +289,7 @@ This operator may be specified by::
 
 where 137.03599926085 is the CODATA22 value for :math:`c`.
 
-The speed of light :math:`c` is an important parameter in relativistic theory, but its explicit value in atomic units is not necessarily remembered. A simpler way to specify the kinetic energy operator is therefore::
+The speed of light :math:`c` is an important parameter in relativistic theory, but its explicit value in a.u. is not necessarily remembered. A simpler way to specify the kinetic energy operator is therefore::
 
   .OPERATOR
    'Kin energy'

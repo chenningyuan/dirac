@@ -127,10 +127,7 @@ try:
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = ['_themes']
     html_static_path = ['_static']
-    html_context = {
-        # custom theme css file, put your styles here
-        'css_files': ['_static/theme-custom.css'],
-    }
+    html_css_files = ['theme-custom.css']
 except ImportError:
     print('sphinx_rtd_theme extension not found - fallback to the old theme')
     html_theme = 'dirac'
