@@ -10,8 +10,6 @@
 # 
 #########################################################################################
 
-set(CMAKE_C_STANDARD 99) # to handle size_t and similar C99 features
-set(CMAKE_C_STANDARD_REQUIRED ON)
 
 
 # What is minimum required compiler version depending on vendor? 
