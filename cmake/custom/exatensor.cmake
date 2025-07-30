@@ -34,13 +34,13 @@ if(ENABLE_EXATENSOR)
 
    include(FetchContent)
 
-   option(ENABLE_TBLIS_WITHIN_TAPP "Build and link TBLIS and TBLIS bindings" ON)
+   option(ENABLE_TBLIS_WITHIN_TAPP "Build and link TBLIS and TBLIS bindings" OFF)
    set(ENABLE_TBLIS ${ENABLE_TBLIS_WITHIN_TAPP} CACHE BOOL "" FORCE)
 
    FetchContent_Declare(
      tapp
      GIT_REPOSITORY https://github.com/TAPPorg/reference-implementation.git
-     GIT_TAG        50d4079
+     GIT_TAG        9812c4d
    )
 
    FetchContent_MakeAvailable(tapp)
