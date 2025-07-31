@@ -59,7 +59,7 @@ contains
   call interface_mpi_bcast(exa_input%n_laplace,1,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%neo_cis_nstates,1,exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%neo_cis_states(exa_input%neo_cis_nstates)
+  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%neo_cis_states(exa_input%neo_cis_nstates))
   call interface_mpi_bcast(exa_input%neo_cis_states,1,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%iterative_level,1,exa_MPI_RANK,global_communicator)
