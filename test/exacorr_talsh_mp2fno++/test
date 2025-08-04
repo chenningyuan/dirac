@@ -13,24 +13,24 @@ test = TestRun(__file__, sys.argv)
 
 f1 = Filter()
 f1.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
-      num_lines   = 26,
-      rel_tolerance   = 1.0e-6)
+      num_lines   = 13, # only lookin at occupation numbers
+      abs_tolerance   = 1.0e-6) # /!\ high value because of different NO energies for y and z
 
 
-for prop in ["x", "y", "z"]:
+for i, prop in enumerate(["x", "y", "z"]):
 
     test.run([f'fno++_{prop}_generation_nr.inp'], ['h2o.xyz'], f1, args='--outcmo')
 
     f2 = Filter()
     f2.add(
-        from_string = "<<X1;X1>> = ",
+        from_string = f"<<X{i+1};X{i+1}>> = ",
         num_lines   = 1,
-        rel_tolerance   = 1.0e-6
+        abs_tolerance   = 1.0e-6
     )
     f2.add(
         from_string = "********** Properties for CCSD wave function **********",
         num_lines   = 28,
-        rel_tolerance   = 1.0e-6
+        abs_tolerance   = 1.0e-6
     )
     test.run([f'fno++_{prop}_alpha_ccsd_v2z.inp'], ['h2o.xyz'], f2, args='--incmo')
 
