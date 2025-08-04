@@ -1117,6 +1117,10 @@
          call kw_read(word, exa_input%t_mp2no)
       end if
 
+      if (kw_matches(word, '.ALLOCC         ')) then
+         call kw_read(word, exa_input%print_occupation_number)
+      end if
+
       if (kw_matches(word, '.FNO++         ')) then
          exa_input%mp2no = 3
          call kw_read(word, exa_input%t_mp2no)

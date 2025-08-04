@@ -486,6 +486,15 @@ module talsh_mp2no
                   call sort_values_vectors (N_OCCUPATION,NOs_MO)
                   call print_date('Sorted natural orbitals by occupation number')
 
+                  if(exa_input%print_occupation_number.eq.1) then
+                      print*, "-------------------------------"
+                      print*, "Printing all occupation numbers"
+                      print*, "-------------------------------"
+                      do i=1,size(N_OCCUPATION)
+                         write(*,'(I6, A2, E15.4)') i,') ', N_OCCUPATION(i)
+                      enddo
+                  endif
+
                   call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
                   call print_date('wrote all natural orbital and occupation number in file NOs_MO')
 

@@ -80,6 +80,7 @@
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
+            integer                 :: print_occupation_number = 0 ! print all occupation number
             integer                 :: moint_scheme = 4
             integer                 :: mp2fno_prop = -1
             integer                 :: mp2no = 0                ! > 0 mp2 natural orbital, < 0 mp2lap
