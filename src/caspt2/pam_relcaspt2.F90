@@ -113,19 +113,6 @@ subroutine IVO_MAIN
 
    call dcaspt2_run_subprograms(.true.)
 
-   if (rank == 0) then
-      ! PCMOIN reads DFPCMO and write it to CHECKPOINT
-      ! therefore we need to rename DFPCMONEW to DFPCMO in order to write the IVO result to CHECKPOINT
-#if defined SYS_WINDOWS
-      call system('move DFPCMO DFPCMO.orig')
-      call system('move DFPCMONEW DFPCMO')
-#else
-      call system('mv DFPCMO DFPCMO.orig')
-      call system('mv DFPCMONEW DFPCMO')
-#endif
-      call PCMOIN ! Write DFPCMO to CHECKPOINT
-   end if
-
    ! restore original input values
    ninact = ninact_orig; nact = nact_orig; nsec = nsec_orig; nelec = nelec_orig
 

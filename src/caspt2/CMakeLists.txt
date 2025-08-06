@@ -35,7 +35,8 @@ set(FREE_CASPT2_FORTRAN_SOURCES
 
     # IVO modules
     module_cmo_variables.F90
-    module_dfpcmo_handler.F90
+    # module_dfpcmo_handler.F90  # for stand alone program
+    module_hdf5_cmo_handler.F90
     module_ivo_consistency_check.F90
 
     # General
