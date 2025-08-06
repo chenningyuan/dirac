@@ -34,6 +34,8 @@ set(FREE_CASPT2_FORTRAN_SOURCES
     ulambda_s_half.F90
 
     # IVO modules
+    module_cmo_variables.F90
+    module_dfpcmo_handler.F90
     module_ivo_consistency_check.F90
 
     # General
