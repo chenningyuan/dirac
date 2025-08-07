@@ -1126,7 +1126,7 @@
          call kw_read(word, exa_input%t_mp2no)
       end if
 
-      if (kw_matches(word, '.PNOPROP         ')) then
+      if (kw_matches(word, '.FNOPROP         ')) then
          call kw_read(word, exa_input%mp2fno_prop)
       end if
 
