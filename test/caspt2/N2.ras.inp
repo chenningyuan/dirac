@@ -1,0 +1,49 @@
+**DIRAC
+.TITLE
+NN molecule
+.ANALYZE
+.4INDEX
+.WAVE FUNCTION
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**ANALYZE
+.PRIVEC
+*PRIVEC
+.VECPRI
+all
+all
+**HAMILTONIAN
+.X2C
+**WAVE FUNCTIONS
+.SCF
+.CASPT2
+*CASPT2
+.ninact
+6
+.nact
+6
+.nsec
+2
+.nelec
+2
+.caspt2_ciroots
+33 1
+.subprograms
+CASCI
+CASPT2
+.ras1
+3..4
+2
+.ras2
+9..10
+.ras3
+11..12
+2
+.minelecras3
+1
+**MOLTRA
+.ACTIVE
+3..5
+2..5
+**END OF

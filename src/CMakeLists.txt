@@ -319,6 +319,10 @@ if(ENABLE_KRCC)
 endif()
 message(STATUS "KRCC module: ${ENABLE_KRCC}")
 
+# Making caspt2 as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/caspt2)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:caspt2> ${EXTERNAL_OBJECTS})
+
 # Making relccsd as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/relccsd)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:relccsd> ${EXTERNAL_OBJECTS})
