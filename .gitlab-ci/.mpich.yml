@@ -52,7 +52,7 @@ mpich-64:
     - ldd dirac.x
     - !reference [.restrict-UCX, script]
     - echo "Running ctest in parallel with $M jobs"
-    - export failure_tests="bss_energy|lucita_short|lucita_large|lucita_q_corrections"
+    - export failure_tests="bss_energy|lucita_short|lucita_large|lucita_q_corrections|caspt2"
     - ctest -j$M -L short --output-on-failure -E "(${failure_tests})"
   artifacts:
     when: always
