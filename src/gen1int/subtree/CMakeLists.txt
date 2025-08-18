@@ -1,5 +1,5 @@
 # Required version of CMake
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.20)
 
 # Project name
 PROJECT(Gen1Int C Fortran)
