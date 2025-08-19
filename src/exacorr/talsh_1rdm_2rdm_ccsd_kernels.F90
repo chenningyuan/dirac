@@ -278,7 +278,7 @@ module eti_1rdm_2rdm_ccsd_kernels
             !
             else if (auto_scheme.eq.2) then
             ! tenpi
-            call tapp_tenpi_1rdms_ccsd(nocc,nvir,&
+            call eti_tenpi_1rdms_ccsd(nocc,nvir,&
                                         comm_t%l2,&
                                         comm_t%l1,&
                                         comm_t%t1,&
@@ -287,17 +287,16 @@ module eti_1rdm_2rdm_ccsd_kernels
                                         gamma%prime_ov,&
                                         gamma%prime_vo,&
                                         gamma%prime_vv)
-        
-     !   ierr = construct_tensor_t(temp_tens,C8,ov_dims,init_val=ZERO)
-
-     !   ierr =t_einsum("temp_tens(i,a)+=X(i,a)*K()",temp_tens,gamma%prime_ov,one_tensor)
-
-     !   ierr = initialize_tensor_t(gamma%prime_ov,ZERO)
-     !   ierr =t_einsum("G(i,a)+=X+(a,i)*K()",gamma%prime_ov,gamma%prime_vo,one_tensor)
-
-     !   ierr = initialize_tensor_t(gamma%prime_vo,ZERO)
-     !   ierr = t_einsum("G(a,i)+=X+(i,a)*K()",gamma%prime_vo,temp_tens,one_tensor)
-
+           else if (auto_scheme.eq.3) then 
+           call tapp_tenpi_1rdms_ccsd(nocc,nvir,&
+                                        comm_t%l2,&
+                                        comm_t%l1,&
+                                        comm_t%t1,&
+                                        comm_t%t2,&
+                                        gamma%prime_oo,&
+                                        gamma%prime_ov,&
+                                        gamma%prime_vo,&
+                                        gamma%prime_vv)
             end if
           else if ((iterative_level.eq.2).and.(iterative_scheme.eq.20)) then
             if (auto_scheme.eq.1) then
@@ -312,7 +311,19 @@ module eti_1rdm_2rdm_ccsd_kernels
             ! 
             else if (auto_scheme.eq.2) then
             ! tenpi
-              call tapp_tenpi_1rdms_ccsdt(nocc,nvir,&
+              call eti_tenpi_1rdms_ccsdt(nocc,nvir,&
+                                                comm_t%l3,&
+                                                comm_t%l2,&
+                                                comm_t%l1,&
+                                                comm_t%t1,&
+                                                comm_t%t2,&
+                                                comm_t%t3,&
+                                                gamma%prime_oo,&
+                                                gamma%prime_ov,&
+                                                gamma%prime_vo,&
+                                                gamma%prime_vv)
+           else if (auto_scheme.eq.3) then
+           call tapp_tenpi_1rdms_ccsdt(nocc,nvir,&
                                                 comm_t%l3,&
                                                 comm_t%l2,&
                                                 comm_t%l1,&
@@ -335,7 +346,7 @@ module eti_1rdm_2rdm_ccsd_kernels
             !
            else if (auto_scheme.eq.2) then
             ! tenpi
-              call tapp_tenpi_1rdms_ccsdtq(nocc,nvir,&
+              call eti_tenpi_1rdms_ccsdtq(nocc,nvir,&
                                                 comm_t%l4,&
                                                 comm_t%l3,&
                                                 comm_t%l2,&
@@ -348,6 +359,20 @@ module eti_1rdm_2rdm_ccsd_kernels
                                                 gamma%prime_ov,&
                                                 gamma%prime_vo,&
                                                 gamma%prime_vv) 
+           else if (auto_scheme.eq.3) then 
+             call tapp_tenpi_1rdms_ccsdtq(nocc,nvir,&
+                                                comm_t%l4,&
+                                                comm_t%l3,&
+                                                comm_t%l2,&
+                                                comm_t%l1,&
+                                                comm_t%t1,&
+                                                comm_t%t2,&
+                                                comm_t%t3,&
+                                                comm_t%t4,&
+                                                gamma%prime_oo,&
+                                                gamma%prime_ov,&
+                                                gamma%prime_vo,&
+                                                gamma%prime_vv)
            end if
        end if
 

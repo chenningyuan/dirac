@@ -4563,7 +4563,7 @@ module eti_cc
 
          oovv_dims = (/nocc, nocc, nvir, nvir/)
          ierr=construct_tensor_t(s2_tensor,C8,oovv_dims,init_val=ZERO)
-        
+
          ovvo_dims = (/nocc, nvir, nvir, nocc/)
          ierr=construct_tensor_t(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
          ierr=initialize_tensor_t(ovvo_aux_tensor)
@@ -4574,18 +4574,15 @@ module eti_cc
             ooovvv_dims = (/nocc, nocc, nocc, nvir, nvir, nvir/)
             ierr=construct_tensor_t(s3_tensor,C8,ooovvv_dims,init_val=ZERO)
          end if
-
          if (iterative_level.ge.4) then 
             oooovvvv_dims = (/nocc, nocc, nocc, nocc, nvir, nvir, nvir, nvir/)
             ierr=construct_tensor_t(s4_tensor,C8,oooovvvv_dims,init_val=ZERO)
          end if
-
          if (iterative_level.ge.5) then 
             ooooovvvvv_dims = (/nocc,nocc, nocc, nocc, nocc, nvir,nvir, nvir, nvir, nvir/)
             ierr=construct_tensor_t(s5_tensor,C8,ooooovvvvv_dims,init_val=ZERO)
          end if
        
-
            if (.not.CCD) then
             if (iterative_level.eq.5) then
                call diis (t5_tensor=comm_t%l5,t4_tensor=comm_t%l4,t3_tensor=comm_t%l3, &
@@ -4602,7 +4599,6 @@ module eti_cc
             call diis (t2_tensor=comm_t%l2,mode=1)
          end if
 
-
          do ilambda = 1, ncycles
 
           if (print_level.gt.2) then
@@ -4615,7 +4611,6 @@ module eti_cc
             end if
             write(*,*) "l2    = ",tensor_norm2(comm_t%l2)
           end if
-
           if (print_level.gt.2) then
             if (.not.CCD) then
                write(*,*) "s1    = ",tensor_norm2(s1_tensor)
@@ -4625,13 +4620,12 @@ module eti_cc
             end if
             write(*,*) "s2    = ",tensor_norm2(s2_tensor)
           end if
-
           if (ierr.ne.TALSH_SUCCESS) then
              write(*,*) " ccdriver: error in calculation of common blocks,code=",ierr
              return
           end if
 
-          ierr=initialize_tensor_t(result_tensor)
+       !   ierr=initialize_tensor_t(result_tensor)
           if (.not.CCD) then
              ierr=initialize_tensor_t(s1_tensor)
              if (iterative_level.ge.3) ierr=initialize_tensor_t(s3_tensor)
@@ -4639,7 +4633,6 @@ module eti_cc
              if (iterative_level.ge.5) ierr=initialize_tensor_t(s5_tensor)
           end if
           ierr=initialize_tensor_t(s2_tensor)
-
           if ((iterative_level.eq.2).and.(iterative_scheme.eq.21)) then
             if (auto_scheme.eq.1) then
             ! mb-codegen
