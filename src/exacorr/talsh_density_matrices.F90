@@ -100,7 +100,7 @@ module eti_gradient
     
     end subroutine
 
-    subroutine eti_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, int_t)
+    subroutine eti_dm_driver(iterative_level, iterative_scheme, exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, int_t,comm_t)
       use exacorr_datatypes
 
 !     Routine for obtaining the density matrices in the MO basis
@@ -110,12 +110,13 @@ module eti_gradient
       type(tensor_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
       type(tensor_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
       type(eti_intg_tens_t), intent(inout), optional :: int_t
+      type(eti_comm_tens_t), intent(inout) :: comm_t
 !     density matrices type, output
       type(eti_dm_tens_t) :: gamma
 !     CCD switch
       logical :: CCD
       character(len=4) :: wavefun
-
+      integer, intent(in) :: iterative_level, iterative_scheme
       complex(8) :: recalculated_energy
 
 !     error code
@@ -134,16 +135,29 @@ module eti_gradient
 !*****************************************
 !     calculate 1-RDM blocks in MO basis *
 !*****************************************
-      if (exa_input%do_1rdm_gs) then
-         if (.not.CCD) then
-           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
-                exa_input%print_level,t1_tensor,l1_tensor)
-         else
-           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
-                exa_input%print_level)
-         end if
-         call print_date("Calculated 1-RDM density matrices in MO basis")
-      end if
+
+      
+if (exa_input%do_1rdm_gs) then
+  if (exa_input%auto_kernels) then
+    if (.not. CCD) then
+      call eti_automatic_dm_1rdm(comm_t, gamma, exa_input%nocc, exa_input%nvir, &
+           exa_input%print_level, iterative_level, iterative_scheme, exa_input%auto_scheme)
+    else
+      write(*,*) 'CCD not available at the moment!'
+    end if
+    call print_date("Calculated 1-RDM density matrices in MO basis")
+  else
+    if (.not. CCD) then
+      call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor, l2_tensor, exa_input%nocc, exa_input%nvir, &
+           exa_input%print_level, t1_tensor, l1_tensor)
+    else
+      call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor, l2_tensor, exa_input%nocc, exa_input%nvir, &
+           exa_input%print_level)
+    end if
+    call print_date("Calculated 1-RDM density matrices in MO basis")
+  end if
+end if
+
 
 !*****************************************
 !     calculate 2-RDM blocks in MO basis *

@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+module purge
+module load git/2.9.5
+module load cmake/3.30.3
+module load intel/18.2.199
+#module load openmpi/intel/4.1.4.2
+#module load openmpi/icc/4.0.3.3
+module load intelmpi/18.2
+module load boost/1.68.0
+ module load hdf5/1.10.2-seq
+#module load cuda
+
+export DIRAC_TMPDIR=/tmpdir/$USER/tmp_dirac
+
+export TOOLKIT=INTEL
+export BUILD_TYPE=OPT
+export MPILIB=MPICH
+export PATH_MPICH=${I_MPI_ROOT}
+export PATH_MPICH_INC=${PATH_MPICH}/include64
+export PATH_MPICH_LIB=${PATH_MPICH}/lib64
+export PATH_MPICH_BIN=${PATH_MPICH}/bin64
+export BLASLIB=MKL
+export PATH_INTEL=${MKLROOT}
+export PATH_BLAS_MKL=${PATH_INTEL}/lib/intel64
+export PATH_BLAS_MKL_DEP=${PATH_INTEL}/lib/intel64_lin
+export PATH_BLAS_MKL_INC=${PATH_INTEL}/include
+export EXA_OS=LINUX
+export WITH_CUTT=NO
+# export EXA_TALSH_ONLY=YES
+export TALSH_ONLY=YES
+export GPU_CUDA=NOCUDA
+# export GPU_CUDA=CUDA
+# export GPU_SM_ARCH=80
+# export
+PATH_CUDA=/usr/local/nvidia_hpc_sdk/Linux_x86_64/22.1/cuda/11.5/lib64
+DIRAC_PATH=/tmpdir/fabbro/tapp/dirac
+export BASDIR_PATH=${DIRAC_PATH}/basis:${DIRAC_PATH}/basis_dalton:${DIRAC_PATH}/basis_ecp
+# export BASDIR_PATH=$DIRAC_PATH/basis
+
+module list
+
+# ../../../build-i7/pam --inp=ccsd.inp --mol=Be_D2h.mol --mw=128 --get="MRCONEE MDCINT"
+# ../../../build-i7/dirac_mointegral_export.x mrcc
+
+# ./setup --fc=ifort --cc=icc --cxx=icpc --type=release --pcmsolver=OFF --cmake-options="-DCMAKE_VERBOSE_MAKEFILE=ON -Dtensor_interface_backend=talsh_only" build-i9

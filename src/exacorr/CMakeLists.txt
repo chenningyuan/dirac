@@ -39,6 +39,20 @@ if(ENABLE_EXATENSOR)
    talsh_tenpi_ccsd.F90
    talsh_tenpi_ccsdt.F90
    talsh_tenpi_ccsdtq.F90
+   tapp_tenpi_lambda_ccd.F90
+   tapp_tenpi_lambda_ccsd.F90
+   tapp_tenpi_lambda_ccsdt.F90
+   tapp_tenpi_lambda_ccsdtq.F90
+   talsh_tenpi_lambda_ccd.F90
+   talsh_tenpi_lambda_ccsd.F90
+   talsh_tenpi_lambda_ccsdt.F90
+   talsh_tenpi_lambda_ccsdtq.F90
+   tapp_tenpi_1rdm_ccsd.F90
+   tapp_tenpi_1rdm_ccsdt.F90
+   tapp_tenpi_1rdm_ccsdtq.F90
+   talsh_tenpi_1rdm_ccsd.F90
+   talsh_tenpi_1rdm_ccsdt.F90
+   talsh_tenpi_1rdm_ccsdtq.F90
    exatensor_tenpi_ccd.F90
    exatensor_tenpi_ccsd.F90
    exatensor_tenpi_ccsdt.F90
