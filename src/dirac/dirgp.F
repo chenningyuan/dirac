@@ -102,15 +102,15 @@ C         Check dimensions
              ENDDO   
              CALL QUIT('PCMOIN: Error in dimension')             
           ENDIF
-          READ(LUCOEF,'(E24.16)',iostat=ierr) TOTERG
+          READ(LUCOEF,*,iostat=ierr) TOTERG
           IF (IERR /= 0) CALL QUIT('error reading DFPCMO: energy')
           GOTO 10
         CASE('COEFS   ')
-          READ(LUCOEF,'(6F22.16)',iostat=ierr) CMO
+          READ(LUCOEF,*,iostat=ierr) CMO
           IF (IERR /= 0) CALL QUIT('error reading DFPCMO: coefficients')
           GOTO 10
         CASE('EVALS   ')
-          READ(LUCOEF,'(6E22.12)',iostat=ierr) EIG
+          READ(LUCOEF,*,iostat=ierr) EIG
           IF (IERR /= 0) CALL QUIT('error reading DFPCMO: eigenvalues')
           GOTO 10
         CASE('SUPERSYM')
