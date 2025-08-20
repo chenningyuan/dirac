@@ -5,6 +5,7 @@ module eti_1rdm_2rdm_ccsd_kernels
 ! and Halbert, L and Gomes, ASP, in preparation (ground-state 2RDM, to come EOMCC 1RDMs) 
 ! Written by Stan Papadopoulos, February 2019
 ! Refactored by Andre Gomes and Loic Halbert summer 2022
+! Automatic code by G. Fabbro, J. Brandejs, T. Saue, J. Phys. Chem. A 2025, 129, 7360–7372
 
 !  use talsh
 !  use tensor_algebra
@@ -376,10 +377,10 @@ module eti_1rdm_2rdm_ccsd_kernels
            end if
        end if
 
-              write(*,*) tensor_norm2(gamma%prime_oo)
-              write(*,*) tensor_norm2(gamma%prime_ov)
-              write(*,*) tensor_norm2(gamma%prime_vo)
-              write(*,*) tensor_norm2(gamma%prime_vv)
+         !     write(*,*) tensor_norm2(gamma%prime_oo)
+         !     write(*,*) tensor_norm2(gamma%prime_ov)
+         !     write(*,*) tensor_norm2(gamma%prime_vo)
+         !     write(*,*) tensor_norm2(gamma%prime_vv)
 
         !--------------------------------------------------
         !       ov symm: g(i,a) = 1/2 (g'(i,a) + g'(a,i)) |
@@ -410,10 +411,10 @@ module eti_1rdm_2rdm_ccsd_kernels
 
      !    ierr=initialize_tensor_t(gamma%symm_oo,ZERO)
          !ierr=initialize_tensor_t(gamma%symm_vv,ZERO)
-              write(*,*) 'Symmetrized tensors OO', tensor_norm2(gamma%symm_oo)
-              write(*,*) 'Symmetrized tensors OV', tensor_norm2(gamma%symm_ov)
-              write(*,*) 'Symmetrized tensors VO', tensor_norm2(gamma%symm_vo)
-              write(*,*) 'Symmetrized tensors VV', tensor_norm2(gamma%symm_vv)
+         !     write(*,*) 'Symmetrized tensors OO', tensor_norm2(gamma%symm_oo)
+         !     write(*,*) 'Symmetrized tensors OV', tensor_norm2(gamma%symm_ov)
+         !     write(*,*) 'Symmetrized tensors VO', tensor_norm2(gamma%symm_vo)
+         !     write(*,*) 'Symmetrized tensors VV', tensor_norm2(gamma%symm_vv)
 
     end subroutine eti_automatic_dm_1rdm
 

@@ -34,7 +34,7 @@ export GPU_CUDA=NOCUDA
 # export GPU_SM_ARCH=80
 # export
 PATH_CUDA=/usr/local/nvidia_hpc_sdk/Linux_x86_64/22.1/cuda/11.5/lib64
-DIRAC_PATH=/tmpdir/fabbro/tapp/dirac
+DIRAC_PATH=/tmpdir/fabbro/tapp/dirac/build-i9
 export BASDIR_PATH=${DIRAC_PATH}/basis:${DIRAC_PATH}/basis_dalton:${DIRAC_PATH}/basis_ecp
 # export BASDIR_PATH=$DIRAC_PATH/basis
 

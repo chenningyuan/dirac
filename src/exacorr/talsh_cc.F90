@@ -419,7 +419,6 @@ module eti_cc
                 if (iterative_level.ge.4) then
                  oooovvvv_dims(1:4) = nocc
                  oooovvvv_dims(5:8) =nvir
-                 write(*,*) 'CCSDTQ HERE'
                  ierr=construct_tensor_t(comm_t%l4,C8,oooovvvv_dims,init_val=ZERO)
                  ierr=t_einsum("L(i,j,k,l,a,b,c,d)+=T+(a,b,c,d,i,j,k,l)*K()",comm_t%l4,&
                                             comm_t%t4,one_tensor)
@@ -4535,29 +4534,29 @@ module eti_cc
             ierr=initialize_tensor_t(oovo_aux_tensor)
             ierr=t_einsum("T(i,j,a,k)+=V(i,j,k,a)",oovo_aux_tensor,int_t%ooov,one_tensor,scale=MINUS_ONE)
 
-            write(*,*) 'oovo_aux_tensor=', tensor_norm2(oovo_aux_tensor)
+           ! write(*,*) 'oovo_aux_tensor=', tensor_norm2(oovo_aux_tensor)
             ovoo_dims = (/nocc, nvir, nocc, nocc/)
             ierr=construct_tensor_t(ovoo_aux_tensor,C8,ovoo_dims,init_val=ZERO)
             ierr=initialize_tensor_t(ovoo_aux_tensor)
             ierr=t_einsum("T(k,a,i,j)+=V+(i,j,k,a)",ovoo_aux_tensor,int_t%ooov,one_tensor)
-            write(*,*) 'ovoo_aux_tensor=', tensor_norm2(ovoo_aux_tensor)
+           ! write(*,*) 'ovoo_aux_tensor=', tensor_norm2(ovoo_aux_tensor)
 
             ovov_dims = (/nocc, nvir, nocc, nvir/)
             ierr=construct_tensor_t(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
             ierr=initialize_tensor_t(ovov_aux_tensor)
             ierr=t_einsum("T(i,a,j,b)+=V(a,i,b,j)",ovov_aux_tensor,int_t%vovo,one_tensor)
-            write(*,*) 'ovov_aux_tensor=', tensor_norm2(ovov_aux_tensor)
+           ! write(*,*) 'ovov_aux_tensor=', tensor_norm2(ovov_aux_tensor)
 
             ovvv_dims = (/nocc, nvir, nvir, nvir/)
             ierr=construct_tensor_t(ovvv_aux_tensor,C8,ovvv_dims,init_val=ZERO)
             ierr=initialize_tensor_t(ovvv_aux_tensor)
             ierr=t_einsum("T(i,a,b,c)+=V(a,i,b,c)",ovvv_aux_tensor,int_t%vovv,one_tensor,scale=MINUS_ONE)
-            write(*,*) 'ovvv_aux_tensor=', tensor_norm2(ovvv_aux_tensor)
+           ! write(*,*) 'ovvv_aux_tensor=', tensor_norm2(ovvv_aux_tensor)
             vvvo_dims = (/nvir, nvir, nvir, nocc/)
             ierr=construct_tensor_t(vvvo_aux_tensor,C8,vvvo_dims,init_val=ZERO)
             ierr=initialize_tensor_t(vvvo_aux_tensor)
             ierr=t_einsum("T(a,b,c,i)+=V+(c,i,a,b)",vvvo_aux_tensor,int_t%vovv,one_tensor)
-            write(*,*) 'vvvo_aux_tensor=', tensor_norm2(vvvo_aux_tensor)
+           ! write(*,*) 'vvvo_aux_tensor=', tensor_norm2(vvvo_aux_tensor)
          end if
 
 
