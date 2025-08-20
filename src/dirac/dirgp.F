@@ -370,11 +370,11 @@ C
       WRITE(IUNIT,'(A74)') TEXT
       WRITE(IUNIT,'(8(X,I0))')
      &      NFSYM,NZ,((IDIM(I,J),I = 1,3),J=1,NFSYM)
-      WRITE(IUNIT,'(E24.16)') TOTERG
+      WRITE(IUNIT,'(G25.17)') TOTERG
       WRITE(IUNIT,'(A8)') 'COEFS   '      
-      WRITE(IUNIT,'(6F22.16)') CMO
+      WRITE(IUNIT,'(6G25.17)') CMO
       WRITE(IUNIT,'(A8)') 'EVALS   '            
-      WRITE(IUNIT,'(6E22.12)') EIG
+      WRITE(IUNIT,'(6G25.17)') EIG
       WRITE(IUNIT,'(A8)') 'SUPERSYM'
       WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,1),I=1,NORBT)
       IF(SSYM) THEN
