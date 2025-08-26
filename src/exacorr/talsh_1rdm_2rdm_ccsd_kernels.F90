@@ -36,7 +36,7 @@ module eti_1rdm_2rdm_ccsd_kernels
     public eti_calc_dm_1rdm_ccsd_EE_mo
     public eti_calc_dm_1rdm_ccsd_IP_mo
     public eti_calc_dm_1rdm_ccsd_EA_mo
-
+    public eti_asym_diag
     public calc_dmSandD_CCD_mo_bis
     public eti_automatic_dm_1rdm
     public eti_calc_dm_2rdm_ccsd_GS_mo
@@ -3288,6 +3288,95 @@ module eti_1rdm_2rdm_ccsd_kernels
 
         end subroutine eti_calc_dm_2rdm_ccsd_EA_mo
 
+        subroutine eti_asym_diag(gamma, nocc, nvir, print_level,asym_diag)
+         !use iso_c_binding, only: C_INT
+         integer, intent(in) :: nocc, nvir, print_level
+         type(eti_dm_tens_t), intent(inout) :: gamma
+         type(tensor_t) :: one_tensor, result_tensor, tmp
+         integer(C_INT) :: dims(0)
+         integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
+         integer :: ierr
+         real(8) :: asym_diag
+         complex(8), pointer :: result_tens(:)
+         type(C_PTR):: body_p
+         integer(INTD)      :: result_dims(1)
+         !Tensor dimensions
+         integer(C_INT)     :: one_dims(1)
+
+         oo_dims = (/nocc, nocc/)
+         ov_dims = (/nocc, nvir/)
+         vo_dims = (/nvir, nocc/)
+         vv_dims = (/nvir, nvir/)
+
+
+         result_dims = 1
+         ierr = construct_tensor_t(result_tensor, C8, result_dims(1:0), init_val=ZERO)
+         ierr = direct_data_pointer(result_tensor, body_p)
+         call c_f_pointer(body_p, result_tens, result_dims)
+
+         ierr = construct_tensor_t(one_tensor, C8, one_dims(1:0), init_val=ONE)
+
+         ierr = initialize_tensor_t(gamma%asym_oo, ZERO)
+         ierr = initialize_tensor_t(gamma%asym_vv, ZERO)
+         ierr = initialize_tensor_t(gamma%asym_ov, ZERO)
+         ierr = initialize_tensor_t(gamma%asym_vo, ZERO)
+
+         !------------------------------------------------
+         ! oo antisymm: g(j,i) = 1/2 (g'(j,i) - g'(i,j))
+         !------------------------------------------------
+         ierr = t_einsum("G(j,i)+=X(j,i)*K()", gamma%asym_oo, gamma%prime_oo,one_tensor, scale=ONE_HALF)
+         ierr = t_einsum("G(j,i)+=X+(i,j)*K()", gamma%asym_oo, gamma%prime_oo,one_tensor, scale=-ONE_HALF)
+
+        !------------------------------------------------
+        ! vv antisymm: g(b,a) = 1/2 (g'(b,a) - g'(a,b))
+        !------------------------------------------------
+        ierr = t_einsum("G(b,a)+=X(b,a)*K()", gamma%asym_vv, gamma%prime_vv,one_tensor, scale=ONE_HALF)
+        ierr = t_einsum("G(b,a)+=X+(a,b)*K()", gamma%asym_vv, gamma%prime_vv,one_tensor, scale=-ONE_HALF)
+
+        !------------------------------------------------
+        ! ov antisymm: g(i,a) = 1/2 (g'(i,a) - g'(a,i))
+        !------------------------------------------------
+        ierr = t_einsum("G(i,a)+=X(i,a)*K()", gamma%asym_ov, gamma%prime_ov,one_tensor, scale=ONE_HALF)
+        ierr = t_einsum("G(i,a)+=X+(a,i)*K()", gamma%asym_ov, gamma%prime_vo,one_tensor, scale=-ONE_HALF)
+
+        !------------------------------------------------
+        ! vo antisymm: g(a,i) = 1/2 (g'(a,i) - g'(i,a))
+        !------------------------------------------------
+        ierr = t_einsum("G(a,i)+=X(a,i)*K()", gamma%asym_vo, gamma%prime_vo,one_tensor, scale=ONE_HALF)
+        ierr = t_einsum("G(a,i)+=X+(i,a)*K()", gamma%asym_vo, gamma%prime_ov,one_tensor, scale=-ONE_HALF)
+
+        !------------------------------------------------
+        ! Frobenius norm 
+        !------------------------------------------------
+
+        ! oo contribution
+        ierr = construct_tensor_t(tmp, C8, oo_dims, init_val=ZERO)
+        ierr = t_einsum("X(i,j)=X(i,j)*X(i,j)", tmp, gamma%asym_oo, gamma%asym_oo)
+        ierr = t_einsum("E()+=X(i,j)*K()", result_tensor, tmp)
+
+        ! vv contribution
+        ierr = construct_tensor_t(tmp, C8, vv_dims, init_val=ZERO)
+        ierr = t_einsum("X(a,b)=X(a,b)*X(a,b)", tmp, gamma%asym_vv, gamma%asym_vv)
+        ierr = t_einsum("E()+=X(a,b)*K()", result_tensor, tmp)
+
+        ! ov contribution
+        ierr = construct_tensor_t(tmp, C8, ov_dims, init_val=ZERO)
+        ierr = t_einsum("X(i,a)=X(i,a)*X(i,a)", tmp, gamma%asym_ov, gamma%asym_ov)
+        ierr = t_einsum("E()+=X(i,a)*K()", result_tensor, tmp)
+
+        ! vo contribution
+        ierr = construct_tensor_t(tmp, C8, vo_dims, init_val=ZERO)
+        ierr = t_einsum("X(a,i)=X(a,i)*X(a,i)", tmp, gamma%asym_vo, gamma%asym_vo)
+        ierr = t_einsum("E()+=X(a,i)*K()", result_tensor, tmp)
+
+        asym_diag = sqrt(real(result_tens(1)))/sqrt(real(nocc))
+
+        if (print_level > 0) then
+            write(*,'(A,F12.6)') 'Asymmetry diagnostic (1-RDM) Frobenius norm: ', asym_diag
+       end if
+
+
+     end subroutine eti_asym_diag
 
 end module 
 

@@ -306,6 +306,7 @@
          type(tensor_t) :: prime_oo, symm_oo
          type(tensor_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(tensor_t) :: prime_vv, symm_vv
+         type(tensor_t) :: asym_oo, asym_vv, asym_ov, asym_vo
 ! two-body density matrices
          type(tensor_t) :: prime_vvvv
          type(tensor_t) :: prime_vvvo, prime_vovv, prime_vvov, prime_ovvv
