@@ -399,8 +399,45 @@ module eti_cc
 
          ! end finite field loop
          end do
-
-         if (lambda.and..not.CC2) then
+        if (exa_input%auto_kernels.and.lambda.and..not.CC2) then
+                call print_date('-Start- Lambda Equations with generated code')
+!               Construct and initialize lambda tensor
+                if (.not.CCD) ierr=construct_tensor_t(comm_t%l1,C8,ov_dims,init_val=ZERO)
+                oovv_dims(1:2) = nocc
+                oovv_dims(3:4) = nvir
+                ierr=construct_tensor_t(comm_t%l2,C8,oovv_dims,init_val=ZERO)
+                if (.not.CCD) ierr=t_einsum("L(i,a)+=T+(a,i)*K()",comm_t%l1,comm_t%t1,one_tensor)
+                ierr=t_einsum("L(i,j,a,b)+=T+(a,b,i,j)*K()",comm_t%l2,comm_t%t2,one_tensor)
+                if (iterative_level.ge.3) then
+                 ooovvv_dims(1:3) = nocc
+                 ooovvv_dims(4:6) =nvir
+                 ierr=construct_tensor_t(comm_t%l3,C8,ooovvv_dims,init_val=ZERO)
+                 ierr=t_einsum("L(i,j,k,a,b,c)+=T+(a,b,c,i,j,k)*K()",comm_t%l3,&
+                                                                     comm_t%t3,one_tensor)
+                 
+                end if 
+                if (iterative_level.ge.4) then
+                 oooovvvv_dims(1:4) = nocc
+                 oooovvvv_dims(5:8) =nvir
+                 ierr=construct_tensor_t(comm_t%l4,C8,oooovvvv_dims,init_val=ZERO)
+                 ierr=t_einsum("L(i,j,k,l,a,b,c,d)+=T+(a,b,c,d,i,j,k,l)*K()",comm_t%l4,&
+                                            comm_t%t4,one_tensor)
+                end if
+!               Solve the lambda-equations and calculate density matrix in MO
+!               basis
+                if (.not.CC2) then
+                        call solve_lambda_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,&
+                                 t_target_precision,CCD,iterative_level,iterative_scheme,exa_input%auto_scheme,&
+                                 ncycles,exa_input%print_level)
+                end if
+                if (.not.CCD) call eti_dm_driver(iterative_level, iterative_scheme, exa_input, comm_t%t2,l2_tensor, comm_t%t1, &
+                                                 comm_t%l1, int_t, comm_t)
+ 
+                !call talsh_dm_driver(iterative_level, iterative_scheme,exa_input,comm_t%t2,comm_t%l2,int_t=int_t,comm_t=comm_t)
+                call print_date('-End- Lambda Equations')
+                !stop
+         
+         else if (lambda.and..not.CC2) then
           call print_date('-Start- Lambda Equations')
 !         Construct lambda tensor
           if (.not.CCD) ierr=construct_tensor_t(l1_tensor,C8,ov_dims,init_val=ZERO)
@@ -412,7 +449,7 @@ module eti_cc
           if (.not.CCD) ierr=t_einsum("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
           ierr=t_einsum("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
-!         solve lambda-equations and caluclate density matrix in MO basis
+!         solve lambda-equations and calculate density matrix in MO basis
           if (.not.CCD) then
             if (.not.CC2) then
                 call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
@@ -421,15 +458,15 @@ module eti_cc
                 call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                     t_target_precision,ncycles,exa_input%print_level,l1_tensor)
             end if 
-            call eti_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor,int_t=int_t)
+            call eti_dm_driver(iterative_level, iterative_scheme,exa_input,comm_t%t2,l2_tensor,&
+                        comm_t%t1,l1_tensor,int_t=int_t,comm_t=comm_t)
           else
             call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                         t_target_precision,ncycles,exa_input%print_level)
-            call eti_dm_driver(exa_input,comm_t%t2,l2_tensor,int_t=int_t)
+            call eti_dm_driver(iterative_level, iterative_scheme,exa_input,comm_t%t2,l2_tensor,int_t=int_t,comm_t=comm_t)
           end if
           call print_date('-End- Lambda Equations')
          end if
-
 !        Destruct tensors no longer needed for ground-state
 !        note the amplitude tensor may still be reused in eom or response, so they need to live longer
          ierr=destroy_tensor_t(comm_t%tau)
@@ -4398,6 +4435,548 @@ module eti_cc
 
         end subroutine
 ! aspg
+        subroutine solve_lambda_equations_automatic(comm_t, int_t, nocc, nvir,eps_occ, eps_vir, t_target_precision, &
+                                           CCD, iterative_level,iterative_scheme, auto_scheme, &
+                                           ncycles, print_level)
+        !Routine for solving the lambda equations
+
+         complex(8), pointer :: result_tens(:)
+         type(C_PTR):: body_p
+         integer, intent(in) :: nocc, nvir
+!        fixed 1- and 2-body tensors (fock matrix elements and two-electron
+!        integrals)
+         type(eti_comm_tens_t), intent(inout) :: comm_t
+         type(eti_intg_tens_t), intent(inout) :: int_t
+         !type(talsh_lambda_tens_t),intent(inout) :: lambda_t
+!        intermediate tensors (same notation as in relccsd)
+!        temporarily using tensors with permutations required by the
+!        automatically generated code
+!        the next update to the code generator is expected to handle index
+!        permutations/conjugation 
+         type(tensor_t) :: vvoo_aux_tensor
+         type(tensor_t) :: voov_aux_tensor 
+         type(tensor_t) :: vooo_aux_tensor 
+         type(tensor_t) :: vvov_aux_tensor 
+         type(tensor_t) :: ovvo_aux_tensor
+         type(tensor_t) :: vvvo_aux_tensor
+         type(tensor_t) :: oovo_aux_tensor
+         type(tensor_t) :: ovoo_aux_tensor
+         type(tensor_t) :: ovov_aux_tensor
+         type(tensor_t) :: ovvv_aux_tensor
+
+         type(tensor_t) :: hvo_aux_tensor
+!        solution tensors
+         type(tensor_t) :: s1_tensor
+         type(tensor_t) :: s2_tensor
+         type(tensor_t) :: s3_tensor
+         type(tensor_t) :: s4_tensor
+         type(tensor_t) :: s5_tensor
+         type(tensor_t) :: result_tensor
+         integer(INTD)      :: result_dims(1)
+         !Tensor dimensions
+         integer(C_INT)     :: one_dims(1)
+         !Tensor dimensions
+         integer(INTD), dimension(2) :: oo_dims
+         integer(INTD), dimension(2) :: ov_dims
+         integer(INTD), dimension(2) :: vo_dims
+         integer(INTD), dimension(2) :: vv_dims
+         integer(INTD), dimension(4) :: oovo_dims
+         integer(INTD), dimension(4) :: vvoo_dims
+         integer(INTD), dimension(4) :: ovoo_dims
+         integer(INTD), dimension(4) :: oovv_dims
+         integer(INTD), dimension(4) :: ovvo_dims
+         integer(INTD), dimension(4) :: voov_dims
+         integer(INTD), dimension(4) :: ovov_dims
+         integer(INTD), dimension(4) :: vvov_dims
+         integer(INTD), dimension(4) :: ovvv_dims
+         integer(INTD), dimension(4) :: vooo_dims
+         integer(INTD), dimension(4) :: ooov_dims
+         integer(INTD), dimension(4) :: vovo_dims
+         integer(INTD), dimension(4) :: vovv_dims
+         integer(INTD), dimension(4) :: vvvv_dims
+         integer(INTD), dimension(4) :: vvvo_dims
+         integer(INTD), dimension(4) :: oooo_dims
+         integer(INTD), dimension(6) :: ooovvv_dims
+         integer(INTD), dimension(8) :: oooovvvv_dims
+         integer(INTD), dimension(10):: ooooovvvvv_dims
+         !Orbital energies for scaling
+         real(8), intent(in)   :: eps_occ(:), eps_vir(:)
+         integer :: ilambda
+         integer, intent(in) :: ncycles
+         real(8), intent(in) :: t_target_precision
+         real(8) :: t_convergence
+         !real(8), intent(out) :: ccsd_energy
+         logical, intent(in)  :: CCD
+         integer, intent(in)  :: iterative_level
+         integer, intent(in)  :: iterative_scheme
+         integer, intent(in)  :: auto_scheme
+         integer, intent(in)  :: print_level
+         integer (INTD)       :: ierr
+        
+          
+
+         print*,'*****************************************************************************'
+         print*,'TAL-SH implementation with automatically generated lambda residual equations'
+         print*,'*****************************************************************************'
+        
+          
+
+         if (.not.CCD) then
+            oo_dims = (/nocc, nocc/)
+            vo_dims = (/nvir, nocc/)
+            ov_dims = (/nocc, nvir/)
+            vv_dims = (/nvir, nvir/) 
+
+            ierr=construct_tensor_t(s1_tensor,C8,ov_dims,init_val=ZERO)
+         
+            oovo_dims = (/nocc, nocc, nvir, nocc/)
+            ierr=construct_tensor_t(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
+            ierr=initialize_tensor_t(oovo_aux_tensor)
+            ierr=t_einsum("T(i,j,a,k)+=V(i,j,k,a)",oovo_aux_tensor,int_t%ooov,one_tensor,scale=MINUS_ONE)
+
+           ! write(*,*) 'oovo_aux_tensor=', tensor_norm2(oovo_aux_tensor)
+            ovoo_dims = (/nocc, nvir, nocc, nocc/)
+            ierr=construct_tensor_t(ovoo_aux_tensor,C8,ovoo_dims,init_val=ZERO)
+            ierr=initialize_tensor_t(ovoo_aux_tensor)
+            ierr=t_einsum("T(k,a,i,j)+=V+(i,j,k,a)",ovoo_aux_tensor,int_t%ooov,one_tensor)
+           ! write(*,*) 'ovoo_aux_tensor=', tensor_norm2(ovoo_aux_tensor)
+
+            ovov_dims = (/nocc, nvir, nocc, nvir/)
+            ierr=construct_tensor_t(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
+            ierr=initialize_tensor_t(ovov_aux_tensor)
+            ierr=t_einsum("T(i,a,j,b)+=V(a,i,b,j)",ovov_aux_tensor,int_t%vovo,one_tensor)
+           ! write(*,*) 'ovov_aux_tensor=', tensor_norm2(ovov_aux_tensor)
+
+            ovvv_dims = (/nocc, nvir, nvir, nvir/)
+            ierr=construct_tensor_t(ovvv_aux_tensor,C8,ovvv_dims,init_val=ZERO)
+            ierr=initialize_tensor_t(ovvv_aux_tensor)
+            ierr=t_einsum("T(i,a,b,c)+=V(a,i,b,c)",ovvv_aux_tensor,int_t%vovv,one_tensor,scale=MINUS_ONE)
+           ! write(*,*) 'ovvv_aux_tensor=', tensor_norm2(ovvv_aux_tensor)
+            vvvo_dims = (/nvir, nvir, nvir, nocc/)
+            ierr=construct_tensor_t(vvvo_aux_tensor,C8,vvvo_dims,init_val=ZERO)
+            ierr=initialize_tensor_t(vvvo_aux_tensor)
+            ierr=t_einsum("T(a,b,c,i)+=V+(c,i,a,b)",vvvo_aux_tensor,int_t%vovv,one_tensor)
+           ! write(*,*) 'vvvo_aux_tensor=', tensor_norm2(vvvo_aux_tensor)
+         end if
 
 
+         oovv_dims = (/nocc, nocc, nvir, nvir/)
+         ierr=construct_tensor_t(s2_tensor,C8,oovv_dims,init_val=ZERO)
+
+         ovvo_dims = (/nocc, nvir, nvir, nocc/)
+         ierr=construct_tensor_t(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
+         ierr=initialize_tensor_t(ovvo_aux_tensor)
+         ierr=t_einsum("T(i,a,b,j)+=V(a,i,b,j)", ovvo_aux_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
+         write(*,*) 'ovvo_aux_tensor=', tensor_norm2(ovvo_aux_tensor)
+
+         if (iterative_level.ge.3) then
+            ooovvv_dims = (/nocc, nocc, nocc, nvir, nvir, nvir/)
+            ierr=construct_tensor_t(s3_tensor,C8,ooovvv_dims,init_val=ZERO)
+         end if
+         if (iterative_level.ge.4) then 
+            oooovvvv_dims = (/nocc, nocc, nocc, nocc, nvir, nvir, nvir, nvir/)
+            ierr=construct_tensor_t(s4_tensor,C8,oooovvvv_dims,init_val=ZERO)
+         end if
+         if (iterative_level.ge.5) then 
+            ooooovvvvv_dims = (/nocc,nocc, nocc, nocc, nocc, nvir,nvir, nvir, nvir, nvir/)
+            ierr=construct_tensor_t(s5_tensor,C8,ooooovvvvv_dims,init_val=ZERO)
+         end if
+       
+           if (.not.CCD) then
+            if (iterative_level.eq.5) then
+               call diis (t5_tensor=comm_t%l5,t4_tensor=comm_t%l4,t3_tensor=comm_t%l3, &
+                          t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,mode=1)
+            else if (iterative_level.eq.4) then
+               call diis (t4_tensor=comm_t%l4,t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,&
+                           mode=1)
+            else if (iterative_level.eq.3) then
+               call diis (t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,mode=1)
+            else
+               call diis (t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,mode=1)
+            end if
+         else
+            call diis (t2_tensor=comm_t%l2,mode=1)
+         end if
+
+         do ilambda = 1, ncycles
+
+          if (print_level.gt.2) then
+!         if (.true.) then
+            if (.not.CCD) then 
+               write(*,*) "l1    = ",tensor_norm2(comm_t%l1)
+               if (iterative_level.ge.3) write(*,*) "l3    = ",tensor_norm2(comm_t%l3)
+               if (iterative_level.ge.4) write(*,*) "l4    = ",tensor_norm2(comm_t%l4)
+               if (iterative_level.ge.5) write(*,*) "l5    = ",tensor_norm2(comm_t%l5)
+            end if
+            write(*,*) "l2    = ",tensor_norm2(comm_t%l2)
+          end if
+          if (print_level.gt.2) then
+            if (.not.CCD) then
+               write(*,*) "s1    = ",tensor_norm2(s1_tensor)
+               if (iterative_level.ge.3) write(*,*) "s3    = ",tensor_norm2(s3_tensor)
+               if (iterative_level.ge.4) write(*,*) "s4    = ",tensor_norm2(s4_tensor)
+               if (iterative_level.ge.5) write(*,*) "s5    = ",tensor_norm2(s5_tensor)
+            end if
+            write(*,*) "s2    = ",tensor_norm2(s2_tensor)
+          end if
+          if (ierr.ne.TALSH_SUCCESS) then
+             write(*,*) " ccdriver: error in calculation of common blocks,code=",ierr
+             return
+          end if
+
+       !   ierr=initialize_tensor_t(result_tensor)
+          if (.not.CCD) then
+             ierr=initialize_tensor_t(s1_tensor)
+             if (iterative_level.ge.3) ierr=initialize_tensor_t(s3_tensor)
+             if (iterative_level.ge.4) ierr=initialize_tensor_t(s4_tensor)
+             if (iterative_level.ge.5) ierr=initialize_tensor_t(s5_tensor)
+          end if
+          ierr=initialize_tensor_t(s2_tensor)
+          if ((iterative_level.eq.2).and.(iterative_scheme.eq.21)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+            !call talsh_CCSD_codegen()
+            else if (auto_scheme.eq.2) then  
+            ! tenpi
+               call eti_tenpi_lambda_ccsd(nocc,nvir,&
+                                            comm_t%foo, &       !OO
+                                            comm_t%fov, &       !OV
+                                            comm_t%fvv, &       !VV
+                                            comm_t%l2, &        !l2_OOVV
+                                            comm_t%l1, &        !l1_OV
+                                            comm_t%t1, &        !t1_VO
+                                            comm_t%t2, &        !t2_VVOO
+                                            int_t%oooo,&        !OOOO
+                                            int_t%ooov,&        !OOOV
+                                            oovo_aux_tensor,&   !OOVO
+                                            int_t%oovv,&        !OOVV
+                                            ovoo_aux_tensor,&   !OVOO 
+                                            ovov_aux_tensor,&   !OVOV
+                                            ovvo_aux_tensor, &  !OVVO
+                                            ovvv_aux_tensor, &  !OVVV
+                                            int_t%vovo, &       !VOVO
+                                            int_t%vovv, &       !VOVV
+                                            vvvo_aux_tensor, &  !VVVO
+                                            int_t%vvvv, &       !VVVV
+                                            s2_tensor, &        !r_OOVV
+                                            s1_tensor &         !r_OV    
+                                                                   )
+           else if (auto_scheme.eq.3) then 
+             call tapp_tenpi_lambda_ccsd(nocc,nvir,&
+                                            comm_t%foo, &       !OO
+                                            comm_t%fov, &       !OV
+                                            comm_t%fvv, &       !VV
+                                            comm_t%l2, &        !l2_OOVV
+                                            comm_t%l1, &        !l1_OV
+                                            comm_t%t1, &        !t1_VO
+                                            comm_t%t2, &        !t2_VVOO
+                                            int_t%oooo,&        !OOOO
+                                            int_t%ooov,&        !OOOV
+                                            oovo_aux_tensor,&   !OOVO
+                                            int_t%oovv,&        !OOVV
+                                            ovoo_aux_tensor,&   !OVOO 
+                                            ovov_aux_tensor,&   !OVOV
+                                            ovvo_aux_tensor, &  !OVVO
+                                            ovvv_aux_tensor, &  !OVVV
+                                            int_t%vovo, &       !VOVO
+                                            int_t%vovv, &       !VOVV
+                                            vvvo_aux_tensor, &  !VVVO
+                                            int_t%vvvv, &       !VVVV
+                                            s2_tensor, &        !r_OOVV
+                                            s1_tensor &         !r_OV    
+                                                                   )
+            end if
+          else if ((iterative_level.eq.2).and.(iterative_scheme.eq.20)) then
+            if (auto_scheme.eq.1) then       
+            ! mb-codegen
+            !call talsh_CCD_codegen_call()
+            else if (auto_scheme.eq.2) then 
+            ! tenpi
+               call eti_tenpi_lambda_ccd(nocc,nvir,&
+                                                     comm_t%foo, & !OO
+                                                     comm_t%fvv, & !VV
+                                                     comm_t%l2, & !l2_OOVV
+                                                     comm_t%t2, & ! t2_VVOO
+                                                     int_t%oooo,& ! OOOO
+                                                     int_t%oovv,& ! OOVV
+                                                     ovvo_aux_tensor, & !OVVO
+                                                     int_t%vvvv, &      !VVVV
+                                                     s2_tensor &    !r_OOVV
+                                                        )
+            else if (auto_scheme.eq.3) then 
+             call tapp_tenpi_lambda_ccd(nocc,nvir,&
+                                                     comm_t%foo, & !OO
+                                                     comm_t%fvv, & !VV
+                                                     comm_t%l2, & !l2_OOVV
+                                                     comm_t%t2, & ! t2_VVOO
+                                                     int_t%oooo,& ! OOOO
+                                                     int_t%oovv,& ! OOVV
+                                                     ovvo_aux_tensor, & !OVVO
+                                                     int_t%vvvv, &      !VVVV
+                                                     s2_tensor &    !r_OOVV
+                                                        )
+
+            end if
+          else if ((iterative_level.eq.3).and.(iterative_scheme.eq.30)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+            ! call talsh_CCSDT_codegen_call()
+            else if (auto_scheme.eq.2) then 
+            ! tenpi
+               call eti_tenpi_lambda_ccsdt(nocc,nvir,&
+                                                     comm_t%foo, &       !OO
+                                                     comm_t%fov, &       !OV
+                                                     comm_t%fvv, &       !VV
+                                                     comm_t%l3, &        !l3_OOOVVV
+                                                     comm_t%l2, &        !l2_OOVV
+                                                     comm_t%l1, &        !l1_OV
+                                                     comm_t%t1, &        !t1_VO
+                                                     comm_t%t2, &        !t2_VVOO
+                                                     comm_t%t3, &        !t3_VVVOOO
+                                                     int_t%oooo,&        !OOOO
+                                                     int_t%ooov,&        !OOOV
+                                                     oovo_aux_tensor,&   !OOVO
+                                                     int_t%oovv,&        !OOVV
+                                                     ovoo_aux_tensor,&   !OVOO 
+                                                     ovov_aux_tensor,&   !OVOV                   
+                                                     ovvo_aux_tensor, &  !OVVO
+                                                     ovvv_aux_tensor, &  !OVVV
+                                                     int_t%vovo, &       !VOVO
+                                                     int_t%vovv, &       !VOVV
+                                                     vvvo_aux_tensor, &  !VVVO
+                                                     int_t%vvvv, &       !VVVV
+                                                     s3_tensor, &        !r_OOOVVV
+                                                     s2_tensor, &        !r_OOVV  
+                                                     s1_tensor  )        !r_OV
+                                                
+                                                 
+            else if (auto_scheme.eq.3) then 
+             call tapp_tenpi_lambda_ccsdt(nocc,nvir,&
+                                                     comm_t%foo, &       !OO
+                                                     comm_t%fov, &       !OV
+                                                     comm_t%fvv, &       !VV
+                                                     comm_t%l3, &        !l3_OOOVVV
+                                                     comm_t%l2, &        !l2_OOVV
+                                                     comm_t%l1, &        !l1_OV
+                                                     comm_t%t1, &        !t1_VO
+                                                     comm_t%t2, &        !t2_VVOO
+                                                     comm_t%t3, &        !t3_VVVOOO
+                                                     int_t%oooo,&        !OOOO
+                                                     int_t%ooov,&        !OOOV
+                                                     oovo_aux_tensor,&   !OOVO
+                                                     int_t%oovv,&        !OOVV
+                                                     ovoo_aux_tensor,&   !OVOO 
+                                                     ovov_aux_tensor,&   !OVOV                   
+                                                     ovvo_aux_tensor, &  !OVVO
+                                                     ovvv_aux_tensor, &  !OVVV
+                                                     int_t%vovo, &       !VOVO
+                                                     int_t%vovv, &       !VOVV
+                                                     vvvo_aux_tensor, &  !VVVO
+                                                     int_t%vvvv, &       !VVVV
+                                                     s3_tensor, &        !r_OOOVVV
+                                                     s2_tensor, &        !r_OOVV  
+                                                     s1_tensor  )        !r_OV
+            end if
+          else if ((iterative_level.eq.3).and.(iterative_scheme.eq.31)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+            ! call talsh_CCSDT_1a_codegen_call()
+            else if (auto_scheme.eq.2) then
+            ! tenpi
+            end if
+          else if ((iterative_level.eq.3).and.(iterative_scheme.eq.32)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+            ! call talsh_CCSDT_1b_codegen_call()
+            else if (auto_scheme.eq.2) then
+            ! tenpi
+            end if
+          else if ((iterative_level.eq.3).and.(iterative_scheme.eq.33)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+           !  call talsh_CCSDT_2_codegen_call()
+            else if (auto_scheme.eq.2) then
+            ! tenpi
+            end if
+          else if ((iterative_level.eq.3).and.(iterative_scheme.eq.34)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+           !  call talsh_CCSDT_3_codegen_call()
+            else if (auto_scheme.eq.2) then
+            ! tenpi
+            end if
+          else if ((iterative_level.eq.4).and.(iterative_scheme.eq.40)) then 
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+          !   call talsh_CCSDTQ_codegen_call()
+            else if (auto_scheme.eq.2) then
+            ! tenpi
+               call eti_tenpi_lambda_ccsdtq(nocc,nvir,&
+                                                     comm_t%foo, &       !OO
+                                                     comm_t%fov, &       !OV
+                                                     comm_t%fvv, &       !VV
+                                                     comm_t%l4, & !l4_OOOOVVVV
+                                                     comm_t%l3, & !l3_OOOVVV
+                                                     comm_t%l2, & !l2_OOVV
+                                                     comm_t%l1, &        !l1_OV
+                                                     comm_t%t1, &        !t1_VO
+                                                     comm_t%t2, & !t2_VVOO
+                                                     comm_t%t3, & !t3_VVVOOO
+                                                     comm_t%t4, & !t4_VVVVOOOO
+                                                     int_t%oooo,&        !OOOO
+                                                     int_t%ooov,&        !OOOV
+                                                     oovo_aux_tensor,&   !OOVO
+                                                     int_t%oovv,&        !OOVV
+                                                     ovoo_aux_tensor,&   !OVOO 
+                                                     ovov_aux_tensor,&   !OVOV                   
+                                                     ovvo_aux_tensor, &  !OVVO
+                                                     ovvv_aux_tensor, &  !OVVV
+                                                     int_t%vovo, &       !VOVO
+                                                     int_t%vovv, &       !VOVV
+                                                     vvvo_aux_tensor, &  !VVVO
+                                                     int_t%vvvv, &       !VVVV
+                                                     s4_tensor, & !r_OOOOVVVV
+                                                     s3_tensor, & !r_OOOVVV
+                                                     s2_tensor, &        !r_OOVV  
+                                                     s1_tensor  )        !r_OV
+            else if (auto_scheme.eq.3) then 
+              call tapp_tenpi_lambda_ccsdtq(nocc,nvir,&
+                                                     comm_t%foo, &       !OO
+                                                     comm_t%fov, &       !OV
+                                                     comm_t%fvv, &       !VV
+                                                     comm_t%l4, & !l4_OOOOVVVV
+                                                     comm_t%l3, & !l3_OOOVVV
+                                                     comm_t%l2, & !l2_OOVV
+                                                     comm_t%l1, &        !l1_OV
+                                                     comm_t%t1, &        !t1_VO
+                                                     comm_t%t2, & !t2_VVOO
+                                                     comm_t%t3, & !t3_VVVOOO
+                                                     comm_t%t4, & !t4_VVVVOOOO
+                                                     int_t%oooo,&        !OOOO
+                                                     int_t%ooov,&        !OOOV
+                                                     oovo_aux_tensor,&   !OOVO
+                                                     int_t%oovv,&        !OOVV
+                                                     ovoo_aux_tensor,&   !OVOO 
+                                                     ovov_aux_tensor,&   !OVOV                   
+                                                     ovvo_aux_tensor, &  !OVVO
+                                                     ovvv_aux_tensor, &  !OVVV
+                                                     int_t%vovo, &       !VOVO
+                                                     int_t%vovv, &       !VOVV
+                                                     vvvo_aux_tensor, &  !VVVO
+                                                     int_t%vvvv, &       !VVVV
+                                                     s4_tensor, & !r_OOOOVVVV
+                                                     s3_tensor, & !r_OOOVVV
+                                                     s2_tensor, &        !r_OOVV  
+                                                     s1_tensor  )        !r_OV
+
+            end if
+          else if ((iterative_level.eq.5).and.(iterative_scheme.eq.50)) then
+            if (auto_scheme.eq.1) then
+            ! mb-codegen
+          !   call talsh_CCSDTQP_codegen_call()
+            else if (auto_scheme.eq.2) then
+            ! tenpi
+               call quit ('Error: CCSDTQP not yet implemented in tenpi.')
+            end if
+          else 
+             write(*,*) "Implementation not available for this method"
+          end if
+
+          if (print_level.gt.2) then
+!         if (.true.) then
+            if (.not.CCD) then
+               write(*,*) "s1    = ",tensor_norm2(s1_tensor)
+               if (iterative_level.ge.3)  write(*,*) "s3    = ",tensor_norm2(s3_tensor)
+               if (iterative_level.ge.4)  write(*,*) "s4    = ",tensor_norm2(s4_tensor)
+               if (iterative_level.ge.5)  write(*,*) "s5    = ",tensor_norm2(s5_tensor)
+            end if
+            write(*,*) "s2    = ",tensor_norm2(s2_tensor)
+          end if
+
+!         prepare for next iteration
+                
+
+          if (.not.CCD) then
+             ierr=initialize_tensor_t(comm_t%l1)
+             ierr=t_einsum("L1(i,a)+=S1(i,a)",comm_t%l1,s1_tensor)
+             if (iterative_level.ge.3) then
+                ierr=initialize_tensor_t(comm_t%l3)
+                ierr=t_einsum("L3(i,j,k,a,b,c)+=S3(i,j,k,a,b,c)",comm_t%l3,s3_tensor)
+             end if
+             if (iterative_level.ge.4) then
+                ierr=initialize_tensor_t(comm_t%l4)
+                ierr=t_einsum("L4(i,j,k,l,a,b,c,d)+=S4(i,j,k,l,a,b,c,d)",comm_t%l4,s4_tensor)
+             end if
+             if (iterative_level.ge.5) then
+                ierr=initialize_tensor_t(comm_t%l5)
+                ierr=t_einsum("L5(i,j,k,l,m,a,b,c,d,e)+=S5(i,j,k,l,m,a,b,c,d,e)",comm_t%l5,s5_tensor)
+             end if
+          end if
+          ierr=initialize_tensor_t(comm_t%l2)
+          ierr=t_einsum("L2(i,j,a,b)+=S2(i,j,a,b)",comm_t%l2,s2_tensor)
+       
+          if (.not.CCD) then
+            if (iterative_level.ge.5) then
+               call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%l1,&
+                              t2_tensor=comm_t%l2,full_t3_tensor=comm_t%l3,&
+                              full_t4_tensor=comm_t%l4,full_t5_tensor=comm_t%l5)
+            else if (iterative_level.ge.4) then
+               call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%l1,&
+                              t2_tensor=comm_t%l2,full_t3_tensor=comm_t%l3,full_t4_tensor=comm_t%l4)
+            else if (iterative_level.ge.3) then
+               call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%l1,&
+                              t2_tensor=comm_t%l2,full_t3_tensor=comm_t%l3)
+            else
+               call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%l1,&
+                              t2_tensor=comm_t%l2)
+            end if
+          else
+            call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%l2)
+          end if
+
+
+        if (.not.CCD) then
+            if (iterative_level.ge.5) then
+               call diis (t5_tensor=comm_t%l5,t4_tensor=comm_t%l4,t3_tensor=comm_t%l3,&
+                          t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,t_convergence=t_convergence)
+            else if (iterative_level.ge.4) then
+               call diis (t4_tensor=comm_t%l4,t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,&
+                        & t1_tensor=comm_t%l1,t_convergence=t_convergence)
+            else if (iterative_level.ge.3) then
+               call diis (t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,&
+                        t1_tensor=comm_t%l1,t_convergence=t_convergence)
+            else
+               call diis (t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,t_convergence=t_convergence)
+            end if
+          else
+            call diis (t2_tensor=comm_t%l2,t_convergence=t_convergence)
+          end if
+
+
+        call print_iteration(ilambda,t_convergence)
+
+          if (t_convergence .lt. t_target_precision) then 
+                write(*,*) 'CONVERGENCE' 
+
+                exit
+          end if
+                
+         end do
+
+        write(*,*) "------------------------"
+         write(*,*) ""
+
+
+
+         
+        
+         if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
+         if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1 norm = ", tensor_norm2(comm_t%l1)
+         write(*,'(A,ES22.16)') "  Final L2 norm = ", tensor_norm2(comm_t%l2)*ONE_QUARTER_R
+         if (iterative_level.ge.3) write(*,'(A,ES22.16)') "  Final L3 norm = ",tensor_norm2(comm_t%l3)*ONE_36_R
+
+         write(*,*) ""
+
+        end subroutine 
+!        stop
 end module eti_cc

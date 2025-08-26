@@ -316,7 +316,7 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_finite_field "cc;talsh;short" "")
     dirac_test(exacorr_talsh_ccsdt_tenpi "cc;exacorr;talsh;tenpi;ccsdt;short" "")
     dirac_test(exacorr_talsh_ccsdt_tenpi_tapp "cc;exacorr;talsh;tenpi:tapp;ccsdt;short" "")
-
+    dirac_test(exacorr_talsh_ccsdt_lambda_tenpi_tapp "cc;exacorr;talsh;tenpi:tapp;ccsdt;lambda;short" "")
    if (ENABLE_MPI AND NOT EXATENSOR_TALSH)
         if (NOT CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC")
         if (EXA_GPU_ENABLED)

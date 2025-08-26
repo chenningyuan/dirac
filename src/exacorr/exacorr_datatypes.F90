@@ -202,9 +202,9 @@
 !       All fixed one and two electron integral tensors (defines 2nd quantized Hamiltonian)
         type, public :: eti_intg_tens_t
          type(tensor_t) :: oooo
-         type(tensor_t) :: ooov
-         type(tensor_t) :: oovv, vovo
-         type(tensor_t) :: vovv
+         type(tensor_t) :: ooov,ovoo
+         type(tensor_t) :: oovv, vovo, ovov,ovvo
+         type(tensor_t) :: vovv,ovvv,vvvo
          type(tensor_t) :: vvvv
          type(tensor_t) :: foo, fov, fvv
         end type eti_intg_tens_t
@@ -225,6 +225,7 @@
          type(tensor_t) :: hoo, hov, hvv
          type(tensor_t) :: a_int, h_int
          type(tensor_t) :: t1, t2, t3, t4, t5, tau
+         type(tensor_t) :: l1, l2, l3, l4, l5
         end type eti_comm_tens_t
 
         type, public :: comm_tensor_t
@@ -233,6 +234,7 @@
          type(tensor_t) :: hoo, hov, hvv
          type(tensor_t) :: a_int, h_int
          type(tensor_t) :: t1, t2, t3, t4, t5, tau
+         type(tensor_t) :: l1, l2, l3, l4, l5
         end type comm_tensor_t
 
         type, public :: eti_lambda_tens_t
@@ -304,6 +306,7 @@
          type(tensor_t) :: prime_oo, symm_oo
          type(tensor_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(tensor_t) :: prime_vv, symm_vv
+         type(tensor_t) :: asym_oo, asym_vv, asym_ov, asym_vo
 ! two-body density matrices
          type(tensor_t) :: prime_vvvv
          type(tensor_t) :: prime_vvvo, prime_vovv, prime_vvov, prime_ovvv
