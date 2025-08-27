@@ -15,6 +15,10 @@ subroutine RELCASPT2_MASTER
    call print_title("CASPT2")
 
    call CASPT2_MAIN
+#ifdef HAVE_MPI
+#include "dirac_partask.h"
+   call DIRAC_PARCTL(RELEASE_NODES)
+#endif
 end subroutine RELCASPT2_MASTER
 
 subroutine RELCASPT2_NODE
@@ -47,17 +51,6 @@ subroutine CASPT2_MAIN
    call get_current_time(init_time); call print_time(init_time); start_time = init_time
 
    call dcaspt2_run_subprograms(.false.)
-
-   call pam_caspt2_mpi_end
-contains
-   subroutine pam_caspt2_mpi_end
-#ifdef HAVE_MPI
-      use module_global_variables, only: nprocs
-      implicit none
-#include "dirac_partask.h"
-      if (nprocs > 1) call DIRAC_PARCTL(RELEASE_NODES)
-#endif
-   end subroutine pam_caspt2_mpi_end
 end subroutine CASPT2_MAIN
 
 subroutine RELIVO_MASTER
@@ -77,6 +70,10 @@ subroutine RELIVO_MASTER
    call print_title("IVO")
 
    call IVO_MAIN
+#ifdef HAVE_MPI
+#include "dirac_partask.h"
+   call DIRAC_PARCTL(RELEASE_NODES)
+#endif
 end subroutine RELIVO_MASTER
 
 subroutine RELIVO_NODE
@@ -115,17 +112,6 @@ subroutine IVO_MAIN
 
    ! restore original input values
    ninact = ninact_orig; nact = nact_orig; nsec = nsec_orig; nelec = nelec_orig
-
-   call pam_ivo_mpi_end
-contains
-   subroutine pam_ivo_mpi_end
-#ifdef HAVE_MPI
-      use module_global_variables, only: nprocs
-      implicit none
-#include "dirac_partask.h"
-      if (nprocs > 1) call DIRAC_PARCTL(RELEASE_NODES)
-#endif
-   end subroutine pam_ivo_mpi_end
 end subroutine IVO_MAIN
 
 
