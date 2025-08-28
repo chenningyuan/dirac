@@ -47,6 +47,8 @@ if(ENABLE_EXATENSOR)
    talsh_tenpi_lambda_ccsd.F90
    talsh_tenpi_lambda_ccsdt.F90
    talsh_tenpi_lambda_ccsdtq.F90
+   talsh_tenpi_1rdm_ccd.F90
+   tapp_tenpi_1rdm_ccd.F90
    tapp_tenpi_1rdm_ccsd.F90
    tapp_tenpi_1rdm_ccsdt.F90
    tapp_tenpi_1rdm_ccsdtq.F90

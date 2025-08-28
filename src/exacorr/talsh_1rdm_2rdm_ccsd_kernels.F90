@@ -36,7 +36,7 @@ module eti_1rdm_2rdm_ccsd_kernels
     public eti_calc_dm_1rdm_ccsd_EE_mo
     public eti_calc_dm_1rdm_ccsd_IP_mo
     public eti_calc_dm_1rdm_ccsd_EA_mo
-    public eti_asym_diag
+  !  public eti_asym_diag
     public calc_dmSandD_CCD_mo_bis
     public eti_automatic_dm_1rdm
     public eti_calc_dm_2rdm_ccsd_GS_mo
@@ -246,7 +246,7 @@ module eti_1rdm_2rdm_ccsd_kernels
 
     end subroutine eti_calc_dm_1rdm_ccsd_GS_mo
 
-    subroutine eti_automatic_dm_1rdm(comm_t,gamma ,nocc,nvir, &
+    subroutine eti_automatic_dm_1rdm(comm_t,gamma ,nocc,nvir,CCD, &
                         print_level,iterative_level,iterative_scheme,auto_scheme)
 
 !     input variables
@@ -259,20 +259,24 @@ module eti_1rdm_2rdm_ccsd_kernels
 !     tensor dimensions
       integer(C_INT)              :: one_dims(1)=1
 !     CCD switch
-      logical :: CCD = .false.
+      logical, intent(in)  :: CCD
 !     error code
       integer :: ierr
       integer, intent(in) :: iterative_level,iterative_scheme,auto_scheme
       integer(INTD), dimension(2) :: ov_dims
 
 
-         ov_dims = (/nocc, nvir/)
+!         ov_dims = (/nocc, nvir/)
 
         ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)    
+        if (.not.CCD) then 
+         ierr=initialize_tensor_t(gamma%prime_ov,ZERO)
+         ierr=initialize_tensor_t(gamma%prime_vo,ZERO)
+        endif 
+
         ierr=initialize_tensor_t(gamma%prime_oo,ZERO)
-        ierr=initialize_tensor_t(gamma%prime_ov,ZERO)
-        ierr=initialize_tensor_t(gamma%prime_vo,ZERO)
         ierr=initialize_tensor_t(gamma%prime_vv,ZERO)
+
        if ((iterative_level.eq.2).and.(iterative_scheme.eq.21)) then
             if (auto_scheme.eq.1) then
             ! mb-codegen
@@ -304,7 +308,17 @@ module eti_1rdm_2rdm_ccsd_kernels
             ! mb-codegen
             !
           else if (auto_scheme.eq.2) then
-            ! tenpi
+          call eti_tenpi_1rdms_ccd(nocc, nvir, &
+                                    comm_t%l2, &
+                                    comm_t%t2, &
+                                    gamma%prime_oo, &
+                                    gamma%prime_vv)
+          else if (auto_scheme.eq.3) then 
+          call tapp_tenpi_1rdms_ccd(nocc, nvir, &
+                                    comm_t%l2, &         
+                                    comm_t%t2, &           
+                                    gamma%prime_oo, &           
+                                    gamma%prime_vv)
             end if
           else if ((iterative_level.eq.3).and.(iterative_scheme.eq.30)) then
             if (auto_scheme.eq.1) then
@@ -381,34 +395,32 @@ module eti_1rdm_2rdm_ccsd_kernels
          !     write(*,*) tensor_norm2(gamma%prime_ov)
          !     write(*,*) tensor_norm2(gamma%prime_vo)
          !     write(*,*) tensor_norm2(gamma%prime_vv)
-
+        if(.not.CCD) then
         !--------------------------------------------------
         !       ov symm: g(i,a) = 1/2 (g'(i,a) + g'(a,i)) |
         !--------------------------------------------------
         ierr=initialize_tensor_t(gamma%symm_ov,ZERO)
         ierr=t_einsum("G(i,a)+=X(i,a)*K()",gamma%symm_ov,gamma%prime_ov,one_tensor,scale=ONE_HALF)
         ierr=t_einsum("G(i,a)+=X+(a,i)*K()",gamma%symm_ov,gamma%prime_vo,one_tensor,scale=ONE_HALF)
-
+        
         !--------------------------------------------------
         !       vo symm: g(a,i) = symmetrized c.c. g(i,a)
         !--------------------------------------------------
          ierr=initialize_tensor_t(gamma%symm_vo,ZERO)
          ierr=t_einsum("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%symm_ov,one_tensor)
-
+        end if
         !------------------------------------------------
         !     vv symm: g(b,a) = 1/2 (g'(b,a) + g'(a,b)) |
         !------------------------------------------------
          ierr=initialize_tensor_t(gamma%symm_vv,ZERO)
          ierr=t_einsum("G(b,a)+=X(b,a)*K()",gamma%symm_vv,gamma%prime_vv,one_tensor,scale=ONE_HALF)
          ierr=t_einsum("G(b,a)+=X+(a,b)*K()",gamma%symm_vv,gamma%prime_vv,one_tensor,scale=ONE_HALF)
-
         !------------------------------------------------
         !     oo symm: g(j,i) = 1/2 (g'(j,i) + g'(i,j)) |
         !------------------------------------------------
          ierr=initialize_tensor_t(gamma%symm_oo,ZERO)
          ierr=t_einsum("G(j,i)+=X(j,i)*K()",gamma%symm_oo,gamma%prime_oo,one_tensor,scale=ONE_HALF)
          ierr=t_einsum("G(j,i)+=X+(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_tensor,scale=ONE_HALF)
-
      !    ierr=initialize_tensor_t(gamma%symm_oo,ZERO)
          !ierr=initialize_tensor_t(gamma%symm_vv,ZERO)
          !     write(*,*) 'Symmetrized tensors OO', tensor_norm2(gamma%symm_oo)

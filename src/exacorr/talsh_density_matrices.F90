@@ -136,27 +136,20 @@ module eti_gradient
 !     calculate 1-RDM blocks in MO basis *
 !*****************************************
 
-      
 if (exa_input%do_1rdm_gs) then
   if (exa_input%auto_kernels) then
-    if (.not. CCD) then
-      call eti_automatic_dm_1rdm(comm_t, gamma, exa_input%nocc, exa_input%nvir, &
-           exa_input%print_level, iterative_level, iterative_scheme, exa_input%auto_scheme)
-    else
-      write(*,*) 'CCD not available at the moment!'
-    end if
-    call print_date("Calculated 1-RDM density matrices in MO basis")
+    call eti_automatic_dm_1rdm(comm_t, gamma, exa_input%nocc, exa_input%nvir,CCD, &
+         exa_input%print_level, iterative_level, iterative_scheme,exa_input%auto_scheme)
+  else if (.not. CCD) then
+    call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor, l2_tensor,exa_input%nocc, exa_input%nvir, &
+         exa_input%print_level, t1_tensor, l1_tensor)
   else
-    if (.not. CCD) then
-      call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor, l2_tensor, exa_input%nocc, exa_input%nvir, &
-           exa_input%print_level, t1_tensor, l1_tensor)
-    else
-      call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor, l2_tensor, exa_input%nocc, exa_input%nvir, &
-           exa_input%print_level)
-    end if
-    call print_date("Calculated 1-RDM density matrices in MO basis")
+    call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor, l2_tensor,exa_input%nocc, exa_input%nvir, &
+         exa_input%print_level)
   end if
+  call print_date("Calculated 1-RDM density matrices in MO basis")
 end if
+      
 
 !*****************************************
 !   calculate asymmetry diagnostic (1-RDM)*
