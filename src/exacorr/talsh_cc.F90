@@ -430,7 +430,7 @@ module eti_cc
                                  t_target_precision,CCD,iterative_level,iterative_scheme,exa_input%auto_scheme,&
                                  ncycles,exa_input%print_level)
                 end if
-                if (.not.CCD) call eti_dm_driver(iterative_level, iterative_scheme, exa_input, comm_t%t2,l2_tensor, comm_t%t1, &
+                if (.not.CC2) call eti_dm_driver(iterative_level, iterative_scheme, exa_input, comm_t%t2,l2_tensor, comm_t%t1, &
                                                  comm_t%l1, int_t, comm_t)
  
                 !call talsh_dm_driver(iterative_level, iterative_scheme,exa_input,comm_t%t2,comm_t%l2,int_t=int_t,comm_t=comm_t)
@@ -4971,9 +4971,8 @@ module eti_cc
          
         
          if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
-         if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1 norm = ", tensor_norm2(comm_t%l1)
-         write(*,'(A,ES22.16)') "  Final L2 norm = ", tensor_norm2(comm_t%l2)*ONE_QUARTER_R
-         if (iterative_level.ge.3) write(*,'(A,ES22.16)') "  Final L3 norm = ",tensor_norm2(comm_t%l3)*ONE_36_R
+         if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", tensor_norm2(comm_t%l1)
+         write(*,'(A,ES22.16)') "  Final L2amp = ", tensor_norm2(comm_t%l2)*ONE_QUARTER_R
 
          write(*,*) ""
 
