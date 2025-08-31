@@ -681,7 +681,7 @@ C     Contribution from overlap matrix to magnetic properties
 C     -------------------------------------------------------
 C
  17   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of first magnetic derivative of overlap matrix'
          INTTYP = 15
          NOPTYP = 3
@@ -1022,7 +1022,7 @@ C     Ket-differentiation of overlap matrix with respect to magnetic field
 C     --------------------------------------------------------------------
 C
  35   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of ket-magnetic derivative of magnetic field'
          INTTYP = 33
          NOPTYP = 3
@@ -1042,7 +1042,7 @@ C     Ket-differentiation of HDO-integrals with respect to magnetic field
 C     -------------------------------------------------------------------
 C
  36   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of ket-magnetic derivative of HDO-integrals'
          INTTYP = 34
          CALL SETATM(DOATOM,NATOM,INTTYP)
@@ -1074,7 +1074,7 @@ C     Half B-differentiated overlap matrix
 C     ------------------------------------
 C
  38   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of half B-differentiated overlap matrix'
          INTTYP = 36
          NOPTYP = 3
@@ -1391,7 +1391,7 @@ C     Contribution from overlap matrix to electric prop. Type A
 C     ---------------------------------------------------------
 C
  52   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of first electric derivative of overlap '/
      &     /'matrix. Type A'
          INTTYP = 49
@@ -1412,7 +1412,7 @@ C     Contribution from overlap matrix to electric prop. Type B
 C     ---------------------------------------------------------
 C
  53   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of first electric derivative of overlap '/
      &     / 'matrix. Type B'
          INTTYP = 50
@@ -1433,7 +1433,7 @@ C     First electric deriv. of one-electron Hamiltonian integrals
 C     -----------------------------------------------------------
 C
  54   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     'Calculation of electric derivative of 1-electron
      &     Hamiltonian integrals'
          INTTYP = 51
@@ -1520,8 +1520,8 @@ CMI   Integrals (RM1H3)  i c Qmn < r (alpha.p) >
 C
 C
  59   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &'PR1DIR: Calculation of icQmn<r(alp.p)>, RM1H3'
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &        'PR1DIR: Calculation of icQmn<r(alp.p)>, RM1H3'
          INTTYP = 201
          NOPTYP = 9
          CALL NTYPTS(NOPTYP)
@@ -1554,8 +1554,8 @@ C     ----------------------------------------------------------
 CMI   Integrals   (c/2).< r_n x alpha >
 C
  60   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &'PR1DIR: Calculation of dipole moment around orbitals.'
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &        'PR1DIR: Calculation of dipole moment around orbitals.'
          INTTYP = 202
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -1576,7 +1576,7 @@ CMI   Integrals   i Q_MN < r_vec V >  (RM1H2)
 C
  61   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &'PR1DIR: Calculation of London orbital contrib. from V'
+     &        'PR1DIR: Calculation of London orbital contrib. from V'
          INTTYP = 203
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -1598,8 +1598,8 @@ C
  62   CONTINUE
          INTTYP = 204
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A,A/)')
-     &'PR1DIR:Calculation of relativ. London contrib.',
-     &' to the expect. value of NMR shielding.'
+     &         'PR1DIR:Calculation of relativ. London contrib.',
+     &         ' to the expect. value of NMR shielding.'
          CALL SETATM(DOATOM,NATOM,-INTTYP)
          CALL NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,'RNST',
      &               INTADR)
@@ -1615,7 +1615,7 @@ C
  63   CONTINUE
          INTTYP = 205
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &'PR1DIR: RDSUSNL-contrib. to LAO diamag. suscept.'
+     &        'PR1DIR: RDSUSNL-contrib. to LAO diamag. suscept.'
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
@@ -1644,7 +1644,7 @@ C
  64   CONTINUE
          INTTYP = 206
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &'PR1DIR: RDSUSLL - ang. contrib. to LAO diamag. sus'
+     &        'PR1DIR: RDSUSLL - ang. contrib. to LAO diamag. sus'
          NOPTYP = 18
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
@@ -1769,7 +1769,7 @@ C
  66   CONTINUE
          INTTYP = 208
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &'PR1DIR: RM2H2-Vnuc contrib. to LAO exp.val of suscp.'
+     &        'PR1DIR: RM2H2-Vnuc contrib. to LAO exp.val of suscp.'
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
@@ -1796,7 +1796,7 @@ C
  67   CONTINUE
          INTTYP = 208
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &'PR1DIR: non-relativistic CAP_re integrals'
+     &        'PR1DIR: non-relativistic CAP_re integrals'
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
@@ -1805,11 +1805,14 @@ C
          SQUARE = .FALSE.
          ANTI = .FALSE.
       GOTO 200
-C   
+C
+C     To be completed...
+C     ------------------
+C
  68   CONTINUE
          INTTYP = 209
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &'PR1DIR: nonrelativistic CAP_im integrals'
+     &        'PR1DIR: nonrelativistic CAP_im integrals'
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
@@ -1818,10 +1821,14 @@ C
          SQUARE = .FALSE.
          ANTI = .FALSE.
       GOTO 200
+C
+C     To be completed...
+C     ------------------
+C
  69   CONTINUE
          INTTYP = 210
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &'PR1DIR: CAP_ovlp integrals'
+     &        'PR1DIR: CAP_ovlp integrals'
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
@@ -1837,7 +1844,7 @@ C     MI, Tel Aviv, 2007
 C
  70   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &   ' Calculation of CAP_D_re integrals'
+     &        ' Calculation of CAP_D_re integrals'
          INTTYP = 3
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -1858,7 +1865,7 @@ C     MI, Tel Aviv, 2007
 C
  71   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &   ' Calculation of CAP_D_im integrals'
+     &        ' Calculation of CAP_D_im integrals'
          INTTYP = 3
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -1879,7 +1886,7 @@ C     MI, Tel Aviv, 2007
 C
  72   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &   ' Calculation of CAP dipole velocity integrals'
+     &        ' Calculation of CAP dipole velocity integrals'
          INTTYP = 3
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -1899,7 +1906,7 @@ C     ----------------------
 C    
  73   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &      ' Calculation of one-electron spin-orbit integrals for ECP.'
+     &       'Calculation of one-electron spin-orbit integrals for ECP'
          INTTYP = 73
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -1921,7 +1928,7 @@ C
  74   CONTINUE
          INTTYP = 1
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &'PR1DIR: CAPD_VDC integrals'
+     &        'PR1DIR: CAPD_VDC integrals'
          NOPTYP = 1
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
@@ -1935,14 +1942,14 @@ C     g1o: first geo derivatives of overlap integrals
 C     -----------------------------------------------
 C
  75   continue
-      inttyp = 100
-      if (iprint > 5) write (lupri, '(/a/)')
-     &  'first geo derivatives of '
-     &  //'overlap integrals'
-      call setatm(doatom, natom, inttyp)
-      call g1_typ('O', noptyp, intrep, labint, doatom)
-      anti   = .false.
-      square = .false.
+         inttyp = 100
+         if (iprint > 5) write (lupri, '(/a/)')
+     &        'first geo derivatives of '
+     &      //'overlap integrals'
+         call setatm(doatom, natom, inttyp)
+         call g1_typ('O', noptyp, intrep, labint, doatom)
+         anti   = .false.
+         square = .false.
       go to 200
 C
 C
@@ -1950,28 +1957,28 @@ C     g1n: first geo derivatives of nuclear attraction integrals
 C     ----------------------------------------------------------
 C
  76   continue
-      inttyp = 101
-      if (iprint > 5) write (lupri, '(/a/)')
-     &  'first geo derivatives of '
-     &  //'nuclear attraction integrals'
-      call setatm(doatom, natom, inttyp)
-      call g1_typ('N', noptyp, intrep, labint, doatom)
-      anti   = .false.
-      square = .false.
+         inttyp = 101
+         if (iprint > 5) write (lupri, '(/a/)')
+     &        'first geo derivatives of '
+     &      //'nuclear attraction integrals'
+         call setatm(doatom, natom, inttyp)
+         call g1_typ('N', noptyp, intrep, labint, doatom)
+         anti   = .false.
+         square = .false.
       go to 200
 C
 C     g1b: first geo derivatives of beta integrals
 C     --------------------------------------------
 C  
  77   continue
-      inttyp = 102
-      if (iprint > 5) write (lupri, '(/a/)')
-     &  'first geo derivatives of '
-     &  //'beta integrals'
-      call setatm(doatom, natom, inttyp)
-      call g1_typ('B', noptyp, intrep, labint, doatom)
-      anti   = .false.
-      square = .false.
+         inttyp = 102
+         if (iprint > 5) write (lupri, '(/a/)')
+     &        'first geo derivatives of '
+     &      //'beta integrals'
+         call setatm(doatom, natom, inttyp)
+         call g1_typ('B', noptyp, intrep, labint, doatom)
+         anti   = .false.
+         square = .false.
       go to 200
 C
 !todo (radovan): the kinetic energy dervs can be done much more
@@ -1983,50 +1990,50 @@ C     g1kx: first geo derivatives of kinetic energy (x) integrals
 C     -----------------------------------------------------------
 C
  78   continue
-      inttyp = 103
-      if (iprint > 5) write (lupri, '(/a/)')
-     &  'first geo derivatives of '
-     &  //'kinetic energy (x) integrals'
-      call setatm(doatom, natom, inttyp)
-      call g1_typ('KX', noptyp, intrep, labint, doatom)
-      anti   = .true.
-      square = .false.
+         inttyp = 103
+         if (iprint > 5) write (lupri, '(/a/)')
+     &        'first geo derivatives of '
+     &      //'kinetic energy (x) integrals'
+         call setatm(doatom, natom, inttyp)
+         call g1_typ('KX', noptyp, intrep, labint, doatom)
+         anti   = .true.
+         square = .false.
       go to 200
 C
 C     g1ky: first geo derivatives of kinetic energy (y) integrals
 C     -----------------------------------------------------------
 C
  79   continue
-      inttyp = 104
-      if (iprint > 5) write (lupri, '(/a/)')
-     &  'first geo derivatives of '
-     &  //'kinetic energy (y) integrals'
-      call setatm(doatom, natom, inttyp)
-      call g1_typ('KY', noptyp, intrep, labint, doatom)
-      anti   = .true.
-      square = .false.
+         inttyp = 104
+         if (iprint > 5) write (lupri, '(/a/)')
+     &        'first geo derivatives of '
+     &      //'kinetic energy (y) integrals'
+         call setatm(doatom, natom, inttyp)
+         call g1_typ('KY', noptyp, intrep, labint, doatom)
+         anti   = .true.
+         square = .false.
       go to 200
 C
 C     g1kz: first geo derivatives of kinetic energy (z) integrals
 C     -----------------------------------------------------------
 C
  80   continue
-      inttyp = 105
-      if (iprint > 5) write (lupri, '(/a/)')
-     &  'first geo derivatives of '
-     &  //'kinetic energy (z) integrals'
-      call setatm(doatom, natom, inttyp)
-      call g1_typ('KZ', noptyp, intrep, labint, doatom)
-      anti   = .true.
-      square = .false.
+         inttyp = 105
+         if (iprint > 5) write (lupri, '(/a/)')
+     &        'first geo derivatives of '
+     &      //'kinetic energy (z) integrals'
+         call setatm(doatom, natom, inttyp)
+         call g1_typ('KZ', noptyp, intrep, labint, doatom)
+         anti   = .true.
+         square = .false.
       go to 200
 C
 C     Dipole gradient integrals DPLGRA
 C     --------------------------------
 C
  81   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &   ' Calculation of dipole gradient integrals'
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &        ' Calculation of dipole gradient integrals'
          INTTYP = 52
          CALL SETATM(doatom,NATOM,INTTYP)
          CALL DPGTYP(NOPTYP,INTREP,INTADR,LABINT,doatom,NATOM)
@@ -2038,8 +2045,8 @@ C     Quadrupole gradient integrals QUAGRA
 C     ------------------------------------
 C
  82   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &   ' Calculation of quadrupole gradient integrals'
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &        ' Calculation of quadrupole gradient integrals'
          INTTYP = 53
          CALL SETATM(doatom,NATOM,INTTYP)
          CALL QUGTYP(NOPTYP,INTREP,INTADR,LABINT,doatom,NATOM)
