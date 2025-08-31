@@ -328,9 +328,9 @@ C
 !                  77         78         79         80
      &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ',
 !                  81         82         83         84
-     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'PVQUAD ',
+     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'xxxxxxx',
 !                  85         86         87         88
-     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx',
+     &            'PVQUAD ', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx',
 !                  89         90         91         92
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ',
 !                  93         94         95         96
@@ -2089,7 +2089,7 @@ C     The operator is: rho_n(r_i) * Y_nm
 C     - where rho_n is the density for nucleus n,
 C     - and Y_nm are spherical harmonics
 C
- 84   CONTINUE
+ 85   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of weak quadrupole moment integrals.'
          INTTYP = 63
@@ -2098,7 +2098,6 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
- 85   continue
  86   continue
  87   continue
  88   continue
