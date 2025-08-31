@@ -41,6 +41,9 @@ C
       else if (inttyp == 53) then
 !       quagra
         nshint = 36
+      else if (inttyp == 63) then
+!       PVquad
+        nshint = 6*natom
       else
         nshint = noptyp
       end if
@@ -393,6 +396,11 @@ C     type 58 already defined (NUCFIEL)
          JMAXM = 0
          DONUC1 = .FALSE.
          DOMOM1 = .FALSE.
+      ELSE IF (INTTYP .EQ. 63) THEN
+         JMAXD  = 0
+         JMAXM  = 2
+         DONUC1 = .FALSE.
+         DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.65) THEN
          JMAXD = 0
          JMAXM = 3
@@ -986,17 +994,15 @@ C
          ELSE IF (INTTYP .EQ. 35) THEN
             CALL NPETRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-         ELSE IF (INTTYP .EQ. 62) THEN
+         ELSE IF (INTTYP .EQ. 62 .OR. INTTYP .EQ. 63) THEN
             CALL PVCTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-
          ELSE IF (INTTYP .EQ. 52) THEN
             CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
          ELSE IF (INTTYP .EQ. 53) THEN
             CALL QUGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-
          ELSE IF (INTTYP .EQ. 56) THEN
             CALL EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
@@ -1005,7 +1011,7 @@ C
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
          else if (inttyp == 100) then
 !          g1o
-           call s1htra(shlint, soint, isymop, 
+           call s1htra(shlint, soint, isymop,
      &                 nelmnt, noptyp, anti, iprint)
          else if (inttyp == 101) then
 !          g1n
@@ -1013,19 +1019,19 @@ C
      &                 isymop,nelmnt,noptyp,anti,intadr,iprint)
          else if (inttyp == 102) then
 !          g1b
-           call s1htra(shlint, soint, isymop, 
+           call s1htra(shlint, soint, isymop,
      &                 nelmnt, noptyp, anti, iprint)
          else if (inttyp == 103) then
 !          g1kx
-           call s1htra(shlint, soint, isymop, 
+           call s1htra(shlint, soint, isymop,
      &                 nelmnt, noptyp, anti, iprint)
          else if (inttyp == 104) then
 !          g1ky
-           call s1htra(shlint, soint, isymop, 
+           call s1htra(shlint, soint, isymop,
      &                 nelmnt, noptyp, anti, iprint)
          else if (inttyp == 105) then
 !          g1kz
-           call s1htra(shlint, soint, isymop, 
+           call s1htra(shlint, soint, isymop,
      &                 nelmnt, noptyp, anti, iprint)
 
          ELSE
@@ -1087,7 +1093,7 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('PR1PRM',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
 C
-      IF (INTTYP .EQ. 62) THEN
+      IF (INTTYP .EQ. 62 .OR. INTTYP .EQ. 63) THEN
 C     Integrals for Parity Violation - chirality
          CALL PR1PRV(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
@@ -1303,7 +1309,7 @@ C
      &                       .or. (inttyp == 101)
      &                       .OR. (INTTYP .EQ. 203) ! RM1H2
      &                       .OR. (INTTYP .EQ. 204) ! RNST
-     &                       .OR. (INTTYP .EQ. 208) ! RM2H2 
+     &                       .OR. (INTTYP .EQ. 208) ! RM2H2
      &                                             ) THEN
                CALL DZERO(AHGTF,(NATOMC + 1)*NAHGTF)
             IF (ADDNAI) THEN
@@ -1314,7 +1320,7 @@ C
             END IF
             FACTOR = D1
             DO 300 IATOMC = 1, NATOMC
-               if (addnai 
+               if (addnai
      &             .or. (inttyp == 101)) then
                  factor = facint(iatomc)
                  if (dabs(factor) < 1.0d-40) then
@@ -1797,13 +1803,13 @@ C
 !     ===============================================
 
          else if (inttyp == 100) then
-           call dpvint(odc, 
-     &                 jmaxa, 
-     &                 jmaxb, 
-     &                 jmaxt, 
-     &                 jmaxd, 
-     &                 jmaxm, 
-     &                 shgtf, 
+           call dpvint(odc,
+     &                 jmaxa,
+     &                 jmaxb,
+     &                 jmaxt,
+     &                 jmaxd,
+     &                 jmaxm,
+     &                 shgtf,
      &                 shlint)
 
 
@@ -1811,16 +1817,16 @@ C
 !     ==========================================================
 
          else if (inttyp == 101) then
-           call g1n_integrals(jmaxa, 
-     &                        jmaxb, 
-     &                        jmaxt, 
-     &                        jmaxd, 
-     &                        jmaxm, 
-     &                        odc, 
-     &                        natomc, 
+           call g1n_integrals(jmaxa,
+     &                        jmaxb,
+     &                        jmaxt,
+     &                        jmaxd,
+     &                        jmaxm,
+     &                        odc,
+     &                        natomc,
      &                        ncentc,
-     &                        ahgtf, 
-     &                        noptyp, 
+     &                        ahgtf,
+     &                        noptyp,
      &                        shlint)
 
 
@@ -1828,13 +1834,13 @@ C
 !     ============================================
 
          else if (inttyp == 102) then
-           call dpvint(odc, 
-     &                 jmaxa, 
-     &                 jmaxb, 
-     &                 jmaxt, 
-     &                 jmaxd, 
-     &                 jmaxm, 
-     &                 shgtf, 
+           call dpvint(odc,
+     &                 jmaxa,
+     &                 jmaxb,
+     &                 jmaxt,
+     &                 jmaxd,
+     &                 jmaxm,
+     &                 shgtf,
      &                 shlint)
 
 
@@ -2379,7 +2385,7 @@ C
 
                 ioff = 0
                 do iatom = 1, natomc
- 
+
                   if (.not. ab_same_center) then
 
                     ah0 = ahgtf(ia0 + ioff)
@@ -2408,14 +2414,14 @@ C
                   xc = 3*(ncentc(iatom) - 1) + 1
                   yc = 3*(ncentc(iatom) - 1) + 2
                   zc = 3*(ncentc(iatom) - 1) + 3
- 
+
                   shlint(i, xb, 2) = shlint(i, xb, 2) - cx
                   shlint(i, yb, 2) = shlint(i, yb, 2) - cy
                   shlint(i, zb, 2) = shlint(i, zb, 2) - cz
                   shlint(i, xc, 3) = shlint(i, xc, 3) + cx
                   shlint(i, yc, 3) = shlint(i, yc, 3) + cy
                   shlint(i, zc, 3) = shlint(i, zc, 3) + cz
-      
+
                   ioff = ioff + nahgtf
                 end do
               end do
@@ -2857,25 +2863,25 @@ C
          DZ2 = SHGTF*(ODC(NVALA + 1,NVALB,0,0,1,3) +
      &           ADZ* ODC(NVALA    ,NVALB,0,0,1,3))
 
-         SHLINT(INT,1) = SHLINT(INT,1) 
+         SHLINT(INT,1) = SHLINT(INT,1)
      &                 - D2I*(DIFABY*DX1*SY0*SZ1 - DIFABZ*DX1*SY1*SZ0)
-         SHLINT(INT,2) = SHLINT(INT,2) 
+         SHLINT(INT,2) = SHLINT(INT,2)
      &                 - D2I*(DIFABZ*DX2*SY0*SZ0 - DIFABX*DX1*SY0*SZ1)
-         SHLINT(INT,3) = SHLINT(INT,3) 
+         SHLINT(INT,3) = SHLINT(INT,3)
      &                 - D2I*(DIFABX*DX1*SY1*SZ0 - DIFABY*DX2*SY0*SZ0)
 
-         SHLINT(INT,4) = SHLINT(INT,4) 
+         SHLINT(INT,4) = SHLINT(INT,4)
      &                 - D2I*(DIFABY*SX0*DY1*SZ1 - DIFABZ*SX0*DY2*SZ0)
-         SHLINT(INT,5) = SHLINT(INT,5) 
+         SHLINT(INT,5) = SHLINT(INT,5)
      &                 - D2I*(DIFABZ*SX1*DY1*SZ0 - DIFABX*SX0*DY1*SZ1)
-         SHLINT(INT,6) = SHLINT(INT,6) 
+         SHLINT(INT,6) = SHLINT(INT,6)
      &                 - D2I*(DIFABX*SX0*DY2*SZ0 - DIFABY*SX1*DY1*SZ0)
 
-         SHLINT(INT,7) = SHLINT(INT,7) 
+         SHLINT(INT,7) = SHLINT(INT,7)
      &                 - D2I*(DIFABY*SX0*SY0*DZ2 - DIFABZ*SX0*SY1*DZ1)
-         SHLINT(INT,8) = SHLINT(INT,8) 
+         SHLINT(INT,8) = SHLINT(INT,8)
      &                 - D2I*(DIFABZ*SX1*SY0*DZ1 - DIFABX*SX0*SY0*DZ2)
-         SHLINT(INT,9) = SHLINT(INT,9) 
+         SHLINT(INT,9) = SHLINT(INT,9)
      &                 - D2I*(DIFABX*SX0*SY1*DZ1 - DIFABY*SX1*SY0*DZ1)
  100  CONTINUE
       RETURN
@@ -2949,30 +2955,30 @@ C
 
          ioff = 0
 
-         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1)
      &                - (D2*DIFABZ*DIFABY*DPLYZ -
      &                   DIFABZ*DIFABZ*DPLYY -
      &                   DIFABY*DIFABY*DPLZZ)*D4INV
-         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2)
      &                - (DIFABZ*DIFABZ*DPLXY -
      &                   DIFABY*DIFABZ*DPLXZ -
      &                   DIFABZ*DIFABX*DPLYZ +
      &                   DIFABY*DIFABX*DPLZZ)*D4INV
-         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3)
      &                - (DIFABY*DIFABY*DPLXZ -
      &                   DIFABX*DIFABY*DPLYZ +
      &                   DIFABZ*DIFABX*DPLYY -
      &                   DIFABY*DIFABZ*DPLXY)*D4INV
-         SHLINT(INT,ioff+4) = SHLINT(INT,ioff+4) 
+         SHLINT(INT,ioff+4) = SHLINT(INT,ioff+4)
      &                - (D2*DIFABZ*DIFABX*DPLXZ -
      &                   DIFABZ*DIFABZ*DPLXX -
      &                   DIFABX*DIFABX*DPLZZ)*D4INV
-         SHLINT(INT,ioff+5) = SHLINT(INT,ioff+5) 
+         SHLINT(INT,ioff+5) = SHLINT(INT,ioff+5)
      &                - (DIFABZ*DIFABY*DPLXX -
      &                   DIFABZ*DIFABX*DPLXY -
      &                   DIFABY*DIFABX*DPLXZ +
      &                   DIFABX*DIFABX*DPLYZ)*D4INV
-         SHLINT(INT,ioff+6) = SHLINT(INT,ioff+6) 
+         SHLINT(INT,ioff+6) = SHLINT(INT,ioff+6)
      &                - (D2*DIFABX*DIFABY*DPLXY -
      &                   DIFABY*DIFABY*DPLXX -
      &                   DIFABX*DIFABX*DPLYY)*D4INV
@@ -2986,30 +2992,30 @@ C
 
          ioff = 6
 
-         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1)
      &                - (D2*DIFABZ*DIFABY*DPLYZ -
      &                   DIFABZ*DIFABZ*DPLYY -
      &                   DIFABY*DIFABY*DPLZZ)*D4INV
-         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2)
      &                - (DIFABZ*DIFABZ*DPLXY -
      &                   DIFABY*DIFABZ*DPLXZ -
      &                   DIFABZ*DIFABX*DPLYZ +
      &                   DIFABY*DIFABX*DPLZZ)*D4INV
-         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3)
      &                - (DIFABY*DIFABY*DPLXZ -
      &                   DIFABX*DIFABY*DPLYZ +
      &                   DIFABZ*DIFABX*DPLYY -
      &                   DIFABY*DIFABZ*DPLXY)*D4INV
-         SHLINT(INT,ioff+4) = SHLINT(INT,ioff+4) 
+         SHLINT(INT,ioff+4) = SHLINT(INT,ioff+4)
      &                - (D2*DIFABZ*DIFABX*DPLXZ -
      &                   DIFABZ*DIFABZ*DPLXX -
      &                   DIFABX*DIFABX*DPLZZ)*D4INV
-         SHLINT(INT,ioff+5) = SHLINT(INT,ioff+5) 
+         SHLINT(INT,ioff+5) = SHLINT(INT,ioff+5)
      &                - (DIFABZ*DIFABY*DPLXX -
      &                   DIFABZ*DIFABX*DPLXY -
      &                   DIFABY*DIFABX*DPLXZ +
      &                   DIFABX*DIFABX*DPLYZ)*D4INV
-         SHLINT(INT,ioff+6) = SHLINT(INT,ioff+6) 
+         SHLINT(INT,ioff+6) = SHLINT(INT,ioff+6)
      &                - (D2*DIFABX*DIFABY*DPLXY -
      &                   DIFABY*DIFABY*DPLXX -
      &                   DIFABX*DIFABX*DPLYY)*D4INV
@@ -3023,30 +3029,30 @@ C
 
          ioff = 12
 
-         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1)
      &                - (D2*DIFABZ*DIFABY*DPLYZ -
      &                   DIFABZ*DIFABZ*DPLYY -
      &                   DIFABY*DIFABY*DPLZZ)*D4INV
-         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2)
      &                - (DIFABZ*DIFABZ*DPLXY -
      &                   DIFABY*DIFABZ*DPLXZ -
      &                   DIFABZ*DIFABX*DPLYZ +
      &                   DIFABY*DIFABX*DPLZZ)*D4INV
-         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3)
      &                - (DIFABY*DIFABY*DPLXZ -
      &                   DIFABX*DIFABY*DPLYZ +
      &                   DIFABZ*DIFABX*DPLYY -
      &                   DIFABY*DIFABZ*DPLXY)*D4INV
-         SHLINT(INT,ioff+4) = SHLINT(INT,ioff+4) 
+         SHLINT(INT,ioff+4) = SHLINT(INT,ioff+4)
      &                - (D2*DIFABZ*DIFABX*DPLXZ -
      &                   DIFABZ*DIFABZ*DPLXX -
      &                   DIFABX*DIFABX*DPLZZ)*D4INV
-         SHLINT(INT,ioff+5) = SHLINT(INT,ioff+5) 
+         SHLINT(INT,ioff+5) = SHLINT(INT,ioff+5)
      &                - (DIFABZ*DIFABY*DPLXX -
      &                   DIFABZ*DIFABX*DPLXY -
      &                   DIFABY*DIFABX*DPLXZ +
      &                   DIFABX*DIFABX*DPLYZ)*D4INV
-         SHLINT(INT,ioff+6) = SHLINT(INT,ioff+6) 
+         SHLINT(INT,ioff+6) = SHLINT(INT,ioff+6)
      &                - (D2*DIFABX*DIFABY*DPLXY -
      &                   DIFABY*DIFABY*DPLXX -
      &                   DIFABX*DIFABX*DPLYY)*D4INV
@@ -3141,11 +3147,11 @@ C
          DPLY = - YR2 + FAC*DX2*SY1*SZ0
          DPLZ = - ZR2 + FAC*DX2*SY0*SZ1
 
-         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1)
      &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
-         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2)
      &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
-         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3)
      &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
 
 !        yy
@@ -3155,11 +3161,11 @@ C
          DPLY = - YR2 + FAC*SX0*DY3*SZ0
          DPLZ = - ZR2 + FAC*SX0*DY2*SZ1
 
-         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1)
      &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
-         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2)
      &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
-         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3)
      &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
 
 !        zz
@@ -3169,11 +3175,11 @@ C
          DPLY = - YR2 + FAC*SX0*SY1*DZ2
          DPLZ = - ZR2 + FAC*SX0*SY0*DZ3
 
-         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1)
      &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
-         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2)
      &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
-         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3)
      &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
 
 !        xy
@@ -3183,11 +3189,11 @@ C
          DPLY = FAC*DX1*SDY2*SZ0
          DPLZ = FAC*DX1*DY1*SZ1
 
-         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1)
      &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
-         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2)
      &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
-         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3)
      &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
 
 !        xz
@@ -3197,11 +3203,11 @@ C
          DPLY = FAC*DX1*SY1*DZ1
          DPLZ = FAC*DX1*SY0*SDZ2
 
-         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1)
      &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
-         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2)
      &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
-         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3)
      &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
 
 !        yz
@@ -3211,11 +3217,11 @@ C
          DPLY = FAC*SX0*SDY2*DZ1
          DPLZ = FAC*SX0*SY1*SDZ2
 
-         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1)
      &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
-         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2)
      &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
-         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3)
      &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
 
  100  CONTINUE
@@ -3323,7 +3329,7 @@ CMI/HJ  .... calculate it only when DOKINE=.true.
      &                                     SX0*SY21*SZ0 + SX0*SY1*DZ2)
      &                                   - DIFABY*(SX21*SY0*SZ0 +
      &                                     SX1*DY2*SZ0 + SX1*SY0*DZ2))
-        ENDIF              
+        ENDIF
 C
 C     Nuclear attraction contribution
 CMI/HJ  ... calculate it always
@@ -3367,7 +3373,7 @@ C  /* Deck dsusan */
 C
 C     K.Ruud, Feb. 1992
 C
-C MI note,Oct.2012: symmetrization of 3x3 tensor implemented inside as stated in 
+C MI note,Oct.2012: symmetrization of 3x3 tensor implemented inside as stated in
 C the article
 C
 #include "implicit.h"
@@ -3953,12 +3959,12 @@ C  /* Deck eftint */
 C
 C     Electric field third derivatives.
 C
-C     Calculate the traceless (TRLESS = true) or 
+C     Calculate the traceless (TRLESS = true) or
 C     non-traceless (TRLESS = false).
 C
 C     ONCN: one-center (coor a = coor b)
 C     Don't calculate < s_A | d^4/dx^4 1/r_A | s_A >
-C     
+C
 C
 C     In Dirac the routine PRP_EFT calculates the 'traceless' tensor
 C     using the Laplace equation. But for numerical reasons
@@ -4037,13 +4043,13 @@ C
                      VZZZZ = AHGTF(IADR0                  + 4 * ISTEPV)
 C
                      IF (ONCN) THEN
-                        IF ( (CORCX(IATOM) .EQ. CORAX) 
-     &                     .AND. (CORCY(IATOM) .EQ. CORAY) 
-     &                     .AND. (CORCZ(IATOM) .EQ. CORAZ) 
+                        IF ( (CORCX(IATOM) .EQ. CORAX)
+     &                     .AND. (CORCY(IATOM) .EQ. CORAY)
+     &                     .AND. (CORCZ(IATOM) .EQ. CORAZ)
      &                     .AND. (MAXU+MAXT+MAXV .LE. 3)) THEN
 #ifdef UNDEF
-                           dbla = 
-     &                  (  D8 * VZZZZ 
+                           dbla =
+     &                  (  D8 * VZZZZ
      &                  - D24 * VXXZZ
      &                  - D24 * VYYZZ
      &                  +  D6 * VXXYY
@@ -4067,94 +4073,94 @@ c                          end if
                      END IF
                      IF (TRLESS) THEN
 #ifndef OLD_CODE
-                        SHLINT(INT,INTTYP+ 1) = SHLINT(INT,INTTYP+ 1) 
+                        SHLINT(INT,INTTYP+ 1) = SHLINT(INT,INTTYP+ 1)
      &                     + EEE * (
-     &                        D8 * VXXXX 
+     &                        D8 * VXXXX
      &                     - D24 * VXXYY
      &                     - D24 * VXXZZ
      &                     +  D3 * VYYYY
      &                     +  D6 * VYYZZ
      &                     +  D3 * VZZZZ ) / D35
-                        SHLINT(INT,INTTYP+ 2) = SHLINT(INT,INTTYP+ 2) 
+                        SHLINT(INT,INTTYP+ 2) = SHLINT(INT,INTTYP+ 2)
      &                     + EEE * (
-     &                        D4 * VXXXY 
+     &                        D4 * VXXXY
      &                     -  D3 * VXYYY
      &                     -  D3 * VXYZZ ) / D7
-                        SHLINT(INT,INTTYP+ 3) = SHLINT(INT,INTTYP+ 3) 
+                        SHLINT(INT,INTTYP+ 3) = SHLINT(INT,INTTYP+ 3)
      &                     + EEE * (
-     &                        D4 * VXXXZ 
+     &                        D4 * VXXXZ
      &                     -  D3 * VXYYZ
      &                     -  D3 * VXZZZ ) / D7
-                        SHLINT(INT,INTTYP+ 4) = SHLINT(INT,INTTYP+ 4) 
+                        SHLINT(INT,INTTYP+ 4) = SHLINT(INT,INTTYP+ 4)
      &                     + EEE * (
-     &                     -  D4 * VXXXX 
+     &                     -  D4 * VXXXX
      &                     + D27 * VXXYY
      &                     -  D3 * VXXZZ
      &                     -  D4 * VYYYY
      &                     -  D3 * VYYZZ
      &                     +       VZZZZ ) / D35
-                        SHLINT(INT,INTTYP+ 5) = SHLINT(INT,INTTYP+ 5) 
+                        SHLINT(INT,INTTYP+ 5) = SHLINT(INT,INTTYP+ 5)
      &                     + EEE * (
-     &                        D6 * VXXYZ 
+     &                        D6 * VXXYZ
      &                     -       VYYYZ
      &                     -       VYZZZ ) / D7
-                        SHLINT(INT,INTTYP+ 6) = SHLINT(INT,INTTYP+ 6) 
+                        SHLINT(INT,INTTYP+ 6) = SHLINT(INT,INTTYP+ 6)
      &                     + EEE * (
-     &                     -  D4 * VXXXX 
+     &                     -  D4 * VXXXX
      &                     -  D3 * VXXYY
      &                     + D27 * VXXZZ
      &                     +       VYYYY
      &                     -  D3 * VYYZZ
      &                     -  D4 * VZZZZ ) / D35
-                        SHLINT(INT,INTTYP+ 7) = SHLINT(INT,INTTYP+ 7) 
+                        SHLINT(INT,INTTYP+ 7) = SHLINT(INT,INTTYP+ 7)
      &                     + EEE * (
-     &                     -  D3 * VXXXY 
+     &                     -  D3 * VXXXY
      &                     +  D4 * VXYYY
      &                     -  D3 * VXYZZ ) / D7
-                        SHLINT(INT,INTTYP+ 8) = SHLINT(INT,INTTYP+ 8) 
+                        SHLINT(INT,INTTYP+ 8) = SHLINT(INT,INTTYP+ 8)
      &                     + EEE * (
-     &                        D6 * VXYYZ 
+     &                        D6 * VXYYZ
      &                     -       VXXXZ
      &                     -       VXZZZ ) / D7
-                        SHLINT(INT,INTTYP+ 9) = SHLINT(INT,INTTYP+ 9) 
+                        SHLINT(INT,INTTYP+ 9) = SHLINT(INT,INTTYP+ 9)
      &                     + EEE * (
-     &                        D6 * VXYZZ 
+     &                        D6 * VXYZZ
      &                     -       VXXXY
      &                     -       VXYYY ) / D7
-                        SHLINT(INT,INTTYP+10) = SHLINT(INT,INTTYP+10) 
+                        SHLINT(INT,INTTYP+10) = SHLINT(INT,INTTYP+10)
      &                     + EEE * (
-     &                        D4 * VXZZZ 
+     &                        D4 * VXZZZ
      &                     -  D3 * VXXXZ
      &                     -  D3 * VXYYZ ) / D7
-                        SHLINT(INT,INTTYP+11) = SHLINT(INT,INTTYP+11) 
+                        SHLINT(INT,INTTYP+11) = SHLINT(INT,INTTYP+11)
      &                     + EEE * (
-     &                        D8 * VYYYY 
+     &                        D8 * VYYYY
      &                     - D24 * VXXYY
      &                     - D24 * VYYZZ
      &                     +  D6 * VXXZZ
      &                     +  D3 * VXXXX
      &                     +  D3 * VZZZZ ) / D35
-                        SHLINT(INT,INTTYP+12) = SHLINT(INT,INTTYP+12) 
+                        SHLINT(INT,INTTYP+12) = SHLINT(INT,INTTYP+12)
      &                     + EEE * (
-     &                        D4 * VYYYZ 
+     &                        D4 * VYYYZ
      &                     -  D3 * VXXYZ
      &                     -  D3 * VYZZZ ) / D7
-                        SHLINT(INT,INTTYP+13) = SHLINT(INT,INTTYP+13) 
+                        SHLINT(INT,INTTYP+13) = SHLINT(INT,INTTYP+13)
      &                     + EEE * (
-     &                     -  D4 * VYYYY 
+     &                     -  D4 * VYYYY
      &                     -  D3 * VXXYY
      &                     + D27 * VYYZZ
      &                     +       VXXXX
      &                     -  D3 * VXXZZ
      &                     -  D4 * VZZZZ ) / D35
-                        SHLINT(INT,INTTYP+14) = SHLINT(INT,INTTYP+14) 
+                        SHLINT(INT,INTTYP+14) = SHLINT(INT,INTTYP+14)
      &                     + EEE * (
-     &                        D4 * VYZZZ 
+     &                        D4 * VYZZZ
      &                     -  D3 * VXXYZ
      &                     -  D3 * VYYYZ ) / D7
-                        SHLINT(INT,INTTYP+15) = SHLINT(INT,INTTYP+15) 
+                        SHLINT(INT,INTTYP+15) = SHLINT(INT,INTTYP+15)
      &                     + EEE * (
-     &                        D8 * VZZZZ 
+     &                        D8 * VZZZZ
      &                     - D24 * VXXZZ
      &                     - D24 * VYYZZ
      &                     +  D6 * VXXYY
@@ -4167,73 +4173,73 @@ c                          end if
                         VYYAA = VXXYY + VYYYY + VYYZZ
                         VYZAA = VXXYZ + VYYYZ + VYZZZ
                         VZZAA = VXXZZ + VYYZZ + VZZZZ
-                        SHLINT(INT,INTTYP+ 1) = SHLINT(INT,INTTYP+ 1) 
+                        SHLINT(INT,INTTYP+ 1) = SHLINT(INT,INTTYP+ 1)
      &                     + EEE * (
-     &                       VXXXX 
+     &                       VXXXX
      &                     - D27/D35 * VXXAA
      &                     +  D3/D35 * VYYAA
      &                     +  D3/D35 * VZZAA )
-                        SHLINT(INT,INTTYP+ 2) = SHLINT(INT,INTTYP+ 2) 
+                        SHLINT(INT,INTTYP+ 2) = SHLINT(INT,INTTYP+ 2)
      &                     + EEE * (
-     &                       VXXXY 
+     &                       VXXXY
      &                     -  D3/D7  * VXYAA )
-                        SHLINT(INT,INTTYP+ 3) = SHLINT(INT,INTTYP+ 3) 
+                        SHLINT(INT,INTTYP+ 3) = SHLINT(INT,INTTYP+ 3)
      &                     + EEE * (
-     &                       VXXXZ 
+     &                       VXXXZ
      &                     -  D3/D7  * VXZAA )
-                        SHLINT(INT,INTTYP+ 4) = SHLINT(INT,INTTYP+ 4) 
+                        SHLINT(INT,INTTYP+ 4) = SHLINT(INT,INTTYP+ 4)
      &                     + EEE * (
-     &                       VXXYY 
+     &                       VXXYY
      &                     -  D4/D35 * VXXAA
      &                     -  D4/D35 * VYYAA
      &                     +  D1/D35 * VZZAA )
-                        SHLINT(INT,INTTYP+ 5) = SHLINT(INT,INTTYP+ 5) 
+                        SHLINT(INT,INTTYP+ 5) = SHLINT(INT,INTTYP+ 5)
      &                     + EEE * (
-     &                       VXXYZ 
+     &                       VXXYZ
      &                     -  D1/D7  * VYZAA )
-                        SHLINT(INT,INTTYP+ 6) = SHLINT(INT,INTTYP+ 6) 
+                        SHLINT(INT,INTTYP+ 6) = SHLINT(INT,INTTYP+ 6)
      &                     + EEE * (
-     &                       VXXZZ 
+     &                       VXXZZ
      &                     -  D4/D35 * VXXAA
      &                     +  D1/D35 * VYYAA
      &                     -  D4/D35 * VZZAA )
-                        SHLINT(INT,INTTYP+ 7) = SHLINT(INT,INTTYP+ 7) 
+                        SHLINT(INT,INTTYP+ 7) = SHLINT(INT,INTTYP+ 7)
      &                     + EEE * (
-     &                       VXYYY 
+     &                       VXYYY
      &                     -  D3/D7  * VXYAA )
-                        SHLINT(INT,INTTYP+ 8) = SHLINT(INT,INTTYP+ 8) 
+                        SHLINT(INT,INTTYP+ 8) = SHLINT(INT,INTTYP+ 8)
      &                     + EEE * (
-     &                       VXYYZ 
+     &                       VXYYZ
      &                     -  D1/D7  * VXZAA )
-                        SHLINT(INT,INTTYP+ 9) = SHLINT(INT,INTTYP+ 9) 
+                        SHLINT(INT,INTTYP+ 9) = SHLINT(INT,INTTYP+ 9)
      &                     + EEE * (
-     &                       VXYZZ 
+     &                       VXYZZ
      &                     -  D1/D7  * VXYAA )
-                        SHLINT(INT,INTTYP+10) = SHLINT(INT,INTTYP+10) 
+                        SHLINT(INT,INTTYP+10) = SHLINT(INT,INTTYP+10)
      &                     + EEE * (
-     &                       VXZZZ 
+     &                       VXZZZ
      &                     -  D3/D7  * VXZAA )
-                        SHLINT(INT,INTTYP+11) = SHLINT(INT,INTTYP+11) 
+                        SHLINT(INT,INTTYP+11) = SHLINT(INT,INTTYP+11)
      &                     + EEE * (
-     &                       VYYYY 
+     &                       VYYYY
      &                     +  D3/D35 * VXXAA
      &                     - D27/D35 * VYYAA
      &                     +  D3/D35 * VZZAA )
-                        SHLINT(INT,INTTYP+12) = SHLINT(INT,INTTYP+12) 
+                        SHLINT(INT,INTTYP+12) = SHLINT(INT,INTTYP+12)
      &                     + EEE * (
-     &                       VYYYZ 
+     &                       VYYYZ
      &                     -  D3/D7  * VYZAA )
-                        SHLINT(INT,INTTYP+13) = SHLINT(INT,INTTYP+13) 
+                        SHLINT(INT,INTTYP+13) = SHLINT(INT,INTTYP+13)
      &                     + EEE * (
-     &                       VYYZZ 
+     &                       VYYZZ
      &                     +  D1/D35 * VXXAA
      &                     -  D4/D35 * VYYAA
      &                     -  D4/D35 * VZZAA )
-                        SHLINT(INT,INTTYP+14) = SHLINT(INT,INTTYP+14) 
+                        SHLINT(INT,INTTYP+14) = SHLINT(INT,INTTYP+14)
      &                     + EEE * (
-     &                       VYZZZ 
+     &                       VYZZZ
      &                     -  D3/D7  * VYZAA )
-                        SHLINT(INT,INTTYP+15) = SHLINT(INT,INTTYP+15) 
+                        SHLINT(INT,INTTYP+15) = SHLINT(INT,INTTYP+15)
      &                     + EEE * (
      &                       VZZZZ
      &                     +  D3/D35 * VXXAA
@@ -4637,7 +4643,7 @@ C
 
           do ixyz = 1, 3
             do id = 0, 2
-              derv(ixyz, id) = 
+              derv(ixyz, id) =
      &                   odc(lmn(1, ixyz), lmn(2, ixyz), 0, id, 0, ixyz)
             end do
           end do
@@ -5734,7 +5740,7 @@ C
       ELSE
 C tsaue 971112 - Bugfix here for SP2...
 C ISYMA = IBTXOR(ISYMO - 1,ISYMB - 1) + 1 fungerer ikke...
-         IREPO = ISYMO - 1     
+         IREPO = ISYMO - 1
          DO 200 IREPB = 0, MAXREP
             ISYMB = IREPB + 1
             ISYMA = IBTXOR(IREPO,IREPB) + 1
@@ -5863,10 +5869,10 @@ C
       RETURN
       END
 C/* Deck cexpint */
-C***********************************************************************      
+C***********************************************************************
       SUBROUTINE CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &     CORPX,CORPY,CORPZ,EXPPI,NINTS,WORK,LWORK)
-C***********************************************************************      
+C***********************************************************************
 C
 C     nhl 2016 -- calculates integrals over exp(ikr)
 C                 based on GOSINT routine.
@@ -5890,10 +5896,10 @@ C
       CALL MEMREL('CEXPINT',WORK,KWORK,KTMP,KFREE,LFREE)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CEXPIN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &     CORPX,CORPY,CORPZ,EXPPI,NINTS,TMPARR)
-C***********************************************************************      
+C***********************************************************************
 C
 C     nhl 2016 -- calculates integrals over exp(ikr)
 C                 based on GOSINT routine.
@@ -5918,12 +5924,12 @@ C***********************************************************************
 #include "inforb.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "dcbwav.h"      
+#include "dcbwav.h"
 C
 #include "ibtfun.h"
 C
       CALL DZERO(TMPARR,KCKTAB*8)
-C     
+C
       DKX  = WAVEVEC(1)
       DKY  = WAVEVEC(2)
       DKZ  = WAVEVEC(3)
@@ -6746,18 +6752,19 @@ C
 C
 #include "ibtfun.h"
 C
-C Does only work for Tensor/Chiral effect!
+C     Does only work for Tensor/Chiral effect!
 C
       DIFODC = .FALSE.
 C
-C Exponent and coordinates of Spherical Nuclear distribution
+C     Exponent and coordinates of Spherical Nuclear distribution
+C
       NUCPN1 = 0
       DO 50 IATOM = 1, NUCIND
       IF (DOATOM(IATOM)) THEN
       DO 60 IREP = 0, MAXREP
          IF (IBTAND(IREP,ISTBNU(IATOM)).NE.0) GOTO 60
       NUCPN1 = NUCPN1 + 1
-      EXPN = GNUEXP(IATOM) 
+      EXPN = GNUEXP(IATOM)
       CORNX = CORCX(NUCPN1)
       CORNY = CORCY(NUCPN1)
       CORNZ = CORCZ(NUCPN1)
@@ -6782,7 +6789,7 @@ C
          EXPB = PRIEXP(JPRIMB)
          EXPP = EXPA + EXPB + EXPN
 C
-C     Tensor interaction
+C        Tensor interaction
 C
          EXPPI = D1/EXPP
          EXPABQ = EXPA*EXPB*DISTAB+EXPA*EXPN*DISTAN+EXPB*EXPN*DISTBN
@@ -6821,7 +6828,7 @@ C
                ENDIF
             ENDIF
          ENDIF
-C     
+C
 C        *********************************************
 C        ***** Overlap Distribution Coefficients *****
 C        *********************************************
@@ -6834,6 +6841,7 @@ C
      &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
      &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
      &                  TEMP,INTTYP)
+C
 C        **********************************************
 C        ***** Calculation of Hermitian integrals *****
 C        **********************************************
@@ -6846,11 +6854,23 @@ C        **********************************************
 C        ***** Calculation of Cartesian integrals *****
 C        **********************************************
 C
+         IF (INTTYP.EQ.62) THEN
+C
 C        PV integrals
 C        ------------
 C
-         CALL OVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &        D1, SHGTF,SHLINT(1,NUCPN1))
+           CALL OVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
+     &          D1,SHGTF,SHLINT(1,NUCPN1))
+C
+         ELSE IF (INTTYP.EQ.63) THEN
+C
+C        PV quadrupole integrals
+C        -----------------------
+C
+           CALL QDPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
+     &          SHGTF,SHLINT(1,NUCPN1),CORPX,CORPY,CORPZ,EXPPI,4)
+C
+         END IF
 C
  200     CONTINUE
  100  CONTINUE
@@ -6874,7 +6894,7 @@ C    /* deck RM2H3  */
       SUBROUTINE RM2H3(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                 DIFABX,DIFABY,DIFABZ)
 C*********************************************************************
-C  Relativistic Magnetic 2nd derivative for Dirac Hamiltonian 
+C  Relativistic Magnetic 2nd derivative for Dirac Hamiltonian
 C             -- kinetic energy term
 C
 C  Integrals for 1/4 * <A_m | (Qmn r)(r Qmn)~ (c \alpha \cdot p) |B_n>
@@ -6948,11 +6968,11 @@ C    Qx*Qx~*grad(x,y,z)=-(-Zmn.y + Ymn.z)*(-Zmn.y + Ymn.z)*grad(x,y,z):
 C
 C           Qx.Qx~ = -(Zmn^2.y^2  - 2Ymn.Zmn.y.z + Ymn^2.z^2)
 C========================================================================
-         SHLINT(INT,1) = SHLINT(INT,1) + 
+         SHLINT(INT,1) = SHLINT(INT,1) +
      &    (DIFABZZ*SY2*SZ0 - D2*DIFABYZ*SY1*SZ1 + DIFABYY*SZ2*SY0)*DX0
-         SHLINT(INT,2) = SHLINT(INT,2) + 
+         SHLINT(INT,2) = SHLINT(INT,2) +
      &    (DIFABZZ*DY2*SZ0 - D2*DIFABYZ*DY1*SZ1 + DIFABYY*SZ2*DY0)*SX0
-         SHLINT(INT,3) = SHLINT(INT,3) + 
+         SHLINT(INT,3) = SHLINT(INT,3) +
      &    (DIFABZZ*SY2*DZ0 - D2*DIFABYZ*SY1*DZ1 + DIFABYY*DZ2*SY0)*SX0
 C========================================================================
 C                      Qx*Qy*grad(x,y,z):
@@ -7020,7 +7040,7 @@ C     Qz = -Ymn.x + Xmn.y
 C
 C    Qz.Qz~ =  -( Ymn^2.x^2 - 2.Xmn.Ymn.x.y + Xmn^2.y^2 )
 C========================================================================
-         SHLINT(INT,16) = SHLINT(INT,16) + 
+         SHLINT(INT,16) = SHLINT(INT,16) +
      &     (DIFABYY*DX2*SY0 - D2*DIFABXY*DX1*SY1
      &          +  DIFABXX*DX0*SY2) * SZ0
          SHLINT(INT,17) = SHLINT(INT,17) +
@@ -7090,8 +7110,8 @@ C
          SX11 = SHGTF*ODC(LVALA,LVALB+1,0,0,1,1) ! x.xn
          SY11 = SHGTF*ODC(MVALA,MVALB+1,0,0,1,2) ! y.yn
          SZ11 = SHGTF*ODC(NVALA,NVALB+1,0,0,1,3) ! z.zn
-          
-      
+
+
 C     write(lupri,'(A,3I5)') 'RDSUSAN LMN A',LVALA,MVALA,NVALA
 C     write(lupri,'(A,3I5)') 'RDSUSAN LMN B',LVALB,MVALB,NVALB
 C     write(lupri,'(A,1P,3D15.5)') 'RDSUSAN S?00',SX00,SY00,SZ00
@@ -7102,109 +7122,109 @@ C=================================================================
 C      1. Qx.yn.   alpha_z           XXRDSULY
 C = (-Zmn.y.yn + Ymn.z.yn)
 C=================================================================
-         SHLINT(INT,1) = SHLINT(INT,1) - 
+         SHLINT(INT,1) = SHLINT(INT,1) -
      & (-DIFABZ*SX00*SY11*SZ00+DIFABY*SX00*SY01*SZ10)*D2INV
 C=================================================================
 C      2. Qx.zn.   alpha_y           XXRDSULZ
 C =   (-Zmn.y.zn + Ymn.z.zn)
 C=================================================================
-         SHLINT(INT,2) = SHLINT(INT,2) - 
+         SHLINT(INT,2) = SHLINT(INT,2) -
      & (-DIFABZ*SX00*SY10*SZ01+DIFABY*SX00*SY00*SZ11)*D2INV
 C=================================================================
 C      3. Qx.zn. alpha_x             XYRDSULZ
 C =     (-Zmn.y.zn + Ymn.z.zn)
 C=================================================================
-         SHLINT(INT,3) = SHLINT(INT,3) - 
+         SHLINT(INT,3) = SHLINT(INT,3) -
      & (-DIFABZ*SX00*SY10*SZ01+DIFABY*SX00*SY00*SZ11)*D2INV
 C=================================================================
 C      4. Qx.xn. alpha_z             XYRDSULX
 C =     (-Zmn.y.xn + Ymn.z.xn)
 C=================================================================
-         SHLINT(INT,4) = SHLINT(INT,4) - 
+         SHLINT(INT,4) = SHLINT(INT,4) -
      & (-DIFABZ*SX01*SY10*SZ00+DIFABY*SX01*SY00*SZ10)*D2INV
 C=================================================================
 C      5. Qx.xn.  alpha_y            XZRDSULX
 C =    (-Zmn.y.xn + Ymn.z.xn)
 C=================================================================
-         SHLINT(INT,5) = SHLINT(INT,5) - 
+         SHLINT(INT,5) = SHLINT(INT,5) -
      & (-DIFABZ*SX01*SY10*SZ00+DIFABY*SX01*SY00*SZ10)*D2INV
 C=================================================================
 C      6. Qx.yn. alpha_x             XZRDSULY
 C =     (-Zmn.y.yn + Ymn.z.yn)
 C=================================================================
-         SHLINT(INT,6) = SHLINT(INT,6) - 
+         SHLINT(INT,6) = SHLINT(INT,6) -
      & (-DIFABZ*SX00*SY11*SZ00+DIFABY*SX00*SY01*SZ10)*D2INV
 C=================================================================
 C      7. Qy.yn.   alpha_z           YXRDSULY
 C =   (Zmn.x.yn - Xmn.z.yn)
 C=================================================================
-         SHLINT(INT,7) = SHLINT(INT,7) - 
+         SHLINT(INT,7) = SHLINT(INT,7) -
      & (DIFABZ*SX10*SY01*SZ00-DIFABX*SX00*SY01*SZ10)*D2INV
 C=================================================================
 C      8. Qy.zn.   alpha_y             YXRDSULZ
 C =    (Zmn.x.zn - Xmn.z.zn)
 C=================================================================
-         SHLINT(INT,8) = SHLINT(INT,8) - 
+         SHLINT(INT,8) = SHLINT(INT,8) -
      & (DIFABZ*SX10*SY00*SZ01-DIFABX*SX00*SY00*SZ11)*D2INV
 C=================================================================
 C      9. Qy.zn.   alpha_x              YYRDSULZ
 C =      (Zmn.x.zn - Xmn.z.zn)
 C=================================================================
-         SHLINT(INT,9) = SHLINT(INT,9) - 
+         SHLINT(INT,9) = SHLINT(INT,9) -
      & (DIFABZ*SX10*SY00*SZ01-DIFABX*SX00*SY00*SZ11)*D2INV
 C=================================================================
-C      10.  Qy.xn.  alpha_z                 YYRDSULX 
+C      10.  Qy.xn.  alpha_z                 YYRDSULX
 C =        (Zmn.x.xn - Xmn.z.xn)
 C=================================================================
-         SHLINT(INT,10) = SHLINT(INT,10) - 
+         SHLINT(INT,10) = SHLINT(INT,10) -
      & (DIFABZ*SX11*SY00*SZ00-DIFABX*SX01*SY00*SZ10)*D2INV
 C=================================================================
 C      11. Qy.xn.  alpha_y                  YZRDSULX
 C =       (Zmn.x.xn - Xmn.z.xn)
 C=================================================================
-         SHLINT(INT,11) = SHLINT(INT,11) - 
+         SHLINT(INT,11) = SHLINT(INT,11) -
      & (DIFABZ*SX11*SY00*SZ00-DIFABX*SX01*SY00*SZ10)*D2INV
 C=================================================================
 C      12. Qy.yn.   alpha_x                 YZRDSULY
 C =        (Zmn.x.yn - Xmn.z.yn)
 C=================================================================
-         SHLINT(INT,12) = SHLINT(INT,12) - 
+         SHLINT(INT,12) = SHLINT(INT,12) -
      & (DIFABZ*SX10*SY01*SZ00-DIFABX*SX00*SY01*SZ10)*D2INV
 C=================================================================
 C      13.  Qz.yn.  alpha_z                 ZXRDSULY
 C  =       (-Ymn.x.yn + Xmn.y.yn)
 C=================================================================
-         SHLINT(INT,13) = SHLINT(INT,13) - 
+         SHLINT(INT,13) = SHLINT(INT,13) -
      & (-DIFABY*SX10*SY01*SZ00+DIFABX*SX00*SY11*SZ00)*D2INV
 C=================================================================
 C      14.  Qz.zn.   alpha_y                 ZXRDSULZ
 C  =       (-Ymn.x.zn + Xmn.y.zn)
 C=================================================================
-         SHLINT(INT,14) = SHLINT(INT,14) - 
+         SHLINT(INT,14) = SHLINT(INT,14) -
      & (-DIFABY*SX10*SY00*SZ01+DIFABX*SX00*SY10*SZ01)*D2INV
 C=================================================================
 C      15. Qz.zn.   alpha_x      ZYRDSULZ
 C  =       (-Ymn.x.zn + Xmn.y.zn)
 C=================================================================
-         SHLINT(INT,15) = SHLINT(INT,15) - 
+         SHLINT(INT,15) = SHLINT(INT,15) -
      & (-DIFABY*SX10*SY00*SZ01+DIFABX*SX00*SY10*SZ01)*D2INV
 C=================================================================
 C      16. Qz.xn.   alpha_z       ZYRDSULX
 C  =       (-Ymn.x.xn + Xmn.y.xn)
 C=================================================================
-         SHLINT(INT,16) = SHLINT(INT,16) - 
+         SHLINT(INT,16) = SHLINT(INT,16) -
      & (-DIFABY*SX11*SY00*SZ00+DIFABX*SX01*SY10*SZ00)*D2INV
 C=================================================================
 C      17. Qz.xn.  alpha_y        ZZRDSULX
 C =        (-Ymn.x.xn + Xmn.y.xn)
 C=================================================================
-         SHLINT(INT,17) = SHLINT(INT,17) - 
+         SHLINT(INT,17) = SHLINT(INT,17) -
      & (-DIFABY*SX11*SY00*SZ00+DIFABX*SX01*SY10*SZ00)*D2INV
 C=================================================================
 C      18.  Qz.yn.   alpha_x      ZZRDSULY
 C =         (-Ymn.x.yn +  Xmn.y.yn)
 C=================================================================
-         SHLINT(INT,18) = SHLINT(INT,18) - 
+         SHLINT(INT,18) = SHLINT(INT,18) -
      & (-DIFABY*SX10*SY01*SZ00 + DIFABX*SX00*SY11*SZ00)*D2INV
 
  100  CONTINUE
@@ -7343,7 +7363,7 @@ C
 C
 C        Center A
 C        ========
-C 
+C
          ICOORA = 3*(ICENTA - 1) + ICOOR
          ISCORA = IPTCNT(3*(NCENTA - 1) + ICOOR,IREP,1)
          IF (ISCORA .GT. 0) THEN
@@ -7429,7 +7449,7 @@ C
 C
 C        Center A
 C        ========
-C 
+C
          ISCORA = IPTCNT(3*(NCENTA - 1) + ICOOR,IREP,1)
          IF (ISCORA .GT. 0) THEN
             FC = HKAB
@@ -7503,7 +7523,7 @@ C
          DX1 = SHGTF*ODC(LVALA,LVALB,0,1,1,1)
          DY1 = SHGTF*ODC(MVALA,MVALB,0,1,1,2)
          DZ1 = SHGTF*ODC(NVALA,NVALB,0,1,1,3)
-C     
+C
          SHLINT(INT,1) = SHLINT(INT,1) - DX1*SY0*SZ0
          SHLINT(INT,2) = SHLINT(INT,2) - DX0*SY1*SZ0
          SHLINT(INT,3) = SHLINT(INT,3) - DX0*SY0*SZ1
@@ -7557,7 +7577,7 @@ C
          DY2 = SHGTF*ODC(MVALA,MVALB,0,1,2,2)
          DZ2 = SHGTF*ODC(NVALA,NVALB,0,1,2,3)
          INT = INT + 1
-C     
+C
          SHLINT(INT,1) = SHLINT(INT,1) - DX2*SY0*SZ0
          SHLINT(INT,2) = SHLINT(INT,2) - DX1*SY1*SZ0
          SHLINT(INT,3) = SHLINT(INT,3) - DX1*SY0*SZ1
@@ -7602,7 +7622,7 @@ C  /* Deck dpgtra */
       ! loop over cartesian displacements of the atoms
       DO 100 X = 1, 3
          JCOMP = 0
- 
+
          ! loop over components of the dipole operator
          DO 200 B = 1, 3
             ICOMP = ICOMP + 1

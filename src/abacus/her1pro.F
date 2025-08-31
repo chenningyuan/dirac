@@ -328,7 +328,7 @@ C
 !                  77         78         79         80
      &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ', 
 !                  81         82         83         84
-     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'xxxxxxx', 
+     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'PVQUAD ', 
 !                  85         86         87         88
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
 !                  89         90         91         92
@@ -2081,8 +2081,23 @@ C     Miro Ilias, Malaya K Nayak
          INTREP(1) = 0
          ANTI = .FALSE. 
       GO TO 200
-
- 84   continue
+C
+C     Integrals for Quadrupole weak interactions
+C     ------------------------------------------
+C
+C     The operator is: rho_n(r_i) * Y_nm
+C     - where rho_n is the density for nucleus n,
+C     - and Y_nm are spherical harmonics
+C
+ 84   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of weak quadrupole moment integrals.'
+         INTTYP = 63
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
+         CALL QPVTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
+         ANTI = .FALSE.         
+      GOTO 200
+C
  85   continue
  86   continue
  87   continue
@@ -2091,7 +2106,6 @@ C     Miro Ilias, Malaya K Nayak
  90   continue
  91   continue
       go to 200
-
 C
 C     First order magnetic field derivatives of electric field gradient QDBINT
 C     -----------------------------------------------------------------
@@ -3556,6 +3570,50 @@ C  /* Deck pvtyp */
   200    CONTINUE
   100 CONTINUE
       RETURN
+      END
+C
+C  /* Deck qpvtyp */
+      SUBROUTINE QPVTYP(NOPTYP,INTREP,IQPVTBL,LABINT,DOATOM,NATOM)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      DIMENSION INTREP(6*MXCENT),IQPVTBL(NUCIND,6,0:MAXREP)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(6*MXCENT)*8
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
+C
+      NOPTYP = 6*NATOM
+      CALL NTYPTS(NOPTYP)
+C
+      IQPVTBL = 0
+      ITYP = 0
+C
+      DO 100 IATOM = 1, NUCIND
+        IF (DOATOM(IATOM)) THEN
+          IJ = 0
+          DO 200 ICOOR1 = 1, 3
+          DO 200 ICOOR2 = ICOOR1, 3
+            IJ = IJ + 1
+            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            DO 300 IREPC = 0, MAXREP
+              IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                ITYP = ITYP + 1
+                IQPVTBL(IATOM,IJ,IREPC) = ITYP
+                LABINT(ITYP) = 'QPV'//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//
+     &                         CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))
+                INTREP(ITYP) = IREPC
+              END IF
+ 300        CONTINUE
+ 200      CONTINUE
+        END IF
+ 100  CONTINUE
       END
 C  /* Deck gauher */
       SUBROUTINE GAUHER(X,W,N)
