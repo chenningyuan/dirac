@@ -156,7 +156,7 @@ if(ENABLE_XAMFI)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:x-amfi> ${EXTERNAL_OBJECTS})
     dirac_test(atomic_x2c_2esoc_models_energy "medium;xamfi" "")
     dirac_test(atomic_x2c_spinfree_energy "medium;xamfi" "")
-    dirac_test(x_amfi "short;xamfi" "")
+    dirac_test(x_amfi "medium;xamfi" "")
     message(STATUS "NOTE: tests for the (e)amfX2C 2e-scalar and spin-orbit picture-change correction module require h5py in your python env!")
 endif()
 message(STATUS "(e)amfX2C 2e-scalar and spin-orbit picture-change correction module: ${ENABLE_XAMFI}")
@@ -236,7 +236,7 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krmc> ${EXTERNAL_OBJECTS})
 if(ENABLE_ESR)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp/esr)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:esr> ${EXTERNAL_OBJECTS})
-    dirac_test(esr "short;gascip;ci" "")
+    dirac_test(esr "medium;gascip;ci" "")
 endif()
 message(STATUS "ESR property module: ${ENABLE_ESR}")
 
@@ -318,6 +318,10 @@ if(ENABLE_KRCC)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krcc> ${EXTERNAL_OBJECTS})
 endif()
 message(STATUS "KRCC module: ${ENABLE_KRCC}")
+
+# Making caspt2 as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/caspt2)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:caspt2> ${EXTERNAL_OBJECTS})
 
 # Making relccsd as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/relccsd)

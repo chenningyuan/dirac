@@ -115,6 +115,11 @@ Activates the  :ref:`**EXACC` module, the new coupled cluster implementation
 based on the ExaTensor library.
 
 
+keyword(CASPT2)
+Activates the :ref:`*CASPT2` module. complete active space second-order
+perturbation theory calculation.
+
+
 **Pre-SCF orbital manipulations**
 =================================
 
