@@ -2084,6 +2084,11 @@
       ELSE IF(LABINT(1:3).EQ.'PVC') THEN
         CLASLB = 'PVC    '
 !
+!     Parity violation - chirality operator
+!
+      ELSE IF(LABINT(1:3).EQ.'QPV') THEN
+        CLASLB = 'PVQUAD '
+!
 !     Electric field gradient at the individual nuclei, spherical
 !
       ELSE IF(LABINT(3:5).EQ.'FGS') THEN

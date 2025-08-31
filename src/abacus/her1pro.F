@@ -58,7 +58,7 @@ C
          NHUCBA = 0
          DO 14 I = 1, MAXREP + 1
             NHUCBA = NHUCBA + NHUCAO(I)
- 14      CONTINUE 
+ 14      CONTINUE
       ELSE
          DOINT(2,1) = .FALSE.
          DOINT(1,2) = .FALSE.
@@ -312,27 +312,27 @@ C
 !                  45         46         47         48
      &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP',
 !                  49         50         51         52
-     &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ', 
+     &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ',
 !                  53         54         55         56
      &            'S1ELB  ', 'ONEELD ', 'PVC    ', 'EFT    ',
 !                  57         58         59         60
-     &            'EFTNTL ', 'NUCFIEL', 'RM1H3  ', 'RM1RN  ', 
+     &            'EFTNTL ', 'NUCFIEL', 'RM1H3  ', 'RM1RN  ',
 !                  61         62         63         64
-     &            'RM1H2  ', 'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 
+     &            'RM1H2  ', 'RM1N1H ', 'RDSUSLN', 'RDSUSLL',
 !                  65         66         67         68
-     &            'RM2H3  ', 'RM2H2  ', 'CAP_RE ', 'CAP_IM ', 
+     &            'RM2H3  ', 'RM2H2  ', 'CAP_RE ', 'CAP_IM ',
 !                  69         70         71         72
-     &            'CAP_OVL', 'CAPD1R ', 'CAPD1I ', 'CAPDVE ', 
+     &            'CAP_OVL', 'CAPD1R ', 'CAPD1I ', 'CAPDVE ',
 !                  73         74         75         76
-     &            'SOPPINT', 'CAPD_VD', 'G1O    ', 'G1N    ', 
+     &            'SOPPINT', 'CAPD_VD', 'G1O    ', 'G1N    ',
 !                  77         78         79         80
-     &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ', 
+     &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ',
 !                  81         82         83         84
      &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'NEFNUC ',
 !                  85         86         87         88
-     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
+     &            'PVQUAD ', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx',
 !                  89         90         91         92
-     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ', 
+     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ',
 !                  93         94         95         96
      &            'S2MBRA ', 'S2MKET ', 'S2MMIX ', 'xxxxxxx',
 !                  97
@@ -1275,10 +1275,10 @@ C
 
          iret = 1
          intrep( 1)  = isymax(iret, 1)
-         intrep( 2)  = ieor(ieor(isymax(1, 2), 
+         intrep( 2)  = ieor(ieor(isymax(1, 2),
      &                           isymax(2, 2)),
      &                           isymax(iret, 1))
-         intrep( 3)  = ieor(ieor(isymax(1, 2), 
+         intrep( 3)  = ieor(ieor(isymax(1, 2),
      &                           isymax(3, 2)),
      &                           isymax(iret, 1))
          intrep( 4)  = isymax(iret, 1)
@@ -1289,10 +1289,10 @@ C
 
          iret = 2
          intrep( 7)  = isymax(iret, 1)
-         intrep( 8)  = ieor(ieor(isymax(1, 2), 
+         intrep( 8)  = ieor(ieor(isymax(1, 2),
      &                           isymax(2, 2)),
      &                           isymax(iret, 1))
-         intrep( 9)  = ieor(ieor(isymax(1, 2), 
+         intrep( 9)  = ieor(ieor(isymax(1, 2),
      &                           isymax(3, 2)),
      &                           isymax(iret, 1))
          intrep(10)  = isymax(iret, 1)
@@ -1303,10 +1303,10 @@ C
 
          iret = 3
          intrep(13)  = isymax(iret, 1)
-         intrep(14)  = ieor(ieor(isymax(1, 2), 
+         intrep(14)  = ieor(ieor(isymax(1, 2),
      &                           isymax(2, 2)),
      &                           isymax(iret, 1))
-         intrep(15)  = ieor(ieor(isymax(1, 2), 
+         intrep(15)  = ieor(ieor(isymax(1, 2),
      &                           isymax(3, 2)),
      &                           isymax(iret, 1))
          intrep(16)  = isymax(iret, 1)
@@ -1811,7 +1811,7 @@ C
 C
 C       Complex CAP integrals - real, imaginary; plus overlap
 C   ------------------------------------------------------------
-C   
+C
 C    MI, Tel Aviv, 2007
 C
  67   CONTINUE
@@ -1826,7 +1826,7 @@ C
          SQUARE = .FALSE.
          ANTI = .FALSE.
       GOTO 200
-C   
+C
  68   CONTINUE
          INTTYP = 209
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1855,7 +1855,7 @@ C
 C
 C       DIRAC CAP integrals - real part
 C   ------------------------------------------------------------
-C   
+C
 C    MI, Tel Aviv, 2007
 C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1877,7 +1877,7 @@ C
 C
 C       DIRAC CAP integrals - imaginary part
 C   ------------------------------------------------------------
-C   
+C
 C    MI, Tel Aviv, 2007
 C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1897,9 +1897,9 @@ C
       GO TO 200
  72   CONTINUE
 C
-C         DIRAC CAP dipole velocity integrals 
+C         DIRAC CAP dipole velocity integrals
 C   ------------------------------------------------------------
-C   
+C
 C    MI, Tel Aviv, 2007
 C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1917,10 +1917,10 @@ C
          ANTI = .TRUE.
          SQUARE = .FALSE.
       GO TO 200
-C        
+C
 C     SOPP integrals for ECP
 C     ----------------------
-C    
+C
    73 CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of one-electron spin-orbit integrals for ECP.'
@@ -1935,13 +1935,13 @@ C
          INTREP(2) = ISYMAX(2,2)
          INTREP(3) = ISYMAX(3,2)
          ANTI = .TRUE.
-         SQUARE = .TRUE. 
+         SQUARE = .TRUE.
       GO TO 200
 
-C                           
-C       V_dc integrals coming with CAP_d term  
-C  -------------------------------------------------    
-C    
+C
+C       V_dc integrals coming with CAP_d term
+C  -------------------------------------------------
+C
    74 CONTINUE
          INTTYP = 1
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1958,7 +1958,7 @@ C
 
 !     g1o: first geo derivatives of overlap integrals
 !     ===============================================
-   
+
  75   continue
       inttyp = 100
       if (iprint > 5) write (lupri, '(/a/)')
@@ -1973,7 +1973,7 @@ C
 
 !     g1n: first geo derivatives of nuclear attraction integrals
 !     ==========================================================
-   
+
  76   continue
       inttyp = 101
       if (iprint > 5) write (lupri, '(/a/)')
@@ -1988,7 +1988,7 @@ C
 
 !     g1b: first geo derivatives of beta integrals
 !     ============================================
-   
+
  77   continue
       inttyp = 102
       if (iprint > 5) write (lupri, '(/a/)')
@@ -2008,7 +2008,7 @@ C
 
 !     g1kx: first geo derivatives of kinetic energy (x) integrals
 !     ===========================================================
-   
+
  78   continue
       inttyp = 103
       if (iprint > 5) write (lupri, '(/a/)')
@@ -2023,7 +2023,7 @@ C
 
 !     g1ky: first geo derivatives of kinetic energy (y) integrals
 !     ===========================================================
-   
+
  79   continue
       inttyp = 104
       if (iprint > 5) write (lupri, '(/a/)')
@@ -2038,7 +2038,7 @@ C
 
 !     g1kz: first geo derivatives of kinetic energy (z) integrals
 !     ===========================================================
-   
+
  80   continue
       inttyp = 105
       if (iprint > 5) write (lupri, '(/a/)')
@@ -2091,10 +2091,25 @@ C     Miro Ilias, Malaya K Nayak
          LABINT(1) = 'KINENERG'
          ! full symmetry ....
          INTREP(1) = 0
-         ANTI = .FALSE. 
+         ANTI = .FALSE.
       GO TO 200
-
- 85   continue
+C
+C     Integrals for Quadrupole weak interactions
+C     ------------------------------------------
+C
+C     The operator is: rho_n(r_i) * Y_nm
+C     - where rho_n is the density for nucleus n,
+C     - and Y_nm are spherical harmonics
+C
+ 85   CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of weak quadrupole moment integrals.'
+         INTTYP = 63
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
+         CALL QPVTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
+         ANTI = .FALSE.
+      GOTO 200
+C
  86   continue
  87   continue
  88   continue
@@ -2102,7 +2117,6 @@ C     Miro Ilias, Malaya K Nayak
  90   continue
  91   continue
       go to 200
-
 C
 C     First order magnetic field derivatives of electric field gradient QDBINT
 C     -----------------------------------------------------------------
@@ -2247,7 +2261,7 @@ C     -------------------------
 C     NOTE: Computes all eight terms in the expansion of exp(ikr)
 C           i.e. real and imaginary components are contained in separate
 C           terms. Integrals 1-4 are the real and 5-8 the imaginary.
-C           The k-vector needs to be specified. 
+C           The k-vector needs to be specified.
 C
   97  CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -2268,11 +2282,11 @@ C
          WRITE (LUPRI,'(A,I5)') ' Integral type:', INTTYP
          WRITE (LUPRI,'(A,L5)') ' TRASPH:', TRASPH
          WRITE (LUPRI,'(A,L5)') ' SQUARE:', SQUARE
-         WRITE (LUPRI,'(A,L5)') '   ANTI:', ANTI    
+         WRITE (LUPRI,'(A,L5)') '   ANTI:', ANTI
          WRITE (LUPRI,'(A,L5)') ' SOLVNT:', SOLVNT
          WRITE (LUPRI,'(A,I5)') ' Number of operator components:',NOPTYP
          DO 300 I = 1, NOPTYP
-            WRITE (LUPRI,'(I3,A,I3,2A)')  
+            WRITE (LUPRI,'(I3,A,I3,2A)')
      &       I,'./',NOPTYP,' Molecule label: ', LABINT(I)
             WRITE (LUPRI,'(I3,A,I3,A,I5)')
      &       I,'./',NOPTYP,' Symmetry:', INTREP(I)
@@ -2374,9 +2388,9 @@ c
               OPEN(62,FORM='UNFORMATTED',FILE='RECP_INT_Z',ERR=5557)
               READ(62) (SOINT(N,I),N=1,N2BBASX)
               CLOSE(62)
-            END IF     !  end of read in 
+            END IF     !  end of read in
  601    CONTINUE
-      END IF     !  end of SOPP    
+      END IF     !  end of SOPP
 C
 C     *********************************************************
 C     ***** Transform from Cartesian to spherical moments *****
@@ -2499,7 +2513,7 @@ C
       IF (INTTYP.GT.0 .OR. ALLATM) THEN
 C     ... INTTYP .le. 0 is special flag for properties
 C         to get list of atoms selected with .SELECT.
-C         This is used in prp/pamprp.F; the other 
+C         This is used in prp/pamprp.F; the other
 C         atoms will still be calculated in PR1INT_1
 C         but will not be used in response. /Sep04 hjaaj
 C
@@ -3122,7 +3136,7 @@ C
      &                  labint,
      &                  doatom)
 
-      implicit none 
+      implicit none
 
 #include "maxaqn.h"
 #include "maxmom.h"
@@ -3175,7 +3189,7 @@ C
      &                     labint,
      &                     doatom)
 
-      implicit none 
+      implicit none
 
 #include "maxaqn.h"
 #include "maxmom.h"
@@ -3372,7 +3386,7 @@ C
                   ITYP = ITYP + 1
                   NOPTYP = NOPTYP + 1
                   IFGTBL(IATOM,IJ,IREPC) = ITYP
-                  LABINT(ITYP) = 
+                  LABINT(ITYP) =
      &                CHRXYZ(ICOOR1)//
      &                CHRXYZ(ICOOR2)//
      &                CHRXYZ(ICOOR3)//
@@ -3571,6 +3585,53 @@ C  /* Deck pvtyp */
   200    CONTINUE
   100 CONTINUE
       RETURN
+      END
+C
+C  /* Deck qpvtyp */
+      SUBROUTINE QPVTYP(NOPTYP,INTREP,IQPVTBL,LABINT,DOATOM,NATOM)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      DIMENSION INTREP(6*MXCENT),IQPVTBL(NUCIND,6,0:MAXREP)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(6*MXCENT)*8
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
+C
+      NOPTYP = 6*NATOM
+      CALL NTYPTS(NOPTYP)
+C
+      IQPVTBL = 0
+      ITYP = 0
+C
+      DO 100 IATOM = 1, NUCIND
+        IF (DOATOM(IATOM)) THEN
+          IJ = 0
+          DO 200 ICOOR1 = 1, 3
+          DO 200 ICOOR2 = ICOOR1, 3
+            IJ = IJ + 1
+            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+c            IOFF = 0
+            DO 300 IREPC = 0, MAXREP
+              IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+c                IOFF = IOFF + 1
+                ITYP = ITYP + 1
+                IQPVTBL(IATOM,IJ,IREPC) = ITYP
+                LABINT(ITYP) = 'QPV'//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//
+     &                         CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))    !//
+c     &                  CHRNOS(IOFF)
+                INTREP(ITYP) = IREPC
+              END IF
+ 300        CONTINUE
+ 200      CONTINUE
+        END IF
+ 100  CONTINUE
       END
 C  /* Deck gauher */
       SUBROUTINE GAUHER(X,W,N)
