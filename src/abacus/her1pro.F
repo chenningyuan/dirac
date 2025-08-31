@@ -1516,7 +1516,7 @@ C
 C
 C     Contribution from Hd to magnetic properties (Thomas Enevoldsen)
 C     ---------------------------------------------------------------
-CMI      integrals (RM1H3)  i c Qmn < r (alpha.p) >
+CMI   Integrals (RM1H3)  i c Qmn < r (alpha.p) >
 C
 C
  59   CONTINUE
@@ -1548,10 +1548,10 @@ C
          SQUARE = .TRUE. ! True specification
       GO TO 200
 C
-C      London contribution from r_N to magnetic properties, RM1RN
-C      (Thomas Enevoldsen)
-C     -----------------------------------------------------------
-CMI          integral  (c/2).< r_n x alpha >
+C     London contribution from r_N to magnetic properties, RM1RN
+C     (Thomas Enevoldsen)
+C     ----------------------------------------------------------
+CMI   Integrals   (c/2).< r_n x alpha >
 C
  60   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1571,8 +1571,8 @@ C
       GO TO 200
 C
 C     London orbital contribution to the potential V (Thomas Enevoldsen)
-C    -------------------------------------------------------------------
-CMI   integral i Q_MN < r_vec V >  (RM1H2)
+C     ------------------------------------------------------------------
+CMI   Integrals   i Q_MN < r_vec V >  (RM1H2)
 C
  61   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1590,10 +1590,10 @@ C
          ANTI = .TRUE. ! Truly antisymmetric !
       GO TO 200
 C
-C    London Relativistic Orbital contribution to expect. value of
-C    NMR shield. tensor, RNST (Thomas Enevoldsen)
-C    ------------------------------------------------------------
-CMI       integrals i/c Qmn <r (r_k x alp/r_k**3) >
+C     London Relativistic Orbital contribution to expect. value of
+C     NMR shield. tensor, RNST (Thomas Enevoldsen)
+C     ------------------------------------------------------------
+CMI   Integrals   i/c Qmn <r (r_k x alp/r_k**3) >
 C
  62   CONTINUE
          INTTYP = 204
@@ -1637,8 +1637,7 @@ C
 C
 C     London Relativistic Orbital contribution to Diamagnetic
 C     susceptibilty tensor  'RDSUSLL' (analogous to nonrel. 'DSUSLL')
-C
-C                 integrals i c Qmn < r (r_n x alpha) >
+C     Integrals   i c Qmn < r (r_n x alpha) >
 C     ---------------------------------------------------------------
 C     MI, jan.2003
 C
@@ -1692,8 +1691,7 @@ C ...  3x3x2=18 unique terms!
 C
 C     London Relativistic Orbital contribution to the
 C     susceptibilty tensor of RM2H3 term:
-C
-C               Qmn<r.r~(c alph.p)>Qmn
+C     Integrals   Qmn<r.r~(c alph.p)>Qmn
 C     -----------------------------------------------
 C     MI, march 2003
 C
@@ -1765,8 +1763,8 @@ C
 C     London Relativistic Orbital contribution to Diamagnetic
 C     Susceptibilty tensor  'RM2H2' -
 C     -------------------------------------------------------
-C    integrals   Qmn <mi_M | r.r~ V_nuc | ni_N> Qmn
-C           MI & HJAaJ, march 2003
+C     Integrals   Qmn <mi_M | r.r~ V_nuc | ni_N> Qmn
+C     MI & HJAaJ, march 2003
 C
  66   CONTINUE
          INTTYP = 208
@@ -1791,10 +1789,9 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C       Complex CAP integrals - real, imaginary; plus overlap
-C   ---------------------------------------------------------
-C   
-C    MI, Tel Aviv, 2007
+C     Complex CAP integrals - real, imaginary; plus overlap
+C     -----------------------------------------------------
+C     MI, Tel Aviv, 2007
 C
  67   CONTINUE
          INTTYP = 208
@@ -1833,12 +1830,12 @@ C
          SQUARE = .FALSE.
          ANTI = .FALSE.
       GOTO 200
+C
+C     DIRAC CAP integrals - real part
+C     -------------------------------
+C     MI, Tel Aviv, 2007
+C
  70   CONTINUE
-C
-C       DIRAC CAP integrals - real part
-C   -----------------------------------
-C    MI, Tel Aviv, 2007
-C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of CAP_D_re integrals'
          INTTYP = 3
@@ -1854,12 +1851,12 @@ C
          ANTI = .TRUE.
          SQUARE = .FALSE.
       GO TO 200
+C
+C     DIRAC CAP integrals - imaginary part
+C     ------------------------------------
+C     MI, Tel Aviv, 2007
+C
  71   CONTINUE
-C
-C       DIRAC CAP integrals - imaginary part
-C   ----------------------------------------
-C    MI, Tel Aviv, 2007
-C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of CAP_D_im integrals'
          INTTYP = 3
@@ -1875,12 +1872,12 @@ C
          ANTI = .TRUE.
          SQUARE = .FALSE.
       GO TO 200
+C
+C     DIRAC CAP dipole velocity integrals 
+C     -----------------------------------
+C     MI, Tel Aviv, 2007
+C
  72   CONTINUE
-C
-C         DIRAC CAP dipole velocity integrals 
-C   -----------------------------------------
-C    MI, Tel Aviv, 2007
-C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of CAP dipole velocity integrals'
          INTTYP = 3
