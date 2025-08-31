@@ -3602,12 +3602,15 @@ C
           DO 200 ICOOR2 = ICOOR1, 3
             IJ = IJ + 1
             ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+c            IOFF = 0
             DO 300 IREPC = 0, MAXREP
               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+c                IOFF = IOFF + 1
                 ITYP = ITYP + 1
                 IQPVTBL(IATOM,IJ,IREPC) = ITYP
                 LABINT(ITYP) = 'QPV'//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//
-     &                         CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))
+     &                         CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))    !//
+c     &                  CHRNOS(IOFF)
                 INTREP(ITYP) = IREPC
               END IF
  300        CONTINUE
