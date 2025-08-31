@@ -386,7 +386,7 @@ C
 C     Overlap integrals
 C     -----------------
 C
-    1 CONTINUE
+  1   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of overlap integrals.'
          INTTYP = 1
@@ -401,7 +401,7 @@ C
 C     Dipole moment (dipole length) integrals
 C     ---------------------------------------
 C
-    2 CONTINUE
+  2   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of dipole moment (length) integrals.'
          INTTYP = 2
@@ -420,7 +420,7 @@ C
 C     Dipole velocity integrals
 C     -------------------------
 C
-    3 CONTINUE
+  3   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of dipole velocity integrals.'
          INTTYP = 3
@@ -439,7 +439,7 @@ C
 C     Quadrupole moment integrals
 C     ---------------------------
 C
-    4 CONTINUE
+  4   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of quadrupole moment integrals.'
          INTTYP = 4
@@ -464,7 +464,7 @@ C
 C     Spin-orbit integrals
 C     --------------------
 C
-    5 CONTINUE
+  5   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of spatial one-electron spin-orbit integrals.'
          INTTYP = 5
@@ -483,7 +483,7 @@ C
 C     Second moments integrals
 C     ------------------------
 C
-    6 CONTINUE
+  6   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of second moments integrals.'
          INTTYP = 6
@@ -508,7 +508,7 @@ C
 C     Traceless theta quadrupole integrals
 C     ------------------------------------
 C
-    7 CONTINUE
+  7   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of theta quadrupole moments integrals.'
          INTTYP = 7
@@ -533,7 +533,7 @@ C
 C     Cartesian moments integrals
 C     ---------------------------
 C
-    8 CONTINUE
+  8   CONTINUE
          INTTYP = 8
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A,I2,A/)')
      &      ' Calculation of Cartesian multipole moment '/
@@ -555,7 +555,7 @@ C
 C     Spherical moments integrals
 C     ---------------------------
 C
-    9 CONTINUE
+  9   CONTINUE
          INTTYP = 8
          TRASPH = .TRUE.
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A,I2,A/)')
@@ -578,7 +578,7 @@ C
 C     Electronic solvent integrals
 C     ----------------------------
 C
-   10 CONTINUE
+ 10   CONTINUE
          INTTYP = 8
          TRASPH = .TRUE.
          SOLVNT = .TRUE.
@@ -603,7 +603,7 @@ C
 C     One-electron Fermi contact integrals
 C     ------------------------------------
 C
-   11 CONTINUE
+ 11   CONTINUE
          INTTYP = 9
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of one-electron Fermi contact integrals.'
@@ -615,7 +615,7 @@ C
 C     Paramagnetic spin-orbit integrals
 C     ---------------------------------
 C
-   12 CONTINUE
+ 12   CONTINUE
          INTTYP = 10
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of paramagnetic spin-orbit integrals.'
@@ -627,7 +627,7 @@ C
 C     Spin-dipole integrals
 C     ---------------------
 C
-   13 CONTINUE
+ 13   CONTINUE
          INTTYP = 11
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of spin-dipole integrals.'
@@ -640,7 +640,7 @@ C
 C     Diamagnetic spin-orbit integrals
 C     --------------------------------
 C
-   14 CONTINUE
+ 14   CONTINUE
          INTTYP = 12
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of diamagnetic spin-orbit integrals.'
@@ -653,7 +653,7 @@ C
 C     Spin-dipole + Fermi contact integrals
 C     -------------------------------------
 C
-   15 CONTINUE
+ 15   CONTINUE
          INTTYP = 13
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of spin-dipole + Fermi contact integrals.'
@@ -666,7 +666,7 @@ C
 C     Half-derivative overlap integrals
 C     ---------------------------------
 C
-   16 CONTINUE
+ 16   CONTINUE
          INTTYP = 14
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A)')
      &      ' Calculation of half-derivative overlap integrals.'
@@ -974,18 +974,6 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Electric field at the individual point/finite nuclei
-C     ----------------------------------------------------
-C
- 84   CONTINUE
-         INTTYP = 80
-         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &        'Calculation of electric field strength at the nuclei'
-         CALL SETATM(DOATOM,NATOM,-INTTYP)
-         CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR,INTTYP)
-         ANTI = .FALSE.
-      GOTO 200
-C
 C     Electric field gradient at the individual nuclei, cartesian
 C     -----------------------------------------------------------
 C
@@ -1157,7 +1145,7 @@ C
 C     Cosine and Sine integrals
 C     -------------------------
 C
-   42 CONTINUE
+ 42   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of cosine and sine integrals'
          INTTYP = 39
@@ -1182,7 +1170,7 @@ C
 C     Mass velocity integrals
 C     -----------------------
 C
-  43  CONTINUE
+ 43   CONTINUE
          INTTYP = 40
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of mass velocity integrals'
@@ -1197,7 +1185,7 @@ C
 C     Darwin type integrals
 C     ---------------------
 C
-   44 CONTINUE
+ 44   CONTINUE
          INTTYP = 41
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of Darwin type integrals'
@@ -1219,7 +1207,6 @@ C
          NOPTYP  = 9
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-
          LABINT( 1) = 'X-CM1 X '
          LABINT( 2) = 'X-CM1 Y '
          LABINT( 3) = 'X-CM1 Z '
@@ -1229,7 +1216,6 @@ C
          LABINT( 7) = 'Z-CM1 X '
          LABINT( 8) = 'Z-CM1 Y '
          LABINT( 9) = 'Z-CM1 Z '
-
          intrep(1) = ieor(isymax(1, 2), isymax(1, 1))
          intrep(2) = ieor(isymax(2, 2), isymax(1, 1))
          intrep(3) = ieor(isymax(3, 2), isymax(1, 1))
@@ -1239,7 +1225,6 @@ C
          intrep(7) = ieor(isymax(1, 2), isymax(3, 1))
          intrep(8) = ieor(isymax(2, 2), isymax(3, 1))
          intrep(9) = ieor(isymax(3, 2), isymax(3, 1))
-
          anti = .true.
       GOTO 200
 C
@@ -1253,7 +1238,6 @@ C
          NOPTYP  = 18
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-
          LABINT( 1) = 'X-CM2XX '
          LABINT( 2) = 'X-CM2XY '
          LABINT( 3) = 'X-CM2XZ '
@@ -1272,7 +1256,6 @@ C
          LABINT(16) = 'Z-CM2YY '
          LABINT(17) = 'Z-CM2YZ '
          LABINT(18) = 'Z-CM2ZZ '
-
          iret = 1
          intrep( 1)  = isymax(iret, 1)
          intrep( 2)  = ieor(ieor(isymax(1, 2), 
@@ -1314,7 +1297,6 @@ C
      &                           isymax(3, 2)),
      &                           isymax(iret, 1))
          intrep(18)  = isymax(iret, 1)
-
          anti = .false.
       GOTO 200
 C
@@ -1407,6 +1389,7 @@ C
 C
 C     Contribution from overlap matrix to electric prop. Type A
 C     ---------------------------------------------------------
+C
  52   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of first electric derivative of overlap '/
@@ -1427,6 +1410,7 @@ C
 C
 C     Contribution from overlap matrix to electric prop. Type B
 C     ---------------------------------------------------------
+C
  53   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of first electric derivative of overlap '/
@@ -1446,7 +1430,7 @@ C
       GOTO 200
 C
 C     First electric deriv. of one-electron Hamiltonian integrals
-C     ___________________________________________________________
+C     -----------------------------------------------------------
 C
  54   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1467,7 +1451,7 @@ C
       GOTO 200
 C
 C     Integrals for Parity Violation - chirality
-C     __________________________________________
+C     ------------------------------------------
 C
 C     The operator is: rho_n(r_i)
 C     - where rho_n is the density for nucleus n.
@@ -1482,8 +1466,7 @@ C
       GOTO 200
 C
 C     Traceless electric field third derivatives
-C
-C     ___________________________________________________________
+C     ------------------------------------------
 C
  56   CONTINUE
          INTTYP = 56
@@ -1495,9 +1478,8 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     non-traceless electric field third derivatives
-C
-C     ___________________________________________________________
+C     Non-traceless electric field third derivatives
+C     ----------------------------------------------
 C
  57   CONTINUE
          INTTYP = 57
@@ -1533,7 +1515,7 @@ C
       GOTO 200
 C
 C     Contribution from Hd to magnetic properties (Thomas Enevoldsen)
-C     ------------------------------------------------------------------
+C     ---------------------------------------------------------------
 CMI      integrals (RM1H3)  i c Qmn < r (alpha.p) >
 C
 C
@@ -1568,7 +1550,7 @@ C
 C
 C      London contribution from r_N to magnetic properties, RM1RN
 C      (Thomas Enevoldsen)
-C     --------------------------------------------------------------------
+C     -----------------------------------------------------------
 CMI          integral  (c/2).< r_n x alpha >
 C
  60   CONTINUE
@@ -1589,7 +1571,7 @@ C
       GO TO 200
 C
 C     London orbital contribution to the potential V (Thomas Enevoldsen)
-C    ----------------------------------------------------------------------
+C    -------------------------------------------------------------------
 CMI   integral i Q_MN < r_vec V >  (RM1H2)
 C
  61   CONTINUE
@@ -1610,7 +1592,7 @@ C
 C
 C    London Relativistic Orbital contribution to expect. value of
 C    NMR shield. tensor, RNST (Thomas Enevoldsen)
-C    ------------------------------------------------------------------
+C    ------------------------------------------------------------
 CMI       integrals i/c Qmn <r (r_k x alp/r_k**3) >
 C
  62   CONTINUE
@@ -1627,7 +1609,7 @@ C
 C
 C     London Relativistic Orbital contribution to Diamagnetic
 C     Susceptibility tensor  'RDSUSNL' (analogous to nonrel. 'DSUSNL')
-C     -------------------------------------------------------------------
+C     ----------------------------------------------------------------
 C     MI, jan.2003
 C
  63   CONTINUE
@@ -1657,7 +1639,7 @@ C     London Relativistic Orbital contribution to Diamagnetic
 C     susceptibilty tensor  'RDSUSLL' (analogous to nonrel. 'DSUSLL')
 C
 C                 integrals i c Qmn < r (r_n x alpha) >
-C     -------------------------------------------------------------------
+C     ---------------------------------------------------------------
 C     MI, jan.2003
 C
  64   CONTINUE
@@ -1712,7 +1694,7 @@ C     London Relativistic Orbital contribution to the
 C     susceptibilty tensor of RM2H3 term:
 C
 C               Qmn<r.r~(c alph.p)>Qmn
-C     -------------------------------------------------------------------
+C     -----------------------------------------------
 C     MI, march 2003
 C
  65   CONTINUE
@@ -1782,7 +1764,7 @@ C
 C
 C     London Relativistic Orbital contribution to Diamagnetic
 C     Susceptibilty tensor  'RM2H2' -
-C     -------------------------------------------------------------------
+C     -------------------------------------------------------
 C    integrals   Qmn <mi_M | r.r~ V_nuc | ni_N> Qmn
 C           MI & HJAaJ, march 2003
 C
@@ -1810,7 +1792,7 @@ C
       GOTO 200
 C
 C       Complex CAP integrals - real, imaginary; plus overlap
-C   ------------------------------------------------------------
+C   ---------------------------------------------------------
 C   
 C    MI, Tel Aviv, 2007
 C
@@ -1854,8 +1836,7 @@ C
  70   CONTINUE
 C
 C       DIRAC CAP integrals - real part
-C   ------------------------------------------------------------
-C   
+C   -----------------------------------
 C    MI, Tel Aviv, 2007
 C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1876,8 +1857,7 @@ C
  71   CONTINUE
 C
 C       DIRAC CAP integrals - imaginary part
-C   ------------------------------------------------------------
-C   
+C   ----------------------------------------
 C    MI, Tel Aviv, 2007
 C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1898,8 +1878,7 @@ C
  72   CONTINUE
 C
 C         DIRAC CAP dipole velocity integrals 
-C   ------------------------------------------------------------
-C   
+C   -----------------------------------------
 C    MI, Tel Aviv, 2007
 C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -1921,7 +1900,7 @@ C
 C     SOPP integrals for ECP
 C     ----------------------
 C    
-   73 CONTINUE
+ 73   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of one-electron spin-orbit integrals for ECP.'
          INTTYP = 73
@@ -1939,10 +1918,10 @@ C
       GO TO 200
 
 C                           
-C       V_dc integrals coming with CAP_d term  
-C  -------------------------------------------------    
+C     V_dc integrals coming with CAP_d term  
+C     -------------------------------------
 C    
-   74 CONTINUE
+ 74   CONTINUE
          INTTYP = 1
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &'PR1DIR: CAPD_VDC integrals'
@@ -1954,11 +1933,10 @@ C
          SQUARE = .FALSE.
          ANTI = .FALSE.
       GO TO 200
-
-
-!     g1o: first geo derivatives of overlap integrals
-!     ===============================================
-   
+C
+C     g1o: first geo derivatives of overlap integrals
+C     -----------------------------------------------
+C
  75   continue
       inttyp = 100
       if (iprint > 5) write (lupri, '(/a/)')
@@ -1969,11 +1947,11 @@ C
       anti   = .false.
       square = .false.
       go to 200
-
-
-!     g1n: first geo derivatives of nuclear attraction integrals
-!     ==========================================================
-   
+C
+C
+C     g1n: first geo derivatives of nuclear attraction integrals
+C     ----------------------------------------------------------
+C
  76   continue
       inttyp = 101
       if (iprint > 5) write (lupri, '(/a/)')
@@ -1984,11 +1962,10 @@ C
       anti   = .false.
       square = .false.
       go to 200
-
-
-!     g1b: first geo derivatives of beta integrals
-!     ============================================
-   
+C
+C     g1b: first geo derivatives of beta integrals
+C     --------------------------------------------
+C  
  77   continue
       inttyp = 102
       if (iprint > 5) write (lupri, '(/a/)')
@@ -1999,16 +1976,15 @@ C
       anti   = .false.
       square = .false.
       go to 200
-
-
+C
 !todo (radovan): the kinetic energy dervs can be done much more
 !                compactly using inttyp alphadot
 !                will fix it when i have time
-
-
-!     g1kx: first geo derivatives of kinetic energy (x) integrals
-!     ===========================================================
-   
+C
+C
+C     g1kx: first geo derivatives of kinetic energy (x) integrals
+C     -----------------------------------------------------------
+C
  78   continue
       inttyp = 103
       if (iprint > 5) write (lupri, '(/a/)')
@@ -2019,11 +1995,10 @@ C
       anti   = .true.
       square = .false.
       go to 200
-
-
-!     g1ky: first geo derivatives of kinetic energy (y) integrals
-!     ===========================================================
-   
+C
+C     g1ky: first geo derivatives of kinetic energy (y) integrals
+C     -----------------------------------------------------------
+C
  79   continue
       inttyp = 104
       if (iprint > 5) write (lupri, '(/a/)')
@@ -2034,11 +2009,10 @@ C
       anti   = .true.
       square = .false.
       go to 200
-
-
-!     g1kz: first geo derivatives of kinetic energy (z) integrals
-!     ===========================================================
-   
+C
+C     g1kz: first geo derivatives of kinetic energy (z) integrals
+C     -----------------------------------------------------------
+C
  80   continue
       inttyp = 105
       if (iprint > 5) write (lupri, '(/a/)')
@@ -2049,10 +2023,9 @@ C
       anti   = .true.
       square = .false.
       go to 200
-
 C
 C     Dipole gradient integrals DPLGRA
-C     -------------------------
+C     --------------------------------
 C
  81   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -2065,7 +2038,7 @@ C
       GOTO 200
 C
 C     Quadrupole gradient integrals QUAGRA
-C     -----------------------------
+C     ------------------------------------
 C
  82   CONTINUE
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -2076,11 +2049,11 @@ C
          ANTI = .FALSE.
          SQUARE = .FALSE.
       GOTO 200
-
 C
 C     EMD - i* Electronic kinetic energy
 C     ----------------------------------
 C     Miro Ilias, Malaya K Nayak
+C
  83   CONTINUE
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
      &' Calculation of EDM - i*KINENERG_LS(electronic kinetic energy)'
@@ -2093,7 +2066,18 @@ C     Miro Ilias, Malaya K Nayak
          INTREP(1) = 0
          ANTI = .FALSE. 
       GO TO 200
-
+C
+C     Electric field at the individual point/finite nuclei
+C     ----------------------------------------------------
+C
+ 84   CONTINUE
+         INTTYP = 80
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &        'Calculation of electric field strength at the nuclei'
+         CALL SETATM(DOATOM,NATOM,-INTTYP)
+         CALL EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR,INTTYP)
+         ANTI = .FALSE.
+      GOTO 200
  85   continue
  86   continue
  87   continue
@@ -2102,10 +2086,9 @@ C     Miro Ilias, Malaya K Nayak
  90   continue
  91   continue
       go to 200
-
 C
 C     First order magnetic field derivatives of electric field gradient QDBINT
-C     -----------------------------------------------------------------
+C     ------------------------------------------------------------------------
 C
  92   CONTINUE
          INTTYP = 65
@@ -2115,7 +2098,7 @@ C
          NOPTYP  = 18
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-
+C
          LABINT( 1) = 'XX-QDB X'
          LABINT( 2) = 'XX-QDB Y'
          LABINT( 3) = 'XX-QDB Z'
@@ -2134,7 +2117,7 @@ C
          LABINT(16) = 'YZ-QDB X'
          LABINT(17) = 'YZ-QDB Y'
          LABINT(18) = 'YZ-QDB Z'
-
+C
          intrep( 1) = isymax(1, 2)
          intrep( 2) = isymax(2, 2)
          intrep( 3) = isymax(3, 2)
@@ -2156,11 +2139,10 @@ C
 
          anti = .true.
       goto 200
-
-
 C
 C     Second order contribution from overlap matrix to magnetic properties
-cdj bra, ket, and mixed bra-ket contributions separately
+C     --------------------------------------------------------------------
+C     dj bra, ket, and mixed bra-ket contributions separately
 C
  93   CONTINUE
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
@@ -2186,6 +2168,9 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
+C     2nd magnetic derivative of overlap matrix, ket part
+C     ---------------------------------------------------
+C
  94   CONTINUE
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
      &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
@@ -2209,6 +2194,9 @@ C
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GOTO 200
+C
+C     2nd magnetic derivative of overlap matrix, mixed bra-ket part
+C     -------------------------------------------------------------
 C
  95   CONTINUE
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
@@ -2239,7 +2227,7 @@ C
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GOTO 200
-
+C
  96   continue
 C
 C     EXPIKR integrals CXIKR
@@ -2248,6 +2236,9 @@ C     NOTE: Computes all eight terms in the expansion of exp(ikr)
 C           i.e. real and imaginary components are contained in separate
 C           terms. Integrals 1-4 are the real and 5-8 the imaginary.
 C           The k-vector needs to be specified. 
+C
+C     expikr integrals
+C     ----------------
 C
   97  CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
