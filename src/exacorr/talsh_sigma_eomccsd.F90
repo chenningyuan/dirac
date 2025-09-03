@@ -4,8 +4,7 @@ module eti_sigma_eomccsd
   use tensor_algebra
   use exacorr_datatypes
   use eti_common_routines, only : tensor_norm2, print_tensor
-  use exacorr_utils,  only : print_date
-
+ 
   implicit none
 
   complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE=(-1.D0,0.D0),ONE=(1.D0,0.D0),ONE_HALF=(0.5D0,0.D0)

@@ -10,7 +10,6 @@ module eti_gradient
   use tensor_algebra
   use eti_common_routines, only : tensor_norm2, print_tensor_elements
   use exacorr_datatypes, only : eti_dm_tens_t, exacc_input
-  use exacorr_utils, only     : print_date
   use eti_1rdm_2rdm_ccsd_kernels
   use, intrinsic:: ISO_C_BINDING
 

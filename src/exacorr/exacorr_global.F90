@@ -68,7 +68,6 @@ module exacorr_global
 
              use exacorr_respect
              use exacc_cfg
-             use exacorr_utils, only : print_date
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              use interface_to_mpi

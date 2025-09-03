@@ -375,10 +375,10 @@ module eti_cc
               call print_date('-End- Triples')
            end if
            call print_exaoutput(exa_input%talsh, iterative_scheme, perturbative_scheme, &
-                                scf_energy, mp2_energy, cc_energy, t1diag=t1diag, pert_energy=pert_energy)
+                                scf_energy, mp2_energy, cc_energy, t1diag, pert_energy)
          else
             call print_exaoutput(exa_input%talsh, iterative_scheme, perturbative_scheme,&
-                                 scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
+                                 scf_energy, mp2_energy, cc_energy, t1diag)
          end if
 
          !Destruct diis tensors

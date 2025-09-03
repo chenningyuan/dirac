@@ -410,10 +410,10 @@ module exacorr_cc
                call t3_energy_split(pert_energy,comm_t,int_t,occ_space,denom,exa_input)
                call print_date('-End- Triples')
                call print_exaoutput(exa_input%talsh, exa_input%iterative_scheme, exa_input%perturbative_scheme, &
-                                   scf_energy, mp2_energy, cc_energy, t1diag=t1diag, pert_energy=pert_energy) 
+                                   scf_energy, mp2_energy, cc_energy, t1diag, pert_energy) 
             else
                call print_exaoutput(exa_input%talsh, exa_input%iterative_scheme, exa_input%perturbative_scheme,&
-                                    scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
+                                    scf_energy, mp2_energy, cc_energy, t1diag)
             end if
 
 !           Destroy tensors 
@@ -3560,7 +3560,7 @@ module exacorr_cc
         subroutine update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, level_shift, print_level)
           
           use exacorr_tensor_methods
-          use exacorr_utils, only : print_orbital_energy, shift_orbital_energy
+          use exacorr_utils, only : shift_orbital_energy
 
           implicit none
 
