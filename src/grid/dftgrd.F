@@ -16,8 +16,8 @@
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C  /* Deck dftgrd */
-      SUBROUTINE DFTGRD(DMAT,IPRINT)
+C  /* Deck DFT_GRID */
+      SUBROUTINE DFT_GRID(DMAT,IPRINT)
 C                                                                      C
 C     Interface routine for grid points                                C
 C     T. Helgaker                                                      C
@@ -153,7 +153,7 @@ C
 
       TIMGRD = SECOND() - TIMSTR
       WRITE (LUPRI,'(1X)')
-      CALL TIMTXT('>>>> Time used in DFTGRD:',TIMGRD,LUPRI)
+      CALL TIMTXT('>>>> Time used in DFT_GRID:',TIMGRD,LUPRI)
       WRITE (LUPRI,'(1X)')
 
  999  CONTINUE
@@ -266,7 +266,7 @@ C
          WRITE(LUPRI,*)
       ELSE
          WRITE(LUPRI,'(/A)')
-     &        'DFTGRD: ATSIZE not requested or no '//
+     &        'DFT_GRID: ATSIZE not requested or no '//
      &        'trial vectors found. Slater-Bragg '//
      &        'radii will be used.'
          WRITE(LUPRI,*)

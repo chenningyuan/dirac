@@ -61,7 +61,7 @@ contains
 
         CALL AROUND('3D numerical integration')
 
-        call dftgrd(D(1)%elms, 1)
+        call dft_grid(D(1)%elms, 1)
 
         open(interface_file_unit,       &
              file   = 'numerical_grid', &
