@@ -90,7 +90,7 @@ C
       RETURN
       END
 C  /* Deck prigrd */
-      SUBROUTINE PRIGRD(GRAD,CSTRA,SCTRA)
+      SUBROUTINE PRIGRD(GRAD)
 C
 C     tuh Mar 1985
 C     tuh Jun 28 1988 - modified for symmetry
@@ -104,7 +104,8 @@ C
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
-      DIMENSION GRAD(MXCOOR), CGRAD(MXCOOR), CSTRA(*), SCTRA(*)
+      real(8)              :: GRAD(MXCOOR)
+      real(8), allocatable :: CSTRA(:), SCTRA(:), CGRAD(:)
       IF (.NOT.DOSYM(1)) THEN
          WRITE (LUPRI,'(2X,A)')
      &  ' Gradient not calculated - '//
@@ -120,12 +121,16 @@ C
             WRITE (LUPRI,'(25X,A6,F17.10)') NAMEX(IPTCOR(I,1)), GRAD(I)
   200    CONTINUE
          WRITE (LUPRI,'(//)')
+         ncoor = 3*NUCDEP
+         n2coor = ncoor*ncoor
+         allocate (CSTRA(n2coor), SCTRA(n2coor), CGRAD(ncoor))
          CALL TRAGRD(GRAD,CGRAD,CSTRA,SCTRA,NCRREP(0,1),3*NUCDEP)
          IOFF = 0
          DO 300 IATOM = 1, NUCDEP
             WRITE (LUPRI,1000) NAMDEP(IATOM),(CGRAD(IOFF+J),J=1,3)
             IOFF = IOFF + 3
   300    CONTINUE
+         deallocate (CSTRA, SCTRA, CGRAD)
       END IF
       WRITE (LUPRI,'(//)')
       CALL FLSHFO(LUPRI)

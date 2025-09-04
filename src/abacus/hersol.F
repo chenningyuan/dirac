@@ -384,7 +384,7 @@ C           CALL TRACTS(VEC,NCOOR,CSTRA)
 C
          IF (IPRINT .GE. 2 .AND. MAXDIF .GE.1) THEN
             CALL HEADER('Nuclear contributions to solvent gradient',-1)
-            CALL PRIGRD(GSOLNN,CSTRA,SCTRA)
+            CALL PRIGRD(GSOLNN)
          END IF
          IF (IPRINT .GE. 2 .AND. MAXDIF .GE. 2) THEN
             CALL HEADER('Nuclear contributions to solvent Hessian',-1)

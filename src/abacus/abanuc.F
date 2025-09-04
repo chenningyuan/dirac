@@ -359,7 +359,7 @@ C     *************************
 C
       IF (IPRINT .GT. 1) THEN
          CALL HEADER('Nuclear repulsion gradient',-1)
-         CALL PRIGRD(GRADNN,CSTRA,SCTRA)
+         CALL PRIGRD(GRADNN)
          IF (SECOND) THEN
             CALL HEADER('Nuclear repulsion Hessian',-1)
             CALL PRIHES(HESSNN,'CENTERS',CSTRA,SCTRA)

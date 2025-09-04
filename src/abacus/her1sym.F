@@ -407,30 +407,24 @@ C
             END IF
             IF (IPRINT .GT. 20) THEN
                IF ( DODERM  .AND. .NOT. ONECEN ) THEN
-                  KCSTRA = 1
-                  KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
-                  KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
                   CALL HEADER('Momentum integral gradient',-1)
-                  CALL PRIGRD(GRADKN(1,1),WORK(KCSTRA),WORK(KSCTRA))
+                  CALL PRIGRD(GRADKN(1,1))
                ELSE
-                  KCSTRA = 1
-                  KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
-                  KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
                   CALL HEADER(
      &            'Nuclear attraction integral gradient - LL',-1)
-                  CALL PRIGRD(GRADNU(1,1),WORK(KCSTRA),WORK(KSCTRA))
+                  CALL PRIGRD(GRADNU(1,1))
                   CALL HEADER(
      &            'Nuclear attraction integral gradient - SS',-1)
-                  CALL PRIGRD(GRADNU(1,2),WORK(KCSTRA),WORK(KSCTRA))
+                  CALL PRIGRD(GRADNU(1,2))
                   IF (.NOT. ONECEN ) THEN
                      CALL HEADER(
      &               'Reorthonormalization gradient - LL',-1)
-                     CALL PRIGRD(GRADRO(1,1),WORK(KCSTRA),WORK(KSCTRA))
+                     CALL PRIGRD(GRADRO(1,1))
                      CALL HEADER(
      &               'Reorthonormalization gradient - SS',-1)
-                     CALL PRIGRD(GRADRO(1,2),WORK(KCSTRA),WORK(KSCTRA))
+                     CALL PRIGRD(GRADRO(1,2))
                      CALL HEADER('Beta matrix integral gradient',-1)
-                     CALL PRIGRD(GRADKN(1,2),WORK(KCSTRA),WORK(KSCTRA))
+                     CALL PRIGRD(GRADKN(1,2))
                   END IF
                END IF
             END IF

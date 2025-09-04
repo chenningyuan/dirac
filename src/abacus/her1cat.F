@@ -541,8 +541,8 @@ C
          KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
          KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
          CALL HEADER('Nuclear attraction integral gradient',-1)
-         CALL PRIGRD(GRADNU(1,1),WORK(KCSTRA),WORK(KSCTRA))
-         CALL PRIGRD(GRADNU(1,2),WORK(KCSTRA),WORK(KSCTRA))
+         CALL PRIGRD(GRADNU(1,1))
+         CALL PRIGRD(GRADNU(1,2))
 #else 
       IF (PROPTY .AND. (IPRINT .GT. 0)) THEN
          CALL HEADER('Nuclear attraction integral gradient',-1)
@@ -785,8 +785,8 @@ C
                KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
                KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
                CALL HEADER('Coulomb attraction integral gradient',-1)
-               CALL PRIGRD(GRADNU(1,1),WORK(KCSTRA),WORK(KSCTRA))
-               CALL PRIGRD(GRADNU(1,2),WORK(KCSTRA),WORK(KSCTRA))
+               CALL PRIGRD(GRADNU(1,1))
+               CALL PRIGRD(GRADNU(1,2))
             END IF
 #else 
             IF (ONECEN) THEN

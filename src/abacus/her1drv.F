@@ -678,15 +678,15 @@ C
          KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
          KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
          CALL HEADER('Momentum integral gradient',-1)
-         CALL PRIGRD(GRADKN(1,1),WORK(KCSTRA),WORK(KSCTRA))
+         CALL PRIGRD(GRADKN(1,1))
          CALL HEADER('Nuclear attraction integral gradient',-1)
-         CALL PRIGRD(GRADNU(1,1),WORK(KCSTRA),WORK(KSCTRA))
-         CALL PRIGRD(GRADNU(1,2),WORK(KCSTRA),WORK(KSCTRA))
+         CALL PRIGRD(GRADNU(1,1))
+         CALL PRIGRD(GRADNU(1,2))
          CALL HEADER('Reorthonormalization gradient',-1)
-         CALL PRIGRD(GRADRO(1,1),WORK(KCSTRA),WORK(KSCTRA))
-         CALL PRIGRD(GRADRO(1,2),WORK(KCSTRA),WORK(KSCTRA))
+         CALL PRIGRD(GRADRO(1,1))
+         CALL PRIGRD(GRADRO(1,2))
          CALL HEADER('Beta matrix gradient',-1)
-         CALL PRIGRD(GRADKN(1,2),WORK(KCSTRA),WORK(KSCTRA))
+         CALL PRIGRD(GRADKN(1,2))
 #else 
       IF (PROPTY .AND. (IPRINT .GT. 0)) THEN
          CALL HEADER('Kinetic energy integral gradient',-1)
