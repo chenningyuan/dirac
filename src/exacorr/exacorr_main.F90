@@ -15,6 +15,7 @@
       use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
+      use exacorr_printout,only     : print_exacorr_logo
       use exacc_cfg
       use exacorr_global
       use exacorr_utils

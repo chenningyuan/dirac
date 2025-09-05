@@ -10,6 +10,7 @@ module eti_cc
         use eti_common_routines
         use mfsolver_dirac_input
         use exacorr_tensor_interface
+        use exacorr_printout
         use, intrinsic:: ISO_C_BINDING
 
         implicit none

@@ -10,6 +10,7 @@ module exacorr_cc
         use exatensor
         use exacorr_datatypes
         use exacorr_utils
+        use exacorr_printout
         use intermediates
 
         implicit none

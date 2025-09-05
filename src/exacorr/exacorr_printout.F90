@@ -1,15 +1,18 @@
-!  Print out routinues used in exacorr
+module exacorr_printout
 
-    subroutine print_date(text)
-    ! Prints time and date with a string
-      character(len=10) :: datex
-      character(len=8)  :: timex
-      character(len=*)  :: text
-      integer           :: lentext
-      lentext = len(text)
-      call daytime(datex,timex)
-      write (*,'(1x,a10,1x,a8,1x,a)') datex,timex,text(1:lentext)
-    end subroutine print_date
+  implicit none
+  private
+
+  public print_exacorr_logo
+  public print_exaoutput
+  public print_exainput
+  public print_orbital_energy
+  public print_iteration
+  public print_iterative_wavefunction_choice
+ 
+  contains
+
+!  Print out routines used in exacorr
 
     subroutine print_exacorr_logo()
     ! Prints logo and authors of exacorr
@@ -365,3 +368,4 @@
 
     end subroutine print_exainput
 
+end module exacorr_printout
