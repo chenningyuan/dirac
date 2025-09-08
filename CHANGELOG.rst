@@ -1,25 +1,35 @@
 :orphan:
 
 
------------------------------------------------------------------------------------------------------
-
-25.1
--------
+26.alpha
+--------
 
 New features:
 
-- Calculation of Parity-Violating EFG Tensors. Activated with ".PVCEFG"
+- Merge of the DIRAC_CASPT2 program published in Masuda2025 into DIRAC.
+  This adds the following features to DIRAC.
+    - IVO calculation (Huzinaga1970)
+    - CASCI/CASPT2 calculation (Anderson1990 but the reference function is CASCI not CASSCF)
+    - RASCI/RASPT2 calculation
+  - Contributors: K. Noda and M. Abe, University of Hiroshima, Japan
+  - Reference: `Yasuto Masuda, Kohei Noda, Sumika Iwamuro, Masahiko Hada, Naoki Nakatani, and Minori Abe, Relativistic CASPT2/RASPT2 Program along with DIRAC Software, J. Chem. Theor. Comput. 21, 1249 (2025). <https://doi.org/10.1021/acs.jctc.4c01589>`__
+
+- Calculation of parity-violating EFG tensors. Activated with ".PVCEFG"
    - Contributor: Juan J. Aucar.
    - Reference: `Juan J. Aucar and Alejandro F. Maldonado, Parity Violation Effects on the Electric Field Gradient, Phys. Chem. Chem. Phys. 27, 7594 (2025) <https://doi.org/10.1039/D4CP04840G>`__
    - Manual: PVCEFG `<https://diracprogram.org/doc/release-25/manual/properties.html#pvcefg>`__
+- RELCCSD: print out largest amplitudes (for analysis) at print level 2
+   - Contributor: Lucas Visscher
 
-- Bugfixes
-   - numerical molecular gradient for open-shell DFT was not working (H. J. Aa. Jensen)
+Bugfixes:
+
+- Numerical molecular gradient for open-shell DFT was not working.
+   - Contributor: H. J. Aa. Jensen. (H. J. Aa. Jensen).
 
 -----------------------------------------------------------------------------------------------------
 
 25.0
---------
+----
 
 New features:
 
@@ -188,7 +198,7 @@ Bugfixes:
 
 New features:
 
-- Calculation of Parity-Violating Nuclear Spin-Rotation Tensors. Activated with ".PVCSR"
+- Calculation of parity-violating nuclear spin-rotation tensors. Activated with ".PVCSR"
    - Contributor: I. Agustín Aucar.
    - Reference: `Ignacio Agustín Aucar and Anastasia Borschevsky, Relativistic study of parity-violating nuclear spin-rotation tensors. J. Chem. Phys. 155, 134307 (2021) <https://doi.org/10.1063/5.0065487>`__
    - Manual: `PVCSR <http://www.diracprogram.org/doc/release-23/manual/properties.html#pvcsr>`__
@@ -424,8 +434,6 @@ Framework changes:
 17.0 (2017-12-12)
 -----------------
 
-- DIRAC17 release.
-
 New features:
 
 - Kramers restricted Polarization Propagator in the ADC framework for electronic excitations, activated with ".POLPRP".
@@ -474,8 +482,6 @@ Performance improvements:
 
 16.0 (2016-12-12)
 -----------------
-
-- DIRAC16 release.
 
 New features:
 
@@ -569,6 +575,7 @@ Bug fixes:
 - Fixed minor issues to allow compilation using IBM XL Fortran compiler (thanks to Bob Walkup, IBM).
 - Update PCMSolver module to its [1.0.3 version](https://github.com/PCMSolver/pcmsolver/releases).
 
+-----------------------------------------------------------------------------------------------------
 
 14.0 (2014-12-12)
 -----------------

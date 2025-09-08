@@ -82,17 +82,6 @@ if(ENABLE_RELCCSD_STANDALONE)
     compile_standalone(relccsd.x                 src/relccsd/ccmain.F                "${_list_of_executables}")
 endif()
 
-option(ENABLE_HSCC "Enable compilation of the standalone hsmrcc.x" OFF)
-if(ENABLE_HSCC) # note: this functionality depends on the pam flag
-    compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${_list_of_executables}")
-    set_property(TARGET hsmrcc.x PROPERTY LINKER_LANGUAGE C)
-endif()
-
-option(ENABLE_HSFS "Enable compilation of the standalone hsfscc.x" OFF)
-if(ENABLE_HSFS) # note: this functionality depends on the pam flag
-    compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${_list_of_executables}")
-endif()
-
 foreach(
     _executable
     ${_list_of_executables}
