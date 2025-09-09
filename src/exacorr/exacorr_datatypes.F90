@@ -89,6 +89,7 @@
                                                                 !   2: MP2NEO
                                                                 !   3: MP2FNO++
                                                                 !  10: MP2_LAP_NO
+            complex(8)              :: omega = (0.D0, 0.D0)       !  Frequency of the perturbation for FNO++
 
             integer                 :: ncycles = 30
             integer                 :: print_level = 0

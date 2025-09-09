@@ -210,6 +210,11 @@ module talsh_mp2no
 !        Calculate and print the MP2 density matrix of virtual-virtual block Dvv
          ierr=talsh_tensor_init(MP2_vv_density)
          if(exa_input%mp2no.eq.3) then
+
+            write(*,*) ""
+            write(*,*) "Computing MP2FNO++ density matrix.."
+            write(*,*) "omega = ", exa_input%omega
+
             ! FNO++
             ! Notations from:
             ! Reduced-scaling coupled cluster response theory: Challenges and opportunities (2018)
@@ -261,7 +266,7 @@ module talsh_mp2no
 
             do i=1,nocc
                do a=1,nvir
-                   t1_ptr(a,i) = t1_ptr(a,i)/(hbar_vv_ptr(a,a) - hbar_oo_ptr(i,i))
+                   t1_ptr(a,i) = t1_ptr(a,i)/(hbar_vv_ptr(a,a) - hbar_oo_ptr(i,i) + exa_input%omega)
                enddo
             enddo
 
@@ -276,7 +281,7 @@ module talsh_mp2no
                   do a=1,nvir
                      do c=1,nvir
                         t2_ptr(a,c,i,j) = t2_ptr(a,c,i,j)/(hbar_vv_ptr(a,a) + hbar_vv_ptr(c,c)&
-                           - hbar_oo_ptr(i,i) - hbar_oo_ptr(j,j))
+                           - hbar_oo_ptr(i,i) - hbar_oo_ptr(j,j) + exa_input%omega)
                      enddo
                   enddo
                enddo
@@ -291,6 +296,8 @@ module talsh_mp2no
                                         comm_t%t1, comm_t%t1)
 
             ! destroy tensors
+            write(*,*) "Finished MP2FNO++ density matrix!"
+            write(*,*) ""
          else
             ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_vv_density,&
                                         int_t%oovv,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
