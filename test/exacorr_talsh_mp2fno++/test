@@ -34,4 +34,7 @@ for i, prop in enumerate(["x", "y", "z"]):
     )
     test.run([f'fno++_{prop}_alpha_ccsd_v2z.inp'], ['h2o.xyz'], f2, args='--incmo')
 
+# test only orbital generation for FNO++ with a given frequency
+test.run(['fno++_x_generation_nr_freq.inp'], ['h2o.xyz'], f1, args='--outcmo')
+
 sys.exit(test.return_code)
