@@ -14,10 +14,12 @@ Setting up DIRAC
 
 * **Installation:**
   :doc:`Requirements <installation/requirements>` |
+  :doc:`EasyBuild <installation/easybuild>` |
+  :doc:`System administrators <installation/sysadmins>` |
   :doc:`Linux, Unix, Mac <installation/general>` |
   :doc:`Windows <installation/windows>` |
-  :doc:`Expert options <installation/expert>` |
-  :doc:`System administrators <installation/sysadmins>`
+  :doc:`Expert options <installation/expert>`
+
 
 * **Math libraries:**
   :doc:`Detection and linking <installation/math>` |

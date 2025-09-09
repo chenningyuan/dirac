@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Radovan Bast <radovan.bast@uit.no>
+#
+# SPDX-License-Identifier: MPL-2.0
+
 import re
 
 
@@ -18,7 +22,6 @@ def cut_sections(
     output = []
 
     for i, _ in enumerate(text):
-
         start_line_matches = False
         if from_is_re:
             start_line_matches = re.match(r".*{0}".format(from_string), text[i])
@@ -35,7 +38,6 @@ def cut_sections(
                     output.append(text[n])
             else:
                 for j in range(i, len(text)):
-
                     end_line_matches = False
                     if to_is_re:
                         end_line_matches = re.match(r".*{0}".format(to_string), text[j])
@@ -51,7 +53,6 @@ def cut_sections(
 
 
 def test_cut_sections():
-
     text = """
 1.0 2.0 3.0
 1.0 2.0 3.0
@@ -81,7 +82,6 @@ raboof 1.0 3.0 7.0
 
 
 def test_cut_sections_re():
-
     text = """
 1.0
 1.0
@@ -104,7 +104,6 @@ def test_cut_sections_re():
 
 
 def test_cut_sections_all():
-
     text = """first line
 1.0 2.0 3.0
 1.0 2.0 3.0
@@ -123,7 +122,6 @@ last line"""
 
 
 def test_cut_sections_from_string_to_string_2_matches():
-
     text = """first line
 1.0 2.0 3.0
 start
@@ -152,7 +150,6 @@ last line"""
 
 
 def test_cut_sections_from_re_to_re_2_matches():
-
     text = """first line
 1.0 2.0 3.0
   raboof

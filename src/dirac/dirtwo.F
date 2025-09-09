@@ -4322,7 +4322,7 @@ C       calculated on the fly. otherwise conventional scf is
 C       performed. 
 C
       IF(IDFLAG.NE.0.AND.IDFLAG.GT.8) THEN
-        IF(SOFOCK) THEN
+        IF(SOFOCK .AND. .NOT.GAUNT) THEN ! Gaunt is not fully implemented in SOFOCK
 C.........construction of Fock matrix using ERIs in SO-basis
           CALL TIMER2('START ',TIMSTR,TIMEND)
           CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,

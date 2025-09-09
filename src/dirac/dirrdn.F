@@ -2993,7 +2993,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 21, NTABLE = 26)
+      PARAMETER (NDIR = 22, NTABLE = 27)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -3011,7 +3011,7 @@ C
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
      &             '*SCF   ','*KRCI  ','*QCORR ','*LAPLCE',
-     &             '*EXACC '/
+     &             '*EXACC ','*CASPT2'/
 
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
      &             '.POST S','.RELCCS','.DIRRCI','.MVO   ',
@@ -3019,7 +3019,7 @@ C
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
      &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP',
-     &             '.EXACC ','.LAPLCE'/
+     &             '.EXACC ','.LAPLCE','.CASPT2'/
 C
       N_WF = 0
 C
@@ -3091,7 +3091,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
      &                117,118,119,120,121,122,123,124,
-     &                125,126),I
+     &                125,126,127),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3300,6 +3300,10 @@ C&&&& LAPLCE: Laplace transformation test program
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in PSIINP.')
       END IF
+C&&&& CASPT2: CASPT2 program
+  127    CONTINUE
+            IF (.NOT.NOTRA) DOTRA=.TRUE.
+            GO TO 100
   180 CONTINUE
 C
 C     Print section
@@ -3411,7 +3415,7 @@ C
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
                GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
-     &                20), I
+     &                20,21,22), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -3520,6 +3524,14 @@ C
 !*LAPLCE
    20 CONTINUE
       CALL LAPINP(WORD,.FALSE.)
+      GO TO 200
+!*EXACC
+   21 CONTINUE
+      CALL move_to_next_star(WORD,lucmd)
+      GO TO 200
+!*CASPT2
+   22 CONTINUE
+      CALL move_to_next_star(WORD,lucmd)
       GO TO 200
 
     1 CONTINUE

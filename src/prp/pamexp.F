@@ -775,7 +775,7 @@ C.............calculate expectation value
               IOPEN = GETIOPEN(J,IFRP)
               EXPVAL(I) = EXPVAL(I) + EXPBUF*DF(IOPEN)
               FMT = MXFORM(EXPBUF,15)
-              WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',5X,F6.4,5X'//FMT//')')
+             WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',5X,F6.4,5X,'//FMT//')')
      &          FREP(IFRP),J,EXPBUF/D2,D2*DF(IOPEN),EXPBUF*DF(IOPEN)
               CALL FLSHFO(LUPRI)
             ENDDO

@@ -6,105 +6,78 @@
 #
 # Written by Radovan BAST, Tromso, Norway
 #            Miroslav ILIAS, Mate Bel University, Banska Bystrica, Slovakia
+#            Juan Jose Aucar, Corrientes, Argentina
 #
 #############################################################################
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_PROJECT_NAMESPACE == 'dirac'
+      variables:
+        RUNNER_TAG: "saas-linux-2xlarge-amd64"
+    - if: $CI_PROJECT_NAMESPACE == "dirac"
+      variables:
+        RUNNER_TAG: "saas-linux-2xlarge-amd64"
+    - variables:
+        RUNNER_TAG: "saas-linux-medium-amd64"
 
 
 variables:
   GIT_SSL_NO_VERIFY: "true"
   GIT_STRATEGY: "clone"
   GIT_SUBMODULE_STRATEGY: "recursive"
+  GET_SOURCES_ATTEMPTS: "10"
   DEBIAN_FRONTEND: "noninteractive"
 # exatensor stuff
   WRAP: "NOWRAP"
   BUILD_TYPE: "OPT"
   BLASLIB: "NONE"
   GPU_CUDA: "NOCUDA"
-  EXA_OS: "LINUX"  
+  EXA_OS: "LINUX"
   MPILIB: "MPICH"
 
-ubuntu_gnu_parallel32-check:
-  only:
-    - merge_requests
-  image: ubuntu:20.04
+include:
+  - local: /.gitlab-ci/.functions.yml
+  - local: /.gitlab-ci/.coverage.yml
+  - local: /.gitlab-ci/.mpich.yml
+  - local: /.gitlab-ci/.intel.yml
+
+# For Ubuntu25.04
+default:
   before_script:
+    - ulimit -s unlimited
+    - df -m
+    - lscpu
+    - free -h
+    - uname -a
     - apt-get -qq update
     - apt-get -qq -y install git
-    - apt-get -qq -y install gfortran-8
-    - apt-get -qq -y install gcc-8
-    - apt-get -qq -y install g++-8
+    - apt-get -qq -y install gfortran-14
+    - apt-get -qq -y install gcc-14
+    - apt-get -qq -y install g++-14
     - apt-get -qq -y install libomp-dev
-    - apt-get -qq -y install mpich libmpich-dev libhdf5-mpich-dev
-    - apt-get -qq -y install python python3-pip
+    - apt-get -qq -y install python3 pip
     - apt-get -qq -y install python-is-python3
     - apt-get -qq -y install libhdf5-dev
-    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 700
-    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
-    - update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-8 800
-    - pip install scipy
-    - pip install h5py
-    - pip install cmake
-  script:
-#   do the parallel buildup here
-#    ...determine number of processors
+    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 800 --slave /usr/bin/g++ g++ /usr/bin/g++-14
+    - update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-14 800
+    - apt -qq -y install python3-scipy
+    - apt -qq -y install python3-h5py
+    - apt-get -qq -y install cmake
+    - apt-get -qq -y install libopenblas-dev liblapack-dev
     - export TOOLKIT="GNU"
-    - export PATH_MPICH="$(which mpiexec | rev | cut -c13- |rev)"
     - gfortran --version
-    - echo "The shell is $SHELL"
-    - let "N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)"
-    - echo "Number of processors/jobs for the build step is N_PROC=$N_PROC"
-    - let "TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)" || TEST_N_PROC=1 # if only 1CPU on worker
-    - echo "Number of processors/jobs for parallel test step is TEST_N_PROC=$TEST_N_PROC"
-    - ./setup --mpi --check --cmake-options="-DENABLE_UNIT_TESTS=ON" build_parallel32
-    #setting up ExaCorr environment
-    - cd build_parallel32
-    - make -j $N_PROC
-    - ldd dirac.x
-    - export DIRAC_MPI_COMMAND="mpiexec -n 4"
-    - echo "The command DIRAC_MPI_COMMAND=$DIRAC_MPI_COMMAND"
-    - ctest -VV -E "(basis_input_scripted|polprp_ph|dft_overlap_diagnostic|eomcc_long)" -L short
-
-ubuntu_intel_mkl_int64-check:
-  only:
-    - merge_requests
-  image: ubuntu:20.04
-  before_script:
-    - apt-get -qq update
-    - apt-get -qq -y install git
-    - apt-get -qq -y install python python3-pip
-    - apt-get -qq -y install python-is-python3
-    - apt-get install -y wget build-essential pkg-config ca-certificates gnupg
-    - wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-    - apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-    - echo "deb https://apt.repos.intel.com/oneapi all main" > /etc/apt/sources.list.d/oneAPI.list
-    - apt-get -qq update
-    - apt-get -qq -y install intel-oneapi-compiler-dpcpp-cpp intel-oneapi-compiler-fortran intel-oneapi-mkl 
-    - set +e
-    - . /opt/intel/oneapi/setvars.sh
-    - set -e
-    - pip install scipy
-    - pip install h5py
-    - pip install cmake
-  script:
-    - export TOOLKIT="INTEL"
-    - ulimit -s unlimited
-    - uname -a
-    - lscpu
-    - free -h -g
-    - ifx --version
-    - icx --version
-    - icpx --version
-    - echo "MKLROOT=$MKLROOT"
+    - gcc --version
+    - g++ --version
+    - python3 --version
     - git --version
     - cmake --version
-    - pip list
-    - echo "The shell is $SHELL"
-    - let "N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)"
-    - echo "Number of processors/jobs for the serial build step is $N_PROC"
-    - ./setup --pcmsolver=OFF --cmake-options="-DENABLE_UNIT_TESTS=ON" --int64 --fc=ifx --cc=icx --cxx=icpx --mkl=parallel  build_serial_intel
-    - cd build_serial_intel
-    - echo  "=== Check the executable(s) generation ==="
-    - make -j $N_PROC
-    - ldd dirac.x
-    - echo  "=== Third, run few short test with the dirac.x executable ==="
-    - ctest -VV -j $N_PROC -E basis_input_scripted -L short # exclude long (failing) test
+  tags:
+    - $RUNNER_TAG
+  artifacts:
+    when: on_failure
+    paths:
+      - build/test*
+      - build/Testing
+    expire_in: 3 days
+  interruptible: true
