@@ -213,7 +213,13 @@ C
 Caspg adding numder to set NOMOVE
 #include "numder.h"
 Caspg
-      THRS = 1.0D-15
+
+      logical, save :: set = .false.
+
+      if (set) return
+      set = .true.
+
+      THRS   = 1.0D-15
 !     THRS   = 1.0D-12 ! default integral accuracy
 C
       NOMOVE = .FALSE.
@@ -718,7 +724,7 @@ C
       CLASS = 'N/A'
       IF (ADDSYM) THEN
          IF (IPREAD .GE. 3) THEN
-            CALL HEADER('Copy of input in .mol file before ADDSYM',0)
+            CALL HEADER('Copy of input in .mol file before SYMADD',0)
             WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
             WRITE (LUPRI,'(/)')
          END IF
