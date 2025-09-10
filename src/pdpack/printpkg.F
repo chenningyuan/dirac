@@ -697,6 +697,111 @@ C
       RETURN
  1000 FORMAT (/10X,8(5X,A6,I4))
       END
+C  /* Deck output_x */
+      SUBROUTINE OUTPUT_x (AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,
+     *                   ROWDIM,COLDIM,LUPRI)
+C.......................................................................
+C 10-Sep-2025 by Hans Jorgen Aa. Jensen, based on OUTPUT
+C Difference: do not print column text if no output for these rows
+C             print dimensions
+C             removed NCTL parameter
+C
+C OUTPUT PRINTS A REAL MATRIX IN FORMATTED FORM WITH NUMBERED ROWS
+C AND COLUMNS.  THE INPUT IS AS FOLLOWS;
+C
+C        AMATRX(',').........MATRIX TO BE OUTPUT
+C
+C        ROWLOW..............ROW NUMBER AT WHICH OUTPUT IS TO BEGIN
+C
+C        ROWHI...............ROW NUMBER AT WHICH OUTPUT IS TO END
+C
+C        COLLOW..............COLUMN NUMBER AT WHICH OUTPUT IS TO BEGIN
+C
+C        COLHI...............COLUMN NUMBER AT WHICH OUTPUT IS TO END
+C
+C        ROWDIM..............ROW DIMENSION OF AMATRX(',')
+C
+C        COLDIM..............COLUMN DIMENSION OF AMATRX(',')
+C
+C THE PARAMETERS THAT FOLLOW MATRIX ARE ALL OF TYPE INTEGER.  THE
+C PROGRAM IS SET UP TO HANDLE 5 COLUMNS/PAGE WITH A 1P,5D24.15 FORMAT
+C FOR THE COLUMNS.  IF A DIFFERENT NUMBER OF COLUMNS IS REQUIRED,
+C CHANGE FORMATS 1000 AND 2000, AND INITIALIZE KCOL WITH THE NEW NUMBER
+C OF COLUMNS.
+C
+C AUTHOR;  NELSON H.F. BEEBE, QUANTUM THEORY PROJECT, UNIVERSITY OF
+C          FLORIDA, GAINESVILLE
+C REVISED; FEBRUARY 26, 1971
+C
+C.......................................................................
+C
+      INTEGER ::  ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
+      REAL*8  :: AMATRX(ROWDIM,COLDIM)
+      CHARACTER   PFMT*20, COLUMN*8
+      LOGICAL     IS_NAN
+      PARAMETER (ZERO=0.D00, KCOL=8)
+      PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
+      DATA COLUMN/'Column  '/
+C
+      WRITE(LUPRI,'(/A,I0,A,I0,A,I0,A,I0,A)')
+     &'    ==== Matrix(',rowlow,':',rowhi,',',
+     &                   collow,':',colhi,') output ===='
+      N_NAN = 0
+      IF (ROWHI.LT.ROWLOW) GO TO 3
+      IF (COLHI.LT.COLLOW) GO TO 3
+C
+      AMAX = ZERO
+      DO 10 J = COLLOW,COLHI
+         DO 10 I = ROWLOW,ROWHI
+            IF ( IS_NAN(AMATRX(I,J),AMATRX(I,J)) ) THEN
+               N_NAN = N_NAN + 1
+            ELSE
+               AMAX = MAX( AMAX, ABS(AMATRX(I,J)) )
+            END IF
+   10 CONTINUE
+      IF (N_NAN .GT. 0) WRITE (LUPRI,'(/T6,A,I10,A)')
+     &   'WARNING: matrix contains',N_NAN,' NaN.'
+      IF (AMAX .EQ. ZERO) THEN
+         WRITE (LUPRI,'(/T6,A)') 'Zero matrix.'
+         GO TO 3
+      END IF
+      IF (FFMIN .LE. AMAX .AND. AMAX .LE. FFMAX) THEN
+C        use F output format
+         PFMT = '(I8,2X,8F15.8)'
+         thrpri = 0.5D-8
+      ELSE
+C        use 1PE output format
+         PFMT = '(I8,2X,1P,8E15.6)'
+         thrpri = 1.0D-8*AMAX
+      END IF
+C
+      LAST = MIN(COLHI,COLLOW+KCOL-1)
+      DO 2 BEGIN = COLLOW,COLHI,KCOL
+         J = 0
+         DO 1 K = ROWLOW,ROWHI
+            DO 4 I = BEGIN,LAST
+               IF (abs(AMATRX(K,I)).gt.thrpri) GO TO 5
+    4       CONTINUE
+         GO TO 1
+    5       CONTINUE
+            IF (J .EQ. 0) THEN ! column output not printed
+               J = 1
+               WRITE (LUPRI,1000) (COLUMN,I,I = BEGIN,LAST)
+            END IF
+            WRITE (LUPRI,PFMT) K,(AMATRX(K,I), I = BEGIN,LAST)
+    1    CONTINUE
+    2 LAST = MIN(LAST+KCOL,COLHI)
+    3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
+#ifdef PRG_DIRAC
+      IF (N_NAN .GT. 0)
+     &   CALL QUIT('ERROR: NaN in matrix')
+#else
+      IF (N_NAN .GT. 0)
+     &   STOP 'ERROR: NaN in matrix'
+#endif
+      RETURN
+ 1000 FORMAT (/10X,8(5X,A6,I4))
+      END
 C  /* Deck Ioutput */
       SUBROUTINE IOUTPUT(IMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,
      *                   NCTL,LUPRI)

@@ -446,7 +446,7 @@ C
      *     ' .REJECT has only meaning when .RESTART is specified.'
             END IF
          END IF
-         IF (IWKTYP .NE. 6) THEN
+         IF (IWKTYP .NE. 6) THEN ! not numerical differentiation
             IF (ISCTYP .EQ. 1) THEN
                WRITE (LUPRI,'(/A/)') ' No scaling in this run.'
             ELSE IF (ISCTYP .EQ. 2) THEN
@@ -821,7 +821,7 @@ C
          END IF
       ELSE
          TRUSTX = TRUSTR
-         IF (DIPDER .AND. (IWKTYP .EQ. 6 .AND. .NOT. 
+         IF (DIPDER .AND. (IWKTYP .EQ. 6 .AND. .NOT.  ! numerical differentiation
      &                    (V3CAL .OR. VIBAVE))) THEN
             NXYZ = 0
             DO 100 I = 1, 3
@@ -849,7 +849,7 @@ C     *******************************************
 C     ***** Diagonal Hessian representation *****
 C     *******************************************
 C
-      IF (IWKTYP .NE. 6) THEN
+      IF (IWKTYP .NE. 6) THEN ! not numerical differentiation
          CALL DZERO(STPDIA,NCRTOT)
          THRIND = D0
          IF (IWKTYP .EQ. 7) THRIND = SMALL
@@ -932,7 +932,7 @@ C
       IF (STOP) THEN
          IPOINT = IPOINT + 1
          IF (VIBCNV) VIB = .TRUE.
-         IF (IWKTYP .EQ. 6) THEN
+         IF (IWKTYP .EQ. 6) THEN ! numerical differentiation
             IF (VIBAVE .OR. NMODIF) THEN
                CALL WLKNCI(STPCAR,COOR,DISPLC,NCART,NCRIND,
      &                     EVEC,IPOINT,NUMMOD,IPRWLK)
@@ -992,7 +992,7 @@ C        ***** New geometry *****
 C        ************************
 C
          IF (.NOT.(START .OR. REJECT)) IPOINT = IPOINT + 1
-         IF (IWKTYP .EQ. 6) THEN
+         IF (IWKTYP .EQ. 6) THEN ! numerical differentiation
 C
 C     Normal coordinate or Cartesian displacements
 C
@@ -1045,7 +1045,7 @@ C     *************************
 C     ***** Print results *****
 C     *************************
 C
-      IF (IWKTYP .NE. 6) THEN
+      IF (IWKTYP .NE. 6) THEN ! not numerical differentiation
          CALL WLKRES(STPDIA,STPCAR,GRDDIA,GRDNRM,EVAL,EVEC,CNDHES,
      &               STPSYM,SCAL,COOR,RATIO,RNU,TRUSTX,TRUSTR,ERGSEC,
      &               OVLPMA,OVLPWM,COFMOD,ANHRAD,STPSYX,ESTART,ERGMOL,
@@ -3177,13 +3177,15 @@ C
 C
 C     ***** Print *****
 C
-      IF (IPRINT .GT. 5) THEN
+      IF (IPRINT .GT. 0) THEN
          CALL HEADER('STPSYM in WLKINC',1)
-         CALL OUTPUT(STPSYM,1,1,1,NCART,1,NCART,1,LUPRI)
+         CALL OUTPUT_x(STPSYM,1,1,1,NCART,1,NCART,LUPRI)
+      IF (IPRINT .GT. 5) THEN
          CALL HEADER('STPCAR in WLKINC',1)
-         CALL OUTPUT(STPCAR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
+         CALL OUTPUT_x(STPCAR,1,1,1,NCRIND,1,NCRIND,LUPRI)
          CALL HEADER('COOR in WLKINC',1)
-         CALL OUTPUT(COOR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
+         CALL OUTPUT_x(COOR,1,1,1,NCRIND,1,NCRIND,LUPRI)
+      END IF
       END IF
       RETURN
       END
