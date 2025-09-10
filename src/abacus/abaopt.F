@@ -1114,8 +1114,8 @@ CTROND      END IF
       ENDIF
 CTROND      IF (DISPLA .NE. DEFDSP) THEN
       IF(DONGRD) THEN
-         WRITE (LUPRI,'(A,D13.2)')
-     &        ' Numerical Gradient: displacements are ', DISPLA
+         WRITE (LUPRI,'(A,1P,D13.2,A)')
+     &        ' Numerical Gradient: displacements are ', DISPLA,' bohr'
       ENDIF
 CTROND      END IF
       IF (ICONDI .NE. 2) THEN
@@ -1919,7 +1919,7 @@ C
 #ifndef PRG_DIRAC
          IF (MOLDEN) CALL MOGECON(.TRUE.,DUMMY)
 #endif
-         CALL TITLER(' End of Minimization ','<',120)
+         CALL TITLER(' End of geometry optimization ','<',120)
          CALL PRI_GEOINF(GEINFO)
 #ifdef PRG_DIRAC
 C        Print angles, bondlengths etc out in human readable form
@@ -4273,7 +4273,7 @@ C
          CALL OUTPUT(GMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
       END IF
 C
-C     Finally we use do the updating, suppressing output.
+C     Finally we do the updating, suppressing output.
 C
       DO 60 K = 1, INUM
          CALL DZERO(DELTA,MXRCRD)
@@ -4300,7 +4300,7 @@ C
             CALL OUTPUT(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
          END IF
 C
-C     The various contributions are collected in UPDHES.
+C     The various contributions are collected in subroutine UPDHES.
 C
          DO 65 J = 1, ICRD
             DO 67 I = 1, ICRD
@@ -7436,7 +7436,7 @@ C
 C  /* Deck numgrd */
       SUBROUTINE NUMGRD
 C
-C     Performs a numerical differentiation in order to get an
+C     Performs a numerical differentiation in order to get a
 C     finite-difference molecular gradient for use in geometry optimization
 C     of MP2, CI or CC wave functions for which there does not exist
 C     analytical implementations, K.Ruud, Feb.-6 1997
@@ -7485,6 +7485,7 @@ C
       real(8), allocatable :: STPSYM1(:),STPCAR1(:)
       real(8), allocatable :: COOR(:,:)
       integer              :: i_symop
+      character(4)         :: point_txt
 #include "ibtfun.h"
 C
       NOMOVE_bkp = NOMOVE
@@ -7521,8 +7522,15 @@ C
 C
 C     Start loop over displaced geometries
 C
+      CALL TITLER('Loop over displaced geometries for finite-field '//
+     &            '(approximate) molecular gradient','=',110)
       DO IPOINT = 0, 2*NCART
-         IF (IPOINT .NE. 0) THEN
+         IF (IPOINT .EQ. 0) THEN
+            CALL HEADER('Numerical gradient: reference geometry',-1)
+         ELSE
+            write(point_txt,'(I4)') IPOINT
+            CALL HEADER('Numerical gradient: displaced geometry no. '//
+     &         point_txt,-1)
             NOMOVE = .TRUE. ! do not move or rotate molecule for symmetry detection
                             ! during numerical differentiation, otherwise wrong results!
 C     

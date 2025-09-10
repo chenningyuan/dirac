@@ -14,12 +14,7 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
-C
-C
-#ifdef UNDEF
-/* Comdeck log */
-tsaue - 941119 : array DOINT implemented
-#endif
+! tsaue - 941119 : array DOINT implemented
 C  /* Deck oneinp */
       SUBROUTINE ONEINP(WORD)
 C

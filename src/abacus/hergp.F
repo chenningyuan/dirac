@@ -2123,16 +2123,15 @@ C  /* Deck dp0pri */
          WRITE (LUPRI,'(20X,A)')
      &      'All dipole components are zero by symmetry'
       ELSE
-         WRITE (LUPRI,'(31X,A/)') 'au             Debye'
+         WRITE (LUPRI,'(31X,A,F12.8,A/)')
+     &   'au            Debye (1 Debye =',DEBYE,' au)'
          DO 100 I = 1, 3
             IF (ISYMAX(I,1) .EQ. 0) THEN
                WRITE (LUPRI,'(20X,A,2F16.8)') CHRXYZ(-I),
-     *                DIPOLE(I), DEBYE*DIPOLE(I)
+     &                DIPOLE(I), DEBYE*DIPOLE(I)
             END IF
   100    CONTINUE
-         WRITE (LUPRI,'(/,23X,A,F12.8,A)') ' 1 Debye = ',DEBYE,' a.u. '
       END IF
-      !WRITE (LUPRI,'(//)')
       RETURN
       END
 C  /* Deck cmmass */
