@@ -4650,6 +4650,7 @@ C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
 #include "implicit.h"
+      REAL*8      WORK(LWORK)
 #include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4659,10 +4660,8 @@ C
 #include "chrsgn.h"
 C
       CHARACTER*4 NAME
-      INTEGER NBASE(8), NSIGN(8)
-      DIMENSION WORK(LWORK)
+      INTEGER     NBASE(8), NSIGN(8)
 C
-#include "infpar.h"
 #include "nuclei.h"
 #include "frame.h"
 #include "symmet.h"
@@ -4674,7 +4673,6 @@ C
 #include "memint.h"
 C
       NCOOR = 3*NUCDEP
-      NWARN = 0
 C
 C     *********************************
 C     ***** Cartesian Coordinates *****
@@ -4683,39 +4681,22 @@ C
       IF (IPREAD .GT. 0) THEN
          CALL HEADER('Cartesian Coordinates (bohr)',1)
          WRITE (LUPRI,'(A,I3//)')'  Total number of coordinates:',NCOOR
-         ICRX = 1
-         ICRY = 2
-         ICRZ = 3
          DO 100 ICENT = 1, NUCIND
             MULCNT = ISTBNU(ICENT)
             NAME   = NAMEX(3*ICENT)(1:4)
             IF (MULT(MULCNT) .EQ. 1) THEN
-               WRITE (LUPRI,'(I4,3X,A,5X,A,3X,F15.10)')
-     *               ICRX, NAME,CHRXYZ(-1), CORD(1,ICENT)
-               WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
-     *               ICRY, CHRXYZ(-2), CORD(2,ICENT)
-               WRITE (LUPRI,'(I4,12X,A,3X,F15.10,/)')
-     *               ICRZ, CHRXYZ(-3), CORD(3,ICENT)
-               ICRX = ICRX + 3
-               ICRY = ICRY + 3
-               ICRZ = ICRZ + 3
+               WRITE (LUPRI,'(3X,A,5X,3F15.10)')
+     *               NAME, CORD(1:3,ICENT)
             ELSE
                JATOM = 0
                DO 200 ISYMOP = 0, MAXOPR
                   IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                      JATOM = JATOM + 1
-                     WRITE (LUPRI,'(I4,3X,A,I2,3X,A,3X,F15.10)')
-     *                     ICRX, NAME,JATOM,CHRXYZ(-1),
-     *                     PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-                     WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
-     *                     ICRY,CHRXYZ(-2),
-     *                     PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-                     WRITE (LUPRI,'(I4,12X,A,3X,F15.10,/)')
-     *                     ICRZ,CHRXYZ(-3),
+                     WRITE (LUPRI,'(3X,A,I2,3X,3F15.10)')
+     *                     NAME,JATOM,
+     *                     PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT),
+     *                     PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT),
      *                     PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-                     ICRX = ICRX + 3
-                     ICRY = ICRY + 3
-                     ICRZ = ICRZ + 3
                   END IF
   200          CONTINUE
             END IF
@@ -4727,7 +4708,7 @@ C
          call header('Cartesian coordinates in XYZ format (Angstrom)',
      &   1)
          write(lupri, '(i5)') nucdep
-         write(lupri, *)
+         write(lupri, '(A)') ' '
          do icent = 1, nucind
             mulcnt = istbnu(icent)
             name   = namex(3*icent)(1:4)
@@ -4756,24 +4737,19 @@ C     ********************************
 C     ***** Symmetry Coordinates *****
 C     ********************************
 C
-      IF (LWORK .LT. 2*NCOOR*NCOOR) CALL STOPIT('PRICAR','TRACOR',
-     &                                          2*NCOOR*NCOOR,LWORK)
-      CALL MEMGET('REAL',KCS ,NCOOR*NCOOR,   WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSC ,NCOOR*NCOOR,   WORK,KFREE,LFREE)
-      CALL TRACOR(WORK(KCS),WORK(KSC),1,NCOOR,IPREAD)
-      IF (MAXREP .GT. 0) THEN
-         IF (IPREAD .GT. 0) THEN
-            CALL HEADER('Symmetry Coordinates',1)
-            WRITE (LUPRI,'(A,8I5)')
-     &            '  Number of coordinates in each symmetry: ',
-     &            (NCRREP(I,1),I=0,MAXREP)
-         END IF
+      IF (MAXREP .GT. 0 .AND. IPREAD .GT. 0) THEN
+         CALL HEADER('Symmetry Coordinates',1)
+         WRITE (LUPRI,'(A,8I5)')
+     &         '  Number of coordinates in each symmetry: ',
+     &         (NCRREP(I,1),I=0,MAXREP)
+
+         CALL MEMGET('REAL',KCS ,NCOOR*NCOOR,   WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KSC ,NCOOR*NCOOR,   WORK,KFREE,LFREE)
+         CALL TRACOR(WORK(KCS),WORK(KSC),1,NCOOR,IPREAD)
          DO 300 ISYM = 0, MAXREP
          IF (NCRREP(ISYM,1) .GT. 0) THEN
-            IF (IPREAD .GT. 0) THEN
-                WRITE (LUPRI,'(//A,2X,A3,A1,I2,A1/)')
+            WRITE (LUPRI,'(//A,2X,A3,A1,I2,A1/)')
      &          '  Symmetry',REP(ISYM),'(',ISYM+1,')'
-            END IF
             DO 400 IATOM = 1, NUCIND
                DO 500 ICOOR = 1, 3
                   ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,ISYM,1)
@@ -4788,7 +4764,6 @@ C
                            NSIGN(NB) = NSGN
                         END IF
   600                CONTINUE
-                     IF (IPREAD .GT. 0) THEN
                      IF (NB .EQ. 1) THEN
                         WRITE (LUPRI,'(I5,3X,A,2X,A,I5)') ISCOOR,
      &                     NAMEX(3*IATOM)(1:4), CHRXYZ(-ICOOR), NBASE(1)
@@ -4799,15 +4774,14 @@ C
      &                   NBASE(1),(CHRSGN(NSIGN(I)),NBASE(I),I=2,NB),
      &                   ' ]/',NB
                      END IF
-                     END IF
                   END IF
   500          CONTINUE
   400       CONTINUE
          END IF
   300    CONTINUE
+         CALL MEMREL('PRICAR',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
 C
-      CALL MEMREL('PRICAR',WORK,KWORK,KWORK,KFREE,LFREE)
       IF (NUCDEP .EQ. 1) THEN
          IF (IPREAD .GT. 0)
      &      WRITE (LUPRI,'(//A)') '  This is an atomic calculation.'
@@ -4818,7 +4792,6 @@ C
          IF (IPREAD .GT. 0) THEN
             CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,WORK,LWORK)
             IF (NUCDEP .GT. 2 .AND. NBONDS .LE. 0) THEN
-               NWARN = NWARN + 1
                WRITE (LUPRI,'(//A/A/)') '  WARNING:  No bonds - '//
      &       ' no atom pairs are within normal bonding distances'
      &       ,'  WARNING:  maybe coordinates were in Bohr, '//
