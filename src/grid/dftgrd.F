@@ -151,10 +151,11 @@ C
 
       close(lunit_grid, status='keep')
 
-      TIMGRD = SECOND() - TIMSTR
-      WRITE (LUPRI,'(1X)')
-      CALL TIMTXT('>>>> Time used in DFT_GRID:',TIMGRD,LUPRI)
-      WRITE (LUPRI,'(1X)')
+      if (iprint .ge. 0) then
+         TIMGRD = SECOND() - TIMSTR
+         WRITE (LUPRI,'(1X)')
+         CALL TIMTXT('>>>> Time used in to make DFT grid:',TIMGRD,LUPRI)
+      end if
 
  999  CONTINUE
 
@@ -243,7 +244,8 @@ C
 C     Get estimates for atomic size ratios for use in the Becke
 C     partitioning scheme.
 C
-      CALL TITLER('Slater-Bragg atomic size estimates','*',122)
+      IF (IPRINT .GT. 0)
+     &CALL TITLER('Slater-Bragg atomic size estimates','*',122)
 C
 C     Initialize CHIMT with Bragg-Slater data
 C
@@ -252,24 +254,26 @@ C
             CHIMT(I,J) = BRAGG(NINT(ZAN(I)))/BRAGG(NINT(ZAN(J)))
          END DO
       END DO
-      CALL HEADER('Slater-Bragg relative atomic sizes',-1)
-      CALL OUTPUT(CHIMT,1,NAT,1,NAT,NAT,NAT,1,LUPRI)
+      IF (IPRINT .GE. 3) THEN
+         CALL HEADER('Slater-Bragg relative atomic sizes',-1)
+         CALL OUTPUT(CHIMT,1,NAT,1,NAT,NAT,NAT,-1,LUPRI)
+      END IF
 C
 C     Get density-based atomic radii if requested AND coefficients 
 C     exist.
 C
       IF(num_grid_cfg_estimate_radii) THEN
-         CALL TITLER('Density based atomic size estimates','*',122)
+         IF (IPRINT .GT. 0)
+     &   CALL TITLER('Density based atomic size estimates','*',122)
          CALL GETCHI(DMAT,CHIMT,NAT,C,IPRINT)
-         CALL HEADER('Density based relative atomic sizes',-1)
-         CALL OUTPUT(CHIMT,1,NAT,1,NAT,NAT,NAT,1,LUPRI)
-         WRITE(LUPRI,*)
+         IF (IPRINT .GE. 3) THEN
+            CALL HEADER('Density based relative atomic sizes',-1)
+            CALL OUTPUT(CHIMT,1,NAT,1,NAT,NAT,NAT,-1,LUPRI)
+         END IF
       ELSE
-         WRITE(LUPRI,'(/A)')
-     &        'DFT_GRID: ATSIZE not requested or no '//
-     &        'trial vectors found. Slater-Bragg '//
-     &        'radii will be used.'
-         WRITE(LUPRI,*)
+         IF (IPRINT .GT. 0) WRITE(LUPRI,'(/A/)')
+     &        'DFT_GRID: .ATSIZE not requested or no trial vectors '//
+     &        'found. Slater-Bragg radii will be used.'
       ENDIF
 
 C
@@ -324,7 +328,7 @@ C
       NTOTAL = 0
       NALL = 0
       NATOM = 1
-      WRITE(LUPRI,'(A)')
+      if (iprint .gt. 0) WRITE(LUPRI,'(A)')
      &  'Atom  Deg   Rmin        Rmax        Step size     #rp     #tp',
      &  '============================================================='
       DO 10 IATOM = 1, NUCIND
@@ -471,8 +475,8 @@ C
          NTOTAL = NTOTAL + NTHIS
          NALL = NALL + NTHAT
          NATOM = NATOM + NDEG
-         WRITE(LUPRI,'(A4,I5,3E12.3,2I8)') NAMN(IATOM),NDEG,
-     &         RL,RH,H,NR,NTHIS
+         if (iprint .gt. 0) WRITE(LUPRI,'(A4,I5,3E12.3,2I8)')
+     &          NAMN(IATOM),NDEG,RL,RH,H,NR,NTHIS
 
       END IF
 10    CONTINUE
@@ -481,7 +485,7 @@ C
       call num_grid_write(x8, y8, z8, wt8, 
      &                     lunit_grid, nlast)
 
-      WRITE (LUPRI,'(/,2X,A,I10,A,F5.1,A/)') 
+      if (iprint .gt. 0) WRITE (LUPRI,'(/,2X,A,I10,A,F5.1,A/)') 
      &     ' Number of grid points in quadrature:',NTOTAL,
      &     ' (',FLOAT(100*NTOTAL)/FLOAT(NALL),'%)'
 

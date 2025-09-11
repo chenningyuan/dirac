@@ -81,10 +81,12 @@ contains
 !     --------------------------------------------------------------------------
       real(8), intent(in) :: dmat(*)
 !     --------------------------------------------------------------------------
+! dcbham.h : iprham
+#include "dcbham.h"
 
       if (.not. grid_is_done) then
 !       calculate grid
-        call dft_grid(dmat, 1)
+        call dft_grid(dmat, iprham)
         grid_is_done = .true.
       end if
 
