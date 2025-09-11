@@ -1851,13 +1851,9 @@ contains
 
       error_nr_electrons = nr_electrons_integrated - nr_electrons
 
-      write(file_unit, *)
-      write(file_unit, *) 'DFT integration'
-      write(file_unit, *)
-
-      write(file_unit, '(3x, a, i9)')                            &
-            'number of grid points                          = ', &
-            nr_points_total
+      write(file_unit, '(/a, i0, a, i0)') &
+         ' DFT integration - number of grid points = ', nr_points_total, &
+         ' and number of MPI processors = ', xc_mpi_get_nr_proc()
 
       if (do_potential) then
          write(file_unit, '(3x, a, f26.16)')                        &
@@ -1865,32 +1861,25 @@ contains
                get_xc_energy()
       end if
 
-      write(file_unit, '(3x, a, f26.16)')                        &
-            'number of electrons from numerical integration = ', &
-            nr_electrons_integrated
+      write(file_unit, '(3x, a, f26.16, a, 1P,D10.2)')              &
+            'Number of electrons from numerical integration = ',    &
+            nr_electrons_integrated,'; error = ',error_nr_electrons
 
       if (abs(error_nr_electrons) > 1.0d-3) then
          write(file_unit, '(3x, a, i9)')                            &
-               'number of electrons from orbital occupations   = ', &
+               'Number of electrons from orbital occupations   = ', &
                nr_electrons
-         write(file_unit, '(3x, a, f26.16)')                        &
+         write(file_unit, '(3x, a, f26.16, a)')                     &
                'WARNING: error in the number of electrons      = ', &
-               error_nr_electrons
-         write(file_unit, '(12x, a, f15.6)')                        &
-               'is larger than 1.0d-3'
-         write(file_unit, '(12x, a)')                              &
-               'this can happen when starting from coefficients'
-         write(file_unit, '(12x, a)')                              &
-               'from a different geometry'
+               error_nr_electrons, ' is larger than 1.0d-3'
          write(file_unit, '(12x, a)')                               &
-               'or it can mean that the quadrature '//              &
-               'grid is inappropriate'
+               'this can happen when starting from coefficients from a different geometry', &
+               'or it can mean that the quadrature grid is inappropriate'
       end if
-      write(file_unit, *)
 
 !     timing
       time_integration = second() - time_integration_start
-      call timtxt('  time spent in DFT integration                  =', &
+      call timtxt('  Time spent in DFT integration                  =', &
                   time_integration, file_unit)
      !call timtxt('                AO evaluation                    =', &
      !            time_ao, file_unit)
@@ -1900,11 +1889,6 @@ contains
      !            time_density, file_unit)
      !call timtxt('                functional derivatives           =', &
      !            time_derv, file_unit)
-      write(file_unit, '(3x, a, i9)')                           &
-            'number of processors                           = ', &
-            xc_mpi_get_nr_proc()
-
-      write(file_unit, *)
 
    end subroutine
 
