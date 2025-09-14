@@ -535,6 +535,6 @@ C
  1011 FORMAT (I6,2F20.10)
  1012 FORMAT (/'Property elements of the "',A8,'" operator',
      &' in Kramers paired molecular spinor basis:'/)
- 1013 FORMAT (2I5,1P,2E15.6)
+ 1013 FORMAT (2I5,1P,2E20.11)
       RETURN
       END
