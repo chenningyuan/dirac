@@ -361,6 +361,8 @@ C
         IF (ICHKCNV.EQ.0) ICHKCNV = -1
         IOPT = 15
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
+        ! Gram-Schmidt orthogonalize orbitals, may be from another geometry ...
+        CALL RGMCMO(CMO,IPRSCF,WORK(KFREE),LFREE)
 C
 C       Generate untransformed coefficients (MO basis)
 C       and prepare for overlap selection
