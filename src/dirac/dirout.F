@@ -67,17 +67,17 @@ C
       IF(.NOT.ONESYS) THEN
         CALL HEADER('SCF - CYCLE',-1)
         IF(ERGCNV) THEN
-          WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+          WRITE(LUPRI,'(A/2(A,1P,D10.3/))')
      &      '* Convergence on total energy.',
      &      '  Desired convergence :',SCFCNV(1),
      &      '  Allowed convergence:',SCFCNV(2)
         ELSEIF(FCKCNV) THEN
-          WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+          WRITE(LUPRI,'(A/2(A,1P,D10.3/))')
      &      '* Convergence on total Fock matrix.',
      &      '  Desired convergence:',SCFCNV(1),
      &      '  Allowed convergence:',SCFCNV(2)
         ELSEIF(EVCCNV) THEN
-          WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+          WRITE(LUPRI,'(A/2(A,1P,D10.3/))')
      &  '* Convergence on norm of error vector (gradient).',
      &  '  Desired convergence:',SCFCNV(1),
      &  '  Allowed convergence:',SCFCNV(2)

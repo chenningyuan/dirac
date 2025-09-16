@@ -791,7 +791,7 @@ C
             WRITE (LUPRI,PFMT) K,(AMATRX(K,I), I = BEGIN,LAST)
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
-    3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
+    3 WRITE(LUPRI,'(/A)') '    ==== End of matrix output ===='
 #ifdef PRG_DIRAC
       IF (N_NAN .GT. 0)
      &   CALL QUIT('ERROR: NaN in matrix')
