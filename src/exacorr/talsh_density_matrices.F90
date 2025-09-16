@@ -151,14 +151,14 @@ if (exa_input%do_1rdm_gs) then
 end if
       
 
-!*****************************************
+!******************************************
 !   calculate asymmetry diagnostic (1-RDM)*
-!*****************************************
+!******************************************
 
-!if (exa_input%do_1rdm_gs) then
-!   call eti_asym_diag(gamma, exa_input%nocc, exa_input%nvir, exa_input%print_level, asym_diag)
-!   call print_date("Calculated asymmetry diagnostic (1-RDM)")
-!end if
+if (exa_input%do_1rdm_gs) then
+   call eti_asym_diag(gamma, exa_input%nocc, exa_input%nvir, exa_input%print_level, asym_diag, CCD)
+   call print_date("Calculated asymmetry diagnostic (1-RDM)")
+end if
 
 
 

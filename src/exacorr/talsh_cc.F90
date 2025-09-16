@@ -89,7 +89,7 @@ module eti_cc
 !        CCSD,CC2,... control and result variables
          real(8) :: e_core, scf_energy, mp2_energy, cc_energy, pert_energy(3)
          real(8) :: t_target_precision
-         real(8) :: t1diag
+         real(8) :: t1diag, t2diag
          integer :: ncycles
          logical :: CCD, lambda, eom, eom_lr, eom_qr, eom_tpa
          logical :: debug_eom = .false.
@@ -361,6 +361,9 @@ module eti_cc
          else
             t1diag = 0.0d0
          end if
+            ! calculate T2 diagnostic
+            t2diag = tensor_norm2(comm_t%t2)
+            t2diag = t2diag/sqrt(dble(nocc))
 
          if (do_perturbative) then
            if (perturbative_scheme.eq.30) then

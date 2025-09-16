@@ -36,7 +36,7 @@ module eti_1rdm_2rdm_ccsd_kernels
     public eti_calc_dm_1rdm_ccsd_EE_mo
     public eti_calc_dm_1rdm_ccsd_IP_mo
     public eti_calc_dm_1rdm_ccsd_EA_mo
-  !  public eti_asym_diag
+    public eti_asym_diag
     public calc_dmSandD_CCD_mo_bis
     public eti_automatic_dm_1rdm
     public eti_calc_dm_2rdm_ccsd_GS_mo
@@ -421,12 +421,11 @@ module eti_1rdm_2rdm_ccsd_kernels
          ierr=initialize_tensor_t(gamma%symm_oo,ZERO)
          ierr=t_einsum("G(j,i)+=X(j,i)*K()",gamma%symm_oo,gamma%prime_oo,one_tensor,scale=ONE_HALF)
          ierr=t_einsum("G(j,i)+=X+(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_tensor,scale=ONE_HALF)
-     !    ierr=initialize_tensor_t(gamma%symm_oo,ZERO)
-         !ierr=initialize_tensor_t(gamma%symm_vv,ZERO)
-         !     write(*,*) 'Symmetrized tensors OO', tensor_norm2(gamma%symm_oo)
-         !     write(*,*) 'Symmetrized tensors OV', tensor_norm2(gamma%symm_ov)
-         !     write(*,*) 'Symmetrized tensors VO', tensor_norm2(gamma%symm_vo)
-         !     write(*,*) 'Symmetrized tensors VV', tensor_norm2(gamma%symm_vv)
+
+         ! write(*,*) 'Symmetrized tensors OO', tensor_norm2(gamma%symm_oo)
+         ! write(*,*) 'Symmetrized tensors OV', tensor_norm2(gamma%symm_ov)
+         ! write(*,*) 'Symmetrized tensors VO', tensor_norm2(gamma%symm_vo)
+         ! write(*,*) 'Symmetrized tensors VV', tensor_norm2(gamma%symm_vv)
 
     end subroutine eti_automatic_dm_1rdm
 
@@ -3300,7 +3299,7 @@ module eti_1rdm_2rdm_ccsd_kernels
 
         end subroutine eti_calc_dm_2rdm_ccsd_EA_mo
 
-        subroutine eti_asym_diag(gamma, nocc, nvir, print_level,asym_diag)
+        subroutine eti_asym_diag(gamma, nocc, nvir, print_level,asym_diag,CCD)
          !use iso_c_binding, only: C_INT
          integer, intent(in) :: nocc, nvir, print_level
          type(eti_dm_tens_t), intent(inout) :: gamma
@@ -3308,85 +3307,140 @@ module eti_1rdm_2rdm_ccsd_kernels
          integer(C_INT) :: dims(0)
          integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
          integer :: ierr
-         real(8) :: asym_diag
+         real(8) :: asym_diag, asym_diag2, norm2_total, asym_diag_prime, norm2_total_prime
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
          integer(INTD)      :: result_dims(1)
          !Tensor dimensions
-         integer(C_INT)     :: one_dims(1)
+         !integer(C_INT)     :: one_dims(1)
+         integer(C_INT)              :: one_dims(1)=1
+         logical, intent(in)        :: CCD
+
 
          oo_dims = (/nocc, nocc/)
-         ov_dims = (/nocc, nvir/)
-         vo_dims = (/nvir, nocc/)
+!     no off-diagonal terms in CCD
+         if (.not.CCD) then
+          ov_dims = (/nocc, nvir/)
+          vo_dims = (/nvir, nocc/)
+         end if
          vv_dims = (/nvir, nvir/)
 
-
-         result_dims = 1
+        ! --- Setup result_tensor (scalar) ---
+         result_dims(1) = 1
          ierr = construct_tensor_t(result_tensor, C8, result_dims(1:0), init_val=ZERO)
+         !write(*,'(A,I6)') 'DEBUG: construct result_tensor ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(result_tensor) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+
          ierr = direct_data_pointer(result_tensor, body_p)
+         !write(*,'(A,I6)') 'DEBUG: direct_data_pointer(result_tensor) ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: direct_data_pointer(result_tensor) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+
          call c_f_pointer(body_p, result_tens, result_dims)
 
-         ierr = construct_tensor_t(one_tensor, C8, one_dims(1:0), init_val=ONE)
+         ! --- Setup one_tensor (scalar with value ONE) ---
+         one_dims(1) = 1
+         ierr = construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+         !write(*,'(A,I6)') 'DEBUG: construct one_tensor ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(one_tensor) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+
+         ierr = construct_tensor_t(gamma%asym_oo, C8, oo_dims, init_val=ZERO)
+         !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_oo ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(gamma%asym_oo) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+
+         ierr = construct_tensor_t(gamma%asym_vv, C8, vv_dims, init_val=ZERO)
+         !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_vv ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(gamma%asym_vv) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+       if (.not.CCD) then
+         ierr = construct_tensor_t(gamma%asym_ov, C8, ov_dims, init_val=ZERO)
+         !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_ov ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(gamma%asym_ov) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+
+         ierr = construct_tensor_t(gamma%asym_vo, C8, vo_dims, init_val=ZERO)
+         !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_vo ierr=', ierr
+         if (ierr /= 0) then
+          if (print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(gamma%asym_vo) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+        end if
 
          ierr = initialize_tensor_t(gamma%asym_oo, ZERO)
          ierr = initialize_tensor_t(gamma%asym_vv, ZERO)
+        if (.not.CCD) then
          ierr = initialize_tensor_t(gamma%asym_ov, ZERO)
          ierr = initialize_tensor_t(gamma%asym_vo, ZERO)
-
+        end if
          !------------------------------------------------
          ! oo antisymm: g(j,i) = 1/2 (g'(j,i) - g'(i,j))
          !------------------------------------------------
          ierr = t_einsum("G(j,i)+=X(j,i)*K()", gamma%asym_oo, gamma%prime_oo,one_tensor, scale=ONE_HALF)
-         ierr = t_einsum("G(j,i)+=X+(i,j)*K()", gamma%asym_oo, gamma%prime_oo,one_tensor, scale=-ONE_HALF)
-
+         ierr = t_einsum("G(j,i)+=X+(i,j)*K()", gamma%asym_oo, gamma%prime_oo,one_tensor,scale=-ONE_HALF)
         !------------------------------------------------
         ! vv antisymm: g(b,a) = 1/2 (g'(b,a) - g'(a,b))
         !------------------------------------------------
         ierr = t_einsum("G(b,a)+=X(b,a)*K()", gamma%asym_vv, gamma%prime_vv,one_tensor, scale=ONE_HALF)
         ierr = t_einsum("G(b,a)+=X+(a,b)*K()", gamma%asym_vv, gamma%prime_vv,one_tensor, scale=-ONE_HALF)
-
+       if (.not.CCD) then
         !------------------------------------------------
         ! ov antisymm: g(i,a) = 1/2 (g'(i,a) - g'(a,i))
         !------------------------------------------------
         ierr = t_einsum("G(i,a)+=X(i,a)*K()", gamma%asym_ov, gamma%prime_ov,one_tensor, scale=ONE_HALF)
-        ierr = t_einsum("G(i,a)+=X+(a,i)*K()", gamma%asym_ov, gamma%prime_vo,one_tensor, scale=-ONE_HALF)
-
+        ierr = t_einsum("G(i,a)+=X+(a,i)*K()", gamma%asym_ov, gamma%prime_vo,one_tensor,  scale=-ONE_HALF)
         !------------------------------------------------
         ! vo antisymm: g(a,i) = 1/2 (g'(a,i) - g'(i,a))
         !------------------------------------------------
         ierr = t_einsum("G(a,i)+=X(a,i)*K()", gamma%asym_vo, gamma%prime_vo,one_tensor, scale=ONE_HALF)
-        ierr = t_einsum("G(a,i)+=X+(i,a)*K()", gamma%asym_vo, gamma%prime_ov,one_tensor, scale=-ONE_HALF)
+        ierr = t_einsum("G(a,i)+=X+(i,a)*K()", gamma%asym_vo, gamma%prime_ov,one_tensor,  scale=-ONE_HALF)
+       end if
+        !write(*,*) 'Antymmetrized tensors OO', tensor_norm2(gamma%asym_oo)
+        !write(*,*) 'Antymmetrized tensors OV', tensor_norm2(gamma%asym_ov)
+        !write(*,*) 'Antymmetrized tensors VO', tensor_norm2(gamma%asym_vo)
+        !write(*,*) 'Antymmetrized tensors VV', tensor_norm2(gamma%asym_vv)
+
+
 
         !------------------------------------------------
         ! Frobenius norm 
         !------------------------------------------------
-
-        ! oo contribution
-        ierr = construct_tensor_t(tmp, C8, oo_dims, init_val=ZERO)
-        ierr = t_einsum("X(i,j)=X(i,j)*X(i,j)", tmp, gamma%asym_oo, gamma%asym_oo)
-        ierr = t_einsum("E()+=X(i,j)*K()", result_tensor, tmp)
-
-        ! vv contribution
-        ierr = construct_tensor_t(tmp, C8, vv_dims, init_val=ZERO)
-        ierr = t_einsum("X(a,b)=X(a,b)*X(a,b)", tmp, gamma%asym_vv, gamma%asym_vv)
-        ierr = t_einsum("E()+=X(a,b)*K()", result_tensor, tmp)
-
-        ! ov contribution
-        ierr = construct_tensor_t(tmp, C8, ov_dims, init_val=ZERO)
-        ierr = t_einsum("X(i,a)=X(i,a)*X(i,a)", tmp, gamma%asym_ov, gamma%asym_ov)
-        ierr = t_einsum("E()+=X(i,a)*K()", result_tensor, tmp)
-
-        ! vo contribution
-        ierr = construct_tensor_t(tmp, C8, vo_dims, init_val=ZERO)
-        ierr = t_einsum("X(a,i)=X(a,i)*X(a,i)", tmp, gamma%asym_vo, gamma%asym_vo)
-        ierr = t_einsum("E()+=X(a,i)*K()", result_tensor, tmp)
-
-        asym_diag = sqrt(real(result_tens(1)))/sqrt(real(nocc))
-
-        if (print_level > 0) then
-            write(*,'(A,F12.6)') 'Asymmetry diagnostic (1-RDM) Frobenius norm: ', asym_diag
-       end if
-
+        if (.not.CCD) then
+         norm2_total = tensor_norm2(gamma%asym_oo)+tensor_norm2(gamma%asym_ov)+tensor_norm2(gamma%asym_vo)+tensor_norm2(gamma%asym_vv)
+        else 
+         norm2_total=tensor_norm2(gamma%asym_oo)+tensor_norm2(gamma%asym_vv)
+        end if
+        asym_diag = (sqrt(norm2_total)/sqrt(real(nocc)))*2
+        write (*,'(A,F20.15)') "  1-RDM diagnostic      :              ",asym_diag
+        write(*,*) '--- End antisymmetry diagnostic ---'
 
      end subroutine eti_asym_diag
 
