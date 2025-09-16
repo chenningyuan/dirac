@@ -16,7 +16,6 @@ C***********************************************************************
       use exacc_cfg
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use eti_ao_to_mo,only         : eti_compute_mo_integrals
-      use exacorr_utils, only       : print_date
       use, intrinsic:: ISO_C_BINDING
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
@@ -164,9 +163,8 @@ C***********************************************************************
       use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
+      use exacorr_printout,only     : print_exacorr_logo
       use exacorr_global
-      use exacorr_utils, only       : print_exacorr_logo
-      use exacorr_utils, only       : print_date
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
 #endif
@@ -1318,3 +1316,13 @@ C     ====================
 
       end subroutine set_laplace
 
+      subroutine print_date(text) 
+!      Prints time and date with a string
+       character(len=10) :: datex
+       character(len=8)  :: timex
+       character(len=*)  :: text
+       integer           :: lentext
+       lentext = len(text)
+       call daytime(datex,timex)
+       write (*,'(1x,a10,1x,a8,1x,a)') datex,timex,text(1:lentext)
+      end subroutine print_date

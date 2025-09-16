@@ -74,6 +74,7 @@ if(ENABLE_EXATENSOR)
    exacorr_respect.F90
    exacorr_cc.F90
    exacorr_mp2no.F90
+   exacorr_printout.F90
    talsh_cholesky_routines.F90
    talsh_ao_to_mo.F90
    talsh_cholesky_integrals.F90

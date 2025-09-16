@@ -1,0 +1,103 @@
+intel-mkl-serial-32:
+  image: ubuntu:20.04
+  variables:
+    DIRAC_MPI_COMMAND: ""
+    OMP_NUM_THREADS: "1"
+  rules: !reference [.define-build-rules, rules]
+  before_script:
+    - !reference [.intel-install, before_script]
+    # Print useful info
+    - uname -a
+    - lscpu
+    - free -h
+    - ifx --version
+    - icx --version
+    - icpx --version
+    - mpirun --version
+    - python3 --version
+    - git --version
+    - cmake --version
+    - echo "MKLROOT=$MKLROOT"
+    - pip list
+  script:
+    - !reference [.define-cores, script]
+    - export TOOLKIT="INTEL"
+    - ulimit -s unlimited
+    - echo "The shell is $SHELL"
+    - ./setup --pcmsolver=OFF --fc=ifx --cc=icx --cxx=icpx --qmkl=parallel --type=release
+    - cd build
+    - make -j $N_PROC
+    - ldd dirac.x
+    - echo "Running ctest serially with $N_PROC jobs"
+    - ctest -j$M -L short --output-on-failure
+
+intel-mkl-mpi-32:
+  image: ubuntu:20.04
+  variables:
+    OMP_NUM_THREADS: "1"
+  rules: !reference [.define-build-rules, rules]
+  before_script:
+    - !reference [.intel-install, before_script]
+    - export PATH_MPICH="$(which mpiexec | rev | cut -c13- |rev)" #To avoid exatensor definition at exatensor/src/exatensor/Makefile
+    # Restrict use of /dev/shm
+    - export I_MPI_SHM_HEAP_VSIZE=0
+    - export I_MPI_SHM=disable
+    # Print useful info
+    - uname -a
+    - lscpu
+    - free -h
+    - mpiifx --version
+    - mpiicx --version
+    - mpiicpx --version
+    - mpirun --version
+    - python3 --version
+    - git --version
+    - cmake --version
+    - echo "MKLROOT=$MKLROOT"
+    - pip list
+  script:
+    - !reference [.define-cores, script]
+    - export TOOLKIT="INTEL"
+    - ulimit -s unlimited
+    - echo "The shell is $SHELL"
+    - ./setup --pcmsolver=OFF --cmake-options="-DENABLE_UNIT_TESTS=ON" --fc=mpiifx --cc=mpiicx --cxx=mpiicpx --qmkl=sequential --mpi --type=release
+    - cd build
+    - make -j $M
+    - ldd dirac.x
+    - echo "Running ctest in parallel with $M jobs"
+    - ctest -j$M -L short --output-on-failure
+
+intel-mkl-mpi-64:
+  image: ubuntu:20.04
+  variables:
+    OMP_NUM_THREADS: "1"
+  rules: !reference [.define-build-rules, rules]
+  before_script:
+    - !reference [.intel-install, before_script]
+    # Restrict use of /dev/shm
+    - export I_MPI_SHM_HEAP_VSIZE=0
+    - export I_MPI_SHM=disable
+    # Print useful info
+    - uname -a
+    - lscpu
+    - free -h
+    - mpiifx --version
+    - mpiicx --version
+    - mpiicpx --version
+    - mpirun --version
+    - python3 --version
+    - git --version
+    - cmake --version
+    - echo "MKLROOT=$MKLROOT"
+    - pip list
+  script:
+    - !reference [.define-cores, script]
+    - export TOOLKIT="INTEL"
+    - ulimit -s unlimited
+    - echo "The shell is $SHELL"
+    - ./setup --pcmsolver=OFF --pelib=OFF --exatensor=OFF --fc=mpiifx --cc=mpiicx --cxx=mpiicpx --qmkl=sequential --mpi --int64 --type=release
+    - cd build
+    - make -j $M
+    - ldd dirac.x
+    - echo "Running ctest in parallel with $M jobs"
+    - ctest -j$M -L short --output-on-failure

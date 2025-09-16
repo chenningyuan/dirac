@@ -43,6 +43,9 @@
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
 
+        case ('*CASPT2')
+           call read_input_caspt2(word, kw_section)
+
         case ('*CCREST')
            call read_input_ccrestart(word, kw_section)
 
@@ -1562,6 +1565,26 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+
+   subroutine read_input_caspt2(word, kw_section)
+
+      use read_input_module, only: read_input
+      use input_reader, only: get_file_unit, kw_length
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+      integer :: file_unit
+!     --------------------------------------------------------------------------
+
+      ! call reset_available_kw_list()
+      file_unit =  get_file_unit()
+      call read_input(file_unit)
+
+   end subroutine
+
 
    subroutine read_input_ccener(word, kw_section)
 

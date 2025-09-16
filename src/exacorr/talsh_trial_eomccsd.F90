@@ -5,7 +5,6 @@ module eti_trial_eomccsd
   use exacorr_datatypes
   use intermediates
   use eti_common_routines, only : tensor_norm2, print_tensor
-  use exacorr_utils,  only : print_date
   use eti_davidson
 
   implicit none
