@@ -1288,7 +1288,7 @@ C
       CALL HERINP(WORK(2),LWORK-2)
       TSTINP = TSTIN
       IPRUSR = IPRSAV
-      HRINPC = .FALSE.
+      !HRINPC = .FALSE.
       WORK(1) = WRKDLM
       NENECALCS = 0 ! MI: counter for energy calculations
 C
@@ -2362,7 +2362,7 @@ C
          THRGRD = SQRT(SCFCNV(1))
       END IF
 C 
-      IF ((2.0D0*THRGRD) .GT. GRDTHR .AND. .NOT. CHGRDT) THEN
+      IF ((1.99D0*THRGRD) .GT. GRDTHR .AND. .NOT. CHGRDT) THEN
          GRDTHR = 2.0D0*THRGRD
          THRSTP = GRDTHR
          THRERG = GRDTHR
@@ -2427,6 +2427,7 @@ C
 C
 C     Calculate gradient
 C
+      DOSYM(1) = .TRUE. ! in abainf.h
       IF(DONGRD) THEN
          CALL NUMGRD()
       ELSE
@@ -6071,7 +6072,7 @@ C
       EXABA  = .FALSE.
       RDINPC = .FALSE.
       RDMLIN = .FALSE.
-      HRINPC = .FALSE.
+      !HRINPC = .FALSE.
       REJGEO = .TRUE.
       ERGOLD = ENERGY
       IJ = 1
@@ -6137,7 +6138,7 @@ C
             EXSIR  = .FALSE.
             RDINPC = .FALSE.
             RDMLIN = .FALSE.
-            HRINPC = .FALSE.
+            !HRINPC = .FALSE.
 C
 C     Line search based on quadratic model
 C
@@ -6306,7 +6307,6 @@ C
       DIMENSION GEINFO(0:ITRMAX,6)
       DIMENSION EVEC(MX2CRD,MX2CRD), CSTEP(MXCOOR)
       DIMENSION TMPMAT(NCRTOT*NCRTOT)
-#include "ibtfun.h"
       CALL DZERO(STPDIA,MXRCRD)
       CALL DZERO(CSTEP,MXCOOR)
       ISYMBR = MAXREP
@@ -6473,10 +6473,10 @@ C
          DO 70 I = 1, NONT(ITYP)
             MULCNT = ISTBNU(IATOM)
             DO 80 ISYMOP = 1, MAXOPR
-               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-                  COOX=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-                  COOY=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-                  COOZ=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                  COOX=PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  COOY=PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  COOZ=PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
                   INSLIN = NCLINE(IATOM)
                   DO 90 J = NMLINE, INSLIN, -1
                      MLINE(J+1) = MLINE(J)
@@ -6520,7 +6520,7 @@ C
       EXABA  = .FALSE.
       RDINPC = .FALSE.
       RDMLIN = .FALSE.
-      HRINPC = .FALSE.
+      !HRINPC = .FALSE.
       NEWSYM = .TRUE.
       DOHUCKEL = .TRUE.
       KEEPHE = .FALSE.
@@ -6659,7 +6659,6 @@ C
 #include "trkoor.h"
       CHARACTER TMPLIN*80
       LOGICAL EXHER, EXSIR, EXABA
-#include "ibtfun.h"
 
       TMPLIN = MLINE(2)
       IF (IPRE .LT. NUMPRE) THEN
@@ -6689,7 +6688,7 @@ C
       EXABA  = .FALSE.
       RDINPC = .FALSE.
       RDMLIN = .FALSE.
-      HRINPC = .FALSE.
+      !HRINPC = .FALSE.
       NEWSYM = .TRUE.
       KEEPHE = .TRUE.
       ERGOLD =  ENERGY
@@ -6902,7 +6901,7 @@ C
       EXABA  = .FALSE.
       RDINPC = .FALSE.
       RDMLIN = .FALSE.
-      HRINPC = .FALSE.
+      !HRINPC = .FALSE.
       MLINE(2) = SPBSTX
 C
 C     New input files are written with desired basis. Iteration number
@@ -7451,6 +7450,7 @@ C
 #ifdef PRG_DIRAC
          use dirac_cfg
          use read_xyzfile
+         use dircmo
 #endif
 #include "implicit.h"
 #include "dummy.h"
@@ -7464,50 +7464,43 @@ C
       LOGICAL   EXHER, EXSIR, EXABA, BIG, ex, NOMOVE_bkp
       CHARACTER*4 NAME
 C
+C cbirea.h : IPREAD
 C numder.h : NOMOVE
 C
 #include "molinp.h"
 #include "taymol.h"
 #include "symmet.h"
 #include "nuclei.h"
+#include "cbirea.h"
 #include "optinf.h"
 #include "infopt.h"
 #include "numder.h"
 #include "codata.h"
 #ifdef PRG_DIRAC
+!
+! dcbdhf.h : scfcnv, itdiis, niter, ...
+! dcbgen.h : iprgen, iprusr, usripr, ...
+! dcborb.h : ncmotq, norbt
 #include "dcbdhf.h"
 #include "dcbgen.h"
+#include "dcborb.h"
 #include "dcbmp2.h"
 #include "dcbpsi.h"
+      real(8), allocatable :: REF_CMO(:), REF_EIG(:)
+      real(8)              :: REF_DHFERG, SCFCNV_save(2)
+      integer, allocatable :: REF_IBEIG(:)
 #else
 #include "gnrinf.h"
 #endif
       real(8), allocatable :: STPSYM1(:),STPCAR1(:)
       real(8), allocatable :: COOR(:,:)
-      integer              :: i_symop
+      integer              :: i_symop, IPRGEN_save, IPRUSR_save, IPREAD_save
       character(4)         :: point_txt
-#include "ibtfun.h"
+      logical              :: wf_is_SCF
+      real(8)              :: TIMSTR(2), TIMEND(2)
 C
-      NOMOVE_bkp = NOMOVE
-#ifdef PRG_DIRAC
-      IF (DOCCM) THEN
-         ECORR = RGETCCSD()
-      ELSE IF (DOMP2) THEN
-         ECORR = DHFERG+EMP2
-      ELSE IF (dirac_cfg_scf_calculation) THEN
-         ECORR = DHFERG
-      ELSE
-         call quit('unknown wave function...')
-      END IF
-#endif
-      ESTART = ECORR
-      NCART  = NCRREP(0,1)
-      NCRIND = 3*NUCIND
-      allocate(STPSYM1(NCART))
-      allocate(STPCAR1(NCRIND))
-      allocate(COOR(3,NUCIND))
-      IF (.NOT. CHGRDT) THEN
-         GRDTHR = 1.0D-4
+      IF (.NOT. CHGRDT .AND. GRDTHR .LT. 1.99999D-3) THEN
+         GRDTHR = 2.0D-3
          THRSTP = GRDTHR
          THRERG = GRDTHR
          THRSYM = SQRT(THRERG)
@@ -7518,21 +7511,81 @@ C
          WRITE (LUPRI,'(/A,/,3(/,20X,A,F11.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
+         CHRGDT = .TRUE. ! we do not need this output in each geometry step
       END IF
+
+      NOMOVE_bkp = NOMOVE
+
+      CALL TITLER('Loop over displaced geometries for finite-field '//
+     &            '(approximate) molecular gradient','=',200)
+
+!     Suppress some of the output in the energy evaluations for the numerical gradient
+      IPREAD_save = IPREAD
+      IPRGEN_save = IPRGEN
+      IPRUSR_save = IPRUSR
+      IF (.not. USRIPR) THEN ! do not suppress output if user has changed general print level
+         IPRGEN = -2
+         IPRUSR = -2
+         IPREAD = -2
+         Write(lupri,'(A)')
+     &   '* Suppressing some of the output for displaced geometries'
+      END IF
+#ifdef PRG_DIRAC
+      allocate (REF_CMO(NCMOTQ), REF_EIG(NORBT), REF_IBEIG(NORBT)  )
+      call REACMO_new(cmo=REF_CMO, eig=REF_EIG, ibeig=REF_IBEIG,
+     &   toterg=REF_DHFERG)
+
+      wf_is_SCF = .FALSE.
+      IF (DOCCM) THEN
+         ECORR = RGETCCSD()
+         WRITE(LUPRI,'(A)') 'Wave function : CC'
+      ELSE IF (DOMP2) THEN
+         ECORR = DHFERG+EMP2
+         WRITE(LUPRI,'(A)') 'Wave function : MP2'
+      ELSE IF (dirac_cfg_scf_calculation) THEN
+         wf_is_SCF = .TRUE.
+         ECORR = DHFERG
+         WRITE(LUPRI,'(A)') 'Wave function : SCF'
+      ELSE
+         call quit(
+     &      'Sorry, wave function type not implemented in NUMGRD ...')
+      END IF
+#endif
+      ESTART = ECORR
+      NCART  = NCRREP(0,1)
+      NCRIND = 3*NUCIND
+      allocate(STPSYM1(NCART))
+      allocate(STPCAR1(NCRIND))
+      allocate(COOR(3,NUCIND))
 C
 C     Start loop over displaced geometries
 C
-      CALL TITLER('Loop over displaced geometries for finite-field '//
-     &            '(approximate) molecular gradient','=',110)
+      CALL TIMER2('START ',TIMSTR,TIMEND)
+      ! SCF convergence to 1.d-3 is sufficient for numerical gradient because SCF is variational
+      ! However, the reference geometry must be converged to at least 1.d-4, i.e. ca. 8 decimal places for displacement of 1.d-3 /hjaaj Sep 2025
+      SCFCNV_save(1:2) = SCFCNV(1:2)
+      SCFCNV(1) = 1.d-3
+      SCFCNV(2) = 2.d-3
+
+      NOMOVE = .TRUE. ! do not move or rotate molecule for symmetry detection
+                      ! during numerical differentiation, otherwise wrong results!
       DO IPOINT = 0, 2*NCART
-         IF (IPOINT .EQ. 0) THEN
-            CALL HEADER('Numerical gradient: reference geometry',-1)
-         ELSE
-            write(point_txt,'(I4)') IPOINT
+         ITDIIS = 0; NITER = 0 ! new geometry, reset DIIS iteration number to zero
+         IF (IPOINT .lt. 2*NCART) THEN
+            write(point_txt,'(I4)') IPOINT+1
             CALL HEADER('Numerical gradient: displaced geometry no. '//
      &         point_txt,-1)
-            NOMOVE = .TRUE. ! do not move or rotate molecule for symmetry detection
-                            ! during numerical differentiation, otherwise wrong results!
+         ELSE
+            CALL HEADER('Numerical gradient: reference geometry',-1)
+            DHFERG = REF_DHFERG
+         END IF
+#ifdef PRG_DIRAC
+         ! Always use reference MO coefficients as start guess for all displacements
+         CALL WRICMO(LUCOEF,REF_CMO,REF_EIG,REF_IBEIG,REF_DHFERG)
+#endif
+         CALL WLKINC(STPSYM1,STPCAR1,COOR,DISPLA,NCART,
+     &               NCRIND,IPOINT,IPRINT)
+         IF (IPOINT .GT. 0) THEN
 C     
 C     Do numerical differentiation
 C
@@ -7555,8 +7608,6 @@ C
      &                   - SCLFCK*(ECORR - ESTART)/DISPLA)
             END IF
          END IF
-         CALL WLKINC(STPSYM1,STPCAR1,COOR,DISPLA,NCART,
-     &               NCRIND,IPOINT,IPRINT)
 C
 C     Update geometry in common block
 C
@@ -7602,12 +7653,12 @@ C        Write updated .xyz style geometry file
      &               namn(icent),(XTANG*coor(icart,icent),icart=1,3)
                else
                 do i_symop = 0, maxopr
-                     if (ibtand(i_symop, mulcnt) == 0)
+                     if (iand(i_symop, mulcnt) == 0)
      &                  write (lumol,'(A4,3F26.16)')  
      &                     namn(icent),
-     * pt(ibtand(isymax(1, 1), i_symop))*coor(1, icent)/unit_conversion,
-     * pt(ibtand(isymax(2, 1), i_symop))*coor(2, icent)/unit_conversion,
-     * pt(ibtand(isymax(3, 1), i_symop))*coor(3, icent)/unit_conversion
+     * pt(iand(isymax(1, 1), i_symop))*coor(1, icent)/unit_conversion,
+     * pt(iand(isymax(2, 1), i_symop))*coor(2, icent)/unit_conversion,
+     * pt(iand(isymax(3, 1), i_symop))*coor(3, icent)/unit_conversion
                 end do
                end if
             end do
@@ -7624,11 +7675,15 @@ C        Write updated .mol style geometry file
 
          CALL GPCLOSE(LUMOL,'KEEP')
 C
-         EXHER = .FALSE.
-         EXSIR = .FALSE.
-         EXABA = .FALSE.
-         RDINPC = .FALSE.
-         CALL GTNRGY(EXHER,EXSIR,EXABA)
+         IF (wf_is_SCF .and. ipoint .eq. 2*NCART) then ! if SCF the reference wave function is saved
+            DHFERG = REF_DHFERG ! ref cmo and eig alread restored with WRICMO above
+         ELSE
+            EXHER = .FALSE.
+            EXSIR = .FALSE.
+            EXABA = .FALSE.
+            RDINPC = .FALSE.
+            CALL GTNRGY(EXHER,EXSIR,EXABA)
+         END IF
 #ifdef PRG_DIRAC
          IF (DOCCM) THEN
             ECORR = RGETCCSD()
@@ -7640,16 +7695,26 @@ C
             call quit('unknown wave function...')
          END IF
 #endif
-      END DO
+      END DO !  DO IPOINT = 0, 2*NCART
+
+      CALL TIMER2('numerical gradient ',TIMSTR,TIMEND)
+
+      ! reset SCF convergence to full convergence for next geometry
+      SCFCNV(1:2) = SCFCNV_save(1:2)
+      ! restore print levels
+      IPRGEN = IPRGEN_save
+      IPRUSR = IPRUSR_save
+      IPREAD = IPREAD_save
 C
 C     Print out gradient
 C
       CALL HEADER('Total finite-field (approximate) molecular '//
      &            'gradient',-1)
 C
-      DO I = 1,NCRREP(0,1)
-         WRITE(LUPRI,*) 'Gradient ',I,'   ',GRDMOL(I)
-      END DO
+!     DO I = 1,NCRREP(0,1)
+!        WRITE(LUPRI,*) 'Gradient ',I,'   ',GRDMOL(I)
+!     END DO
+      call prigrd(GRDMOL)
 C
  9100 FORMAT (A4)
  9200 FORMAT (A4,3F20.10,7X,A1)
@@ -7658,6 +7723,9 @@ C
 CTROND      deallocate(STPSYM)
 CTROND      deallocate(STPCAR)
       deallocate(COOR)
+#ifdef PRG_DIRAC
+      deallocate(ref_cmo, ref_eig, ref_ibeig)
+#endif
 
       NOMOVE = NOMOVE_bkp
       RETURN
@@ -7677,7 +7745,6 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
-#include "ibtfun.h"
 
       character(len=*),intent(in) :: group
       real(8), allocatable        :: geometry(:),nuc_charge(:)
@@ -7696,10 +7763,10 @@ C
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                DO I = 1, 3
                  geometry(i+3*jcent) =
-     &           XTANG*PT(IBTAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
+     &           XTANG*PT(IAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
                END DO 
                jcent = jcent + 1
                symbols(jcent) = namn(icent)
@@ -7734,7 +7801,6 @@ C
 #include "symmet.h"
 #include "nuclei.h"
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
-#include "ibtfun.h"
 #include "codata.h"
 #include "dcbgen.h"
 C
@@ -7758,10 +7824,10 @@ C
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                DO I = 1, 3
                  XYZ(I) =
-     &           FAC*PT(IBTAND(ISYMAX(I,1),ISYMOP))*UNIQUE_CORD(I,ICENT)
+     &           FAC*PT(IAND(ISYMAX(I,1),ISYMOP))*UNIQUE_CORD(I,ICENT)
                END DO 
                WRITE (LUXYZ,'(A4,3F30.15)') NAMN(ICENT),XYZ
             END IF
