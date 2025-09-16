@@ -1017,7 +1017,7 @@ C
             END IF
   300    CONTINUE
       END IF
-      IF (IPRINT .GT. 0) THEN
+      IF (IPRINT .GT. 1) THEN
          CALL HEADER('Nuclear contribution to dipole moments',-1)
          CALL DP0PRI(DIPMN)
          IF (DIFDIP) THEN

@@ -70,9 +70,12 @@ C***********************************************************************
       logical              :: input_found
       integer              :: iline, nlines
       character*100, allocatable    :: lines(:)
+      logical, save        :: first_call = .true.
 C
+
       CALL QENTER('PAMINP')
       call alloc(WORK,LWORK, id="PAMINP WORK array")
+
 C
 C     Initializations
 C
@@ -102,11 +105,13 @@ C
 
       ! echo and collect the input
       rewind(file_unit)
-      write(lupri, '(//a)') 'Contents of the input file'
-      write(lupri, '(a/)')  '--------------------------'
+      if (first_call) then
+         write(lupri, '(//a)') 'Contents of the input file'
+         write(lupri, '(a/)')  '--------------------------'
+      end if
       do iline = 1, nlines
          read(file_unit, '(a100)') line
-         write(lupri, '(a)') line
+         if (first_call) write(lupri, '(a)') line
          lines(iline) = line
       end do
       close(file_unit, status = 'keep')
@@ -151,11 +156,13 @@ C
 
       ! echo and collect the input
       rewind(file_unit)
-      write(lupri, '(//a)') 'Contents of the molecule file'
-      write(lupri, '(a/)')  '-----------------------------'
+      if (first_call) then
+         write(lupri, '(//a)') 'Contents of the molecule file'
+         write(lupri, '(a/)')  '-----------------------------'
+      end if
       do iline = 1, nlines
          read(file_unit, '(a100)') line
-         write(lupri, '(a)') line
+         if (first_call) write(lupri, '(a)') line
          lines(iline) = line
       end do
       close(file_unit, status = 'keep')
@@ -196,7 +203,7 @@ C     Start the xml output and echo the input to the xml output
          write(luxml,'(A)') 'dirac'
          call xml_end('name')
          call xml_begin('version')
-         write(luxml,'(A)') '2019'
+         write(luxml,'(A)') '2025'
          call xml_end('version')
          call xml_end('program')
          call xml_begin('input')
@@ -386,6 +393,7 @@ C
 C
       call dealloc(WORK)
       CALL QEXIT('PAMINP')
+      first_call = .false.
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1098,7 +1106,6 @@ C
      &                                                               /
       DATA SET/.FALSE./
 C
-#include "ibtfun.h"
 #include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -1195,10 +1202,10 @@ CMI  ... reduce the number iterations for preliminary BSS-SCF ...
       MXDIIS    = 10
       NBELM     = 1
       ITDIIS    = 0
-      ILLINT    = IBTAND(INTGEN,1)
-      ISLINT    = IBTAND(INTGEN/2,1)
-      ISSINT    = IBTAND(INTGEN/4,1)
-      IGTINT    = IBTAND(INTGEN/8,1)
+      ILLINT    = IAND(INTGEN,1)
+      ISLINT    = IAND(INTGEN/2,1)
+      ISSINT    = IAND(INTGEN/4,1)
+      IGTINT    = IAND(INTGEN/8,1)
       INTBUF    = 0
       INTFLG    = 0
       INTFLG_CHANGE = .FALSE.
@@ -2625,17 +2632,17 @@ C
 
       WRITE(LUPRI,'(/A)') ' ***** SCF CONVERGENCE CRITERIA *****'
       IF(ERGCNV) THEN
-        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+        WRITE(LUPRI,'(A/2(A,1P,D10.3/))')
      &    ' * Convergence on total energy.',
      &    '   Desired convergence:',SCFCNV(1),
      &    '   Allowed convergence:',SCFCNV(2)
       ELSEIF(FCKCNV) THEN
-        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+        WRITE(LUPRI,'(A/2(A,1P,D10.3/))')
      &    ' * Convergence on total Fock matrix.',
      &    '   Desired convergence:',SCFCNV(1),
      &    '   Allowed convergence:',SCFCNV(2)
       ELSEIF(EVCCNV) THEN
-        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+        WRITE(LUPRI,'(A/2(A,1P,D10.3/))')
      &    ' * Convergence on norm of error vector (gradient).',
      &    '   Desired convergence:',SCFCNV(1),
      &    '   Allowed convergence:',SCFCNV(2)
@@ -2833,17 +2840,17 @@ CMI =====================================================================
        WRITE(LUPRI,'(A)')
      & ' ***** CONVERGENCE CRITERIA ON PRELIMINARY BSS-SCF *****'
       IF(ERGCNV2) THEN
-        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+        WRITE(LUPRI,'(A/2(A,1P,D10.3/))')
      &    ' * Convergence on total energy.',
      &    '   Desired convergence:',SCFCNV2(1),
      &    '   Allowed convergence:',SCFCNV2(2)
       ELSEIF(FCKCNV2) THEN
-        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+        WRITE(LUPRI,'(A/2(A,1P,D10.3/))')
      &    ' * Convergence on total Fock matrix.',
      &    '   Desired convergence:',SCFCNV2(1),
      &    '   Allowed convergence:',SCFCNV2(2)
       ELSEIF(EVCCNV2) THEN
-        WRITE(LUPRI,'(A/2(A,1P,D9.3/))')
+        WRITE(LUPRI,'(A/2(A,1P,D10.3/))')
      &    ' * Convergence on norm of error vector (gradient).',
      &    '   Desired convergence:',SCFCNV2(1),
      &    '   Allowed convergence:',SCFCNV2(2)
@@ -2999,7 +3006,7 @@ C***********************************************************************
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
-      DIMENSION WORK(LWORK)
+      REAL*8    WORK(LWORK)
 C
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -3008,6 +3015,8 @@ C
 #include "dcbreo.h"
 #include "dcbrot.h"
 C
+      LOGICAL, save :: PSIINP_read = .FALSE.
+
       DATA TABDIR /'*END OF','xxxxxxx','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
@@ -3023,6 +3032,8 @@ C
      &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP',
      &             '.EXACC ','.LAPLCE','.CASPT2'/
 C
+      IF (PSIINP_read) RETURN ! do not reread in each step in a geometry optimization
+
       N_WF = 0
 C
 C     Initialize /CBLPSI/
@@ -3650,6 +3661,7 @@ C
          CALL GASCIP_INP(WORD,.TRUE.,WORK,LWORK)
       END IF
 C
+      PSIINP_read = .true.
       RETURN
 C
       END
@@ -5140,6 +5152,7 @@ C
 #include "dcbxpr.h"
 #include "dcbcls.h"
 #include "dcbprl.h"
+      logical, save :: first_call = .true. ! do not reinitialize print levels during geometry optimizations
 C
 C     Initialize temporary variables
 C     ==============================
@@ -5179,7 +5192,7 @@ C
       NMWALK   = .FALSE.
       DOHUCKEL = .false. ! TODO : make DOHUCKEL default
 !
-      IPRGEN   = 0
+      if (first_call) IPRGEN   = 0
       ISPHTR   = ILSPH+2*ISSPH
       IDFLAG   = ILLDIR+2*ISLDIR+4*ISSDIR+8*IGTDIR
       INTGEN   = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
@@ -5187,7 +5200,7 @@ C
       STOL(1)  = 1.0D-6
       STOL(2)  = 1.0D-8
       PANAS  = D0
-      HRINPC = .FALSE.
+      if (first_call) HRINPC = .FALSE. ! only read hermit control input first time
       RDINPC = .FALSE.
       IF(IDFLAG.GT.0) THEN
         DIRCAL = .TRUE.
@@ -5202,8 +5215,8 @@ C            These can also take up quite some space !!!   /jkp
 C
       DIRSET = .TRUE.
 C <---
-      IPRUSR = 0
-      USRIPR = .FALSE.
+      if (first_call) IPRUSR = 0
+      if (first_call) USRIPR = .FALSE.
       SEGBAS = .TRUE.
       NEWBAS = .TRUE.
       NEWPRP = .TRUE.
@@ -5240,6 +5253,7 @@ C     ======================================
 C
       CALL OPTINI()
 C
+      first_call = .false.
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5296,15 +5310,15 @@ C
 #include "orgcom.h"
 #include "codata.h"
 C
-      LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
+      LOGICAL  SYMSTP,TRSSTP,NOINPUT,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
-      logical :: use_pde = .false.
+      logical, save :: use_pde = .false., SETFUN = .false.,
+     &         first_call = .true.
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, LINE*80, LINE100*100
       DIMENSION KSOP(0:7),WORK(LWORK)
       real(8) :: hfx_out, mu_out, beta_out
 C
-      SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
      &             '*PCM   ','*X-AMFI','*PELIB ','*PCMSOL',
@@ -5348,10 +5362,11 @@ C
      &            '.GAUGEO','.GO ANG','.DIPORG', '.PHASEO',
 !                   73        74        75        76
      &            '.KOUT  ','.EFFQED','.ASHIFT', '.ESHIFT'/
-      DATA SETFUN/.FALSE./
 C
-#include "ibtfun.h"
-C
+
+      if (.not. first_call) return ! do not repeat initializations during geometry optimizations
+      first_call = .false.
+
       CALL QENTER('HAMINP')
 
       GAUNT = .FALSE.
@@ -5459,10 +5474,10 @@ Ctsaue: Exchange factor must not be reset during geometry optimizations.
         HFXATT  = D0
       ENDIF
 C ... get integral flags in advance
-      ILLINT    = IBTAND(INTGEN,1)
-      ISLINT    = IBTAND(INTGEN/2,1)
-      ISSINT    = IBTAND(INTGEN/4,1)
-      IGTINT    = IBTAND(INTGEN/8,1)
+      ILLINT    = IAND(INTGEN,1)
+      ISLINT    = IAND(INTGEN/2,1)
+      ISSINT    = IAND(INTGEN/4,1)
+      IGTINT    = IAND(INTGEN/8,1)
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
 !mi:  by default, do not save Jz_MO matrices
@@ -6325,7 +6340,7 @@ CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
        ENDIF
 
        IF(GAUNT)THEN ! check whether it has been included already in INTGEN_SAVE
-         IF(IBTAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
+         IF(IAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
        END IF
 
 CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR
@@ -7743,8 +7758,6 @@ C
      &            '.ADDREP','.IONMVO','.POTMVO','.WEIGHT'/
       DATA SET/.FALSE./
 C
-#include "ibtfun.h"
-C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -7760,10 +7773,10 @@ C     Initialize /CBIMVO/
 C     ===================
 C
       IPRMVO = 0
-      ILLINT = IBTAND(INTGEN,1)
-      ISLINT = IBTAND(INTGEN/2,1)
-      ISSINT = IBTAND(INTGEN/4,1)
-      IGTINT = IBTAND(INTGEN/8,1)
+      ILLINT = IAND(INTGEN,1)
+      ISLINT = IAND(INTGEN/2,1)
+      ISSINT = IAND(INTGEN/4,1)
+      IGTINT = IAND(INTGEN/8,1)
       IFCMVO = 1
       IFEMVO = 1
 C     If MVOWEIGHT < 1 the Fock operator will be constructed from
@@ -7952,8 +7965,6 @@ C
       LOGICAL SS_COR, SS_COR_NEEDED
       logical is_2c_rel_run
 
-#include "ibtfun.h"
-C
       CALL TITLER('Input consistency checks','*',127)
 
       is_2c_rel_run = bss.or.x2c
@@ -7988,7 +7999,7 @@ C     Check for Hamiltonians were SS do not appear anyway..
       SS_COR_NEEDED =
      &       .NOT.(LEVYLE.OR.is_2c_rel_run.OR.(ZORA.AND..NOT.ZORA4))
 C     .. or are computed exactly
-      SS_COR_NEEDED = SS_COR_NEEDED.AND.(IBTAND(INTGEN/4,1).EQ.0)
+      SS_COR_NEEDED = SS_COR_NEEDED.AND.(IAND(INTGEN/4,1).EQ.0)
 C     Check for possible ways of correcting..
       SS_COR = DOLVC.OR.DOTSC
 #ifdef blubb

@@ -3177,7 +3177,7 @@ C
 C
 C     ***** Print *****
 C
-      IF (IPRINT .GT. 0) THEN
+      IF (IPRINT .GE. 0) THEN
          CALL HEADER('STPSYM in WLKINC',1)
          CALL OUTPUT_x(STPSYM,1,1,1,NCART,1,NCART,LUPRI)
       IF (IPRINT .GT. 5) THEN

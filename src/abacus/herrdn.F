@@ -338,7 +338,11 @@ C
 C
       IF (IPREAD .GE. 4) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPREAD .GT. 0) THEN
-         CALL TITLER('Output from MOLECULE input processing','*',118)
+        CALL TITLER(
+     &   'Output of molecule and basis set information','*',115)
+      ELSE IF (IPREAD .GT. -999 .AND. .NOT.SLAVE) THEN
+        CALL TITLER(
+     &   'Output of molecule and basis set info suppressed','*',118)
       END IF
       LUINFO = LUMLCL
 C
@@ -1968,12 +1972,12 @@ C
       IF (GAUNUC .AND. NQ.GT.0) THEN
         IF(QEXP.EQ.D0) THEN
            CALL NUCSIZ(NQ,GEXP,XMASS)
-        WRITE(LUPRI,'(A,F8.3,A,1PD20.10,A,0PF6.1,A)')
+           IF(IPREAD.gt.0) WRITE(LUPRI,'(A,F8.3,A,1PD20.10,A,0PF6.1,A)')
      &       '  Nuclear Gaussian exponent for atom of charge ',
      &       Q,' : ',GEXP,'   (using mass ',xmass,')'
         ELSE
            GEXP = QEXP
-        WRITE(LUPRI,'(A,F8.3,A,1P,D20.10,A)')
+           IF(IPREAD.gt.0) WRITE(LUPRI,'(A,F8.3,A,1P,D20.10,A)')
      &       '  Nuclear Gaussian exponent for atom of charge ',
      &       Q,' :',GEXP,'  (specified through input)'
         ENDIF

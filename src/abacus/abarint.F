@@ -4010,7 +4010,7 @@ C
       EXABA  = .FALSE.
       RDINPC = .FALSE.
       RDMLIN = .FALSE.
-      HRINPC = .FALSE.
+      !HRINPC = .FALSE.
       NEWSYM = .TRUE.
       DOHUCKEL = .TRUE.
       RSTARR = .TRUE.
