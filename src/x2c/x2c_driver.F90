@@ -159,16 +159,18 @@ contains
      integer                :: i,j
      character (len=12)     :: flabel                   ! label for matrices on file
      character (len=51)     :: path
+     logical, save          :: first_call = .true.
 !**********************************************************************
 
 !    print header
-     call hello_dirx2c()
+     if (first_call) call hello_dirx2c()
 
 !    ------------------------------------------------------------------------------
 !    step 1.0: initialize X2C dimensions in Dirac-sorted SA-AO basis and symmetry settings 
 !              transfer information from (Dirac) common blocks to private X2C variables
 !    ------------------------------------------------------------------------------
      call init_x2c_cb(.true.)
+     if (.not.first_call) x2c_prt = -1 ! suppress output in later calls (typically new geometries)
 
 !    initialize variables
      final_ham_lvl_x2c = 0
@@ -185,7 +187,8 @@ contains
          if(x2c_spinfree) path = 'molecular X2C (spinfree)                           '
      end select
 
-     print '(/18x,a,a)', ' *** chosen path in X2C module: ',path
+     if (first_call) &
+     print '(/a,a)', ' *** chosen path in X2C module: ',path
  
 !    ------------------------------------------------------------------------------
 !    step 1.1: initialize and open files
@@ -452,7 +455,13 @@ contains
       close(x2c_funit,status="keep")
 
 !     print goodbye 
-      call goodbye_dirx2c()
+      if (first_call) then
+         print '(/A/)', 'Information: output suppressed in future calls of x2c module'
+         call goodbye_dirx2c()
+         x2c_prt = -1 ! suppress output in additional calls (for geometry optimization)
+         first_call = .false.
+      end if
+
 
   end subroutine x2c_main
 
@@ -540,6 +549,7 @@ contains
      integer                :: i,j
      character (len=12)     :: flabel             ! label for matrices on file
 !**********************************************************************
+
 
 !    memory allocation - part 1 - allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
 !    ---------------------------------------------------------------------------------------------

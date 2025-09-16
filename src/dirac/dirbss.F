@@ -306,6 +306,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL DK2SO1,ONLYSO1,SAVESO1,SF_BEG,FPB,FNDLAB,
      &    GETPCTM,ADD_AMFI,ONLYTRA,ELIM_SF, WRITEH2C, LINAD
       integer is_defining_h1mat
+      logical, save :: first_amfi_call = .true.
 
         CALL QENTER('MAKE_BSS')
 #include "memint.h"
@@ -504,10 +505,16 @@ C     ...    allocated memmory (except entering VMAT)
       IF (ADD_AMFI) THEN
 C    ... transformation cartesian -> spherical, calling the AMFI stuff,
 C        fitting AMFI integrals in the DIRAC order, saving to the BSSMAT
-       IF (SPINFR.AND.ELIM_SF) SPINFR=.FALSE.
-C      ... VMAT is reused as helping array...
+        IF (SPINFR.AND.ELIM_SF) SPINFR=.FALSE.
+        if (first_amfi_call) then
+           iprham_amfi = ipr_ham
+        else
+           iprham_amfi = -1
+        end if
+C       ... VMAT is reused as helping array...
         CALL AMFI_STUFF(VMAT,ONLYSO1,ONLYTRA,IC_AMFI,
-     &                 WORK(KFREE),LFREE,IPRHAM,IMFCH)
+     &                 WORK(KFREE),LFREE,IPRHAM_amfi,IMFCH)
+        first_amfi_call = .false.
         I2CHAM = 2
       ENDIF
 
@@ -1016,13 +1023,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       IF (.NOT.KEEP_OPEN) THEN
         CLOSE(LUBSS,STATUS='KEEP')
         IF (IPRINT.GE.3) THEN
-         write(lupri,'(2x,a)')  
-     &   '* BSSMAT file left closed.'
+         write(lupri,'(2x,a)') '* BSSMAT file left closed.'
         ENDIF
       ELSE
         IF (IPRINT.GE.3) THEN
-         write(lupri,'(2x,a)')
-     &   '* BSSMAT file left open.'
+         write(lupri,'(2x,a)') '* BSSMAT file left open.'
         ENDIF
       ENDIF
 
@@ -1184,13 +1189,11 @@ C     ... close the file if not set to keep it open
       IF (.NOT.KEEP_OPEN) THEN
        CLOSE(LUBSS,STATUS='KEEP')
        IF (IPRINT.GE.3) THEN
-        write(lupri,*)
-     &  '* BSSMAT file was closed.'
+        write(lupri,'(a)') '* BSSMAT file was closed.'
        ENDIF
       ELSE
        IF (IPRINT.GE.3) THEN
-        write(lupri,'(2x,a)')
-     &  '* BSSMAT file was left open.'
+        write(lupri,'(a)') '* BSSMAT file was left open.'
        ENDIF
       ENDIF
 
@@ -8581,15 +8584,22 @@ c     dirbss_verbose = .false.
       iprint_save = iprint
 !     iprint      = 5
 
-      CALL HEADER('Output from AMFIIN',-1)
+      IF (IPRINT .GT. 0) THEN
+         CALL HEADER('Output from AMFIIN',-1)
+         write(lupri,'(/A,I0)') ' Print level in AMFIIN is ',IPRINT
+      ELSE IF (IPRINT .GE. -1) THEN
+         write(lupri,'(/A)')
+     &   '* AMFI: Atomic Mean-Field spin-orbit integrals calculated'//
+     &   ' or read from files'
+      END IF
       IF (IPRINT.GE.3) THEN
       write(lupri,*) '# individual centers   : ',NUCIND
       write(lupri,*) '# of large-comp. shells: ',NLRGSH
       write(lupri,*) 'charge of atoms        : ',(charge(i),i=1,nucind)
       write(lupri,*) 'Total number of atoms  : ',NUCDEP
-C   ... fill IZTNUCS - LIST OF ALL NUCLEIS
       ENDIF
 
+C   ... fill IZTNUCS - LIST OF ALL NUCLEIS
       ix      = 1
       icenter = 0
       do I=1,NONTYP
@@ -8867,7 +8877,7 @@ C     ... skip text
       READ(LUTMP2,*) 
 C     ... read number of unique nuclei
       READ(LUTMP2,*) NUNUC
-      write(lupri,'(/A,I2)')
+      IF (IPRINT .GE. 0) write(lupri,'(/A,I2)')
      &'  *** number of unique nuclei (from file MNF.INP):',NUNUC
 
       TOTDIFX=D0
@@ -8884,7 +8894,7 @@ C *************************************************************************
       DO IATOM = 1, NUNUC ! note: NUNUC == NONTYP (atomic types)
 
        READ(LUTMP2,*) ICHARGE
-       WRITE(LUPRI,'(/A,I2,A,I5)')
+       IF (IPRINT .GE. 0) WRITE(LUPRI,'(/A,I2,A,I5)')
      &   '  *** calculate AMFI for atom type',
      & IATOM,' with atomic charge ',ICHARGE
 
@@ -8927,7 +8937,7 @@ C      ... determine total number of nuclei of type IATOM with charge ICHARGE
           CALL FLSHFO(LUPRI)
        endif
 
-       WRITE(LUPRI,'(A,i4)')
+       IF (IPRINT .GE. 0) WRITE(LUPRI,'(A,i4)')
      &   '  *** number of nuclei with identical atom type:',nicharge
        CALL FLSHFO(LUPRI)
 
@@ -8942,9 +8952,9 @@ C ... now find out if all these (AMFI) nuclei are to be skipped...
        IF (IXC.EQ.NICHARGE) NOAMFC = .TRUE.
        ! no 2e-SO corrections for 1e-atoms like H or hydrogen-like systems!
        if(icharge-iachnuc < 2)then
-         write(lupri,*) ' no 2e-SO corrections for hydrogen'//
-     &                  ' or hydrogen-like 1e-systems.'//
-     &                  ' AMFI is skipped.'
+         if (iprint .ge. 0) write(lupri,*)
+     &         ' No 2e-SO corrections for hydrogen'
+     &      // ' or hydrogen-like 1e-systems. AMFI is skipped.'
          NOAMFC = .TRUE.
        end if
 
@@ -8954,7 +8964,8 @@ C     ... file name for AMFI integrals of center
 !      sknecht - feb 2013
 !      mi/aug2013: oups,right ! fix is below
        nuc_indx=icenter - icenter_tmp + 1
-       write(LUPRI,'(3x,a,i2)') 'unique nuclei index:',nuc_indx
+       if (IPRINT.GE.2)
+     &    write(LUPRI,'(3x,a,i2)') 'unique nuclei index:',nuc_indx
        if(nuc_indx < 10)then
          file_tag=CHRNOS(nuc_indx)
        else if(nuc_indx < 100)then
@@ -8982,11 +8993,11 @@ C     ... file name for AMFI integrals of center
        ENDIF
 
        IF (NOAMFC) THEN
-         WRITE(LUPRI,'(/3X,A/)')
+         IF (IPRINT .GE. 0) WRITE(LUPRI,'(/3X,A/)')
      &   '    *** This (AMFI) unique nuclei is not to be calculated !'//
      &   ' Only pass (to read input basis) through the AMFI routine.'
        ELSE
-         WRITE(LUPRI,'(2A)')
+         IF (IPRINT .GE. 0) WRITE(LUPRI,'(2A)')
      &   '  *** file with AMFI integrals for this center: ',AFN
        ENDIF
 
@@ -9027,10 +9038,11 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
-         CALL AMFI(LUTMP2,LUMNFPRP,BREIT,GAUNUC,EXPNUCL,
-     &             CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
-C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
+       CALL AMFI(LUTMP2,LUMNFPRP,BREIT,GAUNUC,EXPNUCL,
+     &           CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
+
+C      ... read the AOPROPER_MNF file if AMFI has calculated it ..
       IF (.NOT.NOAMFC) THEN
 
       REWIND (LUMNFPRP)
@@ -9190,12 +9202,12 @@ CMI   if (dirbss_verbose) write(lupri,*)
        ENDDO
 
        IF (ISREMOVED.NE.0) THEN
-        WRITE(LUPRI,'(/2X,A,I2,A,I3,A/)')
+        IF (IPRINT .GE. 0) WRITE(LUPRI,'(/A,I2,A,I3,A/)')
      &  '      *** AMFIIN: nucleus ',IANUCS(IANUC),
      &  ' with charge ',ICHARGE,' NOT ADDED to the BSSn Hamiltonian.'
        ELSE
-        WRITE(LUPRI,'(2X,A,I3,A,I3,A)')
-     &  '    *** AMFIIN: ADDING nucleus  ',IANUCS(IANUC),
+        IF (IPRINT .GE. 0) WRITE(LUPRI,'(A,I3,A,I3,A)')
+     &  '    *** AMFIIN: ADDING nucleus ',IANUCS(IANUC),
      &  ' with charge ',ICHARGE,' to the BSSn Hamiltonian.'
 
         IX = 0
@@ -9389,6 +9401,12 @@ C       write(lupri,*) ITD,'>>>',TOTDIFX,TOTDIFY,TOTDIFZ
         CALL QUIT('AMFIIN: Only BSS-AMFI SO1 integral comparisons !')
       ENDIF
       iprint = iprint_save
+
+      ! suppress print in AMFI and RELSCF for subsequent calls, typically in 
+      ! connection with a geometry optimization. Because AMFI is atomic, the
+      ! AMFI operator is read from file in any later calls.
+      IPR_AMFI   = -1
+      IPR_RELSCF = -1
 
       CALL QEXIT('AMFIIN')
       RETURN
@@ -9956,7 +9974,7 @@ C     CALL TITLER('AMFI/RELSCF input reading','*',127)
 C
 C        *** Initialize the default values ***
 C
-        IPR_AMFI = 0
+      IPR_AMFI   = 0
       IPR_RELSCF = 0
 
 !    ... maximum number of iterations

@@ -188,7 +188,7 @@ cbs   read the input
 
 CMI   IF (EXAMF.and.amfi_verbose) THEN
       IF(EXAMF)THEN
-        WRITE(LUPRI,*)
+        IF (IPR_AMFI .GE. 0) WRITE(LUPRI,*)
      &  ' skip explicit AMFI - reading AMFI integrals from file'//
      &  ' AOPROPER_MNF.xxx!'
         RETURN

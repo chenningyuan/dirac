@@ -79,6 +79,7 @@ contains
 !   local variables
 !   ----------------------------------------------------------------------------
     integer             :: i, j, k, l, m, center
+    logical, save       :: first_init_cb = .true.
 !   ----------------------------------------------------------------------------
 
        if(init_x2c_cb_blocks)then
@@ -93,9 +94,11 @@ contains
          call getlab(-1)
 
          call legacy_lwork_get(len_wrk_f77_x2c)
-         x2c_prt               = iprham
-         if(x2cmod_debug)      &
-         x2c_prt               = 3
+         if (first_init_cb) then ! only first time, to allow print control from outside in geometry optimizations /hjaaj
+            x2c_prt            = iprham
+            if(x2cmod_debug)      &
+               x2c_prt         = 3
+         end if
          nr_quat               = nz
          nzt_x2c               = nzt
          if(mdirac) nzt_x2c    = nz ! default: 1
@@ -254,7 +257,8 @@ contains
          !> DFT run
          x2c_isDFT = dirac_cfg_dft_calculation;
 ! 
-       else 
+         first_init_cb = .false.
+       else  !  if(init_x2c_cb_blocks)then
 
 !        initialize the property operator arrays
          if(present(prop_op_dgsym) .and. present(prop_op_trsym) .and.  present(prop_op_name))then
