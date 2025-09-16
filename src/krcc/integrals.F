@@ -506,7 +506,7 @@ C
      &              ' (ROPTST)  Start orbitals read from' //
      &              ' CHECKPOINT '
       END IF
-      CALL RGMCMO(WORK(KCMO),WORK(KFREE),LFREE)
+      CALL RGMCMO(WORK(KCMO),NTEST,WORK(KFREE),LFREE)
 * Stupid routine to see if the 4-index transformation should be done
       CALL AN_IDIOT(NO4IDX)
 * Transformation 

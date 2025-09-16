@@ -1185,7 +1185,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RGMCMO(CMO,WORK,LWORK)
+      SUBROUTINE RGMCMO(CMO,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C     Gram-Schmidt orthogonalize coefficients.
@@ -1195,7 +1195,6 @@ C
 C     Output: CMO re-orthonomalized using the Gram-Schmidt algorithm
 C
 C     Written by J. Thyssen - Jan 23 2001
-C     Revised Aug 2008, H.J.Aa.Jensen (control output with IPROPT)
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1204,11 +1203,10 @@ C
 #include "consts.h"
 C
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 C
-      DIMENSION CMO(*), WORK(*)
+      REAL*8 CMO(*), WORK(*)
 C
 #include "memint.h"
 C
@@ -1218,7 +1216,7 @@ C     Matrix to hold orbitals.
 C
       CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
       CALL GTOVLX(WORK(KSAO),D1)
-      WRITE (LUPRI,'(/A)')
+      IF (IPRINT .GE. 0) WRITE (LUPRI,'(/A)')
      &   ' -> Gram-Schmidt orthonormalizing MO coefficients.'
       call flshfo(lupri)
 C
@@ -1238,7 +1236,7 @@ C
             JSAO1 = JSAO1 + NFBASI
          END DO
          JSAO = JSAO + NFBASI
-         IF (IPROPT .GE. 10) THEN
+         IF (IPRINT .GE. 10) THEN
             WRITE(LUPRI,'(A,I3)')
      &        ' RGMCMO: Coefficients for symmetry ',I
             CALL PRQMAT(CMO(1+ICMOQ(I)),NFBASI,NORBI,
@@ -1280,7 +1278,7 @@ C               because we want to start with the occupied orbitals
 C
          CALL MEMREL('RGMCMO.QNORM',WORK,KWORK,KSCR1,KFREE,LFREE)
 C
-         IF (IPROPT .GE. 10) THEN
+         IF (IPRINT .GE. 10) THEN
             WRITE(LUPRI,'(A,I3)')
      &        ' RGMCMO: Coefficients for symmetry after GM',I
             CALL PRQMAT(CMO(1+ICMOQ(I)),NFBASI,NORBI,

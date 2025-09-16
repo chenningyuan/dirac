@@ -3201,7 +3201,7 @@ C
          END DO
       END IF
 C
-      CALL RGMCMO(CMO,WORK(KFREE),LFREE)
+      CALL RGMCMO(CMO,IPROPT,WORK(KFREE),LFREE)
 C
       IF (IPROPT .GE. 10) THEN
          DO I = 1, NFSYM
@@ -4297,7 +4297,7 @@ C                    for the Gram-Schmidt orthonormalization,
 C                    because we want to start with the
 C                    occupied orbitals
 C
-      CALL RGMCMO(CMO,WORK(KFREE),LFREE)
+      CALL RGMCMO(CMO,IPROPT,WORK(KFREE),LFREE)
 C
 C     Write new coefficients
 C
