@@ -82,7 +82,8 @@
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
             integer                 :: print_occupation_number = 0 ! print all occupation number
             integer                 :: moint_scheme = 4
-            integer                 :: mp2fno_prop = -1
+            integer                 :: n_mp2fno_prop = 1
+            integer, allocatable    :: mp2fno_prop(:)
             integer                 :: mp2no = 0                ! > 0 mp2 natural orbital, < 0 mp2lap
                                                                 !  -1: MP2LAP
                                                                 !   1: MP2N0

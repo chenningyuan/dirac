@@ -1127,7 +1127,9 @@
       end if
 
       if (kw_matches(word, '.FNOPROP         ')) then
-         call kw_read(word, exa_input%mp2fno_prop)
+         call kw_read(word, exa_input%n_mp2fno_prop)
+         allocate(exa_input%mp2fno_prop(exa_input%n_mp2fno_prop))
+         call kw_read(word, exa_input%mp2fno_prop, exa_input%n_mp2fno_prop)
       end if
 
       if (kw_matches(word, '.FNO_OMEGA         ')) then
