@@ -22,6 +22,7 @@ module mp2no_fileinterfaces
         end interface
 
         public quater_write, quater_read
+        public generate_unified_NOs_MO_file
         public print_rMP2FVNO, write_nos
 
        contains
@@ -321,6 +322,13 @@ module mp2no_fileinterfaces
             call print_date('Written natural orbitals to '//trim(new_orbitals)//' section of checkpoint')
 
       end subroutine write_nos
+
+      subroutine generate_unified_NOs_MO_file(n_mp2fno_prop)
+         integer, optional :: n_mp2fno_prop
+
+         integer :: i
+
+      end subroutine generate_unified_NOs_MO_file
 
 end module mp2no_fileinterfaces
 

@@ -52,6 +52,7 @@ module talsh_mp2no
         logical                :: alive
         real(kind=8)           :: threshold
         integer                :: i, nocc
+        character(len=10)      :: fn
 
         call print_date("Entering MP2_NO Module")
 
@@ -60,17 +61,34 @@ module talsh_mp2no
         nocc = exa_input%mokr_occ(size(exa_input%mokr_occ))
 
         inquire(file="NOs_MO", exist=alive)
-        if (alive) then
-            call print_date('File NOs_MO exists')
+
+        if(exa_input%mp2no.ne.3) then
+           if (alive) then
+               call print_date('File NOs_MO exists')
+           else
+               call print_date('File NOs_MO does not exist. Start constructing MP2 density matrix')
+               if (exa_input%mp2no<9) then
+                     call talsh_generate_MP2_VNO_MObasis(exa_input)
+               else
+                     call mp2lap_get_DM(exa_input)
+               endif
+               call get_transform_Fock(exa_input,'DM_complex')
+           end if
         else
-            call print_date('File NOs_MO does not exist. Start constructing MP2 density matrix')
-            if (exa_input%mp2no<9) then
-                  call talsh_generate_MP2_VNO_MObasis(exa_input)
-            else
-                  call mp2lap_get_DM(exa_input)
-            endif
-            call get_transform_Fock(exa_input,'DM_complex')
-        end if
+           ! FNO++ specific
+           do i = 1,exa_input%n_mp2fno_prop
+              ! compute VV block of FV MP2 Matrix
+              call talsh_generate_MP2_VNO_MObasis(exa_input, i)
+
+              ! get NO orbitals and save them in NOs_MO//i files
+              call get_transform_Fock(exa_input,'DM_complex',i)
+           enddo
+
+           ! make final NOs_MO file
+           call generate_unified_NOs_MO_file(exa_input%n_mp2fno_prop)
+
+        endif
+
         call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
                               New_orbital_energy,'NOs_MO',N_cano)
         call write_nos(nocc,NOs_AO,New_orbital_energy,'scf','mbpt')
@@ -80,7 +98,7 @@ module talsh_mp2no
 
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine talsh_generate_MP2_VNO_MObasis (exa_input)
+      subroutine talsh_generate_MP2_VNO_MObasis (exa_input, i_mp2fno_prop)
 !       This subroutine obtains the complex mp2 density matrix in MO basis
 !       The non-diagonal complex DM is written into file DM_complex.
 !       Written by Xiang Yuan
@@ -92,6 +110,7 @@ module talsh_mp2no
          integer,  allocatable                  :: mo_vir(:)               ! the list index of virtual spinors
          integer,  allocatable                  :: mo_occ(:)               ! the list index of occupied spinors
          real(8), allocatable                   :: eps_occ(:),eps_vir(:)   ! HF orbital energies
+         integer, optional, intent(in)          :: i_mp2fno_prop
 
 !        Intermediate tensors (same notation as in relccsd)
          type(talsh_tens_t)          :: MP2_vv_density
@@ -234,7 +253,7 @@ module talsh_mp2no
             ierr=talsh_tensor_contract("H(a,b)+=T(f,a,m,n)*V(m,n,f,b)",comm_t%hvv,comm_t%t2,int_t%oovv,scale=MINUS_ONE_HALF)
 
             ! Abar ai
-            call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop)
+            call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop(i_mp2fno_prop))
             interm_t_prop1%property_label = orb_int_tensor1%property_label
 
             ov_dims(1) = nocc
@@ -457,7 +476,7 @@ module talsh_mp2no
    end subroutine get_MP2_integrals
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine get_transform_Fock (exa_input,Matrix_file)
+      subroutine get_transform_Fock (exa_input,Matrix_file, i_mp2fno_prop)
          ! This routine is used for doing transform of fock matrix from MO basis to NO basis.
          ! The new basis set comes from the digonalization of density matrix.
          ! The all natural orbitals and occupation numbers are saved in file NOs_MO
@@ -469,6 +488,7 @@ module talsh_mp2no
 
                   character(len=*),intent(in)        :: Matrix_file
                   type(exacc_input), intent(in)      :: exa_input
+                  integer, optional, intent(in)      :: i_mp2fno_prop
 
                   type(cmo)                          :: qorbital
                   type(basis_set_info_t)             :: ao_basis
@@ -480,6 +500,7 @@ module talsh_mp2no
                   real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
                   integer                            :: sz,flb,sz_occ           ! size of matrix and flag for block
                   integer                            :: i, ierr, nocc, nvirt
+                  character(len=10)                  :: fn, istr
 
                   call read_matrix_comp(MP2_density_comp,Matrix_file)
                   call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
@@ -502,7 +523,13 @@ module talsh_mp2no
                       enddo
                   endif
 
-                  call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
+                  fn = 'NOs_MO'
+                  if(present(i_mp2fno_prop)) then
+                      write(istr, '(I0)') i_mp2fno_prop
+                     fn = fn // trim(istr)
+                  endif
+                  !call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
+                  call quater_write(NOs_MO,N_OCCUPATION,TRIM(fn))
                   call print_date('wrote all natural orbital and occupation number in file NOs_MO')
 
                   ! we initialize the (diagonal) vv block of the Fock matrix with the orbital energies
@@ -518,7 +545,13 @@ module talsh_mp2no
                   call basis_transform_matrix(Fock_HF,NOs_MO,Fock_NO)
                   call print_date('got full VV Fock matrix in natural orbital basis F_VV_NO')
 
-                  call quater_write(Fock_NO,"FM_in_NatOrb")
+                  fn = 'FM_in_NatOrb'
+                  if(present(i_mp2fno_prop)) then
+                      write(istr, '(I0)') i_mp2fno_prop
+                     fn = fn // trim(istr)
+                  endif
+                  !call quater_write(Fock_NO,"FM_in_NatOrb")
+                  call quater_write(Fock_NO,trim(fn))
                   call print_date('wrote F_VV_NO in file FM_in_NatOrb')
 
       end subroutine get_transform_Fock
