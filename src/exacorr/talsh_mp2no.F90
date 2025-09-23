@@ -4,7 +4,7 @@ module talsh_mp2no
         use tensor_algebra
         use talsh
         use exacorr_datatypes
-        !use exacorr_utils
+        use exacorr_utils
         use talsh_common_routines
         use exacorr_mo
         use exacorr_global
@@ -76,6 +76,7 @@ module talsh_mp2no
            end if
         else
            call print_date('Generating MP2FNO++...')
+           write(*,*) 'Perturbation operators = ', exa_input%mp2fno_prop
            ! FNO++ specific
            do i = 1,exa_input%n_mp2fno_prop
               ! compute VV block of FV MP2 Matrix
@@ -593,22 +594,10 @@ module talsh_mp2no
                               threshold,N_reduced,file_orb)
             call print_date('got the truncated NO and occupation number from NOs_MO')
 
-            Sum_N_OCCUPATION_reduced = 0.0
-            do i=1, size(N_OCCUPATION_reduced)
-                  Sum_N_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced + N_OCCUPATION_reduced(i)
-            end do
-
-            Perc_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced / Sum_N_OCCUPATION_total
-            Perc_OCCUPATION_reduced = Perc_OCCUPATION_reduced * 100
-
-            write(*,*) ""
-            write(*,"(A50,2X,D10.4)") 'MP2 occupation number (o.n.) threshold (t) : ', threshold
-            write(*,"(A50,2X,I10)")    'Number of MP2 FVNOs retained (o.n. > t)    : ', N_reduced
-            write(*,*) ""
-            write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., retained NOs (a)    : ', Sum_N_OCCUPATION_reduced
-            write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., all NOs (b)         : ', Sum_N_OCCUPATION_total
-            write(*,"(A50,2X,D10.4)") 'Percentage of occupation retained (100*a/b): ', Perc_OCCUPATION_reduced
-            write(*,*) ""
+            ! This is already printed before in the case of MP2 FNO++
+            if(exa_input%mp2no.ne.3) then
+               call print_mp2fvno_occupation_number_details(threshold, N_reduced, N_OCCUPATION_reduced, Sum_N_OCCUPATION_total)
+            endif
 
             nvirt = exa_input%nkr_vir        ! the number of virtual orbitals
             nocc  = exa_input%mokr_occ(size(exa_input%mokr_occ))

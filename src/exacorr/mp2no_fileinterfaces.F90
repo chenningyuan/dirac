@@ -328,14 +328,16 @@ module mp2no_fileinterfaces
 
       subroutine generate_unified_NOs_MO_file(exa_input)
          ! Routine specific to MP2FNO++ to regroup into the same NOs_MO file
-         ! the NOs_MO generated for different perturbation
+         ! the NOs_MO generated for different perturbation.
+         ! Also print some information about the FVO size reduction.
          implicit none
 
          type(exacc_input), intent(in) :: exa_input
 
          real(kind=8), pointer  :: NOs_MO(:,:,:), NOs_MO_tmp(:,:,:)
          real(kind=8), pointer  :: N_OCCUPATION(:), N_OCCUPATION_tmp(:)
-         real(kind=8)               :: t_mp2no
+         real(kind=8)               :: N_OCCUPATION_tmp_j
+         real(kind=8)               :: t_mp2no, Sum_N_OCCUPATION_total
          character(len=10)          :: fn
          integer :: unit
          integer :: nao, nto, nz
@@ -343,6 +345,7 @@ module mp2no_fileinterfaces
          
 
          t_mp2no = exa_input%t_mp2no
+         Sum_N_OCCUPATION_total = 0.0
 
          ! read nao from checkpoint file
          nz = 4 
@@ -365,7 +368,9 @@ module mp2no_fileinterfaces
 
             ! number of orbitals whose occupation number is high enough
             do j =1,nao
-               if(N_OCCUPATION_tmp(j).ge.t_mp2no) then
+               N_OCCUPATION_tmp_j = N_OCCUPATION_tmp(j)
+               Sum_N_OCCUPATION_total = Sum_N_OCCUPATION_total + N_OCCUPATION_tmp_j
+               if(N_OCCUPATION_tmp_j.ge.t_mp2no) then
                   nto = nto + 1
                endif
             enddo
@@ -414,6 +419,9 @@ module mp2no_fileinterfaces
          ! save into the final NOs_MO file
          call quater_write_orbital(NOs_MO,N_OCCUPATION,'NOs_MO')
          call print_date('MP2FNO++: Wrote all natural orbital and occupation number in file NOs_MO.')
+
+         ! print info
+         call  print_mp2fvno_occupation_number_details(t_mp2no, nto, N_OCCUPATION, Sum_N_OCCUPATION_total)
 
          deallocate(N_OCCUPATION)
          deallocate(NOs_MO)
