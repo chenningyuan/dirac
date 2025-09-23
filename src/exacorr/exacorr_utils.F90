@@ -19,6 +19,7 @@ module exacorr_utils
   public shift_orbital_energy
   public print_orbital_energy
   public print_iterative_wavefunction_choice
+  public print_mp2fvno_occupation_number_details
 
   contains
 
@@ -510,5 +511,30 @@ module exacorr_utils
          write(wf_label,'(A)') wavefunction
       end if   
    end subroutine
+
+   subroutine print_mp2fvno_occupation_number_details(threshold, N_reduced, N_OCCUPATION_reduced, Sum_N_OCCUPATION_total)
+      real(kind=8), intent(in), pointer :: N_OCCUPATION_reduced(:)
+      real(kind=8), intent(in)          :: threshold, Sum_N_OCCUPATION_total
+      integer, intent(in)               :: N_reduced
+
+      real(kind=8) :: Sum_N_OCCUPATION_reduced, Perc_OCCUPATION_reduced
+      integer :: i
+
+      Sum_N_OCCUPATION_reduced = 0.0
+      do i=1, size(N_OCCUPATION_reduced)
+            Sum_N_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced + N_OCCUPATION_reduced(i)
+      end do
+
+      Perc_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced / Sum_N_OCCUPATION_total
+      Perc_OCCUPATION_reduced = Perc_OCCUPATION_reduced * 100
+      write(*,*) ""
+      write(*,"(A50,2X,D10.4)") 'MP2 occupation number (o.n.) threshold (t) : ', threshold
+      write(*,"(A50,2X,I10)")    'Number of MP2 FVNOs retained (o.n. > t)    : ', N_reduced
+      write(*,*) ""
+      write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., retained NOs (a)    : ', Sum_N_OCCUPATION_reduced
+      write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., all NOs (b)         : ', Sum_N_OCCUPATION_total
+      write(*,"(A50,2X,D10.4)") 'Percentage of occupation retained (100*a/b): ', Perc_OCCUPATION_reduced
+      write(*,*) ""
+   endsubroutine print_mp2fvno_occupation_number_details
 
 end module exacorr_utils
