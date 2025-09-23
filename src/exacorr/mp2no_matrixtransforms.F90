@@ -100,15 +100,18 @@ module mp2no_matrixtransforms
            ! sort N_OCCUPATION
            width = 1
            do while(width<n)
+
+              !$OMP PARALLEL DO SCHEDULE(DYNAMIC) &
+              !$OMP& PRIVATE(I)
               do i = 1, n, 2*width
                  call bottomup_merge(N_OCCUPATION, i, min(i+width, n+1), min(i+width*2,n+1),N_OCCUPATION_tmp, indices, indices_tmp)
               enddo
+              !$OMP END PARALLEL DO
 
               N_OCCUPATION = N_OCCUPATION_tmp
               indices = indices_tmp
               width = width * 2
            enddo
-
 
            ! check for debug
            !do i=1,n-1
@@ -121,9 +124,12 @@ module mp2no_matrixtransforms
            !enddo
 
            ! sort NOs_MO with the indices
+           !$OMP PARALLEL DO SCHEDULE(STATIC) &
+           !$OMP& PRIVATE(I)
            do i=1,n
               NOs_MO(:,i,:) = NOs_MO_tmp(:,indices(i),:)
            enddo
+           !$OMP END PARALLEL DO
            
            deallocate(indices)
            deallocate(indices_tmp)

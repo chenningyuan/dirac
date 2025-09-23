@@ -421,7 +421,7 @@ module mp2no_fileinterfaces
          call print_date('MP2FNO++: Wrote all natural orbital and occupation number in file NOs_MO.')
 
          ! print info
-         call  print_mp2fvno_occupation_number_details(t_mp2no, nto, N_OCCUPATION, Sum_N_OCCUPATION_total)
+         call print_mp2fvno_occupation_number_details(t_mp2no, nto, N_OCCUPATION, Sum_N_OCCUPATION_total)
 
          deallocate(N_OCCUPATION)
          deallocate(NOs_MO)
