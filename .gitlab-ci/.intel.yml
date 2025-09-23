@@ -1,5 +1,5 @@
 intel-mkl-serial-32:
-  image: ubuntu:20.04
+  image: ubuntu:24.04
   variables:
     DIRAC_MPI_COMMAND: ""
     OMP_NUM_THREADS: "1"
@@ -32,7 +32,7 @@ intel-mkl-serial-32:
     - ctest -j$M -L short --output-on-failure
 
 intel-mkl-mpi-32:
-  image: ubuntu:20.04
+  image: ubuntu:24.04
   variables:
     OMP_NUM_THREADS: "1"
   rules: !reference [.define-build-rules, rules]
@@ -68,7 +68,7 @@ intel-mkl-mpi-32:
     - ctest -j$M -L short --output-on-failure
 
 intel-mkl-mpi-64:
-  image: ubuntu:20.04
+  image: ubuntu:24.04
   variables:
     OMP_NUM_THREADS: "1"
   rules: !reference [.define-build-rules, rules]
