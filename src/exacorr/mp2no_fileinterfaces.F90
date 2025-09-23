@@ -7,6 +7,7 @@ module mp2no_fileinterfaces
         use exacorr_mo
         use exacorr_global,only: nfunctions
         use exacorr_utils
+        use mp2no_matrixtransforms
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -36,18 +37,19 @@ module mp2no_fileinterfaces
          real(kind=8), pointer,intent(in)   :: orbital_eigenval(:)       ! new eigenvalue, it could be occupation number or orbital energy
          character(len=*),intent(in)        :: file_name
  
-         integer :: sz
+         integer :: sz1, sz2
 
          integer :: write_orb
          logical :: debug=.true.
 
          call get_free_fileunit(write_orb)
-         sz = size(orbital_coeff,2)
+         sz1 = size(orbital_coeff,1)
+         sz2 = size(orbital_coeff,2)
          open (write_orb,file=file_name,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
          if (debug) then
 !           print *,'<<<<< Quaternion orbital, Writing Begin.'
            ! write dimension of the matrix 
-           write(write_orb) sz
+           write(write_orb) sz1, sz2
            ! write eigenvalues 
            write(write_orb) orbital_eigenval
            ! write orbitals coeffcient 
@@ -105,7 +107,8 @@ module mp2no_fileinterfaces
    !     loop variables
          integer :: i, j
 
-         integer :: sz_all, sz
+         !integer :: sz_all ! sz_all -> sz1
+         integer :: sz1, sz2, sz
          integer :: read_orb, ierr=0
 
          logical :: debug=.true.
@@ -116,10 +119,10 @@ module mp2no_fileinterfaces
          if (debug) then
 !            print *,'<<<<< Start reading all Natural Orbital and Occupation number from the NOs_MO.'
            ! read orbital matrix size
-           read(read_orb) sz_all
+           read(read_orb) sz1, sz2
 
-           allocate(orbital_eigenval_all(sz_all))
-           allocate(orbital_coeff_all(sz_all,sz_all,4))
+           allocate(orbital_eigenval_all(sz2))
+           allocate(orbital_coeff_all(sz1,sz2,4))
            
            ! read eigenvalue
            read(read_orb) orbital_eigenval_all
@@ -131,7 +134,7 @@ module mp2no_fileinterfaces
         close(read_orb,status='KEEP')
 
         n_orb_trunca = 0
-        do i=1,sz_all
+        do i=1,sz1
          if (orbital_eigenval_all(i) >= threshold) then
             n_orb_trunca = n_orb_trunca + 1
          end if
@@ -140,7 +143,7 @@ module mp2no_fileinterfaces
 
         sz = n_orb_trunca
         allocate(orbital_eigenval(sz))
-        allocate(orbital_coeff(sz_all,sz,4))
+        allocate(orbital_coeff(sz1,sz,4))
 
 
         do i=1, sz
@@ -149,13 +152,13 @@ module mp2no_fileinterfaces
 
 
         do j=1, sz
-            do i=1, sz_all
+            do i=1, sz1
                orbital_coeff(i,j,:) = orbital_coeff_all(i,j,:)
             end do
         end do
 
         Sum_orbital_eigenval_total = 0.0
-        do i=1, sz_all
+        do i=1, sz1
            Sum_orbital_eigenval_total = Sum_orbital_eigenval_total + orbital_eigenval_all(i)
         end do
 
@@ -323,11 +326,97 @@ module mp2no_fileinterfaces
 
       end subroutine write_nos
 
-      subroutine generate_unified_NOs_MO_file(n_mp2fno_prop)
-         integer, optional :: n_mp2fno_prop
+      subroutine generate_unified_NOs_MO_file(exa_input)
+         ! Routine specific to MP2FNO++ to regroup into the same NOs_MO file
+         ! the NOs_MO generated for different perturbation
+         implicit none
 
-         integer :: i
+         type(exacc_input), intent(in) :: exa_input
 
+         real(kind=8), pointer  :: NOs_MO(:,:,:), NOs_MO_tmp(:,:,:)
+         real(kind=8), pointer  :: N_OCCUPATION(:), N_OCCUPATION_tmp(:)
+         real(kind=8)               :: t_mp2no
+         character(len=10)          :: fn
+         integer :: unit
+         integer :: nao, nto, nz
+         integer :: i, j, iMO
+         
+
+         t_mp2no = exa_input%t_mp2no
+
+         ! read nao from checkpoint file
+         nz = 4 
+         nto = 0
+
+         ! first read all files to get nto and nao
+         call print_date('First reading every NOs_MO file...')
+         do i=1,exa_input%n_mp2fno_prop
+            write(fn, '(A,I0)') 'NOs_MO', i
+
+            call get_free_fileunit(unit)
+            open (unit,file=fn,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+
+            read(unit) nao
+
+            allocate(N_OCCUPATION_tmp(nao))
+            read(unit) N_OCCUPATION_tmp
+
+            close(unit,status='KEEP')
+
+            ! number of orbitals whose occupation number is high enough
+            do j =1,nao
+               if(N_OCCUPATION_tmp(j).ge.t_mp2no) then
+                  nto = nto + 1
+               endif
+            enddo
+
+            deallocate(N_OCCUPATION_tmp)
+         enddo
+
+         ! allocate arrays
+         allocate(N_OCCUPATION(nto))
+         allocate(NOs_MO(nao,nto,nz))
+         allocate(N_OCCUPATION_tmp(nao))
+         allocate(NOs_MO_tmp(nao,nao,nz))
+
+         ! read all coefficients + occupation numbers
+         call print_date('Second read of NOs_MO files...')
+         iMO = 1
+         do i=1,exa_input%n_mp2fno_prop
+            write(fn, '(A,I0)') 'NOs_MO', i
+
+            call get_free_fileunit(unit)
+            open (unit,file=fn,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+
+            read(unit) nao
+            read(unit) N_OCCUPATION_tmp
+            read(unit) NOs_MO_tmp
+
+            close(unit,status='KEEP')
+
+            do j = 1,nao
+               if(N_OCCUPATION_tmp(j).ge.t_mp2no) then
+                  NOs_MO(:,iMO,:) = NOs_MO_tmp(:,j,:)
+                  N_OCCUPATION(iMO) = N_OCCUPATION_TMP(j)
+                  iMO = iMO + 1
+               endif
+            enddo
+
+         enddo
+         call print_date('Finished!')
+         
+         deallocate(N_OCCUPATION_tmp)
+         deallocate(NOs_MO_tmp)
+
+         ! sort by occupation number
+         call sort_MOs_by_occupation_number(N_OCCUPATION,NOs_MO)
+
+         ! save into the final NOs_MO file
+         call quater_write_orbital(NOs_MO,N_OCCUPATION,'NOs_MO')
+         call print_date('MP2FNO++: Wrote all natural orbital and occupation number in file NOs_MO.')
+
+         deallocate(N_OCCUPATION)
+         deallocate(NOs_MO)
       end subroutine generate_unified_NOs_MO_file
 
 end module mp2no_fileinterfaces
