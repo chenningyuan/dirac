@@ -75,6 +75,7 @@ module talsh_mp2no
                call get_transform_Fock(exa_input,'DM_complex')
            end if
         else
+           call print_date('Generating MP2FNO++...')
            ! FNO++ specific
            do i = 1,exa_input%n_mp2fno_prop
               ! compute VV block of FV MP2 Matrix
@@ -84,8 +85,10 @@ module talsh_mp2no
               call get_transform_Fock(exa_input,'DM_complex',i)
            enddo
 
+           call print_date('Writing NOs_MO...')
+
            ! make final NOs_MO file
-           call generate_unified_NOs_MO_file(exa_input%n_mp2fno_prop)
+           call generate_unified_NOs_MO_file(exa_input)
 
         endif
 
@@ -500,7 +503,7 @@ module talsh_mp2no
                   real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
                   integer                            :: sz,flb,sz_occ           ! size of matrix and flag for block
                   integer                            :: i, ierr, nocc, nvirt
-                  character(len=10)                  :: fn, istr
+                  character(len=20)                  :: fn, istr
 
                   call read_matrix_comp(MP2_density_comp,Matrix_file)
                   call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
@@ -526,7 +529,8 @@ module talsh_mp2no
                   fn = 'NOs_MO'
                   if(present(i_mp2fno_prop)) then
                       write(istr, '(I0)') i_mp2fno_prop
-                     fn = fn // trim(istr)
+                     fn = trim(fn) // trim(istr)
+                     call print_date("FNO++ file: "//fn)
                   endif
                   !call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
                   call quater_write(NOs_MO,N_OCCUPATION,TRIM(fn))
@@ -548,7 +552,8 @@ module talsh_mp2no
                   fn = 'FM_in_NatOrb'
                   if(present(i_mp2fno_prop)) then
                       write(istr, '(I0)') i_mp2fno_prop
-                     fn = fn // trim(istr)
+                     fn = trim(fn) // trim(istr)
+                     call print_date("FNO++ file: "//fn)
                   endif
                   !call quater_write(Fock_NO,"FM_in_NatOrb")
                   call quater_write(Fock_NO,trim(fn))
