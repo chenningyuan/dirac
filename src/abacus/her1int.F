@@ -4664,13 +4664,12 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "gfac.h"
+#include "codata.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 C
       PARAMETER (D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0)
-      PARAMETER (DFAC = D4*GFAC*PI/D3)
       LOGICAL DOATOM(NUCIND)
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
@@ -4679,6 +4678,9 @@ C
 #include "nuclei.h"
 C
 #include "ibtfun.h"
+C
+      DFAC = D4*GFAC*PI/D3
+C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5051,20 +5053,21 @@ C  /* Deck sdint */
      &                 NOPTYP,NATOMC,INTTYP,SAAB,EXPP,CORCX,CORCY,CORCZ,
      &                 CORPX,CORPY,CORPZ)
 C
-C     tuh Feb 09 91 (g_e factor 930726-hjaaj)
-C
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "pi.h"
-#include "gfac.h"
+#include "codata.h"
       PARAMETER (D2 = 2.0D0, D3 = 3.0D0)
-      PARAMETER (DFAC11 = D2*GFAC*PI/D3, DFAC13 = D2*GFAC*PI)
-      PARAMETER (DFACSD = GFAC / D2)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          CORCX(*), CORCY(*), CORCZ(*), SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
+C
+      DFAC11 = D2*GFAC*PI/D3
+      DFAC13 = D2*GFAC*PI
+      DFACSD = GFAC / D2
+C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5876,7 +5879,8 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "onecom.h"             !contains KCKTAB
+! onecom.h : KCKTAB
+#include "onecom.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &     SHLINT(KCKTAB,NINTS),WORK(LWORK)
 #include "memint.h"
@@ -5907,7 +5911,8 @@ C***********************************************************************
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &     SHLINT(KCKTAB,NINTS),TMPARR(KCKTAB,8)
       INTEGER T, U, V, NINTS
-#include "onecom.h" !contains KCKTAB
+! onecom.h :  KCKTAB
+#include "onecom.h"
 #include "lmns.h"
 #include "symmet.h"
 #include "inforb.h"
@@ -6744,8 +6749,6 @@ C
 C Does only work for Tensor/Chiral effect!
 C
       DIFODC = .FALSE.
-C
-C
 C
 C Exponent and coordinates of Spherical Nuclear distribution
       NUCPN1 = 0

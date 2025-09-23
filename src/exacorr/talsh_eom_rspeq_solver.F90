@@ -21,22 +21,33 @@ module talsh_eom_rspeq_solver
       public solve_eom_lr_right
       public solve_eom_lr_left
       public get_left_bvec
+      public print_lr_setup
 
       contains
 
 !----------------------------------------------------------------------------------------------------------------
 
+      subroutine print_lr_setup(rspeq_side,operator_label,operator_index,freq)
+         complex(kind=8), intent(in) :: freq
+         integer, intent(in) :: operator_index
+         character(1), intent(in) :: rspeq_side 
+         character(1), intent(in) :: operator_label
+
+         print *, ""
+         print *, "Solving "//rspeq_side//"HS linear response equation"
+!        when forming e.g 2-photon transition moments, do not print information on indivudial operators 
+         if (operator_index.gt.0) then
+             print *, "   Operator "//operator_label//" : ",operator_index
+         endif
+         print *, "   Frequency  : ",freq
+         print *, ""
+      end subroutine
+
+
       subroutine solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop, &
                                     omega, tprop_tensor)
             use talsh_sigma_eomccsd
             use mfsolver_dirac_input
-
-      ! write(*,*) ""
-      ! write(*,'(A)') "*******************************************************************************"
-      ! write(*,'(A)') "***************************** CC-CI LR Right ******************************"
-      ! write(*,'(A)') "*******************************************************************************"
-      ! write(*,*) ""
-
 
 !     input variables
             type(exacc_input), intent(in) :: exa_input
@@ -54,13 +65,11 @@ module talsh_eom_rspeq_solver
 !     error code
             integer :: ierr
             character(len=2) :: flavor = "EE"
-            integer :: nroot                           ! initialize the number of trail vectors
+            integer :: nroots = 1                           ! initialize the number of trail vectors
 
             integer(INTD), dimension(2) :: vo_dims
             integer(INTD), dimension(4) :: vvoo_dims
 
-            nroot = exa_input%N_eom_trial
-            
             call talsh_davidson_setup(unit_output=6, &
                         convergence_threshold=mfsolver_options_convergence_threshold, &
                         max_subspace_size=mfsolver_options_max_subspace_size,&
@@ -71,20 +80,19 @@ module talsh_eom_rspeq_solver
                         symmetric=.false., &
                         use_preconditioner=.true.,&
                         max_iterations=mfsolver_options_max_iterations,&
-                        ! max_subspace_size=nroot,&
                         complex_mode=.true.)
 
             call print_date("Entering CC-CI Right Linear Systems calculation")
 
-            call talsh_davidson_workspace_create(workspace_t, nroot, interm_t%nocc, interm_t%nvir, flavor, 2)
+            call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
             call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
-            ! call talsh_eomccsd_ee_trial_create(workspace_t)
             call talsh_eomccsd_LR_proper_create(workspace_t,interm_t_prop%epsilon_prop_vo)
             call talsh_eomccsd_LR_trial_create(workspace_t)
             
 
 !     set pointers to sigma vector subroutines 
             interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
+            interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ee
 
             vo_dims(1) = exa_input%nvir
             vo_dims(2) = exa_input%nocc
@@ -111,74 +119,67 @@ module talsh_eom_rspeq_solver
             use talsh_sigma_eomccsd
             use mfsolver_dirac_input
 
-            ! write(*,*) ""
-            ! write(*,'(A)') "*******************************************************************************"
-            ! write(*,'(A)') "***************************** CC-CI LR Left ******************************"
-            ! write(*,'(A)') "*******************************************************************************"
-            ! write(*,*) ""
-      
-      
       !     input variables
-                  type(exacc_input), intent(in) :: exa_input
-                  type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
-                  type(talsh_intg_tens_t), intent(inout) :: int_t
-                  type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop
-                  complex(kind=8),INTENT(IN)              :: omega
+            type(exacc_input), intent(in) :: exa_input
+            type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
+            type(talsh_intg_tens_t), intent(inout) :: int_t
+            type(talsh_rsp_interm_tens_t), intent(inout) :: interm_t_prop
+            complex(kind=8),INTENT(IN)              :: omega
       
 
-                  type(talsh_eom_results_tens_t)  :: results_t
-                  type(talsh_comm_tens_t)       :: tprop_bar_tensor
-                  type(talsh_comm_tens_t)       :: bvec_tensor
+            type(talsh_eom_results_tens_t)  :: results_t
+            type(talsh_comm_tens_t)       :: tprop_bar_tensor
+            type(talsh_comm_tens_t)       :: bvec_tensor
       !     workspace
-                  type(talsh_davidson_workspace_tens_t) :: workspace_t
-                  type(talsh_projectors_tens_t) :: projector_t
+            type(talsh_davidson_workspace_tens_t) :: workspace_t
+            type(talsh_projectors_tens_t) :: projector_t
       !     error code
-                  integer :: ierr
-                  integer :: nroots = 1
-                  character(len=2) :: flavor = "EE"
+            integer :: ierr
+            integer :: nroots = 1
+            character(len=2) :: flavor = "EE"
 
-                  integer(INTD), dimension(2) :: ov_dims
-                  integer(INTD), dimension(4) :: oovv_dims
+            integer(INTD), dimension(2) :: ov_dims
+            integer(INTD), dimension(4) :: oovv_dims
                  
-                  call talsh_davidson_setup(unit_output=6, &
-                              convergence_threshold=mfsolver_options_convergence_threshold, &
-                              max_subspace_size=mfsolver_options_max_subspace_size,&
-                              verbose=mfsolver_options_verbose,&
-                              solve_right=.false.,&
-                              solve_left=.true.,&
-                              solve_linear_sys=.true.,&
-                              symmetric=.false., &
-                              use_preconditioner=.true.,&
-                              max_iterations=mfsolver_options_max_iterations,&
-                              complex_mode=.true.)
+            call talsh_davidson_setup(unit_output=6, &
+                        convergence_threshold=mfsolver_options_convergence_threshold, &
+                        max_subspace_size=mfsolver_options_max_subspace_size,&
+                        verbose=mfsolver_options_verbose,&
+                        solve_right=.false.,&
+                        solve_left=.true.,&
+                        solve_linear_sys=.true.,&
+                        symmetric=.false., &
+                        use_preconditioner=.true.,&
+                        max_iterations=mfsolver_options_max_iterations,&
+                        complex_mode=.true.)
       
-                  call print_date("Entering CC-CI Left Linear Systems calculation")
+            call print_date("Entering CC-CI Left Linear Systems calculation")
       
-                  call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
-                  call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, 'L')
-                  ! call talsh_eomccsd_ee_trial_create(workspace_t)
-                  call talsh_eomccsd_LR_proper_create(workspace_t,bvec_tensor%t1)
-                  call talsh_eomccsd_LR_trial_create(workspace_t)
+            call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
+            call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, 'L')
+            call talsh_eomccsd_LR_proper_create(workspace_t,bvec_tensor%t1)
+            call talsh_eomccsd_LR_trial_create(workspace_t)
       
       !     set pointers to sigma vector subroutines 
-                  interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ee
+            interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
+            interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ee
 
-                  ov_dims(1) = exa_input%nocc
-                  ov_dims(2) = exa_input%nvir
-                  oovv_dims(1:2) = exa_input%nocc
-                  oovv_dims(3:4) = exa_input%nvir
-
-      
-                  ierr=talsh_tensor_construct(tprop_bar_tensor%t1,C8,ov_dims,init_val=ZERO)
-                  ierr=talsh_tensor_construct(tprop_bar_tensor%t2,C8,oovv_dims,init_val=ZERO)
+            ov_dims(1) = exa_input%nocc
+            ov_dims(2) = exa_input%nvir
+            oovv_dims(1:2) = exa_input%nocc
+            oovv_dims(3:4) = exa_input%nvir
 
       
-                  call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,&
-                                          -omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)   !left equation use -omega
-                                          
-                  call print_date("Finishing CC-CI Left Linear Systems calculation")
+            ierr=talsh_tensor_construct(tprop_bar_tensor%t1,C8,ov_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(tprop_bar_tensor%t2,C8,oovv_dims,init_val=ZERO)
+
       
-                  call talsh_davidson_workspace_destroy(workspace_t)
+            call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,&
+                                    -omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)   !left equation use -omega
+                                    
+            call print_date("Finishing CC-CI Left Linear Systems calculation")
+      
+            call talsh_davidson_workspace_destroy(workspace_t)
 
       end subroutine solve_eom_lr_left
 

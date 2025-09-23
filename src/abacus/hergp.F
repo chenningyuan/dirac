@@ -2136,8 +2136,6 @@ C
 C     Determine center of mass in orgcom.h(CMXYZ) from information in common blocks
 C     K.Ruud, June-94
 C
-C     radovan: AMASS is not used !?
-C     hjaaj:   AMASS is passed on to VIBMAS
 C
 #include "implicit.h"
 #include "codata.h"
@@ -2173,6 +2171,8 @@ C
  10   CONTINUE
 C
       CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT-1)
+
+
       TELCMAS = ICHTOT/XFAMU
       TNUCMAS = TOTMAS - TELCMAS
 C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
@@ -2232,6 +2232,65 @@ C
       END IF
       RETURN
       END
+
+C  /* Deck chargebc */
+      SUBROUTINE CHARGEBC
+C     Determine nuclei charge barycenter in orgcom.h(NCHBC) from information in common blocks
+C     J. J. Aucar, 2024
+
+      use memory_allocator
+      IMPLICIT NONE
+
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "orgcom.h"
+#include "symmet.h"
+
+C     Variables Declaration
+      INTEGER :: IATOM, ISYMOP
+      REAL*8  :: CHTOT
+
+C     Initialize array
+      NCHBC(1:3) = 0.0d0
+
+C     Initialize total charge to Zero
+      CHTOT = 0
+
+C     Nuclei charge barycenter calculation
+      DO IATOM = 1, NUCIND
+         DO ISYMOP = 0, MAXOPR
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               !If charge of IATOM is greater than 0 (i.e. if not point charge)
+               IF (IZATOM(IATOM) .GT. 0) THEN
+                  ! use effective nuclear charge in CHARGE(:) (less than real charge for ECPs)
+                  ! instead of real nuclear charge in IZATOM(:)
+                  CHTOT = CHTOT + CHARGE(IATOM)
+                  NCHBC(1) = NCHBC(1) + CHARGE(IATOM)*
+     &                    PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  NCHBC(2) = NCHBC(2) + CHARGE(IATOM)*
+     &                    PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  NCHBC(3) = NCHBC(3) + CHARGE(IATOM)*
+     &                    PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+               END IF
+            END IF
+         END DO
+      END DO
+
+      IF (CHTOT.NE.0.0D0) THEN
+         NCHBC = NCHBC / CHTOT
+      ELSE
+         WRITE (LUPRI,'(//A/2A//)') ' ERROR in CHARGEBC ',
+     &          '     - Total nuclei charge equals zero.'
+         CALL QUIT('Total nuclei charge equals zero.')
+      END IF
+
+      RETURN
+      END
+
       SUBROUTINE TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,IPRINT)
 C
 C     Sets up transformation matrices between Cartesian (ITYPE=1)

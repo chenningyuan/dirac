@@ -1354,7 +1354,6 @@ C
 !radovan: these memgets are easily called 25 million times
 !         if somebody modifies the code
 !         please allocate buffers further upstream
-!miro: I have replaced some of them with MEMGET2 to track response-magnetizability bug ifort-parallel
       CALL MEMGET2('REAL','KPSO',KPSO,NPMAT,WORK,KFREE,LFREE) ! 1
       CALL MEMGET2('REAL','KPSA',KPSA,NPMATA,WORK,KFREE,LFREE)
       CALL MEMGET2('INTE','KNPCOA',KNPCOA,2*NSETA*(NODCAB + 1),
@@ -1441,7 +1440,6 @@ C
      &            DINTSKP,IREPDM,INDX,INDXAB,GENCNT)
       LWTOT  = LWTOT - KFREE + 1
  999  CONTINUE
-      ! miro: an error occurs here for mpi=2,ifort optimized !
       CALL MEMREL('TWOODS',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('TWOODS')
       RETURN
@@ -2091,16 +2089,6 @@ c    &                                       DMRAO(ISYBLD,ISYBLC,I))
                         END IF
 C Largest exchange contribution to gradient/Hessian expectation value
                         IF (IE .NE. 0) THEN
-C                          DNS21       = DMRAO(ISYBLC,ISYBLA,I)
-C    &                                  *DMRAO(ISYBLB,ISYBLD,I)
-c                          DNS21       = MAX(DMRAO(ISYBLC,ISYBLA,I),
-c    &                                       DMRAO(ISYBLA,ISYBLC,I))
-c    &                                  *MAX(DMRAO(ISYBLB,ISYBLD,I),
-c    &                                       DMRAO(ISYBLD,ISYBLB,I))
-c                          DNS22       = MAX(DMRAO(ISYBLD,ISYBLA,I),
-c    &                                       DMRAO(ISYBLA,ISYBLD,I))
-c    &                                  *MAX(DMRAO(ISYBLC,ISYBLB,I),
-c    &                                       DMRAO(ISYBLB,ISYBLC,I))
                            DNSBUF(2,I) = DMRAO(ISYBLC,ISYBLA,I)
      &                                  *DMRAO(ISYBLD,ISYBLB,I)
      &                                 + DMRAO(ISYBLD,ISYBLA,I)
@@ -2181,12 +2169,12 @@ C              Integral contributes
 C              ====================
 C
                IF (IPRINT .GE. 5) THEN
-                  WRITE (LUPRI, '(/,1X,A,3I5)')
+                  WRITE (LUPRI, '(/A,3I5)')
      &               ' Symmetry operations:',ISYMR, ISYMS, ISYMT
-                  WRITE (LUPRI, '(/,1X,A,I5)') ' ISYMTS ', ISYMTS
-                  WRITE (LUPRI, '(1X,A,4I5)')
+                  WRITE (LUPRI, '(/A,I5)') ' ISYMTS ', ISYMTS
+                  WRITE (LUPRI, '(A,4I5)')
      &               ' ICENTA-D ',ICENTA, ICENTB, ICENTC, ICENTD
-                  WRITE (LUPRI, '(1X,A,4I5)')
+                  WRITE (LUPRI, '(A,4I5)')
      &               ' NCENTA-D ',NCENTA, NCENTB, NCENTC, NCENTD
                END IF
 C

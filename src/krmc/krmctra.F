@@ -744,7 +744,7 @@ C
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbopt.h"
-      CHARACTER*24 DAYTID
+      CHARACTER DAYTID*24, SECTID*12, CPUTID*12, WALLTID*12
       LOGICAL TRASAM
       DIMENSION CMO(*),WORK(*), IBEIG(*),
      &          NSTR(2,0:2,4),KVEC(2,4),KQ(2,4),KIBE(2,4),
@@ -754,7 +754,6 @@ C
       CALL QENTER('RTRACTL1')
 #include "memint.h"
       KFRSAV = KFREE
-      DUM = DUMMY
 C
       CALL GETTIM(CPU1,WALL1)
       WRITE(LUPRI,'(/A)')
@@ -792,7 +791,7 @@ C         ... -1 tells NUMLST to _not_ reorder orbital list
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
-          CALL MEMREL('PAMTRA',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
+          CALL MEMREL('RTRACTL1a',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
           CALL MEMGET2('INTE','VEC',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
         ENDDO
@@ -929,33 +928,22 @@ C     Call driver for 4-index transformation
 C     --------------------------------------
 C
       CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
-     &            NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &            NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
      &            TRA_ANTIS,ITRA_INTFL4)
 C
 C     Print timing information
 C
       CALL GETTIM(CPU2,WALL2)
-C
-      WALL    = WALL2 - WALL1
-      IWMINS  = INT(WALL)/60
-      IWHOURS = IWMINS/60
-      IWMINS  = IWMINS - 60*IWHOURS
-      IWSECS  = NINT(WALL) - 3600*IWHOURS - 60*IWMINS
-C
-      CPU     = CPU2 - CPU1
-      ICMINS  = INT(CPU)/60
-      ICHOURS = ICMINS/60
-      ICMINS  = ICMINS - 60*ICHOURS
-      ICSECS  = NINT(CPU) - 3600*ICHOURS - 60*ICMINS
-C
+
+      CPUTID  = SECTID(CPU2-CPU1)
+      WALLTID = SECTID(WALL2-WALL1)
       CALL GTINFO(DAYTID)
-      WRITE(LUPRI,'(/2(A,I5.2,A,I2.2,A,I2.2),A/A,A24)')
-     &     ' (RTRACTL1) Total CPU (wall) time used :',
-     &      ICHOURS,':',ICMINS,':',ICSECS,
-     & ' (',IWHOURS,':',IWMINS,':',IWSECS,')',
-     &     '            Transformation ended ',DAYTID
+      WRITE(LUPRI,9300) CPUTID,WALLTID,DAYTID
 C
-      CALL FLSHFO(LUPRI)
+ 9300 FORMAT(/'>>> Total CPU (wall) time in RTRACTL1: ',A,'(',A,')'/
+     &        '    Integral transformation ended    : ',A/)
+C
+      FLUSH(LUPRI)
       CALL QEXIT('RTRACTL1')
 C
       RETURN
@@ -1064,7 +1052,7 @@ C
 #include "dgroup.h"
 #include "maxorb.h"
 !-----------------------------------------------------------------------
-      integer luint
+      integer luint, LU_NOT_USED
       integer nfh12ij_offset(2), nfh12kl_offset(2), indxb34_offset(2)
       dimension nstr(2,0:2,4)
       character datex*8,timex*8
@@ -1074,7 +1062,7 @@ C
 !     set dimension for the temporary h12 integral arrays
       ndim_h12_tmp = n2orbx * nz * nz * nbsym / nfsym
 
-      luint = 1
+      luint = LU_NOT_USED(10)
       open(luint,file='4INDINFO',status='old',form='unformatted')
 !
 !     read time & date for creation
@@ -1143,19 +1131,20 @@ C
 #include "dcbidx.h"
 #include "dcbham.h"
 C
-      DIMENSION FQ(NORBT,NASHT,NZ)
-      DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
-      DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
-      dimension hmat(*),h2xy(*),h2yx(*), ibeig(*)
-      dimension idxkr12(2,*),indxb12(2,*),indxb34(2,*)
-      LOGICAL DOFQ, DOH2AC
+      real*8    FQ(NORBT,NASHT,NZ)
+      real*8    PV(NASHT,NASHT,NNASHX,NZ,3)
+      real*8    H2AC(NASHT,NASHT,NNASHX,NZ,3)
+      real*8    hmat(*),h2xy(*),h2yx(*)
+      integer   ibeig(*)
+      integer   idxkr12(2,*),indxb12(2,*),indxb34(2,*)
+      LOGICAL   DOFQ, DOH2AC
 !     controls whether or not we read only from the integral file
 !     associated with the master process.
       logical, intent(in) :: int_file_is_master_file
 C     index arrays
-      DIMENSION NFPCK12(2), NFPCK34(2)
-      DIMENSION NSTR(2,0:2,4)
-      DIMENSION IKLB(2)
+      integer   NFPCK12(2), NFPCK34(2)
+      integer   NSTR(2,0:2,4)
+      integer   IKLB(2)
 C     strings
       CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
       logical fopen
@@ -1165,14 +1154,15 @@ C     strings
       integer, allocatable :: indxb34_reod(:,:)
       integer, allocatable :: orb_info_array(:,:,:)
       logical              :: set_qphaseFAC
-      integer              :: mytid_save
+      integer              :: mytid_save, luint
+      integer :: LU_NOT_USED
 
       CALL QENTER('RGETH21')
 C
 C     Read information from integral file
 C     -----------------------------------
 C
-      LUINT = 1
+      luint = LU_NOT_USED(10)
       OPEN(LUINT, FILE = '4INDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
@@ -1454,7 +1444,6 @@ C
  8000 CONTINUE
       WRITE(print_unit,'(/A)')
      &     '*** ERROR in RGETH21 *** Read error'
- 8100 CONTINUE
       WRITE(print_unit,'(1X,A,I4)')
      &     'IREPIJ = ',IREPIJ,
      &     'IREC   = ',IREC,
@@ -2361,8 +2350,8 @@ C     index arrays
       DIMENSION NFPCK12(2), NFPCK34(2)
       DIMENSION NSTR(2,0:2,4)
       DIMENSION IKLB(2)
-      dimension idxkr12(2,*), indxb12(2,*), indxb34(2,*)
-      dimension indxb34_offset(2)
+      integer   idxkr12(2,*), indxb12(2,*), indxb34(2,*)
+      integer   indxb34_offset(2)
 C     strings
       CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
 C     logicals
@@ -2891,7 +2880,6 @@ C
  8000 CONTINUE
       WRITE(LUPRI,'(/A)')
      &     '*** ERROR in RGETH2TX1 *** Read error'
- 8100 CONTINUE
       WRITE(LUPRI,'(1X,A,I4)')
      &     'IREPIJ = ',IREPIJ,
      &     'IREC   = ',IREC,

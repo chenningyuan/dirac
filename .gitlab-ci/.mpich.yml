@@ -1,0 +1,64 @@
+mpich-32:
+  image: ubuntu:25.04
+  rules: !reference [.define-build-rules, rules]
+  variables:
+    OMP_NUM_THREADS: "1"
+  script:
+    - !reference [.define-cores, script]
+    - apt-get -qq -y install mpich libmpich-dev libhdf5-mpich-dev
+    - export PATH_MPICH="$(which mpiexec | rev | cut -c13- |rev)" #To avoid exatensor definition at exatensor/src/exatensor/Makefile
+    - export MPICH_NO_LOCAL=1 # avoid using shared memory at /dev/shma
+    - mpirun --version
+    - ./setup --mpi --check --cmake-options="-DENABLE_UNIT_TESTS=ON" build
+    - cd build
+    - make -j $N_PROC
+    - ldd dirac.x
+    - !reference [.restrict-UCX, script]
+    - echo "Running ctest in parallel with $M jobs"
+    - ctest -j$M -L short --output-on-failure
+
+mpich-64:
+  image: ubuntu:25.04
+  rules: !reference [.define-build-rules, rules]
+  variables:
+    OMP_NUM_THREADS: "1"
+  script:
+    - !reference [.define-cores, script]
+    - apt-get -qq -y install wget
+    # Compile mpich with 64bit integers
+    - cd /
+    - wget https://www.mpich.org/static/downloads/4.1.2/mpich-4.1.2.tar.gz
+    - tar -xzf mpich-4.1.2.tar.gz
+    - cd mpich-4.1.2
+    - ./configure CC="gcc -m64" CXX="g++ -m64" FC="gfortran" CFLAGS="-O2 -m64" CXXFLAGS="-O2 -m64" FCFLAGS="-O2 -m64 -fdefault-integer-8" --enable-fortran=all --with-device=ch3:sock --prefix=/mpich64-long > $CI_PROJECT_DIR/configure.log 2>&1
+    - make -j$N_PROC > $CI_PROJECT_DIR/make_mpich.log 2>&1
+    - make install
+    - export PATH=/mpich64-long/bin:$PATH
+    - export LD_LIBRARY_PATH=/mpich64-long/lib:$LD_LIBRARY_PATH
+    - mpirun --version
+    - export MPICH_NO_LOCAL=1 # avoid using shared memory at /dev/shma
+    # Compile openblas with 64bit integers
+    - cd /
+    - git clone --branch v0.3.29 https://github.com/xianyi/OpenBLAS.git
+    - cd OpenBLAS
+    - make DYNAMIC_ARCH=1 USE_OPENMP=0 INTERFACE64=1 -j$N_PROC > $CI_PROJECT_DIR/make_openblas.log 2>&1
+    - make PREFIX=/opt/openblas64 install
+    - export LD_LIBRARY_PATH=/opt/openblas64/lib:$LD_LIBRARY_PATH
+    # Compile Dirac and run tests
+    - cd $CI_PROJECT_DIR
+    - ./setup --mpi --check --cmake-options="-DENABLE_UNIT_TESTS=ON" --pelib=OFF --int64 build
+    - cd build
+    - make -j $N_PROC
+    - ldd dirac.x
+    - !reference [.restrict-UCX, script]
+    - echo "Running ctest in parallel with $M jobs"
+    - export failure_tests="bss_energy|lucita_short|lucita_large|lucita_q_corrections"
+    - ctest -j$M -L short --output-on-failure -E "(${failure_tests})"
+  artifacts:
+    when: always
+    paths:
+      - build/test*
+      - $CI_PROJECT_DIR/configure.log
+      - $CI_PROJECT_DIR/make_mpich.log
+      - $CI_PROJECT_DIR/make_openblas.log
+    expire_in: 3 days

@@ -10,19 +10,44 @@
 # Set all module options and definitions first
 # so they can be DEFINED for all source subdirectories below
 #----------------------------------------------------------------------------------
+
+
+
+option(ENABLE_GEN1INT "Enable Gen1Int library" ON)
+if(ENABLE_GEN1INT)
+  # fixme: later this needs to become a target_compile_definitions
+  add_definitions(-DBUILD_GEN1INT)
+
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/gen1int)
+
+  set(EXTERNAL_LIBS gen1int_interface ${EXTERNAL_LIBS})
+endif()
+
+
+
+option(ENABLE_PELIB "Enable polarizabile embedding library" ON)
+if(ENABLE_PELIB)
+  # fixme: later this needs to become a target_compile_definitions
+  add_definitions(-DHAS_PELIB)
+
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
+
+  # fixme: this will later be done using targets
+  add_dependencies(PElib gen1int_interface)
+  add_dependencies(pelib_interface interface_mpi)
+
+  set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
+endif()
+
+
+
 option(ENABLE_RELCCSD_STANDALONE "Enable standalone RELCCSD" OFF)
 option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
 
-if (CMAKE_Fortran_COMPILER_ID MATCHES XL OR CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-# xlf compiler does not support isnan used
-# pgfortran compiler does not suppore real*16
-    option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
-else()
-    option(ENABLE_STIELTJES "Enable stieltjes library" ON)
-endif()
+option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
 if(ENABLE_STIELTJES)
     add_definitions(-DHAS_STIELTJES)
 endif()
@@ -68,7 +93,7 @@ endif()
 # variable.
 #
 # The resulting ${EXTERNAL_LIBS} variable contains localized source libraries of all functionality modules
-# of DIRAC (main,dirac,relccsd,prp,reladc, interest ...)
+# of DIRAC (dirac_main,dirac,relccsd,prp,reladc, interest ...)
 #
 # Due to entanglements between libraries (like dirac depends localization and vise versa) it is necessary
 # to keep source files (modules) as localized as possible and with minimal interdependencie on other modules.
@@ -86,6 +111,9 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:pdpack> ${EXTERNAL_OBJECTS})
 # Making interface_mpi as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/interface_mpi)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interface_mpi> ${EXTERNAL_OBJECTS})
+
+
+
 
 # Making mfsolver as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/mfsolver)
@@ -118,9 +146,20 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:moltra> ${EXTERNAL_OBJECTS})
 
-#    embedding as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/embedding)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:embedding> ${EXTERNAL_OBJECTS})
+#    frozen density embedding as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/fde)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:fde> ${EXTERNAL_OBJECTS})
+
+# XAMFI as separate library; before x2c because x2c depends on XAMFI
+if(ENABLE_XAMFI)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/x-amfi)
+    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:x-amfi> ${EXTERNAL_OBJECTS})
+    dirac_test(atomic_x2c_2esoc_models_energy "medium;xamfi" "")
+    dirac_test(atomic_x2c_spinfree_energy "medium;xamfi" "")
+    dirac_test(x_amfi "medium;xamfi" "")
+    message(STATUS "NOTE: tests for the (e)amfX2C 2e-scalar and spin-orbit picture-change correction module require h5py in your python env!")
+endif()
+message(STATUS "(e)amfX2C 2e-scalar and spin-orbit picture-change correction module: ${ENABLE_XAMFI}")
 
 # Making x2c as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/x2c)
@@ -280,6 +319,10 @@ if(ENABLE_KRCC)
 endif()
 message(STATUS "KRCC module: ${ENABLE_KRCC}")
 
+# Making caspt2 as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/caspt2)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:caspt2> ${EXTERNAL_OBJECTS})
+
 # Making relccsd as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/relccsd)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:relccsd> ${EXTERNAL_OBJECTS})
@@ -315,33 +358,12 @@ message(STATUS "LAO properties without connection matrices: ${ENABLE_LAO_REARRAN
 #  mcscf_sf as separate library
 message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
 
-# XAMFI as separate library
-if(ENABLE_XAMFI)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/x-amfi)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:x-amfi> ${EXTERNAL_OBJECTS})
-    dirac_test(atomic_x2c_2esoc_models_energy "medium;xamfi" "")
-    dirac_test(atomic_x2c_spinfree_energy "medium;xamfi" "")
-    dirac_test(x_amfi "short;xamfi" "")
-    message(STATUS "NOTE: tests for the (e)amfX2C 2e-scalar and spin-orbit picture-change correction module require h5py in your python env!")
-endif()
-message(STATUS "(e)amfX2C 2e-scalar and spin-orbit picture-change correction module: ${ENABLE_XAMFI}")
-
 #  srdft module as separate library
 if(ENABLE_SRDFT)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/srdft)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:srdft> ${EXTERNAL_OBJECTS})
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
-
-# pelib interface routines added as module
-if(ENABLE_PELIB)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
-    set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
-    dirac_test(pe_energy "medium;scf;pelib" "")
-    dirac_test(pe_response "medium;polarizabilities;pelib" "")
-    dirac_test(pe_exc "medium;pelib" "")
-    dirac_test(pe_cpp "short;pelib" "")
-endif()
 
 #  dirac sources as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
@@ -353,7 +375,7 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:input> ${EXTERNAL_OBJECTS})
 
 # main directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
-set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:main> ${EXTERNAL_OBJECTS})
+set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:dirac_main> ${EXTERNAL_OBJECTS})
 
 # make these variables visible to the cmake one level up
 set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)

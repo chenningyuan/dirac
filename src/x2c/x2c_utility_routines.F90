@@ -25,7 +25,7 @@
 module x2c_utils
 
 
-  use x2c_fio
+ !use x2c_fio
   use x2c_cb_interface, only:  &
       set_x2c_subblock_data
 

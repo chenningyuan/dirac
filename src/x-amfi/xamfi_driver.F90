@@ -31,9 +31,6 @@ module xamfi_driver
   use xamfi_environment, only: xamfi_set_e_configuration
 
 !#define DEBUG_SOC
-#ifdef  DEBUG_SOC
-  use x2c_utils, only: print_x2cmat
-#endif
 
   implicit none
 
@@ -133,7 +130,7 @@ contains
 #ifdef DEBUG_SOC
       !> debug print
       if(print_lvl > 0)then
-        call print_x2cmat(                             &
+        call print_x2cmat_xamfi(                       &
                           fmat,                        &
                           nr_ao_total_aoo,             &
                           nr_ao_total_aoo,             &
@@ -182,7 +179,7 @@ contains
 
 #ifdef DEBUG_SOC
         !> debug print
-        call print_x2cmat(                             &
+        call print_x2cmat_xamfi(                       &
                           fmat,                        &
                           nr_ao_large_aoo,             &
                           nr_ao_large_aoo,             &
@@ -297,7 +294,7 @@ contains
 #ifdef DEBUG_SOC
       !> debug print
       if(print_lvl > 5)then
-        call print_x2cmat(                                       &
+        call print_x2cmat_xamfi(                                 &
                           Gmat_frag,                             &
                           nrows_ext,                             &
                           ncols_ext,                             &
@@ -342,7 +339,7 @@ contains
 #ifdef DEBUG_SOC
       !> debug print
       if(print_lvl > 5)then
-        call print_x2cmat(                                       &
+        call print_x2cmat_xamfi(                                 &
                           Gmat,                                  &
                           naosh_l,                               &
                           naosh_l,                               &
@@ -416,7 +413,7 @@ call read_xamfi_general_matrix(               &
 #ifdef DEBUG_SOC
 !> debug print
 if(print_lvl > 5)then
-call print_x2cmat(                     &
+call print_x2cmat_xamfi(               &
 Gmat_frag,                             &
 nrows_ext,                             &
 ncols_ext,                             &
@@ -461,7 +458,7 @@ jbuf)
 #ifdef DEBUG_SOC
 !> debug print
 if(print_lvl > 5)then
-call print_x2cmat(                     &
+call print_x2cmat_xamfi(               &
 Gmat,                                  &
 naosh_ls,                              &
 naosh_ls,                              &
@@ -537,7 +534,7 @@ call read_xamfi_general_matrix(                  &
 #ifdef DEBUG_SOC
 !> debug print
 if(print_lvl > 5)then
-call print_x2cmat(                     &
+call print_x2cmat_xamfi(               &
 Gmat_frag,                             &
 nrows_ext,                             &
 ncols_ext,                             &
@@ -582,7 +579,7 @@ jbuf)
 #ifdef DEBUG_SOC
 !> debug print
 if(print_lvl > 5)then
-call print_x2cmat(                           &
+call print_x2cmat_xamfi(                     &
 Gmat,                                        &
 naosh_ls,                                    &
 naosh_ls,                                    &
@@ -653,7 +650,7 @@ call read_xamfi_general_matrix(                  &
 #ifdef DEBUG_SOC
 !> debug print
 if(print_lvl > 5)then
-call print_x2cmat(                     &
+call print_x2cmat_xamfi(               &
 Gmat_frag,                             &
 nrows_ext,                             &
 ncols_ext,                             &
@@ -698,7 +695,7 @@ jbuf)
 #ifdef DEBUG_SOC
 !> debug print
 if(print_lvl > 5)then
-call print_x2cmat(                           &
+call print_x2cmat_xamfi(                     &
 Gmat,                                        &
 naosh_ls,                                    &
 naosh_ls,                                    &

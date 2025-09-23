@@ -33,11 +33,6 @@ module xamfi_utils
                                        ioff_tmot, ioff_tmt, nzt_aoo, amfh5Data
   use amfH5Interface
   
-#ifdef DEBUG_SOC
-  use x2c_utils, only: print_x2cmat
-#endif
-
-
   implicit none
 
   public get_normalized_2e_soc
@@ -49,6 +44,7 @@ module xamfi_utils
   public xamfi_get_energy_correction
   public hello_xamfi
   public goodbye_xamfi
+  public print_x2cmat_xamfi
 
   private
 
@@ -92,7 +88,7 @@ contains
       open(99,file='soc-contributions',status='replace',form='formatted',  &
       access='sequential',action="readwrite",position='rewind')
 
-      call print_x2cmat(fmat,                   &
+      call print_x2cmat_xamfi(fmat,             &
                         nr_ao_total_aoo,        &
                         nr_ao_total_aoo,        &
                         nr_quat,                &
@@ -121,7 +117,7 @@ contains
 #ifdef DEBUG_SOC
 !     debug print
       if(print_lvl > 2)then
-        call print_x2cmat(fmat,                   &
+        call print_x2cmat_xamfi(fmat,             &
                           nr_ao_large_aoo,        &
                           nr_ao_large_aoo,        &
                           nr_quat,                &
@@ -133,7 +129,7 @@ contains
 #endif
 
 #ifdef DEBUG_SOC
-      call print_x2cmat(fmat,                   &
+      call print_x2cmat_xamfi(fmat,             &
                         nr_ao_large_aoo,        &
                         nr_ao_large_aoo,        &
                         nr_quat,                &
@@ -167,9 +163,7 @@ contains
      use xamfi_internal_parameters, only: aoo_cb_pq_to_uq,  aoo_bs_to_fs,&
                                           aoo_bs_irrep_mat, aoo_pointer_quat,&
                                           aoo_iqmult_trip_q, aoo_cb_uq_to_pq
-#ifdef DEBUG_SOC
-     use x2c_utils, only: print_x2cmat
-#endif
+
      real(8), intent(inout)        :: Gmat(nrow,ncol,nz)
      integer, intent(in)           :: nrow
      integer, intent(in)           :: ncol
@@ -187,7 +181,7 @@ contains
     if(final_dump)then
         allocate(Gmat_c1(nrow,ncol,nzc1)); Gmat_c1 = 0
 #ifdef DEBUG_SOC
-        call print_x2cmat(Gmat, &
+        call print_x2cmat_xamfi(Gmat, &
         nrow,                   &
         ncol,                   &
         nz,                     &
@@ -205,7 +199,7 @@ contains
             END DO
         END IF
 #ifdef DEBUG_SOC
-       call print_x2cmat(Gmat,                  &
+       call print_x2cmat_xamfi(Gmat,                  &
                         nrow,                   &
                         ncol,                   &
                         nz,                     &
@@ -219,7 +213,7 @@ contains
         call bstobu_no_work(Gmat,nz)
 
 #ifdef DEBUG_SOC
-        call print_x2cmat(Gmat, &
+        call print_x2cmat_xamfi(Gmat, &
         nrow,                   &
         ncol,                   &
         nz,                     &
@@ -250,7 +244,7 @@ contains
         end do
 
 #ifdef DEBUG_SOC
-        call print_x2cmat(Gmat_c1, &
+        call print_x2cmat_xamfi(Gmat_c1, &
         nrow,                      &
         ncol,                      &
         nzc1,                      &
@@ -294,9 +288,6 @@ end if
 use xamfi_internal_parameters, only: aoo_cb_pq_to_uq,  aoo_bs_to_fs,&
           aoo_bs_irrep_mat, aoo_pointer_quat,&
           aoo_iqmult_trip_q, aoo_cb_uq_to_pq
-#ifdef DEBUG_SOC
-use x2c_utils, only: print_x2cmat
-#endif
 real*8 , intent(inout)        :: Dmat(nrow,ncol,nz,nr_2e_fock_matrices)
 integer, intent(in)           :: nrow
 integer, intent(in)           :: ncol
@@ -584,5 +575,37 @@ end subroutine dump_Xc_c1_dens
   end subroutine quit
 #endif
 !**********************************************************************
+
+  subroutine print_x2cmat_xamfi(xmat, ndim_x, ndim_y, nz,          &
+                          ipq_off, title, prntunit, lrlc_equal)
+!**********************************************************************
+!
+!    purpose: print a matrix
+!    hjaaj Jan 2024: copy of print_xwcmat from x2c/x2c_utility_routines.F90
+!      because using a Fortran module from x2c gave circular dependency in cmake
+!      (x2c also needs x-amfi Fortran modules)
+!
+!**********************************************************************
+     real(8), intent(in)           :: xmat(*)
+     integer, intent(in)           :: ndim_x
+     integer, intent(in)           :: ndim_y
+     integer, intent(in)           :: nz
+     integer, intent(in)           :: ipq_off(1:4, 0:7)
+     character(*), intent(in)      :: title
+     integer, intent(in)           :: prntunit
+     logical, optional, intent(in) :: lrlc_equal
+!**********************************************************************
+!
+         call header2(title,-1,prntunit)
+         if(.not.present(lrlc_equal))then
+           call prqmat(xmat,ndim_x,ndim_y,ndim_x,ndim_y,nz,  &
+                       ipq_off(1,0),prntunit)
+         else
+           call prqmat(xmat,ndim_x,ndim_x,ndim_y,ndim_y,nz,  &
+                       ipq_off(1,0),prntunit)
+         end if
+
+  end subroutine print_x2cmat_xamfi
+
 
  end module

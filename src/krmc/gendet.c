@@ -149,7 +149,7 @@ cgendet1( unsigned long long int anStr[], integer n, integer m,
  * nMaxStr : max number of strings
  */
  
-   integer k1, k2, k3;
+   integer k1, k2;
    unsigned long long int pre;
    const unsigned long long int i8_one = 1;
 
@@ -163,7 +163,11 @@ cgendet1( unsigned long long int anStr[], integer n, integer m,
 	   (*j)++;
        }
        else {
+#ifdef INT_STAR8
+	 printf ("*** ERROR in CGENDET1 *** Too many strings: %li! Allocate more memory in calling routine!\n", *j );
+#else
 	 printf ("*** ERROR in CGENDET1 *** Too many strings: %i! Allocate more memory in calling routine!\n", *j );
+#endif
 	 quit( "*** ERROR in CGENDET1 ***", 25 );
        }
      }

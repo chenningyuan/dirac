@@ -286,8 +286,8 @@ Do not scatter 4-index transformed integrals to all nodes
 keyword(MOFILE)
 
 Name of file with MO coefficients to be used for integral transformation.
-Valid options: "DFCOEF", "KRMCSCF", "KRMCOLD", and "UNKNOWN".
-The "UNKNOWN" option means use the first one found of "KRMCSCF", "KRMCOLD", "DFCOEF" in this order.
+Valid options: "CHECKPOINT", "KRMCSCF", "KRMCOLD", and "UNKNOWN".
+The "UNKNOWN" option means use the first one found of "KRMCSCF", "KRMCOLD", "CHECKPOINT" in this order.
 
 *Default:*
 

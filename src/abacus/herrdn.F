@@ -299,7 +299,6 @@ C
       LOGICAL          :: HERMIT,NEWFILE,SET,FEXIST
       CHARACTER(LEN=6) :: KEYWRD
       INTEGER          :: inpfile
-
 C     JHS
       INTEGER :: i
       REAL :: time1,time2
@@ -727,6 +726,7 @@ C
      &               CLASS,TOL_SYMADD,IPREAD,.true.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
+      IF (LINEAR) WRITE(LUPRI,'(/A)') ' The molecule is linear.'
 
 C     Fix a problem with ADDSYM for some D(2) cases, also corrects for wrong user inputs (e.g. specifying X Y and XY as generators)
       CALL FIX_DUPLICATE_GENERATORS (NSYMOP,KASYM)
@@ -746,7 +746,8 @@ C
      &     DOOWN,blk)
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
-      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
+      if (mytid .eq. 0) ! workers obtain gen1int info from gen1int's own mpi calls
+     &call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
      &                       NBLCK, KANG, JCO, KBLOCK,
      &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
 #endif
@@ -1961,14 +1962,13 @@ C
       IF (GAUNUC .AND. NQ.GT.0) THEN
         IF(QEXP.EQ.D0) THEN
            CALL NUCSIZ(NQ,GEXP,XMASS)
-        WRITE(LUPRI,'(A,F8.3,A,1P,D20.10,A,F6.1,A)')
-     &       '  Nuclear Gaussian exponent for atom of charge',
-     &       Q,' :',GEXP,'   (using mass ',xmass/10,')'
-c.. I have no idea why xmass needs to be divided by 10 to print correctly.  kap
+        WRITE(LUPRI,'(A,F8.3,A,1PD20.10,A,0PF6.1,A)')
+     &       '  Nuclear Gaussian exponent for atom of charge ',
+     &       Q,' : ',GEXP,'   (using mass ',xmass,')'
         ELSE
            GEXP = QEXP
         WRITE(LUPRI,'(A,F8.3,A,1P,D20.10,A)')
-     &       '  Nuclear Gaussian exponent for atom of charge',
+     &       '  Nuclear Gaussian exponent for atom of charge ',
      &       Q,' :',GEXP,'  (specified through input)'
         ENDIF
 C
@@ -3599,7 +3599,6 @@ C*****************************************************************************
                      NUMCF (ISHELL) = KK
                      NUMCFT(ISHELL) = KKK
                      NBCH  (ISHELL) = KBCH
-                     SHARE (ISHELL) = .FALSE.
                      ISTBAO(ISHELL) = ISTBNU(ICENT)
                      NHKT  (ISHELL) = J
                      KHKT  (ISHELL) = NCOMP
@@ -3737,7 +3736,6 @@ C*****************************************************************************
                      NUMCF_FIT (ISHELL_FIT) = KK
                      NUMCFT_FIT(ISHELL_FIT) = KKK
                      NBCH_FIT  (ISHELL_FIT) = KBCH
-                     SHARE_FIT (ISHELL_FIT) = .FALSE.
                      ISTBAO_FIT(ISHELL_FIT) = ISTBNU(ICENT)
                      NHKT_FIT  (ISHELL_FIT) = J
                      KHKT_FIT  (ISHELL_FIT) = NCOMP
@@ -4111,8 +4109,9 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
       IF (LINEAR) THEN
-        IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) 
-     &    ATOMIC = .TRUE.
+        IF((NATOMS .EQ. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) THEN
+          IF ( .NOT. NONATM ) ATOMIC = .TRUE.
+        ENDIF   
       ENDIF
       IF (NUCDEP .GT. MXCENT) GOTO 5010
 C     
@@ -5717,7 +5716,6 @@ C
       print *, ' jstrt ',(jstrt(i),i=1,kmax)
       print *, ' nstrt ',(nstrt(i),i=1,kmax)
       print *, ' ncent ',(ncent(i),i=1,kmax)
-      print *, ' share ',(share(i),i=1,kmax)
       print *, ' nrco ',(nrco(i),i=1,kmax)
       print *, ' numcf ',(numcf(i),i=1,kmax)
       print *, ' nbch ',(nbch(i),i=1,kmax)

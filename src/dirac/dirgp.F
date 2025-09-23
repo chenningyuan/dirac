@@ -38,7 +38,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
-#include "dcbpsi.h"      
+#include "dcbpsi.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -102,15 +102,15 @@ C         Check dimensions
              ENDDO   
              CALL QUIT('PCMOIN: Error in dimension')             
           ENDIF
-          READ(LUCOEF,'(E24.16)',iostat=ierr) TOTERG
+          READ(LUCOEF,*,iostat=ierr) TOTERG
           IF (IERR /= 0) CALL QUIT('error reading DFPCMO: energy')
           GOTO 10
         CASE('COEFS   ')
-          READ(LUCOEF,'(6F22.16)',iostat=ierr) CMO
+          READ(LUCOEF,*,iostat=ierr) CMO
           IF (IERR /= 0) CALL QUIT('error reading DFPCMO: coefficients')
           GOTO 10
         CASE('EVALS   ')
-          READ(LUCOEF,'(6E22.12)',iostat=ierr) EIG
+          READ(LUCOEF,*,iostat=ierr) EIG
           IF (IERR /= 0) CALL QUIT('error reading DFPCMO: eigenvalues')
           GOTO 10
         CASE('SUPERSYM')
@@ -176,8 +176,8 @@ C*****************************************************************************
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbbas.h"
-#include "dcborb.h"`
-#include "dgroup.h"`      
+#include "dcborb.h"
+#include "dgroup.h"
 C
       real(8), allocatable :: CMO(:),EIG(:)
       integer, allocatable :: IBEIG(:,:)
@@ -271,8 +271,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbbas.h"
-#include "dcborb.h"`
-#include "dgroup.h"`      
+#include "dcborb.h"
+#include "dgroup.h"
       integer, intent(out) :: idims(*)
       IDIMS(1) = NZ
       IDIMS(2) = NFSYM
@@ -370,11 +370,11 @@ C
       WRITE(IUNIT,'(A74)') TEXT
       WRITE(IUNIT,'(8(X,I0))')
      &      NFSYM,NZ,((IDIM(I,J),I = 1,3),J=1,NFSYM)
-      WRITE(IUNIT,'(E24.16)') TOTERG
+      WRITE(IUNIT,'(G25.17)') TOTERG
       WRITE(IUNIT,'(A8)') 'COEFS   '      
-      WRITE(IUNIT,'(6F22.16)') CMO
+      WRITE(IUNIT,'(6G25.17)') CMO
       WRITE(IUNIT,'(A8)') 'EVALS   '            
-      WRITE(IUNIT,'(6E22.12)') EIG
+      WRITE(IUNIT,'(6G25.17)') EIG
       WRITE(IUNIT,'(A8)') 'SUPERSYM'
       WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,1),I=1,NORBT)
       IF(SSYM) THEN
@@ -2492,7 +2492,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SelFrag */
       SUBROUTINE SELFRAG(CSEL,NVECS,ESEL,IBSEL,NFRAG,NSTR,FRAGFIL,
      &                   OWNBAS,NUCFRAG,IOPT,KVEC,CMO,EIG,IBEIG,
-     &                   IOFF,KRMC_FLG,WORK,KFREE,LFREE)
+     &                   IOFF,KRMC_FLG,C1READ,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Routine for extracting coefficients, eigenvalues and boson irrep
@@ -2540,7 +2540,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
-      LOGICAL TOBE,OWNBAS,LBIT
+      LOGICAL TOBE,OWNBAS,LBIT,C1READ
       CHARACTER*(*) FRAGFIL(NFRAG)
       DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
      &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
@@ -2587,7 +2587,7 @@ C.......Fragment orbitals in own basis
           CALL SELOWN(IOPT,CMO,EIG,IBEIG,
      &                INUC,NUCFRAG(IFRAG),LUCOEF,fragfile,
      &                CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC(1,IFRAG),
-     &                NSTR(1,0,IFRAG),WORK)
+     &                NSTR(1,0,IFRAG),C1READ,WORK)
 C.......Fragment orbitals in molecular basis
         ELSE
 !
@@ -3289,7 +3289,6 @@ C
 #include "dcblab.h"
 #include "dgroup.h"
 #include "nuclei.h"
-      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       DIMENSION IDIM(3),NBF(2)
       real(8), allocatable :: CMO1(:)
@@ -3301,6 +3300,7 @@ C
       integer, allocatable :: IBUF(:)
       type(file_info_t)    :: dfacmo
 C
+      CALL QENTER('ACMOIN')
       IPRINT = IPRGEN
 C
 C     Allocate arrays
@@ -3328,7 +3328,7 @@ C
 
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
-     &    '* ACMOIN : Coefficients read from DFACMO'
+     &    '* ACMOIN : Coefficients read from '//dfacmo%name
           CALL PRQMAT(CMO2,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
       ENDIF
@@ -3402,6 +3402,7 @@ C     De-allocate arrays
       deallocate(IBEIG2)
       deallocate(IBUF)
 C
+      CALL QEXIT('ACMOIN')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

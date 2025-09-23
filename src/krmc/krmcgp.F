@@ -137,7 +137,7 @@ C
                   END DO
                END DO
             END IF
-         END DO
+         END DO ! IREPAB
 !        ---------------------------------------------------------
 !        zero out integrals that should be zero in linear symmetry
 !        but aren't due to numerical noise
@@ -150,7 +150,7 @@ C
 !          call linzero_nz3(iclass,irepijb,irepklb(1,1),nelem,vnz3)
          end if
 
-      END DO
+      END DO ! ICLASS = 1, 3
 
       IF (NZ .EQ. 4) THEN
          DO ICLASS = 1, 3
@@ -435,7 +435,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION IFACNZ3(I3,IZ,IQ1,IQ2)
 C***********************************************************************
 C
-C     Factors for integrals.
+C     IFAC(NZ,3, q1, q1):
+C     Factors for generating integrals in (NZ,3) format from double
+C     quaternion format (q1, q1).
+C     See Eqs. (B.19), (B.22), and (B.25) in Joern Thyssen PhD thesis.
+C     Notation below: P = \bar{p} etc.
+C
+C     Relations for distributions from complex conjugation (ab)* = (ba)
+C     and time reversal (ab) = (BA), (aB) = -(bA):
+C       Re(pq) =  Re(qp) =  Re(QP) =  Re(PQ)
+C       Im(pq) = -Im(qp) =  Im(QP) = -Im(PQ)
+C       Re(pQ) =  Re(Qp) = -Re(Pq) = -Re(qP)
+C       Im(pQ) = -Im(Qp) = -Im(qP) =  Im(Pq)
+C
+C     Double quaternion contains (pq) and (pQ) distributions,
+C     thus all (PQ) and (pQ) must be rewritten in terms of (pq) and (pQ)
 C
 C     Written by Joern Thyssen - Nov 15 2000
 C
@@ -445,11 +459,9 @@ C***********************************************************************
 C
 #include "dgroup.h"
 C
-      COMMON /SMOELF/ IFAC(4,3,4,4)
+      INTEGER, SAVE :: IFAC(4,3,4,4)
 C
-      LOGICAL FIRST
-      DATA FIRST / .TRUE. /
-      SAVE FIRST
+      LOGICAL, SAVE :: FIRST = .TRUE.
 C
       IF (FIRST) THEN
 C        Initialize IFAC array
@@ -458,7 +470,7 @@ C        Initialize IFAC array
 C
 C        IZ = 1
 C
-C        Re(pq|rs) = Re(rs|pq) = (Re(rs)|Re(pq)) - (Im(pq)|Im(pq))
+C        Re(pq|rs) = Re(rs|pq) = (Re(rs)|Re(pq)) - (Im(rs)|Im(pq))
 C                                    +(1,1)            -(2,2)
 C
          IFAC(1,1,1,1) = +1
@@ -478,7 +490,7 @@ C
 C
          IF (NZ .GE. 2) THEN
 C
-C           Im(pq|rs) = Im(rs|pq) = (Re(rs)|Im(pq)) + (Im(rs)|Re(pq)) +
+C           Im(pq|rs) = Im(rs|pq) = (Re(rs)|Im(pq)) + (Im(rs)|Re(pq))
 C                                       +(1,2)            +(2,1)
 C
             IFAC(2,1,1,2) = +1
@@ -490,8 +502,9 @@ C
             IFAC(2,2,3,4) = +1
             IFAC(2,2,4,3) = +1
 C
-C           Im(Pq|rS) = Im(rS|Pq) = - (Re(rS)|Im(pQ)) + (Im(rS)|Im(pQ))
-C                                         +(3,4)            +(1,2)
+C           Im(Pq|rS) = Im(rS|Pq) =   (Re(rS)|Im(Pq)) + (Im(rS)|Re(Pq))
+C                                 = + (Re(rS)|Im(pQ)) - (Im(rS)|Re(pQ))
+C                                         +(3,4)            -(4,3)
 C
             IFAC(2,3,3,4) = +1
             IFAC(2,3,4,3) = -1
@@ -1129,11 +1142,18 @@ C
      &        WORK(KCMO+I2ORBT(I)),WORK(KRDUM))
       END DO
 C
-c     IF (IPRINT .GE. 3) THEN
-         WRITE(LUPRI,'(/A)')
-     &        ' (RAPPBOS) Approximate boson symmetries: '
+      IF (NZ .LT. 4 .OR. NFSYM .EQ. 2) THEN ! irrelevant output if only one symmetry
+      IF (IPRINT .GE. 3) THEN
+         WRITE(LUPRI,'(/A)') ' (RAPPBOS) Approximate boson symmetries:'
          WRITE(LUPRI,9000) (REP(IBOSYM(I)),I=1,NORBT)
-c     END IF
+      ELSE
+         WRITE(LUPRI,'(/A)')
+     &   ' (RAPPBOS) Approximate boson symmetries of occupied orbitals:'
+         DO J = 1, NFSYM
+            WRITE(LUPRI,9000) (REP(IBOSYM(IORB(J)+I)),I=1,NOCC(J))
+         END DO
+      END IF
+      END IF
 
 #if defined MCSCF_DEBUG_SPINFREE
 !     additional check: ibosym <--> ibeig
@@ -1159,7 +1179,7 @@ c     END IF
       end if
 #endif
 
- 9000 FORMAT(10X,15(A4))
+ 9000 FORMAT(5X,10A4,4X,10A4)
 C
       CALL MEMREL('RAPPBOS',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
@@ -2552,15 +2572,8 @@ C        with MAXCIT iterations
       END IF
 C     Always two-particle (full) Hamiltonian 
       IHAM12 = 2
-C     calculate property operator symmetry in double group subgroup
-C     notation
 #if defined (VAR_MPI)
-      IF( ISYNC_NODES .eq. 1 )
-     &  call interface_mpi_BCAST_L0(DOSYMOPPRP,1,MASTER,
-     &                 global_communicator)
-#endif
 C     reorder property operator matrix (already done by the MASTER...)
-#if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
      &  call interface_mpi_BCAST_L0(DOPROPREOD,1,MASTER,
      &                 global_communicator)

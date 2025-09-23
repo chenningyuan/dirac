@@ -5,7 +5,7 @@ include_directories(
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
     SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
-    message(STATUS "For libmain.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
+    message(STATUS "For libdirac_main.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
 endif()
 
 set(FIXED_MAIN_FORTRAN_SOURCES
@@ -29,24 +29,24 @@ if(ENABLE_RUNTIMECHECK)
 endif()
 
 add_library(
-    main
-    OBJECT
+    dirac_main
+    STATIC
     ${FIXED_MAIN_FORTRAN_SOURCES}
     ${FREE_MAIN_FORTRAN_SOURCES}
 )
 
 # deal with intermodule dependencies
-add_dependencies(main gp)
-add_dependencies(main visual)
-add_dependencies(main embedding)
-add_dependencies(main interest)
+add_dependencies(dirac_main gp)
+add_dependencies(dirac_main visual)
+add_dependencies(dirac_main fde)
+add_dependencies(dirac_main interest)
 if (ENABLE_STIELTJES)
-    add_dependencies(main stieltjes)
+    add_dependencies(dirac_main stieltjes)
 endif()
 
-add_dependencies(main laplace-minimax)
+add_dependencies(dirac_main laplace-minimax)
 
 if(ENABLE_PCMSOLVER)
-    add_dependencies(main pcm_dirac)
+    add_dependencies(dirac_main pcm_dirac)
 endif()
-add_dependencies(main interface_mpi)
+add_dependencies(dirac_main interface_mpi)
