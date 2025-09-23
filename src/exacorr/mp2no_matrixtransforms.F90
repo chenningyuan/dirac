@@ -9,6 +9,7 @@ module mp2no_matrixtransforms
 
         public basis_transform_vector, basis_transform_matrix
         public complex_to_quaternion, diagonal_matrix_quater, get_cano_orbital, read_matrix_comp, sort_values_vectors
+        public sort_MOs_by_occupation_number
 
        contains
 
@@ -69,6 +70,92 @@ module mp2no_matrixtransforms
          end do
          
         end subroutine sort_values_vectors
+
+        subroutine sort_MOs_by_occupation_number(N_OCCUPATION, NOs_MO)
+           use exacorr_utils
+           ! Using merge sort algorithm for soring FNO++
+           real(kind=8), pointer, intent(inout)  :: NOs_MO(:,:,:)
+           real(kind=8), pointer, intent(inout)  :: N_OCCUPATION(:)
+
+           real(kind=8), allocatable             :: NOs_MO_tmp(:,:,:)
+           real(kind=8), allocatable             :: N_OCCUPATION_tmp(:) !, N_OCCUPATION_original(:)
+           real(kind=8), allocatable             :: indices(:), indices_tmp(:)
+
+           integer :: i, j, width, n, iLeft, iRight, iEnd
+
+           n = size(N_OCCUPATION)
+
+           allocate(NOs_MO_tmp(size(NOs_MO,1),size(NOs_MO,2),size(NOs_MO,3)))
+           allocate(indices(n))
+           allocate(N_OCCUPATION_tmp(n))
+           allocate(indices_tmp(n))
+
+           !allocate(N_OCCUPATION_original(n))
+           !N_OCCUPATION_original = N_OCCUPATION
+
+           NOs_MO_tmp = NOs_MO
+           indices = (/ (i, i=1,n) /)
+           indices_tmp = (/ (i, i=1,n) /)
+
+           ! sort N_OCCUPATION
+           width = 1
+           do while(width<n)
+              do i = 1, n, 2*width
+                 call bottomup_merge(N_OCCUPATION, i, min(i+width, n+1), min(i+width*2,n+1),N_OCCUPATION_tmp, indices, indices_tmp)
+              enddo
+
+              N_OCCUPATION = N_OCCUPATION_tmp
+              indices = indices_tmp
+              width = width * 2
+           enddo
+
+
+           ! check for debug
+           !do i=1,n-1
+           !   if(N_OCCUPATION(i)>N_OCCUPATION(i+1)) then
+           !      call print_date("Not sorted!")
+           !   endif
+           !   if(N_OCCUPATION_original(indices(i)).ne.N_OCCUPATION(i)) then
+           !      call print_date("Not orignal!")
+           !   endif
+           !enddo
+
+           ! sort NOs_MO with the indices
+           do i=1,n
+              NOs_MO(:,i,:) = NOs_MO_tmp(:,indices(i),:)
+           enddo
+           
+           deallocate(indices)
+           deallocate(indices_tmp)
+           deallocate(NOs_MO_tmp)
+           deallocate(N_OCCUPATION_tmp)
+
+           call print_date("Finished sorting NOs!")
+           return
+        end subroutine sort_MOs_by_occupation_number
+
+        subroutine bottomup_merge(arr, iLeft, iRight, iEnd, arr_tmp, indices, indices_tmp)
+           real(kind=8), dimension(:), intent(in) :: arr, indices
+           real(kind=8), dimension(:), intent(inout) :: arr_tmp, indices_tmp
+           integer, intent(in) :: iLeft, iRight, iEnd
+           integer :: k, i, j
+
+           i = iLeft
+           j = iRight
+           do k = iLeft, iEnd-1
+               if(i<iRight.and.(j>=iEnd.or.arr(i)<=arr(j))) then
+                   arr_tmp(k) = arr(i)
+                   indices_tmp(k) = indices(i)
+                   i = i + 1
+               else
+                   arr_tmp(k) = arr(j)
+                   indices_tmp(k) = indices(j)
+                   j = j + 1
+               endif
+           enddo
+        endsubroutine
+
+
 
 !-------------------------------------------------------------------------------------------------------------------------------------
         subroutine basis_transform_vector (mat_basis1_in,basis2_in,mat_basis2_out)
