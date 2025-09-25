@@ -2296,6 +2296,10 @@ C
 !        get a new grid at new geometry
          call reset_num_grid()
       end if
+
+! new geometry, reset SCF iteration counters
+      ITDIIS = 0; NITER = 0
+
 #ifdef HAS_PCMSOLVER      
       if (dirac_cfg_pcm) then
 ! Quit if symmetry or X2C are requested.
@@ -7511,7 +7515,7 @@ C
          WRITE (LUPRI,'(/A,/,3(/,20X,A,F11.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
-         CHRGDT = .TRUE. ! we do not need this output in each geometry step
+         CHGRDT = .TRUE. ! we do not need this output in each geometry step
       END IF
 
       NOMOVE_bkp = NOMOVE
@@ -7570,7 +7574,6 @@ C
       NOMOVE = .TRUE. ! do not move or rotate molecule for symmetry detection
                       ! during numerical differentiation, otherwise wrong results!
       DO IPOINT = 0, 2*NCART
-         ITDIIS = 0; NITER = 0 ! new geometry, reset DIIS iteration number to zero
          IF (IPOINT .lt. 2*NCART) THEN
             write(point_txt,'(I4)') IPOINT+1
             CALL HEADER('Numerical gradient: displaced geometry no. '//

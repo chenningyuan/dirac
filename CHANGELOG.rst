@@ -4,7 +4,7 @@
 26.alpha
 --------
 
-New features:
+*New features:*
 
 - Merge of the DIRAC_CASPT2 program published in Masuda2025 into DIRAC.
   This adds the following features to DIRAC.
@@ -18,13 +18,36 @@ New features:
    - Contributor: Juan J. Aucar.
    - Reference: `Juan J. Aucar and Alejandro F. Maldonado, Parity Violation Effects on the Electric Field Gradient, Phys. Chem. Chem. Phys. 27, 7594 (2025) <https://doi.org/10.1039/D4CP04840G>`__
    - Manual: PVCEFG `<https://diracprogram.org/doc/release-25/manual/properties.html#pvcefg>`__
+
+*Changed features and improved features:*
+
 - RELCCSD: print out largest amplitudes (for analysis) at print level 2
    - Contributor: Lucas Visscher
 
-Bugfixes:
+- Gram-Schmidt orthonormalization of MO coefficients read as initial guess (will often be from another geometry; saves SCF iterations in num. mol. grad. evaluation)
+   - Contributor: Hans Jørgen Aa. Jensen
 
-- Numerical molecular gradient for open-shell DFT was not working.
-   - Contributor: H. J. Aa. Jensen. (H. J. Aa. Jensen).
+- Numerical molecular gradient
+
+   - better information in output during evaluation of numerical gradient (e.g. which displacement number)
+   - reduction of output for all the geometries needed for a numerical gradient (e.g. 103 energy evaulations for molecule with 17 atoms)
+   - Contributor: Hans Jørgen Aa. Jensen
+
+*New defaults:*
+
+- reduced geometry convergence criteria during numerical molecular evaluation unless user explicitly specifies what the convergence should be
+     (.ENERGY, .GRADIENT, or .STEP THRESHOLD under \*OPTIMI)
+   - Reduced SCF convergence criterion for displaced geometries: 1.d-3 (with default displacement 1.d-3);
+     reference geometry must be converged to at least 1.d-4.
+   - This gives num.grad. accurate to ca. 1.d-5; aiming for more will cost more CPU time and may cause numerical problems because of the limited number of reliable digits in energy values.
+   - Contributor: Hans Jørgen Aa. Jensen
+
+*Bugfixes:*
+
+- Numerical molecular gradient
+   - now works for open-shell DFT
+   - do not translate and rotate molecule for symmetry detections during num. mol. grad. evaluation
+   - Contributor: H. J. Aa. Jensen.
 
 -----------------------------------------------------------------------------------------------------
 

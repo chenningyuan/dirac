@@ -129,8 +129,8 @@ C
          TIMSTR(1) = TIMEND(1)
          WTIME     = TIMEND(2) - TIMSTR(2)
          TIMSTR(2) = TIMEND(2)
-         IF (CTIME .GT. 0.1D0 .OR. WTIME .GT. 0.1D0) THEN
-C        Jun 06 hjaaj: do not print times less than 0.1 seconds
+         IF (CTIME .GT. 0.2D0 .OR. WTIME .GT. 0.2D0) THEN
+C        Jun 06 hjaaj: do not print times less than 0.1 seconds; changed to 0.2 Sep 25 hjaaj
             LTEXT = LNBLNK(TEXT)
             LTEXT = MIN(30,LTEXT)
             LOUT = 22 + LTEXT + 3

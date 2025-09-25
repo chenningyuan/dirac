@@ -11,8 +11,8 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Energy at final geometry is',
-      num_lines   = 3,
-      rel_tolerance   = 1.0e-4)
+      num_lines   = 2,
+      abs_tolerance   = 1.0e-4)
 
 test.run(['O.inp'], ['O.mol'], args='--outcmo')
 if os.path.isfile('CHECKPOINT.h5'):
