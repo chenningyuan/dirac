@@ -141,7 +141,7 @@ def extract_numbers(f, text):
         for w in line.split():
             # do not consider words like TzB1g
             # otherwise we would extract 1 later
-            if re.match(r'^[0-9\.eEdD\+\-]*$', w):
+            if re.match(r'^[0-9\.eEdD\+\-]*+[,;]?$', w): # hjaaj Sep 2025: added possibility for separator , or ;
                 i += 1
                 if (f.use_mask) and (i not in f.mask):
                     continue

@@ -23,7 +23,7 @@ def extract_numbers(text, mask=None):
     # followed by optional exponent part if desired
     (?: [EeDd] [+-]? \d+ ) ?
     """
-    pattern_number_and_separator = re.compile(r"^[0-9\.eEdD\+\-]+[,]?$", re.VERBOSE)
+    pattern_number_and_separator = re.compile(r"^[0-9\.eEdD\+\-]+[,;]?$", re.VERBOSE)
     pattern_int = re.compile(r"-?[0-9]+", re.VERBOSE)
     pattern_float = re.compile(numeric_const_pattern, re.VERBOSE)
     pattern_d = re.compile(r"[dD]")
