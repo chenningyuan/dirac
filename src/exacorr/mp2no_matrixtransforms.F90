@@ -71,29 +71,32 @@ module mp2no_matrixtransforms
          
         end subroutine sort_values_vectors
 
-        subroutine sort_MOs_by_occupation_number(N_OCCUPATION, NOs_MO)
+        subroutine sort_MOs_by_occupation_number(N_OCCUPATION, NOs_MO, nao, nto, nz)
            use exacorr_utils
            ! Using merge sort algorithm for soring FNO++
-           real(kind=8), pointer, intent(inout)  :: NOs_MO(:,:,:)
-           real(kind=8), pointer, intent(inout)  :: N_OCCUPATION(:)
+           integer, intent(in) :: nao, nto, nz
+           real(kind=8), dimension(nao,nto,nz), intent(inout)  :: NOs_MO
+           real(kind=8), dimension(nto),        intent(inout)  :: N_OCCUPATION
 
-           real(kind=8), allocatable             :: NOs_MO_tmp(:,:,:)
-           real(kind=8), allocatable             :: N_OCCUPATION_tmp(:) !, N_OCCUPATION_original(:)
-           real(kind=8), allocatable             :: indices(:), indices_tmp(:)
+           real(kind=8), dimension(nao,nto,nz)      :: NOs_MO_tmp
+           real(kind=8), dimension(nto)             :: N_OCCUPATION_tmp !, N_OCCUPATION_original(:)
+           real(kind=8), dimension(nto)             :: indices, indices_tmp
 
            integer :: i, j, width, n, iLeft, iRight, iEnd
 
-           n = size(N_OCCUPATION)
+           n = nto
 
-           allocate(NOs_MO_tmp(size(NOs_MO,1),size(NOs_MO,2),size(NOs_MO,3)))
-           allocate(indices(n))
-           allocate(N_OCCUPATION_tmp(n))
-           allocate(indices_tmp(n))
+           !allocate(NOs_MO_tmp(size(NOs_MO,1),size(NOs_MO,2),size(NOs_MO,3)))
+           !allocate(indices(n))
+           !allocate(N_OCCUPATION_tmp(n))
+           !allocate(indices_tmp(n))
 
            !allocate(N_OCCUPATION_original(n))
            !N_OCCUPATION_original = N_OCCUPATION
 
+           N_OCCUPATION_tmp = N_OCCUPATION
            NOs_MO_tmp = NOs_MO
+
            indices = (/ (i, i=1,n) /)
            indices_tmp = (/ (i, i=1,n) /)
 
@@ -131,10 +134,10 @@ module mp2no_matrixtransforms
            enddo
            !$OMP END PARALLEL DO
            
-           deallocate(indices)
-           deallocate(indices_tmp)
-           deallocate(NOs_MO_tmp)
-           deallocate(N_OCCUPATION_tmp)
+           !deallocate(indices)
+           !deallocate(indices_tmp)
+           !deallocate(NOs_MO_tmp)
+           !deallocate(N_OCCUPATION_tmp)
 
            call print_date("Finished sorting NOs!")
            return

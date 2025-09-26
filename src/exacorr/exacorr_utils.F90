@@ -513,9 +513,9 @@ module exacorr_utils
    end subroutine
 
    subroutine print_mp2fvno_occupation_number_details(threshold, N_reduced, N_OCCUPATION_reduced, Sum_N_OCCUPATION_total)
-      real(kind=8), intent(in), pointer :: N_OCCUPATION_reduced(:)
-      real(kind=8), intent(in)          :: threshold, Sum_N_OCCUPATION_total
-      integer, intent(in)               :: N_reduced
+      real(kind=8), intent(in), dimension(:) :: N_OCCUPATION_reduced
+      real(kind=8), intent(in)               :: threshold, Sum_N_OCCUPATION_total
+      integer, intent(in)                    :: N_reduced
 
       real(kind=8) :: Sum_N_OCCUPATION_reduced, Perc_OCCUPATION_reduced
       integer :: i
