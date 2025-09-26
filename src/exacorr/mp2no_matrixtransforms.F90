@@ -149,7 +149,7 @@ module mp2no_matrixtransforms
            i = iLeft
            j = iRight
            do k = iLeft, iEnd-1
-               if(i<iRight.and.(j>=iEnd.or.arr(i)<=arr(j))) then
+               if(i<iRight.and.(j>=iEnd.or.arr(i)>=arr(j))) then
                    arr_tmp(k) = arr(i)
                    indices_tmp(k) = indices(i)
                    i = i + 1
