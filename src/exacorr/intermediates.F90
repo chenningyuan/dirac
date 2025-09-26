@@ -525,8 +525,7 @@ module intermediates
         !Auxiliary tensor
         vvoo_id   = (/vir_space_id, vir_space_id, occ_space_id, occ_space_id/)
         vvoo_root = (/vir_space_root, vir_space_root, occ_space_root, occ_space_root/)
-        ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,idum)
-        !ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
 
         ierr=exatns_tensor_init(tau2_tensor,'ZERO')
         ierr=exatns_tensor_init(w_vovo,'ZERO')
