@@ -1,5 +1,6 @@
 module eti_trial_eomccsd
 
+  use, intrinsic :: ISO_C_BINDING
   use exacorr_tensor_interface
   use tensor_algebra
   use exacorr_datatypes

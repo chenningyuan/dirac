@@ -2,6 +2,7 @@ module intermediates_eom_ccsd
 
 !Module to make intermediates needed in CC and Lambda equations
 
+     use, intrinsic:: ISO_C_BINDING
      use exacorr_tensor_interface
      use tensor_algebra
      use exacorr_datatypes
