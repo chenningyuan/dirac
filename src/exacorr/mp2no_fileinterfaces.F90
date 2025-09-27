@@ -60,12 +60,13 @@ module mp2no_fileinterfaces
 
       end subroutine quater_write_orbital
 
-      subroutine  quater_write_orbital2(orbital_coeff,orbital_eigenval,file_name)
+      subroutine  quater_write_orbital2(orbital_coeff,orbital_eigenval,file_name,nao,nto,nz)
 !     routine for writing new orbital coefficient and eigenvalue into the file.
 
 !     input variables
-         real(kind=8), dimension(:,:,:)          :: orbital_coeff      ! new orbital coefficient
-         real(kind=8), dimension(:),intent(in)   :: orbital_eigenval       ! new eigenvalue, it could be occupation number or orbital energy
+         integer, intent(in) :: nao,nto,nz
+         real(kind=8), dimension(nao,nto,nz), intent(in) :: orbital_coeff      ! new orbital coefficient
+         real(kind=8), dimension(nto),intent(in)      :: orbital_eigenval       ! new eigenvalue, it could be occupation number or orbital energy
          character(len=*),intent(in)        :: file_name
  
          integer :: sz1, sz2
@@ -81,6 +82,7 @@ module mp2no_fileinterfaces
 !           print *,'<<<<< Quaternion orbital, Writing Begin.'
            ! write dimension of the matrix 
            write(write_orb) sz1, sz2
+           print *,"Quater write size = ",sz1,sz2
            ! write eigenvalues 
            write(write_orb) orbital_eigenval
            ! write orbitals coeffcient 
@@ -151,6 +153,7 @@ module mp2no_fileinterfaces
 !            print *,'<<<<< Start reading all Natural Orbital and Occupation number from the NOs_MO.'
            ! read orbital matrix size
            read(read_orb) sz1, sz2
+           print *,"Quater read size = ",sz1,sz2
 
            allocate(orbital_eigenval_all(sz2))
            allocate(orbital_coeff_all(sz1,sz2,4))
@@ -165,7 +168,7 @@ module mp2no_fileinterfaces
         close(read_orb,status='KEEP')
 
         n_orb_trunca = 0
-        do i=1,sz1
+        do i=1,sz2
          if (orbital_eigenval_all(i) >= threshold) then
             n_orb_trunca = n_orb_trunca + 1
          end if
@@ -390,7 +393,7 @@ module mp2no_fileinterfaces
             call get_free_fileunit(unit)
             open (unit,file=fn,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
 
-            read(unit) nao
+            read(unit) nao, j ! j is a dummy variable
 
             allocate(N_OCCUPATION_tmp(nao))
             read(unit) N_OCCUPATION_tmp
@@ -426,7 +429,7 @@ module mp2no_fileinterfaces
             call get_free_fileunit(unit)
             open (unit,file=fn,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
 
-            read(unit) nao
+            read(unit) nao, j ! j is a dummy variable
             read(unit) N_OCCUPATION_tmp
             read(unit) NOs_MO_tmp
 
@@ -444,24 +447,24 @@ module mp2no_fileinterfaces
          write(*,*) "iMO = ",iMO
          call print_date('Finished!')
          
-         deallocate(N_OCCUPATION_tmp)
-         deallocate(NOs_MO_tmp)
+         !deallocate(N_OCCUPATION_tmp)
+         !deallocate(NOs_MO_tmp)
 
          ! sort by occupation number
          call sort_MOs_by_occupation_number(N_OCCUPATION,NOs_MO,nao,nto,nz)
-         !do i=1,nto
+         !do i=1,size(N_OCCUPATION)
          !    write(*,*) "DEBUG Nocc", i,"  = ",N_OCCUPATION(i) 
          !enddo
 
          ! save into the final NOs_MO file
-         call quater_write_orbital2(NOs_MO,N_OCCUPATION,'NOs_MO')
+         call quater_write_orbital2(NOs_MO,N_OCCUPATION,'NOs_MO',nao,nto,nz)
          call print_date('MP2FNO++: Wrote all natural orbital and occupation number in file NOs_MO.')
 
          ! print info
          call print_mp2fvno_occupation_number_details(t_mp2no, nto, N_OCCUPATION, Sum_N_OCCUPATION_total)
 
-         deallocate(N_OCCUPATION)
-         deallocate(NOs_MO)
+         !deallocate(N_OCCUPATION)
+         !deallocate(NOs_MO)
       end subroutine generate_unified_NOs_MO_file
 
 end module mp2no_fileinterfaces

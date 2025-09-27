@@ -80,7 +80,7 @@ module mp2no_matrixtransforms
 
            real(kind=8), dimension(nao,nto,nz)      :: NOs_MO_tmp
            real(kind=8), dimension(nto)             :: N_OCCUPATION_tmp !, N_OCCUPATION_original(:)
-           real(kind=8), dimension(nto)             :: indices, indices_tmp
+           integer, dimension(nto)                  :: indices, indices_tmp
 
            integer :: i, j, width, n, iLeft, iRight, iEnd
 
@@ -104,12 +104,9 @@ module mp2no_matrixtransforms
            width = 1
            do while(width<n)
 
-              !$OMP PARALLEL DO SCHEDULE(DYNAMIC) &
-              !$OMP& PRIVATE(I)
               do i = 1, n, 2*width
                  call bottomup_merge(N_OCCUPATION, i, min(i+width, n+1), min(i+width*2,n+1),N_OCCUPATION_tmp, indices, indices_tmp)
               enddo
-              !$OMP END PARALLEL DO
 
               N_OCCUPATION = N_OCCUPATION_tmp
               indices = indices_tmp
@@ -118,21 +115,17 @@ module mp2no_matrixtransforms
 
            ! check for debug
            !do i=1,n-1
-           !   if(N_OCCUPATION(i)>N_OCCUPATION(i+1)) then
+           !   write(*,*) i, N_OCCUPATION(i),N_OCCUPATION(i+1)
+           !   if(N_OCCUPATION(i)<N_OCCUPATION(i+1)) then
            !      call print_date("Not sorted!")
-           !   endif
-           !   if(N_OCCUPATION_original(indices(i)).ne.N_OCCUPATION(i)) then
-           !      call print_date("Not orignal!")
+           !      STOP
            !   endif
            !enddo
 
            ! sort NOs_MO with the indices
-           !$OMP PARALLEL DO SCHEDULE(STATIC) &
-           !$OMP& PRIVATE(I)
            do i=1,n
               NOs_MO(:,i,:) = NOs_MO_tmp(:,indices(i),:)
            enddo
-           !$OMP END PARALLEL DO
            
            !deallocate(indices)
            !deallocate(indices_tmp)
@@ -144,8 +137,10 @@ module mp2no_matrixtransforms
         end subroutine sort_MOs_by_occupation_number
 
         subroutine bottomup_merge(arr, iLeft, iRight, iEnd, arr_tmp, indices, indices_tmp)
-           real(kind=8), dimension(:), intent(in) :: arr, indices
-           real(kind=8), dimension(:), intent(inout) :: arr_tmp, indices_tmp
+           real(kind=8), dimension(:), intent(in) :: arr
+           integer,      dimension(:), intent(in) :: indices
+           real(kind=8), dimension(:), intent(inout) :: arr_tmp
+           integer,      dimension(:), intent(inout) :: indices_tmp
            integer, intent(in) :: iLeft, iRight, iEnd
            integer :: k, i, j
 
