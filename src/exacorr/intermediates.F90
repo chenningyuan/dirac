@@ -12,9 +12,10 @@ module intermediates
     real(8), parameter     :: ONE_QUARTER=0.25D0
 
      interface get_tau
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_tau_exatns
+#endif
         module procedure get_tau_eti
-        module procedure get_tau_tensor_t
      end interface get_tau
 
      interface get_hoo
@@ -834,27 +835,6 @@ module intermediates
 
        end subroutine get_tau_eti
 
-       subroutine get_tau_tensor_t(comm_t,CCD)
-
-        use exacorr_datatypes, only : comm_tensor_t
-        use, intrinsic:: ISO_C_BINDING
-        use exacorr_tensor_interface
-
-        type(comm_tensor_t),intent(inout) :: comm_t
-        logical, intent(in) :: CCD
-        integer :: ierr
-
-!       tau ! validated
-        ierr=initialize_tensor_t(comm_t%tau)
-        ierr=t_einsum("T(a,b,i,j)+=R(a,b,i,j)",comm_t%tau,comm_t%t2)
-        if (.not.CCD) then
-            ierr=t_einsum("T(a,b,i,j)+=T(a,i)*T(b,j)",comm_t%tau,comm_t%t1,comm_t%t1)                  ! o(2)v(2)
-            ierr=t_einsum("T(a,b,i,j)+=T(a,j)*T(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,scale=MINUS_ONE)  ! o(2)v(2)
-        end if
-
-       end subroutine get_tau_tensor_t
-
-
        subroutine get_hoo_eti(comm_t,oovv_tensor)
 
         use exacorr_tensor_interface
@@ -1393,6 +1373,4 @@ module intermediates
 
        end subroutine get_w_vvvv_CC2_eti
        
-
-
 end module

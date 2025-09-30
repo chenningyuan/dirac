@@ -228,15 +228,6 @@
          type(tensor_t) :: l1, l2, l3, l4, l5
         end type eti_comm_tens_t
 
-        type, public :: comm_tensor_t
-         type(tensor_t) :: foo, fov, fvv ! include finite field perturbations, otherwise identical to f in eti_intg_tens
-         type(tensor_t) :: goo, gvv
-         type(tensor_t) :: hoo, hov, hvv
-         type(tensor_t) :: a_int, h_int
-         type(tensor_t) :: t1, t2, t3, t4, t5, tau
-         type(tensor_t) :: l1, l2, l3, l4, l5
-        end type comm_tensor_t
-
         type, public :: eti_lambda_tens_t
          type(tensor_t) :: fbar_oo, fbar_ov, fbar_vv
          type(tensor_t) :: w_oooo
