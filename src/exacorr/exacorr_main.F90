@@ -7,14 +7,15 @@
       use interface_to_mpi
 #endif
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
-      use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
-      use talsh_cc,only             : talsh_cc_driver
-      use talsh_cis,only            : talsh_cis_driver
-      use talsh_mp2no,only          : talsh_mp2no_driver
-      use talsh_mp2lap,only         : talsh_mp2lap_driver
+      use eti_ao_to_mo,only       : eti_compute_mo_integrals
+      use eti_cc,only             : eti_cc_driver
+      use eti_cis,only            : eti_cis_driver
+      use eti_mp2no,only          : eti_mp2no_driver
+      use eti_mp2lap,only         : eti_mp2lap_driver
       use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
+      use exacorr_printout,only     : print_exacorr_logo
       use exacc_cfg
       use exacorr_global
       use exacorr_utils
@@ -93,9 +94,8 @@
              mo_list(imo+nmo(1)+nmo(2)+nmo(3)) = imo
          end do
 
-         !call talsh_compute_mo_integrals(nmo,mo_list,exa_input%talsh_buff,exa_input%print_level,rcw)
-         call exacorr_compute_mo_integrals (nmo, mo_list, &
-                                      exa_input%print_level)
+         !call eti_compute_mo_integrals(nmo,mo_list,exa_input%talsh_buff,exa_input%print_level,rcw)
+         call exacorr_compute_mo_integrals (nmo, mo_list,exa_input%print_level)
       end if
 
       if (mytid == 0) then
@@ -109,13 +109,13 @@
          if (exa_input%talsh) then
             if (mytid == 0) then
                   if (exa_input%do_cis) then
-                    call talsh_cis_driver (exa_input)
+                    call eti_cis_driver (exa_input)
                   elseif (exa_input%mp2no > 0) then
-                    call talsh_mp2no_driver (exa_input,n_mp2no)
+                    call eti_mp2no_driver (exa_input,n_mp2no)
                   elseif (exa_input%mp2no < 0) then
-                    call talsh_mp2lap_driver (exa_input)
+                    call eti_mp2lap_driver (exa_input)
                   else
-                    call talsh_cc_driver (exa_input)
+                    call eti_cc_driver (exa_input)
                   end if   
                   if (exa_input%do_no) then
                         call get_no_driver (exa_input)

@@ -1,11 +1,11 @@
-module talsh_cis_property
+module eti_cis_property
 !   This module contains the routines needed to compute CI-single wave-function and CIS excitation energy
+    use exacorr_tensor_interface
     use tensor_algebra
-    use talsh
     use exacorr_datatypes
     use exacorr_utils
-    use talsh_common_routines
-    use talsh_cis_density
+    use eti_common_routines
+    use eti_cis_density
     use exacorr_global
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -15,17 +15,17 @@ module talsh_cis_property
                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
 
-    type(talsh_tens_t) :: one_tensor
+    type(tensor_t) :: one_tensor
 
     private
 
-    public talsh_cis_pro_driver
+    public eti_cis_pro_driver
 
     contains
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine talsh_cis_pro_driver(exa_input,eValues,eVectors)
+subroutine eti_cis_pro_driver(exa_input,eValues,eVectors)
 !   Written by Xiang Yuan July 2021, Amsterdam, Netherland 
 
     type(exacc_input), intent(in) :: exa_input
@@ -56,7 +56,7 @@ subroutine talsh_cis_pro_driver(exa_input,eValues,eVectors)
     call print_two_photon(TPA)
     call print_date('Leave CIS transition property routine')    
 
-end subroutine talsh_cis_pro_driver
+end subroutine eti_cis_pro_driver
 
 !-----------------------------------------------------------------------------------------------------------------  
 
@@ -194,8 +194,8 @@ subroutine get_exc_grd(exa_input, onetdmeg, All_opera, eVectors)
     integer                       :: nvir, nocc
     complex(kind=8)               :: onetdmeg_tem
 
-    type(talsh_dm_tens_t)         :: Tra_Den_exe_grd_tensor
-    type(talsh_tens_t)            :: orb_inte_exe_grd_tensor
+    type(eti_dm_tens_t)         :: Tra_Den_exe_grd_tensor
+    type(tensor_t)            :: orb_inte_exe_grd_tensor
 
 
     nvir = exa_input%nvir
@@ -235,9 +235,9 @@ subroutine get_exc_exc(exa_input, onetdmee, All_opera, eVectors)
     integer                       :: all_state
     integer                       :: nvir, nocc
     complex(kind=8)               :: onetdmee_tem
-    type(talsh_dm_tens_t)         :: Tra_Den_exe_exe_tensor
-    type(talsh_tens_t)            :: orb_inte_exe_exe_vv_tensor
-    type(talsh_tens_t)            :: orb_inte_exe_exe_oo_tensor
+    type(eti_dm_tens_t)         :: Tra_Den_exe_exe_tensor
+    type(tensor_t)            :: orb_inte_exe_exe_vv_tensor
+    type(tensor_t)            :: orb_inte_exe_exe_oo_tensor
 
 
     nvir = exa_input%nvir
@@ -274,7 +274,7 @@ end subroutine get_exc_exc
 subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,i_prop)
     ! Read proporty integrals from  MDPROP file 
     type(exacc_input), intent(in) :: exa_input
-    type(talsh_tens_t)        :: orb_int_tensor
+    type(tensor_t)        :: orb_int_tensor
     
 
     type(C_PTR) :: body_p
@@ -296,8 +296,8 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_lis
     mo_dims(2) = nmo2
 
 
-    ierr=talsh_tensor_construct(orb_int_tensor,C8,mo_dims,init_val=ZERO)
-    ierr=talsh_tensor_get_body_access(orb_int_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    ierr=construct_tensor_t(orb_int_tensor,C8,mo_dims,init_val=ZERO)
+    ierr=direct_data_pointer(orb_int_tensor,body_p)
     call c_f_pointer(body_p,orbital_integral_tens,mo_dims)
 
     print *,"mo1_list",mo1_list
@@ -326,25 +326,25 @@ subroutine get_propeg(onetdmeg_tem, orb_inte_exe_grd_tensor, Tra_Den_exe_grd_ten
     complex(kind=8)               :: onetdmeg_tem
 
 
-    type(talsh_dm_tens_t)         :: Tra_Den_exe_grd_tensor
-    type(talsh_tens_t)            :: orb_inte_exe_grd_tensor
-    type(talsh_tens_t)            :: TDM_exe_grd_tensor
+    type(eti_dm_tens_t)         :: Tra_Den_exe_grd_tensor
+    type(tensor_t)            :: orb_inte_exe_grd_tensor
+    type(tensor_t)            :: TDM_exe_grd_tensor
 
     complex(kind=8), pointer      :: TDM_exe_grd_tens(:)
     type(C_PTR)                   :: body_p
 
     one_dims(1) = 1
 
-    ierr=talsh_tensor_construct(TDM_exe_grd_tensor,C8,one_dims(1:0),init_val=ZERO)
-    ierr=talsh_tensor_get_body_access(TDM_exe_grd_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    ierr=construct_tensor_t(TDM_exe_grd_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=direct_data_pointer(TDM_exe_grd_tensor,body_p)
     call c_f_pointer(body_p,TDM_exe_grd_tens,one_dims)
 
-    ierr = talsh_tensor_contract("TDM()+=OL(a,i)*DM(a,i)",TDM_exe_grd_tensor,orb_inte_exe_grd_tensor,&
+    ierr = t_einsum("TDM()+=OL(a,i)*DM(a,i)",TDM_exe_grd_tensor,orb_inte_exe_grd_tensor,&
                                 Tra_Den_exe_grd_tensor%prime_vo,scale=ONE)
     onetdmeg_tem = TDM_exe_grd_tens(1)
-    ierr=talsh_tensor_destruct(TDM_exe_grd_tensor)
-    ierr=talsh_tensor_destruct(orb_inte_exe_grd_tensor)
-    ierr=talsh_tensor_destruct(Tra_Den_exe_grd_tensor%prime_vo)
+    ierr=destroy_tensor_t(TDM_exe_grd_tensor)
+    ierr=destroy_tensor_t(orb_inte_exe_grd_tensor)
+    ierr=destroy_tensor_t(Tra_Den_exe_grd_tensor%prime_vo)
 
     
 end subroutine get_propeg
@@ -359,10 +359,10 @@ subroutine get_propee(onetdmee_tem, orb_inte_exe_exe_vv_tensor, orb_inte_exe_exe
 
 
     complex(kind=8)           :: onetdmee_tem
-    type(talsh_dm_tens_t)     :: Tra_Den_exe_exe_tensor
-    type(talsh_tens_t)        :: orb_inte_exe_exe_vv_tensor
-    type(talsh_tens_t)        :: orb_inte_exe_exe_oo_tensor
-    type(talsh_tens_t)        :: TDM_exe_exe_vv_tensor, TDM_exe_exe_oo_tensor
+    type(eti_dm_tens_t)     :: Tra_Den_exe_exe_tensor
+    type(tensor_t)        :: orb_inte_exe_exe_vv_tensor
+    type(tensor_t)        :: orb_inte_exe_exe_oo_tensor
+    type(tensor_t)        :: TDM_exe_exe_vv_tensor, TDM_exe_exe_oo_tensor
 
     complex(kind=8), pointer      :: TDM_exe_exe_vv_tens(:), TDM_exe_exe_oo_tens(:)
     type(C_PTR)                   :: body_p
@@ -370,29 +370,29 @@ subroutine get_propee(onetdmee_tem, orb_inte_exe_exe_vv_tensor, orb_inte_exe_exe
     one_dims(1) = 1
 
 
-    ierr=talsh_tensor_construct(TDM_exe_exe_vv_tensor,C8,one_dims(1:0),init_val=ZERO) 
-    ierr=talsh_tensor_construct(TDM_exe_exe_oo_tensor,C8,one_dims(1:0),init_val=ZERO) 
+    ierr=construct_tensor_t(TDM_exe_exe_vv_tensor,C8,one_dims(1:0),init_val=ZERO) 
+    ierr=construct_tensor_t(TDM_exe_exe_oo_tensor,C8,one_dims(1:0),init_val=ZERO) 
 
 
-    ierr=talsh_tensor_get_body_access(TDM_exe_exe_vv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    ierr=direct_data_pointer(TDM_exe_exe_vv_tensor,body_p)
     call c_f_pointer(body_p,TDM_exe_exe_vv_tens,one_dims)
-    ierr = talsh_tensor_contract("TDM()+=OL(a,b)*DM(a,b)",TDM_exe_exe_vv_tensor,orb_inte_exe_exe_vv_tensor,&
+    ierr = t_einsum("TDM()+=OL(a,b)*DM(a,b)",TDM_exe_exe_vv_tensor,orb_inte_exe_exe_vv_tensor,&
                     Tra_Den_exe_exe_tensor%prime_vv,scale=ONE)
 
                
-    ierr=talsh_tensor_get_body_access(TDM_exe_exe_oo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    ierr=direct_data_pointer(TDM_exe_exe_oo_tensor,body_p)
     call c_f_pointer(body_p,TDM_exe_exe_oo_tens,one_dims)
-    ierr = talsh_tensor_contract("TDM()+=OL(i,j)*DM(i,j)",TDM_exe_exe_oo_tensor,orb_inte_exe_exe_oo_tensor,&
+    ierr = t_einsum("TDM()+=OL(i,j)*DM(i,j)",TDM_exe_exe_oo_tensor,orb_inte_exe_exe_oo_tensor,&
                     Tra_Den_exe_exe_tensor%prime_oo,scale=ONE)
 
     onetdmee_tem = TDM_exe_exe_vv_tens(1)+TDM_exe_exe_oo_tens(1)
 
-    ierr=talsh_tensor_destruct(TDM_exe_exe_vv_tensor)
-    ierr=talsh_tensor_destruct(TDM_exe_exe_oo_tensor)
-    ierr=talsh_tensor_destruct(orb_inte_exe_exe_vv_tensor)
-    ierr=talsh_tensor_destruct(orb_inte_exe_exe_oo_tensor)
-    ierr=talsh_tensor_destruct(Tra_Den_exe_exe_tensor%prime_vv)
-    ierr=talsh_tensor_destruct(Tra_Den_exe_exe_tensor%prime_oo)
+    ierr=destroy_tensor_t(TDM_exe_exe_vv_tensor)
+    ierr=destroy_tensor_t(TDM_exe_exe_oo_tensor)
+    ierr=destroy_tensor_t(orb_inte_exe_exe_vv_tensor)
+    ierr=destroy_tensor_t(orb_inte_exe_exe_oo_tensor)
+    ierr=destroy_tensor_t(Tra_Den_exe_exe_tensor%prime_vv)
+    ierr=destroy_tensor_t(Tra_Den_exe_exe_tensor%prime_oo)
 end subroutine get_propee
 
 !-------------------------------------------------------------------------------------------------------------------------

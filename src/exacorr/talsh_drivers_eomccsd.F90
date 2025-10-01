@@ -1,13 +1,11 @@
-module talsh_eom
+module eti_eom
 
-  use talsh
+  use exacorr_tensor_interface
   use tensor_algebra
   use exacorr_datatypes
-  use intermediates
-  use talsh_common_routines, only : tensor_norm2, print_tensor
-  use exacorr_utils,  only : print_date
-  use talsh_davidson
-  use talsh_trial_eomccsd
+  use eti_common_routines, only : tensor_norm2, print_tensor
+  use eti_davidson
+  use eti_trial_eomccsd
   use mfsolver_dirac_input
 
   implicit none
@@ -15,28 +13,28 @@ module talsh_eom
   complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE=(-1.D0,0.D0),ONE=(1.D0,0.D0),ONE_HALF=(0.5D0,0.D0)
   real(8),    parameter :: ONE_QUARTER=0.25D0
 
-  type, public :: talsh_eom_results_tens_t
+  type, public :: eti_eom_results_tens_t
      character, pointer :: flavor(:)
-     type(talsh_davidson_results_tens_t) :: value_vectors_t
-  end type talsh_eom_results_tens_t
+     type(eti_davidson_results_tens_t) :: value_vectors_t
+  end type eti_eom_results_tens_t
 
   private
 
-  public talsh_eom_eigval_driver
+  public eti_eom_eigval_driver
 
   contains
 
-    subroutine talsh_steom_eigval_driver (results_t,eom_config,eps_occ,eps_vir,interm_t,int_t)
+    subroutine eti_steom_eigval_driver (results_t,eom_config,eps_occ,eps_vir,interm_t,int_t)
 
 !     input variables
       type(eom_config_t),     intent(in)             :: eom_config
-      type(talsh_intg_tens_t), intent(inout)           :: int_t
+      type(eti_intg_tens_t), intent(inout)           :: int_t
       real(8),               intent(in)              :: eps_occ(:), eps_vir(:)
-      type(talsh_intermediates_tens_t), intent(inout)  :: interm_t
-      type(talsh_eom_results_tens_t), intent(inout)  :: results_t
+      type(eti_intermediates_tens_t), intent(inout)  :: interm_t
+      type(eti_eom_results_tens_t), intent(inout)  :: results_t
 
 !     local variables
-      type(talsh_eom_results_tens_t) :: eomip_results_t, eomea_results_t
+      type(eti_eom_results_tens_t) :: eomip_results_t, eomea_results_t
 
       write(*,*) ""
       write(*,'(A)') "*******************************************************************************"
@@ -44,7 +42,7 @@ module talsh_eom
       write(*,'(A)') "*******************************************************************************"
       write(*,*) ""
 
-      call talsh_davidson_setup(unit_output=6, &
+      call eti_davidson_setup(unit_output=6, &
                                 solve_right=.true.,&
                                 solve_left=.false.,&
                                 symmetric=.false., &
@@ -54,8 +52,8 @@ module talsh_eom
 
 !     todo : store the results from each of ip/ea runs 
 !     we also need to control whether we need to do IP and EA, depending on the options. for now sticking to STEOM-EE, which needs both
-      ! call talsh_davidson_create_results(eomip_results_t)
-      ! call talsh_davidson_create_results(eomea_results_t)
+      ! call eti_davidson_create_results(eomip_results_t)
+      ! call eti_davidson_create_results(eomea_results_t)
 
       call print_date("Setting up RHS EOM-IP run")
       call eom_ccsd_eigenvalue_ip(eomip_results_t,eom_config%nroots,interm_t,int_t)
@@ -66,7 +64,7 @@ module talsh_eom
       call print_date("Done with  RHS EOM-EA run")
 
       if (eom_config%do_expval) then
-         call talsh_davidson_setup(unit_output=6, &
+         call eti_davidson_setup(unit_output=6, &
                                    solve_right=.false.,&
                                    solve_left=.true.,&
                                    symmetric=.false., &
@@ -115,12 +113,12 @@ module talsh_eom
 ! *_qrsp_driver   : uses *_linresp_driver to solve the linear response equations involved in the quadratic response, and forms the quadratic response function
 !
 ! and within each use the different variants : EOM-IP/EE/EA/../-CC* where CC* refers to {P-,}EOM-{CC{SD,SDT},MBPT2}, CCn,
-    subroutine talsh_eom_eigval_driver (results_t,eom_config,interm_t,int_t, solve_right, solve_left)
+    subroutine eti_eom_eigval_driver (results_t,eom_config,interm_t,int_t, solve_right, solve_left)
 !     input variables
-      type(talsh_eom_results_tens_t), intent(inout)  :: results_t
+      type(eti_eom_results_tens_t), intent(inout)  :: results_t
       type(eom_config_t),     intent(in)             :: eom_config
-      type(talsh_intg_tens_t), intent(inout)         :: int_t
-      type(talsh_intermediates_tens_t), intent(inout):: interm_t
+      type(eti_intg_tens_t), intent(inout)         :: int_t
+      type(eti_intermediates_tens_t), intent(inout):: interm_t
       logical :: solve_right, solve_left
 
       write(*,*) ""
@@ -129,8 +127,8 @@ module talsh_eom
       write(*,'(A)') "*******************************************************************************"
       write(*,*) ""
 
-! aspg : need to get from hardcoded options to getting them from input (*CCDIAG) on the calls to talsh_davidson_setup
-      call talsh_davidson_setup(unit_output=6, &
+! aspg : need to get from hardcoded options to getting them from input (*CCDIAG) on the calls to eti_davidson_setup
+      call eti_davidson_setup(unit_output=6, &
                                 convergence_threshold=mfsolver_options_convergence_threshold, &
                                 solve_right=solve_right,&
                                 solve_left=solve_left,&
@@ -163,7 +161,7 @@ module talsh_eom
       end select
 
       if (eom_config%do_expval) then  
-         call talsh_davidson_setup(unit_output=6, &
+         call eti_davidson_setup(unit_output=6, &
                                    solve_right=.false.,&
                                    solve_left=.true.,&
                                    symmetric=.false., &
@@ -188,82 +186,82 @@ module talsh_eom
     end subroutine 
 
     subroutine eom_ccsd_eigenvalue_ip(results_t, nroots, interm_t, int_t)
-       use talsh_sigma_eomccsd
+       use eti_sigma_eomccsd
 
 !     input variables
       integer, intent(in) :: nroots
-      type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
-      type(talsh_intg_tens_t), intent(inout) :: int_t
-      type(talsh_eom_results_tens_t), intent(inout)  :: results_t
+      type(eti_intermediates_tens_t),  intent(inout) :: interm_t
+      type(eti_intg_tens_t), intent(inout) :: int_t
+      type(eti_eom_results_tens_t), intent(inout)  :: results_t
 !     workspace
-      type(talsh_davidson_workspace_tens_t) :: workspace_t
-      type(talsh_projectors_tens_t) :: projector_t
+      type(eti_davidson_workspace_tens_t) :: workspace_t
+      type(eti_projectors_tens_t) :: projector_t
 !     error code
       integer :: ierr
       character(len=2) :: flavor = "IP"
 
       call print_date("Entering EOM-IP energy calculation")
 
-      call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
-      call talsh_eomccsd_ip_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
-      call talsh_eomccsd_ip_trial_create(workspace_t)
-      call talsh_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
+      call eti_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
+      call eti_eomccsd_ip_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
+      call eti_eomccsd_ip_trial_create(workspace_t)
+      call eti_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
 
 !     set pointers to sigma vector subroutines 
-      interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ip
-      interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ip
+      interm_t%sigma_rhs_p => eti_sigma_eomccsd_rhs_ip
+      interm_t%sigma_lhs_p => eti_sigma_eomccsd_lhs_ip
 
-      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
+      call eti_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
       call print_date("Finishing EOM-IP eigenvalue calculation")
 
-      call talsh_davidson_workspace_destroy(workspace_t)
+      call eti_davidson_workspace_destroy(workspace_t)
 
     end subroutine eom_ccsd_eigenvalue_ip
 
 
     subroutine eom_ccsd_eigenvalue_ea(results_t, nroots, interm_t, int_t)
-       use talsh_sigma_eomccsd
+       use eti_sigma_eomccsd
 
 !     input variables
       integer, intent(in) :: nroots
-      type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
-      type(talsh_intg_tens_t), intent(inout) :: int_t
-      type(talsh_eom_results_tens_t), intent(inout)  :: results_t
+      type(eti_intermediates_tens_t),  intent(inout) :: interm_t
+      type(eti_intg_tens_t), intent(inout) :: int_t
+      type(eti_eom_results_tens_t), intent(inout)  :: results_t
 !     workspace
-      type(talsh_davidson_workspace_tens_t) :: workspace_t
-      type(talsh_projectors_tens_t) :: projector_t
+      type(eti_davidson_workspace_tens_t) :: workspace_t
+      type(eti_projectors_tens_t) :: projector_t
 !     error code
       integer :: ierr
       character(len=2) :: flavor = "EA"
 
       call print_date("Entering EOM-EA eigenvalue calculation")
 
-      call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
-      call talsh_eomccsd_ea_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
-      call talsh_eomccsd_ea_trial_create(workspace_t)
+      call eti_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
+      call eti_eomccsd_ea_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
+      call eti_eomccsd_ea_trial_create(workspace_t)
 
 !     set pointers to sigma vector subroutines 
-      interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ea
-      interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ea
+      interm_t%sigma_rhs_p => eti_sigma_eomccsd_rhs_ea
+      interm_t%sigma_lhs_p => eti_sigma_eomccsd_lhs_ea
 
-      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
+      call eti_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
       call print_date("Finishing EOM-EA eigenvalue calculation")
 
-      call talsh_davidson_workspace_destroy(workspace_t)
+      call eti_davidson_workspace_destroy(workspace_t)
 
     end subroutine eom_ccsd_eigenvalue_ea
 
-    subroutine talsh_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
-       type(talsh_projectors_tens_t), intent(inout) :: projector_t
-       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
+    subroutine eti_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
+       type(eti_projectors_tens_t), intent(inout) :: projector_t
+       type(eti_davidson_workspace_tens_t), intent(inout) :: workspace_t
        
        logical :: debug = .false.
        integer :: p, q, r, s, ierr, pmax, qmax, rmax, smax
        complex(8), pointer, contiguous:: proj1_tens(:,:), proj2_tens(:,:,:,:)
        type(C_PTR):: proj1_body_p, proj2_body_p
             
-      ierr=talsh_tensor_construct(projector_t%p1,C8,workspace_t%tens1_dims(1:workspace_t%tens1_rank),init_val=ONE)
-      ierr=talsh_tensor_construct(projector_t%p2,C8,workspace_t%tens2_dims(1:workspace_t%tens2_rank),init_val=ONE)
+      ierr=construct_tensor_t(projector_t%p1,C8,workspace_t%tens1_dims(1:workspace_t%tens1_rank),init_val=ONE)
+      ierr=construct_tensor_t(projector_t%p2,C8,workspace_t%tens2_dims(1:workspace_t%tens2_rank),init_val=ONE)
 
       projector_t%p1_rank = workspace_t%tens1_rank
       projector_t%p2_rank = workspace_t%tens2_rank
@@ -279,8 +277,8 @@ module talsh_eom
       rmax  = projector_t%p2_dims(3) 
       smax  = projector_t%p2_dims(4) 
 
-      ierr = talsh_tensor_get_body_access(projector_t%p1,proj1_body_p,C8,0,DEV_HOST)
-      ierr = talsh_tensor_get_body_access(projector_t%p2,proj2_body_p,C8,0,DEV_HOST)
+      ierr = direct_data_pointer(projector_t%p1,proj1_body_p)
+      ierr = direct_data_pointer(projector_t%p2,proj2_body_p)
 
       call c_f_pointer(proj1_body_p,proj1_tens,projector_t%p1_dims(1:projector_t%p1_rank))
       call c_f_pointer(proj2_body_p,proj2_tens,projector_t%p2_dims(1:projector_t%p2_rank))
@@ -311,36 +309,36 @@ module talsh_eom
     end subroutine
 
     subroutine eom_ccsd_eigenvalue_ee(results_t, nroots, interm_t, int_t, left_right)
-       use talsh_sigma_eomccsd
+       use eti_sigma_eomccsd
 
 !     input variables
       integer, intent(in) :: nroots
-      type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
-      type(talsh_intg_tens_t), intent(inout) :: int_t
+      type(eti_intermediates_tens_t),  intent(inout) :: interm_t
+      type(eti_intg_tens_t), intent(inout) :: int_t
       character*1, OPTIONAL                              :: left_right
-      type(talsh_eom_results_tens_t), intent(inout)  :: results_t
+      type(eti_eom_results_tens_t), intent(inout)  :: results_t
 !     workspace
-      type(talsh_davidson_workspace_tens_t) :: workspace_t
-      type(talsh_projectors_tens_t) :: projector_t
+      type(eti_davidson_workspace_tens_t) :: workspace_t
+      type(eti_projectors_tens_t) :: projector_t
 !     error code
       integer :: ierr
       character(len=2) :: flavor = "EE"
 
       call print_date("Entering EOM-EE eigenvalue calculation")
 
-      call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, left_right)
-      call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, left_right)
-      call talsh_eomccsd_ee_trial_create(workspace_t)
-      call talsh_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
+      call eti_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, left_right)
+      call eti_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, left_right)
+      call eti_eomccsd_ee_trial_create(workspace_t)
+      call eti_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
 
 !     set pointers to sigma vector subroutines 
-      interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
-      interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ee
+      interm_t%sigma_rhs_p => eti_sigma_eomccsd_rhs_ee
+      interm_t%sigma_lhs_p => eti_sigma_eomccsd_lhs_ee
 
-      call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
+      call eti_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t,flavor)
       call print_date("Finishing EOM-EE eigenvalue calculation")
 
-      call talsh_davidson_workspace_destroy(workspace_t)
+      call eti_davidson_workspace_destroy(workspace_t)
 
     end subroutine eom_ccsd_eigenvalue_ee
 

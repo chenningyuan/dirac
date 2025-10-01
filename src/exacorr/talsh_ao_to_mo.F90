@@ -1,19 +1,19 @@
-module talsh_ao_to_mo
+module eti_ao_to_mo
 
 !This module drives the index transformation of two electron integrals
 !integrating the ExaTensor library with the DIRAC code.
 
-
         use tensor_algebra
-        use talsh
-        use talsh_common_routines, only : tensor_norm2, talsh_get_number_gpus
+        use exacorr_tensor_interface
+!       use talsh
+        use eti_common_routines, only : tensor_norm2
         use exacorr_utils
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
 
         private
-        public talsh_compute_mo_integrals
+        public eti_compute_mo_integrals
         public compute_ao_integrals
         public get_integral_tensor
         public ao2mo_ind
@@ -27,7 +27,7 @@ module talsh_ao_to_mo
 
        contains
 !-----------------------------------------------------------
-        subroutine talsh_compute_mo_integrals (nmo, mo_list, talsh_buff, print_level, rcw, th_cholesky)
+        subroutine eti_compute_mo_integrals (nmo, mo_list, buff, executor, print_level, rcw, th_cholesky)
 
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
@@ -39,7 +39,7 @@ module talsh_ao_to_mo
          use exacorr_datatypes
          use exacorr_global
          use module_interest_interface
-         use talsh_CD_routines
+         use eti_CD_routines
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          use interface_to_mpi
 #endif
@@ -47,31 +47,28 @@ module talsh_ao_to_mo
          implicit none
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
-         integer, intent(in) :: talsh_buff   ! buffer size for talsh in MB
+         integer, intent(in) :: buff   ! buffer size for talsh in MB
+         integer, intent(in) :: executor   ! executor
          integer, intent(in) :: print_level  
          integer, intent(in) :: rcw          ! real or complex 
          real(8), intent(in) :: th_cholesky
 
          integer(INTD)       :: ierr
          integer             :: nao, my_MPI_rank
-         type(talsh_tens_t)  :: aoint_tensor
-         type(talsh_tens_t)  :: moint_tensor
+         type(tensor_t)  :: aoint_tensor
+         type(tensor_t)  :: moint_tensor
          integer(C_INT)      :: aoint_dims(1:4),moint_dims(1:4)
-         integer(C_SIZE_T)   :: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-         integer(C_INT)      :: host_arg_max
          integer             :: m, i
          complex(8), pointer, contiguous :: ao_tens(:,:,:,:),mo_tens(:,:,:,:)
          type(C_PTR)                     :: body_p
 
-         type(talsh_tens_t), allocatable :: chol_tensor(:), temp(:)
-         type(talsh_tens_t), allocatable :: upq(:), urs(:)
+         type(tensor_t), allocatable :: chol_tensor(:), temp(:)
+         type(tensor_t), allocatable :: upq(:), urs(:)
          integer(C_INT)                  :: dim2(1:2)
 
-         type(talsh_tens_t)              :: chol_tens, temp_tens
-         type(talsh_tens_t)              :: upq_tens, urs_tens
+         type(tensor_t)              :: chol_tens, temp_tens
+         type(tensor_t)              :: upq_tens, urs_tens
          integer(C_INT)                  :: dim3(1:3), dim_chol(1:3)
-
-         integer :: num_gpus = 0, igpu
 
 !        Make some noise so that we know we are here
          call print_date('Entered compute_mo_integrals routine')
@@ -86,13 +83,8 @@ module talsh_ao_to_mo
          if (my_MPI_rank /= 0) return ! TALSH is not parallelized, leave the work to master
          call print_date('Initialized global data')
 
-         call talsh_get_number_gpus(num_gpus)
+         call eti_executor_initialize(buff,executor)
 
-!        Initialize libraries
-         buf_size=talsh_buff*buf_size
-         ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
-         call print_date('Initialized talsh library')
-         write(*,'(" Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
          call interest_initialize(.true.)
          call print_date('Initialized InteRest library')
 
@@ -105,15 +97,15 @@ module talsh_ao_to_mo
 
          if (th_cholesky.le.0) then
 !          Get tensor for AO integrals
-           ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
+           ierr=construct_tensor_t(aoint_tensor,C8,aoint_dims,init_val=ZERO)
 !          Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
-           ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+           ierr=direct_data_pointer(aoint_tensor,body_p)
            call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
            call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
            call print_date('Calculated AO integrals')
 
 !          Transform to MO basis
-           ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=ZERO)
+           ierr=construct_tensor_t(moint_tensor,C8,moint_dims,init_val=ZERO)
            call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
            if (print_level.gt.2) then
              print*, "AOint = ",tensor_norm2(aoint_tensor)
@@ -124,56 +116,58 @@ module talsh_ao_to_mo
          else
             call print_date('Cholesky method 42')
             !determine cholesky vectors for ao integrals
-            call decompose_cholesky_talsh (chol_tens, th_cholesky, print_level)
-            ierr = talsh_tensor_dimensions(chol_tens,i,dim_chol)
+            call decompose_cholesky_eti (chol_tens, th_cholesky, print_level)
+!           ierr = tensor_dimensions(chol_tens,i,dim_chol)
+            ierr = get_nmodes(chol_tens,i)
+            ierr = get_extents_static(chol_tens,dim_chol)
 
             !  transform upq
             dim3=dim_chol
             dim3(1)=nmo(1)
-            ierr=talsh_tensor_construct(temp_tens,C8,dim3,init_val=ZERO)
+            ierr=construct_tensor_t(temp_tens,C8,dim3,init_val=ZERO)
             dim3(1:2)=nmo(1:2)
-            ierr=talsh_tensor_construct(upq_tens,C8,dim3,init_val=ZERO)
+            ierr=construct_tensor_t(upq_tens,C8,dim3,init_val=ZERO)
 
             call ao2mo_ind(chol_tens,temp_tens,nmo(1),mo_list(1:nmo(1)),11)
             call ao2mo_ind(temp_tens,upq_tens,nmo(2),mo_list(nmo(1)+1:sum(nmo(1:2))),21)
-            ierr=talsh_tensor_init(temp_tens)
+            ierr=initialize_tensor_t(temp_tens)
             call ao2mo_ind(chol_tens,temp_tens,nmo(1),mo_list(1:nmo(1)),12)
             call ao2mo_ind(temp_tens,upq_tens,nmo(2),mo_list(nmo(1)+1:sum(nmo(1:2))),22)
 
-            ierr=talsh_tensor_destruct(temp_tens)
+            ierr=destroy_tensor_t(temp_tens)
 
             if (print_level.gt.2) call print_date(' upq done ')
 
             !  transform urs
             dim3=dim_chol
             dim3(1)=nmo(3)
-            ierr=talsh_tensor_construct(temp_tens,C8,dim3,init_val=ZERO)
+            ierr=construct_tensor_t(temp_tens,C8,dim3,init_val=ZERO)
             dim3(1:2)=nmo(3:4)
-            ierr=talsh_tensor_construct(urs_tens,C8,dim3,init_val=ZERO)
+            ierr=construct_tensor_t(urs_tens,C8,dim3,init_val=ZERO)
 
             call ao2mo_ind(chol_tens,temp_tens,nmo(3),mo_list(sum(nmo(1:2))+1:sum(nmo(1:3))),11)
             call ao2mo_ind(temp_tens,urs_tens,nmo(4),mo_list(sum(nmo(1:3))+1:sum(nmo)),21)
-            ierr=talsh_tensor_init(temp_tens)
+            ierr=initialize_tensor_t(temp_tens)
             call ao2mo_ind(chol_tens,temp_tens,nmo(3),mo_list(sum(nmo(1:2))+1:sum(nmo(1:3))),12)
             call ao2mo_ind(temp_tens,urs_tens,nmo(4),mo_list(sum(nmo(1:3))+1:sum(nmo)),22)
 
-            ierr=talsh_tensor_destruct(temp_tens)
-            ierr=talsh_tensor_destruct(chol_tens)
+            ierr=destroy_tensor_t(temp_tens)
+            ierr=destroy_tensor_t(chol_tens)
 
             if (print_level.gt.2) call print_date(' urs done ')
 
-            ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=ZERO)
-            ierr=talsh_tensor_contract("T(p,q,r,s)+=K(p,q,u)*L(r,s,u)",moint_tensor,upq_tens,urs_tens)
+            ierr=construct_tensor_t(moint_tensor,C8,moint_dims,init_val=ZERO)
+            ierr=t_einsum("T(p,q,r,s)+=K(p,q,u)*L(r,s,u)",moint_tensor,upq_tens,urs_tens)
             if (ierr.ne.0) stop 'program error: cholesky not working'
 
-            ierr=talsh_tensor_destruct(upq_tens)
-            ierr=talsh_tensor_destruct(urs_tens)
+            ierr=destroy_tensor_t(upq_tens)
+            ierr=destroy_tensor_t(urs_tens)
 
          end if
          call print_date(' 2-el Integrals done ')
 
 !        Write to old format MO-integrals file to allow for easy debugging of the integral transform
-         ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(moint_tensor,body_p)
          call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
          call write_to_mdcint (nmo,mo_tens,rcw)
 
@@ -184,11 +178,11 @@ module talsh_ao_to_mo
          end if
 
 !        Destruct remaining tensors and shut down library
-         ierr=talsh_tensor_destruct(aoint_tensor)
-         ierr=talsh_tensor_destruct(moint_tensor)
-!        Get statistics
-         ierr=talsh_stats()
-         ierr = talsh_shutdown()
+         ierr=destroy_tensor_t(aoint_tensor)
+         ierr=destroy_tensor_t(moint_tensor)
+
+!        shutdown tensor libraries
+         call eti_executor_shutdown(executor)
 
 !        Clean up global data used to interact with DIRAC/Interest
          call delete_global_data
@@ -196,7 +190,7 @@ module talsh_ao_to_mo
 !        Make some noise so that we know we are leaving
          call print_date('Leaving compute_mo_integrals routine')
 
-        end subroutine talsh_compute_mo_integrals
+        end subroutine eti_compute_mo_integrals
 
         subroutine get_mocoef_tensor (nao, nmo, mo_list, mocoefa_tensor, mocoefb_tensor)
 
@@ -211,7 +205,7 @@ module talsh_ao_to_mo
          integer, intent(in) :: nao          ! the length of the ao basis
          integer, intent(in) :: nmo          ! the length of the mo basis
          integer, intent(in) :: mo_list(:)   ! and their indices
-         type(talsh_tens_t), intent(inout) :: mocoefa_tensor,mocoefb_tensor
+         type(tensor_t), intent(inout) :: mocoefa_tensor,mocoefb_tensor
 
          integer(INTD)       :: ierr, tens_rank
          type(cmo)           :: cspinor
@@ -220,10 +214,13 @@ module talsh_ao_to_mo
          complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:)
          type(C_PTR):: body_p
 
-         ierr=talsh_tensor_dimensions(mocoefa_tensor,tens_rank,mocoef_dims)
-         ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+!        ierr=tensor_dimensions(mocoefa_tensor,tens_rank,mocoef_dims)
+         ierr = get_nmodes(mocoefa_tensor, tens_rank)
+         ierr = get_extents_static(mocoefa_tensor, mocoef_dims)
+
+         ierr=direct_data_pointer(mocoefa_tensor,body_p)
          call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
-         ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(mocoefb_tensor,body_p)
          call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use cbmo_tens as a regular Fortran 2d array
 
          call get_mo_coefficients (cspinor,mo_list,nmo)
@@ -358,10 +355,10 @@ module talsh_ao_to_mo
 
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
-         type(talsh_tens_t), intent(inout)  :: aoint_tensor, moint_tensor
+         type(tensor_t), intent(inout)  :: aoint_tensor, moint_tensor
 
-         type(talsh_tens_t):: mocoefa_tensor(4),mocoefb_tensor(4)
-         type(talsh_tens_t):: a1int_tensor,a2int_tensor, a3int_tensor
+         type(tensor_t):: mocoefa_tensor(4),mocoefb_tensor(4)
+         type(tensor_t):: a1int_tensor,a2int_tensor, a3int_tensor
          integer(INTD) :: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
          integer(INTD) :: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
 
@@ -371,9 +368,14 @@ module talsh_ao_to_mo
 
          ! call print_date('entered aomo_transform')
 !        Get tensor dimension of input and output tensors
-         ierr = talsh_tensor_dimensions(aoint_tensor,tens_rank,aoint_dims)
+!        ierr = tensor_dimensions(aoint_tensor,tens_rank,aoint_dims)
+         ierr = get_nmodes(aoint_tensor,tens_rank)
+         ierr = get_extents_static(aoint_tensor, aoint_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: aoint tensor corrupted'
-         ierr = talsh_tensor_dimensions(moint_tensor,tens_rank,moint_dims)
+
+!        ierr = tensor_dimensions(moint_tensor,tens_rank,moint_dims)
+         ierr = get_nmodes(moint_tensor,tens_rank)
+         ierr = get_extents_static(moint_tensor, moint_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: moint tensor corrupted'
 
 !        Initialize tensors with MO coefficients
@@ -384,8 +386,8 @@ module talsh_ao_to_mo
             if (mocoef_dims(1) .ne. nao)      stop 'program error: inconsistent dimensions'
             mocoef_dims(2) = moint_dims(i)
             if (mocoef_dims(2) .ne. nmo(i)) stop 'program error: inconsistent dimensions'
-            ierr=talsh_tensor_construct(mocoefa_tensor(i),C8,mocoef_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(mocoefb_tensor(i),C8,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoefa_tensor(i),C8,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoefb_tensor(i),C8,mocoef_dims,init_val=ZERO)
             call get_mocoef_tensor (nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
             imo = imo + nmo(i)
          end do
@@ -401,40 +403,40 @@ module talsh_ao_to_mo
          a3int_dims(4)   = aoint_dims(4)
 
 !        Do 1st and 2nd quarter-transformation
-         ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(a2int_tensor,C8,a2int_dims,init_val=ZERO)
+         ierr=construct_tensor_t(a1int_tensor,C8,a1int_dims,init_val=ZERO)
+         ierr=construct_tensor_t(a2int_tensor,C8,a2int_dims,init_val=ZERO)
          ! call print_date('constructed a1 and a2')
-         ierr=talsh_tensor_contract("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor(1),aoint_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
-         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor(2))
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
-         ierr=talsh_tensor_init(a1int_tensor,ZERO)
-         ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor(1),aoint_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
-         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor(2))
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
+         ierr=t_einsum("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor(1),aoint_tensor)
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
+         ierr=t_einsum("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor(2))
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
+         ierr=initialize_tensor_t(a1int_tensor,ZERO)
+         ierr=t_einsum("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor(1),aoint_tensor)
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
+         ierr=t_einsum("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor(2))
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
          ! call print_date('first ht done')
 
 !        Destruct a1 and a1 integrals:
-         ierr=talsh_tensor_destruct(a1int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=25; return; endif
+         ierr=destroy_tensor_t(a1int_tensor); if(ierr.ne.ETI_SUCCESS) then; ierr=25; return; endif
 
 !        Do 3rd and 4th quarter-transformation
-         ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=ZERO)
+         ierr=construct_tensor_t(a3int_tensor,C8,a3int_dims,init_val=ZERO)
          ! call print_date('constructed a3')
-         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor(3),a2int_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
-         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor(4))
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
-         ierr=talsh_tensor_init(a3int_tensor,ZERO)
-         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor(3),a2int_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
-         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor(4))
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
+         ierr=t_einsum("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor(3),a2int_tensor)
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
+         ierr=t_einsum("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor(4))
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
+         ierr=initialize_tensor_t(a3int_tensor,ZERO)
+         ierr=t_einsum("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor(3),a2int_tensor)
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
+         ierr=t_einsum("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor(4))
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
          ! call print_date('second ht done')
 
 !        Destruct a2 and a3 integrals:
-         ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
-         ierr=talsh_tensor_destruct(a3int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=45; return; endif
+         ierr=destroy_tensor_t(a2int_tensor); if(ierr.ne.ETI_SUCCESS) then; ierr=35; return; endif
+         ierr=destroy_tensor_t(a3int_tensor); if(ierr.ne.ETI_SUCCESS) then; ierr=45; return; endif
 
 !          call print_date('leaving aomo_transform')
 
@@ -444,21 +446,21 @@ module talsh_ao_to_mo
 
          implicit none
 
-         type(talsh_tens_t), intent(inout)  :: aoint_tensor,integral_tensor
+         type(tensor_t), intent(inout)  :: aoint_tensor,integral_tensor
          integer, intent(in)                :: nmo(4), mo_list(:)
          integer, intent(in)                :: antisymmetrize
 
          integer(INTD)                      :: ierr, moint_dims(4)
-         type(talsh_tens_t)                 :: moint_tensor
+         type(tensor_t)                 :: moint_tensor
 
          moint_dims = nmo
-         ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=ZERO)
+         ierr=construct_tensor_t(moint_tensor,C8,moint_dims,init_val=ZERO)
          if (ierr.ne.0) stop 'get_integral_tensor: tensor construction failed'
 !        Transform integrals
          call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 !        Switch to Dirac order and antisymmetrize
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
-         ierr=talsh_tensor_destruct(moint_tensor)
+         ierr=destroy_tensor_t(moint_tensor)
 
         end subroutine get_integral_tensor
 
@@ -466,7 +468,7 @@ module talsh_ao_to_mo
 
          implicit none
 
-         type(talsh_tens_t), intent(inout)  :: mulliken_tensor,dirac_tensor
+         type(tensor_t), intent(inout)  :: mulliken_tensor,dirac_tensor
          integer, intent(in)                :: antisymmetrize
 
          integer(INTD) :: mulliken_dims(1:4),dirac_dims(1:4)
@@ -474,18 +476,24 @@ module talsh_ao_to_mo
          integer(INTD) :: ierr, tens_rank, mismatch
 
 !        work-around: addition with permutation is not implemented
-         type(talsh_tens_t) :: one_tensor, minusone_tensor
+         type(tensor_t) :: one_tensor, minusone_tensor
          integer(C_INT)     :: scalar_dims(1)
          scalar_dims(1) = 1
-         ierr=talsh_tensor_construct(one_tensor,C8,scalar_dims(1:0),init_val=ONE)
-         ierr=talsh_tensor_construct(minusone_tensor,C8,scalar_dims(1:0),init_val=MINUS_ONE)
+         ierr=construct_tensor_t(one_tensor,C8,scalar_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(minusone_tensor,C8,scalar_dims(1:0),init_val=MINUS_ONE)
 !        end work-round
 
 !        get dimensions of the tensors and check consistency
-         ierr = talsh_tensor_dimensions(mulliken_tensor,tens_rank,mulliken_dims)
+!        ierr = tensor_dimensions(mulliken_tensor,tens_rank,mulliken_dims)
+         ierr = get_nmodes(mulliken_tensor,tens_rank)
+         ierr = get_extents_static(mulliken_tensor,mulliken_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'input tensor corrupted in mulliken_to_dirac_sort'
-         ierr = talsh_tensor_dimensions(dirac_tensor,tens_rank,dirac_dims)
+
+!        ierr = tensor_dimensions(dirac_tensor,tens_rank,dirac_dims)
+         ierr = get_nmodes(dirac_tensor,tens_rank)
+         ierr = get_extents_static(dirac_tensor,dirac_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'output tensor corrupted in mulliken_to_dirac_sort'
+
          mismatch = 0
          if (mulliken_dims(1) .ne. dirac_dims(1)) mismatch = mismatch + 1
          if (mulliken_dims(2) .ne. dirac_dims(3)) mismatch = mismatch + 1
@@ -495,21 +503,21 @@ module talsh_ao_to_mo
          if (antisymmetrize .eq. 34 .and. dirac_dims(3) .ne. dirac_dims(4)) mismatch = mismatch + 1
          if (mismatch.gt.0) stop 'dimension mismatch in mulliken_to_dirac_sort'
 
-         ierr=talsh_tensor_init(dirac_tensor)
-!shorter ierr=talsh_tensor_add("D(p,q,r,s)+=M(p,r,q,s)",dirac_tensor,mulliken_tensor)
-         ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,r,q,s)*C()",dirac_tensor,mulliken_tensor,one_tensor)
+         ierr=initialize_tensor_t(dirac_tensor)
+!shorter ierr=tensor_add("D(p,q,r,s)+=M(p,r,q,s)",dirac_tensor,mulliken_tensor)
+         ierr=t_einsum("D(p,q,r,s)+=M(p,r,q,s)*C()",dirac_tensor,mulliken_tensor,one_tensor)
 
          if (antisymmetrize .eq. 12) then
-!shorter     ierr=talsh_tensor_add("D(p,q,r,s)+=M(q,r,p,s)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
-             ierr=talsh_tensor_contract("D(p,q,r,s)+=M(q,r,p,s)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
+!shorter     ierr=tensor_add("D(p,q,r,s)+=M(q,r,p,s)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
+             ierr=t_einsum("D(p,q,r,s)+=M(q,r,p,s)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
          elseif (antisymmetrize .eq. 34) then
-!shorter     ierr=talsh_tensor_add("D(p,q,r,s)+=M(p,s,q,r)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
-              ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,s,q,r)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
+!shorter     ierr=tensor_add("D(p,q,r,s)+=M(p,s,q,r)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
+              ierr=t_einsum("D(p,q,r,s)+=M(p,s,q,r)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
          end if
 
 !        work-around: addition with permutation is not implemented
-         ierr=talsh_tensor_destruct(one_tensor)
-         ierr=talsh_tensor_destruct(minusone_tensor)
+         ierr=destroy_tensor_t(one_tensor)
+         ierr=destroy_tensor_t(minusone_tensor)
 !        end work-round
 
         end subroutine mulliken_to_dirac_sort
@@ -517,17 +525,17 @@ module talsh_ao_to_mo
         subroutine ao2mo_ind(ao_tensor,mo_tensor,nmo,mo_list,ind)
 !         Transform integral tensor from ao-basis to mo-basis
 
-          use talsh_common_routines
+          use eti_common_routines
 
           implicit none
 
-          type(talsh_tens_t), intent(inout) :: ao_tensor
-          type(talsh_tens_t), intent(inout) :: mo_tensor
+          type(tensor_t), intent(inout) :: ao_tensor
+          type(tensor_t), intent(inout) :: mo_tensor
           integer(INTD), intent(in) :: nmo          ! the size of the mo basis for each of the 2 indices (mulliken ordering)
           integer, intent(in)       :: mo_list(:)   ! and their indices (2 lists consecutively)
           integer, intent(in)       :: ind
 
-          type(talsh_tens_t):: mocoef_alpha, mocoef_beta
+          type(tensor_t):: mocoef_alpha, mocoef_beta
           integer(INTD)     :: mocoef_dims(1:2)
           integer(INTD)     :: ao_dim2(1:2), mo_dim2(1:2)
           integer(INTD)     :: ao_dim3(1:3), mo_dim3(1:3)
@@ -535,51 +543,63 @@ module talsh_ao_to_mo
           integer(INTD)     :: ierr, rank, i
 
 !         Get rank of ao tensor
-          rank=talsh_tensor_rank(ao_tensor)
+          ierr = get_nmodes(ao_tensor,rank)
 
 !         for one electron integrals / matrices
           if (rank.eq.2) then
-            ierr = talsh_tensor_dimensions(ao_tensor,rank,ao_dim2)
+!           ierr = tensor_dimensions(ao_tensor,rank,ao_dim2)
+            ierr = get_nmodes(ao_tensor,rank)
+            ierr = get_extents_static(ao_tensor,ao_dim2)
             if (ierr.ne.0 .or. rank.ne.2) stop 'error in ao2mo_ind: ao tensor corrupted'
+
 !           check output tensor
-            ierr = talsh_tensor_dimensions(mo_tensor,rank,mo_dim2)
+!           ierr = tensor_dimensions(mo_tensor,rank,mo_dim2)
+            ierr = get_nmodes(mo_tensor,rank)
+            ierr = get_extents_static(mo_tensor,mo_dim2)
             if (ierr.ne.0 .or. rank.ne.2) stop 'error in ao2mo_ind: mo tensor corrupted'
+
             if (mo_dim2(ind).ne.nmo) stop 'error in ao2mo_ind: mo tensor wrong nmo1'
 
 !           Initialize tensors with MO coefficients
             mocoef_dims(1) = ao_dim2(ind)
             mocoef_dims(2) = mo_dim2(ind)
-            ierr=talsh_tensor_construct(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
             call get_mocoef_tensor (mocoef_dims(1),mocoef_dims(2), & 
                         mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 
 !           transform the index
             if (ind.eq.1) then
-              ierr=talsh_tensor_contract("B(p,q)+=M+(i,p)*A(i,q)",mo_tensor,mocoef_alpha,ao_tensor)
-              if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 2a1'
-              ierr=talsh_tensor_contract("B(p,q)+=M+(i,p)*A(i,q)",mo_tensor,mocoef_beta,ao_tensor)
-              if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 2b1'
+              ierr=t_einsum("B(p,q)+=M+(i,p)*A(i,q)",mo_tensor,mocoef_alpha,ao_tensor)
+              if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_ind: 2a1'
+              ierr=t_einsum("B(p,q)+=M+(i,p)*A(i,q)",mo_tensor,mocoef_beta,ao_tensor)
+              if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_ind: 2b1'
             else if (ind.eq.2) then
-                ierr=talsh_tensor_contract("C(p,q)+=B(p,i)*M(i,q)",mo_tensor,ao_tensor,mocoef_alpha)
-                if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 2a2'
-                ierr=talsh_tensor_contract("C(p,q)+=B(p,i)*M(i,q)",mo_tensor,ao_tensor,mocoef_beta)
-                if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 2b2'
+                ierr=t_einsum("C(p,q)+=B(p,i)*M(i,q)",mo_tensor,ao_tensor,mocoef_alpha)
+                if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_ind: 2a2'
+                ierr=t_einsum("C(p,q)+=B(p,i)*M(i,q)",mo_tensor,ao_tensor,mocoef_beta)
+                if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_ind: 2b2'
             else
               stop 'error in ao2mo_ind: index not available'
             end if 
 
 !           clean up
-            ierr=talsh_tensor_destruct(mocoef_alpha)
-            ierr=talsh_tensor_destruct(mocoef_beta)
+            ierr=destroy_tensor_t(mocoef_alpha)
+            ierr=destroy_tensor_t(mocoef_beta)
             
 !         cholesky vectors
           else if (rank.eq.3) then
-            ierr = talsh_tensor_dimensions(ao_tensor,rank,ao_dim3)
+!           ierr = tensor_dimensions(ao_tensor,rank,ao_dim3)
+            ierr = get_nmodes(ao_tensor,rank)
+            ierr = get_extents_static(ao_tensor,ao_dim3)
             if (ierr.ne.0 .or. rank.ne.3) stop 'error in ao2mo_ind: ao tensor corrupted'
+
 !           check output tensor
-            ierr = talsh_tensor_dimensions(mo_tensor,rank,mo_dim3)
+!           ierr = tensor_dimensions(mo_tensor,rank,mo_dim3)
+            ierr = get_nmodes(mo_tensor,rank)
+            ierr = get_extents_static(mo_tensor,mo_dim3)
             if (ierr.ne.0 .or. rank.ne.3) stop 'error in ao2mo_ind: mo tensor corrupted'
+
             if (mo_dim3(3).ne.ao_dim3(3)) stop 'error in ao2mo_ind: mo tensor wrong chol. dim.'
             if (ind.eq.11 .or. ind.eq.12) then
                 i=1
@@ -593,29 +613,29 @@ module talsh_ao_to_mo
 !           Initialize tensors with MO coefficients
             mocoef_dims(1) = ao_dim3(i)
             mocoef_dims(2) = mo_dim3(i)
-            ierr=talsh_tensor_construct(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
             call get_mocoef_tensor (mocoef_dims(1),mocoef_dims(2), & 
                        mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 
 !           transform index
             if (ind.eq.11) then
-                ierr=talsh_tensor_contract("A(p,s,u)+=M+(r,p)*C(r,s,u)",mo_tensor,mocoef_alpha,ao_tensor)
-                if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 3a1'
+                ierr=t_einsum("A(p,s,u)+=M+(r,p)*C(r,s,u)",mo_tensor,mocoef_alpha,ao_tensor)
+                if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_ind: 3a1'
             else if (ind.eq.12) then
-                ierr=talsh_tensor_contract("A(p,s,u)+=M+(r,p)*C(r,s,u)",mo_tensor,mocoef_beta,ao_tensor)
-                if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 3b1'
+                ierr=t_einsum("A(p,s,u)+=M+(r,p)*C(r,s,u)",mo_tensor,mocoef_beta,ao_tensor)
+                if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_ind: 3b1'
             else if (ind.eq.21) then
-                ierr=talsh_tensor_contract("D(p,q,u)+=A(p,s,u)*M(s,q)",mo_tensor,ao_tensor,mocoef_alpha)
-                if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 3a2'
+                ierr=t_einsum("D(p,q,u)+=A(p,s,u)*M(s,q)",mo_tensor,ao_tensor,mocoef_alpha)
+                if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_ind: 3a2'
             else if (ind.eq.22) then
-                ierr=talsh_tensor_contract("D(p,q,u)+=A(p,s,u)*M(s,q)",mo_tensor,ao_tensor,mocoef_beta)
-                if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 3b2'
+                ierr=t_einsum("D(p,q,u)+=A(p,s,u)*M(s,q)",mo_tensor,ao_tensor,mocoef_beta)
+                if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_ind: 3b2'
             end if
 
 !           clean up
-            ierr=talsh_tensor_destruct(mocoef_alpha)
-            ierr=talsh_tensor_destruct(mocoef_beta)
+            ierr=destroy_tensor_t(mocoef_alpha)
+            ierr=destroy_tensor_t(mocoef_beta)
 
           else 
             stop 'error in ao2mo_ind: wrong rank'
@@ -626,24 +646,26 @@ module talsh_ao_to_mo
         subroutine ao2mo_vec(ao_vec,mo_vec,m,nmo,mo_list,ind)
 !         Transform integral tensor vector from ao-basis to mo-basis
 
-          use talsh_common_routines
+          use eti_common_routines
 
           implicit none
          
-          type(talsh_tens_t), allocatable :: ao_vec(:)
-          type(talsh_tens_t), allocatable :: mo_vec(:)
+          type(tensor_t), allocatable :: ao_vec(:)
+          type(tensor_t), allocatable :: mo_vec(:)
           integer(INTD), intent(in)       :: nmo          ! the size of the mo basis for each of the 2 indices (mulliken ordering)
           integer, intent(in)             :: mo_list(:)   ! and their indices (2 lists consecutively)
           integer, intent(in)             :: ind, m
 
-          type(talsh_tens_t) :: mocoef_alpha, mocoef_beta
+          type(tensor_t) :: mocoef_alpha, mocoef_beta
           integer(INTD)      :: mocoef_dims(1:2)
           integer(INTD)      :: ao_dim2(1:2), mo_dim2(1:2)
           integer(INTD)      :: ierr, rank
           integer            :: i,ii
 
 !         Get info about ao tensor
-          ierr = talsh_tensor_dimensions(ao_vec(1),rank,ao_dim2)
+          ierr = get_nmodes(ao_vec(1), rank)
+          ierr = get_extents_static(ao_vec(1),ao_dim2)
+
           if (ierr.ne.0 .or. rank.ne.2) stop 'error in ao2mo_vec: ao tensor corrupted'
 
           if (ind.eq.11 .or. ind.eq.12) then
@@ -660,32 +682,32 @@ module talsh_ao_to_mo
 !         Initialize tensors with MO coefficients
           mocoef_dims(1) = ao_dim2(ii)
           mocoef_dims(2) = mo_dim2(ii)
-          ierr=talsh_tensor_construct(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
-          ierr=talsh_tensor_construct(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
+          ierr=construct_tensor_t(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
+          ierr=construct_tensor_t(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
           call get_mocoef_tensor (mocoef_dims(1),mocoef_dims(2), & 
                         mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 
           do i=1,m
 !           transform the index
             if (ind.eq.11) then
-              ierr=talsh_tensor_contract("B(p,q)+=M+(i,p)*A(i,q)",mo_vec(i),mocoef_alpha,ao_vec(i))
-              if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_vec: 2a1'
+              ierr=t_einsum("B(p,q)+=M+(i,p)*A(i,q)",mo_vec(i),mocoef_alpha,ao_vec(i))
+              if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_vec: 2a1'
             else if (ind.eq.12) then
-              ierr=talsh_tensor_contract("B(p,q)+=M+(i,p)*A(i,q)",mo_vec(i),mocoef_beta,ao_vec(i))
-              if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_vec: 2b1'
+              ierr=t_einsum("B(p,q)+=M+(i,p)*A(i,q)",mo_vec(i),mocoef_beta,ao_vec(i))
+              if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_vec: 2b1'
             else if (ind.eq.21) then
-                ierr=talsh_tensor_contract("C(p,q)+=B(p,i)*M(i,q)",mo_vec(i),ao_vec(i),mocoef_alpha)
-                if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_vec: 2a2'
+                ierr=t_einsum("C(p,q)+=B(p,i)*M(i,q)",mo_vec(i),ao_vec(i),mocoef_alpha)
+                if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_vec: 2a2'
             else if (ind.eq.22) then
-                ierr=talsh_tensor_contract("C(p,q)+=B(p,i)*M(i,q)",mo_vec(i),ao_vec(i),mocoef_beta)
-                if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_vec: 2b2'
+                ierr=t_einsum("C(p,q)+=B(p,i)*M(i,q)",mo_vec(i),ao_vec(i),mocoef_beta)
+                if(ierr.ne.ETI_SUCCESS) stop 'error in ao2mo_vec: 2b2'
             end if 
           end do
 
 !         clean up
-          ierr=talsh_tensor_destruct(mocoef_alpha)
-          ierr=talsh_tensor_destruct(mocoef_beta)
+          ierr=destroy_tensor_t(mocoef_alpha)
+          ierr=destroy_tensor_t(mocoef_beta)
 
         end subroutine ao2mo_vec
 
-end module talsh_ao_to_mo
+end module eti_ao_to_mo

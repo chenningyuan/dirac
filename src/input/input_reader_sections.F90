@@ -1403,6 +1403,10 @@
          call kw_read(word, exa_input%talsh_buff)
       end if
 
+      if (kw_matches(word, '.EXECUTOR')) then
+         call kw_read(word, exa_input%executor)
+      end if
+
       if (kw_matches(word, '.FF_PROP')) then
          call kw_read(word, exa_input%nff)
          allocate(exa_input%ff_names(exa_input%nff(1)))

@@ -13,8 +13,8 @@ module exacorr_mp2no
         use exacorr_global
         use exacorr_ao_to_mo
         use exacorr_tensor_methods
-        use talsh_common_routines, only: write_talsh_matrix
-        use talsh_mp2no, only: get_new_orbital, get_transform_Fock
+        use eti_common_routines, only: write_2dtensor_as_matrix
+        use eti_mp2no, only: get_new_orbital, get_transform_Fock
         use mp2no_matrixtransforms
         use mp2no_fileinterfaces
         use interface_to_mpi
@@ -101,6 +101,7 @@ module exacorr_mp2no
         subroutine exacorr_generate_MP2_VNO_MObasis (exa_input)
 
          use talsh
+         use exacorr_tensor_interface, only: tensor_t, talsh_to_tensor_t
          use checkpoint
 
 !        This subroutine drives the mp2no DM calculation ans MP2 energy as well
@@ -160,7 +161,8 @@ module exacorr_mp2no
          integer(C_SIZE_T)               :: buf_size=1024_8*1024_8*1024_8 
          integer(C_INT)                  :: host_arg_max
          ! talsh tensor to get local copy
-         type(talsh_tens_t)           :: tensor_slice
+         type(tensor_t)           :: tensor_slice
+         type(talsh_tens_t)           :: talsh_tensor ! we need a talsh tensor because direct conversion from exatns to eti is not implemented
          integer(INTD), dimension(2)  :: h_dims
 
 !        Make some noise so that we know we are here
@@ -280,10 +282,11 @@ module exacorr_mp2no
             call print_date('Initialized talsh library')
             write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
             h_dims=nvir
-            ierr=talsh_tensor_construct(tensor_slice,EXA_DATA_KIND_C8,h_dims,init_val=ZERO)
-            ierr=exatns_tensor_get_slice(MP2_density_tensor%prime_vv,tensor_slice)
+            ierr=talsh_tensor_construct(talsh_tensor,EXA_DATA_KIND_C8,h_dims,init_val=ZERO)
+            ierr=exatns_tensor_get_slice(MP2_density_tensor%prime_vv,talsh_tensor)
+            ierr=talsh_to_tensor_t(talsh_tensor, tensor_slice)
 
-            call write_talsh_matrix(nvir,tensor_slice,'DM_complex')
+            call  write_2dtensor_as_matrix(nvir,tensor_slice,'DM_complex')
             call print_date('Save DM in MO (spinor) basis to file : DM_complex')
 
             ierr=exatns_tensor_destroy(int_t%oooo)

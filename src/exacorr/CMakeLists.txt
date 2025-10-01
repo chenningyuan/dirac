@@ -7,7 +7,13 @@ if(ENABLE_EXATENSOR)
     exacorr_dirac.F
   )
 
+  if (EXATENSOR_TALSH)
+   set(FREE_EXACORR_FORTRAN_SOURCES exatensor_placeholders.F90)
+   message(STATUS "ExaTensor not available or requested: activating placeholder")
+  endif()
+
   set(FREE_EXACORR_FORTRAN_SOURCES
+   ${FREE_EXACORR_FORTRAN_SOURCES}
    mbauto/talsh_auto_ccd_spinor.F90
    mbauto/talsh_auto_ccsd_spinor.F90
    mbauto/talsh_auto_ccsdt_spinor.F90
@@ -22,10 +28,33 @@ if(ENABLE_EXATENSOR)
    mbauto/exatensor_auto_ccsdt_spinor.F90
    mbauto/exatensor_auto_ccsdtq_spinor.F90
    mbauto/exatensor_auto_ccsdtqp_spinor.F90
+   tapp.F90
+   tapp_top.F90
+   exacorr_tensor_interface.F90
+   tapp_tenpi_ccd.F90
+   tapp_tenpi_ccsd.F90
+   tapp_tenpi_ccsdt.F90
+   tapp_tenpi_ccsdtq.F90
    talsh_tenpi_ccd.F90
    talsh_tenpi_ccsd.F90
    talsh_tenpi_ccsdt.F90
    talsh_tenpi_ccsdtq.F90
+   tapp_tenpi_lambda_ccd.F90
+   tapp_tenpi_lambda_ccsd.F90
+   tapp_tenpi_lambda_ccsdt.F90
+   tapp_tenpi_lambda_ccsdtq.F90
+   talsh_tenpi_lambda_ccd.F90
+   talsh_tenpi_lambda_ccsd.F90
+   talsh_tenpi_lambda_ccsdt.F90
+   talsh_tenpi_lambda_ccsdtq.F90
+   talsh_tenpi_1rdm_ccd.F90
+   tapp_tenpi_1rdm_ccd.F90
+   tapp_tenpi_1rdm_ccsd.F90
+   tapp_tenpi_1rdm_ccsdt.F90
+   tapp_tenpi_1rdm_ccsdtq.F90
+   talsh_tenpi_1rdm_ccsd.F90
+   talsh_tenpi_1rdm_ccsdt.F90
+   talsh_tenpi_1rdm_ccsdtq.F90
    exatensor_tenpi_ccd.F90
    exatensor_tenpi_ccsd.F90
    exatensor_tenpi_ccsdt.F90
@@ -36,7 +65,9 @@ if(ENABLE_EXATENSOR)
    exacorr_utils.F90
    exacorr_eri.F90
    exacorr_tensor_methods.F90
-   intermediates.F90
+   intermediates_cc.F90
+   intermediates_lambda.F90
+   intermediates_cc2.F90
    intermediates_eom.F90
    intermediates_eom_rsp.F90
    exacorr_ao_to_mo.F90
@@ -45,6 +76,7 @@ if(ENABLE_EXATENSOR)
    exacorr_respect.F90
    exacorr_cc.F90
    exacorr_mp2no.F90
+   exacorr_printout.F90
    talsh_cholesky_routines.F90
    talsh_ao_to_mo.F90
    talsh_cholesky_integrals.F90

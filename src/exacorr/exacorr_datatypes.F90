@@ -1,10 +1,9 @@
 !This module defines the data types used in the ExaCorr module of DIRAC
        module exacorr_datatypes
 
-#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         use exatensor
-#endif
-        use talsh
+!       use exacorr_tensor_interface
+        use exacorr_tensor_interface, only: tensor_t, ETI_DEFAULT_EXECUTOR 
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -72,10 +71,11 @@
             logical                 :: do_2rdm_gs=.false.
 
             logical                 :: auto_kernels = .false.   ! if true, use automatically generated kernels for t/l equations
-            integer                 :: auto_scheme  = 2         ! 1: autogen;  2: tenpi
+            integer                 :: auto_scheme  = 2         ! 1: autogen;  2: tenpi; 3: tapp reference implementation
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
+            integer                 :: executor = ETI_DEFAULT_EXECUTOR ! executor for tensor contractions (tapp, talsh, exatensor, ...)
             integer                 :: moint_scheme = 4
             integer                 :: mp2no = 0                ! > 0 mp2 natural orbital, < 0 mp2lap
             integer                 :: ncycles = 30
@@ -144,7 +144,6 @@
             
         end type exacc_input
 
-#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 !       All two electron integral tensors
         type, public :: exatns_intg_tens_t
          type(tens_rcrsv_t) :: oooo
@@ -199,116 +198,117 @@
          integer       :: occ_space_id, vir_space_id
          integer(INTL) :: occ_space_root,vir_space_root
         end type space_dims
-#endif
 
 !       All fixed one and two electron integral tensors (defines 2nd quantized Hamiltonian)
-        type, public :: talsh_intg_tens_t
-         type(talsh_tens_t) :: oooo
-         type(talsh_tens_t) :: ooov
-         type(talsh_tens_t) :: oovv, vovo
-         type(talsh_tens_t) :: vovv
-         type(talsh_tens_t) :: vvvv
-         type(talsh_tens_t) :: foo, fov, fvv
-        end type talsh_intg_tens_t
+        type, public :: eti_intg_tens_t
+         type(tensor_t) :: oooo
+         type(tensor_t) :: ooov,ovoo
+         type(tensor_t) :: oovv, vovo, ovov,ovvo
+         type(tensor_t) :: vovv,ovvv,vvvo
+         type(tensor_t) :: vvvv
+         type(tensor_t) :: foo, fov, fvv
+        end type eti_intg_tens_t
 
 !       Common blocks between t and lambda
-        type, public :: talsh_comm_tens_t
-         type(talsh_tens_t) :: foo, fov, fvv ! include finite field perturbations, otherwise identical to f in talsh_intg_tens
-         type(talsh_tens_t) :: goo, gvv
-         type(talsh_tens_t) :: hoo, hov, hvv
-         type(talsh_tens_t) :: a_int, h_int
-         type(talsh_tens_t) :: t1, t2, t3, t4, t5, tau
-        end type talsh_comm_tens_t
+        type, public :: eti_comm_tens_t
+         type(tensor_t) :: foo, fov, fvv ! include finite field perturbations, otherwise identical to f in eti_intg_tens
+         type(tensor_t) :: goo, gvv
+         type(tensor_t) :: hoo, hov, hvv
+         type(tensor_t) :: a_int, h_int
+         type(tensor_t) :: t1, t2, t3, t4, t5, tau
+         type(tensor_t) :: l1, l2, l3, l4, l5
+        end type eti_comm_tens_t
 
-        type, public :: talsh_lambda_tens_t
-         type(talsh_tens_t) :: fbar_oo, fbar_ov, fbar_vv
-         type(talsh_tens_t) :: w_oooo
-         type(talsh_tens_t) :: w_ovoo, w_ooov
-         type(talsh_tens_t) :: w_vovo, wbar_vovo
-         type(talsh_tens_t) :: w_vvvo, w_vovv
-         type(talsh_tens_t) :: w_vvvv
-         type(talsh_tens_t) :: goo, gvv
-         type(talsh_tens_t) :: eta_ov, eta_oovv
-        end type talsh_lambda_tens_t
+        type, public :: eti_lambda_tens_t
+         type(tensor_t) :: fbar_oo, fbar_ov, fbar_vv
+         type(tensor_t) :: w_oooo
+         type(tensor_t) :: w_ovoo, w_ooov
+         type(tensor_t) :: w_vovo, wbar_vovo
+         type(tensor_t) :: w_vvvo, w_vovv
+         type(tensor_t) :: w_vvvv
+         type(tensor_t) :: goo, gvv
+         type(tensor_t) :: eta_ov, eta_oovv
+        end type eti_lambda_tens_t
 
 
-        type, public :: talsh_orb_prop_integ_tens_t
-         type(talsh_tens_t) :: prop_oo, prop_ov, prop_vv, prop_vo
-        end type talsh_orb_prop_integ_tens_t
+        type, public :: eti_orb_prop_integ_tens_t
+         type(tensor_t) :: prop_oo, prop_ov, prop_vv, prop_vo
+        end type eti_orb_prop_integ_tens_t
 
         
 ! intermediates for eom calculations. here we should only have things that do not change and are independent of eom flavor
 !
-        type, extends(talsh_lambda_tens_t), public :: talsh_intermediates_tens_t
+        type, extends(eti_lambda_tens_t), public :: eti_intermediates_tens_t
            logical :: ccd = .false.! aspg: having this here is a hack, in reality the sigma routines should be created by composing with more primitive collections of contractions (so ccsd collects "ccs+ccd+whatever") and then specialized routines pick and choose which approximated contractions to use.
            integer :: nocc, nvir
-           type(talsh_tens_t) :: t1, t2  ! t amplitudes used to construct the Hbar matrix elements, right now to be copied from the contents of comm_t, 
+           type(tensor_t) :: t1, t2  ! t amplitudes used to construct the Hbar matrix elements, right now to be copied from the contents of comm_t, 
                                          ! but could be pointers to that storage as well. but the point of keeping them here is to keep everything 
                                          ! in one placewe make a copy of what may be pointers to what is  
            procedure(sigma_vector), pointer, nopass :: sigma_rhs_p => NULL()
            procedure(sigma_vector), pointer, nopass :: sigma_lhs_p => NULL()
 
-        end type talsh_intermediates_tens_t
+        end type eti_intermediates_tens_t
 
         abstract interface       
            subroutine sigma_vector(int_t, interm_t, r1, r2, s1, s2)
            import :: exacc_input
-           import :: talsh_intg_tens_t
-           import :: talsh_intermediates_tens_t
-           import :: talsh_tens_t
+           import :: eti_intg_tens_t
+           import :: eti_intermediates_tens_t
+           import :: tensor_t
 
-              type(talsh_intg_tens_t), intent(inout) :: int_t
-              type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
-              type(talsh_tens_t),    intent(inout) :: r1
-              type(talsh_tens_t),    intent(inout) :: r2
-              type(talsh_tens_t),    intent(inout) :: s1
-              type(talsh_tens_t),    intent(inout) :: s2
+              type(eti_intg_tens_t), intent(inout) :: int_t
+              type(eti_intermediates_tens_t),  intent(inout) :: interm_t
+              type(tensor_t),    intent(inout) :: r1
+              type(tensor_t),    intent(inout) :: r2
+              type(tensor_t),    intent(inout) :: s1
+              type(tensor_t),    intent(inout) :: s2
             end subroutine  
         end interface
 
         ! intermediates used in eom prop and cc response 
-        type, public :: talsh_rsp_interm_tens_t
-              type(talsh_tens_t) :: prop_bar_vv, prop_bar_oo, prop_bar_ov
-              type(talsh_tens_t) :: Q_vvvo, Q_ovoo
-              type(talsh_tens_t) :: eta_ov, eta_oovv
-              type(talsh_tens_t) :: epsilon_prop_vo, epsilon_prop_vvoo
-              type(talsh_tens_t) :: eta_prop_ov, eta_prop_oovv, eta_prop_ov_eom
-              type(talsh_tens_t) :: O_vo
-       end type talsh_rsp_interm_tens_t
+        type, public :: eti_rsp_interm_tens_t
+              type(tensor_t) :: prop_bar_vv, prop_bar_oo, prop_bar_ov
+              type(tensor_t) :: Q_vvvo, Q_ovoo
+              type(tensor_t) :: eta_ov, eta_oovv
+              type(tensor_t) :: epsilon_prop_vo, epsilon_prop_vvoo
+              type(tensor_t) :: eta_prop_ov, eta_prop_oovv, eta_prop_ov_eom
+              type(tensor_t) :: O_vo
+       end type eti_rsp_interm_tens_t
 
 ! this is a generic type for projectors, could be used e.g in eom for cvs, or in the ground state to project out orbitals in solving the cc equations
-        type, public :: talsh_projectors_tens_t
+        type, public :: eti_projectors_tens_t
           integer, pointer :: p1_dims(:), p2_dims(:)        
           integer :: p1_rank, p2_rank                       
-         type(talsh_tens_t) :: p1, p2
-        end type talsh_projectors_tens_t
+         type(tensor_t) :: p1, p2
+        end type eti_projectors_tens_t
 
 
-        type, public :: talsh_dm_tens_t
+        type, public :: eti_dm_tens_t
 ! one-body density matrices
-         type(talsh_tens_t) :: prime_oo, symm_oo
-         type(talsh_tens_t) :: prime_ov, prime_vo, symm_ov, symm_vo
-         type(talsh_tens_t) :: prime_vv, symm_vv
+         type(tensor_t) :: prime_oo, symm_oo
+         type(tensor_t) :: prime_ov, prime_vo, symm_ov, symm_vo
+         type(tensor_t) :: prime_vv, symm_vv
+         type(tensor_t) :: asym_oo, asym_vv, asym_ov, asym_vo
 ! two-body density matrices
-         type(talsh_tens_t) :: prime_vvvv
-         type(talsh_tens_t) :: prime_vvvo, prime_vovv, prime_vvov, prime_ovvv
-         type(talsh_tens_t) :: prime_vvoo, prime_oovv
-         type(talsh_tens_t) :: prime_ovoo, prime_ooov, prime_vooo, prime_oovo
-         type(talsh_tens_t) :: prime_ovov, prime_voov, prime_vovo, prime_ovvo
-         type(talsh_tens_t) :: prime_oooo
-         type(talsh_tens_t) :: symm_vvvv
-         type(talsh_tens_t) :: symm_vvvo,  symm_vovv,  symm_vvov,  symm_ovvv
-         type(talsh_tens_t) :: symm_vvoo,  symm_oovv
-         type(talsh_tens_t) :: symm_vooo,  symm_ooov,  symm_ovoo,  symm_oovo
-         type(talsh_tens_t) :: symm_vovo,  symm_voov,  symm_ovvo,  symm_ovov
-         type(talsh_tens_t) :: symm_oooo
-        end type talsh_dm_tens_t
+         type(tensor_t) :: prime_vvvv
+         type(tensor_t) :: prime_vvvo, prime_vovv, prime_vvov, prime_ovvv
+         type(tensor_t) :: prime_vvoo, prime_oovv
+         type(tensor_t) :: prime_ovoo, prime_ooov, prime_vooo, prime_oovo
+         type(tensor_t) :: prime_ovov, prime_voov, prime_vovo, prime_ovvo
+         type(tensor_t) :: prime_oooo
+         type(tensor_t) :: symm_vvvv
+         type(tensor_t) :: symm_vvvo,  symm_vovv,  symm_vvov,  symm_ovvv
+         type(tensor_t) :: symm_vvoo,  symm_oovv
+         type(tensor_t) :: symm_vooo,  symm_ooov,  symm_ovoo,  symm_oovo
+         type(tensor_t) :: symm_vovo,  symm_voov,  symm_ovvo,  symm_ovov
+         type(tensor_t) :: symm_oooo
+        end type eti_dm_tens_t
 
-        ! type, public, extends(talsh_comm_tens) :: talsh_eom_fixed_tens
-        !     type(talsh_intg_tens)   :: int_t
-        !     type(talsh_lambda_tens) :: lambda_t
-        !     type(talsh_tens_t)      :: l2_tensor ! lambda amplitude
-        ! end type talsh_eom_fixed_tens
+        ! type, public, extends(eti_comm_tens) :: eti_eom_fixed_tens
+        !     type(eti_intg_tens)   :: int_t
+        !     type(eti_lambda_tens) :: lambda_t
+        !     type(tensor_t)      :: l2_tensor ! lambda amplitude
+        ! end type eti_eom_fixed_tens
 
 !       One electron integrals
         type, public  :: one_el_t
