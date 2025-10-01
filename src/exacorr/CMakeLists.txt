@@ -67,6 +67,7 @@ if(ENABLE_EXATENSOR)
    exacorr_tensor_methods.F90
    intermediates_cc.F90
    intermediates_lambda.F90
+   intermediates_cc2.F90
    intermediates_eom.F90
    intermediates_eom_rsp.F90
    exacorr_ao_to_mo.F90

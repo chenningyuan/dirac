@@ -1588,6 +1588,7 @@ module eti_cc
                                      eps_occ,eps_vir,t_target_precision,ncycles,print_level,l1_tensor)
 
 !        Routine for solving the lambda equations
+         use intermediates_CC2
 
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)

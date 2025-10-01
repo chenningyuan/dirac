@@ -1978,6 +1978,7 @@ module exacorr_cc
 
          use exacorr_ao_to_mo, only : print_tensornorm2
          use exacorr_tensor_methods
+         use intermediates_cc2
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(exatns_comm_tens_t), intent(inout) :: comm_t
