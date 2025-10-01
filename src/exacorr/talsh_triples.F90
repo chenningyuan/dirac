@@ -7,7 +7,6 @@ module eti_triples
         use exacorr_tensor_interface 
         use exacorr_datatypes
         use exacorr_utils
-        use intermediates
         use eti_common_routines
         use, intrinsic:: ISO_C_BINDING
 

@@ -8,7 +8,7 @@ module intermediates_eom_ccsd
      use exacorr_datatypes
      use exacorr_utils, only: get_free_fileunit
      use eti_common_routines
-     use intermediates, only: get_wbar_vovo, get_goo_lambda, get_gvv_lambda
+     use intermediates_lambda, only: get_wbar_vovo, get_goo_lambda, get_gvv_lambda
 
      implicit none
      private

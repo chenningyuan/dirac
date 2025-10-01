@@ -209,15 +209,6 @@
          type(tensor_t) :: foo, fov, fvv
         end type eti_intg_tens_t
 
-        type, public :: intg_tensor_t
-         type(tensor_t) :: oooo
-         type(tensor_t) :: ooov
-         type(tensor_t) :: oovv, vovo
-         type(tensor_t) :: vovv
-         type(tensor_t) :: vvvv
-         type(tensor_t) :: foo, fov, fvv
-        end type intg_tensor_t
-
 !       Common blocks between t and lambda
         type, public :: eti_comm_tens_t
          type(tensor_t) :: foo, fov, fvv ! include finite field perturbations, otherwise identical to f in eti_intg_tens

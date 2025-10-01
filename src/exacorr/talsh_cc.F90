@@ -5,7 +5,8 @@ module eti_cc
         use exacorr_tensor_interface
         use exacorr_datatypes
         use exacorr_utils
-        use intermediates
+        use intermediates_cc
+        use intermediates_lambda
         use intermediates_eom_ccsd
         use eti_common_routines
         use mfsolver_dirac_input

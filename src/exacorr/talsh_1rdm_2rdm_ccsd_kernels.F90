@@ -18,7 +18,7 @@ module eti_1rdm_2rdm_ccsd_kernels
   use exacorr_tensor_interface
   use exacorr_datatypes
   use exacorr_utils
-  use intermediates
+  use intermediates_cc
   use eti_common_routines
 
   use exacorr_global

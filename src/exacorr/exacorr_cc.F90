@@ -11,7 +11,8 @@ module exacorr_cc
         use exacorr_datatypes
         use exacorr_utils
         use exacorr_printout
-        use intermediates
+        use intermediates_cc
+        use intermediates_lambda
 
         implicit none
 
