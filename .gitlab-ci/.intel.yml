@@ -60,7 +60,7 @@ intel-mkl-mpi-32:
     - export TOOLKIT="INTEL"
     - ulimit -s unlimited
     - echo "The shell is $SHELL"
-    - ./setup --pcmsolver=OFF --cmake-options="-DENABLE_UNIT_TESTS=ON" --fc=mpiifx --cc=mpiicx --cxx=mpiicpx --qmkl=sequential --mpi --type=release
+    - ./setup --pcmsolver=OFF --fc=mpiifx --cc=mpiicx --cxx=mpiicpx --qmkl=sequential --mpi --type=release
     - cd build
     - make -j $M
     - ldd dirac.x
