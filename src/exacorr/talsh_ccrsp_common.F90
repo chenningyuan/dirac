@@ -155,8 +155,8 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,i_prop,exchange)
         nocc = exa_input%nocc
         nvir = exa_input%nvir
 
-        call get_prop_integral_driver(orb_int_tensor%prop_oo,nocc,exa_input%mo_occ,&
-                                     nocc,exa_input%mo_occ,min_occ,i_prop,exchange,orb_int_tensor%property_label)
+        call get_prop_integral_driver(orb_int_tensor%prop_oo,nocc,exa_input%mo_occ,nocc,&
+                exa_input%mo_occ,min_occ,i_prop,exchange,orb_int_tensor%property_label)
         call get_prop_integral_driver(orb_int_tensor%prop_vv,nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,min_occ,i_prop,exchange)
         call get_prop_integral_driver(orb_int_tensor%prop_ov,nocc,exa_input%mo_occ,nvir,exa_input%mo_vir,min_occ,i_prop,exchange)
         call get_prop_integral_driver(orb_int_tensor%prop_vo,nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,min_occ,i_prop,exchange)
