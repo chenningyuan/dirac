@@ -9,6 +9,7 @@ module exacorr_cc
 
         use exatensor
         use exacorr_datatypes
+        use exacorr_cfg,only: exacc_input
         use exacorr_utils
         use exacorr_printout
         use intermediates_cc
@@ -548,6 +549,7 @@ module exacorr_cc
          use interface_to_mpi
          use exacorr_global
          use exacorr_ao_to_mo
+         use exacorr_ao
 
          implicit none
 
@@ -5253,7 +5255,7 @@ module exacorr_cc
        contains
 
         subroutine exacorr_cc_driver (exa_input)
-         use exacorr_datatypes
+         use exacorr_cfg, only: exacc_input
          implicit none
          type(exacc_input), intent(in) :: exa_input
          write(*,*) 'called exatensor version of cc_driver in a serial version'

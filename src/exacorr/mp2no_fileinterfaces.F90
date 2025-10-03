@@ -3,9 +3,10 @@ module mp2no_fileinterfaces
 !In principle, one could add more routines to read or write the information that they want
 !Written by Xiang Yuan.
 
-        use exacorr_datatypes
+        use exacorr_ao
         use exacorr_mo
         use exacorr_global,only: nfunctions
+        use exacorr_cfg,only: exacc_input
         use exacorr_utils
         use, intrinsic:: ISO_C_BINDING
 

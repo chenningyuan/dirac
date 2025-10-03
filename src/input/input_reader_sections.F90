@@ -923,7 +923,7 @@
    subroutine read_input_exaeomcc(word, kw_section)
 
 #ifdef MOD_EXACORR
-      use exacc_cfg
+      use exacorr_cfg
 #endif
       use input_reader
 
@@ -1017,7 +1017,7 @@
    subroutine read_input_exacc(word, kw_section)
 
 #ifdef MOD_EXACORR
-      use exacc_cfg
+      use exacorr_cfg
 #endif
       use input_reader
 

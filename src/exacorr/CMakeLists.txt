@@ -60,6 +60,7 @@ if(ENABLE_EXATENSOR)
    exatensor_tenpi_ccsdt.F90
    exatensor_tenpi_ccsdtq.F90
    exacorr_datatypes.F90
+   exacorr_1el.F90
    exacorr_global.F90
    exacorr_cfg.F90
    exacorr_utils.F90
@@ -70,6 +71,7 @@ if(ENABLE_EXATENSOR)
    intermediates_cc2.F90
    intermediates_eom.F90
    intermediates_eom_rsp.F90
+   exacorr_ao.F90
    exacorr_ao_to_mo.F90
    exacorr_gradient.F90
    exacorr_mo.F90

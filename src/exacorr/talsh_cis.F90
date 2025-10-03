@@ -3,6 +3,7 @@ module eti_cis
     use exacorr_tensor_interface
     use tensor_algebra
     use exacorr_datatypes
+    use exacorr_cfg,only: exacc_input
     use exacorr_utils
     use eti_common_routines
     use eti_cis_property

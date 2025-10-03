@@ -45,6 +45,7 @@ module exacorr_ao_to_mo
 
          use interface_to_mpi
          use exacorr_datatypes
+         use exacorr_ao
          use exacorr_global
          use exacorr_tensor_methods
          use exatensor

@@ -4,6 +4,7 @@ module eti_eom_rspeq_solver
       use tensor_algebra
       use eti_common_routines
       use exacorr_datatypes 
+      use exacorr_cfg
       use exacorr_utils
       use eti_trial_eomccsd
       use eti_eom

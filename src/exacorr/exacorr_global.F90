@@ -2,8 +2,9 @@ module exacorr_global
 
 !This module controls storage and interaction with the global data used in ExaCorr
 
-        use exacorr_datatypes
+        use exacorr_ao
         use exacorr_mo
+        use exacorr_1el
         use, intrinsic:: ISO_C_BINDING
         use checkpoint
 
@@ -67,7 +68,7 @@ module exacorr_global
          subroutine initialize_global_data
 
              use exacorr_respect
-             use exacc_cfg
+             use exacorr_cfg, only: exa_input
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              use interface_to_mpi
@@ -421,6 +422,7 @@ module exacorr_global
 
       subroutine add_finitefield (h,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
 
+        use exacorr_cfg, only: exacc_input
         complex(8), intent(inout)     :: h(:,:)      ! one_body matrix to which the property field should be added
         type(exacc_input), intent(in) :: exa_input   ! field strength and label
         integer, intent(in)           :: iff
@@ -769,6 +771,7 @@ module exacorr_global
         string_occ_beta, string_virtual, string_vir_beta)
 
         use exacorr_datatypes
+        use exacorr_cfg, only: exacc_input
 
         implicit none
 
@@ -915,6 +918,7 @@ module exacorr_global
       subroutine print_orbitals ( exa_input )
 
         use exacorr_datatypes
+        use exacorr_cfg, only: exacc_input
 
         implicit none
 

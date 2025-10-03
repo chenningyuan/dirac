@@ -304,7 +304,7 @@ module exacorr_printout
 
    subroutine print_exainput(exa_input,nao)
 
-      use exacorr_datatypes,   only : exacc_input
+      use exacorr_cfg,   only : exacc_input
 
       type(exacc_input), intent(in) :: exa_input
       integer, intent(in) :: nao

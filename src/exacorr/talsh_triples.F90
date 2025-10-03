@@ -407,6 +407,7 @@ module eti_triples
 !       Definitions of terms: L. Visscher, T.J. Lee, K.G. Dyall, J Chem Phys. 105 (1996) 8769.
 !       Implementation by Johann Pototschnig, Summer 2021
         use type_laplace, only : laplace_info, deallocate_laplace
+        use exacorr_cfg, only: exacc_input
         real(8), intent(out)                 :: t_energy(3)
         type(eti_comm_tens_t), intent(inout) :: comm_t
         type(eti_intg_tens_t), intent(inout) :: int_t

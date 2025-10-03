@@ -861,7 +861,7 @@ module exacorr_mp2no
        contains
 
         subroutine exacorr_mp2no_driver (exa_input,N_cano)
-         use exacorr_datatypes
+         use exacorr_cfg,only: exacc_input
          implicit none
          type(exacc_input), intent(in) :: exa_input
          integer, intent(inout)        :: N_cano                  ! number of new canonical orbital

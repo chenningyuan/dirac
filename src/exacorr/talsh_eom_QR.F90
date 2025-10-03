@@ -2,6 +2,7 @@ module eti_eom_QR
     use tensor_algebra
     use exacorr_tensor_interface
     use exacorr_datatypes
+    use exacorr_cfg
     use exacorr_utils
     use eti_common_routines
     use exacorr_global

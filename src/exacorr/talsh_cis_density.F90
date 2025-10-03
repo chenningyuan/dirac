@@ -3,6 +3,7 @@ module eti_cis_density
     use tensor_algebra
     use exacorr_tensor_interface
     use exacorr_datatypes
+    use exacorr_cfg, only: exacc_input
     use exacorr_utils
     use eti_common_routines
     implicit none
