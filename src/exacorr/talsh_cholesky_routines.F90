@@ -265,7 +265,7 @@ subroutine get_diag(DiagR)
 
 ! routine to compute diagonal 2D tensor
 
-  use exacorr_datatypes
+  use exacorr_ao
   use exacorr_global
   use exacorr_eri
 
@@ -369,7 +369,7 @@ subroutine get_integral_block(Dshell, lsh, ksh)
   use tensor_algebra
   use talsh
   use exacorr_tensor_interface
-  use exacorr_datatypes
+  use exacorr_ao
   use exacorr_global
   use exacorr_eri
 
@@ -508,7 +508,7 @@ subroutine eti_find_el(DiagR, Mask, lsh, ksh, l, k, D_el)
 
 ! routine to locate largest element in a shell pair
 
-  use exacorr_datatypes
+  use exacorr_ao
   use exacorr_global
 
   implicit none

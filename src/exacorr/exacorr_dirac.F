@@ -13,7 +13,7 @@ C     Written by L.Visscher Jan 2017
 C
 C***********************************************************************
 
-      use exacc_cfg
+      use exacorr_cfg
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use eti_ao_to_mo,only         : eti_compute_mo_integrals
       use, intrinsic:: ISO_C_BINDING
@@ -155,7 +155,7 @@ C     Written by L.Visscher Jul 2017
 C
 C***********************************************************************
 
-      use exacc_cfg
+      use exacorr_cfg
       use eti_cc,only             : eti_cc_driver
       use eti_cis,only            : eti_cis_driver
       use eti_mp2no,only          : eti_mp2no_driver
@@ -251,62 +251,11 @@ C
 
       end
 
-       subroutine compress_unc_shell (shell,ierr)
-!If basis functions were grouped together in the input, they appear as quasi-contracted functions
-!with a lot of zero coefficients. Remove these zeroes and reduce the length to just one function.
-!Routine will produce an error, if the function is a true contraced function (more than one non-zero coefficient)
-
-          use exacorr_datatypes
-
-          integer, intent(out)     :: ierr
-          type(basis_func_info_t), intent(inout) :: shell
-
-          integer i, j, non_zero
-          real(8), allocatable :: exponents(:), coefficients(:)
-          real(8), parameter   :: treshold=1.D-12
-
-          allocate(exponents(shell%n_primitives))
-          allocate(coefficients(shell%n_primitives))
-          exponents    = shell%exponent
-          coefficients = shell%coefficient
-
-          ierr = 0
-          non_zero = 0
-          do i = 1, shell%n_primitives
-             if (abs(coefficients(i)) > treshold) then
-                non_zero = non_zero + 1
-                j = i
-             end if
-          end do
-
-          if (non_zero > 1) then
-             ierr = 1
-             return   ! leave shell untouched and return with error condition
-          else if (non_zero == 0) then
-             print*, " WARNING: compress_unc_shell found empty shell"
-             ierr = 2
-             j = 1    ! set j to the first function, to avoid complications with zero length arrays
-          end if
-
-          deallocate (shell%exponent)
-          deallocate (shell%coefficient)
-          allocate   (shell%exponent(1))
-          allocate   (shell%coefficient(1))
-
-          shell%n_primitives = 1
-          shell%exponent     = exponents(j)
-          shell%coefficient  = coefficients(j)
-
-          deallocate (exponents)
-          deallocate (coefficients)
-
-       end subroutine compress_unc_shell
-
        subroutine read_from_dirac (ao_basis,cspinor,section,ierr)
 
        use checkpoint
        use exacorr_mo
-       use exacorr_datatypes
+       use exacorr_ao
        use exacorr_global,only: nfunctions
        use exacorr_utils
 
@@ -532,7 +481,7 @@ C
        subroutine read_from_dfcoef (ao_basis,cspinor,file_name,ierr)
 
        use exacorr_mo
-       use exacorr_datatypes
+       use exacorr_ao
        use exacorr_global,only: nfunctions
        use exacorr_utils
 
@@ -795,7 +744,7 @@ C
        subroutine write_mos_to_dfcoef(ao_basis,cspinor,file_name)
 
        use exacorr_mo
-       use exacorr_datatypes
+       use exacorr_ao
        use exacorr_utils
        use labeled_storage
 
@@ -1071,7 +1020,7 @@ C
 
        subroutine read_from_mrconee (int_1el, ierr)
 
-       use exacorr_datatypes
+       use exacorr_1el
        use exacorr_utils, only: get_free_fileunit
 
        implicit none
@@ -1151,7 +1100,7 @@ C
 
        subroutine read_mdprop (int_1el, ierr)
 
-       use exacorr_datatypes
+       use exacorr_1el
        use exacorr_utils, only: get_free_fileunit
 
        implicit none

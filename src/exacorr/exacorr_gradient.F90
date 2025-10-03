@@ -7,6 +7,7 @@ module exacorr_gradient
   use exatensor
   use exacorr_ao_to_mo,  only : print_tensornorm2
   use exacorr_datatypes
+  use exacorr_cfg,only: exacc_input
   use, intrinsic:: ISO_C_BINDING
 
   implicit none

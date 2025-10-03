@@ -3,6 +3,7 @@ module eti_eom
   use exacorr_tensor_interface
   use tensor_algebra
   use exacorr_datatypes
+  use exacorr_cfg
   use eti_common_routines, only : tensor_norm2, print_tensor
   use eti_davidson
   use eti_trial_eomccsd

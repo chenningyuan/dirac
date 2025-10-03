@@ -31,6 +31,7 @@ module eti_mp2lap
 !       This module is used to construct the MP2 density matrix by talsh 
 !       Written by Johann Pototschnig
 
+        use exacorr_cfg, only: exacc_input
         implicit none
    
         type(exacc_input), intent(in) :: exa_input
@@ -223,6 +224,7 @@ module eti_mp2lap
 !       This module is used to construct the MP2 density matrix by talsh 
 !       Written by Johann Pototschnig
 
+        use exacorr_cfg, only: exacc_input
         implicit none
    
         type(exacc_input), intent(in) :: exa_input

@@ -239,7 +239,7 @@ module eti_ao_to_mo
 
 !This subroutine drives the generation of AO integrals by InteRest
 !
-         use exacorr_datatypes
+         use exacorr_ao
          use exacorr_global
          use exacorr_eri
 

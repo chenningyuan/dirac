@@ -1,148 +1,15 @@
-!This module defines the data types used in the ExaCorr module of DIRAC
+!This module defines the tensorial data types used in the ExaCorr module of DIRAC
        module exacorr_datatypes
 
         use exatensor
-!       use exacorr_tensor_interface
-        use exacorr_tensor_interface, only: tensor_t, ETI_DEFAULT_EXECUTOR 
+        use exacorr_tensor_interface, only: tensor_t
+        use exacorr_cfg, only: exacc_input
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
         private
-!PARAMETERS:
-!Generic:
+
         integer, parameter, private:: REALD=8 ! default real for this module
-!DERIVED TYPES:
-!       Basis function info:
-        type, public:: basis_func_info_t
-         integer:: orb_momentum=-1       ! orbital momentum: (0,1,2,3,...)
-         integer:: atom_number=-1        ! atom sequential number [1..MAX] (if centered on a nucleus of some atom)
-         integer:: atom_element=0        ! atomic element number (if centered on a nucleus of some atom)
-         integer:: n_primitives=0        ! number of primitives in the contraction
-         real(REALD):: coord(1:3)        ! coordinate of the basis function center (typically a nucleus)
-         real(REALD), pointer :: exponent(:)
-         real(REALD), pointer :: coefficient(:)
-        end type basis_func_info_t
-!       Basis set info:
-        type, public:: basis_set_info_t
-         integer:: nshells=0             ! number of shells in the basis set
-         integer:: nao=0                 ! number of basis functions
-         integer:: basis_angular         ! 1=cartesian, 2=spherical
-         type(basis_func_info_t), pointer:: gtos(:)
-         integer, pointer :: shell_indices(:)
-        end type basis_set_info_t
-
-        type, public :: spinor_info_t
-           integer                 :: nocc, nvir             ! number of spinors
-           integer, allocatable    :: occ(:), vir(:)         ! list of active spinors
-           real(8), allocatable    :: eps_occ(:), eps_vir(:) ! orbital energies
-        end type spinor_info_t
-
-        type, public :: eom_config_t
-           integer             :: nroots
-           character(len=8)    :: flavor
-           logical             :: do_cvs_prj
-           logical             :: do_expval
-           logical             :: do_linrsp
-           logical             :: do_quarsp
-           logical             :: do_cubrsp
-           integer             :: rhs_expval_states
-           integer             :: lhs_expval_states
-           character(len=8)    :: properties
-           complex(8), pointer :: rsp_pert_freqs(:)
-        end type eom_config_t
-
-!       Input parameter
-        type, public :: exacc_input
-            logical                 :: talsh = .true.           ! if false, use ExaTensor
-            logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
-            logical                 :: cc2 = .false.            !L if true CC2
-            logical                 :: do_cis = .false.         ! enables CIS, and branch off away from the CC driver 
-            logical                 :: lambda = .false.
-            logical                 :: beta_occ = .false.
-            logical                 :: beta_vir = .false.
-            logical                 :: do_iterative   = .true.  ! this provides a way to switch off iterative methods, e.g. if we want to do only MP2 
-            logical                 :: do_perturbative = .true. ! this generalizes the do_triples
-            logical                 :: do_triples = .true.
-            logical                 :: tripl_lap = .false.
-            logical                 :: do_no = .false.          ! if true, generate natural orbital
-            logical                 :: eom_lr = .false.
-            
-            logical                 :: do_1rdm_gs=.false.
-            logical                 :: do_2rdm_gs=.false.
-
-            logical                 :: auto_kernels = .false.   ! if true, use automatically generated kernels for t/l equations
-            integer                 :: auto_scheme  = 2         ! 1: autogen;  2: tenpi; 3: tapp reference implementation
-
-            integer                 :: exa_blocksize = 75
-            integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
-            integer                 :: executor = ETI_DEFAULT_EXECUTOR ! executor for tensor contractions (tapp, talsh, exatensor, ...)
-            integer                 :: moint_scheme = 4
-            integer                 :: mp2no = 0                ! > 0 mp2 natural orbital, < 0 mp2lap
-            integer                 :: ncycles = 30
-            integer                 :: print_level = 0
-            integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
-            integer                 :: nocc, nvir               ! number of spinors
-            integer                 :: iterative_level = 2      ! at which excitation level iterative amplitudes/lagrange mult. will be calculated: 1, 2, 3, 4...
-            integer                 :: iterative_scheme = 21    ! scheme/variant for the iterative determination of amplitudes 
-                                                                ! 10: CCS (not currently implemented, but logically should follow as this)
-                                                                ! 20: CCD      ; 21: CCSD       ; 22: CC2        ; 
-                                                                ! 30: CCSDT    ; 31: CCSDT-1a   ; 32: CCSDT-1b   ; 33: CCSDT-2   ; 34: CCSDT-3   ; 35:  CC3
-                                                                ! 40: CCSDTQ   ; 41: CCSDTQ-1a  ; 42: CCSDTQ-1b  ; 43: CCSDTQ-2  ; 44: CCSDTQ-3  ; 45:  CC4
-                                                                ! 50: CCSDTQP  ; 51: CCSDTQP-1a ; 52: CCSDTQP-1b ; 53: CCSDTQP-2 ; 54: CCSDTQP-3 ; 55:  CC5
-            integer                 :: perturbative_level = 3   ! at which excitation level pertubative corrections will be calculated: 2, 3, 4...
-            integer                 :: perturbative_scheme = 30 ! scheme/variant for the iterative determination of energies/amplitudes/... 
-                                                                ! 20: MP2 (MP2 is always performed)
-                                                                ! 30: CCSD(T)
-
-!  aspg, TODO: harmonize this tripl_block with the more general setup of excitation rank
-            integer                 :: tripl_block(1:2) = -1    ! for running triples
-            integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
-            integer                 :: n_laplace = 10           ! number of laplace points to use
-            integer                 :: N_eom_trial = 1          ! number of trial vectors in CC linear response
-            integer                 :: wf_type = 2              ! wave-function type
-            integer                 :: N_Prop_A, N_Prop_B    ! number of property
-            integer                 :: N_Prop_C, N_Prop_D    ! number of property
-            integer                 :: N_omega_lr = 1               ! number of frequency in cclr
-            integer                 :: N_omega_qr1 = 1               ! number of frequency1 in ccqr
-            integer                 :: N_omega_qr2 = 1               ! number of frequency2 in ccqr
-            integer                 :: N_Time_anti = 0          ! Number of time-antisymmetric operators
-           
-            
-            integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
-            integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
-            integer, allocatable    :: Prop_A(:), Prop_B(:), Prop_C(:), Prop_D(:) ! index of Property
-            INTEGER                 ::  TPA_state             ! index of final excited state in eom-tpa
-            real(REALD), allocatable :: w_lr_re(:)            ! real frequency in CC linear response
-            real(REALD), allocatable :: w_lr_im(:)            ! imaginary frequency in CC response
-
-            real(REALD), allocatable :: w_qr1_re(:)            ! 1st real frequency in CC quadratic response
-            real(REALD), allocatable :: w_qr1_im(:)            ! 1st imaginary frequency in CC quadratic response
-            real(REALD), allocatable :: w_qr2_re(:)            ! 2nd real frequency in CC quadratic response
-            real(REALD), allocatable :: w_qr2_im(:)            ! 2nd imaginary frequency in CC quadratic response
-           
-
-            real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
-            real(REALD)             :: level_shift = 0.D0       ! level shift
-            real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
-            real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
-            
-           
-
-            real(REALD), allocatable:: rew_energies(:,:) ! restricted excitation window, in terms of energy thresholds (a.u.)
-
-! this just signals we should handle *EOMCC inputs under **EXACC
-            logical                 :: eom = .false.
-            integer                 :: current_eom_input = -1
-        !     logical                 :: eom_lr = .false.
-            logical                 :: eom_qr = .false.
-            logical                 :: eom_tpa = .false.
-! handle one or more *EOMCC blocks 
-            type(eom_config_t), allocatable :: eom_input(:)
-
-            complex(8), allocatable   :: ff(:,:)                  ! field strengths
-            character(8), allocatable :: ff_names(:)            ! property labels
-            
-        end type exacc_input
 
 !       All two electron integral tensors
         type, public :: exatns_intg_tens_t
@@ -309,15 +176,5 @@
         !     type(eti_lambda_tens) :: lambda_t
         !     type(tensor_t)      :: l2_tensor ! lambda amplitude
         ! end type eti_eom_fixed_tens
-
-!       One electron integrals
-        type, public  :: one_el_t
-         integer     :: n_spinor=-1           ! number of spinors, used for consistency checks
-         integer     :: n_prop=0              ! number of property matrices that were read
-         real(8)     :: e_core                ! energy of the core electrons plus nuclear repulsion energy
-         complex(8), pointer :: h_core(:,:)   ! one-body part of Hamiltonian (kinetic energy + nuclear attraction + core shielding)
-         complex(8), pointer :: h_prop(:,:,:) ! property integrals to enable adding a finite field perturbation
-         character*8,pointer :: property_labels(:)  ! strings that should correspond to the label as written to MDPROP (or other interface files)
-        end type one_el_t
 
        end module exacorr_datatypes
