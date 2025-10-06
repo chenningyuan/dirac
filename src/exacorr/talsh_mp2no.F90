@@ -314,7 +314,7 @@ module talsh_mp2no
             ! MP2 density matrix
             !---------------
             ierr=talsh_tensor_contract("D(a,b)+=T(a,c,i,j)*T(b,c,i,j)",MP2_vv_density,&
-                                        comm_t%t2, comm_t%t2)
+                                        comm_t%t2, comm_t%t2,scale=ONE_HALF)
             ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
                                         comm_t%t1, comm_t%t1)
 
