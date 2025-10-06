@@ -39,9 +39,9 @@ module codata
 !             and commented are also the on-shell scheme values
 ! ----------------------------------------------------------------------------
 
-!  The 1986 adjustment of the fundamental physical constants
+!  The 1986 CODATA Recommended Values of the Fundamental Physical Constants
 !  E. Richard Cohen and Barry N. Taylor
-!  Reviews of Modern Physics, Vol. 59, No. 4, 1987
+!  J. Phys. Chem. Ref. Data 17 (4), 1795-1803 (1988)
   real(8), parameter :: xtang1986    = 0.529177249d0
   real(8), parameter :: echarge1986  = 1.60217733d-19
   real(8), parameter :: planck1986   = 6.6260755d-34
@@ -58,13 +58,13 @@ module codata
 
 !  Review of Particle Properties
 !  L. Montanet et al. (Particle Data Group)
-!  Phys. Rev. D, Vol. 50, 1173, 1994; Erratum Phys. Rev. D, Vol. 51, 3975, 1995
+!  Phys. Rev. D 50, 1173 (1994); Erratum: Phys. Rev. D 51, 3975 (1995)
   real(8), parameter :: fermicc1994  = 1.16639d-5
   real(8), parameter :: s2thetaw1994 = 0.2319d0    ! on-shell scheme value: not reported
 
-!  "CODATA Recommended Values of the Fundamental Physical Constants: 1998"
-!                     Peter J. Mohr and Barry N. Taylor
-!  Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999
+!  CODATA Recommended Values of the Fundamental Physical Constants: 1998
+!  Peter J. Mohr and Barry N. Taylor
+!  J. Phys. Chem. Ref. Data 28 (6), 1713-1852 (1999)
   real(8), parameter :: xtang1998    = 0.5291772083d0
   real(8), parameter :: echarge1998  = 1.602176462d-19
   real(8), parameter :: planck1998   = 6.62606876d-34
@@ -81,7 +81,7 @@ module codata
 
 !  CODATA Recommended Values of the Fundamental Physical Constants: 2002
 !  Peter J. Mohr and Barry N. Taylor
-!  Reviews of Modern Physics, Vol. 77, No. 1, 2005
+!  Rev. Mod. Phys. 77 (1), 1-107 (2005)
   real(8), parameter :: xtang2002    = 0.5291772108d0
   real(8), parameter :: echarge2002  = 1.60217653d-19
   real(8), parameter :: planck2002   = 6.6260693d-34
@@ -98,7 +98,7 @@ module codata
 
 !  CODATA Recommended Values of the Fundamental Physical Constants: 2006
 !  Peter J. Mohr, Barry N. Taylor and David B. Newell
-!  Journal of Physical and Chemical Reference Data, Vol. 37, No. 3, 2008
+!  J. Phys. Chem. Ref. Data 37 (3), 1187-1284 (2008)
   real(8), parameter :: xtang2006    = 0.52917720859d0
   real(8), parameter :: echarge2006  = 1.602176487d-19
   real(8), parameter :: planck2006   = 6.62606896d-34
@@ -115,7 +115,7 @@ module codata
 
 !  CODATA Recommended Values of the Fundamental Physical Constants: 2010
 !  Peter J. Mohr, Barry N. Taylor and David B. Newell
-!  Journal of Physical and Chemical Reference Data, Vol. 41, No. 4, 2012
+!  J. Phys. Chem. Ref. Data 41 (4), 043109 (2012)
   real(8), parameter :: xtang2010    = 0.52917721092d0
   real(8), parameter :: echarge2010  = 1.602176565d-19
   real(8), parameter :: planck2010   = 6.62606957d-34
@@ -132,7 +132,7 @@ module codata
 
 !  CODATA Recommended Values of the Fundamental Physical Constants: 2014
 !  Peter J. Mohr, David B. Newell and Barry N. Taylor
-!  Journal of Physical and Chemical Reference Data, Vol. 45, No. 4, 2016
+!  J. Phys. Chem. Ref. Data 45 (4), 043102 (2016)
   real(8), parameter :: xtang2014    = 0.52917721067d0
   real(8), parameter :: echarge2014  = 1.6021766208d-19
   real(8), parameter :: planck2014   = 6.626070040d-34
@@ -149,7 +149,7 @@ module codata
 
 !  CODATA Recommended Values of the Fundamental Physical Constants: 2018
 !  Eite Tiesinga, Peter J. Mohr, David B. Newell and Barry N. Taylor
-!  Journal of Physical and Chemical Reference Data, Vol. 50, No. 3, 2021
+!  J. Phys. Chem. Ref. Data 50 (3), 033105 (2021)
   real(8), parameter :: xtang2018    = 0.529177210903d0
   real(8), parameter :: echarge2018  = 1.602176634d-19
   real(8), parameter :: planck2018   = 6.62607015d-34
@@ -164,9 +164,9 @@ module codata
   real(8), parameter :: fermicc2018  = 1.1663787d-5
   real(8), parameter :: s2thetaw2018 = 0.23122d0    ! on-shell scheme value: 0.22290d0
 
-!  CODATA Internationally Recommended 2022 Values of the Fundamental Physical Constants [online]
-!  P. Mohr, E. Tiesinga, E., D. Newell and B. Taylor
-!  https://physics.nist.gov/constants (Accessed March 6, 2025)
+!  CODATA Recommended Values of the Fundamental Physical Constants: 2022
+!  Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor
+!  J. Phys. Chem. Ref. Data 54 (3), 033105 (2025)
   real(8), parameter :: xtang2022    = 0.529177210544d0
   real(8), parameter :: echarge2022  = 1.602176634d-19
   real(8), parameter :: planck2022   = 6.62607015d-34
@@ -386,13 +386,13 @@ module codata
   character*8 CODAT
 
    if(CODAT.eq.'CODATA86') then
-   write(LUPRI,*)   "  The 1986 adjustment of the fundamental physical constants              "
+   write(LUPRI,*)   "      The 1986 Adjustment of the Fundamental Physical Constants          "
    write(LUPRI,*)   "               E. Richard Cohen and Barry N. Taylor                      "
    write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 59, 1121-1148 (1987)             "
 
    elseif(CODAT.eq.'PDG94') then
    write(LUPRI,*)   " Only for the weak mixing angle and the Fermi coupling constant:         "
-   write(LUPRI,*)   "  Review of Particle Properties                                          "
+   write(LUPRI,*)   "                  Review of Particle Properties                          "
    write(LUPRI,*)   "               L. Montanet et al. (Particle Data Group)                  "
    write(LUPRI,*)   "        Physical Reviews D, Vol. 50, 1173-1814 (1994)                    "
    write(LUPRI,*)   "        Erratum: Physical Reviews D, Vol. 51, 3975-3977 (1995)           "
@@ -430,26 +430,26 @@ module codata
    elseif(CODAT.eq.'CODATA22') then
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2022  "
    write(LUPRI,*)   "    Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    "
-   write(LUPRI,*)   "       https://physics.nist.gov/constants (Accessed March 6, 2025)       "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 97, 025002 (2025)                "
 
 !  Default CODATA values
    elseif(CODAT.eq.'NOCODATA') then
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2022  "
    write(LUPRI,*)   "    Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    "
-   write(LUPRI,*)   "       https://physics.nist.gov/constants (Accessed March 6, 2025)       "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 97, 025002 (2025)                "
 
 !  If the user asks for non existing data sets, we set default values and print a WARNING
    else
    write(LUPRI,*)   " *** WARNING: CODATA set ", CODAT, " does not exist. Default is used. ***"
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2022  "
    write(LUPRI,*)   "    Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    "
-   write(LUPRI,*)   "       https://physics.nist.gov/constants (Accessed March 6, 2025)       "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 97, 025002 (2025)                "
    end if
 !  Constants other than s2thetaw and fermicc will be taken from the default CODATA set
    if(CODAT.eq.'PDG94') then
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2022  "
    write(LUPRI,*)   "    Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    "
-   write(LUPRI,*)   "       https://physics.nist.gov/constants (Accessed March 6, 2025)       "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 97, 025002 (2025)                "
    end if
 
   end subroutine print_codata_reference
