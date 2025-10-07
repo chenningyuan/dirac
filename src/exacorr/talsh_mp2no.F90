@@ -62,36 +62,17 @@ module talsh_mp2no
 
         inquire(file="NOs_MO", exist=alive)
 
-        if(exa_input%mp2no.ne.3) then
-           if (alive) then
-               call print_date('File NOs_MO exists')
-           else
-               call print_date('File NOs_MO does not exist. Start constructing MP2 density matrix')
-               if (exa_input%mp2no<9) then
-                     call talsh_generate_MP2_VNO_MObasis(exa_input)
-               else
-                     call mp2lap_get_DM(exa_input)
-               endif
-               call get_transform_Fock(exa_input,'DM_complex')
-           end if
+        if (alive) then
+            call print_date('File NOs_MO exists')
         else
-           call print_date('Generating MP2FNO++...')
-           write(*,*) 'Perturbation operators = ', exa_input%mp2fno_prop
-           ! FNO++ specific
-           do i = 1,exa_input%n_mp2fno_prop
-              ! compute VV block of FV MP2 Matrix
-              call talsh_generate_MP2_VNO_MObasis(exa_input, i)
-
-              ! get NO orbitals and save them in NOs_MO//i files
-              call get_transform_Fock(exa_input,'DM_complex',i)
-           enddo
-
-           call print_date('Writing NOs_MO...')
-
-           ! make final NOs_MO file
-           call generate_unified_NOs_MO_file(exa_input)
-
-        endif
+            call print_date('File NOs_MO does not exist. Start constructing MP2 density matrix')
+            if (exa_input%mp2no<9) then
+                  call talsh_generate_MP2_VNO_MObasis(exa_input)
+            else
+                  call mp2lap_get_DM(exa_input)
+            endif
+            call get_transform_Fock(exa_input,'DM_complex')
+        end if
 
         call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
                               New_orbital_energy,'NOs_MO',N_cano)
@@ -102,7 +83,7 @@ module talsh_mp2no
 
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine talsh_generate_MP2_VNO_MObasis (exa_input, i_mp2fno_prop)
+      subroutine talsh_generate_MP2_VNO_MObasis (exa_input)
 !       This subroutine obtains the complex mp2 density matrix in MO basis
 !       The non-diagonal complex DM is written into file DM_complex.
 !       Written by Xiang Yuan
@@ -114,10 +95,9 @@ module talsh_mp2no
          integer,  allocatable                  :: mo_vir(:)               ! the list index of virtual spinors
          integer,  allocatable                  :: mo_occ(:)               ! the list index of occupied spinors
          real(8), allocatable                   :: eps_occ(:),eps_vir(:)   ! HF orbital energies
-         integer, optional, intent(in)          :: i_mp2fno_prop
 
 !        Intermediate tensors (same notation as in relccsd)
-         type(talsh_tens_t)          :: MP2_vv_density
+         type(talsh_tens_t)          :: MP2_vv_density, MP2_vv_density_tmp
          type(talsh_tens_t)          :: CIS_vv_effden
          type(talsh_tens_t)          :: result_tensor
          integer(INTD), dimension(4) :: vvoo_dims, oovv_dims
@@ -137,6 +117,8 @@ module talsh_mp2no
          integer(INTD), dimension(:), pointer:: tens_shape_ptr
          complex(8), pointer   :: hbar_oo_ptr(:,:), hbar_vv_ptr(:,:)
          complex(8), pointer   :: t1_ptr(:,:), t2_ptr(:,:,:,:)
+         complex(8), pointer   :: MP2_vv_density_array_ptr(:,:)
+         complex(8), pointer   :: MP2_vv_density_array_tmp(:,:)
          !integer(C_SIZE_T)           :: volume
          !integer(C_INT)           :: rankk
 
@@ -155,6 +137,8 @@ module talsh_mp2no
          integer       :: i, j, k, a, c
 
          integer :: num_gpus = 0, igpu
+         integer :: i_mp2fno_prop 
+         character(len=20)                  :: fn, istr
 
          logical :: fock_flag ! used for FNO++ orbitals
 
@@ -235,7 +219,7 @@ module talsh_mp2no
          if(exa_input%mp2no.eq.3) then
 
             write(*,*) ""
-            write(*,*) "Computing MP2FNO++ density matrix.."
+            call print_date("Computing MP2FNO++ density matrix..")
             write(*,*) "omega = ", exa_input%omega
 
             ! FNO++
@@ -256,71 +240,111 @@ module talsh_mp2no
             ierr=talsh_tensor_add("H(a,b)+=F(a,b)",comm_t%hvv,int_t%fvv)
             ierr=talsh_tensor_contract("H(a,b)+=T(f,a,m,n)*V(m,n,f,b)",comm_t%hvv,comm_t%t2,int_t%oovv,scale=MINUS_ONE_HALF)
 
-            ! Abar ai
-            call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop(i_mp2fno_prop))
-            interm_t_prop1%property_label = orb_int_tensor1%property_label
-
-            ov_dims(1) = nocc
-            ov_dims(2) = nvir
-            call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1%prop_ov,comm_t%t2,ov_dims)
-
-            ! Abar acij
-            oovv_dims(1:2) = nocc
-            oovv_dims(3:4) = nvir
-            call get_prop_bar_oovv(interm_t_prop1%prop_bar_oovv,orb_int_tensor1,comm_t%t2,oovv_dims)
-
-            !---------------
-            ! approximated amplitudes
-            !---------------
-            ! t1
-            vo_dims(1) = nvir
-            vo_dims(2) = nocc
-
             ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
-            ierr=talsh_tensor_scale(comm_t%t1,val=ZERO)
-            ierr=talsh_tensor_add("T(a,i)+=A(i,a)",comm_t%t1,interm_t_prop1%prop_bar_ov)
+            do i_mp2fno_prop=1,exa_input%n_mp2fno_prop
+               write(*,*) "Computing density matrix of operator ", i_mp2fno_prop
+               ! Abar ai
+               call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop(i_mp2fno_prop))
+               interm_t_prop1%property_label = orb_int_tensor1%property_label
 
-            ierr=talsh_tensor_get_body_access(comm_t%t1,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,t1_ptr,vo_dims)
-            ierr=talsh_tensor_get_body_access(comm_t%hoo,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,hbar_oo_ptr,oo_dims)
-            ierr=talsh_tensor_get_body_access(comm_t%hvv,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,hbar_vv_ptr,vv_dims)
+               ov_dims(1) = nocc
+               ov_dims(2) = nvir
+               call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1%prop_ov,comm_t%t2,ov_dims)
 
-            do i=1,nocc
-               do a=1,nvir
-                   t1_ptr(a,i) = t1_ptr(a,i)/(hbar_vv_ptr(a,a) - hbar_oo_ptr(i,i) + exa_input%omega)
-               enddo
-            enddo
+               ! Abar acij
+               oovv_dims(1:2) = nocc
+               oovv_dims(3:4) = nvir
+               call get_prop_bar_oovv(interm_t_prop1%prop_bar_oovv,orb_int_tensor1,comm_t%t2,oovv_dims)
 
-            ! t2
-            ierr=talsh_tensor_scale(comm_t%t2,val=ZERO)
-            ierr=talsh_tensor_add("T(a,c,i,j)+=A(i,j,a,c)",comm_t%t2,interm_t_prop1%prop_bar_oovv)
-            ierr=talsh_tensor_get_body_access(comm_t%t2,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,t2_ptr,vvoo_dims)
+               !---------------
+               ! approximated amplitudes
+               !---------------
+               ! t1
+               vo_dims(1) = nvir
+               vo_dims(2) = nocc
 
-            do i=1,nocc
-               do j=1,nocc
+               ierr=talsh_tensor_scale(comm_t%t1,val=ZERO)
+               ierr=talsh_tensor_add("T(a,i)+=A(i,a)",comm_t%t1,interm_t_prop1%prop_bar_ov)
+
+               ierr=talsh_tensor_get_body_access(comm_t%t1,body_p,C8,int(0,C_INT),DEV_HOST)
+               call c_f_pointer(body_p,t1_ptr,vo_dims)
+               ierr=talsh_tensor_get_body_access(comm_t%hoo,body_p,C8,int(0,C_INT),DEV_HOST)
+               call c_f_pointer(body_p,hbar_oo_ptr,oo_dims)
+               ierr=talsh_tensor_get_body_access(comm_t%hvv,body_p,C8,int(0,C_INT),DEV_HOST)
+               call c_f_pointer(body_p,hbar_vv_ptr,vv_dims)
+
+               do i=1,nocc
                   do a=1,nvir
-                     do c=1,nvir
-                        t2_ptr(a,c,i,j) = t2_ptr(a,c,i,j)/(hbar_vv_ptr(a,a) + hbar_vv_ptr(c,c)&
-                           - hbar_oo_ptr(i,i) - hbar_oo_ptr(j,j) + exa_input%omega)
+                      t1_ptr(a,i) = t1_ptr(a,i)/(hbar_vv_ptr(a,a) - hbar_oo_ptr(i,i) + exa_input%omega)
+                  enddo
+               enddo
+
+               ! t2
+               ierr=talsh_tensor_scale(comm_t%t2,val=ZERO)
+               ierr=talsh_tensor_add("T(a,c,i,j)+=A(i,j,a,c)",comm_t%t2,interm_t_prop1%prop_bar_oovv)
+               ierr=talsh_tensor_get_body_access(comm_t%t2,body_p,C8,int(0,C_INT),DEV_HOST)
+               call c_f_pointer(body_p,t2_ptr,vvoo_dims)
+
+               do i=1,nocc
+                  do j=1,nocc
+                     do a=1,nvir
+                        do c=1,nvir
+                           t2_ptr(a,c,i,j) = t2_ptr(a,c,i,j)/(hbar_vv_ptr(a,a) + hbar_vv_ptr(c,c)&
+                              - hbar_oo_ptr(i,i) - hbar_oo_ptr(j,j) + exa_input%omega)
+                        enddo
                      enddo
                   enddo
                enddo
+
+               !---------------
+               ! MP2 density matrix
+               !---------------
+               ierr=talsh_tensor_contract("D(a,b)+=T(a,c,i,j)*T(b,c,i,j)",MP2_vv_density,&
+                                           comm_t%t2, comm_t%t2,scale=ONE_HALF)
+               ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
+                                           comm_t%t1, comm_t%t1)
+               fn = 'DM_complex'
+               write(istr, '(I0)') i_mp2fno_prop
+               fn = trim(fn) // trim(istr)
+               call write_talsh_matrix(nvir,MP2_vv_density,trim(fn))
+
+               ierr=talsh_tensor_scale(MP2_vv_density,val=ZERO)
             enddo
 
-            !---------------
-            ! MP2 density matrix
-            !---------------
-            ierr=talsh_tensor_contract("D(a,b)+=T(a,c,i,j)*T(b,c,i,j)",MP2_vv_density,&
-                                        comm_t%t2, comm_t%t2,scale=ONE_HALF)
-            ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
-                                        comm_t%t1, comm_t%t1)
+            if(exa_input%do_sum_mp2fno_prop_density) then
+               ! initialize arrays
+               ierr=talsh_tensor_construct(MP2_vv_density_tmp,C8,vv_dims,init_val=ZERO)
+               allocate(MP2_vv_density_array_tmp(nvir,nvir))
 
-            ! destroy tensors
-            write(*,*) "Finished MP2FNO++ density matrix!"
-            write(*,*) ""
+               do i_mp2fno_prop=1,exa_input%n_mp2fno_prop
+                  ! read the matrix
+                  fn = 'DM_complex'
+                  write(istr, '(I0)') i_mp2fno_prop
+                  fn = trim(fn) // trim(istr)
+                  call read_matrix_comp(MP2_vv_density_array_tmp,trim(fn))
+
+                  ! assign the values of an array to a tensor
+                  ierr=talsh_tensor_get_body_access(MP2_vv_density_tmp,body_p,C8,int(0,C_INT),DEV_HOST)
+                  call c_f_pointer(body_p,MP2_vv_density_array_ptr,vv_dims)
+                  do a=1,nvir
+                     do c=1,nvir
+                        MP2_vv_density_array_ptr(a,c) = MP2_vv_density_array_tmp(a,c)
+                     enddo
+                  enddo
+
+                  ! contract
+                  ierr=talsh_tensor_add("D(a,b)+=D_tmp(a,b)",MP2_vv_density,MP2_vv_density_tmp,&
+                      scale=dcmplx(exa_input%mp2fno_prop_weights(i_mp2fno_prop),0.0))
+               enddo
+               call write_talsh_matrix(nvir,MP2_vv_density,'DM_complex')
+
+               ! destroy arrays
+               deallocate(MP2_vv_density_array_tmp)
+               ierr=talsh_tensor_destruct(MP2_vv_density_tmp)
+            endif
+
+            call print_date("Finished MP2FNO++ density matrix!")
+            return
          else
             ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_vv_density,&
                                         int_t%oovv,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
@@ -480,7 +504,7 @@ module talsh_mp2no
    end subroutine get_MP2_integrals
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine get_transform_Fock (exa_input,Matrix_file, i_mp2fno_prop)
+      subroutine get_transform_Fock (exa_input,Matrix_file)
          ! This routine is used for doing transform of fock matrix from MO basis to NO basis.
          ! The new basis set comes from the digonalization of density matrix.
          ! The all natural orbitals and occupation numbers are saved in file NOs_MO
@@ -492,7 +516,6 @@ module talsh_mp2no
 
                   character(len=*),intent(in)        :: Matrix_file
                   type(exacc_input), intent(in)      :: exa_input
-                  integer, optional, intent(in)      :: i_mp2fno_prop
 
                   type(cmo)                          :: qorbital
                   type(basis_set_info_t)             :: ao_basis
@@ -504,6 +527,7 @@ module talsh_mp2no
                   real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
                   integer                            :: sz,flb,sz_occ           ! size of matrix and flag for block
                   integer                            :: i, ierr, nocc, nvirt
+                  integer                            :: i_mp2fno_prop
                   character(len=20)                  :: fn, istr
 
                   call read_matrix_comp(MP2_density_comp,Matrix_file)
@@ -528,11 +552,11 @@ module talsh_mp2no
                   endif
 
                   fn = 'NOs_MO'
-                  if(present(i_mp2fno_prop)) then
-                      write(istr, '(I0)') i_mp2fno_prop
-                     fn = trim(fn) // trim(istr)
-                     call print_date("FNO++ file: "//fn)
-                  endif
+                  !if(present(i_mp2fno_prop)) then
+                  !    write(istr, '(I0)') i_mp2fno_prop
+                  !   fn = trim(fn) // trim(istr)
+                  !   call print_date("FNO++ file: "//fn)
+                  !endif
                   !call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
                   call quater_write(NOs_MO,N_OCCUPATION,TRIM(fn))
                   call print_date('wrote all natural orbital and occupation number in file NOs_MO')
@@ -551,11 +575,11 @@ module talsh_mp2no
                   call print_date('got full VV Fock matrix in natural orbital basis F_VV_NO')
 
                   fn = 'FM_in_NatOrb'
-                  if(present(i_mp2fno_prop)) then
-                      write(istr, '(I0)') i_mp2fno_prop
-                     fn = trim(fn) // trim(istr)
-                     call print_date("FNO++ file: "//fn)
-                  endif
+                  !if(present(i_mp2fno_prop)) then
+                  !   write(istr, '(I0)') i_mp2fno_prop
+                  !   fn = trim(fn) // trim(istr)
+                  !   call print_date("FNO++ file: "//fn)
+                  !endif
                   !call quater_write(Fock_NO,"FM_in_NatOrb")
                   call quater_write(Fock_NO,trim(fn))
                   call print_date('wrote F_VV_NO in file FM_in_NatOrb')

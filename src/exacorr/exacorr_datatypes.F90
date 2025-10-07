@@ -84,6 +84,7 @@
             integer                 :: moint_scheme = 4
             integer                 :: n_mp2fno_prop = 1
             integer, allocatable    :: mp2fno_prop(:)
+            real(REALD), allocatable :: mp2fno_prop_weights(:)
             logical                 :: do_sum_mp2fno_prop_density = .true.
             integer                 :: mp2no = 0                ! > 0 mp2 natural orbital, < 0 mp2lap
                                                                 !  -1: MP2LAP
