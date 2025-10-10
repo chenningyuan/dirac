@@ -3527,7 +3527,12 @@ C
             ICONV_TOT = -2
             GOTO 200
          END IF
-         IF (N_CRED .GE. MAX_HRED) THEN
+         N_ROOTS_NOT_CONVERGED = 0   !! counter for new trial vectors (only add non-converged roots!)
+         DO I_ROOT = 1,N_ROOTS
+            IF ( DNRES(I_ROOT) .GT. THR_CONV ) 
+     &         N_ROOTS_NOT_CONVERGED = N_ROOTS_NOT_CONVERGED + 1
+         END DO
+         IF (N_CRED + N_ROOTS_NOT_CONVERGED .GE. MAX_HRED) THEN
             ICONV_TOT = -3
             GOTO 200
          END IF
