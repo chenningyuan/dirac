@@ -923,7 +923,7 @@
    subroutine read_input_exaeomcc(word, kw_section)
 
 #ifdef MOD_EXACORR
-      use exacc_cfg
+      use exacorr_cfg
 #endif
       use input_reader
 
@@ -1017,7 +1017,7 @@
    subroutine read_input_exacc(word, kw_section)
 
 #ifdef MOD_EXACORR
-      use exacc_cfg
+      use exacorr_cfg
 #endif
       use input_reader
 
@@ -1401,6 +1401,10 @@
 
       if (kw_matches(word, '.TALSH_BUFF')) then
          call kw_read(word, exa_input%talsh_buff)
+      end if
+
+      if (kw_matches(word, '.EXECUTOR')) then
+         call kw_read(word, exa_input%executor)
       end if
 
       if (kw_matches(word, '.FF_PROP')) then
