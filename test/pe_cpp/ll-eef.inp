@@ -5,7 +5,8 @@ H2O in H2O with Levy-Leblond and PE
 .PROPERTIES
 **HAMILTONIAN
 .LEVY-LEBLOND
-*PEQM
+.PELIB
+*PELIB
 .POTENT
 h2o.pot
 .EEF

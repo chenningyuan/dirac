@@ -1980,7 +1980,6 @@ C***********************************************************************
       real(8), allocatable :: gab1d(:)
 #include "memint.h"
       group = '/result/operators/ao_matrices/'
-      allocate(gab1d(nsymbl*nsymbl)) ! need a 1d reading array
 C
 C     Construct label
 C     ---------------
@@ -2041,9 +2040,12 @@ C
                 close(104,status="delete")
               END IF
          else
+           n2symbl = nsymbl*nsymbl
+           allocate(gab1d(n2symbl)) ! need a 1d reading array
            call lab_read(dirac_datafiles(1),group//gablab(igab),
      &                   rdata=gab1d)
            gabm(:,:,igab) = reshape(gab1d,(/nsymbl,nsymbl/))
+           deallocate(gab1d)
          end if
          IF(IPRINT.GE.5) THEN
 C           reduced GAB-matrix is printed for IPRINT .ge. 4 in GABGEN

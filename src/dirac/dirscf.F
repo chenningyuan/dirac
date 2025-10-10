@@ -241,6 +241,9 @@ C*****************************************************************************
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
+#ifdef HAS_PELIB
+      use pelib_dirac_interface, only: use_pelib, pelib_ifc_fock
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -542,7 +545,7 @@ C       ... read 1-electron Fock matrix into FOCK ...
 
 ! =======================================================================
 
-      IF (.NOT. BARNUC) THEN
+      IF (.NOT. BARNUC) THEN      
 C     MI     ... get 1-electron Fock matrix into CMO ...
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 C
@@ -570,6 +573,19 @@ C          ======================
              call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,fock,1)
              deallocate(aoo2esssoc)
            end if
+
+C
+C        Polarizable embedding contribution
+C        ==================================
+C
+#ifdef HAS_PELIB
+         IF (use_pelib()) THEN
+            IF (IPRSCF >= 1) WRITE(LUPRI,'(A)') '* Calling PE library'
+            PE_TIME = SECOND()
+            CALL PELIB_IFC_FOCK(DMAT, FOCK, PE_TOT_NRG, PE_EL_NRG)
+            PE_TIME = SECOND() - PE_TIME
+         END IF
+#endif
 
            CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         END IF
@@ -723,6 +739,7 @@ C
           endif
         ENDIF
         CPUTID = SECTID(CTIDTOT)
+
         CALL GTINFO(DAYTID)
         WRITE(LUCYCL,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID
@@ -1239,7 +1256,7 @@ C*****************************************************************************
       use pcm_scf
 #endif
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: use_pelib, pelib_ifc_fock
 #endif
 
 #include "implicit.h"
@@ -1461,7 +1478,7 @@ C        Polarizable embedding contribution
 C        ==================================
 C
 #ifdef HAS_PELIB
-         IF (PEQM) THEN
+         IF (use_pelib()) THEN
             IF (IPRSCF >= 1) WRITE(LUPRI,'(A)') '* Calling PE library'
             PE_TIME = SECOND()
             CALL PELIB_IFC_FOCK(DMAT, FOCK, PE_TOT_NRG, PE_EL_NRG)
@@ -1600,7 +1617,7 @@ C
          endif 
 #endif
 #ifdef HAS_PELIB
-          IF (PEQM) THEN
+          IF (use_pelib()) THEN
             CPUTID = SECTID(PE_TIME)
             WRITE(LUPRI,'(3X,A,A12)')
      &      '* PE Fock matrix            (CPU):',CPUTID
@@ -1726,7 +1743,8 @@ C*****************************************************************************
       use pcm_scf
 #endif
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: use_pelib, pelib_ifc_fock,
+     &                                 pelib_ifc_energy
 #endif
 
 #include "implicit.h"
@@ -1889,7 +1907,7 @@ C
       endif 
 #endif
 #ifdef HAS_PELIB
-      IF (PEQM) THEN
+      IF (use_pelib()) THEN
         ! The PE Fock matrix is added to F2 before entering ERGCAL
         ! and the electronic PE energy is therefore added to E2PART.
         ! Therefore we subtract its contribution from the total PE energy.
@@ -1936,7 +1954,7 @@ C
       
 #ifdef HAS_PELIB
       ! edh: Correct also elergy for printing...
-      if (peqm) then 
+      if (use_pelib()) then 
         elergy = elergy - 0.5d0 * pe_el_nrg
       end if
 #endif
@@ -1993,7 +2011,7 @@ CMI      ... print out matrixes ...
 #endif
         ! later this will be replaced by a get energy routine
 #ifdef HAS_PELIB
-        IF (PEQM) WRITE(LUPRI,'(A,'//FMT//')')
+        IF (use_pelib()) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Embedding energy                   :  ',PE_TOT_NRG
 #endif
          WRITE(LUPRI,'(A,'//FMT//')')

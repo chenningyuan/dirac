@@ -35,7 +35,7 @@ C***********************************************************************
 #endif      
 
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: use_pelib
 #endif
 
 #include "implicit.h"
@@ -188,7 +188,7 @@ C            leave this to authors of this part) Done, hjaaj.
 #endif
 #ifdef HAS_PELIB
 ! edh should be replaced with energy routine
-        IF (PEQM) THEN
+        IF (use_pelib()) THEN
             write(lupri,'(3X,A,'//FMT//')')
      +  'Embedding energy                         :   ', E_PE
         END IF
@@ -450,7 +450,7 @@ C.....Rescale C^b_R
       CALL DSCAL(NTOT,DM1,CMO(1,1,3),1)
 C
       RETURN
- 100  FORMAT(3X,I5,2X,A12,2X,4F14.10)
+ 100  FORMAT(3X,I5,2X,A12,2X,4ES18.10)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck cfsort */

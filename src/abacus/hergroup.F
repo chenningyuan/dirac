@@ -1307,12 +1307,23 @@ C
       JM4 (1,21) =  9
       JCOM(1,21) =  1
 C
-C     22. i[beta gamma5]P  * i beta gamma5 times scalar operator
+C     22. i[beta alpha.P]  * dot-product of beta alpha and vector operator
+C     ====================================================================
+C
+      MCMP(22)   =  3
+      JM4 (1,22) =  15
+      JM4 (2,22) =  14
+      JM4 (3,22) =  13
+      JCOM(1,22) =  1
+      JCOM(2,22) =  1
+      JCOM(3,22) =  1
+C
+C     23. i[beta gamma5]P  * i beta gamma5 times scalar operator
 C     ==========================================================
 C
-      MCMP(22)   =  1
-      JM4 (1,22) =  17
-      JCOM(1,22) =  1
+      MCMP(23)   =  1
+      JM4 (1,23) =  17
+      JCOM(1,23) =  1
 C
       RETURN
       END

@@ -44,7 +44,8 @@ C***********************************************************************
       use pcm_write
 #endif
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: pelib_ifc_activate, use_pelib,
+     &                                 pelib_ifc_init 
       use read_xyzfile, only: pelib_sym_xyz
 #endif
       use x2cmod_cfg
@@ -243,7 +244,7 @@ C     Define Hamiltonian
 
 #ifdef HAS_PELIB
 C     Initialize PE library
-       IF (PEQM) THEN
+       IF (use_pelib()) THEN
          ! first check if symmetry is disabled (for xyz input)
          IF (PELIB_SYM_XYZ) CALL QUIT(".PElib/xyz input:" //
      &                                  " Activate .NOSYM!")
@@ -2994,7 +2995,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 21, NTABLE = 26)
+      PARAMETER (NDIR = 22, NTABLE = 27)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -3012,7 +3013,7 @@ C
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
      &             '*SCF   ','*KRCI  ','*QCORR ','*LAPLCE',
-     &             '*EXACC '/
+     &             '*EXACC ','*CASPT2'/
 
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
      &             '.POST S','.RELCCS','.DIRRCI','.MVO   ',
@@ -3020,7 +3021,7 @@ C
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
      &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP',
-     &             '.EXACC ','.LAPLCE'/
+     &             '.EXACC ','.LAPLCE','.CASPT2'/
 C
       N_WF = 0
 C
@@ -3092,7 +3093,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
      &                117,118,119,120,121,122,123,124,
-     &                125,126),I
+     &                125,126,127),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3301,6 +3302,10 @@ C&&&& LAPLCE: Laplace transformation test program
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in PSIINP.')
       END IF
+C&&&& CASPT2: CASPT2 program
+  127    CONTINUE
+            IF (.NOT.NOTRA) DOTRA=.TRUE.
+            GO TO 100
   180 CONTINUE
 C
 C     Print section
@@ -3412,7 +3417,7 @@ C
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
                GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
-     &                20), I
+     &                20,21,22), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -3521,6 +3526,14 @@ C
 !*LAPLCE
    20 CONTINUE
       CALL LAPINP(WORD,.FALSE.)
+      GO TO 200
+!*EXACC
+   21 CONTINUE
+      CALL move_to_next_star(WORD,lucmd)
+      GO TO 200
+!*CASPT2
+   22 CONTINUE
+      CALL move_to_next_star(WORD,lucmd)
       GO TO 200
 
     1 CONTINUE
@@ -5250,7 +5263,8 @@ C***********************************************************************
       use pcmmod_cfg
 #endif
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: use_pelib, pelib_ifc_activate,
+     &                                 pelib_ifc_input_reader
 #endif
 #ifdef MOD_XAMFI
       use xamfi_global_parameters
@@ -5284,6 +5298,7 @@ C
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
+      logical :: use_pde = .false.
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, LINE*80, LINE100*100
       DIMENSION KSOP(0:7),WORK(LWORK)
@@ -5292,7 +5307,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*X-AMFI','*PEQM  ','*PCMSOL',
+     &             '*PCM   ','*X-AMFI','*PELIB ','*PCMSOL',
      &             '*EFFQED','*XXXXXX','*XXXXXX','*XXXXXX'/ 
 
 !                    1         2         3         4
@@ -5328,7 +5343,7 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','.PEQM  ','.JZOUT ', '.FAKE2C',
+     &            '.TRSMIX','.PELIB ','.JZOUT ', '.FAKE2C',
 !                   69        70        71        72
      &            '.GAUGEO','.GO ANG','.DIPORG', '.PHASEO',
 !                   73        74        75        76
@@ -5450,10 +5465,6 @@ C ... get integral flags in advance
       IGTINT    = IBTAND(INTGEN/8,1)
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
-!jmho: deafult - no polarizable embedding
-#ifdef HAS_PELIB
-      PEQM = .FALSE.
-#endif
 !mi:  by default, do not save Jz_MO matrices
       WRITE_Jz_MATRIX = .FALSE.
       WRITE_K_MATRIX = .FALSE.
@@ -6020,20 +6031,19 @@ C..TODO: check for inconsistencies and add stops
 !&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operator
             TRS_MIX = .TRUE.
           GO TO 100
-!&&&& .PEQM: polarizable embedding
   166     CONTINUE
+!&&&& .PELIB: polarizable embedding
 #ifdef HAS_PELIB
            IF(NBSYM.GT.1) THEN
              CALL QUIT('Polarized embedding '//
      &       'does not work with symmetry yet.')
             ENDIF
             WRITE(LUPRI,*) 'PE library will be used.'
-            PEQM = .TRUE.
+            call pelib_ifc_activate()
 #else
-            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
-            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
+            WRITE(LUPRI,*) 'ERROR for .PELIB: PE library not enabled.'
+            CALL QUIT('ERROR for .PELIB: PE library not enabled.')
 #endif
-            GO TO 100
   167     CONTINUE
 !&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
             WRITE_Jz_MATRIX = .TRUE.
@@ -6086,7 +6096,7 @@ C..TODO: check for inconsistencies and add stops
 !&&&& .KOUT : save Kappa_MO matrices into formatted files for analysis
             WRITE_K_MATRIX = .TRUE.
           GO TO 100
- 174      CONTINUE
+  174     CONTINUE
 !&&&& EFFQED: include effective QED potential
           DOEFFQED=.TRUE.
           ICHANG = ICHANG + 1
@@ -6114,7 +6124,7 @@ C..TODO: check for inconsistencies and add stops
             ENDDO
           ENDDO  
           GOTO 100
- 175      CONTINUE
+  175     CONTINUE
 !&&&& ASHIFT: include atomic projectors
           DOASHIFT=.TRUE.
           ICHANG = ICHANG + 1
@@ -6141,7 +6151,7 @@ C..TODO: check for inconsistencies and add stops
             ENDDO
           ENDDO  
           GOTO 100
- 176      CONTINUE
+  176     CONTINUE
 !&&&& ESHIFT: energy shift in units of mc^2
           READ (LUCMD, *,IOSTAT=IOS) ESHIFT
           ICHANG = ICHANG + 1          
@@ -7114,7 +7124,7 @@ C
         ENDIF
       ENDIF
 #ifdef HAS_PELIB
-      IF (PEQM) THEN
+      IF (use_pelib()) THEN
         WRITE(LUPRI,'(1X,A,A)')
      &  '* Environment is modeled using polarizable embedding scheme'//
      &  ' (PE library)'
@@ -7204,12 +7214,12 @@ CMI  ... reading input routine for AMFI+RELSCF
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200
-!       *PEQM
+!       *PELIB
    11 CONTINUE
 #ifdef HAS_PELIB
-        CALL PELIB_IFC_INPUT_READER(WORD)
+        call pelib_ifc_input_reader(word, use_pde)
 #else
-        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
+        CALL QUIT('ERROR for *PELIB: PE library not enabled.')
 #endif
         GO TO 200
 !       *PCMSOL
@@ -7243,6 +7253,12 @@ C
       IF (TRSSTP) CALL QUIT('**HAMILTONIAN: Non-symmetric operator '//
      &          'under  time-reversal symmetry (T+ and T- mixing) !')
 
+
+#ifdef HAS_PELIB
+      if (use_pde .and. .not. twocomp) then
+          call quit('PDE only implemented with two-component methods.')
+      end if
+#endif
 C
       CALL QEXIT('HAMINP')
       RETURN

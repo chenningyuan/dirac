@@ -55,6 +55,9 @@ macro(option_with_default variable msge default)
   endif()
 endmacro()
 
+set(CMAKE_C_STANDARD 99) # to handle size_t and similar C99 features
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
 # included cmake modules
 include(${PROJECT_SOURCE_DIR}/cmake/downloaded/autocmake_fc.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/downloaded/autocmake_cc.cmake)
@@ -96,15 +99,16 @@ include(${PROJECT_SOURCE_DIR}/cmake/custom/reset_external_libs.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/static.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/definitions.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/matlab.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/custom/qdiag.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/work_array.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/workarounds.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/external.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/pcm.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/exatensor.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/custom/gen1int.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/custom/pelib.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/downloaded/autocmake_src.cmake)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/src)
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/utils)
+
 include(${PROJECT_SOURCE_DIR}/cmake/custom/benchmarks.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/external_libs.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/tutorials.cmake)
