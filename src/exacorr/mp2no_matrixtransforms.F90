@@ -73,7 +73,7 @@ module mp2no_matrixtransforms
 
         subroutine sort_MOs_by_occupation_number(N_OCCUPATION, NOs_MO, nao, nto, nz)
            use exacorr_utils
-           ! Using merge sort algorithm for soring FNO++
+           ! Using merge sort algorithm for sorting FNO++
            integer, intent(in) :: nao, nto, nz
            real(kind=8), dimension(nao,nto,nz), intent(inout)  :: NOs_MO
            real(kind=8), dimension(nto),        intent(inout)  :: N_OCCUPATION
