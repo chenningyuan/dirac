@@ -146,7 +146,7 @@ C
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 9) THEN ! FC (FRMINT)
+      ELSE IF (INTTYP .EQ. 9) THEN  ! FC (FRMINT)
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .TRUE.
