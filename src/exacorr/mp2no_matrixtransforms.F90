@@ -49,24 +49,25 @@ module mp2no_matrixtransforms
 
          real(kind=8)      :: temp
          real, allocatable :: temp_arr(:,:,:)
-         integer           :: i,j,sz
+         integer           :: i,j,sz1, sz2
 
 
-         sz = size(N_OCCUPATION,1)
-         allocate(temp_arr(sz,1,4))
+         sz1 = size(NOs_MO,1)
+         sz2 = size(NOs_MO,2)
+         allocate(temp_arr(sz1,1,4))
 
          ! sorting occupation number in descending order 
-         do i = 1, sz/2
+         do i = 1, sz2/2
             temp = N_OCCUPATION(i)
-            N_OCCUPATION(i) = N_OCCUPATION(sz+1-i)
-            N_OCCUPATION(sz+1-i) = temp
+            N_OCCUPATION(i) = N_OCCUPATION(sz2+1-i)
+            N_OCCUPATION(sz2+1-i) = temp
          end do
 
          ! sorting natural orbital in descending order 
-         do i = 1, sz/2
+         do i = 1, sz2/2
             temp_arr(:,1,:) = NOs_MO(:,i,:)
-            NOs_MO(:,i,:) = NOs_MO(:,sz+1-i,:)
-            NOs_MO(:,sz+1-i,:) = temp_arr(:,1,:)
+            NOs_MO(:,i,:) = NOs_MO(:,sz2+1-i,:)
+            NOs_MO(:,sz2+1-i,:) = temp_arr(:,1,:)
          end do
          
         end subroutine sort_values_vectors
