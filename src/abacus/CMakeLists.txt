@@ -62,6 +62,8 @@ set(FREE_ABACUS_FORTRAN_SOURCES
    carsph.F90
    hermodules.F90
    filemodule.F90
+   gab_settings.F90
+   aobasis_collector.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -92,7 +94,7 @@ endif()
 
 add_library(
     abacus
-    OBJECT
+    STATIC
     ${FIXED_ABACUS_FORTRAN_SOURCES}
     ${FREE_ABACUS_FORTRAN_SOURCES}
 )
@@ -100,11 +102,11 @@ add_library(
 #
 # deal with intermodule dependencies 
 # 
-add_dependencies(abacus main)
+add_dependencies(abacus dirac_main)
 add_dependencies(abacus gp)
 add_dependencies(abacus ecp)
 add_dependencies(abacus xcint)  
 add_dependencies(abacus grid)  
 if (ENABLE_PELIB)
-    add_dependencies(abacus pelib)  
+    add_dependencies(abacus pelib_interface)
 endif()

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 !     !!! MODULE FOR READING XYZ FILES !!!
@@ -87,6 +82,7 @@
 
 !     The unit conversion global variable is used when reading/writing xyz files
        REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION
+       LOGICAL,PUBLIC       :: UNIT_CONVERSION_SET=.FALSE.
 
        INTERFACE GET_ATOMS
            module procedure READ_XYZ_ATOMS
@@ -461,6 +457,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
           SAVE first_call
 
           UNIT_CONVERSION = 1.D0 / XTANG
+          UNIT_CONVERSION_SET = .TRUE.
 
 !     take out comments from the input file and initialize
          call filter_comments(filenum,tmp_file)
@@ -472,6 +469,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
           NSYMOP=0
           ADDSYM=.TRUE.
+          NONATM=.FALSE. ! Forcing linear symmetry not using atomic supersymmetry
           KASYM(:,:)=' '
           KCHARG=0
 #ifdef HAS_PELIB 
@@ -480,6 +478,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
           inMOLECULE = .false.
           DO
             read(tmp_file,*,iostat=ios) str
+            !write(6,*) ' --> next line is ',trim(str)
 
             IF (ios.ne.0) THEN
               EXIT
@@ -535,8 +534,13 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
      &                 section(3)=='.NOSYM') THEN
                        ADDSYM=.FALSE.
 #ifdef HAS_PELIB
-              pelib_sym_xyz = .false.
+                       pelib_sym_xyz = .false.
 #endif
+
+!            Use linear symmetry even when single atom
+              ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
+     &                 section(3)=='.LINEAR') THEN
+                       NONATM=.TRUE.
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
      &                 section(3)=='.DEFAULT') THEN
@@ -615,6 +619,18 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !                   If we set the section back to empty, the read will skip over the
 !                   explicitly typed basis set (the exponents are read in a different routine)
                     section(3)=' '
+                    !> skip until we reach a new keyword/section
+                    do
+                        read(tmp_file,*,iostat=ios) str
+                        if(ios .ne. 0) exit
+                        SELECT CASE(trim(str(1:1)))
+                          CASE ('*','.')
+                            exit
+                          CASE DEFAULT
+                            CYCLE
+                        END SELECT
+                    end do
+                    backspace(tmp_file)
 
                 CASE('WELLTEMP','EVENTEMP','GEOM','FAMILY','DUALFAMILY')
                     CALL ADD_FAM(tmp_file,linelen,tmpbas)
@@ -767,6 +783,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 #include "nucdata.h"
 
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
+      REAL(KIND=8) :: XMASS
 
       CALL QENTER('WRITE_ATOMS')
 
@@ -798,7 +815,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
           IF (GAUNUC.AND.nq.GT.0) THEN
 
             IF (mol%nucexp.EQ.D0) THEN
-              CALL NUCSIZ(nq,mol%nucexp)
+              CALL NUCSIZ(nq,mol%nucexp,xmass)
             END IF
             IF (mol%nucexp .LE. 1.0D8) WRITE(lupri,*)                   &
      &         'WARNING!!! Nuclear gaussian exponent small: ',mol%nucexp
@@ -897,7 +914,9 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
 !     COMMON BLOCKS
 ! cbirea.h : UNCONT, IPREAD, TOL_SYMADD, ...
+! infpar.h : mytid
 #include "cbirea.h"
+#include "infpar.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
       INTEGER,INTENT(IN) :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
@@ -1260,7 +1279,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,              &
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &
      &            DOOWN, blk)
-      IF (LINEAR.and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
+      IF (LINEAR.and. (NUCDEP .Eq. 1) .and. (.NOT. NONATM) ) ATOMIC = .TRUE.
 !
 !     *************************************************
 !     ***** Print orbital and geometry input data *****
@@ -1268,7 +1287,9 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
-      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,               &
+!     NB! workers obtain gen1int info from gen1int's own mpi calls
+      if (mytid .eq. 0)                                                 &
+     &call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,               &
      &                       NBLCK, KANG, JCO, KBLOCK,                  &
      &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
 #endif

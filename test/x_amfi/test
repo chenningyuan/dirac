@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+#import h5py
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = ' TOTAL ENERGY',
+      num_lines   = 11,
+      rel_tolerance   = 5.0e-8)
+
+test.run(['f.inp'], ['f.xyz'], f, args='--outcmo --get="amfPCEC.h5"')
+if os.path.isfile('CHECKPOINT.h5'):
+    ext = '.h5'
+elif os.path.isfile('CHECKPOINT.noh5.tar.gz'):
+    ext = '.noh5.tar.gz'
+shutil.move('CHECKPOINT'+ext, 'X2CMAT_009'+ext)
+
+test.run(['f_pbe.inp'], ['f.xyz'], f, args='--put="amfPCEC.h5" --get="amfPCEC.h5"')
+shutil.move('amfPCEC.h5', 'amfPCEC.009.h5')
+
+test.run(['s.inp'], ['s.xyz'], f, args='--get="amfPCEC.h5"')
+shutil.move('amfPCEC.h5', 'amfPCEC.016.h5')
+
+test.run(['s_sym.inp'], ['s.xyz'], f, args='--get="amfPCEC.h5"')
+test.run(['s_pbe.inp'], ['s.xyz'], f, args='--put="amfPCEC.h5" --get="amfPCEC.h5"')
+shutil.move('amfPCEC.h5', 'amfPCEC.016.sym.h5')
+
+
+# AMFI model: molecular U matrix (from molecular core h1^{4c}) + AMFI 2e-SO corrections
+test.run(['x2c_AMFI_nosym.inp'], ['sf.xyz'], f)
+
+# amf model: molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO + scalar corrections
+blubb = test.binary_dir + '/merge_amf.py'
+shutil.copy(blubb, "merge_amf.py")
+os.system('python merge_amf.py amfPCEC.009.h5 amfPCEC.016.h5')
+test.run(['x2c_amf_nosym.inp'], ['sf.xyz'], f, args='--put="amfPCEC.h5"')
+
+# amf model: molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO corrections + scalar corrections (symmetry turned on)
+test.run(['x2c_amf_sym.inp'], ['sf.xyz'], f, args='--put="amfPCEC.h5"')
+
+os.unlink('amfPCEC.h5')
+os.system('python merge_amf.py amfPCEC.009.h5 amfPCEC.016.sym.h5')
+
+# amf model: molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO corrections + scalar corrections (symmetry turned on)
+test.run(['x2c_amf_sym_s_sym.inp'], ['sf.xyz'], f, args='--put="amfPCEC.h5"')
+
+# eamf model: molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO corrections + scalar corrections (symmetry turned on)
+test.run(['x2c_eamf_sym_s_sym.inp'], ['sf.xyz'], f, args='--put="amfPCEC.h5"')
+
+# AMFI model within DFT/PBE: molecular U matrix (from molecular core h1^{4c}) + AMFI 2e-SO corrections
+test.run(['x2c_AMFI_sym_pbe.inp'], ['sf.xyz'], f)
+
+# eamf model within DFT/PBE: molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO corrections + scalar corrections (symmetry turned on)
+test.run(['x2c_eamf_sym_pbe.inp'], ['sf.xyz'], f, args='--put="amfPCEC.h5"')
+
+# 4c references
+test.run(['4c_nosym.inp'], ['sf.xyz'], f)
+test.run(['4c_pbe.inp'], ['sf.xyz'], f)
+
+os.unlink('X2CMAT_009'+ext)
+os.unlink('amfPCEC.h5')
+os.unlink('amfPCEC.016.h5')
+os.unlink('amfPCEC.016.sym.h5')
+os.unlink('amfPCEC.009.h5')
+os.unlink('merge_amf.py')
+
+sys.exit(test.return_code)

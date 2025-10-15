@@ -1,22 +1,18 @@
+#define DEBUG_MPI -1
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! FILE    : main/dirac.F
@@ -46,7 +42,7 @@ C***********************************************************************
 #include "dgroup.h"
 
 #ifdef HAVE_OPENMP
-      INTEGER omp_get_num_procs, omp_get_thread_limit
+      INTEGER omp_get_num_procs
       INTEGER omp_get_max_threads, omp_get_num_threads
       INTEGER omp_get_thread_num
 #endif
@@ -56,10 +52,11 @@ C     common block infpar
 
 #ifdef HAVE_OPENMP
       MAX_OMP_THREADS = omp_get_max_threads()
-      write(lupri,'(//A,3I5)')
+      IF (MAX_OMP_THREADS .gt. 1) write(lupri,'(//A,3I8)')
      &' * openMP activated, '//
-     &' thread limit - # processes - # threads: ',
-     & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
+     &' max # processes, max # threads, current # threads: ',
+     & omp_get_num_procs(), MAX_OMP_THREADS, omp_get_num_threads()
+      ! else openMP deactivated probably because user has exported OMP_NUM_THREADS=1
 !$OMP PARALLEL
 !      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
 !     &' max # threads - current # threads - current thread: ',
@@ -109,6 +106,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL()
 
+      use checkpoint
       use interface_ao_specific
       use interface_mo_specific
       use xmlout
@@ -119,16 +117,24 @@ C  /* Deck dirctl */
 
       implicit none
 
+! dcbgrd.h : DONGRD
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcbdhf.h"
+#include "mxcent.h"
+#include "dcbgrd.h"
 
-      logical run_pamset
+      logical run_pamset, tobe
+      integer ierr
 C
       CALL QENTER('DIRCTL')
       call xml_open_file('dirac.xml')
       call xml_begin('run','type="dirac-run"')
+      write (lupri,'(/A,I2)') " * Opening checkpoint file "
+      call checkpoint_open
+      call init_propfile
 C
 C***********************************************************************
 C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
@@ -136,6 +142,8 @@ C***********************************************************************
 C
       CALL PAMINP()
       IF ( INPTES ) RETURN
+!     write input coordinates to checkpoint file (and also to xyz file)
+      call write_xyz_fromcommon('/input/molecule')
 C
 C***********************************************************************
 C*****  S E T U P  -  M O D U L E  *************************************
@@ -163,6 +171,21 @@ C***********************************************************************
         write(lupri, '(//A/)') 'PCMSolver initialized.'
       end if
 #endif
+
+      if (dirac_cfg_dft_calculation .and. OPTIMI) then
+      if (.not. DONGRD) then ! numerical molecular gradient is OK
+        if (nopen > 0) then
+          call quit('error in geometry optimization: ' //
+     &      'analytical gradient not implemented for open-shell DFT.'//
+     &      ' Try .NUMGRA')
+        end if
+        if (nbsym > 1) then
+          call quit('error in geometry optimization: ' //
+     &      'analytical gradient not implemented for DFT with symmetry.'
+     &      // ' Try .NUMGRA')
+        end if
+      end if
+      end if
 C
 C
 C***********************************************************************
@@ -186,6 +209,8 @@ C
 !     clean up Gen1Int interface
       call gen1int_host_finalize()
 #endif
+      write (lupri,'(/A,I2)') " * Closing HDF5 checkpoint file "
+      call checkpoint_close
       call xml_end('run')
       call xml_close_file
 
@@ -382,9 +407,7 @@ C***********************************************************************
 C***** L A P L A C E  ---  T E S T             *************************
 C***********************************************************************
 C
-#ifdef HAS_LAPLACE
         IF(DOLAPLCE) CALL PAMLAPLCE()
-#endif
 C
 C***********************************************************************
 C***** K R - M C S C F *************************************************
@@ -522,6 +545,18 @@ C
      &  ' KR-CC module not included in this version')
 #endif
         END IF
+C
+C***********************************************************************
+C******* R E L A T I V I S T I C  C A S P T 2 **************************
+C***********************************************************************
+C
+        IF(DOIVO) THEN
+           CALL RELIVO_MASTER
+           ! need to recreate the 4-index integrals from DFPCMO that is created by IVO program      
+           CALL PAMTRA
+        ENDIF
+        IF(DOCASCI .or. DOCASPT2) CALL RELCASPT2_MASTER
+      
       ENDIF ! IF(DOPSI) .. second part, after 4-index transformation
 C
       CALL QEXIT('PAMPSI')
@@ -588,6 +623,7 @@ C     Transfer open shell average-of-configuration to GAS space notation
 C     (for e.g. ESR GASCIP) /July 2002 hjaaj
 C     HOW it is transferred is determined by the CISELECT keyword. /hjaaj
 C
+      MAXMK2_temp = 99999
       IF ( CISELECT .EQ. 'NO CI' ) THEN
          NGAS_DC  = 0
          OPT_THR_CVEC = D0
@@ -596,7 +632,7 @@ C        ... include exactly those determinants which was included
 C            in the 'average-of-configuration' SCF
          NGAS_DC  = NOPEN
          OPT_THR_CVEC = 1.0D-4
-         CALL IZERO(NGSHT,MXGAS)
+         NGSHT(1:MXGAS) = 0
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
                NGSH(I,J) = NACSH(I,J)
@@ -621,7 +657,7 @@ C            equivalent to RESOLVE but setting information for GASCIP program
 C        ... set CI program in charge
 !        OPT_CIPROGRAM = 'GASCIP'
 
-         CALL IZERO(NGSHT,MXGAS)
+         NGSHT(1:MXGAS) = 0
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
                NGSH(I,J) = NASH(I)
@@ -640,11 +676,13 @@ C        ... set which CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
 C
          OPT_THR_CVEC = THR_CVEC_ESR
-         THRPCI   = THRPCI_ESR
+         THRPCI = THRPCI_ESR
+         MAXMK2_temp = MAXMK2_ESR ! MAXMK2_ESR may be specified in *ESR input
 C
 C        Set up orbital shells for GASCIP
 C
          NRAS1_ELEC = 0
+         IERR = 0
          DO J = 1,NFSYM
 
             DO I = NGAS_CIESR(1),1,-1
@@ -656,13 +694,24 @@ C
                NSSH(J) = NSSH(J) - NGSH_CIESR(J,I,3)
             END DO
 
+            IF (NISH(J) .LT. 0) IERR = 1
+
          END DO ! J = 1, NFSYM
+
+         IF (IERR .GT. 0) THEN
+            WRITE(LUPRI,'(//A,2I5)')
+     &         'FATAL ERROR, the specified GAS spaces'
+     &       //' lead to a negative number of inactive orbitals:',
+     &         NISH(1:NFSYM)
+            CALL QUIT('FATAL ERROR, the specified GAS spaces lead to a'
+     &         //' negative number of inactive orbitals.')
+         END IF
 
          NAELEC = NAELEC + NRAS1_ELEC
 
 C        Set min and max accumulated no. of electrons in each gas space
 
-         CALL IZERO(NGSHT,MXGAS)
+         NGSHT(1:MXGAS) = 0
 
          NGAS_DC = 0
          NAELEC_ACCUM = 0
@@ -676,6 +725,9 @@ C        Set min and max accumulated no. of electrons in each gas space
             END DO
 
             NGASSP(1,NGAS_DC) = MAX(0, NAELEC_ACCUM-LVL_CIESR(I,1)) ! subtract max number of holes in this RAS1-GAS space
+            ! minimum number of electrons cannot be less than for a previous GAS space
+            IF (NGAS_DC .GT. 1) NGASSP(1,NGAS_DC) =
+     &         MAX(NGASSP(1,NGAS_DC),NGASSP(1,NGAS_DC-1))
             NGASSP(2,NGAS_DC) = NAELEC_ACCUM
          END DO
 
@@ -687,6 +739,8 @@ C        Set min and max accumulated no. of electrons in each gas space
 
          IF (NGAS_CIESR(3) > 0) THEN
             NGASSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(1,3))
+            IF (NGAS_DC .GT. 1) NGASSP(1,NGAS_DC) =
+     &         MAX(NGASSP(1,NGAS_DC),NGASSP(1,NGAS_DC-1))
          ELSE ! no RAS3-GAS orbitals, i.e. last GAS space
             NGASSP(1,NGAS_DC) = NAELEC
          END IF
@@ -701,6 +755,8 @@ C        Set min and max accumulated no. of electrons in each gas space
 
             IF (I < NGAS_CIESR(3)) THEN
                NGASSP(1,NGAS_DC) = MAX(0, NAELEC-LVL_CIESR(I+1,3)) ! subtract max number of electrons in next RAS3-GAS space
+               IF (NGAS_DC .GT. 1) NGASSP(1,NGAS_DC) =
+     &            MAX(NGASSP(1,NGAS_DC),NGASSP(1,NGAS_DC-1))
             ELSE ! last RAS1-GAS space
                NGASSP(1,NGAS_DC) = NAELEC
             END IF
@@ -731,7 +787,13 @@ C     transfer open shell average-of-configuration to GAS space notation /July 2
 C
 C
       NASHT  = NASH(1) + NASH(2)
+      ! MAXMK2 two cases:
+      ! NAELEC .le. NASHT: MAXMK2 = NAELEC (all electrons A-elecrons)
+      !                           = 2*NAELEC - NAELEC
+      ! NAELEC .gt. NASHT: MAXMK2 = NASHT (A-electrons) - (NAELEC-NAST) (B-electrons)
+      !                           = 2*NASHT - NAELEC
       IOPT_MAXMK2 = 2*MIN(NAELEC,NASHT) - NAELEC
+      IOPT_MAXMK2 = MIN(IOPT_MAXMK2, MAXMK2_temp) ! MAXMK2 may be set in input for some CISELECT choices
       IOPT_MINMK2 = -IOPT_MAXMK2
       IOPT_MK2REF = 0
       IOPT_MK2DEL = IOPT_MAXMK2
@@ -879,7 +941,7 @@ C
       IOPT_MK2DEL = NKRMC_MK2DEL
       IOPT_MINMK2 = NKRMC_MINMK2
       IOPT_MAXMK2 = NKRMC_MAXMK2
-      CALL IZERO(NGSHT,MXGAS)
+      NGSHT(1:MXGAS) = 0
       DO I = 1,NFSYM
          NISH(I) = NKRMCISH(I)
          NASH(I) = NKRMCASH(I)
@@ -931,7 +993,7 @@ C
       OPT_CNVINT(1)  = DKRMC_CNVINT(1)
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
-      OPT_THRECI     = MAX(DKRCI_THRECI, OPT_THRGRD**2)
+      OPT_THRECI     = OPT_THRGRD**2
       THRPCI         = DKRMC_THRPCI
       E_LVCORR_MC    = 0.0d0
       OPT_THR_CVEC   = 1.0D-4
@@ -962,7 +1024,7 @@ C
 C
 C     Set "constant" CI internal variables
 C
-      NMAX_SYM    = IKRMC_SYMMETRY
+      NMAX_SYM    = 2*NBSYM ! max double group irreps
       NCIROOT     =    1
       ISHMEM_TYPE =  - 1
       CSHMEMO     = .FALSE.
@@ -1008,7 +1070,7 @@ C
       IOPT_MINMK2 = NKRCI_MINMK2
       IOPT_MAXMK2 = NKRCI_MAXMK2
 
-      CALL IZERO(NGSHT,MXGAS)
+      NGSHT(1:MXGAS) = 0
       DO I = 1,NFSYM
          NISH(I) = NKRCIISH(I)
          NASH(I) = NKRCIASH(I)
@@ -1054,8 +1116,8 @@ C
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
       THRPCI         = DKRCI_THRPCI
       E_LVCORR_MC    = 0.0d0
-      OPT_THR_CVEC   = 1.0d-04
-      OPT_THRGRD     = 1.D99
+      OPT_THR_CVEC   = 1.0d-02
+      OPT_THRGRD     = DKRCI_THRGCI
       OPT_THRECI     = DKRCI_THRECI
 C
 C     Set common block DCLOPT
@@ -1099,10 +1161,9 @@ C
       IKRMCCNO    =  - 3
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
-      NATONL      = .FALSE.
-      FOCKON      = .FALSE.
+      NATONLY     = .FALSE.
+      FOCKONLY    = .FALSE.
       COMPROT     = .FALSE.
-      GENFOCK     = GENFOCK_KRCI
       NATOLCR     = NATOLCR_KRCI
       TRA_NATO    = TRANATO_KRCI
       CRDFO_MAT   = CRDFO_MAT_KRCI
@@ -1141,7 +1202,9 @@ C***********************************************************************
 #endif
 !     use fde_evaluators_dirac, only : fde_launch_slave_process
       use fde_mod, only : fde_launch_slave_process
-
+#ifdef HAS_PELIB
+      use pelib_dirac_interface, only : pelib_ifc_slave
+#endif
       implicit none
 
 #if defined (VAR_SLEEPING_SLAVES)
@@ -1178,9 +1241,16 @@ C***********************************************************************
 
       mytid_print = -1
 ! activate next line for debug print from one of the nodes
-!     mytid_print = min(10,INUMNOD)
+#ifdef DEBUG_MPI > -1
+      mytid_print = min(10,INUMNOD)
+#endif
+#ifdef DEBUG_MPI > 0
+      ! print from DEBUG_MPI nodes
+      mytid_print = min(mytid, DEBUG_MPI )
+#endif
       
-      if (mytid .eq. mytid_print) print *, 'DIRNOD slave MYTID ',IMYTID
+      if (mytid .eq. mytid_print)
+     &   write(0, *) 'DIRNOD slave MYTID ',IMYTID
 
 ! Following lines can be uncommented for debug purposes but will mess up the output (and will make tests fail)
 #ifdef HAVE_OPENMP
@@ -1219,11 +1289,9 @@ C
 #if defined (SLOWDOWN_SLAVES)
 !mi+sk: introduce slowdown statement for debug purposes :
 ! node 'sleeps' short time and in between the user can attach debugger to the process
-      if(mytid > 0)then
-         if (mytid .eq. mytid_print) write(lupri,'(2x,a,i2,a)')
+      if (mytid .eq. mytid_print) write(0,'(2x,a,i2,a)')
      &   'slaves first sleep for ',sleep_time,' seconds. '
-         call sleep(sleep_time)
-      endif
+      call sleep(sleep_time)
 #endif
 
 C     Initialize infpar.h control variables
@@ -1263,7 +1331,7 @@ C
      &                           global_communicator)
 #endif
       if (mytid .eq. mytid_print) 
-     &   print*,'info: node',mytid,' has received itask',itask
+     &   write(0,*) 'info: node',mytid,' has received itask',itask
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
@@ -1365,7 +1433,7 @@ C
 C        start the PELIB slave.
 C
 #ifdef HAS_PELIB
-         CALL PELIB_IFC_SLAVE()
+         call pelib_ifc_slave()
 #else
          call quit('ERROR: PElib not available')
 #endif
@@ -1447,6 +1515,17 @@ C
 C        start BEDLEB MPI calculation
 C
          call bedleb_launch_slave_procs()
+      ELSE IF (ITASK .EQ. 22) THEN
+C
+C        start CASPT2 MPI calculation
+C
+         call RELCASPT2_NODE()
+
+      ELSE IF (ITASK .EQ. 23) THEN
+C
+C        start IVO MPI calculation
+C
+         call RELIVO_NODE()
 
       ELSE
 C
@@ -1462,7 +1541,7 @@ C     We want the slave program to go until there is nothing
 C     more to calculate, K.Ruud, May-95
 C
       if (mytid .eq. mytid_print)
-     &   call TIMER('node 10 task',TIMSTR,TIMEND)
+     &   call TIMER('node task',TIMSTR,TIMEND)
       GOTO 100
 C
  999  CALL QEXIT('DIRNOD')
@@ -1566,7 +1645,6 @@ C
 C        start FDE MPI calculation
 C
          call fde_launch_slave_process()
-
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -1608,6 +1686,9 @@ C
 C
 
       IF (NUMNOD .EQ. 0) RETURN   ! MPI version of DIRAC, but no slaves (i.e. sequential)
+#if DEBUG_MPI > 0
+      write(0,*) 'dirac_parctl called with itask ',itask
+#endif
 
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST
@@ -1705,7 +1786,7 @@ C since there are some variables with the same name we will call a routine for t
       IOPT_MK2DEL = NKRCC_MK2DEL
       IOPT_MINMK2 = NKRCC_MINMK2
       IOPT_MAXMK2 = NKRCC_MAXMK2
-      CALL IZERO(NGSHT,MXGAS)
+      NGSHT(1:MXGAS) = 0
       DO I = 1,NFSYM
          NISH(I) = NKRCCISH(I)
          NASH(I) = NKRCCASH(I)
@@ -1775,11 +1856,10 @@ C parallel stuff
       IKRMCCNO    =  - 3
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
-      NATONL      = .FALSE.
-      FOCKON      = .FALSE.
+      NATONLY     = .FALSE.
+      FOCKONLY    = .FALSE.
       COMPROT     = .FALSE.
 C at the moment no fock type orbitlas
-      GENFOCK     = .FALSE. !GENFOCK_KRCI
       NATOLCR     = .FALSE. !NATOLCR_KRCI
       TRA_NATO    = .FALSE. !TRANATO_KRCI
       CRDFO_MAT   = .FALSE. !CRDFO_MAT_KRCI
@@ -1807,7 +1887,7 @@ C
       if (dirac_cfg_exacc) then
          if (dirac_cfg_scf_calculation.or.
      &       dirac_cfg_dft_calculation.or.
-     &      dirac_cfg_mcsrdft_calculation) then
+     &       dirac_cfg_mcsrdft_calculation) then
             RUN_PAMSET = .TRUE.
          else
             RUN_PAMSET = .FALSE.

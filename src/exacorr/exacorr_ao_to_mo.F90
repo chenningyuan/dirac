@@ -5,9 +5,7 @@ module exacorr_ao_to_mo
 
         use exacorr_utils
         use, intrinsic:: ISO_C_BINDING
-#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         use exatensor
-#endif
         implicit none
         private
         public exacorr_compute_mo_integrals
@@ -47,6 +45,7 @@ module exacorr_ao_to_mo
 
          use interface_to_mpi
          use exacorr_datatypes
+         use exacorr_ao
          use exacorr_global
          use exacorr_tensor_methods
          use exatensor
@@ -1225,7 +1224,7 @@ module exacorr_ao_to_mo
         integer(INTD),intent(in)              :: ao_id
         class(h_space_t), pointer, intent(in) :: ao_space
 !       target integral tensors to be filled and given back to the caller
-        type(exatns_intg_tens), intent(inout) :: int_t
+        type(exatns_intg_tens_t), intent(inout) :: int_t
         integer                               :: moint_scheme ! (41: fully pvotised, 42: using shells)
         integer, intent(in)                   :: print_level, exa_blocksize
         real(8),intent(in)                    :: t_cholesky
@@ -1698,6 +1697,8 @@ module exacorr_ao_to_mo
           character(len=12)          :: vs_str
 
           if (print_level.gt.0) call print_date(" === entering decompose_cholesky_exatensor === ")
+! aspg, deactivating this now for sorting out the rest of merge
+#if 0
 
           ierr=exatns_tensor_create(one_element,"one_element",EXA_DATA_KIND_C8)
           ierr=exatns_tensor_init(one_element,ONE)
@@ -1727,13 +1728,13 @@ module exacorr_ao_to_mo
           else
             ao_level=1
           end if
-          if (print_level.gt.5) then
-            write (*,*) ' --- ao_level =     ',ao_level  
-            do i=1,nao
-              write(*,*) ' i =',i,', id = ',ao_space%get_ancestor_id_of_level(int(i-1,INTL),ao_level,ierr),&
-                         ', shell=',get_shell_index(i)
-            end do
-          end if
+!         if (print_level.gt.5) then
+!           write (*,*) ' --- ao_level =     ',ao_level  
+!           do i=1,nao
+!             write(*,*) ' i =',i,', id = ',ao_space%get_ancestor_id_of_level(int(i-1,INTL),ao_level,ierr),&
+!                        ', shell=',get_shell_index(i)
+!           end do
+!         end if
 
           allocate(CD(nao*nao))
 
@@ -1891,6 +1892,7 @@ module exacorr_ao_to_mo
 
           !cholesky tensor needs to be destroyed elsewhere
 
+#endif
           if (print_level.gt.0) call print_date(" === leaving decompose_cholesky_exatensor === ")
 
         end subroutine decompose_cholesky_exatensor
@@ -1922,7 +1924,9 @@ module exacorr_ao_to_mo
           complex(8)                 :: scal_fac, D_max
           character(len=12)          :: vs_str
 
+
           if (print_level.gt.0) call print_date(" === entering decompose_cholesky_exatensor_full === ")
+#if 0
 
           ierr=exatns_tensor_create(one_element,"one_element",EXA_DATA_KIND_C8)
           ierr=exatns_tensor_init(one_element,ONE)
@@ -2034,6 +2038,7 @@ module exacorr_ao_to_mo
 
           !cholesky tensor needs to be destroyed elsewhere
 
+#endif
           if (print_level.gt.0) call print_date("=== leaving decompose_cholesky_exatensor_full === ")
 
         end subroutine decompose_cholesky_exatensor_full

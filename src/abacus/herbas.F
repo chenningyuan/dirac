@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -64,6 +59,9 @@ C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, KAOVEC, KPRIM,
      &                   Q, QEFF, DSM, UNCONT, BASNAM, BASREF, IPRBAS)
+#ifdef PRG_DIRAC
+      use aobasis_collector, only: add_aobasis2container
+#endif
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL   UNCONT, SEG, READ_NU_CALLED
@@ -104,7 +102,7 @@ C     that generate 3 small component p-functions. The maximum for
 C     other types of functions is scaled down by KHK(IQM+1) that
 C     gives the number of functions in the small component for that type.
       PARAMETER (MAX_IN_BLOCK=3*15)
-      LOGICAL SPLIT, DO_UNCONT, DO_SPLIT
+      LOGICAL SPLIT, DO_UNCONT
       integer :: jcount = 0
 #endif /* PRG_DIRAC */
       integer :: LU_NOT_USED
@@ -114,6 +112,7 @@ C
 C     control print in BASLIB, usually IPRBAS = IPREAD = IPRUSR + 1 = 1
 C     from calling routine
       IPRINT = IPRBAS
+      !IPRINT = 10
       IF (BASNAM(1:1).eq.' ') IPRINT = 5
       INTQ   = NINT(Q)
       IF (abs(Q-INTQ) .gt. 1.d-8) then
@@ -130,7 +129,7 @@ C     from calling routine
       IF (BASNAM(1:1).eq.' ') THEN
          CALL QUIT('BASLIB ERROR, basis set name starts with blank')
       END IF
-      len_BASNAM = LNBLNK(BASNAM)
+      len_BASNAM = INDEX(BASNAM,' ') - 1 ! no blanks allowed in basis set name, so 'mybas abc' will give len_BASNAM=5
 
       BASTMP = ' '
       BASSAV = BASNAM
@@ -144,29 +143,12 @@ C     from calling routine
       POLFUN = .FALSE.
 
 C
-C     turn on splitting of primitive shells only for methods that
-C     perform an integral transformation to the spinor basis
-C
-      DO_SPLIT = (DOTRA .OR. DOKRMC .OR. DOMP2 .OR. DOMP2NO)
-      IF (PARCAL) DO_SPLIT = .true. ! if parallel, then also split for direct SCF
-
 CDIRAC:..by default, allow contraction only for elements Z.LE.36
 C        except for 2c NR and RECP calculations
       DO_UNCONT = INTQ.GT.36 .AND. .NOT.(NONREL.OR.LEVYLE.OR.ECPCALC)
 !     DO_UNCONT = DO_UNCONT .OR. (TWOCOMP.AND.(.NOT.TWOCOMPBSS))
 !     hjaaj: is this still relevant after introducing NONREL above?
       DO_UNCONT = UNCONT .OR. DO_UNCONT
-      IF(DO_UNCONT.AND.(.NOT.UNCONT)) THEN
-!     print only from one process
-      if (mytid == MPARID) then
-        WRITE(LUPRI,'(/A/A,I5/2A/A/A)')
-     &   '*** INFO (BASLIB) : Decontracting basis set',
-     &   ' - nuclear charge: ',INTQ,
-     &   ' - basis file    : ',BASNAM,
-     &   'Reason: DIRAC cannot create proper small component basis',
-     &   '        for contracted large component basis when Z > 36'
-      end if
-      ENDIF
 
       ! for windows we keep "-star" basis set files and not "*" files
       ! now we will translate a possible "*" basis set input
@@ -457,6 +439,12 @@ C
         WRITE(LUPRI,*) 'SADLEJ =',SADLEJ
         WRITE(LUPRI,*) 'NQVD   =',NQVD
       ENDIF
+
+      !> save AO basis label for later usage
+#if defined PRG_DIRAC && defined MOD_XAMFI
+      call add_aobasis2container(BASTMP)
+#endif
+
 C
 C Finds the right element in the file.
 C
@@ -468,19 +456,31 @@ C
 C
 C Finds the number of primitives and columns of contraction coefficients
 C
-         CALL FIND_POS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS,
+         CALL FIND_POS ( NEWEL, INTEXP, INTORB, LUBAS,
      &      IPRINT, EMSL_TYPE)
+
+! Print message if basis set uncontracted because Z>36 (and .UNCONT not specified)
+         IF (DO_UNCONT .AND. .NOT. UNCONT .AND. INTORB .GT. 0) THEN
+            if (mytid == MPARID) then ! print only from one process
+               WRITE(LUPRI,'(/A/A,I5/2A/A/A)')
+     &   '*** INFO (BASLIB) : Decontracting basis set',
+     &   ' - nuclear charge: ',INTQ,
+     &   ' - basis set file: ',BASNAM,
+     &   'Reason: DIRAC cannot create proper small component basis',
+     &   '        for contracted large component basis when Z > 36'
+            end if
+         ENDIF
 C
  10      CONTINUE
 C
-         IF (DO_UNCONT) THEN
+         IF (DO_UNCONT .AND. INTORB .GT. 0) THEN
             INTORB = -INTORB
             IF (ANO .OR. SADLEJ) THEN
                WRITE (LUPRI,'(/A)') ' FATAL ERROR: '//
-     &            '.UNCONT not implemented for ano and sadlej yet.'
+     &            'UNCONTRACTED not implemented for ano and sadlej yet.'
                CALL QUIT(
-     &            '.UNCONT not implemented for ano and sadlej yet')
-Chj-aug99: MAERKE find out how to implement UNCONT for ano or sadlej !
+     &            'UNCONTRACTED not implemented for ano and sadlej yet')
+Chj-aug99: TODO find out how to implement UNCONT for ano or sadlej !
             END IF
          END IF
 C
@@ -518,7 +518,7 @@ C
             ELSEIF (INTEXP.GT.KPRIM) THEN
                ! splitting is always necessary, otherwise the fixed array size is too small
                SPLIT = .TRUE.
-            ELSEIF (INTEXP.GT.MAXPRIM_IN_BLOCK .AND. DO_SPLIT) THEN
+            ELSEIF (INTEXP.GT.MAXPRIM_IN_BLOCK) THEN
                ! splitting is desired by the user to reduce memory consumption
                SPLIT = .TRUE.
             ELSE
@@ -537,7 +537,7 @@ C Setting ALPHA, CPRIMU AND CPRIM to zero.
 C
             CALL DZERO(ALPHA(1, NBLOCK), KPRIM)
             CALL DZERO(CPRIMU(1,1, NBLOCK), KPRIM*KPRIM)
-            CALL DZERO(CPRIM (1, 1, NBLOCK), KPRIM*KPRIM)
+            CALL DZERO(CPRIM (1,1, NBLOCK), KPRIM*KPRIM)
 C
 C Reading the primitives and contraction coefficients from file in READ_NU
 C
@@ -549,7 +549,7 @@ C
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1
                   CALL FIND_POS ( NEWEL, INTEXP, INTORB,
-     &                            INTISG, LUBAS, IPRINT, EMSL_TYPE)
+     &                            LUBAS, IPRINT, EMSL_TYPE)
                   GOTO 10
                END IF
             ELSE
@@ -618,7 +618,7 @@ C
 C
 C Define the type of the next relevant line in file
 C
-            CALL FIND_POS( NEWEL, INTEXP, INTORB, INTISG,
+            CALL FIND_POS( NEWEL, INTEXP, INTORB,
      &         LUBAS, IPRINT, EMSL_TYPE)
             GOTO 10
          END IF ! .not. NEWEL
@@ -632,7 +632,7 @@ C
          FOUND = .FALSE.
          ISTART = IPOLST
  33      CONTINUE
-         len_BASNAM = LNBLNK(BASNAM(ISTART:))
+         len_BASNAM = LEN_TRIM(BASNAM(ISTART:))
          IF (len_BASNAM .GT. 0) THEN
             CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT')
             CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA')
@@ -685,7 +685,6 @@ C
 C
 C Close basis set file
 C
-
       BASNAM = BASSAV
       CLOSE (LUBAS, STATUS = 'KEEP')
       CALL QEXIT('BASLIB')
@@ -845,7 +844,7 @@ C
          IF (POLFUN) THEN
             ISTART = IPOLST
  33         CONTINUE
-            len_BASNAM = LNBLNK(BASNAM(ISTART:))
+            len_BASNAM = LEN_TRIM(BASNAM(ISTART:))
             IF (len_BASNAM .GT. 0) THEN
                CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT')
                CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA')
@@ -982,7 +981,7 @@ C           skip core orbitals for Huckel guess for ECP
       IF (POLFUN) THEN
          IREAD = IPOLST
  33      CONTINUE
-         len_BASNAM = LNBLNK(BASNAM(IREAD:))
+         len_BASNAM = LEN_TRIM(BASNAM(IREAD:))
          IF (len_BASNAM .GT. 0) THEN
             CALL FREFRM(BASNAM,IREAD,IQUANT,DUMMY,'INT')
             CALL FREFRM(BASNAM,IREAD,IDUMMY,EXPON,'REA')
@@ -1255,7 +1254,7 @@ C
      &   STRING(1:IEND),' IOSTAT =',IOERR
       CALL QUIT('I/O error in BASLIB(FIND_ELEMENT)')
  200  CONTINUE
-      len_BASNAM = LNBLNK(BASNAM)
+      len_BASNAM = LEN_TRIM(BASNAM)
       WRITE (LUPRI,'(//A,I5,2A/A//)')
      &   ' ERROR: Nuclear charge',INTQ,
      &   ' is an unsupported element for basis ',BASNAM(1:len_BASNAM),
@@ -1398,7 +1397,7 @@ C
                IF (POLFUN) THEN
                   ISTART = IPOLST
  33               CONTINUE
-                  len_BASNAM = LNBLNK(BASNAM(ISTART:))
+                  len_BASNAM = LEN_TRIM(BASNAM(ISTART:))
                   IF (len_BASNAM .GT. 0) THEN
                      CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT')
                      CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA')
@@ -1490,11 +1489,12 @@ C
      &   'FIND_NQD: Error when reading from basis file ',
      &   BASDIR(1:LENBAS)//'NQvD',
      &   ' IOSTAT =',IOERR
-      CALL QUIT('I/O error in FIND_NQD')
+      CALL QUIT('BASLIB: I/O error in FIND_NQD')
  200  CONTINUE
       WRITE (LUPRI,'(/I3,2A)') INTQ,
      &     ' is an unsupported element for basis ',BASNAM
-      CALL QUIT('Unsupported element in HERBAS')
+      CALL QUIT('BASLIB FIND_NQD: '//
+     &   'Unsupported element in specified basis set file')
       END
 C/* Deck find_ref */
       SUBROUTINE FIND_REF(BASREF, LUBAS, BASNAM)
@@ -1505,10 +1505,6 @@ C* Based on FIND_POS, LV, 14-5-2003                      *
 C*********************************************************
 #include "implicit.h"
 #include "priunit.h"
-#ifdef VAR_MPI
-#include "infpar.h"
-#endif
-
       CHARACTER BASNAM*(*), BASREF(10)*80
 C*********************************************************
 C* Variable declarations:                                *
@@ -1517,7 +1513,7 @@ C*            what kind of sentence it is.               *
 C*     STRING - A character string to help bulletproofing*
 C*              the subroutine.                          *
 C*********************************************************
-      CHARACTER SIGN, LINE*80, STRING*100
+      CHARACTER SIGN, STRING*100
 C
       REWIND (LUBAS)
 C
@@ -1541,7 +1537,7 @@ C           Check for start of documentation
             IF (INDEX(STRING,'REFERENCE').GT.0) IREF = 1
          ELSE
 C           We have documentation, omit blank lines and store in BASREF
-            len_STRING = LNBLNK(STRING(2:))
+            len_STRING = LEN_TRIM(STRING(2:))
             IF (len_STRING .GT. 0) THEN
                BASREF(IREF) = STRING(2:)
                IREF = IREF + 1
@@ -1578,18 +1574,19 @@ C*                          coefficients                 *
 C*********************************************************
 C
 C/* Deck find_pos */
-      SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB, INTISG,
-     &   LUBAS, IPRINT)
+      SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB,
+     &   LUBAS, IPRINT, EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
+      LOGICAL   NEWEL, EMSL_TYPE
+
 C*********************************************************
-C* Variable declarations:                                *
+C* Local variable declarations:                          *
 C*     SIGN - The first sign in a sentence, to find out  *
 C*            what kind of sentence it is.               *
 C*     STRING - A character string to help bulletproofing*
 C*              the subroutine.                          *
 C*********************************************************
-      LOGICAL   NEWEL
       CHARACTER SIGN
       CHARACTER*300 STRING
 
@@ -1601,51 +1598,40 @@ C
  20   CONTINUE
       READ (LUBAS, '(A)', IOSTAT = IOERR, ERR = 1000, END = 200)
      +     STRING
-      READ (STRING, '(A1)',IOSTAT=IOS) SIGN
+      len_STRING = LEN_TRIM(STRING)
+      IF (len_STRING .eq. 0) GOTO 20
+      SIGN = STRING(1:1)
 C
-      IF (SIGN .EQ. ' ') THEN
-C
-         len_STRING = LNBLNK(STRING)
-         IF (len_STRING .LE. 0) THEN
-            GOTO 20
-         ELSE
-            READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
-            IF (IOS.NE.0) THEN
-               CALL QUIT('ERROR in reading basis; '//
-     &         'check your mol file formatting')
-            END IF
-            IF (IPRINT.GE.10) THEN
-             write(lupri,'(/,2X,A)') 'Output from FIND_POS...reading'
-             write(lupri,*) 'INTEXP, INTORB, INTISG',
-     &          INTEXP, INTORB, INTISG
-            ENDIF
-            RETURN
-         END IF
-      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
+      IF (SIGN .EQ. 'H' .OR. SIGN .EQ. 'h' !        H or h: this is presumably a basis set from EMSL library
+     &   .OR. SIGN .EQ. ' ' ) THEN
+         READ (STRING(2:len_STRING),*,IOSTAT=IOS) INTEXP, INTORB
+         ! in many old basis set files 3 variables: INTEXP, INTORB, INTISG
+         ! but INTISG is never used and is always zero, so it has been removed from herbas.F /Jan. 2025 hjaaj
+      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A') .OR.                ! <- traditional Dalton basis set file
+     &         (EMSL_TYPE .AND. INDEX(STRING,'->') .GT. 0) ) THEN       ! <- basis set file made by EMSL without "a" or "A"
          NEWEL = .TRUE.
-         IF (IPRINT.GE.10) THEN
-            WRITE(lupri,'(/A)') '  Output from FIND_POS: New element'
-            WRITE(lupri,*) 'INTEXP, INTORB, INTISG',
-     &         INTEXP, INTORB, INTISG
-         END IF
+         IF (IPRINT.GE.10) WRITE(lupri,'(/A)')
+     &      '  Output from FIND_POS: New element'
          RETURN
       ELSE
          GOTO 20
       END IF
+      IF (IOS.NE.0) GO TO 2000
+      IF (IPRINT.GE.10) WRITE(lupri,'(/2X,A,3I10)')
+     &     'Output from FIND_POS... read INTEXP, INTORB',
+     &       INTEXP, INTORB
+      RETURN
 C
 C No more orbitals when end of file, so the orbitals for the last element
-C are read
+C have been read
 C
  200  CONTINUE
       NEWEL = .TRUE.
 C
 C NEWEL must be .TRUE. to break the if-loop.
 C
-      IF (IPRINT.GE.10) THEN
-        WRITE(lupri,'(/,2X,A)') 'Output from FIND_POS'
-        WRITE(lupri,*) 'INTEXP, INTORB, INTISG',
-     &          INTEXP, INTORB, INTISG
-      END IF
+      IF (IPRINT.GE.10) WRITE(lupri,'(/2X,A)')
+     &   'Output from FIND_POS: Reached end of file'
 
       RETURN
 C
@@ -1653,6 +1639,12 @@ C
       WRITE (LUPRI,'(/A,I5)') 'ERROR in reading basis set file, '//
      &     'your basis is not complete. IOSTAT code:',IOERR
       CALL QUIT('BASLIB FIND_POS: Incomplete basis set file')
+ 2000 CONTINUE
+      WRITE (LUPRI,'(/A,I5/3A)')
+     &     'ERROR in searching basis set file,'//
+     &     ' your basis is not complete. IOSTAT code:',IOS,
+     &     'Last line read: "',STRING(1:len_STRING),'"'
+      CALL QUIT('BASLIB FIND_POS: Error searching basis set file')
       END
 
       SUBROUTINE print_gaussian_inp(icount, iqm,ALPHA,CPRIMU,NPRI,

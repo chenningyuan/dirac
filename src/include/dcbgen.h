@@ -20,14 +20,10 @@
 !    X2Cmod_x2c = T means that this is a 2-component relativistic calculation in 2c mode using the X2C module
 !      (now stored in the module x2cmod_cfg)
 !
-!  SKIP2E  - Skip all two electron steps.
-!
 !  DOJACO  - do the Jacobi diagonalization of real matrixes
 !  DOQJACO - Jacobi diagonalization of quaternion Jacobi matrixes
 !
 !  These flags should be passed on to every module
-!
-! NOSFCRASH - No Seg.Fault crash (by call quit). This is important for preserving gmon.out
 !
 ! DIRAC_WF(1:N_WF) the wave function jobs to be done in this dirac run, set in dirac/dirrdn.F
 !
@@ -38,27 +34,27 @@
       CHARACTER*10 DIRAC_WF(100)
       COMMON /CBCPAM/ TITLE, DIRAC_WF
 
-      LOGICAL FAMILY, INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,      &
+      LOGICAL INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,              &
      &        DOANA, DOPRP,DOHRM, DOJACO,DOPUT,DORKBIMP,                &
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG,             &
-     &        TWOCOMP, TWOCOMPBSS, NOSET,                               &
-     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO,     &
-     &        QM3, QMMM, BARNUC, DOHUCKEL, force_bnc, BNSPON
-      LOGICAL OPTWLK, OPTNEW,  NMWALK
+     &        TWOCOMP, TWOCOMPBSS,                                      &
+     &        DOACIN, CBKRINI, LOWJACO, DOQJACO,                        &
+     &        QM3, QMMM, BARNUC, DOHUCKEL
+      LOGICAL OPTWLK, OPTNEW, NMWALK, force_bnc, BNSPON
 !     hjaaj: preparing for implementation of QMMM /Jan 2010
 
       COMMON /DCBGEN_L_PAM/                                             &
-     &                FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
+     &                INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,             &
      &                NOTRA, DOPRP, DOANA,    DOHRM, DOJACO,            &
      &                DOFCK3,DORKBIMP,DOPUT, OPTIMI, HRINPC, RDINPC,    &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
-     &                BNCRON, DOACUT, MP2ORG, TWOCOMP,                  &
-     &                TWOCOMPBSS, NOSET,                                &
-     &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
-     &                DOQJACO, QM3, QMMM, BARNUC, DOHUCKEL,             &
+     &                BNCRON, DOACUT, MP2ORG,                           &
+     &                TWOCOMP, TWOCOMPBSS,                              &
+     &                DOACIN, CBKRINI, LOWJACO, DOQJACO,                &
+     &                QM3, QMMM, BARNUC, DOHUCKEL,                      &
      &                OPTWLK, OPTNEW, NMWALK, force_bnc, BNSPON
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &

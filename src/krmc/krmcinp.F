@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 !***********************************************************************
@@ -1123,15 +1118,12 @@ C     Written by J. Thyssen - Dec 29 2000
 C                    Added CI keyword NOOCCN. Stefan Knecht October 2007
 C                    New start guess code 1531. Read MP2 natural 
 C                    orbitals from KRMCOLD as default. Stefan Knecht 07.07.2008
-C                    Added CI/KRMC keyword GENFOC. Read in orbitals
-C                    and vector to generate Fock-type orbitals for 
-C                    positronic/inactive/secondary space. Stefan Knecht 17.07.2008
 C                    
 C
 C     Major revision by S. Knecht: 08.08.2008
 C
 C                    All CI-related keywords have been moved to a new 
-C                    input section *KRCICALC. 
+C                    input section *KRCI
 C                    Purpose: disentanglement of MCSCF/CI optimization
 C                    input.
 C
@@ -1154,7 +1146,7 @@ C
      &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
      &            '.NO PFQ','.NO FQX','.ANALYZ','-------','.MXCIVE',
      &            '.KTRLVL','.PARINT','-------','.NOOCCN','.RDFOCK',
-     &            '.WRTFCK','-------','-------','-------','.GENFOC'/
+     &            '.WRTFCK','-------','-------','-------','-------'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -1181,10 +1173,9 @@ C
       IDOPARIO    = get_environment_integer('GLBSCR',IDOPARIO)
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
-      NATONL      = .FALSE.
-      FOCKON      = .FALSE.
+      NATONLY     = .FALSE.
+      FOCKONLY    = .FALSE.
       COMPROT     = .FALSE.
-      GENFOCK     = .FALSE.
       NATOLCR     = .FALSE.
       TRA_NATO    = .FALSE.
       CRDFO_MAT   = .FALSE.
@@ -1245,16 +1236,16 @@ C&&& .NO TRACI: don't call rtraci for transform of CI vectors
                   IKRMCCNO = -1
                GO TO 100
     5          CONTINUE
-C&&& .NATONL: only natural orbitals (no canonical orbitals)
+C&&& .NATONLy: only natural orbitals (no canonical orbitals)
                   IKRMCCNO = 1
-                  NATONL = .TRUE.
-                  FOCKON = .FALSE.
+                  NATONLY  = .TRUE.
+                  FOCKONLY = .FALSE.
                GO TO 100
     6          CONTINUE
-C&&& .FOCKON: only Fock-type orbitals (no natural orbitals)
+C&&& .FOCKONly: only Fock-type orbitals (no natural orbitals)
                   IKRMCCNO = 1
-                  FOCKON = .TRUE.
-                  NATONL = .FALSE.
+                  FOCKONLY = .TRUE.
+                  NATONLY  = .FALSE.
                GO TO 100
     7          CONTINUE
 C&&& .NO TRANS: no transformation of orbitals
@@ -1334,7 +1325,7 @@ C                   necessary! - SK- 20-03-2008
    18          CONTINUE
                GO TO 100
    19          CONTINUE
-C&&& .NOOCCN: calculate natural orbitals occupation numbers (with LUCIAREL)
+C&&& .NOOCCN: calculate natural orbitals occupation numbers
                NATOLCR      = .TRUE.
                GO TO 100
    20          CONTINUE
@@ -1352,10 +1343,7 @@ C&&& .WRTFCK: write fock matrix in CI start guess module
    24          CONTINUE
                GO TO 100
    25          CONTINUE
-C&&& .GENFOC: generate Fock-type orbitals as start orbitals for CI 
-C             calculations (starting, e.g., from a previous (converged) 
-C             MCSCF wavefunction.
-               GENFOCK = .TRUE.
+C&&& .xxxxxx:
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1436,7 +1424,8 @@ C     Transformation of CI vectors and orbitals.
 C     ------------------------------------------
 C
       IF (IKRMCCNO .EQ. -1) THEN
-         FOCKON = .TRUE.
+         FOCKONLY = .TRUE.
+         NATONLY  = .FALSE.
       END IF
 C
       IF ( IKRMCCNO .GE. -1 ) THEN
@@ -1444,14 +1433,14 @@ C
      &        ' * Call RTRACI for transformation of CI vectors.'
          IF ( IKRMCCNO .EQ. 0 ) WRITE(LUPRI,'(A)')
      &        ' * Call RTRACI for transformation of CI vectors ' //
-     &        '(if necesary).'
+     &        '(if necessary).'
          IF ( IKRMCCNO .EQ.-1 ) WRITE(LUPRI,'(A)')
      &        ' * Do not call RTRACI for transformation of CI vectors.'
 C
-         IF ( FOCKON ) THEN
+         IF ( FOCKONLY ) THEN
             WRITE(LUPRI,'(A)')
      &           '   - transform to Fock-type orbitals.'
-         ELSE IF (NATONL) THEN
+         ELSE IF ( NATONLY ) THEN
             WRITE(LUPRI,'(A)')
      &           '   - transform to natural orbitals.'
          ELSE
@@ -1473,12 +1462,6 @@ C
 C
       WRITE(LUPRI,'(A,I3)')
      &     ' * Default integral transformation level  :',KTRLVL
-      
-      IF( GENFOCK )THEN
-        WRITE(LUPRI,'(A)') 
-     &     ' * Generate Fock-type positronic/inactive/virtual '//
-     &     '   starting orbitals'
-      END IF
 C
   400 RETURN
       END

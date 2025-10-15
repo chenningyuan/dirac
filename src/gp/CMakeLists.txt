@@ -42,6 +42,8 @@ set(FIXED_GP_FORTRAN_SOURCES_noruntimecheck
 )
 
 set(FREE_GP_FORTRAN_SOURCES
+    basis_datatypes.F90
+    checkpoint.F90
     codata.F90
     debug_mem_alloc.F90
     dirac_cfg.F90
@@ -56,6 +58,7 @@ set(FREE_GP_FORTRAN_SOURCES
     heapsort.F90
     include_h_modules.F90
     kinds.F90
+    luci_wrkspc.F90
     machine_parameters.F90
     memory_allocator.F90
     memory_control.F90
@@ -71,7 +74,6 @@ set(FREE_GP_FORTRAN_SOURCES
     memory_track_if.F90
     memory_tracker.F90
     moltra_labeling.F90
-    numerical_operators.F90
     num_der.F90
     orbital_rotation_indices.F90
     osutils.F90
@@ -79,7 +81,6 @@ set(FREE_GP_FORTRAN_SOURCES
     quaternion_algebra.F90
     selftests.F90
     string_manipulations.f90
-    type_laplace.F90
     unit_test_generator.f90
     unit_testing.F90
     vector_functions.F90
@@ -90,6 +91,14 @@ set(FREE_GP_FORTRAN_SOURCES
     labeled_storage.F90
     dircmo.F90
 )
+
+# later we can take quaternion_algebra.F90 out of "gp" and link against quaternion_algebra
+add_library(quaternion_algebra)
+
+target_sources(quaternion_algebra
+  PRIVATE
+    quaternion_algebra.F90
+  )
 
 set(GP_C_SOURCES
     execinfo_bsd.c
@@ -114,17 +123,59 @@ if(ENABLE_RUNTIMECHECK)
     set_source_files_properties(${GP_C_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_runtimecheck})
 endif()
 
-add_library(
+if(ENABLE_HDF5)
+  add_library(
     gp
-    OBJECT
+    STATIC
     ${FIXED_GP_FORTRAN_SOURCES}
     ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_GP_FORTRAN_SOURCES}
     ${GP_C_SOURCES}
+    hdf5_util/mh5.F90
+    hdf5_util/mh5_capi.c
 )
+else()
+  add_library(
+    gp
+    STATIC
+    ${FIXED_GP_FORTRAN_SOURCES}
+    ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
+    ${FREE_GP_FORTRAN_SOURCES}
+    ${GP_C_SOURCES}
+    hdf5_util/mh5_nohdf5.F90
+)
+endif()
+
+
+
+option(ENABLE_LAPACK_QDIAG "Enable LAPACK diagonalization of real matrices" OFF)
+if(ENABLE_LAPACK_QDIAG)
+  target_compile_definitions(
+    gp
+    PUBLIC  # because this is also used by src/localization/func_PipekMezey.F90
+      LAPACK_QDIAG
+    )
+endif()
+
+
 
 # add intermodule dependencies
 add_dependencies(gp interface_mpi)
-add_dependencies(gp xcint)
 add_dependencies(gp pdpack)
-generate_git_info_header(${PROJECT_BINARY_DIR} git_info.h)
+
+# generates git information
+add_custom_command(
+  OUTPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
+    ALL
+  COMMAND
+  ${CMAKE_COMMAND} -D INPUT_DIR=${PROJECT_SOURCE_DIR}/cmake/downloaded -D OUTPUT_DIR=${PROJECT_BINARY_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/downloaded/git-hash.cmake
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+add_custom_target(
+  git_info
+  ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
+  )
+
+add_dependencies(gp git_info)

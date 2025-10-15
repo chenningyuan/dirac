@@ -14,13 +14,14 @@ Pipek-Mezey localization based on atomic charges from projection analysis
 .PRJLOC
 .THGRAD
 1.0D-09
+.C1READ
 .OWNBAS
 .VECREF
 3
-DFO1AT
+O1.h5
 1..6
-DFH1AT
+H1.h5
 1
-DFH2AT
+H2.h5
 1
 *END OF 

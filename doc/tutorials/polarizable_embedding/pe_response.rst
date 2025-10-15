@@ -51,7 +51,9 @@ with matrix elements
 
 The modification is manifested in the additional terms :math:`\hat{v}^{\mathrm{PE}}` and
 :math:`\hat{v}^{\mathrm{ind}}`, while :math:`\hat{f}_0` is the usual Fock (or Kohn-Sham)
-operator. A brief, physical explaination of the the two additional terms is given below
+operator. Note however, that for Kohn-Sham theory contributions from the exchange-correlation
+kernel will also be present (these are not shown in the above equation).
+A brief, physical explaination of the the two additional terms is given below
 
 * :math:`\hat{v}^{\mathrm{PE}}=\hat{v}^{\mathrm{es}}+\hat{v}^{\mathrm{ind}}` accounts for
   interactions between multipoles and ground-state density :math:`\hat{v}^{\mathrm{es}}`
@@ -65,7 +67,7 @@ found in :cite:`Hedegaard2017` (cf. Eqs. 36-38).
 To demonstrate how to calculate the effect of the environment with PE, we use the same
 system as in the :ref:`PE-HF tutorial <pe_scf>`. The employed ``h2o.mol`` file and potential
 ``3_h2o.pot`` can be found in that tutorial. The input ``pe_response.inp`` is similar to a
-regular TDDFT calculation but with an additional `.PEQM` keyword under the `**HAMILTONIAN`
+regular TDDFT calculation but with an additional `.PELIB` keyword under the `**HAMILTONIAN`
 section::
 
    **DIRAC
@@ -76,7 +78,7 @@ section::
    **HAMILTONIAN
    .DFT
    B3LYP
-   .PEQM        ! activate polarizable embedding
+   .PELIB        ! activate polarizable embedding
    **INTEGRALS
    *TWOINT
    .SCREEN
@@ -96,10 +98,10 @@ section::
    0
    **END OF
 
-As for the case of PE-HF, the specification of `.PEQM` will thus make the program calculate the
+As for the case of PE-HF, the specification of `.PELIB` will thus make the program calculate the
 PE-specific terms; in case of linear response that is the additional
 :math:`\hat{v}^{\mathrm{PE}}` and :math:`\hat{v}^{\mathrm{ind}}` terms. Note that use of the
-`.GSPOL` keyword under the `*PEQM` flag will result in a calculation where only the term
+`.GSPOL` keyword under the `*PELIB` flag will result in a calculation where only the term
 involving :math:`\hat{v}^{\text{PE}}` is included (physically, this corresponds to a frozen
 environment during the excitation process). Now we have
 all ingredients for starting the calculation::
@@ -179,7 +181,7 @@ Electric dipole moments and polarizabilities
 --------------------------------------------
 
 It is also possible to calculate simple expectation values or other linear response properties with the PElib module.
-The work-flow is straightforward, and we only need to add the `.PEQM` keyword as done for the TDDFT calculation above.
+The work-flow is straightforward, and we only need to add the `.PELIB` keyword as done for the TDDFT calculation above.
 The input related to the property is identical to a vacuum calculation.
 Examples of simple expectation values and linear response properties that are currently implemented with PE is the
 (electric) dipole moment and static or frequency-dependent polarizabilities.
@@ -193,7 +195,7 @@ An example is given below for a dipole moment calculation input file ::
    .WAVE FUNCTION
    .PROPERTIES
    **HAMILTONIAN
-   .PEQM
+   .PELIB
    **WAVE FUNCTION
    .SCF
    **PROPERTIES
@@ -203,6 +205,6 @@ An example is given below for a dipole moment calculation input file ::
 Things to note
 --------------
 
-* Calculations with transformed two-component Hamiltonians are generally possibly by supplying the program with the requested model under `**HAMILTONIAN`. In such a calculation, :math:`\hat{v}^{\mathrm{PE}}` is not transformed
-
+* Calculations with transformed two-component Hamiltonians are generally possibly by supplying the program with the requested model under `**HAMILTONIAN`. In such a calculation, :math:`\hat{v}^{\mathrm{PE}}` is not transformed.
+* Calculations with (linear) complex response or complex polarization propagator (CPP) is possible - see the tutorial "Complex response" (no other thing than activating CPP is needed to to PE-CPP calculations). 
 

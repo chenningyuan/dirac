@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 !
 !
@@ -27,7 +22,7 @@
 !
 module x2c_pct_mo_coefficients
 
-  use x2c_fio
+ !use x2c_fio
   use x2c_utils, only:                 &
       print_x2cmat
   use x2c_cb_interface, only:          &
@@ -49,8 +44,7 @@ module x2c_pct_mo_coefficients
 contains
 
 !**********************************************************************
-  subroutine x2c_pctrafo_mo_coefficients_driver(mo_coeff_file_name,  &
-                                                pct_mocoeff_strategy,&
+  subroutine x2c_pctrafo_mo_coefficients_driver(pct_mocoeff_strategy,&
                                                 nr_cmo_q,            &
                                                 naosh_ls,            &
                                                 nr_ao_L,             &
@@ -94,7 +88,6 @@ contains
      integer, intent(in)             :: ipq_off_in(4,0:7)
      integer, intent(in)             :: x2c_file_glb
      logical, intent(in)             :: linear_sym
-     character (len= 6), intent(in)  :: mo_coeff_file_name
      integer, intent(in)             :: print_lvl
 !----------------------------------------------------------------------
      real(8), allocatable            :: scratch1(:)
@@ -343,20 +336,19 @@ contains
          l = l + norb_dim(i)
        end do
        allocate(original_eigen_values(l))
-       open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-!      call reacmo(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,4)
        call reacmo(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,14)
-       close(fh,status='keep')
        offset_1 = 1
        offset_2 = 1
        do i = 1, nfsym
-         call dcopy(nesh_dim(i),original_eigen_values(offset_1+norb_dim(i)-nesh_dim(i)),1,scratch4(offset_2),1) 
-         call dcopy(nesh_dim(i),scratch4(offset_2),1,original_eigen_values(offset_2),1)
-         if(print_lvl > 2)then
-           do l = 1, nesh_dim(i) 
-             print *, ' orig boson irrep val of element # ',offset_1+norb_dim(i)-nesh_dim(i)+l-1, & 
-                        scratch5(offset_1+norb_dim(i)-nesh_dim(i)+l-1)
-           end do
+         if(nesh_dim(i) > 0)then
+           call dcopy(nesh_dim(i),original_eigen_values(offset_1+norb_dim(i)-nesh_dim(i)),1,scratch4(offset_2),1)
+           call dcopy(nesh_dim(i),scratch4(offset_2),1,original_eigen_values(offset_2),1)
+           if(print_lvl > 2)then
+             do l = 1, nesh_dim(i) 
+               print *, ' orig boson irrep val of element # ',offset_1+norb_dim(i)-nesh_dim(i)+l-1, &
+                          scratch5(offset_1+norb_dim(i)-nesh_dim(i)+l-1)
+             end do
+           end if
          end if
          offset_1 = offset_1 + norb_dim(i)
          offset_2 = offset_2 + nesh_dim(i)
@@ -448,16 +440,17 @@ contains
                                           print_lvl)
 !**********************************************************************
 !
-!    purpose: renew the DFCOEF file with the new picture-change-transformed MO
+!    purpose: renew the CHECKPOINT file with the new picture-change-transformed MO
 !             coefficients including the boson / <j_z>-blocking information 
 !             and eigenvalues array.
 !
-!             note: the new DFCOEF still has references to the L+S AO-basis 
+!             note: the new CHECKPOINT still has references to the L+S AO-basis 
 !             as we have not reset the AO-basis common blocks, only the MO-basis 
 !             common blocks. 
 !
 !----------------------------------------------------------------------
      use dircmo
+     use checkpoint
      real(8), intent(inout)      :: transformation_matrix_mo2ao(*)
      real(8), intent(inout)      :: mo_coeff_2c_ao(*)
      real(8), intent(inout)      :: xmat(*)
@@ -487,9 +480,9 @@ contains
      character (len=12)          :: flabel
      character (len=50)          :: info_text
      logical                     :: fndlab12
-     integer                     :: dimension_info(12)
      integer, allocatable        :: supersymmetry(:)
      integer, allocatable        :: ibeig(:,:)
+     integer                     :: n_mo(2), n_po(2), n_basis(2)
 !----------------------------------------------------------------------
 
        allocate(supersymmetry(nesh_dim_total))
@@ -499,7 +492,9 @@ contains
 
        offset_1 = 1
        offset_2 = 1
-       dimension_info = 0 ! initialization
+       n_basis =  0 ! initialization
+       n_mo    =  0 ! initialization
+       n_po    =  0 ! initialization
        do i = 1, nfsym
 
          if(nesh_dim(i) > 0)then
@@ -531,26 +526,18 @@ contains
          offset_1            = offset_1 + nesh_dim(i)
          offset_2            = offset_2 + nesh_dim(i) * nesh_dim(i) * nz
 
-!        write dimension info for the new DFCOEF (7:9=gerade,10:12=ungerade)
-         dimension_info(4+3*i) = 0
-         dimension_info(5+3*i) = nesh_dim(i)
-         dimension_info(6+3*i) = naosh_L(i)
+!        dimension info for the 2C coefficients
+         n_po(i) = 0
+         n_mo(i) = nesh_dim(i)
+         n_basis(i) = naosh_L(i)
        end do
        close(fh,status='keep')
 !      set dimensions for the boson irreps / <j_z>-blocking information + eigenvalues arrays
        ndim_2c_bj = offset_1 - 1
        ndim_2c_ev = offset_1 - 1
 
-!      read the title line and total energy (read code -1) from the old DFCOEF
-       open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-       call reacmo(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,-1)
-       close(fh,status='keep')
-!      keep 4C vectors for restart purposes
-#if defined SYS_WINDOWS
-       call system('copy DFCOEF DFCOEF.4C')
-#else
-       call system('cp DFCOEF DFCOEF.4C')
-#endif
+!      read the total energy
+       call checkpoint_read ('/result/wavefunctions/scf/energy',total_energy)
 
 !      backtransform the 2c-MO coefficients from the reference MO basis to AO basis
        ndim_2c_mo_ao = 0
@@ -582,28 +569,14 @@ contains
          ndim_2c_mo_ao = ndim_2c_mo_ao + naosh_L(i) * nesh_dim(i) * nz
        end do
 
-       dimension_info(1) = nz
-       dimension_info(2) = nfsym
-       dimension_info(3) = ndim_2c_mo_ao
-       dimension_info(4) = 1
-       dimension_info(5) = ndim_2c_ev
-       dimension_info(6) = 1 ! Hardwired, needs to be changed for atomic calculations
-!      write the new DFCOEF file
-       open(fh,file='DFCOEF',status='replace',form='unformatted',access='sequential',position='rewind')
+!      write the new information
        info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
-       if(x2c_atomic) then
-         dimension_info(6) = 2
-         call ATOMIC_WRICMO(fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
-       else
-          call wricmo (fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
-       endif
-       close(fh,status='keep')
-!      make additional copy of these coefficients for restart purposes
-#if defined SYS_WINDOWS
-       call system('copy DFCOEF DFCOEF.2C')
-#else
-       call system('cp DFCOEF DFCOEF.2C')
-#endif
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eigen_values(1:nesh_dim_total))
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/symmetry',idata=supersymmetry)
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/orbitals',rdata=mo_coeff_2c_ao(1:ndim_2c_mo_ao))
 
        deallocate(supersymmetry)
 

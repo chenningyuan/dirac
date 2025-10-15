@@ -23,24 +23,12 @@ set(FREE_X2C_FORTRAN_SOURCES
     x2c_io_interface.F90
     x2c_picture_change_transform_mo_coefficients_ao.F90
     x2c_picture_change_transform_operator_ao.F90
+    x2c_renew_AOMOMAT.F90
     x2c_setup_basic_h1_4c_matrix_ao2onmo.F90
     x2c_setup_defining_h1_4c_matrix_ao2onmo.F90
     x2c_transform_h1_inf_2c_matrix_onmo2ao.F90
     x2c_utility_routines.F90
 )
-
-
-if (ENABLE_AOOSOC)
-# X2C depends on some aoosoc files and vice versa
-    set(FREE_X2C_FORTRAN_SOURCES
-        ${FREE_X2C_FORTRAN_SOURCES}
-        ${PROJECT_SOURCE_DIR}/src/aoosoc/atomic_oo_order_so_correction_cfg.F90
-        ${PROJECT_SOURCE_DIR}/src/aoosoc/atomic_oo_order_so_correction.F90
-        ${PROJECT_SOURCE_DIR}/src/aoosoc/atomic_oo_order_so_correction_utils.F90
-        ${PROJECT_SOURCE_DIR}/src/aoosoc/module_aoosoc_pfg.F90
-        ${PROJECT_SOURCE_DIR}/src/aoosoc/module_aoosoc_init.F90
-    )
-endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_X2C_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
@@ -62,4 +50,9 @@ add_library(
 
 # add intermodule dependencies
 add_dependencies(x2c gp)
+add_dependencies(x2c grid)
 add_dependencies(x2c interest)
+add_dependencies(x2c abacus)
+if(ENABLE_XAMFI)
+    add_dependencies(x2c x-amfi)
+endif()

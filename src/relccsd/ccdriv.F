@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -85,7 +80,10 @@ C
      &"J. Chem. Phys. 149 (2018) 174113.",
      &/"  - Core spectra (CVS-EOM) :",T30,
      &"L. Halbert, M. L. Vidal, A. Shee, S. Coriani, and A.S.P. Gomes,",
-     &" arXiv:2011.08549")
+     &" J. Chem. Theory Comput. 27 (2021) 3583",
+     &/"  - Approx. EOM energies   :",T30,
+     &"L. Halbert and A.S.P. Gomes,",
+     &" Mol. Phys. (2023) e2246592")
 C
       RETURN
 C---------------Record of modifications made in the code-------------
@@ -183,17 +181,16 @@ C
       REAL*8 EHMIN,EHMAX,EPMIN,EPMAX
       REAL*8 SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,SHIFTH12,SHIFTHP,SHIFTP12
 C
+      DOUBLE PRECISION D0
+      PARAMETER (D0 = 0.0D00)
+      INTEGER   NACTH(16),NACTP(16)
+      INTEGER   NACTHI(16),NACTPI(16)
+      INTEGER MAXIT00,MAXIT01,MAXIT10,MAXIT11,MAXIT20,MAXIT02,I,IFREQ,
+     &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT,TSHOLD, NTOL
 !     This namelist is the only one kept for backward compatibility (old HF Hessian).
 !     This is to be replaced when a real CC or MP2 Hessian becomes available.
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
-      DOUBLE PRECISION D0
-      PARAMETER (D0 = 0.0D00)
-      INTEGER NACTH,NACTP,NACTHI,NACTPI,NTOL
-      DIMENSION NACTH(16),NACTP(16)
-      DIMENSION NACTHI(16),NACTPI(16)
-      INTEGER MAXIT00,MAXIT01,MAXIT10,MAXIT11,MAXIT20,MAXIT02,I,IFREQ,
-     &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT,TSHOLD
 
       Logical, SAVE :: FirstCall=.TRUE.
 
@@ -312,6 +309,17 @@ C     Switch on evaluation of property output if necessary
              PRP_WF(IPRP_WF) = 'CCSD'
           END IF
       END IF
+
+! the following section is to activate eom-cc functionality for energies
+
+! enable eom-cc module
+      DOEOMCCSD=relcc_do_eomcc
+
+! approximate eom models: P-EOM, EOM-MBPT(2) (using MP2 or CCSD T2 amplitudes) or P-EOM-MBPT(2) 
+      DOEOMH0DD=relcc_do_eom_peom
+      DOEOMPT2=relcc_do_eom_pt2
+      DOEOMPT2CC=relcc_do_eom_pt2_ccamp
+
 ! the following section is to activate excited state property evaluation module
 
       if (relcc_do_eomprop) then
@@ -597,6 +605,7 @@ c
       use relcc_cfg
       use xmlout
       use eom_driver
+      use mfsolver_dirac_input
 C
       IMPLICIT NONE
 C
@@ -631,7 +640,7 @@ C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
       INTEGER MAXSP
-      PARAMETER (MAXSP=1000)
+      PARAMETER (MAXSP=1102)
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,CA
@@ -711,6 +720,7 @@ C     Read input from file (old namelist) / transfer input (new style) from relc
 !     sync co-workers and master with variables from new input...
 #ifdef VAR_MPI
       call relcc_sync_cw()
+      call mfsolver_dirac_input_sync_cw()
 #endif
 C
       CALL CCINPT (IN,IW)
@@ -849,7 +859,7 @@ C
 
 !! Activate EOMCC calculation 
 
-      IF (relcc_do_eomcc) THEN
+      IF (DOEOMCCSD) THEN
          MXCORR1 = 0
          CALL eom_ee(ICALC,MXCORR1,eps)
          MXCORR = MAX(MXCORR,MXCORR1)
@@ -937,7 +947,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 
-      IF (relcc_do_eomcc) CALL eom_ee(ICALC,MXCORR,eps)
+      IF (DOEOMCCSD) CALL eom_ee(ICALC,MXCORR,eps)
       CALL GETTIM(CPU2,WALL2)
       CPUEOM = CPUEOM + CPU2 - CPU1
       CPU1 = CPU2
@@ -2365,7 +2375,8 @@ C
 #include "eqns.inc"
 #include "results.inc"
 #include "complex.inc"
-#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
+! ccpar.inc not needed, because there is no parallelization in this subroutine
+! include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2396,6 +2407,7 @@ c
       integer                :: maxit_save
       logical                :: is_ccsd_converged = .false.
       integer                :: dum,irp,nbuf1,nbuf2,nbuf3,nvovv
+
 C
 C---------------Executable code--------------------------------------
 C
@@ -2420,7 +2432,19 @@ C
 C This is all we need to calculate the MP2 energy
 C
       IF (DOMP2) MXCORR = MXCOR
-C
+
+      IF (DOEOMPT2) THEN
+         WRITE (IW,'(A)') " "
+         WRITE (IW,'(A)') " INFO: (P-)EOM-MBPT(2) requested"
+C        MAXIT=0 
+C        WRITE (IW,'(AI2)') " INFO:    Reset MAXIT to ",MAXIT
+         IF (DOCCSDT) then
+            DOCCSDT=.FALSE.
+            WRITE (IW,'(A)') ' INFO:    Disabled CCSD(T) calculation'
+         END IF
+         WRITE (IW,'(A)') " "
+      END IF
+
       IF (DOCCSD) THEN
          MAXDIM = MXDIMCC
          NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
@@ -2515,6 +2539,18 @@ C  Solve relativistic CCSD equations
 C
    11 IF (DOCCSD) THEN
 ! aspg changed
+         if (DOEOMCCSD) then
+            if ((IMSTAT(14).NE.3).AND.(IMSTAT(6).EQ.3)) then
+!        if we have not yet reached the EOM-CCSD intermediates checkpont (IMSTAT(14)==3)
+!        we mark the CCSD amplitudes as not completely converged to ensure the intermediates will 
+!        be correctly calculated, since there appears to be an issue with eom-ee when restarting
+!        the eom part while having skipped the ccsd iterations. since the amplitudes are converged,
+!        this typically results in one or two additional iterations.
+               IMSTAT(6) = 2
+               write (iw,*) " INFO: resetting IMSTAT(6) to ",IMSTAT(6)
+            end if
+         end if
+
          IF (IMSTAT(6).EQ.3) THEN
             WRITE (IW,1011)
             GOTO 20
@@ -3012,7 +3048,11 @@ C       limitations elsewhere. 20120720
       IF (MYPROC .NE. MASTER) THEN
          NBUF3 = 0
       ELSE
-         NBUF3 = freemem / RCW
+
+         NV5IRP = MAX(JVOVV(NREP+1),JVVVO(NREP+1), 
+     &       JOVVV(NREP+1),JVVOV(NREP+1))
+
+         NBUF3 = MAX(freemem / RCW, NV5IRP)
       END IF
 C
 C     Allocate now also this remaining work array
@@ -3206,8 +3246,20 @@ C         this means that, for the time being, we can deallocate everything?
      &           TOL,NBUF2,NBUF3)
 
 
+#if defined (VAR_MPI)
+       if (myproc == 0) then
        call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2,
      &                   a_dmo)
+       call interface_mpi_bcast_r1_work_f77(a_dmo,NORBT*NORBT*NZ,
+     &                  master,global_communicator)
+       else
+       call interface_mpi_bcast_r1_work_f77(a_dmo,NORBT*NORBT*NZ,
+     &                  master,global_communicator)
+       endif
+#else
+       call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2,
+     &                   a_dmo)
+#endif
 
 
 C        Solve Z-vector equations
@@ -4032,7 +4084,11 @@ C
       RSBASF='MCCRES'
 C
 #if defined (VAR_MPI)
-      IF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
+      IF (MYPROC .EQ. 0) THEN    !  MPI ID has one digit
+         ! do not write extension for master node
+         WRITE (RSFILN,'(A6)') RSBASF
+         LRSFIL=6
+      ELSEIF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
          WRITE (RSFILN,'(A6,A1,I1)') RSBASF,'.',MYPROC
          LRSFIL=8
       ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
@@ -4141,7 +4197,7 @@ C
 C        ... if we don't want to restart we trash any existing files and start over
 C
             write (IW,*)
-            write (IW,*) 'INFO: Restart file(s) will be overwriten!'
+            write (IW,*) 'INFO: Restart file(s) will be overwritten!'
             write (IW,*)
             OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &            STATUS='REPLACE',RECL=IRECL)

@@ -7,6 +7,7 @@ module vib_prop
    use prop_contribs
    use openrsp_cfg
    use dirac_interface
+   use codata
 
    ! ajt LSDALTON has replaced the (global) quit with lsquit
    !     with unit (lupri) as extra argument, which doesn't
@@ -403,16 +404,10 @@ contains
          if (all(polq(:,:,1+nq*(ij-1):nq*ij)==0).and. &
              all(polq(:,:,1+nq*(ik-1):nq*ik)==0).and. &
              all(polq(:,:,1+nq*(jk-1):nq*jk)==0)) cycle
-#ifdef VAR_PGF90
-!radovan pgf complains here
-!PGF90-S-0152-All dimension specifiers must be ':'
-         call quit('fix vib_prop.f90 for pgf')
-#else
          call print_vib_beta(dax,(/w(i),w(j),w(k)/),nq,wq(1:nq), &
                  -(/dipq(:,1+nq*(i-1):nq*i),dipq(:,1+nq*(j-1):nq*j),dipq(:,1+nq*(k-1):nq*k)/), &
                  -(/polq(:,:,1+nq*(ij-1):nq*ij),polq(:,:,1+nq*(ik-1):nq*ik), &
                    polq(:,:,1+nq*(jk-1):nq*jk)/),o)
-#endif
          exit !only one
       end do
       if ((any(dipq(:,1:nq*4) /= 0) .and. &
@@ -1082,7 +1077,7 @@ contains
    end subroutine
 
    subroutine pnc_gradient(mol, S, D, F, nr_atoms)
-
+#include "codata.h"
       type(prop_molcfg), intent(in)  :: mol
       type(matrix),      intent(in)  :: S
       type(matrix),      intent(in)  :: D
@@ -1098,14 +1093,11 @@ contains
       integer                        :: icharge, imass, nproton, nneutron
       real(8), external              :: disotp
       real(8)                        :: qw
-
-      real(8), parameter             :: sthetaw2 = 0.2319d0
       real(8)                        :: dfac
-      real(8), parameter             :: hartree2hz = 6.579683920721d15
 
 #include "mxcent.h"
 #include "nuclei.h"
-      dfac = 2.22255d-14/(2.0d0*sqrt(2.0d0))
+      dfac = gfermi/(2.0d0*sqrt(2.0d0))
 
       allocate(epnc(nc))
       allocate(epnc_gradient(nr_atoms*3, nc))
@@ -1130,12 +1122,12 @@ contains
       imass    = nint(disotp(icharge, 1, 'MASS'))
       nproton  = icharge
       nneutron = imass - icharge
-      qw = (1.0d0 - 4.0d0*sthetaw2)*nproton - 1.0d0*nneutron
+      qw = (1.0d0 - 4.0d0*s2thetaw)*nproton - 1.0d0*nneutron
 
       print *, 'center', openrsp_cfg_pnc_center
       print *, 'E_pnc (bare integrals in a.u.)', real(epnc)
       print *, 'E_pnc (in hartree)', real(epnc)*qw*dfac
-      print *, 'E_pnc (in Hz)', real(epnc)*qw*dfac*hartree2hz
+      print *, 'E_pnc (in Hz)', real(epnc)*qw*dfac*xthz
 
       call header('E_pnc gradient (bare integrals in a.u.)', -1)
       do iatom = 1, nr_atoms
@@ -1160,7 +1152,7 @@ contains
                                    real(epnc_gradient(iz, 1))
       end do
 
-      epnc_gradient = epnc_gradient*hartree2hz
+      epnc_gradient = epnc_gradient*xthz
       call header('E_pnc gradient (in Hz)', -1)
       do iatom = 1, nr_atoms
          ix = 3*(iatom - 1) + 1
@@ -1473,11 +1465,6 @@ contains
          else if (freq(nj)==freq(nk) .or. (freq(ni)==0 .and. freq(nj)==-freq(nk))) then
             ! j-k symmetry, 20 eqns
             do k=1,3
-#ifdef VAR_PGF90
-!radovan pgf complains here
-!PGF90-S-0152-All dimension specifiers must be ':'
-         call quit('fix vib_prop.f90 for pgf')
-#else
                call pert_dens(mol, S, (/'EL','EL','EL'/), (/3,k,1/),        &
                               (/D,Df(:,ni),Df(:k,nj),Df(k,nk),              &
                                 Dff(:,:k,nij),Dff(:,k,nik),Dff(:k,k,njk)/), &
@@ -1485,7 +1472,6 @@ contains
                                 Fff(:,:k,nij),Fff(:,k,nik),Fff(:k,k,njk)/), &
                               Dfff(:,:k,k), Ffff(:,:k,k),                   &
                               freq=(/freq(ni),freq(nj),freq(nk)/), comp=(/1,1,k/))
-#endif
                do j=1,k-1
                   do i=1,3
                      if (freq(nj)==freq(nk)) Dfff(i,k,j) = Dfff(i,j,k)

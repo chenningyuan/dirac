@@ -1,11 +1,15 @@
+# SPDX-FileCopyrightText: 2023 Radovan Bast <radovan.bast@uit.no>
+#
+# SPDX-License-Identifier: MPL-2.0
+
+from optparse import OptionParser
+import sys
+import os
+import inspect
+from .version import __version__
+
+
 def cli():
-
-    from optparse import OptionParser
-    import sys
-    import os
-    import inspect
-    from .version import __version__
-
     frame = inspect.stack()[-1]
     module = inspect.getmodule(frame[0])
     caller_file = module.__file__
@@ -60,6 +64,6 @@ def cli():
         help="run calculation(s) but do not verify results [default: %default]",
     )
 
-    (options, args) = parser.parse_args(args=sys.argv[1:])
+    (options, _args) = parser.parse_args(args=sys.argv[1:])
 
     return options

@@ -2,7 +2,7 @@ module xc_ac
 
    use dft_cfg
    use interface_functional_read
-   use extra
+   use xcint_extra
    use xc_derv
    use xc_max_block_length
    use interface_ao
@@ -17,7 +17,7 @@ module xc_ac
    private
 
    real(8) :: homo_eigenvalue
-   real(8) :: homo_eigenvalue_previous
+   real(8), save :: homo_eigenvalue_previous = 0.0d0
 
 
 contains

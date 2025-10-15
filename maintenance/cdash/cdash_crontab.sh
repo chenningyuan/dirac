@@ -5,7 +5,6 @@
 
 BRANCH='master'
 COMPILER='GNU'
-MAKE_RELEASE=0
 BUILDNAME='undefined'
 INT64=0
 TRACK='master'
@@ -19,9 +18,6 @@ while getopts b:r:c:n:i:t:k:j: opt; do
   case $opt in
   b)
       BRANCH=$OPTARG
-      ;;
-  r)
-      MAKE_RELEASE=$OPTARG
       ;;
   c)
       COMPILER=$OPTARG
@@ -51,21 +47,13 @@ mkdir -p $CTEST_TEMP_DIR
 
 export DIRAC_TMPDIR=$CTEST_TEMP_DIR/run
 
-ssh-agent bash -c "ssh-add ${DEPLOY_KEY}; git clone --recursive -b $BRANCH git@gitlab.com:dirac/dirac.git $CTEST_TEMP_DIR/compile"
+ssh-agent bash -c "ssh-add ${DEPLOY_KEY}; git clone --recursive -b $BRANCH git@gitlab.com:dirac/dirac-private.git $CTEST_TEMP_DIR/compile"
 
 cd $CTEST_TEMP_DIR/compile
-if [ $MAKE_RELEASE -eq 1 ]; then
-    mkdir -p build
-    cd build
-    cmake -DENABLE_UNRELEASED=OFF ..
-    make release
-    tar xvzf DIRAC-*-Source.tar.gz
-    cd DIRAC-*-Source
-fi
 
 if [ "$COMPILER" == 'Intel' ]; then
     source /opt/intel/bin/compilervars.sh intel64
-    SETUP_FLAGS="--fc=ifort --cc=icc --cxx=icpc --mkl=parallel"
+    SETUP_FLAGS="--fc=ifort --cc=icc --cxx=icpc --qmkl=parallel"
 else
     export DIRAC_MPI_COMMAND="mpirun -np 4"
     export MATH_ROOT=/opt/intel/mkl

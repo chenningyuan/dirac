@@ -1,0 +1,15 @@
+INTGRL
+using a ghost center to break inversion symmetry
+cc-pVDZ basis (the contracted nrel basis)
+C   3              A
+        6.    1
+C      .0000000000        0.0000000000        0.000
+LARGE BASIS cc-pVDZ                                                                               
+        8.    2
+O1     .0000000000         .0000000000        1.1647757354
+O2     .0000000000         .0000000000       -1.1647757354
+LARGE BASIS cc-pVDZ
+        0.    1                                                                                     
+Gh       0.0   0.0  10.0                                                                            
+LARGE 0                    
+FINISH

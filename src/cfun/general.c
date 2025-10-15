@@ -1,23 +1,19 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2021 by the authors of DIRAC.
- *     All Rights Reserved.
  *
- *     This source code is part of the DIRAC program package.
- *     It is provided under a written license and may be used,
- *     copied, transmitted, or stored only in accordance to the
- *     conditions of that written license.
+ *     Copyright (c) by the authors of DIRAC.
  *
- *     In particular, no part of the source code or compiled modules may
- *     be distributed outside the research group of the license holder.
- *     This means also that persons (e.g. post-docs) leaving the research
- *     group of the license holder may not take any part of Dirac,
- *     including modified files, with him/her, unless that person has
- *     obtained his/her own license.
+ *     This program is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU Lesser General Public
+ *     License version 2.1 as published by the Free Software Foundation.
  *
- *     For information on how to get a license, as well as the
- *     author list and the complete list of contributors to the
- *     DIRAC program, see: http://www.diracprogram.org
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *     Lesser General Public License for more details.
+ *
+ *     If a copy of the GNU LGPL v2.1 was not distributed with this
+ *     code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
  */
 /* dirac_copyright_end */
 
@@ -32,7 +28,7 @@
 */
 
 /* strictly conform to XOPEN ANSI C standard */
-#define _XOPEN_SOURCE          500
+#define _XOPEN_SOURCE          600
 #define _XOPEN_SOURCE_EXTENDED 1
 
 /* Use BSD's strncasecmp(); if there is a platform that has no strncasecmp()
@@ -45,6 +41,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #define __CVERSION__
 
@@ -59,10 +56,6 @@
 #include <mpi.h>
 #include "infpar.h"
 #endif
-
-/* C-wide constants */
-const int  ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;
-const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
 
 /* =================================================================== */
 /* dftinput:
@@ -603,35 +596,32 @@ void
 dalton_quit(const char* format, ...)
 {
     char line[128];
-    int len;
+    integer len;
     va_list a;
  
     va_start(a, format);
     vsnprintf(line, sizeof(line), format, a);
     va_end(a);
     len = strlen(line);
-#ifdef PRG_DIRAC
     quit_(line, len);
-#endif
 }
 
 /* Helper functions. Could be bracketed with #ifdef DEBUG or something */
-#ifdef INT_STAR8
-extern void fortwrt_(const char *line, const long *linelen);
-#else
-extern void fortwrt_(const char *line, const int *linelen);
-#endif /* ifdef INT_STAR8 */
+extern void fortwrt_(const char *line, const int* linelen, int ln);
 int
 fort_print(const char* format, ...)
 {
     char line[128];
-#if defined(INT_STAR8)
-    long len; 
-#else 
     int len;
-#endif
+    int l;
     va_list a;
 
+    va_start(a, format);
+    vsnprintf(line, sizeof(line), format, a);
+    va_end(a);
+    len = l = strlen(line);
+    fortwrt_(line, &len, l);
+    return len;
 }
 
 /* ################################################################### */

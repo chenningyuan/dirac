@@ -49,23 +49,20 @@ endif()
 set(_configuration_time "unknown")
 # get configuration time in UTC
 execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} -c "import datetime; print(datetime.datetime.utcnow())"
+    COMMAND ${PYTHON_EXECUTABLE} -c "import datetime; print(datetime.datetime.now(datetime.timezone.utc))"
     OUTPUT_VARIABLE _configuration_time
     )
 string(STRIP ${_configuration_time} _configuration_time) # delete newline
 message(STATUS "Configuration time: ${_configuration_time}")
 
-set(_python_version "unknown")
-execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} -V
-    OUTPUT_VARIABLE _python_version
-    ERROR_VARIABLE _python_version
-    )
-string(REGEX MATCH "Python ([0-9].[0-9].[0-9])" temp "${_python_version}")
-set(_python_version ${CMAKE_MATCH_1})
-message(STATUS "Python version: ${_python_version}")
-
 foreach(_lang Fortran C CXX)
+
+    set(_${_lang}_compiler_id "unknown")
+    if(CMAKE_${_lang}_COMPILER_ID)
+	    set(_${_lang}_compiler_id ${CMAKE_${_lang}_COMPILER_ID})
+	    message(STATUS "${_lang} compiler ID: ${CMAKE_${_lang}_COMPILER_ID}")
+    endif()
+
     set(_${_lang}_compiler "unknown")
     if(CMAKE_${_lang}_COMPILER)
         set(_${_lang}_compiler ${CMAKE_${_lang}_COMPILER})

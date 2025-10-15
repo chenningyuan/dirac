@@ -16,6 +16,7 @@ directly; 0 = do not evaluate directly)::
   .DIRECT
    1 1 1
 
+
 keyword(SPHTRA)
 
 Transformation to spherical harmonics embedded in the transformation to
@@ -39,6 +40,7 @@ Write MO coefficients to the formatted file DFPCMO.  This is useful for porting
 coefficients between machines with different binary structure. For reading the 
 DFPCMO file, there is no keyword - simply copy this file to the working directory.
 
+
 keyword(ACMOUT)
 
 Write coefficients in C1 symmetry to the unformatted file DFACMO.
@@ -57,11 +59,13 @@ Use Jacobi diagonalization in the Löwdin orthogonalization procedure
 (subroutine LOWGEN). This is much slower than the default Householder 
 method but does not mix AOs in the case of block-diagonal overlap matrix. 
 
+
 keyword(DOJACO)
 
 Use the Jacobi method for matrix diagonalization (currently limited to real
 matrices). The default `Householder <http://www.maths.lancs.ac.uk/~gilbert/m306c/node21.html>`_  method is generally more efficient, but may mix
 degenerate eigenvectors of different symmetries. 
+
 
 keyword(QJACO)
 
@@ -112,10 +116,10 @@ By default set to::
 
 keyword(CVALUE)
 
-Speed of light in a.u. Default::
+Speed of light in a.u. Default (from CODATA22)::
 
   .CVALUE
-   137.0359998
+   137.035999177
 
 
 keyword(LOGMEM)
@@ -126,26 +130,14 @@ is mainly useful for programmers or for solving out-of-memory issues.
 
 keyword(CODATA)
 
-Select the fundamental physical constants used througout the code.
-The values are taken from different CODATA sets. Current available data sets are
-CODATA86, CODATA98, CODATA02, CODATA06, CODATA10, CODATA14 and CODATA18.
+Select the fundamental physical constants used througout the code. The values are taken from different CODATA sets.
+Current available data sets are requested by using the keywords ``.CODATA86``, ``.CODATA98``, ``.CODATA02``, ``.CODATA06``, ``.CODATA10``, ``.CODATA14``, ``.CODATA18``, or ``.CODATA22``.
+For the weak mixing angle and the Fermi coupling constant, there are also values reported in 1994 by the Particle Data Group (PDG) that were not included in any of those CODATA sets.
+Nevertheless, they can be used by employing the keyword ``.PDG94``.
+When ``.PDG94`` is used, all other constants are taken from the default CODATA set.
 Default::
 
   .CODATA
-   CODATA18
+   CODATA22
 
-
-keyword(NOSET)
-
-.. warning:: documentation missing
-
-
-keyword(FAMILY)
-
-.. warning:: documentation missing
-
-
-keyword(SKIP2E)
-
-.. warning:: documentation missing
 

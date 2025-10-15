@@ -13,10 +13,9 @@ C     Written by L.Visscher Jan 2017
 C
 C***********************************************************************
 
-      use exacc_cfg
+      use exacorr_cfg
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
-      use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
-      use exacorr_utils, only       : print_date
+      use eti_ao_to_mo,only         : eti_compute_mo_integrals
       use, intrinsic:: ISO_C_BINDING
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
@@ -126,8 +125,9 @@ C
       ENDIF
 
       if (.true.) then !Always use talsh for now
-        call talsh_compute_mo_integrals(nmo,mo_list,
-     &      exa_input%talsh_buff,exa_input%print_level,rcw,TH_CHOLESKY)
+        call eti_compute_mo_integrals(nmo,mo_list,
+     &      exa_input%talsh_buff,exa_input%executor,
+     &      exa_input%print_level,rcw,TH_CHOLESKY)
       else
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          !slaves need the same info to get started
@@ -155,15 +155,16 @@ C     Written by L.Visscher Jul 2017
 C
 C***********************************************************************
 
-      use exacc_cfg
-      use talsh_cc,only             : talsh_cc_driver
-      use talsh_mp2no,only          : talsh_mp2no_driver
+      use exacorr_cfg
+      use eti_cc,only             : eti_cc_driver
+      use eti_cis,only            : eti_cis_driver
+      use eti_mp2no,only          : eti_mp2no_driver
+      use eti_mp2lap,only         : eti_mp2lap_driver
       use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
+      use exacorr_printout,only     : print_exacorr_logo
       use exacorr_global
-      use exacorr_utils, only       : print_exacorr_logo
-      use exacorr_utils, only       : print_date
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
 #endif
@@ -219,12 +220,16 @@ C
 #endif
 
       if (exa_input%talsh) then
-       if (exa_input%do_no) then
+       if (exa_input%do_cis) then
+         call eti_cis_driver (exa_input)
+       else if (exa_input%do_no) then
          call get_no_driver (exa_input)
-       else if (exa_input%mp2no) then
-         call talsh_mp2no_driver (exa_input,n_mp2no)
+       else if (exa_input%mp2no > 0 ) then
+         call eti_mp2no_driver (exa_input,n_mp2no)
+       elseif (exa_input%mp2no < 0) then
+         call eti_mp2lap_driver (exa_input)
        else
-         call talsh_cc_driver (exa_input)
+         call eti_cc_driver (exa_input)
        end if
       else
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
@@ -235,7 +240,7 @@ C
               if (mytid == 0) call set_prop_flags_ccsd()
        end if
 
-       if (exa_input%mp2no) then
+       if (exa_input%mp2no > 0) then
               call exacorr_mp2no_driver (exa_input,n_mp2no)
        else
               call exacorr_cc_driver (exa_input) 
@@ -246,107 +251,244 @@ C
 
       end
 
-       subroutine Initialize_Shells (shell,ierr)
+       subroutine read_from_dirac (ao_basis,cspinor,section,ierr)
 
-!      get information from common blocks about the basis set
-!      raise an error for contracted sets that can not yet be handled by Interest
-
-!      NB: this routine is outdated, replaced by read_from_dirac. Just keeping it in case we still need it.
-
-       use exacorr_datatypes
-
-#include "implicit.h"
-#include "maxorb.h"
-#include "shells.h"
-#include "aovec.h"
-#include "primit.h"
-
-       integer ishell, iPrimStart, iPrimEnd, k, ierr
-       type(basis_func_info_t) :: shell(*)
-
-       do ishell = 1, nlrgsh
-          shell(ishell)%orb_momentum = nhkt(ishell)
-          shell(ishell)%atom_number  = ncent(ishell)
-          shell(ishell)%n_primitives = nuco(ishell)
-          nullify  (shell(ishell)%exponent)
-          allocate (shell(ishell)%exponent(nuco(ishell)))
-          nullify  (shell(ishell)%coefficient)
-          allocate (shell(ishell)%coefficient(nuco(ishell)))
-          iPrimStart = jstrt(ishell) + 1
-          iPrimEnd   = jstrt(ishell) + nuco(ishell)
-          k          = numcf(ishell)
-         shell(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
-         shell(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
-         shell(ishell)%coord = cent(ishell,1:3,1)
-!        In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
-         call compress_unc_shell (shell(ishell),ierr)
-       end do
-
-       return 
-       end
-
-       subroutine compress_unc_shell (shell,ierr)
-!If basis functions were grouped together in the input, they appear as quasi-contracted functions
-!with a lot of zero coefficients. Remove these zeroes and reduce the length to just one function.
-!Routine will produce an error, if the function is a true contraced function (more than one non-zero coefficient)
-
-          use exacorr_datatypes
-
-          integer, intent(out)     :: ierr
-          type(basis_func_info_t), intent(inout) :: shell
-
-          integer i, j, non_zero
-          real(8), allocatable :: exponents(:), coefficients(:)
-          real(8), parameter   :: treshold=1.D-12
-
-          allocate(exponents(shell%n_primitives))
-          allocate(coefficients(shell%n_primitives))
-          exponents    = shell%exponent
-          coefficients = shell%coefficient
-
-          ierr = 0
-          non_zero = 0
-          do i = 1, shell%n_primitives
-             if (abs(coefficients(i)) > treshold) then
-                non_zero = non_zero + 1
-                j = i
-             end if
-          end do
-
-          if (non_zero > 1) then
-             ierr = 1
-             return   ! leave shell untouched and return with error condition
-          else if (non_zero == 0) then
-             print*, " WARNING: compress_unc_shell found empty shell"
-             ierr = 2
-             j = 1    ! set j to the first function, to avoid complications with zero length arrays
-          end if
-
-          deallocate (shell%exponent)
-          deallocate (shell%coefficient)
-          allocate   (shell%exponent(1))
-          allocate   (shell%coefficient(1))
-
-          shell%n_primitives = 1
-          shell%exponent     = exponents(j)
-          shell%coefficient  = coefficients(j)
-
-          deallocate (exponents)
-          deallocate (coefficients)
-
-       end subroutine compress_unc_shell
-
-       subroutine read_from_dirac (ao_basis,cspinor,file_name,ierr)
-
+       use checkpoint
        use exacorr_mo
-       use exacorr_datatypes
+       use exacorr_ao
        use exacorr_global,only: nfunctions
        use exacorr_utils
 
        implicit none
 
-!      read all positive energy mo coefficients present on DFCOEF file
-!      check for imcompatibiklities (use of symmetry) as well and continue
+!      read all positive energy mo coefficients present on CHECKPOINT file
+!      check for incompatibilities (use of symmetry) as well and continue
+!      by reading also the basis set information into gtos
+
+       character(len=*),intent(in) :: section
+       type(basis_set_info_t), intent(inout) :: ao_basis
+       type(cmo), intent(inout):: cspinor
+       integer, intent(out)   :: ierr 
+       integer, parameter     :: NOERROR  = 0 ! no error
+       integer, parameter     :: NOTFOUND = 1 ! file not found
+       integer, parameter     :: CORRUPT  = 2 ! file unreadable
+       integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
+       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old CHECKPOINT?)
+       integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
+       integer, parameter     :: INCONSIS = 6 ! CHECKPOINT does not contain consistent information wrt number of basis functions
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
+       integer                :: maxopr,inversion
+       real(8)                :: total_energy,e_corr
+       integer                :: i, j, k, ishell, iprimstart, iprimend
+       integer                :: nao, nao_bas, nshells, iao, ibas
+       integer                :: nmo, npo, nto, npriexp, nzbuf
+       integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
+       real(8), allocatable   :: coeff(:),eig(:),coeff_q(:,:,:)
+       integer, allocatable   :: ibeig(:),index(:)
+       integer, allocatable   :: orbmom(:)
+       real(8), allocatable   :: priexp(:),priccf(:),coord(:)
+       integer, allocatable   :: ao_map(:,:)
+       character(8)           :: label(4)
+       logical                :: labeled
+       integer                :: n_mo(2),n_po(2),n_basis(2)
+       integer,allocatable    :: n_prim(:),n_cont(:)
+       character*(:),allocatable :: group
+       logical                :: C1_info,sym_info
+
+       ! check whether the MO coefficients were generated with symmetry, we then need to read the C1 form therof
+       ! for backwards compatibility we first check whether the symmetry section itself is available
+       call checkpoint_query ('/result/symmetry',sym_info)
+       if (.not.sym_info) then
+          print*, "WARNING: old CHECKPOINT, assuming NOSYM"
+          maxopr = 0
+          inversion = 1
+       else
+          call checkpoint_read ('/result/symmetry/maxopr',idata=maxopr)
+          call checkpoint_read ('/result/symmetry/inversion',
+     &         idata=inversion)
+       end if
+
+       group = '/result/wavefunctions/'//trim(section)//'/'
+       ierr = NOERROR
+       text = trim(section)//' data read from the checkpoint file '
+       call checkpoint_read (group//'mobasis/nz',idata=nzbuf)
+       call checkpoint_read (group//'mobasis/n_basis',idata=n_basis)
+       call checkpoint_read (group//'mobasis/n_mo',idata=n_mo)
+       call checkpoint_read (group//'mobasis/n_po',idata=n_po)
+       call checkpoint_read (group//'energy',rdata=total_energy)
+       if (section .ne. 'scf') then
+          call checkpoint_read (group//'e_corr',rdata=e_corr)
+          total_energy = total_energy - e_corr
+       end if
+
+       ! check symmetry and get dimensions of the coefficient array
+       if (inversion == 2) then
+          nao = sum(n_basis)
+          npo = sum(n_po)
+          nmo = sum(n_mo)
+          nto = npo+nmo
+       else
+          nao = n_basis(1) ! number of ao's
+          npo = n_po(1)    ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
+          nmo = n_mo(1)    ! "electronic" (= positive energy) solutions (we only need these)
+          nto = npo+nmo    ! total number of solutions on this file
+       end if
+       if (npo>0) print*, "warning: reading 4C CHECKPOINT file" ! this warning will go once we have the full index transform implemented
+
+       allocate(coeff(nao*nto*nz))
+       allocate(coeff_q(nao,nto,nz))
+       allocate(eig(nto))
+       allocate(ibeig(nto))
+       allocate(index(nmo))
+        
+       ! read the mo coefficients and orbital eigenvalues
+       if (maxopr == 0) then
+        call checkpoint_read (group//'mobasis/orbitals',rdata=coeff)
+        call checkpoint_read (group//'mobasis/eigenvalues',rdata=eig)
+       else
+        ! check whether the C1 formatted coefficients were written
+        call checkpoint_query (group//'mobasis/orbitals_C1',C1_info)
+        if (.not. C1_info) then
+         print*," Activate the ACMOUT option in the SCF stage"
+         call quit ("no C1 formatted MO coefficients available ")
+        end if
+        call checkpoint_read (group//'mobasis/orbitals_C1',rdata=coeff)
+        call checkpoint_read (group//'mobasis/eigenvalues_C1',rdata=eig)
+       endif
+       call checkpoint_read (group//'mobasis/symmetry',idata=ibeig)
+       ! fill in index values
+       do i = 1, nmo
+          index(i) = i ! we set the index compatible with the fact that we store all mo's
+       end do
+
+       ! put in cmo in quaternion format
+       coeff_q = reshape(coeff,(/nao,nto,nz/))
+       cspinor%algebra = 'q'
+       call alloc_mo (cspinor,nao,nmo)
+       cspinor%total_energy = total_energy
+       cspinor%index        = index(npo+1:nto)
+       cspinor%coeff_q      = coeff_q(:,npo+1:nto,:)
+       cspinor%energy       = eig(npo+1:nto)
+       cspinor%symmetry     = ibeig(npo+1:nto)
+
+       deallocate(coeff)
+       deallocate(eig)
+       deallocate(ibeig)
+       deallocate(index)
+!      switch to unrestricted spinor picture
+       call convert_mo_to_complex(cspinor)
+
+       ! read general AO basis information
+       if (maxopr == 0) then
+          group = '/input/aobasis/1/' ! SCF was done in C1
+       else
+          group = '/input/aobasis/3/' ! we need the AO basis expanded from the symmetry-packed form
+       end if
+       call checkpoint_read 
+     & (group//'angular',idata=ao_basis%basis_angular)
+       call checkpoint_read (group//'n_ao',idata=nao_bas)
+       call checkpoint_read (group//'n_shells',idata=nshells)
+       allocate (orbmom(nshells))
+       allocate (n_prim(nshells))
+       allocate (n_cont(nshells))
+       allocate (coord(3*nshells))
+!      read information that is defined for each shell
+       call checkpoint_read (group//'orbmom',idata=orbmom)
+       call checkpoint_read (group//'n_prim',idata=n_prim)
+       call checkpoint_read (group//'n_cont',idata=n_cont)
+       call checkpoint_read (group//'center',rdata=coord)
+!      values of the exponents and coefficients for all shells (packed into a 1-d arrays)
+       npriexp = sum(n_prim)
+       allocate (priexp(npriexp))
+       allocate (priccf(npriexp))
+       call checkpoint_read (group//'exponents',rdata=priexp)
+       call checkpoint_read (group//'contractions',rdata=priccf)
+
+       ! check for consistency with the MO first dimension
+       if (nao < nao_bas) then
+          ierr = INCONSIS
+          return
+       elseif (nao > nao_bas) then
+          print*,"WARNING: assuming Levy-Leblond Hamiltonian"
+          print*,"Reading fewer basis functions than MO-coefficients"
+          allocate (ao_map(2,nao_bas))
+          forall (i=1:nao_bas) ao_map(:,i)=i
+          call compress_mo (cspinor,ao_map)
+       end if
+
+       ! put information in gtos
+       ao_basis%nshells       = nshells
+       ao_basis%nao           = nao_bas
+       nullify(ao_basis%gtos)
+       allocate(ao_basis%gtos(nshells))
+       iPrimStart = 1
+       do ishell = 1, nshells
+          ao_basis%gtos(ishell)%orb_momentum = orbmom(ishell)
+          ao_basis%gtos(ishell)%n_primitives = n_prim(ishell)
+          nullify  (ao_basis%gtos(ishell)%exponent) 
+          allocate (ao_basis%gtos(ishell)%exponent(n_prim(ishell)))
+          nullify  (ao_basis%gtos(ishell)%coefficient)
+          allocate (ao_basis%gtos(ishell)%coefficient(n_prim(ishell)))
+          iPrimEnd   = iPrimStart+n_prim(ishell)-1
+          ao_basis%gtos(ishell)%exponent   = priexp(iPrimStart:iPrimEnd)
+          ao_basis%gtos(ishell)%coefficient= priccf(iPrimStart:iPrimEnd)
+          ao_basis%gtos(ishell)%coord = coord(ishell*3-2:3*ishell)
+!         In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
+          call compress_unc_shell (ao_basis%gtos(ishell),ierr)
+          if (ierr == 1) ierr = CONTRAC
+          iPrimStart = iPrimStart + n_prim(ishell)
+       end do
+
+       deallocate(orbmom)
+       deallocate(n_prim)
+       deallocate(n_cont)
+       deallocate(coord)
+       deallocate(priexp)
+       deallocate(priccf)
+
+       ! make array with pointers from a basis function index to its shell
+       nullify(ao_basis%shell_indices)
+       allocate(ao_basis%shell_indices(nao))
+       iao = 0
+       do ishell = 1, nshells
+          do ibas = 1,
+     &       nfunctions(
+     &       ao_basis%gtos(ishell)%orb_momentum,ao_basis%basis_angular)
+             iao = iao + 1
+             if (iao.gt.nao) then
+                ierr = INCONSIS
+                call quit ('Error in read_from_dirac')
+             endif
+             ao_basis%shell_indices(iao) = ishell
+          end do
+       end do
+       if (iao.gt.nao) then
+          ierr = INCONSIS
+          call quit ('Error in read_from_dirac')
+       endif
+
+       call print_date(trim(text))
+       return
+
+  10   ierr = CORRUPT
+       return
+
+  20   ierr = NOBASIS
+       return
+
+       end subroutine read_from_dirac
+
+       subroutine read_from_dfcoef (ao_basis,cspinor,file_name,ierr)
+
+       use exacorr_mo
+       use exacorr_ao
+       use exacorr_global,only: nfunctions
+       use exacorr_utils
+
+       implicit none
+
+!      read all positive energy mo coefficients present on CHECKPOINT file
+!      check for incompatibilities (use of symmetry) as well and continue
 !      by reading also the basis set information into gtos
 
        character(len=*),intent(in) :: file_name
@@ -357,10 +499,10 @@ C
        integer, parameter     :: NOTFOUND = 1 ! file not found
        integer, parameter     :: CORRUPT  = 2 ! file unreadable
        integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
-       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old DFCOEF?)
+       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old CHECKPOINT?)
        integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
-       integer, parameter     :: INCONSIS = 6 ! DFCOEF does not contain consistent information wrt number of basis functions
-       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       integer, parameter     :: INCONSIS = 6 ! CHECKPOINT does not contain consistent information wrt number of basis functions
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
        integer                :: nsym
        integer                :: idim(3,2)
        real(8)                :: total_energy
@@ -414,7 +556,7 @@ C
           npo = idim(1,1) ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
           nmo = idim(2,1) ! "electronic" (= positive energy) solutions (we only need these)
           nto = npo+nmo   ! total number of solutions on this file
-          if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implemented
+          if (npo > 0) print*, "warning: reading 4C CHECKPOINT file" ! this warning will go once we have the full index transform implemented
        end if
 
        allocate(coeff(nao,nto,nz))
@@ -544,7 +686,7 @@ C
        endif
        close (lucoef,status='KEEP')
 
-       call print_date("read from DFCOEF:"//text)
+       call print_date("read from CHECKPOINT:"//text)
        return
 
   10   ierr = CORRUPT
@@ -555,13 +697,54 @@ C
        close (lucoef,status='KEEP')
        return
 
+       end subroutine read_from_dfcoef
 
-       end subroutine read_from_dirac
-
-       subroutine write_mos_to_dirac (ao_basis,cspinor,file_name)
+       subroutine write_mos_to_checkpoint(mobasis_id,cspinor,section)
 
        use exacorr_mo
-       use exacorr_datatypes
+       use checkpoint
+
+!      write mo coefficients in new dirac format
+
+       integer, intent(in)         :: mobasis_id
+       character(len=*),intent(in) :: section
+       type(cmo), intent(inout)    :: cspinor
+       type(cmo)                   :: qorbital
+       integer                     :: ncoeff
+       character*(:), allocatable  :: group
+
+
+       call copy_mo(cspinor,qorbital)
+       call convert_mo_to_quaternion(qorbital)
+
+       ncoeff = qorbital%nao * qorbital%nmo * qorbital%nz
+       group = '/result/wavefunctions/'//trim(section)//'/mobasis'
+       call checkpoint_write 
+     & (trim(group)//'/mobasis_id',idata=mobasis_id)
+       call checkpoint_write 
+     & (trim(group)//'/eigenvalues',rdata=qorbital%energy)
+       call checkpoint_write 
+     & (trim(group)//'/nz',idata=qorbital%nz)
+       call checkpoint_write 
+     & (trim(group)//'/n_fsym',idata=1) ! we can not handle symmetry yet, so this is always 1
+       call checkpoint_write 
+     & (trim(group)//'/n_basis',idata=qorbital%nao)
+       call checkpoint_write (trim(group)//'/n_mo',idata=qorbital%nmo)
+       call checkpoint_write (trim(group)//'/n_po',idata=0)
+       call checkpoint_write 
+     & (trim(group)//'/symmetry',idata=qorbital%symmetry)
+       call checkpoint_write 
+     & (trim(group)//'/orbitals',rdata=
+     & reshape(qorbital%coeff_q,(/ncoeff/)))
+
+       call dealloc_mo(qorbital)
+
+       end subroutine  write_mos_to_checkpoint
+
+       subroutine write_mos_to_dfcoef(ao_basis,cspinor,file_name)
+
+       use exacorr_mo
+       use exacorr_ao
        use exacorr_utils
        use labeled_storage
 
@@ -573,12 +756,12 @@ C
        type(basis_set_info_t), intent(inout) :: ao_basis
        type(cmo), intent(inout):: cspinor
        type(cmo)              :: qorbital
-       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
        integer                :: nsym
        real(8)                :: total_energy
        logical                :: tobe
        integer                :: lucoef
-       integer                :: ishell, i
+       integer                :: i, ishell, iprimstart, iprimend
        integer                :: nao, nshells, iao, ibas
        integer                :: nmo, npo, nto, npriexp, ncnt, ncoeff
        integer, allocatable   :: numcf(:),jstrt(:)
@@ -605,18 +788,25 @@ C
        ! convert basis set info to 1-d lists used by DIRAC (assuming uncontracted basis sets)
        ! TODO: change storage on DIRAC side to use the basis set type
        nshells = ao_basis%nshells
-       ! we always have uncontracted basis sets, so can hardwire the next variable and equate the number of exponents to the number of shells
+       ! we do not support general contraction so ncnt is always 1
        ncnt = 1
-       npriexp =  nshells
+       ! first count the number of exponents (is also number of contraction coefficients) and set jstrt
        allocate(jstrt(nshells))
        allocate(numcf(nshells))
-       allocate(priexp(nshells))
-       allocate(priccf(nshells))
+       npriexp = 0
        do ishell = 1, nshells
-          jstrt(ishell) = ishell-1
+          jstrt(ishell) = npriexp
+          npriexp = npriexp + ao_basis%gtos(ishell)%n_primitives
           numcf(ishell) = 1
-          priexp(ishell) = ao_basis%gtos(ishell)%exponent(1)
-          priccf(ishell) = ao_basis%gtos(ishell)%coefficient(1)
+       end do
+       ! now copy the exponents and contraction coefficients into the 1-d lists
+       allocate(priexp(npriexp))
+       allocate(priccf(npriexp))
+       do ishell = 1, nshells
+        iPrimStart = jstrt(ishell) + 1
+        iPrimEnd   = jstrt(ishell) + ao_basis%gtos(ishell)%n_primitives
+        priexp(iPrimStart:iPrimEnd)=ao_basis%gtos(ishell)%exponent(:)
+        priccf(iPrimStart:iPrimEnd)=ao_basis%gtos(ishell)%coefficient(:)
        end do
  
        ! write the header
@@ -658,7 +848,7 @@ C
 
        return
 
-       end subroutine write_mos_to_dirac
+       end subroutine write_mos_to_dfcoef
 
        subroutine write_mos_to_dirac_formatted(cspinor,file_name)
 
@@ -672,7 +862,7 @@ C
        character(len=*),intent(in) :: file_name
        type(cmo), intent(inout):: cspinor
        type(cmo)              :: qorbital
-       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
        integer                :: nsym
        real(8)                :: total_energy
        logical                :: tobe
@@ -830,7 +1020,7 @@ C
 
        subroutine read_from_mrconee (int_1el, ierr)
 
-       use exacorr_datatypes
+       use exacorr_1el
        use exacorr_utils, only: get_free_fileunit
 
        implicit none
@@ -842,7 +1032,7 @@ C
        integer, parameter     :: NOERROR  = 0 ! no error
        integer, parameter     :: NOTFOUND = 1 ! file not found
        integer, parameter     :: CORRUPT  = 2 ! file unreadable
-       integer, parameter     :: INCONSIS = 6 ! MRCONEE does not match information read from DFCOEF
+       integer, parameter     :: INCONSIS = 6 ! MRCONEE does not match information read from CHECKPOINT
 
        integer :: nsp, nkr
        logical :: breit
@@ -870,7 +1060,7 @@ C
        int_1el%n_spinor=nsp
 !      save core energy
        int_1el%e_core=e_core
-!TODO  check consistency of e_core and nsp with the values read from DFCOEF !
+!TODO  check consistency of e_core and nsp with the values read from CHECKPOINT !
 
 !      skip symmetry information
        read (luone,ERR=10,END=10)
@@ -910,7 +1100,7 @@ C
 
        subroutine read_mdprop (int_1el, ierr)
 
-       use exacorr_datatypes
+       use exacorr_1el
        use exacorr_utils, only: get_free_fileunit
 
        implicit none
@@ -994,3 +1184,94 @@ C
 
        end subroutine read_mdprop
 
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine set_laplace(num,print_level)
+C
+C---------------Description--------------------------------------------
+C
+C   set flags for the computation of laplace points
+C
+C   Johann Pototschnig, Fall 2019
+
+C----------------------------------------------------------------------
+
+      IMPLICIT NONE
+
+C parameters
+#include "priunit.h"
+#include "lapdim.h"
+
+C common blocks
+#include "dcblap.h"
+
+
+      integer  :: num
+      integer  :: print_level
+
+      integer  :: ILAP
+      logical  :: LWGHTS, LXPNTS
+      CHARACTER*7, CHRERR
+      PARAMETER (CHRERR = 'LAPINP>')
+
+C     Initialize /DCBLAP/
+C     ===================
+C
+      IPRLAP = print_level
+      NLAP = num
+      MXITER = 50
+      STEPMX = 0.3D0
+      TOLRNG = 1.D-10
+      TOLPAR = 1.D-15
+
+      ! rather conservative accuracy threshold
+      TOLLAP = 1.D-8
+
+      LWGHTS = .FALSE.
+      LXPNTS = .FALSE.
+
+C     Processing
+C     ====================
+
+!     use pre-tabulated start values
+      INILAP = (.NOT.(LWGHTS.AND.LXPNTS))
+!     determine if points are given or not
+      FNDLAP = (NLAP.LT.1)
+!     print setting
+      IF (IPRLAP.GT.1) THEN
+       WRITE(LUPRI,*) CHRERR,"print level:",IPRLAP
+       WRITE(LUPRI,*) CHRERR,"maximum iteratations:",MXITER
+       WRITE(LUPRI,*) CHRERR,"number of quadrature points:",NLAP
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Maehly algorithms:",TOLRNG 
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Raphson algorithms:",TOLPAR
+       WRITE(LUPRI,*) CHRERR,"accuracy threshold:",TOLLAP 
+       WRITE(LUPRI,*) CHRERR,
+     &  "step length in line search algorithm:",STEPMX 
+       IF (LWGHTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start weights were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,WGHTS(ILAP)
+        END DO
+       END IF
+       IF (LXPNTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start exponents were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,XPNTS(ILAP)
+        END DO
+       END IF
+      END IF
+
+      end subroutine set_laplace
+
+      subroutine print_date(text) 
+!      Prints time and date with a string
+       character(len=10) :: datex
+       character(len=8)  :: timex
+       character(len=*)  :: text
+       integer           :: lentext
+       lentext = len(text)
+       call daytime(datex,timex)
+       write (*,'(1x,a10,1x,a8,1x,a)') datex,timex,text(1:lentext)
+      end subroutine print_date

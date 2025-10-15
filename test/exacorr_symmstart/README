@@ -1,0 +1,2 @@
+! primarily intended to test starting with an SCF that uses symmetry in exacorr   
+! sideways testing also a basis set from the Gaussian family and the Cholesky decomposition

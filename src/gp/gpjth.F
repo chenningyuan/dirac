@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -79,13 +74,12 @@ C***********************************************************************
 C
       DIMENSION IBTAB(0:255)
 C
-#include "ibtfun.h"
 C
       DO I = 0, 255
          ID = I
          NB = 0
          DO J = 1, 8
-            NB = NB + IBTAND(1,ID)
+            NB = NB + IAND(1,ID)
             ID = ID / 2
          END DO
          IBTAB(I) = NB
@@ -93,3 +87,50 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck ini_bit_tab */
+      SUBROUTINE ini_cb_bittab()
+C***********************************************************************
+C
+C     Initialize table with bit_tab(I) = nbits(I)
+C                           bit_dif(I,J)
+C     (I and J integer*1)
+C
+C     Input : none
+C
+C     Output: IBTAB and IBTDIF in cb_bittab.h
+C
+C     Written by H. J. Aa. Jensen - July 2016
+C     Partly based on IBTABINI by J. Thyssen 2001
+C     Last revision :
+C
+C***********************************************************************
+C
+#include "cb_bitdef.h"
+! from cb_bitdef.h:
+!     integer bit_cnt(0:255), bit_dif(0:255,0:255)
+!
+
+!T    print '(/A)', 'i, bits(i), bit_cnt(i) :'
+      DO I = 0, 255
+         nbits = 0
+         DO J = 0, 7
+            IF (BTEST(I,J)) nbits = nbits + 1
+         END DO
+         bit_cnt(I) = nbits
+!T       print '(i8, 5x, B8.8, I8)', i,i,bit_cnt(i)
+      END DO
+
+!T    print '(/A)', 'i,j, bits(i),bits(j),diff(i,j), bit_dif(i,j) :'
+      DO J = 0, 255
+         DO I = 0, 255
+            ID = IEOR(I, J)
+            bit_dif(I,J) = bit_cnt(ID)
+!T          print '(2i8, 2x, B8.8,2x,B8.8,2x,B8.8,I8)',
+!T   &      i,j,i,j,id,bit_dif(i,j)
+         END DO
+      END DO
+C
+      RETURN
+      END
+C -- end of gpjth.F ---

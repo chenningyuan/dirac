@@ -1,6 +1,6 @@
 name: DIRAC
 
-min_cmake_version: 3.7
+min_cmake_version: "3.20"
 
 default_build_type: release
 
@@ -27,9 +27,9 @@ modules:
     - 'custom/compiler_flags/Intel.C.cmake'
     - 'custom/compiler_flags/Intel.CXX.cmake'
     - 'custom/compiler_flags/Intel.Fortran.cmake'
-    - 'custom/compiler_flags/PGI.C.cmake'
-    - 'custom/compiler_flags/PGI.CXX.cmake'
-    - 'custom/compiler_flags/PGI.Fortran.cmake'
+    - 'custom/compiler_flags/NVHPC.C.cmake'
+    - 'custom/compiler_flags/NVHPC.CXX.cmake'
+    - 'custom/compiler_flags/NVHPC.Fortran.cmake'
     - 'custom/compiler_flags/XL.C.cmake'
     - 'custom/compiler_flags/XL.CXX.cmake'
     - 'custom/compiler_flags/XL.Fortran.cmake'
@@ -51,7 +51,6 @@ modules:
     - '%(url_root)modules/int64.cmake'
     - 'custom/mathlibs-integer-compatibility.cmake'
     - '%(url_root)modules/safeguards.cmake'
-    - '%(url_root)modules/git_info/git_info.cmake'
     - '%(url_root)modules/version.cmake'
 - explicit:
   - docopt: "--explicit-libs=<LIBS> Explicit linker specification for extra libraries passed directly to the linker [default: off]."
@@ -60,22 +59,15 @@ modules:
   - source:
     - 'custom/mpi.cmake'
     - 'custom/test.cmake'
-    - 'custom/exported.cmake'
-    - 'custom/unreleased.cmake'
     - 'custom/reset_external_libs.cmake'
     - 'custom/static.cmake'
     - 'custom/definitions.cmake'
     - 'custom/matlab.cmake'
-    - 'custom/qdiag.cmake'
     - 'custom/work_array.cmake'
     - 'custom/workarounds.cmake'
     - 'custom/external.cmake'
-    - 'custom/pcm.cmake'
     - 'custom/exatensor.cmake'
-    - 'custom/gen1int.cmake'
-    - 'custom/pelib.cmake'
-- subdirectories:
-  - source: '%(url_root)modules/src.cmake'
+    - 'custom/pcm.cmake'
 - custom:
   - source:
     - 'custom/benchmarks.cmake'
@@ -90,7 +82,6 @@ modules:
 - install:
   - source:
     - 'custom/install.cmake'
-    - 'custom/cpack-dirac.cmake'
     - 'custom/pam.cmake'
     - 'custom/test.cmake'
 - save_flags:

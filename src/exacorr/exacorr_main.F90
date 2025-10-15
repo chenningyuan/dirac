@@ -7,15 +7,19 @@
       use interface_to_mpi
 #endif
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
-      use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
-      use talsh_cc,only             : talsh_cc_driver
-      use talsh_mp2no,only          : talsh_mp2no_driver
+      use eti_ao_to_mo,only       : eti_compute_mo_integrals
+      use eti_cc,only             : eti_cc_driver
+      use eti_cis,only            : eti_cis_driver
+      use eti_mp2no,only          : eti_mp2no_driver
+      use eti_mp2lap,only         : eti_mp2lap_driver
       use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
-      use exacc_cfg
+      use exacorr_printout,only     : print_exacorr_logo
+      use exacorr_cfg
       use exacorr_global
       use exacorr_utils
+      use checkpoint
       use, intrinsic:: ISO_C_BINDING
 
       implicit none
@@ -56,6 +60,7 @@
         call get_free_fileunit(file_unit)
         call read_menu_input('exacorr.inp',file_unit,'**EXACC',input_found) 
         if (.not.input_found) call quit('Input was not found!')
+        call checkpoint_open
       end if
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
@@ -89,10 +94,8 @@
              mo_list(imo+nmo(1)+nmo(2)+nmo(3)) = imo
          end do
 
-!         call talsh_compute_mo_integrals(nmo,mo_list,
-!     &      exa_input%talsh_buff,exa_input%print_level,rcw)
-         call exacorr_compute_mo_integrals (nmo, mo_list, &
-                                      exa_input%print_level)
+         !call eti_compute_mo_integrals(nmo,mo_list,exa_input%talsh_buff,exa_input%print_level,rcw)
+         call exacorr_compute_mo_integrals (nmo, mo_list,exa_input%print_level)
       end if
 
       if (mytid == 0) then
@@ -105,10 +108,14 @@
       if (cc_calculation) then
          if (exa_input%talsh) then
             if (mytid == 0) then
-                  if (exa_input%mp2no) then
-                    call talsh_mp2no_driver (exa_input,n_mp2no)
+                  if (exa_input%do_cis) then
+                    call eti_cis_driver (exa_input)
+                  elseif (exa_input%mp2no > 0) then
+                    call eti_mp2no_driver (exa_input,n_mp2no)
+                  elseif (exa_input%mp2no < 0) then
+                    call eti_mp2lap_driver (exa_input)
                   else
-                    call talsh_cc_driver (exa_input)
+                    call eti_cc_driver (exa_input)
                   end if   
                   if (exa_input%do_no) then
                         call get_no_driver (exa_input)
@@ -120,7 +127,7 @@
 !           slaves need the same info to get started
             call exacc_sync_cw(0,mytid)
 #endif
-            if (exa_input%mp2no) then
+            if (exa_input%mp2no > 0) then
                call exacorr_mp2no_driver (exa_input,n_mp2no)
             else
                call exacorr_cc_driver (exa_input) 

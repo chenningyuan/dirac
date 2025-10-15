@@ -1,5 +1,5 @@
-# (c) https://github.com/coderefinery/autocmake/blob/master/AUTHORS.md
-# licensed under BSD-3: https://github.com/coderefinery/autocmake/blob/master/LICENSE
+# (c) https://github.com/dev-cafe/autocmake/blob/master/AUTHORS.md
+# licensed under BSD-3: https://github.com/dev-cafe/autocmake/blob/master/LICENSE
 
 #.rst:
 #
@@ -24,16 +24,17 @@
 #   define: "'-DPYTHON_INTERPRETER=\"{0}\"'.format(arguments['--python'])"
 
 if("${PYTHON_INTERPRETER}" STREQUAL "")
-    find_package(PythonInterp REQUIRED)
+    find_package(Python COMPONENTS Interpreter REQUIRED)
 else()
     if(NOT EXISTS "${PYTHON_INTERPRETER}")
-        find_program(PYTHON_EXECUTABLE NAMES ${PYTHON_INTERPRETER})
-        if (NOT EXISTS "${PYTHON_EXECUTABLE}")
+        find_program(Python_EXECUTABLE NAMES ${PYTHON_INTERPRETER})
+        if (NOT EXISTS "${Python_EXECUTABLE}")
             set(PYTHONINTERP_FOUND FALSE)
         endif()
     else()
         set(PYTHONINTERP_FOUND TRUE)
-        set(PYTHON_EXECUTABLE "${PYTHON_INTERPRETER}")
+        set(Python_EXECUTABLE "${PYTHON_INTERPRETER}")
     endif()
 endif()
-find_package(PythonInterp REQUIRED)
+find_package(Python COMPONENTS Interpreter REQUIRED)
+set(PYTHON_EXECUTABLE "${Python_EXECUTABLE}") # for backwards compatibility with cmake scripts using the old PYTHON_EXECUTABLE variable

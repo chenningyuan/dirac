@@ -10,12 +10,12 @@ endif()
 
 set(FIXED_DIRAC_FORTRAN_SOURCES
    atom2molecule_utils.F
-   dftaux.F
    dirana.F
    diraos.F
    dirbss.F
    dircnv.F
    dirden.F
+   dir_effQED.F
    dirgeo.F
    dirgp.F
    dirgrd.F
@@ -36,16 +36,10 @@ set(FIXED_DIRAC_FORTRAN_SOURCES
 
 set(FREE_DIRAC_FORTRAN_SOURCES
    dirimpmos.F90
-#   dirmp2no.F needs 
-    ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
-# needs also input reader..
-    ${PROJECT_SOURCE_DIR}/src/input/parse_input.F90
-    ${PROJECT_SOURCE_DIR}/src/input/input_reader.F90
-    ${PROJECT_SOURCE_DIR}/src/input/input_reader_sections.F90
+   # dirmp2no.F needs fortran module from relcc_cfg.F90
+   # (we cannot use add_dependencies to relccsd, because relccsd also depends on dirac)
+   ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
 )
-
-
-set(FREE_DIRAC_FORTRAN_SOURCES ${PROJECT_SOURCE_DIR}/src/interest/module_interest_interface.F90 ${FREE_DIRAC_FORTRAN_SOURCES})
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_DIRAC_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
@@ -61,7 +55,7 @@ endif()
 
 add_library(
     dirac
-    OBJECT
+    STATIC
     ${FIXED_DIRAC_FORTRAN_SOURCES}
     ${FREE_DIRAC_FORTRAN_SOURCES}
 )
@@ -69,11 +63,11 @@ add_library(
 #
 # Oh, intermodule dependendencies, worth to reduce if possible
 #
-add_dependencies(dirac main)
+add_dependencies(dirac dirac_main)
 add_dependencies(dirac abacus)
 add_dependencies(dirac gp)
 add_dependencies(dirac xcfun_fortran_bindings)
-add_dependencies(dirac embedding)
+add_dependencies(dirac fde)
 add_dependencies(dirac localization)
 add_dependencies(dirac visual)
 add_dependencies(dirac x2c)
@@ -82,21 +76,21 @@ add_dependencies(dirac interest)
 if (ENABLE_PCMSOLVER)
     add_dependencies(dirac pcm_dirac)
 endif()
-if (ENABLE_AOOSOC)
-    add_dependencies(dirac aoosoc)
+if (ENABLE_XAMFI)
+    add_dependencies(dirac x-amfi)
 endif()
 if (ENABLE_SRDFT)
     add_dependencies(dirac srdft)
 endif()
 add_dependencies(dirac reladc)
-if (ENABLE_QCORR)
-    add_dependencies(dirac qcorr)
-endif()
+
+target_link_libraries(dirac PRIVATE qcorr)
+
 if (ENABLE_KRCC)
     add_dependencies(dirac krcc)
 endif()
 if(ENABLE_EXATENSOR)
-    add_dependencies(dirac exatensor)
+    add_dependencies(dirac exacorr)
 endif()
 
 

@@ -1,0 +1,1766 @@
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Konstantin J. Gaul       Helmholtz Institute Mainz         Germany       *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Ernst D. Larsson         University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
+ *    Carlos M. R. Rocha       Netherlands eScience Center       Netherlands   *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC25 (2025), written by                                       *
+ *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
+ *    with contributions from I. A. Aucar, J. J. Aucar, V. Bakken,             *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    J. Henriksson, M. van Horn, M. Ilias, Ch. R. Jacob, S. Knecht,           *
+ *    S. Komorovsky, O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee,       *
+ *    N. H. List, H. S. Nataraj, M. K. Nayak, P. Norman, A. Nyvang,            *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio,       *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | PV-EFG
+Commit hash   | d3a9dc195
+Commit author | Hans Jørgen Aagaard Jensen
+Commit date   | Wed Aug 27 14:28:51 2025 +0000
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | juanjoaucar
+Compiled on server       | Yo-Nitro
+Operating system         | Linux-6.8.0-79-generic
+CMake version            | 3.22.1
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2025-09-13 03:19:19.819171+00:00
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 11.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+C compiler               | /usr/bin/gcc
+C compiler version       | 11.4.0
+C compiler flags         |  -g -fopenmp -fno-lto
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 11.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | -Wl,--start-group;/home/juanjoaucar/intel/oneapi/mkl/2023.2.0/lib/intel64/libmkl_lapack95_lp64.a;/home/juanjoaucar/intel/oneapi/mkl/2023.2.0/lib/intel64/libmkl_gf_lp64.so;-fopenmp;-Wl,--end-group;-Wl,--start-group;/home/juanjoaucar/intel/oneapi/mkl/2023.2.0/lib/intel64/libmkl_gf_lp64.so;/home/juanjoaucar/intel/oneapi/mkl/2023.2.0/lib/intel64/libmkl_gnu_thread.so;/home/juanjoaucar/intel/oneapi/mkl/2023.2.0/lib/intel64/libmkl_core.so;/usr/lib/x86_64-linux-gnu/libpthread.a;/usr/lib/x86_64-linux-gnu/libm.so;-fopenmp;-Wl,--end-group
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;EXA_TALSH_ONLY;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
+Exatensor git hash       | a1efa9efdcae13caacdc4776af839c3cd1957e85
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/usr/bin/gfortran CMAKE_C_COMPILER=/usr/bin/gcc CMAKE_CXX_COMPILER=/usr/bin/g++ TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=MKL     
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Sat Sep 13 00:43:36 2025
+     Host name              : Yo-Nitro                                
+
+ * Opening checkpoint file 
+    - New checkpoint file created
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+.TITLE                                                                                              
+ PVC to EFG                                                                                         
+.WAVE FUNCTION                                                                                      
+.PROPERTIES                                                                                         
+**INTEGRALS                                                                                         
+.SELECT                                                                                             
+ 2                                                                                                  
+ 1                                                                                                  
+ 3                                                                                                  
+**GENERAL                                                                                           
+.CODATA                                                                                             
+ CODATA18                                                                                           
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF                                                                                                
+.ERGCNV                                                                                             
+5.0E-9                                                                                              
+**PROPERTIES                                                                                        
+.PVC                                                                                                
+.PVCEFG                                                                                             
+.ABUNDANCIES                                                                                        
+ 0.0001                                                                                             
+.PRINT                                                                                              
+  1                                                                                                 
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+INTGRL                                                                                              
+H2O2 molecule                                                                                       
+3-21G basis                                                                                         
+C   2    0                                                                                          
+       1.     2                                                                                     
+H1    -0.690815           -1.726149            1.667775     isotope=1                               
+H2     0.690815            1.726149            1.667775     isotope=1                               
+LARGE BASIS 3-21G                                                                                   
+       8.     2                                                                                     
+O3     0.000000           -1.407846            0.000000     isotope=17                              
+O4     0.000000            1.407846            0.000000     isotope=17                              
+LARGE BASIS 3-21G                                                                                   
+FINISH                                                                                              
+
+
+    *************************************************************************
+    ******************************  PVC to EFG ******************************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Properties
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 2018  
+     Eite Tiesinga, Peter J. Mohr, David B. Newell and Barry N. Taylor    
+         Reviews of Modern Physics, Vol. 93, 025010 (2021)                
+ * The speed of light :        137.035999084
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Using default nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+ For property integrals involving atomic centers
+     only integrals involving the following nuclei are calculated:
+
+            1  3
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  H2O2 molecule                                                           
+  3-21G basis                                                             
+  Nuclear Gaussian exponent for atom of charge    1.000 :     2.1248236111D+09   (using mass    1.0)
+  Nuclear Gaussian exponent for atom of charge    8.000 :     5.8631428213D+08   (using mass   16.0)
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  Nuclear repulsion energy                       :     36.151284237507 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    3.335550000000 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    4
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  H2          2       1       3       2      L  - [3s|2s]                                                        
+                              9       9      S  - [3p|3p]                                                        
+  O4          2       8      15       9      L  - [6s3p|3s2p]                                                    
+                             39      39      S  - [3s6p3d|3s6p3d]                                                
+  ----------------------------------------------------------------------
+                             36      22      L  - large components
+                             96      96      S  - small components
+  ----------------------------------------------------------------------
+  total:      4      18     132     118
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements                             References                                
+   --------                             ----------                                
+    H - Ne: J.S. Binkley, J.A. Pople, W.J. Hehre, J. Am. Chem. Soc 102 939 (1980) 
+   Na - Ar: M.S. Gordon, J.S. Binkley, J.A. Pople, W.J. Pietro and W.J. Hehre,    
+            J. Am. Chem. Soc. 104, 2797 (1983).                                   
+    K - Ca: K.D. Dobbs, W.J. Hehre, J. Comput. Chem. 7, 359 (1986).               
+   Ga - Kr: K.D. Dobbs, W.J. Hehre, J. Comput. Chem. 7, 359 (1986).               
+   Sc - Zn: K.D. Dobbs, W.J. Hehre, J. Comput. Chem. 8, 861 (1987).               
+    Y - Cd: K.D. Dobbs, W.J. Hehre, J. Comput. Chem. 8, 880 (1987).               
+   Cs     : A 3-21G quality set derived from the Huzinage MIDI basis sets.        
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates: 12
+
+
+   1   H1       x     -0.6908150000
+   2            y     -1.7261490000
+   3            z      1.6677750000
+
+   4   H2       x      0.6908150000
+   5            y      1.7261490000
+   6            z      1.6677750000
+
+   7   O3       x      0.0000000000
+   8            y     -1.4078460000
+   9            z      0.0000000000
+
+  10   O4       x      0.0000000000
+  11            y      1.4078460000
+  12            z      0.0000000000
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    4
+
+H1    -0.3655635549  -0.9134387134   0.8825485229
+H2     0.3655635549   0.9134387134   0.8825485229
+O3     0.0000000000  -0.7450000197   0.0000000000
+O4     0.0000000000   0.7450000197   0.0000000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            H1          H2          O3          O4  
+
+   H1      0.000000
+   H2      1.967747    0.000000
+   O3      0.970000    1.913883    0.000000
+   O4      1.913883    0.970000    1.490000    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    O3         H1                             0.970000
+  bond distance:    O4         H2                             0.970000
+  bond distance:    O4         O3                             1.490000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       O4         O3         H1                   100.000
+  bond angle:       O3         O4         H2                   100.000
+
+
+
+   Nuclear repulsion energy                          :   36.151284237507 Hartree
+
+                       * Total mass:    36.013912 amu
+                       * Natural abundance:   0.000 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.093343113593158
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.049395048508229
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   10
+     1  L H1  1 s        2  L H2  1 s        3  L O3  1 s        4  L O3  1 px       5  L O3  1 py       6  L O3  1 pz  
+     7  L O4  1 s        8  L O4  1 px       9  L O4  1 py      10  L O4  1 pz  
+   * Small components:   26
+    11  S H1  1 px      12  S H1  1 py      13  S H1  1 pz      14  S H2  1 px      15  S H2  1 py      16  S H2  1 pz  
+    17  S O3  1 s       18  S O3  1 px      19  S O3  1 py      20  S O3  1 pz      21  S O3  1 dxx     22  S O3  1 dxy 
+    23  S O3  1 dxz     24  S O3  1 dyy     25  S O3  1 dyz     26  S O3  1 dzz     27  S O4  1 s       28  S O4  1 px  
+    29  S O4  1 py      30  S O4  1 pz      31  S O4  1 dxx     32  S O4  1 dxy     33  S O4  1 dxz     34  S O4  1 dyy 
+    35  S O4  1 dyz     36  S O4  1 dzz 
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          118
+  Number of large orbitals in each symmetry:     22
+  Number of small orbitals in each symmetry:     96
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        2 functions:    H1 s   
+        2 functions:    H2 s   
+        3 functions:    O3 s   
+        2 functions:    O3 px  
+        2 functions:    O3 py  
+        2 functions:    O3 pz  
+        3 functions:    O4 s   
+        2 functions:    O4 px  
+        2 functions:    O4 py  
+        2 functions:    O4 pz  
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        3 functions:    H1 px  
+        3 functions:    H1 py  
+        3 functions:    H1 pz  
+        3 functions:    H2 px  
+        3 functions:    H2 py  
+        3 functions:    H2 pz  
+        3 functions:    O3 s   
+        6 functions:    O3 px  
+        6 functions:    O3 py  
+        6 functions:    O3 pz  
+        3 functions:    O3 dxx 
+        3 functions:    O3 dxy 
+        3 functions:    O3 dxz 
+        3 functions:    O3 dyy 
+        3 functions:    O3 dyz 
+        3 functions:    O3 dzz 
+        3 functions:    O4 s   
+        6 functions:    O4 px  
+        6 functions:    O4 py  
+        6 functions:    O4 pz  
+        3 functions:    O4 dxx 
+        3 functions:    O4 dxy 
+        3 functions:    O4 dxz 
+        3 functions:    O4 dyy 
+        3 functions:    O4 dyz 
+        3 functions:    O4 dzz 
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     0
+   - GT-integrals:     0
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  18
+   Charge of molecule    =   0
+   i.e. no. of electrons =  18
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with    18 electrons in    9 orbitals.
+ * Charge of molecule : 0
+ * Sum of atomic potentials used for start guess
+ * General print level   :   0
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from CHECKPOINT
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on total energy.
+   Desired convergence:5.000D-09
+   Allowed convergence:5.000D-09
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+    ---> this is default setting from Hamiltonian input
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level:   1
+ * Input label: **PROPE
+ * Properties calculated for the following wave functions:
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+===========================================================================
+ XLRINP: Electronic linear reponse properties
+===========================================================================
+ * Print level                 :    0
+ * e-e rotations are allowed in the linear response function.
+ * e-p rotations are allowed in the linear response function.
+ * Maximum number of iterations:   50
+ * Threshold for convergence   :1.000000D-05
+ * Max. size of reduced matrix :  200
+ * Include contributions from the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals from iteration    1
+    ---> these are default values from Hamiltonian input
+ * Initial trial vectors will be preconditioned.
+ * Linear response functions evaluated at the following REAL frequencies:
+       0.00000E+00 a.u.
+===========================================================================
+ Parity violation - Chirality
+===========================================================================
+...........................................................................
+    Component no.  1:   PVC: H1 01      
+...........................................................................
+    1  PVC: H1 01           A       T+
+...........................................................................
+      Operator type GAMMA5   : [gamma_5]P
+      Labels and factors     : PVCH1 01 0++0     1.0000000000000 (real)     
+...........................................................................
+...........................................................................
+    Component no.  2:   PVC: O3 03      
+...........................................................................
+    2  PVC: O3 03           A       T+
+...........................................................................
+      Operator type GAMMA5   : [gamma_5]P
+      Labels and factors     : PVCO3 03 0++0     1.0000000000000 (real)     
+...........................................................................
+===========================================================================
+ Parity-violation contribution to electric field gradient:
+===========================================================================
+
+ XPRIND INFO: property operator named PVCH1 01        
+   is already existing under the name PVC: H1 01      
+   previous operator renamed to       PVCH1 01        
+
+ XPRIND INFO: property operator named PVCO3 03        
+   is already existing under the name PVC: O3 03      
+   previous operator renamed to       PVCO3 03        
+---------------------------------------------------------------------------
+ ** A operators for PV electric field gradient **
+---------------------------------------------------------------------------
+    1  EFG: XX011           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XXEFG011 +00+     1.0000000000000 (real)     
+...........................................................................
+    2  EFG: XY011           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XYEFG011 +00+     1.0000000000000 (real)     
+...........................................................................
+    3  EFG: XZ011           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XZEFG011 +00+     1.0000000000000 (real)     
+...........................................................................
+    4  EFG: YY011           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YYEFG011 +00+     1.0000000000000 (real)     
+...........................................................................
+    5  EFG: YZ011           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YZEFG011 +00+     1.0000000000000 (real)     
+...........................................................................
+    6  EFG: ZZ011           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZZEFG011 +00+     1.0000000000000 (real)     
+...........................................................................
+    7  EFG: XX031           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XXEFG031 +00+     1.0000000000000 (real)     
+...........................................................................
+    8  EFG: XY031           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XYEFG031 +00+     1.0000000000000 (real)     
+...........................................................................
+    9  EFG: XZ031           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XZEFG031 +00+     1.0000000000000 (real)     
+...........................................................................
+   10  EFG: YY031           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YYEFG031 +00+     1.0000000000000 (real)     
+...........................................................................
+   11  EFG: YZ031           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YZEFG031 +00+     1.0000000000000 (real)     
+...........................................................................
+   12  EFG: ZZ031           A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZZEFG031 +00+     1.0000000000000 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+ ** B operators for PV electric field gradient **
+---------------------------------------------------------------------------
+    1  PVCH1 01             A       T+
+...........................................................................
+      Operator type GAMMA5   : [gamma_5]P
+      Labels and factors     : PVCH1 01 0++0     1.0000000000000 (real)     
+...........................................................................
+    2  PVCO3 03             A       T+
+...........................................................................
+      Operator type GAMMA5   : [gamma_5]P
+      Labels and factors     : PVCO3 03 0++0     1.0000000000000 (real)     
+...........................................................................
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      3.33555000      8.47820092
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.80E-01
+   S   A     * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.15E-01
+
+
+                                Output from MODHAM
+                                ------------------
+
+ * Applied strict kinetic balance !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    22
+No. of negative energy orbitals (NPSH):    22
+Total no. of orbitals           (NORB):    44
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+*** INFO *** No trial vectors found.
+ Using sum of fitted atomic potentials as start potential.
+
+ Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
+
+
+########## START ITERATION NO.   1 ##########   Sat Sep 13 00:43:36 2025
+
+E_HOMO...E_LUMO, symmetry 1:                                 31  -0.55416   32  -0.39058
+
+=> Calculating sum of orbital energies
+It.    1    -53.46161199073      0.00D+00  0.00D+00  0.00D+00               0.02033700s   Atom. scrpot   Sat Sep 13
+
+########## START ITERATION NO.   2 ##########   Sat Sep 13 00:43:36 2025
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   30.29%    0.00%    0.00%   0.01227799s
+SOfock:SL  1.00D-12    0.00%   34.76%    0.00%    0.00%   0.06372900s
+ >>> CPU  time used in SO Fock is   0.10 seconds
+ >>> WALL time used in SO Fock is   0.10 seconds
+E_HOMO...E_LUMO, symmetry 1:                                 31  -0.31539   32   0.25314
+>>> Total wall time:  0.10600000s, and total CPU time :  0.10583900s
+
+########## END ITERATION NO.   2 ##########   Sat Sep 13 00:43:36 2025
+
+It.    2    -149.8902517766      9.64D+01  3.99D+00  8.85D-01               0.10600000s   LL SL          Sat Sep 13
+
+########## START ITERATION NO.   3 ##########   Sat Sep 13 00:43:36 2025
+
+    3 *** Differential density matrix. DCOVLP     = 0.9880
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   30.34%    0.00%    0.00%   0.01265000s
+SOfock:SL  1.00D-12    0.00%   35.06%    0.00%    0.00%   0.06435397s
+E_HOMO...E_LUMO, symmetry 1:                                 31  -0.45414   32   0.23020
+>>> Total wall time:  0.08200000s, and total CPU time :  0.08180401s
+
+########## END ITERATION NO.   3 ##########   Sat Sep 13 00:43:36 2025
+
+It.    3    -150.0100400338      1.20D-01 -5.49D-01  3.70D-01   DIIS   2    0.08200000s   LL SL          Sat Sep 13
+
+########## START ITERATION NO.   4 ##########   Sat Sep 13 00:43:36 2025
+
+    4 *** Differential density matrix. DCOVLP     = 0.9899
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   30.45%    0.00%    0.00%   0.01306200s
+SOfock:SL  1.00D-12    0.00%   35.89%    0.00%    0.00%   0.06520399s
+E_HOMO...E_LUMO, symmetry 1:                                 31  -0.46012   32   0.22893
+>>> Total wall time:  0.08400000s, and total CPU time :  0.08351201s
+
+########## END ITERATION NO.   4 ##########   Sat Sep 13 00:43:36 2025
+
+It.    4    -150.0295750932      1.95D-02  1.53D-01  2.59D-02   DIIS   3    0.08400000s   LL SL          Sat Sep 13
+
+########## START ITERATION NO.   5 ##########   Sat Sep 13 00:43:36 2025
+
+    5 *** Differential density matrix. DCOVLP     = 0.9982
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   30.60%    0.00%    0.00%   0.01265901s
+SOfock:SL  1.00D-12    0.00%   36.59%    0.00%    0.00%   0.06559899s
+E_HOMO...E_LUMO, symmetry 1:                                 31  -0.46188   32   0.22762
+>>> Total wall time:  0.08300000s, and total CPU time :  0.08301100s
+
+########## END ITERATION NO.   5 ##########   Sat Sep 13 00:43:36 2025
+
+It.    5    -150.0299256749      3.51D-04 -2.87D-03  8.65D-03   DIIS   4    0.08300000s   LL SL          Sat Sep 13
+
+########## START ITERATION NO.   6 ##########   Sat Sep 13 00:43:36 2025
+
+    6 *** Differential density matrix. DCOVLP     = 0.9994
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   30.79%    0.00%    0.00%   0.01332897s
+SOfock:SL  1.00D-12    0.00%   37.18%    0.00%    0.01%   0.06560701s
+E_HOMO...E_LUMO, symmetry 1:                                 31  -0.46178   32   0.22745
+>>> Total wall time:  0.08400000s, and total CPU time :  0.08365500s
+
+########## END ITERATION NO.   6 ##########   Sat Sep 13 00:43:36 2025
+
+It.    6    -150.0299868219      6.11D-05 -1.68D-03  2.45D-03   DIIS   5    0.08400000s   LL SL          Sat Sep 13
+
+########## START ITERATION NO.   7 ##########   Sat Sep 13 00:43:36 2025
+
+    7 *** Differential density matrix. DCOVLP     = 0.9998
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   31.08%    0.00%    0.00%   0.01317203s
+SOfock:SL  1.00D-12    0.00%   38.17%    0.00%    0.06%   0.06678599s
+E_HOMO...E_LUMO, symmetry 1:                                 31  -0.46172   32   0.22738
+>>> Total wall time:  0.08500000s, and total CPU time :  0.08505601s
+
+########## END ITERATION NO.   7 ##########   Sat Sep 13 00:43:36 2025
+
+It.    7    -150.0299933777      6.56D-06 -7.79D-04  4.65D-04   DIIS   6    0.08500000s   LL SL          Sat Sep 13
+
+########## START ITERATION NO.   8 ##########   Sat Sep 13 00:43:36 2025
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   31.82%    0.00%    0.00%   0.01283598s
+SOfock:SL  1.00D-12    0.00%   40.29%    0.00%    0.28%   0.07146901s
+E_HOMO...E_LUMO, symmetry 1:                                 31  -0.46170   32   0.22739
+>>> Total wall time:  0.08900000s, and total CPU time :  0.08919501s
+
+########## END ITERATION NO.   8 ##########   Sat Sep 13 00:43:36 2025
+
+It.    8    -150.0299936186      2.41D-07 -1.82D-04  1.19D-04   DIIS   7    0.08900000s   LL SL          Sat Sep 13
+
+########## START ITERATION NO.   9 ##########   Sat Sep 13 00:43:36 2025
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   32.69%    0.00%    0.00%   0.01268697s
+SOfock:SL  1.00D-12    0.00%   43.26%    0.00%    0.40%   0.06715202s
+E_HOMO...E_LUMO, symmetry 1:                                 31  -0.46170   32   0.22739
+>>> Total wall time:  0.08600000s, and total CPU time :  0.08500403s
+
+########## END ITERATION NO.   9 ##########   Sat Sep 13 00:43:36 2025
+
+It.    9    -150.0299936346      1.60D-08 -4.39D-05  3.44D-05   DIIS   8    0.08600000s   LL SL          Sat Sep 13
+
+########## START ITERATION NO.  10 ##########   Sat Sep 13 00:43:36 2025
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   33.58%    0.00%    0.00%   0.01264399s
+SOfock:SL  1.00D-12    0.00%   46.58%    0.00%    0.63%   0.06711400s
+>>> Total wall time:  0.08300000s, and total CPU time :  0.08311999s
+
+########## END ITERATION NO.  10 ##########   Sat Sep 13 00:43:36 2025
+
+It.   10    -150.0299936359      1.33D-09  1.11D-05  6.87D-06   DIIS   8    0.08300000s   LL SL          Sat Sep 13
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on total energy.
+  Desired convergence :5.000D-09
+  Allowed convergence:5.000D-09
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1    -53.46161199073      0.00D+00  0.00D+00  0.00D+00               0.02033700s   Atom. scrpot   Sat Sep 13
+It.    2    -149.8902517766      9.64D+01  3.99D+00  8.85D-01               0.10600000s   LL SL          Sat Sep 13
+It.    3    -150.0100400338      1.20D-01 -5.49D-01  3.70D-01   DIIS   2    0.08200000s   LL SL          Sat Sep 13
+It.    4    -150.0295750932      1.95D-02  1.53D-01  2.59D-02   DIIS   3    0.08400000s   LL SL          Sat Sep 13
+It.    5    -150.0299256749      3.51D-04 -2.87D-03  8.65D-03   DIIS   4    0.08300000s   LL SL          Sat Sep 13
+It.    6    -150.0299868219      6.11D-05 -1.68D-03  2.45D-03   DIIS   5    0.08400000s   LL SL          Sat Sep 13
+It.    7    -150.0299933777      6.56D-06 -7.79D-04  4.65D-04   DIIS   6    0.08500000s   LL SL          Sat Sep 13
+It.    8    -150.0299936186      2.41D-07 -1.82D-04  1.19D-04   DIIS   7    0.08900000s   LL SL          Sat Sep 13
+It.    9    -150.0299936346      1.60D-08 -4.39D-05  3.44D-05   DIIS   8    0.08600000s   LL SL          Sat Sep 13
+It.   10    -150.0299936359      1.33D-09  1.11D-05  6.87D-06   DIIS   8    0.08300000s   LL SL          Sat Sep 13
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   10 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.02000000s
+      LL SL        :    0.08688889s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Charge of molecule : 0
+
+   Electronic energy                        :    -186.18127933680816
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :      36.15128423750657
+   SS Coulombic correction                  :       0.00000146340132
+
+   Sum of all contributions to the energy
+   Total energy                             :    -150.02999363590027
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+-20.53981324105846  ( 2)   -20.53940111474443  ( 2)    -1.45773384365699  ( 2)    -1.21150367327203  ( 2)    -0.72078156040236  ( 2)
+ -0.63266318501945  ( 2)    -0.56205533620077  ( 2)    -0.53291194742147  ( 2)    -0.46169601072364  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+  0.22739271596932  ( 2)     0.23009373449913  ( 2)     0.35391224161871  ( 2)     1.18335434731765  ( 2)     1.24593260841418  ( 2)
+  1.68515673715160  ( 2)     1.75838719715157  ( 2)     1.87800701006270  ( 2)     1.88969530432654  ( 2)     2.02666461295880  ( 2)
+  2.03494591763288  ( 2)     2.82678917274699  ( 2)     3.41837757357024  ( 2)
+* HOMO - LUMO gap:
+
+    E(LUMO) :     0.22739272 au (symmetry E1 )
+  - E(HOMO) :    -0.46169601 au (symmetry E1 )
+  ------------------------------------------
+    gap     :     0.68908873 au
+
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   * HF & DFT first order properties
+      Trond Saue
+
+   * First-order ESR properties
+      Hans Joergen Aa. Jensen et al.
+
+   * MP2 first order properties:
+      J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   * KR-RPA second-order properties
+      Hans Joergen Aa. Jensen and Trond Saue
+
+   * KR-QR third order properties
+      Patrick Norman and Hans Joergen Aa. Jensen
+
+   * Oscillator strengths beyond the electric dipole approximation
+      N.H. List, T.R.L Melin, M. van Horn, T. Saue, J. Chem. Phys. 152 (2020) 184110
+
+   * Molecular gradient
+      Joern Thyssen
+
+   * Additional contributions from:
+      Thomas Enevoldsen, Miroslav Ilias (London orbitals)
+
+   * First-order exp. val. contribution from:
+      Chima Chibueze (KU DHF and KU CCSD)
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+
+    **************************************************************************
+    *************************** Expectation values ***************************
+    **************************************************************************
+
+    PVCH1 01         :     0.56262349E-08 a.u.      s0 = F   t0 = F
+    PVCO3 03         :     0.22259082E-05 a.u.      s0 = F   t0 = F
+    ---------------------------------------------------------------------------
+    s0 = T : Expectation value zero by point group symmetry.
+    t0 = T : Expectation value zero by time reversal symmetry.
+
+    * Orbital classes:
+    Fermion ircop:E1 
+    - Inactive orbitals  :      1..     9                                          
+    - Active orbitals    : No electrons
+    - Secondary orbitals :    -22..-1,    10..    22                               
+
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -150.029993634571809
+* Heading : Data read from the checkpoint file                                       
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+PVCH1 01         - Symmetry: A    T+
+
+
+* GETFCK: reading old two-electron Fock matrix
+
+* REAFCK: Fock matrix read from file DFFCK2                                                      
+* Heading : PVC to EFG                                       Sat Sep 13 00:43:36 2025
+
+* GETFCK: reading old one-electron Fock matrix
+
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading : PVC to EFG                                       Sat Sep 13 00:43:36 2025
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  8.47D-09
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.18D+03
+* Screening threshold in LR solver scaled with norm of property vector:  2.4585D-01
+  and changed to:  2.0835D-09
+
+########## START MICROITERATION NO.   1 ##########   Sat Sep 13 00:43:36 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.08D-09    0.00%   39.00%   26.29%    5.59%   0.01183200s
+SOfock:SL  2.08D-09    0.00%   44.18%    0.58%    0.00%   0.06376696s
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.20E-03  2.20E-03  7.55E-07
+
+########## START MICROITERATION NO.   2 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.08D-09    0.00%   38.76%   22.62%    4.92%   0.01233304s
+SOfock:SL  2.08D-09    0.00%   59.08%   18.59%    4.81%   0.05905104s
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  3.70E-04  3.70E-04  1.54E-06
+
+########## START MICROITERATION NO.   3 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.08D-09    0.00%   44.63%   34.71%    8.39%   0.01347399s
+SOfock:SL  2.08D-09    0.00%   66.18%   22.70%   10.54%   0.05646694s
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  6.85E-05  6.85E-05  1.61E-06
+
+########## START MICROITERATION NO.   4 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.08D-09    0.00%   52.00%   42.92%   28.40%   0.01299500s
+SOfock:SL  2.08D-09    0.48%   72.45%   24.55%   16.29%   0.05719900s
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.21E-05  2.21E-05  1.26E-07
+
+########## START MICROITERATION NO.   5 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.08D-09    0.00%   58.97%   30.55%    7.80%   0.01821899s
+SOfock:SL  2.08D-09   11.29%   69.24%   20.02%   21.12%   0.05258894s
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  7.59E-06  7.59E-06  1.63E-07
+
+########## START MICROITERATION NO.   6 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.08D-09    0.00%   67.66%   20.66%    5.14%   0.01226199s
+SOfock:SL  2.08D-09   18.69%   67.33%   15.67%   24.43%   0.04465795s
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  3.26E-06  3.25E-06  1.75E-07
+
+########## START MICROITERATION NO.   7 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.08D-09    0.00%   73.91%    9.14%    2.29%   0.01249492s
+SOfock:SL  2.08D-09    3.57%   85.34%    4.65%   13.60%   0.05866003s
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  1.17E-06  1.16E-06  1.79E-07
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  7 microiterations
+
+            Freq.(au)   Total norm    E+ norm   P+ norm 
+========================================================
+* It.  1   0.08256996s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.20D-03 |   2.20D-03  7.55D-07
+========================================================
+* It.  2   0.07778203s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   3.70D-04 |   3.70D-04  1.54D-06
+========================================================
+* It.  3   0.07627809s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   6.85D-05 |   6.85D-05  1.61D-06
+========================================================
+* It.  4   0.08209407s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.21D-05 |   2.21D-05  1.26D-07
+========================================================
+* It.  5   0.07799006s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   7.59D-06 |   7.59D-06  1.63D-07
+========================================================
+* It.  6   0.06335902s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   3.25D-06 |   3.25D-06  1.75D-07
+========================================================
+* It.  7   0.07748902s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.17D-06 |   1.16D-06  1.79D-07
+========================================================
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+PVCO3 03         - Symmetry: A    T+
+
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  8.47D-09
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.18D+03
+* Screening threshold in LR solver scaled with norm of property vector:  7.5056D+01
+  and changed to:  6.3607D-07
+
+########## START MICROITERATION NO.   1 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  6.36D-07    0.00%   43.98%   45.50%   11.10%   0.01299202s
+SOfock:SL  6.36D-07    0.00%   53.43%   11.71%    0.01%   0.06414890s
+* Trial vectors in this micro iteration:  E+:  0  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  8.99E-01  8.99E-01  1.01E-03
+
+########## START MICROITERATION NO.   2 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  6.36D-07    0.00%   39.16%   29.90%    5.93%   0.01242590s
+SOfock:SL  6.36D-07    0.00%   59.59%   24.79%    5.98%   0.05886304s
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  1.05E-01  1.05E-01  7.67E-04
+
+########## START MICROITERATION NO.   3 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  6.36D-07    0.00%   45.27%   39.86%    9.92%   0.01483893s
+SOfock:SL  6.36D-07    0.42%   67.19%   25.56%   11.92%   0.06429696s
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  2.26E-02  2.26E-02  8.30E-04
+
+########## START MICROITERATION NO.   4 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  6.36D-07    0.00%   52.65%   42.32%   28.16%   0.01732898s
+SOfock:SL  6.36D-07    2.75%   72.60%   24.13%   16.91%   0.06325006s
+* Trial vectors in this micro iteration:  E+:  1  P+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  7.08E-03  7.08E-03  5.31E-05
+
+########## START MICROITERATION NO.   5 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  6.36D-07    0.00%   59.83%   30.43%    7.48%   0.01265788s
+SOfock:SL  6.36D-07   10.36%   71.91%   18.77%   19.84%   0.05685091s
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  3.47E-03  3.47E-03  7.25E-05
+
+########## START MICROITERATION NO.   6 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  6.36D-07    0.00%   64.69%   20.38%    5.17%   0.01669192s
+SOfock:SL  6.36D-07   10.74%   73.69%   12.70%   20.78%   0.05162406s
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  1.46E-03  1.46E-03  7.72E-05
+
+########## START MICROITERATION NO.   7 ##########   Sat Sep 13 00:43:37 2025
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  6.36D-07    0.00%   72.35%   10.21%    2.56%   0.01190197s
+SOfock:SL  6.36D-07    5.33%   82.68%    5.74%   15.66%   0.05284476s
+* Trial vectors in this micro iteration:  E+:  1  P+:  0
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   P+ part 
+     0.00000000  1.00E-05  5.52E-04  5.47E-04  7.77E-05
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  7 microiterations
+
+            Freq.(au)   Total norm    E+ norm   P+ norm 
+========================================================
+* It.  1   0.08520198s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   8.99D-01 |   8.99D-01  1.01D-03
+========================================================
+* It.  2   0.07837415s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.05D-01 |   1.05D-01  7.67D-04
+========================================================
+* It.  3   0.08722997s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   2.26D-02 |   2.26D-02  8.30D-04
+========================================================
+* It.  4   0.09217894s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   7.08D-03 |   7.08D-03  5.31D-05
+========================================================
+* It.  5   0.07654607s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   3.47D-03 |   3.47D-03  7.25D-05
+========================================================
+* It.  6   0.07458401s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.46D-03 |   1.46D-03  7.72D-05
+========================================================
+* It.  7   0.07139206s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   5.52D-04 |   5.47D-04  7.77D-05
+========================================================
+
+
+                          Linear response; final output
+                          -----------------------------
+
+
+<<A( 1),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XX011           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.43096919E-07 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 1),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XX011           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.11157527E-05 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XY011           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.40649743E-07 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XY011           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.14194707E-05 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XZ011           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.38981937E-07 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XZ011           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.52511457E-05 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 4),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: YY011           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.37767931E-07 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 4),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: YY011           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.86992030E-06 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 5),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: YZ011           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.20658678E-07 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 5),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: YZ011           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.74600024E-06 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 6),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: ZZ011           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.80864850E-07 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 6),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: ZZ011           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.19856730E-05 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 7),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XX031           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.11269234E-06 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 7),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XX031           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.11670456E-03 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 8),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XY031           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.61556513E-06 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 8),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XY031           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.18535782E-04 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 9),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XZ031           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.38414937E-06 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 9),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: XZ031           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.27639483E-04 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A(10),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: YY031           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.13140242E-06 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A(10),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: YY031           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.10561595E-03 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A(11),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: YZ031           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.56551079E-06 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A(11),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: YZ031           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.68835058E-04 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A(12),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: ZZ031           A    T+
+   B - PVCH1 01             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.24409476E-06 a.u.                       4.78E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A(12),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - EFG: ZZ031           A    T+
+   B - PVCO3 03             A    T+
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.11088616E-04 a.u.                       7.36E-06   (converged)
+-----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------
+----------------------------------------------------------------------------
+* Parity violation - chirality E(PV):
+
+----------------------------------------------------------------------------
+     Nucleus  Isotope         integral        factor            contrib.    
+                             MPV(n)/au       QW(n)      
+      H1          1     5.626234875301E-09      0.07512    3.321034363641E-24
+      O3         17     2.225908230329E-06     -8.39904   -1.469050876138E-19
+----------------------------------------------------------------------------
+    Total EPV =                                           -1.469017665794E-19
+
+
+      **********************************************************************
+      **************** PARITY-VIOLATION CONTRIBUTION TO EFG ****************
+      **********************************************************************
+
+      According to J. J. Aucar and A. F. Maldonado,
+      Parity Violation Effects on the Electric Field Gradient,
+      Phys. Chem. Chem. Phys., 27, 7594 (2025)
+      --------------------------------------------------------
+ 
+@ Nuclear species:
+===============================================================
+@ name  charge  isotope   mass         abundance           Qw
+---------------------------------------------------------------
+@ H1         1        1     1.000000      99.985         0.0751
+@                     2     2.000000       0.015        -0.9249
+@ O3         8        1    16.000000      99.760        -7.3990
+@                     2    18.000000       0.200        -9.3990
+@                     3    17.000000       0.040        -8.3990
+-------------------------------------------------------------
+
+@ Selected nuclear species:
+===============================================================
+@ name  charge  isotope   mass         abundance           Qw
+---------------------------------------------------------------
+@ H1         1        1     1.000000      99.985         0.0751
+@ O3         8        3    17.000000       0.040        -8.3990
+-------------------------------------------------------------
+
+
+
+
+
+
+===========================================================================================
+  Nucleus: H1  
+
+
+  Total PV contributions to EFG tensor (a.u.):
+  --------------------------------------------
+
+                   x             y             z
+   x       -0.254391E-22  0.239946E-22 -0.230101E-22
+   y        0.239946E-22 -0.222935E-22 -0.121943E-22
+   z       -0.230101E-22 -0.121943E-22  0.477326E-22
+
+
+
+  e-p and e-e response contributions (a.u.):
+  ------------------------------------------
+
+            x             y             z                 x             y             z
+  x  0.398466E-25 -0.817881E-25  0.414748E-26     -0.254789E-22  0.240764E-22 -0.230143E-22
+  y -0.817881E-25 -0.531662E-25 -0.174272E-25      0.240764E-22 -0.222404E-22 -0.121769E-22
+  z  0.414748E-26 -0.174272E-25  0.133196E-25     -0.230143E-22 -0.121769E-22  0.477193E-22
+
+===========================================================================================
+  Nucleus: O3  
+
+
+  Total PV contributions to EFG tensor (a.u.):
+  --------------------------------------------
+
+                   x             y             z
+   x        0.770225E-17 -0.122332E-17 -0.182415E-17
+   y       -0.122332E-17 -0.697042E-17 -0.454296E-17
+   z       -0.182415E-17 -0.454296E-17 -0.731824E-18
+
+
+
+  e-p and e-e response contributions (a.u.):
+  ------------------------------------------
+
+            x             y             z                 x             y             z
+  x  0.144288E-19  0.482375E-20 -0.146931E-19      0.768782E-17 -0.122814E-17 -0.180945E-17
+  y  0.482375E-20  0.157480E-21  0.326208E-20     -0.122814E-17 -0.697058E-17 -0.454623E-17
+  z -0.146931E-19  0.326208E-20 -0.145862E-19     -0.180945E-17 -0.454623E-17 -0.717238E-18
+
+===========================================================================================
+
+ * Closing HDF5 checkpoint file 
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Sat Sep 13 00:43:38 2025
+     Host name              : Yo-Nitro                                
+
+>>>> Node 0, utime: 2, stime: 0, minflt: 28556, majflt: 0, nvcsw: 9, nivcsw: 128, maxrss: 138628
+>>>> Total WALL time used in DIRAC: 2s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :        79.22
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.11 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        0.05 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.03 Mb at subroutine __allocator_track_if_MOD_allocator_registe for QTRANS90-buffer-space                     
+  
+  Peak memory usage:       488.39 MB
+  Peak memory usage:        0.477 GB
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:    0.00 MB
+
+*****************************************************
+DIRAC pam run in /home/juanjoaucar/Documentos/dirac-pv-efg/build-serial/test/response_pv_efg

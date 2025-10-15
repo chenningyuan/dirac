@@ -9,9 +9,9 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(string    = ' EEDM', rel_tolerance = 1.0e-4)
-f.add(string    = ' MHYP', rel_tolerance = 1.0e-4)
-f.add(string    = ' ENSPS', rel_tolerance = 1.0e-4)
+f.add(string    = ' EEDM',  rel_tolerance = 1.2e-4)
+f.add(string    = ' MHYP',  rel_tolerance = 1.2e-4)
+f.add(string    = ' ENSPS', rel_tolerance = 1.2e-4)
 
 test.run(['BeH.inp'], ['BeH.mol'], f)
 

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -75,8 +70,12 @@ C     set "I/O node master" + "shared memory node master"
       
 !     place spinors (as MOs) in appropriate boson irreps  for further processing (see next step)
       if(dougrp .ge. 10)then
+      
+        call alloc(orb_sym_vec,norbt); orb_sym_vec = 0
+        call icopy(norbt,orbsymVEC,1,orb_sym_vec,1)
+
+#ifdef BLUBB
         call num2str(myproc,mynum_str)
-        call alloc(orb_sym_vec,norbt)
         write(orb_sym_fn,'(a7,a4)') 'orbsym.',mynum_str
         orb_sym_vec = 0
         orb_sym_fh = 99
@@ -84,6 +83,8 @@ C     set "I/O node master" + "shared memory node master"
      &       form='unformatted',action='readwrite',position='rewind')
         read(orb_sym_fh) (orb_sym_vec(i), i=1,norbt)
         close(orb_sym_fh)
+#endif
+
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         print *, 'content of orb_sym_vec is: ',myproc
@@ -95,16 +96,6 @@ C     set "I/O node master" + "shared memory node master"
 !     generalized routine for handling of all double groups including
 !     linear symmetry (dougrp == 10 or 11)
 !     write(lupri,*) 'bla - go in here???? '
-#if defined VAR_IFORT && !defined INT_STAR8
-!     write(lupri,*) 'bla - go in here, yes!!!! '
-      if(myproc .eq. master)then
-        luxxx = lupri
-      else
-        luxxx = luwrt
-      end if
-      write(luxxx,*) ' '
-      call flshfo(luxxx)
-#endif
       call match_spinor_2_boson_irrep(ngsob,ngsob2,ibosym,ngsh,
      &                                orb_sym_vec,iorb,npsh,nish,
      &                                mxndgirr,mxpngas,nfsym,ngas,
@@ -123,10 +114,6 @@ C     set "I/O node master" + "shared memory node master"
 !     types of determinants to be included
       CALL DETTYP(IPRSTR)
 
-#if defined VAR_IFORT && !defined INT_STAR8
-      write(luxxx,*) ' '
-      call flshfo(luxxx)
-#endif
 !     number of string types
       CALL STRTYP_GAS_REL(IPRSTR)
 
@@ -270,6 +257,8 @@ C***********************************************************************
 *
 C***********************************************************************
 *
+      use luci_wrkspc
+      use memory_allocator
       use mc_energies
       use symmetry_setup_krci
       use os_utils
@@ -282,7 +271,6 @@ C***********************************************************************
 #include "dcbbos.h"
 #include "dgroup.h"
 *.Memory
-#include "../luciarel/wrkspc.inc"
 #include "../luciarel/ipoist8.inc"
 *.File numbers
 #include "../luciarel/clunit.inc"
@@ -327,18 +315,9 @@ C
       MZ_NUM = MIN(NZ,2)
       MIN_ONE = - 1
 
-C     Compute offset from WRK in parameter list
-C     to WORK in common in wrkspc.inc. WORK is used internally in LUCIAREL.
-C     This offset is added to all Ksomething addresses in WORK(Ksomething)
-C     so that WRK(1:LWRK) are the memory addresses really used.
-
-C     Note that K_OFFSET is in ipoist8.inc and is always i*8
-C     because the offset can be bigger than what can be stored in i*4.
-C     ** All Ksomething used in WORK(Ksomething) must always be i*8 and declared in ipoist8.inc **
-C     See also subroutine MEMMAR.
-
-      CALL COMPOFF(WRK,WORK,K_OFFSET)
-C     *k_offset = (long) (wrk-work+1);
+      k_offset = 1
+      call legacy_lwork_get(lwrk)
+      call allocate_wrkspc
 
       MXPWRD = LWRK
       KADD = MXPWRD
@@ -715,7 +694,7 @@ C
                 eref = emc_ref ! initialize...
 C
 C###############################################################
-                CALL GASCI_REL(F1,F2,
+                CALL GASCI_LUCIAREL(F1,F2,
      &                         ISM,ISPC,IPRDIA,
      &                         EREF,ECORE_KRMC,CIRUN,
      &                         WORK(KPROCLIST),WORK(KGROUPLIST))
@@ -739,6 +718,7 @@ C     ^ end loop over different T operators (default=1)
 C
 C     release memory
  8888 CALL MEMMAR(IDUM,IDUM,'FLUSM',IDUM,'GROUPL')
+      call delete_wrkspc
 C
 #if defined (VAR_MPI2)
 C

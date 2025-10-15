@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C FILE    : dirden.F
@@ -199,7 +194,6 @@ C       2 - 000010: Active density matrix (see bit 6-?)
 C       4 - 000100: Secondary electron density matrix
 C       8 - 001000: Secondary positron density matrix
 C      16 - 010000: C Ct (that is 1 in AO-basis)
-C      32 - 100000: reference vacuum (for QED)
 C
 C     Important: Act. density matrix works only for one open shell.
 C
@@ -225,16 +219,8 @@ C
 C
 C     Initialize matrix
 C
-      IF (LBIT(IFLAG,6).AND.VACREF) THEN
-        LUBVAC = 14
-        CALL OPNFIL(LUBVAC,'DFBVAC','OLD','GENDEN')
-        CALL READT(LUBVAC,N2BBASXQ,DMAT)
-        CLOSE(LUBVAC,STATUS='KEEP')
-        FAC    = DM1
-      ELSE
         CALL DZERO(DMAT,N2BBASXQ)
         FAC    = D0
-      ENDIF
 C
 C
       IF(IFLAG.EQ.0) GOTO 999
@@ -244,28 +230,23 @@ C
       IF (LBIT(IFLAG,I)) THEN
         DO 20 IFRP = 1,NFSYM
           IF (I.EQ.1) THEN
-            ITEST  = NISH(IFRP)
             ISTART = NPSH(IFRP)+1
             ILOOP  = NISH(IFRP)
           ELSEIF (I.EQ.2) THEN
-            ITEST  = NASH(IFRP)
             ISTART = NPSH(IFRP)+NISH(IFRP)+1
             ILOOP  = NASH(IFRP)
           ELSEIF (I.EQ.3) THEN
-            ITEST  = NSSH(IFRP)
             ISTART = NPSH(IFRP)+NISH(IFRP)+NASH(IFRP)+1
             ILOOP  = NSSH(IFRP)
           ELSEIF (I.EQ.4) THEN
-            ITEST  = NPSH(IFRP)
             ISTART = 1
             ILOOP  = NPSH(IFRP)
           ELSEIF (I.EQ.5) THEN
-            ITEST  = NORB(IFRP)
             ISTART = 1
             ILOOP  = NORB(IFRP)
           ENDIF
-          IF (ITEST.EQ.0) GOTO 20
-CMI ... inserted control print-out of variables
+          ITEST = ITEST + ILOOP
+          IF (ILOOP.EQ.0) GOTO 20
           IF (IPRINT.GE.10) THEN
            WRITE(LUPRI,'(/,8X,A,/)')
      &     '* Output from GENDEN:  before calling DENST1'
@@ -285,8 +266,8 @@ CMI ... inserted control print-out of variables
           CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,
      &              D1,FAC,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
      &              ISTART,ILOOP,NFBAS(IFRP,0))
- 20    CONTINUE
-      IF (ITEST.NE.0) FAC= D1
+ 20     CONTINUE
+        IF(ITEST.NE.0) FAC= D1
       ENDIF
  10   CONTINUE
       IF (IPRINT.GE.10) THEN
@@ -308,8 +289,6 @@ CMI ... inserted control print-out of variables
           ELSEIF (I.EQ.5) THEN
             WRITE(LUPRI,'(3X,A)') 
      &           '- C Ct (1 in AO-basis)'
-          ELSEIF (I.EQ.6) THEN
-            WRITE(LUPRI,'(3X,A)') '- reference vacuum'
           ENDIF
         ENDIF
         ENDDO
@@ -419,17 +398,7 @@ C
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
 
       IDEN = 1
-      IF(VACPOL.AND..NOT.MIXVAC) THEN
-        IF(POSVAC) THEN
-          IDEN = IDEN + 4 + 32
-        ELSE
-          IDEN = IDEN + 8 + 32
-        ENDIF
-      ENDIF
       CALL GENDEN(DMAT,CMO,IDEN,IPRINT)
-CTROND...This only works for zero electrons !!!
-      IF(POSVAC) CALL DSCAL(N2BBASXQ,DM1,DMAT,1)
-      IF(MIXVAC) CALL GENMIXVAC(DMAT,CMO,IPRINT)
       IF(AOC) THEN
 C.......Average of Configuration
         DO IOPEN = 1,NOPEN
@@ -497,8 +466,6 @@ C  /* Deck denst1 */
       SUBROUTINE DENST1(DMAT,LRD,LCD,NZ,ALPHA,BETA,
      &                   CMO,LRC,LCC,JVEC,NVEC,NBAS)
 C*****************************************************************************
-C
-C     Construct density matrix for fermion corep IFRP
 C
 C     DMAT:= alpha*CMO*CMO(H) +  beta*DMAT
 C
@@ -756,78 +723,6 @@ C
       ENDIF
       WRITE(LUPRI,'(A,F16.8)') 
      &   'EIGSEP: * Electron number: ',OCC
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck genaltvac */
-      SUBROUTINE GENMIXVAC(DMAT,CMO,IPRINT)
-C*****************************************************************************
-C
-C     Calculate alternative definition of density matrix of 
-C     vacuum polarisation:
-C
-C     The standard definition is:
-C
-C     D(vacpol) = [D(-) - D(-)_ref]
-C
-C     Alternatively:
-C
-C     D(vacpol) = (1/2)[D(-) - D(+)]
-C    
-C
-C     Note that the density matrix is NOT initialized to zero !
-C
-C     Written by  T. Saue Oct 9 2006
-C     Last revision: 1997/11/23 - jth
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER (D1=1.0D00,DM1=-1.0D00,D0=0.0D00,DP5=0.5D0,DPM5=-0.5D0)
-C
-      DIMENSION DMAT(*), CMO(*)
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-C
-#include "ibtfun.h"
-C
-      CALL QENTER('GENMIXVAC')
-C
-C     Calculate negative energy part
-C
-      DO IFRP = 1,NFSYM
-        ITEST  = NPSH(IFRP)
-        ISTART = 1
-        ILOOP  = NPSH(IFRP)
-        IF(ITEST.GT.0) THEN
-          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,
-     &              DP5,D1,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
-     &              ISTART,ILOOP,NFBAS(IFRP,0))
-        ENDIF
-        ITEST  = NESH(IFRP)
-        ISTART = NPSH(IFRP)+1
-        ILOOP  = NESH(IFRP)
-        IF(ITEST.GT.0) THEN
-          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,
-     &              DPM5,D1,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
-     &              ISTART,ILOOP,NFBAS(IFRP,0))
-        ENDIF
-      ENDDO
-      IF (IPRINT.GE.10) THEN
-        WRITE(LUPRI,'(A)') '* Output from GENMIXVAC:'
-        DO IFRP = 1,NFSYM
-          WRITE(LUPRI,'(/A,A3)')
-     &      '* Fermion ircop ',FREP(IFRP)
-          CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1),
-     &              NFBAS(IFRP,0),NFBAS(IFRP,0),
-     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-        ENDDO
-      END IF
-C   
- 999  CONTINUE
-      CALL QEXIT('GENMIXVAC')
-      CALL FLSHFO(LUPRI)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

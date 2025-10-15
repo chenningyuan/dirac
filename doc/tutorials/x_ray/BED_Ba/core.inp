@@ -1,0 +1,54 @@
+**DIRAC                                                                                             
+.WAVE FUNCTION                                                                                      
+.ANALYZE      
+.PROPERTIES                                                                                      
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONT                                                                                             
+*TWOINT                                                                                             
+.SCREEN                                                                                             
+-1.0D-16   
+**HAMILTONIAN
+.DFT
+PBE0                                                                                            
+**WAVE FUNCTION                                                                                     
+.SCF  
+*SCF
+.CLOSED SHELL                                                                                       
+32 24
+**PROPERTIES
+*EXCITATION ENERGIES
+.OCCUP
+1
+
+.EXCITATION  ! Ag                                                                                       
+1 1                                                                                                 
+.EXCITATION  ! B1g                                                                                       
+2 1                                                                                                 
+.EXCITATION  ! B2g                                                                                       
+3 1                                                                                                 
+.EXCITATION  ! B3g                                                                                       
+4 1                                                                                                 
+.EXCITATION  ! B3u                                                                                       
+5 1                                                                                                 
+.EXCITATION  ! B2u                                                                                       
+6 1                                                                                                 
+.EXCITATION  ! B1u                                                                                       
+7 1                                                                                                 
+.EXCITATION  ! Au                                                                                       
+8 1 
+.BED
+.INTENSE
+8                                                                                    
+**ANALYZE                                                                                           
+.MULPOP                                                                                             
+*MULPOP                                                                                             
+.VECPOP                                                                                             
+1..oo                                                                                               
+1..oo                                                                                               
+**MOLECULE                                                                                          
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+dyall.v2z
+**END OF
+

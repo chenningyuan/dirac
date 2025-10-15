@@ -31,9 +31,7 @@ test.run(['dc_pbe_magn_g0_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="num
 os.unlink('FILEEX')
 os.unlink('GRIDOUT')
 os.unlink('FROZEN')
-os.unlink('DFCOEF')
 os.unlink('numerical_grid')
 os.unlink('numerical_grid.ORIG')
-
 
 sys.exit(test.return_code)

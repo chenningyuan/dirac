@@ -49,6 +49,8 @@ Activates :ref:`*MP2CAL`.
 keyword(MVO)
 
 Calculate modified virtual orbitals (see :ref:`*MVOCAL`).
+Default after open-shell SCF is modified virtual orbitals based on the closed-shell molecular orbitals.
+There is no default for closed-shell SCF.
 
 keyword(MP2 NO)
 
@@ -111,6 +113,11 @@ keyword(EXACC)
 
 Activates the  :ref:`**EXACC` module, the new coupled cluster implementation
 based on the ExaTensor library.
+
+
+keyword(CASPT2)
+Activates the :ref:`*CASPT2` module. complete active space second-order
+perturbation theory calculation.
 
 
 **Pre-SCF orbital manipulations**

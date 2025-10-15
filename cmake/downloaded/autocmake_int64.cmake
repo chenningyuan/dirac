@@ -1,5 +1,5 @@
-# (c) https://github.com/coderefinery/autocmake/blob/master/AUTHORS.md
-# licensed under BSD-3: https://github.com/coderefinery/autocmake/blob/master/LICENSE
+# (c) https://github.com/dev-cafe/autocmake/blob/master/AUTHORS.md
+# licensed under BSD-3: https://github.com/dev-cafe/autocmake/blob/master/LICENSE
 
 #.rst:
 #
@@ -24,7 +24,7 @@ if(ENABLE_64BIT_INTEGERS)
         if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -i8")
         endif()
-        if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+        if(CMAKE_Fortran_COMPILER_ID MATCHES NVHPC)
             set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -i8")
         endif()
         if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

@@ -7,7 +7,7 @@ module xcint_main
    use interface_functional_read
    use xc_derv
    use xc_ac
-   use extra
+   use xcint_extra
    use file_units
    use interface_grid
    use dirac_ao_eval
@@ -27,6 +27,7 @@ module xcint_main
 
    public integrate_xc
    public get_xc_energy
+   public set_xc_energy_delta
    public get_xc_mat_energy
    public get_nr_electrons_integrated
    public get_susc2el_integrated
@@ -62,7 +63,9 @@ module xcint_main
    real(8) :: tau_integral
    real(8) :: nr_electrons_integrated
    real(8) :: xc_energy
+   real(8) :: xc_energy_delta = 0.0d0
    real(8) :: xc_mat_energy
+   real(8) :: xc_mat_energy_delta = 0.0d0
 
    real(8) :: susc2el_xc_integrated(3, 3)
    real(8) :: susc2el_xc_integrated_sdft(3, 3)
@@ -612,11 +615,9 @@ contains
       fmat = 0.0d0
 #endif
 
-#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
          call overlap_diagnostic_init(parallel_xc, xc_mpi_is_master())
       end if
-#endif
 
       if (london_direct_export .or. london_reorth_export) then
          call london_export_open_files(london_direct_export, london_reorth_export)
@@ -633,7 +634,6 @@ contains
 #endif
       end if
 
-#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
 #ifdef VAR_MPI
          if (parallel_xc) then
@@ -644,7 +644,6 @@ contains
             call o_matrix_to_disc()
          end if
       end if
-#endif /* MOD_UNRELEASED */
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -715,6 +714,7 @@ contains
          if (do_potential) then
             save_ddot2    = ddot(mat_dim*mat_dim, dmat_0(1,1,1), 1, fmat, 1)
             xc_mat_energy = save_ddot2 - save_ddot1
+            !print *, 'xc_mat_energy is ',xc_mat_energy, save_ddot2,save_ddot1
          end if
 
          call report()
@@ -1025,7 +1025,6 @@ contains
                      ao,                               &
                      buffer                            &
                     )
-
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
                                     use_gga_qr,               &
@@ -1054,11 +1053,9 @@ contains
                                     xc_energy                 &
                                    )
 
-#ifdef MOD_UNRELEASED
          if (do_overlap_diagnostic) then
             call integrate_o_matrix(block_length, rw(ipoint), ao)
          end if
-#endif
 
          deallocate(ao)
          deallocate(buffer)
@@ -1138,7 +1135,6 @@ contains
          w(1) = rw(ipoint)
 
          if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
             call get_kin_tau(tau,     &
                          0,       &
                          mat_dim, &
@@ -1146,9 +1142,6 @@ contains
                          buffer,  &
                          ao)
             tau_integral = tau_integral + w(1)*tau
-#else
-            call quit('tau_mgga not available in this version')
-#endif
          end if
 
 !       number of electrons
@@ -1220,11 +1213,7 @@ contains
             u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
           end if
          if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
             u%tn(1) = derv(1, d0000010)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
          end if
 
         end if !exchange-correlation potential
@@ -1873,7 +1862,7 @@ contains
       if (do_potential) then
          write(file_unit, '(3x, a, f26.16)')                        &
                'DFT exchange-correlation energy:               = ', &
-               xc_energy
+               get_xc_energy()
       end if
 
       write(file_unit, '(3x, a, f26.16)')                        &
@@ -1929,12 +1918,18 @@ contains
 
    function get_xc_energy()
       real(8) :: get_xc_energy
-      get_xc_energy = xc_energy
+      get_xc_energy = xc_energy + xc_energy_delta
    end function
+
+   subroutine set_xc_energy_delta(dXC,dXCpot)
+      real(8), intent(in), optional :: dXC,dXCpot
+      if(present(dXC   )) xc_energy_delta     = dXC
+      if(present(dXCpot)) xc_mat_energy_delta = dXCpot
+   end subroutine set_xc_energy_delta
 
    function get_xc_mat_energy()
       real(8) :: get_xc_mat_energy
-      get_xc_mat_energy = xc_mat_energy
+      get_xc_mat_energy = xc_mat_energy + xc_mat_energy_delta
    end function
 
    function get_susc2el_integrated() result(r)
@@ -2526,16 +2521,12 @@ contains
       if (calculate_qr) then
 
          if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
             call get_kin_tau(t_b,     &
                          isym(im) - 1,             &
                          mat_dim, &
                          dmaterturbed(1 + im_off), &
                          buffer,  &
                          ao)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
          end if
 
          if (is_gga_qr) then
@@ -2580,15 +2571,11 @@ contains
         end if
 
         if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
            u%tn(im) = u%tn(im) + derv(1, d0000020)*t_b
            u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
            u%tn(im) = u%tn(im) + derv(1, d0010010)*z_b
            u%n(im)  = u%n(im)  + derv(1, d1000010)*t_b
            u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*t_b*derv(1, d0010010)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
         end if
 
       end if !end of qr contribution
@@ -2624,16 +2611,12 @@ contains
                    ao)
         end if
         if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
            call get_kin_tau_imag(ts_b,     &
                              isym(im) - 1,             &
                              mat_dim, &
                              dmaterturbed(1 + im_off), &
                              buffer,  &
                              ao)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
         end if
 
         do k = k_start, 3
@@ -2651,15 +2634,11 @@ contains
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
            if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
               u%ts(k, im) = u%ts(k, im) + derv(1, d0000002)*ts_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0001001)*y_b(k)
               u%s(k, im) = u%s(k, im) + derv(1, d0100001)*ts_b(k)
               u%gs(1:3, k, im) = u%gs(1:3, k, im) + gn_0_pointwise(1:3)*ts_b(k)*derv(1, d0001001)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
            end if
         end do
 

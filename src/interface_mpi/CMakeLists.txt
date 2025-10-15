@@ -31,7 +31,7 @@ endif()
 
 add_library(
     interface_mpi
-    OBJECT
+    STATIC
     ${FIXED_INTERFACE_MPI_FORTRAN_SOURCES}
     ${FREE_INTERFACE_MPI_FORTRAN_SOURCES}
 )

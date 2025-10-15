@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -56,7 +51,6 @@ C
       CALL QENTER('TRDR2T')
       KFRSAV = KFREE
 C
-C     TODO (/hjaaj aug 2001):
       IF (.NOT. LMP2)
      &     CALL QUIT('TRDR2T: Only MP2 is implemented for strategy 2')
 C
@@ -2593,6 +2587,7 @@ C     Initialize
 C        Get hold of the slaves and initialize them
 C        (ITASK = 2 for parallel integral transformation)
 C     
+      cmmnfo = .true.
       CALL DIRAC_PARCTL( MOLTRA_PAR )
       KFRSAV = KFREE
       TMMP2 = 0.D0
@@ -2762,6 +2757,11 @@ C
             END IF
             CALL FLSHFO(LUPRI)
          END IF
+
+         IF (ISLVRL .GT. NODES) THEN
+            CALL QUIT('Program error, counter for number of '//
+     &         'released slaves is greater than number of nodes')
+         END IF
 C
 C     Check if current batch is finished
 C
@@ -2923,6 +2923,7 @@ C
 C
 C     Initialization
 C
+      cmmnfo = .true. ! hjaaj
       KFRSAV = KFREE
       CALL MKNSTT(NSTR,NSTRT)
       CALL DZERO(TIM1,7)
@@ -3032,9 +3033,13 @@ C ----------------------------------------------------------------------
 C     End inner loop over tasks
 C ----------------------------------------------------------------------
  200  CONTINUE
+      IF (CMMNFO) WRITE(LUPRI,'(A,I4,A,6I4,I8)') ' <COMMINFO> Node #',
+     &     MYTID, ' released; INTGTH, task:', INTGTH,IDSNFO
 C     
 C     4/4 transformation
 C
+      IF (INTGTH .GT. 0) THEN ! some integrals to transfer to master
+
       IF (IPRINT .GE. 1) WRITE (LUPRI,1012) N4QMT*8./(1024.*1024.)
       CALL MEMGET('REAL',K4QMAT,N4QMT,WORK,KFREE,LFREE)
       CALL DZERO(WORK(K4QMAT),N4QMT)
@@ -3082,6 +3087,9 @@ C
 #endif
       IF (CMMNFO) WRITE(LUPRI,'(A,I4,A,I4)') ' <COMMINFO> Node #',
      &     MYTID, ' sent fully transformed integrals for batch ', IJBTCH
+
+      END IF ! (INTGTH .GT. 0)
+
 C
 C     If master sends MP2FIN = .TRUE., there are no more batches
 C

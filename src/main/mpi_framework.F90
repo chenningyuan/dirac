@@ -2,24 +2,19 @@
 #define MPIX_DEBUG -1
 #endif
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! FILE    : mpi_framework.F90
@@ -282,8 +277,16 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
 !          way - smarter solutions are welcome.
 !
 !          ITASK == 0: print memory allocation; IVARIABLE = memsize (from
-!                      calling routine)
+!                      calling routine). the memsize in this case will typically
+!                      be the dimension of the work array (e.g. WORK_memsize at 
+!                      the time of writing)
 !          ITASK == 1: call timer and print timing results
+!          ITASK == 2: print memory allocation; IVARIABLE = maxsize (from
+!                      calling routine). In contrast to the first case above
+!                      (ITASK.eq.0), here maxsize is the maximum amount of 
+!                      memory to be in use, as set through the use of the
+!                      wrapper routines alloc/dealloc via the memory_allocator
+!                      module.
 !
 !          Written by Stefan Knecht, Duesseldorf 2008
 !                           H.J.Aa Jensen, SDU Odense, 2016  (polish output)

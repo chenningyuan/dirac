@@ -2,9 +2,11 @@ module exacorr_global
 
 !This module controls storage and interaction with the global data used in ExaCorr
 
-        use exacorr_datatypes
+        use exacorr_ao
         use exacorr_mo
+        use exacorr_1el
         use, intrinsic:: ISO_C_BINDING
+        use checkpoint
 
         implicit none
         private
@@ -66,15 +68,14 @@ module exacorr_global
          subroutine initialize_global_data
 
              use exacorr_respect
-             use exacc_cfg
-             use exacorr_utils, only : print_date
+             use exacorr_cfg, only: exa_input
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              use interface_to_mpi
              integer :: my_MPI_rank
 #endif
              integer :: ierr, scf_file, nmo_original
-             logical :: tobe, tobe_mp2no, tobe_dfcoef, tobe_respect
+             logical :: tobe, tobe_mp2no, tobe_dirac, tobe_respect
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
@@ -84,24 +85,28 @@ module exacorr_global
                 return
              end if
 #endif
-             ! our preferred coefficent file is the MP2 NO one, if present we use it before DFCOEF 
-             inquire (file='MP2NOs_AO',exist=tobe_mp2no)
-             inquire (file='DFCOEF',exist=tobe_dfcoef)
+             ! this decision tree needs to be generalized, for now we prioritize MP2 natural orbitals
+             ! followed  by RESPECT orbitals before standard canonical MOs
              inquire (file='RSD_MOS',exist=tobe_respect)
              ierr = -1
+             call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',tobe_dirac)
+             call checkpoint_query('/result/wavefunctions/mbpt/mobasis/nz',tobe_mp2no)
              if (tobe_mp2no) then
                scf_file = 2
-               call print_date ("Found Dirac MP2 natural orbitals file. using it.")
-               call read_from_dirac (ao_basis,cspinor_all,'MP2NOs_AO',ierr)
-             else if (tobe_dfcoef) then
+               call print_date ("Found Dirac MP2 natural orbitals, will use these.")
+               call read_from_dirac (ao_basis,cspinor_all,'mbpt',ierr)
+             else if (tobe_respect) then
+                scf_file = 1
+                call print_date ("Found ReSpect SCF orbitals file. Will read orbitals from this file.")
+                call read_from_respect (ao_basis,cspinor_all,ierr)
+             else if (tobe_dirac) then
              ! read MO coefficients and ao basis set information
                 scf_file = 0
                 call print_date ("Found Dirac SCF orbitals file. using it.")
-                call read_from_dirac (ao_basis,cspinor_all,'DFCOEF',ierr)
-             else if (tobe_respect) then
-                scf_file = 1
-                call print_date ("Found ReSpect SCF orbitals file. using it.")
-                call read_from_respect (ao_basis,cspinor_all,ierr)
+                call read_from_dirac (ao_basis,cspinor_all,'scf',ierr)
+             else
+                scf_file = -1
+                call print_date ("No orbitals file found.")
              end if
 
              if (ierr == 0) then
@@ -129,24 +134,38 @@ module exacorr_global
                end if
              end if
 
-             ! read property integrals (requires also readding of nsp from mrconee, so testing for this as well)
-             if (exa_input%nff(1)>0) then
-               inquire (file='MDPROP',exist=tobe)
-             else
-              exa_input%nff(2)=1
-              tobe=.FALSE.
-             end if
+             ! YX: MDPROP not only for finite gradient. So, we check if MDPROP first. 
+             inquire (file = 'MDPROP', exist=tobe)
              if (tobe.and.one_el_exist) then
-                call read_mdprop (int_1el, ierr)
-                if (ierr == 0) then
-                  call print_date("read property integrals from MDPROP")
-                else
-                  call print_date("could not read property integrals from MDPROP")
-                  int_1el%n_prop = 0
-                endif
+              call read_mdprop (int_1el, ierr)
+              if (ierr == 0) then
+                call print_date("read property integrals from MDPROP")
+              else
+                call print_date("could not read property integrals from MDPROP")
+                int_1el%n_prop = 0
+              endif
              else
-               int_1el%n_prop = 0
+                int_1el%n_prop = 0
              end if
+
+             ! read property integrals (requires also readding of nsp from mrconee, so testing for this as well)
+             if (exa_input%nff(1)<=0) then
+              !  inquire (file='MDPROP',exist=tobe)
+            !  else
+              exa_input%nff(2)=1
+              ! tobe=.FALSE.
+             end if
+            !  if (tobe.and.one_el_exist) then
+            !     call read_mdprop (int_1el, ierr)
+            !     if (ierr == 0) then
+            !       call print_date("read property integrals from MDPROP")
+            !     else
+            !       call print_date("could not read property integrals from MDPROP")
+            !       int_1el%n_prop = 0
+            !     endif
+            !  else
+            !    int_1el%n_prop = 0
+            !  end if
 
              call synchronize_global_data
 
@@ -403,6 +422,7 @@ module exacorr_global
 
       subroutine add_finitefield (h,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
 
+        use exacorr_cfg, only: exacc_input
         complex(8), intent(inout)     :: h(:,:)      ! one_body matrix to which the property field should be added
         type(exacc_input), intent(in) :: exa_input   ! field strength and label
         integer, intent(in)           :: iff
@@ -496,9 +516,11 @@ module exacorr_global
         integer,optional                      :: mo_list(:)
 
         integer :: str_len, sl, p_len, check, nmo_all
+        integer :: infty_len
         integer :: mo1, mo2, i, j, k, i_mo, size_mo
         character(len=20) :: sav_str
         character(len=10) :: num_str
+        character(len=1)  :: infty_str
         character(len=1)  :: p_str, c_str, e_str
         real(8)                  :: e_min, e_max, e_dist
         real(8), allocatable     :: dist_a(:), eps(:)
@@ -521,11 +543,13 @@ module exacorr_global
 
         str_len=len(inp_str)
         num_str='0123456789'
+        infty_str='o'
         p_str='.'
         c_str=','
         e_str=' '
         sl=0
         p_len=0
+        infty_len=0
         check=0
         nmo_all = cspinor_all%nmo/2
 
@@ -624,6 +648,13 @@ module exacorr_global
               else if (p_len>2) then
                 stop 'wrong number of points in string2mo'
               end if
+            else if (inp_str(i:i)==infty_str) then
+               infty_len=infty_len+1
+               if (infty_len==1) then
+                  sl=1
+               else if (infty_len>2) then
+                  stop 'infinity sign ill defined in string2mo'
+               end if
             else if (inp_str(i:i)==c_str) then
               if(p_len==0) then
                 read(sav_str(1:sl) , *) mo1
@@ -637,8 +668,12 @@ module exacorr_global
                   end if
                 end if
                 sl=0
-              else if (p_len==2) then
-                read(sav_str(1:sl) , *) mo2
+             else if (p_len==2) then
+                if (infty_len==2) then
+                   mo2 = nmo_all
+                else
+                   read(sav_str(1:sl) , *) mo2
+                end if
                 if (mo1>mo2) then
                   k=mo1
                   mo1=mo2
@@ -689,7 +724,11 @@ module exacorr_global
               end if
               sl=0
             else if (p_len==2) then
-              read(sav_str(1:sl) , *) mo2
+              if (infty_len==2) then
+                  mo2 = nmo_all
+              else
+                  read(sav_str(1:sl) , *) mo2
+              end if
               if (mo1>mo2) then
                 k=mo1
                 mo1=mo2
@@ -732,6 +771,7 @@ module exacorr_global
         string_occ_beta, string_virtual, string_vir_beta)
 
         use exacorr_datatypes
+        use exacorr_cfg, only: exacc_input
 
         implicit none
 
@@ -878,6 +918,7 @@ module exacorr_global
       subroutine print_orbitals ( exa_input )
 
         use exacorr_datatypes
+        use exacorr_cfg, only: exacc_input
 
         implicit none
 

@@ -8,8 +8,8 @@ Consistency Test: DALTON vs. DIRAC
 .SCREEN
 1.0D-20
 **HAMILTONIAN
-.PEQM
-*PEQM
+.PELIB
+*PELIB
 .GSPOL
 .POTENT
 peqm.pot

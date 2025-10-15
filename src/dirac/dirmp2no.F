@@ -1,24 +1,19 @@
 !define DEBUG_MP2_NO
 
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -51,9 +46,6 @@ C
 C
 C  .ACTIVE  - (string) Spinors to be included in the MP2 calculation
 C             Default: "energy -10.0 20.0 0.2"
-C  .MAX VS  - (integer) maximum number of virtuals in MP2
-C             if energy criterium gives more then max energy will be
-C             reduced
 C  .SCHEME  - transformation scheme used for MOLTRA (default taken from moltra)
 C  .SEL NO  - select min NO for active orbitals afterwards (relccsd,
 C             lucita, kr-mcscf, luciarel, ...)
@@ -67,7 +59,7 @@ C  .FOCKNO  - transform selected NO's to canonical Fock orbitals in
 C             subspace (?? for better convergence in CI?)
 C  
       SAVE SET
-      DATA TABLE /'.ACTIVE','.PRINT ','.INTFLG','.F2CONT','.MAX VS',
+      DATA TABLE /'.ACTIVE','.PRINT ','.INTFLG','.F2CONT','xxxxxxx',
      &            '.SCHEME','.SEL NO','.MULPOP'/
       DATA SET/.FALSE./
 C
@@ -87,7 +79,6 @@ C
 C     Initialize /CBIMP2NO/
 C     =====================
 C
-      DEF_EN   = .TRUE. ! VECMP2NO(I) is default with energy criterium
 #ifdef DEBUG_MP2_NO
       IPRMP2NO = MAX(10,IPRGEN)
 #else
@@ -109,9 +100,11 @@ C     step
         VECMP2NO(I) = 'energy -10.0 20.0 0.2 '
         VECNOSEL(I) = 'NO-occ 1.99999999 0.0001 0.1 '
       ENDDO
-      IMAXVSP     = JMAXVSP
 Caspg, default changed from scheme 4 to scheme 6
-      IAOMOSCHEME = 6 
+cayaki_03_06_2022
+c     default changed from scheme 6 to scheme 4, because scheme 4 is faster
+c     for the current architecture      
+      IAOMOSCHEME = 4
       
 C
 C     Process input from CBIMP2NO
@@ -145,7 +138,6 @@ C
     1          CONTINUE
 C&&&& ACTIVE: Spinors to be included in the MP2 calculation
                   READ(LUCMD,'(A72)') (VECMP2NO(I),I=1,NFSYM)
-                  DEF_EN = .FALSE.
                GO TO 100
     2          CONTINUE
 C&&&& PRINT: General print level
@@ -164,8 +156,7 @@ C&&& F2CONT: Specify Coulomb/exchange contributions
                   READ(LUCMD,*) IFCMP2NO,IFEMP2NO
                GO TO 100
     5          CONTINUE
-C&&& MAX VS: Specify max. number of virtual. spinors in NO-MP2 calculation
-                  READ(LUCMD,*) IMAXVSP
+C&&& 
                GO TO 100
     6          CONTINUE
 C&&& SCHEME: Specify integral transformation scheme for MP2 (RELCCSD
@@ -218,8 +209,6 @@ C
       ENDDO
       WRITE(LUPRI,'(A,I3)') ' * Integral transformation scheme: ',
      &                          IAOMOSCHEME
-      WRITE(LUPRI,'(A,I3)') ' * Maximum number of virtual spinors: ',
-     &                          IMAXVSP    
       IF(ILLINT.EQ.0) WRITE(LUPRI,'(A)') ' * No LL contributions'
       IF(ISLINT.EQ.0) WRITE(LUPRI,'(A)') ' * No SL contributions'
       IF(ISSINT.EQ.0) WRITE(LUPRI,'(A)') ' * No SS contributions'
@@ -437,9 +426,7 @@ C          ... MP2 NO coefficients
 C          ... boson irrep info (or mj-values if linear symmetry is available)
            CALL IREAKRMC(LUKRMC,'IBEIGORI',work(kibeig),NORBT)
 C          ... MO coefficients
-           CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
-           CALL REACMO_new(LUCOEF,cmo=WORK(KCMO_TRA:KCMO_TRA+NCMOTQ-1))
-           CLOSE(LUCOEF,STATUS='KEEP')
+           CALL REACMO_new(cmo=WORK(KCMO_TRA:KCMO_TRA+NCMOTQ-1))
 C
 C          transformation 
 C          --------------
@@ -715,6 +702,8 @@ C
 C
 C     NSTR(I): Number of Spinors to be Transformed for index I
 C
+      NSTR(:,:,:) = 0
+      NSTRT(:) = 0
       DO I = 1,4
         NSTRT(I) = 0
         DO IFRP = 1,NFSYM
@@ -862,16 +851,7 @@ C
       allocate (EIG(NORBT))
       allocate (IBEIG(NORBT))
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)')
-     &   'MP2DEN ERROR: MO coefficient file not present'
-         CALL Abend2('MP2DEN: No MO coefficient file !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
-         CALL REACMO_new(LUCOEF,cmo=cmo,eig=eig,ibeig=ibeig)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      END IF
+      CALL REACMO_new(cmo=cmo,eig=eig,ibeig=ibeig)
 C
 C     Select the set that we need
 C
@@ -916,8 +896,8 @@ C
       deallocate (ibeig)
 C
 C     If necessary recanonize (virtual) orbitals
-C     Assuming that all sets are equal, we use the first index !!!
-C     ============================================================
+C     Assuming that first index corresponds to the most general set
+C     =============================================================
 C
       IF (RCORBS) THEN
          WRITE(LUPRI,'(/A)') 'Info: RCORBS set, calling VIRCAN'
@@ -996,17 +976,6 @@ C
          NAVIR(IFRP) = NSTR(IFRP,0,1) - NAOCC(IFRP)
          NAVIRT = NAVIRT + NAVIR(IFRP)
       ENDDO
-C
-C     if selection criterion is set check for max. virt. 
-C
-      IF( DEF_EN )THEN
-        IF( NAVIRT .gt. IMAXVSP ) THEN
-          WRITE(LUPRI,'(/A,I5/A,I5/A)')
-     &       ' NOTE: number of active virt.:',NAVIRT,
-     &       ' Maximum number of act. virt.:',IMAXVSP,
-     &       ' You may reconsider your choice of active space'
-        END IF
-      END IF
 C     
 C     number of inactive virtuals
 C 
@@ -1060,14 +1029,7 @@ C
       allocate (CMO(NCMOTQ))
       allocate (EIG(NORBT))
       allocate (IBEIG(NORBT))
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-         CALL QUIT('PAMTRA: No MO coefficient file !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
-         CALL REACMO_new(LUCOEF,cmo=cmo,eig=eig,ibeig=ibeig)
-      ENDIF
+      CALL REACMO_new(cmo=cmo,eig=eig,ibeig=ibeig)
 C
 C     Select the set that we need
 C
@@ -1109,8 +1071,10 @@ C     by making all the MO coefficients for these orbitals zero.
 
       IF (.NOT.NO2IND) THEN
          NSPC2=-1
+         KQ_ONE(1:2,1) = KQ(1:2,1) ! we know index 1 is the general index in (go|go)
+         KQ_ONE(1:2,2) = KQ(1:2,1)
          CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR_ONE,NSTRT_ONE,NSPC,
-     &               KQ,KQC,KE_ONE,KIBE_ONE,NSPC2)
+     &               KQ_ONE,KQC,KE_ONE,KIBE_ONE,NSPC2)
       END IF
 
       CALL FLSHFO(LUPRI)
@@ -1165,6 +1129,7 @@ C
       relcc_do_mp2gradient = .true.
       relcc_do_naturalorbitals = .true.
       relcc_no_recompute = .true.
+      if (istrat==6) relcc_integral_interface = 'DIRAC6    '
 C     The original NO generation treats open shells as closed, set occupation explicitly to keep this definition.
 C     These lines are necessary because the default for information written to MRCONEE has changed to closed shells only.
 C     / Luuk June 2016
@@ -1310,7 +1275,7 @@ C
       end do
 C
       IF( IPRMP2NO .ge. 5 ) THEN 
-         CALL HEADER('final MP2 natural orbitals:',-1)
+         CALL HEADER('Final MP2 natural orbitals:',-1)
          DO I = 1,NFSYM
             CALL HEADER('Coefficients for irrep '//CHAR(I+48),-1)
             WRITE(LUPRI,*) ' printing offset ICMOQ(I)+1',ICMOQ(I)+1
@@ -1353,6 +1318,11 @@ C
 
        reorder_fermion = -1
        reorder_list    =  0
+
+#ifdef DEBUG_MP2_NO
+       write(lupri,*) ' mp2 occupation numbers'
+       write(lupri,'(10F10.6)') occ(1:nesht)
+#endif
 
 !      create list for reordering in descending order according to occupation numbers
 !      ------------------------------------------------------------------------------

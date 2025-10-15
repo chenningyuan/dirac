@@ -48,6 +48,10 @@ Example 1:  Nb [Kr]4d\ :sup:`4`\ 5s\ :sup:`1`\
   .VECPOP
    1..oo
    1..oo
+  **MOLECULE 
+  *BASIS
+  .DEFAULT
+   dyall.2zp
   *END OF
 
 ----------------------------------------------------------
@@ -83,6 +87,10 @@ Example 2:  Np [Rn]5f\ :sup:`4`\6d\ :sup:`1`\7s\ :sup:`2`\
   *MULPOP                                                                                             
   .VECPOP                                                                                             
    1..oo                                                                                              
-   1..oo                                                                                              
+   1..oo
+  **MOLECULE 
+  *BASIS                     
+  .DEFAULT             
+   dyall.2zp   
   *END OF
 

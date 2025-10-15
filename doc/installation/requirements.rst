@@ -8,14 +8,16 @@ DIRAC requires CMake, Fortran 90, C, and C++ compilers and a Python environment
 for the setup and run scripts. The program is designed to run on a unix-like
 operating system, and uses MPI for parallel calculations.  Optionally DIRAC can
 (and should) be linked to platform specific BLAS and LAPACK libraries.
+Installing HDF5 is strongly recommened as not all functionality will work without it.
 
 
 Minimum requirements
 --------------------
 
-* CMake 3.7 - or later
-* Python 2.6 - 2.7
+* CMake 3.20 - or later
+* Python 3.6 - or later
 * GFortran/GCC/G++ 4.9 - 5.2 or Intel compilers 13.0 - 15.0.6
+* HDF5 1.10 - or later (note that patch levels 1.14.0 and 1.14.1 should be avoided due to a bug)
 
 If your distribution does not provide a recent CMake, you can install it
 without root permissions within few minutes. Download the binary distribution
@@ -28,7 +30,7 @@ extracted path, respectively. Verify that your new CMake is recognized with
 Requirements for building with the parallel library ExaTensor
 -------------------------------------------------------------
 
-* CMake 3.7 - or later
+* CMake 3.20 - or later
 * Python 3.6 - or later
 * GFortran/GCC/G++ 8.x or 11 (so neither 9.x nor 10.x), Intel compilers 18 or later
 * OpenMPI 4.1 or later, or MPICH 3.2.1 or later. Compilation with Intel MPI is possible but not recommended due to poor performance.
@@ -48,7 +50,6 @@ Supported, but optional dependencies
 * OpenMPI 1.6.2 - 1.8.5 (MPI parallelization)
 * IntelMPI 4.1 - 5.0 (MPI parallelization)
 * Boost 1.54.0 - 1.60.0 (PCMSolver; installed along DIRAC if below 1.54.0)
-* HDF5 1.8.14 - 1.8.16 (DMRG code)
 * Alps 2.2 (DMRG code)
 
 

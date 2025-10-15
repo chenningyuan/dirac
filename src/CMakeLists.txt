@@ -10,22 +10,44 @@
 # Set all module options and definitions first
 # so they can be DEFINED for all source subdirectories below
 #----------------------------------------------------------------------------------
+
+
+
+option(ENABLE_GEN1INT "Enable Gen1Int library" ON)
+if(ENABLE_GEN1INT)
+  # fixme: later this needs to become a target_compile_definitions
+  add_definitions(-DBUILD_GEN1INT)
+
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/gen1int)
+
+  set(EXTERNAL_LIBS gen1int_interface ${EXTERNAL_LIBS})
+endif()
+
+
+
+option(ENABLE_PELIB "Enable polarizabile embedding library" ON)
+if(ENABLE_PELIB)
+  # fixme: later this needs to become a target_compile_definitions
+  add_definitions(-DHAS_PELIB)
+
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
+
+  # fixme: this will later be done using targets
+  add_dependencies(PElib gen1int_interface)
+  add_dependencies(pelib_interface interface_mpi)
+
+  set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
+endif()
+
+
+
 option(ENABLE_RELCCSD_STANDALONE "Enable standalone RELCCSD" OFF)
 option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
-option(ENABLE_QCORR "Davidson-type +Q corrections for (MR)CISD" ON)
-if(ENABLE_QCORR)
-    add_definitions(-DMOD_QCORR)
-endif()
-if (CMAKE_Fortran_COMPILER_ID MATCHES XL OR CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-# xlf compiler does not support isnan used
-# pgfortran compiler does not suppore real*16
-    option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
-else()
-    option(ENABLE_STIELTJES "Enable stieltjes library" ON)
-endif()
+
+option(ENABLE_STIELTJES "Enable stieltjes library" OFF)
 if(ENABLE_STIELTJES)
     add_definitions(-DHAS_STIELTJES)
 endif()
@@ -33,33 +55,34 @@ option(ENABLE_OPENRSP "Enable OpenRSP" OFF)
 if(ENABLE_OPENRSP)
     add_definitions(-DMOD_OPENRSP)
 endif()
-cmake_dependent_option(ENABLE_LAO_REARRANGED "LAO properties without connection matrices" ON "ENABLE_UNRELEASED" OFF)
+option(ENABLE_LAO_REARRANGED "LAO properties without connection matrices" ON)
 if(ENABLE_LAO_REARRANGED)
     add_definitions(-DMOD_LAO_REARRANGED)
 endif()
-cmake_dependent_option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON "ENABLE_UNRELEASED" OFF)
+option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON)
 if(ENABLE_MCSCF_spinfree)
     add_definitions(-DMOD_MCSCF_spinfree)
 endif()
-cmake_dependent_option(ENABLE_AOOSOC "Atomic oo-order spin-orbit correction module" ON "ENABLE_UNRELEASED" OFF)
-if(ENABLE_AOOSOC)
-    add_definitions(-DMOD_AOOSOC)
+option(ENABLE_XAMFI "(e)amf 2-electron scalar and spin-orbit picture-change correction module" ON)
+if(ENABLE_XAMFI AND HDF5_FOUND)
+    add_definitions(-DMOD_XAMFI)
+else()
+    if(ENABLE_XAMFI AND NOT HDF5_FOUND)
+        message(STATUS "X-AMFI, the (e)amf 2-electron scalar and spin-orbit picture-change correction module requires a working HDF5 library")
+    endif()
+    set(ENABLE_XAMFI OFF)
 endif()
-cmake_dependent_option(ENABLE_ESR "ESR property module" ON "ENABLE_UNRELEASED" OFF)
+option(ENABLE_ESR "ESR property module" ON)
 if(ENABLE_ESR)
     add_definitions(-DMOD_ESR)
 endif()
-cmake_dependent_option(ENABLE_KRCC "KRCC module" ON "ENABLE_UNRELEASED" OFF)
+option(ENABLE_KRCC "KRCC module" ON)
 if(ENABLE_KRCC)
     add_definitions(-DMOD_KRCC)
 endif()
-cmake_dependent_option(ENABLE_SRDFT "srDFT module" ON  "ENABLE_UNRELEASED" OFF)
+option(ENABLE_SRDFT "srDFT module" ON)
 if(ENABLE_SRDFT)
     add_definitions(-DMOD_SRDFT)
-endif()
-cmake_dependent_option(ENABLE_LAPLACE "Laplace module" ON  "ENABLE_UNRELEASED" OFF)
-if(ENABLE_LAPLACE)
-    add_definitions(-DHAS_LAPLACE)
 endif()
 
 #--------------------------------------------------------------------------------------------------------------
@@ -70,7 +93,7 @@ endif()
 # variable.
 #
 # The resulting ${EXTERNAL_LIBS} variable contains localized source libraries of all functionality modules
-# of DIRAC (main,dirac,relccsd,prp,reladc, interest ...)
+# of DIRAC (dirac_main,dirac,relccsd,prp,reladc, interest ...)
 #
 # Due to entanglements between libraries (like dirac depends localization and vise versa) it is necessary
 # to keep source files (modules) as localized as possible and with minimal interdependencie on other modules.
@@ -89,6 +112,13 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:pdpack> ${EXTERNAL_OBJECTS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/interface_mpi)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interface_mpi> ${EXTERNAL_OBJECTS})
 
+
+
+
+# Making mfsolver as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/mfsolver)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:mfsolver> ${EXTERNAL_OBJECTS})
+
 # gp as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/gp)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:gp> ${EXTERNAL_OBJECTS})
@@ -101,6 +131,10 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:abacus> ${EXTERNAL_OBJECTS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/matrix_operations)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:matrix_operations> ${EXTERNAL_OBJECTS})
 
+# laplace-minimax
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace-minimax)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
+
 # exacorr as separate library
 if(ENABLE_EXATENSOR)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/exacorr)
@@ -112,9 +146,20 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:moltra> ${EXTERNAL_OBJECTS})
 
-#    embedding as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/embedding)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:embedding> ${EXTERNAL_OBJECTS})
+#    frozen density embedding as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/fde)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:fde> ${EXTERNAL_OBJECTS})
+
+# XAMFI as separate library; before x2c because x2c depends on XAMFI
+if(ENABLE_XAMFI)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/x-amfi)
+    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:x-amfi> ${EXTERNAL_OBJECTS})
+    dirac_test(atomic_x2c_2esoc_models_energy "medium;xamfi" "")
+    dirac_test(atomic_x2c_spinfree_energy "medium;xamfi" "")
+    dirac_test(x_amfi "medium;xamfi" "")
+    message(STATUS "NOTE: tests for the (e)amfX2C 2e-scalar and spin-orbit picture-change correction module require h5py in your python env!")
+endif()
+message(STATUS "(e)amfX2C 2e-scalar and spin-orbit picture-change correction module: ${ENABLE_XAMFI}")
 
 # Making x2c as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/x2c)
@@ -173,13 +218,7 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/xcint)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:xcint> ${EXTERNAL_OBJECTS})
 
-if(ENABLE_QCORR)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/qcorr)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:qcorr> ${EXTERNAL_OBJECTS})
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_QCORR)
-endif()
-message(STATUS "Davidson-type +Q corrections for (MR)CISD: ${ENABLE_QCORR}")
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/qcorr)
 
 # luciarel as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/luciarel)
@@ -197,9 +236,7 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krmc> ${EXTERNAL_OBJECTS})
 if(ENABLE_ESR)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp/esr)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:esr> ${EXTERNAL_OBJECTS})
-    dirac_test(esr "short;gascip;ci" "")
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_ESR)
+    dirac_test(esr "medium;gascip;ci" "")
 endif()
 message(STATUS "ESR property module: ${ENABLE_ESR}")
 
@@ -279,10 +316,12 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
 if(ENABLE_KRCC)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/krcc)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krcc> ${EXTERNAL_OBJECTS})
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_KRCC)
 endif()
 message(STATUS "KRCC module: ${ENABLE_KRCC}")
+
+# Making caspt2 as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/caspt2)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:caspt2> ${EXTERNAL_OBJECTS})
 
 # Making relccsd as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/relccsd)
@@ -307,82 +346,24 @@ if(ENABLE_OPENRSP)
     dirac_test(legacy_openrsp_quadrupole "openrsp" "")
     dirac_test(legacy_openrsp_roa "openrsp" "")
     dirac_test(legacy_openrsp_pnc_gradient "openrsp" "")
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_OPENRSP)
 endif()
 message(STATUS "OpenRSP library: ${ENABLE_OPENRSP}")
 
 #    lao_rearranged as separate library
 if(ENABLE_LAO_REARRANGED)
-    dirac_test(lao_shield_rearranged "" "")
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_LAO_REARRANGED)
+    dirac_test(lao_shield_rearranged "long" "")
 endif()
 message(STATUS "LAO properties without connection matrices: ${ENABLE_LAO_REARRANGED}")
 
 #  mcscf_sf as separate library
-if(NOT ENABLE_MCSCF_spinfree)
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_MCSCF_spinfree)
-endif()
 message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
-
-# aoosoc as separate library
-if(ENABLE_AOOSOC)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/aoosoc)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:aoosoc> ${EXTERNAL_OBJECTS})
-    dirac_test(atomic_x2c_2esoc_models_energy "medium" "")
-    dirac_test(atomic_x2c_spinfree_energy "medium" "")
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_AOOSOC)
-endif()
-message(STATUS "Atomic oo-order spin-orbit correction module: ${ENABLE_AOOSOC}")
 
 #  srdft module as separate library
 if(ENABLE_SRDFT)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/srdft)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:srdft> ${EXTERNAL_OBJECTS})
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_SRDFT)
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
-
-# laplace-minimax as separate external library
-if(ENABLE_LAPLACE)
-
-# external part
-#include_directories (${PROJECT_BINARY_DIR}/external/laplace-minimax-build)
-
-  set(ExternalProjectCMakeArgs
-    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
-
-  add_external(laplace-minimax)
-
-  set(EXTERNAL_LIBS
-    ${PROJECT_BINARY_DIR}/external/lib/liblaplace-minimax.a
-    ${EXTERNAL_LIBS})
-
-# dirac part
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:laplace> ${EXTERNAL_OBJECTS})
-
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_LAPLACE)
-endif()
-message(STATUS "Laplace module: ${ENABLE_LAPLACE}")
-
-# pelib interface routines added as module
-if(ENABLE_PELIB)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
-    set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
-    dirac_test(pe_energy "medium;scf;pelib" "")
-    dirac_test(pe_response "medium;polarizabilities;pelib" "")
-    dirac_test(pe_exc "short;pelib" "")
-endif()
 
 #  dirac sources as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
@@ -394,9 +375,8 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:input> ${EXTERNAL_OBJECTS})
 
 # main directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
-set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:main> ${EXTERNAL_OBJECTS})
+set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:dirac_main> ${EXTERNAL_OBJECTS})
 
 # make these variables visible to the cmake one level up
 set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)
 set(EXTERNAL_OBJECTS ${EXTERNAL_OBJECTS} PARENT_SCOPE)
-set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} PARENT_SCOPE)

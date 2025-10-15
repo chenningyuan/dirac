@@ -8,7 +8,6 @@
 #define CMAKE_GENERATOR          "@_cmake_generator@"
 #define CMAKE_BUILD_TYPE         "@_cmake_build_type@"
 #define CONFIGURATION_TIME       "@_configuration_time@"
-#define PYTHON_VERSION           "@_python_version@"
 
 #define FORTRAN_COMPILER_ID      "@_Fortran_compiler_id@"
 #define FORTRAN_COMPILER         "@_Fortran_compiler@"

@@ -26,7 +26,8 @@
 *SCF
 #10 electrons
 .CLOSED SHELL
-4 6   
+10
+#4 6
 .INTFLG ! Specify what 2-el.integrals to include
 1 1 0
 .EVCCNV ! Energy convergence...
@@ -37,14 +38,16 @@
 *MULPOP
 .VECPOP
 all
-all
+#all
 **MOLTRA
 .NO2IND
 .NO4IND
 .NOMDCI
+# 10 occup. electrons in 2 ferm.irreps, 4 and 6
 .ACTIVE
-1..2
-1..3
+1..5
+#1..2
+#1..3
 .PRPTRA
 *PRPTRA
 # we need this print level to get all MO mtx elements printed

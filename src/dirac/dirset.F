@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C FILE    : dirset.F
@@ -33,6 +28,7 @@ C     Called from:  DIRCTL (after PAMINP)
 C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
+      use checkpoint
       use memory_allocator
       use visual_cfg
       use x2cmod_cfg
@@ -71,7 +67,7 @@ C
 C     Attempt a restart unless geometry optimization
 C     ==============================================
 C
-      IF(OPTIMI) THEN
+      IF (OPTIMI) THEN
         GOFAST = .FALSE.
       ELSE
         CALL GOTEST(GOFAST,IPREAD)
@@ -83,11 +79,12 @@ C
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
         CNTMAT = .FALSE.
-!       IPREAD = IPREAD - 5
         CALL READIN(.FALSE.)
         CALL SETDC1(IPREAD)
-!       IPREAD = IPREAD + 5
       ENDIF
+
+C     ! write symmetry information to checkpoint
+      call symm_to_checkpoint
 C
 C     Generate all one-electron integrals
 C     ===================================
@@ -104,24 +101,29 @@ C     ===================
       end if
 #endif
 
-      INQUIRE(FILE='AOPROPER',EXIST=TOBE)
 !     radovan: don't restart if you do a geometry optimization!
 !     gosia: don't restart and don't generate integrals if visual_cfg_london
+      tobe = .false. ! disable restart of property integral calculation, too hard to make fullproof (LV, 2022)
       if (tobe .and. visual_cfg_london) then
         goto 11
       endif
-      IF(TOBE .and. .not. optimi) THEN
+      IF(TOBE) THEN
         WRITE(LUPRI,'(A)')
-     &  '* WARNING: DIRAC found the AOPROPER file '//
+     &  '* WARNING: DIRAC found '//
      &  '(one-electron integrals) ...will attempt restart.'
         IF (NOSMLV) CALL NOSSNUCATT
       ELSE 
+        ! Write size of ao-matrices to checkpoint file, matrices themselves are written in onegen
+        call prop_to_checkpoint('write_size_only!',dum,1)
         CALL ONEGEN(WORK,LWORK)
       ENDIF
  11   continue
 #ifdef MOD_CAP
         IF (CAP) CALL CAP_STUFF(WORK,LWORK)
 #endif
+
+!     Write basis set information (which includes their centers, so is geometry-dependent) to checkpoint file
+      call write_basis_fromcommon(.false.) ! the argument false signals that we write the default format
 
       IF(DOHRM) THEN
         CALL TIMER2('PAMSET',TIMSTR,TIMEND)
@@ -145,13 +147,9 @@ C     Set DCB common blocks - second time
 C     ===================================
 C
       CALL SETDC2(IPRGEN)
-C
-C     If semiclassical QED, write density of bare vacuum to file
-C     ==========================================================
-C
-#ifdef MOD_UNRELEASED
-      IF(VACPOL.AND.VACREF) CALL BARVAC(WORK,LWORK,IPRGEN)      
-#endif
+! at this point we do know the occupations which will be used in SCF, dump them to file
+      call write_occupations_fromcommon(
+     & '/result/wavefunctions/scf/mobasis')
 C
 C     Prepare for two-electron integrals
 C     ==================================
@@ -1233,19 +1231,9 @@ C
       IF (NMPOLOP .GT. 1 .AND. .NOT. DIPDONE) THEN
          CALL DEF_DIPOLE(INDDIP,IPRINT)
 C
-C        ... Open AOPROPER integral file for ONEGEN
-C            (is closed again inside ONEGEN)
-C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
          CALL ONEGEN(WORK(KFREE),LFREE)
          DIPDONE = .TRUE.
       END IF
-C
-C     ... Open AOPROPER integral file (again) for PRPREA
-C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
 C
 C     ... Allocate memory for RLMMAT in AO basis
 C         (L=0: Overlap, L=1: Dipole)
@@ -1352,7 +1340,6 @@ C
          ENDIF
       END DO
       CALL MEMREL('LCQMAT',WORK,KWORK,KWORK,KFREE,LFREE)  
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
       CALL TIMER('LSQMAT',TIMSTR,TIMEND)
       CALL QEXIT('LSQMAT')
@@ -1449,105 +1436,6 @@ C
 C
       RETURN
 C      
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck barvac */
-      SUBROUTINE BARVAC(WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Generate and write bare vacuum density to file
-C
-C     Written by T. Saue Nov 7 2002
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbbas.h"
-      LOGICAL TOBE
-      DIMENSION WORK(LWORK)
-#include "memint.h"
-      INQUIRE(FILE='DFBVAC',EXIST=TOBE)
-      IF(TOBE) THEN
-        WRITE(LUPRI,'(A)')
-     &   '* WARNING: BARVAC found file DFBVAC. '//
-     &   'No reference vacuum generated.'
-      ELSE
-        CALL MEMGET('REAL',KFAO ,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFMO ,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KTMAT,N2TMT   ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-        CALL BARVA1(WORK(KFAO),WORK(KFMO),WORK(KTMAT),
-     &            WORK(KEIG),WORK(KIBRP),IPRINT,WORK,KFREE,LFREE)
-        CALL MEMREL('BARVAC',WORK,KWORK,KWORK,KFREE,LFREE)
-      ENDIF
-      RETURN
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck barva1 */
-      SUBROUTINE BARVA1(FAO,FMO,TMAT,EIG,IBEIG,IPRINT,WORK,KFREE,LFREE)
-C***********************************************************************
-C
-C     Generate and write bare vacuum density to file
-C
-C     Written by T. Saue Nov 7 2002
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-C
-      DIMENSION FAO(*),FMO(*),TMAT(*),EIG(*),IBEIG(*),WORK(*)
-C
-      LUBUF  = 10
-C
-C     Generate free particle matrix
-C
-      CALL FREEMT(FAO,IPRINT,WORK(KFREE),LFREE)      
-C
-C     Transform to MO-basis FAO --> FMO
-C
-      CALL OPNFIL(LUBUF,'AOMOMAT','OLD','BARVAC')
-      CALL READT(LUBUF,N2TMT,TMAT)
-      CLOSE(LUBUF,STATUS='KEEP')
-      CALL MKMOFK2(FMO,FAO,TMAT,WORK(KFREE),LFREE)
-C
-C     Diagonalize
-C
-      CALL DFDIAG (FMO,EIG,IBEIG,FAO,.FALSE.,WORK,KFREE,LFREE)
-C
-C     Inspect eigenvalues
-C
-      DO I = 1,NFSYM
-        WRITE(LUPRI,*) '* BARVAC fermion ircop :',I
-        DO J = 1,NORB(I)
-          WRITE(6,'(I5,E20.10)') J,EIG(IORB(I)+J)
-        ENDDO
-      ENDDO
-C     Backtransform solutions to FMO
-C
-      DO 10 I = 1,NFSYM
-        IF(NORB(I).EQ.0) GOTO 10
-        CALL BCKTRA(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
-     &              FAO(I2ORBT(I)+1),NORB(I),NORB(I),
-     &              NORB(I),NZ,NORB(I),1,NFBAS(I,0),
-     &              TMAT(I2TMT(I)+1),NFBAS(I,0),NORB(I),NZT,
-     &              IPRINT)
- 10   CONTINUE
-C
-C     Construct bare vacuum density matrix and write to file
-C
-      CALL GENDEN(FAO,FMO,8,IPRINT)
-      CALL OPNFIL(LUBUF,'DFBVAC','UNKNOWN','BARVAC')
-      CALL WRITT(LUBUF,N2BBASXQ,FAO)
-      CLOSE(LUBUF,STATUS='KEEP')
-C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gofast */
@@ -1718,7 +1606,7 @@ C
      &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
      &        NASH(IFRP),(NACSH(IFRP,IOPEN),IOPEN=1,NOPEN),
      &        NFRO(IFRP),NTMO(IFRP),NISHMF(IFRP),NOCCMF(IFRP),
-     &        (NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN),
+     &        (NACSHMF(IFRP,IOPEN),IOPEN=1,NOPEN),
      &        NESHMF(IFRP),NPSHMF(IFRP)
       ENDDO
       IF(SUB_BL) THEN
@@ -1732,4 +1620,24 @@ C
 C
       RETURN
       END
+      subroutine symm_to_checkpoint
+
+      ! write point group symmetry information to checkpoint
+      use checkpoint
+
+#include "implicit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+
+#include "symmet.h"
+#include "dgroup.h"
+
+      call checkpoint_write ('/result/symmetry/inversion',
+     &     idata=nfsym)
+      call checkpoint_write ('/result/symmetry/maxopr',idata=maxopr)
+      call checkpoint_write ('/result/symmetry/isymax',
+     &     idata=reshape(isymax,(/6/)))
+      end
+
 ! -- end of dirac/dirset.F --

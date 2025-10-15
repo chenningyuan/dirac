@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -204,9 +199,10 @@ C     .SCREEN
       END
 
       SUBROUTINE STEX(WORK,LWORK)
+      use labeled_storage
 C
-C     At this point we expect a converged groundstate DFCOEF in
-C     the working directory, plus an optional DFCOEF.ION for the
+C     At this point we expect a converged groundstate CHECKPOINT in
+C     the working directory, plus an optional ION.h5 for the
 C     core-relaxed determinant.
 C
 #include "implicit.h"
@@ -227,6 +223,9 @@ C#include "dcbrho.h"
       DOUBLE COMPLEX REFGSOVL
       DIMENSION WORK(LWORK)
       LOGICAL LION,LTOBE
+      type(file_info_t)    :: ionfile
+      integer, allocatable :: brep(:)
+
 #include "memint.h"
       CALL QENTER('STEX')
       WRITE(LUPRI,*) 'Start of STEX'
@@ -251,35 +250,40 @@ C
 C     Save ground state energy
       GSERG = DHFERG
 
-C     Check for existence of DFCOEF (should always be present)
-      INQUIRE(FILE='DFCOEF',EXIST=LTOBE)
-      IF(.NOT.LTOBE) THEN
-         WRITE(LUPRI,*) 'Missing DFCOEF'
-         CALL QUIT('File DFCOEF missing')
-      ENDIF
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KBREP,NORBT,WORK,KFREE,LFREE)
+      allocate (brep(norbt))
       LUBUF=22
       IOPT = 2+4+8
 C     See if a separate reference state will be used and read reference orbitals and eigenvalues
-      INQUIRE(FILE='DFCOEF.ION',EXIST=LION)
+      ionfile%type = 2
+      ionfile%status = 0
+      ionfile%name = 'ION.h5'
+      call lab_query(ionfile,
+     &   '/result/wavefunctions/scf/energy',exist=lion)
       IF (LION) THEN
-         WRITE(LUPRI,*) 'DFCOEF.ION found, using it as reference state'
+         WRITE(LUPRI,*) ionfile%name,' found, used as reference state'
          WRITE(LUPRI,*) 'for STEX calculation'
          STEX_COFACTOR = .TRUE.
-         CALL OPNFIL(LUBUF,'DFCOEF.ION','OLD','STEX  ')
-         CALL REACMO(LUBUF,'DFCOEF.ION',WORK(KCMO),WORK(KEIG),
-     &        WORK(KBREP),TOTERG,IOPT)
+         call lab_read(ionfile,
+     &   '/result/wavefunctions/scf/energy',
+     &   rdata=TOTERG)
+         call lab_read(ionfile,
+     &   '/result/wavefunctions/scf/mobasis/orbitals',
+     &   rdata=WORK(KCMO:KCMO+NCMOTQ))
+         call lab_read(ionfile,
+     &   '/result/wavefunctions/scf/mobasis/eigenvalues',
+     &   rdata=WORK(KEIG:KEIG+NORBT))
+         call lab_read(ionfile,
+     &   '/result/wavefunctions/scf/mobasis/symmetry',
+     &   idata=brep)
       ELSE
-         WRITE(LUPRI,*) 'No separate reference state (DFCOEF.ION) found'
+         WRITE(LUPRI,*) 'No separate reference state (ION.h5) found'
          WRITE(LUPRI,*) 'using groundstate as STEX reference state.'
          STEX_COFACTOR = .FALSE.
-         CALL OPNFIL(LUBUF,'DFCOEF','OLD','STEX  ')
          CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &        WORK(KBREP),TOTERG,IOPT)
+     &        BREP,TOTERG,IOPT)
       ENDIF
-      CLOSE(LUBUF,STATUS='KEEP')
 
 C     Set up cutoff and indices
       STEX_NVIR(2) = 0
@@ -336,17 +340,16 @@ C     property gradients are complex, so *2 size of double.
       IF (STEX_COFACTOR) THEN         
          ERGION = TOTERG
          CALL MEMGET('REAL',KCMOGS,NCMOTQ,WORK,KFREE,LFREE)
-         CALL OPNFIL(LUBUF,'DFCOEF','OLD','STEX  ')
          IOPT = 2+8
          CALL REACMO(LUBUF,'DFCOEF',WORK(KCMOGS),DUM,
-     &        WORK(KBREP),TOTERG,IOPT)
-         CALL COF_PRPGRAD(WORK(KPRP),WORK(KCMOGS),WORK(KBREP)
+     &        BREP,TOTERG,IOPT)
+         CALL COF_PRPGRAD(WORK(KPRP),WORK(KCMOGS),BREP
      $        ,WORK(KCMO),REFGSOVL,WORK(KFREE),LFREE)
       ELSE
          ERGION = 0.0D0
          REFGSOVL = 1.0D0
 C     Calculate the property gradient the normal way
-         CALL FROZEN_PRPGRAD(WORK(KPRP),WORK(KCMO),WORK(KBREP)
+         CALL FROZEN_PRPGRAD(WORK(KPRP),WORK(KCMO),BREP
      $        ,WORK(KFREE),LFREE)
       ENDIF
 C       IF (STEX_NCUBE.GT.0) THEN
@@ -451,6 +454,8 @@ C     on disk in DFFCK1
 #include "cbihr2.h"
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),FMAT(N2BBASXQ),CMO(NCMOTQ)
+      real*8 , allocatable :: aoo2esssoc(:)
+      logical              :: tobe
 #include "memint.h"
 
       CALL MEMGET('REAL',KF1,N2BBASXQ,WORK,KFREE,LFREE)
@@ -480,6 +485,22 @@ C     Calculate 2e part
       SCRFCK = SCRFCK_SAVE 
       print *,'SCRFCK:',SCRFCK
 C     Calculate energy
+C     ======================
+      inquire(file='XAMFI-ss-soc-contributions',exist=tobe)
+      if(tobe)then
+        open(99,file='XAMFI-ss-soc-contributions',status='old',
+     &  form='unformatted',access='sequential',
+     &  action="readwrite",position='rewind')
+        allocate(aoo2esssoc(ntbas(0)**2*nz))
+        read(99) aoo2esssoc(1:ntbas(0)**2*nz)
+        close(99,status='keep')
+        !> subtract the PCE corrections from the effective F[1] ...
+        call daxpy(ntbas(0)**2*nz,-1.0d0,aoo2esssoc,1,work(kf1),1)
+        !> ... and add the PCE corrections to F[2]
+        call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,work(kf2),1)
+        deallocate(aoo2esssoc)
+      end if
+
       CALL ERGCAL(WORK(KF1),WORK(KF2),WORK(KDEN),WORK(KFREE),LFREE)
 C     Add 2e part to 1e part
       DO II=0,N2BBASXQ-1
@@ -1098,11 +1119,6 @@ c     FIXME: symmetry
 #include "memint.h"
       CALL QENTER('FROZEN_PRPGRAD')
       CALL MEMGET('REAL',KPROP,N2ORBXQ,WORK,KFREE,LFREE)
-      INQUIRE(FILE='AOPROPER',OPENED=LOPEN)
-      IF (.NOT. LOPEN) THEN
-         OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &        FILE='AOPROPER')
-      ENDIF
       DO IPRP=1,STEX_NR_OP
          CALL WRIXPR(IPRP,STEX_OP_IND(IPRP))
          call flush(lupri)
@@ -1670,11 +1686,6 @@ C     Put the complex overlap matrix in WORK(KCOVL)
       CALL QTOC(WORK(KQOVL+NPSH(1)*(1+NORBT)),WORK(KCOVL),1,NOCCT,
      &     NOCCVIRT,NORBT,NORBT,NZ)
 C     Load the property matrices and convert them to complex form.
-      INQUIRE(FILE='AOPROPER',OPENED=LOPEN)
-      IF (.NOT. LOPEN) THEN
-         OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &        FILE='AOPROPER')
-      ENDIF
       CALL MEMGET('REAL',KCPRP, NCSIZE*STEX_NR_OP, WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KQA, N2ORBXQ, WORK,KFREE,LFREE)
 

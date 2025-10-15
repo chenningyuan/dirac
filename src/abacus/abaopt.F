@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -2234,7 +2229,7 @@ C
             RED = .TRUE.
          END IF
          WRITE(LUPRI,
-     &   '(A1,I4,A1,F20.6,1P,2D10.3,I5,0P,F12.6,A1,F11.6,I4,A1)')
+     &   '(A1,I4,A1,F18.6,2X,1P,2D10.3,I5,0P,F12.6,A1,F11.6,I4,A1)')
      &        '@',I,BRKMRK,GEINFO(I,1),TMPNRG,GEINFO(I,2),
      &        NINT(ABS(GEINFO(I,3))),GEINFO(I,4),NWSMRK,GEINFO(I,5),
      &        NINT(GEINFO(I,6)),REDMRK
@@ -2273,7 +2268,7 @@ C
       use pcm_scf
 #endif      
 #ifdef HAS_PELIB
-      use pe_variables, only: peqm
+      use pelib_dirac_interface, only: use_pelib
 #endif 
 
 #include "implicit.h"
@@ -2324,7 +2319,7 @@ C
 C     Execute Dirac, and retrieve energy.
 C
 #ifdef HAS_PELIB
-      if (peqm) then 
+      if (use_pelib()) then 
          call quit('PELib geometry optimization '//
      &   'not implemented in DIRAC')
       endif 
@@ -7660,6 +7655,65 @@ CTROND      deallocate(STPCAR)
       RETURN
       END
 
+      SUBROUTINE write_xyz_fromcommon(group)
+
+      use checkpoint
+
+C     Dump the coordinates sitting in common block nuclei.h to checkpoint file
+C     The argument group should define the appropriate group (e.g. '/input/molecule')
+C
+#include "implicit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "codata.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "ibtfun.h"
+
+      character(len=*),intent(in) :: group
+      real(8), allocatable        :: geometry(:),nuc_charge(:)
+      character*4, allocatable    :: symbols(:)
+      logical                     :: tobe
+
+      ! start by writing the number of atoms
+      call checkpoint_write (trim(group)//'/n_atoms',idata=nucdep)
+      ! allocate arrays to store the full list of symbols and coordinates
+      allocate (symbols(nucdep))
+      allocate (geometry(3*nucdep))
+      allocate (nuc_charge(nucdep))
+      ! get these from the symmetry-unique list of atoms by applying symmetry operations
+      ! we always write coordinates in Angstroms and convert them from AU using XTANG
+      jcent = 0 ! counter for the dependent atoms
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               DO I = 1, 3
+                 geometry(i+3*jcent) =
+     &           XTANG*PT(IBTAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
+               END DO 
+               jcent = jcent + 1
+               symbols(jcent) = namn(icent)
+               nuc_charge(jcent) = charge(icent)
+            END IF
+         END DO
+      END DO
+
+      ! write the coordinates
+      call checkpoint_write (group//'/symbols',sarray=symbols,slen=4)
+      call checkpoint_write (group//'/nuc_charge',rdata=nuc_charge)
+      call checkpoint_write (group//'/geometry',rdata=geometry)
+
+!     Finish by writing XYZ file in plain text format if it does not exist yet.
+      INQUIRE(FILE='MOLECULE.XYZ',EXIST=TOBE)
+      if (.not.TOBE) then
+         call pncxyz(cord)
+      end if
+
+      RETURN
+      END
+
       SUBROUTINE PNCXYZ (UNIQUE_CORD)
 
 C     Write an XYZ file
@@ -7674,10 +7728,15 @@ C
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
 #include "ibtfun.h"
 #include "codata.h"
+#include "dcbgen.h"
 C
 !     XYZ files are written in Angstroms (default) or a user-specified Unit
 !
-      FAC = 1.D0 / UNIT_CONVERSION
+      IF (UNIT_CONVERSION_SET) THEN
+          FAC = 1.D0 / UNIT_CONVERSION
+      ELSE
+          FAC = XTANG
+      END IF
 
 !     Write the file
 
@@ -7686,8 +7745,8 @@ C
      &            'FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUXYZ)
 
-      WRITE (LUXYZ,'(I10/)') NUCDEP
-      WRITE (LUXYZ,*) " "
+      WRITE (LUXYZ,'(I10)') NUCDEP
+      WRITE (LUXYZ,*) TITLE
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO ISYMOP = 0, MAXOPR

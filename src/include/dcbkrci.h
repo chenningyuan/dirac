@@ -7,7 +7,7 @@
 !
       LOGICAL KRCI_MKCNST, KRCI_UCIBOS, CRDFO_MAT_KRCI, CWRTFO_MAT_KRCI,&
      &        CSHMEMO_KRCI, CINT_REORD_KRCI, CINT_SPLIT_KRCI,           &
-     &        NATOLCR_KRCI, CHCKPT_KRCI, CUSE_PBLFL_KRCI, GENFOCK_KRCI, &
+     &        NATOLCR_KRCI, CHCKPT_KRCI, CUSE_PBLFL_KRCI,               &
      &        TRANATO_KRCI, LOWSORT_KRCI, STATE_SELECT_KRCI,            &
      &        domcana_krci, save_reordered_nos_krci, fcidump_krci,      &
      &        XPSINTERFACE_KRCI
@@ -15,7 +15,7 @@
       COMMON /DCLKRCI/ KRCI_MKCNST, KRCI_UCIBOS, CRDFO_MAT_KRCI,        &
      &                 CWRTFO_MAT_KRCI, CSHMEMO_KRCI, CINT_REORD_KRCI,  &
      &                 CINT_SPLIT_KRCI, NATOLCR_KRCI, CHCKPT_KRCI,      &
-     &                 CUSE_PBLFL_KRCI, GENFOCK_KRCI, TRANATO_KRCI,     &
+     &                 CUSE_PBLFL_KRCI,               TRANATO_KRCI,     &
      &                 LOWSORT_KRCI, STATE_SELECT_KRCI, domcana_krci,   &
      &                 save_reordered_nos_krci, fcidump_krci,           &
      &        XPSINTERFACE_KRCI
@@ -44,8 +44,9 @@
      &                 IDOPARIO_KRCI, IKRCI_MEMFAC, IKRCI_SVRONO,       &
      &                 NKRCI_SELOM(MAX_NKRCI_MAX_SYM),NOMEGASEL_statenr
 !
-      REAL*8 DKRCI_CNVINT(2), DKRCI_THRPCI, DKRCI_THRECI
-      COMMON /DCRKRCI/ DKRCI_CNVINT, DKRCI_THRPCI, DKRCI_THRECI
+      REAL*8 DKRCI_CNVINT(2), DKRCI_THRPCI, DKRCI_THRGCI, DKRCI_THRECI
+      COMMON /DCRKRCI/ DKRCI_CNVINT, DKRCI_THRPCI,
+     &                 DKRCI_THRGCI, DKRCI_THRECI
 
       COMMON /DCCKRCI/ KRCI_CIPROGRAM
 !

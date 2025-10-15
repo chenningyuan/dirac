@@ -24,25 +24,25 @@ In tensorial notation, the nuclear spin-rotation contributions of a nucleus :mat
 
    {\bf M}_N^{NU} =& \; \frac{1}{4\pi\epsilon_0c^2} \, \frac{e^2 \hslash^2}{2 m_p h} \, g_N  \sum_{M \neq N} \frac{Z_M}{|{\bf R}_{MN}|^3} \\
                    & \hspace{2cm} \left(  \left\{ \left[ {\bf R}_{M,CM} - \left( 1 - \frac{Z_N m_p}{m_N g_N} \right) {\bf R}_{N,CM} \right] \cdot {\bf R}_{MN} \right\} {\bf 1}  \right. \\
-                   & \hspace{4cm} \left. - \left[ {\bf R}_{M,CM} - \left( 1 - \frac{Z_N m_p}{m_N g_N} \right) {\bf R}_{N,CM} \right] {\bf R}_{MN} \right)   \otimes {\bf I}^{-1}  \\
+                   & \hspace{4cm} \left. - \left[ {\bf R}_{M,CM} - \left( 1 - \frac{Z_N m_p}{m_N g_N} \right) {\bf R}_{N,CM} \right] {\bf R}_{MN} \right) \; \cdot \; {\bf I}^{-1} \\
                    & \\
                    & \\
    {\bf M}_N^{EV} =& \; \frac{1}{4\pi\epsilon_0c^2} \, \frac{e^2 \hslash^2}{2 m_p h} \, g_N \left( 1 - \frac{Z_N m_p}{m_N g_N} \right) \\
-                   & \hspace{2cm} \left[ \left(  \langle 0 | \frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 } | 0 \rangle \cdot {\bf R}_{N,CM} \right) {\bf 1} - \langle 0 | \frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 } | 0 \rangle  \; \; {\bf R}_{N,CM}\right] \otimes {\bf I}^{-1} \\
+                   & \hspace{2cm} \left[ \left(  \langle 0 | \frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 } | 0 \rangle \cdot {\bf R}_{N,CM} \right) {\bf 1} - \langle 0 | \frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 } | 0 \rangle  \; \; {\bf R}_{N,CM}\right] \; \cdot \; {\bf I}^{-1} \\
                    & \\
                    & \\
-   {\bf M}_N^{LR} =& \; \frac{1}{4\pi\epsilon_0c^2} \, \frac{e^2 \hslash^2}{2 m_p h} \, g_N  \;  \langle\langle \; \left (\frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 }\times c \, {\bf \alpha}\right) \; ; \; {\bf J}_e \; \rangle\rangle \; \otimes  \; {\bf I}^{-1}
+   {\bf M}_N^{LR} =& \; \frac{1}{4\pi\epsilon_0c^2} \, \frac{e^2 \hslash^2}{2 m_p h} \, g_N  \;  \langle\langle \; \left (\frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 }\times c \, {\bf \alpha}\right) \; ; \; {\bf J}_e \; \rangle\rangle \; \cdot \; {\bf I}^{-1}
 
 where :math:`{\bf R}_{MN}` is the position of nucleus :math:`M` with respect to the position of nucleus :math:`N`; :math:`{\bf R}_{N,CM}` is the position of nucleus :math:`N` with respect to the molecular center of mass; :math:`{\bf I}` is the inertia tensor of the molecule and :math:`{\bf J}_e = \left({\bf r} - {\bf R}_{CM} \right) \times {\bf p}+{\bf S}_e` is the electronic total angular momentum.
 
-For molecules at their equilibrium geometry, it is found that the sum of the first two terms, :math:`{\bf M}_N^{NU} (eq) + {\bf M}_N^{EV} (eq)`, is equal to a new tensor which is independent of the electronic dynamics (see Eq. 60 of :cite:`Aucar_JCP2012`),
+For molecules at their equilibrium geometry, it is found that the sum of the first two terms, :math:`{\bf M}_N^{NU} (eq) + {\bf M}_N^{EV} (eq)`, is equal to a new tensor which is independent of the electronic variables (see Eq. 60 of :cite:`Aucar_JCP2012`),
 
 .. math::
 
    {\bf M}_N^{nuc} =& \; {\bf M}_N^{NU} (eq) \; + \; {\bf M}_N^{EV} (eq) \\
                            =& \; \frac{1}{4\pi\epsilon_0c^2} \, \frac{e^2 \hslash^2}{2 m_p h} \, g_N \sum_{M \neq N} Z_M
                               \left[  \left( {\bf R}_{M,CM}  \cdot \frac{{\bf R}_{MN}}{|{\bf R}_{MN}|^3} \right) {\bf 1}
-                                    - {\bf R}_{M,CM} \frac{{\bf R}_{MN}}{|{\bf R}_{MN}|^3} \right]   \otimes {\bf I}^{-1}
+                                    - {\bf R}_{M,CM} \frac{{\bf R}_{MN}}{|{\bf R}_{MN}|^3} \right]   \cdot {\bf I}^{-1}
 
 Therefore, the electronic dependence of the nuclear spin-rotation tensor of a nucleus :math:`N` in a molecule in equilibrium is completely given by its linear response term, :math:`{\bf M}_N^{LR}` (see Eq. 59 of :cite:`Aucar_JCP2012`).
 
@@ -82,7 +82,7 @@ The SR constant of the fluorine nucleus, in kHz, will look like:
 
 .. literalinclude:: SR-HF-khz
 
-One should recall that in the case of linear molecules, as the present one, only one tensor element is printed out (the spin-rotation constant) because for these molecules the SR tensor has only two equal and non-zero elements.
+One should recall that in the case of linear molecules, as the present one, only one tensor element is printed out (the nuclear spin-rotation constant) because for these molecules the SR tensor has only two equal and non-zero diagonal elements.
 
 As it can be seen, the total SR constant of the fluorine nucleus is given, and then separated in its two terms (nuc and LR). The latter contribution, the linear response function, is further separated in their (e-e) and (e-p) parts, as well as in their :math:`\mathbf{L}` and :math:`\mathbf{S}` parts. It is seen how the (e-p) contribution to the linear response term of the SR constants is almost zero.
 

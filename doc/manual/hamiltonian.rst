@@ -214,6 +214,15 @@ include)::
   .INTFLG
    1 1 0
 
+keyword(ESHIFT)
+
+Specify an energy shift in units of :math:`mc^2`.
+By default the zero of the energy is aligned with the non-relativistic energy scale.
+To shift back to the relativistic scale, one can specify::
+
+  .ESHIFT
+  1.0D0
+
 
 **Turning off spin dependence**
 ===============================
@@ -254,8 +263,31 @@ keyword(SPINF2)
 .. warning:: documentation missing
 
 
-**Advanced: Other projection operators**
-========================================
+**Other projection operators**
+==============================
+
+keyword(ASHIFT)
+
+Define atomic shift operator
+
+.. math::
+
+   V = \sum_{A}\sum_{I\in A}\sum_{i\in I}|\varphi^A_i\rangle \varepsilon^A_I \langle \varphi^A_i|
+
+where :math:`A` is a sum over atomic types. For each atomic types a group :math:`I` of orbitals may be
+specified with an associated shift parameter :math:`\varepsilon^A_I`.    
+Example::
+
+   .ASHIFT
+   AFCXXX
+   1
+   -9.328
+   1,2
+   AFOXXX
+   0
+
+Following the keyword there is a loop over the atomic types of the molecule under consideration, in this case carbon monoxide. For each atomic type one must specify the name of the coefficient file for the atom and the number of groups :math:`I`. For each group one then specifies the shift parameter :math:`\varepsilon^A_I` and then :ref:`orbital_strings` for each group.
+In the example above we specify one group for carbon. It involves a shift parameter -9.328 and the first and second atomic orbitals, that is, :math:`C1s` and :math:`C2s`. For oxygen there a no groups.   
 
 keyword(FREEPJ)
 
@@ -290,6 +322,11 @@ The spinfree X2C is equivalent to and numerically yields the same numbers as X2C
 An overview of the (local) X2C approach is given in the corresponding tutorial 
 section :ref:`X2Clocal`.
 
+**NOTE**: From DIRAC2023 onwards, we highly recommend to use the **(e)amf** module 
+described in  :ref:`\*XAMFI` in replacement of the :ref:`\*AMFI` module as highlighted 
+by the numerical examples provided in :cite:`Knecht2022`.
+
+
 keyword(X2Cmmf)
 
 This keyword activates the 2-component molecular-mean-field (X2C) Hamiltonian approach :cite:`Sikkema2009` 
@@ -297,7 +334,7 @@ within the module X2Cmod, Ref. :cite:`Knecht2014`.
 
 DIRAC starts with a 4c-SCF run and performs a transformation to 2-component
 mode (based on the converged Fock operator) prior to a post-HF correlation
-step. after the SCF. One can combine this option with :ref:`HAMILTONIAN_.GAUNT` which
+step. One can combine this option with :ref:`HAMILTONIAN_.GAUNT` which
 activates the inclusion of spin-other-orbit contributions in the Hamiltonian.
 The X2Cmmf-Hamiltonian can at present only be used for post-HF calculation
 within the RELCCSD module. Patches for other correlation modules in DIRAC will 
@@ -388,6 +425,7 @@ Point nucleus model is default for ECP.
 (See :ref:`ecp_input`)
 
 
+
 **External fields/Environment**
 ===============================
 
@@ -428,9 +466,16 @@ ADF code (see the developer's website http://www.scm.com for further information
 or via the PyADF scripting framework (see :cite:`Jacob2011` or visit the developer's website http://pyadf.org 
 for further information).
 
-keyword(PEQM)
+keyword(PELIB)
 
-Activates the polarizable embedding model. Options can be specified under the :ref:`\*PEQM` menu.
+Activates polarizable embedding using PElib, website https://gitlab.com/pe-software/pelib.
+Which model and other options must be specified under the :ref:`\*PELIB` menu.
+
+Three embedding models are defined (all of which can be included in a single calculation)
+    - polarizable density embedding (PDE)
+    - polarizable embedding (PE)
+    - continuum solvation (FixSol)
+
 
 keyword(CAP)
 
@@ -696,41 +741,7 @@ keyword(BLOCKD)
 .. warning:: documentation missing
 
 
-keyword(VACPOL)
-
-.. warning:: documentation missing
-
-
-keyword(MIXVAC)
-
-.. warning:: documentation missing
-
-
-keyword(NOVREF)
-
-.. warning:: documentation missing
-
-
-keyword(POSVAC)
-
-.. warning:: documentation missing
-
-
 keyword(QDOTS)
 
 .. warning:: documentation missing
 
-
-keyword(MMF)
-
-.. warning:: documentation missing
-
-
-keyword(xB)
-
-.. warning:: documentation missing
-
-
-keyword(xC)
-
-.. warning:: documentation missing

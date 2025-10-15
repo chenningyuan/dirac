@@ -1,9 +1,14 @@
-def get_filter(**kwargs):
-    import sys
-    from collections import namedtuple
-    from .exceptions import FilterKeywordError
-    from .filter_api import recognized_kw, incompatible_pairs
+# SPDX-FileCopyrightText: 2023 Radovan Bast <radovan.bast@uit.no>
+#
+# SPDX-License-Identifier: MPL-2.0
 
+import sys
+from collections import namedtuple
+from .exceptions import FilterKeywordError
+from .filter_api import recognized_kw, incompatible_pairs
+
+
+def get_filter(**kwargs):
     _filter = namedtuple(
         "_filter",
         [

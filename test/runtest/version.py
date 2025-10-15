@@ -1,6 +1,10 @@
+# SPDX-FileCopyrightText: 2023 Radovan Bast <radovan.bast@uit.no>
+#
+# SPDX-License-Identifier: MPL-2.0
+
 from collections import namedtuple
 
-__version__ = "2.2.1"
+__version__ = "2.3.5"
 
 version_info = namedtuple("version_info", ["major", "minor", "micro", "releaselevel"])
 

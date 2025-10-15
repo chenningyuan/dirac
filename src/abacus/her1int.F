@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
       SUBROUTINE PR1DRV(SOINT,NELMNT,WORK,LWORK,NPQUAD,LABINT,
@@ -1094,7 +1089,7 @@ C
       IF (INTTYP .EQ. 65) JMAXA = JMAXA + 2
       JMAXB  = NHKTB - 1
 
-CMI     for RDSUSLL, wee need to multiply with x_N, y_N, z_N ...
+CMI     for RDSUSLL, we need to multiply with x_N, y_N, z_N ...
       IF (INTTYP .EQ. 206) JMAXB = JMAXB + 1
 
       JMAXT  = JMAXA + JMAXB + JMAXD + JMAXM
@@ -1245,15 +1240,15 @@ C     3) Gauge origin
 C     4) Molecular center of mass
 C     5) Operator center ("molecular" origin)
 C
-         IF ((INTTYP .EQ. 17) .OR. (INTTYP .EQ. 20) .OR.
-     &       (INTTYP .EQ. 22) .OR. (INTTYP .EQ. 26).OR. 
-     &       (INTTYP .EQ. 202).OR. (INTTYP .EQ.205) ) THEN
+         IF ((INTTYP .EQ. 17)  .OR. (INTTYP .EQ. 20) .OR.
+     &       (INTTYP .EQ. 22)  .OR. (INTTYP .EQ. 26) .OR.
+     &       (INTTYP .EQ. 202) .OR. (INTTYP .EQ.205)) THEN
             TEMP(1) = CORBX ! MI:shift the gauge to the right orbital
             TEMP(2) = CORBY
             TEMP(3) = CORBZ
-         ELSE IF ((INTTYP .EQ. 2) .OR. (INTTYP .EQ. 4) .OR.
-     &            (INTTYP .EQ. 6) .OR. (INTTYP .EQ. 7) .OR.
-     &            (INTTYP .EQ. 8) .OR. (INTTYP .EQ. 29) .OR.
+         ELSE IF ((INTTYP .EQ. 2)  .OR. (INTTYP .EQ. 4)  .OR.
+     &            (INTTYP .EQ. 6)  .OR. (INTTYP .EQ. 7)  .OR.
+     &            (INTTYP .EQ. 8)  .OR. (INTTYP .EQ. 29) .OR.
      &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
      &            (INTTYP .EQ. 53) .OR. (INTTYP .EQ. 56) .OR.
      &            (INTTYP .EQ. 57) .OR. (INTTYP .EQ. 58)) THEN
@@ -1282,7 +1277,7 @@ C
                   TEMP(2) = CORD(2,KR)
                   TEMP(3) = CORD(3,KR)
                END IF
- 37         CONTINUE 
+ 37         CONTINUE
          ELSE
             TEMP(1) = ORIGIN(1)
             TEMP(2) = ORIGIN(2)
@@ -1376,7 +1371,7 @@ C                 58: NUCFIEL
                   CALL HERNAI(AHGTF,JMAX,EXPP,DIFCPX,DIFCPY,DIFCPZ
      &                 ,FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
                END IF
-               
+
                IF (ADDNAI) THEN
                   CALL DAXPY(NAHGTF,D1,AHGTF(IADR),1,AHGTF(1),1)
                ELSE
@@ -4703,18 +4698,22 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "gfac.h"
+#include "codata.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 C
-      PARAMETER (DFAC = 4.0D0*GFAC*PI/3.0D0)
-      LOGICAL   DOATOM(NUCIND)
+      PARAMETER (D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0)
+      LOGICAL DOATOM(NUCIND)
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
 #include "symmet.h"
 #include "nuclei.h"
+C
+#include "ibtfun.h"
+C
+      DFAC = D4*GFAC*PI/D3
 C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -5510,20 +5509,21 @@ C  /* Deck sdint */
      &                 NOPTYP,NATOMC,INTTYP,SAAB,EXPP,CORCX,CORCY,CORCZ,
      &                 CORPX,CORPY,CORPZ)
 C
-C     tuh Feb 09 91 (g_e factor 930726-hjaaj)
-C
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "pi.h"
-#include "gfac.h"
+#include "codata.h"
       PARAMETER (D2 = 2.0D0, D3 = 3.0D0)
-      PARAMETER (DFAC11 = D2*GFAC*PI/D3, DFAC13 = D2*GFAC*PI)
-      PARAMETER (DFACSD = GFAC / D2)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          CORCX(*), CORCY(*), CORCZ(*), SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
+C
+      DFAC11 = D2*GFAC*PI/D3
+      DFAC13 = D2*GFAC*PI
+      DFACSD = GFAC / D2
+C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -6335,7 +6335,8 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "onecom.h"             !contains KCKTAB
+! onecom.h : KCKTAB
+#include "onecom.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &     SHLINT(KCKTAB,NINTS),WORK(LWORK)
 #include "memint.h"
@@ -6366,7 +6367,8 @@ C***********************************************************************
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &     SHLINT(KCKTAB,NINTS),TMPARR(KCKTAB,8)
       INTEGER T, U, V, NINTS
-#include "onecom.h" !contains KCKTAB
+! onecom.h :  KCKTAB
+#include "onecom.h"
 #include "lmns.h"
 #include "symmet.h"
 #include "inforb.h"
@@ -7203,8 +7205,6 @@ C
 C Does only work for Tensor/Chiral effect!
 C
       DIFODC = .FALSE.
-C
-C
 C
 C Exponent and coordinates of Spherical Nuclear distribution
       NUCPN1 = 0

@@ -31,14 +31,20 @@
         case ('*X2C')
            call read_input_x2c(word, kw_section)
 
-        case ('*aooSOC')
+        case ('*X-AMFI', '*XAMFI ')
            call read_input_aoosoc(word, kw_section)
 
         case ('**EXACC')
            call read_input_exacc(word, kw_section)
 
+        case ('*EXEOM')
+           call read_input_exaeomcc(word, kw_section)
+
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
+
+        case ('*CASPT2')
+           call read_input_caspt2(word, kw_section)
 
         case ('*CCREST')
            call read_input_ccrestart(word, kw_section)
@@ -65,10 +71,10 @@
            call read_input_eomprop(word, kw_section)
 
         case ('*CCPROJ')
-           call read_input_ccproj(word, kw_section)
+           call read_input_mfsolver_proj(word, kw_section)
 
         case ('*CCDIAG')
-           call read_input_ccdiag(word, kw_section)
+           call read_input_mfsolver_options(word, kw_section)
 
 #ifdef HAS_PCMSOLVER
         case ('*PCM   ')
@@ -175,6 +181,14 @@
       if (kw_matches(word, '.ULTRAF')) then
          num_grid_cfg_radint = 2.0d-15
          num_grid_cfg_angint = 64
+      end if
+
+      if (kw_matches(word, '.GRASP ')) then
+         num_grid_cfg_grasp = .true.
+      end if
+
+      if (kw_matches(word, '.SCREEN')) then
+         call kw_read(word, num_grid_cfg_screen)
       end if
 
       if (kw_matches(word, '.INTCHK')) then
@@ -296,6 +310,7 @@
       if (kw_matches(word, '.3D_IMP')) then
          visual_cfg_3d_gridimp = .true.
          read(get_file_unit(), *) visual_cfg_3d_gridfil
+         read(get_file_unit(), *) visual_cfg_3d_grid_units
       end if
 
       if (kw_matches(word, '.SCALE ')) then
@@ -308,6 +323,10 @@
                             visual_cfg_cartesian_power(3))
       end if
 
+      if (kw_matches(word, '.RADPOW')) then
+         call kw_read(word, visual_cfg_radial_power)
+      end if
+
       if (kw_matches(word, '.DSCALE ')) then
          call kw_read(word, visual_cfg_scale)
          visual_cfg_scale=1.0D0/visual_cfg_scale
@@ -315,6 +334,27 @@
 
       if (kw_matches(word, '.DENSIT')) then
          call read_input_visual_helper(iq_density)
+      end if
+
+      if (kw_matches(word, '.DENGRA')) then
+         call read_input_visual_helper(iq_density_gradient)
+      end if
+
+      if (kw_matches(word, '.DENHES')) then
+         visual_cfg_tensor = .true.
+         call read_input_visual_helper(iq_density_hessian)
+      end if
+
+      if (kw_matches(word, '.DENLAP')) then
+         call read_input_visual_helper(iq_density_laplacian)
+      end if
+
+      if (kw_matches(word, '.RDG   ')) then
+         call read_input_visual_helper(iq_rdg)
+      end if
+
+      if (kw_matches(word, '.SIGNL2')) then
+         call read_input_visual_helper(iq_density_sign_lambda2)
       end if
 
       if (kw_matches(word, '.ELF   ')) then
@@ -375,6 +415,11 @@
 
       if (kw_matches(word, '.ROTJ  ')) then
          call read_input_visual_helper(iq_rotj)
+      end if
+
+      if (kw_matches(word, '.GRADJ ')) then
+         visual_cfg_tensor = .true.
+         call read_input_visual_helper(iq_gradj)
       end if
 
       if (kw_matches(word, '.S     ')) then
@@ -566,6 +611,37 @@
       if (kw_matches(word, '.NOKAPP')) then
          visual_cfg_london_skip_kappa = .true.
       end if
+
+      if (kw_matches(word, '.OUTFIL')) then
+         visual_cfg_out_file_custom = .true.
+!        file for scalar field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_scalar_file_name   = trim(line)
+            visual_cfg_out_scalar_file_custom = .true.
+         end if 
+!        file for vector field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_vector_file_name   = trim(line)
+            visual_cfg_out_vector_file_custom = .true.
+         end if 
+!        file for 2ndtensor field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_2ndtensor_file_name   = trim(line)
+            visual_cfg_out_2ndtensor_file_custom = .true.
+         end if 
+      end if
+
+      if (kw_matches(word, '.NOCUBE')) then
+         visual_cfg_london_skip_cube  = .true.
+      end if
+
+      if (kw_matches(word, '.NOVTK ')) then
+         visual_cfg_london_skip_vtk   = .true.
+      end if
+
 
       call check_whether_kw_found(word, kw_section)
 
@@ -844,10 +920,104 @@
 
    end subroutine
 
+   subroutine read_input_exaeomcc(word, kw_section)
+
+#ifdef MOD_EXACORR
+      use exacorr_cfg
+#endif
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer :: nfreq, i
+      real(kind=8) :: freq_r, freq_i
+      logical :: setup = .true. 
+      character(kw_length) :: wordtemp
+
+#ifndef MOD_EXACORR
+      call quit(kw_section//' not available in this version')
+#else
+      call reset_available_kw_list()
+
+      if (setup) then
+         setup = .false.
+         exa_input%current_eom_input = exa_input%current_eom_input + 1
+      end if
+
+!     consistency check on reading
+      if (size(exa_input%eom_input,1).ge.exa_input%current_eom_input) then
+
+         if (kw_matches(word, '.NROOTS')) then
+            call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%nroots) 
+         end if
+
+!        expectation values between the number of right
+         if (kw_matches(word, '.RHSFOP')) then
+            exa_input%eom_input(exa_input%current_eom_input)%do_expval = .true.
+            call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%rhs_expval_states)
+            if (  exa_input%eom_input(exa_input%current_eom_input)%rhs_expval_states &
+               & .gt.exa_input%eom_input(exa_input%current_eom_input)%nroots) &
+               call quit('Asked for more states in RHSFOP than those solved for')
+         end if
+
+         if (kw_matches(word, '.LHSFOP')) then
+            exa_input%eom_input(exa_input%current_eom_input)%do_expval = .true.
+            call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%lhs_expval_states)
+            if (  exa_input%eom_input(exa_input%current_eom_input)%lhs_expval_states &
+               & .gt.exa_input%eom_input(exa_input%current_eom_input)%nroots) &
+               call quit('Asked for more states in LHSFOP than those solved for')
+         end if
+
+         if (kw_matches(word, '.LINRSP')) then
+            exa_input%eom_input(exa_input%current_eom_input)%do_linrsp = .true.
+            call kw_read(word, nfreq)
+            allocate(exa_input%eom_input(exa_input%current_eom_input)%rsp_pert_freqs(nfreq))
+            do i = 1, nfreq
+               call kw_read(word, freq_r, freq_i)
+               exa_input%eom_input(exa_input%current_eom_input)%rsp_pert_freqs(i) = cmplx(freq_r, freq_i)
+            end do
+         end if
+
+         if (kw_matches(word, '.FLAVOR')) then
+            call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%flavor)
+            wordtemp = exa_input%eom_input(exa_input%current_eom_input)%flavor
+            if ( (kw_matches(wordtemp, 'EE     ') .or. &
+                & kw_matches(wordtemp, 'EA     ') .or. &
+                & kw_matches(wordtemp, 'IP     ') .or. &
+                & kw_matches(wordtemp, 'DIP    ') .or. &
+                & kw_matches(wordtemp, 'DEA    ') .or. &
+                & kw_matches(wordtemp, 'ST-EE  ') .or. &
+                & kw_matches(wordtemp, 'P2-EE  ') .or. &
+                & kw_matches(wordtemp, 'P2-EA  ') .or. &
+                & kw_matches(wordtemp, 'P2-IP  ') .or. &
+                & kw_matches(wordtemp, 'P-EE   ') .or. &
+                & kw_matches(wordtemp, 'P-EA   ') .or. &
+                & kw_matches(wordtemp, 'P-IP   ') .or. &
+                & kw_matches(wordtemp, 'P-P2-EE') .or. &
+                & kw_matches(wordtemp, 'P-P2-EA') .or. &
+                & kw_matches(wordtemp, 'P-P2-IP'))) then
+               exa_input%current_eom_input = exa_input%current_eom_input + 1
+               setup = .true.
+            else
+               call quit('_'//wordtemp//'_ is an unsupported eomcc flavor')
+            end if
+         end if
+      else
+         call quit('more *EXEOM blocks defined than specified in EXACC input block') 
+      end if
+      call check_whether_kw_found(word, kw_section)
+#endif
+
+   end subroutine
+
    subroutine read_input_exacc(word, kw_section)
 
 #ifdef MOD_EXACORR
-      use exacc_cfg
+      use exacorr_cfg
 #endif
       use input_reader
 
@@ -859,6 +1029,7 @@
       integer :: i,j
       real(8) :: val_real, val_imag
 !     --------------------------------------------------------------------------
+      integer :: nr_eom_runs = 0
 
 #ifndef MOD_EXACORR
       call quit(kw_section//' not available in this version')
@@ -877,18 +1048,175 @@
          exa_input%talsh = .false.
       end if
 
+      if (kw_matches(word, '.AUTOKERNELS')) then
+         exa_input%auto_kernels = .true.
+      end if
+
+      if (kw_matches(word, '.AUTOSCHEME')) then
+         call kw_read(word, exa_input%auto_scheme)
+      end if
+
       if (kw_matches(word, '.CCDOUBLES')) then
          exa_input%ccd = .true.
+         exa_input%iterative_level  = 2
+         exa_input%iterative_scheme = 20
+      end if
+
+      if (kw_matches(word, '.ITLEVEL')) then
+         call kw_read(word, exa_input%iterative_level)
+#ifdef VAR_NVFORTRAN
+         if (exa_input%iterative_level.ge.4) then
+            call quit('Tensors with more than 7 dimensions not supported by NVFORTRAN')
+         end if
+#endif
+      end if
+
+      if (kw_matches(word, '.ITSCHEME')) then
+         call kw_read(word, exa_input%iterative_scheme)
+#ifdef VAR_NVFORTRAN
+         if (exa_input%iterative_scheme.ge.40) then
+            call quit('Tensors with more than 7 dimensions not supported by NVFORTRAN')
+         end if
+#endif
+      end if
+
+      if (kw_matches(word, '.PTLEVEL')) then
+         call kw_read(word, exa_input%perturbative_level)
+      end if
+
+      if (kw_matches(word, '.PTSCHEME')) then
+         call kw_read(word, exa_input%perturbative_scheme)
+      end if
+
+      if (kw_matches(word, '.CIS   ')) then
+         exa_input%do_cis = .true.
       end if
 
       if (kw_matches(word, '.MP2NO         ')) then
-         exa_input%mp2no = .true.
+         exa_input%mp2no = 1
+         call kw_read(word, exa_input%t_mp2no)
+      end if
+
+      if (kw_matches(word, '.MP2LAP        ')) then
+         exa_input%mp2no = -1
+      end if
+
+      if (kw_matches(word, '.MP2_LAP_NO      ')) then
+         exa_input%mp2no = 10
          call kw_read(word, exa_input%t_mp2no)
       end if
 
       if (kw_matches(word, '.CC2         ')) then
          exa_input%cc2 = .true.
+         exa_input%iterative_level  = 2
+         exa_input%iterative_scheme = 22
       end if
+
+      if (kw_matches(word, '.CCiT        ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 30
+      end if
+
+      if (kw_matches(word, '.CCiT1a      ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 31
+      end if
+
+      if (kw_matches(word, '.CCiT1b      ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 32
+      end if
+
+      if (kw_matches(word, '.CCiT2       ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 33
+      end if
+
+      if (kw_matches(word, '.CCiT3       ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 34
+      end if
+
+      if (kw_matches(word, '.CC3         ')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 35
+      end if
+
+#ifndef VAR_NVFORTRAN
+      if (kw_matches(word, '.CCiQ      ')) then
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 40
+      end if
+
+      if (kw_matches(word, '.CCiQ1a      ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 41
+      end if
+
+      if (kw_matches(word, '.CCiQ1b      ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 42
+      end if
+
+      if (kw_matches(word, '.CCiQ2       ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 43
+      end if
+
+      if (kw_matches(word, '.CCiQ3       ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 44
+      end if
+
+      if (kw_matches(word, '.CC4         ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 45
+      end if
+
+      if (kw_matches(word, '.CCiP     ')) then
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 50
+      end if
+
+      if (kw_matches(word, '.CCiP1a      ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 51
+      end if
+
+      if (kw_matches(word, '.CCiP1b      ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 52
+      end if
+
+      if (kw_matches(word, '.CCiP2       ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 53
+      end if
+
+      if (kw_matches(word, '.CCiP3       ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 54
+      end if
+
+      if (kw_matches(word, '.CC5         ')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 55
+      end if
+#else 
+      if (kw_matches(word, '.CCiQ      ').or.&
+          kw_matches(word, '.CCiQ1a    ').or.&
+          kw_matches(word, '.CCiQ1b    ').or.&
+          kw_matches(word, '.CCiQ2     ').or.&
+          kw_matches(word, '.CCiQ3     ').or.&
+          kw_matches(word, '.CC4       ').or.&
+          kw_matches(word, '.CCiP      ').or.&
+          kw_matches(word, '.CCiP1a    ').or.&
+          kw_matches(word, '.CCiP1b    ').or.&
+          kw_matches(word, '.CCiP2     ').or.&
+          kw_matches(word, '.CCiP3     ').or.&
+          kw_matches(word, '.CC5       ')) & 
+      call quit('Tensors with more than 7 dimensions not supported by NVFORTRAN')
+#endif
 
       if (kw_matches(word, '.TCONVERG')) then
          call kw_read(word, exa_input%t_econv)
@@ -904,6 +1232,23 @@
 
       if (kw_matches(word, '.LAMBDA')) then
          exa_input%lambda = .true.
+         exa_input%do_1rdm_gs = .true.
+      end if
+
+      if (kw_matches(word, '.NO1RDM')) then
+         exa_input%do_1rdm_gs = .false.
+      end if
+
+      if (kw_matches(word, '.GS2RDM')) then
+         exa_input%do_2rdm_gs = .true.
+      end if
+
+      if (kw_matches(word, '.NOITERT')) then
+         exa_input%do_iterative = .false.
+      end if
+
+      if (kw_matches(word, '.NOPERTT')) then
+         exa_input%do_perturbative = .false.
       end if
 
       if (kw_matches(word, '.DONATORB')) then
@@ -912,10 +1257,23 @@
 
       if (kw_matches(word, '.NOTRIPLES')) then
          exa_input%do_triples = .false.
+         exa_input%do_perturbative = .false.
+      end if
+
+      if (kw_matches(word, '.RIXS     ')) then
+         allocate(exa_input%rew_energies(2,2)) 
+! energy window for core states 
+         call kw_read(word, exa_input%rew_energies(1,1),exa_input%rew_energies(2,1))
+! energy window for final states (valence or core)
+         call kw_read(word, exa_input%rew_energies(1,2),exa_input%rew_energies(2,2))
       end if
 
       if (kw_matches(word, '.TRIPL_BLOCK')) then
          call kw_read(word, exa_input%tripl_block)
+      end if
+
+      if (kw_matches(word, '.LAP_TRIPL   ')) then
+         exa_input%tripl_lap = .true.
       end if
 
       if (kw_matches(word, '.EXA_BLOCKSIZE')) then
@@ -930,6 +1288,103 @@
          call kw_read(word, exa_input%ncycles)
       end if
 
+      if (kw_matches(word, '.CCCILR')) then
+         exa_input%eom_lr =.true.
+         call kw_read(word, exa_input%wf_type)
+      end if
+
+      if (kw_matches(word, '.LRFRE ')) then
+         call kw_read(word, exa_input%N_omega_lr)
+         allocate(exa_input%w_lr_re(exa_input%N_omega_lr))
+         allocate(exa_input%w_lr_im(exa_input%N_omega_lr))
+         call kw_read(word, exa_input%w_lr_re,exa_input%N_omega_lr)
+         call kw_read(word, exa_input%w_lr_im,exa_input%N_omega_lr)
+      end if
+
+
+      if (kw_matches(word, '.CCCIQR')) then
+         exa_input%eom_qr =.true.
+         call kw_read(word, exa_input%wf_type)
+         ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
+      end if
+
+
+      if (kw_matches(word, '.CCTPA ')) then
+         exa_input%eom_tpa =.true.
+         call kw_read(word, exa_input%wf_type)
+         call kw_read(word, exa_input%TPA_state)
+         ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
+      end if
+
+      if (kw_matches(word, '.QR1FRE ')) then
+         call kw_read(word, exa_input%N_omega_qr1)
+         allocate(exa_input%w_qr1_re(exa_input%N_omega_qr1))
+         allocate(exa_input%w_qr1_im(exa_input%N_omega_qr1))
+         call kw_read(word, exa_input%w_qr1_re,exa_input%N_omega_qr1)
+         call kw_read(word, exa_input%w_qr1_im,exa_input%N_omega_qr1)
+      end if
+
+      if (kw_matches(word, '.QR2FRE ')) then
+         call kw_read(word, exa_input%N_omega_qr2)
+         allocate(exa_input%w_qr2_re(exa_input%N_omega_qr2))
+         allocate(exa_input%w_qr2_im(exa_input%N_omega_qr2))
+         call kw_read(word, exa_input%w_qr2_re,exa_input%N_omega_qr2)
+         call kw_read(word, exa_input%w_qr2_im,exa_input%N_omega_qr2)
+      end if
+
+      if (kw_matches(word, '.AProp ')) then
+         call kw_read(word, exa_input%N_prop_A)
+         allocate(exa_input%Prop_A(exa_input%N_prop_A))
+         call kw_read(word, exa_input%Prop_A,exa_input%N_prop_A)
+      end if
+
+      if (kw_matches(word, '.BProp ')) then
+         call kw_read(word, exa_input%N_prop_B)
+         allocate(exa_input%Prop_B(exa_input%N_prop_B))
+         call kw_read(word, exa_input%Prop_B,exa_input%N_prop_B)
+      end if
+
+      if (kw_matches(word, '.CProp ')) then
+         call kw_read(word, exa_input%N_prop_C)
+         allocate(exa_input%Prop_C(exa_input%N_prop_C))
+         call kw_read(word, exa_input%Prop_C,exa_input%N_prop_C)
+      end if
+
+      if (kw_matches(word, '.DProp ')) then
+         call kw_read(word, exa_input%N_prop_D)
+         allocate(exa_input%Prop_D(exa_input%N_prop_D))
+         call kw_read(word, exa_input%Prop_D,exa_input%N_prop_D)
+      end if
+
+      if (kw_matches(word, '.NTA   ')) then
+         call kw_read(word, exa_input%N_Time_anti)
+      end if
+
+
+      if (kw_matches(word, '.EXEOM ')) then
+         exa_input%eom = .true.
+         call kw_read(word, nr_eom_runs)
+         print *,'debug: setting up eom inputs:',nr_eom_runs
+         if (nr_eom_runs.ge.1) then
+            allocate(exa_input%eom_input(nr_eom_runs)) 
+            exa_input%current_eom_input = 0
+            print *,'debug: allocated ',nr_eom_runs,' input decks for eom'
+            do i = 1, nr_eom_runs
+               print *,'debug: initialized eom input block',i
+               exa_input%eom_input(i)%nroots = 0
+               exa_input%eom_input(i)%do_expval = .false.
+               exa_input%eom_input(i)%do_linrsp = .false.
+               exa_input%eom_input(i)%do_quarsp = .false.
+               exa_input%eom_input(i)%do_cubrsp = .false.
+               exa_input%eom_input(i)%rhs_expval_states = 0
+               exa_input%eom_input(i)%lhs_expval_states = 0
+               exa_input%eom_input(i)%properties = ''
+               exa_input%eom_input(i)%rsp_pert_freqs => NULL()
+            end do
+         end if
+      end if
+
+ 
       if (kw_matches(word, '.OCC_BETA')) then
          exa_input%beta_occ = .true.
          call kw_read(word, string_occ_beta)
@@ -948,6 +1403,10 @@
          call kw_read(word, exa_input%talsh_buff)
       end if
 
+      if (kw_matches(word, '.EXECUTOR')) then
+         call kw_read(word, exa_input%executor)
+      end if
+
       if (kw_matches(word, '.FF_PROP')) then
          call kw_read(word, exa_input%nff)
          allocate(exa_input%ff_names(exa_input%nff(1)))
@@ -959,6 +1418,10 @@
              exa_input%ff(i,j)=dcmplx(val_real,val_imag)
            enddo
          enddo
+      end if
+
+      if (kw_matches(word, '.NLAPLACE')) then
+         call kw_read(word, exa_input%n_laplace)
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -1052,6 +1515,36 @@
          relcc_do_eomcc  = .true.
       end if
 
+      if (kw_matches(word, '.pEOM  ')) then
+         relcc_do_eomcc  = .true.
+         relcc_do_eom_peom  = .true.
+      end if
+        
+      if (kw_matches(word, '.pEOM2  ')) then
+         relcc_do_eomcc  = .true.
+         relcc_do_eom_pt2   = .true.
+         relcc_do_eom_peom  = .true.
+      end if 
+
+      if (kw_matches(word, '.EOM2   ')) then
+         relcc_do_eomcc  = .true.
+         relcc_do_eom_pt2   = .true.
+         relcc_do_eom_pt2_ccamp = .false.
+      end if 
+
+      if (kw_matches(word, '.EOM2CC ')) then
+         relcc_do_eomcc  = .true.
+         relcc_do_eom_pt2   = .false.
+         relcc_do_eom_pt2_ccamp = .true.
+      end if 
+
+      if (kw_matches(word, '.pEOM2CC')) then
+         relcc_do_eomcc  = .true.
+         relcc_do_eom_pt2   = .false.
+         relcc_do_eom_pt2_ccamp = .true.
+         relcc_do_eom_peom = .true.
+      end if 
+
       if (kw_matches(word, '.EOMPROP')) then
          relcc_do_eomprop  = .true.
       end if
@@ -1072,6 +1565,26 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+
+   subroutine read_input_caspt2(word, kw_section)
+
+      use read_input_module, only: read_input
+      use input_reader, only: get_file_unit, kw_length
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+      integer :: file_unit
+!     --------------------------------------------------------------------------
+
+      ! call reset_available_kw_list()
+      file_unit =  get_file_unit()
+      call read_input(file_unit)
+
+   end subroutine
+
 
    subroutine read_input_ccener(word, kw_section)
 
@@ -1201,7 +1714,6 @@
 !     --------------------------------------------------------------------------
        integer                          :: nr_roots(2) ! number of roots in each symmetry 
 !     --------------------------------------------------------------------------
-
       call reset_available_kw_list()
 
       if (kw_matches(word, '.EE    ')) then
@@ -1226,7 +1738,7 @@
 
       if (    (relcc_do_eomip .and. relcc_do_eomea) &
           .or.(relcc_do_eomip .and. relcc_do_eomee) &
-          .or.(relcc_do_eomea .and. relcc_do_eomee)) &
+          .or.(relcc_do_eomea .and. relcc_do_eomee)) & 
           call quit('Only one EOM kind of calculation at a time (IP/EE/EA) allowed !')
 
 
@@ -1272,9 +1784,9 @@
    end subroutine
 
 
-   subroutine read_input_ccproj(word, kw_section)
+   subroutine read_input_mfsolver_proj(word, kw_section)
 
-      use relcc_cfg
+      use mfsolver_dirac_input
       use input_reader
 
       implicit none
@@ -1287,54 +1799,55 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.REW_STRICT')) then
-         relcc_projectors_rew_strict = .true.
+         mfsolver_projectors_rew_strict = .true.
       end if
 
       if (kw_matches(word, '.REW_NOSTRICT')) then
-         relcc_projectors_rew_strict = .false.
+         mfsolver_projectors_rew_strict = .false.
       end if
 
       if (kw_matches(word, '.REW_OCC')) then
-         relcc_projectors_do_restricted_excitation_window = .true.
-         call kw_read(word,  relcc_projectors_rew_occ_min_energy)
-         call kw_read(word,  relcc_projectors_rew_occ_max_energy)
+         mfsolver_projectors_do_restricted_excitation_window = .true.
+         call kw_read(word,  mfsolver_projectors_rew_occ_min_energy)
+         call kw_read(word,  mfsolver_projectors_rew_occ_max_energy)
       end if
 
       if (kw_matches(word, '.REW_VIRT')) then
-         relcc_projectors_do_restricted_excitation_window = .true.
-         call kw_read(word,  relcc_projectors_rew_virt_min_energy)
-         call kw_read(word,  relcc_projectors_rew_virt_max_energy)
+         mfsolver_projectors_do_restricted_excitation_window = .true.
+         call kw_read(word,  mfsolver_projectors_rew_virt_min_energy)
+         call kw_read(word,  mfsolver_projectors_rew_virt_max_energy)
       end if
 
       if (kw_matches(word, '.CVS_CORE')) then
-         relcc_projectors_do_core_valence_separation = .true.
-         call kw_read(word,  relcc_projectors_rew_occ_max_energy)
-         relcc_projectors_rew_occ_min_energy = -huge(relcc_projectors_rew_occ_min_energy)
-         relcc_projectors_rew_virt_min_energy = -huge(relcc_projectors_rew_virt_min_energy)
-         relcc_projectors_rew_virt_max_energy = huge(relcc_projectors_rew_virt_min_energy)
+         mfsolver_projectors_do_core_valence_separation = .true.
+         call kw_read(word,  mfsolver_projectors_rew_occ_max_energy)
+         mfsolver_projectors_rew_occ_min_energy = -huge(mfsolver_projectors_rew_occ_min_energy)
+         mfsolver_projectors_rew_virt_min_energy = -huge(mfsolver_projectors_rew_virt_min_energy)
+         mfsolver_projectors_rew_virt_max_energy = huge(mfsolver_projectors_rew_virt_min_energy)
       end if
 
       if (kw_matches(word, '.FCORE ')) then
-         relcc_projectors_frozen_core = .true.
-         call kw_read(word,  relcc_projectors_frozen_core_max_energy)
+         mfsolver_projectors_frozen_core = .true.
+         call kw_read(word,  mfsolver_projectors_frozen_core_max_energy)
       end if
 
       if (kw_matches(word, '.NODOCC')) then
-         relcc_projectors_rew_remove_double_occupied = .true.
+         mfsolver_projectors_rew_remove_double_occupied = .true.
       end if
 
       call check_whether_kw_found(word, kw_section)
 
-      if (relcc_projectors_do_restricted_excitation_window.and.relcc_projectors_do_core_valence_separation) & 
+      if (mfsolver_projectors_do_restricted_excitation_window.and. & 
+          mfsolver_projectors_do_core_valence_separation) & 
           call quit('Only one projection scheme (CVS/REW) allowed at a time !')
 
 
    end subroutine
 
 
-   subroutine read_input_ccdiag(word, kw_section)
+   subroutine read_input_mfsolver_options(word, kw_section)
 
-      use relcc_cfg
+      use mfsolver_dirac_input
       use input_reader
 
       implicit none
@@ -1347,75 +1860,84 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.DEBUG ')) then
-         relcc_mfd_verbose = .true.
+         mfsolver_options_verbose = .true.
       end if
 
       if (kw_matches(word, '.MAXSIZE')) then
-         call kw_read(word,  relcc_mfd_max_subspace_size)
+         call kw_read(word,  mfsolver_options_max_subspace_size)
       end if
 
       if (kw_matches(word, '.REFRESH')) then
-         call kw_read(word, relcc_mfd_refresh_rate)
+         call kw_read(word, mfsolver_options_refresh_rate)
       end if
 
       if (kw_matches(word, '.MAXITER')) then
-         call kw_read(word, relcc_mfd_max_iterations)
+         call kw_read(word, mfsolver_options_max_iterations)
       end if
 
       if (kw_matches(word, '.CONVERG')) then
-         call kw_read(word, relcc_mfd_convergence_threshold)
+         call kw_read(word, mfsolver_options_convergence_threshold)
+      end if
+
+! aspg: .TRV_SDM allows to bypass the restriction of the number of roots
+!       from the dimension of the singles manifold, so that initial
+!       trial vectors also contaning elements of the doubles manifold.
+!       this implies a pivoted diagonal  
+      if (kw_matches(word, '.TRV_SDM')) then
+         mfsolver_options_trial_double_mfold = .true.
       end if
 
       if (kw_matches(word, '.TRV_CCS')) then
-         relcc_mfd_trial_ccs      = .true.
-         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_ccs
-         relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_ccs
-         relcc_mfd_trial_restart = .not.relcc_mfd_trial_ccs
+         mfsolver_options_trial_ccs      = .true.
+         mfsolver_options_trial_diagonal = .not.mfsolver_options_trial_ccs
+         mfsolver_options_trial_full_matrix = .not.mfsolver_options_trial_ccs
+         mfsolver_options_trial_restart = .not.mfsolver_options_trial_ccs
+         mfsolver_options_trial_double_mfold = .not.mfsolver_options_trial_ccs
       end if
 
       if (kw_matches(word, '.TRV_I  ')) then
-         relcc_mfd_trial_diagonal = .true.
-         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_diagonal 
-         relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_diagonal
-         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_diagonal
+         mfsolver_options_trial_diagonal = .true.
+         mfsolver_options_trial_ccs      = .not.mfsolver_options_trial_diagonal 
+         mfsolver_options_trial_full_matrix = .not.mfsolver_options_trial_diagonal
+         mfsolver_options_trial_restart  = .not.mfsolver_options_trial_diagonal
       end if
 
       if (kw_matches(word, '.TRV_FULLMATRIX')) then
-         relcc_mfd_trial_full_matrix = .true.
-         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_full_matrix
-         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_full_matrix
-         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_full_matrix
+         mfsolver_options_trial_full_matrix = .true.
+         mfsolver_options_trial_diagonal = .not.mfsolver_options_trial_full_matrix
+         mfsolver_options_trial_ccs      = .not.mfsolver_options_trial_full_matrix
+         mfsolver_options_trial_restart  = .not.mfsolver_options_trial_full_matrix
       end if
 
       if (kw_matches(word, '.TRV_RESTART')) then
-         relcc_mfd_trial_restart = .true.
-         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_restart
-         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_restart
-         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_restart
+         mfsolver_options_trial_restart = .true.
+         mfsolver_options_trial_diagonal = .not.mfsolver_options_trial_restart
+         mfsolver_options_trial_ccs      = .not.mfsolver_options_trial_restart
+         mfsolver_options_trial_restart  = .not.mfsolver_options_trial_restart
       end if
 
       if (kw_matches(word, '.TRV_R2L ')) then
-         relcc_mfd_trial_lhs_use_rhs = .true.
+         mfsolver_options_trial_lhs_use_rhs = .true.
       end if
 
       if (kw_matches(word, '.TRV_NOR2L')) then
-         relcc_mfd_trial_lhs_use_rhs = .false.
+         mfsolver_options_trial_lhs_use_rhs = .false.
       end if
 
       if (kw_matches(word, '.OVERLAP')) then
-         relcc_mfd_overlap_sorting = .true.
+         mfsolver_options_overlap_sorting = .true.
       end if
 
       if (kw_matches(word, '.NOOVERLAP')) then
-         relcc_mfd_overlap_sorting = .false.
+         mfsolver_options_overlap_sorting = .false.
       end if
 
       if (kw_matches(word, '.EV_Re_SHIFT')) then
-         call kw_read(word, relcc_mfd_eigenvalues_energy_shift(1))
+         call kw_read(word, mfsolver_options_eigenvalues_energy_shift(1))
       end if
 
       if (kw_matches(word, '.EV_Im_SHIFT')) then
-         call kw_read(word, relcc_mfd_eigenvalues_energy_shift(2))
+         call kw_read(word, mfsolver_options_eigenvalues_energy_shift(2))
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -1452,7 +1974,6 @@
 
 ! miro&luuk: expert option - adding finite field perturbation operators
       if (kw_matches(word, '.NFFOPER')) then
-#ifdef MOD_UNRELEASED
          call kw_read(word, relcc_nffoper)
          relcc_ADD_FINITE_FIELD = .TRUE.
          ! after reading the number of perturbative operators
@@ -1461,9 +1982,6 @@
            call kw_read(word, relcc_FF_PROP_NAMES(i))
            call kw_read(word, relcc_FF_PROP_STRENGTHS(1,i),relcc_FF_PROP_STRENGTHS(2,i))
          enddo
-#else
-         call quit('.NFFOPER keyword not in the Dirac release version !')
-#endif
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -2134,8 +2652,8 @@
 
       use x2cmod_cfg
       use input_reader
-#ifdef MOD_AOOSOC
-      use atomic_oo_order_so_correction_cfg
+#ifdef MOD_XAMFI
+      use xamfi_global_parameters
 #endif
 
       implicit none
@@ -2145,24 +2663,45 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
       call reset_available_kw_list()
 
 
       if (kw_matches(word, '.DEBUG ')) then
          aoomod_debug = .true.
-         aoomod       = .true.
-         x2c_add_amfi = 2
       end if
+
       if (kw_matches(word, '.atomic')) then
          aoomod       = .true.
          x2c_add_amfi = 2
       end if
 
+      if (kw_matches(word, '.2ediag')) then
+         aoomod       = .true.
+         aoo2ediag    = .true.
+      end if
+
+      if (kw_matches(word, '.amf   ')) then
+         aoomod       = .true.
+         aoo2ediag    = .true.
+         x2c_add_amfi = 2
+      end if
+
+      if (kw_matches(word, '.eamf  ')) then
+         aoomod       = .true.
+         aooeamf      = .true.
+         x2c_add_amfi = 3
+      end if
+
+      if (kw_matches(word, '.noaoc ')) then
+         aoomod       = .true.
+         aoofocc      = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
 #else
-      call quit('Atomic oo-order spin-orbit correction not included in this version')
+      call quit('X-AMFI not included in this version')
 #endif
 
    end subroutine
@@ -2645,11 +3184,9 @@
          dft_cfg_pointwise = .true.
       end if
 
-#ifdef MOD_UNRELEASED
       if (kw_matches(word, '.OVLDIA')) then
          dft_cfg_overlap_diagnostic = .true.
       end if
-#endif
 
       call check_whether_kw_found(word, kw_section)
 
@@ -2659,7 +3196,6 @@
 ! reading subroutine for the standalone testing program of diagonalization
 ! routines (miro ilias)
      subroutine read_input_diagonalization_tests(word, kw_section)
-#ifdef MOD_UNRELEASED
       use input_reader
       use diagmod
       implicit none
@@ -2711,7 +3247,66 @@
      end if
 
      call check_whether_kw_found(word, kw_section)
-#else
-     call quit('read_input_diagonalization_tests not in release version')
-#endif  /* MOD_UNRELEASED */
+   end subroutine
+
+   ! This routine is called from in HAMINP routine in dirac/dirrdn.F
+   subroutine read_input_effqed(word,kw_section)
+
+      use input_reader
+      use num_grid_cfg
+
+      implicit none   
+!     ---------------------------------------------------------------------------
+      character(kw_length), intent(inout) :: word
+      character(kw_length), intent(in) :: kw_section
+!     ---------------------------------------------------------------------------
+      CHARACTER PROMPT*1 
+      INTEGER :: I, MXXTRP_INP
+#include "priunit.h"      
+
+      MXXTRP_INP = 50
+      
+      DO WHILE (.TRUE.)
+      READ (LUCMD, *) WORD
+      select case (word(1:1))
+        case ('!', '#')
+          ! comment       
+        case ('*')
+          RETURN
+        case default   
+
+         if (kw_matches(word, '.GRASP ')) then
+            num_grid_cfg_grasp = .true.
+            write(*,*)"num_grid_cfg_grasp",num_grid_cfg_grasp
+         end if
+
+         if (kw_matches(word, '.ANGQED')) then
+            read(LUCMD, *) num_grid_cfg_angqed
+         end if
+
+         if (kw_matches(word, '.MINIMUM')) then
+            read(LUCMD, *) num_grid_cfg_minz
+         end if
+
+         if (kw_matches(word, '.SCREEN')) then
+            read(LUCMD, *) num_grid_cfg_screen
+         end if
+
+         if (kw_matches(word, '.UEHCUT')) then
+            num_grid_cfg_uehcut = .true.
+         end if
+
+         if (kw_matches(word, '.ALLATOM')) then
+            num_grid_cfg_allatom = .true.
+         end if
+
+         if (kw_matches(word, '.PRINTPOT')) then
+            num_grid_cfg_printpot = .true.
+         end if
+
+         call check_whether_kw_found(word, kw_section)
+
+      end select
+      ENDDO
+   
    end subroutine

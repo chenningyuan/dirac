@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! file: abacus/herrdn.F
@@ -713,7 +708,7 @@ C&&& MAGCOR - print magnetic coordinates
             END IF
          END IF
          IF (KINENE) WRITE (LUPRI,'(10X,A)')
-     &      '- electronic kinetic energy'
+     &       '- NR electronic kinetic energy'
          IF (MASSVL) WRITE (LUPRI,'(10X,A)')
      &       '- mass velocity integrals'
          IF (DARWIN) WRITE (LUPRI,'(10X,A)')
@@ -759,7 +754,8 @@ C&&& MAGCOR - print magnetic coordinates
          IF (S2MAGT) WRITE (LUPRI,'(10X,A)')
      &      '- test of second magnetic derivatives of overlap integrals'
          IF (ANGMOM) WRITE (LUPRI,'(10X,A)')
-     &      '- electronic angular momentum around the origin'
+     &      '- electronic angular momentum around the molecular'//
+     &      ' center of mass'
          IF (ANGLON) WRITE (LUPRI,'(10X,A)')
      &      '- electronic angular momentum around the nuclei'
          IF (LONMOM) WRITE (LUPRI,'(10X,A)')
@@ -793,7 +789,7 @@ C&&& MAGCOR - print magnetic coordinates
          IF (NSTTST) WRITE (LUPRI,'(10X,A)')
      &     '- Test of nuclear shielding tensor integrals'
          IF (EFGCAR) WRITE (LUPRI,'(10X,A)')
-     &            '- Cartesien electric field gradient integrals'
+     &            '- Cartesian electric field gradient integrals'
          IF (EFGSPH) WRITE (LUPRI,'(10X,A)')
      &            '- Spherical electric field gradient integrals'
          IF (S1MAGL) WRITE (LUPRI,'(10X,A)')
@@ -815,7 +811,7 @@ C&&& MAGCOR - print magnetic coordinates
          IF (SQHDOR) WRITE (LUPRI,'(10X,A)')
      &        '- Ket differentiated half-derivative overlap matrix'
          IF (NUCPOT) WRITE (LUPRI,'(10X,A)')
-     &    '- Potenial energy of interaction of electrons with a nucleus'
+     &   '- Potential energy of interaction of electrons with a nucleus'
          IF (NPOTST) WRITE (LUPRI,'(10X,A)')
      &            '- Test of nuclear potential energy'
          IF (MGMO2T) WRITE (LUPRI,'(10X,A)')

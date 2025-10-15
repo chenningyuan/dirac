@@ -1,22 +1,18 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module relcc_cfg
@@ -69,7 +65,7 @@ module relcc_cfg
   logical, public :: relcc_no_recompute             = .false.
   logical, public :: relcc_low_memory               = .false.
   integer, public :: relcc_memory_in_mw             = 0
-  character(10), public :: relcc_integral_interface = 'DIRAC6    '
+  character(10), public :: relcc_integral_interface = 'DIRAC4    '
 
 ! Information relevant to restarts
   logical, public, dimension(1:6)  :: relcc_restart_skipsect     = .false. 
@@ -110,37 +106,13 @@ module relcc_cfg
   logical, public :: relcc_do_eomip = .false.
   logical, public :: relcc_do_eomea = .false.
   logical, public :: relcc_do_eomee = .false.
+  logical, public :: relcc_do_eom_peom = .false.       ! do partitioned EOM, where the DD block is diagonal
+  logical, public :: relcc_do_eom_pt2  = .false.       ! do EOM based on MBPT2 expressions
+  logical, public :: relcc_do_eom_pt2_ccamp = .false.  ! use CCSD/CCD T2 amplitudes if true (dependent upon number of iterations), otherwise MP2 T2 amplitudes
   integer, public, dimension(1:32) :: relcc_eom_nroots = 0 
   integer, public, dimension(1:32) :: relcc_eom_nroots_prop  = 0 
   integer, public, dimension(1:32) :: relcc_eom_nroots_left  = 0 
   integer, public, dimension(1:32) :: relcc_eom_nroots_right = 0 
-
-! Information relevant for matrix-free diagonalization (Davidson etc)
-  real*8, public  :: relcc_mfd_convergence_threshold = 1.0d-8
-  real*8, public  :: relcc_mfd_eigenvalues_energy_shift(2) = (/0.0d0, 0.0d0/)
-  integer, public :: relcc_mfd_max_subspace_size = 128
-  integer, public :: relcc_mfd_max_iterations = 80
-  integer, public :: relcc_mfd_refresh_rate = 0
-  logical, public :: relcc_mfd_overlap_sorting = .false.
-  logical, public :: relcc_mfd_verbose = .false.
-  logical, public :: relcc_mfd_trial_diagonal = .true.
-  logical, public :: relcc_mfd_trial_ccs = .false. 
-  logical, public :: relcc_mfd_trial_full_matrix = .false.
-  logical, public :: relcc_mfd_trial_restart = .false.
-  logical, public :: relcc_mfd_trial_lhs_use_rhs = .true.
-
-  logical, public :: relcc_projectors_do_restricted_excitation_window = .false. 
-  logical, public :: relcc_projectors_do_core_valence_separation = .false. 
-  logical, public :: relcc_projectors_rew_strict = .false.
-  logical, public :: relcc_projectors_rew_remove_double_occupied = .false.
-  logical, public :: relcc_projectors_frozen_core = .false.
-  real*8, public  :: relcc_projectors_rew_occ_min_energy = -huge(relcc_projectors_rew_occ_min_energy)
-  real*8, public  :: relcc_projectors_rew_occ_max_energy =  huge(relcc_projectors_rew_occ_max_energy)
-  real*8, public  :: relcc_projectors_rew_virt_min_energy = -huge(relcc_projectors_rew_virt_min_energy)
-  real*8, public  :: relcc_projectors_rew_virt_max_energy =  huge(relcc_projectors_rew_virt_max_energy)
-  real*8, public  :: relcc_projectors_frozen_core_max_energy =  huge(relcc_projectors_frozen_core_max_energy)
-
-! will add filenames etc here too
 
 ! Information relevant for the (Intermediate Hamiltonian) Fock space calculations
   logical, public :: relcc_fs_do_ea                   = .false.
@@ -239,38 +211,13 @@ contains
   call interface_mpi_bcast_l0(relcc_do_eomee        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_eomea        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_eomip        ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_eom_peom     ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_eom_pt2      ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_eom_pt2_ccamp,1,0,global_communicator)
   call interface_mpi_bcast(relcc_eom_nroots,size(relcc_eom_nroots),0,global_communicator)
   call interface_mpi_bcast(relcc_eom_nroots_prop,size(relcc_eom_nroots_prop),0,global_communicator)
   call interface_mpi_bcast(relcc_eom_nroots_left,size(relcc_eom_nroots_prop),0,global_communicator)
   call interface_mpi_bcast(relcc_eom_nroots_right,size(relcc_eom_nroots_prop),0,global_communicator)
-
-! Information relevant to the davidson or other type of matrix-free diagonalization methods
-
-  call interface_mpi_bcast(relcc_mfd_convergence_threshold ,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_mfd_eigenvalues_energy_shift,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_mfd_max_subspace_size     ,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_mfd_max_iterations        ,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_mfd_refresh_rate          ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_mfd_overlap_sorting    ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_mfd_verbose            ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_mfd_trial_diagonal     ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_mfd_trial_ccs          ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_mfd_trial_full_matrix  ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_mfd_trial_restart      ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_mfd_trial_lhs_use_rhs  ,1,0,global_communicator)
-
-! information relevant to projectors that modify the matrix-free trial vectores
-
-  call interface_mpi_bcast_l0(relcc_projectors_do_restricted_excitation_window,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_projectors_do_core_valence_separation,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_projectors_rew_strict                     ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_projectors_rew_remove_double_occupied     , 1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_projectors_frozen_core     , 1,0,global_communicator)
-  call interface_mpi_bcast(relcc_projectors_rew_occ_min_energy    ,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_projectors_rew_occ_max_energy    ,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_projectors_rew_virt_min_energy   ,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_projectors_rew_virt_max_energy   ,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_projectors_frozen_core_max_energy    ,1,0,global_communicator)
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)

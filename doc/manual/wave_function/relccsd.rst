@@ -50,7 +50,7 @@ This calculation generates the file CCDENS, which contains the MP2 or CC ground-
 matrix in AO basis. In this release, CCDENS is used by the property module to calculate 
 ground-state expectation values. 
 
-If saved, CCDENS can be used in a property calculation (see :ref:`PROPERTIES_.RDCCDENS`) 
+If saved, CCDENS can be used in a property calculation (see :ref:`PROPERTIES_.RDCCDM`) 
 without the need to invoke this module.
 
 
@@ -79,6 +79,45 @@ options available).
 ::
 
     No EOM-CC calculation.
+
+keyword(pEOM)
+
+Activate the partitioned EOM approximation to CCSD (P-EOM-CCSD), in which the doubles-doubles 
+block of the similarity transformed Hamiltonian is approximated by diagonal elements given by orbital
+energy differences. This keyword also activates the :ref:`RELCC_.EOMCC` keyword, and as such it is available for the same
+types of calculations supported by the latter.
+
+*Default:*
+
+::
+
+    No P-EOM-CCSD calculation.
+
+keyword(EOM2)
+
+Activate the second order perturbation theory based EOM approximation (EOM-MBPT2), in which all of
+the matrix elements of the the similarity transformed Hamiltonian are approximated. This keyword also activates 
+the :ref:`RELCC_.EOMCC` keyword, and as such it is available for the same types of calculations supported by the latter.
+
+
+*Default:*
+
+::
+
+    No EOM-MBPT2 calculation.
+
+keyword(pEOM2)
+
+Activate the partitioned second order perturbation theory based EOM approximation (P-EOM-MBPT2), which combines
+both approximations mentioned above. This keyword also activates the :ref:`RELCC_.EOMCC` keyword, and as such it is available for the same
+types of calculations supported by the latter.
+
+*Default:*
+
+::
+
+    No P-EOM-MBPT2 calculation.
+
 
 keyword(EOMPROP)
 
@@ -127,6 +166,10 @@ Distribution of correlated open shell electrons over the irreps.  This determine
 
 This input should always be given for average-of-configuration SCF calculations that are followed by a CC calculation. The total number of electrons that is
 given should correspond to the number of open shell electrons.
+
+One should activate either :ref:`RELCC_.NELEC` (total number of correlated electrons) or
+:ref:`RELCC_.NELEC_OPEN` (only open-shell electrons)  for open-shell cases. 
+Do not activate both :ref:`RELCC_.NELEC` and :ref:`RELCC_.NELEC_OPEN` once.
 
 *Arguments:*
 
@@ -510,6 +553,8 @@ Note this value does not have to be the same as for the definition of the frozen
 
 In addition to this, users should make sure to enable root following (see :ref:`CCDIAG_.OVERLAP`) if they want to target states with dominant singly ionized or singly excited character.
 
+When each edge is energetically far apart (e.g., K and L1 edge of heavy elements), one should aim for calculating different edges separately instead of requesting more roots. Otherwise, convergence is likely to be obtained only for the lowest-lying state. 
+Furthermore, if more than one edge is sought, we recommend that is the restart capabilities of the code are employed to avoid the AO to MO transformation step (:ref:`**MOLTRA`) and the integral sorting in RELCCSD (see restart options under :ref:`*CCRESTART`.
 
 *Example:* requests that all spinors with energies below -10.0 a.u. are considered to be core::
 

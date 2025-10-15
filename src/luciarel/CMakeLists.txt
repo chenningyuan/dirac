@@ -56,7 +56,7 @@ endif()
 # Create the module library
 add_library(
     luciarel
-    OBJECT
+    STATIC
     ${FIXED_LUCIAREL_FORTRAN_SOURCES}
     ${FIXED_LUCIAREL_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_LUCIAREL_FORTRAN_SOURCES}

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -46,10 +41,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION AMAT(NDIM1,NDIM1,NDIM2,NZ,3)
+      REAL*8    AMAT(NDIM1,NDIM1,NDIM2,NZ,3)
+      INTEGER   IP(4)
       CHARACTER M(4)*2
-      DIMENSION IP(4)
       DATA M /'AR', 'AI', 'BR', 'BI' /
+      REAL*8, PARAMETER :: THR_PRINT = 1.D-8
+      REAL*8    A_TEST
 C
       IF (NDIM1 * (NDIM1+1) / 2 .NE. NDIM2) THEN
          WRITE(LUPRI,9000) NDIM1, NDIM2
@@ -62,12 +59,13 @@ C
 C
 C     Print matrix.
 C
- 9001 FORMAT(/3X,'Indices',5X,'Matrix',4X,'Elements',
+ 9001 FORMAT(/'   (Only elements abs value >',1P,D8.1,' are printed.)',
+     &      //3X,'Indices',5X,'Matrix',4X,'Elements',
      &       /1X, 65('-'))
  9010 FORMAT(1P,1X,4I3,4X,A2,6X,3(D14.7,1X))
  9011 FORMAT(1P,17X,A2,6X,3(D14.7,1X))
 C
-      WRITE(LUNIT,9001)
+      WRITE(LUNIT,9001) THR_PRINT
 C
       IJ = 0
       DO I = 1,NDIM1
@@ -75,13 +73,19 @@ C
             IJ = IJ + 1
             DO K = 1,NDIM1
                DO L = 1,NDIM1
-                  WRITE(LUNIT,9010)
+                  A_TEST = ABS(AMAT(K,L,IJ,1,1))
+     &                   + ABS(AMAT(K,L,IJ,1,2))
+     &                   + ABS(AMAT(K,L,IJ,1,3))
+                  IF (A_TEST .gt. THR_PRINT) WRITE(LUNIT,9010)
      &                 K,L,I,J,
      &                 M(IP(1)),
      &                 (AMAT(K,L,IJ,1,ICL),ICL = 1,3)
                   DO IZ = 2, NZ
-                     WRITE(LUNIT,9011) M(IP(IZ)),
-     &                    (AMAT(K,L,IJ,IZ,ICL),ICL = 1,3)
+                     A_TEST = ABS(AMAT(K,L,IJ,IZ,1))
+     &                      + ABS(AMAT(K,L,IJ,IZ,2))
+     &                      + ABS(AMAT(K,L,IJ,IZ,3))
+                     IF (A_TEST .gt. THR_PRINT) WRITE(LUNIT,9011)
+     &                  M(IP(IZ)),(AMAT(K,L,IJ,IZ,ICL),ICL = 1,3)
                   END DO
                END DO
             END DO
@@ -728,7 +732,7 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION IVECTOR(ISIZE)
-      CHARACTER LABEL*8
+      CHARACTER LABEL*8, FILENAME*24
       LOGICAL   FNDLAB
 C
       REWIND(LUNIT)
@@ -739,9 +743,12 @@ C
          CALL READI(LUNIT,ISIZE,IVECTOR)
 C
       ELSE
-         WRITE(LUPRI,'(//A/,3A,I3)')
-     $        '*** ERROR in IREAKRMC ***',
-     $        'Label <',LABEL,'> does not exists on unit ',LUNIT
+         INQUIRE(LUNIT, NAME=FILENAME)
+         WRITE(LUPRI,'(//A/3A,I3,2A)')
+     &        '*** ERROR in IREAKRMC ***',
+     &        'Label <',LABEL,'> does not exists on unit ',LUNIT,
+     &        ' : ',FILENAME
+         CALL DMPLAB(LUNIT,LUPRI)
          CALL QUIT('*** ERROR in IREAKRMC ***')
       END IF
 C

@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final L1amp',
+      num_lines   = 2,
+      rel_tolerance   = 1.0e-6)
+
+f.add(from_string = 'Dipole length: X :',
+      to_string   = '* Dipole moment',
+      abs_tolerance   = 1.0e-6)
+
+test.run(['talsh_cc_ch.inp'], ['CH_nosym.mol'], f)
+
+sys.exit(test.return_code)

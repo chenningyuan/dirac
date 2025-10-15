@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -302,28 +297,26 @@ C
          CALL PRIDIS(NAMDPX,DIST,NUCDEP)
       END IF
 C
+      BONDED(1:NUCDEP,1:NUCDEP) = .FALSE.
       DO 10, J= 1,NUCDEP
+         IF (ICHARG(J) .EQ. 0) GO TO 10 ! point charge
          RADJ = RADIUS(ICHARG(J))
          DO 20, I= 1, J-1
+            IF (ICHARG(I) .EQ. 0) GO TO 20 ! point charge
             RADI = RADIUS(ICHARG(I))
             IF (RADI .LT. D0 .OR. RADJ .LT. D0) THEN
-               WRITE(LUPRI,*) 'RADII FOR ATOMS WITH EITHER/OR ATOMIC'
+               WRITE(LUPRI,'(A,I0,A,I0,A)')
+     &              'RADII FOR ATOMS WITH EITHER/OR ATOMIC'
      &              //' NUMBER ', ICHARG(I), ' OR ', ICHARG(J),
-     &              ' ARE UNAVAILABLE '
-               BONDED(I,J) = .FALSE.
-               BONDED(J,I) = .FALSE.
+     &              ' ARE UNAVAILABLE'
             ELSE IF (DIST2(I,J) .LT. (1.2D0 * (RADI + RADJ))) THEN
                NBONDS = NBONDS + 1
                IPAIRS(1,NBONDS) = I
                IPAIRS(2,NBONDS) = J
                BONDED(I,J) = .TRUE.
                BONDED(J,I) = .TRUE.
-            ELSE
-               BONDED(I,J) = .FALSE.
-               BONDED(J,I) = .FALSE.
             END IF
  20      CONTINUE
-         BONDED(J,J) = .FALSE.
  10   CONTINUE
 C
       IF (PRINT .AND. .NOT. DIF) THEN
@@ -520,16 +513,20 @@ C
  2000 FORMAT (A1,2X,A4,6F12.6)
       END
 C  /* Deck radius */
-      FUNCTION RADIUS(NCHARGE)
-#include "implicit.h"
-C     Returns atomic radius in Angstrom;
-C     based on covalent radii and metallic radii. 
-C     Returns radius of MAXCHR when data not available.
-C     Revision March 17 1999 - Trond Saue
-      PARAMETER ( DPH = 1.0D-02,MAXCHR=83)
-      DIMENSION RAD(MAXCHR)
-      DATA (RAD(I), I = 1, MAXCHR)/
-     & 30.D0,  155.D0,  160.D0,  110.D0,   90.D0,
+      REAL*8 FUNCTION RADIUS(NCHARGE)
+C
+C     Returns an atomic radius in Angstrom;
+C     Based on covalent radii and metallic radii in Angstrom.
+C     Returns -1 if NCHARGE < 1
+C     Returns 300 pm for heavy elements beyond end of COVRAD table.
+C     Oct 2006 hjaaj: changed Hydrogen from 30 to 40 pm,
+C              such that H2 is printed as bonded ;-) .
+      INTEGER :: NCHARGE
+      INTEGER, PARAMETER :: MAX_CHARGE = 83
+      REAL*8,  PARAMETER :: DPH = 1.0D-02
+      REAL*8,  SAVE      ::  COVRAD(MAX_CHARGE)
+      DATA (COVRAD(I), I = 1, MAX_CHARGE)/ ! in pm
+     & 40.D0,  155.D0,  160.D0,  110.D0,   90.D0,
      & 80.D0,   70.D0,   68.D0,   65.D0,  154.D0,
      &190.D0,  160.D0,  140.D0,  110.D0,  110.D0,
      &105.D0,  105.D0,  190.D0,  238.D0,  200.D0,
@@ -548,34 +545,51 @@ C     Revision March 17 1999 - Trond Saue
      &170.D0,  175.D0,  170.D0/
 
 C
-      IF(NCHARGE.GT.MAXCHR) THEN
-        RADIUS = DPH*RAD(MAXCHR)
-      ELSEIF(NCHARGE.LE.0) THEN
-        RADIUS = -1.0D0
+      IF (NCHARGE .LE. 0) THEN
+Chj      =  0: solvent cavity center or floating orbital
+Chj      = -Z: multiple basis for r12 methods for nuclear charge Z
+Chj      = -1234567890: point charges
+C
+         RADIUS = -1.0D0
+      ELSE IF (NCHARGE .GT. MAX_CHARGE) THEN
+      ! no data available, but the heavy elements are quite big,
+      ! so I arbitrarily chos 300 pm, which is greater than 270 pm
+      ! the largest value in COVRAD table /hjaaj
+        RADIUS = DPH*300.D0
       ELSE
-        RADIUS = DPH*RAD(NCHARGE)
+        RADIUS = DPH*COVRAD(NCHARGE)
       ENDIF
       RETURN
       END
 C  /* Deck vdwrad */
-      FUNCTION VDWRAD(NCHARGE)
+      REAL*8 FUNCTION VDWRAD(NCHARGE)
+C     Based on van der Waals radii in Angstrom.
+C     If no table value, use covalent radius plus 0.65 AA /Dec. 2006, hjaaj
+C     Returns -1 if NCHARGE < 1
 #include "implicit.h"
-C     based on van der Waals radii. 
-C     returns radius of MAXCHR when data not available
-C     Revised by T.Saue March 17 1999
-      PARAMETER ( DPH = 1.0D-02,MAXCHR=24)
-      DIMENSION RAD(MAXCHR)
-      DATA (RAD(I), I = 1, MAXCHR)/
-     &110.,  220.,  122.,   63.,  155.,
-     &155.,  140.,  135.,  130.,  154.,
-     &190.,  160.,  140.,  110.,  202.,
-     &220.,  150.,  150.,  220.,  188.,
-     &181.,  175.,  277.,  239./
+#include "priunit.h"
+      PARAMETER ( DPH = 1.0D-02, MAX_charge=24)
+      REAL*8  RAD(MAX_charge)
+      DATA (RAD(I), I = 1, MAX_charge)/   ! in pm
+     & 110.,  220.,  122.,   63.,  155.,
+     & 155.,  140.,  135.,  130.,  154.,
+     & 190.,  160.,  140.,  110.,  202.,
+     & 220.,  150.,  150.,  220.,  188.,
+     & 181.,  175.,  277.,  239./
 C
-      IF(NCHARGE.GT.MAXCHR) THEN
-        VDWRAD = DPH*RAD(MAXCHR)
+
+      IF (NCHARGE .LE. 0) THEN
+Chj      =  0: solvent cavity center or floating orbital
+Chj      = -Z: multiple basis for r12 methods for nuclear charge Z
+Chj      = -1234567890: point charges
+C
+         VDWRAD = -1.0D0
+      ELSE IF (NCHARGE .GT. MAX_charge) THEN
+C           if no table value, use covalent radius plus 0.65 AA
+C           (as for B-F above) /Dec. 2006, hjaaj
+            WDWRAD = RADIUS(NCHARGE) + 0.65D0
       ELSE
         VDWRAD = DPH*RAD(NCHARGE)
-      ENDIF
+      END IF
       RETURN
       END

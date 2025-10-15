@@ -46,6 +46,7 @@ keyword(VECMVO)
 Read :ref:`orbital_strings` of
 orbitals to be included in the Hartree-Fock potential when constructing
 the cationic Fock operator.
+Default is the doubly-occupied molecular orbitals from the SCF.
 
 
 keyword(INTFLG)

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -142,7 +137,7 @@ C
                   END DO
                END DO
             END IF
-         END DO
+         END DO ! IREPAB
 !        ---------------------------------------------------------
 !        zero out integrals that should be zero in linear symmetry
 !        but aren't due to numerical noise
@@ -155,7 +150,7 @@ C
 !          call linzero_nz3(iclass,irepijb,irepklb(1,1),nelem,vnz3)
          end if
 
-      END DO
+      END DO ! ICLASS = 1, 3
 
       IF (NZ .EQ. 4) THEN
          DO ICLASS = 1, 3
@@ -440,7 +435,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION IFACNZ3(I3,IZ,IQ1,IQ2)
 C***********************************************************************
 C
-C     Factors for integrals.
+C     IFAC(NZ,3, q1, q1):
+C     Factors for generating integrals in (NZ,3) format from double
+C     quaternion format (q1, q1).
+C     See Eqs. (B.19), (B.22), and (B.25) in Joern Thyssen PhD thesis.
+C     Notation below: P = \bar{p} etc.
+C
+C     Relations for distributions from complex conjugation (ab)* = (ba)
+C     and time reversal (ab) = (BA), (aB) = -(bA):
+C       Re(pq) =  Re(qp) =  Re(QP) =  Re(PQ)
+C       Im(pq) = -Im(qp) =  Im(QP) = -Im(PQ)
+C       Re(pQ) =  Re(Qp) = -Re(Pq) = -Re(qP)
+C       Im(pQ) = -Im(Qp) = -Im(qP) =  Im(Pq)
+C
+C     Double quaternion contains (pq) and (pQ) distributions,
+C     thus all (PQ) and (pQ) must be rewritten in terms of (pq) and (pQ)
 C
 C     Written by Joern Thyssen - Nov 15 2000
 C
@@ -450,11 +459,9 @@ C***********************************************************************
 C
 #include "dgroup.h"
 C
-      COMMON /SMOELF/ IFAC(4,3,4,4)
+      INTEGER, SAVE :: IFAC(4,3,4,4)
 C
-      LOGICAL FIRST
-      DATA FIRST / .TRUE. /
-      SAVE FIRST
+      LOGICAL, SAVE :: FIRST = .TRUE.
 C
       IF (FIRST) THEN
 C        Initialize IFAC array
@@ -463,7 +470,7 @@ C        Initialize IFAC array
 C
 C        IZ = 1
 C
-C        Re(pq|rs) = Re(rs|pq) = (Re(rs)|Re(pq)) - (Im(pq)|Im(pq))
+C        Re(pq|rs) = Re(rs|pq) = (Re(rs)|Re(pq)) - (Im(rs)|Im(pq))
 C                                    +(1,1)            -(2,2)
 C
          IFAC(1,1,1,1) = +1
@@ -483,7 +490,7 @@ C
 C
          IF (NZ .GE. 2) THEN
 C
-C           Im(pq|rs) = Im(rs|pq) = (Re(rs)|Im(pq)) + (Im(rs)|Re(pq)) +
+C           Im(pq|rs) = Im(rs|pq) = (Re(rs)|Im(pq)) + (Im(rs)|Re(pq))
 C                                       +(1,2)            +(2,1)
 C
             IFAC(2,1,1,2) = +1
@@ -495,8 +502,9 @@ C
             IFAC(2,2,3,4) = +1
             IFAC(2,2,4,3) = +1
 C
-C           Im(Pq|rS) = Im(rS|Pq) = - (Re(rS)|Im(pQ)) + (Im(rS)|Im(pQ))
-C                                         +(3,4)            +(1,2)
+C           Im(Pq|rS) = Im(rS|Pq) =   (Re(rS)|Im(Pq)) + (Im(rS)|Re(Pq))
+C                                 = + (Re(rS)|Im(pQ)) - (Im(rS)|Re(pQ))
+C                                         +(3,4)            -(4,3)
 C
             IFAC(2,3,3,4) = +1
             IFAC(2,3,4,3) = -1
@@ -1134,11 +1142,18 @@ C
      &        WORK(KCMO+I2ORBT(I)),WORK(KRDUM))
       END DO
 C
-c     IF (IPRINT .GE. 3) THEN
-         WRITE(LUPRI,'(/A)')
-     &        ' (RAPPBOS) Approximate boson symmetries: '
+      IF (NZ .LT. 4 .OR. NFSYM .EQ. 2) THEN ! irrelevant output if only one symmetry
+      IF (IPRINT .GE. 3) THEN
+         WRITE(LUPRI,'(/A)') ' (RAPPBOS) Approximate boson symmetries:'
          WRITE(LUPRI,9000) (REP(IBOSYM(I)),I=1,NORBT)
-c     END IF
+      ELSE
+         WRITE(LUPRI,'(/A)')
+     &   ' (RAPPBOS) Approximate boson symmetries of occupied orbitals:'
+         DO J = 1, NFSYM
+            WRITE(LUPRI,9000) (REP(IBOSYM(IORB(J)+I)),I=1,NOCC(J))
+         END DO
+      END IF
+      END IF
 
 #if defined MCSCF_DEBUG_SPINFREE
 !     additional check: ibosym <--> ibeig
@@ -1164,7 +1179,7 @@ c     END IF
       end if
 #endif
 
- 9000 FORMAT(10X,15(A4))
+ 9000 FORMAT(5X,10A4,4X,10A4)
 C
       CALL MEMREL('RAPPBOS',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
@@ -2147,7 +2162,9 @@ C
       if(linear.or.spinfr)then
 
         call alloc(orb_sym_vec,norbt)
-        orb_sym_vec = 0
+        if(.not.allocated(orbsymVEC))
+     &  call alloc(orbsymVEC,norbt,'orbital-SYM-KRCI')
+        orb_sym_vec = 0; orbsymVEC = 0
 
 !       read data from master file krmcscf or dfcoef
         if(myproc.eq.master)then
@@ -2178,20 +2195,21 @@ C
               end if
               if(.not.isopen) close(luxxxx,status="keep")
             else
-              call opnfil(lucoef,'DFCOEF','OLD','mjlist ')
               call reacmo(lucoef,'DFCOEF',dummy,dummy,
      &                            orb_sym_vec,dummy,8)
-              close(lucoef,status='KEEP')
             end if
           end if
         end if
+        call ICOPY(norbt,orb_sym_vec,1,orbsymVEC,1)
 !       communicate data
 #ifdef VAR_MPI
         if(isync_nodes .eq. 1)then
-          call interface_mpi_bcast(orb_sym_vec,norbt,master,
+          call interface_mpi_bcast(orbsymVEC,norbt,master,
      &                   global_communicator)
         end if
 #endif
+
+#ifdef BLUBB
 !       store orbital symmetry information on file 'orbsym.xxxx' 
 !       where xxxx is the process id.
         orb_sym_fh = 99
@@ -2201,6 +2219,7 @@ C
      &       form='unformatted',action='readwrite',position='rewind')
         write(orb_sym_fh) (orb_sym_vec(i), i=1,norbt)
         close(orb_sym_fh)
+#endif
 
         call dealloc(orb_sym_vec)
       end if
@@ -2472,12 +2491,16 @@ C     been initialized on the outside.
 CSK      IGSOCCX(I          ) = NGASSP(1,I)
 CSK      IGSOCCX(I + MXPNGAS) = NGASSP(2,I)
       END DO
-C     Energy convergence threshold
+C     Gradient and energy convergence thresholds
+      THRES_G = opt_thrgrd
       THRES_E = opt_threci
 #if defined (VAR_MPI)
-        IF( ISYNC_NODES .eq. 1 )
-     &    call interface_mpi_BCAST(thres_e,1,MASTER,
+        IF( ISYNC_NODES .eq. 1 ) THEN
+          call interface_mpi_BCAST(thres_g,1,MASTER,
      &                   global_communicator)
+          call interface_mpi_BCAST(thres_e,1,MASTER,
+     &                   global_communicator)
+         END IF
 #endif
 C     Sequence of CI calculations (here one!)
       NSEQCI(1) = 1
@@ -2549,15 +2572,8 @@ C        with MAXCIT iterations
       END IF
 C     Always two-particle (full) Hamiltonian 
       IHAM12 = 2
-C     calculate property operator symmetry in double group subgroup
-C     notation
 #if defined (VAR_MPI)
-      IF( ISYNC_NODES .eq. 1 )
-     &  call interface_mpi_BCAST_L0(DOSYMOPPRP,1,MASTER,
-     &                 global_communicator)
-#endif
 C     reorder property operator matrix (already done by the MASTER...)
-#if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
      &  call interface_mpi_BCAST_L0(DOPROPREOD,1,MASTER,
      &                 global_communicator)
@@ -3142,14 +3158,16 @@ C     DIAPAR.1
       END IF
 *
 *. Number of iterations
-      WRITE(LUPRI,'(A,I2)')
+      WRITE(LUPRI,'(A,I4)')
      &   '        Allowed number of iterations    ',MAXIT
 *. Number of CI vectors in subspace
-      WRITE(LUPRI,'(A,I2)')
-     &   '        Allowed Dimension of CI subspace ',MXCIV_CI
+      WRITE(LUPRI,'(A,I4)')
+     &   '        Allowed Dimension of CI subspace',MXCIV_CI
 *
       WRITE(LUPRI,'(A,1P,E11.5/)')
-     &   '        Convergence threshold for energy ',THRES_E
+     &   '        Convergence threshold for gradient',THRES_G
+      WRITE(LUPRI,'(A,1P,E11.5/)')
+     &   '        Convergence threshold for energy  ',THRES_E
       IF(IDIAG.EQ.2) THEN
         WRITE(LUPRI,'(A,1P,E11.5)')
      &   '        Individual second order energy threshold ',E_THRE

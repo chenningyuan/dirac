@@ -57,7 +57,7 @@ if(SPHINX_FOUND)
 else()
     add_custom_target(
         html
-        COMMAND echo error: please install Sphinx, see http://diracprogram.org/doc/master/programmers/documentation_howto.html
+        COMMAND echo error: please install Sphinx, see http://diracprogram.org/doc/master/development/documentation_howto.html
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
 endif()
