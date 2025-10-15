@@ -22,11 +22,11 @@
 1
 .INTFLG
 1 1 0
-**WAVE FUNCTIONS 
+**WAVE FUNCTIONS
 .SCF
 *SCF
 .CLOSED SHELL
-20  
+20
 .INTFLG ! Specify what 2-el.integrals to include
 1 1 0
 .EVCCNV ! Energy convergence...
@@ -53,21 +53,21 @@
 #---------------------------------------
 .OPERATOR
  'x diplen'
- DIAGONAL 
+ DIAGONAL
  'XDIPLEN '
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'y diplen'
- DIAGONAL 
+ DIAGONAL
  'YDIPLEN '
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'z diplen'
- DIAGONAL 
+ DIAGONAL
  'ZDIPLEN '
  COMFACTOR
  1.00D0
@@ -76,21 +76,21 @@
 #---------------------------------------
 .OPERATOR
  'd/dx oper'
- DIAGONAL 
+ DIAGONAL
  'XDIPVEL '
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'd/dy oper'
- DIAGONAL 
+ DIAGONAL
  'YDIPVEL '
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'd/dz oper'
- DIAGONAL 
+ DIAGONAL
  'ZDIPVEL '
  COMFACTOR
  1.00D0
@@ -99,14 +99,14 @@
 #------------------------------------------------------------
 .OPERATOR
  'FC Mg '
- DIAGONAL 
+ DIAGONAL
  'FC Mg 02'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'FC O  '
- DIAGONAL 
+ DIAGONAL
  'FC O  01'
  COMFACTOR
  1.00D0
@@ -115,14 +115,14 @@
 #-----------------------------------------------
 .OPERATOR
  'd/dx dMg'
- DIAGONAL 
+ DIAGONAL
  'XGFMg 02'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'd/dy dMg'
- DIAGONAL 
+ DIAGONAL
  'YGFMg 02'
  COMFACTOR
  1.00D0
@@ -136,14 +136,14 @@
 #
 .OPERATOR
  'd/dx d O'
- DIAGONAL 
+ DIAGONAL
  'XGFO  01'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'd/dy d O'
- DIAGONAL 
+ DIAGONAL
  'YGFO  01'
  COMFACTOR
  1.00D0
@@ -159,14 +159,14 @@
 #-----------------------------------------------
 .OPERATOR
  'd/dx pMg'
- DIAGONAL 
+ DIAGONAL
  'DRHO 004'
  COMFACTOR
  -2.0943951
 #
 .OPERATOR
  'd/dy pMg'
- DIAGONAL 
+ DIAGONAL
  'DRHO 005'
  COMFACTOR
  -2.0943951
@@ -180,14 +180,14 @@
 #
 .OPERATOR
  'd/dx pO'
- DIAGONAL 
+ DIAGONAL
  'DRHO 001'
  COMFACTOR
  -2.0943951
 #
 .OPERATOR
  'd/dy pO'
- DIAGONAL 
+ DIAGONAL
  'DRHO 002'
  COMFACTOR
  -2.0943951
@@ -207,21 +207,21 @@
 #---------------------------------------
 .OPERATOR
  'x diplen'
- DIAGONAL 
+ DIAGONAL
  'XDIPLEN '
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'y diplen'
- DIAGONAL 
+ DIAGONAL
  'YDIPLEN '
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'z diplen'
- DIAGONAL 
+ DIAGONAL
  'ZDIPLEN '
  COMFACTOR
  1.00D0
@@ -230,21 +230,21 @@
 #---------------------------------------
 .OPERATOR
  'd/dx oper'
- DIAGONAL 
+ DIAGONAL
  'XDIPVEL '
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'd/dy oper'
- DIAGONAL 
+ DIAGONAL
  'YDIPVEL '
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'd/dz oper'
- DIAGONAL 
+ DIAGONAL
  'ZDIPVEL '
  COMFACTOR
  1.00D0
@@ -253,28 +253,28 @@
 #------------------------------------------------------------
 .OPERATOR
  'FC Mg '
- DIAGONAL 
+ DIAGONAL
  'FC Mg 02'
  COMFACTOR
  0.11922794437D0
 #
 .OPERATOR
  'FC O  '
- DIAGONAL 
+ DIAGONAL
  'FC O  01'
  COMFACTOR
  0.11922794437D0
 #
 .OPERATOR
  'PVCMg '
- DIAGONAL 
+ DIAGONAL
  'PVCMg 02'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'PVCO  '
- DIAGONAL 
+ DIAGONAL
  'PVCO  01'
  COMFACTOR
  1.00D0
@@ -283,14 +283,14 @@
 #-----------------------------------------------
 .OPERATOR
  'd/dx dMg'
- DIAGONAL 
+ DIAGONAL
  'XGFMg 02'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'd/dy dMg'
- DIAGONAL 
+ DIAGONAL
  'YGFMg 02'
  COMFACTOR
  1.00D0
@@ -304,14 +304,14 @@
 #
 .OPERATOR
  'd/dx d O'
- DIAGONAL 
+ DIAGONAL
  'XGFO  01'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'd/dy d O'
- DIAGONAL 
+ DIAGONAL
  'YGFO  01'
  COMFACTOR
  1.00D0
@@ -327,14 +327,14 @@
 #-----------------------------------------------
 .OPERATOR
  'd/dx pMg'
- DIAGONAL 
+ DIAGONAL
  'DRHO 004'
  COMFACTOR
  -2.0943951
 #
 .OPERATOR
  'd/dy pMg'
- DIAGONAL 
+ DIAGONAL
  'DRHO 005'
  COMFACTOR
  -2.0943951
@@ -348,14 +348,14 @@
 #
 .OPERATOR
  'd/dx pO'
- DIAGONAL 
+ DIAGONAL
  'DRHO 001'
  COMFACTOR
  -2.0943951
 #
 .OPERATOR
  'd/dy pO'
- DIAGONAL 
+ DIAGONAL
  'DRHO 002'
  COMFACTOR
  -2.0943951

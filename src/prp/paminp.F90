@@ -1967,7 +1967,7 @@
 !KG SCHIFF
 ! gradient of Nuclear density distribution
 !
-      ELSE IF(LABINT(1:4).EQ.'DRHO') THEN   
+      ELSE IF(LABINT(1:4).EQ.'DRHO') THEN
         CLASLB = 'GRADRHO'
 !KG SCHIFF
 !

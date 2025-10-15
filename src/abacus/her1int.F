@@ -116,7 +116,7 @@ C
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 3) THEN  ! DIPVEL 
+      ELSE IF (INTTYP .EQ. 3) THEN  ! DIPVEL
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
@@ -4761,9 +4761,9 @@ C
 !
 ! Electric gradient of Fermi contact integrals, <mi| grad delta(r-R)|ni>, INTTYP=59
 !
-! Entering: 
+! Entering:
 !           XP,YP,ZP  ... nuclear center coordinates of the Dirac delta function
-!           SAAB 
+!           SAAB
 !           DOATOM
 !           EXPP    ...  sum Gauss.exponents alpha_A+alpha_B
 !           NOPTYP
@@ -4816,7 +4816,7 @@ C
          ! i.e. for 2 p orbital INT = (1:9),
          !      for s and p orbitals INT = (1:3)
          ! used in SHLINT(INT,INTTYP)
-         ! 
+         !
          INTTYP = 0
          !  used for components of this integral block
          !  (in this case 3 for d/dx, d/dy, and d/dz
@@ -4847,13 +4847,13 @@ C
                   XC = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
                   YC = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
                   ZC = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
-                  ! coordinates of symdep atom getting 
+                  ! coordinates of symdep atom getting
                   ! contributions for this ISYMOP on FC(IATOM)
                   RCP2 = (XC-XP)**2 + (YC-YP)**2 + (ZC-ZP)**2
                   ! distance squard from Center to P
                   ! (P is center of gaussian product A with B)
                   FINT = DFAC*SAAB*PT(IAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
-                  ! PT tells what sign the FC operator of 
+                  ! PT tells what sign the FC operator of
                   ! symmetry ISYMOP has at this nucleus
 
 !    Calculate polynomial contributions to GTO_A( C )
@@ -4913,10 +4913,10 @@ C
                END IF  ! IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0
                END DO  ! ISYMOP
 
-               SHLINT(INT,INTTYP+1) = SHLINT(INT,INTTYP+1) 
+               SHLINT(INT,INTTYP+1) = SHLINT(INT,INTTYP+1)
      &           - FINT*(XFINTA*FINTBX + FINTAX*XFINTB)
      &                 *FINTAY*FINTBY*FINTAZ*FINTBZ
-               SHLINT(INT,INTTYP+2) = SHLINT(INT,INTTYP+2)   
+               SHLINT(INT,INTTYP+2) = SHLINT(INT,INTTYP+2)
      &           - FINT*(YFINTA*FINTBY + FINTAY*YFINTB)
      &                 *FINTAX*FINTBX*FINTAZ*FINTBZ
                SHLINT(INT,INTTYP+3) = SHLINT(INT,INTTYP+3)
@@ -4950,13 +4950,13 @@ C
       END
 CKG SCHIFF
 C--------------------------------------------------------------------------
-C  Finite nucleus version of Schiff moment enhancement 
+C  Finite nucleus version of Schiff moment enhancement
 C  The operator is at nucleus A
 C   -(<grad psi| grad rho_nuc(r) |psi> + <psi| rho_nuc(r) | grad psi>)
-C    =  <psi| grad rho_nuc,A(r) | psi> 
+C    =  <psi| grad rho_nuc,A(r) | psi>
 C    =  <psi| (-2 zeta) (r-rA) rho_nuc,A(r) | psi>
 C For getting the Schiff moment coupling constant W_S the result has to be
-C multiplied by -4 pi, so 
+C multiplied by -4 pi, so
 C W_S = <psi| 8 pi zeta (r-rA) rho_nuc,A(r) | psi>
 C I don't add this factor here, but rather define it in the general way
 C of the derivative of the nuclear charge density distribution
@@ -5007,7 +5007,7 @@ C Exponent and coordinates of Spherical Nuclear distribution
             IF (.NOT.DOATOM(IATOM)) CONTINUE
             NUCPN1 = NUCPN1 + 1
             ISHIFT = (NUCPN1 - 1) * 3
-            EXPN = GNUEXP(IATOM) 
+            EXPN = GNUEXP(IATOM)
 C        with the scaling with the factor (-2 zeta_A) from the
 C        derivative
             CONTN = (-2D0*EXPN) * DSQRT((EXPN / PI)**3)
@@ -5082,12 +5082,12 @@ C
                      ENDIF
                   ENDIF
                ENDIF
-C     
+C
 C              *********************************************
 C              ***** Overlap Distribution Coefficients *****
 C              *********************************************
 C
-               TEMP(1) = ORIGIN(1) 
+               TEMP(1) = ORIGIN(1)
                TEMP(2) = ORIGIN(2)
                TEMP(3) = ORIGIN(3)
 C
@@ -5113,14 +5113,14 @@ C I do not call DPLINT due to numerical instabilities
 C See below...
 C The following lines are a copy of DPLINT with some additional
 C neglection thresholds
-               POX = CORPX - CORNX 
+               POX = CORPX - CORNX
                POY = CORPY - CORNY
                POZ = CORPZ - CORNZ
                IF(DISTAB.LT.SMTHR) THEN
                   IF(DISTAN.LT.SMTHR) THEN
                      IF(DISTBN.LT.SMTHR) THEN
-                         POX = 0D0 
-                         POY = 0D0 
+                         POX = 0D0
+                         POY = 0D0
                          POZ = 0D0
                      ENDIF
                   ENDIF
@@ -5139,7 +5139,7 @@ C neglection thresholds
                   SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
 C Its very important to remove all these contributions for ultra low
 C values of POX,Y,Z as in the case of CORN being at 0,0,0 this leads to
-C numerical instabilties. 
+C numerical instabilties.
                   IF (ABS(POX)+ABS(POY)+ABS(POZ).GT.SMTHR) THEN
                     DX0 = POX*SX0
                     DY0 = POY*SY0
@@ -5151,9 +5151,9 @@ C numerical instabilties.
                   END IF
                   IF (LVALA+LVALB.GT.0)
      &               DX0 = DX0+ SHGTF*ODC(LVALA,LVALB,1,0,0,1)
-                  IF (MVALA+MVALB.GT.0) 
+                  IF (MVALA+MVALB.GT.0)
      &               DY0 = DY0+ SHGTF*ODC(MVALA,MVALB,1,0,0,2)
-                  IF (NVALA+NVALB.GT.0) 
+                  IF (NVALA+NVALB.GT.0)
      &               DZ0 = DZ0+ SHGTF*ODC(NVALA,NVALB,1,0,0,3)
                   INT = INT + 1
                   SHLINT(INT,1+ISHIFT)=SHLINT(INT,1+ISHIFT)-DX0*SY0*SZ0

@@ -1,11 +1,11 @@
 INTGRL
  MgO molecule; C1 symm. Huge nuclear exponent to mimic point.
- small test basis, re from Huber,Herzberg  
+ small test basis, re from Huber,Herzberg
 C   2    0
        8.0    1   1.0d+40
 O      .0000000000        0.0000000000         1.749
 LARGE BASIS STO-2G
-      12.0    1   1.0d+40    
+      12.0    1   1.0d+40
 Mg    0.0000000000        0.0000000000         0.000
-LARGE BASIS STO-2G 
+LARGE BASIS STO-2G
 FINISH

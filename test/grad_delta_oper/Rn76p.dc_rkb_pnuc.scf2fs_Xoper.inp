@@ -21,7 +21,7 @@
 0
 .INTFLG
 1 1 0
-**WAVE FUNCTIONS 
+**WAVE FUNCTIONS
 .SCF
 *SCF
 #10 electrons
@@ -58,21 +58,21 @@ all
 #---------------------------------------
 .OPERATOR
  'd/dx oper'
- DIAGONAL 
+ DIAGONAL
  'XDIPVEL '
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'd/dy oper'
- DIAGONAL 
+ DIAGONAL
  'YDIPVEL '
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'd/dz oper'
- DIAGONAL 
+ DIAGONAL
  'ZDIPVEL '
  COMFACTOR
  1.00D0
@@ -81,7 +81,7 @@ all
 #------------------------------------------------------------
 .OPERATOR
  'FC Rn '
- DIAGONAL 
+ DIAGONAL
  'FC Rn 01'
  COMFACTOR
  1.00D0
@@ -91,14 +91,14 @@ all
 #-----------------------------------------------
 .OPERATOR
  'd/dx dRn'
- DIAGONAL 
+ DIAGONAL
  'XGFRn 01'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
  'd/dy dRn'
- DIAGONAL 
+ DIAGONAL
  'YGFRn 01'
  COMFACTOR
  1.00D0

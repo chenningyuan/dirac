@@ -328,9 +328,9 @@ C
 !                  77         78         79         80
      &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ', 
 !                  81         82         83         84
-     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'GRAD FC', 
+     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'GRAD FC',
 !                  85         86         87         88
-     &            'GRADRHO', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
+     &            'GRADRHO', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx',
 !                  89         90         91         92
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ', 
 !                  93         94         95         96
@@ -2100,11 +2100,11 @@ C     Miro Ilias, Malaya K Nayak
 CKG SCHIFF
 C
 C     Nuclear Schiff moment
-C     ------------------------
-!      gradient of the nuclear charge density 
+C     ---------------------
+!      gradient of the nuclear charge density
 !      distribution rho(r-R),
 !      "grad rho(r-R)"
-!     ------------------------
+!     ---------------------
 !     Konstantin Gaul @ RUG, Aug. 2021
  85   continue
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
@@ -2849,7 +2849,7 @@ C  /* Deck frmtyp */
 
 CKG SCHIFF
 !-------------------------------------------------------------------
-! Labels and symmetries of "grad rho(r-R)" operator 
+! Labels and symmetries of "grad rho(r-R)" operator
 ! (I use continuous numbering here for all nuclear coordinates.)
 !
 ! Written by Konstantin Gaul @ RUG, August 2021
@@ -2894,7 +2894,7 @@ C
                END IF
             END IF
  100     CONTINUE
- 50   CONTINUE 
+ 50   CONTINUE
       RETURN
       END
 CKG SCHIFF
@@ -3396,7 +3396,7 @@ C
  200           CONTINUE
             END IF
  100     CONTINUE
- 50   CONTINUE 
+ 50   CONTINUE
       RETURN
       END
 
