@@ -218,14 +218,23 @@ module talsh_mp2no
             write(*,*) ""
             write(*,*) "Computing MP2FNO++ density matrix.."
             write(*,*) "omega = ", exa_input%omega
+            write(*,*) "#perturbations = ", exa_input%n_mp2fno_prop
 
             ! FNO++
             ! Notations from:
             ! Reduced-scaling coupled cluster response theory: Challenges and opportunities (2018)
-            !
             !---------------
             ! constructing tensors
             !---------------
+            ! dimensions
+            ov_dims(1) = nocc
+            ov_dims(2) = nvir
+
+            oovv_dims(1:2) = nocc
+            oovv_dims(3:4) = nvir
+
+            vo_dims(1) = nvir
+            vo_dims(2) = nocc
             ! Hbar in comm_t%hoo and comm_t%hvv (not to confuse with actual hoo and hvv)
             oo_dims = nocc
 
@@ -237,71 +246,72 @@ module talsh_mp2no
             ierr=talsh_tensor_add("H(a,b)+=F(a,b)",comm_t%hvv,int_t%fvv)
             ierr=talsh_tensor_contract("H(a,b)+=T(f,a,m,n)*V(m,n,f,b)",comm_t%hvv,comm_t%t2,int_t%oovv,scale=MINUS_ONE_HALF)
 
-            ! Abar ai
-            call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop(1))
-            interm_t_prop1%property_label = orb_int_tensor1%property_label
-
-            ov_dims(1) = nocc
-            ov_dims(2) = nvir
-            call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1%prop_ov,comm_t%t2,ov_dims)
-
-            ! Abar acij
-            oovv_dims(1:2) = nocc
-            oovv_dims(3:4) = nvir
-            call get_prop_bar_oovv(interm_t_prop1%prop_bar_oovv,orb_int_tensor1,comm_t%t2,oovv_dims)
-
-            !---------------
-            ! approximated amplitudes
-            !---------------
-            ! t1
-            vo_dims(1) = nvir
-            vo_dims(2) = nocc
-
             ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
-            ierr=talsh_tensor_scale(comm_t%t1,val=ZERO)
-            ierr=talsh_tensor_add("T(a,i)+=A(i,a)",comm_t%t1,interm_t_prop1%prop_bar_ov)
 
-            ierr=talsh_tensor_get_body_access(comm_t%t1,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,t1_ptr,vo_dims)
-            ierr=talsh_tensor_get_body_access(comm_t%hoo,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,hbar_oo_ptr,oo_dims)
-            ierr=talsh_tensor_get_body_access(comm_t%hvv,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,hbar_vv_ptr,vv_dims)
+            !---------------
+            ! Generate density matrix for each perturbation
+            !---------------
+            do i_mp2fno_prop=1,exa_input%n_mp2fno_prop
+               ! Abar ai
+               call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop(i_mp2fno_prop))
+               interm_t_prop1%property_label = orb_int_tensor1%property_label
 
-            do i=1,nocc
-               do a=1,nvir
-                   t1_ptr(a,i) = t1_ptr(a,i)/(hbar_vv_ptr(a,a) - hbar_oo_ptr(i,i) + exa_input%omega)
-               enddo
-            enddo
+               call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1%prop_ov,comm_t%t2,ov_dims)
 
-            ! t2
-            ierr=talsh_tensor_scale(comm_t%t2,val=ZERO)
-            ierr=talsh_tensor_add("T(a,c,i,j)+=A(i,j,a,c)",comm_t%t2,interm_t_prop1%prop_bar_oovv)
-            ierr=talsh_tensor_get_body_access(comm_t%t2,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,t2_ptr,vvoo_dims)
+               ! Abar acij
+               call get_prop_bar_oovv(interm_t_prop1%prop_bar_oovv,orb_int_tensor1,comm_t%t2,oovv_dims)
 
-            do i=1,nocc
-               do j=1,nocc
+               ! t1
+               ierr=talsh_tensor_scale(comm_t%t1,val=ZERO)
+               ierr=talsh_tensor_add("T(a,i)+=A(i,a)",comm_t%t1,interm_t_prop1%prop_bar_ov)
+
+               ierr=talsh_tensor_get_body_access(comm_t%t1,body_p,C8,int(0,C_INT),DEV_HOST)
+               call c_f_pointer(body_p,t1_ptr,vo_dims)
+               ierr=talsh_tensor_get_body_access(comm_t%hoo,body_p,C8,int(0,C_INT),DEV_HOST)
+               call c_f_pointer(body_p,hbar_oo_ptr,oo_dims)
+               ierr=talsh_tensor_get_body_access(comm_t%hvv,body_p,C8,int(0,C_INT),DEV_HOST)
+               call c_f_pointer(body_p,hbar_vv_ptr,vv_dims)
+
+               do i=1,nocc
                   do a=1,nvir
-                     do c=1,nvir
-                        t2_ptr(a,c,i,j) = t2_ptr(a,c,i,j)/(hbar_vv_ptr(a,a) + hbar_vv_ptr(c,c)&
-                           - hbar_oo_ptr(i,i) - hbar_oo_ptr(j,j) + exa_input%omega)
+                      t1_ptr(a,i) = t1_ptr(a,i)/(hbar_vv_ptr(a,a) - hbar_oo_ptr(i,i) + exa_input%omega)
+                  enddo
+               enddo
+
+               ! t2
+               ierr=talsh_tensor_scale(comm_t%t2,val=ZERO)
+               ierr=talsh_tensor_add("T(a,c,i,j)+=A(i,j,a,c)",comm_t%t2,interm_t_prop1%prop_bar_oovv)
+               ierr=talsh_tensor_get_body_access(comm_t%t2,body_p,C8,int(0,C_INT),DEV_HOST)
+               call c_f_pointer(body_p,t2_ptr,vvoo_dims)
+
+               do i=1,nocc
+                  do j=1,nocc
+                     do a=1,nvir
+                        do c=1,nvir
+                           t2_ptr(a,c,i,j) = t2_ptr(a,c,i,j)/(hbar_vv_ptr(a,a) + hbar_vv_ptr(c,c)&
+                              - hbar_oo_ptr(i,i) - hbar_oo_ptr(j,j) + exa_input%omega)
+                        enddo
                      enddo
                   enddo
                enddo
+
+               ! MP2 density matrix
+               ierr=talsh_tensor_scale(MP2_vv_density,val=ZERO)
+               ierr=talsh_tensor_contract("D(a,b)+=T(a,c,i,j)*T(b,c,i,j)",MP2_vv_density,&
+                                           comm_t%t2, comm_t%t2,scale=ONE_HALF)
+               ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
+                                           comm_t%t1, comm_t%t1)
+
+               call write_talsh_matrix(nvir,MP2_vv_density,&
+                   'DM_complex')
             enddo
 
-            !---------------
-            ! MP2 density matrix
-            !---------------
-            ierr=talsh_tensor_contract("D(a,b)+=T(a,c,i,j)*T(b,c,i,j)",MP2_vv_density,&
-                                        comm_t%t2, comm_t%t2,scale=ONE_HALF)
-            ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
-                                        comm_t%t1, comm_t%t1)
-
+            ! Generate weighted density matrix
             ! destroy tensors
             write(*,*) "Finished MP2FNO++ density matrix!"
             write(*,*) ""
+
+            return
          else
             ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_vv_density,&
                                         int_t%oovv,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
