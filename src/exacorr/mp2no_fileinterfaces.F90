@@ -25,6 +25,7 @@ module mp2no_fileinterfaces
         public quater_write, quater_read
         public generate_unified_NOs_MO_file
         public print_rMP2FVNO, write_nos
+        public get_filename_with_index
 
        contains
 
@@ -421,7 +422,7 @@ module mp2no_fileinterfaces
          allocate(NOs_MO_tmp(nao,nao,nz))
 
          ! read all coefficients + occupation numbers
-         call print_date('Second read of NOs_MO files...')
+   call print_date('Second read of NOs_MO files...')
          iMO = 1
          do i=1,exa_input%n_mp2fno_prop
             write(fn, '(A,I0)') 'NOs_MO', i
@@ -466,6 +467,18 @@ module mp2no_fileinterfaces
          !deallocate(N_OCCUPATION)
          !deallocate(NOs_MO)
       end subroutine generate_unified_NOs_MO_file
+
+      pure character(len=20) function get_filename_with_index(fn, i) result(fn_out)
+         ! routine to concatenate a string and an integer
+         ! mostly used for FNO++
+         character(len=20), intent(in)  :: fn
+         integer, intent(in)            :: i 
+
+         character(len=3)  :: istr
+
+         write(istr, '(I0)') i
+         fn_out = trim(fn) // trim(istr)
+      end function get_filename_with_index
 
 end module mp2no_fileinterfaces
 

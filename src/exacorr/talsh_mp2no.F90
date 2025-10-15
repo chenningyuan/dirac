@@ -71,7 +71,8 @@ module talsh_mp2no
             else
                   call mp2lap_get_DM(exa_input)
             endif
-            call get_transform_Fock(exa_input,'DM_complex')
+            !call get_transform_Fock(exa_input,'DM_complex')
+            call get_transform_Fock(exa_input)
         end if
 
         call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
@@ -303,10 +304,8 @@ module talsh_mp2no
                                            comm_t%t2, comm_t%t2,scale=ONE_HALF)
                ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
                                            comm_t%t1, comm_t%t1)
-               fn = 'DM_complex'
-               write(istr, '(I0)') i_mp2fno_prop
-               fn = trim(fn) // trim(istr)
-               call write_talsh_matrix(nvir,MP2_vv_density,trim(fn))
+               call write_talsh_matrix(nvir,MP2_vv_density,&
+                    trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
 
                ierr=talsh_tensor_scale(MP2_vv_density,val=ZERO)
             enddo
@@ -318,10 +317,8 @@ module talsh_mp2no
 
                do i_mp2fno_prop=1,exa_input%n_mp2fno_prop
                   ! read the matrix
-                  fn = 'DM_complex'
-                  write(istr, '(I0)') i_mp2fno_prop
-                  fn = trim(fn) // trim(istr)
-                  call read_matrix_comp(MP2_vv_density_array_tmp,trim(fn))
+                  call read_matrix_comp(MP2_vv_density_array_tmp,&
+                      trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
 
                   ! assign the values of an array to a tensor
                   ierr=talsh_tensor_get_body_access(MP2_vv_density_tmp,body_p,C8,int(0,C_INT),DEV_HOST)
@@ -504,7 +501,7 @@ module talsh_mp2no
    end subroutine get_MP2_integrals
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine get_transform_Fock (exa_input,Matrix_file)
+      subroutine get_transform_Fock (exa_input)
          ! This routine is used for doing transform of fock matrix from MO basis to NO basis.
          ! The new basis set comes from the digonalization of density matrix.
          ! The all natural orbitals and occupation numbers are saved in file NOs_MO
@@ -514,30 +511,90 @@ module talsh_mp2no
          ! Written by Xiang Yuan
 
 
-                  character(len=*),intent(in)        :: Matrix_file
+                  !character(len=*),intent(in)        :: Matrix_file
                   type(exacc_input), intent(in)      :: exa_input
 
                   type(cmo)                          :: qorbital
                   type(basis_set_info_t)             :: ao_basis
                   real(kind=8), pointer              :: N_OCCUPATION(:)         ! occupation number from qdia of DM
+                  real(kind=8), pointer              :: N_OCCUPATION_tmp(:)     ! occupation number from qdia of DM
                   complex(kind=8), pointer           :: MP2_density_comp(:,:)   ! MP2 density matrix from DM_complex
                   real(8), pointer                   :: MP2_density_quat(:,:,:) ! quaternion MP2 density matrix
                   real(kind=8), pointer              :: NOs_MO(:,:,:)           ! natural orbital from qdia of DM
+                  real(kind=8), pointer              :: NOs_MO_tmp(:,:,:)       ! natural orbital from qdia of DM
                   real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix
                   real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
-                  integer                            :: sz,flb,sz_occ           ! size of matrix and flag for block
+                  !integer                            :: sz,flb,sz_occ           ! size of matrix and flag for block
+                  integer                            :: sz1, sz2                ! size of matrix and flag for block
+                  real(kind=8)                       :: Sum_N_OCCUPATION_total, Sum_N_OCCUPATION_total_tmp
                   integer                            :: i, ierr, nocc, nvirt
-                  integer                            :: i_mp2fno_prop
+                  integer                            :: i_mp2fno_prop, counter
+                  integer                            :: N_reduced, N_reduced_tmp
                   character(len=20)                  :: fn, istr
 
-                  call read_matrix_comp(MP2_density_comp,Matrix_file)
-                  call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
+                  if((exa_input%mp2no==3).and.exa_input%do_sum_mp2fno_prop_density) then
+                      ! Generating the FNO and save them in files
+                      sz1 = 0
+                      sz2 = 0
+                      do i_mp2fno_prop = 1,exa_input%n_mp2fno_prop
+                         call print_date('Diagonalizing perturbed density...')
+                         call read_matrix_comp(MP2_density_comp,&
+                             trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
+                         call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
 
-                  call complex_to_quaternion(MP2_density_comp,MP2_density_quat)
-                  call print_date('changed MO DM representation (spinor->quaternion)')
+                         call complex_to_quaternion(MP2_density_comp,MP2_density_quat)
+                         call print_date('changed MO DM representation (spinor->quaternion)')
 
-                  call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)
-                  call print_date('diagonalized MO DM (quaternion)')
+                         call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION_tmp,NOs_MO_tmp)
+                         call print_date('diagonalized MO DM (quaternion)')
+
+                         call quater_write(NOs_MO_tmp,N_OCCUPATION_tmp,&
+                             trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
+                         call print_date('wrote all natural orbital and occupation number in file NOs_MO')
+
+                         sz1 = sz1 + size(NOs_MO_tmp,1)
+                         sz2 = sz2 + size(NOs_MO_tmp,2)
+
+                         deallocate(MP2_density_quat) ! allocation done in complex_to_quaternion
+                         deallocate(NOs_MO_tmp)       ! allocation done in diagonal_matrix_quater
+                         deallocate(N_OCCUPATION_tmp) ! allocation done in diagonal_matrix_quater
+                      enddo
+
+                      ! Read the FNO from files and concatenate them in arrays 
+                      allocate(NOs_MO(sz1,sz2,4))
+                      allocate(N_OCCUPATION(sz2))
+
+                      Sum_N_OCCUPATION_total = 0.0
+                      N_reduced = 0
+                      counter = 0
+                      do i_mp2fno_prop = 1,exa_input%n_mp2fno_prop
+                         call quater_read_orbital(NOs_MO_tmp,N_OCCUPATION_tmp,Sum_N_OCCUPATION_total_tmp,exa_input%t_mp2no,N_reduced_tmp,&
+                             trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
+                         
+                         forall (i=1:size(N_OCCUPATION_tmp)) N_OCCUPATION(i+counter) = N_OCCUPATION_tmp(i)
+                         do i = 1,size(N_OCCUPATION_tmp)
+                            NOs_MO(:,i+counter,:) = NOs_MO_tmp(:,i,:)
+                         enddo
+
+                         Sum_N_OCCUPATION_total = Sum_N_OCCUPATION_total + Sum_N_OCCUPATION_total_tmp
+                         N_reduced = N_reduced + N_reduced_tmp
+                         counter = counter + size(N_OCCUPATION_tmp)
+
+                         deallocate(NOs_MO_tmp)       ! allocation done in quater_read_orbital
+                         deallocate(N_OCCUPATION_tmp) ! allocation done in quater_read_orbital
+                      enddo
+
+                      call print_mp2fvno_occupation_number_details(exa_input%t_mp2no, N_reduced, N_OCCUPATION, Sum_N_OCCUPATION_total)
+                  else
+                     call read_matrix_comp(MP2_density_comp,'DM_complex')
+                     call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
+
+                     call complex_to_quaternion(MP2_density_comp,MP2_density_quat)
+                     call print_date('changed MO DM representation (spinor->quaternion)')
+
+                     call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)
+                     call print_date('diagonalized MO DM (quaternion)')
+                  endif
 
                   call sort_values_vectors (N_OCCUPATION,NOs_MO)
                   call print_date('Sorted natural orbitals by occupation number')
@@ -551,14 +608,7 @@ module talsh_mp2no
                       enddo
                   endif
 
-                  fn = 'NOs_MO'
-                  !if(present(i_mp2fno_prop)) then
-                  !    write(istr, '(I0)') i_mp2fno_prop
-                  !   fn = trim(fn) // trim(istr)
-                  !   call print_date("FNO++ file: "//fn)
-                  !endif
-                  !call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
-                  call quater_write(NOs_MO,N_OCCUPATION,TRIM(fn))
+                  call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
                   call print_date('wrote all natural orbital and occupation number in file NOs_MO')
 
                   ! we initialize the (diagonal) vv block of the Fock matrix with the orbital energies
@@ -574,14 +624,7 @@ module talsh_mp2no
                   call basis_transform_matrix(Fock_HF,NOs_MO,Fock_NO)
                   call print_date('got full VV Fock matrix in natural orbital basis F_VV_NO')
 
-                  fn = 'FM_in_NatOrb'
-                  !if(present(i_mp2fno_prop)) then
-                  !   write(istr, '(I0)') i_mp2fno_prop
-                  !   fn = trim(fn) // trim(istr)
-                  !   call print_date("FNO++ file: "//fn)
-                  !endif
-                  !call quater_write(Fock_NO,"FM_in_NatOrb")
-                  call quater_write(Fock_NO,trim(fn))
+                  call quater_write(Fock_NO,'FM_inNatOrb')
                   call print_date('wrote F_VV_NO in file FM_in_NatOrb')
 
       end subroutine get_transform_Fock
@@ -617,11 +660,6 @@ module talsh_mp2no
             call quater_read(NOs_MO_reduced,N_OCCUPATION_reduced,Sum_N_OCCUPATION_total,&
                               threshold,N_reduced,file_orb)
             call print_date('got the truncated NO and occupation number from NOs_MO')
-
-            ! This is already printed before in the case of MP2 FNO++
-            if(exa_input%mp2no.ne.3) then
-               call print_mp2fvno_occupation_number_details(threshold, N_reduced, N_OCCUPATION_reduced, Sum_N_OCCUPATION_total)
-            endif
 
             nvirt = exa_input%nkr_vir        ! the number of virtual orbitals
             nocc  = exa_input%mokr_occ(size(exa_input%mokr_occ))
