@@ -2037,7 +2037,6 @@ C
       anti   = .true.
       square = .false.
       go to 200
-
 C
 C     Dipole gradient integrals DPLGRA
 C     -------------------------
@@ -2064,7 +2063,6 @@ C
          ANTI = .FALSE.
          SQUARE = .FALSE.
       GOTO 200
-
 C
 C     EMD - i* Electronic kinetic energy
 C     ----------------------------------
@@ -2081,7 +2079,6 @@ C     Miro Ilias, Malaya K Nayak
          INTREP(1) = 0
          ANTI = .FALSE. 
       GO TO 200
-
 !
 ! ---------------------------------------------------------
 !  electronic gradient of the delta(r-R) contact operator,
@@ -2097,7 +2094,6 @@ C     Miro Ilias, Malaya K Nayak
          ANTI = .FALSE.
          SQUARE = .FALSE.
       GO TO 200
-CKG SCHIFF
 C
 C     Nuclear Schiff moment
 C     ---------------------
@@ -2115,7 +2111,6 @@ C     ---------------------
          ANTI = .FALSE.
          SQUARE = .FALSE.
       GO TO 200
-CKG SCHIFF
  86   continue
  87   continue
  88   continue
@@ -2123,7 +2118,6 @@ CKG SCHIFF
  90   continue
  91   continue
       go to 200
-
 C
 C     First order magnetic field derivatives of electric field gradient QDBINT
 C     -----------------------------------------------------------------
@@ -2847,7 +2841,6 @@ C  /* Deck frmtyp */
       RETURN
       END
 
-CKG SCHIFF
 !-------------------------------------------------------------------
 ! Labels and symmetries of "grad rho(r-R)" operator
 ! (I use continuous numbering here for all nuclear coordinates.)
@@ -2897,7 +2890,6 @@ C
  50   CONTINUE
       RETURN
       END
-CKG SCHIFF
 C  /* Deck nsttyp */
       SUBROUTINE NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,LABEL,INTADR)
 C    MI/HJaJ - extended for LAO integral

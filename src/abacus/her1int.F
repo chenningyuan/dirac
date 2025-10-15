@@ -393,13 +393,11 @@ C     type 58 already defined (NUCFIEL)
          JMAXM = 0 ! we do not need ODC for this property
          DONUC1= .TRUE.
          DOMOM1 = .TRUE.
-CKG SCHIFF Moment integrals as derivative of the nuclear charge density
-      ELSE IF (INTTYP .EQ.60) THEN
+      ELSE IF (INTTYP .EQ. 60) THEN
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-CKG SCHIFF
       ELSE IF (INTTYP .EQ. 62) THEN
          JMAXD = 0
          JMAXM = 0
@@ -1108,17 +1106,16 @@ C     Integrals for Parity Violation - chirality
      &               TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,
      &               DIFABX,DIFABY,DIFABZ,DONUC1,DOMOM1,HUCFAC)
       ELSE IF (INTTYP .EQ. 60) THEN
-CKG SCHIFF
 C
 C     Schiff moment enhancement integrals
 C     -> DERIVATIVE of the nuclear charge density distribution
-C     ------------------------
+C        -----------------------------------------------------
          CALL GRDRHONUC(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &                  WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
      &                  LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
      &                  TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,
      &                  CORCZ,DIFABX,DIFABY,DIFABZ,DONUC1,DOMOM1)
-CKG SCHIFF
+C
       ELSE IF (INTTYP .NE. 12) THEN ! not DSO
          CALL PR1PRA(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
@@ -4948,7 +4945,6 @@ C
   100 CONTINUE
       RETURN
       END
-CKG SCHIFF
 C--------------------------------------------------------------------------
 C  Finite nucleus version of Schiff moment enhancement
 C  The operator is at nucleus A
@@ -5175,8 +5171,6 @@ C
       END IF
       RETURN
       END
-CKG SCHIFF
-
 
 C  /* Deck dwnint */
       SUBROUTINE DWNINT(SHLINT,EXPP,XP,YP,ZP,SAAB)
