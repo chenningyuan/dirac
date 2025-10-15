@@ -62,36 +62,17 @@ module talsh_mp2no
 
         inquire(file="NOs_MO", exist=alive)
 
-        if(exa_input%mp2no.ne.3) then
-           if (alive) then
-               call print_date('File NOs_MO exists')
-           else
-               call print_date('File NOs_MO does not exist. Start constructing MP2 density matrix')
-               if (exa_input%mp2no<9) then
-                     call talsh_generate_MP2_VNO_MObasis(exa_input)
-               else
-                     call mp2lap_get_DM(exa_input)
-               endif
-               call get_transform_Fock(exa_input,'DM_complex')
-           end if
+        if (alive) then
+            call print_date('File NOs_MO exists')
         else
-           call print_date('Generating MP2FNO++...')
-           write(*,*) 'Perturbation operators = ', exa_input%mp2fno_prop
-           ! FNO++ specific
-           do i = 1,exa_input%n_mp2fno_prop
-              ! compute VV block of FV MP2 Matrix
-              call talsh_generate_MP2_VNO_MObasis(exa_input, i)
-
-              ! get NO orbitals and save them in NOs_MO//i files
-              call get_transform_Fock(exa_input,'DM_complex',i)
-           enddo
-
-           call print_date('Writing NOs_MO...')
-
-           ! make final NOs_MO file
-           call generate_unified_NOs_MO_file(exa_input)
-
-        endif
+            call print_date('File NOs_MO does not exist. Start constructing MP2 density matrix')
+            if (exa_input%mp2no<9) then
+                  call talsh_generate_MP2_VNO_MObasis(exa_input)
+            else
+                  call mp2lap_get_DM(exa_input)
+            endif
+            call get_transform_Fock(exa_input,'DM_complex')
+        end if
 
         call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
                               New_orbital_energy,'NOs_MO',N_cano)
@@ -102,7 +83,7 @@ module talsh_mp2no
 
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine talsh_generate_MP2_VNO_MObasis (exa_input, i_mp2fno_prop)
+      subroutine talsh_generate_MP2_VNO_MObasis (exa_input)
 !       This subroutine obtains the complex mp2 density matrix in MO basis
 !       The non-diagonal complex DM is written into file DM_complex.
 !       Written by Xiang Yuan
@@ -114,7 +95,6 @@ module talsh_mp2no
          integer,  allocatable                  :: mo_vir(:)               ! the list index of virtual spinors
          integer,  allocatable                  :: mo_occ(:)               ! the list index of occupied spinors
          real(8), allocatable                   :: eps_occ(:),eps_vir(:)   ! HF orbital energies
-         integer, optional, intent(in)          :: i_mp2fno_prop
 
 !        Intermediate tensors (same notation as in relccsd)
          type(talsh_tens_t)          :: MP2_vv_density
@@ -153,6 +133,7 @@ module talsh_mp2no
 !        Scalars (need to be defined as tensor types)
          real(kind=8)  :: energy_shift(2) = 0.0d0
          integer       :: i, j, k, a, c
+         integer       :: i_mp2fno_prop
 
          integer :: num_gpus = 0, igpu
 
@@ -257,7 +238,7 @@ module talsh_mp2no
             ierr=talsh_tensor_contract("H(a,b)+=T(f,a,m,n)*V(m,n,f,b)",comm_t%hvv,comm_t%t2,int_t%oovv,scale=MINUS_ONE_HALF)
 
             ! Abar ai
-            call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop(i_mp2fno_prop))
+            call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop(1))
             interm_t_prop1%property_label = orb_int_tensor1%property_label
 
             ov_dims(1) = nocc
