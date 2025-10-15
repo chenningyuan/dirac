@@ -1004,15 +1004,6 @@
 !   23. iBETAGAMMA5
 !       i[betagamma5]P  * i.beta gamma5 times scalar operator
 !
-!   22. XBETAAL
-!        [betaalp_x]p * x-component of T+ beta alpha times scalar operator
-!
-!   23. YBETAAL
-!        [betaalp_y]p * y-component of T+ beta alpha times scalar operator
-!
-!   24. ZBETAAL
-!        [betaalp_z]p * z-component of T+ beta alpha times scalar operator
-!
 !
 !  Operator types 5, 6 and 7 form the components of a vector product
 !  of the alpha matrices and some scalar operator.
