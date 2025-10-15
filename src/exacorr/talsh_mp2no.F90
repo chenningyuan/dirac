@@ -71,7 +71,6 @@ module talsh_mp2no
             else
                   call mp2lap_get_DM(exa_input)
             endif
-            !call get_transform_Fock(exa_input,'DM_complex')
             call get_transform_Fock(exa_input)
         end if
 
@@ -120,6 +119,7 @@ module talsh_mp2no
          complex(8), pointer   :: t1_ptr(:,:), t2_ptr(:,:,:,:)
          complex(8), pointer   :: MP2_vv_density_array_ptr(:,:)
          complex(8), pointer   :: MP2_vv_density_array_tmp(:,:)
+
          !integer(C_SIZE_T)           :: volume
          !integer(C_INT)           :: rankk
 
@@ -136,9 +136,9 @@ module talsh_mp2no
 !        Scalars (need to be defined as tensor types)
          real(kind=8)  :: energy_shift(2) = 0.0d0
          integer       :: i, j, k, a, c
+         integer       :: i_mp2fno_prop
 
          integer :: num_gpus = 0, igpu
-         integer :: i_mp2fno_prop 
          character(len=20)                  :: fn, istr
 
          logical :: fock_flag ! used for FNO++ orbitals
@@ -219,20 +219,28 @@ module talsh_mp2no
          ierr=talsh_tensor_init(MP2_vv_density)
          if(exa_input%mp2no.eq.3) then
 
-            write(*,*) ""
-            call print_date("Computing MP2FNO++ density matrix..")
+            call print_date("Computing MP2FNO++ density matrix with config:")
             write(*,*) "omega = ", exa_input%omega
+            write(*,*) "#perturbations = ", exa_input%n_mp2fno_prop
+            write(*,*) "Weighted sum of the perturbations = ", exa_input%do_sum_mp2fno_prop_density
 
             ! FNO++
             ! Notations from:
             ! Reduced-scaling coupled cluster response theory: Challenges and opportunities (2018)
-            !
-            !---------------
-            ! constructing tensors
-            !---------------
-            ! Hbar in comm_t%hoo and comm_t%hvv (not to confuse with actual hoo and hvv)
+
+            ! dimensions
+            ov_dims(1) = nocc
+            ov_dims(2) = nvir
+
+            oovv_dims(1:2) = nocc
+            oovv_dims(3:4) = nvir
+
+            vo_dims(1) = nvir
+            vo_dims(2) = nocc
+
             oo_dims = nocc
 
+            ! Hbar in comm_t%hoo and comm_t%hvv (not to confuse with actual hoo and hvv)
             ierr=talsh_tensor_construct(comm_t%hoo,C8,oo_dims,init_val=ZERO)
             ierr=talsh_tensor_add("H(i,j)+=F(i,j)",comm_t%hoo,int_t%foo)
             ierr=talsh_tensor_contract("H(i,j)+=T(e,f,i,n)*V(j,n,e,f)",comm_t%hoo,comm_t%t2,int_t%oovv,scale=ONE_HALF)
@@ -242,28 +250,21 @@ module talsh_mp2no
             ierr=talsh_tensor_contract("H(a,b)+=T(f,a,m,n)*V(m,n,f,b)",comm_t%hvv,comm_t%t2,int_t%oovv,scale=MINUS_ONE_HALF)
 
             ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
+
+            !---------------
+            ! Generate density matrix for each perturbation
+            !---------------
             do i_mp2fno_prop=1,exa_input%n_mp2fno_prop
-               write(*,*) "Computing density matrix of operator ", i_mp2fno_prop
                ! Abar ai
                call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop(i_mp2fno_prop))
                interm_t_prop1%property_label = orb_int_tensor1%property_label
 
-               ov_dims(1) = nocc
-               ov_dims(2) = nvir
                call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1%prop_ov,comm_t%t2,ov_dims)
 
                ! Abar acij
-               oovv_dims(1:2) = nocc
-               oovv_dims(3:4) = nvir
                call get_prop_bar_oovv(interm_t_prop1%prop_bar_oovv,orb_int_tensor1,comm_t%t2,oovv_dims)
 
-               !---------------
-               ! approximated amplitudes
-               !---------------
                ! t1
-               vo_dims(1) = nvir
-               vo_dims(2) = nocc
-
                ierr=talsh_tensor_scale(comm_t%t1,val=ZERO)
                ierr=talsh_tensor_add("T(a,i)+=A(i,a)",comm_t%t1,interm_t_prop1%prop_bar_ov)
 
@@ -297,23 +298,29 @@ module talsh_mp2no
                   enddo
                enddo
 
-               !---------------
                ! MP2 density matrix
-               !---------------
+               ierr=talsh_tensor_scale(MP2_vv_density,val=ZERO)
                ierr=talsh_tensor_contract("D(a,b)+=T(a,c,i,j)*T(b,c,i,j)",MP2_vv_density,&
                                            comm_t%t2, comm_t%t2,scale=ONE_HALF)
                ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
                                            comm_t%t1, comm_t%t1)
-               call write_talsh_matrix(nvir,MP2_vv_density,&
-                    trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
 
-               ierr=talsh_tensor_scale(MP2_vv_density,val=ZERO)
+               call write_talsh_matrix(nvir,MP2_vv_density,&
+                   trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
+
+               ! destroy tensors
+               ierr=talsh_tensor_destruct(orb_int_tensor1%prop_oo)
+               ierr=talsh_tensor_destruct(orb_int_tensor1%prop_vv)
+               ierr=talsh_tensor_destruct(orb_int_tensor1%prop_vo)
+               ierr=talsh_tensor_destruct(orb_int_tensor1%prop_ov)
+               ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_ov)
+               ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_oovv)
             enddo
 
+            ! Generate weighted density matrix
             if(exa_input%do_sum_mp2fno_prop_density) then
                ! initialize arrays
                ierr=talsh_tensor_construct(MP2_vv_density_tmp,C8,vv_dims,init_val=ZERO)
-               allocate(MP2_vv_density_array_tmp(nvir,nvir))
 
                do i_mp2fno_prop=1,exa_input%n_mp2fno_prop
                   ! read the matrix
@@ -332,15 +339,17 @@ module talsh_mp2no
                   ! contract
                   ierr=talsh_tensor_add("D(a,b)+=D_tmp(a,b)",MP2_vv_density,MP2_vv_density_tmp,&
                       scale=dcmplx(exa_input%mp2fno_prop_weights(i_mp2fno_prop),0.0))
+
+                  ! deallocate/destroy arrays
+                  deallocate(MP2_vv_density_array_tmp)
                enddo
                call write_talsh_matrix(nvir,MP2_vv_density,'DM_complex')
 
                ! destroy arrays
-               deallocate(MP2_vv_density_array_tmp)
                ierr=talsh_tensor_destruct(MP2_vv_density_tmp)
             endif
 
-            call print_date("Finished MP2FNO++ density matrix!")
+            call print_date('FNO++: Finished MP2_DM_VV calculation and save it to file DM_complex!')
             return
          else
             ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_vv_density,&
@@ -510,8 +519,6 @@ module talsh_mp2no
          ! This routine doesn't truncate the new basis set.
          ! Written by Xiang Yuan
 
-
-                  !character(len=*),intent(in)        :: Matrix_file
                   type(exacc_input), intent(in)      :: exa_input
 
                   type(cmo)                          :: qorbital
@@ -532,59 +539,61 @@ module talsh_mp2no
                   integer                            :: N_reduced, N_reduced_tmp
                   character(len=20)                  :: fn, istr
 
-                  if((exa_input%mp2no==3).and.exa_input%do_sum_mp2fno_prop_density) then
-                      ! Generating the FNO and save them in files
-                      sz1 = 0
-                      sz2 = 0
-                      do i_mp2fno_prop = 1,exa_input%n_mp2fno_prop
-                         call print_date('Diagonalizing perturbed density...')
-                         call read_matrix_comp(MP2_density_comp,&
-                             trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
-                         call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
+                  if((exa_input%mp2no==3).and..not.exa_input%do_sum_mp2fno_prop_density) then
+                     ! Generating the FNO and save them in files
+                     sz1 = 0
+                     sz2 = 0
+                     do i_mp2fno_prop = 1,exa_input%n_mp2fno_prop
+                        call print_date('Diagonalizing perturbed density...')
+                        call read_matrix_comp(MP2_density_comp,&
+                            trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
+                        call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
 
-                         call complex_to_quaternion(MP2_density_comp,MP2_density_quat)
-                         call print_date('changed MO DM representation (spinor->quaternion)')
+                        call complex_to_quaternion(MP2_density_comp,MP2_density_quat)
+                        call print_date('changed MO DM representation (spinor->quaternion)')
 
-                         call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION_tmp,NOs_MO_tmp)
-                         call print_date('diagonalized MO DM (quaternion)')
+                        call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION_tmp,NOs_MO_tmp)
+                        call print_date('diagonalized MO DM (quaternion)')
 
-                         call quater_write(NOs_MO_tmp,N_OCCUPATION_tmp,&
-                             trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
-                         call print_date('wrote all natural orbital and occupation number in file NOs_MO')
+                        call quater_write(NOs_MO_tmp,N_OCCUPATION_tmp,&
+                            trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
+                        call print_date('wrote all natural orbital and occupation number in file NOs_MO')
 
-                         sz1 = sz1 + size(NOs_MO_tmp,1)
-                         sz2 = sz2 + size(NOs_MO_tmp,2)
+                        sz1 = size(NOs_MO_tmp,1)
+                        do i = 1,size(N_OCCUPATION_tmp)
+                           if(N_OCCUPATION_tmp(i).gt.exa_input%t_mp2no) then
+                              sz2 = sz2 + 1
+                           endif
+                        enddo
 
-                         deallocate(MP2_density_quat) ! allocation done in complex_to_quaternion
-                         deallocate(NOs_MO_tmp)       ! allocation done in diagonal_matrix_quater
-                         deallocate(N_OCCUPATION_tmp) ! allocation done in diagonal_matrix_quater
-                      enddo
+                        deallocate(MP2_density_quat) ! allocation done in complex_to_quaternion
+                        deallocate(NOs_MO_tmp)       ! allocation done in diagonal_matrix_quater
+                        deallocate(N_OCCUPATION_tmp) ! allocation done in diagonal_matrix_quater
+                     enddo
 
-                      ! Read the FNO from files and concatenate them in arrays 
-                      allocate(NOs_MO(sz1,sz2,4))
-                      allocate(N_OCCUPATION(sz2))
+                     ! Read the FNO from files and concatenate them in arrays 
+                     allocate(NOs_MO(sz1,sz2,4))
+                     allocate(N_OCCUPATION(sz2))
 
-                      Sum_N_OCCUPATION_total = 0.0
-                      N_reduced = 0
-                      counter = 0
-                      do i_mp2fno_prop = 1,exa_input%n_mp2fno_prop
-                         call quater_read_orbital(NOs_MO_tmp,N_OCCUPATION_tmp,Sum_N_OCCUPATION_total_tmp,exa_input%t_mp2no,N_reduced_tmp,&
-                             trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
-                         
-                         forall (i=1:size(N_OCCUPATION_tmp)) N_OCCUPATION(i+counter) = N_OCCUPATION_tmp(i)
-                         do i = 1,size(N_OCCUPATION_tmp)
-                            NOs_MO(:,i+counter,:) = NOs_MO_tmp(:,i,:)
-                         enddo
+                     Sum_N_OCCUPATION_total = 0.0
+                     N_reduced = 0
+                     counter = 0
+                     do i_mp2fno_prop = 1,exa_input%n_mp2fno_prop
+                        call quater_read_orbital(NOs_MO_tmp,N_OCCUPATION_tmp,Sum_N_OCCUPATION_total_tmp,exa_input%t_mp2no,N_reduced_tmp,&
+                            trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
 
-                         Sum_N_OCCUPATION_total = Sum_N_OCCUPATION_total + Sum_N_OCCUPATION_total_tmp
-                         N_reduced = N_reduced + N_reduced_tmp
-                         counter = counter + size(N_OCCUPATION_tmp)
+                        forall (i=1:size(N_OCCUPATION_tmp)) N_OCCUPATION(i+counter) = N_OCCUPATION_tmp(i)
+                        forall (i=1:size(N_OCCUPATION_tmp)) NOs_MO(:,i+counter,:) = NOs_MO_tmp(:,i,:)
 
-                         deallocate(NOs_MO_tmp)       ! allocation done in quater_read_orbital
-                         deallocate(N_OCCUPATION_tmp) ! allocation done in quater_read_orbital
-                      enddo
+                        Sum_N_OCCUPATION_total = Sum_N_OCCUPATION_total + Sum_N_OCCUPATION_total_tmp
+                        N_reduced = N_reduced + N_reduced_tmp
+                        counter = counter + size(N_OCCUPATION_tmp)
 
-                      call print_mp2fvno_occupation_number_details(exa_input%t_mp2no, N_reduced, N_OCCUPATION, Sum_N_OCCUPATION_total)
+                        deallocate(NOs_MO_tmp)       ! allocation done in quater_read_orbital
+                        deallocate(N_OCCUPATION_tmp) ! allocation done in quater_read_orbital
+                     enddo
+
+                     call print_mp2fvno_occupation_number_details(exa_input%t_mp2no, N_reduced, N_OCCUPATION, Sum_N_OCCUPATION_total)
                   else
                      call read_matrix_comp(MP2_density_comp,'DM_complex')
                      call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
@@ -660,6 +669,10 @@ module talsh_mp2no
             call quater_read(NOs_MO_reduced,N_OCCUPATION_reduced,Sum_N_OCCUPATION_total,&
                               threshold,N_reduced,file_orb)
             call print_date('got the truncated NO and occupation number from NOs_MO')
+
+            if(exa_input%mp2no.ne.3) then
+               call print_mp2fvno_occupation_number_details(threshold, N_reduced, N_OCCUPATION_reduced, Sum_N_OCCUPATION_total)
+            endif
 
             nvirt = exa_input%nkr_vir        ! the number of virtual orbitals
             nocc  = exa_input%mokr_occ(size(exa_input%mokr_occ))

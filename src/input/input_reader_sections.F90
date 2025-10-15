@@ -1134,6 +1134,7 @@
          if(exa_input%n_mp2fno_prop.eq.1) then
             exa_input%do_sum_mp2fno_prop_density = .false.
          end if
+
       end if
 
       if (kw_matches(word, '.SUM_FNOPROP      ')) then
