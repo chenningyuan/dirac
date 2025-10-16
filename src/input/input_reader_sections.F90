@@ -1117,7 +1117,7 @@
          call kw_read(word, exa_input%t_mp2no)
       end if
 
-      if (kw_matches(word, '.ALLOCC         ')) then
+      if (kw_matches(word, '.P_OCC_NUM         ')) then
          call kw_read(word, exa_input%print_occupation_number)
       end if
 
@@ -1131,19 +1131,16 @@
          allocate(exa_input%mp2fno_prop(exa_input%n_mp2fno_prop))
          call kw_read(word, exa_input%mp2fno_prop, exa_input%n_mp2fno_prop)
 
-         if(exa_input%n_mp2fno_prop.eq.1) then
-            exa_input%do_sum_mp2fno_prop_density = .false.
-         end if
-
       end if
 
       if (kw_matches(word, '.SUM_FNOPROP      ')) then
          exa_input%do_sum_mp2fno_prop_density = .true.
          allocate(exa_input%mp2fno_prop_weights(exa_input%n_mp2fno_prop))
-         exa_input%mp2fno_prop_weights = 1.D0/exa_input%n_mp2fno_prop
+         !exa_input%mp2fno_prop_weights = 1.D0/REAL(exa_input%n_mp2fno_prop) ! not read
+         
       end if
 
-      if (kw_matches(word, '.FNOPROP_WEIGHTS  ')) then
+      if (kw_matches(word, '.PROP_WEIGHTS  ')) then
          call kw_read(word, exa_input%mp2fno_prop_weights, exa_input%n_mp2fno_prop)
       end if
 
