@@ -1,10 +1,13 @@
 :orphan:
 
-
 26.alpha
 --------
 
 *New features:*
+
+- Basis set library has been extended with 5z basis sets for s blocks: New dyall.(v5z/cv5z/av5z/ae5z/acv5z/aae5z) basis sets.
+   - Contributor: K. Dyall.
+   - Reference: `M. L. Reitsma, E. H. Prinsen, J. D. Polet, A. Borschevsky, and K. G. Dyall, Relativistic quintuple-zeta basis sets for the s block Available to Purchase, J. Chem. Phys. 163, 144116 (2025). <https://doi.org/10.1063/5.0297009>`__
 
 - Merge of the DIRAC_CASPT2 program published in Masuda2025 into DIRAC.
   This adds the following features to DIRAC.
