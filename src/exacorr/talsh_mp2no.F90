@@ -222,7 +222,12 @@ module talsh_mp2no
             call print_date("Computing MP2FNO++ density matrix with config:")
             write(*,*) "omega = ", exa_input%omega
             write(*,*) "#perturbations = ", exa_input%n_mp2fno_prop
+            write(*,*) "perturbations = ", exa_input%mp2fno_prop
             write(*,*) "Weighted sum of the perturbations = ", exa_input%do_sum_mp2fno_prop_density
+            if(exa_input%do_sum_mp2fno_prop_density) then !write(*,*) "weights = ", exa_input%mp2fno_prop_weights(1)
+               write(*,*) "weights size = ", size(exa_input%mp2fno_prop_weights)
+               write(*,*) "weights = ", SUM(exa_input%mp2fno_prop_weights)
+            endif
 
             ! FNO++
             ! Notations from:
@@ -315,11 +320,14 @@ module talsh_mp2no
                ierr=talsh_tensor_destruct(orb_int_tensor1%prop_ov)
                ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_ov)
                ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_oovv)
+
+
             enddo
 
             ! Generate weighted density matrix
             if(exa_input%do_sum_mp2fno_prop_density) then
                ! initialize arrays
+               ierr=talsh_tensor_scale(MP2_vv_density,val=ZERO)
                ierr=talsh_tensor_construct(MP2_vv_density_tmp,C8,vv_dims,init_val=ZERO)
 
                do i_mp2fno_prop=1,exa_input%n_mp2fno_prop
@@ -343,6 +351,7 @@ module talsh_mp2no
                   ! deallocate/destroy arrays
                   deallocate(MP2_vv_density_array_tmp)
                enddo
+               ierr=talsh_tensor_get_body_access(MP2_vv_density,body_p,C8,int(0,C_INT),DEV_HOST)
                call write_talsh_matrix(nvir,MP2_vv_density,'DM_complex')
 
                ! destroy arrays

@@ -23,7 +23,6 @@ module mp2no_fileinterfaces
         end interface
 
         public quater_write, quater_read
-        public generate_unified_NOs_MO_file
         public print_rMP2FVNO, write_nos
         public get_filename_with_index
 
