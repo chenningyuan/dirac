@@ -555,6 +555,8 @@ module talsh_mp2no
                         call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION_tmp,NOs_MO_tmp)
                         call print_date('diagonalized MO DM (quaternion)')
 
+                        call sort_values_vectors (N_OCCUPATION_tmp,NOs_MO_tmp)
+
                         call quater_write(NOs_MO_tmp,N_OCCUPATION_tmp,&
                             trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
                         call print_date('wrote all natural orbital and occupation number in file NOs_MO')
@@ -603,10 +605,11 @@ module talsh_mp2no
 
                      call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)
                      call print_date('diagonalized MO DM (quaternion)')
-                  endif
 
-                  call sort_values_vectors (N_OCCUPATION,NOs_MO)
-                  call print_date('Sorted natural orbitals by occupation number')
+                     call sort_values_vectors (N_OCCUPATION,NOs_MO)
+                     call print_date('Sorted natural orbitals by occupation number')
+
+                  endif
 
                   if(exa_input%print_occupation_number.eq.1) then
                       print*, "-------------------------------"
@@ -670,7 +673,7 @@ module talsh_mp2no
                               threshold,N_reduced,file_orb)
             call print_date('got the truncated NO and occupation number from NOs_MO')
 
-            if(exa_input%mp2no.ne.3) then
+            if((exa_input%mp2no.ne.3).or.exa_input%do_sum_mp2fno_prop_density) then
                call print_mp2fvno_occupation_number_details(threshold, N_reduced, N_OCCUPATION_reduced, Sum_N_OCCUPATION_total)
             endif
 
