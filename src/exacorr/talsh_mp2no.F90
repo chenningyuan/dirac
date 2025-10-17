@@ -600,7 +600,8 @@ module talsh_mp2no
                         N_reduced = N_reduced + N_reduced_tmp
                         counter = counter + size(N_OCCUPATION_tmp)
 
-                        call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO,size(NOs_MO,1),size(NOs_MO,2),4)
+                        !call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO,size(NOs_MO,1),size(NOs_MO,2),4)
+                        call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO)
 
                         deallocate(NOs_MO_tmp)       ! allocation done in quater_read_orbital
                         deallocate(N_OCCUPATION_tmp) ! allocation done in quater_read_orbital

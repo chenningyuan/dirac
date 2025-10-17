@@ -72,25 +72,35 @@ module mp2no_matrixtransforms
          
         end subroutine sort_MOs_by_occupation_number_v1
 
-        subroutine sort_MOs_by_occupation_number_v2(N_OCCUPATION, NOs_MO, nao, nto, nz)
+        !subroutine sort_MOs_by_occupation_number_v2(N_OCCUPATION, NOs_MO, nao, nto, nz)
+        subroutine sort_MOs_by_occupation_number_v2(N_OCCUPATION, NOs_MO)
            use exacorr_utils
            ! Using merge sort algorithm for sorting FNO++
-           integer, intent(in) :: nao, nto, nz
-           real(kind=8), dimension(nao,nto,nz), intent(inout)  :: NOs_MO
-           real(kind=8), dimension(nto),        intent(inout)  :: N_OCCUPATION
+           !integer, intent(in) :: nao, nto, nz
+           !real(kind=8), dimension(nao,nto,nz), intent(inout)  :: NOs_MO
+           !real(kind=8), dimension(nto),        intent(inout)  :: N_OCCUPATION
 
-           real(kind=8), dimension(nao,nto,nz)      :: NOs_MO_tmp
-           real(kind=8), dimension(nto)             :: N_OCCUPATION_tmp !, N_OCCUPATION_original(:)
-           integer, dimension(nto)                  :: indices, indices_tmp
+           !real(kind=8), dimension(nao,nto,nz)      :: NOs_MO_tmp
+           !real(kind=8), dimension(nto)             :: N_OCCUPATION_tmp !, N_OCCUPATION_original(:)
+           !integer, dimension(nto)                  :: indices, indices_tmp
+
+           !integer :: i, j, width, n, iLeft, iRight, iEnd
+           real(kind=8), pointer, intent(inout)  :: NOs_MO(:,:,:)
+           real(kind=8), pointer,        intent(inout)  :: N_OCCUPATION(:)
+
+           real(kind=8), dimension(:,:,:),allocatable      :: NOs_MO_tmp
+           real(kind=8), dimension(:),allocatable             :: N_OCCUPATION_tmp !, N_OCCUPATION_original(:)
+           integer, dimension(:), allocatable                  :: indices, indices_tmp
 
            integer :: i, j, width, n, iLeft, iRight, iEnd
+           integer :: nao, nto, nz
 
            n = nto
 
-           !allocate(NOs_MO_tmp(size(NOs_MO,1),size(NOs_MO,2),size(NOs_MO,3)))
-           !allocate(indices(n))
-           !allocate(N_OCCUPATION_tmp(n))
-           !allocate(indices_tmp(n))
+           allocate(NOs_MO_tmp(size(NOs_MO,1),size(NOs_MO,2),size(NOs_MO,3)))
+           allocate(indices(n))
+           allocate(N_OCCUPATION_tmp(n))
+           allocate(indices_tmp(n))
 
            !allocate(N_OCCUPATION_original(n))
            !N_OCCUPATION_original = N_OCCUPATION
@@ -128,10 +138,10 @@ module mp2no_matrixtransforms
               NOs_MO(:,i,:) = NOs_MO_tmp(:,indices(i),:)
            enddo
            
-           !deallocate(indices)
-           !deallocate(indices_tmp)
-           !deallocate(NOs_MO_tmp)
-           !deallocate(N_OCCUPATION_tmp)
+           deallocate(indices)
+           deallocate(indices_tmp)
+           deallocate(NOs_MO_tmp)
+           deallocate(N_OCCUPATION_tmp)
 
            call print_date("Finished sorting NOs!")
            return
