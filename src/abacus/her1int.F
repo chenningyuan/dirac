@@ -387,6 +387,11 @@ C     type 45 already defined
          JMAXM = 0
          DONUC1= .FALSE.
          DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ. 59) THEN ! MI: grad(FC)
+         JMAXD = 0 ! we do not need ODC for this property
+         JMAXM = 0 ! we do not need ODC for this property
+         DONUC1= .TRUE.
+         DOMOM1 = .TRUE.
 C     type 58 already defined (NUCFIEL)
       ELSE IF (INTTYP .EQ. 60) THEN
          JMAXD  = 0
@@ -995,14 +1000,12 @@ C
          ELSE IF (INTTYP .EQ. 62) THEN
             CALL PVCTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-
          ELSE IF (INTTYP .EQ. 52) THEN
             CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
          ELSE IF (INTTYP .EQ. 53) THEN
             CALL QUGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-
          ELSE IF (INTTYP .EQ. 56) THEN
             CALL EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
@@ -1799,7 +1802,14 @@ C
             CALL EFTINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC,.FALSE.,ONCN,
      &                  CORCX,CORCY,CORCZ)
-
+C
+C        Gradient of the Fermi contact operator
+C        --------------------------------------
+C
+         ELSE IF (INTTYP .EQ. 59) THEN
+            CALL GRDFRMINT(SHLINT,NOPTYP,EXPP,CORPX,CORPY,CORPZ,SAAB,
+     &             DOATOM)
+C
 C        Electric field contribution to magnetic moment
 C        ----------------------------------------------
 C
@@ -4731,6 +4741,300 @@ C
                END IF
   400          CONTINUE
                SHLINT(INT,INTTYP) = SHLINT(INT,INTTYP) - SAAB*FRM*DFAC
+            END IF
+            END IF
+  300       CONTINUE
+  200    CONTINUE
+  100 CONTINUE
+      RETURN
+      END
+
+      SUBROUTINE GRDFRMINT(SHLINT,NOPTYP,EXPP,XP,YP,ZP,SAAB,DOATOM)
+!
+! integrals for GRAD(FC)
+! are grad(xhi_a xhi_b) for r=R
+!   = (grad xhi_a) xhi_b + xhi_a (grad xhi_b) for r=R
+!   = (grad xhi_a)(R) xhi_b(R) + xhi_a(R) (grad xhi_b)(R)
+!
+! MI and HJAaJ, Sep 2020, Aug 2021
+! Last update: Konstantin Gaul, Oct 2025
+!
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+C
+      PARAMETER (DFAC = 2.0D0*PI/3.0D0)
+      LOGICAL   DOATOM(NUCIND), CTRL_PRINT
+      DIMENSION SHLINT(KCKTAB,NOPTYP)
+#include "onecom.h"
+#include "lmns.h"
+#include "symmet.h"
+#include "nuclei.h"
+      CTRL_PRINT=.FALSE.
+      !CTRL_PRINT=.TRUE.
+C
+      INT = 0
+      DO 100 ICOMPA = 1,KCKTA
+         ! real "m_l" components of primitive A
+         ! x**LVALA * y**MVALA * z**NVALA * exp(...)
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         ! real "m_l" components of primitive B
+         ! x**LVALB * y**MVALB * z**NVALB * exp(...)
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+         INT = INT + 1
+         !  INT corresponds to a specific ICOMPA,ICOMPB combination
+         ! i.e. for 2 p orbital INT = (1:9),
+         !      for s and p orbitals INT = (1:3)
+         ! used in SHLINT(INT,INTTYP)
+         !
+         INTTYP = 0
+         !  used for components of this integral block
+         !  (in this case 3 for d/dx, d/dy, and d/dz
+         !   times the number of atoms)
+         DO 200 IREP = 0, MAXREP
+         ! symmetry operator working on atoms
+            DO 300 IATOM = 1, NUCIND
+            ! sum of symmetry independent atoms
+            IF (DOATOM(IATOM)) THEN
+            ! do this atom?
+            IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+            ! this symmetry operation (IREP)
+            ! working on symmetry independent atoms (IATOM)
+            ! gives a new atom not handled before
+               FRM  = 0.0D0
+               FRMX = 0.0D0
+               FRMY = 0.0D0
+               FRMZ = 0.0D0
+               DO ISYMOP = 0, MAXOPR
+               ! symmetry operator working on the three operators
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               !  a symmetry dependent atom exists for this ISYMOP
+               ! we must take all symmetry operations on
+               ! the operator working on the symmetry indepent
+               ! IATOM, because the symmetry version of
+               ! the operator will contain contributions
+               ! at all symmetry equivalent atoms.
+                  XC = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  YC = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  ZC = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+                  ! coordinates of symdep atom getting
+                  ! contributions for this ISYMOP on FC(IATOM)
+                  RCP2 = (XC-XP)**2 + (YC-YP)**2 + (ZC-ZP)**2
+                  IF(SQRT(RCP2).LT.1D-20) THEN
+                  FINT = DFAC*SAAB*PT(IAND(IREP,ISYMOP))
+                  ELSE
+                  ! distance squard from Center to P
+                  ! (P is center of gaussian product A with B)
+                  FINT = DFAC*SAAB*PT(IAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
+                  ! PT tells what sign the FC operator of
+                  ! symmetry ISYMOP has at this nucleus
+                  ENDIF
+
+!    Calculate polynomial contributions to GTO_A( C )
+!    and derivative contribution
+                  IF (LVALA .GT. 1) THEN
+                     FINTAX = ((XC - CORAX)**LVALA)
+                     XFINTA = LVALA*((XC-CORAX)**(LVALA-1))
+     &                      - 2.0D0*((XC-CORAX)**(LVALA+1))*EXPA
+                  ELSE IF (LVALA .EQ. 1) THEN
+                     FINTAX = (XC - CORAX)
+                     XFINTA = 1D0- 2.0D0*((XC-CORAX)**2)*EXPA
+                  ELSE
+                     FINTAX = 1.0D0
+                     XFINTA = - 2.0D0*(XC-CORAX)*EXPA
+                  END IF
+                  IF (MVALA .GT. 1) THEN
+                     FINTAY = ((YC - CORAY)**MVALA)
+                     YFINTA = MVALA*((YC-CORAY)**(MVALA-1))
+     &                      - 2.0D0*((YC-CORAY)**(MVALA+1))*EXPA
+                  ELSE IF (MVALA .EQ. 1) THEN
+                     FINTAY = (YC - CORAY)
+                     YFINTA = 1D0- 2.0D0*((YC-CORAY)**2)*EXPA
+                  ELSE
+                     FINTAY = 1.0D0
+                     YFINTA = -2.0D0*(YC-CORAY)*EXPA
+                  END IF
+                  IF (NVALA .GT. 1) THEN
+                     FINTAZ = ((ZC - CORAZ)**NVALA)
+                     ZFINTA = NVALA*((ZC-CORAZ)**(NVALA-1))
+     &                      - 2.0D0*((ZC-CORAZ)**(NVALA+1))*EXPA
+                  ELSE IF (NVALA .EQ. 1) THEN
+                     FINTAZ = (ZC - CORAZ)
+                     ZFINTA = 1D0- 2.0D0*((ZC-CORAZ)**2)*EXPA
+                  ELSE
+                     FINTAZ = 1.0D0
+                     ZFINTA = -2.0D0*(ZC-CORAZ)*EXPA
+                  END IF
+                  IF ( ABS(XC-CORAX) .LT. 1D-20 ) THEN
+                    IF (LVALA .EQ. 1) THEN
+                      XFINTA = 1D0
+                    ELSE
+                      XFINTA = 0D0
+                    END IF
+                  END IF
+                  IF ( ABS(YC-CORAY) .LT. 1D-20 ) THEN
+                    IF (MVALA .EQ. 1) THEN
+                      YFINTA = 1D0
+                    ELSE
+                      YFINTA = 0D0
+                    END IF
+                  END IF
+                  IF ( ABS(ZC-CORAZ) .LT. 1D-20 ) THEN
+                    IF (NVALA .EQ. 1) THEN
+                      ZFINTA = 1D0
+                    ELSE
+                      ZFINTA = 0D0
+                    END IF
+                  END IF
+
+!    Calculate polynomial contributions to GTO_B( C )
+!    and derivative contribution
+                  IF (LVALB .GT. 1) THEN
+                     FINTBX = ((XC - CORBX)**LVALB)
+                     XFINTB = LVALB*((XC-CORBX)**(LVALB-1))
+     &                      - 2.0D0*((XC-CORBX)**(LVALB+1))*EXPB
+                  ELSE IF (LVALB .EQ. 1) THEN
+                     FINTBX = (XC - CORBX)
+                     XFINTB = 1D0- 2.0D0*((XC-CORBX)**2)*EXPB
+                  ELSE
+                     FINTBX = 1.0D0
+                     XFINTB = - 2.0D0*(XC-CORBX)*EXPB
+                  END IF
+                  IF (MVALB .GT. 1) THEN
+                     FINTBY = ((YC - CORBY)**MVALB)
+                     YFINTB = MVALB*((YC-CORBY)**(MVALB-1))
+     &                      - 2.0D0*((YC-CORBY)**(MVALB+1))*EXPB
+                  ELSE IF (MVALB .EQ. 1) THEN
+                     FINTBY = (YC - CORBY)
+                     YFINTB = 1D0- 2.0D0*((YC-CORBY)**2)*EXPB
+                  ELSE
+                     FINTBY = 1.0D0
+                     YFINTB = -2.0D0*(YC-CORBY)*EXPB
+                  END IF
+                  IF (NVALB .GT. 1) THEN
+                     FINTBZ = ((ZC - CORBZ)**NVALB)
+                     ZFINTB = NVALB*((ZC-CORBZ)**(NVALB-1))
+     &                      - 2.0D0*((ZC-CORBZ)**(NVALB+1))*EXPB
+                  ELSE IF (NVALB .EQ. 1) THEN
+                     FINTBZ = (ZC - CORBZ)
+                     ZFINTB = 1D0- 2.0D0*((ZC-CORBZ)**2)*EXPB
+                  ELSE
+                     FINTBZ = 1.0D0
+                     ZFINTB = -2.0D0*(ZC-CORBZ)*EXPB
+                  END IF
+                  IF ( ABS(XC-CORBX) .LT. 1D-14 ) THEN
+                    IF (LVALB .EQ. 1) THEN
+                      XFINTB = 1D0
+                    ELSE
+                      XFINTB = 0D0
+                    END IF
+                  END IF
+                  IF ( ABS(YC-CORBY) .LT. 1D-14 ) THEN
+                    IF (MVALB .EQ. 1) THEN
+                      YFINTB = 1D0
+                    ELSE
+                      YFINTB = 0D0
+                    END IF
+                  END IF
+                  IF ( ABS(ZC-CORBZ) .LT. 1D-14 ) THEN
+                    IF (NVALB .EQ. 1) THEN
+                      ZFINTB = 1D0
+                    ELSE
+                      ZFINTB = 0D0
+                    END IF
+                  END IF
+
+               END IF  ! IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0
+               END DO  ! ISYMOP
+               IF ( ABS(XFINTB) .GT. 1D-20 ) THEN
+                 IF ( ABS(XFINTA) .GT. 1D-20 ) THEN
+                    XFINT = XFINTA*FINTBX + FINTAX*XFINTB
+                 ELSE
+                    XFINT = FINTAX*XFINTB
+                 END IF
+               ELSE
+                 IF ( ABS(XFINTA) .GT. 1D-20 ) THEN
+                    XFINT = XFINTA*FINTBX
+                 ELSE
+                    XFINT = 0D0
+                 END IF
+               END IF
+               IF ( ABS(YFINTB) .GT. 1D-20 ) THEN
+                 IF ( ABS(YFINTA) .GT. 1D-20 ) THEN
+                    YFINT = YFINTA*FINTBY + FINTAY*YFINTB
+                 ELSE
+                    YFINT = FINTAY*YFINTB
+                 END IF
+               ELSE
+                 IF ( ABS(YFINTA) .GT. 1D-20 ) THEN
+                    YFINT = YFINTA*FINTBY
+                 ELSE
+                    YFINT = 0D0
+                 END IF
+               END IF
+               IF ( ABS(ZFINTB) .GT. 1D-20 ) THEN
+                 IF ( ABS(ZFINTA) .GT. 1D-20 ) THEN
+                    ZFINT = ZFINTA*FINTBZ + FINTAZ*ZFINTB
+                 ELSE
+                    ZFINT = FINTAZ*ZFINTB
+                 END IF
+               ELSE
+                 IF ( ABS(ZFINTA) .GT. 1D-20 ) THEN
+                    ZFINT = ZFINTA*FINTBZ
+                 ELSE
+                    ZFINT = 0D0
+                 END IF
+               END IF
+               FINTX = FINT*FINTAY*FINTBY*FINTAZ*FINTBZ
+               FINTY = FINT*FINTAX*FINTBX*FINTAZ*FINTBZ
+               FINTZ = FINT*FINTAX*FINTBX*FINTAY*FINTBY
+
+               IF (ABS(FINTX) .GT. 1D-20) THEN
+               SHLINT(INT,INTTYP+1) = SHLINT(INT,INTTYP+1)
+C     &           - FINT*(XFINTA*FINTBX + FINTAX*XFINTB)
+     &           - FINT*XFINT
+     &                 *FINTAY*FINTBY*FINTAZ*FINTBZ
+               END IF
+               IF (ABS(FINTY) .GT. 1D-20) THEN
+               SHLINT(INT,INTTYP+2) = SHLINT(INT,INTTYP+2)   
+C     &           - FINT*(YFINTA*FINTBY + FINTAY*YFINTB)
+     &           - FINT*YFINT
+     &                 *FINTAX*FINTBX*FINTAZ*FINTBZ
+               END IF
+               IF (ABS(FINTZ) .GT. 1D-20) THEN
+               SHLINT(INT,INTTYP+3) = SHLINT(INT,INTTYP+3)
+C     &           - FINT*(ZFINTA*FINTBZ + FINTAZ*ZFINTB)
+     &           - FINT*ZFINT
+     &                 *FINTAY*FINTBY*FINTAX*FINTBX
+               END IF
+
+
+              IF (CTRL_PRINT) THEN
+              if (DABS(SHLINT(INT,INTTYP+1)).GE.1.0d-9) then
+                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
+                 write(lupri,*) 'x delta shlint=',SHLINT(INT,INTTYP+1),
+     &                           INT, INTTYP+1
+              endif
+              if (DABS(SHLINT(INT,INTTYP+2)).GE.1.0d-9) then
+                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
+                 write(lupri,*) 'y delta shlint=',SHLINT(INT,INTTYP+2),
+     &                          INT, INTTYP+2
+              endif
+              if (DABS(SHLINT(INT,INTTYP+3)).GE.1.0d-9) then
+                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
+                 write(lupri,*) 'z delta shlint=',SHLINT(INT,INTTYP+3),
+     &                          INT, INTTYP+3
+              endif
+              ENDIF
+              INTTYP = INTTYP + 3
             END IF
             END IF
   300       CONTINUE

@@ -10,8 +10,8 @@ from runtest_config import configure
 assert version_info.major == 2
 
 f = [
-    get_filter(from_string='Transformation of property integrals',
-               to_string='E N D   of   D I R A C  output',
+    get_filter(from_string='SETDC2: Distribution of symmetry',
+               to_string='Total wall time used in PAMTRA',
                rel_tolerance=1.0e-4)
 ]
 
