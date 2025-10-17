@@ -124,7 +124,6 @@ module mp2no_matrixtransforms
               N_OCCUPATION = N_OCCUPATION_tmp
               indices = indices_tmp
               width = width * 2
-              write(*,'(A, *(ES12.5, :," "))') "DEBUG = ", N_OCCUPATION
            enddo
 
            ! check for debug
