@@ -564,7 +564,7 @@ module talsh_mp2no
                         call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION_tmp,NOs_MO_tmp)
                         call print_date('diagonalized MO DM (quaternion)')
 
-                        call sort_values_vectors (N_OCCUPATION_tmp,NOs_MO_tmp)
+                        call sort_MOs_by_occupation_number_v1 (N_OCCUPATION_tmp,NOs_MO_tmp)
 
                         call quater_write(NOs_MO_tmp,N_OCCUPATION_tmp,&
                             trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
@@ -600,6 +600,8 @@ module talsh_mp2no
                         N_reduced = N_reduced + N_reduced_tmp
                         counter = counter + size(N_OCCUPATION_tmp)
 
+                        call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO,size(NOs_MO,1),size(NOs_MO,2),4)
+
                         deallocate(NOs_MO_tmp)       ! allocation done in quater_read_orbital
                         deallocate(N_OCCUPATION_tmp) ! allocation done in quater_read_orbital
                      enddo
@@ -615,7 +617,7 @@ module talsh_mp2no
                      call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)
                      call print_date('diagonalized MO DM (quaternion)')
 
-                     call sort_values_vectors (N_OCCUPATION,NOs_MO)
+                     call sort_MOs_by_occupation_number_v1 (N_OCCUPATION,NOs_MO)
                      call print_date('Sorted natural orbitals by occupation number')
 
                   endif
